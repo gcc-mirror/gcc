@@ -1214,18 +1214,24 @@ sched_analyze_2 (x, insn)
 #ifdef HAVE_cc0
     case CC0:
       {
-	rtx link;
+	rtx link, prev;
+
+	/* There may be a note before this insn now, but all notes will
+	   be removed before we actually try to schedule the insns, so
+	   it won't cause a problem later.  We must avoid it here though.  */
 
 	/* User of CC0 depends on immediately preceding insn.
-	   There may be a note before this insn now, but all notes will
-	   be removed before we actually try to schedule the insns, so
-	   it doesn't matter.  */
 	SCHED_GROUP_P (insn) = 1;
 
-	/* Make a copy of all dependencies on PREV_INSN, and add to this insn.
-	   This is so that all the dependencies will apply to the group.  */
+	/* Make a copy of all dependencies on the immediately previous insn,
+	   and add to this insn.  This is so that all the dependencies will
+	   apply to the group.  */
 
-	for (link = LOG_LINKS (PREV_INSN (insn)); link; link = XEXP (link, 1))
+	prev = PREV_INSN (insn);
+	while (GET_CODE (prev) == NOTE)
+	  prev = PREV_INSN (prev);
+
+	for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
 	  add_dependence (insn, XEXP (link, 0), GET_MODE (link));
 
 	return;

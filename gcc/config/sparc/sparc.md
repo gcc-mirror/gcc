@@ -1402,6 +1402,92 @@
 }"
   [(set_attr "type" "fp")
    (set_attr "length" "3")])
+
+;; Allow combiner to combine a fix_truncdfsi2 with a floatsidf2
+;; This eliminates 2 useless instructions.
+;; The first one matches if the fixed result is needed.  The second one
+;; matches if the fixed result is not needed.
+
+(define_insn ""
+  [(set (match_operand:DF 0 "general_operand" "=f")
+	(float:DF (fix:SI (fix:DF (match_operand:DF 1 "general_operand" "fm")))))
+   (set (match_operand:SI 2 "general_operand" "=rm")
+	(fix:SI (fix:DF (match_dup 1))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fdtoi %1,%0\", operands);
+  else
+    {
+      output_asm_insn (output_fp_move_double (operands), operands);
+      output_asm_insn (\"fdtoi %0,%0\", operands);
+    }
+  if (GET_CODE (operands[2]) == MEM)
+    return \"st %0,%2\;fitod %0,%0\";
+  else
+    return \"st %0,[%%fp-4]\;fitod %0,%0\;ld [%%fp-4],%2\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "5")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "general_operand" "=f")
+	(float:DF (fix:SI (fix:DF (match_operand:DF 1 "general_operand" "fm")))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fdtoi %1,%0\", operands);
+  else
+    {
+      output_asm_insn (output_fp_move_double (operands), operands);
+      output_asm_insn (\"fdtoi %0,%0\", operands);
+    }
+  return \"fitod %0,%0\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "3")])
+
+;; Allow combiner to combine a fix_truncsfsi2 with a floatsisf2
+;; This eliminates 2 useless instructions.
+;; The first one matches if the fixed result is needed.  The second one
+;; matches if the fixed result is not needed.
+
+(define_insn ""
+  [(set (match_operand:SF 0 "general_operand" "=f")
+	(float:SF (fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm")))))
+   (set (match_operand:SI 2 "general_operand" "=rm")
+	(fix:SI (fix:SF (match_dup 1))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fstoi %1,%0\", operands);
+  else
+    output_asm_insn (\"ld %1,%0\;fstoi %0,%0\", operands);
+  if (GET_CODE (operands[2]) == MEM)
+    return \"st %0,%2\;fitos %0,%0\";
+  else
+    return \"st %0,[%%fp-4]\;fitos %0,%0\;ld [%%fp-4],%2\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "5")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "general_operand" "=f")
+	(float:SF (fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm")))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fstoi %1,%0\", operands);
+  else
+    output_asm_insn (\"ld %1,%0\;fstoi %0,%0\", operands);
+  return \"fitos %0,%0\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "3")])
 
 ;;- arithmetic instructions
 

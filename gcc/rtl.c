@@ -383,21 +383,39 @@ add_dependence (insn, elem, dep_type)
      rtx elem;
      enum reg_note dep_type;
 {
-  rtx link;
+  rtx link, next;
 
   /* Don't depend an insn on itself.  */
   if (insn == elem)
     return;
 
   /* If elem is part of a sequence that must be scheduled together, then
-     make the dependence point to the last insn of the sequence.  */
-  if (NEXT_INSN (elem) && SCHED_GROUP_P (NEXT_INSN (elem)))
+     make the dependence point to the last insn of the sequence.
+     When HAVE_cc0, it is possible for NOTEs to exist between users and
+     setters of the condition codes, so we must skip past notes here.
+     Otherwise, NOTEs are impossible here.  */
+
+  next = NEXT_INSN (elem);
+
+#ifdef HAVE_cc0
+  while (next && GET_CODE (next) == NOTE)
+    next = NEXT_INSN (next);
+#endif
+
+  if (next && SCHED_GROUP_P (next))
     {
-      while (NEXT_INSN (elem) && SCHED_GROUP_P (NEXT_INSN (elem)))
-	elem = NEXT_INSN (elem);
-      /* Again, don't depend an insn of itself.  */
-      if (insn == elem)
+      /* Notes will never intervene here though, so don't bother checking
+	 for them.  */
+      while (next && SCHED_GROUP_P (next))
+	next = NEXT_INSN (next);
+
+      /* Again, don't depend an insn on itself.  */
+      if (insn == next)
 	return;
+
+      /* Make the dependence to NEXT, the last insn of the group, instead
+	 of the original ELEM.  */
+      elem = next;
     }
 
   /* Check that we don't already have this dependence.  */
