@@ -1,5 +1,19 @@
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetSocketAddress.java
+	(hostname): Made private, added documentation.
+	(addr): Likewise.
+	(port): Likewise.
+	(equals): Completed documentation.
+	(getAddress): Likewise.
+	(getHostName): Likewise.
+	(getPort): Likewise.
+	(hashCode): Likewise.
+	(isUnresolved): Likewise.
+	(toString): Likewise.
+
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/file/Handler.java
 	(Handler): New explicit constructor.
 	(openConnection): Added documentation.
