@@ -1,5 +1,10 @@
 2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/13289
+	* g++.dg/parse/nontype1.C: New test.
+
+2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/12403
 	* g++.dg/parse/explicit1.C: New test.
 	* g++.old-deja/g++.pt/explicit71.C: Adjust expected error.
