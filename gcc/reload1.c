@@ -78,10 +78,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    fixing up each insn, and generating the new insns to copy values
    into the reload registers.  */
 
-#ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(m, x, y) 2
-#endif
-
 #ifndef LOCAL_REGNO
 #define LOCAL_REGNO(REGNO)  0
 #endif

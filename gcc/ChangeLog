@@ -1,3 +1,9 @@
+2003-06-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* defaults.h (REGISTER_MOVE_COST): Define default here.
+	* regclass.c: Don't define default REGISTER_MOVE_COST here.
+	* reload.c, reload1.c: Ditto.
+
 2003-06-27  Richard Earnshaw <rearnsha@arm.com>
 
 	* flags.h: Really install previous change.
