@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfor.
-   Copyright 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -236,6 +236,11 @@ extern unsigned line;		/* Location of the current libray call (optional).  */
 
 #define filename prefix(filename)
 extern char *filename;
+
+/* Avoid conflicting prototypes of alloca() in system headers by using 
+   GCC's builtin alloca().  */
+
+#define gfc_alloca(x)  __builtin_alloca(x)
 
 
 /* main.c */

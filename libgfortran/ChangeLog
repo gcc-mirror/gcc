@@ -1,3 +1,8 @@
+2004-09-21  Steven G. Kargl  <kargls@comcast.net>
+
+	* libgfortran.h: define gfc_alloca()
+	* intrinsics/env.c (getenv, get_environment_variable_i4): Use it.
+
 2004-09-21  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17286
