@@ -428,6 +428,7 @@ java::net::PlainSocketImpl::close()
     }
   // Safe place to reset the file pointer.
   fnum = -1;
+  timeout = 0;
 }
 
 // Write a byte to the socket.
