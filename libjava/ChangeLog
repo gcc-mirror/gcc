@@ -1,5 +1,10 @@
 2002-02-24  Adam Megacz  <adam@xwt.org>
 
+	* java/net/natPlainDatagramSocketImpl.cc: whops; removed 'make'
+	typo. Sorry.
+
+2002-02-24  Adam Megacz  <adam@xwt.org>
+
 	* java/net/natPlainDatagramSocketImpl.cc: Updated #includes
 	for Win32, changed #ifdefs to check WIN32 instead of the
 	(now-obsolete) USE_WINSOCK, and removed support for socket
