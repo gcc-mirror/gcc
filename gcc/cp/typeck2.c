@@ -1191,9 +1191,9 @@ build_functional_cast (tree exp, tree parms)
 tree
 add_exception_specifier (tree list, tree spec, int complain)
 {
-  int ok;
+  bool ok;
   tree core = spec;
-  int is_ptr;
+  bool is_ptr;
   int diag_type = -1; /* none */
   
   if (spec == error_mark_node)
@@ -1208,16 +1208,16 @@ add_exception_specifier (tree list, tree spec, int complain)
   if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
     core = TREE_TYPE (core);
   if (complain < 0)
-    ok = 1;
+    ok = true;
   else if (VOID_TYPE_P (core))
     ok = is_ptr;
   else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
-    ok = 1;
+    ok = true;
   else if (processing_template_decl)
-    ok = 1;
+    ok = true;
   else
     {
-      ok = 1;
+      ok = true;
       /* 15.4/1 says that types in an exception specifier must be complete,
          but it seems more reasonable to only require this on definitions
          and calls.  So just give a pedwarn at this point; we will give an
