@@ -1,3 +1,7 @@
+2004-11-07  James A. Morrison  <phython@gcc.gnu.org>
+
+	* README: Update website URL.
+
 2004-10-27  Geoffrey Keating  <geoffk@apple.com>
 
 	* btest-gcc.sh (TESTLOGS): The libstdc++-v3 test log is called
