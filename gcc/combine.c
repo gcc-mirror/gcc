@@ -7139,14 +7139,22 @@ num_sign_bit_copies (x, mode)
 	}
 
 #ifdef WORD_REGISTER_OPERATIONS
+#ifdef LOAD_EXTEND_OP
       /* For paradoxical SUBREGs on machines where all register operations
 	 affect the entire register, just look inside.  Note that we are
 	 passing MODE to the recursive call, so the number of sign bit copies
 	 will remain relative to that mode, not the inner mode.  */
 
-      if (GET_MODE_SIZE (GET_MODE (x))
-	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+      /* This works only if loads sign extend.  Otherwise, if we get a
+	 reload for the inner part, it may be loaded from the stack, and
+	 then we lose all sign bit copies that existed before the store
+	 to the stack.  */
+
+      if ((GET_MODE_SIZE (GET_MODE (x))
+	   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	  && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND)
 	return num_sign_bit_copies (SUBREG_REG (x), mode);
+#endif
 #endif
       break;
 
