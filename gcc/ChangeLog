@@ -1,3 +1,8 @@
+Mon Mar 20 11:43:15 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (delete_noop_moves): Remove code attempting to
+	combine stack adjustments.
+
 2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* emit-rtl.c (push_to_full_sequence, end_full_sequence): New functions.
