@@ -1,5 +1,8 @@
 2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Retrieve
+	current limits before setting.
+
 	* acinclude.m4 (enable_symvers): Quote $LD.
 	* aclocal.m4: Regenerate.
 	* configure: Likewise.
