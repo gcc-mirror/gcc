@@ -1207,10 +1207,11 @@ output_prolog (file, size)
      FILE *file;
      int size;
 {
-  HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
+  HOST_WIDE_INT vars_size = (size + 7) & ~7;
+  HOST_WIDE_INT frame_size = ((vars_size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  HOST_WIDE_INT reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT reg_offset = vars_size + current_function_outgoing_args_size;
   HOST_WIDE_INT start_reg_offset = reg_offset;
   HOST_WIDE_INT actual_start_reg_offset = start_reg_offset;
   rtx insn;
@@ -1408,10 +1409,11 @@ output_epilog (file, size)
      int size;
 {
   rtx insn = get_last_insn ();
-  HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
+  HOST_WIDE_INT vars_size = (size + 7) & ~7;
+  HOST_WIDE_INT frame_size = ((vars_size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  HOST_WIDE_INT reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT reg_offset = vars_size + current_function_outgoing_args_size;
   HOST_WIDE_INT frame_size_from_reg_save = frame_size - reg_offset;
   int reg_offset_base_reg = 30;
   int i;
