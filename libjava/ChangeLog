@@ -2,6 +2,12 @@
 
 	* java/awt/Window.java (addNotify): Remove peer casting hack now that 
 	gcj/312 is fixed.
+	* java/awt/Button.java (addNotify): Likewise.
+	* java/awt/Label.java (addNotify): Likewise.
+	* java/awt/Panel.java (addNotify): Likewise.
+	* java/awt/Scrollbar.java (addNotify): Likewise.
+	* java/awt/Component.java (processPaintEvent): Use peer not getPeer.
+	Remove redundant null checks.
 
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 

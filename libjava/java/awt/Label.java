@@ -42,7 +42,7 @@ public class Label extends Component
   public void addNotify ()
   {
     if (peer == null)
-      peer = (ComponentPeer) getToolkit ().createLabel (this);
+      peer = getToolkit ().createLabel (this);
   }
 
   public int getAlignment ()

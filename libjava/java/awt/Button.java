@@ -38,7 +38,7 @@ public class Button extends Component
   public void addNotify ()
   {
     if (peer == null)
-      peer = (ComponentPeer) getToolkit ().createButton (this);
+      peer = getToolkit ().createButton (this);
     super.addNotify();
   }
 
