@@ -187,7 +187,7 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct tree_list),
   TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* MEM, PLUS, etc.  */
-  RTL_SIZE (9),		/* INSN, CALL_INSN, JUMP_INSN */
+  RTL_SIZE (9),			/* INSN */
 };
 
 /* The total number of orders.  */
