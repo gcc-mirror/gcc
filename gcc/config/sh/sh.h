@@ -1018,7 +1018,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    ? (MODE) == DFmode \
    : TARGET_REGISTER_P (REGNO) \
    ? ((MODE) == DImode || (MODE) == SImode) \
-   : (REGNO) == PR_REG ? 0			\
+   : (REGNO) == PR_REG ? (MODE) == SImode \
    : (REGNO) == FPSCR_REG ? (MODE) == PSImode \
    : 1)
 
@@ -2335,11 +2335,6 @@ while (0)
    the stack.  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_REG (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
-
-/* libstdc++-v3/libsupc++/eh_personality.cc:__gxx_personality_v0
-   can get confused by SHmedia return addresses when it does:
-   ip = _Unwind_GetIP (context) - 1;  */
-#define RETURN_ADDR_OFFSET (TARGET_SH5 ? -1 : 0)
 
 /* Generate necessary RTL for __builtin_saveregs().  */
 #define EXPAND_BUILTIN_SAVEREGS() sh_builtin_saveregs ()
@@ -3101,18 +3096,30 @@ while (0)
    register exists, so we should return -1 for invalid register numbers.  */
 #define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
 
+/* SHcompact PR_REG used to use the encoding 241, and SHcompact FP registers
+   used to use the encodings 245..260, but that doesn't make sense:
+   PR_REG and PR_MEDIA_REG are actually the same register, and likewise
+   the FP registers stay the same when switching between compact and media
+   mode.  Hence, we also need to use the same dwarf frame coloumns.
+   Likewise, we need to support unwind information for SHmedia registers
+   even in compact code.  */
 #define SH_DBX_REGISTER_NUMBER(REGNO) \
-  (GENERAL_REGISTER_P (REGNO) \
+  (IN_RANGE ((REGNO), \
+	     (unsigned HOST_WIDE_INT) FIRST_GENERAL_REG, \
+	     FIRST_GENERAL_REG + (TARGET_SH5 ? 63U :15U)) \
    ? ((unsigned) (REGNO) - FIRST_GENERAL_REG) \
-   : FP_REGISTER_P (REGNO) \
+  : ((int) (REGNO) >= FIRST_FP_REG \
+     && ((int) (REGNO) \
+	 <= (FIRST_FP_REG + \
+	     ((TARGET_SH5 && TARGET_FPU_ANY) ? 63 : TARGET_SH2E ? 15 : -1)))) \
    ? ((unsigned) (REGNO) - FIRST_FP_REG \
-      + (TARGET_SH5 ? (TARGET_SHCOMPACT ? 245 : 77) : 25)) \
+      + (TARGET_SH5 ? 77 : 25)) \
    : XD_REGISTER_P (REGNO) \
    ? ((unsigned) (REGNO) - FIRST_XD_REG + (TARGET_SH5 ? 289 : 87)) \
    : TARGET_REGISTER_P (REGNO) \
    ? ((unsigned) (REGNO) - FIRST_TARGET_REG + 68) \
    : (REGNO) == PR_REG \
-   ? (TARGET_SH5 ? 241 : 17) \
+   ? (TARGET_SH5 ? 18 : 17) \
    : (REGNO) == PR_MEDIA_REG \
    ? (TARGET_SH5 ? 18 : (unsigned) -1) \
    : (REGNO) == T_REG \
@@ -3472,6 +3479,27 @@ extern int rtx_equal_function_value_matters;
 #define EH_RETURN_STACKADJ_REGNO STATIC_CHAIN_REGNUM
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, EH_RETURN_STACKADJ_REGNO)
 
+/* We have to distinguish between code and data, so that we apply
+   datalabel where and only where appropriate.  Use textrel for code.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+ ((flag_pic && (GLOBAL) ? DW_EH_PE_indirect : 0) \
+  | ((CODE) ? DW_EH_PE_textrel : flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr))
+
+/* Handle special EH pointer encodings.  Absolute, pc-relative, and
+   indirect are handled automatically.  */
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  do { \
+    if (((ENCODING) & 0x70) == DW_EH_PE_textrel) \
+      { \
+	encoding &= ~DW_EH_PE_textrel; \
+	encoding |= flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr; \
+	if (GET_CODE (ADDR) != SYMBOL_REF) \
+	  abort (); \
+	SYMBOL_REF_FLAGS (ADDR) |= SYMBOL_FLAG_FUNCTION; \
+	if (0) goto DONE; \
+      } \
+  } while (0)
+
 #if (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__
 /* SH constant pool breaks the devices in crtstuff.c to control section
    in where code resides.  We have to write it as asm code.  */
@@ -3487,8 +3515,13 @@ extern int rtx_equal_function_value_matters;
 #endif /* (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__ */
 
 #define ALLOCATE_INITIAL_VALUE(hard_reg) \
-  (REGNO (hard_reg) == (TARGET_SH5 ? PR_MEDIA_REG : PR_REG) \
-   ? (current_function_is_leaf && ! sh_pr_n_sets () \
+  (REGNO (hard_reg) == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG) \
+   ? (current_function_is_leaf \
+      && ! sh_pr_n_sets () \
+      && ! (TARGET_SHCOMPACT \
+	    && ((current_function_args_info.call_cookie \
+		 & ~ CALL_COOKIE_RET_TRAMP (1)) \
+		|| current_function_has_nonlocal_label)) \
       ? (hard_reg) \
       : gen_rtx_MEM (Pmode, TARGET_SH5 \
 			    ? (plus_constant (arg_pointer_rtx, \

@@ -3471,6 +3471,17 @@
 	fake	%1,%0"
   [(set_attr "type" "pcload,move,load,move,prget,move,store,pcload")])
 
+(define_split
+  [(set (match_operand:SI 0 "general_movdst_operand" "")
+	(mem:SI (reg:SI RAP_REG)))]
+  "TARGET_SHCOMPACT
+   && ! rtx_equal_function_value_matters
+   && ! ((current_function_args_info.call_cookie
+	  & ~ CALL_COOKIE_RET_TRAMP (1))
+	 || current_function_has_nonlocal_label)"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = sh_get_pr_initial_val ();")
+
 (define_insn "*movsi_media"
   [(set (match_operand:SI 0 "general_movdst_operand"
 	        "=r,r,r,r,m,f,m,f,r,f,*b,r,b")
