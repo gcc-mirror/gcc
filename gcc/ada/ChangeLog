@@ -1,3 +1,7 @@
+2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* misc.c (gnat_init): Adjust setting of internal_error_function.
+
 2002-06-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gnat_ug.texi: Use @ifnottex instead of @ifinfo.
