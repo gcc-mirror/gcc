@@ -1,3 +1,7 @@
+2001-05-21  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/VMClassLoader.java (VMClassLoader): Now public.
+
 2001-05-18  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* include/dwarf2-signal.h: New file.	
