@@ -1,3 +1,7 @@
+2004-09-29  Eric Christopher  <echristo@redhat.com>
+
+	* fold-const.c (tree_swap_operands_p): Remove duplicated code.
+
 2004-09-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md (moverside, movemside): With MEM, make sure
@@ -155,7 +159,7 @@
 	* config/s390/s390.c (s390_adjust_cost): Remove.
 	(TARGET_SCHED_ADJUST_COST): Do not redefine.
 	(s390_adjust_priority): Handle TYPE_STM like TYPE_STORE.
-	* config/s390/s390.md ("main_pool"): Use "larl" type 
+	* config/s390/s390.md ("main_pool"): Use "larl" type
 	attribute if TARGET_CPU_ZARCH.
 
 2004-09-28  Jakub Jelinek  <jakub@redhat.com>
@@ -204,7 +208,7 @@
 2004-09-28  Devang Patel  <dpatel@apple.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print vector types.
-	
+
 2004-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.h (INIT_CUMULATIVE_ARGS): Replace with an
@@ -561,7 +565,7 @@
 	* tree-ssa-propagate.c (simulate_stmt): Likewise.
 	(simulate_block): Likewise.
 	(ssa_prop_init): Likewise.
-	* tree-ssa-threadupdate.c (thread_block): Likewise.	
+	* tree-ssa-threadupdate.c (thread_block): Likewise.
 	(create_block_for_threading): Likewise.
 	(remove_last_stmt_and_useless_edges): Likewise.
 	* tree-ssa.c (verify_phi_args): Likewise.
@@ -683,7 +687,7 @@
 2004-09-27  Devang Patel  <dpatel@apple.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.
-	
+
 2004-09-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (athlon_cost, k8_cost): Set BRANCH_COST to 5.
@@ -700,7 +704,7 @@
 
 	* ggc-page.c (GGC_QUIRE_SIZE): Bump up from 16 to 256 if we're
 	using mmap.
-	
+
 2004-09-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* bitmap.h (EXECUTE_IF_SET_IN_BITMAP, EXECUTE_IF_AND_COMPL_IN_BITMAP,
@@ -898,7 +902,7 @@
 	only if compiling with back chain.
 	("save_stack_nonlocal", "restore_stack_nonlocal"): Save/restore
 	back chain only if back chain enabled.  Use s390_back_chain_rtx.
-	
+
 2004-09-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/trouble.texi: Remove obsolete information.  Update
@@ -980,7 +984,7 @@
 	* tree-if-conv.c (tree_if_convert_cond_expr0: Create temp. variable
 	only when necesssary.
 	(combine_blocks): Combine loop header and exit block.
-	
+
 2004-09-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* hooks.c (hook_tree_tree_bool_null): New.
@@ -1087,7 +1091,7 @@
 	PR c++/13989
 	PR c++/9844
 	* tree.c (reconstruct_complex_type): Remove extra "this".
-	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): 
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute):
 	Add V4SFmode to case statement.
 
 2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
@@ -1105,7 +1109,7 @@
 	dominance data during error message printing.
 	* tree-mudflap.c (mf_build_check_statement_for): Build basic blocks
 	and edges more correctly.
-	
+
 2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
 
 	* tree.def (ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF):
