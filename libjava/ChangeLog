@@ -1,3 +1,12 @@
+2004-01-30  Michael Koch  <konqueror@gmx.de>
+
+	* configure.in: Use pkg-config to check for GTK 2.2 and libart 2.1.
+	* configure: Regenerated.
+	* glib-2.0.m4: Removed.
+	* gtk-2.0.m4: Removed.
+	* libart.m4: Removed.
+	* pkg.m4: New file.
+
 2004-01-30  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/net/PlainSocketImpl.java 
