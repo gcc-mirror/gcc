@@ -1,3 +1,8 @@
+2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Provide defaults
+	for insns without luid.
+
 2003-04-07  Glen Nakamura  <glen@imodulo.com>
 
 	PR opt/8634
