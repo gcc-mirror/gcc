@@ -1285,8 +1285,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       && (GET_CODE (trueop1) == CONST_DOUBLE
 	  || GET_CODE (trueop1) == CONST_INT))
     {
-      unsigned HOST_WIDE_INT l1, l2, lv;
-      HOST_WIDE_INT h1, h2, hv;
+      unsigned HOST_WIDE_INT l1, l2, lv, lt;
+      HOST_WIDE_INT h1, h2, hv, ht;
 
       if (GET_CODE (trueop0) == CONST_DOUBLE)
 	l1 = CONST_DOUBLE_LOW (trueop0), h1 = CONST_DOUBLE_HIGH (trueop0);
@@ -1315,10 +1315,29 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  mul_double (l1, h1, l2, h2, &lv, &hv);
 	  break;
 
-	case DIV:  case MOD:   case UDIV:  case UMOD:
-	  /* We'd need to include tree.h to do this and it doesn't seem worth
-	     it.  */
-	  return 0;
+	case DIV:
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 0, l1, h1, l2, h2,
+				    &lv, &hv, &lt, &ht))
+	    return 0;
+	  break;
+
+	case MOD:
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 0, l1, h1, l2, h2,
+				    &lt, &ht, &lv, &hv))
+	    return 0;
+	  break;
+
+	case UDIV:
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 1, l1, h1, l2, h2,
+				    &lv, &hv, &lt, &ht))
+	    return 0;
+	  break;
+
+	case UMOD:
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 1, l1, h1, l2, h2,
+				    &lt, &ht, &lv, &hv))
+	    return 0;
+	  break;
 
 	case AND:
 	  lv = l1 & l2, hv = h1 & h2;
