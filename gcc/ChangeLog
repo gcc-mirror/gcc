@@ -23,7 +23,7 @@
 	start_sequence_for_rtl_expr, not start_sequence.
 	* expr.c (expand_expr, case RTL_EXPR): Don't call
 	preserve_rtl_expr_result or free_temps_for_rtl_expr.
-	(assign_stack_temp_for_type): Don't set rtl_expr.
+	* function.c (assign_stack_temp_for_type): Don't set rtl_expr.
 	(preserve_rtl_expr_result): Remove.
 	(free_temps_for_rtl_expr): Likewise.
 	(pop_temp_slots): Likewise.

@@ -708,7 +708,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
 						    rounded_size));
 	      p->align = best_p->align;
 	      p->address = 0;
-	      p->rtl_expr = 0;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
@@ -776,7 +775,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
   p->in_use = 1;
   p->addr_taken = 0;
-  p->rtl_expr = seq_rtl_expr;
 
   if (keep == 2)
     {
@@ -1129,34 +1127,6 @@ preserve_temp_slots (x)
       p->level--;
 }
 
-/* X is the result of an RTL_EXPR.  If it is a temporary slot associated
-   with that RTL_EXPR, promote it into a temporary slot at the present
-   level so it will not be freed when we free slots made in the
-   RTL_EXPR.  */
-
-void
-preserve_rtl_expr_result (x)
-     rtx x;
-{
-  struct temp_slot *p;
-
-  /* If X is not in memory or is at a constant address, it cannot be in
-     a temporary slot.  */
-  if (x == 0 || GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
-    return;
-
-  /* If we can find a match, move it to our level unless it is already at
-     an upper level.  */
-  p = find_temp_slot_from_address (XEXP (x, 0));
-  if (p != 0)
-    {
-      p->level = MIN (p->level, temp_slot_level);
-      p->rtl_expr = 0;
-    }
-
-  return;
-}
-
 /* Free all temporaries used so far.  This is normally called at the end
    of generating code for a statement.  Don't free any temporaries
    currently in use for an RTL_EXPR that hasn't yet been emitted.
@@ -1170,23 +1140,7 @@ free_temp_slots ()
   struct temp_slot *p;
 
   for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && ! p->keep
-	&& p->rtl_expr == 0)
-      p->in_use = 0;
-
-  combine_temp_slots ();
-}
-
-/* Free all temporary slots used in T, an RTL_EXPR node.  */
-
-void
-free_temps_for_rtl_expr (t)
-     tree t;
-{
-  struct temp_slot *p;
-
-  for (p = temp_slots; p; p = p->next)
-    if (p->rtl_expr == t)
+    if (p->in_use && p->level == temp_slot_level && ! p->keep)
       p->in_use = 0;
 
   combine_temp_slots ();
@@ -1264,7 +1218,7 @@ pop_temp_slots ()
   struct temp_slot *p;
 
   for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && p->rtl_expr == 0)
+    if (p->in_use && p->level == temp_slot_level)
       p->in_use = 0;
 
   combine_temp_slots ();
@@ -6980,8 +6934,6 @@ mark_temp_slot (t)
     {
       ggc_mark_rtx (t->slot);
       ggc_mark_rtx (t->address);
-      ggc_mark_tree (t->rtl_expr);
-
       t = t->next;
     }
 }
