@@ -1838,15 +1838,21 @@ expand_call (exp, target, ignore)
     {
       if (target == 0)
 	{
-	  target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
-			    copy_to_reg (valreg));
-	  MEM_IN_STRUCT_P (target)
-	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
+	  /* We used leave the value in the location that it is
+	     returned in, but that causes problems if it is used more
+	     than once in one expression.  Rather than trying to track
+	     when a copy is required, we always copy when TARGET is
+	     not specified.  This calling sequence is only used on
+	     a few machines and TARGET is usually nonzero.  */
+	  if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+	    target = assign_stack_temp (BLKmode,
+					int_size_in_bytes (TREE_TYPE (exp)),
+					1);
+	  else
+	    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 	}
-      else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
+
+      if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 	emit_move_insn (target, gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
 					 copy_to_reg (valreg)));
       else
