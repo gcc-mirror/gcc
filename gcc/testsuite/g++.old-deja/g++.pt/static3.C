@@ -1,3 +1,7 @@
+// On targets that don't support weak symbols, we require an explicit
+// instantiation of arr.
+// excess errors test - XFAIL *-*-aout *-*-coff
+
 template<class T>
 struct A {
   static T arr[5];
