@@ -116,6 +116,10 @@ tree unsigned_type_node;
 tree long_unsigned_type_node;
 tree long_long_unsigned_type_node;
 
+tree boolean_type_node;
+tree boolean_false_node;
+tree boolean_true_node;
+
 tree ptrdiff_type_node;
 
 tree unsigned_char_type_node;
@@ -2891,6 +2895,10 @@ init_decl_processing ()
   integer_one_node = build_int_2 (1, 0);
   TREE_TYPE (integer_one_node) = integer_type_node;
 
+  boolean_type_node = integer_type_node;
+  boolean_true_node = integer_one_node;
+  boolean_false_node = integer_zero_node;
+
   size_zero_node = build_int_2 (0, 0);
   TREE_TYPE (size_zero_node) = sizetype;
   size_one_node = build_int_2 (1, 0);
@@ -3222,6 +3230,8 @@ init_decl_processing ()
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
 		    NULL_PTR);
 #endif
+
+  pedantic_lvalues = pedantic;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
   declare_function_name ();
