@@ -1,3 +1,8 @@
+2000-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* sibcall.c (purge_mem_unchanging_flag): New function.
+	(optimize_sibling_and_tail_recursive_calls): Call it.
+
 2000-10-24  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in (check-po): New target for doing checks in the po

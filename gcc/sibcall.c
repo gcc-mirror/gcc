@@ -41,6 +41,7 @@ static rtx skip_jump_insn		PARAMS ((rtx));
 static int uses_addressof		PARAMS ((rtx));
 static int sequence_uses_addressof	PARAMS ((rtx));
 static void purge_reg_equiv_notes	PARAMS ((void));
+static void purge_mem_unchanging_flag	PARAMS ((rtx));
 
 /* Examine a CALL_PLACEHOLDER pattern and determine where the call's
    return value is located.  P_HARD_RETURN receives the hard register
@@ -362,6 +363,45 @@ purge_reg_equiv_notes ()
     }
 }
 
+/* Clear RTX_UNCHANGING_P flag of incoming argument MEMs.  */
+
+static void
+purge_mem_unchanging_flag (x)
+     rtx x;
+{
+  RTX_CODE code;
+  int i, j;
+  const char *fmt;
+
+  if (x == NULL_RTX)
+    return;
+
+  code = GET_CODE (x);
+
+  if (code == MEM)
+    {
+      if (RTX_UNCHANGING_P (x)
+	  && (XEXP (x, 0) == current_function_internal_arg_pointer
+	      || (GET_CODE (XEXP (x, 0)) == PLUS
+		  && XEXP (XEXP (x, 0), 0) ==
+		     current_function_internal_arg_pointer
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
+	RTX_UNCHANGING_P (x) = 0;
+      return;
+    }
+
+  /* Scan all subexpressions. */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
+    {
+      if (*fmt == 'e')
+	purge_mem_unchanging_flag (XEXP (x, i));
+      else if (*fmt == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  purge_mem_unchanging_flag (XVECEXP (x, i, j));
+    }
+}
+
 /* Replace the CALL_PLACEHOLDER with one of its children.  INSN should be
    the CALL_PLACEHOLDER insn; USE tells which child to use.  */
 
@@ -593,18 +633,39 @@ success:
 	}
     }
 
-  /* A sibling call sequence invalidates any REG_EQUIV notes made for
-     this function's incoming arguments. 
-
-     At the start of RTL generation we know the only REG_EQUIV notes
-     in the rtl chain are those for incoming arguments, so we can safely
-     flush any REG_EQUIV note. 
-
-     This is (slight) overkill.  We could keep track of the highest argument
-     we clobber and be more selective in removing notes, but it does not
-     seem to be worth the effort.  */
   if (successful_sibling_call)
-    purge_reg_equiv_notes ();
+    {
+      rtx insn;
+
+      /* A sibling call sequence invalidates any REG_EQUIV notes made for
+	 this function's incoming arguments. 
+
+	 At the start of RTL generation we know the only REG_EQUIV notes
+	 in the rtl chain are those for incoming arguments, so we can safely
+	 flush any REG_EQUIV note. 
+
+	 This is (slight) overkill.  We could keep track of the highest
+	 argument we clobber and be more selective in removing notes, but it
+	 does not seem to be worth the effort.  */
+      purge_reg_equiv_notes ();
+
+      /* A sibling call sequence also may invalidate RTX_UNCHANGING_P
+	 flag of some incoming arguments MEM RTLs, because it can write into
+	 those slots.  We clear all those bits now.
+	 
+	 This is (slight) overkill, we could keep track of which arguments
+	 we actually write into.  */
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	{
+	  if (GET_CODE (insn) == NOTE)
+	    {
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+		break;
+	    }
+	  else if (INSN_P (insn))
+	    purge_mem_unchanging_flag (PATTERN (insn));
+	}
+    }
 
   /* There may have been NOTE_INSN_BLOCK_{BEGIN,END} notes in the 
      CALL_PLACEHOLDER alternatives that we didn't emit.  Rebuild the
