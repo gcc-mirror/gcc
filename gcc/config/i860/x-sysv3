@@ -1,0 +1,2 @@
+INSTALL=cp
+ALLOCA=alloca.o
