@@ -34,6 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h" /* for BLOCK_EXPR_BODY */
 #include "buffer.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -3100,7 +3101,11 @@ generate_classfile (clas, state)
 
   /* generate the SourceFile attribute. */
   if (SourceFile_node == NULL_TREE) 
-    SourceFile_node = get_identifier ("SourceFile");
+    {
+      SourceFile_node = get_identifier ("SourceFile");
+      ggc_add_tree_root (&SourceFile_node, 1);
+    }
+
   i = find_utf8_constant (&state->cpool, SourceFile_node);
   PUT2 (i);  /* attribute_name_index */
   PUT4 (2);
@@ -3126,7 +3131,10 @@ append_synthetic_attribute (state)
   int i;
 
   if (Synthetic_node == NULL_TREE)
-    Synthetic_node = get_identifier ("Synthetic");
+    {
+      Synthetic_node = get_identifier ("Synthetic");
+      ggc_add_tree_root (&Synthetic_node, 1);
+    }
   i = find_utf8_constant (&state->cpool, Synthetic_node);
   PUT2 (i);		/* Attribute string index */
   PUT4 (0);		/* Attribute length */
@@ -3150,8 +3158,11 @@ append_innerclasses_attribute (state, class)
 
   ptr = append_chunk (NULL, 8, state); /* 2+4+2 */
   
-  if (InnerClasses_node == NULL_TREE)
-    InnerClasses_node = get_identifier ("InnerClasses");
+  if (InnerClasses_node == NULL_TREE) 
+    {
+      InnerClasses_node = get_identifier ("InnerClasses");
+      ggc_add_tree_root (&InnerClasses_node, 1);
+    }
   i = find_utf8_constant (&state->cpool, InnerClasses_node);
   PUT2 (i);
   length_marker = ptr; PUT4 (0); /* length, to be later patched */
@@ -3198,8 +3209,11 @@ append_innerclasses_attribute_entry (state, decl, name)
   unsigned char *ptr = append_chunk (NULL, 8, state);
 
   if (!anonymous_name)
-    anonymous_name = get_identifier ("");
-  
+    {
+      anonymous_name = get_identifier ("");
+      ggc_add_tree_root (&anonymous_name, 1);
+    }
+
   icii = find_class_constant (&state->cpool, TREE_TYPE (decl));
   ocii = find_class_constant (&state->cpool, TREE_TYPE (DECL_CONTEXT (decl))); 
 

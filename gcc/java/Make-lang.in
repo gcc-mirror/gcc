@@ -75,7 +75,8 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
   $(srcdir)/java/jcf-parse.c $(srcdir)/java/mangle.c \
   $(srcdir)/java/jcf-write.c $(srcdir)/java/buffer.c \
   $(srcdir)/java/check-init.c $(srcdir)/java/lex.c $(srcdir)/java/boehm.c \
-  $(srcdir)/java/jcf-depend.c  $(srcdir)/java/jcf-path.c
+  $(srcdir)/java/jcf-depend.c  $(srcdir)/java/jcf-path.c \
+  $(srcdir)/java/java-tree.h
 
 jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \

@@ -273,7 +273,7 @@ force:
 
 parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h \
   $(srcdir)/../function.h $(JAVA_TREE_H) $(srcdir)/lex.c $(PARSE_H) \
-  $(srcdir)/lex.h
+  $(srcdir)/lex.h $(srcdir)/../ggc.h
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def $(srcdir)/../version.h
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
@@ -286,12 +286,12 @@ check-init.o : check-init.c $(CONFIG_H) $(srcdir)/../gansidecl.h \
   $(JAVA_TREE_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 class.o : class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) jcf.h $(PARSE_H) \
   $(srcdir)/../gansidecl.h $(srcdir)/../toplev.h $(srcdir)/../system.h \
-  $(srcdir)/../output.h
+  $(srcdir)/../output.h $(srcdir)/../ggc.h
 constants.o : constants.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
-  $(srcdir)/../toplev.h $(srcdir)/../system.h
+  $(srcdir)/../toplev.h $(srcdir)/../system.h $(srcdir)/../ggc.h
 decl.o : decl.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h $(srcdir)/../function.h \
-  $(srcdir)/../defaults.h
+  $(srcdir)/../defaults.h $(srcdir)/../gcc.h
 except.o : except.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) javaop.h java-opcodes.h $(srcdir)/../except.h java-except.h \
   $(srcdir)/../eh-common.h $(srcdir)/../toplev.h $(srcdir)/../system.h \
@@ -299,20 +299,21 @@ except.o : except.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
 expr.o : expr.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) $(EXPR_H) javaop.h java-opcodes.h $(srcdir)/../except.h \
   java-except.h java-except.h parse.h $(srcdir)/../toplev.h \
-  $(srcdir)/../system.h
+  $(srcdir)/../system.h $(srcdir)/../ggc.h
 jcf-depend.o : jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
 jcf-io.o : jcf-io.c $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H)
 jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../input.h java-except.h $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h $(PARSE_H)
+  $(srcdir)/../toplev.h $(PARSE_H) $(srcdir)/../ggc.h
 jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
-  java-opcodes.h parse.h buffer.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+  java-opcodes.h parse.h buffer.h $(srcdir)/../system.h \
+  $(srcdir)/../toplev.h $(srcdir)/../ggc.h
 jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../version.h
 jvgenmain.o : jvgenmain.c $(CONFIG_H) $(srcdir)/../system.h
 lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h $(RTL_H) $(EXPR_H)
 mangle.o : mangle.c $(CONFIG_H) jcf.h $(JAVA_TREE_H) $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(srcdir)/../ggc.h
 parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h \
   $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \

@@ -1,3 +1,66 @@
+2000-09-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (JAVA_SRCS): Include java-tree.h.
+	* Makefile.in (parse.o): Depend on ggc.h.
+	(class.o): Likewise.
+	(constants.o): Likewise.
+	(decl.o): Likewise.
+	(expr.o): Likewise.
+	(jcf-parse.o): Likewise.
+	(jcf-write.o): Likewise.
+	(mangle.o): Likewise.
+	* class.c: Include ggc.h.
+	(build_static_field_ref): Register GC roots.
+	(layout_class): Likewise.
+	(init_class_processing): Likewise.
+	* constants.c: Include ggc.h.
+	(current_constant_pool_data_ref): Remove.
+	(tag_nodes): Move it to ...
+	(get_tag_node): ... here.  Register GC roots.
+	* decl.c: Include ggc.h.  Remove many global tree definitions.
+	(throw_node): Define.
+	(java_global_trees): Likewise.
+	(predef_filenames): Make the size a constant.
+	(init_decl_processing): Adjust accordingly.
+	(init_decl_processing): Call init_jcf_parse.  Register GC roots.
+	* expr.c: Include ggc.h.
+	(init_expr_processing): Register GC roots.
+	(build_invokeinterface): Likewise.
+	* java-tree.h: Replace extern tree declarations with macros.
+	(java_global_trees): New variable.
+	(java_tree_index): New enumeration.
+	(init_jcf_parse): Declare.
+	* jcf-parse.c: Include ggc.h.
+	(current_class): Remove declaration.
+	(main_class): Likewise.
+	(all_class_list): Likewise.
+	(predefined_filename_p): Adjust for constant size of
+	predef_filenames.
+	(init_jcf_parse): New function.
+	* jcf-write.c: Include ggc.h.
+	(generate_classfile): Register GC roots.
+	(append_synthetic_attribute): Likewise.
+	(append_innerclass_attribute_entry): Likewise.
+	* lang.c: Include ggc.h.
+	(lang_print_error): Register GC roots.
+	* parse.h (struct parser_ctxt): Rename fields to avoid conflicts
+	with macros.
+	* parse.y: Include ggc.h.
+	(wfl_operator): Remove.
+	(goal): Register GC roots.
+	(java_pop_parser_context): Adjust for new field names.
+	(java_parser_context_save_global): Likewse.
+	(java_parser_context_restore_global): Likewise.
+	(java_parser_context_suspend): Likewise.
+	(java_parser_context_resume): Likewise.
+	(verify_constructor_circularity): Register GC roots.
+	(lookup_cl): Likewise.
+	(java_reorder_fields): Likewise.
+	(build_current_this): Likewise.
+	(class_in_current_package): Likewise.
+	(argument_types_convertible): Likewise.
+	(patch_cast): Rename wfl_op parameter to avoid macro conflicts.
+	
 2000-09-14  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.h: Use HAVE_ICONV_H, not HAVE_ICONV.

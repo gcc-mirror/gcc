@@ -27,6 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 #include "toplev.h"
+#include "ggc.h"
 
 extern struct obstack permanent_obstack;
 
@@ -318,17 +319,21 @@ write_constant_pool (cpool, buffer, length)
 
 CPool *outgoing_cpool;
 
-/* If non-NULL, an ADDR_EXPR referencing a VAR_DECL containing
-   the constant data array for the current class. */
-tree current_constant_pool_data_ref;
-
-/* A Cache for build_int_2 (CONSTANT_XXX, 0). */
-static tree tag_nodes[13];
-
 static tree
 get_tag_node (tag)
      int tag;
 {
+  /* A Cache for build_int_2 (CONSTANT_XXX, 0). */
+  static tree tag_nodes[13];
+  static int initialized_p;
+
+  /* Register the TAG_NODES with the garbage collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (tag_nodes, 13);
+      initialized_p = 1;
+    }
+
   if (tag_nodes[tag] == NULL_TREE)
     {
       push_obstacks (&permanent_obstack, &permanent_obstack);

@@ -40,6 +40,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "except.h"
 #include "defaults.h"
+#include "ggc.h"
 
 static void flush_quick_stack PARAMS ((void));
 static void push_value PARAMS ((tree));
@@ -83,6 +84,10 @@ static tree case_identity PARAMS ((tree, tree));
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
 
+static tree methods_ident = NULL_TREE;
+static tree ncode_ident = NULL_TREE;
+tree dtable_ident = NULL_TREE;
+
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */
 int always_initialize_class_p;
@@ -95,6 +100,9 @@ init_expr_processing()
   operand_type[23] = operand_type[56] = float_type_node;
   operand_type[24] = operand_type[57] = double_type_node;
   operand_type[25] = operand_type[58] = ptr_type_node;
+  ggc_add_tree_root (operand_type, 59);
+  ggc_add_tree_root (&methods_ident, 1);
+  ggc_add_tree_root (&ncode_ident, 1);
 }
 
 /* We store the stack state in two places:
@@ -1652,10 +1660,6 @@ build_class_init (clas, expr)
   return init;
 }
 
-static tree methods_ident = NULL_TREE;
-static tree ncode_ident = NULL_TREE;
-tree dtable_ident = NULL_TREE;
-
 tree
 build_known_method_ref (method, method_type, self_type, method_signature, arg_list)
      tree method, method_type ATTRIBUTE_UNUSED, self_type,
@@ -1771,8 +1775,11 @@ build_invokeinterface (dtable, method)
      abstract nor static.  */
 	    
   if (class_ident == NULL_TREE)
-    class_ident = get_identifier ("class");
-  
+    {
+      class_ident = get_identifier ("class");
+      ggc_add_tree_root (&class_ident, 1);
+    }
+
   dtable = build1 (INDIRECT_REF, dtable_type, dtable);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
 		  lookup_field (&dtable_type, class_ident));

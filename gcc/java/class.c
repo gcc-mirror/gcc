@@ -35,6 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "output.h"
 #include "parse.h"
+#include "ggc.h"
 
 static tree mangle_class_field PARAMS ((tree class));
 static tree make_method_value PARAMS ((tree));
@@ -1011,9 +1012,15 @@ build_static_field_ref (fdecl)
       int field_index = 0;
       ref = build1 (INDIRECT_REF, class_type_node, ref);
       if (fields_ident == NULL_TREE)
-	fields_ident = get_identifier ("fields");
+	{
+	  fields_ident = get_identifier ("fields");
+	  ggc_add_tree_root (&fields_ident, 1);
+	}
       if (info_ident == NULL_TREE)
-	info_ident = get_identifier ("info");
+	{
+	  info_ident = get_identifier ("info");
+	  ggc_add_tree_root (&info_ident, 1);
+	}
       ref = build (COMPONENT_REF, field_ptr_type_node, ref,
 		   lookup_field (&class_type_node, fields_ident));
 
@@ -1779,9 +1786,17 @@ layout_class (this_class)
      tree this_class;
 {
   static tree list = NULL_TREE;
+  static int initialized_p;
   tree super_class = CLASSTYPE_SUPER (this_class);
   tree field;
   
+  /* Register LIST with the garbage collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&list, 1);
+      initialized_p = 1;
+    }
+
   list = tree_cons (this_class, NULL_TREE, list);
   if (CLASS_BEING_LAIDOUT (this_class))
     {
@@ -2044,6 +2059,9 @@ static tree registered_class = NULL_TREE;
 void
 register_class ()
 {
+  /* END does not need to be registered with the garbage collector
+     because it always points into the list given by REGISTERED_CLASS,
+     and that variable is registered with the collector.  */
   static tree end;
   tree node    = TREE_OPERAND (build_class_ref (current_class), 0);
   tree current = copy_node (node);
@@ -2102,4 +2120,5 @@ void
 init_class_processing ()
 {
   registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
+  ggc_add_tree_root (&registered_class, 1);
 }

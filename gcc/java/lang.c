@@ -35,6 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "flags.h"
 #include "xref.h"
+#include "ggc.h"
 
 static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
@@ -518,6 +519,16 @@ lang_print_error (file)
 {
   static tree last_error_function_context = NULL_TREE;
   static tree last_error_function = NULL;
+  static int initialized_p;
+
+  /* Register LAST_ERROR_FUNCTION_CONTEXT and LAST_ERROR_FUNCTION with
+     the garbage collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&last_error_function_context, 1);
+      ggc_add_tree_root (&last_error_function, 1);
+      initialized_p = 1;
+    }
 
   if (current_function_decl != NULL
       && DECL_CONTEXT (current_function_decl) != last_error_function_context)
