@@ -31,6 +31,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "flags.h"
 
+#ifdef EXTRA_CONSTRAINT
+/* If EXTRA_CONSTRAINT is defined, then the 'S'
+   constraint in REG_CLASS_FROM_LETTER will no longer work, and various
+   asm statements that need 'S' for class SIREG will break.  */
+ #error EXTRA_CONSTRAINT conflicts with S constraint letter
+#endif
+
 #define AT_BP(mode) (gen_rtx (MEM, (mode), frame_pointer_rtx))
 
 extern FILE *asm_out_file;
@@ -318,7 +325,12 @@ output_move_double (operands)
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	split_double (operands[1], &operands[1], &latehalf[1]);
       else if (CONSTANT_P (operands[1]))
-	latehalf[1] = const0_rtx;
+	{
+	  if (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) < 0)
+	    latehalf[1] = constm1_rtx;
+	  else
+	    latehalf[1] = const0_rtx;
+	}
     }
   else
     latehalf[1] = operands[1];
@@ -790,11 +802,6 @@ function_epilogue (file, size)
 	}
       else
 	  output_asm_insn ("ret %1", xops);
-    }
-  else if (current_function_returns_struct)
-    {
-      xops[0] = gen_rtx (CONST_INT, VOIDmode, 4);
-      output_asm_insn ("ret %0", xops);
     }
   else
     output_asm_insn ("ret", xops);
