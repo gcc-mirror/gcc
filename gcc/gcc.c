@@ -731,6 +731,10 @@ translate_options (argcp, argvp)
 	    {
 	      int optlen = strlen (option_map[j].name);
 	      int complen = strlen (argv[i]);
+	      char *arginfo = option_map[j].arg_info;
+
+	      if (arginfo == 0)
+		arginfo = "";
 	      if (complen > optlen)
 		complen = optlen;
 	      if (!strncmp (argv[i], option_map[j].name, complen))
@@ -745,19 +749,18 @@ translate_options (argcp, argvp)
 			arg = argv[i] + optlen + 1;
 		      /* If this mapping allows extra text at end of name,
 			 accept that as "argument".  */
-		      else if (index (option_map[j].arg_info, '*') != 0)
+		      else if (index (arginfo, '*') != 0)
 			arg = argv[i] + optlen;
 		      /* Otherwise, extra text at end means mismatch.
 			 Try other mappings.  */
 		      else
 			continue;
 		    }
-		  else if (option_map[j].arg_info != 0
-			   && index (option_map[j].arg_info, '*') != 0)
+		  else if (index (arginfo, '*') != 0)
 		    error ("Incomplete `%s' option", option_map[j].name);
 
 		  /* Handle arguments.  */
-		  if (index (option_map[j].arg_info, 'o') != 0)
+		  if (index (arginfo, 'o') != 0)
 		    {
 		      if (arg == 0)
 			{
@@ -767,7 +770,7 @@ translate_options (argcp, argvp)
 			  arg = argv[++i];
 			}
 		    }
-		  else if (index (option_map[j].arg_info, 'a') == 0)
+		  else if (index (arginfo, 'a') == 0)
 		    {
 		      if (arg != 0)
 			error ("Extraneous argument to `%s' option",
@@ -776,7 +779,7 @@ translate_options (argcp, argvp)
 		    }
 
 		  /* Store the translation as one argv elt or as two.  */
-		  if (arg != 0 && index (option_map[j].arg_info, 'j') != 0)
+		  if (arg != 0 && index (arginfo, 'j') != 0)
 		    newv[newindex++] = concat (option_map[j].equivalent,
 					       arg, "");
 		  else if (arg != 0)
