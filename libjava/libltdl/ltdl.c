@@ -1584,7 +1584,13 @@ static struct lt_user_dlloader sys_dld = {
 
 
 #if HAVE_MACH_O_DYLD_H
-# include <mach-o/dyld.h>
+# ifndef __private_extern__
+# define __private_extern__ extern
+#  include <mach-o/dyld.h>
+# undef __private_extern__
+# else
+#  include <mach-o/dyld.h>
+# endif
 #endif
 #include <mach-o/getsect.h>
 

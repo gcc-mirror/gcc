@@ -1,5 +1,9 @@
 2003-12-18  Michael Koch  <konqueror@gmx.de>
 
+	* libltdl/ltdl.c: Define __private_extern__ if needed.
+
+2003-12-18  Michael Koch  <konqueror@gmx.de>
+
 	* libltdl/.cvsignore: Ignore autom4te.cache
 	* libltdl/Makefile.in: Regenerated.
 	* libltdl/aclocal.m4: Regenerated.
