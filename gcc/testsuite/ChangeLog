@@ -1,3 +1,8 @@
+2004-11-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* lib/target-libpath.exp (restore_ld_library_path_env_vars):
+	Check existence of ld library path variables before unsetting.
+
 2004-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.eh/badalloc1.C: Robustify.

@@ -196,42 +196,42 @@ proc restore_ld_library_path_env_vars { } {
 
   if { $orig_ld_library_path_saved } {
     setenv LD_LIBRARY_PATH "$orig_ld_library_path"
-  } else {
+  } elseif [info exists env(LD_LIBRARY_PATH)] {
     unsetenv LD_LIBRARY_PATH
   }
   if { $orig_ld_run_path_saved } {
     setenv LD_RUN_PATH "$orig_ld_run_path"
-  } else {
+  } elseif [info exists env(LD_RUN_PATH)] {
     unsetenv LD_RUN_PATH
   }
   if { $orig_shlib_path_saved } {
     setenv SHLIB_PATH "$orig_shlib_path"
-  } else {
+  } elseif [info exists env(SHLIB_PATH)] {
     unsetenv SHLIB_PATH
   }
   if { $orig_ld_libraryn32_path_saved } {
     setenv LD_LIBRARYN32_PATH "$orig_ld_libraryn32_path"
-  } else {
+  } elseif [info exists env(LD_LIBRARYN32_PATH)] {
     unsetenv LD_LIBRARYN32_PATH
   }
   if { $orig_ld_library64_path_saved } {
     setenv LD_LIBRARY64_PATH "$orig_ld_library64_path"
-  } else {
+  } elseif [info exists env(LD_LIBRARY64_PATH)] {
     unsetenv LD_LIBRARY64_PATH
   }
   if { $orig_ld_library_path_32_saved } {
     setenv LD_LIBRARY_PATH_32 "$orig_ld_library_path_32"
-  } else {
+  } elseif [info exists env(LD_LIBRARY_PATH_32)] {
     unsetenv LD_LIBRARY_PATH_32
   }
   if { $orig_ld_library_path_64_saved } {
     setenv LD_LIBRARY_PATH_64 "$orig_ld_library_path_64"
-  } else {
+  } elseif [info exists env(LD_LIBRARY_PATH_64)] {
     unsetenv LD_LIBRARY_PATH_64
   }
   if { $orig_dyld_library_path_saved } {
     setenv DYLD_LIBRARY_PATH "$orig_dyld_library_path"
-  } else {
+  } elseif [info exists env(DYLD_LIBRARY_PATH)] {
     unsetenv DYLD_LIBRARY_PATH
   }
 }
