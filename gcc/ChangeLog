@@ -1,5 +1,8 @@
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
+        * config/mips/mips.c (override_options): Don't override N32 for
+        a 64-bit ISA.
+
 	PR 6202
 	* config/mips/mips.md (can_delay): Split out of existing define_delays.
 	(HILO_delay): Set can_delay false.

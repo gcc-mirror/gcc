@@ -4860,7 +4860,7 @@ override_options ()
 	{
 	  if (! ISA_HAS_64BIT_REGS)
 	    mips_abi = ABI_32;
-	  else
+	  else if (mips_abi != ABI_N32)
 	    mips_abi = ABI_64;
 	}
     }
