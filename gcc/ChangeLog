@@ -1,5 +1,11 @@
 2000-12-04  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/arm.c (arm_override_options): Test 'insn_flags' not
+	'tune_flags' for XScale nature.
+
+	* config/arm/arm.md (umulsidi3adddi): Restore "=&r" register
+	contraint, accidentally changed during XScale contribution.
+
 	* config/arm/lib1funcs.asm (interwork_call_via_, call_via_): Do
 	not create these functions if the target architecture does not
 	support Thumb instructions.

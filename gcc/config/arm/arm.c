@@ -526,7 +526,7 @@ arm_override_options ()
       target_flags &= ~ARM_FLAG_APCS_FRAME;
     }
 
-  if (TARGET_HARD_FLOAT && (tune_flags & FL_XSCALE))
+  if (TARGET_HARD_FLOAT && (insn_flags & FL_XSCALE))
     {
       warning ("XScale does not support hardware FP instructions.");
       target_flags |= ARM_FLAG_SOFT_FLOAT;
@@ -587,11 +587,11 @@ arm_override_options ()
   arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
   arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   arm_arch5         = (insn_flags & FL_ARCH5) != 0;
+  arm_is_xscale     = (insn_flags & FL_XSCALE) != 0;
   
   arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
   arm_is_strong     = (tune_flags & FL_STRONG) != 0;
   thumb_code	    = (TARGET_ARM == 0);
-  arm_is_xscale     = (tune_flags & FL_XSCALE) != 0;
   arm_is_6_or_7     = (((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4))) != 0;
   
