@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "toplev.h"
 #include "defaults.h"
+#include "ggc.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -105,6 +106,9 @@ enum decl_context
 #define WCHAR_TYPE "int"
 #endif
 
+/* Don't do GC.  */
+int ggc_p = 0;
+
 /* a node which has tree code ERROR_MARK, and whose type is itself.
    All erroneous expressions are replaced with this node.  All functions
    that accept nodes as arguments should avoid generating error messages
@@ -342,6 +346,7 @@ tree static_ctors, static_dtors;
 /* Forward declarations.  */
 
 static struct binding_level * make_binding_level	PROTO((void));
+static void mark_binding_level		PROTO((void *));
 static void clear_limbo_values		PROTO((tree));
 static int duplicate_decls		PROTO((tree, tree, int));
 static int redeclaration_error_message	PROTO((tree, tree));
@@ -2928,6 +2933,25 @@ lookup_name_current_level (name)
   return t;
 }
 
+/* Mark ARG for GC.  */
+void 
+mark_binding_level (arg)
+     void *arg;
+{
+  struct binding_level *level = *(struct binding_level **) arg;
+
+  while (level)
+    {
+      ggc_mark_tree (level->names);
+      ggc_mark_tree (level->tags);
+      ggc_mark_tree (level->shadowed);
+      ggc_mark_tree (level->blocks);
+      ggc_mark_tree (level->this_block);
+      ggc_mark_tree (level->parm_order);
+      level = level->level_chain;
+    }
+}
+
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *) 0).
    Initialize the global binding level.
@@ -3222,6 +3246,31 @@ init_decl_processing ()
   incomplete_decl_finalize_hook = finish_incomplete_decl;
 
   lang_get_alias_set = c_get_alias_set;
+
+  /* Record our roots.  */
+
+  ggc_add_tree_root (c_global_trees, CTI_MAX);
+  ggc_add_tree_root (&current_function_decl, 1);
+  ggc_add_tree_root (&error_mark_node, 1);
+  ggc_add_tree_root (&ptr_type_node, 1);
+  ggc_add_tree_root (&va_list_type_node, 1);
+  ggc_add_tree_root (&void_type_node, 1);
+  ggc_add_tree_root (&char_type_node, 1);
+  ggc_add_tree_root (&integer_type_node, 1);
+  ggc_add_tree_root (&unsigned_type_node, 1);
+  ggc_add_tree_root (&integer_one_node, 1);
+  ggc_add_tree_root (&integer_zero_node, 1);
+  ggc_add_tree_root (&named_labels, 1);
+  ggc_add_tree_root (&null_pointer_node, 1);
+  ggc_add_tree_root (&size_one_node, 1);
+  ggc_add_tree_root (&size_zero_node, 1);
+  ggc_add_tree_root (&shadowed_labels, 1);
+  ggc_add_root (&current_binding_level, 1, sizeof current_binding_level,
+		mark_binding_level);
+  ggc_add_root (&label_level_chain, 1, sizeof label_level_chain,
+		mark_binding_level);
+  ggc_add_tree_root (&static_ctors, 1);
+  ggc_add_tree_root (&static_dtors, 1);
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -7048,6 +7097,21 @@ pop_c_function_context (f)
   f->language = 0;
 }
 
+/* Mark the language specific parts of F for GC.  */
+void
+mark_c_function_context (f)
+     struct function *f;
+{
+  struct language_function *p = f->language;
+
+  if (p == 0)
+    return;
+
+  ggc_mark_tree (p->shadowed_labels);
+  ggc_mark_tree (p->named_labels);
+  mark_binding_level (&p->binding_level);
+}
+
 /* integrate_decl_tree calls this function, but since we don't use the
    DECL_LANG_SPECIFIC field, this is a no-op.  */
 
@@ -7055,4 +7119,46 @@ void
 copy_lang_decl (node)
      tree node ATTRIBUTE_UNUSED;
 {
+}
+
+/* Mark ARG for GC.  */
+void
+lang_mark_false_label_stack (arg)
+     struct label_node *arg;
+{
+  /* C doesn't use false_label_stack.  It better be NULL.  */
+  if (arg != NULL)
+    abort();
+}
+
+/* Mark the language specific bits in T for GC.  */
+void
+lang_mark_tree (t)
+     tree t;
+{
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    {
+      struct lang_identifier *i = (struct lang_identifier *) t;
+      ggc_mark_tree (i->global_value);
+      ggc_mark_tree (i->local_value);
+      ggc_mark_tree (i->label_value);
+      ggc_mark_tree (i->implicit_decl);
+      ggc_mark_tree (i->error_locus);
+      ggc_mark_tree (i->limbo_value);
+    }
+}
+
+/* Free the language specific bits in T for GC.  */
+void
+lang_cleanup_tree (t)
+     tree t;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+      && TYPE_LANG_SPECIFIC (t) != NULL)
+    {
+#if 0
+      /* This is currently allocated with an obstack.  This will change.  */
+      free (TYPE_LANG_SPECIFIC (t));
+#endif
+    }
 }

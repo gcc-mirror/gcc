@@ -42,7 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
-
+#include "ggc.h"
+  
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
@@ -207,6 +208,16 @@ static int undeclared_variable_notice;
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
 extern void yyprint			PROTO ((FILE *, int, YYSTYPE));
+
+/* Add GC roots for variables local to this file.  */
+void
+c_parse_init ()
+{
+  ggc_add_tree_root (&declspec_stack, 1);
+  ggc_add_tree_root (&current_declspecs, 1);
+  ggc_add_tree_root (&prefix_attributes, 1);
+}
+
 %}
 
 %%

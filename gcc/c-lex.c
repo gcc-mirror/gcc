@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "toplev.h"
 #include "intl.h"
+#include "ggc.h"
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -752,7 +753,7 @@ linenum:
       goto skipline;
     }
 
-  if (!TREE_PERMANENT (yylval.ttype))
+  if (! ggc_p && !TREE_PERMANENT (yylval.ttype))
     {
       input_filename
 	= (char *) permalloc (TREE_STRING_LENGTH (yylval.ttype) + 1);
