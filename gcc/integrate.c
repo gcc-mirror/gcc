@@ -2717,6 +2717,7 @@ subst_constants (loc, insn, map)
 	    new = operand_subword (inner, SUBREG_WORD (x), 0,
 				   GET_MODE (SUBREG_REG (x)));
 
+	  cancel_changes (num_changes);
 	  if (new == 0 && subreg_lowpart_p (x))
 	    new = gen_lowpart_common (GET_MODE (x), inner);
 
