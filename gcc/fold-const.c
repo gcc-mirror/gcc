@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/*@@ Fix lossage on folding division of big integers.  */
-
 /*@@ This file should be rewritten to use an arbitrary precision
   @@ representation for "struct tree_int_cst" and "struct tree_real_cst".
   @@ Perhaps the routines could also be used for bc/dc, and made a lib.
@@ -48,8 +46,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle floating overflow for `const_binop'.  */
 static jmp_buf float_error;
 
-static void encode	PROTO((short *, HOST_WIDE_INT, HOST_WIDE_INT));
-static void decode	PROTO((short *, HOST_WIDE_INT *, HOST_WIDE_INT *));
+static void encode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT, HOST_WIDE_INT));
+static void decode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT *, HOST_WIDE_INT *));
 static int div_and_round_double PROTO((enum tree_code, int, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT *,
@@ -94,46 +92,41 @@ static tree strip_compound_expr PROTO((tree, tree));
 #define overflow_sum_sign(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
 
 /* To do constant folding on INTEGER_CST nodes requires two-word arithmetic.
-   We do that by representing the two-word integer as MAX_SHORTS shorts,
-   with only 8 bits stored in each short, as a positive number.  */
+   We do that by representing the two-word integer in 4 words, with only
+   HOST_BITS_PER_WIDE_INT/2 bits stored in each word, as a positive number.  */
 
-/* Unpack a two-word integer into MAX_SHORTS shorts.
+#define LOWPART(x) \
+  ((x) & (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT/2)) - 1))
+#define HIGHPART(x) \
+  ((unsigned HOST_WIDE_INT) (x) >> HOST_BITS_PER_WIDE_INT/2)
+#define BASE ((unsigned HOST_WIDE_INT) 1 << HOST_BITS_PER_WIDE_INT/2)
+
+/* Unpack a two-word integer into 4 words.
    LOW and HI are the integer, as two `HOST_WIDE_INT' pieces.
-   SHORTS points to the array of shorts.  */
+   WORDS points to the array of HOST_WIDE_INTs.  */
 
 static void
-encode (shorts, low, hi)
-     short *shorts;
+encode (words, low, hi)
+     HOST_WIDE_INT *words;
      HOST_WIDE_INT low, hi;
 {
-  register int i;
-
-  for (i = 0; i < MAX_SHORTS / 2; i++)
-    {
-      shorts[i] = (low >> (i * 8)) & 0xff;
-      shorts[i + MAX_SHORTS / 2] = (hi >> (i * 8) & 0xff);
-    }
+  words[0] = LOWPART (low);
+  words[1] = HIGHPART (low);
+  words[2] = LOWPART (hi);
+  words[3] = HIGHPART (hi);
 }
 
-/* Pack an array of MAX_SHORTS shorts into a two-word integer.
-   SHORTS points to the array of shorts.
+/* Pack an array of 4 words into a two-word integer.
+   WORDS points to the array of words.
    The integer is stored into *LOW and *HI as two `HOST_WIDE_INT' pieces.  */
 
 static void
-decode (shorts, low, hi)
-     short *shorts;
+decode (words, low, hi)
+     HOST_WIDE_INT *words;
      HOST_WIDE_INT *low, *hi;
 {
-  register int i;
-  HOST_WIDE_INT lv = 0, hv = 0;
-
-  for (i = 0; i < MAX_SHORTS / 2; i++)
-    {
-      lv |= (HOST_WIDE_INT) shorts[i] << (i * 8);
-      hv |= (HOST_WIDE_INT) shorts[i + MAX_SHORTS / 2] << (i * 8);
-    }
-
-  *low = lv, *hi = hv;
+  *low = words[0] | words[1] * BASE;
+  *hi = words[2] | words[3] * BASE;
 }
 
 /* Make the integer constant T valid for its type
@@ -225,38 +218,27 @@ force_fit_type (t, overflow)
 /* Add two doubleword integers with doubleword result.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
-   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
-   We use the 8-shorts representation internally.  */
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
 add_double (l1, h1, l2, h2, lv, hv)
      HOST_WIDE_INT l1, h1, l2, h2;
      HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[MAX_SHORTS];
-  short arg2[MAX_SHORTS];
-  register int carry = 0;
-  register int i;
+  HOST_WIDE_INT l, h;
 
-  encode (arg1, l1, h1);
-  encode (arg2, l2, h2);
+  l = l1 + l2;
+  h = h1 + h2 + ((unsigned HOST_WIDE_INT) l < l1);
 
-  for (i = 0; i < MAX_SHORTS; i++)
-    {
-      carry += arg1[i] + arg2[i];
-      arg1[i] = carry & 0xff;
-      carry >>= 8;
-    }
-
-  decode (arg1, lv, hv);
-  return overflow_sum_sign (h1, h2, *hv);
+  *lv = l;
+  *hv = h;
+  return overflow_sum_sign (h1, h2, h);
 }
 
 /* Negate a doubleword integer with doubleword result.
    Return nonzero if the operation overflows, assuming it's signed.
    The argument is given as two `HOST_WIDE_INT' pieces in L1 and H1.
-   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
-   We use the 8-shorts representation internally.  */
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
 neg_double (l1, h1, lv, hv)
@@ -281,86 +263,46 @@ neg_double (l1, h1, lv, hv)
    Return nonzero if the operation overflows, assuming it's signed.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
-   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
-   We use the 8-shorts representation internally.  */
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
 mul_double (l1, h1, l2, h2, lv, hv)
      HOST_WIDE_INT l1, h1, l2, h2;
      HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[MAX_SHORTS];
-  short arg2[MAX_SHORTS];
-  short prod[MAX_SHORTS * 2];
-  register int carry = 0;
+  HOST_WIDE_INT arg1[4];
+  HOST_WIDE_INT arg2[4];
+  HOST_WIDE_INT prod[4 * 2];
+  register unsigned HOST_WIDE_INT carry;
   register int i, j, k;
   HOST_WIDE_INT toplow, tophigh, neglow, neghigh;
-
-  /* These cases are used extensively, arising from pointer combinations.  */
-  if (h2 == 0)
-    {
-      if (l2 == 2)
-	{
-	  int overflow = left_shift_overflows (h1, 1);
-	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  *hv = (h1 << 1) + (temp < l1);
-	  *lv = temp;
-	  return overflow;
-	}
-      if (l2 == 4)
-	{
-	  int overflow = left_shift_overflows (h1, 2);
-	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  h1 = (h1 << 2) + ((temp < l1) << 1);
-	  l1 = temp;
-	  temp += temp;
-	  h1 += (temp < l1);
-	  *lv = temp;
-	  *hv = h1;
-	  return overflow;
-	}
-      if (l2 == 8)
-	{
-	  int overflow = left_shift_overflows (h1, 3);
-	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  h1 = (h1 << 3) + ((temp < l1) << 2);
-	  l1 = temp;
-	  temp += temp;
-	  h1 += (temp < l1) << 1;
-	  l1 = temp;
-	  temp += temp;
-	  h1 += (temp < l1);
-	  *lv = temp;
-	  *hv = h1;
-	  return overflow;
-	}
-    }
 
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
 
   bzero ((char *) prod, sizeof prod);
 
-  for (i = 0; i < MAX_SHORTS; i++)
-    for (j = 0; j < MAX_SHORTS; j++)
-      {
-	k = i + j;
-	carry = arg1[i] * arg2[j];
-	while (carry)
-	  {
-	    carry += prod[k];
-	    prod[k] = carry & 0xff;
-	    carry >>= 8;
-	    k++;
-	  }
-      }
+  for (i = 0; i < 4; i++)
+    {
+      carry = 0;
+      for (j = 0; j < 4; j++)
+	{
+	  k = i + j;
+	  /* This product is <= 0xFFFE0001, the sum <= 0xFFFF0000.  */
+	  carry += arg1[i] * arg2[j];
+	  /* Since prod[p] < 0xFFFF, this sum <= 0xFFFFFFFF.  */
+	  carry += prod[k];
+	  prod[k] = LOWPART (carry);
+	  carry = HIGHPART (carry);
+	}
+      prod[i + 4] = carry;
+    }
 
-  decode (prod, lv, hv);	/* This ignores
-				   prod[MAX_SHORTS] -> prod[MAX_SHORTS*2-1] */
+  decode (prod, lv, hv);	/* This ignores prod[4] through prod[4*2-1] */
 
   /* Check for overflow by calculating the top half of the answer in full;
      it should agree with the low half's sign bit.  */
-  decode (prod+MAX_SHORTS, &toplow, &tophigh);
+  decode (prod+4, &toplow, &tophigh);
   if (h1 < 0)
     {
       neg_double (l2, h2, &neglow, &neghigh);
@@ -387,34 +329,26 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT *lv, *hv;
      int arith;
 {
-  short arg1[MAX_SHORTS];
-  register int i;
-  register int carry;
-
   if (count < 0)
     {
       rshift_double (l1, h1, - count, prec, lv, hv, arith);
       return;
     }
+  
+  if (count >= prec)
+    count = (unsigned HOST_WIDE_INT) count & prec;
 
-  encode (arg1, l1, h1);
-
-  if (count > prec)
-    count = prec;
-
-  while (count > 0)
+  if (count >= HOST_BITS_PER_WIDE_INT)
     {
-      carry = 0;
-      for (i = 0; i < MAX_SHORTS; i++)
-	{
-	  carry += arg1[i] << 1;
-	  arg1[i] = carry & 0xff;
-	  carry >>= 8;
-	}
-      count--;
+      *hv = (unsigned HOST_WIDE_INT) l1 << count - HOST_BITS_PER_WIDE_INT;
+      *lv = 0;
     }
-
-  decode (arg1, lv, hv);
+  else
+    {
+      *hv = (((unsigned HOST_WIDE_INT) h1 << count)
+	     | ((unsigned HOST_WIDE_INT) l1 >> HOST_BITS_PER_WIDE_INT - count - 1 >> 1));
+      *lv = (unsigned HOST_WIDE_INT) l1 << count;
+    }
 }
 
 /* Shift the doubleword integer in L1, H1 right by COUNT places
@@ -429,31 +363,30 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT *lv, *hv;
      int arith;
 {
-  short arg1[MAX_SHORTS];
-  register int i;
-  register int carry;
+  unsigned HOST_WIDE_INT signmask;
+  signmask = (arith
+	      ? -((unsigned HOST_WIDE_INT) h1 >> (HOST_BITS_PER_WIDE_INT - 1))
+	      : 0);
 
-  encode (arg1, l1, h1);
+  if (count >= prec)
+    count = (unsigned HOST_WIDE_INT) count % prec;
 
-  if (count > prec)
-    count = prec;
-
-  while (count > 0)
+  if (count >= HOST_BITS_PER_WIDE_INT)
     {
-      carry = arith && arg1[7] >> 7; 
-      for (i = MAX_SHORTS - 1; i >= 0; i--)
-	{
-	  carry <<= 8;
-	  carry += arg1[i];
-	  arg1[i] = (carry >> 1) & 0xff;
-	}
-      count--;
+      *hv = signmask;
+      *lv = ((signmask << 2 * HOST_BITS_PER_WIDE_INT - count - 1 << 1)
+	     | ((unsigned HOST_WIDE_INT) h1 >> count - HOST_BITS_PER_WIDE_INT));
     }
-
-  decode (arg1, lv, hv);
+  else
+    {
+      *lv = (((unsigned HOST_WIDE_INT) l1 >> count)
+	     | ((unsigned HOST_WIDE_INT) h1 << HOST_BITS_PER_WIDE_INT - count - 1 << 1));
+      *hv = ((signmask << HOST_BITS_PER_WIDE_INT - count)
+	     | ((unsigned HOST_WIDE_INT) h1 >> count));
+    }
 }
 
-/* Rotate the doubldword integer in L1, H1 left by COUNT places
+/* Rotate the doubleword integer in L1, H1 left by COUNT places
    keeping only PREC bits of result.
    Rotate right if COUNT is negative.
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
@@ -464,7 +397,7 @@ lrotate_double (l1, h1, count, prec, lv, hv)
      int prec;
      HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[MAX_SHORTS];
+  HOST_WIDE_INT arg1[4];
   register int i;
   register int carry;
 
@@ -479,14 +412,14 @@ lrotate_double (l1, h1, count, prec, lv, hv)
   if (count > prec)
     count = prec;
 
-  carry = arg1[MAX_SHORTS - 1] >> 7;
+  carry = arg1[4 - 1] >> 16 - 1;
   while (count > 0)
     {
-      for (i = 0; i < MAX_SHORTS; i++)
+      for (i = 0; i < 4; i++)
 	{
 	  carry += arg1[i] << 1;
-	  arg1[i] = carry & 0xff;
-	  carry >>= 8;
+	  arg1[i] = LOWPART (carry);
+	  carry = HIGHPART (carry);
 	}
       count--;
     }
@@ -504,7 +437,7 @@ rrotate_double (l1, h1, count, prec, lv, hv)
      int prec;
      HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[MAX_SHORTS];
+  HOST_WIDE_INT arg1[4];
   register int i;
   register int carry;
 
@@ -516,11 +449,11 @@ rrotate_double (l1, h1, count, prec, lv, hv)
   carry = arg1[0] & 1;
   while (count > 0)
     {
-      for (i = MAX_SHORTS - 1; i >= 0; i--)
+      for (i = 4 - 1; i >= 0; i--)
 	{
-	  carry <<= 8;
+	  carry *= BASE;
 	  carry += arg1[i];
-	  arg1[i] = (carry >> 1) & 0xff;
+	  arg1[i] = LOWPART (carry >> 1);
 	}
       count--;
     }
@@ -548,9 +481,10 @@ div_and_round_double (code, uns,
      HOST_WIDE_INT *lquo, *hquo, *lrem, *hrem;
 {
   int quo_neg = 0;
-  short num[MAX_SHORTS + 1];	/* extra element for scaling.  */
-  short den[MAX_SHORTS], quo[MAX_SHORTS];
-  register int i, j, work;
+  HOST_WIDE_INT num[4 + 1];	/* extra element for scaling.  */
+  HOST_WIDE_INT den[4], quo[4];
+  register int i, j;
+  unsigned HOST_WIDE_INT work;
   register int carry = 0;
   HOST_WIDE_INT lnum = lnum_orig;
   HOST_WIDE_INT hnum = hnum_orig;
@@ -603,38 +537,29 @@ div_and_round_double (code, uns,
   encode (num, lnum, hnum); 
   encode (den, lden, hden);
 
-  /* This code requires more than just hden == 0.
-     We also have to require that we don't need more than three bytes
-     to hold CARRY.  If we ever did need four bytes to hold it, we
-     would lose part of it when computing WORK on the next round.  */
-  if (hden == 0 && (((unsigned HOST_WIDE_INT) lden << 8) >> 8) == lden)
-    {				/* simpler algorithm */
+  /* Special code for when the divisor < BASE.  */
+  if (hden == 0 && lden < BASE)
+    {
       /* hnum != 0 already checked.  */
-      for (i = MAX_SHORTS - 1; i >= 0; i--)
+      for (i = 4 - 1; i >= 0; i--)
 	{
-	  work = num[i] + (carry << 8);
+	  work = num[i] + carry * BASE;
 	  quo[i] = work / (unsigned HOST_WIDE_INT) lden;
 	  carry = work % (unsigned HOST_WIDE_INT) lden;
 	}
     }
-  else {			/* full double precision,
-				   with thanks to Don Knuth's
-				   "Seminumerical Algorithms".  */
-#define BASE 256
-    int quo_est, scale, num_hi_sig, den_hi_sig, quo_hi_sig;
+  else
+    {
+      /* Full double precision division,
+	 with thanks to Don Knuth's "Seminumerical Algorithms".  */
+    int quo_est, scale, num_hi_sig, den_hi_sig;
 
     /* Find the highest non-zero divisor digit.  */
-    for (i = MAX_SHORTS - 1; ; i--)
+    for (i = 4 - 1; ; i--)
       if (den[i] != 0) {
 	den_hi_sig = i;
 	break;
       }
-    for (i = MAX_SHORTS - 1; ; i--)
-      if (num[i] != 0) {
-	num_hi_sig = i;
-	break;
-      }
-    quo_hi_sig = num_hi_sig - den_hi_sig + 1;
 
     /* Insure that the first digit of the divisor is at least BASE/2.
        This is required by the quotient digit estimation algorithm.  */
@@ -642,43 +567,40 @@ div_and_round_double (code, uns,
     scale = BASE / (den[den_hi_sig] + 1);
     if (scale > 1) {		/* scale divisor and dividend */
       carry = 0;
-      for (i = 0; i <= MAX_SHORTS - 1; i++) {
+      for (i = 0; i <= 4 - 1; i++) {
 	work = (num[i] * scale) + carry;
-	num[i] = work & 0xff;
-	carry = work >> 8;
-	if (num[i] != 0) num_hi_sig = i;
-      }
+	num[i] = LOWPART (work);
+	carry = HIGHPART (work);
+      } num[4] = carry;
       carry = 0;
-      for (i = 0; i <= MAX_SHORTS - 1; i++) {
+      for (i = 0; i <= 4 - 1; i++) {
 	work = (den[i] * scale) + carry;
-	den[i] = work & 0xff;
-	carry = work >> 8;
+	den[i] = LOWPART (work);
+	carry = HIGHPART (work);
 	if (den[i] != 0) den_hi_sig = i;
       }
     }
 
+    num_hi_sig = 4;
+
     /* Main loop */
-    for (i = quo_hi_sig; i > 0; i--) {
+    for (i = num_hi_sig - den_hi_sig - 1; i >= 0; i--) {
       /* guess the next quotient digit, quo_est, by dividing the first
 	 two remaining dividend digits by the high order quotient digit.
 	 quo_est is never low and is at most 2 high.  */
+      unsigned HOST_WIDE_INT tmp;
 
-      int num_hi;		/* index of highest remaining dividend digit */
-
-      num_hi = i + den_hi_sig;
-
-      work = (num[num_hi] * BASE) + (num_hi > 0 ? num[num_hi - 1] : 0);
-      if (num[num_hi] != den[den_hi_sig]) {
+      num_hi_sig = i + den_hi_sig + 1;
+      work = num[num_hi_sig] * BASE + num[num_hi_sig - 1];
+      if (num[num_hi_sig] != den[den_hi_sig])
 	quo_est = work / den[den_hi_sig];
-      }
-      else {
+      else
 	quo_est = BASE - 1;
-      }
 
       /* refine quo_est so it's usually correct, and at most one high.   */
-      while ((den[den_hi_sig - 1] * quo_est)
-	     > (((work - (quo_est * den[den_hi_sig])) * BASE)
-		 + ((num_hi - 1) > 0 ? num[num_hi - 2] : 0)))
+      tmp = work - quo_est * den[den_hi_sig];
+      if (tmp < BASE
+	  && den[den_hi_sig - 1] * quo_est > (tmp * BASE + num[num_hi_sig - 2]))
 	quo_est--;
 
       /* Try QUO_EST as the quotient digit, by multiplying the
@@ -686,48 +608,33 @@ div_and_round_double (code, uns,
 	 Keep in mind that QUO_EST is the I - 1st digit.  */
 
       carry = 0;
-
       for (j = 0; j <= den_hi_sig; j++)
 	{
-	  int digit;
-
-	  work = num[i + j - 1] - (quo_est * den[j]) + carry;
-	  digit = work & 0xff;
-	  carry = work >> 8;
-	  if (digit < 0)
-	    {
-	      digit += BASE;
-	      carry--;
-	    }
-	  num[i + j - 1] = digit;
+	  work = quo_est * den[j] + carry;
+	  carry = HIGHPART (work);
+	  work = num[i + j] - LOWPART (work);
+	  num[i + j] = LOWPART (work);
+	  carry += HIGHPART (work) != 0;
 	}
 
       /* if quo_est was high by one, then num[i] went negative and
 	 we need to correct things.  */
 
-      if (num[num_hi] < 0)
+      if (num[num_hi_sig] < carry)
 	{
 	  quo_est--;
 	  carry = 0;		/* add divisor back in */
 	  for (j = 0; j <= den_hi_sig; j++)
 	    {
-	      work = num[i + j - 1] + den[j] + carry;
-	      if (work > BASE)
-		{
-		  work -= BASE;
-		  carry = 1;
-		}
-	      else
-		{
-		  carry = 0;
-		}
-	      num[i + j - 1] = work;
+	      work = num[i + j] + den[j] + carry;
+	      carry = HIGHPART (work);
+	      num[i + j] = LOWPART (work);
 	    }
-	  num [num_hi] += carry;
+	  num [num_hi_sig] += carry;
 	}
 
       /* store the quotient digit.  */
-      quo[i - 1] = quo_est;
+      quo[i] = quo_est;
     }
   }
 
@@ -1179,72 +1086,6 @@ const_binop (code, arg1, arg2, notrunc)
 	  break;
 
 	case MULT_EXPR:
-	  /* Optimize simple cases.  */
-	  if (int1h == 0)
-	    {
-	      unsigned HOST_WIDE_INT temp;
-
-	      switch (int1l)
-		{
-		case 0:
-		  t = build_int_2 (0, 0);
-		  goto got_it;
-		case 1:
-		  t = build_int_2 (int2l, int2h);
-		  goto got_it;
-		case 2:
-		  overflow = left_shift_overflows (int2h, 1);
-		  temp = int2l + int2l;
-		  int2h = (int2h << 1) + (temp < int2l);
-		  t = build_int_2 (temp, int2h);
-		  goto got_it;
-#if 0 /* This code can lose carries.  */
-		case 3:
-		  temp = int2l + int2l + int2l;
-		  int2h = int2h * 3 + (temp < int2l);
-		  t = build_int_2 (temp, int2h);
-		  goto got_it;
-#endif
-		case 4:
-		  overflow = left_shift_overflows (int2h, 2);
-		  temp = int2l + int2l;
-		  int2h = (int2h << 2) + ((temp < int2l) << 1);
-		  int2l = temp;
-		  temp += temp;
-		  int2h += (temp < int2l);
-		  t = build_int_2 (temp, int2h);
-		  goto got_it;
-		case 8:
-		  overflow = left_shift_overflows (int2h, 3);
-		  temp = int2l + int2l;
-		  int2h = (int2h << 3) + ((temp < int2l) << 2);
-		  int2l = temp;
-		  temp += temp;
-		  int2h += (temp < int2l) << 1;
-		  int2l = temp;
-		  temp += temp;
-		  int2h += (temp < int2l);
-		  t = build_int_2 (temp, int2h);
-		  goto got_it;
-		default:
-		  break;
-		}
-	    }
-
-	  if (int2h == 0)
-	    {
-	      if (int2l == 0)
-		{
-		  t = build_int_2 (0, 0);
-		  break;
-		}
-	      if (int2l == 1)
-		{
-		  t = build_int_2 (int1l, int1h);
-		  break;
-		}
-	    }
-
 	  overflow = mul_double (int1l, int1h, int2l, int2h, &low, &hi);
 	  t = build_int_2 (low, hi);
 	  break;
@@ -4060,56 +3901,22 @@ fold (expr)
       if (integer_zerop (arg1))
 	return t;
 
-      /* If we have ((a / C1) / C2) where both division are the same type, tr
+      /* If we have ((a / C1) / C2) where both division are the same type, try
 	 to simplify.  First see if C1 * C2 overflows or not.  */
       if (TREE_CODE (arg0) == code && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 1), arg1, 0);
+	  tree new_divisor;
 
-	  /* If it overflows, the result is +/- 1 or zero, depending on
-	     the signs of the constants and remaining operand and on which
-	     division operation is being performed.  */
+	  new_divisor = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 1), arg1, 0);
+	  tem = const_binop (FLOOR_DIV_EXPR, new_divisor, arg1, 0);
 
-	  if (TREE_OVERFLOW (tem))
+	  if (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) == TREE_INT_CST_LOW (tem)
+	      && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == TREE_INT_CST_HIGH (tem))
 	    {
-	      /* 1 if C1 * C2 is negative (i.e., C1 and C2 have
-		 different signs).  */
-	      int c_neg = ((tree_int_cst_sgn (arg1) < 0)
-			   == (tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0));
-
-	      switch (code)
-		{
-		case EXACT_DIV_EXPR:
-		  /* If this overflowed, it couldn't have been exact.  */
-		  abort ();
-
-		case TRUNC_DIV_EXPR:
-		  return omit_one_operand (type, integer_zero_node,
-					   TREE_OPERAND (arg0, 0));
-
-		case FLOOR_DIV_EXPR:
-		  /* -1 or zero, depending on signs of remaining
-		     operand and constants.  */
-		  tem = build (c_neg ? GE_EXPR : LE_EXPR, integer_type_node,
-			       TREE_OPERAND (arg0, 0),
-			       convert (type, integer_zero_node));
-		  return fold (build (NEGATE_EXPR, type,
-				      convert (type, fold (tem))));
-
-		case CEIL_DIV_EXPR:
-		  /* Zero or 1, depending on signs of remaining
-		     operand and constants.  */
-		  tem = build (c_neg ? LE_EXPR : GE_EXPR, integer_type_node,
-			       TREE_OPERAND (arg0, 0),
-			       convert (type, integer_zero_node));
-		  
-		  return convert (type, fold (tem));
-		}
+	      /* If no overflow, divide by C1*C2.  */
+	      return fold (build (code, type, TREE_OPERAND (arg0, 0), new_divisor));
 	    }
-	  else
-	    /* If no overflow, divide by C1*C2.  */
-	    return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
 	}
 
       /* Look for ((a * C1) / C3) or (((a * C1) + C2) / C3),
@@ -4184,6 +3991,53 @@ fold (expr)
 		t = save_expr (t);
 
 	      return t;
+	    }
+	}
+
+      /* Note that this transformation might sometimes cause division-by-zero
+	 to pass unnoticed.  For example when C=2 and y=31.  If that is unacceptable,
+	 we could restrict the optimization to the case when log == 0.  */
+
+      if ((code == FLOOR_DIV_EXPR || code == TRUNC_DIV_EXPR)
+	  && TREE_CODE (arg1) == LSHIFT_EXPR)
+	{
+	  int log;
+	  if (TREE_CODE (TREE_OPERAND (arg1, 0)) == INTEGER_CST
+	      && (log = exact_log2 (TREE_INT_CST_LOW (TREE_OPERAND (arg1, 0)))) >= 0
+	      && TREE_INT_CST_HIGH (TREE_OPERAND (arg1, 0)) == 0)
+	    {
+	      tree cnt;
+	      cnt = log == 0 ? TREE_OPERAND (arg1, 1)
+		: fold (build (PLUS_EXPR, TREE_TYPE (TREE_OPERAND (arg1, 1)),
+			       TREE_OPERAND (arg1, 1),
+			       build_int_2 (log, 0)));
+
+	      if (TREE_UNSIGNED (type) || code == FLOOR_DIV_EXPR)
+		{
+		  /* (x / (C << y)) where C = 1 << log  =>  x >> (y + log)  */
+		  /* BUG: First TYPE here should always be unsigned to get logical
+		     shift.  How do we do that?  */
+		  return fold (build (RSHIFT_EXPR, type, arg0, cnt));
+		}
+
+	      /* (x / (C << y)) when C = 1 << log  =>
+		  => (ashiftrt (plus x (and (ashiftrt x 31)
+					    (not (lshift -1 cnt)))) cnt),
+		    where cnt is y + log  */
+	      /* BUG: Several TYPE arguments here might be wrong.  */
+	      return
+		fold (build (RSHIFT_EXPR, type,
+			     fold (build (PLUS_EXPR, type,
+					  arg0,
+					  fold (build (BIT_AND_EXPR, type,
+						       fold (build (RSHIFT_EXPR, type,
+								    arg0,
+								    build_int_2 (TYPE_PRECISION (type) - 1, 0))),
+						       fold (build1 (BIT_NOT_EXPR, type,
+								     fold (build (LSHIFT_EXPR, type,
+										  build_int_2 (~0, ~0),
+										  cnt)))))))),
+			     cnt));
 	    }
 	}
 
