@@ -1,6 +1,9 @@
 /* { dg-do run { target ia64-*-linux* } } */
 /* { dg-options "-O3" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int __attribute__((noinline, const))
 ret4 (float value)
 {
