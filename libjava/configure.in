@@ -798,14 +798,14 @@ else
    if test "$GC" = boehm; then
       AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
    fi
+fi
 
-   if test -z "${with_multisubdir}"; then
-      builddotdot=.
-   else
+if test -z "${with_multisubdir}"; then
+   builddotdot=.
+else
 changequote(<<,>>)
-      builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+   builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
 changequote([,])
-   fi
 fi
 
 # Which gcj do we use?

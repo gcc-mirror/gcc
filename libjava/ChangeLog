@@ -1,3 +1,8 @@
+2003-08-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.in: Fix detection of gcj when building with newlib.
+	* configure: Regenerated.
+
 2003-08-20  Graydon Hoare  <graydon@redhat.com>
 
 	* jni.cc: Replace "cheating" pointer-casting code with
