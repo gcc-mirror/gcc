@@ -65,7 +65,7 @@ import gnu.java.security.der.DERWriter;
  *
  * @since JDK 1.4
  */
-public class PolicyQualifierInfo
+public final class PolicyQualifierInfo
 {
 
   // Fields.

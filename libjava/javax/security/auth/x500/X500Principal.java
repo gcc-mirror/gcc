@@ -55,6 +55,7 @@ import gnu.java.security.x509.X500DistinguishedName;
 
 public final class X500Principal implements Principal, Serializable
 {
+  private static final long serialVersionUID = -500463348111345721L;
 
   // Constants and fields.
   // ------------------------------------------------------------------------
