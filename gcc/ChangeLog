@@ -1,3 +1,38 @@
+2003-07-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (machine_function): Add new fields:
+	ignore_hazard_length_p and all_noreorder_p.
+	(mips_flag_delayed_branch): New variable.
+	(override_options): Treat '/' as an operand punctuation character.
+	Set up mips_flag_delayed_branch.
+	(print_operand): Handle '/'.
+	(mips_output_function_prologue): Put the whole function in
+	.set noreorder and .set nomacro if all_noreorder_p is true.
+	(mips_output_function_epilogue): End the noreorder/nomacro sequence.
+	(mips16_optimize_gp): Remove "first insn" parameter.
+	(mips16_lay_out_constants): New function, split out from mips_reorg.
+	(mips_avoid_hazard, mips_avoid_hazards): New functions.
+	(mips_reorg): For mips16 code, call mips16_lay_out_constant
+	and (optionally) mips16_optimize.  If TARGET_EXPLICIT_RELOCS,
+	do delayed-branch scheduling followed by hazard detection.
+	(mips_adjust_insn_length): Only account for hazards if
+	!ignore_hazard_length_p.
+	(mips_output_load_label): Add a nop to the o32 sequence if
+	the target suffers from load delays.
+	(mips_output_conditional_branch): Add %/ to the end of branches.
+	(mips_output_division): Fill the branch delay slot with %#.
+	* config/mips/mips.md: Remove redundant '%*' from mips16 branch
+	instructions.  End all other %* branches with %/.
+	(ffssi2, ffsdi2): Fix lengths.
+	(truncdisi2, truncdihi2, truncdiqi2): Add store attributes.
+	(fix_truncdfsi2_macro): Turn off .set nomacro if appropriate.
+	(fix_truncsfsi2_macro): Likewise.
+	(mov_lwl): Set hazard to "none".
+	(ashldi3_internal): Fill the branch delay slot with %#.
+	(ashrdi3_internal, lshrdi3_internal): Likewise.
+	(exception_receiver): Explicitly set $28.
+	(hazard_nop): New pattern.
+
 Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_unit): Set current_function_decl
