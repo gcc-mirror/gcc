@@ -17,6 +17,7 @@ Usage:
 		    --build-cxx
 		    --install-cxx
 		    --cxxflags
+		    --cxxpchflags
 EOF
 }
 
@@ -41,8 +42,7 @@ case ${query} in
       echo ${CXX}
       ;;
     --build-cxx)
-      PCHFLAGS="@glibcxx_PCHFLAGS@"
-      CXX_build="@CXX@ ${PCHFLAGS}"
+      CXX_build="@CXX@"
       CXX=`echo "$CXX_build" | sed 's,gcc/xgcc ,gcc/g++ ,'`
       echo ${CXX}
       ;;
@@ -52,8 +52,12 @@ case ${query} in
  		      @EXTRA_CXX_FLAGS@ -DLOCALEDIR="@glibcxx_localedir@" '
       echo ${CXXFLAGS_save} ${CXXFLAGS_config}
       ;;
+    --cxxpchflags)
+      PCHFLAGS="@glibcxx_PCHFLAGS@"
+      echo ${PCHFLAGS}
+      ;;
     *)
-      print_usage
+      print_usagex
       ;;
 esac
 

@@ -1,3 +1,19 @@
+2003-12-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/objects/char/5.cc: Don't use stdc++.h.gch.
+	* testsuite/27_io/objects/wchar_t/5.cc: Same.
+	* docs/html/test.html: Add docs for constructing test files that
+	don't use stdc++.h.gch.
+	* scripts/testsuite_flags.in (PCHFLAGS): Move to --cxxpchflags.	
+	* testsuite/libstdc++-dg/normal.exp: Compute DEFAULT_CXXFLAGS
+	differently.
+
+	* include/bits/ios_base.h (ios_base::Init::_S_initialized): Remove.
+	* src/ios_init.cc: Same.
+	* config/linker-map.gnu: Same.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Same.
+		
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libstdc++/13462

@@ -33,7 +33,6 @@ GLIBCXX_3.4 {
       std::ios_base::_M_grow_words*;
       std::ios_base::_M_init*;
       std::ios_base::Init::[A-Za-z]*;
-      std::ios_base::Init::_S_initialized*;
       std::ios_base::[J-Za-z]*;
       std::i[p-z]*;
       std::[A-Zj-k]*;

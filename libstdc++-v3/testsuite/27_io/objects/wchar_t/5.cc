@@ -1,3 +1,4 @@
+// { dg-options "-D_GLIBCXX_ASSERT" { target *-*-* } }
 // 2003-05-01 Petur Runolfsson  <peturr02@ru.is>
 
 // Copyright (C) 2003 Free Software Foundation

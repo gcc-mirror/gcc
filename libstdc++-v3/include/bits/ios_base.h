@@ -492,11 +492,6 @@ namespace std
       Init();
       ~Init();
       
-      // NB: Allows debugger applications use of the standard streams
-      // from operator new. 
-      static bool
-      _S_initialized();
-
     private:
       static _Atomic_word	_S_refcount;
       static bool		_S_synced_with_stdio;

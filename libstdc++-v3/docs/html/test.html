@@ -392,6 +392,12 @@ Example 3: Testing for expected warnings on line 36
 Example 4: Testing for compilation errors on line 41
 // { dg-do compile }
 // { dg-error "no match for" "" { target *-*-* } 41 }
+
+Example 5: Testing with special command line settings, or without the
+use of pre-compiled headers, in particular the stdc++.h.gch file. Any
+options here will override the DEFAULT_CXXFLAGS set up in the
+normal.exp file.
+// { dg-options "-O0" { target *-*-* } }
 </pre>
 
    <p>
