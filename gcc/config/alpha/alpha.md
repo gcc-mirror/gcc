@@ -282,7 +282,7 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(sign_extend:DI
-	 (plus:SI (match_operand:SI 1 "register_operand" "")
+	 (plus:SI (match_operand:SI 1 "reg_not_elim_operand" "")
 		  (match_operand:SI 2 "const_int_operand" ""))))
    (clobber (match_operand:SI 3 "reg_not_elim_operand" ""))]
   "! sext_add_operand (operands[2], SImode) && INTVAL (operands[2]) > 0
@@ -380,7 +380,7 @@
 					      [(match_operand 2 "" "")
 					       (match_operand 3 "" "")])
 			   (match_operand:SI 4 "const48_operand" ""))
-		  (match_operand:SI 5 "add_operand" ""))))
+		  (match_operand:SI 5 "sext_add_operand" ""))))
    (clobber (match_operand:DI 6 "reg_not_elim_operand" ""))]
   ""
   [(set (match_dup 6) (match_dup 7))
@@ -398,7 +398,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(plus:DI (mult:DI (match_operand:DI 1 "reg_not_elim_operand" "r,r")
 			  (match_operand:DI 2 "const48_operand" "I,I"))
-		 (match_operand:DI 3 "reg_or_8bit_operand" "rI,O")))]
+		 (match_operand:DI 3 "reg_not_elim_or_8bit_operand" "rI,O")))]
   ""
   "@
    s%2addq %1,%3,%0
