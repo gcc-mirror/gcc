@@ -2804,7 +2804,7 @@ fill_simple_delay_slots (first, non_jumps_p)
   register int i, j;
   int num_unfilled_slots = unfilled_slots_next - unfilled_slots_base;
   struct resources needed, set;
-  register int slots_to_fill, slots_filled;
+  int slots_to_fill, slots_filled;
   rtx delay_list;
 
   for (i = 0; i < num_unfilled_slots; i++)
@@ -3135,6 +3135,19 @@ fill_simple_delay_slots (first, non_jumps_p)
 		reorg_redirect_jump (insn, new_label);
 	    }
 	}
+
+      /* If this is an unconditional jump, then try to get insns from the
+	 target of the jump.  */
+      if (GET_CODE (insn) == JUMP_INSN
+	  && simplejump_p (insn)
+	  && slots_filled != slots_to_fill)
+	delay_list
+	  = fill_slots_from_thread (insn, const_true_rtx,
+				    next_active_insn (JUMP_LABEL (insn)),
+				    NULL, 1, 1,
+				    own_thread_p (JUMP_LABEL (insn),
+						  JUMP_LABEL (insn), 0),
+				    0, slots_to_fill, &slots_filled);
 
       if (delay_list)
 	unfilled_slots_base[i]
