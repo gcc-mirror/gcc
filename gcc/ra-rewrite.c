@@ -550,7 +550,7 @@ remember_slot (list, x)
 }
 
 /* Given two rtx' S1 and S2, either being REGs or MEMs (or SUBREGs
-   thereof), return non-zero, if they overlap.  REGs and MEMs don't
+   thereof), return nonzero, if they overlap.  REGs and MEMs don't
    overlap, and if they are MEMs they must have an easy address
    (plus (basereg) (const_inst x)), otherwise they overlap.  */
 

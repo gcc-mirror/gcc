@@ -191,7 +191,7 @@ static int num_changes = 0;
    an INSN, CALL_INSN, or JUMP_INSN, the insn will be re-recognized with
    the change in place.
 
-   IN_GROUP is non-zero if this is part of a group of changes that must be
+   IN_GROUP is nonzero if this is part of a group of changes that must be
    performed as a group.  In that case, the changes will be stored.  The
    function `apply_change_group' will validate and apply the changes.
 
@@ -856,7 +856,7 @@ find_single_use_1 (dest, loc)
    sequel.  If so, return a pointer to the innermost rtx expression in which
    it is used.
 
-   If PLOC is non-zero, *PLOC is set to the insn containing the single use.
+   If PLOC is nonzero, *PLOC is set to the insn containing the single use.
 
    This routine will return usually zero either before flow is called (because
    there will be no LOG_LINKS notes) or after reload (because the REG_DEAD
@@ -2341,7 +2341,7 @@ preprocess_constraints ()
    This is used in final, just before printing the assembler code and by
    the routines that determine an insn's attribute.
 
-   If STRICT is a positive non-zero value, it means that we have been
+   If STRICT is a positive nonzero value, it means that we have been
    called after reload has been completed.  In that case, we must
    do all checks strictly.  If it is zero, it means that we have been called
    before reload has completed.  In that case, we first try to see if we can

@@ -507,7 +507,7 @@ normalize (r)
   int shift = 0, exp;
   int i, j;
 
-  /* Find the first word that is non-zero.  */
+  /* Find the first word that is nonzero.  */
   for (i = SIGSZ - 1; i >= 0; i--)
     if (r->sig[i] == 0)
       shift += HOST_BITS_PER_LONG;
@@ -522,7 +522,7 @@ normalize (r)
       return;
     }
 
-  /* Find the first bit that is non-zero.  */
+  /* Find the first bit that is nonzero.  */
   for (j = 0; ; j++)
     if (r->sig[i] & ((unsigned long)1 << (HOST_BITS_PER_LONG - 1 - j)))
       break;
@@ -2114,7 +2114,7 @@ round_for_format (fmt, r)
     }
 
   /* There are P2 true significand bits, followed by one guard bit,
-     followed by one sticky bit, followed by stuff.  Fold non-zero
+     followed by one sticky bit, followed by stuff.  Fold nonzero
      stuff into the sticky bit.  */
 
   sticky = 0;

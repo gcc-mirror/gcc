@@ -340,7 +340,7 @@ static const struct elim_table_1
 #define NUM_ELIMINABLE_REGS ARRAY_SIZE (reg_eliminate_1)
 
 /* Record the number of pending eliminations that have an offset not equal
-   to their initial offset.  If non-zero, we use a new copy of each
+   to their initial offset.  If nonzero, we use a new copy of each
    replacement result in any insns encountered.  */
 int num_not_at_initial_offset;
 
@@ -2118,7 +2118,7 @@ mark_home_live (regno)
 
    INSN is the insn that it came from, if any.
 
-   INITIAL_P is non-zero if we are to set the offset to be the initial
+   INITIAL_P is nonzero if we are to set the offset to be the initial
    offset and zero if we are setting the offset of the label to be the
    current offset.  */
 
@@ -2273,7 +2273,7 @@ set_label_offsets (x, insn, initial_p)
    to record the fact that a register is referenced outside a MEM.
 
    If INSN is an insn, it is the insn containing X.  If we replace a REG
-   in a SET_DEST with an equivalent MEM and INSN is non-zero, write a
+   in a SET_DEST with an equivalent MEM and INSN is nonzero, write a
    CLOBBER of the pseudo after INSN so find_equiv_regs will know that
    the REG is being modified.
 
@@ -4752,7 +4752,7 @@ char reload_inherited[MAX_RELOADS];
    if we know it.  Otherwise, this is 0.  */
 rtx reload_inheritance_insn[MAX_RELOADS];
 
-/* If non-zero, this is a place to get the value of the reload,
+/* If nonzero, this is a place to get the value of the reload,
    rather than using reload_in.  */
 rtx reload_override_in[MAX_RELOADS];
 
@@ -4993,7 +4993,7 @@ reload_reg_free_for_value_p (start_regno, regno, opnum, type, value, out,
    determine how many hard regs to test.
 
    Other read-only reloads with the same value do not conflict
-   unless OUT is non-zero and these other reloads have to live while
+   unless OUT is nonzero and these other reloads have to live while
    output reloads live.
    If OUT is CONST0_RTX, this is a special case: it means that the
    test should not be for using register REGNO as reload register, but
@@ -5116,7 +5116,7 @@ set_reload_reg (i, r)
 }
 
 /* Find a spill register to use as a reload register for reload R.
-   LAST_RELOAD is non-zero if this is the last reload for the insn being
+   LAST_RELOAD is nonzero if this is the last reload for the insn being
    processed.
 
    Set rld[R].reg_rtx to the register allocated.
@@ -6009,7 +6009,7 @@ deallocate_reload_reg (r)
   reload_spill_index[r] = -1;
 }
 
-/* If SMALL_REGISTER_CLASSES is non-zero, we may not have merged two
+/* If SMALL_REGISTER_CLASSES is nonzero, we may not have merged two
    reloads of the same item for fear that we might not have enough reload
    registers. However, normally they will get the same reload register
    and hence actually need not be loaded twice.
@@ -7922,7 +7922,7 @@ inc_for_reload (reloadreg, in, value, inc_amount)
   rtx real_in = in == value ? XEXP (in, 0) : in;
 
   /* No hard register is equivalent to this register after
-     inc/dec operation.  If REG_LAST_RELOAD_REG were non-zero,
+     inc/dec operation.  If REG_LAST_RELOAD_REG were nonzero,
      we could inc/dec that register as well (maybe even using it for
      the source), but I'm not sure it's worth worrying about.  */
   if (GET_CODE (incloc) == REG)

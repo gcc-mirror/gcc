@@ -268,7 +268,7 @@ static rtx next_flags_user 		PARAMS ((rtx));
 static void record_label_references	PARAMS ((rtx, rtx));
 static bool compensate_edge		PARAMS ((edge, FILE *));
 
-/* Return non-zero if any stack register is mentioned somewhere within PAT.  */
+/* Return nonzero if any stack register is mentioned somewhere within PAT.  */
 
 static int
 stack_regs_mentioned_p (pat)

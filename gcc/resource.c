@@ -372,7 +372,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	     We assume that they both use and set all registers.  Using all
 	     registers ensures that a register will not be considered dead
 	     just because it crosses a setjmp call.  A register should be
-	     considered dead only if the setjmp call returns non-zero.  */
+	     considered dead only if the setjmp call returns nonzero.  */
 	  if (find_reg_note (x, REG_SETJMP, NULL))
 	    SET_HARD_REG_SET (res->regs);
 
@@ -1178,7 +1178,7 @@ init_resource_info (epilogue_insn)
   /* Indicate what resources are required to be valid at the end of the current
      function.  The condition code never is and memory always is.  If the
      frame pointer is needed, it is and so is the stack pointer unless
-     EXIT_IGNORE_STACK is non-zero.  If the frame pointer is not needed, the
+     EXIT_IGNORE_STACK is nonzero.  If the frame pointer is not needed, the
      stack pointer is.  Registers used to return the function value are
      needed.  Registers holding global variables are needed.  */
 

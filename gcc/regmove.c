@@ -80,7 +80,7 @@ static int regclass_compatible_p PARAMS ((int, int));
 static int replacement_quality PARAMS ((rtx));
 static int fixup_match_2 PARAMS ((rtx, rtx, rtx, rtx, FILE *));
 
-/* Return non-zero if registers with CLASS1 and CLASS2 can be merged without
+/* Return nonzero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */
 static int
 regclass_compatible_p (class0, class1)

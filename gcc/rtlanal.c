@@ -353,7 +353,7 @@ get_related_value (x)
    into the jump table.  If the offset cannot be determined, then return
    NULL_RTX.
 
-   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   If EARLIEST is nonzero, it is a pointer to a place where the earliest
    insn used in locating the offset was found.  */
 
 rtx
@@ -541,7 +541,7 @@ global_reg_mentioned_p_1 (loc, data)
   return 0;
 }
 
-/* Returns non-zero if X mentions a global register.  */
+/* Returns nonzero if X mentions a global register.  */
 
 int
 global_reg_mentioned_p (x)
@@ -2786,7 +2786,7 @@ computed_jump_p (insn)
    sub-expression (including X itself).  F is also passed the DATA.
    If F returns -1, do not traverse sub-expressions, but continue
    traversing the rest of the tree.  If F ever returns any other
-   non-zero value, stop the traversal, and return the value returned
+   nonzero value, stop the traversal, and return the value returned
    by F.  Otherwise, return 0.  This function does not traverse inside
    tree structure that contains RTX_EXPRs, or into sub-expressions
    whose format code is `0' since it is not known whether or not those
@@ -3039,7 +3039,7 @@ insns_safe_to_move_p (from, to, new_to)
   return 0;
 }
 
-/* Return non-zero if IN contains a piece of rtl that has the address LOC */
+/* Return nonzero if IN contains a piece of rtl that has the address LOC */
 int
 loc_mentioned_in_p (loc, in)
      rtx *loc, in;

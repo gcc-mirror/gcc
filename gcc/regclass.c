@@ -220,7 +220,7 @@ static int may_move_out_cost[MAX_MACHINE_MODE][N_REG_CLASSES][N_REG_CLASSES];
 
 static int forbidden_inc_dec_class[N_REG_CLASSES];
 
-/* Indexed by n, is non-zero if (REG n) is used in an auto-inc or auto-dec
+/* Indexed by n, is nonzero if (REG n) is used in an auto-inc or auto-dec
    context.  */
 
 static char *in_inc_dec;
@@ -254,7 +254,7 @@ struct reg_info_data {
   struct reg_info_data *next;	/* next set of reg_info structures */
   size_t min_index;		/* minimum index # */
   size_t max_index;		/* maximum index # */
-  char used_p;			/* non-zero if this has been used previously */
+  char used_p;			/* nonzero if this has been used previously */
   reg_info data[1];		/* beginning of the reg_info data */
 };
 
@@ -1904,7 +1904,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 	}
 }
 
-/* Compute the cost of loading X into (if TO_P is non-zero) or from (if
+/* Compute the cost of loading X into (if TO_P is nonzero) or from (if
    TO_P is zero) a register of class CLASS in mode MODE.
 
    X must not be a pseudo.  */

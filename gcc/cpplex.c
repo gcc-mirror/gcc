@@ -1329,7 +1329,7 @@ _cpp_lex_direct (pfile)
     case '}': result->type = CPP_CLOSE_BRACE; break;
     case ';': result->type = CPP_SEMICOLON; break;
 
-      /* @ is a punctuator in Objective C.  */
+      /* @ is a punctuator in Objective-C.  */
     case '@': result->type = CPP_ATSIGN; break;
 
     case '$':

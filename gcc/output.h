@@ -327,7 +327,7 @@ extern bool default_assemble_integer	PARAMS ((rtx, unsigned int, int));
 
 /* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
    the alignment of the integer in bits.  Return 1 if we were able to output
-   the constant, otherwise 0.  If FORCE is non-zero, abort if we can't output
+   the constant, otherwise 0.  If FORCE is nonzero, abort if we can't output
    the constant.  */
 extern bool assemble_integer		PARAMS ((rtx, unsigned, unsigned, int));
 
