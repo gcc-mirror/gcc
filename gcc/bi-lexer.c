@@ -38,7 +38,7 @@ xmalloc (nbytes)
   if (!tmp)
     {
       fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   return tmp;
@@ -60,7 +60,7 @@ xrealloc (block, nbytes)
   if (!tmp)
     {
       fprintf (stderr, "can't reallocate %d bytes (out of virtual memory)\n", nbytes);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   return tmp;
