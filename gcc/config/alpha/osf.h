@@ -103,3 +103,8 @@ Boston, MA 02111-1307, USA.  */
 		%{.s:%i} %{!.s:%g.s}}}"
 
 #endif
+
+/* Indicate that we have a stamp.h to use.  */
+#ifndef CROSS_COMPILE
+#define HAVE_STAMP_H 1
+#endif
