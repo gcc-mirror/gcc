@@ -5346,20 +5346,18 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 			&& (*insn_operand_predicate[icode][0]) (equiv, Pmode)
 			&& (*insn_operand_predicate[icode][1]) (equiv, Pmode)))
 		{
-		  loc = &XEXP (x, 0);
+		  /* We use the original pseudo for loc, so that
+		     emit_reload_insns() knows which pseudo this
+		     reload refers to and updates the pseudo rtx, not
+		     its equivalent memory location, as well as the
+		     corresponding entry in reg_last_reload_reg.  */
+		  loc = &XEXP (x_orig, 0);
 		  x = XEXP (x, 0);
 		  reloadnum
 		    = push_reload (x, x, loc, loc,
 				   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
 				    GET_MODE (x), GET_MODE (x), 0, 0,
 				    opnum, RELOAD_OTHER);
-
-		  /* If we created a new MEM based on reg_equiv_mem[REGNO], then
-		     LOC above is part of the new MEM, not the MEM in INSN.
-
-		     We must also replace the address of the MEM in INSN.  */
-		  if (&XEXP (x_orig, 0) != loc)
-		    push_replacement (&XEXP (x_orig, 0), reloadnum, VOIDmode);
 
 		}
 	      else
