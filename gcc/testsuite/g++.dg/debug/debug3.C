@@ -3,6 +3,7 @@
 // to emit location expression for parameter a of operator+.
 // { dg-do compile }
 // { dg-options "-fpic" }
+// { dg-warning "not supported" "PIC unsupported" { target cris-*-elf* cris-*-aout* mmix-*-* } 0 }
 
 struct A { char *s; };
 

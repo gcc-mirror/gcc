@@ -8,6 +8,9 @@ if { [istarget rs6000-*-aix*]
      || [istarget sh-*-hms]
      || [istarget sh-*-coff]
      || [istarget h8300*-*-*]
+     || [istarget cris-*-elf*]
+     || [istarget cris-*-aout*]
+     || [istarget mmix-*-*]
 } {
     set options "-Wuninitialized -Werror"
 } else {

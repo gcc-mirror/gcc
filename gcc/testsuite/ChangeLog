@@ -1,3 +1,17 @@
+2002-03-15  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/20020312-2.c [__MMIX__]: No pic register.
+	* gcc.c-torture/compile/981006-1.x: Don't use -fpic on cris-*-elf*
+	cris-*-aout* mmix-*-*.
+	* g++.old-deja/g++.other/local-alloc1.C: Skip on cris-*-elf*
+	cris-*-aout* mmix-*-*.
+	* g++.dg/debug/debug3.C: Expect warning for unsupported -fpic on
+	cris-*-elf* cris-*-aout* and mmix-*-*.
+	* gcc.dg/20001009-1.c: Ditto.
+	* gcc.dg/20010912-1.c: Ditto.
+	* gcc.dg/20020122-4.c: Ditto.
+	* gcc.dg/inline-2.c: Ditto.
+
 Thu Mar 14 14:28:38 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20020314-1.c: New test.
