@@ -1622,12 +1622,13 @@ propagate_block (old, first, last, final, significant, bnum)
 				      final, insn);
 
 		  /* Each call clobbers all call-clobbered regs that are not
-		     global.  Note that the function-value reg is a
+		     global or fixed.  Note that the function-value reg is a
 		     call-clobbered reg, and mark_set_regs has already had
 		     a chance to handle it.  */
 
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (call_used_regs[i] && ! global_regs[i])
+		    if (call_used_regs[i] && ! global_regs[i]
+			&& ! fixed_regs[i])
 		      dead[i / REGSET_ELT_BITS]
 			|= ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS));
 
