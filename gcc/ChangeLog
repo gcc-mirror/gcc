@@ -1,3 +1,8 @@
+Sun Feb 21 20:35:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* config/aoutos.h (ASM_OUTPUT_CONSTRUCTOR): Delete.
+	(ASM_OUTPUT_DESTRUCTOR, ASM_OUTPUT_GC_ENTRY): Likewise.
+
 Tue Feb 16 21:02:07 1999  Anton Hartl <toni@devsoft.com>
 
 	* rs6000.md (call_value): Fix typo.
