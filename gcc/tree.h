@@ -234,6 +234,11 @@ struct tree_common
   (TREE_CODE (TYPE) == ARRAY_TYPE || TREE_CODE (TYPE) == RECORD_TYPE \
    || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE \
    || TREE_CODE (TYPE) == SET_TYPE)
+
+/* Nonzero if TYPE represents a pointer type.  */
+
+#define POINTER_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)
 
 /* Define many boolean fields that all tree nodes have.  */
 
