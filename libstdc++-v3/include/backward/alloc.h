@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,9 +47,6 @@
 #include <bits/c++config.h>
 #include <bits/allocator.h>
 
-using __gnu_cxx::__pool_alloc;
-using std::__alloc;
-using std::__simple_alloc;
 using std::allocator;
 
 #endif

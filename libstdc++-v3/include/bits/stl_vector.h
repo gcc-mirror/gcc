@@ -94,7 +94,7 @@ namespace __gnu_norm
       }
       
       ~_Vector_base() 
-      { _M_deallocate(this->_M_start,
+      { _M_deallocate(this->_M_start, 
 		      this->_M_end_of_storage - this->_M_start); }
 
     public:

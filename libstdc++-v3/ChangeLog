@@ -1,5 +1,37 @@
 2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/Makefile.am (bits_headers): Remove allocator_traits.h.
+	* include/Makefile.in: Regenerate.
+	* include/bits/allocator_traits.h: Remove.
+	* include/bits/allocator.h: Remove allocator_traits.h include, and
+	relevant comments.
+	(allocator): Empty base class, inherit from the underlying allocator.
+	* src/allocator-inst.cc: Move __pool_alloc instantiation to...
+	* src/allocator.cc: ...here. New. For the underlying allocators.
+	Add __mt_alloc, __pool_alloc, new_allocator, malloc_allocator bits.
+	* config/linker-map.gnu: Remove __pool_alloc bits.
+	* src/Makefile.am (sources): Add allocator.cc.
+	* src/Makefile.in: Regenerate.
+	* testsuite/20_util/allocator/1.cc: Split second test into...
+	* testsuite/20_util/allocator/8230.cc: ...this. 
+	* include/bits/stl_bvector.h (__gnu_norm): Change bit_vector
+	typedef to use std::allocatore. Format.
+	* include/ext/pool_allocator.h: Remove allocator_traits.h include,
+	_Alloc_traits.
+	* include/ext/mt_allocator.h (__gnu_cxx): Qualify
+	__throw_bad_alloc calls. Don't include <memory>.
+	* include/ext/malloc_allocator.h: Remove <memory> include.
+	* include/ext/new_allocator.h (new_allocator): Same.
+	* include/ext/ropeimpl.h (__gnu_cxx): Remove __alloc using
+	declaration. Switch __alloc to _Alloc.
+	* include/ext/hashtable.h: Remove __alloc.
+	* include/backward/alloc.h: Only inject allocator, not
+	implementation details.
+
+	* include/ext/mt_allocator.h: Replace free with delete.
+	
+2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/globals_io.cc: Change to __gnu_internal namespace.
 	* src/globals_locale.cc: Same.
 	* src/locale_init.cc: Same.

@@ -36,8 +36,6 @@
 #define _MT_ALLOCATOR_H 1
 
 #include <new>
-#include <memory>
-#include <cstdlib>
 #include <bits/functexcept.h>
 #include <bits/gthr.h>
 #include <bits/atomicity.h>
@@ -230,7 +228,7 @@ namespace __gnu_cxx
 
     public:
       pointer
-      allocate(size_t __n, std::allocator<void>::const_pointer __h = 0)
+      allocate(size_t __n, const void* __h = 0)
       {
         /*
          * Although the test in __gthread_once() would suffice, we
@@ -260,7 +258,7 @@ namespace __gnu_cxx
           {
             void* __ret = ::operator new(__n * sizeof(_Tp));
             if (!__ret)
-              __throw_bad_alloc();
+              std::__throw_bad_alloc();
             return static_cast<_Tp*>(__ret);
           }
 
@@ -314,10 +312,10 @@ namespace __gnu_cxx
                     __gthread_mutex_unlock(_S_bin[bin].mutex);
 
                     _S_bin[bin].first[thread_id] =
-                      static_cast<block_record*>(::operator new(_S_chunk_size));
+                     static_cast<block_record*>(::operator new(_S_chunk_size));
 
                     if (!_S_bin[bin].first[thread_id])
-                      __throw_bad_alloc();
+                      std::__throw_bad_alloc();
 
                     _S_bin[bin].free[thread_id] = block_count;
 
@@ -385,7 +383,7 @@ namespace __gnu_cxx
                   static_cast<block_record*>(::operator new(_S_chunk_size));
 
                 if (!_S_bin[bin].first[0])
-                  __throw_bad_alloc();
+                  std::__throw_bad_alloc();
 
                 size_t bin_t = 1 << bin;
                 size_t block_count = 
@@ -441,11 +439,11 @@ namespace __gnu_cxx
       {
         /*
          * Requests larger than _S_max_bytes are handled by
-         * malloc/free directly
+         * operators new/delete directly
          */
         if (__n * sizeof(_Tp) > _S_max_bytes || _S_force_new)
           {
-            free(__p);
+            ::operator delete(__p);
             return;
           }
 
@@ -584,10 +582,10 @@ namespace __gnu_cxx
        * Setup the bin map for quick lookup of the relevant bin
        */
       _S_binmap = (binmap_type*)
-        malloc ((_S_max_bytes + 1) * sizeof(binmap_type));
+        ::operator new ((_S_max_bytes + 1) * sizeof(binmap_type));
 
       if (!_S_binmap)
-        __throw_bad_alloc();
+        std::__throw_bad_alloc();
 
       binmap_type* bp_t = _S_binmap;
       binmap_type bin_max_t = 1;
@@ -615,7 +613,7 @@ namespace __gnu_cxx
               new(sizeof(thread_record) * _S_max_threads));
 
           if (!_S_thread_freelist_first)
-            __throw_bad_alloc();
+            std::__throw_bad_alloc();
 
           /*
            * NOTE! The first assignable thread id is 1 since the global
@@ -651,7 +649,7 @@ namespace __gnu_cxx
         new(sizeof(bin_record) * _S_no_of_bins));
 
       if (!_S_bin)
-        __throw_bad_alloc();
+        std::__throw_bad_alloc();
 
       std::size_t __n = 1;
 
@@ -666,13 +664,13 @@ namespace __gnu_cxx
             new(sizeof(block_record*) * __n));
 
           if (!_S_bin[bin].first)
-            __throw_bad_alloc();
+            std::__throw_bad_alloc();
 
           _S_bin[bin].last = static_cast<block_record**>(::operator 
             new(sizeof(block_record*) * __n));
 
           if (!_S_bin[bin].last)
-            __throw_bad_alloc();
+            std::__throw_bad_alloc();
 
 #ifdef __GTHREADS
           if (__gthread_active_p())
@@ -681,13 +679,13 @@ namespace __gnu_cxx
                 new(sizeof(size_t) * __n));
 
               if (!_S_bin[bin].free)
-                __throw_bad_alloc();
+                std::__throw_bad_alloc();
 
               _S_bin[bin].used = static_cast<size_t*>(::operator 
                 new(sizeof(size_t) * __n));
 
               if (!_S_bin[bin].used)
-                __throw_bad_alloc();
+                std::__throw_bad_alloc();
 
               _S_bin[bin].mutex = static_cast<__gthread_mutex_t*>(::operator 
                 new(sizeof(__gthread_mutex_t)));
@@ -781,8 +779,8 @@ namespace __gnu_cxx
   __mt_alloc<_Tp>::_S_once_mt = __GTHREAD_ONCE_INIT;
 #endif
 
-  template<typename _Tp> bool
-  volatile __mt_alloc<_Tp>::_S_initialized = false;
+  template<typename _Tp> 
+  bool volatile __mt_alloc<_Tp>::_S_initialized = false;
 
   template<typename _Tp> bool
   __mt_alloc<_Tp>::_S_force_new = false;
@@ -792,7 +790,7 @@ namespace __gnu_cxx
 
   /*
    * Allocation requests (after round-up to power of 2) below this
-   * value will be handled by the allocator. A raw malloc/free() call
+   * value will be handled by the allocator. A raw new/ call
    * will be used for requests larger than this value.
    */
   template<typename _Tp> size_t
@@ -853,14 +851,12 @@ namespace __gnu_cxx
 
   template<typename _Tp>
     inline bool
-    operator==(const __mt_alloc<_Tp>&,
-               const __mt_alloc<_Tp>&)
+    operator==(const __mt_alloc<_Tp>&, const __mt_alloc<_Tp>&)
     { return true; }
   
   template<typename _Tp>
     inline bool
-    operator!=(const __mt_alloc<_Tp>&,
-               const __mt_alloc<_Tp>&)
+    operator!=(const __mt_alloc<_Tp>&, const __mt_alloc<_Tp>&)
     { return false; }
 } // namespace __gnu_cxx
 

@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,7 +51,6 @@
 #include <bits/functexcept.h>
 #include <bits/stl_threads.h>
 #include <bits/atomicity.h>
-#include <bits/allocator_traits.h>
 
 namespace __gnu_cxx
 {
@@ -359,34 +358,5 @@ namespace __gnu_cxx
   extern template class __pool_alloc<true, 0>;
 #endif
 } // namespace __gnu_cxx
-
-namespace std
-{
-  //@{
-  /// Versions for the predefined "SGI" style allocators.
-  template<typename _Tp, bool __thr, int __inst>
-    struct _Alloc_traits<_Tp, __gnu_cxx::__pool_alloc<__thr, __inst> >
-    {
-      static const bool _S_instanceless = true;
-      typedef __gnu_cxx::__pool_alloc<__thr, __inst>	base_alloc_type;
-      typedef __simple_alloc<_Tp, base_alloc_type>	_Alloc_type;
-      typedef __allocator<_Tp, base_alloc_type>		allocator_type;
-    };
-  //@}
-
-  //@{
-  /// Versions for the __allocator adaptor used with the predefined
-  /// "SGI" style allocators.
-  template<typename _Tp, typename _Tp1, bool __thr, int __inst>
-    struct _Alloc_traits<_Tp, __allocator<_Tp1,
-				     __gnu_cxx::__pool_alloc<__thr, __inst> > >
-    {
-      static const bool _S_instanceless = true;
-      typedef __gnu_cxx::__pool_alloc<__thr, __inst>	base_alloc_type;
-      typedef __simple_alloc<_Tp, base_alloc_type>	_Alloc_type;
-      typedef __allocator<_Tp, base_alloc_type>		allocator_type;
-    };
-  //@}
-} // namespace std
 
 #endif

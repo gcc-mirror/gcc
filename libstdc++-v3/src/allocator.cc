@@ -1,6 +1,6 @@
-// Explicit instantiation file.
+// Allocator details.
 
-// Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,9 +33,25 @@
 
 #include <bits/c++config.h>
 #include <memory>
+#include <ext/mt_allocator.h>
+#include <ext/pool_allocator.h>
 
-namespace std
+// Explicitly instantiate the static data members of the underlying
+// allocator.
+namespace __gnu_cxx
 {
-  template class allocator<char>;
-  template class allocator<wchar_t>;
-} // namespace std
+  // Static data members and member functions of __mt_alloc.
+  static template class __mt_alloc<char>;
+
+  template
+    void __mt_alloc<char>::_S_init();
+
+   template
+    size_t __mt_alloc<char>::_S_get_thread_id();
+
+   template
+    void __mt_alloc<char>::_S_thread_key_destr(void*);
+
+  // Static members of __pool_alloc.
+  template class __pool_alloc<true, 0>;
+} // namespace __gnu_cxx

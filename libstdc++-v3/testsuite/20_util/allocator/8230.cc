@@ -22,44 +22,33 @@
 
 #include <memory>
 #include <stdexcept>
-#include <cstdlib>
 #include <testsuite_hooks.h>
 
-struct gnu { };
-
-bool check_new = false;
-bool check_delete = false;
-
-void* 
-operator new(std::size_t n) throw(std::bad_alloc)
-{
-  check_new = true;
-  return std::malloc(n);
-}
-
-void operator delete(void *v) throw()
-{
-  check_delete = true;
-  return std::free(v);
-}
-
-void test01()
+// libstdc++/8230
+void test02()
 {
   bool test __attribute__((unused)) = true;
-  std::allocator<gnu> obj;
-
-  // XXX These should work for various size allocation and
-  // deallocations.  Currently, they only work as expected for sizes >
-  // _MAX_BYTES as defined in stl_alloc.h, which happes to be 128. 
-  gnu* pobj = obj.allocate(256);
-  VERIFY( check_new );
-
-  obj.deallocate(pobj, 256);
-  VERIFY( check_delete );
+  try 
+    {
+      std::allocator<int> alloc;
+      const std::allocator<int>::size_type n = alloc.max_size();
+      int* p = alloc.allocate(n + 1);
+      p[n] = 2002;
+    } 
+  catch(const std::bad_alloc& e) 
+    {
+      // Allowed.
+      test = true;
+    }
+  catch(...) 
+    {
+      test = false;
+    }
+  VERIFY( test );
 }
 
 int main()
 {
-  test01();
+  test02();
   return 0;
 }
