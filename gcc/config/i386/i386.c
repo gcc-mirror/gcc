@@ -3731,8 +3731,7 @@ output_fix_trunc (insn, operands)
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
   rtx xops[2];
 
-  if (! STACK_TOP_P (operands[1]) ||
-      (GET_MODE (operands[0]) == DImode && ! stack_top_dies))
+  if (! STACK_TOP_P (operands[1]))
     abort ();
 
   xops[0] = GEN_INT (12);
@@ -3750,6 +3749,17 @@ output_fix_trunc (insn, operands)
     {
       if (stack_top_dies)
 	output_asm_insn (AS1 (fistp%z0,%0), operands);
+      else if (GET_MODE (operands[0]) == DImode && ! stack_top_dies)
+	{
+	  /* There is no DImode version of this without a stack pop, so
+	     we must emulate it.  It doesn't matter much what the second
+	     instruction is, because the value being pushed on the FP stack
+	     is not used except for the following stack popping store.
+	     This case can only happen without optimization, so it doesn't
+	     matter that it is inefficient.  */
+	  output_asm_insn (AS1 (fistp%z0,%0), operands);
+	  output_asm_insn (AS1 (fild%z0,%0), operands);
+	}
       else
 	output_asm_insn (AS1 (fist%z0,%0), operands);
     }

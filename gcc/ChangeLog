@@ -1,3 +1,8 @@
+Thu Apr 30 19:28:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.c (output_fix_trunc): Add code to emulate non-popping DImode
+	case.
+
 Thu Apr 23 01:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for 1.0.3 pre-release.
