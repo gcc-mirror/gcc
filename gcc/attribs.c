@@ -241,7 +241,11 @@ init_attributes ()
    information, in the form of a bitwise OR of flags in enum attribute_flags
    from tree.h.  Depending on these flags, some attributes may be
    returned to be applied at a later stage (for example, to apply
-   a decl attribute to the declaration rather than to its type).  */
+   a decl attribute to the declaration rather than to its type).  If
+   ATTR_FLAG_BUILT_IN is not set and *NODE is a DECL, then also consider
+   whether there might be some default attributes to apply to this DECL;
+   if so, decl_attributes will be called recusrively with those attributes
+   and ATTR_FLAG_BUILT_IN set.  */
 
 tree
 decl_attributes (node, attributes, flags)
@@ -255,6 +259,10 @@ decl_attributes (node, attributes, flags)
     init_attributes ();
 
   (*targetm.insert_attributes) (*node, &attributes);
+
+  if (DECL_P (*node) && TREE_CODE (*node) == FUNCTION_DECL
+      && !(flags & (int) ATTR_FLAG_BUILT_IN))
+    insert_default_attributes (*node);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     {

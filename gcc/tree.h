@@ -2140,7 +2140,11 @@ enum attribute_flags
   ATTR_FLAG_ARRAY_NEXT = 4,
   /* The type passed in is a structure, union or enumeration type being
      created, and should be modified in place.  */
-  ATTR_FLAG_TYPE_IN_PLACE = 8
+  ATTR_FLAG_TYPE_IN_PLACE = 8,
+  /* The attributes are being applied by default to a library function whose
+     name indicates known behavior, and should be silently ignored if they
+     are not in fact compatible with the function type.  */
+  ATTR_FLAG_BUILT_IN = 16
 };
 
 /* Default versions of target-overridable functions.  */
@@ -2919,6 +2923,13 @@ extern int setjmp_call_p		PARAMS ((tree));
    returned to be applied at a later stage (for example, to apply
    a decl attribute to the declaration rather than to its type).  */
 extern tree decl_attributes		PARAMS ((tree *, tree, int));
+
+/* The following function must be provided by front ends
+   using attribs.c.  */
+
+/* Possibly apply default attributes to a function (represented by
+   a FUNCTION_DECL).  */
+extern void insert_default_attributes PARAMS ((tree));
 
 /* Table of machine-independent attributes for checking formats, if used.  */
 extern const struct attribute_spec *format_attribute_table;

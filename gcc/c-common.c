@@ -2324,6 +2324,18 @@ c_alignof_expr (expr)
   return fold (build1 (NOP_EXPR, c_size_type_node, t));
 }
 
+/* Give the specifications for the format attributes, used by C and all
+   descendents.  */
+
+static const struct attribute_spec c_format_attribute_table[] =
+{
+  { "format",                 3, 3, true,  false, false,
+			      handle_format_attribute },
+  { "format_arg",             1, 1, true,  false, false,
+			      handle_format_arg_attribute },
+  { NULL,                     0, 0, false, false, false, NULL }
+};
+
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 
@@ -2368,6 +2380,10 @@ c_common_nodes_and_builtins ()
   tree traditional_len_type_node;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
+
+  /* We must initialize this before any builtin functions (which might have
+     attributes) are declared.  (c_common_lang_init is too late.)  */
+  format_attribute_table = c_format_attribute_table;
 
   /* Define `int' and `char' first so that dbx will output them first.  */
   record_builtin_type (RID_INT, NULL, integer_type_node);
@@ -3774,24 +3790,34 @@ boolean_increment (code, arg)
   return val;
 }
 
-/* Give the specifications for the format attributes, used by C and all
-   descendents.  */
+/* Handle C and C++ default attributes.  */
 
-static const struct attribute_spec c_format_attribute_table[] =
+enum built_in_attribute
 {
-  { "format",                 3, 3, true,  false, false,
-			      handle_format_attribute },
-  { "format_arg",             1, 1, true,  false, false,
-			      handle_format_arg_attribute },
-  { NULL,                     0, 0, false, false, false, NULL }
+#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
+#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
+#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
+#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No entry needed in enum.  */
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+#undef DEF_FN_ATTR
+  ATTR_LAST
 };
+
+static tree built_in_attributes[(int) ATTR_LAST];
+
+static bool c_attrs_initialized = false;
+
+static void c_init_attributes PARAMS ((void));
 
 /* Do the parts of lang_init common to C and C++.  */
 void
 c_common_lang_init ()
 {
-  format_attribute_table = c_format_attribute_table;
-
   /* If still "unspecified", make it match -fbounded-pointers.  */
   if (flag_bounds_check < 0)
     flag_bounds_check = flag_bounded_pointers;
@@ -3808,4 +3834,60 @@ c_common_lang_init ()
     warning ("-Wformat-security ignored without -Wformat");
   if (warn_missing_format_attribute && !warn_format)
     warning ("-Wmissing-format-attribute ignored without -Wformat");
+
+  if (!c_attrs_initialized)
+    c_init_attributes ();
+}
+
+static void
+c_init_attributes ()
+{
+  /* Fill in the built_in_attributes array.  */
+#define DEF_ATTR_NULL_TREE(ENUM)		\
+  built_in_attributes[(int) ENUM] = NULL_TREE;
+#define DEF_ATTR_INT(ENUM, VALUE)					     \
+  built_in_attributes[(int) ENUM] = build_int_2 (VALUE, VALUE < 0 ? -1 : 0);
+#define DEF_ATTR_IDENT(ENUM, STRING)				\
+  built_in_attributes[(int) ENUM] = get_identifier (STRING);
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)	\
+  built_in_attributes[(int) ENUM]			\
+    = tree_cons (built_in_attributes[(int) PURPOSE],	\
+		 built_in_attributes[(int) VALUE],	\
+		 built_in_attributes[(int) CHAIN]);
+#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No initialization needed.  */
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+#undef DEF_FN_ATTR
+  ggc_add_tree_root (built_in_attributes, (int) ATTR_LAST);
+  c_attrs_initialized = true;
+}
+
+/* Depending on the name of DECL, apply default attributes to it.  */
+
+void
+c_common_insert_default_attributes (decl)
+     tree decl;
+{
+  tree name = DECL_NAME (decl);
+
+  if (!c_attrs_initialized)
+    c_init_attributes ();
+
+#define DEF_ATTR_NULL_TREE(ENUM) /* Nothing needed after initialization.  */
+#define DEF_ATTR_INT(ENUM, VALUE)
+#define DEF_ATTR_IDENT(ENUM, STRING)
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)
+#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE)			\
+  if ((PREDICATE) && name == built_in_attributes[(int) NAME])	\
+    decl_attributes (&decl, built_in_attributes[(int) ATTRS],	\
+		     ATTR_FLAG_BUILT_IN);
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+#undef DEF_FN_ATTR
 }

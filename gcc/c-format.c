@@ -89,7 +89,7 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
      tree name ATTRIBUTE_UNUSED;
      tree args;
-     int flags ATTRIBUTE_UNUSED;
+     int flags;
      bool *no_add_attrs;
 {
   tree decl = *node;
@@ -177,7 +177,8 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
 	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
 	      != char_type_node))
 	{
-	  error ("format string arg not a string type");
+	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	    error ("format string arg not a string type");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -191,7 +192,8 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
 
 	  if (arg_num != first_arg_num)
 	    {
-	      error ("args to be formatted is not '...'");
+	      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+		error ("args to be formatted is not '...'");
 	      *no_add_attrs = true;
 	      return NULL_TREE;
 	    }
@@ -218,7 +220,7 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
      tree name ATTRIBUTE_UNUSED;
      tree args;
-     int flags ATTRIBUTE_UNUSED;
+     int flags;
      bool *no_add_attrs;
 {
   tree decl = *node;
@@ -268,7 +270,8 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
 	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
 	      != char_type_node))
 	{
-	  error ("format string arg not a string type");
+	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	    error ("format string arg not a string type");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -278,7 +281,8 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
       || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (TREE_TYPE (decl))))
 	  != char_type_node))
     {
-      error ("function does not return string type");
+      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	error ("function does not return string type");
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -309,80 +313,6 @@ typedef struct international_format_info
 } international_format_info;
 
 static international_format_info *international_format_list = NULL;
-
-/* Initialize the table of functions to perform format checking on.
-   The ISO C functions are always checked (whether <stdio.h> is
-   included or not), since it is common to call printf without
-   including <stdio.h>.  There shouldn't be a problem with this,
-   since ISO C reserves these function names whether you include the
-   header file or not.  In any case, the checking is harmless.  With
-   -ffreestanding, these default attributes are disabled, and must be
-   specified manually if desired.
-
-   Also initialize the name of function that modify the format string for
-   internationalization purposes.  */
-
-void
-init_function_format_info ()
-{
-  /* __builtin functions should be checked unconditionally, even with
-     -ffreestanding.  */
-  record_function_format (get_identifier ("__builtin_printf"), NULL_TREE,
-			  printf_format_type, 1, 2);
-  record_function_format (get_identifier ("__builtin_fprintf"), NULL_TREE,
-			  printf_format_type, 2, 3);
-
-  if (flag_hosted)
-    {
-      /* Functions from ISO/IEC 9899:1990.  */
-      record_function_format (get_identifier ("printf"), NULL_TREE,
-			      printf_format_type, 1, 2);
-      record_function_format (get_identifier ("fprintf"), NULL_TREE,
-			      printf_format_type, 2, 3);
-      record_function_format (get_identifier ("sprintf"), NULL_TREE,
-			      printf_format_type, 2, 3);
-      record_function_format (get_identifier ("scanf"), NULL_TREE,
-			      scanf_format_type, 1, 2);
-      record_function_format (get_identifier ("fscanf"), NULL_TREE,
-			      scanf_format_type, 2, 3);
-      record_function_format (get_identifier ("sscanf"), NULL_TREE,
-			      scanf_format_type, 2, 3);
-      record_function_format (get_identifier ("vprintf"), NULL_TREE,
-			      printf_format_type, 1, 0);
-      record_function_format (get_identifier ("vfprintf"), NULL_TREE,
-			      printf_format_type, 2, 0);
-      record_function_format (get_identifier ("vsprintf"), NULL_TREE,
-			      printf_format_type, 2, 0);
-      record_function_format (get_identifier ("strftime"), NULL_TREE,
-			      strftime_format_type, 3, 0);
-    }
-
-  if (flag_hosted && (flag_isoc99 || flag_noniso_default_format_attributes))
-    {
-      /* ISO C99 adds the snprintf and vscanf family functions.  */
-      record_function_format (get_identifier ("snprintf"), NULL_TREE,
-			      printf_format_type, 3, 4);
-      record_function_format (get_identifier ("vsnprintf"), NULL_TREE,
-			      printf_format_type, 3, 0);
-      record_function_format (get_identifier ("vscanf"), NULL_TREE,
-			      scanf_format_type, 1, 0);
-      record_function_format (get_identifier ("vfscanf"), NULL_TREE,
-			      scanf_format_type, 2, 0);
-      record_function_format (get_identifier ("vsscanf"), NULL_TREE,
-			      scanf_format_type, 2, 0);
-    }
-
-  if (flag_hosted && flag_noniso_default_format_attributes)
-    {
-      /* Uniforum/GNU gettext functions, not in ISO C.  */
-      record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
-      record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
-      record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
-      /* X/Open strfmon function.  */
-      record_function_format (get_identifier ("strfmon"), NULL_TREE,
-			      strfmon_format_type, 3, 4);
-    }
-}
 
 /* Record information for argument format checking.  FUNCTION_IDENT is
    the identifier node for the name of the function to check (its decl

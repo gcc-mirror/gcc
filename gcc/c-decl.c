@@ -2505,7 +2505,7 @@ tree
 implicitly_declare (functionid)
      tree functionid;
 {
-  register tree decl;
+  tree decl;
   int traditional_warning = 0;
   /* Only one "implicit declaration" warning per identifier.  */
   int implicit_warning;
@@ -2554,6 +2554,9 @@ implicitly_declare (functionid)
      prototypes file (if requested).  */
 
   gen_aux_info_record (decl, 0, 1, 0);
+
+  /* Possibly apply some default attributes to this implicit declaration.  */
+  decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
 }
@@ -3056,9 +3059,6 @@ init_decl_processing ()
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
 
-  /* Prepare to check format strings against argument lists.  */
-  init_function_format_info ();
-
   incomplete_decl_finalize_hook = finish_incomplete_decl;
 
   /* Record our roots.  */
@@ -3152,7 +3152,22 @@ builtin_function (name, type, function_code, class, library_name)
   if (name[0] != '_' || name[1] != '_')
     C_DECL_ANTICIPATED (decl) = 1;
 
+  /* Possibly apply some default attributes to this built-in function.  */
+  decl_attributes (&decl, NULL_TREE, 0);
+
   return decl;
+}
+
+/* Apply default attributes to a function, if a system function with default
+   attributes.  */
+
+void
+insert_default_attributes (decl)
+     tree decl;
+{
+  if (!TREE_PUBLIC (decl))
+    return;
+  c_common_insert_default_attributes (decl);
 }
 
 /* Called when a declaration is seen that contains no names to declare.
