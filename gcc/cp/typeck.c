@@ -1805,7 +1805,10 @@ build_class_member_access_expr (tree object, tree member,
     member_scope = TYPE_CONTEXT (member_scope);
   if (!member_scope || !DERIVED_FROM_P (member_scope, object_type))
     {
-      error ("`%D' is not a member of `%T'", member, object_type);
+      if (TREE_CODE (member) == FIELD_DECL)
+        error ("invalid use of nonstatic data member '%E'", member);
+      else
+        error ("`%D' is not a member of `%T'", member, object_type);
       return error_mark_node;
     }
 
