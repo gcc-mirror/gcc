@@ -1716,12 +1716,10 @@ set_mem_alias_set (mem, set)
      HOST_WIDE_INT set;
 {
   /* It would be nice to enable this check, but we can't quite yet.  */
-#if 0
 #ifdef ENABLE_CHECKING	
   /* If the new and old alias sets don't conflict, something is wrong.  */
   if (!alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)))
     abort ();
-#endif
 #endif
 
   MEM_ATTRS (mem) = get_mem_attrs (set, MEM_DECL (mem), MEM_OFFSET (mem),

@@ -470,16 +470,32 @@ get_alias_set (t)
     return 0;
 
   /* We can be passed either an expression or a type.  This and the
-     language-specific routine may make mutually-recursive calls to
-     each other to figure out what to do.  At each juncture, we see if
-     this is a tree that the language may need to handle specially.
-     First handle things that aren't types and start by removing nops
-     since we care only about the actual object.  */
+     language-specific routine may make mutually-recursive calls to each other
+     to figure out what to do.  At each juncture, we see if this is a tree
+     that the language may need to handle specially.  First handle things that
+     aren't types and start by removing nops since we care only about the
+     actual object.  Also replace PLACEHOLDER_EXPRs and pick up the outermost
+     object that we could have a pointer to.  */
   if (! TYPE_P (t))
     {
-      while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
-	     || TREE_CODE (t) == NON_LVALUE_EXPR)
-	t = TREE_OPERAND (t, 0);
+      /* Remove any NOPs and see what any PLACEHOLD_EXPRs will expand to.  */
+      while (((TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR)
+	      && (TYPE_MODE (TREE_TYPE (t))
+		  == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0)))))
+	     || TREE_CODE (t) == NON_LVALUE_EXPR
+	     || TREE_CODE (t) == PLACEHOLDER_EXPR
+	     || (handled_component_p (t) && ! can_address_p (t)))
+	{
+	  /* Give the language a chance to do something with this tree
+	     before we go inside it.  */
+	  if ((set = lang_get_alias_set (t)) != -1)
+	    return set;
+
+	  if (TREE_CODE (t) == PLACEHOLDER_EXPR)
+	    t = find_placeholder (t, 0);
+	  else
+	    t = TREE_OPERAND (t, 0);
+	}
 
       /* Now give the language a chance to do something but record what we
 	 gave it this time.  */
@@ -487,15 +503,9 @@ get_alias_set (t)
       if ((set = lang_get_alias_set (t)) != -1)
 	return set;
 
-      /* Now loop the same way as get_inner_reference and get the alias
-	 set to use.  Pick up the outermost object that we could have
-	 a pointer to.  */
-      while (handled_component_p (t) && ! can_address_p (t))
-	t = TREE_OPERAND (t, 0);
-
+      /* Check for accesses through restrict-qualified pointers.  */
       if (TREE_CODE (t) == INDIRECT_REF)
 	{
-	  /* Check for accesses through restrict-qualified pointers.  */
 	  tree decl = find_base_decl (TREE_OPERAND (t, 0));
 
 	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
@@ -586,6 +596,11 @@ record_alias_subset (superset, subset)
 {
   alias_set_entry superset_entry;
   alias_set_entry subset_entry;
+
+  /* It is possible in complex type situations for both sets to be the same,
+     in which case we can ignore this operation.  */
+  if (superset == subset)
+    return;
 
   if (superset == 0)
     abort ();
