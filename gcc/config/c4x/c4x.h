@@ -232,7 +232,7 @@
 
 extern int target_flags;
 
-#define TARGET_INLINE		1 /* Inline MPYI.  */
+#define TARGET_INLINE		(! optimize_size) /* Inline MPYI.  */
 #define TARGET_PARALLEL	        1 /* Enable parallel insns in MD.  */
 #define TARGET_SMALL_REG_CLASS	0
 
@@ -1444,6 +1444,39 @@ CUMULATIVE_ARGS;
 #define FIXUNS_TRUNCHFHI2_LIBCALL "__ufix_trunchfhi2"
 
 #define FFS_LIBCALL	    "__ffs"
+
+
+#define INIT_TARGET_OPTABS \
+  do { \
+    smul_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (MULQI3_LIBCALL);		\
+    sdiv_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (DIVQI3_LIBCALL);		\
+    udiv_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (UDIVQI3_LIBCALL);		\
+    smod_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (MODQI3_LIBCALL);		\
+    umod_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (UMODQI3_LIBCALL);		\
+    flodiv_optab->handlers[(int) QFmode].libfunc	\
+      = init_one_libfunc (DIVQF3_LIBCALL);		\
+    smul_optab->handlers[(int) HFmode].libfunc		\
+      = init_one_libfunc (MULHF3_LIBCALL);		\
+    flodiv_optab->handlers[(int) HFmode].libfunc	\
+      = init_one_libfunc (DIVHF3_LIBCALL);		\
+    smul_optab->handlers[(int) HImode].libfunc		\
+      = init_one_libfunc (MULHI3_LIBCALL);		\
+    sdiv_optab->handlers[(int) HImode].libfunc		\
+      = init_one_libfunc (DIVHI3_LIBCALL);		\
+    udiv_optab->handlers[(int) HImode].libfunc		\
+      = init_one_libfunc (UDIVHI3_LIBCALL);		\
+    smod_optab->handlers[(int) HImode].libfunc		\
+      = init_one_libfunc (MODHI3_LIBCALL);		\
+    umod_optab->handlers[(int) HImode].libfunc		\
+      = init_one_libfunc (UMODHI3_LIBCALL);		\
+    ffs_optab->handlers[(int) QImode].libfunc		\
+      = init_one_libfunc (FFS_LIBCALL);			\
+  } while (0)
 
 #define TARGET_MEM_FUNCTIONS
 

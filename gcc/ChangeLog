@@ -1,3 +1,13 @@
+2000-01-06  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md(udivqi3, divqi3): Delete.
+	(umodqi3, modqi3, udivhi3, divhi3, umodhi3, modhi3, ffsqi2): Likewise.
+	(*smulqi3_highpart_noclobber, *umulqi3_highpart_noclobber): New.
+	(*lshrqi3_const_noclobber, *lshrqi3_nonconst_noclobber): Likewise.
+	(*ashrqi3_const_noclobber, *ashrqi3_nonconst_noclobber): Likewise.
+
+	* c4x.h (INIT_TARGET_OPTABS): Define to init libcalls.
+
 2000-01-05 11:25 -0800  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* c-decl.c (finish_enum): Simplify code to determine minimum and

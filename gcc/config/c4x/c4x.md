@@ -1892,14 +1892,14 @@
   "*
    if (IS_STD_REG (operands[0]))
      {
-       if (which_alternative == 0)
+       if (which_alternative == 0 || which_alternative == 3)
 	 return \"addi\\t%2,%0\";
        else
 	 return \"addi3\\t%2,%1,%0\";
      }
    else
      {
-       if (which_alternative == 0)
+       if (which_alternative == 0 || which_alternative == 3)
 	 return \"push\\tst\\n\\taddi\\t%2,%0\\n\\tpop\\tst\";
        else
 	 return \"push\\tst\\n\\taddi3\\t%2,%1,%0\\n\\tpop\\tst\";
@@ -2333,6 +2333,22 @@
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "int16,int16,int16,int16,int16,int16")])
 
+(define_insn "*smulqi3_highpart_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (truncate:QI 
+         (lshiftrt:HI
+          (mult:HI
+           (sign_extend:HI (match_operand:QI 1 "src_operand" "0,rR,rS<>"))
+           (sign_extend:HI (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))
+      (const_int 32))))]
+  "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
+  "@
+   mpyshi\\t%2,%0
+   mpyshi3\\t%2,%1,%0
+   mpyshi3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")
+   (set_attr "data" "int16,int16,int16")])
+
 ;
 ; MPYUHI (C4x only)
 ;
@@ -2373,6 +2389,22 @@
    mpyuhi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "uint16,uint16,uint16,uint16,uint16,uint16")])
+
+(define_insn "*umulqi3_highpart_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (truncate:QI
+         (lshiftrt:HI
+          (mult:HI 
+           (zero_extend:HI (match_operand:QI 1 "src_operand" "0,rR,rS<>"))
+           (zero_extend:HI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>")))
+          (const_int 32))))]
+  "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
+  "@
+   mpyuhi\\t%2,%0
+   mpyuhi3\\t%2,%1,%0
+   mpyuhi3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")
+   (set_attr "data" "uint16,uint16,uint16")])
 
 ;
 ; AND
@@ -2925,7 +2957,17 @@
    lsh\\t%n2,%0
    lsh3\\t%n2,%1,%0
    lsh3\\t%n2,%1,%0"
-  [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
+  [(set_attr "type" "binarycc,binary,binarycc,binary")])
+
+(define_insn "*lshrqi3_const_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,?c")
+        (lshiftrt:QI (match_operand:QI 1 "src_operand" "0,r")
+                     (match_operand:QI 2 "const_int_operand" "n,J")))]
+  "valid_operands (LSHIFTRT, operands, QImode)"
+  "@
+   lsh\\t%n2,%0
+   lsh3\\t%n2,%1,%0"
+  [(set_attr "type" "binary,binary")])
 
 ; When the shift count is greater than the size of the word
 ; the result can be implementation specific
@@ -2960,6 +3002,18 @@
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
+(define_insn "*lshrqi3_nonconst_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (lshiftrt:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>")
+                     (neg:QI (match_operand:QI 2 "src_operand" "rm,R,rS<>"))))]
+  "valid_operands (LSHIFTRT, operands, QImode)"
+  "@
+   lsh\\t%2,%0
+   lsh3\\t%2,%1,%0
+   lsh3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")])
+; Default to int16 data attr.
+
 ;
 ; ASH (right)
 ;
@@ -2988,7 +3042,17 @@
    ash\\t%n2,%0
    ash3\\t%n2,%1,%0
    ash3\\t%n2,%1,%0"
-  [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
+  [(set_attr "type" "binarycc,binary,binarycc,binary")])
+
+(define_insn "*ashrqi3_const_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,?c")
+        (ashiftrt:QI (match_operand:QI 1 "src_operand" "0,r")
+                     (match_operand:QI 2 "const_int_operand" "n,J")))]
+  "valid_operands (ASHIFTRT, operands, QImode)"
+  "@
+   ash\\t%n2,%0
+   ash3\\t%n2,%1,%0"
+  [(set_attr "type" "binarycc,binarycc")])
 
 ; When the shift count is greater than the size of the word
 ; the result can be implementation specific
@@ -3021,6 +3085,18 @@
    ash3\\t%2,%1,%0
    ash3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
+; Default to int16 data attr.
+
+(define_insn "*ashrqi3_nonconst_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (ashiftrt:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>")
+                     (neg:QI (match_operand:QI 2 "src_operand" "rm,R,rS<>"))))]
+  "valid_operands (ASHIFTRT, operands, QImode)"
+  "@
+   ash\\t%2,%0
+   ash3\\t%2,%1,%0
+   ash3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")])
 ; Default to int16 data attr.
 
 ;
@@ -3068,49 +3144,6 @@
    cmpi3\\t%1,%0"
   [(set_attr "type" "compare,compare,compare")])
 
-(define_expand "udivqi3"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
-                   (udiv:QI (match_operand:QI 1 "src_operand" "")
-                            (match_operand:QI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (UDIVQI3_LIBCALL, UDIV, QImode, operands);
-   DONE;")
-
-(define_expand "divqi3"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
-                   (div:QI (match_operand:QI 1 "src_operand" "")
-                            (match_operand:QI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (DIVQI3_LIBCALL, DIV, QImode, operands);
-   DONE;")
-
-(define_expand "umodqi3"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
-                   (umod:QI (match_operand:QI 1 "src_operand" "")
-                            (match_operand:QI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (UMODQI3_LIBCALL, UMOD, QImode, operands);
-   DONE;")
-
-(define_expand "modqi3"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
-                   (mod:QI (match_operand:QI 1 "src_operand" "")
-                           (match_operand:QI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (MODQI3_LIBCALL, MOD, QImode, operands);
-   DONE;")
-
-(define_expand "ffsqi2"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
-                   (ffs:QI (match_operand:QI 1 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall (FFS_LIBCALL, FFS, QImode, QImode, 2, operands);
-   DONE;")
 
 ;
 ; BIT-FIELD INSTRUCTIONS
@@ -3832,15 +3865,9 @@
   [(parallel [(set (match_operand:QF 0 "reg_operand" "")
                    (sqrt:QF (match_operand:QF 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
-  ""
-  "if (TARGET_C3X || ! TARGET_INLINE)
-     FAIL;
-   else
-     {
-       emit_insn (gen_sqrtqf2_inline (operands[0], operands[1]));
-       DONE;
-     }
-  ")
+  "! TARGET_C3X && TARGET_INLINE"
+  "emit_insn (gen_sqrtqf2_inline (operands[0], operands[1]));
+   DONE;")
 
 ;
 ; THREE OPERAND FLOAT INSTRUCTIONS
@@ -4074,18 +4101,9 @@
                    (div:QF (match_operand:QF 1 "src_operand" "")
                             (match_operand:QF 2 "src_operand" "")))
               (clobber (reg:CC 21))])]
-  ""
-  "if (TARGET_C3X || ! TARGET_INLINE)
-     {
-       c4x_emit_libcall3 (DIVQF3_LIBCALL, DIV, QFmode, operands);
-       DONE;
-     }
-   else
-     {
-       emit_insn (gen_divqf3_inline (operands[0], operands[1], operands[2]));
-       DONE;
-     }
-  ")
+  "! TARGET_C3X && TARGET_INLINE"
+  "emit_insn (gen_divqf3_inline (operands[0], operands[1], operands[2]));
+   DONE;")
 
 ;
 ; CONDITIONAL MOVES
@@ -5890,15 +5908,10 @@
   [(parallel [(set (match_operand:HF 0 "reg_operand" "")
                    (sqrt:HF (match_operand:HF 1 "reg_operand" "")))
               (clobber (reg:CC 21))])]
-  ""
-  "if (TARGET_C3X || ! TARGET_INLINE)
-     FAIL;
-   else
-     {
-       emit_insn (gen_sqrthf2_inline (operands[0], operands[1]));
-       DONE;
-     }
-  ")
+  "! TARGET_C3X && TARGET_INLINE"
+  "emit_insn (gen_sqrthf2_inline (operands[0], operands[1]));
+   DONE;")
+
 
 (define_expand "fix_trunchfhi2"
   [(parallel [(set (match_operand:HI 0 "reg_operand" "")
@@ -5960,13 +5973,8 @@
                    (mult:HF (match_operand:HF 1 "reg_operand" "h")
                             (match_operand:HF 2 "reg_operand" "h")))
               (clobber (reg:CC_NOOV 21))])]
-  ""
-  "if (TARGET_C3X)
-     {
-       c4x_emit_libcall3 (MULHF3_LIBCALL, MULT, HFmode, operands);
-       DONE;
-     }
-  ")
+  "! TARGET_C3X"
+  "")
 
 (define_insn "*mulhf3_c40"
   [(set (match_operand:HF 0 "reg_operand" "=h,?h")
@@ -6040,18 +6048,9 @@
                    (div:HF (match_operand:HF 1 "reg_operand" "")
                            (match_operand:HF 2 "reg_operand" "")))
               (clobber (reg:CC 21))])]
-  ""
-  "if (TARGET_C3X || ! TARGET_INLINE)
-     {
-       c4x_emit_libcall3 (DIVHF3_LIBCALL, DIV, HFmode, operands);
-       DONE;
-     }
-   else
-     {
-       emit_insn (gen_divhf3_inline (operands[0], operands[1], operands[2]));
-       DONE;
-     }
-  ")
+  "! TARGET_C3X && TARGET_INLINE"
+  "emit_insn (gen_divhf3_inline (operands[0], operands[1], operands[2]));
+   DONE;")
 
 
 ;
@@ -6863,41 +6862,6 @@
   "c4x_emit_libcall3 (MULHI3_LIBCALL, MULT, HImode, operands);
    DONE;")
 
-(define_expand "udivhi3"
-  [(parallel [(set (match_operand:HI 0 "reg_operand" "")
-                   (udiv:HI (match_operand:HI 1 "src_operand" "")
-                            (match_operand:HI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (UDIVHI3_LIBCALL, UDIV, HImode, operands);
-   DONE;")
-
-(define_expand "divhi3"
-  [(parallel [(set (match_operand:HI 0 "reg_operand" "")
-                   (div:HI (match_operand:HI 1 "src_operand" "")
-                            (match_operand:HI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (DIVHI3_LIBCALL, DIV, HImode, operands);
-   DONE;")
-
-(define_expand "umodhi3"
-  [(parallel [(set (match_operand:HI 0 "reg_operand" "")
-                   (umod:HI (match_operand:HI 1 "src_operand" "")
-                            (match_operand:HI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (UMODHI3_LIBCALL, UMOD, HImode, operands);
-   DONE;")
-
-(define_expand "modhi3"
-  [(parallel [(set (match_operand:HI 0 "reg_operand" "")
-                   (mod:HI (match_operand:HI 1 "src_operand" "")
-                            (match_operand:HI 2 "src_operand" "")))
-              (clobber (reg:CC 21))])]
-  ""
-  "c4x_emit_libcall3 (MODHI3_LIBCALL, MOD, HImode, operands);
-   DONE;")
 
 ;
 ; PEEPHOLES
