@@ -149,8 +149,15 @@ struct lang_type
    an explicit loop over that iterator.  */
 #define ITERATOR_BOUND_P(NODE) ((NODE)->common.readonly_flag)
 
-extern int maybe_objc_comptypes                 PROTO((tree, tree));
+/* in c-lang.c and objc-act.c */
+extern tree lookup_interface			PROTO((tree));
+extern tree is_class_name			PROTO((tree));
+extern void maybe_objc_check_decl		PROTO((tree));
+extern int maybe_objc_comptypes                 PROTO((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PROTO((void));
+extern tree maybe_objc_method_name		PROTO((tree));
+extern int recognize_objc_keyword		PROTO((void));
+extern tree build_objc_string			PROTO((int, char *));
 
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PROTO((tree, int, int, int));
@@ -168,7 +175,6 @@ extern void constant_expression_warning         PROTO((tree));
 extern void decl_attributes                     PROTO((tree, tree));
 extern void declare_function_name               PROTO((void));
 extern tree convert_and_check			PROTO((tree, tree));
-extern void constant_expression_warning		PROTO((tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
 /* Read the rest of the current #-directive line.  */
@@ -433,5 +439,9 @@ extern int (*comptypes_record_hook) ();
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
+
+/* Nonzero enables objc features.  */
+
+extern int doing_objc_thang;
 
 #endif /* not _C_TREE_H */
