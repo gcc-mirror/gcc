@@ -1,3 +1,7 @@
+2002-04-28  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/check.tpl(set-writable): verify that it exists before invoking.
+
 2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR c/6343

@@ -171,6 +171,6 @@ else
 fi
 $exitok[=
 
-(set-writable)
+(if (procedure? 'set-writable) (set-writable))
 
 =]
