@@ -266,6 +266,7 @@ enum dump_file_index
   DFI_bp,
   DFI_ce1,
   DFI_tracer,
+  DFI_web,
   DFI_loop2,
   DFI_cse2,
   DFI_life,
@@ -295,7 +296,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"            m   q         "
-	"         JK   O Q    V  YZ"
+	"         JK   O Q    V  Y "
 */
 
 static struct dump_file_info dump_file[DFI_MAX] =
@@ -319,6 +320,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "bp",	'b', 1, 0, 0 },
   { "ce1",	'C', 1, 0, 0 },
   { "tracer",	'T', 1, 0, 0 },
+  { "web",      'Z', 0, 0, 0 },
   { "loop2",	'L', 1, 0, 0 },
   { "cse2",	't', 1, 0, 0 },
   { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
@@ -653,6 +655,10 @@ int flag_complex_divide_method = 0;
 /* Nonzero means just do syntax checking; don't output anything.  */
 
 int flag_syntax_only = 0;
+
+/* Nonzero means performs web construction pass.  */
+
+int flag_web;
 
 /* Nonzero means perform loop optimizer.  */
 
@@ -1065,6 +1071,7 @@ static const lang_independent_options f_options[] =
   {"pcc-struct-return", &flag_pcc_struct_return, 1 },
   {"reg-struct-return", &flag_pcc_struct_return, 0 },
   {"delayed-branch", &flag_delayed_branch, 1 },
+  {"web", &flag_web, 1},
   {"gcse", &flag_gcse, 1 },
   {"gcse-lm", &flag_gcse_lm, 1 },
   {"gcse-sm", &flag_gcse_sm, 1 },
@@ -2427,6 +2434,20 @@ rest_of_handle_if_after_combine (tree decl, rtx insns)
   timevar_pop (TV_IFCVT);
 }
 
+static void
+rest_of_handle_web (tree decl, rtx insns)
+{
+  open_dump_file (DFI_web, decl);
+  timevar_push (TV_WEB);
+  web_main ();
+  delete_trivially_dead_insns (insns, max_reg_num ());
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  timevar_pop (TV_WEB);
+  close_dump_file (DFI_web, print_rtl_with_bb, insns);
+  reg_scan (get_insns (), max_reg_num (), 0);
+}
+
 /* Do branch profiling and static profile estimation passes.  */
 static void
 rest_of_handle_branch_prob (tree decl, rtx insns)
@@ -3312,6 +3333,9 @@ rest_of_compilation (tree decl)
   timevar_push (TV_FLOW);
 
   rest_of_handle_cfg (decl, insns);
+
+  if (flag_web)
+    rest_of_handle_web (decl, insns);
 
   if (optimize > 0
       || profile_arc_flag || flag_test_coverage || flag_branch_probabilities)

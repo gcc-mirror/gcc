@@ -715,6 +715,10 @@ fverbose-asm
 Common
 Add extra commentary to assembler output
 
+fweb
+Common
+Construct webs and split unrelated uses of single variable
+
 fwrapv
 Common
 Assume signed arithmetic overflow wraps around
