@@ -417,7 +417,7 @@ save_call_clobbered_regs ()
 		   int r = reg_renumber[regno];
 		   int nregs;
 
-		   if (r > 0)
+		   if (r >= 0)
 		     {
 		       enum machine_mode mode;
 
