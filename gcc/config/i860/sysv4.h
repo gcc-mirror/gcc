@@ -60,6 +60,55 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	fprintf (FILE, "]@%s", PART_CODE);				\
   } while (0)
 
+/* If the host and target formats match, output the floats as hex.  */
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+
+/* This is how to output an assembler line defining a `double' constant.
+   Note that the native i860/svr4 ELF assembler can't properly handle
+   infinity.  It generates an incorrect (non-infinity) value when given
+   `.double 99e9999' and it doesn't grok `inf' at all.  It also mishandles
+   NaNs and -0.0.  */
+
+#undef ASM_OUTPUT_DOUBLE
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t[2];							\
+	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+	fprintf (FILE, "\t.word 0x%lx\n\t.word 0x%lx\n", t[0], t[1]);	\
+      }									\
+    else								\
+      fprintf (FILE, "\t.double 0r%.17g\n", VALUE);			\
+  }
+
+/* This is how to output an assembler line defining a `float' constant.
+   Note that the native i860/svr4 ELF assembler can't properly handle
+   infinity.  It actually generates an assembly time error when given
+   `.float 99e9999' and it doesn't grok `inf' at all.  It also mishandles
+   NaNs and -0.0.  */
+
+#undef ASM_OUTPUT_FLOAT
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t;								\
+	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+	fprintf (FILE, "\t.word 0x%lx\n", t);				\
+      }									\
+    else								\
+      fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
+  }
+
+#endif /* word order matches */
+#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
+
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
   do {	output_file_directive (FILE, main_input_filename);		\
