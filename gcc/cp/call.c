@@ -3611,15 +3611,22 @@ build_op_delete_call (code, addr, size, flags, placement)
 
   if (placement)
     {
-      /* placement is a CALL_EXPR around an ADDR_EXPR around a function.  */
+      tree alloc_fn;
+      tree call_expr;
 
+      /* Find the allocation function that is being called. */
+      call_expr = placement;
+      /* Sometimes we have a COMPOUND_EXPR, rather than a simple
+	 CALL_EXPR. */
+      while (TREE_CODE (call_expr) == COMPOUND_EXPR)
+	call_expr = TREE_OPERAND (call_expr, 1);
       /* Extract the function.  */
-      argtypes = TREE_OPERAND (TREE_OPERAND (placement, 0), 0);
+      alloc_fn = get_callee_fndecl (call_expr);
+      my_friendly_assert (alloc_fn != NULL_TREE, 20020327);
       /* Then the second parm type.  */
-      argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (argtypes)));
-
+      argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
       /* Also the second argument.  */
-      args = TREE_CHAIN (TREE_OPERAND (placement, 1));
+      args = TREE_CHAIN (TREE_OPERAND (call_expr, 1));
     }
   else
     {
