@@ -340,7 +340,7 @@ for machine in $build $host $target; do
 		then
 			extra_programs=ld.exe
 		fi
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		;;
@@ -646,7 +646,7 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='mach'
 		fi
 		;;
@@ -788,7 +788,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
- 		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
  			thread_file='single'
  		fi
 		;;
@@ -801,7 +801,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
- 		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
  		fi
 		;;
@@ -917,7 +917,7 @@ for machine in $build $host $target; do
 		xmake_file=x-svr4
 		fixincludes=fixinc.svr4
 		broken_install=yes
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
 		;;
@@ -966,7 +966,7 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-cygwin32
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -978,7 +978,7 @@ for machine in $build $host $target; do
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin32
 		fixincludes=Makefile.in
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -996,7 +996,7 @@ for machine in $build $host $target; do
 		then
 			extra_programs=ld.exe
 		fi
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		;;
@@ -1349,7 +1349,7 @@ for machine in $build $host $target; do
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='mach'
 		fi
 		;;
@@ -1544,7 +1544,7 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='irix'
 		fi
 		;;
@@ -1557,7 +1557,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-cross64
 		# See comment in mips/iris[56].h files.
 		use_collect2=yes
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='irix'
 		fi
 		;;
@@ -1601,7 +1601,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-mips-gas
 		# See comment in mips/iris5.h file.
 		use_collect2=yes
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='irix'
 		fi
 		;;
@@ -1623,7 +1623,7 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='irix'
 		fi
 		;;
@@ -1645,7 +1645,7 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='irix'
 		fi
 		;;
@@ -2173,7 +2173,7 @@ for machine in $build $host $target; do
                 tmake_file=rs6000/t-winnt
 #               extra_objs=pe.o
 		fixincludes=Makefile.in
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		extra_headers=ppc-asm.h
@@ -2185,7 +2185,7 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-cygwin32
 #		extra_objs=pe.o
 		fixincludes=Makefile.in
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -2333,7 +2333,7 @@ for machine in $build $host $target; do
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		fixincludes=fixinc.svr4
 		broken_install=yes
-		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
 		;;
