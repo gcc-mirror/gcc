@@ -905,6 +905,10 @@ emit_stack_save (save_level, psave, after)
       break;
     }
 
+#ifdef STACK_SAVEAREA_MODE
+  mode = STACK_SAVEAREA_MODE (mode, save_level);
+#endif
+
   /* If there is no save area and we have to allocate one, do so.  Otherwise
      verify the save area is the proper mode.  */
 
