@@ -1,3 +1,9 @@
+2000-04-05  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR gcj/140:
+	* parse.y (check_final_assignment): Recognize assignments to the
+	`length' field of an array when generating class files.
+
 2000-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (decl_hash): Prototype removed.
