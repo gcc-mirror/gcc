@@ -993,7 +993,7 @@ do_compare (a, b, nan_result)
 
 /* Return A truncated to an integral value toward zero.  */
 
-void
+static void
 do_fix_trunc (r, a)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a;
@@ -2366,6 +2366,9 @@ encode_ieee_single (fmt, buf, r)
       image |= exp << 23;
       image |= sig;
       break;
+
+    default:
+      abort ();
     }
 
   buf[0] = image;
@@ -2516,6 +2519,9 @@ encode_ieee_double (fmt, buf, r)
       image_hi |= sig_hi;
       image_lo = sig_lo;
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -2746,6 +2752,9 @@ encode_ieee_extended (fmt, buf, r)
 	  }
       }
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3016,6 +3025,9 @@ encode_ieee_quad (fmt, buf, r)
 	  image2 &= 0xffffffff;
 	}
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3209,6 +3221,9 @@ encode_vax_f (fmt, buf, r)
       image |= exp << 7;
       image |= sig >> 16;
       break;
+
+    default:
+      abort ();
     }
 
   buf[0] = image;
@@ -3281,6 +3296,9 @@ encode_vax_d (fmt, buf, r)
       image0 |= sign;
       image0 |= (r->exp + 128) << 7;
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3382,6 +3400,9 @@ encode_vax_g (fmt, buf, r)
       image0 |= sign;
       image0 |= (r->exp + 1024) << 4;
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3529,6 +3550,9 @@ encode_i370_single (fmt, buf, r)
       exp = ((r->exp / 4) + 64) << 24;
       image = sign | exp | sig;
       break;
+
+    default:
+      abort ();
     }
 
   buf[0] = image;
@@ -3599,6 +3623,9 @@ encode_i370_double (fmt, buf, r)
       exp = ((r->exp / 4) + 64) << 24;
       image_hi |= sign | exp;
       break;
+
+    default:
+      abort ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3723,6 +3750,9 @@ encode_c4x_single (fmt, buf, r)
 	  sig |= 0x800000;
 	}
       break;
+
+    default:
+      abort ();
     }
 
   image = ((exp & 0xff) << 24) | (sig & 0xffffff);
@@ -3802,6 +3832,9 @@ encode_c4x_extended (fmt, buf, r)
 	  sig |= 0x80000000;
 	}
       break;
+
+    default:
+      abort ();
     }
 
   exp = (exp & 0xff) << 24;
