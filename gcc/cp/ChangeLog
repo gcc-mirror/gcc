@@ -1,5 +1,8 @@
 2000-12-22  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (genrtl_finish_function): Don't try to jump to
+	return_label unless it exists.
+
 	In partial ordering for a call, ignore parms for which we don't have
 	a real argument.
 	* call.c (joust): Pass len to more_specialized.
