@@ -2352,14 +2352,15 @@ do { ip = &instack[indepth];		\
 
       while (1) {
 	if (ibp >= limit) {
-	  if (traditional) {
-	    if (ip->macro != 0) {
-	      /* try harder: this string crosses a macro expansion boundary */
-	      POPMACRO;
-	      RECACHE;
-	      continue;
-	    }
-	  } else {
+	  if (ip->macro != 0) {
+	    /* try harder: this string crosses a macro expansion boundary.
+	       This can happen naturally if -traditional.
+	       Otherwise, only -D can make a macro with an unmatched quote.  */
+	    POPMACRO;
+	    RECACHE;
+	    continue;
+	  }
+	  if (!traditional) {
 	    error_with_line (line_for_error (start_line),
 			     "unterminated string or character constant");
 	    error_with_line (multiline_string_line,
@@ -5220,8 +5221,10 @@ collect_expansion (buf, end, nargs, arglist)
       *exp_p++ = '\n';
       *exp_p++ = *limit++;
     }
-  } else if (!traditional) {
-    /* There is no trailing whitespace, so invent some.  */
+  } else if (!traditional && expected_delimiter == 0) {
+    /* There is no trailing whitespace, so invent some in ANSI mode.
+       But not if "inside a string" (which in ANSI mode
+       happens only for -D option).  */
     *exp_p++ = '\n';
     *exp_p++ = ' ';
   }
