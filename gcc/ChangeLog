@@ -6,6 +6,9 @@ Tue Jul 14 14:15:30 1998  Nick Clifton  <nickc@cygnus.com>
 
 Tue Jul 14 14:46:08 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in: Rework gas feature code to work with symlink based
+	source trees.
+
 	* extend.texi: Clarify some issues related to local variables
 	assigned to explicit registers.
 
