@@ -994,6 +994,37 @@ compare_case_labels (const void *p1, const void *p2)
   return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
 }
 
+/* Sort the case labels in LABEL_VEC in ascending order.  */
+
+void
+sort_case_labels (tree label_vec)
+{
+  size_t len = TREE_VEC_LENGTH (label_vec);
+  tree default_case = TREE_VEC_ELT (label_vec, len - 1);
+
+  if (CASE_LOW (default_case))
+    {
+      size_t i;
+
+      /* The last label in the vector should be the default case
+         but it is not.  */
+      for (i = 0; i < len; ++i)
+	{
+	  tree t = TREE_VEC_ELT (label_vec, i);
+	  if (!CASE_LOW (t))
+	    {
+	      default_case = t;
+	      TREE_VEC_ELT (label_vec, i) = TREE_VEC_ELT (label_vec, len - 1);
+	      TREE_VEC_ELT (label_vec, len - 1) = default_case;
+	      break;
+	    }
+	}
+    }
+
+  qsort (&TREE_VEC_ELT (label_vec, 0), len - 1, sizeof (tree),
+	 compare_case_labels);
+}
+
 /* Gimplify a SWITCH_EXPR, and collect a TREE_VEC of the labels it can
    branch to.  */
 
@@ -1057,11 +1088,11 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
       else
 	*expr_p = SWITCH_BODY (switch_expr);
 
-      qsort (&VARRAY_TREE (labels, 0), len, sizeof (tree),
-	     compare_case_labels);
       for (i = 0; i < len; ++i)
 	TREE_VEC_ELT (label_vec, i) = VARRAY_TREE (labels, i);
       TREE_VEC_ELT (label_vec, len) = default_case;
+
+      sort_case_labels (label_vec);
 
       SWITCH_BODY (switch_expr) = NULL;
     }
