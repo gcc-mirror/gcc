@@ -1,3 +1,7 @@
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
+	* Makefile.in: Replace PWD with PWD_COMMAND.
+
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* libU77/bes.c, libU77/dbes.c: Remove.

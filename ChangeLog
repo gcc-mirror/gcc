@@ -1,3 +1,8 @@
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
+	* Makefile.tpl: Replace PWD with PWD_COMMAND.
+	* Makefile.in: Regenerated.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* intl: New directory; see intl/ChangeLog for details.

@@ -156,7 +156,7 @@ treelang.dvi: $(srcdir)/treelang/treelang.texi \
 	 $(srcdir)/doc/include/gpl.texi \
 	 $(srcdir)/doc/include/fdl.texi \
 	 $(srcdir)/doc/include/funding.texi
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	cd treelang && $(TEXI2DVI) -I $$s/doc/include $$s/treelang/treelang.texi
 
 treelang.generated-manpages:
@@ -293,23 +293,23 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 # patch files for new empty files as required for cvs.
 # STAMP does not cut it here as I need an empty file.
 	touch $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
-	-rootme=`${PWD}`; export rootme; \
-	srcdir=`cd ${srcdir}; ${PWD}` ; export srcdir ; \
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	TRANSFORM=$(program_transform_name); export TRANSFORM; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD}` ; \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	   export TCL_LIBRARY ; fi ; \
-	PATH=`cd ..;${PWD}`:$$PATH; export PATH; \
-	gcc_extras="-B`cd ..;${PWD}` -B`cd ..;${PWD}`/treelang"; export gcc_extras; \
+	PATH=`cd ..;${PWD_COMMAND}`:$$PATH; export PATH; \
+	gcc_extras="-B`cd ..;${PWD_COMMAND}` -B`cd ..;${PWD_COMMAND}`/treelang"; export gcc_extras; \
 	$(RUNTEST) --tool treelang $(RUNTESTFLAGS)
 	rm $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
 #	GCC_EXTRAS="$(GCC_EXTRAS)"; export GCC_EXTRAS; \
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force
-	srcdir=`cd ${srcdir}; ${PWD}` ; export srcdir ;
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ;
 	-cp testsuite/treelang/*.out* t
 	-cp testsuite/treelang/*runpgm* t
 	-rm -f t/*nofilename

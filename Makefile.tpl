@@ -142,7 +142,9 @@ SHELL = @config_shell@
 # the environment to account for automounters.  The make variable must not
 # be called PWDCMD, otherwise the value set here is passed to make
 # subprocesses and overrides the setting from the user's environment.
-PWD = $${PWDCMD-pwd}
+# Don't use PWD since it is a common shell environment variable and we
+# don't want to corrupt it.
+PWD_COMMAND = $${PWDCMD-pwd}
 
 # compilers to use to create programs which must be run in the build
 # environment.
@@ -534,8 +536,8 @@ maybe-[+make_target+]-gcc:
     [+depend+]-gcc [+
   ENDFOR depend +]
 	@[ -f ./gcc/Makefile ] || exit 0; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	for flag in $(EXTRA_GCC_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
@@ -562,8 +564,8 @@ maybe-[+make_target+]-[+module+]:
     [+depend+]-[+module+] [+
   ENDFOR depend +]
 	@[ -f ./[+module+]/Makefile ] || exit 0; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	for flag in $(EXTRA_HOST_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
@@ -592,8 +594,8 @@ maybe-[+make_target+]-target-[+module+]:
     [+depend+]-target-[+module+] [+
   ENDFOR depend +]
 	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Doing [+make_target+] in $(TARGET_SUBDIR)/[+module+]" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
@@ -624,7 +626,7 @@ dvi: do-dvi
 do-info: maybe-all-texinfo
 
 install-info: do-install-info dir.info
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if [ -f dir.info ] ; then \
 	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info ; \
 	else true ; fi
@@ -729,7 +731,7 @@ uninstall:
 .PHONY: install.all
 install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
-		r=`${PWD}` ; export r ; \
+		r=`${PWD_COMMAND}` ; export r ; \
 		$(SET_LIB_PATH) \
 		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
@@ -783,8 +785,8 @@ configure-build-[+module+]:
 	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
 	[ -d $(BUILD_SUBDIR)/[+module+] ] || \
 	  mkdir $(BUILD_SUBDIR)/[+module+];\
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	AR="$(AR_FOR_BUILD)"; export AR; \
 	AS="$(AS_FOR_BUILD)"; export AS; \
 	CC="$(CC_FOR_BUILD)"; export CC; \
@@ -842,8 +844,8 @@ configure-build-[+module+]:
 .PHONY: all-build-[+module+] maybe-all-build-[+module+]
 maybe-all-build-[+module+]:
 all-build-[+module+]: configure-build-[+module+]
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
 [+ ENDFOR build_modules +]
 
@@ -856,8 +858,8 @@ maybe-configure-[+module+]:
 configure-[+module+]:
 	@test ! -f [+module+]/Makefile || exit 0; \
 	[ -d [+module+] ] || mkdir [+module+]; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
@@ -892,8 +894,8 @@ configure-[+module+]:
 .PHONY: all-[+module+] maybe-all-[+module+]
 maybe-all-[+module+]:
 all-[+module+]: configure-[+module+]
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
@@ -908,8 +910,8 @@ check-[+module+]:
 # This module is only tested in a native toolchain.
 check-[+module+]:
 	@if [ '$(host)' = '$(target)' ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
@@ -918,8 +920,8 @@ check-[+module+]:
 	fi
 [+ ELSE check +]
 check-[+module+]:
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
@@ -933,8 +935,8 @@ maybe-install-[+module+]:
 install-[+module+]:
 [+ ELSE install +]
 install-[+module+]: installdirs
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
@@ -961,8 +963,8 @@ configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
 	[ -d $(TARGET_SUBDIR)/[+module+] ] || \
 	  mkdir $(TARGET_SUBDIR)/[+module+];\
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
 	AS="$(AS_FOR_TARGET)"; export AS; \
@@ -1027,8 +1029,8 @@ ENDIF raw_cxx +]
 .PHONY: all-target-[+module+] maybe-all-target-[+module+]
 maybe-all-target-[+module+]:
 all-target-[+module+]: configure-target-[+module+]
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
@@ -1044,8 +1046,8 @@ maybe-check-target-[+module+]:
 check-target-[+module+]:
 [+ ELSE check +]
 check-target-[+module+]:
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
@@ -1062,8 +1064,8 @@ maybe-install-target-[+module+]:
 install-target-[+module+]:
 [+ ELSE install +]
 install-target-[+module+]: installdirs
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
@@ -1084,8 +1086,8 @@ maybe-configure-gcc:
 configure-gcc:
 	@test ! -f gcc/Makefile || exit 0; \
 	[ -d gcc ] || mkdir gcc; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
@@ -1125,13 +1127,13 @@ configure-gcc:
 maybe-all-gcc:
 all-gcc: configure-gcc
 	@if [ -f gcc/stage_last ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
 	else \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	fi
@@ -1149,13 +1151,13 @@ all-gcc: configure-gcc
 GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
 .PHONY: $(GCC_STRAP_TARGETS)
 $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	case "$@" in \
 	  *bootstrap4-lean ) \
 	    msg="Comparing stage3 and stage4 of the compiler"; \
@@ -1173,38 +1175,38 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	$(SET_LIB_PATH) \
 	echo "$$msg"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}` ; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
 
 profiledbootstrap: all-bootstrap configure-gcc
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}` ; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries and training compiler"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building feedback based compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}` ; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
@@ -1214,8 +1216,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 maybe-check-gcc:
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \
@@ -1225,8 +1227,8 @@ check-gcc:
 .PHONY: check-gcc-c++
 check-gcc-c++:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
@@ -1241,8 +1243,8 @@ check-c++:
 maybe-install-gcc:
 install-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
@@ -1261,8 +1263,8 @@ gcc-no-fixedincludes:
 	  cp $(srcdir)/gcc/gsyslimits.h gcc/include/syslimits.h; \
 	  touch gcc/stmp-fixinc gcc/include/fixed; \
 	  rm -f gcc/stmp-headers gcc/stmp-int-hdrs; \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}` ; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd ./gcc && \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
@@ -1406,7 +1408,7 @@ configure-target-qthreads: $(ALL_GCC_C)
 # We use move-if-change so that it's only considered updated when it
 # actually changes, because it has to depend on a phony target.
 multilib.out: maybe-all-gcc
-	@r=`${PWD}`; export r; \
+	@r=`${PWD_COMMAND}`; export r; \
 	echo "Checking multilib configuration..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
 	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \

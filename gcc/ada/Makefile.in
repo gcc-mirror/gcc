@@ -115,7 +115,7 @@ RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 SHELL = @SHELL@
-PWD = $${PWDCMD-pwd}
+PWD_COMMAND = $${PWDCMD-pwd}
 # How to copy preserving the date
 INSTALL_DATA_DATE = cp -p
 MAKEINFO = makeinfo
@@ -187,10 +187,10 @@ host_canonical=@host@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-fsrcdir := $(shell cd $(srcdir);${PWD})
-fsrcpfx := $(shell cd $(srcdir);${PWD})/
-fcurdir := $(shell ${PWD})
-fcurpfx := $(shell ${PWD})/
+fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
+fsrcpfx := $(shell cd $(srcdir);${PWD_COMMAND})/
+fcurdir := $(shell ${PWD_COMMAND})
+fcurpfx := $(shell ${PWD_COMMAND})/
 
 # Top build directory, relative to here.
 top_builddir = ..

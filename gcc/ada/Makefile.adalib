@@ -42,11 +42,11 @@
 # updating the value of the environment variable ADA_OBJECTS_PATH
 
 SHELL=sh
-PWD=$${PWDCMD-pwd}
+PWD_COMMAND=$${PWDCMD-pwd}
 
 CC = gcc
 AR = ar
-GNAT_ROOT = $(shell cd $(ROOT);${PWD})/
+GNAT_ROOT = $(shell cd $(ROOT);${PWD_COMMAND})/
 target = $(shell $(CC) -dumpmachine)
 version = $(shell $(CC) -dumpversion)
 ADA_INCLUDE_PATH = $(GNAT_ROOT)lib/gcc-lib/$(target)/$(version)/adainclude/
