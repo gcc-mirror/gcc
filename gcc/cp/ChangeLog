@@ -1,3 +1,8 @@
+Mon May 15 11:46:29 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* semantics.c (begin_class_definition): make the packed
+	attribute be sensitive to the "-fpack-struct" command line flag
+
 2000-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (sort_member_init): Fix typo in error message generation
