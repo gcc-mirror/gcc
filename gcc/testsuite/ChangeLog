@@ -1,3 +1,8 @@
+2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/5909:
+	* README.ada, ada/acats: Import ACATS 2.5 for GCC Ada test suite.
+
 2003-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20031023-1.c: New test.
