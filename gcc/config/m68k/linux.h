@@ -97,8 +97,20 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#define CPP_PREDEFINES \
-  "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix -Acpu=m68k -Amachine=m68k"
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("mc68000");		\
+	builtin_define_std ("mc68020");		\
+	builtin_define_std ("linux");		\
+	builtin_define_std ("unix");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=posix");	\
+   }						\
+  while (0)
 
 #undef CPP_SPEC
 #ifdef USE_GNULIBC_1

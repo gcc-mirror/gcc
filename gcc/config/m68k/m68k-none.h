@@ -87,11 +87,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 #endif
 
-/* Always define mc68000.
-   Remember that GCC will automatically add __mc68000 and __mc68000__.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000"
-
 /* Define __HAVE_68881__ or nothing (soft float), appropriately.  */
 #undef CPP_FPU_SPEC
 #if TARGET_DEFAULT & MASK_68881

@@ -1,5 +1,12 @@
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/m68k/hp320.h, config/m68k/linux.h, config/m68k/m68k-none.h,
+	config/m68k/m68k.h, config/m68k/m68kemb.h, config/m68k/m68kv4.h,
+	config/m68k/openbsd.h, config/m68k/rtemself.h: Remove CPP_PREDEFINES,
+	use TARGET_OS_CPP_BUILTINS and TARGET_CPU_CPP_BUILTINS instead.
+
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
 	PR c/9209
 	* c-common.c, c-common.h (dollars_in_ident): Remove.
 	* c-opts.c (DOLLARS_IN_IDENTIFIERS): Default to true.

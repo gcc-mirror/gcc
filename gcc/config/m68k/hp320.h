@@ -125,12 +125,21 @@ Boston, MA 02111-1307, USA.  */
 /* Translate -static for HPUX linker.  */
 #define LINK_SPEC "%{static:-a archive}"
 
-/* Names to predefine in the preprocessor for this target machine
-   (for non-strict-ANSI programs only).  */
-/* These are the ones defined by HPUX cc, plus mc68000 for uniformity with
-   GCC on other 68000 systems.  */
 
-#define CPP_PREDEFINES "-Dhp9000s200 -Dhp9000s300 -DPWB -Dhpux -Dunix -D__hp9000s300 -D__hp9000s200 -D__PWB -D__hpux -D__unix -D__motorola__ -Asystem=unix -Asystem=hpux -Acpu=m68k -Amachine=m68k"
+/* Target OS builtins.  These are the ones defined by HPUX cc.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("hp9000s200");	\
+	builtin_define_std ("hp9000s300");	\
+	builtin_define_std ("hpux");		\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("PWB");		\
+	builtin_define ("__motorola__");	\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=hpux");		\
+    }						\
+  while (0)
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

@@ -18,6 +18,17 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__unix__");		\
+	builtin_define ("__OpenBSD__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=OpenBSD");	\
+   }						\
+  while (0)
+
 /* m68k is an old configuration that does not yet use the TARGET_CPU_DEFAULT
    framework.  */
 #define TARGET_DEFAULT (MASK_BITFIELD | MASK_68881 | MASK_68020)
@@ -32,9 +43,6 @@ Boston, MA 02111-1307, USA.  */
    This will control the use of inline 68881 insns in certain macros.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
-
-/* Run-time target specifications.  */
-#define CPP_PREDEFINES "-D__unix__ -D__m68k__ -D__mc68000__ -D__mc68020__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=m68k -Amachine=m68k"
 
 /* m68k as needs to know about the processor subtype.  */
 #undef ASM_SPEC
