@@ -10834,56 +10834,9 @@ get_last_value (x)
     return 0;
 
   /* If the value was set in a later insn than the ones we are processing,
-     we can't use it even if the register was only set once, but make a quick
-     check to see if the previous insn set it to something.  This is commonly
-     the case when the same pseudo is used by repeated insns.
-
-     This does not work if there exists an instruction which is temporarily
-     not on the insn chain.  */
-
+     we can't use it even if the register was only set once.  */
   if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
-    {
-      rtx insn, set;
-
-      /* We can not do anything useful in this case, because there is
-	 an instruction which is not on the insn chain.  */
-      if (subst_prev_insn)
-	return 0;
-
-      /* Skip over USE insns.  They are not useful here, and they may have
-	 been made by combine, in which case they do not have a INSN_CUID
-	 value.  We can't use prev_real_insn, because that would incorrectly
-	 take us backwards across labels.  Skip over BARRIERs also, since
-	 they could have been made by combine.  If we see one, we must be
-	 optimizing dead code, so it doesn't matter what we do.  */
-      for (insn = prev_nonnote_insn (subst_insn);
-	   insn && ((GET_CODE (insn) == INSN
-		     && GET_CODE (PATTERN (insn)) == USE)
-		    || GET_CODE (insn) == BARRIER
-		    || INSN_CUID (insn) >= subst_low_cuid);
-	   insn = prev_nonnote_insn (insn))
-	;
-
-      if (insn
-	  && (set = single_set (insn)) != 0
-	  && rtx_equal_p (SET_DEST (set), x))
-	{
-	  value = SET_SRC (set);
-
-	  /* Make sure that VALUE doesn't reference X.  Replace any
-	     explicit references with a CLOBBER.  If there are any remaining
-	     references (rare), don't use the value.  */
-
-	  if (reg_mentioned_p (x, value))
-	    value = replace_rtx (copy_rtx (value), x,
-				 gen_rtx_CLOBBER (GET_MODE (x), const0_rtx));
-
-	  if (reg_overlap_mentioned_p (x, value))
-	    return 0;
-	}
-      else
-	return 0;
-    }
+    return 0;
 
   /* If the value has all its registers valid, return it.  */
   if (get_last_value_validate (&value, reg_last_set[regno],

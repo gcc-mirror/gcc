@@ -1,3 +1,9 @@
+Mon Oct 18 01:41:35 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (get_last_value): If the last set of a register
+	is after subst_low_cuid, then we can not use it to determine
+	the register's last value.
+
 Sat Oct 16 15:20:15 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Sat Oct 16 00:07:01 1999  Richard Henderson  <rth@cygnus.com>
