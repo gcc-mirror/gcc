@@ -4,6 +4,9 @@
 	* module.c (gfc_dump_module, gfc_use_module): Print locus
 	when opening of module file fails.
 
+	PR fortran/16404
+	* io.c (match_io): Flag 'WRITE(...), ...' as extension.
+	
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* f95-lang.c (set_block): Remove.
