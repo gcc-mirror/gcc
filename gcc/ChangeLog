@@ -1,3 +1,8 @@
+2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * flow.c (find_regno_partial): Indent properly.  Add a default to
+        switch.
+
 2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (combine_strings): Complain if concatenating
