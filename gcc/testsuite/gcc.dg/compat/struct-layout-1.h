@@ -1,9 +1,7 @@
-#include <complex.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "compat-common.h"

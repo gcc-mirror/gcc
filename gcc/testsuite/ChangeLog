@@ -1,3 +1,11 @@
+004-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/16820
+	* gcc.dg/compat/struct-layout-1.h: Don't include complex.h nor
+	stdint.h.
+	* gcc.dg/compat/struct-layout-1_x1.h (TX): Cast to long instead of
+	uintptr_t.
+
 2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/16301
