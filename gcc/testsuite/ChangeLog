@@ -1,3 +1,7 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* gcc.dg/20000724-1.c: Don't use multiline strings.
+
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/macro7.c: New test.
