@@ -236,6 +236,25 @@ init_reg_sets ()
   bcopy (initial_call_used_regs, call_used_regs, sizeof call_used_regs);
   bzero (global_regs, sizeof global_regs);
 
+  /* Do any additional initialization regsets may need */
+  INIT_ONCE_REG_SET ();
+}
+
+/* After switches have been processed, which perhaps alter
+   `fixed_regs' and `call_used_regs', convert them to HARD_REG_SETs.  */
+
+static void
+init_reg_sets_1 ()
+{
+  register unsigned int i, j;
+
+  /* This macro allows the fixed or call-used registers
+     and the register classes to depend on target flags.  */
+
+#ifdef CONDITIONAL_REGISTER_USAGE
+  CONDITIONAL_REGISTER_USAGE;
+#endif
+
   /* Compute number of hard regs in each class.  */
 
   bzero ((char *) reg_class_size, sizeof reg_class_size);
@@ -338,25 +357,6 @@ init_reg_sets ()
 	  *p = (enum reg_class) i;
 	}
     }
-
-  /* Do any additional initialization regsets may need */
-  INIT_ONCE_REG_SET ();
-}
-
-/* After switches have been processed, which perhaps alter
-   `fixed_regs' and `call_used_regs', convert them to HARD_REG_SETs.  */
-
-static void
-init_reg_sets_1 ()
-{
-  register unsigned int i, j;
-
-  /* This macro allows the fixed or call-used registers
-     to depend on target flags.  */
-
-#ifdef CONDITIONAL_REGISTER_USAGE
-  CONDITIONAL_REGISTER_USAGE;
-#endif
 
   /* Initialize "constant" tables.  */
 

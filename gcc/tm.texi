@@ -1357,9 +1357,17 @@ preserve the entire contents of a register across a call.
 @findex fixed_regs
 @findex call_used_regs
 @item CONDITIONAL_REGISTER_USAGE
-Zero or more C statements that may conditionally modify two variables
-@code{fixed_regs} and @code{call_used_regs} (both of type @code{char
-[]}) after they have been initialized from the two preceding macros.
+Zero or more C statements that may conditionally modify four variables
+@code{fixed_regs}, @code{call_used_regs}, @code{global_regs}
+(these three are of type @code{char []}) and @code{reg_class_contents}
+(of type @code{HARD_REG_SET}).
+Before the macro is called @code{fixed_regs}, @code{call_used_regs}
+and @code(reg_class_contents) have been initialized from 
+@code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS} and
+@code{REG_CLASS_CONTENTS}, respectively,
+@code{global_regs} has been cleared, and any @samp{-ffixed-@var{reg}},
+@samp{-fcall-used-@var{reg}} and @samp{-fcall-saved-@var{reg}} command
+options have been applied.
 
 This is necessary in case the fixed or call-clobbered registers depend
 on target flags.
