@@ -81,8 +81,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   %{fpic:-k} %{fPIC:-k}"
 
 /* Names to predefine in the preprocessor for this target machine.  */
+/* For a while,  -D_CROSS_TARGET_ARCH=SUN3 was included here,
+   but it doesn't work, partly because SUN3 etc. aren't defined
+   (and shouldn't be).  It seems that on a native compiler _CROSS_TARGET_ARCH
+   should not be defined.  For cross compilers, let's do things as we
+   normally do in GCC.  -- rms.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -D_CROSS_TARGET_ARCH=SUN3 -Asystem(unix)  -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -Asystem(unix)  -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
 
 /* STARTFILE_SPEC to include sun floating point initialization
    This is necessary (tr: Sun does it) for both the m68881 and the fpa
