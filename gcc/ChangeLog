@@ -1,3 +1,10 @@
+2004-12-10  Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.c (struct processor_costs): New fields ml,
+	sqdbr, sqebr.
+	(s390_rtx_costs): Added the missing handling of multiply & add,
+	square root, and umulsidi.
+
 2004-12-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expmed.c (synth_mult): Initialize new_limit.latency before
