@@ -6,6 +6,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	* c-typeck.c (build_binary_op): Conditionally warn
 	about equality tests of floating point types.
 	* toplev.c (documented_lan_options): Add -W[no-]float-equal.
+	* invoke.texi: Add docs for -Wfloat-equal warning.
 
 Wed Sep 29 23:43:39 1999  Jeffrey A Law  (law@cygnus.com)
 
