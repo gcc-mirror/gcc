@@ -1705,11 +1705,12 @@ do_pragma_implementation (pfile)
       return 1;
     }
 
+  /* Trim the leading and trailing quote marks from the string.  */
   name = pfile->token_buffer + written + 1;
-  len = strlen (name);
+  len = CPP_PWRITTEN (pfile) - name;
   copy = (U_CHAR *) alloca (len);
   memcpy (copy, name, len - 1);
-  copy[len] = '\0';	/* trim trailing quote */
+  copy[len - 1] = '\0';
   
   if (cpp_included (pfile, copy))
     cpp_warning (pfile,

@@ -1,3 +1,9 @@
+2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_pragma_implementation): Fix off-by-one error
+	truncating a string.  Don't assume tokens are nul terminated.
+	Problem noted by Andreas Jaeger <aj@suse.de>
+
 2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (add_name_and_src_coords_attributes): Only add
