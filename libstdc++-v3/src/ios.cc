@@ -279,7 +279,6 @@ namespace std
     _M_precision = 6;
     _M_width = 0;
     _M_flags = skipws | dec;
-    _M_callbacks = 0;
     _M_ios_locale = locale();
   }  
   
