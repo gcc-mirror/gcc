@@ -1688,7 +1688,7 @@ ix86_function_regparm (tree type, tree decl)
 
       /* Use register calling convention for local functions when possible.  */
       if (!TARGET_64BIT && !user_convention && decl
-	  && flag_unit_at_a_time)
+	  && flag_unit_at_a_time && !profile_flag)
 	{
 	  struct cgraph_local_info *i = cgraph_local_info (decl);
 	  if (i && i->local)
@@ -6884,12 +6884,6 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
 void
 print_reg (rtx x, int code, FILE *file)
 {
-  if (REGNO (x) == ARG_POINTER_REGNUM
-      || REGNO (x) == FRAME_POINTER_REGNUM
-      || REGNO (x) == FLAGS_REG
-      || REGNO (x) == FPSR_REG)
-    abort ();
-
   if (ASSEMBLER_DIALECT == ASM_ATT || USER_LABEL_PREFIX[0] == 0)
     putc ('%', file);
 

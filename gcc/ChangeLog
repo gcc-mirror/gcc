@@ -1,3 +1,16 @@
+2003-10-19  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (print_reg): Do not abort on certain registers.
+
+	PR optimization/12612
+	* reg-stack.c (subst_stack_regs_pat):  Use st(1) for clobbers.
+	* i386.md (fpatan, fyl2x, fscale patterns and expanders): Use
+	match_scratch; avoid bogus paralles.
+
+	PR target/12674
+	* i386.c (ix86_function_regparm): Disable implicit register passing
+	conventions when profiling.
+
 2003-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Richard Henderson  <rth@redhat.com>
 

@@ -1430,7 +1430,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		      abort ();
 		  }
 		remove_note (insn, note);
-		replace_reg (dest, LAST_STACK_REG);
+		replace_reg (dest, FIRST_STACK_REG + 1);
 	      }
 	    else
 	      {
