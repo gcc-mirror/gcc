@@ -2197,16 +2197,6 @@ do {                                                                    \
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
-#if 0 /* Sun 4 has matherr, so this is no good.  */
-/* This is the value of the error code EDOM for this machine,
-   used by the sqrt instruction.  */
-#define TARGET_EDOM 33
-
-/* This is how to refer to the variable errno.  */
-#define GEN_ERRNO_RTX \
-  gen_rtx_MEM (SImode, gen_rtx_SYMBOL_REF (Pmode, "errno"))
-#endif /* 0 */
-
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS

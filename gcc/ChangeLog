@@ -1,5 +1,10 @@
 2004-02-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/sparc/sparc.h: Remove commented-out definitions of
+	TARGET_EDOM and GEN_ERRNO_RTX.
+
+2004-02-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* df.c, df.h, ra-build.c, ra-rewrite.c, ra.c, web.c: Replace
 	df_analyse with df_analyze.
 
