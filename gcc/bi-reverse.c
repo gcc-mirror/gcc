@@ -21,8 +21,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "hconfig.h"
 #include "bi-defs.h"
 
-#define NULL 0
-
 void
 reverse()
 {
@@ -35,19 +33,19 @@ reverse()
       vp = dp->variations;
       if (vp)
 	{
-	  for (v = vp->next, vp->next = NULL; v; vp = v, v = vn)
+	  for (v = vp->next, vp->next = 0; v; vp = v, v = vn)
 	    {
 	      vn = v->next;
 	      v->next = vp;
 	    }
 	  dp->variations = vp;
 	}
-      for (d = dp->next, dp->next = NULL; d; dp = d, d = dn)
+      for (d = dp->next, dp->next = 0; d; dp = d, d = dn)
 	{
 	  vp = d->variations;
 	  if (vp)
 	    {
-	      for (v = vp->next, vp->next = NULL; v; vp = v, v = vn)
+	      for (v = vp->next, vp->next = 0; v; vp = v, v = vn)
 		{
 		  vn = v->next;
 		  v->next = vp;
