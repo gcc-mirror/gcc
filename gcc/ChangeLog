@@ -1,3 +1,8 @@
+2002-11-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (two anonymous patterns): Fix insn
+	lengths.
+
 2002-11-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* sh.c (gen_shl_and): Don't create a zero_extend if the operand
