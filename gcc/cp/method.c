@@ -987,7 +987,7 @@ build_template_parm_names (parmlist, arglist)
 	}
       else
 	{
-	  parm = tsubst (parm, arglist, /*complain=*/1, NULL_TREE);
+	  parm = tsubst (parm, inner_args, /*complain=*/1, NULL_TREE);
 	  /* It's a PARM_DECL.  */
 	  build_mangled_name_for_type (TREE_TYPE (parm));
 	  build_overload_value (TREE_TYPE (parm), arg, 
@@ -2315,22 +2315,24 @@ do_build_copy_constructor (fndecl)
       tree fields = TYPE_FIELDS (current_class_type);
       int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
+      tree member_init_list = NULL_TREE;
+      tree base_init_list = NULL_TREE;
       int i;
 
       /* Initialize all the base-classes.  */
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
-	current_base_init_list 
+	base_init_list 
 	  = tree_cons (BINFO_TYPE (TREE_VALUE (t)), parm, 
-		       current_base_init_list);
+		       base_init_list);
       for (i = 0; i < n_bases; ++i)
 	{
 	  t = TREE_VEC_ELT (binfos, i);
 	  if (TREE_VIA_VIRTUAL (t))
 	    continue; 
 
-	  current_base_init_list 
-	    = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
+	  base_init_list 
+	    = tree_cons (BINFO_TYPE (t), parm, base_init_list);
 	}
 
       for (; fields; fields = TREE_CHAIN (fields))
@@ -2364,12 +2366,12 @@ do_build_copy_constructor (fndecl)
 	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
 	  init = build_tree_list (NULL_TREE, init);
 
-	  current_member_init_list
-	    = tree_cons (field, init, current_member_init_list);
+	  member_init_list
+	    = tree_cons (field, init, member_init_list);
 	}
-      current_member_init_list = nreverse (current_member_init_list);
-      current_base_init_list = nreverse (current_base_init_list);
-      setup_vtbl_ptr ();
+      member_init_list = nreverse (member_init_list);
+      base_init_list = nreverse (base_init_list);
+      setup_vtbl_ptr (member_init_list, base_init_list);
     }
 }
 
@@ -2512,7 +2514,7 @@ synthesize_method (fndecl)
       need_body = 0;
     }
   else if (DECL_DESTRUCTOR_P (fndecl))
-    setup_vtbl_ptr ();
+    setup_vtbl_ptr (NULL_TREE, NULL_TREE);
   else
     {
       tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);
@@ -2521,7 +2523,7 @@ synthesize_method (fndecl)
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
-	setup_vtbl_ptr ();
+	setup_vtbl_ptr (NULL_TREE, NULL_TREE);
     }
 
   /* If we haven't yet generated the body of the function, just

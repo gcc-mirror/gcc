@@ -454,7 +454,7 @@ dequeue_and_dump (di)
       break;
 
     case TREE_VEC:
-      dump_int (di, "lngt", IDENTIFIER_LENGTH (t));
+      dump_int (di, "lngt", TREE_VEC_LENGTH (t));
       for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
 	{
 	  char buffer[32];

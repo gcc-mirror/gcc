@@ -12,6 +12,49 @@
 
 2000-06-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (struct language_function): Remove x_base_init_list
+	and x_member_init_list.
+	(current_base_init_list): Remove.
+	(current_member_init_list): Likewise.
+	(setup_vtbl_ptr): Change prototype.
+	(emit_base_init): Likewise.
+	(expand_member_init): Likewise.
+	(reinit_parse_for_function): Remove.
+	* decl.c (save_function_data): Don't clear x_base_init_list and
+	x_member_init_list.
+	(mark_language_function): Don't mark them.
+	* init.c (perform_member_init): Tweak comment.
+	(sort_member_init): Take the list of initializers as an argument.
+	(sort_base_init): Likewise.
+	(emit_base_init): Likewise.
+	(expand_member_init): Return the initializer.  Don't use global
+	variables.
+	* lex.c (reinit_parse_for_function): Remove.
+	* method.c (build_template_parm_names): Correct substitution.
+	(do_build_copy_constructor): Don't use current_member_init_list
+	and current_base_init_list.
+	(synthesize_method): Likewise.
+	* parse.y (base_init): Split mem-initializers into
+	base-initializers and field-initializers.
+	(member_init_list): Build up the list here.
+	(member_init): Return the initializer.
+	(fn.depfn): Don't use reinit_parse_for_function.
+	* parse.c: Regenerated.
+	* pt.c (convert_nontype_argument): Don't make an ADDR_EXPR of the
+	ERROR_MARK.
+	(tsubst_expr): Don't use current_member_init_list
+	and current_base_init_list.
+	(tsubst_expr_values): Rename to ...
+	(tsubst_initializer_list): ... this.  Use convert_from_reference.
+	* semantics.c (setup_vtbl_ptr): Don't use current_member_init_list
+	and current_base_init_list.
+	(begin_function_definition): Don't call reinit_parse_for_function.
+	
+	* dump.c (dequeue_and_dump): Use TREE_VEC_LENGTH with vectors.
+
+	* error.c (dump_expr): Handle ADDR_EXPRs with REFERENCE_TYPE
+	correctly.
+	
 	* cp-tree.h (DECL_PENDING_INLINE_P): Relax checking.
 
 2000-06-14  Benjamin Chelf  <chelf@cabriolet.stanford.edu>

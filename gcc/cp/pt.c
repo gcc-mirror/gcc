@@ -104,7 +104,7 @@ static int push_tinst_level PARAMS ((tree));
 static void reopen_tinst_level PARAMS ((tree));
 static tree classtype_mangled_name PARAMS ((tree));
 static char *mangle_class_name_for_template PARAMS ((char *, tree, tree));
-static tree tsubst_expr_values PARAMS ((tree, tree));
+static tree tsubst_initializer_list PARAMS ((tree, tree));
 static int list_eq PARAMS ((tree, tree));
 static tree get_class_bindings PARAMS ((tree, tree, tree));
 static tree coerce_template_parms PARAMS ((tree, tree, tree, int, int));
@@ -3009,7 +3009,7 @@ convert_nontype_argument (type, expr)
 		|| !at_least_as_qualified_p (type_referred_to,
 					     expr_type)
 		|| !real_lvalue_p (expr))
-	      expr = error_mark_node;
+	      return error_mark_node;
 	  }
 
 	mark_addressable (expr);
@@ -7145,14 +7145,19 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case CTOR_INITIALIZER:
-      prep_stmt (t);
-      current_member_init_list
-	= tsubst_expr_values (TREE_OPERAND (t, 0), args);
-      current_base_init_list
-	= tsubst_expr_values (TREE_OPERAND (t, 1), args);
-      setup_vtbl_ptr ();
-      tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
-      break;
+      {
+	tree member_init_list;
+	tree base_init_list;
+
+	prep_stmt (t);
+	member_init_list
+	  = tsubst_initializer_list (TREE_OPERAND (t, 0), args);
+	base_init_list
+	  = tsubst_initializer_list (TREE_OPERAND (t, 1), args);
+	setup_vtbl_ptr (member_init_list, base_init_list);
+	tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
+	break;
+      }
 
     case RETURN_STMT:
       prep_stmt (t);
@@ -9837,12 +9842,13 @@ instantiate_pending_templates ()
   return instantiated_something;
 }
 
-/* Substitute ARGVEC into T, which is a TREE_LIST.  In particular, it
-   is an initializer list: the TREE_PURPOSEs are DECLs, and the
-   TREE_VALUEs are initializer values.  Used by instantiate_decl.  */
+/* Substitute ARGVEC into T, which is a list of initializers for
+   either base class or a non-static data member.  The TREE_PURPOSEs
+   are DECLs, and the TREE_VALUEs are the initializer values.  Used by
+   instantiate_decl.  */
 
 static tree
-tsubst_expr_values (t, argvec)
+tsubst_initializer_list (t, argvec)
      tree t, argvec;
 {
   tree first = NULL_TREE;
@@ -9850,11 +9856,24 @@ tsubst_expr_values (t, argvec)
 
   for (; t; t = TREE_CHAIN (t))
     {
-      tree pur = tsubst_copy (TREE_PURPOSE (t), argvec,
-			      /*complain=*/1, NULL_TREE);
-      tree val = tsubst_expr (TREE_VALUE (t), argvec, /*complain=*/1, 
-			      NULL_TREE);
-      *p = build_tree_list (pur, val);
+      tree decl;
+      tree init;
+      tree val;
+
+      decl = tsubst_copy (TREE_PURPOSE (t), argvec, /*complain=*/1,
+			  NULL_TREE);
+      init = tsubst_expr (TREE_VALUE (t), argvec, /*complain=*/1,
+			  NULL_TREE);
+
+      if (!init)
+	;
+      else if (TREE_CODE (init) == TREE_LIST)
+	for (val = init; val; val = TREE_CHAIN (val))
+	  TREE_VALUE (val) = convert_from_reference (TREE_VALUE (val));
+      else
+	init = convert_from_reference (init);
+
+      *p = build_tree_list (decl, init);
       p = &TREE_CHAIN (*p);
     }
   return first;

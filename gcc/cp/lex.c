@@ -730,13 +730,6 @@ finish_parse ()
   fclose (finput);
 #endif
 }
-
-void
-reinit_parse_for_function ()
-{
-  current_base_init_list = NULL_TREE;
-  current_member_init_list = NULL_TREE;
-}
 
 inline void
 yyprint (file, yychar, yylval)
