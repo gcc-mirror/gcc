@@ -1,5 +1,5 @@
-# Don't really put anything in libgcc1.
-LIBGCC1 = libgcc1.null
+# Don't build or use libgcc1.
+LIBGCC1 = 
 
 # Specify tools and options for manipulating libraries for the target machine.
 AR = $(AR_FOR_TARGET)
