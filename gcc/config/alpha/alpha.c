@@ -105,7 +105,8 @@ static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 void
 override_options ()
 {
-  alpha_cpu = PROCESSOR_EV4;
+  alpha_cpu
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4;
 
   if (alpha_cpu_string)
     {
