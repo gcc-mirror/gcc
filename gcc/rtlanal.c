@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "toplev.h"
 #include "rtl.h"
+#include "hard-reg-set.h"
 
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
@@ -68,7 +69,9 @@ rtx_unstable_p (x)
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-	  || x == arg_pointer_rtx || RTX_UNCHANGING_P (x))
+	  /* The arg pointer varies if it is not a fixed register.  */
+	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])
+	  || RTX_UNCHANGING_P (x))
 	return 0;
 #ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
       /* ??? When call-clobbered, the value is stable modulo the restore
@@ -144,7 +147,8 @@ rtx_varies_p (x, for_alias)
 	 eliminated the frame and/or arg pointer and are using it
 	 for pseudos.  */
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-	  || x == arg_pointer_rtx)
+	  /* The arg pointer varies if it is not a fixed register.  */
+	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	return 0;
       if (x == pic_offset_table_rtx
 #ifdef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
@@ -212,7 +216,9 @@ rtx_addr_can_trap_p (x)
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
       return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-		|| x == stack_pointer_rtx || x == arg_pointer_rtx);
+		|| x == stack_pointer_rtx
+		/* The arg pointer varies if it is not a fixed register.  */
+		|| (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]));
 
     case CONST:
       return rtx_addr_can_trap_p (XEXP (x, 0));

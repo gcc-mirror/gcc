@@ -1351,7 +1351,7 @@ rtl.o : rtl.c $(GCONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
 print-rtl.o : print-rtl.c $(GCONFIG_H) system.h $(RTL_H) hard-reg-set.h \
     $(BASIC_BLOCK_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-rtlanal.o : rtlanal.c $(CONFIG_H) system.h toplev.h $(RTL_H)
+rtlanal.o : rtlanal.c $(CONFIG_H) system.h toplev.h $(RTL_H) hard-reg-set.h
 errors.o : errors.c $(GCONFIG_H) system.h errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -1826,11 +1826,6 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(CONFIG_H) system.h $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
 
-$(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) system.h $(RTL_H)
-	rm -f $(HOST_PREFIX)rtlanal.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtlanal.c
-
 $(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
 	rm -f $(HOST_PREFIX)alloca.c
 	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
@@ -2286,7 +2281,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
-	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
+	-rm -f $(HOST_PREFIX_1)rtl.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
 	-rm -f $(HOST_PREFIX_1)obstack.c
 # Delete the temp files made in the course of building libgcc.a.
