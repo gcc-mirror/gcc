@@ -1594,6 +1594,14 @@ duplicate_decls (tree newdecl, tree olddecl)
 	    = DECL_SOURCE_LOCATION (newdecl);
 	}
 
+      if (DECL_FUNCTION_TEMPLATE_P (newdecl))
+	{
+	  DECL_INLINE (DECL_TEMPLATE_RESULT (olddecl)) 
+	    |= DECL_INLINE (DECL_TEMPLATE_RESULT (newdecl));
+	  DECL_DECLARED_INLINE_P (DECL_TEMPLATE_RESULT (olddecl))
+	    |= DECL_DECLARED_INLINE_P (DECL_TEMPLATE_RESULT (newdecl));
+	}
+
       return olddecl;
     }
 
@@ -4342,7 +4350,17 @@ reshape_init (tree type, tree *initp)
 	      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
 	      CONSTRUCTOR_ELTS (new_init) = element_init;
 	      if (TREE_PURPOSE (element_init))
-		index = TREE_PURPOSE (element_init);
+		{
+		  tree next_index = TREE_PURPOSE (element_init);
+		  if (TREE_CODE (next_index) == IDENTIFIER_NODE)
+		    {
+		      error ("name `%D' used in a GNU-style designated "
+			     "initializer for an array", next_index);
+		      TREE_PURPOSE (element_init) = NULL_TREE;
+		    }
+		  else
+		    index = next_index;
+		}
 	    }
 	}
       else
