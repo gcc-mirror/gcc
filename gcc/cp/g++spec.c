@@ -330,7 +330,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
-int lang_specific_pre_link ()  /* Not used for C++.  */
+int lang_specific_pre_link (void)  /* Not used for C++.  */
 {
   return 0;
 }

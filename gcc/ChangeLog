@@ -1,5 +1,10 @@
 2003-09-30  Kelley Cook  <kelleycoook@wideopenwest.com>
 
+	* sdbout.c: Convert to ISO C90 prototypes.
+	* objc/objc-act.c: Likewise.
+
+2003-09-30  Kelley Cook  <kelleycoook@wideopenwest.com>
+
 	* config/i386/cygwin1.c: Convert to ISO C90 prototypes.
 	* config/i386/winnt.c: Likewise.
 	* config/i386/cygming.h: Likewise.

@@ -1,3 +1,8 @@
+2003-09-30  Kelley Cook  <kelleycoook@wideopenwest.com>
+
+	* g++spec.c: Convert to ISO C90 prototypes.
+	* parser.c: Likewise.
+
 2003-09-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (pop_binding): Don't mess with nullifying binding->scope

@@ -3125,7 +3125,7 @@ objc_build_catch_epilogue (void)
 }
 
 tree
-objc_build_finally_prologue ()
+objc_build_finally_prologue (void)
 {
   /* { // begin FINALLY scope
        if (!_rethrowException) {
@@ -4556,8 +4556,7 @@ generate_ivars_list (tree type, const char *name, int size, tree list)
 
 /* Count only the fields occurring in T.  */
 static int
-ivar_list_length (t)
-     tree t;
+ivar_list_length (tree t)
 {
   int count = 0;
 

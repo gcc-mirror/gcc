@@ -126,7 +126,7 @@ static void cp_token_cache_push_token
 /* Create a new cp_token_cache.  */
 
 static cp_token_cache *
-cp_token_cache_new ()
+cp_token_cache_new (void)
 {
   return ggc_alloc_cleared (sizeof (cp_token_cache));
 }
