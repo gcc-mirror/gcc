@@ -1,3 +1,7 @@
+Wed Mar 27 22:33:05 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_output_addr_diff_elt): Remove binutils bug workaround.
+
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (c_expand_expr): Fix prototype.
