@@ -99,6 +99,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
+#include "ggc.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -1726,7 +1727,8 @@ operate_exp (op, left, right)
 	     give the same value), optimize it away.  */
 	  if (allsame)
 	    {
-	      obstack_free (rtl_obstack, newexp);
+	      if (!ggc_p)
+		obstack_free (rtl_obstack, newexp);
 	      return operate_exp (op, left, XEXP (right, 1));
 	    }
 
@@ -1734,7 +1736,8 @@ operate_exp (op, left, right)
 	     just use that.  */
 	  if (rtx_equal_p (newexp, right))
 	    {
-	      obstack_free (rtl_obstack, newexp);
+	      if (!ggc_p)
+		obstack_free (rtl_obstack, newexp);
 	      return right;
 	    }
 
@@ -1783,7 +1786,8 @@ operate_exp (op, left, right)
 	 optimize it away.  */
       if (allsame)
 	{
-	  obstack_free (rtl_obstack, newexp);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, newexp);
 	  return operate_exp (op, XEXP (left, 1), right);
 	}
 
@@ -1791,7 +1795,8 @@ operate_exp (op, left, right)
 	 just use that.  */
       if (rtx_equal_p (newexp, left))
 	{
-	  obstack_free (rtl_obstack, newexp);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, newexp);
 	  return left;
 	}
 
@@ -2609,14 +2614,16 @@ simplify_cond (exp, insn_code, insn_index)
 
   if (len == 0)
     {
-      obstack_free (rtl_obstack, first_spacer);
+      if (!ggc_p)
+	obstack_free (rtl_obstack, first_spacer);
       if (GET_CODE (defval) == COND)
 	return simplify_cond (defval, insn_code, insn_index);
       return defval;
     }
   else if (allsame)
     {
-      obstack_free (rtl_obstack, first_spacer);
+      if (!ggc_p)
+	obstack_free (rtl_obstack, first_spacer);
       return exp;
     }
   else
@@ -3146,14 +3153,16 @@ simplify_test_exp (exp, insn_code, insn_index)
       SIMPLIFY_ALTERNATIVE (left);
       if (left == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return false_rtx;
 	}
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (right);
       if (left == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return false_rtx;
 	}
 
@@ -3185,7 +3194,8 @@ simplify_test_exp (exp, insn_code, insn_index)
 
       if (left == false_rtx || right == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return false_rtx;
 	}
       else if (left == true_rtx)
@@ -3244,14 +3254,16 @@ simplify_test_exp (exp, insn_code, insn_index)
       SIMPLIFY_ALTERNATIVE (left);
       if (left == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return true_rtx;
 	}
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (right);
       if (right == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return true_rtx;
 	}
 
@@ -3261,7 +3273,8 @@ simplify_test_exp (exp, insn_code, insn_index)
 
       if (right == true_rtx || left == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return true_rtx;
 	}
       else if (left == false_rtx)
@@ -3348,12 +3361,14 @@ simplify_test_exp (exp, insn_code, insn_index)
 
       if (left == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return true_rtx;
 	}
       else if (left == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
+	  if (!ggc_p)
+	    obstack_free (rtl_obstack, spacer);
 	  return false_rtx;
 	}
 
@@ -3515,7 +3530,8 @@ optimize_attrs ()
 		  insert_insn_ent (av, ie);
 		  something_changed = 1;
 		}
-	      obstack_free (temp_obstack, spacer);
+	      if (!ggc_p)
+		obstack_free (temp_obstack, spacer);
 	    }
 	}
     }

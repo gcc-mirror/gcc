@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "ggc.h"
 
 void print_node ();
 void indent_to ();
@@ -274,7 +275,7 @@ print_node (file, prefix, node, indent)
     }
 
   /* If a permanent object is in the wrong obstack, or the reverse, warn.  */
-  if (object_permanent_p (node) != TREE_PERMANENT (node))
+  if (!ggc_p && object_permanent_p (node) != TREE_PERMANENT (node))
     {
       if (TREE_PERMANENT (node))
 	fputs (" !!permanent object in non-permanent obstack!!", file);

@@ -24,6 +24,7 @@
 #include "tree.h"
 #include "ggc.h"
 #include "flags.h"
+#include "varray.h"
 
 /* Debugging flags.  */
 #undef GGC_DUMP
@@ -96,6 +97,7 @@ static void ggc_free_rtx PROTO ((struct ggc_rtx *r));
 static void ggc_free_tree PROTO ((struct ggc_tree *t));
 static void ggc_mark_rtx_ptr PROTO ((void *elt));
 static void ggc_mark_tree_ptr PROTO ((void *elt));
+static void ggc_mark_tree_varray_ptr PROTO ((void *elt));
 
 /* These allocators are dreadfully simple, with no caching whatsoever so
    that Purify-like tools that do allocation versioning can catch errors.
@@ -472,6 +474,18 @@ ggc_mark_tree (t)
     }
 }
 
+/* Mark all the elements of the varray V, which contains trees.  */
+
+void
+ggc_mark_tree_varray (v)
+     varray_type v;
+{
+  int i;
+
+  for (i = v->num_elements - 1; i >= 0; --i) 
+    ggc_mark_tree (VARRAY_TREE (v, i));
+}
+
 void
 ggc_mark_string (s)
      char *s;
@@ -645,6 +659,17 @@ ggc_add_tree_root (base, nelt)
   ggc_add_root (base, nelt, sizeof(tree), ggc_mark_tree_ptr);
 }
 
+/* Add vV (a varray full of trees) to the list of GC roots.  */
+
+void
+ggc_add_tree_varray_root (base, nelt)
+     varray_type *base;
+     int nelt;
+{
+  ggc_add_root (base, nelt, sizeof (varray_type), 
+		ggc_mark_tree_varray_ptr);
+}
+
 void
 ggc_del_root (base)
      void *base;
@@ -679,6 +704,16 @@ ggc_mark_tree_ptr (elt)
      void *elt;
 {
   ggc_mark_tree (*(tree *)elt);
+}
+
+/* Type-correct function to pass to ggc_add_root.  It just forwards
+   ELT (which is really a varray_type *) to ggc_mark_tree_varray.  */
+
+static void
+ggc_mark_tree_varray_ptr (elt)
+     void *elt;
+{
+  ggc_mark_tree_varray (*(varray_type *)elt);
 }
 
 #ifdef GGC_DUMP

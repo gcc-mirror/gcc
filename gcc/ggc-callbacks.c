@@ -24,6 +24,8 @@
 #include "tree.h"
 #include "ggc.h"
 
+int ggc_p = 0;
+
 void 
 lang_mark_tree (t)
      union tree_node *t ATTRIBUTE_UNUSED;
