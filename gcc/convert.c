@@ -310,13 +310,13 @@ convert_to_integer (type, expr)
 		  {
 		    /* Don't do unsigned arithmetic where signed was wanted,
 		       or vice versa.
-		       Exception: if either of the original operands were
+		       Exception: if both of the original operands were
 		       unsigned then can safely do the work as unsigned.
 		       And we may need to do it as unsigned
 		       if we truncate to the original size.  */
 		    typex = ((TREE_UNSIGNED (TREE_TYPE (expr))
-			      || TREE_UNSIGNED (TREE_TYPE (arg0))
-			      || TREE_UNSIGNED (TREE_TYPE (arg1)))
+			      || (TREE_UNSIGNED (TREE_TYPE (arg0))
+				  && TREE_UNSIGNED (TREE_TYPE (arg1))))
 			     ? unsigned_type (typex) : signed_type (typex));
 		    return convert (type,
 				    fold (build (ex_form, typex,
