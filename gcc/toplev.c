@@ -1240,12 +1240,13 @@ vnotice (file, msgid, ap)
   vfprintf (file, _(msgid), ap);
 #else
   {
-    HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v5 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v6 = va_arg(ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v1 = va_arg (ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v2 = va_arg (ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v3 = va_arg (ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v4 = va_arg (ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v5 = va_arg (ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v6 = va_arg (ap, HOST_WIDE_INT);
+
     fprintf (file, _(msgid), v1, v2, v3, v4, v5, v6);
   }
 #endif
@@ -1360,10 +1361,11 @@ v_message_with_decl (decl, warn, msgid, ap)
 	      vfprintf (stderr, p + 2, ap);
 #else
 	      {
-		HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
-		HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
-		HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
-		HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v1 = va_arg (ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v2 = va_arg (ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v3 = va_arg (ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v4 = va_arg (ap, HOST_WIDE_INT);
+
 		fprintf (stderr, p + 2, v1, v2, v3, v4);
 	      }
 #endif
