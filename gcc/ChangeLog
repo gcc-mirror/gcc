@@ -1,3 +1,8 @@
+2000-05-05  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* varasm.c (asm_emit_uninitialised): Use 0, not NULL
+	as arg 2 of UNIQUE_SECTION.
+
 Fri May  5 10:11:41 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* predict.c: Remove May 4 change.
