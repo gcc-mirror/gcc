@@ -77,7 +77,7 @@ static char *mangle_class_name_for_template PROTO((char *, tree, tree, tree));
 static tree tsubst_expr_values PROTO((tree, tree));
 static int comp_template_args PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
-static tree get_class_bindings PROTO((tree, tree, tree));
+static tree get_class_bindings PROTO((tree, tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int, int));
 static tree tsubst_enum	PROTO((tree, tree, tree *));
 static tree add_to_template_args PROTO((tree, tree));
@@ -109,12 +109,14 @@ finish_member_template_decl (template_parameters, decl)
     {
       /* Assume that the class is the only declspec.  */
       decl = TREE_VALUE (decl);
-      if (IS_AGGR_TYPE (decl) && CLASSTYPE_TEMPLATE_INFO (decl))
+      if (IS_AGGR_TYPE (decl) && CLASSTYPE_TEMPLATE_INFO (decl)
+	  && ! CLASSTYPE_TEMPLATE_SPECIALIZATION (decl))
 	{
 	  tree tmpl = CLASSTYPE_TI_TEMPLATE (decl);
 	  check_member_template (tmpl);
 	  return tmpl;
 	}
+      return NULL_TREE;
     }
   else if (DECL_TEMPLATE_INFO (decl) &&
 	   !DECL_TEMPLATE_SPECIALIZATION (decl))
@@ -2380,6 +2382,8 @@ lookup_template_class (d1, arglist, in_decl, context)
 	  if (! template)
 	    template = IDENTIFIER_CLASS_VALUE (d1);
 	}
+      if (template)
+	context = DECL_CONTEXT (template);
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
@@ -2938,7 +2942,7 @@ instantiate_class_template (type)
      tree type;
 {
   tree template, template_info, args, pattern, t, *field_chain;
-  tree typedecl;
+  tree typedecl, outer_args;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -2954,14 +2958,15 @@ instantiate_class_template (type)
 
   if (DECL_TEMPLATE_INFO (template))
     {
-      args = add_to_template_args (DECL_TI_ARGS (template), args);
+      outer_args = DECL_TI_ARGS (template);
       while (DECL_TEMPLATE_INFO (template))
 	template = DECL_TI_TEMPLATE (template);
     }
+  else
+    outer_args = NULL_TREE;
 
-  /* FIXME deal with partial specializations of member templates.  */
   t = most_specialized_class
-    (DECL_TEMPLATE_SPECIALIZATIONS (template), args);
+    (DECL_TEMPLATE_SPECIALIZATIONS (template), args, outer_args);
 
   if (t == error_mark_node)
     {
@@ -2969,7 +2974,8 @@ instantiate_class_template (type)
       cp_error ("ambiguous class template instantiation for `%#T'", type);
       for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; t = TREE_CHAIN (t))
 	{
-	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args))
+	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
+				  args, outer_args))
 	    {
 	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
 	      str = "               ";
@@ -2987,7 +2993,11 @@ instantiate_class_template (type)
     return type;
 
   if (t)
-    args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args);
+    args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
+			       args, outer_args);
+
+  if (outer_args)
+    args = add_to_template_args (outer_args, args);
 
   if (pedantic && uses_template_parms (args))
     /* If there are still template parameters amongst the args, then
@@ -3617,7 +3627,7 @@ tsubst (t, args, in_decl)
 	if (PRIMARY_TEMPLATE_P (t))
 	  TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (tmpl)) = tmpl;
 
-	/* FIXME deal with partial specializations.  */
+	/* We don't partially instantiate partial specializations.  */
 	if (TREE_CODE (decl) == TYPE_DECL)
 	  return tmpl;
 
@@ -5651,12 +5661,14 @@ more_specialized_class (pat1, pat2)
   int winner = 0;
 
   targs = get_class_bindings
-    (TREE_VALUE (pat1), TREE_PURPOSE (pat1), TREE_PURPOSE (pat2));
+    (TREE_VALUE (pat1), TREE_PURPOSE (pat1),
+     TREE_PURPOSE (pat2), NULL_TREE);
   if (targs)
     --winner;
 
   targs = get_class_bindings
-    (TREE_VALUE (pat2), TREE_PURPOSE (pat2), TREE_PURPOSE (pat1));
+    (TREE_VALUE (pat2), TREE_PURPOSE (pat2),
+     TREE_PURPOSE (pat1), NULL_TREE);
   if (targs)
     ++winner;
 
@@ -5718,11 +5730,17 @@ get_bindings (fn, decl, explicit_args)
 }
 
 static tree
-get_class_bindings (tparms, parms, args)
-     tree tparms, parms, args;
+get_class_bindings (tparms, parms, args, outer_args)
+     tree tparms, parms, args, outer_args;
 {
   int i, dummy, ntparms = TREE_VEC_LENGTH (tparms);
   tree vec = make_temp_vec (ntparms);
+
+  if (outer_args)
+    {
+      tparms = tsubst (tparms, outer_args, NULL_TREE);
+      parms = tsubst (parms, outer_args, NULL_TREE);
+    }
 
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
     {
@@ -5803,15 +5821,16 @@ most_specialized (fns, decl, explicit_args)
    SPECS that can produce an instantiation matching ARGS.  */
 
 tree
-most_specialized_class (specs, mainargs)
-     tree specs, mainargs;
+most_specialized_class (specs, mainargs, outer_args)
+     tree specs, mainargs, outer_args;
 {
   tree list = NULL_TREE, t, args, champ;
   int fate;
 
   for (t = specs; t; t = TREE_CHAIN (t))
     {
-      args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), mainargs);
+      args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
+				 mainargs, outer_args);
       if (args)
 	{
 	  list = decl_tree_cons (TREE_PURPOSE (t), TREE_VALUE (t), list);

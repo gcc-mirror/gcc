@@ -2458,7 +2458,7 @@ extern void end_tree                            PROTO((void));
 extern void add_maybe_template			PROTO((tree, tree));
 extern void pop_tinst_level			PROTO((void));
 extern tree most_specialized			PROTO((tree, tree, tree));
-extern tree most_specialized_class		PROTO((tree, tree));
+extern tree most_specialized_class		PROTO((tree, tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
