@@ -1,5 +1,7 @@
 Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* i386.md ({add,sub}qi3): Operand 0 should be nonimmediate_operand.
+
 	* jump.c (delete_computation): Can trust REG_DEAD if same register
 	is set in insn.
 
