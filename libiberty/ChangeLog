@@ -1,3 +1,8 @@
+1999-06-21  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* configure.in (checkfuncs): Add gettimeofday.
+	* config.in, configure: Regenerated.
+
 Mon Jun 21 05:56:01 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (*-*-uwin*): UWIN has sys_{errlist,nerr} even if
