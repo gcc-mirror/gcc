@@ -37,7 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DF_ALL		255
 #define DF_HARD_REGS	1024	/* Mark hard registers.  */
 #define DF_EQUIV_NOTES	2048	/* Mark uses present in EQUIV/EQUAL notes.  */
-#define DF_FOR_REGALLOC	4096    /* If called for the register allocator.  */
 
 enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
 		  DF_REF_REG_MEM_STORE};

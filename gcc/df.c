@@ -913,8 +913,7 @@ df_def_record_1 (struct df *df, rtx x, basic_block bb, rtx insn)
      be handy for the reg allocator.  */
   while (GET_CODE (dst) == STRICT_LOW_PART
 	 || GET_CODE (dst) == ZERO_EXTRACT
-	 || ((df->flags & DF_FOR_REGALLOC) == 0
-             && read_modify_subreg_p (dst)))
+	 || read_modify_subreg_p (dst))
     {
       /* Strict low part always contains SUBREG, but we do not want to make
 	 it appear outside, as whole register is always considered.  */
@@ -1025,8 +1024,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 	switch (GET_CODE (dst))
 	  {
 	    case SUBREG:
-	      if ((df->flags & DF_FOR_REGALLOC) == 0
-                  && read_modify_subreg_p (dst))
+	      if (read_modify_subreg_p (dst))
 		{
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 				  insn, DF_REF_READ_WRITE);

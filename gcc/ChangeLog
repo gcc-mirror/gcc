@@ -1,3 +1,9 @@
+2005-02-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* df.c (df_def_record_1, df_uses_record): Don't use
+	DF_FOR_REGALLOC.
+	* df.h (DF_FOR_REGALLOC): Remove.
+
 2005-02-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/19435
