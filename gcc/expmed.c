@@ -118,6 +118,9 @@ init_expmed ()
     }
 
   mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
+  /* For gcc 2.4 keep MULT_COST small to avoid really slow searches
+     in synth_mult.  */
+  mult_cost = MIN (12 * add_cost, mult_cost);
   negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg), SET);
 
   /* 999999 is chosen to avoid any plausible faster special case.  */
@@ -1879,6 +1882,52 @@ synth_mult (t, cost_limit)
 	}
     }
 
+  /* If we have an odd number, add or subtract one.  */
+  if ((t & 1) != 0)
+  {
+    unsigned HOST_WIDE_INT w;
+
+    for (w = 1; (w & t) != 0; w <<= 1)
+      ;
+    if (w > 2
+	/* Reject the case where t is 3.
+	   Thus we prefer addition in that case.  */
+	&& t != 3)
+      {
+	/* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
+
+	cost = add_cost;
+	*alg_in = synth_mult (t + 1, cost_limit - cost);
+
+	cost += alg_in->cost;
+	if (cost < best_alg->cost)
+	  {
+	    struct algorithm *x;
+	    x = alg_in, alg_in = best_alg, best_alg = x;
+	    best_alg->log[best_alg->ops] = 0;
+	    best_alg->op[best_alg->ops++] = alg_sub_t_m2;
+	    best_alg->cost = cost_limit = cost;
+	  }
+      }
+    else
+      {
+	/* T ends with ...01 or ...011.  Multiply by (T - 1) and add 1.  */
+
+	cost = add_cost;
+	*alg_in = synth_mult (t - 1, cost_limit - cost);
+
+	cost += alg_in->cost;
+	if (cost < best_alg->cost)
+	  {
+	    struct algorithm *x;
+	    x = alg_in, alg_in = best_alg, best_alg = x;
+	    best_alg->log[best_alg->ops] = 0;
+	    best_alg->op[best_alg->ops++] = alg_add_t_m2;
+	    best_alg->cost = cost_limit = cost;
+	  }
+      }
+  }
+
   /* Look for factors of t of the form
      t = q(2**m +- 1), 2 <= m <= floor(log2(t - 1)).
      If we find such a factor, we can multiply by t using an algorithm that
@@ -1970,58 +2019,6 @@ synth_mult (t, cost_limit)
 	    }
 	}
     }
-
-  /* Now, use the simple method of adding or subtracting at the leftmost
-     1-bit.  */
-  {
-    unsigned HOST_WIDE_INT w;
-
-    q = t & -t;			/* get out lsb */
-    for (w = q; (w & t) != 0; w <<= 1)
-      ;
-    if ((w > q << 1)
-	/* Reject the case where t has only two bits.
-	   Thus we prefer addition in that case.  */
-	&& !(t < w && w == q << 2))
-      {
-	/* There are many bits in a row.  Make 'em by subtraction.  */
-
-	m = exact_log2 (q);
-
-	/* Don't use shiftsub_cost here, this operation
-	   scales wrong operand.  */
-	cost = add_cost + shift_cost[m];
-	*alg_in = synth_mult (t + q, cost_limit - cost);
-
-	cost += alg_in->cost;
-	if (cost < best_alg->cost)
-	  {
-	    struct algorithm *x;
-	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->log[best_alg->ops] = m;
-	    best_alg->op[best_alg->ops++] = alg_sub_t_m2;
-	    best_alg->cost = cost_limit = cost;
-	  }
-      }
-    else
-      {
-	/* There's only one or two bit at the left.  Make it by addition.  */
-
-	m = exact_log2 (q);
-	cost = MIN (shiftadd_cost[m], add_cost + shift_cost[m]);
-	*alg_in = synth_mult (t - q, cost_limit - cost);
-
-	cost += alg_in->cost;
-	if (cost < best_alg->cost)
-	  {
-	    struct algorithm *x;
-	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->log[best_alg->ops] = m;
-	    best_alg->op[best_alg->ops++] = alg_add_t_m2;
-	    best_alg->cost = cost_limit = cost;
-	  }
-      }
-  }
 
   /* If we are getting a too long sequence for `struct algorithm'
      to record, store a fake cost to make this search fail.  */
