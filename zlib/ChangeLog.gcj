@@ -1,3 +1,10 @@
+2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (toolexecdir, toolexeclibdir): Set and AC_SUBST.
+	Remove USE_LIBDIR conditional.
+	* Makefile.am (toolexecdir, toolexeclibdir): Don't override.
+	* Makefile.in, configure: Rebuilt.
+
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.am (all-multi): Fix multilib parallel build.

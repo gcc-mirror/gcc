@@ -85,6 +85,8 @@ STRIP = @STRIP@
 VERSION = @VERSION@
 mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
 zlib_basedir = @zlib_basedir@
 
 AUTOMAKE_OPTIONS = cygnus
@@ -96,9 +98,6 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 ZLIB_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
@@ -106,11 +105,8 @@ inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
 trees.h uncompr.c zconf.h zlib.h zutil.c zutil.h
 
 
-# toolexeclib_LTLIBRARIES = @target_all@
-# EXTRA_LTLIBRARIES = libzgcj.la
 @TARGET_LIBRARY_TRUE@noinst_LTLIBRARIES = @TARGET_LIBRARY_TRUE@libzgcj_convenience.la
 @TARGET_LIBRARY_TRUE@libzgcj_convenience_la_SOURCES = @TARGET_LIBRARY_TRUE@$(ZLIB_SOURCES)
-# libzgcj_la_LDFLAGS = -version-info 0:0:0 -rpath $(toolexeclibdir)
 @TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = @TARGET_LIBRARY_FALSE@libz.a
 @TARGET_LIBRARY_FALSE@libz_a_SOURCES = @TARGET_LIBRARY_FALSE@$(ZLIB_SOURCES)
 
