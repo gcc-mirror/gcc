@@ -1815,10 +1815,20 @@ build_new_1 (tree exp)
 
   if (nelts)
     {
+      tree index;
+
       has_array = 1;
       outer_nelts = nelts;
-      /* Use an incomplete array type to avoid VLA headaches.  */
+
+      /* ??? The middle-end will error on us for building a VLA outside a 
+	 function context.  Methinks that's not it's purvey.  So we'll do
+	 our own VLA layout later.  */
+
       full_type = build_cplus_array_type (type, NULL_TREE);
+
+      index = convert (sizetype, nelts);
+      index = size_binop (MINUS_EXPR, index, size_one_node);
+      TYPE_DOMAIN (full_type) = build_index_type (index);
     }
   else
     full_type = type;
@@ -1857,7 +1867,20 @@ build_new_1 (tree exp)
 
   size = size_in_bytes (true_type);
   if (has_array)
-    size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
+    {
+      tree n, bitsize;
+
+      /* Do our own VLA layout.  Setting TYPE_SIZE/_UNIT is necessary in
+	 order for the <INIT_EXPR <*foo> <CONSTRUCTOR ...>> to be valid.  */
+
+      n = convert (sizetype, nelts);
+      size = size_binop (MULT_EXPR, size, n);
+      TYPE_SIZE_UNIT (full_type) = size;
+
+      n = convert (bitsizetype, nelts);
+      bitsize = size_binop (MULT_EXPR, TYPE_SIZE (true_type), n);
+      TYPE_SIZE (full_type) = bitsize;
+    }
 
   /* Allocate the object.  */
   if (! placement && TYPE_FOR_JAVA (true_type))
