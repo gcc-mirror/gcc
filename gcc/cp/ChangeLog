@@ -1,3 +1,7 @@
+2002-12-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (pending_lang_change): Declare.
+
 2002-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_context_free_list): New variable.
