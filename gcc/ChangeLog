@@ -1,5 +1,10 @@
 2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* configure.ac: Update checks for target tools.
+	* configure: Regenerated.
+
+2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* varasm.c (decl_tls_model): Check flag_shlib instead of flag_pic.
 
 2005-03-13  Roger Sayle  <roger@eyesopen.com>

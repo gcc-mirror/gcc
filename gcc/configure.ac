@@ -1792,10 +1792,12 @@ if test "x$gcc_cv_as" = x; then
 	fi
 
 	# If the loop below does not find an assembler, then use whatever
-	# one we can find in the users's path.
-	# user's path.
+	# one we can find in the users's path.  We are looking for a
+	# ${build} -> ${target} assembler.
 	if test "x$program_prefix" != xNONE; then
 		gcc_cv_as=${program_prefix}as$build_exeext
+	elif test x$build != x$host && test x$build != x$target; then
+		gcc_cv_as=${target_noncanonical}-as$build_exeext
 	else
 		gcc_cv_as=`echo as | sed "${program_transform_name}"`$build_exeext
 	fi
@@ -1811,7 +1813,7 @@ if test "x$gcc_cv_as" = x; then
 	    test_dirs=
 	fi
 
-	if test x$host = x$target; then
+	if test x$build = x$target; then
 	    test_dirs="$test_dirs \
 		   /usr/libexec \
 		   /usr/ccs/gcc \
@@ -1916,11 +1918,13 @@ if test "x$gcc_cv_ld" = x; then
 		test_prefix=$exec_prefix
 	fi
 
-	# If the loop below does not find an linker, then use whatever
-	# one we can find in the users's path.
-	# user's path.
+	# If the loop below does not find a linker, then use whatever
+	# one we can find in the users's path.  We are looking for a
+	# ${build} -> ${target} linker.
 	if test "x$program_prefix" != xNONE; then
 		gcc_cv_ld=${program_prefix}ld$build_exeext
+	elif test x$build != x$host && test x$build != x$target; then
+		gcc_cv_ld=${target_noncanonical}-ld$build_exeext
 	else
 		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$build_exeext
 	fi
@@ -1936,7 +1940,7 @@ if test "x$gcc_cv_ld" = x; then
 	    test_dirs=
 	fi
 
-	if test x$host = x$target; then
+	if test x$build = x$target; then
 	    test_dirs="$test_dirs \
 		   /usr/libexec \
 		   /usr/ccs/gcc \
@@ -1981,6 +1985,8 @@ elif test -f $gcc_cv_binutils_srcdir/configure.in \
 	$LN_S ../binutils/nm-new$build_exeext nm$build_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_nm=${program_prefix}nm$build_exeext
+elif test x$build != x$host && test x$build != x$target; then
+	gcc_cv_nm=${target_noncanonical}-nm$build_exeext
 else
 	gcc_cv_nm=`echo nm | sed "${program_transform_name}"`$build_exeext
 fi
@@ -2003,6 +2009,8 @@ elif test -f $gcc_cv_binutils_srcdir/configure.in \
 	$LN_S ../binutils/objdump$build_exeext objdump$build_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_objdump=${program_prefix}objdump$build_exeext
+elif test x$build != x$host && test x$build != x$target; then
+	gcc_cv_objdump=${target_noncanonical}-objdump$build_exeext
 else
 	gcc_cv_objdump=`echo objdump | \
 		sed "${program_transform_name}"`$build_exeext
