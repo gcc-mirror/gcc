@@ -3222,6 +3222,12 @@ aggregate_value_p (exp)
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
   reg = hard_function_value (type, 0);
+
+  /* If we have something other than a REG (e.g. a PARALLEL), then assume
+     it is OK.  */
+  if (GET_CODE (reg) != REG)
+    return 0;
+
   regno = REGNO (reg);
   nregs = HARD_REGNO_NREGS (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
