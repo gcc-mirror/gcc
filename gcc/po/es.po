@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.3\n"
 "POT-Creation-Date: 2003-05-12 14:42-0700\n"
-"PO-Revision-Date: 2003-05-21 13:22-0500\n"
+"PO-Revision-Date: 2003-06-29 15:48-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -26,12 +26,12 @@ msgstr "se especificó el número equivocado de argumentos para el atributo `%s'"
 #: attribs.c:210
 #, c-format
 msgid "`%s' attribute does not apply to types"
-msgstr "el atributo `%s' no aplica a tipos"
+msgstr "el atributo `%s' no se aplica a tipos"
 
 #: attribs.c:247
 #, c-format
 msgid "`%s' attribute only applies to function types"
-msgstr "el atributo `%s' aplica solamente a tipos de funciones"
+msgstr "el atributo `%s' se aplica solamente a tipos de funciones"
 
 #: attribs.c:404 c-common.c:5270 c-common.c:5292 c-common.c:5314
 #: c-common.c:5345 c-common.c:5367 c-common.c:5392 c-common.c:5418
@@ -165,7 +165,7 @@ msgstr "`%s' no está definido fuera del ámbito de la función"
 #: c-common.c:1184
 #, c-format
 msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are required to support"
-msgstr "la longitud de la cadena `%d' es mayor que la longitud `%d' que se requiere que los compiladores ISO C%d den soporte"
+msgstr "la longitud de la cadena `%d' es mayor que la longitud `%d', la máxima que los compiladores ISO C%d deben soportar"
 
 #: c-common.c:1242
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
@@ -203,7 +203,7 @@ msgstr "desbordamiento en la conversión implícita de constante"
 #: c-common.c:1595
 #, c-format
 msgid "operation on `%s' may be undefined"
-msgstr "la operación sobre `%s' puede estar indefinida"
+msgstr "la operación sobre `%s' puede no estar definida"
 
 #: c-common.c:1886
 msgid "expression statement has incomplete type"
@@ -240,19 +240,19 @@ msgstr "la comparación de una expresión unsigned < 0 siempre es falsa"
 
 #: c-common.c:2636
 msgid "pointer of type `void *' used in arithmetic"
-msgstr "se usó un apuntador de tipo `void *' en la aritmética"
+msgstr "se usó un puntero de tipo `void *' en la aritmética"
 
 #: c-common.c:2642
 msgid "pointer to a function used in arithmetic"
-msgstr "se usó un apuntador a una función en la aritmética"
+msgstr "se usó un puntero a una función en la aritmética"
 
 #: c-common.c:2648
 msgid "pointer to member function used in arithmetic"
-msgstr "se usó un apuntador a una función miembro en la aritmética"
+msgstr "se usó un puntero a una función miembro en la aritmética"
 
 #: c-common.c:2654
 msgid "pointer to a member used in arithmetic"
-msgstr "se usó un apuntador a un miembro en la aritmética"
+msgstr "se usó un puntero a un miembro en la aritmética"
 
 #: c-common.c:2741 f/com.c:14762
 msgid "struct type value used where scalar is required"
@@ -314,15 +314,15 @@ msgstr "argumentos que no son de coma flotante para la función `%s'"
 
 #: c-common.c:4076
 msgid "pointers are not permitted as case values"
-msgstr "los apuntadores no son permitidos como valores case"
+msgstr "no se permite usar punteros como valores case"
 
 #: c-common.c:4082
 msgid "ISO C++ forbids range expressions in switch statements"
-msgstr "ISO C++ prohibe un rango de expresiones en las declaraciones switch"
+msgstr "ISO C++ prohíbe un rango de expresiones en las declaraciones switch"
 
 #: c-common.c:4084
 msgid "ISO C forbids range expressions in switch statements"
-msgstr "ISO C prohibe un rango de expresiones en las declaraciones switch"
+msgstr "ISO C prohíbe un rango de expresiones en las declaraciones switch"
 
 #: c-common.c:4114
 msgid "empty range specified"
@@ -330,11 +330,11 @@ msgstr "se especificó un rango vacío"
 
 #: c-common.c:4165
 msgid "duplicate (or overlapping) case value"
-msgstr "valor case duplicado (o traslapado)"
+msgstr "valor case duplicado (o con solapamiento de rangos)"
 
 #: c-common.c:4167
 msgid "this is the first entry overlapping that value"
-msgstr "esta es la primera entrada que traslapa ese valor"
+msgstr "esta es la primera entrada que solapa ese valor"
 
 #: c-common.c:4171
 msgid "duplicate case value"
@@ -346,24 +346,24 @@ msgstr "se usó previamente aquí"
 
 #: c-common.c:4176
 msgid "multiple default labels in one switch"
-msgstr "múltiples etiquetas por omisión en un solo switch"
+msgstr "múltiples etiquetas por defecto en un solo switch"
 
 #: c-common.c:4177
 msgid "this is the first default label"
-msgstr "esta es la primera etiqueta por omisión"
+msgstr "esta es la primera etiqueta por defecto"
 
 #: c-common.c:4205
 msgid "ISO C++ forbids taking the address of a label"
-msgstr "ISO C++ prohibe tomar la dirección de una etiqueta"
+msgstr "ISO C++ prohíbe tomar la dirección de una etiqueta"
 
 #: c-common.c:4207
 msgid "ISO C forbids taking the address of a label"
-msgstr "ISO C prohibe tomar la dirección de una etiqueta"
+msgstr "ISO C prohíbe tomar la dirección de una etiqueta"
 
 #: c-common.c:5230
 #, c-format
 msgid "declaration of `%s' shadows %s"
-msgstr "la declaración de `%s' obscurece a %s"
+msgstr "la declaración de `%s' oscurece a %s"
 
 #: c-common.c:5649
 #, c-format
@@ -396,7 +396,7 @@ msgstr "no se permite un atributo de sección para `%s'"
 
 #: c-common.c:5724
 msgid "section attributes are not supported for this target"
-msgstr "no se da soporte a atributos de sección en este objetivo"
+msgstr "no se soportan atributos de sección en este objetivo"
 
 #: c-common.c:5766
 msgid "requested alignment is not a constant"
@@ -430,7 +430,7 @@ msgstr "el argumento de visibilidad no es una cadena"
 
 #: c-common.c:5914
 msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr "el argumento de visibilidad debe ser uno de \"default\", \"hidden\", \"protected\" ó \"internal\""
+msgstr "el argumento de visibilidad debe ser \"default\", \"hidden\", \"protected\" o \"internal\""
 
 #: c-common.c:5948
 msgid "tls_model arg not a string"
@@ -443,7 +443,7 @@ msgstr "el argumento de tls_model debe ser uno de \"local-exec\", \"initial-exec
 #: c-common.c:5982 c-common.c:6038
 #, c-format
 msgid "`%s' attribute applies only to functions"
-msgstr "el atributo `%s' aplica solamente a funciones"
+msgstr "el atributo `%s' se aplica solamente a funciones"
 
 #: c-common.c:5989 c-common.c:6045
 #, c-format
@@ -481,7 +481,7 @@ msgstr "un argumento que no es nulo con un número de operandos fuera de rango (a
 #: c-common.c:6391
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-msgstr "un argumento que no es nulo hace referencia a un operando que no es apuntador (arg %lu, operando %lu)"
+msgstr "un argumento que no es nulo hace referencia a un operando que no es puntero (arg %lu, operando %lu)"
 
 #: c-common.c:6477
 #, c-format
@@ -550,12 +550,12 @@ msgstr "la declaración previa de la función `%s' era inline"
 #: c-decl.c:930 c-decl.c:976
 #, c-format
 msgid "shadowing built-in function `%s'"
-msgstr "obscureciendo la función interna `%s'"
+msgstr "oscureciendo la función interna `%s'"
 
 #: c-decl.c:932
 #, c-format
 msgid "shadowing library function `%s'"
-msgstr "obscureciendo la función de biblioteca `%s'"
+msgstr "oscureciendo la función de biblioteca `%s'"
 
 #: c-decl.c:938
 #, c-format
@@ -595,7 +595,7 @@ msgstr "una lista de parámetros con una elipsis no puede coincidir con una decla
 
 #: c-decl.c:1136
 msgid "an argument type that has a default promotion can't match an empty parameter name list declaration"
-msgstr "un tipo de argumento que tiene una promoción por omisión no puede coincidir con una declaración de nombre de lista de parámetros vacía."
+msgstr "un tipo de argumento que tiene una promoción por defecto no puede coincidir con una declaración de nombre de lista de parámetros vacía."
 
 #: c-decl.c:1154
 #, c-format
@@ -679,12 +679,12 @@ msgstr "declaración redundante de `%s' en el mismo ámbito"
 #: c-decl.c:1607 java/decl.c:1102
 #, c-format
 msgid "declaration of `%s' shadows a parameter"
-msgstr "la declaración de `%s' obscurece un parámetro"
+msgstr "la declaración de `%s' oscurece un parámetro"
 
 #: c-decl.c:1610 java/decl.c:1105
 #, c-format
 msgid "declaration of `%s' shadows a symbol from the parameter list"
-msgstr "la declaración de `%s' obscurece un símbolo de la lista de parámetros"
+msgstr "la declaración de `%s' oscurece un símbolo de la lista de parámetros"
 
 #: c-decl.c:1631 cp/decl.c:4218
 msgid "a parameter"
@@ -887,7 +887,7 @@ msgstr "se ignora el especificador asm para la variable local no estática `%s'"
 #: c-decl.c:3198
 #, c-format
 msgid "ISO C forbids parameter `%s' shadowing typedef"
-msgstr "ISO C prohibe el obscurecimiento del parámetro `%s' de typedef"
+msgstr "ISO C prohíbe el oscurecimiento del parámetro `%s' de typedef"
 
 #: c-decl.c:3543 cp/decl.c:10568
 msgid "`long long long' is too long for GCC"
@@ -923,7 +923,7 @@ msgstr "`%s' falla al ser un typedef o un tipo interno del compilador"
 #: c-decl.c:3639
 #, c-format
 msgid "type defaults to `int' in declaration of `%s'"
-msgstr "el tipo de dato por omisión es `int' en la declaración de `%s'"
+msgstr "el tipo de dato por defecto es `int' en la declaración de `%s'"
 
 #: c-decl.c:3668
 #, c-format
@@ -1077,7 +1077,7 @@ msgstr "el tamaño de la matriz `%s' tiene un tipo no entero"
 #: c-decl.c:4017
 #, c-format
 msgid "ISO C forbids zero-size array `%s'"
-msgstr "ISO C prohibe la matriz `%s' de tamaño cero"
+msgstr "ISO C prohíbe la matriz `%s' de tamaño cero"
 
 #: c-decl.c:4024
 #, c-format
@@ -1087,12 +1087,12 @@ msgstr "el tamaño de la matriz `%s' es negativo"
 #: c-decl.c:4037
 #, c-format
 msgid "ISO C90 forbids array `%s' whose size can't be evaluated"
-msgstr "ISO C90 prohibe la matriz `%s' cuyo tamaño no se puede evaluar"
+msgstr "ISO C90 prohíbe la matriz `%s' cuyo tamaño no se puede evaluar"
 
 #: c-decl.c:4040
 #, c-format
 msgid "ISO C90 forbids variable-size array `%s'"
-msgstr "ISO C90 prohibe la matriz `%s' de tamaño variable"
+msgstr "ISO C90 prohíbe la matriz `%s' de tamaño variable"
 
 #: c-decl.c:4070 c-decl.c:4293 cp/decl.c:11585
 #, c-format
@@ -1109,7 +1109,7 @@ msgstr "el tipo matriz tiene tipo de elemento incompleto"
 
 #: c-decl.c:4113 c-decl.c:4343
 msgid "ISO C forbids const or volatile function types"
-msgstr "ISO C prohibe los tipos de función const o volatile"
+msgstr "ISO C prohíbe los tipos de función const o volatile"
 
 #: c-decl.c:4159 cp/decl.c:11133
 #, c-format
@@ -1123,7 +1123,7 @@ msgstr "`%s' que es declarado como función devuelve una matriz"
 
 #: c-decl.c:4192
 msgid "ISO C forbids qualified void function return type"
-msgstr "ISO C prohibe el tipo calificado de devolución de una función void"
+msgstr "ISO C prohíbe el tipo calificado de devolución de una función void"
 
 #: c-decl.c:4196
 msgid "type qualifiers ignored on function return type"
@@ -1131,11 +1131,11 @@ msgstr "se ignoran los calificadores de tipo en el tipo de devolución de la func
 
 #: c-decl.c:4225 c-decl.c:4308 c-decl.c:4432 c-decl.c:4524
 msgid "ISO C forbids qualified function types"
-msgstr "ISO C prohibe los tipos de función calificados"
+msgstr "ISO C prohíbe los tipos de función calificados"
 
 #: c-decl.c:4265 cp/decl.c:11372
 msgid "invalid type modifier within pointer declarator"
-msgstr "modificador de tipo inválido dentro de la declaración del apuntador"
+msgstr "modificador de tipo inválido dentro de la declaración del puntero"
 
 #: c-decl.c:4363 cp/decl.c:11870
 #, c-format
@@ -1388,7 +1388,7 @@ msgstr "el tipo de devolución es un tipo de dato incompleto"
 
 #: c-decl.c:5719
 msgid "return type defaults to `int'"
-msgstr "el tipo de devolución por omisión es `int'"
+msgstr "el tipo de devolución por defecto es `int'"
 
 #: c-decl.c:5766
 #, c-format
@@ -1465,7 +1465,7 @@ msgstr "múltiples parámetros nombrados `%s'"
 #: c-decl.c:6096 c-decl.c:6098
 #, c-format
 msgid "type of `%s' defaults to `int'"
-msgstr "el tipo de `%s' es `int' por omisión"
+msgstr "el tipo de `%s' es `int' por defecto"
 
 #: c-decl.c:6134
 #, c-format
@@ -1996,12 +1996,12 @@ msgstr "el número de operandos especificados para el formato no toma argumentos"
 #: c-format.c:2211
 #, c-format
 msgid "writing through null pointer (arg %d)"
-msgstr "escribiendo a través de un apuntador nulo (argumento %d)"
+msgstr "escribiendo a través de un puntero nulo (argumento %d)"
 
 #: c-format.c:2220
 #, c-format
 msgid "reading through null pointer (arg %d)"
-msgstr "leyendo a través de un apuntador nulo (argumento %d)"
+msgstr "leyendo a través de un puntero nulo (argumento %d)"
 
 #: c-format.c:2240
 #, c-format
@@ -2016,16 +2016,16 @@ msgstr "calificadores de tipo extra en el argumento de formato (argumento %d)"
 #: c-format.c:2257
 #, c-format
 msgid "format argument is not a pointer (arg %d)"
-msgstr "el argumento de formato no es un apuntador (argumento %d)"
+msgstr "el argumento de formato no es un puntero (argumento %d)"
 
 #: c-format.c:2259
 #, c-format
 msgid "format argument is not a pointer to a pointer (arg %d)"
-msgstr "el argumento de formato no es un apuntador a un apuntador (argumento %d)"
+msgstr "el argumento de formato no es un puntero a un puntero (argumento %d)"
 
 #: c-format.c:2330
 msgid "pointer"
-msgstr "apuntador"
+msgstr "puntero"
 
 #: c-format.c:2332
 msgid "different type"
@@ -2142,7 +2142,7 @@ msgstr "la opción \"%s\" es obsoleta, por favor vea la documentación para más de
 
 #: c-opts.c:1153
 msgid "-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)"
-msgstr "se renombró -fhandle-exceptions a -fexceptions (y ahora está activado por omisión)"
+msgstr "se renombró -fhandle-exceptions a -fexceptions (y ahora está activado por defecto)"
 
 #: c-opts.c:1273
 msgid "output filename specified twice"
@@ -2361,7 +2361,7 @@ msgstr "error sintáctico: no se puede regresar"
 
 #: c-parse.y:325 objc-parse.y:346
 msgid "ISO C forbids an empty source file"
-msgstr "ISO C prohibe un fichero fuente vacío"
+msgstr "ISO C prohíbe un fichero fuente vacío"
 
 #: c-parse.y:366 c-typeck.c:6887 objc-parse.y:388
 msgid "argument of `asm' is not a constant string"
@@ -2369,7 +2369,7 @@ msgstr "el argumento de `asm' no es una cadena constante"
 
 #: c-parse.y:374 objc-parse.y:396
 msgid "ISO C forbids data definition with no type or storage class"
-msgstr "ISO C prohibe la definición de datos sin tipo o clase de almacenamiento"
+msgstr "ISO C prohíbe la definición de datos sin tipo o clase de almacenamiento"
 
 #: c-parse.y:376 objc-parse.y:398
 msgid "data definition has no type or storage class"
@@ -2389,15 +2389,15 @@ msgstr "`sizeof' aplicado a un campo de bits"
 
 #: c-parse.y:583 objc-parse.y:605
 msgid "ISO C forbids omitting the middle term of a ?: expression"
-msgstr "ISO C prohibe la omisión del término medio de una expresión ?:"
+msgstr "ISO C prohíbe la omisión del término medio de una expresión ?:"
 
 #: c-parse.y:632 objc-parse.y:654
 msgid "ISO C89 forbids compound literals"
-msgstr "ISO C89 prohibe las literales compuestas"
+msgstr "ISO C89 prohíbe las literales compuestas"
 
 #: c-parse.y:646 objc-parse.y:668
 msgid "ISO C forbids braced-groups within expressions"
-msgstr "ISO C prohibe grupos de llaves dentro de expresiones"
+msgstr "ISO C prohíbe grupos de llaves dentro de expresiones"
 
 #: c-parse.y:677 objc-parse.y:699
 msgid "first argument to __builtin_choose_expr not a constant"
@@ -2421,11 +2421,11 @@ msgstr "`%s' no está en el inicio de la declaración"
 
 #: c-parse.y:1441 objc-parse.y:1496
 msgid "ISO C forbids empty initializer braces"
-msgstr "ISO C prohibe las llaves de inicializador vacías"
+msgstr "ISO C prohíbe las llaves de inicializador vacías"
 
 #: c-parse.y:1455 objc-parse.y:1510
 msgid "ISO C89 forbids specifying subobject to initialize"
-msgstr "ISO C89 prohibe la especificación de subobjetos a inicializar"
+msgstr "ISO C89 prohíbe la especificación de subobjetos a inicializar"
 
 #: c-parse.y:1458 objc-parse.y:1513
 msgid "obsolete use of designated initializer without `='"
@@ -2437,15 +2437,15 @@ msgstr "uso obsoleto del inicializador asignado con `:'"
 
 #: c-parse.y:1489 objc-parse.y:1544
 msgid "ISO C forbids specifying range of elements to initialize"
-msgstr "ISO C prohibe la especificación de rangos de elementos a inicializar"
+msgstr "ISO C prohíbe la especificación de rangos de elementos a inicializar"
 
 #: c-parse.y:1497 c-parse.y:1528 objc-parse.y:1552 objc-parse.y:1583
 msgid "ISO C forbids nested functions"
-msgstr "ISO C prohibe las funciones anidadas"
+msgstr "ISO C prohíbe las funciones anidadas"
 
 #: c-parse.y:1703 objc-parse.y:1760
 msgid "ISO C forbids forward references to `enum' types"
-msgstr "ISO C prohibe las declaraciones posteriores para tipos `enum'"
+msgstr "ISO C prohíbe las declaraciones posteriores para tipos `enum'"
 
 #: c-parse.y:1715 parse.y:2386 objc-parse.y:1772
 msgid "comma at end of enumerator list"
@@ -2465,7 +2465,7 @@ msgstr "ISO C no tiene soporte para structs/unions sin nombre"
 
 #: c-parse.y:1754 objc-parse.y:1825
 msgid "ISO C forbids member declarations with no members"
-msgstr "ISO C prohibe declaraciones de miembros con no miembros"
+msgstr "ISO C prohíbe declaraciones de miembros con no miembros"
 
 #: c-parse.y:1913 objc-parse.y:1984
 msgid "deprecated use of label at end of compound statement"
@@ -2473,11 +2473,11 @@ msgstr "uso obsoleto de la etiqueta al final de la declaración compuesta"
 
 #: c-parse.y:1930 objc-parse.y:2001
 msgid "ISO C89 forbids mixed declarations and code"
-msgstr "ISO C89 prohibe las declaraciones mezcladas y código"
+msgstr "ISO C89 prohíbe las declaraciones mezcladas y código"
 
 #: c-parse.y:2005 objc-parse.y:2080
 msgid "ISO C forbids label declarations"
-msgstr "ISO C prohibe las declaraciones etiquetadas"
+msgstr "ISO C prohíbe las declaraciones etiquetadas"
 
 #: c-parse.y:2055 parse.y:1628 objc-parse.y:2130
 msgid "braced-group within expression allowed only inside a function"
@@ -2489,11 +2489,11 @@ msgstr "cuerpo vacío en una declaración else"
 
 #: c-parse.y:2303 objc-parse.y:2378
 msgid "ISO C forbids `goto *expr;'"
-msgstr "ISO C prohibe `goto *expr;'"
+msgstr "ISO C prohíbe `goto *expr;'"
 
 #: c-parse.y:2403 objc-parse.y:2478
 msgid "ISO C forbids forward parameter declarations"
-msgstr "ISO C prohibe declaraciones adelantadas de parámetros"
+msgstr "ISO C prohíbe declaraciones adelantadas de parámetros"
 
 #. Gcc used to allow this as an extension.  However, it does
 #. not work for all targets, and thus has been disabled.
@@ -2712,7 +2712,7 @@ msgstr "los tipos no son totalmente compatibles"
 
 #: c-typeck.c:757 c-typeck.c:2687
 msgid "arithmetic on pointer to an incomplete type"
-msgstr "aritmética en apuntador a un tipo de dato incompleto"
+msgstr "aritmética en puntero a un tipo de dato incompleto"
 
 #: c-typeck.c:1136
 #, c-format
@@ -2726,11 +2726,11 @@ msgstr "petición del miembro `%s' en algo que no es estructura ó unión"
 
 #: c-typeck.c:1204
 msgid "dereferencing pointer to incomplete type"
-msgstr "apuntador deferenciado a tipo de dato incompleto"
+msgstr "puntero deferenciado a tipo de dato incompleto"
 
 #: c-typeck.c:1208
 msgid "dereferencing `void *' pointer"
-msgstr "deferenciando el apuntador `void *'"
+msgstr "deferenciando el puntero `void *'"
 
 #: c-typeck.c:1225 cp/typeck.c:2366
 #, c-format
@@ -2751,11 +2751,11 @@ msgstr "el subíndice de la matriz no es un entero"
 
 #: c-typeck.c:1306
 msgid "ISO C forbids subscripting `register' array"
-msgstr "ISO C prohibe el subíndice de una matriz `register'"
+msgstr "ISO C prohíbe el subíndice de una matriz `register'"
 
 #: c-typeck.c:1308
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr "ISO C90 prohibe el subíndice de una matriz no-lvaluada"
+msgstr "ISO C90 prohíbe el subíndice de una matriz no-lvaluada"
 
 #: c-typeck.c:1341
 msgid "subscript has type `char'"
@@ -2763,7 +2763,7 @@ msgstr "el subíndice es de tipo `char'"
 
 #: c-typeck.c:1357 cp/typeck.c:2515
 msgid "subscripted value is neither array nor pointer"
-msgstr "el valor indicado por el subíndice no es ni matriz ni apuntador"
+msgstr "el valor indicado por el subíndice no es ni matriz ni puntero"
 
 #: c-typeck.c:1411
 #, c-format
@@ -2925,27 +2925,27 @@ msgstr "no es segura la comparacion de coma flotante con == o !="
 
 #: c-typeck.c:2178 c-typeck.c:2184
 msgid "ISO C forbids comparison of `void *' with function pointer"
-msgstr "ISO C prohibe la comparación de `void *' con un apuntador de función"
+msgstr "ISO C prohíbe la comparación de `void *' con un puntero de función"
 
 #: c-typeck.c:2187 c-typeck.c:2227 c-typeck.c:2255
 msgid "comparison of distinct pointer types lacks a cast"
-msgstr "la comparación de diferentes tipos de apuntador carece de una conversión"
+msgstr "la comparación de diferentes tipos de puntero carece de una conversión"
 
 #: c-typeck.c:2201 c-typeck.c:2206 c-typeck.c:2275 c-typeck.c:2280
 msgid "comparison between pointer and integer"
-msgstr "comparación entre apuntador y entero"
+msgstr "comparación entre puntero y entero"
 
 #: c-typeck.c:2222 c-typeck.c:2250
 msgid "ISO C forbids ordered comparisons of pointers to functions"
-msgstr "ISO C prohibe la comparación entre apuntadores a funciones"
+msgstr "ISO C prohíbe la comparación entre punteros a funciones"
 
 #: c-typeck.c:2247
 msgid "comparison of complete and incomplete pointers"
-msgstr "comparación de apuntadores completos e incompletos"
+msgstr "comparación de punteros completos e incompletos"
 
 #: c-typeck.c:2263 c-typeck.c:2270
 msgid "ordered comparison of pointer with integer zero"
-msgstr "comparación ordenada de apuntador con el entero cero"
+msgstr "comparación ordenada de puntero con el entero cero"
 
 #: c-typeck.c:2294 cp/typeck.c:3386
 msgid "unordered comparison on non-floating point argument"
@@ -2965,11 +2965,11 @@ msgstr "comparación de un ~unsigned promovido con unsigned"
 
 #: c-typeck.c:2639
 msgid "pointer of type `void *' used in subtraction"
-msgstr "se usó un apuntador de tipo `void *' en la sustracción"
+msgstr "se usó un puntero de tipo `void *' en la sustracción"
 
 #: c-typeck.c:2641
 msgid "pointer to a function used in subtraction"
-msgstr "se utilizó un apuntador a una función en la sustracción"
+msgstr "se utilizó un puntero a una función en la sustracción"
 
 #: c-typeck.c:2738
 msgid "wrong type argument to unary plus"
@@ -3013,15 +3013,15 @@ msgstr "argumento de tipo erróneo para el decremento"
 
 #: c-typeck.c:2890
 msgid "increment of pointer to unknown structure"
-msgstr "incremento de apuntador a estructura desconocida"
+msgstr "incremento de puntero a estructura desconocida"
 
 #: c-typeck.c:2892
 msgid "decrement of pointer to unknown structure"
-msgstr "decremento de apuntador a estructura desconocida"
+msgstr "decremento de puntero a estructura desconocida"
 
 #: c-typeck.c:3029
 msgid "ISO C forbids the address of a cast expression"
-msgstr "ISO C prohibe la dirección de una expresión cast"
+msgstr "ISO C prohíbe la dirección de una expresión cast"
 
 #: c-typeck.c:3039
 msgid "invalid lvalue in unary `&'"
@@ -3042,15 +3042,15 @@ msgstr "%s"
 
 #: c-typeck.c:3241
 msgid "ISO C forbids use of conditional expressions as lvalues"
-msgstr "ISO C prohibe el uso de expresiones condicionales como l-valores"
+msgstr "ISO C prohíbe el uso de expresiones condicionales como l-valores"
 
 #: c-typeck.c:3244
 msgid "ISO C forbids use of compound expressions as lvalues"
-msgstr "ISO C prohibe el uso de expresiones compuestas como l-valores"
+msgstr "ISO C prohíbe el uso de expresiones compuestas como l-valores"
 
 #: c-typeck.c:3247
 msgid "ISO C forbids use of cast expressions as lvalues"
-msgstr "ISO C prohibe el uso de expresiones de conversión como l-valores"
+msgstr "ISO C prohíbe el uso de expresiones de conversión como l-valores"
 
 #: c-typeck.c:3264
 #, c-format
@@ -3102,19 +3102,19 @@ msgstr "tipos signed y unsigned en la expresión condicional"
 
 #: c-typeck.c:3460
 msgid "ISO C forbids conditional expr with only one void side"
-msgstr "ISO C prohibe una expresión condicional con sólo un lado void"
+msgstr "ISO C prohíbe una expresión condicional con sólo un lado void"
 
 #: c-typeck.c:3476 c-typeck.c:3483
 msgid "ISO C forbids conditional expr between `void *' and function pointer"
-msgstr "ISO C prohibe expresiones condicionales entre `void *' y apuntadores de funciones"
+msgstr "ISO C prohíbe expresiones condicionales entre `void *' y punteros de función"
 
 #: c-typeck.c:3489
 msgid "pointer type mismatch in conditional expression"
-msgstr "los tipos de datos apuntadores no coinciden en la expresión condicional"
+msgstr "los tipos de datos punteros no coinciden en la expresión condicional"
 
 #: c-typeck.c:3496 c-typeck.c:3506
 msgid "pointer/integer type mismatch in conditional expression"
-msgstr "los tipos de datos apuntadores/enteros no coinciden en la expresión condicional"
+msgstr "los tipos de datos punteros/enteros no coinciden en la expresión condicional"
 
 #: c-typeck.c:3520
 msgid "type mismatch in conditional expression"
@@ -3134,11 +3134,11 @@ msgstr "la conversión especifica el tipo función"
 
 #: c-typeck.c:3651
 msgid "ISO C forbids casting nonscalar to the same type"
-msgstr "ISO C prohibe la conversión de un no escalar al mismo tipo"
+msgstr "ISO C prohíbe la conversión de un no escalar al mismo tipo"
 
 #: c-typeck.c:3670
 msgid "ISO C forbids casts to union type"
-msgstr "ISO C prohibe la conversión al tipo union"
+msgstr "ISO C prohíbe la conversión al tipo union"
 
 #: c-typeck.c:3685
 msgid "cast to union type from type not present in union"
@@ -3152,7 +3152,7 @@ msgstr "la conversión agrega calificadores nuevos al tipo función"
 #. present in IN_TYPE.
 #: c-typeck.c:3741
 msgid "cast discards qualifiers from pointer target type"
-msgstr "la conversión descarta los calificadores del tipo del destino del apuntador"
+msgstr "la conversión descarta los calificadores del tipo del destino del puntero"
 
 #: c-typeck.c:3756
 msgid "cast increases required alignment of target type"
@@ -3160,7 +3160,7 @@ msgstr "la conversión incrementa la alineación requerida del tipo del destino"
 
 #: c-typeck.c:3762 cp/typeck.c:5050
 msgid "cast from pointer to integer of different size"
-msgstr "conversión de apuntador a entero de tamaño diferente"
+msgstr "conversión de puntero a entero de tamaño diferente"
 
 #: c-typeck.c:3767
 msgid "cast does not match function type"
@@ -3168,7 +3168,7 @@ msgstr "la conversión no coincide con el tipo de la función"
 
 #: c-typeck.c:3774 cp/typeck.c:5057
 msgid "cast to pointer from integer of different size"
-msgstr "conversión a apuntador desde un entero de tamaño diferente"
+msgstr "conversión a puntero desde un entero de tamaño diferente"
 
 #: c-typeck.c:3786
 msgid "type-punning to incomplete type might break strict-aliasing rules"
@@ -3176,7 +3176,7 @@ msgstr "el castigo de tipo a tipo incompleto puede romper las reglas de alias es
 
 #: c-typeck.c:3790
 msgid "dereferencing type-punned pointer will break strict-aliasing rules"
-msgstr "la dereferencia de apuntadores de tipo castigado romperá las reglas de alias estricto"
+msgstr "la dereferencia de punteros de tipo castigado romperá las reglas de alias estricto"
 
 #. Now we have handled acceptable kinds of LHS that are not truly lvalues.
 #. Reject anything strange now.
@@ -3202,36 +3202,36 @@ msgstr "%s hace que la función calificada apunte desde una no calificada"
 #: c-typeck.c:4178 c-typeck.c:4221
 #, c-format
 msgid "%s discards qualifiers from pointer target type"
-msgstr "%s descarta calificadores del tipo del destino del apuntador"
+msgstr "%s descarta calificadores del tipo del destino del puntero"
 
 #: c-typeck.c:4184
 msgid "ISO C prohibits argument conversion to union type"
-msgstr "ISO C prohibe la conversión de argumentos a tipo union"
+msgstr "ISO C prohíbe la conversión de argumentos a tipo union"
 
 #: c-typeck.c:4213
 #, c-format
 msgid "ISO C forbids %s between function pointer and `void *'"
-msgstr "ISO C prohibe %s entre apuntadores a función y `void *'"
+msgstr "ISO C prohíbe %s entre punteros a función y `void *'"
 
 #: c-typeck.c:4230
 #, c-format
 msgid "pointer targets in %s differ in signedness"
-msgstr "el apuntador que apunta a %s difiere en signo"
+msgstr "el puntero que apunta a %s difiere en signo"
 
 #: c-typeck.c:4246
 #, c-format
 msgid "%s from incompatible pointer type"
-msgstr "%s de tipo de apuntador incompatible"
+msgstr "%s de tipo de puntero incompatible"
 
 #: c-typeck.c:4262
 #, c-format
 msgid "%s makes pointer from integer without a cast"
-msgstr "%s se crea un apuntador desde un entero sin una conversión"
+msgstr "%s se crea un puntero desde un entero sin una conversión"
 
 #: c-typeck.c:4270
 #, c-format
 msgid "%s makes integer from pointer without a cast"
-msgstr "%s se crea un entero desde un apuntador sin una conversión"
+msgstr "%s se crea un entero desde un puntero sin una conversión"
 
 #: c-typeck.c:4284 c-typeck.c:4287
 #, c-format
@@ -3257,7 +3257,7 @@ msgstr "al pasar un argumento de `%s'"
 #. Function name unknown (call through ptr).
 #: c-typeck.c:4363
 msgid "passing arg of pointer to function"
-msgstr "al pasar un argumento de apuntador a la función"
+msgstr "al pasar un argumento de puntero a la función"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4371
@@ -3269,7 +3269,7 @@ msgstr "al pasar el argumento %d de `%s'"
 #: c-typeck.c:4381
 #, c-format
 msgid "passing arg %d of pointer to function"
-msgstr "al pasar el argumento %d del apuntador a la función"
+msgstr "al pasar el argumento %d del puntero a la función"
 
 #: c-typeck.c:4447
 msgid "initializer for static variable is not constant"
@@ -3915,7 +3915,7 @@ msgstr "falta la sección de cadenas"
 
 #: collect2.c:3138
 msgid "section pointer missing"
-msgstr "falta la sección de apuntadores"
+msgstr "falta la sección de punteros"
 
 #: collect2.c:3186
 msgid "no symbol table found"
@@ -4055,11 +4055,11 @@ msgstr ""
 
 #: convert.c:69
 msgid "cannot convert to a pointer type"
-msgstr "no se puede convertir a un tipo apuntador"
+msgstr "no se puede convertir a un tipo puntero"
 
 #: convert.c:102
 msgid "pointer value used where a floating point value was expected"
-msgstr "se usó un valor de apuntador donde se esperaba un valor de coma flotante"
+msgstr "se usó un valor de puntero donde se esperaba un valor de coma flotante"
 
 #: convert.c:106
 msgid "aggregate value used where a float was expected"
@@ -4079,7 +4079,7 @@ msgstr "se usó un valor agregado donde se esperaba un entero"
 
 #: convert.c:472 f/com.c:1100
 msgid "pointer value used where a complex was expected"
-msgstr "se usó un valor de apuntador donde se esperaba un complejo"
+msgstr "se usó un valor de puntero donde se esperaba un complejo"
 
 #: convert.c:476 f/com.c:1102
 msgid "aggregate value used where a complex was expected"
@@ -6910,11 +6910,11 @@ msgstr "el valor de case `%ld' no es un tipo enumerado `%s'"
 
 #: stmt.c:5310
 msgid "switch missing default case"
-msgstr "falta el case por omisión para un switch"
+msgstr "falta el case por defecto para un switch"
 
 #: stor-layout.c:178
 msgid "type size can't be explicitly evaluated"
-msgstr "el tamaño del tipo no puede ser evaluado explícitamente"
+msgstr "el tamaño del tipo no se puede evaluar explícitamente"
 
 #: stor-layout.c:180
 msgid "variable-size type declared outside of any function"
@@ -7006,11 +7006,11 @@ msgstr "ld devolvió el estado de salida %d"
 
 #: toplev.c:920
 msgid "Generate debugging info in default format"
-msgstr "Generar información de depuración en el formato por omisión"
+msgstr "Generar información de depuración en el formato por defecto"
 
 #: toplev.c:921
 msgid "Generate debugging info in default extended format"
-msgstr "Generar información de depuración en el formato extendido por omisión"
+msgstr "Generar información de depuración en el formato extendido por defecto"
 
 #: toplev.c:923
 msgid "Generate STABS format debug info"
@@ -7058,7 +7058,7 @@ msgstr "No guardar floats en registros"
 
 #: toplev.c:985
 msgid "Consider all mem refs through pointers as volatile"
-msgstr "Considerar todas las referencias a memoria a través de apuntadores como volatile"
+msgstr "Considerar todas las referencias a memoria a través de punteros como volatile"
 
 #: toplev.c:987
 msgid "Consider all mem refs to global data to be volatile"
@@ -7222,7 +7222,7 @@ msgstr "Ejecutar el optimizador de ciclos dos veces"
 
 #: toplev.c:1067
 msgid "Delete useless null pointer checks"
-msgstr "Borrar las revisiones de apuntadores nulos sin uso"
+msgstr "Borrar las revisiones de punteros nulos sin uso"
 
 #: toplev.c:1069
 msgid "Reschedule instructions before register allocation"
@@ -7478,15 +7478,15 @@ msgstr "Determinar el estándard de lenguaje"
 
 #: toplev.c:1213
 msgid "Make bit-fields by unsigned by default"
-msgstr "Hacer por omisión unsigned los campos de bit"
+msgstr "Hacer por defecto unsigned los campos de bit"
 
 #: toplev.c:1217
 msgid "Make 'char' be signed by default"
-msgstr "Hacer que 'char' sea signed por omisión"
+msgstr "Hacer que 'char' sea signed por defecto"
 
 #: toplev.c:1219
 msgid "Make 'char' be unsigned by default"
-msgstr "Hacer que 'char' sea unsigned por omisión"
+msgstr "Hacer que 'char' sea unsigned por defecto"
 
 #: toplev.c:1225
 msgid "Do not recognize the 'asm' keyword"
@@ -7626,7 +7626,7 @@ msgstr "Avisar sobre posibles paréntesis faltantes"
 
 #: toplev.c:1334
 msgid "Warn about function pointer arithmetic"
-msgstr "Avisar sobre la aritmética de apuntadores de funciones"
+msgstr "Avisar sobre la aritmética de punteros de funciones"
 
 #: toplev.c:1337
 msgid "Warn about multiple declarations of the same object"
@@ -7634,7 +7634,7 @@ msgstr "Avisar sobre declaraciones múltiples del mismo objeto"
 
 #: toplev.c:1340
 msgid "Warn whenever a function's return-type defaults to int"
-msgstr "Avisar cuando el tipo de devolución por omisión de una función cambia a int"
+msgstr "Avisar cuando el tipo de devolución por defecto de una función cambia a int"
 
 #: toplev.c:1343
 msgid "Warn about possible violations of sequence point rules"
@@ -7694,15 +7694,15 @@ msgstr "Tratar todos los avisos como errores"
 
 #: toplev.c:1522
 msgid "Warn when one local variable shadows another"
-msgstr "Avisar cuando una variable local obscurece otra"
+msgstr "Avisar cuando una variable local oscurece otra"
 
 #: toplev.c:1524
 msgid "Warn about enumerated switches, with no default, missing a case"
-msgstr "Avisar sobre switches enumerados, sin valor por omisión, que carezcan de un case"
+msgstr "Avisar sobre switches enumerados, sin valor por defecto, que carezcan de un case"
 
 #: toplev.c:1526
 msgid "Warn about enumerated switches missing a default case"
-msgstr "Avisar sobre switches enumerados que carezcan de un case por omisión"
+msgstr "Avisar sobre switches enumerados que carezcan de un case por defecto"
 
 #: toplev.c:1528
 msgid "Warn about all enumerated switches missing a specific case"
@@ -7714,7 +7714,7 @@ msgstr "Avisar sobre la devolución de estructuras, unions o matrices"
 
 #: toplev.c:1532
 msgid "Warn about pointer casts which increase alignment"
-msgstr "Avisar sobre conversión de apuntadores que incremente la alineación"
+msgstr "Avisar sobre conversión de punteros que incremente la alineación"
 
 #: toplev.c:1534
 msgid "Warn about code that will never be executed"
@@ -7803,7 +7803,7 @@ msgstr "  -fdiagnostics-show-location=[once | every-line] Indica que tan seguido
 
 #: toplev.c:3685
 msgid "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indicates the default thread-local storage code generation model\n"
-msgstr "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indica el modelo de generación de código por omisión para almacenamiento thread-local\n"
+msgstr "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indica el modelo de generación de código por defecto para almacenamiento thread-local\n"
 
 #: toplev.c:3696
 msgid "  -O[number]              Set optimization level to [number]\n"
@@ -8616,7 +8616,7 @@ msgstr "Emitir reubicaciones de 32-bit a las áreas de datos small"
 
 #: config/alpha/alpha.h:314
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr "Emitir rdval en lugar de rduniq para un apuntador thread"
+msgstr "Emitir rdval en lugar de rduniq para un puntero thread"
 
 #. For -mcpu=
 #. For -mtune=
@@ -8783,7 +8783,7 @@ msgstr "no se puede usar '%s' para registro PIC"
 #: config/v850/v850.c:2180
 #, c-format
 msgid "`%s' attribute only applies to functions"
-msgstr "el atributo `%s' aplica solamente a funciones"
+msgstr "el atributo `%s' se aplica solamente a funciones"
 
 #: config/arm/arm.c:9485
 msgid "unable to compute real location of stacked parameter"
@@ -8893,7 +8893,7 @@ msgstr "Thumb: Asumir que las funciones no static pueden ser llamadas desde códi
 
 #: config/arm/arm.h:481
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
-msgstr "Thumb: Asumir que los apuntadores de función pueden ir a código no informado sobre Thumb"
+msgstr "Thumb: Asumir que los punteros de función pueden ir a código no informado sobre Thumb"
 
 #: config/arm/arm.h:491
 msgid "Specify the name of the target CPU"
@@ -8922,7 +8922,7 @@ msgstr "Ignorar el atributo dllimport para las funciones"
 #: config/avr/avr.c:528
 #, c-format
 msgid "large frame pointer change (%d) with -mtiny-stack"
-msgstr "cambio de apuntador grande de marco (%d) con -mtiny-stack"
+msgstr "cambio de puntero de marco grande (%d) con -mtiny-stack"
 
 #: config/avr/avr.c:1135
 msgid "bad address, not (reg+disp):"
@@ -8978,7 +8978,7 @@ msgstr "Asumir que int sea entero de 8 bit"
 
 #: config/avr/avr.h:80
 msgid "Change the stack pointer without disabling interrupts"
-msgstr "Cambiar el apuntador de la pila sin desactivar las interrupciones"
+msgstr "Cambiar el puntero de la pila sin desactivar las interrupciones"
 
 #: config/avr/avr.h:82
 msgid "Use subroutines for function prologue/epilogue"
@@ -8986,7 +8986,7 @@ msgstr "Usar subrutinas para el prólogo/epílogo de función"
 
 #: config/avr/avr.h:84
 msgid "Change only the low 8 bits of the stack pointer"
-msgstr "Cambiar sólo los 8 bits bajos del apuntador de pila"
+msgstr "Cambiar sólo los 8 bits bajos del puntero de pila"
 
 #: config/avr/avr.h:86
 msgid "Do not generate tablejump insns"
@@ -9358,11 +9358,11 @@ msgstr "Desactivar las instrucciones MPY||ADD y MPY||SUB"
 
 #: config/c4x/c4x.h:256
 msgid "Assume that pointers may be aliased"
-msgstr "Asumir que se pueden hacer alias de los apuntadores"
+msgstr "Asumir que se pueden hacer alias de los punteros"
 
 #: config/c4x/c4x.h:258
 msgid "Assume that pointers not aliased"
-msgstr "Asumir que no se pueden hacer alias de los apuntadores"
+msgstr "Asumir que no se pueden hacer alias de los punteros"
 
 #: config/c4x/c4x.h:331
 msgid "Specify maximum number of iterations for RPTS"
@@ -9699,11 +9699,11 @@ msgstr "No hacer paralelas las instrucciones adyacentes"
 
 #: config/d30v/d30v.h:135 config/d30v/d30v.h:138
 msgid "Link programs/data to be in external memory by default"
-msgstr "Enlazar programas/datos para estar en la memoria externa por omisión"
+msgstr "Enlazar programas/datos para estar en la memoria externa por defecto"
 
 #: config/d30v/d30v.h:141
 msgid "Link programs/data to be in onchip memory by default"
-msgstr "Enlazar programas/datos para estar en la memoria del chip por omisión"
+msgstr "Enlazar programas/datos para estar en la memoria del chip por defecto"
 
 #: config/d30v/d30v.h:149
 msgid "Change the branch costs within the compiler"
@@ -9752,7 +9752,7 @@ msgstr "modo inválido para la comparación entera en gen_compare_reg"
 #. An empty string NAME is used to identify the default VALUE.
 #: config/dsp16xx/dsp16xx.h:230
 msgid "Pass parameters in registers (default)"
-msgstr "Pasar los parámetros en los registros (por omisión)"
+msgstr "Pasar los parámetros en los registros (por defecto)"
 
 #: config/dsp16xx/dsp16xx.h:232
 msgid "Don't pass parameters in registers"
@@ -10291,7 +10291,7 @@ msgstr "el desplazamiento debe ser un inmediato"
 #: config/i386/winnt.c:105
 #, c-format
 msgid "`%s' attribute only applies to variables"
-msgstr "el atributo `%s' solamente aplica a variables"
+msgstr "el atributo `%s' solamente se aplica a variables"
 
 #: config/i386/winnt.c:275
 #, c-format
@@ -11435,7 +11435,7 @@ msgstr "la generación de instrucciones Probables a Ramificar está activada, pero
 
 #: config/mips/mips.c:5297
 msgid "-G is incompatible with PIC code which is the default"
-msgstr "-G es incompatible con el código PIC el cual es por omisión"
+msgstr "-G es incompatible con el código PIC el cual es por defecto"
 
 #: config/mips/mips.c:5313
 msgid "-membedded-pic and -mabicalls are incompatible"
@@ -11481,7 +11481,7 @@ msgstr "PRINT_OPERAND: puntuación desconocida '%c'"
 
 #: config/mips/mips.c:5842 config/xtensa/xtensa.c:1939
 msgid "PRINT_OPERAND null pointer"
-msgstr "PRINT_OPERAND apuntador nulo"
+msgstr "PRINT_OPERAND puntero nulo"
 
 #: config/mips/mips.c:5973
 #, c-format
@@ -11490,7 +11490,7 @@ msgstr "uso inválido de %%d, %%x, o %%X"
 
 #: config/mips/mips.c:6011 config/xtensa/xtensa.c:2033
 msgid "PRINT_OPERAND_ADDRESS, null pointer"
-msgstr "PRINT_OPERAND_ADDRESS, apuntador nulo"
+msgstr "PRINT_OPERAND_ADDRESS, puntero nulo"
 
 #: config/mips/mips.c:6240
 msgid "MIPS ECOFF format does not allow changing filenames within functions with #line"
@@ -11548,7 +11548,7 @@ msgstr "valor erróneo (%s) para %s"
 #. An empty string NAME is used to identify the default VALUE.
 #: config/mips/mips.h:528 config/mn10300/mn10300.h:64
 msgid "No default crt0.o"
-msgstr "No está el crt0.o por omisión"
+msgstr "No está el crt0.o por defecto"
 
 #: config/mips/mips.h:530
 msgid "Use 64-bit int type"
@@ -11743,11 +11743,11 @@ msgstr "No atrapar desbordamientos en la división entera"
 
 #: config/mips/mips.h:628
 msgid "Use Branch Likely instructions, overriding default for arch"
-msgstr "Usar instrucciones Propensas a Ramificar, sobreponiendo el valor por omisión para la arquitectura"
+msgstr "Usar instrucciones Propensas a Ramificar, sobreponiendo el valor por defecto para la arquitectura"
 
 #: config/mips/mips.h:630
 msgid "Don't use Branch Likely instructions, overriding default for arch"
-msgstr "No utilizarinstrucciones Propensas a Ramificar, sobreponiendo el valor por omisión para la arquitectura"
+msgstr "No utilizar instrucciones Propensas a Ramificar, sobreponiendo el valor por defecto para la arquitectura"
 
 #: config/mips/mips.h:744 config/pa/pa.h:310
 msgid "Specify CPU for scheduling purposes"
@@ -11929,7 +11929,7 @@ msgstr "Preceder a los símbolos globales con \":\" (para usarse con PREFIJO)"
 
 #: config/mmix/mmix.h:217
 msgid "Do not provide a default start-address 0x100 of the program"
-msgstr "No proveer una dirección de inicio por omisión 0x100 del programa"
+msgstr "No proveer una dirección de inicio por defecto 0x100 del programa"
 
 #: config/mmix/mmix.h:219
 msgid "Link to emit program in ELF format (rather than mmo)"
@@ -12504,11 +12504,11 @@ msgstr "Soporte para el paso de mensajes con el Ambiente Paralelo"
 
 #: config/rs6000/aix43.h:28 config/rs6000/aix51.h:28 config/rs6000/aix52.h:28
 msgid "Compile for 64-bit pointers"
-msgstr "Compilar para apuntadores de 64-bit"
+msgstr "Compilar para punteros de 64-bit"
 
 #: config/rs6000/aix43.h:30 config/rs6000/aix51.h:30 config/rs6000/aix52.h:30
 msgid "Compile for 32-bit pointers"
-msgstr "Compilar para apuntadores de 32-bit"
+msgstr "Compilar para punteros de 32-bit"
 
 #: config/rs6000/aix43.h:49 config/rs6000/aix51.h:49 config/rs6000/aix52.h:49
 msgid "-maix64 and POWER architecture are incompatible"
@@ -12647,11 +12647,11 @@ msgstr "No calendarizar el inicio y el final del procedimiento"
 
 #: config/rs6000/rs6000.h:324
 msgid "Return all structures in memory (AIX default)"
-msgstr "Regresar todas las estructuras en memoria (por omisión en AIX)"
+msgstr "Devolver todas las estructuras en memoria (por defecto en AIX)"
 
 #: config/rs6000/rs6000.h:326
 msgid "Return small structures in registers (SVR4 default)"
-msgstr "Regresar las estructuras pequeñas en registros (por omisión en SVR4)"
+msgstr "Devolver las estructuras pequeñas en registros (por defecto en SVR4)"
 
 #: config/rs6000/rs6000.h:391 config/sparc/sparc.h:633
 msgid "Use features of and schedule code for given CPU"
@@ -12921,7 +12921,7 @@ msgstr "el atributo interrupt_handler no es compatible con -m5-compact"
 #: config/sh/sh.c:5713 config/sh/sh.c:5752
 #, c-format
 msgid "`%s' attribute only applies to interrupt functions"
-msgstr "el atributo `%s' aplica solamente a funciones de interrupción"
+msgstr "el atributo `%s' se aplica solamente a funciones de interrupción"
 
 #. The argument must be a constant string.
 #: config/sh/sh.c:5720
@@ -13108,11 +13108,11 @@ msgstr "Optimizar para procesadores SuperSPARC"
 #. End of deprecated options.
 #: config/sparc/sparc.h:574
 msgid "Pointers are 64-bit"
-msgstr "Los apuntadores son 64-bit"
+msgstr "Los punteros son de 64-bit"
 
 #: config/sparc/sparc.h:576
 msgid "Pointers are 32-bit"
-msgstr "Los apuntadores son 32-bit"
+msgstr "Los punteros son de 32-bit"
 
 #: config/sparc/sparc.h:578
 msgid "Use 32-bit ABI"
@@ -13538,7 +13538,7 @@ msgstr "el objeto base `%E' de la llamada de método del ambiente es del tipo no 
 
 #: cp/call.c:367
 msgid "unable to call pointer to member function here"
-msgstr "no se puede llamar un apuntador a una función miembro aquí"
+msgstr "no se puede llamar un puntero a una función miembro aquí"
 
 #: cp/call.c:516
 msgid "destructors take no parameters"
@@ -13601,7 +13601,7 @@ msgstr "la llamada del `%D(%A)' sobrecargado es ambigua"
 #: cp/call.c:2955
 #, c-format
 msgid "pointer-to-member function %E cannot be called without an object; consider using .* or ->*"
-msgstr "la función apuntador-a-miembro %E no se puede llamar dentro de un objeto; considere utilizar .* o ->*"
+msgstr "la función puntero-a-miembro %E no se puede llamar dentro de un objeto; considere utilizar .* o ->*"
 
 #: cp/call.c:3020
 msgid "no match for call to `(%T) (%A)'"
@@ -13633,7 +13633,7 @@ msgstr "%s para el operador `%s %T'"
 
 #: cp/call.c:3171
 msgid "ISO C++ forbids omitting the middle term of a ?: expression"
-msgstr "ISO C++ prohibe la omisión del término medio de una expresión ?:"
+msgstr "ISO C++ prohíbe la omisión del término medio de una expresión ?:"
 
 #: cp/call.c:3230
 #, c-format
@@ -13835,7 +13835,7 @@ msgstr "la clase base `%#T' tiene un destructor no virtual"
 
 #: cp/class.c:1309
 msgid "base `%T' with only non-default constructor in class without a constructor"
-msgstr "base `%T' con sólo un constructor que no es por omisión en una clase sin un constructor"
+msgstr "base `%T' con sólo un constructor que no es por defecto en una clase sin un constructor"
 
 #: cp/class.c:1881
 msgid "all member functions in class `%T' are private"
@@ -13873,7 +13873,7 @@ msgstr "  por `%D'"
 
 #: cp/class.c:2724
 msgid "ISO C++ forbids member `%D' with same name as enclosing class"
-msgstr "ISO C++ prohibe que el miembro `%D' tenga el mismo nombre que la clase que lo contiene"
+msgstr "ISO C++ prohíbe que el miembro `%D' tenga el mismo nombre que la clase que lo contiene"
 
 #: cp/class.c:2729 cp/decl2.c:1336
 msgid "`%#D' invalid; an anonymous union can only have non-static data members"
@@ -13966,7 +13966,7 @@ msgstr "campo `%#D' con el mismo nombre que la clase"
 
 #: cp/class.c:3336
 msgid "`%#T' has pointer data members"
-msgstr "`%#T' tiene miembros apuntadores a datos"
+msgstr "`%#T' tiene miembros punteros a datos"
 
 #: cp/class.c:3340
 msgid "  but does not override `%T(const %T&)'"
@@ -14047,12 +14047,12 @@ msgstr "la conversión de la función sobrecargada `%D' al tipo `%#T' es ambigua"
 
 #: cp/class.c:6209
 msgid "assuming pointer to member `%D'"
-msgstr "asumiendo el apuntador a miembro `%D'"
+msgstr "asumiendo el puntero a miembro `%D'"
 
 #: cp/class.c:6212
 #, c-format
 msgid "(a pointer to member can only be formed with `&%E')"
-msgstr "(un apuntador a miembro solamente se puede formar con `&%E')"
+msgstr "(un puntero a miembro solamente se puede formar con `&%E')"
 
 #: cp/class.c:6256 cp/class.c:6427 cp/class.c:6434
 msgid "not enough type information"
@@ -14093,7 +14093,7 @@ msgstr "convirtiendo de `%T' a `%T'"
 
 #: cp/cvt.c:203 cp/cvt.c:207
 msgid "pointer to member cast from `%T' to `%T' is via virtual base"
-msgstr "apuntador a la conversión de miembro de `%T' a `%T' es a través de una base virtual"
+msgstr "puntero a la conversión de miembro de `%T' a `%T' es a través de una base virtual"
 
 #: cp/cvt.c:225 cp/cvt.c:236 cp/cvt.c:283
 msgid "cannot convert `%E' from type `%T' to type `%T'"
@@ -14109,7 +14109,7 @@ msgstr "la conversión de `%T' a `%T' descarta los calificadores"
 
 #: cp/cvt.c:522
 msgid "casting `%T' to `%T' does not dereference pointer"
-msgstr "la conversión de `%T' a `%T' no dereferencía a los apuntadores"
+msgstr "la conversión de `%T' a `%T' no dereferencía a los punteros"
 
 #: cp/cvt.c:551
 msgid "cannot convert type `%T' to type `%T'"
@@ -14162,11 +14162,11 @@ msgstr "%s es una referencia, no una llamada, a la función `%E'"
 
 #: cp/cvt.c:1039
 msgid "converting NULL to non-pointer type"
-msgstr "convirtiendo NULL a un tipo que no es apuntador"
+msgstr "convirtiendo NULL a un tipo que no es puntero"
 
 #: cp/cvt.c:1115
 msgid "ambiguous default type conversion from `%T'"
-msgstr "conversión de tipo por omisión ambigua desde `%T'"
+msgstr "conversión de tipo por defecto ambigua desde `%T'"
 
 #: cp/cvt.c:1117
 msgid "  candidate conversions include `%D' and `%D'"
@@ -14194,7 +14194,7 @@ msgstr "declaración previa de `%D'"
 
 #: cp/decl.c:3120 cp/decl.c:3158
 msgid "shadowing %s function `%#D'"
-msgstr "obscureciendo la función de biblioteca `%#D'"
+msgstr "oscureciendo la función de biblioteca `%#D'"
 
 #: cp/decl.c:3129
 msgid "library function `%#D' redeclared as non-function `%#D'"
@@ -14271,7 +14271,7 @@ msgstr "tiene conflictos con la declaración nueva con el enlace %L"
 
 #: cp/decl.c:3373 cp/decl.c:3380
 msgid "default argument given for parameter %d of `%#D'"
-msgstr "argumento por omisión dado para el parámetro %d de `%#D'"
+msgstr "argumento por defecto dado para el parámetro %d de `%#D'"
 
 #: cp/decl.c:3375 cp/decl.c:3382
 msgid "after previous specification in `%#D'"
@@ -14351,12 +14351,12 @@ msgstr "con la declaración global `%#D'"
 
 #: cp/decl.c:4211
 msgid "declaration of `%#D' shadows a parameter"
-msgstr "la declaración de `%#D' obscurece un parámetro"
+msgstr "la declaración de `%#D' oscurece un parámetro"
 
 #: cp/decl.c:4231
 #, c-format
 msgid "declaration of `%s' shadows a member of `this'"
-msgstr "la declaración de `%s' obscurece a un miembro de `this'"
+msgstr "la declaración de `%s' oscurece a un miembro de `this'"
 
 #: cp/decl.c:4600
 msgid "`%#D' hides constructor for `%#T'"
@@ -14530,7 +14530,7 @@ msgstr "falta el nombre del tipo en la declaración typedef"
 
 #: cp/decl.c:7259
 msgid "ISO C++ prohibits anonymous structs"
-msgstr "ISO C++ prohibe structs anónimos"
+msgstr "ISO C++ prohíbe structs anónimos"
 
 #: cp/decl.c:7266
 msgid "`%D' can only be specified for functions"
@@ -14594,7 +14594,7 @@ msgstr "`%D' declarado como referencia pero no está inicializado"
 
 #: cp/decl.c:7633
 msgid "ISO C++ forbids use of initializer list to initialize reference `%D'"
-msgstr "ISO C++ prohibe el uso de una lista de inicializadores para inicializar la referencia `%D'"
+msgstr "ISO C++ prohíbe el uso de una lista de inicializadores para inicializar la referencia `%D'"
 
 #: cp/decl.c:7663
 msgid "cannot initialize `%T' from `%T'"
@@ -14685,7 +14685,7 @@ msgstr "no se pueden inicializar `%D' para el espacio de nombres `%D'"
 
 #: cp/decl.c:8530
 msgid "shadowing previous type declaration of `%#D'"
-msgstr "obscureciendo la declaración de tipo previa de `%#D'"
+msgstr "oscureciendo la declaración de tipo previa de `%#D'"
 
 #: cp/decl.c:8576
 msgid "`%D' cannot be thread-local because it has non-POD type `%T'"
@@ -14774,7 +14774,7 @@ msgstr "uso inválido del id de plantilla `%D' en la declaración de la plantilla 
 
 #: cp/decl.c:9441
 msgid "default arguments are not allowed in declaration of friend template specialization `%D'"
-msgstr "no se permiten los argumento por omisión en la declaración de la especialización friend de la plantilla `%D'"
+msgstr "no se permiten los argumentos por defecto en la declaración de la especialización friend de la plantilla `%D'"
 
 #: cp/decl.c:9448
 msgid "`inline' is not allowed in declaration of friend template specialization `%D'"
@@ -14798,11 +14798,11 @@ msgstr "inicialización en la clase inválida para el miembro de datos static de t
 
 #: cp/decl.c:9761
 msgid "ISO C++ forbids in-class initialization of non-const static member `%D'"
-msgstr "ISO C++ prohibe la inicialización en la clase del miembro static `%D' que no es constante"
+msgstr "ISO C++ prohíbe la inicialización en la clase del miembro static `%D' que no es constante"
 
 #: cp/decl.c:9764
 msgid "ISO C++ forbids initialization of member constant `%D' of non-integral type `%T'"
-msgstr "ISO C++ prohibe la inicialización del miembro constante `%D' del tipo `%T' que no es entero"
+msgstr "ISO C++ prohíbe la inicialización del miembro constante `%D' del tipo `%T' que no es entero"
 
 #: cp/decl.c:9814
 msgid "size of array `%D' has non-integer type"
@@ -14822,11 +14822,11 @@ msgstr "el tamaño de la matriz es negativo"
 
 #: cp/decl.c:9847
 msgid "ISO C++ forbids zero-size array `%D'"
-msgstr "ISO C++ prohibe la matriz `%D' de tamaño cero"
+msgstr "ISO C++ prohíbe la matriz `%D' de tamaño cero"
 
 #: cp/decl.c:9849
 msgid "ISO C++ forbids zero-size array"
-msgstr "ISO C++ prohibe una matriz de tamaño cero"
+msgstr "ISO C++ prohíbe una matriz de tamaño cero"
 
 #: cp/decl.c:9856
 msgid "size of array `%D' is not an integral constant-expression"
@@ -14838,11 +14838,11 @@ msgstr "el tamaño de la matriz no es una expresion constante integral"
 
 #: cp/decl.c:9877
 msgid "ISO C++ forbids variable-size array `%D'"
-msgstr "ISO C++ prohibe la matriz `%D' de tamaño variable"
+msgstr "ISO C++ prohíbe la matriz `%D' de tamaño variable"
 
 #: cp/decl.c:9880
 msgid "ISO C++ forbids variable-size array"
-msgstr "ISO C++ prohibe la matriz de tamaño variable"
+msgstr "ISO C++ prohíbe la matriz de tamaño variable"
 
 #: cp/decl.c:9891
 msgid "overflow in array dimension"
@@ -14947,7 +14947,7 @@ msgstr "ISO C++ no da soporte a `long long'"
 #: cp/decl.c:10671 cp/decl.c:10674
 #, c-format
 msgid "ISO C++ forbids declaration of `%s' with no type"
-msgstr "ISO C++ prohibe la declaración de `%s' sin tipo"
+msgstr "ISO C++ prohíbe la declaración de `%s' sin tipo"
 
 #. The implicit typename extension is deprecated and will be
 #. removed.  Warn about its use now.
@@ -15058,11 +15058,11 @@ msgstr "no se pueden declarar referencias a `%#T'"
 
 #: cp/decl.c:11311
 msgid "cannot declare pointer to `%#T'"
-msgstr "no se pueden declarar apuntadores a `%#T'"
+msgstr "no se pueden declarar punteros a `%#T'"
 
 #: cp/decl.c:11316
 msgid "cannot declare pointer to `%#T' member"
-msgstr "no se pueden declarar un apuntador al miembro `%#T'"
+msgstr "no se pueden declarar un puntero al miembro `%#T'"
 
 #: cp/decl.c:11492
 msgid "extra qualification `%T::' on member `%s' ignored"
@@ -15121,7 +15121,7 @@ msgstr "el id de plantilla `%D' se usa como un declarador"
 
 #: cp/decl.c:11669
 msgid "ISO C++ forbids nested type `%D' with same name as enclosing class"
-msgstr "ISO C++ prohibe el tipo anidado `%D' con el mismo nombre que la clase que lo contiene"
+msgstr "ISO C++ prohíbe el tipo anidado `%D' con el mismo nombre que la clase que lo contiene"
 
 #: cp/decl.c:11718
 msgid "typedef name may not be class-qualified"
@@ -15231,7 +15231,7 @@ msgstr "las funciones miembros son implícitamente friends de su clase"
 #. static so we make it static below.
 #: cp/decl.c:12119
 msgid "ISO C++ forbids initialization of member `%D'"
-msgstr "ISO C++ prohibe la inicialización del miembro `%D'"
+msgstr "ISO C++ prohíbe la inicialización del miembro `%D'"
 
 #: cp/decl.c:12121
 msgid "making `%D' static"
@@ -15239,7 +15239,7 @@ msgstr "haciendo a `%D' static"
 
 #: cp/decl.c:12145
 msgid "ISO C++ forbids static data member `%D' with same name as enclosing class"
-msgstr "ISO C++ prohibe que el miembro de datos static `%D' tenga el mismo nombre que la clase que lo contiene"
+msgstr "ISO C++ prohíbe que el miembro de datos static `%D' tenga el mismo nombre que la clase que lo contiene"
 
 #: cp/decl.c:12186
 #, c-format
@@ -15294,15 +15294,15 @@ msgstr "no se puede declarar explícitamente que el miembro `%#D' tenga un enlaza
 
 #: cp/decl.c:12459
 msgid "default argument for `%#D' has type `%T'"
-msgstr "el argumento por omisión de `%#D' tiene tipo `%T'"
+msgstr "el argumento por defecto de `%#D' tiene tipo `%T'"
 
 #: cp/decl.c:12462
 msgid "default argument for parameter of type `%T' has type `%T'"
-msgstr "el argumento por omisión para el parámetro del tipo `%T' tiene el tipo `%T'"
+msgstr "el argumento por defecto para el parámetro del tipo `%T' tiene el tipo `%T'"
 
 #: cp/decl.c:12479
 msgid "default argument `%E' uses local variable `%D'"
-msgstr "el argumento por omisión `%E' usa la variable local `%D'"
+msgstr "el argumento por defecto `%E' usa la variable local `%D'"
 
 #: cp/decl.c:12524
 #, c-format
@@ -15364,7 +15364,7 @@ msgstr "la conversión a %s%s nunca usará un operador de conversión de tipo"
 #. 13.4.0.3
 #: cp/decl.c:12969
 msgid "ISO C++ prohibits overloading operator ?:"
-msgstr "ISO C++ prohibe la sobrecarga del operador ?:"
+msgstr "ISO C++ prohíbe la sobrecarga del operador ?:"
 
 #: cp/decl.c:13019
 msgid "postfix `%D' must take `int' as its argument"
@@ -15412,7 +15412,7 @@ msgstr "`%D' debe regresar por valor"
 
 #: cp/decl.c:13114 cp/decl.c:13117
 msgid "`%D' cannot have default arguments"
-msgstr "`%D' no puede tener argumentos por omisión"
+msgstr "`%D' no puede tener argumentos por defecto"
 
 #: cp/decl.c:13160
 msgid "using typedef-name `%D' after `%s'"
@@ -15535,7 +15535,7 @@ msgstr "tipos inválidos `%T[%T]' para índice de matriz"
 
 #: cp/decl2.c:515
 msgid "type `%#T' argument given to `delete', expected pointer"
-msgstr "se dió un argumento de tipo `%#T' a `delete', se esperaba un apuntador"
+msgstr "se dió un argumento de tipo `%#T' a `delete', se esperaba un puntero"
 
 #: cp/decl2.c:523
 msgid "anachronistic use of array size in vector delete"
@@ -15543,7 +15543,7 @@ msgstr "uso anacrónico del tamaño de la matriz desconocida en vector delete"
 
 #: cp/decl2.c:533
 msgid "cannot delete a function.  Only pointer-to-objects are valid arguments to `delete'"
-msgstr "no se puede borrar una función.  Solamente los apuntadores a objetos son argumentos válidos para `delete'"
+msgstr "no se puede borrar una función.  Solamente los punteros a objetos son argumentos válidos para `delete'"
 
 #: cp/decl2.c:540
 msgid "deleting `%T' is undefined"
@@ -15775,7 +15775,7 @@ msgstr "espacio de nombres `%T' sin declarar"
 
 #: cp/decl2.c:4811
 msgid "default argument missing for parameter %P of `%+#D'"
-msgstr "falta el argumento por omisión para el parámetro %P de `%+#D'"
+msgstr "falta el argumento por defecto para el parámetro %P de `%+#D'"
 
 #: cp/decl2.c:4935
 msgid "extra qualification `%T::' on member `%D' ignored"
@@ -15863,11 +15863,11 @@ msgstr "mezclando `catch'es de C++ y Java en una sola unidad de traducción"
 
 #: cp/except.c:639
 msgid "throwing NULL, which has integral, not pointer type"
-msgstr "arrojando NULL, que tiene un tipo integral, no apuntador"
+msgstr "arrojando NULL, que tiene un tipo integral, que no es puntero"
 
 #: cp/except.c:730
 msgid "  in thrown expression"
-msgstr "  en expresión thrown"
+msgstr "  en la expresión thrown"
 
 #: cp/except.c:856
 msgid "expression '%E' of abstract class type '%T' cannot be used in throw-expression"
@@ -15950,7 +15950,7 @@ msgstr "`%D' se debe inicializar en la lista de inicialización de miembros"
 
 #: cp/init.c:378
 msgid "default-initialization of `%#D', which has reference type"
-msgstr "la inicialización por omisión de `%#D', el cual tiene el tipo de referencia"
+msgstr "la inicialización por defecto de `%#D', el cual tiene el tipo de referencia"
 
 #: cp/init.c:383
 msgid "uninitialized reference member `%D'"
@@ -16069,7 +16069,7 @@ msgstr "`%D' no es un miembro de tipo `%T'"
 
 #: cp/init.c:1697
 msgid "invalid pointer to bit-field `%D'"
-msgstr "apuntador inválido al campo de bit `%D'"
+msgstr "puntero inválido al campo de bit `%D'"
 
 #: cp/init.c:1736
 msgid "object missing in use of pointer-to-member construct"
@@ -16102,11 +16102,11 @@ msgstr "la matriz de tamaño cero no reserva espacio"
 
 #: cp/init.c:2028
 msgid "new cannot be applied to a reference type"
-msgstr "new no puede ser aplicado a un tipo de referencia"
+msgstr "new no se puede aplicar a un tipo de referencia"
 
 #: cp/init.c:2034
 msgid "new cannot be applied to a function type"
-msgstr "new no puede ser aplicado a un tipo de referencia"
+msgstr "new no se puede aplicar a un tipo de función"
 
 #: cp/init.c:2081
 msgid "call to Java constructor, while `jclass' undefined"
@@ -16127,7 +16127,7 @@ msgstr "llamado a constructor Java con `%s' sin definir"
 
 #: cp/init.c:2371
 msgid "ISO C++ forbids initialization in array new"
-msgstr "ISO C++ prohibe la inicialización en la matriz new"
+msgstr "ISO C++ prohíbe la inicialización en la matriz new"
 
 #: cp/init.c:2393 cp/typeck2.c:366 cp/typeck2.c:1207
 msgid "initializer list being treated as compound expression"
@@ -16135,7 +16135,7 @@ msgstr "se trata la lista de inicializadores como una expresión compuesta"
 
 #: cp/init.c:2399
 msgid "ISO C++ forbids aggregate initializer to new"
-msgstr "ISO C++ prohibe un inicializador agregado para new"
+msgstr "ISO C++ prohíbe un inicializador agregado para new"
 
 #: cp/init.c:2487
 msgid "uninitialized const in `new' of `%#T'"
@@ -16155,11 +16155,11 @@ msgstr "tamaño de matriz desconocida en delete"
 
 #: cp/init.c:3387
 msgid "type to vector delete is neither pointer or array type"
-msgstr "el tipo de vector delete no es del tipo apuntador ni matriz"
+msgstr "el tipo de vector delete no es del tipo puntero ni matriz"
 
 #: cp/lex.c:136
 msgid "type name expected before `*'"
-msgstr "se esperaba nombre de tipo antes de `*'"
+msgstr "se esperaba un nombre de tipo antes de `*'"
 
 #: cp/lex.c:158
 msgid "cannot declare references to references"
@@ -16167,11 +16167,11 @@ msgstr "no se pueden declarar referencias a referencias"
 
 #: cp/lex.c:163
 msgid "cannot declare pointers to references"
-msgstr "no se pueden declarar apuntadores a referencias"
+msgstr "no se pueden declarar punteros a referencias"
 
 #: cp/lex.c:167
 msgid "type name expected before `&'"
-msgstr "se esperaba nombre de tipo antes de `&'"
+msgstr "se esperaba un nombre de tipo antes de `&'"
 
 #: cp/lex.c:894
 #, c-format
@@ -16268,11 +16268,11 @@ msgstr "el código de thunk genérico falló para el método `%#D' que utiliza `...'
 
 #: cp/method.c:697
 msgid "non-static const member `%#D', can't use default assignment operator"
-msgstr "el miembro const `%#D' que no es static, no puede usar el operador de asignación por omisión"
+msgstr "el miembro const `%#D' que no es static, no puede usar el operador de asignación por defecto"
 
 #: cp/method.c:702
 msgid "non-static reference member `%#D', can't use default assignment operator"
-msgstr "el miembro de referencia `%#D' que no es static, no puede usar el operador de asignación por omisión"
+msgstr "el miembro de referencia `%#D' que no es static, no puede usar el operador de asignación por defecto"
 
 #: parse.y:261
 msgid "`%s' tag used in naming `%#T'"
@@ -16306,7 +16306,7 @@ msgstr "uso del calificador de plantilla fuera de la plantilla"
 #: parse.y:1183 parse.y:1192
 #, c-format
 msgid "ISO C++ forbids an empty condition for `%s'"
-msgstr "ISO C++ prohibe una condición vacía para `%s'"
+msgstr "ISO C++ prohíbe una condición vacía para `%s'"
 
 #: parse.y:1215
 msgid "definition of class `%T' in condition"
@@ -16336,11 +16336,11 @@ msgstr "inicialización de la expresión new con `='"
 
 #: parse.y:1385
 msgid "ISO C++ forbids compound literals"
-msgstr "ISO C++ prohibe literales compuestos"
+msgstr "ISO C++ prohíbe literales compuestos"
 
 #: parse.y:1632
 msgid "ISO C++ forbids braced-groups within expressions"
-msgstr "ISO C++ prohibe grupos de llaves dentro de las expresiones"
+msgstr "ISO C++ prohíbe grupos de llaves dentro de las expresiones"
 
 #: parse.y:2036 parse.y:2051
 msgid "sigof type specifier"
@@ -16399,7 +16399,7 @@ msgstr "falta ';' antes de la llave derecha"
 
 #: parse.y:2850
 msgid "ISO C++ forbids array dimensions with parenthesized type in new"
-msgstr "ISO C++ prohibe las dimensiones de matriz con tipos con paréntesis en new"
+msgstr "ISO C++ prohíbe las dimensiones de matriz con tipos con paréntesis en new"
 
 #: parse.y:3137 parse.y:3157 parse.y:3166 parse.y:3195
 msgid "`%T' is not a class or namespace"
@@ -16407,11 +16407,11 @@ msgstr "`%T' no es una claso o un espacio de nombres"
 
 #: parse.y:3362
 msgid "ISO C++ forbids label declarations"
-msgstr "ISO C++ prohibe declaraciones etiquetadas"
+msgstr "ISO C++ prohíbe declaraciones etiquetadas"
 
 #: parse.y:3522
 msgid "ISO C++ forbids computed gotos"
-msgstr "ISO C++ prohibe gotos calculados"
+msgstr "ISO C++ prohíbe gotos calculados"
 
 #: parse.y:3530
 msgid "label must be followed by statement"
@@ -16423,7 +16423,7 @@ msgstr "se debe tener por lo menos un catch por cada bloque try"
 
 #: parse.y:3635
 msgid "ISO C++ forbids compound statements inside for initializations"
-msgstr "ISO C++ prohibe las declaraciones compuestas internas para inicializaciones"
+msgstr "ISO C++ prohíbe las declaraciones compuestas internas para inicializaciones"
 
 #. This helps us recover from really nasty
 #. parse errors, for example, a missing right
@@ -16542,7 +16542,7 @@ msgstr "especialización parcial `%D' de la plantilla de función"
 
 #: cp/pt.c:1623
 msgid "default argument specified in explicit specialization"
-msgstr "se especificó un argumento por omisión en la especialización explícita"
+msgstr "se especificó un argumento por defecto en la especialización explícita"
 
 #: cp/pt.c:1627
 msgid "template specialization with C linkage"
@@ -16571,7 +16571,7 @@ msgstr "demasiadas listas de parámetros de plantilla en la declaración de `%T'"
 
 #: cp/pt.c:2002
 msgid " shadows template parm `%#D'"
-msgstr " obscurece el parámetro de plantilla `%#D'"
+msgstr " oscurece el parámetro de plantilla `%#D'"
 
 #: cp/pt.c:2406
 msgid "template parameters not used in partial specialization:"
@@ -16596,7 +16596,7 @@ msgstr "el tipo `%T' del argumento de plantilla `%E' depende de el(los) parámetr
 
 #: cp/pt.c:2579
 msgid "no default argument for `%D'"
-msgstr "no hay un argumento por omisión para `%D'"
+msgstr "no hay un argumento por defecto para `%D'"
 
 #: cp/pt.c:2732
 msgid "template with C linkage"
@@ -16658,11 +16658,11 @@ msgstr "redeclarado aquí como `%#D'"
 #. by two different declarations in the same scope.
 #: cp/pt.c:3003
 msgid "redefinition of default argument for `%#D'"
-msgstr "redefinición del argumento por omisión para `%#D'"
+msgstr "redefinición del argumento por defecto para `%#D'"
 
 #: cp/pt.c:3004
 msgid "  original definition appeared here"
-msgstr "  la definición original aparece aquí"
+msgstr "  la definición original apareció aquí"
 
 #: cp/pt.c:3097
 #, c-format
@@ -16679,7 +16679,7 @@ msgstr "debe ser la dirección de un objeto con enlace externo"
 
 #: cp/pt.c:3107
 msgid "it must be a pointer-to-member of the form `&X::Y'"
-msgstr "debe ser un apuntador-a-miembro de la forma `&X::Y'"
+msgstr "debe ser un puntero-a-miembro de la forma `&X::Y'"
 
 #: cp/pt.c:3118
 #, c-format
@@ -16803,7 +16803,7 @@ msgstr "en la declaración `%D'"
 
 #: cp/pt.c:6492
 msgid "creating pointer to member function of non-class type `%T'"
-msgstr "creando un apuntador a función miembro del tipo `%T' que no es clase"
+msgstr "creando un puntero a función miembro del tipo `%T' que no es clase"
 
 #: cp/pt.c:6655
 msgid "creating array with size zero"
@@ -16824,11 +16824,11 @@ msgstr "formando %s para referenciar al tipo `%T'"
 
 #: cp/pt.c:6948
 msgid "creating pointer to member of non-class type `%T'"
-msgstr "creando un apuntador al miembro del tipo `%T' que no es clase"
+msgstr "creando un puntero al miembro del tipo `%T' que no es clase"
 
 #: cp/pt.c:6954
 msgid "creating pointer to member reference type `%T'"
-msgstr "creando un apuntador al miembro de referencia de tipo `%T'"
+msgstr "creando un puntero al miembro de referencia de tipo `%T'"
 
 #: cp/pt.c:7032
 msgid "creating array of `%T'"
@@ -16878,7 +16878,7 @@ msgstr "instanciación explícita duplicada de `%#D'"
 
 #: cp/pt.c:9860
 msgid "ISO C++ forbids the use of `extern' on explicit instantiations"
-msgstr "ISO C++ prohibe el uso de `extern' en instanciaciones explícitas"
+msgstr "ISO C++ prohíbe el uso de `extern' en instanciaciones explícitas"
 
 #: cp/pt.c:9864 cp/pt.c:9942
 msgid "storage class `%D' applied to template instantiation"
@@ -16895,7 +16895,7 @@ msgstr "instanciación explícita de `%#T' antes de la definición de la plantilla"
 #: cp/pt.c:9931
 #, c-format
 msgid "ISO C++ forbids the use of `%s' on explicit instantiations"
-msgstr "ISO C++ prohibe el uso de `%s' en las instanciaciones explícitas"
+msgstr "ISO C++ prohíbe el uso de `%s' en las instanciaciones explícitas"
 
 #: cp/pt.c:9975
 msgid "duplicate explicit instantiation of `%#T'"
@@ -16965,7 +16965,7 @@ msgstr "asignación al miembro `%D' que no es static de la clase incluyente `%T'"
 
 #: cp/search.c:2009
 msgid "adjusting pointers for covariant returns"
-msgstr "ajustando los apuntadores para devoluciones covariantes"
+msgstr "ajustando los punteros para devoluciones covariantes"
 
 #: cp/search.c:2013 cp/search.c:2020
 msgid "invalid covariant return type for `%#D'"
@@ -16973,11 +16973,11 @@ msgstr "tipo de devolución covariante inválido para `%#D'"
 
 #: cp/search.c:2014
 msgid "  overriding `%#D' (must be pointer or reference to class)"
-msgstr "  sustituyendo a `%#D' (debe ser apuntador o referencia a una clase)"
+msgstr "  sustituyendo a `%#D' (debe ser puntero o referencia a una clase)"
 
 #: cp/search.c:2021
 msgid "  overriding `%#D' (must use pointer or reference)"
-msgstr "  sustituyendo a `%#D' (debe ser apuntador o referencia)"
+msgstr "  sustituyendo a `%#D' (debe ser puntero o referencia)"
 
 #: cp/search.c:2026
 msgid "conflicting return type specified for `%#D'"
@@ -17026,7 +17026,7 @@ msgstr "el identificador de devolución `%D' ya está en su lugar"
 
 #: cp/semantics.c:1068
 msgid "can't redefine default return value for constructors"
-msgstr "no se puede redefinir el valor por omisión de devoluciòn para los constructores"
+msgstr "no se puede redefinir el valor por defecto de devoluciòn para los constructores"
 
 #: cp/semantics.c:1100
 msgid "only constructors take base initializers"
@@ -17062,7 +17062,7 @@ msgstr "los parámetros de tipo plantilla debe usar la palabra clave `class' o `t
 
 #: cp/semantics.c:1651
 msgid "invalid default template argument"
-msgstr "argumento de la plantilla por omisión inválido"
+msgstr "argumento de la plantilla por defecto inválido"
 
 #: cp/semantics.c:1693
 msgid "definition of `%#T' inside template parameter list"
@@ -17112,15 +17112,15 @@ msgstr "falta el cuerpo de la función para el constructor"
 
 #: cp/spew.c:1262
 msgid "%Hend of file read inside default argument"
-msgstr "%Hlectura de final de fichero dentro del argumento por omisión"
+msgstr "%Hlectura de final de fichero dentro del argumento por defecto"
 
 #: cp/spew.c:1419
 msgid "circular dependency in default args of `%#D'"
-msgstr "dependencia circular en los argumentos por omisión de `%#D'"
+msgstr "dependencia circular en los argumentos por defecto de `%#D'"
 
 #: cp/spew.c:1483
 msgid "invalid type `%T' for default argument to `%T'"
-msgstr "tipo `%T' inválido para el argumento por omisión de `%T'"
+msgstr "tipo `%T' inválido para el argumento por defecto de `%T'"
 
 #: cp/spew.c:1548
 #, c-format
@@ -17159,12 +17159,12 @@ msgstr "el atributo `%s' sólo se puede aplicar a definiciones de clases Java"
 #: cp/tree.c:2056
 #, c-format
 msgid "`%s' attribute can only be applied to class definitions"
-msgstr "el atributo `%s' solo se puede aplicar a definiciones de clase"
+msgstr "el atributo `%s' sólo se puede aplicar a definiciones de clase"
 
 #: cp/tree.c:2062
 #, c-format
 msgid "`%s' is obsolete; g++ vtables are now COM-compatible by default"
-msgstr "`%s' es obsoleto; las vtables de g++ ahora son compatibles con COM por omisión"
+msgstr "`%s' es obsoleto; las vtables de g++ ahora son compatibles con COM por defecto"
 
 #: cp/tree.c:2087
 msgid "requested init_priority is not an integer constant"
@@ -17196,15 +17196,15 @@ msgstr "revisión lang_*: falló en %s, en %s:%d"
 #: cp/typeck.c:524
 #, c-format
 msgid "ISO C++ forbids %s between pointer of type `void *' and pointer-to-function"
-msgstr "ISO C++ prohibe %s entre apuntadores de tipo `void *' y apuntadores a funciones"
+msgstr "ISO C++ prohíbe %s entre punteros de tipo `void *' y punteros a funciones"
 
 #: cp/typeck.c:545
 msgid "%s between distinct pointer types `%T' and `%T' lacks a cast"
-msgstr "%s entre diferentes tipos de apuntador `%T' y `%T' carece de una conversión"
+msgstr "%s entre diferentes tipos de punteros `%T' y `%T' carece de una conversión"
 
 #: cp/typeck.c:1438
 msgid "ISO C++ prohibits conversion from `%#T' to `(...)'"
-msgstr "ISO C++ prohibe la conversión de `%#T' a `(...)'"
+msgstr "ISO C++ prohíbe la conversión de `%#T' a `(...)'"
 
 #: cp/typeck.c:1516
 #, c-format
@@ -17222,7 +17222,7 @@ msgstr "sizeof aplicado a un campo de bits"
 
 #: cp/typeck.c:1543
 msgid "ISO C++ forbids applying `sizeof' to an expression of function type"
-msgstr "ISO C++ prohibe la aplicación de `sizeof' a una expresión de tipo de función"
+msgstr "ISO C++ prohíbe la aplicación de `sizeof' a una expresión de tipo de función"
 
 #: cp/typeck.c:1655
 msgid "invalid use of non-lvalue array"
@@ -17268,12 +17268,12 @@ msgstr "`%D' no es una función plantilla miembro"
 #. dereferenced [expr.unary.op]/1
 #: cp/typeck.c:2335
 msgid "`%T' is not a pointer-to-object type"
-msgstr "`%T' no es de tipo apuntador-a-objeto"
+msgstr "`%T' no es de tipo puntero-a-objeto"
 
 #: cp/typeck.c:2362
 #, c-format
 msgid "invalid use of `%s' on pointer to member"
-msgstr "uso inválido de `%s' en apuntador a miembro"
+msgstr "uso inválido de `%s' en puntero a miembro"
 
 #: cp/typeck.c:2368
 msgid "invalid type argument"
@@ -17281,7 +17281,7 @@ msgstr "argumento de tipo inválido"
 
 #: cp/typeck.c:2471
 msgid "ISO C++ forbids subscripting non-lvalue array"
-msgstr "ISO C++ prohibe el subíndice de una matriz de l-valores"
+msgstr "ISO C++ prohíbe el subíndice de una matriz de l-valores"
 
 #: cp/typeck.c:2482
 msgid "subscripting array declared `register'"
@@ -17294,12 +17294,12 @@ msgstr "falta un objeto en el uso de `%E'"
 
 #: cp/typeck.c:2671
 msgid "ISO C++ forbids calling `::main' from within program"
-msgstr "ISO C++ prohibe la llamada `::main' dentro del mismo programa"
+msgstr "ISO C++ prohíbe la llamada `::main' dentro del mismo programa"
 
 #: cp/typeck.c:2696
 #, c-format
 msgid "must use .* or ->* to call pointer-to-member function in `%E (...)'"
-msgstr "se debe usar .* o ->* en la llamada a la función apuntador-a-miembro en `%E (...)'"
+msgstr "se debe usar .* o ->* en la llamada a la función puntero-a-miembro en `%E (...)'"
 
 #: cp/typeck.c:2709
 #, c-format
@@ -17354,7 +17354,7 @@ msgstr "la cuenta de rotación %s >= anchura del tipo"
 
 #: cp/typeck.c:3271 cp/typeck.c:3276 cp/typeck.c:3367 cp/typeck.c:3372
 msgid "ISO C++ forbids comparison between pointer and integer"
-msgstr "ISO C++ prohibe la comparación entre apuntadores y enteros"
+msgstr "ISO C++ prohíbe la comparación entre puntero y entero"
 
 #: cp/typeck.c:3550
 msgid "comparison between types `%#T' and `%#T'"
@@ -17378,50 +17378,51 @@ msgstr "se usó NULL en la aritmética"
 
 #: cp/typeck.c:3740
 msgid "ISO C++ forbids using pointer of type `void *' in subtraction"
-msgstr "ISO C++ prohibe el uso de un apuntador de tipo `void *' en la sustracción"
+msgstr "ISO C++ prohíbe el uso de un puntero de tipo `void *' en la sustracción"
 
 #: cp/typeck.c:3742
 msgid "ISO C++ forbids using pointer to a function in subtraction"
-msgstr "ISO C++ prohibe el uso de un apuntador a una función en la sustracción"
+msgstr "ISO C++ prohíbe el uso de un puntero a una función en la sustracción"
 
 #: cp/typeck.c:3744
 msgid "ISO C++ forbids using pointer to a method in subtraction"
-msgstr "ISO C++ prohibe el uso de un apuntador a un método en la sustracción"
+msgstr "ISO C++ prohíbe el uso de un puntero a un método en la sustracción"
 
 #: cp/typeck.c:3746
 msgid "ISO C++ forbids using pointer to a member in subtraction"
-msgstr "ISO C++ prohibe el uso de un apuntador a un miembro en la sustracción"
+msgstr "ISO C++ prohíbe el uso de un puntero a un miembro en la sustracción"
 
 #: cp/typeck.c:3758
 msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
-msgstr "uso inválido de un apuntador a un tipo incompleto en aritmética de apuntadores"
+msgstr "uso inválido de un puntero a un tipo incompleto en aritmética de punteros"
 
 #: cp/typeck.c:3818
 #, c-format
 msgid "invalid use of '%E' to form a pointer-to-member-function.  Use a qualified-id."
-msgstr "uso inválido de '%E' para formar una función apuntador a miembro.  Use un identificador calificado."
+msgstr "uso inválido de '%E' para formar una función puntero a miembro.  Use un identificador calificado."
 
 #: cp/typeck.c:3824
 #, c-format
 msgid "parenthesis around '%E' cannot be used to form a pointer-to-member-function"
-msgstr "no se pueden usar paréntesis alrededor de '%E' para formar una función apuntador a miembro"
+msgstr "no se pueden usar paréntesis alrededor de '%E' para formar una función puntero a miembro"
 
 #: cp/typeck.c:3847
 msgid "taking address of temporary"
 msgstr "tomando la dirección del temporal"
 
+# Esta cadena solamente funciona bien en inglés. cfuga
 #: cp/typeck.c:4088
 #, c-format
 msgid "ISO C++ forbids %sing an enum"
-msgstr "ISO C++ prohibe %sing un enum"
+msgstr "ISO C++ prohíbe %sing un enum"
 
 #: cp/typeck.c:4100
 msgid "cannot %s a pointer to incomplete type `%T'"
-msgstr "no se puede %s un apuntador a un tipo incompleto `%T'"
+msgstr "no se puede %s un puntero a un tipo incompleto `%T'"
 
 #: cp/typeck.c:4107
 msgid "ISO C++ forbids %sing a pointer of type `%T'"
-msgstr "ISO C++ prohibe el %s un apuntador de tipo `%T'"
+msgstr "ISO C++ prohíbe el %s un puntero de tipo `%T'"
 
 #: cp/typeck.c:4132
 msgid "cast to non-reference type used as lvalue"
@@ -17434,20 +17435,20 @@ msgstr "uso inválido de `--' en la variable booleana `%D'"
 #. ARM $3.4
 #: cp/typeck.c:4199
 msgid "ISO C++ forbids taking address of function `::main'"
-msgstr "ISO C++ prohibe tomar la dirección de la función `::main'"
+msgstr "ISO C++ prohíbe tomar la dirección de la función `::main'"
 
 #. An expression like &memfn.
 #: cp/typeck.c:4266
 msgid "ISO C++ forbids taking the address of an unqualified non-static member function to form a pointer to member function.  Say `&%T::%D'"
-msgstr "ISO C++ prohibe tomar la dirección de una función miembro no estática sin calificar para formar un apuntador a la función miembro.  Como `&%T::%D'"
+msgstr "ISO C++ prohíbe tomar la dirección de una función miembro no estática sin calificar para formar un puntero a la función miembro.  Como `&%T::%D'"
 
 #: cp/typeck.c:4268
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say `&%T::%D'"
-msgstr "ISO C++ prohibe tomar la dirección de una función miembro limitada para formar un apuntador a la función miembro.  Como `&%T::%D'"
+msgstr "ISO C++ prohíbe tomar la dirección de una función miembro limitada para formar un puntero a la función miembro.  Como `&%T::%D'"
 
 #: cp/typeck.c:4292
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
-msgstr "ISO C++ prohibe tomar la dirección de una conversión a una expresión no l-valuada"
+msgstr "ISO C++ prohíbe tomar la dirección de una conversión a una expresión no l-valuada"
 
 #: cp/typeck.c:4321
 msgid "attempt to take address of bit-field structure member `%D'"
@@ -17461,11 +17462,11 @@ msgstr "tomando la dirección del destructor"
 # ¿bound se utiliza aquí como 'limitada' o 'sujeta'? Revisar el código. cfuga
 #: cp/typeck.c:4454
 msgid "taking address of bound pointer-to-member expression"
-msgstr "tomando la dirección de la expresión limitada apuntador-a-miembro"
+msgstr "tomando la dirección de la expresión limitada puntero-a-miembro"
 
 #: cp/typeck.c:4470
 msgid "cannot create pointer to reference member `%D'"
-msgstr "no se pueden crear un apuntador al miembro referencia `%D'"
+msgstr "no se puede crear un puntero al miembro referencia `%D'"
 
 #: cp/typeck.c:4533
 msgid "cannot take the address of `this', which is an rvalue expression"
@@ -17497,7 +17498,7 @@ msgstr "reinterpret_cast de `%T' a `%T' proscribe a const (o volatile)"
 
 #: cp/typeck.c:4862
 msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object"
-msgstr "ISO C++ prohibe la conversión entre entre apuntador a función y apuntador a objeto"
+msgstr "ISO C++ prohíbe la conversión entre entre puntero a función y puntero a objeto"
 
 #: cp/typeck.c:4868
 msgid "invalid reinterpret_cast from type `%T' to type `%T'"
@@ -17505,11 +17506,11 @@ msgstr "reinterpret_cast inválido del tipo `%T' al tipo `%T'"
 
 #: cp/typeck.c:4895
 msgid "invalid use of const_cast with type `%T', which is not a pointer, reference, nor a pointer-to-data-member type"
-msgstr "uso inválido de const_cast con tipo `%T', que no es apuntador, referencia, ni un tipo apuntador-a-datos-miembros"
+msgstr "uso inválido de const_cast con tipo `%T', que no es puntero, referencia, ni un tipo puntero-a-datos-miembros"
 
 #: cp/typeck.c:4898
 msgid "invalid use of const_cast with type `%T', which is a pointer or reference to a function type"
-msgstr "uso inválido de const_cast con tipo `%T', el cual es un apuntador o referencia a un tipo de función"
+msgstr "uso inválido de const_cast con tipo `%T', el cual es un puntero o referencia a un tipo de función"
 
 #: cp/typeck.c:4921
 msgid "invalid const_cast of an rvalue of type `%T' to type `%T'"
@@ -17521,7 +17522,7 @@ msgstr "const_cast inválido del tipo `%T' al tipo `%T'"
 
 #: cp/typeck.c:4979 cp/typeck.c:4984
 msgid "ISO C++ forbids casting to an array type `%T'"
-msgstr "ISO C++ prohibe la conversión a un tipo de matriz `%T'"
+msgstr "ISO C++ prohíbe la conversión a un tipo de matriz `%T'"
 
 #: cp/typeck.c:4992
 msgid "invalid cast to function type `%T'"
@@ -17529,7 +17530,7 @@ msgstr "conversión inválida al tipo de función `%T'"
 
 #: cp/typeck.c:5044
 msgid "cast from `%T' to `%T' discards qualifiers from pointer target type"
-msgstr "la conversión de `%T' a `%T' descarta los calificadores del tipo del destino del apuntador"
+msgstr "la conversión de `%T' a `%T' descarta los calificadores del tipo del destino del puntero"
 
 #: cp/typeck.c:5090
 msgid "cast from `%T' to `%T' increases required alignment of target type"
@@ -17541,7 +17542,7 @@ msgstr "  en la evaluación de `%Q(%#T, %#T)'"
 
 #: cp/typeck.c:5300
 msgid "ISO C++ forbids cast to non-reference type used as lvalue"
-msgstr "ISO C++ prohibe la conversión a un tipo no referente usado como l-valor"
+msgstr "ISO C++ prohíbe la conversión a un tipo no referente usado como l-valor"
 
 #: cp/typeck.c:5372
 msgid "incompatible types in assignment of `%T' to `%T'"
@@ -17549,24 +17550,24 @@ msgstr "tipos incompatible en la asignación de `%T' a `%T'"
 
 #: cp/typeck.c:5379
 msgid "ISO C++ forbids assignment of arrays"
-msgstr "ISO C++ prohibe la asignación de matrices"
+msgstr "ISO C++ prohíbe la asignación de matrices"
 
 #: cp/typeck.c:5522
 msgid "   in pointer to member function conversion"
-msgstr "   en la conversión del apuntador a función miembro"
+msgstr "   en la conversión del puntero a función miembro"
 
 #: cp/typeck.c:5530
 msgid "   in pointer to member conversion"
-msgstr "   en la conversión del apuntador a miembro"
+msgstr "   en la conversión del puntero a miembro"
 
 #. This is a reinterpret cast, we choose to do nothing.
 #: cp/typeck.c:5541 cp/typeck.c:5560
 msgid "pointer to member cast via virtual base `%T' of `%T'"
-msgstr "apuntador a la conversión miembro a través de la base virtual `%T' de `%T'"
+msgstr "puntero a la conversión miembro a través de la base virtual `%T' de `%T'"
 
 #: cp/typeck.c:5564
 msgid "pointer to member conversion via virtual base `%T' of `%T'"
-msgstr "apuntador a la conversión miembro a través de la base virtual `%T' de `%T'"
+msgstr "puntero a la conversión miembro a través de la base virtual `%T' de `%T'"
 
 #: cp/typeck.c:5640
 msgid "invalid conversion to type `%T' from type `%T'"
@@ -17574,11 +17575,11 @@ msgstr "conversión inválida del tipo `%T' a partir del tipo `%T'"
 
 #: cp/typeck.c:5805
 msgid "passing NULL used for non-pointer %s %P of `%D'"
-msgstr "pasando NULL usado para el no apuntador %s %P de `%D'"
+msgstr "pasando NULL usado para el no puntero %s %P de `%D'"
 
 #: cp/typeck.c:5808
 msgid "%s to non-pointer type `%T' from NULL"
-msgstr "%s al tipo `%T' que no es apuntador desde NULL"
+msgstr "%s al tipo `%T' que no es puntero desde NULL"
 
 #: cp/typeck.c:5816
 msgid "passing `%T' for %s %P of `%D'"
@@ -17785,27 +17786,27 @@ msgstr "exceso de elementos en el inicializador agregado"
 
 #: cp/typeck2.c:1037
 msgid "circular pointer delegation detected"
-msgstr "se detectó una delegación de apuntador circular"
+msgstr "se detectó una delegación de puntero circular"
 
 #: cp/typeck2.c:1050
 msgid "base operand of `->' has non-pointer type `%T'"
-msgstr "el operando base de `->' tiene el tipo `%T' que no es apuntador"
+msgstr "el operando base de `->' tiene el tipo `%T' que no es puntero"
 
 #: cp/typeck2.c:1064
 msgid "result of `operator->()' yields non-pointer result"
-msgstr "el resultado de `operator->()' produce un resultado que no es apuntador"
+msgstr "el resultado de `operator->()' produce un resultado que no es puntero"
 
 #: cp/typeck2.c:1066
 msgid "base operand of `->' is not a pointer"
-msgstr "el operando base de `->' no es un apuntador"
+msgstr "el operando base de `->' no es un puntero"
 
 #: cp/typeck2.c:1132
 msgid "`%E' cannot be used as a member pointer, since it is of type `%T'"
-msgstr "no se puede usar `%E' como un apuntador miembro, porque es de tipo `%T'"
+msgstr "no se puede usar `%E' como un puntero miembro, porque es de tipo `%T'"
 
 #: cp/typeck2.c:1139
 msgid "cannot apply member pointer `%E' to `%E', which is of non-aggregate type `%T'"
-msgstr "no se puede aplicar el apuntador a miembro `%E' a `%E', el cual es del tipo no agregado `%T'"
+msgstr "no se puede aplicar el puntero a miembro `%E' a `%E', el cual es del tipo no agregado `%T'"
 
 #: cp/typeck2.c:1148
 msgid "member type `%T::' incompatible with object type `%T'"
@@ -17818,7 +17819,7 @@ msgstr "`%T' falla al ser un typedef o un tipo interno"
 #: cp/typeck2.c:1258
 #, c-format
 msgid "ISO C++ forbids defining types within %s"
-msgstr "ISO C++ prohibe la definición de tipos dentro de %s"
+msgstr "ISO C++ prohíbe la definición de tipos dentro de %s"
 
 #: cp/typeck2.c:1383
 msgid "call to function `%D' which throws incomplete type `%#T'"
@@ -17860,7 +17861,7 @@ msgstr "Volcar la unidad de traducción completa a un fichero"
 
 #: cp/lang-options.h:48
 msgid "Do not inline member functions by default"
-msgstr "No hacer inline por omisión a las funciones miembro"
+msgstr "No hacer inline por defecto a las funciones miembro"
 
 #: cp/lang-options.h:51
 msgid "Do not generate run time type descriptor information"
@@ -17972,7 +17973,7 @@ msgstr "Avisar cuando el comportamiento de síntesis difiera de Cfront"
 
 #: cp/lang-options.h:144
 msgid "Don't warn when type converting pointers to member functions"
-msgstr "No avisar cuando el tipo convierte apuntadores a funciones miembro"
+msgstr "No avisar sobre punteros a funciones miembro que conviertan tipos de datos"
 
 #: cp/lang-options.h:146
 msgid "Warn about violations of Effective C++ style rules"
@@ -18025,7 +18026,7 @@ msgstr "la etiqueta ASSIGNada no cabe en `%A' en %0 -- utilizando una similar má
 
 #: f/com.c:11623
 msgid "no INTEGER type can hold a pointer on this configuration"
-msgstr "ningún tipo INTEGER puede guardar una apuntador en esta configuración"
+msgstr "ningún tipo INTEGER puede guardar un puntero en esta configuración"
 
 #: f/com.c:11844
 #, c-format
@@ -18035,7 +18036,7 @@ msgstr "configuration: REAL, INTEGER, y LOGICAL son de %d bits de anchura,"
 #: f/com.c:11846
 #, c-format
 msgid "and pointers are %d bits wide, but g77 doesn't yet work"
-msgstr "y los apuntadores son de %d bits de anchura, pero g77 aún no trabaja"
+msgstr "y los punteros son de %d bits de anchura, pero g77 aún no trabaja"
 
 #: f/com.c:11848
 msgid "properly unless they all are 32 bits wide"
@@ -18106,7 +18107,7 @@ msgstr "Use .EQV./.NEQV. en lugar de .EQ./.NE. en %0 para los operandos LOGICAL 
 #: f/expr.c:10896
 #, no-c-format
 msgid "Unsupported operand for ** at %1 -- converting to default INTEGER"
-msgstr "Operando sin soporte para ** en %1 -- se convirtió a INTEGER por omisión"
+msgstr "Operando sin soporte para ** en %1 -- se convirtió a INTEGER por defecto"
 
 #: f/g77spec.c:234
 #, c-format
@@ -19009,7 +19010,7 @@ msgstr "Segunda ocurrencia de CASE DEFAULT en %0 dentro de un SELECT CASE en %1"
 #: f/bad.def:598
 #, no-c-format
 msgid "Duplicate or overlapping case values/ranges at %0 and %1"
-msgstr "Valores/rangos case duplicados o traslapados en %0 y %1"
+msgstr "Valores/rangos case duplicados o con solapamientos en %0 y %1"
 
 #: f/bad.def:601
 #, no-c-format
@@ -20077,7 +20078,7 @@ msgstr "archivo .zip malformado en CLASSPATH: %s"
 #: ../../gcc/java/parse.y:6950
 #, c-format
 msgid "Can't find default package `%s'. Check the CLASSPATH environment variable and the access to the archives"
-msgstr "No se puede encontrar el paquete por omisión `%s'. Revise la variable de ambiente CLASSPATH y el acceso a los archivos"
+msgstr "No se puede encontrar el paquete por defecto `%s'. Revise la variable de ambiente CLASSPATH y el acceso a los archivos"
 
 #: ../../gcc/java/parse.y:12352
 #, c-format
@@ -20151,7 +20152,7 @@ msgstr "Escoger la clase cuyo método main debería ser usado"
 
 #: java/lang-options.h:46
 msgid "Choose input encoding (default comes from locale)"
-msgstr "Escoger la codificación de entrada (por omisión viene del local)"
+msgstr "Escoger la codificación de entrada (por defecto viene del local)"
 
 #: java/lang-options.h:48
 msgid "Add directory to class path"
@@ -20291,7 +20292,7 @@ msgstr "no se puede encontrar el método de la clase (de fábrica)"
 #: objc/objc-act.c:5082 objc/objc-act.c:5126
 #, c-format
 msgid "return type for `%s' defaults to id"
-msgstr "el tipo de devolución para `%s' por omisión es id"
+msgstr "el tipo de devolución para `%s' por defecto es id"
 
 #: objc/objc-act.c:5099
 #, c-format
@@ -20300,7 +20301,7 @@ msgstr "el método `%s' no se ha implementado por el protocolo"
 
 #: objc/objc-act.c:5108
 msgid "return type defaults to id"
-msgstr "el tipo de devolución por omisión es id"
+msgstr "el tipo de devolución por defecto es id"
 
 #: objc/objc-act.c:5125
 msgid "cannot find method"
@@ -20700,7 +20701,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "más de un sufijo `i' o una `j' en una constante de coma flotante"
 
 #~ msgid "ISO C forbids imaginary numeric constants"
-#~ msgstr "ISO C prohibe las constantes numéricas imaginarias"
+#~ msgstr "ISO C prohíbe las constantes numéricas imaginarias"
 
 #~ msgid "floating constant out of range"
 #~ msgstr "constante de coma flotante fuera de rango"
@@ -21537,13 +21538,13 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "se ignoran los calificadores `%V' para `%T'"
 
 #~ msgid "ISO C++ forbids applying `sizeof' to a function type"
-#~ msgstr "ISO C++ prohibe la aplicación de `sizeof' a un tipo de función"
+#~ msgstr "ISO C++ prohíbe la aplicación de `sizeof' a un tipo de función"
 
 #~ msgid "ISO C++ forbids applying `sizeof' to a member function"
-#~ msgstr "ISO C++ prohibe la aplicación de `sizeof' a una función miembro"
+#~ msgstr "ISO C++ prohíbe la aplicación de `sizeof' a una función miembro"
 
 #~ msgid "ISO C++ forbids applying `sizeof' to type `void' which is an incomplete type"
-#~ msgstr "ISO C++ prohibe aplicar `sizeof' al tipo `void' el cual es un tipo incompleto"
+#~ msgstr "ISO C++ prohíbe aplicar `sizeof' al tipo `void' el cual es un tipo incompleto"
 
 #~ msgid "`sizeof' applied to non-static member"
 #~ msgstr "`sizeof' aplicado a miembro que no es static"
@@ -21618,7 +21619,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "debido al acceso no público del miembro `%D'"
 
 #~ msgid "ISO C++ forbids non-constant aggregate initializer expressions"
-#~ msgstr "ISO C++ prohibe las expresiones inicializadoras agregadas que no son constantes"
+#~ msgstr "ISO C++ prohíbe las expresiones inicializadoras agregadas que no son constantes"
 
 #~ msgid "The meaning of `\\x' (at %0) varies with -traditional"
 #~ msgstr "el significado de `\\x' (en %0) varía con -traditional"
@@ -23449,16 +23450,16 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "`%T' no puede ser calificado con `const', `volatile' o `restrict'"
 
 #~ msgid "ISO C++ forbids using pointer of type `void *' in pointer arithmetic"
-#~ msgstr "ISO C++ prohibe el uso de un apuntador a un tipo de tipo `void *' en la aritmética de apuntadores"
+#~ msgstr "ISO C++ prohíbe el uso de un apuntador a un tipo de tipo `void *' en la aritmética de apuntadores"
 
 #~ msgid "ISO C++ forbids using a pointer-to-function in pointer arithmetic"
-#~ msgstr "ISO C++ prohibe el uso de un apuntador a función en la aritmética de apuntadores"
+#~ msgstr "ISO C++ prohíbe el uso de un apuntador a función en la aritmética de apuntadores"
 
 #~ msgid "ISO C++ forbids using a pointer to member function in pointer arithmetic"
-#~ msgstr "ISO C++ prohibe el uso de un apuntador a una función miembro en la aritmética de apuntadores"
+#~ msgstr "ISO C++ prohíbe el uso de un apuntador a una función miembro en la aritmética de apuntadores"
 
 #~ msgid "ISO C++ forbids using pointer to a member in pointer arithmetic"
-#~ msgstr "ISO C++ prohibe el uso de un apuntador a un miembro en la aritmética de apuntadores"
+#~ msgstr "ISO C++ prohíbe el uso de un apuntador a un miembro en la aritmética de apuntadores"
 
 #~ msgid "Extra label definition %A at %0 -- perhaps previous label definition %B at %1 should have CONTINUE statement?"
 #~ msgstr "Definición de etiqueta extra %A en %0 -- ¿tal vez la definición de la etiqueta anterior %B en %1 debe tener una declaración CONTINUE?"
@@ -24131,7 +24132,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "la declaración de `%s' obscurece a una declaración local previa"
 
 #~ msgid "ANSI C forbids const or volatile function types"
-#~ msgstr "ANSI C prohibe los tipos de función const o volatile"
+#~ msgstr "ANSI C prohíbe los tipos de función const o volatile"
 
 #~ msgid "leaving more files than we entered"
 #~ msgstr "dejando más ficheros de los que se introducieron"
@@ -24143,7 +24144,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "secuencia de escape desconocida, '\\' seguida por el carácter 0x%x"
 
 #~ msgid "ISO C forbids `&&'"
-#~ msgstr "ISO C prohibe `&&'"
+#~ msgstr "ISO C prohíbe `&&'"
 
 #~ msgid "`[*]' in parameter declaration only allowed in ISO C 99"
 #~ msgstr "`[*]' en la declaración de parámetros solamente se permite en ISO C 99"
@@ -24221,7 +24222,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "No tratar al espacio de nombres `std' como un espacio de nombres normal"
 
 #~ msgid "ISO C++ forbids `&&'"
-#~ msgstr "ISO C++ prohibe `&&'"
+#~ msgstr "ISO C++ prohíbe `&&'"
 
 #~ msgid "taking dynamic typeid of object with -fno-rtti"
 #~ msgstr "tomando typeid dinámico de objeto con -fno-rtti"
