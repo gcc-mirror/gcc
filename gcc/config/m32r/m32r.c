@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "m32r-protos.h"
+#include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
 

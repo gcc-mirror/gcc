@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "cpplib.h"
 #include "c-pragma.h"
-#include "c4x-protos.h"
+#include "tm_p.h"
 
 static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
 
