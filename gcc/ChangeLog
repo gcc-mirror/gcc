@@ -1,3 +1,10 @@
+2004-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14209
+	* config/cris/cris.md ("*andsi_movu", "*andhi_movu"): Tweak
+	constraints to not match postincrement.  Adjust the predicate to
+	exclude a volatile memory reference.
+
 2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mcore/mcore.h (ASM_OUTPUT_EXTERNAL): Remove.
