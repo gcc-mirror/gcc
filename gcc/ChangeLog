@@ -1,3 +1,7 @@
+2000-06-02  Toshiyasu Morita  <toshi.morita@sega.com>
+
+	* sh.md (untyped_call): Remove excess parameters
+
 2000-06-01  Stan Cox  <scox@cygnus.com>
 
 	* varray.h (VARRAY_PUSH_GENERIC_PTR, VARRAY_PUSH_CHAR_PTR): Fix
