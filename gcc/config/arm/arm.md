@@ -2071,7 +2071,7 @@
              (ior (eq_attr "alternative" "5")
 		  (eq_attr "alternative" "6")) (const_int 16)]
             (const_int 4)))
- (set_attr "type" "load,load,*,*,store1,*,*,*")])
+ (set_attr "type" "load,load,*,*,store1,*,*")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
