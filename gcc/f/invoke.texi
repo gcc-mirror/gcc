@@ -255,7 +255,7 @@ program is written is generally indicated by the suffix.
 Suffixes specific to GNU Fortran are listed below.
 @xref{Overall Options,,Options Controlling the Kind of
 Output,gcc,Using the GNU Compiler Collection (GCC)}, for
-information on suffixes recognized by GNU CC.
+information on suffixes recognized by GCC.
 
 @table @gcctabopt
 @cindex .f filename suffix
@@ -286,7 +286,7 @@ You can force @samp{.f} files to be preprocessed by @command{cpp} by using
 @item @var{file}.fpp
 @item @var{file}.FPP
 Fortran source code that must be preprocessed (by the C preprocessor
-@command{cpp}, which is part of GNU CC).
+@command{cpp}, which is part of GCC).
 
 Note that preprocessing is not extended to the contents of
 files included by the @code{INCLUDE} directive---the @code{#include}
