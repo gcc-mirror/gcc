@@ -2849,7 +2849,14 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	      else if (unroll_type != UNROLL_COMPLETELY
 		       && v->giv_type == DEST_ADDR
 		       && v->same && v->same->giv_type == DEST_ADDR
-		       && v->same->unrolled)
+		       && v->same->unrolled
+		       /* combine_givs_p may return true for some cases
+			  where the add and mult values are not equal.
+			  To share a register here, the values must be
+			  equal.  */
+		       && rtx_equal_p (v->same->mult_val, v->mult_val)
+		       && rtx_equal_p (v->same->add_val, v->add_val))
+
 		{
 		  v->dest_reg = v->same->dest_reg;
 		  v->shared = 1;

@@ -1,3 +1,8 @@
+Sat Aug 23 18:19:40 1997  John F. Carr  <jfc@mit.edu>
+
+	* unroll.c (find_splittable_givs): Only share if two givs have the
+	same add and multiply values.
+
 Sat Aug 23 14:36:27 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k/next.h (GO_IF_INDEXABLE_BASE): Fix typo in undef.
