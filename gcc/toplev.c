@@ -744,6 +744,10 @@ int flag_unwind_tables = 0;
 
 int flag_asynchronous_unwind_tables = 0;
 
+/* Nonzero means allow for forced unwinding.  */
+
+int flag_forced_unwind_exceptions;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 
@@ -1128,6 +1132,8 @@ static const lang_independent_options f_options[] =
    N_("Generate unwind tables exact at each instruction boundary") },
   {"non-call-exceptions", &flag_non_call_exceptions, 1,
    N_("Support synchronous non-call exceptions") },
+  {"forced-unwind-exceptions", &flag_forced_unwind_exceptions, 1,
+   N_("Support forced unwinding, e.g. for thread cancellation") },
   {"profile-arcs", &profile_arc_flag, 1,
    N_("Insert arc based program profiling code") },
   {"test-coverage", &flag_test_coverage, 1,

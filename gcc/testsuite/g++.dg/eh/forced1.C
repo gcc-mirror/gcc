@@ -1,0 +1,71 @@
+// { dg-do run }
+// { dg-options "-fforced-unwind-exceptions" }
+
+// Test that forced unwinding runs all cleanups, and only cleanups.
+
+#include <unwind.h>
+#include <stdlib.h>
+
+static int test = 0;
+
+static _Unwind_Reason_Code
+force_unwind_stop (int version, _Unwind_Action actions,
+                   _Unwind_Exception_Class exc_class,
+                   struct _Unwind_Exception *exc_obj,
+                   struct _Unwind_Context *context,
+                   void *stop_parameter)
+{
+  if (actions & _UA_END_OF_STACK)
+    {
+      if (test != 5)
+        abort ();
+      exit (0);
+    }
+
+  return _URC_NO_REASON;
+}
+
+static void force_unwind ()
+{
+  _Unwind_Exception *exc = new _Unwind_Exception;
+  exc->exception_class = 0;
+  exc->exception_cleanup = 0;
+                   
+  _Unwind_ForcedUnwind (exc, force_unwind_stop, 0);
+                   
+  abort ();
+}
+
+struct S
+{
+  int bit;
+  S(int b) : bit(b) { }
+  ~S() { test |= bit; }
+};
+  
+static void doit ()
+{
+  try {
+    S four(4);
+
+    try {
+      S one(1);
+      force_unwind ();
+  
+    } catch(...) { 
+      test |= 2;
+    }
+
+  } catch(...) {
+    test |= 8;
+  }
+}
+
+int main()
+{ 
+  try {
+    doit ();
+  } catch (...) {
+  }
+  abort ();
+}

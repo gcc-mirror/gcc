@@ -705,7 +705,7 @@ in the following sections.
 -fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
 -ffixed-@var{reg} -fexceptions @gol
 -fnon-call-exceptions  -funwind-tables @gol
--fasynchronous-unwind-tables @gol
+-fasynchronous-unwind-tables -fforced-unwind-exceptions @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -fno-common  -fno-ident  -fno-gnu-linker @gol
 -fpcc-struct-return  -fpic  -fPIC @gol
@@ -10842,6 +10842,13 @@ not exist everywhere.  Moreover, it only allows @emph{trapping}
 instructions to throw exceptions, i.e.@: memory references or floating
 point instructions.  It does not allow exceptions to be thrown from
 arbitrary signal handlers such as @code{SIGALRM}.
+
+@item -fforced-unwind-exceptions
+@opindex fforced-unwind-exceptions
+Generate code that checks for non-catchable exceptions derived from
+@code{_Unwind_ForcedUnwind}, such as from @code{longjmp_unwind} or
+from pthread cancellation.  There is some amount of code-size 
+overhead associated with this, so it is not default.
 
 @item -funwind-tables
 @opindex funwind-tables
