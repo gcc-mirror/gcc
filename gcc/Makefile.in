@@ -1471,7 +1471,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
 
 rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h ggc.h toplev.h
 
-print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h basic-block.h
+print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) $(BASIC_BLOCK_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
 errors.o : errors.c $(CONFIG_H) system.h errors.h
 
@@ -1596,9 +1596,9 @@ final.o : final.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h intl.h \
    real.h output.h hard-reg-set.h insn-flags.h insn-codes.h gstab.h except.h \
    xcoffout.h defaults.h toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h \
    dbxout.h
-recog.o : recog.c $(CONFIG_H) system.h $(RTL_H) function.h \
+recog.o : recog.c $(CONFIG_H) system.h $(RTL_H) function.h $(BASIC_BLOCK_H) \
    $(REGS_H) $(RECOG_H) hard-reg-set.h flags.h insn-config.h insn-attr.h \
-   insn-flags.h insn-codes.h real.h toplev.h output.h resource.h basic-block.h
+   insn-flags.h insn-codes.h real.h toplev.h output.h resource.h 
 reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) recog.h \
    $(REGS_H) hard-reg-set.h flags.h insn-config.h insn-flags.h toplev.h \
    varray.h function.h
@@ -1876,8 +1876,8 @@ $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
 
-$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) system.h \
-  $(RTL_H) bitmap.h basic-block.h
+$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) \
+  $(RTL_H) $(BASIC_BLOCK_H) system.h
 	rm -f $(HOST_PREFIX)print-rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
