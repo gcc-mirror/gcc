@@ -1,3 +1,23 @@
+2001-05-29  Andrew Haley  <aph@redhat.com>
+
+        * include/i386-signal.h (MAKE_THROW_FRAME): Don't fix up frame
+        pointer: the dwarf unwinder in libgcc will do everything that's
+        needed.
+        (HANDLE_DIVIDE_OVERFLOW): Tidy.  Don't mess with stack frames any
+        more than we absolutely need to.
+        * configure.host (EXCEPTIONSPEC): Remove libgcj_sjlj on Alpha.
+        * configure.in (SIGNAL_HANDLER): Use include/dwarf2-signal.h on
+        Alpha.
+        (SIGNAL_HANDLER): Test "$enable_sjlj_exceptions", not
+        "$libgcj_sjlj".
+        * configure: Rebuilt.
+        * include/dwarf2-signal.h (MAKE_THROW_FRAME): Adjust PC
+        for Alpha.
+        (SIGNAL_HANDLER): Use siginfo style handler.
+        (INIT_SEGV): Likewise.
+        (INIT_FPE): Likewise.
+        * include/ppc-signal.h: Delete whole file.
+
 2001-05-23  Jeff Sturm  <jsturm@one-point.com>
 
 	* java/net/natPlainDatagramSocketImpl.cc: Undefine bind if defined.

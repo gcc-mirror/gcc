@@ -746,13 +746,16 @@ case "${host}" in
  powerpc-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
+ alpha*-*-linux*)
+    SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h
     ;;
 esac
 
 # If we're using sjlj exceptions, forget what we just learned.
-if test "$libgcj_sjlj" = yes; then
+if test "$enable_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
 fi
 
