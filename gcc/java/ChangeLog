@@ -1,3 +1,10 @@
+2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Make-lang.in (GCJH_OBJS): Change dependency from
+	ggc-none.o to java/ggc-none.o
+	(JCFDUMP_OBJS): Likewise.
+	(java/ggc-none.o): New target.
+
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* boehm.c (get_boehm_type_descriptor):  Adjust build_int_cst calls.
