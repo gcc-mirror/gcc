@@ -1,5 +1,5 @@
 /* BasicButtonUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,18 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.*;
-import javax.swing.plaf.*;
-import java.awt.*;
-
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.plaf.ComponentUI;
 
 public class BasicButtonUI extends ButtonUI
 {

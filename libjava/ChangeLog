@@ -1,5 +1,18 @@
 2004-01-10  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/plaf/basic/BasicButtonUI.java,
+	javax/swing/plaf/basic/BasicCheckBoxUI.java,
+	javax/swing/plaf/basic/BasicListUI.java,
+	javax/swing/plaf/basic/BasicOptionPaneUI.java,
+	javax/swing/plaf/basic/BasicPanelUI.java,
+	javax/swing/plaf/basic/BasicRadioButtonUI.java,
+	javax/swing/plaf/basic/BasicScrollPaneUI.java,
+	javax/swing/plaf/basic/BasicToggleButtonUI.java,
+	javax/swing/plaf/basic/BasicViewportUI.java:
+	Fixed import statements.
+
+2004-01-10  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/image/ImageDecoder.java
 	(produce): Made public.
 	* gnu/java/awt/peer/GLightweightPeer.java,

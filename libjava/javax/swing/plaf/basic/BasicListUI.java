@@ -1,5 +1,5 @@
 /* BasicListUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,17 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.plaf.*;
-import javax.swing.*;
-import java.awt.*;
-
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.ListUI;
 
 public class BasicListUI extends ListUI
 {
