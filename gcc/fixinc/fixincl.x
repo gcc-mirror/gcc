@@ -5484,8 +5484,16 @@ tSCC zWindiss_ValistName[] =
 tSCC* apzWindiss_ValistMachs[] = {
         "*-*-windiss",
         (const char*)NULL };
-#define WINDISS_VALIST_TEST_CT  0
-#define aWindiss_ValistTests   (tTestDesc*)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zWindiss_ValistSelect0[] =
+       "(#include.*)diab/va_list.h";
+
+#define    WINDISS_VALIST_TEST_CT  1
+static tTestDesc aWindiss_ValistTests[] = {
+  { TT_EGREP,    zWindiss_ValistSelect0, (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for Windiss_Valist
@@ -5664,7 +5672,7 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          151
+#define REGEX_COUNT          152
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            145
 

@@ -3337,6 +3337,7 @@ fix = {
  * WindISS headers include "diab/va_list.h" instead of "stdarg.h"
  */
 fix = {
+    select    = '(#include.*)diab/va_list.h';
     hackname  = windiss_valist;
     sed       = "s|diab/va_list.h|stdarg.h|";
     mach      = "*-*-windiss";

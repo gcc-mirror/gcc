@@ -130,6 +130,16 @@ extern int matherr();
 extern double atof(const char *__nptr);
 
 #endif  /* ULTRIX_ATOF_PARAM_CHECK */
+
+
+#if defined( WINDISS_MATH1_CHECK )
+#ifndef __GNUC__
+#endif  /* WINDISS_MATH1_CHECK */
+
+
+#if defined( WINDISS_MATH2_CHECK )
+#endif /* __GNUC__ */
+#endif  /* WINDISS_MATH2_CHECK */
 #ifdef __cplusplus
 #undef exception
 #endif
