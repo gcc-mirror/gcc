@@ -1,5 +1,13 @@
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* g++.dg/warn/format2.C, gcc.dg/format/attr-7.c,
+	gcc.dg/format/multattr-1.c, gcc.dg/format/multattr-2.c,
+	gcc.dg/format/multattr-3.c: New tests.
+	* gcc.dg/format/attr-3.c: Update expected error texts.  Remove
+	tests for format attributes on function pointers being rejected.
+
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/format/attr-5.c, gcc.dg/format/attr-6.c: New tests.
 
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>

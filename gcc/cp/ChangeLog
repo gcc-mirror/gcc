@@ -1,5 +1,12 @@
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* call.c (build_over_call), typeck.c (build_function_call_real):
+	Pass type attributes to check_function_format rather than name or
+	assembler name.  Don't require there to be a name or assembler
+	name to check formats.
+
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* decl.c (init_decl_processing): Don't call
 	init_function_format_info.  Initialize lang_attribute_table
 	earlier.

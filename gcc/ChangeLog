@@ -1,5 +1,44 @@
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (c_format_attribute_table): Make format and
+	format_arg attributes apply to function types rather than to
+	decls.
+	(is_valid_printf_arglist): Construct an attribute list and pass
+	that to check_function_format rather than a name.
+	* c-common.h (check_function_format): Adjust prototype.
+	* c-decl.c (duplicate_decls): Preserve attributes from type of
+	built-in decl when allowing for harmless conflict in types.
+	* c-format.c (record_function_format,
+	record_international_format, function_format_list,
+	international_format_info, international_format_list): Remove.
+	(function_format_info): Remove next, name and assembler_name.
+	Make format_num and first_arg_num be unsigned HOST_WIDE_INT.
+	(decode_format_attr): New.
+	(handle_format_attribute): Handle receiving a type rather than a
+	decl.  Call decode_format_attr.  Store format information in a
+	function_format_info.
+	(handle_format_arg_attribute): Correct comment.  Handle receiving
+	a type rather than a decl.  Use unsigned HOST_WIDE_INT for
+	arg_num.
+	(check_format_info_recurse, check_format_info_main): Take argument
+	numbers as unsigned HOST_WIDE_INT.
+	(check_function_format): Take a list of attributes from the
+	function type rather than a name or assembler name.  Check for
+	format attributes in that list and the attributes on the type of
+	the current function rather than looking through
+	function_format_list.
+	(check_format_info): Use unsigned HOST_WIDE_INT for argument
+	numbers.
+	(check_format_info_recurse): Take format_arg attributes from the
+	type of the function calls rather than using
+	international_format_list.  Allow for multiple format_arg
+	attributes.
+	* c-typeck.c (build_function_call): Pass type attributes to
+	check_function_format rather than name or assembler name.  Don't
+	require there to be a name or assembler name to check formats.
+
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* attribs.c (decl_attributes): Possibly call
 	insert_default_attributes to insert default attributes on
 	functions in a lazy manner.

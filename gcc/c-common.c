@@ -2329,9 +2329,10 @@ c_alignof_expr (expr)
 
 static const struct attribute_spec c_format_attribute_table[] =
 {
-  { "format",                 3, 3, true,  false, false,
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "format",                 3, 3, false, true,  true,
 			      handle_format_attribute },
-  { "format_arg",             1, 1, true,  false, false,
+  { "format_arg",             1, 1, false, true,  true,
 			      handle_format_arg_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
@@ -3551,14 +3552,22 @@ is_valid_printf_arglist (arglist)
   /* Save this value so we can restore it later.  */
   const int SAVE_pedantic = pedantic;
   int diagnostic_occurred = 0;
+  tree attrs;
 
   /* Set this to a known value so the user setting won't affect code
      generation.  */
   pedantic = 1;
   /* Check to make sure there are no format specifier errors.  */
-  check_function_format (&diagnostic_occurred,
-			 maybe_get_identifier("printf"),
-			 NULL_TREE, arglist);
+  attrs = tree_cons (get_identifier ("format"),
+		     tree_cons (NULL_TREE,
+				get_identifier ("printf"),
+				tree_cons (NULL_TREE,
+					   integer_one_node,
+					   tree_cons (NULL_TREE,
+						      build_int_2 (2, 0),
+						      NULL_TREE))),
+		     NULL_TREE);
+  check_function_format (&diagnostic_occurred, attrs, arglist);
 
   /* Restore the value of `pedantic'.  */
   pedantic = SAVE_pedantic;
