@@ -61,11 +61,11 @@ extern java::lang::Class StringClass;
 typedef void _Jv_FinalizerFunc (jobject);
 
 /* Allocate space for a new Java object.  */
-void *_Jv_AllocObj (jsize size);
+void *_Jv_AllocObj (jsize size) __attribute__((__malloc__));
 /* Allocate space for an array of Java objects.  */
-void *_Jv_AllocArray (jsize size);
+void *_Jv_AllocArray (jsize size) __attribute__((__malloc__));
 /* Allocate space that is known to be pointer-free.  */
-void *_Jv_AllocBytes (jsize size);
+void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
 /* Initialize the GC.  */
 void _Jv_InitGC (void);
 /* Register a finalizer.  */
@@ -102,7 +102,7 @@ void _Jv_SetInitialHeapSize (const char *arg);
 void _Jv_SetMaximumHeapSize (const char *arg);
 
 /* Allocate some unscanned bytes.  Throw exception if out of memory.  */
-void *_Jv_AllocBytesChecked (jsize size);
+void *_Jv_AllocBytesChecked (jsize size) __attribute__((__malloc__));
 
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
 void _Jv_RunMain (const char* name, int argc, const char **argv);
@@ -145,8 +145,10 @@ _Jv_GetArrayElementFromElementType (jobject array,
 }
 
 extern "C" void _Jv_ThrowBadArrayIndex (jint bad_index);
-extern "C" jobject _Jv_NewArray (jint type, jint size);
-extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...);
+extern "C" jobject _Jv_NewArray (jint type, jint size)
+  __attribute__((__malloc__));
+extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...)
+  __attribute__((__malloc__));
 extern "C" void *_Jv_CheckCast (jclass klass, jobject obj);
 extern "C" void *_Jv_LookupInterfaceMethod (jclass klass, Utf8Const *name,
 					    Utf8Const *signature);
@@ -160,7 +162,8 @@ extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 extern jclass _Jv_FindClassFromSignature (char *,
 					  java::lang::ClassLoader *loader);
 
-extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims);
+extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
+  __attribute__((__malloc__));
 
 /* Checked divide subroutines. */
 extern "C"

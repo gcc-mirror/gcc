@@ -257,20 +257,22 @@ struct _Jv_JNIEnv;
 typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
 
-extern "C" jobject _Jv_AllocObject (jclass, jint);
+extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
 extern "C" jboolean _Jv_IsInstanceOf(jobject, jclass);
-extern "C" jstring _Jv_AllocString(jsize);
-extern "C" jstring _Jv_NewString (const jchar*, jsize);
+extern "C" jstring _Jv_AllocString(jsize) __attribute__((__malloc__));
+extern "C" jstring _Jv_NewString (const jchar*, jsize)
+  __attribute__((__malloc__));
 extern "C" jchar* _Jv_GetStringChars (jstring str);
 extern "C" jint _Jv_MonitorEnter (jobject);
 extern "C" jint _Jv_MonitorExit (jobject);
-extern "C" jstring _Jv_NewStringLatin1(const char*, jsize);
+extern "C" jstring _Jv_NewStringLatin1(const char*, jsize)
+  __attribute__((__malloc__));
 extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
 
 extern "C" void _Jv_Throw (void *) __attribute__ ((__noreturn__));
 extern "C" void _Jv_Sjlj_Throw (void *) __attribute__ ((__noreturn__));
-extern "C" void* _Jv_Malloc (jsize);
+extern "C" void* _Jv_Malloc (jsize) __attribute__((__malloc__));
 extern "C" void _Jv_Free (void*);
 
 typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));

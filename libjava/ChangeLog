@@ -1,3 +1,9 @@
+1999-12-05  Anthony Green  <green@cygnus.com>
+
+	* include/jvm.h: Declare many functions with
+	__attribute__((__malloc__)).
+	* gcj/javaprims.h: Ditto.
+
 Thu Dec  2 17:26:47 1999  Anthony Green  <green@cygnus.com>
 
 	* THANKS: Giving credit where credit is due.
