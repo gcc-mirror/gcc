@@ -1220,6 +1220,19 @@ reload (first, global, dumpfile)
 
 		  if (caller_save_group_size > 1)
 		    insn_total_groups = MAX (insn_total_groups, 1);
+
+
+                /* Show that this basic block will need a register of
+                   this class.  */
+
+                if (global
+                    && ! (basic_block_needs[(int) caller_save_spill_class]
+                          [this_block]))
+                  {
+                    basic_block_needs[(int) caller_save_spill_class]
+                      [this_block] = 1;
+                    new_basic_block_needs = 1;
+                  }
 		}
 
 #ifdef SMALL_REGISTER_CLASSES
