@@ -1038,6 +1038,7 @@ dbxout_type (type, full)
      int full;
 {
   tree tem;
+  tree main_variant;
   static int anonymous_type_number = 0;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -1050,23 +1051,23 @@ dbxout_type (type, full)
     type = integer_type_node;
   else
     {
-      /* Try to find the "main variant" with the same name but not const
-	 or volatile.  (Since stabs does not distinguish const and volatile,
-	 there is no need to make them separate types.  But types with
-	 different names are usefully distinguished.) */
-	 
-      for (tem = TYPE_MAIN_VARIANT (type); tem; tem = TYPE_NEXT_VARIANT (tem))
-	if (!TYPE_READONLY (tem) && !TYPE_VOLATILE (tem)
-	    && TYPE_NAME (tem) == TYPE_NAME (type))
-	  {
-	    type = tem;
-	    break;
-	  }
       if (TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
 	full = 0;
     }
+
+  /* Try to find the "main variant" with the same name.  */
+  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
+    main_variant = TREE_TYPE (TYPE_NAME (type));
+  else
+    main_variant = TYPE_MAIN_VARIANT (type);
+
+  /* If we are not using extensions, stabs does not distinguish const and
+     volatile, so there is no need to make them separate types.  */
+  if (!use_gnu_debug_info_extensions)
+    type = main_variant;
 
   if (TYPE_SYMTAB_ADDRESS (type) == 0)
     {
@@ -1157,12 +1158,30 @@ dbxout_type (type, full)
 
   typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_DEFINED;
 
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
-    { 
+  /* If this type is a variant of some other, hand off.  Types with
+     different names are usefully distinguished.  We only distinguish
+     cv-qualified types if we're using extensions.  */
+  if (TYPE_READONLY (type) > TYPE_READONLY (main_variant))
+    {
+      putc ('k', asmfile);
+      CHARS (1);
+      dbxout_type (build_type_variant (type, 0, TYPE_VOLATILE (type)), 0);
+      return;
+    }
+  else if (TYPE_VOLATILE (type) > TYPE_VOLATILE (main_variant))
+    {
+      putc ('B', asmfile);
+      CHARS (1);
+      dbxout_type (build_type_variant (type, TYPE_READONLY (type), 0), 0);
+      return;
+    }
+  else if (main_variant != TYPE_MAIN_VARIANT (type))
+    {
+      /* 'type' is a typedef; output the type it refers to.  */
       dbxout_type (DECL_ORIGINAL_TYPE (TYPE_NAME (type)), 0);
       return;
     }
+  /* else continue.  */
 
   switch (TREE_CODE (type))
     {

@@ -1,5 +1,7 @@
 2002-01-17  Jason Merrill  <jason@redhat.com>
 
+	* dbxout.c (dbxout_type): Support const and volatile.
+
 	* except.c (add_partial_entry): Remove backwards compatibility code.
 	(end_protect_partials): Likewise.
 
