@@ -1,3 +1,9 @@
+Thu Sep  2 21:49:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* reload1.c (eliminate_regs_in_insn): Avoid eliminating the
+	reg notes on a deleted insn.
+	* gcse.c (hash_expr_1): Use XWINT on a CONST_DOUBLE.
+
 Thu Sep  2 20:18:12 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.c (ix86_attr_length_default): Handle TYPE_FXCH.
