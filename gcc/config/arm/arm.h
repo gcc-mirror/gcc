@@ -248,7 +248,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 extern int target_flags;
 
 /* The floating point instruction architecture, can be 2 or 3 */
-extern char * target_fp_name;
+extern const char * target_fp_name;
 
 /* Nonzero if the function prologue (and epilogue) should obey
    the ARM Procedure Call Standard.  */
@@ -404,9 +404,9 @@ function tries to return. */
 
 struct arm_cpu_select
 {
-  char *              string;
-  char *              name;
-  struct processors * processors;
+  const char *              string;
+  const char *              name;
+  const struct processors * processors;
 };
 
 /* This is a magic array.  If the user specifies a command line switch
@@ -585,7 +585,7 @@ extern int arm_is_6_or_7;
 #endif
 
 /* Used when parsing command line option -mstructure_size_boundary.  */
-extern char * structure_size_string;
+extern const char * structure_size_string;
 
 /* Non-zero if move instructions will actually fail to work
    when given unaligned data.  */
