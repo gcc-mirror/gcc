@@ -287,13 +287,13 @@ cpp_reader *pfile;
 
  retry:
 
+  old_written = CPP_WRITTEN (pfile);
+  cpp_skip_hspace (pfile);
   c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
   if (c == '#')
     return parse_number (pfile,
 			 cpp_read_check_assertion (pfile) ? "1" : "0", 1);
 
-  old_written = CPP_WRITTEN (pfile);
-  cpp_skip_hspace (pfile);
   if (c == '\n')
     {
       op.op = 0;
