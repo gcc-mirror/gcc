@@ -1,3 +1,9 @@
+2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Revert 2003-09-23 change.
+	Allow override.
+	* doc/tm.texi (MUST_USE_SJLJ_EXCEPTIONS): Document.
+
 2003-09-23  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Undefine

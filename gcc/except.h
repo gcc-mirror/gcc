@@ -142,17 +142,15 @@ extern tree (*lang_eh_runtime_type) (tree);
    mean that we can use call frame exceptions.  Detect that the target
    has appropriate support.  */
 
-#if ! (defined (EH_RETURN_DATA_REGNO)			\
+#ifndef MUST_USE_SJLJ_EXCEPTIONS
+# if !(defined (EH_RETURN_DATA_REGNO)			\
        && (defined (IA64_UNWIND_INFO)			\
 	   || (DWARF2_UNWIND_INFO			\
 	       && (defined (EH_RETURN_HANDLER_RTX)	\
 		   || defined (HAVE_eh_return)))))
-# define MUST_USE_SJLJ_EXCEPTIONS	1
-#else
-# ifdef IA64_UNWIND_INFO
-#  define MUST_USE_SJLJ_EXCEPTIONS	0
+#  define MUST_USE_SJLJ_EXCEPTIONS	1
 # else
-#  define MUST_USE_SJLJ_EXCEPTIONS	(DWARF2_UNWIND_INFO == 0)
+#  define MUST_USE_SJLJ_EXCEPTIONS	0
 # endif
 #endif
 
