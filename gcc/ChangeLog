@@ -1,3 +1,10 @@
+Thu Jun  3 02:15:07 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (add_incomplete_type): New fn.
+	(gen_struct_or_union_type_die): Call it.
+	(retry_incomplete_types): New fn.
+	(dwarf2out_finish): Call it.
+
 Thu Jun  3 01:19:03 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c (insert_insn_end_bb): Correct placement of insns when the
