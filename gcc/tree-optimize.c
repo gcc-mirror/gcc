@@ -285,7 +285,7 @@ static struct tree_opt_pass **
 next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
 {
 
-  /* A non-zero static_pass_number indicates that the
+  /* A nonzero static_pass_number indicates that the
      pass is already in the list.  */
   if (pass->static_pass_number)
     {

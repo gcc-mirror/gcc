@@ -191,11 +191,11 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
    indicates whether constant overflow has already occurred.  We force
    T's value to be within range of T's type (by setting to 0 or 1 all
    the bits outside the type's range).  We set TREE_OVERFLOWED if,
-  	OVERFLOWED is non-zero,
+  	OVERFLOWED is nonzero,
 	or OVERFLOWABLE is >0 and signed overflow occurs
 	or OVERFLOWABLE is <0 and any overflow occurs
    We set TREE_CONSTANT_OVERFLOWED if,
-        CONST_OVERFLOWED is non-zero
+        CONST_OVERFLOWED is nonzero
 	or we set TREE_OVERFLOWED.
   We return either the original T, or a copy.  */
 
