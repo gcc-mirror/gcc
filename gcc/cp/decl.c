@@ -5544,7 +5544,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 	  if (complain & tf_error)
 	    {
 	      if (complain & tf_parsing)
-		type_access_control (context, tmpl);
+		perform_or_defer_access_check (context, tmpl);
 	      else
 		enforce_access (context, tmpl);
 	    }
@@ -5579,7 +5579,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 	      if (complain & tf_error)
 		{
 	      	  if (complain & tf_parsing)
-		    type_access_control (context, t);
+		    perform_or_defer_access_check (context, t);
 		  else
 		    enforce_access (context, t);
 		}
@@ -5651,7 +5651,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
       if (complain & tf_error)
 	{
 	  if (complain & tf_parsing)
-	    type_access_control (context, tmpl);
+	    perform_or_defer_access_check (context, tmpl);
 	  else
 	    enforce_access (context, tmpl);
 	}
@@ -9854,7 +9854,6 @@ grokdeclarator (tree declarator,
 
 		decl = start_decl (declarator, declspecs, 1,
 				   attributes, NULL_TREE);
-		decl_type_access_control (decl);
 		if (decl)
 		  {
 		    /* Look for __unused__ attribute */
@@ -11407,8 +11406,6 @@ grokdeclarator (tree declarator,
 	  /* Only try to do this stuff if we didn't already give up.  */
 	  if (type != integer_type_node)
 	    {
-	      decl_type_access_control (TYPE_NAME (type));
-
 	      /* A friendly class?  */
 	      if (current_class_type)
 		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));

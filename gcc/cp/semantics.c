@@ -52,7 +52,6 @@
 
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
-static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
 static void genrtl_eh_spec_block PARAMS ((tree));
@@ -78,6 +77,145 @@ static tree clear_decl_rtl PARAMS ((tree *, int *, void *));
     else						\
       (SUBSTMT) = (COND);				\
   } while (0)
+
+/* Data for deferred access checking.  */
+static GTY(()) deferred_access *deferred_access_stack;
+static GTY(()) deferred_access *deferred_access_free_list;
+
+/* Save the current deferred access states and start deferred
+   access checking iff DEFER_P is true.  */
+
+void push_deferring_access_checks (bool deferring_p)
+{
+  deferred_access *d;
+
+  /* Recycle previously used free store if available.  */
+  if (deferred_access_free_list)
+    {
+      d = deferred_access_free_list;
+      deferred_access_free_list = d->next;
+    }
+  else
+    d = (deferred_access *) ggc_alloc (sizeof (deferred_access));
+
+  d->next = deferred_access_stack;
+  d->deferred_access_checks = NULL_TREE;
+  d->deferring_access_checks_p = deferring_p;
+  deferred_access_stack = d;
+}
+
+/* Resume deferring access checks again after we stopped doing
+   this previously.  */
+
+void resume_deferring_access_checks (void)
+{
+  deferred_access_stack->deferring_access_checks_p = true;
+}
+
+/* Stop deferring access checks.  */
+
+void stop_deferring_access_checks (void)
+{
+  deferred_access_stack->deferring_access_checks_p = false;
+}
+
+/* Discard the current deferred access checks and restore the
+   previous states.  */
+
+void pop_deferring_access_checks (void)
+{
+  deferred_access *d = deferred_access_stack;
+  deferred_access_stack = d->next;
+
+  /* Remove references to access checks TREE_LIST.  */
+  d->deferred_access_checks = NULL_TREE;
+
+  /* Store in free list for later use.  */
+  d->next = deferred_access_free_list;
+  deferred_access_free_list = d;
+}
+
+/* Returns a TREE_LIST representing the deferred checks.  
+   The TREE_PURPOSE of each node is the type through which the 
+   access occurred; the TREE_VALUE is the declaration named.
+   */
+
+tree get_deferred_access_checks (void)
+{
+  return deferred_access_stack->deferred_access_checks;
+}
+
+/* Take current deferred checks and combine with the
+   previous states if we also defer checks previously.
+   Otherwise perform checks now.  */
+
+void pop_to_parent_deferring_access_checks (void)
+{
+  tree deferred_check = get_deferred_access_checks ();
+  deferred_access *d1 = deferred_access_stack;
+  deferred_access *d2 = deferred_access_stack->next;
+  deferred_access *d3 = deferred_access_stack->next->next;
+
+  /* Temporary swap the order of the top two states, just to make
+     sure the garbage collector will not reclaim the memory during 
+     processing below.  */
+  deferred_access_stack = d2;
+  d2->next = d1;
+  d1->next = d3;
+
+  for ( ; deferred_check; deferred_check = TREE_CHAIN (deferred_check))
+    /* Perform deferred check if required.  */
+    perform_or_defer_access_check (TREE_PURPOSE (deferred_check), 
+				   TREE_VALUE (deferred_check));
+
+  deferred_access_stack = d1;
+  d1->next = d2;
+  d2->next = d3;
+  pop_deferring_access_checks ();
+}
+
+/* Perform the deferred access checks.  */
+
+void perform_deferred_access_checks (void)
+{
+  tree deferred_check;
+  for (deferred_check = deferred_access_stack->deferred_access_checks;
+       deferred_check;
+       deferred_check = TREE_CHAIN (deferred_check))
+    /* Check access.  */
+    enforce_access (TREE_PURPOSE (deferred_check), 
+		    TREE_VALUE (deferred_check));
+
+  /* No more deferred checks.  */
+  deferred_access_stack->deferred_access_checks = NULL_TREE;
+}
+
+/* Defer checking the accessibility of DECL, when looked up in
+   CLASS_TYPE.  */
+
+void perform_or_defer_access_check (tree class_type, tree decl)
+{
+  tree check;
+
+  /* If we are not supposed to defer access checks, just check now.  */
+  if (!deferred_access_stack->deferring_access_checks_p)
+    {
+      enforce_access (class_type, decl);
+      return;
+    }
+
+  /* See if we are already going to perform this check.  */
+  for (check = deferred_access_stack->deferred_access_checks;
+       check;
+       check = TREE_CHAIN (check))
+    if (TREE_VALUE (check) == decl
+	&& same_type_p (TREE_PURPOSE (check), class_type))
+      return;
+  /* If not, record the check.  */
+  deferred_access_stack->deferred_access_checks
+    = tree_cons (class_type, decl,
+		 deferred_access_stack->deferred_access_checks);
+}
 
 /* Returns nonzero if the current statement is a full expression,
    i.e. temporaries created during that statement should be destroyed
@@ -1506,63 +1644,6 @@ finish_fname (tree id)
   return decl;
 }
 
-static tree current_type_lookups;
-
-/* Perform deferred access control for types used in the type of a
-   declaration.  */
-
-static void
-deferred_type_access_control ()
-{
-  tree lookup = type_lookups;
-
-  if (lookup == error_mark_node)
-    return;
-
-  for (; lookup; lookup = TREE_CHAIN (lookup))
-    enforce_access (TREE_PURPOSE (lookup), TREE_VALUE (lookup));
-}
-
-void
-decl_type_access_control (decl)
-     tree decl;
-{
-  tree save_fn;
-
-  if (type_lookups == error_mark_node)
-    return;
-
-  save_fn = current_function_decl;
-
-  if (decl && TREE_CODE (decl) == FUNCTION_DECL)
-    current_function_decl = decl;
-
-  deferred_type_access_control ();
-
-  current_function_decl = save_fn;
-  
-  /* Now strip away the checks for the current declarator; they were
-     added to type_lookups after typed_declspecs saved the copy that
-     ended up in current_type_lookups.  */
-  type_lookups = current_type_lookups;
-}
-
-void
-save_type_access_control (lookups)
-     tree lookups;
-{
-  current_type_lookups = lookups;
-}
-
-/* Reset the deferred access control.  */
-
-void
-reset_type_access_control ()
-{
-  type_lookups = NULL_TREE;
-  current_type_lookups = NULL_TREE;
-}
-
 /* Begin a function definition declared with DECL_SPECS, ATTRIBUTES,
    and DECLARATOR.  Returns nonzero if the function-declaration is
    valid.  */
@@ -1575,9 +1656,6 @@ begin_function_definition (decl_specs, attributes, declarator)
 {
   if (!start_function (decl_specs, declarator, attributes, SF_DEFAULT))
     return 0;
-
-  deferred_type_access_control ();
-  type_lookups = error_mark_node;
 
   /* The things we're about to see are not directly qualified by any
      template headers we've seen thus far.  */
@@ -1714,10 +1792,6 @@ begin_class_definition (t)
   if (t == error_mark_node)
     return error_mark_node;
 
-  /* Check the bases are accessible.  */
-  decl_type_access_control (TYPE_NAME (t));
-  reset_type_access_control ();
-  
   if (processing_template_parmlist)
     {
       error ("definition of `%#T' inside template parameter list", t);
@@ -2690,3 +2764,5 @@ init_cp_semantics ()
 {
   lang_expand_stmt = cp_expand_stmt;
 }
+
+#include "gt-cp-semantics.h"
