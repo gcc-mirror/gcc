@@ -1,5 +1,6 @@
 2004-09-11  David Edelsohn  <edelsohn@gnu.org>
 
+	PR target/17277
 	* config/rs6000/aix.h (MD_FROB_UPDATE_CONTEXT): Use __64BIT__ to
 	choose 64-bit version.
 
