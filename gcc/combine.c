@@ -964,7 +964,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
 		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
 #ifdef SMALL_REGISTER_CLASSES
-		      || ! REG_USERVAR_P (src)
+		      || (! all_adjacent && ! REG_USERVAR_P (src))
 #endif
 		      ))))
 	return 0;
