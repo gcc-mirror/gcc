@@ -418,7 +418,8 @@ lookup_tmp_var (tree val, bool is_formal)
 	  elt_p = xmalloc (sizeof (*elt_p));
 	  elt_p->val = val;
 	  elt_p->temp = create_tmp_from_val (val);
-	  *slot = (void *)elt_p;
+	  TREE_READONLY (elt_p->temp) = 1;
+	  *slot = (void *) elt_p;
 	}
       else
 	elt_p = (elt_t *) *slot;
@@ -1749,44 +1750,6 @@ gimplify_array_ref_to_plus (tree *expr_p, tree *pre_p, tree *post_p)
   return GS_OK;
 }
 
-/*  Build an expression for the address of T.  Folds away INDIRECT_REF to
-    avoid confusing the gimplify process.  */
-
-static tree
-build_addr_expr_with_type (tree t, tree ptrtype)
-{
-  if (TREE_CODE (t) == INDIRECT_REF)
-    {
-      t = TREE_OPERAND (t, 0);
-      if (TREE_TYPE (t) != ptrtype)
-	t = build1 (NOP_EXPR, ptrtype, t);
-    }
-  else
-    {
-      tree base = t;
-
-      if (TREE_CODE (base) == REALPART_EXPR
-	  || TREE_CODE (base) == IMAGPART_EXPR)
-	base = TREE_OPERAND (base, 0);
-      else
-	while (handled_component_p (base))
-	  base = TREE_OPERAND (base, 0);
-
-      if (DECL_P (base))
-	TREE_ADDRESSABLE (base) = 1;
-
-      t = build1 (ADDR_EXPR, ptrtype, t);
-    }
-
-  return t;
-}
-
-static tree
-build_addr_expr (tree t)
-{
-  return build_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
-}
-
 /* Gimplify the COMPONENT_REF, ARRAY_REF, REALPART_EXPR or IMAGPART_EXPR
    node pointed by EXPR_P.
 
@@ -1816,6 +1779,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   tree *p;
   varray_type stack;
   enum gimplify_status ret = GS_OK, tret;
+  int i;
 
 #if defined ENABLE_CHECKING
   if (TREE_CODE (*expr_p) != ARRAY_REF
@@ -1831,43 +1795,32 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
      order from inner to outer.  */
   VARRAY_TREE_INIT (stack, 10, "stack");
 
-  /* We can either handle one REALPART_EXPR or IMAGEPART_EXPR or
-     nest of handled components.  */
-  if (TREE_CODE (*expr_p) == REALPART_EXPR
-      || TREE_CODE (*expr_p) == IMAGPART_EXPR)
-    p = &TREE_OPERAND (*expr_p, 0);
-  else
-    for (p = expr_p; handled_component_p (*p); p = &TREE_OPERAND (*p, 0))
-      VARRAY_PUSH_TREE (stack, *p);
+  /* We can either handle REALPART_EXPR, IMAGEPART_EXPR anything that
+     handled_components can deal with.  */
+  for (p = expr_p;
+       (handled_component_p (*p)
+	|| TREE_CODE (*p) == REALPART_EXPR || TREE_CODE (*p) == IMAGPART_EXPR);
+       p = &TREE_OPERAND (*p, 0))
+    VARRAY_PUSH_TREE (stack, *p);
 
   /* Now STACK is a stack of pointers to all the refs we've walked through
      and P points to the innermost expression.
 
-     Process each of the outer nodes from left to right, then gimplify the
-     base.  We need to do it in this order so that PLACEHOLDER_EXPRs
-     can be resolved.  */
-  for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
+     Java requires that we elaborated nodes in source order.  That
+     means we must gimplify the inner expression followed by each of
+     the indices, in order.  But we can't gimplify the inner
+     expression until we deal with any variable bounds, sizes, or
+     positions in order to deal with PLACEHOLDER_EXPRs.
+
+     So we do this in three steps.  First we deal with the annotations
+     for any variables in the components, then we gimplify the base,
+     then we gimplify any indices, from left to right.  */
+  for (i = VARRAY_ACTIVE_SIZE (stack) - 1; i >= 0; i--)
     {
-      tree t = VARRAY_TOP_TREE (stack);
+      tree t = VARRAY_TREE (stack, i);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
-	  /* Gimplify the dimension.
-	     Temporary fix for gcc.c-torture/execute/20040313-1.c.
-	     Gimplify non-constant array indices into a temporary
-	     variable.
-	     FIXME - The real fix is to gimplify post-modify
-	     expressions into a minimal gimple lvalue.  However, that
-	     exposes bugs in alias analysis.  The alias analyzer does
-	     not handle &PTR->FIELD very well.  Will fix after the
-	     branch is merged into mainline (dnovillo 2004-05-03).  */
-	  if (!is_gimple_min_invariant (TREE_OPERAND (t, 1)))
-	    {
-	      tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
-				    is_gimple_tmp_var, fb_rvalue);
-	      ret = MIN (ret, tret);
-	    }
-
 	  /* Gimplify the low bound and element type size and put them into
 	     the ARRAY_REF.  If these values are set, they have already been
 	     gimplified.  */
@@ -1924,6 +1877,36 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 		}
 	    }
 	}
+    }
+
+  /* Step 2 is to gimplify the base expression.  */
+  tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
+			want_lvalue ? fb_lvalue : fb_rvalue);
+  ret = MIN (ret, tret);
+
+  /* And finally, the indices and operands to BIT_FIELD_REF.  */
+  for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
+    {
+      tree t = VARRAY_TOP_TREE (stack);
+
+      if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
+	{
+	  /* Gimplify the dimension.
+	     Temporary fix for gcc.c-torture/execute/20040313-1.c.
+	     Gimplify non-constant array indices into a temporary
+	     variable.
+	     FIXME - The real fix is to gimplify post-modify
+	     expressions into a minimal gimple lvalue.  However, that
+	     exposes bugs in alias analysis.  The alias analyzer does
+	     not handle &PTR->FIELD very well.  Will fix after the
+	     branch is merged into mainline (dnovillo 2004-05-03).  */
+	  if (!is_gimple_min_invariant (TREE_OPERAND (t, 1)))
+	    {
+	      tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
+				    is_gimple_tmp_var, fb_rvalue);
+	      ret = MIN (ret, tret);
+	    }
+	}
       else if (TREE_CODE (t) == BIT_FIELD_REF)
 	{
 	  tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
@@ -1934,6 +1917,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	  ret = MIN (ret, tret);
 	}
 	  
+      /* The innermost expression P may have originally had TREE_SIDE_EFFECTS
+	 set which would have caused all the outer expressions in EXPR_P
+	 leading to P to also have had TREE_SIDE_EFFECTS set.  */
       recalculate_side_effects (t);
       VARRAY_POP (stack);
     }
@@ -1941,22 +1927,6 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			want_lvalue ? fb_lvalue : fb_rvalue);
   ret = MIN (ret, tret);
-
-  /* The innermost expression P may have originally had TREE_SIDE_EFFECTS
-     set which would have caused all the outer expressions in EXPR_P leading
-     to P to also have had TREE_SIDE_EFFECTS set.
- 
-     Gimplification of P may have cleared TREE_SIDE_EFFECTS on P, which should
-     be propagated to P's parents, innermost to outermost.  */
-  for (p = expr_p; handled_component_p (*p); p = &TREE_OPERAND (*p, 0))
-    VARRAY_PUSH_TREE (stack, *p);
-
-  for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
-    {
-      tree t = VARRAY_TOP_TREE (stack);
-      recalculate_side_effects (t);
-      VARRAY_POP (stack);
-    }
 
   /* If the outermost expression is a COMPONENT_REF, canonicalize its type.  */
   if (!want_lvalue && TREE_CODE (*expr_p) == COMPONENT_REF)
@@ -2754,9 +2724,9 @@ gimplify_variable_sized_compare (tree *expr_p)
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, op0);
   t = unshare_expr (t);
   args = tree_cons (NULL, t, NULL);
-  t = build_addr_expr (op1);
+  t = build_fold_addr_expr (op1);
   args = tree_cons (NULL, t, args);
-  dest = build_addr_expr (op0);
+  dest = build_fold_addr_expr (op0);
   args = tree_cons (NULL, dest, args);
   t = implicit_built_in_decls[BUILT_IN_MEMCMP];
   t = build_function_call_expr (t, args);
@@ -2944,9 +2914,12 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
     case VIEW_CONVERT_EXPR:
       /* Take the address of our operand and then convert it to the type of
-	 this ADDR_EXPR.  */
+	 this ADDR_EXPR.
+
+	 ??? The interactions of VIEW_CONVERT_EXPR and aliasing is not at
+	 all clear.  The impact of this transformation is even less clear.  */
       *expr_p = fold_convert (TREE_TYPE (expr),
-			      build_addr_expr (TREE_OPERAND (op0, 0)));
+			      build_fold_addr_expr (TREE_OPERAND (op0, 0)));
       ret = GS_OK;
       break;
 
@@ -3473,7 +3446,12 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	  /* If both types are BLKmode or if one type is of variable size,
 	     convert this into a pointer punning operation.  This avoids
-	     copies of large data or making a variable-size temporary.  */
+	     copies of large data or making a variable-size temporary.
+
+	     ??? The interactions of VIEW_CONVERT_EXPR and aliasing is not at
+	     all clear.  The impact of this transformation is even less
+	     clear.  */
+
 	  if ((TYPE_MODE (TREE_TYPE (*expr_p)) == BLKmode
 	       && TYPE_MODE (TREE_TYPE (TREE_OPERAND (*expr_p, 0))) == BLKmode)
 	      || !TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (*expr_p)))
@@ -3483,7 +3461,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	      tree restype = TREE_TYPE (*expr_p);
 	      *expr_p = build1 (INDIRECT_REF, TREE_TYPE (*expr_p),
 				fold_convert (build_pointer_type (restype),
-					      build_addr_expr
+					      build_fold_addr_expr
 					      (TREE_OPERAND (*expr_p, 0))));
 	      break;
 	    }
