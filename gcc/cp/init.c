@@ -138,7 +138,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
     }
 #if 0
   /* Before turning this on, make sure it is correct.  */
-  if (can_elide  && ! BINFO_MODIFIED (binfo))
+  if (can_elide && ! BINFO_MODIFIED (binfo))
     return;
 #endif
   /* Should we use something besides CLASSTYPE_VFIELDS? */

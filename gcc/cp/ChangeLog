@@ -1,3 +1,18 @@
+Wed Apr 19 02:32:40 1995  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (virtual_context): New function to get the virtual
+	context of a function.
+	(expand_upcast_fixups): New function to generate runtime vtables.
+	(fixup_virtual_upcast_offsets): Ditto.
+	(expand_indirect_vtbls_init): Use fixup_virtual_upcast_offsets to
+	ensure that the this offsets for upcasts from virtual bases into
+	other virtual bases or non-virtual bases are correct at construction
+	time and destruction time.
+	* class.c (fixup_vtable_deltas): Modify to fixup all offsets in all
+	vtables in all virtual bases, instead of just one vtable in each
+	virtual base.
+	(fixup_vtable_deltas1): Ditto.
+
 Tue Apr 18 03:57:35 1995  Michael Meissner  (meissner@cygnus.com)
 
 	* Makefile.in (lex.o): Add dependency on c-pragma.h.

@@ -2342,12 +2342,9 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
     }
 }
 
-/* Fixup all the delta entries in this vtable that need updating.
-   This happens when we have non-overridden virtual functions from a
-   virtual base class, that are at a different offset, in the new
-   hierarchy, because the layout of the virtual bases has changed.  */
+/* Fixup all the delta entries in this one vtable that need updating.  */
 static void
-fixup_vtable_deltas (binfo, t)
+fixup_vtable_deltas1 (binfo, t)
      tree binfo, t;
 {
   tree virtuals = BINFO_VIRTUALS (binfo);
@@ -2415,6 +2412,33 @@ fixup_vtable_deltas (binfo, t)
 	}
       ++n;
       virtuals = TREE_CHAIN (virtuals);
+    }
+}
+
+/* Fixup all the delta entries in all the direct vtables that need updating.
+   This happens when we have non-overridden virtual functions from a
+   virtual base class, that are at a different offset, in the new
+   hierarchy, because the layout of the virtual bases has changed.  */
+static void
+fixup_vtable_deltas (binfo, init_self, t)
+     tree binfo, t;
+     int init_self;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (! TREE_VIA_VIRTUAL (base_binfo))
+	fixup_vtable_deltas (base_binfo, is_not_base_vtable, t);
+    }
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      fixup_vtable_deltas1 (binfo, t);
     }
 }
 
@@ -3707,7 +3731,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	     only doing this for vtables that come from virtual bases
 	     that have differing offsets, but don't want to miss any
 	     entries.  */
-	  fixup_vtable_deltas (vbases, t);
+	  fixup_vtable_deltas (vbases, 1, t);
 	  vbases = TREE_CHAIN (vbases);
 	}
     }

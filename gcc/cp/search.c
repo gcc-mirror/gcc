@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "cp-tree.h"
 #include "obstack.h"
 #include "flags.h"
+#include "rtl.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -2552,6 +2553,184 @@ init_vbase_pointers (type, decl_ptr)
   return 0;
 }
 
+/* get the virtual context (the vbase that directly contains the
+   DECL_CLASS_CONTEXT of the FNDECL) that the given FNDECL is declared in,
+   or NULL_TREE if there is none.
+
+   FNDECL must come from a virtual table from a virtual base to ensure that
+   there is only one possible DECL_CLASS_CONTEXT.
+
+   We know that if there is more than one place (binfo) the fndecl that the
+   declared, they all refer to the same binfo.  See get_class_offset_1 for
+   the check that ensures this.  */
+static tree
+virtual_context (fndecl, t, vbase)
+     tree fndecl, t, vbase;
+{
+  tree path;
+  if (get_base_distance (DECL_CLASS_CONTEXT (fndecl), t, 0, &path) < 0)
+    {
+      /* This shouldn't happen, I don't want errors! */
+      warning ("recoverable compiler error, fixups for virtual function");
+      return vbase;
+    }
+  while (path)
+    {
+      if (TREE_VIA_VIRTUAL (path))
+	return binfo_member (BINFO_TYPE (path), CLASSTYPE_VBASECLASSES (t));
+      path = BINFO_INHERITANCE_CHAIN (path);
+    }
+  return 0;
+}
+
+/* Fixups upcast offsets for one vtable.
+   Entries may stay within the VBASE given, or
+   they may upcast into a direct base, or
+   they may upcast into a different vbase.
+
+   We only need to do fixups in case 2 and 3.
+
+   This routine mirrors fixup_vtable_deltas in functionality, though
+   this one is runtime based, and the other is compile time based.
+   Conceivably that routine could be removed entirely, and all fixups
+   done at runtime.
+
+   VBASE_OFFSETS is an association list of virtual bases that contains
+   offset information, so the offsets are only calculated once.  */
+static void
+expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
+     tree binfo, addr, orig_addr, vbase, t, *vbase_offsets;
+{
+  tree virtuals = BINFO_VIRTUALS (binfo);
+  tree vc;
+  tree delta;
+  unsigned HOST_WIDE_INT n;
+  
+  delta = purpose_member (vbase, *vbase_offsets);
+  if (! delta)
+    {
+      delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbase));
+      delta = build (MINUS_EXPR, ptrdiff_type_node, delta, addr);
+      delta = save_expr (delta);
+      delta = tree_cons (vbase, delta, *vbase_offsets);
+      *vbase_offsets = delta;
+    }
+
+  /* Skip RTTI fake object. */
+  n = 1;
+  if (virtuals)
+    virtuals = TREE_CHAIN (virtuals);
+  while (virtuals)
+    {
+      tree current_fndecl = TREE_VALUE (virtuals);
+      current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
+      current_fndecl = TREE_OPERAND (current_fndecl, 0);
+      if (current_fndecl
+	  && (vc=virtual_context (current_fndecl, t, vbase)) != vbase)
+	{
+	  /* This may in fact need a runtime fixup. */
+	  tree idx = DECL_VINDEX (current_fndecl);
+	  tree vtbl = BINFO_VTABLE (binfo);
+	  tree nvtbl = lookup_name (DECL_NAME (vtbl), 0);
+	  tree aref, ref, naref;
+	  tree old_delta, new_delta;
+	  tree init;
+
+	  if (nvtbl == NULL_TREE
+	      || nvtbl == IDENTIFIER_GLOBAL_VALUE (DECL_NAME (vtbl)))
+	    {
+	      /* Dup it if it isn't in local scope yet.  */
+	      nvtbl = build_decl (VAR_DECL,
+				  DECL_NAME (vtbl),
+				  TYPE_MAIN_VARIANT (TREE_TYPE (BINFO_VTABLE (binfo))));
+	      DECL_ALIGN (nvtbl) = MAX (TYPE_ALIGN (double_type_node),
+					DECL_ALIGN (nvtbl));
+	      TREE_READONLY (nvtbl) = 0;
+	      nvtbl = pushdecl (nvtbl);
+	      init = NULL_TREE;
+	      finish_decl (nvtbl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	      DECL_VIRTUAL_P (nvtbl) = 1;
+	      DECL_CONTEXT (nvtbl) = t;
+	      init = build (MODIFY_EXPR, TREE_TYPE (nvtbl),
+			    nvtbl, vtbl);
+	      TREE_SIDE_EFFECTS (init) = 1;
+	      expand_expr_stmt (init);
+	      /* Update the vtable pointers as necessary. */
+	      ref = build_vfield_ref (build_indirect_ref (addr, NULL_PTR), DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
+	      expand_expr_stmt (build_modify_expr (ref, NOP_EXPR,
+						   build_unary_op (ADDR_EXPR, nvtbl, 0)));
+	    }
+	  assemble_external (vtbl);
+	  aref = build_array_ref (vtbl, idx);
+	  naref = build_array_ref (nvtbl, idx);
+	  old_delta = build_component_ref (aref, delta_identifier, 0, 0);
+	  new_delta = build_component_ref (naref, delta_identifier, 0, 0);
+	  old_delta = build_binary_op (PLUS_EXPR, old_delta,
+				       TREE_VALUE (delta), 0);
+	  if (vc)
+	    {
+	      /* If this is set, we need to add in delta adjustments for
+		 the other virtual base.  */
+	      tree vc_delta = purpose_member (vc, *vbase_offsets);
+	      if (! vc_delta)
+		{
+		  tree vc_addr = convert_pointer_to_real (vc, orig_addr);
+		  vc_delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vc));
+		  vc_delta = build (MINUS_EXPR, ptrdiff_type_node,
+				    vc_addr, vc_delta);
+		  vc_delta = save_expr (vc_delta);
+		  *vbase_offsets = tree_cons (vc, vc_delta, *vbase_offsets);
+		}
+	      else
+		vc_delta = TREE_VALUE (vc_delta);
+   
+	      old_delta = build_binary_op (PLUS_EXPR, old_delta, vc_delta, 0);
+	    }
+
+	  TREE_READONLY (new_delta) = 0;
+	  expand_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
+					       old_delta));
+	}
+      ++n;
+      virtuals = TREE_CHAIN (virtuals);
+    }
+}
+
+/* Fixup upcast offsets for all direct vtables.  Patterned after
+   expand_direct_vtbls_init.  */
+static void
+fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, orig_addr, type, vbase, vbase_offsets)
+     tree real_binfo, binfo, addr, orig_addr, type, vbase, *vbase_offsets;
+     int init_self, can_elide;
+{
+  tree real_binfos = BINFO_BASETYPES (real_binfo);
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
+      if (! TREE_VIA_VIRTUAL (real_base_binfo))
+	fixup_virtual_upcast_offsets (real_base_binfo, base_binfo,
+				      is_not_base_vtable, can_elide, addr,
+				      orig_addr, type, vbase, vbase_offsets);
+    }
+#if 0
+  /* Before turning this on, make sure it is correct.  */
+  if (can_elide && ! BINFO_MODIFIED (binfo))
+    return;
+#endif
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
+    {
+      addr = convert_pointer_to_real (binfo, addr);
+      expand_upcast_fixups (real_binfo, addr, orig_addr, vbase, type, vbase_offsets);
+    }
+}
+
 /* Build a COMPOUND_EXPR which when expanded will generate the code
    needed to initialize all the virtual function table slots of all
    the virtual baseclasses.  MAIN_BINFO is the binfo which determines
@@ -2577,6 +2756,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
   tree type = BINFO_TYPE (binfo);
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
+      rtx fixup_insns = NULL_RTX;
       int old_flag = flag_this_is_variable;
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       vbase_types = vbases;
@@ -2587,8 +2767,9 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	{
 	  /* This is an object of type IN_TYPE,  */
 	  flag_this_is_variable = -2;
-	  dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep);
 	}
+
+      dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep);
 
       /* Initialized with vtables of type TYPE.  */
       for (; vbases; vbases = TREE_CHAIN (vbases))
@@ -2627,6 +2808,46 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	     binfos.  (in the CLASSTPE_VFIELD_PARENT sense)  */
 	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
 				    1, 0, addr);
+
+	  /* If we are using computed offsets we can skip fixups.  */
+	  if (use_computed_offsets)
+	    continue;
+
+	  /* Now we adjust the offsets for virtual functions that cross
+	     virtual boundaries on an implicit upcast on vf call so that
+	     the layout of the most complete type is used, instead of
+	     assuming the layout of the virtual bases from our current type. */
+
+	  if (flag_vtable_thunks)
+	    {
+	      /* We don't have dynamic thunks yet!  So for now, just fail silently. */
+	    }
+	  else
+	    {
+	      tree vbase_offsets = NULL_TREE;
+	      push_to_sequence (fixup_insns);
+	      fixup_virtual_upcast_offsets (vbases,
+					    TYPE_BINFO (BINFO_TYPE (vbases)),
+					    1, 0, addr, vbase_decl_ptr,
+					    type, vbases, &vbase_offsets);
+	      fixup_insns = get_insns ();
+	      end_sequence ();
+	    }
+	}
+
+      if (fixup_insns)
+	{
+	  extern tree in_charge_identifier;
+	  tree in_charge_node = lookup_name (in_charge_identifier, 0);
+	  if (! in_charge_node)
+	    {
+	      warning ("recoverable internal compiler error, nobody's in charge!");
+	      in_charge_node = integer_zero_node;
+	    }
+	  in_charge_node = build_binary_op (EQ_EXPR, in_charge_node, integer_zero_node, 1);
+	  expand_start_cond (in_charge_node, 0);
+	  emit_insns (fixup_insns);
+	  expand_end_cond ();
 	}
 
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep);
