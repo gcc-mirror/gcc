@@ -79,11 +79,14 @@ for name in $LIB1ASMFUNCS; do
     echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
 
-    # Remove any objects from LIB2FUNCS that are defined as optimized
-    # assembly code in LIB1ASMFUNCS.
+    # Remove any objects from LIB2FUNCS and LIB2_DIVMOD_FUNCS that are
+    # defined as optimized assembly code in LIB1ASMFUNCS.
     LIB2FUNCS=`echo $LIB2FUNCS | sed -e 's/^'$name' //' \
 				     -e 's/ '$name' / /' \
 				     -e 's/ '$name'$//'`
+    LIB2_DIVMOD_FUNCS=`echo $LIB2_DIVMOD_FUNCS | sed -e 's/^'$name' //' \
+				                     -e 's/ '$name' / /' \
+				                     -e 's/ '$name'$//'`
   done
   libgcc1_objs="$libgcc1_objs ${name}${objext}"
 done
