@@ -1,3 +1,22 @@
+2004-11-03  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* config/os/bsd/darwin/os_defines.h
+	(_GLIBCXX_WEAK_DEFINITION): Define.
+	* include/bits/c++config (_GLIBCXX_WEAK_DEFINITION): Define.
+	* libsupc++/del_op.cc (operator delete(void *)): Use
+	_GLIBCXX_WEAK_DEFINITION.
+	* libsupc++/del_opnt.cc
+	(operator delete(void *, const std::nothrow_t&)): Same.
+	* libsupc++/del_opv.cc (operator delete[](void *)): Same.
+	* libsupc++/del_opvnt.cc
+	(operator delete[](void *, const std::nothrow_t&)): Same.
+	* libsupc++/new_op.cc (operator new(std::size_t)): Same.
+	* libsupc++/new_opnt.cc
+	(operator new(std::size_t, const std::nothrow_t&)): Same
+	* libsupc++/new_opv.cc (operator new[](std::size_t)): Same.
+	* libsupc++/new_opvnt.cc
+	(operator new[](std::size_t, const std::nothrow_t&)): Same.
+
 2004-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int):

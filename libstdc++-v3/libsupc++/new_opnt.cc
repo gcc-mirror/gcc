@@ -36,7 +36,7 @@ using std::bad_alloc;
 extern "C" void *malloc (std::size_t);
 extern new_handler __new_handler;
 
-__attribute__((weak)) void *
+_GLIBCXX_WEAK_DEFINITION void *
 operator new (std::size_t sz, const std::nothrow_t&) throw()
 {
   void *p;
