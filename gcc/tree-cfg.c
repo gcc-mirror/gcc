@@ -3884,12 +3884,7 @@ thread_jumps (void)
 	       tree_forwarder_block_p (dest);
 	       last = EDGE_SUCC (dest, 0),
 	       dest = EDGE_SUCC (dest, 0)->dest)
-	    {
-	      if (EDGE_SUCC (dest, 0)->dest == EXIT_BLOCK_PTR)
-		break;
-
-	      bb_ann (dest)->forwardable = 0;
-	    }
+	    bb_ann (dest)->forwardable = 0;
 
 	  /* Reset the forwardable marks to 1.  */
 	  for (tmp = e->dest;

@@ -1,3 +1,8 @@
+2004-10-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (thread_jumps): Remove a duplicate check for
+	EXIT_BLOCK_PTR.
+
 2004-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s_imm_operand): Remove.
