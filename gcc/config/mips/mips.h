@@ -559,6 +559,8 @@ while (0)
 	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
 	%{pipe: %e-pipe is not supported.} \
 	%{K}} \
+%{!mmips-as: \
+	%{mcpu=*}} \
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
 %{noasmopt:-O0} \
 %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
@@ -576,6 +578,8 @@ while (0)
 	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
 	%{pipe: %e-pipe is not supported.} \
 	%{K}} \
+%{mgas: \
+	%{mcpu=*}} \
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
 %{noasmopt:-O0} \
 %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
