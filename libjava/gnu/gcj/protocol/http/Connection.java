@@ -1,6 +1,6 @@
 // Connection.java - Implementation of HttpURLConnection for http protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,7 +37,6 @@ class Connection extends HttpURLConnection
   private Hashtable requestProperties;
   private Hashtable hdrHash = new Hashtable();
   private Vector hdrVec = new Vector();
-  private boolean gotHeaders = false;
   private BufferedInputStream bufferedIn;
 
   public Connection(URL url)
@@ -94,14 +93,15 @@ class Connection extends HttpURLConnection
     PrintWriter out = new PrintWriter(sock.getOutputStream());
 
     // Send request including any request properties that were set.
-    out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.1\n");
+    out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.0\n");
     out.print("Host: " + url.getHost() + ":" + port + "\n");
     Enumeration reqKeys = requestProperties.keys();
     Enumeration reqVals = requestProperties.elements();
     while (reqKeys.hasMoreElements())
       out.print(reqKeys.nextElement() + ": " + reqVals.nextElement() + "\n");
     out.print("\n");
-    out.flush();
+    out.flush();    
+    getHttpHeaders();
     connected = true;
   }
 
@@ -120,7 +120,6 @@ class Connection extends HttpURLConnection
 	  }
 	sock = null;
       }
-    connected = false;
   }
 
   // TODO: public boolean usingProxy()
@@ -135,10 +134,8 @@ class Connection extends HttpURLConnection
     if (!connected)
       connect();
 
-    if (! doInput)
+    if (!doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    if (bufferedIn == null)
-      bufferedIn = new BufferedInputStream(sock.getInputStream());
     return bufferedIn;
   }
 
@@ -157,48 +154,52 @@ class Connection extends HttpURLConnection
   // Override default method in URLConnection.
   public String getHeaderField(String name)
   {
-    try
-      {
-	getHttpHeaders();
-      }
-    catch (IOException x)
-      {
-	return null;
-      }
+    if (!connected)
+      try
+        {
+	  connect();
+	}
+      catch (IOException x)
+        {
+	  return null;
+	}
+
     return (String) hdrHash.get(name.toLowerCase());
   }
 
   // Override default method in URLConnection.
   public String getHeaderField(int n)
   {
-    try
-      {
-	getHttpHeaders();
-      }
-    catch (IOException x)
-      {
-	return null;
-      }
+    if (!connected)
+      try
+        {
+	  connect();
+	}
+      catch (IOException x)
+        {
+	  return null;
+	}
+
     if (n < hdrVec.size())
       return getField((String) hdrVec.elementAt(n));
-
     return null;
   }
 
   // Override default method in URLConnection.
   public String getHeaderFieldKey(int n)
   {
-    try
-      {
-	getHttpHeaders();
-      }
-    catch (IOException x)
-      {
-	return null;
-      }
+    if (!connected)
+      try
+        {
+	  connect();
+	}
+      catch (IOException x)
+        {
+	  return null;
+	}
+
     if (n < hdrVec.size())
       return getKey((String) hdrVec.elementAt(n));
-
     return null;
   }
 
@@ -226,20 +227,13 @@ class Connection extends HttpURLConnection
 
   private void getHttpHeaders() throws IOException
   {
-    if (gotHeaders)
-      return;
-    gotHeaders = true;
-
-    connect();
-
     // Originally tried using a BufferedReader here to take advantage of
     // the readLine method and avoid the following, but the buffer read
     // past the end of the headers so the first part of the content was lost.
     // It is probably more robust than it needs to be, e.g. the byte[]
     // is unlikely to overflow and a '\r' should always be followed by a '\n',
     // but it is better to be safe just in case.
-    if (bufferedIn == null)
-      bufferedIn = new BufferedInputStream(sock.getInputStream());
+    bufferedIn = new BufferedInputStream(sock.getInputStream());
 
     int buflen = 100;
     byte[] buf = new byte[buflen];
@@ -247,6 +241,7 @@ class Connection extends HttpURLConnection
     boolean gotnl = false;
     byte[] ch = new byte[1];
     ch[0] = (byte) '\n';
+
     while (true)
       {
 	// Check for leftover byte from non-'\n' after a '\r'.
@@ -254,9 +249,12 @@ class Connection extends HttpURLConnection
 	  line = line + '\r' + new String(ch, 0, 1);
 
 	int i;
+	// FIXME: This is rather inefficient.
 	for (i = 0; i < buflen; i++)
 	  {
-	    bufferedIn.read(buf, i, 1);
+	    buf[i] = (byte) bufferedIn.read();
+	    if (buf[i] == -1)
+	      throw new IOException("Malformed HTTP header");
 	    if (buf[i] == '\r')
 	      {
 	        bufferedIn.read(ch, 0, 1);
