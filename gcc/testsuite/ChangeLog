@@ -1,5 +1,7 @@
 2003-06-03  J"orn Rennecke <joern.rennecke@superh.com>
 
+	* g++.dg/abi/empty6.C (B): Request alignment of 8 bytes.
+
 	* gcc.dg/torture/builtin-noret-1.c (_exit, _Exit): Make weak.
 	* gcc.dg/torture/builtin-noret-2.c (_exit, _Exit): Likewise.
 
