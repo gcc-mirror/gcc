@@ -1,6 +1,6 @@
 // natFloat.cc - Implementation of java.lang.Float native methods.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -30,6 +30,14 @@ java::lang::Float::floatToIntBits(jfloat value)
   if (e == 0x7f800000 && f != 0)
     u.l = 0x7fc00000;
 
+  return u.l;
+}
+
+jint 
+java::lang::Float::floatToRawIntBits(jfloat value)
+{
+  union u u;
+  u.d = value;  
   return u.l;
 }
 

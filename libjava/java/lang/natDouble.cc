@@ -1,6 +1,6 @@
 // natDouble.cc - Implementation of java.lang.Double native methods.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -45,6 +45,14 @@ java::lang::Double::doubleToLongBits(jdouble value)
   if (e == 0x7ff0000000000000LL && f != 0L)
     u.l = 0x7ff8000000000000LL;
 
+  return u.l;
+}
+
+jlong 
+java::lang::Double::doubleToRawLongBits(jdouble value)
+{
+  union u u;
+  u.d = value;
   return u.l;
 }
 
