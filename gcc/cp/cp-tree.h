@@ -3949,6 +3949,7 @@ extern tree pfn_from_ptrmemfunc                 PROTO((tree));
 extern tree type_after_usual_arithmetic_conversions PROTO((tree, tree));
 extern tree composite_pointer_type              PROTO((tree, tree, tree, tree,
 						       const char*));
+extern tree check_return_expr                   PROTO((tree));
 
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));

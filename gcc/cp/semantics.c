@@ -371,6 +371,33 @@ void
 finish_return_stmt (expr)
      tree expr;
 {
+  if (doing_semantic_analysis_p () && !processing_template_decl)
+    expr = check_return_expr (expr);
+
+  if (doing_semantic_analysis_p () && !processing_template_decl)
+    {
+      if (DECL_CONSTRUCTOR_P (current_function_decl) && ctor_label)
+	{
+	  /* Even returns without a value in a constructor must return
+	     `this'.  We accomplish this by sending all returns in a
+	     constructor to the CTOR_LABEL; finish_function emits code to
+	     return a value there.  When we finally generate the real
+	     return statement, CTOR_LABEL is no longer set, and we fall
+	     through into the normal return-processing code below.  */
+	  finish_goto_stmt (ctor_label);
+	  return;
+	}
+      else if (DECL_DESTRUCTOR_P (current_function_decl))
+	{
+	  /* Similarly, all destructors must run destructors for
+	     base-classes before returning.  So, all returns in a
+	     destructor get sent to the DTOR_LABEL; finsh_function emits
+	     code to return a value there.  */
+	  finish_goto_stmt (dtor_label);
+	  return;
+	}
+    }
+
   if (building_stmt_tree ())
     add_tree (build_min_nt (RETURN_STMT, expr));
   else

@@ -180,6 +180,7 @@ static void save_function_data PROTO((tree));
 static void check_function_type PROTO((tree));
 static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
+static void finish_constructor_body PROTO((void));
 static void finish_destructor_body PROTO((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
@@ -4064,7 +4065,10 @@ pushdecl (x)
     }
 
   if (need_new_binding)
-    add_decl_to_level (x, current_binding_level);
+    add_decl_to_level (x, 
+		       DECL_NAMESPACE_SCOPE_P (x)
+		       ? NAMESPACE_LEVEL (CP_DECL_CONTEXT (x))
+		       : current_binding_level);
 
   return x;
 }
@@ -13329,9 +13333,26 @@ save_function_data (decl)
   f->cannot_inline = current_function_cannot_inline;
 }
 
+/* At the end of every constructor we generate to code to return
+   `this'.  Do that now.  */
+
+static void
+finish_constructor_body ()
+{
+  /* Any return from a constructor will end up here.  */
+  add_tree (build_min_nt (LABEL_STMT, ctor_label));
+
+  /* Clear CTOR_LABEL so that finish_return_stmt knows to really
+     generate the return, rather than a goto to CTOR_LABEL.  */
+  ctor_label = NULL_TREE;
+  /* In check_return_expr we translate an empty return from a
+     constructor to a return of `this'.  */
+  finish_return_stmt (NULL_TREE);
+}
+
 /* At the end of every destructor we generate code to restore virtual
    function tables to the values desired by base classes and to call
-   to base class destructors.  Do that now, for DECL.  */
+   to base class destructors.  Do that now.  */
 
 static void
 finish_destructor_body ()
@@ -13343,6 +13364,9 @@ finish_destructor_body ()
 
   /* Create a block to contain all the extra code.  */
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+
+  /* Any return from a destructor will end up here.  */
+  add_tree (build_min_nt (LABEL_STMT, dtor_label));
 
   /* Generate the code to call destructor on base class.  If this
      destructor belongs to a class with virtual functions, then set
@@ -13372,13 +13396,12 @@ finish_destructor_body ()
 	  || TREE_OPERAND (exprstmt, 0) != integer_zero_node
 	  || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)))
     {
-      add_tree (build_min_nt (LABEL_STMT, dtor_label));
       if (exprstmt != void_zero_node)
 	/* Don't call `expand_expr_stmt' if we're not going to do
 	   anything, since -Wall will give a diagnostic.  */
 	finish_expr_stmt (exprstmt);
 
-      /* Run destructor on all virtual baseclasses.  */
+      /* Run destructors for all virtual baseclasses.  */
       if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	{
 	  tree vbases = nreverse (copy_list (CLASSTYPE_VBASECLASSES (current_class_type)));
@@ -13496,10 +13519,23 @@ finish_function (lineno, flags)
 
   if (building_stmt_tree ())
     {
-      if (DECL_CONSTRUCTOR_P (fndecl) && call_poplevel)
-	do_poplevel ();
+      if (DECL_CONSTRUCTOR_P (fndecl))
+	{
+	  finish_constructor_body ();
+	  if (call_poplevel)
+	    do_poplevel ();
+	}
       else if (DECL_DESTRUCTOR_P (fndecl) && !processing_template_decl)
 	finish_destructor_body ();
+      else if (DECL_MAIN_P (fndecl))
+	{
+	  /* Make it so that `main' always returns 0 by default.  */
+#ifdef VMS
+	  finish_return_stmt (integer_one_node);
+#else
+	  finish_return_stmt (integer_zero_node);
+#endif
+	}
 
       /* Finish dealing with exception specifiers.  */
       if (flag_exceptions && !processing_template_decl
@@ -13535,28 +13571,11 @@ finish_function (lineno, flags)
 	;
       else if (DECL_CONSTRUCTOR_P (fndecl))
 	{
-	  /* This is where the body of the constructor begins.  All
-	     subobjects have been fully constructed at this point.  */
+	  /* All subobjects have been fully constructed at this point.  */
 	  end_protect_partials ();
-
-	  /* This is where the body of the constructor ends.  */
-	  expand_label (ctor_label);
-	  ctor_label = NULL_TREE;
 
 	  if (call_poplevel)
 	    do_poplevel ();
-
-	  /* c_expand_return knows to return 'this' from a constructor.  */
-	  c_expand_return (NULL_TREE);
-	}
-      else if (DECL_MAIN_P (fndecl))
-	{
-	  /* Make it so that `main' always returns 0 by default.  */
-#ifdef VMS
-	  c_expand_return (integer_one_node);
-#else
-	  c_expand_return (integer_zero_node);
-#endif
 	}
       else if (return_label != NULL_RTX
 	       && flag_this_is_variable <= 0

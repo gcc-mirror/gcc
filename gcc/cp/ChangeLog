@@ -1,3 +1,22 @@
+1999-09-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (check_return_expr): New function.
+	* decl.c (finish_constructor_body): New function.
+	(pushdecl): Put global friend functions in namespace binding
+	level, not the class binding level.
+	(finish_destructor_body): Make sure the dtor_label is always
+	defined.  Fix typo in comment.
+	(finish_function): Move generation of constructor-termination code
+	to semantic-analysis time.  Move generation of implicit `main'
+	return value to semantic-analysis time.
+	* semantics.c (finish_return_stmt): Generate goto's to
+	ctor_label/dtor_label here.  Use check_return_expr to do semantic
+	analysis on the returned expression.
+	* typeck.c (maybe_warn_about_returning_address_of_local): New
+	function split out from c_expand_return.
+	(check_return_expr): Likewise.
+	(c_expand_return): Just generate the RTL for the return.
+	
 1999-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CPTI_CLEANUP_TYPE): New macro.
