@@ -5652,6 +5652,9 @@ make_typename_type (context, name, complain)
 	      return error_mark_node;
 	    }
 
+	  if (!enforce_access (context, tmpl))
+	    return error_mark_node;
+
 	  return lookup_template_class (tmpl,
 					TREE_OPERAND (fullname, 1),
 					NULL_TREE, context,
@@ -5672,6 +5675,9 @@ make_typename_type (context, name, complain)
 	  t = lookup_field (context, name, 0, 1);
 	  if (t)
 	    {
+	      if (!enforce_access (context, t))
+		return error_mark_node;
+
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
 	      if (IMPLICIT_TYPENAME_P (t))
