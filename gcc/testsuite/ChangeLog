@@ -1,3 +1,8 @@
+2003-10-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/execute/va-arg-24.c: Correct, and rename to...
+	* gcc.c-torture/execute/va-arg-25.c: ... here.
+
 2003-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/ext/attrib8.C: Only run it on x86 targets.
