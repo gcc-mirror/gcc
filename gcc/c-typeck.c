@@ -41,10 +41,10 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
-#endif
-
+#else
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
+#endif
 #endif
 
 /* Nonzero if we've already printed a "missing braces around initializer"

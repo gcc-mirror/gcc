@@ -55,10 +55,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
-#endif
-
+#else
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
+#endif
 #endif
 
 #include "gcov-io.h"
