@@ -37,8 +37,8 @@ java.text.StringCharacterIterator.iter
 !java.net.MulticastSocket.MulticastSocketTest
 !java.net.ServerSocket.ServerSocketTest
 !java.net.URL.URLTest
-!java.net.URLConnection.MyURLConnection
 !java.text.SimpleDateFormat.Test
 !java.text.SimpleDateFormat.getAndSet2DigitYearStart
 !java.net.Socket.SocketTest
 !java.net.URLConnection.URLConnectionTest
+!java.net.InetAddress.InetAddressTest
