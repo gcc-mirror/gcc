@@ -1033,7 +1033,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 		 safe to be used as the base in an indexed address. 
 
 		 Don't mark hard registers though.  That loses.  */
-	      if (REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
+	      if (GET_CODE (operand0) == REG
+		  && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
 		REGNO_POINTER_FLAG (REGNO (operand0)) = 1;
 	      if (REGNO (temp) >= FIRST_PSEUDO_REGISTER)
 		REGNO_POINTER_FLAG (REGNO (temp)) = 1;
