@@ -178,22 +178,30 @@ typedef void *jmethodID;
 
 #define JNIIMPORT        __declspec(dllimport)
 #define JNIEXPORT        __declspec(dllexport)
+
 #define JNICALL          __stdcall
 
-#else
+/* These defines apply to symbols in libgcj */
+#ifdef __GCJ_DLL__
+# ifdef __GCJ_JNI_IMPL__
+#  define __GCJ_JNIIMPEXP__ JNIEXPORT
+# else
+#  define __GCJ_JNIIMPEXP__ JNIIMPORT
+# endif /* ! __GCJ_JNI_IMPL__ */
+#else /* ! __GCJ_DLL__ */
+# define __GCJ_JNIIMPEXP__
+#endif /*  __GCJ_DLL__ */
+
+#else /* !( _WIN32 || __WIN32__ || WIN32) */
 
 #define JNIIMPORT
 #define JNIEXPORT
 #define JNICALL
+#define __GCJ_JNIIMPEXP__
 
 #endif /* !( _WIN32 || __WIN32__ || WIN32) */
 
-#ifdef __GCJ_JNI_IMPL__
-#define JNIIMPEXP JNIEXPORT
-#else
-#define JNIIMPEXP JNIIMPORT
-#endif /* ! __GCJ_JNI_IMPL__ */
-
+ 
 #ifdef __cplusplus
 extern "C"
 {
@@ -206,9 +214,14 @@ extern JNIEXPORT void JNICALL JNI_OnUnload (JavaVM *, void *);
 
 /* These functions are called by user code to start using the
    invocation API.  */
-extern JNIIMPEXP jint JNICALL JNI_GetDefaultJavaVMInitArgs (void *);
-extern JNIIMPEXP jint JNICALL JNI_CreateJavaVM (JavaVM **, void **, void *);
-extern JNIIMPEXP jint JNICALL JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);
+extern __GCJ_JNIIMPEXP__ jint JNICALL
+JNI_GetDefaultJavaVMInitArgs (void *);
+
+extern __GCJ_JNIIMPEXP__ jint JNICALL
+JNI_CreateJavaVM (JavaVM **, void **, void *);
+
+extern __GCJ_JNIIMPEXP__ jint JNICALL
+JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);
 
 #ifdef __cplusplus
 }
