@@ -1,5 +1,12 @@
 2004-12-21  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (x86_sse_partial_regs_for_cvtsd2ss): Remove.
+	* config/i386/i386.h (TARGET_SSE_PARTIAL_REGS_FOR_CVTSD2SS): Remove.
+	* config/i386/i386.md (truncdfsf2_1_sse): Don't test it.
+	(truncdfsf2_2, truncdfsf2_sse_only): Likewise.
+	(truncdfsf2_1_sse_nooverlap, truncdfsf2_2_nooverlap): Remove.
+	(truncdfsf2_sse_only_nooverlap): Remove.
+
 	* config/i386/i386.h (TARGET_SSE_TYPELESS_LOAD0): Remove.
 
 2004-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
