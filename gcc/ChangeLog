@@ -1,3 +1,10 @@
+Thu Oct 30 13:26:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c (const_8bit_operand): New function.
+	(mask_ok_for_mem_btst): New funtion.
+	* mn10300.md (btst patterns with mem operands): Use new functions
+	to avoid creating btst instructions with invalid operands.
+
 Wed Oct 29 16:57:19 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000/xm-sysv4.h: Include xm-linux.h instead of xm-svr4.h if we

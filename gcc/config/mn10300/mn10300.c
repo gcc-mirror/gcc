@@ -990,6 +990,42 @@ impossible_plus_operand (op, mode)
   return 0;
 }
 
+/* Return 1 if X is a CONST_INT that is only 8 bits wide.  This is used
+   for the btst insn which may examine memory or a register (the memory
+   variant only allows an unsigned 8 bit integer).  */
+int
+const_8bit_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) >= 0
+	  && INTVAL (op) < 256);
+}
+
+/* Similarly, but when using a zero_extract pattern for a btst where
+   the source operand might end up in memory.  */
+int
+mask_ok_for_mem_btst (len, bit)
+     int len;
+     int bit;
+{
+  int mask = 0;
+
+  while (len > 0)
+    {
+      mask |= (1 << bit);
+      bit++;
+      len--;
+    }
+
+  /* MASK must bit into an 8bit value.  */
+  return (((mask & 0xff) == mask)
+	  || ((mask & 0xff00) == mask)
+	  || ((mask & 0xff0000) == mask)
+	  || ((mask & 0xff000000) == mask));
+}
+
 /* Return 1 if X contains a symbolic expression.  We know these
    expressions will have one of a few well defined forms, so
    we need only check those forms.  */
