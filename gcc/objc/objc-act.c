@@ -5300,6 +5300,10 @@ get_arg_type_list (tree meth, int context, int superflag)
     {
       tree arg_type = TREE_VALUE (TREE_TYPE (akey));
 
+      /* Decay arrays into pointers.  */
+      if (TREE_CODE (arg_type) == ARRAY_TYPE)
+	arg_type = build_pointer_type (TREE_TYPE (arg_type));
+
       chainon (arglist, build_tree_list (NULL_TREE, arg_type));
     }
 
@@ -7473,9 +7477,13 @@ start_method_def (tree method)
   parmlist = METHOD_SEL_ARGS (method);
   while (parmlist)
     {
-      tree parm = build_decl (PARM_DECL, KEYWORD_ARG_NAME (parmlist),
-			      TREE_VALUE (TREE_TYPE (parmlist)));
+      tree type = TREE_VALUE (TREE_TYPE (parmlist)), parm;
 
+      /* Decay arrays into pointers.  */
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	type = build_pointer_type (TREE_TYPE (type));
+
+      parm = build_decl (PARM_DECL, KEYWORD_ARG_NAME (parmlist), type);
       objc_push_parm (parm);
       parmlist = TREE_CHAIN (parmlist);
     }
@@ -7941,14 +7949,39 @@ gen_type_name_0 (tree type)
 
   if (TYPE_P (type) && TYPE_NAME (type))
     type = TYPE_NAME (type);
-  else if (POINTER_TYPE_P (type))
+  else if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
     {
-      gen_type_name_0 (TREE_TYPE (type));
+      tree inner = TREE_TYPE (type);
+
+      while (TREE_CODE (inner) == ARRAY_TYPE)
+	inner = TREE_TYPE (inner);
+
+      gen_type_name_0 (inner);
       
-      if (!POINTER_TYPE_P (TREE_TYPE (type)))
+      if (!POINTER_TYPE_P (inner))
 	strcat (errbuf, " ");
 
-      strcat (errbuf, "*");
+      if (POINTER_TYPE_P (type))
+	strcat (errbuf, "*");
+      else
+	while (type != inner)
+	  {
+	    strcat (errbuf, "[");
+
+	    if (TYPE_DOMAIN (type))
+	      {
+		char sz[20];
+
+		sprintf (sz, HOST_WIDE_INT_PRINT_DEC,
+			 (TREE_INT_CST_LOW 
+			  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1));
+		strcat (errbuf, sz);
+	      }
+
+	    strcat (errbuf, "]");
+	    type = TREE_TYPE (type);
+	  }
+
       goto exit_function;
     }
 
