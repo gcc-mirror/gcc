@@ -30,6 +30,9 @@ details.  */
 #include <gcj/cni.h>
 #include <gcj/field.h>
 
+/* Macro for possible unused arguments.  */
+#define MAYBE_UNUSED __attribute__((__unused__))
+
 /* Structure of the virtual table.  */
 struct _Jv_VTable
 {
