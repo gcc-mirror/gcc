@@ -45,6 +45,9 @@
 /* libm includes expf */
 #undef HAVE_EXPF
 
+/* libm includes finite */
+#undef HAVE_FINITE
+
 /* libm includes floorf */
 #undef HAVE_FLOORF
 

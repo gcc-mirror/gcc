@@ -1,3 +1,13 @@
+2004-11-22  Steven Bosscher  <stevenb@suse.de>
+
+	PR libfortran/15960
+	* configure.ac: Check for finite in libm.
+	* libgfortran.h: Define isfinite macro if not defined.
+	* intrinsics/c99_functions.c: Use defined(fpclassify) instead of
+	HAVE_FPCLASSIFY.
+	* io/write.c (write_float): Use isfinite instead of finite.
+	* configure, config.h.in: Rebuilt.
+
 2004-11-20  Roger Sayle  <roger@eyesopen.com>
 
 	* io/write.c (write_float, list_formatted_write): Fix indentation.

@@ -654,7 +654,7 @@ write_float (fnode *f, const char *source, int len)
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
-      res = finite (n);
+      res = isfinite (n);
       if (res == 0)
 	{
 	  nb =  f->u.real.w;

@@ -210,6 +210,9 @@ AC_CHECK_LIB([m],[y1f],[AC_DEFINE([HAVE_Y1F],[1],[libm includes y1f])])
 AC_CHECK_LIB([m],[yn],[AC_DEFINE([HAVE_YN],[1],[libm includes yn])])
 AC_CHECK_LIB([m],[ynf],[AC_DEFINE([HAVE_YNF],[1],[libm includes ynf])])
 
+# Fallback in case isfinite is not available.
+AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
+
 # Let the user override this
 AC_ARG_ENABLE(cmath,
 	AC_HELP_STRING([--enable-cmath],[Include complex math functions]),

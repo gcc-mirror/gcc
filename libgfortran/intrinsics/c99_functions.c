@@ -254,7 +254,7 @@ powf(float x, float y)
 }
 #endif
 
-/* Note that if HAVE_FPCLASSIFY is not defined, then NaN is not handled */
+/* Note that if fpclassify is not defined, then NaN is not handled */
 
 /* Algorithm by Steven G. Kargl.  */
 
@@ -266,7 +266,7 @@ double
 round(double x)
 {
    double t;
-#ifdef HAVE_FPCLASSIFY
+#if defined(fpclassify)
    int i;
    i = fpclassify(x);
    if (i == FP_INFINITE || i == FP_NAN)
@@ -298,7 +298,7 @@ float
 roundf(float x)
 {
    float t;
-#ifdef HAVE_FPCLASSIFY
+#if defined(fpclassify)
    int i;
 
    i = fpclassify(x);
