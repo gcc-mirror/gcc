@@ -712,6 +712,10 @@ GC_API void (*GC_is_visible_print_proc)
 
 # endif /* SOLARIS_THREADS */
 
+#if defined(LINUX_THREADS)
+  void * GC_dlopen(const char *path, int mode);
+# define dlopen GC_dlopen
+#endif
 
 #if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
 /* We treat these similarly. */
