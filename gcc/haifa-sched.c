@@ -154,8 +154,8 @@
    priorities are computed, and (3) block level: insns in the block
    are actually scheduled.  */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"
@@ -320,7 +320,7 @@ static unsigned int *insn_blockage;
 #define UNIT_BLOCKED(B) ((B) >> (2 * BLOCKAGE_BITS))
 #define BLOCKAGE_RANGE(B)                                                \
   (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
-   | (B) & BLOCKAGE_MASK)
+   | ((B) & BLOCKAGE_MASK))
 
 /* Encodings of the `<name>_unit_blockage_range' function.  */
 #define MIN_BLOCKAGE_COST(R) ((R) >> (HOST_BITS_PER_INT / 2))
@@ -457,7 +457,7 @@ static void sched_analyze_1 PROTO ((rtx, rtx));
 static void sched_analyze_2 PROTO ((rtx, rtx));
 static void sched_analyze_insn PROTO ((rtx, rtx, rtx));
 static void sched_analyze PROTO ((rtx, rtx));
-static void sched_note_set PROTO ((int, rtx, int));
+static void sched_note_set PROTO ((rtx, int));
 static int rank_for_schedule PROTO ((rtx *, rtx *));
 static void swap_sort PROTO ((rtx *, int));
 static void queue_insn PROTO ((rtx, int));
@@ -467,9 +467,9 @@ static void attach_deaths PROTO ((rtx, rtx, int));
 static void attach_deaths_insn PROTO ((rtx));
 static int new_sometimes_live PROTO ((struct sometimes *, int, int));
 static void finish_sometimes_live PROTO ((struct sometimes *, int));
-static int schedule_block PROTO ((int, int, int));
+static int schedule_block PROTO ((int, int));
 static rtx regno_use_in PROTO ((int, rtx));
-static void split_hard_reg_notes PROTO ((rtx, rtx, rtx, rtx));
+static void split_hard_reg_notes PROTO ((rtx, rtx, rtx));
 static void new_insn_dead_notes PROTO ((rtx, rtx, rtx, rtx));
 static void update_n_sets PROTO ((rtx, int));
 static void update_flow_info PROTO ((rtx, rtx, rtx, rtx));
@@ -707,8 +707,8 @@ static void compute_dom_prob_ps PROTO ((int));
 /* speculative scheduling functions */
 static int check_live_1 PROTO ((int, rtx));
 static void update_live_1 PROTO ((int, rtx));
-static int check_live PROTO ((rtx, int, int));
-static void update_live PROTO ((rtx, int, int));
+static int check_live PROTO ((rtx, int));
+static void update_live PROTO ((rtx, int));
 static void set_spec_fed PROTO ((rtx));
 static int is_pfree PROTO ((rtx, int, int));
 static int find_conditional_protection PROTO ((rtx, int));
@@ -2166,7 +2166,7 @@ check_live_1 (src, x)
      int src;
      rtx x;
 {
-  register i;
+  register int i;
   register int regno;
   register rtx reg = SET_DEST (x);
 
@@ -2234,7 +2234,7 @@ update_live_1 (src, x)
      int src;
      rtx x;
 {
-  register i;
+  register int i;
   register int regno;
   register rtx reg = SET_DEST (x);
 
@@ -2287,10 +2287,9 @@ update_live_1 (src, x)
    ready-list or before the scheduling.  */
 
 static int
-check_live (insn, src, trg)
+check_live (insn, src)
      rtx insn;
      int src;
-     int trg;
 {
   /* find the registers set by instruction */
   if (GET_CODE (PATTERN (insn)) == SET
@@ -2316,9 +2315,9 @@ check_live (insn, src, trg)
    block src to trg.  */
 
 static void
-update_live (insn, src, trg)
+update_live (insn, src)
      rtx insn;
-     int src, trg;
+     int src;
 {
   /* find the registers set by instruction */
   if (GET_CODE (PATTERN (insn)) == SET
@@ -2936,7 +2935,6 @@ __inline static int
 insn_issue_delay (insn)
      rtx insn;
 {
-  rtx link;
   int i, delay = 0;
   int unit = insn_unit (insn);
 
@@ -3725,6 +3723,9 @@ sched_analyze_2 (x, insn)
       sched_analyze_2 (XEXP (x, 0), insn);
       sched_analyze_1 (x, insn);
       return;
+
+    default:
+      break;
     }
 
   /* Other cases: walk the insn.  */
@@ -4026,8 +4027,7 @@ sched_analyze (head, tail)
    are scanning forwards.  Mark that register as being born.  */
 
 static void
-sched_note_set (b, x, death)
-     int b;
+sched_note_set (x, death)
      rtx x;
      int death;
 {
@@ -4388,7 +4388,7 @@ schedule_insn (insn, ready, n_ready, clock)
 		  || CANT_MOVE (next)
 		  || (IS_SPECULATIVE_INSN (next)
 		      && (insn_issue_delay (next) > 3
-			  || !check_live (next, INSN_BB (next), target_bb)
+			  || !check_live (next, INSN_BB (next))
 		 || !is_exception_free (next, INSN_BB (next), target_bb)))))
 	    continue;
 
@@ -5178,7 +5178,7 @@ find_pre_sched_live (bb)
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER)
 	    {
-	      sched_note_set (b, PATTERN (insn), 0);
+	      sched_note_set (PATTERN (insn), 0);
 	      reg_weight++;
 	    }
 
@@ -5189,7 +5189,7 @@ find_pre_sched_live (bb)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 		    || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
 		  {
-		    sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+		    sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 		    reg_weight++;
 		  }
 
@@ -5197,7 +5197,7 @@ find_pre_sched_live (bb)
 	         is harmless though, so we will leave it in for now.  */
 	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
-		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+		  sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 	    }
 
 	  /* Each call cobbers (makes live) all call-clobbered regs
@@ -5360,13 +5360,13 @@ find_post_sched_live (bb)
 
       if (GET_CODE (PATTERN (insn)) == SET
 	  || GET_CODE (PATTERN (insn)) == CLOBBER)
-	sched_note_set (b, PATTERN (insn), 1);
+	sched_note_set (PATTERN (insn), 1);
       else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	{
 	  for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 	    if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 		|| GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-	      sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 1);
+	      sched_note_set (XVECEXP (PATTERN (insn), 0, j), 1);
 	}
 
       /* This code keeps life analysis information up to date.  */
@@ -6573,9 +6573,8 @@ group_leader (insn)
    Return number of insns scheduled.  */
 
 static int
-schedule_block (bb, rgn, rgn_n_insns)
+schedule_block (bb, rgn_n_insns)
      int bb;
-     int rgn;
      int rgn_n_insns;
 {
   /* Local variables.  */
@@ -6744,7 +6743,7 @@ schedule_block (bb, rgn, rgn_n_insns)
 	    if (!CANT_MOVE (insn)
 		&& (!IS_SPECULATIVE_INSN (insn)
 		    || (insn_issue_delay (insn) <= 3
-			&& check_live (insn, bb_src, target_bb)
+			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
 
 	      {
@@ -6850,14 +6849,14 @@ schedule_block (bb, rgn, rgn_n_insns)
 		  if (IS_SPECULATIVE_INSN (insn))
 		    {
 
-		      if (!check_live (insn, INSN_BB (insn), target_bb))
+		      if (!check_live (insn, INSN_BB (insn)))
 			{
 			  /* speculative motion, live check failed, remove
 			     insn from ready list */
 			  ready[i] = ready[--n_ready];
 			  continue;
 			}
-		      update_live (insn, INSN_BB (insn), target_bb);
+		      update_live (insn, INSN_BB (insn));
 
 		      /* for speculative load, mark insns fed by it.  */
 		      if (IS_LOAD_INSN (insn) || FED_BY_SPEC_LOAD (insn))
@@ -7623,7 +7622,7 @@ schedule_region (rgn)
   /* now we can schedule all blocks */
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      sched_rgn_n_insns += schedule_block (bb, rgn, rgn_n_insns);
+      sched_rgn_n_insns += schedule_block (bb, rgn_n_insns);
 
 #ifdef USE_C_ALLOCA
       alloca (0);
@@ -7704,8 +7703,8 @@ regno_use_in (regno, x)
    several smaller hard register references in the split insns.  */
 
 static void
-split_hard_reg_notes (note, first, last, orig_insn)
-     rtx note, first, last, orig_insn;
+split_hard_reg_notes (note, first, last)
+     rtx note, first, last;
 {
   rtx reg, temp, link;
   int n_regs, i, new_reg;
@@ -7927,7 +7926,7 @@ update_flow_info (notes, first, last, orig_insn)
 		      && GET_CODE (temp) == REG
 		      && REGNO (temp) < FIRST_PSEUDO_REGISTER
 		      && HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)) > 1)
-		    split_hard_reg_notes (note, first, last, orig_insn);
+		    split_hard_reg_notes (note, first, last);
 		  else
 		    {
 		      XEXP (note, 1) = REG_NOTES (insn);
@@ -8457,7 +8456,6 @@ schedule_insns (dump_file)
 
   int max_uid;
   int b;
-  int i;
   rtx insn;
   int rgn;
 

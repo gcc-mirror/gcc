@@ -1,3 +1,20 @@
+Tue Feb 17 22:37:22 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* haifa-sched.c: Include "system.h" to get <stdlib.h> and <stdio.h>.
+	(BLOCKAGE_RANGE): Add parentheses around arithmetic in operand of |.
+	(sched_note_set): Remove unused parameter `b', all callers changed.
+	(schedule_block): Likewise for `rgn'.
+	(split_hard_reg_notes): Likewise for `orig_insn'.
+	(check_live): Likewise for `trg'.
+	(update_live): Likewise.
+	(check_live_1): Explcitly declare variable `i' as int.
+	(update_live_1): Likewise.
+	(insn_issue_delay): Remove unused variable `link'.
+	(sched_analyze_2): Add default case in enumeration switch.
+	(schedule_insns): Remove unused variable `i'.
+
+	* Makefile.in ($(SCHED_PREFIX)sched.o): Depend on system.h.
+
 Tue Feb 17 22:31:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (rtx_equal_for_loop_p): Add some braces to disambiguate
