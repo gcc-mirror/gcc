@@ -1,3 +1,7 @@
+Fri Nov 21 12:49:56 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* stmt.c (expand_end_bindings): Allow jump into block with cleanups.
+
 Fri Nov 21 12:18:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.h: Add outer_context_label_stack.
