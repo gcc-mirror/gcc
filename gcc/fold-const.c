@@ -2814,7 +2814,7 @@ make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos,
   tree result = build (BIT_FIELD_REF, type, inner,
 		       size_int (bitsize), bitsize_int (bitpos));
 
-  TREE_UNSIGNED (result) = unsignedp;
+  BIT_FIELD_REF_UNSIGNED (result) = unsignedp;
 
   return result;
 }

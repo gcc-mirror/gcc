@@ -1,3 +1,14 @@
+2004-04-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (get_inner_reference): Use DECL_UNSIGNED, not TREE_UNSIGNED.
+	* stor-layout.c (layout_decl): Likewise.
+	* tree.c (get_narrower): Likewise and also use BIT_FIELD_REF_UNSIGNED.
+	* fold-const.c (make_bit_field_ref): Use BIT_FIELD_REF_UNSIGNED.
+	* print-tree.c (print_node): Handle various used of unsigned_flag.
+	* tree.def (BIT_FIELD_REF): Update comment.
+	* tree.h (TREE_UNSIGNED): Deleted.
+	(DECL_UNSIGNED, BIT_FIELD_REF_UNSIGNED): New macros.
+
 2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c, c-aux-info.c, c-common.c, c-cppbuiltin.c, c-decl.c:

@@ -264,8 +264,10 @@ struct tree_common GTY(())
 
        TYPE_UNSIGNED in
            all types
-       TREE_UNSIGNED in
-           FIELD_DECL
+       DECL_UNSIGNED in
+           all decls
+       BIT_FIELD_REF_UNSIGNED in
+           BIT_FIELD_REF
        SAVE_EXPR_NOPLACEHOLDER in
 	   SAVE_EXPR
 
@@ -710,9 +712,12 @@ extern void tree_operand_check_failed (int, enum tree_code,
    if the value is constant.  */
 #define TREE_CONSTANT(NODE) ((NODE)->common.constant_flag)
 
-/* In INTEGER_TYPE or ENUMERAL_TYPE nodes, means an unsigned type.
-   In FIELD_DECL nodes, means an unsigned bit field.  */
-#define TREE_UNSIGNED(NODE) ((NODE)->common.unsigned_flag)
+/* In a decl (most significantly a FIELD_DECL), means an unsigned field.  */
+#define DECL_UNSIGNED(NODE) (DECL_CHECK (NODE)->common.unsigned_flag)
+
+/* In a BIT_FIELD_REF, means the bitfield is to be interpreted as unsigned.  */
+#define BIT_FIELD_REF_UNSIGNED(NODE) \
+  (BIT_FIELD_REF_CHECK (NODE)->common.unsigned_flag)
 
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->common.unsigned_flag)

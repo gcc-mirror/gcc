@@ -213,7 +213,7 @@ static tree get_vcall_index (tree, tree);
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
    and dfs_fixup_binfo_vtbls.  */
-#define VTT_TOP_LEVEL_P(NODE) TREE_UNSIGNED (NODE)
+#define VTT_TOP_LEVEL_P(NODE) (TREE_LIST_CHECK (NODE)->common.unsigned_flag)
 #define VTT_MARKED_BINFO_P(NODE) TREE_USED (NODE)
 
 /* Variables shared between class.c and call.c.  */

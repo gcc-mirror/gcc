@@ -5440,12 +5440,12 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       if (! DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
 	mode = DECL_MODE (TREE_OPERAND (exp, 1));
 
-      *punsignedp = TREE_UNSIGNED (TREE_OPERAND (exp, 1));
+      *punsignedp = DECL_UNSIGNED (TREE_OPERAND (exp, 1));
     }
   else if (TREE_CODE (exp) == BIT_FIELD_REF)
     {
       size_tree = TREE_OPERAND (exp, 1);
-      *punsignedp = TREE_UNSIGNED (exp);
+      *punsignedp = BIT_FIELD_REF_UNSIGNED (exp);
     }
   else
     {
