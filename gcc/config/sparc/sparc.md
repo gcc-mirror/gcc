@@ -2995,6 +2995,9 @@
 
   self_reference = reg_mentioned_p (operands[0],
                                     XEXP (XEXP (word1, 0), 0));
+  if (GET_CODE (operands[0]) == SUBREG)
+    operands[0] = alter_subreg (operands[0]);
+
   if (self_reference != 0
       && WORDS_BIG_ENDIAN)
     {
@@ -3028,6 +3031,8 @@
   rtx word1 = change_address (operands[0], SFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
 
+  if (GET_CODE (operands[1]) == SUBREG)
+    operands[1] = alter_subreg (operands[1]);
   emit_insn (gen_movsf (word0,
 			gen_highpart (SFmode, operands[1])));
   emit_insn (gen_movsf (word1,
@@ -3054,8 +3059,8 @@
                                                    operands[1]));
     }
 
-  /* Handle MEM cases first, note that even v9 only guarentees
-     8-byte alignment for quads so... */
+  /* Handle MEM cases first, note that only v9 guarentees
+     full 16-byte alignment for quads. */
   if (GET_CODE (operands[0]) == MEM)
     {
       if (register_operand (operands[1], TFmode))
@@ -3179,10 +3184,11 @@ movtf_is_ok:
   if (GET_CODE (set_src) == SUBREG)
     set_src = alter_subreg (set_src);
 
-  dest1 = gen_highpart (DFmode, set_dest);
-  dest2 = gen_lowpart (DFmode, set_dest);
-  src1 = gen_highpart (DFmode, set_src);
-  src2 = gen_lowpart (DFmode, set_src);
+  /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
+  dest1 = gen_rtx_SUBREG (DFmode, set_dest, WORDS_BIG_ENDIAN == 0);
+  dest2 = gen_rtx_SUBREG (DFmode, set_dest, WORDS_BIG_ENDIAN != 0);
+  src1 = gen_rtx_SUBREG (DFmode, set_src, WORDS_BIG_ENDIAN == 0);
+  src2 = gen_rtx_SUBREG (DFmode, set_src, WORDS_BIG_ENDIAN != 0);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
@@ -3210,11 +3216,13 @@ movtf_is_ok:
   rtx word0 = change_address (operands[1], DFmode, NULL_RTX);
   rtx word1 = change_address (operands[1], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
+  rtx dest1, dest2;
 
-  emit_insn (gen_movdf (gen_highpart (DFmode, operands[0]),
-			word0));
-  emit_insn (gen_movdf (gen_lowpart (DFmode, operands[0]),
-			word1));
+  /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
+  dest1 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN == 0);
+  dest2 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN != 0);
+  emit_insn (gen_movdf (dest1, word0));
+  emit_insn (gen_movdf (dest2, word1));
   DONE;
 }")
 
@@ -3229,11 +3237,13 @@ movtf_is_ok:
   rtx word0 = change_address (operands[0], DFmode, NULL_RTX);
   rtx word1 = change_address (operands[0], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
+  rtx src1, src2;
 
-  emit_insn (gen_movdf (word0,
-			gen_highpart (DFmode, operands[1])));
-  emit_insn (gen_movdf (word1,
-			gen_lowpart (DFmode, operands[1])));
+  /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
+  src1 = gen_rtx_SUBREG (DFmode, operands[1], WORDS_BIG_ENDIAN == 0);
+  src2 = gen_rtx_SUBREG (DFmode, operands[1], WORDS_BIG_ENDIAN != 0);
+  emit_insn (gen_movdf (word0, src1));
+  emit_insn (gen_movdf (word1, src2));
   DONE;
 }")
 

@@ -1,3 +1,15 @@
+Mon Aug 10 22:39:09 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (input_operand): Do not accept a LO_SUM MEM
+	for TFmode when !v9.  We require offsettable memory addresses.
+	* config/sparc/sparc.h (ALTER_HARD_SUBREG): Handle TFmode to
+	DFmode register number conversions.
+	* config/sparc/sparc.md (define_split DFmode moves): If register
+	is a SUBREG do alter_subreg on it before using.
+	(define_expand movtf): Fixup comment about alignment on v9.
+	(define_split TFmode moves): Don't use gen_{high,low}part, create
+	explicit SUBREGs instead.
+
 Mon Aug 10 19:02:55 1998  John Carr  <jfc@mit.edu>
 
 	* Makefile.in (mbchar.o): Depend on mbchar.c.

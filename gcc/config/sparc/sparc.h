@@ -980,7 +980,8 @@ while (0)
 
 /* A subreg in 64 bit mode will have the wrong offset for a floating point
    register.  The least significant part is at offset 1, compared to 0 for
-   integer registers.  This only applies when FMODE is a larger mode.  */
+   integer registers.  This only applies when FMODE is a larger mode.
+   We also need to handle a special case of TF-->DF conversions.  */
 #define ALTER_HARD_SUBREG(TMODE, WORD, FMODE, REGNO)			\
      (TARGET_ARCH64							\
       && (REGNO) >= SPARC_FIRST_FP_REG					\
@@ -988,7 +989,9 @@ while (0)
       && (TMODE) == SImode						\
       && !((FMODE) == QImode || (FMODE) == HImode)			\
       ? ((REGNO) + 1)							\
-      : ((REGNO) + (WORD)))
+      : ((TMODE) == DFmode && (FMODE) == TFmode)			\
+        ? ((REGNO) + ((WORD) * 2))					\
+        : ((REGNO) + (WORD)))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    See sparc.c for how we initialize this.  */
