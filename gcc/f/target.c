@@ -2521,27 +2521,14 @@ void *
 ffetarget_memcpy_ (void *dst, void *src, size_t len)
 {
 #ifdef CROSS_COMPILE
+  /* HOST_WORDS_BIG_ENDIAN corresponds to both WORDS_BIG_ENDIAN and
+     BYTES_BIG_ENDIAN (i.e. there are no HOST_ macros to represent a
+     difference in the two latter).  */
   int host_words_big_endian =
 #ifndef HOST_WORDS_BIG_ENDIAN
     0
 #else
     HOST_WORDS_BIG_ENDIAN
-#endif
-    ;
-
-  int host_bytes_big_endian =
-#ifndef HOST_BYTES_BIG_ENDIAN
-    0
-#else
-    HOST_BYTES_BIG_ENDIAN
-#endif
-    ;
-
-  int host_bits_big_endian =
-#ifndef HOST_BITS_BIG_ENDIAN
-    0
-#else
-    HOST_BITS_BIG_ENDIAN
 #endif
     ;
 
@@ -2555,8 +2542,7 @@ ffetarget_memcpy_ (void *dst, void *src, size_t len)
      for instance in g77.f-torture/execute/980628-[4-6].f and alpha2.f.
      Still, we compile *some* code.  FIXME: Rewrite handling of numbers.  */
   if (!WORDS_BIG_ENDIAN != !host_words_big_endian
-      || !BYTES_BIG_ENDIAN != !host_bytes_big_endian
-      || !BITS_BIG_ENDIAN != !host_bits_big_endian)
+      || !BYTES_BIG_ENDIAN != !host_words_big_endian)
     sorry ("data initializer on host with different endianness");
 
 #endif /* CROSS_COMPILE */

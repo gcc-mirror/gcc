@@ -1,3 +1,10 @@
+2002-08-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* target.c (ffetarget_memcpy_): Don't test nonexistent
+	HOST_BYTES_BIG_ENDIAN, HOST_BITS_BIG_ENDIAN.  Check
+	HOST_WORDS_BIG_ENDIAN against both WORDS_BIG_ENDIAN and
+	BYTES_BIG_ENDIAN.
+
 2002-08-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* target.h (FFETARGET_32bit_longs): Don't define for powerpc64 or
