@@ -17,6 +17,11 @@ extern pid_t wait3();
 #endif  /* AIX_SYSWAIT_CHECK */
 
 
+#if defined( AIX_SYSWAIT_2_CHECK )
+#define WSTOPSIG(__x)    (int)(WIFSTOPPED(__x) ? (int)((((unsigned int)__x) >> 8) & 0xff) : -1)
+#endif  /* AIX_SYSWAIT_2_CHECK */
+
+
 #if defined( NEXT_WAIT_UNION_CHECK )
 extern pid_d wait(void*);
 #endif  /* NEXT_WAIT_UNION_CHECK */
