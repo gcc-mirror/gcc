@@ -1,3 +1,8 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_web_docs_old: Copy from update_web_docs.  Add comment
+	that this is for GCC 3.0.x and earlier versions.
+
 2001-11-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_release: Add /usr/local/bin to path when local.
