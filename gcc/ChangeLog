@@ -65,6 +65,8 @@ Wed Jun 17 15:57:48 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 Wed Jun 17 08:38:13 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* fold-const.c (make_range): Do not widen the type of the expression.
+
 	* expr.c (check_max_integer_computation_mode): New function.
 	(expand_expr): Avoid integer computations in modes wider than
 	MAX_INTEGER_COMPUTATION_MODE.
