@@ -1,6 +1,6 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002,
+   2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
