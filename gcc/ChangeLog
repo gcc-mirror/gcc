@@ -1,5 +1,26 @@
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* varasm.c (asm_output_bss): Add prototype.
+	(asm_output_aligned_bss): Likewise.
+
+	* unroll.c (verify_addresses): Add prototype.
+
+	* toplev.c: Add many prototypes.  Too many to mention here.
+
+	* stmt.c (check_seenlabel): Add prototype.
+
+	* rtlanal.c (reg_set_p_1): Add prototype.
+	(reg_set_last_1): Likewise.
+
+	* reorg.c (find_dead_or_set_registers): Add prototype.
+	
+	* regmove (try_auto_increment): Add prototype.
+
+	* reg-stack.c (pop_stack): Add prototype.
+
+	* recog.c (validate_replace_rtx_1): Add prototype.
+	(find_cosntant_term_loc): Likewise.
+
 	* loop.c (regs_patch_p): Add prototype.
 	(add_label_notes, count_nonfixed_reads): Likewise.
 	(find_single_use_in_loop): Likewise.
