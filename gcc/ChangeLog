@@ -1,3 +1,13 @@
+2004-11-10  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h (XMALLOC_REG_SET, XFREE_REG_SET): New.
+	(struct basic_block_def): Remove local_set and cond_local_set
+	fields.  Update comment for global_live_at_start.
+	* flow.c (calculate_global_regs_live): Allocate local_sets and
+	cond_local_sets here as arrays of bitmaps previously stored in
+	bb->local_set and bb->cond_local_set.  Use xmalloc instead of
+	obstack allocated bitmaps.
+
 2004-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/18380

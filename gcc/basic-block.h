@@ -110,6 +110,12 @@ typedef bitmap_iterator reg_set_iterator;
 /* Do any cleanup needed on a regset when it is no longer used.  */
 #define FREE_REG_SET(REGSET) BITMAP_FREE(REGSET)
 
+/* Allocate a register set with xmalloc.  */
+#define XMALLOC_REG_SET() BITMAP_XMALLOC ()
+
+/* Free a register set.  */
+#define XFREE_REG_SET(REGSET) BITMAP_XFREE (REGSET)
+
 /* Do any one-time initializations needed for regsets.  */
 #define INIT_ONCE_REG_SET() BITMAP_INIT_ONCE ()
 
@@ -229,20 +235,9 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   VEC(edge) *preds;
   VEC(edge) *succs;
 
-  /* Liveness info.  */
-
-  /* The registers that are modified within this in block.  */
-  bitmap GTY ((skip (""))) local_set;
-  /* The registers that are conditionally modified within this block.
-     In other words, registers that are set only as part of a
-     COND_EXEC.  */
-  bitmap GTY ((skip (""))) cond_local_set;
-  /* The registers that are live on entry to this block.
-
-     Note that in SSA form, global_live_at_start does not reflect the
-     use of regs in phi functions, since the liveness of these regs
-     may depend on which edge was taken into the block.  */
+  /* The registers that are live on entry to this block.  */
   bitmap GTY ((skip (""))) global_live_at_start;
+
   /* The registers that are live on exit from this block.  */
   bitmap GTY ((skip (""))) global_live_at_end;
 

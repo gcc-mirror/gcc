@@ -112,7 +112,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* TODO:
 
    Split out from life_analysis:
-	- local property discovery (bb->local_live, bb->local_set)
+	- local property discovery
 	- global property computation
 	- log links creation
 	- pre/post modify transformation
@@ -1018,6 +1018,14 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
   regset tmp, new_live_at_end, invalidated_by_call;
   regset_head tmp_head, invalidated_by_call_head;
   regset_head new_live_at_end_head;
+
+  /* The registers that are modified within this in block.  */
+  regset *local_sets;
+
+  /* The registers that are conditionally modified within this block.
+     In other words, regs that are set only as part of a COND_EXEC.  */
+  regset *cond_local_sets;
+
   int i;
 
   /* Some passes used to forget clear aux field of basic block causing
@@ -1036,12 +1044,18 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
     if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
       SET_REGNO_REG_SET (invalidated_by_call, i);
 
+  /* Allocate space for the sets of local properties.  */
+  local_sets = xcalloc (last_basic_block - (INVALID_BLOCK + 1),
+			sizeof (regset));
+  cond_local_sets = xcalloc (last_basic_block - (INVALID_BLOCK + 1),
+			     sizeof (regset));
+
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't
      work with a full queue.  */
-  queue = xmalloc ((n_basic_blocks + 2) * sizeof (*queue));
+  queue = xmalloc ((n_basic_blocks - (INVALID_BLOCK + 1)) * sizeof (*queue));
   qtail = queue;
-  qhead = qend = queue + n_basic_blocks + 2;
+  qhead = qend = queue + n_basic_blocks - (INVALID_BLOCK + 1);
 
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do
@@ -1171,13 +1185,14 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	}
 
       /* On our first pass through this block, we'll go ahead and continue.
-	 Recognize first pass by local_set NULL.  On subsequent passes, we
-	 get to skip out early if live_at_end wouldn't have changed.  */
+	 Recognize first pass by checking if local_set is NULL for this
+         basic block.  On subsequent passes, we get to skip out early if
+	 live_at_end wouldn't have changed.  */
 
-      if (bb->local_set == NULL)
+      if (local_sets[bb->index - (INVALID_BLOCK + 1)] == NULL)
 	{
-	  bb->local_set = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-	  bb->cond_local_set = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	  local_sets[bb->index - (INVALID_BLOCK + 1)] = XMALLOC_REG_SET ();
+	  cond_local_sets[bb->index - (INVALID_BLOCK + 1)] = XMALLOC_REG_SET ();
 	  rescan = 1;
 	}
       else
@@ -1190,28 +1205,35 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 					     new_live_at_end);
 
 	  if (!rescan)
-	    /* If any of the registers in the new live_at_end set are
-	       conditionally set in this basic block, we must rescan.
-	       This is because conditional lifetimes at the end of the
-	       block do not just take the live_at_end set into
-	       account, but also the liveness at the start of each
-	       successor block.  We can miss changes in those sets if
-	       we only compare the new live_at_end against the
-	       previous one.  */
-	    rescan = bitmap_intersect_p (new_live_at_end,
-					 bb->cond_local_set);
+	    {
+	      regset cond_local_set;
+
+	       /* If any of the registers in the new live_at_end set are
+		  conditionally set in this basic block, we must rescan.
+		  This is because conditional lifetimes at the end of the
+		  block do not just take the live_at_end set into
+		  account, but also the liveness at the start of each
+		  successor block.  We can miss changes in those sets if
+		  we only compare the new live_at_end against the
+		  previous one.  */
+	      cond_local_set = cond_local_sets[bb->index - (INVALID_BLOCK + 1)];
+	      rescan = bitmap_intersect_p (new_live_at_end, cond_local_set);
+	    }
 
 	  if (!rescan)
 	    {
+	      regset local_set;
+
 	      /* Find the set of changed bits.  Take this opportunity
 		 to notice that this set is empty and early out.  */
 	      bitmap_xor (tmp, bb->global_live_at_end, new_live_at_end);
 	      if (bitmap_empty_p (tmp))
 		continue;
   
-	      /* If any of the changed bits overlap with local_set,
+	      /* If any of the changed bits overlap with local_sets[bb],
  		 we'll have to rescan the block.  */
-	      rescan = bitmap_intersect_p (tmp, bb->local_set);
+	      local_set = local_sets[bb->index - (INVALID_BLOCK + 1)];
+	      rescan = bitmap_intersect_p (tmp, local_set);
 	    }
 	}
 
@@ -1238,8 +1260,10 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
-	  propagate_block (bb, new_live_at_end, bb->local_set,
-			   bb->cond_local_set, flags);
+	  propagate_block (bb, new_live_at_end,
+			   local_sets[bb->index - (INVALID_BLOCK + 1)],
+			   cond_local_sets[bb->index - (INVALID_BLOCK + 1)],
+			   flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
 	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))
@@ -1272,20 +1296,22 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  FREE_REG_SET (bb->local_set);
-	  FREE_REG_SET (bb->cond_local_set);
+	  XFREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  XFREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
 	});
     }
   else
     {
       FOR_EACH_BB (bb)
 	{
-	  FREE_REG_SET (bb->local_set);
-	  FREE_REG_SET (bb->cond_local_set);
+	  XFREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  XFREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
 	}
     }
 
   free (queue);
+  free (cond_local_sets);
+  free (local_sets);
 }
 
 
