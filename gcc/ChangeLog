@@ -1,3 +1,8 @@
+2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* expr.c (emit_group_store): Do not treat floats as BLKmode.
+	(emit_group_load): Same.
+
 2004-10-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-parse.in (datadef): Use pedwarn rather than error and warning
