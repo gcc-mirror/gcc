@@ -1,3 +1,21 @@
+2004-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15507
+	* class.c (layout_nonempty_base_or_field): Do not try to avoid
+	layout conflicts for unions.
+
+	PR c++/15542
+	* typeck.c (build_x_unary_op): Instantiate template class
+	specializations before looking for "operator &".
+
+	PR c++/15427
+	* typeck.c (complete_type): Layout non-dependent array types, even
+	in templates.
+
+	PR c++/15287
+	* typeck.c (build_unary_op): Do not optimize "&x[y]" when in a
+	template.
+
 2004-05-22  Roger Sayle  <roger@eyesopen.com>
 
 	* name-lookup.c (check_for_out_of_scope_variable): Avoid ICE by
