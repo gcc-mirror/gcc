@@ -3923,10 +3923,6 @@ extern int tree_node_sizes[];
    restricted to creating gimple expressions.  */
 extern bool in_gimple_form;
 
-/* In tree-ssa-loop-niter.c.  */
-tree lower_bound_in_type (tree, tree);
-tree upper_bound_in_type (tree, tree);
-
 /* In tree-ssa-threadupdate.c.  */
 extern bool thread_through_all_blocks (void);
 
