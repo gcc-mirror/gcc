@@ -1,3 +1,24 @@
+2004-05-22  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_strstr, expand_builtin_strchr,
+	expand_builtin_strrchr, expand_builtin_strpbrk,
+	expand_builtin_mempcpy, expand_builtin_memcmp,
+	expand_builtin_strcmp, expand_builtin_strncmp,
+	expand_builtin_strcat, std_expand_builtin_va_start,
+	std_expand_builtin_va_arg, expand_builtin_va_copy,
+	expand_builtin_signbit, fold_builtin_cabs,
+	fold_builtin_logarithm, fold_builtin_mempcpy,
+	fold_builtin_signbit, fold_builtin_isascii,
+	fold_builtin_toascii, fold_builtin_isdigit,
+	fold_builtin_1, build_function_call_expr,
+	simplify_builtin_strchr, simplify_builtin_strrchr,
+	simplify_builtin_strpbrk, simplify_builtin_strncpy,
+	simplify_builtin_memcmp, simplify_builtin_strcmp,
+	simplify_builtin_strncmp, simplify_builtin_strncat,
+	simplify_builtin_strspn, simplify_builtin_strcspn,
+	simplify_builtin_fputs, simplify_builtin_sprintf): Replace calls
+	to build with calls to build2, build3 or omit_one_operand.
+
 2004-05-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_file_start): Emit a .gcc_compiled_longXX
