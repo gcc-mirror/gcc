@@ -1,6 +1,7 @@
-/* { dg-do compile { target powerpc-*-darwin* } } */
-/* { dg-options "-faltivec -O0 -Wall" } */
+/* { dg-do compile { target powerpc-*-* } } */
+/* { dg-options "-maltivec -O0 -Wall" } */
 
+#include <altivec.h>
 
 /* These denote "generic" GCC vectors.  */
 static int __attribute__((vector_size(16))) x, y;
