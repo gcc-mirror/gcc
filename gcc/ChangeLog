@@ -1,4 +1,27 @@
-2004-09-19  Steven Bosscher  <stevenb@suse.de>
+2004-08-18  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (-mfix-and-continue): Add support for
+	fast turn around debugging.
+	(-ffix-and-continue): Likewise.
+	(-mindirect-data): Likewise.
+	(-findirect-data): Likewise.
+	* config/darwin.c (TARGET_FIX_AND_CONTINUE): Likewise.
+	(indirect_data): Likewise.
+	(machopic_data_defined_p): Likewise.
+	(machopic_output_indirection): Likewise.
+	(darwin_encode_section_info): Likewise.
+	(darwin_fix_and_continue): Likewise.
+	(darwin_fix_and_continue_switch): Likewise.
+	* config/darwin.h (MACHO_SYMBOL_STATIC): Likewise.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(SUBTARGET_OPTION_TRANSLATE_TABLE): Likewise.
+	(SUBTARGET_OPTIONS): Likewise.
+	(darwin_fix_and_continue): Likewise.
+	(darwin_fix_and_continue_switch): Likewise.
+	(TARGET_FIX_AND_CONTINUE): Likewise.
+	* config/rs6000.c (rs6000_emit_prologue): Likewise.
+
+2004-08-19  Steven Bosscher  <stevenb@suse.de>
 
 	* basic-block.h (struct edge_def): Remove crossing_edge.
 	(EDGE_CROSSING): New define.
