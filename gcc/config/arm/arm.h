@@ -256,6 +256,10 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!mthumb-interwork:%{!mno-thumb-interwork:%(cpp_interwork_default)}}	\
 "
 
+#ifndef CPP_PREDEFINES
+#define CPP_PREDEFINES ""
+#endif
+
 #ifndef CC1_SPEC
 #define CC1_SPEC ""
 #endif
@@ -1098,6 +1102,13 @@ enum reg_class
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB ? BASE_REGS : GENERAL_REGS)
+
+/* For the Thumb the high registers cannot be used as base
+   registers when addressing quanitities in QI or HI mode.  */
+#define MODE_BASE_REG_CLASS(MODE)					\
+    (TARGET_ARM ? BASE_REGS :						\
+     (((MODE) == QImode || (MODE) == HImode || (MODE) == VOIDmode)	\
+     ? LO_REGS : BASE_REGS))
 
 /* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
    registers explicitly used in the rtl to be used as spill registers

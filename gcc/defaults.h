@@ -450,4 +450,11 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define FUNCTION_ARG_REG_LITTLE_ENDIAN 0
 #endif
 
+/* Determine the register class for registers suitable to be the base
+   address register in a MEM.  Allow the choice to be dependent upon
+   the mode of the memory access.  */
+#ifndef MODE_BASE_REG_CLASS
+#define MODE_BASE_REG_CLASS(MODE) BASE_REG_CLASS
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

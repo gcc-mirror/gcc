@@ -2244,7 +2244,8 @@ preprocess_constraints ()
 
 		case 'p':
 		  op_alt[j].is_address = 1;
-		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) BASE_REG_CLASS];
+		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class]
+		    [(int) MODE_BASE_REG_CLASS (VOIDmode)];
 		  break;
 
 		case 'g': case 'r':
