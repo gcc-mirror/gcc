@@ -1,3 +1,7 @@
+2004-10-24  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/c90-const-expr-3.c: Reference the ISO C standard.
+
 2004-10-24  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* gcc.dg/c90-const-expr-3.c: xfail all the ASSERT_NOT_NPC tests.
