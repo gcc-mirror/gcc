@@ -1,3 +1,7 @@
+2003-01-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* adaint.c, adaint.h, gmem.c, init.c: Update copyright year.
+
 2003-01-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* init.c (__gnat_error_handler): Make msg const.
