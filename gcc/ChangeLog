@@ -1,5 +1,7 @@
 2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* fixinc/inclhack.def (ptx_pwd_h): New disabled fix, ported
+	from fixinc.ptx.
         * fixinc/inclhack.def (ptx_sys_mc_param_h): New disabled fix,
         ported from fixinc.ptx.
 	
