@@ -812,9 +812,7 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
-  /* The following comparison is correct. -1 is used to indicate that
-     the value isn't a register number.  */
-  if (sreg == (unsigned int) -1)
+  if (sreg == INVALID_REGNUM)
     {
       if (reg & ~0x3f)
 	/* The register number won't fit in 6 bits, so we have to use
@@ -893,7 +891,7 @@ dwarf2out_args_size (const char *label, HOST_WIDE_INT size)
 void
 dwarf2out_reg_save (const char *label, unsigned int reg, HOST_WIDE_INT offset)
 {
-  reg_save (label, DWARF_FRAME_REGNUM (reg), -1, offset);
+  reg_save (label, DWARF_FRAME_REGNUM (reg), INVALID_REGNUM, offset);
 }
 
 /* Entry point for saving the return address in the stack.
@@ -902,7 +900,7 @@ dwarf2out_reg_save (const char *label, unsigned int reg, HOST_WIDE_INT offset)
 void
 dwarf2out_return_save (const char *label, HOST_WIDE_INT offset)
 {
-  reg_save (label, DWARF_FRAME_RETURN_COLUMN, -1, offset);
+  reg_save (label, DWARF_FRAME_RETURN_COLUMN, INVALID_REGNUM, offset);
 }
 
 /* Entry point for saving the return address in a register.
@@ -911,7 +909,7 @@ dwarf2out_return_save (const char *label, HOST_WIDE_INT offset)
 void
 dwarf2out_return_reg (const char *label, unsigned int sreg)
 {
-  reg_save (label, DWARF_FRAME_RETURN_COLUMN, sreg, 0);
+  reg_save (label, DWARF_FRAME_RETURN_COLUMN, DWARF_FRAME_REGNUM (sreg), 0);
 }
 
 /* Record the initial position of the return address.  RTL is
@@ -920,7 +918,7 @@ dwarf2out_return_reg (const char *label, unsigned int sreg)
 static void
 initial_return_save (rtx rtl)
 {
-  unsigned int reg = (unsigned int) -1;
+  unsigned int reg = INVALID_REGNUM;
   HOST_WIDE_INT offset = 0;
 
   switch (GET_CODE (rtl))
@@ -1203,6 +1201,8 @@ flush_queued_reg_saves (void)
   for (q = queued_reg_saves; q; q = q->next)
     {
       size_t i;
+      unsigned int reg, sreg;
+
       for (i = 0; i < num_regs_saved_in_regs; i++)
 	if (REGNO (regs_saved_in_regs[i].orig_reg) == REGNO (q->reg))
 	  break;
@@ -1218,8 +1218,12 @@ flush_queued_reg_saves (void)
 	  regs_saved_in_regs[i].saved_in_reg = q->saved_reg;
 	}
 
-      reg_save (last_reg_save_label, REGNO (q->reg), 
-		q->saved_reg ? REGNO (q->saved_reg) : -1U, q->cfa_offset);
+      reg = DWARF_FRAME_REGNUM (REGNO (q->reg));
+      if (q->saved_reg)
+	sreg = DWARF_FRAME_REGNUM (REGNO (q->saved_reg));
+      else
+	sreg = INVALID_REGNUM;
+      reg_save (last_reg_save_label, reg, sreg, q->cfa_offset);
     }
 
   queued_reg_saves = NULL;
