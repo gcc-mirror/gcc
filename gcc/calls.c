@@ -352,9 +352,10 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    says that the pointer to this aggregate is to be popped by the callee.
 
    STACK_SIZE is the number of bytes of arguments on the stack,
-   rounded up to PREFERRED_STACK_BOUNDARY; zero if the size is variable.
-   This is both to put into the call insn and
-   to generate explicit popping code if necessary.
+   ROUNDED_STACK_SIZE is that number rounded up to
+   PREFERRED_STACK_BOUNDARY; zero if the size is variable.  This is
+   both to put into the call insn and to generate explicit popping
+   code if necessary.
 
    STRUCT_VALUE_SIZE is the number of bytes wanted in a structure value.
    It is zero if this call doesn't want a structure value.
@@ -501,6 +502,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
      If returning from the subroutine does pop the args, indicate that the
      stack pointer will be changed.  */
+
+  /* The space for the args is no longer waiting for the call; either it
+     was popped by the call, or it'll be popped below.  */
+  arg_space_so_far -= rounded_stack_size;
 
   if (n_popped > 0)
     {
@@ -1219,10 +1224,12 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 #ifdef PREFERRED_STACK_BOUNDARY
       preferred_stack_boundary /= BITS_PER_UNIT;
       args_size->constant = (((args_size->constant
+			       + arg_space_so_far
 			       + pending_stack_adjust
 			       + preferred_stack_boundary - 1)
 			      / preferred_stack_boundary
 			      * preferred_stack_boundary)
+			     - arg_space_so_far
 			     - pending_stack_adjust);
 #endif
 
@@ -2285,6 +2292,7 @@ expand_call (exp, target, ignore)
 	{
 	  args_size.constant = (unadjusted_args_size
 			        + ((pending_stack_adjust + args_size.constant
+				    + arg_space_so_far
 				    - unadjusted_args_size)
 			           % (preferred_stack_boundary / BITS_PER_UNIT)));
 	  pending_stack_adjust -= args_size.constant - unadjusted_args_size;
@@ -2292,6 +2300,11 @@ expand_call (exp, target, ignore)
 	}
       else if (argblock == 0)
 	anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
+      arg_space_so_far += args_size.constant - unadjusted_args_size;
+
+      /* Now that the stack is properly aligned, pops can't safely
+	 be deferred during the evaluation of the arguments.  */
+      NO_DEFER_POP;
     }
 #endif
 #endif
@@ -4061,6 +4074,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
 		      ARGS_SIZE_RTX (arg->alignment_pad));
 
+      arg_space_so_far += used;
     }
   else
     {
@@ -4088,6 +4102,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
 	  size_rtx = expr_size (pval);
+	  arg_space_so_far += excess + INTVAL (size_rtx);
 	}
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,

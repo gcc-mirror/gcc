@@ -288,6 +288,7 @@ init_expr ()
 
   pending_chain = 0;
   pending_stack_adjust = 0;
+  arg_space_so_far = 0;
   inhibit_defer_pop = 0;
   saveregs_value = 0;
   apply_args_value = 0;

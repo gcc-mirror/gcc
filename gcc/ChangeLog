@@ -1,3 +1,12 @@
+2000-03-02  Jason Merrill  <jason@casey.cygnus.com>
+
+	* function.h (struct expr_status): Add x_arg_space_so_far.
+	(arg_space_so_far): New macro.
+	* expr.c (init_expr): Initialize it.
+	* calls.c (emit_call_1): Reset it.
+	(compute_argument_block_size, expand_call): Use it.
+	(expand_call, store_one_arg): Increment it.
+
 Thu Mar  2 17:27:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* varasm.c (output_constant): Strip off a CONVERT_EXPR to
