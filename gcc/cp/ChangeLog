@@ -1,3 +1,9 @@
+2004-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13086
+	* init.c (build_delete): Emit a more informative error message in
+	case of an incomplete type, and on the correct source line.
+
 2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13683
