@@ -6035,8 +6035,30 @@ force_to_mode (x, mode, mask, reg, just_select)
 	{
 	  int i = -1;
 
-	  nonzero = GET_MODE_MASK (GET_MODE (x));
-	  nonzero >>= INTVAL (XEXP (x, 1));
+	  /* If the considered data is wider then HOST_WIDE_INT, we can't
+	     represent a mask for all its bits in a single scalar.
+	     But we only care about the lower bits, so calculate these.  */
+
+	  if (GET_MODE_SIZE (GET_MODE (x)) > sizeof (HOST_WIDE_INT))
+	    {
+	      nonzero = ~(HOST_WIDE_INT)0;
+
+	      /* GET_MODE_BITSIZE (GET_MODE (x)) - INTVAL (XEXP (x, 1))
+		 is the number of bits a full-width mask would have set.
+		 We need only shift if these are fewer than nonzero can
+		 hold.  If not, we must keep all bits set in nonzero.  */
+
+	      if (GET_MODE_BITSIZE (GET_MODE (x)) - INTVAL (XEXP (x, 1))
+		  < HOST_BITS_PER_WIDE_INT)
+		nonzero >>= INTVAL (XEXP (x, 1))
+			    + HOST_BITS_PER_WIDE_INT
+			    - GET_MODE_BITSIZE (GET_MODE (x)) ;
+	    }
+	  else
+	    {
+	      nonzero = GET_MODE_MASK (GET_MODE (x));
+	      nonzero >>= INTVAL (XEXP (x, 1));
+	    }
 
 	  if ((mask & ~ nonzero) == 0
 	      || (i = exact_log2 (mask)) >= 0)
