@@ -1,3 +1,11 @@
+Tue Nov 11 21:47:27 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* glimits.h (SHRT_MIN): Define in a way suitable for 16 bit hosts.
+
+	* c-lex.c (whitespace_cr, skip_white_space_on_line): New functions.
+	(skip_white_space): Use whitespace_cr.
+	(check_newline): Handle whitespace more consistently.
+
 Tue Nov 11 16:25:49 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* i386/cygwin32.h (CPP_PREDEFINES): Delete -DPOSIX.

@@ -332,6 +332,29 @@ yyprint (file, yychar, yylval)
 }
 
 
+/* Iff C is a carriage return, warn about it - if appropriate -
+   and return nonzero.  */
+int
+whitespace_cr (c)
+     int c;
+{
+  static int newline_warning = 0;
+
+  if (c == '\r')
+    {
+      /* ANSI C says the effects of a carriage return in a source file
+	 are undefined.  */
+      if (pedantic && !newline_warning)
+	{
+	  warning ("carriage return in source file");
+	  warning ("(we only warn about the first carriage return)");
+	  newline_warning = 1;
+	}
+      return 1;
+    }
+  return 0;
+}
+
 /* If C is not whitespace, return C.
    Otherwise skip whitespace and return first nonwhite char read.  */
 
@@ -339,8 +362,6 @@ static int
 skip_white_space (c)
      register int c;
 {
-  static int newline_warning = 0;
-
   for (;;)
     {
       switch (c)
@@ -362,14 +383,7 @@ skip_white_space (c)
 	  break;
 
 	case '\r':
-	  /* ANSI C says the effects of a carriage return in a source file
-	     are undefined.  */
-	  if (pedantic && !newline_warning)
-	    {
-	      warning ("carriage return in source file");
-	      warning ("(we only warn about the first carriage return)");
-	      newline_warning = 1;
-	    }
+	  whitespace_cr (c);
 	  c = GETC();
 	  break;
 
@@ -404,6 +418,38 @@ position_after_white_space ()
     c = GETC();
 
   UNGETC (skip_white_space (c));
+}
+
+/* Like skip_white_space, but don't advance beyond the end of line.
+   Moreover, we don't get passed a character to start with.  */
+static int
+skip_white_space_on_line ()
+{
+  register int c;
+
+  while (1)
+    {
+      c = GETC();
+      switch (c)
+	{
+	case '\n':
+	default:
+	  break;
+
+	case ' ':
+	case '\t':
+	case '\f':
+	case '\v':
+	case '\b':
+	  continue;
+
+	case '\r':
+	  whitespace_cr (c);
+	  continue;
+	}
+      break;
+    }
+  return c;
 }
 
 /* Make the token buffer longer, preserving the data in it.
@@ -550,9 +596,10 @@ check_newline ()
 	      && GETC() == 'g'
 	      && GETC() == 'm'
 	      && GETC() == 'a'
-	      && ((c = GETC()) == ' ' || c == '\t' || c == '\n'))
+	      && ((c = GETC()) == ' ' || c == '\t' || c == '\n'
+		   || whitespace_cr (c) ))
 	    {
-	      while (c == ' ' || c == '\t')
+	      while (c == ' ' || c == '\t' || whitespace_cr (c))
 		c = GETC ();
 	      if (c == '\n')
 		return c;
@@ -631,8 +678,7 @@ check_newline ()
 	      /* Here we have just seen `#ident '.
 		 A string constant should follow.  */
 
-	      while (c == ' ' || c == '\t')
-		c = GETC();
+	      c = skip_white_space_on_line ();
 
 	      /* If no argument, ignore the line.  */
 	      if (c == '\n')
@@ -667,8 +713,11 @@ linenum:
   /* Here we have either `#line' or `# <nonletter>'.
      In either case, it should be a line number; a digit should follow.  */
 
-  while (c == ' ' || c == '\t')
-    c = GETC();
+  /* Can't use skip_white_space here, but must handle all whitespace
+     that is not '\n', lest we get a recursion for '\r' '\n' when
+     calling yylex.  */
+  UNGETC (c);
+  c = skip_white_space_on_line ();
 
   /* If the # is the only nonwhite char on the line,
      just ignore it.  Check the new newline.  */
@@ -691,9 +740,7 @@ linenum:
       int l = TREE_INT_CST_LOW (yylval.ttype) - 1;
 
       /* Is this the last nonwhite stuff on the line?  */
-      c = GETC();
-      while (c == ' ' || c == '\t')
-	c = GETC();
+      c = skip_white_space_on_line ();
       if (c == '\n')
 	{
 	  /* No more: store the line number and check following line.  */
@@ -726,9 +773,7 @@ linenum:
 	main_input_filename = input_filename;
 
       /* Is this the last nonwhite stuff on the line?  */
-      c = GETC();
-      while (c == ' ' || c == '\t')
-	c = GETC();
+      c = skip_white_space_on_line ();
       if (c == '\n')
 	{
 	  /* Update the name in the top element of input_file_stack.  */
@@ -798,9 +843,7 @@ linenum:
       if (used_up)
 	{
 	  /* Is this the last nonwhite stuff on the line?  */
-	  c = GETC();
-	  while (c == ' ' || c == '\t')
-	    c = GETC();
+	  c = skip_white_space_on_line ();
 	  if (c == '\n')
 	    return c;
 	  UNGETC (c);
@@ -819,9 +862,7 @@ linenum:
       if (used_up)
 	{
 	  /* Is this the last nonwhite stuff on the line?  */
-	  c = GETC();
-	  while (c == ' ' || c == '\t')
-	    c = GETC();
+	  c = skip_white_space_on_line ();
 	  if (c == '\n')
 	    return c;
 	  UNGETC (c);
