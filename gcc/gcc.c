@@ -387,11 +387,15 @@ or with constant text in a single argument.
 	If that switch was not specified, this substitutes nothing.
 	Here S is a metasyntactic variable.
  %{S*}  substitutes all the switches specified to CC whose names start
-	with -S.  This is used for -o, -D, -I, etc; switches that take
+	with -S.  This is used for -o, -I, etc; switches that take
 	arguments.  CC considers `-o foo' as being one switch whose
 	name starts with `o'.  %{o*} would substitute this text,
 	including the space; thus, two arguments would be generated.
  %{^S*} likewise, but don't put a blank between a switch and any args.
+ %{S*&T*} likewise, but preserve order of S and T options (the order
+ 	of S and T in the spec is not significant).  Can be any number
+ 	of ampersand-separated variables; for each the wild card is
+ 	optional.  Useful for CPP as %{D*&U*&A*}.
  %{S*:X} substitutes X if one or more switches whose names start with -S are
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
@@ -579,7 +583,7 @@ static const char *trad_capable_cpp =
 static const char *cpp_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{std*} %{nostdinc*}\
- %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+ %{C} %{v} %{I*} %{P} %{$} %I\
  %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
@@ -591,7 +595,7 @@ static const char *cpp_options =
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
  %{ftabstop=*}\
- %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{U*} %{D*} %{i*} %Z %i\
+ %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
 
 /* NB: This is shared amongst all front-ends.  */
@@ -2655,7 +2659,8 @@ struct switchstr
   const char *part1;
   const char **args;
   int live_cond;
-  int validated;
+  unsigned char validated;
+  unsigned char ordering;
 };
 
 static struct switchstr *switches;
@@ -4715,6 +4720,7 @@ handle_braces (p)
   int suffix;
   int include_blanks = 1;
   int elide_switch = 0;
+  int ordered = 0;
 
   if (*p == '^')
     {
@@ -4765,16 +4771,17 @@ next_member:
       abort ();
     }
 
+ next_ampersand:
   filter = p;
-  while (*p != ':' && *p != '}' && *p != '|')
+  while (*p != ':' && *p != '}' && *p != '|' && *p != '&')
     p++;
 
-  if (*p == '|' && pipe_p)
+  if (*p == '|' && (pipe_p || ordered))
     abort ();
 
   if (!body)
     {
-      if (*p != '}')
+      if (*p != '}' && *p != '&')
 	{
 	  register int count = 1;
 	  register const char *q = p;
@@ -4812,14 +4819,14 @@ next_member:
 	  && do_spec_1 (save_string (body, endbody-body-1), 0, NULL_PTR) < 0)
 	return 0;
     }
-  else if (p[-1] == '*' && p[0] == '}')
+  else if (p[-1] == '*' && (p[0] == '}' || p[0] == '&'))
     {
       /* Substitute all matching switches as separate args.  */
       register int i;
-      --p;
+
       for (i = 0; i < n_switches; i++)
-	if (!strncmp (switches[i].part1, filter, p - filter)
-	    && check_live_switch (i, p - filter))
+	if (!strncmp (switches[i].part1, filter, p - 1 - filter)
+	    && check_live_switch (i, p - 1 - filter))
 	  {
 	    if (elide_switch)
 	      {
@@ -4827,7 +4834,7 @@ next_member:
 		switches[i].validated = 1;
 	      }
 	    else
-	      give_switch (i, 0, include_blanks);
+	      ordered = 1, switches[i].ordering = 1;
 	  }
     }
   else
@@ -4918,10 +4925,10 @@ next_member:
 	      switches[i].live_cond = SWITCH_IGNORE;
 	      switches[i].validated = 1;
 	    }
+	  else if (ordered || *p == '&')
+	    ordered = 1, switches[i].ordering = 1;
 	  else if (*p == '}')
-	    {
-	      give_switch (i, 0, include_blanks);
-	    }
+	    give_switch (i, 0, include_blanks);
 	  else
 	    /* Even if many alternatives are matched, only output once.  */
 	    true_once = 1;
@@ -4939,8 +4946,26 @@ next_member:
   if (*p++ == '|')
     goto next_member;
 
+  if (p[-1] == '&')
+    {
+      body = 0;
+      goto next_ampersand;
+    }
+
+  if (ordered)
+    {
+      int i;
+      /* Doing this set of switches later preserves their command-line
+	 ordering.  This is needed for e.g. -U, -D and -A.  */
+      for (i = 0; i < n_switches; i++)
+	if (switches[i].ordering == 1)
+	  {
+	    switches[i].ordering = 0;
+	    give_switch (i, 0, include_blanks);
+	  }
+    }
   /* Process the spec just once, regardless of match count.  */
-  if (true_once)
+  else if (true_once)
     {
       if (do_spec_1 (save_string (body, endbody - body - 1),
 		     0, NULL_PTR) < 0)
@@ -5950,7 +5975,7 @@ next_member:
     suffix = 1, ++p;
 
   filter = p;
-  while (*p != ':' && *p != '}' && *p != '|')
+  while (*p != ':' && *p != '}' && *p != '|' && *p != '&')
     p++;
 
   if (suffix)
@@ -5973,7 +5998,7 @@ next_member:
 	}
     }
 
-  if (*p++ == '|')
+  if (*p++ == '|' || p[-1] == '&')
     goto next_member;
 }
 
