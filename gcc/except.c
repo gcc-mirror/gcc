@@ -2393,6 +2393,7 @@ mark_eh_state (eh)
      struct eh_status *eh;
 {
   mark_eh_stack (&eh->x_ehstack);
+  mark_eh_stack (&eh->x_catchstack);
   mark_eh_queue (&eh->x_ehqueue);
   ggc_mark_rtx (eh->x_catch_clauses);
 
@@ -2401,6 +2402,7 @@ mark_eh_state (eh)
 
   ggc_mark_tree (eh->x_protect_list);
   ggc_mark_rtx (eh->ehc);
+  ggc_mark_rtx (eh->x_eh_return_stub_label);
 }
 
 /* This group of functions initializes the exception handling data
