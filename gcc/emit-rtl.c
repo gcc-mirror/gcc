@@ -1631,10 +1631,11 @@ adjust_address (memref, mode, offset)
      will do memref tracking.  */
   rtx addr = XEXP (memref, 0);
 
-  /* If MEMREF is a LO_SUM and the offset is within the size of the
+  /* If MEMREF is a LO_SUM and the offset is within the alignment of the
      object, we can merge it into the LO_SUM.  */
   if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-      && offset >= 0 && offset < GET_MODE_SIZE (GET_MODE (memref)))
+      && offset >= 0
+      && offset < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
     addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
 			   plus_constant (XEXP (addr, 1), offset));
   else
@@ -1658,7 +1659,8 @@ adjust_address_nv (memref, mode, offset)
   /* If MEMREF is a LO_SUM and the offset is within the size of the
      object, we can merge it into the LO_SUM.  */
   if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-      && offset >= 0 && offset < GET_MODE_SIZE (GET_MODE (memref)))
+      && offset >= 0
+      && offset < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
     addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
 			   plus_constant (XEXP (addr, 1), offset));
   else
