@@ -4438,6 +4438,8 @@ expand_end_case (orig_index)
 	    {
 	      enum machine_mode index_mode = SImode;
 	      int index_bits = GET_MODE_BITSIZE (index_mode);
+	      rtx op1, op2;
+	      enum machine_mode op_mode;
 
 	      /* Convert the index to SImode.  */
 	      if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (index_expr)))
@@ -4467,10 +4469,26 @@ expand_end_case (orig_index)
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
-	      emit_jump_insn (gen_casesi (index, expand_expr (minval, NULL_RTX,
-							      VOIDmode, 0),
-					  expand_expr (range, NULL_RTX,
-						       VOIDmode, 0),
+	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][0];
+	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][0])
+		  (index, op_mode))
+		index = copy_to_mode_reg (op_mode, index);
+
+	      op1 = expand_expr (minval, NULL_RTX, VOIDmode, 0);
+
+	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][1];
+	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][1])
+		  (op1, op_mode))
+		op1 = copy_to_mode_reg (op_mode, op1);
+
+	      op2 = expand_expr (range, NULL_RTX, VOIDmode, 0);
+
+	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][2];
+	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][2])
+		  (op2, op_mode))
+		op2 = copy_to_mode_reg (op_mode, op2);
+
+	      emit_jump_insn (gen_casesi (index, op1, op2,
 					  table_label, default_label));
 	      win = 1;
 	    }
