@@ -1,3 +1,7 @@
+2000-02-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config.sub: Support an OS of "wince".
+
 2000-02-22  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Add mips-pe, sh-pe and arm-wince-pe targets.
