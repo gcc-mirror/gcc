@@ -791,7 +791,8 @@ fi
 # How about lex?
 dnl Don't use AC_PROG_LEX; we insist on flex.
 dnl LEXLIB is not useful in gcc.
-if test x${build} = x${host} && test -f $srcdir/../flex/skel.c; then
+if test x${build} = x${host} && test -f $srcdir/../flex/skel.c \
+  && test -d ../flex ; then
   FLEX='$(objdir)/../flex/flex'
 else
   AC_CHECK_PROG(FLEX, flex, flex, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing flex)
@@ -799,21 +800,24 @@ fi
 
 # Bison?
 # The -L switch is so bison can find its skeleton file.
-if test x${build} = x${host} && test -f $srcdir/../bison/bison.simple; then
+if test x${build} = x${host} && test -f $srcdir/../bison/bison.simple \
+  && test -d ../bison ; then
   BISON='$(objdir)/../bison/bison -L $(srcdir)/../bison/'
 else
   AC_CHECK_PROG(BISON, bison, bison, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing bison)
 fi
 
 # NM
-if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c; then
+if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c \
+  && test -d ../binutils ; then
   NM='$(objdir)/../binutils/nm-new'
 else
   AC_CHECK_PROG(NM, nm, nm, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing nm)
 fi
 
 # AR
-if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c; then
+if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c \
+  && test -d ../binutils ; then
   AR='$(objdir)/../binutils/ar'
 else
   AC_CHECK_PROG(AR, ar, ar, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing ar)

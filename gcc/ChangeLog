@@ -1,3 +1,9 @@
+2004-08-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.ac: When testing for flex, nm, ar, and bison, check
+	that they will actually be built.
+	* configure: Regenerate.
+
 2004-08-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (MAX_FIXED_MODE_SIZE): Define.
