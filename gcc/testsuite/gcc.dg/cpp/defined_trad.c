@@ -5,8 +5,13 @@
 
 /* Tests tradcpp0 with defined.  */
 
-/*  Source: Neil Booth, 11 Dec 2000.  */
+/* Source: Glibc, 11 Dec 2000.  */
 
 #if defined REGPARMS
 #error REGPARMS should not be defined
+#endif
+
+#define REGPARMS 1
+#if !defined REGPARMS
+#error REGPARMS should be defined
 #endif
