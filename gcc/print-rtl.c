@@ -19,21 +19,28 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-
+/* This file is compiled twice: once for the generator programs,
+   once for the compiler.  */
+#ifdef GENERATOR_FILE
+#include "bconfig.h"
+#else
 #include "config.h"
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
 
-/* We don't want the tree code checking code for the access to the
-   DECL_NAME to be included in the gen* programs.  */
-#undef ENABLE_TREE_CHECKING
+/* These headers all define things which are not available in
+   generator programs.  */
+#ifndef GENERATOR_FILE
 #include "tree.h"
 #include "real.h"
 #include "flags.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#endif
 
 static FILE *outfile;
 
@@ -59,6 +66,7 @@ int flag_simple = 0;
 /* Nonzero if we are dumping graphical description.  */
 int dump_for_graph;
 
+#ifndef GENERATOR_FILE
 void
 print_mem_expr (FILE *outfile, tree expr)
 {
@@ -85,6 +93,7 @@ print_mem_expr (FILE *outfile, tree expr)
   else
     fputs (" <anonymous>", outfile);
 }
+#endif
 
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
@@ -256,9 +265,11 @@ print_rtx (rtx in_rtx)
 
 	      case NOTE_INSN_BASIC_BLOCK:
 		{
+#ifndef GENERATOR_FILE
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
 		  if (bb != 0)
 		    fprintf (outfile, " [bb %d]", bb->index);
+#endif
 		  break;
 	        }
 
@@ -282,18 +293,22 @@ print_rtx (rtx in_rtx)
 
 	      case NOTE_INSN_UNLIKELY_EXECUTED_CODE:
 		{
+#ifndef GENERATOR_FILE
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
 		  if (bb != 0)
 		    fprintf (outfile, " [bb %d]", bb->index);
+#endif
 		  break;
 		}
 		
 	      case NOTE_INSN_VAR_LOCATION:
+#ifndef GENERATOR_FILE
 		fprintf (outfile, " (");
 		print_mem_expr (outfile, NOTE_VAR_LOCATION_DECL (in_rtx));
 		fprintf (outfile, " ");
 		print_rtx (NOTE_VAR_LOCATION_LOC (in_rtx));
 		fprintf (outfile, ")");
+#endif
 		break;
 
 	      default:
@@ -416,6 +431,7 @@ print_rtx (rtx in_rtx)
 	    else
 	      fprintf (outfile, " %d", value);
 
+#ifndef GENERATOR_FILE
 	    if (REG_P (in_rtx) && REG_ATTRS (in_rtx))
 	      {
 		fputs (" [", outfile);
@@ -429,6 +445,7 @@ print_rtx (rtx in_rtx)
 			   REG_OFFSET (in_rtx));
 		fputs (" ]", outfile);
 	      }
+#endif
 
 	    if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
 		&& XINT (in_rtx, i) >= 0
@@ -483,9 +500,7 @@ print_rtx (rtx in_rtx)
 	break;
 
       case 'b':
-#ifdef GENERATOR_FILE
-	fputs (" {bitmap}", outfile);
-#else
+#ifndef GENERATOR_FILE
 	if (XBITMAP (in_rtx, i) == NULL)
 	  fputs (" {null}", outfile);
 	else
@@ -504,8 +519,10 @@ print_rtx (rtx in_rtx)
 	break;
 
       case 'B':
+#ifndef GENERATOR_FILE
 	if (XBBDEF (in_rtx, i))
 	  fprintf (outfile, " %i", XBBDEF (in_rtx, i)->index);
+#endif
 	break;
 
       default:

@@ -1,3 +1,24 @@
+2004-08-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (BUILD_PREFIX, BUILD_PREFIX_1): Delete.
+	(BUILD_RTL, BUILD_PRINT, BUILD_ERRORS, BUILD_VARRAY): Update.
+	(genobjs): Add build-rtl.o, build-print-rtl.o, build-varray.o.
+	(genobjs static pattern rule): Remove %.c dependency.
+	($(BUILD_PREFIX_1)rtl.o, print-rtl.o, $(BUILD_PREFIX_1)varray.o):
+	Rename rules; delete commands; fix dependencies.
+	(mostlyclean): Do not delete temporary source copies.
+	* configure.ac: Delete all references to BUILD_PREFIX and
+	BUILD_PREFIX_1.
+	* configure: Regenerate.
+
+	* print-rtl.c: Include bconfig.h #ifdef GENERATOR_FILE.
+	Do not include tree.h, real.h, flags.h, hard-reg-set.h, or
+	basic-block.h #ifdef GENERATOR_FILE.  Surround some more code
+	with #ifndef GENERATOR_FILE so that nothing from those headers
+	is used.
+
+	* rtl.c, varray.c: Include bconfig.h #ifdef GENERATOR_FILE.
+
 2004-08-16  Adam Nemet  <anemet@lnxw.com>
 
 	* Makefile.in (LIBS): Move $(LIBIBERTY) after $(BANSHEELIB).
@@ -14,10 +35,10 @@
 	* target-def.h (TARGET_ASM_MARK_DECL_PRESERVED): New #define.
 	(TARGET_ASM_OUT): New member, TARGET_ASM_MARK_DECL_PRESERVED
 	* target.h (struct gcc_target): New member, mark_decl_preserved.
-        * hooks.c (hook_void_charptr): Rename to ...
-        (hook_void_constcharptr): ... new name.
-        * hooks.h (hook_void_charptr): Rename to ..
-        (hook_void_constcharptr): ... new name.
+	* hooks.c (hook_void_charptr): Rename to ...
+	(hook_void_constcharptr): ... new name.
+	* hooks.h (hook_void_charptr): Rename to ..
+	(hook_void_constcharptr): ... new name.
 	* tree.h (DECL_PRESERVE_P): New #define.
 	(struct tree_decl): New member, preserve_flag.
 	* varasm.c (assemble_start_function): Mark decl preserved.
@@ -95,17 +116,17 @@
 
 	* Makefile.in (C_PRETTY_PRINT_H): Add c-pretty-print.h.
 	(c-lang.o): Depend on c-objc-common.h.
-	(c-objc-common.o): Depend on $(C_PRETTY_PRINT_H) and 
+	(c-objc-common.o): Depend on $(C_PRETTY_PRINT_H) and
 	c-objc-common.h; remove duplicate $(C_TREE_H) dependency.
 	* c-lang.c: Include c-objc-common.h.
 	(LANG_HOOKS_FINISH, LANG_HOOKS_INIT_OPTIONS,
 	LANG_HOOKS_INITIALIZE_DIAGNOSTICS, LANG_HOOKS_HANDLE_OPTION,
 	LANG_HOOKS_MISSING_ARGUMENT, LANG_HOOKS_POST_OPTIONS,
-	LANG_HOOKS_GET_ALIAS_SET, LANG_HOOKS_SAFE_FROM_P, 
-	LANG_HOOKS_EXPAND_EXPR, LANG_HOOKS_MARK_ADDRESSABLE, 
+	LANG_HOOKS_GET_ALIAS_SET, LANG_HOOKS_SAFE_FROM_P,
+	LANG_HOOKS_EXPAND_EXPR, LANG_HOOKS_MARK_ADDRESSABLE,
 	LANG_HOOKS_PARSE_FILE, LANG_HOOKS_TRUTHVALUE_CONVERSION,
 	LANG_HOOKS_FINISH_INCOMPLETE_DECL, LANG_HOOKS_UNSAFE_FOR_REEVAL,
-	LANG_HOOKS_STATICP, LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, 
+	LANG_HOOKS_STATICP, LANG_HOOKS_SET_DECL_ASSEMBLER_NAME,
 	LANG_HOOKS_NO_BODY_BLOCKS, LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL,
 	LANG_HOOKS_PRINT_IDENTIFIER, LANG_HOOKS_FUNCTION_ENTER_NESTED,
 	LANG_HOOKS_FUNCTION_LEAVE_NESTED, LANG_HOOKS_DUP_LANG_SPECIFIC_DECL,
@@ -200,7 +221,7 @@
 	* tree-ssa-loop-niter.c (number_of_iterations_cond,
 	loop_niter_by_eval, upper_bound_in_type, lower_bound_in_type):
 	Likewise.
-	
+
 	* config/alpha/alpha.c (alpha_initialize_trampoline,
 	alpha_va_start, alpha_gimplify_va_arg_1): Use build_int_cst.
 	* config/arm/arm.c (arm_get_cookie_size): Likewise.
@@ -219,7 +240,7 @@
 	Likewise.
 	* config/xtensa/xtensa.c (xtensa_va_start,
 	xtensa_gimplify_va_arg_expr): Likewise.
-	
+
 	* objc/objc-act.c (build_objc_string_object,
 	build_objc_symtab_template, init_def_list, init_objc_symtab,
 	init_module_descriptor, generate_static_references,
@@ -361,7 +382,7 @@
 	hard_fp_register_operand, hard_int_register_operand,
 	reg_or_cint_operand, some_operand, some_ni_operand, input_operand,
 	samegp_function_operand, direct_call_operand, small_symbolic_operand,
-	global_symbolic_operand, call_operand, symbolic_operand, 
+	global_symbolic_operand, call_operand, symbolic_operand,
 	dtp16_symbolic_operand, dtp32_symbolic_operand,
 	gotdtp_symbolic_operand, tp16_symbolic_operand, tp32_symbolic_operand,
 	gottp_symbolic_operand, alpha_comparison_operator,
