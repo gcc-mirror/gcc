@@ -1,3 +1,10 @@
+2002-05-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c/6569.
+	* varasm.c (mark_weak): New function.
+	(merge_weak): Use it.  Do not call declare_weak.
+	(declare_weak): Use merge_weak.
+
 Wed May  8 13:12:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (dead_libcall_p): Update counts.

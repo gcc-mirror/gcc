@@ -39,12 +39,12 @@ void * foo1b (void)
 }
 
 
-extern int vfoo1c;  /* { dg-warning "weak declaration" "weak declaration" } */
+extern int vfoo1c;  
 void * foo1c (void)
 {
   return (void *)&vfoo1c;
 }
-extern int vfoo1c __attribute__((weak));
+extern int vfoo1c __attribute__((weak)); /* { dg-warning "weak declaration" "weak declaration" } */
 
 
 extern int vfoo1d __attribute__((weak));

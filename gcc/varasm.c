@@ -189,6 +189,7 @@ static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
 static void const_str_htab_del		PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 static void resolve_unique_section	PARAMS ((tree, int));
+static void mark_weak                   PARAMS ((tree));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -4993,6 +4994,21 @@ output_constructor (exp, size, align)
    to be emitted.  */
 static tree weak_decls;
 
+/* Mark DECL as weak.  */
+
+static void
+mark_weak (decl)
+     tree decl;
+{
+  DECL_WEAK (decl) = 1;
+
+  if (DECL_RTL_SET_P (decl)
+      && GET_CODE (DECL_RTL (decl)) == MEM
+      && XEXP (DECL_RTL (decl), 0)
+      && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF)
+    SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+ 
 /* Merge weak status between NEWDECL and OLDDECL.  */
 
 void
@@ -5000,22 +5016,54 @@ merge_weak (newdecl, olddecl)
      tree newdecl;
      tree olddecl;
 {
-  tree decl;
-
   if (DECL_WEAK (newdecl) == DECL_WEAK (olddecl))
     return;
 
-  decl = DECL_WEAK (olddecl) ? newdecl : olddecl;
-
   if (SUPPORTS_WEAK
+      && DECL_WEAK (newdecl) 
       && DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)
-      && (TREE_CODE (decl) != VAR_DECL
-	  || ! TREE_STATIC (decl))
-      && TREE_USED (decl)
-      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    warning_with_decl (decl, "weak declaration of `%s' after first use results in unspecified behavior");
+      && (TREE_CODE (olddecl) != VAR_DECL || ! TREE_STATIC (olddecl))
+      && TREE_USED (olddecl)
+      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)))
+    warning_with_decl (newdecl, "weak declaration of `%s' after first use results in unspecified behavior");
 
-  declare_weak (decl);
+  if (DECL_WEAK (newdecl))
+    {
+      tree wd;
+      
+      /* NEWDECL is weak, but OLDDECL is not.  */
+
+      /* If we already output the OLDDECL, we're in trouble; we can't
+	 go back and make it weak.  This error cannot caught in
+	 declare_weak because the NEWDECL and OLDDECL was not yet
+	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
+      if (TREE_CODE (olddecl) == FUNCTION_DECL && TREE_ASM_WRITTEN (olddecl))
+	error_with_decl (newdecl, 
+			 "weak declaration of `%s' must precede definition");
+      
+      if (SUPPORTS_WEAK)
+	{
+	  /* We put the NEWDECL on the weak_decls list at some point.
+	     Replace it with the OLDDECL.  */
+	  for (wd = weak_decls; wd; wd = TREE_CHAIN (wd))
+	    if (TREE_VALUE (wd) == newdecl)
+	      {
+		TREE_VALUE (wd) = olddecl;
+		break;
+	      }
+	  /* We may not find the entry on the list.  If NEWDECL is a
+	     weak alias, then we will have already called
+	     globalize_decl to remove the entry; in that case, we do
+	     not need to do anything.  */
+	}
+
+      /* Make the OLDDECL weak; it's OLDDECL that we'll be keeping.  */
+      mark_weak (olddecl);
+    }
+  else
+    /* OLDDECL was weak, but NEWDECL was not explicitly marked as
+       weak.  Just update NEWDECL to indicate that it's weak too.  */
+    mark_weak (newdecl);
 }
 
 /* Declare DECL to be a weak symbol.  */
@@ -5036,13 +5084,7 @@ declare_weak (decl)
   else
     warning_with_decl (decl, "weak declaration of `%s' not supported");
 
-  DECL_WEAK (decl) = 1;
-
-  if (DECL_RTL_SET_P (decl)
-      && GET_CODE (DECL_RTL (decl)) == MEM
-      && XEXP (DECL_RTL (decl), 0)
-      && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF)
-    SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = 1;
+  mark_weak (decl);
 }
 
 /* Emit any pending weak declarations.  */
