@@ -1552,15 +1552,33 @@ i960_print_operand_addr (file, addr)
    convert common non-canonical forms to canonical form so that they will
    be recognized.  */
 
+/* These two macros allow us to accept either a REG or a SUBREG anyplace
+   where a register is valid.  */
+
+#define RTX_OK_FOR_BASE_P(X, STRICT)					\
+  ((GET_CODE (X) == REG							\
+    && (STRICT ? REG_OK_FOR_BASE_P_STRICT (X) : REG_OK_FOR_BASE_P (X)))	\
+   || (GET_CODE (X) == SUBREG						\
+       && GET_CODE (SUBREG_REG (X)) == REG				\
+       && (STRICT ? REG_OK_FOR_BASE_P_STRICT (SUBREG_REG (X))		\
+	   : REG_OK_FOR_BASE_P (SUBREG_REG (X)))))
+
+#define RTX_OK_FOR_INDEX_P(X, STRICT)					\
+  ((GET_CODE (X) == REG							\
+    && (STRICT ? REG_OK_FOR_INDEX_P_STRICT (X) : REG_OK_FOR_INDEX_P (X)))\
+   || (GET_CODE (X) == SUBREG						\
+       && GET_CODE (SUBREG_REG (X)) == REG				\
+       && (STRICT ? REG_OK_FOR_INDEX_P_STRICT (SUBREG_REG (X))		\
+	   : REG_OK_FOR_INDEX_P (SUBREG_REG (X)))))
+
 int
 legitimate_address_p (mode, addr, strict)
      enum machine_mode mode;
      register rtx addr;
      int strict;
 {
-  if (GET_CODE (addr) == REG)
-    return (strict ? REG_OK_FOR_BASE_P_STRICT (addr)
-	    : REG_OK_FOR_BASE_P (addr));
+  if (RTX_OK_FOR_BASE_P (addr, strict))
+    return 1;
   else if (CONSTANT_P (addr))
     return 1;
   else if (GET_CODE (addr) == PLUS)
@@ -1573,15 +1591,10 @@ legitimate_address_p (mode, addr, strict)
       op0 = XEXP (addr, 0);
       op1 = XEXP (addr, 1);
 
-      if (GET_CODE (op0) == REG)
+      if (RTX_OK_FOR_BASE_P (op0, strict))
 	{
-	  if (! (strict ? REG_OK_FOR_BASE_P_STRICT (op0)
-		 : REG_OK_FOR_BASE_P (op0)))
-	    return 0;
-
-	  if (GET_CODE (op1) == REG)
-	    return (strict ? REG_OK_FOR_INDEX_P_STRICT (op1)
-		    : REG_OK_FOR_INDEX_P (op1));
+	  if (RTX_OK_FOR_INDEX_P (op1, strict))
+	    return 1;
 	  else if (CONSTANT_P (op1))
 	    return 1;
 	  else
@@ -1591,29 +1604,21 @@ legitimate_address_p (mode, addr, strict)
 	{
 	  if (GET_CODE (XEXP (op0, 0)) == MULT)
 	    {
-	      if (! (GET_CODE (XEXP (XEXP (op0, 0), 0)) == REG
-		     && (strict ? REG_OK_FOR_INDEX_P_STRICT (XEXP (XEXP (op0, 0), 0))
-			 : REG_OK_FOR_INDEX_P (XEXP (XEXP (op0, 0), 0)))
+	      if (! (RTX_OK_FOR_INDEX_P (XEXP (XEXP (op0, 0), 0), strict)
 		     && SCALE_TERM_P (XEXP (XEXP (op0, 0), 1))))
 		return 0;
 
-	      if (GET_CODE (XEXP (op0, 1)) == REG)
-		return ((strict ? REG_OK_FOR_BASE_P_STRICT (XEXP (op0, 1))
-			 : REG_OK_FOR_BASE_P (XEXP (op0, 1)))
-			&& CONSTANT_P (op1));
+	      if (RTX_OK_FOR_BASE_P (XEXP (op0, 1), strict)
+		  && CONSTANT_P (op1))
+		return 1;
 	      else
 		return 0;
 	    }
-	  else if (GET_CODE (XEXP (op0, 0)) == REG)
+	  else if (RTX_OK_FOR_BASE_P (XEXP (op0, 0), strict))
 	    {
-	      if (! (strict ? REG_OK_FOR_BASE_P_STRICT (XEXP (op0, 0))
-		     : REG_OK_FOR_BASE_P (XEXP (op0, 0))))
-		return 0;
-
-	      if (GET_CODE (XEXP (op0, 1)) == REG)
-		return ((strict ? REG_OK_FOR_INDEX_P_STRICT (XEXP (op0, 1))
-			 : REG_OK_FOR_INDEX_P (XEXP (op0, 1)))
-			&& CONSTANT_P (op1));
+	      if (RTX_OK_FOR_INDEX_P (XEXP (op0, 1), strict)
+		  && CONSTANT_P (op1))
+		return 1;
 	      else
 		return 0;
 	    }
@@ -1622,15 +1627,12 @@ legitimate_address_p (mode, addr, strict)
 	}
       else if (GET_CODE (op0) == MULT)
 	{
-	  if (! (GET_CODE (XEXP (op0, 0)) == REG
-		 && (strict ? REG_OK_FOR_INDEX_P_STRICT (XEXP (op0, 0))
-		     : REG_OK_FOR_INDEX_P (XEXP (op0, 0)))
+	  if (! (RTX_OK_FOR_INDEX_P (XEXP (op0, 0), strict)
 		 && SCALE_TERM_P (XEXP (op0, 1))))
 	    return 0;
 
-	  if (GET_CODE (op1) == REG)
-	    return (strict ? REG_OK_FOR_BASE_P_STRICT (op1)
-		    : REG_OK_FOR_BASE_P (op1));
+	  if (RTX_OK_FOR_BASE_P (op1, strict))
+	    return 1;
 	  else if (CONSTANT_P (op1))
 	    return 1;
 	  else
@@ -1644,9 +1646,7 @@ legitimate_address_p (mode, addr, strict)
       if (! TARGET_COMPLEX_ADDR && ! reload_completed)
 	return 0;
 
-      return (GET_CODE (XEXP (addr, 0)) == REG
-	      && (strict ? REG_OK_FOR_INDEX_P_STRICT (XEXP (addr, 0))
-		  : REG_OK_FOR_INDEX_P (XEXP (addr, 0)))
+      return (RTX_OK_FOR_INDEX_P (XEXP (addr, 0), strict)
 	      && SCALE_TERM_P (XEXP (addr, 1)));
     }
   else
