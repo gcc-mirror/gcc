@@ -1,3 +1,10 @@
+Fri Jun 14 12:04:02 2002  Dhananjay R. Deshpande <dhananjayd@kpit.com>
+
+	* sh.h: Define HARD_REGNO_RENAME_OK
+	* sh.c: sh_hard_regno_rename_ok: New. If current function has
+	interrupt_handler attribute, only registers saved on stack are OK.
+	* sh-protos.h: Declare sh_hard_regno_rename_ok.
+
 2002-06-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (jump): Emit jump insn.
