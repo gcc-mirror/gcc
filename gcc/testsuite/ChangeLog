@@ -1,3 +1,8 @@
+2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/simd-1.c: Force all use of int to
+	32-bit int.
+
 2002-09-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.dg/struct-ret-1.c: Add prototype for exit function and correct
