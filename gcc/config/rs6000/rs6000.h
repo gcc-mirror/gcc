@@ -1075,7 +1075,7 @@ enum reg_class
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
    ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
-   : (C) == 'J' ? ((VALUE) & 0xffff) == 0				\
+   : (C) == 'J' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0	\
    : (C) == 'K' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff)) == 0		\
    : (C) == 'L' ? mask_constant (VALUE)					\
    : (C) == 'M' ? (VALUE) > 31						\
