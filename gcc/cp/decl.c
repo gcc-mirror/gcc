@@ -6719,6 +6719,10 @@ builtin_function (name, type, code, class, libname)
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = code;
 
+  /* The return builtins leave the current function.  */
+  if (code == BUILT_IN_RETURN || code == BUILT_IN_EH_RETURN)
+    TREE_THIS_VOLATILE (decl) = 1;
+
   my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
 
   /* All builtins that don't begin with an `_' should go in the `std'
@@ -14224,7 +14228,7 @@ finish_function (flags)
   /* Complain if there's just no return statement.  */
   if (!processing_template_decl
       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
-      && !current_function_returns_value
+      && !current_function_returns_value && !current_function_returns_null
       && !DECL_NAME (DECL_RESULT (fndecl))
       /* Don't complain if we abort or throw.  */
       && !current_function_returns_abnormally
