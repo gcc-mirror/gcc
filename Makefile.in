@@ -17705,18 +17705,16 @@ configure-ash:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in ash; \
 	cd ash || exit 1; \
 	case $(srcdir) in \
@@ -17773,18 +17771,16 @@ configure-autoconf:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in autoconf; \
 	cd autoconf || exit 1; \
 	case $(srcdir) in \
@@ -17841,18 +17837,16 @@ configure-automake:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in automake; \
 	cd automake || exit 1; \
 	case $(srcdir) in \
@@ -17909,18 +17903,16 @@ configure-bash:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in bash; \
 	cd bash || exit 1; \
 	case $(srcdir) in \
@@ -17977,18 +17969,16 @@ configure-bfd:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in bfd; \
 	cd bfd || exit 1; \
 	case $(srcdir) in \
@@ -18045,18 +18035,16 @@ configure-opcodes:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in opcodes; \
 	cd opcodes || exit 1; \
 	case $(srcdir) in \
@@ -18113,18 +18101,16 @@ configure-binutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in binutils; \
 	cd binutils || exit 1; \
 	case $(srcdir) in \
@@ -18181,18 +18167,16 @@ configure-bison:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in bison; \
 	cd bison || exit 1; \
 	case $(srcdir) in \
@@ -18252,18 +18236,16 @@ configure-byacc:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in byacc; \
 	cd byacc || exit 1; \
 	case $(srcdir) in \
@@ -18323,18 +18305,16 @@ configure-bzip2:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in bzip2; \
 	cd bzip2 || exit 1; \
 	case $(srcdir) in \
@@ -18391,18 +18371,16 @@ configure-dejagnu:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in dejagnu; \
 	cd dejagnu || exit 1; \
 	case $(srcdir) in \
@@ -18459,18 +18437,16 @@ configure-diff:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in diff; \
 	cd diff || exit 1; \
 	case $(srcdir) in \
@@ -18527,18 +18503,16 @@ configure-dosutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in dosutils; \
 	cd dosutils || exit 1; \
 	case $(srcdir) in \
@@ -18591,18 +18565,16 @@ configure-etc:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in etc; \
 	cd etc || exit 1; \
 	case $(srcdir) in \
@@ -18659,18 +18631,16 @@ configure-fastjar:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in fastjar; \
 	cd fastjar || exit 1; \
 	case $(srcdir) in \
@@ -18730,18 +18700,16 @@ configure-fileutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in fileutils; \
 	cd fileutils || exit 1; \
 	case $(srcdir) in \
@@ -18798,18 +18766,16 @@ configure-findutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in findutils; \
 	cd findutils || exit 1; \
 	case $(srcdir) in \
@@ -18866,18 +18832,16 @@ configure-find:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in find; \
 	cd find || exit 1; \
 	case $(srcdir) in \
@@ -18934,18 +18898,16 @@ configure-flex:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in flex; \
 	cd flex || exit 1; \
 	case $(srcdir) in \
@@ -19005,18 +18967,16 @@ configure-gas:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gas; \
 	cd gas || exit 1; \
 	case $(srcdir) in \
@@ -19073,18 +19033,16 @@ configure-gawk:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gawk; \
 	cd gawk || exit 1; \
 	case $(srcdir) in \
@@ -19141,18 +19099,16 @@ configure-gettext:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gettext; \
 	cd gettext || exit 1; \
 	case $(srcdir) in \
@@ -19209,18 +19165,16 @@ configure-gnuserv:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gnuserv; \
 	cd gnuserv || exit 1; \
 	case $(srcdir) in \
@@ -19277,18 +19231,16 @@ configure-gprof:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gprof; \
 	cd gprof || exit 1; \
 	case $(srcdir) in \
@@ -19345,18 +19297,16 @@ configure-gzip:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gzip; \
 	cd gzip || exit 1; \
 	case $(srcdir) in \
@@ -19413,18 +19363,16 @@ configure-hello:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in hello; \
 	cd hello || exit 1; \
 	case $(srcdir) in \
@@ -19481,18 +19429,16 @@ configure-indent:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in indent; \
 	cd indent || exit 1; \
 	case $(srcdir) in \
@@ -19549,18 +19495,16 @@ configure-intl:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in intl; \
 	cd intl || exit 1; \
 	case $(srcdir) in \
@@ -19617,18 +19561,16 @@ configure-tcl:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in tcl; \
 	cd tcl || exit 1; \
 	case $(srcdir) in \
@@ -19685,18 +19627,16 @@ configure-itcl:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in itcl; \
 	cd itcl || exit 1; \
 	case $(srcdir) in \
@@ -19753,18 +19693,16 @@ configure-ld:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in ld; \
 	cd ld || exit 1; \
 	case $(srcdir) in \
@@ -19821,18 +19759,16 @@ configure-libgui:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in libgui; \
 	cd libgui || exit 1; \
 	case $(srcdir) in \
@@ -19889,18 +19825,16 @@ configure-libiberty:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in libiberty; \
 	cd libiberty || exit 1; \
 	case $(srcdir) in \
@@ -19957,18 +19891,16 @@ configure-libtool:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in libtool; \
 	cd libtool || exit 1; \
 	case $(srcdir) in \
@@ -20025,18 +19957,16 @@ configure-m4:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in m4; \
 	cd m4 || exit 1; \
 	case $(srcdir) in \
@@ -20093,18 +20023,16 @@ configure-make:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in make; \
 	cd make || exit 1; \
 	case $(srcdir) in \
@@ -20161,18 +20089,16 @@ configure-mmalloc:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in mmalloc; \
 	cd mmalloc || exit 1; \
 	case $(srcdir) in \
@@ -20225,18 +20151,16 @@ configure-patch:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in patch; \
 	cd patch || exit 1; \
 	case $(srcdir) in \
@@ -20293,18 +20217,16 @@ configure-perl:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in perl; \
 	cd perl || exit 1; \
 	case $(srcdir) in \
@@ -20361,18 +20283,16 @@ configure-prms:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in prms; \
 	cd prms || exit 1; \
 	case $(srcdir) in \
@@ -20429,18 +20349,16 @@ configure-rcs:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in rcs; \
 	cd rcs || exit 1; \
 	case $(srcdir) in \
@@ -20497,18 +20415,16 @@ configure-readline:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in readline; \
 	cd readline || exit 1; \
 	case $(srcdir) in \
@@ -20565,18 +20481,16 @@ configure-release:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in release; \
 	cd release || exit 1; \
 	case $(srcdir) in \
@@ -20625,18 +20539,16 @@ configure-recode:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in recode; \
 	cd recode || exit 1; \
 	case $(srcdir) in \
@@ -20693,18 +20605,16 @@ configure-sed:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in sed; \
 	cd sed || exit 1; \
 	case $(srcdir) in \
@@ -20761,18 +20671,16 @@ configure-send-pr:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in send-pr; \
 	cd send-pr || exit 1; \
 	case $(srcdir) in \
@@ -20829,18 +20737,16 @@ configure-shellutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in shellutils; \
 	cd shellutils || exit 1; \
 	case $(srcdir) in \
@@ -20897,18 +20803,16 @@ configure-sid:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in sid; \
 	cd sid || exit 1; \
 	case $(srcdir) in \
@@ -20965,18 +20869,16 @@ configure-sim:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in sim; \
 	cd sim || exit 1; \
 	case $(srcdir) in \
@@ -21033,18 +20935,16 @@ configure-tar:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in tar; \
 	cd tar || exit 1; \
 	case $(srcdir) in \
@@ -21101,18 +21001,16 @@ configure-texinfo:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in texinfo; \
 	cd texinfo || exit 1; \
 	case $(srcdir) in \
@@ -21165,18 +21063,16 @@ configure-textutils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in textutils; \
 	cd textutils || exit 1; \
 	case $(srcdir) in \
@@ -21233,18 +21129,16 @@ configure-time:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in time; \
 	cd time || exit 1; \
 	case $(srcdir) in \
@@ -21301,18 +21195,16 @@ configure-uudecode:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in uudecode; \
 	cd uudecode || exit 1; \
 	case $(srcdir) in \
@@ -21369,18 +21261,16 @@ configure-wdiff:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in wdiff; \
 	cd wdiff || exit 1; \
 	case $(srcdir) in \
@@ -21437,18 +21327,16 @@ configure-zip:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in zip; \
 	cd zip || exit 1; \
 	case $(srcdir) in \
@@ -21508,18 +21396,16 @@ configure-zlib:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in zlib; \
 	cd zlib || exit 1; \
 	case $(srcdir) in \
@@ -21568,18 +21454,16 @@ configure-gdb:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gdb; \
 	cd gdb || exit 1; \
 	case $(srcdir) in \
@@ -21636,18 +21520,16 @@ configure-expect:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in expect; \
 	cd expect || exit 1; \
 	case $(srcdir) in \
@@ -21704,18 +21586,16 @@ configure-guile:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in guile; \
 	cd guile || exit 1; \
 	case $(srcdir) in \
@@ -21772,18 +21652,16 @@ configure-tk:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in tk; \
 	cd tk || exit 1; \
 	case $(srcdir) in \
@@ -21840,18 +21718,16 @@ configure-tix:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in tix; \
 	cd tix || exit 1; \
 	case $(srcdir) in \
@@ -21908,18 +21784,16 @@ configure-libtermcap:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in libtermcap; \
 	cd libtermcap || exit 1; \
 	case $(srcdir) in \
@@ -21972,18 +21846,16 @@ configure-utils:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in utils; \
 	cd utils || exit 1; \
 	case $(srcdir) in \
@@ -23686,18 +23558,16 @@ configure-gcc:
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \

@@ -934,18 +934,16 @@ configure-[+module+]:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in [+module+]; \
 	cd [+module+] || exit 1; \
 	case $(srcdir) in \
@@ -1165,18 +1163,16 @@ configure-gcc:
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
