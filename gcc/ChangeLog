@@ -14,7 +14,6 @@
 	* config/rs6000/rs6000.h (MASK_64BIT): Correct comment.
 	(EXTRA_CONSTRAINT, 'S' and 'T'): Call mask_operand and
 	mask64_operand with correct mode.
-	(RETURN_IN_MEMORY): Use HOST_WIDE_INT, not HOST_WIDEST_INT.
 	(FUNCTION_ARG_REGNO_P): Correct parentheses.
 
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
