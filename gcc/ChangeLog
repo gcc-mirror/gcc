@@ -1,3 +1,9 @@
+Wed Feb 11 01:47:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (dwarf2out.o, emit-rtl.o, jump.o, cse.o, unroll.o,
+	reorg.o, regmove.o): Depend on insn-codes.h, it gets included
+	indirectly via expr.h.
+
 Wed Feb 11 01:44:13 1998  Richard Henderson  <rth@cygnus.com>
 
 	* stor-layout.c (layout_type): Do upper - lower in the native type,
