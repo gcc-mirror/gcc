@@ -17271,10 +17271,6 @@ rs6000_elf_in_small_data_p (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
-  /* Thread-local vars can't go in the small data area.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    return false;
-
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
     {
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));

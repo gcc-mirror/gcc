@@ -5097,10 +5097,10 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     flags |= SYMBOL_FLAG_FUNCTION;
   if (targetm.binds_local_p (decl))
     flags |= SYMBOL_FLAG_LOCAL;
-  if (targetm.in_small_data_p (decl))
-    flags |= SYMBOL_FLAG_SMALL;
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     flags |= decl_tls_model (decl) << SYMBOL_FLAG_TLS_SHIFT;
+  else if (targetm.in_small_data_p (decl))
+    flags |= SYMBOL_FLAG_SMALL;
   /* ??? Why is DECL_EXTERNAL ever set for non-PUBLIC names?  Without
      being PUBLIC, the thing *must* be defined in this translation unit.
      Prevent this buglet from being propagated into rtl code as well.  */
