@@ -2516,6 +2516,9 @@ try_pre_increment_1 (insn)
   rtx y = reg_next_use[regno];
   if (y != 0
       && BLOCK_NUM (y) == BLOCK_NUM (insn)
+      /* Don't do this if the reg dies, or gets set in y; a standard addressing
+	 mode would be better. */
+      && ! dead_or_set_p (y, SET_DEST (x))
       && try_pre_increment (y, SET_DEST (PATTERN (insn)),
 			    amount))
     {
