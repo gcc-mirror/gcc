@@ -4826,14 +4826,15 @@ size_of_line_info ()
   /* Prolog.  */
   size += size_of_line_prolog ();
 
-  /* Set address register instruction.  */
-  size += size_of_set_address;
-
   current_file = 1;
   current_line = 1;
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
-      register dw_line_info_ref line_info;
+      register dw_line_info_ref line_info = &line_info_table[lt_index];
+
+      if (line_info->dw_line_num == current_line
+	  && line_info->dw_file_num == current_file)
+	continue;
 
       /* Advance pc instruction.  */
       /* ??? See the DW_LNS_advance_pc comment in output_line_info.  */
@@ -4842,7 +4843,6 @@ size_of_line_info ()
       else
 	size += size_of_set_address;
 
-      line_info = &line_info_table[lt_index];
       if (line_info->dw_file_num != current_file)
 	{
 	  /* Set file number instruction.  */
@@ -4886,6 +4886,12 @@ size_of_line_info ()
     {
       register dw_separate_line_info_ref line_info
 	= &separate_line_info_table[lt_index];
+
+      if (line_info->dw_line_num == current_line
+	  && line_info->dw_file_num == current_file
+	  && line_info->function == function)
+	goto cont;
+
       if (function != line_info->function)
 	{
 	  function = line_info->function;
@@ -4928,6 +4934,7 @@ size_of_line_info ()
 	    }
 	}
 
+    cont:
       ++lt_index;
 
       /* If we're done with a function, end its sequence.  */
@@ -5834,18 +5841,9 @@ output_line_info ()
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
   fputc ('\n', asm_out_file);
 
-  /* Set the address register to the first location in the text section */
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
-
-  fputc ('\n', asm_out_file);
-  output_uleb128 (1 + PTR_SIZE);
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_section_label);
-  fputc ('\n', asm_out_file);
+  /* We used to set the address register to the first location in the text
+     section here, but that didn't accomplish anything since we already
+     have a line note for the opening brace of the first function.  */
 
   /* Generate the line number to PC correspondence table, encoded as
      a series of state machine operations.  */
@@ -5854,7 +5852,14 @@ output_line_info ()
   strcpy (prev_line_label, text_section_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
-      register dw_line_info_ref line_info;
+      register dw_line_info_ref line_info = &line_info_table[lt_index];
+
+      /* Don't emit anything for redundant notes.  Just updating the
+         address doesn't accomplish anything, because we already assume
+         that anything after the last address is this line.  */
+      if (line_info->dw_line_num == current_line
+	  && line_info->dw_file_num == current_file)
+	continue;
 
       /* Emit debug info for the address of the current line, choosing
 	 the encoding that uses the least amount of space.  */
@@ -5898,7 +5903,6 @@ output_line_info ()
 
       /* Emit debug info for the source file of the current line, if
 	 different from the previous line.  */
-      line_info = &line_info_table[lt_index];
       if (line_info->dw_file_num != current_file)
 	{
 	  current_file = line_info->dw_file_num;
@@ -5916,35 +5920,48 @@ output_line_info ()
 
       /* Emit debug info for the current line number, choosing the encoding
 	 that uses the least amount of space.  */
-      line_offset = line_info->dw_line_num - current_line;
-      line_delta = line_offset - DWARF_LINE_BASE;
-      current_line = line_info->dw_line_num;
-      if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+      if (line_info->dw_line_num != current_line)
 	{
-	  /* This can handle deltas from -10 to 234, using the current
-	     definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.  This
-	     takes 1 byte.  */
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
-				  DWARF_LINE_OPCODE_BASE + line_delta);
-	  if (flag_debug_asm)
-	      fprintf (asm_out_file,
-		       "\t%s line %ld", ASM_COMMENT_START, current_line);
+	  line_offset = line_info->dw_line_num - current_line;
+	  line_delta = line_offset - DWARF_LINE_BASE;
+	  current_line = line_info->dw_line_num;
+	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+	    {
+	      /* This can handle deltas from -10 to 234, using the current
+		 definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.  This
+		 takes 1 byte.  */
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
+				      DWARF_LINE_OPCODE_BASE + line_delta);
+	      if (flag_debug_asm)
+		fprintf (asm_out_file,
+			 "\t%s line %ld", ASM_COMMENT_START, current_line);
 
-	  fputc ('\n', asm_out_file);
+	      fputc ('\n', asm_out_file);
+	    }
+	  else
+	    {
+	      /* This can handle any delta.  This takes at least 4 bytes,
+		 depending on the value being encoded.  */
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
+	      if (flag_debug_asm)
+		fprintf (asm_out_file, "\t%s advance to line %ld",
+			 ASM_COMMENT_START, current_line);
+
+	      fputc ('\n', asm_out_file);
+	      output_sleb128 (line_offset);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
+	      if (flag_debug_asm)
+		fprintf (asm_out_file, "\t%s DW_LNS_copy", ASM_COMMENT_START);
+	      fputc ('\n', asm_out_file);
+	    }
 	}
       else
 	{
-	  /* This can handle any delta.  This takes at least 4 bytes, depending
-	     on the value being encoded.  */
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s advance to line %ld",
-		     ASM_COMMENT_START, current_line);
-
-	  fputc ('\n', asm_out_file);
-	  output_sleb128 (line_offset);
-	  fputc ('\n', asm_out_file);
+	  /* We still need to start a new row, so output a copy insn.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
+	  if (flag_debug_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNS_copy", ASM_COMMENT_START);
 	  fputc ('\n', asm_out_file);
 	}
     }
@@ -5993,6 +6010,12 @@ output_line_info ()
     {
       register dw_separate_line_info_ref line_info
 	= &separate_line_info_table[lt_index];
+
+      /* Don't emit anything for redundant notes.  */
+      if (line_info->dw_line_num == current_line
+	  && line_info->dw_file_num == current_file
+	  && line_info->function == function)
+	goto cont;
 
       /* Emit debug info for the address of the current line.  If this is
 	 a new function, or the first line of a function, then we need
@@ -6094,10 +6117,21 @@ output_line_info ()
 	      output_sleb128 (line_offset);
 	      fputc ('\n', asm_out_file);
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
+	      if (flag_debug_asm)
+		fprintf (asm_out_file, "\t%s DW_LNS_copy", ASM_COMMENT_START);
 	      fputc ('\n', asm_out_file);
 	    }
 	}
+      else
+	{
+	  /* We still need to start a new row, so output a copy insn.  */
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
+	  if (flag_debug_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNS_copy", ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	}
 
+    cont:
       ++lt_index;
 
       /* If we're done with a function, end its sequence.  */

@@ -1,3 +1,8 @@
+Tue Mar 30 00:26:34 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (output_line_info): Don't emit redundant info.
+	Do start a new row if the file changes and the line # doesn't.
+
 Mon Mar 29 15:48:39 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* invoke.texi (Invoking G++, C++ Dialect Options): Update.
