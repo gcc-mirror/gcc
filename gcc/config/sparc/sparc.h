@@ -1066,8 +1066,8 @@ do								\
 	   %fp, but output it as %i7.  */			\
 	fixed_regs[31] = 1;					\
 	reg_names[FRAME_POINTER_REGNUM] = "%i7";		\
-	/* ??? This is a hack to disable leaf functions.  */	\
-	global_regs[7] = 1;					\
+	/* Disable leaf functions */				\
+	bzero (sparc_leaf_regs, FIRST_PSEUDO_REGISTER);		\
       }								\
     if (profile_block_flag)					\
       {								\
@@ -1373,26 +1373,8 @@ extern enum reg_class sparc_regno_reg_class[];
   
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
-/* ??? %g7 is not a leaf register to effectively #undef LEAF_REGISTERS when
-   -mflat is used.  Function only_leaf_regs_used will return 0 if a global
-   register is used and is not permitted in a leaf function.  We make %g7
-   a global reg if -mflat and voila.  Since %g7 is a system register and is
-   fixed it won't be used by gcc anyway.  */
-
-#define LEAF_REGISTERS \
-{ 1, 1, 1, 1, 1, 1, 1, 0,	\
-  0, 0, 0, 0, 0, 0, 1, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  1, 1, 1, 1, 1, 1, 0, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1}
+extern char sparc_leaf_regs[];
+#define LEAF_REGISTERS sparc_leaf_regs
 
 extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
@@ -2144,6 +2126,10 @@ LFLGRET"ID":\n\
    For the v9 we want NAMED to mean what it says it means.  */
 
 #define STRICT_ARGUMENT_NAMING TARGET_V9
+
+/* We do not allow sibling calls if -mflat, nor
+   we do not allow indirect calls to be optimized into sibling calls.  */
+#define FUNCTION_OK_FOR_SIBCALL(DECL) (DECL && ! TARGET_FLAT)
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */

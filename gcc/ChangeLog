@@ -1,3 +1,45 @@
+2000-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* sibcall.c (skip_copy_to_return_value): Use OUTGOING_REGNO for
+	comparison if regno's are equal.
+	* calls.c (initialize_argument_informat): Add ecf_flags argument.
+	Use FUNCTION_INCOMING_ARG if available and ECF_SIBCALL.
+	(expand_call): Update caller.
+	Avoid making a sibling call if argument size of the callee is larger
+	than argument size of the caller.
+	Call hard_function_value with outgoing set if in sibcall pass.
+	Use FUNCTION_INCOMING_ARG if available and ECF_SIBCALL.
+
+	* final.c (permitted_reg_in_leaf_functions, only_leaf_regs_used):
+	Change LEAF_REGISTERS from an array initializer to actual array
+	identifier. Move static global variable into the function.
+	(leaf_function_p): Allow SIBLING_CALL_P calls even outside of
+	sequences for leaf functions.
+	* global.c (global_alloc): Likewise.
+	* tm.texi (LEAF_REGISTERS): Update documentation.
+
+	* config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Remove the ugly
+	TARGET_FLAT leaf disabling hack.
+	(LEAF_REGISTERS): Changed from an array initializer to actual array
+	identifier to avoid duplication and remove the above hack.
+	(FUNCTION_OK_FOR_SIBCALL): Define.
+	* config/sparc/sparc.md (sibcall): New attr type. Use it almost
+	always like call attribute.
+	(eligible_for_sibcall_delay): New attribute.
+	(sibcall): New delay type.
+	(sibcall, sibcall_value, sibcall_epilogue): New expands.
+	(sibcall_symbolic_sp32, sibcall_symbolic_sp64,
+	sibcall_value_symbolic_sp32, sibcall_value_symbolic_sp64): New insns.
+	* config/sparc/sparc.c (sparc_leaf_regs): New array.
+	(eligible_for_sibcall_delay, output_restore_regs, output_sibcall):
+	New functions.
+	(output_function_epilogue): Move part of the code into
+	output_restore_regs.
+	(ultra_code_from_mask, ultrasparc_sched_reorder): Handle
+	TYPE_SIBCALL.
+	* sparc-protos.h (output_sibcall, eligible_for_sibcall_delay): New
+	prototypes.
+
 Fri Mar 24 13:49:45 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* integrate.c (save_for_inline_nocopy): Clear in_nonparm_insns here.

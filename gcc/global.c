@@ -374,7 +374,7 @@ global_alloc (file)
      a leaf function.  */
   {
     char *cheap_regs;
-    static char leaf_regs[] = LEAF_REGISTERS;
+    char *leaf_regs = LEAF_REGISTERS;
 
     if (only_leaf_regs_used () && leaf_function_p ())
       cheap_regs = leaf_regs;

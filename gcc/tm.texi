@@ -1652,7 +1652,7 @@ accomplish this.
 @table @code
 @findex LEAF_REGISTERS
 @item LEAF_REGISTERS
-A C initializer for a vector, indexed by hard register number, which
+Name of a char vector, indexed by hard register number, which
 contains 1 for a register that is allowable in a candidate for leaf
 function treatment.
 
