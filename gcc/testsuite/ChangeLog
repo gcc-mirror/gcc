@@ -1,3 +1,8 @@
+2002-07-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/cmdlne-dD.c, gcc.dg/cpp/trad/cmdlne-dM.c,
+	gcc.dg/cpp/trad/include.c: New tests.
+
 2002-07-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/7177
