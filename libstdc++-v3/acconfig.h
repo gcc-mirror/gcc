@@ -66,9 +66,6 @@
 // Define if lrand48 exists.
 #undef HAVE_DRAND48
 
-// Define if isatty exists.
-#undef HAVE_ISATTY
-
 // Define if getpagesize exists.
 #undef HAVE_GETPAGESIZE
 
