@@ -90,6 +90,7 @@ struct decision_test
     {
       DT_mode, DT_code, DT_veclen,
       DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide, DT_elt_zero_wide_safe,
+      DT_const_int,
       DT_veclen_ge, DT_dup, DT_pred, DT_c_test,
       DT_accept_op, DT_accept_insn
     } type;
@@ -1981,6 +1982,11 @@ write_cond (struct decision_test *p, int depth,
       print_host_wide_int (p->u.intval);
       break;
 
+    case DT_const_int:
+      printf ("x%d == const_int_rtx[MAX_SAVED_CONST_INT + (%d)]",
+	      depth, (int) p->u.intval);
+      break;
+
     case DT_veclen_ge:
       printf ("XVECLEN (x%d, 0) >= %d", depth, p->u.veclen);
       break;
@@ -2142,6 +2148,23 @@ write_node (struct decision *p, int depth,
 {
   struct decision_test *test, *last_test;
   int uncond;
+
+  /* Scan the tests and simplify comparisons against small
+     constants.  */
+  for (test = p->tests; test; test = test->next)
+    {
+      if (test->type == DT_code
+	  && test->u.code == CONST_INT
+	  && test->next
+	  && test->next->type == DT_elt_zero_wide_safe
+	  && -MAX_SAVED_CONST_INT <= test->next->u.intval
+	  && test->next->u.intval <= MAX_SAVED_CONST_INT)
+	{
+	  test->type = DT_const_int;
+	  test->u.intval = test->next->u.intval;
+	  test->next = test->next->next;
+	}
+    }
 
   last_test = test = p->tests;
   uncond = is_unconditional (test, subroutine_type);

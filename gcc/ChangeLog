@@ -1,5 +1,13 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* genrecog.c (decision_type): Add DT_const_int.
+	(write_cond) [DT_const_int]: Print a comparison against small
+	constant.
+	(write_node): Simplify comparisons against small constants
+	before printing tests.
+	
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/m32r/m32r.c (m32r_load_pic_register): Use GEN_INT
 	instead of gen_rtx_CONST_INT.
 
