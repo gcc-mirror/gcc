@@ -1,3 +1,10 @@
+2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* trans.c (tree_transform): Use location_t and input_location
+	directly.
+	(build_unit_elab): Likewise.
+	* utils.c (create_label_decl): Likewise.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* trans.c (tree_transform, build_unit_elab,

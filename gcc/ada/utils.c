@@ -1663,8 +1663,7 @@ create_label_decl (label_name)
 
   DECL_CONTEXT (label_decl)     = current_function_decl;
   DECL_MODE (label_decl)        = VOIDmode;
-  DECL_SOURCE_LINE (label_decl) = input_line;
-  DECL_SOURCE_FILE (label_decl) = input_filename;
+  DECL_SOURCE_LOCATION (label_decl) = input_location;
 
   return label_decl;
 }
