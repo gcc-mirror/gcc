@@ -366,8 +366,7 @@ static char *alternative_name;
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
    They won't actually be used.  */
 
-rtx frame_pointer_rtx, hard_frame_pointer_rtx, stack_pointer_rtx;
-rtx arg_pointer_rtx;
+struct _global_rtl global_rtl;
 
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
 #ifdef HAVE_VPRINTF
@@ -492,8 +491,6 @@ struct attr_hash *attr_hash_table[RTL_HASH_SIZE];
 /* Here is how primitive or already-shared RTL's hash
    codes are made.  */
 #define RTL_HASH(RTL) ((HOST_WIDE_INT) (RTL) & 0777777)
-
-rtx pc_rtx;
 
 /* Add an entry to the hash table for RTL with hash code HASHCODE.  */
 
@@ -5619,11 +5616,6 @@ main (argc, argv)
     }
 
   init_rtl ();
-
-  /* We don't use this, but it is referenced in rtlanal.c. 
-     Set it up correctly just in case someone tries to use it someday.  */
-  pc_rtx = rtx_alloc (PC);
-  PUT_MODE (pc_rtx, VOIDmode);
 
   /* Set up true and false rtx's */
   true_rtx = rtx_alloc (CONST_INT);

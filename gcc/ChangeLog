@@ -1,3 +1,11 @@
+Thu Dec 11 17:23:48 1997  John F. Carr  <jfc@mit.edu>
+
+	* rtl.h (global_rtl): New variable, replacing separate variables for
+	commonly used rtl.
+	(const_int_rtx): Now array of rtx_def, not rtx.
+	* emit-rtl.c: Update for new rtl data structures.
+	* genattrtab.c: Define global_rtl.
+
 Thu Dec 11 15:50:29 1997 David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* configure.in ({rs6000,powerpc}-*-*): Enable Haifa scheduler by

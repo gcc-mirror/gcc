@@ -886,12 +886,16 @@ extern enum reg_class reg_alternate_class PROTO((int));
 extern rtx get_first_nonparm_insn	PROTO((void));
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
-extern rtx pc_rtx;
-extern rtx cc0_rtx;
-extern rtx const0_rtx;
-extern rtx const1_rtx;
-extern rtx const2_rtx;
-extern rtx constm1_rtx;
+#define pc_rtx		(&global_rtl.pc_val)
+#define cc0_rtx		(&global_rtl.cc0_val)
+
+#define MAX_SAVED_CONST_INT 64
+extern struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+
+#define const0_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT])
+#define const1_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT+1])
+#define const2_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT+2])
+#define constm1_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT-1])
 extern rtx const_true_rtx;
 
 extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
@@ -906,13 +910,24 @@ extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
 #define CONST1_RTX(MODE) (const_tiny_rtx[1][(int) (MODE)])
 #define CONST2_RTX(MODE) (const_tiny_rtx[2][(int) (MODE)])
 
+extern struct _global_rtl
+{
+  struct rtx_def pc_val, cc0_val;
+  struct rtx_def stack_pointer_val, frame_pointer_val;
+  struct rtx_def hard_frame_pointer_val;
+  struct rtx_def arg_pointer_val;
+  struct rtx_def virtual_incoming_args_val;
+  struct rtx_def virtual_stack_vars_val;
+  struct rtx_def virtual_stack_dynamic_val;
+  struct rtx_def virtual_outgoing_args_val;
+} global_rtl;
+
 /* All references to certain hard regs, except those created
    by allocating pseudo regs into them (when that's possible),
    go through these unique rtx objects.  */
-extern rtx stack_pointer_rtx;
-extern rtx frame_pointer_rtx;
-extern rtx hard_frame_pointer_rtx;
-extern rtx arg_pointer_rtx;
+#define stack_pointer_rtx	(&global_rtl.stack_pointer_val)
+#define frame_pointer_rtx	(&global_rtl.frame_pointer_val)
+
 extern rtx pic_offset_table_rtx;
 extern rtx struct_value_rtx;
 extern rtx struct_value_incoming_rtx;
@@ -929,6 +944,25 @@ extern rtx static_chain_incoming_rtx;
 #define HARD_FRAME_POINTER_REGNUM FRAME_POINTER_REGNUM
 #endif
 
+/* For register elimination to work properly these hard_frame_pointer_rtx,
+   frame_pointer_rtx, and arg_pointer_rtx must be the same if they refer to
+   the same register.  */
+#if HARD_FRAME_POINTER_REGNUM == FRAME_POINTER_REGNUM
+#define hard_frame_pointer_rtx	(&global_rtl.frame_pointer_val)
+#else
+#define hard_frame_pointer_rtx	(&global_rtl.hard_frame_pointer_val)
+#endif
+
+#if FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
+#define arg_pointer_rtx		(&global_rtl.frame_pointer_val)
+#else
+#if HARD_POINTER_REGNUM == ARG_POINTER_REGNUM
+#define arg_pointer_rtx		(&global_rtl.hard_frame_pointer_val)
+#else
+#define arg_pointer_rtx		(&global_rtl.arg_pointer_val)
+#endif
+#endif
+
 /* Virtual registers are used during RTL generation to refer to locations into
    the stack frame when the actual location isn't known until RTL generation
    is complete.  The routine instantiate_virtual_regs replaces these with
@@ -941,7 +975,7 @@ extern rtx static_chain_incoming_rtx;
    either by the caller or by the callee when pretending it was passed by the
    caller.  */
 
-extern rtx virtual_incoming_args_rtx;
+#define virtual_incoming_args_rtx (&global_rtl.virtual_incoming_args_val)
 
 #define VIRTUAL_INCOMING_ARGS_REGNUM	(FIRST_VIRTUAL_REGISTER)
 
@@ -949,7 +983,7 @@ extern rtx virtual_incoming_args_rtx;
    variable on the stack.  Otherwise, it points to the first variable on
    the stack.  */
 
-extern rtx virtual_stack_vars_rtx;
+#define virtual_stack_vars_rtx	(&global_rtl.virtual_stack_vars_val)
 
 #define VIRTUAL_STACK_VARS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 1)
 
@@ -957,7 +991,7 @@ extern rtx virtual_stack_vars_rtx;
    immediately after the stack pointer has been adjusted by the amount
    desired.  */
 
-extern rtx virtual_stack_dynamic_rtx;
+#define virtual_stack_dynamic_rtx	(&global_rtl.virtual_stack_dynamic_val)
 
 #define VIRTUAL_STACK_DYNAMIC_REGNUM	((FIRST_VIRTUAL_REGISTER) + 2)
 
@@ -965,7 +999,7 @@ extern rtx virtual_stack_dynamic_rtx;
    be written when the stack is pre-pushed (arguments pushed using push
    insns always use sp).  */
 
-extern rtx virtual_outgoing_args_rtx;
+#define virtual_outgoing_args_rtx	(&global_rtl.virtual_outgoing_args_val)
 
 #define VIRTUAL_OUTGOING_ARGS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 3)
 
@@ -1015,8 +1049,8 @@ extern int cse_not_expected;
    Allocated in parallel with regno_pointer_flag.  */
 extern rtx *regno_reg_rtx;
 
-/* Vector indexed by regno; contains the alignment in bytes for a
-   register that contains a pointer, if known.  */
+/* Vector indexed by regno; contain the alignment in bytes and type
+   pointed to for a register that contains a pointer, if known.  */
 extern char *regno_pointer_align;
 #define REGNO_POINTER_ALIGN(REGNO) regno_pointer_align[REGNO]
 
