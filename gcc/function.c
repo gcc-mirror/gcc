@@ -7706,6 +7706,8 @@ ggc_mark_struct_function (f)
     ggc_mark_rtvec ((rtvec) f->original_arg_vector);
   if (f->original_decl_initial)
     ggc_mark_tree (f->original_decl_initial);
+  if (f->outer)
+    ggc_mark_struct_function (f->outer);
 }
 
 /* Called once, at initialization, to initialize function.c.  */

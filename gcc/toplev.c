@@ -3773,7 +3773,13 @@ rest_of_compilation (decl)
   /* We're done with this function.  Free up memory if we can.  */
   free_after_parsing (cfun);
   if (! DECL_DEFER_OUTPUT (decl))
-    free_after_compilation (cfun);
+    {
+      free_after_compilation (cfun);
+
+      /* Clear integrate.c's pointer to the cfun structure we just
+	 destroyed.  */
+      DECL_SAVED_INSNS (decl) = 0;
+    }
   cfun = 0;
 
   ggc_collect ();

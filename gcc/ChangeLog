@@ -1,3 +1,9 @@
+2001-09-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* function.c (ggc_mark_struct_function): Mark f->outer.
+	* toplev.c (rest_of_compilation): Clear DECL_SAVED_INSNS here...
+	* integrate.c (output_inline_function): ... not here.
+
 Wed Sep  5 17:28:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (branch_prob): Call add_noreturn_fake_exit_edges.

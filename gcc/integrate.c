@@ -2899,13 +2899,11 @@ output_inline_function (fndecl)
      before it gets mangled by optimization.  */
   (*debug_hooks->outlining_inline_function) (fndecl);
 
-  /* Compile this function all the way down to assembly code.  */
+  /* Compile this function all the way down to assembly code.  As a
+     side effect this destroys the saved RTL representation, but
+     that's okay, because we don't need to inline this anymore.  */
   rest_of_compilation (fndecl);
-
-  /* We can't inline this anymore; rest_of_compilation destroyed the
-     data structures describing the function.  */
   DECL_INLINE (fndecl) = 0;
-  DECL_SAVED_INSNS (fndecl) = 0;
 
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;
