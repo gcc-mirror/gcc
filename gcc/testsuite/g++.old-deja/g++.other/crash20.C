@@ -32,7 +32,7 @@ int
 main ()
 {
   GcspFlags::btmFlag<GcspFlags::OffYes> f;
-  const type_info& ti = typeid (f);
+  const std::type_info& ti = typeid (f);
   return 0;
 }
 

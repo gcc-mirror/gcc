@@ -1,3 +1,9 @@
+2000-09-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* g++.old-deja/g++.other/crash20.C: Make ready for libstdc++-v3.
+	* g++.old-deja/g++.pt/ttp62.C: Same.
+	* g++.old-deja/g++.other/inline14.C: Same.
+
 2000-09-24  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000914-1.c: Declare malloc.
