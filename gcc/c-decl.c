@@ -6485,7 +6485,9 @@ finish_function (nested)
       /* But DECL_INITIAL must remain nonzero so we know this
 	 was an actual function definition.  */
       /* For a nested function, this is done in pop_c_function_context.  */
-      DECL_INITIAL (fndecl) = error_mark_node;
+      /* If rest_of_compilation set this to 0, leave it 0.  */
+      if (DECL_INITIAL (fndecl) != 0)
+	DECL_INITIAL (fndecl) = error_mark_node;
       DECL_ARGUMENTS (fndecl) = 0;
     }
 
