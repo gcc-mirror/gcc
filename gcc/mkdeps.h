@@ -39,7 +39,7 @@ extern void deps_free		PARAMS ((struct deps *));
 extern void deps_add_target	PARAMS ((struct deps *, const char *, int));
 
 /* Sets the default target if none has been given already.  An empty
-   string as the default target in interpreted as stdin.  */
+   string as the default target is interpreted as stdin.  */
 extern void deps_add_default_target PARAMS ((struct deps *, const char *));
 
 /* Add a dependency (appears on the right side of the colon) to the

@@ -392,7 +392,7 @@ struct cpp_reader
      list of recognized pragmas.  */
   struct pragma_entry *pragmas;
 
-  /* Call backs.  */
+  /* Call backs to cpplib client.  */
   struct cpp_callbacks cb;
 
   /* Identifier hash table.  */

@@ -1038,9 +1038,9 @@ _cpp_pop_context (cpp_reader *pfile)
   pfile->context = context->prev;
 }
 
-/* Eternal routine to get a token.  Also used nearly everywhere
+/* External routine to get a token.  Also used nearly everywhere
    internally, except for places where we know we can safely call
-   the lexer directly, such as lexing a directive name.
+   _cpp_lex_token directly, such as lexing a directive name.
 
    Macro expansions and directives are transparently handled,
    including entering included files.  Thus tokens are post-macro
