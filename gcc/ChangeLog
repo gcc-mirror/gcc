@@ -1,3 +1,7 @@
+2003-11-30  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Fix missing semicolon.
+
 2003-11-29  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc.c (init_spec): Pass -lunwind to init_gcc_specs in eh_name
