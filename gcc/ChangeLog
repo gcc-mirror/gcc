@@ -1,3 +1,8 @@
+2002-09-11  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* fold-const.c (make_range): Only narrow to signed range if
+	the signed range is smaller than the unsigned range.
+
 2002-09-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* emit-rtl.c (set_mem_size): New function.
