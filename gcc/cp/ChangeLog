@@ -1,3 +1,9 @@
+Fri May 15 20:28:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Revert problem change.
+
+	* Makefile.in (CONFLICTS): Fix.
+
 Fri May 15 15:34:02 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
         * decl.c (duplicate_decls): Clean up, add DECL_DATA_AREA bits.
