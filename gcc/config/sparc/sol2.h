@@ -85,11 +85,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
 #define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
 
-/* The native assembler can't compute differences between symbols in different
-   sections when generating pic code, so we must put jump tables in the
-   text section.  */
-#define JUMP_TABLES_IN_TEXT_SECTION 1
-
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX)		\
