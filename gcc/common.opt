@@ -28,7 +28,7 @@ Display this information
 
 -param
 Common Separate
---param <param>=<value>	Set paramter <param> to value.  See below for a complete list of parameters
+--param <param>=<value>	Set parameter <param> to value.  See below for a complete list of parameters
 
 -target-help
 Common

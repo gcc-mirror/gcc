@@ -1,3 +1,8 @@
+2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/18186
+	* common.opt (--param): Fix spelling of parameter.
+
 2004-10-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*subdf3_cc"): Replaced plus by minus.
