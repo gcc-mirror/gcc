@@ -1273,11 +1273,11 @@ DRIVER_DEFINES = \
 
 gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
     Makefile $(lang_specs_files) prefix.h $(GCC_H)
-	SHLIB_LIB='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
-  -c $(srcdir)/gcc.c
+  -c $(srcdir)/gcc.c)
 
 gccspec.o: gccspec.c $(CONFIG_H) system.h $(GCC_H)
 cppspec.o: cppspec.c $(CONFIG_H) system.h $(GCC_H)
@@ -1978,19 +1978,19 @@ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
 
 protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
    Makefile version.h
-	SHLIB_LIB='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
-	  $(srcdir)/protoize.c $(OUTPUT_OPTION)
+	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
 unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) system.h Makefile version.h
-	SHLIB_LIB='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
-	  $(srcdir)/unprotoize.c $(OUTPUT_OPTION)
+	  $(srcdir)/unprotoize.c $(OUTPUT_OPTION))
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
