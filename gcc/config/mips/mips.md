@@ -664,7 +664,7 @@
 (define_expand "conditional_trap"
   [(trap_if (match_operator 0 "cmp_op"
 			    [(match_dup 2) (match_dup 3)])
-	    (match_operand 1 "const_int_operand" ""))]
+	    (match_operand 1 "const_int_operand"))]
   "ISA_HAS_COND_TRAP"
 {
   if (operands[1] == const0_rtx)
@@ -721,9 +721,9 @@
    (set_attr "mode"	"SF")])
 
 (define_expand "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
-		 (match_operand:SI 2 "arith_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand")
+		 (match_operand:SI 2 "arith_operand")))]
   ""
 {
   /* If a large stack adjustment was forced into a register, we may be
@@ -771,7 +771,7 @@
   "addu\t%$,%$,%0"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
-   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_simm8_8" "")
+   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_simm8_8")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -783,7 +783,7 @@
   "addu\t%0,%$,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
-   (set (attr "length")	(if_then_else (match_operand:VOID 1 "m16_uimm8_4" "")
+   (set (attr "length")	(if_then_else (match_operand:VOID 1 "m16_uimm8_4")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -813,10 +813,10 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
-		[(if_then_else (match_operand:VOID 2 "m16_simm8_1" "")
+		[(if_then_else (match_operand:VOID 2 "m16_simm8_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 2 "m16_simm4_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_simm4_1")
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
@@ -829,9 +829,9 @@
 ;; simply adding a constant to a register.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "register_operand")
 	(plus:SI (match_dup 0)
-		 (match_operand:SI 1 "const_int_operand" "")))]
+		 (match_operand:SI 1 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -858,9 +858,9 @@
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 1 "register_operand" "")
-		 (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -890,9 +890,9 @@
 })
 
 (define_expand "adddi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (plus:DI (match_operand:DI 1 "register_operand" "")
-			    (match_operand:DI 2 "arith_operand" "")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (plus:DI (match_operand:DI 1 "register_operand")
+			    (match_operand:DI 2 "arith_operand")))
 	      (clobber (match_dup 3))])]
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
 {
@@ -944,10 +944,10 @@
    (set_attr "length"	"16")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -974,10 +974,10 @@
   "")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -1018,10 +1018,10 @@
    (set_attr "length"	"12,8,16")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -1042,10 +1042,10 @@
   "")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -1088,7 +1088,7 @@
   "daddu\t%$,%$,%0"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")
-   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_simm8_8" "")
+   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_simm8_8")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -1100,7 +1100,7 @@
   "daddu\t%0,%$,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")
-   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_uimm5_4" "")
+   (set (attr "length")	(if_then_else (match_operand:VOID 0 "m16_uimm5_4")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -1130,10 +1130,10 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
-		[(if_then_else (match_operand:VOID 2 "m16_simm5_1" "")
+		[(if_then_else (match_operand:VOID 2 "m16_simm5_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 2 "m16_simm4_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_simm4_1")
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
@@ -1146,9 +1146,9 @@
 ;; simply adding a constant to a register.
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand")
 	(plus:DI (match_dup 0)
-		 (match_operand:DI 1 "const_int_operand" "")))]
+		 (match_operand:DI 1 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -1175,9 +1175,9 @@
 })
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "const_int_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -1231,10 +1231,10 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
-		[(if_then_else (match_operand:VOID 2 "m16_simm8_1" "")
+		[(if_then_else (match_operand:VOID 2 "m16_simm8_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 2 "m16_simm4_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_simm4_1")
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
@@ -1266,9 +1266,9 @@
    (set_attr "mode"	"SF")])
 
 (define_expand "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(minus:SI (match_operand:SI 1 "register_operand" "")
-		  (match_operand:SI 2 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(minus:SI (match_operand:SI 1 "register_operand")
+		  (match_operand:SI 2 "register_operand")))]
   ""
   "")
 
@@ -1282,9 +1282,9 @@
    (set_attr "mode"	"SI")])
 
 (define_expand "subdi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "=d")
-		   (minus:DI (match_operand:DI 1 "register_operand" "d")
-			     (match_operand:DI 2 "register_operand" "d")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (minus:DI (match_operand:DI 1 "register_operand")
+			     (match_operand:DI 2 "register_operand")))
 	      (clobber (match_dup 3))])]
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
 {
@@ -1310,10 +1310,10 @@
    (set_attr "length"	"16")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(minus:DI (match_operand:DI 1 "register_operand" "")
-		  (match_operand:DI 2 "register_operand" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(minus:DI (match_operand:DI 1 "register_operand")
+		  (match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -1338,10 +1338,10 @@
   "")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(minus:DI (match_operand:DI 1 "register_operand" "")
-		  (match_operand:DI 2 "register_operand" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(minus:DI (match_operand:DI 1 "register_operand")
+		  (match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -1393,9 +1393,9 @@
 ;;
 
 (define_expand "muldf3"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(mult:DF (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand")
+	(mult:DF (match_operand:DF 1 "register_operand")
+		 (match_operand:DF 2 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "")
 
@@ -1423,9 +1423,9 @@
    (set_attr "length"	"8")])
 
 (define_expand "mulsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mult:SF (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
+  [(set (match_operand:SF 0 "register_operand")
+	(mult:SF (match_operand:SF 1 "register_operand")
+		 (match_operand:SF 2 "register_operand")))]
   "TARGET_HARD_FLOAT"
   "")
 
@@ -1498,9 +1498,9 @@
 ;; respectively.
 
 (define_expand "mulsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(mult:SI (match_operand:SI 1 "register_operand" "")
-		 (match_operand:SI 2 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(mult:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "register_operand")))]
   ""
 {
   if (GENERATE_MULT3_SI || TARGET_MAD)
@@ -1548,12 +1548,12 @@
 ;; Operand 4: GPR (destination)
 (define_peephole2
   [(parallel
-       [(set (match_operand:SI 0 "register_operand" "")
-	     (mult:SI (match_operand:SI 1 "register_operand" "")
-		      (match_operand:SI 2 "register_operand" "")))
-        (clobber (match_operand:SI 3 "register_operand" ""))
+       [(set (match_operand:SI 0 "register_operand")
+	     (mult:SI (match_operand:SI 1 "register_operand")
+		      (match_operand:SI 2 "register_operand")))
+        (clobber (match_operand:SI 3 "register_operand"))
         (clobber (scratch:SI))])
-   (set (match_operand:SI 4 "register_operand" "")
+   (set (match_operand:SI 4 "register_operand")
 	(unspec [(match_dup 0) (match_dup 3)] UNSPEC_MFHILO))]
   "GENERATE_MULT3_SI && peep2_reg_dead_p (2, operands[0])"
   [(parallel
@@ -1596,11 +1596,11 @@
 ;; Operand 4: GPR (destination)
 (define_peephole2
   [(parallel
-       [(set (match_operand:SI 0 "register_operand" "")
-	     (mult:SI (match_operand:SI 1 "register_operand" "")
-		      (match_operand:SI 2 "register_operand" "")))
-        (clobber (match_operand:SI 3 "register_operand" ""))])
-   (set (match_operand:SI 4 "register_operand" "")
+       [(set (match_operand:SI 0 "register_operand")
+	     (mult:SI (match_operand:SI 1 "register_operand")
+		      (match_operand:SI 2 "register_operand")))
+        (clobber (match_operand:SI 3 "register_operand"))])
+   (set (match_operand:SI 4 "register_operand")
 	(unspec:SI [(match_dup 0) (match_dup 3)] UNSPEC_MFHILO))]
   "ISA_HAS_MACC && !GENERATE_MULT3_SI"
   [(set (match_dup 0)
@@ -1653,13 +1653,13 @@
 
 ;; Split the above insn if we failed to get LO allocated.
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (match_operand:SI 2 "register_operand" ""))
-		 (match_operand:SI 3 "register_operand" "")))
-   (clobber (match_scratch:SI 4 ""))
-   (clobber (match_scratch:SI 5 ""))
-   (clobber (match_scratch:SI 6 ""))]
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand")
+			  (match_operand:SI 2 "register_operand"))
+		 (match_operand:SI 3 "register_operand")))
+   (clobber (match_scratch:SI 4))
+   (clobber (match_scratch:SI 5))
+   (clobber (match_scratch:SI 6))]
   "reload_completed && !TARGET_DEBUG_D_MODE
    && GP_REG_P (true_regnum (operands[0]))
    && GP_REG_P (true_regnum (operands[3]))"
@@ -1672,13 +1672,13 @@
 
 ;; Splitter to copy result of MADD to a general register
 (define_split
-  [(set (match_operand:SI                   0 "register_operand" "")
-        (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
-                          (match_operand:SI 2 "register_operand" ""))
-                 (match_operand:SI          3 "register_operand" "")))
-   (clobber (match_scratch:SI               4 ""))
-   (clobber (match_scratch:SI               5 ""))
-   (clobber (match_scratch:SI               6 ""))]
+  [(set (match_operand:SI                   0 "register_operand")
+        (plus:SI (mult:SI (match_operand:SI 1 "register_operand")
+                          (match_operand:SI 2 "register_operand"))
+                 (match_operand:SI          3 "register_operand")))
+   (clobber (match_scratch:SI               4))
+   (clobber (match_scratch:SI               5))
+   (clobber (match_scratch:SI               6))]
   "reload_completed && !TARGET_DEBUG_D_MODE
    && GP_REG_P (true_regnum (operands[0]))
    && true_regnum (operands[3]) == LO_REGNUM"
@@ -1798,11 +1798,11 @@
 ;; Operand 3: GPR (destination)
 (define_peephole2
   [(parallel
-       [(set (match_operand:SI 0 "register_operand" "")
-	     (match_operand:SI 1 "macc_msac_operand" ""))
-	(clobber (match_operand:SI 2 "register_operand" ""))
+       [(set (match_operand:SI 0 "register_operand")
+	     (match_operand:SI 1 "macc_msac_operand"))
+	(clobber (match_operand:SI 2 "register_operand"))
 	(clobber (scratch:SI))])
-   (set (match_operand:SI 3 "register_operand" "")
+   (set (match_operand:SI 3 "register_operand")
 	(unspec:SI [(match_dup 0) (match_dup 2)] UNSPEC_MFHILO))]
   ""
   [(parallel [(set (match_dup 0)
@@ -1829,13 +1829,13 @@
 ;; Operand 7: new addition/subtraction
 (define_peephole2
   [(match_scratch:SI 0 "d")
-   (set (match_operand:SI 1 "register_operand" "")
-	(match_operand:SI 2 "register_operand" ""))
+   (set (match_operand:SI 1 "register_operand")
+	(match_operand:SI 2 "register_operand"))
    (match_dup 0)
    (parallel
-       [(set (match_operand:SI 3 "register_operand" "")
-	     (match_operand:SI 4 "macc_msac_operand" ""))
-	(clobber (match_operand:SI 5 "register_operand" ""))
+       [(set (match_operand:SI 3 "register_operand")
+	     (match_operand:SI 4 "macc_msac_operand"))
+	(clobber (match_operand:SI 5 "register_operand"))
 	(clobber (match_dup 1))])]
   "GENERATE_MULT3_SI
    && true_regnum (operands[1]) == LO_REGNUM
@@ -1865,16 +1865,16 @@
 ;; Operand 7: new addition/subtraction
 (define_peephole2
   [(match_scratch:SI 0 "d")
-   (set (match_operand:SI 1 "register_operand" "")
-	(match_operand:SI 2 "register_operand" ""))
+   (set (match_operand:SI 1 "register_operand")
+	(match_operand:SI 2 "register_operand"))
    (match_dup 0)
    (parallel
        [(set (match_dup 1)
-	     (match_operand:SI 3 "macc_msac_operand" ""))
-	(clobber (match_operand:SI 4 "register_operand" ""))
+	     (match_operand:SI 3 "macc_msac_operand"))
+	(clobber (match_operand:SI 4 "register_operand"))
 	(clobber (scratch:SI))])
    (match_dup 0)
-   (set (match_operand:SI 5 "register_operand" "")
+   (set (match_operand:SI 5 "register_operand")
 	(unspec:SI [(match_dup 1) (match_dup 4)] UNSPEC_MFHILO))]
   "GENERATE_MULT3_SI && peep2_reg_dead_p (3, operands[1])"
   [(parallel [(set (match_dup 0)
@@ -1908,13 +1908,13 @@
 
 ;; Split the above insn if we failed to get LO allocated.
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (minus:SI (match_operand:SI 1 "register_operand" "")
-                  (mult:SI (match_operand:SI 2 "register_operand" "")
-                           (match_operand:SI 3 "register_operand" ""))))
-   (clobber (match_scratch:SI 4 ""))
-   (clobber (match_scratch:SI 5 ""))
-   (clobber (match_scratch:SI 6 ""))]
+  [(set (match_operand:SI 0 "register_operand")
+        (minus:SI (match_operand:SI 1 "register_operand")
+                  (mult:SI (match_operand:SI 2 "register_operand")
+                           (match_operand:SI 3 "register_operand"))))
+   (clobber (match_scratch:SI 4))
+   (clobber (match_scratch:SI 5))
+   (clobber (match_scratch:SI 6))]
   "reload_completed && !TARGET_DEBUG_D_MODE
    && GP_REG_P (true_regnum (operands[0]))
    && GP_REG_P (true_regnum (operands[1]))"
@@ -1927,13 +1927,13 @@
 
 ;; Splitter to copy result of MSUB to a general register
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (minus:SI (match_operand:SI 1 "register_operand" "")
-                  (mult:SI (match_operand:SI 2 "register_operand" "")
-                           (match_operand:SI 3 "register_operand" ""))))
-   (clobber (match_scratch:SI 4 ""))
-   (clobber (match_scratch:SI 5 ""))
-   (clobber (match_scratch:SI 6 ""))]
+  [(set (match_operand:SI 0 "register_operand")
+        (minus:SI (match_operand:SI 1 "register_operand")
+                  (mult:SI (match_operand:SI 2 "register_operand")
+                           (match_operand:SI 3 "register_operand"))))
+   (clobber (match_scratch:SI 4))
+   (clobber (match_scratch:SI 5))
+   (clobber (match_scratch:SI 6))]
   "reload_completed && !TARGET_DEBUG_D_MODE
    && GP_REG_P (true_regnum (operands[0]))
    && true_regnum (operands[1]) == LO_REGNUM"
@@ -1960,9 +1960,9 @@
    (set_attr "mode"     "SI")])
 
 (define_expand "muldi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(mult:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(mult:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "register_operand")))]
   "TARGET_64BIT"
 {
   if (GENERATE_MULT3_DI)
@@ -2011,10 +2011,10 @@
 
 (define_expand "mulsidi3"
   [(parallel
-      [(set (match_operand:DI 0 "register_operand" "")
+      [(set (match_operand:DI 0 "register_operand")
 	    (mult:DI
-	       (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
-	       (sign_extend:DI (match_operand:SI 2 "register_operand" ""))))
+	       (sign_extend:DI (match_operand:SI 1 "register_operand"))
+	       (sign_extend:DI (match_operand:SI 2 "register_operand"))))
        (clobber (scratch:DI))
        (clobber (scratch:DI))
        (clobber (scratch:DI))])]
@@ -2129,10 +2129,10 @@
 
 (define_expand "umulsidi3"
   [(parallel
-      [(set (match_operand:DI 0 "register_operand" "")
+      [(set (match_operand:DI 0 "register_operand")
 	    (mult:DI
-	       (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
-	       (zero_extend:DI (match_operand:SI 2 "register_operand" ""))))
+	       (zero_extend:DI (match_operand:SI 1 "register_operand"))
+	       (zero_extend:DI (match_operand:SI 2 "register_operand"))))
        (clobber (scratch:DI))
        (clobber (scratch:DI))
        (clobber (scratch:DI))])]
@@ -2236,11 +2236,11 @@
 
 ;; _highpart patterns
 (define_expand "umulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "register_operand")
 	(truncate:SI
 	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
-		   (zero_extend:DI (match_operand:SI 2 "register_operand" "")))
+	  (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"))
+		   (zero_extend:DI (match_operand:SI 2 "register_operand")))
 	  (const_int 32))))]
   "ISA_HAS_MULHI || !TARGET_FIX_R4000"
 {
@@ -2303,11 +2303,11 @@
    (set_attr "length" "4")])
 
 (define_expand "smulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "register_operand")
 	(truncate:SI
 	 (lshiftrt:DI
-	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
-		   (sign_extend:DI (match_operand:SI 2 "register_operand" "")))
+	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"))
+		   (sign_extend:DI (match_operand:SI 2 "register_operand")))
          (const_int 32))))]
   "ISA_HAS_MULHI || !TARGET_FIX_R4000"
 {
@@ -2546,9 +2546,9 @@
 ;;
 
 (define_expand "divdf3"
-  [(set (match_operand:DF 0 "register_operand" "")
-	(div:DF (match_operand:DF 1 "reg_or_const_float_1_operand" "")
-		(match_operand:DF 2 "register_operand" "")))]
+  [(set (match_operand:DF 0 "register_operand")
+	(div:DF (match_operand:DF 1 "reg_or_const_float_1_operand")
+		(match_operand:DF 2 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   if (const_float_1_operand (operands[1], DFmode))
@@ -2596,9 +2596,9 @@
 ;; errata, or if working around those errata and a slight loss of
 ;; precision is OK (i.e., flag_unsafe_math_optimizations is set).
 (define_expand "divsf3"
-  [(set (match_operand:SF 0 "register_operand" "")
-	(div:SF (match_operand:SF 1 "reg_or_const_float_1_operand" "")
-		(match_operand:SF 2 "register_operand" "")))]
+  [(set (match_operand:SF 0 "register_operand")
+	(div:SF (match_operand:SF 1 "reg_or_const_float_1_operand")
+		(match_operand:SF 2 "register_operand")))]
   "TARGET_HARD_FLOAT && (!TARGET_FIX_SB1 || flag_unsafe_math_optimizations)"
 {
   if (const_float_1_operand (operands[1], SFmode))
@@ -2988,8 +2988,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SI")])
 
 (define_expand "negdi2"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "=d")
-		   (neg:DI (match_operand:DI 1 "register_operand" "d")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (neg:DI (match_operand:DI 1 "register_operand")))
 	      (clobber (match_dup 2))])]
   "(TARGET_64BIT || !TARGET_DEBUG_G_MODE) && !TARGET_MIPS16"
 {
@@ -3074,9 +3074,9 @@ dsrl\t%3,%3,1\n\
 ;; want to use a different set of constraints when TARGET_MIPS16.
 
 (define_expand "andsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(and:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(and:SI (match_operand:SI 1 "uns_arith_operand")
+		(match_operand:SI 2 "uns_arith_operand")))]
   ""
 {
   if (TARGET_MIPS16)
@@ -3107,9 +3107,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SI")])
 
 (define_expand "anddi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(and:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "uns_arith_operand")))]
   "TARGET_64BIT"
 {
   if (TARGET_MIPS16)
@@ -3140,9 +3140,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"DI")])
 
 (define_expand "iorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ior:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ior:SI (match_operand:SI 1 "uns_arith_operand")
+		(match_operand:SI 2 "uns_arith_operand")))]
   ""
 {
   if (TARGET_MIPS16)
@@ -3173,9 +3173,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SI")])
 
 (define_expand "iordi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ior:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "uns_arith_operand")))]
   "TARGET_64BIT"
 {
   if (TARGET_MIPS16)
@@ -3206,9 +3206,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"DI")])
 
 (define_expand "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(xor:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(xor:SI (match_operand:SI 1 "uns_arith_operand")
+		(match_operand:SI 2 "uns_arith_operand")))]
   ""
   "")
 
@@ -3236,15 +3236,15 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
 
 (define_expand "xordi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(xor:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(xor:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "uns_arith_operand")))]
   "TARGET_64BIT"
 {
   if (TARGET_MIPS16)
@@ -3278,7 +3278,7 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
@@ -3482,8 +3482,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "DI")])
 
 (define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+        (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand")))]
   ""
 {
   if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
@@ -3516,8 +3516,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "SI")])
 
 (define_expand "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-        (zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (zero_extend:DI (match_operand:HI 1 "nonimmediate_operand")))]
   "TARGET_64BIT"
 {
   if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
@@ -3550,8 +3550,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "DI")])
 
 (define_expand "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:HI 0 "register_operand")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
 {
   if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
@@ -3585,8 +3585,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "HI")])
 
 (define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
 {
   if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
@@ -3619,8 +3619,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "SI")])
 
 (define_expand "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand")))]
   "TARGET_64BIT"
 {
   if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
@@ -3681,8 +3681,8 @@ dsrl\t%3,%3,1\n\
 ;; all non-mem patterns after reload.
 
 (define_expand "extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-        (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand")))]
   "TARGET_64BIT"
   "")
 
@@ -3693,8 +3693,8 @@ dsrl\t%3,%3,1\n\
   "#")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (sign_extend:DI (match_operand:HI 1 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (sign_extend:DI (match_operand:HI 1 "register_operand")))]
   "TARGET_64BIT && reload_completed"
   [(set (match_dup 0)
         (ashift:DI (match_dup 1) (const_int 48)))
@@ -3711,8 +3711,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"     "DI")])
 
 (define_expand "extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+        (sign_extend:SI (match_operand:HI 1 "nonimmediate_operand")))]
   ""
 {
   if (ISA_HAS_SEB_SEH)
@@ -3730,8 +3730,8 @@ dsrl\t%3,%3,1\n\
   "#")
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (sign_extend:SI (match_operand:HI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+        (sign_extend:SI (match_operand:HI 1 "register_operand")))]
   "reload_completed"
   [(set (match_dup 0)
         (ashift:SI (match_dup 1) (const_int 16)))
@@ -3756,8 +3756,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode" "SI")])
 
 (define_expand "extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-        (sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:HI 0 "register_operand")
+        (sign_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
   "")
 
@@ -3768,8 +3768,8 @@ dsrl\t%3,%3,1\n\
   "#")
 
 (define_split
-  [(set (match_operand:HI 0 "register_operand" "")
-        (sign_extend:HI (match_operand:QI 1 "register_operand" "")))]
+  [(set (match_operand:HI 0 "register_operand")
+        (sign_extend:HI (match_operand:QI 1 "register_operand")))]
   "reload_completed"
   [(set (match_dup 0)
         (ashift:SI (match_dup 1) (const_int 24)))
@@ -3788,8 +3788,8 @@ dsrl\t%3,%3,1\n\
 
 
 (define_expand "extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+        (sign_extend:SI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
 {
   if (ISA_HAS_SEB_SEH)
@@ -3807,8 +3807,8 @@ dsrl\t%3,%3,1\n\
   "#")
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (sign_extend:SI (match_operand:QI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+        (sign_extend:SI (match_operand:QI 1 "register_operand")))]
   "reload_completed"
   [(set (match_dup 0)
         (ashift:SI (match_dup 1) (const_int 24)))
@@ -3833,8 +3833,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode" "SI")])
 
 (define_expand "extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-        (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand")))]
   "TARGET_64BIT"
   "")
 
@@ -3845,8 +3845,8 @@ dsrl\t%3,%3,1\n\
   "#")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (sign_extend:DI (match_operand:QI 1 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (sign_extend:DI (match_operand:QI 1 "register_operand")))]
   "TARGET_64BIT && reload_completed"
   [(set (match_dup 0)
         (ashift:DI (match_dup 1) (const_int 56)))
@@ -3878,8 +3878,8 @@ dsrl\t%3,%3,1\n\
 ;;  ....................
 
 (define_expand "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(fix:SI (match_operand:DF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   if (!ISA_HAS_TRUNC_W)
@@ -3914,8 +3914,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "length"	"36")])
 
 (define_expand "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(fix:SI (match_operand:SF 1 "register_operand")))]
   "TARGET_HARD_FLOAT"
 {
   if (!ISA_HAS_TRUNC_W)
@@ -4011,8 +4011,8 @@ dsrl\t%3,%3,1\n\
 
 
 (define_expand "fixuns_truncdfsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(unsigned_fix:SI (match_operand:DF 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(unsigned_fix:SI (match_operand:DF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   rtx reg1 = gen_reg_rtx (DFmode);
@@ -4056,8 +4056,8 @@ dsrl\t%3,%3,1\n\
 
 
 (define_expand "fixuns_truncdfdi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(unsigned_fix:DI (match_operand:DF 1 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(unsigned_fix:DI (match_operand:DF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
 {
   rtx reg1 = gen_reg_rtx (DFmode);
@@ -4098,8 +4098,8 @@ dsrl\t%3,%3,1\n\
 
 
 (define_expand "fixuns_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(unsigned_fix:SI (match_operand:SF 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(unsigned_fix:SI (match_operand:SF 1 "register_operand")))]
   "TARGET_HARD_FLOAT"
 {
   rtx reg1 = gen_reg_rtx (SFmode);
@@ -4140,8 +4140,8 @@ dsrl\t%3,%3,1\n\
 
 
 (define_expand "fixuns_truncsfdi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(unsigned_fix:DI (match_operand:SF 1 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(unsigned_fix:DI (match_operand:SF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
 {
   rtx reg1 = gen_reg_rtx (SFmode);
@@ -4190,10 +4190,10 @@ dsrl\t%3,%3,1\n\
 ;; Bit field extract patterns which use lwl/lwr or ldl/ldr.
 
 (define_expand "extv"
-  [(set (match_operand 0 "register_operand" "")
-	(sign_extract (match_operand:QI 1 "memory_operand" "")
-		      (match_operand 2 "immediate_operand" "")
-		      (match_operand 3 "immediate_operand" "")))]
+  [(set (match_operand 0 "register_operand")
+	(sign_extract (match_operand:QI 1 "memory_operand")
+		      (match_operand 2 "immediate_operand")
+		      (match_operand 3 "immediate_operand")))]
   "!TARGET_MIPS16"
 {
   if (mips_expand_unaligned_load (operands[0], operands[1],
@@ -4205,10 +4205,10 @@ dsrl\t%3,%3,1\n\
 })
 
 (define_expand "extzv"
-  [(set (match_operand 0 "register_operand" "")
-	(zero_extract (match_operand:QI 1 "memory_operand" "")
-		      (match_operand 2 "immediate_operand" "")
-		      (match_operand 3 "immediate_operand" "")))]
+  [(set (match_operand 0 "register_operand")
+	(zero_extract (match_operand:QI 1 "memory_operand")
+		      (match_operand 2 "immediate_operand")
+		      (match_operand 3 "immediate_operand")))]
   "!TARGET_MIPS16"
 {
   if (mips_expand_unaligned_load (operands[0], operands[1],
@@ -4220,10 +4220,10 @@ dsrl\t%3,%3,1\n\
 })
 
 (define_expand "insv"
-  [(set (zero_extract (match_operand:QI 0 "memory_operand" "")
-		      (match_operand 1 "immediate_operand" "")
-		      (match_operand 2 "immediate_operand" ""))
-	(match_operand 3 "reg_or_0_operand" ""))]
+  [(set (zero_extract (match_operand:QI 0 "memory_operand")
+		      (match_operand 1 "immediate_operand")
+		      (match_operand 2 "immediate_operand"))
+	(match_operand 3 "reg_or_0_operand"))]
   "!TARGET_MIPS16"
 {
   if (mips_expand_unaligned_store (operands[0], operands[3],
@@ -4582,8 +4582,8 @@ dsrl\t%3,%3,1\n\
 ;; the compiler, have memoized the insn number already.
 
 (define_expand "movdi"
-  [(set (match_operand:DI 0 "" "")
-	(match_operand:DI 1 "" ""))]
+  [(set (match_operand:DI 0 "")
+	(match_operand:DI 1 ""))]
   ""
 {
   if (mips_legitimize_move (DImode, operands[0], operands[1]))
@@ -4648,10 +4648,10 @@ dsrl\t%3,%3,1\n\
 		[(const_int 4)
 		 (const_int 4)
 		 (const_int 4)
-		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1")
 			       (const_int 8)
 			       (const_int 12))
 		 (const_string "*")
@@ -4664,9 +4664,9 @@ dsrl\t%3,%3,1\n\
 ;; load are 2 2 byte instructions.
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand")
 	(mem:DI (plus:DI (match_dup 0)
-			 (match_operand:DI 1 "const_int_operand" ""))))]
+			 (match_operand:DI 1 "const_int_operand"))))]
   "TARGET_64BIT && TARGET_MIPS16 && reload_completed
    && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
@@ -4709,8 +4709,8 @@ dsrl\t%3,%3,1\n\
 ;; the compiler, have memoized the insn number already.
 
 (define_expand "movsi"
-  [(set (match_operand:SI 0 "" "")
-	(match_operand:SI 1 "" ""))]
+  [(set (match_operand:SI 0 "")
+	(match_operand:SI 1 ""))]
   ""
 {
   if (mips_legitimize_move (SImode, operands[0], operands[1]))
@@ -4754,10 +4754,10 @@ dsrl\t%3,%3,1\n\
 		[(const_int 4)
 		 (const_int 4)
 		 (const_int 4)
-		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1")
 			       (const_int 8)
 			       (const_int 12))
 		 (const_string "*")
@@ -4769,9 +4769,9 @@ dsrl\t%3,%3,1\n\
 ;; load are 2 2 byte instructions.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "register_operand")
 	(mem:SI (plus:SI (match_dup 0)
-			 (match_operand:SI 1 "const_int_operand" ""))))]
+			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -4811,8 +4811,8 @@ dsrl\t%3,%3,1\n\
 ;; instructions.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "const_int_operand" ""))]
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "const_int_operand"))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -4832,8 +4832,8 @@ dsrl\t%3,%3,1\n\
 ;; load and a neg.  That's what mips_output_move will generate anyhow.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "const_int_operand" ""))]
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "const_int_operand"))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -4993,8 +4993,8 @@ dsrl\t%3,%3,1\n\
 ;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movhi"
-  [(set (match_operand:HI 0 "" "")
-	(match_operand:HI 1 "" ""))]
+  [(set (match_operand:HI 0 "")
+	(match_operand:HI 1 ""))]
   ""
 {
   if (mips_legitimize_move (HImode, operands[0], operands[1]))
@@ -5040,10 +5040,10 @@ dsrl\t%3,%3,1\n\
 		[(const_int 4)
 		 (const_int 4)
 		 (const_int 4)
-		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))
-		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1" "")
+		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1")
 			       (const_int 8)
 			       (const_int 12))
 		 (const_string "*")
@@ -5055,9 +5055,9 @@ dsrl\t%3,%3,1\n\
 ;; load are 2 2 byte instructions.
 
 (define_split
-  [(set (match_operand:HI 0 "register_operand" "")
+  [(set (match_operand:HI 0 "register_operand")
 	(mem:HI (plus:SI (match_dup 0)
-			 (match_operand:SI 1 "const_int_operand" ""))))]
+			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -5100,8 +5100,8 @@ dsrl\t%3,%3,1\n\
 ;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movqi"
-  [(set (match_operand:QI 0 "" "")
-	(match_operand:QI 1 "" ""))]
+  [(set (match_operand:QI 0 "")
+	(match_operand:QI 1 ""))]
   ""
 {
   if (mips_legitimize_move (QImode, operands[0], operands[1]))
@@ -5150,9 +5150,9 @@ dsrl\t%3,%3,1\n\
 ;; load are 2 2 byte instructions.
 
 (define_split
-  [(set (match_operand:QI 0 "register_operand" "")
+  [(set (match_operand:QI 0 "register_operand")
 	(mem:QI (plus:SI (match_dup 0)
-			 (match_operand:SI 1 "const_int_operand" ""))))]
+			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
@@ -5178,8 +5178,8 @@ dsrl\t%3,%3,1\n\
 ;; 32-bit floating point moves
 
 (define_expand "movsf"
-  [(set (match_operand:SF 0 "" "")
-	(match_operand:SF 1 "" ""))]
+  [(set (match_operand:SF 0 "")
+	(match_operand:SF 1 ""))]
   ""
 {
   if (mips_legitimize_move (SFmode, operands[0], operands[1]))
@@ -5223,8 +5223,8 @@ dsrl\t%3,%3,1\n\
 ;; 64-bit floating point moves
 
 (define_expand "movdf"
-  [(set (match_operand:DF 0 "" "")
-	(match_operand:DF 1 "" ""))]
+  [(set (match_operand:DF 0 "")
+	(match_operand:DF 1 ""))]
   ""
 {
   if (mips_legitimize_move (DFmode, operands[0], operands[1]))
@@ -5276,8 +5276,8 @@ dsrl\t%3,%3,1\n\
    (set_attr "length"	"8,8,8,*,*")])
 
 (define_split
-  [(set (match_operand:DI 0 "nonimmediate_operand" "")
-	(match_operand:DI 1 "move_operand" ""))]
+  [(set (match_operand:DI 0 "nonimmediate_operand")
+	(match_operand:DI 1 "move_operand"))]
   "reload_completed && !TARGET_64BIT
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
@@ -5287,8 +5287,8 @@ dsrl\t%3,%3,1\n\
 })
 
 (define_split
-  [(set (match_operand:DF 0 "nonimmediate_operand" "")
-	(match_operand:DF 1 "move_operand" ""))]
+  [(set (match_operand:DF 0 "nonimmediate_operand")
+	(match_operand:DF 1 "move_operand"))]
   "reload_completed && !TARGET_64BIT
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
@@ -5418,10 +5418,10 @@ dsrl\t%3,%3,1\n\
 ;; Argument 3 is the alignment
 
 (define_expand "movstrsi"
-  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
-		   (match_operand:BLK 1 "general_operand" ""))
-	      (use (match_operand:SI 2 "" ""))
-	      (use (match_operand:SI 3 "const_int_operand" ""))])]
+  [(parallel [(set (match_operand:BLK 0 "general_operand")
+		   (match_operand:BLK 1 "general_operand"))
+	      (use (match_operand:SI 2 ""))
+	      (use (match_operand:SI 3 "const_int_operand"))])]
   "!TARGET_MIPS16 && !TARGET_MEMCPY"
 {
   if (mips_expand_block_move (operands[0], operands[1], operands[2]))
@@ -5441,9 +5441,9 @@ dsrl\t%3,%3,1\n\
 ;; want to use a different set of constraints when TARGET_MIPS16.
 
 (define_expand "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ashift:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "arith_operand" "dI")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashift:SI (match_operand:SI 1 "register_operand")
+		   (match_operand:SI 2 "arith_operand")))]
   ""
 {
   /* On the mips16, a shift of more than 8 is a four byte instruction,
@@ -5517,16 +5517,16 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ashift:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashift:SI (match_operand:SI 1 "register_operand")
+		   (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[2]) == CONST_INT
    && INTVAL (operands[2]) > 8
@@ -5536,9 +5536,9 @@ dsrl\t%3,%3,1\n\
   { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
 
 (define_expand "ashldi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (ashift:DI (match_operand:DI 1 "register_operand" "")
-			      (match_operand:SI 2 "arith_operand" "")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (ashift:DI (match_operand:DI 1 "register_operand")
+			      (match_operand:SI 2 "arith_operand")))
 	      (clobber (match_dup  3))])]
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
 {
@@ -5620,10 +5620,10 @@ sll\t%L0,%L1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (match_operand:DI 1 "register_operand" "")
-		   (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -5637,10 +5637,10 @@ sll\t%L0,%L1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (match_operand:DI 1 "register_operand" "")
-		   (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -5675,10 +5675,10 @@ sll\t%L0,%L1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (match_operand:DI 1 "register_operand" "")
-		   (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -5709,10 +5709,10 @@ sll\t%L0,%L1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (match_operand:DI 1 "register_operand" "")
-		   (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -5774,7 +5774,7 @@ sll\t%L0,%L1,%2\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -5782,9 +5782,9 @@ sll\t%L0,%L1,%2\n\
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (match_operand:DI 1 "register_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && !TARGET_DEBUG_D_MODE
    && reload_completed
    && GET_CODE (operands[2]) == CONST_INT
@@ -5795,9 +5795,9 @@ sll\t%L0,%L1,%2\n\
   { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
 
 (define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
 {
   /* On the mips16, a shift of more than 8 is a four byte instruction,
@@ -5852,7 +5852,7 @@ sll\t%L0,%L1,%2\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -5860,9 +5860,9 @@ sll\t%L0,%L1,%2\n\
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[2]) == CONST_INT
    && INTVAL (operands[2]) > 8
@@ -5872,9 +5872,9 @@ sll\t%L0,%L1,%2\n\
   { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
 
 (define_expand "ashrdi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-				(match_operand:SI 2 "arith_operand" "")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (ashiftrt:DI (match_operand:DI 1 "register_operand")
+				(match_operand:SI 2 "arith_operand")))
 	      (clobber (match_dup  3))])]
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
 {
@@ -5951,10 +5951,10 @@ sra\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -5968,10 +5968,10 @@ sra\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6006,10 +6006,10 @@ sra\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6040,10 +6040,10 @@ sra\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6102,16 +6102,16 @@ sra\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && !TARGET_DEBUG_D_MODE
    && reload_completed
    && GET_CODE (operands[2]) == CONST_INT
@@ -6122,9 +6122,9 @@ sra\t%M0,%M1,%2\n\
   { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
 
 (define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
 {
   /* On the mips16, a shift of more than 8 is a four byte instruction,
@@ -6179,7 +6179,7 @@ sra\t%M0,%M1,%2\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -6187,9 +6187,9 @@ sra\t%M0,%M1,%2\n\
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[2]) == CONST_INT
    && INTVAL (operands[2]) > 8
@@ -6222,9 +6222,9 @@ sra\t%M0,%M1,%2\n\
    (set_attr "length"	"16")])
 
 (define_expand "lshrdi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-				(match_operand:SI 2 "arith_operand" "")))
+  [(parallel [(set (match_operand:DI 0 "register_operand")
+		   (lshiftrt:DI (match_operand:DI 1 "register_operand")
+				(match_operand:SI 2 "arith_operand")))
 	      (clobber (match_dup  3))])]
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
 {
@@ -6302,10 +6302,10 @@ srl\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6319,10 +6319,10 @@ srl\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6357,10 +6357,10 @@ srl\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6391,10 +6391,10 @@ srl\t%M0,%M1,%2\n\
 
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand:DI 0 "register_operand")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "small_int")))
+   (clobber (match_operand:SI 3 "register_operand"))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
@@ -6453,7 +6453,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -6503,9 +6503,9 @@ srl\t%M0,%M1,%2\n\
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand")
+		     (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[2]) == CONST_INT
    && INTVAL (operands[2]) > 8
@@ -6539,8 +6539,8 @@ srl\t%M0,%M1,%2\n\
 
 (define_expand "cmpsi"
   [(set (cc0)
-	(compare:CC (match_operand:SI 0 "register_operand" "")
-		    (match_operand:SI 1 "arith_operand" "")))]
+	(compare:CC (match_operand:SI 0 "register_operand")
+		    (match_operand:SI 1 "arith_operand")))]
   ""
 {
   branch_cmp[0] = operands[0];
@@ -6551,8 +6551,8 @@ srl\t%M0,%M1,%2\n\
 
 (define_expand "cmpdi"
   [(set (cc0)
-	(compare:CC (match_operand:DI 0 "register_operand" "")
-		    (match_operand:DI 1 "arith_operand" "")))]
+	(compare:CC (match_operand:DI 0 "register_operand")
+		    (match_operand:DI 1 "arith_operand")))]
   "TARGET_64BIT"
 {
   branch_cmp[0] = operands[0];
@@ -6563,8 +6563,8 @@ srl\t%M0,%M1,%2\n\
 
 (define_expand "cmpdf"
   [(set (cc0)
-	(compare:CC (match_operand:DF 0 "register_operand" "")
-		    (match_operand:DF 1 "register_operand" "")))]
+	(compare:CC (match_operand:DF 0 "register_operand")
+		    (match_operand:DF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   branch_cmp[0] = operands[0];
@@ -6575,8 +6575,8 @@ srl\t%M0,%M1,%2\n\
 
 (define_expand "cmpsf"
   [(set (cc0)
-	(compare:CC (match_operand:SF 0 "register_operand" "")
-		    (match_operand:SF 1 "register_operand" "")))]
+	(compare:CC (match_operand:SF 0 "register_operand")
+		    (match_operand:SF 1 "register_operand")))]
   "TARGET_HARD_FLOAT"
 {
   branch_cmp[0] = operands[0];
@@ -6860,7 +6860,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (unordered:CC (cc0)
 				    (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6872,7 +6872,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ordered:CC (cc0)
 				  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6884,7 +6884,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (unlt:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6896,7 +6896,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (unge:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6908,7 +6908,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (uneq:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6920,7 +6920,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ltgt:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6932,7 +6932,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (unle:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6944,7 +6944,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ungt:CC (cc0)
 			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6956,7 +6956,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (eq:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6968,7 +6968,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ne:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6980,7 +6980,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (gt:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -6992,7 +6992,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ge:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7004,7 +7004,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (lt:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7016,7 +7016,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (le:CC (cc0)
 			     (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7028,7 +7028,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (gtu:CC (cc0)
 			      (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7040,7 +7040,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (geu:CC (cc0)
 			      (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7052,7 +7052,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (ltu:CC (cc0)
 			      (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7064,7 +7064,7 @@ srl\t%M0,%M1,%2\n\
   [(set (pc)
 	(if_then_else (leu:CC (cc0)
 			      (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+		      (label_ref (match_operand 0 ""))
 		      (pc)))]
   ""
 {
@@ -7080,7 +7080,7 @@ srl\t%M0,%M1,%2\n\
 ;;  ....................
 
 (define_expand "seq"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(eq:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
@@ -7154,9 +7154,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(eq:SI (match_operand:SI 1 "register_operand" "")
-	       (match_operand:SI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(eq:SI (match_operand:SI 1 "register_operand")
+	       (match_operand:SI 2 "uns_arith_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
@@ -7180,9 +7180,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(eq:DI (match_operand:DI 1 "register_operand" "")
-	       (match_operand:DI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(eq:DI (match_operand:DI 1 "register_operand")
+	       (match_operand:DI 2 "uns_arith_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
     && !TARGET_MIPS16
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
@@ -7197,7 +7197,7 @@ srl\t%M0,%M1,%2\n\
 ;; On the mips16 the default code is better than using sltu.
 
 (define_expand "sne"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(ne:SI (match_dup 1)
 	       (match_dup 2)))]
   "!TARGET_MIPS16"
@@ -7252,9 +7252,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ne:SI (match_operand:SI 1 "register_operand" "")
-	       (match_operand:SI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ne:SI (match_operand:SI 1 "register_operand")
+	       (match_operand:SI 2 "uns_arith_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
@@ -7278,9 +7278,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ne:DI (match_operand:DI 1 "register_operand" "")
-	       (match_operand:DI 2 "uns_arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ne:DI (match_operand:DI 1 "register_operand")
+	       (match_operand:DI 2 "uns_arith_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
     && !TARGET_MIPS16
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
@@ -7293,7 +7293,7 @@ srl\t%M0,%M1,%2\n\
   "")
 
 (define_expand "sgt"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(gt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
@@ -7354,7 +7354,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")])
 
 (define_expand "sge"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(ge:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
@@ -7386,9 +7386,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ge:SI (match_operand:SI 1 "register_operand" "")
-	       (match_operand:SI 2 "arith_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ge:SI (match_operand:SI 1 "register_operand")
+	       (match_operand:SI 2 "arith_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
   [(set (match_dup 0)
 	(lt:SI (match_dup 1)
@@ -7409,9 +7409,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ge:DI (match_operand:DI 1 "register_operand" "")
-	       (match_operand:DI 2 "arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(ge:DI (match_operand:DI 1 "register_operand")
+	       (match_operand:DI 2 "arith_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
    && !TARGET_MIPS16"
   [(set (match_dup 0)
@@ -7423,7 +7423,7 @@ srl\t%M0,%M1,%2\n\
   "")
 
 (define_expand "slt"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(lt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
@@ -7463,7 +7463,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -7486,12 +7486,12 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))])])
 
 (define_expand "sle"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(le:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
@@ -7538,7 +7538,7 @@ srl\t%M0,%M1,%2\n\
 }
   [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
-   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
+   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -7565,7 +7565,7 @@ srl\t%M0,%M1,%2\n\
 }
   [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
-   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
+   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -7580,9 +7580,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(le:SI (match_operand:SI 1 "register_operand" "")
-	       (match_operand:SI 2 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(le:SI (match_operand:SI 1 "register_operand")
+	       (match_operand:SI 2 "register_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
   [(set (match_dup 0)
 	(lt:SI (match_dup 2)
@@ -7603,9 +7603,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(le:DI (match_operand:DI 1 "register_operand" "")
-	       (match_operand:DI 2 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(le:DI (match_operand:DI 1 "register_operand")
+	       (match_operand:DI 2 "register_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
    && !TARGET_MIPS16"
   [(set (match_dup 0)
@@ -7617,7 +7617,7 @@ srl\t%M0,%M1,%2\n\
   "")
 
 (define_expand "sgtu"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(gtu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
@@ -7678,7 +7678,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")])
 
 (define_expand "sgeu"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
         (geu:SI (match_dup 1)
                 (match_dup 2)))]
   ""
@@ -7710,9 +7710,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(geu:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "arith_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(geu:SI (match_operand:SI 1 "register_operand")
+		(match_operand:SI 2 "arith_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
   [(set (match_dup 0)
 	(ltu:SI (match_dup 1)
@@ -7733,9 +7733,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(geu:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "arith_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(geu:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "arith_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
    && !TARGET_MIPS16"
   [(set (match_dup 0)
@@ -7747,7 +7747,7 @@ srl\t%M0,%M1,%2\n\
   "")
 
 (define_expand "sltu"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(ltu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
@@ -7787,7 +7787,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))])])
 
@@ -7810,12 +7810,12 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1" "")
+		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))])])
 
 (define_expand "sleu"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand")
 	(leu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
@@ -7862,7 +7862,7 @@ srl\t%M0,%M1,%2\n\
 }
   [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
-   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
+   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -7889,7 +7889,7 @@ srl\t%M0,%M1,%2\n\
 }
   [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
-   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
+   (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])
 
@@ -7904,9 +7904,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(leu:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(leu:SI (match_operand:SI 1 "register_operand")
+		(match_operand:SI 2 "register_operand")))]
   "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
   [(set (match_dup 0)
 	(ltu:SI (match_dup 2)
@@ -7927,9 +7927,9 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(leu:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(leu:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "register_operand")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
    && !TARGET_MIPS16"
   [(set (match_dup 0)
@@ -8162,7 +8162,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_expand "indirect_jump"
-  [(set (pc) (match_operand 0 "register_operand" "d"))]
+  [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
   rtx dest;
@@ -8195,8 +8195,8 @@ srl\t%M0,%M1,%2\n\
 
 (define_expand "tablejump"
   [(set (pc)
-	(match_operand 0 "register_operand" "d"))
-   (use (label_ref (match_operand 1 "" "")))]
+	(match_operand 0 "register_operand"))
+   (use (label_ref (match_operand 1 "")))]
   ""
 {
   if (TARGET_MIPS16)
@@ -8243,9 +8243,8 @@ srl\t%M0,%M1,%2\n\
    (set_attr "mode"	"none")])
 
 (define_expand "tablejump_mips161"
-  [(set (pc) (plus:SI (sign_extend:SI
-		       (match_operand:HI 0 "register_operand" "d"))
-		      (label_ref:SI (match_operand 1 "" ""))))]
+  [(set (pc) (plus:SI (sign_extend:SI (match_operand:HI 0 "register_operand"))
+		      (label_ref:SI (match_operand 1 ""))))]
   "TARGET_MIPS16 && !(Pmode == DImode)"
 {
   rtx t1, t2, t3;
@@ -8261,9 +8260,8 @@ srl\t%M0,%M1,%2\n\
 })
 
 (define_expand "tablejump_mips162"
-  [(set (pc) (plus:DI (sign_extend:DI
-		       (match_operand:HI 0 "register_operand" "d"))
-		      (label_ref:DI (match_operand 1 "" ""))))]
+  [(set (pc) (plus:DI (sign_extend:DI (match_operand:HI 0 "register_operand"))
+		      (label_ref:DI (match_operand 1 ""))))]
   "TARGET_MIPS16 && Pmode == DImode"
 {
   rtx t1, t2, t3;
@@ -8284,7 +8282,7 @@ srl\t%M0,%M1,%2\n\
 ;; it takes 3 or 4 insns to do so.
 
 (define_expand "builtin_setjmp_setup"
-  [(use (match_operand 0 "register_operand" ""))]
+  [(use (match_operand 0 "register_operand"))]
   "TARGET_ABICALLS"
 {
   rtx addr;
@@ -8299,7 +8297,7 @@ srl\t%M0,%M1,%2\n\
 ;; $25 for compatibility (we lose nothing by doing so).
 
 (define_expand "builtin_longjmp"
-  [(use (match_operand 0 "register_operand" "r"))]
+  [(use (match_operand 0 "register_operand"))]
   "TARGET_ABICALLS"
 {
   /* The elements of the buffer are, in order:  */
@@ -8393,7 +8391,7 @@ srl\t%M0,%M1,%2\n\
 
 ;; This is used in compiling the unwind routines.
 (define_expand "eh_return"
-  [(use (match_operand 0 "general_operand" ""))]
+  [(use (match_operand 0 "general_operand"))]
   ""
 {
   enum machine_mode gpr_mode = TARGET_64BIT ? DImode : SImode;
@@ -8424,8 +8422,8 @@ srl\t%M0,%M1,%2\n\
   "#")
 
 (define_split
-  [(unspec [(match_operand 0 "register_operand" "")] UNSPEC_EH_RETURN)
-   (clobber (match_scratch 1 ""))]
+  [(unspec [(match_operand 0 "register_operand")] UNSPEC_EH_RETURN)
+   (clobber (match_scratch 1))]
   "reload_completed && !TARGET_DEBUG_D_MODE"
   [(const_int 0)]
 {
@@ -8501,10 +8499,10 @@ srl\t%M0,%M1,%2\n\
 ;; epilogue -- we might as well use it for !TARGET_ABICALLS as well.
 
 (define_expand "sibcall"
-  [(parallel [(call (match_operand 0 "" "")
-		    (match_operand 1 "" ""))
-	      (use (match_operand 2 "" ""))	;; next_arg_reg
-	      (use (match_operand 3 "" ""))])]	;; struct_value_size_rtx
+  [(parallel [(call (match_operand 0 "")
+		    (match_operand 1 ""))
+	      (use (match_operand 2 ""))	;; next_arg_reg
+	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
   "TARGET_SIBCALLS"
 {
   mips_expand_call (0, XEXP (operands[0], 0), operands[1], operands[2], true);
@@ -8521,10 +8519,10 @@ srl\t%M0,%M1,%2\n\
   [(set_attr "type" "call")])
 
 (define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "" "")
-			 (match_operand 2 "" "")))
-	      (use (match_operand 3 "" ""))])]		;; next_arg_reg
+  [(parallel [(set (match_operand 0 "")
+		   (call (match_operand 1 "")
+			 (match_operand 2 "")))
+	      (use (match_operand 3 ""))])]		;; next_arg_reg
   "TARGET_SIBCALLS"
 {
   mips_expand_call (operands[0], XEXP (operands[1], 0),
@@ -8556,10 +8554,10 @@ srl\t%M0,%M1,%2\n\
   [(set_attr "type" "call")])
 
 (define_expand "call"
-  [(parallel [(call (match_operand 0 "" "")
-		    (match_operand 1 "" ""))
-	      (use (match_operand 2 "" ""))	;; next_arg_reg
-	      (use (match_operand 3 "" ""))])]	;; struct_value_size_rtx
+  [(parallel [(call (match_operand 0 "")
+		    (match_operand 1 ""))
+	      (use (match_operand 2 ""))	;; next_arg_reg
+	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
   ""
 {
   mips_expand_call (0, XEXP (operands[0], 0), operands[1], operands[2], false);
@@ -8630,10 +8628,10 @@ srl\t%M0,%M1,%2\n\
   [(set_attr "type" "call")])
 
 (define_expand "call_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "" "")
-			 (match_operand 2 "" "")))
-	      (use (match_operand 3 "" ""))])]		;; next_arg_reg
+  [(parallel [(set (match_operand 0 "")
+		   (call (match_operand 1 "")
+			 (match_operand 2 "")))
+	      (use (match_operand 3 ""))])]		;; next_arg_reg
   ""
 {
   mips_expand_call (operands[0], XEXP (operands[1], 0),
@@ -8710,10 +8708,10 @@ srl\t%M0,%M1,%2\n\
 ;; Call subroutine returning any type.
 
 (define_expand "untyped_call"
-  [(parallel [(call (match_operand 0 "" "")
+  [(parallel [(call (match_operand 0 "")
 		    (const_int 0))
-	      (match_operand 1 "" "")
-	      (match_operand 2 "" "")])]
+	      (match_operand 1 "")
+	      (match_operand 2 "")])]
   ""
 {
   int i;
@@ -8740,9 +8738,9 @@ srl\t%M0,%M1,%2\n\
 
 
 (define_expand "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "")
-	     (match_operand 1 "const_int_operand" "")
-	     (match_operand 2 "const_int_operand" ""))]
+  [(prefetch (match_operand 0 "address_operand")
+	     (match_operand 1 "const_int_operand")
+	     (match_operand 2 "const_int_operand"))]
   "ISA_HAS_PREFETCH"
 {
   if (symbolic_operand (operands[0], GET_MODE (operands[0])))
@@ -9015,11 +9013,11 @@ srl\t%M0,%M1,%2\n\
 ;; These are the main define_expand's used to make conditional moves.
 
 (define_expand "movsicc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:SI 0 "register_operand" "")
+  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
+   (set (match_operand:SI 0 "register_operand")
 	(if_then_else:SI (match_dup 5)
-			 (match_operand:SI 2 "reg_or_0_operand" "")
-			 (match_operand:SI 3 "reg_or_0_operand" "")))]
+			 (match_operand:SI 2 "reg_or_0_operand")
+			 (match_operand:SI 3 "reg_or_0_operand")))]
   "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
 {
   gen_conditional_move (operands);
@@ -9027,11 +9025,11 @@ srl\t%M0,%M1,%2\n\
 })
 
 (define_expand "movdicc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:DI 0 "register_operand" "")
+  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
+   (set (match_operand:DI 0 "register_operand")
 	(if_then_else:DI (match_dup 5)
-			 (match_operand:DI 2 "reg_or_0_operand" "")
-			 (match_operand:DI 3 "reg_or_0_operand" "")))]
+			 (match_operand:DI 2 "reg_or_0_operand")
+			 (match_operand:DI 3 "reg_or_0_operand")))]
   "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
 {
   gen_conditional_move (operands);
@@ -9039,11 +9037,11 @@ srl\t%M0,%M1,%2\n\
 })
 
 (define_expand "movsfcc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:SF 0 "register_operand" "")
+  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
+   (set (match_operand:SF 0 "register_operand")
 	(if_then_else:SF (match_dup 5)
-			 (match_operand:SF 2 "register_operand" "")
-			 (match_operand:SF 3 "register_operand" "")))]
+			 (match_operand:SF 2 "register_operand")
+			 (match_operand:SF 3 "register_operand")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
 {
   gen_conditional_move (operands);
@@ -9051,11 +9049,11 @@ srl\t%M0,%M1,%2\n\
 })
 
 (define_expand "movdfcc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:DF 0 "register_operand" "")
+  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
+   (set (match_operand:DF 0 "register_operand")
 	(if_then_else:DF (match_dup 5)
-			 (match_operand:DF 2 "register_operand" "")
-			 (match_operand:DF 3 "register_operand" "")))]
+			 (match_operand:DF 2 "register_operand")
+			 (match_operand:DF 3 "register_operand")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   gen_conditional_move (operands);
@@ -9221,7 +9219,7 @@ srl\t%M0,%M1,%2\n\
    (set_attr "length"	"8")])
 
 (define_split
-  [(match_operand 0 "small_data_pattern" "")]
+  [(match_operand 0 "small_data_pattern")]
   "reload_completed"
   [(match_dup 0)]
   { operands[0] = mips_rewrite_small_data (operands[0]); })
