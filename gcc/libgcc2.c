@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tconfig.h"
 #include "machmode.h"
 #ifndef L_trampoline
-#include "gstddef.h"
+#include <stddef.h>
 #endif
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
