@@ -1,5 +1,15 @@
 2002-10-07  Richard Henderson  <rth@redhat.com>
 
+	* config/i960/i960.md (*): Use TFmode, not XFmode.
+	* config/i960/i960.c (*): Likewise.
+	(i960_arg_size_and_align): Remove XFmode alignment hack.
+	(i960_round_align): Merge code from ROUND_TYPE_ALIGN.
+	* config/i960/i960.h (LONG_DOUBLE_TYPE_SIZE): Use 128, not 96.
+	(MAX_LONG_DOUBLE_TYPE_SIZE): Likewise.
+	(DATA_ALIGNMENT, ROUND_TYPE_SIZE): Remove.
+
+2002-10-07  Richard Henderson  <rth@redhat.com>
+
 	* config/fp-bit.c (EXTENDED_FLOAT_STUBS): Flush out all XF/TFmode
 	entry points; use void return value and argument list.
 

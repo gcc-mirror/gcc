@@ -362,17 +362,16 @@ extern int target_flags;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
-/* Width in bits of a long double.  Define to 96, and let
-   ROUND_TYPE_ALIGN adjust the alignment for speed.  */
-#define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 96)
-#define MAX_LONG_DOUBLE_TYPE_SIZE 96
+/* Width in bits of a long double.  */
+#define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 128)
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
 
 /* Define this to set long double type size to use in libgcc2.c, which can
    not depend on target_flags.  */
 #if defined(__LONG_DOUBLE_64__)
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
 #endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
@@ -417,33 +416,14 @@ extern int target_flags;
    ? i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP)))	    \
    : (ALIGN))
 
-/* Make XFmode floating point quantities be 128 bit aligned.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)					\
-  (TREE_CODE (TYPE) == ARRAY_TYPE					\
-   && TYPE_MODE (TREE_TYPE (TYPE)) == XFmode				\
-   && (ALIGN) < 128 ? 128 : (ALIGN))
-
 /* Macros to determine size of aggregates (structures and unions
    in C).  Normally, these may be defined to simply return the maximum
    alignment and simple rounded-up size, but on some machines (like
    the i960), the total size of a structure is based on a non-trivial
    rounding method.  */
 
-#define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED)		\
-  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	   \
-   ? 128  /* Put 80 bit floating point elements on 128 bit boundaries.  */ \
-   : ((!TARGET_OLD_ALIGN && !TYPE_PACKED (TYPE)				   \
-       && TREE_CODE (TYPE) == RECORD_TYPE)				   \
-      ? i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE_SIZE (TYPE)) \
-      : MAX ((COMPUTED), (SPECIFIED))))
-
-#define ROUND_TYPE_SIZE(TYPE, COMPUTED, SPECIFIED)		\
-  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	\
-   ? bitsize_int (128) : round_up (COMPUTED, SPECIFIED))
-#define ROUND_TYPE_SIZE_UNIT(TYPE, COMPUTED, SPECIFIED)		\
-  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	\
-   ? size_int (16) : round_up (COMPUTED, SPECIFIED))
-
+#define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED) \
+  i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE)
 
 /* Standard register usage.  */
 
@@ -526,7 +506,7 @@ extern int target_flags;
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On 80960, the cpu registers can hold any mode but the float registers
-   can only hold SFmode, DFmode, or XFmode.  */
+   can only hold SFmode, DFmode, or TFmode.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers

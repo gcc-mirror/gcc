@@ -152,8 +152,8 @@ i960_initialize ()
       i960_last_maxbitalignment = 8;
     }
 
-  /* Tell the compiler which flavor of XFmode we're using.  */
-  real_format_for_mode[XFmode - QFmode] = &ieee_extended_intel_96_format;
+  /* Tell the compiler which flavor of TFmode we're using.  */
+  real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
 }
 
 /* Return true if OP can be used as the source of an fp move insn.  */
@@ -803,13 +803,13 @@ i960_output_ldconst (dst, src)
       output_asm_insn ("ldconst	%1,%0", operands);
       return "";
     }
-  else if (mode == XFmode)
+  else if (mode == TFmode)
     {
       REAL_VALUE_TYPE d;
       long value_long[3];
       int i;
 
-      if (fp_literal_zero (src, XFmode))
+      if (fp_literal_zero (src, TFmode))
 	return "movt	0,%0";
 
       REAL_VALUE_FROM_CONST_DOUBLE (d, src);
@@ -2208,7 +2208,7 @@ hard_regno_mode_ok (regno, mode)
 	case DImode: case DFmode:
 	  return (regno & 1) == 0;
 
-	case TImode: case XFmode:
+	case TImode: case TFmode:
 	  return (regno & 3) == 0;
 
 	default:
@@ -2219,7 +2219,7 @@ hard_regno_mode_ok (regno, mode)
     {
       switch (mode)
 	{
-	case SFmode: case DFmode: case XFmode:
+	case SFmode: case DFmode: case TFmode:
 	case SCmode: case DCmode:
 	  return 1;
 
@@ -2397,14 +2397,7 @@ i960_arg_size_and_align (mode, type, size_out, align_out)
     size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (type == 0)
-    {
-      /* ??? This is a hack to properly correct the alignment of XFmode
-	 values without affecting anything else.  */
-      if (size == 3)
-	align = 4;
-      else
-	align = size;
-    }
+    align = size;
   else if (TYPE_ALIGN (type) >= BITS_PER_WORD)
     align = TYPE_ALIGN (type) / BITS_PER_WORD;
   else
@@ -2503,11 +2496,18 @@ i960_object_bytes_bitalign (n)
                      MIN (pragma align, structure size alignment)).  */
 
 int
-i960_round_align (align, tsize)
+i960_round_align (align, type)
      int align;
-     tree tsize;
+     tree type;
 {
   int new_align;
+  tree tsize;
+
+  if (TARGET_OLD_ALIGN || TYPE_PACKED (type))
+    return align;
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return align;
+  tsize = TYPE_SIZE (type);
 
   if (! tsize || TREE_CODE (tsize) != INTEGER_CST)
     return align;
