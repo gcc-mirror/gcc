@@ -45,6 +45,7 @@ DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
 DEFTIMEVAR (TV_CFG                   , "cfg construction")
 /* Time spent by cleaning up CFG.  */
 DEFTIMEVAR (TV_CLEANUP_CFG           , "cfg cleanup")
+DEFTIMEVAR (TV_CFG_VERIFY            , "CFG verifier")
 DEFTIMEVAR (TV_DELETE_TRIVIALLY_DEAD , "trivially dead code")
 /* Time spent by life analysis.  */
 DEFTIMEVAR (TV_LIFE		     , "life analysis")

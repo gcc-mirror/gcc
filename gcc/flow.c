@@ -517,7 +517,7 @@ verify_wide_reg (int regno, basic_block bb)
   if (rtl_dump_file)
     {
       fprintf (rtl_dump_file, "Register %d died unexpectedly.\n", regno);
-      dump_bb (bb, rtl_dump_file);
+      dump_bb (bb, rtl_dump_file, 0);
     }
   abort ();
 }
@@ -541,7 +541,7 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 		       bb->index);
 	      debug_bitmap_file (rtl_dump_file, new_live_at_start);
 	      fputs ("Old:\n", rtl_dump_file);
-	      dump_bb (bb, rtl_dump_file);
+	      dump_bb (bb, rtl_dump_file, 0);
 	    }
 	  abort ();
 	}
@@ -562,7 +562,7 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 		{
 		  fprintf (rtl_dump_file,
 			   "Register %d died unexpectedly.\n", i);
-		  dump_bb (bb, rtl_dump_file);
+		  dump_bb (bb, rtl_dump_file, 0);
 		}
 	      abort ();
 	    }

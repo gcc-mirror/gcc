@@ -76,18 +76,20 @@ static rtx last_loop_beg_note (rtx);
 static bool back_edge_of_syntactic_loop_p (basic_block, basic_block);
 basic_block force_nonfallthru_and_redirect (edge, basic_block);
 static basic_block rtl_split_edge (edge);
+static bool rtl_move_block_after (basic_block, basic_block);
 static int rtl_verify_flow_info (void);
-static edge cfg_layout_split_block (basic_block, void *);
+static basic_block cfg_layout_split_block (basic_block, void *);
 static bool cfg_layout_redirect_edge_and_branch (edge, basic_block);
 static basic_block cfg_layout_redirect_edge_and_branch_force (edge, basic_block);
 static void cfg_layout_delete_block (basic_block);
 static void rtl_delete_block (basic_block);
 static basic_block rtl_redirect_edge_and_branch_force (edge, basic_block);
 static bool rtl_redirect_edge_and_branch (edge, basic_block);
-static edge rtl_split_block (basic_block, void *);
-static void rtl_dump_bb (basic_block, FILE *);
+static basic_block rtl_split_block (basic_block, void *);
+static void rtl_dump_bb (basic_block, FILE *, int);
 static int rtl_verify_flow_info_1 (void);
 static void mark_killed_regs (rtx, rtx, void *);
+static void rtl_make_forwarder_block (edge);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -337,7 +339,7 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
   basic_block bb;
 
   /* Place the new block just after the end.  */
-  VARRAY_GROW (basic_block_info, last_basic_block+1);
+  VARRAY_GROW (basic_block_info, last_basic_block + 1);
 
   n_basic_blocks++;
 
@@ -407,19 +409,6 @@ rtl_delete_block (basic_block b)
   /* Selectively delete the entire chain.  */
   BB_HEAD (b) = NULL;
   delete_insn_chain (insn, end);
-
-  /* Remove the edges into and out of this block.  Note that there may
-     indeed be edges in, if we are removing an unreachable loop.  */
-  while (b->pred != NULL)
-    remove_edge (b->pred);
-  while (b->succ != NULL)
-    remove_edge (b->succ);
-
-  b->pred = NULL;
-  b->succ = NULL;
-
-  /* Remove the basic block from the array.  */
-  expunge_block (b);
 }
 
 /* Records the basic block struct in BLOCK_FOR_INSN for every insn.  */
@@ -470,28 +459,34 @@ update_bb_for_insn (basic_block bb)
     }
 }
 
-/* Split a block BB after insn INSN creating a new fallthru edge.
-   Return the new edge.  Note that to keep other parts of the compiler happy,
-   this function renumbers all the basic blocks so that the new
-   one has a number one greater than the block split.  */
+/* Creates a new basic block just after basic block B by splitting
+   everything after specified instruction I.  */
 
-static edge
+static basic_block
 rtl_split_block (basic_block bb, void *insnp)
 {
   basic_block new_bb;
-  edge new_edge;
-  edge e;
   rtx insn = insnp;
+  edge e;
 
-  /* There is no point splitting the block after its end.  */
-  if (BB_END (bb) == insn)
-    return 0;
+  if (!insn)
+    {
+      insn = first_insn_after_basic_block_note (bb);
+
+      if (insn)
+	insn = PREV_INSN (insn);
+      else
+	insn = get_last_insn ();
+    }
+
+  /* We probably should check type of the insn so that we do not create
+     inconsistent cfg.  It is checked in verify_flow_info anyway, so do not
+     bother.  */
+  if (insn == BB_END (bb))
+    emit_note_after (NOTE_INSN_DELETED, insn);
 
   /* Create the new basic block.  */
   new_bb = create_basic_block (NEXT_INSN (insn), BB_END (bb), bb);
-  new_bb->count = bb->count;
-  new_bb->frequency = bb->frequency;
-  new_bb->loop_depth = bb->loop_depth;
   BB_END (bb) = insn;
 
   /* Redirect the outgoing edges.  */
@@ -499,8 +494,6 @@ rtl_split_block (basic_block bb, void *insnp)
   bb->succ = NULL;
   for (e = new_bb->succ; e; e = e->succ_next)
     e->src = new_bb;
-
-  new_edge = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 
   if (bb->global_live_at_start)
     {
@@ -528,34 +521,7 @@ rtl_split_block (basic_block bb, void *insnp)
 #endif
     }
 
-  return new_edge;
-}
-
-/* Assume that the code of basic block B has been merged into A.
-   Do corresponding CFG updates:  redirect edges accordingly etc.  */
-static void
-update_cfg_after_block_merging (basic_block a, basic_block b)
-{
-  edge e;
-
-  /* Normally there should only be one successor of A and that is B, but
-     partway though the merge of blocks for conditional_execution we'll
-     be merging a TEST block with THEN and ELSE successors.  Free the
-     whole lot of them and hope the caller knows what they're doing.  */
-  while (a->succ)
-    remove_edge (a->succ);
-
-  /* Adjust the edges out of B for the new owner.  */
-  for (e = b->succ; e; e = e->succ_next)
-    e->src = a;
-  a->succ = b->succ;
-  a->flags |= b->flags;
-
-  /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
-  b->pred = b->succ = NULL;
-  a->global_live_at_end = b->global_live_at_end;
-
-  expunge_block (b);
+  return new_bb;
 }
 
 /* Blocks A and B are to be merged into a single block A.  The insns
@@ -625,10 +591,9 @@ rtl_merge_blocks (basic_block a, basic_block b)
   else if (GET_CODE (NEXT_INSN (a_end)) == BARRIER)
     del_first = NEXT_INSN (a_end);
 
-  update_cfg_after_block_merging (a, b);
-
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */
+  BB_HEAD (b) = NULL;
   delete_insn_chain (del_first, del_last);
 
   /* Reassociate the insns of B with A.  */
@@ -1159,10 +1124,16 @@ rtl_redirect_edge_and_branch_force (edge e, basic_block target)
 /* The given edge should potentially be a fallthru edge.  If that is in
    fact true, delete the jump and barriers that are in the way.  */
 
-void
-tidy_fallthru_edge (edge e, basic_block b, basic_block c)
+static void
+rtl_tidy_fallthru_edge (edge e)
 {
   rtx q;
+  basic_block b = e->src, c = b->next_bb;
+
+  /* If the jump insn has side effects, we can't tidy the edge.  */
+  if (GET_CODE (BB_END (b)) == JUMP_INSN
+      && !onlyjump_p (BB_END (b)))
+    return;
 
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
@@ -1208,48 +1179,6 @@ tidy_fallthru_edge (edge e, basic_block b, basic_block c)
 
   e->flags |= EDGE_FALLTHRU;
 }
-
-/* Fix up edges that now fall through, or rather should now fall through
-   but previously required a jump around now deleted blocks.  Simplify
-   the search by only examining blocks numerically adjacent, since this
-   is how find_basic_blocks created them.  */
-
-void
-tidy_fallthru_edges (void)
-{
-  basic_block b, c;
-
-  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
-    return;
-
-  FOR_BB_BETWEEN (b, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, next_bb)
-    {
-      edge s;
-
-      c = b->next_bb;
-
-      /* We care about simple conditional or unconditional jumps with
-	 a single successor.
-
-	 If we had a conditional branch to the next instruction when
-	 find_basic_blocks was called, then there will only be one
-	 out edge for the block which ended with the conditional
-	 branch (since we do not create duplicate edges).
-
-	 Furthermore, the edge will be marked as a fallthru because we
-	 merge the flags for the duplicate edges.  So we do not want to
-	 check that the edge is not a FALLTHRU edge.  */
-
-      if ((s = b->succ) != NULL
-	  && ! (s->flags & EDGE_COMPLEX)
-	  && s->succ_next == NULL
-	  && s->dest == c
-	  /* If the jump insn has side effects, we can't tidy the edge.  */
-	  && (GET_CODE (BB_END (b)) != JUMP_INSN
-	      || onlyjump_p (BB_END (b))))
-	tidy_fallthru_edge (s, b, c);
-    }
-}
 
 /* Helper function for split_edge.  Return true in case edge BB2 to BB1
    is back edge of syntactic loop.  */
@@ -1283,6 +1212,15 @@ back_edge_of_syntactic_loop_p (basic_block bb1, basic_block bb2)
       }
 
   return count >= 0;
+}
+
+/* Should move basic block BB after basic block AFTER.  NIY.  */
+
+static bool
+rtl_move_block_after (basic_block bb ATTRIBUTE_UNUSED,
+		      basic_block after ATTRIBUTE_UNUSED)
+{
+  return false;
 }
 
 /* Split a (typically critical) edge.  Return the new block.
@@ -1347,8 +1285,6 @@ rtl_split_edge (edge edge_in)
     before = NULL_RTX;
 
   bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
-  bb->count = edge_in->count;
-  bb->frequency = EDGE_FREQUENCY (edge_in);
 
   /* ??? This info is likely going to be out of date very soon.  */
   if (edge_in->dest->global_live_at_start)
@@ -1714,15 +1650,21 @@ commit_edge_insertions_watch_calls (void)
   sbitmap_free (blocks);
 }
 
-/* Print out one basic block with live information at start and end.  */
+/* Print out RTL-specific basic block information (live information
+   at start and end).  */
 
 static void
-rtl_dump_bb (basic_block bb, FILE *outf)
+rtl_dump_bb (basic_block bb, FILE *outf, int indent)
 {
   rtx insn;
   rtx last;
+  char *s_indent;
 
-  fputs (";; Registers live at start:", outf);
+  s_indent = (char *) alloca ((size_t) indent + 1);
+  memset ((void *) s_indent, ' ', (size_t) indent);
+  s_indent[indent] = '\0';
+
+  fprintf (outf, ";;%s Registers live at start: ", s_indent);
   dump_regset (bb->global_live_at_start, outf);
   putc ('\n', outf);
 
@@ -1730,7 +1672,7 @@ rtl_dump_bb (basic_block bb, FILE *outf)
        insn = NEXT_INSN (insn))
     print_rtl_single (outf, insn);
 
-  fputs (";; Registers live at end:", outf);
+  fprintf (outf, ";;%s Registers live at end: ", s_indent);
   dump_regset (bb->global_live_at_end, outf);
   putc ('\n', outf);
 }
@@ -1847,6 +1789,7 @@ update_br_prob_note (basic_block bb)
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
+
 static int
 rtl_verify_flow_info_1 (void)
 {
@@ -2412,16 +2355,17 @@ purge_all_dead_edges (int update_life_p)
 }
 
 /* Same as split_block but update cfg_layout structures.  */
-static edge
+
+static basic_block
 cfg_layout_split_block (basic_block bb, void *insnp)
 {
   rtx insn = insnp;
+  basic_block new_bb = rtl_split_block (bb, insn);
 
-  edge fallthru = rtl_split_block (bb, insn);
+  new_bb->rbi->footer = bb->rbi->footer;
+  bb->rbi->footer = NULL;
 
-  fallthru->dest->rbi->footer = fallthru->src->rbi->footer;
-  fallthru->src->rbi->footer = NULL;
-  return fallthru;
+  return new_bb;
 }
 
 
@@ -2511,7 +2455,8 @@ cfg_layout_redirect_edge_and_branch_force (edge e, basic_block dest)
   return NULL;
 }
 
-/* Same as flow_delete_block but update cfg_layout structures.  */
+/* Same as delete_basic_block but update cfg_layout structures.  */
+
 static void
 cfg_layout_delete_block (basic_block bb)
 {
@@ -2693,11 +2638,10 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Merged blocks %d and %d.\n",
 	     a->index, b->index);
-
-  update_cfg_after_block_merging (a, b);
 }
 
 /* Split edge E.  */
+
 static basic_block
 cfg_layout_split_edge (edge e)
 {
@@ -2707,19 +2651,22 @@ cfg_layout_split_edge (edge e)
 			? NEXT_INSN (BB_END (e->src)) : get_insns (),
 			NULL_RTX, e->src);
 
-  new_bb->count = e->count;
-  new_bb->frequency = EDGE_FREQUENCY (e);
-
   new_e = make_edge (new_bb, e->dest, EDGE_FALLTHRU);
-  new_e->probability = REG_BR_PROB_BASE;
-  new_e->count = e->count;
   redirect_edge_and_branch_force (e, new_bb);
 
   return new_bb;
 }
 
+/* Do postprocessing after making a forwarder block joined by edge FALLTHRU.  */
+
+static void
+rtl_make_forwarder_block (edge fallthru ATTRIBUTE_UNUSED)
+{
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
+  "rtl",
   rtl_verify_flow_info,
   rtl_dump_bb,
   rtl_create_basic_block,
@@ -2727,9 +2674,12 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_redirect_edge_and_branch_force,
   rtl_delete_block,
   rtl_split_block,
+  rtl_move_block_after,
   rtl_can_merge_blocks,  /* can_merge_blocks_p */
   rtl_merge_blocks,
-  rtl_split_edge
+  rtl_split_edge,
+  rtl_make_forwarder_block,
+  rtl_tidy_fallthru_edge
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
@@ -2737,6 +2687,7 @@ struct cfg_hooks rtl_cfg_hooks = {
    This representation will hopefully become the default one in future
    version of the compiler.  */
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
+  "cfglayout mode",
   rtl_verify_flow_info_1,
   rtl_dump_bb,
   cfg_layout_create_basic_block,
@@ -2744,7 +2695,10 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   cfg_layout_redirect_edge_and_branch_force,
   cfg_layout_delete_block,
   cfg_layout_split_block,
+  rtl_move_block_after,
   cfg_layout_can_merge_blocks_p,
   cfg_layout_merge_blocks,
-  cfg_layout_split_edge
+  cfg_layout_split_edge,
+  rtl_make_forwarder_block,
+  NULL
 };

@@ -194,8 +194,8 @@ try_simplify_condjump (basic_block cbranch_block)
 	}
     }
   /* Delete the block with the unconditional jump, and clean up the mess.  */
-  delete_block (jump_block);
-  tidy_fallthru_edge (cbranch_jump_edge, cbranch_block, cbranch_dest_block);
+  delete_basic_block (jump_block);
+  tidy_fallthru_edge (cbranch_jump_edge);
 
   return true;
 }
@@ -1530,7 +1530,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   to_remove = redirect_from->succ->dest;
 
   redirect_edge_and_branch_force (redirect_from->succ, redirect_to);
-  delete_block (to_remove);
+  delete_basic_block (to_remove);
 
   update_forwarder_flag (redirect_from);
 
@@ -1694,7 +1694,7 @@ try_optimize_cfg (int mode)
 		    fprintf (rtl_dump_file, "Deleting block %i.\n",
 			     b->index);
 
-		  delete_block (b);
+		  delete_basic_block (b);
 		  if (!(mode & CLEANUP_CFGLAYOUT))
 		    changed = true;
 		  b = c;
@@ -1755,7 +1755,7 @@ try_optimize_cfg (int mode)
 
 		  c = b->prev_bb == ENTRY_BLOCK_PTR ? b->next_bb : b->prev_bb;
 		  redirect_edge_succ_nodup (b->pred, b->succ->dest);
-		  delete_block (b);
+		  delete_basic_block (b);
 		  changed = true;
 		  b = c;
 		}
@@ -1873,7 +1873,7 @@ delete_unreachable_blocks (void)
 
       if (!(b->flags & BB_REACHABLE))
 	{
-	  delete_block (b);
+	  delete_basic_block (b);
 	  changed = true;
 	}
     }

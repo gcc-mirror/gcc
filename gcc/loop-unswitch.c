@@ -381,7 +381,6 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
       switch_bb->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
       switch_bb->succ->succ_next->flags &= ~EDGE_IRREDUCIBLE_LOOP;
     }
-  add_to_dominance_info (CDI_DOMINATORS, switch_bb);
   unswitch_on->rbi->copy = unswitch_on_alt;
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */

@@ -1,3 +1,66 @@
+2004-01-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (cfghooks.o): Add TIMEVAR_H and toplev.h dependency.
+	* basic-block.h (tidy_fallthru_edge, tidy_fallthru_edges, dump_bb,
+	verify_flow_info): Declaration removed.
+	* cfg.c (verify_flow_info, dump_bb): Moved to cfghooks.c.
+	(debug_bb, debug_bb_n): Add argument to dump_bb call.
+	* cfgcleanup.c (try_simplify_condjump, try_crossjump_to_edge,
+	try_optimize_cfg, delete_unreachable_blocks): Use delete_basic_block
+	instead of delete_block.
+	* cfghooks.c: Include timevar.h and toplev.h.
+	(cfg_hooks): Define here.
+	(verify_flow_info, dump_bb): Moved from cfg.c.
+	(redirect_edge_and_branch, redirect_edge_and_branch_force,
+	split_block, split_block_after_labels, move_block_after,
+	delete_basic_block, split_edge, create_basic_block,
+	create_empty_bb, can_merge_blocks_p, merge_blocks,
+	make_forwarder_block, tidy_fallthru_edge, tidy_fallthru_edges):
+	New functions.
+	* cfghooks.h (struct cfg_hooks): Added fields name,
+	make_forwarder_block, tidy_fallthru_edge and
+	move_block_after. Changed type of verify_flow_info, dump_bb,
+	split_block fields. Renamed cfgh_split_edge and delete_block
+	fields.
+	(redirect_edge_and_branch, redirect_edge_and_branch_force,
+	split_block, delete_block, split_edge, create_basic_block,
+	can_merge_blocks_p, merge_blocks): Macros removed.
+	(cfg_hooks): Do not export.
+	(verify_flow_info, dump_bb, redirect_edge_and_branch,
+	redirect_edge_and_branch_force, split_block, split_block_after_labels,
+	move_block_after, delete_basic_block, split_edge, create_basic_block,
+	create_empty_bb, can_merge_blocks_p, merge_blocks,
+	make_forwarder_block, tidy_fallthru_edge, tidy_fallthru_edges):
+	Declare.
+	(cfg_layout_rtl_cfg_hooks): Declare.
+	* cfgloop.c (update_latch_info, mfb_keep_just, mfb_keep_nonlatch):
+	New functions.
+	(canonicalize_loop_headers): Use new semantics of make_forwarder_block.
+	(redirect_edge_with_latch_update): Removed.
+	(make_forwarder_block): Moved to cfghooks.c, semantics changed.
+	* cfgloopmanip.c (remove_bbs): Do not update dominators here.
+	* cfgrtl.c (cfg_layout_split_block, rtl_split_block, rtl_dump_bb,
+	rtl_delete_block, rtl_split_block, rtl_merge_blocks,
+	tidy_fallthru_edge, rtl_split_edge, cfg_layout_delete_block,
+	cfg_layout_merge_blocks, cfg_layout_split_edge): Partly moved to
+	cfghooks.c.
+	(rtl_create_basic_block): Coding style fix.
+	(rtl_tidy_fallthru_edge, rtl_move_block_after,
+	rtl_make_forwarder_block): New functions.
+	(update_cfg_after_block_merging): Removed.
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hooks): Fill in new entries.
+	* flow.c (verify_wide_reg, verify_local_live_at_start): Add argument
+	to dump_bb.
+	* ifcvt.c (merge_if_block, find_cond_trap, find_if_case_1,
+	find_if_case_2): Don't update dominators.
+	* timevar.def (TV_CFG_VERIFY): New.
+	* loop-unswitch.c (unswitch_loop): Don't call add_to_dominance_info.
+	* cfglayout.c (copy_bbs): Don't call add_to_dominance_info.
+	* cfgloopmanip.c (split_loop_bb): Don't update dominators.
+	(remove_bbs): Don't call remove_bbs.
+	(create_preheader): Use make_forwarder_block.
+	(mfb_keep_just, mfb_update_loops): New static functions.
+
 2004-01-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/avr/avr.h: Remove target-independent comments about
