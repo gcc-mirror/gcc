@@ -5516,10 +5516,13 @@ emit_reload_insns (insn)
 	    oldequiv_reg = SUBREG_REG (oldequiv);
 
 	  /* Encapsulate both RELOADREG and OLDEQUIV into that mode,
-	     then load RELOADREG from OLDEQUIV.  */
+	     then load RELOADREG from OLDEQUIV.  Note that we cannot use
+	     gen_lowpart_common since it can do the wrong thing when
+	     RELOADREG has a multi-word mode.  Note that RELOADREG
+	     must always be a REG here.  */
 
 	  if (GET_MODE (reloadreg) != mode)
-	    reloadreg = gen_lowpart_common (mode, reloadreg);
+	    reloadreg = gen_rtx (REG, mode, REGNO (reloadreg));
 	  while (GET_CODE (oldequiv) == SUBREG && GET_MODE (oldequiv) != mode)
 	    oldequiv = SUBREG_REG (oldequiv);
 	  if (GET_MODE (oldequiv) != VOIDmode
@@ -5981,7 +5984,7 @@ emit_reload_insns (insn)
 	    }
 
 	  if (GET_MODE (reloadreg) != mode)
-	    reloadreg = gen_lowpart_common (mode, reloadreg);
+	    reloadreg = gen_rtx (REG, mode, REGNO (reloadreg));
 
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 
