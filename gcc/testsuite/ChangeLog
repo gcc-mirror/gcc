@@ -1,3 +1,13 @@
+2004-09-19  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-13.c: Now vectorized on ppc*.
+	* gcc.dg/vect/vect-73.c: New testcase.
+	* gcc.dg/vect/vect-74.c: New testcase.
+	* gcc.dg/vect/vect-75.c: New testcase.
+	* gcc.dg/vect/vect-76.c: New testcase.
+	* gcc.dg/vect/vect-77.c: New testcase.
+	* gcc.dg/vect/vect-78.c: New testcase
+
 2004-09-18  Paul Brook  <paul@codesourcery.com>
 
 	* g++.old-deja/g++.pt/static11.C: XFAIL on arm*-*-eabi.
