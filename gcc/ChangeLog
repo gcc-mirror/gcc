@@ -1,3 +1,10 @@
+2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_offset_within_object_p): New function.
+	(mips_symbolic_constant_p): Use it in the SYMBOL_SMALL_DATA and
+	SYMBOL_CONSTANT_POOL cases.  Also use it for SYMBOL_GENERAL if the
+	ABI has 64-bit pointers and the object file only allows 32-bit symbols.
+
 2004-01-25  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	PR bootstrap/13853
