@@ -855,6 +855,7 @@ convert_to_ssa()
   if (in_ssa_form)
     abort ();
 
+  /* Need global_live_at_{start,end} up to date.  */
   life_analysis (get_insns (), NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
   /* Compute dominators.  */
@@ -1810,7 +1811,7 @@ convert_from_ssa()
   partition reg_partition;
   rtx insns = get_insns ();
     
-  /* We need up-to-date life information.  */
+  /* Need global_live_at_{start,end} up to date.  */
   life_analysis (insns, NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
