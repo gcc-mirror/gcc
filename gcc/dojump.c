@@ -525,26 +525,31 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
     {
       enum rtx_code rcode1;
-      enum tree_code tcode1 = UNORDERED_EXPR, tcode2;
+      enum tree_code tcode1, tcode2;
 
       case UNLT_EXPR:
         rcode1 = UNLT;
+        tcode1 = UNORDERED_EXPR;
         tcode2 = LT_EXPR;
         goto unordered_bcc;
       case UNLE_EXPR:
         rcode1 = UNLE;
+        tcode1 = UNORDERED_EXPR;
         tcode2 = LE_EXPR;
         goto unordered_bcc;
       case UNGT_EXPR:
         rcode1 = UNGT;
+        tcode1 = UNORDERED_EXPR;
         tcode2 = GT_EXPR;
         goto unordered_bcc;
       case UNGE_EXPR:
         rcode1 = UNGE;
+        tcode1 = UNORDERED_EXPR;
         tcode2 = GE_EXPR;
         goto unordered_bcc;
       case UNEQ_EXPR:
         rcode1 = UNEQ;
+        tcode1 = UNORDERED_EXPR;
         tcode2 = EQ_EXPR;
         goto unordered_bcc;
       case LTGT_EXPR:
