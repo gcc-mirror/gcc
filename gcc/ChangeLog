@@ -1,3 +1,8 @@
+2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (*-*-netbsd*): Set thread_file to 'posix'
+	for --enable-threads=yes and --enable-threads=posix.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sparc/cypress.md: Replace Sparc with SPARC.
