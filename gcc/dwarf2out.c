@@ -12735,6 +12735,22 @@ dwarf2out_finish (input_filename)
   limbo_die_node *node, *next_node;
   dw_die_ref die = 0;
 
+  if (get_AT (comp_unit_die, DW_AT_comp_dir) == NULL)
+    {
+      char *wd = getpwd ();
+      unsigned i;
+
+      if (wd != NULL)
+	{
+	  for (i = 1; i < file_table.in_use; i++)
+	    if (file_table.table[i][0] != DIR_SEPARATOR)
+	      {
+		add_AT_string (comp_unit_die, DW_AT_comp_dir, wd);
+		break;
+	      }
+	}
+    }
+
   /* Traverse the limbo die list, and add parent/child links.  The only
      dies without parents that should be here are concrete instances of
      inline functions, and the comp_unit_die.  We can ignore the comp_unit_die.
