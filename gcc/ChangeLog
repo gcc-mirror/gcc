@@ -1,3 +1,7 @@
+Sat Mar 16 12:57:28 CET 2002  Jan HUbicka  <jh@suse.cz>
+
+	* cfgcleanup.c (cleanup_cfg): Fix updating of liveness.
+
 2002-03-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (print_help): Display -MD and -MMD.

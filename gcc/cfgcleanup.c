@@ -1765,7 +1765,7 @@ cleanup_cfg (mode)
 	  /* Cleaning up CFG introduces more oppurtunities for dead code
 	     removal that in turn may introduce more oppurtunities for
 	     cleaning up the CFG.  */
-	  if (!update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL,
+	  if (!update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
 						 PROP_DEATH_NOTES
 						 | PROP_SCAN_DEAD_CODE
 						 | PROP_KILL_DEAD_CODE
