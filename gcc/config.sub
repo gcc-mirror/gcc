@@ -587,7 +587,7 @@ case $os in
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
-	      | -ptx* | -coff* | -winnt*)
+	      | -ptx* | -coff* | -winnt* | -domain* )
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -664,6 +664,9 @@ case $basic_machine in
 		;;
 	*-dec | vax-*)
 		os=-ultrix4.2
+		;;
+	m68*-apollo)
+		os=-domain
 		;;
 	i386-sun)
 		os=-sunos4.0.2
