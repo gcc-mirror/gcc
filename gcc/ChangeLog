@@ -1,3 +1,9 @@
+2004-01-23  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_va_arg): Handle complex values as
+	separate real and imaginary parts.
+	* config/xtensa/xtensa.h (SPLIT_COMPLEX_ARGS): Define.
+
 2004-01-23  Richard Henderson  <rth@redhat.com>
 
         PR opt/12941
