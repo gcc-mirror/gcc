@@ -433,7 +433,7 @@ build_java_array_type (element_type, length)
                            (unsigned) BIGGEST_FIELD_ALIGNMENT);
 #endif
 #ifdef ADJUST_FIELD_ALIGN
-      desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+      desired_align = ADJUST_FIELD_ALIGN (fld, desired_align);
 #endif
       DECL_ALIGN (arfld) = desired_align;
       }
