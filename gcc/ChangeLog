@@ -1,3 +1,7 @@
+2000-07-07  Neil Booth  <NeilB@earthling.net>
+
+	* cpp.texi: Update to new lexer.
+
 2000-07-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* tradcpp.c: New file.

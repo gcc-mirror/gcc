@@ -17,7 +17,7 @@
 This file documents the GNU C Preprocessor.
 
 Copyright 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999 Free Software Foundation, Inc.
+1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -42,7 +42,7 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title The C Preprocessor
-@subtitle Last revised May 1999
+@subtitle Last revised July 2000
 @subtitle for GCC version 2
 @author Richard M. Stallman
 @page
@@ -52,7 +52,8 @@ C Language manual.
 
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987, 1989, 1991-1999
+Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
+1997, 1998, 1999, 2000
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -74,13 +75,20 @@ into another language, under the above conditions for modified versions.
 @chapter The C Preprocessor
 @c man begin DESCRIPTION
 
-The C preprocessor is a @dfn{macro processor} that is used automatically by
-the C compiler to transform your program before actual compilation.  It is
-called a macro processor because it allows you to define @dfn{macros},
-which are brief abbreviations for longer constructs.
+The C preprocessor is a @dfn{macro processor} that is used automatically
+by the C compiler to transform your program before actual compilation.
+It is called a macro processor because it allows you to define
+@dfn{macros}, which are brief abbreviations for longer constructs.
 
-The C preprocessor provides four separate facilities that you can use as
-you see fit:
+The C preprocessor is intended only for macro processing of C, C++ and
+Objective C source files.  For macro processing of other files, you are
+strongly encouraged to use alternatives like M4, which will likely give
+you better results and avoid many problems.  For example, the C
+preprocessor sometimes outputs extra white space to avoid inadvertent C
+token concatenation, and this may cause problems with other languages.
+
+For use on C-like source files, the C preprocessor provides four
+separate facilities that you can use as you see fit:
 
 @itemize @bullet
 @item
@@ -98,72 +106,77 @@ can include or exclude parts of the program according to various
 conditions.
 
 @item
-Line control.  If you use a program to combine or rearrange source files into
-an intermediate file which is then compiled, you can use line control
-to inform the compiler of where each source line originally came from.
+Line control.  If you use a program to combine or rearrange source files
+into an intermediate file which is then compiled, you can use line
+control to inform the compiler of where each source line originally came
+from.
 @end itemize
 
 C preprocessors vary in some details.  This manual discusses the GNU C
-preprocessor, the C Compatible Compiler Preprocessor.  The GNU C
-preprocessor provides a superset of the features of ANSI Standard C@.
+preprocessor, which provides a small superset of the features of ISO
+Standard C@.
 
-ANSI Standard C requires the rejection of many harmless constructs commonly
-used by today's C programs.  Such incompatibility would be inconvenient for
-users, so the GNU C preprocessor is configured to accept these constructs
-by default.  Strictly speaking, to get ANSI Standard C, you must use the
-options @samp{-trigraphs}, @samp{-undef} and @samp{-pedantic}, but in
-practice the consequences of having strict ANSI Standard C make it
-undesirable to do this.  @xref{Invocation}.
+ISO Standard C requires the rejection of many harmless constructs
+commonly used by today's C programs.  Such incompatibility would be
+inconvenient for users, so the GNU C preprocessor is configured to
+accept these constructs by default.  Strictly speaking, to get ISO
+Standard C, you must use the options @samp{-trigraphs}, @samp{-undef}
+and @samp{-pedantic}, but in practice the consequences of having strict
+ISO Standard C make it undesirable to do this.  @xref{Invocation}.
 
-The C preprocessor is designed for C-like languages; you may run into
-problems if you apply it to other kinds of languages, because it assumes
-that it is dealing with C@.  For example, the C preprocessor sometimes
-outputs extra white space to avoid inadvertent C token concatenation,
-and this may cause problems with other languages.
 @c man end
 
 @menu
-* Global Actions::    Actions made uniformly on all input files.
-* Directives::        General syntax of preprocessing directives.
-* Header Files::      How and why to use header files.
-* Macros::            How and why to use macros.
-* Conditionals::      How and why to use conditionals.
-* Combining Sources:: Use of line control when you combine source files.
-* Other Directives::  Miscellaneous preprocessing directives.
-* Output::            Format of output from the C preprocessor.
-* Invocation::        How to invoke the preprocessor; command options.
-* Concept Index::     Index of concepts and terms.
-* Index::             Index of directives, predefined macros and options.
+* Global Actions::       Actions made uniformly on all input files.
+* Directives::           General syntax of preprocessing directives.
+* Header Files::         How and why to use header files.
+* Macros::               How and why to use macros.
+* Conditionals::         How and why to use conditionals.
+* Assertions::		 How and why to use assertions.
+* Line Control::         Use of line control when you combine source files.
+* Other Directives::     Miscellaneous preprocessing directives.
+* Output::               Format of output from the C preprocessor.
+* Unreliable Features::  Undefined behavior and deprecated features.
+* Invocation::           How to invoke the preprocessor; command options.
+* Concept Index::        Index of concepts and terms.
+* Index::                Index of directives, predefined macros and options.
 @end menu
 
 @node Global Actions, Directives, Top, Top
 @section Transformations Made Globally
 @cindex ASCII NUL handling
 
-Most C preprocessor features are inactive unless you give specific directives
-to request their use.  (Preprocessing directives are lines starting with
-@samp{#}; @pxref{Directives}).  But there are three transformations that the
-preprocessor always makes on all the input it receives, even in the absence
-of directives.
+Most C preprocessor features are inactive unless you give specific
+directives to request their use.  (Preprocessing directives are lines
+starting with a @samp{#} token, possibly preceded by whitespace;
+@pxref{Directives}).  However, there are three transformations that the
+preprocessor always makes on all the input it receives, even in the
+absence of directives.
 
 @itemize @bullet
 @item
-All C comments are replaced with single spaces.
+Trigraphs, if enabled, are replaced with the character they represent.
+Conceptually, this is the very first action undertaken, just before
+backslash-newline deletion.
 
 @item
-Backslash-Newline sequences are deleted, no matter where.  This
+Backslash-newline sequences are deleted, no matter where.  This
 feature allows you to break long lines for cosmetic purposes without
 changing their meaning.
+
+@item
+All C comments are replaced with single spaces.
 
 @item
 Predefined macro names are replaced with their expansions
 (@pxref{Predefined}).
 @end itemize
 
-The first two transformations are done @emph{before} nearly all other parsing
-and before preprocessing directives are recognized.  Thus, for example, you
-can split a line cosmetically with Backslash-Newline anywhere (except
-when trigraphs are in use; see below).
+The first three transformations are done @emph{before} nearly all other
+parsing and before preprocessing directives are recognized.  Thus, for
+example, you can split a line cosmetically with backslash-newline
+anywhere (except within trigraphs since they are replaced first; see
+below).
 
 @example
 /*
@@ -175,9 +188,9 @@ O 10\
 @end example
 
 @noindent
-is equivalent into @samp{#define FOO 1020}.  You can split even an escape
-sequence with Backslash-Newline.  For example, you can split @code{"foo\bar"}
-between the @samp{\} and the @samp{b} to get
+is equivalent into @samp{#define FOO 1020}.  You can split even an
+escape sequence with backslash-newline.  For example, you can split
+@code{"foo\bar"} between the @samp{\} and the @samp{b} to get
 
 @example
 "foo\\
@@ -185,19 +198,19 @@ bar"
 @end example
 
 @noindent
-This behavior is unclean: in all other contexts, a Backslash can be
-inserted in a string constant as an ordinary character by writing a double
-Backslash, and this creates an exception.  But the ANSI C standard requires
-it.  (Strict ANSI C does not allow Newlines in string constants, so they
-do not consider this a problem.)
+This behavior can be confusing: in all other contexts, a backslash can
+be inserted in a string constant as an ordinary character by writing a
+double backslash.  This is an exception, but the ISO C standard requires
+it.  (Strict ISO C does not allow string constants to extend to more
+than one logical line, so they do not consider this a problem.)
 
-But there are a few exceptions to all three transformations.
+There are a few exceptions to all three transformations.
 
 @itemize @bullet
 @item
 C comments and predefined macro names are not recognized inside a
 @samp{#include} directive in which the file name is delimited with
-@samp{<} and @samp{>}.
+@samp{<} and @samp{>}.  What lies in-between is read literally.
 
 @item
 C comments and predefined macro names are never recognized within a
@@ -205,14 +218,14 @@ character or string constant.  (Strictly speaking, this is the rule,
 not an exception, but it is worth noting here anyway.)
 
 @item
-Backslash-Newline may not safely be used within an ANSI ``trigraph''.
-Trigraphs are converted before Backslash-Newline is deleted.  If you
-write what looks like a trigraph with a Backslash-Newline inside, the
-Backslash-Newline is deleted as usual, but it is then too late to
+Backslash-newline may not safely be used within an ISO ``trigraph'',
+since trigraphs are converted before backslash-newlines are deleted.  If
+you write what looks like a trigraph with a backslash-newline inside,
+the backslash-newline is deleted as usual, but it is then too late to
 recognize the trigraph.
 
-This exception is relevant only if you use the @samp{-trigraphs}
-option to enable trigraph processing.  @xref{Invocation}.
+This is relevant only if you use the @samp{-trigraphs} option to enable
+trigraph processing.  @xref{Invocation}.
 @end itemize
 
 The preprocessor handles null characters embedded in the input file
@@ -230,14 +243,14 @@ Within comments.  Here, null characters are silently ignored.
 @item
 Within a string or character constant.  Here the preprocessor emits a
 warning, but preserves the null character and passes it through to the
-output file.
+output file or compiler front-end.
 
 @item
 In any other context, the preprocessor issues a warning, and discards
-the null character.  In all other respects the preprocessor treats it
-like whitespace, combining it with any surrounding whitespace to become
-a single whitespace token.  Representing the null character by "^@@",
-this means that code like
+the null character.  The preprocessor treats it like whitespace,
+combining it with any surrounding whitespace to become a single
+whitespace block.  Representing the null character by "^@@", this means
+that code like
 
 @example
 #define X^@@1
@@ -257,35 +270,34 @@ and X is defined with replacement text "1".
 
 @cindex preprocessing directives
 @cindex directives
-Most preprocessor features are active only if you use preprocessing directives
-to request their use.
+Most preprocessor features are active only if you use preprocessing
+directives to request their use.
 
-Preprocessing directives are lines in your program that start with @samp{#}.
-The @samp{#} is followed by an identifier that is the @dfn{directive name}.
+Preprocessing directives are lines in your program that start with
+@samp{#}.  Whitespace is allowed before and after the @samp{#}.  The
+@samp{#} is followed by an identifier that is the @dfn{directive name}.
 For example, @samp{#define} is the directive that defines a macro.
-Whitespace is also allowed before and after the @samp{#}.
+
+Since the @samp{#} must be the first token on the line, it cannot come
+from a macro expansion if you wish it to begin a directive.  Also, the
+directive name is not macro expanded.  Thus, if @samp{foo} is defined as
+a macro expanding to @samp{define}, that does not make @samp{#foo} a
+valid preprocessing directive.
 
 The set of valid directive names is fixed.  Programs cannot define new
 preprocessing directives.
 
-Some directive names require arguments; these make up the rest of the directive
-line and must be separated from the directive name by whitespace.  For example,
-@samp{#define} must be followed by a macro name and the intended expansion
-of the macro.  @xref{Simple Macros}.
+Some directive names require arguments; these make up the rest of the
+directive line and must be separated from the directive name by
+whitespace.  For example, @samp{#define} must be followed by a macro
+name and the intended expansion of the macro.  @xref{Object-like
+Macros}.
 
-A preprocessing directive cannot be more than one line in normal circumstances.
-It may be split cosmetically with Backslash-Newline, but that has no effect
-on its meaning.  Comments containing Newlines can also divide the
-directive into multiple lines, but the comments are changed to Spaces
-before the directive is interpreted.  The only way a significant Newline
-can occur in a preprocessing directive is within a string constant or
-character constant.  Note that
-most C compilers that might be applied to the output from the preprocessor
-do not accept string or character constants containing Newlines.
-
-The @samp{#} and the directive name cannot come from a macro expansion.  For
-example, if @samp{foo} is defined as a macro expanding to @samp{define},
-that does not make @samp{#foo} a valid preprocessing directive.
+A preprocessing directive cannot cover more than one line.  It may be
+logically extended with backslash-newline, but that has no effect on its
+meaning.  Comments containing newlines can also divide the directive
+into multiple lines, but a comment is replaced by a single space before
+the directive is interpreted.
 
 @node Header Files, Macros, Directives, Top
 @section Header Files
@@ -293,8 +305,8 @@ that does not make @samp{#foo} a valid preprocessing directive.
 @cindex header file
 A header file is a file containing C declarations and macro definitions
 (@pxref{Macros}) to be shared between several source files.  You request
-the use of a header file in your program with the C preprocessing directive
-@samp{#include}.
+the use of a header file in your program with the C preprocessing
+directive @samp{#include}.
 
 @menu
 * Header Uses::         What header files are used for.
@@ -326,14 +338,14 @@ file for them.
 @end itemize
 
 Including a header file produces the same results in C compilation as
-copying the header file into each source file that needs it.  But such
-copying would be time-consuming and error-prone.  With a header file, the
-related declarations appear in only one place.  If they need to be changed,
-they can be changed in one place, and programs that include the header file
-will automatically use the new version when next recompiled.  The header
-file eliminates the labor of finding and changing all the copies as well as
-the risk that a failure to find one copy will result in inconsistencies
-within a program.
+copying the header file into each source file that needs it.  Such
+copying would be time-consuming and error-prone.  With a header file,
+the related declarations appear in only one place.  If they need to be
+changed, they can be changed in one place, and programs that include the
+header file will automatically use the new version when next recompiled.
+The header file eliminates the labor of finding and changing all the
+copies as well as the risk that a failure to find one copy will result
+in inconsistencies within a program.
 
 The usual convention is to give header files names that end with
 @file{.h}.  Avoid unusual characters in header file names, as they
@@ -350,48 +362,46 @@ directive @samp{#include}.  It has three variants:
 @item #include <@var{file}>
 This variant is used for system header files.  It searches for a file
 named @var{file} in a list of directories specified by you, then in a
-standard list of system directories.  You specify directories to
-search for header files with the command option @samp{-I}
-(@pxref{Invocation}).  The option @samp{-nostdinc} inhibits searching
-the standard system directories; in this case only the directories
-you specify are searched.
+standard list of system directories.  You specify directories to search
+for header files with the command option @samp{-I} (@pxref{Invocation}).
+The option @samp{-nostdinc} inhibits searching the standard system
+directories; in this case only the directories you specify are searched.
 
-The parsing of this form of @samp{#include} is slightly special
-because comments are not recognized within the @samp{<@dots{}>}.
-Thus, in @samp{#include <x/*y>} the @samp{/*} does not start a comment
-and the directive specifies inclusion of a system header file named
-@file{x/*y}.  Of course, a header file with such a name is unlikely to
-exist on Unix, where shell wildcard features would make it hard to
-manipulate.@refill
+The parsing of this form of @samp{#include} is slightly special because
+comments are not recognized within the @samp{<@dots{}>}.  Thus, in
+@samp{#include <x/*y>} the @samp{/*} does not start a comment and the
+directive specifies inclusion of a system header file named @file{x/*y}.
+Of course, a header file with such a name is unlikely to exist on Unix,
+where shell wildcard features would make it hard to manipulate.@refill
 
-The argument @var{file} may not contain a @samp{>} character.  It may,
-however, contain a @samp{<} character.
+The first @samp{>} character terminates the file name.  The file name
+may contain a @samp{<} character.
 
 @item #include "@var{file}"
-This variant is used for header files of your own program.  It
-searches for a file named @var{file} first in the current directory,
-then in the same directories used for system header files.  The
-current directory is the directory of the current input file.  It is
-tried first because it is presumed to be the location of the files
-that the current input file refers to.  (If the @samp{-I-} option is
-used, the special treatment of the current directory is inhibited.)
+This variant is used for header files of your own program.  It searches
+for a file named @var{file} first in the current directory, then in the
+same directories used for system header files.  The current directory is
+the directory of the current input file.  It is tried first because it
+is presumed to be the location of the files that the current input file
+refers to.  (If the @samp{-I-} option is used, the special treatment of
+the current directory is inhibited.)
 
-The argument @var{file} may not contain @samp{"} characters.  If
-backslashes occur within @var{file}, they are considered ordinary text
-characters, not escape characters.  None of the character escape
-sequences appropriate to string constants in C are processed.  Thus,
+The first @samp{"} character terminates the file name.  If backslashes
+occur within @var{file}, they are considered ordinary text characters,
+not escape characters.  None of the character escape sequences
+appropriate to string constants in C are processed.  Thus,
 @samp{#include "x\n\\y"} specifies a filename containing three
-backslashes.  It is not clear why this behavior is ever useful, but
-the ANSI standard specifies it.
+backslashes.
 
 @item #include @var{anything else}
 @cindex computed @samp{#include}
 This variant is called a @dfn{computed #include}.  Any @samp{#include}
 directive whose argument does not fit the above two forms is a computed
-include.  The text @var{anything else} is checked for macro calls,
-which are expanded (@pxref{Macros}).  When this is done, the result
-must fit one of the above two variants---in particular, the expanded
-text must in the end be surrounded by either quotes or angle braces.
+include.  The text @var{anything else} is checked for macro calls, which
+are expanded (@pxref{Macros}).  When this is done, the result must match
+one of the above two variants --- in particular, the expansion must form
+a string literal token, or a sequence of tokens surrounded by angle
+braces.  @xref{Unreliable Features}
 
 This feature allows you to define a macro which controls the file name
 to be used at a later point in the program.  One application of this is
@@ -404,12 +414,13 @@ system header files are found in different places.
 @node Include Operation, Once-Only, Include Syntax, Header Files
 @subsection How @samp{#include} Works
 
-The @samp{#include} directive works by directing the C preprocessor to scan
-the specified file as input before continuing with the rest of the current
-file.  The output from the preprocessor contains the output already
-generated, followed by the output resulting from the included file,
-followed by the output that comes from the text after the @samp{#include}
-directive.  For example, given a header file @file{header.h} as follows,
+The @samp{#include} directive works by directing the C preprocessor to
+scan the specified file as input before continuing with the rest of the
+current file.  The output from the preprocessor contains the output
+already generated, followed by the output resulting from the included
+file, followed by the output that comes from the text after the
+@samp{#include} directive.  For example, given a header file
+@file{header.h} as follows,
 
 @example
 char *test ();
@@ -443,34 +454,34 @@ main ()
 @}
 @end example
 
-Included files are not limited to declarations and macro definitions; those
-are merely the typical uses.  Any fragment of a C program can be included
-from another file.  The include file could even contain the beginning of a
-statement that is concluded in the containing file, or the end of a
-statement that was started in the including file.  However, a comment or a
-string or character constant may not start in the included file and finish
-in the including file.  An unterminated comment, string constant or
-character constant in an included file is considered to end (with an error
-message) at the end of the file.
+Included files are not limited to declarations and macro definitions;
+those are merely the typical uses.  Any fragment of a C program can be
+included from another file.  The include file could even contain the
+beginning of a statement that is concluded in the containing file, or
+the end of a statement that was started in the including file.  However,
+a comment or a string or character constant may not start in the
+included file and finish in the including file.  An unterminated
+comment, string constant or character constant in an included file is
+considered to end (with an error message) at the end of the file.
 
 It is possible for a header file to begin or end a syntactic unit such
 as a function definition, but that would be very confusing, so don't do
 it.
 
 The line following the @samp{#include} directive is always treated as a
-separate line by the C preprocessor even if the included file lacks a final
-newline.
+separate line by the C preprocessor, even if the included file lacks a
+final newline.
 
 @node Once-Only, Inheritance, Include Operation, Header Files
 @subsection Once-Only Include Files
 @cindex repeated inclusion
 @cindex including just once
 
-Very often, one header file includes another.  It can easily result that a
-certain header file is included more than once.  This may lead to errors,
-if the header file defines structure types or typedefs, and is certainly
-wasteful.  Therefore, we often wish to prevent multiple inclusion of a
-header file.
+Very often, one header file includes another.  It can easily result that
+a certain header file is included more than once.  This may lead to
+errors, if the header file defines structure types or typedefs, and is
+certainly wasteful.  Therefore, we often wish to prevent multiple
+inclusion of a header file.
 
 The standard way to do this is to enclose the entire real contents of the
 file in a conditional, like this:
@@ -493,17 +504,11 @@ additional text, to avoid conflicts with other header files.
 
 The GNU C preprocessor is programmed to notice when a header file uses
 this particular construct and handle it efficiently.  If a header file
-is contained entirely in a @samp{#ifndef} conditional, then it records
-that fact.  If a subsequent @samp{#include} specifies the same file,
-and the macro in the @samp{#ifndef} is already defined, then the file
-is entirely skipped, without even reading it.
-
-@findex #pragma once
-There is also an explicit directive to tell the preprocessor that it need
-not include a file more than once.  This is called @samp{#pragma once},
-and was used @emph{in addition to} the @samp{#ifndef} conditional around
-the contents of the header file.  @samp{#pragma once} is now obsolete
-and should not be used at all.
+is contained entirely in a @samp{#ifndef} conditional, modulo whitespace
+and comments, then it remembers that fact.  If a subsequent
+@samp{#include} specifies the same file, and the macro in the
+@samp{#ifndef} is already defined, then the directive is skipped without
+processing the specified file at all.
 
 @findex #import
 In the Objective C language, there is a variant of @samp{#include}
@@ -513,11 +518,11 @@ don't need the conditionals inside the header file to prevent multiple
 execution of the contents.
 
 @samp{#import} is obsolete because it is not a well designed feature.
-It requires the users of a header file---the applications
-programmers---to know that a certain header file should only be included
-once.  It is much better for the header file's implementor to write the
-file so that users don't need to know this.  Using @samp{#ifndef}
-accomplishes this goal.
+It requires the users of a header file --- the applications programmers
+--- to know that a certain header file should only be included once.  It
+is much better for the header file's implementor to write the file so
+that users don't need to know this.  Using @samp{#ifndef} accomplishes
+this goal.
 
 @node Inheritance, System Headers, Once-Only, Header Files
 @subsection Inheritance and Header Files
@@ -543,14 +548,13 @@ It might be convenient to define a ``local'' version, perhaps under the
 name @file{/usr/local/include/sys/signal.h}, to override or add to the
 one supplied by the system.
 
-You can do this by compiling with the option @samp{-I.}, and
-writing a file @file{sys/signal.h} that does what the application
-program expects.  But making this file include the standard
-@file{sys/signal.h} is not so easy---writing @samp{#include
-<sys/signal.h>} in that file doesn't work, because it includes your own
-version of the file, not the standard system version.  Used in that file
-itself, this leads to an infinite recursion and a fatal error in
-compilation.
+You can do this by compiling with the option @samp{-I.}, and writing a
+file @file{sys/signal.h} that does what the application program expects.
+Making this file include the standard @file{sys/signal.h} is not so easy
+--- writing @samp{#include <sys/signal.h>} in that file doesn't work,
+because it includes your own version of the file, not the standard
+system version.  Used in that file itself, this leads to an infinite
+recursion and a fatal error in compilation.
 
 @samp{#include </usr/include/sys/signal.h>} would find the proper file,
 but that is not clean, since it makes an assumption about where the
@@ -568,11 +572,10 @@ was found.
 
 Suppose you specify @samp{-I /usr/local/include}, and the list of
 directories to search also includes @file{/usr/include}; and suppose
-both directories contain @file{sys/signal.h}.  Ordinary
-@samp{#include <sys/signal.h>} finds the file under
-@file{/usr/local/include}.  If that file contains @samp{#include_next
-<sys/signal.h>}, it starts searching after that directory, and finds the
-file in @file{/usr/include}.
+both directories contain @file{sys/signal.h}.  Ordinary @samp{#include
+<sys/signal.h>} finds the file under @file{/usr/local/include}.  If that
+file contains @samp{#include_next <sys/signal.h>}, it starts searching
+after that directory, and finds the file in @file{/usr/include}.
 
 @samp{#include_next} is a GCC extension and should not be used in
 programs intended to be portable to other compilers.
@@ -585,16 +588,7 @@ The header files declaring interfaces to the operating system and
 runtime libraries often cannot be written in strictly conforming C.
 Therefore, GNU C gives code found in @dfn{system headers} special
 treatment.  Certain categories of warnings are suppressed, notably those
-enabled by @samp{-pedantic}.  For example, a hypothetical definition of
-@code{printf} as a variable argument macro:
-
-@smallexample
-#define printf(format, args...) fprintf(stdout, format , ##args)
-@end smallexample
-
-@noindent
-would cause a warning with -pedantic if it appeared in your own code,
-but not if it appeared in @file{stdio.h}.
+enabled by @samp{-pedantic}.
 
 Normally, only the headers found in specific directories are considered
 system headers.  The set of these directories is determined when GCC is
@@ -614,8 +608,8 @@ command line.  If the same directory is named by both @samp{-I} and
 had never been specified at all.
 
 @findex #pragma GCC system_header
-There is also a directive, @samp{#pragma GCC system_header}, which tells GCC
-to consider the rest of the current include file a system header, no
+There is also a directive, @samp{#pragma GCC system_header}, which tells
+GCC to consider the rest of the current include file a system header, no
 matter where it was found.  Code that comes before the @samp{#pragma} in
 the file will not be affected.
 
@@ -629,41 +623,43 @@ use later.  There are many complicated features associated with macros
 in the C preprocessor.
 
 @menu
-* Simple Macros::    Macros that always expand the same way.
-* Argument Macros::  Macros that accept arguments that are substituted
-                       into the macro expansion.
-* Macro Varargs::    Macros with variable number of arguments.
-* Predefined::       Predefined macros that are always available.
-* Stringification::  Macro arguments converted into string constants.
-* Concatenation::    Building tokens from parts taken from macro arguments.
-* Undefining::       Cancelling a macro's definition.
-* Redefining::       Changing a macro's definition.
-* Poisoning::        Ensuring a macro is never defined or used.
-* Macro Pitfalls::   Macros can confuse the unwary.  Here we explain
-                       several common problems and strange features.
+* Object-like Macros::   Macros that always expand the same way.
+* Function-like Macros:: Macros that accept arguments that are substituted
+                         into the macro expansion.
+* Macro Varargs::        Macros with variable number of arguments.
+* Predefined::           Predefined macros that are always available.
+* Stringification::      Macro arguments converted into string constants.
+* Concatenation::        Building tokens from parts taken from macro arguments.
+* Undefining::           Cancelling a macro's definition.
+* Redefining::           Changing a macro's definition.
+* Poisoning::            Ensuring a macro is never defined or used.
+* Macro Pitfalls::       Macros can confuse the unwary.  Here we explain
+                           several common problems and strange features.
 @end menu
 
-@node Simple Macros, Argument Macros, Macros, Macros
-@subsection Simple Macros
-@cindex simple macro
+@node Object-like Macros, Function-like Macros, Macros, Macros
+@subsection Object-like Macros
+@cindex object-like macro
 @cindex manifest constant
 
-A @dfn{simple macro} is a kind of abbreviation.  It is a name which
-stands for a fragment of code.  Some people refer to these as
+An @dfn{object-like macro} is a kind of abbreviation.  It is a name
+which stands for a fragment of code.  Some people refer to these as
 @dfn{manifest constants}.
 
 Before you can use a macro, you must @dfn{define} it explicitly with the
 @samp{#define} directive.  @samp{#define} is followed by the name of the
-macro and then the code it should be an abbreviation for.  For example,
+macro and then the token sequence it should be an abbreviation for,
+which is variously referred to as the macro's @dfn{body},
+@dfn{expansion} or @dfn{replacement list}.  For example,
 
 @example
 #define BUFFER_SIZE 1020
 @end example
 
 @noindent
-defines a macro named @samp{BUFFER_SIZE} as an abbreviation for the text
-@samp{1020}.  If somewhere after this @samp{#define} directive there comes
-a C statement of the form
+defines a macro named @samp{BUFFER_SIZE} as an abbreviation for the
+token @samp{1020}.  If somewhere after this @samp{#define} directive
+there comes a C statement of the form
 
 @example
 foo = (char *) xmalloc (BUFFER_SIZE);
@@ -678,28 +674,23 @@ foo = (char *) xmalloc (1020);
 @end example
 
 The use of all upper case for macro names is a standard convention.
-Programs are easier to read when it is possible to tell at a glance which
-names are macros.
+Programs are easier to read when it is possible to tell at a glance
+which names are macros.
 
-Normally, a macro definition must be a single line, like all C
-preprocessing directives.  (You can split a long macro definition
-cosmetically with Backslash-Newline.)  There is one exception: Newlines
-can be included in the macro definition if within a string or character
-constant.  This is because it is not possible for a macro definition to
-contain an unbalanced quote character; the definition automatically
-extends to include the matching quote character that ends the string or
-character constant.  Comments within a macro definition may contain
-Newlines, which make no difference since the comments are entirely
-replaced with Spaces regardless of their contents.
+Normally, a macro definition can only span a single logical line, like
+all C preprocessing directives.  Comments within a macro definition may
+contain newlines, which make no difference since each comment is
+replaced by a space regardless of its contents.
 
-Aside from the above, there is no restriction on what can go in a macro
-body.  Parentheses need not balance.  The body need not resemble valid C
-code.  (But if it does not, you may get error messages from the C
+Apart from this, there is no restriction on what can go in a macro body
+provided it decomposes into valid preprocessing tokens.  In particular,
+parentheses need not balance, and the body need not resemble valid C
+code.  (If it does not, you may get error messages from the C
 compiler when you use the macro.)
 
 The C preprocessor scans your program sequentially, so macro definitions
-take effect at the place you write them.  Therefore, the following input to
-the C preprocessor
+take effect at the place you write them.  Therefore, the following input
+to the C preprocessor
 
 @example
 foo = X;
@@ -716,10 +707,9 @@ foo = X;
 bar = 4;
 @end example
 
-After the preprocessor expands a macro name, the macro's definition body is
-appended to the front of the remaining input, and the check for macro calls
-continues.  Therefore, the macro body can contain calls to other macros.
-For example, after
+When the preprocessor expands a macro name, the macro's expansion
+replaces the macro invocation, and the result is re-scanned for more
+macros to expand.  For example, after
 
 @example
 #define BUFSIZE 1020
@@ -730,35 +720,37 @@ For example, after
 the name @samp{TABLESIZE} when used in the program would go through two
 stages of expansion, resulting ultimately in @samp{1020}.
 
-This is not at all the same as defining @samp{TABLESIZE} to be @samp{1020}.
-The @samp{#define} for @samp{TABLESIZE} uses exactly the body you
-specify---in this case, @samp{BUFSIZE}---and does not check to see whether
-it too is the name of a macro.  It's only when you @emph{use} @samp{TABLESIZE}
-that the result of its expansion is checked for more macro names.
-@xref{Cascaded Macros}.
+This is not the same as defining @samp{TABLESIZE} to be @samp{1020}.
+The @samp{#define} for @samp{TABLESIZE} uses exactly the expansion you
+specify --- in this case, @samp{BUFSIZE} --- and does not check to see
+whether it too contains macro names.  Only when you @emph{use}
+@samp{TABLESIZE} is the result of its expansion scanned for more macro
+names.  @xref{Cascaded Macros}.
 
-@node Argument Macros, Macro Varargs, Simple Macros, Macros
+@node Function-like Macros, Macro Varargs, Object-like Macros, Macros
 @subsection Macros with Arguments
 @cindex macros with argument
 @cindex arguments in macro definitions
 @cindex function-like macro
 
-A simple macro always stands for exactly the same text, each time it is
-used.  Macros can be more flexible when they accept @dfn{arguments}.
-Arguments are fragments of code that you supply each time the macro is
-used.  These fragments are included in the expansion of the macro
-according to the directions in the macro definition.  A macro that
-accepts arguments is called a @dfn{function-like macro} because the
-syntax for using it looks like a function call.
+An object-like macro is always replaced by exactly the same tokens each
+time it is used.  Macros can be made more flexible by taking
+@dfn{arguments}.  Arguments are fragments of code that you supply each
+time the macro is used.  These fragments are included in the expansion
+of the macro according to the directions in the macro definition.  A
+macro that accepts arguments is called a @dfn{function-like macro}
+because the syntax for using it looks like a function call.
 
 @findex #define
-To define a macro that uses arguments, you write a @samp{#define} directive
-with a list of @dfn{argument names} in parentheses after the name of the
-macro.  The argument names may be any valid C identifiers, separated by
-commas and optionally whitespace.  The open-parenthesis must follow the
-macro name immediately, with no space in between.
+To define a macro that uses arguments, you write a @samp{#define}
+directive with a list of @dfn{parameters} in parentheses after the name
+of the macro.  The parameters must be valid C identifiers, separated by
+commas and optionally whitespace.  The @samp{(} must follow the macro
+name immediately, with no space in between.  If you leave a space, you
+instead define an object-like macro whose expansion begins with a
+@samp{(}, and often leads to confusing errors at compile time.
 
-For example, here is a macro that computes the minimum of two numeric
+As an example, here is a macro that computes the minimum of two numeric
 values, as it is defined in many C programs:
 
 @example
@@ -769,16 +761,21 @@ values, as it is defined in many C programs:
 (This is not the best way to define a ``minimum'' macro in GNU C@.
 @xref{Side Effects}, for more information.)
 
-To use a macro that expects arguments, you write the name of the macro
-followed by a list of @dfn{actual arguments} in parentheses, separated by
-commas.  The number of actual arguments you give must match the number of
-arguments the macro expects.   Examples of use of the macro @samp{min}
-include @samp{min (1, 2)} and @samp{min (x + 28, *p)}.
+To invoke a function-like macro, you write the name of the macro
+followed by a list of @dfn{arguments} in parentheses, separated by
+commas.  The invocation of the macro need not be restricted to a single
+logical line - it can cross as many lines in the source file as you
+wish.  The number of arguments you give must match the number of
+parameters in the macro definition; empty arguments are fine.  Examples
+of use of the macro @samp{min} include @samp{min (1, 2)} and @samp{min
+(x + 28, *p)}.
 
-The expansion text of the macro depends on the arguments you use.
-Each of the argument names of the macro is replaced, throughout the
-macro definition, with the corresponding actual argument.  Using the
-same macro @samp{min} defined above, @samp{min (1, 2)} expands into
+The expansion text of the macro depends on the arguments you use.  Each
+macro parameter is replaced throughout the macro expansion with the
+tokens of the corresponding argument.  Leading and trailing argument
+whitespace is dropped, and all whitespace between the tokens of an
+argument is reduced to a single space.  Using the same macro @samp{min}
+defined above, @samp{min (1, 2)} expands into
 
 @example
 ((1) < (2) ? (1) : (2))
@@ -793,10 +790,10 @@ Likewise, @samp{min (x + 28, *p)} expands into
 ((x + 28) < (*p) ? (x + 28) : (*p))
 @end example
 
-Parentheses in the actual arguments must balance; a comma within
-parentheses does not end an argument.  However, there is no requirement
-for brackets or braces to balance, and they do not prevent a comma from
-separating arguments.  Thus,
+Parentheses within each argument must balance; a comma within such
+parentheses does not end the argument.  However, there is no requirement
+for square brackets or braces to balance, and they do not prevent a
+comma from separating arguments.  Thus,
 
 @example
 macro (array[x = y, x + 1])
@@ -808,12 +805,11 @@ passes two arguments to @code{macro}: @samp{array[x = y} and @samp{x +
 you must write it as @samp{array[(x = y, x + 1)]}, which is equivalent C
 code.
 
-After the actual arguments are substituted into the macro body, the entire
-result is appended to the front of the remaining input, and the check for
-macro calls continues.  Therefore, the actual arguments can contain calls
-to other macros, either with or without arguments, or even to the same
-macro.  The macro body can also contain calls to other macros.  For
-example, @samp{min (min (a, b), c)} expands into this text:
+After the arguments have been substituted into the macro body, the
+resulting expansion replaces the macro invocation, and re-scanned for
+more macro calls.  Therefore even arguments can contain calls to other
+macros, either with or without arguments, and even to the same macro.
+For example, @samp{min (min (a, b), c)} expands into this text:
 
 @example
 ((((a) < (b) ? (a) : (b))) < (c)
@@ -824,52 +820,53 @@ example, @samp{min (min (a, b), c)} expands into this text:
 @noindent
 (Line breaks shown here for clarity would not actually be generated.)
 
-@cindex blank macro arguments
-@cindex space as macro argument
+@cindex empty macro arguments
 If a macro @code{foo} takes one argument, and you want to supply an
-empty argument, you must write at least some whitespace between the
-parentheses, like this: @samp{foo ( )}.  Just @samp{foo ()} is providing
-no arguments, which is an error if @code{foo} expects an argument.  But
-@samp{foo0 ()} is the correct way to call a macro defined to take zero
-arguments, like this:
+empty argument, simply supply no preprocessing tokens.  Since whitespace
+does not form a preprocessing token, it is optional.  For example,
+@samp{foo ()}, @samp{foo ( )} and @samp{bar (, arg2)}.
+
+Previous GNU preprocessor implementations and documentation were
+incorrect on this point, insisting that a function-like macro that takes
+a single argument be passed a space if an empty argument was required.
+
+If you use a macro name followed by something other than a @samp{(}
+(after ignoring any whitespace that might follow), it does not form an
+invocation of the macro, and the preprocessor does not change what you
+have written.  Therefore, it is possible for the same identifier to be a
+variable or function in your program as well as a macro, and you can
+choose in each instance whether to refer to the macro (if an actual
+argument list follows) or the variable or function (if an argument list
+does not follow).  For example,
 
 @example
-#define foo0() @dots{}
+#define foo(X) X
+foo bar foo(baz)
 @end example
 
-If you use the macro name followed by something other than an
-open-parenthesis (after ignoring any spaces, tabs and comments that
-follow), it is not a call to the macro, and the preprocessor does not
-change what you have written.  Therefore, it is possible for the same name
-to be a variable or function in your program as well as a macro, and you
-can choose in each instance whether to refer to the macro (if an actual
-argument list follows) or the variable or function (if an argument list
-does not follow).
+expands to @samp{foo bar baz}.  Such dual use of one name could be
+confusing and should be avoided except when the two meanings are
+effectively synonymous: that is, when the name is both a macro and a
+function and the two have similar effects.  You can think of the name
+simply as a function; use of the name for purposes other than calling it
+(such as, to take the address) will refer to the function, while calls
+will expand the macro and generate better but equivalent code.
 
-Such dual use of one name could be confusing and should be avoided
-except when the two meanings are effectively synonymous: that is, when the
-name is both a macro and a function and the two have similar effects.  You
-can think of the name simply as a function; use of the name for purposes
-other than calling it (such as, to take the address) will refer to the
-function, while calls will expand the macro and generate better but
-equivalent code.  For example, you can use a function named @samp{min} in
-the same source file that defines the macro.  If you write @samp{&min} with
-no argument list, you refer to the function.  If you write @samp{min (x,
-bb)}, with an argument list, the macro is expanded.  If you write
-@samp{(min) (a, bb)}, where the name @samp{min} is not followed by an
-open-parenthesis, the macro is not expanded, so you wind up with a call to
-the function @samp{min}.
-
-You may not define the same name as both a simple macro and a macro with
-arguments.
+For example, you can use a function named @samp{min} in the same source
+file that defines the macro.  If you write @samp{&min} with no argument
+list, you refer to the function.  If you write @samp{min (x, bb)}, with
+an argument list, the macro is expanded.  If you write @samp{(min) (a,
+bb)}, where the name @samp{min} is not followed by an open-parenthesis,
+the macro is not expanded, so you wind up with a call to the function
+@samp{min}.
 
 In the definition of a macro with arguments, the list of argument names
-must follow the macro name immediately with no space in between.  If there
-is a space after the macro name, the macro is defined as taking no
-arguments, and all the rest of the line is taken to be the expansion.  The
-reason for this is that it is often useful to define a macro that takes no
-arguments and whose definition begins with an identifier in parentheses.
-This rule about spaces makes it possible for you to do either this:
+must follow the macro name immediately with no space in between.  If
+there is a space after the macro name, the macro is defined as taking no
+arguments, and all the rest of the line is taken to be the expansion.
+The reason for this is that it is often useful to define a macro that
+takes no arguments and whose definition begins with an identifier in
+parentheses.  This rule makes it possible for you to do either this:
 
 @example
 #define FOO(x) - 1 / (x)
@@ -887,11 +884,11 @@ reciprocal of that argument) or this:
 (which defines @samp{BAR} to take no argument and always expand into
 @samp{(x) - 1 / (x)}).
 
-Note that the @emph{uses} of a macro with arguments can have spaces before
-the left parenthesis; it's the @emph{definition} where it matters whether
-there is a space.
+Note that the @emph{uses} of a macro with arguments can have spaces
+before the left parenthesis; it's the @emph{definition} where it matters
+whether there is a space.
 
-@node Macro Varargs, Predefined, Argument Macros, Macros
+@node Macro Varargs, Predefined, Function-like Macros, Macros
 @subsection Macros with Variable Numbers of Arguments
 @cindex variable number of arguments
 @cindex macro with variable arguments
@@ -902,14 +899,13 @@ function can.  The syntax for defining the macro looks much like that
 used for a function.  Here is an example:
 
 @example
-#define eprintf(format, args...)  \
- fprintf (stderr, format , ## args)
+#define eprintf(...) fprintf (stderr, __VA_ARGS__)
 @end example
 
-Here @code{args} is a @dfn{rest argument}: it takes in zero or more
-arguments, as many as the call contains.  All of them plus the commas
-between them form the value of @code{args}, which is substituted into
-the macro body where @code{args} is used.  Thus, we have this expansion:
+Here @samp{<@dots{}>} is a @dfn{variable argument}.  It represents the
+zero or more tokens until the matching closing parenthesis, including
+commas.  This set of tokens is substituted into the macro body wherever
+@code{__VA_ARGS__} is used.  Thus, we have this expansion:
 
 @example
 eprintf ("%s:%d: ", input_file_name, line_number)
@@ -917,48 +913,38 @@ eprintf ("%s:%d: ", input_file_name, line_number)
 fprintf (stderr, "%s:%d: " , input_file_name, line_number)
 @end example
 
-@noindent
-Note that the comma after the string constant comes from the definition
-of @code{eprintf}, whereas the last comma comes from the value of
-@code{args}.
-
-The reason for using @samp{##} is to handle the case when @code{args}
-matches no arguments at all.  In this case, @code{args} has an empty
-value.  In this case, the second comma in the definition becomes an
-embarrassment: if it got through to the expansion of the macro, we would
-get something like this:
+We might instead have defined eprintf as follows:-
 
 @example
-fprintf (stderr, "success!\n" , )
+#define eprintf(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end example
 
-@noindent
-which is invalid C syntax.  @samp{##} gets rid of the comma, so we get
-the following instead:
+This formulation causes problems if there are no arguments to fprintf
+after the format, however.  There is no way to produce expanded output
+of
 
 @example
 fprintf (stderr, "success!\n")
 @end example
 
-This is a special feature of the GNU C preprocessor: @samp{##} before a
-rest argument that is empty discards the preceding sequence of
-non-whitespace characters from the macro definition.  (If another macro
-argument precedes, none of it is discarded.)
+@noindent
+since passing an empty argument for the variable arguments part like this
 
-It might be better to discard the last preprocessor token instead of the
-last preceding sequence of non-whitespace characters; in fact, we may
-someday change this feature to do so.  We advise you to write the macro
-definition so that the preceding sequence of non-whitespace characters
-is just a single token, so that the meaning will not change if we change
-the definition of this feature.
+@example
+eprintf ("success!\n", )
+@end example
+
+@noindent
+produces an unwanted extra comma, originating from the expansion and not
+the invocation of eprintf, in the output.
 
 @node Predefined, Stringification, Macro Varargs, Macros
 @subsection Predefined Macros
 
 @cindex predefined macros
-Several simple macros are predefined.  You can use them without giving
-definitions for them.  They fall into two classes: standard macros and
-system-specific macros.
+Several object-like macros are predefined; you use them without
+supplying their definitions.  They fall into two classes: standard
+macros and system-specific macros.
 
 @menu
 * Standard Predefined::     Standard predefined macros.
@@ -970,17 +956,19 @@ system-specific macros.
 @cindex standard predefined macros
 
 The standard predefined macros are available with the same meanings
-regardless of the machine or operating system on which you are using GNU C@.
-Their names all start and end with double underscores.  Those preceding
-@code{__GNUC__} in this table are standardized by ANSI C; the rest are
-GNU C extensions.
+regardless of the machine or operating system on which you are using GNU
+C@.  Their names all start and end with double underscores.  Those
+preceding @code{__GNUC__} in this table are standardized by ISO C; the
+rest are GNU C extensions.
 
 @table @code
 @item __FILE__
 @findex __FILE__
 This macro expands to the name of the current input file, in the form of
 a C string constant.  The precise name returned is the one that was
-specified in @samp{#include} or as the input file name argument.
+specified in @samp{#include} or as the input file name argument.  For
+example, @samp{"/usr/local/include/myheader.h"} is a possible expansion
+of this macro.
 
 @item __LINE__
 @findex __LINE__
@@ -1009,7 +997,7 @@ the @samp{#include} directive, the expansions of @samp{__FILE__} and
 processing moves to the line after the @samp{#include}).
 
 The expansions of both @samp{__FILE__} and @samp{__LINE__} are altered
-if a @samp{#line} directive is used.  @xref{Combining Sources}.
+if a @samp{#line} directive is used.  @xref{Line Control}.
 
 @item __DATE__
 @findex __DATE__
@@ -1027,27 +1015,27 @@ eight characters and looks like @samp{"23:59:01"}.
 
 @item __STDC__
 @findex __STDC__
-This macro expands to the constant 1, to signify that this is ANSI
+This macro expands to the constant 1, to signify that this is ISO
 Standard C@.  (Whether that is actually true depends on what C compiler
 will operate on the output from the preprocessor.)
 
 On some hosts, system include files use a different convention, where
 @samp{__STDC__} is normally 0, but is 1 if the user specifies strict
-conformance to the C Standard.  The preprocessor follows the host convention
-when processing system include files, but when processing user files it follows
-the usual GNU C convention.
+conformance to the C Standard.  The preprocessor follows the host
+convention when processing system include files, but when processing
+user files it follows the usual GNU C convention.
 
 This macro is not defined if the @samp{-traditional} option is used.
 
 @item __STDC_VERSION__
 @findex __STDC_VERSION__
-This macro expands to the C Standard's version number,
-a long integer constant of the form @samp{@var{yyyy}@var{mm}L}
-where @var{yyyy} and @var{mm} are the year and month of the Standard version.
-This signifies which version of the C Standard the preprocessor conforms to.
-Like @samp{__STDC__}, whether this version number is accurate
-for the entire implementation depends on what C compiler
-will operate on the output from the preprocessor.
+This macro expands to the C Standard's version number, a long integer
+constant of the form @samp{@var{yyyy}@var{mm}L} where @var{yyyy} and
+@var{mm} are the year and month of the Standard version.  This signifies
+which version of the C Standard the preprocessor conforms to.  Like
+@samp{__STDC__}, whether this version number is accurate for the entire
+implementation depends on what C compiler will operate on the output
+from the preprocessor.
 
 This macro is not defined if the @samp{-traditional} option is used.
 
@@ -1063,16 +1051,16 @@ version 1, which is now obsolete, and @samp{2} for version 2).
 @findex __GNUC_MINOR__
 The macro contains the minor version number of the compiler.  This can
 be used to work around differences between different releases of the
-compiler (for example, if gcc 2.6.3 is known to support a feature, you
+compiler (for example, if GCC 2.6.3 is known to support a feature, you
 can test for @code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 6)}).
 
 @item __GNUC_PATCHLEVEL__
 @findex __GNUC_PATCHLEVEL__
 This macro contains the patch level of the compiler.  This can be
 used to work around differences between different patch level releases
-of the compiler (for example, if gcc 2.6.2 is known to contain a bug,
-whereas gcc 2.6.3 contains a fix, and you have code which can workaround
-ths problem depending on whether the bug is fixed or not, you can test for
+of the compiler (for example, if GCC 2.6.2 is known to contain a bug,
+whereas GCC 2.6.3 contains a fix, and you have code which can workaround
+the problem depending on whether the bug is fixed or not, you can test for
 @code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) || 
 (__GNUC__ == 2 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 3)}).
 
@@ -1087,8 +1075,8 @@ C++.
 The ISO standard for C++ requires predefining this variable.  You can
 use @samp{__cplusplus} to test whether a header is compiled by a C
 compiler or a C++ compiler. The compiler currently uses a value of
-@samp{1}, instead of the value @samp{199711L}, which would indicate
-full conformance with the standard.
+@samp{1}, instead of the value @samp{199711L}, which would indicate full
+conformance with the standard.
 
 @item __STRICT_ANSI__
 @findex __STRICT_ANSI__
@@ -1096,27 +1084,27 @@ GNU C defines this macro if and only if the @samp{-ansi} switch was
 specified when GNU C was invoked.  Its definition is the null string.
 This macro exists primarily to direct certain GNU header files not to
 define certain traditional Unix constructs which are incompatible with
-ANSI C@.
+ISO C@.
 
 @item __BASE_FILE__
 @findex __BASE_FILE__
 This macro expands to the name of the main input file, in the form
 of a C string constant.  This is the source file that was specified
-as an argument when the C compiler was invoked.
+on the command line of the preprocessor or C compiler.
 
 @item __INCLUDE_LEVEL__
 @findex __INCLUDE_LEVEL_
 This macro expands to a decimal integer constant that represents the
 depth of nesting in include files.  The value of this macro is
-incremented on every @samp{#include} directive and decremented at every
-end of file.  For input files specified by command line arguments,
-the nesting level is zero.
+incremented on every @samp{#include} directive and decremented at the
+end of every included file.  It starts out at 0, it's value within the
+base file specified on the command line.
 
 @item __VERSION__
 @findex __VERSION__
-This macro expands to a string constant which describes the version number of
-GNU C@.  The string is normally a sequence of decimal numbers separated
-by periods, such as @samp{"2.6.0"}.
+This macro expands to a string constant which describes the version
+number of GNU C@.  The string is normally a sequence of decimal numbers
+separated by periods, such as @samp{"2.6.0"}.
 
 @item __OPTIMIZE__
 @findex __OPTIMIZE__
@@ -1159,12 +1147,12 @@ the rs6000 System V Release 4 target.
 @node Nonstandard Predefined,, Standard Predefined, Predefined
 @subsubsection Nonstandard Predefined Macros
 
-The C preprocessor normally has several predefined macros that vary between
-machines because their purpose is to indicate what type of system and
-machine is in use.  This manual, being for all systems and machines, cannot
-tell you exactly what their names are; instead, we offer a list of some
-typical ones.  You can use @samp{cpp -dM} to see the values of
-predefined macros; see @ref{Invocation}.
+The C preprocessor normally has several predefined macros that vary
+between machines because their purpose is to indicate what type of
+system and machine is in use.  This manual, being for all systems and
+machines, cannot tell you exactly what their names are; instead, we
+offer a list of some typical ones.  You can use @samp{cpp -dM} to see
+the values of predefined macros; see @ref{Invocation}.
 
 Some nonstandard predefined macros describe the operating system in use,
 with more or less specificity.  For example,
@@ -1203,7 +1191,7 @@ depends on the system you are using it on.
 @item M68020
 @findex M68020
 @samp{M68020} has been observed to be predefined on some systems that
-use 68020 CPUs---in addition to @samp{mc68000} and @samp{m68k}, which
+use 68020 CPUs --- in addition to @samp{mc68000} and @samp{m68k}, which
 are less specific.
 
 @item _AM29K
@@ -1237,21 +1225,21 @@ the system.  For example,
 @end table
 
 These predefined symbols are not only nonstandard, they are contrary to the
-ANSI standard because their names do not start with underscores.
+ISO standard because their names do not start with underscores.
 Therefore, the option @samp{-ansi} inhibits the definition of these
 symbols.
 
-This tends to make @samp{-ansi} useless, since many programs depend on the
-customary nonstandard predefined symbols.  Even system header files check
-them and will generate incorrect declarations if they do not find the names
-that are expected.  You might think that the header files supplied for the
-Uglix computer would not need to test what machine they are running on,
-because they can simply assume it is the Uglix; but often they do, and they
-do so using the customary names.  As a result, very few C programs will
-compile with @samp{-ansi}.  We intend to avoid such problems on the GNU
-system.
+This tends to make @samp{-ansi} useless, since many programs depend on
+the customary nonstandard predefined symbols.  Even system header files
+check them and will generate incorrect declarations if they do not find
+the names that are expected.  You might think that the header files
+supplied for the Uglix computer would not need to test what machine they
+are running on, because they can simply assume it is the Uglix; but
+often they do, and they do so using the customary names.  As a result,
+very few C programs will compile with @samp{-ansi}.  We intend to avoid
+such problems on the GNU system.
 
-What, then, should you do in an ANSI C program to test the type of machine
+What, then, should you do in an ISO C program to test the type of machine
 it will run on?
 
 GNU C offers a parallel series of symbols for this purpose, whose names
@@ -1276,18 +1264,18 @@ This macro is usually specified in @file{tm.h}.
 @subsection Stringification
 
 @cindex stringification
-@dfn{Stringification} means turning a code fragment into a string constant
-whose contents are the text for the code fragment.  For example,
-stringifying @samp{foo (z)} results in @samp{"foo (z)"}.
+@dfn{Stringification} means turning a sequence of preprocessing tokens
+into a string literal.  For example, stringifying @samp{foo (z)} results
+in @samp{"foo (z)"}.
 
-In the C preprocessor, stringification is an option available when macro
-arguments are substituted into the macro definition.  In the body of the
-definition, when an argument name appears, the character @samp{#} before
-the name specifies stringification of the corresponding actual argument
-when it is substituted at that point in the definition.  The same argument
-may be substituted in other places in the definition without
-stringification if the argument name appears in those places with no
-@samp{#}.
+In the C preprocessor, stringification is possible when macro arguments
+are substituted during macro expansion.  When a parameter appears
+preceded by a @samp{#} token in the replacement list of a function-like
+macro, it indicates that both tokens should be replaced with the
+stringification of the corresponding argument during expansion.  The
+same argument may be substituted in other places in the definition
+without stringification if the argument name appears in those places
+with no preceding @samp{#}.
 
 Here is an example of a macro definition that uses stringification:
 
@@ -1301,20 +1289,21 @@ while (0)
 @end smallexample
 
 @noindent
-Here the actual argument for @samp{EXP} is substituted once as given,
-into the @samp{if} statement, and once as stringified, into the
-argument to @samp{fprintf}.  The @samp{do} and @samp{while (0)} are
-a kludge to make it possible to write @samp{WARN_IF (@var{arg});},
-which the resemblance of @samp{WARN_IF} to a function would make
-C programmers want to do; see @ref{Swallow Semicolon}.
+Here the argument for @samp{EXP} is substituted once, as-is, into the
+@samp{if} statement, and once, stringified, into the argument to
+@samp{fprintf}.  The @samp{do} and @samp{while (0)} are a kludge to make
+it possible to write @samp{WARN_IF (@var{arg});}, which the resemblance
+of @samp{WARN_IF} to a function would make C programmers want to do; see
+@ref{Swallow Semicolon}.
 
-The stringification feature is limited to transforming one macro argument
-into one string constant: there is no way to combine the argument with
-other text and then stringify it all together.  But the example above shows
-how an equivalent result can be obtained in ANSI Standard C using the
-feature that adjacent string constants are concatenated as one string
-constant.  The preprocessor stringifies the actual value of @samp{EXP} 
-into a separate string constant, resulting in text like
+The stringification feature is limited to transforming the tokens of a
+macro argument into a string constant: there is no way to combine the
+argument with surrounding text and stringify it all together.  The
+example above shows how an equivalent result can be obtained in ISO
+Standard C, using the fact that adjacent string constants are
+concatenated by the C compiler to form a single string constant.  The
+preprocessor stringifies the actual value of @samp{EXP} into a separate
+string constant, resulting in text like
 
 @smallexample
 @group
@@ -1325,7 +1314,7 @@ while (0)
 @end smallexample
 
 @noindent
-but the C compiler then sees three consecutive string constants and
+but the compiler then sees three consecutive string constants and
 concatenates them into one, producing effectively
 
 @smallexample
@@ -1334,38 +1323,38 @@ do @{ if (x == 0) \
 while (0)
 @end smallexample
 
-Stringification in C involves more than putting doublequote characters
-around the fragment; it is necessary to put backslashes in front of all
-doublequote characters, and all backslashes in string and character
-constants, in order to get a valid C string constant with the proper
-contents.  Thus, stringifying @samp{p = "foo\n";} results in @samp{"p =
-\"foo\\n\";"}.  However, backslashes that are not inside of string or
-character constants are not duplicated: @samp{\n} by itself stringifies to
-@samp{"\n"}.
+Stringification in C involves more than putting double-quote characters
+around the fragment.  The preprocessor backslash-escapes the surrounding
+quotes of string literals, and all backslashes within string and
+character constants, in order to get a valid C string constant with the
+proper contents.  Thus, stringifying @samp{p = "foo\n";} results in
+@samp{"p = \"foo\\n\";"}.  However, backslashes that are not inside
+string or character constants are not duplicated: @samp{\n} by itself
+stringifies to @samp{"\n"}.
 
 Whitespace (including comments) in the text being stringified is handled
-according to precise rules.  All leading and trailing whitespace is ignored.
-Any sequence of whitespace in the middle of the text is converted to
-a single space in the stringified result.
+according to precise rules.  All leading and trailing whitespace is
+ignored.  Any sequence of whitespace in the middle of the text is
+converted to a single space in the stringified result.
 
 @node Concatenation, Undefining, Stringification, Macros
 @subsection Concatenation
 @cindex concatenation
 @cindex @samp{##}
 @dfn{Concatenation} means joining two strings into one.  In the context
-of macro expansion, concatenation refers to joining two lexical units
-into one longer one.  Specifically, an actual argument to the macro can be
-concatenated with another actual argument or with fixed text to produce
+of macro expansion, concatenation refers to joining two preprocessing
+tokens to form one.  In particular, a token of a macro argument can be
+concatenated with another argument's token or with fixed text to produce
 a longer name.  The longer name might be the name of a function,
-variable or type, or a C keyword; it might even be the name of another
+variable, type, or a C keyword; it might even be the name of another
 macro, in which case it will be expanded.
 
-When you define a macro, you request concatenation with the special
-operator @samp{##} in the macro body.  When the macro is called,
-after actual arguments are substituted, all @samp{##} operators are
-deleted, and so is any whitespace next to them (including whitespace
-that was part of an actual argument).  The result is to concatenate
-the syntactic tokens on either side of the @samp{##}.
+When you define a function-like or object-like macro, you request
+concatenation with the special operator @samp{##} in the macro's
+replacement list.  When the macro is called, any arguments are
+substituted without performing macro expansion, every @samp{##} operator
+is deleted, and the two tokens on either side of it are concatenated to
+form a single token.
 
 Consider a C program that interprets named commands.  There probably needs
 to be a table of commands, perhaps an array of structures declared as
@@ -1403,28 +1392,24 @@ struct command commands[] =
 @};
 @end example
 
-The usual case of concatenation is concatenating two names (or a name and a
-number) into a longer name.  But this isn't the only valid case.  It is
-also possible to concatenate two numbers (or a number and a name, such as
-@samp{1.5} and @samp{e3}) into a number.  Also, multi-character operators
-such as @samp{+=} can be formed by concatenation.  In some cases it is even
-possible to piece together a string constant.  However, two pieces of text
-that don't together form a valid lexical unit cannot be concatenated.  For
-example, concatenation with @samp{x} on one side and @samp{+} on the other
-is not meaningful because those two characters can't fit together in any
-lexical unit of C@.  The ANSI standard says that such attempts at
-concatenation are undefined, but in the GNU C preprocessor it is well
-defined: it puts the @samp{x} and @samp{+} side by side with no particular
-special results.
+The usual case of concatenation is concatenating two names (or a name
+and a number) into a longer name.  This isn't the only valid case.
+It is also possible to concatenate two numbers (or a number and a name,
+such as @samp{1.5} and @samp{e3}) into a number.  Also, multi-character
+operators such as @samp{+=} can be formed by concatenation.  However,
+two tokens that don't together form a valid token cannot be
+concatenated.  For example, concatenation of @samp{x} on one side and
+@samp{+} on the other is not meaningful because those two tokens do not
+form a valid preprocessing token when concatenated.  UNDEFINED
 
-Keep in mind that the C preprocessor converts comments to whitespace before
-macros are even considered.  Therefore, you cannot create a comment by
-concatenating @samp{/} and @samp{*}: the @samp{/*} sequence that starts a
-comment is not a lexical unit, but rather the beginning of a ``long'' space
-character.  Also, you can freely use comments next to a @samp{##} in a
-macro definition, or in actual arguments that will be concatenated, because
-the comments will be converted to spaces at first sight, and concatenation
-will later discard the spaces.
+Keep in mind that the C preprocessor converts comments to whitespace
+before macros are even considered.  Therefore, you cannot create a
+comment by concatenating @samp{/} and @samp{*}: the @samp{/*} sequence
+that starts a comment is not a token, but rather the beginning of a
+comment.  You can freely use comments next to @samp{##} in a macro
+definition, or in arguments that will be concatenated, because the
+comments will be converted to spaces at first sight, and concatenation
+operates on tokens and so ignores whitespace.
 
 @node Undefining, Redefining, Concatenation, Macros
 @subsection Undefining Macros
@@ -1436,8 +1421,8 @@ name to be undefined.
 
 Like definition, undefinition occurs at a specific point in the source
 file, and it applies starting from that point.  The name ceases to be a
-macro name, and from that point on it is treated by the preprocessor as if
-it had never been a macro name.
+macro name, and from that point on it is treated by the preprocessor as
+if it had never been a macro name.
 
 For example,
 
@@ -1464,7 +1449,8 @@ valid C code.
 
 The same form of @samp{#undef} directive will cancel definitions with
 arguments or definitions that don't expect arguments.  The @samp{#undef}
-directive has no effect when used on a name not currently defined as a macro.
+directive has no effect when used on a name not currently defined as a
+macro.
 
 @node Redefining, Poisoning, Undefining, Macros
 @subsection Redefining Macros
@@ -1473,45 +1459,51 @@ directive has no effect when used on a name not currently defined as a macro.
 @dfn{Redefining} a macro means defining (with @samp{#define}) a name that
 is already defined as a macro.
 
-A redefinition is trivial if the new definition is transparently identical
-to the old one.  You probably wouldn't deliberately write a trivial
-redefinition, but they can happen automatically when a header file is
-included more than once (@pxref{Header Files}), so they are accepted
-silently and without effect.
+A redefinition is trivial if the new definition is transparently
+identical to the old one.  You probably wouldn't deliberately write a
+trivial redefinition, but they can happen automatically when a header
+file is included more than once (@pxref{Header Files}), so they are
+accepted silently and without effect.
 
-Nontrivial redefinition is considered likely to be an error, so
-it provokes a warning message from the preprocessor.  However, sometimes it
-is useful to change the definition of a macro in mid-compilation.  You can
-inhibit the warning by undefining the macro with @samp{#undef} before the
-second definition.
+Nontrivial redefinition is considered likely to be an error, so it
+provokes a warning message from the preprocessor.  However, sometimes it
+is useful to change the definition of a macro in mid-compilation.  You
+can inhibit the warning by undefining the macro with @samp{#undef}
+before the second definition.
 
-In order for a redefinition to be trivial, the new definition must
+In order for a redefinition to be trivial, the parameter names must
+match and be in the same order, and the new replacement list must
 exactly match the one already in effect, with two possible exceptions:
 
 @itemize @bullet
 @item
-Whitespace may be added or deleted at the beginning or the end.
+Whitespace may be added or deleted at the beginning or the end of the
+replacement list.  In a sense this is vacuous, since strictly such
+whitespace doesn't form part of the macro's expansion.
 
 @item
-Whitespace may be changed in the middle (but not inside strings).
-However, it may not be eliminated entirely, and it may not be added
-where there was no whitespace at all.
+Between tokens in the expansion, any two forms of whitespace are
+considered equivalent.  In particular, whitespace may not be eliminated
+entirely, nor may it be added where there previously wasn't any.
 @end itemize
 
 Recall that a comment counts as whitespace.
+
+As a particular case of the above, you may not redefine an object-like
+macro as a function-like macro, and vice-versa.
 
 @node Poisoning, Macro Pitfalls, Redefining, Macros
 @subsection Poisoning Macros
 @cindex poisoning macros
 @findex #pragma GCC poison
-@findex #pragma poison
 
 Sometimes, there is an identifier that you want to remove completely
 from your program, and make sure that it never creeps back in.  To
 enforce this, the @samp{#pragma GCC poison} directive can be used.
-@samp{#pragma GCC poison} is followed by a list of identifiers to poison,
-and takes effect for the rest of the source.  You cannot @samp{#undef} a
-poisoned identifier or test to see if it's defined with @samp{#ifdef}.
+@samp{#pragma GCC poison} is followed by a list of identifiers to
+poison, and takes effect for the rest of the source.  You cannot
+@samp{#undef} a poisoned identifier or test to see if it's defined with
+@samp{#ifdef}.
 
 For example,
 
@@ -1522,8 +1514,6 @@ sprintf(some_string, "hello");
 
 @noindent
 will produce an error.
-
-For backwards compatibility @samp{#pragma poison} is also recognized.
 
 @node Macro Pitfalls,, Poisoning, Macros
 @subsection Pitfalls and Subtleties of Macros
@@ -1543,8 +1533,8 @@ counterintuitive consequences that you must watch out for.
 * Side Effects::      Unsafe macros that cause trouble when
                          arguments contain side effects.
 * Self-Reference::    Macros whose definitions use the macros' own names.
-* Argument Prescan::  Actual arguments are checked for macro calls
-                         before they are substituted.
+* Argument Prescan::  Arguments are checked for macro calls before they
+                         are substituted.
 * Cascaded Macros::   Macros whose definitions use other macros.
 * Newlines in Args::  Sometimes line numbers get confused.
 @end menu
@@ -1557,7 +1547,7 @@ substituted into the macro body and the result is checked, together with
 the rest of the input file, for more macro calls.
 
 It is possible to piece together a macro call coming partially from the
-macro body and partially from the actual arguments.  For example,
+macro body and partially from the arguments.  For example,
 
 @example
 #define double(x) (2*(x))
@@ -1567,10 +1557,10 @@ macro body and partially from the actual arguments.  For example,
 @noindent
 would expand @samp{call_with_1 (double)} into @samp{(2*(1))}.
 
-Macro definitions do not have to have balanced parentheses.  By writing an
-unbalanced open parenthesis in a macro body, it is possible to create a
-macro call that begins inside the macro body but ends outside of it.  For
-example,
+Macro definitions do not have to have balanced parentheses.  By writing
+an unbalanced open parenthesis in a macro body, it is possible to create
+a macro call that begins inside the macro body but ends outside of it.
+For example,
 
 @example
 #define strange(file) fprintf (file, "%s %d",
@@ -1586,9 +1576,10 @@ This bizarre example expands to @samp{fprintf (stderr, "%s %d", p, 35)}!
 @cindex parentheses in macro bodies
 
 You may have noticed that in most of the macro definition examples shown
-above, each occurrence of a macro argument name had parentheses around it.
-In addition, another pair of parentheses usually surround the entire macro
-definition.  Here is why it is best to write macros that way.
+above, each occurrence of a macro argument name had parentheses around
+it.  In addition, another pair of parentheses usually surround the
+entire macro definition.  Here is why it is best to write macros that
+way.
 
 Suppose you define a macro as follows,
 
@@ -1621,7 +1612,7 @@ a = (b & (c + sizeof (int) - 1)) / sizeof (int);
 @end example
 
 @noindent
-But what we want is this:
+What we want is this:
 
 @example
 a = ((b & c) + sizeof (int) - 1)) / sizeof (int);
@@ -1637,22 +1628,22 @@ Defining the macro as
 @noindent
 provides the desired result.
 
-Unintended grouping can result in another way.  Consider
-@samp{sizeof ceil_div(1, 2)}.  That has the appearance of a C expression
-that would compute the size of the type of @samp{ceil_div (1, 2)}, but in
-fact it means something very different.  Here is what it expands to:
+Unintended grouping can result in another way.  Consider @samp{sizeof
+ceil_div(1, 2)}.  That has the appearance of a C expression that would
+compute the size of the type of @samp{ceil_div (1, 2)}, but in fact it
+means something very different.  Here is what it expands to:
 
 @example
 sizeof ((1) + (2) - 1) / (2)
 @end example
 
 @noindent
-This would take the size of an integer and divide it by two.  The precedence
-rules have put the division outside the @samp{sizeof} when it was intended
-to be inside.
+This would take the size of an integer and divide it by two.  The
+precedence rules have put the division outside the @samp{sizeof} when it
+was intended to be inside.
 
-Parentheses around the entire macro definition can prevent such problems.
-Here, then, is the recommended way to define @samp{ceil_div}:
+Parentheses around the entire macro definition can prevent such
+problems.  Here, then, is the recommended way to define @samp{ceil_div}:
 
 @example
 #define ceil_div(x, y) (((x) + (y) - 1) / (y))
@@ -1676,17 +1667,18 @@ characters:
 @end example
 
 @noindent
-Here Backslash-Newline is used to split the macro definition, which must
-be a single line, so that it resembles the way such C code would be
-laid out if not part of a macro definition.
+Here backslash-newline is used to split the macro definition, which must
+be a single logical line, so that it resembles the way such C code would
+be laid out if not part of a macro definition.
 
 A call to this macro might be @samp{SKIP_SPACES (p, lim)}.  Strictly
 speaking, the call expands to a compound statement, which is a complete
-statement with no need for a semicolon to end it.  But it looks like a
-function call.  So it minimizes confusion if you can use it like a function
-call, writing a semicolon afterward, as in @samp{SKIP_SPACES (p, lim);}
+statement with no need for a semicolon to end it.  However, since it
+looks like a function call, it minimizes confusion if you can use it
+like a function call, writing a semicolon afterward, as in
+@samp{SKIP_SPACES (p, lim);}
 
-But this can cause trouble before @samp{else} statements, because the
+This can cause trouble before @samp{else} statements, because the
 semicolon is actually a null statement.  Suppose you write
 
 @example
@@ -1696,8 +1688,8 @@ else @dots{}
 @end example
 
 @noindent
-The presence of two statements---the compound statement and a null
-statement---in between the @samp{if} condition and the @samp{else}
+The presence of two statements --- the compound statement and a null
+statement --- in between the @samp{if} condition and the @samp{else}
 makes invalid C code.
 
 The definition of the macro @samp{SKIP_SPACES} can be altered to solve
@@ -1753,13 +1745,13 @@ for @samp{Y}.
 The function @samp{foo} is used only once in the statement as it appears
 in the program, but the expression @samp{foo (z)} has been substituted
 twice into the macro expansion.  As a result, @samp{foo} might be called
-two times when the statement is executed.  If it has side effects or
-if it takes a long time to compute, the results might not be what you
+two times when the statement is executed.  If it has side effects or if
+it takes a long time to compute, the results might not be what you
 intended.  We say that @samp{min} is an @dfn{unsafe} macro.
 
 The best solution to this problem is to define @samp{min} in a way that
-computes the value of @samp{foo (z)} only once.  The C language offers no
-standard way to do this, but it can be done with GNU C extensions as
+computes the value of @samp{foo (z)} only once.  The C language offers
+no standard way to do this, but it can be done with GNU C extensions as
 follows:
 
 @example
@@ -1770,8 +1762,8 @@ follows:
 
 If you do not wish to use GNU C extensions, the only solution is to be
 careful when @emph{using} the macro @samp{min}.  For example, you can
-calculate the value of @samp{foo (z)}, save it in a variable, and use that
-variable in @samp{min}:
+calculate the value of @samp{foo (z)}, save it in a variable, and use
+that variable in @samp{min}:
 
 @example
 #define min(X, Y)  ((X) < (Y) ? (X) : (Y))
@@ -1789,10 +1781,10 @@ variable in @samp{min}:
 @subsubsection Self-Referential Macros
 
 @cindex self-reference
-A @dfn{self-referential} macro is one whose name appears in its definition.
-A special feature of ANSI Standard C is that the self-reference is not
-considered a macro call.  It is passed into the preprocessor output
-unchanged.
+A @dfn{self-referential} macro is one whose name appears in its
+definition.  A special feature of ISO Standard C is that the
+self-reference is not considered a macro call.  It is passed into the
+preprocessor output unchanged.
 
 Let's consider an example:
 
@@ -1803,15 +1795,15 @@ Let's consider an example:
 @noindent
 where @samp{foo} is also a variable in your program.
 
-Following the ordinary rules, each reference to @samp{foo} will expand into
-@samp{(4 + foo)}; then this will be rescanned and will expand into @samp{(4
-+ (4 + foo))}; and so on until it causes a fatal error (memory full) in the
-preprocessor.
+Following the ordinary rules, each reference to @samp{foo} will expand
+into @samp{(4 + foo)}; then this will be rescanned and will expand into
+@samp{(4 + (4 + foo))}; and so on until it causes a fatal error (memory
+full) in the preprocessor.
 
 However, the special rule about self-reference cuts this process short
 after one step, at @samp{(4 + foo)}.  Therefore, this macro definition
-has the possibly useful effect of causing the program to add 4 to
-the value of @samp{foo} wherever @samp{foo} is referred to.
+has the possibly useful effect of causing the program to add 4 to the
+value of @samp{foo} wherever @samp{foo} is referred to.
 
 In most cases, it is a bad idea to take advantage of this feature.  A
 person reading the program who sees that @samp{foo} is a variable will
@@ -1834,15 +1826,16 @@ expanded.  Thus, after
 @noindent
 @samp{x} would expand into @samp{(4 + (2 * x))}.  Clear?
 
-But suppose @samp{y} is used elsewhere, not from the definition of @samp{x}.
-Then the use of @samp{x} in the expansion of @samp{y} is not a self-reference
-because @samp{x} is not ``in progress''.  So it does expand.  However,
-the expansion of @samp{x} contains a reference to @samp{y}, and that
-is an indirect self-reference now because @samp{y} is ``in progress''.
-The result is that @samp{y} expands to @samp{(2 * (4 + y))}.
+Suppose @samp{y} is used elsewhere, not from the definition of @samp{x}.
+Then the use of @samp{x} in the expansion of @samp{y} is not a
+self-reference because @samp{x} is not ``in progress''.  So it does
+expand.  However, the expansion of @samp{x} contains a reference to
+@samp{y}, and that is an indirect self-reference now because @samp{y} is
+``in progress''.  The result is that @samp{y} expands to @samp{(2 * (4 +
+y))}.
 
-It is not clear that this behavior would ever be useful, but it is specified
-by the ANSI C standard, so you may need to understand it.
+This behavior is specified by the ISO C standard, so you may need to
+understand it.
 
 @node Argument Prescan, Cascaded Macros, Self-Reference, Macro Pitfalls
 @subsubsection Separate Expansion of Macro Arguments
@@ -1851,29 +1844,30 @@ by the ANSI C standard, so you may need to understand it.
 @cindex prescan of macro arguments
 
 We have explained that the expansion of a macro, including the substituted
-actual arguments, is scanned over again for macro calls to be expanded.
+arguments, is re-scanned for macro calls to be expanded.
 
-What really happens is more subtle: first each actual argument text is scanned
-separately for macro calls.  Then the results of this are substituted into
-the macro body to produce the macro expansion, and the macro expansion
-is scanned again for macros to expand.
+What really happens is more subtle: first each argument is scanned
+separately for macro calls.  Then the resulting tokens are substituted
+into the macro body to produce the macro expansion, and the macro
+expansion is scanned again for macros to expand.
 
-The result is that the actual arguments are scanned @emph{twice} to expand
+The result is that the arguments are scanned @emph{twice} to expand
 macro calls in them.
 
-Most of the time, this has no effect.  If the actual argument contained
-any macro calls, they are expanded during the first scan.  The result
-therefore contains no macro calls, so the second scan does not change it.
-If the actual argument were substituted as given, with no prescan,
-the single remaining scan would find the same macro calls and produce
-the same results.
+Most of the time, this has no effect.  If the argument contained any
+macro calls, they are expanded during the first scan.  The result
+therefore contains no macro calls, so the second scan does not change
+it.  If the argument were substituted as given, with no prescan, the
+single remaining scan would find the same macro calls and produce the
+same results.
 
 You might expect the double scan to change the results when a
-self-referential macro is used in an actual argument of another macro
-(@pxref{Self-Reference}): the self-referential macro would be expanded once
-in the first scan, and a second time in the second scan.  But this is not
-what happens.  The self-references that do not expand in the first scan are
-marked so that they will not expand in the second scan either.
+self-referential macro is used in an argument of another macro
+(@pxref{Self-Reference}): the self-referential macro would be expanded
+once in the first scan, and a second time in the second scan.  However,
+this is not what happens.  The self-references that do not expand in the
+first scan are marked so that they will not expand in the second scan
+either.
 
 The prescan is not done when an argument is stringified or concatenated.
 Thus,
@@ -1888,10 +1882,10 @@ str (foo)
 expands to @samp{"foo"}.  Once more, prescan has been prevented from
 having any noticeable effect.
 
-More precisely, stringification and concatenation use the argument as
-written, in un-prescanned form.  The same actual argument would be used in
-prescanned form if it is substituted elsewhere without stringification or
-concatenation.
+More precisely, stringification and concatenation use the argument
+tokens as given without initially scanning for macros.  The same
+argument would be used in expanded form if it is substituted elsewhere
+without stringification or concatenation.
 
 @example
 #define str(s) #s lose(s)
@@ -1916,20 +1910,19 @@ Macros that call other macros that stringify or concatenate.
 Macros whose expansions contain unshielded commas.
 @end itemize
 
-We say that @dfn{nested} calls to a macro occur when a macro's actual
-argument contains a call to that very macro.  For example, if @samp{f}
-is a macro that expects one argument, @samp{f (f (1))} is a nested
-pair of calls to @samp{f}.  The desired expansion is made by
-expanding @samp{f (1)} and substituting that into the definition of
-@samp{f}.  The prescan causes the expected result to happen.
-Without the prescan, @samp{f (1)} itself would be substituted as
-an actual argument, and the inner use of @samp{f} would appear
-during the main scan as an indirect self-reference and would not
-be expanded.  Here, the prescan cancels an undesirable side effect
-(in the medical, not computational, sense of the term) of the special
-rule for self-referential macros.
+We say that @dfn{nested} calls to a macro occur when a macro's argument
+contains a call to that very macro.  For example, if @samp{f} is a macro
+that expects one argument, @samp{f (f (1))} is a nested pair of calls to
+@samp{f}.  The desired expansion is made by expanding @samp{f (1)} and
+substituting that into the definition of @samp{f}.  The prescan causes
+the expected result to happen.  Without the prescan, @samp{f (1)} itself
+would be substituted as an argument, and the inner use of @samp{f} would
+appear during the main scan as an indirect self-reference and would not
+be expanded.  Here, the prescan cancels an undesirable side effect (in
+the medical, not computational, sense of the term) of the special rule
+for self-referential macros.
 
-But prescan causes trouble in certain other cases of nested macro calls.
+Prescan causes trouble in certain other cases of nested macro calls.
 Here is an example:
 
 @example
@@ -1942,7 +1935,7 @@ bar(foo)
 
 @noindent
 We would like @samp{bar(foo)} to turn into @samp{(1 + (foo))}, which
-would then turn into @samp{(1 + (a,b))}.  But instead, @samp{bar(foo)}
+would then turn into @samp{(1 + (a,b))}.  Instead, @samp{bar(foo)}
 expands into @samp{lose(a,b)}, and you get an error because @code{lose}
 requires a single argument.  In this case, the problem is easily solved
 by the same parentheses that ought to be used to prevent misnesting of
@@ -1975,10 +1968,10 @@ Or you can rewrite the macro definition to avoid such commas:
 #define foo @{ int a; int b; @dots{} @}
 @end example
 
-There is also one case where prescan is useful.  It is possible
-to use prescan to expand an argument and then stringify it---if you use
-two levels of macros.  Let's add a new macro @samp{xstr} to the
-example shown above:
+There is also one case where prescan is useful.  It is possible to use
+prescan to expand an argument and then stringify it --- if you use two
+levels of macros.  Let's add a new macro @samp{xstr} to the example
+shown above:
 
 @example
 #define xstr(s) str(s)
@@ -1989,8 +1982,8 @@ xstr (foo)
 
 This expands into @samp{"4"}, not @samp{"foo"}.  The reason for the
 difference is that the argument of @samp{xstr} is expanded at prescan
-(because @samp{xstr} does not specify stringification or concatenation of
-the argument).  The result of prescan then forms the actual argument for
+(because @samp{xstr} does not specify stringification or concatenation
+of the argument).  The result of prescan then forms the argument for
 @samp{str}.  @samp{str} uses its argument without prescan because it
 performs stringification; but it cannot prevent or undo the prescanning
 already done by @samp{xstr}.
@@ -2008,13 +2001,13 @@ to another macro.  This is very common practice.  For example,
 #define TABLESIZE BUFSIZE
 @end example
 
-This is not at all the same as defining @samp{TABLESIZE} to be @samp{1020}.
-The @samp{#define} for @samp{TABLESIZE} uses exactly the body you
-specify---in this case, @samp{BUFSIZE}---and does not check to see whether
-it too is the name of a macro.
+This is not at all the same as defining @samp{TABLESIZE} to be
+@samp{1020}.  The @samp{#define} for @samp{TABLESIZE} uses exactly the
+body you specify --- in this case, @samp{BUFSIZE} --- and does not check
+to see whether it too is the name of a macro.
 
-It's only when you @emph{use} @samp{TABLESIZE} that the result of its expansion
-is checked for more macro names.
+It's only when you @emph{use} @samp{TABLESIZE} that the result of its
+expansion is checked for more macro names.
 
 This makes a difference if you change the definition of @samp{BUFSIZE}
 at some point in the source file.  @samp{TABLESIZE}, defined as shown,
@@ -2037,22 +2030,16 @@ redefinition of @code{BUFSIZE}.)
 @subsection Newlines in Macro Arguments
 @cindex newlines in macro arguments
 
-Traditional macro processing carries forward all newlines in macro
-arguments into the expansion of the macro.  This means that, if some of
-the arguments are substituted more than once, or not at all, or out of
-order, newlines can be duplicated, lost, or moved around within the
-expansion.  If the expansion consists of multiple statements, then the
-effect is to distort the line numbers of some of these statements.  The
-result can be incorrect line numbers, in error messages or displayed in
-a debugger.
+The invocation of a function-like macro can extend over many logical
+lines.  The ISO C standard requires that newlines within a macro
+invocation be treated as ordinary whitespace.  This means that when the
+expansion of a function-like macro replaces its invocation, it appears
+on the same line as the macro name did.  Thus line numbers emitted by
+the compiler or debugger refer to the line the invocation started on,
+which might be different to the line containing the argument causing the
+problem.
 
-The GNU C preprocessor operating in ANSI C mode adjusts appropriately
-for multiple use of an argument---the first use expands all the
-newlines, and subsequent uses of the same argument produce no newlines.
-But even in this mode, it can produce incorrect line numbering if
-arguments are used out of order, or not used at all.
-
-Here is an example illustrating this problem:
+Here is an example illustrating this:
 
 @example
 #define ignore_second_arg(a,b,c) a; c
@@ -2063,34 +2050,34 @@ ignore_second_arg (foo (),
 @end example
 
 @noindent
-The syntax error triggered by the tokens @samp{syntax error} results
-in an error message citing line four, even though the statement text
-comes from line five.
+The syntax error triggered by the tokens @samp{syntax error} results in
+an error message citing line three --- the line of ignore_second_arg ---
+even though the problematic code comes from line five.
 
-@node Conditionals, Combining Sources, Macros, Top
+@node Conditionals, Assertions, Macros, Top
 @section Conditionals
 
 @cindex conditionals
-In a macro processor, a @dfn{conditional} is a directive that allows a part
-of the program to be ignored during compilation, on some conditions.
-In the C preprocessor, a conditional can test either an arithmetic expression
-or whether a name is defined as a macro.
+In a macro processor, a @dfn{conditional} is a directive that allows a
+part of the program to be ignored during compilation, on some
+conditions.  In the C preprocessor, a conditional can test either an
+arithmetic expression or whether a name is defined as a macro.
 
 A conditional in the C preprocessor resembles in some ways an @samp{if}
 statement in C, but it is important to understand the difference between
-them.  The condition in an @samp{if} statement is tested during the execution
-of your program.  Its purpose is to allow your program to behave differently
-from run to run, depending on the data it is operating on.  The condition
-in a preprocessing conditional directive is tested when your program is compiled.
-Its purpose is to allow different code to be included in the program depending
-on the situation at the time of compilation.
+them.  The condition in an @samp{if} statement is tested during the
+execution of your program.  Its purpose is to allow your program to
+behave differently from run to run, depending on the data it is
+operating on.  The condition in a preprocessing conditional directive is
+tested when your program is compiled.  Its purpose is to allow different
+code to be included in the program depending on the situation at the
+time of compilation.
 
 @menu
 * Uses: Conditional Uses.       What conditionals are for.
 * Syntax: Conditional Syntax.   How conditionals are written.
 * Deletion: Deleted Code.       Making code into a comment.
 * Macros: Conditionals-Macros.  Why conditionals are used with macros.
-* Assertions::		        How and why to use assertions.
 * Errors: #error Directive.     Detecting inconsistent compilation parameters.
 @end menu
 
@@ -2106,8 +2093,8 @@ operating system it is to run on.  In some cases the code for one
 operating system may be erroneous on another operating system; for
 example, it might refer to library routines that do not exist on the
 other system.  When this happens, it is not enough to avoid executing
-the invalid code: merely having it in the program makes it impossible
-to link the program and run it.  With a preprocessing conditional, the
+the invalid code: merely having it in the program makes it impossible to
+link the program and run it.  With a preprocessing conditional, the
 offending code can be effectively excised from the program when it is
 not valid.
 
@@ -2153,12 +2140,12 @@ The @samp{#if} directive in its simplest form consists of
 #endif /* @var{expression} */
 @end example
 
-The comment following the @samp{#endif} is not required, but it is a good
-practice because it helps people match the @samp{#endif} to the
-corresponding @samp{#if}.  Such comments should always be used, except in
-short conditionals that are not nested.  In fact, you can put anything at
-all after the @samp{#endif} and it will be ignored by the GNU C preprocessor,
-but only comments are acceptable in ANSI Standard C@.
+The comment following the @samp{#endif} is not required, but it is a
+good practice because it helps people match the @samp{#endif} to the
+corresponding @samp{#if}.  Such comments should always be used, except
+in short conditionals that are not nested.  In fact, you can put
+anything at all after the @samp{#endif} and it will be ignored by the
+GNU C preprocessor, but only comments are acceptable in ISO Standard C@.
 
 @var{expression} is a C expression of integer type, subject to stringent
 restrictions.  It may contain
@@ -2181,7 +2168,8 @@ negative; otherwise, no character code is considered negative.
 @item
 Arithmetic operators for addition, subtraction, multiplication,
 division, bitwise operations, shifts, comparisons, and logical
-operations (@samp{&&} and @samp{||}).
+operations (@samp{&&} and @samp{||}).  The latter two obey the usual
+short-circuiting rules of standard C.
 
 @item
 Identifiers that are not macros, which are all treated as zero(!).
@@ -2191,14 +2179,14 @@ Macro calls.  All macro calls in the expression are expanded before
 actual computation of the expression's value begins.
 @end itemize
 
-Note that @samp{sizeof} operators and @code{enum}-type values are not allowed.
-@code{enum}-type values, like all other identifiers that are not taken
-as macro calls and expanded, are treated as zero.
+Note that @samp{sizeof} operators and @code{enum}-type values are not
+allowed.  @code{enum}-type values, like all other identifiers that are
+not taken as macro calls and expanded, are treated as zero.
 
 The @var{controlled text} inside of a conditional can include
-preprocessing directives.  Then the directives inside the conditional are
-obeyed only if that branch of the conditional succeeds.  The text can
-also contain other conditional groups.  However, the @samp{#if} and
+preprocessing directives.  Then the directives inside the conditional
+are obeyed only if that branch of the conditional succeeds.  The text
+can also contain other conditional groups.  However, the @samp{#if} and
 @samp{#endif} directives must balance.
 
 @node #else Directive
@@ -2219,7 +2207,7 @@ it looks like:
 
 If @var{expression} is nonzero, and thus the @var{text-if-true} is 
 active, then @samp{#else} acts like a failing conditional and the
-@var{text-if-false} is ignored.  Contrariwise, if the @samp{#if}
+@var{text-if-false} is ignored.  Conversely, if the @samp{#if}
 conditional fails, the @var{text-if-false} is considered included.
 
 @node #elif Directive
@@ -2241,8 +2229,8 @@ possible alternatives.  For example, you might have
 #endif /* X != 1 */
 @end example
 
-Another conditional directive, @samp{#elif}, allows this to be abbreviated
-as follows:
+Another conditional directive, @samp{#elif}, allows this to be
+abbreviated as follows:
 
 @example
 #if X == 1
@@ -2286,9 +2274,9 @@ they must be entire conditionals (balanced @samp{#if} and @samp{#endif}).
 Conversely, do not use @samp{#if 0} for comments which are not C code.
 Use the comment delimiters @samp{/*} and @samp{*/} instead.  The
 interior of @samp{#if 0} must consist of complete tokens; in particular,
-singlequote characters must balance.  But comments often contain
-unbalanced singlequote characters (known in English as apostrophes).
-These confuse @samp{#if 0}.  They do not confuse @samp{/*}.
+single-quote characters must balance.  Comments often contain unbalanced
+single-quote characters (known in English as apostrophes).  These
+confuse @samp{#if 0}.  They do not confuse @samp{/*}.
 
 @node Conditionals-Macros
 @subsection Conditionals and Macros
@@ -2336,14 +2324,14 @@ defined as a macro.  You can test the same condition using assertions
 #if #cpu (vax) || #cpu (ns16000)
 @end example
 
-If a macro is defined and later undefined with @samp{#undef},
-subsequent use of the @samp{defined} operator returns 0, because
-the name is no longer defined.  If the macro is defined again with
-another @samp{#define}, @samp{defined} will recommence returning 1.
+If a macro is defined and later undefined with @samp{#undef}, subsequent
+use of the @samp{defined} operator returns 0, because the name is no
+longer defined.  If the macro is defined again with another
+@samp{#define}, @samp{defined} will recommence returning 1.
 
 @findex #ifdef
 @findex #ifndef
-Conditionals that test whether just one name is defined are very common,
+Conditionals that test whether a single macro is defined are very common,
 so there are two special short conditional directives for this case.
 
 @table @code
@@ -2363,27 +2351,26 @@ Vax, the name @samp{vax} is a predefined macro.  On other machines, it
 would not be defined.
 
 @item
-Many more macros are defined by system header files.  Different
-systems and machines define different macros, or give them different
-values.  It is useful to test these macros with conditionals to avoid
-using a system feature on a machine where it is not implemented.
+Many more macros are defined by system header files.  Different systems
+and machines define different macros, or give them different values.  It
+is useful to test these macros with conditionals to avoid using a system
+feature on a machine where it is not implemented.
 
 @item
 Macros are a common way of allowing users to customize a program for
 different machines or applications.  For example, the macro
-@samp{BUFSIZE} might be defined in a configuration file for your
-program that is included as a header file in each source file.  You
-would use @samp{BUFSIZE} in a preprocessing conditional in order to
-generate different code depending on the chosen configuration.
+@samp{BUFSIZE} might be defined in a configuration file for your program
+that is included as a header file in each source file.  You would use
+@samp{BUFSIZE} in a preprocessing conditional in order to generate
+different code depending on the chosen configuration.
 
 @item
-Macros can be defined or undefined with @samp{-D} and @samp{-U}
-command options when you compile the program.  You can arrange to
-compile the same source file into two different programs by choosing
-a macro name to specify which program you want, writing conditionals
-to test whether or how this macro is defined, and then controlling
-the state of the macro with compiler command options.
-@xref{Invocation}.
+Macros can be defined or undefined with @samp{-D} and @samp{-U} command
+options when you compile the program.  You can arrange to compile the
+same source file into two different programs by choosing a macro name to
+specify which program you want, writing conditionals to test whether or
+how this macro is defined, and then controlling the state of the macro
+with compiler command options.  @xref{Invocation}.
 @end itemize
 
 @ifinfo
@@ -2391,8 +2378,53 @@ Assertions are usually predefined, but can be defined with preprocessor
 directives or command-line options.
 @end ifinfo
 
-@node Assertions
-@subsection Assertions
+@node #error Directive
+@subsection The @samp{#error} and @samp{#warning} Directives
+
+@findex #error
+The directive @samp{#error} causes the preprocessor to report a fatal
+error.  The tokens forming the rest of the line following @samp{#error}
+are used as the error message, and not macro-expanded.  Internal
+whitespace sequences are each replaced with a single space.  The line
+must consist of complete tokens.
+
+You would use @samp{#error} inside of a conditional that detects a
+combination of parameters which you know the program does not properly
+support.  For example, if you know that the program will not run
+properly on a Vax, you might write
+
+@smallexample
+@group
+#ifdef __vax__
+#error "Won't work on Vaxen.  See comments at get_last_object."
+#endif
+@end group
+@end smallexample
+
+@noindent
+@xref{Nonstandard Predefined}, for why this works.
+
+If you have several configuration parameters that must be set up by
+the installation in a consistent way, you can use conditionals to detect
+an inconsistency and report it with @samp{#error}.  For example,
+
+@smallexample
+#if HASH_TABLE_SIZE % 2 == 0 || HASH_TABLE_SIZE % 3 == 0 \
+    || HASH_TABLE_SIZE % 5 == 0
+#error HASH_TABLE_SIZE should not be divisible by a small prime
+#endif
+@end smallexample
+
+@findex #warning
+The directive @samp{#warning} is like the directive @samp{#error}, but
+causes the preprocessor to issue a warning and continue preprocessing.
+The tokens following @samp{#warning} are used as the warning message,
+and not macro-expanded.
+
+You might use @samp{#warning} in obsolete header files, with a message
+directing the user to the header file which should be used instead.
+
+@node Assertions, Line Control, Conditionals, Top
 
 @cindex assertions
 @dfn{Assertions} are a more systematic alternative to macros in writing
@@ -2407,8 +2439,8 @@ indicate a hardware architecture, a particular hardware model, an
 operating system, a particular version of an operating system, or
 specific configuration options.  These are jumbled together in a single
 namespace.  In contrast, each assertion consists of a named question and
-an answer.  The question is usually called the @dfn{predicate}.
-An assertion looks like this:
+an answer.  The question is usually called the @dfn{predicate}.  An
+assertion looks like this:
 
 @example
 #@var{predicate} (@var{answer})
@@ -2418,9 +2450,10 @@ An assertion looks like this:
 You must use a properly formed identifier for @var{predicate}.  The
 value of @var{answer} can be any sequence of words; all characters are
 significant except for leading and trailing whitespace, and differences
-in internal whitespace sequences are ignored.  Thus, @samp{x + y} is
-different from @samp{x+y} but equivalent to @samp{x + y}.  @samp{)} is
-not allowed in an answer.
+in internal whitespace sequences are ignored.  (This is similar to the
+rules governing macro redefinition.)  Thus, @samp{x + y} is different
+from @samp{x+y} but equivalent to @samp{ x + y }.  @samp{)} is not
+allowed in an answer.
 
 @cindex testing predicates
 Here is a conditional to test whether the answer @var{answer} is asserted
@@ -2509,10 +2542,10 @@ this:
 @findex #unassert
 Each time you do this, you assert a new true answer for @var{predicate}.
 Asserting one answer does not invalidate previously asserted answers;
-they all remain true.  The only way to remove an assertion is with
+they all remain true.  The only way to remove an answer is with
 @samp{#unassert}.  @samp{#unassert} has the same syntax as
-@samp{#assert}.  You can also remove all assertions about
-@var{predicate} like this:
+@samp{#assert}.  You can also remove all answers to a @var{predicate}
+like this:
 
 @example
 #unassert @var{predicate}
@@ -2521,50 +2554,7 @@ they all remain true.  The only way to remove an assertion is with
 You can also add or cancel assertions using command options
 when you run @code{gcc} or @code{cpp}.  @xref{Invocation}.
 
-@node #error Directive
-@subsection The @samp{#error} and @samp{#warning} Directives
-
-@findex #error
-The directive @samp{#error} causes the preprocessor to report a fatal
-error.  The rest of the line that follows @samp{#error} is used as the
-error message.  The line must consist of complete tokens.
-
-You would use @samp{#error} inside of a conditional that detects a
-combination of parameters which you know the program does not properly
-support.  For example, if you know that the program will not run
-properly on a Vax, you might write
-
-@smallexample
-@group
-#ifdef __vax__
-#error "Won't work on Vaxen.  See comments at get_last_object."
-#endif
-@end group
-@end smallexample
-
-@noindent
-@xref{Nonstandard Predefined}, for why this works.
-
-If you have several configuration parameters that must be set up by
-the installation in a consistent way, you can use conditionals to detect
-an inconsistency and report it with @samp{#error}.  For example,
-
-@smallexample
-#if HASH_TABLE_SIZE % 2 == 0 || HASH_TABLE_SIZE % 3 == 0 \
-    || HASH_TABLE_SIZE % 5 == 0
-#error HASH_TABLE_SIZE should not be divisible by a small prime
-#endif
-@end smallexample
-
-@findex #warning
-The directive @samp{#warning} is like the directive @samp{#error}, but causes
-the preprocessor to issue a warning and continue preprocessing.  The rest of
-the line that follows @samp{#warning} is used as the warning message.
-
-You might use @samp{#warning} in obsolete header files, with a message
-directing the user to the header file which should be used instead.
-
-@node Combining Sources, Other Directives, Conditionals, Top
+@node Line Control, Other Directives, Assertions, Top
 @section Combining Source Files
 
 @cindex line control
@@ -2578,17 +2568,17 @@ from the line's number in the original source file.  You will appreciate
 the value of making both the C compiler (in error messages) and symbolic
 debuggers such as GDB use the line numbers in your source file.
 
-The C preprocessor builds on this feature by offering a directive by which
-you can control the feature explicitly.  This is useful when a file for
-input to the C preprocessor is the output from another program such as the
-@code{bison} parser generator, which operates on another file that is the
-true source file.  Parts of the output from @code{bison} are generated from
-scratch, other parts come from a standard parser file.  The rest are copied
-nearly verbatim from the source file, but their line numbers in the
-@code{bison} output are not the same as their original line numbers.
-Naturally you would like compiler error messages and symbolic debuggers to
-know the original source file and line number of each line in the
-@code{bison} input.
+The C preprocessor builds on this feature by offering a directive by
+which you can control the feature explicitly.  This is useful when a
+file for input to the C preprocessor is the output from another program
+such as the @code{bison} parser generator, which operates on another
+file that is the true source file.  Parts of the output from
+@code{bison} are generated from scratch, other parts come from a
+standard parser file.  The rest are copied nearly verbatim from the
+source file, but their line numbers in the @code{bison} output are not
+the same as their original line numbers.  Naturally you would like
+compiler error messages and symbolic debuggers to know the original
+source file and line number of each line in the @code{bison} input.
 
 @findex #line
 @code{bison} arranges this by writing @samp{#line} directives into the output
@@ -2603,12 +2593,12 @@ the line number of the following line of input, in its original source file,
 was @var{linenum}.
 
 @item #line @var{linenum} @var{filename}
-Here @var{linenum} is a decimal integer constant and @var{filename}
-is a string constant.  This specifies that the following line of input
-came originally from source file @var{filename} and its line number there
-was @var{linenum}.  Keep in mind that @var{filename} is not just a
-file name; it is surrounded by doublequote characters so that it looks
-like a string constant.
+Here @var{linenum} is a decimal integer constant and @var{filename} is a
+string constant.  This specifies that the following line of input came
+originally from source file @var{filename} and its line number there was
+@var{linenum}.  Keep in mind that @var{filename} is not just a file
+name; it is surrounded by double-quote characters so that it looks like
+a string constant.
 
 @item #line @var{anything else}
 @var{anything else} is checked for macro calls, which are expanded.
@@ -2621,40 +2611,41 @@ by a string constant, as described above.
 Predefined}.
 
 The output of the preprocessor (which is the input for the rest of the
-compiler) contains directives that look much like @samp{#line} directives.
-They start with just @samp{#} instead of @samp{#line}, but this is
-followed by a line number and file name as in @samp{#line}.  @xref{Output}.
+compiler) contains directives that look much like @samp{#line}
+directives.  They start with just @samp{#} instead of @samp{#line}, but
+this is followed by a line number and file name as in @samp{#line}.
+@xref{Output}.
 
-@node Other Directives, Output, Combining Sources, Top
+@node Other Directives, Output, Line Control, Top
 @section Miscellaneous Preprocessing Directives
 
 @cindex null directive
-This section describes three additional preprocessing directives.  They are
-not very useful, but are mentioned for completeness.
+This section describes three additional preprocessing directives.  They
+are not very useful, but are mentioned for completeness.
 
-The @dfn{null directive} consists of a @samp{#} followed by a Newline, with
-only whitespace (including comments) in between.  A null directive is
-understood as a preprocessing directive but has no effect on the preprocessor
-output.  The primary significance of the existence of the null directive is
-that an input line consisting of just a @samp{#} will produce no output,
-rather than a line of output containing just a @samp{#}.  Supposedly
-some old C programs contain such lines.
+The @dfn{null directive} consists of a @samp{#} followed by a newline,
+with only whitespace (including comments) in between.  A null directive
+is understood as a preprocessing directive but has no effect on the
+preprocessor output.  The primary significance of the existence of the
+null directive is that an input line consisting of just a @samp{#} will
+produce no output, rather than a line of output containing just a
+@samp{#}.  Supposedly some old C programs contain such lines.
 
 @findex #pragma
 @findex #pragma GCC
 
-The ANSI standard specifies that the effect of the @samp{#pragma}
+The ISO standard specifies that the effect of the @samp{#pragma}
 directive is implementation-defined.  The GNU C preprocessor recognizes
 some pragmas, and passes unrecognized ones through to the preprocessor
 output, so they are available to the compilation pass.
 
-In line with the C99 standard, which introduces a STDC namespace for
-C99 pragmas, the preprocessor introduces a GCC namespace for GCC
-pragmas.  Supported GCC preprocessor pragmas are of the form
-@samp{#pragma GCC ...}.  For backwards compatibility previously
-supported pragmas are also recognized without the @samp{GCC} prefix,
-however that use is deprecated.  Pragmas that are already deprecated
-are not recognized with a @samp{GCC} prefix.
+In line with the C99 standard, which introduces a STDC namespace for C99
+pragmas, the preprocessor introduces a GCC namespace for GCC pragmas.
+Supported GCC preprocessor pragmas are of the form @samp{#pragma GCC
+...}.  For backwards compatibility previously supported pragmas are also
+recognized without the @samp{GCC} prefix, however that use is
+deprecated.  Pragmas that are already deprecated are not recognized with
+a @samp{GCC} prefix.
 
 @findex #ident
 The @samp{#ident} directive is supported for compatibility with certain
@@ -2666,8 +2657,8 @@ where it is meaningful.
 
 @findex #pragma GCC dependency
 The @samp{#pragma GCC dependency} allows you to check the relative dates
-of the current file and another file. If the other file is more
-recent than the current file, a warning is issued. This is useful if the
+of the current file and another file. If the other file is more recent
+than the current file, a warning is issued. This is useful if the
 include file is derived from the other file, and should be regenerated.
 The other file is searched for using the normal include search path.
 Optional trailing text can be used to give more information in the
@@ -2678,31 +2669,39 @@ warning message.
 #pragma GCC dependency "/usr/include/time.h" rerun /path/to/fixincludes
 @end smallexample
 
-@node Output, Invocation, Other Directives, Top
+@node Output, Unreliable Features, Other Directives, Top
 @section C Preprocessor Output
 
 @cindex output format
 The output from the C preprocessor looks much like the input, except
-that all preprocessing directive lines have been replaced with blank lines
-and all comments with spaces.  Whitespace within a line is not altered;
-however, unless @samp{-traditional} is used, spaces may be inserted into
-the expansions of macro calls to prevent tokens from being concatenated.
+that all preprocessing directive lines have been replaced with blank
+lines and all comments with spaces.
 
-Source file name and line number information is conveyed by lines of
-the form
+The ISO standard specifies that it is implementation defined whether a
+preprocessor preserves whitespace between tokens, or replaces it with
+e.g. a single space.  In the GNU C preprocessor, whitespace between
+tokens is collapsed to become a single space, with the exception that
+the first token on a non-directive line is preceded with sufficient
+spaces that it appears in the same column in the preprocessed output
+that it appeared in in the original source file.  This is so the output
+is easy to read.  @xref{Unreliable Features}.
+
+Source file name and line number information is conveyed by lines
+of the form
 
 @example
 # @var{linenum} @var{filename} @var{flags}
 @end example
 
 @noindent
-which are inserted as needed into the middle of the input (but never
-within a string or character constant).  Such a line means that the
-following line originated in file @var{filename} at line @var{linenum}.
+which are inserted as needed into the output (but never within a string
+or character constant), and in place of long sequences of empty lines.
+Such a line means that the following line originated in file
+@var{filename} at line @var{linenum}.
 
 After the file name comes zero or more flags, which are @samp{1},
-@samp{2}, @samp{3}, or @samp{4}.  If there are multiple flags, spaces separate
-them.  Here is what the flags mean:
+@samp{2}, @samp{3}, or @samp{4}.  If there are multiple flags, spaces
+separate them.  Here is what the flags mean:
 
 @table @samp
 @item 1
@@ -2717,7 +2716,95 @@ This indicates that the following text should be treated as C@.
 @c maybe cross reference NO_IMPLICIT_EXTERN_C
 @end table
 
-@node Invocation, Concept Index, Output, Top
+@node Unreliable Features, Invocation, Output, Top
+@section Undefined Behavior and Deprecated Features
+@cindex undefined behavior
+@cindex deprecated features
+
+This section details GNU C preprocessor behavior that is subject to
+change or deprecated.  You are @emph{strongly advised} to write your
+software so it does not rely on anything described here; future versions
+of the preprocessor may subtly change such behavior or even remove the
+feature altogether.
+
+Preservation of the form of whitespace between tokens is unlikely to
+change from current behavior (see @ref{Output}), but you are advised not
+to rely on it.
+
+The following is undocumented and subject to change:-
+
+@itemize @bullet
+
+@item Interpretation of the filename between @samp{<} and @samp{>} tokens
+ resulting from a macro-expanded @samp{#include} directive
+
+The text between the @samp{<} and @samp{>} is taken literally if given
+directly within a @samp{#include} or similar directive.  If a directive
+of this form is obtained through macro expansion, however, behavior like
+preservation of whitespace, and interpretation of backslashes and quotes
+is undefined.  @xref{Include Syntax}
+
+@item Precedence of ## operators with respect to each other
+
+It is not defined whether a sequence of ## operators are evaluated
+left-to-right, right-to-left or indeed in a consistent direction at all.
+An example of where this might matter is pasting the arguments @samp{1},
+@samp{e} and @samp{-2}.  This would be fine for left-to-right pasting,
+but right-to-left pasting would produce an invalid token @samp{e-2}.
+
+@item Precedence of # operator with respect to the ## operator
+
+It is undefined which of these two operators is evaluated first.
+
+@end itemize
+
+The following features are deprecated and will likely be removed at some
+point in the future:-
+
+@itemize @bullet
+
+@item ## swallowing the previous token in variable-argument macros
+
+In a macro expansion, if ## appeared before a variable arguments
+parameter, and the set of tokens specified for that argument in the
+macro invocation was empty, previous versions of the GNU C preprocessor
+would back up and remove the token appearing before the ##.  This
+behavior was not well-defined, and alternative ways of achieving its
+intended use are available.  Since the ISO C standard now provides for
+variable-argument macros, and since this old behavior potentially
+conflicts with behavior mandated by the standard, this feature is now
+deprecated and will be removed in future.
+
+The current preprocessor still supports it for reasons of code
+migration, and warns at the location of the macro definition.
+
+@item Attempting to paste two tokens which together do not form a valid
+preprocessing token
+
+The preprocessor currently warns about this and outputs the two tokens
+adjacently, which is probably the behavior the programmer intends.  It
+may not work in future, though.
+
+@findex #pragma once
+@item #pragma once
+
+This pragma was once used to tell the preprocessor that it need not
+include a file more than once.  It is now obsolete and should not be
+used at all.
+
+@item #pragma poison
+
+This pragma has been superceded by @samp{#pragma GCC poison}.
+@xref{Poisoning}
+
+@item Multi-line string literals in directives
+
+The GNU C preprocessor currently allows newlines in string literals
+within a directive.
+
+@end itemize
+
+@node Invocation, Concept Index, Unreliable Features, Top
 @section Invoking the C Preprocessor
 @cindex invocation of the preprocessor
 
@@ -2746,9 +2833,9 @@ gcc(1), as(1), ld(1), and the Info entries for @file{cpp}, @file{gcc}, and
 
 @c man begin OPTIONS
 The C preprocessor expects two file names as arguments, @var{infile} and
-@var{outfile}.  The preprocessor reads @var{infile} together with any other
-files it specifies with @samp{#include}.  All the output generated by the
-combined input files is written in @var{outfile}.
+@var{outfile}.  The preprocessor reads @var{infile} together with any
+other files it specifies with @samp{#include}.  All the output generated
+by the combined input files is written in @var{outfile}.
 
 Either @var{infile} or @var{outfile} may be @samp{-}, which as
 @var{infile} means to read from standard input and as @var{outfile}
@@ -2776,14 +2863,22 @@ Do not discard comments: pass them through to the output file.
 Comments appearing in arguments of a macro call will be copied to the
 output before the expansion of the macro call.
 
+You should be prepared for unwanted side effects when using -C.  For
+example, macro redefinitions that were trivial when comments were
+replaced by a single space might become significant when comments are
+retained.  Also, comments appearing at the start of what would be a
+directive line have the effect of turning that line into an ordinary
+source line, since the first token on the line is no longer a @samp{#}.
+
 @item -traditional
 @findex -traditional
-Try to imitate the behavior of old-fashioned C, as opposed to ANSI C@.
+Try to imitate the behavior of old-fashioned C, as opposed to ISO C@.
+Note: support for this option is currently fairly broken.
 
 @itemize @bullet
 @item
-Traditional macro expansion pays no attention to singlequote or
-doublequote characters; macro argument symbols are replaced by the
+Traditional macro expansion pays no attention to single-quote or
+double-quote characters; macro argument symbols are replaced by the
 argument values even when they appear within apparent string or
 character constants.
 
@@ -2797,7 +2892,7 @@ However, traditionally the end of the line terminates a string or
 character constant, with no error.
 
 @item
-In traditional C, a comment is equivalent to no text at all.  (In ANSI
+In traditional C, a comment is equivalent to no text at all.  (In ISO
 C, a comment counts as whitespace.)
 
 @item
@@ -2816,7 +2911,7 @@ in traditional C@.
 @item
 In traditional C, the text at the end of a macro expansion can run
 together with the text after the macro call, to produce a single token.
-(This is impossible in ANSI C@.)
+(This is impossible in ISO C@.)
 
 @item
 Traditionally, @samp{\} inside a macro argument suppresses the syntactic
@@ -2825,17 +2920,14 @@ significance of the following character.
 
 @cindex Fortran
 @cindex unterminated
-Use the @samp{-traditional} option when preprocessing Fortran code,
-so that singlequotes and doublequotes
-within Fortran comment lines
-(which are generally not recognized as such by the preprocessor)
-do not cause diagnostics
-about unterminated character or string constants.
+Use the @samp{-traditional} option when preprocessing Fortran code, so
+that single-quotes and double-quotes within Fortran comment lines (which
+are generally not recognized as such by the preprocessor) do not cause
+diagnostics about unterminated character or string constants.
 
-However, this option does not prevent diagnostics
-about unterminated comments
-when a C-style comment appears to start, but not end,
-within Fortran-style commentary.
+However, this option does not prevent diagnostics about unterminated
+comments when a C-style comment appears to start, but not end, within
+Fortran-style commentary.
 
 So, the following Fortran comment lines are accepted with
 @samp{-traditional}:
@@ -2846,9 +2938,9 @@ C Neither is "20000000000, an octal constant
 C in some dialects of Fortran
 @end smallexample
 
-However, this type of comment line will likely produce a diagnostic,
-or at least unexpected output from the preprocessor,
-due to the unterminated comment:
+However, this type of comment line will likely produce a diagnostic, or
+at least unexpected output from the preprocessor, due to the
+unterminated comment:
 
 @smallexample
 C Some Fortran compilers accept /* as starting
@@ -2856,28 +2948,35 @@ C an inline comment.
 @end smallexample
 
 @cindex g77
-Note that @code{g77} automatically supplies
-the @samp{-traditional} option
-when it invokes the preprocessor.
-However, a future version of @code{g77}
-might use a different, more-Fortran-aware preprocessor
-in place of @code{cpp}.
+Note that @code{g77} automatically supplies the @samp{-traditional}
+option when it invokes the preprocessor.  However, a future version of
+@code{g77} might use a different, more-Fortran-aware preprocessor in
+place of @code{cpp}.
 
 @item -trigraphs
 @findex -trigraphs
-Process ANSI standard trigraph sequences.  These are three-character
-sequences, all starting with @samp{??}, that are defined by ANSI C to
+Process ISO standard trigraph sequences.  These are three-character
+sequences, all starting with @samp{??}, that are defined by ISO C to
 stand for single characters.  For example, @samp{??/} stands for
 @samp{\}, so @samp{'??/n'} is a character constant for a newline.
-Strictly speaking, the GNU C preprocessor does not support all
-programs in ANSI Standard C unless @samp{-trigraphs} is used, but if
-you ever notice the difference it will be with relief.
+Strictly speaking, the GNU C preprocessor does not conform to ISO
+Standard C unless @samp{-trigraphs} is used, but if you ever notice the
+difference it will be with relief.
 
-You don't want to know any more about trigraphs.
+The nine trigraph sequences are
+@samp{??(} -> @samp{[},
+@samp{??)} -> @samp{]},
+@samp{??<} -> @samp{@{},
+@samp{??>} -> @samp{@}},
+@samp{??=} -> @samp{#},
+@samp{??/} -> @samp{\},
+@samp{??'} -> @samp{^},
+@samp{??!} -> @samp{|},
+@samp{??-} -> @samp{~}
 
 @item -pedantic
 @findex -pedantic
-Issue warnings required by the ANSI C standard in certain cases such
+Issue warnings required by the ISO C standard in certain cases such
 as when text other than a comment follows @samp{#else} or @samp{#endif}.
 
 @item -pedantic-errors
@@ -2889,17 +2988,17 @@ warnings.
 @findex -Wcomment
 @ignore
 @c "Not worth documenting" both singular and plural forms of this
-@c option, per RMS.  But also unclear which is better; hence may need to
+@c option, per RMS.  Also unclear which is better; hence may need to
 @c switch this at some future date.  pesch@cygnus.com, 2jan92.
 @itemx -Wcomments
 (Both forms have the same effect).
 @end ignore
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
-comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
+comment, or whenever a backslash-newline appears in a @samp{//} comment.
 
 @item -Wtrigraphs
 @findex -Wtrigraphs
-Warn if any trigraphs are encountered (assuming they are enabled).
+Warn if any trigraphs are encountered.
 
 @item -Wwhite-space
 @findex -Wwhite-space
@@ -2914,7 +3013,7 @@ Requests @samp{-Wcomment}, @samp{-Wtrigraphs}, and @samp{-Wwhite-space}
 @item -Wtraditional
 @findex -Wtraditional
 Warn about certain constructs that behave differently in traditional and
-ANSI C@.
+ISO C@.
 
 @item -Wundef
 @findex -Wundef
@@ -2955,8 +3054,8 @@ Only the directories you have specified with @samp{-I} options
 @item -nostdinc++
 @findex -nostdinc++
 Do not search for header files in the C++-specific standard directories,
-but do still search the other standard directories.
-(This option is used when building the C++ library.)
+but do still search the other standard directories.  (This option is
+used when building the C++ library.)
 
 @item -remap
 @findex -remap
@@ -3003,7 +3102,7 @@ Make an assertion with the predicate @var{predicate} and answer
 
 @item -A -@var{predicate}(@var{answer})
 Disable an assertion with the predicate @var{predicate} and answer
-@var{answer}.  Specifiying no predicate, by @samp{-A-} or @samp{-A -},
+@var{answer}.  Specifying no predicate, by @samp{-A-} or @samp{-A -},
 disables all predefined assertions and all assertions preceding it on
 the command line; and also undefines all predefined macros and all
 macros preceding it on the command line.
@@ -3032,20 +3131,21 @@ the standard output file.
 
 @item -dI
 @findex -dI
-Output @samp{#include} directives in addition to the result of preprocessing.
+Output @samp{#include} directives in addition to the result of
+preprocessing.
 
 @item -M [-MG]
 @findex -M
 Instead of outputting the result of preprocessing, output a rule
-suitable for @code{make} describing the dependencies of the main
-source file.  The preprocessor outputs one @code{make} rule containing
-the object file name for that source file, a colon, and the names of
-all the included files.  If there are many included files then the
-rule is split into several lines using @samp{\}-newline.
+suitable for @code{make} describing the dependencies of the main source
+file.  The preprocessor outputs one @code{make} rule containing the
+object file name for that source file, a colon, and the names of all the
+included files.  If there are many included files then the rule is split
+into several lines using @samp{\}-newline.
 
-@samp{-MG} says to treat missing header files as generated files and assume
-they live in the same directory as the source file.  It must be specified
-in addition to @samp{-M}.
+@samp{-MG} says to treat missing header files as generated files and
+assume they live in the same directory as the source file.  It must be
+specified in addition to @samp{-M}.
 
 This feature is used in automatic updating of makefiles.
 
@@ -3058,16 +3158,16 @@ Like @samp{-M} but mention only the files included with @samp{#include
 @item -MD @var{file}
 @findex -MD
 Like @samp{-M} but the dependency information is written to @var{file}.
-This is in addition to compiling the file as specified---@samp{-MD} does
-not inhibit ordinary compilation the way @samp{-M} does.
+This is in addition to compiling the file as specified --- @samp{-MD}
+does not inhibit ordinary compilation the way @samp{-M} does.
 
 When invoking @code{gcc}, do not specify the @var{file} argument.
 @code{gcc} will create file names made by replacing ".c" with ".d" at
 the end of the input file names.
 
 In Mach, you can use the utility @code{md} to merge multiple dependency
-files into a single dependency file suitable for using with the @samp{make}
-command.
+files into a single dependency file suitable for using with the
+@samp{make} command.
 
 @item -MMD @var{file}
 @findex -MMD
@@ -3103,13 +3203,14 @@ in any of the directories in the main include path (the one that
 @item -iprefix @var{prefix}
 @findex -iprefix
 Specify @var{prefix} as the prefix for subsequent @samp{-iwithprefix}
-options.
+options.  If the prefix represents a directory, you should include the
+final @samp{/}.
 
 @item -iwithprefix @var{dir}
 @findex -iwithprefix
 Add a directory to the second include path.  The directory's name is
-made by concatenating @var{prefix} and @var{dir}, where @var{prefix}
-was specified previously with @samp{-iprefix}.
+made by concatenating @var{prefix} and @var{dir}, where @var{prefix} was
+specified previously with @samp{-iprefix}.
 
 @item -isystem @var{dir}
 @findex -isystem
@@ -3191,8 +3292,10 @@ default is 8.
 
 @item -$
 @findex -$
-Forbid the use of @samp{$} in identifiers.  The C standard does not
-permit this, but it is a common extension.
+Forbid the use of @samp{$} in identifiers.  The C standard allows
+implementations to define extra characters that can appear in
+identifiers.  By default the GNU C preprocessor permits @samp{$}, a
+common extension.
 @end table
 @c man end
 
