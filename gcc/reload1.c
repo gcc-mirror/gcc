@@ -6705,7 +6705,8 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
 	  || !(set = single_set (insn))
 	  || rtx_equal_p (old, SET_DEST (set))
 	  || !reg_mentioned_p (old, SET_SRC (set))
-	  || !regno_clobbered_p (REGNO (old), insn, rl->mode, 0))
+	  || !((REGNO (old) < FIRST_PSEUDO_REGISTER)
+	       && regno_clobbered_p (REGNO (old), insn, rl->mode, 0)))
 	gen_reload (old, reloadreg, rl->opnum,
 		    rl->when_needed);
     }
