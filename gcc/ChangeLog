@@ -1,5 +1,11 @@
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR c++/17972
+	* tree-inline.c (expand_call_inline): Set TREE_SIDE_EFFECTS
+	on the STMT_EXPR wrapping up the inlined body.
+
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR preprocessor/15167
 	* cppfiles.c (destroy_cpp_file): New function.
 	(should_stack_file): Make a new file if the

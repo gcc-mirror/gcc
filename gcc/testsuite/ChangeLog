@@ -1,3 +1,7 @@
+2004-12-15  Alan Modra  <amodra@bigpond.net.au>
+
+	* g++.dg/opt/inline9.C: New test.
+
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* cpp/pragma-once-1.c: New test.
