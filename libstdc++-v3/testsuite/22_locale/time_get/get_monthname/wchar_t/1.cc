@@ -1,6 +1,6 @@
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,23 +27,15 @@
 void test01()
 {
   using namespace std;
-  typedef time_base::dateorder dateorder;
+  bool test __attribute__((unused)) = true;
+
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
-  bool test __attribute__((unused)) = true;
-
-  // basic construction and sanity checks.
+  // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_test::try_named_locale("en_HK");
-  locale loc_fr = __gnu_test::try_named_locale("fr_FR@euro");
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  VERIFY( loc_hk != loc_c );
-  VERIFY( loc_hk != loc_fr );
-  VERIFY( loc_hk != loc_de );
-  VERIFY( loc_de != loc_fr );
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };

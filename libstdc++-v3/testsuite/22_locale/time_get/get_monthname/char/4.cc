@@ -1,6 +1,6 @@
-// 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
+// 2004-04-07  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,26 +28,28 @@ void test01()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;
-  typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<wchar_t> iterator_type;
+
+  typedef istreambuf_iterator<char> iterator_type;
+
+  const ios_base::iostate good = ios_base::goodbit;
+  ios_base::iostate errorstate = good;
 
   // basic construction
   locale loc_c = locale::classic();
 
-  const string empty;
-
-  // create an ostream-derived object, cache the time_get facet
   iterator_type end;
   istringstream iss;
   iss.imbue(loc_c);
-  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
+  const time_get<char>& tim_get =
+    use_facet<time_get<char> >(iss.getloc()); 
 
-  // 1
-  // dateorder date_order() const
-  iss.imbue(loc_c);
-  dateorder do1 = tim_get.date_order();
-  //  VERIFY( do1 == time_base::mdy );
-  VERIFY( do1 == time_base::no_order );
+  iss.str("Jul");
+  iterator_type is_it01(iss);
+  tm time01;
+  errorstate = good;
+  tim_get.get_monthname(is_it01, end, iss, errorstate, &time01);
+  VERIFY( time01.tm_mon == 6 );
+  VERIFY( errorstate == ios_base::eofbit );
 }
 
 int main()
