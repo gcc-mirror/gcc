@@ -1,3 +1,10 @@
+2004-07-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac (ranlib_flags): New variable.
+	* Makefile.in (RANLIB_FLAGS): New variable.
+	(libbackend.a): Use it.
+	* configure: Regenerated.
+
 2004-07-04  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (noce_try_sign_mask): Call emit_store_flag to generate
