@@ -1,3 +1,12 @@
+2004-03-03  Per Bothner  <per@bothner.com>
+
+	* java/nio/channels/Channels.java (newInputStream, newOutputStream):
+	Optimize when argument is a FileChannelImpl.
+	(newInputStream(FileChannelImpl), newOutputStream(FileChannelImpl)):
+	New native methods.
+	* java/nio/channels/natChannels.cc:  New file for new native methods.
+	* Makefile.am:  Update accordingly.
+
 2004-03-02  Jan Hubicka  <jh@suse.cz>
 
 	* configure.host: Pass -fno-omit-frame-pointer for i386.
@@ -7,15 +16,6 @@
 2004-03-01  Per Bothner  <per@bothner.com>
 
 	* java/lang/natPosixProcess.cc (startProcess):  Fix thinko.
-
-2004-03-01  Per Bothner  <per@bothner.com>
-
-	* java/nio/channels/Channels.java (newInputStream, newOutputStream):
-	Optimize when argument is a FileChannelImpl.
-	(newInputStream(FileChannelImpl), newOutputStream(FileChannelImpl)):
-	New native methods.
-	* java/nio/channels/natChannels.cc:  New file for new native methods.
-	* Makefile.am:  Update accordingly.
 
 2004-02-29  Per Bothner  <per@bothner.com>
 

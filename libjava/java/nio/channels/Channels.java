@@ -41,8 +41,11 @@ import gnu.java.nio.ChannelInputStream;
 import gnu.java.nio.ChannelOutputStream;
 import gnu.java.nio.InputStreamChannel;
 import gnu.java.nio.OutputStreamChannel;
+import gnu.java.nio.channels.FileChannelImpl;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -59,16 +62,23 @@ public final class Channels
    */
   public static InputStream newInputStream(ReadableByteChannel ch)
   {
+    if (ch instanceof FileChannelImpl)
+      return newInputStream((FileChannelImpl) ch);
     return new ChannelInputStream(ch);
   }
-  
+
   /**
    * Constructs a stream that writes bytes to the given channel.
    */
   public static OutputStream newOutputStream(WritableByteChannel ch) 
   {
+    if (ch instanceof FileChannelImpl)
+      return newOutputStream((FileChannelImpl) ch);
     return new ChannelOutputStream(ch);
   }
+
+  static native FileInputStream newInputStream(FileChannelImpl ch);
+  static native FileOutputStream newOutputStream(FileChannelImpl ch);
   
   /**
    * Constructs a channel that reads bytes from the given stream.
@@ -77,7 +87,7 @@ public final class Channels
   {
     return new InputStreamChannel(in);
   }
-  
+
   /**
    * Constructs a channel that writes bytes to the given stream.
    */
