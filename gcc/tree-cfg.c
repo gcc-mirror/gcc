@@ -3144,7 +3144,6 @@ tree_split_edge (edge edge_in)
 {
   basic_block new_bb, after_bb, dest, src;
   edge new_edge, e;
-  edge_iterator ei;
 
   /* Abnormal edges cannot be split.  */
   gcc_assert (!(edge_in->flags & EDGE_ABNORMAL));
@@ -3155,13 +3154,10 @@ tree_split_edge (edge edge_in)
   /* Place the new block in the block list.  Try to keep the new block
      near its "logical" location.  This is of most help to humans looking
      at debugging dumps.  */
-  FOR_EACH_EDGE (e, ei, dest->preds)
-    if (e->src->next_bb == dest)
-      break;
-  if (!e)
-    after_bb = dest->prev_bb;
-  else
+  if (dest->prev_bb && find_edge (dest->prev_bb, dest))
     after_bb = edge_in->src;
+  else
+    after_bb = dest->prev_bb;
 
   new_bb = create_empty_bb (after_bb);
   new_bb->frequency = EDGE_FREQUENCY (edge_in);
