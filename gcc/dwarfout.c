@@ -2827,7 +2827,16 @@ type_attribute (type, decl_const, decl_volatile)
     if (root_type_modified)
 	mod_u_d_type_attribute (type, decl_const, decl_volatile);
     else
-	user_def_type_attribute (type);
+	/* We have to get the TYPE_MAIN_VARIANT here (and pass that to the
+	   `user_def_type_attribute' routine) because the ..._TYPE node we
+	   have might simply be a *copy* of some original type node (where
+	   the copy was created to help us keep track of typedef names)
+	   and that copy might have a different TYPE_UID from the original
+	   ..._TYPE node.  (Note that when `equate_type_number_to_die_number'
+	   is labeling a given type DIE for future reference, it always and
+	   only creates labels for DIEs representing *main variants*, and it
+	   never even knows about non-main-variants.)  */
+	user_def_type_attribute (TYPE_MAIN_VARIANT (type));
 }
 
 /* Given a tree pointer to a struct, class, union, or enum type node, return
