@@ -90,7 +90,8 @@ symbol_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct symbol_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, 
+		       (hash_table_key) string));
   ret->file = NULL;
   ret->chosen = 0;
   ret->tweaking = 0;
@@ -104,7 +105,8 @@ symbol_hash_lookup (string, create)
      boolean create;
 {
   return ((struct symbol_hash_entry *)
-	  hash_lookup (&symbol_table, string, create, true));
+	  hash_lookup (&symbol_table, (hash_table_key) string, 
+		       create, &string_copy));
 }
 
 static struct hash_table file_table;
@@ -124,7 +126,8 @@ file_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct file_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, 
+		       (hash_table_key) string));
   ret->args = NULL;
   ret->dir = NULL;
   ret->main = NULL;
@@ -137,7 +140,8 @@ file_hash_lookup (string)
      const char *string;
 {
   return ((struct file_hash_entry *)
-	  hash_lookup (&file_table, string, true, true));
+	  hash_lookup (&file_table, (hash_table_key) string, true, 
+		       &string_copy));
 }
 
 static struct hash_table demangled_table;
@@ -157,7 +161,8 @@ demangled_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct demangled_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, 
+		       (hash_table_key) string));
   ret->mangled = NULL;
   return (struct hash_entry *) ret;
 }
@@ -168,7 +173,8 @@ demangled_hash_lookup (string, create)
      boolean create;
 {
   return ((struct demangled_hash_entry *)
-	  hash_lookup (&demangled_table, string, create, true));
+	  hash_lookup (&demangled_table, (hash_table_key) string, 
+		       create, &string_copy));
 }
 
 /* Stack code.  */
@@ -251,9 +257,12 @@ tlink_init ()
 {
   char *p;
 
-  hash_table_init (&symbol_table, symbol_hash_newfunc);
-  hash_table_init (&file_table, file_hash_newfunc);
-  hash_table_init (&demangled_table, demangled_hash_newfunc);
+  hash_table_init (&symbol_table, symbol_hash_newfunc, &string_hash,
+		   &string_compare);
+  hash_table_init (&file_table, file_hash_newfunc, &string_hash, 
+		   &string_compare);
+  hash_table_init (&demangled_table, demangled_hash_newfunc,
+		   &string_hash, &string_compare);
   obstack_begin (&symbol_stack_obstack, 0);
   obstack_begin (&file_stack_obstack, 0);
 
@@ -367,10 +376,11 @@ read_repo_file (f)
      file *f;
 {
   char c;
-  FILE *stream = fopen (f->root.string, "r");
+  FILE *stream = fopen ((char*) f->root.key, "r");
 
   if (tlink_verbose >= 2)
-    fprintf (stderr, "collect: reading %s\n", f->root.string);
+    fprintf (stderr, "collect: reading %s\n", 
+	     (char*) f->root.key);
 
   while (fscanf (stream, "%c ", &c) == 1)
     {
@@ -432,8 +442,8 @@ recompile_files ()
   while ((f = file_pop ()) != NULL)
     {
       char *line, *command;
-      FILE *stream = fopen (f->root.string, "r");
-      char *outname = frob_extension (f->root.string, ".rnw");
+      FILE *stream = fopen ((char*) f->root.key, "r");
+      char *outname = frob_extension ((char*) f->root.key, ".rnw");
       FILE *output = fopen (outname, "w");
 
       while ((line = tfgets (stream)) != NULL)
@@ -448,7 +458,7 @@ recompile_files ()
 	}
       fclose (stream);
       fclose (output);
-      rename (outname, f->root.string);
+      rename (outname, (char*) f->root.key);
 
       obstack_grow (&temporary_obstack, "cd ", 3);
       obstack_grow (&temporary_obstack, f->dir, strlen (f->dir));
@@ -507,13 +517,14 @@ demangle_new_symbols ()
   while ((sym = symbol_pop ()) != NULL)
     {
       demangled *dem;
-      char *p = cplus_demangle (sym->root.string, DMGL_PARAMS | DMGL_ANSI);
+      char *p = cplus_demangle ((char*) sym->root.key, 
+				DMGL_PARAMS | DMGL_ANSI);
 
       if (! p)
 	continue;
 
       dem = demangled_hash_lookup (p, true);
-      dem->mangled = sym->root.string;
+      dem->mangled = (char*) sym->root.key;
     }
 }
 
@@ -584,7 +595,7 @@ scan_linker_output (fname)
 	{
 	  if (tlink_verbose >= 2)
 	    fprintf (stderr, "collect: tweaking %s in %s\n",
-		     sym->root.string, sym->file->root.string);
+		     (char*) sym->root.key, (char*) sym->file->root.key);
 	  sym->tweaking = 1;
 	  file_push (sym->file);
 	}

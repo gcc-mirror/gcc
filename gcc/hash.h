@@ -26,6 +26,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 typedef enum {false, true} boolean;
 
+typedef PTR hash_table_key;
+
 /* Hash table routines.  There is no way to free up a hash table.  */
 
 /* An element in the hash table.  Most uses will actually use a larger
@@ -35,8 +37,8 @@ struct hash_entry
 {
   /* Next entry for this hash code.  */
   struct hash_entry *next;
-  /* String being hashed.  */
-  const char *string;
+  /* The thing being hashed.  */
+  hash_table_key key;
   /* Hash code.  This is the full hash code, not the index into the
      table.  */
   unsigned long hash;
@@ -59,7 +61,11 @@ struct hash_table
      only if the argument is NULL.  */
   struct hash_entry *(*newfunc) PARAMS ((struct hash_entry *,
 					 struct hash_table *,
-					 const char *));
+					 hash_table_key));
+  /* A function to compute the hash code for a key in the hash table.  */
+  unsigned long (*hash) PARAMS ((hash_table_key));
+  /* A function to compare two keys.  */
+  boolean (*comp) PARAMS ((hash_table_key, hash_table_key));
   /* An obstack for this hash table.  */
   struct obstack memory;
 };
@@ -69,31 +75,35 @@ extern boolean hash_table_init
   PARAMS ((struct hash_table *,
 	   struct hash_entry *(*) (struct hash_entry *,
 				   struct hash_table *,
-				   const char *)));
+				   hash_table_key),
+	   unsigned long (*hash) (hash_table_key),
+	   boolean (*comp) (hash_table_key, hash_table_key)));
 
 /* Initialize a hash table specifying a size.  */
 extern boolean hash_table_init_n
   PARAMS ((struct hash_table *,
 	   struct hash_entry *(*) (struct hash_entry *,
 				   struct hash_table *,
-				   const char *),
+				   hash_table_key),
+	   unsigned long (*hash) (hash_table_key),
+	   boolean (*comp) (hash_table_key, hash_table_key),
 	   unsigned int size));
 
 /* Free up a hash table.  */
 extern void hash_table_free PARAMS ((struct hash_table *));
 
-/* Look up a string in a hash table.  If CREATE is true, a new entry
-   will be created for this string if one does not already exist.  The
-   COPY argument must be true if this routine should copy the string
-   into newly allocated memory when adding an entry.  */
+/* Look up KEY in a hash table.  If CREATE is true, a new entry
+   will be created for this KEY if one does not already exist.  If
+   COPY is non-NULL, it is used to copy the KEY before storing it in
+   the hash table.  */
 extern struct hash_entry *hash_lookup
-  PARAMS ((struct hash_table *, const char *, boolean create,
-	   boolean copy));
+  PARAMS ((struct hash_table *, hash_table_key key, boolean create,
+	   hash_table_key (*copy)(struct obstack*, hash_table_key)));
 
 /* Base method for creating a hash table entry.  */
 extern struct hash_entry *hash_newfunc
-  PARAMS ((struct hash_entry *, struct hash_table *,
-	   const char *));
+  PARAMS ((struct hash_entry *, struct hash_table *, 
+	   hash_table_key key));
 
 /* Grab some space for a hash table entry.  */
 extern PTR hash_allocate PARAMS ((struct hash_table *,
@@ -104,5 +114,17 @@ extern PTR hash_allocate PARAMS ((struct hash_table *,
    INFO argument is passed to the function.  */
 extern void hash_traverse PARAMS ((struct hash_table *,
 				   boolean (*) (struct hash_entry *,
-						PTR),
-				   PTR info));
+						hash_table_key),
+				   hash_table_key info));
+
+/* Hash a string K, which is really of type `char*'.  */
+extern unsigned long string_hash PARAMS ((hash_table_key k));
+
+/* Compare two strings K1, K2 which are really of type `char*'.  */
+extern boolean string_compare PARAMS ((hash_table_key k1, 
+				       hash_table_key k2));
+
+/* Copy a string K, which is really of type `char*'.  */
+extern hash_table_key string_copy PARAMS ((struct obstack* memory,
+					   hash_table_key k));
+
