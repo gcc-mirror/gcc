@@ -1931,6 +1931,7 @@ gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
 gnu/java/nio/NIOServerSocket.java \
 gnu/java/nio/NIOSocket.java \
+gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \
@@ -3064,7 +3065,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/net/protocol/jar/Handler.P \
 .deps/gnu/java/nio/DatagramChannelImpl.P \
 .deps/gnu/java/nio/DatagramChannelSelectionKey.P \
-.deps/gnu/java/nio/FileLockImpl.P .deps/gnu/java/nio/NIOConstants.P \
+.deps/gnu/java/nio/FileLockImpl.P \
+.deps/gnu/java/nio/InputStreamChannel.P \
+.deps/gnu/java/nio/NIOConstants.P \
 .deps/gnu/java/nio/NIODatagramSocket.P \
 .deps/gnu/java/nio/NIOServerSocket.P .deps/gnu/java/nio/NIOSocket.P \
 .deps/gnu/java/nio/PipeImpl.P .deps/gnu/java/nio/SelectionKeyImpl.P \
