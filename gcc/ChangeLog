@@ -1,3 +1,8 @@
+1999-04-13  Mike Stump  <mrs@wrs.com>
+
+	* i386/vxi386.h (CPP_CPU_SPEC): Define appropriately for vxworks.
+	(CPP_PREDEFINES, LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): likewise.
+
 Tue Apr 13 21:01:36 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-common.c (default_valid_lang_attribute): New fn.
