@@ -6518,7 +6518,7 @@ package body Sem_Ch12 is
 
                   while Present (Actual_Ent)
                     and then Present (Formal_Node)
-                    and then Actual_Ent /= First_Private_Entity (Act_Ent)
+                    and then Actual_Ent /= First_Private_Entity (Act_Pkg)
                   loop
                      --  ???  Are the following calls also needed here:
                      --

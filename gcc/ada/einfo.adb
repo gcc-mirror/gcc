@@ -1003,6 +1003,12 @@ package body Einfo is
 
    function First_Private_Entity (Id : E) return E is
    begin
+      pragma Assert (Ekind (Id) = E_Package
+                       or else Ekind (Id) = E_Generic_Package
+                       or else Ekind (Id) = E_Protected_Type
+                       or else Ekind (Id) = E_Protected_Subtype
+                       or else Ekind (Id) = E_Task_Type
+                       or else Ekind (Id) = E_Task_Subtype);
       return Node16 (Id);
    end First_Private_Entity;
 
@@ -2981,7 +2987,12 @@ package body Einfo is
 
    procedure Set_First_Private_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      pragma Assert (Ekind (Id) = E_Package
+                       or else Ekind (Id) = E_Generic_Package
+                       or else Ekind (Id) = E_Protected_Type
+                       or else Ekind (Id) = E_Protected_Subtype
+                       or else Ekind (Id) = E_Task_Type
+                       or else Ekind (Id) = E_Task_Subtype);
       Set_Node16 (Id, V);
    end Set_First_Private_Entity;
 
