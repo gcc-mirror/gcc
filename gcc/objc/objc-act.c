@@ -6896,23 +6896,6 @@ finish_class (tree class)
 			     IDENTIFIER_POINTER (CLASS_SUPER_NAME (objc_implementation_context)));
 	}
     }
-
-  else if (TREE_CODE (class) == CLASS_INTERFACE_TYPE)
-    {
-      tree decl;
-      const char *class_name = IDENTIFIER_POINTER (CLASS_NAME (class));
-      char *string = (char *) alloca (strlen (class_name) + 3);
-
-      /* extern struct objc_object *_<my_name>; */
-
-      sprintf (string, "_%s", class_name);
-
-      decl = build_decl (VAR_DECL, get_identifier (string),
-			 build_pointer_type (objc_object_reference));
-      DECL_EXTERNAL (decl) = 1;
-      lang_hooks.decls.pushdecl (decl);
-      finish_decl (decl, NULL_TREE, NULL_TREE);
-    }
 }
 
 static tree

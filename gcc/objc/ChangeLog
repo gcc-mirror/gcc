@@ -1,3 +1,8 @@
+2004-10-26  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (finish_class): Do not synthesize bogus
+	'extern objc_object *_Foo;' declarations for @interface Foo.
+
 2004-10-25  Ziemowit Laski  <zlaski@apple.com>
 	    David Ayers  <d.ayers@inode.at>
 

@@ -1,3 +1,7 @@
+2004-10-26  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/super-class-3.m: New test.
+
 2004-10-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/cpp/direct2.c: Adjust expected errors, robustify parser
