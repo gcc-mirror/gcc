@@ -160,21 +160,13 @@ is_sra_candidate_decl (tree decl)
 }
 
 /* Return true if EXP is of the form <ref decl>, where REF is one of the
-   field access references we handle and DECL is an SRA candidate. 
-
-   Set ALLOW_BIT_FIELD_REF to accept BIT_FIELD_REF as well.  This is
-   normally false, except when we're trying to work around it.  */
+   field access references we handle and DECL is an SRA candidate.   */
 
 static bool
-is_sra_candidate_ref (tree exp, bool allow_bit_field_ref)
+is_sra_candidate_ref (tree exp)
 {
   switch (TREE_CODE (exp))
     {
-    case BIT_FIELD_REF:
-      if (!allow_bit_field_ref)
-	break;
-      /* FALLTHRU */
-
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -182,6 +174,28 @@ is_sra_candidate_ref (tree exp, bool allow_bit_field_ref)
 
     default:
       break;
+    }
+
+  return false;
+}
+
+/* Return true if EXP is of the form <ref decl>, where REF is a nest of
+   references handled by handle_components_p and DECL is an SRA candidate. 
+   *VAR_P is set to DECL.  */
+
+static bool
+is_sra_candidate_complex_ref (tree exp, tree *var_p)
+{
+  tree orig_exp = exp;
+
+  while (TREE_CODE (exp) == REALPART_EXPR || TREE_CODE (exp) == IMAGPART_EXPR
+	 || handled_component_p (exp))
+    exp = TREE_OPERAND (exp, 0);
+
+  if (orig_exp != exp && is_sra_candidate_decl (exp))
+    {
+      *var_p = exp;
+      return true;
     }
 
   return false;
@@ -916,9 +930,10 @@ scalarize_modify_expr (block_stmt_iterator *si_p)
   tree stmt = bsi_stmt (*si_p);
   tree lhs = TREE_OPERAND (stmt, 0);
   tree rhs = TREE_OPERAND (stmt, 1);
+  tree var = NULL_TREE;
 
   /* Found AGGREGATE.FIELD = ...  */
-  if (is_sra_candidate_ref (lhs, false))
+  if (is_sra_candidate_ref (lhs))
     {
       tree sym;
       v_may_def_optype v_may_defs;
@@ -936,10 +951,12 @@ scalarize_modify_expr (block_stmt_iterator *si_p)
     }
 
   /* Found ... = AGGREGATE.FIELD  */
-  else if (is_sra_candidate_ref (rhs, false))
+  else if (is_sra_candidate_ref (rhs))
     scalarize_component_ref (stmt, &TREE_OPERAND (stmt, 1));
 
-  /* Found ... = BIT_FIELD_REF <>.  This is similar to a CALL_EXPR, if the
+  /* Found a complex reference nesting involving a candidate decl.  This
+     should only occur if the above condition is false if a BIT_FIELD_REF or
+     VIEW_CONVERT_EXPR is involved.  This is similar to a CALL_EXPR, if the
      operand of the BIT_FIELD_REF is a scalarizable structure, we need to
      copy from its scalar replacements before doing the bitfield operation.
 
@@ -951,10 +968,22 @@ scalarize_modify_expr (block_stmt_iterator *si_p)
      generates a BIT_FIELD_REF operation for one of the comparisons,
      preventing the optimizers from removing all the redundant
      operations.  */
-  else if (is_sra_candidate_ref (rhs, true))
+  else if (is_sra_candidate_complex_ref (rhs, &var))
     {
-      tree var = TREE_OPERAND (rhs, 0);
       emit_scalar_copies (si_p, var, var, FIELD_SCALAR);
+
+      /* If the LHS of the assignment is also a scalarizable structure, insert
+	 copies into the scalar replacements after the call.  */
+      if (is_sra_candidate_decl (lhs))
+	{
+	  tree list = create_scalar_copies (lhs, lhs, SCALAR_FIELD);
+	  if (EXPR_HAS_LOCATION (stmt))
+	    annotate_all_with_locus (&list, EXPR_LOCATION (stmt));
+	  if (stmt_ends_bb_p (stmt))
+	    insert_edge_copies (list, bb_for_stmt (stmt));
+	  else
+	    bsi_insert_after (si_p, list, BSI_NEW_STMT);
+	}
     }
 
   /* Found AGGREGATE = ... or ... = AGGREGATE  */
@@ -983,7 +1012,7 @@ scalarize_tree_list (tree list, block_stmt_iterator *si_p, bitmap done)
 	      bitmap_set_bit (done, index);
 	    }
 	}
-      else if (is_sra_candidate_ref (arg, false))
+      else if (is_sra_candidate_ref (arg))
 	{
 	  tree stmt = bsi_stmt (*si_p);
 	  scalarize_component_ref (stmt, &TREE_VALUE (op));
@@ -1071,7 +1100,7 @@ scalarize_return_expr (block_stmt_iterator *si_p)
 	emit_scalar_copies (si_p, rhs, rhs, FIELD_SCALAR);
 
       /* Handle 'return STRUCTURE.FIELD;'  */
-      else if (is_sra_candidate_ref (rhs, false))
+      else if (is_sra_candidate_ref (rhs))
 	scalarize_component_ref (stmt, rhs_p);
 
       /* Handle 'return CALL_EXPR;'  */
