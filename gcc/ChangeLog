@@ -1,3 +1,9 @@
+2002-09-07  Glen Nakamura  <glen@imodulo.com>
+
+	* sched-deps.c (sched_analyze_insn): Make sure to add insn
+	to reg_last->sets after flushing the dependency lists to guarantee
+	that subsequent clobbers will be dependent on it.
+
 2002-09-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
@@ -35,8 +41,8 @@
 
 2002-08-29  Rodney Brown  <rbrown64@csc.com.au>
 
-        * doc/install.texi (Specific, alpha*-dec-osf*): Add "virtual
-        memory exhausted" workarounds.
+	* doc/install.texi (Specific, alpha*-dec-osf*): Add "virtual
+	memory exhausted" workarounds.
 
 2002-08-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -58,10 +64,10 @@
 	
 2002-08-23  David Edelsohn  <edelsohn@gnu.org>
 
-        * config/rs6000/rs6000.c (rs6000_select_section): Treat
-        DEFAULT_ABI == ABI_AIX like PIC.  Test PIC & reloc for readonly
-        default.
-        (rs6000_unique_section): Likewise.
+	* config/rs6000/rs6000.c (rs6000_select_section): Treat
+	DEFAULT_ABI == ABI_AIX like PIC.  Test PIC & reloc for readonly
+	default.
+	(rs6000_unique_section): Likewise.
 
 2002-08-22  Jason Merrill  <jason@redhat.com>
 

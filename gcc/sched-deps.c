@@ -1118,8 +1118,6 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list (insn, reg_last->sets, REG_DEP_OUTPUT);
-	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
 	      if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
 		  || reg_last->clobbers_length > MAX_PENDING_LIST_LENGTH)
 		{
@@ -1129,6 +1127,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 						REG_DEP_ANTI);
 		  add_dependence_list_and_free (insn, &reg_last->clobbers,
 						REG_DEP_OUTPUT);
+		  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 		  reg_last->clobbers_length = 0;
 		  reg_last->uses_length = 0;
 		}
