@@ -1951,6 +1951,17 @@ emit_move_insn_1 (x, y)
       rtx last_insn = 0;
       rtx insns;
       
+#ifdef PUSH_ROUNDING
+
+      /* If X is a push on the stack, do the push now and replace
+	 X with a reference to the stack pointer.  */
+      if (push_operand (x, GET_MODE (x)))
+	{
+	  anti_adjust_stack (GEN_INT (GET_MODE_SIZE (GET_MODE (x))));
+	  x = change_address (x, VOIDmode, stack_pointer_rtx);
+	}
+#endif
+			     
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 	   i++)
