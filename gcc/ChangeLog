@@ -1,3 +1,17 @@
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.h (warn_missing_format_attribute): New variable.
+	* c-decl.c (warn_missing_format_attribute): New variable.
+	(c_decode_option): Decode -Wmissing-format-attribute and
+	-Wno-missing-format-attribute.
+	* c-common.c (check_function_format): If
+	-Wmissing-format-attribute, give a warning where a vprintf or
+	vscanf function is called by a function without its own printf or
+	scanf attribute.
+	* toplev.c (documented_lang_options): Add
+	-Wmissing-format-attribute.
+	* invoke.texi: Document -Wmissing-format-attribute.
+
 2000-10-17  Marc Espie <espie@openbsd.org>
 
 	* invoke.texi (-shared): Insist on requiring code generation flags

@@ -337,6 +337,10 @@ extern int flag_const_strings;
 
 extern int warn_format;
 
+/* Warn about functions which might be candidates for format attributes.  */
+
+extern int warn_missing_format_attribute;
+
 /* Nonzero means do some things the same way PCC does.  */
 
 extern int flag_traditional;

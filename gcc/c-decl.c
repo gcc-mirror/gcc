@@ -416,6 +416,10 @@ int warn_cast_qual;
 
 int warn_bad_function_cast;
 
+/* Warn about functions which might be candidates for format attributes.  */
+
+int warn_missing_format_attribute;
+
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 int warn_traditional;
@@ -716,6 +720,10 @@ c_decode_option (argc, argv)
     warn_missing_noreturn = 1;
   else if (!strcmp (p, "-Wno-missing-noreturn"))
     warn_missing_noreturn = 0;
+  else if (!strcmp (p, "-Wmissing-format-attribute"))
+    warn_missing_format_attribute = 1;
+  else if (!strcmp (p, "-Wno-missing-format-attribute"))
+    warn_missing_format_attribute = 0;
   else if (!strcmp (p, "-Wpointer-arith"))
     warn_pointer_arith = 1;
   else if (!strcmp (p, "-Wno-pointer-arith"))

@@ -2012,6 +2012,16 @@ be taken to manually verify functions actually do not ever return before
 adding the @code{noreturn} attribute, otherwise subtle code generation
 bugs could be introduced.
 
+@item -Wmissing-format-attribute
+If @samp{-Wformat} is enabled, also warn about functions which might be
+candidates for @code{format} attributes.  Note these are only possible
+candidates, not absolute ones.  GCC will guess that @code{format}
+attributes might be appropriate for any function that calls a function
+like @code{vprintf} or @code{vscanf}, but this might not always be the
+case, and some functions for which @code{format} attributes are
+appropriate may not be detected.  This option has no effect unless
+@samp{-Wformat} is enabled (possibly by @samp{-Wall}).
+
 @item -Wpacked
 Warn if a structure is given the packed attribute, but the packed
 attribute has no effect on the layout or size of the structure.  
