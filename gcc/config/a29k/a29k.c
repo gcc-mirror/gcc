@@ -1103,7 +1103,7 @@ print_operand (file, x, code)
 	{
 	  union real_extract u;
 
-	  bcopy (&CONST_DOUBLE_LOW (x), &u, sizeof u);
+	  bcopy ((char *) &CONST_DOUBLE_LOW (x), (char *) &u, sizeof u);
 	  fprintf (file, "$double1(%.20e)", u.d);
 	}
       else if (GET_CODE (x) == REG)
@@ -1167,7 +1167,8 @@ print_operand (file, x, code)
 	fprintf (file, "$float");
       else
 	fprintf (file, "$double%d", SUBREG_WORD (XEXP (x, 0)));
-      bcopy (&CONST_DOUBLE_LOW (SUBREG_REG (XEXP (x, 0))), &u, sizeof u);
+      bcopy ((char *) &CONST_DOUBLE_LOW (SUBREG_REG (XEXP (x, 0))),
+	     (char *) &u, sizeof u);
       fprintf (file, "(%.20e)", u.d);
     }
 
@@ -1176,7 +1177,7 @@ print_operand (file, x, code)
     {
       union real_extract u;
 
-      bcopy (&CONST_DOUBLE_LOW (x), &u, sizeof u);
+      bcopy ((char *) &CONST_DOUBLE_LOW (x), (char *) &u, sizeof u);
       fprintf (file, "$%s(%.20e)",
 	       GET_MODE (x) == SFmode ? "float" : "double0", u.d);
     }
