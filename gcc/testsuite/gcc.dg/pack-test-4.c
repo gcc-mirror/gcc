@@ -1,11 +1,11 @@
-// PR c/11885
-// Bug: flag4 was allocated into the same byte as the other flags.
-// { dg-do run }
+/* PR c/11885
+   Bug: flag4 was allocated into the same byte as the other flags.
+   { dg-options "" }
+   { dg-do run } */
 
 typedef unsigned char uint8_t;
 
 typedef struct {
-    
     uint8_t flag1:2;
     uint8_t flag2:1;
     uint8_t flag3:1;
