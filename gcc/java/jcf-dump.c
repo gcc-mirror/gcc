@@ -321,10 +321,12 @@ DEFUN (print_access_flags, (stream, flags, context),
   if (flags & ACC_STATIC) fprintf (stream, " static");
   if (flags & ACC_FINAL) fprintf (stream, " final");
   if (flags & ACC_SYNCHRONIZED)
-    if (context == 'c')
-      fprintf (stream, " super");
-    else
-      fprintf (stream, " synchronized");
+    {
+      if (context == 'c')
+	fprintf (stream, " super");
+      else
+	fprintf (stream, " synchronized");
+    }
   if (flags & ACC_VOLATILE) fprintf (stream, " volatile");
   if (flags & ACC_TRANSIENT) fprintf (stream, " transient");
   if (flags & ACC_NATIVE) fprintf (stream, " native");

@@ -303,6 +303,10 @@ static tree java_lang_cloneable = NULL_TREE;
   int value;
 }
 
+%{
+#include "lex.c"
+%}
+
 %pure_parser
 
 /* Things defined here have to match the order of what's in the
@@ -1010,15 +1014,13 @@ explicit_constructor_invocation:
 this_or_super:			/* Added, simplifies error diagnostics */
 	THIS_TK
 		{
-		  tree wfl = build_wfl_node (this_identifier_node, 
-					     input_filename, 0, 0);
+		  tree wfl = build_wfl_node (this_identifier_node);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  $$ = wfl;
 		}
 |	SUPER_TK
 		{
-		  tree wfl = build_wfl_node (super_identifier_node,
-					     input_filename, 0, 0);
+		  tree wfl = build_wfl_node (super_identifier_node);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  $$ = wfl;
 		}
@@ -1861,8 +1863,7 @@ field_access:
 |	SUPER_TK DOT_TK identifier
 		{
 		  tree super_wfl = 
-		    build_wfl_node (super_identifier_node, 
-				    input_filename, 0, 0);
+		    build_wfl_node (super_identifier_node);
 		  EXPR_WFL_LINECOL (super_wfl) = $1.location;
 		  $$ = make_qualified_name (super_wfl, $3, $2.location);
 		}
@@ -2277,8 +2278,6 @@ constant_expression:
 
 %%
 
-
-#include "lex.c"
 
 /* Flag for the error report routine to issue the error the first time
    it's called (overriding the default behavior which is to drop the
@@ -2961,7 +2960,7 @@ create_class (flags, id, super, interfaces)
 {
   tree raw_name = EXPR_WFL_NODE (id);
   tree class_id, decl;
-  tree super_decl = NULL, super_decl_type;
+  tree super_decl_type;
 
   class_id = parser_qualified_classname (id);
   decl = IDENTIFIER_CLASS_VALUE (class_id);
@@ -4375,7 +4374,7 @@ get_printable_method_name (decl)
      tree decl;
 {
   char *to_return;
-  tree name;
+  tree name = NULL_TREE;
 
   if (DECL_CONSTRUCTOR_P (decl))
     {
@@ -5919,7 +5918,7 @@ make_qualified_primary (primary, right, location)
      different form than a SUPER. Turn THIS into something symbolic */
   if (TREE_CODE (primary) == THIS_EXPR)
     {
-      wfl = build_wfl_node (this_identifier_node, input_filename, 0, 0);
+      wfl = build_wfl_node (this_identifier_node);
       EXPR_WFL_LINECOL (wfl) = EXPR_WFL_LINECOL (primary);
       wfl = make_qualified_name (wfl, right, location);
       PRIMARY_P (wfl) = 1;
@@ -8329,8 +8328,7 @@ build_super_invocation ()
     return empty_stmt_node;
   else
     {
-      tree super_wfl = build_wfl_node (super_identifier_node, 
-				       input_filename, 0, 0);
+      tree super_wfl = build_wfl_node (super_identifier_node);
       return build_method_invocation (super_wfl, NULL_TREE);
     }
 }
@@ -8346,8 +8344,7 @@ build_this_super_qualified_invocation (use_this, name, args, lloc, rloc)
 {
   tree invok;
   tree wfl = 
-    build_wfl_node ((use_this ? this_identifier_node : super_identifier_node),
-		    input_filename, 0, 0);
+    build_wfl_node (use_this ? this_identifier_node : super_identifier_node);
   EXPR_WFL_LINECOL (wfl) = lloc;
   invok = build_method_invocation (name, args);
   return make_qualified_primary (wfl, invok, rloc);
@@ -10215,7 +10212,7 @@ static tree
 build_this (location)
      int location;
 {
-  tree node = build_wfl_node (this_identifier_node, input_filename, 0, 0);
+  tree node = build_wfl_node (this_identifier_node);
   TREE_SET_CODE (node, THIS_EXPR);
   EXPR_WFL_LINECOL (node) = location;
   return node;

@@ -136,7 +136,6 @@ typedef struct _java_lc {
 #else
 
 extern void set_float_handler PROTO((jmp_buf));
-static tree build_wfl_node ();
 #define SET_FLOAT_HANDLER(H) set_float_handler ((H))
 #define DCONST0 dconst0
 #define GET_IDENTIFIER(S) get_identifier ((S))

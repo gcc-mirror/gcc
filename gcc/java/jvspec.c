@@ -328,7 +328,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	}
       else
 	{
+#if COMBINE_INPUTS
 	  int len; 
+#endif
 
 	  if (saw_speclang)
 	    {
