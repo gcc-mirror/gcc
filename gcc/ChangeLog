@@ -1,3 +1,8 @@
+2004-06-13  Jason Merrill  <jason@redhat.com>
+
+	* tree.h: Move std_gimplify_va_arg_expr protoype here.
+	* tree-gimple.h: From here.
+
 2004-06-13  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/15979
