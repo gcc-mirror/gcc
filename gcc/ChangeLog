@@ -1,3 +1,9 @@
+2004-07-10  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* flags.h: Delete redundant prototypes that are being generated
+	in options.h from common.opt.
+	* common.opt: Add in the expository comments formerly in flags.h.
+
 2004-07-09  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (init_cumulative_args): Set mmx/sse registers

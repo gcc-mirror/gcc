@@ -59,9 +59,6 @@ extern enum debug_info_level debug_info_level;
    debugging information.  */
 extern bool use_gnu_debug_info_extensions;
 
-/* Nonzero means emit debugging information only for symbols which are used.  */
-extern int flag_debug_only_used_symbols;
-
 /* Nonzero means do optimizations.  -opt.  */
 
 extern int optimize;
@@ -69,16 +66,6 @@ extern int optimize;
 /* Nonzero means optimize for size.  -Os.  */
 
 extern int optimize_size;
-
-/* Don't print functions as they are compiled and don't print
-   times taken by the various passes.  -quiet.  */
-
-extern int quiet_flag;
-
-/* Print memory still in use at end of compilation (which may have little
-   to do with peak memory consumption).  -fmem-report.  */
-
-extern int mem_report;
 
 /* Do print extra warnings (such as for uninitialized variables).
    -W/-Wextra.  */
@@ -90,10 +77,6 @@ extern bool extra_warnings;
    -Wunused option.  */
 
 extern void set_Wunused (int setting);
-
-/* Nonzero to warn about variables used before they are initialized.  */
-
-extern int warn_uninitialized;
 
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
@@ -111,48 +94,6 @@ extern HOST_WIDE_INT larger_than_size;
    aliasing safe.  */
 
 extern int warn_strict_aliasing;
-
-/* Nonzero if generating code to do profiling.  */
-
-extern int profile_flag;
-
-/* Nonzero if generating code to profile program flow graph arcs.  */
-
-extern int profile_arc_flag;
-
-/* Nonzero if value profile should be measured.  */
-
-extern int flag_profile_values;
-
-/* Nonzero if generating info for gcov to calculate line test coverage.  */
-
-extern int flag_test_coverage;
-
-/* Nonzero indicates that branch taken probabilities should be calculated.  */
-
-extern int flag_branch_probabilities;
-
-/* Nonzero if basic blocks should be reordered.  */
-
-extern int flag_reorder_blocks;
-
-/* Nonzero if basic blocks should be partitioned into hot and cold
-   sections of the .o file, in addition to being reordered.  */
-
-extern int flag_reorder_blocks_and_partition;
-
-/* Nonzero if functions should be reordered.  */
-
-extern int flag_reorder_functions;
-
-/* Nonzero if registers should be renamed.  */
-
-extern int flag_rename_registers;
-
-/* Nonzero for -pedantic switch: warn about anything
-   that standard C forbids.  */
-
-extern int pedantic;
 
 /* Temporarily suppress certain warnings.
    This is set while reading code from a system header file.  */
@@ -175,158 +116,15 @@ extern int flag_signed_char;
 
 extern int flag_short_enums;
 
-/* Nonzero for -fcaller-saves: allocate values in regs that need to
-   be saved across function calls, if that produces overall better code.
-   Optional now, so people can test it.  */
-
-extern int flag_caller_saves;
-
 /* Nonzero for -fpcc-struct-return: return values the same way PCC does.  */
 
 extern int flag_pcc_struct_return;
-
-/* Nonzero for -fforce-mem: load memory value into a register
-   before arithmetic on it.  This makes better cse but slower compilation.  */
-
-extern int flag_force_mem;
-
-/* Nonzero for -fforce-addr: load memory address into a register before
-   reference to memory.  This makes better cse but slower compilation.  */
-
-extern int flag_force_addr;
-
-/* Nonzero for -fdefer-pop: don't pop args after each function call;
-   instead save them up to pop many calls' args with one insns.  */
-
-extern int flag_defer_pop;
-
-/* Nonzero for -ffloat-store: don't allocate floats and doubles
-   in extended-precision registers.  */
-
-extern int flag_float_store;
-
-/* Nonzero enables strength-reduction in loop.c.  */
-
-extern int flag_strength_reduce;
-
-/* Nonzero enables loop unrolling in unroll.c.  Only loops for which the
-   number of iterations can be calculated at compile-time (UNROLL_COMPLETELY,
-   UNROLL_MODULO) or at run-time (preconditioned to be UNROLL_MODULO) are
-   unrolled.  */
-
-extern int flag_old_unroll_loops;
-
-/* Nonzero enables loop unrolling in unroll.c.  All loops are unrolled.
-   This is generally not a win.  */
-
-extern int flag_old_unroll_all_loops;
-
-/* Nonzero forces all invariant computations in loops to be moved
-   outside the loop.  */
-
-extern int flag_move_all_movables;
-
-/* Nonzero enables prefetch optimizations for arrays in loops.  */
-
-extern int flag_prefetch_loop_arrays;
-
-/* Nonzero forces all general induction variables in loops to be
-   strength reduced.  */
-
-extern int flag_reduce_all_givs;
-
-/* Nonzero for -fcse-follow-jumps:
-   have cse follow jumps to do a more extensive job.  */
-
-extern int flag_cse_follow_jumps;
-
-/* Nonzero for -fcse-skip-blocks:
-   have cse follow a branch around a block.  */
-
-extern int flag_cse_skip_blocks;
-
-/* Nonzero for -fexpensive-optimizations:
-   perform miscellaneous relatively-expensive optimizations.  */
-extern int flag_expensive_optimizations;
-
-/* Nonzero means to use global dataflow analysis to eliminate
-   useless null pointer tests.  */
-extern int flag_delete_null_pointer_checks;
-
-/* Nonzero means don't put addresses of constant functions in registers.
-   Used for compiling the Unix kernel, where strange substitutions are
-   done on the assembly output.  */
-
-extern int flag_no_function_cse;
-
-/* Nonzero for -fomit-frame-pointer:
-   don't make a frame pointer in simple functions that don't require one.  */
-
-extern int flag_omit_frame_pointer;
-
-/* Nonzero to inhibit use of define_optimization peephole opts.  */
-
-extern int flag_no_peephole;
-
-/* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
-
-extern int flag_optimize_sibling_calls;
-
-/* Nonzero means the front end generally wants `errno' maintained by math
-   operations, like built-in SQRT.  */
-
-extern int flag_errno_math;
-
-/* Nonzero means that unsafe floating-point math optimizations are allowed
-   for the sake of speed.  IEEE compliance is not guaranteed, and operations
-   are allowed to assume that their arguments and results are "normal"
-   (e.g., nonnegative for SQRT).  */
-
-extern int flag_unsafe_math_optimizations;
-
-/* Nonzero means that no NaNs or +-Infs are expected.  */
-
-extern int flag_finite_math_only;
-
-/* Zero means that floating-point math operations cannot generate a
-   (user-visible) trap.  This is the case, for example, in nonstop
-   IEEE 754 arithmetic.  */
-
-extern int flag_trapping_math;
-
-/* Nonzero means disable transformations that assume default floating
-   point rounding behavior.  */
-
-extern int flag_rounding_math;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
    2 means C99-like requirements for complex divide (not yet implemented).  */
 
 extern int flag_complex_divide_method;
-
-/* Nonzero means to run loop optimizations twice.  */
-
-extern int flag_rerun_loop_opt;
-
-/* Nonzero means make functions that look like good inline candidates
-   go inline.  */
-
-extern int flag_inline_functions;
-
-/* Nonzero for -fkeep-inline-functions: even if we make a function
-   go inline everywhere, keep its definition around for debugging
-   purposes.  */
-
-extern int flag_keep_inline_functions;
-
-/* Nonzero means that functions declared `inline' will be treated
-   as `static'.  Prevents generation of zillions of copies of unused
-   static inline functions; instead, `inlines' are written out
-   only when actually used.  Used in conjunction with -g.  Also
-   does the right thing with #pragma interface.  */
-
-extern int flag_no_inline;
 
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */
@@ -335,76 +133,11 @@ extern int flag_really_no_inline;
 
 /* Nonzero if we are only using compiler to check syntax errors.  */
 
-extern int flag_syntax_only;
 extern int rtl_dump_and_exit;
-
-/* Nonzero if we are exiting on the first error occurred.  */
-
-extern int flag_fatal_errors;
 
 /* Nonzero means we should save auxiliary info into a .X file.  */
 
 extern int flag_gen_aux_info;
-
-/* Nonzero means make the text shared if supported.  */
-
-extern int flag_shared_data;
-
-/* Controls the activation of SMS modulo scheduling.  */
-extern int flag_modulo_sched;
-
-/* flag_schedule_insns means schedule insns within basic blocks (before
-   local_alloc).
-   flag_schedule_insns_after_reload means schedule insns after
-   global_alloc.  */
-
-extern int flag_schedule_insns;
-extern int flag_schedule_insns_after_reload;
-extern int flag_sched2_use_superblocks;
-extern int flag_sched2_use_traces;
-
-/* The following flags have effect only for scheduling before register
-   allocation:
-
-   flag_schedule_interblock means schedule insns across basic blocks.
-   flag_schedule_speculative means allow speculative motion of non-load insns.
-   flag_schedule_speculative_load means allow speculative motion of some
-   load insns.
-   flag_schedule_speculative_load_dangerous allows speculative motion of more
-   load insns.  */
-
-extern int flag_schedule_interblock;
-extern int flag_schedule_speculative;
-extern int flag_schedule_speculative_load;
-extern int flag_schedule_speculative_load_dangerous;
-
-/* The following flags have an effect during scheduling after register
-   allocation:   
-
-   sched_stalled_insns means that insns can be moved prematurely from the queue
-   of stalled insns into the ready list.
-
-   sched_stalled_insns_dep controls how many recently scheduled cycles will 
-   be examined for a dependency on a stalled insn that is candidate for
-   premature removal from the queue of stalled insns into the ready list (has 
-   an effect only if the flag 'sched_stalled_insns' is set).  */
-
-extern int flag_sched_stalled_insns;
-extern int flag_sched_stalled_insns_dep;
-
-/* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
-   by a cheaper branch, on a count register.  */
-extern int flag_branch_on_count_reg;
-
-/* This option is set to 1 on -fsingle-precision-constant option which is
-   used to convert the floating point constants to single precision 
-   constants.  */
-
-extern int flag_single_precision_constant;
-
-/* Nonzero means put things in delayed-branch slots if supported.  */
-
-extern int flag_delayed_branch;
 
 /* Nonzero means suppress output of instruction numbers and line number
    notes in debugging dumps.  */
@@ -416,62 +149,10 @@ extern int flag_dump_unnumbered;
 
 extern int flag_pedantic_errors;
 
-/* Nonzero means generate position-independent code.  1 vs 2 for a 
-   target-dependent "small" or "large" mode.  */
-
-extern int flag_pic;
-
-/* Nonzero if we are compiling position independent code for executable.
-   1 vs 2 for a target-dependent "small" or "large" mode.  */
-      
-extern int flag_pie;
-      
 /* Nonzero if we are compiling code for a shared library, zero for
    executable.  */
 
 extern int flag_shlib;
-
-/* Nonzero means generate extra code for exception handling and enable
-   exception handling.  */
-
-extern int flag_exceptions;
-
-/* Nonzero means generate frame unwind info table when supported.  */
-
-extern int flag_unwind_tables;
-
-/* Nonzero means generate frame unwind info table exact at each insn boundary.  */
-
-extern int flag_asynchronous_unwind_tables;
-
-/* Nonzero means don't place uninitialized global data in common storage
-   by default.  */
-
-extern int flag_no_common;
-
-/* -finhibit-size-directive inhibits output of .size for ELF.
-   This is used only for compiling crtstuff.c,
-   and it may be extended to other effects
-   needed for crtstuff.c on other systems.  */
-extern int flag_inhibit_size_directive;
-
-/* Nonzero means place each function into its own section on those platforms
-   which support arbitrary section names and unlimited numbers of sections.  */
-
-extern int flag_function_sections;
-
-/* ... and similar for data.  */
- 
-extern int flag_data_sections;
-
-/* -fverbose-asm causes extra commentary information to be produced in
-   the generated assembly code (to make it more readable).  This option
-   is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).
-   -fno-verbose-asm, the default, causes the extra information
-   to not be added and is useful when comparing two assembler files.  */
-
-extern int flag_verbose_asm;
 
 /* -dA causes debug information to be produced in
    the generated assembly code (to make it more readable).  This option
@@ -483,55 +164,6 @@ extern int flag_verbose_asm;
 extern int flag_debug_asm;
 
 extern int flag_dump_rtl_in_asm;
-
-/* Greater than zero if user symbols are prepended by a leading underscore
-   in generated assembly code.  */
-extern int flag_leading_underscore;
-
-/* Tag all structures with __attribute__(packed) */
-extern int flag_pack_struct;
-
-/* This flag is only tested if alias checking is enabled.
-   0 if pointer arguments may alias each other.  True in C.
-   1 if pointer arguments may not alias each other but may alias
-   global variables.
-   2 if pointer arguments may not alias each other and may not
-   alias global variables.  True in Fortran.
-   The value is ignored if flag_alias_check is 0.  */
-extern int flag_argument_noalias;
-
-/* Nonzero if we should do (language-dependent) alias analysis.
-   Typically, this analysis will assume that expressions of certain
-   types do not alias expressions of certain other types.  Only used
-   if alias analysis (in general) is enabled.  */
-extern int flag_strict_aliasing;
-
-/* Emit code to probe the stack, to help detect stack overflow; also
-   may cause large objects to be allocated dynamically.  */
-extern int flag_stack_check;
-
-/* Do the full regmove optimization pass.  */
-extern int flag_regmove;
-
-/* Instrument functions with calls at entry and exit, for profiling.  */
-extern int flag_instrument_function_entry_exit;
-
-/* Perform a peephole pass before sched2.  */
-extern int flag_peephole2;
-
-/* Try to guess branch probabilities.  */
-extern int flag_guess_branch_prob;
-
-/* -fcheck-bounds causes gcc to generate array bounds checks.
-   For C, C++ and ObjC: defaults off.
-   For Java: defaults to on.
-   For Fortran: defaults to off.  */
-extern int flag_bounds_check;
-
-/* This will attempt to merge constant section constants, if 1 only
-   string constants and constants from constant pool, if 2 also constant
-   variables.  */
-extern int flag_merge_constants;
 
 /* If one, renumber instruction UIDs to reduce the number of
    unused UIDs if there are a lot of instructions.  If greater than
@@ -546,13 +178,6 @@ extern int flag_renumber_insns;
 
 extern int frame_pointer_needed;
 
-/* Nonzero if the generated code should trap on signed overflow
-   for PLUS / SUB / MULT.  */
-extern int flag_trapv;
-
-/* Nonzero if the signed arithmetic overflow should wrap around.  */
-extern int flag_wrapv;
-
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 extern int flag_evaluation_order;
 
@@ -565,16 +190,12 @@ extern bool g_switch_set;
    For each variable, there is an _log variant which is the power
    of two not less than the variable, for .align output.  */
 
-extern int align_loops;
 extern int align_loops_log;
 extern int align_loops_max_skip;
-extern int align_jumps;
 extern int align_jumps_log;
 extern int align_jumps_max_skip;
-extern int align_labels;
 extern int align_labels_log;
 extern int align_labels_max_skip;
-extern int align_functions;
 extern int align_functions_log;
 
 /* Like align_functions_log above, but used by front-ends to force the
@@ -592,105 +213,9 @@ enum graph_dump_types
 };
 extern enum graph_dump_types graph_dump_format;
 
-/* Nonzero means ignore `#ident' directives.  0 means handle them.
-   On SVR4 targets, it also controls whether or not to emit a
-   string identifying the compiler.  */
-
-extern int flag_no_ident;
-
-/* Nonzero means perform global CSE.  */
-
-extern int flag_gcse;
-
-/* Nonzero if we want to perform enhanced load motion during gcse.  */
-
-extern int flag_gcse_lm;
-
-/* Nonzero if we want to perform store motion after gcse.  */
-
-extern int flag_gcse_sm;
-
-/* Nonzero if we want to perform redundant load-after-store elimination
-   in gcse.  */
-
-extern int flag_gcse_las;
-
-/* Nonzero if we want to perform global redundancy elimination after
-   register allocation.  */
-
-extern int flag_gcse_after_reload;
-
-/* Nonzero if value histograms should be used to optimize code.  */
-extern int flag_value_profile_transformations;
-
-/* Perform branch target register optimization before prologue / epilogue
-   threading.  */
-
-extern int flag_branch_target_load_optimize;
-
-/* Perform branch target register optimization after prologue / epilogue
-   threading and jump2.  */
-
-extern int flag_branch_target_load_optimize2;
-
-/* For the bt-load pass, nonzero means don't re-use branch target registers 
-   in any basic block.  */
-extern int flag_btr_bb_exclusive;
-
-
-/* Nonzero means we should do dwarf2 duplicate elimination.  */
-
-extern int flag_eliminate_dwarf2_dups;
-
-/* Nonzero means we should do unused type elimination.  */
-
-extern int flag_eliminate_unused_debug_types;
-
 /* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
-
-/* Nonzero means enable synchronous exceptions for non-call instructions.  */
-extern int flag_non_call_exceptions;
-
-/* Nonzero means enable mudflap bounds-checking transforms;
-   >1 means also to include multithreading locks.  */
-extern int flag_mudflap;
-extern int flag_mudflap_threads;
-extern int flag_mudflap_ignore_reads;
-
-/* Enable SSA-PRE on trees.  */
-extern int flag_tree_pre;
-
-/* Enable SSA-CCP on trees.  */
-extern int flag_tree_ccp;
-
-/* Enable SSA-DCE on trees.  */
-extern int flag_tree_dce;
-
-/* Enable SSA->normal pass memory location coalescing.  */
-extern int flag_tree_combine_temps;
-
-/* Enable SSA->normal pass expression replacement.  */
-extern int flag_tree_ter;
-
-/* Enable SSA_>normal live range splitting.  */
-extern int flag_tree_live_range_split;
-
-/* Enable dominator optimizations.  */
-extern int flag_tree_dom;
-
-/* Enable loop header copying on tree-ssa.  */
-extern int flag_tree_ch;
-
-/* Enable dead store and redundant load elimination */
-extern int flag_tree_dse;
-
-/* Enable scalar replacement of aggregates.  */
-extern int flag_tree_sra;
-
-/* Enable copy rename optimization.  */
-extern int flag_tree_copyrename;
 
 /* Enable points-to analysis on trees.  */
 enum pta_type
@@ -699,17 +224,6 @@ enum pta_type
     PTA_ANDERSEN
   };
 extern enum pta_type flag_tree_points_to;
-
-/* Enable FRE (Full Redundancy Elimination) on trees.  */
-extern int flag_tree_fre;
-
-/* Nonzero means put zero initialized data in the bss section.  */
-extern int flag_zero_initialized_in_bss;
-
-/* Nonzero means disable transformations observable by signaling NaNs.  */
-extern int flag_signaling_nans;
-
-extern int flag_unit_at_a_time;
 
 extern int flag_web;
 
@@ -724,21 +238,6 @@ extern int flag_var_tracking;
    to make it really random.  */
 
 extern const char *flag_random_seed;
-
-/*  The version of the C++ ABI in use.  The following values are
-    allowed:
-
-    0: The version of the ABI believed most conformant with the 
-       C++ ABI specification.  This ABI may change as bugs are
-       discovered and fixed.  Therefore, 0 will not necessarily
-       indicate the same ABI in different versions of G++.
-
-    1: The version of the ABI first used in G++ 3.2.
-
-    Additional positive integers will be assigned as new versions of
-    the ABI become the default version of the ABI.  */
-
-extern int flag_abi_version;
 
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */
