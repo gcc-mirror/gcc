@@ -1,10 +1,5 @@
 2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
 
-	* config/rs6000/rs6000.h (DWARF_FRAME_RETURN_COLUMN): Define.
-	* config/alpha/alpha.h (DWARF_FRAME_RETURN_COLUMN): Define.
-	* config/sparc/sparc.h (DWARF_FRAME_RETURN_COLUMN): Define.
-	* dwarf2out.c (throw_helper): Adjust.
-
 	Implement dwarf2 exception handling for the ARM.
 	* config/arm/arm.h (INCOMING_RETURN_ADDR_RTX): Define.
 	(DWARF_FRAME_RETURN_COLUMN): Define.
