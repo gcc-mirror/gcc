@@ -1,3 +1,11 @@
+2000-12-14  Philipp Thomas  <pthomas@suse.de>
+	* protoize.c (main): Correctly set locale categories.
+	* gcc.c (main): Likewise.
+	* cppmain.c (general_init): Likewise.
+	* toplev.c (main): Likewise.
+	* gcov.c (main): Likewise.
+	* collect2.c (main): Likewise.
+
 2000-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (c_common_nodes_and_builtins): Create a
