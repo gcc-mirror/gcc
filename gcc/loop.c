@@ -9887,7 +9887,13 @@ load_mems (loop)
 		{
 		  if (CONSTANT_P (equiv->loc))
 		    const_equiv = equiv;
-		  else if (GET_CODE (equiv->loc) == REG)
+		  else if (GET_CODE (equiv->loc) == REG
+			   /* Extending hard register lifetimes cuases crash
+			      on SRC targets.  Doing so on non-SRC is
+			      probably also not good idea, since we most
+			      probably have pseudoregister equivalence as
+			      well.  */
+			   && REGNO (equiv->loc) >= FIRST_PSEUDO_REGISTER)
 		    best_equiv = equiv;
 		}
 	      /* Use the constant equivalence if that is cheap enough.  */

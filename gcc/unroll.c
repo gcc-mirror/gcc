@@ -385,6 +385,8 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
       return;
     }
   else if (loop_info->n_iterations > 0
+	   /* Avoid overflow in the next expression.  */
+	   && loop_info->n_iterations < MAX_UNROLLED_INSNS
 	   && loop_info->n_iterations * insn_count < MAX_UNROLLED_INSNS)
     {
       unroll_number = loop_info->n_iterations;
@@ -906,7 +908,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
 
 	  VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray, maxregnum,
-				   "unroll_loop");
+				   "unroll_loop_precondition");
 	  global_const_equiv_varray = map->const_equiv_varray;
 
 	  init_reg_map (map, maxregnum);
