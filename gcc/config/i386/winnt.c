@@ -26,34 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "tree.h"
 #include "flags.h"
-/* Return DECL with the assembler name modified with a suffix consisting
-   of an atsign (@) followed by the number of bytes of arguments */
-
-tree
-gen_stdcall_suffix (decl)
-  tree decl;
-{
-  int total = 0;
-  char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *newsym;
-
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl)))) 
-        == void_type_node)
-      {
-        tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-
-        while (TREE_VALUE (formal_type) != void_type_node)
-          {
-            total += TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-            formal_type = TREE_CHAIN (formal_type);
-          }
-      }
-
-  newsym = xmalloc (strlen (asmname) + 10);
-  sprintf (newsym, "%s@%d", asmname, total/BITS_PER_UNIT);
-  return get_identifier (newsym);
-}
 
 /* This function generates the assembly code for function entry.
    FILE is an stdio stream to output the code to.
