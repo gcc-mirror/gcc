@@ -1,3 +1,10 @@
+2004-06-01  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* function.c (walk_fixup_memory_subreg): New parameter 'var'.
+	Call fixup_memory_subreg only if the MEM is equal to 'var'.
+	Adjust recursive calls to self.
+	(fixup_var_refs_insn): Pass 'var' to walk_fixup_memory_subreg.
+
 2004-06-01  Richard Henderson  <rth@redhat.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 

@@ -241,7 +241,7 @@ static void fixup_var_refs_insn (rtx, rtx, enum machine_mode, int, int, rtx);
 static void fixup_var_refs_1 (rtx, enum machine_mode, rtx *, rtx,
 			      struct fixup_replacement **, rtx);
 static rtx fixup_memory_subreg (rtx, rtx, enum machine_mode, int);
-static rtx walk_fixup_memory_subreg (rtx, rtx, enum machine_mode, int);
+static rtx walk_fixup_memory_subreg (rtx, rtx, rtx, enum machine_mode, int);
 static rtx fixup_stack_1 (rtx, rtx);
 static void optimize_bit_field (rtx, rtx, rtx *);
 static void instantiate_decls (tree, int);
@@ -1914,7 +1914,7 @@ fixup_var_refs_insn (rtx insn, rtx var, enum machine_mode promoted_mode,
     {
       if (GET_CODE (note) != INSN_LIST)
 	XEXP (note, 0)
-	  = walk_fixup_memory_subreg (XEXP (note, 0), insn,
+	  = walk_fixup_memory_subreg (XEXP (note, 0), insn, var,
 				      promoted_mode, 1);
       note = XEXP (note, 1);
     }
@@ -2601,17 +2601,17 @@ fixup_memory_subreg (rtx x, rtx insn, enum machine_mode promoted_mode, int uncri
   return result;
 }
 
-/* Do fixup_memory_subreg on all (SUBREG (MEM ...) ...) contained in X.
+/* Do fixup_memory_subreg on all (SUBREG (VAR) ...) contained in X.
+   VAR is a MEM that used to be a pseudo register with mode PROMOTED_MODE.
    Replace subexpressions of X in place.
-   If X itself is a (SUBREG (MEM ...) ...), return the replacement expression.
+   If X itself is a (SUBREG (VAR) ...), return the replacement expression.
    Otherwise return X, with its contents possibly altered.
 
-   INSN, PROMOTED_MODE and UNCRITICAL are as for
-   fixup_memory_subreg.  */
+   INSN and UNCRITICAL are as for fixup_memory_subreg.  */
 
 static rtx
-walk_fixup_memory_subreg (rtx x, rtx insn, enum machine_mode promoted_mode,
-			  int uncritical)
+walk_fixup_memory_subreg (rtx x, rtx insn, rtx var,
+			  enum machine_mode promoted_mode, int uncritical)
 {
   enum rtx_code code;
   const char *fmt;
@@ -2622,7 +2622,7 @@ walk_fixup_memory_subreg (rtx x, rtx insn, enum machine_mode promoted_mode,
 
   code = GET_CODE (x);
 
-  if (code == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM)
+  if (code == SUBREG && SUBREG_REG (x) == var)
     return fixup_memory_subreg (x, insn, promoted_mode, uncritical);
 
   /* Nothing special about this RTX; fix its operands.  */
@@ -2631,14 +2631,14 @@ walk_fixup_memory_subreg (rtx x, rtx insn, enum machine_mode promoted_mode,
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn,
+	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn, var,
 						promoted_mode, uncritical);
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j)
-	      = walk_fixup_memory_subreg (XVECEXP (x, i, j), insn,
+	      = walk_fixup_memory_subreg (XVECEXP (x, i, j), insn, var,
 					  promoted_mode, uncritical);
 	}
     }
