@@ -1,3 +1,22 @@
+2002-02-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* target.h (struct gcc_target): Added ms_bitfield_layout_p.
+	* target-def.h (TARGET_MS_BITFIELD_LAYOUT_P): New.  Added to...
+	(TARGET_INITIALIZER): this.
+	* doc/tm.texi (TARGET_MS_BITFIELD_LAYOUT_P): Document.
+	(BITFIELD_NBYTES_LIMITED): Markup fix.
+	* tree.h (default_ms_bitfield_layout_p): Declare.
+	(record_layout_info): Added prev_field.
+	* tree.c (default_ms_bitfield_layout_p): New fn.
+	* c-decl.c (finish_struct): Disregard EMPTY_FIELD_BOUNDARY and
+	PCC_BITFIELD_TYPE_MATTERS for MS bit-field layout.
+	* stor-layout.c: Include target.h.
+	(start_record_layout): Initialize prev_field.
+	(place_field): Handle MS bit-field layout, and disregard
+	EMPTY_FIELD_BOUNDARY, BITFIELD_NBYTES_LIMITED and
+	PCC_BITFIELD_TYPE_MATTERS in this case.  Update prev_field.
+	* Makefile.in (stor-layout.o): Adjust dependencies.
+
 2002-02-05  Jason Merrill  <jason@redhat.com>
 
 	* c-typeck.c (convert_for_assignment): Don't allow conversions
