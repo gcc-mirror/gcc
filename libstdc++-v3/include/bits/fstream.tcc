@@ -98,9 +98,9 @@ namespace std
 	      _M_writing = false;
 	      _M_set_buffer(-1);
 
+	      // 27.8.1.3,4
 	      if ((__mode & ios_base::ate) 
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
-		// 27.8.1.3,4
 		this->close();
 	      else
 		__ret = this;
@@ -203,7 +203,8 @@ namespace std
 	  streamsize __ilen = 0;
 	  if (__check_facet(_M_codecvt).always_noconv())
 	    {
-	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), __buflen);
+	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), 
+				      __buflen);
 	      __ilen = __elen;
 	    }
 	  else
@@ -490,11 +491,8 @@ namespace std
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_destroy_pback();
 
-	  // Sync the internal and external streams.	      
-	  off_type __computed_off = __off;
-	  
-	  if (this->pbase() < this->pptr()
-	      || _M_last_overflowed)
+	  off_type __computed_off = __off;	  
+	  if (this->pbase() < this->pptr())
 	    {
 	      // Part one: update the output sequence.
 	      this->sync();
@@ -505,7 +503,7 @@ namespace std
 	  else if (_M_reading && __way == ios_base::cur)
 	    __computed_off += this->gptr() - this->egptr();
 	  
-	  // Return pos_type(off_type(-1)) in case of failure.
+	  // Returns pos_type(off_type(-1)) in case of failure.
 	  __ret = _M_file.seekoff(__computed_off * __width, __way, __mode);
 	  
 	  _M_reading = false;

@@ -116,7 +116,6 @@ bits_headers = \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/demangle.h \
 	${bits_srcdir}/deque.tcc \
-	${bits_srcdir}/fpos.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/gslice.h \
@@ -323,7 +322,8 @@ target_headers = \
 	${target_srcdir}/ctype_inline.h \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
-	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 
+	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
+	${glibcpp_srcdir}/@FPOS_INC_SRCDIR@/fpos.h 
 
 # Non-installed target_header files.
 target_headers_noinst = \

@@ -1,6 +1,7 @@
-// File position object and stream types
+// File position object and stream types, GNU version -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,35 +56,41 @@ namespace std
   template<typename _StateT>
     class fpos
     {
-    public:
-      // Types:
-      typedef _StateT __state_type;
-
     private:
-      streamoff 	_M_off;
-      __state_type 	_M_st;
+      fpos_t		_M_pos;
 
     public:
-      __state_type
-      state() const  { return _M_st; }
+      _StateT
+      state() const;
 
       void 
-      state(__state_type __st)  { _M_st = __st; }
+      state(_StateT __st);
+
+      fpos() : _M_pos(fpos_t()) { }
 
       // NB: The standard defines only the implicit copy ctor and the
       // previous two members.  The rest is a "conforming extension".
-      fpos(): _M_off(streamoff()), _M_st(__state_type()) { }
+      fpos(streamoff __off, _StateT __st = _StateT());
 
-      fpos(streamoff __off, __state_type __st = __state_type())
-      :  _M_off(__off), _M_st(__st) { }
+      fpos(const fpos_t& __pos) : _M_pos(__pos) { }
 
-      operator streamoff() const { return _M_off; }
+      operator streamoff() const { return _M_pos.__pos; }
 
-      fpos& 
-      operator+=(streamoff __off) { _M_off += __off; return *this; }
+      operator fpos_t() const { return _M_pos; }
 
       fpos& 
-      operator-=(streamoff __off) { _M_off -= __off; return *this; }
+      operator+=(streamoff __off) 
+      { 
+	_M_pos.__pos += __off; 
+	return *this; 
+      }
+
+      fpos& 
+      operator-=(streamoff __off) 
+      { 
+	_M_pos.__pos -= __off; 
+	return *this; 
+      }
 
       fpos 
       operator+(streamoff __off) 
@@ -103,18 +110,28 @@ namespace std
 
       bool  
       operator==(const fpos& __pos) const
-      { return _M_off == __pos._M_off; }
+      { return _M_pos.__pos == __pos._M_pos.__pos; }
 
       bool  
       operator!=(const fpos& __pos) const
-      { return _M_off != __pos._M_off; }
-
-      streamoff 
-      _M_position() const { return _M_off; }
-
-      void
-      _M_position(streamoff __off)  { _M_off = __off; }
+      { return !(*this == __pos); }
     };
+
+  template<>
+    inline mbstate_t
+    fpos<mbstate_t>::state() const { return _M_pos.__state; }
+
+  template<>
+    inline void 
+    fpos<mbstate_t>::state(mbstate_t __st) { _M_pos.__state = __st; }
+
+  template<>
+    inline 
+    fpos<mbstate_t>::fpos(streamoff __off, mbstate_t __st) : _M_pos(fpos_t())
+    { 
+      _M_pos.__pos = __off;
+      _M_pos.__state = __st;
+    }
 
   /// 27.2, paragraph 10 about fpos/char_traits circularity
   typedef fpos<mbstate_t> 		streampos;

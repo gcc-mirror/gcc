@@ -91,6 +91,8 @@ DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
+FPOS_H = @FPOS_H@
+FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
@@ -232,7 +234,6 @@ bits_headers = \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/demangle.h \
 	${bits_srcdir}/deque.tcc \
-	${bits_srcdir}/fpos.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/gslice.h \
@@ -433,7 +434,8 @@ target_headers = \
 	${target_srcdir}/ctype_inline.h \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
-	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 
+	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
+	${glibcpp_srcdir}/@FPOS_INC_SRCDIR@/fpos.h 
 
 
 # Non-installed target_header files.

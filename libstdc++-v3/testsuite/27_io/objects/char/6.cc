@@ -26,21 +26,31 @@
 
 #include <iostream>
 #include <streambuf>
+#include <testsuite_hooks.h>
 
 class Badbuf : public std::streambuf
 {
 protected:
   virtual int sync()
-  {
-    return -1;
-  }
+  { return -1; }
 };
 
 void test06()
 {
-  std::ios_base::Init init;
-  std::cout.rdbuf(new Badbuf);
-  std::cout.exceptions(std::ios_base::badbit);
+  bool test = true;
+
+  try
+    {
+      // No-op in current code.
+      std::ios_base::Init init;
+      std::cout.rdbuf(new Badbuf);
+      std::cout.exceptions(std::ios_base::badbit);
+    }
+  catch(...)
+    {
+      test = false;
+    }
+  VERIFY( test );
 }
 
 int main()

@@ -183,13 +183,6 @@ namespace std
       */
       locale 			_M_buf_locale;	
 
-      /**
-       *  @if maint
-       *  Yet unused.
-       *  @endif
-      */
-      fpos<__state_type>	_M_pos;
-
   public:
       /// Destructor deallocates no buffer space.
       virtual 

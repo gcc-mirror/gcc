@@ -30,6 +30,8 @@
 #   abi_baseline_pair      directory name for ABI compat testing,
 #                          defaults to host_cpu-host_os (as per config.guess)
 #
+#   fpos_include_dir       directory for definition of fpos template
+#
 #   ATOMICITYH             location of atomicity.h,
 #                          defaults to cpu_include_dir
 #
@@ -52,7 +54,7 @@
 # systems out there.  :-)
 c_model=c_std
 c_compatibility=no
-
+fpos_include_dir=generic
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
@@ -142,6 +144,7 @@ case "${host_os}" in
     ;;
   gnu* | linux*)
     os_include_dir="os/gnu-linux"
+    fpos_include_dir=$os_include_dir
     ;;
   hpux*)
     os_include_dir="os/hpux"

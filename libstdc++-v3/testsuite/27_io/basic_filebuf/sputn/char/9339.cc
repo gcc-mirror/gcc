@@ -31,12 +31,14 @@ void test01()
   fbuf01.open("tmp_9339", ios_base::out | ios_base::trunc);
   streamsize s1 = fbuf01.sputn("Pete Goldlust @ Carl Hammer Gallery", len);
   VERIFY( s1 == len );
+  fbuf01.close();
 
   filebuf fbuf02;
   char buf[256];
   fbuf02.open("tmp_9339", ios_base::in);
   streamsize s2 = fbuf02.sgetn(buf, 256);
   VERIFY( s2 == len );
+  fbuf02.close();
 }
 
 int main()
