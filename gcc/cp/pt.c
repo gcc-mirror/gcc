@@ -672,6 +672,13 @@ maybe_process_partial_specialization (type)
       if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
 	  && TYPE_SIZE (type) == NULL_TREE)
 	{
+	  if (current_namespace
+	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
+	    {
+	      cp_pedwarn ("specializing `%#T' in different namespace", type);
+	      cp_pedwarn_at ("  from definition of `%#D'",
+			     CLASSTYPE_TI_TEMPLATE (type));
+	    }
 	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
 	  if (processing_template_decl)
 	    push_template_decl (TYPE_MAIN_DECL (type));
@@ -2804,8 +2811,15 @@ coerce_template_template_parms (parm_parms, arg_parms, in_decl, outer_args)
 	  /* We encounter instantiations of templates like
 	       template <template <template <class> class> class TT>
 	       class C;  */
-	  sorry ("nested template template parameter");
-	  return 0;
+	  {
+	    tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
+	    tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+
+	    if (!coerce_template_template_parms (parmparm, argparm, 
+					         in_decl, outer_args))
+	      return 0;
+	  }
+	  break;
 
 	case PARM_DECL:
 	  /* The tsubst call is used to handle cases such as

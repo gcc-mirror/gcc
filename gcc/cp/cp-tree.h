@@ -3288,6 +3288,7 @@ extern tree break_out_target_exprs		PROTO((tree));
 extern tree get_type_decl			PROTO((tree));
 extern tree vec_binfo_member			PROTO((tree, tree));
 extern tree hack_decl_function_context 		PROTO((tree));
+extern tree decl_namespace_context 		PROTO((tree));
 extern tree lvalue_type				PROTO((tree));
 extern tree error_type				PROTO((tree));
 extern tree make_temp_vec			PROTO((int));
