@@ -1,5 +1,14 @@
 2001-10-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* system.h: Poison old unused target macros.
+	* config/dsp16xx.h (ASM_OPEN_PAREN, ASM_CLOSE_PAREN): Remove.
+	* config/stormy16/stormy16.c: Update references to obsolete macros.
+	* config/stormy16/stormy16.h: Similarly.
+	* config/stormy16/stormy16.md: Similarly.
+	* config/cris/cris.h: Similarly.
+
+2001-10-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cpplib.c (struct pragma_entry): Store the name as a hashnode.
 	(lookup_pragma_entry, insert_pragma_entry, do_pragma,
 	cpp_register_pragma): Update accordingly.

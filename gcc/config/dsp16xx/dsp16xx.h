@@ -1736,10 +1736,6 @@ const_section ()                                                   \
     (OUTPUT) = (char *) alloca (strlen (NAME) + 11);			\
     ASM_GENERATE_INTERNAL_LABEL (OUTPUT, temp, LABELNO);		\
   } while (0)
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 
 /* OUTPUT OF UNINITIALIZED VARIABLES */
 

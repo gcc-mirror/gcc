@@ -908,12 +908,13 @@ emit_addhi3_postreload (dest, src0, src1)
   return insn;
 }
 
-/* Called after register allocation to add any instructions needed for the
-   prologue.  Using a prologue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.
+/* Called after register allocation to add any instructions needed for
+   the prologue.  Using a prologue insn is favored compared to putting
+   all of the instructions in the TARGET_ASM_FUNCTION_PROLOGUE macro,
+   since it allows the scheduler to intermix instructions with the
+   saves of the caller saved registers.  In some cases, it might be
+   necessary to emit a barrier instruction as the last insn to prevent
+   such scheduling.
 
    Also any insns generated here should have RTX_FRAME_RELATED_P(insn) = 1
    so that the debug info generation code can handle them properly.  */
@@ -1003,12 +1004,13 @@ direct_return ()
 	  && stormy16_compute_stack_layout ().frame_size == 0);
 }
 
-/* Called after register allocation to add any instructions needed for the
-   epilogue.  Using a epilogue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.  */
+/* Called after register allocation to add any instructions needed for
+   the epilogue.  Using a epilogue insn is favored compared to putting
+   all of the instructions in the TARGET_ASM_FUNCTION_PROLOGUE macro,
+   since it allows the scheduler to intermix instructions with the
+   saves of the caller saved registers.  In some cases, it might be
+   necessary to emit a barrier instruction as the last insn to prevent
+   such scheduling.  */
 
 void
 stormy16_expand_epilogue ()

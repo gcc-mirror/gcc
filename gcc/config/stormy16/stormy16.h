@@ -2421,10 +2421,11 @@ typedef int CUMULATIVE_ARGS;
    the return address.  Hence returning from FUNCTION will return to whoever
    called the current `thunk'.
 
-   The effect must be as if FUNCTION had been called directly with the adjusted
-   first argument.  This macro is responsible for emitting all of the code for
-   a thunk function; `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' are not
-   invoked.
+   The effect must be as if @var{function} had been called directly
+   with the adjusted first argument.  This macro is responsible for
+   emitting all of the code for a thunk function;
+   TARGET_ASM_FUNCTION_PROLOGUE and TARGET_ASM_FUNCTION_EPILOGUE are
+   not invoked.
 
    The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
    extracted from it.)  It might possibly be useful on some targets, but
@@ -2564,10 +2565,11 @@ typedef int CUMULATIVE_ARGS;
    code to call function `__bb_trace_ret'.  The assembler code should
    only be output if the global compile flag `profile_block_flag' ==
    2.  This macro has to be used at every place where code for
-   returning from a function is generated (e.g. `FUNCTION_EPILOGUE').
-   Although you have to write the definition of `FUNCTION_EPILOGUE'
-   as well, you have to define this macro to tell the compiler, that
-   the proper call to `__bb_trace_ret' is produced.  */
+   returning from a function is generated
+   (e.g. `TARGET_ASM_FUNCTION_EPILOGUE').  Although you have to write
+   the definition of `TARGET_ASM_FUNCTION_EPILOGUE' as well, you have
+   to define this macro to tell the compiler, that the proper call to
+   `__bb_trace_ret' is produced.  */
 /* #define FUNCTION_BLOCK_PROFILER_EXIT(FILE) */
 
 /* A C statement or compound statement to save all registers, which may be
@@ -2576,17 +2578,19 @@ typedef int CUMULATIVE_ARGS;
    the assembler code can be concatenated with the string ID, to obtain a
    unique lable name.
 
-   Registers or condition codes clobbered by `FUNCTION_PROLOGUE' or
-   `FUNCTION_EPILOGUE' must be saved in the macros `FUNCTION_BLOCK_PROFILER',
+   Registers or condition codes clobbered by
+   `TARGET_ASM_FUNCTION_PROLOGUE' or `TARGET_ASM_FUNCTION_EPILOGUE'
+   must be saved in the macros `FUNCTION_BLOCK_PROFILER',
    `FUNCTION_BLOCK_PROFILER_EXIT' and `BLOCK_PROFILER' prior calling
-   `__bb_init_trace_func', `__bb_trace_ret' and `__bb_trace_func' respectively.  */
+   `__bb_init_trace_func', `__bb_trace_ret' and `__bb_trace_func'
+   respectively.  */
 /* #define MACHINE_STATE_SAVE(ID) */
 
 /* A C statement or compound statement to restore all registers, including
    condition codes, saved by `MACHINE_STATE_SAVE'.
 
-   Registers or condition codes clobbered by `FUNCTION_PROLOGUE' or
-   `FUNCTION_EPILOGUE' must be restored in the macros
+   Registers or condition codes clobbered by `TARGET_ASM_FUNCTION_PROLOGUE' or
+   `TARGET_ASM_FUNCTION_EPILOGUE' must be restored in the macros
    `FUNCTION_BLOCK_PROFILER', `FUNCTION_BLOCK_PROFILER_EXIT' and
    `BLOCK_PROFILER' after calling `__bb_init_trace_func', `__bb_trace_ret' and
    `__bb_trace_func' respectively.  */
@@ -2720,7 +2724,8 @@ typedef int CUMULATIVE_ARGS;
    stack slot.  This default is right for most machines.  The exceptions are
    machines where it is impossible to execute instructions in the stack area.
    On such machines, you may have to implement a separate stack, using this
-   macro in conjunction with `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE'.
+   macro in conjunction with `TARGET_ASM_FUNCTION_PROLOGUE' and
+   `TARGET_ASM_FUNCTION_EPILOGUE'.
 
    FP points to a data structure, a `struct function', which describes the
    compilation status of the immediate containing function of the function
@@ -4875,8 +4880,8 @@ do {									\
    To support optional call frame debugging information, you must also define
    `INCOMING_RETURN_ADDR_RTX' and either set `RTX_FRAME_RELATED_P' on the
    prologue insns if you use RTL for the prologue, or call `dwarf2out_def_cfa'
-   and `dwarf2out_reg_save' as appropriate from `FUNCTION_PROLOGUE' if you
-   don't.
+   and `dwarf2out_reg_save' as appropriate from `TARGET_ASM_FUNCTION_PROLOGUE'
+   if you don't.
 
    Defined in svr4.h.  */
 /* #define DWARF2_DEBUGGING_INFO */
@@ -5210,25 +5215,6 @@ do {									\
    #pragma pack(push,<n>) and #pragma pack(pop). */
 /* HANDLE_PRAGMA_PACK_PUSH_POP 1 */
    
-/* If defined, a C expression whose value is nonzero if IDENTIFIER with
-   arguments ARGS is a valid machine specific attribute for DECL.  The
-   attributes in ATTRIBUTES have previously been assigned to DECL.  */
-/* #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) */
-
-/* If defined, a C expression whose value is nonzero if IDENTIFIER with
-   arguments ARGS is a valid machine specific attribute for TYPE.  The
-   attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-/* #define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) */
-
-/* If defined, a C expression whose value is zero if the attributes on TYPE1
-   and TYPE2 are incompatible, one if they are compatible, and two if they are
-   nearly compatible (which causes a warning to be generated).  */
-/* #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) */
-
-/* If defined, a C statement that assigns default attributes to newly defined
-   TYPE.  */
-/* #define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) */
-
 /* Define this macro to control use of the character `$' in identifier names.
    The value should be 0, 1, or 2.  0 means `$' is not allowed by default; 1
    means it is allowed by default if `-traditional' is used; 2 means it is

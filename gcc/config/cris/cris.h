@@ -509,8 +509,8 @@ extern int target_flags;
    Old comment: (2.1: still valid in 2.7.2?)
     Note that to make this macro affect the alignment of stack
    locals, a fix was required, and special precautions when handling
-   the stack pointer in various other macros (FUNCTION_PROLOGUE et al)
-   were required.  See file "function.c".  If you would just define
+   the stack pointer in various other macros (TARGET_ASM_FUNCTION_PROLOGUE
+   et al) were required.  See file "function.c".  If you would just define
    this macro, it would only affect the builtin alloca and variable
    local data (non-ANSI, non-K&R, Gnu C extension).  */
 #define STACK_BOUNDARY \
