@@ -80,7 +80,7 @@ extern const char *const built_in_class_names[4];
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA) ENUM,
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT) ENUM,
 enum built_in_function
 {
 #include "builtins.def"

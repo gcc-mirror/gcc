@@ -1,3 +1,30 @@
+2002-07-05  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/7099
+	* builtin-attrs.def: Define new attribute lists for use in
+	builtins.def.
+	* builtins.def [DEF_BUILTIN]: Modify to take an additional
+	ATTRS argument, an enumerated value defined in builtin-attrs.def
+	that represents the attribute list for the builtins.  Modify
+	all builtin functions to pass an appropriate attribute list.
+	Specify "abort", "exit", "_exit" and "_Exit" builtins here with
+	their required noreturn attributes.
+	* tree.h (enum_builtin_function): Ignore the additional parameter
+	to DEF_BUILTIN.
+	* builtins.c (built_in_names): Likewise.
+	* c-common.c: (builtin_function_2): Replace the "int noreturn_p"
+	argument with a tree representing the functions attribute list.
+	Pass this "attrs" argument to builtin_function.  No longer handle
+	the noreturn_p processing manually.
+	(built_in_attributes): Move the definitions from builtin-attrs.def
+	before c_common_nodes_and_builtins.
+	(c_common_nodes_and_builtins): Handle the new ATTRS parameter in
+	DEF_BUILTIN, passing it to both builtin_function and the changed
+	builtin_function_2.
+
+	* doc/extend.texi: Document __builtin_abort, __builtin_exit,
+	__builtin__exit and __builtin__Exit.
+
 2002-07-05  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Avoid allocating
