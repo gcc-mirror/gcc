@@ -1,3 +1,8 @@
+2000-01-24  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/t-cygwin: Accomodate new winsup directory layout
+	when searching for include files.
+
 2000-01-24  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.def: Add unordered fp comparisions.
