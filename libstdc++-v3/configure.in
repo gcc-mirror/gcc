@@ -81,7 +81,7 @@ fi
 if test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
-  GLIBCPP_IS_CROSS_COMPILING=1
+  GLIBCPP_IS_CROSS_COMPILING=true
 
   # This lets us hard-code the functionality we know we'll have in the cross
   # target environment.  "Let" is a sugar-coated word placed on an especially
@@ -401,7 +401,7 @@ else
   # We are being configured natively. We can do more elaborate tests
   # that include AC_TRY_COMPILE now, as the linker is assumed to be
   # working.
-  GLIBCPP_IS_CROSS_COMPILING=0
+  GLIBCPP_IS_CROSS_COMPILING=false
   CANADIAN=no
 
   # Check for available headers.
@@ -447,9 +447,17 @@ ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
 
-# Set up cross-compile flags
-AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)  dnl Unused so far.
+# Set up cross-compile flags and all AM_CONDITIONALs.
+AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
+dnl from GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT:
+AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
+dnl from GLIBCPP_CHECK_WCHAR_T_SUPPORT:
+AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
+dnl from GLIBCPP_CONFIGURE_TESTSUITE:
+# Don't do ABI checking unless native.
+AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK,
+               ${GLIBCPP_IS_CROSS_COMPILING} && test "$enable_abi_check" = yes )
  
 AC_CACHE_SAVE
 

@@ -214,6 +214,18 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
   esac
 
+  # Set up safe default values for all subsequent AM_CONDITIONAL tests.
+  need_libmath=no
+  enable_wchar_t=no
+  #enable_debug=no
+  #need_libio=no
+  #need_wlibio=no
+  #glibcpp_pch_comp=no
+  #enable_cheaders=c
+  #c_compatibility=no
+  enable_abi_check=no
+  #enable_symvers=no
+
   # Find platform-specific directories containing configuration info.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_HOST
@@ -861,7 +873,9 @@ dnl Define USE_COMPLEX_LONG_DOUBLE etc if "copysignl" is found.
 dnl
 dnl GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
-  dnl Check for complex versions of math functions of platform.
+  dnl Check for complex versions of math functions of platform.  This will
+  dnl always pass if libm is available, and fail if it isn't.  If it is
+  dnl available, we assume we'll need it later, so add it to LIBS.
   AC_CHECK_LIB(m, main)
   AC_REPLACE_MATHFUNCS(nan copysignf)
 
@@ -881,7 +895,6 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
     need_libmath=yes
   fi
   AC_SUBST(LIBMATHOBJS)
-  AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
 ])
 
 
@@ -908,7 +921,6 @@ dnl
 dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   dnl Wide characters disabled by default.
-  enable_wchar_t=no
 
   dnl Test wchar.h for mbstate_t, which is needed for char_traits and
   dnl others even if wchar_t support is not on.
@@ -1007,7 +1019,6 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   fi
   AC_MSG_CHECKING([for enabled wchar_t specializations])
   AC_MSG_RESULT($enable_wchar_t)	
-  AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
 ])
 
 
@@ -2144,15 +2155,11 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_triplet}/baseline_symbols.txt"
   AC_SUBST(baseline_file)
 
+  dnl XXX move to configure.host?
   case "$target" in
     *-*-cygwin* ) enable_abi_check=no ;;
     * ) enable_abi_check=yes ;;
   esac
-
-  # Don't do ABI checking unless native.
-  AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK,
-                 test x"$build" = x"$host" && test -z "$with_cross_host" \
-		 && test "$enable_abi_check" = yes )
 ])
 
 
