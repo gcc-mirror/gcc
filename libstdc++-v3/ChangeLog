@@ -1,3 +1,8 @@
+2003-12-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pool_allocator.h (class __pool_alloc): Use
+	operator new and operator delete.
+
 2003-12-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/cpu/i386/atomicity.h (__exchange_and_add): Fix output 
