@@ -39,7 +39,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define TARGET_VERSION fprintf (stderr, " (vax)");
+#ifndef TARGET_NAME	/* A more specific value might be supplied via -D.  */
+#define TARGET_NAME "vax"
+#endif
+#define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
