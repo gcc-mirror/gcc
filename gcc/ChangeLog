@@ -1,3 +1,7 @@
+2003-06-27  Gunther Nikl <gni@gecko.de>
+
+	* unwind-c.c (PERSONALITY_FUNCTION): Delete duplicate define.
+
 2003-06-27  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (mips_build_va_list): Make padding in
