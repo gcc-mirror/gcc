@@ -1,3 +1,8 @@
+2004-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15862
+	* g++.dg/parse/enum1.C: New test.
+
 2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>	
 	
 	Backport from mainline:

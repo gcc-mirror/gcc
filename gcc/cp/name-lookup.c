@@ -3743,16 +3743,17 @@ unqualified_namespace_lookup (tree name, int flags)
       cxx_binding *b =
          cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
-      /* Ignore anticipated built-in functions.  */
-      if (b && b->value && DECL_P (b->value)
-          && DECL_LANG_SPECIFIC (b->value) && DECL_ANTICIPATED (b->value))
-        /* Keep binding cleared.  */;
-      else if (b)
-        {
-          /* Initialize binding for this context.  */
-          binding.value = b->value;
-          binding.type = b->type;
-        }
+      if (b)
+	{
+	  if (b->value && DECL_P (b->value)
+	      && DECL_LANG_SPECIFIC (b->value) 
+	      && DECL_ANTICIPATED (b->value))
+	    /* Ignore anticipated built-in functions.  */
+	    ;
+	  else
+	    binding.value = b->value;
+	  binding.type = b->type;
+	}
 
       /* Add all _DECLs seen through local using-directives.  */
       for (level = current_binding_level;

@@ -1,3 +1,9 @@
+i2004-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15862
+	* name-lookup.c (unqualified_namespace_lookup): Do not ignore type
+	bindings for undeclared built-ins.
+
 2004-06-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15875
