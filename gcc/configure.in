@@ -137,6 +137,7 @@ AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
 
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
+GCC_NEED_DECLARATION(calloc)
 GCC_NEED_DECLARATION(free)
 
 # File extensions
