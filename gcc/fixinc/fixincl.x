@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 163 fixup descriptions.
+ * This file contains 164 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3808,6 +3808,41 @@ static const char* apzNodeent_SyntaxPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Obstack_Lvalue_Cast fix
+ */
+tSCC zObstack_Lvalue_CastName[] =
+     "obstack_lvalue_cast";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zObstack_Lvalue_CastList[] =
+  "|obstack.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzObstack_Lvalue_CastMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zObstack_Lvalue_CastSelect0[] =
+       "\\*\\(\\(([^()]*)\\*\\)(.*)\\)\\+\\+ = \\(([^()]*)\\)";
+
+#define    OBSTACK_LVALUE_CAST_TEST_CT  1
+static tTestDesc aObstack_Lvalue_CastTests[] = {
+  { TT_EGREP,    zObstack_Lvalue_CastSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Obstack_Lvalue_Cast
+ */
+static const char* apzObstack_Lvalue_CastPatch[] = {
+    "format",
+    "((*((%1*)%2) = (%3)), (%2 += sizeof (%1)))",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Osf_Namespace_A fix
  */
 tSCC zOsf_Namespace_AName[] =
@@ -6418,9 +6453,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          177
+#define REGEX_COUNT          178
 #define MACH_LIST_SIZE_LIMIT 334
-#define FIX_COUNT            163
+#define FIX_COUNT            164
 
 /*
  *  Enumerate the fixes
@@ -6521,6 +6556,7 @@ typedef enum {
     NEXT_VOLITILE_FIXIDX,
     NEXT_WAIT_UNION_FIXIDX,
     NODEENT_SYNTAX_FIXIDX,
+    OBSTACK_LVALUE_CAST_FIXIDX,
     OSF_NAMESPACE_A_FIXIDX,
     OSF_NAMESPACE_C_FIXIDX,
     PTHREAD_PAGE_SIZE_FIXIDX,
@@ -7066,6 +7102,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzNodeent_SyntaxMachs,
      NODEENT_SYNTAX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aNodeent_SyntaxTests,   apzNodeent_SyntaxPatch, 0 },
+
+  {  zObstack_Lvalue_CastName,    zObstack_Lvalue_CastList,
+     apzObstack_Lvalue_CastMachs,
+     OBSTACK_LVALUE_CAST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aObstack_Lvalue_CastTests,   apzObstack_Lvalue_CastPatch, 0 },
 
   {  zOsf_Namespace_AName,    zOsf_Namespace_AList,
      apzOsf_Namespace_AMachs,

@@ -3234,19 +3234,18 @@ static void
 pedantic_lvalue_warning (code)
      enum tree_code code;
 {
-  if (pedantic)
-    switch (code)
-      {
-      case COND_EXPR:
-	pedwarn ("ISO C forbids use of conditional expressions as lvalues");
-	break;
-      case COMPOUND_EXPR:
-	pedwarn ("ISO C forbids use of compound expressions as lvalues");
-	break;
-      default:
-	pedwarn ("ISO C forbids use of cast expressions as lvalues");
-	break;
-      }
+  switch (code)
+    {
+    case COND_EXPR:
+      pedwarn ("use of conditional expressions as lvalues is deprecated");
+      break;
+    case COMPOUND_EXPR:
+      pedwarn ("use of compound expressions as lvalues is deprecated");
+      break;
+    default:
+      pedwarn ("use of cast expressions as lvalues is deprecated");
+      break;
+    }
 }
 
 /* Warn about storing in something that is `const'.  */

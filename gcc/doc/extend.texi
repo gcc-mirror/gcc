@@ -1037,9 +1037,7 @@ Compound expressions, conditional expressions and casts are allowed as
 lvalues provided their operands are lvalues.  This means that you can take
 their addresses or store values into them.
 
-Standard C++ allows compound expressions and conditional expressions as
-lvalues, and permits casts to reference type, so use of this extension
-is deprecated for C++ code.
+All these extensions are deprecated.
 
 For example, a compound expression can be assigned, provided the last
 expression in the sequence is an lvalue.  These two expressions are
