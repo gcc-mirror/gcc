@@ -1,3 +1,8 @@
+2004-12-19  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19068
+	* g++.dg/opt/max1.C: New test case.
+
 2004-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20041218-1.c: New test.
