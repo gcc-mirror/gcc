@@ -1,4 +1,4 @@
-/* Move constant computations out of loops.
+/* Perform various loop optimizations, including strength reduction.
    Copyright (C) 1987, 88, 89, 91-4, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
