@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91-99, 2000, 2001
+#   Copyright (C) 1990, 91-99, 2000, 2001, 2002
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -34,6 +34,8 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
+includedir = @includedir@
+target_header_dir = @target_header_dir@
 
 SHELL = @SHELL@
 
@@ -48,6 +50,7 @@ MULTICLEAN = true
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
 
 AR = @AR@
 AR_FLAGS = rc
@@ -181,6 +184,22 @@ CONFIGURED_OFILES = asprintf.o atexit.o					\
 	vasprintf.o vfork.o vfprintf.o vprintf.o vsprintf.o		\
 	waitpid.o
 
+# These files are installed if the library has been configured to do so.
+INSTALLED_HEADERS =                                                     \
+	$(INCDIR)/ansidecl.h                                            \
+	$(INCDIR)/demangle.h                                            \
+	$(INCDIR)/dyn-string.h                                          \
+	$(INCDIR)/fibheap.h                                             \
+	$(INCDIR)/floatformat.h                                         \
+	$(INCDIR)/hashtab.h                                             \
+	$(INCDIR)/libiberty.h                                           \
+	$(INCDIR)/objalloc.h                                            \
+	$(INCDIR)/partition.h                                           \
+	$(INCDIR)/safe-ctype.h                                          \
+	$(INCDIR)/sort.h                                                \
+	$(INCDIR)/splay-tree.h                                          \
+	$(INCDIR)/ternary.h
+
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB) pic/$(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
@@ -240,6 +259,16 @@ install_to_libdir: all
 	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
 	( cd $(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
 	mv -f $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(libdir)$(MULTISUBDIR)/$(TARGETLIB)
+	if test -n "${target_header_dir}"; then \
+	  case "${target_header_dir}" in \
+	    /*)    thd=${target_header_dir};; \
+	    *)     thd=${includedir}${MULTISUBDIR}/${target_header_dir};; \
+	  esac; \
+	  ${mkinstalldirs} $${thd}; \
+	  for h in ${INSTALLED_HEADERS}; do \
+	    ${INSTALL_DATA} $$h $${thd}; \
+	  done; \
+	fi
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install_to_tooldir: all

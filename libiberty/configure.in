@@ -205,6 +205,7 @@ fi
 
 setobjs=
 CHECK=
+target_header_dir=
 if test -n "${with_target_subdir}"; then
 
   # We are being configured as a target library.  AC_REPLACE_FUNCS
@@ -239,6 +240,27 @@ if test -n "${with_target_subdir}"; then
 
   fi
 
+  # We may wish to install the target headers somewhere.
+  AC_ARG_ENABLE(install-libiberty,
+  [  --enable-install-libiberty       Install headers for end users],
+  enable_install_libiberty=$enableval,
+  enable_install_libiberty=no)dnl
+  
+  # Option parsed, now set things appropriately.
+  case x"$enable_install_libiberty" in
+    xyes|x)
+      target_header_dir=libiberty
+      ;;
+    xno)   
+      target_header_dir=
+      ;;
+    *) 
+      # This could be sanity-checked in various ways...
+      target_header_dir="${enable_install_libiberty}"
+      ;;
+  esac
+
+
 else
 
    # Not a target library, so we set things up to run the test suite.
@@ -247,6 +269,7 @@ else
 fi
 
 AC_SUBST(CHECK)
+AC_SUBST(target_header_dir)
 
 case "${host}" in
   *-*-cygwin* | *-*-mingw*)
