@@ -10929,9 +10929,6 @@ cxx_maybe_build_cleanup (tree decl)
       rval = build_delete (TREE_TYPE (rval), rval,
 			   sfk_complete_destructor, flags, 0);
 
-      if (has_vbases && !TYPE_HAS_DESTRUCTOR (type))
-	rval = build_compound_expr (rval, build_vbase_delete (type, decl));
-
       return rval;
     }
   return NULL_TREE;

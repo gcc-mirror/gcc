@@ -823,9 +823,7 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 static tree
 locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 {
-  return (CLASSTYPE_METHOD_VEC (type) 
-	  ? CLASSTYPE_DESTRUCTORS (type) 
-	  : NULL_TREE);
+  return CLASSTYPE_DESTRUCTORS (type);
 }
 
 /* Locate the default ctor of TYPE.  */
@@ -1035,7 +1033,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_INLINE (fn) = 1;
   gcc_assert (!TREE_USED (fn));
-  
+
   return fn;
 }
 
@@ -1060,24 +1058,46 @@ lazily_declare_fn (special_function_kind sfk, tree type)
     const_p = false;
   /* Declare the function.  */
   fn = implicitly_declare_fn (sfk, type, const_p);
+  /* A destructor may be virtual.  */
+  if (sfk == sfk_destructor)
+    check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
   add_method (type, fn);
   /* Add it to TYPE_METHODS.  */
-  TREE_CHAIN (fn) = TYPE_METHODS (type);
-  TYPE_METHODS (type) = fn;
+  if (sfk == sfk_destructor 
+      && DECL_VIRTUAL_P (fn)
+      && abi_version_at_least (2))
+    /* The ABI requires that a virtual destructor go at the end of the
+       vtable.  */
+    TYPE_METHODS (type) = chainon (TYPE_METHODS (type), fn);
+  else
+    {
+      /* G++ 3.2 put the implicit destructor at the *beginning* of the
+	 TYPE_METHODS list, which cause the destructor to be emitted
+	 in an incorrect location in the vtable.  */ 
+      if (warn_abi && DECL_VIRTUAL_P (fn))
+	warning ("vtable layout for class %qT may not be ABI-compliant"
+		 "and may change in a future version of GCC due to "
+		 "implicit virtual destructor",
+		 type);
+      TREE_CHAIN (fn) = TYPE_METHODS (type);
+      TYPE_METHODS (type) = fn;
+    }
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
-  if (sfk == sfk_constructor || sfk == sfk_copy_constructor)
+  if (sfk == sfk_assignment_operator)
+    CLASSTYPE_LAZY_ASSIGNMENT_OP (type) = 0;
+  else
     {
       /* Remember that the function has been created.  */
       if (sfk == sfk_constructor)
 	CLASSTYPE_LAZY_DEFAULT_CTOR (type) = 0;
-      else
+      else if (sfk == sfk_copy_constructor)
 	CLASSTYPE_LAZY_COPY_CTOR (type) = 0;
+      else if (sfk == sfk_destructor)
+	CLASSTYPE_LAZY_DESTRUCTOR (type) = 0;
       /* Create appropriate clones.  */
       clone_function_decl (fn, /*update_method_vec=*/true);
     }
-  else if (sfk == sfk_assignment_operator)
-    CLASSTYPE_LAZY_ASSIGNMENT_OP (type) = 0;
 
   return fn;
 }

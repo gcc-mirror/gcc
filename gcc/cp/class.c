@@ -116,7 +116,6 @@ static void modify_vtable_entry (tree, tree, tree, tree, tree *);
 static void finish_struct_bits (tree);
 static int alter_access (tree, tree, tree);
 static void handle_using_decl (tree, tree);
-static void check_for_override (tree, tree);
 static tree dfs_modify_vtables (tree, void *);
 static tree modify_all_vtables (tree, tree);
 static void determine_primary_bases (tree);
@@ -893,13 +892,16 @@ add_method (tree type, tree method)
   else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     {
       slot = CLASSTYPE_DESTRUCTOR_SLOT;
-      TYPE_HAS_DESTRUCTOR (type) = 1;
       
       if (TYPE_FOR_JAVA (type))
-	error (DECL_ARTIFICIAL (method)
-	       ? "Java class %qT cannot have an implicit non-trivial destructor"
-	       : "Java class %qT cannot have a destructor",
-	       DECL_CONTEXT (method));
+	{
+	  if (!DECL_ARTIFICIAL (method))
+	    error ("Java class %qT cannot have a destructor", type);
+	  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	    error ("Java class %qT cannot have an implicit non-trivial "
+		   "destructor",
+		   type);
+	}
     }
   else
     {
@@ -1203,8 +1205,7 @@ check_bases (tree t,
       /* Effective C++ rule 14.  We only need to check TYPE_POLYMORPHIC_P
 	 here because the case of virtual functions but non-virtual
 	 dtor is handled in finish_struct_1.  */
-      if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype)
-	  && TYPE_HAS_DESTRUCTOR (basetype))
+      if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype))
 	warning ("base class %q#T has a non-virtual destructor", basetype);
 
       /* If the base class doesn't have copy constructors or
@@ -1406,7 +1407,6 @@ finish_struct_bits (tree t)
       /* These fields are in the _TYPE part of the node, not in
 	 the TYPE_LANG_SPECIFIC component, so they are not shared.  */
       TYPE_HAS_CONSTRUCTOR (variants) = TYPE_HAS_CONSTRUCTOR (t);
-      TYPE_HAS_DESTRUCTOR (variants) = TYPE_HAS_DESTRUCTOR (t);
       TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants) 
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
@@ -1540,8 +1540,8 @@ maybe_warn_about_overly_private_class (tree t)
   /* Even if some of the member functions are non-private, the class
      won't be useful for much if all the constructors or destructors
      are private: such an object can never be created or destroyed.  */
-  if (TYPE_HAS_DESTRUCTOR (t)
-      && TREE_PRIVATE (CLASSTYPE_DESTRUCTORS (t)))
+  fn = CLASSTYPE_DESTRUCTORS (t);
+  if (fn && TREE_PRIVATE (fn))
     {
       warning ("%q#T only defines a private destructor and has no friends",
 	       t);
@@ -1693,11 +1693,6 @@ finish_struct_methods (tree t)
        fn_fields = TREE_CHAIN (fn_fields))
     DECL_IN_AGGR_P (fn_fields) = 0;
 
-  if (TYPE_HAS_DESTRUCTOR (t) && !CLASSTYPE_DESTRUCTORS (t))
-    /* We thought there was a destructor, but there wasn't.  Some
-       parse errors cause this anomalous situation.  */
-    TYPE_HAS_DESTRUCTOR (t) = 0;
-    
   /* Issue warnings about private constructors and such.  If there are
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
@@ -2284,7 +2279,7 @@ get_basefndecls (tree name, tree t)
    a method declared virtual in the base class, then
    mark this field as being virtual as well.  */
 
-static void
+void
 check_for_override (tree decl, tree ctype)
 {
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -2465,8 +2460,7 @@ maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
    CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason, the
    class cannot have a default constructor, copy constructor taking a
    const reference argument, or an assignment operator taking a const
-   reference, respectively.  If a virtual destructor is created, its
-   DECL is returned; otherwise the return value is NULL_TREE.  */
+   reference, respectively.  */
 
 static void
 add_implicitly_declared_members (tree t, 
@@ -2474,26 +2468,53 @@ add_implicitly_declared_members (tree t,
 				 int cant_have_const_cctor,
 				 int cant_have_const_assignment)
 {
-  tree default_fn;
-  tree implicit_fns = NULL_TREE;
-  tree virtual_dtor = NULL_TREE;
-  tree *f;
-
   /* Destructor.  */
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
+  if (!CLASSTYPE_DESTRUCTORS (t))
     {
-      default_fn = implicitly_declare_fn (sfk_destructor, t, /*const_p=*/0);
-      check_for_override (default_fn, t);
+      /* In general, we create destructors lazily.  */
+      CLASSTYPE_LAZY_DESTRUCTOR (t) = 1;
+      /* However, if the implicit destructor is non-trivial
+	 destructor, we sometimes have to create it at this point.  */
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+	{
+	  bool lazy_p = true;
 
-      TREE_CHAIN (default_fn) = implicit_fns;
-      implicit_fns = default_fn;
-      
-      if (DECL_VINDEX (default_fn))
-	virtual_dtor = default_fn;
+	  if (TYPE_FOR_JAVA (t))
+	    /* If this a Java class, any non-trivial destructor is
+	       invalid, even if compiler-generated.  Therefore, if the
+	       destructor is non-trivial we create it now.  */
+	    lazy_p = false;
+	  else
+	    {
+	      tree binfo;
+	      tree base_binfo;
+	      int ix;
+
+	      /* If the implicit destructor will be virtual, then we must
+		 generate it now because (unfortunately) we do not
+		 generate virtual tables lazily.  */
+	      binfo = TYPE_BINFO (t);
+	      for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
+		{
+		  tree base_type;
+		  tree dtor;
+
+		  base_type = BINFO_TYPE (base_binfo);
+		  dtor = CLASSTYPE_DESTRUCTORS (base_type);
+		  if (dtor && DECL_VIRTUAL_P (dtor))
+		    {
+		      lazy_p = false;
+		      break;
+		    }
+		}
+	    }
+
+	  /* If we can't get away with being lazy, generate the destructor
+	     now.  */ 
+	  if (!lazy_p)
+	    lazily_declare_fn (sfk_destructor, t);
+	}
     }
-  else
-    /* Any non-implicit destructor is non-trivial.  */
-    TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
 
   /* Default constructor.  */
   if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
@@ -2520,29 +2541,6 @@ add_implicitly_declared_members (tree t,
       TYPE_HAS_ASSIGN_REF (t) = 1;
       TYPE_HAS_CONST_ASSIGN_REF (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_ASSIGNMENT_OP (t) = 1;
-    }
-  
-  /* Now, hook all of the new functions on to TYPE_METHODS,
-     and add them to the CLASSTYPE_METHOD_VEC.  */
-  for (f = &implicit_fns; *f; f = &TREE_CHAIN (*f))
-    {
-      add_method (t, *f);
-      maybe_add_class_template_decl_list (current_class_type, *f, /*friend_p=*/0);
-    }
-  if (abi_version_at_least (2))
-    /* G++ 3.2 put the implicit destructor at the *beginning* of the
-       list, which cause the destructor to be emitted in an incorrect
-       location in the vtable.  */
-    TYPE_METHODS (t) = chainon (TYPE_METHODS (t), implicit_fns);
-  else
-    {
-      if (warn_abi && virtual_dtor)
-	warning ("vtable layout for class %qT may not be ABI-compliant "
-		 "and may change in a future version of GCC due to implicit "
-		 "virtual destructor",
-		 t);
-      *f = TYPE_METHODS (t);
-      TYPE_METHODS (t) = implicit_fns;
     }
 }
 
@@ -3012,7 +3010,7 @@ check_field_decls (tree t, tree *access_decls,
     if (warn_ecpp
 	&& has_pointers
 	&& TYPE_HAS_CONSTRUCTOR (t)
-	&& TYPE_HAS_DESTRUCTOR (t)
+	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
       warning ("%q#T has pointer data members", t);
@@ -3660,6 +3658,9 @@ check_methods (tree t)
 	  if (DECL_PURE_VIRTUAL_P (x))
 	    VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (t), x);
 	}
+      /* All user-declared destructors are non-trivial.  */
+      if (DECL_DESTRUCTOR_P (x))
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 1;
     }
 }
 
@@ -4034,14 +4035,17 @@ check_bases_and_members (tree t)
   check_bases (t, &cant_have_default_ctor, &cant_have_const_ctor,
 	       &no_const_asn_ref);
 
-  /* Check all the data member declarations.  */
+  /* Check all the method declarations.  */
+  check_methods (t);
+
+  /* Check all the data member declarations.  We cannot call
+     check_field_decls until we have called check_bases check_methods,
+     as check_field_decls depends on TYPE_HAS_NONTRIVIAL_DESTRUCTOR
+     being set appropriately.  */
   check_field_decls (t, &access_decls,
 		     &cant_have_default_ctor,
 		     &cant_have_const_ctor,
 		     &no_const_asn_ref);
-
-  /* Check all the method declarations.  */
-  check_methods (t);
 
   /* A nearly-empty class has to be vptr-containing; a nearly empty
      class contains just a vptr.  */
@@ -4057,7 +4061,8 @@ check_bases_and_members (tree t)
   CLASSTYPE_NON_AGGREGATE (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_POLYMORPHIC_P (t));
   CLASSTYPE_NON_POD_P (t)
-    |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
+    |= (CLASSTYPE_NON_AGGREGATE (t) 
+	|| TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	|| TYPE_HAS_ASSIGN_REF (t));
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
@@ -5007,17 +5012,22 @@ finish_struct_1 (tree t)
   /* Build the VTT for T.  */
   build_vtt (t);
 
-  if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t) && TYPE_HAS_DESTRUCTOR (t)
-      && !DECL_VINDEX (CLASSTYPE_DESTRUCTORS (t)))
-
+  if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t))
     {
-      tree dtor = CLASSTYPE_DESTRUCTORS (t);
+      tree dtor;
 
-      /* Warn only if the dtor is non-private or the class has friends */
-      if (!TREE_PRIVATE (dtor) ||
-	  (CLASSTYPE_FRIEND_CLASSES (t) ||
-	   DECL_FRIENDLIST (TYPE_MAIN_DECL (t))))
-	warning ("%q#T has virtual functions but non-virtual destructor", t);
+      dtor = CLASSTYPE_DESTRUCTORS (t);
+      /* Warn only if the dtor is non-private or the class has
+	 friends.  */
+      if (/* An implicitly declared destructor is always public.  And,
+	     if it were virtual, we would have created it by now.  */
+	  !dtor
+	  || (!DECL_VINDEX (dtor)
+	      && (!TREE_PRIVATE (dtor) 
+		  || CLASSTYPE_FRIEND_CLASSES (t) 
+		  || DECL_FRIENDLIST (TYPE_MAIN_DECL (t)))))
+	warning ("%q#T has virtual functions but non-virtual destructor", 
+		 t);
     }
 
   complete_vars (t);

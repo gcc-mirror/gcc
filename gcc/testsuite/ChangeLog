@@ -1,3 +1,9 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19733
+	* g++.dg/parse/crash23.C: New test.
+	* g++.dg/warn/Weff1.C: New test.
+
 2005-02-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/20050209-1.c: New test.
