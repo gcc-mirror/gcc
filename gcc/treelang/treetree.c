@@ -1278,7 +1278,7 @@ static void
 treelang_expand_function (tree fndecl)
 {
   /* We have nothing special to do while expanding functions for treelang.  */
-  tree_rest_of_compilation (fndecl, 0);
+  tree_rest_of_compilation (fndecl);
 }
 
 #include "debug.h" /* for debug_hooks, needed by gt-treelang-treetree.h */

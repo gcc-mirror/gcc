@@ -2892,7 +2892,7 @@ expand_body (tree fn)
      generating trees for a function.  */
   gcc_assert (function_depth == 0);
 
-  tree_rest_of_compilation (fn, 0);
+  tree_rest_of_compilation (fn);
 
   current_function_decl = saved_function;
 

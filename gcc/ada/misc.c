@@ -649,7 +649,7 @@ gnat_expand_body (tree gnu_decl)
   if (!DECL_INITIAL (gnu_decl) || DECL_INITIAL (gnu_decl) == error_mark_node)
     return;
 
-  tree_rest_of_compilation (gnu_decl, false);
+  tree_rest_of_compilation (gnu_decl);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been

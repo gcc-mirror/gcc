@@ -565,7 +565,7 @@ update_inlined_to_pointers (struct cgraph_node *node,
    compilation for FNDECL.  */
 
 void
-tree_rest_of_compilation (tree fndecl, bool nested_p)
+tree_rest_of_compilation (tree fndecl)
 {
   location_t saved_loc;
   struct cgraph_node *saved_node = NULL, *node;
@@ -629,11 +629,6 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   if (!vars_to_rename)
     vars_to_rename = BITMAP_XMALLOC ();
 
-  /* If this is a nested function, protect the local variables in the stack
-     above us from being collected while we're compiling this function.  */
-  if (nested_p)
-    ggc_push_context ();
-
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
 
@@ -689,7 +684,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	}
     }
 
-  if (!nested_p && !flag_inline_trees)
+  if (!flag_inline_trees)
     {
       DECL_SAVED_TREE (fndecl) = NULL;
       if (DECL_STRUCT_FUNCTION (fndecl) == 0
@@ -708,9 +703,5 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   input_location = saved_loc;
 
   ggc_collect ();
-
-  /* Undo the GC context switch.  */
-  if (nested_p)
-    ggc_pop_context ();
   timevar_pop (TV_EXPAND);
 }
