@@ -24,13 +24,18 @@ MAKEOVERRIDES=
 
 #### Start of system configuration section. ####
 
-srcdir = @srcdir@
-VPATH = @srcdir@
+srcdir = @glibcpp_srcdir@
+VPATH = @glibcpp_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_alias = @target_alias@
 gcc_version = @gcc_version@
 gcc_version_trigger = @gcc_version_trigger@
+top_srcdir = @top_srcdir@
+toplevel_srcdir = @toplevel_srcdir@
+toolexecdir = @glibcpp_toolexecdir@
+glibcpp_toolexecdir = @glibcpp_toolexecdir@
+glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 
 top_builddir = .
 
@@ -204,28 +209,21 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install: all
-	$(LIBTOOL) --mode=install $(INSTALL) $(LIBG2C) $(libdir)$(MULTISUBDIR)
-	$(INSTALL_DATA) libfrtbegin.a $(libsubdir)$(MULTISUBDIR)
-	$(RANLIB) $(libsubdir)$(MULTISUBDIR)/libfrtbegin.a
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(glibcpp_toolexeclibdir)
+	$(LIBTOOL) --mode=install $(INSTALL) $(LIBG2C) $(glibcpp_toolexeclibdir)
+	$(INSTALL_DATA) libfrtbegin.a $(glibcpp_toolexeclibdir)
+	$(RANLIB) $(glibcpp_toolexeclibdir)/libfrtbegin.a
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
-	@if [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]; then \
-	  echo ''; \
-	  echo 'Warning: g77 no longer installs libf2c.a or f2c.h.'; \
-	  echo '         You must do so yourself.  For more information,'; \
-	  echo '         read "Distributing Binaries" in the g77 docs.'; \
-	  echo '         (To turn off this warning, delete the file'; \
-	  echo '         f2c-install-ok in the source or build directory.)'; \
-	  echo ''; \
-	else true; fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
-	@-$(LIBTOOL) --mode=finish $(prefix)/lib
+	@-$(LIBTOOL) --mode=finish $(glibcpp_toolexeclibdir)
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall:
-	rm -f $(libsubdir)$(MULTISUBDIR)/include/g2c.h
-	$(LIBTOOL) --mode=uninstall rm -f $(libdir)$(MULTISUBDIR)/$(LIBG2C_BASE).la
+	rm -f $(libsubdir)/include/g2c.h
+	rm -f $(glibcpp_toolexeclibdir)/libfrtbegin.a
+	$(LIBTOOL) --mode=uninstall rm -f $(glibcpp_toolexeclibdir)$(LIBG2C_BASE).la
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
 mostlyclean:
