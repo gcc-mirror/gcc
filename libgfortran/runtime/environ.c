@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002,2003,2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -48,7 +48,6 @@ Boston, MA 02111-1307, USA.  */
 
 options_t options = { };
 
-extern char **environ;
 
 typedef struct variable
 {
@@ -464,12 +463,6 @@ static variable variable_table[] = {
   {"GFORTRAN_SHOW_LOCUS", 1, &options.locus, init_boolean, show_boolean,
    "If TRUE, print filename and line number where runtime errors happen."},
 
-/* GFORTRAN_NAME_xx (where xx is a unit number) gives the names of files
- * preconnected to those units. */
-
-/* GFORTRAN_UNBUFFERED_xx (where xx is a unit number) gives a boolean that is used
- * to turn off buffering for that unit. */
-
   {"GFORTRAN_OPTIONAL_PLUS", 0, &options.optional_plus, init_boolean, show_boolean,
    "Print optional plus signs in numbers where permitted.  Default FALSE."},
 
@@ -577,43 +570,9 @@ check_buffered (int n)
 }
 
 
-/* pattern_scan()-- Given an environment string, check that the name
- * has the same name as the pattern followed by an integer.  On a
- * match, a pointer to the value is returned and the integer pointed
- * to by n is updated.  Returns NULL on no match. */
-
-static char *
-pattern_scan (char *env, const char *pattern, int *n)
-{
-  char *p;
-  size_t len;
-
-  len = strlen (pattern);
-  if (strncasecmp (env, pattern, len) != 0)
-    return NULL;
-  p = env + len;
-
-  if (!isdigit (*p))
-    return NULL;
-
-  while (isdigit (*p))
-    p++;
-
-  if (*p != '=')
-    return NULL;
-
-  *p = '\0';
-  *n = atoi (env + len);
-  *p++ = '=';
-
-  return p;
-}
-
-
 void
 show_variables (void)
 {
-  char *p, **e;
   variable *v;
   int n;
 
@@ -638,26 +597,6 @@ show_variables (void)
 
       v->show (v);
       st_printf ("%s\n\n", v->desc);
-    }
-
-  st_printf ("\nDefault unit names (GFORTRAN_NAME_x):\n");
-
-  for (e = environ; *e; e++)
-    {
-      p = pattern_scan (*e, "GFORTRAN_NAME_", &n);
-      if (p == NULL)
-	continue;
-      st_printf ("GFORTRAN_NAME_%d         %s\n", n, p);
-    }
-
-  st_printf ("\nUnit buffering overrides (GFORTRAN_UNBUFFERED_x):\n");
-  for (e = environ; *e; e++)
-    {
-      p = pattern_scan (*e, "GFORTRAN_UNBUFFERED_", &n);
-      if (p == NULL)
-	continue;
-
-      st_printf ("GFORTRAN_UNBUFFERED_%d = %s\n", n, p);
     }
 
   /* System error codes */

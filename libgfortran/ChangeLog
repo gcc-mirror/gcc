@@ -1,3 +1,13 @@
+2005-02-25  Peter O'Gorman  <peter@pogma.com>
+            Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR libgfortran/17748
+	* runtime/environ.c: Remove references to environ.
+	Update copyright years.
+	(show_variables): remove GFORTRAN_UNBUFFERED_* and 
+	GFORTRAN_NAME_* because they require environ.
+	(pattern_scan): Remove function.
+
 2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20101
