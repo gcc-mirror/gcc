@@ -1885,8 +1885,8 @@ expand_start_stmt_expr ()
   momentary = suspend_momentary ();
   t = make_node (RTL_EXPR);
   resume_momentary (momentary);
-  start_sequence_for_rtl_expr (t);
   do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (t);
   NO_DEFER_POP;
   expr_stmts_for_value++;
   return t;
