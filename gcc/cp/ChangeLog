@@ -1,5 +1,8 @@
 2000-02-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* ir.texi (ADDR_EXPR): Document the fact that an ADDR_EXPR can be
+	used to create an implicit temporary.
+
 	* class.c (dfs_modify_vtables): Tweak calculation of functions to
 	override.
 
