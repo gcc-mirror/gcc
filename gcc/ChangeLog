@@ -1,3 +1,9 @@
+1999-08-01  Bruce Korb  <ddsinc09@ix.netcom.com>
+
+	* fixinc/inclhack.tpl: Only install assert.h conditionally.
+	* fixinc/inclhack.sh: Regenerated.
+	* fixinc/fixincl.sh: Regenerated.
+
 Wed Aug 11 00:34:22 1999  Joe Buck  <jbuck@synopsys.com>
 
 	* invoke.texi: s/GNU CC/GCC/ for consistency with gcc.texi.

@@ -3093,8 +3093,10 @@ done
 #
 # # # # # # # # # # # # # # # # # # # # #
 
-cd $ORIGDIR
-rm -f include/assert.h
-cp ${srcdir}/assert.h include/assert.h || exit 1
-chmod a+r include/assert.h
-
+if [ x${INSTALL_ASSERT_H} != x ] && [ -f ${srcdir}/assert.h ]
+then
+  cd $ORIGDIR
+  rm -f include/assert.h
+  cp ${srcdir}/assert.h include/assert.h || exit 1
+  chmod a+r include/assert.h
+fi
