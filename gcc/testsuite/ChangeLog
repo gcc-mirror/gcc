@@ -1,3 +1,9 @@
+2002-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7176
+	* g++.dg/parse/friend1.C: New test.
+	* g++.old-deja/g++.pt/memtemp64.C: Adjust.
+
 2002-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20021014-1.c: New test.

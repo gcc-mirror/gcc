@@ -1,3 +1,10 @@
+2002-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7176
+	* lex.c (do_identifier): Add another option for the parsing
+	parameter.
+	* parse.y (do_id): Use it.
+
 2002-10-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PRs C++/6803, C++/7721 and C++/7803
