@@ -1,3 +1,8 @@
+2002-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* search.c (is_subobject_of_p_1): Fix thinko.
+	(lookup_field_queue_p): Likewise.
+
 2002-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_class_type): Reuse tail padding when laying out

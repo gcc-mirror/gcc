@@ -1116,7 +1116,7 @@ is_subobject_of_p_1 (parent, binfo, most_derived)
   binfos = BINFO_BASETYPES (binfo);
   n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-  /* Iterate the base types.  */
+  /* Iterate through the base types.  */
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
@@ -1132,7 +1132,7 @@ is_subobject_of_p_1 (parent, binfo, most_derived)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  if (CLASSTYPE_MARKED4 (base_type))
-	    return 0;
+	    continue;
 	  SET_CLASSTYPE_MARKED4 (base_type);
 	  base_binfo = binfo_for_vbase (base_type, most_derived);
 	}
@@ -1202,11 +1202,12 @@ lookup_field_queue_p (binfo, data)
 
   /* If this base class is hidden by the best-known value so far, we
      don't need to look.  */
+  binfo = CANONICAL_BINFO (binfo, lfi->type);
   if (!lfi->from_dep_base_p && lfi->rval_binfo
       && is_subobject_of_p (binfo, lfi->rval_binfo, lfi->type))
     return NULL_TREE;
 
-  return CANONICAL_BINFO (binfo, lfi->type);
+  return binfo;
 }
 
 /* Within the scope of a template class, you can refer to the to the
