@@ -68,6 +68,7 @@ struct function
   struct function *next;
 
   struct eh_status *eh;
+  struct stmt_status *stmt;
 
   /* For function.c.  */
   char *name;
@@ -123,22 +124,6 @@ struct function
      during the nested function.  */
   struct var_refs_queue *fixup_var_refs_queue;
   CUMULATIVE_ARGS args_info;
-
-  /* For stmt.c  */
-  struct nesting *block_stack;
-  struct nesting *stack_block_stack;
-  struct nesting *cond_stack;
-  struct nesting *loop_stack;
-  struct nesting *case_stack;
-  struct nesting *nesting_stack;
-  int nesting_depth;
-  int block_start_count;
-  tree last_expr_type;
-  rtx last_expr_value;
-  int expr_stmts_for_value;
-  char *emit_filename;
-  int emit_lineno;
-  struct goto_fixup *goto_fixup_chain;
 
   /* For expr.c.  */
   rtx pending_chain;
@@ -278,10 +263,6 @@ extern void save_tree_status		PROTO((struct function *, tree));
 extern void restore_tree_status		PROTO((struct function *, tree));
 extern void save_varasm_status		PROTO((struct function *, tree));
 extern void restore_varasm_status	PROTO((struct function *));
-extern void save_eh_status		PROTO((struct function *));
-extern void restore_eh_status		PROTO((struct function *));
-extern void save_stmt_status		PROTO((struct function *));
-extern void restore_stmt_status		PROTO((struct function *));
 extern void save_expr_status		PROTO((struct function *));
 extern void restore_expr_status		PROTO((struct function *));
 extern void save_emit_status		PROTO((struct function *));

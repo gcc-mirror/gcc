@@ -14509,9 +14509,6 @@ cplus_expand_expr_stmt (exp)
 void
 finish_stmt ()
 {
-  extern struct nesting *cond_stack, *loop_stack, *case_stack;
-
-  
   if (current_function_assigns_this
       || ! current_function_just_assigned_this)
     return;
@@ -14519,7 +14516,7 @@ finish_stmt ()
     {
       /* Constructors must wait until we are out of control
 	 zones before calling base constructors.  */
-      if (cond_stack || loop_stack || case_stack)
+      if (in_control_zone_p ())
 	return;
       expand_expr_stmt (base_init_expr);
       check_base_init (current_class_type);

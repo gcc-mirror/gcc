@@ -1929,6 +1929,7 @@ extern int (*lang_get_alias_set)                PROTO((tree));
 
 /* In stmt.c */
 
+extern int in_control_zone_p			PROTO((void));
 extern void expand_fixups			PROTO((struct rtx_def *));
 extern tree expand_start_stmt_expr		PROTO((void));
 extern tree expand_end_stmt_expr		PROTO((tree));

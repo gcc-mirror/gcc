@@ -626,7 +626,6 @@ push_function_context_to (context)
   save_storage_status (p);
   save_emit_status (p);
   save_expr_status (p);
-  save_stmt_status (p);
   save_varasm_status (p, context);
   if (save_machine_status)
     (*save_machine_status) (p);
@@ -715,7 +714,6 @@ pop_function_context_from (context)
   restore_storage_status (p);
   restore_expr_status (p);
   restore_emit_status (p);
-  restore_stmt_status (p);
   restore_varasm_status (p);
 
   if (restore_machine_status)

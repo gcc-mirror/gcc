@@ -1,3 +1,48 @@
+Sun Aug  1 12:55:31 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* stmt.c (emit_filename, emit_lineno, expr_stmts_for_value,
+	last_expr_type, last_expr_value, block_start_count, block_stack,
+	stack_block_stack, cond_stack, loop_stack, case_stack, nesting_stack,
+	nesting_depth, goto_fixup_chain): Delete global	vars; now allocated
+	dynamically in stmt elt of struct function for each function.
+	(struct nesting): Rename function_call_count elt to n_function_calls,
+	target_temp_slot_level to block_target_temp_slot_level.  All users
+	changed.
+	(struct stmt_status): New structure definition.
+	Add many accessor macros for stmt_status elements which previously
+	were global variables.
+	(init_stmt_for_function): Allocate stmt elt for current_function.
+	Reflect that block_start_count was renamed to
+	current_block_start_count.
+	(save_stmt_status, restore_stmt_status): Delete functions.
+	(preserve_subexpressions_p): Don't access loop_stack when outside
+	a function.
+	(expand_start_bindings): Reflect that block_start_count was renamed to
+	current_block_start_count.
+	(expand_fixup): Likewise.
+	(expand_decl): Don't access block_stack when outside a function.
+	(expand_decl_cleanup): Likewise.
+	(expand_dcc_cleanup): Likewise.
+	(expand_dhc_cleanup): Likewise.
+	(expand_anon_union_decl): Likewise.
+	(set_file_and_line_for_stmt): New function.
+	(in_control_zone_p): New function.
+
+	* function.h (struct function): Add new elt stmt.
+	Delete elts block_stack, stack_block_stack, cond_stack, loop_stack,
+	case_stack, nesting_stack, nesting_depth, block_start_count,
+	last_expr_type, last_expr_value, expr_stmts_for_value, emit_filename,
+	emit_lineno, goto_fixup_chain.
+	(save_eh_status, restore_eh_status, save_stmt_status,
+	restore_stmt_status): Delete declarations.
+	* function.c (push_function_context_to): Don't call save_stmt_status.
+	(pop_function_context_to): Don't call restore_stmt_status.
+	* tree.h (in_control_zone_p): Declare.
+	* rtl.h (set_file_and_line_for_stmt): Declare.
+
+	* emit-rtl.c (emit_line_note): Don't set emit_filename/emit_lineno;
+	call set_file_and_line_for_stmt.
+
 Thu Jul 31 12:34:45 1999  Joe Buck  <jbuck@synopsys.com>
 
 	* gcc.texi: Use terms "GNU Compiler Collection" and "GCC".
