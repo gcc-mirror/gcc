@@ -1,6 +1,17 @@
+2004-03-10  Paul Kienzle  <pkienzle@nist.gov>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13450
+	* include/std/std_complex.h (pow(const complex&, const _Tp&),
+	pow(const _Tp&, const complex&)): Use cmath pow only when safe.
+	* testsuite/26_numerics/complex/13450.cc: New.
+
+	* testsuite/26_numerics/cmath/overloads.C: Rename to overloads.cc.
+	* testsuite/26_numerics/complex/pow.C: Rename to pow.cc and fix.
+
 2004-03-10  Jerry Quinn  <jlquinn@optonline.net>
 
-	PR 3247
+	PR libstdc++/3247
 	* include/bits/gslice_array.h (gslice_array()): Make public.
 	(operator=(gslice_array)): Make public.  Implement.
 	* include/bits/indirect_array.h (indirect_array()): Make public.
