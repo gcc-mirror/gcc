@@ -16,6 +16,8 @@ crti.o: $(srcdir)/config/sparc/sol2-ci.asm
 	$(AS) -o crti.o $(srcdir)/config/sparc/sol2-ci.asm
 crtn.o: $(srcdir)/config/sparc/sol2-cn.asm
 	$(AS) -o crtn.o $(srcdir)/config/sparc/sol2-cn.asm
+gcrt1.o: $(srcdir)/config/sparc/sol2-g1.asm
+	$(AS) -o gcrt1.o $(srcdir)/config/sparc/sol2-g1.asm
 
 # We need to use -fPIC when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++
