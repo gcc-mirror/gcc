@@ -1,3 +1,9 @@
+2004-01-20  Andrew Haley  <aph@redhat.com>
+
+	* include/private/gcconfig.h (USE_MMAP): Define for all Linux.
+
+	* configure.in: Comment change.
+
 2004-01-16  Andrew Haley  <aph@redhat.com>
 
 	* configure.in (NO_EXECUTE_PERMISSION): Remove global declaration;

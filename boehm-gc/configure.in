@@ -248,7 +248,7 @@ esac
 #
 # We don't set NO_EXECUTE_PERMISSION by default because gcj (and
 # anything else that creates trampolines in gc-allocated memory)
-# always needs exec permission.  The exception to this is IA-64 and
+# always needs exec permission.  The exceptions to this are IA-64 and
 # some variations of Power PC, where trampolines don't contain
 # executable code.
 #
