@@ -25,6 +25,25 @@
 
 2000-08-03  Bryce McKinlay  <bryce@albatross.co.nz>
 
+        * Makefile.am: Add new AWT stubs.
+        * java/awt/Canvas.java: New placeholder class.
+        * java/awt/Checkbox.java: Ditto.
+        * java/awt/CheckboxMenuItem.java: Ditto.
+        * java/awt/Choice.java: Ditto.
+        * java/awt/Dialog.java: Ditto.
+        * java/awt/FileDialog.java: Ditto.
+        * java/awt/List.java: Ditto.
+        * java/awt/ScrollPane.java: Ditto.
+        * java/awt/TextField.java: Ditto.
+        * java/awt/datatransfer/Clipboard.java: Ditto.
+        * java/awt/Component.java (treeLock): Now a static String. Add comment.
+        * java/awt/MenuItem.java (MenuItem): Add default constructor.
+        * java/awt/Toolkit.java: Added all methods from J2SE 1.3 API docs. 
+        Some commented out. Partially implemented.
+        * java/awt/natToolkit.cc: Removed file.
+
+2000-08-03  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* Makefile.am: Make inner class CNI headers depend on libgcj.zip only.
 	Fixes "make -j" builds.
 	* Makefile.in: Rebuild.
