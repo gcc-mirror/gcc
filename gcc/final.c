@@ -2515,7 +2515,8 @@ only_leaf_regs_used ()
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (regs_ever_live[i] > permitted_reg_in_leaf_functions[i])
+      if ((regs_ever_live[i] || global_regs[i])
+	  && ! permitted_reg_in_leaf_functions[i])
 	return 0;
     }
   return 1;
