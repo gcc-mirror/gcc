@@ -7119,6 +7119,15 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	      last_giv->combined_with++;
 	      /* No need to update lifetimes / benefits here since we have
 		 already decided what to reduce.  */
+
+	      if (loop_dump_stream)
+		{
+		  fprintf (loop_dump_stream,
+			   "giv at %d recombined with giv at %d as ",
+			   INSN_UID (v->insn), INSN_UID (last_giv->insn));
+		  print_rtl (loop_dump_stream, v->new_reg);
+		  putc ('\n', loop_dump_stream);
+		}
 	      continue;
 	    }
 	  v = v->same;
@@ -7324,6 +7333,15 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	      v->derived = 1;
 	      v->new_reg = v->dest_reg;
 	      life_end = stats[i].end_luid;
+
+	      if (loop_dump_stream)
+		{
+		  fprintf (loop_dump_stream,
+			   "giv at %d derived from %d as ",
+			   INSN_UID (v->insn), INSN_UID (last_giv->insn));
+		  print_rtl (loop_dump_stream, v->new_reg);
+		  putc ('\n', loop_dump_stream);
+		}
 	    }
 	  else if (rescan < 0)
 	    rescan = i;
