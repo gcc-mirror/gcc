@@ -99,7 +99,9 @@ LN_S=@LN_S@
 # These permit overriding just for certain files.
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
-MAKEINFO = makeinfo
+MAKEINFO = `if [ -f $(objdir)/../texinfo/makeinfo/Makefile ] ; \
+	then echo $(objdir)/../texinfo/makeinfo/makeinfo ; \
+	else echo makeinfo ; fi`
 MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 # For GNUmake: let us decide what gets passed to recursive makes.
