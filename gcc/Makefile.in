@@ -2371,7 +2371,7 @@ clean: mostlyclean intl.clean lang.clean
 # while building and installing GCC.
 INTL_DISTCLEAN = intl.distclean
 distclean: clean $(INTL_DISTCLEAN) lang.distclean
-	-rm -f tm.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
+	-rm -f tm.h tm_p.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
 	-rm -f md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target

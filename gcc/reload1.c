@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "obstack.h"
 #include "insn-config.h"
 #include "insn-flags.h"

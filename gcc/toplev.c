@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "tree.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "flags.h"
 #include "insn-attr.h"
 #include "insn-codes.h"

@@ -475,8 +475,9 @@ for machine in $build $host $target; do
 	gnu_ld="$gnu_ld_flag"
 	enable_threads=$enable_threads_flag
 
-	# Set default cpu_type, tm_file and xm_file so it can be updated in
-	# each machine entry.
+	# Set default cpu_type, tm_file, tm_p_file and xm_file so it can be
+	# updated in each machine entry.
+	tm_p_file=
 	cpu_type=`echo $machine | sed 's/-.*$//'`
 	case $machine in
 	alpha*-*-*)
@@ -515,7 +516,10 @@ changequote([,])dnl
 
 	tm_file=${cpu_type}/${cpu_type}.h
 	xm_file=${cpu_type}/xm-${cpu_type}.h
-	
+	if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h;
+	then
+		tm_p_file=${cpu_type}/${cpu_type}-protos.h;
+	fi
 	# On a.out targets, we need to use collect2.
 	case $machine in
 	*-*-*aout*)
@@ -3860,9 +3864,9 @@ fi
 xm_file="gansidecl.h ${xm_file}"
 tm_file="gansidecl.h ${tm_file}"
 
-vars="host_xm_file tm_file xm_file build_xm_file"
-links="config.h tm.h tconfig.h hconfig.h"
-defines="host_xm_defines null_defines xm_defines build_xm_defines"
+vars="host_xm_file tm_file tm_p_file xm_file build_xm_file"
+links="config.h tm.h tm_p.h tconfig.h hconfig.h"
+defines="host_xm_defines null_defines null_defines xm_defines build_xm_defines"
 
 rm -f config.bak
 if test -f config.status; then mv -f config.status config.bak; fi
@@ -3875,6 +3879,8 @@ do
 	set $defines; define=$1; shift; defines=$*
 
 	rm -f $link
+	# Make sure the file is created, even if it is empty.
+	echo >$link
 
 	# Define TARGET_CPU_DEFAULT if the system wants one.
 	# This substitutes for lots of *.h files.

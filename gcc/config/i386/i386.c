@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA. */
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
+#include "tree.h"
+#include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -30,7 +32,6 @@ Boston, MA 02111-1307, USA. */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "tree.h"
 #include "flags.h"
 #include "except.h"
 #include "function.h"
@@ -5110,12 +5111,14 @@ ix86_attr_length_default (insn)
       break;
 
     case TYPE_CALL:
-      if (constant_call_address_operand (recog_data.operand[0]))
+      if (constant_call_address_operand (recog_data.operand[0],
+					 GET_MODE (recog_data.operand[0])))
 	return 5;
       break;
 
     case TYPE_CALLV:
-      if (constant_call_address_operand (recog_data.operand[1]))
+      if (constant_call_address_operand (recog_data.operand[1],
+					 GET_MODE (recog_data.operand[1])))
 	return 5;
       break;
 

@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "machmode.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "obstack.h"
 #include "flags.h"
 #include "regs.h"
