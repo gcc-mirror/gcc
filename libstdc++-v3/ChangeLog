@@ -4,7 +4,7 @@
 	Adjust comment.
 	* include/bits/basic_ios.h (basic_ios::_M_fill): Make mutable.
 	(basic_ios::_M_fill_init): New.
-	(basic_ios::fill()): Deal with _M_fill lazily.
+	(basic_ios::fill()): Delay dealing with _M_fill.
 	Adjust comment. 
 	* testsuite/27_io/ios_init.cc (test02): Adjust testcase.
 
