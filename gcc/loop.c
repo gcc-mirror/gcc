@@ -7835,9 +7835,10 @@ check_dbra_loop (loop, insn_count)
 	      % (-INTVAL (bl->biv->add_val))) == 0)
 	{
 	  /* register always nonnegative, add REG_NOTE to branch */
-	  REG_NOTES (PREV_INSN (loop_end))
-	    = gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
-				 REG_NOTES (PREV_INSN (loop_end)));
+	  if (! find_reg_note (jump, REG_NONNEG, NULL_RTX))
+	    REG_NOTES (jump)
+	      = gen_rtx_EXPR_LIST (REG_NONNEG, bl->biv->dest_reg,
+				   REG_NOTES (jump));
 	  bl->nonneg = 1;
 
 	  return 1;
@@ -7860,9 +7861,10 @@ check_dbra_loop (loop, insn_count)
 	      && ! reg_set_between_p (bl->biv->dest_reg, p, loop_start)
 	      && INTVAL (bl->biv->add_val) == -1)
 	    {
-	      REG_NOTES (PREV_INSN (loop_end))
-		= gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
-				     REG_NOTES (PREV_INSN (loop_end)));
+	      if (! find_reg_note (jump, REG_NONNEG, NULL_RTX))
+		REG_NOTES (jump)
+		  = gen_rtx_EXPR_LIST (REG_NONNEG, bl->biv->dest_reg,
+				       REG_NOTES (jump));
 	      bl->nonneg = 1;
 
 	      return 1;
@@ -8260,7 +8262,7 @@ check_dbra_loop (loop, insn_count)
 		      /* Increment of LABEL_NUSES done above.  */
 		      /* Register is now always nonnegative,
 			 so add REG_NONNEG note to the branch.  */
-		      REG_NOTES (tem) = gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
+		      REG_NOTES (tem) = gen_rtx_EXPR_LIST (REG_NONNEG, reg,
 							   REG_NOTES (tem));
 		    }
 		  bl->nonneg = 1;

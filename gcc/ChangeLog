@@ -1,3 +1,11 @@
+Wed Jun 14 03:39:58 EDT 2000  John Wehle  (john@feith.com)
+
+	* ifcvt.c (EDGE_COMPLEX): Move definition ...
+	* basic-block.h (EDGE_COMPLEX): ... here.
+
+	* loop.c (check_dbra_loop): Specify the register when
+	generating REG_NONNEG notes and don't generate duplicates.
+
 2000-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (TYPE_USER_ALIGN, DECL_USER_ALIGN): Define.

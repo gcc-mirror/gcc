@@ -51,8 +51,6 @@
 #define MAX_CONDITIONAL_EXECUTE   (BRANCH_COST + 1)
 #endif
 
-#define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
-
 #define NULL_EDGE	((struct edge_def *)NULL)
 #define NULL_BLOCK	((struct basic_block_def *)NULL)
 
