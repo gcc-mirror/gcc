@@ -1,5 +1,12 @@
 2003-02-25  Matthias Klose  <doko@debian.org>
 
+	2003-02-07  Richard Henderson  <rth@redhat.com>
+        PR 9226
+        * gcse.c (local_cprop_find_used_regs): New.
+        (local_cprop_pass): Use it.
+
+2003-02-25  Matthias Klose  <doko@debian.org>
+
 	* config.gcc (m68k-*-linux*): Add crtbeginT.o to extra_parts.
 
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
