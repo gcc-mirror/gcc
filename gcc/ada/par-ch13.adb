@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,7 +92,7 @@ package body Ch13 is
       --  Note that the name in a representation clause is always a simple
       --  name, even in the attribute case, see AI-300 which made this so!
 
-      Identifier_Node := P_Identifier;
+      Identifier_Node := P_Identifier (C_Use);
 
       --  Check case of qualified name to give good error message
 

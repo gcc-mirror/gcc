@@ -47,7 +47,7 @@ package body Ch2 is
 
    --  Error recovery: can raise Error_Resync (cannot return Error)
 
-   function P_Identifier return Node_Id is
+   function P_Identifier (C : Id_Check := None) return Node_Id is
       Ident_Node : Node_Id;
 
    begin
@@ -61,7 +61,7 @@ package body Ch2 is
       --  If we have a reserved identifier, manufacture an identifier with
       --  a corresponding name after posting an appropriate error message
 
-      elsif Is_Reserved_Identifier then
+      elsif Is_Reserved_Identifier (C) then
          Scan_Reserved_Identifier (Force_Msg => False);
          Ident_Node := Token_Node;
          Scan; -- past the node

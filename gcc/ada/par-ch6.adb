@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -593,6 +593,10 @@ package body Ch6 is
       --  True, a real dot has been scanned and we are positioned past it,
       --  if the result is False, the scan position is unchanged.
 
+      --------------
+      -- Real_Dot --
+      --------------
+
       function Real_Dot return Boolean is
          Scan_State  : Saved_Scan_State;
 
@@ -715,7 +719,7 @@ package body Ch6 is
          Set_Identifier_Casing (Current_Source_File, Determine_Token_Casing);
       end if;
 
-      Ident_Node := P_Identifier;
+      Ident_Node := P_Identifier (C_Dot);
       Merge_Identifier (Ident_Node, Tok_Return);
 
       --  Normal case (not child library unit name)
@@ -746,7 +750,7 @@ package body Ch6 is
             Name_Node := New_Node (N_Selected_Component, Token_Ptr);
             Scan; -- past period
             Set_Prefix (Name_Node, Prefix_Node);
-            Ident_Node := P_Identifier;
+            Ident_Node := P_Identifier (C_Dot);
             Set_Selector_Name (Name_Node, Ident_Node);
             Prefix_Node := Name_Node;
          end loop;
@@ -870,7 +874,7 @@ package body Ch6 is
 
             Ignore (Tok_Left_Paren);
             Ident_Sloc := Token_Ptr;
-            Idents (1) := P_Defining_Identifier;
+            Idents (1) := P_Defining_Identifier (C_Comma_Colon);
             Num_Idents := 1;
 
             Ident_Loop : loop
@@ -924,7 +928,7 @@ package body Ch6 is
 
                T_Comma;
                Num_Idents := Num_Idents + 1;
-               Idents (Num_Idents) := P_Defining_Identifier;
+               Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
             end loop Ident_Loop;
 
             --  Fall through the loop on encountering a colon, or deciding

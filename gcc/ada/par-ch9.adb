@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ package body Ch9 is
 
       if Token = Tok_Body then
          Scan; -- past BODY
-         Name_Node := P_Defining_Identifier;
+         Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
 
          if Token = Tok_Left_Paren then
@@ -133,7 +133,7 @@ package body Ch9 is
 
          else
             Task_Node := New_Node (N_Single_Task_Declaration, Task_Sloc);
-            Name_Node := P_Defining_Identifier;
+            Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Task_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
 
@@ -141,7 +141,6 @@ package body Ch9 is
                Error_Msg_SC ("discriminant part not allowed for single task");
                Discard_Junk_List (P_Known_Discriminant_Part_Opt);
             end if;
-
          end if;
 
          --  Parse optional task definition. Note that P_Task_Definition scans
@@ -344,7 +343,7 @@ package body Ch9 is
 
       if Token = Tok_Body then
          Scan; -- past BODY
-         Name_Node := P_Defining_Identifier;
+         Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
 
          if Token = Tok_Left_Paren then
@@ -381,7 +380,7 @@ package body Ch9 is
             Scan; -- past TYPE
             Protected_Node :=
               New_Node (N_Protected_Type_Declaration, Protected_Sloc);
-            Name_Node := P_Defining_Identifier;
+            Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Protected_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
             Set_Discriminant_Specifications
@@ -390,7 +389,7 @@ package body Ch9 is
          else
             Protected_Node :=
               New_Node (N_Single_Protected_Declaration, Protected_Sloc);
-            Name_Node := P_Defining_Identifier;
+            Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Protected_Node, Name_Node);
 
             if Token = Tok_Left_Paren then
@@ -631,7 +630,8 @@ package body Ch9 is
       Decl_Node := New_Node (N_Entry_Declaration, Token_Ptr);
       Scan; -- past ENTRY
 
-      Set_Defining_Identifier (Decl_Node, P_Defining_Identifier);
+      Set_Defining_Identifier
+        (Decl_Node, P_Defining_Identifier (C_Left_Paren_Semicolon));
 
       --  If left paren, could be (Discrete_Subtype_Definition) or Formal_Part
 
@@ -719,7 +719,7 @@ package body Ch9 is
       Scan; -- past ACCEPT
       Scope.Table (Scope.Last).Labl := Token_Node;
 
-      Set_Entry_Direct_Name (Accept_Node, P_Identifier);
+      Set_Entry_Direct_Name (Accept_Node, P_Identifier (C_Do));
 
       --  Left paren could be (Entry_Index) or Formal_Part, determine which
 
@@ -932,7 +932,7 @@ package body Ch9 is
    begin
       Iterator_Node := New_Node (N_Entry_Index_Specification, Token_Ptr);
       T_For; -- past FOR
-      Set_Defining_Identifier (Iterator_Node, P_Defining_Identifier);
+      Set_Defining_Identifier (Iterator_Node, P_Defining_Identifier (C_In));
       T_In;
       Set_Discrete_Subtype_Definition
         (Iterator_Node, P_Discrete_Subtype_Definition);

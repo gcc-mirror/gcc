@@ -124,7 +124,7 @@ package body Freeze is
    --  a subprogram type (i.e. an access to a subprogram).
 
    function Is_Fully_Defined (T : Entity_Id) return Boolean;
-   --  true if T is not private and has no private components, or has a full
+   --  True if T is not private and has no private components, or has a full
    --  view. Used to determine whether the designated type of an access type
    --  should be frozen when the access type is frozen. This is done when an
    --  allocator is frozen, or an expression that may involve attributes of
@@ -4262,12 +4262,12 @@ package body Freeze is
       elsif Is_Record_Type (T)
         and not Is_Private_Type (T)
       then
-
          --  Verify that the record type has no components with
          --  private types without completion.
 
          declare
             Comp : Entity_Id;
+
          begin
             Comp := First_Component (T);
 

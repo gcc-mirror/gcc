@@ -38,6 +38,7 @@ GNATRTL_TASKING_OBJS= \
   g-boubuf$(objext) \
   g-boumai$(objext) \
   g-semaph$(objext) \
+  g-signal$(objext) \
   g-thread$(objext) \
   s-asthan$(objext) \
   s-inmaop$(objext) \
