@@ -527,7 +527,8 @@ gfloat.h: $(FLOAT_H)
 
 # Create float.h source for the native machine.
 float.h-nat: enquire
-	-./enquire -f > float.h-nat
+	-./enquire -f > tmp-float.h
+	mv tmp-float.h float.h-nat
 
 # Create a dummy float.h source for a cross-compiler.
 float.h-cross:
