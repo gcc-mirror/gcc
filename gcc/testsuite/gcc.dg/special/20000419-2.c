@@ -1,7 +1,7 @@
 /* A static function with a global alias should not get 'defined but
    not used' warnings.  Exposed by Linux kernel.  */
 /* { dg-do compile } */
-/* { dg-require-alias } */
+/* { dg-require-alias "" } */
 /* { dg-options "-Wall" } */
 
 extern void do_something (void);
