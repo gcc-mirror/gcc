@@ -1,3 +1,8 @@
+2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11794
+	* g++.dg/parse/using3.C: New test.
+
 2003-09-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/11409
