@@ -1,5 +1,5 @@
 /* java.util.zip.ZipEntry
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -168,7 +168,7 @@ public class ZipEntry implements ZipConstants, Cloneable
     Calendar cal = getCalendar();
     synchronized (cal)
       {
-	cal.setTime(new Date(time*1000L));
+	cal.setTime(new Date(time));
 	dostime = (cal.get(Calendar.YEAR) - 1980 & 0x7f) << 25
 	  | (cal.get(Calendar.MONTH) + 1) << 21
 	  | (cal.get(Calendar.DAY_OF_MONTH)) << 16
@@ -176,7 +176,6 @@ public class ZipEntry implements ZipConstants, Cloneable
 	  | (cal.get(Calendar.MINUTE)) << 5
 	  | (cal.get(Calendar.SECOND)) >> 1;
       }
-    dostime = (int) (dostime / 1000L);
     this.known |= KNOWN_TIME;
   }
 
