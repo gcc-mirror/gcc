@@ -1233,6 +1233,7 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
     }
   
   if (TREE_CODE (e) == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
       && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
     {
       error ("invalid application of `%s' to a bit-field", op_name);

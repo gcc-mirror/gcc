@@ -1,5 +1,8 @@
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12989
+	* g++.dg/expr/sizeof1.C: New test.
+
 	PR c++/13310
 	* g++.dg/template/crash15.C: New test.
 
