@@ -501,12 +501,16 @@ emit_jump_to_block_after (bb, after)
     }
   else
     {
+#ifdef HAVE_return
       if (! HAVE_return)
 	abort ();
       jump = emit_jump_insn_after (gen_return (), after);
 
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Emitting return\n");
+#else
+      abort ();
+#endif
     }
 
   return jump;
