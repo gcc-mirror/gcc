@@ -41,6 +41,7 @@ details.  */
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/Thread.h>
 #include <java/lang/IllegalAccessError.h>
+#include <java/nio/Buffer.h>
 #include <java/nio/DirectByteBufferImpl.h>
 #include <java/nio/DirectByteBufferImpl$ReadWrite.h>
 #include <java/util/IdentityHashMap.h>
@@ -1733,16 +1734,22 @@ static void * JNICALL
 _Jv_JNI_GetDirectBufferAddress (JNIEnv *, jobject buffer)
 {
   using namespace java::nio;
-  DirectByteBufferImpl* bb = static_cast<DirectByteBufferImpl *> (buffer);
-  return reinterpret_cast<void *> (bb->address);
+  if (! _Jv_IsInstanceOf (buffer, &Buffer::class$))
+    return NULL;
+  Buffer *tmp = static_cast<Buffer *> (buffer);
+  return reinterpret_cast<void *> (tmp->address);
 }
 
 static jlong JNICALL
 _Jv_JNI_GetDirectBufferCapacity (JNIEnv *, jobject buffer)
 {
   using namespace java::nio;
-  DirectByteBufferImpl* bb = static_cast<DirectByteBufferImpl *> (buffer);
-  return bb->capacity();
+  if (! _Jv_IsInstanceOf (buffer, &Buffer::class$))
+    return -1;
+  Buffer *tmp = static_cast<Buffer *> (buffer);
+  if (tmp->address == NULL)
+    return -1;
+  return tmp->capacity();
 }
 
 
