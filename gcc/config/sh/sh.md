@@ -422,67 +422,87 @@
 			 (const_int 4)
 			 (const_int 2))))
 
-;; (define_function_unit {name} {num-units} {n-users} {test}
-;;                       {ready-delay} {issue-delay} [{conflict-list}])
-
 ;; Load and store instructions save a cycle if they are aligned on a
 ;; four byte boundary.  Using a function unit for stores encourages
 ;; gcc to separate load and store instructions by one instruction,
 ;; which makes it more likely that the linker will be able to word
 ;; align them when relaxing.
 
+;; SH-1 scheduling
+
+(define_automaton "sh1")
+(define_cpu_unit "sh1memory,sh1int,sh1mpy,sh1fp" "sh1")
+
 ;; Loads have a latency of two.
 ;; However, call insns can have a delay slot, so that we want one more
 ;; insn to be scheduled between the load of the function address and the call.
 ;; This is equivalent to a latency of three.
-;; We cannot use a conflict list for this, because we need to distinguish
-;; between the actual call address and the function arguments.
 ;; ADJUST_COST can only properly handle reductions of the cost, so we
 ;; use a latency of three here.
 ;; We only do this for SImode loads of general registers, to make the work
 ;; for ADJUST_COST easier.
-(define_function_unit "memory" 1 0
+(define_insn_reservation "sh1_load_si" 3
   (and (eq_attr "pipe_model" "sh1")
        (eq_attr "type" "load_si,pcload_si"))
-  3 2)
-(define_function_unit "memory" 1 0
+  "sh1memory*2")
+
+(define_insn_reservation "sh1_load_store" 2
   (and (eq_attr "pipe_model" "sh1")
        (eq_attr "type" "load,pcload,pload,store,pstore"))
-  2 2)
+  "sh1memory*2")
 
-(define_function_unit "int"    1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "arith3,arith3b")) 3 3)
+(define_insn_reservation "sh1_arith3" 3
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "arith3,arith3b"))
+  "sh1int*3")
 
-(define_function_unit "int"    1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "dyn_shift")) 2 2)
+(define_insn_reservation "sh1_dyn_shift" 2
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "dyn_shift"))
+  "sh1int*2")
 
-(define_function_unit "int"    1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "!arith3,arith3b,dyn_shift")) 1 1)
+(define_insn_reservation "sh1_int" 1
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "!arith3,arith3b,dyn_shift"))
+  "sh1int")
 
 ;; ??? These are approximations.
-(define_function_unit "mpy"    1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "smpy")) 2 2)
-(define_function_unit "mpy"    1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "dmpy")) 3 3)
+(define_insn_reservation "sh1_smpy" 2
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "smpy"))
+  "sh1mpy*2")
 
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "fp,fmove")) 2 1)
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "fdiv")) 13 12)
+(define_insn_reservation "sh1_dmpy" 3
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "dmpy"))
+  "sh1mpy*3")
 
+(define_insn_reservation "sh1_fp" 2
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "fp,fmove"))
+  "sh1fp")
+
+(define_insn_reservation "sh1_fdiv" 13
+  (and (eq_attr "pipe_model" "sh1")
+       (eq_attr "type" "fdiv"))
+  "sh1fp*12")
 
 ;; SH-5 SHmedia scheduling
 ;; When executing SHmedia code, the SH-5 is a fairly straightforward
 ;; single-issue machine.  It has four pipelines, the branch unit (br),
 ;; the integer and multimedia unit (imu), the load/store unit (lsu), and
 ;; the floating point unit (fpu).
-;; Here model the instructions with a latency greater than one cycle.
+;;
+;; (define_function_unit {name} {num-units} {n-users} {test}
+;;                       {ready-delay} {issue-delay} [{conflict-list}])
 
 ;; Every instruction on SH-5 occupies the issue resource for at least one
 ;; cycle.
 (define_function_unit "sh5issue" 1 0
   (and (eq_attr "pipe_model" "sh5media")
        (eq_attr "type" "!pt_media,ptabs_media,invalidate_line_media,dmpy_media,load_media,fload_media,fcmp_media,fmove_media,fparith_media,dfparith_media,fpconv_media,dfpconv_media,dfmul_media,store_media,fstore_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media")) 1 1)
+
+;; Here model the instructions with a latency greater than one cycle.
 
 ;; Specify the various types of instruction which have latency > 1
 (define_function_unit "sh5issue" 1 0
