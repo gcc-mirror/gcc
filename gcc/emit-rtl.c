@@ -1546,9 +1546,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	     || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
 
-      /* If this expression can't be addressed (e.g., it contains a reference
-	 to a non-addressable field), show we don't change its alias set.  */
-      if (! can_address_p (t))
+      /* If this expression uses it's parent's alias set, mark it such
+	 that we won't change it.  */
+      if (component_uses_parent_alias_set (t))
 	MEM_KEEP_ALIAS_SET_P (ref) = 1;
 
       /* If this is a decl, set the attributes of the MEM from it.  */

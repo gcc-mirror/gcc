@@ -1,5 +1,16 @@
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
+	* alias.c (component_uses_parent_alias_set): Rename from 
+	can_address_p.  Return bool.  Reverse the sense of the result.
+	Reinstate the check for alias set zero.
+	(get_alias_set): Update to match.
+	* alias.h (component_uses_parent_alias_set): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* expr.c (expand_assignment): Likewise.
+	* expr.h: Remove commented out prototypes that were moved to alias.h.
+
+2004-12-03  Richard Henderson  <rth@redhat.com>
+
 	* doc/tm.texi (TARGET_BUILD_BUILTIN_VA_LIST): New.
 	(TARGET_CANNOT_FORCE_CONST_MEM): New.
 

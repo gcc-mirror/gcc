@@ -530,11 +530,6 @@ extern unsigned int case_values_threshold (void);
 
 /* Functions from alias.c */
 #include "alias.h"
-/* extern HOST_WIDE_INT get_varargs_alias_set (void); */
-/* extern HOST_WIDE_INT get_frame_alias_set (void); */
-/* extern void record_base_value (unsigned int, rtx, int); */
-/* extern HOST_WIDE_INT new_alias_set (void); */
-/* extern int can_address_p (tree); */
 
 
 /* rtl.h and tree.h were included.  */

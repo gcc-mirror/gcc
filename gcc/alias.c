@@ -378,29 +378,36 @@ find_base_decl (tree t)
     }
 }
 
-/* Return 1 if all the nested component references handled by
-   get_inner_reference in T are such that we can address the object in T.  */
+/* Return true if all nested component references handled by
+   get_inner_reference in T are such that we should use the alias set
+   provided by the object at the heart of T.
 
-int
-can_address_p (tree t)
+   This is true for non-addressable components (which don't have their
+   own alias set), as well as components of objects in alias set zero.
+   This later point is a special case wherein we wish to override the
+   alias set used by the component, but we don't have per-FIELD_DECL
+   assignable alias sets.  */
+
+bool
+component_uses_parent_alias_set (tree t)
 {
   while (1)
     {
-      /* If we're at the end, it is vacuously addressable.  */
+      /* If we're at the end, it vacuously uses its own alias set.  */
       if (!handled_component_p (t))
-	return true;
+	return false;
 
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
 	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-	    return false;
+	    return true;
 	  break;
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
-	    return false;
+	    return true;
 	  break;
 
 	case REALPART_EXPR:
@@ -409,10 +416,12 @@ can_address_p (tree t)
 
 	default:
 	  /* Bitfields and casts are never addressable.  */
-	  return false;
+	  return true;
 	}
 
       t = TREE_OPERAND (t, 0);
+      if (get_alias_set (TREE_TYPE (t)) == 0)
+	return true;
     }
 }
 
@@ -515,7 +524,7 @@ get_alias_set (tree t)
 
       /* Otherwise, pick up the outermost object that we could have a pointer
 	 to, processing conversions as above.  */
-      while (handled_component_p (t) && ! can_address_p (t))
+      while (component_uses_parent_alias_set (t))
 	{
 	  t = TREE_OPERAND (t, 0);
 	  STRIP_NOPS (t);

@@ -3810,8 +3810,7 @@ expand_assignment (tree to, tree from)
 		 done for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
 	      if (volatilep)
 		MEM_VOLATILE_P (to_rtx) = 1;
-
-	      if (!can_address_p (to))
+	      if (component_uses_parent_alias_set (to))
 		MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	    }
 
