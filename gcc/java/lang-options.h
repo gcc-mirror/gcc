@@ -45,6 +45,7 @@ DEFINE_LANG_NAME ("Java")
   { "-foutput-class-dir", "Directory where class files should be written" },
   { "-fuse-divide-subroutine", "" },
   { "-fno-use-divide-subroutine", "Use built-in instructions for division" },
+  { "-fcheck-references", "Generate null pointer checks inline" },
   { "-Wredundant-modifiers", 
     "Warn if modifiers are specified when not necessary"},
   { "-Wextraneous-semicolon", "Warn if deprecated empty statements are found"},

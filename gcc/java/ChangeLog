@@ -1,3 +1,7 @@
+2001-03-27  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* lang-options.h: Add flag_check_references.
+
 2001-04-04  Per Bothner  <per@bothner.com>
 
 	* java-tree.h (CONSTANT_VALUE_P):  New macro.
