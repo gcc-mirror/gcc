@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -264,7 +264,7 @@ splay_tree_insert (sp, key, value)
      splay_tree_key key;
      splay_tree_value value;
 {
-  int comparison;
+  int comparison = 0;
 
   splay_tree_splay (sp, key);
 
