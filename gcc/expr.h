@@ -282,7 +282,7 @@ extern rtx (*const insn_gen_function[]) ();
 
 extern optab add_optab;
 extern optab sub_optab;
-extern optab smul_optab;	/* Signed multiply */
+extern optab smul_optab;	/* Signed and floating-point multiply */
 extern optab smul_widen_optab;	/* Signed multiply with result 
 				   one machine mode wider than args */
 extern optab umul_widen_optab;
@@ -303,8 +303,8 @@ extern optab lshl_optab;	/* Logical shift left */
 extern optab lshr_optab;	/* Logical shift right */
 extern optab rotl_optab;	/* Rotate left */
 extern optab rotr_optab;	/* Rotate right */
-extern optab smin_optab;	/* Signed minimum value */
-extern optab smax_optab;	/* Signed maximum value */
+extern optab smin_optab;	/* Signed and floating-point minimum value */
+extern optab smax_optab;	/* Signed and floating-point maximum value */
 extern optab umin_optab;	/* Unsigned minimum value */
 extern optab umax_optab;	/* Unsigned maximum value */
 
