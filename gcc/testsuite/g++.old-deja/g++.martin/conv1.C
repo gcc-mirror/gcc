@@ -1,4 +1,3 @@
-// excess errors test - XFAIL
 struct S{
   operator bool()
   {
