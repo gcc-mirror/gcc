@@ -1193,7 +1193,8 @@ input_operand (op, mode)
 		  (SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
 		   && (((CONST_DOUBLE_LOW (op) & 0x80000000) == 0
 			&& CONST_DOUBLE_HIGH (op) == 0)
-		       || (CONST_DOUBLE_HIGH (op) == -1)))
+		       || (CONST_DOUBLE_HIGH (op) == -1
+			   && CONST_DOUBLE_LOW (op) & 0x80000000) != 0))
 #endif
 		  ))))
     return 1;
