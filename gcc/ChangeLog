@@ -1,5 +1,10 @@
 Mon Jul 24 02:04:52 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (alloc_pre_mem): Do not alloc TRANSPOUT, it is not
+	needed by our gcse pass anymore.
+	(free_pre_mem): Corresponding changes.
+	(compute_pre_data): Do not call compute_transpout anymore.
+
 	* gcse.c (alloc_avail_expr_mem): Kill unused 'u_bitmap'.
 	(free_avail_expr_mem, alloc_pre_mem, free_pre_mem): Corresponding
 	changes.
