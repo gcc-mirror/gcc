@@ -1,3 +1,12 @@
+2000-03-26  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (expand_call): Pass parms not original exp to
+	optimize_tail_recursion.  Mind return value instead of looking
+	for a barrier.
+	* stmt.c (optimize_tail_recursion): Take parameter list, not entire
+	call_expr.  Move checks for call_expr and current_function_decl ...
+	(expand_return): ... here.
+
 2000-03-26  Tom Tromey  <tromey@cygnus.com>
 
 	* gcc.c (handle_braces): Recognize `%{<S}' construct.

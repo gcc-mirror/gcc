@@ -2872,7 +2872,14 @@ expand_return (retval)
     }
 
   /* Attempt to optimize the call if it is tail recursive.  */
-  if (optimize_tail_recursion (retval_rhs, last_insn))
+  if (optimize
+      && retval_rhs != NULL_TREE
+      && frame_offset == 0
+      && TREE_CODE (retval_rhs) == CALL_EXPR
+      && TREE_CODE (TREE_OPERAND (retval_rhs, 0)) == ADDR_EXPR
+      && (TREE_OPERAND (TREE_OPERAND (retval_rhs, 0), 0)
+	  == current_function_decl)
+      && optimize_tail_recursion (TREE_OPERAND (retval_rhs, 1), last_insn))
     return;
 
 #ifdef HAVE_return
@@ -3084,33 +3091,20 @@ drop_through_at_end_p ()
   return insn && GET_CODE (insn) != BARRIER;
 }
 
-/* Test CALL_EXPR to determine if it is a potential tail recursion call
-   and emit code to optimize the tail recursion.  LAST_INSN indicates where
-   to place the jump to the tail recursion label.  Return TRUE if the
-   call was optimized into a goto.
-
-   This is only used by expand_return, but expand_call is expected to
-   use it soon.  */
+/* Attempt to optimize a potential tail recursion call into a goto.
+   ARGUMENTS are the arguments to a CALL_EXPR; LAST_INSN indicates
+   where to place the jump to the tail recursion label. 
+   
+   Return TRUE if the call was optimized into a goto.  */
 
 int
-optimize_tail_recursion (call_expr, last_insn)
-     tree call_expr;
+optimize_tail_recursion (arguments, last_insn)
+     tree arguments;
      rtx last_insn;
 {
-  /* For tail-recursive call to current function,
-     just jump back to the beginning.
-     It's unsafe if any auto variable in this function
-     has its address taken; for simplicity,
-     require stack frame to be empty.  */
-  if (optimize && call_expr != 0
-      && frame_offset == 0
-      && TREE_CODE (call_expr) == CALL_EXPR
-      && TREE_CODE (TREE_OPERAND (call_expr, 0)) == ADDR_EXPR
-      && TREE_OPERAND (TREE_OPERAND (call_expr, 0), 0) == current_function_decl
-      /* Finish checking validity, and if valid emit code
-	 to set the argument variables for the new call.  */
-      && tail_recursion_args (TREE_OPERAND (call_expr, 1),
-			      DECL_ARGUMENTS (current_function_decl)))
+  /* Finish checking validity, and if valid emit code to set the
+     argument variables for the new call.  */
+  if (tail_recursion_args (arguments, DECL_ARGUMENTS (current_function_decl)))
     {
       if (tail_recursion_label == 0)
 	{
@@ -3123,7 +3117,6 @@ optimize_tail_recursion (call_expr, last_insn)
       emit_barrier ();
       return 1;
     }
-
   return 0;
 }
 
