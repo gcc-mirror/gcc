@@ -1,3 +1,7 @@
+2001-02-16  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (BLOCK_CHAIN): Use BLOCK_CHECK.
+
 2001-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc/objc-act.c (start_class): Register implemented_classes with

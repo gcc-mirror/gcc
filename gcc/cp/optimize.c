@@ -161,7 +161,6 @@ remap_block (scope_stmt, decls, id)
       tree old_block;
       tree new_block;
       tree old_var;
-      tree *first_block;
       tree fn;
 
       /* Make the new block.  */
@@ -195,16 +194,24 @@ remap_block (scope_stmt, decls, id)
 	}
       /* We put the BLOCK_VARS in reverse order; fix that now.  */
       BLOCK_VARS (new_block) = nreverse (BLOCK_VARS (new_block));
-      /* Attach this new block after the DECL_INITIAL block for the
-	 function into which this block is being inlined.  In
-	 rest_of_compilation we will straighten out the BLOCK tree.  */
       fn = VARRAY_TREE (id->fns, 0);
-      if (DECL_INITIAL (fn))
-	first_block = &BLOCK_CHAIN (DECL_INITIAL (fn));
+      if (fn == current_function_decl)
+	/* We're building a clone; DECL_INITIAL is still error_mark_node, and
+	   current_binding_level is the parm binding level.  */
+	insert_block (new_block);
       else
-	first_block = &DECL_INITIAL (fn);
-      BLOCK_CHAIN (new_block) = *first_block;
-      *first_block = new_block;
+	{
+	  /* Attach this new block after the DECL_INITIAL block for the
+	     function into which this block is being inlined.  In
+	     rest_of_compilation we will straighten out the BLOCK tree.  */
+	  tree *first_block;
+	  if (DECL_INITIAL (fn))
+	    first_block = &BLOCK_CHAIN (DECL_INITIAL (fn));
+	  else
+	    first_block = &DECL_INITIAL (fn);
+	  BLOCK_CHAIN (new_block) = *first_block;
+	  *first_block = new_block;
+	}
       /* Remember the remapped block.  */
       splay_tree_insert (id->decl_map,
 			 (splay_tree_key) old_block,

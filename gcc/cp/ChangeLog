@@ -1,3 +1,8 @@
+2001-02-16  Jason Merrill  <jason@redhat.com>
+
+	* optimize.c (remap_block): If we're compiling a clone, pass the
+	new block to insert_block.
+
 2001-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck.c (build_unary_op): Clarify error message.
