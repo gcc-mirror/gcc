@@ -685,6 +685,12 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	(resolve_type_during_patch): Use `type' as a second
 	argument to resolve_no_layout. Fixes gcj/257.
 
+2000-07-18  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* parse.y (find_most_specific_methods_list): Select the only 
+	non-abstract method even if max has been set.
+	Fixes gcj/285, gcj/298.
+
 2000-07-18  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* lang-specs.h: Added %(jc1) to java compiler options.
