@@ -737,6 +737,14 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Cancel out ansi_compat.h on Ultrix.  Replace it with empty file.
+file=ansi_compat.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  if grep -s ULTRIX $file; then
+    echo "/* This file intentionally left blank.  */" > $LIB/$file
+  fi
+fi
+
 # parameter to atof not const on DECstation Ultrix V4.0.
 file=math.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
