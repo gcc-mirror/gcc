@@ -6,7 +6,7 @@
 
 // keywords: abort, incomplete types, reference types, formal parameters
 
-struct s0;
+struct s0;              // ERROR - forward declaration
 
 void function (struct s0 &arg1, struct s0 &arg2)
 {

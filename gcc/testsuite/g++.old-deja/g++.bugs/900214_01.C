@@ -7,7 +7,7 @@
 
 // keywords: friends, incomplete types, function members
 
-struct A;
+struct A;                       // ERROR - forward declaration
 
 struct B {
   friend void A::foo();		// ERROR - type A is incomplete

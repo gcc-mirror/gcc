@@ -3,7 +3,7 @@
 template <class T, int i>
 struct K {
 	void f();
-};
+};  // ERROR - forward declaration
 
 template <class T>
 void

@@ -16,7 +16,7 @@ public:
   }
 };
 
-class B : public A< B >
+class B : public A< B > // ERROR - forward declaration
 {
 public:
   typedef int myT;
