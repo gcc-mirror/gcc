@@ -1,3 +1,8 @@
+2001-11-27  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c: Fix typo PREFERRED_DEBUGGING_FORMAT ->
+	PREFERRED_DEBUGGING_TYPE.
+
 Tue Nov 27 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (c-lang.o): Depends on langhooks-def.h.

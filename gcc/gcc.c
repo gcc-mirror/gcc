@@ -590,7 +590,7 @@ proper position among the other output files.  */
    to the assembler.  */
 #ifndef ASM_DEBUG_SPEC
 # if defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#  if PREFERRED_DEBUGGING_FORMAT == DBX_DEBUG
+#  if PREFERRED_DEBUGGING_TYPE == DBX_DEBUG
 #    define ASM_DEBUG_SPEC "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"
 #  else
 #    define ASM_DEBUG_SPEC "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}"
