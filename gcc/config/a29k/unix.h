@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU, Unix.
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -20,10 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* This is mostly the same as a29k.h, except that we define unix instead of
-   EPI and define unix-style machine names.  */
-
-#include "a29k/a29k.h"
+/* We define unix instead of EPI and define unix-style machine names.  */
 
 /* Set our default target to be the 29050; that is the more interesting chip
    for Unix systems.  */
