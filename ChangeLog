@@ -1,3 +1,8 @@
+2005-03-08  Daniel Jacobowitz  <dan@debian.org>
+
+	* configure.in: Use an absolute path to install-sh.
+	* configure: Regenerated.
+
 2005-01-12  David Edelsohn  <edelsohn@gnu.org>
 	    Andreas Schwab  <schwab@suse.de>
 
