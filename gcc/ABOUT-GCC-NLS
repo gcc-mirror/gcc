@@ -6,16 +6,17 @@ non-ASCII letters in identifiers.
 
 Not all of GCC's diagnostic messages have been internationalized. Programs
 like `enquire' and `genattr' (in fact all gen* programs) are not
-internationalized, as their users are GCC maintainers who typically need to
-be able to read English anyway; internationalizing them would thus entail
-needless work for the human translators. Messages used for debugging, such
-as used in dumped tables, should also not be translated.
+internationalized, as their users are GCC maintainers who typically need
+to be able to read English anyway; internationalizing them would thus
+entail needless work for the human translators. Messages used for
+debugging, such as used in dumped tables, should also not be translated.
 
 The GCC library should not contain any messages that need
 internationalization, because it operates below the internationalization
 library.
 
-Currently, the only language translation supplied is en_UK (British English).
+Currently, the only language translation supplied is en_UK (British
+English).
 
 Unlike some other GNU programs, the GCC sources contain few instances
 of explicit translation calls like _("string").  Instead, the
@@ -35,133 +36,15 @@ line, where MSGID does not contain `%' or `}', corresponds to a
 message MSGID that requires translation; this is needed to identify
 diagnostics in GCC spec strings.
 
-If you modify source files, you'll need to use a special
-version of the GNU gettext package to propagate the modifications to the
-translation tables.
+If you modify source files, you'll need to use a special version of the
+GNU gettext package to propagate the modifications to the translation
+tables.
 
-Paul Eggerts original patches have been incorporated into the official
+All patches needed for GCC have been incorporated into the official
 gettext CVS. These sources may be accessed via anonymous cvs. The root for
-the gettext CVS is :pserver:anoncvs@anoncvs.cygnus.com:/cvs/gettext 
-Password is `anoncvs' like for the GCC CVS. After having retrieved the
-sources, you have to apply the following patch, which is pending approval by
-the gettext maintainer.
+the gettext CVS is :pserver:anoncvs@anoncvs.cygnus.com:/cvs/gettext
+Password is `anoncvs' like for the GCC CVS.
 
-After having built and installed these gettext tools, you have to configure
-GCC with --enable-maintainer-mode to get the master catalog rebuilt.
-
-2000-06-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
-
-        * xgettext.c (long_options): New option defines.
-        * xget-lex.c (phase6_get): If set, process #defines as well.
-
---- doc/gettext.texi	2000/07/28 21:11:32	1.2
-+++ doc/gettext.texi	2000/08/27 23:28:32
-@@ -20,7 +20,7 @@
- This file provides documentation for GNU @code{gettext} utilities.
- It also serves as a reference for the free Translation Project.
- 
--Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
-+Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
- 
- Permission is granted to make and distribute verbatim copies of
- this manual provided the copyright notice and this permission notice
-@@ -54,7 +54,7 @@ by the Foundation.
- 
- @page
- @vskip 0pt plus 1filll
--Copyright @copyright{} 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
-+Copyright @copyright{} 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
- 
- Permission is granted to make and distribute verbatim copies of
- this manual provided the copyright notice and this permission notice
-@@ -1828,6 +1828,10 @@ not have to care about these details.
- @item -d @var{name}
- @itemx --default-domain=@var{name}
- Use @file{@var{name}.po} for output (instead of @file{messages.po}).
-+
-+@itemx --defines
-+Look for the keywords in #define statements as well. Normally, xgettext
-+will treat them as white space.
- 
- The special domain name @file{-} or @file{/dev/stdout} means to write
- the output to @file{stdout}.
-
---- src/xget-lex.c	2000/07/28 21:11:32	1.2
-+++ src/xget-lex.c	2000/08/27 23:28:33
-@@ -1045,6 +1045,7 @@ phaseX_get (tp)
- static token_ty phase6_pushback[4];
- static int phase6_pushback_length;
- 
-+extern int defines;
- 
- static void
- phase6_get (tp)
-@@ -1068,9 +1069,36 @@ phase6_get (tp)
-       if (tp->type != token_type_hash)
- 	return;
- 
-+      /* Find the first non-whitespace token. If it is a define, we
-+ 	 will treat the rest of the line as normal input, if defines
-+ 	 is set. */
-+      if (defines)
-+	{
-+	  while (1)
-+	    {
-+	      phaseX_get (tp);
-+	      if (tp->type == token_type_eoln || tp->type == token_type_eof)
-+		return;
-+	      if (tp->type != token_type_white_space)
-+		break;
-+	    }
-+	  if (tp->type == token_type_name 
-+	      && strcmp (tp->string, "define") == 0)
-+	    return;
-+	  /* It's not a define, so we start collecting tokens.  */
-+	  if (!bufmax)
-+	    {
-+	      bufmax = 100;
-+	      buf = xrealloc (buf, bufmax * sizeof (buf[0]));
-+	    }
-+	  buf[0] = *tp;
-+	  bufpos = 1;
-+	}
-+      else
-+	bufpos = 0;
-+
-       /* Accumulate the rest of the directive in a buffer.  Work out
- 	 what it is later.  */
--      bufpos = 0;
-       while (1)
- 	{
- 	  phaseX_get (tp);
-
---- src/xgettext.c	2000/07/28 21:11:32	1.2
-+++ src/xgettext.c	2000/08/27 23:28:35
-@@ -80,6 +80,9 @@ static char *comment_tag;
- /* Name of default domain file.  If not set defaults to messages.po.  */
- static char *default_domain;
- 
-+/* If preprocessor defines are also analyzed for keywords.  */
-+int defines;
-+
- /* If called with --debug option the output reflects whether format
-    string recognition is done automatically or forced by the user.  */
- static int do_debug;
-@@ -125,6 +128,7 @@ static const struct option long_options[
-   { "debug", no_argument, &do_debug, 1 },
-   { "default-domain", required_argument, NULL, 'd' },
-   { "directory", required_argument, NULL, 'D' },
-+  { "defines", no_argument, &defines, 1 },
-   { "escape", no_argument, NULL, 'E' },
-   { "exclude-file", required_argument, NULL, 'x' },
-   { "extract-all", no_argument, &extract_all, 1 },
-@@ -552,6 +556,7 @@ Mandatory arguments to long options are 
-   -C, --c++                      shorthand for --language=C++\n\
-       --debug                    more detailed formatstring recognision result\n\
-   -d, --default-domain=NAME      use NAME.po for output (instead of messages.po)\n\
-+      --defines                  analyze preprocessor defines\n\
-   -D, --directory=DIRECTORY      add DIRECTORY to list for input files search\n\
-   -e, --no-escape                do not use C escapes in output (default)\n\
-   -E, --escape                   use C escapes in output, no extended chars\n\
-
-
+After having built and installed these gettext tools, you have to
+configure GCC with --enable-maintainer-mode to get the master catalog
+rebuilt.
