@@ -2606,6 +2606,11 @@ store_expr (exp, target, want_value)
     {
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
+      /* If TEMP is a volatile MEM and we want a result value, make
+	 the access now so it gets done only once.  */
+      if (GET_CODE (temp) == MEM && MEM_VOLATILE_P (temp))
+	temp = copy_to_reg (temp);
+
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
@@ -2620,8 +2625,7 @@ store_expr (exp, target, want_value)
   else
     {
       temp = expand_expr (exp, target, GET_MODE (target), 0);
-      /* DO return TARGET if it's a specified hardware register.
-	 expand_return relies on this.
+      /* Return TARGET if it's a specified hardware register.
 	 If TARGET is a volatile mem ref, either return TARGET
 	 or return a reg copied *from* TARGET; ANSI requires this.
 
@@ -2746,13 +2750,23 @@ store_expr (exp, target, want_value)
 	emit_move_insn (target, temp);
     }
 
-  if (dont_return_target && GET_CODE (temp) != MEM)
+  /* If we don't want a value, return NULL_RTX.  */
+  if (! want_value)
+    return NULL_RTX;
+
+  /* If we are supposed to return TEMP, do so as long as it isn't a MEM.
+     ??? The latter test doesn't seem to make sense.  */
+  else if (dont_return_target && GET_CODE (temp) != MEM)
     return temp;
-  if (want_value && GET_MODE (target) != BLKmode)
+
+  /* Return TARGET itself if it is a hard register.  */
+  else if (want_value && GET_MODE (target) != BLKmode
+	   && ! (GET_CODE (target) == REG
+		 && REGNO (target) < FIRST_PSEUDO_REGISTER))
     return copy_to_reg (target);
-  if (want_value)
+  
+  else
     return target;
-  return NULL_RTX;
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
