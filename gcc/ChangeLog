@@ -59,6 +59,11 @@ Tue Apr 28 07:25:53 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (libgcc2.ready): Revert last patch (Apr 24).
 
+Mon Apr 27 18:39:47 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.h (GO_IF_LEGITIMATE_ADDRESS): Check against
+	frame_pointer_rtx not FRAME_POINTER_REGNUM.
+
 Mon Apr 27 18:36:28 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reg-stack.c: Revert last patch (Apr 20).
