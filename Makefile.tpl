@@ -243,43 +243,40 @@ CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 
 CXX_FOR_BUILD = $(CXX)
 
-# Path to the build directory for a Canadian cross, empty otherwise.
-BUILD_DIR_PREFIX = @BUILD_DIR_PREFIX@
-
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined
 # here so that they can be overridden by Makefile fragments.
 BUILD_PREFIX = @BUILD_PREFIX@
 BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 
 CONFIGURED_BISON = @CONFIGURED_BISON@
-BISON = `if [ -f $$r/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
-	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -L $$s/bison/ ; \
+BISON = `if [ -f $$r/$(BUILD_SUBDIR)/bison/tests/bison ] ; then \
+	    echo $$r/$(BUILD_SUBDIR)/bison/tests/bison ; \
 	 else \
 	    echo ${CONFIGURED_BISON} ; \
 	 fi`
 
 CONFIGURED_YACC = @CONFIGURED_YACC@
-YACC = `if [ -f $$s/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
-	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -y -L $$s/bison/ ; \
-	elif [ -f $$s/$(BUILD_DIR_PREFIX)/byacc/byacc ] ; then \
-	    echo $$r/$(BUILD_DIR_PREFIX)/byacc/byacc ; \
+YACC = `if [ -f $$r/$(BUILD_SUBDIR)/bison/tests/bison ] ; then \
+	    echo $$r/$(BUILD_SUBDIR)/bison/tests/bison -y ; \
+	elif [ -f $$r/$(BUILD_SUBDIR)/byacc/byacc ] ; then \
+	    echo $$r/$(BUILD_SUBDIR)/byacc/byacc ; \
 	else \
 	    echo ${CONFIGURED_YACC} ; \
 	fi`
 
 CONFIGURED_FLEX = @CONFIGURED_FLEX@
-FLEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
-	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+FLEX = `if [ -f $$r/$(BUILD_SUBDIR)/flex/flex ] ; \
+	then echo $$r/$(BUILD_SUBDIR)/flex/flex ; \
 	else echo ${CONFIGURED_FLEX} ; fi`
 
 CONFIGURED_LEX = @CONFIGURED_LEX@
-LEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
-	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+LEX = `if [ -f $$r/$(BUILD_SUBDIR)/flex/flex ] ; \
+	then echo $$r/$(BUILD_SUBDIR)/flex/flex ; \
 	else echo ${CONFIGURED_LEX} ; fi`
 
 CONFIGURED_M4 = @CONFIGURED_M4@
-M4 = `if [ -f $$r/$(BUILD_DIR_PREFIX)/m4/m4 ] ; \
-	then echo $$r/$(BUILD_DIR_PREFIX)/m4/m4 ; \
+M4 = `if [ -f $$r/$(BUILD_SUBDIR)/m4/m4 ] ; \
+	then echo $$r/$(BUILD_SUBDIR)/m4/m4 ; \
 	else echo ${CONFIGURED_M4} ; fi`
 
 # For an installed makeinfo, we require it to be from texinfo 4.2 or
@@ -287,8 +284,8 @@ M4 = `if [ -f $$r/$(BUILD_DIR_PREFIX)/m4/m4 ] ; \
 # makeinfo even if only the Makefile is there, because Texinfo builds its
 # manual when made, and it requires its own version.
 CONFIGURED_MAKEINFO = @CONFIGURED_MAKEINFO@
-MAKEINFO = `if [ -f $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/Makefile ] ; \
-	then echo $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/makeinfo ; \
+MAKEINFO = `if [ -f $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/Makefile ] ; \
+	then echo $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/makeinfo ; \
 	else if (${CONFIGURED_MAKEINFO} --version \
 	  | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])') >/dev/null 2>&1; \
         then echo ${CONFIGURED_MAKEINFO}; else echo $$s/missing makeinfo; fi; fi`
@@ -603,7 +600,7 @@ configure-target: [+
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
-all: unstage all-build all-host all-target stage
+all: unstage all-host all-target stage
 
 .PHONY: all-build
 all-build: [+
@@ -864,12 +861,14 @@ configure-build-[+module+]:
 .PHONY: all-build-[+module+] maybe-all-build-[+module+]
 maybe-all-build-[+module+]:
 @if build-[+module+]
+TARGET-build-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
 maybe-all-build-[+module+]: all-build-[+module+]
 all-build-[+module+]: configure-build-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
-	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) [+extra_make_flags+] all)
+	(cd $(BUILD_SUBDIR)/[+module+] && \
+	  $(MAKE) [+extra_make_flags+] $(TARGET-build-[+module+]))
 @endif build-[+module+]
 [+ ENDFOR build_modules +]
 
@@ -882,7 +881,8 @@ maybe-configure-[+module+]:
 @if [+module+]
 maybe-configure-[+module+]: configure-[+module+]
 configure-[+module+]:
-	@test ! -f [+module+]/Makefile || exit 0; \
+	@[+ IF bootstrap +]test -f stage_last && exit 0; \
+	[+ ENDIF bootstrap +]test ! -f [+module+]/Makefile || exit 0; \
 	[ -d [+module+] ] || mkdir [+module+]; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -910,7 +910,8 @@ maybe-all-[+module+]:
 @if [+module+]
 maybe-all-[+module+]: all-[+module+]
 all-[+module+]: configure-[+module+]
-	@r=`${PWD_COMMAND}`; export r; \
+	@[+ IF bootstrap +]test -f stage_last && exit 0; \
+	[+ ENDIF bootstrap +]r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
@@ -937,10 +938,8 @@ check-[+module+]:
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
-	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	    IF with_x 
-	      +] $(X11_FLAGS_TO_PASS)[+ 
-	    ENDIF with_x +] [+extra_make_flags+] check); \
+	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+ 
+	    extra_make_flags+] check); \
 	fi
 [+ ELSE check +]
 check-[+module+]:
@@ -949,9 +948,7 @@ check-[+module+]:
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	  IF with_x 
-	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] [+extra_make_flags+] check)
+	  extra_make_flags+] check)
 [+ ENDIF no_check +]
 @endif [+module+]
 
@@ -968,9 +965,7 @@ install-[+module+]: installdirs
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	  IF with_x 
-	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] [+extra_make_flags+] install)
+	  extra_make_flags+] install)
 [+ ENDIF no_install +]
 @endif [+module+]
 
@@ -1080,6 +1075,7 @@ ENDIF raw_cxx +]
 .PHONY: all-target-[+module+] maybe-all-target-[+module+]
 maybe-all-target-[+module+]:
 @if target-[+module+]
+TARGET-target-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
 maybe-all-target-[+module+]: all-target-[+module+]
 all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1095,7 +1091,7 @@ ENDIF raw_cxx +]
 	    IF raw_cxx 
 	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
 	    ENDIF raw_cxx 
-	  +] [+extra_make_flags+] all)
+	  +] [+extra_make_flags+] $(TARGET-target-[+module+]))
 @endif target-[+module+]
 
 .PHONY: check-target-[+module+] maybe-check-target-[+module+]
@@ -1249,7 +1245,7 @@ profiledbootstrap: all-prebootstrap configure-gcc
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
 .PHONY: cross
-cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+cross: all-build all-gas all-ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1322,7 +1318,6 @@ stage:
 	@$(MAKE) `cat stage_current`-end
 @endif gcc-bootstrap
 
-@if gcc-bootstrap
 # We name the build directories for the various stages "stage1-gcc",
 # "stage2-gcc","stage3-gcc", etc.
 
@@ -1360,12 +1355,6 @@ STAGE1_LANGUAGES=@stage1_languages@
 # We only want to compare .o files, so set this!
 objext = .o
 
-# Real targets act phony if they depend on phony targets; this hack
-# prevents gratuitous rebuilding of stage 1.
-prebootstrap:
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-prebootstrap
-	$(STAMP) prebootstrap
-
 # Flags to pass to stage2 and later makes.
 BOOT_CFLAGS= -g -O2
 POSTSTAGE1_FLAGS_TO_PASS = \
@@ -1389,39 +1378,46 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 stage[+id+]-start::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	echo stage[+id+] > stage_current ; \
-	echo stage[+id+] > stage_last ; \
-	[ -d stage[+id+]-gcc ] || mkdir stage[+id+]-gcc; \
-	set stage[+id+]-gcc gcc ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
-	set stage[+prev+]-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+	echo stage[+id+] > stage_last[+ FOR host_modules +][+ IF bootstrap +]
+@if [+ module +]
+	[ -d stage[+id+]-[+module+] ] || mkdir stage[+id+]-[+module+]; \
+	set stage[+id+]-[+module+] [+module+] ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
+	set stage[+prev+]-[+module+] prev-[+module+] ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 stage[+id+]-end::
-	rm -f stage_current ; \
-	set gcc stage[+id+]-gcc ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
-	set prev-gcc stage[+prev+]-gcc ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
+	rm -f stage_current[+ FOR host_modules +][+ IF bootstrap +]
+@if [+ module +]
+	set [+module+] stage[+id+]-[+module+] ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
+	set prev-[+module+] stage[+prev+]-[+module+] ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 # Bubble a bugfix through all the stages up to stage [+id+].  They
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage[+id+]-bubble
 stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
-	@if [ -f all-stage[+id+]-gcc ] ; then \
-	  echo Remaking stage [+id+] ; \
-	  rm -f all-stage[+id+]-gcc ; \
-	fi ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage[+id+]-gcc
+	@case `echo all-stage[+id+]-*` in \
+	  'all-stage[+id+]-*') ;; \
+	  *) echo Remaking stage [+id+] ; rm -f all-stage[+id+]-* ;; \
+	esac ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage[+id+]
 
-[+ IF prev +]
-stage[+prev+]-bubble::
-	@if [ -f configure-stage[+id+]-gcc ] ; then \
-	  $(STAMP) configure-stage[+id+]-gcc ; \
-	fi
-[+ ENDIF prev +]
+.PHONY: all-stage[+id+]
+all-stage[+id+]: [+ FOR host_modules +][+ IF bootstrap +]\
+  maybe-all-stage[+id+]-[+module+][+
+ENDIF bootstrap+] [+ ENDFOR host_modules +]
 
-configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
-	  ELSE +] prebootstrap [+ ENDIF prev +]
+[+ FOR host_modules +][+ IF bootstrap +]
+maybe-configure-stage[+id+]-[+module+]:
+maybe-all-stage[+id+]-[+module+]:
+
+@if [+module+]-bootstrap
+maybe-configure-stage[+id+]-[+module+]: configure-stage[+id+]-[+module+]
+configure-stage[+id+]-[+module+]: [+ IF prev +] maybe-all-stage[+prev+]-[+module+] [+ ENDIF prev +]
 	$(MAKE) stage[+id+]-start
-	@if [ -f stage[+id+]-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage[+id+]-gcc ; \
+	@if [ -f stage[+id+]-[+module+]/Makefile ] ; then \
+	  $(STAMP) configure-stage[+id+]-[+module+] ; \
 	  exit 0; \
 	else \
 	  true ; \
@@ -1430,35 +1426,42 @@ configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
 	$(HOST_EXPORTS) [+ ENDIF prev +] \
-	echo Configuring stage [+id+] in gcc ; \
-	cd gcc || exit 1; \
+	echo Configuring stage [+id+] in [+module+] ; \
+	cd [+module+] || exit 1; \
 	case $(srcdir) in \
 	  \.) \
 	    srcdiroption="--srcdir=."; \
 	    libsrcdir=".";; \
 	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
+	    srcdiroption="--srcdir=$(srcdir)/[+module+]"; \
+	    libsrcdir="$$s/[+module+]";; \
 	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
+	    srcdiroption="--srcdir=../$(srcdir)/[+module+]"; \
+	    libsrcdir="$$s/[+module+]";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  [+extra_configure_flags+] && \
-	  $(STAMP) ../configure-stage[+id+]-gcc
+	  [+stage_configure_flags+] [+extra_configure_flags+] && \
+	  $(STAMP) ../configure-stage[+id+]-[+module+]
 
-all-stage[+id+]-gcc: configure-stage[+id+]-gcc
+maybe-all-stage[+id+]-[+module+]: all-stage[+id+]-[+module+]
+all-stage[+id+]-[+module+]: configure-stage[+id+]-[+module+]
 	$(MAKE) stage[+id+]-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
 	$(HOST_EXPORTS) [+ ENDIF prev +] \
-	cd gcc && \
-	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
+	cd [+module+] && \
+	$(MAKE) $(FLAGS_TO_PASS) [+ IF prev +] \
 		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
-		[+extra_make_flags+] && $(STAMP) ../all-stage[+id+]-gcc
+		[+stage_make_flags+] [+extra_make_flags+] && \
+	$(STAMP) ../all-stage[+id+]-[+module+]
+@endif [+module+]-bootstrap
+[+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
+# FIXME: Will not need to be conditional when toplevel bootstrap is the
+# only possibility, but now it conflicts with no-bootstrap rules
+@if gcc-bootstrap
 [+ IF compare-target +]
 [+compare-target+]: all-stage[+id+]-gcc
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
@@ -1485,8 +1488,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 
 [+ IF bootstrap-target +]
 .PHONY: [+bootstrap-target+]
-[+bootstrap-target+]:
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble [+
+[+bootstrap-target+]: stage[+id+]-bubble [+
 	  IF compare-target +] [+compare-target+] [+
 	  ENDIF compare-target +] all
 [+ ENDIF bootstrap-target +]
@@ -1497,33 +1499,39 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 [+ IF prev +]distclean-stage[+prev+]:: distclean-stage[+id+] [+ ENDIF prev +]
 distclean-stage[+id+]::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stage[+id+]-gcc all-stage[+id+]-gcc stage[+id+]-gcc [+
+	rm -rf configure-stage[+id+]-* all-stage[+id+]-* stage[+id+]-* [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
 # Rules to renew the timestamp on a stage and all the following ones
 [+ IF prev +]touch-stage[+prev+]:: touch-stage[+id+] [+ ENDIF prev +]
 touch-stage[+id+]::
-	@[ -f configure-stage[+id+]-gcc ] && \
-	  echo '$(STAMP) configure-stage[+id+]-gcc' && \
-	  $(STAMP) configure-stage[+id+]-gcc; \
-	[ -f all-stage[+id+]-gcc ] && \
-	  echo '$(STAMP) all-stage[+id+]-gcc' && \
-	  $(STAMP) all-stage[+id+]-gcc; \
-	:
+	@case `echo configure-stage[+id+]-*` in \
+	  'configure-stage[+id+]-*') ;; \
+	  *) \
+	    echo '$(STAMP)' configure-stage[+id+]-* && \
+	    $(STAMP) configure-stage[+id+]-* ;; \
+	esac ; \
+	case `echo all-stage[+id+]-*` in \
+	  'all-stage[+id+]-*') ;; \
+	  *) \
+	    echo '$(STAMP)' all-stage[+id+]-* && \
+	    $(STAMP) all-stage[+id+]-* ;; \
+	esac
 
 # After building a stage, touch the following ones
 [+ IF prev +]restage[+prev+]:: touch-stage[+id+] [+ ENDIF prev +]
 restage[+id+]::
-	rm -rf all-stage[+id+]-gcc [+
+	rm -rf all-stage[+id+]-* [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+
 	  IF compare-target +][+compare-target+] [+
-	  ELSE +] all-stage[+id+]-gcc [+ ENDIF compare-target +]
+	  ELSE +] all-stage[+id+] [+ ENDIF compare-target +]
 
 [+ IF cleanstrap-target +]
 .PHONY: [+cleanstrap-target+]
 [+cleanstrap-target+]: distclean-stage1 [+bootstrap-target+]
 [+ ENDIF cleanstrap-target +]
+@endif gcc-bootstrap
 
 [+ ENDFOR bootstrap-stage +]
 
@@ -1534,7 +1542,10 @@ stagefeedback-start::
 	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
 	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
 
-profiledbootstrap: all-prebootstrap configure-gcc
+# FIXME: Will not need to be conditional when toplevel bootstrap is the
+# only possibility, but now it conflicts with no-bootstrap rules
+@if gcc-bootstrap
+profiledbootstrap:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1552,7 +1563,6 @@ profiledbootstrap: all-prebootstrap configure-gcc
 	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	$(MAKE) stagefeedback-bubble stagefeedback-end
-
 @endif gcc-bootstrap
 
 # --------------------------------------
@@ -1589,10 +1599,10 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
       )))
 
    ;; make-dep builds a dependency from the MODULE and ON AutoGen vars.
-   (define make-dep (lambda (module-kind)
+   (define make-dep (lambda (module-kind on-kind)
       (string-append
          (dep-target module-kind "module" #t) ": "
-         (dep-target module-kind "on" (exist? "hard")))))
+         (dep-target on-kind "on" (exist? "hard")))))
 
    ;; dep-subtarget extracts everything up to the first dash in the given
    ;; AutoGen variable, for example it extracts "all-" out of "all-gcc".
@@ -1620,23 +1630,21 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
    ;; or if the LHS module is not bootstrapped.  It returns "bootstrap" for
    ;; configure or build dependencies between bootstrapped modules; it returns
    ;; "prebootstrap" for configure or build dependencies of bootstrapped
-   ;; modules on a non-bootstrapped modules (e.g. gcc on bison).  All this
+   ;; modules on a build module (e.g. all-gcc on all-build-bison).  All this
    ;; is only necessary for host modules.
    (define dep-kind (lambda ()
-      (if (or (= (dep-subtarget "on") "install-")
-	      (=* (dep-module "on") "build-")
-	      (=* (dep-module "on") "target-"))
-          "normal"
+      (if (and (hash-ref boot-modules (dep-module "module"))
+	       (=* (dep-module "on") "build-"))
+	  "prebootstrap"
 
-          (if (hash-ref boot-modules (dep-module "module"))
-              (if (hash-ref boot-modules (dep-module "on"))
-	          "bootstrap"
-	          "prebootstrap")
-	      "normal"))))
+	  (if (or (= (dep-subtarget "on") "install-")
+		  (=* (dep-module "on") "target-")
+		  (not (hash-ref boot-modules (dep-module "module"))))
+              "normal"
+	      "bootstrap"))))
 
    ;; We now build the hash table that is used by dep-kind.
    (define boot-modules (make-hash-table 113))
-   (define preboot-modules (make-hash-table 37))
 +]
 
 [+ FOR host_modules +][+
@@ -1649,27 +1657,22 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
 # to check for bootstrap/prebootstrap dependencies.  To resolve
 # prebootstrap dependencies, prebootstrap modules are gathered in
 # a hash table.
-[+ FOR dependencies +][+ (make-dep "") +]
-[+ CASE (dep-kind) +][+
-   == "prebootstrap"
-     +][+ (hash-create-handle! preboot-modules (dep-module "on") #t) "" +][+
-   == "bootstrap"
+[+ FOR dependencies +][+ (make-dep "" "") +]
+[+ CASE (dep-kind) +]
+[+ == "prebootstrap"
      +][+ FOR bootstrap_stage +]
-[+ (make-dep (dep-stage)) +][+
+[+ (make-dep (dep-stage) "") +][+
+       ENDFOR bootstrap_stage +]
+all-prebootstrap: [+ (dep-target "" "on" (exist? "hard")) +]
+[+ == "bootstrap"
+     +][+ FOR bootstrap_stage +]
+[+ (make-dep (dep-stage) (dep-stage)) +][+
        ENDFOR bootstrap_stage +]
 [+ ESAC +][+
 ENDFOR dependencies +]
 
-# Now build the prebootstrap dependencies.
-[+ FOR host_modules +][+
-   IF (hash-ref preboot-modules (get "module")) +]
-all-prebootstrap: maybe-all-[+module+][+
-   ENDIF +][+
-ENDFOR host_modules +]
-
-# Unless toplevel bootstrap is going, bootstrapped packages are actually
-# prebootstrapped, with the exception of gcc.  Another wart that will go
-# away with toplevel bootstrap.
+# Non-toplevel bootstrap rules must depend on several packages, to be built
+# before gcc.  Another wart that will go away, hopefully soon.
 @if gcc-no-bootstrap
 [+ FOR host_modules +][+
    IF (and (not (= (get "module") "gcc"))

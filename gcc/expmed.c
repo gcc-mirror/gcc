@@ -2547,13 +2547,12 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
   for (opno = 1; opno < alg->ops; opno++)
     {
       int log = alg->log[opno];
-      int preserve = preserve_subexpressions_p ();
-      rtx shift_subtarget = preserve ? 0 : accum;
+      rtx shift_subtarget = optimize ? 0 : accum;
       rtx add_target
 	= (opno == alg->ops - 1 && target != 0 && variant != add_variant
-	   && ! preserve)
+	   && !optimize)
 	  ? target : 0;
-      rtx accum_target = preserve ? 0 : accum;
+      rtx accum_target = optimize ? 0 : accum;
 
       switch (alg->op[opno])
 	{
@@ -2615,8 +2614,8 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 			      build_int_cst (NULL_TREE, log, 0),
 			      NULL_RTX, 0);
 	  accum = force_operand (gen_rtx_MINUS (mode, tem, accum),
-				 (add_target ? add_target
-				  : preserve ? 0 : tem));
+				 (add_target
+				  ? add_target : (optimize ? 0 : tem)));
 	  val_so_far = (val_so_far << log) - val_so_far;
 	  break;
 
@@ -4829,8 +4828,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       compare_mode = insn_data[(int) icode].operand[0].mode;
       subtarget = target;
       pred = insn_data[(int) icode].operand[0].predicate;
-      if (preserve_subexpressions_p ()
-	  || ! (*pred) (subtarget, compare_mode))
+      if (optimize || ! (*pred) (subtarget, compare_mode))
 	subtarget = gen_reg_rtx (compare_mode);
 
       pattern = GEN_FCN (icode) (subtarget);
@@ -4863,7 +4861,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  /* If we want to keep subexpressions around, don't reuse our
 	     last target.  */
 
-	  if (preserve_subexpressions_p ())
+	  if (optimize)
 	    subtarget = 0;
 
 	  /* Now normalize to the proper value in COMPARE_MODE.  Sometimes
@@ -4908,10 +4906,10 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   delete_insns_since (last);
 
-  /* If expensive optimizations, use different pseudo registers for each
-     insn, instead of reusing the same pseudo.  This leads to better CSE,
-     but slows down the compiler, since there are more pseudos */
-  subtarget = (!flag_expensive_optimizations
+  /* If optimizing, use different pseudo registers for each insn, instead
+     of reusing the same pseudo.  This leads to better CSE, but slows
+     down the compiler, since there are more pseudos */
+  subtarget = (!optimize
 	       && (target_mode == mode)) ? target : NULL_RTX;
 
   /* If we reached here, we can't do this with a scc insn.  However, there

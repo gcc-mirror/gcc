@@ -25,7 +25,6 @@ AutoGen definitions Makefile.tpl;
 // that recursive target in its Makefile.
 
 build_modules= { module= libiberty; };
-build_modules= { module= libbanshee; };
 build_modules= { module= bison; };
 build_modules= { module= byacc; };
 build_modules= { module= flex; };
@@ -53,6 +52,7 @@ host_modules= { module= find; };
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
+		target="`if [ -f gcc/stage_last ]; then echo quickstrap ; else echo all; fi`";
 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gawk; };
 host_modules= { module= gettext; };
@@ -94,10 +94,10 @@ host_modules= { module= uudecode; };
 host_modules= { module= wdiff; };
 host_modules= { module= zip; no_check_cross=true; };
 host_modules= { module= zlib; no_install=true; no_check=true; bootstrap=true; };
-host_modules= { module= gdb; with_x=true; };
-host_modules= { module= expect; with_x=true; };
-host_modules= { module= guile; with_x=true; };
-host_modules= { module= tk; with_x=true; };
+host_modules= { module= gdb; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
+host_modules= { module= expect; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
+host_modules= { module= guile; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
+host_modules= { module= tk; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
 host_modules= { module= libtermcap; no_check=true; 
                 missing=mostlyclean;
                 missing=clean;
@@ -238,14 +238,12 @@ dependencies = { module=configure-gcc; on=configure-intl; };
 dependencies = { module=configure-gcc; on=configure-binutils; };
 dependencies = { module=configure-gcc; on=configure-gas; };
 dependencies = { module=configure-gcc; on=configure-ld; };
-dependencies = { module=configure-gcc; on=configure-bison; };
-dependencies = { module=configure-gcc; on=configure-flex; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
-dependencies = { module=all-gcc; on=all-texinfo; };
-dependencies = { module=all-gcc; on=all-bison; };
-dependencies = { module=all-gcc; on=all-byacc; };
-dependencies = { module=all-gcc; on=all-flex; };
+dependencies = { module=all-gcc; on=all-build-texinfo; };
+dependencies = { module=all-gcc; on=all-build-bison; };
+dependencies = { module=all-gcc; on=all-build-byacc; };
+dependencies = { module=all-gcc; on=all-build-flex; };
 dependencies = { module=all-gcc; on=all-binutils; };
 dependencies = { module=all-gcc; on=all-gas; };
 dependencies = { module=all-gcc; on=all-ld; };
@@ -268,8 +266,8 @@ dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-bfd; };
 dependencies = { module=all-gdb; on=all-readline; };
-dependencies = { module=all-gdb; on=all-bison; };
-dependencies = { module=all-gdb; on=all-byacc; };
+dependencies = { module=all-gdb; on=all-build-bison; };
+dependencies = { module=all-gdb; on=all-build-byacc; };
 dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=install-gdb; on=install-tcl; };
 dependencies = { module=install-gdb; on=install-tk; };
@@ -290,9 +288,9 @@ dependencies = { module=all-bfd; on=all-intl; };
 dependencies = { module=all-binutils; on=all-libiberty; };
 dependencies = { module=all-binutils; on=all-opcodes; };
 dependencies = { module=all-binutils; on=all-bfd; };
-dependencies = { module=all-binutils; on=all-flex; };
-dependencies = { module=all-binutils; on=all-bison; };
-dependencies = { module=all-binutils; on=all-byacc; };
+dependencies = { module=all-binutils; on=all-build-flex; };
+dependencies = { module=all-binutils; on=all-build-bison; };
+dependencies = { module=all-binutils; on=all-build-byacc; };
 dependencies = { module=all-binutils; on=all-intl; };
 
 // We put install-opcodes before install-binutils because the installed
@@ -314,9 +312,9 @@ dependencies = { module=all-gprof; on=all-intl; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };
 dependencies = { module=all-ld; on=all-opcodes; };
-dependencies = { module=all-ld; on=all-bison; };
-dependencies = { module=all-ld; on=all-byacc; };
-dependencies = { module=all-ld; on=all-flex; };
+dependencies = { module=all-ld; on=all-build-bison; };
+dependencies = { module=all-ld; on=all-build-byacc; };
+dependencies = { module=all-ld; on=all-build-flex; };
 dependencies = { module=all-ld; on=all-intl; };
 
 dependencies = { module=all-opcodes; on=all-bfd; };
@@ -358,43 +356,43 @@ dependencies = { module=all-sim; on=configure-gdb; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };
-dependencies = { module=all-fastjar; on=all-texinfo; };
+dependencies = { module=all-fastjar; on=all-build-texinfo; };
 dependencies = { module=all-fastjar; on=all-libiberty; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-autoconf; on=all-m4; };
-dependencies = { module=all-autoconf; on=all-texinfo; };
+dependencies = { module=all-autoconf; on=all-build-texinfo; };
 dependencies = { module=all-automake; on=all-m4; };
-dependencies = { module=all-automake; on=all-texinfo; };
+dependencies = { module=all-automake; on=all-build-texinfo; };
 dependencies = { module=all-automake; on=all-autoconf; };
 dependencies = { module=all-bison; on=all-intl; };
-dependencies = { module=all-bison; on=all-texinfo; };
+dependencies = { module=all-bison; on=all-build-texinfo; };
 dependencies = { module=all-diff; on=all-intl; };
-dependencies = { module=all-diff; on=all-texinfo; };
+dependencies = { module=all-diff; on=all-build-texinfo; };
 dependencies = { module=all-fileutils; on=all-intl; };
-dependencies = { module=all-fileutils; on=all-texinfo; };
-dependencies = { module=all-flex; on=all-bison; };
-dependencies = { module=all-flex; on=all-byacc; };
+dependencies = { module=all-fileutils; on=all-build-texinfo; };
+dependencies = { module=all-flex; on=all-build-bison; };
+dependencies = { module=all-flex; on=all-build-byacc; };
 dependencies = { module=all-flex; on=all-intl; };
 dependencies = { module=all-flex; on=all-m4; };
-dependencies = { module=all-flex; on=all-texinfo; };
+dependencies = { module=all-flex; on=all-build-texinfo; };
 dependencies = { module=all-gzip; on=all-intl; };
 dependencies = { module=all-gzip; on=all-zlib; };
-dependencies = { module=all-gzip; on=all-texinfo; };
+dependencies = { module=all-gzip; on=all-build-texinfo; };
 dependencies = { module=all-hello; on=all-intl; };
-dependencies = { module=all-hello; on=all-texinfo; };
+dependencies = { module=all-hello; on=all-build-texinfo; };
 dependencies = { module=all-m4; on=all-intl; };
-dependencies = { module=all-m4; on=all-texinfo; };
+dependencies = { module=all-m4; on=all-build-texinfo; };
 dependencies = { module=all-make; on=all-intl; };
-dependencies = { module=all-make; on=all-texinfo; };
-dependencies = { module=all-patch; on=all-texinfo; };
-dependencies = { module=all-make; on=all-texinfo; };
+dependencies = { module=all-make; on=all-build-texinfo; };
+dependencies = { module=all-patch; on=all-build-texinfo; };
+dependencies = { module=all-make; on=all-build-texinfo; };
 dependencies = { module=all-prms; on=all-libiberty; };
-dependencies = { module=all-recode; on=all-texinfo; };
-dependencies = { module=all-sed; on=all-texinfo; };
+dependencies = { module=all-recode; on=all-build-texinfo; };
+dependencies = { module=all-sed; on=all-build-texinfo; };
 dependencies = { module=all-send-pr; on=all-prms; };
-dependencies = { module=all-tar; on=all-texinfo; };
-dependencies = { module=all-uudecode; on=all-texinfo; };
+dependencies = { module=all-tar; on=all-build-texinfo; };
+dependencies = { module=all-uudecode; on=all-build-texinfo; };
 
 // Target modules.  These can also have dependencies on the language
 // environment (e.g. on libstdc++).
@@ -438,32 +436,32 @@ dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 // Toplevel bootstrap
 bootstrap_stage = {
 	id=1 ;
-	extra_configure_flags='--disable-intermodule \
+	stage_configure_flags='--disable-intermodule \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"' ;
-	extra_make_flags='CFLAGS="$(STAGE1_CFLAGS)"' ; };
+	stage_make_flags='CFLAGS="$(STAGE1_CFLAGS)"' ; };
 bootstrap_stage = {
 	id=2 ; prev=1 ;
 	bootstrap_target=bootstrap2 ;
-	extra_configure_flags="@stage2_werror_flag@" ;
-	extra_make_flags="" ; };
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_make_flags="" ; };
 bootstrap_stage = {
 	id=3 ; prev=2 ;
 	compare_target=compare ;
 	bootstrap_target=bootstrap ;
 	cleanstrap_target=cleanstrap ;
-	extra_configure_flags="@stage2_werror_flag@" ;
-	extra_make_flags="" ; };
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_make_flags="" ; };
 bootstrap_stage = {
 	id=4 ; prev=3 ;
 	compare_target=compare3 ;
 	bootstrap_target=bootstrap4 ;
-	extra_configure_flags="@stage2_werror_flag@" ;
-	extra_make_flags="" ; };
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_make_flags="" ; };
 bootstrap_stage = {
 	id=profile ; prev=1 ;
-	extra_configure_flags="@stage2_werror_flag@" ;
-	extra_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"' ; };
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"' ; };
 bootstrap_stage = {
 	id=feedback ; prev=1 ;
-	extra_configure_flags="@stage2_werror_flag@" ;
-	extra_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-use"' ; };
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-use"' ; };

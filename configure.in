@@ -184,9 +184,11 @@ target_tools="target-examples target-groff target-gperf target-rda"
 configdirs=`echo ${host_libs} ${host_tools}`
 target_configdirs=`echo ${target_libraries} ${target_tools}`
 
-# Only make build modules if build != host.
+# Only make build libraries if build != host.
 if test ${host_alias} != ${build_alias} ; then
   build_configdirs=`echo ${build_libs} ${build_tools}`
+else
+  build_configdirs=`echo ${build_tools}`
 fi
 
 ################################################################################
@@ -985,7 +987,6 @@ if test "${build}" != "${host}" ; then
   CXX_FOR_TARGET=${CXX_FOR_TARGET-${target_alias}-c++}
   GCJ_FOR_TARGET=${GCJ_FOR_TARGET-${target_alias}-gcj}
   GCC_FOR_TARGET=${GCC_FOR_TARGET-${CC_FOR_TARGET-${target_alias}-gcc}}
-  BUILD_DIR_PREFIX=${build_subdir}
   BUILD_PREFIX=${build_alias}-
   BUILD_PREFIX_1=${build_alias}-
 
@@ -1000,7 +1001,6 @@ else
 
   CC_FOR_BUILD="\$(CC)"
   GCC_FOR_TARGET="\$(USUAL_GCC_FOR_TARGET)"
-  BUILD_DIR_PREFIX=
   BUILD_PREFIX=
   BUILD_PREFIX_1=loser-
 
@@ -2089,7 +2089,6 @@ AC_SUBST_FILE(ospace_frag)
 # Miscellanea: directories, flags, etc.
 AC_SUBST(SET_LIB_PATH)
 AC_SUBST(RPATH_ENVVAR)
-AC_SUBST(BUILD_DIR_PREFIX)
 AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(gcc_version_trigger)

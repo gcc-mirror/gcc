@@ -782,13 +782,13 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       binoptab = add_optab;
     }
 
-  /* If we are inside an appropriately-short loop and one operand is an
-     expensive constant, force it into a register.  */
-  if (CONSTANT_P (op0) && preserve_subexpressions_p ()
+  /* If we are inside an appropriately-short loop and we are optimizing,
+     force expensive constants into a register.  */
+  if (CONSTANT_P (op0) && optimize
       && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
     op0 = force_reg (mode, op0);
 
-  if (CONSTANT_P (op1) && preserve_subexpressions_p ()
+  if (CONSTANT_P (op1) && optimize
       && ! shift_op && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
     op1 = force_reg (mode, op1);
 
@@ -2348,13 +2348,13 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
       op1 = force_not_mem (op1);
     }
 
-  /* If we are inside an appropriately-short loop and one operand is an
-     expensive constant, force it into a register.  */
-  if (CONSTANT_P (op0) && preserve_subexpressions_p ()
+  /* If we are inside an appropriately-short loop and we are optimizing,
+     force expensive constants into a register.  */
+  if (CONSTANT_P (op0) && optimize
       && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
     op0 = force_reg (mode, op0);
 
-  if (CONSTANT_P (op1) && preserve_subexpressions_p ()
+  if (CONSTANT_P (op1) && optimize
       && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
     op1 = force_reg (mode, op1);
 
@@ -3750,13 +3750,13 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	}
     }
 
-  /* If we are inside an appropriately-short loop and one operand is an
-     expensive constant, force it into a register.  */
-  if (CONSTANT_P (x) && preserve_subexpressions_p ()
+  /* If we are inside an appropriately-short loop and we are optimizing,
+     force expensive constants into a register.  */
+  if (CONSTANT_P (x) && optimize
       && rtx_cost (x, COMPARE) > COSTS_N_INSNS (1))
     x = force_reg (mode, x);
 
-  if (CONSTANT_P (y) && preserve_subexpressions_p ()
+  if (CONSTANT_P (y) && optimize
       && rtx_cost (y, COMPARE) > COSTS_N_INSNS (1))
     y = force_reg (mode, y);
 

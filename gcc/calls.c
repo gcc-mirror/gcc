@@ -691,7 +691,7 @@ precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > COSTS_N_INSNS (1)
 	    && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
-		|| preserve_subexpressions_p ()))
+		|| optimize))
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 }
