@@ -1,3 +1,12 @@
+1999-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h (ATTRIBUTE_MALLOC): New macro.
+
+	* libiberty.h (buildargv, dupargv, concat, choose_temp_base,
+	make_temp_file, xmalloc, xcalloc, xstrdup, xmemdup): Add
+	ATTRIBUTE_MALLOC.
+	(xatexit): Remove __GNUC__ check, add ATTRIBUTE_NORETURN.
+
 1999-11-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h: Include stdarg.h when ANSI_PROTOTYPES is defined.
