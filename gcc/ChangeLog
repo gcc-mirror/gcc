@@ -1,3 +1,12 @@
+2004-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/16195
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage): Make
+	r30 fixed if TARGET_TOC && TARGET_MINIMAL_TOC.
+	(first_reg_to_save): Pretend call_used_regs[30] is 0 if
+	TARGET_TOC && TARGET_MINIMAL_TOC.
+	(rs6000_emit_prologue, rs6000_emit_epilogue): Likewise.
+
 2004-06-29  J"orn Rennecke <joern.rennecke@superh.com>
 
 	Fix gcc.dg/builtin-apply2.c failures:
