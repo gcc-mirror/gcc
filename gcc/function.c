@@ -5267,6 +5267,12 @@ assign_parms (tree fndecl)
 	    {
 	      SET_DECL_RTL (parm, DECL_RTL (fnargs));
 	      set_decl_incoming_rtl (parm, DECL_INCOMING_RTL (fnargs));
+
+	      /* Set MEM_EXPR to the original decl, i.e. to PARM,
+		 instead of the copy of decl, i.e. FNARGS.  */
+	      if (DECL_INCOMING_RTL (parm)
+		  && GET_CODE (DECL_INCOMING_RTL (parm)) == MEM)
+		set_mem_expr (DECL_INCOMING_RTL (parm), parm);
 	    }
 	  fnargs = TREE_CHAIN (fnargs);
 	}
