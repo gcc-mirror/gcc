@@ -147,9 +147,41 @@ decl_attributes (decl, attributes)
 {
   tree a;
   for (a = attributes; a; a = TREE_CHAIN (a))
-    if (TREE_VALUE (a) != 0
+    if (TREE_VALUE (a) == get_identifier ("packed"))
+      {
+	if (TREE_CODE (decl) == FIELD_DECL)
+	  DECL_PACKED (decl) = 1;
+      }
+    else if (TREE_VALUE (a) != 0
 	&& TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	&& TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("aligned"))
+	&& TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("mode"))
+      {
+	int i;
+	char *specified_name
+	  = IDENTIFIER_POINTER (TREE_VALUE (TREE_VALUE (a)));
+
+	/* Give this decl a type with the specified mode.  */
+	for (i = 0; i < NUM_MACHINE_MODES; i++)
+	  if (!strcmp (specified_name, GET_MODE_NAME (i)))
+	    {
+	      tree type
+		= type_for_size (GET_MODE_BITSIZE (i),
+				 TREE_UNSIGNED (TREE_TYPE (decl)));
+	      if (type != 0)
+		{
+		  TREE_TYPE (decl) = type;
+		  DECL_SIZE (decl) = 0;
+		  layout_decl (decl);
+		}
+	      else
+		error ("no data type for mode `%s'", specified_name);
+	    }
+	if (i == NUM_MACHINE_MODES)
+	  error ("unknown machine mode `%s'", specified_name);
+      }
+    else if (TREE_VALUE (a) != 0
+	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
+	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("aligned"))
       {
 	int align = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (a)))
 		    * BITS_PER_UNIT;
@@ -161,26 +193,12 @@ decl_attributes (decl, attributes)
 		 && TREE_CODE (decl) != FIELD_DECL)
 	  warning_with_decl (decl,
 		"alignment specified for `%s' which is not a variable");
-
-	/* ??? The maximum alignment gcc can currently handle is 16 bytes!
-	   We should change the representation to be the log of the
-	   actual alignment since we only handle powers of 2 anyway.  */
-	else if (align > 255)
-	  warning_with_decl (decl,
-		"requested alignment of `%s' exceeds compiler limits");
 	else
 	  DECL_ALIGN (decl) = align;
       }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("packed"))
-      {
-	if (TREE_CODE (decl) == FIELD_DECL)
-	  DECL_PACKED (decl) = 1;
-      }
-    else if (TREE_VALUE (a) != 0
-	&& TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	&& TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("format"))
+	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("format"))
       {
         tree list = TREE_VALUE (TREE_VALUE (a));
         tree format_type = TREE_PURPOSE (list);
