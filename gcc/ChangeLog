@@ -1,5 +1,7 @@
 Tue Sep 14 04:03:44 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* gthr-win32.h: New file.
+
 	* i386/winnt.c (i386_pe_valid_decl_attribute_p): Recognize
 	shared as a valid attribute.
 	* i386/cygwin.h (ASM_OUTPUT_SECTION): Handle shared attribute.
