@@ -372,6 +372,10 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_ccp);
   NEXT_PASS (pass_redundant_phi);
   NEXT_PASS (pass_fold_builtins);
+  /* FIXME: May alias should a TODO but for 4.0.0,
+     we add may_alias right after fold builtins
+     which can create arbitrary GIMPLE.  */
+  NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_split_crit_edges);
   NEXT_PASS (pass_pre);
   NEXT_PASS (pass_loop);
