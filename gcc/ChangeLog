@@ -1,3 +1,8 @@
+2002-06-19  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (unstrap, restrap): New targets.
+	(bootstrap): Mention restrap.
+
 2002-06-19  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
 	* config/ns32k/ns32k.md: Give "*xxx" names to all unnamed insn's.
