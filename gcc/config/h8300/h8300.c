@@ -465,7 +465,6 @@ asm_file_start (file)
 {
   fprintf (file, ";\tGCC For the Hitachi H8/300\n");
   fprintf (file, ";\tBy Hitachi America Ltd and Cygnus Support\n");
-  fprintf (file, ";\trelease F-1\n");
   if (optimize)
     fprintf (file, "; -O%d\n", optimize);
   if (TARGET_H8300H)
