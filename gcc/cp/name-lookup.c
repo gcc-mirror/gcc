@@ -2494,15 +2494,30 @@ is_ancestor (tree root, tree child)
     }
 }
 
-/* Enter a class or namespace scope.  */
+/* Enter the class or namespace scope indicated by T.  Returns TRUE iff
+   pop_scope should be called later to exit this scope.  */
 
-void
+bool
 push_scope (tree t)
 {
+  bool pop = true;
+
   if (TREE_CODE (t) == NAMESPACE_DECL)
     push_decl_namespace (t);
-  else if CLASS_TYPE_P (t)
-    push_nested_class (t);
+  else if (CLASS_TYPE_P (t))
+    {
+      if (!at_class_scope_p ()
+	  || !same_type_p (current_class_type, t))
+	push_nested_class (t);
+      else
+	/* T is the same as the current scope.  There is therefore no
+	   need to re-enter the scope.  Since we are not actually
+	   pushing a new scope, our caller should not call
+	   pop_scope.  */
+	pop = false;
+    }
+
+  return pop;
 }
 
 /* Leave scope pushed by push_scope.  */
