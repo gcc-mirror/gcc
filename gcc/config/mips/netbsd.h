@@ -22,19 +22,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define default target values. */
 
-#ifndef TARGET_ENDIAN_DEFAULT
-#define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
-#endif
-
-#ifndef MACHINE_TYPE
+#undef MACHINE_TYPE
 #if TARGET_ENDIAN_DEFAULT != 0
 #define MACHINE_TYPE "NetBSD/mipseb ELF"
 #else
 #define MACHINE_TYPE "NetBSD/mipsel ELF"
 #endif
-#endif
-
-#define TARGET_DEFAULT (MASK_GAS|MASK_ABICALLS)
 
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
@@ -47,13 +40,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__LONG64");			\
     }							\
   while (0)
-
-
-/* XXX Don't use DWARF-2 debugging info, for now.  */
-#undef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 
 /* Include the generic MIPS ELF configuration.  */

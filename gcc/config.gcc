@@ -1838,6 +1838,7 @@ mips-sgi-*)	# would otherwise be caught by mips-*-elf*
 	exit 1
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
+	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/netbsd.h"
 	tmake_file="${tmake_file} mips/t-netbsd"
 	;;
