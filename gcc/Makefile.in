@@ -2385,14 +2385,14 @@ compare: force
 	for file in *$(objext); do \
 	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
-	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
-	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	    done; \
 	  fi; \
 	done
@@ -2403,14 +2403,14 @@ compare3: force
 	for file in *$(objext); do \
 	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
-	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
-	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	    done; \
 	  fi; \
 	done
