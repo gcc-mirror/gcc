@@ -923,6 +923,12 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
 
   IOR_HARD_REG_SET (used1, hard_reg_conflicts[allocno]);
 
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+  if (reg_changes_size[allocno_reg[allocno]])
+    IOR_HARD_REG_SET (used1,
+		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
+#endif
+
   /* Try each hard reg to see if it fits.  Do this in two passes.
      In the first pass, skip registers that are preferred by some other pseudo
      to give it a better chance of getting one of those registers.  Only if
@@ -1096,7 +1102,14 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
 	  if (local_reg_n_refs[regno] != 0
 	      /* Don't use a reg no good for this pseudo.  */
 	      && ! TEST_HARD_REG_BIT (used2, regno)
-	      && HARD_REGNO_MODE_OK (regno, mode))
+	      && HARD_REGNO_MODE_OK (regno, mode)
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+	      && ! (reg_changes_size[allocno_reg[allocno]]
+		    && (TEST_HARD_REG_BIT
+			(reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+			 regno)))
+#endif
+	      )
 	    {
 	      /* We explicitly evaluate the divide results into temporary
 		 variables so as to avoid excess precision problems that occur
