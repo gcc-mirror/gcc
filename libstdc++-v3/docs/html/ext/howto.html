@@ -425,6 +425,13 @@
     <dd>Apparently extracting Boolean values was messed up...
     </dd>
 
+    <dt><a href="lwg-defects.html#19">19</a>:
+        <em>&quot;Noconv&quot; definition too vague</em>
+    </dt>
+    <dd>If <code>codecvt::do_in</code> returns <code>noconv</code> there are
+        no changes to the values in <code>[to, to_limit)</code>.
+    </dd>
+
     <dt><a href="lwg-defects.html#22">22</a>:
         <em>Member open vs flags</em>
     </dt>
@@ -475,6 +482,13 @@
     </dt>
     <dd>Safety checks on the size of the string should test against
         <code>max_size()</code> rather than <code>npos</code>.
+    </dd>
+
+    <dt><a href="lwg-defects.html#90">90</a>:
+        <em>Incorrect description of operator&gt;&gt; for strings</em>
+    </dt>
+    <dd>The effect contain <code>isspace(c,getloc())</code> which must be
+        replaced by <code>isspace(c,is.getloc())</code>.
     </dd>
 
     <dt><a href="lwg-defects.html#109">109</a>:
@@ -531,6 +545,12 @@
         calculating an incorrect number of characters to write.
     </dd>
 
+    <dt><a href="lwg-defects.html#171">171</a>:
+        <em>Strange seekpos() semantics due to joint position</em>
+    </dt>
+    <dd>Quite complex to summarize...
+    </dd>
+
     <dt><a href="lwg-defects.html#181">181</a>:
         <em>make_pair() unintended behavior</em>
     </dt>
@@ -559,6 +579,13 @@
         for const instances.
     </dd>
 
+    <dt><a href="lwg-active.html#231">231</a>:
+        <em>Precision in iostream?</em>
+    </dt>
+    <dd>For conversion from a floating-point type, <code>str.precision()</code>
+        is specified in the conversion specification.
+    </dd>
+
     <dt><a href="lwg-defects.html#251">251</a>:
         <em>basic_stringbuf missing allocator_type</em>
     </dt>
@@ -577,6 +604,13 @@
     </dt>
     <dd>The <code>bad_</code>* classes no longer have destructors (they
         are trivial), since no description of them was ever given.
+    </dd>
+
+    <dt><a href="lwg-defects.html#271">271</a>:
+        <em>basic_iostream missing typedefs</em>
+    </dt>
+    <dd>The typedefs it inherits from its base classes can't be used, since
+        (for example) <code>basic_iostream&lt;T&gt;::traits_type</code> is ambiguous.
     </dd>
 
     <dt><a href="lwg-defects.html#275">275</a>:
