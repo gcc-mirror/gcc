@@ -77,52 +77,11 @@ static HARD_REG_SET hard_regs_need_restore;
 
 int n_regs_saved;
 
-static enum machine_mode choose_hard_reg_mode PROTO((int, int));
 static void set_reg_live		PROTO((rtx, rtx));
 static void clear_reg_live		PROTO((rtx));
 static void restore_referenced_regs	PROTO((rtx, rtx, enum machine_mode));
 static int insert_save_restore		PROTO((rtx, int, int,
 					       enum machine_mode, int));
-
-/* Return a machine mode that is legitimate for hard reg REGNO and large
-   enough to save nregs.  If we can't find one, return VOIDmode.  */
-
-static enum machine_mode
-choose_hard_reg_mode (regno, nregs)
-     int regno;
-     int nregs;
-{
-  enum machine_mode found_mode = VOIDmode, mode;
-
-  /* We first look for the largest integer mode that can be validly
-     held in REGNO.  If none, we look for the largest floating-point mode.
-     If we still didn't find a valid mode, try CCmode.  */
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
-      found_mode = mode;
-
-  if (found_mode != VOIDmode)
-    return found_mode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
-      found_mode = mode;
-
-  if (found_mode != VOIDmode)
-    return found_mode;
-
-  if (HARD_REGNO_NREGS (regno, CCmode) == nregs
-      && HARD_REGNO_MODE_OK (regno, CCmode))
-    return CCmode;
-
-  /* We can't find a mode valid for this register.  */
-  return VOIDmode;
-}
 
 /* Initialize for caller-save.
 
