@@ -7957,14 +7957,10 @@ initialize_local_var (decl, init, flags)
 	{
 	  int saved_stmts_are_full_exprs_p;
 
-	  emit_line_note (DECL_SOURCE_FILE (decl),
-			  DECL_SOURCE_LINE (decl));
+	  my_friendly_assert (building_stmt_tree (), 20000906);
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  if (building_stmt_tree ())
-	    finish_expr_stmt (build_aggr_init (decl, init, flags));
-	  else
-	    genrtl_expr_stmt (build_aggr_init (decl, init, flags));
+	  finish_expr_stmt (build_aggr_init (decl, init, flags));
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 
 	    saved_stmts_are_full_exprs_p;
 	}
