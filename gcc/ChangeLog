@@ -1,3 +1,7 @@
+2000-03-03  Jason Merrill  <jason@casey.cygnus.com>
+
+	* gcse.c (dump_hash_table): Really fix error in last change.
+
 2000-03-02  Denis Chertykov  <denisc@overta.ru>
 
 	* avr.c (print_operand): Use print_operand_address instead of
@@ -14,8 +18,7 @@
 
 2000-03-02  Clinton Popetz  <cpopetz@cygnus.com>
 
-	* config/i386/i386.c: (constant_call_address_operand): Reject
-	CONST_INT.
+	* i386.c: (constant_call_address_operand): Reject CONST_INT.
 
 2000-03-02  Jason Merrill  <jason@casey.cygnus.com>
 

@@ -2011,9 +2011,10 @@ dump_hash_table (file, name, table, table_size, total_size)
   for (i = 0; i < total_size; i++)
     if (flat_table[i] != 0)
       {
+	expr = flat_table[i];
 	fprintf (file, "Index %d (hash value %d)\n  ",
 		 expr->bitmap_index, hash_val[i]);
-	print_rtl (file, flat_table[i]->expr);
+	print_rtl (file, expr->expr);
 	fprintf (file, "\n");
       }
 
