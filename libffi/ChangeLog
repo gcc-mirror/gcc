@@ -1,4 +1,10 @@
-2001-04-25 Hans Boehm <Hans_Boehm@hp.com>
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* configure.in: Remove warning about beta code.
+	* configure: Rebuilt.
+
+2001-04-25  Hans Boehm <Hans_Boehm@hp.com>
+
 	* src/ia64/unix.S: Restore stack pointer when returning from
 	ffi_closure_UNIX.
 	* src/ia64/ffi.c: Fix typo in comment.

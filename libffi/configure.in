@@ -2,13 +2,6 @@ dnl Process this with autoconf to create configure
 AC_INIT(fficonfig.h.in)
 AM_CONFIG_HEADER(fficonfig.h)
 
-AC_MSG_WARN(***********************************************************)
-AC_MSG_WARN(***********************************************************)
-AC_MSG_WARN(This is beta code.  If you're looking for a stable release)
-AC_MSG_WARN(then use the most recent one - libffi-1.20.)
-AC_MSG_WARN(***********************************************************)
-AC_MSG_WARN(***********************************************************)
-
 dnl Default to --enable-multilib
 AC_ARG_ENABLE(multilib,
 [  --enable-multilib       build many library versions (default)],
