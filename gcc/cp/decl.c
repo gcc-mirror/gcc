@@ -93,6 +93,10 @@ static struct stack_level *decl_stack;
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
+#ifndef BOOL_TYPE_SIZE
+#define BOOL_TYPE_SIZE BITS_PER_WORD
+#endif
+
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
    When machines start needing nontrivial differences in the size type,
@@ -207,7 +211,7 @@ tree int_array_type_node;
 tree wchar_array_type_node;
 
 /* The bool data type, and constants */
-tree bool_type_node, true_node, false_node;
+tree boolean_type_node, boolean_true_node, boolean_false_node;
 
 /* type `int ()' -- used for implicit declaration of functions.  */
 
@@ -4378,13 +4382,13 @@ init_decl_processing ()
   integer_three_node = build_int_2 (3, 0);
   TREE_TYPE (integer_three_node) = integer_type_node;
 
-  bool_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
-  TREE_SET_CODE (bool_type_node, BOOLEAN_TYPE);
-  record_builtin_type (RID_BOOL, "bool", bool_type_node);
-  false_node = build_int_2 (0, 0);
-  TREE_TYPE (false_node) = bool_type_node;
-  true_node = build_int_2 (1, 0);
-  TREE_TYPE (true_node) = bool_type_node;
+  boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
+  TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+  record_builtin_type (RID_BOOL, "bool", boolean_type_node);
+  boolean_false_node = build_int_2 (0, 0);
+  TREE_TYPE (boolean_false_node) = boolean_type_node;
+  boolean_true_node = build_int_2 (1, 0);
+  TREE_TYPE (boolean_true_node) = boolean_type_node;
 
   /* These are needed by stor-layout.c.  */
   size_zero_node = size_int (0);

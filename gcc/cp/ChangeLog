@@ -1,3 +1,19 @@
+Tue Jan 17 14:12:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+        * cvt.c (cp_convert): Just call truthvalue_conversion to convert to
+        bool.
+
+Mon Jan 16 13:28:48 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+        * various: Use boolean_type_node, boolean_true_node,
+        boolean_false_node.
+
+Sun Jan 15 22:17:32 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+        * decl.c (BOOL_TYPE_SIZE): Defaults to BITS_PER_WORD.
+        (init_decl_processing): Use BOOL_TYPE_SIZE instead of CHAR_TYPE_SIZE
+        for bool.
+
 Fri Dec 30 12:22:29 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (n_incomplete): Bump n_incomplete up to int to match C
