@@ -123,6 +123,47 @@ phinodes_print_statistics (void)
 }
 #endif
 
+/* Allocate a PHI node with at least LEN arguments.  If the free list
+   happens to contain a PHI node with LEN arguments or more, return
+   that one.  */
+
+static inline tree
+allocate_phi_node (int len)
+{
+  tree phi;
+  int bucket = NUM_BUCKETS - 2;
+  int size = (sizeof (struct tree_phi_node)
+	      + (len - 1) * sizeof (struct phi_arg_d));
+
+  if (free_phinode_count)
+    for (bucket = len - 2; bucket < NUM_BUCKETS - 2; bucket++)
+      if (free_phinodes[bucket])
+	break;
+
+  /* If our free list has an element, then use it.  */
+  if (bucket < NUM_BUCKETS - 2
+      && PHI_ARG_CAPACITY (free_phinodes[bucket]) >= len)
+    {
+      free_phinode_count--;
+      phi = free_phinodes[bucket];
+      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
+#ifdef GATHER_STATISTICS
+      phi_nodes_reused++;
+#endif
+    }
+  else
+    {
+      phi = ggc_alloc (size);
+#ifdef GATHER_STATISTICS
+      phi_nodes_created++;
+      tree_node_counts[(int) phi_kind]++;
+      tree_node_sizes[(int) phi_kind] += size;
+#endif
+    }
+
+  return phi;
+}
+
 /* Given LEN, the original number of requested PHI arguments, return
    a new, "ideal" length for the PHI node.  The "ideal" length rounds
    the total size of the PHI node up to the next power of two bytes.
@@ -165,39 +206,10 @@ tree
 make_phi_node (tree var, int len)
 {
   tree phi;
-  int size;
-  int bucket = NUM_BUCKETS - 2;
 
   len = ideal_phi_node_len (len);
 
-  size = sizeof (struct tree_phi_node) + (len - 1) * sizeof (struct phi_arg_d);
-
-  if (free_phinode_count)
-    for (bucket = len - 2; bucket < NUM_BUCKETS - 2; bucket++)
-      if (free_phinodes[bucket])
-	break;
-
-  /* If our free list has an element, then use it.  */
-  if (bucket < NUM_BUCKETS - 2
-      && PHI_ARG_CAPACITY (free_phinodes[bucket]) >= len)
-    {
-      free_phinode_count--;
-      phi = free_phinodes[bucket];
-      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
-#ifdef GATHER_STATISTICS
-      phi_nodes_reused++;
-#endif
-    }
-  else
-    {
-      phi = ggc_alloc (size);
-#ifdef GATHER_STATISTICS
-      phi_nodes_created++;
-      tree_node_counts[(int) phi_kind]++;
-      tree_node_sizes[(int) phi_kind] += size;
-#endif
-
-    }
+  phi = allocate_phi_node (len);
 
   /* We do not have to clear a part of the PHI node that stores PHI
      arguments, which is safe because we tell the garbage collector to
@@ -237,42 +249,16 @@ release_phi_node (tree phi)
 static void
 resize_phi_node (tree *phi, int len)
 {
-  int size, old_size;
+  int old_size;
   tree new_phi;
-  int bucket = NUM_BUCKETS - 2;
 
   gcc_assert (len >= PHI_ARG_CAPACITY (*phi));
 
   /* Note that OLD_SIZE is guaranteed to be smaller than SIZE.  */
   old_size = (sizeof (struct tree_phi_node)
 	     + (PHI_ARG_CAPACITY (*phi) - 1) * sizeof (struct phi_arg_d));
-  size = sizeof (struct tree_phi_node) + (len - 1) * sizeof (struct phi_arg_d);
 
-  if (free_phinode_count)
-    for (bucket = len - 2; bucket < NUM_BUCKETS - 2; bucket++)
-      if (free_phinodes[bucket])
-	break;
-
-  /* If our free list has an element, then use it.  */
-  if (bucket < NUM_BUCKETS - 2
-      && PHI_ARG_CAPACITY (free_phinodes[bucket]) >= len)
-    {
-      free_phinode_count--;
-      new_phi = free_phinodes[bucket];
-      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
-#ifdef GATHER_STATISTICS
-      phi_nodes_reused++;
-#endif
-    }
-  else
-    {
-      new_phi = ggc_alloc (size);
-#ifdef GATHER_STATISTICS
-      phi_nodes_created++;
-      tree_node_counts[(int) phi_kind]++;
-      tree_node_sizes[(int) phi_kind] += size;
-#endif
-    }
+  new_phi = allocate_phi_node (len);
 
   memcpy (new_phi, *phi, old_size);
 
