@@ -195,7 +195,7 @@ postbase_with_opts $src_code $run $groups
 prebase
 
 set src_code 940510-1.c
-set compiler_output ".*:1.*:1"
+set compiler_output ".*:1"
 
 set groups {passed gcc-noncompile}
 
