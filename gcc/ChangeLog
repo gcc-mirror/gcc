@@ -1,3 +1,15 @@
+2000-11-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (duplicate_decls, copy_lang_decl), dwarfout.c
+	(dwarfout_line), gcc.c (main, save_string), tree.c (init_obstacks,
+	perm_calloc, get_identifier, maybe_get_identifier,
+	real_value_from_int_cst, simple_cst_equal), varasm.c
+	(assemble_name, assemble_real, immed_real_const_1,
+	compare_constant_1, decode_rtx_const, output_constant_pool): Use
+	strrchr () instead of rindex ().  Use memcmp () instead of bcmp
+	().  Use memcpy () instead of bcopy ().  Use memset () instead of
+	bzero ().
+
 2000-11-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cppfiles.c (open_file): If already read, then don't reopen.

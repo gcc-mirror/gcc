@@ -1772,7 +1772,7 @@ assemble_name (file, name)
 
   STRIP_NAME_ENCODING (real_name, name);
   if (flag_prefix_function_name 
-      && ! bcmp (real_name, CHKR_PREFIX, CHKR_PREFIX_SIZE))
+      && ! memcmp (real_name, CHKR_PREFIX, CHKR_PREFIX_SIZE))
     real_name = real_name + CHKR_PREFIX_SIZE;
 
   id = maybe_get_identifier (real_name);
@@ -1972,7 +1972,7 @@ assemble_real (d, mode)
     {
       error ("floating point trap outputting a constant");
 #ifdef REAL_IS_NOT_DOUBLE
-      bzero ((char *) &d, sizeof d);
+      memset ((char *) &d, 0, sizeof d);
       d = dconst0;
 #else
       d = 0;
@@ -2164,7 +2164,7 @@ immed_real_const_1 (d, mode)
      If one is found, return it.  */
   if (cfun != 0)
     for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-      if (! bcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
+      if (! memcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
 	  && GET_MODE (r) == mode)
 	return r;
 
@@ -2176,7 +2176,7 @@ immed_real_const_1 (d, mode)
      freed memory.  */
   r = rtx_alloc (CONST_DOUBLE);
   PUT_MODE (r, mode);
-  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (r), sizeof u);
+  memcpy ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u);
 
   /* If we aren't inside a function, don't put r on the
      const_double_chain.  */
@@ -2533,7 +2533,7 @@ compare_constant_1 (exp, p)
 
       strp = (unsigned char *)TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
-      if (bcmp ((char *) &TREE_STRING_LENGTH (exp), p,
+      if (memcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		sizeof TREE_STRING_LENGTH (exp)))
 	return 0;
 
@@ -2555,7 +2555,7 @@ compare_constant_1 (exp, p)
 
 	  get_set_constructor_bytes (exp, tmp, len);
 	  strp = (unsigned char *) tmp;
-	  if (bcmp ((char *) &xlen, p, sizeof xlen))
+	  if (memcmp ((char *) &xlen, p, sizeof xlen))
 	    return 0;
 
 	  p += sizeof xlen;
@@ -2573,7 +2573,7 @@ compare_constant_1 (exp, p)
 	    if (TREE_PURPOSE (link))
 	      have_purpose = 1;
 
-	  if (bcmp ((char *) &length, p, sizeof length))
+	  if (memcmp ((char *) &length, p, sizeof length))
 	    return 0;
 
 	  p += sizeof length;
@@ -2587,12 +2587,12 @@ compare_constant_1 (exp, p)
 	  else
 	    type = 0;
 
-	  if (bcmp ((char *) &type, p, sizeof type))
+	  if (memcmp ((char *) &type, p, sizeof type))
 	    return 0;
 
 	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	    {
-	      if (bcmp ((char *) &mode, p, sizeof mode))
+	      if (memcmp ((char *) &mode, p, sizeof mode))
 		return 0;
 
 	      p += sizeof mode;
@@ -2600,7 +2600,7 @@ compare_constant_1 (exp, p)
 
 	  p += sizeof type;
 
-	  if (bcmp ((char *) &have_purpose, p, sizeof have_purpose))
+	  if (memcmp ((char *) &have_purpose, p, sizeof have_purpose))
 	    return 0;
 
 	  p += sizeof have_purpose;
@@ -2610,7 +2610,7 @@ compare_constant_1 (exp, p)
 	    {
 	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 
-	      if (bcmp ((char *) &size, p, sizeof size))
+	      if (memcmp ((char *) &size, p, sizeof size))
 		return 0;
 
 	      p += sizeof size;
@@ -2627,7 +2627,7 @@ compare_constant_1 (exp, p)
 		{
 		  tree zero = 0;
 
-		  if (bcmp ((char *) &zero, p, sizeof zero))
+		  if (memcmp ((char *) &zero, p, sizeof zero))
 		    return 0;
 
 		  p += sizeof zero;
@@ -2636,7 +2636,7 @@ compare_constant_1 (exp, p)
 	      if (TREE_PURPOSE (link)
 		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
 		{
-		  if (bcmp ((char *) &TREE_PURPOSE (link), p,
+		  if (memcmp ((char *) &TREE_PURPOSE (link), p,
 			    sizeof TREE_PURPOSE (link)))
 		    return 0;
 
@@ -2651,7 +2651,7 @@ compare_constant_1 (exp, p)
 		{
 		  int zero = 0;
 
-		  if (bcmp ((char *) &zero, p, sizeof zero))
+		  if (memcmp ((char *) &zero, p, sizeof zero))
 		    return 0;
 
 		  p += sizeof zero;
@@ -3352,7 +3352,7 @@ decode_rtx_const (mode, x, value)
      struct rtx_const *value;
 {
   /* Clear the whole structure, including any gaps.  */
-  bzero (value, sizeof (struct rtx_const));
+  memset (value, 0, sizeof (struct rtx_const));
 
   value->kind = RTX_INT;	/* Most usual kind.  */
   value->mode = mode;
@@ -3364,8 +3364,8 @@ decode_rtx_const (mode, x, value)
       if (GET_MODE (x) != VOIDmode)
 	{
 	  value->mode = GET_MODE (x);
-	  bcopy ((char *) &CONST_DOUBLE_LOW (x),
-		 (char *) &value->un.du, sizeof value->un.du);
+	  memcpy ((char *) &value->un.du,
+		  (char *) &CONST_DOUBLE_LOW (x), sizeof value->un.du);
 	}
       else
 	{
@@ -3797,7 +3797,7 @@ output_constant_pool (fnname, fndecl)
 	  if (GET_CODE (x) != CONST_DOUBLE)
 	    abort ();
 
-	  bcopy ((char *) &CONST_DOUBLE_LOW (x), (char *) &u, sizeof u);
+	  memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);
 	  assemble_real (u.d, pool->mode);
 	  break;
 

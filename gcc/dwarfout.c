@@ -5535,7 +5535,7 @@ dwarfout_line (filename, line)
         }
 
       {
-        register const char *tail = rindex (filename, '/');
+        register const char *tail = strrchr (filename, '/');
 
         if (tail != NULL)
           filename = tail;

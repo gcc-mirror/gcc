@@ -205,7 +205,7 @@ init_obstacks ()
   gcc_obstack_init (&permanent_obstack);
 
   /* Init the hash table of identifiers.  */
-  bzero ((char *) hash_table, sizeof hash_table);
+  memset ((char *) hash_table, 0, sizeof hash_table);
   ggc_add_tree_root (hash_table, sizeof hash_table / sizeof (tree));
 
   /* Initialize the hash table of types.  */
@@ -257,7 +257,7 @@ perm_calloc (nelem, size)
      long size;
 {
   char *rval = (char *) obstack_alloc (&permanent_obstack, nelem * size);
-  bzero (rval, nelem * size);
+  memset (rval, 0, nelem * size);
   return rval;
 }
 
@@ -591,7 +591,7 @@ get_identifier (text)
   for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
     if (IDENTIFIER_LENGTH (idp) == len
 	&& IDENTIFIER_POINTER (idp)[0] == text[0]
-	&& !bcmp (IDENTIFIER_POINTER (idp), text, len))
+	&& !memcmp (IDENTIFIER_POINTER (idp), text, len))
       /* Return if found.  */
       return idp;
 
@@ -655,7 +655,7 @@ maybe_get_identifier (text)
   for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
     if (IDENTIFIER_LENGTH (idp) == len
 	&& IDENTIFIER_POINTER (idp)[0] == text[0]
-	&& !bcmp (IDENTIFIER_POINTER (idp), text, len))
+	&& !memcmp (IDENTIFIER_POINTER (idp), text, len))
       return idp;		/* <-- return if found */
 
   return NULL_TREE;
@@ -739,7 +739,7 @@ real_value_from_int_cst (type, i)
 #ifdef REAL_ARITHMETIC
   /* Clear all bits of the real value type so that we can later do
      bitwise comparisons to see if two values are the same.  */
-  bzero ((char *) &d, sizeof d);
+  memset ((char *) &d, 0, sizeof d);
 
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
     REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
@@ -3625,7 +3625,7 @@ simple_cst_equal (t1, t2)
 
     case STRING_CST:
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
-	      && ! bcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+	      && ! memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
 			 TREE_STRING_LENGTH (t1)));
 
     case CONSTRUCTOR:

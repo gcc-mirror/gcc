@@ -2054,9 +2054,9 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   {
     register unsigned olddecl_uid = DECL_UID (olddecl);
 
-    bcopy ((char *) newdecl + sizeof (struct tree_common),
-	   (char *) olddecl + sizeof (struct tree_common),
-	   sizeof (struct tree_decl) - sizeof (struct tree_common));
+    memcpy ((char *) olddecl + sizeof (struct tree_common),
+	    (char *) newdecl + sizeof (struct tree_common),
+	    sizeof (struct tree_decl) - sizeof (struct tree_common));
     DECL_UID (olddecl) = olddecl_uid;
   }
 
@@ -7006,8 +7006,8 @@ copy_lang_decl (decl)
     return;
 
   ld = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl));
-  bcopy ((char *)DECL_LANG_SPECIFIC (decl), (char *)ld, 
-	 sizeof (struct lang_decl));
+  memcpy ((char *) ld, (char *) DECL_LANG_SPECIFIC (decl),
+	  sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (decl) = ld;
 }
 
