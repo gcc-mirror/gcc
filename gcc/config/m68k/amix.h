@@ -21,8 +21,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k/m68kv4.h"
 
-/* ler@lerami.lerctr.org reports as doesn't accept $.  */
-#define NO_DOLLAR_IN_LABEL
 /* rhealey@aggregate.com says dots are no good either.  */
 #define NO_DOT_IN_LABEL
 
