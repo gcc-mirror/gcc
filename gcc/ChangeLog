@@ -1,3 +1,9 @@
+2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (add_name_and_src_coords_attributes): Only add
+	DW_AT_MIPS_linkage_name for TREE_PUBLIC decls.
+	(ASM_OUTPUT_DWARF_ADDR_CONST): Don't output trailing newline.
+
 2000-03-13  Richard Earnshaw <rearnsha@arm.com>
 
 	* stor-layout.c (new_record_layout_info): Fix typo inside ifdef

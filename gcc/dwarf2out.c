@@ -365,7 +365,6 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
   do {									\
     fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);			\
     output_addr_const ((FILE), (RTX));					\
-    fputc ('\n', (FILE));						\
   } while (0)
 #endif
 
@@ -7464,6 +7463,7 @@ add_name_and_src_coords_attributes (die, decl)
 	add_src_coords_attributes (die, decl);
 
       if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+	  && TREE_PUBLIC (decl)
 	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
 	add_AT_string (die, DW_AT_MIPS_linkage_name,
 		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
