@@ -333,11 +333,6 @@ override_options ()
 
   if (TARGET_OMIT_LEAF_FRAME_POINTER)	/* keep nonleaf frame pointers */
     flag_omit_frame_pointer = 1;
-
-  /* pic references don't explicitly mention pic_offset_table_rtx */
-  /* code threaded into the prologue may conflict with profiling */
-  if (flag_pic || profile_flag || profile_block_flag)
-    target_flags &= ~MASK_SCHEDULE_PROLOGUE;
 }
 
 /* A C statement (sans semicolon) to choose the order in which to
@@ -1856,8 +1851,6 @@ asm_output_function_prefix (file, name)
     }
 }
 
-#define EMIT_PROLOGUE_AS_RTL 1
-
 /* Generate the assembly code for function entry.
    FILE is an stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate. */
@@ -1867,28 +1860,24 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
-  /* pic references don't explicitly mention pic_offset_table_rtx */
   if (TARGET_SCHEDULE_PROLOGUE)
     {
       pic_label_rtx = 0;
       return;
     }
   
-  ix86_prologue (! EMIT_PROLOGUE_AS_RTL);
+  ix86_prologue (0);
 }
 
-/* Generate the assembly code for function entry. */
+/* Expand the prologue into a bunch of separate insns. */
 
 void
 ix86_expand_prologue ()
 {
-  /* pic references don't explicitly mention pic_offset_table_rtx */
   if (!TARGET_SCHEDULE_PROLOGUE)
-    {
       return;
-    }
  
-  ix86_prologue (EMIT_PROLOGUE_AS_RTL);
+  ix86_prologue (1);
 }
 
 static void
@@ -1902,9 +1891,7 @@ ix86_prologue (do_rtl)
 				  || current_function_uses_const_pool);
   long tsize = get_frame_size ();
   rtx insn;
-
-  if (!TARGET_SCHEDULE_PROLOGUE)
-    return;
+  int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
   
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
@@ -1926,7 +1913,17 @@ ix86_prologue (do_rtl)
       else
 	{
 	  output_asm_insn ("push%L1 %1", xops); 
+ 	  if (dwarf2out_do_frame ())
+ 	    {
+ 	      char *l = (char *) dwarf2out_cfi_label ();
+ 	      cfa_store_offset += 4;
+ 	      cfa_offset = cfa_store_offset;
+ 	      dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+ 	      dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_store_offset);
+ 	    }
 	  output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+ 	  if (dwarf2out_do_frame ())
+ 	    dwarf2out_def_cfa ("", FRAME_POINTER_REGNUM, cfa_offset);
 	}
     }
 
@@ -1942,6 +1939,15 @@ ix86_prologue (do_rtl)
       else 
 	{
 	  output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+ 	  if (dwarf2out_do_frame ())
+ 	    {
+ 	      cfa_store_offset += tsize;
+ 	      if (! frame_pointer_needed)
+ 		{
+ 		  cfa_offset = cfa_store_offset;
+ 		  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
+ 		}
+ 	    }
 	}
     }
   else 
@@ -1986,7 +1992,20 @@ ix86_prologue (do_rtl)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	  }
 	else
+	  {
 	  output_asm_insn ("push%L0 %0", xops);
+ 	    if (dwarf2out_do_frame ())
+ 	      {
+ 		char *l = (char *) dwarf2out_cfi_label ();
+ 		cfa_store_offset += 4;
+ 		if (! frame_pointer_needed)
+ 		  {
+ 		    cfa_offset = cfa_store_offset;
+ 		    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+ 		  }
+ 		dwarf2out_reg_save (l, regno, -cfa_store_offset);
+ 	      }
+ 	  }
       }
 
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
@@ -2021,9 +2040,12 @@ ix86_prologue (do_rtl)
  
       if (do_rtl)
 	{
-	  emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+	  emit_insn (gen_prologue_get_pc
+		     (xops[0],
+		      gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
 	  emit_insn (gen_pop (xops[0]));
-	  emit_insn (gen_prologue_set_got (xops[0], 
+	  emit_insn (gen_prologue_set_got
+		     (xops[0],
 					   gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 					   gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
 	}
@@ -2035,6 +2057,13 @@ ix86_prologue (do_rtl)
 	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
 	}
     } 
+  /* When -fpic, we must emit a scheduling barrier, so that the instruction
+     that restores %ebx (which is PIC_OFFSET_TABLE_REGNUM), does not get
+     moved before any instruction which implicitly uses the got.  
+     If we are profiling, make sure no instructions are scheduled before
+     the call to mcount.  */
+  if (flag_pic || profile_flag || profile_block_flag)
+    emit_insn (gen_blockage ());
 }
 
 /* Return 1 if it is appropriate to emit `ret' instructions in the
@@ -2084,10 +2113,7 @@ function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  if (TARGET_SCHEDULE_PROLOGUE)
     return;
-  
-  ix86_epilogue (!EMIT_PROLOGUE_AS_RTL);
 }
 
 /* Restore function stack, frame, and registers. */ 
@@ -2095,10 +2121,7 @@ function_epilogue (file, size)
 void
 ix86_expand_epilogue ()
 {
-  if (!TARGET_SCHEDULE_PROLOGUE)
-    return;
-  
-  ix86_epilogue (EMIT_PROLOGUE_AS_RTL);
+  ix86_epilogue (1);
 }
 
 static void
@@ -2146,7 +2169,7 @@ ix86_epilogue (do_rtl)
 
      Alternatively, this could be fixed by making the dependence on the
      PIC_OFFSET_TABLE_REGNUM explicit in the RTL.  */
-  if (flag_pic)
+  if (flag_pic || profile_flag || profile_block_flag)
     emit_insn (gen_blockage ());
 
   if (nregs > 1 || ! frame_pointer_needed)
