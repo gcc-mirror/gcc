@@ -22,6 +22,9 @@
 
 /* Signed type of difference of two pointers.  */
 
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_ptrdiff_t)
 #ifndef _PTRDIFF_T	/* in case <sys/types.h> has defined it. */
 #ifndef _T_PTRDIFF_
 #ifndef _T_PTRDIFF
@@ -39,11 +42,7 @@
 #ifndef __PTRDIFF_TYPE__
 #define __PTRDIFF_TYPE__ long int
 #endif
-/* Define this type if we are doing the whole job,
-   or if we want this type in particular.  */
-#if defined (_STDDEF_H) || defined (__need_ptrdiff_t)
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
-#endif /* <stddef.h> or __need_ptrdiff_t.  */
 #endif /* _GCC_PTRDIFF_T */
 #endif /* ___int_ptrdiff_t_h */
 #endif /* _PTRDIFF_T_ */
@@ -55,8 +54,13 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 /* If this symbol has done its job, get rid of it.  */
 #undef	__need_ptrdiff_t
 
+#endif /* _STDDEF_H or __need_ptrdiff_t.  */
+
 /* Unsigned type of `sizeof' something.  */
 
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_size_t)
 #ifndef _SIZE_T	/* in case <sys/types.h> has defined it. */
 #ifndef _T_SIZE_
 #ifndef _T_SIZE
@@ -76,11 +80,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef __SIZE_TYPE__
 #define __SIZE_TYPE__ long unsigned int
 #endif
-/* Define this type if we are doing the whole job,
-   or if we want this type in particular.  */
-#if defined (_STDDEF_H) || defined (__need_size_t)
 typedef __SIZE_TYPE__ size_t;
-#endif /* <stddef.h> or __need_size_t.  */
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
@@ -90,6 +90,7 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* _T_SIZE_ */
 #endif /* _SIZE_T */
 #undef	__need_size_t
+#endif /* _STDDEF_H or __need_size_t.  */
 
 
 /* Wide character type.
@@ -97,6 +98,9 @@ typedef __SIZE_TYPE__ size_t;
    be big enough to hold unique values not between 0 and 127,
    and not (wchar_t) -1, for each defined multibyte character.  */
 
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_wchar_t)
 #ifndef _WCHAR_T
 #ifndef _T_WCHAR_
 #ifndef _T_WCHAR
@@ -114,11 +118,7 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
-/* Define this type if we are doing the whole job,
-   or if we want this type in particular.  */
-#if defined (_STDDEF_H) || defined (__need_wchar_t)
 typedef __WCHAR_TYPE__ wchar_t;
-#endif /* <stddef.h> or __need_wchar_t.  */
 #endif
 #endif
 #endif
@@ -127,6 +127,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #undef	__need_wchar_t
+#endif /* _STDDEF_H or __need_wchar_t.  */
 
 #endif /* __sys_stdtypes_h */
 
