@@ -189,7 +189,7 @@ static unsigned long size_of_uleb128	PROTO((unsigned long));
 static unsigned long size_of_sleb128	PROTO((long));
 static void output_uleb128		PROTO((unsigned long));
 static void output_sleb128		PROTO((long));
-static char *dwarf2out_cfi_label	PROTO((void));
+char *dwarf2out_cfi_label		PROTO((void));
 static void add_fde_cfi			PROTO((char *, dw_cfi_ref));
 static void lookup_cfa_1		PROTO((dw_cfi_ref, unsigned long *,
 					       long *));
@@ -246,7 +246,11 @@ static unsigned reg_number		PROTO((rtx));
    almost all svr4 assemblers, except for the sparc, where the section name
    must be enclosed in double quotes.  (See sparcv4.h).  */
 #ifndef SECTION_FORMAT
-#define SECTION_FORMAT	"\t%s\t%s\n"
+#ifdef PUSHSECTION_FORMAT
+#define SECTION_FORMAT PUSHSECTION_FORMAT
+#else
+#define SECTION_FORMAT		"\t%s\t%s\n"
+#endif
 #endif
 
 #ifndef FRAME_SECTION
@@ -466,9 +470,15 @@ dwarf_cfi_name (cfi_opc)
       return "DW_CFA_def_cfa_register";
     case DW_CFA_def_cfa_offset:
       return "DW_CFA_def_cfa_offset";
+
     /* SGI/MIPS specific */
     case DW_CFA_MIPS_advance_loc8:
       return "DW_CFA_MIPS_advance_loc8";
+
+    /* GNU extensions */
+    case DW_CFA_GNU_window_save:
+      return "DW_CFA_GNU_window_save";
+
     default:
       return "DW_CFA_<unknown>";
     }
@@ -506,7 +516,7 @@ add_cfi (list_head, cfi)
 
 /* Generate a new label for the CFI info to refer to.  */
 
-static char *
+char *
 dwarf2out_cfi_label ()
 {
   static char label[20];
@@ -698,8 +708,24 @@ reg_save (label, reg, sreg, offset)
   add_fde_cfi (label, cfi);
 }
 
-/* Entry point for saving a register.  REG is the GCC register number.
-   LABEL and OFFSET are passed to reg_save.  */
+/* Add the CFI for saving a register window.  LABEL is passed to reg_save.
+   This CFI tells the unwinder that it needs to restore the window registers
+   from the previous frame's window save area.
+   
+   ??? Perhaps we should note in the CIE where windows are saved (instead of
+   assuming 0(cfa)) and what registers are in the window.  */
+
+void
+dwarf2out_window_save (label)
+     register char * label;
+{
+  register dw_cfi_ref cfi = new_cfi ();
+  cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+  add_fde_cfi (label, cfi);
+}
+
+/* Entry point for saving a register to the stack.  REG is the GCC register
+   number.  LABEL and OFFSET are passed to reg_save.  */
 
 void
 dwarf2out_reg_save (label, reg, offset)
@@ -708,6 +734,28 @@ dwarf2out_reg_save (label, reg, offset)
      register long offset;
 {
   reg_save (label, DWARF_FRAME_REGNUM (reg), -1, offset);
+}
+
+/* Entry point for saving the return address in the stack.
+   LABEL and OFFSET are passed to reg_save.  */
+
+void
+dwarf2out_return_save (label, offset)
+     register char * label;
+     register long offset;
+{
+  reg_save (label, DWARF_FRAME_RETURN_COLUMN, -1, offset);
+}
+
+/* Entry point for saving the return address in a register.
+   LABEL and SREG are passed to reg_save.  */
+
+void
+dwarf2out_return_reg (label, sreg)
+     register char * label;
+     register unsigned sreg;
+{
+  reg_save (label, DWARF_FRAME_RETURN_COLUMN, sreg, 0);
 }
 
 /* Record the initial position of the return address.  RTL is
@@ -747,6 +795,13 @@ initial_return_save (rtl)
 	  abort ();
 	}
       break;
+    case PLUS:
+      /* The return address is at some offset from any value we can
+	 actually load.  For instance, on the SPARC it is in %i7+8. Just
+	 ignore the offset for now; it doesn't matter for unwinding frames.  */
+      assert (GET_CODE (XEXP (rtl, 1)) == CONST_INT);
+      initial_return_save (XEXP (rtl, 0));
+      return;
     default:
       abort ();
     }
@@ -1222,6 +1277,8 @@ output_cfi (cfi, fde)
 	case DW_CFA_def_cfa_offset:
 	  output_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset);
           fputc ('\n', asm_out_file);
+	  break;
+	case DW_CFA_GNU_window_save:
 	  break;
 	default:
 	  break;
@@ -2058,8 +2115,8 @@ static void gen_decl_die		PROTO((tree, dw_die_ref));
 static unsigned lookup_filename		PROTO((char *));
 
 /* Section names used to hold DWARF debugging information.  */
-#ifndef DEBUG_SECTION
-#define DEBUG_SECTION		".debug_info"
+#ifndef DEBUG_INFO_SECTION
+#define DEBUG_INFO_SECTION	".debug_info"
 #endif
 #ifndef ABBREV_SECTION
 #define ABBREV_SECTION		".debug_abbrev"
@@ -2070,8 +2127,8 @@ static unsigned lookup_filename		PROTO((char *));
 #ifndef DW_MACINFO_SECTION
 #define DW_MACINFO_SECTION	".debug_macinfo"
 #endif
-#ifndef LINE_SECTION
-#define LINE_SECTION		".debug_line"
+#ifndef DEBUG_LINE_SECTION
+#define DEBUG_LINE_SECTION	".debug_line"
 #endif
 #ifndef LOC_SECTION
 #define LOC_SECTION		".debug_loc"
@@ -5005,7 +5062,7 @@ output_pubnames ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -5079,7 +5136,7 @@ output_aranges ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -9218,7 +9275,7 @@ dwarf2out_finish ()
   if (line_info_table_in_use > 1 || separate_line_info_table_in_use)
     {
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_SECTION (asm_out_file, LINE_SECTION);
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
       output_line_info ();
 
       /* We can only use the low/high_pc attributes if all of the code
@@ -9229,7 +9286,7 @@ dwarf2out_finish ()
 	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
 	}
 
-      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, LINE_SECTION);
+      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, DEBUG_LINE_SECTION);
     }
 
   /* Output the abbreviation table.  */
@@ -9244,7 +9301,7 @@ dwarf2out_finish ()
 
   /* Output debugging information.  */
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_SECTION);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_INFO_SECTION);
   output_compilation_unit_header ();
   output_die (comp_unit_die);
 

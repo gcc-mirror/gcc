@@ -2894,12 +2894,13 @@ sparc_init_modes ()
 __inline__
 #endif
 static int
-save_regs (file, low, high, base, offset, n_regs)
+save_regs (file, low, high, base, offset, n_regs, real_offset)
      FILE *file;
      int low, high;
      char *base;
      int offset;
      int n_regs;
+     int real_offset;
 {
   int i;
 
@@ -2908,9 +2909,15 @@ save_regs (file, low, high, base, offset, n_regs)
       for (i = low; i < high; i++)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
-	    fprintf (file, "\tstx %s,[%s+%d]\n",
-	      reg_names[i], base, offset + 4 * n_regs),
-	    n_regs += 2;
+	    {
+	      fprintf (file, "\tstx %s,[%s+%d]\n",
+		       reg_names[i], base, offset + 4 * n_regs);
+#ifdef DWARF2_DEBUGGING_INFO
+	      if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
+#endif
+	      n_regs += 2;
+	    }
 	}
     }
   else
@@ -2919,17 +2926,39 @@ save_regs (file, low, high, base, offset, n_regs)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
 	    if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	      fprintf (file, "\tstd %s,[%s+%d]\n",
-		       reg_names[i], base, offset + 4 * n_regs),
-	      n_regs += 2;
+	      {
+		fprintf (file, "\tstd %s,[%s+%d]\n",
+			 reg_names[i], base, offset + 4 * n_regs);
+#ifdef DWARF2_DEBUGGING_INFO
+		if (write_symbols == DWARF2_DEBUG)
+		  {
+		    char *l = (char *) dwarf2out_cfi_label ();
+		    dwarf2out_reg_save (l, i, real_offset + 4 * n_regs);
+		    dwarf2out_reg_save (l, i+1, real_offset + 4 * n_regs + 4);
+		  }
+#endif
+		n_regs += 2;
+	      }
 	    else
-	      fprintf (file, "\tst %s,[%s+%d]\n",
-		       reg_names[i], base, offset + 4 * n_regs),
-	      n_regs += 2;
+	      {
+		fprintf (file, "\tst %s,[%s+%d]\n",
+			 reg_names[i], base, offset + 4 * n_regs);
+#ifdef DWARF2_DEBUGGING_INFO
+		if (write_symbols == DWARF2_DEBUG)
+		  dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
+#endif
+		n_regs += 2;
+	      }
 	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	    fprintf (file, "\tst %s,[%s+%d]\n",
-		     reg_names[i+1], base, offset + 4 * n_regs + 4),
-	    n_regs += 2;
+	    {
+	      fprintf (file, "\tst %s,[%s+%d]\n",
+		       reg_names[i+1], base, offset + 4 * n_regs + 4);
+#ifdef DWARF2_DEBUGGING_INFO
+	      if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_reg_save ("", i + 1, real_offset + 4 * n_regs + 4);
+#endif
+	      n_regs += 2;
+	    }
 	}
     }
   return n_regs;
@@ -3169,6 +3198,29 @@ output_function_prologue (file, size, leaf_function)
 	}
     }
 
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG && actual_fsize)
+    {
+      char *label = (char *) dwarf2out_cfi_label ();
+
+      /* The canonical frame address refers to the top of the frame.  */
+      dwarf2out_def_cfa (label, (leaf_function ? STACK_POINTER_REGNUM
+				 : FRAME_POINTER_REGNUM),
+			 frame_base_offset);
+
+      if (! leaf_function)
+	{
+	  /* Note the register window save.  This tells the unwinder that
+	     it needs to restore the window registers from the previous
+	     frame's window save area at 0(cfa).  */
+	  dwarf2out_window_save (label);
+
+	  /* The return address (-8) is now in %i7.  */
+	  dwarf2out_return_reg (label, 31);
+	}
+    }
+#endif
+
   /* If doing anything with PIC, do it now.  */
   if (! flag_pic)
     fprintf (file, "\t!#PROLOGUE# 1\n");
@@ -3176,10 +3228,10 @@ output_function_prologue (file, size, leaf_function)
   /* Call saved registers are saved just above the outgoing argument area.  */
   if (num_gfregs)
     {
-      int offset, n_regs;
+      int offset, real_offset, n_regs;
       char *base;
 
-      offset = -apparent_fsize + frame_base_offset;
+      real_offset = offset = -apparent_fsize + frame_base_offset;
       if (offset < -4096 || offset + num_gfregs * 4 > 4096)
 	{
 	  /* ??? This might be optimized a little as %g1 might already have a
@@ -3200,12 +3252,13 @@ output_function_prologue (file, size, leaf_function)
 
       if (TARGET_EPILOGUE && ! leaf_function)
 	/* ??? Originally saved regs 0-15 here.  */
-	n_regs = save_regs (file, 0, 8, base, offset, 0);
+	n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
       else if (leaf_function)
 	/* ??? Originally saved regs 0-31 here.  */
-	n_regs = save_regs (file, 0, 8, base, offset, 0);
+	n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
       if (TARGET_EPILOGUE)
-	save_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
+	save_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs,
+		   real_offset);
     }
 
   leaf_label = 0;
@@ -4626,7 +4679,7 @@ sparc_flat_compute_frame_size (size)
    DOUBLEWORD_OP is either "std" for save, "ldd" for restore.  */
 
 void
-sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doubleword_op)
+sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doubleword_op, base_offset)
      FILE *file;
      char *base_reg;
      unsigned int offset;
@@ -4634,6 +4687,7 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
      unsigned long fmask;
      char *word_op;
      char *doubleword_op;
+     unsigned long base_offset;
 {
   int regno;
 
@@ -4661,9 +4715,20 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 		    offset += UNITS_PER_WORD;
 
 		  if (word_op[0] == 's')
-		    fprintf (file, "\t%s %s,[%s+%d]\n",
-			     doubleword_op, reg_names[regno],
-			     base_reg, offset);
+		    {
+		      fprintf (file, "\t%s %s,[%s+%d]\n",
+			       doubleword_op, reg_names[regno],
+			       base_reg, offset);
+#ifdef DWARF2_DEBUGGING_INFO
+		      if (write_symbols == DWARF2_DEBUG)
+			{
+			  char *l = (char *) dwarf2out_cfi_label ();
+			  dwarf2out_reg_save (l, regno, offset + base_offset);
+			  dwarf2out_reg_save
+			    (l, regno+1, offset+base_offset + UNITS_PER_WORD);
+			}
+#endif
+		    }
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
 			     doubleword_op, base_reg, offset,
@@ -4675,9 +4740,15 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 	      else
 		{
 		  if (word_op[0] == 's')
-		    fprintf (file, "\t%s %s,[%s+%d]\n",
-			     word_op, reg_names[regno],
-			     base_reg, offset);
+		    {
+		      fprintf (file, "\t%s %s,[%s+%d]\n",
+			       word_op, reg_names[regno],
+			       base_reg, offset);
+#ifdef DWARF2_DEBUGGING_INFO
+		      if (write_symbols == DWARF2_DEBUG)
+			dwarf2out_reg_save ("", regno, offset + base_offset);
+#endif
+		    }
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
 			     word_op, base_reg, offset, reg_names[regno]);
@@ -4695,9 +4766,15 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 	  if ((fmask & (1L << (regno - 32))) != 0)
 	    {
 	      if (word_op[0] == 's')
-		fprintf (file, "\t%s %s,[%s+%d]\n",
-			 word_op, reg_names[regno],
-			 base_reg, offset);
+		{
+		  fprintf (file, "\t%s %s,[%s+%d]\n",
+			   word_op, reg_names[regno],
+			   base_reg, offset);
+#ifdef DWARF2_DEBUGGING_INFO
+		  if (write_symbols == DWARF2_DEBUG)
+		    dwarf2out_reg_save ("", regno, offset + base_offset);
+#endif
+		}
 	      else
 		fprintf (file, "\t%s [%s+%d],%s\n",
 			 word_op, base_reg, offset, reg_names[regno]);
@@ -4794,16 +4871,34 @@ sparc_flat_output_function_prologue (file, size)
 		  reg_offset += 4;
 		}
 	    }
+#ifdef DWARF2_DEBUGGING_INFO
+	  if (write_symbols == DWARF2_DEBUG)
+	    {
+	      char *l = (char *) dwarf2out_cfi_label ();
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
+				      reg_offset - 4 - size);
+		  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, 0);
+		}
+	      else
+		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size);
+	    }
+#endif
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst %s,[%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, reg_offset);
+#ifdef DWARF2_DEBUGGING_INFO
+	      if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_return_save ("", reg_offset - size);
+#endif
 	      reg_offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, reg_offset,
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
-				   "st", "std");
+				   "st", "std", 0);
 	}
       else
 	{
@@ -4836,18 +4931,43 @@ sparc_flat_output_function_prologue (file, size)
 		  offset += 4;
 		}
 	    }
+#ifdef DWARF2_DEBUGGING_INFO
+	  if (write_symbols == DWARF2_DEBUG)
+	    {
+	      char *l = (char *) dwarf2out_cfi_label ();
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
+				      offset - 4 - size1);
+		  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, 0);
+		}
+	      else
+		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size1);
+	    }
+#endif
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst %s,[%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
+#ifdef DWARF2_DEBUGGING_INFO
+	      if (write_symbols == DWARF2_DEBUG)
+		/* offset - size1 == reg_offset - size
+		   if reg_offset were updated above like offset.  */
+		dwarf2out_return_save ("", offset - size1);
+#endif
 	      offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, offset,
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
-				   "st", "std");
+				   "st", "std", size - size1);
 	  fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
 		   size - size1, t1_str, sp_str, t1_str, sp_str);
+#ifdef DWARF2_DEBUGGING_INFO
+	  if (write_symbols == DWARF2_DEBUG)
+	    if (! (gmask & FRAME_POINTER_MASK))
+	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
+#endif
 	}
     }
 
@@ -4952,7 +5072,7 @@ sparc_flat_output_function_epilogue (file, size)
       sparc_flat_save_restore (file, sp_str, reg_offset,
 			       current_frame_info.gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 			       current_frame_info.fmask,
-			       "ld", "ldd");
+			       "ld", "ldd", 0);
 
       /* If we had to increment %sp in two steps, record it so the second
 	 restoration in the epilogue finishes up.  */
