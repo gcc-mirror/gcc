@@ -24,6 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern void optimization_options PARAMS ((int, int));
 extern void override_options PARAMS ((void));
 extern int s390_arg_frame_offset PARAMS ((void));
+extern void s390_load_got PARAMS ((int));
 extern void s390_emit_prologue PARAMS ((void));
 extern void s390_emit_epilogue PARAMS ((void));
 extern void s390_function_profiler PARAMS ((FILE *, int));

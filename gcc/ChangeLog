@@ -1,3 +1,59 @@
+2003-07-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_pic_address): Access local symbols 
+	relative to the GOT instead of relative to the literal pool base.
+	(s390_output_symbolic_const): Handle new GOT-relative accesses.
+	* config/s390/s390.md ("call"): Access local functions and PLT stubs
+	relative to the GOT instead of relative to the literal pool base.
+	("call_value"): Likewise.
+	("call_value_tls"): Likewise.
+
+	* config/s390/s390.c (s390_chunkify_start): Remove pool anchor 
+	reloading.  Support LTREL_BASE / LTREL_OFFSET construct.
+	(s390_chunkify_finish): Likewise.
+	(s390_chunkify_cancel): Likewise.
+	(s390_reorg): Adapt caller.
+	(find_base_register_in_addr,
+	find_base_register_ref, replace_base_register_ref): Delete.
+	(find_ltrel_base, replace_ltrel_base): New functions.
+	(find_constant_pool_ref): Handle LTREL_BASE unspecs.
+	(s390_decompose_address): Handle LTREL_BASE unspecs.  Optimize
+	base vs. index register usage.
+	(struct constant_pool): Remove 'anchor'.
+	(s390_add_anchor): Delete.
+	(s390_dump_pool): Remove anchor handling.
+	* config/s390/s390.md ("reload_anchor"): Remove.
+
+	* config/s390/s390.c (s390_split_branches): Use LTREL_BASE/OFFSET.
+	(s390_load_got): New function.  Use LTREL_BASE/OFFSET.
+	(s390_emit_prologue): Use it.
+	* config/s390/s390.md ("builtin_longjmp", "builtin_setjmp_setup", 
+	"builtin_setjmp_receiver"): Cleanup.  Use s390_load_got.  Do not 
+	hard-code register 14.
+	* config/s390/s390-protos.h (s390_load_got): Declare.
+
+	* config/s390/s390.c (NR_C_MODES, constant_modes, gen_consttable): 
+	Support TImode constants.
+	* config/s390/s390.md ("consttable_ti"): New.
+	("consttable_si", "consttable_di"): Handle TLS symbols correctly.
+
+	* config/s390/s390.md (UNSPEC_LTREL_OFFSET, UNSPEC_LTREL_BASE,
+	UNSPEC_GOTENT, UNSPEC_GOT, UNSPEC_GOTOFF, UNSPEC_PLT, UNSPEC_PLTOFF,
+	UNSPEC_RELOAD_BASE, UNSPECV_POOL, UNSPECV_POOL_START, UNSPECV_POOL_END,
+	UNSPECV_POOL_QI, UNSPECV_POOL_HI, UNSPECV_POOL_SI, UNSPECV_POOL_DI,
+	UNSPECV_POOL_TI, UNSPECV_POOL_SF, UNSPECV_POOL_DF, UNSPECV_MAIN_POOL):
+	New symbolic constants.
+	("consttable_qi", "consttable_hi", "consttable_si", "consttable_di",
+	"consttable_sf", "consttable_df", "pool_start_31", "pool_end_31",
+	"pool_start_64", "pool_end_64", "reload_base_31", "reload_base_64",
+	"pool", "literal_pool_31", "literal_pool_64"): Cleanup.  Use
+	symbolic UNSPEC values.
+	* config/s390/s390.c (larl_operand, s390_short_displacement, 
+	bras_sym_operand, s390_cannot_force_const_mem,
+	s390_delegitimize_address, s390_decompose_address,
+	legitimize_pic_address, s390_output_symbolic_const,
+	s390_function_profiler): Use symbolic UNSPEC values.
+
 2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c alloc-pool.c bitmap.c bitmap.h bt-load.c builtins.c
