@@ -2693,8 +2693,8 @@ lookup_conversions (type)
   tree t;
   tree conversions = NULL_TREE;
 
-  if (COMPLETE_TYPE_P (type))
-    bfs_walk (TYPE_BINFO (type), add_conversions, 0, &conversions);
+  complete_type (type);
+  bfs_walk (TYPE_BINFO (type), add_conversions, 0, &conversions);
 
   for (t = conversions; t; t = TREE_CHAIN (t))
     IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (t)))) = 0;
