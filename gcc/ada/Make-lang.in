@@ -762,6 +762,7 @@ ada.uninstall:
 
 ada.mostlyclean:
 	-$(RM) ada/*$(objext) ada/*.ali ada/b_*.c
+	-$(RM) ada/*$(coverageexts)
 	-$(RM) ada/sdefault.adb ada/stamp-sdefault
 	-$(RMDIR) ada/tools
 ada.clean:

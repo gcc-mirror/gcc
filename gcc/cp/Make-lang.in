@@ -225,6 +225,7 @@ c++.uninstall:
 
 c++.mostlyclean:
 	-rm -f cp/*$(objext) $(DEMANGLER_PROG)
+	-rm -f cp/*$(coverageexts)
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile

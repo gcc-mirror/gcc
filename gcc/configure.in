@@ -254,6 +254,28 @@ if test x$ac_gc_always_collect != x ; then
    every opportunity.  This is extremely expensive.])
 fi
 
+# Enable code coverage collection
+AC_ARG_ENABLE(coverage,
+[  --enable-coverage[=LEVEL]
+			  enable compiler\'s code coverage collection.
+			  Use to measure compiler performance and locate
+			  unused parts of the compiler. With LEVEL, specificy
+			  optimization. Values are opt, noopt,
+			  default is noopt],
+[case "${enableval}" in
+yes|noopt)
+	coverage_flags="-fprofile-arcs -ftest-coverage -O0"
+	;;
+opt)
+	coverage_flags="-fprofile-arcs -ftest-coverage -O2"
+	;;
+*)
+	AC_MSG_ERROR(unknown coverage setting $enableval)
+	;;
+esac],
+[coverage_flags="-O2"])
+AC_SUBST(coverage_flags)
+
 AC_ARG_WITH(cpp_install_dir,
 [  --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR

@@ -782,6 +782,17 @@ specifying @var{list}; the categories of checks available are
 default when @var{list} is not specified is @samp{misc,tree,gc,rtlflag}; the
 checks @samp{rtl} and @samp{gcac} are very expensive.
 
+@item --enable-coverage
+@item --enable-coverage=@var{level}
+With this option, the compiler is built to collect self coverage
+information, every time it is run. This is for internal development
+purposes, and only works when the compiler is being built with gcc. The
+@var{level} argument controls whether the compiler is built optimized or
+not, values are @samp{opt} and @samp{noopt}. For coverage analysis you
+want to disable optimization, for performance analysis you want to
+enable optimization. When coverage is enabled, the default level is
+without optimization.
+
 @item --enable-nls
 @itemx --disable-nls
 The @option{--enable-nls} option enables Native Language Support (NLS),

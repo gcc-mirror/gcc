@@ -1,3 +1,7 @@
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ada/Make-lang.in (ada.mostlyclean): Remove coverage files.
+
 2002-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* adadecode.c (ada_demangle): Use xstrdup in lieu of

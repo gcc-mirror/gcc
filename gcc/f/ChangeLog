@@ -1,3 +1,7 @@
+Thu Aug  8 10:06:14 2002  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* f/Make-lang.in (f.mostlyclean): Remove coverage files.
+
 2002-08-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* g77.texi (Top): Rename Index to Keyword Index.

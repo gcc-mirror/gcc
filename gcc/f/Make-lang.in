@@ -315,6 +315,7 @@ f77.uninstall: installdirs
 
 f77.mostlyclean:
 	-rm -f f/*$(objext)
+	-rm -f f/*$(coverageexts)
 	-rm -f f/fini$(build_exeext) f/stamp-str f/str-*.h f/str-*.j
 	-rm -f f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
