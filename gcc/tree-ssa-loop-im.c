@@ -1114,9 +1114,7 @@ is_call_clobbered_ref (tree ref)
   if (DECL_P (base))
     return is_call_clobbered (base);
 
-  if (TREE_CODE (base) == INDIRECT_REF
-      || TREE_CODE (base) == ALIGN_INDIRECT_REF
-      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
+  if (INDIRECT_REF_P (base))
     {
       /* Check whether the alias tags associated with the pointer
 	 are call clobbered.  */

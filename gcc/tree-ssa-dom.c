@@ -2435,9 +2435,7 @@ record_equivalences_from_stmt (tree stmt,
 	  t = TREE_OPERAND (t, 0);
 
 	/* Now see if this is a pointer dereference.  */
-	if (TREE_CODE (t) == INDIRECT_REF
-	    || TREE_CODE (t) == ALIGN_INDIRECT_REF
-	    || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
+	if (INDIRECT_REF_P (t))
           {
 	    tree op = TREE_OPERAND (t, 0);
 
