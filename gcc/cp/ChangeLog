@@ -1,3 +1,9 @@
+2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12881
+	* method.c (make_thunk): Deal with thunk aliases when searching
+	for a thunk. Robustify assertion.
+
 2003-12-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* mangle.c (conv_type_names): Holds IDENTIFIER_NODEs only.
