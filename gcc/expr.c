@@ -2743,11 +2743,23 @@ store_expr (exp, target, want_value)
        expression.  */
     {
       /* If we don't want a value, we can do the conversion inside EXP,
-	 which will often result in some optimizations.  */
+	 which will often result in some optimizations.  Do the conversion
+	 in two steps: first change the signedness, if needed, then
+	 the extend.  */
       if (! want_value)
-	exp = convert (type_for_mode (GET_MODE (SUBREG_REG (target)),
-				      SUBREG_PROMOTED_UNSIGNED_P (target)),
-		       exp);
+	{
+	  if (TREE_UNSIGNED (TREE_TYPE (exp))
+	      != SUBREG_PROMOTED_UNSIGNED_P (target))
+	    exp
+	      = convert
+		(signed_or_unsigned_type (SUBREG_PROMOTED_UNSIGNED_P (target),
+					  TREE_TYPE (exp)),
+		 exp);
+
+	  exp = convert (type_for_mode (GET_MODE (SUBREG_REG (target)),
+					SUBREG_PROMOTED_UNSIGNED_P (target)),
+			 exp);
+	}
 	 
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
