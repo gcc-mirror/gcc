@@ -1,5 +1,11 @@
 2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (extendqisi2): Change to an expander.
+	(*extendqisi2_h8300): New.
+	(*extendqisi2_h8300hs): Likewise.
+
+2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Update the prototype for
 	split_adds_subs.  Remove the prototypes for
 	const_int_le_2_operand and const_int_le_6_operand.
