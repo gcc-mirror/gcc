@@ -4643,7 +4643,6 @@ processors.  This is the default.
 Do not generate code to avoid bugs in the multiply instructions for the
 MN10300 processors.
 
-@table @code
 @item -mam33
 Generate code which uses features specific to the AM33 processor.
 
