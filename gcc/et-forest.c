@@ -56,7 +56,7 @@ struct et_occ
 };
 
 static alloc_pool et_nodes;
-static alloc_pool et_occurences;
+static alloc_pool et_occurrences;
 
 /* Changes depth of OCC to D.  */
 
@@ -459,9 +459,9 @@ et_new_occ (struct et_node *node)
 {
   struct et_occ *nw;
   
-  if (!et_occurences)
-    et_occurences = create_alloc_pool ("et_occ pool", sizeof (struct et_occ), 300);
-  nw = pool_alloc (et_occurences);
+  if (!et_occurrences)
+    et_occurrences = create_alloc_pool ("et_occ pool", sizeof (struct et_occ), 300);
+  nw = pool_alloc (et_occurrences);
 
   nw->of = node;
   nw->parent = NULL;
@@ -509,7 +509,7 @@ et_free_tree (struct et_node *t)
   if (t->father)
     et_split (t);
 
-  pool_free (et_occurences, t->rightmost_occ);
+  pool_free (et_occurrences, t->rightmost_occ);
   pool_free (et_nodes, t);
 }
 
@@ -602,7 +602,7 @@ et_split (struct et_node *t)
   rmost->depth = 0;
   rmost->min = 0;
 
-  pool_free (et_occurences, p_occ);
+  pool_free (et_occurrences, p_occ);
 
   /* Update the tree.  */
   if (father->son == t)
