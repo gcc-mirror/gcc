@@ -802,23 +802,23 @@ expand_class_desc (tdecl, type)
       base_info_type_node = make_lang_type (RECORD_TYPE);
 
       /* Actually const __user_type_info * */
-      fields [0] = build_lang_field_decl
+      fields [0] = build_lang_decl
 	(FIELD_DECL, NULL_TREE,
 	 build_pointer_type (build_qualified_type
 			     (type_info_type_node,
 			      TYPE_QUAL_CONST)));
-      fields [1] = build_lang_field_decl
+      fields [1] = build_lang_decl
 	(FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
       DECL_FIELD_SIZE (fields[1]) = 29;
 
-      fields [2] = build_lang_field_decl
+      fields [2] = build_lang_decl
 	(FIELD_DECL, NULL_TREE, boolean_type_node);
       DECL_BIT_FIELD (fields[2]) = 1;
       DECL_FIELD_SIZE (fields[2]) = 1;
 
       /* Actually enum access */
-      fields [3] = build_lang_field_decl
+      fields [3] = build_lang_decl
 	(FIELD_DECL, NULL_TREE, integer_type_node);
       DECL_BIT_FIELD (fields[3]) = 1;
       DECL_FIELD_SIZE (fields[3]) = 2;

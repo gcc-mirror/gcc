@@ -4734,8 +4734,19 @@ build_lang_decl (code, name, type)
      tree name;
      tree type;
 {
-  register tree t = build_decl (code, name, type);
+  tree t;
+
+  /* When we're building statement trees, declarations need to live
+     forever.  */
+  if (building_stmt_tree ())
+    push_permanent_obstack ();
+
+  t = build_decl (code, name, type);
   retrofit_lang_decl (t);
+
+  if (building_stmt_tree ())
+    pop_obstacks ();
+
   return t;
 }
 
@@ -4748,8 +4759,12 @@ retrofit_lang_decl (t)
 {
   struct obstack *obstack = current_obstack;
   struct lang_decl *ld;
+  size_t size;
 
-  my_friendly_assert (CAN_HAVE_FULL_LANG_DECL_P (t), 19990816);
+  if (CAN_HAVE_FULL_LANG_DECL_P (t))
+    size = sizeof (struct lang_decl);
+  else
+    size = sizeof (struct lang_decl_flags);
 
   if (! TREE_PERMANENT (t))
     obstack = saveable_obstack;
@@ -4757,21 +4772,20 @@ retrofit_lang_decl (t)
     /* Could be that saveable is permanent and current is not.  */
     obstack = &permanent_obstack;
 
-  if (free_lang_decl_chain && obstack == &permanent_obstack)
+  if (CAN_HAVE_FULL_LANG_DECL_P (t) && free_lang_decl_chain 
+      && obstack == &permanent_obstack)
     {
       ld = free_lang_decl_chain;
       free_lang_decl_chain = free_lang_decl_chain->u.next;
     }
   else
-    ld = ((struct lang_decl *) 
-	  obstack_alloc (obstack, sizeof (struct lang_decl)));
+    ld = (struct lang_decl *) obstack_alloc (obstack, size);
 
-  bzero (ld, sizeof (struct lang_decl));
+  bzero (ld, size);
 
   DECL_LANG_SPECIFIC (t) = ld;
   LANG_DECL_PERMANENT (ld) = obstack == &permanent_obstack;
   my_friendly_assert (LANG_DECL_PERMANENT (ld) == TREE_PERMANENT  (t), 234);
-  DECL_MAIN_VARIANT (t) = t;
   if (current_lang_name == lang_name_cplusplus)
     DECL_LANGUAGE (t) = lang_cplusplus;
   else if (current_lang_name == lang_name_c)
@@ -4780,37 +4794,13 @@ retrofit_lang_decl (t)
     DECL_LANGUAGE (t) = lang_java;
   else my_friendly_abort (64);
 
+  if (CAN_HAVE_FULL_LANG_DECL_P (t))
+    DECL_MAIN_VARIANT (t) = t;
+
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += sizeof (struct lang_decl);
+  tree_node_sizes[(int)lang_decl] += size;
 #endif
-}
-
-/* Like build_decl, except that a new lang_decl_flags structure is
-   placed in DECL_LANG_SPECIFIC.  */
-
-tree
-build_lang_field_decl (code, name, type)
-     enum tree_code code;
-     tree name;
-     tree type;
-{
-  extern struct obstack *current_obstack, *saveable_obstack;
-  register tree t = build_decl (code, name, type);
-  struct obstack *obstack = current_obstack;
-
-  if (! TREE_PERMANENT (t))
-    obstack = saveable_obstack;
-  else
-    my_friendly_assert (obstack == &permanent_obstack, 235);
-
-  my_friendly_assert (!CAN_HAVE_FULL_LANG_DECL_P (t), 19990816);
-
-  DECL_LANG_SPECIFIC (t) 
-    = ((struct lang_decl *) 
-       obstack_alloc (obstack, sizeof (struct lang_decl_flags)));
-  bzero (DECL_LANG_SPECIFIC (t), sizeof (struct lang_decl_flags));
-  return t;
 }
 
 void

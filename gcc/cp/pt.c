@@ -2421,11 +2421,15 @@ push_template_decl_real (decl, is_friend)
     {
       if (current_lang_name == lang_name_c)
 	cp_error ("template with C linkage");
-      if (TREE_CODE (decl) == TYPE_DECL && ANON_AGGRNAME_P (DECL_NAME (decl)))
+      else if (TREE_CODE (decl) == TYPE_DECL 
+	       && ANON_AGGRNAME_P (DECL_NAME (decl))) 
 	cp_error ("template class without a name");
-      if (TREE_CODE (decl) == TYPE_DECL 
+      else if (TREE_CODE (decl) == TYPE_DECL 
 	  && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	cp_error ("template declaration of `%#T'", TREE_TYPE (decl));
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && !CLASS_TYPE_P (CP_DECL_CONTEXT (decl)))
+	cp_error ("template declaration of `%#D'", decl);
     }
 
   /* Check to see that the rules regarding the use of default
