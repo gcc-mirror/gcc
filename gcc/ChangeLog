@@ -1,3 +1,7 @@
+Sun Mar 21 01:15:03 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Mar 20 22:26:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.h (TARGET_SWITCHES): Add null description to default case.
