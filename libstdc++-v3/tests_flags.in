@@ -3,8 +3,8 @@
 #
 # This script computes the various flags needed to run GNU C++ testsuites
 # (compiler specific as well as library specific).  It is based on 
-# the ./mkcheck.in, which in the long will be removed in favor of a
-# DejaGnu-base framework.
+# the file ./mkcheck.in, which in the long will be removed in favor of a
+# DejaGnu-based framework.
 #
 # Written by Gabriel Dos Reis <gdr@codesourcery.com>
 #
@@ -21,16 +21,15 @@
 #     
 #      Returns a colon-separated list of space-separated list of flags,
 #      needed to run library specific tests,
-#      BUILD_DIR:SRC_DIR:PREFIX_DIR:LTCXX:LIBS:LTEXE:CXX:CXXFLAGS 
+#      BUILD_DIR:SRC_DIR:PREFIX_DIR:CXX:CXXFLAGS:INCLUDES:LIBS 
 #      the meaning of which is as follows:
 #        BUILD_DIR   build-dir
 #        SRC_DIR     src-dir
 #        PREFIX_DIR  install-dir (meaningful only with --installed-library)
-#        LTCXX       libtoolized command to compile a C++ program
+#        CXX         which C++ compiler is being used
+#        CXXFLAGS    special flags to pass to g++
+#        INCLUDES    paths to headers
 #        LIBS        flags to pass to the linker
-#        LTEXE       libtoolized command to run a compiled C++ program
-#	 CXX         which C++ compiler is being used
-#        CXXFLAGS    special C++ flags used
 #
 
 ##
@@ -97,31 +96,26 @@ case ${query} in
     ;;
 esac
 
-# This is LIBTOOL=@LIBTOOL@ piped through a bit of sanity that we can
-# assume for this script (by the time we run this).
-LIBTOOL="${BUILD_DIR}/libtool"
-chmod u+x ${LIBTOOL}
-
 # Compute include paths
-# INC_PATH == include path to new headers for use on gcc command-line
+# INCLUDES == include path to new headers for use on gcc command-line
 top_srcdir=@top_srcdir@
 C_DIR="`basename  @C_INCLUDE_DIR@`"
 case ${query} in
     --installed-library)
-    INC_PATH="-I${SRC_DIR}/testsuite"
+    INCLUDES="-I${SRC_DIR}/testsuite"
     ;;
     *)
-    INC_PATH="-nostdinc++ @CSHADOW_FLAGS@ -I${BUILD_DIR}/include
+    INCLUDES="-nostdinc++ @CSHADOW_FLAGS@ -I${BUILD_DIR}/include
 	      -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
 	      -I${SRC_DIR}/include -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
 	      -I${SRC_DIR}/testsuite"
     ;;
 esac
 
-# If called for compiler tests, just output include paths
+# If called for compiler tests, just output appropriate include paths
 case ${query} in
     --compiler)
-    echo ${INC_PATH} -I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext
+    echo ${INCLUDES} -I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext
     exit 0
     ;;
 esac
@@ -130,11 +124,11 @@ esac
 . ${top_srcdir}/configure.target
 
 # LIB_PATH == where to find the build libraries for libtool's use
-# CXX == how to call the compiler
+# CXX == the full pathname of the compiler
 case ${query} in
     --built-library)
     LIB_PATH=${BUILD_DIR}/src
-    CXX="${BUILD_DIR}/../../gcc/g++ -B${BUILD_DIR}/../../gcc/"
+    CXX="${BUILD_DIR}/../../gcc/g++"
     ;;
     --installed-library)
     LIB_PATH=${PREFIX_DIR}/lib
@@ -146,30 +140,22 @@ esac
 # but thst's really meant for building the library itself, not using it)
 CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
-# LTCXX == how to call libtool when creating an executable
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 case ${query} in
     --built-library)
-    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXXFLAGS} ${INC_PATH} 
-	   ${LIB_PATH}/../libsupc++/libsupc++.la  ${LIB_PATH}/libstdc++.la
-	   -no-install"
-    LTEXE="${LIBTOOL} --mode=execute"
+    LIBS="${LIB_PATH}/../libsupc++/libsupc++.la ${LIB_PATH}/libstdc++.la
+	    -no-install"
     case @target_os@ in
-        *cygwin*)  LIBS="-nodefaultlibs -lgcc -lcygwin -luser32
+        *cygwin*)  LIBS="${LIBS} -nodefaultlibs -lgcc -lcygwin -luser32
                          -lkernel32 -ladvapi32 -lshell32" ;;
-        *)         LIBS="-nodefaultlibs -lc -lgcc -lc" ;;
+        *)         LIBS="${LIBS} -nodefaultlibs -lc -lgcc -lc" ;;
     esac
     ;;
     --installed-library)
-    # For the installed version, we really only need to use libtool and
-    # the .la file to get correct rpaths.
-    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXXFLAGS} ${INC_PATH}
-	   -L${LIB_PATH} ${LIB_PATH}/libstdc++.la -no-install 
-	   -rpath ${LIB_PATH}"
-    LTEXE="${LIBTOOL} --mode=execute"
-    LIBS=
+    LIBS="-L${LIB_PATH} ${LIB_PATH}/libstdc++.la -no-install
+	    -rpath ${LIB_PATH}"
     ;;
 esac
 
-echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${LTCXX}:${LIBS}:${LTEXE}:${CXX}:${CXXFLAGS}
+echo -n ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${CXX}:${CXXFLAGS}:${INCLUDES}:${LIBS}
 exit 0

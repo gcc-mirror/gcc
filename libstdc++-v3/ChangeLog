@@ -1,3 +1,11 @@
+2001-01-20  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* tests_flags.in: Just output the bare minimum to run tests.
+	Let's the caller do its own arrangement.
+
+	* mkcheck.in: Rename INC_PATH to INCLUDES.  Adjust flags
+	computations.
+
 2001-01-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/17_intro: Prepare testcases for new style DejaGnu
