@@ -57,17 +57,16 @@ Boston, MA 02111-1307, USA.  */
 	%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
         %{!pipe:%g.s} %A\n }}}}"}
 #else /* ! USE_CPPLIB */
-   {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-objc \
+	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 \
         -D__GNUC_PATCHLEVEL__=%v3}\
-	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
+	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\

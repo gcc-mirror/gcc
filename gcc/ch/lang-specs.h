@@ -24,13 +24,13 @@ Boston, MA 02111-1307, USA.  */
   {".ch",  {"@chill"}},
   {".chi", {"@chill"}},
   {"@chill",
-     {"cpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+     {"tradcpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU CHILL does not support -C without using -E}}\
         %{!no-gcc:-D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional} %{!undef:%{!ansi:%p} %P} %{trigraphs}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:-D__OPTIMIZE__} \
+	%{!undef:%{!ansi:%p} %P} \
 	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
+	%{g*} %{W*} %{w} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!E:%g.i}%{E:%W{o*}} \n",
    "%{!E:cc1chill %g.i %1 \
 		   %{!Q:-quiet} -dumpbase %b.ch %{d*} %{m*} %{a}\
