@@ -1,3 +1,7 @@
+2002-12-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Character.java (forDigit): Formatting fix.
+
 2002-12-03  Raif Naffah  <raif@fl.net.au>
 
         * java/security/spec/DSAParameterSpec.java (getP): Return p, not q.
