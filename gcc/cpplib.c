@@ -785,7 +785,6 @@ cpp_options_init (opts)
   /* Initialize is_idchar to allow $.  */
   opts->dollars_in_ident = 1;
   initialize_char_syntax (opts);
-  opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 0;
 
   opts->no_line_commands = 0;
   opts->no_trigraphs = 1;
@@ -5228,6 +5227,9 @@ parse_name (pfile, c)
 	  break;
       }
 
+      if (c == '$' && CPP_PEDANTIC (pfile))
+	cpp_pedwarn ("`$' in identifier");
+
       CPP_RESERVE(pfile, 2); /* One more for final NUL.  */
       CPP_PUTC_Q (pfile, c);
       c = GETC();
@@ -6418,8 +6420,6 @@ cpp_handle_options (pfile, argc, argv)
       case 't':
 	if (!strcmp (argv[i], "-traditional")) {
 	  opts->traditional = 1;
-	  if (opts->dollars_in_ident > 0)
-	    opts->dollars_in_ident = 1;
 	} else if (!strcmp (argv[i], "-trigraphs")) {
 	  if (!opts->chill)
 	    opts->no_trigraphs = 0;
