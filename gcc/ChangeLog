@@ -1,3 +1,9 @@
+2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/8880
+	* gcc.c (cpp_unique_options): Handle -fshort-wchar later so it
+	overrides any target CPU specs.
+
 2002-12-28  John David Anglin  <dave.anglin@nrc.ca>
 
 	* pa.h (TARGET_SOM): Define if not defined.
