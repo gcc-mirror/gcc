@@ -2154,6 +2154,142 @@ static const char *const rotate_two[3][3] =
     }
 };
 
+/* Macros to keep the shift algorithm tables small.  */
+#define INL SHIFT_INLINE
+#define ROT SHIFT_ROT_AND
+#define LOP SHIFT_LOOP
+#define SPC SHIFT_SPECIAL
+
+/* The shift algorithms for each machine, mode, shift type, and shift
+   count are defined below.  The three tables below correspond to
+   QImode, HImode, and SImode, respectively.  Each table is organized
+   by, in the order of indecies, machine, shift type, and shift count.  */
+
+static const enum shift_alg shift_alg_qi[3][3][8] = {
+  {
+    /* TARGET_H8300  */
+    /* 0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /* 0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, INL, INL, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, SPC }  /* SHIFT_ASHIFTRT */
+  }
+};
+
+static const enum shift_alg shift_alg_hi[3][3][16] = {
+  {
+    /* TARGET_H8300  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  }
+};
+
+static const enum shift_alg shift_alg_si[3][3][32] = {
+  {
+    /* TARGET_H8300  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      LOP, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      LOP, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      LOP, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  }
+};
+
+#undef INL
+#undef ROT
+#undef LOP
+#undef SPC
+
 struct shift_info {
   /* Shift algorithm.  */
   enum shift_alg alg;
@@ -2178,7 +2314,7 @@ struct shift_info {
 };
 
 static void get_shift_alg PARAMS ((enum shift_type,
-				   enum shift_mode, int,
+				   enum shift_mode, unsigned int,
 				   struct shift_info *));
 
 /* Given SHIFT_TYPE, SHIFT_MODE, and shift count COUNT, determine the
@@ -2198,9 +2334,19 @@ static void
 get_shift_alg (shift_type, shift_mode, count, info)
      enum shift_type shift_type;
      enum shift_mode shift_mode;
-     int count;
+     unsigned int count;
      struct shift_info *info;
 {
+  int cpu;
+
+  /* Find the target CPU.  */
+  if (TARGET_H8300)
+    cpu = 0;
+  else if (TARGET_H8300H)
+    cpu = 1;
+  else
+    cpu = 2;
+
   /* In case we end up with SHIFT_SPECIAL, initialize REMAINDER to 0.  */
   info->remainder = 0;
 
@@ -2214,37 +2360,47 @@ get_shift_alg (shift_type, shift_mode, count, info)
   switch (shift_mode)
     {
     case QIshift:
-      if (count <= 4)
-	goto return_shift_inline;
-      else
+      if (GET_MODE_BITSIZE (QImode) <= count)
+	goto return_shift_loop;
+
+      switch (shift_alg_qi[cpu][shift_type][count])
 	{
-	  /* Shift by 5/6 are only 3 insns on the H8/S, so it's just as
-	     fast as SHIFT_ROT_AND, plus CC is valid.  */
-	  if (TARGET_H8300S && count <= 6)
-	    goto return_shift_inline;
-
-	  /* For ASHIFTRT by 7 bits, the sign bit is simply replicated
-	     through the entire value.  */
-	  if (shift_type == SHIFT_ASHIFTRT && count == 7)
-	    {
-	      info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
-	      goto return_shift_special;
-	    }
-
-	  /* Other ASHIFTRTs are too much of a pain.  */
-	  if (shift_type == SHIFT_ASHIFTRT)
-	    goto return_shift_loop;
-
-	  /* Other shifts by 5, 6, or 7 bits use SHIFT_ROT_AND.  */
+	case SHIFT_INLINE:
+	  goto return_shift_inline;
+	case SHIFT_LOOP:
+	  goto return_shift_loop;
+	case SHIFT_ROT_AND:
 	  goto return_shift_rot_and;
+	case SHIFT_SPECIAL:
+	  ;
 	}
 
+      /* For ASHIFTRT by 7 bits, the sign bit is simply replicated
+	 through the entire value.  */
+      if (shift_type == SHIFT_ASHIFTRT && count == 7)
+	{
+	  info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
+	  goto return_shift_special;
+	}
+      abort ();
+
     case HIshift:
-      if (count <= 4)
-	goto return_shift_inline;
-      else if (TARGET_H8300S && count <= 7)
-	goto return_shift_inline;
-      else if (count == 7)
+      if (GET_MODE_BITSIZE (HImode) <= count)
+	goto return_shift_loop;
+
+      switch (shift_alg_hi[cpu][shift_type][count])
+	{
+	case SHIFT_INLINE:
+	  goto return_shift_inline;
+	case SHIFT_LOOP:
+	  goto return_shift_loop;
+	case SHIFT_ROT_AND:
+	  goto return_shift_rot_and;
+	case SHIFT_SPECIAL:
+	  ;
+	}
+
+      if (count == 7)
 	{
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300)
 	    {
@@ -2302,27 +2458,31 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto return_shift_special;
 	    }
 	}
-      else if ((!TARGET_H8300 && (count == 13 || count == 14))
-	       || count == 15)
+      else if (count == 15 && shift_type == SHIFT_ASHIFTRT)
 	{
-	  if (count == 15 && shift_type == SHIFT_ASHIFTRT)
-	    {
-	      info->special = "shll\t%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
-	      goto return_shift_special;
-	    }
-	  else if (shift_type != SHIFT_ASHIFTRT)
-	    {
-	      goto return_shift_rot_and;
-	    }
+	  info->special = "shll\t%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
+	  goto return_shift_special;
 	}
-      break;
+      abort ();
 
     case SIshift:
-      if (count <= (TARGET_H8300 ? 2 : 4))
-	goto return_shift_inline;
-      else if (TARGET_H8300S && count <= 10)
-	goto return_shift_inline;
-      else if (count == 8 && TARGET_H8300)
+      if (GET_MODE_BITSIZE (SImode) <= count)
+	goto return_shift_loop;
+
+      info->alg = shift_alg_si[cpu][shift_type][count];
+      switch (info->alg)
+	{
+	case SHIFT_INLINE:
+	  goto return_shift_inline;
+	case SHIFT_LOOP:
+	  goto return_shift_loop;
+	case SHIFT_ROT_AND:
+	  goto return_shift_rot_and;
+	case SHIFT_SPECIAL:
+	  ;
+	}
+
+      if (count == 8 && TARGET_H8300)
 	{
 	  switch (shift_type)
 	    {
@@ -2395,17 +2555,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto return_shift_special;
 	    }
 	}
-      else if (count >= 28 && count <= 30 && !TARGET_H8300)
-	{
-	  if (shift_type == SHIFT_ASHIFTRT)
-	    {
-	      goto return_shift_loop;
-	    }
-	  else
-	    {
-	      goto return_shift_rot_and;
-	    }
-	}
       else if (count == 31)
 	{
 	  if (shift_type == SHIFT_ASHIFTRT)
@@ -2426,13 +2575,9 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		    info->special = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
 		  goto return_shift_special;
 		}
-	      else
-		{
-		  goto return_shift_rot_and;
-		}
 	    }
 	}
-      break;
+      abort ();
 
     default:
       abort ();
