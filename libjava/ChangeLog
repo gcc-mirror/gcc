@@ -1,3 +1,12 @@
+2003-03-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natObject.cc: Don't include assert.h.
+	(heavy_lock_obj_finalization_proc): Use JvAssert.
+	(remove_all_heavy): Likewise.
+	(_Jv_MonitorEnter): Likewise.
+	(_Jv_MonitorExit): Likewise.
+	(wait): Likewise.
+
 2003-03-01  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/io/File (getAbsolutePath): Prefix drive specifier on
