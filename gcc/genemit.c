@@ -178,7 +178,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       return;
 
     case MATCH_OP_DUP:
-      printf ("gen_rtx (GET_CODE (operand%d), ", XINT (x, 0));
+      printf ("gen_rtx_fmt_");
+      for (i = 0; i < XVECLEN (x, 1); i++)
+	printf ("e");
+      printf (" (GET_CODE (operand%d), ", XINT (x, 0));
       if (GET_MODE (x) == VOIDmode)
 	printf ("GET_MODE (operand%d)", XINT (x, 0));
       else
@@ -192,7 +195,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       return;
 
     case MATCH_OPERATOR:
-      printf ("gen_rtx (GET_CODE (operand%d)", XINT (x, 0));
+      printf ("gen_rtx_fmt_");
+      for (i = 0; i < XVECLEN (x, 2); i++)
+	printf ("e");
+      printf (" (GET_CODE (operand%d)", XINT (x, 0));
       printf (", %smode", GET_MODE_NAME (GET_MODE (x)));
       for (i = 0; i < XVECLEN (x, 2); i++)
 	{

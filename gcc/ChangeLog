@@ -1,3 +1,8 @@
+2004-02-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genemit.c (gen_exp): Generate gen_rtx_fmt_e* instead of
+	gen_rtx.
+
 2004-02-02  Eric Christopher  <echristo@redhat.com>
             Zack Weinberg  <zack@codesourcery.com>
 
