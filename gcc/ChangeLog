@@ -1,5 +1,11 @@
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/11271
+	* reload.c (find_reloads_address): Handle any register in
+	(PLUS (PLUS (REG) (REG)) (CONST_INT).
+
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* ggc-page.c (ggc_pch_read): Wrap call to poison_pages in 
 	ENABLE_GC_CHECKING not in GGC_POISON.
 
