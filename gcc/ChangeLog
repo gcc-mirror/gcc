@@ -1,3 +1,7 @@
+2001-04-05  Bo Thorsen  <bo@suse.de>
+
+	* i386.md: Don't allow "builtin_setjmp_receiver" for TARGET_64BIT.
+
 Thu Apr  5 13:44:17 2001  J"orn Rennecke <amylaar@redhat.com>
 
         * i386.md (*andsi_1+3): If used after reload, make sure the operand
@@ -18,8 +22,8 @@ Thu Apr  5 13:44:17 2001  J"orn Rennecke <amylaar@redhat.com>
 	something that doesn't exist.  In the big switch, set xm_file,
 	don't append to it (the value before the big switch is always
 	null).  Don't force build_xm_file or host_xm_file to have a value.
-	* configure.in: Remove default for xm_file.  Do not special       
-	case $cpu/xm-$cpu.h not existing.                          
+	* configure.in: Remove default for xm_file.  Do not special
+	case $cpu/xm-$cpu.h not existing.
 	* configure: Regenerate.
 
 2001-04-04  Diego Novillo  <dnovillo@redhat.com>
@@ -29,9 +33,9 @@ Thu Apr  5 13:44:17 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-04-04  Andrew MacLeod  <amacleod@redhat.com>
 
-	* dwarf2out.c (output_cfi): Add 'for_eh' parameter, use PTR_SIZE 
+	* dwarf2out.c (output_cfi): Add 'for_eh' parameter, use PTR_SIZE
 	instead of DWARF2_ADDR_SIZE for EH addresses.
-	(output_call_frame_info): Use PTR_SIZE instead of DWARF2_ADDR_SIZE for 
+	(output_call_frame_info): Use PTR_SIZE instead of DWARF2_ADDR_SIZE for
 	EH addresses.
 
 2001-04-04  Richard Henderson  <rth@redhat.com>
@@ -1196,7 +1200,7 @@ Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	undefined symbol on many targets.
 
 	* sdbout.c: #include ggc.h.
- 	(sdbout_init): Move to end of file.
+	(sdbout_init): Move to end of file.
 	Call ggc_add_tree_root for anonymous_types.
 	(sdbout_symbol): Use DECL_NAME for local, not DECL_ASSEMBLER_NAME.
 	(sdbout_one_type): Use DECL_NAME for field name.
