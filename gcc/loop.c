@@ -4135,17 +4135,19 @@ loop_giv_reduce_benefit (loop, bl, v, test_reg)
       && benefit > 0
       && GET_CODE (v->mult_val) == CONST_INT)
     {
+      int size = GET_MODE_SIZE (GET_MODE (v->mem));
+
       if (HAVE_POST_INCREMENT
-	  && INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
+	  && INTVAL (v->mult_val) == size)
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_PRE_INCREMENT
-	       && INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
+	       && INTVAL (v->mult_val) == size)
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_POST_DECREMENT
-	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
+	       && -INTVAL (v->mult_val) == size)
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_PRE_DECREMENT
-	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
+	       && -INTVAL (v->mult_val) == size)
 	benefit += add_cost * bl->biv_count;
     }
 #endif
@@ -6482,7 +6484,8 @@ check_ext_dependant_givs (bl, loop_info)
   int ze_ok = 0, se_ok = 0, info_ok = 0;
   enum machine_mode biv_mode = GET_MODE (bl->biv->src_reg);
   HOST_WIDE_INT start_val;
-  unsigned HOST_WIDE_INT u_end_val, u_start_val;
+  unsigned HOST_WIDE_INT u_end_val = 0;
+  unsigned HOST_WIDE_INT u_start_val = 0;
   rtx incr = pc_rtx;
   struct induction *v;
 
@@ -8815,7 +8818,7 @@ load_mems (loop)
   rtx end_label;
   /* Nonzero if the next instruction may never be executed.  */
   int next_maybe_never = 0;
-  int last_max_reg = max_reg_num ();
+  unsigned int last_max_reg = max_reg_num ();
 
   if (loop_info->mems_idx == 0)
     return;
@@ -9247,7 +9250,7 @@ try_swap_copy_prop (loop, replacement, regno)
      unsigned int regno;
 {
   rtx insn;
-  rtx set;
+  rtx set = NULL_RTX;
   unsigned int new_regno;
 
   new_regno = REGNO (replacement);
@@ -9257,7 +9260,7 @@ try_swap_copy_prop (loop, replacement, regno)
        insn = next_insn_in_loop (loop, insn))
     {
       /* Search for the insn that copies REGNO to NEW_REGNO?  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      if (INSN_P (insn)
 	  && (set = single_set (insn))
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && REGNO (SET_DEST (set)) == new_regno
@@ -9266,7 +9269,7 @@ try_swap_copy_prop (loop, replacement, regno)
 	break;
     }
 
-  if (insn != NULL_RTX)
+  if (set)
     {
       rtx prev_insn;
       rtx prev_set;
@@ -9277,7 +9280,7 @@ try_swap_copy_prop (loop, replacement, regno)
 
       prev_insn = PREV_INSN (insn);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      if (INSN_P (insn)
 	  && (prev_set = single_set (prev_insn))
 	  && GET_CODE (SET_DEST (prev_set)) == REG
 	  && REGNO (SET_DEST (prev_set)) == regno)
