@@ -55,7 +55,7 @@ struct dom_walk_data
   /* Function to call before the statement walk occurring before the
      recursive walk of the dominator children. 
 
-     This typically initializes an block local data and pushes that
+     This typically initializes a block local data and pushes that
      data onto BLOCK_DATA_STACK.  */
   void (*before_dom_children_before_stmts) (struct dom_walk_data *,
 					    basic_block);

@@ -724,7 +724,7 @@ unshare_expr (tree expr)
   return expr;
 }
 
-/* A terser interface for building a representation of a exception
+/* A terser interface for building a representation of an exception
    specification.  */
 
 tree

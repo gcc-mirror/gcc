@@ -4054,7 +4054,7 @@ associative_tree_code (enum tree_code code)
   return false;
 }
 
-/* Return true if CODE represents an commutative tree code.  Otherwise
+/* Return true if CODE represents a commutative tree code.  Otherwise
    return false.  */
 bool
 commutative_tree_code (enum tree_code code)

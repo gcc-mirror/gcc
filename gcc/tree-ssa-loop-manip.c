@@ -681,7 +681,7 @@ lv_adjust_loop_header_phi (basic_block first, basic_block second,
 
 /* Adjust entry edge for lv.
    
-  e is a incoming edge. 
+  e is an incoming edge. 
 
   --- edge e ---- > [second_head]
 

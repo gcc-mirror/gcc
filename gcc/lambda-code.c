@@ -53,7 +53,7 @@
 
  A loop iteration space represents the points traversed by the loop.  A point in the
  iteration space can be represented by a vector of size <loop depth>.  You can
- therefore represent the iteration space as a integral combinations of a set
+ therefore represent the iteration space as an integral combinations of a set
  of basis vectors. 
 
  A loop iteration space is dense if every integer point between the loop
