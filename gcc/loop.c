@@ -3555,6 +3555,11 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   struct loop_info loop_iteration_info;
   struct loop_info *loop_info = &loop_iteration_info;
 
+  /* If scan_start points to the loop exit test, we have to be wary of
+     subversive use of gotos inside expression statements.  */
+  if (prev_nonnote_insn (scan_start) != prev_nonnote_insn (loop_start))
+    maybe_multiple = back_branch_in_range_p (scan_start, loop_start, loop_end);
+
   reg_iv_type = (enum iv_mode *) alloca (max_reg_before_loop
 					 * sizeof (enum iv_mode));
   bzero ((char *) reg_iv_type, max_reg_before_loop * sizeof (enum iv_mode));
@@ -3618,8 +3623,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       /* Past CODE_LABEL, we get to insns that may be executed multiple
 	 times.  The only way we can be sure that they can't is if every
 	 jump insn between here and the end of the loop either
-	 returns, exits the loop, is a forward jump, or is a jump
-	 to the loop start.  */
+	 returns, exits the loop, is a jump to a location that is still
+	 behind the label, or is a jump to the loop start.  */
 
       if (GET_CODE (p) == CODE_LABEL)
 	{
@@ -3648,9 +3653,12 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		      || (JUMP_LABEL (insn) != 0
 			  && JUMP_LABEL (insn) != scan_start
 			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
-			      || INSN_UID (insn) >= max_uid_for_loop
-			      || (INSN_LUID (JUMP_LABEL (insn))
-				  < INSN_LUID (insn))))))
+			      || (INSN_UID (p) < max_uid_for_loop
+				  ? (INSN_LUID (JUMP_LABEL (insn))
+				     <= INSN_LUID (p))
+				  : (INSN_UID (insn) >= max_uid_for_loop
+				     || (INSN_LUID (JUMP_LABEL (insn))
+					 < INSN_LUID (insn))))))))
 		{
 		  maybe_multiple = 1;
 		  break;
