@@ -2,6 +2,10 @@ EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
 CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic.h
 
+# We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
+PREMADE_ATTRTAB = config/mips-at.c
+PREMADE_ATTRTAB_MD = config/mips-at.md
+
 # Add additional dependencies to recompile selected modules whenever the
 # tm.h file changes.  The files compiled are:
 #
