@@ -1398,6 +1398,8 @@ if [ -r ${LIB}/$file ]; then
       fi
     fi
   fi
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
@@ -1616,6 +1618,34 @@ struct exception;
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
+  fi
+fi
+
+# assert.h on HP/UX is not C++ ready, even though NO_IMPLICIT_EXTERN_C
+# is defined on HP/UX.
+file=assert.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if egrep '"C"' ${LIB}/$file >/dev/null 2>/dev/null; then
+    true
+  else
+    echo Fixing $file
+    echo '#ifdef __cplusplus
+extern "C" {
+#endif' > ${LIB}/${file}.sed
+    cat ${LIB}/${file} >> ${LIB}/${file}.sed
+    echo '#ifdef __cplusplus
+}
+#endif' >> ${LIB}/${file}.sed 
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
   fi
 fi
 
