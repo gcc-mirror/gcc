@@ -3018,6 +3018,10 @@ do {						\
   {"const0_operand", {CONST_INT, CONST_DOUBLE}},			\
   {"const1_operand", {CONST_INT}},					\
   {"const248_operand", {CONST_INT}},					\
+  {"const_0_to_3_operand", {CONST_INT}},				\
+  {"const_0_to_7_operand", {CONST_INT}},				\
+  {"const_0_to_15_operand", {CONST_INT}},				\
+  {"const_0_to_255_operand", {CONST_INT}},				\
   {"incdec_operand", {CONST_INT}},					\
   {"mmx_reg_operand", {REG}},						\
   {"reg_no_sp_operand", {SUBREG, REG}},					\
