@@ -1,3 +1,11 @@
+2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (altivec_expand_builtin): Move
+        lvx/stv/dst builtins...
+        (altivec_expand_ld_builtin): ...to here.
+        (altivec_expand_st_builtin): ...here.
+        (altivec_expand_dst_builtin): ...and here (respectively).
+
 2002-06-28  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (RETURN_IN_MEMORY): Update comment.
