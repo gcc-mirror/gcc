@@ -328,7 +328,7 @@ typedef struct optab
 #define GEN_FCN(CODE) (*insn_gen_function[(int) (CODE)])
 #endif
 
-extern rtx (*const insn_gen_function[]) ();
+extern rtx (*const insn_gen_function[]) PVPROTO((rtx, ...));
 
 extern optab add_optab;
 extern optab sub_optab;
@@ -520,7 +520,7 @@ extern rtx chkr_copy_bitmap_libfunc;
 extern rtx chkr_check_exec_libfunc;
 extern rtx chkr_check_str_libfunc;
 
-typedef rtx (*rtxfun) ();
+typedef rtx (*rtxfun) PROTO((rtx));
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -608,6 +608,7 @@ rtx emit_conditional_move PROTO((rtx, enum rtx_code, rtx, rtx,
 
 /* Return non-zero if the conditional move is supported.  */
 int can_conditionally_move_p PROTO((enum machine_mode mode));
+
 #endif
 
 /* Create but don't emit one rtl instruction to add one rtx into another.
@@ -727,7 +728,7 @@ extern rtx clear_storage PROTO((rtx, rtx, int));
 extern rtx emit_move_insn PROTO((rtx, rtx));
 
 /* Emit insns to set X from Y, with no frills.  */
-extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
+extern rtx emit_move_insn_1 PROTO((rtx, rtx));
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.  */
@@ -942,7 +943,9 @@ extern rtx assemble_static_space PROTO((int));
 /* Hook called by expand_expr for language-specific tree codes.
    It is up to the language front end to install a hook
    if it has any such codes that expand_expr needs to know about.  */
-extern rtx (*lang_expand_expr) ();
+extern rtx (*lang_expand_expr) PROTO((union tree_node *, rtx,
+				      enum machine_mode,
+				      enum expand_modifier modifier));
 
 #ifdef TREE_CODE
 /* Build bytecode call descriptor for function SUBR. */
@@ -953,3 +956,10 @@ extern rtx bc_build_calldesc PROTO((tree));
    plus the minimal alignment shifted left 8 bits.  */
 extern tree bc_runtime_type_code PROTO((tree));
 #endif
+
+extern void init_all_optabs			PROTO((void));
+extern void init_mov_optab			PROTO((void));
+extern void bc_adjust_stack			PROTO((int));
+extern void bc_load_localaddr			PROTO((rtx));
+extern void do_jump_by_parts_greater_rtx	PROTO((enum machine_mode, int,
+						       rtx, rtx, rtx, rtx));
