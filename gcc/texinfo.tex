@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.226 1998/02/25 20:48:50 karl Exp karl $
+% $Id: texinfo.tex,v 2.227 1998/02/25 22:54:34 karl Exp karl $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -25,8 +25,10 @@
 %
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
-% ftp://ftp.cs.umb.edu/pub/tex/texinfo.tex
 % /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+% ftp://tug.org/tex/texinfo.tex
+% ftp://ctan.org/macros/texinfo/texinfo.tex
+% (and all CTAN mirrors, finger info@ctan.org for a list).
 % 
 % Send bug reports to bug-texinfo@gnu.org.
 % Please include a precise test case in each bug report,
@@ -44,7 +46,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.226 $
+\deftexinfoversion$Revision: 2.227 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -772,6 +774,7 @@ where each line of input produces a line of output.}
 % Also ignore @macro ... @end macro.  The user must run texi2dvi,
 % which runs makeinfo to do macro expansion.  Ignore @unmacro, too.
 \def\macro{\doignore{macro}}
+\def\macrocsname{macro}
 \let\unmacro = \comment
 
 
@@ -786,7 +789,9 @@ where each line of input produces a line of output.}
   \ignoresections
   %
   % Define a command to swallow text until we reach `@end #1'.
-  \long\def\doignoretext##1\end #1{\enddoignore}%
+  % This @ is a catcode 12 token (that is the normal catcode of @ in
+  % this texinfo.tex file).  We change the catcode of @ below to match.
+  \long\def\doignoretext##1@end #1{\enddoignore}%
   %
   % Make sure that spaces turn into tokens that match what \doignoretext wants.
   \catcode32 = 10
@@ -794,6 +799,22 @@ where each line of input produces a line of output.}
   % Ignore braces, too, so mismatched braces don't cause trouble.
   \catcode`\{ = 9
   \catcode`\} = 9
+  %
+  % We must not have @c interpreted as a control sequence.
+  \catcode`\@ = 12
+  %
+  % Make the letter c a comment character so that the rest of the line
+  % will be ignored. This way, the document can have (for example)
+  %   @c @end ifinfo
+  % and the @end ifinfo will be properly ignored.
+  % (We've just changed @ to catcode 12.)
+  % 
+  % But we can't do this if #1 is `macro', since that actually contains a c.
+  % Happily, none of the other conditionals have the letter `c' in their names!
+  \def\temp{#1}%
+  \ifx\temp\macrocsname \else
+    \catcode`\c = 14
+  \fi
   %
   % And now expand that command.
   \doignoretext
