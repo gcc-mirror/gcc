@@ -1,3 +1,10 @@
+2002-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/6100
+	* config/sparc/sparc.c (output_cbranch): Use REG_BR_PROB, not
+	REG_BR_PRED.
+	(output_v9branch): Likewise.
+
 2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c: Revert previous patch for now.
