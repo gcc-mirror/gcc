@@ -692,10 +692,6 @@ enum move_pos
   };
 extern enum move_pos movement_possibility (tree);
 
-/* In tree-if-conv.c  */
-bool tree_if_conversion (struct loop *, bool);
-
-
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
 static inline bool is_call_clobbered (tree);
