@@ -1,5 +1,6 @@
 2002-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	ABI change, returning simple classes from functions.
 	* class.c (finish_struct_bits): Only mark TREE_ADDRESSABLE if
 	TYPE_HAS_TRIVIAL_INIT_REF is false or
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR is true.
