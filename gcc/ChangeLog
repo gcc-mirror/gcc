@@ -1,3 +1,8 @@
+2004-02-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* reload.c (find_equiv_reg): When checking for register overlap,
+	don't index hard_regno_nregs with a pseudo-reg.
+
 2004-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_trampoline_template): Remove gen_rtx().

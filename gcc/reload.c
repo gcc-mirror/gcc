@@ -6587,16 +6587,15 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 
   /* Reject registers that overlap GOAL.  */
 
-  if (!goal_mem && !goal_const
-      && regno + (int) hard_regno_nregs[regno][mode] > valueno
-      && regno < valueno + (int) hard_regno_nregs[valueno][mode])
-    return 0;
-
   if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
     nregs = hard_regno_nregs[regno][mode];
   else
     nregs = 1;
   valuenregs = hard_regno_nregs[valueno][mode];
+
+  if (!goal_mem && !goal_const
+      && regno + nregs > valueno && regno < valueno + valuenregs)
+    return 0;
 
   /* Reject VALUE if it is one of the regs reserved for reloads.
      Reload1 knows how to reuse them anyway, and it would get
