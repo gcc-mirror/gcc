@@ -966,7 +966,7 @@ compute_alignments ()
     xcalloc (max_labelno - min_labelno + 1, sizeof (struct label_alignment));
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
-  if (optimize || optimize_size)
+  if (! optimize || optimize_size)
     return;
 
   for (i = 0; i < n_basic_blocks; i++)

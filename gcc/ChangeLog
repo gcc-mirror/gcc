@@ -1,5 +1,7 @@
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
+	* final.c (compute_alignments): Fix typo.
+
 	* expmed.c (CODE_FOR_insv, gen_insv): Provide defaults.
 	(CODE_FOR_extv, gen_extv, CODE_FOR_extzv, gen_extzv): Likewise.
 	(store_bit_field): Use mode_for_extraction more places.
