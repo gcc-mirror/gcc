@@ -1,5 +1,8 @@
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
+	* dwarf2out.c (lookup_filename): Don't check for "<internal>".
+	(dwarf2out_source_line): Don't do anything if line==0.
+
 	* stor-layout.c (do_type_align): New fn, split out from...
 	(layout_decl): ...here.  Do all alignment calculations for 
 	FIELD_DECLs here.
