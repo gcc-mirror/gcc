@@ -164,8 +164,6 @@ static rtx *unfilled_firstobj;
 #define unfilled_slots_next	\
   ((rtx *) obstack_next_free (&unfilled_slots_obstack))
 
-/* This structure is used to indicate which hardware resources are set or
-
 /* Points to the label before the end of the function.  */
 static rtx end_of_function_label;
 
