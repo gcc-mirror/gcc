@@ -226,14 +226,17 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Abort_Selector (Selector : Selector_Type) is
-      Buf     : aliased Character := ASCII.NUL;
-      Discard : C.int;
-      pragma Unreferenced (Discard);
+      Buf : aliased Character := ASCII.NUL;
+      Res : C.int;
 
    begin
       --  Send an empty array to unblock C select system call
 
-      Discard := C_Write (C.int (Selector.W_Sig_Socket), Buf'Address, 1);
+      Res := C_Send (C.int (Selector.W_Sig_Socket), Buf'Address, 1,
+                     Constants.MSG_Forced_Flags);
+      if Res = Failure then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
    end Abort_Selector;
 
    -------------------
@@ -440,8 +443,13 @@ package body GNAT.Sockets is
 
          declare
             Buf : Character;
+
          begin
-            Res := C_Read (C.int (Selector.R_Sig_Socket), Buf'Address, 1);
+            Res := C_Recv (C.int (Selector.R_Sig_Socket), Buf'Address, 1, 0);
+
+            if Res = Failure then
+               Raise_Socket_Error (Socket_Errno);
+            end if;
          end;
 
          Status := Aborted;

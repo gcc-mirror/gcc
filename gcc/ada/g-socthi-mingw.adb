@@ -318,7 +318,7 @@ package body GNAT.Sockets.Thin is
       --  POSIX compatitibility, copy write fd set into exception fd
       --  set. Once select() returns, check any socket present in the
       --  exception fd set and peek at incoming out-of-band data. If
-      --  the test is not successfull and if the socket is present in
+      --  the test is not successful, and the socket is present in
       --  the initial write fd set, then move the socket from the
       --  exception fd set to the write fd set.
 
