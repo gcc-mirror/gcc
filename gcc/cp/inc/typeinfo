@@ -4,6 +4,8 @@
 #ifndef __TYPEINFO__
 #define __TYPEINFO__
 
+#pragma interface "typeinfo"
+
 #include <exception>
 
 extern "C++" {
@@ -34,22 +36,11 @@ public:
   bool operator!= (const type_info& arg) const;
 };
 
-// We can't rely on common symbols being shared between translation units
-// under Windows.  Sigh.
-
-#ifndef _WIN32
-inline bool type_info::
-operator== (const type_info& arg) const
-{
-  return &arg == this;
-}
-
 inline bool type_info::
 operator!= (const type_info& arg) const
 {
-  return &arg != this;
+  return !operator== (arg);
 }
-#endif
 
 class bad_cast : public exception {
 public:

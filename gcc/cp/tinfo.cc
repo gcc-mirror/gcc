@@ -25,6 +25,8 @@
 // This exception does not however invalidate any other reasons why
 // the executable file might be covered by the GNU General Public License.
 
+#pragma implementation "typeinfo"
+
 #include <stddef.h>
 #include "tinfo.h"
 #include "new"			// for placement new
@@ -36,6 +38,13 @@
 std::type_info::
 ~type_info ()
 { }
+
+// We can't rely on common symbols being shared between shared objects.
+bool type_info::
+operator== (const type_info& arg) const
+{
+  return (&arg == this) || (strcmp (name (), arg.name ()) == 0);
+}
 
 extern "C" void
 __rtti_class (void *addr, const char *name,

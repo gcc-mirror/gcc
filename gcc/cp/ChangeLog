@@ -7,6 +7,23 @@
 	* spew.c (yylex): Clear looking_for_typename if we got
 	'enum { ... };'.
 
+1998-10-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo2.cc (fast_compare): Remove.
+	(before): Just use strcmp.
+	* tinfo.cc (operator==): Just use strcmp.
+
+1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo.cc (operator==): Always compare names.
+
+1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* inc/typeinfo: Add #pragma interface.
+	(operator!=): Just call operator==.
+	* tinfo.cc: Add #pragma implementation.
+	(operator==): Move from inc/typeinfo and tinfo2.cc.
+
 Fri Oct  2 02:07:26 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* parse.y (nomods_initdcl0): Set up the parser stack correctly.
