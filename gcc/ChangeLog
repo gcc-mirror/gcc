@@ -1,3 +1,9 @@
+2004-03-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.md (thumb_jump): Reduce the backward branch
+	range, and increase the forward branch range, to allow for
+	the fact that the PC will be off by 4.
+
 2004-03-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* .cvsignore: Add GPATH, GRTAGS, GSYMS and GTAGS (GNU GLOBAL)
