@@ -1616,7 +1616,7 @@ fixhdr.ready: fix-header
 stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	@echo "Various warnings and error messages from fixproto are normal"
 	-if [ -d include ] ; then true; else mkdir include; fi
-	if [ -f include/fixed ] ; then true; \
+	-if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
@@ -1935,7 +1935,7 @@ install-include-dir: install-dir
 # Install the include directory using tar.
 install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 	(cd include; \
-	 tar cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
+	 tar -cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
 # /bin/sh on some systems returns the status of the first tar,
 # and that can lose with GNU tar which always writes a full block.
 # So use `exit 0' to ignore its exit status.
@@ -2010,7 +2010,7 @@ gcc.xtar.gz: gcc.xtar
 #gcc-$(version).tar:
 gcc.xtar: distdir
 # Make the distribution.
-	tar chf gcc.xtar gcc-$(version)
+	tar -chf gcc.xtar gcc-$(version)
 
 distdir: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y cp-parse.y \
   c-parse.c cp-parse.c objc-parse.c cexp.c
