@@ -499,6 +499,9 @@ life_analysis (f, file, flags)
       }
   }
 #endif
+
+  rebuild_jump_labels (get_insns ());
+
   /* Removing dead insns should've made jumptables really dead.  */
   delete_dead_jumptables ();
 }

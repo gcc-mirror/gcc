@@ -1,3 +1,8 @@
+2002-11-16  Graham Stott  <graham.stott@btinternet.com>
+
+	* flow.c (life_analysis): Update LABEL_NUSES before purging
+	dead jumptables.
+
 2002-11-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Testing): Document extra Java testing.
