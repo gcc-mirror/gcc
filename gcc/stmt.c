@@ -143,8 +143,9 @@ extern void (*interim_eh_hook)	PROTO((tree));
    statements.  We handle "range" labels; for a single-value label
    as in C, the high and low limits are the same.
 
-   A chain of case nodes is initially maintained via the RIGHT fields
-   in the nodes.  Nodes with higher case values are later in the list.
+   An AVL tree of case nodes is initially created, and later transformed
+   to a list linked via the RIGHT fields in the nodes.  Nodes with
+   higher case values are later in the list.
 
    Switch statements can be output in one of two forms.  A branch table
    is used if there are more than a few labels and the labels are dense
@@ -4280,6 +4281,8 @@ add_case_node (low, high, label, duplicate)
 	      else
 		/* r->balance == +1 */
 		{
+		  /* LR-Rotation */
+
 		  int b2;
 		  struct case_node *t = r->right;
 
@@ -4570,36 +4573,62 @@ mark_seen_cases (type, cases_seen, count, sparseness)
   tree next_node_to_try = NULL_TREE;
   long next_node_offset = 0;
 
-  register struct case_node *n;
+  register struct case_node *n, *root = case_stack->data.case_stmt.case_list;
   tree val = make_node (INTEGER_CST);
   TREE_TYPE (val) = type;
-  for (n = case_stack->data.case_stmt.case_list; n;
-       n = n->right)
+  if (! root)
+    ; /* Do nothing */
+  else if (sparseness == 2)
     {
-      TREE_INT_CST_LOW (val) = TREE_INT_CST_LOW (n->low);
-      TREE_INT_CST_HIGH (val) = TREE_INT_CST_HIGH (n->low);
-      while ( ! tree_int_cst_lt (n->high, val))
-	{
-	  /* Calculate (into xlo) the "offset" of the integer (val).
-	     The element with lowest value has offset 0, the next smallest
-	     element has offset 1, etc.  */
+      tree t;
+      HOST_WIDE_INT xlo;
 
-	  HOST_WIDE_INT xlo, xhi;
-	  tree t;
-	  if (sparseness == 2)
+      /* This less efficient loop is only needed to handle
+	 duplicate case values (multiple enum constants
+	 with the same value).  */
+      TREE_TYPE (val) = TREE_TYPE (root->low);
+      for (t = TYPE_VALUES (type), xlo = 0;  t != NULL_TREE;
+	   t = TREE_CHAIN (t), xlo++)
+	{
+	  TREE_INT_CST_LOW (val) = TREE_INT_CST_LOW (TREE_VALUE (t));
+	  TREE_INT_CST_HIGH (val) = TREE_INT_CST_HIGH (TREE_VALUE (t));
+	  n = root;
+	  do
 	    {
-	      /* This less efficient loop is only needed to handle
-		 duplicate case values (multiple enum constants
-		 with the same value).  */
-	      for (t = TYPE_VALUES (type), xlo = 0;  t != NULL_TREE;
-		   t = TREE_CHAIN (t), xlo++)
+	      /* Keep going past elements distinctly greater than VAL.  */
+	      if (tree_int_cst_lt (val, n->low))
+		n = n->left;
+	
+	      /* or distinctly less than VAL.  */
+	      else if (tree_int_cst_lt (n->high, val))
+		n = n->right;
+	
+	      else
 		{
-		  if (tree_int_cst_equal (val, TREE_VALUE (t)))
-		    BITARRAY_SET (cases_seen, xlo);
+		  /* We have found a matching range.  */
+		  BITARRAY_SET (cases_seen, xlo);
+		  break;
 		}
 	    }
-	  else
+	  while (n);
+	}
+    }
+  else
+    {
+      if (root->left)
+	case_stack->data.case_stmt.case_list = root = case_tree2list (root, 0);
+      for (n = root; n; n = n->right)
+	{
+	  TREE_INT_CST_LOW (val) = TREE_INT_CST_LOW (n->low);
+	  TREE_INT_CST_HIGH (val) = TREE_INT_CST_HIGH (n->low);
+	  while ( ! tree_int_cst_lt (n->high, val))
 	    {
+	      /* Calculate (into xlo) the "offset" of the integer (val).
+		 The element with lowest value has offset 0, the next smallest
+		 element has offset 1, etc.  */
+
+	      HOST_WIDE_INT xlo, xhi;
+	      tree t;
 	      if (sparseness && TYPE_VALUES (type) != NULL_TREE)
 		{
 		  /* The TYPE_VALUES will be in increasing order, so
@@ -4623,7 +4652,10 @@ mark_seen_cases (type, cases_seen, count, sparseness)
 		      xlo++;
 		      t = TREE_CHAIN (t);
 		      if (t == next_node_to_try)
-			break;
+			{
+			  xlo = -1;
+			  break;
+			}
 		    }
 		}
 	      else
@@ -4641,10 +4673,10 @@ mark_seen_cases (type, cases_seen, count, sparseness)
 	      
 	      if (xhi == 0 && xlo >= 0 && xlo < count)
 		BITARRAY_SET (cases_seen, xlo);
+	      add_double (TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val),
+			  1, 0,
+			  &TREE_INT_CST_LOW (val), &TREE_INT_CST_HIGH (val));
 	    }
-	  add_double (TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val),
-		      1, 0,
-		      &TREE_INT_CST_LOW (val), &TREE_INT_CST_HIGH (val));
 	}
     }
 }
@@ -4706,7 +4738,7 @@ check_for_full_enumeration_handling (type)
       /* The time complexity of this code is normally O(N), where
 	 N being the number of members in the enumerated type.
 	 However, if type is a ENUMERAL_TYPE whose values do not
-	 increase monotonically, quadratic time may be needed. */
+	 increase monotonically, O(N*log(N)) time may be needed. */
 
       mark_seen_cases (type, cases_seen, size, sparseness);
 
@@ -4725,6 +4757,10 @@ check_for_full_enumeration_handling (type)
      occur since C and C++ don't enforce type-checking of
      assignments to enumeration variables. */
 
+  if (case_stack->data.case_stmt.case_list
+      && case_stack->data.case_stmt.case_list->left)
+    case_stack->data.case_stmt.case_list
+      = case_tree2list (case_stack->data.case_stmt.case_list, 0);
   if (warn_switch)
     for (n = case_stack->data.case_stmt.case_list; n; n = n->right)
       {
@@ -4908,7 +4944,8 @@ expand_end_case (orig_index)
 
       before_case = get_last_insn ();
 
-      if (thiscase->data.case_stmt.case_list)
+      if (thiscase->data.case_stmt.case_list
+	  && thiscase->data.case_stmt.case_list->left)
 	thiscase->data.case_stmt.case_list
 	  = case_tree2list(thiscase->data.case_stmt.case_list, 0);
 
