@@ -1,3 +1,10 @@
+2002-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	* com.c (ffecom_subscript_check_): Cast the failure branch
+	of the bounds check COND_EXPR to void, to indicate noreturn.
+	(ffe_truthvalue_conversion): Only apply truth value conversion
+	to the non-void branches of a COND_EXPR.
+
 2002-10-26  Andris Pavenis  <pavenis@latnet.lv>
 
 	* lang-specs.h: Fix ratfor specs.

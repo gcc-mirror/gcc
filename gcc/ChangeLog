@@ -1,3 +1,11 @@
+2002-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg):  Improve
+	handling of cases where one or both branches of the conditional
+	have void type, i.e. throw an exception or don't return.
+	(fold): Only apply (and undo) type conversion to the non-void
+	branches of a COND_EXPR.
+
 2002-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8333
