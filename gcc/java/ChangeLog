@@ -1,3 +1,11 @@
+2002-02-22  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/2369:
+	* jvspec.c (verify_class_name): New function.
+	(lang_specific_driver): Call it.
+	(JAVA_START_CHAR_P): New macro.
+	(JAVA_PART_CHAR_P): Likewise.
+
 2002-02-22  Per Bothner  <per@bothner.com>
 
 	*  class.c:  Change vtable to be more compatible with g++ v3 abi.
