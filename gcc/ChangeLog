@@ -1,3 +1,13 @@
+2002-01-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Prepend ${srcdir}/config/${cpu_type}/ instead of
+	${srcdir}/ginclude/ to every entry in extra_headers.
+	* configure: Regenerate.
+	* ginclude/math-3300.h: Rename to config/m68k/math-3300.h.
+	* ginclude/math-68881.h: Rename to config/m68k/math-68881.h.
+	* ginclude/ppc-asm.h: Rename to config/rs6000/ppc-asm.h.
+	* ginclude/proto.h: Rename to config/convex/proto.h.
+
 Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* attribs.c (handle_vector_size_attribute): Use host_integerp
