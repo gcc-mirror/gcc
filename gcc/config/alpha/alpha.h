@@ -173,6 +173,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_BYTE_OPS 1024
 #define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
 
+/* This means that the processor is an EV5 or EV56.  This is defined only
+   in TARGET_CPU_DEFAULT.  */
+#define MASK_CPU_EV5 2048
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
