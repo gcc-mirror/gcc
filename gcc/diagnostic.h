@@ -108,6 +108,10 @@ struct output_buffer
 
   /* The amount of characters output so far.  */  
   int line_length;
+
+  /* This must be large enough to hold any printed integer or
+     floating-point value.  */
+  char digit_buffer[128];
 };
 
 #define output_buffer_state(BUFFER) (BUFFER)->state
