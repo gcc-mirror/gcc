@@ -3017,13 +3017,25 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_PUSH(FILE, REGNO)  \
-  asm_fprintf ((FILE), "\tpush{l}\t%%e%s\n", reg_names[(REGNO)])
+do {									\
+  if (TARGET_64BIT)							\
+    asm_fprintf ((FILE), "\tpush{q}\t%%r%s\n",				\
+		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
+  else									\
+    asm_fprintf ((FILE), "\tpush{l}\t%%e%s\n", reg_names[(REGNO)]);	\
+} while (0)
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO)  \
-  asm_fprintf ((FILE), "\tpop{l}\t%%e%s\n", reg_names[(REGNO)])
+do {									\
+  if (TARGET_64BIT)							\
+    asm_fprintf ((FILE), "\tpop{q}\t%%r%s\n",				\
+		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
+  else									\
+    asm_fprintf ((FILE), "\tpop{l}\t%%e%s\n", reg_names[(REGNO)]);	\
+} while (0)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
