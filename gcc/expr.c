@@ -916,6 +916,12 @@ convert_move (to, from, unsignedp)
       /* No special multiword conversion insn; do it by hand.  */
       start_sequence ();
 
+      /* Since we will turn this into a no conflict block, we must ensure
+	 that the source does not overlap the target.  */
+
+      if (reg_overlap_mentioned_p (to, from))
+	from = force_reg (from_mode, from);
+
       /* Get a copy of FROM widened to a word, if necessary.  */
       if (GET_MODE_BITSIZE (from_mode) < BITS_PER_WORD)
 	lowpart_mode = word_mode;
