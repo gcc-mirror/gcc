@@ -1,3 +1,10 @@
+2000-01-11  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* jcf-path.c: Delete PATH_SEPARATOR and DIR_SEPARATOR macros.
+	* jcf-write.c: Likewise.
+	* parse.y: Likewise.
+	* parse.c: Regenerate.
+
 2000-01-09  Anthony Green  <green@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): Emit invokeinterface
