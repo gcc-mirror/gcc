@@ -1406,6 +1406,146 @@ output_move_simode_const (operands)
   return "move%.l %1,%0";
 }
 
+char *
+output_move_simode (operands)
+     rtx *operands;
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    return output_move_simode_const (operands);
+  else if ((GET_CODE (operands[1]) == SYMBOL_REF
+	    || GET_CODE (operands[1]) == CONST)
+	   && push_operand (operands[0], SImode))
+    return "pea %a1";
+  else if ((GET_CODE (operands[1]) == SYMBOL_REF
+	    || GET_CODE (operands[1]) == CONST)
+	   && ADDRESS_REG_P (operands[0]))
+    return "lea %a1,%0";
+  return "move%.l %1,%0";
+}
+
+char *
+output_move_himode (operands)
+     rtx *operands;
+{
+ if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (operands[1] == const0_rtx
+	  && (DATA_REG_P (operands[0])
+	      || GET_CODE (operands[0]) == MEM)
+	  /* clr insns on 68000 read before writing.
+	     This isn't so on the 68010, but we have no TARGET_68010.  */
+	  && ((TARGET_68020 || TARGET_5200)
+	      || !(GET_CODE (operands[0]) == MEM
+		   && MEM_VOLATILE_P (operands[0]))))
+	return "clr%.w %0";
+      else if (DATA_REG_P (operands[0])
+	       && INTVAL (operands[1]) < 128
+	       && INTVAL (operands[1]) >= -128)
+	{
+#if defined(MOTOROLA) && !defined(CRDS)
+	  return "moveq%.l %1,%0";
+#else
+	  return "moveq %1,%0";
+#endif
+	}
+      else if (INTVAL (operands[1]) < 0x8000
+	       && INTVAL (operands[1]) >= -0x8000)
+	return "move%.w %1,%0";
+    }
+  else if (CONSTANT_P (operands[1]))
+    return "move%.l %1,%0";
+#ifndef SGS_NO_LI
+  /* Recognize the insn before a tablejump, one that refers
+     to a table of offsets.  Such an insn will need to refer
+     to a label on the insn.  So output one.  Use the label-number
+     of the table of offsets to generate this label.  This code,
+     and similar code below, assumes that there will be at most one
+     reference to each table.  */
+  if (GET_CODE (operands[1]) == MEM
+      && GET_CODE (XEXP (operands[1], 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (operands[1], 0), 1)) == LABEL_REF
+      && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) != PLUS)
+    {
+      rtx labelref = XEXP (XEXP (operands[1], 0), 1);
+#if defined (MOTOROLA) && !defined (SGS_SWITCH_TABLES)
+#ifdef SGS
+      asm_fprintf (asm_out_file, "\tset %LLI%d,.+2\n",
+		   CODE_LABEL_NUMBER (XEXP (labelref, 0)));
+#else /* not SGS */
+      asm_fprintf (asm_out_file, "\t.set %LLI%d,.+2\n",
+		   CODE_LABEL_NUMBER (XEXP (labelref, 0)));
+#endif /* not SGS */
+#else /* SGS_SWITCH_TABLES or not MOTOROLA */
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LI",
+				 CODE_LABEL_NUMBER (XEXP (labelref, 0)));
+#ifdef SGS_SWITCH_TABLES
+      /* Set flag saying we need to define the symbol
+	 LD%n (with value L%n-LI%n) at the end of the switch table.  */
+      switch_table_difference_label_flag = 1;
+#endif /* SGS_SWITCH_TABLES */
+#endif /* SGS_SWITCH_TABLES or not MOTOROLA */
+    }
+#endif /* SGS_NO_LI */
+  return "move%.w %1,%0";
+}
+
+char *
+output_move_qimode (operands)
+     rtx *operands;
+{
+  rtx xoperands[4];
+
+  /* This is probably useless, since it loses for pushing a struct
+     of several bytes a byte at a time.	 */
+  if (GET_CODE (operands[0]) == MEM
+      && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
+      && XEXP (XEXP (operands[0], 0), 0) == stack_pointer_rtx
+      && ! ADDRESS_REG_P (operands[1]))
+    {
+      xoperands[1] = operands[1];
+      xoperands[2]
+	= gen_rtx (MEM, QImode,
+		   gen_rtx (PLUS, VOIDmode, stack_pointer_rtx, const1_rtx));
+      /* Just pushing a byte puts it in the high byte of the halfword.	*/
+      /* We must put it in the low-order, high-numbered byte.  */
+      output_asm_insn ("move%.b %1,%-\n\tmove%.b %@,%2", xoperands);
+      return "";
+    }
+
+  /* clr and st insns on 68000 read before writing.
+     This isn't so on the 68010, but we have no TARGET_68010.  */
+  if (!ADDRESS_REG_P (operands[0])
+      && ((TARGET_68020 || TARGET_5200)
+	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
+    {
+      if (operands[1] == const0_rtx)
+	return "clr%.b %0";
+      if ((!TARGET_5200 || DATA_REG_P (operands[0]))
+	  && GET_CODE (operands[1]) == CONST_INT
+	  && (INTVAL (operands[1]) & 255) == 255)
+	{
+	  CC_STATUS_INIT;
+	  return "st %0";
+	}
+    }
+  if (GET_CODE (operands[1]) == CONST_INT
+      && DATA_REG_P (operands[0])
+      && INTVAL (operands[1]) < 128
+      && INTVAL (operands[1]) >= -128)
+    {
+#if defined(MOTOROLA) && !defined(CRDS)
+      return "moveq%.l %1,%0";
+#else
+      return "moveq %1,%0";
+#endif
+    }
+  if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
+    return "move%.l %1,%0";
+  if (ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
+    return "move%.w %1,%0";
+  return "move%.b %1,%0";
+}
+
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
