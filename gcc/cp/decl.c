@@ -8218,6 +8218,13 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	  && (!DECL_EXTERNAL (decl) || init))
 	{
 	  init = check_initializer (decl, init);
+	  /* Thread-local storage cannot be dynamically initialized.  */
+	  if (DECL_THREAD_LOCAL (decl) && init)
+	    {
+	      error ("`%D' is thread-local and so cannot be dynamically "
+		     "initialized", decl);
+	      init = NULL_TREE;
+	    }
 	  /* If DECL has an array type without a specific bound, deduce the
 	     array size from the initializer.  Note that this must be done
 	     after check_initializer is called because of cases like this:
