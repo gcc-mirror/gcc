@@ -430,6 +430,9 @@ extern int target_flags;
 	r1 is the stack pointer,
 	r2 is the return instruction pointer,
 	r3-r15 are always available,
+	r3 is clobbered by calls in functions that use the arg pointer
+	r4-r11 may be clobbered by the mcount call when profiling
+	r4-r15 if otherwise unused may be used for preserving global registers
 	fp0..fp3 are never available.  */
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -849,8 +852,8 @@ extern struct rtx_def *i960_function_arg ();
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tlda	LP%d,g0\n\tbal	mcount\n", (LABELNO))
+#define FUNCTION_PROFILER(FILE, LABELNO)	\
+  output_function_profiler ((FILE), (LABELNO));
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
