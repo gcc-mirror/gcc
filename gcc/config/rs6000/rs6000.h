@@ -1435,17 +1435,22 @@ extern int rs6000_sysv_varargs_p;
    floating-point register number, and the third says how many more args we
    have prototype types for.
 
+   For ABI_V4, we treat these slightly differently -- `sysv_gregno' is
+   the next availible GP register, `fregno' is the next available FP
+   register, and `words' is the number of words used on the stack.
+
    The varargs/stdarg support requires that this structure's size
-   be a multiple of sizeof(int). */
+   be a multiple of sizeof(int).  */
 
 typedef struct rs6000_args
 {
-  int words;			/* # words uses for passing GP registers */
+  int words;			/* # words used for passing GP registers */
   int fregno;			/* next available FP register */
   int nargs_prototype;		/* # args left in the current prototype */
   int orig_nargs;		/* Original value of nargs_prototype */
   int prototype;		/* Whether a prototype was defined */
   int call_cookie;		/* Do special things for this call */
+  int sysv_gregno;		/* next available GP register */
 } CUMULATIVE_ARGS;
 
 /* Define intermediate macro to compute the size (in registers) of an argument
