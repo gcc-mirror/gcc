@@ -1,4 +1,5 @@
 2005-01-12  David Edelsohn  <edelsohn@gnu.org>
+	    Andreas Schwab  <schwab@suse.de>
 
 	PR bootstrap/18033
 	* config-ml.in: Eval option if surrounded by single quotes.
