@@ -1,3 +1,10 @@
+2000-09-25  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.h (INDEX_REG_CLASS): Define to GENERAL_REGS.
+	(REGNO_OK_FOR_INDEX_P): Define to REGNO_OK_FOR_BASE_P.
+	(LEGITIMATE_ADDRESS_DISP): Use LEGITIMATE_ADDRESS_REG.
+	(REG_OK_FOR_INDEX): Define to REG_OK_FOR_BASE_P.
+
 Tue 26-Sep-2000 00:16:22 BST  Neil Booth  <neilb@earthling.net>
 
         * cpplex.c (parse_args): Don't set VOID_REST flag.
