@@ -4037,6 +4037,11 @@ create_class (int flags, tree id, tree super, tree interfaces)
   CLASS_COMPLETE_P (decl) = 1;
   add_superinterfaces (decl, interfaces);
 
+  /* TYPE_VFIELD' is a compiler-generated field used to point to
+     virtual function tables.  In gcj, every class has a common base
+     virtual function table in java.lang.object.  */
+  TYPE_VFIELD (TREE_TYPE (decl)) = TYPE_VFIELD (object_type_node);
+
   /* Add the private this$<n> field, Replicate final locals still in
      scope as private final fields mangled like val$<local_name>.
      This doesn't not occur for top level (static) inner classes. */
