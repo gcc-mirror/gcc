@@ -956,8 +956,8 @@ struct lang_decl_func GTY(())
   int max_locals;
   int max_stack;
   int arg_slot_count;
-  /* A temportary lie for the sake of ggc.  Actually, last_line is
-  * only a source_location if USE_MAPPED_LOCATION.  FIXME. */
+  /* A temporary lie for the sake of ggc.  Actually, last_line is
+     only a source_location if USE_MAPPED_LOCATION.  FIXME.  */
   source_location last_line;	/* End line number for a function decl */
   tree wfl;			/* Information on the original location */
   tree throws_list;		/* Exception specified by `throws' */
