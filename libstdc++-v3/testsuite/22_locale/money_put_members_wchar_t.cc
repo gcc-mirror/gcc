@@ -79,12 +79,12 @@ void test01()
   const money_put<wchar_t>& mon_put = use_facet<money_put<wchar_t> >(oss.getloc()); 
 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result1 = oss.str();
   VERIFY( result1 == L"7.200.000.000,00 ");
 
   oss.str(empty);
-  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result2 = oss.str();
   VERIFY( result2 == L"7.200.000.000,00 ");
 
@@ -95,12 +95,12 @@ void test01()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
-  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result3 = oss.str();
   VERIFY( result3 == L"7.200.000.000,00 DEM ");
 
   oss.str(empty);
-  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result4 = oss.str();
   VERIFY( result4 == L"7.200.000.000,00 DM");
 
@@ -112,26 +112,26 @@ void test01()
   // test sign of more than one digit, say hong kong.
   oss.imbue(loc_hk);
   oss.str(empty);
-  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result5 = oss.str();
   VERIFY( result5 == L"HK$7,200,000,000.00");
 
   oss.str(empty);
-  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, '*', digits2);
+  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits2);
   wstring result6 = oss.str();
   VERIFY( result6 == L"(HKD 100,000,000,000.00)");
 
   // test one-digit formats without zero padding
   oss.imbue(loc_c);
   oss.str(empty);
-  iterator_type os_it07 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it07 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits4);
   wstring result7 = oss.str();
   VERIFY( result7 == L"1");
 
   // test one-digit formats with zero padding, zero frac widths
   oss.imbue(loc_hk);
   oss.str(empty);
-  iterator_type os_it08 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it08 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits4);
   wstring result8 = oss.str();
   VERIFY( result8 == L"(HKD .01)");
 
@@ -139,7 +139,7 @@ void test01()
 
   // test bunk input
   oss.str(empty);
-  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, '*', digits3);
+  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits3);
   wstring result9 = oss.str();
   VERIFY( result9 == L"");
 
@@ -151,7 +151,7 @@ void test01()
   oss.width(20);
   iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
   wstring result10 = oss.str();
-  VERIFY( result10 == L"***************-,01 ");
+  VERIFY( result10 == L"***************-,01*");
 
   oss.str(empty);
   oss.width(20);
@@ -210,12 +210,12 @@ void test02()
   const money_put<wchar_t>& mon_put = use_facet<money_put<wchar_t> >(oss.getloc()); 
 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result1 = oss.str();
   VERIFY( result1 == L"7.200.000.000,00 ");
 
   oss.str(empty);
-  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result2 = oss.str();
   VERIFY( result2 == L"7.200.000.000,00 ");
 
@@ -226,12 +226,12 @@ void test02()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
- iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+ iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result3 = oss.str();
   VERIFY( result3 == L"7.200.000.000,00 DEM ");
 
   oss.str(empty);
-  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result4 = oss.str();
   VERIFY( result4 == L"7.200.000.000,00 DM");
 
@@ -302,6 +302,44 @@ void test04()
     }
 #endif
 }
+
+struct My_money_io : public std::moneypunct<wchar_t,false>
+{
+  char_type do_decimal_point() const { return L'.'; }
+  char_type do_thousands_sep() const { return L','; }
+  std::string do_grouping() const { return "\003"; }
+  
+  std::wstring do_negative_sign() const { return L"()"; }
+  
+  int do_frac_digits() const { return 2; }
+
+  pattern do_neg_format() const
+  {
+    static pattern pat = { { symbol, space, sign, value } };
+    return pat;
+  }
+};
+
+// libstdc++/5708
+void test05()
+{
+  using namespace std;
+  typedef ostreambuf_iterator<wchar_t> OutIt;
+
+  locale loc(locale::classic(), new My_money_io);
+
+  bool intl = false;
+
+  wstring val(L"-123456");
+  const money_put<wchar_t,OutIt>& mp  =
+    use_facet<money_put<wchar_t, OutIt> >(loc);
+
+  wostringstream fmt;
+  fmt.imbue(loc);
+  OutIt out(fmt);
+  mp.put(out,intl,fmt,L'*',val);
+  VERIFY( fmt.str() == L"*(1,234.56)" );
+}
 #endif
 
 int main()
@@ -311,6 +349,7 @@ int main()
   test02();
   test03();
   test04();
+  test05();
 #endif
   return 0;
 }
