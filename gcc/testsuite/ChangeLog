@@ -1,3 +1,8 @@
+2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20030209-1.c: Disable the test if
+	STACK_SIZE is too small.
+
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
