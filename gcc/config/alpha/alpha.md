@@ -1806,10 +1806,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (use (match_operand:DI 1 "address_operand" ""))]
   ""
 {
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_extendhidi_be (operands[0], operands[1]));
-  else
-    emit_insn (gen_unaligned_extendhidi_le (operands[0], operands[1]));
+  operands[0] = gen_lowpart (DImode, operands[0]);
+  emit_insn ((WORDS_BIG_ENDIAN
+	      ? gen_unaligned_extendhidi_be
+	      : gen_unaligned_extendhidi_le) (operands[0], operands[1]));
   DONE;
 })
 
@@ -1824,7 +1824,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			     (ashift:DI
 			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 4) (const_int 48)))]
   "! WORDS_BIG_ENDIAN"
 {
@@ -1847,7 +1847,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		       (plus:DI (match_dup 5) (const_int 1))
 		       (const_int 7))
 		     (const_int 3))))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 6) (const_int 48)))]
   "WORDS_BIG_ENDIAN"
 {

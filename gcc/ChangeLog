@@ -1,3 +1,8 @@
+2001-12-10  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (unaligned_extendhidi): Call gen_lowpart
+	instead of hardcoding subregs into the _be and _le patterns.
+
 2001-12-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c, c-parse.in, c-typeck.c: Revert concatenation changes.
