@@ -45,7 +45,7 @@ else
 fi
 tr '	' ' ' <TMP >dummy.out
 
-for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_t sigset_t size_t ssize_t time_t uid_t va_list wchar_t int32_t uint_32_t ; do
+for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_t size_t ssize_t time_t uid_t va_list wchar_t int32_t uint_32_t ; do
     IMPORTED=`eval 'echo $'"$TYPE"`
     if [ -n "${IMPORTED}" ] ; then
 	eval "$TYPE='$IMPORTED"
@@ -84,7 +84,6 @@ cat <<!EOF!
 #define ${macro_prefix}off_t ${off_t-long /* default */}
 #define ${macro_prefix}pid_t ${pid_t-int /* default */}
 #define ${macro_prefix}ptrdiff_t ${ptrdiff_t-long int /* default */}
-#define ${macro_prefix}sigset_t ${sigset_t-int /* default */}
 #define ${macro_prefix}size_t ${size_t-unsigned long /* default */}
 #define ${macro_prefix}time_t ${time_t-int /* default */}
 #define ${macro_prefix}uid_t ${uid_t-int /* default */}
