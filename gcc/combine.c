@@ -3400,6 +3400,18 @@ subst (x, from, to, in_dest, unique_copy)
 		      )
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+		  if (code == SUBREG
+		      && GET_CODE (to) == REG
+		      && REGNO (to) < FIRST_PSEUDO_REGISTER
+		      && (TEST_HARD_REG_BIT
+			  (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+			   REGNO (to)))
+		      && (GET_MODE_BITSIZE (GET_MODE (to)) 
+			  != GET_MODE_BITSIZE (GET_MODE (x))))
+		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
+#endif
+
 		  new = (unique_copy && n_occurrences ? copy_rtx (to) : to);
 		  n_occurrences++;
 		}

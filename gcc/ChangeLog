@@ -1,3 +1,8 @@
+2000-05-27  Geoff Keating  <geoffk@cygnus.com>
+
+	* combine.c (subst): Honour CLASS_CANNOT_CHANGE_SIZE when
+	substituting the REG in a (subreg:X (reg:Y ...)).
+
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (_cpp_lex_line): Merge vertical space.  Flag
