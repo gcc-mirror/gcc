@@ -40,6 +40,7 @@
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
+#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
