@@ -1,3 +1,7 @@
+2000-11-22  Neil Booth  <neilb@earthling.net>
+
+	* gcc.dg/cpp/Wtrigraphs.c: New test.
+
 2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
 
         * g++.old-deja/g++.robertl/eb39.C: Don't include libio.h.
