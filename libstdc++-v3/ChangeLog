@@ -1,3 +1,13 @@
+2002-02-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	libstdc++/5708
+	* include/bits/locale_facets.tcc (money_put::do_put):
+	For the space field use __fill instead of ' ', uniformly.
+	* testsuite/22_locale/money_put_members_char.cc:
+	Add test05 distilled from PR.
+	(test01-02-03): Trim some '*' to ' '.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Ditto.
+
 2002-02-18  Loren Rittle <ljrittle@acm.org>
 
 	libstdc++/5697

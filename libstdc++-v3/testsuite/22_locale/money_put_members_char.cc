@@ -79,12 +79,12 @@ void test01()
   const money_put<char>& mon_put = use_facet<money_put<char> >(oss.getloc()); 
 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   string result1 = oss.str();
   VERIFY( result1 == "7.200.000.000,00 ");
 
   oss.str(empty);
-  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result2 = oss.str();
   VERIFY( result2 == "7.200.000.000,00 ");
 
@@ -95,12 +95,12 @@ void test01()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
-  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   string result3 = oss.str();
   VERIFY( result3 == "7.200.000.000,00 DEM ");
 
   oss.str(empty);
-  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result4 = oss.str();
   VERIFY( result4 == "7.200.000.000,00 DM");
 
@@ -112,26 +112,26 @@ void test01()
   // test sign of more than one digit, say hong kong.
   oss.imbue(loc_hk);
   oss.str(empty);
-  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result5 = oss.str();
   VERIFY( result5 == "HK$7,200,000,000.00");
 
   oss.str(empty);
-  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, '*', digits2);
+  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits2);
   string result6 = oss.str();
   VERIFY( result6 == "(HKD 100,000,000,000.00)");
 
   // test one-digit formats without zero padding
   oss.imbue(loc_c);
   oss.str(empty);
-  iterator_type os_it07 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it07 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits4);
   string result7 = oss.str();
   VERIFY( result7 == "1");
 
   // test one-digit formats with zero padding, zero frac widths
   oss.imbue(loc_hk);
   oss.str(empty);
-  iterator_type os_it08 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it08 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits4);
   string result8 = oss.str();
   VERIFY( result8 == "(HKD .01)");
 
@@ -139,7 +139,7 @@ void test01()
 
   // test bunk input
   oss.str(empty);
-  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, '*', digits3);
+  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits3);
   string result9 = oss.str();
   VERIFY( result9 == "");
 
@@ -151,7 +151,7 @@ void test01()
   oss.width(20);
   iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
   string result10 = oss.str();
-  VERIFY( result10 == "***************-,01 ");
+  VERIFY( result10 == "***************-,01*");
 
   oss.str(empty);
   oss.width(20);
@@ -210,12 +210,12 @@ void test02()
   const money_put<char>& mon_put = use_facet<money_put<char> >(oss.getloc()); 
 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   string result1 = oss.str();
   VERIFY( result1 == "7.200.000.000,00 ");
 
   oss.str(empty);
-  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result2 = oss.str();
   VERIFY( result2 == "7.200.000.000,00 ");
 
@@ -226,12 +226,12 @@ void test02()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
- iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
+ iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   string result3 = oss.str();
   VERIFY( result3 == "7.200.000.000,00 DEM ");
 
   oss.str(empty);
-  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
+  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result4 = oss.str();
   VERIFY( result4 == "7.200.000.000,00 DM");
 
@@ -303,11 +303,50 @@ void test04()
 #endif
 }
 
+struct My_money_io : public std::moneypunct<char,false>
+{
+  char_type do_decimal_point() const { return '.'; }
+  char_type do_thousands_sep() const { return ','; }
+  std::string do_grouping() const { return "\003"; }
+  
+  std::string do_negative_sign() const { return "()"; }
+  
+  int do_frac_digits() const { return 2; }
+
+  pattern do_neg_format() const
+  {
+    static pattern pat = { { symbol, space, sign, value } };
+    return pat;
+  }
+};
+
+// libstdc++/5708
+void test05()
+{
+  using namespace std;
+  typedef ostreambuf_iterator<char> OutIt;
+
+  locale loc(locale::classic(), new My_money_io);
+
+  bool intl = false;
+
+  string val("-123456");
+  const money_put<char,OutIt>& mp  =
+    use_facet<money_put<char, OutIt> >(loc);
+
+  ostringstream fmt;
+  fmt.imbue(loc);
+  OutIt out(fmt);
+  mp.put(out,intl,fmt,'*',val);
+  VERIFY( fmt.str() == "*(1,234.56)" );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test05();
   return 0;
 }

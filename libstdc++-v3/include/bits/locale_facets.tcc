@@ -1230,7 +1230,7 @@ namespace std
 		  if (__testipad)
 		    __res += string_type(__width - __len, __fill);
 		  else
-		    __res += __ctype.widen(' ');
+		    __res += __ctype.widen(__fill);
 		  break;
 		case money_base::none:
 		  if (__testipad)
