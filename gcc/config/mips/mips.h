@@ -2124,9 +2124,21 @@ extern enum reg_class mips_char_to_class[256];
 #define STACK_GROWS_DOWNWARD
 
 /* The offset of the first local variable from the beginning of the frame.
-   See compute_frame_size for details about the frame layout.  */
+   See compute_frame_size for details about the frame layout.
+
+   ??? If flag_profile_values is true, and we are generating 32-bit code, then
+   we assume that we will need 16 bytes of argument space.  This is because
+   the value profiling code may emit calls to cmpdi2 in leaf functions.
+   Without this hack, the local variables will start at sp+8 and the gp save
+   area will be at sp+16, and thus they will overlap.  compute_frame_size is
+   OK because it uses STARTING_FRAME_OFFSET to compute cprestore_size, which
+   will end up as 24 instead of 8.  This won't be needed if profiling code is
+   inserted before virtual register instantiation.  */
+
 #define STARTING_FRAME_OFFSET						\
-  (current_function_outgoing_args_size					\
+  ((flag_profile_values && ! TARGET_64BIT				\
+    ? MAX (REG_PARM_STACK_SPACE(NULL), current_function_outgoing_args_size) \
+    : current_function_outgoing_args_size)				\
    + (TARGET_ABICALLS && !TARGET_NEWABI					\
       ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
