@@ -61,11 +61,13 @@ typedef __SIZE_TYPE__ size_t;
 
 #ifndef _WCHAR_T
 #ifndef _T_WCHAR_
+#ifndef _T_WCHAR
 #ifndef __WCHAR_T
 #ifndef _WCHAR_T_
 #ifndef ___int_wchar_t_h
 #define _WCHAR_T
 #define _T_WCHAR_
+#define _T_WCHAR
 #define __WCHAR_T
 #define _WCHAR_T_
 #define ___int_wchar_t_h
@@ -73,6 +75,7 @@ typedef __SIZE_TYPE__ size_t;
 #define __WCHAR_TYPE__ int
 #endif
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif
