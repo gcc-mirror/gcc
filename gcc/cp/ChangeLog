@@ -1,3 +1,8 @@
+1998-10-27  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Use type_quals, rather than constp,
+	consistently.
+
 1998-10-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (standard_conversion): instantiate_type here.
