@@ -69,11 +69,14 @@ gnu::java::net::PlainDatagramSocketImpl::create ()
       _Jv_ThrowSocketException ();
     }
 
-  _Jv_platform_close_on_exec (sock);
+  // Cast this to a HANDLE so we can make
+  // it non-inheritable via _Jv_platform_close_on_exec.
+  HANDLE hSocket = (HANDLE) sock;
+  _Jv_platform_close_on_exec (hSocket);
 
   // We use native_fd in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
-  native_fd = (int) sock;
+  native_fd = (jint) hSocket;
 }
 
 void

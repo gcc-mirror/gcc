@@ -363,3 +363,11 @@ _Jv_pipe (int filedes[2])
 {
   return _pipe (filedes, 4096, _O_BINARY);
 }
+
+void
+_Jv_platform_close_on_exec (HANDLE h)
+{
+  // Mark the handle as non-inheritable. This has
+  // no effect under Win9X.
+  SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0);
+}

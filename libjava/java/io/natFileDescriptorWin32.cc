@@ -133,7 +133,13 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
         throw new FileNotFoundException (_Jv_WinStrError (cpath, dwErrorCode));
       }
     }
-  return (jint)handle;
+    
+  // Make this handle non-inheritable so that child
+  // processes don't inadvertently prevent us from
+  // closing this file.
+  _Jv_platform_close_on_exec (handle);
+
+  return (jint) handle;
 }
 
 void
