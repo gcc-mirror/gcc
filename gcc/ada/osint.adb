@@ -1681,26 +1681,6 @@ package body Osint is
       Search_Dir_Default_Name : String_Access)
       return                  String_Access
    is
-      function Is_Relative (S : String; K : Positive) return Boolean;
-      --  Returns True if a relative directory specification is found in S at
-      --  position K.
-
-      function Is_Relative (S : String; K : Positive) return Boolean is
-      begin
-         return
-           not (Is_Directory_Separator (S (K)) -- Unix style absolute pathname
-
-                or else -- DOS style absolute pathname with drive letter
-
-                (S'Last > K + 2
-                    and then
-                 (S (K) in 'a' .. 'z' or else S (K) in 'A' .. 'Z')
-                    and then
-                 S (K + 1) = ':'
-                    and then
-                 Is_Directory_Separator (S (K + 2))));
-      end Is_Relative;
-
       Prefix_Len : constant Integer := Search_Dir_Prefix.all'Length;
       Buffer     : String (1 .. Prefix_Len + Search_File.all'Length + 1);
       File_FD    : File_Descriptor;
