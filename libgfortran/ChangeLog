@@ -2,7 +2,7 @@
 	Paul Brook  <paul@codesourcery.com>
 
 	* intrinsics/env.c (getenv, get_environmental_variable): Remove
-	trailing white space.  Uase alloca.  Honour trim_name.
+	trailing white space.  Use alloca.  Honour trim_name.
 
 2004-09-13  Bud Davis  <bdavis9659@comcast.net>
 
