@@ -84,7 +84,6 @@ GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
 INCLTDL = @INCLTDL@
-LD = @LD@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
@@ -95,6 +94,7 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
@@ -104,7 +104,6 @@ THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
@@ -253,18 +252,13 @@ jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 
-gij_SOURCES = 
-EXTRA_gij_SOURCES = gij.cc
+gij_SOURCES = gij.cc
 gij_LDFLAGS = -rpath $(toolexeclibdir)
 gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 	-o gij
 
-gij_LDADD = gij.lo libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
-
-gij_DEPENDENCIES = gij.lo \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
-
+gij_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+gij_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 gen_from_JIS_SOURCES = 
 EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
@@ -832,7 +826,7 @@ libgcjawt_la_OBJECTS =
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 jv_convert_OBJECTS = 
-gij_OBJECTS = 
+gij_OBJECTS =  gij.o
 gen_from_JIS_OBJECTS = 
 gen_from_JIS_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
@@ -848,14 +842,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-include/config.h.in include/stamp-h.in libgcj-test.spec.in \
-libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1143,7 +1136,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/libgcjdata.P \
 .deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
 .deps/posix-threads.P .deps/prims.P .deps/resolve.P
-SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(EXTRA_libgcjawt_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(EXTRA_libgcjawt_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
 OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(libgcjawt_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
@@ -1163,34 +1156,6 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-include/config.h: include/stamp-h
-	@if test ! -f $@; then \
-		rm -f include/stamp-h; \
-		$(MAKE) include/stamp-h; \
-	else :; fi
-include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > include/stamp-h 2> /dev/null
-$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/include/stamp-h.in; \
-		$(MAKE) $(srcdir)/include/stamp-h.in; \
-	else :; fi
-$(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f include/config.h
-
-maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -1634,33 +1599,31 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-toolexeclibLTLIBRARIES \
+mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLIBRARIES clean-compile \
-		clean-libtool clean-toolexeclibLTLIBRARIES \
-		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
-		clean-depend clean-generic mostlyclean-am clean-local
+clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
+		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
+		clean-noinstPROGRAMS clean-tags clean-depend \
+		clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-toolexeclibLTLIBRARIES distclean-binPROGRAMS \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
+		distclean-libtool distclean-toolexeclibLTLIBRARIES \
+		distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-toolexeclibLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
@@ -1673,8 +1636,7 @@ maintainer-clean-am:  maintainer-clean-hdr \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
 clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
@@ -1732,7 +1694,7 @@ clean-local:
 $(nat_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -c -o $@ $<
 
-$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS): \
+$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS) $(gij_OBJECTS): \
 		include/config.h include/java-signal.h $(nat_headers)
 
 $(c_files): %.lo: %.c
