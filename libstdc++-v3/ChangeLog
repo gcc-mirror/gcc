@@ -1,3 +1,18 @@
+2004-10-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1: New.
+	* include/tr1/array: New.
+	* include/Makefile.am (tr1_headers): New.
+	(stamp-tr1): New.
+	(install-headers): New.
+	(allstamped): Add stamp-tr1.
+
+	* include/ext/array_allocator.h: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/ext/array_allocator/1.cc: New.
+	* testsuite/ext/array_allocator/2.cc: New.
+
 2004-10-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_exit): New proc.
