@@ -165,6 +165,11 @@ static enum reg_class *qty_alternate_class;
 
 static rtx *qty_scratch_rtx;
 
+/* Element Q is nonzero if this quantity has been used in a SUBREG
+   that changes its size.  */
+
+static char *qty_changes_size;
+
 /* Element Q is the register number of one pseudo register whose
    reg_qty value is Q, or -1 is this quantity is for a SCRATCH.  This
    register should be the head of the chain maintained in reg_next_in_qty.  */
@@ -289,6 +294,7 @@ alloc_qty (regno, mode, size, birth)
   qty_min_class[qty] = reg_preferred_class (regno);
   qty_alternate_class[qty] = reg_alternate_class (regno);
   qty_n_refs[qty] = reg_n_refs[regno];
+  qty_changes_size[qty] = reg_changes_size[regno];
 }
 
 /* Similar to `alloc_qty', but allocates a quantity for a SCRATCH rtx
@@ -378,6 +384,7 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
   qty_min_class[qty] = class;
   qty_alternate_class[qty] = NO_REGS;
   qty_n_refs[qty] = 1;
+  qty_changes_size[qty] = 0;
 }
 
 /* Main entry point of this file.  */
@@ -439,6 +446,7 @@ local_alloc ()
   qty_alternate_class
     = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
   qty_n_refs = (int *) alloca (max_qty * sizeof (int));
+  qty_changes_size = (char *) alloca (max_qty * sizeof (char));
 
   reg_qty = (int *) alloca (max_regno * sizeof (int));
   reg_offset = (char *) alloca (max_regno * sizeof (char));
@@ -1925,6 +1933,9 @@ update_qty_class (qty, reg)
   rclass = reg_alternate_class (reg);
   if (reg_class_subset_p (rclass, qty_alternate_class[qty]))
     qty_alternate_class[qty] = rclass;
+
+  if (reg_changes_size[reg])
+    qty_changes_size[qty] = 1;
 }
 
 /* Handle something which alters the value of an rtx REG.
@@ -2106,6 +2117,12 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 #endif
 #else
   SET_HARD_REG_BIT (used, FRAME_POINTER_REGNUM);
+#endif
+
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+  if (qty_changes_size[qty])
+    IOR_HARD_REG_SET (first_used,
+		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
 #endif
 
   /* Normally, the registers that can be used for the first register in
