@@ -7409,7 +7409,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return t;
 	/* If ARGS is NULL, then T is known to be non-dependent.  */
 	if (args == NULL_TREE)
-	  return t;
+	  return decl_constant_value (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:

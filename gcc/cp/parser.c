@@ -10531,13 +10531,15 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  /* Resolve the TYPENAME_TYPE.  */
 		  type = resolve_typename_type (scope,
-						 /*only_current_p=*/false);
+						/*only_current_p=*/false);
 		  /* If that failed, the declarator is invalid.  */
-		  if (type != error_mark_node)
-		    scope = type;
+		  if (type == error_mark_node)
+		    error ("`%T::%D' is not a type",
+			   TYPE_CONTEXT (scope),
+			   TYPE_IDENTIFIER (scope));
 		  /* Build a new DECLARATOR.  */
 		  declarator = build_nt (SCOPE_REF, 
-					 scope,
+					 type,
 					 TREE_OPERAND (declarator, 1));
 		}
 	    }
