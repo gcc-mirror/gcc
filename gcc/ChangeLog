@@ -1,3 +1,15 @@
+2005-04-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/altivec.md (UNSPEC_VSLW, UNSPEC_SUBS,
+	UNSPEC_SET_VSCR): New constants, used throughout.
+	(*andc3_v4sf): New.
+	(altivec_vspltisb, altivec_vsplitish, altivec_vsplitisw):
+	Replace with...
+	(altivec_vspltis<VI_char>): ... this pattern, using
+	a QImode const_int_operand for the immediate.
+	(abs<mode>2, absv4sf2, altivec_abss_<mode>): Rewrite as
+	define_expands.
+
 2005-04-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/17822
