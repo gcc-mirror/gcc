@@ -1,3 +1,15 @@
+Sat Jun 23 19:40:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (emit_i387_cw_initialization): Declare.
+	* i386.md (movsi_insv_1): Remove '*'.
+	(fix_trunc?f?i2): Revamp to use control word parameters.
+	(fix_trunc?i_1): Likewise; update splitters.
+	(fix splitter): Remove.
+	* i386.c (MAX_386_STACK_LOCALS): set to 3.
+	(emit_i387_cw_initialization): New function.
+	(output_fix_trunc): Do not initialize control word;
+	kill dead code; simplify.
+
 2001-06-23  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cppmacro.c (make_string_token): Avoid warning.
