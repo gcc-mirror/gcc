@@ -6956,6 +6956,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		 was initialized was ever used.  Don't do this if it has a
 		 destructor, so we don't complain about the 'resource
 		 allocation is initialization' idiom.  */
+	      /* Now set attribute((unused)) on types so decls of
+		 of that type will be marked used. (see TREE_USED, above.) 
+		 This avoids the warning problems this particular code
+		 tried to work around. */
 
 	      if (TYPE_NEEDS_CONSTRUCTING (type)
 		  && ! already_used
@@ -7797,6 +7801,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		init = TREE_OPERAND (decl, 1);
 
 		decl = start_decl (declarator, declspecs, 1);
+		/* Look for __unused__ attribute */
+		if (TREE_USED (TREE_TYPE (decl)))
+		  TREE_USED (decl) = 1;
 		finish_decl (decl, init, NULL_TREE);
 		return 0;
 	      }
