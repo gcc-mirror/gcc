@@ -268,7 +268,8 @@ java_new_lexer (finput, encoding)
 	      outp = (char *) &result;
 	      outc = 2;
 
-	      r = iconv (handle, (const char **) &inp, &inc, &outp, &outc);
+	      r = iconv (handle, (ICONV_CONST char **) &inp, &inc,
+			 &outp, &outc);
 	      iconv_close (handle);
 	      /* Conversion must be complete for us to use the result.  */
 	      if (r != (size_t) -1 && inc == 0 && outc == 0)
@@ -370,8 +371,8 @@ java_read_char (lex)
 	      out_save = out_count;
 	      inp = &lex->buffer[lex->first];
 	      outp = &lex->out_buffer[lex->out_last];
-	      ir = iconv (lex->handle, (const char **) &inp, &inbytesleft,
-			  &outp, &out_count);
+	      ir = iconv (lex->handle, (ICONV_CONST char **) &inp,
+			  &inbytesleft, &outp, &out_count);
 
 	      /* If we haven't read any bytes, then look to see if we
 		 have read a BOM.  */

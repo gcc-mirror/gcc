@@ -1,3 +1,12 @@
+2001-07-18  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/2812:
+	* lex.h: Use HAVE_ICONV, not HAVE_ICONV_H.
+	* lex.c (java_new_lexer): Use ICONV_CONST.
+	(java_read_char): Likewise.
+	* Make-lang.in (jc1$(exeext)): Link against LIBICONV.
+	(jv-scan$(exeext)): Likewise.
+
 2001-07-13  Tom Tromey  <tromey@redhat.com>
 
 	* jvspec.c (jvgenmain_spec): Remove -ffilelist-file from cc1
