@@ -3420,10 +3420,6 @@ extern varray_type local_classes;
 
 /* Things for handling inline functions.  */
 
-/* Negative values means we know `this' to be of static type.  */
-
-extern int flag_this_is_variable;
-
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
 
