@@ -520,9 +520,9 @@ parse_number (olen)
       while (1) {
 	if (c == 'l' || c == 'L')
 	  {
-	    if (spec_long)
-	      yyerror ("two `l's in integer constant");
-	    spec_long = 1;
+	    if (!pedantic < spec_long)
+	      yyerror ("too many `l's in integer constant");
+	    spec_long++;
 	  }
 	else if (c == 'u' || c == 'U')
 	  {
