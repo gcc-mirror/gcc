@@ -205,8 +205,9 @@ DEF_RTL_EXPR(DEFINE_PEEPHOLE, "define_peephole", "EsTV", 'x')
    3rd operand: vector of insn patterns to place into a SEQUENCE
    4th operand: optionally, some C code to execute before generating the
 	insns.  This might, for example, create some RTX's and store them in
-	elements of `recog_operand' for use by the vector of insn-patterns.
-	(`operands' is an alias here for `recog_operand').   */
+	elements of `recog_data.operand' for use by the vector of
+	insn-patterns.
+	(`operands' is an alias here for `recog_data.operand').   */
 DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", 'x')
 
 /* Definition of an insn and associated split.
@@ -231,8 +232,9 @@ DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", 'x')
    5: vector of insn patterns to place into a SEQUENCE
    6: optionally, some C code to execute before generating the
 	insns.  This might, for example, create some RTX's and store them in
-	elements of `recog_operand' for use by the vector of insn-patterns.
-	(`operands' is an alias here for `recog_operand').  
+	elements of `recog_data.operand' for use by the vector of
+	insn-patterns.
+	(`operands' is an alias here for `recog_data.operand').  
    7: optionally, a vector of attributes for this insn.  */
 DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", 'x')
 
@@ -247,13 +249,14 @@ DEF_RTL_EXPR(DEFINE_COMBINE, "define_combine", "Ess", 'x')
 /* Define how to generate multiple insns for a standard insn name.
    1st operand: the insn name.
    2nd operand: vector of insn-patterns.
-	Use match_operand to substitute an element of `recog_operand'.
+	Use match_operand to substitute an element of `recog_data.operand'.
    3rd operand: C expression that must be true for this to be available.
 	This may not test any operands.
    4th operand: Extra C code to execute before generating the insns.
 	This might, for example, create some RTX's and store them in
-	elements of `recog_operand' for use by the vector of insn-patterns.
-	(`operands' is an alias here for `recog_operand').  */
+	elements of `recog_data.operand' for use by the vector of
+	insn-patterns.
+	(`operands' is an alias here for `recog_data.operand').  */
 DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEss", 'x')
    
 /* Define a requirement for delay slots.
