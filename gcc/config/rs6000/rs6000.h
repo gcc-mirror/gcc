@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    csects.  See AIX documentation for more information about this.  */
 
 #define LINK_SPEC "-T512 -H512 -btextro -bhalt:4 -bnodelcsect\
-   %{static:-bnso -bI:/lib/syscalls.exp"
+   %{static:-bnso -bI:/lib/syscalls.exp}"
 
 /* Profiled library versions are used by linking with special directories.  */
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
