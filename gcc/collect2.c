@@ -104,11 +104,6 @@ extern int errno;
 #include <sgs.h>
 #endif
 
-#ifdef _AIX
-#define ISCOFF(magic) \
-  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC || (magic) == U802TOCMAGIC)
-#endif
-
 /* Many versions of ldfcn.h define these.  */
 #ifdef FREAD
 #undef FREAD
@@ -117,7 +112,11 @@ extern int errno;
 
 #include <ldfcn.h>
 
-/* Mips-news overrides this macro.  */
+/* Some systems have an ISCOFF macro, but others do not.  In some cases
+   the macro may be wrong.  MY_ISCOFF is defined in tm.h files for machines
+   that either do not have an ISCOFF macro in /usr/include or for those 
+   where it is wrong.  */
+
 #ifndef MY_ISCOFF
 #define MY_ISCOFF(X) ISCOFF (X)
 #endif
