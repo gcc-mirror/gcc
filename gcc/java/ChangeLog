@@ -1,3 +1,11 @@
+1999-03-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_stabilize_reference): Use save_expr instead of
+	building a SAVE_EXPR node.
+	(java_complete_lhs): Patch the resulting string of the `+='
+	operator (if necessary) and complete the RHS after having built
+	the cast.
+
 Mon Mar 15 12:18:29 1999  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (make_class):  Don't set CLASS_P here (because

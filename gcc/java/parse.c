@@ -10122,7 +10122,7 @@ java_stabilize_reference (node)
     {
       tree op0 = TREE_OPERAND (node, 0);
       tree op1 = TREE_OPERAND (node, 1);
-      TREE_OPERAND (node, 0) = build1 (SAVE_EXPR, TREE_TYPE (op0), op0);
+      TREE_OPERAND (node, 0) = save_expr (op0);
       TREE_OPERAND (node, 1) = java_stabilize_reference (op1);
       return node;
     }
@@ -10537,9 +10537,13 @@ java_complete_lhs (node)
 	  /* Now complete the RHS. We write it back later on. */
 	  nn = java_complete_tree (TREE_OPERAND (node, 1));
 
+	  if ((cn = patch_string (nn)))
+	    nn = cn;
+
 	  /* The last part of the rewrite for E1 op= E2 is to have 
 	     E1 = (T)(E1 op E2), with T being the type of E1. */
-	  nn = build_cast (EXPR_WFL_LINECOL (wfl_op2), TREE_TYPE (lvalue), nn);
+	  nn = java_complete_tree (build_cast (EXPR_WFL_LINECOL (wfl_op2), 
+					       TREE_TYPE (lvalue), nn));
 	}
 
       /* If we're about to patch a NEW_ARRAY_INIT, we call a special
@@ -11986,7 +11990,6 @@ build_string_concatenation (op1, op2)
 {
   tree result;
   int side_effects = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
-
   
   /* Try to do some static optimization */
   if ((result = string_constant_concatenation (op1, op2)))
