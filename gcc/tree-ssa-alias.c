@@ -1347,6 +1347,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	{
 	  if (!bitmap_bit_p (ai->addresses_needed, v_ann->uid)
 	      && v_ann->mem_tag_kind == NOT_A_TAG
+	      && TREE_CODE (var) != RESULT_DECL
 	      && !is_global_var (var))
 	    {
 	      /* The address of VAR is not needed, remove the
