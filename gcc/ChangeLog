@@ -1,3 +1,8 @@
+2003-03-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcse.c (simple_mem): Return false for floating-point accesses
+	if flag_float_store is true.
+
 2003-03-30  Roger Sayle  <roger@eyesopen.com>
 
 	* gcse.c (gcse_constant_p): New function to identify constants

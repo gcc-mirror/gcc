@@ -6657,6 +6657,9 @@ simple_mem (x)
   if (GET_MODE (x) == BLKmode)
     return 0;
 
+  if (flag_float_store && FLOAT_MODE_P (GET_MODE (x)))
+    return 0;
+
   if (!rtx_varies_p (XEXP (x, 0), 0))
     return 1;
 
