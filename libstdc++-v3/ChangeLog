@@ -1,3 +1,13 @@
+2002-07-16  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/Makefile.am (bits_headers): Remove slice.h
+	* include/Makefile.in: Regenerate.
+	* include/bits/slice.h (slice): move to include/bits/slice_array.h
+	* include/bits/slice.h Remove.
+	* include/std/std_valarray.h: Don't #include bits/slice.h anymore.
+	* include/bits/slice_array.h: Comply to official coding styles.
+	* testsuite/26_numerics/slice.cc: New test.
+
 2002-07-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/os/solaris/solaris2.5/ctype_base.h (ctype_base): Fix

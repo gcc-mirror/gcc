@@ -254,7 +254,6 @@ namespace std
 
 } // std::
       
-#include <bits/slice.h>
 #include <bits/slice_array.h>
 #include <bits/gslice.h>
 #include <bits/gslice_array.h>
