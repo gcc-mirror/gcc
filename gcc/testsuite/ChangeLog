@@ -3,6 +3,10 @@
 	* gcc.c-torture/compile/20000504-1.c: New test.  Derived from
 	OpenSSL by Jason R Thorpe.
 
+Wed May  3 13:02:10 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/20000503-1.c: New test for extract_muldiv bug.
+
 2000-05-03  Robert Lipe <robertlipe@usa.net>
 
 	* gcc.dg/20000503-1.c: New test.
@@ -13,9 +17,27 @@
 	* g++.old-deja/g++.other/align.C: New test.
 	* gcc.dg/cpp-tradstringify.c: New test.
 
+Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20000427-1.c: New test for loop hoisting code
+	and hard registers.
+
+2000-04-26  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/loop-5.c: New test.
+
+2000-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/va-arg-20.c: New test.
+
 Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000422-1.c: New test.
+
+2000-04-20  Greg McGary  <gkm@gnu.org>
+
+	* gcc.c-torture/compile/20000420-2.c: New test for stack misalignment
+	when optimizing, but without sibling-call optimizations (-O1).
 
 Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
 
@@ -26,9 +48,22 @@ Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
 	* g++.abi/ptrflags.C: New test.
 	* g++.eh/catchptr1.C: Test incomplete pointer chains.
 
+Wed Apr 19 09:16:32 2000  Catherine Moore  <clm@cygnus.com>
+
+	* gcc.c-torture/execute/921017-1.c: Check for NO_TRAMPOLINES.
+
+2000-04-19  Greg McGary  <gkm@gnu.org>
+
+	* gcc.c-torture/execute/20000419-1.c: New test for arg clobbering with
+	sibling-call optimizations.
+
 2000-04-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/20000419-1.c: New test.
+
+Wed Apr 12 22:54:02 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20000412-6.c: New test.
 
 Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 
@@ -91,6 +126,20 @@ Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c:  Add FSF
 	copyright.	  
 
+Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/960327-1.c (f): Add a letter to s[] to
+	avoid stack-frame overwrite.
+
+2000-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20000405-2.c: New test.
+	* gcc.c-torture/compile/20000405-3.c: New test.
+
+2000-04-05  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcc.c-torture/compile/20000405-1.c: New test.
+
 2000-04-04  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.dg/cast-qual-1.c: Revert last change.
@@ -108,6 +157,22 @@ Mon Apr  3 02:35:34 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000403-2.c: New test.
 	* gcc.c-torture/compile/20000403-1.c: New test.
+
+Mon Apr  3 16:53:52 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20000403-1.c: New test.
+
+2000-04-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/20000402-1.c: New test.
+
+Mon Apr  3 14:10:34 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* gcc.c-torture/execute/va-arg-15.c: New test.
+	* gcc.c-torture/execute/va-arg-16.c: New test.
+	* gcc.c-torture/execute/va-arg-17.c: New test.
+	* gcc.c-torture/execute/va-arg-18.c: New test.
+	* gcc.c-torture/execute/va-arg-19.c: New test.
 
 2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -133,9 +198,23 @@ Wed Mar 29 13:44:23 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000329-1.c: New test.
 
+2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/compile/20000326-1.c: New test.
+	* gcc.c-torture/compile/20000326-2.c: New test.
+
+2000-03-24  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/va-arg-14.c: New test for va_start where
+	the first parameter is a function argument.
+
 2000-03-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.ext/array4.C: New test.
+
+2000-03-22  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/20000320-1.c: New test for denormals.
 
 2000-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -160,6 +239,12 @@ Tue Mar 14 08:58:37 2000  Jeffrey A Law  (law@cygnus.com)
 2000-03-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.warn/inline.C: New test.
+
+Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.c-torture/execute/divconst-2.c: Rewrite to check for
+	standards-compliant result rather than specific constants.
+	Put test-values in array.
 
 2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
 
@@ -187,6 +272,11 @@ Tue Mar 14 08:58:37 2000  Jeffrey A Law  (law@cygnus.com)
 2000-03-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.warn/impint2.C: New test.	
+
+Sun Mar  5 23:25:12 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.c-torture/execute/20000224-1.c (main): Expected return-value
+	is 1, not zero.
 
 2000-03-05  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -217,6 +307,15 @@ Sat Feb 26 19:46:09 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* g++.old-deja/g++.ext/attrib5.C: XFAIL on Alpha since no link alias.
 	* g++.old-deja/g++.pt/static3.C: Generalize system name for Alpha.
 
+2000-02-25  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/compile/20000224-1.c: New test.
+
+2000-02-25  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcc.c-torture/compile/cpp-2.c: New test.
+	* gcc.c-torture/compile/cpp-1.c: New test.
+
 Fri Feb 25 21:44:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000225-1.c: New test.
@@ -232,6 +331,18 @@ Fri Feb 25 21:44:49 2000  Jeffrey A Law  (law@cygnus.com)
 2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/sizeof5.C: New test.
+
+2000-02-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/va-arg-13.c: New test.
+
+Wed Feb 23 14:16:06 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* gcc.c-torture/execute/va-arg-12.c: New test.
+
+2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c-torture/execute/20000223-1.c: New test.
 
 2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -285,6 +396,11 @@ Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.dg/unused-2.c: Use -Wreturn-type instead of -Wall.
 
 	* gcc.dg/loop-1.c: New test.
+
+2000-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20000127-1.c: New test.
+	* gcc.c-torture/execute/991228-1.c: New test.
 
 2000-01-26  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
@@ -443,13 +559,31 @@ Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
 
 	* gcc.c-torture/compile/labels-2.c: New test.
 
+1999-12-27  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gcc.c-torture/execute/991227-1.c: New test.
+
 1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* g++.old-deja/g++.pt/instantiate6.C: Remove excess errors XFAIL.
 
+1999-12-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gcc.c-torture/execute/991221-1.c: New test.
+
 1999-12-20  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/cast3.C: New test.
+
+1999-12-16  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/execute/991216-4.c: New test.
+
+1999-12-16  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/991216-1.c: New test.
+	* gcc.c-torture/execute/991216-2.c: New test.
+	* gcc.c-torture/execute/991216-3.c: New test.
 
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
@@ -459,6 +593,11 @@ Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
 1999-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.warn/cast-align1.C: New test.
+
+1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/compile/991214-1.c: New test.
+	* gcc.c-torture/compile/991214-2.c: New test.
 
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
@@ -486,6 +625,13 @@ Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
 
 	* g++.old-deja/g++.abi/align.C (main): Fix typo.
 
+1999-12-02  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/compile/991202-1.c: New test.
+	* gcc.c-torture/execute/991202-1.c: New test.
+	* gcc.c-torture/execute/991202-2.c: New test.
+	* gcc.c-torture/execute/991202-3.c: New test.
+
 1999-12-02  Alex Samuel  <samuel@codesourcery.com>
 
 	* g++.old-deja/g++.abi/align.C: New test.
@@ -500,6 +646,10 @@ Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
 
 	* gcc.dg/991129-1.c: New test.
 
+1999-11-27  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/compile/991127-1.c: New test.
+
 1999-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/warn4.C: New test.
@@ -510,6 +660,11 @@ Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
 	* g++.old-deja/g++.ext/pretty2.C: New test.
 	* g++.old-deja/g++.ext/pretty3.C: New test.
 	* g++.old-deja/g++.other/debug6.C: New test.
+
+Wed Oct 20 16:18:23 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/noncompile/noncompile.exp: For 940510-1.c, change
+	compiler_output to look for one error message instead of two.
 
 1999-11-19  Geoffrey Keating  <geoffk@cygnus.com>
 
@@ -528,6 +683,16 @@ Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
 
 	* g77.f-torture/execute/u77-test.f (wd): Allow for longer
 	working directory pathnames.
+
+1999-10-13  Brendan Kehoe  <brendan@cygnus.com>
+
+	* gcc.c-torture/execute/memcheck/memcheck.exp: Make sure a remote
+	host is equipped with driver.h and driver.o so it can actually
+	compile and run the tests.
+
+Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.c-torture/compile/991008-1.c: New test.
 
 1999-11-08  Nick Clifton  <nickc@cygnus.com>
 
@@ -605,6 +770,10 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* g77.f-torture/noncompile/19990905-1.f: Moved from being
 	in compile/.
 
+1999-10-04  Ulrich Drepper  <drepper@cygnus.com>
+
+	* gcc.c-torture/execute/va-arg-11.c: New test.
+
 Fri Oct  1 00:53:17 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* lib/file-format.exp (gcc_target_object_format): Don't
@@ -613,6 +782,10 @@ Fri Oct  1 00:53:17 1999  Mark P. Mitchell  <mark@codesourcery.com>
 Wed Sep 29 23:48:44 1999  Donn Terry <donn@interix.com>
 
 	* gcc.misc-tests/mg.exp: delete extraneous redirection.
+
+1999-09-28  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/compile/990928-1.c: New test.
 
 Tue Sep 28 13:19:15 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
@@ -626,6 +799,15 @@ Mon Sep 27 09:14:24 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.pt/memtemp77.C: Adjust expected
 	__PRETTY_FUNCTION__.
+
+1999-09-23  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/990923-1.c: New test.
+
+1999-09-21  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/special/special.exp: Add FR30 to list of targets
+	for which -fpic is inappropriate.
 
 1999-09-21  Mark Mitchell  <mark@codesourcery.com>
 
@@ -680,6 +862,11 @@ Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
 	overload use.
 	* g++.old-deja/g++.jason/rfg5.C: Likewise
 
+1999-09-08  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/noncompile/noncompile.exp: Add poison-1.c.
+	* gcc.c-torture/noncompile/poison-1.c: New file.
+
 Wed Sep  8 09:39:56 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/sizeof3.C: New test.
@@ -690,6 +877,10 @@ Wed Sep  8 09:39:56 BST 1999  Nathan Sidwell  <nathan@acm.org>
 1999-09-07  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/va-arg-1.c: New.
+
+1999-09-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/va-arg-9.c: New test.
 
 1999-09-05  Craig Burley  <craig@jcb-sc.com>
 
@@ -833,6 +1024,18 @@ Sun Aug  1 22:29:34 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990801-1.c: New test.
 
+1999-07-27  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/fp-cmp-2.c: New file, clone from
+	fp-cmp-1.c, converting double to float.
+
+	* gcc.c-torture/execute/ieee/fp-cmp-3.c: New file, clone from
+	fp-cmp-1.c, converting double to long double.
+
+	* gcc.c-torture/noncompile/920507-1.c (x): Rename asm register
+	from fr1 to unknown_register, since fr1 is a legitimate register
+	on some machines.
+
 Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* README: More listname related changes.
@@ -874,6 +1077,13 @@ Fri Jun 25 05:28:40 1999  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/compile/990625-2.c: New test.
 
 	* gcc.c-torture/compile/990625-1.c: New test.
+
+1999-06-23  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/compile/dll.c: New test case.  Check that dll
+	attributes compile.
+	* gcc.c-torture/compile/dll.x: Only support the dll.c test on
+	ports that use the COFF/PE file format.
 
 Thu Jun 17 13:48:16 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -918,6 +1128,11 @@ Thu May 27 02:38:36 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
 
 	* gcc.c-torture/execute/990527-1.c: New test.
+
+1999-05-25  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/bf-sign-2.c: Explicitly declare signed
+	bitfields as signed. 
 
 1999-05-25  Craig Burley  <craig@jcb-sc.com>
 
@@ -1072,6 +1287,10 @@ Sat Apr 17 16:56:48 1999  Richard Henderson  <rth@cygnus.com>
 	* gcc.dg/uninit-9.c (func): Use __builtin_alloca instead of alloca
 	to avoid the need for a prototype to supress a warning.
 
+Wed Apr  7 23:08:59 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/920501-7.c (main): Delete __I960__ ifndef.
+
 Sun Apr  4 04:02:53 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990404-1.c: New test.
@@ -1101,6 +1320,15 @@ Wed Mar 24 22:50:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990324-1.c: New test.
 
+Mon Mar 22 14:55:58 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/bf-sign-2.c (main): Replace struct sizeof
+	test with 4.
+
+Wed Mar 17 12:22:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/980619-1.x: New.  Expected fail on x86.
+
 1999-03-13  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/19990313-2.f: New test.
@@ -1111,6 +1339,14 @@ Wed Mar 24 22:50:50 1999  Jeffrey A Law  (law@cygnus.com)
 	* g77.f-torture/execute/19990313-0.f: New test.
 	* g77.f-torture/execute/19990313-1.f: New test.
 
+Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/970312-1.c, execute/980605-1.c (f): Change
+	printf to sprintf.
+	* gcc.c-torture/execute/bf-sign-2.c (struct X): Add u15 field.
+	(main): Add check for u15.  Conditionalize u31 check depending on
+	whether ints are <32 bits or >=32 bits.
+	
 1999-03-08  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/19981119-0.f: Improve testiness.
@@ -1136,6 +1372,11 @@ Wed Mar 24 22:50:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/execute/960317-1.f: New (old) test.
 	* g77.f-torture/execute/970625-2.f: Ditto.
+
+1999-03-01 Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gcc.c-torture/noncompile/noncompile.exp (951025-1.c): Accept an error
+	message on line 1 or line 2; cccp and cpplib do this differently.
 
 Mon Mar  1 23:29:14 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -1252,6 +1493,20 @@ Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* README: Update email addresses.
 
+1999-02-03  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/memcheck/blkarg.c (foo): Use 10 leading
+	arguments in order to force structure S onto the stack even on
+	the alpha.
+	(test): Pass 10 leading arguments to function foo as well as the
+	structure S.
+
+	* gcc.c-torture/execute/memcheck/blkarg.x: New file: Expected
+	failure for all targets. 
+
+	* gcc.c-torture/execute/memcheck/driver.c (main): Use exit or
+	abort to terminate program execution.
+
 Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990130-1.c: New test.
@@ -1259,6 +1514,14 @@ Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
 Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990130-1.c: New test.
+
+1999-01-28  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/990128-1.c: New test.
+
+1999-01-27  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/990127-{1,2}.c: New tests.
 
 1999-01-27  Felix Lee  <flee@cygnus.com>
 
@@ -1306,6 +1569,10 @@ Tue Dec 29 11:33:25 1998  Richard Henderson  <rth@cygnus.com>
 1998-12-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/conv5.C: New test.
+
+1998-12-14  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/920501-4.c (main): Fix typo: replace | with ||.
 
 Fri Dec 11 10:25:57 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -1370,6 +1637,11 @@ Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.pt/lookup6.C: New test.
 
+1998-11-30  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/981130-1.c: New test.
+	* gcc.c-torture/execute/981130-1.x: New test failure expectations.
+
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit76.C: New test.
@@ -1413,6 +1685,11 @@ Sat Nov 21 21:41:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.eh/throw2.C: New test.  CV-qualifiers are not
  	properly discarded.
+
+Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* gcc.c-torture/execute/memcheck: New directory of tests for
+	-fcheck-memory-usage.
 
 1998-11-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -1562,6 +1839,12 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/compile/981007-1.c: New test for irix6 -O0 core dump.
 
+1998-10-06  Ken Raeburn  <raeburn@cygnus.com>
+
+	* gcc.c-torture/special/981006-1.c: New test.  Make sure gcc doesn't
+	lose track of the possible targets of tablejump insns.
+	* special/special.exp: Run it.
+
 1998-10-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/friend35.C: New test.  A template function
@@ -1612,6 +1895,11 @@ Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.other/addrof1.C: New test.
 
+Thu Oct  1 17:15:26 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/compile/981001-1.c: New test.
+	* gcc.c-torture/execute/981001-1.c: New test.
+	
 Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/981001-2.c: New test.
@@ -1700,6 +1988,10 @@ Thu Sep  3 00:40:32 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
 	* lib/{objc.exp,objc-torture.exp}: New files for objc testing harness.
 	* objc: ObjC testsuite.
 
+Mon Aug 31 12:00:00 1998  Catherine Moore  <clm@cygnus.com>
+
+	* gcc.c-torture/execute/941014-1.x:  New file.
+
 Mon Aug 31 15:19:32 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add support for
@@ -1715,6 +2007,10 @@ Thu Aug 27 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980827-1.c: New test.
 
+Wed Aug 26 16:10:00 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/execute/loop-4b.c: New test.
+
 Wed Aug 26 16:25:38 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add support for
@@ -1724,6 +2020,11 @@ Wed Aug 26 16:25:38 1998  Nick Clifton  <nickc@cygnus.com>
 Tue Aug 25 19:42:13 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980825-1.c: New test.
+
+Mon Aug 24 14:20:32 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/bcp-1.c (main): Fix optimize test loop to
+	count number tests in opt_t0 not good_t0.
 
 Mon Aug 24 16:38:52 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -1766,6 +2067,11 @@ Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980816-1.c: New test.
 
+Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Pass -ffloat-store to
+	compiler for ieee tests.
+
 1998-08-01  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/980729-0.f: New test.
@@ -1779,6 +2085,11 @@ Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
 Wed Jul 29 00:17:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980729-1.c: New test.
+
+Mon Jul 27 11:05:07 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/930529-1.c (main): Check to see if
+	__thumb__ is defined, and test for ARM style doubles if so.
 
 1998-07-26  Dave Love  <d.love@dl.ac.uk>
 
@@ -1796,6 +2107,16 @@ Sun Jul 26 01:05:02 1998  Jeffrey A Law  (law@cygnus.com)
 1998-07-25  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/io0.f: New test.
+
+Fri Jul 24 11:02:43 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/comp-goto-1.c (main): Make main() return
+	an int.
+
+Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/980618-{1,2}.c: New tests that showed up
+	m32r bugs.
 
 Fri Jul 17 14:19:32 1998  Nick Clifton  <nickc@cygnus.com>
 
@@ -1950,6 +2271,10 @@ Mon Jun  8 02:13:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980608-1.c: New test.
 
+Fri Jun  5 21:54:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/execute/980605-1.c: New test.
+
 Thu Jun  4 01:39:24 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980604-1.c: New test.
@@ -1962,6 +2287,11 @@ Tue Jun  2 20:51:43 1998  Jeffrey A Law  (law@cygnus.com)
 1998-06-02  Dave Love  <d.love@dl.ac.uk>
 
 	* 970125-0.f: Fix per JCB.  Add commentary.
+
+Sun May 31 23:23:29 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/mzero2.c: New test to better test
+	IEEE -0 support.
 
 Fri May 29 01:10:12 1998  Peter Leven <leven@lpr.e-technik.tu-muenchen.de>
 
@@ -2072,6 +2402,19 @@ Tue May  5 19:20:13 1998  Michael Meissner  <meissner@cygnus.com>
 	* g77.f-torture/compile/970125-0.f: New test.
 	* g77.f-torture/compile/980419-1.f: New test.
 
+Wed Apr  8 13:09:15 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/980407-1.c: Delete test.  Is duplicate
+	of loop-4.c.
+
+Tue Apr  7 12:01:24 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/980407-1.c: New test from Joern Rennecke.
+
+Fri Apr  3 12:27:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/compile/980329-1.c: New test.
+
 Wed Mar 18 16:22:22 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.dg/980313-1.c: New test for fp conditional move on PPro.
@@ -2103,6 +2446,11 @@ Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
 	* g77.f-torture/execute/dnrm2.f (dnrm2): Avoid uninitialized (and
 	possibly uninitialized) variables and declare dnrm2.
 
+Mon Feb 23 15:16:53 1998  Robert Lipe <robertl@dgii.com>
+
+	From Bruno Haible <haible@ilog.fr>:
+	* gcc.c-torture/execute/980223.c: New test.
+
 Fri Feb 13 00:36:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/ifelse-1.c: New test.
@@ -2117,15 +2465,30 @@ Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
         handling to be like "excess errors test fails".
         * Update various tests accordingly.
 
+Fri Feb  6 14:30:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/execute/980205.c: New test.
+
 Sun Jan 18 01:33:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Look for .x files instead of .cexp files.
 	* lib/f-torture.exp: Similarly.
 	* gcc.c-torture: Rename all .cexp files to .x files.
 
+Mon Dec  8 23:55:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/noncompile/noncompile.exp (921102-1.c): Fixed comment.
+	(940510-1.c): Removed duplicate.
+	(971104-1.c): New test.
+
 Tue Nov 25 16:18:51 1997  Kate Hedstrom  (kate@ahab.rutgers.edu)
 
         * lib/f-torture.exp: Improve error and loop detection.
+
+Wed Nov 19 14:27:04 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/950221-1.c (filler): If STACK_SIZE is defined,
+	use that to size the filler array.
 
 Fri Sep 26 10:50:53 1997  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -2180,6 +2543,11 @@ Fri Sep  5 00:21:42 1997  Jeffrey A Law  (law@cygnus.com)
 
         * gcc.c-torture/execute/cbrt.c: Tweak to work on more targets.
 
+Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Check for ieee_multilib_flags
+	target feature; pass this to c-torture-execute as needed.
+
 Wed Sep  3 17:15:00 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp(c-torture-execute): If the previous and the
@@ -2192,6 +2560,10 @@ Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/gcc-dg.exp (gcc-dg-test): Fix typos setting compile_type.
 
+Fri Aug 29 12:48:09 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/921007-1.c: Make strcmp static.
+
 Thu Jul 31 12:17:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/920501-9.c: Fix to work on targets with
@@ -2200,10 +2572,19 @@ Thu Jul 31 12:17:24 1997  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/961017-2.c: Fix to work on targets which
 	have either a 32bit long or 32bit int.
 
+Tue Jul 29 00:40:38 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/execute/conversion.c (test_float_to_integer):
+	Make double precision tests dependent on sizeof (double).
+
 Wed Jul  9 15:15:40 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* gcc.prms/5403.c: Allow CRLFs to occur at the start of the output
 	too.
+
+Tue Jun 17 22:11:16 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/compile/961203-1.cexp: New script.
 
 Mon Jun 16 15:27:06 1997  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -2219,6 +2600,10 @@ Fri Jun  6 14:23:24 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp: Use g++_link_flags from libgloss.exp, instead
 	of trying to do it ourselves.
+
+Wed Jun  4 03:38:50 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Set -mieee for SH.
 
 Wed Jun  4 18:43:55 1997  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -2244,6 +2629,13 @@ Tue May 20 15:23:27 1997  Jeffrey A Law  (law@cygnus.com)
 	an old-style decl for malloc.  Fixes tests to work when
 	sizeof (int) != sizeof (size_t).
 
+Thu May 15 14:00:04 1997  Mike Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/va-arg-3.c: If NO_VARARGS is defined, nop test.
+
+	* gcc.c-torture/execute/strct-varg-1.c: If NO_VARARGS is defined,
+	use stdargs.h interface.
+
 Thu May 15 14:10:39 1997  Mike Meissner  <meissner@cygnus.com>
 
 	* lib/gcc.exp (gcc_target_compile): If gcc,no_varargs, define
@@ -2263,6 +2655,11 @@ Thu Apr 10 14:50:26 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* lib/g++.exp(g++init): Don't try to be smart, always run g++_init
  	to completion when it's called.
 
+Fri Mar 21 16:34:52 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/920501-7.c (main,x): If NO_LABELS_VALUES
+	is defined, don't do test.
+
 Thu Mar 20 09:50:32 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/plumhall.exp (ph_make): Comment out errorCode=NONE test
@@ -2272,6 +2669,27 @@ Thu Mar 20 09:50:32 1997  Doug Evans  <dje@canuck.cygnus.com>
 	* lib/plumhall.exp (ph_make): If unresolved because of bad
 	errorCode, record errorCode in log file.
 	(*): Replace send_log/verbose with verbose -log.
+
+Wed Mar 19 13:06:26 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/rbug.c (main): Don't do long long to
+	double conversion if double isn't at least 8 bytes.
+
+	* gcc.c-torture/execute/cvt-1.c: Make all functions use long, not
+	int to work with targets where int is 16 bits.
+
+	* gcc.c-torture/execute/920715-1.c (main): If double isn't at least
+	8 bytes, just exit, since 4 byte doubles don't have enough bits of
+	precision for the test to complete.
+
+Fri Mar 14 17:51:02 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c-torture/execute/920715-1.cexp (d10v-*-*): Expect to fail
+	if d10v is not compiled with the -mdouble64 flag.
+	* gcc.c-torture/execute/ieee/rbug.cexp (d10v-*-*): Ditto.
+
+	* gcc.c-torture/execute/cvt-1.cexp (d10v-*-*): Expect to fail if
+	d10v is not compiled with the -mint32 flag.
 
 Thu Mar 13 16:09:28 1997  Bob Manson  <manson@charmed.cygnus.com>
 
