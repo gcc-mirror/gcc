@@ -645,7 +645,7 @@ unloop (struct loops *loops, struct loop *loop)
 }
 
 /* Fix placement of LOOP inside loop tree, i.e. find the innermost superloop
-   FATHER of LOOP such that all of the edges comming out of LOOP belong to
+   FATHER of LOOP such that all of the edges coming out of LOOP belong to
    FATHER, and set it as outer loop of LOOP.  Return 1 if placement of
    LOOP changed.  */
 int

@@ -6665,7 +6665,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 								    arg1)),
 					ext_val, benefit);
 	    }
-	  /* Propagate the MULT expressions to the intermost nodes.  */
+	  /* Propagate the MULT expressions to the innermost nodes.  */
 	  else if (GET_CODE (arg0) == PLUS)
 	    {
 	      /* (invar_0 + invar_1) * invar_2.  Distribute.  */

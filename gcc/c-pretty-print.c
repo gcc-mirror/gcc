@@ -538,7 +538,7 @@ pp_c_declaration_specifiers (c_pretty_printer *pp, tree t)
       ( declarator )
       direct-declarator [ type-qualifier-list(opt) assignment-expression(opt) ]
       direct-declarator [ static type-qualifier-list(opt) assignment-expression(opt)]
-      direct-declarator [ type-qualifier-list static assignment-exression ]
+      direct-declarator [ type-qualifier-list static assignment-expression ]
       direct-declarator [ type-qualifier-list * ]
       direct-declaratpr ( parameter-type-list )
       direct-declarator ( identifier-list(opt) )  */
@@ -884,7 +884,7 @@ pp_c_compound_literal (c_pretty_printer *pp, tree e)
       integer-constant
       floating-constant
       enumeration-constant
-      chatracter-constant   */
+      character-constant   */
 
 void
 pp_c_constant (c_pretty_printer *pp, tree e)

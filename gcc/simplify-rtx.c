@@ -778,7 +778,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	   && width <= 2*HOST_BITS_PER_WIDE_INT && width > 0)
     {
       /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
-	 operators are intentionally left unspecified (to ease implemention
+	 operators are intentionally left unspecified (to ease implementation
 	 by target backends), for consistency, this routine implements the
 	 same semantics for constant folding as used by the middle-end.  */
 

@@ -1340,7 +1340,7 @@ check_live_1 (int src, rtx x)
 	}
       else
 	{
-	  /* Check for psuedo registers.  */
+	  /* Check for pseudo registers.  */
 	  for (i = 0; i < candidate_table[src].split_bbs.nr_members; i++)
 	    {
 	      int b = candidate_table[src].split_bbs.first_member[i];

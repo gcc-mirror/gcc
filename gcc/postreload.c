@@ -757,7 +757,7 @@ reload_combine (void)
 	  else
 	    {
 	      /* Otherwise, look for a free index register.  Since we have
-		 checked above that neiter REG nor BASE are index registers,
+		 checked above that neither REG nor BASE are index registers,
 		 if we find anything at all, it will be different from these
 		 two registers.  */
 	      for (i = first_index_reg; i <= last_index_reg; i++)
