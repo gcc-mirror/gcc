@@ -1,3 +1,17 @@
+2001-07-11  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/run_doxygen:  Don't keep output from previous run.
+	* docs/doxygen/user.cfg.in:  Tweaks.
+	* include/bits/c++config:  Documentation comments for Doxygen.
+	* include/bits/char_traits.h:  Likewise.
+	* include/bits/limits_generic.h:  Likewise.
+	* include/bits/std_stdexcept.h:  Likewise.
+	* include/bits/stl_pair.h:  Likewise.
+	* libsupc++/exception:  Likewise.
+	* libsupc++/new:  Likewise.
+	* libsupc++/typeinfo:  Likewise.
+	* libmath/Makefile.am:  Update and correct copyright.
+
 2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* acinclude.m4: Don't AC_REPLACE_MATHFUNCS expf and atan2f.

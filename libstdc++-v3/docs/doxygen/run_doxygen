@@ -5,7 +5,7 @@
 # Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@sources.redhat.com>
-# $Id: run_doxygen,v 1.4 2001/04/29 01:40:34 pme Exp $
+# $Id: run_doxygen,v 1.5 2001/06/11 13:04:07 pme Exp $
 
 
 # We can check now that the version of doxygen is >= this variable.
@@ -75,7 +75,7 @@ parse_options() {
         blank=
         Id=is
         echo You expect this dinky script to track a version?  Okay, here
-        echo it $Id: run_doxygen,v 1.4 2001/04/29 01:40:34 pme Exp $blank
+        echo it $Id: run_doxygen,v 1.5 2001/06/11 13:04:07 pme Exp $blank
         exit 0
         ;;
       *)
@@ -115,7 +115,9 @@ case x"$mode" in
       exit 1 ;;
 esac
 
-test -d $outdir || (mkdir -p $outdir ; chmod u+w $outdir)
+rm -rf $outdir
+mkdir -p $outdir
+chmod u+w $outdir
 (
   set -e
   cd $srcdir
