@@ -1,3 +1,7 @@
+2002-06-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 Thu Jun 20 00:35:14 2002  Denis Chertykov  <denisc@overta.ru>
 
 	* configure.in: Add support for ip2k.
