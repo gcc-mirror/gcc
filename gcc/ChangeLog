@@ -1,5 +1,14 @@
 2000-08-28  Richard Henderson  <rth@cygnus.com>
 
+	* config/i386/i386.c: Don't error on EXTRA_CONSTRAINT defined.
+	(call_insn_operand): Don't expect a surrounding mem.
+	(constant_call_address_operand): Likewise.
+	* config/i386/i386.h (PREDICATE_CODES): Update.
+	* config/i386/i386.md (call patterns): Move the match_operand
+	for the call destination inside the mem.
+
+2000-08-28  Richard Henderson  <rth@cygnus.com>
+
 	* local-alloc.c (requires_inout): Don't use reserved range for
 	EXTRA_CONSTRAINTS; use anything not matched by REG_CLASS_FROM_LETTER.
 	* recog.c (asm_operand_ok): Likewise.

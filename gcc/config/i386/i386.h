@@ -2585,8 +2585,8 @@ do { long l;						\
   {"aligned_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
 		       LABEL_REF, SUBREG, REG, MEM}},			\
   {"pic_symbolic_operand", {CONST}},					\
-  {"call_insn_operand", {MEM}},						\
-  {"constant_call_address_operand", {MEM}},				\
+  {"call_insn_operand", {REG, SUBREG, MEM, SYMBOL_REF}},		\
+  {"constant_call_address_operand", {SYMBOL_REF}},			\
   {"const0_operand", {CONST_INT, CONST_DOUBLE}},			\
   {"const1_operand", {CONST_INT}},					\
   {"const248_operand", {CONST_INT}},					\
