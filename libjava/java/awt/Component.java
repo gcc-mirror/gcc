@@ -1,5 +1,5 @@
 /* Component.java -- a graphics component
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -4168,19 +4168,26 @@ p   * <li>the set of backward traversal keys
       return;
 
     Graphics gfx = getGraphics();
-    Shape clip = event.getUpdateRect();
-    gfx.setClip(clip);
-
-    switch (event.id)
+    try
       {
-      case PaintEvent.PAINT:
-        paint(gfx);
-        break;
-      case PaintEvent.UPDATE:
-        update(gfx);
-        break;
-      default:
-        throw new IllegalArgumentException("unknown paint event");
+	Shape clip = event.getUpdateRect();
+	gfx.setClip(clip);
+
+	switch (event.id)
+	  {
+	  case PaintEvent.PAINT:
+	    paint(gfx);
+	    break;
+	  case PaintEvent.UPDATE:
+	    update(gfx);
+	    break;
+	  default:
+	    throw new IllegalArgumentException("unknown paint event");
+	  }
+      }
+    finally
+      {
+	gfx.dispose();
       }
   }
 

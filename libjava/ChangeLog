@@ -1,3 +1,8 @@
+2003-01-28  Oscar Pearce  <oscar@pearceenterprises.com>
+
+	* java/awt/Component.java (processPaintEvent): Dispose of Graphics
+	object when finished.
+
 2003-01-28  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* libjava/configure.host: Disable can_unwind_signal on darwin.
