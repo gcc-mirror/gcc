@@ -580,8 +580,7 @@ int main(int argc, char **argv){
     if (action == ACTION_UPDATE)
 #if HAVE_FTRUNCATE
       ftruncate (jarfd, lseek (jarfd, 0, SEEK_CUR));
-#endif
-#if HAVE__CHSIZE
+#else
       _chsize (jarfd, lseek (jarfd, 0, SEEK_CUR));
 #endif
 

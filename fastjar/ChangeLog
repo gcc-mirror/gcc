@@ -1,3 +1,8 @@
+2004-07-19  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* jartool.c (main): Ensure that only one of ftruncate and _chsize
+	is used.
+
 2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR 16472
