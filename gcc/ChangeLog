@@ -1,3 +1,16 @@
+2004-07-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (lang_post_pch_load): New variable.
+	* c-pch.c (lang_post_pch_load): Define it.
+	(c_common_read_pch): Use it.
+	* cgraphunit.c (record_call_1): Give the front end a chance to
+	record additional needed entities when a variable is marked as
+	needed.
+	* tlink.c (recompile_files): Robustify.
+	(scan_linker_output): If a symbol is assigned to a file,
+	but after recompilation is not present there, issue an error
+	message.
+
 2004-07-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-im.c (force_move_till_expr, force_move_till):

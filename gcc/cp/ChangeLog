@@ -1,3 +1,103 @@
+2004-07-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (IDENTIFIER_REPO_CHOSEN): Define.
+	(lang_decl_flags): Narrow the width of "languages".  Add
+	repo_available_p.
+	(DECL_NEEDED_P): Remove.
+	(FOR_EACH_CLONE): New macro.
+	(DECL_REPO_AVAILABLE_P): Likewise.
+	(DECL_TINFO_P): Likewise.
+	(set_linkage_according_to_type): Declare.
+	(import_export_vtable): Remove.
+	(import_export_tinfo): Likewise.
+	(mark_needed): New function.
+	(decl_needed_p): Likewise.
+	(note_vauge_linkage_fn): Likewise.
+	(init_repo): Change prototype.
+	(repo_template_used): Remove.
+	(repo_template_instantiated): Likewise.
+	(repo_emit_p): New function.
+	(repo_export_class_p): Likewise.
+	(no_linkage_check): Change prototype.
+	* class.c (set_linkage_according_to_type): New function.
+	(build_vtable): Use it.  Do not call import_export_vtable.  Set
+	DECL_IGNORED_P if appropriate.
+	* decl.c (duplicate_decls): Preserve DECL_REPO_AVAILABLE_P.
+	(make_rtL_for_nonlocal_decls): Check for template instantiations
+	explicitly.
+	(grokfndecl): Adjust call to no_linkage_check.
+	(set_linkage_for_static_data_member): New function.
+	(grokvardecl): Use it.  Adjust call to no_linkage_check.
+	(grokdeclarator): Use set_linkage_for_static_data_member.
+	* decl2.c (note_vague_linkage_fn): New function.
+	(note_vague_linkage_var): Likewise.
+	(finish_static_data_member_decl): Use it.
+	(import_export_vtable): Remove.
+	(import_export_class): Use repo_export_class_p.
+	(var_finalized_p): Simplify.
+	(maybe_emit_vtables): Simplify.
+	(mark_needed): New function.
+	(decl_needed_p): Likewise.
+	(import_export_decl): Add documentation and consistency checks.
+	Use repo_emit_p.  Handle virtual tables and RTTI information
+	here.
+	(import_export_tinfo): Remove.
+	(write_out_vars): Call import_export_decl.
+	(cxx_callgraph_analyze_expr): Ensure that all vtables are emitted
+	whenever one is.
+	(finish_file): Use decl_needed_p.  Do not call import_export_decl
+	for undefined static data members.  Do not warn about undefined
+	inlines when using a repository.
+	(mark_used): Use note_vague_linkage_fn.  Always defer template
+	instantiations.
+	* lex.c (cxx_init): Adjust call to init_repo.  Always set
+	flag_unit_at_a-time.
+	* method.c (synthesize_method): Remove unncessary
+	import_export_decl call.
+	(implicitly_declare_fn): Use set_linkage_according_to_type.
+	* optimize.c (maybe_clone_body): Use FOR_EACH_CLONE.
+	* pt.c (instantiate_class_template): Don't redundantly add classes
+	to keyed_classes.  Don't call repo_template_used.
+	(tsubst_decl): Set DECL_INTERFACE_KNOWN for instantiations of
+	templates with internal linkage.
+	(check_instantiated_args): Adjust call to no_linkage_check.
+	(instantiate_template): Use FOR_EACH_CLONE.
+	(mark_definable): New function.
+	(mark_decl_instantiated): Use it.
+	(do_decl_instantiation): Adjust tests for explicit instantiation
+	after "extern template".
+	(instantiate_class_member): Do not use repo_template_instantiated.
+	(do_type_instantiation): Simplify.
+	(instantiate_decl): Use mark_definable.  Check repo_emit_p.
+	Simplify.
+	* repo.c (repo_get_id): Remove.
+	(original_repo): Remove.
+	(IDENTIFIER_REPO_USED): Remove.
+	(IDENTIFIER_REPO_CHOSEN): Remove.
+	Remove all #if 0'd code.
+	(repo_template_used): Remove.
+	(repo_template_instantiated): Remove.
+	(temporary_obstack_initialized_p): New variable.
+	(init_repo): Register with lang_post_pch_load.  Avoid creating
+	identifiers unnecessarily.  Don't use original_repo.  Close the
+	file here.
+	(reopen_repo_file_for_write): Not here.
+	(finish_repo): Always write out a new repository file.
+	(repo_emit_p): New function.
+	(repo_export_class_p): Likewise.
+	* rtti.c (get_tinfo_decl): Use set_linkage_according_to_type.
+	(involves_incomplete_p): New function.
+	(tinfo_base_init): Use it.
+	(ptr_initializer): Remove non_public_ptr parameter.
+	(ptm_initializer): Likewise.
+	(get_pseudo_ti_init): Likewise.
+	(unemitted_tinfo_decl_p): Remove.
+	(emit_tinfo_decl): Use import_export_decl.
+	* semantics.c (expand_body): Move updates of static_ctors and
+	static_dtors to ...
+	(expand_or_defer_fn): ... here.
+	* tree.c (no_linkage_check): Add relaxed_p parameter.
+	
 2004-07-28  Eric Christopher  <echristo@redhat.com>
 
 	* cp-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.

@@ -700,9 +700,6 @@ synthesize_method (tree fndecl)
   bool need_body = true;
   tree stmt;
 
-  if (at_eof)
-    import_export_decl (fndecl);
-
   /* If we've been asked to synthesize a clone, just synthesize the
      cloned function instead.  Doing so will automatically fill in the
      body for the clone.  */
@@ -1014,7 +1011,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL,
 	       TYPE_UNQUALIFIED);
   grok_special_member_properties (fn);
-  TREE_PUBLIC (fn) = !decl_function_context (TYPE_MAIN_DECL (type));
+  set_linkage_according_to_type (type, fn);
   rest_of_decl_compilation (fn, /*asmspec=*/NULL,
 			    toplevel_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;

@@ -1062,10 +1062,11 @@ find_tree (tree t, tree x)
 }
 
 /* Check if the type T depends on a type with no linkage and if so, return
-   it.  */
+   it.  If RELAXED_P then do not consider a class type declared within
+   a TREE_PUBLIC function to have no linkage.  */
 
 tree
-no_linkage_check (tree t)
+no_linkage_check (tree t, bool relaxed_p)
 {
   tree r;
 
@@ -1076,6 +1077,8 @@ no_linkage_check (tree t)
 
   switch (TREE_CODE (t))
     {
+      tree fn;
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	goto ptrmem;
@@ -1085,25 +1088,28 @@ no_linkage_check (tree t)
 	return NULL_TREE;
       /* Fall through.  */
     case ENUMERAL_TYPE:
-      if (decl_function_context (TYPE_MAIN_DECL (t))
-	  || TYPE_ANONYMOUS_P (t))
+      if (TYPE_ANONYMOUS_P (t))
+	return t;
+      fn = decl_function_context (TYPE_MAIN_DECL (t));
+      if (fn && (!relaxed_p || !TREE_PUBLIC (fn)))
 	return t;
       return NULL_TREE;
 
     case ARRAY_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      return no_linkage_check (TREE_TYPE (t));
+      return no_linkage_check (TREE_TYPE (t), relaxed_p);
 
     case OFFSET_TYPE:
     ptrmem:
-      r = no_linkage_check (TYPE_PTRMEM_POINTED_TO_TYPE (t));
+      r = no_linkage_check (TYPE_PTRMEM_POINTED_TO_TYPE (t),
+			    relaxed_p);
       if (r)
 	return r;
-      return no_linkage_check (TYPE_PTRMEM_CLASS_TYPE (t));
+      return no_linkage_check (TYPE_PTRMEM_CLASS_TYPE (t), relaxed_p);
 
     case METHOD_TYPE:
-      r = no_linkage_check (TYPE_METHOD_BASETYPE (t));
+      r = no_linkage_check (TYPE_METHOD_BASETYPE (t), relaxed_p);
       if (r)
 	return r;
       /* Fall through.  */
@@ -1114,11 +1120,11 @@ no_linkage_check (tree t)
 	     parm && parm != void_list_node;
 	     parm = TREE_CHAIN (parm))
 	  {
-	    r = no_linkage_check (TREE_VALUE (parm));
+	    r = no_linkage_check (TREE_VALUE (parm), relaxed_p);
 	    if (r)
 	      return r;
 	  }
-	return no_linkage_check (TREE_TYPE (t));
+	return no_linkage_check (TREE_TYPE (t), relaxed_p);
       }
 
     default:

@@ -400,7 +400,12 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	 by this function and re-examine whether the decl is actually used
 	 after rtl has been generated.  */
       if (TREE_STATIC (t))
-        cgraph_varpool_mark_needed_node (cgraph_varpool_node (t));
+	{
+	  cgraph_varpool_mark_needed_node (cgraph_varpool_node (t));
+	  if (lang_hooks.callgraph.analyze_expr)
+	    return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees, 
+						      data);
+	}
       break;
 
     case ADDR_EXPR:

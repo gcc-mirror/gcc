@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "diagnostic.h"
 
-static tree repo_get_id (tree);
 static char *extract_string (char **);
 static const char *get_base_filename (const char *);
 static void open_repo_file (const char *);
@@ -45,162 +44,13 @@ static char *afgets (FILE *);
 static void reopen_repo_file_for_write (void);
 
 static GTY(()) tree pending_repo;
-static GTY(()) tree original_repo;
 static char *repo_name;
 static FILE *repo_file;
 
 static const char *old_args, *old_dir, *old_main;
 
 static struct obstack temporary_obstack;
-
-#define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
-#define IDENTIFIER_REPO_CHOSEN(NODE) (TREE_LANG_FLAG_4 (NODE))
-
-#if 0
-/* Record the flags used to compile this translation unit.  */
-
-void
-repo_compile_flags (int argc, char **argv)
-{
-}
-
-/* If this template has not been seen before, add a note to the repository
-   saying where the declaration was.  This may be used to find the
-   definition at link time.  */
-
-void
-repo_template_declared (tree t)
-{}
-
-/* Note where the definition of a template lives so that instantiations can
-   be generated later.  */
-
-void
-repo_template_defined (tree t)
-{}
-
-/* Note where the definition of a class lives to that template
-   instantiations can use it.  */
-
-void
-repo_class_defined (tree t)
-{}
-#endif
-
-static tree
-repo_get_id (tree t)
-{
-  if (TYPE_P (t))
-    {
-      tree vtable;
-
-      /* If we're not done setting up the class, we may not have set up
-	 the vtable, so going ahead would give the wrong answer.
-         See g++.pt/instantiate4.C.  */
-      if (!COMPLETE_TYPE_P (t) || TYPE_BEING_DEFINED (t))
-	abort ();
-
-      vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
-
-      t = vtable;
-      if (t == NULL_TREE)
-	return t;
-    }
-  return DECL_ASSEMBLER_NAME (t);
-}
-
-/* Note that a template has been used.  If we can see the definition, offer
-   to emit it.  */
-
-void
-repo_template_used (tree t)
-{
-  tree id;
-
-  if (! flag_use_repository)
-    return;
-
-  id = repo_get_id (t);
-  if (id == NULL_TREE)
-    return;
-  
-  if (TYPE_P (t))
-    {
-      if (IDENTIFIER_REPO_CHOSEN (id))
-	mark_class_instantiated (t, 0);
-    }
-  else if (DECL_P (t))
-    {
-      if (IDENTIFIER_REPO_CHOSEN (id))
-	/* It doesn't make sense to instantiate a clone, so we
-	   instantiate the cloned function instead.  Note that this
-	   approach will not work correctly if collect2 assigns
-	   different clones to different files -- but it shouldn't.  */
-	mark_decl_instantiated (DECL_CLONED_FUNCTION_P (t)
-				? DECL_CLONED_FUNCTION (t) : t, 
-				0);
-    }
-  else
-    abort ();
-
-  if (! IDENTIFIER_REPO_USED (id))
-    {
-      IDENTIFIER_REPO_USED (id) = 1;
-      pending_repo = tree_cons (NULL_TREE, id, pending_repo);
-    }
-}
-
-#if 0
-/* Note that the vtable for a class has been used, and offer to emit it.  */
-
-static void
-repo_vtable_used (tree t)
-{
-  if (! flag_use_repository)
-    return;
-
-  pending_repo = tree_cons (NULL_TREE, t, pending_repo);
-}
-
-/* Note that an inline with external linkage has been used, and offer to
-   emit it.  */
-
-void
-repo_inline_used (tree fn)
-{
-  if (! flag_use_repository)
-    return;
-
-  /* Member functions of polymorphic classes go with their vtables.  */
-  if (DECL_FUNCTION_MEMBER_P (fn) 
-      && TYPE_POLYMORPHIC_P (DECL_CONTEXT (fn)))
-    {
-      repo_vtable_used (DECL_CONTEXT (fn));
-      return;
-    }
-
-  pending_repo = tree_cons (NULL_TREE, fn, pending_repo);
-}
-
-/* Note that a particular typeinfo node has been used, and offer to
-   emit it.  */
-
-void
-repo_tinfo_used (tree ti)
-{
-}
-#endif
-
-void
-repo_template_instantiated (tree t, bool extern_p)
-{
-  if (! extern_p)
-    {
-      tree id = repo_get_id (t);
-      if (id)
-	IDENTIFIER_REPO_CHOSEN (id) = 1;
-    }
-}
+static bool temporary_obstack_initialized_p;
 
 /* Parse a reasonable subset of shell quoting syntax.  */
 
@@ -298,16 +148,22 @@ afgets (FILE *stream)
 }
 
 void
-init_repo (const char *filename)
+init_repo (void)
 {
   char *buf;
 
   if (! flag_use_repository)
     return;
 
-  gcc_obstack_init (&temporary_obstack);
+  /* When a PCH file is loaded, the entire identifier table is
+     replaced, with the result that IDENTIFIER_REPO_CHOSEN is cleared.
+     So, we have to reread the repository file.  */
+  lang_post_pch_load = init_repo;
 
-  open_repo_file (filename);
+  if (!temporary_obstack_initialized_p)
+    gcc_obstack_init (&temporary_obstack);
+
+  open_repo_file (main_input_filename);
 
   if (repo_file == 0)
     return;
@@ -325,21 +181,16 @@ init_repo (const char *filename)
 	case 'M':
 	  old_main = ggc_strdup (buf + 2);
 	  break;
-	case 'C':
 	case 'O':
+	  /* A symbol that we were able to define the last time this
+	     file was compiled.  */
+	  break;
+	case 'C':
+	  /* A symbol that the prelinker has requested that we
+	     define.  */
 	  {
 	    tree id = get_identifier (buf + 2);
-	    tree orig;
-
-	    if (buf[0] == 'C')
-	      {
-		IDENTIFIER_REPO_CHOSEN (id) = 1;
-		orig = integer_one_node;
-	      }
-	    else
-	      orig = NULL_TREE;
-
-	    original_repo = tree_cons (orig, id, original_repo);
+	    IDENTIFIER_REPO_CHOSEN (id) = 1;
 	  }
 	  break;
 	default:
@@ -347,13 +198,12 @@ init_repo (const char *filename)
 	}
       obstack_free (&temporary_obstack, buf);
     }
+  fclose (repo_file);
 }
 
 static void
 reopen_repo_file_for_write (void)
 {
-  if (repo_file)
-    fclose (repo_file);
   repo_file = fopen (repo_name, "w");
 
   if (repo_file == 0)
@@ -369,74 +219,119 @@ void
 finish_repo (void)
 {
   tree t;
-  bool repo_changed = false;
   char *dir, *args;
 
   if (!flag_use_repository)
     return;
 
-  /* Do we have to write out a new info file?  */
-
-  /* Are there any old templates that aren't used any longer or that are
-     newly chosen?  */
-  
-  for (t = original_repo; t; t = TREE_CHAIN (t))
-    {
-      if (!IDENTIFIER_REPO_USED (TREE_VALUE (t))
-	  || (!TREE_PURPOSE (t) && IDENTIFIER_REPO_CHOSEN (TREE_VALUE (t))))
-	{
-	  repo_changed = true;
-	  break;
-	}
-      IDENTIFIER_REPO_USED (TREE_VALUE (t)) = 0;
-    }
-
-  /* Are there any templates that are newly used?  */
-  
-  if (!repo_changed)
-    for (t = pending_repo; t; t = TREE_CHAIN (t))
-      {
-	if (IDENTIFIER_REPO_USED (TREE_VALUE (t)))
-	  {
-	    repo_changed = true;
-	    break;
-	  }
-      }
-
-  dir = getpwd ();
-  args = getenv ("COLLECT_GCC_OPTIONS");
-
-  if (!repo_changed && pending_repo)
-    if (strcmp (old_main, main_input_filename) != 0
-	|| strcmp (old_dir, dir) != 0
-	|| (args == NULL) != (old_args == NULL)
-	|| (args && strcmp (old_args, args) != 0))
-      repo_changed = true;
-
-  if (!repo_changed || errorcount || sorrycount)
+  if (errorcount || sorrycount)
     goto out;
 
   reopen_repo_file_for_write ();
-
   if (repo_file == 0)
     goto out;
 
   fprintf (repo_file, "M %s\n", main_input_filename);
+  dir = getpwd ();
   fprintf (repo_file, "D %s\n", dir);
+  args = getenv ("COLLECT_GCC_OPTIONS");
   if (args)
     fprintf (repo_file, "A %s\n", args);
 
   for (t = pending_repo; t; t = TREE_CHAIN (t))
     {
       tree val = TREE_VALUE (t);
-      char type = IDENTIFIER_REPO_CHOSEN (val) ? 'C' : 'O';
-
-      fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (val));
+      tree name = DECL_ASSEMBLER_NAME (val);
+      char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';
+      fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (name));
     }
 
  out:
   if (repo_file)
     fclose (repo_file);
+}
+
+/* DECL is a FUNCTION_DECL or VAR_DECL with vague linkage whose
+   definition is available in this translation unit.  Returns 0 if
+   this definition should not be emitted in this translation unit
+   because it will be emitted elsewhere.  Returns 1 if the repository
+   file indicates that that DECL should be emitted in this translation
+   unit, or 2 if the repository file is not in use.  */
+
+int
+repo_emit_p (tree decl)
+{
+  my_friendly_assert (TREE_PUBLIC (decl), 20040725);
+  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL
+		      || TREE_CODE (decl) == VAR_DECL,
+		      20040725);
+  my_friendly_assert (!DECL_REALLY_EXTERN (decl), 20040725);
+
+  /* When not using the repository, emit everything.  */
+  if (!flag_use_repository)
+    return 2;
+
+  /* Only template instantiations are managed by the repository.  This
+     is an artificial restriction; the code in the prelinker and here
+     will work fine if all entities with vague linkage are managed by
+     the repository.  */
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      tree type = NULL_TREE;
+      if (DECL_VTABLE_OR_VTT_P (decl))
+	type = DECL_CONTEXT (decl);
+      else if (DECL_TINFO_P (decl))
+	type = TREE_TYPE (DECL_NAME (decl));
+      if (!DECL_TEMPLATE_INSTANTIATION (decl)
+	  && !CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+	return 2;
+    }
+  else if (!DECL_TEMPLATE_INSTANTIATION (decl))
+    return 2;
+
+  /* For constructors and destructors, the repository contains
+     information about the clones -- not the original function --
+     because only the clones are emitted in the object file.  */
+  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
+      || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+    {
+      int emit_p = 0;
+      tree clone;
+      /* There is no early exit from this loop because we want to
+	 ensure that all of the clones are marked as available in this
+	 object file.  */
+      FOR_EACH_CLONE (clone, decl)
+	/* The only possible results from the recursive call to
+	   repo_emit_p are 0 or 1.  */
+	if (repo_emit_p (clone))
+	  emit_p = 1;
+      return emit_p;
+    }
+
+  /* Keep track of all available entities.  */
+  if (!DECL_REPO_AVAILABLE_P (decl))
+    {
+      DECL_REPO_AVAILABLE_P (decl) = 1;
+      pending_repo = tree_cons (NULL_TREE, decl, pending_repo);
+    }
+
+  return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl));
+}
+
+/* Returns true iff the prelinker has explicitly marked CLASS_TYPE for
+   export from this translation unit.  */
+
+bool
+repo_export_class_p (tree class_type)
+{
+  if (!flag_use_repository)
+    return false;
+  if (!CLASSTYPE_VTABLES (class_type))
+    return false;
+  /* If the virtual table has been assigned to this translation unit,
+     export the class.  */
+  return (IDENTIFIER_REPO_CHOSEN 
+	  (DECL_ASSEMBLER_NAME (CLASSTYPE_VTABLES (class_type))));
 }
 
 #include "gt-cp-repo.h"

@@ -581,6 +581,32 @@ get_vtt_name (tree type)
   return mangle_vtt_for_type (type);
 }
 
+/* DECL is an entity associated with TYPE, like a virtual table or an
+   implicitly generated constructor.  Determine whether or not DECL
+   should have external or internal linkage at the object file
+   level.  This routine does not deal with COMDAT linkage and other
+   similar complexities; it simply sets TREE_PUBLIC if it possible for
+   entities in other translation units to contain copies of DECL, in
+   the abstract.  */
+
+void
+set_linkage_according_to_type (tree type, tree decl)
+{
+  /* If TYPE involves a local class in a function with internal
+     linkage, then DECL should have internal linkage too.  Other local
+     classes have no linkage -- but if their containing functions
+     have external linkage, it makes sense for DECL to have external
+     linkage too.  That will allow template definitions to be merged,
+     for example.  */
+  if (no_linkage_check (type, /*relaxed_p=*/true))
+    {
+      TREE_PUBLIC (decl) = 0;
+      DECL_INTERFACE_KNOWN (decl) = 1;
+    }
+  else
+    TREE_PUBLIC (decl) = 1;
+}
+
 /* Create a VAR_DECL for a primary or secondary vtable for CLASS_TYPE.
    (For a secondary vtable for B-in-D, CLASS_TYPE should be D, not B.)
    Use NAME for the name of the vtable, and VTABLE_TYPE for its type.  */
@@ -601,17 +627,42 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   DECL_VIRTUAL_P (decl) = 1;
   DECL_ALIGN (decl) = TARGET_VTABLE_ENTRY_ALIGN;
   DECL_VTABLE_OR_VTT_P (decl) = 1;
-
   /* At one time the vtable info was grabbed 2 words at a time.  This
      fails on sparc unless you have 8-byte alignment.  (tiemann) */
   DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
 			   DECL_ALIGN (decl));
+  set_linkage_according_to_type (class_type, decl);
+  /* The vtable has not been defined -- yet.  */
+  DECL_EXTERNAL (decl) = 1;
+  DECL_NOT_REALLY_EXTERN (decl) = 1;
+
+  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
+    /* Mark the VAR_DECL node representing the vtable itself as a
+       "gratuitous" one, thereby forcing dwarfout.c to ignore it.  It
+       is rather important that such things be ignored because any
+       effort to actually generate DWARF for them will run into
+       trouble when/if we encounter code like:
+       
+         #pragma interface
+	 struct S { virtual void member (); };
+	   
+       because the artificial declaration of the vtable itself (as
+       manufactured by the g++ front end) will say that the vtable is
+       a static member of `S' but only *after* the debug output for
+       the definition of `S' has already been output.  This causes
+       grief because the DWARF entry for the definition of the vtable
+       will try to refer back to an earlier *declaration* of the
+       vtable as a static member of `S' and there won't be one.  We
+       might be able to arrange to have the "vtable static member"
+       attached to the member list for `S' before the debug info for
+       `S' get written (which would solve the problem) but that would
+       require more intrusive changes to the g++ front end.  */
+    DECL_IGNORED_P (decl) = 1;
 
   /* The vtable's visibility is the class visibility.  There is no way
      to override the visibility for just the vtable. */
   DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
   DECL_VISIBILITY_SPECIFIED (decl) = CLASSTYPE_VISIBILITY_SPECIFIED (class_type);
-  import_export_vtable (decl, class_type, 0);
 
   return decl;
 }

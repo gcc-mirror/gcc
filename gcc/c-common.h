@@ -286,6 +286,10 @@ extern void (*lang_expand_function_end) (void);
    noreturn attribute.  */
 extern int (*lang_missing_noreturn_ok_p) (tree);
 
+/* If non-NULL, this function is called after a precompile header file
+   is loaded.  */
+extern void (*lang_post_pch_load) (void);
+
 extern void push_file_scope (void);
 extern void pop_file_scope (void);
 extern int yyparse (void);
