@@ -1,3 +1,10 @@
+2004-02-06  Falk Hueffner  <falk@debian.org>
+
+	PR target/12898
+	* config/alpha/alpha.c (alpha_emit_set_const_1): If
+	no_new_pseudos, use gen_rtx_SET directly for SImode constants
+	which need multiple instructions to emit.
+
 2004-02-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Remove the pni option from -mfpmath=.
