@@ -6,11 +6,11 @@
 
 #include "i386v.h"
 
-/* Use crt0.o or crt1.o as a startup file and crtn.o as a closing file.  */
+/* Use crt1.o, not crt0.o, as a startup file, and crtn.o as a closing file. */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-  "%{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp0.o%s}}}\
-   %{!posix:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}\
+  "%{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
+   %{!posix:%{pg:mcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}\
    %{p:-L/lib/libp} %{pg:-L/lib/libp}}}\
    %{shlib:%{posix:crtp1.o%s}%{!posix:crt1.o%s}} crtbegin.o%s"
   
