@@ -2229,6 +2229,9 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    SET_DEST (x) = temp;
 	  }
       }
+
+    default:
+      break;
     }
 
   /* Nothing special about this RTX; fix its operands.  */
@@ -3241,6 +3244,9 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	}
 
       return 1;
+      
+    default:
+      break;
     }
 
   /* Scan all subexpressions.  */
