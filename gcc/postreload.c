@@ -1199,14 +1199,12 @@ reload_cse_move2add (rtx first)
 		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
 			   && have_add2_insn (reg, new_src))
 		    {
-		      rtx newpat = gen_add2_insn (reg, new_src);
-		      if (INSN_P (newpat) && NEXT_INSN (newpat) == NULL_RTX)
-			newpat = PATTERN (newpat);
-		      /* If it was the first insn of a sequence or
-			 some other emitted insn, validate_change will
-			 reject it.  */
-		      validate_change (insn, &PATTERN (insn),
-				       newpat, 0);
+		      rtx newpat = gen_rtx_SET (VOIDmode,
+						reg,
+						gen_rtx_PLUS (GET_MODE (reg),
+						 	      reg,
+						 	      new_src));
+		      validate_change (insn, &PATTERN (insn), newpat, 0);
 		    }
 		  else
 		    {
@@ -1288,10 +1286,11 @@ reload_cse_move2add (rtx first)
 				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
 			       && have_add2_insn (reg, new_src))
 			{
-			  rtx newpat = gen_add2_insn (reg, new_src);
-			  if (INSN_P (newpat)
-			      && NEXT_INSN (newpat) == NULL_RTX)
-			    newpat = PATTERN (newpat);
+			  rtx newpat = gen_rtx_SET (VOIDmode,
+						    reg,
+						    gen_rtx_PLUS (GET_MODE (reg),
+						 		  reg,
+								  new_src));
 			  success
 			    = validate_change (next, &PATTERN (next),
 					       newpat, 0);
