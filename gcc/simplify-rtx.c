@@ -2679,7 +2679,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 
 /* Like simplify_binary_operation except used for relational operators.
    MODE is the mode of the result. If MODE is VOIDmode, both operands must
-   also be VOIDmode.
+   not also be VOIDmode.
 
    CMP_MODE specifies in which mode the comparison is done in, so it is
    the mode of the operands.  If CMP_MODE is VOIDmode, it is taken from
@@ -2699,19 +2699,45 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
   tem = simplify_const_relational_operation (code, cmp_mode, op0, op1);
   if (tem)
     {
-#ifdef FLOAT_STORE_FLAG_VALUE
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
           if (tem == const0_rtx)
             return CONST0_RTX (mode);
-          else if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	    {
-	      REAL_VALUE_TYPE val;
-	      val = FLOAT_STORE_FLAG_VALUE (mode);
-	      return CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
-	    }
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  {
+	    REAL_VALUE_TYPE val;
+	    val = FLOAT_STORE_FLAG_VALUE (mode);
+	    return CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
+	  }
+#else
+	  return NULL_RTX;
+#endif 
 	}
+      if (VECTOR_MODE_P (mode))
+	{
+	  if (tem == const0_rtx)
+	    return CONST0_RTX (mode);
+#ifdef VECTOR_STORE_FLAG_VALUE
+	  {
+	    int i, units;
+	    rtvec c;
+
+	    rtx val = VECTOR_STORE_FLAG_VALUE (mode);
+	    if (val == NULL_RTX)
+	      return NULL_RTX;
+	    if (val == const1_rtx)
+	      return CONST1_RTX (mode);
+
+	    units = GET_MODE_NUNITS (mode);
+	    v = rtvec_alloc (units);
+	    for (i = 0; i < units; i++)
+	      RTVEC_ELT (v, i) = val;
+	    return gen_rtx_raw_CONST_VECTOR (mode, v);
+	  }
+#else
+	  return NULL_RTX;
 #endif
+	}
 
       return tem;
     }

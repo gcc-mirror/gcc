@@ -1,3 +1,9 @@
+2004-10-09  Stuart Hastings  <stuart@apple.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17853
+	* gcc.dg/i386-mmx-5.c: New testcase.
+
 2004-10-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/opt/pr17902.C: Fix typo in dg-do.
