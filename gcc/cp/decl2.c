@@ -88,7 +88,6 @@ static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
 static tree prune_vars_needing_no_initialization (tree);
 static void write_out_vars (tree);
 static void import_export_class (tree);
-static tree key_method (tree); 
 static tree get_guard_bits (tree);
 
 /* A list of static class variables.  This is needed, because a
@@ -1536,29 +1535,6 @@ maybe_make_one_only (tree decl)
     }
 }
 
-/* Returns the virtual function with which the vtable for TYPE is
-   emitted, or NULL_TREE if that heuristic is not applicable to TYPE.  */
-
-static tree
-key_method (tree type)
-{
-  tree method;
-
-  if (TYPE_FOR_JAVA (type)
-      || CLASSTYPE_TEMPLATE_INSTANTIATION (type)
-      || CLASSTYPE_INTERFACE_KNOWN (type))
-    return NULL_TREE;
-
-  for (method = TYPE_METHODS (type); method != NULL_TREE;
-       method = TREE_CHAIN (method))
-    if (DECL_VINDEX (method) != NULL_TREE
-	&& ! DECL_DECLARED_INLINE_P (method)
-	&& ! DECL_PURE_VIRTUAL_P (method))
-      return method;
-
-  return NULL_TREE;
-}
-
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
    based on TYPE and other static flags.
 
@@ -1589,7 +1565,7 @@ import_export_vtable (tree decl, tree type, int final)
 	 functions in our class, or if we come from a template.  */
 
       int found = (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
-		   || key_method (type));
+		   || CLASSTYPE_KEY_METHOD (type) != NULL_TREE);
 
       if (final || ! found)
 	{
@@ -1648,7 +1624,7 @@ import_export_class (tree ctype)
   if (import_export == 0
       && TYPE_POLYMORPHIC_P (ctype))
     {
-      tree method = key_method (ctype);
+      tree method = CLASSTYPE_KEY_METHOD (ctype);
       if (method)
 	import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
     }
@@ -2639,12 +2615,37 @@ finish_file ()
       instantiate_pending_templates ();
 
       /* Write out virtual tables as required.  Note that writing out
-	 the virtual table for a template class may cause the
-	 instantiation of members of that class.  */
-      for (t = dynamic_classes; t; t = TREE_CHAIN (t))
-	if (maybe_emit_vtables (TREE_VALUE (t)))
-	  reconsider = true;
-      
+  	 the virtual table for a template class may cause the
+ 	 instantiation of members of that class.  If we write out
+ 	 vtables then we remove the class from our list so we don't
+ 	 have to look at it again. */
+ 
+      while (keyed_classes != NULL_TREE
+ 	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
+ 	{
+  	  reconsider = 1;
+ 	  keyed_classes = TREE_CHAIN (keyed_classes);
+ 	}
+ 
+      t = keyed_classes;
+      if (t != NULL_TREE)
+ 	{
+ 	  tree next = TREE_CHAIN (t);
+ 
+ 	  while (next)
+ 	    {
+ 	      if (maybe_emit_vtables (TREE_VALUE (next)))
+ 		{
+ 		  reconsider = 1;
+ 		  TREE_CHAIN (t) = TREE_CHAIN (next);
+ 		}
+ 	      else
+ 		t = next;
+ 
+ 	      next = TREE_CHAIN (t);
+ 	    }
+ 	}
+       
       /* Write out needed type info variables. Writing out one variable
          might cause others to be needed.  */
       if (walk_globals (unemitted_tinfo_decl_p, emit_tinfo_decl, /*data=*/0))

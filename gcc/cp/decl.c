@@ -14360,6 +14360,15 @@ finish_function (flags)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+      && DECL_VIRTUAL_P (fndecl)
+      && !processing_template_decl)
+    {
+      tree fnclass = DECL_CONTEXT (fndecl);
+      if (fndecl == CLASSTYPE_KEY_METHOD (fnclass))
+	keyed_classes = tree_cons (NULL_TREE, fnclass, keyed_classes);
+    }
+
   nested = function_depth > 1;
   fntype = TREE_TYPE (fndecl);
 

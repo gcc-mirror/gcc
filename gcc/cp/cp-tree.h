@@ -628,7 +628,7 @@ enum cp_tree_index
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
 
-    CPTI_DYNAMIC_CLASSES,
+    CPTI_KEYED_CLASSES,
 
     CPTI_MAX
 };
@@ -761,9 +761,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    destructors.  */
 #define vtt_parm_type                   cp_global_trees[CPTI_VTT_PARM_TYPE]
 
-/* A TREE_LIST of all of the dynamic classes in the program.  */
+/* A TREE_LIST of the dynamic classes whose vtables may have to be
+   emitted in this translation unit.  */
 
-#define dynamic_classes                 cp_global_trees[CPTI_DYNAMIC_CLASSES]
+#define keyed_classes                   cp_global_trees[CPTI_KEYED_CLASSES]
 
 /* Global state.  */
 
@@ -1182,6 +1183,7 @@ struct lang_type_class GTY(())
   tree pure_virtuals;
   tree friend_classes;
   tree methods;
+  tree key_method;
   tree decl_list;
   tree template_info;
   tree befriending_classes;
@@ -1301,6 +1303,11 @@ struct lang_type GTY(())
    virtual base classes.  If this is 0 for the root of a type
    hierarchy, then we can use more efficient search techniques.  */
 #define TYPE_USES_VIRTUAL_BASECLASSES(NODE) (TREE_LANG_FLAG_3 (NODE))
+
+/* The member function with which the vtable will be emitted:
+   the first noninline non-pure-virtual member function.  NULL_TREE
+   if there is no key function or if this is a class template */
+#define CLASSTYPE_KEY_METHOD(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->key_method)
 
 /* Vector member functions defined in this class.  Each element is
    either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
