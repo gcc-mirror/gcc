@@ -1,5 +1,55 @@
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(impl): Made private.
+	(bound): New private member variable.
+	(DatagramSocket): Fixed documentation, use getImpl().
+	(getImpl): New package-private method.
+	(isClosed): Use getImpl().
+	(getLocalAddress): Completed documentation, use getImpl().
+	(getLocalPort): Use getImpl().
+	(getSoTimeout): Likewise.
+	(setSoTimeout): Likewise.
+	(getSendBufferSize): Likewise.
+	(setSendBufferSize): Likewise.
+	(getReceiveBufferSize): Likewise.
+	(setReceiveBufferSize): Likewise.
+	(connect): Likewise.
+	(disconnect): Likewise.
+	(receive): Likewise.
+	(send): Likewise.
+	(setReuseAddress): Likewise.
+	(setTrafficClass): Likewise.
+	(bind): Added message to exception.
+	(isClosed): Completed documentation.
+	(getChannel): Likewise.
+	(connect): Added missing exception, refined exception message.
+	(isBound): Completed documentation, just return bound.
+	(isConnected): Completed documentation.
+	(getRemoteSocketAddress): Likewise.
+	(getReuseAddress): Completed documentation, use getImpl().
+	(setSoBroadcast): Likewise.
+	(getSoBroadcast): Likewise.
+	(getTrafficClass): Likewise.
+	(getLocalSocketAddress): Simplified.
+	* java/net/MulticastSocket.java
+	(MulticastSocket): Removed comment not applying anymore.
+	(getInterface): Use getImpl().
+	(getTTL): Likewise.
+	(getTimeToLive): Likewise.
+	(setInterface): Likewise.
+	(setNetworkInterface): Likewise.
+	(getNetworkInterface): Likewise.
+	(setLoopback): Likewise.
+	(getLoopback): Likewise.
+	(setTTL): Likewise.
+	(setTimeToLive): Likewise.
+	(joinGroup): Likewise.
+	(leaveGroup): Likewise.
+	(send): Likewise.
+
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/Socket.java
 	(implCreated): Dont set default value explicitely, added
 	documentation.
