@@ -502,7 +502,7 @@ c_decode_option (argc, argv)
     { "write-strings", &flag_const_strings }
   };
 
-  strings_processed = cpp_handle_option (parse_in, argc, argv, 0);
+  strings_processed = cpp_handle_option (parse_in, argc, argv);
 
   if (!strcmp (p, "-fhosted") || !strcmp (p, "-fno-freestanding"))
     {

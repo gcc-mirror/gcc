@@ -1,3 +1,15 @@
+2002-06-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppinit.c (COMMAND_LINE_OPTIONS): Give all relevant -W
+	options their own entries.
+	(parse_option): Clarify comment.
+	(cpp_handle_option): Remove 'ignore' parameter and OPT_W
+	special case.  Replace if/strcmp chain for -W options with
+	use of new OPT_* entries for them.
+	(cpp_handle_options): Update to match.
+	* cpplib.h: Remove last parameter to cpp_handle_option from prototype.
+	* c-decl.c: Update call to cpp_handle_option.
+
 2002-06-07  Akim Demaille  <akim@epita.fr>
 
 	* gengtype-yacc.y (optionseqopt): Add the ending `;' to the action.
