@@ -1336,6 +1336,66 @@ A floating point constant (in @code{asm} statements, use the machine
 independent @samp{E} or @samp{F} instead)
 @end table
 
+@item AVR family---@file{avr.h}
+@table @code
+@item l
+Registers from r0 to r15
+
+@item a
+Registers from r16 to r23
+
+@item d
+Registers from r16 to r31
+
+@item w
+Register from r24 to r31. This registers can be used in @samp{addw} command
+
+@item e
+Pointer register (r26 - r31)
+
+@item b
+Base pointer register (r28 - r31)
+
+@item t
+Temporary register r0
+
+@item x
+Register pair X (r27:r26)
+
+@item y
+Register pair Y (r29:r28)
+
+@item z
+Register pair Z (r31:r30)
+
+@item I
+Constant greater than -1, less than 64
+
+@item J
+Constant greater than -64, less than 1
+
+@item K
+Constant integer 2
+
+@item L
+Constant integer 0
+
+@item M
+Constant that fits in 8 bits
+
+@item N
+Constant integer -1
+
+@item O
+Constant integer 8
+
+@item P
+Constant integer 1
+
+@item G
+A floating point constant 0.0
+@end table
+
 @item IBM RS6000---@file{rs6000.h}
 @table @code
 @item b
