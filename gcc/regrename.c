@@ -1745,24 +1745,31 @@ copyprop_hardreg_forward (void)
 {
   struct value_data *all_vd;
   bool need_refresh;
-  basic_block bb, bbp = 0;
+  basic_block bb;
 
   need_refresh = false;
 
   all_vd = xmalloc (sizeof (struct value_data) * last_basic_block);
 
+  /* Clear all BB_VISITED flags.  We use BB_VISITED flags to indicate
+     whether we have processed a given basic block or not.  Note that
+     we never put BB_VISITED flag on ENTRY_BLOCK_PTR throughout this
+     function because we want to call init_value_data for all
+     successors of ENTRY_BLOCK_PTR.  */
+  FOR_ALL_BB (bb)
+    bb->flags &= ~BB_VISITED;
+
   FOR_EACH_BB (bb)
     {
+      bb->flags |= BB_VISITED;
+
       /* If a block has a single predecessor, that we've already
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (EDGE_COUNT (bb->preds) == 1)
-	for (bbp = bb; bbp && bbp != EDGE_PRED (bb, 0)->src; bbp = bbp->prev_bb);
       if (EDGE_COUNT (bb->preds) == 1
-	  && ! (EDGE_PRED (bb, 0)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-	  && EDGE_PRED (bb, 0)->src != ENTRY_BLOCK_PTR
-	  && bbp)
+	  && ((EDGE_PRED (bb, 0)->src->flags & BB_VISITED) != 0)
+	  && ! (EDGE_PRED (bb, 0)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
 	all_vd[bb->index] = all_vd[EDGE_PRED (bb, 0)->src->index];
       else
 	init_value_data (all_vd + bb->index);
@@ -1770,6 +1777,12 @@ copyprop_hardreg_forward (void)
       if (copyprop_hardreg_forward_1 (bb, all_vd + bb->index))
 	need_refresh = true;
     }
+
+  /* Clear BB_VISITED flag on each basic block.  We do not need to
+     clear the one on ENTRY_BLOCK_PTR because it's already cleared
+     above.  */
+  FOR_EACH_BB (bb)
+    bb->flags &= ~BB_VISITED;
 
   if (need_refresh)
     {
