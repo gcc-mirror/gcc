@@ -10681,8 +10681,7 @@ print_operand (FILE *file, rtx x, int code)
       /* Bit 1 is EQ bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 2;
 
-      /* If we want bit 31, write a shift count of zero, not 32.  */
-      fprintf (file, "%d", i == 31 ? 0 : i + 1);
+      fprintf (file, "%d", i);
       return;
 
     case 'E':
@@ -11487,7 +11486,7 @@ rs6000_generate_compare (enum rtx_code code)
   if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT)
       && rs6000_compare_fp_p)
     {
-      rtx cmp, or1, or2, or_result, compare_result2;
+      rtx cmp, or_result, compare_result2;
       enum machine_mode op_mode = GET_MODE (rs6000_compare_op0);
 
       if (op_mode == VOIDmode)
@@ -11561,9 +11560,6 @@ rs6000_generate_compare (enum rtx_code code)
 	    default: abort ();
 	    }
 
-	  or1 = gen_reg_rtx (SImode);
-	  or2 = gen_reg_rtx (SImode);
-	  or_result = gen_reg_rtx (CCEQmode);
 	  compare_result2 = gen_reg_rtx (CCFPmode);
 
 	  /* Do the EQ.  */
@@ -11582,14 +11578,10 @@ rs6000_generate_compare (enum rtx_code code)
 	  else abort ();
 	  emit_insn (cmp);
 
-	  or1 = gen_rtx_GT (SImode, compare_result, const0_rtx);
-	  or2 = gen_rtx_GT (SImode, compare_result2, const0_rtx);
-
 	  /* OR them together.  */
-	  cmp = gen_rtx_SET (VOIDmode, or_result,
-			     gen_rtx_COMPARE (CCEQmode,
-					      gen_rtx_IOR (SImode, or1, or2),
-					      const_true_rtx));
+	  or_result = gen_reg_rtx (CCFPmode);
+	  cmp = gen_e500_cr_ior_compare (or_result, compare_result,
+					   compare_result2);
 	  compare_result = or_result;
 	  code = EQ;
 	}
@@ -11699,9 +11691,9 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
 	abort ();
 
       if (cond_code == NE)
-	emit_insn (gen_e500_flip_eq_bit (t, t));
+	emit_insn (gen_e500_flip_gt_bit (t, t));
 
-      emit_insn (gen_move_from_CR_eq_bit (result, t));
+      emit_insn (gen_move_from_CR_gt_bit (result, t));
       return;
     }
 
@@ -11882,9 +11874,9 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
   return string;
 }
 
-/* Return the string to flip the EQ bit on a CR.  */
+/* Return the string to flip the GT bit on a CR.  */
 char *
-output_e500_flip_eq_bit (rtx dst, rtx src)
+output_e500_flip_gt_bit (rtx dst, rtx src)
 {
   static char string[64];
   int a, b;
@@ -11893,9 +11885,9 @@ output_e500_flip_eq_bit (rtx dst, rtx src)
       || GET_CODE (src) != REG || ! CR_REGNO_P (REGNO (src)))
     abort ();
 
-  /* EQ bit.  */
-  a = 4 * (REGNO (dst) - CR0_REGNO) + 2;
-  b = 4 * (REGNO (src) - CR0_REGNO) + 2;
+  /* GT bit.  */
+  a = 4 * (REGNO (dst) - CR0_REGNO) + 1;
+  b = 4 * (REGNO (src) - CR0_REGNO) + 1;
 
   sprintf (string, "crnot %d,%d", a, b);
   return string;

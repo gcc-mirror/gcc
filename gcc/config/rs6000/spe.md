@@ -29,6 +29,7 @@
    (TSTDFGT_GPR		1009)
    (CMPDFLT_GPR		1010)
    (TSTDFLT_GPR		1011)
+   (E500_CR_IOR_COMPARE 1012)
    ])
 
 (define_insn "*negsf2_gpr"
@@ -2615,14 +2616,14 @@
 ;; FP comparison stuff.
 
 ;; Flip the GT bit.
-(define_insn "e500_flip_eq_bit"
+(define_insn "e500_flip_gt_bit"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
 	(unspec:CCFP
 	 [(match_operand:CCFP 1 "cc_reg_operand" "y")] 999))]
   "!TARGET_FPRS && TARGET_HARD_FLOAT"
   "*
 {
-  return output_e500_flip_eq_bit (operands[0], operands[1]);
+  return output_e500_flip_gt_bit (operands[0], operands[1]);
 }"
   [(set_attr "type" "cr_logical")])
 
@@ -2751,3 +2752,13 @@
   "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && flag_unsafe_math_optimizations"
   "efdtstlt %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
+
+;; Like cceq_ior_compare, but compare the GT bits.
+(define_insn "e500_cr_ior_compare"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP [(match_operand 1 "cc_reg_operand" "y")
+		      (match_operand 2 "cc_reg_operand" "y")]
+		     E500_CR_IOR_COMPARE))]
+  "TARGET_E500"
+  "cror 4*%0+gt,4*%1+gt,4*%2+gt"
+  [(set_attr "type" "cr_logical")])
