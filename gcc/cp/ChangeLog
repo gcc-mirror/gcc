@@ -1,3 +1,9 @@
+2002-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6477
+	* decl.c (follow_tag_typedef): Check if TYPE_NAME (original) is
+	non-NULL first.
+
 2002-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6492
