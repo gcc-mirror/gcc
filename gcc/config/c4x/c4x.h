@@ -2594,6 +2594,7 @@ if (final_sequence != NULL_RTX)		\
   {"st_reg_operand", {REG}},					\
   {"rc_reg_operand", {REG}},					\
   {"call_address_operand", {REG, SYMBOL_REF, LABEL_REF, CONST}}, \
+  {"dst_operand", {SUBREG, REG, MEM}}, \
   {"src_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"src_hi_operand", {SUBREG, REG, MEM, CONST_DOUBLE}}, 	\
   {"lsrc_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
@@ -2673,6 +2674,8 @@ extern int ext_low_reg_operand ();
 extern int ext_reg_operand ();
 
 extern int std_reg_operand ();
+
+extern int dst_operand ();
 
 extern int src_operand ();
 

@@ -1216,7 +1216,7 @@
    && ! IS_INT16_CONST (INTVAL (operands[1]))
    && ! IS_HIGH_CONST (INTVAL (operands[1]))
    && reload_completed
-   && (TARGET_C3X && c4x_shiftable_constant (operands[1]) < 0
+   && ((TARGET_C3X && c4x_shiftable_constant (operands[1]) < 0)
        || ! std_reg_operand (operands[0], QImode))"
   [(set (match_dup 0) (match_dup 2))
    (use (match_dup 1))]
@@ -1325,7 +1325,7 @@
 ; We must provide an alternative to store to memory in case we have to
 ; spill a register.
 (define_insn "movqi_noclobber"
-  [(set (match_operand:QI 0 "src_operand" "=d,*c,m,r")
+  [(set (match_operand:QI 0 "dst_operand" "=d,*c,m,r")
         (match_operand:QI 1 "src_hi_operand" "rIm,rIm,r,O"))]
   "(REG_P (operands[0]) || REG_P (operands[1])
     || GET_CODE (operands[0]) == SUBREG
@@ -1415,16 +1415,6 @@
     DONE;
 }")
 
-(define_insn "*movqi_update"
-  [(set (match_operand:QI 0 "reg_operand" "=r") 
-        (mem:QI (plus:QI (match_operand:QI 1 "addr_reg_operand" "a")
-                         (match_operand:QI 2 "index_reg_operand" "x"))))
-   (set (match_dup 1)
-        (plus:QI (match_dup 1) (match_dup 2)))]
-  ""
-  "ldiu\\t*%1++(%2),%0"
-  [(set_attr "type" "unary")
-   (set_attr "data" "int16")])
 
 (define_insn "movqi_parallel"
   [(set (match_operand:QI 0 "parallel_operand" "=q,S<>,q,S<>")
@@ -1833,7 +1823,7 @@
 ; may be allocated to reload the PLUS and thus gen_reload will
 ; emit an add insn that may clobber CC.
 (define_insn "*addqi3_noclobber_reload"
-  [(set (match_operand:QI 0 "general_operand" "=c,c,c")
+  [(set (match_operand:QI 0 "dst_operand" "=c,c,c")
         (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
   "reload_in_progress"
@@ -3183,7 +3173,7 @@
 ; This can generate invalid stack slot displacements
 (define_split
  [(set (match_operand:QI 0 "reg_operand" "=r")
-       (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))]
+       (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))]
   "reload_completed"
   [(set (match_dup 3) (match_dup 1))
    (set (match_dup 0) (match_dup 2))]
@@ -3194,14 +3184,14 @@
 
 (define_insn "storeqf_int"
  [(set (match_operand:QI 0 "reg_operand" "=r")
-       (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))]
+       (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))]
  ""
  "#"
   [(set_attr "type" "multi")])
 
 (define_split
  [(parallel [(set (match_operand:QI 0 "reg_operand" "=r")
-                  (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))
+                  (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))
              (clobber (reg:CC 21))])]
   "reload_completed"
   [(set (mem:QF (pre_inc:QI (reg:QI 20)))
@@ -3226,7 +3216,7 @@
 
 (define_insn "storeqf_int_clobber"
  [(parallel [(set (match_operand:QI 0 "reg_operand" "=r")
-                  (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))
+                  (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))
              (clobber (reg:CC 21))])]
  ""
  "#"
@@ -3236,7 +3226,7 @@
 ; This can generate invalid stack slot displacements
 (define_split
  [(set (match_operand:QF 0 "reg_operand" "=f")
-       (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))]
+       (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (match_dup 3))]
@@ -3247,14 +3237,14 @@
 
 (define_insn "loadqf_int"
  [(set (match_operand:QF 0 "reg_operand" "=f")
-       (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))]
+       (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))]
  ""
  "#"
   [(set_attr "type" "multi")])
 
 (define_split
  [(parallel [(set (match_operand:QF 0 "reg_operand" "=f")
-                  (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))
+                  (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))
              (clobber (reg:CC 21))])]
   "reload_completed"
   [(set (mem:QI (pre_inc:QI (reg:QI 20)))
@@ -3266,7 +3256,7 @@
 
 (define_insn "loadqf_int_clobber"
  [(parallel [(set (match_operand:QF 0 "reg_operand" "=f")
-                  (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))
+                  (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))
              (clobber (reg:CC 21))])]
  ""
  "#"
@@ -3275,7 +3265,7 @@
 ; We must provide an alternative to store to memory in case we have to
 ; spill a register.
 (define_insn "movqf_noclobber"
- [(set (match_operand:QF 0 "src_operand" "=f,m")
+ [(set (match_operand:QF 0 "dst_operand" "=f,m")
        (match_operand:QF 1 "src_operand" "fHm,f"))]
  "REG_P (operands[0]) || REG_P (operands[1])"
  "@
@@ -3310,15 +3300,6 @@
  "ldf\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
-(define_insn "*movqf_update"
-  [(set (match_operand:QF 0 "reg_operand" "=r") 
-        (mem:QF (plus:QI (match_operand:QI 1 "addr_reg_operand" "a")
-                         (match_operand:QI 2 "index_reg_operand" "x"))))
-   (set (match_dup 1)
-        (plus:QI (match_dup 1) (match_dup 2)))]
-  ""
-  "ldfu\\t*%1++(%2),%0"
-  [(set_attr "type" "unary")])
 
 (define_insn "*movqf_parallel"
  [(set (match_operand:QF 0 "parallel_operand" "=q,S<>,q,S<>")
@@ -3574,7 +3555,7 @@
 ;
 (define_insn "*rcpfqf_clobber"
   [(set (match_operand:QF 0 "reg_operand" "=f")
-        (unspec [(match_operand:QF 1 "src_operand" "fHm")] 5))
+        (unspec:QF [(match_operand:QF 1 "src_operand" "fHm")] 5))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rcpf\\t%1,%0"
@@ -3585,7 +3566,7 @@
 ;
 (define_insn "*rsqrfqf_clobber"
   [(set (match_operand:QF 0 "reg_operand" "=f")
-        (unspec [(match_operand:QF 1 "src_operand" "fHm")] 10))
+        (unspec:QF [(match_operand:QF 1 "src_operand" "fHm")] 10))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rsqrf\\t%1,%0"
@@ -3596,7 +3577,7 @@
 ;
 (define_insn "*rndqf_clobber"
   [(set (match_operand:QF 0 "reg_operand" "=f")
-        (unspec [(match_operand:QF 1 "src_operand" "fHm")] 6))
+        (unspec:QF [(match_operand:QF 1 "src_operand" "fHm")] 6))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rnd\\t%1,%0"
@@ -4103,7 +4084,7 @@
 
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operator 1 "comparison_operator" [(reg:CC 21) (const_int 0)]))]
+        (match_operator:QI 1 "comparison_operator" [(reg:CC 21) (const_int 0)]))]
   "reload_completed"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0)
@@ -4114,7 +4095,7 @@
 
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operator 1 "comparison_operator" [(reg:CC_NOOV 21) (const_int 0)]))]
+        (match_operator:QI 1 "comparison_operator" [(reg:CC_NOOV 21) (const_int 0)]))]
   "reload_completed"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0)
@@ -5234,7 +5215,7 @@
   [(set_attr "type" "unary")])
 
 (define_insn "*movhf_noclobber"
- [(set (match_operand:HF 0 "src_operand" "=h,m")
+ [(set (match_operand:HF 0 "dst_operand" "=h,m")
        (match_operand:HF 1 "src_operand" "Hm,h"))]
  "reg_operand (operands[0], HFmode) ^ reg_operand (operands[1], HFmode)"
  "#"
@@ -5302,7 +5283,7 @@
 
 (define_insn "*loadhf_int"
  [(set (match_operand:HF 0 "reg_operand" "=h")
-       (unspec[(subreg:QI (match_dup 0) 0)
+       (unspec:HF [(subreg:QI (match_dup 0) 0)
                (match_operand:QI 1 "src_operand" "rIm")] 8))]
  ""
  "@
@@ -5318,7 +5299,7 @@
 
 (define_insn "*storehf_int"
  [(set (match_operand:QI 0 "memory_operand" "=m")
-       (unspec [(match_operand:HF 1 "reg_operand" "h")] 9))]
+       (unspec:QI [(match_operand:HF 1 "reg_operand" "h")] 9))]
  ""
  "@
   sti\\t%1,%0"
@@ -5368,7 +5349,7 @@
 
 (define_insn "pushhf_int"
   [(set (mem:QI (pre_inc:QI (reg:QI 20)))
-        (unspec [(match_operand:HF 0 "reg_operand" "h")] 9))]
+        (unspec:QI [(match_operand:HF 0 "reg_operand" "h")] 9))]
  ""
  "push\\t%0"
  [(set_attr "type" "push")])
@@ -5398,7 +5379,7 @@
 
 (define_insn "*pophf_int"
  [(set (match_operand:HF 0 "reg_operand" "=h")
-       (unspec[(subreg:QI (match_dup 0) 0)
+       (unspec:HF [(subreg:QI (match_dup 0) 0)
                (mem:QI (post_dec:QI (reg:QI 20)))] 8))
   (clobber (reg:CC 21))]
  ""
@@ -5506,7 +5487,7 @@
 ;
 (define_insn "*rcpfhf_clobber"
   [(set (match_operand:HF 0 "reg_operand" "=h")
-        (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 5))
+        (unspec:HF [(match_operand:HF 1 "reg_or_const_operand" "hH")] 5))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rcpf\\t%1,%0"
@@ -5517,7 +5498,7 @@
 ;
 (define_insn "*rsqrfhf_clobber"
   [(set (match_operand:HF 0 "reg_operand" "=h")
-        (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 10))
+        (unspec:HF [(match_operand:HF 1 "reg_or_const_operand" "hH")] 10))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rsqrf\\t%1,%0"
@@ -5528,7 +5509,7 @@
 ;
 (define_insn "*rndhf_clobber"
   [(set (match_operand:HF 0 "reg_operand" "=h")
-        (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 6))
+        (unspec:HF [(match_operand:HF 1 "reg_or_const_operand" "hH")] 6))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X"
   "rnd\\t%1,%0"
@@ -5764,7 +5745,7 @@
 ; we can get RC, R8 allocated as a pair.  We want more
 ; votes for FP_REGS so we use dr as the constraints.
 (define_insn "*movhi_noclobber"
-  [(set (match_operand:HI 0 "src_operand" "=dr,m")
+  [(set (match_operand:HI 0 "dst_operand" "=dr,m")
         (match_operand:HI 1 "src_operand" "drIm,r"))]
   "reg_operand (operands[0], HImode)
    || reg_operand (operands[1], HImode)"
@@ -5786,7 +5767,7 @@
 ; However, things are likely to be very screwed up if we get this.
 
 (define_split
-  [(set (match_operand:HI 0 "src_operand" "")
+  [(set (match_operand:HI 0 "dst_operand" "")
 	(match_operand:HI 1 "src_operand" ""))]
   "reload_completed
    && (reg_operand (operands[0], HImode)
@@ -6509,7 +6490,7 @@
  
 (define_insn "cmphi_cc"
   [(set (reg:CC 21)
-        (unspec [(compare:CC (match_operand:HI 0 "src_operand" "rR,rS<>")
+        (unspec:CC [(compare:CC (match_operand:HI 0 "src_operand" "rR,rS<>")
                              (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
    (clobber (match_scratch:QI 2 "=&d,&d"))
    (clobber (match_scratch:QI 3 "=&c,&c"))]
@@ -6525,8 +6506,9 @@
 
 (define_insn "cmphi_cc_noov"
   [(set (reg:CC_NOOV 21)
-        (unspec [(compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
-                                  (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
+        (unspec:CC_NOOV [
+          (compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
+                           (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
    (clobber (match_scratch:QI 2 "=&d,&d"))
    (clobber (match_scratch:QI 3 "=&c,&c"))]
   "valid_operands (COMPARE, operands, HImode)"
