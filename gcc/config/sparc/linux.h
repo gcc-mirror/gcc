@@ -62,7 +62,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
 /* This is for -profile to use -lc_p instead of -lc.  */
 #undef	CC1_SPEC

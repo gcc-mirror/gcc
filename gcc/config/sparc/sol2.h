@@ -162,7 +162,9 @@ Boston, MA 02111-1307, USA.  */
        %{p|pg:-ldl} -lc}}"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s crtn.o%s"
 
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC

@@ -1,3 +1,15 @@
+2002-04-04  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/crtfastmath.c: New file.
+	* config/sparc/t-crtfm: New file.
+	* config/sparc/linux.h (ENDFILE_SPEC): Use crtfastmath.o
+	* config/sparc/linux64.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/sol2.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/sp64-elf.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/elf.h (ENDFILE_SPEC): Likewise.
+	* config.gcc (sparc*-*-{elf*,linux*,solaris2*}): Add
+	sparc/t-crtfm to tmake_file.
+
 2002-04-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtsavres.o
