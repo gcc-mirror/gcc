@@ -187,6 +187,8 @@
   |((du2_power4+du3_power4),iu2_power4,iu2_power4)\
   |((du3_power4+du4_power4),iu2_power4,iu1_power4)")
 
+(define_bypass 2 "power4-compare" "power4-integer")
+
 (define_insn_reservation "power4-imul" 7
   (and (eq_attr "type" "imul,lmul")
        (eq_attr "cpu" "power4"))
