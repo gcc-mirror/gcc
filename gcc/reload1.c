@@ -9065,7 +9065,7 @@ reload_combine_note_use (xp, insn)
    use move2add_last_label_luid to note where the label is and then
    later disable any optimization that would cross it.
    reg_offset[n] / reg_base_reg[n] / reg_mode[n] are only valid if
-   reg_set_luid[n] is greater than last_label_luid[n] .  */
+   reg_set_luid[n] is greater than move2add_last_label_luid.  */
 static int reg_set_luid[FIRST_PSEUDO_REGISTER];
 
 /* If reg_base_reg[n] is negative, register n has been set to
