@@ -61,7 +61,7 @@ extern int errno;
    via other calls to this function.
 
    This version of the function uses vfork.  In general vfork is
-   similar to setjmp/longmp, in that any variable which is modified by
+   similar to setjmp/longjmp, in that any variable which is modified by
    the child process has an indeterminate value in the parent process.
    We follow a safe approach here by not modifying any variables at
    all in the child process (with the possible exception of variables
