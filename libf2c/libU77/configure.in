@@ -20,7 +20,7 @@
 #USA.
 
 AC_INIT(access_.c)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h:config.hin)
 
 dnl Checks for programs.
 # For g77 we'll set CC to point at the built gcc, but this will get it into

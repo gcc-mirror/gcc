@@ -1,3 +1,13 @@
+Thu Jul 16 00:58:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g2c.hin: Renamed from g2c.h.in.
+	* Makefile.in, configure.in: Changed as needed.
+	* configure: Rebuilt.
+
+	* libU77/config.hin: Renamed from libU77/config.h.in.
+	* Makefile.in, configure.in: Changed as needed.
+	* configure: Rebuilt.
+
 Tue Jul 14 21:35:30 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* Makefile.in (all): Invoke $(MAKE) instead of just make.

@@ -21,7 +21,7 @@
 
 AC_INIT(libF77/Version.c)
 
-AC_REVISION(1.11)
+AC_REVISION(1.12)
 
 dnl Checks for programs.
 # For g77 we'll set CC to point at the built gcc, but this will get it into
@@ -167,7 +167,7 @@ AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
 
 AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
-AC_OUTPUT(Makefile g2c.h)
+AC_OUTPUT(Makefile g2c.h:g2c.hin)
 
 dnl Local Variables:
 dnl comment-start: "dnl "
