@@ -1,5 +1,10 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/xtensa/xtensa.h (DYNAMIC_CHAIN_ADDRESS): Use GEN_INT
+	instead of gen_rtx_CONST_INT.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* target-def.h (TARGET_STRICT_ARGUMENT_NAMING): Define as
 	hook_bool_CUMULATIVE_ARGS_false.
 	* targhooks.c (default_strict_argument_naming): Rename to

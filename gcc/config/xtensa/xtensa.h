@@ -953,8 +953,7 @@ typedef struct xtensa_args {
    when count == 0 and the stack pointer when count > 0.  */
 
 #define DYNAMIC_CHAIN_ADDRESS(frame)					\
-  gen_rtx (PLUS, Pmode, frame,						\
-	   gen_rtx_CONST_INT (VOIDmode, -3 * UNITS_PER_WORD))
+  gen_rtx (PLUS, Pmode, frame, GEN_INT (-3 * UNITS_PER_WORD))
 
 /* Define this if the return address of a particular stack frame is
    accessed from the frame pointer of the previous stack frame.  */
