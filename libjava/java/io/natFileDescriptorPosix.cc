@@ -13,6 +13,7 @@ details.  */
 #include "posix.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -419,4 +420,48 @@ java::io::FileDescriptor::available (void)
 #else
   return 0;
 #endif
+}
+
+void
+java::io::FileDescriptor::lock (jlong pos, jint len, jboolean shared)
+{
+  struct flock lockdata;
+
+  lockdata.l_type = shared ? F_WRLCK : F_RDLCK;
+  lockdata.l_whence = SEEK_SET;
+  lockdata.l_start = pos;
+  lockdata.l_len = len;
+
+  if (::fcntl (fd, F_SETLK, &lockdata) == -1)
+    throw new IOException (JvNewStringLatin1 (strerror (errno)));
+}
+
+jboolean
+java::io::FileDescriptor::tryLock (jlong pos, jint len, jboolean shared)
+{
+  struct flock lockdata;
+
+  lockdata.l_type = shared ? F_WRLCK : F_RDLCK;
+  lockdata.l_whence = SEEK_SET;
+  lockdata.l_start = pos;
+  lockdata.l_len = len;
+
+  if (::fcntl (fd, F_GETLK, &lockdata) == -1)
+    throw new IOException (JvNewStringLatin1 (strerror (errno)));
+
+  return lockdata.l_type == F_UNLCK;
+}
+
+void
+java::io::FileDescriptor::unlock (jlong pos, jint len)
+{
+  struct flock lockdata;
+
+  lockdata.l_type = F_UNLCK;
+  lockdata.l_whence = SEEK_SET;
+  lockdata.l_start = pos;
+  lockdata.l_len = len;
+
+  if (::fcntl (fd, F_SETLK, &lockdata) == -1)
+    throw new IOException (JvNewStringLatin1 (strerror (errno)));
 }
