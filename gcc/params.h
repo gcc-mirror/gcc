@@ -72,8 +72,8 @@ extern void set_param_value
 
 typedef enum compiler_param
 {
-#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT) \
-  ENUM,
+#define DEFPARAM(enumerator, option, msgid, default) \
+  enumerator,
 #include "params.def"
 #undef DEFPARAM  
   LAST_PARAM
