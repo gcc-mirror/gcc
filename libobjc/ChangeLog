@@ -1,3 +1,9 @@
+2001-05-25  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* init.c (__objc_send_message_in_list): When setting a new entry
+	in __objc_load_methods use the method name as key, not the method
+	IMP (reported by Richard Frith-Macdonald <richard@brainstorm.co.uk>).
+
 2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* objc-features.texi: Move to ../gcc/objc.texi.
