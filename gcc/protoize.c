@@ -39,8 +39,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
-#include "intl.h"
-
 #if 0
 /* Users are not supposed to use _POSIX_SOURCE to say the
    system is a POSIX system.  That is not what _POSIX_SOURCE means! -- rms  */ 
@@ -60,6 +58,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "system.h"
+#include "intl.h"
+
 #if ! defined (_WIN32) || defined (__CYGWIN__)
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
