@@ -1,3 +1,26 @@
+2002-12-20  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
+
+        * config/ns32k/ns32k.md (movdi): Use "l" instead of "f" to match
+        all registers capable of holding a double float.
+        (*rcond): change name of "reverse branch" insns to
+        something more meaningful.
+        (*rbgt, *rblt, *rbge, *rble): Reverse branches to handle IEEE
+        comparisons properly.
+        (*ffs): Change operand 0 from write to read-modify-write.
+        (*ffsssi2): Drop constraints from define_expand.
+
+        * config/ns32k/ns32k.h (STORE_RATIO, STORE_BY_PIECES): Avoid using
+        MOVE_RATIO as default for store operations.
+
+        * config/ns32k/ns32k.h (enum reg_class, REG_CLASS_NAMES): Add
+        LONG_REGS class.
+        (CANNOT_CHANGE_MODE_CLASS): Can't subreg LONG_REGS.
+        (GO_IF_LEGITIMATE_ADDRESS): Remove spurious abort().
+        * config/ns32k/ns32k.c (regclass_map): Add LONG_REGS class.
+
+        * config/ns32k/STATUS: New File
+        * config/ns32k/NOTES: New file.
+
 2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
 	
        	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=

@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000, 2001
+;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000, 2001, 2002
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -312,8 +312,8 @@
   "movmd %1,%0,4")
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm<,*f,rm")
-	(match_operand:DI 1 "general_operand" "gF,g,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm<,*l,rm")
+	(match_operand:DI 1 "general_operand" "gF,g,*l"))]
   ""
   "*
 {
@@ -2378,9 +2378,9 @@
   ""
   "bls %l0")
 
-;; "Reversed" jump instructions. Are these ever generated?
+;; "Reversed" jump instructions.
 
-(define_insn "*bne"
+(define_insn "*rbeq"
   [(set (pc)
 	(if_then_else (eq (cc0)
 			  (const_int 0))
@@ -2392,10 +2392,11 @@
     return \"bfs %l0\";
   else if (cc_prev_status.flags & CC_Z_IN_NOT_F)
     return \"bfc %l0\";
-  else return \"bne %l0\";
+  else
+    return \"bne %l0\";
 }")
 
-(define_insn "*beq"
+(define_insn "*rbne"
   [(set (pc)
 	(if_then_else (ne (cc0)
 			  (const_int 0))
@@ -2410,7 +2411,7 @@
   else return \"beq %l0\";
 }")
 
-(define_insn "*ble"
+(define_insn "*rbgt"
   [(set (pc)
 	(if_then_else (gt (cc0)
 			  (const_int 0))
@@ -2420,12 +2421,12 @@
   "*
 {
     if (cc_prev_status.flags & CC_UNORD)
-      return \"bhi 0f\;ble %l0\;0:\";
+      return \"ble %l0\;bhi %l0\";
     else
       return \"ble %l0\";
 }")
 
-(define_insn "*bleu"
+(define_insn "*rbgtu"
   [(set (pc)
 	(if_then_else (gtu (cc0)
 			   (const_int 0))
@@ -2434,16 +2435,22 @@
   ""
   "bls %l0")
 
-(define_insn "*bge"
+(define_insn "*rblt"
   [(set (pc)
 	(if_then_else (lt (cc0)
 			  (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "bge %l0")
+   "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bge %l0\;bhi %l0\";
+    else
+      return \"bge %l0\";
+}")
 
-(define_insn "*bgeu"
+(define_insn "*rbltu"
   [(set (pc)
 	(if_then_else (ltu (cc0)
 			   (const_int 0))
@@ -2452,7 +2459,7 @@
   ""
   "bhs %l0")
 
-(define_insn "*blt"
+(define_insn "*rbge"
   [(set (pc)
 	(if_then_else (ge (cc0)
 			  (const_int 0))
@@ -2462,12 +2469,12 @@
   "*
 {
     if (cc_prev_status.flags & CC_UNORD)
-      return \"bhi 0f\;blt %l0\;0:\";
+      return \"blt %l0\;bhi %l0\";
     else
       return \"blt %l0\";
 }")
 
-(define_insn "*bltu"
+(define_insn "*rbgeu"
   [(set (pc)
 	(if_then_else (geu (cc0)
 			   (const_int 0))
@@ -2476,16 +2483,22 @@
   ""
   "blo %l0")
 
-(define_insn "*bgt"
+(define_insn "*rble"
   [(set (pc)
 	(if_then_else (le (cc0)
 			  (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "bgt %l0")
+  "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bgt %l0\;bhi %l0\";
+    else
+      return \"bgt %l0\";
+}")
 
-(define_insn "*bgtu"
+(define_insn "*rbleu"
   [(set (pc)
 	(if_then_else (leu (cc0)
 			   (const_int 0))
@@ -2918,7 +2931,7 @@
 ;; ffs instructions
 
 (define_insn "*ffs"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=ro")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "+ro")
 	(minus:SI 
 		(plus:SI (ffs:SI (zero_extract:SI 
 				(match_operand:SI 1 "general_operand" "g") 
@@ -2927,10 +2940,10 @@
 			(match_dup 0)) 
 		(const_int 1)))]
   ""
-  "ffsd %1,%0; bfc 1f; addqd %$-1,%0; 1:")
+  "ffsd %1,%0\;bfc 1f\;addqd %$-1,%0\;1:")
 
 (define_expand "ffssi2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm") (const_int 0))
+  [(set (match_operand:SI 0 "nonimmediate_operand" "") (const_int 0))
    (set (match_dup 0)
 	(minus:SI 
 		(plus:SI (ffs:SI (zero_extract:SI 
