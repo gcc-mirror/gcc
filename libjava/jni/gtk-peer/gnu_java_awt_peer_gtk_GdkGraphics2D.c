@@ -35,7 +35,7 @@
    obligated to do so.  If you do not wish to do so, delete this
    exception statement from your version. */
 
-#include "gtkpeer.h"
+#include "gtkcairopeer.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkGraphics2D.h"
 #include <gdk/gdktypes.h>

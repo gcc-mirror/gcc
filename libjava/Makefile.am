@@ -168,8 +168,20 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
 
+# Gtk/Cairo JNI sources.
+if GTK_CAIRO
+gtk_cairo_c_source_files = \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
+else
+gtk_cairo_c_source_files = 
+endif
+
 ## Gtk JNI sources.
 gtk_c_source_files = \
+$(gtk_cairo_c_source_files) \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
@@ -207,8 +219,12 @@ jni/classpath/primlib.c
 
 ## Java sources for Gtk peers.
 gtk_awt_peer_sources = \
+gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java \
+gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.java \
 gnu/java/awt/peer/gtk/GdkFontMetrics.java \
+gnu/java/awt/peer/gtk/GdkGlyphVector.java \
 gnu/java/awt/peer/gtk/GdkGraphics.java \
+gnu/java/awt/peer/gtk/GdkGraphics2D.java \
 gnu/java/awt/peer/gtk/GdkPixbufDecoder.java \
 gnu/java/awt/peer/gtk/GtkArg.java \
 gnu/java/awt/peer/gtk/GtkArgList.java \
@@ -264,7 +280,7 @@ jni/classpath/jnilink.h	\
 jni/classpath/native_state.h \
 jni/classpath/primlib.h
 
-lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS)
+lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
 
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
@@ -430,7 +446,8 @@ $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: see above
 $(gtk_c_files): %.lo: %.c
-	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer $(GTK_CFLAGS) $(LIBART_CFLAGS) -o $@ $<
+	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer \
+	$(GTK_CFLAGS) $(LIBART_CFLAGS) $(CAIRO_LIBS) $(PANGOFT2_LIBS) -o $@ $<
 
 $(gtk_c_files): $(gtk_c_headers)
 
@@ -604,7 +621,6 @@ install-data-local:
 	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyType.h' $(DESTDIR)$(includedir)/java/lang/reflect/
 	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketInputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
 	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
-	
 	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 
 ## ################################################################
@@ -833,6 +849,7 @@ gnu/awt/j2d/MappedRaster.java \
 gnu/java/awt/BitMaskExtent.java \
 gnu/java/awt/Buffers.java \
 gnu/java/awt/ComponentDataBlitOp.java \
+gnu/java/awt/ClasspathToolkit.java \
 gnu/java/awt/EmbeddedWindow.java \
 gnu/java/awt/EmbeddedWindowSupport.java \
 gnu/java/awt/EventModifier.java \
@@ -840,6 +857,7 @@ gnu/java/awt/image/ImageDecoder.java \
 gnu/java/awt/image/XBMDecoder.java \
 gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/awt/peer/GLightweightPeer.java \
+gnu/java/awt/peer/ClasspathFontPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\

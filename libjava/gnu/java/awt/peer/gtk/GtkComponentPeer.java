@@ -48,6 +48,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Insets;
@@ -148,7 +149,16 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public Image createImage (int width, int height)
   {
-    GdkGraphics g = new GdkGraphics (width, height);
+    Graphics g;
+    if (GtkToolkit.useGraphics2D ())
+      {
+        Graphics2D g2 = new GdkGraphics2D (width, height);
+        g2.setBackground (getBackground ());
+        g = g2;
+      }
+    else
+      g = new GdkGraphics (width, height);
+
     return new GtkOffScreenImage (null, g, width, height);
   }
 

@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
+import java.awt.font.TextAttribute;
 import java.awt.im.InputMethodHighlight;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
@@ -55,6 +56,7 @@ import java.util.Properties;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.EmbeddedWindowSupport;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
+import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.classpath.Configuration;
 import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
 
@@ -65,13 +67,34 @@ import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
    this class.  If getPeer() ever goes away, we can implement a hash table
    that will keep up with every window's peer, but for now this is faster. */
 
-public class GtkToolkit extends Toolkit
+/**
+ * This class accesses a system property called
+ * <tt>gnu.java.awt.peer.gtk.Graphics</tt>.  If the property is defined and
+ * equal to "Graphics2D", the cairo-based GdkGraphics2D will be used in
+ * drawing contexts. Any other value will cause the older GdkGraphics
+ * object to be used.
+ */
+
+public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   implements EmbeddedWindowSupport
 {
   GtkMainThread main;
   Hashtable containers = new Hashtable();
   static EventQueue q = new EventQueue();
   static Clipboard systemClipboard;
+
+  static boolean useGraphics2dSet;
+  static boolean useGraphics2d;
+
+  public static boolean useGraphics2D()
+  {
+    if (useGraphics2dSet)
+      return useGraphics2d;
+    useGraphics2d = System.getProperty("gnu.java.awt.peer.gtk.Graphics", 
+                                       "Graphics").equals("Graphics2D");
+    useGraphics2dSet = true;
+    return useGraphics2d;
+  }
 
   static 
   {
@@ -135,7 +158,10 @@ public class GtkToolkit extends Toolkit
 
   public FontMetrics getFontMetrics (Font font) 
   {
-    return new GdkFontMetrics (font);
+    if (useGraphics2D())
+      return new GdkClasspathFontPeerMetrics (font);
+    else
+      return new GdkFontMetrics (font);
   }
 
   public Image getImage (String filename) 
@@ -322,6 +348,11 @@ public class GtkToolkit extends Toolkit
     return new GtkEmbeddedWindowPeer (w);
   }
 
+  /** 
+   * @deprecated part of the older "logical font" system in earlier AWT
+   * implementations. Our newer Font class uses getClasspathFontPeer.
+   */
+
   protected FontPeer getFontPeer (String name, int style) 
   {
     try {
@@ -330,6 +361,38 @@ public class GtkToolkit extends Toolkit
     } catch (MissingResourceException ex) {
       return null;
     }
+  }
+
+  /**
+   * Newer method to produce a peer for a Font object, even though Sun's
+   * design claims Font should now be peerless, we do not agree with this
+   * model, hence "ClasspathFontPeer". 
+   */
+
+  public ClasspathFontPeer getClasspathFontPeer (String name, Map attrs)
+  {
+    if (useGraphics2D())
+      return new GdkClasspathFontPeer (name, attrs);
+    else
+      {
+        int style = Font.PLAIN;
+
+        if (attrs.containsKey (TextAttribute.WEIGHT))
+          {
+            Float weight = (Float) attrs.get (TextAttribute.WEIGHT);
+            if (weight.floatValue () >= TextAttribute.WEIGHT_BOLD.floatValue ())
+              style += Font.BOLD;
+          }
+        
+        if (attrs.containsKey (TextAttribute.POSTURE))
+          {
+            Float posture = (Float) attrs.get (TextAttribute.POSTURE);
+            if (posture.floatValue () >= TextAttribute.POSTURE_OBLIQUE.floatValue ())
+              style += Font.ITALIC;
+          }
+        
+        return (ClasspathFontPeer) this.getFontPeer (name, style);
+      }
   }
 
   protected EventQueue getSystemEventQueueImpl() 
@@ -350,4 +413,18 @@ public class GtkToolkit extends Toolkit
   {
     throw new Error("not implemented");
   }
+
+  // ClasspathToolkit methods
+
+  public GraphicsEnvironment getLocalGraphicsEnvironment()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public Font createFont(int format, java.io.InputStream stream)
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+
 } // class GtkToolkit
