@@ -1,3 +1,11 @@
+2001-06-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
+	doc/gcc.texi, doc/gcov.texi, doc/install.texi, doc/invoke.texi,
+	doc/md.texi, doc/rtl.texi, doc/tm.texi: Be more consistent about
+	the use of "GCC" and related terms.
+	* doc/gcc.1, doc/gcov.1: Regenerate.
+
 2001-06-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi, doc/gcc.texi, doc/install-old.texi,

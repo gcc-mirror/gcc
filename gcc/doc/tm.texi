@@ -6853,8 +6853,8 @@ fprintf (@var{stream}, "\t.word L%d-L%d\n",
 @end example
 
 You must provide this macro on machines where the addresses in a
-dispatch table are relative to the table's own address.  If defined, GNU
-CC will also use this macro on all machines when producing PIC.
+dispatch table are relative to the table's own address.  If defined, GCC
+will also use this macro on all machines when producing PIC.
 @var{body} is the body of the ADDR_DIFF_VEC; it is provided so that the
 mode and flags can be read.
 
@@ -7293,14 +7293,14 @@ first.
 @item DBX_BLOCKS_FUNCTION_RELATIVE
 Define this macro if the value of a symbol describing the scope of a
 block (@code{N_LBRAC} or @code{N_RBRAC}) should be relative to the start
-of the enclosing function.  Normally, GNU C uses an absolute address.
+of the enclosing function.  Normally, GCC uses an absolute address.
 
 @findex DBX_USE_BINCL
 @item DBX_USE_BINCL
-Define this macro if GNU C should generate @code{N_BINCL} and
+Define this macro if GCC should generate @code{N_BINCL} and
 @code{N_EINCL} stabs for included header files, as on Sun systems.  This
-macro also directs GNU C to output a type number as a pair of a file
-number and a type number within the file.  Normally, GNU C does not
+macro also directs GCC to output a type number as a pair of a file
+number and a type number within the file.  Normally, GCC does not
 generate @code{N_BINCL} or @code{N_EINCL} stabs, and it outputs a single
 number for a type number.
 @end table

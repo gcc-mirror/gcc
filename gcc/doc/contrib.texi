@@ -112,7 +112,7 @@ ongoing work with the RS6000/PowerPC port, and help cleaning up Haifa
 loop changes.
 
 @item
-Paul Eggert for random hacking all over gcc.
+Paul Eggert for random hacking all over GCC.
 
 @item
 Mark Elbrecht for various DJGPP improvements.

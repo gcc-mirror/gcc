@@ -29,7 +29,7 @@ English.
 @node Gcov
 @chapter @command{gcov}: a Test Coverage Program
 
-@command{gcov} is a tool you can use in conjunction with @sc{gnu} CC to
+@command{gcov} is a tool you can use in conjunction with GCC to
 test code coverage in your programs.
 
 This chapter describes version 1.5 of @command{gcov}.
@@ -45,8 +45,8 @@ This chapter describes version 1.5 of @command{gcov}.
 @section Introduction to @command{gcov}
 @c man begin DESCRIPTION
 
-@command{gcov} is a test coverage program.  Use it in concert with @sc{gnu}
-CC to analyze your programs to help create more efficient, faster
+@command{gcov} is a test coverage program.  Use it in concert with GCC
+to analyze your programs to help create more efficient, faster
 running code.  You can use @command{gcov} as a profiling tool to help
 discover where your optimization efforts will best affect your code.  You
 can also use @command{gcov} along with the other profiling tool,
@@ -99,7 +99,7 @@ in fine-tuning the performance of your programs.  @command{gprof} gives
 timing information you can use along with the information you get from
 @command{gcov}.
 
-@command{gcov} works only on code compiled with @sc{gnu} CC.  It is not
+@command{gcov} works only on code compiled with GCC.  It is not
 compatible with any other profiling or test coverage mechanism.
 
 @c man end
@@ -154,7 +154,7 @@ The directory where the object files live.  Gcov will search for @file{.bb},
 
 @need 3000
 When using @command{gcov}, you must first compile your program with two
-special @sc{gnu} CC options: @samp{-fprofile-arcs -ftest-coverage}.
+special GCC options: @samp{-fprofile-arcs -ftest-coverage}.
 This tells the compiler to generate additional information needed by
 gcov (basically a flow graph of the program) and also includes
 additional code in the object files for generating the extra profiling
@@ -276,9 +276,9 @@ counts and finally writes the data to the file.
 @section Using @command{gcov} with GCC Optimization
 
 If you plan to use @command{gcov} to help optimize your code, you must
-first compile your program with two special @sc{gnu} CC options:
+first compile your program with two special GCC options:
 @samp{-fprofile-arcs -ftest-coverage}.  Aside from that, you can use any
-other @sc{gnu} CC options; but if you want to prove that every single line
+other GCC options; but if you want to prove that every single line
 in your program was executed, you should not compile with optimization
 at the same time.  On some machines the optimizer can eliminate some
 simple code lines by combining them with other lines.  For example, code
@@ -322,7 +322,7 @@ of these files are placed in the same directory as the source file, and
 contain data stored in a platform-independent method.
 
 The @file{.bb} and @file{.bbg} files are generated when the source file
-is compiled with the @sc{gnu} CC @option{-ftest-coverage} option.  The
+is compiled with the GCC @option{-ftest-coverage} option.  The
 @file{.bb} file contains a list of source files (including headers),
 functions within those files, and line numbers corresponding to each
 basic block in the source file.
@@ -364,7 +364,7 @@ list of basic blocks, and to verify that the file has been read
 correctly.
 
 The @file{.da} file is generated when a program containing object files
-built with the @sc{gnu} CC @option{-fprofile-arcs} option is executed.  A
+built with the GCC @option{-fprofile-arcs} option is executed.  A
 separate @file{.da} file is created for each source file compiled with
 this option, and the name of the @file{.da} file is stored as an
 absolute pathname in the resulting object file.  This path name is
