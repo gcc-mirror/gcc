@@ -5099,29 +5099,43 @@ cpp_get_token (pfile)
 	    if (hp->type == T_MACRO && hp->value.defn->nargs >= 0)
 	    {
 	      struct parse_marker macro_mark;
-	      int is_macro_call;
-	      while (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	        {
-		  cpp_buffer *next_buf;
-		  cpp_skip_hspace (pfile);
-		  if (PEEKC () != EOF)
-		    break;
-		  next_buf = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
-		  (*CPP_BUFFER (pfile)->cleanup) (CPP_BUFFER (pfile), pfile);
-		  CPP_BUFFER (pfile) = next_buf;
-	        }
+	      int is_macro_call, macbuf_whitespace = 0;
+
 	      parse_set_mark (&macro_mark, pfile);
 	      for (;;)
 		{
 		  cpp_skip_hspace (pfile);
 		  c = PEEKC ();
 		  is_macro_call = c == '(';
-		  if (c != '\n')
-		    break;
-		  FORWARD (1);
+		  if (c != EOF)
+		    {
+		      if (c != '\n')
+		        break;
+		      FORWARD (1);
+		    }
+                  else
+                    {
+                      if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+                        {
+                          if (macro_mark.position !=
+                              (CPP_BUFFER (pfile)->cur
+                               - CPP_BUFFER (pfile)->buf))
+                             macbuf_whitespace = 1;
+
+                          parse_clear_mark (&macro_mark);
+                          cpp_pop_buffer (pfile);
+                          parse_set_mark (&macro_mark, pfile);
+                        }
+                      else
+                        break;
+                    }
 		}
 	      if (!is_macro_call)
-		parse_goto_mark (&macro_mark, pfile);
+                {
+                  parse_goto_mark (&macro_mark, pfile);
+                  if (macbuf_whitespace)
+                    CPP_PUTC (pfile, ' ');
+                }
 	      parse_clear_mark (&macro_mark);
 	      if (!is_macro_call)
 		return CPP_NAME;
