@@ -1,3 +1,12 @@
+Wed Sep 15 21:37:06 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (identify_blocks): Don't shadow a variable in an 
+	outer scope.
+	* integrate.c (integrate_decl_tree): Don't use pushlevel,
+	pushdecl, or poplevel to build up the new BLOCK tree.
+	(expand_inline_function): Likewise.
+	(integrate_parm_decls): Likewise.
+
 Wed Sep 15 21:20:38 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (qualify_type): Merge qualifiers from both types.

@@ -5421,11 +5421,11 @@ identify_blocks (block, insns)
       {
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	  {
-	    tree block;
+	    tree b;
 
-	    block = block_vector[current_block_number++];
-	    NOTE_BLOCK (insn) = block;
-	    block_stack[depth++] = block;
+	    b = block_vector[current_block_number++];
+	    NOTE_BLOCK (insn) = b;
+	    block_stack[depth++] = b;
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  NOTE_BLOCK (insn) = block_stack[--depth];

@@ -65,7 +65,7 @@ static void adjust_copied_decl_tree	PROTO((tree));
 static void note_modified_parmregs	PROTO((rtx, rtx));
 static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
 					       rtvec));
-static void integrate_decl_tree		PROTO((tree, int,
+static tree integrate_decl_tree		PROTO((tree,
 					       struct inline_remap *));
 static void subst_constants		PROTO((rtx *, rtx,
 					       struct inline_remap *));
@@ -581,11 +581,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     expand_expr (TREE_VALUE (actual), const0_rtx,
 		 TYPE_MODE (TREE_TYPE (TREE_VALUE (actual))), 0);
 
-  /* Make a binding contour to keep inline cleanups called at
-     outer function-scope level from looking like they are shadowing
-     parameter declarations.  */
-  pushlevel (0);
-
   /* Expand the function arguments.  Do this first so that any
      new registers get created before we allocate the maps.  */
 
@@ -985,7 +980,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* Make a fresh binding contour that we can easily remove.  Do this after
      expanding our arguments so cleanups are properly scoped.  */
-  pushlevel (0);
   expand_start_bindings (0);
 
   /* Initialize label_map.  get_label_from_map will actually make
@@ -1281,17 +1275,18 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   inline_function_decl = fndecl;
   integrate_parm_decls (DECL_ARGUMENTS (fndecl), map, arg_vector);
-  integrate_decl_tree (inl_f->original_decl_initial, 0, map);
-  inline_function_decl = 0;
-
-  /* End the scope containing the copied formal parameter variables
-     and copied LABEL_DECLs.  */
-
-  expand_end_bindings (getdecls (), 1, 1);
-  block = poplevel (1, 1, 0);
+  block = integrate_decl_tree (inl_f->original_decl_initial, map);
   BLOCK_ABSTRACT_ORIGIN (block) = (DECL_ABSTRACT_ORIGIN (fndecl) == NULL
 				   ? fndecl : DECL_ABSTRACT_ORIGIN (fndecl));
-  poplevel (0, 0, 0);
+  inline_function_decl = 0;
+  insert_block (block);
+
+  /* End the scope containing the copied formal parameter variables
+     and copied LABEL_DECLs.  We pass NULL_TREE for the variables list
+     here so that expand_end_bindings will not check for unused
+     variables.  That's already been checked for when the inlined
+     function was defined.  */
+  expand_end_bindings (NULL_TREE, 1, 1);
 
   /* Must mark the line number note after inlined functions as a repeat, so
      that the test coverage code can avoid counting the call twice.  This
@@ -1355,7 +1350,7 @@ integrate_parm_decls (args, map, arg_vector)
       TREE_USED (decl) = 1;
       /* Prevent warning for shadowing with these.  */
       DECL_ABSTRACT_ORIGIN (decl) = DECL_ORIGIN (tail);
-      pushdecl (decl);
+      DECL_CONTEXT (decl) = current_function_decl;
       /* Fully instantiate the address with the equivalent form so that the
 	 debugging information contains the actual register, instead of the
 	 virtual register.   Do this by not passing an insn to
@@ -1369,24 +1364,22 @@ integrate_parm_decls (args, map, arg_vector)
 /* Given a BLOCK node LET, push decls and levels so as to construct in the
    current function a tree of contexts isomorphic to the one that is given.
 
-   LEVEL indicates how far down into the BLOCK tree is the node we are
-   currently traversing.  It is always zero except for recursive calls.
-
    MAP, if nonzero, is a pointer to an inline_remap map which indicates how
    registers used in the DECL_RTL field should be remapped.  If it is zero,
    no mapping is necessary.  */
 
-static void
-integrate_decl_tree (let, level, map)
+static tree
+integrate_decl_tree (let, map)
      tree let;
-     int level;
      struct inline_remap *map;
 {
-  tree t, node;
+  tree t;
+  tree new_block;
+  tree *next;
 
-  if (level > 0)
-    pushlevel (0);
-  
+  new_block = make_node (BLOCK);
+  next = &BLOCK_VARS (new_block);
+
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
       tree d;
@@ -1412,21 +1405,29 @@ integrate_decl_tree (let, level, map)
       if (DECL_LANG_SPECIFIC (d))
 	copy_lang_decl (d);
 
-      pushdecl (d);
+      /* This new declaration is now in the scope of the function into
+	 which we are inlining the function, not the function being
+	 inlined.  */
+      DECL_CONTEXT (d) = current_function_decl;
+
+      /* Add this declaration to the list of variables in the new
+	 block.  */
+      *next = d;
+      next = &TREE_CHAIN (d);
     }
 
-  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
-    integrate_decl_tree (t, level + 1, map);
-
-  if (level > 0)
+  next = &BLOCK_SUBBLOCKS (new_block);
+  for (t = BLOCK_SUBBLOCKS (let); t; t = BLOCK_CHAIN (t))
     {
-      node = poplevel (1, 0, 0);
-      if (node)
-	{
-	  TREE_USED (node) = TREE_USED (let);
-	  BLOCK_ABSTRACT_ORIGIN (node) = let;
-	}
+      *next = integrate_decl_tree (t, map);
+      BLOCK_SUPERCONTEXT (*next) = new_block;
+      next = &BLOCK_CHAIN (*next);
     }
+
+  TREE_USED (new_block) = TREE_USED (let);
+  BLOCK_ABSTRACT_ORIGIN (new_block) = let;
+  
+  return new_block;
 }
 
 /* Create a new copy of an rtx.
