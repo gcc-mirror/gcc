@@ -32,7 +32,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
    %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}\
-   %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
+   %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}\
+   %{msupersparc:-D__supersparc__ -D__sparc_v8__}"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used. */
