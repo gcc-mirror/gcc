@@ -12,6 +12,8 @@ details.  */
 #define __GCJ_METHOD_H__
 
 #include <java/lang/Class.h>
+#include <java/lang/reflect/Constructor.h>
+#include <java/lang/reflect/Method.h>
 
 extern inline jmethodID
 _Jv_FromReflectedMethod (java::lang::reflect::Method *method)

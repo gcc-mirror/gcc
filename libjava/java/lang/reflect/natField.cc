@@ -45,14 +45,19 @@ java::lang::reflect::Field::getName ()
 jclass
 java::lang::reflect::Field::getType ()
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  JvSynchronize sync (declaringClass);
-  _Jv_Linker::resolve_field (fld, declaringClass->getClassLoaderInternal ());
-  return fld->type;
+  if (type == NULL)
+    {
+      jfieldID fld = _Jv_FromReflectedField (this);
+      JvSynchronize sync (declaringClass);
+      _Jv_Linker::resolve_field (fld, declaringClass->getClassLoaderInternal ());
+      type = fld->type;
+    }
+  return type;
 }
 
 static void*
-getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
+getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj,
+         jboolean checkFinal)
 {
   // FIXME: we know CALLER is NULL here.  At one point we planned to
   // have the compiler insert the caller as a hidden argument in some
@@ -63,6 +68,12 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
   
   jfieldID fld = _Jv_FromReflectedField (field);
   _Jv_ushort flags = fld->getModifiers();
+
+  // Setting a final field is usually not allowed.
+  if (checkFinal
+      && field->getModifiers() & java::lang::reflect::Modifier::FINAL)
+    throw new java::lang::IllegalAccessException(JvNewStringUTF 
+      ("Field is final"));
   
   // Check accessibility, if required.
   if (! (Modifier::isPublic (flags) || field->isAccessible()))
@@ -180,56 +191,56 @@ getDouble (jclass cls, void* addr)
 jboolean
 java::lang::reflect::Field::getBoolean (jclass caller, jobject obj)
 {
-  return ::getBoolean (this->getType(), getAddr (this, caller, obj));
+  return ::getBoolean (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jchar
 java::lang::reflect::Field::getChar (jclass caller, jobject obj)
 {
-  return ::getChar (this->getType(), getAddr (this, caller, obj));
+  return ::getChar (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jbyte
 java::lang::reflect::Field::getByte (jclass caller, jobject obj)
 {
-  return ::getByte (this->getType(), getAddr (this, caller, obj));
+  return ::getByte (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jshort
 java::lang::reflect::Field::getShort (jclass caller, jobject obj)
 {
-  return ::getShort (this->getType(), getAddr (this, caller, obj));
+  return ::getShort (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jint
 java::lang::reflect::Field::getInt (jclass caller, jobject obj)
 {
-  return ::getInt (this->getType(), getAddr (this, caller, obj));
+  return ::getInt (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jlong
 java::lang::reflect::Field::getLong (jclass caller, jobject obj)
 {
-  return ::getLong (this->getType(), getAddr (this, caller, obj));
+  return ::getLong (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jfloat
 java::lang::reflect::Field::getFloat (jclass caller, jobject obj)
 {
-  return ::getFloat (this->getType(), getAddr (this, caller, obj));
+  return ::getFloat (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jdouble
 java::lang::reflect::Field::getDouble (jclass caller, jobject obj)
 {
-  return ::getDouble (this->getType(), getAddr (this, caller, obj));
+  return ::getDouble (this->getType(), getAddr (this, caller, obj, false));
 }
 
 jobject
 java::lang::reflect::Field::get (jclass caller, jobject obj)
 {
   jclass type = this->getType();
-  void* addr = getAddr (this, caller, obj);
+  void* addr = getAddr (this, caller, obj, false);
   if (! type->isPrimitive ())
     return * (jobject*) addr;
   if (type == JvPrimClass (double))
@@ -255,16 +266,6 @@ java::lang::reflect::Field::get (jclass caller, jobject obj)
 	return java::lang::Boolean::FALSE;
     }
   throw new java::lang::IllegalArgumentException;
-}
-
-static void*
-setAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
-{
-  void *addr = getAddr(field, caller, obj);
-  if  (!field->isAccessible()
-	&& field->getModifiers() & java::lang::reflect::Modifier::FINAL)
-    throw new java::lang::IllegalAccessException();
-  return addr;
 }
 
 static void
@@ -378,57 +379,66 @@ setDouble (jclass type, void *addr, jdouble value)
 }
 
 void
-java::lang::reflect::Field::setBoolean (jclass caller, jobject obj, jboolean b)
+java::lang::reflect::Field::setBoolean (jclass caller, jobject obj, jboolean b,
+					jboolean checkFinal)
 {
-  ::setBoolean (this->getType(), setAddr (this, caller, obj), b);
+  ::setBoolean (this->getType(), getAddr (this, caller, obj, checkFinal), b);
 }
 
 void
-java::lang::reflect::Field::setChar (jclass caller, jobject obj, jchar c)
+java::lang::reflect::Field::setChar (jclass caller, jobject obj, jchar c,
+				     jboolean checkFinal)
 {
-  ::setChar (this->getType(), setAddr (this, caller, obj), c);
+  ::setChar (this->getType(), getAddr (this, caller, obj, checkFinal), c);
 }
 
 void
-java::lang::reflect::Field::setByte (jclass caller, jobject obj, jbyte b)
+java::lang::reflect::Field::setByte (jclass caller, jobject obj, jbyte b,
+				     jboolean checkFinal)
 {
-  ::setByte (this->getType(), setAddr (this, caller, obj), b);
+  ::setByte (this->getType(), getAddr (this, caller, obj, checkFinal), b);
 }
 
 void
-java::lang::reflect::Field::setShort (jclass caller, jobject obj, jshort s)
+java::lang::reflect::Field::setShort (jclass caller, jobject obj, jshort s,
+				      jboolean checkFinal)
 {
-  ::setShort (this->getType(), setAddr (this, caller, obj), s);
+  ::setShort (this->getType(), getAddr (this, caller, obj, checkFinal), s);
 }
 
 void
-java::lang::reflect::Field::setInt (jclass caller, jobject obj, jint i)
+java::lang::reflect::Field::setInt (jclass caller, jobject obj, jint i,
+				    jboolean checkFinal)
 {
-  ::setInt (this->getType(), setAddr (this, caller, obj), i);
+  ::setInt (this->getType(), getAddr (this, caller, obj, checkFinal), i);
 }
 
 void
-java::lang::reflect::Field::setLong (jclass caller, jobject obj, jlong l)
+java::lang::reflect::Field::setLong (jclass caller, jobject obj, jlong l,
+				     jboolean checkFinal)
 {
-  ::setLong (this->getType(), setAddr (this, caller, obj), l);
-}
-void
-java::lang::reflect::Field::setFloat (jclass caller, jobject obj, jfloat f)
-{
-  ::setFloat (this->getType(), setAddr (this, caller, obj), f);
+  ::setLong (this->getType(), getAddr (this, caller, obj, checkFinal), l);
 }
 
 void
-java::lang::reflect::Field::setDouble (jclass caller, jobject obj, jdouble d)
+java::lang::reflect::Field::setFloat (jclass caller, jobject obj, jfloat f,
+				      jboolean checkFinal)
 {
-  ::setDouble (this->getType(), setAddr (this, caller, obj), d);
+  ::setFloat (this->getType(), getAddr (this, caller, obj, checkFinal), f);
+}
+
+void
+java::lang::reflect::Field::setDouble (jclass caller, jobject obj, jdouble d,
+				       jboolean checkFinal)
+{
+  ::setDouble (this->getType(), getAddr (this, caller, obj, checkFinal), d);
 }
 
 void
 java::lang::reflect::Field::set (jclass caller, jobject object, jobject value,
-				 jclass type)
+				 jclass type, jboolean checkFinal)
 {
-  void* addr = setAddr (this, caller, object);
+  void* addr = getAddr (this, caller, object, checkFinal);
   if (value != NULL && ! _Jv_IsInstanceOf (value, type))
     throw new java::lang::IllegalArgumentException;
   * (jobject*) addr = value;
