@@ -4,9 +4,9 @@
 /* { dg-do preprocess } */
 /* { dg-options "-Wtraditional -fno-show-column" } */
 
-#if 1U /* { dg-warning "traditional C rejects.*suffix" "numeric constant suffix" } */
+#if 1U /* { dg-warning "traditional C rejects" "numeric constant suffix" } */
 #endif
-#if 1u /* { dg-warning "traditional C rejects.*suffix" "numeric constant suffix" } */
+#if 1u /* { dg-warning "traditional C rejects" "numeric constant suffix" } */
 #endif
 #if 1L
 #endif

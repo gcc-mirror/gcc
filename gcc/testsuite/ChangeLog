@@ -1,3 +1,8 @@
+2000-08-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/tr-warn4.c: Remove unconstrained .* from
+	dg-warning regexps.
+
 2000-08-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-ext-3.c, gcc.dg/format-ext-4.c,
