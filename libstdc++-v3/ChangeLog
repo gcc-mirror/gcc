@@ -1,3 +1,7 @@
+2001-08-18  Vladimir A Merzliakov  <wanderer@rsu.ru>
+
+	* include/bits/locale_facets.tcc (collate::do_transform): Add typename.
+
 2001-08-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/operators.cc: Add test.
