@@ -131,14 +131,9 @@ extern int target_flags;
 #define MASK_3DNOW_A		0x00400000	/* Support Athlon 3Dnow builtins */
 #define MASK_3DNOW_A_SET	0x00800000
 #define MASK_128BIT_LONG_DOUBLE 0x01000000	/* long double size is 128bit */
-#define MASK_MIX_SSE_I387	0x02000000	/* Mix SSE and i387 instructions */
-#define MASK_64BIT		0x04000000	/* Produce 64bit code */
-#define MASK_NO_RED_ZONE	0x08000000	/* Do not use red zone */
-
-/* Temporary codegen switches */
-#define MASK_INTEL_SYNTAX	0x10000000
-#define MASK_DEBUG_ARG		0x20000000	/* function_arg */   
-#define MASK_DEBUG_ADDR		0x40000000	/* GO_IF_LEGITIMATE_ADDRESS */
+#define MASK_64BIT		0x02000000	/* Produce 64bit code */
+/* ... overlap with subtarget options starts by 0x04000000.  */
+#define MASK_NO_RED_ZONE	0x04000000	/* Do not use red zone */
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -188,10 +183,10 @@ extern int target_flags;
   (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
 
 /* Debug GO_IF_LEGITIMATE_ADDRESS */
-#define TARGET_DEBUG_ADDR (target_flags & MASK_DEBUG_ADDR)
+#define TARGET_DEBUG_ADDR (ix86_debug_addr_string != 0)
 
 /* Debug FUNCTION_ARG macros */
-#define TARGET_DEBUG_ARG (target_flags & MASK_DEBUG_ARG)
+#define TARGET_DEBUG_ARG (ix86_debug_arg_string != 0)
 
 /* 64bit Sledgehammer mode */
 #ifdef TARGET_BI_ARCH
@@ -273,7 +268,7 @@ extern int x86_prefetch_sse;
 #define TARGET_ALIGN_STRINGOPS (!(target_flags & MASK_NO_ALIGN_STROPS))
 #define TARGET_INLINE_ALL_STRINGOPS (target_flags & MASK_INLINE_ALL_STROPS)
 
-#define ASSEMBLER_DIALECT ((target_flags & MASK_INTEL_SYNTAX) != 0)
+#define ASSEMBLER_DIALECT (ix86_asm_dialect)
 
 #define TARGET_SSE ((target_flags & (MASK_SSE | MASK_SSE2)) != 0)
 #define TARGET_SSE2 ((target_flags & MASK_SSE2) != 0)
@@ -292,10 +287,12 @@ extern int x86_prefetch_sse;
   { "hard-float",		 MASK_80387, N_("Use hardware fp") },	      \
   { "soft-float",		-MASK_80387, N_("Do not use hardware fp") },  \
   { "no-soft-float",		 MASK_80387, N_("Use hardware fp") },	      \
-  { "386",			 0, N_("Same as -mcpu=i386") },		      \
-  { "486",			 0, N_("Same as -mcpu=i486") },		      \
-  { "pentium",			 0, N_("Same as -mcpu=pentium") },	      \
-  { "pentiumpro",		 0, N_("Same as -mcpu=pentiumpro") },	      \
+  { "386",			 0, N_("") /*Deprecated.*/},		      \
+  { "486",			 0, N_("") /*Deprecated.*/},		      \
+  { "pentium",			 0, N_("") /*Deprecated.*/},		      \
+  { "pentiumpro",		 0, N_("") /*Deprecated.*/},		      \
+  { "intel-syntax",		 0, N_("") /*Deprecated.*/},	 	      \
+  { "no-intel-syntax",		 0, N_("") /*Deprecated.*/},	 	      \
   { "rtd",			 MASK_RTD,				      \
     N_("Alternate calling convention") },				      \
   { "no-rtd",			-MASK_RTD,				      \
@@ -323,18 +320,11 @@ extern int x86_prefetch_sse;
   { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER,		      \
     N_("Omit the frame pointer in leaf functions") },			      \
   { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER, "" },	      \
-  { "debug-addr",		 MASK_DEBUG_ADDR, 0 /* undocumented */ },     \
-  { "no-debug-addr",		-MASK_DEBUG_ADDR, 0 /* undocumented */ },     \
-  { "debug-arg",		 MASK_DEBUG_ARG, 0 /* undocumented */ },      \
-  { "no-debug-arg",		-MASK_DEBUG_ARG, 0 /* undocumented */ },      \
   { "stack-arg-probe",		 MASK_STACK_PROBE,			      \
     N_("Enable stack probing") },					      \
   { "no-stack-arg-probe",	-MASK_STACK_PROBE, "" },		      \
   { "windows",			0, 0 /* undocumented */ },		      \
   { "dll",			0,  0 /* undocumented */ },		      \
-  { "intel-syntax",		MASK_INTEL_SYNTAX,			      \
-    N_("Emit Intel syntax assembler opcodes") },			      \
-  { "no-intel-syntax",		-MASK_INTEL_SYNTAX, "" },		      \
   { "align-stringops",		-MASK_NO_ALIGN_STROPS,			      \
     N_("Align destination of the string operations") },			      \
   { "no-align-stringops",	 MASK_NO_ALIGN_STROPS,			      \
@@ -449,6 +439,12 @@ extern int ix86_arch;
     N_("Branches are this expensive (1-5, arbitrary units)") },	\
   { "cmodel=", &ix86_cmodel_string,				\
     N_("Use given x86-64 code model") },			\
+  { "debug-arg", &ix86_debug_arg_string,			\
+    N_("" /* Undocumented. */) },				\
+  { "debug-addr", &ix86_debug_addr_string,			\
+    N_("" /* Undocumented. */) },				\
+  { "asm=", &ix86_asm_string,					\
+    N_("Use given assembler dialect") },			\
   SUBTARGET_OPTIONS						\
 }
 
@@ -482,7 +478,11 @@ extern int ix86_arch;
 %{mpentium:-mcpu=pentium \
 %n`-mpentium' is deprecated. Use `-march=pentium' or `-mcpu=pentium' instead.\n} \
 %{mpentiumpro:-mcpu=pentiumpro \
-%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.\n}}"
+%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.\n}} \
+%{mintel-syntax:-masm=intel \
+%n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
+%{mno-intel-syntax:-masm=att \
+%n`-mno-intel-syntax' is deprecated. Use `-masm=att' instead.\n}"
 #endif
 
 #define TARGET_CPU_DEFAULT_i386 0
@@ -3138,6 +3138,14 @@ enum cmodel {
 #define RED_ZONE_SIZE 128
 /* Reserved area of the red zone for temporaries.  */
 #define RED_ZONE_RESERVE 8
+extern const char *ix86_debug_arg_string, *ix86_debug_addr_string;
+
+enum asm_dialect {
+  ASM_ATT,
+  ASM_INTEL
+};
+extern const char *ix86_asm_string;
+extern enum cmodel ix86_asm_dialect;
 /* Valud of -mcmodel specified by user.  */
 extern const char *ix86_cmodel_string;
 extern enum cmodel ix86_cmodel;

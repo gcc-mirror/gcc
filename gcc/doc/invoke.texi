@@ -474,7 +474,7 @@ in the following sections.
 @emph{i386 and x86-64 Options}
 @gccoptlist{
 -mcpu=@var{cpu-type}  -march=@var{cpu-type} -mfpmath=@var{unit} @gol
--mintel-syntax -mieee-fp  -mno-fancy-math-387 @gol
+-masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
@@ -7534,9 +7534,10 @@ still experimental, because gcc register allocator does not model separate
 functional units well resulting in instable performance.
 @end table
 
-@item -mintel-syntax
-@opindex mintel-syntax
-Emit assembly using Intel syntax opcodes instead of AT&T syntax.
+@item -masm=@var{dialect}
+@opindex masm=@var{dialect}
+Output asm instructions using selected @var{dialect}. Supported choices are
+@samp{intel} or @samp{att} (the default one).
 
 @item -mieee-fp
 @itemx -mno-ieee-fp

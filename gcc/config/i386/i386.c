@@ -586,8 +586,13 @@ struct ix86_frame
   HOST_WIDE_INT stack_pointer_offset;
 };
 
+/* Used to enable/disable debugging features.  */
+const char *ix86_debug_arg_string, *ix86_debug_addr_string;
 /* Code model option as passed by user.  */
 const char *ix86_cmodel_string;
+/* Asm dialect.  */
+const char *ix86_asm_string;
+enum cmodel ix86_asm_dialect = ASM_ATT;
 /* Parsed value.  */
 enum cmodel ix86_cmodel;
 
@@ -930,6 +935,15 @@ override_options ()
       ix86_cmodel = CM_32;
       if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+    }
+  if (ix86_asm_string != 0)
+    {
+      if (!strcmp (ix86_asm_string, "intel"))
+	ix86_asm_dialect = ASM_INTEL;
+      else if (!strcmp (ix86_asm_string, "att"))
+	ix86_asm_dialect = ASM_ATT;
+      else
+	error ("bad value (%s) for -masm= switch", ix86_asm_string);
     }
   if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
     error ("code model `%s' not supported in the %s bit mode",

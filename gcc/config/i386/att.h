@@ -53,7 +53,7 @@ do								\
 #define ASM_FILE_START(FILE)						\
   do {									\
 	output_file_directive (FILE, main_input_filename);		\
-	if (target_flags & MASK_INTEL_SYNTAX)				\
+	if (ix86_asm_dialect == ASM_INTEL)				\
 	  fputs ("\t.intel_syntax\n", FILE);				\
   } while (0)
 
