@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation.
+/* Copyright (C) 2003, 2004  Free Software Foundation.
 
    Ensure builtin memmove and bcopy perform correctly.
 
@@ -62,13 +62,13 @@ main_test (void)
   struct bar b1[sizeof bar/sizeof*bar];
   int bz[sizeof baz/sizeof*baz];
 
-  if (memmove (f1, foo, sizeof (foo)) != f1 || memcmp (f1, foo, sizeof(foo)))
-    abort();
-  if (memmove (b1, bar, sizeof (bar)) != b1 || memcmp (b1, bar, sizeof(bar)))
-    abort();
+  if (memmove (f1, foo, sizeof (foo)) != f1 || memcmp (f1, foo, sizeof (foo)))
+    abort ();
+  if (memmove (b1, bar, sizeof (bar)) != b1 || memcmp (b1, bar, sizeof (bar)))
+    abort ();
   bcopy (baz, bz, sizeof (baz));
-  if (memcmp (bz, baz, sizeof(baz)))
-    abort();
+  if (memcmp (bz, baz, sizeof (baz)))
+    abort ();
 
   if (memmove (p, "abcde", 6) != p || memcmp (p, "abcde", 6))
     abort ();

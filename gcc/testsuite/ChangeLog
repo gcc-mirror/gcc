@@ -1,3 +1,9 @@
+2004-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/memmove.c (main_test): Formatting.
+	* gcc.c-torture/execute/builtins/memmove-2.c: New test.
+	* gcc.c-torture/execute/builtins/memmove-2-lib.c: New.
+
 2004-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17324
