@@ -57,6 +57,11 @@ tree
 get_pending_sizes ()
 {
   tree chain = pending_sizes;
+  tree t;
+
+  /* Put each SAVE_EXPR into the current function.  */
+  for (t = chain; t; t = TREE_CHAIN (t))
+    SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = current_function_decl;
   pending_sizes = 0;
   return chain;
 }
@@ -64,7 +69,7 @@ get_pending_sizes ()
 /* Given a size SIZE that isn't constant, return a SAVE_EXPR
    to serve as the actual size-expression for a type or decl.  */
 
-static tree
+tree
 variable_size (size)
      tree size;
 {
@@ -686,15 +691,13 @@ layout_type (type)
 	      = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
 			       MODE_INT, 1);
 
-#ifdef STRICT_ALIGNMENT
-	    if (TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
+	    if (STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
 		&& TYPE_ALIGN (type) < TREE_INT_CST_LOW (TYPE_SIZE (type))
 		&& TYPE_MODE (type) != BLKmode)
 	      {
 		TYPE_NO_FORCE_BLK (type) = 1;
 		TYPE_MODE (type) = BLKmode;
 	      }
-#endif
 	  }
 	break;
       }
@@ -741,9 +744,10 @@ layout_type (type)
 	  /* If structure's known alignment is less than
 	     what the scalar mode would need, and it matters,
 	     then stick with BLKmode.  */
-#ifdef STRICT_ALIGNMENT
-	  if (! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-		 || TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type))))
+	  if (STRICT_ALIGNMENT
+	      && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
+		    || (TYPE_ALIGN (type)
+			>= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
 	    {
 	      if (TYPE_MODE (type) != BLKmode)
 		/* If this is the only reason this type is BLKmode,
@@ -751,7 +755,7 @@ layout_type (type)
 		TYPE_NO_FORCE_BLK (type) = 1;
 	      TYPE_MODE (type) = BLKmode;
 	    }
-#endif
+
 	record_lose: ;
 	}
 
@@ -771,11 +775,9 @@ layout_type (type)
 	  /* If structure's known alignment is less than
 	     what the scalar mode would need, and it matters,
 	     then stick with BLKmode.  */
-#ifdef STRICT_ALIGNMENT
-	  && (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	      || TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type)))
-#endif
-	  )
+	  && (! STRICT_ALIGNMENT
+	      || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
+	      || TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type))))
 	{
 	  tree field;
 	  /* A union which has any BLKmode members must itself be BLKmode;
@@ -809,11 +811,9 @@ layout_type (type)
      alignment.  */
 
   if (TYPE_MODE (type) != BLKmode && TYPE_MODE (type) != VOIDmode
-#ifndef STRICT_ALIGNMENT
-      && (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
-	  && TREE_CODE (type) != ARRAY_TYPE)
-#endif
-      )
+      && (STRICT_ALIGNMENT
+	  || (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
+	      && TREE_CODE (type) != ARRAY_TYPE)))
     TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
@@ -971,7 +971,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 
   if (mode == MAX_MACHINE_MODE
       /* It is tempting to omit the following line
-	 if STRICT_ALIGNMENT is not defined.
+	 if STRICT_ALIGNMENT is true.
 	 But that is incorrect, since if the bitfield uses part of 3 bytes
 	 and we use a 4-byte mode, we could get a spurious segv
 	 if the extra 4th byte is past the end of memory.
