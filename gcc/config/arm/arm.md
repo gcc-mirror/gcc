@@ -1090,12 +1090,177 @@
 
 ;; Boolean and,ior,xor insns
 
+;; Split up double word logical operations
+
+;; Split up simple DImode logical operations.  Simply perform the logical
+;; operation on the upper and lower halves of the registers.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(match_operator:DI 6 "logical_binary_operator"
+	  [(match_operand:DI 1 "s_register_operand" "")
+	   (match_operand:DI 2 "s_register_operand" "")]))]
+  "reload_completed"
+  [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
+   (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_highpart (SImode, operands[2]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(not:DI (match_operand:DI 1 "s_register_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (not:SI (match_dup 1)))
+   (set (match_dup 2) (not:SI (match_dup 3)))]
+  "
+{
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[3] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+}")
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(and:DI
+	  (not:DI (match_operand:DI 1 "s_register_operand" ""))
+	  (match_operand:DI 2 "s_register_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_highpart (SImode, operands[2]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(match_operator:DI 6 "logical_binary_operator"
+	  [(sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
+	   (match_operand:DI 1 "s_register_operand" "")]))]
+  "reload_completed"
+  [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
+   (set (match_dup 3) (match_op_dup:SI 6
+			[(ashiftrt:SI (match_dup 2) (const_int 31))
+			 (match_dup 4)]))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_highpart (SImode, operands[2]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(and:DI (not:DI (sign_extend:DI
+			(match_operand:SI 2 "s_register_operand" "")))
+		(match_operand:DI 1 "s_register_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (and:SI (not:SI
+				(ashiftrt:SI (match_dup 2) (const_int 31)))
+			       (match_dup 4)))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+;; The zero extend of operand 2 clears the high word of the output
+;; operand.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(and:DI
+	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
+	  (match_operand:DI 1 "s_register_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 3) (const_int 0))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+}")
+
+;; The zero extend of operand 2 means we can just copy the high part of
+;; operand1 into operand0.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(ior:DI
+	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
+	  (match_operand:DI 1 "s_register_operand" "")))]
+  "operands[0] != operands[1] && reload_completed"
+  [(set (match_dup 0) (ior:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 3) (match_dup 4))]
+  "
+{
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+}")
+
+;; The zero extend of operand 2 means we can just copy the high part of
+;; operand1 into operand0.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(xor:DI
+	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
+	  (match_operand:DI 1 "s_register_operand" "")))]
+  "operands[0] != operands[1] && reload_completed"
+  [(set (match_dup 0) (xor:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 3) (match_dup 4))]
+  "
+{
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+}")
+
+;; (not (zero_extend ...)) allows us to just copy the high word from
+;; operand1 to operand0.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(and:DI (not:DI (zero_extend:DI
+			(match_operand:SI 2 "s_register_operand" "")))
+		(match_operand:DI 1 "s_register_operand" "")))]
+  "operands[0] != operands[1] && reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (match_dup 4))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
 (define_insn "anddi3"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (match_operand:DI 1 "s_register_operand" "%0,0")
 		(match_operand:DI 2 "s_register_operand" "r,0")))]
   ""
-  "and%?\\t%Q0, %Q1, %Q2\;and%?\\t%R0, %R1, %R2"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "*anddi_zesidi_di"
@@ -1104,7 +1269,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "and%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, #0"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "*anddi_sesdi_di"
@@ -1113,7 +1278,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "and%?\\t%Q0, %Q1, %2\;and%?\\t%R0, %R1, %2, asr #31"
+  "#"
 [(set_attr "length" "8")])
 
 (define_expand "andsi3"
@@ -1374,7 +1539,7 @@
 	(and:DI (not:DI (match_operand:DI 2 "s_register_operand" "r,0"))
 		(match_operand:DI 1 "s_register_operand" "0,r")))]
   ""
-  "bic%?\\t%Q0, %Q1, %Q2\;bic%?\\t%R0, %R1, %R2"
+  "#"
 [(set_attr "length" "8")])
   
 (define_insn "*anddi_notzesidi_di"
@@ -1385,7 +1550,7 @@
   ""
   "@
    bic%?\\t%Q0, %Q1, %2
-   bic%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
+   #"
 [(set_attr "length" "4,8")])
   
 (define_insn "*anddi_notsesidi_di"
@@ -1394,7 +1559,7 @@
 			 (match_operand:SI 2 "s_register_operand" "r,r")))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "bic%?\\t%Q0, %Q1, %2\;bic%?\\t%R0, %R1, %2, asr #31"
+  "#"
 [(set_attr "length" "8")])
   
 (define_insn "andsi_notsi_si"
@@ -1441,7 +1606,7 @@
 	(ior:DI (match_operand:DI 1 "s_register_operand" "%0")
 		(match_operand:DI 2 "s_register_operand" "r")))]
   ""
-  "orr%?\\t%Q0, %Q1, %Q2\;orr%?\\t%R0, %R1, %R2"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "*iordi_zesidi_di"
@@ -1452,7 +1617,7 @@
   ""
   "@
    orr%?\\t%Q0, %Q1, %2
-   orr%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
+   #"
 [(set_attr "length" "4,8")])
 
 (define_insn "*iordi_sesidi_di"
@@ -1461,7 +1626,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "orr%?\\t%Q0, %Q1, %2\;orr%?\\t%R0, %R1, %2, asr #31"
+  "#"
 [(set_attr "length" "8")])
 
 (define_expand "iorsi3"
@@ -1528,7 +1693,7 @@
 	(xor:DI (match_operand:DI 1 "s_register_operand" "%0,0")
 		(match_operand:DI 2 "s_register_operand" "r,0")))]
   ""
-  "eor%?\\t%Q0, %Q1, %Q2\;eor%?\\t%R0, %R1, %R2"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "*xordi_zesidi_di"
@@ -1539,7 +1704,7 @@
   ""
   "@
    eor%?\\t%Q0, %Q1, %2
-   eor%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
+   #"
 [(set_attr "length" "4,8")])
 
 (define_insn "*xordi_sesidi_di"
@@ -1548,7 +1713,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "eor%?\\t%Q0, %Q1, %2\;eor%?\\t%R0, %R1, %2, asr #31"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "xorsi3"
@@ -2035,7 +2200,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(not:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "mvn%?\\t%Q0, %Q1\;mvn%?\\t%R0, %R1"
+  "#"
 [(set_attr "length" "8")])
 
 (define_insn "one_cmplsi2"

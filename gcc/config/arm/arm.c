@@ -2366,6 +2366,23 @@ shiftable_operator (x, mode)
     }
 }
 
+/* Return TRUE for binary logical operators.  */
+
+int
+logical_binary_operator (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  if (GET_MODE (x) != mode)
+    return FALSE;
+  else
+    {
+      enum rtx_code code = GET_CODE (x);
+
+      return (code == IOR || code == XOR || code == AND);
+    }
+}
+
 /* Return TRUE for shift operators. */
 
 int
