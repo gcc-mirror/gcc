@@ -2,7 +2,7 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                               F I N A L                                  *
+ *                            A D A F I N A L                               *
  *                                                                          *
  *                                                                          *
  *                          C Implementation File                           *
