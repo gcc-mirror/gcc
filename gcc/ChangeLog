@@ -1,5 +1,13 @@
 2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	* c-decl.c (duplicate_decls): Revert rth's patch.  If newdecl
+	is in a different binding level, get its abstract origin to be
+	olddecl.
+	* tree-inline.c (expand_call_inline): Move DECL_INITIAL sanity
+	check earlier.
+	* tree.c (get_callee_fndecl): Follow DECL_ABSTRACT_ORIGIN if
+	DECL_INITIAL is NULL.
+
 	* stmt.c (expand_expr_stmt): Keep last_expr_value non-NULL iff
 	we're interested in the result.  Use it to tell whether to
 	ignore results of enclosed expressions.
