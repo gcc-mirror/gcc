@@ -1,4 +1,9 @@
-2001-02-17  Mark Mitchell  <mark@codesourcery.com>
+2001-02-18  Shane Nay  <shane@agendacomputing.com>
+
+	* mips.c (mips_expand_prologue) Add REG_MAYBE_DEAD to 
+	structure shift insns.
+
+2001-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi (-fsquangle): Remove documentation.
 	(-fname-mangling-version): Likewise.
