@@ -1,3 +1,19 @@
+2005-01-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi: Document -mTLS.
+
+	* testsuite/gcc.target/frv/all-tls-global-dynamic.c: New.
+	* testsuite/gcc.target/frv/all-tls-initial-exec.c: New.
+	* testsuite/gcc.target/frv/all-tls-initial-exec-pic.c: New.
+	* testsuite/gcc.target/frv/all-tls-local-dynamic.c: New.
+	* testsuite/gcc.target/frv/all-tls-local-dynamic-plt.c: New.
+	* testsuite/gcc.target/frv/all-tls-local-dynamic-plt-pic.c: New.
+	* testsuite/gcc.target/frv/all-tls-local-exec.c: New.
+	* testsuite/gcc.target/frv/all-tls-local-exec-TLS.c: New.
+
+	* configure.ac: Check for a TLS capable gas.
+
+	* configure: Regenerate.
 2005-01-26  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/18008

@@ -461,6 +461,7 @@ Objective-C and Objective-C++ Dialects}.
 -mvliw-branch  -mno-vliw-branch @gol
 -mmulti-cond-exec  -mno-multi-cond-exec  -mnested-cond-exec @gol
 -mno-nested-cond-exec  -mtomcat-stats @gol
+-mTLS -mtls @gol
 -mcpu=@var{cpu}}
 
 @emph{H8/300 Options}
@@ -7871,6 +7872,16 @@ It's enabled by default if optimizing for speed and compiling for
 shared libraries (i.e., @option{-fPIC} or @option{-fpic}), or when an
 optimization option such as @option{-O3} or above is present in the
 command line.
+
+@item -mTLS
+@opindex TLS
+
+Assume a large TLS segment when generating thread-local code.
+
+@item -mtls
+@opindex tls
+
+Do not assume a large TLS segment when generating thread-local code.
 
 @item -mgprel-ro
 @opindex mgprel-ro
