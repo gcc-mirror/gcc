@@ -1,3 +1,7 @@
+2001-05-25  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/t-darwin: Fix dependencies for darwin.o.
+
 2001-05-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in (notype_initdcl): Remove redundant line.
