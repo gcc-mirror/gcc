@@ -55,6 +55,7 @@ static tree alloc_eh_object PARAMS ((tree));
 static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
 static void initialize_handler_parm PARAMS ((tree));
 static tree expand_throw PARAMS ((tree));
+static int decl_is_java_type PARAMS ((tree decl, int err));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -91,6 +92,14 @@ asm (TEXT_SECTION_ASM_OP);
 #include "decl.h"
 #include "insn-flags.h"
 #include "obstack.h"
+
+/* In a given translation unit we are constrained to catch only C++
+   types or only Java types.  `catch_language' holds the current type,
+   and `catch_language_init' registers whether `catch_language' has
+   been set.  */
+
+static int catch_language_init = 0;
+static int catch_language;
 
 /* ======================================================================
    Briefly the algorithm works like this:
@@ -450,6 +459,49 @@ build_terminate_handler ()
   return build_function_call (terminate_node, NULL_TREE);
 }
 
+/* Return nonzero value if DECL is a Java type suitable for catch or
+   throw.  */
+
+static int
+decl_is_java_type (decl, err)
+     tree decl;
+     int err;
+{
+  int r = (TREE_CODE (decl) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	   && TYPE_FOR_JAVA (TREE_TYPE (decl)));
+
+  if (err)
+    {
+      if (TREE_CODE (decl) == REFERENCE_TYPE
+	  && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	  && TYPE_FOR_JAVA (TREE_TYPE (decl)))
+	{
+	  /* Can't throw a reference.  */
+	  cp_error ("type `%T' is disallowed in Java `throw' or `catch'",
+		    decl);
+	}
+
+      if (r)
+	{
+	  tree jthrow_node
+	    = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jthrowable"));
+	  if (jthrow_node == NULL_TREE)
+	    fatal ("call to Java `catch' or `throw', while `jthrowable' undefined");
+	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
+
+	  if (! DERIVED_FROM_P (jthrow_node, TREE_TYPE (decl)))
+	    {
+	      /* Thrown object must be a Throwable.  */
+	      cp_error ("type `%T' is not derived from `java::lang::Throwable'",
+			TREE_TYPE (decl));
+	    }
+	}
+    }
+
+  return r;
+}
+
 /* Initialize the catch parameter DECL.  */
 
 static void 
@@ -459,6 +511,7 @@ initialize_handler_parm (decl)
   tree exp;
   tree init;
   tree init_type;
+  int lang;
 
   /* Make sure we mark the catch param as used, otherwise we'll get a
      warning about an unused ((anonymous)).  */
@@ -470,7 +523,42 @@ initialize_handler_parm (decl)
       && TREE_CODE (init_type) != POINTER_TYPE)
     init_type = build_reference_type (init_type);
 
-  exp = get_eh_value ();
+  if (decl_is_java_type (init_type, 0))
+    {
+      tree fn
+	= builtin_function ("_Jv_exception_info", 
+			    build_function_type (ptr_type_node,
+						 tree_cons (NULL_TREE,
+							    void_type_node,
+							    NULL_TREE)),
+			    0, NOT_BUILT_IN, NULL_PTR);
+
+      exp = build (CALL_EXPR, ptr_type_node,
+		   build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)),
+			   fn),
+		   NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (exp) = 1;
+      lang = EH_LANG_Java;
+
+      set_exception_lang_code (EH_LANG_Java);
+      set_exception_version_code (1);
+    }
+  else
+    {
+      exp = get_eh_value ();
+      lang = EH_LANG_C_plus_plus;
+    }
+
+  if (catch_language_init)
+    {
+      if (lang != catch_language)
+	error ("mixing C++ and Java `catch'es in single translation unit");
+    }
+  else
+    {
+      catch_language_init = 1;
+      catch_language = lang;
+    }
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the value slot.  */ 
@@ -524,14 +612,27 @@ expand_start_catch_block (decl)
      cleanup.  */
   compound_stmt_1 = begin_compound_stmt (/*has_no_scope=*/0);
 
-  if (decl)
-    type = build_eh_type_type_ref (TREE_TYPE (decl));
-  else
-    type = NULL_TREE;
-  begin_catch_block (type);
+  if (! decl || ! decl_is_java_type (TREE_TYPE (decl), 1))
+    {
+      /* The ordinary C++ case.  */
 
-  push_eh_info ();
-  push_eh_cleanup ();
+      if (decl)
+	type = build_eh_type_type_ref (TREE_TYPE (decl));
+      else
+	type = NULL_TREE;
+      begin_catch_block (type);
+
+      push_eh_info ();
+      push_eh_cleanup ();
+    }
+  else
+    {
+      /* The Java case.  In this case, the match_info is a pointer to
+	 the Java class object.  We assume that the class is a
+	 compiled class.  */
+      tree ref = build_java_class_ref (TREE_TYPE (TREE_TYPE (decl)));
+      begin_catch_block (build1 (ADDR_EXPR, jclass_node, ref));
+    }
 
   /* Create a binding level for the parm.  */
   compound_stmt_2 = begin_compound_stmt (/*has_no_scope=*/0);
@@ -734,7 +835,35 @@ expand_throw (exp)
   if (! doing_eh (1))
     return error_mark_node;
 
-  if (exp)
+  if (exp
+      && decl_is_java_type (TREE_TYPE (exp), 1))
+    {
+      /* A Java `throw' statement.  */
+      tree args = tree_cons (NULL_TREE, exp, NULL);
+
+      fn = get_identifier (exceptions_via_longjmp
+			   ? "_Jv_Sjlj_throw"
+			   : "_Jv_Throw");
+      if (IDENTIFIER_GLOBAL_VALUE (fn))
+	fn = IDENTIFIER_GLOBAL_VALUE (fn);
+      else
+	{
+	  /* Declare _Jv_Throw (void *), as defined in Java's
+	     exception.cc.  */
+	  tree tmp;
+	  tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
+	  fn = build_lang_decl (FUNCTION_DECL, fn,
+				build_function_type (ptr_type_node, tmp));
+	  DECL_EXTERNAL (fn) = 1;
+	  TREE_PUBLIC (fn) = 1;
+	  DECL_ARTIFICIAL (fn) = 1;
+	  pushdecl_top_level (fn);
+	  make_function_rtl (fn);
+	}
+
+      exp = build_function_call (fn, args);
+    }
+  else if (exp)
     {
       tree throw_type;
       tree cleanup = NULL_TREE, e;
