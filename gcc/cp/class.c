@@ -146,8 +146,6 @@ static bool build_base_field PARAMS ((record_layout_info, tree, int *,
 				     splay_tree, tree));
 static bool build_base_fields PARAMS ((record_layout_info, int *,
 				      splay_tree, tree));
-static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, tree,
-					       int *));
 static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
@@ -3496,43 +3494,6 @@ check_field_decls (t, access_decls, empty_p,
   *access_decls = nreverse (*access_decls);
 }
 
-/* Return a FIELD_DECL for a pointer-to-virtual-table or
-   pointer-to-virtual-base.  The NAME, ASSEMBLER_NAME, and TYPE of the
-   field are as indicated.  The CLASS_TYPE in which this field occurs
-   is also indicated.  FCONTEXT is the type that is needed for the debug
-   info output routines.  *EMPTY_P is set to a non-zero value by this
-   function to indicate that a class containing this field is
-   non-empty.  */
-
-static tree
-build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
-			   empty_p)
-     tree name;
-     tree assembler_name;
-     tree type;
-     tree class_type;
-     tree fcontext;
-     int *empty_p;
-{
-  tree field;
-
-  /* This class is non-empty.  */
-  *empty_p = 0;
-
-  /* Build the FIELD_DECL.  */
-  field = build_decl (FIELD_DECL, name, type);
-  SET_DECL_ASSEMBLER_NAME (field, assembler_name);
-  DECL_VIRTUAL_P (field) = 1;
-  DECL_ARTIFICIAL (field) = 1;
-  DECL_FIELD_CONTEXT (field) = class_type;
-  DECL_FCONTEXT (field) = fcontext;
-  DECL_ALIGN (field) = TYPE_ALIGN (type);
-  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (type);
-
-  /* Return it.  */
-  return field;
-}
-
 /* If TYPE is an empty class type, records its OFFSET in the table of
    OFFSETS.  */
 
@@ -4490,13 +4451,21 @@ create_vtable_ptr (t, empty_p, vfuns_p,
 	 bounds.  That's better than using `void*' or some such; it's
 	 cleaner, and it let's the alias analysis code know that these
 	 stores cannot alias stores to void*!  */
-      TYPE_VFIELD (t) 
-	= build_vtbl_or_vbase_field (get_vfield_name (t),
-				     get_identifier (VFIELD_BASE),
-				     vtbl_ptr_type_node,
-				     t,
-				     t,
-				     empty_p);
+      tree field;
+
+      field = build_decl (FIELD_DECL, get_vfield_name (t), vtbl_ptr_type_node);
+      SET_DECL_ASSEMBLER_NAME (field, get_identifier (VFIELD_BASE));
+      DECL_VIRTUAL_P (field) = 1;
+      DECL_ARTIFICIAL (field) = 1;
+      DECL_FIELD_CONTEXT (field) = t;
+      DECL_FCONTEXT (field) = t;
+      DECL_ALIGN (field) = TYPE_ALIGN (vtbl_ptr_type_node);
+      DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (vtbl_ptr_type_node);
+      
+      TYPE_VFIELD (t) = field;
+      
+      /* This class is non-empty.  */
+      *empty_p = 0;
 
       if (CLASSTYPE_N_BASECLASSES (t))
 	/* If there were any baseclasses, they can't possibly be at
@@ -4505,7 +4474,7 @@ create_vtable_ptr (t, empty_p, vfuns_p,
 	   take work.  */
 	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t) = 1;
 
-      return TYPE_VFIELD (t);
+      return field;
     }
 
   return NULL_TREE;
