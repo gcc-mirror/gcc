@@ -1,3 +1,8 @@
+2001-06-13  Andrew Cagney  <ac131313@redhat.com>
+
+	* lbasename.c (lbasename): Change function definition to return a
+	const char pointer.
+
 2001-08-07  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cp-demangle.c (demangle_special_name): "GR" -> "reference temporary
