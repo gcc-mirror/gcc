@@ -545,7 +545,6 @@ lhd_print_error_function (diagnostic_context *context, const char *file)
 	      (context->printer, "In function `%s':",
 	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
 	}
-      pp_newline (context->printer);
 
       diagnostic_set_last_function (context);
       pp_flush (context->printer);
