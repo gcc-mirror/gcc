@@ -83,6 +83,15 @@ enum dwarf_tag
     DW_TAG_variant_part = 0x33,
     DW_TAG_variable = 0x34,
     DW_TAG_volatile_type = 0x35,
+    /* DWARF 2.1 */
+    DW_TAG_dwarf_procedure = 0x36,
+    DW_TAG_restrict_type = 0x37,
+    DW_TAG_interface_type = 0x38,
+    DW_TAG_namespace = 0x39,
+    DW_TAG_imported_module = 0x3a,
+    DW_TAG_unspecified_type = 0x3b,
+    DW_TAG_partial_unit = 0x3c,
+    DW_TAG_imported_unit = 0x3d,
     /* SGI/MIPS Extensions */
     DW_TAG_MIPS_loop = 0x4081,
     /* GNU extensions */
@@ -192,6 +201,19 @@ enum dwarf_attribute
     DW_AT_variable_parameter = 0x4b,
     DW_AT_virtuality = 0x4c,
     DW_AT_vtable_elem_location = 0x4d,
+    /* DWARF 2.1 */
+    DW_AT_allocated = 0x4e,
+    DW_AT_associated = 0x4f,
+    DW_AT_data_location = 0x50, 
+    DW_AT_stride = 0x51,
+    DW_AT_entry_pc = 0x52,
+    DW_AT_use_UTF8 = 0x53,
+    DW_AT_extension = 0x54,
+    DW_AT_ranges = 0x55,
+    DW_AT_trampoline = 0x56,
+    DW_AT_call_column = 0x57, 
+    DW_AT_call_file = 0x58,
+    DW_AT_call_line = 0x59,
     /* SGI/MIPS Extensions */
     DW_AT_MIPS_fde = 0x2001,
     DW_AT_MIPS_loop_begin = 0x2002,
@@ -364,7 +386,12 @@ enum dwarf_location_atom
     DW_OP_piece = 0x93,
     DW_OP_deref_size = 0x94,
     DW_OP_xderef_size = 0x95,
-    DW_OP_nop = 0x96
+    DW_OP_nop = 0x96,
+    /* DWARF 2.1 */
+    DW_OP_push_object_address = 0x97,
+    DW_OP_call2 = 0x98,
+    DW_OP_call4 = 0x99,
+    DW_OP_calli = 0x9a
   };
 
 #define DW_OP_lo_user	0x80	/* implementation-defined range start */
@@ -382,7 +409,9 @@ enum dwarf_type
     DW_ATE_signed = 0x5,
     DW_ATE_signed_char = 0x6,
     DW_ATE_unsigned = 0x7,
-    DW_ATE_unsigned_char = 0x8
+    DW_ATE_unsigned_char = 0x8,
+    /* DWARF 2.1 */
+    DW_ATE_imaginary_float = 0x9
   };
 
 #define	DW_ATE_lo_user 0x80
@@ -542,6 +571,11 @@ enum dwarf_source_language
     DW_LANG_Pascal83 = 0x0009,
     DW_LANG_Modula2 = 0x000a,
     DW_LANG_Java = 0x000b,
+    /* DWARF 2.1 */
+    DW_LANG_C99 = 0x000c,
+    DW_LANG_Ada95 = 0x000d,
+    DW_LANG_Fortran95 = 0x000e,
+    /* MIPS */
     DW_LANG_Mips_Assembler = 0x8001
   };
 
