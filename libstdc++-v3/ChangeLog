@@ -1,3 +1,10 @@
+2001-02-06  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* src/misc-inst.cc (_S_pad_char): Modify declaration's parameters
+	to match header files.
+	(_S_output_float): Likewise.
+	(_S_copy_streambufs): Likewise.
+
 2001-02-06  Hyman Rosen  <Hyman.Rosen@kbcfp.com>
             Phil Edwards  <pme@sources.redhat.com>
 
