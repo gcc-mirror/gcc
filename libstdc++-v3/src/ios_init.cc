@@ -142,6 +142,12 @@ namespace std
       }
   } 
 
+  bool
+  ios_base::Init::_S_initialized()
+  {
+    return _S_refcount > 0;
+  }
+
   bool 
   ios_base::sync_with_stdio(bool __sync)
   { 
