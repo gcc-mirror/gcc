@@ -1,3 +1,7 @@
+Fri Sep 21 11:20:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (allocate_initial_values): Eliminate unused arg warning.
+
 21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
 
 	* cfgcleanup.c (flow_find_cross_jump): Delete any REG_EQUAL notes
