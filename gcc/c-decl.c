@@ -2491,7 +2491,15 @@ pushdecl (x)
 	 incomplete type.  */
       if (TREE_TYPE (x) != error_mark_node
 	  && !COMPLETE_TYPE_P (TREE_TYPE (x)))
-	++b->n_incomplete;
+	{
+	  tree element = TREE_TYPE (x);
+
+	  while (TREE_CODE (element) == ARRAY_TYPE)
+	    element = TREE_TYPE (element);
+	  if (TREE_CODE (element) == RECORD_TYPE
+	      || TREE_CODE (element) == UNION_TYPE)
+	    ++b->n_incomplete;
+	}
     }
 
   /* Put decls on list in reverse order.
@@ -5777,7 +5785,8 @@ finish_struct (t, fieldlist, attributes)
 	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
 		expand_decl (decl);
-	      --current_binding_level->n_incomplete;
+	      if (--current_binding_level->n_incomplete == 0)
+		break;
 	    }
 	  else if (!COMPLETE_TYPE_P (TREE_TYPE (decl))
 		   && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
@@ -5786,7 +5795,19 @@ finish_struct (t, fieldlist, attributes)
 	      while (TREE_CODE (element) == ARRAY_TYPE)
 		element = TREE_TYPE (element);
 	      if (element == t)
-		layout_array_type (TREE_TYPE (decl));
+		{
+		  layout_array_type (TREE_TYPE (decl));
+		  if (TREE_CODE (decl) != TYPE_DECL)
+		    {
+		      layout_decl (decl, 0);
+		      maybe_objc_check_decl (decl);
+		      rest_of_decl_compilation (decl, NULL, toplevel, 0);
+		      if (! toplevel)
+			expand_decl (decl);
+		    }
+		  if (--current_binding_level->n_incomplete == 0)
+		    break;
+		}
 	    }
 	}
     }
