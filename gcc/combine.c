@@ -12239,6 +12239,10 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	      place = prev_real_insn (from_insn);
 	      if (tem && place)
 		XEXP (tem, 0) = place;
+	      /* If we're deleting the last remaining instruction of a
+		 libcall sequence, don't add the notes.  */
+	      else if (XEXP (note, 0) == from_insn)
+		tem = place = 0;
 	    }
 	  break;
 
@@ -12252,6 +12256,10 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	      place = next_real_insn (from_insn);
 	      if (tem && place)
 		XEXP (tem, 0) = place;
+	      /* If we're deleting the last remaining instruction of a
+		 libcall sequence, don't add the notes.  */
+	      else if (XEXP (note, 0) == from_insn)
+		tem = place = 0;
 	    }
 	  break;
 
