@@ -2406,7 +2406,8 @@ simplify_subreg (outermode, op, innermode, byte)
 	    return new;
 	}
 
-      if (GET_MODE_CLASS (outermode) != MODE_INT)
+      if (GET_MODE_CLASS (outermode) != MODE_INT
+	  && GET_MODE_CLASS (outermode) != MODE_CC)
 	{
 	  enum machine_mode new_mode = int_mode_for_mode (outermode);
 
