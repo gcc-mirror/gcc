@@ -1,4 +1,4 @@
-/* Target definitions for GNU compiler for a little endian PowerPC
+/* Target definitions for GCC for a little endian PowerPC
    running System V.4
    Copyright (C) 1995, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
@@ -32,15 +32,6 @@
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-linux: --oformat elf32-powerpc} \
   }}}}"
-
-/* Define this macro as a C expression for the initializer of an
-   array of string to tell the driver program which options are
-   defaults for this target and thus do not need to be handled
-   specially when using `MULTILIB_OPTIONS'.
-
-   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
-   the target makefile fragment or if none of the options listed in
-   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mlittle", "mcall-sysv" }
