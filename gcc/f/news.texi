@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-news 2001-10-05
+@set last-update-news 2001-10-29
 
 @include root.texi
 
@@ -155,6 +155,27 @@ The following information was last updated on @value{last-update-news}:
 @heading In development, 0.5.27, @code{GCC} 3.1 versus @code{GCC} 3.0:
 @itemize @bullet
 @ifclear USERVISONLY
+@item
+g77 used to reject the following program on 32-bit targets:
+@smallexample
+PROGRAM PROG
+DIMENSION A(140 000 000)
+END
+@end smallexample
+with the message:
+@smallexample
+prog.f: In program `prog':
+prog.f:2: 
+         DIMENSION A(140 000 000)
+                   ^
+Array `a' at (^) is too large to handle
+@end smallexample
+because 140 000 000 reals is larger than the largest bit-extent that can be
+expressed in 32 bits.  However, bit-sizes never play a role after offsets
+have been converted to byte addresses.  Therefore this check has been removed.
+Note: On GNU/Linux systems one has to compile programs that occupy more
+than 1 Gbyte statically, i.e.@: g77 -static ...
+
 @item
 Based on work done by Juergen Pfeifer (@email{juergen.pfeifer@@gmx.net})
 libf2c is now a shared library.  One can still link in all objects with

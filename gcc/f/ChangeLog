@@ -1,3 +1,8 @@
+2001-10-29  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document new ability to compile programs with
+	arrays larger than 512 Mbyte on 32-bit targets.
+
 2001-10-24  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_check_size_overflow_): Only check for TREE_OVERFLOW.
