@@ -1,5 +1,11 @@
 2004-10-16  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimization/17560
+	* predict.c (tree_estimate_probability): Mark irreducible
+	loops.
+
+2004-10-16  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR rtl-optimization/17723
 	* cfgcleanup.c (merge_memattrs): Handle case when
 	MEM_SIZE == NULL_RTX.
