@@ -27,9 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #ifndef _GLIBCPP_OS_DEFINES
 #define _GLIBCPP_OS_DEFINES 1
+
+// System-specific #define, typedefs, corrections, etc, go here.  This
+// file will come before all others.
 
 // This keeps isanum, et al from being propagated as macros.
 #define __NO_CTYPE 1
@@ -63,21 +65,12 @@ typedef __loff_t __off64_t;
 #  define __NO_STRING_INLINES
 # endif
 
-#if defined (__powerpc__) || defined (__s390__)
-#define __glibcpp_wchar_t_is_signed true
-#endif
-
-#if defined (__alpha__) || defined (__powerpc64__) || (defined (__sparc__) && defined(__arch64__)) || defined (__s390x__)
+#if defined(__sparc__) && defined(__arch64__)
 #define __glibcpp_long_bits 64
 #endif
 
-#if defined (__alpha__) || (defined (__powerpc__) && !defined (__LONG_DOUBLE_128__)) || defined (__s390__)
-#define __glibcpp_long_double_bits 64
-#endif
-
-#if defined (__mc68000__)
-#define __glibcpp_long_double_bits 96
+#ifdef __powerpc64__
+#define __glibcpp_long_bits 64
 #endif
 
 #endif
-

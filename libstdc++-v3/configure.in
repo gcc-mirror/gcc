@@ -225,9 +225,10 @@ else
   AC_LC_MESSAGES
 
   AC_TRY_COMPILE([
-#include <setjmp.h>
-], [sigjmp_buf env; while (! sigsetjmp (env, 1)) siglongjmp (env, 1);],
-[AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.  ])])
+  #include <setjmp.h>
+  ], [sigjmp_buf env; while (! sigsetjmp (env, 1)) siglongjmp (env, 1);],
+  [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.  ])
+  ])
 
   AC_FUNC_MMAP
 
@@ -239,10 +240,10 @@ fi
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits
 ATOMICITY_INC_SRCDIR=$ATOMICITYH/bits
-LIMITS_INC_SRCDIR=$LIMITSH/bits
+CPU_LIMITS_INC_SRCDIR=$CPULIMITSH/bits
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
-AC_SUBST(LIMITS_INC_SRCDIR)
+AC_SUBST(CPU_LIMITS_INC_SRCDIR)
 
 # Set up cross-compile flags
 AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)

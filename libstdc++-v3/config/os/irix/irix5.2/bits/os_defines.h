@@ -27,32 +27,28 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES
+#define _GLIBCPP_OS_DEFINES 1
 
-/* System-specific #define, typedefs, corrections, etc, go here.  This
-   file will come before all others. */
+// System-specific #define, typedefs, corrections, etc, go here.  This
+// file will come before all others.
 
-/* We need large file support.  There are two ways to turn it on:
-   by defining either _LARGEFILE64_SOURCE or _SGI_SOURCE.  However,
-   it does not actually work to define only the former, as then
-   <sys/stat.h> is invalid: `st_blocks' is defined to be a macro,
-   but then used as a field name.  So, we have to turn on 
-   _SGI_SOURCE.  That only works if _POSIX_SOURCE is turned off,
-   so we have to explicitly turn it off.  (Some of the libio C files
-   explicitly try to turn it on.)  _SGI_SOURCE is actually turned on 
-   implicitly via the command-line.  */
+// We need large file support.  There are two ways to turn it on: by
+// defining either _LARGEFILE64_SOURCE or _SGI_SOURCE.  However, it
+// does not actually work to define only the former, as then
+// <sys/stat.h> is invalid: `st_blocks' is defined to be a macro, but
+// then used as a field name.  So, we have to turn on _SGI_SOURCE.
+// That only works if _POSIX_SOURCE is turned off, so we have to
+// explicitly turn it off.  (Some of the libio C files explicitly try
+// to turn it on.)  _SGI_SOURCE is actually turned on implicitly via
+// the command-line.
 #undef _POSIX_SOURCE
 
 #define __off_t off_t
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 
-/* GCC does not use thunks on IRIX.  */
+// GCC does not use thunks on IRIX.
 #define _G_USING_THUNKS 0
 
 #endif
-
-
-

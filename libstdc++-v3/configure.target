@@ -13,7 +13,6 @@
 #   target                The configuration target
 #   target_cpu            The configuration target CPU
 #   target_os             The configuration target OS
-#   target_optspace       --enable-target-optspace ("yes", "no", "")
 
 # It possibly modifies the following shell variables:
 #   cpu_include_dir        CPU-specific include directory, relative to srcdir
@@ -22,7 +21,6 @@
 
 # Set any CPU dependent compiler flags.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-
 case "${target_cpu}" in
   alpha*)
     cpu_include_dir="config/cpu/alpha"
@@ -68,7 +66,6 @@ esac
 
 # Set any OS dependent compiler flags.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-
 case "${target_os}" in
   aix4.[3456789]* | aix[56789]*)
     os_include_dir="config/os/aix"
@@ -115,7 +112,6 @@ esac
 
 # Set any flags dependant on the full target triplet.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-
 case "${target}" in
    *-*-aix[456789]*)
      # We set os_include_dir to config/os/aix only on AIX 4.3 and
@@ -135,24 +131,32 @@ case "${target}" in
      ;;
 esac
 
-# Set LIMITSH to the directory where the configuration-dependent
-# limits.h can be found.
+# Set CPULIMITSH to the directory where the configuration-dependent
+# cpu_limits.h can be found.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-
 case "${target}" in
+   alpha-*-*)
+     CPULIMITSH=config/cpu/alpha
+     ;;
    cris-*-*)
-     LIMITSH=config/cpu/cris
+     CPULIMITSH=config/cpu/cris
      ;;
    i?86-*-*)
-     LIMITSH=config/cpu/i386
+     CPULIMITSH=config/cpu/i386
+     ;;
+   m68k-*-* | m680[246]0-*-*)
+     CPULIMITSH=config/cpu/m68k
      ;;
    powerpc-*-*)
-     LIMITSH=config/cpu/powerpc
+     CPULIMITSH=config/cpu/powerpc
+     ;;
+   s390-*-* | s390x-*-*)
+     CPULIMITSH=config/cpu/s390
      ;;
    x86_64-*-*)
-     LIMITSH=config/cpu/x86-64
+     CPULIMITSH=config/cpu/x86-64
      ;;
    *)
-     LIMITSH=config/cpu/generic
+     CPULIMITSH=config/cpu/generic
      ;;
 esac

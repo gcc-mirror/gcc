@@ -27,12 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #ifndef _GLIBCPP_OS_DEFINES
-#  define _GLIBCPP_OS_DEFINES
+#define _GLIBCPP_OS_DEFINES 1
 
-/* System-specific #define, typedefs, corrections, etc, go here.  This
-   file will come before all others. */
+// System-specific #define, typedefs, corrections, etc, go here.  This
+// file will come before all others.
 
 #define _GLIBCPP_AVOID_FSEEK 1
 

@@ -28,9 +28,14 @@
 #ifndef _GLIBCPP_CPU_LIMITS
 #define _GLIBCPP_CPU_LIMITS 1
 
-// Some operating systems set this
-#ifndef __glibcpp_long_double_bits
-#define __glibcpp_long_double_bits 80
-#endif
+// Nothing is defined in the generic file.  In that way, we fall back
+// on the defaults in std_limits.h.
+
+// If you need to override these defaults, you can either use a
+// CPU-specific version (in which case you must modify
+// configure.target) or you must add the overrides to your
+// os_defines.h.  In general, if all systems for your CPU use the
+// same values, it is best to use a cpu-specific configuration file.
 
 #endif
+
