@@ -1,3 +1,11 @@
+2005-01-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtlanal.c (non_rtx_starting_operands, for_each_rtx_1,
+	init_rtlanal): New.
+	(for_each_rtx): Call for_each_rtx_1.
+	* rtl.h (init_rtlanal): Declare.
+	* toplev.c (backend_init): Call init_rtlanal.
+
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* flow.c (propagate_one_insn): Formatting.

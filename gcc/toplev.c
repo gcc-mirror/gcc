@@ -1951,6 +1951,7 @@ backend_init (void)
 #endif
 		    || flag_test_coverage);
 
+  init_rtlanal ();
   init_regs ();
   init_fake_stack_mems ();
   init_alias_once ();

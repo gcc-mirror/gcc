@@ -58,6 +58,10 @@ static unsigned int cached_num_sign_bit_copies (rtx, enum machine_mode, rtx,
 static unsigned int num_sign_bit_copies1 (rtx, enum machine_mode, rtx,
                                           enum machine_mode, unsigned int);
 
+/* Offset of the first 'e', 'E' or 'V' operand for each rtx code, or
+   -1 if a code has no such operand.  */
+static int non_rtx_starting_operands[NUM_RTX_CODE];
+
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
    and set by `-m...' switches.  Must be defined in rtlanal.c.  */
@@ -2624,6 +2628,82 @@ computed_jump_p (rtx insn)
   return 0;
 }
 
+/* Optimized loop of for_each_rtx, trying to avoid useless recursive
+   calls.  Processes the subexpressions of EXP and passes them to F.  */
+static int
+for_each_rtx_1 (rtx exp, int n, rtx_function f, void *data)
+{
+  int result, i, j;
+  const char *format = GET_RTX_FORMAT (GET_CODE (exp));
+  rtx *x;
+
+  for (; format[n] != '\0'; n++)
+    {
+      switch (format[n])
+	{
+	case 'e':
+	  /* Call F on X.  */
+	  x = &XEXP (exp, n);
+	  result = (*f) (x, data);
+	  if (result == -1)
+	    /* Do not traverse sub-expressions.  */
+	    continue;
+	  else if (result != 0)
+	    /* Stop the traversal.  */
+	    return result;
+	
+	  if (*x == NULL_RTX)
+	    /* There are no sub-expressions.  */
+	    continue;
+	
+	  i = non_rtx_starting_operands[GET_CODE (*x)];
+	  if (i >= 0)
+	    {
+	      result = for_each_rtx_1 (*x, i, f, data);
+	      if (result != 0)
+		return result;
+	    }
+	  break;
+
+	case 'V':
+	case 'E':
+	  if (XVEC (exp, n) == 0)
+	    continue;
+	  for (j = 0; j < XVECLEN (exp, n); ++j)
+	    {
+	      /* Call F on X.  */
+	      x = &XVECEXP (exp, n, j);
+	      result = (*f) (x, data);
+	      if (result == -1)
+		/* Do not traverse sub-expressions.  */
+		continue;
+	      else if (result != 0)
+		/* Stop the traversal.  */
+		return result;
+	
+	      if (*x == NULL_RTX)
+		/* There are no sub-expressions.  */
+		continue;
+	
+	      i = non_rtx_starting_operands[GET_CODE (*x)];
+	      if (i >= 0)
+		{
+		  result = for_each_rtx_1 (*x, i, f, data);
+		  if (result != 0)
+		    return result;
+	        }
+	    }
+	  break;
+
+	default:
+	  /* Nothing to do.  */
+	  break;
+	}
+    }
+
+  return 0;
+}
+
 /* Traverse X via depth-first search, calling F for each
    sub-expression (including X itself).  F is also passed the DATA.
    If F returns -1, do not traverse sub-expressions, but continue
@@ -2641,8 +2721,6 @@ int
 for_each_rtx (rtx *x, rtx_function f, void *data)
 {
   int result;
-  int length;
-  const char *format;
   int i;
 
   /* Call F on X.  */
@@ -2658,42 +2736,13 @@ for_each_rtx (rtx *x, rtx_function f, void *data)
     /* There are no sub-expressions.  */
     return 0;
 
-  length = GET_RTX_LENGTH (GET_CODE (*x));
-  format = GET_RTX_FORMAT (GET_CODE (*x));
+  i = non_rtx_starting_operands[GET_CODE (*x)];
+  if (i < 0)
+    return 0;
 
-  for (i = 0; i < length; ++i)
-    {
-      switch (format[i])
-	{
-	case 'e':
-	  result = for_each_rtx (&XEXP (*x, i), f, data);
-	  if (result != 0)
-	    return result;
-	  break;
-
-	case 'V':
-	case 'E':
-	  if (XVEC (*x, i) != 0)
-	    {
-	      int j;
-	      for (j = 0; j < XVECLEN (*x, i); ++j)
-		{
-		  result = for_each_rtx (&XVECEXP (*x, i, j), f, data);
-		  if (result != 0)
-		    return result;
-		}
-	    }
-	  break;
-
-	default:
-	  /* Nothing to do.  */
-	  break;
-	}
-
-    }
-
-  return 0;
+  return for_each_rtx_1 (*x, i, f, data);
 }
+
 
 /* Searches X for any reference to REGNO, returning the rtx of the
    reference found if any.  Otherwise, returns NULL_RTX.  */
@@ -4612,3 +4661,17 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
 				 allow_cc_mode, valid_at_insn_p);
 }
 
+
+/* Initialize non_rtx_starting_operands, which is used to speed up
+   for_each_rtx.  */
+void
+init_rtlanal (void)
+{
+  int i;
+  for (i = 0; i < NUM_RTX_CODE; i++)
+    {
+      const char *format = GET_RTX_FORMAT (i);
+      const char *first = strpbrk (format, "eEV");
+      non_rtx_starting_operands[i] = first ? first - format : -1;
+    }
+}
