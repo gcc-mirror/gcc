@@ -1075,6 +1075,7 @@ main (argc, argv)
   /* Try to discover a valid linker/nm/strip to use.  */
 
   /* Maybe we know the right file to use (if not cross).  */
+  ld_file_name = 0;
 #ifdef DEFAULT_LINKER
   if (access (DEFAULT_LINKER, X_OK) == 0)
     ld_file_name = DEFAULT_LINKER;
