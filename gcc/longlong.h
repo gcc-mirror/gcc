@@ -498,10 +498,10 @@
   __asm__ ("multu %2,%3
 	mflo %0
 	mfhi %1"							\
-	   : "=r" ((unsigned long int)(w0)),				\
-	     "=r" ((unsigned long int)(w1))				\
-	   : "r" ((unsigned long int)(u)),				\
-	     "r" ((unsigned long int)(v)))
+	   : "=d" ((unsigned long int)(w0)),				\
+	     "=d" ((unsigned long int)(w1))				\
+	   : "d" ((unsigned long int)(u)),				\
+	     "d" ((unsigned long int)(v)))
 #define UMUL_TIME 5
 #define UDIV_TIME 100
 #endif /* __mips__ */
