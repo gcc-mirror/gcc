@@ -1,3 +1,8 @@
+Sun Sep  6 00:00:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (INCLUDES): Update after recent toplevel gcc
+	reorganizations.
+
 1998-09-05  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (TI_PENDING_SPECIALIZATION_FLAG): Remove.
