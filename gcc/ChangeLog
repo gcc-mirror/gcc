@@ -1,3 +1,9 @@
+2002-01-11  Andreas Jaeger  <aj@suse.de>,
+	    Brad Lucier <lucier@math.purdue.edu>
+
+	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Remove wrong
+	mcpu.
+
 Fri Jan 11 07:35:12 2002  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h: (MD_FALLBACK_FRAME_STATE_FOR): Fix errors.
@@ -6,7 +12,7 @@ Fri Jan 11 07:35:12 2002  Douglas B Rupp  <rupp@gnat.com>
 
 Fri Jan 11 09:25:05 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
-	* c-tree.h: Move function declarations so that they are listed 
+	* c-tree.h: Move function declarations so that they are listed
 	under the filename which contains them.
 	(check_identifier, finish_decl_top_level,
 	lookup_name_current_level_global, shadow_record_fields): Remove.
