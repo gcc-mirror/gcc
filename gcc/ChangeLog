@@ -1,3 +1,17 @@
+2003-05-31  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (c-opts.o, c-options.h): Update dependencies.
+	* c-opts.c: Include c-options.h and c-options.c.
+	(CL_C_ONLY, CL_OBJC_ONLY, CL_CXX_ONLY, CL_OBJCXX_ONLY):
+	Rename CL_C, CL_OBJC, CL_CXX, CL_OBJCXX.
+	(CL_ARG, CL_ALL, COMMAND_LINE_OPTIONS, struct cl_option,
+	OPT, opt_comp): Remove.
+	(missing_arg, c_common_init_options, c_common_decode_option,
+	write_langs): Update for macro redefinitions and enumeration
+	name changes.
+	* c.opt, opts.sh: New files.
+	* doc/passes.texi: Update.
+
 2003-05-31  Andreas Jaeger  <aj@suse.de>
 
 	* function.c (trampoline_address): Remove ALLOCATE_TRAMPOLINE
