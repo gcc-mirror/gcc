@@ -1384,7 +1384,7 @@ scan_prog_file (prog_name, which_pass)
       if (rw)
 	{
 	  load_union_t *ptr = (load_union_t *) xmalloc (load_hdr->hdr.ldci_cmd_size);
-	  bcopy (load_hdr, ptr, load_hdr->hdr.ldci_cmd_size);
+	  bcopy ((generic *)load_hdr, (generic *)ptr, load_hdr->hdr.ldci_cmd_size);
 	  load_hdr = ptr;
 
 	  /* null out old command map, because we will rewrite at the end.  */
@@ -1567,7 +1567,7 @@ scan_prog_file (prog_name, which_pass)
 	  if (debug)
 	    print_load_command (load_hdr, offset, i);
 
-	  bcopy (load_hdr, obj + offset, size);
+	  bcopy ((generic *)load_hdr, (generic *)(obj + offset), size);
 	  offset += size;
 	}
     }
