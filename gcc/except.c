@@ -698,6 +698,7 @@ struct func_eh_entry
   int range_number;   /* EH region number from EH NOTE insn's.  */
   rtx rethrow_label;  /* Label for rethrow.  */
   int rethrow_ref;    /* Is rethrow_label referenced?  */
+  int emitted;        /* 1 if this entry has been emitted in assembly file.  */
   struct handler_info *handlers;
 };
 
@@ -739,7 +740,8 @@ new_eh_region_entry (note_eh_region, rethrow)
   else
     function_eh_regions[current_func_eh_entry].rethrow_label = rethrow;
   function_eh_regions[current_func_eh_entry].handlers = NULL;
-
+  function_eh_regions[current_func_eh_entry].emitted = 0;
+ 
   return current_func_eh_entry++;
 }
 
@@ -2221,40 +2223,44 @@ output_exception_table_entry (file, n)
   else
     rethrow = NULL_RTX;
 
+  if (function_eh_regions[index].emitted)
+    return;
+  function_eh_regions[index].emitted  = 1;
+
   for ( ; handler != NULL || rethrow != NULL_RTX; handler = handler->next)
     {
       /* rethrow label should indicate the LAST entry for a region */
       if (rethrow != NULL_RTX && (handler == NULL || handler->next == NULL))
         {
           ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", n);
-          assemble_label(buf);
+          assemble_eh_label(buf);
           rethrow = NULL_RTX;
         }
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LEHB", n);
       sym = gen_rtx_SYMBOL_REF (Pmode, buf);
-      assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
+      assemble_eh_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LEHE", n);
       sym = gen_rtx_SYMBOL_REF (Pmode, buf);
-      assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
+      assemble_eh_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
       
       if (handler == NULL)
-        assemble_integer (GEN_INT (0), POINTER_SIZE / BITS_PER_UNIT, 1);
+        assemble_eh_integer (GEN_INT (0), POINTER_SIZE / BITS_PER_UNIT, 1);
       else
         {
           ASM_GENERATE_INTERNAL_LABEL (buf, "L", handler->handler_number);
           sym = gen_rtx_SYMBOL_REF (Pmode, buf);
-          assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
+          assemble_eh_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
         }
 
       if (flag_new_exceptions)
         {
           if (handler == NULL || handler->type_info == NULL)
-            assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+            assemble_eh_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
           else
             if (handler->type_info == CATCH_ALL_TYPE)
-              assemble_integer (GEN_INT (CATCH_ALL_TYPE), 
+              assemble_eh_integer (GEN_INT (CATCH_ALL_TYPE), 
                                              POINTER_SIZE / BITS_PER_UNIT, 1);
             else
               output_constant ((tree)(handler->type_info), 
@@ -2288,11 +2294,50 @@ set_exception_version_code (code)
   version_code = code;
 }
 
+/* Free the EH table structures.  */
+void
+free_exception_table ()
+{
+  free (eh_table);
+  clear_function_eh_region ();
+}
+  
+/* Output the common content of an exception table.  */
+void
+output_exception_table_data ()
+{
+  int i;
+  char buf[256];
+  extern FILE *asm_out_file;
 
+  if (flag_new_exceptions)
+    {
+      assemble_eh_integer (GEN_INT (NEW_EH_RUNTIME), 
+                                        POINTER_SIZE / BITS_PER_UNIT, 1);
+      assemble_eh_integer (GEN_INT (language_code), 2 , 1); 
+      assemble_eh_integer (GEN_INT (version_code), 2 , 1);
+
+      /* Add enough padding to make sure table aligns on a pointer boundry. */
+      i = GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT - 4;
+      for ( ; i < 0; i = i + GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT)
+        ;
+      if (i != 0)
+        assemble_eh_integer (const0_rtx, i , 1);
+
+      /* Generate the label for offset calculations on rethrows.  */
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", 0);
+      assemble_eh_label(buf);
+    }
+
+  for (i = 0; i < eh_table_size; ++i)
+    output_exception_table_entry (asm_out_file, eh_table[i]);
+
+}
+
+/* Output an exception table for the entire compilation unit.  */
 void
 output_exception_table ()
 {
-  int i;
   char buf[256];
   extern FILE *asm_out_file;
 
@@ -2302,47 +2347,47 @@ output_exception_table ()
   exception_section ();
 
   /* Beginning marker for table.  */
-  assemble_align (GET_MODE_ALIGNMENT (ptr_mode));
-  assemble_label ("__EXCEPTION_TABLE__");
+  assemble_eh_align (GET_MODE_ALIGNMENT (ptr_mode));
+  assemble_eh_label ("__EXCEPTION_TABLE__");
 
-  if (flag_new_exceptions)
-    {
-      assemble_integer (GEN_INT (NEW_EH_RUNTIME), 
-                                        POINTER_SIZE / BITS_PER_UNIT, 1);
-      assemble_integer (GEN_INT (language_code), 2 , 1); 
-      assemble_integer (GEN_INT (version_code), 2 , 1);
-
-      /* Add enough padding to make sure table aligns on a pointer boundry. */
-      i = GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT - 4;
-      for ( ; i < 0; i = i + GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT)
-        ;
-      if (i != 0)
-        assemble_integer (const0_rtx, i , 1);
-
-      /* Generate the label for offset calculations on rethrows.  */
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", 0);
-      assemble_label(buf);
-    }
-
-  for (i = 0; i < eh_table_size; ++i)
-    output_exception_table_entry (asm_out_file, eh_table[i]);
-
-  free (eh_table);
-  clear_function_eh_region ();
+  output_exception_table_data ();
 
   /* Ending marker for table.  */
   /* Generate the label for end of table. */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", CODE_LABEL_NUMBER (final_rethrow));
-  assemble_label(buf);
-  assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_eh_label(buf);
+  assemble_eh_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   /* For binary compatibility, the old __throw checked the second
      position for a -1, so we should output at least 2 -1's */
   if (! flag_new_exceptions)
-    assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+    assemble_eh_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   putc ('\n', asm_out_file);		/* blank line */
 }
+
+/* Used by the ia64 unwind format to output data for an individual 
+   function.  */
+void
+output_function_exception_table ()
+{
+  extern FILE *asm_out_file;
+
+  if (! doing_eh (0) || ! eh_table)
+    return;
+
+#ifdef HANDLER_SECTION
+  HANDLER_SECTION;
+#endif
+
+  output_exception_table_data ();
+
+  /* Ending marker for table.  */
+  assemble_eh_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+
+  putc ('\n', asm_out_file);           /* blank line */
+}
+
 
 /* Emit code to get EH context.
    

@@ -367,6 +367,9 @@ LIBGCC2_INCLUDES =
 # Additional target-dependent options for compiling libgcc2.a.
 TARGET_LIBGCC2_CFLAGS =
 
+# Addition sources to handle exceptions; overridden by some targets.
+LIB2ADDEH = $(srcdir)/frame-dwarf2.c
+
 # libgcc1-test target (must also be overridable for a target)
 LIBGCC1_TEST = libgcc1-test
 
@@ -951,7 +954,7 @@ libgcc2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
 		touch libgcc2.ready; \
 	fi
 
-LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
+LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	objext='$(objext)' \

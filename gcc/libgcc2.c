@@ -3940,6 +3940,173 @@ label:
 }
 #endif /* DWARF2_UNWIND_INFO */
 
+#ifdef IA64_UNWIND_INFO
+#include "frame.h"
+
+/* Return handler to which we want to transfer control, NULL if we don't
+   intend to handle this exception here.  */
+void *
+__ia64_personality_v1 (void *pc, old_exception_table *table)
+{
+  if (table)
+    {
+      int pos;
+      int best = -1;
+
+      for (pos = 0; table[pos].start_region != (void *) -1; ++pos)
+        {
+          if (table[pos].start_region <= pc && table[pos].end_region > pc)
+            {
+              /* This can apply.  Make sure it is at least as small as
+                 the previous best.  */
+              if (best == -1 || (table[pos].end_region <= table[best].end_region
+                        && table[pos].start_region >= table[best].start_region))
+                best = pos;
+            }
+          /* It is sorted by starting PC within a function.  */
+          else if (best >= 0 && table[pos].start_region > pc)
+            break;
+        }
+      if (best != -1)
+        return table[best].exception_handler;
+    }
+  return (void *) 0;
+}
+
+static void
+ia64_throw_helper (throw_pc, throw_frame, caller, throw_bsp)
+     void *throw_pc;
+     ia64_frame_state *throw_frame;
+     ia64_frame_state *caller;
+     void *throw_bsp;
+{
+  unwind_info_ptr *info;
+  void *pc, *handler = NULL;
+  void *pc_base;
+  int frame_count;
+  void *bsp;
+
+  __builtin_ia64_flushrs ();      /*  Make the local register stacks available.  */
+
+  /* Start at our stack frame, get our state.  */
+  __build_ia64_frame_state (throw_pc, throw_frame, throw_bsp, &pc_base);
+
+  /* Now we have to find the proper frame for pc, and see if there
+     is a handler for it. if not, we keep going back frames until
+     we do find one. Otherwise we call uncaught ().  */
+
+  frame_count = 0;
+  memcpy (caller, throw_frame, sizeof (*caller));
+  while (!handler)
+    {
+      void *(*personality) ();
+      void *eh_table;
+
+      frame_count++;
+      /* We only care about the RP right now, so we dont need to keep
+         any other information about a call frame right now.  */
+      pc = __get_real_reg_value (&caller->rp) - 1;
+      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs), caller->my_bsp);
+      info = __build_ia64_frame_state (pc, caller, bsp, &pc_base);
+
+      /* If we couldn't find the next frame, we lose.  */
+      if (! info)
+	break;
+
+      personality = __get_personality (info); 
+      /* TODO Haven't figured out how to actually load the personality address
+         yet, so just always default to the one we expect for now.  */
+      if (personality != 0)
+	personality = __ia64_personality_v1;
+      eh_table = __get_except_table (info);
+      /* If there is no personality routine, we'll keep unwinding.  */
+      if (personality)
+	/* Pass a segment relative PC address to the personality routine,
+	   because the unwind_info section uses segrel relocs.  */
+	handler = personality (pc - pc_base, eh_table);
+    }
+  
+  if (!handler)
+   __terminate ();
+
+  /* Handler is a segment relative address, so we must adjust it here.  */
+  handler += (long) pc_base;
+
+  /* If we found a handler, we need to unwind the stack to that point.
+     We do this by copying saved values from previous frames into the
+     save slot for the throw_frame saved slots.  when __throw returns,
+     it'll pickup the correct values.  */
+  
+  /* Start with where __throw saved things, and copy each saved register
+     of each previous frame until we get to the one before we're 
+     throwing back to.  */
+  memcpy (caller, throw_frame, sizeof (*caller));
+  for ( ; frame_count > 0; frame_count--)
+    {
+      pc = __get_real_reg_value (&caller->rp) - 1;
+      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs), caller->my_bsp);
+      __build_ia64_frame_state (pc, caller, bsp, &pc_base);
+      /* Any regs that were saved can be put in the throw frame now.  */
+      /* We don't want to copy any saved register from the 
+         target destination, but we do want to load up it's frame.  */
+      if (frame_count > 1)
+	__copy_saved_reg_state (throw_frame, caller);
+    }
+
+  /* Set return address of the throw frame to the handler. */
+  __set_real_reg_value (&throw_frame->rp, handler);
+
+  /* TODO, do we need to do anything to make the values we wrote 'stick'? */
+  /* DO we need to go through the whole loadrs seqeunce?  */
+
+}
+
+void
+__throw ()
+{
+  struct eh_context *eh = (*get_eh_context) ();
+  ia64_frame_state my_frame;
+  ia64_frame_state originator;	/* For the context handler is in.  */
+  void *bsp, *tmp_bsp;
+  long offset;
+
+  /* This is required for C++ semantics.  We must call terminate if we
+     try and rethrow an exception, when there is no exception currently
+     active.  */
+  if (! eh->info)
+    __terminate ();
+
+  __builtin_unwind_init ();
+label_ia64:
+  /* We have to call another routine to actually process the frame 
+     information, which will force all of __throw's local registers into
+     backing store.  */
+
+  /* Get the value of ar.bsp while we're here.  */
+
+  bsp = __builtin_ia64_bsp ();
+  ia64_throw_helper (&&label_ia64, &my_frame, &originator, bsp);
+
+  /* Now we have to fudge the bsp by the amount in our (__throw)
+     frame marker, since the return is going to adjust it by that much. */
+
+  tmp_bsp = __calc_caller_bsp ((long)__get_real_reg_value (&my_frame.pfs), 
+			     my_frame.my_bsp);
+  offset = (char *)my_frame.my_bsp - (char *)tmp_bsp;
+  tmp_bsp = (char *)originator.my_bsp + offset;
+
+  /* A throw handler is trated like a  non-local goto, which is architeched
+     to set the FP (or PSP) in r7 before branching.  gr[0-3] map to 
+     r4-r7, so we want gr[3].  */
+  __set_real_reg_value (&my_frame.gr[3], __get_real_reg_value (&originator.psp));
+
+  __builtin_eh_return (tmp_bsp, offset, originator.my_sp);
+
+  /* The return address was already set by throw_helper.  */
+}
+
+#endif /* IA64_UNWIND_INFO  */
+
 #endif /* L_eh */
 
 #ifdef L_pure

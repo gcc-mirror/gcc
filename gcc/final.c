@@ -1827,6 +1827,10 @@ final_end_function (first, file, optimize)
 
   bb_func_label_num = -1;	/* not in function, nuke label # */
 
+#ifdef IA64_UNWIND_INFO
+  output_function_exception_table ();
+#endif
+
   /* If FUNCTION_EPILOGUE is not defined, then the function body
      itself contains return instructions wherever needed.  */
 }
@@ -2968,6 +2972,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	if (prescan > 0)
 	  break;
 
+#ifdef IA64_UNWIND_INFO
+	IA64_UNWIND_EMIT (asm_out_file, insn);
+#endif
 	/* Output assembler code from the template.  */
 
 	output_asm_insn (template, recog_data.operand);

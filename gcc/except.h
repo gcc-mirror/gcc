@@ -355,6 +355,15 @@ extern int exception_table_p			PARAMS ((void));
 
 extern void output_exception_table		PARAMS ((void));
 
+/* Free the exception table.  */
+
+extern void free_exception_table		PARAMS((void));
+
+/* Used by the ia64 unwind format to output data for an individual 
+   function.  */
+
+extern void output_function_exception_table	PARAMS((void));
+
 /* Given a return address in ADDR, determine the address we should use
    to find the corresponding EH region.  */
 
