@@ -1,3 +1,10 @@
+1999-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Make-lang.in (CHILL.stage1): Depend on stage1-start.
+        (CHILL.stage2): Likewise for stage2-start.
+        (CHILL.stage3): Likewise for stage3-start.
+        (CHILL.stage4): Likewise for stage4-start.
+
 Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc

@@ -1,3 +1,10 @@
+1999-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Make-lang.in (java.stage1): Depend on stage1-start.
+        (java.stage2): Likewise for stage2-start.
+        (java.stage3): Likewise for stage3-start.
+        (java.stage4): Likewise for stage4-start.
+
 1999-06-22  Andrew Haley  <aph@cygnus.com>
 
 	* verify.c (verify_jvm_instructions): Check for pending blocks
