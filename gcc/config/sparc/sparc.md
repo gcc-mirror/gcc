@@ -2157,7 +2157,10 @@
 (define_insn "*movsf_const_insn"
   [(set (match_operand:SF 0 "general_operand" "=?r,f,m")
 	(match_operand:SF 1 "" "?F,m,G"))]
-  "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && (GET_CODE (operands[0]) == REG
+       || fp_zero_operand (operands[1]))"
   "*
 {
   switch (which_alternative)
@@ -2231,7 +2234,10 @@
 (define_insn "*movdf_const_insn"
   [(set (match_operand:DF 0 "general_operand" "=?r,e,o")
 	(match_operand:DF 1 "" "?F,m,G"))]
-  "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && (GET_CODE (operands[0]) == REG
+       || fp_zero_operand (operands[1]))"
   "*
 {
   switch (which_alternative)
@@ -2349,7 +2355,10 @@
 (define_insn "*movtf_const_insn"
   [(set (match_operand:TF 0 "general_operand" "=?r,e,o")
 	(match_operand:TF 1 "" "?F,m,G"))]
-  "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && (GET_CODE (operands[0]) == REG
+       || fp_zero_operand (operands[1]))"
   "*
 {
   switch (which_alternative)
