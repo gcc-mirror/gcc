@@ -1,3 +1,169 @@
+2004-06-10  Brian Booth  <bbooth@redhat.com>
+
+	* doc/tree-ssa.texi: Remove references to VDEF and add descriptions
+	of V_MAY_DEF and V_MUST_DEF.
+	* tree-dfa.c (dfa_stats_d): Add num_v_must_defs and rename
+	num_vdefs to num_v_may_defs.
+	(compute_immediate_uses_for_stmt): Rename occurences of vdef
+	to v_may_def.
+	(redirect_immediate_uses): Ditto.
+	(dump_dfa_stats): Ditto. Also added code to dump num_v_must_defs.
+	(collect_dfa_stats_r): Rename occurences of vdef to v_may_def.
+	Also add code to sum up the number of v_must_defs.
+	(vdefs_disappeared_p): Replace with...
+	(v_may_defs_disappeared_p): This.
+	(v_must_defs_disappeared_p): New function.
+	(mark_new_vars_to_rename): Rename occurences of vdef to v_may_def.
+	Also add code to mark new variables found in V_MUST_DEFs for
+	renameing.
+	* tree-flow.h (stmt_ann_d): Add v_must_def_ops and replace
+	vdef_ops to v_may_def_ops.
+	(get_vdef_ops): Replace with...
+	(get_v_may_def_ops): This.
+	* tree-flow-inline.h (get_vdef_ops): Replace with...
+	(get_v_may_def_ops): This.
+	(get_v_must_def_ops): New function.
+	(get_vdef_result_ptr): Replace with...
+	(get_v_may_def_result_ptr): This.
+	(get_vdef_op_ptr): Ditto with...
+	(get_v_may_def_op_ptr); This.
+	(get_v_must_def_op_ptr): New function.
+	* tree-into-ssa.c (mark_def_sites): Rename occurences of vdef
+	to v_may_def. Also add code to mark statements with
+	V_MUST_DEFs as definition sites.
+	(rewrite_stmt): Rename occurences of vdef to v_may_def. Also 
+	add code to register new V_MUST_DEFs made by the statement.
+	* tree-outof-ssa.c (VIRTUAL_PARTITION): Update comments.
+	(check_replaceable): Rename occurences of vdef to v_may_def. Also 
+	add check for V_MUST_DEFs.
+	(find_replaceable_in_bb): Ditto.
+	* tree-pretty-print.c (dump_vops): Rename occurences of vdef
+	to v_may_def. Also add code to dump V_MUST_DEFs.
+	* tree-sra.c (mark_all_vdefs): Replace with...
+	(mark_all_v_may_defs): This.
+	(mark_all_v_must_defs): New function.
+	(create_scalar_copies): Replace call to mark_all_vdefs with
+	calls to mark_all_v_may_defs and mark_all_v_must_defs.
+	(scalarize_structures): Rename occurences of vdef to v_may_def. 
+	Also add a check for V_MUST_DEFs.
+	(scalarize_modify_expr): Rename occurences of vdef to v_may_def.
+	* tree-ssa-alias.c (global_var): Update comment.
+	(compute_may_aliases): Ditto.
+	(compute_points_to_and_addr_escape): Rename occurences of vdef
+	to v_may_def. Also add code to mark variables in V_MUST_DEF 
+	operands as being written to.
+	(group_aliases): Update comment.
+	(maybe_create_global_var): Ditto.
+	* tree-ssa.c (verify_ssa): Rename occurences of vdef to v_may_def.
+	Also add a check for V_MUST_DEFs on GIMPLE registers.
+	(replace_immediate_uses): Rename occurences of vdef to v_may_def.
+	* tree-ssa-ccp.c (visit_stmt): Rename occurences of vdef
+	to v_may_def. Also add code to mark all V_MUST_DEF operands 
+	VARYING.
+	(initialize): Ditto.
+	(set_rhs): Rename occurences of vdef to v_may_def. Also add
+	code to update SSA_NAMEs in V_MUST_DEFs.
+	* tree-ssa-copy.c (cprop_into_stmt): Rename occurences of vdef
+	to v_may_def.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Rename 
+	occurences of vdef to v_may_def. Also add code to mark statements
+	with V_MUST_DEFs as necessary.
+	(propagate_necessity): Rename occurences of vdef to v_may_def.
+	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Rename 
+	occurences of vdef to v_may_def. Also add code to mark operands
+	in V_MUST_DEFs for renaming.
+	(eliminate_redundant_computations): Rename occurences of vdef
+	to v_may_def.
+	(record_equivalences_from_stmt): Rename occurences of vdef
+	to v_may_def. Also add code to record VUSEs for V_MUST_DEFs.
+	(optimize_stmt): Remove unnesessary variable vdefs. Update
+	comment.
+	(register_definitions_for_stmt): Rename occurences of vdef
+	to v_may_def. Also add code to register definitions made with
+	V_MUST_DEFs.
+	* tree-ssa-dse.c (fix_stmt_vdefs): Replace with...
+	(fix_stmt_v_may_defs): This.
+	(fix_phi_uses): Rename occurences of vdef to v_may_def.
+	(dse_optimize_stmt): Ditto.
+	* tree-ssa-live.c (create_ssa_var_map): Rename occurences of vdef
+	to v_may_def. Also add code to mark V_MUST_DEF operands as being
+	used in virtual operators.
+	* tree-ssa-loop.c (mark_defs_for_rewrite): Rename occurences of 
+	vdef to v_may_def. Also add code to mark V_MUST_DEF operands for
+	renaming.
+	* tree-ssa-operands.c (opf_kill_def): New flag for killing 
+	definitions.
+	(build_vdefs): Renamed to...
+	(build_v_may_defs): This.
+	(build_v_must_defs): New variable.
+	(voperands_d): Add v_must_def_ops and replace vdef_ops with
+	v_may_def_ops.
+	(append_vdef): Replace with...
+	(append_v_may_def): This.
+	(append_v_must_def): New function.
+	(NUM_FREE): Increment for V_MUST_DEF
+	(optype_freelist): Increment its size for V_MUST_DEF
+	(allocate_vdef_optype): Replace with...
+	(allocate_v_may_def_optype): This.
+	(allocate_v_must_def_optype): New function.
+	(free_vdefs): Replace with...
+	(free_v_may_defs): This.
+	(free_v_must_defs): New function.
+	(remove_vdefs): Replace with...
+	(remove_v_may_defs): This.
+	(remove_v_must_defs): New function.
+	(init_ssa_operands): Rename occurences of vdef to v_may_def. Also
+	add code to initialize build_v_must_defs.
+	(finalize_ssa_vdefs): Replace with...
+	(finalize_ssa_v_may_defs): This.
+	(finalize_ssa_vuses): Rename occurences of vdef to v_may_def.
+	(finalize_ssa_v_must_defs): New function.
+	(finalize_ssa_stmt_operands): Replace call to finalize_ssa_vdefs
+	with calls to finalize_ssa_v_may_defs and finalize_ssa_v_must_defs.
+	(verify_start_operands): Rename occurences of vdef to v_may_def.
+	Also add check for build_v_must_defs.
+	(get_stmt_operands): Rename occurences of vdef to v_may_def.
+	Also add code to handle V_MUST_DEFs and to use opf_kill_def for
+	killing definitions.
+	(get_expr_operands): Update comment and use opf_kill_def for
+	killing definitions.
+	(add_stmt_operand): Replace code that appends VDEFs with code
+	that appends V_MUST_DEFs when opf_kill_def is set and V_MAY_DEFs
+	otherwise.
+	(add_call_clobber_ops): Update comments.
+	* tree-ssa-operands.h (vdef_optype_d): Replace with...
+	(v_may_def_optype_d): This.
+	(v_must_def_optype_d): New structure.
+	(VDEF_OPS): Replace with...
+	(V_MAY_DEF_OPS): This.
+	(STMT_VDEF_OPS): Same with...
+	(STMT_V_MAY_DEF_OPS): This.
+	(NUM_VDEFS): And...
+	(NUM_V_MAY_DEFS): This.
+	(VDEF_RESULT_PTR): As well as...
+	(V_MAY_DEF_RESULT_PTR): This.
+	(VDEF_RESULT): Same goes for...
+	(V_MAY_DEF_RESULT): This.
+	(VDEF_OP_PTR): And...
+	(V_MAY_DEF_OP_PTR): This.
+	(VDEF_OP): And...
+	(V_MAY_DEF_OP): This.
+	(V_MUST_DEF_OPS): New macro.
+	(STMT_V_MUST_DEF_OPS): Ditto.
+	(NUM_V_MUST_DEFS): Ditto.
+	(V_MUST_DEF_OP_PTR): Ditto.
+	(V_MUST_DEF_OP): Ditto.
+	(remove_vdefs): Replace signature with...
+	(remove_v_may_defs): This.
+	(remove_v_must_defs): New function signature.
+	* tree-ssa-pre.c (subst_phis): Replace call to remove_vdefs
+	with calls to remove_v_may_defs and remove_v_must_defs.
+	(process_left_occs_and_kills): Rename occurences of vdef to v_may_def.
+	Also add code that marks left occurences of operands in V_MUST_DEFs.
+	* tree-tailcall.c (find_tail_calls): Rename occurences of vdef 
+	to v_may_def. Also add check for V_MUST_DEFs.
+	(eliminate_tail_call):Rename occurences of vdef to v_may_def.
+
 2004-06-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/15653

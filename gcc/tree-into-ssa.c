@@ -211,7 +211,8 @@ mark_def_sites (struct dom_walk_data *walk_data,
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
   sbitmap kills = gd->kills;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   vuse_optype vuses;
   def_optype defs;
   use_optype uses;
@@ -248,22 +249,36 @@ mark_def_sites (struct dom_walk_data *walk_data,
     }
 
   /* Note that virtual definitions are irrelevant for computing KILLS
-     because a VDEF does not constitute a killing definition of the
+     because a V_MAY_DEF does not constitute a killing definition of the
      variable.  However, the operand of a virtual definitions is a use
      of the variable, so it may cause the variable to be considered
      live-on-entry.  */
-  vdefs = VDEF_OPS (ann);
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      if (prepare_operand_for_rename (VDEF_OP_PTR (vdefs, i), &uid, true))
+      if (prepare_operand_for_rename (V_MAY_DEF_OP_PTR (v_may_defs, i), 
+                                      &uid, true))
 	{
 	  /* If we do not already have an SSA_NAME for our destination,
 	     then set the destination to the source.  */
-	  if (TREE_CODE (VDEF_RESULT (vdefs, i)) != SSA_NAME)
-	    VDEF_RESULT (vdefs, i) = VDEF_OP (vdefs, i);
+	  if (TREE_CODE (V_MAY_DEF_RESULT (v_may_defs, i)) != SSA_NAME)
+	    V_MAY_DEF_RESULT (v_may_defs, i) = V_MAY_DEF_OP (v_may_defs, i);
+	    
+          set_livein_block (V_MAY_DEF_OP (v_may_defs, i), bb);
+	  set_def_block (V_MAY_DEF_RESULT (v_may_defs, i), bb);
+	}
+    }
 
-	  set_livein_block (VDEF_OP (vdefs, i), bb);
-	  set_def_block (VDEF_RESULT (vdefs, i), bb);
+  /* Now process the virtual must-defs made by this statement.  */
+  v_must_defs = V_MUST_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      tree *def_p = V_MUST_DEF_OP_PTR (v_must_defs, i);
+
+      if (prepare_operand_for_rename (def_p, &uid, false))
+	{
+	  set_def_block (*def_p, bb);
+	  SET_BIT (kills, uid);
 	}
     }
 
@@ -717,7 +732,8 @@ rewrite_stmt (struct dom_walk_data *walk_data,
   stmt_ann_t ann;
   tree stmt;
   vuse_optype vuses;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   def_optype defs;
   use_optype uses;
   struct rewrite_block_data *bd;
@@ -744,7 +760,8 @@ rewrite_stmt (struct dom_walk_data *walk_data,
   defs = DEF_OPS (ann);
   uses = USE_OPS (ann);
   vuses = VUSE_OPS (ann);
-  vdefs = VDEF_OPS (ann);
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  v_must_defs = V_MUST_DEF_OPS (ann);
 
   /* Step 1.  Rewrite USES and VUSES in the statement.  */
   for (i = 0; i < NUM_USES (uses); i++)
@@ -768,18 +785,32 @@ rewrite_stmt (struct dom_walk_data *walk_data,
     }
 
   /* Register new virtual definitions made by the statement.  */
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      rewrite_operand (VDEF_OP_PTR (vdefs, i));
+      rewrite_operand (V_MAY_DEF_OP_PTR (v_may_defs, i));
 
-      if (TREE_CODE (VDEF_RESULT (vdefs, i)) != SSA_NAME)
-	*VDEF_RESULT_PTR (vdefs, i)
-	  = make_ssa_name (VDEF_RESULT (vdefs, i), stmt);
+      if (TREE_CODE (V_MAY_DEF_RESULT (v_may_defs, i)) != SSA_NAME)
+	*V_MAY_DEF_RESULT_PTR (v_may_defs, i)
+	  = make_ssa_name (V_MAY_DEF_RESULT (v_may_defs, i), stmt);
 
       /* FIXME: We shouldn't be registering new defs if the variable
 	 doesn't need to be renamed.  */
-      register_new_def (VDEF_RESULT (vdefs, i), &bd->block_defs);
+      register_new_def (V_MAY_DEF_RESULT (v_may_defs, i), &bd->block_defs);
     }
+        
+  /* Register new virtual mustdefs made by the statement.  */
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      tree *v_must_def_p = V_MUST_DEF_OP_PTR (v_must_defs, i);
+
+      if (TREE_CODE (*v_must_def_p) != SSA_NAME)
+	*v_must_def_p = make_ssa_name (*v_must_def_p, stmt);
+
+      /* FIXME: We shouldn't be registering new mustdefs if the variable
+	 doesn't need to be renamed.  */
+      register_new_def (*v_must_def_p, &bd->block_defs);
+    }
+    
 }
 
 

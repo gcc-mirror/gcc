@@ -1312,7 +1312,8 @@ subst_phis (struct expr_info *ei, tree Z, basic_block pred, basic_block bb)
   else
     {
       remove_vuses (stmt_copy);
-      remove_vdefs (stmt_copy);
+      remove_v_may_defs (stmt_copy);
+      remove_v_must_defs (stmt_copy);
     }
 
   if (pred->index < n_phi_preds)
@@ -3016,13 +3017,16 @@ process_left_occs_and_kills (varray_type bexprs, tree expr)
 {
   size_t i, j, k;
   
-  stmt_ann_t ann = stmt_ann (expr);
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   vuse_optype vuses;
   def_optype defs;
-  defs = DEF_OPS (ann);
-  vdefs = VDEF_OPS (ann);
-  if (NUM_DEFS (defs) == 0 && NUM_VDEFS (vdefs) == 0)
+  defs = STMT_DEF_OPS (expr);
+  v_may_defs = STMT_V_MAY_DEF_OPS (expr);
+  v_must_defs = STMT_V_MUST_DEF_OPS (expr);
+  if (NUM_DEFS (defs) == 0 
+      && NUM_V_MAY_DEFS (v_may_defs) == 0 
+      && NUM_V_MUST_DEFS (v_must_defs) == 0)
     return;
 
   for (j = 0; j < VARRAY_ACTIVE_SIZE (bexprs); j++)
@@ -3052,19 +3056,36 @@ process_left_occs_and_kills (varray_type bexprs, tree expr)
 	    }
 	}
       
-      /* If we VDEF the VUSE of the expression, it's also a left
+      /* If we virtually define the variable itself,
+	 it's a left occurrence.  */
+      for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+	{
+	  if (names_match_p (V_MUST_DEF_OP (v_must_defs, i), ei->expr))    
+	    {
+	      if (TREE_CODE (expr) == ASM_EXPR)
+		{
+		  ei->loadpre_cand = false;
+		  continue;
+		}
+	      VARRAY_PUSH_TREE (ei->lefts, expr);
+	      VARRAY_PUSH_TREE (ei->occurs, NULL);
+	      VARRAY_PUSH_TREE (ei->kills, NULL);
+	    }
+	}
+      
+      /* If we V_MAY_DEF the VUSE of the expression, it's also a left
 	 occurrence.  */
       random_occur = VARRAY_TREE (ei->occurs, 0);
       ann = stmt_ann (random_occur);
       vuses = VUSE_OPS (ann);
-      if (NUM_VDEFS (vdefs) != 0)
+      if (NUM_V_MAY_DEFS (v_may_defs) != 0)
 	{
 	  for (k = 0; k < NUM_VUSES (vuses); k++)
 	    {
 	      vuse_name = VUSE_OP (vuses, k);
-	      for (i = 0; i < NUM_VDEFS (vdefs); i++)
+	      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
 		{
-		  if (names_match_p (VDEF_OP (vdefs, i), vuse_name))
+		  if (names_match_p (V_MAY_DEF_OP (v_may_defs, i), vuse_name))
 		    {
 		      VARRAY_PUSH_TREE (ei->lefts, expr);
 		      VARRAY_PUSH_TREE (ei->occurs, NULL);

@@ -39,13 +39,13 @@ typedef struct use_optype_d GTY(())
 
 typedef use_optype_t *use_optype;
 
-typedef struct vdef_optype_d GTY(())
+typedef struct v_may_def_optype_d GTY(())
 {
-  unsigned num_vdefs; 
-  tree GTY((length ("%h.num_vdefs * 2"))) vdefs[1];
-} vdef_optype_t;
+  unsigned num_v_may_defs; 
+  tree GTY((length ("%h.num_v_may_defs * 2"))) v_may_defs[1];
+} v_may_def_optype_t;
 
-typedef vdef_optype_t *vdef_optype;
+typedef v_may_def_optype_t *v_may_def_optype;
 
 typedef struct vuse_optype_d GTY(()) 
 {
@@ -54,6 +54,14 @@ typedef struct vuse_optype_d GTY(())
 } vuse_optype_t;
 
 typedef vuse_optype_t *vuse_optype;
+
+typedef struct v_must_def_optype_d GTY(())
+{
+  unsigned num_v_must_defs; 
+  tree GTY((length("%h.num_v_must_defs"))) v_must_defs[1];
+} v_must_def_optype_t;
+
+typedef v_must_def_optype_t *v_must_def_optype;
 
 #define USE_OPS(ANN)		get_use_ops (ANN)
 #define STMT_USE_OPS(STMT)	get_use_ops (stmt_ann (STMT))
@@ -69,13 +77,13 @@ typedef vuse_optype_t *vuse_optype;
 #define DEF_OP(OPS, I)		(*(DEF_OP_PTR ((OPS), (I))))
 
 
-#define VDEF_OPS(ANN)		get_vdef_ops (ANN)
-#define STMT_VDEF_OPS(STMT)	get_vdef_ops (stmt_ann(STMT))
-#define NUM_VDEFS(OPS)		((OPS) ? (OPS)->num_vdefs : 0)
-#define VDEF_RESULT_PTR(OPS, I)	get_vdef_result_ptr ((OPS), (I))
-#define VDEF_RESULT(OPS, I)	(*(VDEF_RESULT_PTR ((OPS), (I))))
-#define VDEF_OP_PTR(OPS, I)	get_vdef_op_ptr ((OPS), (I))
-#define VDEF_OP(OPS, I)		(*(VDEF_OP_PTR ((OPS), (I))))
+#define V_MAY_DEF_OPS(ANN)		get_v_may_def_ops (ANN)
+#define STMT_V_MAY_DEF_OPS(STMT)	get_v_may_def_ops (stmt_ann(STMT))
+#define NUM_V_MAY_DEFS(OPS)		((OPS) ? (OPS)->num_v_may_defs : 0)
+#define V_MAY_DEF_RESULT_PTR(OPS, I)	get_v_may_def_result_ptr ((OPS), (I))
+#define V_MAY_DEF_RESULT(OPS, I)	(*(V_MAY_DEF_RESULT_PTR ((OPS), (I))))
+#define V_MAY_DEF_OP_PTR(OPS, I)	get_v_may_def_op_ptr ((OPS), (I))
+#define V_MAY_DEF_OP(OPS, I)		(*(V_MAY_DEF_OP_PTR ((OPS), (I))))
 
 
 #define VUSE_OPS(ANN)		get_vuse_ops (ANN)
@@ -85,6 +93,12 @@ typedef vuse_optype_t *vuse_optype;
 #define VUSE_OP(OPS, I)  	(*(VUSE_OP_PTR ((OPS), (I))))
 
 
+#define V_MUST_DEF_OPS(ANN)		get_v_must_def_ops (ANN)
+#define STMT_V_MUST_DEF_OPS(STMT)	get_v_must_def_ops (stmt_ann (STMT))
+#define NUM_V_MUST_DEFS(OPS)		((OPS) ? (OPS)->num_v_must_defs : 0)
+#define V_MUST_DEF_OP_PTR(OPS, I)	get_v_must_def_op_ptr ((OPS), (I))
+#define V_MUST_DEF_OP(OPS, I)		(*(V_MUST_DEF_OP_PTR ((OPS), (I))))
+
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
 extern void verify_start_operands (tree);
@@ -92,6 +106,7 @@ extern void finalize_ssa_stmt_operands (tree);
 void add_vuse (tree, tree);
 extern void get_stmt_operands (tree);
 extern void remove_vuses (tree);
-extern void remove_vdefs (tree);
+extern void remove_v_may_defs (tree);
+extern void remove_v_must_defs (tree);
 
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

@@ -391,7 +391,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       /* If the statement has virtual operands, fail.  */
       ann = stmt_ann (stmt);
-      if (NUM_VDEFS (VDEF_OPS (ann))
+      if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann))
+          || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann))
 	  || NUM_VUSES (VUSE_OPS (ann)))
 	return;
     }
@@ -644,7 +645,7 @@ eliminate_tail_call (struct tailcall *t)
   edge e;
   tree phi;
   stmt_ann_t ann;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
   unsigned i;
 
   stmt = bsi_stmt (t->call_bsi);
@@ -696,10 +697,10 @@ eliminate_tail_call (struct tailcall *t)
     }
 
   /* Add phi nodes for the call clobbered variables.  */
-  vdefs = VDEF_OPS (ann);
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      param = SSA_NAME_VAR (VDEF_RESULT (vdefs, i));
+      param = SSA_NAME_VAR (V_MAY_DEF_RESULT (v_may_defs, i));
       for (phi = phi_nodes (first); phi; phi = TREE_CHAIN (phi))
 	if (param == SSA_NAME_VAR (PHI_RESULT (phi)))
 	  break;
@@ -721,7 +722,7 @@ eliminate_tail_call (struct tailcall *t)
 	    abort ();
 	}
 
-      add_phi_arg (&phi, VDEF_OP (vdefs, i), e);
+      add_phi_arg (&phi, V_MAY_DEF_OP (v_may_defs, i), e);
     }
 
   /* Update the values of accumulators.  */

@@ -13,4 +13,4 @@ main(void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "VDEF" 2 "alias" } } */
+/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 2 "alias" } } */

@@ -238,9 +238,10 @@ struct stmt_ann_d GTY(())
   struct def_optype_d * GTY (()) def_ops;
   struct use_optype_d * GTY (()) use_ops;
 
-  /* Virtual operands (VDEF and VUSE).  */
-  struct vdef_optype_d * GTY (()) vdef_ops;
+  /* Virtual operands (V_MAY_DEF, VUSE, and V_MUST_DEF).  */
+  struct v_may_def_optype_d * GTY (()) v_may_def_ops;
   struct vuse_optype_d * GTY (()) vuse_ops;
+  struct v_must_def_optype_d * GTY (()) v_must_def_ops;
 
   /* Dataflow information.  */
   dataflow_t df;
@@ -281,7 +282,7 @@ static inline int get_lineno (tree);
 static inline const char *get_filename (tree);
 static inline bool is_exec_stmt (tree);
 static inline bool is_label_stmt (tree);
-static inline vdef_optype get_vdef_ops (stmt_ann_t);
+static inline v_may_def_optype get_v_may_def_ops (stmt_ann_t);
 static inline vuse_optype get_vuse_ops (stmt_ann_t);
 static inline use_optype get_use_ops (stmt_ann_t);
 static inline def_optype get_def_ops (stmt_ann_t);

@@ -174,7 +174,7 @@ bool aliases_computed_p;
    this variable is used to represent the clobbering effects of function
    calls.  In these cases, all the call clobbered variables in the program
    are forced to alias this variable.  This reduces compile times by not
-   having to keep track of too many VDEF expressions at call sites.  */
+   having to keep track of too many V_MAY_DEF expressions at call sites.  */
 tree global_var;
 
 
@@ -264,11 +264,11 @@ tree global_var;
 		p_6 = &b;
 	      # p_1 = PHI <p_4(1), p_6(2)>;
 
-	      # a_7 = VDEF <a_3>;
-	      # b_8 = VDEF <b_5>;
+	      # a_7 = V_MAY_DEF <a_3>;
+	      # b_8 = V_MAY_DEF <b_5>;
 	      *p_1 = 3;
 
-	      # a_9 = VDEF <a_7>
+	      # a_9 = V_MAY_DEF <a_7>
 	      # VUSE <b_8>
 	      a_9 = b_8 + 2;
 
@@ -536,7 +536,8 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	{
 	  use_optype uses;
 	  def_optype defs;
-	  vdef_optype vdefs;
+	  v_may_def_optype v_may_defs;
+	  v_must_def_optype v_must_defs;
 	  stmt_ann_t ann;
 	  bitmap addr_taken;
 	  tree stmt = bsi_stmt (si);
@@ -658,11 +659,21 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 		(VARRAY_UINT (ai->num_references, ann->uid))++;
 	    }
 
-	  /* Mark variables in VDEF operands as being written to.  */
-	  vdefs = VDEF_OPS (ann);
-	  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+	  /* Mark variables in V_MAY_DEF operands as being written to.  */
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
 	    {
-	      tree op = VDEF_OP (vdefs, i);
+	      tree op = V_MAY_DEF_OP (v_may_defs, i);
+	      tree var = SSA_NAME_VAR (op);
+	      var_ann_t ann = var_ann (var);
+	      bitmap_set_bit (ai->written_vars, ann->uid);
+	    }
+	    
+	  /* Mark variables in V_MUST_DEF operands as being written to.  */
+	  v_must_defs = V_MUST_DEF_OPS (ann);
+	  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+	    {
+	      tree op = V_MUST_DEF_OP (v_must_defs, i);
 	      tree var = SSA_NAME_VAR (op);
 	      var_ann_t ann = var_ann (var);
 	      bitmap_set_bit (ai->written_vars, ann->uid);
@@ -1040,7 +1051,7 @@ group_aliases (struct alias_info *ai)
 
      	p_5 = &a;
 	...
-	# a_9 = VDEF <a_8>
+	# a_9 = V_MAY_DEF <a_8>
 	p_5->field = 0
 	... Several modifications to TMT.20 ... 
 	# VUSE <a_9>
@@ -1273,8 +1284,8 @@ setup_pointers_and_addressables (struct alias_info *ai)
 }
 
 
-/* Determine whether to use .GLOBAL_VAR to model call clobbering semantics.  At
-   every call site, we need to emit VDEF expressions to represent the
+/* Determine whether to use .GLOBAL_VAR to model call clobbering semantics. At
+   every call site, we need to emit V_MAY_DEF expressions to represent the
    clobbering effects of the call for variables whose address escapes the
    current function.
 
@@ -1283,10 +1294,11 @@ setup_pointers_and_addressables (struct alias_info *ai)
    (.GLOBAL_VAR).  This works well, but it ties the optimizer hands because
    references to any call clobbered variable is a reference to .GLOBAL_VAR.
 
-   The second approach is to emit a clobbering VDEF for every call-clobbered
-   variable at call sites.  This is the preferred way in terms of optimization
-   opportunities but it may create too many VDEF operands if there are many
-   call clobbered variables and function calls in the function.
+   The second approach is to emit a clobbering V_MAY_DEF for every 
+   call-clobbered variable at call sites.  This is the preferred way in terms 
+   of optimization opportunities but it may create too many V_MAY_DEF operands
+   if there are many call clobbered variables and function calls in the 
+   function.
 
    To decide whether or not to use .GLOBAL_VAR we multiply the number of
    function calls found by the number of call-clobbered variables.  If that

@@ -95,7 +95,7 @@ static void dse_optimize_stmt (struct dom_walk_data *,
 static void dse_record_phis (struct dom_walk_data *, basic_block);
 static void dse_finalize_block (struct dom_walk_data *, basic_block);
 static void fix_phi_uses (tree, tree);
-static void fix_stmt_vdefs (tree, tree);
+static void fix_stmt_v_may_defs (tree, tree);
 static void record_voperand_set (bitmap, bitmap *, unsigned int);
 
 /* Function indicating whether we ought to include information for 'var'
@@ -109,70 +109,71 @@ need_imm_uses_for (tree var)
 }
 
 
-/* Replace uses in PHI which match VDEF_RESULTs in STMT with the 
-   corresponding VDEF_OP in STMT.  */
+/* Replace uses in PHI which match V_MAY_DEF_RESULTs in STMT with the 
+   corresponding V_MAY_DEF_OP in STMT.  */
 
 static void
 fix_phi_uses (tree phi, tree stmt)
 {
   stmt_ann_t ann = stmt_ann (stmt);
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
   unsigned int i;
   int j;
 
   get_stmt_operands (stmt);
-  vdefs = VDEF_OPS (ann);
+  v_may_defs = V_MAY_DEF_OPS (ann);
 
-  /* Walk each VDEF in STMT.  */
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  /* Walk each V_MAY_DEF in STMT.  */
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      tree vdef = VDEF_RESULT (vdefs, i);
+      tree v_may_def = V_MAY_DEF_RESULT (v_may_defs, i);
 
-      /* Find any uses in the PHI which match VDEF and replace
-	 them with the appropriate VDEF_OP.  */
+      /* Find any uses in the PHI which match V_MAY_DEF and replace
+	 them with the appropriate V_MAY_DEF_OP.  */
       for (j = 0; j < PHI_NUM_ARGS (phi); j++)
-	if (vdef == PHI_ARG_DEF (phi, j))
-	  PHI_ARG_DEF (phi, j) = VDEF_OP (vdefs, i);
+	if (v_may_def == PHI_ARG_DEF (phi, j))
+	  PHI_ARG_DEF (phi, j) = V_MAY_DEF_OP (v_may_defs, i);
     }
 }
 
-/* Replace the VDEF_OPs in STMT1 which match VDEF_RESULTs in STMT2 with
-   the appropriate VDEF_OPs from STMT2.  */
+/* Replace the V_MAY_DEF_OPs in STMT1 which match V_MAY_DEF_RESULTs 
+   in STMT2 with the appropriate V_MAY_DEF_OPs from STMT2.  */
 
 static void
-fix_stmt_vdefs (tree stmt1, tree stmt2)
+fix_stmt_v_may_defs (tree stmt1, tree stmt2)
 {
   stmt_ann_t ann1 = stmt_ann (stmt1);
   stmt_ann_t ann2 = stmt_ann (stmt2);
-  vdef_optype vdefs1;
-  vdef_optype vdefs2;
+  v_may_def_optype v_may_defs1;
+  v_may_def_optype v_may_defs2;
   unsigned int i, j;
 
   get_stmt_operands (stmt1);
   get_stmt_operands (stmt2);
-  vdefs1 = VDEF_OPS (ann1);
-  vdefs2 = VDEF_OPS (ann2);
+  v_may_defs1 = V_MAY_DEF_OPS (ann1);
+  v_may_defs2 = V_MAY_DEF_OPS (ann2);
 
-  /* Walk each VDEF_OP in stmt1.  */
-  for (i = 0; i < NUM_VDEFS (vdefs1); i++)
+  /* Walk each V_MAY_DEF_OP in stmt1.  */
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs1); i++)
     {
-      tree vdef1 = VDEF_OP (vdefs1, i);
+      tree v_may_def1 = V_MAY_DEF_OP (v_may_defs1, i);
 
-      /* Find the appropriate VDEF_RESULT in STMT2.  */
-      for (j = 0; j < NUM_VDEFS (vdefs2); j++)
+      /* Find the appropriate V_MAY_DEF_RESULT in STMT2.  */
+      for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs2); j++)
 	{
-	  if (vdef1 == VDEF_RESULT (vdefs2, j))
+	  if (v_may_def1 == V_MAY_DEF_RESULT (v_may_defs2, j))
 	    {
 	      /* Update.  */
-	      *VDEF_OP_PTR (vdefs1, i) = VDEF_OP (vdefs2, j);
+	      *V_MAY_DEF_OP_PTR (v_may_defs1, i) = 
+	                        V_MAY_DEF_OP (v_may_defs2, j);
 	      break;
 	    }
 	}
 
 #ifdef ENABLE_CHECKING
-      /* If we did not find a corresponding VDEF_RESULT, then something
+      /* If we did not find a corresponding V_MAY_DEF_RESULT, then something
 	 has gone terribly wrong.  */
-      if (j == NUM_VDEFS (vdefs2))
+      if (j == NUM_V_MAY_DEFS (v_may_defs2))
 	abort ();
 #endif
 
@@ -234,14 +235,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   struct dse_global_data *dse_gd = walk_data->global_data;
   tree stmt = bsi_stmt (bsi);
   stmt_ann_t ann = stmt_ann (stmt);
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
 
   get_stmt_operands (stmt);
-  vdefs = VDEF_OPS (ann);
+  v_may_defs = V_MAY_DEF_OPS (ann);
 
   /* If this statement has no virtual uses, then there is nothing
      to do.  */
-  if (NUM_VDEFS (vdefs) == 0)
+  if (NUM_V_MAY_DEFS (v_may_defs) == 0)
     return;
 
   /* We know we have virtual definitions.  If this is a MODIFY_EXPR, then
@@ -269,7 +270,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 represents the only use of this store.
 
 	 Note this does not handle the case where the store has
-	 multiple VDEFs which all reach a set of PHI nodes in the
+	 multiple V_MAY_DEFs which all reach a set of PHI nodes in the
 	 same block.  */
       while (num_uses == 1
 	     && TREE_CODE (use) == PHI_NODE
@@ -300,7 +301,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	  if (skipped_phi)
 	    fix_phi_uses (skipped_phi, stmt);
 	  else
-	    fix_stmt_vdefs (use, stmt);
+	    fix_stmt_v_may_defs (use, stmt);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
             {
