@@ -1612,7 +1612,7 @@ namespace std
     inline _Distance
     __random_number(_Distance __n)
     {
-  #ifdef _GLIBCXX_HAVE_DRAND48
+  #ifdef _GLIBCXX_HAVE_LRAND48
       return lrand48() % __n;
   #else
       return rand() % __n;

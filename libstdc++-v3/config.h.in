@@ -64,8 +64,8 @@
 // Define if gthr-default.h exists (meaning that threading support is enabled).
 #undef HAVE_GTHR_DEFAULT
 
-// Define if drand48 exists.
-#undef HAVE_DRAND48
+// Define if lrand48 exists.
+#undef HAVE_LRAND48
 
 // Define if getpagesize exists.
 #undef HAVE_GETPAGESIZE
@@ -221,8 +221,8 @@
 /* Define to 1 if you have the `cosl' function. */
 #undef HAVE_COSL
 
-/* Define to 1 if you have the `drand48' function. */
-#undef HAVE_DRAND48
+/* Define to 1 if you have the `lrand48' function. */
+#undef HAVE_LRAND48
 
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
