@@ -1520,18 +1520,22 @@ reg_overlap_mentioned_p (rtx x, rtx in)
 {
   unsigned int regno, endregno;
 
-  /* Overly conservative.  */
-  if (GET_CODE (x) == STRICT_LOW_PART
-      || GET_CODE (x) == ZERO_EXTRACT
-      || GET_CODE (x) == SIGN_EXTRACT)
-    x = XEXP (x, 0);
-
-  /* If either argument is a constant, then modifying X can not affect IN.  */
-  if (CONSTANT_P (x) || CONSTANT_P (in))
+  /* If either argument is a constant, then modifying X can not
+     affect IN.  Here we look at IN, we can profitably combine
+     CONSTANT_P (x) with the switch statement below.  */
+  if (CONSTANT_P (in))
     return 0;
 
+ recurse:
   switch (GET_CODE (x))
     {
+    case STRICT_LOW_PART:
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      /* Overly conservative.  */
+      x = XEXP (x, 0);
+      goto recurse;
+
     case SUBREG:
       regno = REGNO (SUBREG_REG (x));
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -1574,15 +1578,18 @@ reg_overlap_mentioned_p (rtx x, rtx in)
 	for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	  if (XEXP (XVECEXP (x, 0, i), 0) != 0
 	      && reg_overlap_mentioned_p (XEXP (XVECEXP (x, 0, i), 0), in))
-	      return 1;
+	    return 1;
 	return 0;
       }
 
     default:
-      break;
-    }
+#ifdef ENABLE_CHECKING
+      if (!CONSTANT_P (x))
+	abort ();
+#endif
 
-  abort ();
+      return 0;
+    }
 }
 
 /* Return the last value to which REG was set prior to INSN.  If we can't

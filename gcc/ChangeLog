@@ -1,3 +1,11 @@
+2004-02-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtlanal.c (reg_overlap_mentioned_p) [!ENABLE_CHECKING]:
+	Don't test CONSTANT_P (x).
+	(reg_overlap_mentioned_p): Merge check for STRICT_LOWPART,
+	ZERO_EXTRACT, SIGN_EXTRACT with the switch statement.
+	Fix misindentation.
+
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Document that -mflat is deprecated.
