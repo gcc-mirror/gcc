@@ -1,3 +1,7 @@
+Wed Sep  8 16:41:27 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (new_insn_dead_notes): Don't early out for preexisting regs.
+
 Wed Sep  8 16:07:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gengenrtl.c (CONST_DOUBLE_FORMAT): Take the size REAL_ARITHMETIC 
