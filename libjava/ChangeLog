@@ -1,3 +1,9 @@
+2005-02-24  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/awt/font/TextAttribute.java: changed names to lower case;
+	(readResolve): implemented.
+	Added doc comments all over.
+
 2005-02-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/16923

@@ -1,5 +1,5 @@
 /* TextAttribute.java --
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,83 +41,269 @@ package java.awt.font;
 import java.io.InvalidObjectException;
 import java.text.AttributedCharacterIterator;
 
+/**
+ * Attributes (and associated values) that can be used to define an
+ * {@link java.text.AttributedString}.
+ */
 public final class TextAttribute extends AttributedCharacterIterator.Attribute
 {
   private static final long serialVersionUID = 7744112784117861702L;
   
+  /** A key for the background paint attribute. */
   public static final TextAttribute BACKGROUND =
-    new TextAttribute ("BACKGROUND");
+    new TextAttribute("background");
+  
+  /** A key for the BIDI_EMBEDDING attribute. */
   public static final TextAttribute BIDI_EMBEDDING =
-    new TextAttribute ("BIDI_EMBEDDING");
+    new TextAttribute("bidi_embedding");
+  
+  /** A key for the CHAR_REPLACEMENT attribute. */
   public static final TextAttribute CHAR_REPLACEMENT =
-    new TextAttribute ("CHAR_REPLACEMENT");
-  public static final TextAttribute FAMILY = new TextAttribute ("FAMILY");
-  public static final TextAttribute FONT = new TextAttribute ("FONT");
-  public static final TextAttribute FOREGROUND =
-    new TextAttribute ("FOREGROUND");
+    new TextAttribute("char_replacement");
+  
+  /** A key for the FAMILY attribute. */
+  public static final TextAttribute FAMILY = new TextAttribute("family");
+  
+  /** A key for the font attribute. */
+  public static final TextAttribute FONT = new TextAttribute("font");
+  
+  /** A key for the foreground paint attribute. */
+  public static final TextAttribute FOREGROUND = 
+    new TextAttribute("foreground");
+  
+  /** A key for the INPUT_METHOD_HIGHLIGHT attribute. */
   public static final TextAttribute INPUT_METHOD_HIGHLIGHT =
-    new TextAttribute ("INPUT_METHOD_HIGHLIGHT");
+    new TextAttribute("input method highlight");
+  
+  /** A key for the INPUT_METHOD_UNDERLINE attribute. */
   public static final TextAttribute INPUT_METHOD_UNDERLINE =
-    new TextAttribute ("INPUT_METHOD_UNDERLINE");
+    new TextAttribute("input method underline");
+  
+  /** A key for the text justification attribute. */
   public static final TextAttribute JUSTIFICATION =
-    new TextAttribute ("JUSTIFICATION");
-  public static final Float JUSTIFICATION_FULL = new Float (1.0);
-  public static final Float JUSTIFICATION_NONE = new Float (0.0);
+    new TextAttribute("justification");
+  
+  /** 
+   * A value that can be used with the {@link #JUSTIFICATION} attribute to
+   * indicate full justification of the text. 
+   */
+  public static final Float JUSTIFICATION_FULL = new Float(1.0);
+  
+  /** 
+   * A value that can be used with the {@link #JUSTIFICATION} attribute to
+   * indicate no justification of the text. 
+   */
+  public static final Float JUSTIFICATION_NONE = new Float(0.0);
+  
+  /** A key for the NUMERIC_SHAPING attribute. */
   public static final TextAttribute NUMERIC_SHAPING =
-    new TextAttribute ("NUMERIC_SHAPING");
-  public static final TextAttribute POSTURE = new TextAttribute ("POSTURE");
-  public static final Float POSTURE_OBLIQUE = new Float (0.2);
-  public static final Float POSTURE_REGULAR = new Float (0.0);
+    new TextAttribute("numeric_shaping");
+  
+  /** A key for the POSTURE attribute. */
+  public static final TextAttribute POSTURE = new TextAttribute("posture");
+  
+  /** A value that can be used with the {@link #POSTURE} attribute. */
+  public static final Float POSTURE_OBLIQUE = new Float(0.2);
+  
+  /** A value that can be used with the {@link #POSTURE} attribute. */
+  public static final Float POSTURE_REGULAR = new Float(0.0);
+  
+  /** A key for the RUN_DIRECTION attribute. */
   public static final TextAttribute RUN_DIRECTION =
-    new TextAttribute ("RUN_DIRECTION");
-  public static final Boolean RUN_DIRECTION_LTR = Boolean.TRUE;
-  public static final Boolean RUN_DIRECTION_RTL = Boolean.FALSE;
-  public static final TextAttribute SIZE = new TextAttribute ("SIZE");
+    new TextAttribute("run_direction");
+  
+  /** A value that can be used with the {@link #RUN_DIRECTION} attribute. */
+  public static final Boolean RUN_DIRECTION_LTR = Boolean.FALSE;
+  
+  /** A value that can be used with the {@link #RUN_DIRECTION} attribute. */
+  public static final Boolean RUN_DIRECTION_RTL = Boolean.TRUE;
+  
+  /** A key for the text size attribute. */
+  public static final TextAttribute SIZE = new TextAttribute("size");
+  
+  /** A key for the STRIKETHROUGH attribute. */
   public static final TextAttribute STRIKETHROUGH =
-    new TextAttribute ("STRIKETHROUGH");
+    new TextAttribute("strikethrough");
+  
+  /** A value that can be used with the {@link #STRIKETHROUGH} attribute. */
   public static final Boolean STRIKETHROUGH_ON = Boolean.TRUE;
+  
+  /** A key for the SUPERSCRIPT attribute. */
   public static final TextAttribute SUPERSCRIPT =
-    new TextAttribute ("SUPERSCRIPT");
-  public static final Integer SUPERSCRIPT_SUB = new Integer (-1);
-  public static final Integer SUPERSCRIPT_SUPER = new Integer (1);
+    new TextAttribute("superscript");
+  
+  /** A value that can be used with the {@link #SUPERSCRIPT} attribute. */
+  public static final Integer SUPERSCRIPT_SUB = new Integer(-1);
+  
+  /** A value that can be used with the {@link #SUPERSCRIPT} attribute. */
+  public static final Integer SUPERSCRIPT_SUPER = new Integer(1);
+  
+  /** A key for the SWAP_COLORS attribute. */
   public static final TextAttribute SWAP_COLORS =
-    new TextAttribute ("SWAP_COLORS");
+    new TextAttribute("swap_colors");
+  
+  /** A value that can be used with the {@link #SWAP_COLORS} attribute. */
   public static final Boolean SWAP_COLORS_ON = Boolean.TRUE;
-  public static final TextAttribute TRANSFORM = new TextAttribute ("TRANSFORM");
-  public static final TextAttribute UNDERLINE = new TextAttribute ("UNDERLINE");
-  public static final Integer UNDERLINE_LOW_DASHED = new Integer (0);
-  public static final Integer UNDERLINE_LOW_DOTTED = new Integer (0);
-  public static final Integer UNDERLINE_LOW_GRAY = new Integer (0);
-  public static final Integer UNDERLINE_LOW_ONE_PIXEL = new Integer (0);
-  public static final Integer UNDERLINE_LOW_TWO_PIXEL = new Integer (0);
-  public static final Integer UNDERLINE_ON = new Integer (0);
-  public static final TextAttribute WEIGHT = new TextAttribute ("WEIGHT");
-  public static final Float WEIGHT_BOLD = new Float (2.0);
-  public static final Float WEIGHT_DEMIBOLD = new Float (1.75);
-  public static final Float WEIGHT_DEMILIGHT = new Float (0.875);
-  public static final Float WEIGHT_EXTRA_LIGHT = new Float (0.5);
-  public static final Float WEIGHT_EXTRABOLD = new Float (2.5);
-  public static final Float WEIGHT_HEAVY = new Float (2.25);
-  public static final Float WEIGHT_LIGHT = new Float (0.75);
-  public static final Float WEIGHT_MEDIUM = new Float (1.5);
-  public static final Float WEIGHT_REGULAR = new Float (1.0);
-  public static final Float WEIGHT_SEMIBOLD = new Float (1.25);
-  public static final Float WEIGHT_ULTRABOLD = new Float (2.75);
-  public static final TextAttribute WIDTH = new TextAttribute ("");
-  public static final Float WIDTH_CONDENSED = new Float (0.75);
-  public static final Float WIDTH_EXTENDED = new Float (1.5);
-  public static final Float WIDTH_REGULAR = new Float (1.0);
-  public static final Float WIDTH_SEMI_CONDENSED = new Float (0.875);
-  public static final Float WIDTH_SEMI_EXTENDED = new Float (1.25);
-             
-  protected TextAttribute (String name)
+  
+  /** A key for the TRANFORM attribute. */
+  public static final TextAttribute TRANSFORM = new TextAttribute("transform");
+  
+  /** A key for the UNDERLINE attribute. */
+  public static final TextAttribute UNDERLINE = new TextAttribute("underline");
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_LOW_DASHED = new Integer(5);
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_LOW_DOTTED = new Integer(3);
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_LOW_GRAY = new Integer(4);
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_LOW_ONE_PIXEL = new Integer(1);
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_LOW_TWO_PIXEL = new Integer(2);
+  
+  /** A value that can be used with the {@link #UNDERLINE} attribute. */
+  public static final Integer UNDERLINE_ON = new Integer(0);
+  
+  /** A key for the WEIGHT attribute. */
+  public static final TextAttribute WEIGHT = new TextAttribute("weight");
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_BOLD = new Float(2.0);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_DEMIBOLD = new Float(1.75);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_DEMILIGHT = new Float(0.875);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_EXTRA_LIGHT = new Float(0.5);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_EXTRABOLD = new Float(2.5);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_HEAVY = new Float(2.25);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_LIGHT = new Float(0.75);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_MEDIUM = new Float(1.5);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_REGULAR = new Float(1.0);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_SEMIBOLD = new Float(1.25);
+  
+  /** A value that can be used with the {@link #WEIGHT} attribute. */
+  public static final Float WEIGHT_ULTRABOLD = new Float(2.75);
+  
+  /** A key for the WIDTH attribute. */
+  public static final TextAttribute WIDTH = new TextAttribute("width");
+  
+  /** A value that can be used with the {@link #WIDTH} attribute. */
+  public static final Float WIDTH_CONDENSED = new Float(0.75);
+  
+  /** A value that can be used with the {@link #WIDTH} attribute. */
+  public static final Float WIDTH_EXTENDED = new Float(1.5);
+  
+  /** A value that can be used with the {@link #WIDTH} attribute. */
+  public static final Float WIDTH_REGULAR = new Float(1.0);
+  
+  /** A value that can be used with the {@link #WIDTH} attribute. */
+  public static final Float WIDTH_SEMI_CONDENSED = new Float(0.875);
+  
+  /** A value that can be used with the {@link #WIDTH} attribute. */
+  public static final Float WIDTH_SEMI_EXTENDED = new Float(1.25);
+          
+  /**
+   * Creates a new attribute.
+   * 
+   * @param name  the name.
+   */
+  protected TextAttribute(String name)
   {
-    super (name);
+    super(name);
   }
   
-  protected Object readResolve ()
+  /**
+   * After deserialization, this method ensures that only one instance of
+   * each attribute is used.
+   * 
+   * @return The (single) attribute instance.
+   * 
+   * @throws InvalidObjectException if the attribute is not recognised.
+   */
+  protected Object readResolve()
     throws InvalidObjectException
   {
-    throw new Error ("not implemented");
+    if (this.getName().equals("background"))
+      return BACKGROUND;
+
+    if (this.getName().equals("bidi_embedding"))
+      return BIDI_EMBEDDING;
+
+    if (this.getName().equals("char_replacement"))
+      return CHAR_REPLACEMENT;
+
+    if (this.getName().equals("family"))
+      return FAMILY;
+
+    if (this.getName().equals("font"))
+      return FONT;
+
+    if (this.getName().equals("foreground"))
+      return FOREGROUND;
+
+    if (this.getName().equals("input method highlight"))
+      return INPUT_METHOD_HIGHLIGHT;
+
+    if (this.getName().equals("input method underline"))
+      return INPUT_METHOD_UNDERLINE;
+
+    if (this.getName().equals("justification"))
+      return JUSTIFICATION;
+
+    if (this.getName().equals("numeric_shaping"))
+      return NUMERIC_SHAPING;
+
+    if (this.getName().equals("posture"))
+      return POSTURE;
+
+    if (this.getName().equals("run_direction"))
+      return RUN_DIRECTION;
+
+    if (this.getName().equals("size"))
+      return SIZE;
+
+    if (this.getName().equals("strikethrough"))
+      return STRIKETHROUGH;
+
+    if (this.getName().equals("superscript"))
+      return SUPERSCRIPT;
+
+    if (this.getName().equals("swap_colors"))
+      return SWAP_COLORS;
+
+    if (this.getName().equals("transform"))
+      return TRANSFORM;
+
+    if (this.getName().equals("underline"))
+      return UNDERLINE;
+
+    if (this.getName().equals("weight"))
+      return WEIGHT;
+
+    if (this.getName().equals("width"))
+      return WIDTH;
+
+    throw new InvalidObjectException("Can't resolve Attribute: " + getName());
   }
 }
