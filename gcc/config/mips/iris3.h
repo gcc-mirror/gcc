@@ -28,11 +28,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__} -D_MIPSEB -D_SYSTYPE_SYSV \
 %{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D_LANGUAGE_OBJECTIVE_C} \
-%{!.S: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}"
+%{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}"
 
 #define LIB_SPEC	"%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"
 
