@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -557,6 +557,9 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   int all_zero = 0;
   int all_one = 0;
 
+  if (! SLOW_UNALIGNED_ACCESS)
+    struct_align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+    
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
      and a field split across two aligned halfwords within the structure.
