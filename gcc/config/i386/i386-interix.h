@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes
    We also align doubles to 64-bits for MSVC default compatibility
-   We do bitfields MSVC-compatibly by default, too. */
+   We do bitfields MSVC-compatibly by default, too.  */
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE | \
@@ -140,7 +140,7 @@ Boston, MA 02111-1307, USA.  */
    generated assembly code more compact (and thus faster to assemble)
    as well as more readable, especially for targets like the i386
    (where the only alternative is to output character sequences as
-   comma separated lists of numbers).   */
+   comma separated lists of numbers).  */
 
 #define ASM_OUTPUT_LIMITED_STRING(FILE, STR)				\
   do									\
@@ -242,7 +242,7 @@ Boston, MA 02111-1307, USA.  */
    available at runtime, so it's hopeless to try.
 
    And if the user tries to set the flag for objc, give an error
-   so he has some clue. */
+   so he has some clue.  */
 
 #undef  SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\
@@ -356,7 +356,7 @@ extern void i386_pe_unique_section (tree, int);
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* MSVC returns structs of up to 8 bytes via registers. */
+/* MSVC returns structs of up to 8 bytes via registers.  */
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 

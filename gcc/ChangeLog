@@ -1,3 +1,15 @@
+2004-01-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/cygming.h: Fix comment formatting.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/gthr-win32.c: Likewise.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/openbsd.h: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/i386/xm-mingw32.h: Likewise.
+
 2004-01-02  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/invoke.texi, doc/install.texi: Update

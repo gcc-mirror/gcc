@@ -57,9 +57,9 @@ Boston, MA 02111-1307, USA.  */
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 
-/* Define standard DJGPP installation paths.                             */
+/* Define standard DJGPP installation paths.  */
 /* We override default /usr or /usr/local part with /dev/env/DJDIR which */
-/* points to actual DJGPP installation directory.                        */
+/* points to actual DJGPP installation directory.  */
 
 /* Standard include directory */
 #undef STANDARD_INCLUDE_DIR
