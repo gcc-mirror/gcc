@@ -648,7 +648,7 @@ null_ptr_cst_p (t)
 
 
 /* Returns non-zero if PARMLIST consists of only default parms and/or
-   ellipsis. */
+   ellipsis.  */
 
 int
 sufficient_parms_p (parmlist)
@@ -2764,7 +2764,7 @@ build_new_function_call (fn, args)
       return build_over_call (cand, args, LOOKUP_NORMAL);
     }
 
-  /* This is not really overloaded. */
+  /* This is not really overloaded.  */
   fn = OVL_CURRENT (fn);
 
   return build_function_call (fn, args);
@@ -3053,7 +3053,7 @@ build_conditional_expr (arg1, arg2, arg3)
 	   type of the other and is an rvalue.
 
 	 --Both the second and the third operands have type void; the
-	   result is of type void and is an rvalue.   */
+	   result is of type void and is an rvalue.  */
       if ((TREE_CODE (arg2) == THROW_EXPR)
 	  ^ (TREE_CODE (arg3) == THROW_EXPR))
 	result_type = ((TREE_CODE (arg2) == THROW_EXPR) 
@@ -3275,7 +3275,7 @@ build_conditional_expr (arg1, arg2, arg3)
        qualification conversions (_conv.qual_) are performed to bring
        them to a common type, whose cv-qualification shall match the
        cv-qualification of either the second or the third operand.
-       The result is of the common type.   */
+       The result is of the common type.  */
   else if ((null_ptr_cst_p (arg2) 
 	    && (TYPE_PTR_P (arg3_type) || TYPE_PTRMEM_P (arg3_type)
 		|| TYPE_PTRMEMFUNC_P (arg3_type)))
@@ -3360,7 +3360,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
     case VEC_NEW_EXPR:
     case VEC_DELETE_EXPR:
     case DELETE_EXPR:
-      /* Use build_op_new_call and build_op_delete_call instead. */
+      /* Use build_op_new_call and build_op_delete_call instead.  */
       abort ();
 
     case CALL_EXPR:
@@ -3458,7 +3458,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    {
-	      /* A member template. */
+	      /* A member template.  */
 	      templates = tree_cons (NULL_TREE, fn, templates);
 	      candidates 
 		= add_template_candidate (candidates, fn, 
@@ -3752,10 +3752,10 @@ build_op_delete_call (code, addr, size, flags, placement)
       tree alloc_fn;
       tree call_expr;
 
-      /* Find the allocation function that is being called. */
+      /* Find the allocation function that is being called.  */
       call_expr = placement;
       /* Sometimes we have a COMPOUND_EXPR, rather than a simple
-	 CALL_EXPR. */
+	 CALL_EXPR.  */
       while (TREE_CODE (call_expr) == COMPOUND_EXPR)
 	call_expr = TREE_OPERAND (call_expr, 1);
       /* Extract the function.  */
@@ -3876,7 +3876,7 @@ enforce_access (basetype_path, decl)
    FN and ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is non-zero when
    being called to continue a conversion chain. It is negative when a
-   reference binding will be applied, positive otherwise. */
+   reference binding will be applied, positive otherwise.  */
 
 static tree
 convert_like_real (convs, expr, fn, argnum, inner)
@@ -4553,11 +4553,11 @@ build_java_interface_fn_ref (fn, instance)
     }
 
   /* Look up the pointer to the runtime java.lang.Class object for `instance'. 
-     This is the first entry in the vtable. */
+     This is the first entry in the vtable.  */
   klass_ref = build_vtbl_ref (build_indirect_ref (instance, 0), 
 			      integer_zero_node);
 
-  /* Get the java.lang.Class pointer for the interface being called. */
+  /* Get the java.lang.Class pointer for the interface being called.  */
   iface = DECL_CONTEXT (fn);
   iface_ref = lookup_field (iface, get_identifier ("class$"), 0, 0);
   if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
@@ -4569,7 +4569,7 @@ build_java_interface_fn_ref (fn, instance)
     }
   iface_ref = build1 (ADDR_EXPR, build_pointer_type (iface), iface_ref);
   
-  /* Determine the itable index of FN. */
+  /* Determine the itable index of FN.  */
   i = 1;
   for (method = TYPE_METHODS (iface); method; method = TREE_CHAIN (method))
     {
@@ -4814,7 +4814,7 @@ build_new_method_call (tree instance, tree fns, tree args,
 
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
-	      /* A member template. */
+	      /* A member template.  */
 	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = 
 		add_template_candidate (candidates, t, 

@@ -1,3 +1,11 @@
+2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Fix comment formatting.
+	* class.c: Likewise.
+	* cp-lang.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+
 2002-09-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in: Build cp/cxxfilt.o from $(srcdir)/cp/cxxfilt.c,

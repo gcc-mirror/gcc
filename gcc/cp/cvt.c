@@ -149,12 +149,12 @@ cp_convert_to_pointer (type, expr, force)
 	  enum tree_code code = PLUS_EXPR;
 	  tree binfo;
 
-	  /* Try derived to base conversion. */
+	  /* Try derived to base conversion.  */
 	  binfo = lookup_base (TREE_TYPE (intype), TREE_TYPE (type),
 			       ba_check, NULL);
 	  if (!binfo)
 	    {
-	      /* Try base to derived conversion. */
+	      /* Try base to derived conversion.  */
 	      binfo = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
 				   ba_check, NULL);
 	      code = MINUS_EXPR;
@@ -164,7 +164,7 @@ cp_convert_to_pointer (type, expr, force)
 	  if (binfo)
 	    {
 	      expr = build_base_path (code, expr, binfo, 0);
-	      /* Add any qualifier conversions. */
+	      /* Add any qualifier conversions.  */
 	      if (!same_type_p (TREE_TYPE (TREE_TYPE (expr)),
 				TREE_TYPE (type)))
 		{
@@ -322,7 +322,7 @@ convert_to_pointer_force (type, expr)
 	  if (binfo)
 	    {
 	      expr = build_base_path (code, expr, binfo, 0);
-	      /* Add any qualifier conversions. */
+	      /* Add any qualifier conversions.  */
 	      if (!same_type_p (TREE_TYPE (TREE_TYPE (expr)),
 				TREE_TYPE (type)))
 		{
@@ -857,7 +857,7 @@ convert_to_void (expr, implicit)
     
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
-      /* These have already decayed to rvalue. */
+      /* These have already decayed to rvalue.  */
       break;
     
     case CALL_EXPR:   /* we have a special meaning for volatile void fn() */
