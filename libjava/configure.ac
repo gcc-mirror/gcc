@@ -652,7 +652,7 @@ case "$THREADS" in
 	# the command line.  For now, the user must provide the -pthread
 	# switch to link code compiled with gcj.  In future, consider adding
 	# support for weak references to pthread_* functions ala gthr.h API.
-	THREADSPEC='%{!pthread: %eUnder this configuration, the user must provide -pthread when linking.}'
+	THREADSPEC='%{!pthread: %{!shared: %eUnder this configuration, the user must provide -pthread when linking.}}'
 	;;
      *-*-freebsd*)
 	# FreeBSD 5 implements a model much closer to other modern UNIX
