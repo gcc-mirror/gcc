@@ -1501,6 +1501,17 @@ arm_rtx_costs (x, code, outer_code)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 4)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 1)) ? 0 : 4));
 
+    case TRUNCATE:
+      if (arm_fast_multiply && mode == SImode
+	  && GET_CODE (XEXP (x, 0)) == LSHIFTRT
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0))
+	      == GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)))
+	  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ZERO_EXTEND
+	      || GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SIGN_EXTEND))
+	return 8;
+      return 99;
+
     case NEG:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	return 4 + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 6);
