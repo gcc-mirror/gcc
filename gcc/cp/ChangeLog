@@ -1,3 +1,8 @@
+Mon Jul 28 23:55:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (mark_member_pointers): Verify that member pointer points to
+	the function.
+
 2003-07-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (begin_compound_stmt): No scope arg is a bool.
