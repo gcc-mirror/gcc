@@ -1,3 +1,9 @@
+2003-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/11473
+	* dbxout.c (dbxout_type): Use TYPE_SIZE to determine the sizes of
+	base classes.
+
 2003-07-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/10795
