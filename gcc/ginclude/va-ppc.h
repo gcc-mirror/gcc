@@ -5,6 +5,8 @@
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
+/* Note that the names in this structure are in the user's namespace, but
+   that the V.4 abi explicitly states that these names should be used.  */
 typedef struct {
   char gpr;			/* index into the array of 8 GPRs stored in the
 				   register save area gpr=0 corresponds to r3,
@@ -113,6 +115,14 @@ __extension__ (*({							\
     {									\
       __ptr = __VA_GP_REGSAVE (AP, TYPE);				\
       (AP)->gpr += __va_size (TYPE);					\
+    }									\
+									\
+  else if (!__va_float_p (TYPE) && !__va_aggregate_p (TYPE)		\
+	   && (AP)->gpr < 8)						\
+    {									\
+      (AP)->gpr = 8;							\
+      __ptr = (TYPE *) (void *) ((AP)->overflow_arg_area);		\
+      (AP)->overflow_arg_area += __va_size (TYPE) * sizeof (long);	\
     }									\
 									\
   else if (__va_aggregate_p (TYPE))					\
