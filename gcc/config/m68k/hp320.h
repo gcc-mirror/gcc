@@ -319,7 +319,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TEXT_SECTION_ASM_OP "text"
 #define DATA_SECTION_ASM_OP "data"
 #endif
-#define READONLY_DATA_SECTION data_section
 #define	ASCII_DATA_ASM_OP "byte"
  
 /* This is the command to make the user-level label named NAME
