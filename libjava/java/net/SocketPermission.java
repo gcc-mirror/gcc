@@ -96,6 +96,9 @@ import java.security.PermissionCollection;
  *   Can accept connections from 197.197.20.1
  * </pre><p>
  *
+ * This class also supports IPv6 addresses.  These should be specified
+ * in either RFC 2732 format or in full uncompressed form.
+ *
  * @since 1.2
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -159,7 +162,7 @@ public final class SocketPermission extends Permission
 
   /**
    * Returns a hash code value for this object.  Overrides the 
-   * Permission.hashCode()
+   * <code>Permission.hashCode()</code>.
    *
    * @return A hash code
    */
@@ -233,7 +236,7 @@ public final class SocketPermission extends Permission
    * Returns true if the permission object passed it is implied by the
    * this permission.  This will be true if 
    * <p><ul>
-   * <li>The argument is of type SocketPermission
+   * <li>The argument is of type <code>SocketPermission</code>
    * <li>The actions list of the argument are in this object's actions
    * <li>The port range of the argument is within this objects port range
    * <li>The hostname is equal to or a subset of this objects hostname
@@ -247,7 +250,7 @@ public final class SocketPermission extends Permission
    * wildcards
    * </ul>
    *
-   * @param perm The Permission to check against
+   * @param perm The <code>Permission</code> to check against
    *
    * @return <code>true</code> if the <code>Permission</code> is implied by 
    * this object, <code>false</code> otherwise.
