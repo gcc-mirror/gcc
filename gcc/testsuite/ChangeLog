@@ -1,3 +1,7 @@
+2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-1.c: Add test for wide string format.
+
 2000-09-22  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.c-torture/compile/20000922-1.c: New file.

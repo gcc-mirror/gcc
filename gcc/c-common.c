@@ -2040,6 +2040,11 @@ check_format_info (status, info, params)
 	status_warning (status, "format not a string literal, argument types not checked");
       return;
     }
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format_tree))) != char_type_node)
+    {
+      status_warning (status, "format is a wide character string");
+      return;
+    }
   format_chars = TREE_STRING_POINTER (format_tree);
   format_length = TREE_STRING_LENGTH (format_tree);
   if (format_length <= 1)
