@@ -1,3 +1,8 @@
+2003-09-22  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (c_common_signed_or_unsigned_type): Examine mode, 
+	not precision.
+
 2003-09-22  David Edelsohn  <edelsohn@gnu.org>
 	    Hartmut Penner  <hpenner@de.ibm.com>
 
