@@ -1,3 +1,9 @@
+2002-01-22  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/5379
+	* config/i386/i386.md (prefetch_sse): Specify "p" as a constraint
+	for the address operand.
+
 2002-01-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/freebsd.h (FUNCTION_PROFILER): Remove.
