@@ -14,8 +14,11 @@
 #define LIB_SPEC "%{bsd:-lbsd-compat} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
 
-/* We have atexit).  */
+/* We have atexit.  */
 #define HAVE_ATEXIT
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
+
+/* The system headers under GNU are C++-aware.  */
+#define NO_IMPLICIT_EXTERN_C
