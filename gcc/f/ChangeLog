@@ -1,3 +1,8 @@
+Sat Mar  8 21:11:40 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* com.c (ffe_init): Update prototype; move code to ffe_post_options.
+	(ffe_post_options): New.
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (f77.tags): New target.

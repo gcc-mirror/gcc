@@ -1,3 +1,8 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (java_init): Update prototype, move code to java_post_options.
+	(java_post_options): Similarly.
+
 2003-03-05  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* jcf.h (COMPARE_FILENAMES): New macro similar to "strcmp" to

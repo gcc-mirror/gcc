@@ -241,15 +241,13 @@ c_warn_unused_global_decl (decl)
 }
 
 /* Initialization common to C and Objective-C front ends.  */
-const char *
-c_objc_common_init (filename)
-     const char *filename;
+bool
+c_objc_common_init ()
 {
   c_init_decl_processing ();
 
-  filename = c_common_init (filename);
-  if (filename == NULL)
-    return NULL;
+  if (c_common_init () == false)
+    return false;
 
   lang_expand_decl_stmt = c_expand_decl_stmt;
 
@@ -271,7 +269,7 @@ c_objc_common_init (filename)
 
   VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
 
-  return filename;
+  return true;
 }
 
 /* Register a function tree, so that its optimization and conversion

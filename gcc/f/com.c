@@ -14030,8 +14030,9 @@ insert_block (tree block)
 }
 
 /* Each front end provides its own.  */
-static const char *ffe_init PARAMS ((const char *));
+static bool ffe_init PARAMS ((void));
 static void ffe_finish PARAMS ((void));
+static bool ffe_post_options PARAMS ((const char **));
 static void ffe_init_options PARAMS ((void));
 static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 
@@ -14050,6 +14051,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_INIT_OPTIONS		ffe_init_options
 #undef  LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION	ffe_decode_option
+#undef  LANG_HOOKS_POST_OPTIONS
+#define LANG_HOOKS_POST_OPTIONS		ffe_post_options
 #undef  LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		ffe_parse_file
 #undef  LANG_HOOKS_MARK_ADDRESSABLE
@@ -14115,9 +14118,12 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-static const char *
-ffe_init (const char *filename)
+static bool
+ffe_post_options (pfilename)
+     const char **pfilename;
 {
+  const char *filename = *pfilename;
+
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
     {
@@ -14126,9 +14132,17 @@ ffe_init (const char *filename)
     }
   else
     finput = fopen (filename, "r");
+
   if (finput == 0)
     fatal_io_error ("can't open %s", filename);
 
+  return false;
+}
+
+
+static bool
+ffe_init ()
+{
 #ifdef IO_BUFFER_SIZE
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
@@ -14144,11 +14158,8 @@ ffe_init (const char *filename)
   ffelex_hash_kludge (finput);
 
   /* FIXME: The ffelex_hash_kludge code needs to be cleaned up to
-     return the new file name.  */
-  if (main_input_filename)
-    filename = main_input_filename;
-
-  return filename;
+     set the new file name.  Maybe in ffe_post_options.  */
+  return true;
 }
 
 static void

@@ -1,3 +1,8 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cp-tree.h (cxx_init): Update prototype.
+	* lex.c (cxx_init): Similarly.
+
 2003-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9823

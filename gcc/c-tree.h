@@ -245,7 +245,7 @@ extern tree make_pointer_declarator		PARAMS ((tree, tree));
 /* in c-objc-common.c */
 extern int c_disregard_inline_limits		PARAMS ((tree));
 extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
-extern const char *c_objc_common_init		PARAMS ((const char *));
+extern bool c_objc_common_init			PARAMS ((void));
 extern int c_missing_noreturn_ok_p		PARAMS ((tree));
 extern void c_objc_common_finish_file		PARAMS ((void));
 extern int defer_fn				PARAMS ((tree));

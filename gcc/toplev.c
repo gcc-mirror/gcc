@@ -104,7 +104,7 @@ extern void reg_alloc PARAMS ((void));
 
 static void general_init PARAMS ((char *));
 static void parse_options_and_default_flags PARAMS ((int, char **));
-static void do_compile PARAMS ((int));
+static void do_compile PARAMS ((void));
 static void process_options PARAMS ((void));
 static void backend_init PARAMS ((void));
 static int lang_dependent_init PARAMS ((const char *));
@@ -134,6 +134,9 @@ static void print_switch_values PARAMS ((FILE *, int, int, const char *,
 
 /* Nonzero to dump debug info whilst parsing (-dy option).  */
 static int set_yydebug;
+
+/* True if we don't need a backend (e.g. preprocessing only).  */
+static bool no_backend;
 
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
@@ -5169,6 +5172,13 @@ parse_options_and_default_flags (argc, argv)
 static void
 process_options ()
 {
+  /* Allow the front end to perform consistency checks and do further
+     initialization based on the command line options.  This hook also
+     sets the original filename if appropriate (e.g. foo.i -> foo.c)
+     so we can correctly initialize debug output.  */
+  no_backend = (*lang_hooks.post_options) (&filename);
+  main_input_filename = input_filename = filename;
+
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
@@ -5411,15 +5421,10 @@ lang_dependent_init (name)
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
 
-  /* Front-end initialization.  This hook can assume that GC,
-     identifier hashes etc. are set up, but debug initialization is
-     not done yet.  This routine must return the original filename
-     (e.g. foo.i -> foo.c) so can correctly initialize debug output.  */
-  name = (*lang_hooks.init) (name);
-  if (name == NULL)
+  /* Other front-end initialization.  */
+  if ((*lang_hooks.init) () == 0)
     return 0;
 
-  main_input_filename = input_filename = name;
   init_asm_output (name);
 
   /* These create various _DECL nodes, so need to be called after the
@@ -5513,8 +5518,7 @@ finalize ()
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile (no_backend)
-     int no_backend;
+do_compile ()
 {
   /* We cannot start timing until after options are processed since that
      says if we run timers or not.  */
@@ -5558,16 +5562,11 @@ toplev_main (argc, argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
-      /* All command line options have been parsed; allow the front
-	 end to perform consistency checks, etc.  */
-      bool no_backend = (*lang_hooks.post_options) ();
-
-      /* The bulk of command line switch processing.  */
       process_options ();
 
       /* Don't do any more if an error has already occurred.  */
       if (!errorcount)
-	do_compile (no_backend);
+	do_compile ();
     }
 
   if (errorcount || sorrycount)
