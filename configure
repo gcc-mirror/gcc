@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.31 $"
+version="$Revision: 1.32 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -155,7 +155,7 @@ progname=$0
 if [ -n "$PWD" ]; then PWD=`pwd`; fi
 
 case "${progname}" in
-/*) ;;
+/* | [A-Za-z]:[\\/]* ) ;;
 */*) ;;
 *)
         PATH=$PATH:${PWD=`pwd`} ; export PATH
@@ -1096,7 +1096,7 @@ for subdir in . ${subdirs} ; do
     case "${srcdir}" in
         ".")  # no -srcdir option.  We're building in place.
                 makesrcdir=. ;;
-        /*) # absolute path
+        /* | [A-Za-z]:[\\/]* ) # absolute path
                 makesrcdir=`echo ${srcdir}/${subdir} | sed -e 's|/\.$||'`
                 ;;
         *) # otherwise relative
@@ -1322,19 +1322,19 @@ EOF
 
             case "${package_makefile_frag}" in
               "") ;;
-              /*) echo package_makefile_frag = ${package_makefile_frag} >>${Makefile} ;;
+              /* | [A-Za-z]:[\\/]* ) echo package_makefile_frag = ${package_makefile_frag} >>${Makefile} ;;
               *)  echo package_makefile_frag = ${invsubdir}${package_makefile_frag} >>${Makefile} ;;
             esac
 
             case "${target_makefile_frag}" in
               "") ;;
-              /*) echo target_makefile_frag = ${target_makefile_frag} >>${Makefile} ;;
+              /* | [A-Za-z]:[\\/]* ) echo target_makefile_frag = ${target_makefile_frag} >>${Makefile} ;;
               *)  echo target_makefile_frag = ${invsubdir}${target_makefile_frag} >>${Makefile} ;;
             esac
 
             case "${host_makefile_frag}" in
               "") ;;
-              /*) echo host_makefile_frag = ${host_makefile_frag} >>${Makefile} ;;
+              /* | [A-Za-z]:[\\/]* ) echo host_makefile_frag = ${host_makefile_frag} >>${Makefile} ;;
               *)  echo host_makefile_frag = ${invsubdir}${host_makefile_frag} >>${Makefile} ;;
             esac
 
@@ -1545,11 +1545,7 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
 ### figure out what to do with srcdir
                         case "${srcdir}" in
                         ".") newsrcdir=${srcdir} ;; # no -srcdir option.  We're building in place.
-                        /*) # absolute path
-                                newsrcdir=${srcdir}/${cfg_dir}
-                                srcdiroption="--srcdir=${newsrcdir}"
-                                ;;
-                        ?:*) # absolute path on win32
+                        /* | [A-Za-z]:[\\/]* ) # absolute path
                                 newsrcdir=${srcdir}/${cfg_dir}
                                 srcdiroption="--srcdir=${newsrcdir}"
                                 ;;
@@ -1563,10 +1559,7 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
 			case "${cache_file}" in
 			"") # empty
 				;;
-			/*) # absolute path
-				cache_file_option="--cache-file=${cache_file}"
-				;;
-			?:*) # absolute path on win32
+			/* | [A-Za-z]:[\\/]* ) # absolute path
 				cache_file_option="--cache-file=${cache_file}"
 				;;
 			*) # relative path
@@ -1579,9 +1572,8 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
                                 recprog=${newsrcdir}/configure
                         elif [ -f ${newsrcdir}/configure.in ] ; then
                                 case "${progname}" in
-                                /*)     recprog=${progname} ;;
-                                ?:*)    recprog=${progname} ;;
-                                *)      recprog=../${progname} ;;
+                                /* | [A-Za-z]:[\\/]* )  recprog=${progname} ;;
+                                *)                      recprog=../${progname} ;;
                                 esac
 			else
 				eval echo No configuration information in ${cfg_dir} ${redirect}
