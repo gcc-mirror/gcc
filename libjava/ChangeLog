@@ -1,3 +1,10 @@
+2003-06-06  Mark Wielaard  <mark@klomp.org>
+
+	* java/security/Security.java (secprops): Initialize.
+	(loadProviders): Return boolean.
+	(static): Check result of loadProvider calls. If necessary
+	display WARNING and fallback to Gnu provider.
+
 2002-06-06  James Clark  <jjc@jclark.com>
 
 	Fix for PR libgcj/8738:
