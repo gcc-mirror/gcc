@@ -1,3 +1,7 @@
+1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* Makefile.in (HEADERS): Install bitset
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this
