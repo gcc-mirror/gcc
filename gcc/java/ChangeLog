@@ -1,3 +1,8 @@
+2001-01-21  Per Bothner  <per@bothner.com>
+
+	* parse.y (method_header):  Don't set the DECL_NAME of a FUNCTION_DECL
+	to a EXPR_WITH_FILE_LOCATION - that is just too fragile and wrong.
+
 2001-01-19  Per Bothner  <per@bothner.com>
 
 	* expr.c (pop_type_0):  Only return object_ptr_type_node on mismatch
