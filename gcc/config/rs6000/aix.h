@@ -155,7 +155,7 @@
    layout treating the parameter area as any other block of memory,
    then map the reg param area to registers, i.e., pad upward, which
    is the way IBM Compilers for AIX behave.
-   Setting both of the following defines results in this behaviour.  */
+   Setting both of the following defines results in this behavior.  */
 #define AGGREGATE_PADDING_FIXED 1
 #define AGGREGATES_PAD_UPWARD_ALWAYS 1
 

@@ -304,7 +304,7 @@
 
 ;; Instruction type
 
-;; The table below summarises the types of media instruction and their
+;; The table below summarizes the types of media instruction and their
 ;; scheduling classification.  Headings are:
 
 ;; Type:	the name of the define_attr type
