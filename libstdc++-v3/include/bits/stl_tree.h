@@ -457,7 +457,7 @@ namespace std
 		  if (__w->_M_right == 0 
 		      || __w->_M_right->_M_color == _M_black) 
 		    {
-		      if (__w->_M_left) __w->_M_left->_M_color = _M_black;
+		      __w->_M_left->_M_color = _M_black;
 		      __w->_M_color = _M_red;
 		      _Rb_tree_rotate_right(__w, __root);
 		      __w = __x_parent->_M_right;
@@ -494,7 +494,7 @@ namespace std
 		{
 		  if (__w->_M_left == 0 || __w->_M_left->_M_color == _M_black) 
 		    {
-		      if (__w->_M_right) __w->_M_right->_M_color = _M_black;
+		      __w->_M_right->_M_color = _M_black;
 		      __w->_M_color = _M_red;
 		      _Rb_tree_rotate_left(__w, __root);
 		      __w = __x_parent->_M_left;

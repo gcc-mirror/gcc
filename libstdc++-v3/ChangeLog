@@ -1,3 +1,11 @@
+2002-11-22  Laszlo Ersek  <erseklaszlo@chello.hu>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8645
+	* include/bits/stl_tree.h (_Rb_tree_rebalance_for_erase):
+	Don't check that __w->_M_left != 0 and __w->_M_right != 0
+	when they can't be otherwise.
+
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/documentation.html:  Fix broken/thinko'd URL.
