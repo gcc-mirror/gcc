@@ -1,3 +1,8 @@
+Sun Jun  3 21:59:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (reload_inner_reg_of_subreg): Return 1 for PLUS.
+	(push_reload): Handle non-REG in reload_inner_reg_of_subreg case.
+
 2001-06-03  kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* gcc/config/sh/sh.c (print_operand_address, print_operand): Call
