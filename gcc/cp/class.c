@@ -4300,7 +4300,9 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	      TREE_PROTECTED (DECL_RESULT (x)) = TREE_PROTECTED (x);
 	    }
 
-	  /* Check for inconsistent use of this name in the class body.
+	  /* A name N used in a class S shall refer to the same declaration
+	     in its context and when re-evaluated in the completed scope of S.
+
              Enums, types and static vars have already been checked.  */
 	  if (TREE_CODE (x) != TYPE_DECL && TREE_CODE (x) != USING_DECL
 	      && ! (TREE_CODE (x) == TEMPLATE_DECL
@@ -4325,10 +4327,10 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 		  && !(TREE_CODE (icv) == TYPE_DECL
 		       && DECL_CONTEXT (icv) == t))
 		{
-		  cp_error_at ("declaration of identifier `%D' as `%+#D'",
-			       name, x);
-		  cp_error_at ("conflicts with other use in class as `%#D'",
-			       icv);
+		  cp_pedwarn_at ("declaration of identifier `%D' as `%+#D'",
+				 name, x);
+		  cp_pedwarn_at ("conflicts with other use in class as `%#D'",
+				 icv);
 		}
 	    }
 

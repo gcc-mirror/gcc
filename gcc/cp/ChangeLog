@@ -1,3 +1,8 @@
+1998-06-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct): Make conflicting use of id a pedwarn.
+	* decl.c (pushdecl_class_level): Likewise.
+
 1998-06-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (convert_nontype_argument): Issue an error when presented
