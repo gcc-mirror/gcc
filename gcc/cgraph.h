@@ -119,11 +119,13 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   bool output;
 };
 
-struct cgraph_edge GTY((chain_next ("%h.next_caller")))
+struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller")))
 {
   struct cgraph_node *caller;
   struct cgraph_node *callee;
+  struct cgraph_edge *prev_caller;
   struct cgraph_edge *next_caller;
+  struct cgraph_edge *prev_callee;
   struct cgraph_edge *next_callee;
   tree call_expr;
   PTR GTY ((skip (""))) aux;
@@ -165,6 +167,7 @@ void dump_cgraph (FILE *);
 void dump_cgraph_node (FILE *, struct cgraph_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
+void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
 				        tree);
