@@ -3,7 +3,8 @@
 	PR tree-optimization/14042
 	PR tree-optimization/14729
 	PR tree-optimization/14736
-	* tree-ssa.c: Check the type which the pointer points to
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1):
+	Check the type which the pointer points to
 	instead of the pointer types.
 
 2004-06-02  Kazu Hirata  <kazu@cs.umass.edu>
