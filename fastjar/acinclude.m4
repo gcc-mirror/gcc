@@ -1,5 +1,3 @@
-sinclude(../config/accross.m4)
-
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
 AC_DEFUN([gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG],
