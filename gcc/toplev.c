@@ -2720,17 +2720,16 @@ rest_of_compilation (decl)
     }
 
   timevar_push (TV_JUMP);
+  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
-  if (flag_delete_null_pointer_checks || flag_if_conversion)
+  /* Try to identify useless null pointer tests and delete them.  */
+  if (flag_delete_null_pointer_checks)
     {
       open_dump_file (DFI_null, decl);
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
-      /* Try to identify useless null pointer tests and delete them.  */
-      if (flag_delete_null_pointer_checks)
-	delete_null_pointer_checks (insns);
+      delete_null_pointer_checks (insns);
 
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       close_dump_file (DFI_null, print_rtl_with_bb, insns);
