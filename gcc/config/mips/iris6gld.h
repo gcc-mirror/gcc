@@ -46,3 +46,38 @@ Boston, MA 02111-1307, USA.  */
   %{!shared: %{!non_shared: %{!call_shared: -call_shared}}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
 %{mabi=32: -melf32bsmip}%{mabi=n32: -melfbmipn32}%{mabi=64: -melf64bmip}%{!mabi*: -melf32bmipn32}"
+
+/* The GNU linker supports one-only sections.  */
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+#undef UNIQUE_SECTION_P
+#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
+#define UNIQUE_SECTION(DECL,RELOC)				\
+do {								\
+  int len;							\
+  char *name, *string, *prefix;					\
+								\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+								\
+  if (! DECL_ONE_ONLY (DECL))					\
+    {								\
+      prefix = ".";                                             \
+      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	prefix = ".text.";					\
+      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
+	prefix = ".rodata.";					\
+      else							\
+	prefix = ".data.";					\
+    }								\
+  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+    prefix = ".gnu.linkonce.t.";				\
+  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
+    prefix = ".gnu.linkonce.r.";				\
+  else								\
+    prefix = ".gnu.linkonce.d.";				\
+								\
+  len = strlen (name) + strlen (prefix);			\
+  string = alloca (len + 1);					\
+  sprintf (string, "%s%s", prefix, name);			\
+								\
+  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+} while (0)
