@@ -1228,6 +1228,7 @@ const_binop (code, arg1, arg2, notrunc)
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
   if (TREE_CODE (arg1) == COMPLEX_CST)
     {
+      register tree type = TREE_TYPE (arg1);
       register tree r1 = TREE_REALPART (arg1);
       register tree i1 = TREE_IMAGPART (arg1);
       register tree r2 = TREE_REALPART (arg2);
@@ -1237,17 +1238,20 @@ const_binop (code, arg1, arg2, notrunc)
       switch (code)
 	{
 	case PLUS_EXPR:
-	  t = build_complex (const_binop (PLUS_EXPR, r1, r2, notrunc),
+	  t = build_complex (type,
+			     const_binop (PLUS_EXPR, r1, r2, notrunc),
 			     const_binop (PLUS_EXPR, i1, i2, notrunc));
 	  break;
 
 	case MINUS_EXPR:
-	  t = build_complex (const_binop (MINUS_EXPR, r1, r2, notrunc),
+	  t = build_complex (type,
+			     const_binop (MINUS_EXPR, r1, r2, notrunc),
 			     const_binop (MINUS_EXPR, i1, i2, notrunc));
 	  break;
 
 	case MULT_EXPR:
-	  t = build_complex (const_binop (MINUS_EXPR,
+	  t = build_complex (type,
+			     const_binop (MINUS_EXPR,
 					  const_binop (MULT_EXPR,
 						       r1, r2, notrunc),
 					  const_binop (MULT_EXPR,
@@ -1269,32 +1273,33 @@ const_binop (code, arg1, arg2, notrunc)
 			     const_binop (MULT_EXPR, i2, i2, notrunc),
 			     notrunc);
 
-	    t = build_complex
-	      (const_binop (INTEGRAL_TYPE_P (TREE_TYPE (r1))
-			    ? TRUNC_DIV_EXPR : RDIV_EXPR,
-			    const_binop (PLUS_EXPR,
-					 const_binop (MULT_EXPR, r1, r2,
-						      notrunc),
-					 const_binop (MULT_EXPR, i1, i2,
-						      notrunc),
-					 notrunc),
-			    magsquared, notrunc),
-	       const_binop (INTEGRAL_TYPE_P (TREE_TYPE (r1))
-			    ? TRUNC_DIV_EXPR : RDIV_EXPR,
-			    const_binop (MINUS_EXPR,
-					 const_binop (MULT_EXPR, i1, r2,
-						      notrunc),
-					 const_binop (MULT_EXPR, r1, i2,
-						      notrunc),
-					 notrunc),
-			    magsquared, notrunc));
+	    t = build_complex (type,
+			       const_binop
+			       (INTEGRAL_TYPE_P (TREE_TYPE (r1))
+				? TRUNC_DIV_EXPR : RDIV_EXPR,
+				const_binop (PLUS_EXPR,
+					     const_binop (MULT_EXPR, r1, r2,
+							  notrunc),
+					     const_binop (MULT_EXPR, i1, i2,
+							  notrunc),
+					     notrunc),
+				magsquared, notrunc),
+			       const_binop
+			       (INTEGRAL_TYPE_P (TREE_TYPE (r1))
+				? TRUNC_DIV_EXPR : RDIV_EXPR,
+				const_binop (MINUS_EXPR,
+					     const_binop (MULT_EXPR, i1, r2,
+							  notrunc),
+					     const_binop (MULT_EXPR, r1, i2,
+							  notrunc),
+					     notrunc),
+				magsquared, notrunc));
 	  }
 	  break;
 
 	default:
 	  abort ();
 	}
-      TREE_TYPE (t) = TREE_TYPE (arg1);
       return t;
     }
   return 0;
@@ -3621,7 +3626,7 @@ fold (expr)
 				    TREE_TYPE (TREE_TYPE (arg0)),
 				    TREE_OPERAND (arg0, 1))));
       else if (TREE_CODE (arg0) == COMPLEX_CST)
-	return build_complex (TREE_OPERAND (arg0, 0),
+	return build_complex (type, TREE_OPERAND (arg0, 0),
 			      fold (build1 (NEGATE_EXPR,
 					    TREE_TYPE (TREE_TYPE (arg0)),
 					    TREE_OPERAND (arg0, 1))));
@@ -5123,7 +5128,7 @@ fold (expr)
 
     case COMPLEX_EXPR:
       if (wins)
-	return build_complex (arg0, arg1);
+	return build_complex (type, arg0, arg1);
       return t;
 
     case REALPART_EXPR:
