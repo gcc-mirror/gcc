@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.18 2001/06/11 07:26:33 jsm28 Exp $
+@comment $Id: install.texi,v 1.19 2001/06/11 21:29:37 mmitchel Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -309,6 +309,35 @@ These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.
 @table @code
 
+@item --exec-prefix=@var{dirname}
+Specify the toplevel installation directory for architecture-dependent
+files.  The default is @file{@var{prefix}}.
+
+@item --bindir=@var{dirname}
+Specify the installation directory for the executables called by users
+(such as @command{gcc} and @command{g++}).  The default is
+@file{@var{exec-prefix}/bin}.
+
+@item --libdir=@var{dirname}
+Specify the installation directory for object code libraries and
+internal parts of GCC.  The default is @file{@var{exec-prefix}/lib}.
+
+@item --with-slibdir=@var{dirname}
+Specify the installation directory for the shared libgcc library.  The
+default is @file{@var{libdir}}.
+
+@item --infodir=@var{dirname}
+Specify the installation directory for documentation in info format.
+The default is @file{@var{prefix}/info}.
+
+@item --mandir=@var{dirname}
+Specify the installation directory for manual pages.  The default is
+@file{@var{prefix}/man}.  (Note that the manual pages are only extracts from
+the full GCC manuals, which are provided in Texinfo format.  The
+@command{g77} manpage is unmaintained and may be out of date; the others
+are derived by an automatic conversion process from parts of the full
+manual.)
+
 @item --with-gxx-include-dir=@var{dirname}
 Specify
 the installation directory for g++ header files.  The default is
@@ -460,9 +489,12 @@ Specify that target
 libraries should be optimized for code space instead of code speed.
 This is the default for the m32r platform.
 
-@item --enable-cpp
-Specify that a shell script which
-emulates traditional cpp functionality should be installed.
+@item --disable-cpp
+Specify that a user visible @command{cpp} program should not be installed.
+
+@item --with-cpp-install-dir=@var{dirname}
+Specify that the user visible @command{cpp} program should be installed
+in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
 
 @item --enable-maintainer-mode
 The build rules that
@@ -472,12 +504,6 @@ tree is present. If you have changed the sources and want to rebuild the
 catalog, configuring with @option{--enable-maintainer-mode} will enable
 this. Note that you need a recent version of the @code{gettext} tools
 to do so.
-
-@item --without-fast-fixincludes
-Specify that the
-old, slower method of fixing the system header files should be used.
-EGCS 1.1.x and older releases default to the slow version. GCC 2.95 and
-newer releases will default to the fast version.
 
 @item --enable-version-specific-runtime-libs
 Specify
@@ -963,7 +989,13 @@ Now that GCC has been built and tested, you can install it with
 That step completes the installation of GCC; user level binaries can
 be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
 specified with the @option{--prefix} to configure (or @file{/usr/local}
-by default).
+by default).  (If you specified @option{--bindir}, that directory will
+be used instead; otherwise, if you specified @option{--exec-prefix},
+@file{@var{exec-prefix}/bin} will be used.)  Headers for the C++ and
+Java libraries are installed in @file{@var{prefix}/include}; libraries
+in @file{@var{libdir}} (normally @file{@var{prefix}/lib}); internal
+parts of the compiler in @file{@var{libdir}/gcc-lib}; documentation in
+info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 
 If you don't mind, please quickly review the 
 @uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
@@ -977,6 +1009,15 @@ running it!)
 
 If you find a bug, please report it following our
 @uref{../bugs.html,,bug reporting guidelines}.
+
+If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
+dvi}.  You will need to have @command{texi2dvi} (version at least 4.0)
+and @TeX{} installed.  This creates a number of @file{.dvi} files in
+subdirectories of @file{@var{objdir}}; these may be converted for
+printing with programs such as @command{dvips}.  You can also
+@uref{http://www.gnu.org/order/order.html,,buy printed manuals from the
+Free Software Foundation}, though such manuals may not be for the most
+recent version of GCC.
 
 @html
 <hr>
