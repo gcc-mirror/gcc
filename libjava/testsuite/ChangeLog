@@ -1,3 +1,8 @@
+2002-02-23  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.lang/InvokeReturn.java: New file.
+	* libjava.lang/InvokeReturn.out: New file.
+
 2002-02-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* lib/libjava.exp: Add "xfail-byte-output" and "xfail-source-output".
