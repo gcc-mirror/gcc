@@ -10086,6 +10086,21 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
+	 (match_operator 4 "equality_op"
+			 [(match_operand:DI 1 "se_register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:SF 2 "register_operand" "f,0")
+	 (match_operand:SF 3 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "@
+    mov%B4.s\\t%0,%2,%1
+    mov%b4.s\\t%0,%3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SF")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f,f")
+	(if_then_else:SF
 	 (match_operator 3 "equality_op" [(match_operand:CC 4
 							    "register_operand"
 							    "z,z")
@@ -10104,6 +10119,21 @@ move\\t%0,%z4\\n\\
 	(if_then_else:DF
 	 (match_operator 4 "equality_op"
 			 [(match_operand:SI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:DF 2 "register_operand" "f,0")
+	 (match_operand:DF 3 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "@
+    mov%B4.d\\t%0,%2,%1
+    mov%b4.d\\t%0,%3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DF")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f,f")
+	(if_then_else:DF
+	 (match_operator 4 "equality_op"
+			 [(match_operand:DI 1 "se_register_operand" "d,d")
 			  (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
