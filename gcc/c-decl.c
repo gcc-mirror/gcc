@@ -522,8 +522,12 @@ c_decode_option (p)
       dollars_in_ident = 1;
 #endif
     }
-  else if (!strcmp (p, "-fnotraditional"))
-    ;
+  else if (!strcmp (p, "-fnotraditional") || !strcmp (p, "-fno-traditional"))
+    {
+      flag_traditional = 0;
+      flag_writable_strings = 0;
+      dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 1;
+    }
   else if (!strcmp (p, "-fsigned-char"))
     flag_signed_char = 1;
   else if (!strcmp (p, "-funsigned-char"))
@@ -883,7 +887,7 @@ poplevel (keep, reverse, functionbody)
       BLOCK_VARS (block) = decls;
       BLOCK_TYPE_TAGS (block) = tags;
       BLOCK_SUBBLOCKS (block) = subblocks;
-      remember_end_node (block);
+      remember_end_note (block);
     }
 
   /* In each subblock, record that this is its superior.  */
