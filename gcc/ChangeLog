@@ -1,3 +1,7 @@
+2004-10-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* config/arc/lib1funcs.asm (___umulsidi3): Fix typo.
+
 2004-10-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR 18004.
