@@ -4070,14 +4070,15 @@ compute_a_rotate_length (rtx *operands)
    operating insn.  */
 
 int
-fix_bit_operand (rtx *operands, int what, enum rtx_code code)
+fix_bit_operand (rtx *operands, enum rtx_code code)
 {
   /* The bit_operand predicate accepts any memory during RTL generation, but
      only 'U' memory afterwards, so if this is a MEM operand, we must force
      it to be valid for 'U' by reloading the address.  */
 
-  if ((what == 0 && single_zero_operand (operands[2], QImode))
-      || (what == 1 && single_one_operand (operands[2], QImode)))
+  if (code == AND
+      ? single_zero_operand (operands[2], QImode)
+      : single_one_operand (operands[2], QImode))
     {
       /* OK to have a memory dest.  */
       if (GET_CODE (operands[0]) == MEM
