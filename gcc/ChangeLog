@@ -307,13 +307,8 @@ Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Delete.
 	* config/m88k/m88k.c (m88k_end_prologue, m88k_begin_epilogue): Rename
 	an use in target struct, make static.
-<<<<<<< ChangeLog
-	* ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE): Delete.
-=======
 	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE):
 	Delete.
->>>>>>> 1.10591
-
 
 2001-07-08  Richard Henderson  <rth@redhat.com>
 
