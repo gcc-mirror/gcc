@@ -54,7 +54,7 @@
 # systems out there.  :-)
 c_model=c_std
 c_compatibility=no
-fpos_include_dir=generic
+fpos_include_dir="os/generic"
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
