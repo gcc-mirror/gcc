@@ -5284,7 +5284,7 @@ shared between processes running the same program, while private data
 exists in one copy per process.
 
 @item -fno-common
-Allocate even uninitialized global variables in the bss section of the
+Allocate even uninitialized global variables in the data section of the
 object file, rather than generating them as common blocks.  This has the
 effect that if the same variable is declared (without @code{extern}) in
 two different compilations, you will get an error when you link them.
