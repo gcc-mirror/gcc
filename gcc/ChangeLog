@@ -1,3 +1,9 @@
+2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR inline-asm/6162
+	* reload.c (find_reloads): Only support one pair of commutative
+	operands.
+
 2004-01-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR java/13824
