@@ -28,10 +28,10 @@ Boston, MA 02111-1307, USA.  */
    written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 52
+%expect 66
 end ifobjc
 ifc
-%expect 34
+%expect 45 
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -185,6 +185,8 @@ void yyerror ();
 %type <ttype> typed_declspecs reserved_declspecs
 %type <ttype> typed_typespecs reserved_typespecquals
 %type <ttype> declmods typespec typespecqual_reserved
+%type <ttype> typed_declspecs_no_prefix_attr reserved_declspecs_no_prefix_attr
+%type <ttype> declmods_no_prefix_attr
 %type <ttype> SCSPEC TYPESPEC TYPE_QUAL nonempty_type_quals maybe_type_qual
 %type <ttype> initdecls notype_initdecls initdcl notype_initdcl
 %type <ttype> init maybeasm
@@ -239,7 +241,7 @@ static char *if_stmt_file;
 static int if_stmt_line;
 
 /* List of types and structure classes of the current declaration.  */
-static tree current_declspecs;
+static tree current_declspecs = NULL_TREE;
 static tree prefix_attributes = NULL_TREE;
 
 /* Stack of saved values of current_declspecs and prefix_attributes.  */
@@ -343,11 +345,11 @@ datadef:
 
 fndef:
 	  typed_declspecs setspecs declarator
-		{ if (! start_function ($1, $3, prefix_attributes,
-					NULL_TREE, 0))
+		{ if (! start_function (current_declspecs, $3,
+					prefix_attributes, NULL_TREE, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
-	  xdecls
+	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function (0); 
@@ -361,11 +363,11 @@ fndef:
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| declmods setspecs notype_declarator
-		{ if (! start_function ($1, $3, prefix_attributes,
-					NULL_TREE, 0))
+		{ if (! start_function (current_declspecs, $3,
+					prefix_attributes, NULL_TREE, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
-	  xdecls
+	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function (0); 
@@ -383,7 +385,7 @@ fndef:
 					prefix_attributes, NULL_TREE, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
-	  xdecls
+	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function (0); 
@@ -862,7 +864,7 @@ objc_string:
 	;
 end ifobjc
 
-xdecls:
+old_style_parm_decls:
 	/* empty */
 	| datadecls
 	| datadecls ELLIPSIS
@@ -887,21 +889,25 @@ datadecls:
 	| lineno_datadecl errstmt
 	;
 
+/* We don't allow prefix attributes here because they cause reduce/reduce
+   conflicts: we can't know whether we're parsing a function decl with
+   attribute suffix, or function defn with attribute prefix on first old
+   style parm.  */
 datadecl:
-	typed_declspecs setspecs initdecls ';'
+	typed_declspecs_no_prefix_attr setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
-	| declmods setspecs notype_initdecls ';'
+	| declmods_no_prefix_attr setspecs notype_initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);	
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
-	| typed_declspecs ';'
+	| typed_declspecs_no_prefix_attr ';'
 		{ shadow_tag_warned ($1, 1);
 		  pedwarn ("empty declaration"); }
-	| declmods ';'
+	| declmods_no_prefix_attr ';'
 		{ pedwarn ("empty declaration"); }
 	;
 
@@ -931,10 +937,11 @@ setspecs: /* empty */
 		  declspec_stack = tree_cons (prefix_attributes,
 					      current_declspecs,
 					      declspec_stack);
-		  current_declspecs = $<ttype>0; 
-		  prefix_attributes = NULL_TREE; }
+		  split_specs_attrs ($<ttype>0,
+				     &current_declspecs, &prefix_attributes); }
 	;
 
+/* ??? Yuck.  See after_type_declarator.  */
 setattrs: /* empty */
 		{ prefix_attributes = chainon (prefix_attributes, $<ttype>0); }
 	;
@@ -968,7 +975,8 @@ decl:
 
 /* Declspecs which contain at least one type specifier or typedef name.
    (Just `const' or `volatile' is not enough.)
-   A typedef'd name following these is taken as a name to be declared.  */
+   A typedef'd name following these is taken as a name to be declared.
+   Declspecs have a non-NULL TREE_VALUE, attributes do not.  */
 
 typed_declspecs:
 	  typespec reserved_declspecs
@@ -986,22 +994,55 @@ reserved_declspecs:  /* empty */
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
 		  $$ = tree_cons (NULL_TREE, $2, $1); }
+	| reserved_declspecs attributes
+		{ $$ = tree_cons ($2, NULL_TREE, $1); }
 	;
 
-/* List of just storage classes and type modifiers.
+typed_declspecs_no_prefix_attr:
+	  typespec reserved_declspecs_no_prefix_attr
+		{ $$ = tree_cons (NULL_TREE, $1, $2); }
+	| declmods_no_prefix_attr typespec reserved_declspecs_no_prefix_attr
+		{ $$ = chainon ($3, tree_cons (NULL_TREE, $2, $1)); }
+	;
+
+reserved_declspecs_no_prefix_attr:
+	  /* empty */
+		{ $$ = NULL_TREE; }
+	| reserved_declspecs_no_prefix_attr typespecqual_reserved
+		{ $$ = tree_cons (NULL_TREE, $2, $1); }
+	| reserved_declspecs_no_prefix_attr SCSPEC
+		{ if (extra_warnings)
+		    warning ("`%s' is not at beginning of declaration",
+			     IDENTIFIER_POINTER ($2));
+		  $$ = tree_cons (NULL_TREE, $2, $1); }
+	;
+
+/* List of just storage classes, type modifiers, and prefix attributes.
    A declaration can start with just this, but then it cannot be used
-   to redeclare a typedef-name.  */
+   to redeclare a typedef-name.
+   Declspecs have a non-NULL TREE_VALUE, attributes do not.  */
 
 declmods:
+	  declmods_no_prefix_attr
+		{ $$ = $1; }
+	| attributes
+		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
+	| declmods declmods_no_prefix_attr
+		{ $$ = chainon ($2, $1); }
+	| declmods attributes
+		{ $$ = tree_cons ($2, NULL_TREE, $1); }
+	;
+
+declmods_no_prefix_attr:
 	  TYPE_QUAL
 		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE);
 		  TREE_STATIC ($$) = 1; }
 	| SCSPEC
 		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
-	| declmods TYPE_QUAL
+	| declmods_no_prefix_attr TYPE_QUAL
 		{ $$ = tree_cons (NULL_TREE, $2, $1);
 		  TREE_STATIC ($$) = 1; }
-	| declmods SCSPEC
+	| declmods_no_prefix_attr SCSPEC
 		{ if (extra_warnings && TREE_STATIC ($1))
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
@@ -1238,7 +1279,7 @@ nested_function:
 		      YYERROR1;
 		    }
 		  reinit_parse_for_function (); }
-	   xdecls
+	   old_style_parm_decls
 		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
@@ -1261,7 +1302,7 @@ notype_nested_function:
 		      YYERROR1;
 		    }
 		  reinit_parse_for_function (); }
-	  xdecls
+	  old_style_parm_decls
 		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
@@ -1298,6 +1339,11 @@ after_type_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
 	| '*' type_quals after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
+	/* ??? Yuck.  setattrs is a quick hack.  We can't use
+	   prefix_attributes because $1 only applies to this
+	   declarator.  We assume setspecs has already been done.
+	   setattrs also avoids 5 reduce/reduce conflicts (otherwise multiple
+	   attributes could be recognized here or in `attributes').  */
 	| attributes setattrs after_type_declarator
 		{ $$ = $3; }
 	| TYPENAME
@@ -1323,6 +1369,11 @@ parm_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
 	| '*' type_quals parm_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
+	/* ??? Yuck.  setattrs is a quick hack.  We can't use
+	   prefix_attributes because $1 only applies to this
+	   declarator.  We assume setspecs has already been done.
+	   setattrs also avoids 5 reduce/reduce conflicts (otherwise multiple
+	   attributes could be recognized here or in `attributes').  */
 	| attributes setattrs parm_declarator
 		{ $$ = $3; }
 	| TYPENAME
@@ -1345,6 +1396,11 @@ notype_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, $3); }
 	| notype_declarator '[' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	/* ??? Yuck.  setattrs is a quick hack.  We can't use
+	   prefix_attributes because $1 only applies to this
+	   declarator.  We assume setspecs has already been done.
+	   setattrs also avoids 5 reduce/reduce conflicts (otherwise multiple
+	   attributes could be recognized here or in `attributes').  */
 	| attributes setattrs notype_declarator
 		{ $$ = $3; }
 	| IDENTIFIER
@@ -1559,8 +1615,8 @@ absdcl1:  /* a nonempty absolute declarator */
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, $2); }
 	| '[' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
-	| attributes setattrs absdcl1
-		{ $$ = $3; }
+	/* ??? It appears we have to support attributes here, however
+	   using prefix_attributes is wrong.  */
 	;
 
 /* at least one statement, the first of which parses without error.  */
