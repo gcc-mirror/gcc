@@ -1,3 +1,7 @@
+Fri Jun 19 02:24:11 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Defined.
+
 Fri Jun 19 02:10:10 1998  John Wehle  (john@feith.com)
 
 	* i386.c (notice_update_cc): Integer conditional moves don't
