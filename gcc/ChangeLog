@@ -1,6 +1,9 @@
 Tue Apr 20 23:38:58 1999  Nathan Sidwell  <nathan@acm.org>
 
-	* Make-lang.in (c-parse.c): Put BISON parameters in correct
+	* objc/Make-lang.in (objc-parse.c): Put BISON parameters in correct
+	order.
+
+	* Makefile.in (c-parse.c): Put BISON parameters in correct
 	order.
 
 Tue Apr 20 16:38:11 1999  Richard Henderson  <rth@cygnus.com>
