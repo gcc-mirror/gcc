@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "function.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
@@ -314,8 +315,6 @@ static rtx last_parm_cleanup_insn;
    the pointer to the initialized object.  */
 
 tree ctor_label;
-
-extern rtx cleanup_label, return_label;
 
 /* If original DECL_RESULT of current function was a register,
    but due to being an addressable named return value, would up
@@ -13509,7 +13508,7 @@ store_parm_decls ()
   declare_function_name ();
 
   /* Initialize the RTL code for the function.  */
-  DECL_SAVED_INSNS (fndecl) = NULL_RTX;
+  DECL_SAVED_INSNS (fndecl) = 0;
   if (! processing_template_decl)
     expand_function_start (fndecl, parms_have_cleanups);
 
@@ -13639,7 +13638,7 @@ finish_function (lineno, flags, nested)
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  rtx last_parm_insn, insns;
+  rtx fn_last_parm_insn, insns;
   /* Label to use if this function is supposed to return a value.  */
   tree no_return_label = NULL_TREE;
   tree decls = NULL_TREE;
@@ -13875,13 +13874,13 @@ finish_function (lineno, flags, nested)
 	  insns = get_insns ();
 	  end_sequence ();
 
-	  last_parm_insn = get_first_nonparm_insn ();
-	  if (last_parm_insn == NULL_RTX)
-	    last_parm_insn = get_last_insn ();
+	  fn_last_parm_insn = get_first_nonparm_insn ();
+	  if (fn_last_parm_insn == NULL_RTX)
+	    fn_last_parm_insn = get_last_insn ();
 	  else
-	    last_parm_insn = previous_insn (last_parm_insn);
+	    fn_last_parm_insn = previous_insn (fn_last_parm_insn);
 
-	  emit_insns_after (insns, last_parm_insn);
+	  emit_insns_after (insns, fn_last_parm_insn);
 
 	  if (! ok_to_optimize_dtor)
 	    expand_end_cond ();
@@ -14183,7 +14182,7 @@ finish_function (lineno, flags, nested)
   if (! nested)
     permanent_allocation (1);
 
-  if (DECL_SAVED_INSNS (fndecl) == NULL_RTX)
+  if (DECL_SAVED_INSNS (fndecl) == 0)
     {
       tree t;
 

@@ -136,7 +136,7 @@ do {								\
 	 tree parm;							\
 	 int i;								\
 	 if (TREE_PUBLIC (DECL) || TARGET_GAS)				\
-	   { extern int current_function_varargs;			\
+	   { 								\
 	     if (TREE_PUBLIC (DECL))					\
 	       {							\
 		 fputs ("\t.EXPORT ", FILE);				\

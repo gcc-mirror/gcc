@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "rtl.h"
 #include "tree.h"
+#include "function.h"
 #include "expr.h"
 #define HAVE_cc0
 #include "conditions.h"

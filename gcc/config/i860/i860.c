@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "recog.h"
 #include "insn-attr.h"
+#include "function.h"
 #include "expr.h"
 
 static rtx find_addr_reg ();

@@ -57,19 +57,11 @@ enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
 enum machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
 enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
-/* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
-   After rtl generation, it is 1 plus the largest register number used.  */
-
-int reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
 
 /* This is *not* reset after each function.  It gives each CODE_LABEL
    in the entire compilation a unique label number.  */
 
 static int label_num = 1;
-
-/* Lowest label number in current function.  */
-
-static int first_label_num;
 
 /* Highest label number in current function.
    Zero means use the value of label_num instead.
@@ -162,58 +154,6 @@ rtx return_address_pointer_rtx;	/* (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM) */
 
 struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
-/* The ends of the doubly-linked chain of rtl for the current function.
-   Both are reset to null at the start of rtl generation for the function.
-   
-   start_sequence saves both of these on `sequence_stack' along with
-   `sequence_rtl_expr' and then starts a new, nested sequence of insns.  */
-
-static rtx first_insn = NULL;
-static rtx last_insn = NULL;
-
-/* RTL_EXPR within which the current sequence will be placed.  Use to
-   prevent reuse of any temporaries within the sequence until after the
-   RTL_EXPR is emitted.  */
-
-tree sequence_rtl_expr = NULL;
-
-/* INSN_UID for next insn emitted.
-   Reset to 1 for each function compiled.  */
-
-static int cur_insn_uid = 1;
-
-/* Line number and source file of the last line-number NOTE emitted.
-   This is used to avoid generating duplicates.  */
-
-static int last_linenum = 0;
-static char *last_filename = 0;
-
-/* A vector indexed by pseudo reg number.  The allocated length
-   of this vector is regno_pointer_flag_length.  Since this
-   vector is needed during the expansion phase when the total
-   number of registers in the function is not yet known,
-   it is copied and made bigger when necessary.  */
-
-char *regno_pointer_flag;
-int regno_pointer_flag_length;
-
-/* Indexed by pseudo register number, if nonzero gives the known alignment
-   for that pseudo (if regno_pointer_flag is set).
-   Allocated in parallel with regno_pointer_flag.  */
-char *regno_pointer_align;
-
-/* Indexed by pseudo register number, gives the rtx for that pseudo.
-   Allocated in parallel with regno_pointer_flag.  */
-
-rtx *regno_reg_rtx;
-
-/* Stack of pending (incomplete) sequences saved by `start_sequence'.
-   Each element describes one pending sequence.
-   The main insn-chain is saved in the last element of the chain,
-   unless the chain is empty.  */
-
-struct sequence_stack *sequence_stack;
-
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
 
@@ -237,12 +177,14 @@ static rtx sequence_result[SEQUENCE_RESULT_SIZE];
 /* During RTL generation, we also keep a list of free INSN rtl codes.  */
 static rtx free_insn;
 
-extern int rtx_equal_function_value_matters;
+#define first_insn (current_function->emit->x_first_insn)
+#define last_insn (current_function->emit->x_last_insn)
+#define cur_insn_uid (current_function->emit->x_cur_insn_uid)
+#define last_linenum (current_function->emit->x_last_linenum)
+#define last_filename (current_function->emit->x_last_filename)
+#define first_label_num (current_function->emit->x_first_label_num)
 
-/* Filename and line number of last line-number note,
-   whether we actually emitted it or not.  */
-extern char *emit_filename;
-extern int emit_lineno;
+extern int rtx_equal_function_value_matters;
 
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
@@ -544,6 +486,7 @@ rtx
 gen_reg_rtx (mode)
      enum machine_mode mode;
 {
+  struct function *f = current_function;
   register rtx val;
 
   /* Don't let anything called after initial flow analysis create new
@@ -575,28 +518,26 @@ gen_reg_rtx (mode)
   /* Make sure regno_pointer_flag and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 
-  if (reg_rtx_no == regno_pointer_flag_length)
+  if (reg_rtx_no == f->emit->regno_pointer_flag_length)
     {
+      int old_size = f->emit->regno_pointer_flag_length;
       rtx *new1;
-      char *new =
-	(char *) savealloc (regno_pointer_flag_length * 2);
-      bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
-      bzero (&new[regno_pointer_flag_length], regno_pointer_flag_length);
-      regno_pointer_flag = new;
+      char *new = (char *) savealloc (old_size * 2);
+      memcpy (new, f->emit->regno_pointer_flag, old_size);
+      memset (new + old_size, 0, old_size);
+      f->emit->regno_pointer_flag = new;
 
-      new = (char *) savealloc (regno_pointer_flag_length * 2);
-      bcopy (regno_pointer_align, new, regno_pointer_flag_length);
-      bzero (&new[regno_pointer_flag_length], regno_pointer_flag_length);
-      regno_pointer_align = new;
+      new = (char *) savealloc (old_size * 2);
+      memcpy (new, f->emit->regno_pointer_align, old_size);
+      memset (new + old_size, 0, old_size);
+      f->emit->regno_pointer_align = new;
 
-      new1 = (rtx *) savealloc (regno_pointer_flag_length * 2 * sizeof (rtx));
-      bcopy ((char *) regno_reg_rtx, (char *) new1,
-	     regno_pointer_flag_length * sizeof (rtx));
-      bzero ((char *) &new1[regno_pointer_flag_length],
-	     regno_pointer_flag_length * sizeof (rtx));
+      new1 = (rtx *) savealloc (old_size * 2 * sizeof (rtx));
+      memcpy (new1, regno_reg_rtx, old_size * sizeof (rtx));
+      memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
-      regno_pointer_flag_length *= 2;
+      f->emit->regno_pointer_flag_length = old_size * 2;
     }
 
   val = gen_rtx_raw_REG (mode, reg_rtx_no);
@@ -1617,44 +1558,6 @@ gen_label_rtx ()
 
 /* For procedure integration.  */
 
-/* Return a newly created INLINE_HEADER rtx.  Should allocate this
-   from a permanent obstack when the opportunity arises.  */
-
-rtx
-gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
-		       last_labelno, max_parm_regnum, max_regnum, args_size,
-		       pops_args, stack_slots, forced_labels, function_flags,
-		       outgoing_args_size, original_arg_vector,
-		       original_decl_initial, regno_rtx, regno_flag,
-		       regno_align, parm_reg_stack_loc)
-     rtx first_insn, first_parm_insn;
-     int first_labelno, last_labelno, max_parm_regnum, max_regnum, args_size;
-     int pops_args;
-     rtx stack_slots;
-     rtx forced_labels;
-     int function_flags;
-     int outgoing_args_size;
-     rtvec original_arg_vector;
-     rtx original_decl_initial;
-     rtvec regno_rtx;
-     char *regno_flag;
-     char *regno_align;
-     rtvec parm_reg_stack_loc;
-{
-  rtx header = gen_rtx_INLINE_HEADER (VOIDmode,
-				      cur_insn_uid++, NULL_RTX,
-				      first_insn, first_parm_insn,
-				      first_labelno, last_labelno,
-				      max_parm_regnum, max_regnum, args_size,
-				      pops_args, stack_slots, forced_labels,
-				      function_flags, outgoing_args_size,
-				      original_arg_vector,
-				      original_decl_initial,
-				      regno_rtx, regno_flag, regno_align,
-				      parm_reg_stack_loc);
-  return header;
-}
-
 /* Install new pointers to the first and last insns in the chain.
    Also, set cur_insn_uid to one higher than the last in use.
    Used for an inline-procedure after copying the insn chain.  */
@@ -1686,29 +1589,18 @@ set_new_first_and_last_label_num (first, last)
   first_label_num = first;
   last_label_num = last;
 }
-
-/* Save all variables describing the current status into the structure *P.
-   This is used before starting a nested function.  */
+
+/* Set the last label number found in the current function.
+   This is used when belatedly compiling an inline function.  */
 
 void
-save_emit_status (p)
-     struct function *p;
+set_new_last_label_num (last)
+     int last;
 {
-  p->reg_rtx_no = reg_rtx_no;
-  p->first_label_num = first_label_num;
-  p->first_insn = first_insn;
-  p->last_insn = last_insn;
-  p->sequence_rtl_expr = sequence_rtl_expr;
-  p->sequence_stack = sequence_stack;
-  p->cur_insn_uid = cur_insn_uid;
-  p->last_linenum = last_linenum;
-  p->last_filename = last_filename;
-  p->regno_pointer_flag = regno_pointer_flag;
-  p->regno_pointer_align = regno_pointer_align;
-  p->regno_pointer_flag_length = regno_pointer_flag_length;
-  p->regno_reg_rtx = regno_reg_rtx;
+  base_label_num = label_num;
+  last_label_num = last;
 }
-
+
 /* Restore all variables describing the current status from the structure *P.
    This is used after a nested function.  */
 
@@ -1716,30 +1608,8 @@ void
 restore_emit_status (p)
      struct function *p;
 {
-  int i;
-
-  reg_rtx_no = p->reg_rtx_no;
-  first_label_num = p->first_label_num;
   last_label_num = 0;
-  first_insn = p->first_insn;
-  last_insn = p->last_insn;
-  sequence_rtl_expr = p->sequence_rtl_expr;
-  sequence_stack = p->sequence_stack;
-  cur_insn_uid = p->cur_insn_uid;
-  last_linenum = p->last_linenum;
-  last_filename = p->last_filename;
-  regno_pointer_flag = p->regno_pointer_flag;
-  regno_pointer_align = p->regno_pointer_align;
-  regno_pointer_flag_length = p->regno_pointer_flag_length;
-  regno_reg_rtx = p->regno_reg_rtx;
-
-  /* Clear our cache of rtx expressions for start_sequence and
-     gen_sequence.  */
-  sequence_element_free_list = 0;
-  for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
-    sequence_result[i] = 0;
-
-  free_insn = 0;
+  clear_emit_caches ();
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared structure.
@@ -2033,7 +1903,7 @@ get_last_insn_anywhere ()
   struct sequence_stack *stack;
   if (last_insn)
     return last_insn;
-  for (stack = sequence_stack; stack; stack = stack->next)
+  for (stack = seq_stack; stack; stack = stack->next)
     if (stack->last != 0)
       return stack->last;
   return 0;
@@ -2498,7 +2368,7 @@ add_insn_after (insn, after)
     last_insn = insn;
   else
     {
-      struct sequence_stack *stack = sequence_stack;
+      struct sequence_stack *stack = seq_stack;
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (after == stack->last)
@@ -2549,7 +2419,7 @@ add_insn_before (insn, before)
     first_insn = insn;
   else
     {
-      struct sequence_stack *stack = sequence_stack;
+      struct sequence_stack *stack = seq_stack;
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (before == stack->first)
@@ -2588,7 +2458,7 @@ remove_insn (insn)
     first_insn = next;
   else
     {
-      struct sequence_stack *stack = sequence_stack;
+      struct sequence_stack *stack = seq_stack;
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (insn == stack->first)
@@ -2611,7 +2481,7 @@ remove_insn (insn)
     last_insn = prev;
   else
     {
-      struct sequence_stack *stack = sequence_stack;
+      struct sequence_stack *stack = seq_stack;
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (insn == stack->last)
@@ -3335,12 +3205,12 @@ start_sequence ()
   else
     tem = (struct sequence_stack *) permalloc (sizeof (struct sequence_stack));
 
-  tem->next = sequence_stack;
+  tem->next = seq_stack;
   tem->first = first_insn;
   tem->last = last_insn;
-  tem->sequence_rtl_expr = sequence_rtl_expr;
+  tem->sequence_rtl_expr = seq_rtl_expr;
 
-  sequence_stack = tem;
+  seq_stack = tem;
 
   first_insn = 0;
   last_insn = 0;
@@ -3356,7 +3226,7 @@ start_sequence_for_rtl_expr (t)
 {
   start_sequence ();
 
-  sequence_rtl_expr = t;
+  seq_rtl_expr = t;
 }
 
 /* Set up the insn chain starting with FIRST as the current sequence,
@@ -3387,12 +3257,12 @@ push_topmost_sequence ()
 
   start_sequence ();
 
-  for (stack = sequence_stack; stack; stack = stack->next)
+  for (stack = seq_stack; stack; stack = stack->next)
     top = stack;
 
   first_insn = top->first;
   last_insn = top->last;
-  sequence_rtl_expr = top->sequence_rtl_expr;
+  seq_rtl_expr = top->sequence_rtl_expr;
 }
 
 /* After emitting to the outer-level insn chain, update the outer-level
@@ -3403,12 +3273,12 @@ pop_topmost_sequence ()
 {
   struct sequence_stack *stack, *top = NULL;
 
-  for (stack = sequence_stack; stack; stack = stack->next)
+  for (stack = seq_stack; stack; stack = stack->next)
     top = stack;
 
   top->first = first_insn;
   top->last = last_insn;
-  /* ??? Why don't we save sequence_rtl_expr here?  */
+  /* ??? Why don't we save seq_rtl_expr here?  */
 
   end_sequence ();
 }
@@ -3429,12 +3299,12 @@ pop_topmost_sequence ()
 void
 end_sequence ()
 {
-  struct sequence_stack *tem = sequence_stack;
+  struct sequence_stack *tem = seq_stack;
 
   first_insn = tem->first;
   last_insn = tem->last;
-  sequence_rtl_expr = tem->sequence_rtl_expr;
-  sequence_stack = tem->next;
+  seq_rtl_expr = tem->sequence_rtl_expr;
+  seq_stack = tem->next;
 
   tem->next = sequence_element_free_list;
   sequence_element_free_list = tem;
@@ -3445,7 +3315,7 @@ end_sequence ()
 int
 in_sequence_p ()
 {
-  return sequence_stack != 0;
+  return seq_stack != 0;
 }
 
 /* Generate a SEQUENCE rtx containing the insns already emitted
@@ -3506,13 +3376,27 @@ gen_sequence ()
 /* Put the various virtual registers into REGNO_REG_RTX.  */
 
 void
-init_virtual_regs ()
+init_virtual_regs (es)
+     struct emit_status *es;
 {
-  regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
-  regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
-  regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
-  regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
-  regno_reg_rtx[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
+  rtx *ptr = es->x_regno_reg_rtx;
+  ptr[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
+  ptr[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
+  ptr[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
+  ptr[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+  ptr[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
+}
+
+void
+clear_emit_caches ()
+{
+  int i;
+
+  /* Clear the start_sequence/gen_sequence cache.  */
+  sequence_element_free_list = 0;
+  for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
+    sequence_result[i] = 0;
+  free_insn = 0;
 }
 
 /* Initialize data structures and variables in this file
@@ -3521,43 +3405,41 @@ init_virtual_regs ()
 void
 init_emit ()
 {
-  int i;
+  struct function *f = current_function;
 
+  f->emit = (struct emit_status *) xmalloc (sizeof (struct emit_status));
   first_insn = NULL;
   last_insn = NULL;
-  sequence_rtl_expr = NULL;
+  seq_rtl_expr = NULL;
   cur_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   last_linenum = 0;
   last_filename = 0;
   first_label_num = label_num;
   last_label_num = 0;
-  sequence_stack = NULL;
+  seq_stack = NULL;
 
-  /* Clear the start_sequence/gen_sequence cache.  */
-  sequence_element_free_list = 0;
-  for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
-    sequence_result[i] = 0;
-  free_insn = 0;
+  clear_emit_caches ();
 
   /* Init the tables that describe all the pseudo regs.  */
 
-  regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
+  f->emit->regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
 
-  regno_pointer_flag 
-    = (char *) savealloc (regno_pointer_flag_length);
-  bzero (regno_pointer_flag, regno_pointer_flag_length);
+  f->emit->regno_pointer_flag 
+    = (char *) savealloc (f->emit->regno_pointer_flag_length);
+  bzero (f->emit->regno_pointer_flag, f->emit->regno_pointer_flag_length);
 
-  regno_pointer_align
-    = (char *) savealloc (regno_pointer_flag_length);
-  bzero (regno_pointer_align, regno_pointer_flag_length);
+  f->emit->regno_pointer_align
+    = (char *) savealloc (f->emit->regno_pointer_flag_length);
+  bzero (f->emit->regno_pointer_align, f->emit->regno_pointer_flag_length);
 
   regno_reg_rtx 
-    = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
-  bzero ((char *) regno_reg_rtx, regno_pointer_flag_length * sizeof (rtx));
+    = (rtx *) savealloc (f->emit->regno_pointer_flag_length * sizeof (rtx));
+  bzero ((char *) regno_reg_rtx,
+	 f->emit->regno_pointer_flag_length * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
-  init_virtual_regs ();
+  init_virtual_regs (f->emit);
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
@@ -3607,8 +3489,6 @@ init_emit_once (line_numbers)
   enum machine_mode double_mode;
 
   no_line_numbers = ! line_numbers;
-
-  sequence_stack = NULL;
 
   /* Compute the word and byte modes.  */
 

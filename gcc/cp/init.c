@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "function.h"
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
@@ -504,7 +505,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
 
-extern tree base_init_expr, rtl_expr_chain;
+extern tree base_init_expr;
 
 void
 emit_base_init (t, immediately)

@@ -154,6 +154,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "function.h"
 #include "insn-config.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -248,8 +249,6 @@ BLOCK_NUM(insn)
     abort ();
   return tmp;
 }
-
-extern rtx forced_labels;
 
 /* Forward declarations */
 

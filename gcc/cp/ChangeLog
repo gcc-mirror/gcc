@@ -1,3 +1,20 @@
+1999-08-09  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in: Update dependencies.
+	* class.c (finish_struct_1): Don't initialize DECL_SAVED_INSNS with
+	NULL_RTX.
+	* decl.c: Include "function.h"
+	(cleanup_label, return_label): Delete declarations.
+	(store_parm_decls):  Don't initialize DECL_SAVED_INSNS with NULL_RTX.
+	(finish_function): Rename last_parm_insn variable to
+	fn_last_parm_insn.  Don't compare DECL_SAVED_INSNS to NULL_RTX.
+	* decl2.c: Include "function.h".
+	(rtl_expr_chain): Delete declaration.
+	* method.c: Include "function.h"
+	* tree.c (build_vbase_pointer_fields): Don't initialize
+	DECL_SAVED_INSNS with NULL_RTX.
+	* typeck.c: Include "function.h"
+
 1999-08-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* semantics.c (begin_function_try_block, finish_function_try_block,

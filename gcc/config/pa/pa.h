@@ -1121,7 +1121,6 @@ extern enum cmp_type hppa_branch_type;
    No definition is equivalent to always zero.  */
 
 extern int may_call_alloca;
-extern int current_function_pretend_args_size;
 
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
@@ -1137,11 +1136,6 @@ extern int current_function_pretend_args_size;
    It should use the frame pointer only.  This is mandatory because
    of alloca; we also take advantage of it to omit stack adjustments
    before returning.  */
-
-/* This declaration is needed due to traditional/ANSI
-   incompatibilities which cannot be #ifdefed away
-   because they occur inside of macros.  Sigh.  */
-extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)			\
   output_function_epilogue (FILE, SIZE)

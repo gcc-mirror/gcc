@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "function.h"
 #include "expr.h"
 #include "toplev.h"
 #include "output.h"

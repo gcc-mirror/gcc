@@ -484,7 +484,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define FUNCTION_PROLOGUE(FILE, SIZE)				\
 {								\
   extern char call_used_regs[];					\
-  extern int current_function_pretend_args_size;		\
   int fsize = ((SIZE) + 7) & ~7;				\
   int nregs, i, fp_used = 0;					\
   for (i = 32, nregs = 0; i < FIRST_PSEUDO_REGISTER; i++)	\
@@ -534,9 +533,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 
-extern int current_function_calls_alloca;
-extern int current_function_pretend_args_size;
-
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
   || current_function_calls_alloca || current_function_pretend_args_size)
@@ -554,8 +550,6 @@ extern int current_function_pretend_args_size;
 #define FUNCTION_EPILOGUE(FILE, SIZE)				\
 {								\
   extern char call_used_regs[];					\
-  extern int current_function_calls_alloca;			\
-  extern int current_function_pretend_args_size;		\
   int fsize = ((SIZE) + 7) & ~7;				\
   int nregs, i, fp_used = 0;					\
   for (i = 32, nregs = 0; i < FIRST_PSEUDO_REGISTER; i++)	\

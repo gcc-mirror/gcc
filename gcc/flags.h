@@ -485,23 +485,6 @@ extern int frame_pointer_needed;
 
 extern int can_reach_end;
 
-/* Nonzero if function being compiled receives nonlocal gotos
-   from nested functions.  */
-
-extern int current_function_has_nonlocal_label;
-
-/* Nonzero if function being compiled has nonlocal gotos to parent
-   function.  */
-
-extern int current_function_has_nonlocal_goto;
-
-/* Nonzero if this function has a computed goto.
-
-   It is computed during find_basic_blocks or during stupid life
-   analysis.  */
-
-extern int current_function_has_computed_jump;
-
 /* Nonzero if GCC must add code to check memory access (used by Checker).  */
 
 extern int flag_check_memory_usage;
@@ -510,9 +493,6 @@ extern int flag_check_memory_usage;
    flag_check_memory_usage).  */
 
 extern int flag_prefix_function_name;
-/* Nonzero if the current function is a thunk, so we should try to cut
-   corners where we can.  */
-extern int current_function_is_thunk;
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern int g_switch_value;

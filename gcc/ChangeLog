@@ -1,3 +1,291 @@
+Mon Aug  9 10:08:50 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in: Update dependencies.
+	* alias.c: Include "function.h"
+	* c-decl.c: Likewise.
+	* caller-save.c: Likewise.
+	* calls.c: Likewise.
+	* combine.c: Likewise.
+	* cse.c: Likewise.
+	* explow.c: Likewise.
+	* final.c: Likewise.
+	* global.c: Likewise.
+	* graph.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* optabs.c: Likewise.
+	* profile.c: Likewise.
+	* recog.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* reload.c: Likewise.
+	* reorg.c: Likewise.
+	* resource.c: Likewise.
+	* sched.c: Likewise.
+	* stupid.c: Likewise.
+	* config/1750a/1750a.c: Likewise.
+	* config/a29k/a29k.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/thumb.c: Likewise.
+	* config/c4x/c4x.c: Likewise.
+	* config/clipper/clipper.c: Likewise.
+	* config/convex/convex.c: Likewise.
+	* config/fx80/fx80.c: Likewise.
+	* config/i860/i860.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/m88k/m88k.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/pyr/pyr.c: Likewise.
+	* config/romp/romp.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/tahoe/tahoe.c: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/we32k/we32k.c: Likewise.
+	* config/sparc/sparc.c: Include "function.h".
+	(mem_min_alignment): Test current_function rather than
+	regno_pointer_align.
+	* config/pa/pa.c: Likewise.
+	(compute_frame_size): Delete declaration of
+	current_function_outgoing_args_size.
+	* config/arc/arc.h (current_function_varargs): Delete declaration.
+	* config/elxsi/elxsi.h (current_function_calls_alloca): Delete
+	declaration.
+	* config/i370/i370.h (current_function_outgoing_args_size): Delete
+	declaration.
+	* config/i386/i386.h (FINALIZE_PIC): Delete declaration of
+	current_function_uses_pic_offset_table.
+	* config/m68k/a-ux.h (FUNCTION_EXTRA_EPILOGUE): Delete declaration
+	of current_function_returns_pointer.
+	* config/m68k/altos3068.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m68k/linux.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m68k/m68kv4.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m68k/mot3300.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m68k/pbb.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m68k/tower-as.h (FUNCTION_EXTRA_EPILOGUE): Likewise.
+	* config/m88k/m88k.c: Include "function.h"
+	(call_used_regs, current_function_pretend_args_size,
+	current_function_outgoing_args_size, frame_pointer_needed): Delete
+	declarations.
+	* config/m88k/m88k.h (current_function_pretend_args_size): Delete
+	declaration.
+	* config/mips/mips.h (current_function_calls_alloca): Delete
+	declaration.
+	* config/mn10200/mn10200.h (current_function_needs_context,
+	rtx_equal_function_value_matters): Delete declarations.
+	* config/ns32k/ns32k (current_function_uses_pic_offset_table,
+	flag_pic): Delete declarations.
+	* config/pa/pa.h (current_function_pretend_args_size,
+	current_function_decl): Delete declarations.
+	* config/pa/som.h (current_function_varargs): Delete declaration.
+	* config/pdp11/pdp11.h (current_function_pretend_args_size): Delete
+	declaration.
+	* config/pyr/pyr.h (current_function_pretend_args_size,
+	current_function_args_size, current_function_calls_alloca): Delete
+	declarations.
+	* config/sh/sh.h (current_function_varargs): Delete declaration.
+	* config/sparc/sparc.h (current_function_outgoing_args_size,
+	current_function_calls_alloca, current_function_decl): Delete
+	declarations.
+	* config/spur/spur.h (current_function_pretend_args_size,
+	current_function_calls_alloca): Delete declarations.
+	* config/v850/v850.c (current_function_outgoing_args_size): Delete
+	declaration.
+	* config/vax/vms.h (current_function_name): Delete declaration.
+	* gcse.c: Include "function.h".
+	(current_function_name, current_function_calls_setjmp): Delete
+	declarations.
+	* haifa-sched.c: Include "function.h".
+	(forced_labels): Delete declaration.
+	* jump.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* genemit.c (main): Make generated file include function.h.
+	* genoutput.c (output_prologue): Likewise.
+
+	* builtins.c (saveregs_value, apply_args_value): Delete variables.
+	* emit-rtl.c (reg_rtx_no, first_label_num, first_insn, last_insn,
+	sequence_rtl_expr, cur_insn_uid, last_linenum, last_filename,
+	regno_pointer_flag, regno_pointer_flag_length, regno_pointer_align,
+	regno_reg_rtx, sequence_stack): Delete variables.  Add accessor
+	macros for some of them.
+	(emit_filename, emit_lineno): Delete declarations.
+	(gen_reg_rtx): Use memset/memcpy instead of bzero/bcopy.  Access
+	regno_pointer_* variables through current_function.
+	(gen_inline_header_rtx): Delete function.
+	(save_emit_status): Delete function.
+	(set_new_last_label_num): New function.
+	(clear_emit_caches): New function.
+	(restore_emit_status): Just clear last_labelnum and call
+	clear_emit_caches.
+	(get_last_insn_anywhere): Variable sequence_stack is now accessed
+	through macro seq_stack.
+	(add_insn_after): Likewise.
+	(add_insn_before): Likewise.
+	(remove_insn): Likewise.
+	(pop_topmost_sequence): Likewise.
+	(in_sequence_p): Likewise.
+	(start_sequence_for_rtl_expr): Likewise.
+	(start_sequence): Likewise, and likewise for
+	sequence_rtl_expr/seq_rtl_expr.
+	(push_topmost_sequence): Likewise.
+	(end_sequence): Likewise.
+	(init_virtual_regs): Now takes a "struct emit_status *" argument.
+	All callers changed.  Store into that pointer instead of globals.
+	(init_emit): Allocate emit elt of current_function.
+	Changes for sequence_rtl_expr/sequence_stack renaming.
+	Call clear_emit_caches instead of doing it in-line.
+	Access regno_pointer_* variables through current_function.
+	(init_emit_once) Don't clear sequence_stack.
+	
+	* expr.c (pending_stack_adjust, inhibit_defer_pop, pending_chain):
+	Delete variables.
+	(arg_pointer_save_area): Delete declaration.
+	(finish_expr_for_function): Renamed from init_queue; no longer static.
+	(init_expr): Don't call init_queue.
+	(save_expr_status, restore_expr_status): Delete functions.
+	(expand_expr): Changes to reflect new layout of struct function.
+	Don't access current_function_check_memory_usage when current_function
+	is 0.
+	* expr.h (forced_labels, save_expr_regs, saveregs_value,
+	apply_args_value, current_function_calls_alloca, inhibit_defer_pop,
+	current_function_outgoing_args_size, current_function_arg_offset_rtx,
+	current_function_uses_const_pool, function_call_count,
+	current_function_uses_pic_offset_table, nonlocal_labels,
+	current_function_internal_arg_pointer, nonlocal_goto_stack_level,
+	current_function_check_memory_usage, nonlocal_goto_handler_slots,
+	pending_stack_adjust, target_temp_slot_level, temp_slot_level): Delete
+	declarations.
+	(finish_expr_for_function): Declare.
+	* flags.h (current_function_has_nonlocal_label,
+	current_function_has_nonlocal_goto, current_function_is_thunk,
+	current_function_has_computed_jump): Delete declarations.
+	* flow.c (forced_labels): Delete declaration.
+	* function.c (current_function_pops_args,
+	current_function_returns_struct, current_function_returns_pcc_struct,
+	current_function_needs_context, current_function_calls_setjmp,
+	current_function_calls_longjmp, current_function_has_nonlocal_label,
+	current_function_has_nonlocal_goto, current_function_is_thunk,
+	current_function_has_computed_jump, current_function_calls_alloca,
+	current_function_contains_functions, current_function_returns_pointer,
+	current_function_epilogue_delay_list, current_function_args_size,
+	current_function_pretend_args_size, current_function_arg_offset_rtx,
+	current_function_outgoing_args_size, current_function_varargs,
+	current_function_stdarg, current_function_args_info, cleanup_label,
+	current_function_name, current_function_uses_const_pool,
+	current_function_instrument_entry_exit, current_function_return_rtx,
+	current_function_uses_pic_offset_table, nonlocal_labels,
+	current_function_internal_arg_pointer, current_function_cannot_inline,
+	current_function_check_memory_usage, function_call_count,
+	nonlocal_goto_handler_slots, nonlocal_goto_handler_labels,
+	nonlocal_goto_stack_level, return_label, save_expr_regs,
+	stack_slot_list, rtl_expr_chain, tail_recursion_label, temp_slots,
+	tail_recursion_reentry, arg_pointer_save_area, frame_offset,
+	context_display, trampoline_list, parm_birth_insn, invalid_stack_slot,
+	last_parm_insn, max_parm_reg, parm_reg_stack_loc, sequence_rtl_expr,
+	temp_slot_level, var_temp_slot_level, target_temp_slot_level):
+	Delete variables.
+	(push_function_context_to): Don't save them.  Don't call
+	save_storage_status, save_emit_status or save_expr_status.
+	(pop_function_context_from): Don't restore them.  Don't call
+	restore_storage_status or restore_expr_status.
+	(get_func_frame_size): New function.
+	(get_frame_size): Use it.
+	(assign_outer_stack_local): Reflect some member name changes in struct
+	function.
+	(put_reg_into_stack): Likewise.
+	(assign_stack_temp_for_type): sequence_rtl_expr was renamed to
+	seq_rtl_expr.
+	(fixup_var_refs): Likewise.
+	(fix_lexical_addr): Likewise.
+	(trampoline_address): Likewise.
+	(prepare_function_start): Clear field inlinable of current_function.
+	(init_function_for_compilation): New function.
+	(expand_dummy_function_end): New function.
+	(expand_function_end): Call finish_expr_for_function.
+	* function.h (struct emit_status): New; fields moved here from struct
+	function and from global variables.  Add accessor macros for some of
+	the fields.
+	(struct expr_status): Likewise.
+	(REGNO_POINTER_ALIGN, REGNO_POINTER_FLAG): Moved here from regs.h.
+	(struct function): Add fields expr and emit, inlinable, inl_emit,
+	original_arg_vector, original_decl_initial, inl_last_parm_insn,
+	inl_max_label_num.  Add many comments.
+	Add accessor macros for all elts of struct function that no longer
+	have a global variable.
+	(cleanup_label, return_label, frame_offset, tail_recursion_label,
+	tail_recursion_reentry, arg_pointer_save_area, rtl_expr_chain,
+	stack_slot_list): Delete declarations.
+	(get_func_frame_size): Declare.
+	(save_expr_status, restore_expr_status, save_emit_status,
+	save_storage_status, restore_storage_status): Delete declarations.
+	(init_virtual_regs): Declare.
+	* output.h (current_function_pops_args,
+	current_function_returns_struct, current_function_returns_pcc_struct,
+	current_function_needs_context, current_function_calls_setjmp,
+	current_function_calls_longjmp, current_function_calls_alloca,
+	current_function_has_nonlocal_label, current_function_varargs,
+	current_function_has_computed_jump, current_function_returns_pointer,
+	current_function_contains_functions, current_function_args_size,
+	current_function_pretend_args_size, current_function_stdarg,
+	current_function_outgoing_args_size, current_function_args_info,
+	current_function_name, current_function_return_rtx,
+	current_function_epilogue_delay_list,
+	current_function_uses_const_pool, current_function_cannot_inline):
+	Delete declarations.
+	* regs.h (reg_rtx_no, regno_pointer_flag, regno_pointer_flag_length,
+	regno_reg_rtx): Delete declaration.
+	(REGNO_POINTER_FLAG): Delete macro.
+	* stmt.c (expand_goto): Changes to reflect that some fields in struct
+	function were renamed.
+	* stor-layout.c (save_storage_status, restore_storage_status): Delete
+	functions.
+	* toplev.c: Include "function.h".
+	(current_function_decl): Delete declaration.
+	(compile_file): Call init_dummy_function_start and
+	expand_dummy_function_end around some initializations that need to
+	emit rtl.
+	(rest_of_compilation): Use DECL_SAVED_INSNS properly.
+	Call init_function_for_compilation.
+	* unroll.c: Include "function.h"
+	(unroll_loop): Access regno_pointer_* variables through
+	current_function.
+
+	* tree.h (struct tree_decl): Add elt f to saved_insns member.
+	(DECL_SAVED_INSNS): use it.
+	(expand_dummy_function_end): Declare.
+	(init_function_for_compilation): Declare.
+	* calls.c (calls_function_1): Change use of DECL_SAVED_INSNS now
+	that it's no longer an INLINE_HEADER.
+	(expand_call): Likewise.
+	* integrate.c (finish_inline): Delete function.
+	(max_parm_reg, parm_reg_stack_loc): Delete declarations.
+	(initialize_for_inline): Delete min_labelno, max_labelno and max_reg
+	args.  Don't generate an INLINE_HEADER rtx, just return the arg
+	vector.  All callers changed.
+	(save_for_inline_copying):  Create a duplicate struct emit_status to
+	hold the emit state for compiling the current function.  Use this and
+	the other new fields in struct function that are for integration
+	instead of an INLINE_HEADER.
+	Use memcpy instead of bcopy.
+	Store the current struct function in DECL_SAVED_INSNS of fndecl.
+	(save_for_inline_nocopy): Similar changes, except no new emit_status
+	is needed here.
+	(expand_inline_function): Get information from function structure,
+	not from an inline header rtx.
+	(output_inline_function): Lose code to extract the necessary
+	information from an inline header; simply put back the function
+	structure into current_function.  Clear its inlinable elt.
+	* rtl.def (INLINE_HEADER): Delete.
+	* rtl.h: Delete all accessors for an INLINE_HEADER.
+	(gen_inline_header_rtx): Delete declaration.
+	(regno_reg_rtx, regno_pointer_align, nonlocal_goto_handler_labels):
+	Delete declarations.
+	(REGNO_POINTER_ALIGN): Delete.
+	(clear_emit_caches): Declare.
+	(set_new_last_label_num): Declare.
+
 Mon Aug  9 01:52:24 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* print-tree.c (print_node): Print base for OFFSET_TYPEs.

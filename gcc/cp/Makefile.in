@@ -257,16 +257,17 @@ lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
-  $(srcdir)/../hash.h
+  $(srcdir)/../hash.h $(srcdir)/../function.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  lex.h decl.h $(EXPR_H) $(srcdir)/../except.h \
+  lex.h decl.h $(EXPR_H) $(srcdir)/../except.h $(srcdir)/../function.h \
   $(srcdir)/../output.h $(srcdir)/../except.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h \
   $(srcdir)/../../include/splay-tree.h $(srcdir)/../varray.h
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/../function.h
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h \
   $(srcdir)/../../include/splay-tree.h
@@ -275,9 +276,10 @@ call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/../function.h
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(srcdir)/../function.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h decl.h \
   $(srcdir)/../flags.h $(srcdir)/../toplev.h $(srcdir)/../convert.h
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h \

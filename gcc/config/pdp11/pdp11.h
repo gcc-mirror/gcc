@@ -684,7 +684,6 @@ maybe ac0 ? - as option someday! */
    No definition is equivalent to always zero.  */
 
 extern int may_call_alloca;
-extern int current_function_pretend_args_size;
 
 #define EXIT_IGNORE_STACK	1
 

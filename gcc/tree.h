@@ -1095,7 +1095,7 @@ struct tree_type
    where the data was actually passed.  */
 #define DECL_INCOMING_RTL(NODE) (DECL_CHECK (NODE)->decl.saved_insns.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
-#define DECL_SAVED_INSNS(NODE) (DECL_CHECK (NODE)->decl.saved_insns.r)
+#define DECL_SAVED_INSNS(NODE) (DECL_CHECK (NODE)->decl.saved_insns.f)
 /* For FUNCTION_DECL, if it is inline,
    holds the size of the stack frame, as an integer.  */
 #define DECL_FRAME_SIZE(NODE) (DECL_CHECK (NODE)->decl.frame_size.i)
@@ -1363,6 +1363,7 @@ struct tree_decl
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For FIELD_DECL, this is DECL_FIELD_SIZE.  */
   union {
+    struct function *f;
     struct rtx_def *r;
     HOST_WIDE_INT i;
   } saved_insns;
@@ -2202,6 +2203,8 @@ extern void setjmp_protect		PROTO ((tree));
 extern void expand_main_function	PROTO ((void));
 extern void mark_varargs		PROTO ((void));
 extern void init_dummy_function_start	PROTO ((void));
+extern void expand_dummy_function_end	PROTO ((void));
+extern void init_function_for_compilation	PROTO ((void));
 extern void init_function_start		PROTO ((tree, char *, int));
 extern void assign_parms		PROTO ((tree, int));
 extern void put_var_into_stack		PROTO ((tree));

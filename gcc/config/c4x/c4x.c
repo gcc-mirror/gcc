@@ -37,6 +37,7 @@
 #include "insn-flags.h"
 #include "output.h"
 #include "tree.h"
+#include "function.h"
 #include "expr.h"
 #include "flags.h"
 #include "loop.h"

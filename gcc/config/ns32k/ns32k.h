@@ -711,7 +711,6 @@ enum reg_class
   int used_regs_buf[8], *bufp = used_regs_buf;			\
   int used_fregs_buf[17], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
-  extern int current_function_uses_pic_offset_table, flag_pic;	\
   MAIN_FUNCTION_PROLOGUE;					\
   for (regno = R0_REGNUM; regno < F0_REGNUM; regno++)		\
     if (regs_ever_live[regno]					\
@@ -836,7 +835,6 @@ enum reg_class
   int used_regs_buf[8], *bufp = used_regs_buf;			\
   int used_fregs_buf[17], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
-  extern int current_function_uses_pic_offset_table, flag_pic;	\
   if (flag_pic && current_function_uses_pic_offset_table)	\
     fprintf (FILE, "\tlprd sb,tos\n");				\
   *fbufp++ = -2;						\
@@ -898,7 +896,6 @@ enum reg_class
 {								\
   int regno;							\
   int offset = -4;						\
-  extern int current_function_uses_pic_offset_table, flag_pic;	\
   for (regno = 0; regno < L1_REGNUM; regno++)			\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
@@ -1196,7 +1193,6 @@ __transfer_from_trampoline ()		\
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
 { register rtx xfooy, xfoo0, xfoo1;					\
   unsigned xfoo2;							\
-  extern int current_function_uses_pic_offset_table, flag_pic;		\
   xfooy = X;								\
   if (flag_pic && ! current_function_uses_pic_offset_table		\
       && global_symbolic_reference_mentioned_p (X, 1))			\
@@ -1240,7 +1236,6 @@ __transfer_from_trampoline ()		\
    when generating PIC code.  It is given that flag_pic is on and
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-extern int current_function_uses_pic_offset_table, flag_pic;
 #define LEGITIMATE_PIC_OPERAND_P(X) \
   (((! current_function_uses_pic_offset_table			\
      && symbolic_reference_mentioned_p (X))?			\

@@ -124,6 +124,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 #include "expr.h"
+#include "function.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "hard-reg-set.h"

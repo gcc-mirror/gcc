@@ -126,10 +126,9 @@ Boston, MA 02111-1307, USA.  */
 /* Return pointer values in both d0 and a0.  */
 
 #undef FUNCTION_EXTRA_EPILOGUE
-#define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)			\
-{								\
-  extern int current_function_returns_pointer;			\
-  if ((current_function_returns_pointer) && 			\
-      ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))\
-    fprintf (FILE, "\tmovel d0,a0\n");				\
+#define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
+{									\
+  if (current_function_returns_pointer					\
+      && ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
+    fprintf (FILE, "\tmovel d0,a0\n");					\
 }

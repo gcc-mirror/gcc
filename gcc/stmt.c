@@ -625,8 +625,8 @@ expand_goto (label)
       tree link;
 
       /* Find the corresponding handler slot for this label.  */
-      handler_slot = p->nonlocal_goto_handler_slots;
-      for (link = p->nonlocal_labels; TREE_VALUE (link) != label;
+      handler_slot = p->x_nonlocal_goto_handler_slots;
+      for (link = p->x_nonlocal_labels; TREE_VALUE (link) != label;
 	   link = TREE_CHAIN (link))
 	handler_slot = XEXP (handler_slot, 1);
       handler_slot = XEXP (handler_slot, 0);
@@ -643,7 +643,7 @@ expand_goto (label)
       if (HAVE_nonlocal_goto)
 	emit_insn (gen_nonlocal_goto (lookup_static_chain (label),
 				      copy_rtx (handler_slot),
-				      copy_rtx (p->nonlocal_goto_stack_level),
+				      copy_rtx (p->x_nonlocal_goto_stack_level),
 				      label_ref));
       else
 #endif
@@ -669,7 +669,7 @@ expand_goto (label)
 					   hard_frame_pointer_rtx));
 	  
 	  /* Restore the stack pointer.  Note this uses fp just restored.  */
-	  addr = p->nonlocal_goto_stack_level;
+	  addr = p->x_nonlocal_goto_stack_level;
 	  if (addr)
 	    addr = replace_rtx (copy_rtx (addr),
 				virtual_stack_vars_rtx,

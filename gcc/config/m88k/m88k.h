@@ -155,7 +155,6 @@ extern enum m88k_instruction classify_integer ();
 
 extern int target_flags;			/* -m compiler switches */
 extern int frame_pointer_needed;		/* current function has a FP */
-extern int current_function_pretend_args_size;	/* args size without ... */
 extern int flag_delayed_branch;			/* -fdelayed-branch */
 extern int flag_pic;				/* -fpic */
 extern char * reg_names[];
@@ -198,13 +197,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.14 $"
+#define VERSION_INFO2   "$Revision: 1.15 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.14 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.15 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */

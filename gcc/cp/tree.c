@@ -1010,7 +1010,7 @@ build_vbase_pointer_fields (rec)
 	  DECL_FIELD_CONTEXT (decl) = rec;
 	  DECL_CLASS_CONTEXT (decl) = rec;
 	  DECL_FCONTEXT (decl) = basetype;
-	  DECL_SAVED_INSNS (decl) = NULL_RTX;
+	  DECL_SAVED_INSNS (decl) = 0;
 	  DECL_FIELD_SIZE (decl) = 0;
 	  DECL_ALIGN (decl) = TYPE_ALIGN (ptr_type_node);
 	  TREE_CHAIN (decl) = vbase_decls;

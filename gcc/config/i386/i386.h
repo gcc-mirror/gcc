@@ -1859,8 +1859,6 @@ while (0)
 #define FINALIZE_PIC							\
 do									\
   {									\
-    extern int current_function_uses_pic_offset_table;			\
-									\
     current_function_uses_pic_offset_table |= profile_flag | profile_block_flag; \
   }									\
 while (0)

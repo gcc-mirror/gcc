@@ -68,58 +68,6 @@ enum memory_use_mode {MEMORY_USE_BAD = 0, MEMORY_USE_RO = 1,
 		      MEMORY_USE_WO = 2, MEMORY_USE_RW = 3,
 		      MEMORY_USE_TW = 6, MEMORY_USE_DONT = 99};
 
-/* List of labels that must never be deleted.  */
-extern rtx forced_labels;
-
-/* List (chain of EXPR_LISTs) of pseudo-regs of SAVE_EXPRs.
-   So we can mark them all live at the end of the function, if stupid.  */
-extern rtx save_expr_regs;
-
-/* Nonzero means __builtin_saveregs has already been done in this function.
-   The value is the pseudoreg containing the value __builtin_saveregs
-   returned.  */
-extern rtx saveregs_value;
-
-/* Similarly for __builtin_apply_args.  */
-extern rtx apply_args_value;
-
-extern int current_function_calls_alloca;
-extern int current_function_outgoing_args_size;
-
-/* This is the offset from the arg pointer to the place where the first
-   anonymous arg can be found, if there is one.  */
-extern rtx current_function_arg_offset_rtx;
-
-/* This is nonzero if the current function uses the constant pool.  */
-extern int current_function_uses_const_pool;
-
-/* This is nonzero if the current function uses pic_offset_table_rtx.  */
-extern int current_function_uses_pic_offset_table;
-
-/* The arg pointer hard register, or the pseudo into which it was copied.  */
-extern rtx current_function_internal_arg_pointer;
-
-/* This is nonzero if memory access checking be enabled in the current
-   function.  */
-extern int current_function_check_memory_usage;
-
-/* Under some ABIs, it is the caller's responsibility to pop arguments
-   pushed for function calls.  A naive implementation would simply pop
-   the arguments immediately after each call.  However, if several
-   function calls are made in a row, it is typically cheaper to pop
-   all the arguments after all of the calls are complete since a
-   single pop instruction can be used.  Therefore, GCC attempts to
-   defer popping the arguments until absolutely necessary.  (For
-   example, at the end of a conditional, the arguments must be popped,
-   since code outside the conditional won't know whether or not the
-   arguments need to be popped.)
-
-   When INHIBIT_DEFER_POP is non-zero, however, the compiler does not
-   attempt to defer pops.  Instead, the stack is popped immediately
-   after each call.  Rather then setting this variable directly, use
-   NO_DEFER_POP and OK_DEFER_POP.  */
-extern int inhibit_defer_pop;
-
 /* Prevent the compiler from deferring stack pops.  See
    inhibit_defer_pop for more information.  */
 #define NO_DEFER_POP (inhibit_defer_pop += 1)
@@ -127,45 +75,6 @@ extern int inhibit_defer_pop;
 /* Allow the compiler to defer stack pops.  See inhibit_defer_pop for
    more information.  */
 #define OK_DEFER_POP (inhibit_defer_pop -= 1)
-
-/* Number of function calls seen so far in current function.  */
-
-extern int function_call_count;
-
-/* List (chain of EXPR_LIST) of stack slots that hold the current handlers
-   for nonlocal gotos.  There is one for every nonlocal label in the function;
-   this list matches the one in nonlocal_labels.
-   Zero when function does not have nonlocal labels.  */
-
-extern rtx nonlocal_goto_handler_slots;
-
-/* RTX for stack slot that holds the stack pointer value to restore
-   for a nonlocal goto.
-   Zero when function does not have nonlocal labels.  */
-
-extern rtx nonlocal_goto_stack_level;
-
-/* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
-   (labels to which there can be nonlocal gotos from nested functions)
-   in this function.  */
-
-#ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
-extern tree nonlocal_labels;
-#endif
-
-/* Number of units that we should eventually pop off the stack.
-   These are the arguments to function calls that have already returned.  */
-extern int pending_stack_adjust;
-
-/* When temporaries are created by TARGET_EXPRs, they are created at
-   this level of temp_slot_level, so that they can remain allocated
-   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
-   of TARGET_EXPRs.  */
-extern int target_temp_slot_level;
-
-/* Current level for normal temporaries.  */
-
-extern int temp_slot_level;
 
 #ifdef TREE_CODE /* Don't lose if tree.h not included.  */
 /* Structure to record the size of a sequence of arguments
@@ -755,6 +664,9 @@ extern void init_expr_once PROTO((void));
 
 /* This is run at the start of compiling a function.  */
 extern void init_expr PROTO((void));
+
+/* This is run at the end of compiling a function.  */
+extern void finish_expr_for_function PROTO((void));
 
 /* Use protect_from_queue to convert a QUEUED expression
    into something that you can put immediately into an instruction.  */
