@@ -1,3 +1,8 @@
+2003-08-19  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Makefile.in (STAGESTUFF): Move cc1obj$(exeext) from here ...
+	* objc/config-lang.in (stagestuff): ... to here.
+
 2003-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11946

@@ -30,7 +30,7 @@ language="objc"
 
 compilers="cc1obj\$(exeext)"
 
-stagestuff=""
+stagestuff="cc1obj\$(exeext)"
 
 target_libs=target-libobjc
 
