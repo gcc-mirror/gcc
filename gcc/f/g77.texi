@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-03-15
+@set last-update 1999-04-02
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -828,6 +828,8 @@ without royalty; alteration is not permitted.
 Work on GNU Fortran is still being done mostly by its author,
 James Craig Burley (@email{@value{email-burley}}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
+(He has a web page at @uref{@value{www-burley}}.)
+
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
 

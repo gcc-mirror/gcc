@@ -1,3 +1,8 @@
+Fri Apr  2 12:49:12 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Funding GNU Fortran): Dude's got a web page.
+	* root.texi: Ditto.
+
 Tue Mar 30 12:04:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * sta.c (ffesta_ffebad_1sp, ffesta_ffebad_1st, ffesta_ffebad_2st):
