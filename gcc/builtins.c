@@ -4549,6 +4549,17 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   return build_fold_indirect_ref (addr);
 }
 
+/* Like std_gimplify_va_arg_expr, but uses pass-by-reference.  */
+ 
+tree
+ind_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
+{
+  tree t;
+  t = build_pointer_type (type);
+  t = std_gimplify_va_arg_expr (valist, t, pre_p, post_p);
+  return build_fold_indirect_ref (t);
+}
+
 /* Return a dummy expression of type TYPE in order to keep going after an
    error.  */
 

@@ -2299,11 +2299,7 @@ arc_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
      than 8 bytes are passed by reference.  */
 
   if (AGGREGATE_TYPE_P (type) || int_size_in_bytes (type) > 8)
-    {
-      tree type_ptr = build_pointer_type (type);
-      tree addr = std_gimplify_va_arg_expr (valist, type_ptr, pre_p, post_p);
-      return build_fold_indirect_ref (addr);
-    }
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
