@@ -1,3 +1,7 @@
+2003-05-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Update Kean Johnston.
+
 2003-05-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (save_fpregs_{si,di}): Add length attribute.
