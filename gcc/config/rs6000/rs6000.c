@@ -3676,7 +3676,7 @@ rs6000_output_load_toc_table (file, reg)
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
       asm_fprintf (file, "\t{liu|lis} %s,", reg_names[reg]);
       assemble_name (file, buf);
-      asm_fprintf (file, "@ha\n");
+      fputs ("@ha\n", file);
       asm_fprintf (file, "\t{cal|la} %s,", reg_names[reg]);
       assemble_name (file, buf);
       asm_fprintf (file, "@l(%s)\n", reg_names[reg]);
@@ -4609,32 +4609,28 @@ output_function_profiler (file, labelno)
       fprintf (file, "\tmflr %s\n", reg_names[0]);
       if (flag_pic == 1)
 	{
-	  fprintf (file, "\tbl _GLOBAL_OFFSET_TABLE_@local-4\n");
-	  fprintf (file, "\t%s %s,4(%s)\n",
-		   (TARGET_NEW_MNEMONICS) ? "stw" : "st",
-		   reg_names[0], reg_names[1]);
-	  fprintf (file, "\tmflr %s\n", reg_names[11]);
-	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
-		   reg_names[0]);
+	  fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
+	  asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
+	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[0]);
 	  assemble_name (file, buf);
-	  fprintf (file, "@got(%s)\n", reg_names[11]);
+	  asm_fprintf (file, "@got(%s)\n", reg_names[11]);
 	}
 #if TARGET_ELF
       else if (flag_pic > 1 || TARGET_RELOCATABLE)
 	{
-	  fprintf (file, "\t%s %s,4(%s)\n",
-		   (TARGET_NEW_MNEMONICS) ? "stw" : "st",
-		   reg_names[0], reg_names[1]);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
 	  rs6000_pic_func_labelno = rs6000_pic_labelno;
 	  rs6000_output_load_toc_table (file, 11);
-	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
-		   reg_names[11]);
+	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[11]);
 	  assemble_name (file, buf);
-	  fprintf (file, "X(%s)\n", reg_names[11]);
-	  fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+	  asm_fprintf (file, "X(%s)\n", reg_names[11]);
+	  asm_fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
 	  assemble_name (file, buf);
-	  fprintf (file, "X = .-.LCTOC1\n");
-	  fprintf (file, "\t.long ");
+	  fputs ("X = .-.LCTOC1\n", file);
+	  fputs ("\t.long ", file);
 	  assemble_name (file, buf);
 	  fputs ("\n\t.previous\n", file);
 	}
@@ -4643,7 +4639,7 @@ output_function_profiler (file, labelno)
 	{
 	  asm_fprintf (file, "\t{liu|lis} %s,", reg_names[11]);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "@ha\n");
+	  fputs ("@ha\n", file);
 	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n", reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\t{cal|la} %s,", reg_names[0]);
 	  assemble_name (file, buf);

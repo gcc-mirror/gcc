@@ -1,3 +1,10 @@
+Sun Jun  7 12:27:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (restore_stack_block): Generate MEM and specify mode.
+	* rs6000.h (STACK_SAVEAREA_MODE): SAVE_FUNCTION is VOIDmode.
+	* rs6000.c (rs6000_output_load_toc_table): Use fputs.
+	(output_function_profiler): Use asm_fprintf and fputs.
+
 Sat Jun  6 12:17:12 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gencheck.c: Remove redundant stdio.h include.  Add a definition
