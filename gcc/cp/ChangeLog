@@ -12,7 +12,7 @@
 
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* decl.c: Move the q after the %.
+	* decl.c (bad_specifiers): Move the q after the %.
 
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
