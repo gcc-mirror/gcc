@@ -112,6 +112,7 @@ proc libjava_init { args } {
     global TOOL_EXECUTABLE
     global original_ld_library_path
     global env objdir
+    global env gcc_version
 
     if { $libjava_initialized == 1 } { return; }
 
@@ -126,6 +127,11 @@ proc libjava_init { args } {
 	    }
 	}
     }
+
+    # Determine the version so we can find the libgcj jar file.
+    set text [eval exec "$GCJ_UNDER_TEST --version 2>@ stdout"]
+    regexp -- "gcj \[^ \]+ (\[^ \]+) .*" $text ignore gcc_version
+    verbose "jar file is libgcj-$gcc_version.jar"
 
     # The -B is so we find libgcj.spec.
     set text [eval exec "$GCJ_UNDER_TEST -B$objdir/../ -v 2>@ stdout"]
@@ -222,6 +228,7 @@ proc libjava_arguments {{mode compile}} {
     global runtests
     global env
     global tool_root_dir
+    global gcc_version
 
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
@@ -292,9 +299,9 @@ proc libjava_arguments {{mode compile}} {
     verbose "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
 
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
+    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj-$gcc_version.jar"
     global env
-    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
+    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj-$gcc_version.jar"
 
     if {$mode == "link"} {
 	global wrapper_file wrap_compile_flags;
