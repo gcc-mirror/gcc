@@ -1,3 +1,21 @@
+2003-02-11  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.h (enum optab_index): Add new OTI_pow and OTI_atan2.
+	(pow_optab, atan2_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize pow_optab and atan2_optab.
+	* genopinit.c (optabs): Implement pow_optab and atan2_optab
+	using pow?f3 and atan2?f3 patterns.
+	* builtins.c (expand_errno_check): New function to update errno
+	if necessary, split out from expand_builtin_mathfn.
+	(expand_builtin_mathfn): Use expand_errno_check.
+	(expand_builtin_mathfn_2): New function to handle expanding binary
+	math functions, reusing the code in expand_errno_check.
+	(expand_builtin): Handle the pow and atan2 math built-ins,
+	BUILT_IN_{POW,POWF,POWL,ATAN2,ATAN2F,ATAN2L} via the new function
+	expand_builtin_mathfn_2.
+
+	* doc/md.texi: Document new pow?f3 and atan2?f3 patterns.
+
 Tue Feb 11 19:03:22 MET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx): Fix folding of

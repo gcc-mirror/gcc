@@ -5512,6 +5512,8 @@ init_optabs ()
   smax_optab = init_optab (SMAX);
   umin_optab = init_optab (UMIN);
   umax_optab = init_optab (UMAX);
+  pow_optab = init_optab (UNKNOWN);
+  atan2_optab = init_optab (UNKNOWN);
 
   /* These three have codes assigned exclusively for the sake of
      have_insn_for.  */

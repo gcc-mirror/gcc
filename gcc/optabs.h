@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,6 +108,10 @@ enum optab_index
   OTI_umin,
   /* Unsigned maximum value */
   OTI_umax,
+  /* Power */
+  OTI_pow,
+  /* Arc tangent of y/x */
+  OTI_atan2,
 
   /* Move instruction.  */
   OTI_mov,
@@ -202,6 +206,8 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define smax_optab (optab_table[OTI_smax])
 #define umin_optab (optab_table[OTI_umin])
 #define umax_optab (optab_table[OTI_umax])
+#define pow_optab (optab_table[OTI_pow])
+#define atan2_optab (optab_table[OTI_atan2])
 
 #define mov_optab (optab_table[OTI_mov])
 #define movstrict_optab (optab_table[OTI_movstrict])

@@ -1,6 +1,6 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -105,6 +105,8 @@ static const char * const optabs[] =
   "smax_optab->handlers[$A].insn_code = CODE_FOR_$(max$F$a3$)",
   "umin_optab->handlers[$A].insn_code = CODE_FOR_$(umin$I$a3$)",
   "umax_optab->handlers[$A].insn_code = CODE_FOR_$(umax$I$a3$)",
+  "pow_optab->handlers[$A].insn_code = CODE_FOR_$(pow$a3$)",
+  "atan2_optab->handlers[$A].insn_code = CODE_FOR_$(atan2$a3$)",
   "neg_optab->handlers[$A].insn_code = CODE_FOR_$(neg$P$a2$)",
   "negv_optab->handlers[(int) $A].insn_code =\n\
     neg_optab->handlers[(int) $A].insn_code = CODE_FOR_$(neg$F$a2$)",
