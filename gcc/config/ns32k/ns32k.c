@@ -467,7 +467,7 @@ print_operand (file, x, code)
 #endif
 	output_address (XEXP (x, 0));
     }
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != DImode)
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
       if (GET_MODE (x) == DFmode)
 	{ 
