@@ -32,6 +32,7 @@ extern int constrain_operands		PROTO((int, int));
 extern int memory_address_p		PROTO((enum machine_mode, rtx));
 extern int strict_memory_address_p	PROTO((enum machine_mode, rtx));
 extern int validate_replace_rtx		PROTO((rtx, rtx, rtx));
+extern int validate_replace_src		PROTO((rtx, rtx, rtx));
 extern int reg_fits_class_p		PROTO((rtx, enum reg_class, int,
 					       enum machine_mode));
 extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));

@@ -1364,7 +1364,7 @@ rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \
    function.h defaults.h insn-codes.h expr.h hard-reg-set.h regs.h \
-   xcoffout.h output.h c-pragma.h toplev.h except.h
+   xcoffout.h output.h c-pragma.h toplev.h except.h dbxout.h
 function.o : function.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h
@@ -1413,9 +1413,9 @@ jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h regs.h \
 stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h
 
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h \
-   real.h insn-config.h insn-codes.h $(RECOG_H) expr.h
+   real.h insn-config.h insn-codes.h $(RECOG_H) expr.h toplev.h output.h
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h \
-   real.h insn-config.h insn-codes.h $(RECOG_H) expr.h basic-block.h
+   real.h insn-config.h insn-codes.h $(RECOG_H) expr.h basic-block.h output.h
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h regs.h toplev.h
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \

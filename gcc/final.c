@@ -2276,7 +2276,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
 	{
 	  int align = LABEL_TO_ALIGNMENT (insn);
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 	  int max_skip = LABEL_TO_MAX_SKIP (insn);
+#endif
 
 	  if (align && NEXT_INSN (insn))
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN

@@ -141,7 +141,7 @@ yyy
 
 #include "config.h"
 /* Must precede rtl.h for FFS.  */
-#include <stdio.h>
+#include "system.h"
 
 #include "rtl.h"
 #include "regs.h"
@@ -151,6 +151,7 @@ yyy
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
+#include "output.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc gmalloc
@@ -541,7 +542,7 @@ static char *grealloc                 PROTO ((char *, unsigned int));
 static char *gcse_alloc               PROTO ((unsigned long));
 static void alloc_gcse_mem            PROTO ((rtx));
 static void free_gcse_mem             PROTO ((void));
-static void dump_cuid_table           PROTO ((FILE *));
+extern void dump_cuid_table           PROTO ((FILE *));
 
 static void alloc_reg_set_mem         PROTO ((int));
 static void free_reg_set_mem          PROTO ((void));
@@ -590,7 +591,7 @@ static void free_rd_mem               PROTO ((void));
 static void compute_kill_rd           PROTO ((void));
 static void handle_rd_kill_set        PROTO ((rtx, int, int));
 static void compute_rd                PROTO ((void));
-static void dump_rd_table             PROTO ((FILE *, char *, sbitmap *));
+extern void dump_rd_table             PROTO ((FILE *, char *, sbitmap *));
 
 static void alloc_avail_expr_mem      PROTO ((int, int));
 static void free_avail_expr_mem       PROTO ((void));
@@ -610,7 +611,7 @@ static int one_classic_gcse_pass      PROTO ((rtx, int));
 
 static void alloc_cprop_mem           PROTO ((int, int));
 static void free_cprop_mem            PROTO ((void));
-static void dump_cprop_data           PROTO ((FILE *));
+extern void dump_cprop_data           PROTO ((FILE *));
 static void compute_transp            PROTO ((rtx, int, sbitmap *, int));
 static void compute_cprop_local_properties PROTO ((void));
 static void compute_cprop_avinout     PROTO ((void));
@@ -624,7 +625,7 @@ static int one_cprop_pass             PROTO ((rtx, int));
 
 static void alloc_pre_mem             PROTO ((int, int));
 static void free_pre_mem              PROTO ((void));
-static void dump_pre_data             PROTO ((FILE *));
+extern void dump_pre_data             PROTO ((FILE *));
 static void compute_pre_local_properties PROTO ((void));
 static void compute_pre_avinout       PROTO ((void));
 static void compute_pre_antinout      PROTO ((void));
@@ -786,7 +787,9 @@ static void
 compute_can_copy ()
 {
   int i;
+#ifndef AVOID_CCMODE_COPIES
   rtx reg,insn;
+#endif
   char *free_point = (char *) oballoc (1);
 
   bzero (can_copy_p, NUM_MACHINE_MODES);
@@ -918,7 +921,7 @@ free_gcse_mem ()
   free (mem_set_in_block);
 }
 
-static void
+void
 dump_cuid_table (file)
      FILE *file;
 {
@@ -1014,7 +1017,7 @@ static rtx record_set_insn;
 
 static void
 record_set_info (dest, setter)
-     rtx dest, setter;
+     rtx dest, setter ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
@@ -1823,14 +1826,14 @@ hash_scan_set (pat, insn, set_p)
 
 static void
 hash_scan_clobber (x, insn)
-     rtx x, insn;
+     rtx x ATTRIBUTE_UNUSED, insn ATTRIBUTE_UNUSED;
 {
   /* Currently nothing to do.  */
 }
 
 static void
 hash_scan_call (x, insn)
-     rtx x, insn;
+     rtx x ATTRIBUTE_UNUSED, insn ATTRIBUTE_UNUSED;
 {
   /* Currently nothing to do.  */
 }
@@ -1977,7 +1980,7 @@ static rtx last_set_insn;
 
 static void
 record_last_set_info (dest, setter)
-     rtx dest, setter;
+     rtx dest, setter ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
@@ -2338,7 +2341,7 @@ repeat:
 
 static void
 mark_call (pat, insn)
-     rtx pat, insn;
+     rtx pat ATTRIBUTE_UNUSED, insn;
 {
   mem_last_set = INSN_CUID (insn);
 }
@@ -2466,7 +2469,7 @@ handle_rd_kill_set (insn, regno, bb)
     }
 }
 
-static void
+void
 dump_rd_table (file, title, bmap)
      FILE *file;
      char *title;
@@ -3321,7 +3324,7 @@ free_cprop_mem ()
 
 /* Dump copy/const propagation data.  */
 
-static void
+void
 dump_cprop_data (file)
      FILE *file;
 {
@@ -3915,7 +3918,7 @@ free_pre_mem ()
 
 /* Dump PRE data.  */
 
-static void
+void
 dump_pre_data (file)
      FILE *file;
 {
@@ -4323,7 +4326,9 @@ pre_insert_insn (expr, bb)
 
   if (GET_CODE (insn) == JUMP_INSN)
     {
+#ifdef HAVE_cc0
       rtx note;
+#endif
 
       /* If this is a jump table, then we can't insert stuff here.  Since
 	 we know the previous real insn must be the tablejump, we insert

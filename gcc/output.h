@@ -171,6 +171,9 @@ extern void make_function_rtl		PROTO((tree));
 extern void declare_weak		PROTO ((tree));
 #endif /* TREE_CODE */
 
+/* Emit any pending weak declarations.  */
+extern void weak_finish			PROTO ((void));
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
    or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,

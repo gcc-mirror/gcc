@@ -27,14 +27,8 @@ Boston, MA 02111-1307, USA.  */
    be replaced with something better designed.  */
 
 #include "config.h"
-
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "system.h"
+#include <signal.h>
 
 #include "rtl.h"
 #include "regs.h"
@@ -46,25 +40,16 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "insn-codes.h"
 #include "recog.h"
-#include "output.h"
+#include "toplev.h"
 
 #undef MAX			/* sys/param.h may also define these */
 #undef MIN
 
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/file.h>
-#include <ctype.h>
 #include "tree.h"
 #include "expr.h"
 #include "flags.h"
 #include "reload.h"
-
-#ifndef R_OK
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-#endif
+#include "output.h"
 
 #if defined(USG) || !defined(HAVE_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
@@ -78,19 +63,8 @@ Boston, MA 02111-1307, USA.  */
 #define STAB_CODE_TYPE int
 #endif
 
-extern void   abort ();
-extern int    atoi ();
-extern char  *getenv ();
 extern char  *mktemp ();
- 
-extern rtx    adj_offsettable_operand ();
-extern rtx    copy_to_reg ();
-extern void   error ();
 extern tree   lookup_name ();
-extern void   pfatal_with_name ();
-extern void   warning ();
-
-extern FILE  *asm_out_file;
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order

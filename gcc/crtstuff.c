@@ -150,7 +150,7 @@ __do_global_dtors_aux ()
 
 /* Stick a call to __do_global_dtors_aux into the .fini section.  */
 
-static void
+static void __attribute__ ((__unused__))
 fini_dummy ()
 {
   asm (FINI_SECTION_ASM_OP);
@@ -173,7 +173,7 @@ frame_dummy ()
   __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 
-static void
+static void __attribute__ ((__unused__))
 init_dummy ()
 {
   asm (INIT_SECTION_ASM_OP);
@@ -335,7 +335,7 @@ __do_global_ctors_aux ()
 
 /* Stick a call to __do_global_ctors_aux into the .init section.  */
 
-static void
+static void __attribute__ ((__unused__))
 init_dummy ()
 {
   asm (INIT_SECTION_ASM_OP);
@@ -407,6 +407,9 @@ asm (TEXT_SECTION_ASM_OP);
    not an SVR4-style .init section.  __do_global_ctors can be non-static
    in this case because we protect it with -hidden_symbol.  */
 static func_ptr __CTOR_END__[];
+#ifdef EH_FRAME_SECTION_ASM_OP
+extern void __frame_dummy (void);
+#endif
 void
 __do_global_ctors ()
 {
