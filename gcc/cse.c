@@ -3929,9 +3929,9 @@ simplify_plus_minus (code, mode, op0, op1)
   rtx ops[8];
   int negs[8];
   rtx result, tem;
-  int n_ops = 2, input_ops = 2;
-  int i, j, k;
+  int n_ops = 2, input_ops = 2, input_consts = 0, n_consts = 0;
   int first = 1, negate = 0, changed;
+  int i, j;
 
   bzero (ops, sizeof ops);
   
@@ -3969,6 +3969,7 @@ simplify_plus_minus (code, mode, op0, op1)
 
 	  case CONST:
 	    ops[i] = XEXP (ops[i], 0);
+	    input_consts++;
 	    changed = 1;
 	    break;
 
@@ -4035,17 +4036,20 @@ simplify_plus_minus (code, mode, op0, op1)
 
   /* Pack all the operands to the lower-numbered entries and give up if
      we didn't reduce the number of operands we had.  Make sure we
-     count a CONST as two operands.  */
+     count a CONST as two operands.  If we have the same number of
+     operands, but have made more CONSTs than we had, this is also
+     an improvement, so accept it.  */
 
-  for (i = 0, j = 0, k = 0; j < n_ops; j++)
+  for (i = 0, j = 0; j < n_ops; j++)
     if (ops[j] != 0)
       {
 	ops[i] = ops[j], negs[i++] = negs[j];
 	if (GET_CODE (ops[j]) == CONST)
-	  k++;
+	  n_consts++;
       }
 
-  if (i + k >= input_ops)
+  if (i + n_consts > input_ops
+      || (i + n_consts == input_ops && n_consts <= input_consts))
     return 0;
 
   n_ops = i;
