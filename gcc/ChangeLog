@@ -1,3 +1,10 @@
+Fri Jan 23 09:39:36 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c: Add -dM command line option to dump RTL after the
+	machine dependent reorganisation pass, if there is one.
+	Reorganise RTL dump code, so that only one file handle is
+	needed. 
+
 Mon Jan 26 12:09:42 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* except.c (check_exception_handler_labels): Disable warning when

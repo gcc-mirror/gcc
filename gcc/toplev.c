@@ -163,6 +163,9 @@ extern void dump_sched_info ();
 extern void dump_local_alloc ();
 extern void regset_release_memory ();
 
+extern void print_rtl ();
+extern void print_rtl_with_bb ();
+
 void rest_of_decl_compilation ();
 void error_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void error_with_decl PVPROTO((tree decl, char *s, ...));
@@ -264,7 +267,12 @@ int sched2_dump = 0;
 int jump2_opt_dump = 0;
 int dbr_sched_dump = 0;
 int flag_print_asm_name = 0;
+#ifdef STACK_REGS
 int stack_reg_dump = 0;
+#endif
+#ifdef MACHINE_DEPENDENT_REORG
+int mach_dep_reorg_dump = 0;
+#endif
 
 /* Name for output file of assembly code, specified with -o.  */
 
@@ -947,23 +955,7 @@ struct { char *string; int *variable; int on_value;} W_options[] =
 
 FILE *asm_out_file;
 FILE *aux_info_file;
-FILE *rtl_dump_file;
-FILE *jump_opt_dump_file;
-FILE *addressof_dump_file;
-FILE *cse_dump_file;
-FILE *loop_dump_file;
-FILE *cse2_dump_file;
-FILE *branch_prob_dump_file;
-FILE *flow_dump_file;
-FILE *combine_dump_file;
-FILE *regmove_dump_file;
-FILE *sched_dump_file;
-FILE *local_reg_dump_file;
-FILE *global_reg_dump_file;
-FILE *sched2_dump_file;
-FILE *jump2_opt_dump_file;
-FILE *dbr_sched_dump_file;
-FILE *stack_reg_dump_file;
+FILE *rtl_dump_file = NULL;
 
 /* Time accumulators, to count the total time spent in various passes.  */
 
@@ -1122,38 +1114,8 @@ fatal_insn (message, insn)
     fflush (asm_out_file);
   if (aux_info_file)
     fflush (aux_info_file);
-  if (rtl_dump_file)
+  if (rtl_dump_file != NULL)
     fflush (rtl_dump_file);
-  if (jump_opt_dump_file)
-    fflush (jump_opt_dump_file);
-  if (addressof_dump_file)
-    fflush (addressof_dump_file);
-  if (cse_dump_file)
-    fflush (cse_dump_file);
-  if (loop_dump_file)
-    fflush (loop_dump_file);
-  if (cse2_dump_file)
-    fflush (cse2_dump_file);
-  if (flow_dump_file)
-    fflush (flow_dump_file);
-  if (combine_dump_file)
-    fflush (combine_dump_file);
-  if (regmove_dump_file)
-    fflush (regmove_dump_file);
-  if (sched_dump_file)
-    fflush (sched_dump_file);
-  if (local_reg_dump_file)
-    fflush (local_reg_dump_file);
-  if (global_reg_dump_file)
-    fflush (global_reg_dump_file);
-  if (sched2_dump_file)
-    fflush (sched2_dump_file);
-  if (jump2_opt_dump_file)
-    fflush (jump2_opt_dump_file);
-  if (dbr_sched_dump_file)
-    fflush (dbr_sched_dump_file);
-  if (stack_reg_dump_file)
-    fflush (stack_reg_dump_file);
   fflush (stdout);
   fflush (stderr);
   abort ();
@@ -2183,22 +2145,96 @@ output_lang_identify (asm_out_file)
 }
 
 /* Routine to open a dump file.  */
-
-static FILE *
-open_dump_file (base_name, suffix)
-     char *base_name;
+static void
+open_dump_file (suffix, function_name)
      char *suffix;
+     char *function_name;
 {
-  FILE *f;
-  char *dumpname = (char *) alloca (strlen (base_name) + strlen (suffix) + 1);
+  char *dumpname;
 
-  strcpy (dumpname, base_name);
-  strcat (dumpname, suffix);
-  f = fopen (dumpname, "w");
-  if (f == 0)
-    pfatal_with_name (dumpname);
-  return f;
+  TIMEVAR
+    (dump_time,
+     {
+       dumpname = (char *) xmalloc (strlen (dump_base_name) + strlen (suffix) + 1);
+
+       if (rtl_dump_file != NULL)
+	 fclose (rtl_dump_file);
+  
+       strcpy (dumpname, dump_base_name);
+       strcat (dumpname, suffix);
+       
+       rtl_dump_file = fopen (dumpname, "a");
+       
+       if (rtl_dump_file == NULL)
+	 pfatal_with_name (dumpname);
+       
+       free (dumpname);
+
+       if (function_name)
+	 fprintf (rtl_dump_file, "\n;; Function %s\n\n", function_name);
+     });
+  
+  return;
 }
+
+/* Routine to close a dump file.  */
+static void
+close_dump_file (func, insns)
+     void (*func)(FILE *, rtx);
+     rtx    insns;
+{
+  TIMEVAR
+    (dump_time,
+     {
+       if (func)
+	 func (rtl_dump_file, insns);
+       
+       fflush (rtl_dump_file);
+       fclose (rtl_dump_file);
+       
+       rtl_dump_file = NULL;
+     });
+
+  return;
+}
+
+/* Routine to dump rtl into a file.  */
+static void
+dump_rtl (suffix, decl, func, insns)
+     char *suffix;
+     tree   decl;
+     void (*func)(FILE *, rtx);
+     rtx    insns;
+{
+  open_dump_file (suffix, decl_printable_name (decl, 2));
+  close_dump_file (func, insns);
+}
+
+/* Routine to empty a dump file.  */
+static void
+clean_dump_file (suffix)
+     char * suffix;
+{
+  char * dumpname;
+
+  dumpname = (char *) xmalloc (strlen (dump_base_name) + strlen (suffix) + 1);
+
+  strcpy (dumpname, dump_base_name);
+  strcat (dumpname, suffix);
+       
+  rtl_dump_file = fopen (dumpname, "w");
+
+  if (rtl_dump_file == NULL)
+    pfatal_with_name (dumpname);       
+
+  free (dumpname);
+
+  fclose (rtl_dump_file);
+  rtl_dump_file = NULL;
+  
+  return;
+}
+
 
 /* Compile an entire file of output from cpp, named NAME.
    Write a file of assembly output and various debugging dumps.  */
@@ -2291,76 +2327,46 @@ compile_file (name)
 	pfatal_with_name (aux_info_file_name);
     }
 
-  /* If rtl dump desired, open the output file.  */
+  /* Clear the dump files file.  */
   if (rtl_dump)
-    rtl_dump_file = open_dump_file (dump_base_name, ".rtl");
-
-  /* If jump_opt dump desired, open the output file.  */
+    clean_dump_file (".rtl");
   if (jump_opt_dump)
-    jump_opt_dump_file = open_dump_file (dump_base_name, ".jump");
-
-  /* If addressof dump desired, open the output file.  */
+    clean_dump_file (".jump");
   if (addressof_dump)
-    addressof_dump_file = open_dump_file (dump_base_name, ".addressof");
-
-  /* If cse dump desired, open the output file.  */
+    clean_dump_file (".addressof");
   if (cse_dump)
-    cse_dump_file = open_dump_file (dump_base_name, ".cse");
-
-  /* If loop dump desired, open the output file.  */
+    clean_dump_file (".cse");
   if (loop_dump)
-    loop_dump_file = open_dump_file (dump_base_name, ".loop");
-
-  /* If cse2 dump desired, open the output file.  */
+    clean_dump_file (".loop");
   if (cse2_dump)
-    cse2_dump_file = open_dump_file (dump_base_name, ".cse2");
-
-  /* If branch_prob dump desired, open the output file.  */
+    clean_dump_file (".cse2");
   if (branch_prob_dump)
-    branch_prob_dump_file = open_dump_file (dump_base_name, ".bp");
-
-  /* If flow dump desired, open the output file.  */
+    clean_dump_file (".bp");
   if (flow_dump)
-    flow_dump_file = open_dump_file (dump_base_name, ".flow");
-
-  /* If combine dump desired, open the output file.  */
+    clean_dump_file (".flow");
   if (combine_dump)
-    combine_dump_file = open_dump_file (dump_base_name, ".combine");
-
-  /* If regmove dump desired, open the output file.  */
+    clean_dump_file (".combine");
   if (regmove_dump)
-    regmove_dump_file = open_dump_file (dump_base_name, ".regmove");
-
-  /* If scheduling dump desired, open the output file.  */
+    clean_dump_file (".regmove");
   if (sched_dump)
-    sched_dump_file = open_dump_file (dump_base_name, ".sched");
-
-  /* If local_reg dump desired, open the output file.  */
+    clean_dump_file (".sched");
   if (local_reg_dump)
-    local_reg_dump_file = open_dump_file (dump_base_name, ".lreg");
-
-  /* If global_reg dump desired, open the output file.  */
+    clean_dump_file (".lreg");
   if (global_reg_dump)
-    global_reg_dump_file = open_dump_file (dump_base_name, ".greg");
-
-  /* If 2nd scheduling dump desired, open the output file.  */
+    clean_dump_file (".greg");
   if (sched2_dump)
-    sched2_dump_file = open_dump_file (dump_base_name, ".sched2");
-
-  /* If jump2_opt dump desired, open the output file.  */
+    clean_dump_file (".sched2");
   if (jump2_opt_dump)
-    jump2_opt_dump_file = open_dump_file (dump_base_name, ".jump2");
-
-  /* If dbr_sched dump desired, open the output file.  */
+    clean_dump_file (".jump2");
   if (dbr_sched_dump)
-    dbr_sched_dump_file = open_dump_file (dump_base_name, ".dbr");
-
+    clean_dump_file (".dbr");
 #ifdef STACK_REGS
-
-  /* If stack_reg dump desired, open the output file.  */
   if (stack_reg_dump)
-    stack_reg_dump_file = open_dump_file (dump_base_name, ".stack");
-
+    clean_dump_file (".stack");
+#endif
+#ifdef MACHINE_DEPENDENT_REORG
+  if (mach_dep_reorg_dump)
+    clean_dump_file (".mach");
 #endif
 
   /* Open assembler code output file.  */
@@ -2775,8 +2781,15 @@ compile_file (name)
   /* Output some stuff at end of file if nec.  */
 
   end_final (dump_base_name);
-  end_branch_prob (branch_prob_dump_file);
-
+   
+  if (branch_prob_dump)
+    open_dump_file (".bp", NULL);
+   
+  TIMEVAR (dump_time, end_branch_prob (rtl_dump_file));
+   
+  if (branch_prob_dump)
+    close_dump_file (NULL, NULL_RTX);
+   
 #ifdef ASM_FILE_END
   ASM_FILE_END (asm_out_file);
 #endif
@@ -2794,61 +2807,12 @@ compile_file (name)
 	unlink (aux_info_file_name);
     }
 
-  if (rtl_dump)
-    fclose (rtl_dump_file);
-
-  if (jump_opt_dump)
-    fclose (jump_opt_dump_file);
-
-  if (addressof_dump)
-    fclose (addressof_dump_file);
-
-  if (cse_dump)
-    fclose (cse_dump_file);
-
-  if (loop_dump)
-    fclose (loop_dump_file);
-
-  if (cse2_dump)
-    fclose (cse2_dump_file);
-
-  if (branch_prob_dump)
-    fclose (branch_prob_dump_file);
-
-  if (flow_dump)
-    fclose (flow_dump_file);
-
   if (combine_dump)
     {
-      dump_combine_total_stats (combine_dump_file);
-      fclose (combine_dump_file);
+      open_dump_file (".combine", NULL);
+      TIMEVAR (dump_time, dump_combine_total_stats (rtl_dump_file));
+      close_dump_file (NULL, NULL_RTX);
     }
-
-  if (regmove_dump)
-    fclose (regmove_dump_file);
-
-  if (sched_dump)
-    fclose (sched_dump_file);
-
-  if (local_reg_dump)
-    fclose (local_reg_dump_file);
-
-  if (global_reg_dump)
-    fclose (global_reg_dump_file);
-
-  if (sched2_dump)
-    fclose (sched2_dump_file);
-
-  if (jump2_opt_dump)
-    fclose (jump2_opt_dump_file);
-
-  if (dbr_sched_dump)
-    fclose (dbr_sched_dump_file);
-
-#ifdef STACK_REGS
-  if (stack_reg_dump)
-    fclose (stack_reg_dump_file);
-#endif
 
   /* Close non-debugging input and output files.  Take special care to note
      whether fclose returns an error, since the pages might still be on the
@@ -3045,15 +3009,14 @@ rest_of_compilation (decl)
       /* Dump the rtl code if we are dumping rtl.  */
 
       if (rtl_dump)
-	TIMEVAR (dump_time,
-		 {
-		   fprintf (rtl_dump_file, "\n;; Function %s\n\n",
-			    (*decl_printable_name) (decl, 2));
-		   if (DECL_SAVED_INSNS (decl))
-		     fprintf (rtl_dump_file, ";; (integrable)\n\n");
-		   print_rtl (rtl_dump_file, insns);
-		   fflush (rtl_dump_file);
-		 });
+	{
+	  open_dump_file (".rtl", decl_printable_name (decl, 2));
+	  
+	  if (DECL_SAVED_INSNS (decl))
+	    fprintf (rtl_dump_file, ";; (integrable)\n\n");
+	  
+	  close_dump_file (print_rtl, insns);
+	}
 
       /* If we can, defer compiling inlines until EOF.
 	 save_for_inline_copying can be extremely expensive.  */
@@ -3244,29 +3207,19 @@ rest_of_compilation (decl)
 
   /* Dump rtl code after jump, if we are doing that.  */
 
-  if (jump_opt_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (jump_opt_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       print_rtl (jump_opt_dump_file, insns);
-	       fflush (jump_opt_dump_file);
-	     });
+    if (jump_opt_dump)
+      dump_rtl (".jump", decl, print_rtl, insns);
 
   /* Perform common subexpression elimination.
      Nonzero value from `cse_main' means that jumps were simplified
      and some code may now be unreachable, so do
      jump optimization again.  */
 
-  if (cse_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (cse_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
   if (optimize > 0)
     {
+      if (cse_dump)
+	open_dump_file (".cse", decl_printable_name (decl, 2));
+
       TIMEVAR (cse_time, reg_scan (insns, max_reg_num (), 1));
 
       if (flag_thread_jumps)
@@ -3274,129 +3227,104 @@ rest_of_compilation (decl)
 	TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 1));
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
-					 0, cse_dump_file));
+					 0, rtl_dump_file));
       TIMEVAR (cse_time, delete_dead_from_cse (insns, max_reg_num ()));
 
       if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
+
+      /* Dump rtl code after cse, if we are doing that.  */
+      
+      if (cse_dump)
+	close_dump_file (print_rtl, insns);
     }
-
-  /* Dump rtl code after cse, if we are doing that.  */
-
-  if (cse_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl (cse_dump_file, insns);
-	       fflush (cse_dump_file);
-	     });
 
   purge_addressof (insns);
   reg_scan (insns, max_reg_num (), 1);
 
   if (addressof_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       print_rtl (addressof_dump_file, insns);
-	       fflush (addressof_dump_file);
-	     });
-
-  if (loop_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (loop_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
+    dump_rtl (".addressof", decl, print_rtl, insns);
+  
   /* Move constant computations out of loops.  */
 
   if (optimize > 0)
     {
-      TIMEVAR (loop_time,
-	       {
-		 if (flag_rerun_loop_opt)
-		   {
-		      /* We only want to perform unrolling once.  */
-
-		      loop_optimize (insns, loop_dump_file, 0);
-
-		      /* The regscan pass may not be necessary, but let's
-			 be safe until we can prove otherwise.  */
-		      reg_scan (insns, max_reg_num (), 1);
-		   }
-		 loop_optimize (insns, loop_dump_file, flag_unroll_loops);
-	       });
+      if (loop_dump)
+	open_dump_file (".loop", decl_printable_name (decl, 2));
+	
+      TIMEVAR
+	(loop_time,
+	 {
+	   if (flag_rerun_loop_opt)
+	     {
+	       /* We only want to perform unrolling once.  */
+	       
+	       loop_optimize (insns, rtl_dump_file, 0);
+	       
+	       /* The regscan pass may not be necessary, but let's
+		  be safe until we can prove otherwise.  */
+	       reg_scan (insns, max_reg_num (), 1);
+	     }
+	   loop_optimize (insns, rtl_dump_file, flag_unroll_loops);
+	 });
+      
+      /* Dump rtl code after loop opt, if we are doing that.  */
+      
+      if (loop_dump)
+	close_dump_file (print_rtl, insns);
     }
 
-  /* Dump rtl code after loop opt, if we are doing that.  */
-
-  if (loop_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl (loop_dump_file, insns);
-	       fflush (loop_dump_file);
-	     });
-
-  if (cse2_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (cse2_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
-  if (optimize > 0 && flag_rerun_cse_after_loop)
+  if (optimize > 0)
     {
-      /* Running another jump optimization pass before the second
-	 cse pass sometimes simplifies the RTL enough to allow
-	 the second CSE pass to do a better job.  Jump_optimize can change
-	 max_reg_num so we must rerun reg_scan afterwards.
-	 ??? Rework to not call reg_scan so often.  */
-      TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-      TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
+      if (cse2_dump)
+	open_dump_file (".cse2", decl_printable_name (decl, 2));
+      
+      if (flag_rerun_cse_after_loop)
+	{
+	  /* Running another jump optimization pass before the second
+	     cse pass sometimes simplifies the RTL enough to allow
+	     the second CSE pass to do a better job.  Jump_optimize can change
+	     max_reg_num so we must rerun reg_scan afterwards.
+	     ??? Rework to not call reg_scan so often.  */
+	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
+	  TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
+	  
+	  TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
+	  TIMEVAR (cse2_time, tem = cse_main (insns, max_reg_num (),
+					      1, rtl_dump_file));
+	  if (tem)
+	    TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
+	}
 
-      TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
-      TIMEVAR (cse2_time, tem = cse_main (insns, max_reg_num (),
-					  1, cse2_dump_file));
-      if (tem)
-	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
+      if (flag_thread_jumps)
+	{
+	  /* This pass of jump threading straightens out code
+	     that was kinked by loop optimization.  */
+	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
+	  TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
+	}
+      
+      /* Dump rtl code after cse, if we are doing that.  */
+      
+      if (cse2_dump)
+	close_dump_file (print_rtl, insns);
     }
-
-  if (optimize > 0 && flag_thread_jumps)
-    {
-      /* This pass of jump threading straightens out code
-         that was kinked by loop optimization.  */
-      TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-      TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
-    }
-  /* Dump rtl code after cse, if we are doing that.  */
-
-  if (cse2_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl (cse2_dump_file, insns);
-	       fflush (cse2_dump_file);
-	     });
-
-  if (branch_prob_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (branch_prob_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
+  
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
-    TIMEVAR (branch_prob_time,
-	     {
-	       branch_prob (insns, branch_prob_dump_file);
-	     });
-
-  if (branch_prob_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl (branch_prob_dump_file, insns);
-	       fflush (branch_prob_dump_file);
-	     });
+    {
+      if (branch_prob_dump)
+	open_dump_file (".bp", decl_printable_name (decl, 2));
+    
+      TIMEVAR
+	(branch_prob_time,
+	 {
+	   branch_prob (insns, rtl_dump_file);
+	 });
+      
+      if (branch_prob_dump)
+	close_dump_file (print_rtl, insns);
+    }
+  
   /* We are no longer anticipating cse in this function, at least.  */
 
   cse_not_expected = 1;
@@ -3414,19 +3342,15 @@ rest_of_compilation (decl)
      because doing the flow analysis makes some of the dump.  */
 
   if (flow_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (flow_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
+    open_dump_file (".flow", decl_printable_name (decl, 2));
+  
   if (obey_regdecls)
     {
       TIMEVAR (flow_time,
 	       {
 		 regclass (insns, max_reg_num ());
 		 stupid_life_analysis (insns, max_reg_num (),
-				       flow_dump_file);
+				       rtl_dump_file);
 	       });
     }
   else
@@ -3435,7 +3359,7 @@ rest_of_compilation (decl)
 	 and write some of the results to dump file.  */
 
       TIMEVAR (flow_time, flow_analysis (insns, max_reg_num (),
-					 flow_dump_file));
+					 rtl_dump_file));
       if (warn_uninitialized)
 	{
 	  uninitialized_vars_warning (DECL_INITIAL (decl));
@@ -3446,75 +3370,52 @@ rest_of_compilation (decl)
   /* Dump rtl after flow analysis.  */
 
   if (flow_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl_with_bb (flow_dump_file, insns);
-	       fflush (flow_dump_file);
-	     });
-
+    close_dump_file (print_rtl_with_bb, insns);
+  
   /* If -opt, try combining insns through substitution.  */
 
   if (optimize > 0)
-    TIMEVAR (combine_time, combine_instructions (insns, max_reg_num ()));
-
-  /* Dump rtl code after insn combination.  */
-
-  if (combine_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (combine_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       dump_combine_stats (combine_dump_file);
-	       print_rtl_with_bb (combine_dump_file, insns);
-	       fflush (combine_dump_file);
-	     });
-
-  if (regmove_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (regmove_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
+    {
+      TIMEVAR (combine_time, combine_instructions (insns, max_reg_num ()));
+      
+      /* Dump rtl code after insn combination.  */
+      
+      if (combine_dump)
+	dump_rtl (".combine", decl, print_rtl_with_bb, insns);
+    }
 
   /* Register allocation pre-pass, to reduce number of moves
      necessary for two-address machines.  */
   if (optimize > 0 && flag_regmove)
-    TIMEVAR (regmove_time, regmove_optimize (insns, max_reg_num (),
-					     regmove_dump_file));
-
-  if (regmove_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl_with_bb (regmove_dump_file, insns);
-	       fflush (regmove_dump_file);
-	     });
+    {
+      if (regmove_dump)
+	open_dump_file (".regmove", decl_printable_name (decl, 2));
+      
+      TIMEVAR (regmove_time, regmove_optimize (insns, max_reg_num (),
+					       rtl_dump_file));
+      
+      if (regmove_dump)
+	close_dump_file (print_rtl_with_bb, insns);
+    }
 
   /* Print function header into sched dump now
      because doing the sched analysis makes some of the dump.  */
 
-  if (sched_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (sched_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	     });
-
   if (optimize > 0 && flag_schedule_insns)
     {
+      if (sched_dump)
+	open_dump_file (".sched", decl_printable_name (decl, 2));
+      
       /* Do control and data sched analysis,
 	 and write some of the results to dump file.  */
 
-      TIMEVAR (sched_time, schedule_insns (sched_dump_file));
+      TIMEVAR (sched_time, schedule_insns (rtl_dump_file));
+      
+      /* Dump rtl after instruction scheduling.  */
+      
+      if (sched_dump)
+	close_dump_file (print_rtl_with_bb, insns);
     }
-
-  /* Dump rtl after instruction scheduling.  */
-
-  if (sched_dump)
-    TIMEVAR (dump_time,
-	     {
-	       print_rtl_with_bb (sched_dump_file, insns);
-	       fflush (sched_dump_file);
-	     });
 
   /* Unless we did stupid register allocation,
      allocate pseudo-regs that are used only within 1 basic block.  */
@@ -3529,20 +3430,17 @@ rest_of_compilation (decl)
   /* Dump rtl code after allocating regs within basic blocks.  */
 
   if (local_reg_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (local_reg_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       dump_flow_info (local_reg_dump_file);
-	       dump_local_alloc (local_reg_dump_file);
-	       print_rtl_with_bb (local_reg_dump_file, insns);
-	       fflush (local_reg_dump_file);
-	     });
+    {
+      open_dump_file (".lreg", decl_printable_name (decl, 2));
+      
+      TIMEVAR (dump_time, dump_flow_info (rtl_dump_file));
+      TIMEVAR (dump_time, dump_local_alloc (rtl_dump_file));
+      
+      close_dump_file (print_rtl_with_bb, insns);
+    }
 
   if (global_reg_dump)
-    TIMEVAR (dump_time,
-	     fprintf (global_reg_dump_file, "\n;; Function %s\n\n",
-		      (*decl_printable_name) (decl, 2)));
+    open_dump_file (".greg", decl_printable_name (decl, 2));
 
   /* Save the last label number used so far, so reorg can tell
      when it's safe to kill spill regs.  */
@@ -3555,18 +3453,16 @@ rest_of_compilation (decl)
   TIMEVAR (global_alloc_time,
 	   {
 	     if (!obey_regdecls)
-	       failure = global_alloc (global_reg_dump_file);
+	       failure = global_alloc (rtl_dump_file);
 	     else
-	       failure = reload (insns, 0, global_reg_dump_file);
+	       failure = reload (insns, 0, rtl_dump_file);
 	   });
 
   if (global_reg_dump)
-    TIMEVAR (dump_time,
-	     {
-	       dump_global_regs (global_reg_dump_file);
-	       print_rtl_with_bb (global_reg_dump_file, insns);
-	       fflush (global_reg_dump_file);
-	     });
+    {
+      TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
+      close_dump_file (print_rtl_with_bb, insns);
+    }
 
   if (failure)
     goto exit_rest_of_compilation;
@@ -3587,25 +3483,17 @@ rest_of_compilation (decl)
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       if (sched2_dump)
-	TIMEVAR (dump_time,
-		 {
-		   fprintf (sched2_dump_file, "\n;; Function %s\n\n",
-			    (*decl_printable_name) (decl, 2));
-		 });
+	open_dump_file (".sched2", decl_printable_name (decl, 2));
 
       /* Do control and data sched analysis again,
 	 and write some more of the results to dump file.  */
 
-      TIMEVAR (sched2_time, schedule_insns (sched2_dump_file));
+      TIMEVAR (sched2_time, schedule_insns (rtl_dump_file));
 
       /* Dump rtl after post-reorder instruction scheduling.  */
 
       if (sched2_dump)
-	TIMEVAR (dump_time,
-		 {
-		   print_rtl_with_bb (sched2_dump_file, insns);
-		   fflush (sched2_dump_file);
-		 });
+	close_dump_file (print_rtl_with_bb, insns);
     }
 
 #ifdef LEAF_REGISTERS
@@ -3622,22 +3510,19 @@ rest_of_compilation (decl)
   if (optimize > 0)
     {
       TIMEVAR (jump_time, jump_optimize (insns, 1, 1, 0));
+      
+      /* Dump rtl code after jump, if we are doing that.  */
+
+      if (jump2_opt_dump)
+	dump_rtl (".jump2", decl, print_rtl_with_bb, insns);
     }
-
-  /* Dump rtl code after jump, if we are doing that.  */
-
-  if (jump2_opt_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (jump2_opt_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       print_rtl_with_bb (jump2_opt_dump_file, insns);
-	       fflush (jump2_opt_dump_file);
-	     });
 
   /* If a machine dependent reorganization is needed, call it.  */
 #ifdef MACHINE_DEPENDENT_REORG
    MACHINE_DEPENDENT_REORG (insns);
+
+   if (mach_dep_reorg_dump)
+     dump_rtl (".mach", decl, print_rtl_with_bb, insns);
 #endif
 
   /* If a scheduling pass for delayed branches is to be done,
@@ -3647,16 +3532,9 @@ rest_of_compilation (decl)
   if (optimize > 0 && flag_delayed_branch)
     {
       TIMEVAR (dbr_sched_time, dbr_schedule (insns, dbr_sched_dump_file));
+      
       if (dbr_sched_dump)
-	{
-	  TIMEVAR (dump_time,
-		 {
-		   fprintf (dbr_sched_dump_file, "\n;; Function %s\n\n",
-			    (*decl_printable_name) (decl, 2));
-		   print_rtl_with_bb (dbr_sched_dump_file, insns);
-		   fflush (dbr_sched_dump_file);
-		 });
-	}
+	dump_rtl (".dbr", decl, print_rtl_with_bb, insns);
     }
 #endif
 
@@ -3668,16 +3546,9 @@ rest_of_compilation (decl)
 
 #ifdef STACK_REGS
   TIMEVAR (stack_reg_time, reg_to_stack (insns, stack_reg_dump_file));
+
   if (stack_reg_dump)
-    {
-      TIMEVAR (dump_time,
-	       {
-		 fprintf (stack_reg_dump_file, "\n;; Function %s\n\n",
-		          (*decl_printable_name) (decl, 2));
-		 print_rtl_with_bb (stack_reg_dump_file, insns);
-		 fflush (stack_reg_dump_file);
-	       });
-    }
+    dump_rtl (".stack", decl, print_rtl_with_bb, insns);
 #endif
 
   /* Now turn the rtl into assembler code.  */
@@ -3956,14 +3827,21 @@ main (argc, argv, envp)
  		    cse_dump = 1, cse2_dump = 1;
  		    sched_dump = 1;
  		    sched2_dump = 1;
+#ifdef STACK_REGS
 		    stack_reg_dump = 1;
+#endif
+#ifdef MACHINE_DEPENDENT_REORG
+		    mach_dep_reorg_dump = 1;
+#endif
 		    break;
 		  case 'b':
 		    branch_prob_dump = 1;
 		    break;
+#ifdef STACK_REGS		    
 		  case 'k':
 		    stack_reg_dump = 1;
 		    break;
+#endif
 		  case 'c':
 		    combine_dump = 1;
 		    break;
@@ -3994,6 +3872,11 @@ main (argc, argv, envp)
 		  case 'm':
 		    flag_print_mem = 1;
 		    break;
+#ifdef MACHINE_DEPENDENT_REORG
+		  case 'M':
+		    mach_dep_reorg_dump = 1;
+		    break;
+#endif
 		  case 'p':
 		    flag_print_asm_name = 1;
 		    break;
@@ -4023,6 +3906,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'A':
 		    flag_debug_asm = 1;
+		    break;
+		  default:
+		    warning ("unrecognised gcc debugging option: %c", p[-1]);
 		    break;
 		  }
 	    }
