@@ -2427,6 +2427,8 @@ propagate_deps (bb, pred_deps)
 	    succ_rl->sets = concat_INSN_LIST (pred_rl->sets, succ_rl->sets);
 	    succ_rl->clobbers = concat_INSN_LIST (pred_rl->clobbers,
 						  succ_rl->clobbers);
+	    succ_rl->uses_length += pred_rl->uses_length;
+	    succ_rl->clobbers_length += pred_rl->clobbers_length;
 	  });
 	IOR_REG_SET (&succ_deps->reg_last_in_use, &pred_deps->reg_last_in_use);
 
