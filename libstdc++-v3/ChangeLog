@@ -1,3 +1,7 @@
+2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
+
+	* aclocal.m4 (GLIBCPP_INCLUDES): Include backward.
+
 2001-08-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/collate_wchar_t_members.cc: Guard

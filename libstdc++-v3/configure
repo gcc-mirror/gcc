@@ -17395,7 +17395,8 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 # Export all the include and flag information to makefiles.
 
   # Root level of the build directory include sources.
-  GLIBCPP_INCLUDES="-I${glibcpp_builddir}/include/${target_alias} -I${glibcpp_builddir}/include"
+  GLIBCPP_INCLUDES="-I${glibcpp_builddir}/include/${target_alias} -I${glibcpp_builddir}/include \
+		    -I${glibcpp_builddir}/include/backward"
 
   # Passed down for canadian crosses.
   if test x"$CANADIAN" = xyes; then
