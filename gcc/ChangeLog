@@ -1,3 +1,11 @@
+2002-07-29  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* Makefile.in (C_OBJS): Include c-pretty-print.o
+	(c-pretty-print.o): Add depency rule.
+	* pretty-print.h: Add more macros.
+	* c-pretty-print.c: New file.
+	* c-pretty-print.h: Likewise.
+
 2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.h (__internal_ev_mwhgumian): Cast vector
