@@ -1,3 +1,11 @@
+2003-06-19  Matt Austern  <austern@apple.com>
+
+	PR c++/11228
+	* g++.dg/anew1.C: New test.
+	* g++.dg/anew2.C: New test.
+	* g++.dg/anew3.C: New test.
+	* g++.dg/anew4.C: New test.
+	
 2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/simd-5.c: Don't XFAIL on H8.

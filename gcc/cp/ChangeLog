@@ -1,3 +1,11 @@
+2003-06-19  Matt Austern  <austern@apple.com>
+
+	PR c++/11228
+	* init.c (build_zero_init): Assert that number of array elements
+	is an integer constant.
+	(build_default_init) Don't use build_zero_init for arrays with
+	variable number of elements.
+	
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
 	* cp-tree.h: Remove duplicated declarations.
