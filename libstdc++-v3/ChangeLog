@@ -1,3 +1,8 @@
+2001-08-10  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Add
+	dummy default argument to the non-limit implementation.
+
 2001-08-10   Gunter Winkler gunter.winkler@mathematik.tu-chemnitz.de
 
 	* include/bits/std_complex.h (complex<long double>::operator*=,
