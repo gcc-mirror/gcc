@@ -1944,8 +1944,10 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	if (TREE_CONSTANT (init)
 	    && ilength >= 10 && JPRIMITIVE_TYPE_P (element_type))
 	  {
-	    tree init_decl = build_decl (VAR_DECL, generate_name (),
-					 TREE_TYPE (init));
+	    tree init_decl;
+	    push_obstacks (&permanent_obstack, &permanent_obstack);
+	    init_decl = build_decl (VAR_DECL, generate_name (),
+				    TREE_TYPE (init));
 	    pushdecl_top_level (init_decl);
 	    TREE_STATIC (init_decl) = 1;
 	    DECL_INITIAL (init_decl) = init;
@@ -1953,6 +1955,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    TREE_READONLY (init_decl) = 1;
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    make_decl_rtl (init_decl, NULL, 1);
+	    pop_obstacks ();
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
