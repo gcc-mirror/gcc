@@ -408,6 +408,11 @@ extern int i386_pe_dllimport_name_p (const char *);
   while (0)
 #endif /* HAVE_GAS_WEAK */
 
+/* FIXME: SUPPORTS_WEAK && TARGET_HAVE_NAMED_SECTIONS is true,
+   but for .jcr section to work we also need crtbegin and crtend
+   objects.  */
+#define TARGET_USE_JCR_SECTION 0
+
 /* Decide whether it is safe to use a local alias for a virtual function
    when constructing thunks.  */
 #undef TARGET_USE_LOCAL_THUNK_ALIAS_P

@@ -9575,3 +9575,9 @@ option.  The default is to have no target-specific format checks.
 If defined, this macro is the number of entries in
 @code{TARGET_FORMAT_TYPES}.
 @end defmac
+
+@defmac TARGET_USE_JCR_SECTION
+This macro determines whether to use the JCR section to register Java
+classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both
+SUPPORTS_WEAK and TARGET_HAVE_NAMED_SECTIONS are true, else 0.
+@end defmac
