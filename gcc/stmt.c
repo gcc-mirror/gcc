@@ -1564,15 +1564,9 @@ expand_value_return (rtx val)
 static void
 expand_null_return_1 (void)
 {
-  rtx end_label;
-
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
-
-  end_label = return_label;
-  if (end_label == 0)
-     end_label = return_label = gen_label_rtx ();
-  emit_jump (end_label);
+  emit_jump (return_label);
 }
 
 /* Generate RTL to evaluate the expression RETVAL and return it
