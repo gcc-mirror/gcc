@@ -817,7 +817,7 @@ extern enum cmp_type hppa_branch_type;
 #endif
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-    do { tree fntype = DECL_RESULT (DECL);	 			\
+    do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
 	 tree tree_type = TREE_TYPE (DECL);				\
 	 tree parm;							\
 	 int i;								\
