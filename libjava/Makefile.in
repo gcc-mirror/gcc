@@ -398,6 +398,7 @@ java/awt/Graphics.java \
 java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
 java/awt/GridBagConstraints.java \
+java/awt/GridBagLayout.java \
 java/awt/GridLayout.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -891,6 +892,8 @@ javax/swing/text/MutableAttributeSet.java \
 javax/swing/text/StyledDocument.java \
 javax/swing/text/StyledEditorKit.java \
 javax/swing/text/TextAction.java \
+javax/swing/text/html/HTML.java \
+javax/swing/text/html/parser/ParserDelegator.java \
 javax/swing/tree/TreeNode.java \
 javax/swing/tree/AbstractLayoutCache.java \
 javax/swing/tree/DefaultMutableTreeNode.java \
@@ -2171,7 +2174,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -2482,8 +2485,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/Graphics2D.P .deps/java/awt/GraphicsConfigTemplate.P \
 .deps/java/awt/GraphicsConfiguration.P .deps/java/awt/GraphicsDevice.P \
 .deps/java/awt/GraphicsEnvironment.P \
-.deps/java/awt/GridBagConstraints.P .deps/java/awt/GridLayout.P \
-.deps/java/awt/HeadlessException.P \
+.deps/java/awt/GridBagConstraints.P .deps/java/awt/GridBagLayout.P \
+.deps/java/awt/GridLayout.P .deps/java/awt/HeadlessException.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/ImageCapabilities.P .deps/java/awt/Insets.P \
 .deps/java/awt/ItemSelectable.P .deps/java/awt/JobAttributes.P \
@@ -3390,7 +3393,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/text/Style.P .deps/javax/swing/text/StyledDocument.P \
 .deps/javax/swing/text/StyledEditorKit.P \
 .deps/javax/swing/text/TextAction.P .deps/javax/swing/text/View.P \
-.deps/javax/swing/text/ViewFactory.P \
+.deps/javax/swing/text/ViewFactory.P .deps/javax/swing/text/html/HTML.P \
+.deps/javax/swing/text/html/parser/ParserDelegator.P \
 .deps/javax/swing/tree/AbstractLayoutCache.P \
 .deps/javax/swing/tree/DefaultMutableTreeNode.P \
 .deps/javax/swing/tree/DefaultTreeCellEditor.P \

@@ -37,9 +37,14 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.image.ImageObserver;
+import java.awt.image.renderable.RenderableImage;
 
-//import java.util.Map;
+import java.text.AttributedCharacterIterator;
+
+import java.util.Map;
 
 /**
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
@@ -68,40 +73,28 @@ public abstract class Graphics2D extends Graphics
   public abstract boolean drawImage(Image image, AffineTransform xform,
 				    ImageObserver obs);
 
-  /*
   public abstract void drawImage(BufferedImage image,
-				 BufferedImageOp op,
+				 BufferedImage op,
 				 int x,
 				 int y);
-  */
 
-  /*
   public abstract void drawRenderedImage(RenderedImage image,
 					 AffineTransform xform);
-  */
 
-  /*
   public abstract void drawRenderableImage(RenderableImage image,
                                            AffineTransform xform);
-  */
 
   public abstract void drawString(String text, int x, int y);
 
   public abstract void drawString(String text, float x, float y);
     
-  /*
   public abstract void drawString(AttributedCharacterIterator iterator,
                                   int x, int y);
-  */
 
-  /*
   public abstract void drawString(AttributedCharacterIterator iterator,
 				  float x, float y);
-  */
 
-  /*
-  public abstract void drawGlyphVector(GlyphVector g, float x, float y);
-  */
+  // public abstract void drawGlyphVector(GlyphVector g, float x, float y);
 
   public abstract void fill(Shape shape);
     
@@ -110,20 +103,20 @@ public abstract class Graphics2D extends Graphics
 
   public abstract GraphicsConfiguration getDeviceConfiguration();
 
-  //public abstract void setComposite(Composite comp);
+  public abstract void setComposite(Composite comp);
     
   public abstract void setPaint(Paint paint);
 
-  //public abstract void setStroke(Stroke stroke)
+  public abstract void setStroke(Stroke stroke);
 
   public abstract void setRenderingHint(RenderingHints.Key hintKey,
                                         Object hintValue);
 
   public abstract Object getRenderingHint(RenderingHints.Key hintKey);
   
-  //public abstract void setRenderingHints(Map hints);
+  public abstract void setRenderingHints(Map hints);
 
-  //public abstract void addRenderingHints(Map hints);
+  public abstract void addRenderingHints(Map hints);
 
   public abstract RenderingHints getRenderingHints();
 
@@ -147,15 +140,15 @@ public abstract class Graphics2D extends Graphics
 
   public abstract Paint getPaint();
 
-  //public abstract Composite getComposite();
+  public abstract Composite getComposite();
 
   public abstract void setBackground(Color color);
 
   public abstract Color getBackground();
 
-  //public abstract Stroke getStroke();    
+  public abstract Stroke getStroke();    
 
   public abstract void clip(Shape s);
 
-  //public abstract FontRenderContext getFontRenderContext()
+  // public abstract FontRenderContext getFontRenderContext();
 }

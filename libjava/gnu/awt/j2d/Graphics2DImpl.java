@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,6 +9,7 @@ details.  */
 package gnu.awt.j2d;
 
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Rectangle;
@@ -19,8 +20,14 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.RenderableImage;
+import java.text.AttributedCharacterIterator;
+import java.util.Map;
 
 /**
  * Delegates almost all work to a state object, that allows us to
@@ -450,5 +457,62 @@ public class Graphics2DImpl extends Graphics2D implements Cloneable
       "intersecting current clip shape " + clip + " with new shape " + shape +
       "has not been implemented yet";
     throw new UnsupportedOperationException(msg);
+  }
+  
+  public void drawImage(BufferedImage image, BufferedImage op, int x, int y)
+  {
+    throw new UnsupportedOperationException("not implemented yet");  
+  }
+
+  public void drawRenderedImage(RenderedImage image, AffineTransform xform)
+  {
+    throw new UnsupportedOperationException("not implemented yet");  
+  }
+
+  public void drawRenderableImage(RenderableImage image, AffineTransform xform)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void drawString(AttributedCharacterIterator iterator,
+                		  int x, int y)
+  {
+    throw new UnsupportedOperationException("not implemented yet");  
+  }
+
+  public void drawString(AttributedCharacterIterator iterator, float x, 
+			 float y)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void setComposite(Composite comp)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void setStroke(Stroke stroke)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void setRenderingHints(Map hints)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void addRenderingHints(Map hints)
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public Composite getComposite()
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public Stroke getStroke()
+  {
+    throw new UnsupportedOperationException("not implemented yet");
   }
 }

@@ -629,6 +629,7 @@ java/awt/Graphics.java \
 java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
 java/awt/GridBagConstraints.java \
+java/awt/GridBagLayout.java \
 java/awt/GridLayout.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -1122,6 +1123,8 @@ javax/swing/text/MutableAttributeSet.java \
 javax/swing/text/StyledDocument.java \
 javax/swing/text/StyledEditorKit.java \
 javax/swing/text/TextAction.java \
+javax/swing/text/html/HTML.java \
+javax/swing/text/html/parser/ParserDelegator.java \
 javax/swing/tree/TreeNode.java \
 javax/swing/tree/AbstractLayoutCache.java \
 javax/swing/tree/DefaultMutableTreeNode.java \
