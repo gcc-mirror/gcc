@@ -3940,19 +3940,75 @@
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
-  "bl%* %l0,0"
+  "*
+{
+  extern int optimize;
+  /* An unconditional branch which can reach its target.  */
+  if (get_attr_length (insn) != 24
+      && get_attr_length (insn) != 16)
+    return \"bl%* %l0,0\";
+
+  /* An unconditional branch which can not reach its target.
+
+     We need to be able to use %r1 as a scratch register; however,
+     we can never be sure whether or not it's got a live value in
+     it.  Therefore, we must restore its original value after the
+     jump.
+
+     To make matters worse, we don't have a stack slot which we
+     can always clobber.  sp-12/sp-16 shouldn't ever have a live
+     value during a non-optimizing compilation, so we use those
+     slots for now.  We don't support very long branches when
+     optimizing -- they should be quite rare when optimizing.
+
+     Really the way to go long term is a register scavenger; goto
+     the target of the jump and find a register which we can use
+     as a scratch to hold the value in %r1.  */
+
+  /* We don't know how to register scavenge yet.  */
+  if (optimize)
+    abort ();
+
+  /* First store %r1 into the stack.  */
+  output_asm_insn (\"stw %%r1,-16(%%r30)\", operands);
+
+  /* Now load the target address into %r1 and do an indirect jump
+     to the value specified in %r1.  Be careful to generate PIC
+     code as needed.  */
+  if (flag_pic)
+    {
+      rtx xoperands[2];
+      xoperands[0] = operands[0];
+      xoperands[1] = gen_label_rtx ();
+
+      output_asm_insn (\"bl .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\", xoperands);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+                                 CODE_LABEL_NUMBER (xoperands[1]));
+      output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv 0(%%r1)\",
+		       xoperands);
+    }
+  else
+    output_asm_insn (\"ldil L'%l0,%%r1\\n\\tbe R'%l0(%%sr4,%%r1)\", operands);;
+
+  /* And restore the value of %r1 in the delay slot.  We're not optimizing,
+     so we know nothing else can be in the delay slot.  */
+  return \"ldw -16(%%r30),%%r1\";
+}"
   [(set_attr "type" "uncond_branch")
    (set_attr "pa_combine_type" "uncond_branch")
    (set (attr "length")
-    (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 0))
-	   (const_int 4)
-;; If the jump is in the delay slot of a call, then its length depends
-;; on whether or not we can add the proper offset to %r2 with an ldo
-;; instruction.
-	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		    (const_int 8184))
-           (const_int 4)]
-	  (const_int 8)))])
+    (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 1))
+	   (if_then_else (lt (abs (minus (match_dup 0)
+					 (plus (pc) (const_int 8))))
+			     (const_int 8184))
+			 (const_int 4)
+			 (const_int 8))
+	   (ge (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int 262100))
+	   (if_then_else (eq (symbol_ref "flag_pic") (const_int 0))
+			 (const_int 16)
+			 (const_int 24))]
+	  (const_int 4)))])
 
 ;; Subroutines of "casesi".
 ;; operand 0 is index
