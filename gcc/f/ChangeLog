@@ -1,5 +1,10 @@
 2004-02-15  Roger Sayle  <roger@eyesopen.com>
 
+	* lex.c (ffelex_get_directive_line): Provide a more descriptive
+	comment.  Remove reference to non-existant get_directive_line.
+
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
 	PR fortran/14129
 	* lex.c (ffelex_cfelex_): Avoid calling xrealloc on a local stack
 	allocated array.

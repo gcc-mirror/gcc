@@ -931,9 +931,6 @@ extern tree convert_and_check (tree, tree);
 extern void overflow_warning (tree);
 extern void unsigned_conversion_warning (tree, tree);
 
-/* Read the rest of the current #-directive line.  */
-extern char *get_directive_line (void);
-#define GET_DIRECTIVE_LINE() get_directive_line ()
 #define c_sizeof(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 1)
 #define c_alignof(T) c_sizeof_or_alignof_type (T, ALIGNOF_EXPR, 1)
 
