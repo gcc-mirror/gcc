@@ -1,3 +1,8 @@
+2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/template/access2.C: New test.
+	* g++.dg/template/access3.C: New test.
+
 2002-07-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-torture/execute/991216-3.c, c-torture/execute/strct-varg-1.c,

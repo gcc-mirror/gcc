@@ -1,3 +1,8 @@
+2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/4802, c++/5387
+	* decl.c (make_typename_type): Use enforce_access.
+
 2002-07-17  Scott Snyder <snyder@fnal.gov>
 
 	PR c++/7320
