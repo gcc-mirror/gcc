@@ -35,8 +35,8 @@
 /* Use the right prefix for global labels.  */
 #define CNAME(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
 #else
-/* XXX these lose for some platforms, I'm sure. */
 #define CNAME(x) x
+#endif
 #define ENTRY(x) .globl CNAME(x); .type CNAME(x),%function; CNAME(x):
 #endif
 	

@@ -1,3 +1,7 @@
+2002-09-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* src/arm/sysv.S: Fix typo.
+
 2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* src/arm/sysv.S: If we don't have machine/asm.h and the pre-processor
