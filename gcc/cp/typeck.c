@@ -3207,9 +3207,16 @@ convert_arguments (typelist, values, fndecl, flags)
 	  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
 	    val = convert_from_reference (val);
 
-	  result = tree_cons (NULL_TREE,
-				   convert_arg_to_ellipsis (val),
-				   result);
+	  if (DECL_BUILT_IN (fndecl)
+	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P)
+	    /* Don't do ellipsis conversion for __built_in_constant_p
+	       as this will result in spurious warnings for non-POD
+	       types.  */
+	    val = require_complete_type (val);
+	  else
+	    val = convert_arg_to_ellipsis (val);
+
+	  result = tree_cons (NULL_TREE, val, result);
 	}
 
       if (typetail)
