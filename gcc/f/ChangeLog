@@ -1,3 +1,9 @@
+Fri Apr  2 13:33:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: -malign-double now works.
+	Give URL for alignment-testing package.
+	* news.texi: -malign-double now works.
+
 Fri Apr  2 12:49:12 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi (Funding GNU Fortran): Dude's got a web page.
