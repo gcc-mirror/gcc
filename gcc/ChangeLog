@@ -1,3 +1,10 @@
+Tue Mar 23 15:45:25 1999  Richard Earnshaw (rearnsha@arm.com)
+			  Jeff Law <law@cygnus.com>
+
+	* fold-const.c (make_range): If orig_type is unset, set it as soon
+	as we know the type.  Remove now unnecessary set of orig_type for
+	conversions.
+
 Wed Mar 24 23:27:25 1999  Mark Elbrecht  <snowball3@usa.net.
 
 	* i386/djgpp.h: Fix typo.
