@@ -1,3 +1,8 @@
+2002-02-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (LIB_SPEC): Update definition.
+	* pa32-linux.h (LINK_COMMAND_SPEC): Delete.
+
 2002-02-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (gen_inlined_subroutine_die): If block is abstract,
