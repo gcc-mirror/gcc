@@ -3586,6 +3586,12 @@ text, including the space.  Thus two arguments would be generated.
 Like %@{@code{S}*@}, but don't put a blank between a switch and its
 argument.  Thus %@{^o*@} would only generate one argument, not two.
 
+@item %@{<@code{S}@}
+Remove all occurences of @code{S} from the command line.  Note - this
+command is position dependent.  @samp{%} commands in the spec string
+before this option will see @code{S}, @samp{%} commands in the spec
+string after this option will not.
+
 @item %@{@code{S}*:@code{X}@}
 Substitutes @code{X} if one or more switches whose names start with
 @code{-S} are specified to GCC.  Note that the tail part of the
