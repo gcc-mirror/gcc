@@ -291,7 +291,7 @@ create_phi_node (tree var, basic_block bb)
 {
   tree phi;
 
-  phi = make_phi_node (var, bb_ann (bb)->num_preds);
+  phi = make_phi_node (var, EDGE_COUNT (bb->preds));
 
   /* This is a new phi node, so note that is has not yet been
      rewritten.  */
