@@ -1,3 +1,7 @@
+2003-11-20  Matt Thomas  <matt@3am-software.com>
+
+	* MAINTAINERS: Add myself as a vax port maintainer.
+
 2003-11-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.tpl (BASE_FLAGS_TO_PASS): Pass along CONFIG_SHELL.
