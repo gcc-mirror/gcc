@@ -1,3 +1,8 @@
+2002-06-12  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFilePosix.cc (getCanonicalPath): Treat "" like ".".
+	Fixes PR libgcj/6652.
+
 2002-06-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (Class::desiredAssertionStatus): Declare.
