@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1172,28 +1172,38 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   nargs = list_length (DECL_ARGUMENTS (fndecl));
 
-  /* We expect PARMS to have the right length; don't crash if not.  */
-  if (list_length (parms) != nargs)
-    return (rtx) (HOST_WIDE_INT) -1;
-  /* Also check that the parms type match.  Since the appropriate
-     conversions or default promotions have already been applied,
-     the machine modes should match exactly.  */
+  /* Check that the parms type match and that sufficient arguments were
+     passed.  Since the appropriate conversions or default promotions have
+     already been applied, the machine modes should match exactly.  */
+
   for (formal = DECL_ARGUMENTS (fndecl),
        actual = parms;
        formal;
        formal = TREE_CHAIN (formal),
        actual = TREE_CHAIN (actual))
     {
-      tree arg = TREE_VALUE (actual);
-      enum machine_mode mode = TYPE_MODE (DECL_ARG_TYPE (formal));
-      if (mode != TYPE_MODE (TREE_TYPE (arg)))
+      tree arg;
+      enum machine_mode mode;
+
+      if (actual == 0)
 	return (rtx) (HOST_WIDE_INT) -1;
-      /* If they are block mode, the types should match exactly.
-         They don't match exactly if TREE_TYPE (FORMAL) == ERROR_MARK_NODE,
-	 which could happen if the parameter has incomplete type.  */
-      if (mode == BLKmode && TREE_TYPE (arg) != TREE_TYPE (formal))
+
+      arg = TREE_VALUE (actual);
+      mode= TYPE_MODE (DECL_ARG_TYPE (formal));
+
+      if (mode != TYPE_MODE (TREE_TYPE (arg))
+	  /* If they are block mode, the types should match exactly.
+	     They don't match exactly if TREE_TYPE (FORMAL) == ERROR_MARK_NODE,
+	     which could happen if the parameter has incomplete type.  */
+	  || (mode == BLKmode && TREE_TYPE (arg) != TREE_TYPE (formal)))
 	return (rtx) (HOST_WIDE_INT) -1;
     }
+
+  /* Extra arguments are valid, but will be ignored below, so we must
+     evaluate them here for side-effects.  */
+  for (; actual; actual = TREE_CHAIN (actual))
+    expand_expr (TREE_VALUE (actual), const0_rtx,
+		 TYPE_MODE (TREE_TYPE (TREE_VALUE (actual))), 0);
 
   /* Make a binding contour to keep inline cleanups called at
      outer function-scope level from looking like they are shadowing
