@@ -954,7 +954,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     fi
 
     dnl Test for <ctype> functionality -- IRIX
-    if test $ctype_defualt ="yes"; then 
+    if test $ctype_default ="yes"; then 
     AC_MSG_CHECKING([<ctype> for IRIX])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
