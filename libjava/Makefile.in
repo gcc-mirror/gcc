@@ -780,12 +780,18 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/security/action/GetPropertyAction.java \
 	gnu/java/security/action/GetSecurityPropertyAction.java \
 	gnu/java/security/action/SetAccessibleAction.java \
+	gnu/java/security/ber/BER.java \
+	gnu/java/security/ber/BEREncodingException.java \
+	gnu/java/security/ber/BERReader.java \
+	gnu/java/security/ber/BERValue.java \
 	gnu/java/security/der/BitString.java \
 	gnu/java/security/der/DER.java \
 	gnu/java/security/der/DEREncodingException.java \
 	gnu/java/security/der/DERReader.java \
 	gnu/java/security/der/DERValue.java \
 	gnu/java/security/der/DERWriter.java \
+	gnu/java/security/pkcs/PKCS7SignedData.java \
+	gnu/java/security/pkcs/SignerInfo.java \
 	gnu/java/security/provider/CollectionCertStoreImpl.java \
 	gnu/java/security/provider/DSAKeyFactory.java \
 	gnu/java/security/provider/DSAKeyPairGenerator.java \
@@ -4104,12 +4110,18 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/security/action/GetPropertyAction.lo \
 	gnu/java/security/action/GetSecurityPropertyAction.lo \
 	gnu/java/security/action/SetAccessibleAction.lo \
+	gnu/java/security/ber/BER.lo \
+	gnu/java/security/ber/BEREncodingException.lo \
+	gnu/java/security/ber/BERReader.lo \
+	gnu/java/security/ber/BERValue.lo \
 	gnu/java/security/der/BitString.lo \
 	gnu/java/security/der/DER.lo \
 	gnu/java/security/der/DEREncodingException.lo \
 	gnu/java/security/der/DERReader.lo \
 	gnu/java/security/der/DERValue.lo \
 	gnu/java/security/der/DERWriter.lo \
+	gnu/java/security/pkcs/PKCS7SignedData.lo \
+	gnu/java/security/pkcs/SignerInfo.lo \
 	gnu/java/security/provider/CollectionCertStoreImpl.lo \
 	gnu/java/security/provider/DSAKeyFactory.lo \
 	gnu/java/security/provider/DSAKeyPairGenerator.lo \
@@ -7357,12 +7369,18 @@ gnu/java/security/PolicyFile.java \
 gnu/java/security/action/GetPropertyAction.java \
 gnu/java/security/action/GetSecurityPropertyAction.java \
 gnu/java/security/action/SetAccessibleAction.java \
+gnu/java/security/ber/BER.java \
+gnu/java/security/ber/BEREncodingException.java \
+gnu/java/security/ber/BERReader.java \
+gnu/java/security/ber/BERValue.java \
 gnu/java/security/der/BitString.java \
 gnu/java/security/der/DER.java \
 gnu/java/security/der/DEREncodingException.java \
 gnu/java/security/der/DERReader.java \
 gnu/java/security/der/DERValue.java \
 gnu/java/security/der/DERWriter.java \
+gnu/java/security/pkcs/PKCS7SignedData.java \
+gnu/java/security/pkcs/SignerInfo.java \
 gnu/java/security/provider/CollectionCertStoreImpl.java \
 gnu/java/security/provider/DSAKeyFactory.java \
 gnu/java/security/provider/DSAKeyPairGenerator.java \
@@ -10123,6 +10141,23 @@ gnu/java/security/action/GetSecurityPropertyAction.lo:  \
 gnu/java/security/action/SetAccessibleAction.lo:  \
 	gnu/java/security/action/$(am__dirstamp) \
 	gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/ber/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/ber
+	@: > gnu/java/security/ber/$(am__dirstamp)
+gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/ber/$(DEPDIR)
+	@: > gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/ber/BER.lo: gnu/java/security/ber/$(am__dirstamp) \
+	gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/ber/BEREncodingException.lo:  \
+	gnu/java/security/ber/$(am__dirstamp) \
+	gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/ber/BERReader.lo:  \
+	gnu/java/security/ber/$(am__dirstamp) \
+	gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/ber/BERValue.lo:  \
+	gnu/java/security/ber/$(am__dirstamp) \
+	gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
 gnu/java/security/der/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/security/der
 	@: > gnu/java/security/der/$(am__dirstamp)
@@ -10146,6 +10181,18 @@ gnu/java/security/der/DERValue.lo:  \
 gnu/java/security/der/DERWriter.lo:  \
 	gnu/java/security/der/$(am__dirstamp) \
 	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/pkcs/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/pkcs
+	@: > gnu/java/security/pkcs/$(am__dirstamp)
+gnu/java/security/pkcs/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/pkcs/$(DEPDIR)
+	@: > gnu/java/security/pkcs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/pkcs/PKCS7SignedData.lo:  \
+	gnu/java/security/pkcs/$(am__dirstamp) \
+	gnu/java/security/pkcs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/pkcs/SignerInfo.lo:  \
+	gnu/java/security/pkcs/$(am__dirstamp) \
+	gnu/java/security/pkcs/$(DEPDIR)/$(am__dirstamp)
 gnu/java/security/provider/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/security/provider
 	@: > gnu/java/security/provider/$(am__dirstamp)
@@ -16756,6 +16803,14 @@ mostlyclean-compile:
 	-rm -f gnu/java/security/action/GetSecurityPropertyAction.lo
 	-rm -f gnu/java/security/action/SetAccessibleAction.$(OBJEXT)
 	-rm -f gnu/java/security/action/SetAccessibleAction.lo
+	-rm -f gnu/java/security/ber/BER.$(OBJEXT)
+	-rm -f gnu/java/security/ber/BER.lo
+	-rm -f gnu/java/security/ber/BEREncodingException.$(OBJEXT)
+	-rm -f gnu/java/security/ber/BEREncodingException.lo
+	-rm -f gnu/java/security/ber/BERReader.$(OBJEXT)
+	-rm -f gnu/java/security/ber/BERReader.lo
+	-rm -f gnu/java/security/ber/BERValue.$(OBJEXT)
+	-rm -f gnu/java/security/ber/BERValue.lo
 	-rm -f gnu/java/security/der/BitString.$(OBJEXT)
 	-rm -f gnu/java/security/der/BitString.lo
 	-rm -f gnu/java/security/der/DER.$(OBJEXT)
@@ -16768,6 +16823,10 @@ mostlyclean-compile:
 	-rm -f gnu/java/security/der/DERValue.lo
 	-rm -f gnu/java/security/der/DERWriter.$(OBJEXT)
 	-rm -f gnu/java/security/der/DERWriter.lo
+	-rm -f gnu/java/security/pkcs/PKCS7SignedData.$(OBJEXT)
+	-rm -f gnu/java/security/pkcs/PKCS7SignedData.lo
+	-rm -f gnu/java/security/pkcs/SignerInfo.$(OBJEXT)
+	-rm -f gnu/java/security/pkcs/SignerInfo.lo
 	-rm -f gnu/java/security/provider/CollectionCertStoreImpl.$(OBJEXT)
 	-rm -f gnu/java/security/provider/CollectionCertStoreImpl.lo
 	-rm -f gnu/java/security/provider/DSAKeyFactory.$(OBJEXT)
@@ -21834,12 +21893,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/GetPropertyAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/GetSecurityPropertyAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/SetAccessibleAction.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/ber/$(DEPDIR)/BER.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/ber/$(DEPDIR)/BEREncodingException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/ber/$(DEPDIR)/BERReader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/ber/$(DEPDIR)/BERValue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/BitString.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/DER.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/DEREncodingException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/DERReader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/DERValue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/der/$(DEPDIR)/DERWriter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/pkcs/$(DEPDIR)/PKCS7SignedData.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/pkcs/$(DEPDIR)/SignerInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/provider/$(DEPDIR)/CollectionCertStoreImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/provider/$(DEPDIR)/DSAKeyFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/provider/$(DEPDIR)/DSAKeyPairGenerator.Plo@am__quote@
@@ -25006,7 +25071,9 @@ clean-libtool:
 	-rm -rf gnu/java/rmi/server/.libs gnu/java/rmi/server/_libs
 	-rm -rf gnu/java/security/.libs gnu/java/security/_libs
 	-rm -rf gnu/java/security/action/.libs gnu/java/security/action/_libs
+	-rm -rf gnu/java/security/ber/.libs gnu/java/security/ber/_libs
 	-rm -rf gnu/java/security/der/.libs gnu/java/security/der/_libs
+	-rm -rf gnu/java/security/pkcs/.libs gnu/java/security/pkcs/_libs
 	-rm -rf gnu/java/security/provider/.libs gnu/java/security/provider/_libs
 	-rm -rf gnu/java/security/util/.libs gnu/java/security/util/_libs
 	-rm -rf gnu/java/security/x509/.libs gnu/java/security/x509/_libs
@@ -25555,8 +25622,12 @@ distclean-generic:
 	-rm -f gnu/java/security/$(am__dirstamp)
 	-rm -f gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/security/action/$(am__dirstamp)
+	-rm -f gnu/java/security/ber/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/security/ber/$(am__dirstamp)
 	-rm -f gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/security/der/$(am__dirstamp)
+	-rm -f gnu/java/security/pkcs/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/security/pkcs/$(am__dirstamp)
 	-rm -f gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/security/provider/$(am__dirstamp)
 	-rm -f gnu/java/security/util/$(DEPDIR)/$(am__dirstamp)
@@ -25807,7 +25878,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -25837,7 +25908,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
