@@ -56,9 +56,9 @@ enum bb_flags {
 
 #define BB_FLAGS(bb) (enum bb_flags)(bb)->aux
 #define BB_SET_FLAG(bb,flag) \
-  (bb)->aux = (void *)((enum bb_flags)(bb)->aux | (flag))
+  (bb)->aux = (void *) (long) ((enum bb_flags)(bb)->aux | (flag))
 #define BB_CLEAR_FLAG(bb,flag) \
-  (bb)->aux = (void *)((enum bb_flags)(bb)->aux & ~(flag))
+  (bb)->aux = (void *) (long) ((enum bb_flags)(bb)->aux & ~(flag))
 
 #define FORWARDER_BLOCK_P(bb) (BB_FLAGS(bb) & BB_FORWARDER_BLOCK)
 

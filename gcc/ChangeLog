@@ -1,3 +1,10 @@
+Fri Oct 26 07:18:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cfgcleanup.c (BB_SET_FLAG, BB_CLEAR_FLAG): Add cast to avoid warning.
+
+	* local-alloc.c (update_equiv_regs): Don't make REG_EQUAL note for
+	ASM_OPERANDS.
+
 2001-10-26  Andreas Jaeger  <aj@suse.de>
 
 	* flow.c (clear_log_links): Remove unused variable.

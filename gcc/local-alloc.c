@@ -927,8 +927,11 @@ update_equiv_regs ()
 
 	  /* cse sometimes generates function invariants, but doesn't put a
 	     REG_EQUAL note on the insn.  Since this note would be redundant,
-	     there's no point creating it earlier than here.  */
-	  if (! note && ! rtx_varies_p (src, 0))
+	     there's no point creating it earlier than here.  Don't do this
+	     for ASM_OPERANDS since eliminate_regs doesn't support it and
+	     it serves no useful purpose.  */
+	  if (! note && ! rtx_varies_p (src, 0)
+	      && GET_CODE (src) != ASM_OPERANDS)
 	    REG_NOTES (insn)
 	      = note = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
 
