@@ -1,3 +1,7 @@
+2003-02-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* tlink.c (scan_linker_output): Drop leading '.' from symbol names.
+
 2003-02-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (ASM_FILE_START): Do not emit machine
