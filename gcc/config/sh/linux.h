@@ -24,20 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION  fputs (" (SH GNU/Linux with ELF)", stderr);
 
-/* We're not SYSVR4, not having /usr/ccs */
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-
-/* This was defined in linux.h.  Define it here also.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
-
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
-
 /* Enable DWARF 2 exceptions.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
@@ -49,14 +35,16 @@ Boston, MA 02111-1307, USA.  */
 "
 
 #define TARGET_OS_CPP_BUILTINS() \
-do { \
-  builtin_define_std ("unix"); \
-  builtin_define ("__gnu_linux__"); \
-  builtin_define_std ("linux"); \
-  builtin_assert ("system=linux"); \
-  builtin_assert ("system=unix"); \
-  builtin_assert ("system=posix"); \
-} while (0)
+  do						\
+    {						\
+      LINUX_TARGET_OS_CPP_BUILTINS();		\
+      if (flag_pic)				\
+	{					\
+	  builtin_define ("__PIC__");		\
+	  builtin_define ("__pic__");		\
+	}					\
+    }						\
+  while (0)
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
@@ -73,46 +61,6 @@ do { \
      %{rdynamic:-export-dynamic} \
      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
    %{static:-static}"
-
-#undef LIB_SPEC
-#define LIB_SPEC \
-  "%{pthread:-lpthread} \
-   %{shared: -lc} \
-   %{!shared: \
-     %{mieee-fp:-lieee} \
-     %{profile:-lc_p} %{!profile: -lc}}"
-
-#if defined(HAVE_LD_EH_FRAME_HDR)
-#undef LINK_EH_SPEC
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
-#endif
-
-#undef STARTFILE_SPEC
-#if defined HAVE_LD_PIE
-#define STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#else
-#define STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#endif
-
-#undef	ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
-
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
-
-/* Use --as-needed -lgcc_s for eh support.  */
-#ifdef HAVE_LD_AS_NEEDED
-#define USE_LD_AS_NEEDED 1
-#endif
-
-/* Determine whether the the entire c99 runtime
-   is present in the runtime library.  */
-#define TARGET_C99_FUNCTIONS 1
 
 /* Output assembler code to STREAM to call the profiler.  */
 

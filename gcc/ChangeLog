@@ -1,3 +1,15 @@
+2005-02-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine here.
+	(HANDLE_PRAGMA_PACK_PUSH_POP): Delete.
+	(NO_IMPLICIT_EXTERN_C, CPLUSPLUS_CPP_SPEC): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Use LINUX_TARGET_OS_CPP_BUILTINS.
+	(LIB_SPEC, LINK_EH_SPEC, STARTFILE_SPEC, ENDFILE_SPEC,
+	LINK_GCC_C_SEQUENCE_SPEC, USE_LD_AS_NEEDED, TARGET_C99_FUNCTIONS):
+	Delete.
+	* config.gcc (sh*-*-linux*): Use config/linux.h.
+
 2005-02-28  Dale Johannesen  <dalej@apple.com>
 	    Stan Shebs  <shebs@apple.com>
 
