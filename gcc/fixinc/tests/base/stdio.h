@@ -24,6 +24,13 @@ extern int vsnprintf(char *, _hpux_size_t, const char *, __gnuc_va_list);
 #endif  /* HPUX11_VSNPRINTF_CHECK */
 
 
+#if defined( HPUX11_SNPRINTF_CHECK )
+extern int snprintf(char *, size_t, const char *, ...);
+extern int snprintf(char *, _hpux_size_t, const char *, ...);
+extern int snprintf(char *, _hpux_size_t, const char *, ...);
+#endif  /* HPUX11_SNPRINTF_CHECK */
+
+
 #if defined( IRIX_STDIO_DUMMY_VA_LIST_CHECK )
 extern int printf( const char *, __gnuc_va_list );
 #endif  /* IRIX_STDIO_DUMMY_VA_LIST_CHECK */

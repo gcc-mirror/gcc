@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 162 fixup descriptions.
+ * This file contains 163 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2248,6 +2248,41 @@ static tTestDesc aHpux11_VsnprintfTests[] = {
 static const char* apzHpux11_VsnprintfPatch[] = {
     "format",
     "%1 __va_list);",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Hpux11_Snprintf fix
+ */
+tSCC zHpux11_SnprintfName[] =
+     "hpux11_snprintf";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_SnprintfList[] =
+  "|stdio.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzHpux11_SnprintfMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_SnprintfSelect0[] =
+       "(extern int snprintf *\\(char *\\*, *(|__|_hpux_)size_t,) *(char *\\*, *\\.\\.\\.\\);)";
+
+#define    HPUX11_SNPRINTF_TEST_CT  1
+static tTestDesc aHpux11_SnprintfTests[] = {
+  { TT_EGREP,    zHpux11_SnprintfSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Snprintf
+ */
+static const char* apzHpux11_SnprintfPatch[] = {
+    "format",
+    "%1 const %3",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -6374,9 +6409,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          176
+#define REGEX_COUNT          177
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            162
+#define FIX_COUNT            163
 
 /*
  *  Enumerate the fixes
@@ -6436,6 +6471,7 @@ typedef enum {
     HPUX11_SIZE_T_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX11_VSNPRINTF_FIXIDX,
+    HPUX11_SNPRINTF_FIXIDX,
     HPUX8_BOGUS_INLINES_FIXIDX,
     HPUX_CTYPE_MACROS_FIXIDX,
     HPUX_LONG_DOUBLE_FIXIDX,
@@ -6816,6 +6852,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHpux11_VsnprintfMachs,
      HPUX11_VSNPRINTF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_VsnprintfTests,   apzHpux11_VsnprintfPatch, 0 },
+
+  {  zHpux11_SnprintfName,    zHpux11_SnprintfList,
+     apzHpux11_SnprintfMachs,
+     HPUX11_SNPRINTF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux11_SnprintfTests,   apzHpux11_SnprintfPatch, 0 },
 
   {  zHpux8_Bogus_InlinesName,    zHpux8_Bogus_InlinesList,
      apzHpux8_Bogus_InlinesMachs,
