@@ -66,6 +66,9 @@ static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
 #endif
 
 java_lexer *java_new_lexer PARAMS ((FILE *, const char *));
+#ifndef JC1_LITE
+static void error_if_numeric_overflow PARAMS ((tree));
+#endif
 
 #ifdef HAVE_ICONV
 /* This is nonzero if we have initialized `need_byteswap'.  */
@@ -132,7 +135,6 @@ java_init_lex (finput, encoding)
   ctxp->lineno = lineno = 0;
   ctxp->p_line = NULL;
   ctxp->c_line = NULL;
-  ctxp->minus_seen = 0;
   ctxp->java_error_flag = 0;
   ctxp->lexer = java_new_lexer (finput, encoding);
 }
@@ -995,6 +997,7 @@ java_lex (java_lval)
       int  i;
 #ifndef JC1_LITE
       int  number_beginning = ctxp->c_line->current;
+      tree value;
 #endif
       
       /* We might have a . separator instead of a FP like .[0-9]* */
@@ -1233,9 +1236,8 @@ java_lex (java_lval)
 	     expressed using a 10 radix. For other radixes, everything that
 	     fits withing 64 bits is OK. */
 	  int hb = (high >> 31);
-	  if (overflow || (hb && low && radix == 10) ||  
-	      (hb && high & 0x7fffffff && radix == 10) ||
-	      (hb && !(high & 0x7fffffff) && !ctxp->minus_seen && radix == 10))
+	  if (overflow || (hb && low && radix == 10)
+	      || (hb && high & 0x7fffffff && radix == 10))
 	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `long' literal");
 	}
       else
@@ -1246,18 +1248,20 @@ java_lex (java_lval)
 	     that fits within 32 bits is OK.  As all literals are
 	     signed, we sign extend here. */
 	  int hb = (low >> 31) & 0x1;
-	  if (overflow || high || (hb && low & 0x7fffffff && radix == 10) ||
-	      (hb && !(low & 0x7fffffff) && !ctxp->minus_seen && radix == 10))
+	  if (overflow || high || (hb && low & 0x7fffffff && radix == 10))
 	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `int' literal");
 	  high = -hb;
 	}
-      ctxp->minus_seen = 0;
+#ifndef JC1_LITE
+      value = build_int_2 (low, high);
+      JAVA_RADIX10_FLAG (value) = radix == 10;
+      SET_LVAL_NODE_TYPE (value, long_suffix ? long_type_node : int_type_node);
+#else
       SET_LVAL_NODE_TYPE (build_int_2 (low, high),
-			  (long_suffix ? long_type_node : int_type_node));
+			  long_suffix ? long_type_node : int_type_node);
+#endif
       return INT_LIT_TK;
     }
-
-  ctxp->minus_seen = 0;
 
   /* Character literals */
   if (c == '\'')
@@ -1475,7 +1479,6 @@ java_lex (java_lval)
 	  BUILD_OPERATOR2 (MINUS_ASSIGN_TK);
 	default:
 	  java_unget_unicode ();
-	  ctxp->minus_seen = 1;
 	  BUILD_OPERATOR (MINUS_TK);
 	}
 
@@ -1648,6 +1651,37 @@ java_lex (java_lval)
   }
   return 0;
 }
+
+#ifndef JC1_LITE
+/* This is called by the parser to see if an error should be generated
+   due to numeric overflow.  This function only handles the particular
+   case of the largest negative value, and is only called in the case
+   where this value is not preceeded by `-'.  */
+static void
+error_if_numeric_overflow (value)
+     tree value;
+{
+  if (TREE_CODE (value) == INTEGER_CST && JAVA_RADIX10_FLAG (value))
+    {
+      unsigned HOST_WIDE_INT lo, hi;
+
+      lo = TREE_INT_CST_LOW (value);
+      hi = TREE_INT_CST_HIGH (value);
+      if (TREE_TYPE (value) == long_type_node)
+	{
+	  int hb = (hi >> 31);
+	  if (hb && !(hi & 0x7fffffff))
+	    java_lex_error ("Numeric overflow for `long' literal", 0);
+	}
+      else
+	{
+	  int hb = (lo >> 31) & 0x1;
+	  if (hb && !(lo & 0x7fffffff))
+	    java_lex_error ("Numeric overflow for `int' literal", 0);
+	}
+    }
+}
+#endif /* JC1_LITE */
 
 static void
 java_unicode_2_utf8 (unicode)

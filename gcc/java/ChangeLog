@@ -1,3 +1,14 @@
+2001-11-08  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (trap_overflow_corner_case): New rule.
+	(unary_expression): Use it.
+	* lex.c (java_init_lex): Don't set minus_seen.
+	(yylex): Don't use minus_seen.  Communicate overflow to parser for
+	it to handle.
+	(error_if_numeric_overflow): New function.
+	* parse.h (minus_seen): Removed field.
+	(JAVA_RADIX10_FLAG): New define.
+
 2001-11-07  Tom Tromey  <tromey@redhat.com>
 
 	Patch for PR java/1414:
