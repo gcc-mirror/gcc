@@ -1,3 +1,9 @@
+2004-09-24  Paolo Carlini  <pcarlini@suse.de>
+	    Magnus Fromreide  <magfr@lysator.liu.se>
+	    
+	* include/bits/boost_concept_check.h (struct _SequenceConcept):
+	Remove wrong requirement, i.e., not present in Table 67.
+
 2004-09-20  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* testsuite/23_containers/{set,multiset}/14340.cc: Fix typos in
