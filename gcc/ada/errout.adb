@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.208 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1981,7 +1981,30 @@ package body Errout is
             E := Errors.Table (E).Next;
          end loop;
 
-         return OK;
+         if Nkind (N) = N_Raise_Constraint_Error
+           and then Original_Node (N) /= N
+         then
+
+            --  Warnings may have been posted on subexpressions of
+            --  the original tree. We temporarily replace the raise
+            --  statement with the original expression to remove
+            --  those warnings, whose sloc do not match those of
+            --  any node in the current tree.
+
+            declare
+               Old : Node_Id := N;
+               Status : Traverse_Result;
+
+            begin
+               Rewrite (N, Original_Node (N));
+               Status := Check_For_Warning (N);
+               Rewrite (N, Old);
+               return Status;
+            end;
+
+         else
+            return OK;
+         end if;
       end Check_For_Warning;
 
    --  Start of processing for Remove_Warning_Messages
