@@ -333,7 +333,8 @@ EOF
   fi
 fi
 
-# Fix this file to avoid interfering with stddef.h.
+# Fix this file to avoid interfering with stddef.h, but don't mistakenly
+# match e.g. ssize_t present in AIX for the ps/2.
 file=sys/types.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -343,7 +344,7 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   ex ${LIB}/$file <<EOF
-  /typedef.*size_t.*;/
+  /typedef.*[ 	]size_t.*;/
   i
 #ifndef _GCC_SIZE_T
 #define _GCC_SIZE_T
