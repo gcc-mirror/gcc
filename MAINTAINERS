@@ -55,6 +55,7 @@ caller-save.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
+C++ runtime libs	Gabriel Dos Reis	dosreis@cmla.ens-cachan.fr
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
@@ -99,6 +100,7 @@ Andrew Haley					aph@cygnus.com
 Alexandre Petit-Bianco				apbianco@cygnus.com
 Anthony Green					green@cygnus.com
 Stu Grossman					grossman@cygnus.com
+Gabriel Dos Reis				dosreis@cmla.ens-cachan.fr
 
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they

@@ -1,3 +1,23 @@
+1999-06-06  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/std_valarray.h: New file.
+	  * std/slice.h: New file.
+	  * std/slice_array.h: New file.
+	  * std/gslice.h: New file.
+	  * std/gslice_array.h: New file.
+	  * std/mask_array.h: New file.
+	  * std/indirect_array.h: New file.
+	  * std/valarray_array.h: New file.
+	  * std/valarray_array.tcc: New file.
+	  * std/valarray_meta.h: New file.
+	  * valarray.cc: New file.
+	  * valarray: New file
+
+	  * Makefile.in (OBJS): add valarray.o
+	  (HEADERS): add valarray
+	  (valarray.o): define dependency on valarray.cc
+	  (install): make it possible to install valarray file.
+	
 Wed Jun  2 00:21:54 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* std/bastring.h (class basic_string:Rep): Encode xlock opcode
