@@ -37,3 +37,7 @@ Boston, MA 02111-1307, USA. */
 #undef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
 
+/* U/WIN 2.0b[3-5] bcopy was implemented using memcpy, which breaks the
+   C++ front end, so don't use it. */
+#undef HAVE_BCOPY
+
