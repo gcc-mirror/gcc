@@ -4856,7 +4856,6 @@
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
   rtx xoperands[2];
 
   if (FP_REG_P (operands[1]))
@@ -4896,7 +4895,6 @@
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
   rtx xoperands[2];
 
   if (FP_REG_P (operands[0]))
