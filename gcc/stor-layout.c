@@ -880,12 +880,15 @@ layout_type (type)
 	}
       break;
 
-    /* Pascal types */
+    /* Pascal and Chill types */
     case BOOLEAN_TYPE:		 /* store one byte/boolean for now. */
       TYPE_MODE (type) = QImode;
       TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_PRECISION (type) = 1;
       TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+      if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
+ 	TREE_UNSIGNED (type) = 1;
       break;
 
     case CHAR_TYPE:
