@@ -1,3 +1,18 @@
+2005-01-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_abstract, by exploiting the
+	resolution of DR core/337.
+	* testsuite/testsuite_tr1.h: Add AbstractClass.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_abstract/
+	is_abstract.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_abstract/
+	typedefs.cc: Likewise.
+	
+	* include/tr1/type_traits (is_function): Rewrite, use the conversion
+	F& -> F* instead, thus avoiding problems with abstract classes.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_function/is_function.cc: Add a test for tricky AbstractClass.
+
 2005-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h
