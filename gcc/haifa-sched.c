@@ -2251,7 +2251,7 @@ schedule_block (b, rgn_n_insns)
 
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
-      if (targetm.sched.reorder
+      if (sort_p && targetm.sched.reorder
 	  && (ready.n_ready == 0
 	      || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	can_issue_more =

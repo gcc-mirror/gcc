@@ -1,3 +1,8 @@
+2003-03-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (schedule_block): Don't call reorder when sorting
+	is prohibited.
+
 2003-03-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (c-ppoutput.o): Update.
