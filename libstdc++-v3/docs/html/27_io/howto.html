@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 27</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2000/12/03 23:47:49 jsm28 Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -28,6 +28,7 @@
    <LI><A HREF="#3">Binary I/O</A>
    <LI><A HREF="#4">Iostreams class hierarchy diagram</A>
    <LI><A HREF="#5">What is this &lt;sstream&gt;/stringstreams thing?</A>
+   <LI><A HREF="#6">Deriving a stream buffer</A>
 </UL>
 
 <HR>
@@ -327,6 +328,61 @@
       support them, and 2) if you use them, people will laugh at you.
    </P>
 
+<HR>
+<H2><A NAME="6">Deriving a stream buffer</A></H2>
+   <P>Creating your own stream buffers for I/O can be remarkably easy.
+      If you are interested in doing so, we highly recommend two very
+      excellent books:  <EM>Standard C++ IOStreams and Locales</EM> by
+      Langer and Kreft, ISBN 0-201-18395-1, and
+      <A HREF="http://www.josuttis.com/libbook/">The C++ Standard Library</A>
+      by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by
+      Addison-Wesley, who isn't paying us a cent for saying that, honest.
+   </P>
+   <P>Here is a simple example, io/outbuf1, from the Josuttis text.  It
+      transforms everything sent through it to uppercase.  This version
+      assumes many things about the nature of the character type being
+      used (for more information, read the books or the newsgroups):
+      <PRE>
+    #include &lt;iostream&gt;
+    #include &lt;streambuf&gt;
+    #include &lt;locale&gt;
+    #include &lt;cstdio&gt;
+
+    class outbuf : public std::streambuf
+    {
+      protected:
+	/* central output function
+	 * - print characters in uppercase mode
+	 */
+	virtual int_type overflow (int_type c) {
+	    if (c != EOF) {
+		// convert lowercase to uppercase
+		c = std::toupper(static_cast&lt;char&gt;(c),getloc());
+
+		// and write the character to the standard output
+		if (putchar(c) == EOF) {
+		    return EOF;
+		}
+	    }
+	    return c;
+	}
+    };
+
+    int main()
+    {
+	// create special output buffer
+	outbuf ob;
+	// initialize output stream with that output buffer
+	std::ostream out(&ob);
+
+	out &lt;&lt; "31 hexadecimal: "
+	    &lt;&lt; std::hex &lt;&lt; 31 &lt;&lt; std::endl;
+	return 0;
+    }
+   </PRE>
+      Try it yourself!
+   </P>
+
 
 <!-- ####################################################### -->
 
@@ -335,7 +391,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.5 2000/12/03 23:47:49 jsm28 Exp $
+<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $
 </EM></P>
 
 

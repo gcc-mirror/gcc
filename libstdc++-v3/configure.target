@@ -20,6 +20,7 @@
 #   glibcpp_cxxflags       Special CXXFLAGS to use when building
 #   cpu_include_dir        CPU-specific include directory, relative to srcdir
 #   os_include_dir         OS-specific include directory, relative to srcdir
+#   ctype_include_dir      Platform-specific (usually OS) ctype include dir
 # The first two are set in configure.host and modified here.
 
 

@@ -368,7 +368,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
 dnl
 dnl Like GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, but does a bunch of
 dnl of functions at once.  It's an all-or-nothing check -- either 
-dnl HAVE_XYZ is defined for each of the functions, or for none of them
+dnl HAVE_XYZ is defined for each of the functions, or for none of them.
 dnl Doing it this way saves significant configure time.
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1, [
   AC_MSG_CHECKING([for $1 functions])
@@ -377,8 +377,8 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1, [
     AC_LANG_CPLUSPLUS
     AC_TRY_COMPILE([#include <math.h>],
                    [ `for x in $3; do echo "$x (0);"; done` ],
-	           [glibcpp_cv_func_$2_use=yes],
-	           [glibcpp_cv_func_$2_use=no])
+                   [glibcpp_cv_func_$2_use=yes],
+                   [glibcpp_cv_func_$2_use=no])
     AC_LANG_RESTORE])
   AC_MSG_RESULT($glibcpp_cv_func_$2_use)
   if test x$glibcpp_cv_func_$2_use = x"yes"; then
@@ -645,12 +645,12 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
 
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float trig,
-	                                  float_trig,
-	                                  acosf asinf atanf \
+                                          float_trig,
+                                          acosf asinf atanf \
                                           cosf sinf tanf \
-	                                  coshf sinhf tanhf)
+                                          coshf sinhf tanhf)
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float round,
-	                                  float_round,
+                                          float_round,
                                           ceilf floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
@@ -668,12 +668,12 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
 
   dnl Check to see if basic C math functions have long double versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(long double trig,
-	                                  long_double_trig,
-	                                  acosl asinl atanl \
+                                          long_double_trig,
+                                          acosl asinl atanl \
                                           cosl sinl tanl \
-	                                  coshl sinhl tanhl)
+                                          coshl sinhl tanhl)
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(long double round,
-	                                  long_double_round,
+                                          long_double_round,
                                           ceill floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinfl)
@@ -706,12 +706,12 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
 
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float trig,
-	                                  _float_trig,
-	                                  _acosf _asinf _atanf \
+                                          _float_trig,
+                                          _acosf _asinf _atanf \
                                           _cosf _sinf _tanf \
-	                                  _coshf _sinhf _tanhf)
+                                          _coshf _sinhf _tanhf)
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float round,
-	                                  _float_round,
+                                          _float_round,
                                           _ceilf _floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinff)
@@ -729,12 +729,12 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
 
   dnl Check to see if basic C math functions have long double versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double trig,
-	                                  _long_double_trig,
-	                                  _acosl _asinl _atanl \
+                                          _long_double_trig,
+                                          _acosl _asinl _atanl \
                                           _cosl _sinl _tanl \
-	                                  _coshl _sinhl _tanhl)
+                                          _coshl _sinhl _tanhl)
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double round,
-	                                  _long_double_round,
+                                          _long_double_round,
                                           _ceill _floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinfl)
@@ -1410,13 +1410,13 @@ changequote(<<, >>)dnl
 changequote([, ])
   [case "$enableval" in
    c) 
-	enable_cheaders=c 
+        enable_cheaders=c 
         ;;
    c_std)  
-	enable_cheaders=c_std 
+        enable_cheaders=c_std 
         ;;
    c_shadow)  
-	enable_cheaders=c_shadow 
+        enable_cheaders=c_shadow 
         ;;
    *)   AC_MSG_ERROR([Unknown argument to enable/disable "C" headers]) 
         ;;

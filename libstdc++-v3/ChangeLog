@@ -1,3 +1,28 @@
+2001-01-23  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4:  Cosmetic changes only.
+	* aclocal.m4:  Regenerated.
+	* configure:  Regenerated.
+	* configure.target:  Update documented list of changed variables.
+	* docs/html/install.html:  Fix typo.
+	* docs/html/20_util/howto.html:  More notes on auto_ptr.
+	* docs/html/27_io/howto.html:  More notes on streabufs.
+	* docs/html/faq/index.html:  Add rel_ops problem and mention the
+	  DEC as(1) .subsection difficulty.
+	* docs/html/faq/index.txt:  Regenerated.
+
+2001-01-23  Mark Mitchell  <mark@codesourcery.com>
+
+        * ainclude.m4 (GLIBCPP_CHEC_MATH_DECLS_AND_LINKAGE_1): New macro.
+        (GLIBCPP_CHECK_MATH_SUPPORT): Use it.
+        (GLIBCPP_CHECK_TYPE_SUPPORT): Don't autoconf ctype information if
+        its already provided in config.target.
+        * aclocal.m4: Regenerated.
+        * configure: Likewise.
+        * configure.target: Set ctype_include_dir for lots of systems.
+        * libsupc++/Makefile.am: Explicitly include --tag disable-shared.
+        * libsupc++/Makefile.in: Regenerated.
+
 2001-01-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp: Improve.  Add support for @xxx#
