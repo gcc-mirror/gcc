@@ -1262,7 +1262,7 @@
 			 (match_operand:SI 3 "const_int_operand" "n")
 			 (const_int 0)))
    (clobber (reg:SI 18))]
-  "shl_sext_kind (operands[2], operands[3], 0) <= 5"
+  "(unsigned)shl_sext_kind (operands[2], operands[3], 0) - 1 < 5"
   "#"
   [(set (attr "length")
 	(cond [(eq (symbol_ref "shl_sext_length (insn)") (const_int 1))
