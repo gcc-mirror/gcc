@@ -745,24 +745,17 @@ expand_fixup (tree tree_label, rtx rtl_label, rtx last_insn)
 	block = make_node (BLOCK);
 	TREE_USED (block) = 1;
 
-	if (!cfun->x_whole_function_mode_p)
-	  lang_hooks.decls.insert_block (block);
-	else
-	  {
-	    BLOCK_CHAIN (block)
-	      = BLOCK_CHAIN (DECL_INITIAL (current_function_decl));
-	    BLOCK_CHAIN (DECL_INITIAL (current_function_decl))
-	      = block;
-	  }
+	BLOCK_CHAIN (block)
+	  = BLOCK_CHAIN (DECL_INITIAL (current_function_decl));
+	BLOCK_CHAIN (DECL_INITIAL (current_function_decl))
+	  = block;
 
 	start_sequence ();
 	start = emit_note (NOTE_INSN_BLOCK_BEG);
-	if (cfun->x_whole_function_mode_p)
-	  NOTE_BLOCK (start) = block;
+	NOTE_BLOCK (start) = block;
 	fixup->before_jump = emit_note (NOTE_INSN_DELETED);
 	end = emit_note (NOTE_INSN_BLOCK_END);
-	if (cfun->x_whole_function_mode_p)
-	  NOTE_BLOCK (end) = block;
+	NOTE_BLOCK (end) = block;
 	fixup->context = block;
 	end_sequence ();
 	emit_insn_after (start, original_before_jump);
