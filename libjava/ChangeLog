@@ -1,7 +1,7 @@
-2001-09-02  Tom Tromey  <tromey@redhat.com>
+2001-09-03  Tom Tromey  <tromey@redhat.com>
 
-	* java/security/spec/AlgorithmParameterSpec.java,
-	java/security/spec/KeySpec.java: Re-merged with Classpath.
+	* java/lang/reflect/natField.cc (set): Allow for case when the
+	value is null.  Fixes PR libgcj/4208.
 
 	* gcj/javaprims.h: Regenerated class list.
 	* java/lang/IllegalThreadStateException.java,

@@ -418,9 +418,10 @@ java::lang::reflect::Field::setDouble (jclass caller, jobject obj, jdouble d)
 }
 
 void
-java::lang::reflect::Field::set (jclass caller, jobject object, jobject value, jclass type)
+java::lang::reflect::Field::set (jclass caller, jobject object, jobject value,
+				 jclass type)
 {
-  if (! _Jv_IsInstanceOf (value, type))
+  if (value != NULL && ! _Jv_IsInstanceOf (value, type))
     throw new java::lang::IllegalArgumentException;
   void* addr = getAddr (this, caller, object);
   * (jobject*) addr = value;
