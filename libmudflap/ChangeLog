@@ -1,3 +1,16 @@
+2004-09-07  Frank Ch. Eigler  <fche@redhat.com>
+
+	* configure.ac: Look for pwd.h, grp.h, netdb.h headers and functions.
+	* mf-hooks2.c (strerror): Unregister previous string returned by
+	previous strerror.
+	(getlogin,cuserid,getpwnam,getpwuid,getgrnam,getgrgid): New wrappers.
+	(getservent,getservbyname,getservbyport,gai_strerror): Ditto.
+	* mf-runtime.h.in: Add redefine_extname pragmas for them all.
+	* mf-runtime.c (__mf_describe_object): Clarify object life status.
+	* testsuite/libmudflap.c/pass48-frag.c, pass49-frag.c, fail32-frag.c:
+	New tests.
+	* configure, config.h.in: Regenerated.
+
 2004-08-03  Dale Johannesen  <dalej@apple.com>
 
          * mf-runtime.c: Conditionalize POSIX_SOURCE for Darwin.

@@ -1614,7 +1614,8 @@ __mf_describe_object (__mf_object_t *obj)
   if (__mf_opts.abbreviate && obj->description_epoch == epoch)
     {
       fprintf (stderr,
-               "mudflap object %p: name=`%s'\n",
+               "mudflap %sobject %p: name=`%s'\n",
+               (obj->deallocated_p ? "dead " : ""),
                (void *) obj, (obj->name ? obj->name : ""));
       return;
     }
@@ -1622,13 +1623,14 @@ __mf_describe_object (__mf_object_t *obj)
     obj->description_epoch = epoch;
 
   fprintf (stderr,
-           "mudflap object %p: name=`%s'\n"
+           "mudflap %sobject %p: name=`%s'\n"
            "bounds=[%p,%p] size=%lu area=%s check=%ur/%uw liveness=%u%s\n"
            "alloc time=%lu.%06lu pc=%p"
 #ifdef LIBMUDFLAPTH
            " thread=%u"
 #endif
            "\n",
+           (obj->deallocated_p ? "dead " : ""),
            (void *) obj, (obj->name ? obj->name : ""), 
            (void *) obj->low, (void *) obj->high,
            (unsigned long) (obj->high - obj->low + 1),
