@@ -1,7 +1,11 @@
+2002-06-20  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* com.c: Remove #ifdef HOHO sections.
+
 2002-06-17  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* bit.c: Don't include glimits.h.
-	* target.c: Likewise.   
+	* target.c: Likewise.
 	* where.h: Likewise.
 
 2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
