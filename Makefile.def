@@ -1,6 +1,29 @@
 #! /usr/bin/autogen
 AutoGen definitions Makefile.tpl;
 
+// Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
+// This file was originally written by Nathanael Nerode.
+//
+//   Copyright 2002, 2003 Free Software Foundation
+//
+// This file is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+// "missing" indicates that that module doesn't supply
+// that recursive target in its Makefile.
+
 build_modules= { module= libiberty; };
 
 host_modules= { module= ash; };
@@ -31,7 +54,8 @@ host_modules= { module= gzip; };
 host_modules= { module= hello; };
 host_modules= { module= indent; };
 host_modules= { module= intl; };
-host_modules= { module= tcl; };
+host_modules= { module= tcl;
+                missing=mostlyclean; };
 host_modules= { module= itcl; };
 host_modules= { module= ld; };
 host_modules= { module= libgui; };
@@ -65,14 +89,22 @@ host_modules= { module= expect; with_x=true; };
 host_modules= { module= guile; with_x=true; };
 host_modules= { module= tk; with_x=true; };
 host_modules= { module= tix; with_x=true; };
-host_modules= { module= libtermcap; no_check=true; no_clean=true; };
+host_modules= { module= libtermcap; no_check=true; 
+                missing=mostlyclean;
+                missing=clean;
+                missing=distclean;
+                missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
 
 target_modules = { module= libstdc++-v3; raw_cxx=true; };
 target_modules = { module= newlib; };
 target_modules = { module= libf2c; };
 target_modules = { module= libobjc; };
-target_modules = { module= libtermcap; no_check=true; no_clean=true; };
+target_modules = { module= libtermcap; no_check=true; 
+                   missing=mostlyclean;
+                   missing=clean;
+                   missing=distclean;
+                   missing=maintainer-clean; };
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libiberty; };
@@ -87,12 +119,20 @@ target_modules = { module= rda; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
+// "depend" indicates that a target depends on another target uniformly
+// for each subdirectory.  There can be several such lines per target.
+recursive_targets = { make_target= info; 
+                      depend=configure; };
+recursive_targets = { make_target= dvi; 
+                      depend=configure; };
+recursive_targets = { make_target= TAGS; 
+                      depend=configure; };
+recursive_targets = { make_target= install-info; 
+                      depend=configure;
+                      depend=info; };
+recursive_targets = { make_target= installcheck; 
+                      depend=configure; };
+recursive_targets = { make_target= mostlyclean; };
 recursive_targets = { make_target= clean; };
 recursive_targets = { make_target= distclean; };
-recursive_targets = { make_target= dvi; };
-recursive_targets = { make_target= info; };
-recursive_targets = { make_target= install-info; };
-recursive_targets = { make_target= installcheck; };
-recursive_targets = { make_target= mostlyclean; };
 recursive_targets = { make_target= maintainer-clean; };
-recursive_targets = { make_target= TAGS; };

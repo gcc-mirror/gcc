@@ -1,5 +1,15 @@
 2003-06-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Make 'recursive targets' using autogen rather
+	than shell loop.  Remove duplicate 'clean' targets and false
+	comments.
+	* Makefile.def: Add systematic dependencies to 'recursive' targets.
+	Add systematic method of specifying missing targets in subdirs.
+	Add copyright boilerplate.
+	* Makefile.in: Regenerate.
+	* configure.in: Add 'recursive targets' to maybe list.
+	* configure: Regenerate.
+
 	* MAINTAINERS: "GNATS only" -> "Bug database only".
 
 	* Makefile.tpl: Rename [+target+] to [+make_target+].

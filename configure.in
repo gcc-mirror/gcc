@@ -1655,7 +1655,8 @@ rm -f maybedep.tmp
 echo '# maybedep.tmp' > maybedep.tmp
 
 # Make-targets which may need maybe dependencies.
-mts="configure all install check"
+mts="configure all install check clean distclean dvi info install-info"
+mts="${mts} installcheck mostlyclean maintainer-clean TAGS"
 
 # Loop over modules and make-targets.
 for module in ${build_modules} ; do
