@@ -1,3 +1,25 @@
+2002-09-12  Graham Stott  <graham.stott@btinternet.com>
+            Roger Sayle  <roger@eyesopen.com>
+
+	* i386.c (any_fp_register_operand, fp_register_operand,
+	register_and_not_any_fp_reg_operand, register_and_not_fp_reg_operand):
+	New predicate functions.
+	* i386-protos.h:  Add their prototypes.
+	* i386.h: Add them to PREDICATE_CODES.
+	* i386.md ("*pushsf_rex64"+2, "*pushsf_rex64"+3, "*pushdf_integer"+1,
+	"*pushdf_integer"+2, "*pushtf_integer"+1, "*pushtf_integer"+2,
+	"*pushtf_integer"+3, "*pushtf_integer"+4, "*dummy_extendsfdf2"+1,
+	"*dummy_extendsfdf2"+2, "*dummy_extendsfxf2"+1,
+	"*dummy_extendsftf2"+1, "*dummy_extendsftf2"+2,
+	"*dummy_extenddfxf2"+1, "*dummy_extenddftf2"+1,
+	"*dummy_extenddftf2"+2, "*negsf2_if"+1, "*negsf2_if"+2,
+	"*negdf2_if_rex64"+1, "*negdf2_if_rex64"+2, "*negxf2_if"+1,
+	"*negxf2_if"+2, "*negtf2_if"+1, "*negtf2_if"+2, "*abssf2_if"+1,
+	"*abssf2_if"+2, "*absdf2_if_rex64"+1, "*absdf2_if_rex64"+2,
+	"*absxf2_if"+1, "*absxf2_if"+2, "*abstf2_if"+1, "*abstf2_if"+2):
+	Use these new predicates to simplify and correct the use of
+	FP_REG_P, ANY_FP_REG_P, FP_REGNO_P and any ANY_FP_REGNO_P.
+
 2002-09-12  Jason Merrill  <jason@redhat.com>
 
 	* diagnostic.c (output_add_identifier): New fn.

@@ -2754,6 +2754,43 @@ ix86_va_arg (valist, type)
   return addr_rtx;
 }
 
+/* Return nonzero if OP is either a i387 or SSE fp register.  */
+int
+any_fp_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return ANY_FP_REG_P (op);
+}
+
+/* Return nonzero if OP is an i387 fp register.  */
+int
+fp_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return FP_REG_P (op);
+}
+
+/* Return nonzero if OP is a non-fp register_operand.  */
+int
+register_and_not_any_fp_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) && !ANY_FP_REG_P (op);
+}
+
+/* Return nonzero of OP is a register operand other than an
+   i387 fp register.  */
+int
+register_and_not_fp_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) && !FP_REG_P (op);
+}
+
 /* Return nonzero if OP is general operand representable on x86_64.  */
 
 int
