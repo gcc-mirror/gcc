@@ -1,3 +1,12 @@
+2004-02-29  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	Backport from mainline:
+	2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	PR target/10904
+	PR target/13058
+	* config/sparc/sparc.h (CANNOT_CHANGE_MODE_CLASS): New.
+	Forbid mode changes from SImode for lower FP regs if ARCH64.
+
 2004-02-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE, TRAMPOLINE_CODE_SIZE,

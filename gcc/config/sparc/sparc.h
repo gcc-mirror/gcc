@@ -1233,6 +1233,20 @@ enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
    {-1, -1, -1, 0x20},	/* GENERAL_OR_EXTRA_FP_REGS */	\
    {-1, -1, -1, 0x3f}}	/* ALL_REGS */
 
+/* Defines invalid mode changes.  Borrowed from pa64-regs.h.
+
+   SImode loads to floating-point registers are not zero-extended.
+   The definition for LOAD_EXTEND_OP specifies that integer loads
+   narrower than BITS_PER_WORD will be zero-extended.  As a result,
+   we inhibit changes from SImode unless they are to a mode that is
+   identical in size.  */
+
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
+  (TARGET_ARCH64						\
+   && (FROM) == SImode						\
+   && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
+   ? reg_classes_intersect_p (CLASS, FP_REGS) : 0)
+
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
