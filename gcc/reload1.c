@@ -77,7 +77,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* During reload_as_needed, element N contains a REG rtx for the hard reg
-   into which pseudo reg N has been reloaded (perhaps for a previous insn). */
+   into which reg N has been reloaded (perhaps for a previous insn). */
 static rtx *reg_last_reload_reg;
 
 /* Elt N nonzero if reg_last_reload_reg[N] has been set in this insn
@@ -3540,7 +3540,7 @@ order_regs_for_reload ()
    and perhaps store insns after insns that modify the reloaded pseudo reg.
 
    reg_last_reload_reg and reg_reloaded_contents keep track of
-   which pseudo-registers are already available in reload registers.
+   which registers are already available in reload registers.
    We update these for the reloads that we perform,
    as the insns are scanned.  */
 
@@ -6134,14 +6134,32 @@ emit_reload_insns (insn)
 	  if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
 	    {
 	      register int nregno = REGNO (reload_out[r]);
+	      int nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
+			 : HARD_REGNO_NREGS (nregno,
+					     GET_MODE (reload_reg_rtx[r])));
 
 	      spill_reg_store[i] = new_spill_reg_store[i];
 	      reg_last_reload_reg[nregno] = reload_reg_rtx[r];
 
+	      /* If NREGNO is a hard register, it may occupy more than
+		 one register.  If it does, say what is in the 
+		 rest of the registers assuming that both registers
+		 agree on how many words the object takes.  If not,
+		 invalidate the subsequent registers.  */
+
+	      if (nregno < FIRST_PSEUDO_REGISTER)
+		for (k = 1; k < nnr; k++)
+		  reg_last_reload_reg[nregno + k]
+		    = (nr == nnr ? gen_rtx (REG, word_mode,
+					    REGNO (reload_reg_rtx[r]) + k)
+		       : 0);
+
+	      /* Now do the inverse operation.  */
 	      for (k = 0; k < nr; k++)
 		{
 		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
-		    = nregno;
+		    = (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr ? nregno
+		       : nregno + k);
 		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = insn;
 		}
 	    }
@@ -6153,12 +6171,25 @@ emit_reload_insns (insn)
 		       || GET_CODE (reload_in_reg[r]) == REG))
 	    {
 	      register int nregno;
+	      int nnr;
+
 	      if (GET_CODE (reload_in[r]) == REG)
 		nregno = REGNO (reload_in[r]);
 	      else
 		nregno = REGNO (reload_in_reg[r]);
 
+	      nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
+		     : HARD_REGNO_NREGS (nregno,
+					 GET_MODE (reload_reg_rtx[r])));
+
 	      reg_last_reload_reg[nregno] = reload_reg_rtx[r];
+
+	      if (nregno < FIRST_PSEUDO_REGISTER)
+		for (k = 1; k < nnr; k++)
+		  reg_last_reload_reg[nregno + k]
+		    = (nr == nnr ? gen_rtx (REG, word_mode,
+					    REGNO (reload_reg_rtx[r]) + k)
+		       : 0);
 
 	      /* Unless we inherited this reload, show we haven't
 		 recently done a store.  */
@@ -6168,7 +6199,8 @@ emit_reload_insns (insn)
 	      for (k = 0; k < nr; k++)
 		{
 		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
-		    = nregno;
+		    = (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr ? nregno
+		       : nregno + k);
 		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]]
 		    = insn;
 		}
