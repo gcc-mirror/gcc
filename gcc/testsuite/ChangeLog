@@ -1,3 +1,7 @@
+2005-03-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/warn/Wnvdtor.C: New test.
+
 2005-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/torture/pr19683-1.c: New test.
