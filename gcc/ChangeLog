@@ -1,3 +1,7 @@
+Mon Feb 15 16:57:38 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (addsi3): Allow lea for any constant_p.
+
 1999-02-15 17:11 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* toplev.c (documented_lang_options): Remove -fident and
