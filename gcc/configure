@@ -9345,7 +9345,7 @@ echo "configure:9329: checking assembler instructions" >&5
     fi
     if test x"$gcc_cv_as_instructions" != x; then
 	cat >> confdefs.h <<EOF
-#define HAVE_GAS_`echo "$gcc_cv_as_instructions" | tr 'a-z ' 'A-Z_'` 1
+#define HAVE_GAS_`echo "$gcc_cv_as_instructions" | sed -e 's/ $//' | tr 'a-z ' 'A-Z_'` 1
 EOF
 
     fi
