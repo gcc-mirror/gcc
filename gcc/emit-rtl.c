@@ -1208,7 +1208,7 @@ operand_subword (op, i, validate_address, mode)
 	{
 	  long value;
 	  value = k[i >> 1];
-	  if ((i & 0x1) == 0)
+	  if ((i & 0x1) == !WORDS_BIG_ENDIAN)
 	    value >>= 16;
 	  value &= 0xffff;
 	  return GEN_INT ((HOST_WIDE_INT) value);
@@ -1265,6 +1265,13 @@ operand_subword (op, i, validate_address, mode)
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+
+      if (BITS_PER_WORD == 16)
+	{
+	  if ((i & 0x1) == !WORDS_BIG_ENDIAN)
+	    l >>= 16;
+	  l &= 0xffff;
+	}
       return GEN_INT ((HOST_WIDE_INT) l);
     }
 #else
