@@ -11,7 +11,7 @@ case "${host}" in
   *-*-freebsd2.1.*)	frag=mh-fbsd21 ;;
   *-*-freebsd2.2.[012])	frag=mh-fbsd21 ;;
   i370-*-opened*)       frag=mh-openedition ;;
-  i[345]86-*-windows*)	frag=mh-windows ;;
+  i[34567]86-*-windows*)	frag=mh-windows ;;
 esac
 
 if [ -n "${frag}" ]; then
@@ -34,7 +34,7 @@ if [ "${shared}" = "yes" ]; then
     alpha*-*-linux*)	frag=mh-elfalphapic ;;
     arm*-*-*)		frag=mh-armpic ;;
     hppa*-*-*)		frag=mh-papic ;;
-    i[3456]86-*-* | x86_64-*-*)
+    i[34567]86-*-* | x86_64-*-*)
 			frag=mh-x86pic ;;
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	frag=mh-ppcpic ;;
