@@ -1,3 +1,7 @@
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* texi2pod.pl: Skip contents of @copying.
+
 2002-10-21  Richard Henderson  <rth@redhat.com>
 
 	* paranoia.cc (real_c_float::image): Accomodate size of
