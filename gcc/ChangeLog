@@ -1,3 +1,12 @@
+Fri Jul 17 07:23:49 1998  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* reorg.c (check_annul_list_true_false): New function.
+	(steal_delay_list_from_{target,fallthrough}): Call it and also
+	refine tests for when we may annul if already filled a slot.
+	(fill_slots_from_thread): Likewise.
+	(delete_from_delay_slot): Return newly-created thread.
+	(try_merge_delay_isns): Use its new return value.
+
 Sat Jul  4 11:07:33 1998  Eberhard Mattes  <mattes@azu.informatik.uni-stuttgart.de>
 
 	* function.c (assign_parms): Handle PARALLEL which include stack.
