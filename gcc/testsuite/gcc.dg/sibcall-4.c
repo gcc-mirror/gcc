@@ -13,8 +13,8 @@
    (except targets where the test does not work due to the return address
    not saved on the regular stack).  */
 
-extern void recurser_void1 (void);
-extern void recurser_void2 (void);
+static void recurser_void1 (void);
+static void recurser_void2 (void);
 extern void track (void);
 
 int n = 0;
@@ -28,7 +28,7 @@ int main ()
    reasonably sure is to make them have the same contents (regarding the
    n tests).  */
 
-void __attribute__((noinline))
+static void __attribute__((noinline))
 recurser_void1 (void)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -40,7 +40,7 @@ recurser_void1 (void)
   recurser_void2 ();
 }
 
-void __attribute__((noinline))
+static void __attribute__((noinline))
 recurser_void2 (void)
 {
   if (n == 0 || n == 7 || n == 8)
