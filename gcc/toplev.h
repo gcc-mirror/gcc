@@ -84,9 +84,6 @@ extern void output_clean_symbol_name    PARAMS ((FILE *, const char *));
 extern void output_quoted_string	PARAMS ((FILE *, const char *));
 extern void output_file_directive	PARAMS ((FILE *, const char *));
 #endif
-extern void do_abort			PARAMS ((void)) ATTRIBUTE_NORETURN;
-extern void botch			PARAMS ((const char *))
-  ATTRIBUTE_NORETURN;
 
 #ifdef BUFSIZ
   /* N.B. Unlike all the others, fnotice is just gettext+fprintf, and
