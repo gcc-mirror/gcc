@@ -215,8 +215,8 @@ setup_callbacks ()
     }
 }
 
-/* Writes out the preprocessed file.  Alternates between two tokens,
-   so that we can avoid accidental token pasting.  */
+/* Writes out the preprocessed file, handling spacing and paste
+   avoidance issues.  */
 static void
 scan_translation_unit (pfile)
      cpp_reader *pfile;
@@ -334,7 +334,7 @@ print_line (map, line, special_flags)
 }
 
 /* Called when a line of output is started.  TOKEN is the first token
-   of the line, and maybe be CPP_EOF.  */
+   of the line, and may be CPP_EOF.  */
 
 static void
 cb_line_change (pfile, token, parsing_args)
