@@ -1,3 +1,10 @@
+2002-03-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/t-linux64: New.
+	* config.gcc (powerpc64-*-linux* <tmake_file>): Drop t-ppcos and
+	t-ppccomm.  Use t-rs6000 and t-linux64.
+	(powerpc64-*-gnu* <tmake_file>): Likewise.
+
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
