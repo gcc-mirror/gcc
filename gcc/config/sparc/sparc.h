@@ -2584,8 +2584,11 @@ extern struct rtx_def *legitimize_pic_address ();
 
    For Sparc 32, we wish to handle addresses by splitting them into
    HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference. 
-   This cuts the number of extra insns by one.  */
-   
+   This cuts the number of extra insns by one.
+
+   Do nothing when generating PIC code and the address is a
+   symbolic operand or requires a scratch register.  */
+
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
 do {                                                                    \
   /* Decompose SImode constants into hi+lo_sum.  We do have to 		\
@@ -2593,7 +2596,10 @@ do {                                                                    \
   if (CONSTANT_P (X)							\
       && (MODE != TFmode || TARGET_V9)					\
       && GET_MODE (X) == SImode						\
-      && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH)		\
+      && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH			\
+      && ! (flag_pic							\
+	    && (symbolic_operand (X, Pmode))				\
+		|| pic_address_needs_scratch (X)))			\
     {									\
       X = gen_rtx_LO_SUM (GET_MODE (X),					\
 			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
