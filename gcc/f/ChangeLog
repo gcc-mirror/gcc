@@ -1,3 +1,34 @@
+Sun Nov 28 21:15:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_get_invented_identifier): Rewrite to take an ellipses.
+	
+	(ffecom_char_enhance_arg_, ffecom_do_entry_,
+	ffecom_f2c_make_type_, ffecom_gen_sfuncdef_,
+	ffecom_start_progunit_, ffecom_start_progunit_,
+	ffecom_start_progunit_, ffecom_sym_transform_assign_,
+	ffecom_transform_equiv_, ffecom_transform_namelist_,
+	ffecom_vardesc_, ffecom_vardesc_array_, ffecom_vardesc_dims_,
+	ffecom_end_transition, ffecom_lookup_label, ffecom_temp_label):
+	Adjust accordingly.
+
+	* com.h (ffecom_get_invented_identifier): Likewise.
+
+	* sts.c (ffests_printf): New function taking ellipses.
+	(ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+	ffests_printf_2Us): Delete.
+
+	* sts.h: Likewise.
+
+	* std.c (ffestd_R1001dump_, ffestd_R1001dump_1005_1_,
+	ffestd_R1001dump_1005_2_, ffestd_R1001dump_1005_3_,
+	ffestd_R1001dump_1005_4_, ffestd_R1001dump_1005_5_,
+	ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+	ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_,
+	ffestd_R1001rtexpr_): Call `ffests_printf', not `ffests_printf_*'.
+
+	* ste.c (ffeste_io_ialist_, ffeste_io_cilist_, ffeste_io_cllist_,
+	ffeste_io_icilist_, ffeste_io_inlist_, ffeste_io_olist_): Likewise.
+
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
                           Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

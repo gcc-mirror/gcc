@@ -306,8 +306,8 @@ tree ffecom_expr_w (tree type, ffebld expr);
 void ffecom_finish_compile (void);
 void ffecom_finish_decl (tree decl, tree init, bool is_top_level);
 void ffecom_finish_progunit (void);
-tree ffecom_get_invented_identifier (const char *pattern, const char *text,
-				     int number);
+tree ffecom_get_invented_identifier (const char *pattern, ...)
+  ATTRIBUTE_PRINTF_1;
 ffeinfoKindtype ffecom_gfrt_basictype (ffecomGfrt ix);
 ffeinfoKindtype ffecom_gfrt_kindtype (ffecomGfrt ix);
 void ffecom_init_0 (void);

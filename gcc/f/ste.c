@@ -1279,7 +1279,7 @@ ffeste_io_ialist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_alist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_alist_%d",
 						  mynumber++),
 		  f2c_alist_struct);
   TREE_STATIC (t) = 1;
@@ -1495,7 +1495,7 @@ ffeste_io_cilist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_cilist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_cilist_%d",
 						  mynumber++),
 		  f2c_cilist_struct);
   TREE_STATIC (t) = 1;
@@ -1635,7 +1635,7 @@ ffeste_io_cllist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_cllist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_cllist_%d",
 						  mynumber++),
 		  f2c_close_struct);
   TREE_STATIC (t) = 1;
@@ -1853,7 +1853,7 @@ ffeste_io_icilist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_icilist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_icilist_%d",
 						  mynumber++),
 		  f2c_icilist_struct);
   TREE_STATIC (t) = 1;
@@ -2113,7 +2113,7 @@ ffeste_io_inlist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_inlist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_inlist_%d",
 						  mynumber++),
 		  f2c_inquire_struct);
   TREE_STATIC (t) = 1;
@@ -2302,7 +2302,7 @@ ffeste_io_olist_ (bool have_err,
   yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_olist_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_olist_%d",
 						  mynumber++),
 		  f2c_open_struct);
   TREE_STATIC (t) = 1;
