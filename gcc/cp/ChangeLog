@@ -1,3 +1,8 @@
+1999-08-29  Alex Samuel  <samuel@codesourcery.com>
+
+	* pt.c (push_template_decl_real): Use template declaration from
+	class type if it exists.
+
 1999-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (TYPE_NEEDS_CONSTRUCTING): Remove #if 0'd definition.

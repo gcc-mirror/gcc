@@ -2461,6 +2461,22 @@ push_template_decl_real (decl, is_friend)
 	  && DECL_TEMPLATE_INFO (decl)
 	  && DECL_TI_TEMPLATE (decl))
 	tmpl = DECL_TI_TEMPLATE (decl);
+      /* If DECL is a TYPE_DECL for a class-template, then there won't
+	 be DECL_LANG_SPECIFIC.  The information equivalent to
+	 DECL_TEMPLATE_INFO is found in TYPE_TEMPLATE_INFO instead.  */
+      else if (DECL_IMPLICIT_TYPEDEF_P (decl) 
+	       && TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
+	       && TYPE_TI_TEMPLATE (TREE_TYPE (decl)))
+	{
+	  /* Since a template declaration already existed for this
+	     class-type, we must be redeclaring it here.  Make sure
+	     that the redeclaration is legal.  */
+	  redeclare_class_template (TREE_TYPE (decl),
+				    current_template_parms);
+	  /* We don't need to create a new TEMPLATE_DECL; just use the
+	     one we already had.  */
+	  tmpl = TYPE_TI_TEMPLATE (TREE_TYPE (decl));
+	}
       else
 	{
 	  tmpl = build_template_decl (decl, current_template_parms);
