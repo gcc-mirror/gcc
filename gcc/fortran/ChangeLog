@@ -1,3 +1,18 @@
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15481
+	PR fortran/13372
+	PR fortran/13575
+	PR fortran/15978
+	* module.c (write_symbol, write_symtree): Remove workaround.
+	* primary.c (match_actual_arglist): Enhance comment.
+	(gfc_match_rvalue): Handle function call with first argument
+	a keyword argument correctly.
+	* resolve.c (resolve_symbol): Change call to
+	gfc_set_default_type to issue error if no implicit type
+	can be found.
+	* trans-decl.c (gfc_create_module_variable): Remove workaround.
+	
 2004-07-08  Paul Brook  <paul@codesourcery.com>
 
 	* intrinsic.c (add_sym_4s): New function.
