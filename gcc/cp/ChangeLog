@@ -1,3 +1,31 @@
+Thu Apr  9 22:16:57 1998  Per Bothner  <bothner@cygnus.com>
+
+        * cp-tree.h (start_decl):  Update prototype.
+        * decl.c (start_decl):  Like the C version, new parameters
+        for the attributes.  Call cplus_decl_attributes here,
+        (pushdecl):  Like C version, do build_type_copy if TYPE_DECL,
+        (grokdeclarator):  Pass NULL for new start_decl arguments.
+        * pt.c (tsubst_expr):  Likewise.
+        * parse.y:  Merge cplus_decl_attribute calls into start_decl calls.
+	* typeck.c (common_type): Check TYPE_MAIN_VARIANT.
+	* lex.c (build_lang_decl): Add lang_name_java.
+	* class.c (push_lang_context): Add lang_name_java.
+	* method.c (build_mangled_name): Check for is_java_type.
+
+Thu Apr  9 22:16:57 1998  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* decl.c (grokdeclarator): Check TYPE_MAIN_VARIANT.
+	* call.c (build_scoped_method_call): Check for TREE_CODE for
+	VOID_TYPE instead of type ==  void_type_node.
+	(build_method_call): Ditto.
+	* decl.c (lookup_name_real): Ditto.
+	(grokdeclarator): Ditto.
+	(start_decl): Ditto.
+	(grokparms): Ditto.
+	(start_function): Ditto.
+	(finish_function): Ditto.
+	(start_method): Ditto.
+
 Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
 
 	* lex.c (finput): New variable.
