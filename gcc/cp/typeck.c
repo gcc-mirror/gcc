@@ -592,12 +592,14 @@ merge_types (t1, t2)
       /* For two pointers, do this recursively on the target type.  */
       {
 	tree target = merge_types (TREE_TYPE (t1), TREE_TYPE (t2));
+	int quals = cp_type_quals (t1);
 
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
 	  t1 = build_reference_type (target);
 	t1 = build_type_attribute_variant (t1, attributes);
+	t1 = cp_build_qualified_type (t1, quals);
 
 	if (TREE_CODE (target) == METHOD_TYPE)
 	  t1 = build_ptrmemfunc_type (t1);
