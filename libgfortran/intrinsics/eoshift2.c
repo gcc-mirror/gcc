@@ -203,6 +203,35 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
     }
 }
 
+
+extern void eoshift2_1 (gfc_array_char *, const gfc_array_char *,
+			const GFC_INTEGER_1 *, const gfc_array_char *,
+			const GFC_INTEGER_1 *);
+export_proto(eoshift2_1);
+
+void
+eoshift2_1 (gfc_array_char *ret, const gfc_array_char *array,
+	    const GFC_INTEGER_1 *pshift, const gfc_array_char *bound,
+	    const GFC_INTEGER_1 *pdim)
+{
+  eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
+}
+
+
+extern void eoshift2_2 (gfc_array_char *, const gfc_array_char *,
+			const GFC_INTEGER_2 *, const gfc_array_char *,
+			const GFC_INTEGER_2 *);
+export_proto(eoshift2_2);
+
+void
+eoshift2_2 (gfc_array_char *ret, const gfc_array_char *array,
+	    const GFC_INTEGER_2 *pshift, const gfc_array_char *bound,
+	    const GFC_INTEGER_2 *pdim)
+{
+  eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
+}
+
+
 extern void eoshift2_4 (gfc_array_char *, const gfc_array_char *,
 			const GFC_INTEGER_4 *, const gfc_array_char *,
 			const GFC_INTEGER_4 *);
@@ -216,6 +245,7 @@ eoshift2_4 (gfc_array_char *ret, const gfc_array_char *array,
   eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }
 
+
 extern void eoshift2_8 (gfc_array_char *, const gfc_array_char *,
 			const GFC_INTEGER_8 *, const gfc_array_char *,
 			const GFC_INTEGER_8 *);
@@ -228,3 +258,4 @@ eoshift2_8 (gfc_array_char *ret, const gfc_array_char *array,
 {
   eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }
+
