@@ -1,3 +1,10 @@
+Sat Sep 19 07:33:36 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (add_constant): New parameter address_only, change caller.
+	Set it non-zero if taking the address of an item in the pool.
+	(arm_reorg): Handle cases where we need the address of an item in
+	the pool.
+
 Sat Sep 19 01:00:32 1998  Michael Hayes  (mph@elec.canterbury.ac.nz)
 
 	* README.C4X: New file with information about the c4x ports.
