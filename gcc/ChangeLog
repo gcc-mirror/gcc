@@ -1,3 +1,9 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* fdl.texi: New file.
+	* c-tree.texi: Use the GFDL.
+	* gcc.texi: Likewise.
+
 2001-04-30  Stan Shebs  <shebs@apple.com>
 
 	* invoke.texi: Add a section documenting Objective-C options.
