@@ -3224,6 +3224,12 @@ rest_of_compilation (decl)
 	     ??? Rework to not call reg_scan so often.  */
 	  timevar_push (TV_JUMP);
 
+	  /* The previous call to loop_optimize makes some instructions
+	     trivially dead.  We delete those instructions now in the
+	     hope that doing so will make the heuristics in jump work
+	     better and possibly speed up compilation.  */
+	  delete_trivially_dead_insns (insns, max_reg_num ());
+
 	  reg_scan (insns, max_reg_num (), 0);
 	  jump_optimize (insns, !JUMP_CROSS_JUMP,
 			 !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);

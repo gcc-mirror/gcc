@@ -1,3 +1,9 @@
+Fri Apr 13 00:09:22 EDT 2001  John Wehle  (john@feith.com)
+
+	* jump.c (jump_optimize_1): Don't delete dead stores here.
+	* toplev.c (rest_of_compilation): Call delete_trivially_dead_insns
+	prior to running jump optimize before cse2.
+
 2001-04-12  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c: Remove all code ifdefed with the never-used
