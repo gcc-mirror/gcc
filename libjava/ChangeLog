@@ -1,3 +1,16 @@
+2005-02-07  Mark Wielaard  <mark@klomp.org>
+
+        Reported by Timo Lindfors <timo.lindfors@iki.fi>
+        java/util/regex/Matcher.java (lookingAt): Set position when match
+        found.
+        (matches): Implemented through lookingAt().
+
+2005-02-07  Mark Wielaard  <mark@klomp.org>
+
+        Fix suggested by Timo Lindfors <timo.lindfors@iki.fi>
+        * java/util/regex/Pattern.java (split(CharSequence,int)):
+        Fix while empties > 0 loops.
+
 2005-02-07  Robert Schuster  <thebohemian@gmx.net>
 
 	* gnu/java/nio/charset/ISO_8859_1.java,
