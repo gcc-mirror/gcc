@@ -240,10 +240,7 @@ eliminate_constant_term (rtx x, rtx *constptr)
 rtx
 expr_size (tree exp)
 {
-  tree size = lang_hooks.expr_size (exp);
-
-  if (CONTAINS_PLACEHOLDER_P (size))
-    size = build (WITH_RECORD_EXPR, sizetype, size, exp);
+  tree size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lang_hooks.expr_size (exp), exp);
 
   return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
 }

@@ -1409,19 +1409,13 @@ component_ref_for_mem_expr (tree ref)
     inner = component_ref_for_mem_expr (inner);
   else
     {
-      tree placeholder_ptr = 0;
-
       /* Now remove any conversions: they don't change what the underlying
-	 object is.  Likewise for SAVE_EXPR.  Also handle PLACEHOLDER_EXPR.  */
+	 object is.  Likewise for SAVE_EXPR.  */
       while (TREE_CODE (inner) == NOP_EXPR || TREE_CODE (inner) == CONVERT_EXPR
 	     || TREE_CODE (inner) == NON_LVALUE_EXPR
 	     || TREE_CODE (inner) == VIEW_CONVERT_EXPR
-	     || TREE_CODE (inner) == SAVE_EXPR
-	     || TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	  inner = find_placeholder (inner, &placeholder_ptr);
-	else
-	  inner = TREE_OPERAND (inner, 0);
+	     || TREE_CODE (inner) == SAVE_EXPR)
+	inner = TREE_OPERAND (inner, 0);
 
       if (! DECL_P (inner))
 	inner = NULL_TREE;
@@ -1608,20 +1602,14 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		index = fold (build (MINUS_EXPR, TREE_TYPE (index),
 				     index, low_bound));
 
-	      /* If the index has a self-referential type, pass it to a
-		 WITH_RECORD_EXPR; if the component size is, pass our
-		 component to one.  */
-	      if (CONTAINS_PLACEHOLDER_P (index))
-		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t2);
-	      if (CONTAINS_PLACEHOLDER_P (unit_size))
-		unit_size = build (WITH_RECORD_EXPR, sizetype,
-				   unit_size, array);
-
+	      /* If the index has a self-referential type, instantiate it;
+		 likewise for the component size.  */
+	      index = SUBSTITUTE_PLACEHOLDER_IN_EXPR (index, t2);
+	      unit_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (unit_size, array);
 	      off_tree
 		= fold (build (PLUS_EXPR, sizetype,
 			       fold (build (MULT_EXPR, sizetype,
-					    index,
-					    unit_size)),
+					    index, unit_size)),
 			       off_tree));
 	      t2 = TREE_OPERAND (t2, 0);
 	    }

@@ -8705,7 +8705,6 @@ loc_descriptor_from_tree (tree loc, int addressp)
     case ERROR_MARK:
       return 0;
 
-    case WITH_RECORD_EXPR:
     case PLACEHOLDER_EXPR:
       /* This case involves extracting fields from an object to determine the
 	 position of other fields.  We don't try to encode this here.  The

@@ -90,9 +90,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the same indirect address eventually.  */
 int cse_not_expected;
 
-/* Chain of pending expressions for PLACEHOLDER_EXPR to replace.  */
-tree placeholder_list = 0;
-
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
 struct move_by_pieces
@@ -4610,9 +4607,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    {
 	      rtx offset_rtx;
 
-	      if (CONTAINS_PLACEHOLDER_P (offset))
-		offset = build (WITH_RECORD_EXPR, sizetype,
-				offset, make_tree (TREE_TYPE (exp), target));
+	      offset
+		= SUBSTITUTE_PLACEHOLDER_IN_EXPR (offset,
+						  make_tree (TREE_TYPE (exp),
+							     target));
 
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
 	      if (GET_CODE (to_rtx) != MEM)
@@ -5401,7 +5399,6 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   enum machine_mode mode = VOIDmode;
   tree offset = size_zero_node;
   tree bit_offset = bitsize_zero_node;
-  tree placeholder_ptr = 0;
   tree tem;
 
   /* First get the mode, signedness, and size.  We do this from just the
@@ -5454,8 +5451,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	     made during type construction.  */
 	  if (this_offset == 0)
 	    break;
-	  else if (CONTAINS_PLACEHOLDER_P (this_offset))
-	    this_offset = build (WITH_RECORD_EXPR, sizetype, this_offset, exp);
+	  else
+	    this_offset = SUBSTITUTE_PLACEHOLDER_IN_EXPR (this_offset, exp);
 
 	  offset = size_binop (PLUS_EXPR, offset, this_offset);
 	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
@@ -5481,33 +5478,14 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	    index = fold (build (MINUS_EXPR, TREE_TYPE (index),
 				 index, low_bound));
 
-	  /* If the index has a self-referential type, pass it to a
-	     WITH_RECORD_EXPR; if the component size is, pass our
-	     component to one.  */
-	  if (CONTAINS_PLACEHOLDER_P (index))
-	    index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
-	  if (CONTAINS_PLACEHOLDER_P (unit_size))
-	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size, array);
-
+	  /* If the index has a self-referential type, instantiate it with
+	     the object; likewise fkor the component size.  */
+	  index = SUBSTITUTE_PLACEHOLDER_IN_EXPR (index, exp);
+	  unit_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (unit_size, array);
 	  offset = size_binop (PLUS_EXPR, offset,
 			       size_binop (MULT_EXPR,
 					   convert (sizetype, index),
 					   unit_size));
-	}
-
-      else if (TREE_CODE (exp) == PLACEHOLDER_EXPR)
-	{
-	  tree new = find_placeholder (exp, &placeholder_ptr);
-
-	  /* If we couldn't find the replacement, return the PLACEHOLDER_EXPR.
-	     We might have been called from tree optimization where we
-	     haven't set up an object yet.  */
-	  if (new == 0)
-	    break;
-	  else
-	    exp = new;
-
-	  continue;
 	}
 
       /* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
@@ -6033,7 +6011,7 @@ highest_pow2_factor (tree exp)
       break;
 
     case NON_LVALUE_EXPR:  case NOP_EXPR:  case CONVERT_EXPR:
-    case SAVE_EXPR: case WITH_RECORD_EXPR:
+    case SAVE_EXPR:
       return highest_pow2_factor (TREE_OPERAND (exp, 0));
 
     case COMPOUND_EXPR:
@@ -6069,70 +6047,6 @@ highest_pow2_factor_for_target (tree target, tree exp)
   return MAX (factor, target_align);
 }
 
-/* Return an object on the placeholder list that matches EXP, a
-   PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
-   PLACEHOLDER_EXPR or a pointer type to it.  For further information, see
-   tree.def.  If no such object is found, return 0.  If PLIST is nonzero, it
-   is a location which initially points to a starting location in the
-   placeholder list (zero means start of the list) and where a pointer into
-   the placeholder list at which the object is found is placed.  */
-
-tree
-find_placeholder (tree exp, tree *plist)
-{
-  tree type = TREE_TYPE (exp);
-  tree placeholder_expr;
-
-  for (placeholder_expr
-       = plist && *plist ? TREE_CHAIN (*plist) : placeholder_list;
-       placeholder_expr != 0;
-       placeholder_expr = TREE_CHAIN (placeholder_expr))
-    {
-      tree need_type = TYPE_MAIN_VARIANT (type);
-      tree elt;
-
-      /* Find the outermost reference that is of the type we want.  If none,
-	 see if any object has a type that is a pointer to the type we
-	 want.  */
-      for (elt = TREE_PURPOSE (placeholder_expr); elt != 0;
-	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
-		   || TREE_CODE (elt) == COND_EXPR)
-		  ? TREE_OPERAND (elt, 1)
-		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
-		  ? TREE_OPERAND (elt, 0) : 0))
-	if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
-	  {
-	    if (plist)
-	      *plist = placeholder_expr;
-	    return elt;
-	  }
-
-      for (elt = TREE_PURPOSE (placeholder_expr); elt != 0;
-	   elt
-	   = ((TREE_CODE (elt) == COMPOUND_EXPR
-	       || TREE_CODE (elt) == COND_EXPR)
-	      ? TREE_OPERAND (elt, 1)
-	      : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		 || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		 || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		 || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
-	      ? TREE_OPERAND (elt, 0) : 0))
-	if (POINTER_TYPE_P (TREE_TYPE (elt))
-	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
-		== need_type))
-	  {
-	    if (plist)
-	      *plist = placeholder_expr;
-	    return build1 (INDIRECT_REF, need_type, elt);
-	  }
-    }
-
-  return 0;
-}
-
 /* Subroutine of expand_expr.  Expand the two operands of a binary
    expression EXP0 and EXP1 placing the results in OP0 and OP1.
    The value may be stored in TARGET if TARGET is nonzero.  The
@@ -6652,31 +6566,6 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	  = lang_hooks.unsave_expr_now (TREE_OPERAND (exp, 0));
 	return temp;
       }
-
-    case PLACEHOLDER_EXPR:
-      {
-	tree old_list = placeholder_list;
-	tree placeholder_expr = 0;
-
-	exp = find_placeholder (exp, &placeholder_expr);
-	if (exp == 0)
-	  abort ();
-
-	placeholder_list = TREE_CHAIN (placeholder_expr);
-	temp = expand_expr (exp, original_target, tmode, modifier);
-	placeholder_list = old_list;
-	return temp;
-      }
-
-    case WITH_RECORD_EXPR:
-      /* Put the object on the placeholder list, expand our first operand,
-	 and pop the list.  */
-      placeholder_list = tree_cons (TREE_OPERAND (exp, 1), NULL_TREE,
-				    placeholder_list);
-      target = expand_expr (TREE_OPERAND (exp, 0), original_target, tmode,
-			    modifier);
-      placeholder_list = TREE_CHAIN (placeholder_list);
-      return target;
 
     case GOTO_EXPR:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == LABEL_DECL)
@@ -9095,11 +8984,10 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 static int
 is_aligning_offset (tree offset, tree exp)
 {
-  /* Strip off any conversions and WITH_RECORD_EXPR nodes.  */
+  /* Strip off any conversions.  */
   while (TREE_CODE (offset) == NON_LVALUE_EXPR
 	 || TREE_CODE (offset) == NOP_EXPR
-	 || TREE_CODE (offset) == CONVERT_EXPR
-	 || TREE_CODE (offset) == WITH_RECORD_EXPR)
+	 || TREE_CODE (offset) == CONVERT_EXPR)
     offset = TREE_OPERAND (offset, 0);
 
   /* We must now have a BIT_AND_EXPR with a constant that is one less than
@@ -9128,13 +9016,8 @@ is_aligning_offset (tree offset, tree exp)
 	 || TREE_CODE (offset) == CONVERT_EXPR)
     offset = TREE_OPERAND (offset, 0);
 
-  /* This must now be the address either of EXP or of a PLACEHOLDER_EXPR
-     whose type is the same as EXP.  */
-  return (TREE_CODE (offset) == ADDR_EXPR
-	  && (TREE_OPERAND (offset, 0) == exp
-	      || (TREE_CODE (TREE_OPERAND (offset, 0)) == PLACEHOLDER_EXPR
-		  && (TREE_TYPE (TREE_OPERAND (offset, 0))
-		      == TREE_TYPE (exp)))));
+  /* This must now be the address of EXP.  */
+  return TREE_CODE (offset) == ADDR_EXPR && TREE_OPERAND (offset, 0) == exp;
 }
 
 /* Return the tree node if an ARG corresponds to a string constant or zero

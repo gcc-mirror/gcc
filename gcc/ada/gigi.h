@@ -701,7 +701,7 @@ extern tree build_component_ref (tree, tree, tree, int);
    GNU_SIZE is the size of the object and ALIGN is the alignment.
    GNAT_PROC, if present is a procedure to call and GNAT_POOL is the
    storage pool to use.  If not preset, malloc and free will be used.  */
-extern tree build_call_alloc_dealloc (tree, tree, int, Entity_Id,
+extern tree build_call_alloc_dealloc (tree, tree, unsigned int, Entity_Id,
 				      Entity_Id, Node_Id);
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose

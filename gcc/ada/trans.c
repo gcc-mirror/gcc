@@ -1236,8 +1236,8 @@ tree_transform (Node_Id gnat_node)
 	    if (CONTAINS_PLACEHOLDER_P (gnu_result))
 	      {
 		if (TREE_CODE (gnu_prefix) != TYPE_DECL)
-		  gnu_result = build (WITH_RECORD_EXPR, TREE_TYPE (gnu_result),
-				      gnu_result, gnu_expr);
+		  gnu_result = substitute_placeholder_in_expr (gnu_result,
+							       gnu_expr);
 		else
 		  gnu_result = max_size (gnu_result, 1);
 	      }
@@ -1381,9 +1381,8 @@ tree_transform (Node_Id gnat_node)
 	      /* If this has a PLACEHOLDER_EXPR, qualify it by the object
 		 we are handling.  Note that these attributes could not
 		 have been used on an unconstrained array type.  */
-	      if (CONTAINS_PLACEHOLDER_P (gnu_result))
-		gnu_result = build (WITH_RECORD_EXPR, TREE_TYPE (gnu_result),
-				    gnu_result, gnu_prefix);
+	      gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result,
+							   gnu_prefix);
 
 	      break;
 	    }
@@ -1486,9 +1485,8 @@ tree_transform (Node_Id gnat_node)
 
 	      /* If this has a PLACEHOLDER_EXPR, qualify it by the object
 		 we are handling. */
-	      if (CONTAINS_PLACEHOLDER_P (gnu_result))
-		gnu_result = build (WITH_RECORD_EXPR, TREE_TYPE (gnu_result),
-				    gnu_result, gnu_prefix);
+	      gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result,
+							   gnu_prefix);
 
 	      break;
 	    }
@@ -1496,7 +1494,7 @@ tree_transform (Node_Id gnat_node)
 	  case Attr_Min:
 	  case Attr_Max:
 	    gnu_lhs = gnat_to_gnu (First (Expressions (gnat_node)));
-	    gnu_rhs =  gnat_to_gnu (Next (First (Expressions (gnat_node))));
+	    gnu_rhs = gnat_to_gnu (Next (First (Expressions (gnat_node))));
 
 	    gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	    gnu_result = build_binary_op (attribute == Attr_Min
@@ -4622,13 +4620,8 @@ emit_index_check (tree gnu_array_object,
 
   /* If GNU_LOW or GNU_HIGH are a PLACEHOLDER_EXPR, qualify them by
      the object we are handling. */
-  if (CONTAINS_PLACEHOLDER_P (gnu_low))
-    gnu_low = build (WITH_RECORD_EXPR, TREE_TYPE (gnu_low),
-		     gnu_low, gnu_array_object);
-
-  if (CONTAINS_PLACEHOLDER_P (gnu_high))
-    gnu_high = build (WITH_RECORD_EXPR, TREE_TYPE (gnu_high),
-		      gnu_high, gnu_array_object);
+  gnu_low = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_low, gnu_array_object);
+  gnu_high = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_high, gnu_array_object);
 
   /* There's no good type to use here, so we might as well use
      integer_type_node.   */

@@ -2675,6 +2675,24 @@ extern int has_cleanups (tree);
 
 extern tree substitute_in_expr (tree, tree, tree);
 
+/* This macro calls the above function but short-circuits the common
+   case of a constant to save time and also checks for NULL.  */
+
+#define SUBSTITUTE_IN_EXPR(EXP, F, R) \
+  ((EXP) == 0 || TREE_CONSTANT (EXP) ? (EXP) : substitute_in_expr (EXP, F, R))
+
+/* Similar, but look for a PLACEHOLDER_EXPR in EXP and find a replacement
+   for it within OBJ, a tree that is an object or a chain of references.  */
+
+extern tree substitute_placeholder_in_expr (tree, tree);
+
+/* This macro calls the above function but short-circuits the common
+   case of a constant to save time and also checks for NULL.  */
+
+#define SUBSTITUTE_PLACEHOLDER_IN_EXPR(EXP, OBJ) \
+  ((EXP) == 0 || TREE_CONSTANT (EXP) ? (EXP)	\
+   : substitute_placeholder_in_expr (EXP, OBJ))
+
 /* variable_size (EXP) is like save_expr (EXP) except that it
    is for the special case of something that is part of a
    variable size for a data type.  It makes special arrangements
