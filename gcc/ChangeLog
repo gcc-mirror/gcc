@@ -1,3 +1,13 @@
+Sat Sep  4 11:37:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_emit_move_sequence): Do not force large
+	constants into memory.
+	(c4x_shiftable_constant): New function.
+	* config/c4x/c4x.c (LEGITIMATE_CONSTANT_P): Allow any CONST_INT.
+	(c4x_shiftable_constant): Declare.
+	* config/c4x/c4x.md (loadqi_big_constant, loadhi_big_constant,
+ 	ashlqi3_noclobber): Add new patterns and associated splitters.
+	
 Fri Sep  3 16:22:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* dbxout.c (dbxout_init): Use xcalloc instead of xmalloc+bzero.
