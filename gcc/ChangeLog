@@ -1,3 +1,9 @@
+2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/16819
+	* calls.c (load_register_parameters): Don't call use_regs when
+	nregs is zero.
+
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/19102

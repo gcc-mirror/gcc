@@ -1719,8 +1719,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	    use_group_regs (call_fusage, reg);
 	  else if (nregs == -1)
 	    use_reg (call_fusage, reg);
-	  else
-	    use_regs (call_fusage, REGNO (reg), nregs == 0 ? 1 : nregs);
+	  else if (nregs > 0)
+	    use_regs (call_fusage, REGNO (reg), nregs);
 	}
     }
 }
