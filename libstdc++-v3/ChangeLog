@@ -1,3 +1,10 @@
+2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/char_traits.h char_traits<char>::int_type: Change
+	to `int' to match 21.1.3.1/2.
+
+	* testsuite/21_strings/char_traits-int_type.C: New test.
+
 2001-02-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/Makefile.am: New file.

@@ -150,7 +150,7 @@ namespace std {
     struct char_traits<char>
     {
       typedef char 		char_type;
-      typedef unsigned int 	int_type;
+      typedef int 	        int_type;
       typedef streampos 	pos_type;
       typedef streamoff 	off_type;
       typedef mbstate_t 	state_type;
