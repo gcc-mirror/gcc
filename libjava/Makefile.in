@@ -1646,20 +1646,19 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/spec/KeySpec.P \
 .deps/java/security/spec/RSAPrivateCrtKeySpec.P \
 .deps/java/security/spec/RSAPrivateKeySpec.P \
-.deps/java/security/spec/RSAPublicKeySpec.P \
-.deps/java/sql/Array.P .deps/java/sql/BatchUpdateException.P \
-.deps/java/sql/Blob.P .deps/java/sql/CallableStatement.P \
-.deps/java/sql/Clob.P .deps/java/sql/Connection.P \
-.deps/java/sql/DataTruncation.P .deps/java/sql/DatabaseMetaData.P \
-.deps/java/sql/Date.P .deps/java/sql/Driver.P \
-.deps/java/sql/DriverManager.P .deps/java/sql/DriverPropertyInfo.P \
-.deps/java/sql/PreparedStatement.P .deps/java/sql/Ref.P \
-.deps/java/sql/ResultSet.P .deps/java/sql/ResultSetMetaData.P \
-.deps/java/sql/SQLData.P .deps/java/sql/SQLException.P \
-.deps/java/sql/SQLInput.P .deps/java/sql/SQLOutput.P \
-.deps/java/sql/Struct.P .deps/java/sql/SQLWarning.P \
-.deps/java/sql/Statement.P .deps/java/sql/Time.P \
-.deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
+.deps/java/security/spec/RSAPublicKeySpec.P .deps/java/sql/Array.P \
+.deps/java/sql/BatchUpdateException.P .deps/java/sql/Blob.P \
+.deps/java/sql/CallableStatement.P .deps/java/sql/Clob.P \
+.deps/java/sql/Connection.P .deps/java/sql/DataTruncation.P \
+.deps/java/sql/DatabaseMetaData.P .deps/java/sql/Date.P \
+.deps/java/sql/Driver.P .deps/java/sql/DriverManager.P \
+.deps/java/sql/DriverPropertyInfo.P .deps/java/sql/PreparedStatement.P \
+.deps/java/sql/Ref.P .deps/java/sql/ResultSet.P \
+.deps/java/sql/ResultSetMetaData.P .deps/java/sql/SQLData.P \
+.deps/java/sql/SQLException.P .deps/java/sql/SQLInput.P \
+.deps/java/sql/SQLOutput.P .deps/java/sql/SQLWarning.P \
+.deps/java/sql/Statement.P .deps/java/sql/Struct.P \
+.deps/java/sql/Time.P .deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
 .deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
 .deps/java/text/ChoiceFormat.P \
 .deps/java/text/CollationElementIterator.P \
