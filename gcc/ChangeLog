@@ -1,3 +1,10 @@
+2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+	    Sunil Davasam  <sunil.k.davasam@intel.com>
+
+	PR libstdc++/9076 
+	* unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
+	DW_CFA_same_value, read next and ignore.
+
 2003-01-07  Richard Henderson  <rth@redhat.com>
 
 	* cfganal.c (flow_call_edges_add): Don't crash on noreturn call.
