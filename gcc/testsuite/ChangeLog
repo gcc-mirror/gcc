@@ -1,3 +1,7 @@
+2003-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/arm-asm.c: Enable for StrongARM and XScale targets.
+
 2003-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/compile/20010327-1.c: Use __SIZE_TYPE__ instead of
