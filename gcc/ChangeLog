@@ -1,3 +1,59 @@
+2005-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfgloop.c (flow_loop_entry_edges_find, flow_loop_exit_edges_find,
+	flow_loop_pre_header_scan, flow_loop_pre_header_find,
+	flow_loop_scan): Removed.
+	(flow_loop_dump): Do not dump removed fields.
+	(flow_loop_free): Do not free removed fields.
+	(flow_loops_find): Flags argument removed.  Do not call flow_loop_scan.
+	(loop_exit_edge_p): New function.
+	* cfgloop.h (struct loop): Removed fields pre_header, pre_header_edges,
+	num_pre_header_edges, entry_edges, num_entries, exit_edges,
+	num_exits, exits_doms.
+	(LOOP_TREE, LOOP_PRE_HEADER, LOOP_ENTRY_EDGES, LOOP_EXIT_EDGES,
+	LOOP_EDGES, LOOP_ALL): Removed.
+	(flow_loop_scan): Declaration removed.
+	(loop_exit_edge_p, mark_loop_exit_edges): Declare.
+	* cfgloopmanip.c (create_loop_notes): Do not pass flags to
+	flow_loops_find.
+	* ifcvt.c (mark_loop_exit_edges): Moved to cfgloopanal.c.
+	(if_convert): Call flow_loops_find and flow_loops_free
+	when calling mark_loop_exit_edges.
+	* cfgloopanal.c (mark_loop_exit_edges): Moved from
+	ifcvt.c.  Removed the flow_loops_find, flow_loops_free and
+	free_dominance_info calls.
+	* loop-init.c (flow_loops_find): Ditto.
+	* passes.c (rest_of_handle_branch_prob): Ditto.
+	* lambda-code.c (perfect_nestify): Do not call flow_loops_find.
+	* loop-unroll.c (analyze_insns_in_loop): Do not use
+	EDGE_LOOP_EXIT.
+	* predict.c (predict_loops): Do not call flow_loop_scan.
+	Use get_loop_exit_edges.
+	(tree_estimate_probability): Do not pass flags to flow_loops_find.
+	* tree-if-conv.c (bb_with_exit_edge_p): Take loop as argument.
+	Do not use EDGE_LOOP_EXIT.
+	(tree_if_convert_cond_expr, if_convertible_modify_expr_p): Pass loop
+	to bb_with_exit_edge_p.
+	(if_convertible_loop_p): Do not call flow_loop_scan.  Use
+	loop->single_exit.  Do not use EDGE_LOOP_EXIT.  Pass loop
+	to bb_with_exit_edge_p.
+	(combine_blocks): Pass loop to bb_with_exit_edge_p.  Do not use
+	EDGE_LOOP_EXIT.
+	* tree-loop-linear.c (linear_transform_loops): Do not call
+	flow_loop_scan.  Use loop->single_exit.
+	* tree-vect-analyze.c (vect_analyze_operations): Use loop->single_exit.
+	(vect_analyze_loop_form): Do not call flow_loop_scan.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer): Use
+	loop->single_exit.
+	(vect_do_peeling_for_loop_bound): Use loop_preheader_edge and
+	loop->single_exit.
+	* tree-vectorizer.c (slpeel_update_phis_for_duplicate_loop,
+	slpeel_make_loop_iterate_ntimes, slpeel_can_duplicate_loop_p,
+	slpeel_tree_duplicate_loop_to_edge_cfg,
+	slpeel_verify_cfg_after_peeling, slpeel_tree_peel_loop_to_edge):
+	Use loop_preheader_edge and loop->single_exit.  Do not call
+	flow_loop_scan.
+
 2005-03-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (thumb_find_work_register): Check all of the

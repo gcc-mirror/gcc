@@ -462,7 +462,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
                      "not vectorized: can't create epilog loop 1.");
           return false;
         }
-      if (!slpeel_can_duplicate_loop_p (loop, loop->exit_edges[0]))
+      if (!slpeel_can_duplicate_loop_p (loop, loop->single_exit))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
                                      LOOP_LOC (loop_vinfo)))
@@ -2265,7 +2265,6 @@ vect_analyze_loop_form (struct loop *loop)
   loop_vec_info loop_vinfo;
   tree loop_cond;
   tree number_of_iterations = NULL;
-  bool rescan = false;
   LOC loop_loc;
 
   loop_loc = find_loop_location (loop);
@@ -2282,8 +2281,7 @@ vect_analyze_loop_form (struct loop *loop)
   
   if (!loop->single_exit 
       || loop->num_nodes != 2
-      || EDGE_COUNT (loop->header->preds) != 2
-      || loop->num_entries != 1)
+      || EDGE_COUNT (loop->header->preds) != 2)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS, loop_loc))
         {
@@ -2293,8 +2291,6 @@ vect_analyze_loop_form (struct loop *loop)
             fprintf (vect_dump, "not vectorized: too many BBs in loop.");
           else if (EDGE_COUNT (loop->header->preds) != 2)
             fprintf (vect_dump, "not vectorized: too many incoming edges.");
-          else if (loop->num_entries != 1)
-            fprintf (vect_dump, "not vectorized: too many entries.");
         }
 
       return NULL;
@@ -2311,16 +2307,6 @@ vect_analyze_loop_form (struct loop *loop)
       return NULL;
     }
 
-  /* Make sure we have a preheader basic block.  */
-  if (!loop->pre_header || EDGE_COUNT (loop->pre_header->succs) != 1)
-    {
-      edge e = loop_preheader_edge (loop);
-      loop_split_edge_with (e, NULL);
-      if (vect_print_dump_info (REPORT_DETAILS, loop_loc))
-	fprintf (vect_dump, "split preheader edge.");
-      rescan = true;
-    }
-    
   /* Make sure there exists a single-predecessor exit bb:  */
   if (EDGE_COUNT (loop->single_exit->dest->preds) != 1)
     {
@@ -2330,7 +2316,6 @@ vect_analyze_loop_form (struct loop *loop)
 	  loop_split_edge_with (e, NULL);
 	  if (vect_print_dump_info (REPORT_DETAILS, loop_loc))
 	    fprintf (vect_dump, "split exit edge.");
-	  rescan = true;
 	}
       else
 	{
@@ -2338,13 +2323,6 @@ vect_analyze_loop_form (struct loop *loop)
 	    fprintf (vect_dump, "not vectorized: abnormal loop exit edge.");
 	  return NULL;
 	}
-    }
-    
-  if (rescan)
-    {
-      flow_loop_scan (loop, LOOP_ALL);
-      /* Flow loop scan does not update loop->single_exit field.  */
-      loop->single_exit = loop->exit_edges[0];
     }
 
   if (empty_block_p (loop->header))

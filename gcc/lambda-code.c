@@ -2430,7 +2430,6 @@ perfect_nestify (struct loops *loops,
 	}
     }
   free (bbs);
-  flow_loops_find (loops, LOOP_ALL);
   return perfect_nest_p (loop);
 }
 

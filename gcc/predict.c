@@ -583,13 +583,13 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
     {
       basic_block bb, *bbs;
       unsigned j;
-      int exits;
+      unsigned n_exits;
       struct loop *loop = loops_info->parray[i];
       struct niter_desc desc;
       unsigned HOST_WIDE_INT niter;
+      edge *exits;
 
-      flow_loop_scan (loop, LOOP_EXIT_EDGES);
-      exits = loop->num_exits;
+      exits = get_loop_exit_edges (loop, &n_exits);
 
       if (rtlsimpleloops)
 	{
@@ -615,11 +615,8 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	}
       else
 	{
-	  edge *exits;
-	  unsigned j, n_exits;
 	  struct tree_niter_desc niter_desc;
 
-	  exits = get_loop_exit_edges (loop, &n_exits);
 	  for (j = 0; j < n_exits; j++)
 	    {
 	      tree niter = NULL;
@@ -647,8 +644,8 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 		}
 	    }
 
-	  free (exits);
 	}
+      free (exits);
 
       bbs = get_loop_body (loop);
 
@@ -690,7 +687,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 		  (e, PRED_LOOP_EXIT,
 		   (REG_BR_PROB_BASE
 		    - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
-		   / exits);
+		   / n_exits);
 	}
       
       /* Free basic blocks from get_loop_body.  */
@@ -1293,7 +1290,7 @@ tree_estimate_probability (void)
   basic_block bb;
   struct loops loops_info;
 
-  flow_loops_find (&loops_info, LOOP_TREE);
+  flow_loops_find (&loops_info);
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (&loops_info, dump_file, NULL, 0);
 

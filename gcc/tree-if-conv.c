@@ -126,7 +126,7 @@ static void combine_blocks (struct loop *);
 static tree ifc_temp_var (tree, tree);
 static bool pred_blocks_visited_p (basic_block, bitmap *);
 static basic_block * get_loop_body_in_if_conv_order (const struct loop *loop);
-static bool bb_with_exit_edge_p (basic_block);
+static bool bb_with_exit_edge_p (struct loop *, basic_block);
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
@@ -312,7 +312,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
      using new condition.  */
-  if (!bb_with_exit_edge_p (bb_for_stmt (stmt)))
+  if (!bb_with_exit_edge_p (loop, bb_for_stmt (stmt)))
     {
       bsi_remove (bsi);
       cond = NULL_TREE;
@@ -405,7 +405,7 @@ if_convertible_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
 
   if (TREE_CODE (TREE_OPERAND (m_expr, 0)) != SSA_NAME
       && bb != loop->header
-      && !bb_with_exit_edge_p (bb))
+      && !bb_with_exit_edge_p (loop, bb))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -534,8 +534,6 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
       return false;
     }
 
-  flow_loop_scan (loop, LOOP_ALL);
-
   /* If only one block, no need for if-conversion.  */
   if (loop->num_nodes <= 2)
     {
@@ -545,7 +543,7 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
     }
 
   /* More than one loop exit is too much to handle.  */
-  if (loop->num_exits > 1)
+  if (!loop->single_exit)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "multiple exits\n");
@@ -557,8 +555,10 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
   /* If one of the loop header's edge is exit edge then do not apply
      if-conversion.  */
   FOR_EACH_EDGE (e, ei, loop->header->succs)
-    if ( e->flags & EDGE_LOOP_EXIT)
-      return false;
+    {
+      if (loop_exit_edge_p (loop, e))
+	return false;
+    }
 
   compute_immediate_uses (TDFA_USE_OPS|TDFA_USE_VOPS, NULL);
 
@@ -593,7 +593,7 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 	if (!if_convertible_phi_p (loop, bb, phi))
 	  return false;
 
-      if (bb_with_exit_edge_p (bb))
+      if (bb_with_exit_edge_p (loop, bb))
 	exit_bb_seen = true;
     }
 
@@ -874,7 +874,7 @@ combine_blocks (struct loop *loop)
 
       bb = ifc_bbs[i];
 
-      if (!exit_bb && bb_with_exit_edge_p (bb))
+      if (!exit_bb && bb_with_exit_edge_p (loop, bb))
 	  exit_bb = bb;
 
       if (bb == exit_bb)
@@ -890,11 +890,13 @@ combine_blocks (struct loop *loop)
 	    {
 	      /* Redirect non-exit edge to loop->latch.  */
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (!(e->flags & EDGE_LOOP_EXIT))
-		  {
-		    redirect_edge_and_branch (e, loop->latch);
-		    set_immediate_dominator (CDI_DOMINATORS, loop->latch, bb);
-		  }
+		{
+		  if (!loop_exit_edge_p (loop, e))
+		    {
+		      redirect_edge_and_branch (e, loop->latch);
+		      set_immediate_dominator (CDI_DOMINATORS, loop->latch, bb);
+		    }
+		}
 	    }
 	  continue;
 	}
@@ -1056,17 +1058,17 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   return blocks;
 }
 
-/* Return true if one of the basic block BB edge is loop exit.  */
+/* Return true if one of the basic block BB edge is exit of LOOP.  */
 
 static bool
-bb_with_exit_edge_p (basic_block bb)
+bb_with_exit_edge_p (struct loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
   bool exit_edge_found = false;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_LOOP_EXIT)
+    if (loop_exit_edge_p (loop, e))
       {
 	exit_edge_found = true;
 	break;
