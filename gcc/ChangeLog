@@ -1,3 +1,8 @@
+2003-11-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (loadgp): Take $25 as a second operand.
+	* config/mips/mips.c (mips_expand_prologue): Modify accordingly.
+
 2003-11-06  Matt Austern <austern@apple.com>
 
 	* c-common.c (handle_visibility_attribute): Set DECL_VISIBILITY
