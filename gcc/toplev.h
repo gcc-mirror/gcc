@@ -45,23 +45,32 @@ extern void _fatal_insn (const char *, rtx, const char *, int, const char *)
    style, use the generic one.  */
 #ifndef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_diag__
+#define NO_FRONT_END_DIAG
 #endif
 /* None of these functions are suitable for ATTRIBUTE_PRINTF, because
    each language front end can extend them with its own set of format
-   specifiers.  We must use custom format checks.  */
+   specifiers.  We must use custom format checks.  Note that at present
+   the front-end %D specifier is used in non-front-end code with some
+   functions, and those formats can only be checked in front-end code.  */
 #if GCC_VERSION >= 3005
 #define ATTRIBUTE_GCC_DIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
+#ifdef NO_FRONT_END_DIAG
+#define ATTRIBUTE_GCC_FE_DIAG(m, n) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCC_FE_DIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
+#endif
 #else
 #define ATTRIBUTE_GCC_DIAG(m, n) ATTRIBUTE_NONNULL(m)
+#define ATTRIBUTE_GCC_FE_DIAG(m, n) ATTRIBUTE_NONNULL(m)
 #endif
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void warning (const char *, ...);
-extern void error (const char *, ...);
+extern void warning (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
+extern void error (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void pedwarn (const char *, ...);
-extern void sorry (const char *, ...);
+extern void pedwarn (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
+extern void sorry (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, const char *, int, int);
