@@ -5194,7 +5194,6 @@ auto_function (name, type, code)
 void
 init_decl_processing ()
 {
-  tree decl;
   register tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree fields[20];
   /* Data type of memcpy.  */
