@@ -1,6 +1,6 @@
 /* Subroutines for assembler code output on the DSP1610.
    Copyright (C) 1994, 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
-   Contributed by Michael Collison (collison@world.std.com).
+   Contributed by Michael Collison (collison@isisinc.net).
 
 This file is part of GNU CC.
 
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "toplev.h"
 #include "recog.h"
-#include "tm_p.h"
+#include "dsp16xx-protos.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -58,7 +58,7 @@ const char *save_chip_name;
 
 rtx dsp16xx_compare_op0;
 rtx dsp16xx_compare_op1;
-rtx (*dsp16xx_compare_gen) PARAMS (());
+struct rtx_def *(*dsp16xx_compare_gen)();
 
 static const char *fp;
 static const char *sp;
@@ -149,7 +149,7 @@ static const char *const lshift_right_asm_first[] =
 static int reg_save_size PARAMS ((void));
 static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE dsp16xx_output_function_prologue
@@ -157,7 +157,7 @@ static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_FUNCTION_EPILOGUE dsp16xx_output_function_epilogue
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
+
 int 
 hard_regno_mode_ok (regno, mode)
      int regno;
@@ -208,6 +208,12 @@ dsp16xx_reg_class_from_letter (c)
     {
     case 'A':
       return ACCUM_REGS;
+
+    case 'l':
+      return A0_REG;
+
+    case 'C':
+      return A1_REG;
       
     case 'h':
       return ACCUM_HIGH_REGS;
@@ -241,9 +247,6 @@ dsp16xx_reg_class_from_letter (c)
 
     case 'd':
       return ACCUM_Y_OR_P_REGS;
-
-    case 'C':
-      return NO_FRAME_Y_ADDR_REGS;
 
     case 'a':
       return Y_ADDR_REGS;
@@ -279,7 +282,7 @@ dsp16xx_reg_class_from_letter (c)
       return SLOW_MEM_LOAD_REGS;
 
     default:
-      abort ();
+      return NO_REGS;
     }
 }
 /* Return the class number of the smallest class containing
@@ -368,210 +371,16 @@ class_max_nregs(class, mode)
 
 enum reg_class
 limit_reload_class (mode, class)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      enum reg_class class;
 {
-  switch ((int) class)
-    {
-    case NO_REGS:
-    case A0H_REG:
-    case A0L_REG:
-    case A0_REG:
-    case A1H_REG:
-      return class;
-
-    case ACCUM_HIGH_REGS:
-      abort ();
-
-    case A1L_REG:
-    case ACCUM_LOW_REGS:
-    case A1_REG:
-      return class;
-
-    case ACCUM_REGS:
-      if (GET_MODE_SIZE(mode) == 1)
-	return ACCUM_LOW_REGS;
-      else
-	return class;
-
-    case X_REG:
-    case X_OR_ACCUM_LOW_REGS:
-      return class;
-
-    case X_OR_ACCUM_REGS:
-      if (GET_MODE_SIZE(mode) == 1)
-	return X_OR_ACCUM_LOW_REGS;
-      else
-	return class;
-
-    case YH_REG:
-      return class;
-
-    case YH_OR_ACCUM_HIGH_REGS:
-      abort ();
-
-    case X_OR_YH_REGS:
-      return class;
-
-    case YL_REG:
-      /* Register 'yl' is invalid for QImode, so we should never
-	 see it. */
-      abort ();
-
-    case YL_OR_ACCUM_LOW_REGS:
-    case X_OR_YL_REGS:
-      return class;
-
-    case Y_REG:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return YH_REG;
-
-    case ACCUM_OR_Y_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return YL_OR_ACCUM_LOW_REGS;
-
-    case PH_REG:
-    case X_OR_PH_REGS:
-    case PL_REG:
-    case PL_OR_ACCUM_LOW_REGS:
-    case X_OR_PL_REGS:
-      return class;
-
-    case P_REG:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return PL_REG;
-
-    case ACCUM_OR_P_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return PL_OR_ACCUM_LOW_REGS;
-
-    case YL_OR_P_REGS:
-    case ACCUM_LOW_OR_YL_OR_P_REGS:
-      return class;
-
-    case Y_OR_P_REGS:
-      return class;
-
-    case ACCUM_Y_OR_P_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return ACCUM_LOW_OR_YL_OR_P_REGS;
-
-    case NO_FRAME_Y_ADDR_REGS:
-    case Y_ADDR_REGS: 
-    case ACCUM_LOW_OR_Y_ADDR_REGS:
-      return class;
-
-    case ACCUM_OR_Y_ADDR_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return ACCUM_REGS;
-      else
-	return ACCUM_LOW_OR_Y_ADDR_REGS;
-
-    case X_OR_Y_ADDR_REGS:
-      return class;
-
-    case Y_OR_Y_ADDR_REGS:
-    case P_OR_Y_ADDR_REGS:
-    case NON_HIGH_YBASE_ELIGIBLE_REGS:
-
-    case J_REG:
-      return class;
-
-    case YBASE_ELIGIBLE_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return ACCUM_Y_P_OR_YBASE_REGS;
-      else
-	return NON_HIGH_YBASE_ELIGIBLE_REGS;
-
-    case J_OR_DAU_16_BIT_REGS:
-      if (GET_MODE_SIZE(mode) == 1)
-	return J_REG;
-      else
-	return class;
-
-    case BMU_REGS:
-    case NOHIGH_NON_ADDR_REGS:
-      return class;
-
-    case NON_ADDR_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return NOHIGH_NON_ADDR_REGS;
-
-    case NOHIGH_NON_YBASE_REGS:
-      return class;
-
-    case NON_YBASE_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return NOHIGH_NON_YBASE_REGS;
-
-    case YBASE_VIRT_REGS:
-    case ACCUM_LOW_OR_YBASE_REGS:
-      return class;
-      
-    case ACCUM_OR_YBASE_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return ACCUM_LOW_OR_YBASE_REGS;
-
-    case X_OR_YBASE_REGS:
-      return class;
-
-    case Y_OR_YBASE_REGS:
-    case ACCUM_LOW_YL_PL_OR_YBASE_REGS:
-    case P_OR_YBASE_REGS:
-      return class;
-
-    case ACCUM_Y_P_OR_YBASE_REGS:
-      return ACCUM_LOW_YL_PL_OR_YBASE_REGS;
-
-    case Y_ADDR_OR_YBASE_REGS:
-    case YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS:
-      return class;
-
-    case YBASE_OR_YBASE_ELIGIBLE_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS;
-
-    case NO_HIGH_ALL_REGS:
-      return class;
-
-    case ALL_REGS:
-      if (GET_MODE_SIZE(mode) > 1)
-	return class;
-      else
-	return NO_HIGH_ALL_REGS;
-
-    default:
-      return class;
-    }
+  return class;
 }
 
 int
 dsp16xx_register_move_cost (from, to)
      enum reg_class from, to;
 {
-#if 0
-  if (from == NO_REGS || to == NO_REGS || (from == to))
-    return 2;
-#endif
-
   if (from == A0H_REG || from == A0L_REG || from == A0_REG ||
       from == A1H_REG || from == ACCUM_HIGH_REGS || from == A1L_REG ||
       from == ACCUM_LOW_REGS || from == A1_REG || from == ACCUM_REGS)
@@ -589,18 +398,20 @@ dsp16xx_register_move_cost (from, to)
       return 2;
     }
 
-#if 0
   if (from == YBASE_VIRT_REGS)
     {
+      if (to == YBASE_VIRT_REGS)
+	return 16;
+
       if (to == X_REG || to == YH_REG || to == YL_REG ||
 	  to == Y_REG || to == PL_REG || to == PH_REG ||
 	  to == P_REG || to == Y_ADDR_REGS || to == YBASE_ELIGIBLE_REGS ||
 	  to == Y_OR_P_REGS)
 	{
-	  return 2;
+	  return 8;
 	}
       else
-	return 4;
+	return 10;
     }
 
   if (to == YBASE_VIRT_REGS)
@@ -610,13 +421,13 @@ dsp16xx_register_move_cost (from, to)
 	  from == P_REG || from == Y_ADDR_REGS || from == YBASE_ELIGIBLE_REGS ||
 	  from == Y_OR_P_REGS)
 	{
-	  return 2;
+	  return 8;
 	}
       else
-	return 4;
+	return 10;
     }
-#endif
-  return 4;
+
+  return 8;
 }
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -636,13 +447,341 @@ preferred_reload_class (x, class)
 
   if (CONSTANT_P (x))
     {
-      if (class == ALL_REGS)
-	return NON_YBASE_REGS;
+      switch ((int) class)
+	{
+	case YBASE_VIRT_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_OR_YBASE_REGS:
+	  return ACCUM_LOW_REGS;
+
+	case ACCUM_OR_YBASE_REGS:
+	  return ACCUM_REGS;
+
+	case X_OR_YBASE_REGS:
+	  return X_REG;
+
+	case Y_OR_YBASE_REGS:
+	  return Y_REG;
+
+	case ACCUM_LOW_YL_PL_OR_YBASE_REGS:
+	  return YL_OR_PL_OR_ACCUM_LOW_REGS;
+
+	case P_OR_YBASE_REGS:
+	  return P_REG;
+
+	case ACCUM_Y_P_OR_YBASE_REGS:
+	  return ACCUM_Y_OR_P_REGS;
+
+	case Y_ADDR_OR_YBASE_REGS:
+	  return Y_ADDR_REGS;
+
+	case YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS:
+	  return NON_HIGH_YBASE_ELIGIBLE_REGS;;
+	  
+	case YBASE_OR_YBASE_ELIGIBLE_REGS:
+	  return YBASE_ELIGIBLE_REGS;
+
+	case NO_HIGH_ALL_REGS:
+	  return NOHIGH_NON_YBASE_REGS;
+
+	case ALL_REGS:
+	  return NON_YBASE_REGS;
+
+	default:
+	  return class;
+	}
     }
 
-  if (class == ALL_REGS && REG_P (x) && !TARGET_RESERVE_YBASE
+  /* If x is not an accumulator or a ybase register, restrict the class of registers
+     we can copy the register into */
+
+  if (REG_P (x) && !IS_ACCUM_REG (REGNO (x)) && !IS_YBASE_REGISTER_WINDOW (REGNO (x)))
+    {
+      switch ((int) class)
+	{
+	case NO_REGS:
+	case A0H_REG: case A0L_REG: case A0_REG: case A1H_REG:
+	case ACCUM_HIGH_REGS: case A1L_REG: case ACCUM_LOW_REGS: 
+	case A1_REG: case ACCUM_REGS:
+	  return class;
+
+	case X_REG: 
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case X_OR_ACCUM_LOW_REGS: 
+	  return ACCUM_LOW_REGS;
+
+	case X_OR_ACCUM_REGS:
+	  return ACCUM_REGS;
+
+	case YH_REG:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case YH_OR_ACCUM_HIGH_REGS:
+	  return ACCUM_HIGH_REGS;
+
+	case X_OR_YH_REGS: 
+	case YL_REG:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case YL_OR_ACCUM_LOW_REGS: 
+	  return ACCUM_LOW_REGS;
+
+	case X_OR_YL_REGS:
+	case X_OR_Y_REGS: case Y_REG:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_OR_Y_REGS: 
+	  return ACCUM_REGS;
+
+	case PH_REG:
+	case X_OR_PH_REGS: case PL_REG: 
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case PL_OR_ACCUM_LOW_REGS:
+ 	  return ACCUM_LOW_REGS;
+
+	case X_OR_PL_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case YL_OR_PL_OR_ACCUM_LOW_REGS: 
+ 	  return ACCUM_LOW_REGS;
+
+	case P_REG:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_OR_P_REGS: 
+	  return ACCUM_REGS;
+
+	case YL_OR_P_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_OR_YL_OR_P_REGS: 
+ 	  return ACCUM_LOW_REGS;
+
+	case Y_OR_P_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_Y_OR_P_REGS: 
+	  return ACCUM_REGS;
+
+	case NO_FRAME_Y_ADDR_REGS:
+	case Y_ADDR_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_OR_Y_ADDR_REGS:
+ 	  return ACCUM_LOW_REGS;
+
+	case ACCUM_OR_Y_ADDR_REGS: 
+	  return ACCUM_REGS;
+
+	case X_OR_Y_ADDR_REGS:
+	case Y_OR_Y_ADDR_REGS: 
+	case P_OR_Y_ADDR_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case NON_HIGH_YBASE_ELIGIBLE_REGS: 
+ 	  return ACCUM_LOW_REGS;
+
+	case YBASE_ELIGIBLE_REGS:
+	  return ACCUM_REGS;
+
+	case J_REG:
+	case J_OR_DAU_16_BIT_REGS:
+	case BMU_REGS: 
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case YBASE_VIRT_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return class;
+	  else
+	    return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return class;
+	  else
+	    return ACCUM_LOW_REGS;
+
+	case ACCUM_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return class;
+	  else
+	    return ACCUM_REGS;
+
+	case X_OR_YBASE_REGS:
+	case Y_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return YBASE_VIRT_REGS;
+	  else
+	    return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_YL_PL_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_LOW_OR_YBASE_REGS;
+	  else
+	    return ACCUM_LOW_REGS;
+
+	case P_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return YBASE_VIRT_REGS;
+	  else
+	    return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_Y_P_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_OR_YBASE_REGS;
+	  else
+	    return ACCUM_REGS;
+
+	case Y_ADDR_OR_YBASE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return YBASE_VIRT_REGS;
+	  else
+	    return (!reload_in_progress ? NO_REGS : class);
+
+	case YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_LOW_OR_YBASE_REGS;
+	  else
+	    return ACCUM_LOW_REGS;
+
+	case YBASE_OR_YBASE_ELIGIBLE_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_OR_YBASE_REGS;
+	  else
+	    return ACCUM_REGS;
+
+	case NO_HIGH_ALL_REGS:
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_LOW_OR_YBASE_REGS;
+	  else
+	    return ACCUM_LOW_REGS;
+
+	case ALL_REGS: 
+	  if (IS_YBASE_ELIGIBLE_REG (REGNO (x)))
+	    return ACCUM_OR_YBASE_REGS;
+	  else
+	    return ACCUM_REGS;
+
+	case NOHIGH_NON_ADDR_REGS:
+	    return ACCUM_LOW_REGS;
+
+	case NON_ADDR_REGS:
+	case SLOW_MEM_LOAD_REGS:
+	    return ACCUM_REGS;
+
+	case NOHIGH_NON_YBASE_REGS:
+	    return ACCUM_LOW_REGS;
+
+	case NO_ACCUM_NON_YBASE_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case NON_YBASE_REGS:
+	    return ACCUM_REGS;
+
+	default:
+	  return class;
+	}
+    }
+
+  /* If x (the input) is a ybase register, restrict the class of registers
+     we can copy the register into */
+
+  if (REG_P (x) && !TARGET_RESERVE_YBASE
       && IS_YBASE_REGISTER_WINDOW (REGNO(x)))
-    return YBASE_ELIGIBLE_REGS;
+    {
+      switch ((int) class)
+	{
+	case NO_REGS:
+	case A0H_REG: case A0L_REG: case A0_REG: case A1H_REG:
+	case ACCUM_HIGH_REGS: case A1L_REG: case ACCUM_LOW_REGS: 
+	case A1_REG: case ACCUM_REGS: case X_REG: 
+	case X_OR_ACCUM_LOW_REGS: case X_OR_ACCUM_REGS:
+	case YH_REG: case YH_OR_ACCUM_HIGH_REGS:
+	case X_OR_YH_REGS: case YL_REG:
+	case YL_OR_ACCUM_LOW_REGS: case X_OR_YL_REGS:
+	case X_OR_Y_REGS: case Y_REG:
+	case ACCUM_OR_Y_REGS: case PH_REG:
+	case X_OR_PH_REGS: case PL_REG: 
+	case PL_OR_ACCUM_LOW_REGS: case X_OR_PL_REGS:
+	case YL_OR_PL_OR_ACCUM_LOW_REGS: case P_REG:
+	case ACCUM_OR_P_REGS: case YL_OR_P_REGS:
+	case ACCUM_LOW_OR_YL_OR_P_REGS: case Y_OR_P_REGS:
+	case ACCUM_Y_OR_P_REGS: case NO_FRAME_Y_ADDR_REGS:
+	case Y_ADDR_REGS: case ACCUM_LOW_OR_Y_ADDR_REGS:
+	case ACCUM_OR_Y_ADDR_REGS: case X_OR_Y_ADDR_REGS:
+	case Y_OR_Y_ADDR_REGS: case P_OR_Y_ADDR_REGS:
+	case NON_HIGH_YBASE_ELIGIBLE_REGS: case YBASE_ELIGIBLE_REGS:
+	default:
+	  return class;
+
+	case J_REG:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case J_OR_DAU_16_BIT_REGS:
+	  return ACCUM_HIGH_REGS;
+
+	case BMU_REGS: 
+	case YBASE_VIRT_REGS:
+	  return (!reload_in_progress ? NO_REGS : class);
+
+	case ACCUM_LOW_OR_YBASE_REGS:
+	  return ACCUM_LOW_REGS;
+
+	case ACCUM_OR_YBASE_REGS:
+	  return ACCUM_REGS;
+
+	case X_OR_YBASE_REGS:
+	  return X_REG;
+
+	case Y_OR_YBASE_REGS:
+	  return Y_REG;
+
+	case ACCUM_LOW_YL_PL_OR_YBASE_REGS:
+	  return YL_OR_PL_OR_ACCUM_LOW_REGS; 
+
+	case P_OR_YBASE_REGS:
+	  return P_REG;
+
+	case ACCUM_Y_P_OR_YBASE_REGS:
+	  return ACCUM_Y_OR_P_REGS;
+
+	case Y_ADDR_OR_YBASE_REGS:
+	  return Y_ADDR_REGS;
+
+	case YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS:
+	  return NON_HIGH_YBASE_ELIGIBLE_REGS;
+
+	case YBASE_OR_YBASE_ELIGIBLE_REGS:
+	  return YBASE_ELIGIBLE_REGS;
+
+	case NO_HIGH_ALL_REGS:
+	  return NON_HIGH_YBASE_ELIGIBLE_REGS;
+
+	case ALL_REGS: 
+	  return YBASE_ELIGIBLE_REGS;
+
+	case NOHIGH_NON_ADDR_REGS:
+	  return ACCUM_LOW_OR_YL_OR_P_REGS;
+
+	case NON_ADDR_REGS:
+	  return ACCUM_Y_OR_P_REGS;
+
+	case SLOW_MEM_LOAD_REGS:
+	  return ACCUM_OR_Y_ADDR_REGS;
+
+	case NOHIGH_NON_YBASE_REGS:
+    	  return NON_HIGH_YBASE_ELIGIBLE_REGS;
+
+    	case NO_ACCUM_NON_YBASE_REGS:
+	  return Y_ADDR_REGS;
+
+    	case NON_YBASE_REGS:
+	  return YBASE_ELIGIBLE_REGS;
+	}
+    }
 
   if (GET_CODE (x) == PLUS)
     {
@@ -655,6 +794,12 @@ preferred_reload_class (x, class)
 	  if (class == ACCUM_HIGH_REGS)
 	    return class;
 
+	  /* If the accumulators are not part of the class
+	     being reloaded into, return NO_REGS */
+#if 0
+	  if (!reg_class_subset_p (ACCUM_REGS, class))
+	    return (!reload_in_progress ? NO_REGS : class);
+#endif
 	  if (reg_class_subset_p (ACCUM_HIGH_REGS, class))
 	    return ACCUM_HIGH_REGS;
 
@@ -678,14 +823,54 @@ preferred_reload_class (x, class)
     }
   else if (GET_CODE (x) == MEM)
     {
-      if (class == ALL_REGS)
+      /* We can't copy from a memory location into a
+	 ybase register */
+      if (reg_class_subset_p(YBASE_VIRT_REGS, class))
 	{
-#if 0
-	  if (GET_MODE(x) == HImode)
-	    return NO_ACCUM_NON_YBASE_REGS;
-	  else
-#endif
-	    return NON_YBASE_REGS;
+	  switch ((int) class)
+	    {
+	    case YBASE_VIRT_REGS:
+	      return (!reload_in_progress ? NO_REGS : class);
+
+	    case ACCUM_LOW_OR_YBASE_REGS:
+	      return ACCUM_LOW_REGS;
+
+	    case ACCUM_OR_YBASE_REGS:
+	      return ACCUM_REGS;
+
+	    case X_OR_YBASE_REGS:
+	      return X_REG;
+
+	    case Y_OR_YBASE_REGS:
+	      return Y_REG;
+
+	    case ACCUM_LOW_YL_PL_OR_YBASE_REGS:
+	      return YL_OR_PL_OR_ACCUM_LOW_REGS;
+
+	    case P_OR_YBASE_REGS:
+	      return P_REG;
+
+	    case ACCUM_Y_P_OR_YBASE_REGS:
+	      return ACCUM_Y_OR_P_REGS;
+
+	    case Y_ADDR_OR_YBASE_REGS:
+	      return Y_ADDR_REGS;
+
+	    case YBASE_OR_NOHIGH_YBASE_ELIGIBLE_REGS:
+	      return NON_HIGH_YBASE_ELIGIBLE_REGS;
+	  
+	    case YBASE_OR_YBASE_ELIGIBLE_REGS:
+	      return YBASE_ELIGIBLE_REGS;
+
+	    case NO_HIGH_ALL_REGS:
+	      return NOHIGH_NON_YBASE_REGS;
+
+	    case ALL_REGS:
+	      return NON_YBASE_REGS;
+
+	    default:
+	      return class;
+	    }
 	}
       else
 	return class;
@@ -708,6 +893,18 @@ secondary_reload_class (class, mode, in)
 
   if (GET_CODE (in) == REG || GET_CODE (in) == SUBREG)
     regno = true_regnum (in);
+
+  /* If we are reloading a plus into a high accumulator register,
+     we need a scratch low accumulator, because the low half gets
+     clobbered */
+
+  if (class == ACCUM_HIGH_REGS 
+      || class == A1H_REG
+      || class == A0H_REG)
+    {
+      if (GET_CODE (in) == PLUS && mode == QImode)
+	return ACCUM_LOW_REGS;
+    }
 
   if (class == ACCUM_HIGH_REGS 
       || class == ACCUM_LOW_REGS
@@ -736,6 +933,12 @@ secondary_reload_class (class, mode, in)
        class == A1H_REG || class == A1_REG) || 
       (regno >= REG_A0 && regno < REG_A1L + 1))
     return NO_REGS;
+
+  if (class == ACCUM_OR_YBASE_REGS && REG_P(in)
+      && IS_YBASE_ELIGIBLE_REG(regno))
+    {
+      return NO_REGS;
+    }
 
   /* We can copy the ybase registers into:
      r0-r3, a0-a1, y, p, & x or the union of
@@ -1128,6 +1331,9 @@ compute_frame_size (size)
   long extra_size;
   long reg_size;
 
+  /* This value is needed to compute reg_size */
+  current_frame_info.function_makes_calls = !leaf_function_p ();
+
   reg_size = 0;
   extra_size = 0;
   var_size = size;
@@ -1145,7 +1351,6 @@ compute_frame_size (size)
   current_frame_info.reg_size    = reg_size;
   current_frame_info.initialized = reload_completed;
   current_frame_info.reg_size	 = reg_size / UNITS_PER_WORD;
-  current_frame_info.function_makes_calls = dsp16xx_makes_calls ();
 
   if (reg_size)
     {
@@ -1157,13 +1362,29 @@ compute_frame_size (size)
   return total_size;
 }
 
+int frame_size()
+{
+  return (int) compute_frame_size(get_frame_size());
+}
+
+int frame_pointer_offset()
+{
+  if (!leaf_function_p())
+    return ( -(current_function_outgoing_args_size + 1) );
+  else
+    return 1;
+}
+
 int
 dsp16xx_call_saved_register (regno)
      int regno;
 {
+#if 0
+  if (regno == REG_PR && current_frame_info.function_makes_calls)
+    return 1;
+#endif
   return (regs_ever_live[regno] && !call_used_regs[regno] &&
 	  !IS_YBASE_REGISTER_WINDOW(regno));
-
 }
 
 int
@@ -1182,10 +1403,10 @@ ybase_regs_ever_used ()
   return live;
 }
 
-static void 
+void 
 dsp16xx_output_function_prologue (file, size)
      FILE *file;
-     HOST_WIDE_INT size;
+     int  size;
 {
   int regno;
   long total_size;
@@ -1197,14 +1418,14 @@ dsp16xx_output_function_prologue (file, size)
   total_size = compute_frame_size (size);
   
   fprintf( file, "\t/* FUNCTION PROLOGUE: */\n" );
-  fprintf (file, "\t/* total=%ld, vars= %ld, regs= %d, args=%d, extra= %ld */\n",
+  fprintf (file, "\t/* total=%d, vars= %d, regs= %d, args=%d, extra= %d */\n",
 	   current_frame_info.total_size,
 	   current_frame_info.var_size,
 	   current_frame_info.reg_size,
 	   current_function_outgoing_args_size,
 	   current_frame_info.extra_size);
   
-  fprintf (file, "\t/* fp save offset= %ld, sp save_offset= %ld */\n\n",
+  fprintf (file, "\t/* fp save offset= %d, sp save_offset= %d */\n\n",
 	   current_frame_info.fp_save_offset,
 	   current_frame_info.sp_save_offset);
   /* Set up the 'ybase' register window. */
@@ -1219,58 +1440,51 @@ dsp16xx_output_function_prologue (file, size)
       fprintf (file, "\t%s=%s\n", reg_names[REG_YBASE], a1h);
     }
   
-#if 0
-  if (current_frame_info.function_makes_calls)
-    fprintf( file, "\t*%s++=%s\n", sp, rr );   /* Push return address */
-#endif
-  
-  
   if (current_frame_info.var_size)
     {
       if (current_frame_info.var_size == 1)
 	fprintf (file, "\t*%s++\n", sp);
-      else if (SMALL_INTVAL (current_frame_info.var_size)
-	       && ((current_frame_info.var_size & 0x8000) == 0))
-	fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J],
-		 current_frame_info.var_size, sp, reg_names[REG_J]);
       else
-	error ("Stack size > 32k");
+        {
+	  if(SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
+	    fprintf (file, "\t%s=%d\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
+	  else
+	    fatal_error ("Stack size > 32k");
+	}
     }
   
-  /* Save any registers this function uses, unless they are used in a call,
-     in which case we don't need to.  */
+  /* Save any registers this function uses, unless they are
+   * used in a call, in which case we don't need to
+   */
   
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno)
+  for( regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno )
     if (dsp16xx_call_saved_register (regno)) 
       {
-#if OLD_REGISTER_SAVE
-	fprintf (file, "\t*%s++=%s\n", sp, reg_names[regno]);
-#else
-	fprintf (file, "\tpush(*%s)=%s\n", sp, reg_names[regno]);
-#endif
+	fprintf( file, "\tpush(*%s)=%s\n", sp, reg_names[regno] );
       }
-  
+
+  /* For debugging purposes, we want the return address to be at a predictable
+     location */
+  if (current_frame_info.function_makes_calls)
+    fprintf( file, "\tpush(*%s)=%s\n", sp, reg_names[RETURN_ADDRESS_REGNUM]);
+
   if (current_frame_info.args_size)
     {
       if (current_frame_info.args_size == 1)
 	fprintf (file, "\t*%s++\n", sp);
-      else if (SMALL_INTVAL (current_frame_info.args_size)
-	       && (current_frame_info.args_size & 0x8000) == 0)
-	fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J],
-		 current_frame_info.args_size, sp, reg_names[REG_J]);
       else
 	error ("Stack size > 32k");
     }
-  
+   
   if (frame_pointer_needed)
     {
-      fprintf (file, "\t%s=%s\n", a1h, sp);
-      fprintf (file, "\t%s=%s\n", fp, a1h);  /* Establish new base frame */
-      fprintf (file, "\t%s=%ld\n", reg_names[REG_J], -total_size);
-      fprintf (file, "\t*%s++%s\n", fp, reg_names[REG_J]);
+      fprintf( file, "\t%s=%s\n", a1h, sp );
+      fprintf( file, "\t%s=%s\n", fp, a1h );  /* Establish new base frame */
+      fprintf( file, "\t%s=%d\n", reg_names[REG_J], -total_size);
+      fprintf( file, "\t*%s++%s\n", fp, reg_names[REG_J]);
     }
   
-  fprintf (file, "\t/* END FUNCTION PROLOGUE: */\n\n");
+  fprintf( file, "\t/* END FUNCTION PROLOGUE: */\n\n" );
 }
 
 void
@@ -1300,16 +1514,12 @@ init_emulation_routines ()
  dsp16xx_lshrhi3_libcall = (rtx) 0;
 
 }
-
-static void
+void
 dsp16xx_output_function_epilogue (file, size)
      FILE *file;
-     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
 {
   int regno;
-#if OLD_REGISTER_SAVE  
-  int initial_stack_dec = 0;
-#endif
   
   fp = reg_names[FRAME_POINTER_REGNUM];
   sp = reg_names[STACK_POINTER_REGNUM];
@@ -1324,7 +1534,7 @@ dsp16xx_output_function_epilogue (file, size)
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.args_size, sp, reg_names[REG_J]);
 	}
     }
@@ -1338,32 +1548,15 @@ dsp16xx_output_function_epilogue (file, size)
 	fprintf (file, "\t%s=%sh-32\n", reg_names[REG_A1], a1h);
       fprintf (file, "\t%s=%s\n", reg_names[REG_YBASE], a1h);
     }
+
+  if (current_frame_info.function_makes_calls)
+    fprintf( file, "\t%s=pop(*%s)\n", reg_names[RETURN_ADDRESS_REGNUM], sp );
   
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; --regno)
     if (dsp16xx_call_saved_register(regno))
       {
-#if OLD_REGISTER_SAVE
-	if (!initial_stack_dec)
-	  {
-	    initial_stack_dec = 1;
-	    fprintf (file, "\t*%s--\n", sp);
-	  }
-#endif
-
-#if OLD_REGISTER_SAVE
-	fprintf( file, "\t%s=*%s--\n", reg_names[regno], sp );
-#else
 	fprintf( file, "\t%s=pop(*%s)\n", reg_names[regno], sp );
-#endif
       }
-  
-  /* If we restored any registers we have to account for the
-     initial pre-decrement. But only if we had any local variables
-     or spills. */
-#if OLD_REGISTER_SAVE  
-  if (initial_stack_dec) 
-    fprintf (file, "\t*%s++\n", sp);
-#endif
   
   if (current_frame_info.var_size)
     {
@@ -1371,7 +1564,7 @@ dsp16xx_output_function_epilogue (file, size)
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.var_size, sp, reg_names[REG_J]);
 	}
     }
@@ -1427,7 +1620,7 @@ double_reg_from_memory (operands)
     else if (GET_CODE(XEXP(operands[1],0)) == PLUS)
     {
       rtx addr;
-      int offset;
+      int offset = 0;
 
       output_asm_insn ("%u0=%1", operands);
 
@@ -1477,7 +1670,7 @@ double_reg_to_memory (operands)
     else if (GET_CODE(XEXP(operands[0],0)) == PLUS)
     {
       rtx addr;
-      int offset;
+      int offset = 0;
 
       output_asm_insn ("%0=%u1", operands);
 
@@ -1489,10 +1682,9 @@ double_reg_to_memory (operands)
       else if (GET_CODE (XEXP(addr,1)) == CONST_INT)
 	offset = INTVAL(XEXP(addr,1)) + 1;
       else
-	abort ();
+	fatal_error ("Invalid addressing mode");
 
-      fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31,
-	       reg_names[REGNO(operands[1]) + 1]);
+      fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31, reg_names[REGNO(operands[1]) + 1]);
     }
     else
     {
@@ -1541,15 +1733,6 @@ override_options ()
 					strlen(const_seg_name) + 3);
   sprintf (tmp, ".rsect \"%s\"", const_seg_name);
   
-  if (optimize)
-    {
-      if (TARGET_OPTIMIZE_SPEED)
-	{
-	  flag_unroll_loops = 1;
-	  flag_inline_functions = 1;
-	}
-    }
-
   /* Mark our global variables for GC.  */
   ggc_add_rtx_root (&dsp16xx_addhf3_libcall, 1);
   ggc_add_rtx_root (&dsp16xx_subhf3_libcall, 1);
@@ -1574,25 +1757,6 @@ override_options ()
   ggc_add_rtx_root (&dsp16xx_lshrhi3_libcall, 1);
 }
 
-
-enum rtx_code
-next_cc_user_code (insn)
-     rtx insn;
-{
-  if ( !(insn = next_cc0_user (insn)))
-    abort ();
-  else if (GET_CODE (insn) == JUMP_INSN
-	   && GET_CODE (PATTERN (insn)) == SET
-	   && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
-    return GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 0));
-  else if (GET_CODE (insn) == INSN
-	   && GET_CODE (PATTERN (insn)) == SET
-	   && comparison_operator (SET_SRC (PATTERN (insn)), VOIDmode))
-    return GET_CODE (SET_SRC (PATTERN (insn)));
-  else
-    abort ();
-}
-
 int
 next_cc_user_unsigned (insn)
      rtx insn;
@@ -1607,6 +1771,27 @@ next_cc_user_unsigned (insn)
     default:
       return 0;
     }
+}
+
+enum rtx_code
+next_cc_user_code (insn)
+     rtx insn;
+{
+  /* If no insn could be found we assume that the jump has been
+     deleted and the compare will be deleted later. */
+
+  if ( !(insn = next_cc0_user (insn)))
+    return (enum rtx_code) 0;
+  else if (GET_CODE (insn) == JUMP_INSN
+	   && GET_CODE (PATTERN (insn)) == SET
+	   && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
+    return GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 0));
+  else if (GET_CODE (insn) == INSN
+	   && GET_CODE (PATTERN (insn)) == SET
+	   && comparison_operator (SET_SRC (PATTERN (insn)), VOIDmode))
+    return GET_CODE (SET_SRC (PATTERN (insn)));
+  else
+    abort ();
 }
 
 void
@@ -1689,19 +1874,57 @@ print_operand(file, op, letter)
 	else if (letter == 'h')
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
         else if (letter == 'U')
-	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
+	  fprintf(file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
         else
-	  output_addr_const (file, op);
-      }
-    else if (code == CONST_DOUBLE && GET_MODE (op) != DImode)
+           output_addr_const( file, op );
+    }
+    else if( code == CONST_DOUBLE && GET_MODE(op) != DImode )
+    {
+	  union { double d; int i[2]; } u;
+	  union { float f; int i; } u1;
+	  u.i[0] = CONST_DOUBLE_LOW (op);
+	  u.i[1] = CONST_DOUBLE_HIGH (op);
+	  u1.f = u.d;
+          fprintf( file, "0x%x", u1.i );
+    }
+    else if (code == CONST)
       {
-	union {double d; int i[2]; } u;
-	union {float f; int i; } u1;
-
-	u.i[0] = CONST_DOUBLE_LOW (op);
-	u.i[1] = CONST_DOUBLE_HIGH (op);
-	u1.f = u.d;
-	fprintf (file, "0x%x", u1.i);
+	rtx addr = XEXP (op, 0);
+	
+	if (GET_CODE (addr) != PLUS)
+	  {
+	    output_addr_const( file, op);
+	    return;
+	  }
+	
+	if ((GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
+	     || GET_CODE (XEXP (addr, 0)) == LABEL_REF)
+	    && (GET_CODE (XEXP (addr, 1)) == CONST_INT))
+	  {
+	    int n = INTVAL (XEXP(addr, 1));
+	    output_addr_const (file, XEXP (addr, 0));
+	    
+	    if (n >= 0)
+	      fprintf (file, "+");
+	    
+	    n = (int) (short) n;
+	    fprintf (file, "%d", n);
+	  }
+	else if ((GET_CODE (XEXP (addr, 1)) == SYMBOL_REF
+		  || GET_CODE (XEXP (addr, 1)) == LABEL_REF)
+		 && (GET_CODE (XEXP (addr, 0)) == CONST_INT))
+	  {
+	    int n = INTVAL (XEXP(addr, 0));
+	    output_addr_const (file, XEXP (addr, 1));
+	    
+	    if (n >= 0)
+	      fprintf (file, "+");
+	    
+	    n = (int) (short) n;
+	    fprintf (file, "%d", n);
+	  }
+	else
+	  output_addr_const( file, op);
       }
     else
       output_addr_const (file, op);
@@ -1714,7 +1937,7 @@ print_operand_address(file, addr)
      rtx addr;
 {
   rtx base;
-  int offset;
+  int offset = 0;;
   
   switch (GET_CODE (addr))
     {
@@ -1737,10 +1960,10 @@ print_operand_address(file, addr)
 	  if (offset >= -31 && offset <= 0)
 	    offset = 31 + offset;
 	  else
-	    abort ();
+	    fatal_error ("Invalid offset in ybase addressing");
 	}
       else
-	abort ();
+	fatal_error ("Invalid register in ybase addressing");
       
       fprintf (file, "*(%d)", offset);
       break;
@@ -1777,17 +2000,22 @@ static int
 reg_save_size ()
 {
   int reg_save_size = 0;
- int regno;
- 
+  int regno;
+
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (dsp16xx_call_saved_register (regno))
       {
 	reg_save_size += UNITS_PER_WORD;
       }
 
+  /* If the function makes calls we will save need to save the 'pr' register */
+  if (current_frame_info.function_makes_calls)
+    reg_save_size += 1;
+
   return (reg_save_size);
 }
 
+#if 0
 int
 dsp16xx_starting_frame_offset()
 {
@@ -1802,6 +2030,7 @@ dsp16xx_starting_frame_offset()
 
   return (reg_save_size);
 }
+#endif
 
 int
 initial_frame_pointer_offset()
@@ -1913,7 +2142,7 @@ emit_1600_core_shift (shift_op, operands, shift_amount)
       shift_asm_ptr_first = lshift_right_asm_first;
     }
   else
-    abort ();
+    fatal_error ("Invalid shift operator in emit_1600_core_shift");
 
   while (shift_amount != 0)
     {
@@ -1956,6 +2185,57 @@ emit_1600_core_shift (shift_op, operands, shift_amount)
     }
 }
 #endif
+
+int
+num_1600_core_shifts (shift_amount)
+int shift_amount;
+{
+  int quotient;
+  int i;
+  int first_shift_emitted = 0;
+  int num_shifts = 0;
+
+  while (shift_amount != 0)
+    {
+      if (shift_amount/16)
+	{
+	  quotient = shift_amount/16;
+	  shift_amount = shift_amount - (quotient * 16);
+	  for (i = 0; i < quotient; i++)
+	    num_shifts++;
+	  first_shift_emitted = 1;
+	}
+      else if (shift_amount/8)
+	{
+	  quotient = shift_amount/8;
+	  shift_amount = shift_amount - (quotient * 8);
+	  for (i = 0; i < quotient; i++)
+	    num_shifts++;
+
+	  first_shift_emitted = 1;
+	}
+      else if (shift_amount/4)
+	{
+	  quotient = shift_amount/4;
+	  shift_amount = shift_amount - (quotient * 4);
+	  for (i = 0; i < quotient; i++)
+	    num_shifts++;
+
+	  first_shift_emitted = 1;
+	}
+      else if (shift_amount/1)
+	{
+	  quotient = shift_amount/1;
+	  shift_amount = shift_amount - (quotient * 1);
+	  for (i = 0; i < quotient; i++)
+	    num_shifts++;
+
+	  first_shift_emitted = 1;
+	}
+    }
+  return num_shifts;
+}
+
 void
 asm_output_common(file, name, size, rounded)
      FILE *file;
@@ -2134,6 +2414,9 @@ dsp16xx_function_arg (args_so_far, mode, type, named)
 	  && (mode == HImode || GET_MODE_CLASS(mode) == MODE_FLOAT))
 	args_so_far++;
 
+      if (type == void_type_node)
+	return (struct rtx_def *) 0;
+
       if (named && args_so_far < 4 && !MUST_PASS_IN_STACK (mode,type))
 	return gen_rtx_REG (mode, args_so_far + FIRST_REG_FOR_FUNCTION_ARG);
       else
@@ -2166,13 +2449,50 @@ dsp16xx_function_arg_advance (cum, mode, type, named)
 }
 
 void
-dsp16xx_file_start ()
+coff_dsp16xx_file_start (file)
+     FILE *file;
 {
-  fprintf (asm_out_file, "#include <%s.h>\n", save_chip_name);
-#if 0
-	if (TARGET_BMU)
-		fprintf (asm_out_file, "#include <1610.h>\n");
+  fprintf (file, "#include <%s.h>\n", save_chip_name);
+}
+
+void
+luxworks_dsp16xx_file_start (file)
+     FILE *file;
+{
+  char *temp_filename;
+  int len, err_code;
+
+
+  fprintf(file, "\t.debug ");
+  err_code = (TARGET_DEBUG) ? fprintf (file, "yes, ") : fprintf (file, "no, ");
+  err_code = (TARGET_SAVE_TEMPS) ? fprintf (file, "asm, ") : fprintf (file, "temp, ");
+  len = strlen (main_input_filename);
+  temp_filename = (char *) xmalloc (len + 2);
+  strcpy (temp_filename, main_input_filename);
+#ifdef __CYGWIN32__
+    p = temp_filename;
+    while (*p != '\0') {
+    if (*p == '\\')
+        *p = '/';
+         p++;
+         }
 #endif
+    fprintf(file, "\"%s\"\n", temp_filename);
+    fprintf(file, "");
+
+  fprintf (file, "#include <%s.h>\n", save_chip_name);
+
+   /*
+    * Add dummy sections, so that they always exist in the 
+    * object code. These have been created so that the number and
+    * type of sections remain consistent with and without -g option. Note
+    * that the .data, .text, .const and .bss are always created when -g
+    * is provided as an option. 
+    */
+   fprintf(file, "\t.rsect \".text\" , nodelete\n");
+   fprintf(file, "\t.rsect \".data\" , nodelete\n");
+   fprintf(file, "\t.rsect \".const\" , nodelete\n");
+   fprintf(file, "\t.rsect \".bss\" , nodelete\n");
 }
 
 rtx
@@ -2192,7 +2512,7 @@ gen_tst_reg (x)
   else if (mode == HImode)
     emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, x));
   else
-    abort ();
+    fatal_error ("Invalid mode for gen_tst_reg");
 
   return cc0_rtx;
 }
@@ -2243,28 +2563,19 @@ gen_compare_reg (code, x, y)
       if (code == GTU || code == GEU
 	  || code == LTU || code == LEU)
 	{
-#if 1
-	  emit_insn (gen_rtx_PARALLEL
-		     (VOIDmode,
+	  emit_insn (gen_rtx_PARALLEL 
+		     (VOIDmode, 
 		      gen_rtvec (5,
-				 gen_rtx_SET (VOIDmode, cc0_rtx,
-					      gen_rtx_COMPARE (VOIDmode,
-							       x, y)),
-				 gen_rtx_CLOBBER (VOIDmode,
+				 gen_rtx_SET (VOIDmode, cc0_rtx, 
+					      gen_rtx_COMPARE (VOIDmode, x, y)),
+				 gen_rtx_CLOBBER (VOIDmode, 
 						  gen_rtx_SCRATCH (QImode)),
-				 gen_rtx_CLOBBER (VOIDmode,
+				 gen_rtx_CLOBBER (VOIDmode, 
 						  gen_rtx_SCRATCH (QImode)),
-				 gen_rtx_CLOBBER (VOIDmode,
+				 gen_rtx_CLOBBER (VOIDmode, 
 						  gen_rtx_SCRATCH (QImode)),
-				 gen_rtx_CLOBBER (VOIDmode,
+				 gen_rtx_CLOBBER (VOIDmode, 
 						  gen_rtx_SCRATCH (QImode)))));
-#else
-	  if (!dsp16xx_ucmphi2_libcall)
-	    dsp16xx_ucmphi2_libcall = gen_rtx_SYMBOL_REF (Pmode, UCMPHI2_LIBCALL);
-	  emit_library_call (dsp16xx_ucmphi2_libcall, 1, HImode, 2,
-			     x, HImode, y, HImode);
-	  emit_insn (gen_tsthi_1 (copy_to_reg(hard_libcall_value (HImode))));
-#endif
 	}
       else
 	emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
@@ -2273,7 +2584,7 @@ gen_compare_reg (code, x, y)
 						 force_reg (HImode,y))));
     }
   else
-    abort ();
+    fatal_error ("Invalid mode for integer comparison in gen_compare_reg");
 
   return cc0_rtx;
 }
@@ -2296,4 +2607,50 @@ output_block_move (operands)
 
   fprintf (asm_out_file, "\t}\n");
   return "";
+}
+
+int
+uns_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode == VOIDmode || GET_MODE (op) == mode)
+    {
+      enum rtx_code code;
+      
+      code = GET_CODE(op);
+
+      if (code == LEU || code == LTU || code == GEU
+	  || code == GTU)
+	{
+	  return 1;
+	}
+      else
+	return 0;
+    }
+
+  return 0;
+}
+
+int
+signed_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode == VOIDmode || GET_MODE (op) == mode)
+    {
+      enum rtx_code code;
+      
+      code = GET_CODE(op);
+
+      if (!(code == LEU || code == LTU || code == GEU
+	  || code == GTU))
+	{
+	  return 1;
+	}
+      else
+	return 0;
+    }
+
+  return 0;
 }
