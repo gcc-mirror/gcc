@@ -2007,6 +2007,7 @@ pushdecl (x)
 	  /* Don't test for DECL_EXTERNAL, because grokdeclarator
 	     sets this for all functions.  */
 	  && ! TREE_PUBLIC (x)
+	  && (TREE_CODE (x) == FUNCTION_DECL || b == global_binding_level)
 	  /* We used to warn also for explicit extern followed by static,
 	     but sometimes you need to do it that way.  */
 	  && IDENTIFIER_IMPLICIT_DECL (name) != 0)
