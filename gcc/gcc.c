@@ -1862,8 +1862,9 @@ read_specs (filename, main_p)
 	    {
 	      int name_len;
 	      struct spec_list *sl;
+	      struct spec_list *newsl;
 
-	      /* Get original name */
+	      /* Get original name.  */
 	      p1 += sizeof "%rename";
 	      while (*p1 == ' ' || *p1 == '\t')
 		p1++;
@@ -1908,6 +1909,11 @@ read_specs (filename, main_p)
 
 	      if (strcmp (p1, p2) == 0)
 		continue;
+
+	      for (newsl = specs; newsl; newsl = newsl->next)
+		if (strcmp (newsl->name, p2) == 0)
+		  fatal ("%s: attempt to rename spec '%s' to already defined spec '%s'",
+		    filename, p1, p2);
 
 	      if (verbose_flag)
 		{
