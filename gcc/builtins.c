@@ -157,10 +157,10 @@ static tree fold_builtin_sin (tree);
 static tree fold_builtin_cos (tree, tree, tree);
 static tree fold_builtin_tan (tree);
 static tree fold_builtin_atan (tree, tree);
-static tree fold_builtin_trunc (tree);
-static tree fold_builtin_floor (tree);
-static tree fold_builtin_ceil (tree);
-static tree fold_builtin_round (tree);
+static tree fold_builtin_trunc (tree, tree);
+static tree fold_builtin_floor (tree, tree);
+static tree fold_builtin_ceil (tree, tree);
+static tree fold_builtin_round (tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_memcpy (tree, tree);
 static tree fold_builtin_mempcpy (tree, tree, int);
@@ -6110,10 +6110,8 @@ fold_trunc_transparent_mathfn (tree fndecl, tree arglist)
    the argument, for instance lround((double)f) -> lroundf (f).  */
 
 static tree
-fold_fixed_mathfn (tree exp)
+fold_fixed_mathfn (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg;
 
@@ -6501,10 +6499,8 @@ fold_builtin_atan (tree arglist, tree type)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_trunc (tree exp)
+fold_builtin_trunc (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -6529,10 +6525,8 @@ fold_builtin_trunc (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_floor (tree exp)
+fold_builtin_floor (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -6562,10 +6556,8 @@ fold_builtin_floor (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_ceil (tree exp)
+fold_builtin_ceil (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -6595,10 +6587,8 @@ fold_builtin_ceil (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_round (tree exp)
+fold_builtin_round (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -6629,10 +6619,8 @@ fold_builtin_round (tree exp)
    simplification can be made.  */
 
 static tree
-fold_builtin_lround (tree exp)
+fold_builtin_lround (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -6659,7 +6647,7 @@ fold_builtin_lround (tree exp)
 	}
     }
 
-  return fold_fixed_mathfn (exp);
+  return fold_fixed_mathfn (fndecl, arglist);
 }
 
 /* Fold function call to builtin ffs, clz, ctz, popcount and parity
@@ -8173,22 +8161,22 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_FLOOR:
     case BUILT_IN_FLOORF:
     case BUILT_IN_FLOORL:
-      return fold_builtin_floor (exp);
+      return fold_builtin_floor (fndecl, arglist);
 
     case BUILT_IN_CEIL:
     case BUILT_IN_CEILF:
     case BUILT_IN_CEILL:
-      return fold_builtin_ceil (exp);
+      return fold_builtin_ceil (fndecl, arglist);
 
     case BUILT_IN_TRUNC:
     case BUILT_IN_TRUNCF:
     case BUILT_IN_TRUNCL:
-      return fold_builtin_trunc (exp);
+      return fold_builtin_trunc (fndecl, arglist);
 
     case BUILT_IN_ROUND:
     case BUILT_IN_ROUNDF:
     case BUILT_IN_ROUNDL:
-      return fold_builtin_round (exp);
+      return fold_builtin_round (fndecl, arglist);
 
     case BUILT_IN_NEARBYINT:
     case BUILT_IN_NEARBYINTF:
@@ -8204,7 +8192,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_LLROUND:
     case BUILT_IN_LLROUNDF:
     case BUILT_IN_LLROUNDL:
-      return fold_builtin_lround (exp);
+      return fold_builtin_lround (fndecl, arglist);
 
     case BUILT_IN_LRINT:
     case BUILT_IN_LRINTF:
@@ -8212,7 +8200,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_LLRINT:
     case BUILT_IN_LLRINTF:
     case BUILT_IN_LLRINTL:
-      return fold_fixed_mathfn (exp);
+      return fold_fixed_mathfn (fndecl, arglist);
 
     case BUILT_IN_FFS:
     case BUILT_IN_FFSL:
