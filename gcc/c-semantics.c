@@ -286,14 +286,17 @@ emit_local_var (decl)
 	expand_decl (decl);
     }
 
-  /* Actually do the initialization.  */
-  if (stmts_are_full_exprs_p ())
-    expand_start_target_temps ();
+  if (DECL_INITIAL (decl))
+    {
+      /* Actually do the initialization.  */
+      if (stmts_are_full_exprs_p ())
+	expand_start_target_temps ();
 
-  expand_decl_init (decl);
+      expand_decl_init (decl);
 
-  if (stmts_are_full_exprs_p ())
-    expand_end_target_temps ();
+      if (stmts_are_full_exprs_p ())
+	expand_end_target_temps ();
+    }
 }
 
 /* Helper for generating the RTL at the beginning of a scope.  */
