@@ -3486,22 +3486,21 @@ decode_rtx_const (mode, x, value)
 
     case CONST:
       x = XEXP (x, 0);
-      if (GET_CODE (x) == PLUS)
+      if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  value->un.addr.base = XEXP (x, 0);
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	    abort ();
 	  value->un.addr.offset = INTVAL (XEXP (x, 1));
 	}
-      else if (GET_CODE (x) == MINUS)
+      else if (GET_CODE (x) == MINUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  value->un.addr.base = XEXP (x, 0);
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	    abort ();
 	  value->un.addr.offset = - INTVAL (XEXP (x, 1));
 	}
       else
-	abort ();
+	{
+	  value->un.addr.base = x;
+	  value->un.addr.offset = 0;
+	}
       break;
 
     default:

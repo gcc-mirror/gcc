@@ -1,3 +1,19 @@
+Thu Nov 23 04:33:33 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* final.c (output_addr_const) [LABEL_REF]: Simplify.
+	[MINUS]: Enclose non-CONST_INTs in parentheses.
+	[default]: Try OUTPUT_ADDR_CONST_EXTRA.
+	* tm.texi (OUTPUT_ADDR_CONST_EXTRA): Document it.
+	* varasm.c (decode_rtx_const) [CONST]: If it's not something
+	PLUS or MINUS a CONST_INT, use the whole CONST with offset 0
+	instead of abort()ing.
+	* sh.c (output_pic_addr_const): Removed.  Fixed all callers.
+	* sh.h (OUTPUT_ADDR_CONST_EXTRA): New.  Handle the UNSPECs
+	formerly handled in output_pic_addr_const.
+	* sh.md (sym_label2reg, symPLT_label2reg): Enclose UNSPEC
+	operands of MINUS in CONSTs so that decode_rtx_const() will
+	accept them.
+
 Thu Nov 23 04:10:30 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (mova_const): New pattern.

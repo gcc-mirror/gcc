@@ -3677,10 +3677,8 @@ output_addr_const (file, x)
       break;
 
     case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      assemble_name (file, buf);
-      break;
-
+      x = XEXP (x, 0);
+      /* Fall through.  */
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
       assemble_name (file, buf);
@@ -3741,8 +3739,9 @@ output_addr_const (file, x)
 
       output_addr_const (file, XEXP (x, 0));
       fprintf (file, "-");
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) < 0)
+      if ((GET_CODE (XEXP (x, 1)) == CONST_INT
+	   && INTVAL (XEXP (x, 1)) < 0)
+	  || GET_CODE (XEXP (x, 1)) != CONST_INT)
 	{
 	  fprintf (file, "%s", ASM_OPEN_PAREN);
 	  output_addr_const (file, XEXP (x, 1));
@@ -3758,6 +3757,12 @@ output_addr_const (file, x)
       break;
 
     default:
+#ifdef OUTPUT_ADDR_CONST_EXTRA
+      OUTPUT_ADDR_CONST_EXTRA (file, x, fail);
+      break;
+
+    fail:
+#endif
       output_operand_lossage ("invalid expression as operand");
     }
 }

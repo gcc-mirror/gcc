@@ -2072,12 +2072,12 @@ do { char dstr[30];					\
 
 #define ASM_OUTPUT_INT(STREAM, EXP)		\
   (fprintf ((STREAM), "\t.long\t"),      	\
-   output_pic_addr_const ((STREAM), (EXP)),  	\
+   output_addr_const ((STREAM), (EXP)),  	\
    fputc ('\n', (STREAM)))
 
 #define ASM_OUTPUT_SHORT(STREAM, EXP)	\
   (fprintf ((STREAM), "\t.short\t"),	\
-   output_pic_addr_const ((STREAM), (EXP)),	\
+   output_addr_const ((STREAM), (EXP)),	\
    fputc ('\n', (STREAM)))
 
 #define ASM_OUTPUT_CHAR(STREAM, EXP)		\
@@ -2157,6 +2157,40 @@ do { char dstr[30];					\
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR) == '.' || (CHAR) == '#' || (CHAR) == '@' || (CHAR) == ','	\
    || (CHAR) == '$')
+
+/* Recognize machine-specific patterns that may appear within
+   constants.  Used for PIC-specific UNSPECs.  */
+#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
+  do									\
+    if (flag_pic && GET_CODE (X) == UNSPEC && XVECLEN ((X), 0) == 1)	\
+      {									\
+	switch (XINT ((X), 1))						\
+	  {								\
+	  case UNSPEC_PIC:						\
+	    /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */	\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    break;							\
+	  case UNSPEC_GOT:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@GOT", (STREAM));					\
+	    break;							\
+	  case UNSPEC_GOTOFF:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@GOTOFF", (STREAM));				\
+	    break;							\
+	  case UNSPEC_PLT:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@PLT", (STREAM));					\
+	    break;							\
+	  default:							\
+	    goto FAIL;							\
+	  }								\
+	break;								\
+      }									\
+    else								\
+      goto FAIL;							\
+  while (0)
+
 
 extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
