@@ -6,6 +6,10 @@
 	* function.c (get_func_frame_size): Make it static.
 	* function.h: Remove the corresponding type.
 
+	* regclass.c (reg_class_superclasses, reg_class_subclasses):
+	Make them static.
+	* hard-reg-set.h: Remove the corresponding declarations.
+
 2005-03-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc: Remove excess indentation.
