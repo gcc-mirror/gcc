@@ -15,10 +15,10 @@ comments about this document to Ovidiu Predescu
 @email{ovidiu@@cup.hp.com}.
 
 @menu
-* Executing code before main::  
-* Type encoding::               
-* Garbage Collection::          
-* Constant string objects::     
+* Executing code before main::
+* Type encoding::
+* Garbage Collection::
+* Constant string objects::
 * compatibility_alias::
 @end menu
 
@@ -43,20 +43,20 @@ Suppose for example you have a @code{FileStream} class that declares
 below:
 
 @example
-            
-FileStream *Stdin = nil;                                              
-FileStream *Stdout = nil;                                          
-FileStream *Stderr = nil;                                                
-            
-@@implementation FileStream                                               
-          
-+ (void)initialize                                                 
+
+FileStream *Stdin = nil;
+FileStream *Stdout = nil;
+FileStream *Stderr = nil;
+
+@@implementation FileStream
+
++ (void)initialize
 @{
-    Stdin = [[FileStream new] initWithFd:0];                           
-    Stdout = [[FileStream new] initWithFd:1];                           
+    Stdin = [[FileStream new] initWithFd:0];
+    Stdout = [[FileStream new] initWithFd:1];
     Stderr = [[FileStream new] initWithFd:2];
 @}
- 
+
 /* Other methods here */
 @@end
 
@@ -76,31 +76,31 @@ method instead of @code{+initialize}:
 
 @example
 
-@@implementation FileStream                                             
- 
-+ (void)load                                 
+@@implementation FileStream
+
++ (void)load
 @{
     Stdin = [[FileStream new] initWithFd:0];
     Stdout = [[FileStream new] initWithFd:1];
     Stderr = [[FileStream new] initWithFd:2];
 @}
- 
-/* Other methods here */                                               
+
+/* Other methods here */
 @@end
 
 @end example
- 
+
 The @code{+load} is a method that is not overridden by categories. If a
 class and a category of it both implement @code{+load}, both methods are
 invoked.  This allows some additional initializations to be performed in
 a category.
-   
+
 This mechanism is not intended to be a replacement for @code{+initialize}.
 You should be aware of its limitations when you decide to use it
 instead of @code{+initialize}.
 
 @menu
-* What you can and what you cannot do in +load::  
+* What you can and what you cannot do in +load::
 @end menu
 
 
@@ -149,7 +149,7 @@ category implemented in the same file;
 You should make no assumptions about receiving @code{+load} in sibling
 classes when you write @code{+load} of a class. The order in which
 sibling classes receive @code{+load} is not guaranteed.
-    
+
 The order in which @code{+load} and @code{+initialize} are called could
 be problematic if this matters. If you don't allocate objects inside
 @code{+load}, it is guaranteed that @code{+load} is called before
@@ -180,43 +180,43 @@ The types are encoded in the following way:
 @c @sp 1
 
 @multitable @columnfractions .25 .75
-@item @code{char}                      
+@item @code{char}
 @tab @code{c}
-@item @code{unsigned char}             
+@item @code{unsigned char}
 @tab @code{C}
-@item @code{short}                     
+@item @code{short}
 @tab @code{s}
-@item @code{unsigned short}            
+@item @code{unsigned short}
 @tab @code{S}
-@item @code{int}                       
+@item @code{int}
 @tab @code{i}
-@item @code{unsigned int}              
+@item @code{unsigned int}
 @tab @code{I}
-@item @code{long}                      
+@item @code{long}
 @tab @code{l}
-@item @code{unsigned long}             
+@item @code{unsigned long}
 @tab @code{L}
-@item @code{long long}                 
+@item @code{long long}
 @tab @code{q}
-@item @code{unsigned long long}        
+@item @code{unsigned long long}
 @tab @code{Q}
-@item @code{float}                     
+@item @code{float}
 @tab @code{f}
-@item @code{double}                    
+@item @code{double}
 @tab @code{d}
-@item @code{void}                      
+@item @code{void}
 @tab @code{v}
-@item @code{id}                        
+@item @code{id}
 @tab @code{@@}
-@item @code{Class}                     
+@item @code{Class}
 @tab @code{#}
-@item @code{SEL}                       
+@item @code{SEL}
 @tab @code{:}
-@item @code{char*}                     
+@item @code{char*}
 @tab @code{*}
-@item unknown type                     
+@item unknown type
 @tab @code{?}
-@item bitfields                 
+@item bitfields
 @tab @code{b} followed by the starting position of the bitfield, the type of the bitfield and the size of the bitfield (the bitfields encoding was changed from the NeXT's compiler encoding, see below)
 @end multitable
 
@@ -240,7 +240,7 @@ The non-atomic types are encoded as follows:
 @c @sp 1
 
 @multitable @columnfractions .2 .8
-@item pointers          
+@item pointers
 @tab @code{'^'} followed by the pointed type.
 @item arrays
 @tab @code{'['} followed by the number of elements in the array followed by the type of the elements followed by @code{']'}
@@ -287,17 +287,17 @@ Objective-C type specifiers:
 @multitable @columnfractions .25 .75
 @item Specifier
 @tab Encoding
-@item @code{const}              
+@item @code{const}
 @tab @code{r}
-@item @code{in}                 
+@item @code{in}
 @tab @code{n}
-@item @code{inout}              
+@item @code{inout}
 @tab @code{N}
-@item @code{out}                
+@item @code{out}
 @tab @code{o}
-@item @code{bycopy}             
+@item @code{bycopy}
 @tab @code{O}
-@item @code{oneway}             
+@item @code{oneway}
 @tab @code{V}
 @end multitable
 
@@ -436,20 +436,20 @@ This is a feature of the Objective-C compiler rather than of the
 runtime, anyway since it is documented nowhere and its existence was
 forgotten, we are documenting it here.
 
-The keyword @code{@@compatibility_alias} allows you to define a class name 
-as equivalent to another class name.  For example: 
+The keyword @code{@@compatibility_alias} allows you to define a class name
+as equivalent to another class name.  For example:
 
 @example
 @@compatibility_alias WOApplication GSWApplication;
 @end example
 
-tells the compiler that each time it encounters @code{WOApplication} as 
-a class name, it should replace it with @code{GSWApplication} (that is, 
+tells the compiler that each time it encounters @code{WOApplication} as
+a class name, it should replace it with @code{GSWApplication} (that is,
 @code{WOApplication} is just an alias for @code{GSWApplication}).
 
-There are some constraints on how this can be used - 
+There are some constraints on how this can be used -
 
-@itemize @bullet 
+@itemize @bullet
 
 @item @code{WOApplication} (the alias) must not be an existing class;
 

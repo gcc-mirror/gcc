@@ -1,3 +1,9 @@
+2001-05-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-tree.texi, contrib.texi, cpp.texi, extend.texi, gcc.texi,
+	gcov.texi, install.texi, md.texi, objc.texi, rtl.texi, tm.texi:
+	Remove trailing whitespace.
+
 2001-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): http://reality.sgi.com/ariel/freeware/

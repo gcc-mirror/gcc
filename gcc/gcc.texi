@@ -28,7 +28,7 @@
 @c NOTE: checks/things to do:
 @c
 @c -have bob do a search in all seven files for "mew" (ideally --mew,
-@c  but i may have forgotten the occasional "--"..).  
+@c  but i may have forgotten the occasional "--"..).
 @c     Just checked... all have `--'!  Bob 22Jul96
 @c     Use this to search:   grep -n '\-\-mew' *.texi
 @c -item/itemx, text after all (sub/sub)section titles, etc..
@@ -271,9 +271,9 @@ bugs.  It corresponds to GCC version 3.1.
 
 @cindex Objective C
 Several versions of the compiler (C, C++, Objective C, Fortran, Java
-and CHILL) are integrated; this is why we use the name 
+and CHILL) are integrated; this is why we use the name
 ``GNU Compiler Collection''. GCC can compile programs written in any of these
-languages. The Fortran, CHILL, and Java compilers are described in 
+languages. The Fortran, CHILL, and Java compilers are described in
 separate manuals.
 
 @cindex GCC
@@ -295,7 +295,7 @@ compiler.  For example, we refer to the optimization options as
 affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
 
 Front ends for other languages, such as Ada 95 and Pascal exist but
-have not yet been integrated into GCC. These front-ends, like that for C++, 
+have not yet been integrated into GCC. These front-ends, like that for C++,
 are built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
 Objective C, or any of the languages for which you have installed front
@@ -1282,7 +1282,7 @@ MALLOC=gmalloc.o
 @section Incompatibilities of GCC
 @cindex incompatibilities of GCC
 
-There are several noteworthy incompatibilities between GNU C and K&R 
+There are several noteworthy incompatibilities between GNU C and K&R
 (non-ISO) versions of C.  The @samp{-traditional} option
 eliminates many of these incompatibilities, @emph{but not all}, by
 telling GNU C to behave like a K&R C compiler.
@@ -1801,7 +1801,7 @@ operates on pointers to @code{char}:
 string strfunc ();
 void charfunc (const char *);
 
-void 
+void
 f ()
 @{
   const char *p = strfunc().c_str();
@@ -2334,7 +2334,7 @@ that is a compiler bug.  However, you should note that your idea of
 for traditional practice''.
 
 @item
-If you are an experienced user of one of the languages GCC supports, your 
+If you are an experienced user of one of the languages GCC supports, your
 suggestions for improvement of GCC are welcome in any case.
 @end itemize
 
@@ -3430,11 +3430,11 @@ along with header files
 The source files for parsing C++ are in @file{cp/}.
 They are @file{parse.y},
 @file{class.c},@*
-@file{cvt.c}, @file{decl.c}, @file{decl2.c}, 
+@file{cvt.c}, @file{decl.c}, @file{decl2.c},
 @file{except.c},@*
 @file{expr.c}, @file{init.c}, @file{lex.c},
 @file{method.c}, @file{ptree.c},@*
-@file{search.c}, @file{tree.c}, 
+@file{search.c}, @file{tree.c},
 @file{typeck2.c}, and
 @file{typeck.c}, along with header files @file{cp-tree.def},
 @file{cp-tree.h}, and @file{decl.h}.
@@ -3562,7 +3562,7 @@ the input file name.
 @cindex global common subexpression elimination
 @cindex constant propagation
 @cindex copy propagation
-@item               
+@item
 Global common subexpression elimination.  This pass performs GCSE
 using Morel-Renvoise Partial Redundancy Elimination, with the exception
 that it does not try to move invariants out of loops - that is left to
@@ -3738,11 +3738,11 @@ to the input file name.
 @cindex branch shortening
 @item
 Branch shortening.  On many RISC machines, branch instructions have a
-limited range.  Thus, longer sequences of instructions must be used for 
+limited range.  Thus, longer sequences of instructions must be used for
 long branches.  In this pass, the compiler figures out what how far each
 instruction will be from each other instruction, and therefore whether
 the usual instructions, or the longer sequences, must be used for each
-branch. 
+branch.
 
 @cindex register-to-stack conversion
 @item
@@ -4151,7 +4151,7 @@ procedure will build all combinations of compatible options.
 For example, if you set @code{MULTILIB_OPTIONS} to @samp{m68000/m68020
 msoft-float}, @file{Makefile} will build special versions of
 @file{libgcc.a} using the following sets of options:  @samp{-m68000},
-@samp{-m68020}, @samp{-msoft-float}, @samp{-m68000 -msoft-float}, and 
+@samp{-m68020}, @samp{-msoft-float}, @samp{-m68000 -msoft-float}, and
 @samp{-m68020 -msoft-float}.
 
 @findex MULTILIB_DIRNAMES
@@ -4295,7 +4295,7 @@ already available.
 What they found was no accident---it was the GNU system.  The available
 free software added up to a complete system because the GNU Project
 had been working since 1984 to make one.  The GNU Manifesto
-had set forth the goal of developing a free Unix-like system, called 
+had set forth the goal of developing a free Unix-like system, called
 GNU.  By the time Linux was written, the system was almost finished.
 
 Most free software projects have the goal of developing a particular

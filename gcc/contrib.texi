@@ -91,7 +91,7 @@ Dario Dariol contributed the four varieties of sample programs
 that print a copy of their source.
 
 @item
-Ulrich Drepper for his work on the C++ runtime libraries, glibc, 
+Ulrich Drepper for his work on the C++ runtime libraries, glibc,
  testing of GCC using glibc, ISO C99 support, CFG dumping support, etc.
 
 @item
@@ -128,7 +128,7 @@ Peter Gerwinski for various bugfixes and the Pascal front end.
 @item
 Anthony Green for his -Os contributions and Java front end work.
 
-@item 
+@item
 Kaveh Ghazi for his direction via the steering committee and
 amazing work to make -W -Wall useful.
 
@@ -289,7 +289,7 @@ Martin von L&ouml;wis for internal consistency checking infrastructure,
 and various C++ improvements including namespace support.
 
 @item
-Dave Love for his ongoing work with the Fortran front end and 
+Dave Love for his ongoing work with the Fortran front end and
 runtime libraries.
 
 @item
@@ -510,8 +510,8 @@ fixincludes, etc.
 Holger Teutsch provided the support for the Clipper cpu.
 
 @item
-Michael Tiemann for random bugfixes the first instruction scheduler, 
-initial C++ support, function integration, NS32k, sparc and M88k 
+Michael Tiemann for random bugfixes the first instruction scheduler,
+initial C++ support, function integration, NS32k, sparc and M88k
 machine description work, delay slot scheduling.
 
 @item
