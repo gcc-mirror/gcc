@@ -8787,6 +8787,28 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      continue;
 	    }
 	  break;
+
+	case TRUNCATE:
+	  /* Change (lshiftrt (truncate (lshiftrt))) to (truncate (lshiftrt))
+	     if the truncate does not affect the value.  */
+	  if (code == LSHIFTRT
+	      && GET_CODE (XEXP (varop, 0)) == LSHIFTRT
+	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
+	      && (INTVAL (XEXP (XEXP (varop, 0), 1))
+		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (varop, 0))) - GET_MODE_BITSIZE (varop))))
+	    {
+	      rtx varop_inner = XEXP (varop, 0);
+
+	      varop_inner = gen_rtx_combine (LSHIFTRT,
+					     GET_MODE (varop_inner),
+					     XEXP (varop_inner, 0),
+					     GEN_INT (count + INTVAL (XEXP (varop_inner, 1))));
+	      varop = gen_rtx_combine (TRUNCATE, GET_MODE (varop),
+				       varop_inner);
+	      count = 0;
+	      continue;
+	    }
+	  break;
 	  
 	default:
 	  break;
