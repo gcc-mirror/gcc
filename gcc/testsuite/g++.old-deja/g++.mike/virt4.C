@@ -1,3 +1,5 @@
+// Special g++ Options:
+
 void  Foo () {}
 
 class B {

@@ -4,7 +4,7 @@
 
 void bar(struct s1 { } a) { (void)a; }			// ERROR - 
 
-struct s2*fooey()					// ERROR - XFAIL *-*-*
+struct s2*fooey()
 {
   try {
     static_cast<struct s3 { } *>(0);			// ERROR - 
