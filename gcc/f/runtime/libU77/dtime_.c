@@ -43,21 +43,23 @@ double G77_dtime_0 (tarray)
 double G77_dtime_0 (real tarray[2])
 #endif
 {
-  time_t utime, stime;
-  static time_t old_utime = 0, old_stime = 0;
   /* The getrusage version is only the default for convenience. */
 #ifdef HAVE_GETRUSAGE
+  float utime, stime;
+  static float old_utime = 0.0, old_stime = 0.0;
   struct rusage rbuff;
 
    if (getrusage (RUSAGE_SELF, &rbuff) != 0)
      abort ();
-   utime = ((float) (rbuff.ru_utime).tv_sec +
-	   (float) (rbuff.ru_utime).tv_usec/1000000.0);
+   utime = (float) (rbuff.ru_utime).tv_sec +
+	   (float) (rbuff.ru_utime).tv_usec/1000000.0;
    tarray[0] = utime - (float) old_utime;
-   stime = ((float) (rbuff.ru_stime).tv_sec +
-	   (float) (rbuff.ru_stime).tv_usec/1000000.0);
+   stime = (float) (rbuff.ru_stime).tv_sec +
+	   (float) (rbuff.ru_stime).tv_usec/1000000.0;
   tarray[1] = stime - old_stime;
 #else  /* HAVE_GETRUSAGE */
+  time_t utime, stime;
+  static time_t old_utime = 0, old_stime = 0;
   struct tms buffer;
 
 /* NeXTStep seems to define _SC_CLK_TCK but not to have sysconf;

@@ -1,3 +1,9 @@
+1997-09-19  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/dtime_.c (G77_dtime_0): Fix types in HAVE_GETRUSAGE case
+ 	so as not to truncate results to integer values.
+	* libU77/Version.c: Bump.
+
 Thu Sep 18 16:58:46 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (stamp-lib): Don't use '$?', explicitly
