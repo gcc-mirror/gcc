@@ -1,3 +1,10 @@
+2002-12-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Use shared multilib.out.  Use move-if-change for it.
+	Convert (cd foo; make) to (cd foo && make).  Clean up multilib.out.
+	* Makefile.in: Regenerate.
+	* configure.in: Remove unnecessary leftovers.
+
 2002-12-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/mt-aix43: Delete.

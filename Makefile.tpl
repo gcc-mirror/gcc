@@ -589,13 +589,13 @@ do-[+target+]:
 	      done; \
 	      ;; \
 	    esac ; \
-	    if (cd ./$$i; \
+	    (cd ./$$i && \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	                "`echo \"RANLIB=$${RANLIB}\" | sed -e 's/.*=$$/XFOO=/'`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+target+]); \
-	    then true; else exit 1; fi; \
+			[+target+]) \
+	    || exit 1; \
 	  else true; fi; \
 	done
 	# Break into two pieces
@@ -607,13 +607,13 @@ do-[+target+]:
 	    for flag in $(EXTRA_TARGET_FLAGS); do \
 		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	    done; \
-	    if (cd $(TARGET_SUBDIR)/$$i; \
+	    (cd $(TARGET_SUBDIR)/$$i && \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	                "`echo \"RANLIB=$${RANLIB}\" | sed -e 's/.*=$$/XFOO=/'`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+target+]); \
-	    then true; else exit 1; fi; \
+			[+target+]) \
+	    || exit 1; \
 	  else true; fi; \
 	done
 [+ ENDFOR recursive_targets +]
@@ -643,6 +643,7 @@ local-clean:
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
+	-rm -f multilib.out multilib.ts multilib.tmp
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
@@ -671,7 +672,7 @@ $(CLEAN_MODULES) $(CLEAN_X11_MODULES) clean-gcc:
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) clean); \
+	  (cd $${dir} && $(MAKE) $(FLAGS_TO_PASS) clean); \
 	else \
 	  true; \
 	fi
@@ -684,7 +685,7 @@ $(CLEAN_TARGET_MODULES):
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/$${dir}; $(MAKE) $(TARGET_FLAGS_TO_PASS) clean); \
+	  (cd $(TARGET_SUBDIR)/$${dir} && $(MAKE) $(TARGET_FLAGS_TO_PASS) clean); \
 	else \
 	  true; \
 	fi
@@ -742,7 +743,7 @@ install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
 		r=`${PWD}` ; export r ; \
 		$(SET_LIB_PATH) \
-		(cd ./gcc; \
+		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
 	else \
 		true ; \
@@ -783,7 +784,6 @@ etags tags: TAGS
 # the user could load to tell emacs19 where all the TAGS files we just
 # built are.
 TAGS: do-TAGS
-
 
 # --------------------------------------
 # Modules which run on the build machine
@@ -909,7 +909,7 @@ all-[+module+]: configure-[+module+]
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd [+module+]; $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
 	    ENDIF with_x +] all)
@@ -925,7 +925,7 @@ check-[+module+]:
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
-	    (cd [+module+]; $(MAKE) $(FLAGS_TO_PASS)[+ 
+	    (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	      IF with_x 
 	        +] $(X11_FLAGS_TO_PASS)[+ 
 	      ENDIF with_x +] check); \
@@ -936,7 +936,7 @@ check-[+module+]:
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd [+module+]; $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
 	    ENDIF with_x +] check)
@@ -953,7 +953,7 @@ install-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd [+module+]; $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
 	    ENDIF with_x +] install)
@@ -968,13 +968,10 @@ install-[+module+]: installdirs
 maybe-configure-target-[+module+]:
 configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/Makefile
 
-# Don't manually override CC_FOR_TARGET at make time; get it set right
-# at configure time.  Otherwise multilibs may be wrong.
-$(TARGET_SUBDIR)/[+module+]/multilib.out: maybe-all-gcc
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+$(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
 	@[ -d $(TARGET_SUBDIR)/[+module+] ] || mkdir $(TARGET_SUBDIR)/[+module+];\
-	r=`${PWD}`; export r; \
-	echo "Configuring multilibs for [+module+]"; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/[+module+]/multilib.out 2> /dev/null
+	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
 
 $(TARGET_SUBDIR)/[+module+]/Makefile: config.status $(TARGET_SUBDIR)/[+module+]/multilib.out
 	@[ -d $(TARGET_SUBDIR)/[+module+] ] || mkdir $(TARGET_SUBDIR)/[+module+];\
@@ -1046,7 +1043,7 @@ all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+]; \
+	  (cd $(TARGET_SUBDIR)/[+module+] && \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
 	       IF raw_cxx 
 	         +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
@@ -1062,7 +1059,7 @@ check-target-[+module+]:
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+]; \
+	  (cd $(TARGET_SUBDIR)/[+module+] && \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
 	       IF raw_cxx 
 	         +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
@@ -1081,7 +1078,7 @@ install-target-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+]; \
+	  (cd $(TARGET_SUBDIR)/[+module+] && \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 [+ ENDIF no_install +]
 [+ ENDFOR target_modules +]
@@ -1146,12 +1143,12 @@ all-gcc: configure-gcc
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
+	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
 	else \
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
+	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	fi
 
 # Building GCC uses some tools for rebuilding "source" files
@@ -1213,7 +1210,7 @@ check-gcc:
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
+	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \
 	  true; \
 	fi
@@ -1224,7 +1221,7 @@ check-gcc-c++:
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
+	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
 	  true; \
 	fi
@@ -1239,7 +1236,7 @@ install-gcc:
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
+	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
 	  true; \
 	fi
@@ -1259,7 +1256,7 @@ gcc-no-fixedincludes:
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}` ; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd ./gcc; \
+	  (cd ./gcc && \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	  rm -rf gcc/include; \
 	  mv gcc/tmp-include gcc/include 2>/dev/null; \
@@ -1394,6 +1391,23 @@ configure-target-qthreads: $(ALL_GCC_C)
 # --------------------------------
 # Regenerating top level configury
 # --------------------------------
+
+# Multilib.out tells target dirs what multilibs they should build.
+# There is really only one copy.  We use the 'timestamp' method to
+# work around various timestamp bugs on some systems.
+# We use move-if-change so that it's only considered updated when it
+# actually changes, because it has to depend on a phony target.
+multilib.out: multilib.ts
+	@if [ -f multilib.out] ; then : else \
+	  rm -f multilib.ts; $(MAKE) multilib.ts; \
+	fi
+
+multilib.ts: maybe-all-gcc
+	@r=`${PWD}`; export r; \
+	echo "Checking multilib configuration..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
+	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \
+	echo timestamp > multilib.ts
 
 # Rebuilding Makefile.in, using autogen.
 $(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
