@@ -128,7 +128,7 @@ public final class DatagramPacket
    * receiving packets from the network.
    *
    * @param buf A buffer for storing the returned packet data
-   * @param length The length of the buffer (must be <= buf.length)
+   * @param length The length of the buffer (must be &lt;= buf.length)
    */
   public DatagramPacket(byte[] buf, int length)
   {
@@ -141,7 +141,7 @@ public final class DatagramPacket
    *
    * @param buf A buffer containing the data to send
    * @param offset The offset into the buffer to start writing from.
-   * @param len The length of the buffer (must be <= buf.length)
+   * @param len The length of the buffer (must be &lt;= buf.length)
    * @param addr The address to send to
    * @param port The port to send to
    *
@@ -176,7 +176,7 @@ public final class DatagramPacket
    * transmitting packets across the network.
    *
    * @param buf A buffer containing the data to send
-   * @param length The length of the buffer (must be <= buf.length)
+   * @param length The length of the buffer (must be &lt;= buf.length)
    * @param address The address to send to
    * @param port The port to send to
    */
@@ -191,7 +191,7 @@ public final class DatagramPacket
    *
    * @param buf A buffer containing the data to send
    * @param offset The offset into the buffer to start writing from.
-   * @param length The length of the buffer (must be <= buf.length)
+   * @param length The length of the buffer (must be &lt;= buf.length)
    * @param address The socket address to send to
    *
    * @exception SocketException If an error occurs
@@ -212,7 +212,7 @@ public final class DatagramPacket
    * transmitting packets across the network.
    *
    * @param buf A buffer containing the data to send
-   * @param length The length of the buffer (must be <= buf.length)
+   * @param length The length of the buffer (must be &lt;= buf.length)
    * @param address The socket address to send to
    *
    * @exception SocketException If an error occurs
