@@ -476,11 +476,13 @@ find_basic_blocks (f, nonlocal_label_list)
       abort ();
   }
 
-  /* Don't delete the labels that are referenced by non-jump instructions.  */
+  /* Don't delete the labels (in this function)
+     that are referenced by non-jump instructions.  */
   {
     register rtx x;
     for (x = label_value_list; x; x = XEXP (x, 1))
-      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
+      if (! LABEL_REF_NONLOCAL_P (x))
+	block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
   }
 
   /* Record which basic blocks control can drop in to.  */
