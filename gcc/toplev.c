@@ -5156,9 +5156,6 @@ backend_init ()
   /* init_emit_once uses reg_raw_mode and therefore must be called
      after init_regs which initialized reg_raw_mode.  */
   init_regs ();
-  /* Similarly, init_emit_once uses floating point numbers, and
-     thus must follow init_real_once.  */
-  init_real_once ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
 #ifdef VMS_DEBUGGING_INFO
@@ -5324,6 +5321,11 @@ do_compile ()
      says if we run timers or not.  */
   init_timevar ();
   timevar_start (TV_TOTAL);
+
+  /* We need to initialize real.c in order to define __FLT_MIN__ etc,
+     which must happen even with -E.  But with -E we'll suppress the
+     rest of backend_init.  */
+  init_real_once ();
 
   /* Set up the back-end if requested.  */
   if (!no_backend)
