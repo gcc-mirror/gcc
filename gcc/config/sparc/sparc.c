@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Sun SPARC.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2843,6 +2843,10 @@ output_double_int (file, value)
     abort ();
 }
 
+/* Return the value of a code used in the .proc pseudo-op that says
+   what kind of result this function returns.  For non-C types, we pick
+   the closest C type.  */
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -2914,6 +2918,7 @@ sparc_type_code (type)
 	  return (qualifiers | 8);
 
 	case UNION_TYPE:
+	case QUAL_UNION_TYPE:
 	  return (qualifiers | 9);
 
 	case ENUMERAL_TYPE:
@@ -2932,78 +2937,37 @@ sparc_type_code (type)
 	    }
 
 	  /* Carefully distinguish all the standard types of C,
-	     without messing up if the language is not C.
-	     Note that we check only for the names that contain spaces;
-	     other names might occur by coincidence in other languages.  */
-	  if (TYPE_NAME (type) != 0
-	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	      && DECL_NAME (TYPE_NAME (type)) != 0
-	      && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
-	    {
-	      char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-  
-	      if (!strcmp (name, "unsigned char"))
-		return (qualifiers | 12);
-	      if (!strcmp (name, "signed char"))
-		return (qualifiers | 2);
-	      if (!strcmp (name, "unsigned int"))
-		return (qualifiers | 14);
-	      if (!strcmp (name, "short int"))
-		return (qualifiers | 3);
-	      if (!strcmp (name, "short unsigned int"))
-		return (qualifiers | 13);
-	      if (!strcmp (name, "long int"))
-		return (qualifiers | 5);
-	      if (!strcmp (name, "long unsigned int"))
-		return (qualifiers | 15);
-	      if (!strcmp (name, "long long int"))
-		return (qualifiers | 5);	/* Who knows? */
-	      if (!strcmp (name, "long long unsigned int"))
-		return (qualifiers | 15);	/* Who knows? */
-	    }
-  
-	  /* Most integer types will be sorted out above, however, for the
-	     sake of special `array index' integer types, the following code
-	     is also provided.  */
-  
-	  if (TYPE_PRECISION (type) == INT_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 14 : 4));
-  
-	  if (TYPE_PRECISION (type) == LONG_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
-  
-	  if (TYPE_PRECISION (type) == LONG_LONG_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
-  
-	  if (TYPE_PRECISION (type) == SHORT_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 13 : 3));
-  
-	  if (TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
+	     without messing up if the language is not C.  We do this by
+	     testing TYPE_PRECISION and TREE_UNSIGNED.  The old code used to
+	     look at both the names and the above fields, but that's redundant.
+	     Any type whose size is between two C types will be considered
+	     to be the wider of the two types.  Also, we do not have a
+	     special code to use for "long long", so anything wider than
+	     long is treated the same.  Note that we can't distinguish
+	     between "int" and "long" in this code if they are the same
+	     size, but that's fine, since neither can the assembler.  */
+
+	  if (TYPE_PRECISION (type) <= CHAR_TYPE_SIZE)
 	    return (qualifiers | (TREE_UNSIGNED (type) ? 12 : 2));
   
-	  abort ();
+	  else if (TYPE_PRECISION (type) <= SHORT_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 13 : 3));
+  
+	  else if (TYPE_PRECISION (type) <= INT_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 14 : 4));
+  
+	  else
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
   
 	case REAL_TYPE:
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  */
-	  if (TYPE_NAME (type) != 0
-	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	      && DECL_NAME (TYPE_NAME (type)) != 0
-	      && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
-	    {
-	      char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-  
-	      if (!strcmp (name, "long double"))
-		return (qualifiers | 7);	/* Who knows? */
-	    }
-  
-	  if (TYPE_PRECISION (type) == DOUBLE_TYPE_SIZE)
-	    return (qualifiers | 7);
+
 	  if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
 	    return (qualifiers | 6);
-	  if (TYPE_PRECISION (type) == LONG_DOUBLE_TYPE_SIZE)
-	    return (qualifiers | 7);	/* Who knows? */
-	  abort ();
+
+	  else 
+	    return (qualifiers | 7);
   
 	case COMPLEX_TYPE:	/* GNU Fortran COMPLEX type.  */
 	  /* ??? We need to distinguish between double and float complex types,
