@@ -1,3 +1,8 @@
+Mon Aug 16 11:56:36 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (type_hash_add): Use permalloc to allocate nodes in the
+	hashtable.
+
 Mon Aug 16 17:04:15 1999  Jorn Rennecke <amylaar@cygnus.co.uk>
 
 	* mips.h (CLASS_CANNOT_CHANGE_SIZE): Define.
