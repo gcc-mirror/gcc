@@ -1,5 +1,9 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c, 
+	config/dsp16xx/dsp16xx.h, config/dsp16xx/dsp16xx.md: Replace
+	"GNU CC" with "GCC".
+
 	* config/c4x/c4x-c.c, config/c4x/c4x-modes.def,
 	config/c4x/c4x-protos.h, config/c4x/c4x.c, config/c4x/c4x.h,
 	config/c4x/c4x.md, config/c4x/libgcc.S, config/c4x/rtems.h:
