@@ -11,6 +11,11 @@ Sun Jul 25 22:45:55 1999  Richard Henderson  <rth@cygnus.com>
 
 Sun Jul 25 21:40:33 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* config/svr4.h (CTORS_SECTION_ASM_OP): Do not emit directives in
+	column zero.
+	(DTORS_SECTION_ASM_OP, INIT_SECTION_ASM_OP): Likewise.
+	(FINI_SECTION_ASM_OP, ASM_OUTPUT_SECTION_NAME): Likewise.
+
 	* gcc.texi: More changes related to list conversion.
 	* invoke.texi: Likewise.
 

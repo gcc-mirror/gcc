@@ -457,8 +457,8 @@ do {									\
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
@@ -466,8 +466,8 @@ do {									\
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
 
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#define FINI_SECTION_ASM_OP	".section\t.fini"
+#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -567,14 +567,14 @@ do {									\
       s->type = type;							\
       s->next = sections;						\
       sections = s;							\
-      fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, mode);	\
+      fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n", NAME, mode);	\
     }									\
   else									\
     {									\
       if (DECL && s->type != type)					\
 	error_with_decl (DECL, "%s causes a section type conflict");	\
 									\
-      fprintf (FILE, ".section\t%s\n", NAME);				\
+      fprintf (FILE, "\t.section\t%s\n", NAME);				\
     }									\
 } while (0)
 
