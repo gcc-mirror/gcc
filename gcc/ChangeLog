@@ -1,5 +1,12 @@
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.c (c4x_emit_move_sequence): Use loadqi_big_constant
+	and loadhi_big_constant if applicable.
+	* config/c4x/c4x.md (loadqi_big_constant, loadhi_big_constant): Tweak
+	and add new splitter.s
+
+2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.c (c4x_rptb_insert): Make more robust.
 
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
