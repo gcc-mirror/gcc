@@ -1,0 +1,14 @@
+# /bin/cc is hopelessly broken, so we must use /bin/gcc instead.
+CC	= $(OLDCC)
+OLDCC	= /bin/gcc
+
+# /bin/sh is too buggy, so use /bin/bash instead.
+SHELL = /bin/bash
+
+# Show we need to use the C version of ALLOCA
+ALLOCA=alloca.o
+
+# configuration for IBM rs6000 running lynx
+
+# For some reason, we need -lm for cc1.
+CLIB=-lm
