@@ -24,7 +24,6 @@
 AC_INIT(tree.c)
 AC_CONFIG_HEADER(config.h:config.in)
 
-native_prefix=/usr
 remove=rm
 hard_link=ln
 symbolic_link='ln -s'
@@ -1767,10 +1766,6 @@ for machine in $build $host $target; do
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
 		tmake_file=t-netbsd
-		if [[ x$prefix = xNONE ]]; then
-			prefix=$native_prefix
-		fi
-		prefix=$native_prefix
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file=mips/news4.h
@@ -2768,15 +2763,6 @@ fi
 
 # Get the version number from the toplevel
 version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
-
-# Are we using gcc as the native compiler?
-case $host in
-*linux*)	# All Linux's use gcc as the native compiler.
-	if [[ x$prefix = xNONE ]]; then
-		prefix=$native_prefix
-	fi
-	;;
-esac
 
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`

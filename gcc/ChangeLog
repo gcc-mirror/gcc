@@ -1,3 +1,9 @@
+Thu Sep 11 17:43:55 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (native_prefix): Delete.
+	(mips-dec-netbsd): Don't set prefix.
+	(*linux*): Don't set prefix.
+
 Thu Sep 11 15:48:32 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* protoize.c: Include <varargs.h> only if HAVE_VARARGS_H is
