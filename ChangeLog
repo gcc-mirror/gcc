@@ -1,3 +1,16 @@
+2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.tpl ($(NOTPARALLEL)): Move to the end.  Bring uses of
+	program_transform_name to standard idiom.
+	(AUTOGEN, AUTOCONF): Define.
+	(Makefile.in): Use $(AUTOGEN).
+	(Makefile): Depend on config.status, and use autoconf-style rule to
+	build it.  Move original commands to...
+	(config.status): ... this new target.
+	(configure): Add $(srcdir).  Depend on config/acx.m4.  Use
+	$(AUTOCONF).
+	* Makefile.in: Rebuilt.
+
 2002-12-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Fix dramatic bustage due to change in
