@@ -1,3 +1,8 @@
+2004-06-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/fill/1.cc: Tweak instantiations.
+	* testsuite/25_algorithms/fill/2.cc: Likewise.
+
 2004-06-25  Dan Nicolaescu  <dann@ics.uci.edu>
 	    Paolo Carlini  <pcarlini@suse.de>
 

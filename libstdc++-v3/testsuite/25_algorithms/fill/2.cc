@@ -60,6 +60,7 @@ void test01()
 #if !__GXX_WEAK__ && _MT_ALLOCATOR_H
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
+template class __gnu_cxx::__mt_alloc<std::_List_node<num> >;
 #endif
 
 int main()
