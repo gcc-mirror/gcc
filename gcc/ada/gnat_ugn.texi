@@ -81,10 +81,17 @@
 
 @ifset vms
 @settitle GNAT User's Guide for Native Platforms / OpenVMS Alpha
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ugn_vms) for Native Platforms / OpenVMS Alpha
+@end direntry
 @end ifset
 
 @ifset unw
 @settitle GNAT User's Guide for Native Platforms / Unix and Windows
+@direntry
+* GNAT User's Guide (gnat_ugn_unw) for Native Platforms / Unix and Windows
+@end direntry
 @end ifset
 
 @include gcc-common.texi
@@ -141,7 +148,7 @@ A copy of the license is included in the section entitled
 @end titlepage
 
 
-@ifinfo
+@ifnottex
 @node Top, About This Guide, (dir), (dir)
 @top GNAT User's Guide
 
@@ -623,7 +630,7 @@ Microsoft Windows Topics
 
 * Index::
 @end menu
-@end ifinfo
+@end ifnottex
 
 @node About This Guide
 @unnumbered About This Guide
@@ -8652,12 +8659,12 @@ and some of the techniques for making your program run faster.
 It then documents the @command{gnatelim} tool, which can reduce
 the size of program executables.
 
-@ifinfo
+@ifnottex
 @menu
 * Performance Considerations::
 * Reducing the Size of Ada Executables with gnatelim::
 @end menu
-@end ifinfo
+@end ifnottex
 
 
 @c *****************************
@@ -15034,7 +15041,7 @@ Clear :
 @end cartouche
 @end iftex
 
-@ifinfo
+@ifnottex
 @smallexample
 @cartouche
 GNAT style, compact layout              Uncompact layout
@@ -15059,7 +15066,7 @@ end loop Clear;                               A (J) := 0;
                                            end loop Clear;
 @end cartouche
 @end smallexample
-@end ifinfo
+@end ifnottex
 
 @noindent
 A further difference between GNAT style layout and compact layout is that

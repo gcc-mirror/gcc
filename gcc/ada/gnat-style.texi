@@ -46,8 +46,6 @@
 @end flushright
 @sp 2
 @subtitle GNAT, The GNU Ada 95 Compiler
-@subtitle Document revision level $Revision: 1.8 $
-@subtitle Date:  $Date: 2003/05/24 21:29:30 $
 
 @author Ada Core Technologies, Inc.
 
@@ -72,7 +70,7 @@ A copy of the license is included in the section entitled
 @node    Top,       General,         , (dir)
 @comment node-name, next,    previous, up
 
-@ifinfo
+@ifnottex
 @noindent
 GNAT Coding Style@*
 A Guide for GNAT Developers
@@ -80,7 +78,7 @@ A Guide for GNAT Developers
 @noindent
 GNAT, The GNU Ada 95 Compiler@*
 Document revision level $Revision: 1.8 $@*
-Date:  $Date: 2003/05/24 21:29:30 $
+Date:  $Date: 2004/04/01 17:25:02 $
 
 @noindent
 Permission is granted to copy, distribute and/or modify this document
@@ -92,7 +90,7 @@ Front-Cover Texts being
 and with no Back-Cover Texts.
 A copy of the license is included in the section entitled
 ``GNU Free Documentation License''.
-@end ifinfo
+@end ifnottex
 
 
 @menu
