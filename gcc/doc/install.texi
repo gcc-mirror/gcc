@@ -3117,7 +3117,7 @@ newer: @command{g++} will complain that types are missing.  These headers assume
 that omitting the type means @code{int}; this assumption worked for C89 but
 is wrong for C++, and is now wrong for C99 also.
 
-@command{g++} accepts such (illegal) constructs with the option
+@command{g++} accepts such (invalid) constructs with the option
 @option{-fpermissive}; it
 will assume that any missing type is @code{int} (as defined by C89).
 

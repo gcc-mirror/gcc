@@ -987,10 +987,10 @@ object.  For example:
 struct foo @{ int x; int y[]; @};
 struct bar @{ struct foo z; @};
 
-struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // Legal.
-struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // Illegal.
-struct bar c = @{ @{ 1, @{ @} @} @};            // Legal.
-struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // Illegal.
+struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // @r{Valid.}
+struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // @r{Invalid.}
+struct bar c = @{ @{ 1, @{ @} @} @};            // @r{Valid.}
+struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
 @end example
 
 @node Variable Length

@@ -3921,7 +3921,7 @@ The name of a file or file-like object on the host system which acts as
 a ``bit bucket''.  If you do not define this macro, GCC will use
 @samp{/dev/null} as the bit bucket.  If the target does not support a
 bit bucket, this should be defined to the null string, or some other
-illegal filename.  If the bit bucket is not writable, GCC will use a
+invalid filename.  If the bit bucket is not writable, GCC will use a
 temporary file instead.
 
 @findex COLLECT_EXPORT_LIST

@@ -1,3 +1,9 @@
+2001-11-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/extend.texi, doc/gcc.texi, doc/install.texi, doc/tm.texi:
+	Use "invalid" instead of "illegal".  Use @r in comments in
+	examples.
+
 2001-11-01  Richard Sandiford  <rsandifo@redhat.com>
 
  	* config/mips/mips.c (save_restore_insns): Don't mark any register

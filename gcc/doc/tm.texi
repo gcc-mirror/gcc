@@ -2345,7 +2345,7 @@ which the compiler may not change modes arbitrarily.
 
 @item CLASS_CANNOT_CHANGE_MODE_P(@var{from}, @var{to})
 A C expression that is true if, for a register in
-@code{CLASS_CANNOT_CHANGE_MODE}, the requested mode punning is illegal.
+@code{CLASS_CANNOT_CHANGE_MODE}, the requested mode punning is invalid.
 
 For the example, loading 32-bit integer or floating-point objects into
 floating-point registers on the Alpha extends them to 64-bits.
