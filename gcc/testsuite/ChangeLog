@@ -1,3 +1,8 @@
+2000-09-17  Greg McGary  <greg@mcgary.org>
+
+	* gcc.c-torture/execute/20000917-1.c: New test.
+	* gcc.c-torture/execute/20000917-1.x: XFAIL.
+
 Sat 16-Sep-2000 08:14:58 BST  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/macro2.c: Testcase for multi-context arguments
@@ -90,8 +95,8 @@ Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 2000-09-06  Greg McGary  <greg@mcgary.org>
 
-	* gcc.c-torture/20000906.c: New test.
-	* gcc.c-torture/20000906.x: Expect failure for ix86 at `-O2'.
+	* gcc.c-torture/execute/20000906-1.c: New test.
+	* gcc.c-torture/execute/20000906-1.x: Expect failure for ix86 at `-O2'.
 
 2000-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
