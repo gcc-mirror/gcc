@@ -441,7 +441,7 @@ extern int target_flags;
    gcc-cris they are using.  Please use some flavor of "R<number>" for
    the version (no need for major.minor versions, I believe).  */
 #define TARGET_VERSION \
- fprintf (stderr, " [Axis CRIS release R36a%s]", CRIS_SUBTARGET_VERSION)
+ fprintf (stderr, " [Axis CRIS%s]", CRIS_SUBTARGET_VERSION)
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_SUBTARGET_VERSION " - generic ELF"
