@@ -1,3 +1,8 @@
+2001-06-14  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* combine.c (nonzero_bits): Don't optimize away division by
+	zero.
+
 2001-06-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* doc/cpp.texi: Revised and brought up to date.

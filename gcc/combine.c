@@ -8136,18 +8136,26 @@ nonzero_bits (x, mode)
 	    result_low = low0 + low1;
 	    break;
 	  case DIV:
+	    if (width1 == 0)
+	      break;
 	    if (! op0_maybe_minusp && ! op1_maybe_minusp)
 	      result_width = width0;
 	    break;
 	  case UDIV:
+	    if (width1 == 0)
+	      break;
 	    result_width = width0;
 	    break;
 	  case MOD:
+	    if (width1 == 0)
+	      break;
 	    if (! op0_maybe_minusp && ! op1_maybe_minusp)
 	      result_width = MIN (width0, width1);
 	    result_low = MIN (low0, low1);
 	    break;
 	  case UMOD:
+	    if (width1 == 0)
+	      break;
 	    result_width = MIN (width0, width1);
 	    result_low = MIN (low0, low1);
 	    break;
