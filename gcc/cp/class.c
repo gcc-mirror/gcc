@@ -999,7 +999,10 @@ add_method (type, method, error_p)
 	  if (! DECL_STATIC_FUNCTION_P (method))
 	    parms2 = TREE_CHAIN (parms2);
 
-	  if (same && compparms (parms1, parms2))
+	  if (same && compparms (parms1, parms2) 
+	      && (!DECL_CONV_FN_P (fn) 
+		  || same_type_p (TREE_TYPE (TREE_TYPE (fn)),
+				  TREE_TYPE (TREE_TYPE (method)))))
 	    {
 	      if (using && DECL_CONTEXT (fn) == type)
 		/* Defer to the local function.  */
