@@ -2029,8 +2029,8 @@ typedef struct rs6000_args
 
 #define TOC_RELATIVE_EXPR_P(X) (toc_relative_expr_p (X))
 
-/* SPE offset addressing is limited to 5-bits.  */
-#define SPE_CONST_OFFSET_OK(x) (((x) & ~0x1f) == 0)
+/* SPE offset addressing is limited to 5-bits worth of double words.  */
+#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xff) == 0)
 
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
   (TARGET_TOC								\
