@@ -734,9 +734,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    break;
 	}
 
-      if (TREE_CODE (result) != INDIRECT_REF && TREE_CODE (result) != NULL_EXPR
-	  && !DECL_P (result))
-	abort ();
+      gcc_assert (TREE_CODE (result) == INDIRECT_REF
+		  || TREE_CODE (result) == NULL_EXPR || DECL_P (result));
 
       /* Convert the right operand to the operation type unless
 	 it is either already of the correct type or if the type
@@ -783,8 +782,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case LE_EXPR:
     case GT_EXPR:
     case LT_EXPR:
-      if (POINTER_TYPE_P (left_type))
-	abort ();
+      gcc_assert (!POINTER_TYPE_P (left_type));
 
       /* ... fall through ... */
 
@@ -833,12 +831,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	{
 	  result = compare_arrays (result_type, left_operand, right_operand);
 
-	  if (op_code == EQ_EXPR)
-	    ;
-	  else if (op_code == NE_EXPR)
+	  if (op_code == NE_EXPR)
 	    result = invert_truthvalue (result);
 	  else
-	    abort ();
+	    gcc_assert (op_code == EQ_EXPR);
 
 	  return result;
 	}
@@ -857,9 +853,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		 Even better is if one is of fixed size.  */
 	      best_type = NULL_TREE;
 
-	      if (!TYPE_NAME (left_base_type)
-		  || TYPE_NAME (left_base_type) != TYPE_NAME (right_base_type))
-		abort ();
+	      gcc_assert (TYPE_NAME (left_base_type)
+			  && (TYPE_NAME (left_base_type)
+			      == TYPE_NAME (right_base_type)));
 
 	      if (TREE_CONSTANT (TYPE_SIZE (left_base_type)))
 		best_type = left_base_type;
@@ -870,13 +866,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      else if (!CONTAINS_PLACEHOLDER_P (TYPE_SIZE (right_base_type)))
 		best_type = right_base_type;
 	      else
-		abort ();
+		gcc_unreachable ();
 
 	      left_operand = convert (best_type, left_operand);
 	      right_operand = convert (best_type, right_operand);
 	    }
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	}
 
       /* If we are comparing a fat pointer against zero, we need to
@@ -913,9 +909,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 we guarantee that no overflow can occur.  So nothing special need
 	 be done for modular types.  */
 
-      if (left_type != result_type)
-	abort ();
-
+      gcc_assert (left_type == result_type);
       operation_type = get_base_type (result_type);
       left_operand = convert (operation_type, left_operand);
       right_operand = convert (operation_type, right_operand);
@@ -930,9 +924,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
        /* The RHS of a shift can be any type.  Also, ignore any modulus
 	 (we used to abort, but this is needed for unchecked conversion
 	 to modular types).  Otherwise, processing is the same as normal.  */
-      if (operation_type != left_base_type)
-	abort ();
-
+      gcc_assert (operation_type == left_base_type);
       modulus = NULL_TREE;
       left_operand = convert (operation_type, left_operand);
       break;
@@ -957,10 +949,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
       goto common;
 
     case COMPLEX_EXPR:
-      if (TREE_TYPE (result_type) != left_base_type
-	  || TREE_TYPE (result_type) != right_base_type)
-	abort ();
-
+      gcc_assert (TREE_TYPE (result_type) == left_base_type
+		  && TREE_TYPE (result_type) == right_base_type);
       left_operand = convert (left_base_type, left_operand);
       right_operand = convert (right_base_type, right_operand);
       break;
@@ -979,10 +969,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 both operands (and they should be the same).  Convert
 	 everything to the result type.  */
 
-      if (operation_type != left_base_type
-	  || left_base_type != right_base_type)
-	abort ();
-
+      gcc_assert (operation_type == left_base_type
+		  && left_base_type == right_base_type);
       left_operand = convert (operation_type, left_operand);
       right_operand = convert (operation_type, right_operand);
     }
@@ -1053,16 +1041,14 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
     case IMAGPART_EXPR:
       if (!operation_type)
 	result_type = operation_type = TREE_TYPE (type);
-      else if (result_type != TREE_TYPE (type))
-	abort ();
+      else
+	gcc_assert (result_type == TREE_TYPE (type));
 
       result = fold (build1 (op_code, operation_type, operand));
       break;
 
     case TRUTH_NOT_EXPR:
-      if (result_type != base_type)
-	abort ();
-
+      gcc_assert (result_type == base_type);
       result = invert_truthvalue (gnat_truthvalue_conversion (operand));
       break;
 
@@ -1252,9 +1238,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
 	if (modulus)
 	  {
-	    if (operation_type != base_type)
-	      abort ();
-
+	    gcc_assert (operation_type == base_type);
 	    operand = convert (operation_type, operand);
 
 	    /* The fastest in the negate case for binary modulus is
@@ -1317,9 +1301,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       /* ... fall through ... */
 
     default:
-      if (operation_type != base_type)
-	abort ();
-
+      gcc_assert (operation_type == base_type);
       result = fold (build1 (op_code, operation_type, convert (operation_type,
 							       operand)));
     }
@@ -1534,12 +1516,11 @@ build_simple_component_ref (tree record_variable, tree component,
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
   tree ref;
 
-  if ((TREE_CODE (record_type) != RECORD_TYPE
-       && TREE_CODE (record_type) != UNION_TYPE
-       && TREE_CODE (record_type) != QUAL_UNION_TYPE)
-      || !TYPE_SIZE (record_type)
-      || (component != 0) == (field != 0))
-    abort ();
+  gcc_assert ((TREE_CODE (record_type) == RECORD_TYPE
+	       || TREE_CODE (record_type) == UNION_TYPE
+	       || TREE_CODE (record_type) == QUAL_UNION_TYPE)
+	      && TYPE_SIZE (record_type)
+	      && (component != 0) != (field != 0));
 
   /* If no field was specified, look for a field with the specified name
      in the current record only.  */
@@ -1626,12 +1607,9 @@ build_component_ref (tree record_variable, tree component,
   /* If FIELD was specified, assume this is an invalid user field so
      raise constraint error.  Otherwise, we can't find the type to return, so
      abort.  */
-
-  else if (field)
-    return build1 (NULL_EXPR, TREE_TYPE (field),
-		   build_call_raise (CE_Discriminant_Check_Failed));
-  else
-    abort ();
+  gcc_assert (field);
+  return build1 (NULL_EXPR, TREE_TYPE (field),
+		 build_call_raise (CE_Discriminant_Check_Failed));
 }
 
 /* Build a GCC tree to call an allocation or deallocation function.
@@ -1750,7 +1728,7 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
 	}
       else
-	abort ();
+	gcc_unreachable ();
 #if 0
 	return build2 (ALLOCATE_EXPR, ptr_void_type_node, gnu_size, gnu_align);
 #endif

@@ -154,11 +154,9 @@ save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
      to something which is a decl.  Raise gigi 401 if not.  Usually, this
      means GNAT_ENTITY is defined twice, but occasionally is due to some
      Gigi problem.  */
-  if (gnu_decl
-      && (associate_gnat_to_gnu[gnat_entity - First_Node_Id]
-	  || (!no_check && !DECL_P (gnu_decl))))
-    abort ();
-
+  gcc_assert (!gnu_decl
+	      || (!associate_gnat_to_gnu[gnat_entity - First_Node_Id]
+		  && (no_check || DECL_P (gnu_decl))));
   associate_gnat_to_gnu[gnat_entity - First_Node_Id] = gnu_decl;
 }
 
@@ -172,9 +170,7 @@ save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
 tree
 get_gnu_tree (Entity_Id gnat_entity)
 {
-  if (!associate_gnat_to_gnu[gnat_entity - First_Node_Id])
-    abort ();
-
+  gcc_assert (associate_gnat_to_gnu[gnat_entity - First_Node_Id]);
   return associate_gnat_to_gnu[gnat_entity - First_Node_Id];
 }
 
@@ -729,7 +725,6 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
   enum tree_code code = TREE_CODE (record_type);
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
-  tree size_unit = size_zero_node;
   bool var_size = false;
   tree field;
 
@@ -785,7 +780,6 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 
       tree type = TREE_TYPE (field);
       tree this_size = DECL_SIZE (field);
-      tree this_size_unit = DECL_SIZE_UNIT (field);
       tree this_ada_size = DECL_SIZE (field);
 
       /* We need to make an XVE/XVU record if any field has variable size,
@@ -826,7 +820,6 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 	case UNION_TYPE:
 	  ada_size = size_binop (MAX_EXPR, ada_size, this_ada_size);
 	  size = size_binop (MAX_EXPR, size, this_size);
-	  size_unit = size_binop (MAX_EXPR, size_unit, this_size_unit);
 	  break;
 
 	case QUAL_UNION_TYPE:
@@ -835,9 +828,6 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 			    this_ada_size, ada_size));
 	  size = fold (build3 (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
 			       this_size, size));
-	  size_unit = fold (build3 (COND_EXPR, sizetype,
-				    DECL_QUALIFIER (field),
-				    this_size_unit, size_unit));
 	  break;
 
 	case RECORD_TYPE:
@@ -854,13 +844,10 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 			   TREE_CODE (type) == QUAL_UNION_TYPE, has_rep);
 	  size = merge_sizes (size, pos, this_size,
 			      TREE_CODE (type) == QUAL_UNION_TYPE, has_rep);
-	  size_unit
-	    = merge_sizes (size_unit, byte_position (field), this_size_unit,
-			   TREE_CODE (type) == QUAL_UNION_TYPE, has_rep);
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -871,10 +858,7 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
      what was specified in it, if any.  */
   if (TREE_CODE (record_type) == RECORD_TYPE
       && TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
-    {
-      size = TYPE_SIZE (record_type);
-      size_unit = TYPE_SIZE_UNIT (record_type);
-    }
+    size = TYPE_SIZE (record_type);
 
   /* Now set any of the values we've just computed that apply.  */
   if (!TYPE_IS_FAT_POINTER_P (record_type)
@@ -887,6 +871,9 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 	    && TYPE_IS_PADDING_P (record_type)
 	    && CONTAINS_PLACEHOLDER_P (size)))
 	{
+	  tree size_unit
+	    = convert (sizetype, size_binop (CEIL_DIV_EXPR, size,
+					     bitsize_unit_node));
 	  TYPE_SIZE (record_type) = round_up (size, TYPE_ALIGN (record_type));
 	  TYPE_SIZE_UNIT (record_type)
 	    = round_up (size_unit,
@@ -1894,9 +1881,7 @@ float_type_for_precision (int precision, enum machine_mode mode)
   TYPE_PRECISION (t) = precision;
   layout_type (t);
 
-  if (TYPE_MODE (t) != mode)
-    abort ();
-
+  gcc_assert (TYPE_MODE (t) == mode);
   if (!TYPE_NAME (t))
     {
       sprintf (type_name, "FLOAT_%d", precision);
@@ -2076,7 +2061,7 @@ max_size (tree exp, bool max_p)
       break;
     }
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Build a template of type TEMPLATE_TYPE from the array bounds of ARRAY_TYPE.
@@ -2125,7 +2110,7 @@ build_template (tree template_type, tree array_type, tree expr)
 	       && DECL_BY_COMPONENT_PTR_P (expr))
 	bounds = TREE_TYPE (field);
       else
-	abort ();
+	gcc_unreachable ();
 
       min = convert (TREE_TYPE (TREE_CHAIN (field)), TYPE_MIN_VALUE (bounds));
       max = convert (TREE_TYPE (field), TYPE_MAX_VALUE (bounds));
@@ -2564,7 +2549,7 @@ update_pointer_to (tree old_type, tree new_type)
      pointers to void.  In that case, copy the field list from the
      old type to the new one and update the fields' context. */
   else if (TREE_CODE (ptr) != RECORD_TYPE || !TYPE_IS_FAT_POINTER_P (ptr))
-    abort ();
+    gcc_unreachable ();
 
   else
     {
@@ -3009,7 +2994,7 @@ convert (tree type, tree expr)
 			   convert (TREE_TYPE (tem), expr));
 	}
 
-      abort ();
+      gcc_unreachable ();
 
     case UNCONSTRAINED_ARRAY_TYPE:
       /* If EXPR is a constrained array, take its address, convert it to a
@@ -3037,13 +3022,13 @@ convert (tree type, tree expr)
 				   build_unary_op (ADDR_EXPR,
 						   NULL_TREE, expr)));
       else
-	abort ();
+	gcc_unreachable ();
 
     case COMPLEX_TYPE:
       return fold (convert_to_complex (type, expr));
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

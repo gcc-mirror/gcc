@@ -1,3 +1,21 @@
+2004-10-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cuintp.c, decl.c, utils2.c: Use gcc_assert and gcc_unreachable.
+
+	* trans.c (assoc_to_constructor): Fix unused var warning if no checking.
+	(gnat_gimplify_expr, case ADDR_EXPR): Fix error in last change.
+	Use gcc_assert and gcc_unreachable.
+
+	* decl.c (gnat_to_gnu_entity, case object): Check and process a
+	specified alignment before validating size.
+	(gnat_to_gnu_entity) <E_Modular_Integer_Subtype>: Create a
+	stripped-down declaration for the type of the inner field when making
+	a JM type.
+
+	* utils.c (finish_record_type): Do not compute the size in units
+	incrementally. Instead compute it once for the rep clause case.
+	Use gcc_assert and gcc_unreachable.
+
 2004-10-04  Vincent Celier  <celier@gnat.com>
 
 	* a-dirval-mingw.adb (Invalid_Character): Add '\' as invalid character
