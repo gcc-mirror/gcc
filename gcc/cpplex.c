@@ -2069,7 +2069,7 @@ is_macro_disabled (pfile, expansion, token)
       if (next->type != CPP_OPEN_PAREN)
 	{
 	  _cpp_push_token (pfile, next);
-	  if (CPP_OPTION (pfile, warn_traditional))
+	  if (CPP_TRADITIONAL (pfile))
 	    cpp_warning (pfile,
 	 "function macro %.*s must be used with arguments in traditional C",
 			 (int) token->val.node->length, token->val.node->name);
