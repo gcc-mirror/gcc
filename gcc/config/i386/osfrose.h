@@ -23,12 +23,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define OSF_OS
 
-/* Use a more friendly abort which prints internal compiler error,
-   rather than just dumping core.  */
-
-#ifndef abort
-#define abort fancy_abort
-#endif
+#undef  WORD_SWITCH_TAKES_ARG
+#define WORD_SWITCH_TAKES_ARG(STR)					\
+ (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")			\
+  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")			\
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info")		\
+  || !strcmp (STR, "pic-names"))
 
 #define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
@@ -74,6 +74,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
+%{pic-names*: -mhalf-pic} \
 %{!pic-*:     -mhalf-pic}"
 
 #undef	ASM_SPEC
