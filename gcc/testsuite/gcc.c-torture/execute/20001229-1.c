@@ -21,6 +21,7 @@ setsysinfo(unsigned long op, void *buffer, unsigned long size,
 
 #else
 #include <sys/sysinfo.h>
+#include <sys/proc.h>
 #endif
    
 static void __attribute__((constructor))
