@@ -1,3 +1,8 @@
+2001-01-07  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.h (EPILOGUE_USES): New, mark link register
+	after reload.
+
 2001-01-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (BUILT_IN_FPRINTF): New entry.

@@ -1559,6 +1559,14 @@ typedef struct rs6000_args
    its backpointer, which we maintain.  */
 #define EXIT_IGNORE_STACK	1
 
+/* Define this macro as a C expression that is nonzero for registers
+   that are used by the epilogue or the return' pattern.  The stack
+   and frame pointer registers are already be assumed to be used as
+   needed.  */
+
+#define	EPILOGUE_USES(REGNO)	\
+  (reload_completed && (REGNO) == LINK_REGISTER_REGNUM)
+
 /* This macro generates the assembly code for function exit,
    on machines that need it.  If FUNCTION_EPILOGUE is not defined
    then individual return instructions are generated for each
