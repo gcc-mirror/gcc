@@ -53,7 +53,7 @@ extern int target_flags;
 
 #define MASK_VOL_ASM_STOP 0x00000010	/* Emit stop bits for vol ext asm.  */
 
-#define MASK_A_STEP	0x00000020	/* Emit code for Itanium A step.  */
+/* 0x00000020 is available.  */
 
 #define MASK_B_STEP	0x00000040	/* Emit code for Itanium B step.  */
 
@@ -80,8 +80,6 @@ extern int target_flags;
 #define TARGET_NO_PIC		(target_flags & MASK_NO_PIC)
 
 #define TARGET_VOL_ASM_STOP	(target_flags & MASK_VOL_ASM_STOP)
-
-#define TARGET_A_STEP		(target_flags & MASK_A_STEP)
 
 #define TARGET_B_STEP		(target_flags & MASK_B_STEP)
 
@@ -126,8 +124,6 @@ extern int target_flags;
       N_("Emit stop bits before and after volatile extended asms") },	\
   { "no-volatile-asm-stop", -MASK_VOL_ASM_STOP,				\
       N_("Don't emit stop bits before and after volatile extended asms") }, \
-  { "a-step",		MASK_A_STEP,					\
-      N_("Emit code for Itanium (TM) processor A step")},		\
   { "b-step",		MASK_B_STEP,					\
       N_("Emit code for Itanium (TM) processor B step")},		\
   { "register-names",	MASK_REG_NAMES,					\
