@@ -40,7 +40,7 @@ static void debug_print (const char *fmt, ...)
   __attribute__ ((format (printf, 1, 2)));
 
 static inline void
-debug_print (const char *fmt, ...)
+debug_print (MAYBE_UNUSED const char *fmt, ...)
 {
 #ifdef VERIFY_DEBUG
   va_list ap;

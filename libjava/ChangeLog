@@ -1,3 +1,10 @@
+2004-02-01  Michael Koch  <konqueror@gmx.de>
+
+	* include/jvm.h (MAYBE_UNUSED): New macro tp mark probably unused
+	arguments.
+	* jni.cc (_Jv_LookupJNIMethod): Mark 'args_size' unused.
+	* verify.cc (debug_print): Mark 'fmt' unused.
+
 2004-01-30  Michael Koch  <konqueror@gmx.de>
 
 	* configure.in: Use pkg-config to check for GTK 2.2 and libart 2.1.
