@@ -1,3 +1,16 @@
+2002-09-22  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_f32_round_error,
+	__glibcpp_f64_round_error, __glibcpp_f80_round_error,
+	__glibcpp_f96_round_error, __glibcpp_f128_round_error,
+	__glibcpp_float_round_error, __glibcpp_double_round_error,
+	__glibcpp_long_double_round_error, __glibcpp_float_round_style,
+	__glibcpp_double_round_style, __glibcpp_long_double_round_style): Kill.
+	(numeric_limits<char>::epsilon, round_error): Use constant 0.
+	(numeric_limits<float>::round_error): Use constant 0.5.
+	(numeric_limits<float>::round_style): Use round_to_nearest.
+	(numeric_limits<double>, numeric_limits<long double>): Similarly.
+
 2002-09-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/18_support/numeric_limits.cc (test_epsilon): New.

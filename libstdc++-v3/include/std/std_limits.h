@@ -150,32 +150,27 @@
 #define __glibcpp_u64_digits 64
 #define __glibcpp_u64_digits10 19
 
-#define __glibcpp_f32_round_error 1.0F
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f32_is_iec559  true
 #endif
 #ifndef __glibcpp_f32_is_iec559
 #  define __glibcpp_f32_is_iec559 false
 #endif 
-#define __glibcpp_f64_round_error 1.0
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f64_is_iec559 true
 #endif
 #ifndef __glibcpp_f64_is_iec559
 #  define __glibcpp_f64_is_iec559 false
 #endif 
-#define __glibcpp_f80_round_error 1.0L
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f80_is_iec559 true
 #endif
 #ifndef __glibcpp_f80_is_iec559
 #  define __glibcpp_f80_is_iec559 false
 #endif 
-#define __glibcpp_f96_round_error 1.0L
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f96_is_iec559 true
 #endif
-#define __glibcpp_f128_round_error 1.0L
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f128_is_iec559 true
 #endif
@@ -503,13 +498,10 @@
 //
 
 #if __FLOAT_BIT__ == 32
-#  define __glibcpp_float_round_error __glibcpp_f32_round_error
 #  define __glibcpp_float_is_iec559 __glibcpp_f32_is_iec559
 #elif __FLOAT_BIT__ == 64
-#  define __glibcpp_float_round_error __glibcpp_f64_round_error
 #  define __glibcpp_float_is_iec559 __glibcpp_f64_is_iec559
 #elif __FLOAT_BIT__ == 80
-#  define __glibcpp_float_round_error __glibcpp_f80_round_error
 #  define __glibcpp_float_is_iec559 __glibcpp_f80_is_iec559
 #else
 // You must define these macros in the configuration file.
@@ -541,20 +533,13 @@
 #  define __glibcpp_float_tinyness_before false
 #endif
 
-#ifndef __glibcpp_float_round_style
-#  define __glibcpp_float_round_style round_toward_zero
-#endif
-
 // double
 
 #if __DOUBLE_BIT__ == 32
-#  define __glibcpp_double_round_error __glibcpp_f32_round_error
 #  define __glibcpp_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __DOUBLE_BIT__ == 64
-#  define __glibcpp_double_round_error __glibcpp_f64_round_error
 #  define __glibcpp_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __DOUBLE_BIT__ == 80
-#  define __glibcpp_double_round_error __glibcpp_f80_round_error
 #  define __glibcpp_double_is_iec559 __glibcpp_f80_is_iec559
 #else
 // You must define these macros in the configuration file.
@@ -586,26 +571,17 @@
 #  define __glibcpp_double_tinyness_before false
 #endif
 
-#ifndef __glibcpp_double_round_style
-#  define __glibcpp_double_round_style round_toward_zero
-#endif
-
 // long double
 
 #if __LONG_DOUBLE_BIT__ == 32
-#  define __glibcpp_long_double_round_error __glibcpp_f32_round_error
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 64
-#  define __glibcpp_long_double_round_error __glibcpp_f64_round_error
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 80
-#  define __glibcpp_long_double_round_error __glibcpp_f80_round_error
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f80_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 96
-#  define __glibcpp_long_double_round_error __glibcpp_f96_round_error
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f96_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 128
-#  define __glibcpp_long_double_round_error __glibcpp_f128_round_error
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f128_is_iec559
 #else
 // You must define these macros in the configuration file.
@@ -635,10 +611,6 @@
 
 #ifndef __glibcpp_long_double_tinyness_before
 #  define __glibcpp_long_double_tinyness_before false
-#endif
-
-#ifndef __glibcpp_long_double_round_style
-#  define __glibcpp_long_double_round_style round_toward_zero
 #endif
 
 
@@ -825,9 +797,9 @@ namespace std
       static const bool is_exact = true;
       static const int radix = 2;
       static char epsilon() throw()
-      { return char(); }
+      { return 0; }
       static char round_error() throw()
-      { return char(); }
+      { return 0; }
 
       static const int min_exponent = 0;
       static const int min_exponent10 = 0;
@@ -1505,7 +1477,7 @@ namespace std
       static float epsilon() throw()
       { return __FLT_EPSILON__; }
       static float round_error() throw()
-      { return __glibcpp_float_round_error; }
+      { return 0.5F; }
 
       static const int min_exponent = __FLT_MIN_EXP__;
       static const int min_exponent10 = __FLT_MIN_10_EXP__;
@@ -1536,17 +1508,15 @@ namespace std
 
       static const bool traps = __glibcpp_float_traps;
       static const bool tinyness_before = __glibcpp_float_tinyness_before;
-      static const float_round_style round_style = __glibcpp_float_round_style;
+      static const float_round_style round_style = round_to_nearest;
     };
 
-#undef __glibcpp_float_round_error
 #undef __glibcpp_float_has_denorm_loss
 #undef __glibcpp_float_is_iec559
 #undef __glibcpp_float_is_bounded
 #undef __glibcpp_float_is_modulo
 #undef __glibcpp_float_traps
 #undef __glibcpp_float_tinyness_before
-#undef __glibcpp_float_round_style  
 
   template<>
     struct numeric_limits<double>
@@ -1567,7 +1537,7 @@ namespace std
       static double epsilon() throw()
       { return __DBL_EPSILON__; }
       static double round_error() throw()
-      { return __glibcpp_double_round_error; }
+      { return 0.5; }
 
       static const int min_exponent = __DBL_MIN_EXP__;
       static const int min_exponent10 = __DBL_MIN_10_EXP__;
@@ -1598,18 +1568,15 @@ namespace std
 
       static const bool traps = __glibcpp_double_traps;
       static const bool tinyness_before = __glibcpp_double_tinyness_before;
-      static const float_round_style round_style =
-              __glibcpp_double_round_style;
+      static const float_round_style round_style = round_to_nearest;
     };
 
-#undef __glibcpp_double_round_error
 #undef __glibcpp_double_has_denorm_loss
 #undef __glibcpp_double_is_iec559
 #undef __glibcpp_double_is_bounded
 #undef __glibcpp_double_is_modulo
 #undef __glibcpp_double_traps
 #undef __glibcpp_double_tinyness_before
-#undef __glibcpp_double_round_style  
   
   
   template<>
@@ -1631,7 +1598,7 @@ namespace std
       static long double epsilon() throw()
       { return __LDBL_EPSILON__; }
       static long double round_error() throw()
-      { return __glibcpp_long_double_round_error; }
+      { return 0.5L; }
 
       static const int min_exponent = __LDBL_MIN_EXP__;
       static const int min_exponent10 = __LDBL_MIN_10_EXP__;
@@ -1663,19 +1630,16 @@ namespace std
 
       static const bool traps = __glibcpp_long_double_traps; 
       static const bool tinyness_before = __glibcpp_long_double_tinyness_before;
-      static const float_round_style round_style = 
-        __glibcpp_long_double_round_style;
+      static const float_round_style round_style = round_to_nearest;
     };
 
-#undef __glibcpp_long_double_round_error
 #undef __glibcpp_long_double_has_denorm_loss
 #undef __glibcpp_long_double_is_iec559
 #undef __glibcpp_long_double_is_bounded
 #undef __glibcpp_long_double_is_modulo
 #undef __glibcpp_long_double_traps
 #undef __glibcpp_long_double_tinyness_before
-#undef __glibcpp_long_double_round_style  
-  
+
 } // namespace std
 
 #endif // _CPP_NUMERIC_LIMITS
