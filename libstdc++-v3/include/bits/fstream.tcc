@@ -477,10 +477,7 @@ namespace std
       bool __testbeg = gptr() == eback() && pptr() == pbase();
 
       if (__testbeg && this->_M_buf_locale != __loc)
-	{
-	  this->_M_buf_locale = __loc;
-	  this->_M_buf_locale_init = true;
-	}
+	this->_M_buf_locale = __loc;
 
       // NB this may require the reconversion of previously
       // converted chars. This in turn may cause the reconstruction

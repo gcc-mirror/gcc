@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,6 +70,28 @@ void test02(std::stringbuf& in, bool pass)
   VERIFY( p == bad );
 }
 
+// libstdc++/9322
+void test08()
+{
+  using std::locale;
+  bool test = true;
+
+  locale loc;
+  std::stringbuf ob;
+  VERIFY( ob.getloc() == loc );
+
+  locale::global(locale("en_US"));
+  VERIFY( ob.getloc() == loc );
+
+  locale loc_de ("de_DE");
+  locale ret = ob.pubimbue(loc_de);
+  VERIFY( ob.getloc() == loc_de );
+  VERIFY( ret == loc );
+
+  locale::global(loc);
+  VERIFY( ob.getloc() == loc_de );
+}
+
 int main() 
 {
   using namespace std;
@@ -83,5 +105,6 @@ int main()
   test02(in2, false);
   test02(in3, false);
 
+  test08();
   return 0;
 }
