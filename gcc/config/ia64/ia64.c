@@ -3169,17 +3169,7 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	  else if (gr_size > UNITS_PER_WORD)
 	    int_regs += gr_size / UNITS_PER_WORD;
 	}
-
-      /* If we ended up using just one location, just return that one loc, but
-	 change the mode back to the argument mode.  However, we can't do this
-	 when hfa_mode is XFmode and mode is TImode.  In that case, we would
-	 return a TImode reference to an FP reg, but FP regs can't hold TImode.
-	 We need the PARALLEL to make this work.  This can happen for a union
-	 containing a single __float80 member.  */
-      if (i == 1 && ! (hfa_mode == XFmode && mode == TImode))
-	return gen_rtx_REG (mode, REGNO (XEXP (loc[0], 0)));
-      else
-	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
+      return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
 
   /* Integral and aggregates go in general registers.  If we have run out of
@@ -3477,11 +3467,7 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 				      GEN_INT (offset));
 	  offset += hfa_size;
 	}
-
-      if (i == 1)
-	return XEXP (loc[0], 0);
-      else
-	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
+      return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
   else if (FLOAT_TYPE_P (valtype) && mode != TFmode && mode != TCmode)
     return gen_rtx_REG (mode, FR_ARG_FIRST);
