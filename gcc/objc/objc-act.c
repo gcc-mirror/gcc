@@ -2925,6 +2925,7 @@ hack_method_prototype (nst_methods, tmp_decl)
      tree tmp_decl;
 {
   tree parms;
+  tree parm;
 
   /* Hack to avoid problem with static typing of self arg. */
   TREE_SET_CODE (nst_methods, CLASS_METHOD_DECL);
@@ -2952,6 +2953,9 @@ hack_method_prototype (nst_methods, tmp_decl)
       restype = integer_type_node;
     DECL_RESULT (tmp_decl) = build_decl (RESULT_DECL, 0, restype);
   }
+
+  for (parm = DECL_ARGUMENTS (tmp_decl); parm; parm = TREE_CHAIN (parm))
+    DECL_CONTEXT (parm) = tmp_decl;
 
   init_function_start (tmp_decl, "objc-act", 0);
 
