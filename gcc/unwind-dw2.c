@@ -132,10 +132,10 @@ static inline void *
 read_pointer (const void *p) { const union unaligned *up = p; return up->p; }
 
 static inline int
-read_1u (const void *p) { return *(const unsigned char *)p; }
+read_1u (const void *p) { return *(const unsigned char *) p; }
 
 static inline int
-read_1s (const void *p) { return *(const signed char *)p; }
+read_1s (const void *p) { return *(const signed char *) p; }
 
 static inline int
 read_2u (const void *p) { const union unaligned *up = p; return up->u2; }
@@ -600,13 +600,13 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	      result = second & first;
 	      break;
 	    case DW_OP_div:
-	      result = (_Unwind_Sword)second / (_Unwind_Sword)first;
+	      result = (_Unwind_Sword) second / (_Unwind_Sword) first;
 	      break;
 	    case DW_OP_minus:
 	      result = second - first;
 	      break;
 	    case DW_OP_mod:
-	      result = (_Unwind_Sword)second % (_Unwind_Sword)first;
+	      result = (_Unwind_Sword) second % (_Unwind_Sword) first;
 	      break;
 	    case DW_OP_mul:
 	      result = second * first;
@@ -624,28 +624,28 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	      result = second >> first;
 	      break;
 	    case DW_OP_shra:
-	      result = (_Unwind_Sword)second >> first;
+	      result = (_Unwind_Sword) second >> first;
 	      break;
 	    case DW_OP_xor:
 	      result = second ^ first;
 	      break;
 	    case DW_OP_le:
-	      result = (_Unwind_Sword)first <= (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first <= (_Unwind_Sword) second;
 	      break;
 	    case DW_OP_ge:
-	      result = (_Unwind_Sword)first >= (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first >= (_Unwind_Sword) second;
 	      break;
 	    case DW_OP_eq:
-	      result = (_Unwind_Sword)first == (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first == (_Unwind_Sword) second;
 	      break;
 	    case DW_OP_lt:
-	      result = (_Unwind_Sword)first < (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first < (_Unwind_Sword) second;
 	      break;
 	    case DW_OP_gt:
-	      result = (_Unwind_Sword)first > (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first > (_Unwind_Sword) second;
 	      break;
 	    case DW_OP_ne:
-	      result = (_Unwind_Sword)first != (_Unwind_Sword)second;
+	      result = (_Unwind_Sword) first != (_Unwind_Sword) second;
 	      break;
 
 	    default:
@@ -725,7 +725,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	{
 	  reg = insn & 0x3f;
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  offset = (_Unwind_Sword)utmp * fs->data_align;
+	  offset = (_Unwind_Sword) utmp * fs->data_align;
 	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
 	  fs->regs.reg[reg].loc.offset = offset;
 	}
@@ -757,7 +757,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	case DW_CFA_offset_extended:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  offset = (_Unwind_Sword)utmp * fs->data_align;
+	  offset = (_Unwind_Sword) utmp * fs->data_align;
 	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
 	  fs->regs.reg[reg].loc.offset = offset;
 	  break;
@@ -878,7 +878,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	     older PowerPC code.  */
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  offset = (_Unwind_Word)utmp * fs->data_align;
+	  offset = (_Unwind_Word) utmp * fs->data_align;
 	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
 	  fs->regs.reg[reg].loc.offset = -offset;
 	  break;
@@ -929,7 +929,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   execute_cfa_program (insn, end, context, fs);
 
   /* Locate augmentation for the fde.  */
-  aug = (unsigned char *)fde + sizeof (*fde);
+  aug = (unsigned char *) fde + sizeof (*fde);
   aug += 2 * size_of_encoded_value (fs->fde_encoding);
   insn = NULL;
   if (fs->saw_z)

@@ -1,5 +1,5 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -159,7 +159,7 @@ extern varray_type varray_init	PARAMS ((size_t, size_t, const char *));
 /* Free up memory allocated by the virtual array, but do not free any of the
    elements involved.  */
 #define VARRAY_FREE(vp) \
-  do { if (vp) { free (vp); vp = (varray_type)0; } } while (0)
+  do { if (vp) { free (vp); vp = (varray_type) 0; } } while (0)
 
 /* Grow/shrink the virtual array VA to N elements.  */
 extern varray_type varray_grow	PARAMS ((varray_type, size_t));
