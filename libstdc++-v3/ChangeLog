@@ -1,3 +1,13 @@
+2004-01-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13650
+	* include/bits/basic_string.tcc (compare(size_type, size_type,
+	const _CharT*, size_type)): Implement correctly the resolution
+	of DR 5: basically, s is a char array, -not- a C string.
+	* include/bits/basic_string.h: Tweak some comments.
+	* testsuite/21_strings/basic_string/compare/char/13650.cc: New.
+	* testsuite/21_strings/basic_string/compare/wchar_t/13650.cc: New.
+
 2004-01-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libstdc++.exp: Set LD_LIBRARY_PATH_32 for

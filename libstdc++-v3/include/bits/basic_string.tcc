@@ -1080,12 +1080,11 @@ namespace std
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      const size_type __osize = std::min(traits_type::length(__s), __n2);
       const size_type __rsize = std::min(size_type(__size - __pos), __n1);
-      const size_type __len = std::min(__rsize, __osize);
+      const size_type __len = std::min(__rsize, __n2);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
-	__r = __rsize - __osize;
+	__r = __rsize - __n2;
       return __r;
     }
 
