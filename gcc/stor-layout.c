@@ -265,13 +265,20 @@ layout_decl (decl, known_align)
 {
   register tree type = TREE_TYPE (decl);
   register enum tree_code code = TREE_CODE (decl);
-  int spec_size = DECL_FIELD_SIZE (decl);
+  HOST_WIDE_INT spec_size = 0;
 
   if (code == CONST_DECL)
     return;
-
-  if (code != VAR_DECL && code != PARM_DECL && code != RESULT_DECL
-      && code != FIELD_DECL && code != TYPE_DECL)
+  else if (code == FIELD_DECL)
+    {
+      if (DECL_SIZE (decl) != 0)
+	{
+	  spec_size = TREE_INT_CST_LOW (DECL_SIZE (decl));
+	  DECL_SIZE (decl) = 0;
+	}
+    }
+  else if (code != VAR_DECL && code != PARM_DECL && code != RESULT_DECL
+	   && code != TYPE_DECL)
     abort ();
 
   if (type == error_mark_node)

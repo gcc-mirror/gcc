@@ -5117,9 +5117,7 @@ finish_struct (t, fieldlist, attributes)
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.
-     Also process specified field sizes.
-     Set DECL_FIELD_SIZE to the specified size, or 0 if none specified.
-     The specified size is found in the DECL_INITIAL.
+     Also process specified field sizes,m which is found in the DECL_INITIAL.
      Store 0 there, except for ": 0" fields (so we can find them
      and delete them, below).  */
 
@@ -5127,7 +5125,6 @@ finish_struct (t, fieldlist, attributes)
     {
       DECL_CONTEXT (x) = t;
       DECL_PACKED (x) |= TYPE_PACKED (t);
-      DECL_FIELD_SIZE (x) = 0;
 
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
@@ -5166,7 +5163,8 @@ finish_struct (t, fieldlist, attributes)
 	    constant_expression_warning (DECL_INITIAL (x));
 	  else
 	    {
-	      error_with_decl (x, "bit-field `%s' width not an integer constant");
+	      error_with_decl (x,
+			       "bit-field `%s' width not an integer constant");
 	      DECL_INITIAL (x) = NULL;
 	    }
 	}
@@ -5179,6 +5177,7 @@ finish_struct (t, fieldlist, attributes)
 	  error_with_decl (x, "bit-field `%s' has invalid type");
 	  DECL_INITIAL (x) = NULL;
 	}
+
       if (DECL_INITIAL (x) && pedantic
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != integer_type_node
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node
@@ -5191,20 +5190,19 @@ finish_struct (t, fieldlist, attributes)
       /* Detect and ignore out of range field width.  */
       if (DECL_INITIAL (x))
 	{
-	  unsigned HOST_WIDE_INT width = TREE_INT_CST_LOW (DECL_INITIAL (x));
-
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
 	    {
 	      DECL_INITIAL (x) = NULL;
 	      error_with_decl (x, "negative width in bit-field `%s'");
 	    }
 	  else if (TREE_INT_CST_HIGH (DECL_INITIAL (x)) != 0
-		   || width > TYPE_PRECISION (TREE_TYPE (x)))
+		   || (TREE_INT_CST_LOW (DECL_INITIAL (x))
+		       > TYPE_PRECISION (TREE_TYPE (x))))
 	    {
 	      DECL_INITIAL (x) = NULL;
 	      pedwarn_with_decl (x, "width of `%s' exceeds its type");
 	    }
-	  else if (width == 0 && DECL_NAME (x) != 0)
+	  else if (integer_zerop (DECL_INITIAL (x)) && DECL_NAME (x) != 0)
 	    {
 	      error_with_decl (x, "zero width for bit-field `%s'");
 	      DECL_INITIAL (x) = NULL;
@@ -5223,7 +5221,7 @@ finish_struct (t, fieldlist, attributes)
 					    TREE_UNSIGNED (TREE_TYPE (x)))))
 	    warning_with_decl (x, "`%s' is narrower than values of its type");
 
-	  DECL_FIELD_SIZE (x) = width;
+	  DECL_SIZE (x) = bitsize_int (width);
 	  DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
 	  DECL_INITIAL (x) = NULL;
 
@@ -5243,7 +5241,8 @@ finish_struct (t, fieldlist, attributes)
       else if (TREE_TYPE (x) != error_mark_node)
 	{
 	  unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
-			   : TYPE_ALIGN (TREE_TYPE (x)));
+				    : TYPE_ALIGN (TREE_TYPE (x)));
+
 	  /* Non-bit-fields are aligned for their type, except packed
 	     fields which require only BITS_PER_UNIT alignment.  */
 	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);

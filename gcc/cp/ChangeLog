@@ -1,3 +1,14 @@
+Mon Feb 28 08:15:23 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (build_vtbl_or_vbase_field, check_methods): Don't clear
+	DECL_FIELD_SIZE.
+	(check_bitfield_decl, check_field_decls): Set DECL_SIZE, not
+	DECL_FIELD_SIZE.
+	* rtti.c (expand_class_desc): Likewise.
+	* cp-tree.h (DECL_INIT_PRIORITY): Use underlying union name.
+	(THUNK_VCALL_OFFSET): Likewise.
+	(THUNK_DELTA): Reflect changes in ../tree.h.
+
 2000-02-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* search.c (protected_accessible_p): Also allow the access if

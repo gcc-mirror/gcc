@@ -1,3 +1,11 @@
+Mon Feb 28 08:12:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ch-tree.h (DECL_ACTION_NESTING_LEVEL): Use new tree union name.
+	* decl.c (finish_struct): Don't clear DECL_FIELD_SIZE.
+	* typeck.c (make_chill_struct_type): Likewise.
+	(apply_decl_field_layout): General cleanup.
+	Set DECL_SIZE instead of DECL_FIELD_SIZE.
+
 Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* actions.c (chill_convert_for_assignment): Don't use size_binop

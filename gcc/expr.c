@@ -6572,7 +6572,8 @@ expand_expr (exp, target, tmode, modifier)
 		op0 =  expand_expr (TREE_VALUE (elt), target, tmode, modifier);
 		if (DECL_BIT_FIELD (TREE_PURPOSE (elt)))
 		  {
-		    int bitsize = DECL_FIELD_SIZE (TREE_PURPOSE (elt));
+		    HOST_WIDE_INT bitsize
+		      = TREE_INT_CST_LOW (DECL_SIZE (TREE_PURPOSE (elt)));
 
 		    if (TREE_UNSIGNED (TREE_TYPE (TREE_PURPOSE (elt))))
 		      {

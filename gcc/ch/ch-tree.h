@@ -88,7 +88,7 @@ extern int action_nesting_level;
 #define ELSE_VARIANT_NAME ridpointers[(int) RID_ELSE]
 
 /* For a LABEL_DECL:  action_nesting_level of its target. */
-#define DECL_ACTION_NESTING_LEVEL(NODE) ((NODE)->decl.saved_insns.i)
+#define DECL_ACTION_NESTING_LEVEL(NODE) ((NODE)->decl.u2.i)
 
 #define DECL_OLD_PREFIX(DECL) ((DECL)->decl.initial)
 #define DECL_NEW_PREFIX(DECL) ((DECL)->decl.result)

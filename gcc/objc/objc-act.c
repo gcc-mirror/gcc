@@ -2468,14 +2468,9 @@ objc_copy_list (list, head)
 
       /* The following statement fixes a bug when inheriting instance
 	 variables that are declared to be bitfields. finish_struct
-	 expects to find the width of the bitfield in DECL_INITIAL,
-	 which it nulls out after processing the decl of the super
-	 class...rather than change the way finish_struct works (which
-	 is risky), I create the situation it expects...s.naroff
-	 (7/23/89).  */
-
+	 expects to find the width of the bitfield in DECL_INITIAL.  */
       if (DECL_BIT_FIELD (tail) && DECL_INITIAL (tail) == 0)
-	DECL_INITIAL (tail) = build_int_2 (DECL_FIELD_SIZE (tail), 0);
+	DECL_INITIAL (tail) = DECL_SIZE (tail);
 
       newlist = chainon (newlist, tail);
       list = TREE_CHAIN (list);
@@ -6870,25 +6865,16 @@ encode_field_decl (field_decl, curtype, format)
   if (flag_next_runtime)
     {
       if (DECL_BIT_FIELD (field_decl))
-	encode_bitfield (DECL_FIELD_SIZE (field_decl));
-      else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	       && DECL_FIELD_SIZE (field_decl)
-	       && TYPE_MODE (type) > DECL_MODE (field_decl))
-	encode_bitfield (DECL_FIELD_SIZE (field_decl));
+	encode_bitfield (TREE_INT_CST_LOW (DECL_SIZE (field_decl)));
       else
 	encode_type (TREE_TYPE (field_decl), curtype, format);
     }
   else
     {
-      if (DECL_BIT_FIELD (field_decl)
-	  || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	      && DECL_FIELD_SIZE (field_decl)
-	      && TYPE_MODE (type) > DECL_MODE (field_decl)))
-	{
-	  encode_complete_bitfield (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl)),
-				    DECL_BIT_FIELD_TYPE (field_decl),
-				    DECL_FIELD_SIZE (field_decl));
-	}
+      if (DECL_BIT_FIELD (field_decl))
+	encode_complete_bitfield (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl)),
+				  DECL_BIT_FIELD_TYPE (field_decl),
+				  TREE_INT_CST_LOW (DECL_SIZE (field_decl)));
       else
 	encode_type (TREE_TYPE (field_decl), curtype, format);
     }

@@ -4337,18 +4337,9 @@ finish_struct (t, fieldlist)
 {
   register tree x;
 
-  /* Install struct as DECL_CONTEXT of each field decl.
-     Also process specified field sizes.
-     Set DECL_FIELD_SIZE to the specified size, or 0 if none specified.
-     The specified size is found in the DECL_INITIAL.
-     Store 0 there, except for ": 0" fields (so we can find them
-     and delete them, below).  */
-
+  /* Install struct as DECL_CONTEXT of each field decl.  */
   for (x = fieldlist; x; x = TREE_CHAIN (x))
-    {
-      DECL_CONTEXT (x) = t;
-      DECL_FIELD_SIZE (x) = 0;
-    }
+    DECL_CONTEXT (x) = t;
 
   TYPE_FIELDS (t) = fieldlist;
 

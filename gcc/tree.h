@@ -67,8 +67,8 @@ extern int tree_code_length[MAX_TREE_CODES];
 
 extern const char *tree_code_name[MAX_TREE_CODES];
 
-/* Classify which part of the compiler has defined a given builtin
-   function.  */
+/* Classify which part of the compiler has defined a given builtin function.
+   Note that we assume below that this is no more than two bits.  */
 enum built_in_class
 {
   NOT_BUILT_IN = 0,
@@ -76,6 +76,10 @@ enum built_in_class
   BUILT_IN_MD,
   BUILT_IN_NORMAL
 };
+
+/* Names for the above.  */
+extern char *built_in_class_names[4];
+
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
@@ -149,6 +153,9 @@ enum built_in_function
   /* Upper bound on non-language-specific builtins. */
   END_BUILTINS
 };
+
+/* Names for the above.  */
+extern char *built_in_names[(int) END_BUILTINS];
 
 /* The definition of tree nodes fills the next several pages.  */
 
@@ -951,7 +958,7 @@ struct tree_type
 
   unsigned char precision;
 #ifdef ONLY_INT_FIELDS
-  int mode : 8;
+  unsigned int mode : 8;
 #else
   enum machine_mode mode : 8;
 #endif
@@ -1146,7 +1153,7 @@ struct tree_type
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
 /* Holds the alignment required for the datum.  */
-#define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.frame_size.u)
+#define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.u)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -1162,18 +1169,15 @@ struct tree_type
 #define DECL_LIVE_RANGE_RTL(NODE) (DECL_CHECK (NODE)->decl.live_range_rtl)
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
-#define DECL_INCOMING_RTL(NODE) (DECL_CHECK (NODE)->decl.saved_insns.r)
+#define DECL_INCOMING_RTL(NODE) (DECL_CHECK (NODE)->decl.u2.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
-#define DECL_SAVED_INSNS(NODE) (DECL_CHECK (NODE)->decl.saved_insns.f)
+#define DECL_SAVED_INSNS(NODE) (DECL_CHECK (NODE)->decl.u2.f)
 /* For FUNCTION_DECL, if it is inline,
    holds the size of the stack frame, as an integer.  */
-#define DECL_FRAME_SIZE(NODE) (DECL_CHECK (NODE)->decl.frame_size.i)
+#define DECL_FRAME_SIZE(NODE) (DECL_CHECK (NODE)->decl.u1.i)
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
-#define DECL_FUNCTION_CODE(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.code)
-#define DECL_SET_FUNCTION_CODE(NODE,VAL) (DECL_CHECK (NODE)->decl.frame_size.f.code = (VAL))
-/* For a FIELD_DECL, holds the size of the member as an integer.  */
-#define DECL_FIELD_SIZE(NODE) (DECL_CHECK (NODE)->decl.saved_insns.i)
+#define DECL_FUNCTION_CODE(NODE) (DECL_CHECK (NODE)->decl.u1.f)
 
 /* The DECL_VINDEX is used for FUNCTION_DECLS in two different ways.
    Before the struct containing the FUNCTION_DECL is laid out,
@@ -1297,7 +1301,7 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 /* For a builtin function, identify which part of the compiler defined it.  */
-#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.bclass)
+#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.built_in_class)
 
 /* In a VAR_DECL that's static,
    nonzero if the space is in the text section.  */
@@ -1410,6 +1414,18 @@ struct tree_decl
   unsigned artificial_flag : 1;
   unsigned weak_flag : 1;
 
+  unsigned non_addr_const_p : 1;
+  unsigned no_instrument_function_entry_exit : 1;
+  unsigned no_check_memory_usage : 1;
+  unsigned comdat_flag : 1;
+  unsigned malloc_flag : 1;
+  unsigned no_limit_stack : 1;
+#ifdef ONLY_INT_FIELDS
+  unsigned int built_in_class : 2;
+#else
+  enum built_in_class built_in_class : 2;
+#endif
+
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -1419,25 +1435,14 @@ struct tree_decl
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
 
-  unsigned non_addr_const_p : 1;
-  unsigned no_instrument_function_entry_exit : 1;
-  unsigned no_check_memory_usage : 1;
-  unsigned comdat_flag : 1;
-  unsigned malloc_flag : 1;
-  unsigned no_limit_stack : 1;
-
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.
      For other kinds of decls, this is DECL_ALIGN.  */
   union {
-    int i;
+    HOST_WIDE_INT i;
     unsigned int u;
-    struct
-      {
-	unsigned int code:24;
-	unsigned int bclass:8;
-      } f;
-  } frame_size;
+    enum built_in_function f;
+  } u1;
 
   union tree_node *size_unit;
   union tree_node *name;
@@ -1449,17 +1454,20 @@ struct tree_decl
   union tree_node *assembler_name;
   union tree_node *section_name;
   union tree_node *machine_attributes;
-  struct rtx_def *rtl;	/* acts as link to register transfer language
-				   (rtl) info */
+  struct rtx_def *rtl;	/* RTL representation for object.  */
   struct rtx_def *live_range_rtl;
 
-  /* For FUNCTION_DECLs: points to insn that constitutes its definition
-     on the permanent obstack.  For FIELD_DECL, this is DECL_FIELD_SIZE.  */
+  /* In FUNCTION_DECL, if it is inline, holds the saved insn chain.
+     In PARM_DECL, holds an RTL for the stack slot
+     of register where the data was actually passed.
+     Used by Chill and Java in LABEL_DECL and by C++ and Java in VAR_DECL.  */
   union {
     struct function *f;
     struct rtx_def *r;
-    HOST_WIDE_INT i;
-  } saved_insns;
+    union tree_node *t;
+    int i;
+  } u2;
+
   union tree_node *vindex;
   int pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */

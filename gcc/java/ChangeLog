@@ -1,3 +1,9 @@
+Mon Feb 28 08:20:42 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* java-tree.h (LABEL_PC): Relect name changes in ../tree.h.
+	(DECL_BIT_INDEX): Use underlying representation.
+	* parse.h (DECL_INHERITED_SOURCE_LINE): Likewise.
+
 Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (build_java_ret): Pass proper type to size_binop.
