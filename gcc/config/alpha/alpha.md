@@ -1,5 +1,5 @@
 ;;- Machine description for DEC Alpha for GNU C compiler
-;;   Copyright (C) 1992 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -26,7 +26,7 @@
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iaddlog,shiftcm,icmp,imull,imulq,fpop,fdivs,fdivt,ldsym"
+  "ld,st,ibr,fbr,jsr,iaddlog,shiftcm,icmp,imull,imulq,fpop,fdivs,fdivt,ldsym,isubr"
   (const_string "shiftcm"))
 
 ;; We include four function units: ABOX, which computes the address,
@@ -503,7 +503,8 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   ""
-  "%E1 $24,$25,$27")
+  "%E1 $24,$25,$27"
+  [(set_attr "type" "isubr")])
 
 (define_insn ""
   [(set (reg:DI 27)
@@ -512,7 +513,8 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   ""
-  "%E1 $24,$25,$27")
+  "%E1 $24,$25,$27"
+  [(set_attr "type" "isubr")])
 
 ;; Next are the basic logical operations.  These only exist in DImode.
 
