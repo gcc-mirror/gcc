@@ -27,16 +27,22 @@
 #define TS_HASH_SIZE 1024
 #define HASH(n) (((((long)n) >> 8) ^ (long)n) & (TS_HASH_SIZE - 1))
 
+/* An entry describing a thread-specific value for a given thread.	*/
+/* All such accessible structures preserve the invariant that if either	*/
+/* thread is a valid pthread id or qtid is a valid "quick tread id"	*/
+/* for a thread, then value holds the corresponding thread specific	*/
+/* value.  This invariant must be preserved at ALL times, since		*/
+/* asynchronous reads are allowed.					*/
 typedef struct thread_specific_entry {
 	unsigned long qtid;	/* quick thread id, only for cache */
 	void * value;
-	pthread_t thread;
 	struct thread_specific_entry *next;
+	pthread_t thread;
 } tse;
 
 
 /* We represent each thread-specific datum as two tables.  The first is	*/
-/* a cache, index by a "quick thread identifier".  The "quick" thread	*/
+/* a cache, indexed by a "quick thread identifier".  The "quick" thread	*/
 /* identifier is an easy to compute value, which is guaranteed to	*/
 /* determine the thread, though a thread may correspond to more than	*/
 /* one value.  We typically use the address of a page in the stack.	*/
@@ -45,12 +51,15 @@ typedef struct thread_specific_entry {
 
 /* Return the "quick thread id".  Default version.  Assumes page size,	*/
 /* or at least thread stack separation, is at least 4K.			*/
-static __inline__ long quick_thread_id() {
+/* Must be defined so that it never returns 0.  (Page 0 can't really	*/
+/* be part of any stack, since that would make 0 a valid stack pointer.)*/
+static __inline__ unsigned long quick_thread_id() {
     int dummy;
-    return (long)(&dummy) >> 12;
+    return (unsigned long)(&dummy) >> 12;
 }
 
-#define INVALID_QTID ((unsigned long)(-1))
+#define INVALID_QTID ((unsigned long)0)
+#define INVALID_THREADID ((pthread_t)0)
 
 typedef struct thread_specific_data {
     tse * volatile cache[TS_CACHE_SIZE];
@@ -76,7 +85,10 @@ static __inline__ void * PREFIXED(getspecific) (tsd * key) {
     unsigned hash_val = CACHE_HASH(qtid);
     tse * volatile * entry_ptr = key -> cache + hash_val;
     tse * entry = *entry_ptr;   /* Must be loaded only once.	*/
-    if (entry -> qtid == qtid) return entry -> value;
+    if (entry -> qtid == qtid) {
+      GC_ASSERT(entry -> thread == pthread_self());
+      return entry -> value;
+    }
     return PREFIXED(slow_getspecific) (key, qtid, entry_ptr);
 }
 
