@@ -82,6 +82,8 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "scan.h"
 
+extern sstring buf;
+
 int verbose = 0;
 int partial_count = 0;
 #if 0
@@ -167,7 +169,6 @@ char *inc_filename;
 int inc_filename_length;
 char *progname = "fix-header";
 FILE *outf;
-sstring buf;
 sstring line;
 
 int lbrac_line, rbrac_line;
