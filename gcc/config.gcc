@@ -675,7 +675,7 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
-	tmake_file="arm/t-arm arm/t-arm-elf t-rtems"
+	tmake_file="arm/t-arm arm/t-arm-elf t-rtems arm/t-rtems"
 	;;
 arm*-*-elf | ep9312-*-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"

@@ -1,3 +1,8 @@
+2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
+
+	* config/arm/t-rtems: New.
+	* config.gcc: Reflect having added arm/t-rtems.
+
 2004-11-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (tree_execute_on_growing_pred): New.
