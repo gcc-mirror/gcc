@@ -4485,6 +4485,9 @@ get_memory_usage_from_modifier (modifier)
   switch (modifier)
     {
     case EXPAND_NORMAL:
+    case EXPAND_SUM:
+    case EXPAND_CONST_ADDRESS:
+    case EXPAND_INITIALIZER:
       return MEMORY_USE_RO;
       break;
     case EXPAND_MEMORY_USE_WO:
@@ -4493,10 +4496,7 @@ get_memory_usage_from_modifier (modifier)
     case EXPAND_MEMORY_USE_RW:
       return MEMORY_USE_RW;
       break;
-    case EXPAND_INITIALIZER:
     case EXPAND_MEMORY_USE_DONT:
-    case EXPAND_SUM:
-    case EXPAND_CONST_ADDRESS:
       return MEMORY_USE_DONT;
     case EXPAND_MEMORY_USE_BAD:
     default:
