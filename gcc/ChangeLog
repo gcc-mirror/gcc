@@ -1,3 +1,53 @@
+2002-06-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (DECL_UNIT, DECL_BYPASS, DECL_AUTOMATON,
+	DECL_EXCL, DECL_PRESENCE, DECL_ABSENCE, DECL_RESERV,
+	DECL_INSN_RESERV, REGEXP_UNIT, REGEXP_RESERV, REGEXP_SEQUENCE,
+	REGEXP_REPEAT, REGEXP_ALLOF, REGEXP_ONEOF): New macros with
+	checking and without it.
+	(decl_name, decl_mode_check_failed, regexp_name,
+	regexp_mode_check_failed): New functions.
+	(gen_cpu_unit, gen_query_cpu_unit, gen_bypass, gen_excl_set,
+	gen_presence_set, gen_absence_set, gen_automaton,
+	gen_regexp_repeat, gen_regexp_allof, gen_regexp_oneof,
+	gen_regexp_sequence, gen_reserv, gen_insn_reserv,
+	automaton_decl_hash, automaton_decl_eq_p): Use the macros.
+	(find_automaton_decl): Ditto.  Set up mode of work_automaton_decl.
+	(insn_decl_hash, insn_decl_hash, insn_decl_eq_p): Use the macros.
+	(find_insn_decl): Ditto.  Set up mode of work_insn_decl.
+	(decl_hash, decl_eq_p): Use the macros.
+	(find_decl): Ditto.  Set up mode of work_decl.
+	(process_excls, process_presence_absence, process_decls,
+	check_automaton_usage, process_regexp, process_regexp_decls,
+	check_usage, loop_in_regexp, check_loops_in_regexps,
+	process_regexp_cycles, add_advance_cycle_insn_decl,
+	initiate_states, initiate_excl_sets,
+	initiate_presence_absence_sets, copy_insn_regexp, transform_1,
+	transform_2): Use the macros.
+	(transform_3): Ditto.  Check mode before making transformations of
+	ALLOF.
+	(regexp_transform_func, transform_insn_regexps,
+	process_unit_to_form_the_same_automaton_unit_lists,
+	form_the_same_automaton_unit_lists_from_regexp,
+	form_the_same_automaton_unit_lists,
+	process_seq_for_forming_states, process_alts_for_forming_states,
+	create_alt_states, form_ainsn_with_same_reservs, make_automaton,
+	form_arcs_marked_by_insn, NDFA_to_DFA, set_new_cycle_flags,
+	estimate_one_automaton_bound, compare_max_occ_cycle_nums,
+	units_to_automata_heuristic_distr, create_ainsns,
+	units_to_automata_distr, create_automata): Use the macros.
+	(form_regexp): Ditto.  Fix typo in access to fields of ALLOF.
+	(longest_path_length, min_issue_delay_pass_states,
+	output_dead_lock_vect, output_tables, output_insn_code_cases,
+	output_internal_insn_latency_func, output_print_reservation_func,
+	output_description, output_automaton_units, generate): Use the
+	macros.
+	(make_insn_alts_attr): Ditto.  Check case when there are not
+	alternatives in the reservation.
+	(make_internal_dfa_insn_code_attr, make_default_insn_latency_attr,
+	make_bypass_attr, form_important_insn_automata_lists,
+	expand_automata): Use the macros.
+	
 2002-06-20  Tim Josling  <tej@melbpc.org.au>
 
 	* Makefile.in: Clean up code to check for misspecified languages
