@@ -1,3 +1,7 @@
+Sun Mar 14 03:23:47 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* README, gcc.1, gcc.texi, version.c: Update for egcs-1.1.2 release.
+
 Thu Mar 11 14:00:58 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (HARD_REGNO_MODE_OK): Disallow QI/HImode in fp regs.

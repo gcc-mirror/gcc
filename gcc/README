@@ -1,4 +1,4 @@
-This directory contains the egcs version 1.1.1 release of the GNU C
+This directory contains the egcs version 1.1.2 release of the GNU C
 compiler.  It includes all of the support for compiling C++ and
 Objective C, including a run-time library for Objective C.
 
