@@ -1860,6 +1860,9 @@ compile_file (void)
 
   dw2_output_indirect_constants ();
 
+  /* Flush any pending equate directives.  */
+  process_pending_assemble_output_defs ();
+
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
       timevar_push (TV_DUMP);

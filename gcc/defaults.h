@@ -139,6 +139,12 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #endif
 #endif
 
+/* Decide whether to defer emitting the assembler output for an equate
+   of two values.  The default is to not defer output.  */
+#ifndef TARGET_DEFERRED_OUTPUT_DEFS
+#define TARGET_DEFERRED_OUTPUT_DEFS(DECL,TARGET) false
+#endif
+
 /* This is how to output the definition of a user-level label named
    NAME, such as the label on a static function or variable NAME.  */
 

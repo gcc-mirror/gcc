@@ -2982,6 +2982,7 @@ enum tls_model decl_tls_model (tree);
 extern void resolve_unique_section (tree, int, int);
 extern void mark_referenced (tree);
 extern void notice_global_symbol (tree);
+extern void process_pending_assemble_output_defs (void);
 
 /* In stmt.c */
 extern void emit_nop (void);

@@ -1,3 +1,18 @@
+2005-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/16304
+	* defaults.h (TARGET_DEFERRED_OUTPUT_DEFS): Provide default.
+	* toplev.c (compile_file): Call process_pending_assemble_output_defs
+	just before targetm.asm_out.file_end.
+	* tree.h (process_pending_assemble_output_defs): Declare.
+	* varasm.c (assemble_output_def, process_pending_assemble_output_defs):
+	New functions.
+	(assemble_alias): Defer generation of assembly code for defines when
+	TARGET_DEFERRED_OUTPUT_DEFS is true.
+	* config/rs6000/aix41.h (TARGET_DEFERRED_OUTPUT_DEFS): Define.
+	* config/rs6000/aix43.h (TARGET_DEFERRED_OUTPUT_DEFS): Define.
+	* doc/tm.texi (TARGET_DEFERRED_OUTPUT_DEFS): document.
+
 2005-01-15  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/rtems.h (MIPS_DEFAULT_GVALUE): Set to 0.

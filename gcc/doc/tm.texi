@@ -6953,6 +6953,15 @@ If @code{SET_ASM_OP} is defined, a default definition is provided which is
 correct for most systems.
 @end defmac
 
+@defmac TARGET_DEFERRED_OUTPUT_DEFS (@var{decl_of_name}, @var{decl_of_value})
+A C statement that evaluates to true if the assembler code which defines
+(equates) the symbol whose tree node is @var{decl_of_name} to have the value
+of the tree node @var{decl_of_value} should be emitted near the end of the
+current compilation unit.  The default is to not defer output of defines.
+This macro affects defines output by @samp{ASM_OUTPUT_DEF} and
+@samp{ASM_OUTPUT_DEF_FROM_DECLS}.
+@end defmac
+
 @defmac ASM_OUTPUT_WEAK_ALIAS (@var{stream}, @var{name}, @var{value})
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the weak symbol @var{name} to have the value

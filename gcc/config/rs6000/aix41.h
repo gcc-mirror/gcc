@@ -98,3 +98,7 @@
 #undef RS6000_CALL_GLUE
 #define RS6000_CALL_GLUE "{cror 31,31,31|nop}"
 
+/* The IBM AIX 4.x assembler doesn't support forward references in
+   .set directives.  We handle this by deferring the output of .set
+   directives to the end of the compilation unit.  */
+#define TARGET_DEFERRED_OUTPUT_DEFS(DECL,TARGET) true
