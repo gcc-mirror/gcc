@@ -1,3 +1,8 @@
+2002-05-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (SUBREG_PROMOTED_UNSIGNED_SET): Avoid warnings when
+	disabling checking, and avoid multiple evaluation of RTX.
+
 2002-05-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* bitmap.c (bitmap_find_bit): Return early if we have the correct
