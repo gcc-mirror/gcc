@@ -1894,6 +1894,7 @@ java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
 java/net/NetPermission.java \
+java/net/NetworkInterface.java \
 java/net/NoRouteToHostException.java \
 java/net/PasswordAuthentication.java \
 java/net/PlainDatagramSocketImpl.java \
@@ -2236,6 +2237,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
+java/net/natNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
