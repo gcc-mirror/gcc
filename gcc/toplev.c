@@ -4883,21 +4883,24 @@ do_compile (void)
       if (!no_backend)
 	backend_init ();
 
-      if (flag_unit_at_a_time)
-	{
-          open_dump_file (DFI_cgraph, NULL);
-	  cgraph_dump_file = rtl_dump_file;
-	  rtl_dump_file = NULL;
-	}
       /* Language-dependent initialization.  Returns true on success.  */
       if (lang_dependent_init (main_input_filename))
-	compile_file ();
-
-      if (flag_unit_at_a_time)
 	{
-	  rtl_dump_file = cgraph_dump_file;
-	  cgraph_dump_file = NULL;
-          close_dump_file (DFI_cgraph, NULL, NULL_RTX);
+	  if (flag_unit_at_a_time)
+	    {
+	      open_dump_file (DFI_cgraph, NULL);
+	      cgraph_dump_file = rtl_dump_file;
+	      rtl_dump_file = NULL;
+	    }
+
+	  compile_file ();
+
+	  if (flag_unit_at_a_time)
+	    {
+	      rtl_dump_file = cgraph_dump_file;
+	      cgraph_dump_file = NULL;
+              close_dump_file (DFI_cgraph, NULL, NULL_RTX);
+	    }
 	}
 
       finalize ();
