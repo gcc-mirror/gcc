@@ -162,7 +162,7 @@ ffe_is_digit_string_ (char *s)
 
 int
 ffe_decode_option (argc, argv)
-     int argc;
+     int argc ATTRIBUTE_UNUSED;
      char **argv;
 {
   char *opt = argv[0];

@@ -1,3 +1,62 @@
+Mon Oct 12 20:41:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Change type of variable `c' to unsigned
+	char, change type of variable `s' to unsigned char *.
+
+	* com.c (ffecom_symbol_null_): Add missing initializers.
+
+	* fini.c (MAXNAMELEN): Undef it before defining.
+
+	* implic.c (ffeimplic_lookup_): Change type of parameter `c' to
+	unsigned char.
+
+	* intrin.c (ffeintrin_init_0): Cast the argument of ctype macros
+	to (unsigned char).
+
+	* lex.c (ffelex_splice_tokens): Change type of variable `p' to
+	unsigned char *.
+	(ffelex_token_name_from_names): Cast the argument of
+	`ffelex_is_firstnamechar' to (unsigned char).
+	(ffelex_token_names_from_names): Likewise.
+	(ffelex_token_new_name): Likewise.
+	(ffelex_token_new_names): Likewise.
+
+	* malloc.c (malloc_root_): Add missing initializer.
+
+	* stb.c (ffestb_do): Change type of variable `p' to unsigned char *.
+	(ffestb_else) Likewise.
+	(ffestb_else3_) Likewise.
+	(ffestb_endxyz) Likewise.
+	(ffestb_goto) Likewise.
+	(ffestb_let) Likewise.
+	(ffestb_varlist) Likewise.
+	(ffestb_R522) Likewise.
+	(ffestb_R528) Likewise.
+	(ffestb_R834) Likewise.
+	(ffestb_R835) Likewise.
+	(ffestb_R838) Likewise.
+	(ffestb_R1102) Likewise.
+	(ffestb_blockdata) Likewise.
+	(ffestb_R1212) Likewise.
+	(ffestb_R810) Likewise.
+	(ffestb_R10014_): Cast the argument of `ffelex_is_firstnamechar'
+	to (unsigned char).
+	(ffestb_V014): Change type of variable `p' to unsigned char *.
+	(ffestb_dummy) Likewise.
+	(ffestb_R524) Likewise.
+	(ffestb_R547) Likewise.
+	(ffestb_decl_chartype) Likewise.
+	(ffestb_decl_dbltype) Likewise.
+	(ffestb_decl_gentype) Likewise.
+	(ffestb_decl_entsp_2_) Likewise.
+	(ffestb_V027) Likewise.
+	(ffestb_decl_R539) Likewise.
+
+	* top.c (ffe_decode_option): Mark parameter `argc' with
+	ATTRIBUTE_UNUSED.
+
+	* where.c (ffewhere_unknown_line_): Add missing initializers.
+
 1998-10-02  Dave Love  <d.love@dl.ac.uk>
 
 	* com.c (ffecom_expr_intrinsic_): Fix return type for RAND.

@@ -52,6 +52,8 @@ struct _malloc_root_ malloc_root_
     0,
 #if MALLOC_DEBUG
     0, 0, 0, 0, 0, 0, 0, { '/' }
+#else
+    { 0 }
 #endif
   },
 };

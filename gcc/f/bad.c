@@ -372,8 +372,8 @@ ffebad_finish ()
   ffebadIndex bi;
   unsigned short i;
   char pointer;
-  char c;
-  char *s;
+  unsigned char c;
+  unsigned char *s;
   char *fn;
   static char buf[1024];
   int bufi;

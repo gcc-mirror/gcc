@@ -38,7 +38,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct _ffewhere_line_ ffewhere_unknown_line_
 =
-{NULL, NULL, 0, 0, 0};
+{NULL, NULL, 0, 0, 0, {0}};
 
 /* Simple definitions and enumerations. */
 
