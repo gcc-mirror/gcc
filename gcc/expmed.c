@@ -763,7 +763,6 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
   if (tmode == VOIDmode)
     tmode = mode;
-
   while (GET_CODE (op0) == SUBREG)
     {
       offset += SUBREG_WORD (op0);
@@ -1581,8 +1580,9 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	      || (methods == OPTAB_WIDEN
 		  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (output_mode)))
 	    {
-	      /* Note convert_to_mode does protect_from_queue.  */
-	      rtx shifted1 = convert_to_mode (output_mode, shifted, 1);
+	      rtx shifted1 = convert_to_mode (output_mode,
+					      protect_from_queue (shifted, 0),
+					      1);
 	      enum machine_mode length_mode
 		= insn_operand_mode[(int) CODE_FOR_extzv][2];
 	      enum machine_mode pos_mode
@@ -1610,6 +1610,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 			(target1, output_mode)))
 		target1 = gen_reg_rtx (output_mode);
 
+	      xop1 = protect_from_queue (xop1, 0);
 	      xop1 = convert_to_mode (pos_mode, xop1,
 				      TREE_UNSIGNED (TREE_TYPE (amount)));
 
@@ -1626,6 +1627,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	      else
 		{
 		  /* Now get the width in the proper mode.  */
+		  op1 = protect_from_queue (op1, 0);
 		  width = convert_to_mode (length_mode, op1,
 					   TREE_UNSIGNED (TREE_TYPE (amount)));
 
@@ -2709,6 +2711,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	 first.  */
       if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
 	{
+	  op0 = protect_from_queue (op0, 0);
 	  op0 = convert_to_mode (target_mode, op0, 0);
 	  mode = target_mode;
 	}
@@ -2943,6 +2946,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       else if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  mode = word_mode;
+	  op0 = protect_from_queue (op0, 0);
 	  tem = convert_to_mode (mode, op0, 1);
 	}
 
