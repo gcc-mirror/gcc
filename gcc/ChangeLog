@@ -1,3 +1,9 @@
+2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/9594:
+	* sh.c (barrier_align): Also recognize stuff_delay_slot as
+	an indicator that a barrier was created by branch splitting.
+
 2003-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (implicitly_declare): Copy declarations that are going
