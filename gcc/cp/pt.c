@@ -5261,6 +5261,9 @@ tsubst_template_arg_vector (t, args, complain)
 	  (tsubst_expr (TREE_VEC_ELT (t, i), args, complain,
 			NULL_TREE));
       
+      if (elts[i] == error_mark_node)
+	return error_mark_node;
+
       if (elts[i] != TREE_VEC_ELT (t, i))
 	need_new = 1;
     }
@@ -5380,6 +5383,8 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
 	     S we only want {double}.  */
 	  argvec = tsubst_template_arg_vector (TYPE_TI_ARGS (t), args,
 					       complain);
+	  if (argvec == error_mark_node)
+	    return error_mark_node;
 
   	  r = lookup_template_class (t, argvec, in_decl, context,
 				     entering_scope);

@@ -2190,12 +2190,17 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
 
-      /* Only write out one anon union element--choose the one that
-	 can hold them all.  */
+      /* Only write out one anon union element--choose the largest
+	 one.  We used to try to find one the same size as the union,
+	 but that fails if the ABI forces us to align the union more
+	 strictly.  */
       if (main_decl == NULL_TREE
-	  && simple_cst_equal (DECL_SIZE (decl),
-			       DECL_SIZE (anon_decl)) == 1)
-	main_decl = decl;
+	  || tree_int_cst_lt (DECL_SIZE (main_decl), DECL_SIZE (decl)))
+	{
+	  if (main_decl)
+	    TREE_ASM_WRITTEN (main_decl) = 1;
+	  main_decl = decl;
+	}
       else 
 	/* ??? This causes there to be no debug info written out
 	   about this decl.  */
