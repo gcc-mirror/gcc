@@ -1183,10 +1183,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /*** Trampolines for Nested Functions ***/
 
 /* Output assembler code for a block containing the constant parts
-  char buf[256];							\
-  static int labelno = 0;						\
-  labelno++;								\
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LTRMP", labelno);			\
    of a trampoline, leaving space for the variable parts.
 
    This block is placed on the stack and filled in.  It is aligned
@@ -1198,6 +1194,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
+  char buf[256];							\
+  static int labelno = 0;						\
+  labelno++;								\
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LTRMP", labelno);			\
   /* Save the return address (r1) in the static chain reg (r11).  */	\
   fprintf (FILE, "\tor\t %s,%s,0\n", reg_names[11], reg_names[1]);	\
   /* Locate this block; transfer to the next instruction.  */		\
