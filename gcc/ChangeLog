@@ -110,6 +110,21 @@
 	* recog.h: Likewise.
 	* regrename.c: Likewise.
 	* tree.h: Likewise.
+	* c-common.c (builtin_function_2): Change type of 5th parameter from
+	int to enum built_in_function. Change type of 8th parameter from int
+	to bool.
+	* c-decl (builtin_function): Replace call to ggc_alloc_cleared ()
+	with GGC_CNEW().
+	* c-typeck.c (convert_arguments): Change type of formal_prec from
+	int to unsigned int.
+	* genmodes.c (blank_mode): Make a few negative constants unsigned.
+	(complete_all_modes, calc_wider_mode, emit_insn_modes_h,
+	emit_mode_name, emit_mode_class, emit_mode_precision, emit_mode_size,
+	emit_mode_nunits, emit_mode_wider, emit_mode_mask, emit_mode_inner,
+	emit_mode_base_align, emit_class_narrowest_mode): Pass an integer
+	iterator to for_all_modes () instead of an enum because enums can't
+	be incremented in C++.
+
 
 2004-07-25  Daniel Jacobowitz  <dan@debian.org>
 
