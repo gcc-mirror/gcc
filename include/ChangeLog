@@ -1,7 +1,7 @@
 2003-05-07  Jason Merrill  <jason@redhat.com>
 
-	* hashtab.h (burtle_hash): Prototype.
-	(burtle_hash_object): New macro.
+	* hashtab.h (iterative_hash): Prototype.
+	(iterative_hash_object): New macro.
 
 2003-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
