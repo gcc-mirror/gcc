@@ -41,6 +41,7 @@ import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Point;
 import javax.accessibility.Accessible;
@@ -382,6 +383,12 @@ public abstract class JTextComponent extends JComponent
     {
 	//          Get the component this is labelling.  
 	return null;
+    }
+
+    public Insets getMargin()
+    {
+        // FIXME: Not implemented.
+        return null;
     }
 
     public void setText(String text)

@@ -1,5 +1,10 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/text/JTextComponent.java:
+	New version from classpath.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/Timer.java,
 	javax/swing/plaf/ActionMapUIResource.java,
 	javax/swing/plaf/ButtonUI.java,
