@@ -3088,9 +3088,12 @@ duplicate_decls (newdecl, olddecl)
 	      TREE_VALUE (decls) = olddecl;
 	}
 
-      if ((char *)newdecl + ROUND (function_size)
-	  + ROUND (sizeof (struct lang_decl))
-	  == obstack_next_free (&permanent_obstack))
+      if (((char *)newdecl + ROUND (function_size) == (char *)nl
+	   && ((char *)newdecl + ROUND (function_size)
+	       + ROUND (sizeof (struct lang_decl))
+	       == obstack_next_free (&permanent_obstack)))
+	  || ((char *)newdecl + ROUND (function_size)
+	      == obstack_next_free (&permanent_obstack)))
 	{
 	  DECL_MAIN_VARIANT (newdecl) = olddecl;
 	  DECL_LANG_SPECIFIC (olddecl) = ol;

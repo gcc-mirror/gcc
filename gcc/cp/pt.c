@@ -2546,9 +2546,15 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
       char* s;
 
       if (TREE_CODE (ctx) == FUNCTION_DECL)
-	s = fndecl_as_string(ctx, 0);
+	s = fndecl_as_string (ctx, 0);
       else if (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't')
-	s = type_as_string(ctx, 0);
+	{
+	  /* We can't use a typedef type name here.  */
+	  ctx = build_type_variant (TYPE_MAIN_VARIANT (ctx),
+				    TYPE_READONLY (ctx),
+				    TYPE_VOLATILE (ctx));
+	  s = type_as_string (ctx, 0);
+	}
       else
 	my_friendly_abort (0);
       cat (s);
@@ -2565,6 +2571,12 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 
       if (i)
 	ccat (',');
+
+      /* We can't use a typedef type name here.  */
+      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't')
+	arg = build_type_variant (TYPE_MAIN_VARIANT (arg),
+				  TYPE_READONLY (arg),
+				  TYPE_VOLATILE (arg));
 
       if (TREE_CODE (parm) == TYPE_DECL)
 	{
@@ -5627,7 +5639,9 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
       }
 #endif
       /* Simple cases: Value already set, does match or doesn't.  */
-      if (targ == arg || (targ && explicit_mask && explicit_mask[idx]))
+      if (targ != NULL_TREE 
+	  && (comptypes (targ, arg, 1)
+	      || (explicit_mask && explicit_mask[idx])))
 	return 0;
       else if (targ)
 	return 1;
@@ -5697,7 +5711,9 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 	}
 
       /* Simple cases: Value already set, does match or doesn't.  */
-      if (targ == arg || (targ && explicit_mask && explicit_mask[idx]))
+      if (targ != NULL_TREE 
+	  && (comptypes (targ, arg, 1)
+	      || (explicit_mask && explicit_mask[idx])))
 	return 0;
       else if (targ)
 	return 1;
