@@ -56,7 +56,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "cpplib.h"
-extern cpp_reader  parse_in;
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -695,8 +694,7 @@ generate_struct_by_value_array ()
 void
 lang_init_options ()
 {
-  cpp_init ();
-  cpp_reader_init (&parse_in, CLK_GNUC89);
+  parse_in = cpp_create_reader (CLK_GNUC89);
 }
 
 void

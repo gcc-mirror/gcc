@@ -35,6 +35,6 @@ extern tree is_class_name PARAMS ((tree));
 extern int indent_level;
 
 struct cpp_reader;
-extern struct cpp_reader parse_in;
+extern struct cpp_reader* parse_in;
 
 #endif

@@ -509,7 +509,7 @@ c_decode_option (argc, argv)
   const char *option_value = NULL;
   char *p = argv[0];
 
-  strings_processed = cpp_handle_option (&parse_in, argc, argv);
+  strings_processed = cpp_handle_option (parse_in, argc, argv);
 
   if (!strcmp (p, "-lang-objc"))
     c_language = clk_objective_c;

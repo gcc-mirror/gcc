@@ -52,8 +52,7 @@ lang_decode_option (argc, argv)
 void
 lang_init_options ()
 {
-  cpp_init ();
-  cpp_reader_init (&parse_in, CLK_GNUC89);
+  parse_in = cpp_create_reader (CLK_GNUC89);
 
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;

@@ -122,12 +122,12 @@ init_c_lex (filename)
   GET_ENVIRONMENT (literal_codeset, "LANG");
 #endif
 
-  parse_in.cb.ident = cb_ident;
-  parse_in.cb.change_file = cb_change_file;
-  parse_in.cb.def_pragma = cb_def_pragma;
+  parse_in->cb.ident = cb_ident;
+  parse_in->cb.change_file = cb_change_file;
+  parse_in->cb.def_pragma = cb_def_pragma;
 
-  /* Make sure parse_in.digraphs matches flag_digraphs.  */
-  CPP_OPTION (&parse_in, digraphs) = flag_digraphs;
+  /* Make sure parse_in->digraphs matches flag_digraphs.  */
+  CPP_OPTION (parse_in, digraphs) = flag_digraphs;
 
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
@@ -145,7 +145,7 @@ init_c_lex (filename)
 int
 yyparse()
 {
-  if (! cpp_start_read (&parse_in, orig_filename))
+  if (! cpp_start_read (parse_in, orig_filename))
     return 1;			/* cpplib has emitted an error.  */
 
   return yyparse_1();
@@ -951,13 +951,13 @@ c_lex (value)
 
   retry:
   timevar_push (TV_CPP);
-  cpp_get_token (&parse_in, &tok);
+  cpp_get_token (parse_in, &tok);
   timevar_pop (TV_CPP);
 
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
      every time we return a token.  */
-  lex_lineno = cpp_get_line (&parse_in)->line;
+  lex_lineno = cpp_get_line (parse_in)->line;
 
   *value = NULL_TREE;
   lineno = lex_lineno;

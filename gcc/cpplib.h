@@ -696,16 +696,14 @@ struct cpp_hashnode
   union tree_node *fe_value;		/* Front end value.  */
 };
 
+extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 extern unsigned int cpp_token_len PARAMS ((const cpp_token *));
 extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *,
 						 const cpp_token *));
 extern unsigned char *cpp_spell_token PARAMS ((cpp_reader *, const cpp_token *,
 					       unsigned char *));
-extern void cpp_init PARAMS ((void));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
-extern void cpp_reader_init PARAMS ((cpp_reader *, enum c_lang));
-
 extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));

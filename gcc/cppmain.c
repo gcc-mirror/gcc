@@ -38,6 +38,8 @@ struct printer
 };
 
 int main		PARAMS ((int, char **));
+static void general_init PARAMS ((const char *));
+static void setup_callbacks PARAMS ((void));
 
 /* General output routines.  */
 static void scan_buffer	PARAMS ((cpp_reader *));
@@ -58,8 +60,8 @@ static void cb_change_file PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma PARAMS ((cpp_reader *));
 static void do_pragma_implementation PARAMS ((cpp_reader *));
 
-const char *progname;
-static cpp_reader parse_in;
+const char *progname;		/* Needs to be global.  */
+static cpp_reader *pfile;
 static struct printer print;
 
 int
@@ -67,25 +69,11 @@ main (argc, argv)
      int argc;
      char **argv;
 {
-  char *p;
-  cpp_reader *pfile = &parse_in;
   int argi = 1;  /* Next argument to handle.  */
 
-  p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && ! IS_DIR_SEPARATOR (p[-1])) --p;
-  progname = p;
-
-  xmalloc_set_program_name (progname);
-
-#ifdef HAVE_LC_MESSAGES
-  setlocale (LC_MESSAGES, "");
-#endif
-  (void) bindtextdomain (PACKAGE, localedir);
-  (void) textdomain (PACKAGE);
-
-  cpp_init ();
+  general_init (argv[0]);
   /* Default language is GNU C89.  */
-  cpp_reader_init (pfile, CLK_GNUC89);
+  pfile = cpp_create_reader (CLK_GNUC89);
   
   argi += cpp_handle_options (pfile, argc - argi , argv + argi);
   if (argi < argc && ! CPP_FATAL_ERRORS (pfile))
@@ -99,30 +87,7 @@ main (argc, argv)
   if (printer_init (pfile))
     return (FATAL_EXIT_CODE);
 
-  /* Set callbacks.  */
-  if (! CPP_OPTION (pfile, no_output))
-    {
-      pfile->cb.ident      = cb_ident;
-      pfile->cb.def_pragma = cb_def_pragma;
-      if (! CPP_OPTION (pfile, no_line_commands))
-	pfile->cb.change_file = cb_change_file;
-    }
-
-  if (CPP_OPTION (pfile, dump_includes))
-    pfile->cb.include  = cb_include;
-
-  if (CPP_OPTION (pfile, debug_output)
-      || CPP_OPTION (pfile, dump_macros) == dump_names
-      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
-    {
-      pfile->cb.define = cb_define;
-      pfile->cb.undef  = cb_undef;
-      pfile->cb.poison = cb_def_pragma;
-    }
-
-  /* Register one #pragma which needs special handling.  */
-  cpp_register_pragma(pfile, 0, "implementation", do_pragma_implementation);
-  cpp_register_pragma(pfile, "GCC", "implementation", do_pragma_implementation);
+  setup_callbacks ();
 
   if (! cpp_start_read (pfile, CPP_OPTION (pfile, in_fname)))
     return (FATAL_EXIT_CODE);
@@ -148,9 +113,57 @@ main (argc, argv)
   if (ferror (print.outf) || fclose (print.outf))
     cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
 
-  if (parse_in.errors)
+  if (pfile->errors)
     return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
+}
+
+/* Store the program name, and set the locale.  */
+static void
+general_init (const char *argv0)
+{
+  progname = argv0 + strlen (argv0);
+
+  while (progname != argv0 && ! IS_DIR_SEPARATOR (progname[-1]))
+    --progname;
+
+  xmalloc_set_program_name (progname);
+
+#ifdef HAVE_LC_MESSAGES
+  setlocale (LC_MESSAGES, "");
+#endif
+  (void) bindtextdomain (PACKAGE, localedir);
+  (void) textdomain (PACKAGE);
+}
+
+/* Set up the callbacks and register the pragmas we handle.  */
+static void
+setup_callbacks ()
+{
+  /* Set callbacks.  */
+  if (! CPP_OPTION (pfile, no_output))
+    {
+      pfile->cb.ident      = cb_ident;
+      pfile->cb.def_pragma = cb_def_pragma;
+      if (! CPP_OPTION (pfile, no_line_commands))
+	pfile->cb.change_file = cb_change_file;
+    }
+
+  if (CPP_OPTION (pfile, dump_includes))
+    pfile->cb.include  = cb_include;
+
+  if (CPP_OPTION (pfile, debug_output)
+      || CPP_OPTION (pfile, dump_macros) == dump_names
+      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+    {
+      pfile->cb.define = cb_define;
+      pfile->cb.undef  = cb_undef;
+      pfile->cb.poison = cb_def_pragma;
+    }
+
+  /* Register one #pragma which needs special handling.  */
+  cpp_register_pragma(pfile, 0, "implementation", do_pragma_implementation);
+  cpp_register_pragma(pfile, "GCC", "implementation", do_pragma_implementation);
 }
 
 /* Writes out the preprocessed file.  Alternates between two tokens,

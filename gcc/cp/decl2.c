@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "timevar.h"
 #include "cpplib.h"
-extern cpp_reader  parse_in;
+extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
    and/or destructions required for a particular priority level.  */
@@ -569,7 +569,7 @@ lang_decode_option (argc, argv)
   int strings_processed;
   const char *p = argv[0];
 
-  strings_processed = cpp_handle_option (&parse_in, argc, argv);
+  strings_processed = cpp_handle_option (parse_in, argc, argv);
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
