@@ -1,5 +1,11 @@
 1998-10-22  Tom Tromey  <tromey@cygnus.com>
 
+	* java-tree.h (finalize_identifier_node): Don't declare.
+	* class.c (make_class_data): Don't push "final" field.
+	* decl.c (init_decl_processing): Don't push "final" field.
+	(finalize_identifier_node): Removed.
+	(init_decl_processing): Don't set finalize_identifier_node.
+
 	* config-lang.in (stagestuff): Added jcf-dump and jv-scan.
 
 Sun Oct 11 10:31:52 1998  Anthony Green  <green@cygnus.com>

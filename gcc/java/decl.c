@@ -325,7 +325,6 @@ tree boolean_true_node, boolean_false_node;
 tree TYPE_identifier_node;
 tree init_identifier_node;
 tree clinit_identifier_node;
-tree finalize_identifier_node;
 tree void_signature_node;
 tree length_identifier_node;
 tree this_identifier_node;
@@ -534,7 +533,6 @@ init_decl_processing ()
   TYPE_identifier_node = get_identifier ("TYPE");
   init_identifier_node = get_identifier ("<init>");
   clinit_identifier_node = get_identifier ("<clinit>");
-  finalize_identifier_node = get_identifier ("finalize");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");
@@ -603,7 +601,6 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "interface_len", short_type_node);
   PUSH_FIELD (class_type_node, field, "state", byte_type_node);
-  PUSH_FIELD (class_type_node, field, "final", byte_type_node);
   PUSH_FIELD (class_type_node, field, "thread", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
