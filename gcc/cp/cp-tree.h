@@ -3200,9 +3200,6 @@ typedef enum base_kind {
 			     binfo. */
 } base_kind;
 
-/* Nonzero means allow Microsoft extensions without a pedwarn.  */
-extern int flag_ms_extensions;
-
 /* Non-zero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */

@@ -1,3 +1,16 @@
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (flag_ms_extensions): Move from c++ front end.
+	* c-common.h (flag_ms_extensions): Declare.
+	* c-decl.c (c_decode_option): Add -fms-extensions.
+	(grokfield): Don't accept anonymous structures in ISO C mode;
+	accept only unnamed anonymous structures in GNU C mode; accept
+	Plan 9 extensions in MS mode.
+	* c-parse.in (SAVE_EXT_FLAGS, RESTORE_EXT_FLAGS): Rename from
+	SAVE/RESTORE_WARN_FLAGS; add flag_iso frobbing; update all callers.
+	(extension): Clear flag_iso.
+	* doc/invoke.texi (C Dialect Options): Add -fms-extensions.
+
 2002-06-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/7042

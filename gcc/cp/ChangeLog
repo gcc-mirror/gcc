@@ -1,3 +1,7 @@
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h, decl2.c (flag_ms_extensions): Move to c-common.
+
 2002-06-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* cp-tree.h (compiler_error): Remove declaration.

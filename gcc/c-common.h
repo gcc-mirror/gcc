@@ -396,6 +396,9 @@ extern int flag_short_double;
 
 extern int flag_short_wchar;
 
+/* Nonzero means allow Microsoft extensions without warnings or errors.  */
+extern int flag_ms_extensions;
+
 /* Nonzero means warn about use of multicharacter literals.  */
 extern int warn_multichar;
 

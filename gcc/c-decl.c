@@ -629,6 +629,10 @@ c_decode_option (argc, argv)
     flag_no_asm = 0;
   else if (!strcmp (p, "-fno-asm"))
     flag_no_asm = 1;
+  else if (!strcmp (p, "-fms-extensions"))
+    flag_ms_extensions = 1;
+  else if (!strcmp (p, "-fno-ms-extensions"))
+    flag_ms_extensions = 0;
   else if (!strcmp (p, "-fbuiltin"))
     flag_no_builtin = 0;
   else if (!strcmp (p, "-fno-builtin"))
@@ -5359,15 +5363,44 @@ grokfield (filename, line, declarator, declspecs, width)
 
   if (declarator == NULL_TREE && width == NULL_TREE)
     {
-      /* This is an unnamed decl.  We only support unnamed
-	 structs/unions, so check for other things and refuse them.  */
+      /* This is an unnamed decl.
+
+	 If we have something of the form "union { list } ;" then this
+	 is the anonymous union extension.  Similarly for struct.
+
+	 If this is something of the form "struct foo;", then
+	   If MS extensions are enabled, this is handled as an
+	     anonymous struct.
+	   Otherwise this is a forward declaration of a structure tag.
+
+	 If this is something of the form "foo;" and foo is a TYPE_DECL, then
+	   If MS extensions are enabled and foo names a structure, then
+	     again this is an anonymous struct.
+	   Otherwise this is an error.
+
+	 Oh what a horrid tangled web we weave.  I wonder if MS consiously
+	 took this from Plan 9 or if it was an accident of implementation
+	 that took root before someone noticed the bug...  */
+
       tree type = TREE_VALUE (declspecs);
 
-      if (TREE_CODE (type) == TYPE_DECL)
+      if (flag_ms_extensions && TREE_CODE (type) == TYPE_DECL)
 	type = TREE_TYPE (type);
-      if (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE)
+      if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE)
 	{
-	  error ("unnamed fields of type other than struct or union are not allowed");
+	  if (flag_ms_extensions)
+	    ; /* ok */
+	  else if (flag_iso)
+	    goto warn_unnamed_field;
+	  else if (TYPE_NAME (type) == NULL)
+	    ; /* ok */
+	  else
+	    goto warn_unnamed_field;
+	}
+      else
+	{
+	warn_unnamed_field:
+	  warning ("declaration does not declare anything");
 	  return NULL_TREE;
 	}
     }
