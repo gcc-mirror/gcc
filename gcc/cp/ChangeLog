@@ -1,3 +1,7 @@
+Thu Apr 23 18:27:53 1998  Mark P. Mitchell  <mmitchell@usa.net>
+
+	* pt.c (unify): Fix typo in previous change.
+
 Thu Apr 23 09:32:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* error.c (dump_type_real): Declare canonical_name.
