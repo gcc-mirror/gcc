@@ -376,8 +376,8 @@ public class DirectColorModel extends PackedColorModel
     return Buffers.getData(buffer);
   }
     
-  public ColorModel coerceData(WritableRaster raster,
-			       boolean isAlphaPremultiplied)
+  public final ColorModel coerceData (WritableRaster raster,
+				      boolean isAlphaPremultiplied)
   {
     if (this.isAlphaPremultiplied == isAlphaPremultiplied)
       return this;

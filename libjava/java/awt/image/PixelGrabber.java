@@ -336,8 +336,12 @@ public class PixelGrabber implements ImageConsumer
     }
 
     /**
-       @deprecated by getStatus
-    */
+       Get the status of the pixel grabbing representing by ImageObserver flags
+
+       @return the status
+       
+       @specnote This method is not deprecated but getStatus is preferred to use
+     */
     public synchronized int status()
     {
 	return getStatus();

@@ -63,7 +63,7 @@ public abstract class GraphicAttribute
 
   public abstract float getAdvance ();
 
-  public int getAlignment ()
+  public final int getAlignment ()
   {
     return alignment;
   }
