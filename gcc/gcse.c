@@ -4054,7 +4054,9 @@ cprop_jump (bb, setcc, jump, from, src)
 
   /* First substitute in the INSN condition as the SET_SRC of the JUMP,
      then substitute that given values in this expanded JUMP.  */
-  if (setcc != NULL)
+  if (setcc != NULL
+      && !modified_between_p (from, setcc, jump)
+      && !modified_between_p (src, setcc, jump))
     {
       rtx setcc_set = single_set (setcc);
       new_set = simplify_replace_rtx (SET_SRC (set),
@@ -4068,7 +4070,7 @@ cprop_jump (bb, setcc, jump, from, src)
 
   /* If no simplification can be made, then try the next
      register.  */
-  if (rtx_equal_p (new, new_set))
+  if (rtx_equal_p (new, new_set) || rtx_equal_p (new, SET_SRC (set)))
     return 0;
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
@@ -4076,6 +4078,11 @@ cprop_jump (bb, setcc, jump, from, src)
     delete_insn (jump);
   else
     {
+      /* Ensure the value computed inside the jump insn to be equivalent
+         to one computed by setcc.  */
+      if (setcc 
+	  && modified_in_p (new, setcc))
+	return 0;
       if (! validate_change (jump, &SET_SRC (set), new, 0))
 	return 0;
 

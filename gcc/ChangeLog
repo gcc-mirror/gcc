@@ -1,3 +1,11 @@
+Mon Sep 30 14:57:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (TARGET_CPP_CPU_BUILTINS): Define __SSE_MATH__.
+
+	* gcse.c (cprop_jump): Check that the register has not
+	been modified
+	(cprop_jump): Likewise.
+
 2002-09-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (BASE_REG_CLASS): Always return LO_REGS for Thumb.

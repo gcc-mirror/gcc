@@ -529,6 +529,10 @@ extern int x86_prefetch_sse;
 	builtin_define ("__SSE__");				\
       if (TARGET_SSE2)						\
 	builtin_define ("__SSE2__");				\
+      if (TARGET_SSE_MATH && TARGET_SSE)			\
+	builtin_define ("__SSE_MATH__");			\
+      if (TARGET_SSE_MATH && TARGET_SSE2)			\
+	builtin_define ("__SSE2_MATH__");			\
 								\
       /* Built-ins based on -march=.  */			\
       if (ix86_arch == PROCESSOR_I486)				\
