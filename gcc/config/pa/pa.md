@@ -5490,7 +5490,7 @@
 ;; code but the real world cost should be unmeasurable.
 (define_insn "return_internal"
   [(return)
-   (use (match_operand:SI 0 "register_operand" "r"))
+   (use (match_operand 0 "register_operand" "r"))
    (use (reg:SI 2))
    (const_int 1)]
   "true_regnum (operands[0]) == PIC_OFFSET_TABLE_REGNUM"
