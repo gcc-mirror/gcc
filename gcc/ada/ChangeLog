@@ -1,3 +1,9 @@
+2001-11-29  Ed Schonberg <schonber@gnat.com>
+
+	* g-os_lib.adb (Add_To_Command): use explicit loop to move string 
+	into Command, an array conversion is illegal here. Uncovered by 
+	ACATS B460005.
+
 2001/11/28  Geert Bosch <bosch@gnat.com>
 
 	* init.c: Minor whitespace changes.

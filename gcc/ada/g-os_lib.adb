@@ -1316,7 +1316,13 @@ package body GNAT.OS_Lib is
 
       begin
          Command_Last := Command_Last + S'Length;
-         Command (First .. Command_Last) := Chars (S);
+
+         --  Move characters one at a time, because Command has
+         --  aliased components.
+
+         for J in S'Range loop
+            Command (First + J - S'First) := S (J);
+         end loop;
 
          Command_Last := Command_Last + 1;
          Command (Command_Last) := ASCII.NUL;
