@@ -54,6 +54,7 @@
 	avoid aliasing warning.
 
 2004-04-22  Jan Hubicka  <jh@suse.cz>
+	    Mostafa Hagog <mustafa@il.ibm.com>
 
       * cfgloopmanip.c (scale_bbs_frequencies): Use RDIV macro
       * cfgloopanal.c (expected_loop_iterations): Change the return value
