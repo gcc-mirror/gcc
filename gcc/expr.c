@@ -1199,10 +1199,11 @@ emit_block_move (x, y, size, align)
 		  || (*insn_operand_predicate[(int) code][3]) (opalign,
 							       VOIDmode)))
 	    {
-	      rtx op2 = size;
+	      rtx op2;
 	      rtx last = get_last_insn ();
 	      rtx pat;
 
+	      op2 = convert_to_mode (mode, size, 1);
 	      if (insn_operand_predicate[(int) code][2] != 0
 		  && ! (*insn_operand_predicate[(int) code][2]) (op2, mode))
 		op2 = copy_to_mode_reg (mode, op2);
