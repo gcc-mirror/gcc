@@ -939,7 +939,8 @@ is_specialization_of_friend (tree decl, tree friend)
   bool need_template = true;
   int template_depth;
 
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == TYPE_DECL);
 
   /* For [temp.friend/6] when FRIEND is an ordinary member function
      of a template class, we want to check if DECL is a specialization
@@ -948,16 +949,20 @@ is_specialization_of_friend (tree decl, tree friend)
       && DECL_TEMPLATE_INFO (friend)
       && !DECL_USE_TEMPLATE (friend))
     {
+      /* We want a TEMPLATE_DECL for `is_specialization_of'.  */
       friend = DECL_TI_TEMPLATE (friend);
       need_template = false;
     }
+  else if (TREE_CODE (friend) == TEMPLATE_DECL
+	   && !PRIMARY_TEMPLATE_P (friend))
+    need_template = false;
 
   /* There is nothing to do if this is not a template friend.  */
   if (TREE_CODE (friend) != TEMPLATE_DECL)
-    return 0;
+    return false;
 
   if (is_specialization_of (decl, friend))
-    return 1;
+    return true;
 
   /* [temp.friend/6]
      A member of a class template may be declared to be a friend of a
@@ -986,17 +991,25 @@ is_specialization_of_friend (tree decl, tree friend)
 			       CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (friend))))
     {
       /* Next, we check the members themselves.  In order to handle
-	 a few tricky cases like
+	 a few tricky cases, such as when FRIEND's are
 
 	   template <class T> friend void A<T>::g(T t);
 	   template <class T> template <T t> friend void A<T>::h();
 
-	 we need to figure out what ARGS is (corresponding to `T' in above
-	 examples) from DECL for later processing.  */
+	 and DECL's are
+
+	   void A<int>::g(int);
+	   template <int> void A<int>::h();
+
+	 we need to figure out ARGS, the template arguments from
+	 the context of DECL.  This is required for template substitution
+	 of `T' in the function parameter of `g' and template parameter
+	 of `h' in the above examples.  Here ARGS corresponds to `int'.  */
 
       tree context = DECL_CONTEXT (decl);
       tree args = NULL_TREE;
       int current_depth = 0;
+
       while (current_depth < template_depth)
 	{
 	  if (CLASSTYPE_TEMPLATE_INFO (context))
@@ -1023,7 +1036,7 @@ is_specialization_of_friend (tree decl, tree friend)
 	  is_template = DECL_TEMPLATE_INFO (decl)
 			&& PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl));
 	  if (need_template ^ is_template)
-	    return 0;
+	    return false;
 	  else if (is_template)
 	    {
 	      /* If both are templates, check template parameter list.  */
@@ -1033,7 +1046,7 @@ is_specialization_of_friend (tree decl, tree friend)
 	      if (!comp_template_parms
 		     (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (decl)),
 		      friend_parms))
-		return 0;
+		return false;
 
 	      decl_type = TREE_TYPE (DECL_TI_TEMPLATE (decl));
 	    }
@@ -1043,11 +1056,11 @@ is_specialization_of_friend (tree decl, tree friend)
 	  friend_type = tsubst_function_type (TREE_TYPE (friend), args,
 					      tf_none, NULL_TREE);
 	  if (friend_type == error_mark_node)
-	    return 0;
+	    return false;
 
 	  /* Check if return types match.  */
 	  if (!same_type_p (TREE_TYPE (decl_type), TREE_TYPE (friend_type)))
-	    return 0;
+	    return false;
 
 	  /* Check if function parameter types match, ignoring the
 	     `this' parameter.  */
@@ -1057,11 +1070,46 @@ is_specialization_of_friend (tree decl, tree friend)
 	    friend_args_type = TREE_CHAIN (friend_args_type);
 	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
 	    decl_args_type = TREE_CHAIN (decl_args_type);
-	  if (compparms (decl_args_type, friend_args_type))
-	    return 1;
+
+	  return compparms (decl_args_type, friend_args_type);
+	}
+      else
+	{
+	  /* DECL is a TYPE_DECL */
+	  bool is_template;
+	  tree decl_type = TREE_TYPE (decl);
+
+	  /* Make sure that both DECL and FRIEND are templates or
+	     non-templates.  */
+	  is_template
+	    = CLASSTYPE_TEMPLATE_INFO (decl_type)
+	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (decl_type));
+
+	  if (need_template ^ is_template)
+	    return false;
+	  else if (is_template)
+	    {
+	      tree friend_parms;
+	      /* If both are templates, check the name of the two
+		 TEMPLATE_DECL's first because is_friend didn't.  */
+	      if (DECL_NAME (CLASSTYPE_TI_TEMPLATE (decl_type))
+		  != DECL_NAME (friend))
+		return false;
+
+	      /* Now check template parameter list.  */
+	      friend_parms
+		= tsubst_template_parms (DECL_TEMPLATE_PARMS (friend),
+					 args, tf_none);
+	      return comp_template_parms
+		(DECL_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (decl_type)),
+		 friend_parms);
+	    }
+	  else
+	    return (DECL_NAME (decl)
+		    == DECL_NAME (friend));
 	}
     }
-  return 0;
+  return false;
 }
 
 /* Register the specialization SPEC as a specialization of TMPL with
@@ -5691,15 +5739,37 @@ instantiate_class_template (tree type)
 	      /* Build new CLASSTYPE_FRIEND_CLASSES.  */
 
 	      tree friend_type = t;
-	      tree new_friend_type;
+	      bool adjust_processing_template_decl = false;
 
 	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
-		new_friend_type = tsubst_friend_class (friend_type, args);
+		{
+		  friend_type = tsubst_friend_class (friend_type, args);
+	  	  adjust_processing_template_decl = true;
+		}
+	      else if (TREE_CODE (friend_type) == UNBOUND_CLASS_TEMPLATE)
+		{
+		  friend_type = tsubst (friend_type, args,
+					tf_error | tf_warning, NULL_TREE);
+		  if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+		    friend_type = TREE_TYPE (friend_type);
+	  	  adjust_processing_template_decl = true;
+		}
+	      else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
+		{
+		  friend_type = tsubst (friend_type, args,
+					tf_error | tf_warning, NULL_TREE);
+		  /* Bump processing_template_decl for correct
+		     dependent_type_p calculation.  */
+		  ++processing_template_decl;
+		  if (dependent_type_p (friend_type))
+		    adjust_processing_template_decl = true;
+		  --processing_template_decl;
+		}
 	      else if (uses_template_parms (friend_type))
-		new_friend_type = tsubst (friend_type, args,
-					  tf_error | tf_warning, NULL_TREE);
+		friend_type = tsubst (friend_type, args,
+				      tf_error | tf_warning, NULL_TREE);
 	      else if (CLASSTYPE_USE_TEMPLATE (friend_type))
-		new_friend_type = friend_type;
+		friend_type = friend_type;
 	      else 
 		{
 		  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
@@ -5707,12 +5777,12 @@ instantiate_class_template (tree type)
 		  /* The call to xref_tag_from_type does injection for friend
 		     classes.  */
 		  push_nested_namespace (ns);
-		  new_friend_type = 
+		  friend_type = 
 		    xref_tag_from_type (friend_type, NULL_TREE, 1);
 		  pop_nested_namespace (ns);
 		}
 
-	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+	      if (adjust_processing_template_decl)
 		/* Trick make_friend_class into realizing that the friend
 		   we're adding is a template, not an ordinary class.  It's
 		   important that we use make_friend_class since it will
@@ -5720,11 +5790,10 @@ instantiate_class_template (tree type)
 		   information.  */
 		++processing_template_decl;
 
-	      if (new_friend_type != error_mark_node)
-	        make_friend_class (type, new_friend_type,
-				   /*complain=*/false);
+	      if (friend_type != error_mark_node)
+	        make_friend_class (type, friend_type, /*complain=*/false);
 
-	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+	      if (adjust_processing_template_decl)
 		--processing_template_decl;
 	    }
 	  else
@@ -7283,11 +7352,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree ctx = tsubst_aggr_type (TYPE_CONTEXT (t), args, complain,
 				     in_decl, /*entering_scope=*/1);
 	tree name = TYPE_IDENTIFIER (t);
+	tree parm_list = DECL_TEMPLATE_PARMS (TYPE_NAME (t));
 
 	if (ctx == error_mark_node || name == error_mark_node)
 	  return error_mark_node;
 
-	return make_unbound_class_template (ctx, name, complain);
+	if (parm_list)
+	  parm_list = tsubst_template_parms (parm_list, args, complain);
+	return make_unbound_class_template (ctx, name, parm_list, complain);
       }
 
     case INDIRECT_REF:

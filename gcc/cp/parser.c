@@ -14158,7 +14158,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 						  /*complain=*/1));
 	  else if (is_template)
 	    decl = make_unbound_class_template (parser->scope,
-						name,
+						name, NULL_TREE,
 						/*complain=*/1);
 	  else
 	    decl = build_nt (SCOPE_REF, parser->scope, name);
@@ -14847,6 +14847,21 @@ cp_parser_single_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser))
 	{
 	  decl = shadow_tag (&decl_specifiers);
+
+	  /* In this case:
+
+	       struct C {
+		 friend template <typename T> struct A<T>::B;
+	       };
+
+	     A<T>::B will be represented by a TYPENAME_TYPE, and
+	     therefore not recognized by shadow_tag.  */
+	  if (friend_p && *friend_p
+	      && !decl
+	      && decl_specifiers.type
+	      && TYPE_P (decl_specifiers.type))
+	    decl = decl_specifiers.type;
+
 	  if (decl && decl != error_mark_node)
 	    decl = TYPE_NAME (decl);
 	  else

@@ -3689,7 +3689,7 @@ extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);
 extern void define_case_label			(void);
 extern tree make_typename_type			(tree, tree, tsubst_flags_t);
-extern tree make_unbound_class_template		(tree, tree, tsubst_flags_t);
+extern tree make_unbound_class_template		(tree, tree, tree, tsubst_flags_t);
 extern tree check_for_out_of_scope_variable     (tree);
 extern tree build_library_fn			(tree, tree);
 extern tree build_library_fn_ptr		(const char *, tree);

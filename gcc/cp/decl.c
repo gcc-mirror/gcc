@@ -2730,14 +2730,18 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
   return build_typename_type (context, name, fullname);
 }
 
-/* Resolve `CONTEXT::template NAME'.  Returns an appropriate type,
-   unless an error occurs, in which case error_mark_node is returned.
-   If we locate a TYPE_DECL, we return that, rather than the _TYPE it
-   corresponds to.  If COMPLAIN zero, don't complain about any errors
-   that occur.  */
+/* Resolve `CONTEXT::template NAME'.  Returns a TEMPLATE_DECL if the name
+   can be resolved or an UNBOUND_CLASS_TEMPLATE, unless an error occurs, 
+   in which case error_mark_node is returned.
+
+   If PARM_LIST is non-NULL, also make sure that the template parameter
+   list of TEMPLATE_DECL matches.
+
+   If COMPLAIN zero, don't complain about any errors that occur.  */
 
 tree
-make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
+make_unbound_class_template (tree context, tree name, tree parm_list,
+			     tsubst_flags_t complain)
 {
   tree t;
   tree d;
@@ -2763,6 +2767,17 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
 	  return error_mark_node;
 	}
 
+      if (parm_list
+	  && !comp_template_parms (DECL_TEMPLATE_PARMS (tmpl), parm_list))
+	{
+	  if (complain & tf_error)
+	    {
+	      error ("template parameters do not match template");
+	      cp_error_at ("%qD declared here", tmpl);
+	    }
+	  return error_mark_node;
+	}
+
       if (complain & tf_error)
 	perform_or_defer_access_check (TYPE_BINFO (context), tmpl);
 
@@ -2780,6 +2795,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
   TYPE_STUB_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = FROB_CONTEXT (context);
   DECL_ARTIFICIAL (d) = 1;
+  DECL_TEMPLATE_PARMS (d) = parm_list;
 
   return t;
 }

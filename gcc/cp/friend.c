@@ -92,7 +92,7 @@ is_friend (tree type, tree supplicant)
 	  tree t = TREE_VALUE (list);
 
 	  if (TREE_CODE (t) == TEMPLATE_DECL ? 
-	      is_specialization_of (TYPE_MAIN_DECL (supplicant), t) :
+	      is_specialization_of_friend (TYPE_MAIN_DECL (supplicant), t) :
 	      same_type_p (supplicant, t))
 	    return 1;
 	}
@@ -197,7 +197,31 @@ void
 make_friend_class (tree type, tree friend_type, bool complain)
 {
   tree classes;
-  int is_template_friend;
+
+  /* CLASS_TEMPLATE_DEPTH counts the number of template headers for
+     the enclosing class.  FRIEND_DEPTH counts the number of template
+     headers used for this friend declaration.  TEMPLATE_MEMBER_P,
+     defined inside the `if' block for TYPENAME_TYPE case, is true if
+     a template header in FRIEND_DEPTH is intended for DECLARATOR.
+     For example, the code
+
+       template <class T> struct A {
+	 template <class U> struct B {
+	   template <class V> template <class W>
+	     friend class C<V>::D;
+	 };
+       };
+
+     will eventually give the following results
+
+     1. CLASS_TEMPLATE_DEPTH equals 2 (for `T' and `U').
+     2. FRIEND_DEPTH equals 2 (for `V' and `W').
+     3. TEMPLATE_MEMBER_P is true (for `W').
+
+     The friend is a template friend iff FRIEND_DEPTH is nonzero.  */
+
+  int class_template_depth = template_class_depth (type);
+  int friend_depth = processing_template_decl - class_template_depth;
 
   if (! IS_AGGR_TYPE (friend_type))
     {
@@ -205,7 +229,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
       return;
     }
 
-  if (processing_template_decl > template_class_depth (type))
+  if (friend_depth)
     /* If the TYPE is a template then it makes sense for it to be
        friends with itself; this means that each instantiation is
        friends with all other instantiations.  */
@@ -221,8 +245,6 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		 friend_type);
 	  return;
 	}
-  
-      is_template_friend = 1;
     }
   else if (same_type_p (type, friend_type))
     {
@@ -231,8 +253,6 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		 type);
       return;
     }
-  else
-    is_template_friend = 0;
 
   /* [temp.friend]
 
@@ -240,13 +260,75 @@ make_friend_class (tree type, tree friend_type, bool complain)
      class template, a specialization of a function template or
      class template, or an ordinary (nontemplate) function or
      class.  */
-  if (!is_template_friend)
+  if (!friend_depth)
     ;/* ok */
   else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
     {
-      /* template <class T> friend typename S<T>::X; */
-      error ("typename type %q#T declared %<friend%>", friend_type);
-      return;
+      if (TREE_CODE (TYPENAME_TYPE_FULLNAME (friend_type))
+	  == TEMPLATE_ID_EXPR)
+	{
+	  /* template <class U> friend class T::X<U>; */
+	  /* [temp.friend]
+	     Friend declarations shall not declare partial
+	     specializations.  */
+	  error ("partial specialization %qT declared %<friend%>",
+		 friend_type);
+	  return;
+	}
+      else
+	{
+	  /* We will figure this out later.  */
+	  bool template_member_p = false;
+
+	  tree ctype = TYPE_CONTEXT (friend_type);
+	  tree name = TYPE_IDENTIFIER (friend_type);
+	  tree decl;
+
+	  if (!uses_template_parms_level (ctype, class_template_depth
+						 + friend_depth))
+	    template_member_p = true;
+
+	  if (class_template_depth)
+	    {
+	      /* We rely on tsubst_friend_class to check the
+		 validity of the declaration later.  */
+	      if (template_member_p)
+		friend_type
+		  = make_unbound_class_template (ctype,
+						 name,
+						 current_template_parms,
+						 tf_error);
+	      else
+		friend_type
+		  = make_typename_type (ctype, name, tf_error);
+	    }
+	  else
+	    {
+	      decl = lookup_member (ctype, name, 0, true);
+	      if (!decl)
+		{
+		  error ("%qT is not a member of %qT", name, ctype);
+		  return;
+		}
+	      if (template_member_p && !DECL_CLASS_TEMPLATE_P (decl))
+		{
+		  error ("%qT is not a member class template of %qT",
+			 name, ctype);
+		  cp_error_at ("%qD declared here", decl);
+		  return;
+		}
+	      if (!template_member_p && (TREE_CODE (decl) != TYPE_DECL
+					 || !CLASS_TYPE_P (TREE_TYPE (decl))))
+		{
+		  error ("%qT is not a nested class of %qT",
+			 name, ctype);
+		  cp_error_at ("%qD declared here", decl);
+		  return;
+		}
+
+	      friend_type = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
+	    }
+	}
     }
   else if (TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM)
     {
@@ -260,9 +342,12 @@ make_friend_class (tree type, tree friend_type, bool complain)
       error ("%q#T is not a template", friend_type);
       return;
     }
-
-  if (is_template_friend)
+  else
+    /* template <class T> friend class A; where A is a template */
     friend_type = CLASSTYPE_TI_TEMPLATE (friend_type);
+
+  if (friend_type == error_mark_node)
+    return;
 
   /* See if it is already a friend.  */
   for (classes = CLASSTYPE_FRIEND_CLASSES (type);
@@ -297,7 +382,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
       CLASSTYPE_FRIEND_CLASSES (type)
 	= tree_cons (NULL_TREE, friend_type, CLASSTYPE_FRIEND_CLASSES (type));
-      if (is_template_friend)
+      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 	friend_type = TREE_TYPE (friend_type);
       if (!uses_template_parms (type))
 	CLASSTYPE_BEFRIENDING_CLASSES (friend_type)
