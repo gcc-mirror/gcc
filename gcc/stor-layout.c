@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -739,6 +739,15 @@ layout_type (type)
 	      = size_binop (PLUS_EXPR, size_one_node,
 			    size_binop (MINUS_EXPR, TYPE_MAX_VALUE (index),
 					TYPE_MIN_VALUE (index)));
+
+	    /* If neither bound is a constant and sizetype is signed, make
+	       sure the size is never negative.  We should really do this
+	       if *either* bound is non-constant, but this is the best
+	       compromise between C and Ada.  */
+	    if (! TREE_UNSIGNED (sizetype)
+		&& TREE_CODE (TYPE_MIN_VALUE (index)) != INTEGER_CST
+		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
+	      length = size_binop (MAX_EXPR, length, size_zero_node);
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, length,
 					   TYPE_SIZE (element));
