@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -799,24 +799,24 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "zapnot %1,1,%0"
-  [(set_attr "type" "shift")])
+  "and %1,0xff,%0"
+  [(set_attr "type" "ilog")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_BWX"
   "@
-   zapnot %1,1,%0
+   and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "shift,ld")])
+  [(set_attr "type" "ilog,ld")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "! TARGET_BWX"
-  "zapnot %1,1,%0"
-  [(set_attr "type" "shift")])
+  "and %1,0xff,%0"
+  [(set_attr "type" "ilog")])
 
 (define_expand "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -829,16 +829,16 @@
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_BWX"
   "@
-   zapnot %1,1,%0
+   and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "shift,ld")])
+  [(set_attr "type" "ilog,ld")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
   "! TARGET_BWX"
-  "zapnot %1,1,%0"
-  [(set_attr "type" "shift")])
+  "and %1,0xff,%0"
+  [(set_attr "type" "ilog")])
   
 (define_expand "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "")
