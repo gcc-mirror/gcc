@@ -1752,16 +1752,38 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,4")])
 
+
 ;; 64-bit integer moves
 
 ;; Unlike most other insns, the move insns can't be split with
 ;; different predicates, because register spilling and other parts of
 ;; the compiler, have memoized the insn number already.
 
-(define_insn "movdi"
+(define_expand "movdi"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "")
+	(match_operand:DI 1 "general_operand" ""))]
+  ""
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], DImode)
+      && !register_operand (operands[1], DImode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+      && operands[1] != CONST0_RTX (DImode))
+    {
+      rtx temp = force_reg (DImode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
+
+(define_insn "movdi_internal"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,R,o,*d,*x")
 	(match_operand:DI 1 "general_operand" "d,iF,R,o,d,d,*x,*d"))]
-  ""
+  "register_operand (operands[0], DImode)
+   || register_operand (operands[1], DImode)
+   || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
+   || operands[1] == CONST0_RTX (DImode)"
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo")
    (set_attr "mode"	"DI")
@@ -1804,7 +1826,18 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
   ""
-  "")
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], SImode)
+      && !register_operand (operands[1], SImode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0))
+    {
+      rtx temp = force_reg (SImode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
 
 ;; The difference between these two is whether or not ints are allowed
 ;; in FP registers (off by default, use -mdebugh to enable).
@@ -1812,7 +1845,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movsi_internal1"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*d")
 	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,*d,*x"))]
-  "TARGET_DEBUG_H_MODE"
+  "TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
    (set_attr "mode"	"SI")
@@ -1821,7 +1857,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movsi_internal2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*d,*x")
 	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,*x,*d"))]
-  "!TARGET_DEBUG_H_MODE"
+  "!TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo")
    (set_attr "mode"	"SI")
@@ -1839,7 +1878,18 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
   ""
-  "")
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], HImode)
+      && !register_operand (operands[1], HImode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0))
+    {
+      rtx temp = force_reg (HImode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
 
 ;; The difference between these two is whether or not ints are allowed
 ;; in FP registers (off by default, use -mdebugh to enable).
@@ -1847,7 +1897,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movhi_internal1"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f*z,*x,*d")
 	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*f*z,*d,*f,*d,*x"))]
-  "TARGET_DEBUG_H_MODE"
+  "TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"HI")
@@ -1856,7 +1909,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movhi_internal2"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*z,*x,*d")
 	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*z,*d,*d,*x"))]
-  "!TARGET_DEBUG_H_MODE"
+  "!TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,hilo,hilo")
    (set_attr "mode"	"HI")
@@ -1874,7 +1930,18 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
-  "")
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], QImode)
+      && !register_operand (operands[1], QImode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0))
+    {
+      rtx temp = force_reg (QImode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
 
 ;; The difference between these two is whether or not ints are allowed
 ;; in FP registers (off by default, use -mdebugh to enable).
@@ -1882,7 +1949,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movqi_internal1"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f*z,*f,*x,*d")
 	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*f*z,*d,*f,*d,*x"))]
-  "TARGET_DEBUG_H_MODE"
+  "TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], QImode)
+       || register_operand (operands[1], QImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"QI")
@@ -1891,7 +1961,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movqi_internal2"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*z,*x,*d")
 	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*z,*d,*d,*x"))]
-  "!TARGET_DEBUG_H_MODE"
+  "!TARGET_DEBUG_H_MODE
+   && (register_operand (operands[0], QImode)
+       || register_operand (operands[1], QImode)
+       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,hilo,hilo")
    (set_attr "mode"	"QI")
@@ -1900,21 +1973,64 @@ move\\t%0,%z4\\n\\
 
 ;; 32-bit floating point moves
 
-(define_insn "movsf"
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(match_operand:SF 1 "general_operand" ""))]
+  ""
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], SFmode)
+      && !register_operand (operands[1], SFmode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+      && operands[1] != CONST0_RTX (SFmode))
+    {
+      rtx temp = force_reg (SFmode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
+
+(define_insn "movsf_internal"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,f,R,m,*f,*d,*d,*d,*d,*R,*m")
 	(match_operand:SF 1 "general_operand" "f,G,R,Em,fG,fG,*d,*f,*G*d,*R,*E*m,*d,*d"))]
-  ""
+  "register_operand (operands[0], SFmode)
+   || register_operand (operands[1], SFmode)
+   || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
+   || operands[1] == CONST0_RTX (SFmode)"
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,xfer,load,load,store,store,xfer,xfer,move,load,load,store,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,2,1,2")])
 
+
 ;; 64-bit floating point moves
 
-(define_insn "movdf"
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  ""
+  "
+{
+  if ((reload_in_progress | reload_completed) == 0
+      && !register_operand (operands[0], DFmode)
+      && !register_operand (operands[1], DFmode)
+      && (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+      && operands[1] != CONST0_RTX (DFmode))
+    {
+      rtx temp = force_reg (DFmode, operands[1]);
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
+}")
+
+(define_insn "movdf_internal"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,R,o,f,*f,*d,*d,*d,*d,*R,*o")
 	(match_operand:DF 1 "general_operand" "f,R,o,fG,fG,E,*d,*f,*d*G,*R,*o*E,*d,*d"))]
-  ""
+  "register_operand (operands[0], DFmode)
+   || register_operand (operands[1], DFmode)
+   || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
+   || operands[1] == CONST0_RTX (DFmode)"
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,load,load,store,store,load,xfer,xfer,move,load,load,store,store")
    (set_attr "mode"	"DF")
