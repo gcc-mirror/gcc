@@ -54,7 +54,18 @@ static regset_head reg_pending_uses_head;
 static regset reg_pending_sets;
 static regset reg_pending_clobbers;
 static regset reg_pending_uses;
-static bool reg_pending_barrier;
+
+/* The following enumeration values tell us what dependencies we
+   should use to implement the barrier.  We use true-dependencies for
+   TRUE_BARRIER and anti-dependencies for MOVE_BARRIER.  */
+enum reg_pending_barrier_mode
+{
+  NOT_A_BARRIER = 0,
+  MOVE_BARRIER,
+  TRUE_BARRIER
+};
+
+static enum reg_pending_barrier_mode reg_pending_barrier;
 
 /* To speed up the test for duplicate dependency links we keep a
    record of dependencies created by add_dependence when the average
@@ -748,7 +759,7 @@ sched_analyze_2 (deps, x, insn)
 	   mode.  An insn should not be moved across this even if it only uses
 	   pseudo-regs because it might give an incorrectly rounded result.  */
 	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
-	  reg_pending_barrier = true;
+	  reg_pending_barrier = TRUE_BARRIER;
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
 	   We can not just fall through here since then we would be confused
@@ -867,7 +878,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}
       if (find_reg_note (insn, REG_SETJMP, NULL))
-	reg_pending_barrier = true;
+	reg_pending_barrier = MOVE_BARRIER;
     }
 
   if (GET_CODE (insn) == JUMP_INSN)
@@ -875,7 +886,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       rtx next;
       next = next_nonnote_insn (insn);
       if (next && GET_CODE (next) == BARRIER)
-	reg_pending_barrier = true;
+	reg_pending_barrier = TRUE_BARRIER;
       else
 	{
 	  rtx pending, pending_mem;
@@ -940,7 +951,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END
 	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_BEG
 	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_END)
-	    reg_pending_barrier = true;
+	    reg_pending_barrier = MOVE_BARRIER;
 
 	  link = XEXP (link, 1);
 	}
@@ -952,7 +963,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
      where block boundaries fall.  This is mighty confusing elsewhere.
      Therefore, prevent such an instruction from being moved.  */
   if (can_throw_internal (insn))
-    reg_pending_barrier = true;
+    reg_pending_barrier = MOVE_BARRIER;
 
   /* Add dependencies if a scheduling barrier was found.  */
   if (reg_pending_barrier)
@@ -965,8 +976,12 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
-	      add_dependence_list (insn, reg_last->sets, REG_DEP_ANTI);
-	      add_dependence_list (insn, reg_last->clobbers, REG_DEP_ANTI);
+	      add_dependence_list
+		(insn, reg_last->sets,
+		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
+	      add_dependence_list
+		(insn, reg_last->clobbers,
+		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
 	    });
 	}
       else
@@ -976,10 +991,12 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list_and_free (insn, &reg_last->uses,
 					    REG_DEP_ANTI);
-	      add_dependence_list_and_free (insn, &reg_last->sets,
-					    REG_DEP_ANTI);
-	      add_dependence_list_and_free (insn, &reg_last->clobbers,
-					    REG_DEP_ANTI);
+	      add_dependence_list_and_free
+		(insn, &reg_last->sets,
+		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
+	      add_dependence_list_and_free
+		(insn, &reg_last->clobbers,
+		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
 	      reg_last->uses_length = 0;
 	      reg_last->clobbers_length = 0;
 	    });
@@ -993,7 +1010,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	}
 
       flush_pending_lists (deps, insn, true, true);
-      reg_pending_barrier = false;
+      reg_pending_barrier = NOT_A_BARRIER;
     }
   else
     {
@@ -1190,7 +1207,7 @@ sched_analyze (deps, head, tail)
 	    {
 	      /* This is setjmp.  Assume that all registers, not just
 		 hard registers, may be clobbered by this call.  */
-	      reg_pending_barrier = true;
+	      reg_pending_barrier = MOVE_BARRIER;
 	    }
 	  else
 	    {
@@ -1505,7 +1522,7 @@ init_deps_global ()
   reg_pending_sets = INITIALIZE_REG_SET (reg_pending_sets_head);
   reg_pending_clobbers = INITIALIZE_REG_SET (reg_pending_clobbers_head);
   reg_pending_uses = INITIALIZE_REG_SET (reg_pending_uses_head);
-  reg_pending_barrier = false;
+  reg_pending_barrier = NOT_A_BARRIER;
 }
 
 /* Free everything used by the dependency analysis code.  */
