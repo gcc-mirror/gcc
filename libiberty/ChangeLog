@@ -1,3 +1,9 @@
+2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.c (htab_create): Set del_f.
+	(htab_delete, htab_empty, htab_remove_elt, htab_clear_slot):
+	Use it.
+
 2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c: Remove debugging variables (all_searches,
