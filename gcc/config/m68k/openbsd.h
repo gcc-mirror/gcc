@@ -91,6 +91,5 @@ Boston, MA 02111-1307, USA.  */
 /* Assembler format: exception region output.  */
 
 /* All configurations that don't use elf must be explicit about not using
-   dwarf unwind information. egcs doesn't try too hard to check internal
-   configuration files...  */
+   dwarf unwind information.  */
 #define DWARF2_UNWIND_INFO 0

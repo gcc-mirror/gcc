@@ -1,3 +1,10 @@
+2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR other/1494
+	* config/alpha/openbsd.h, config/i386/openbsd.h,
+	config/m68k/openbsd.h, config/sparc/openbsd.h: Remove
+	residual reference to EGCS.
+
 2003-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (output_call_mem): If the address references the link-register
