@@ -2636,7 +2636,11 @@ install-include-dir: installdirs
 
 # Install the include directory using tar.
 install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
-	(cd include; \
+# We use `pwd`/include instead of just include to problems with CDPATH
+# Unless a full pathname is provided, some shells would print the new CWD,
+# found in CDPATH, corrupting the output.  We could just redirect the
+# output of `cd', but some shells lose on redirection within `()'s
+	(cd `pwd`/include ; \
 	 tar -cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
 # /bin/sh on some systems returns the status of the first tar,
 # and that can lose with GNU tar which always writes a full block.
@@ -2644,7 +2648,9 @@ install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
-	(cd include; find . -print) | (cd include; cpio -pdum $(libsubdir)/include)
+# See discussion about the use of `pwd` above
+	cd `pwd`/include ; \
+	find . -print | cpio -pdum $(libsubdir)/include
 
 # Put assert.h where it won't override GNU libc's assert.h.
 # It goes in a dir that is searched after GNU libc's headers;
