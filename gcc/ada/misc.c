@@ -697,26 +697,26 @@ gnat_get_alias_set (tree type)
 int
 default_pass_by_ref (tree gnu_type)
 {
-  CUMULATIVE_ARGS cum;
-
-  INIT_CUMULATIVE_ARGS (cum, NULL_TREE, NULL_RTX, 0, 2);
-
   /* We pass aggregates by reference if they are sufficiently large.  The
      choice of constant here is somewhat arbitrary.  We also pass by
      reference if the target machine would either pass or return by
      reference.  Strictly speaking, we need only check the return if this
      is an In Out parameter, but it's probably best to err on the side of
      passing more things by reference.  */
-  return (0
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-	  || FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type),
-					     gnu_type, 1)
-#endif
-	  || targetm.calls.return_in_memory (gnu_type, NULL_TREE)
-	  || (AGGREGATE_TYPE_P (gnu_type)
-	      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
-		  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),
-					   8 * TYPE_ALIGN (gnu_type)))));
+
+  if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, 1))
+    return true;
+
+  if (targetm.calls.return_in_memory (gnu_type, NULL_TREE))
+    return true;
+  
+  if (AGGREGATE_TYPE_P (gnu_type)
+      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
+	  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),
+				   8 * TYPE_ALIGN (gnu_type))))
+    return true;
+
+  return false;
 }
 
 /* GNU_TYPE is the type of a subprogram parameter.  Determine from the type if

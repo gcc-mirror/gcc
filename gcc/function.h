@@ -556,4 +556,7 @@ extern void init_function_once (void);
 
 extern void do_warn_unused_parameter (tree);
 
+extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+			       tree, bool);
+
 #endif  /* GCC_FUNCTION_H */

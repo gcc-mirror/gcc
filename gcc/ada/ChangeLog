@@ -1,3 +1,7 @@
+2004-07-13  Richard Henderson  <rth@redhat.com>
+
+	* misc.c (default_pass_by_ref): Use pass_by_reference.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* misc.c (LANG_HOOKS_CLEAR_BINDING_STACK, LANG_HOOKS_PUSHLEVEL,
