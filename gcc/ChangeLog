@@ -1,3 +1,8 @@
+Thu May 17 11:53:49 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* except.c (sjlj_emit_function_enter): Call assemble_external_libcall
+	for eh_personality_libfunc.
+
 2001-05-17  Bernd Schmidt  <bernds@redhat.com>
 
 	* reload1.c (delete_output_reload): Call eliminate_regs on substed.
