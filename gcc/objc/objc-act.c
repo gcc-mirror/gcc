@@ -5066,7 +5066,7 @@ handle_class_ref (chain)
   char *string
     = (char *) alloca (strlen (IDENTIFIER_POINTER (TREE_VALUE (chain))) + 30);
 
-  sprintf (string, ".objc_class_name_%s",
+  sprintf (string, "__objc_class_name_%s",
 	   IDENTIFIER_POINTER (TREE_VALUE (chain)));
 
   /* Make a decl for this name, so we can use its address in a tree.  */
@@ -5096,7 +5096,7 @@ handle_impent (impent)
       char *string
 	= (char *) alloca (strlen (IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context))) + 30);
 
-      sprintf (string, ".objc_class_name_%s",
+      sprintf (string, "__objc_class_name_%s",
 	       IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)));
       assemble_global (string);
       assemble_label (string);
@@ -5111,7 +5111,7 @@ handle_impent (impent)
       /* Do the same for categories.  Even though no references to these
 	  symbols are generated automatically by the compiler, it gives
 	  you a handle to pull them into an archive by hand. */
-      sprintf (string, ".objc_category_name_%s_%s",
+      sprintf (string, "__objc_category_name_%s_%s",
 	       IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)),
 	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context)));
       assemble_global (string);
