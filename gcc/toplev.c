@@ -1344,7 +1344,7 @@ v_message_with_decl (decl, prefix, s, ap)
       while (*p)
 	{
 	  ++p;
-	  if (isalpha (*(p - 1) & 0xFF))
+	  if (ISALPHA (*(p - 1) & 0xFF))
 	    break;
 	}
     }

@@ -463,7 +463,7 @@ quote_string (pfile, src)
     switch ((c = *src++))
       {
       default:
-        if (isprint (c))
+        if (ISPRINT (c))
 	  CPP_PUTC_Q (pfile, c);
 	else
 	  {
@@ -2770,7 +2770,7 @@ macroexpand (pfile, hp)
 		      /* Escape these chars */
 		      if (c == '\"' || (in_string && c == '\\'))
 			CPP_PUTC (pfile, '\\');
-		      if (isprint (c))
+		      if (ISPRINT (c))
 			CPP_PUTC (pfile, c);
 		      else
 			{
@@ -3683,7 +3683,7 @@ do_line (pfile, keyword)
   token = get_directive_token (pfile);
 
   if (token != CPP_NUMBER
-      || !isdigit(pfile->token_buffer[old_written]))
+      || !ISDIGIT(pfile->token_buffer[old_written]))
     {
       cpp_error (pfile, "invalid format `#line' command");
       goto bad_line_directive;
@@ -4920,7 +4920,7 @@ cpp_get_token (pfile)
 	case '.':
 	  NEWLINE_FIX;
 	  c2 = PEEKC ();
-	  if (isdigit(c2))
+	  if (ISDIGIT(c2))
 	    {
 	      CPP_RESERVE(pfile, 2);
 	      CPP_PUTC_Q (pfile, '.');

@@ -2768,21 +2768,21 @@ process_command (argc, argv)
 		char *v = compiler_version;
 
 		/* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
-		while (! isdigit (*v))
+		while (! ISDIGIT (*v))
 		  v++;
 
 		if (v > compiler_version && v[-1] != '-')
 		  fatal ("invalid version number format");
 
 		/* Set V after the first period.  */
-		while (isdigit (*v))
+		while (ISDIGIT (*v))
 		  v++;
 
 		if (*v != '.')
 		  fatal ("invalid version number format");
 
 		v++;
-		while (isdigit (*v))
+		while (ISDIGIT (*v))
 		  v++;
 
 		if (*v != 0 && *v != ' ' && *v != '.' && *v != '-')

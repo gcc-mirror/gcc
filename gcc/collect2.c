@@ -565,7 +565,7 @@ dump_file (name)
     {
       int c;
       while (c = getc (stream),
-	     c != EOF && (isalnum (c) || c == '_' || c == '$' || c == '.'))
+	     c != EOF && (ISALNUM (c) || c == '_' || c == '$' || c == '.'))
 	obstack_1grow (&temporary_obstack, c);
       if (obstack_object_size (&temporary_obstack) > 0)
 	{
@@ -1853,7 +1853,7 @@ write_c_file_stat (stream, name)
   strncpy (prefix, p, q - p);
   prefix[q - p] = 0;
   for (q = prefix; *q; q++)
-    if (!isalnum (*q))
+    if (!ISALNUM (*q))
       *q = '_';
   if (debug)
     fprintf (stderr, "\nwrite_c_file - output name is %s, prefix is %s\n",
@@ -2169,7 +2169,7 @@ scan_prog_file (prog_name, which_pass)
       name = p;
       /* Find the end of the symbol name.
 	 Do not include `|', because Encore nm can tack that on the end.  */
-      for (end = p; (ch2 = *end) != '\0' && !isspace (ch2) && ch2 != '|';
+      for (end = p; (ch2 = *end) != '\0' && !ISSPACE (ch2) && ch2 != '|';
 	   end++)
 	continue;
 
@@ -2303,7 +2303,7 @@ libcompare (d1, d2)
   char *e2 = (*d2)->d_name + i2;
 
   while (*e1 && *e2 && *e1 == '.' && *e2 == '.'
-	 && e1[1] && isdigit (e1[1]) && e2[1] && isdigit (e2[1]))
+	 && e1[1] && ISDIGIT (e1[1]) && e2[1] && ISDIGIT (e2[1]))
     {
       ++e1;
       ++e2;
@@ -2316,7 +2316,7 @@ libcompare (d1, d2)
   if (*e1)
     {
       /* It has a valid numeric extension, prefer this one.  */
-      if (*e1 == '.' && e1[1] && isdigit (e1[1]))
+      if (*e1 == '.' && e1[1] && ISDIGIT (e1[1]))
 	return 1;
       /* It has a invalid numeric extension, must prefer the other one.  */
       else
@@ -2325,7 +2325,7 @@ libcompare (d1, d2)
   else if (*e2)
     {
       /* It has a valid numeric extension, prefer this one.  */
-      if (*e2 == '.' && e2[1] && isdigit (e2[1]))
+      if (*e2 == '.' && e2[1] && ISDIGIT (e2[1]))
 	return -1;
       /* It has a invalid numeric extension, must prefer the other one.  */
       else
@@ -2609,7 +2609,7 @@ scan_libraries (prog_name)
 
       /* Find the end of the symbol name.  */
       for (end = p; 
-	   (ch2 = *end) != '\0' && ch2 != '\n' && !isspace (ch2) && ch2 != '|';
+	   (ch2 = *end) != '\0' && ch2 != '\n' && !ISSPACE (ch2) && ch2 != '|';
 	   end++)
 	continue;
       *end = '\0';

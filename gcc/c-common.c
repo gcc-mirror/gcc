@@ -1356,7 +1356,7 @@ check_format_info (info, params)
 	  suppressed = *format_chars == '*';
 	  if (suppressed)
 	    ++format_chars;
-	  while (isdigit (*format_chars))
+	  while (ISDIGIT (*format_chars))
 	    ++format_chars;
 	}
       else if (info->format_type == strftime_format_type)
@@ -1379,7 +1379,7 @@ check_format_info (info, params)
 		  flag_chars[i] = 0;
 		}
 	    }
-	  while (isdigit ((unsigned char) *format_chars))
+	  while (ISDIGIT ((unsigned char) *format_chars))
 	    {
 	      wide = TRUE;
               ++format_chars;
@@ -1480,7 +1480,7 @@ check_format_info (info, params)
 	    }
 	  else
 	    {
-	      while (isdigit (*format_chars))
+	      while (ISDIGIT (*format_chars))
 		{
 		  wide = TRUE;
 		  ++format_chars;
@@ -1490,7 +1490,7 @@ check_format_info (info, params)
 	    {
 	      precise = TRUE;
 	      ++format_chars;
-	      if (*format_chars != '*' && !isdigit (*format_chars))
+	      if (*format_chars != '*' && !ISDIGIT (*format_chars))
 		warning ("`.' not followed by `*' or digit in format");
 	      /* "...a...precision...may be indicated by an asterisk.
 		 In this case, an int argument supplies the...precision."  */
@@ -1515,7 +1515,7 @@ check_format_info (info, params)
 		}
 	      else
 		{
-		  while (isdigit (*format_chars))
+		  while (ISDIGIT (*format_chars))
 		    ++format_chars;
 		}
 	    }

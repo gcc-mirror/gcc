@@ -1255,7 +1255,7 @@ yylex ()
     case '$':
     letter:
       p = token_buffer;
-      while (isalnum (c) || c == '_' || c == '$' || c == '@')
+      while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
 	{
 	  /* Make sure this char really belongs in an identifier.  */
 	  if (c == '@' && ! doing_objc_thang)
@@ -1367,7 +1367,7 @@ yylex ()
 
 	next_c = GETC ();
 	UNGETC (next_c);	/* Always undo this lookahead.  */
-	if (!isalnum (next_c) && next_c != '.')
+	if (!ISALNUM (next_c) && next_c != '.')
 	  {
 	    token_buffer[0] = (char)c,  token_buffer[1] = '\0';
 	    yylval.ttype = (c == '0') ? integer_zero_node : integer_one_node;
@@ -1424,7 +1424,7 @@ yylex ()
 	/* Read all the digits-and-decimal-points.  */
 
 	while (c == '.'
-	       || (isalnum (c) && c != 'l' && c != 'L'
+	       || (ISALNUM (c) && c != 'l' && c != 'L'
 		   && c != 'u' && c != 'U'
 		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
 		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
@@ -1453,7 +1453,7 @@ yylex ()
 		   only when it is followed by a digit.
 		   Otherwise, unread the following non-digit
 		   and use the '.' as a structural token.  */
-		if (p == token_buffer + 2 && !isdigit (c))
+		if (p == token_buffer + 2 && !ISDIGIT (c))
 		  {
 		    if (c == '.')
 		      {
@@ -1477,7 +1477,7 @@ yylex ()
 		/* It is not a decimal point.
 		   It should be a digit (perhaps a hex digit).  */
 
-		if (isdigit (c))
+		if (ISDIGIT (c))
 		  {
 		    c = c - '0';
 		  }
@@ -1559,9 +1559,9 @@ yylex ()
 		    *p++ = c;
 		    c = GETC();
 		  }
-		if (! isdigit (c))
+		if (! ISDIGIT (c))
 		  error ("floating constant exponent has no digits");
-	        while (isdigit (c))
+	        while (ISDIGIT (c))
 		  {
 		    if (p >= token_buffer + maxtoken - 3)
 		      p = extend_token_buffer (p);
@@ -1876,7 +1876,7 @@ yylex ()
 	UNGETC (c);
 	*p = 0;
 
-	if (isalnum (c) || c == '.' || c == '_' || c == '$'
+	if (ISALNUM (c) || c == '.' || c == '_' || c == '$'
 	    || (!flag_traditional && (c == '-' || c == '+')
 		&& (p[-1] == 'e' || p[-1] == 'E')))
 	  error ("missing white space after number `%s'", token_buffer);
@@ -1923,7 +1923,7 @@ yylex ()
 		    && (unsigned) c >= (1 << width))
 		  pedwarn ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
-		if (isprint (c))
+		if (ISPRINT (c))
 		  c = MAP_CHARACTER (c);
 #endif
 	      }

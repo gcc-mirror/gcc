@@ -1,3 +1,22 @@
+Wed May  6 15:37:27 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c: Convert to using ctype macros defined in system.h.
+	* c-lex.c: Likewise.
+	* cccp.c: Likewise.
+	* collect2.c: Likewise.
+	* rs6000.c: Likewise.
+	* cpplib.c: Likewise.
+	* fix-header.c: Likewise.
+	* gcc.c: Likewise.
+	* gen-protos.c: Likewise.
+	* pexecute.c: Likewise.
+	* protoize.c: Likewise.
+	* rtl.c: Likewise.
+	* scan.c: Likewise.
+	* stmt.c: Likewise.
+	* tlink.c: Likewise.
+	* toplev.c: Likewise.	
+
 Wed May  6 14:44:14 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/r3900.h (SUBTARGET_ASM_DEBUGGING_SPEC) : 

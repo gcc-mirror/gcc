@@ -4450,7 +4450,7 @@ rs6000_gen_section_name (buf, filename, section_desc)
 	  p += strlen (section_desc);
         }
 
-      else if (isalnum (*q))
+      else if (ISALNUM (*q))
         *p++ = *q;
     }
 

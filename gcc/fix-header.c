@@ -956,13 +956,13 @@ inf_scan_ident (s, c)
      int c;
 {
   s->ptr = s->base;
-  if (isalpha (c) || c == '_')
+  if (ISALPHA (c) || c == '_')
     {
       for (;;)
 	{
 	  SSTRING_PUT (s, c);
 	  c = INF_GET ();
-	  if (c == EOF || !(isalnum (c) || c == '_'))
+	  if (c == EOF || !(ISALNUM (c) || c == '_'))
 	    break;
 	}
     }
@@ -1273,7 +1273,7 @@ main (argc, argv)
 	  c = INF_GET ();
 	  if (c == EOF)
 	    break;
-	  if (isalpha (c) || c == '_')
+	  if (ISALPHA (c) || c == '_')
 	    {
 	      c = inf_scan_ident (&buf, c);
 	      (void) INF_UNGET (c);
