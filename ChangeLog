@@ -1,3 +1,7 @@
+2003-04-30  Wolfgang Bangerth  <bangerth@dealii.org>
+
+	* MAINTAINERS (GNATS only): Add Giovanni Bajo.
+
 2003-04-27  Daniel Jacobowitz  <drow@mvista.com>
 
 	* Makefile.tpl: Clean $(BUILD_SUBDIR).
