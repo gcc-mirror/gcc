@@ -498,8 +498,8 @@ recognized_macro (fname)
 
 void
 recognized_extern (name, name_length, type, type_length)
-     char *name;
-     char *type ATTRIBUTE_UNUSED;
+     const char *name;
+     const char *type ATTRIBUTE_UNUSED;
      int name_length, type_length ATTRIBUTE_UNUSED;
 {
   switch (special_file_handling)
@@ -526,13 +526,13 @@ void
 recognized_function (fname, fname_length,
 		     kind, rtype, rtype_length,
 		     have_arg_list, file_seen, line_seen)
-     char *fname;
+     const char *fname;
      int fname_length;
      int kind; /* One of 'f' 'F' or 'I' */
-     char *rtype;
+     const char *rtype;
      int rtype_length;
      int have_arg_list;
-     char *file_seen;
+     const char *file_seen;
      int line_seen;
 {
   struct partial_proto *partial;
