@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -121,6 +121,17 @@ extern int target_flags;
 #define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "char"
 #define WCHAR_TYPE_SIZE BITS_PER_UNIT
+
+/* Define this macro if it is advisible to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases, 
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.  */
+
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
+  if (GET_MODE_CLASS (MODE) == MODE_INT	\
+      && GET_MODE_SIZE (MODE) < 4)  	\
+    (MODE) == SImode;
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
@@ -307,7 +318,7 @@ extern int target_flags;
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
-  0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -383,7 +394,8 @@ extern int target_flags;
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On 29k, the cpu registers can hold any mode.  But a double-precision
    floating-point value should start at an even register.  The special
-   registers cannot hold floating-point values and the accumulators cannot
+   registers cannot hold floating-point values, BP, CR, and FC cannot
+   hold integer or floating-point values,  and the accumulators cannot
    hold integer values.
 
    DImode and larger values should start at an even register just like
@@ -396,7 +408,9 @@ extern int target_flags;
   (((REGNO) >= R_ACC (0)						\
     && (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
 	|| GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT))		\
-   || ((REGNO) >= R_BP && (REGNO) < R_ACC (0)				\
+   || ((REGNO) >= R_BP && (REGNO) <= R_CR				\
+       && GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT)			\
+   || ((REGNO) >= R_Q && (REGNO) < R_ACC (0)				\
        && GET_MODE_CLASS (MODE) != MODE_FLOAT				\
        && GET_MODE_CLASS (MODE) != MODE_COMPLEX_FLOAT)			\
    || ((REGNO) < R_BP							\
@@ -413,12 +427,11 @@ extern int target_flags;
    the special register's restriction to non-floating and the floating-point
    accumulator's restriction to only floating.  This probably won't
    cause any great inefficiencies in practice.  */
+
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   ((MODE1) == (MODE2)					\
-   || (GET_MODE_CLASS (MODE1) != MODE_FLOAT		\
-       && GET_MODE_CLASS (MODE1) != MODE_COMPLEX_FLOAT	\
-       && GET_MODE_CLASS (MODE2) != MODE_FLOAT		\
-       && GET_MODE_CLASS (MODE2) != MODE_COMPLEX_FLOAT))
+   || (GET_MODE_CLASS (MODE1) == MODE_INT		\
+       && GET_MODE_CLASS (MODE2) == MODE_INT))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -468,27 +481,28 @@ extern int target_flags;
    For any two classes, it is very desirable that there be another
    class that represents their union.
    
-   The 29k has six registers classes: GENERAL_REGS, SPECIAL_REGS,
-   BP_REGS, Q_REGS, ACCUM_REGS, and ACCUM0_REGS.  BP_REGS contains just BP and
-   is used for the extract and insert operations to allow combinations; Q
-   contains just the Q register.  The latter two classes are used to represent
-   the floating-point accumulator registers in the 29050.  We also define the
-   union class FLOAT_REGS to represent any register that can be used to hold a
+   The 29k has nine registers classes: LR0_REGS, GENERAL_REGS, SPECIAL_REGS,
+   BP_REGS, FC_REGS, CR_REGS, Q_REGS, ACCUM_REGS, and ACCUM0_REGS.
+   LR0_REGS, BP_REGS, FC_REGS, CR_REGS, and Q_REGS contain just the single
+   register.  The latter two classes are used to represent the floating-point
+   accumulator registers in the 29050.  We also define the union class
+   FLOAT_REGS to represent any register that can be used to hold a
    floating-point value.  The union of SPECIAL_REGS and ACCUM_REGS isn't
    useful as the former cannot contain floating-point and the latter can only
    contain floating-point.  */
 
-enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS, 
-		 ACCUM0_REGS, ACCUM_REGS, FLOAT_REGS, ALL_REGS,
-		 LIM_REG_CLASSES };
+enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
+		 Q_REGS, SPECIAL_REGS, ACCUM0_REGS, ACCUM_REGS, FLOAT_REGS,
+		 ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES				\
- {"NO_REGS", "GENERAL_REGS", "BP_REGS", "Q_REGS", "SPECIAL_REGS",	\
-  "ACCUM0_REGS", "ACCUM_REGS", "FLOAT_REGS", "ALL_REGS" }
+ {"NO_REGS", "LR0_REGS", "GENERAL_REGS", "BP_REGS", "FC_REGS", "CR_REGS", \
+  "Q_REGS", "SPECIAL_REGS", "ACCUM0_REGS", "ACCUM_REGS", "FLOAT_REGS",    \
+  "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -496,8 +510,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS,
 
 #define REG_CLASS_CONTENTS	\
   { {0, 0, 0, 0, 0, 0, 0}, 	\
+    {0, 1, 0, 0, 0, 0, 0},	\
     {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, 0},  \
     {0, 0, 0, 0, 0, 0x20000, 0}, 	\
+    {0, 0, 0, 0, 0, 0x40000, 0}, 	\
+    {0, 0, 0, 0, 0, 0x80000, 0}, 	\
     {0, 0, 0, 0, 0, 0x100000, 0}, 	\
     {0, 0, 0, 0, 0, 0xfffe0000, 0xff},	\
     {0, 0, 0, 0, 0, 0, 0x100},		\
@@ -512,10 +529,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS,
 
 #define REGNO_REG_CLASS(REGNO)		\
   ((REGNO) == R_BP ? BP_REGS		\
+   : (REGNO) == R_FC ? FC_REGS		\
+   : (REGNO) == R_CR ? CR_REGS		\
    : (REGNO) == R_Q ? Q_REGS		\
    : (REGNO) > R_BP && (REGNO) <= R_EXO ? SPECIAL_REGS	\
    : (REGNO) == R_ACC (0) ? ACCUM0_REGS	\
    : (REGNO) > R_ACC (0) ? ACCUM_REGS	\
+   : (REGNO) == R_LR (0) ? LR0_REGS	\
    : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -526,7 +546,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS,
 
 #define REG_CLASS_FROM_LETTER(C)	\
  ((C) == 'r' ? GENERAL_REGS		\
+  : (C) == 'l' ? LR0_REGS		\
   : (C) == 'b' ? BP_REGS		\
+  : (C) == 'f' ? FC_REGS		\
+  : (C) == 'c' ? CR_REGS		\
   : (C) == 'q' ? Q_REGS			\
   : (C) == 'h' ? SPECIAL_REGS		\
   : (C) == 'a' ? ACCUM_REGS		\
@@ -605,6 +628,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS,
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
 
+/* This function is used to get the address of an object.  */
+
+extern struct rtx_def *a29k_get_reloaded_address ();
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
 
@@ -621,6 +648,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, BP_REGS, Q_REGS, SPECIAL_REGS,
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
   ((CLASS1) == GENERAL_REGS || (CLASS2) == GENERAL_REGS ? 2 : 4)
+
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  On the a29k, ignore the cost of anti- and
+   output-dependencies.  */
+#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
+  if (REG_NOTE_KIND (LINK) != 0)					\
+    (COST) = 0; /* Anti or output dependence.  */
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1544,10 +1580,11 @@ extern int a29k_debug_reg_map[];
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
+  {"call_operand", {SYMBOL_REF, CONST_INT}},			\
   {"in_operand", {SUBREG, MEM, REG, CONST_INT, CONST, SYMBOL_REF, \
 		  LABEL_REF, CONST_DOUBLE}},			\
   {"out_operand", {SUBREG, REG, MEM}},				\
-  {"extend_operator", {ZERO_EXTEND, SIGN_EXTEND}},		\
+  {"reload_memory_operand", {SUBREG, REG, MEM}},		\
   {"fp_comparison_operator", {EQ, GT, GE}},			\
   {"branch_operator", {GE, LT}},				\
   {"epilogue_operand", {CODE_LABEL}},
