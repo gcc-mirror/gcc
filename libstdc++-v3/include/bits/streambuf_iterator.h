@@ -202,7 +202,9 @@ namespace std
       ostreambuf_iterator& 
       _M_put(const _CharT* __ws, streamsize __len)
       {
-	this->_M_sbuf->sputn(__ws, __len);
+	if (__builtin_expect(!_M_failed, true)
+	    && __builtin_expect(this->_M_sbuf->sputn(__ws, __len) != __len, false))
+	  _M_failed = true;
 	return *this;
       }
     };
