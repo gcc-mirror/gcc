@@ -158,6 +158,7 @@ GCC_3.0 {
   _Unwind_Resume
   _Unwind_SetGR
   _Unwind_SetIP
+  _Unwind_Find_Enclosing_Function
   __deregister_frame
   __deregister_frame_info
   __deregister_frame_info_bases
