@@ -1,3 +1,8 @@
+2003-09-10  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* combine.c (force_to_mode): Set fuller_mask based only on mask,
+	not op_mode.
+
 Thu Sep 11 01:21:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* c-objc-common.c (c_cannot_inline_tree_fn): Warn
