@@ -7806,7 +7806,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 	      if (found)
 		{
 		  found_equiv = true;
-		  if (insn_count < sizeof insns / sizeof insn[0])
+		  if (insn_count < ARRAY_SIZE(insns))
 		    {
 		      insns[insn_count] = insn;
 		      modes[insn_count] = set_mode;
