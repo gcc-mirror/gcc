@@ -1,3 +1,8 @@
+2000-06-30  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* invoke.texi (-Wreturn-type): In C++, a missing return type is
+	always an error.
+
 2000-06-30  Catherine Moore  <clm@cygnus.com>
  
         * c-common.c (decl_attributes):  Differentiate between

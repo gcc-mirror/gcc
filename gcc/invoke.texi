@@ -1553,9 +1553,13 @@ the enclosing @code{if}.  The resulting code would look like this:
 @end smallexample
 
 @item -Wreturn-type
-Warn whenever a function is defined with a return-type that defaults
-to @code{int}.  Also warn about any @code{return} statement with no
-return-value in a function whose return-type is not @code{void}.
+Warn whenever a function is defined with a return-type that defaults to
+@code{int}.  Also warn about any @code{return} statement with no
+return-value in a function whose return-type is not @code{void}. 
+
+For C++, a function without return type always produces a diagnostic
+message, even when @samp{-Wno-return-type} is specified. The only
+exceptions are @samp{main} and functions defined in system headers.
 
 @item -Wswitch
 Warn whenever a @code{switch} statement has an index of enumeral type
