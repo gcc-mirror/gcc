@@ -75,9 +75,10 @@ init_expmed ()
   mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg));
   negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg));
 
+  /* 999999 is chosen to avoid any plausible faster special case.  */
   mult_is_very_cheap
     = (rtx_cost (gen_rtx (MULT, word_mode, reg,
-			  gen_rtx (CONST_INT, VOIDmode, 128)))
+			  gen_rtx (CONST_INT, VOIDmode, 999999)))
        < rtx_cost (gen_rtx (LSHIFT, word_mode, reg,
 			    gen_rtx (CONST_INT, VOIDmode, 7))));
 
@@ -90,9 +91,10 @@ init_expmed ()
   for (i = 2;; i <<= 1)
     {
       lea = gen_rtx (SET, VOIDmode, reg,
-		     gen_rtx (PLUS, word_mode, reg,
+		     gen_rtx (PLUS, word_mode,
 			      gen_rtx (MULT, word_mode, reg,
-				       gen_rtx (CONST_INT, VOIDmode, i))));
+				       gen_rtx (CONST_INT, VOIDmode, i)),
+			      reg));
       /* Using 0 as second argument is not quite right,
 	 but what else is there to do?  */
       if (recog (lea, 0, &dummy) < 0)
@@ -2246,7 +2248,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  rtx label = gen_label_rtx ();
 	  if (! can_clobber_op0)
 	    {
-	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target);
+	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
+						    compute_mode);
 	      /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
 		 which will screw up mem refs for autoincrements.  */
 	      op0 = force_reg (compute_mode, op0);
@@ -2266,7 +2269,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  rtx label = gen_label_rtx ();
 	  if (! can_clobber_op0)
 	    {
-	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target);
+	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
+						    compute_mode);
 	      /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
 		 which will screw up mem refs for autoincrements.  */
 	      op0 = force_reg (compute_mode, op0);
@@ -2284,7 +2288,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
     case CEIL_MOD_EXPR:
       if (! can_clobber_op0)
 	{
-	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target);
+	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
+						compute_mode);
 	  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
 	     which will screw up mem refs for autoincrements.  */
 	  op0 = force_reg (compute_mode, op0);
@@ -2316,7 +2321,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
     case ROUND_MOD_EXPR:
       if (! can_clobber_op0)
 	{
-	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target);
+	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
+						compute_mode);
 	  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
 	     which will screw up mem refs for autoincrements.  */
 	  op0 = force_reg (compute_mode, op0);
@@ -2544,7 +2550,7 @@ expand_mult_add (x, target, mult, add, mode, unsignedp)
 {
   tree type = type_for_mode (mode, unsignedp);
   tree add_type = (GET_MODE (add) == VOIDmode
-		   ? type : type_for_mode (GET_MODE (add)));
+		   ? type : type_for_mode (GET_MODE (add), unsignedp));
   tree result =  fold (build (PLUS_EXPR, type,
 			      fold (build (MULT_EXPR, type,
 					   make_tree (type, x),
@@ -2884,7 +2890,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
 	 Two operations that can do the above actions are ABS and FFS, so try
 	 them.  If that doesn't work, and MODE is smaller than a full word,
-	 we can use zero-extention to the wider mode (an unsigned conversion)
+	 we can use zero-extension to the wider mode (an unsigned conversion)
 	 as the operation.  */
 
       if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
@@ -2913,6 +2919,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
       if (tem == 0 && (code == NE || BRANCH_COST > 1))
 	{
+	  if (rtx_equal_p (subtarget, op0))
+	    subtarget = 0;
+
 	  tem = expand_unop (mode, neg_optab, op0, subtarget, 0);
 	  tem = expand_binop (mode, ior_optab, tem, op0, subtarget, 0,
 			      OPTAB_WIDEN);
