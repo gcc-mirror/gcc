@@ -1,5 +1,7 @@
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* search.c (covariant_return_p): Complain about ambiguous base.
+
 	* typeck.c (build_component_ref): Diagnose ref to nested type.
 
 1998-06-10  Brendan Kehoe  <brendan@cygnus.com>

@@ -2205,7 +2205,12 @@ covariant_return_p (brettype, drettype)
   if (! IS_AGGR_TYPE (drettype) || ! IS_AGGR_TYPE (brettype))
     return -1;
 
-  binfo = get_binfo (brettype, drettype, 0);
+  binfo = get_binfo (brettype, drettype, 1);
+
+  /* If we get an error_mark_node from get_binfo, it already complained,
+     so let's just succeed.  */
+  if (binfo == error_mark_node)
+    return 1;
 
   if (! BINFO_OFFSET_ZEROP (binfo) || TREE_VIA_VIRTUAL (binfo))
     return 2;
