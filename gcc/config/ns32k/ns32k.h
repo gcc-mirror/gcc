@@ -837,7 +837,7 @@ __transfer_from_trampoline ()		\
    Strictly speaking, we can't be sure that a symbol will fit this range.
    But, in practice, it always will.  */
 
-#define NS32K_DISPLACEMENT(i) 				\
+#define NS32K_DISPLACEMENT_P(i) 				\
  (((i) <= 16777215 && (i) >= -16777216)			\
   || ((TARGET_32532 || TARGET_32332)			\
       && (i) <= 536870913 && (i) >= -536870912))
