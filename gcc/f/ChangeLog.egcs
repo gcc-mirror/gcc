@@ -1,3 +1,8 @@
+1997-11-14  Dave Love  <d.love@dl.ac.uk>
+
+	* intrin.def: Supply gfrt for CPU_TIME.  Generalize arg types of
+	INT2, INT8, per doc.
+
 Sun Nov  2 19:49:51 1997  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ffecom_expr_): Only use TREE_TYPE argument for simple

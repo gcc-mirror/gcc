@@ -38,6 +38,9 @@ certain complicated expressions involving @code{COMPLEX}
 arithmetic (especially multiplication).
 
 @item
+Fix an internal error compiling the @code{Cpu_Time} intrinsic.
+
+@item
 Rename the @code{gcc} keyword @code{restrict} to
 @code{__restrict__}, to avoid rejecting valid, existing,
 C programs.
@@ -46,7 +49,8 @@ for @code{complex}.
 
 @item
 Fix @code{DTime} intrinsic so as not to truncate
-results to integer values (on some systems).
+results to integer values (on some systems) and allow general numeric
+args for the  @code{Int2} and @code{Int8} intrinsics.
 
 @item
 Improve diagnostic messages from @code{libf2c}
