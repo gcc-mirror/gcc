@@ -1,3 +1,31 @@
+2004-02-26  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* testsuite/demangle/abi_examples/01.cc: Expect error -2.
+	* testsuite/demangle/abi_examples/02.cc: Likewise.
+	* testsuite/demangle/regression/cw-11.cc: Likewise.
+	* testsuite/demangle/regression/cw-16.cc: Change two expected
+	results to match libiberty demangler output.
+
+2004-02-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/10246
+        * libsupc++/Makefile.am: Use libiberty demangler.
+        (c_sources): Add cp-demangle.c.
+        * libsupc++/Makefile.in: Regenerate.
+        * src/Makefile.am (sources): Remove demangle.cc.
+        * src/Makefile.in: Regenerate.
+        * include/Makefile.am (bits_headers): Move demangle.h.
+	(ext_headers): ...here.
+        * include/Makefile.in: Regenerate.
+        * include/bits/demangle.h: Move...
+	* include/ext/demangle.h: ...here.
+        * src/demangle.cc: Remove.
+
+2004-02-26  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+        * include/bits/demangle.h: Add type template parameter to all
+        templates with just an Allocator template parameter.
+ 
 2004-02-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/atomicity.h: New, forward declarations for __atomic_add

@@ -31,7 +31,7 @@ int main()
   // or variable "f" 
   // int f;
   // B f
-  verify_demangle("f", "f");  
+  verify_demangle("f", "error code = -2: invalid mangled name");
 
   return 0;
 }
