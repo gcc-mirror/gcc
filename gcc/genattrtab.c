@@ -170,6 +170,8 @@ struct attr_desc
   struct attr_value *default_val; /* Default value for this attribute. */
 };
 
+#define NULL_ATTR (struct attr_desc *) NULL
+
 /* Structure for each DEFINE_DELAY.  */
 
 struct delay_desc
@@ -546,7 +548,7 @@ attr_rtx (va_alist)
     }
   else if (code == CONST_INT)
     {
-      int arg0 = va_arg (p, int);
+      HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
       if (arg0 == 0)
 	return false_rtx;
       if (arg0 == 1)
@@ -568,6 +570,10 @@ attr_rtx (va_alist)
 
 	    case 'i':		/* An integer?  */
 	      XINT (rt_val, i) = va_arg (p, int);
+	      break;
+
+	    case 'w':		/* A wide integer? */
+	      XWINT (rt_val, i) = va_arg (p, HOST_WIDE_INT);
 	      break;
 
 	    case 's':		/* A string?  */
@@ -772,9 +778,22 @@ attr_copy_rtx (orig)
 	    }
 	  break;
 
-	default:
+	case 'n':
+	case 'i':
 	  XINT (copy, i) = XINT (orig, i);
 	  break;
+
+	case 'w':
+	  XWINT (copy, i) = XWINT (orig, i);
+	  break;
+
+	case 's':
+	case 'S':
+	  XSTR (copy, i) = XSTR (orig, i);
+	  break;
+
+	default:
+	  abort ();
 	}
     }
   return copy;
@@ -880,7 +899,7 @@ check_attr_test (exp, is_const)
 
     case CONST_INT:
       /* Either TRUE or FALSE.  */
-      if (XINT (exp, 0))
+      if (XWINT (exp, 0))
 	return true_rtx;
       else
 	return false_rtx;
@@ -1644,10 +1663,10 @@ expand_units ()
 	     and busy cost.  Then make an attribute for use in the conflict
 	     function.  */
 	  op->condexp = check_attr_test (op->condexp, 0);
-	  op->busyexp = check_attr_value (op->busyexp, 0);
+	  op->busyexp = check_attr_value (op->busyexp, NULL_ATTR);
 	  str = attr_printf (strlen (unit->name) + 11, "*%s_case_%d",
 			     unit->name, op->num);
-	  make_internal_attr (str, make_canonical (0, op->busyexp));
+	  make_internal_attr (str, make_canonical (NULL_ATTR, op->busyexp));
 
 	  /* Make our adjustment to the two COND's being computed.  If we are
 	     the last operation class, place our values into the default of
@@ -3499,7 +3518,11 @@ write_test_expr (exp, in_comparison)
 
     /* Constant integer. */
     case CONST_INT:
-      printf ("%d", XINT (exp, 0));
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+      printf ("%d", XWINT (exp, 0));
+#else
+      printf ("%ld", XWINT (exp, 0));
+#endif
       break;
 
     /* A random C expression. */
@@ -4481,9 +4504,9 @@ main (argc, argv)
 
   /* Set up true and false rtx's */
   true_rtx = rtx_alloc (CONST_INT);
-  XINT (true_rtx, 0) = 1;
+  XWINT (true_rtx, 0) = 1;
   false_rtx = rtx_alloc (CONST_INT);
-  XINT (false_rtx, 0) = 0;
+  XWINT (false_rtx, 0) = 0;
   RTX_UNCHANGING_P (true_rtx) = RTX_UNCHANGING_P (false_rtx) = 1;
   RTX_INTEGRATED_P (true_rtx) = RTX_INTEGRATED_P (false_rtx) = 1;
 

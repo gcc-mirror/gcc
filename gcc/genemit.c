@@ -146,7 +146,7 @@ gen_exp (x)
 
   if (x == 0)
     {
-      printf ("0");
+      printf ("NULL_RTX");
       return;
     }
 
@@ -202,25 +202,27 @@ gen_exp (x)
 
     case CONST_INT:
       if (INTVAL (x) == 0)
-	{
-	  printf ("const0_rtx");
-	  return;
-	}
-      if (INTVAL (x) == 1)
-	{
-	  printf ("const1_rtx");
-	  return;
-	}
-      if (INTVAL (x) == -1)
-	{
-	  printf ("constm1_rtx");
-	  return;
-	}
-      if (INTVAL (x) == STORE_FLAG_VALUE)
-	{
-	  printf ("const_true_rtx");
-	  return;
-	}
+	printf ("const0_rtx");
+      else if (INTVAL (x) == 1)
+	printf ("const1_rtx");
+      else if (INTVAL (x) == -1)
+	printf ("constm1_rtx");
+      else if (INTVAL (x) == STORE_FLAG_VALUE)
+	printf ("const_true_rtx");
+      else
+	printf (
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT	     
+		"GEN_INT (%d)",
+#else
+		"GEN_INT (%ld)",
+#endif
+		INTVAL (x));
+      return;
+
+    case CONST_DOUBLE:
+      /* These shouldn't be written in MD files.  Instead, the appropriate
+	 routines in varasm.c should be called.  */
+      abort ();
     }
 
   printf ("gen_rtx (");
@@ -237,7 +239,7 @@ gen_exp (x)
       if (fmt[i] == 'e' || fmt[i] == 'u')
 	gen_exp (XEXP (x, i));
       else if (fmt[i] == 'i')
-	printf ("%u", (unsigned) XINT (x, i));
+	printf ("%u", XINT (x, i));
       else if (fmt[i] == 's')
 	printf ("\"%s\"", XSTR (x, i));
       else if (fmt[i] == 'E')
