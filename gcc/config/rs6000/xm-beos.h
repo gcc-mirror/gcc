@@ -72,10 +72,18 @@ extern void *alloca ();
 
 /* Define various things that the BeOS host has. */
 
+#ifndef HAVE_VPRINTF
 #define HAVE_VPRINTF
+#endif
+#ifndef HAVE_PUTENV
 #define HAVE_PUTENV
+#endif
+#ifndef HAVE_ATEXIT
 #define HAVE_ATEXIT
+#endif
+#ifndef HAVE_RENAME
 #define HAVE_RENAME
+#endif
 
 #define STDC_HEADERS 1
 
