@@ -1,3 +1,11 @@
+2001-11-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp/decl2.c (grok_alignof): Make sure that expression created
+	while processing a template do not have a type.
+	* cp/typeck.c (c_sizeof): Likewise.
+	(expr_sizeof): Likewise.
+	(c_alignof): Likewise.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in: Change all uses of $(manext) to $(man1ext).

@@ -1054,7 +1054,7 @@ grok_alignof (expr)
   int bestalign;
 
   if (processing_template_decl)
-    return build_min (ALIGNOF_EXPR, sizetype, expr);
+    return build_min_nt (ALIGNOF_EXPR, expr);
 
   if (TREE_CODE (expr) == COMPONENT_REF
       && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
