@@ -1,5 +1,5 @@
 /* libgcc routines for NEC V850.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1114,7 +1114,7 @@ __return_r29_r31:
 	.type	__save_r31,@function
 	/* Allocate space and save register 31 on the stack */
 	/* Also allocate space for the argument save area */
-	/* Called via:	jalr __save_r29_r31,r10 */
+	/* Called via:	jalr __save_r31,r10 */
 __save_r31:
 	addi	-20,sp,sp
 	st.w	r31,16[sp]
@@ -1130,7 +1130,7 @@ __return_r31:
 	ld.w	16[sp],r31
 	addi	20,sp,sp
 	jmp	[r31]
-	.size	__return_r29_r31,.-__return_r29_r31
+        .size   __return_r31,.-__return_r31
 #endif /* L_save_31c */
 
 #ifdef L_save_varargs
@@ -1267,3 +1267,378 @@ __restore_all_interrupt:
 	jmp	[r10]
 	.size	__restore_all_interrupt,.-__restore_all_interrupt
 #endif /* L_save_all_interrupt */
+
+	
+#if defined __v850e__
+#ifdef	L_callt_save_r2_r29
+	/* Put these functions into the call table area.  */
+	.call_table_text
+	
+	/* Allocate space and save registers 2, 20 .. 29 on the stack.  */
+	/* Called via:	callt ctoff(__callt_save_r2_r29).  */
+	.align	2
+.L_save_r2_r29:
+	add	-4, sp
+	st.w	r2, 0[sp]
+	prepare {r20 - r29}, 0
+	ctret
+
+	/* Restore saved registers, deallocate stack and return to the user.  */
+	/* Called via:	callt ctoff(__callt_return_r2_r29).  */
+	.align	2
+.L_return_r2_r29:
+	dispose 0, {r20-r29}
+	ld.w    0[sp], r2
+	add	4, sp
+	jmp     [r31]
+
+	/* Place the offsets of the start of these routines into the call table.  */
+	.call_table_data
+
+	.global	__callt_save_r2_r29
+	.type	__callt_save_r2_r29,@function
+__callt_save_r2_r29:	.short ctoff(.L_save_r2_r29)
+	
+	.global	__callt_return_r2_r29
+	.type	__callt_return_r2_r29,@function
+__callt_return_r2_r29:	.short ctoff(.L_return_r2_r29)
+	
+#endif /* L_callt_save_r2_r29 */
+
+#ifdef	L_callt_save_r2_r31
+	/* Put these functions into the call table area.  */
+	.call_table_text
+	
+	/* Allocate space and save registers 2 and 20 .. 29, 31 on the stack.  */
+	/* Also allocate space for the argument save area.  */
+	/* Called via:	callt ctoff(__callt_save_r2_r31).  */
+	.align	2
+.L_save_r2_r31:
+	add	-4, sp
+	st.w	r2, 0[sp]
+	prepare {r20 - r29, r31}, 4
+	ctret
+
+	/* Restore saved registers, deallocate stack and return to the user.  */
+	/* Called via:	callt ctoff(__callt_return_r2_r31).  */
+	.align	2
+.L_return_r2_r31:
+	dispose 4, {r20 - r29, r31}
+	ld.w    0[sp], r2
+	addi	4, sp, sp
+	jmp     [r31]
+
+	/* Place the offsets of the start of these routines into the call table.  */
+	.call_table_data
+
+	.global	__callt_save_r2_r31
+	.type	__callt_save_r2_r31,@function
+__callt_save_r2_r31:	.short ctoff(.L_save_r2_r31)
+	
+	.global	__callt_return_r2_r31
+	.type	__callt_return_r2_r31,@function
+__callt_return_r2_r31:	.short ctoff(.L_return_r2_r31)
+	
+#endif /* L_callt_save_r2_r31 */
+
+
+#ifdef L_callt_save_r6_r9
+	/* Put these functions into the call table area.  */
+	.call_table_text
+	
+	/* Save registers r6 - r9 onto the stack in the space reserved for them.
+	   Use by variable argument functions. 
+	   Called via:	callt ctoff(__callt_save_r6_r9).  */
+	.align	2
+.L_save_r6_r9:
+	mov	ep,r1
+	mov	sp,ep
+	sst.w	r6,0[ep]
+	sst.w	r7,4[ep]
+	sst.w	r8,8[ep]
+	sst.w	r9,12[ep]
+	mov	r1,ep
+	ctret
+
+	/* Place the offsets of the start of this routines into the call table.  */
+	.call_table_data
+
+	.global	__callt_save_r6_r9
+	.type	__callt_save_r6_r9,@function
+__callt_save_r6_r9:	.short ctoff(.L_save_r6_r9)
+#endif /* L_callt_save_r6_r9 */
+
+	
+#ifdef	L_callt_save_interrupt
+	/* Put this functions into the call table area */
+	.call_table_text
+	
+	/* Save registers r1, ep, gp, r10 on stack and load up with expected values.  */
+	/* Called via:	callt ctoff(__callt_save_interrupt).  */
+	.align	2
+.L_save_interrupt:
+        /* SP has already been moved before callt ctoff(_save_interrupt).  */
+        /* addi -24, sp, sp  */
+        st.w    ep,  0[sp]
+        st.w    gp,  4[sp]
+        st.w    r1,  8[sp]
+        /* R10 has alread been saved bofore callt ctoff(_save_interrupt).  */
+        /* st.w    r10, 12[sp]  */
+	mov	hilo(__ep),ep
+	mov	hilo(__gp),gp
+	ctret
+
+        /* Place the offsets of the start of the routine into the call table.  */
+        .call_table_data
+        .global __callt_save_interrupt
+        .type   __callt_save_interrupt,@function
+__callt_save_interrupt: .short ctoff(.L_save_interrupt)
+
+        .call_table_text
+
+	/* Restore saved registers, deallocate stack and return from the interrupt.  */
+        /* Called via:  callt ctoff(__callt_restore_itnerrupt).   */
+	.text
+	.align	2
+	.globl	__return_interrupt
+	.type	__return_interrupt,@function
+.L_return_interrupt:
+        ld.w    20[sp], r1
+        ldsr    r1,     ctpsw
+        ld.w    16[sp], r1
+        ldsr    r1,     ctpc
+        ld.w    12[sp], r10
+        ld.w     8[sp], r1
+        ld.w     4[sp], gp
+        ld.w     0[sp], ep
+        addi    24, sp, sp
+        reti
+
+	/* Place the offsets of the start of the routine into the call table.  */
+	.call_table_data
+
+        .global __callt_return_interrupt
+        .type   __callt_return_interrupt,@function
+__callt_return_interrupt:       .short ctoff(.L_return_interrupt)
+	
+#endif /* L_callt_save_interrupt */
+
+#ifdef L_callt_save_all_interrupt
+	/* Put this functions into the call table area.  */
+	.call_table_text
+	
+	/* Save all registers except for those saved in __save_interrupt.  */
+	/* Allocate enough stack for all of the registers & 16 bytes of space.  */
+	/* Called via:	callt ctoff(__callt_save_all_interrupt).  */
+	.align	2
+.L_save_all_interrupt:
+	addi	-60, sp, sp
+	mov	ep,  r1
+	mov	sp,  ep
+	sst.w	r2,  56[ep]
+	sst.w	r5,  52[ep]
+	sst.w	r6,  48[ep]
+	sst.w	r7,  44[ep]
+	sst.w	r8,  40[ep]
+	sst.w	r9,  36[ep]
+	sst.w	r11, 32[ep]
+	sst.w	r12, 28[ep]
+	sst.w	r13, 24[ep]
+	sst.w	r14, 20[ep]
+	sst.w	r15, 16[ep]
+	sst.w	r16, 12[ep]
+	sst.w	r17, 8[ep]
+	sst.w	r18, 4[ep]
+	sst.w	r19, 0[ep]
+	mov	r1,  ep
+
+	prepare {r20 - r29, r31}, 4
+	ctret	
+
+	/* Restore all registers saved in __save_all_interrupt.  */
+	/* & deallocate the stack space.  */
+	/* Called via:	callt ctoff(__callt_restore_all_interrupt).  */
+	.align 2
+.L_restore_all_interrupt:
+	dispose 4, {r20 - r29, r31}
+	
+	mov	ep, r1
+	mov	sp, ep
+	sld.w	0 [ep], r19
+	sld.w	4 [ep], r18
+	sld.w	8 [ep], r17
+	sld.w	12[ep], r16
+	sld.w	16[ep], r15
+	sld.w	20[ep], r14
+	sld.w	24[ep], r13
+	sld.w	28[ep], r12
+	sld.w	32[ep], r11
+	sld.w	36[ep], r9
+	sld.w	40[ep], r8
+	sld.w	44[ep], r7
+	sld.w	48[ep], r6
+	sld.w	52[ep], r5
+	sld.w	56[ep], r2
+	mov	r1, ep
+	addi	60, sp, sp
+	ctret
+
+	/* Place the offsets of the start of these routines into the call table.  */
+	.call_table_data
+
+	.global	__callt_save_all_interrupt
+	.type	__callt_save_all_interrupt,@function
+__callt_save_all_interrupt:	.short ctoff(.L_save_all_interrupt)
+	
+	.global	__callt_restore_all_interrupt
+	.type	__callt_restore_all_interrupt,@function
+__callt_restore_all_interrupt:	.short ctoff(.L_restore_all_interrupt)
+	
+#endif /* L_callt_save_all_interrupt */
+
+
+#define MAKE_CALLT_FUNCS( START )						\
+	.call_table_text							;\
+	.align	2								;\
+	/* Allocate space and save registers START .. r29 on the stack.  */	;\
+	/* Called via:	callt ctoff(__callt_save_START_r29).  */		;\
+.L_save_##START##_r29:								;\
+	prepare { START - r29 }, 0						;\
+	ctret									;\
+										;\
+	/* Restore saved registers, deallocate stack and return.  */		;\
+	/* Called via:	callt ctoff(__return_START_r29) */			;\
+	.align	2								;\
+.L_return_##START##_r29:							;\
+	dispose 0, { START - r29 }, r31						;\
+										;\
+	/* Place the offsets of the start of these funcs into the call table. */;\
+	.call_table_data							;\
+										;\
+	.global	__callt_save_##START##_r29					;\
+	.type	__callt_save_##START##_r29,@function				;\
+__callt_save_##START##_r29:	.short ctoff(.L_save_##START##_r29 )		;\
+										;\
+	.global	__callt_return_##START##_r29					;\
+	.type	__callt_return_##START##_r29,@function				;\
+__callt_return_##START##_r29:	.short ctoff(.L_return_##START##_r29 )	
+
+
+#define MAKE_CALLT_CFUNCS( START )						\
+	.call_table_text							;\
+	.align	2								;\
+	/* Allocate space and save registers START .. r31 on the stack.  */	;\
+	/* Called via:	callt ctoff(__callt_save_START_r31c).  */		;\
+.L_save_##START##_r31c:								;\
+	prepare { START - r29, r31}, 4						;\
+	ctret									;\
+										;\
+	/* Restore saved registers, deallocate stack and return.  */		;\
+	/* Called via:	callt ctoff(__return_START_r31c).  */			;\
+	.align	2								;\
+.L_return_##START##_r31c:							;\
+	dispose 4, { START - r29, r31}, r31					;\
+										;\
+	/* Place the offsets of the start of these funcs into the call table. */;\
+	.call_table_data							;\
+										;\
+	.global	__callt_save_##START##_r31c					;\
+	.type	__callt_save_##START##_r31c,@function				;\
+__callt_save_##START##_r31c:    .short ctoff(.L_save_##START##_r31c )		;\
+										;\
+	.global	__callt_return_##START##_r31c					;\
+	.type	__callt_return_##START##_r31c,@function				;\
+__callt_return_##START##_r31c:  .short ctoff(.L_return_##START##_r31c )	
+
+	
+#ifdef	L_callt_save_20
+	MAKE_CALLT_FUNCS (r20)
+#endif
+#ifdef	L_callt_save_21
+	MAKE_CALLT_FUNCS (r21)
+#endif
+#ifdef	L_callt_save_22
+	MAKE_CALLT_FUNCS (r22)
+#endif
+#ifdef	L_callt_save_23
+	MAKE_CALLT_FUNCS (r23)
+#endif
+#ifdef	L_callt_save_24
+	MAKE_CALLT_FUNCS (r24)
+#endif
+#ifdef	L_callt_save_25
+	MAKE_CALLT_FUNCS (r25)
+#endif
+#ifdef	L_callt_save_26
+	MAKE_CALLT_FUNCS (r26)
+#endif
+#ifdef	L_callt_save_27
+	MAKE_CALLT_FUNCS (r27)
+#endif
+#ifdef	L_callt_save_28
+	MAKE_CALLT_FUNCS (r28)
+#endif
+#ifdef	L_callt_save_29
+	MAKE_CALLT_FUNCS (r29)
+#endif
+
+#ifdef	L_callt_save_20c
+	MAKE_CALLT_CFUNCS (r20)
+#endif
+#ifdef	L_callt_save_21c
+	MAKE_CALLT_CFUNCS (r21)
+#endif
+#ifdef	L_callt_save_22c
+	MAKE_CALLT_CFUNCS (r22)
+#endif
+#ifdef	L_callt_save_23c
+	MAKE_CALLT_CFUNCS (r23)
+#endif
+#ifdef	L_callt_save_24c
+	MAKE_CALLT_CFUNCS (r24)
+#endif
+#ifdef	L_callt_save_25c
+	MAKE_CALLT_CFUNCS (r25)
+#endif
+#ifdef	L_callt_save_26c
+	MAKE_CALLT_CFUNCS (r26)
+#endif
+#ifdef	L_callt_save_27c
+	MAKE_CALLT_CFUNCS (r27)
+#endif
+#ifdef	L_callt_save_28c
+	MAKE_CALLT_CFUNCS (r28)
+#endif
+#ifdef	L_callt_save_29c
+	MAKE_CALLT_CFUNCS (r29)
+#endif
+
+	
+#ifdef	L_callt_save_31c
+	.call_table_text
+	.align	2
+	/* Allocate space and save register r31 on the stack.  */
+	/* Called via:	callt ctoff(__callt_save_r31c).  */
+.L_callt_save_r31c:
+	prepare {r31}, 4
+	ctret
+
+	/* Restore saved registers, deallocate stack and return.  */
+	/* Called via:	callt ctoff(__return_r31c).  */
+	.align	2
+.L_callt_return_r31c:
+	dispose 4, {r31}, r31
+	
+	/* Place the offsets of the start of these funcs into the call table.  */
+	.call_table_data
+
+	.global	__callt_save_r31c
+	.type	__callt_save_r31c,@function
+__callt_save_r31c:	.short ctoff(.L_callt_save_r31c)
+
+	.global	__callt_return_r31c
+	.type	__callt_return_r31c,@function
+__callt_return_r31c:	.short ctoff(.L_callt_return_r31c)		
+#endif
+
+#endif /* __v850e__ */
