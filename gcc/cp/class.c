@@ -4173,23 +4173,6 @@ finish_struct (t, attributes, warn_anon)
      tree t, attributes;
      int warn_anon;
 {
-  tree name = TYPE_NAME (t);
-
-  if (TREE_CODE (name) == TYPE_DECL)
-    {
-      extern int lineno;
-	  
-      DECL_SOURCE_FILE (name) = input_filename;
-      /* For TYPE_DECL that are not typedefs (those marked with a line
-	 number of zero, we don't want to mark them as real typedefs.
-	 If this fails one needs to make sure real typedefs have a
-	 previous line number, even if it is wrong, that way the below
-	 will fill in the right line number.  (mrs) */
-      if (DECL_SOURCE_LINE (name))
-	DECL_SOURCE_LINE (name) = lineno;
-      name = DECL_NAME (name);
-    }
-
   /* Append the fields we need for constructing signature tables.  */
   if (IS_SIGNATURE (t))
     append_signature_fields (t);

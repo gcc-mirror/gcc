@@ -1,9 +1,9 @@
 // Build don't link:
 
 template <class T, int i>
-struct K {
+struct K {  // ERROR - forward declaration
 	void f();
-};  // ERROR - forward declaration
+};
 
 template <class T>
 void

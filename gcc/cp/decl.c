@@ -5516,7 +5516,6 @@ tree
 make_typename_type (context, name)
      tree context, name;
 {
-  tree t;
   tree fullname;
 
   if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
@@ -5576,14 +5575,15 @@ make_typename_type (context, name)
 	}
       else
 	{
-	  if (IS_AGGR_TYPE (context))
-	    t = lookup_field (context, name, 0, 1);
-	  else
+          tree t;
+          
+	  if (!IS_AGGR_TYPE (context))
 	    {
 	      cp_error ("no type named `%#T' in `%#T'", name, context);
 	      return error_mark_node;
 	    }
 
+	  t = lookup_field (context, name, 0, 1);
 	  if (t)
 	    return TREE_TYPE (t);
 	}
@@ -5591,7 +5591,7 @@ make_typename_type (context, name)
 
   /* If the CONTEXT is not a template type, then either the field is
      there now or its never going to be.  */
-  if (!uses_template_parms (context) && !t)
+  if (!uses_template_parms (context))
     {
       cp_error ("no type named `%#T' in `%#T'", name, context);
       return error_mark_node;

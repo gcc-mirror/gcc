@@ -1297,6 +1297,10 @@ begin_class_definition (t)
   else if (TYPE_SIZE (t))
     duplicate_tag_error (t);
 
+  /* Update the location of the decl.  */
+  DECL_SOURCE_FILE (TYPE_NAME (t)) = input_filename;
+  DECL_SOURCE_LINE (TYPE_NAME (t)) = lineno;
+  
   if (TYPE_BEING_DEFINED (t))
     {
       t = make_lang_type (TREE_CODE (t));
