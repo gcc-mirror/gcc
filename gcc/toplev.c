@@ -3708,7 +3708,7 @@ main (argc, argv, envp)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK */
+#endif
 
   signal (SIGFPE, float_signal);
 
