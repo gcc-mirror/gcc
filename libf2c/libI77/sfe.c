@@ -32,9 +32,3 @@ integer e_wsfe(Void)
 	f__fmtbuf=NULL;
 	return n;
 }
-
-integer e_wdfe(Void)
-{
-	f__init = 1;
-	return en_fio();
-}

@@ -3,6 +3,8 @@
 /* compiler-dependent.   The #define below assumes signal.h declares */
 /* type SIG_PF for the signal function's second argument. */
 
+/* For some C++ compilers, "#define Sigarg_t ..." may be appropriate. */
+
 #include <signal.h>
 
 #ifndef Sigret_t
@@ -12,11 +14,7 @@
 #ifdef KR_headers
 #define Sigarg_t
 #else
-#ifdef __cplusplus
-#define Sigarg_t ...
-#else
 #define Sigarg_t int
-#endif
 #endif
 #endif /*Sigarg_t*/
 

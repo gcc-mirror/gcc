@@ -87,7 +87,9 @@ t_runc(alist *a)
 		}
 	if (!(bf = fopen(b->ufnm, f__r_mode[0]))
 	 || !(tf = tmpfile())) {
+#ifdef NON_UNIX_STDIO
  bad:
+#endif
 		rc = 1;
 		goto done;
 		}

@@ -2927,3 +2927,56 @@ Thu Jun 18 01:22:52 EDT 1998
 either a decimal point or an exponent field) are treated as errors
 when they appear as list input for integer data.  Compile lread.c with
 -DALLOW_FLOAT_IN_INTEGER_LIST_INPUT to restore the old behavior.
+
+Mon Aug 31 10:38:54 EDT 1998
+  formatdata.c: if possible, and assuming doubles must be aligned on
+double boundaries, use existing holes in DATA for common blocks to
+force alignment of the block.  For example,
+	block data
+	common /abc/ a, b
+	double precision a
+	integer b(2)
+	data b(2)/1/
+	end
+used to generate
+	struct {
+	    integer fill_1[3];
+	    integer e_2;
+	    doublereal e_3;
+	    } abc_ = { {0}, 1, 0. };
+and now generates
+	struct {
+	    doublereal fill_1[1];
+	    integer fill_2[1];
+	    integer e_3;
+	    } abc_ = { {0}, {0}, 1 };
+In the old generated C, e_3 was added to force alignment; in the new C,
+fill_1 does this job.
+
+Mon Sep  7 19:48:51 EDT 1998
+  libi77: move e_wdfe from sfe.c to dfe.c, where it was originally.
+Why did it ever move to sfe.c?
+
+Tue Sep  8 10:22:50 EDT 1998
+  Treat dreal as a synonym for dble unless -cd is specified on the
+command line.
+
+Sun Sep 13 22:23:41 EDT 1998
+  format.c: fix bug in writing prototypes under f2c -A ... *.P:
+under some circumstances involving external functions with no known
+type, a null pointer was passed to printf.
+
+Tue Oct 20 23:25:54 EDT 1998
+  Comments added to libf2c/README and libF77/README, pointing out
+the need to modify signal1.h on some systems.
+
+Wed Feb 10 22:59:52 EST 1999
+  defs.h lex.c: permit long names (up to at least roughly
+MAX_SHARPLINE_LEN = 1000 characters long) in #line lines (which only
+matters under -g).
+  fc: add -U option; recognize .so files.
+
+Sat Feb 13 10:18:27 EST 1999
+ libf2c: endfile.c, lread.c, signal1.h0: minor tweaks to make some
+(C++) compilers happier; f77_aloc.c: make exit_() visible to C++
+compilers.  Version strings not changed.
