@@ -1,0 +1,8 @@
+// { dg-do compile }
+static int bar ();
+static void barf ();
+
+bar {
+	barf (1); // { dg-error "mismatch" "barf" }
+	return -12;
+}

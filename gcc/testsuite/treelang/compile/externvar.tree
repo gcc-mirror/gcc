@@ -1,0 +1,4 @@
+// { dg-do compile }
+external_reference int bar = 0;  // { dg-error "initial" }
+
+static char barf = 1;

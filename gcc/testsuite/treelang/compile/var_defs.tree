@@ -24,6 +24,8 @@ condition
 
 first_nonzero
 {
+  automatic int y;
+  automatic int y;  // { dg-error "Duplicate" }
   if (arg5)
     {
       return arg5;
