@@ -2203,7 +2203,7 @@ for machine in $build $host $target; do
 	alpha*-*-linux-gnulibc1*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
+		tmake_file="t-linux t-linux-gnulibc1"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
@@ -2214,7 +2214,7 @@ for machine in $build $host $target; do
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		tmake_file="t-linux alpha/t-linux"
+		tmake_file="t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
@@ -4214,7 +4214,7 @@ for machine in $build $host $target; do
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
-		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
+		tmake_file="t-linux t-linux-gnulibc1"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
@@ -4223,7 +4223,7 @@ for machine in $build $host $target; do
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
-		tmake_file="t-linux sparc/t-linux"
+		tmake_file="t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
