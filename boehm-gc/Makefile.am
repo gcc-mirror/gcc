@@ -6,6 +6,8 @@
 
 AUTOMAKE_OPTIONS = cygnus
 
+SUBDIRS = include
+
 # Multilib support variables.
 MULTISRCTOP =
 MULTIBUILDTOP =
