@@ -316,9 +316,6 @@
 /* Define if you have the sys_siglist variable. */
 #undef HAVE_SYS_SIGLIST
 
-/* Define if you have the _system_configuration variable. */
-#undef HAVE__SYSTEM_CONFIGURATION
-
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP
    systems. This function is required for alloca.c support on those
    systems. */
@@ -330,6 +327,9 @@
         STACK_DIRECTION < 0 => grows toward lower addresses
         STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
+
+/* Define if you have the _system_configuration variable. */
+#undef HAVE__SYSTEM_CONFIGURATION
 
 /* Define if canonicalize_file_name is not declared in system header files. */
 #undef NEED_DECLARATION_CANONICALIZE_FILE_NAME
