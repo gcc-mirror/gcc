@@ -53,6 +53,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_FILE_START_1
 #define ASM_FILE_START_1(FILE)
+
+/* We want to be able to get DBX debugging information via -gstabs.  */
+
+#undef DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO
+
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
 /* longjmp may fail to restore the registers if called from the same
    function that called setjmp.  To compensate, the compiler avoids
