@@ -1749,7 +1749,18 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/config >/dev/null 2>&1 || cp $$file ../tmp/config; \
+	  if test -d $$file; then \
+	    mkdir ../tmp/config/$$file; \
+	    cd $$file; \
+	    for subfile in *[0-9a-zA-Z+]; do \
+	      ln $$subfile ../../tmp/config/$$file >/dev/null 2>&1 \
+	      || cp $$subfile ../../tmp/config/$$file; \
+	    done; \
+	    cd ..; \
+	  else \
+	    ln $$file ../tmp/config >/dev/null 2>&1 \
+	    || cp $$file ../tmp/config; \
+	  fi; \
 	done
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
