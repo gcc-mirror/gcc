@@ -1,1 +1,3 @@
 CC=/usr/local/bin/gcc -DUSE_C_ALLOCA -D__inline=
+# B option not supported on hpux.
+TAROUTOPTS = xpf

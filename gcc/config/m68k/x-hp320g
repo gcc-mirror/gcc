@@ -2,6 +2,9 @@
 CC=cc -Wc,-Nw2000 -Wc,-Ns2000 -Wc,-Ne700 -Wc,-Np300
 OLDCC=cc -Wc,-Nw2000 -Wc,-Ns2000 -Wc,-Ne700 -Wc,-Np300
 ALLOCA=alloca.o
+# B option not supported on hpux.
+TAROUTOPTS = xpf
+
 # For CCLIBFLAGS you might want to specify the switch that
 # forces only 68000 instructions to be used.
 
