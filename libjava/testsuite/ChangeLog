@@ -1,3 +1,7 @@
+1999-04-09  Warren Levy  <warrenl@cygnus.com>
+
+	* libjava.mauve/mauve.exp (KEYS): Default to libgcj.
+
 1999-04-09  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/plusplus.java: New file.
