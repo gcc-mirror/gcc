@@ -1,3 +1,10 @@
+2002-11-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* libjava.loader/loader.exp (gcj_loader_test_one): Fix typo in
+	'type' argument to libjava_tcompile.
+	(gcj_loader_run): Use libjava_tcompile instead of running
+	GCJ_UNDER_TEST directly.
+
 2002-11-05  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.exp: New file.
