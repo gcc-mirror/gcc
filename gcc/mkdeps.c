@@ -180,7 +180,7 @@ deps_calc_target (d, t)
      struct deps *d;
      const char *t;
 {
-  const char *o, *suffix;
+  char *o, *suffix;
 
   t = base_name (t);
   o = alloca (strlen (t) + 8);

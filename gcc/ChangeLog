@@ -1,3 +1,7 @@
+2000-03-05  Jason Merrill  <jason@casey.cygnus.com>
+
+	* mkdeps.c (deps_calc_target): Remove incorrect 'const'.
+
 2000-03-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.def (RTL_EXPR): Update documentation.
