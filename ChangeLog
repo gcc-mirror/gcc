@@ -1,3 +1,7 @@
+Fri Apr 27 14:39:25 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ltcf-cxx.sh: Add -nostdlib to HP-UX GCC archive_cmds.
+
 Fri Apr 27 10:23:04 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 	* ltcf-cxx.sh: Add -nostdlib to IRIX 6 archive_cmds.
