@@ -1787,7 +1787,7 @@ check_exception_handler_labels ()
 		  == NOTE_BLOCK_NUMBER (insn))
 		break;
 	    }
-	  if (handler == NULL_RTX)
+	  if (handler == NULL_RTX && !flag_syntax_only)
 	    warning ("region exists, no handler %d",
 		     NOTE_BLOCK_NUMBER (insn));
 	}
