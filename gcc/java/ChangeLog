@@ -1,3 +1,22 @@
+1999-07-25  Anthony Green  <green@cygnus.com>
+
+	* gjavah.c (print_stub): New function.
+	(METHOD_IS_NATIVE): New macro.
+	(print_mangled_classname): Make static.
+	(HANDLE_END_FIELD): Don't emit fields during stub generation.
+	(process_file): Perform stub generation.
+	(HANDLE_METHOD): Don't emit class decls during stub
+	generation.
+	(HANDLE_END_METHOD): Take into account stub generation.
+	(print_method_info): Handle stub generation.
+	(print_stub): New function.
+	(print_cxx_classname): Make signature consistant with others.
+	(help): Describe -stubs option.
+	(main): Create stub file.
+	(version): Use version.c.
+	(print_full_cxx_name): New function.
+	(print_c_decl): Use print_full_cxx_name.
+
 Thu Jul 22 12:41:12 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Handle MAX_EXPR.

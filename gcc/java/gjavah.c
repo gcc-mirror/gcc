@@ -33,6 +33,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "java-opcodes.h"
 
+#include "version.c"
+
 /* The output file.  */
 FILE *out = NULL;
 
@@ -88,6 +90,11 @@ static JCF_u2 last_access;
 #define METHOD_IS_FINAL(Class, Method) \
    (((Class) & ACC_FINAL) || ((Method) & (ACC_FINAL | ACC_PRIVATE)))
 
+/* Pass this macro the flags for a method.  It will return true if the
+   method is native.  */
+#define METHOD_IS_NATIVE(Method) \
+   ((Method) & ACC_NATIVE)
+
 /* We keep a linked list of all method names we have seen.  This lets
    us determine if a method name and a field name are in conflict.  */
 struct method_name
@@ -100,11 +107,15 @@ struct method_name
 /* List of method names we've seen.  */
 static struct method_name *method_name_list;
 
-static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
-static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
+static void print_field_info PROTO ((FILE*, JCF*, int, int, JCF_u2));
+static void print_mangled_classname PROTO ((FILE*, JCF*, const char*, int));
+static int  print_cxx_classname PROTO ((FILE*, const char*, JCF*, int));
+static void print_method_info PROTO ((FILE*, JCF*, int, int, JCF_u2));
 static void print_c_decl PROTO ((FILE*, JCF*, int, int, int, const char *));
-static void decompile_method PROTO ((FILE *, JCF *, int));
-static void add_class_decl PROTO ((FILE *, JCF *, JCF_u2));
+static void print_stub PROTO ((FILE*, JCF*, int, int, int, const char *));
+static void print_full_cxx_name PROTO ((FILE*, JCF*, int, int, int, const char *));
+static void decompile_method PROTO ((FILE*, JCF*, int));
+static void add_class_decl PROTO ((FILE*, JCF*, JCF_u2));
 
 static int java_float_finite PROTO ((jfloat));
 static int java_double_finite PROTO ((jdouble));
@@ -130,13 +141,13 @@ static int method_pass;
 #define HANDLE_END_FIELD()						      \
   if (field_pass)							      \
     {									      \
-      if (out)								      \
+      if (out && ! stubs)						      \
 	print_field_info (out, jcf, current_field_name,			      \
 			  current_field_signature,			      \
 			  current_field_flags);				      \
     }									      \
   else									      \
-    add_class_decl (out, jcf, current_field_signature);
+    if (! stubs) add_class_decl (out, jcf, current_field_signature);
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
@@ -151,14 +162,14 @@ static int method_printed = 0;
         print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
     }									      \
   else									      \
-    add_class_decl (out, jcf, SIGNATURE);
+    if (! stubs) add_class_decl (out, jcf, SIGNATURE);
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
 
 static int decompiled = 0;
 #define HANDLE_END_METHOD() \
-  if (out && method_printed) fputs (decompiled ? "\n" : ";\n", out);
+  if (out && method_printed) fputs (decompiled || stubs ? "\n" : ";\n", out);
 
 #include "jcf-reader.c"
 
@@ -562,24 +573,36 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	return;
     }
 
-  method_printed = 1;
-  generate_access (stream, flags);
-
-  fputs ("  ", out);
-  if ((flags & ACC_STATIC))
-    fputs ("static ", out);
-  else if (! METHOD_IS_FINAL (jcf->access_flags, flags))
+  if (! stubs)
     {
-      /* Don't print `virtual' if we have a constructor.  */
-      if (! is_init)
-	fputs ("virtual ", out);
-    }
-  print_c_decl (out, jcf, name_index, sig_index, is_init, override);
+      method_printed = 1;
 
-  if ((flags & ACC_ABSTRACT))
-    fputs (" = 0", out);
+      generate_access (stream, flags);
+      
+      fputs ("  ", out);
+      if ((flags & ACC_STATIC))
+	fputs ("static ", out);
+      else if (! METHOD_IS_FINAL (jcf->access_flags, flags))
+	{
+	  /* Don't print `virtual' if we have a constructor.  */
+	  if (! is_init)
+	    fputs ("virtual ", out);
+	}
+      print_c_decl (out, jcf, name_index, sig_index, is_init, override);
+      
+      if ((flags & ACC_ABSTRACT))
+	fputs (" = 0", out);
+      else
+	method_declared = 1;
+    }
   else
-    method_declared = 1;
+    {
+      if (METHOD_IS_NATIVE(flags)) 
+	{
+	  method_printed = 1;
+	  print_stub (out, jcf, name_index, sig_index, is_init, override);
+	}
+    }
 }
 
 /* Try to decompile a method body.  Right now we just try to handle a
@@ -791,40 +814,121 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
       /* Now print the name of the thing.  */
       if (need_space)
 	fputs (" ", stream);
-      if (name_override)
-	fputs (name_override, stream);
-      else if (name_index)
-	{
-	  /* Declare constructors specially.  */
-	  if (is_init)
-	    print_base_classname (stream, jcf, jcf->this_class);
-	  else
-	    print_name (stream, jcf, name_index);
-	}
+      print_full_cxx_name (stream, jcf, name_index, 
+			   signature_index, is_init, name_override);
+    }
+}
 
-      if (is_method)
+// Print the unqualified method name followed by the signature.
+static void
+DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, name_override),
+      FILE* stream AND JCF* jcf
+      AND int name_index AND int signature_index AND int is_init 
+      AND const char *name_override)
+{
+  int length = JPOOL_UTF_LENGTH (jcf, signature_index);
+  unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
+  register  unsigned char *str = str0;
+  unsigned char *limit = str + length;
+  int need_space = 0;
+  int is_method = str[0] == '(';
+  unsigned char *next;
+
+  if (name_override)
+    fputs (name_override, stream);
+  else if (name_index)
+    {
+      /* Declare constructors specially.  */
+      if (is_init)
+	print_base_classname (stream, jcf, jcf->this_class);
+      else
+	print_name (stream, jcf, name_index);
+    }
+  
+  if (is_method)
+    {
+      /* Have a method or a constructor.  Print signature pieces
+	 until done.  */
+      fputs (" (", stream);
+      str = str0 + 1;
+      while (str < limit && *str != ')')
 	{
-	  /* Have a method or a constructor.  Print signature pieces
-	     until done.  */
-	  fputs (" (", stream);
-	  str = str0 + 1;
-	  while (str < limit && *str != ')')
+	  next = decode_signature_piece (stream, str, limit, &need_space);
+	  if (! next)
 	    {
-	      next = decode_signature_piece (stream, str, limit, &need_space);
-	      if (! next)
-		{
-		  fprintf (stderr, "unparseable signature: `%s'\n", str0);
-		  found_error = 1;
-		  return;
-		}
-
-	      if (next < limit && *next != ')')
-		fputs (", ", stream);
-	      str = next;
+	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
+	      found_error = 1;
+	      return;
 	    }
-
-	  fputs (")", stream);
+	  
+	  if (next < limit && *next != ')')
+	    fputs (", ", stream);
+	  str = next;
 	}
+      
+      fputs (")", stream);
+    }
+}
+      
+static void
+DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
+		     name_override),
+      FILE* stream AND JCF* jcf
+      AND int name_index AND int signature_index
+      AND int is_init AND const char *name_override)
+{
+  if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
+    {
+      fprintf (stream, "<not a UTF8 constant>");
+      found_error = 1;
+    }
+  else
+    {
+      int length = JPOOL_UTF_LENGTH (jcf, signature_index);
+      unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
+      register  unsigned char *str = str0;
+      unsigned char *limit = str + length;
+      int need_space = 0;
+      int is_method = str[0] == '(';
+      unsigned char *next;
+
+      /* If printing a method, skip to the return signature and print
+	 that first.  However, there is no return value if this is a
+	 constructor.  */
+      if (is_method && ! is_init)
+	{
+	  while (str < limit)
+	    {
+	      int ch = *str++;
+	      if (ch == ')')
+		break;
+	    }
+	}
+
+      /* If printing a field or an ordinary method, then print the
+	 "return value" now.  */
+      if (! is_method || ! is_init)
+	{
+	  next = decode_signature_piece (stream, str, limit, &need_space);
+	  if (! next)
+	    {
+	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
+	      found_error = 1;
+	      return;
+	    }
+	}
+
+      /* Now print the name of the thing.  */
+      print_cxx_classname (stream, "\n", jcf, jcf->this_class);
+      fputs ("::", stream);
+      print_full_cxx_name (stream, jcf, name_index, 
+			   signature_index, is_init, name_override);
+      fputs ("\n{\n  JvFail (\"", stream);
+      print_cxx_classname (stream, "", jcf, jcf->this_class);
+      fputs ("::", stream);
+      print_full_cxx_name (stream, jcf, name_index, 
+			   signature_index, is_init, name_override);
+      fputs (" not implemented\");\n}\n\n", stream);
     }
 }
 
@@ -846,7 +950,7 @@ DEFUN(print_mangled_classname, (stream, jcf, prefix, index),
 static int
 print_cxx_classname (stream, prefix, jcf, index)
      FILE *stream;
-     char *prefix;
+     const char *prefix;
      JCF *jcf;
      int index;
 {
@@ -1204,30 +1308,49 @@ DEFUN(process_file, (jcf, out),
   jcf_parse_class (jcf);
 
   if (written_class_count++ == 0 && out)
-    fputs ("// DO NOT EDIT THIS FILE - it is machine generated -*- c++ -*-\n\n",
-	   out);
+    if (! stubs)
+      fputs ("// DO NOT EDIT THIS FILE - it is machine generated -*- c++ -*-\n\n",
+	     out);
+    else
+      {
+	fputs ("// This file was created by `gcjh -stubs'.  It is -*- c++ -*-.
+//
+// This file is intended to give you a head start on implementing native 
+// methods using CNI.  
+// Be aware: running `gcjh -stubs' once more for this class may overwrite any 
+// edits you have made to this file.\n\n", out);
+      }
 
   if (out)
     {
-      print_mangled_classname (out, jcf, "#ifndef __", jcf->this_class);
-      fprintf (out, "__\n");
-
-      print_mangled_classname (out, jcf, "#define __", jcf->this_class);
-      fprintf (out, "__\n\n");
-
-      /* We do this to ensure that inline methods won't be `outlined'
-	 by g++.  This works as long as method and fields are not
-	 added by the user.  */
-      fprintf (out, "#pragma interface\n");
-    }
-
-  if (jcf->super_class && out)
-    {
-      int super_length;
-      unsigned char *supername = super_class_name (jcf, &super_length);
-
-      fputs ("\n", out);
-      print_include (out, supername, super_length);
+      if (! stubs)
+	{
+	  print_mangled_classname (out, jcf, "#ifndef __", jcf->this_class);
+	  fprintf (out, "__\n");
+	  
+	  print_mangled_classname (out, jcf, "#define __", jcf->this_class);
+	  fprintf (out, "__\n\n");
+	  
+	  /* We do this to ensure that inline methods won't be `outlined'
+	     by g++.  This works as long as method and fields are not
+	     added by the user.  */
+	  fprintf (out, "#pragma interface\n");
+	  
+	  if (jcf->super_class)
+	    {
+	      int super_length;
+	      unsigned char *supername = super_class_name (jcf, &super_length);
+	      
+	      fputs ("\n", out);
+	      print_include (out, supername, super_length);
+	    }
+	}
+      else
+	{
+	  /* Strip off the ".class" portion of the name when printing
+	     the include file name.  */
+	  print_include (out, jcf->classname, strlen (jcf->classname) - 6);
+	}
     }
 
   /* We want to parse the methods first.  But we need to find where
@@ -1246,31 +1369,37 @@ DEFUN(process_file, (jcf, out),
   if (out)
     {
       fputs ("\n", out);
-      print_class_decls (out, jcf, jcf->this_class);
+
+      if (! stubs)
+	print_class_decls (out, jcf, jcf->this_class);
 
       for (i = 0; i < prepend_count; ++i)
 	fprintf (out, "%s\n", prepend_specs[i]);
       if (prepend_count > 0)
 	fputc ('\n', out);
-    }
-
-  if (out && ! print_cxx_classname (out, "class ", jcf, jcf->this_class))
-    {
-      fprintf (stderr, "class is of array type\n");
-      found_error = 1;
-      return;
-    }
-  if (out && jcf->super_class)
-    {
-      if (! print_cxx_classname (out, " : public ", jcf, jcf->super_class))
+      
+      if (! stubs)
 	{
-	  fprintf (stderr, "base class is of array type\n");
-	  found_error = 1;
-	  return;
+	  if (! print_cxx_classname (out, "class ", jcf, jcf->this_class))
+	    {
+	      fprintf (stderr, "class is of array type\n");
+	      found_error = 1;
+	      return;
+	    }
+	  if (jcf->super_class)
+	    {
+	      if (! print_cxx_classname (out, " : public ", 
+					 jcf, jcf->super_class))
+		{
+		  fprintf (stderr, "base class is of array type\n");
+		  found_error = 1;
+		  return;
+		}
+	    }
+
+	  fputs ("\n{\n", out);
 	}
     }
-  if (out)
-    fputs ("\n{\n", out);
 
   /* Now go back for second pass over methods and fields.  */
   JCF_SEEK (jcf, method_start);
@@ -1297,15 +1426,20 @@ DEFUN(process_file, (jcf, out),
       for (i = 0; i < add_count; ++i)
 	fprintf (out, "  %s\n", add_specs[i]);
 
-      fputs ("};\n", out);
+      if (! stubs)
+	fputs ("};\n", out);
 
       if (append_count > 0)
 	fputc ('\n', out);
       for (i = 0; i < append_count; ++i)
 	fprintf (out, "%s\n", append_specs[i]);
 
-      print_mangled_classname (out, jcf, "\n#endif /* __", jcf->this_class);
-      fprintf (out, "__ */\n");
+      if (!stubs)
+	{
+	  print_mangled_classname (out, jcf, 
+				   "\n#endif /* __", jcf->this_class);
+	  fprintf (out, "__ */\n");
+	}
     }
 }
 
@@ -1327,6 +1461,7 @@ help ()
   printf ("  -d DIRECTORY            Set output directory name\n");
   printf ("  --help                  Print this help, then exit\n");
   printf ("  -o FILE                 Set output file name\n");
+  printf ("  -stubs                  Generate a C++ implementation stub file\n");
   printf ("  -td DIRECTORY           Set temporary directory name\n");
   printf ("  -v, --verbose           Print extra information while running\n");
   printf ("  --version               Print version number, then exit\n");
@@ -1346,8 +1481,8 @@ static void
 version ()
 {
   /* FIXME: use version.c?  */
-  printf ("gcjh (GNU gcc) 0.0\n\n");
-  printf ("Copyright (C) 1998 Free Software Foundation, Inc.\n");
+  printf ("gcjh (%s)\n\n", version_string);
+  printf ("Copyright (C) 1998, 1999 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (0);
@@ -1548,7 +1683,7 @@ DEFUN(main, (argc, argv),
 	{
 	  int dir_len = strlen (output_directory);
 	  int i, classname_length = strlen (classname);
-	  current_output_file = (char*) ALLOC (dir_len + classname_length + 4);
+	  current_output_file = (char*) ALLOC (dir_len + classname_length + 5);
 	  strcpy (current_output_file, output_directory);
 	  if (dir_len > 0 && output_directory[dir_len-1] != '/')
 	    current_output_file[dir_len++] = '/';
@@ -1574,7 +1709,8 @@ DEFUN(main, (argc, argv),
 		  jcf_dependency_set_dep_file (current_output_file);
 		}
 	    }
-	  strcpy (current_output_file + dir_len, ".h");
+	  strcpy (current_output_file + dir_len, 
+		  stubs ? ".cc" : ".h");
 	  jcf_dependency_set_target (current_output_file);
 	  if (! suppress_output)
 	    {
@@ -1601,10 +1737,9 @@ DEFUN(main, (argc, argv),
 
 /* TODO:
 
- * Do whatever the javah -stubs flag does.
-
  * Emit "structure forward declarations" when needed.
 
  * Generate C headers, like javah
 
  */
+
