@@ -210,6 +210,7 @@ static int splay_tree_compare_integer_csts PARAMS ((splay_tree_key k1,
 						    splay_tree_key k2));
 static void warn_about_ambiguous_direct_bases PARAMS ((tree));
 static bool type_requires_array_cookie PARAMS ((tree));
+static bool contains_empty_class_p (tree);
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -3544,11 +3545,19 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
+	    tree field_offset;
+
+	    if (abi_version_at_least (2))
+	      field_offset = byte_position (field);
+	    else
+	      /* In G++ 3.2, DECL_FIELD_OFFSET was used.  */
+	      field_offset = DECL_FIELD_OFFSET (field);
+
 	    r = walk_subobject_offsets (TREE_TYPE (field),
 					f,
 					size_binop (PLUS_EXPR,
 						    offset,
-						    DECL_FIELD_OFFSET (field)),
+						    field_offset),
 					offsets,
 					max_offset,
 					/*vbases_p=*/1);
@@ -3720,10 +3729,17 @@ layout_empty_base (binfo, eoc, offsets, t)
   tree alignment;
   tree basetype = BINFO_TYPE (binfo);
   bool atend = false;
-  
+
   /* This routine should only be used for empty classes.  */
   my_friendly_assert (is_empty_class (basetype), 20000321);
   alignment = ssize_int (CLASSTYPE_ALIGN_UNIT (basetype));
+  
+  if (abi_version_at_least (2))
+    BINFO_OFFSET (binfo) = size_zero_node;
+  if (warn_abi && !integer_zerop (BINFO_OFFSET (binfo)))
+    warning ("offset of empty base `%T' may not be ABI-compliant and may"
+	     "change in a future version of GCC",
+	     BINFO_TYPE (binfo));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
@@ -4913,6 +4929,17 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
 					 DECL_FIELD_BIT_OFFSET (field),
 					 bitsize_unit_node)))
 	cp_warning_at ("offset of `%D' is not ABI-compliant and may change in a future version of GCC", 
+		       field);
+
+      /* G++ used to use DECL_FIELD_OFFSET as if it were the byte
+	 offset of the field.  */
+      if (warn_abi 
+	  && !tree_int_cst_equal (DECL_FIELD_OFFSET (field),
+				  byte_position (field))
+	  && contains_empty_class_p (TREE_TYPE (field)))
+	cp_warning_at ("`%D' contains empty classes which may cause base "
+		       "classes to be placed at different locations in a "
+		       "future version of GCC",
 		       field);
 
       /* If we needed additional padding after this field, add it
@@ -6369,6 +6396,30 @@ is_empty_class (type)
     return 0;
 
   return integer_zerop (CLASSTYPE_SIZE (type));
+}
+
+/* Returns true if TYPE contains an empty class.  */
+
+static bool
+contains_empty_class_p (tree type)
+{
+  if (is_empty_class (type))
+    return true;
+  if (CLASS_TYPE_P (type))
+    {
+      tree field;
+      int i;
+
+      for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); ++i)
+	if (contains_empty_class_p (TYPE_BINFO_BASETYPE (type, i)))
+	  return true;
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	if (contains_empty_class_p (TREE_TYPE (field)))
+	  return true;
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    return contains_empty_class_p (TREE_TYPE (type));
+  return false;
 }
 
 /* Find the enclosing class of the given NODE.  NODE can be a *_DECL or

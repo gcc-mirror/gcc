@@ -1,3 +1,10 @@
+2002-09-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp/class.c (contains_empty_class_p): New method.
+	(walk_subobject_offsets): Correct computation of field offset.
+	(layout_empty_base): Correct placement of emtpy base classes.
+	(layout_class_type): Warn about ABI changes.
+
 2002-09-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp/class.c (layout_virtual_bases): Do not round the size of the
