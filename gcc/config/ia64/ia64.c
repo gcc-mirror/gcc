@@ -3746,8 +3746,12 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	}
 
       /* If we ended up using just one location, just return that one loc, but
-	 change the mode back to the argument mode.  */
-      if (i == 1)
+	 change the mode back to the argument mode.  However, we can't do this
+	 when hfa_mode is XFmode and mode is TImode.  In that case, we would
+	 return a TImode reference to an FP reg, but FP regs can't hold TImode.
+	 We need the PARALLEL to make this work.  This can happen for a union
+	 containing a single __float80 member.  */
+      if (i == 1 && ! (hfa_mode == XFmode && mode == TImode))
 	return gen_rtx_REG (mode, REGNO (XEXP (loc[0], 0)));
       else
 	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
