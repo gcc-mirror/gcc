@@ -1,5 +1,15 @@
 2002-11-10  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/GridLayout.java (layoutContainer): Use tree lock.
+	(getSize): Likewise.
+	* java/awt/FlowLayout.java (layoutContainer): Use tree lock.
+	(getSize): Likewise.
+	* java/awt/BorderLayout.java (layoutContainer): Use tree lock.
+	(calcSize): Likewise.
+	* java/awt/CardLayout.java (getSize): Use tree lock.
+	(gotoComponent): Likewise.
+	(layoutContainer): Likewise.
+
 	* java/io/natFileDescriptorWin32.cc (read): Handle case where
 	count is 0.
 	* java/io/natFileDescriptorPosix.cc (read): Handle case where
