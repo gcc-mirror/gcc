@@ -424,10 +424,10 @@ namespace std
     template<typename _InputIter>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace(iterator __i1, iterator __i2, _InputIter __j1, 
-		 _InputIter __j2, input_iterator_tag)
+      _M_replace(iterator __i1, iterator __i2, _InputIter __k1, 
+		 _InputIter __k2, input_iterator_tag)
       {
-	basic_string __s(__j1, __j2);
+	basic_string __s(__k1, __k2);
 	return this->replace(__i1, __i2, __s._M_ibegin(), __s._M_iend());
       }
 
@@ -435,19 +435,19 @@ namespace std
     template<typename _ForwardIter>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace(iterator __i1, iterator __i2, _ForwardIter __j1, 
-		 _ForwardIter __j2, forward_iterator_tag)
+      _M_replace(iterator __i1, iterator __i2, _ForwardIter __k1, 
+		 _ForwardIter __k2, forward_iterator_tag)
       {
 	size_type __dold = __i2 - __i1;
 	size_type __dmax = this->max_size();
-	size_type __dnew = static_cast<size_type>(distance(__j1, __j2));
+	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 
 	__LENGTHERROR(__dmax <= __dnew);
 	size_type __off = __i1 - _M_ibegin();
 	_M_mutate(__off, __dold, __dnew);
 	// Invalidated __i1, __i2
 	if (__dnew)
-	  _S_copy_chars(_M_data() + __off, __j1, __j2);
+	  _S_copy_chars(_M_data() + __off, __k1, __k2);
 	
 	return *this;
       }
