@@ -1,3 +1,20 @@
+Tue Sep  7 21:55:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (alpha_eh_epilogue_sp_ofs): Remove.
+	(struct machine_function): Declare; add eh_epilogue_sp_ofs.
+	(INIT_EXPANDERS): Remove.
+	* alpha.c: Include ggc.h.
+	(alpha_eh_epilogue_sp_ofs, alpha_return_addr_rtx): Remove.
+	(alpha_init_machine_status, alpha_mark_machine_status): New.
+	(override_options): Install them.
+	(struct machine_function): Moved to alpha.h.
+	(alpha_save_machine_status, alpha_restore_machine_status): Remove.
+	(alpha_init_expanders): Remove.
+	(alpha_return_addr): Adjust to use current_function->machine.
+	(alpha_ra_ever_killed): Likewise.
+	(alpha_expand_epilogue): Likewise.
+	* alpha.md (eh_epilogue): Likewise.
+
 Wed Sep  8 14:34:42 1999  Ian Piumarta  <piumarta@prof.inria.fr>
 			  Melissa O'Neill  <oneill@cs.sfu.ca>
 			  Geoffrey Keating  <geoffk@cygnus.com>
