@@ -719,6 +719,151 @@ move_operand (op, mode)
 	  && ! (mips_split_addresses && mips_check_split (op, mode)));
 }
 
+/* Return true if OPERAND is valid as a source operand for movdi.
+   This accepts not only general_operand, but also sign extended
+   constants and registers.  We need to accept sign extended constants
+   in case a sign extended register which is used in an expression,
+   and is equivalent to a constant, is spilled.  */
+
+int
+movdi_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && (GET_MODE (XEXP (op, 0)) == SImode
+	  || (GET_CODE (XEXP (op, 0)) == CONST_INT
+	      && GET_MODE (XEXP (op, 0)) == VOIDmode))
+      && (register_operand (XEXP (op, 0), SImode)
+	  || immediate_operand (XEXP (op, 0), SImode)))
+    return 1;
+
+  return general_operand (op, mode);
+}
+
+/* Like register_operand, but when in 64 bit mode also accept a sign
+   extend of a 32 bit register, since the value is known to be already
+   sign extended.  */
+
+int
+se_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return register_operand (op, mode);
+}
+
+/* Like reg_or_0_operand, but when in 64 bit mode also accept a sign
+   extend of a 32 bit register, since the value is known to be already
+   sign extended.  */
+
+int
+se_reg_or_0_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return reg_or_0_operand (op, mode);
+}
+
+/* Like uns_arith_operand, but when in 64 bit mode also accept a sign
+   extend of a 32 bit register, since the value is known to be already
+   sign extended.  */
+
+int
+se_uns_arith_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return uns_arith_operand (op, mode);
+}
+
+/* Like arith_operand, but when in 64 bit mode also accept a sign
+   extend of a 32 bit register, since the value is known to be already
+   sign extended.  */
+
+int
+se_arith_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return arith_operand (op, mode);
+}
+
+/* Like nonmemory_operand, but when in 64 bit mode also accept a sign
+   extend of a 32 bit register, since the value is known to be already
+   sign extended.  */
+
+int
+se_nonmemory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return nonmemory_operand (op, mode);
+}
+
+/* Like nonimmediate_operand, but when in 64 bit mode also accept a
+   sign extend of a 32 bit register, since the value is known to be
+   already sign extended.  */
+
+int
+se_nonimmediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_64BIT
+      && mode == DImode
+      && GET_CODE (op) == SIGN_EXTEND
+      && GET_MODE (op) == DImode
+      && GET_MODE (XEXP (op, 0)) == SImode
+      && register_operand (XEXP (op, 0), SImode))
+    return 1;
+
+  return nonimmediate_operand (op, mode);
+}
+
 /* Return true if we split the address into high and low parts.  */
 
 /* ??? We should also handle reg+array somewhere.  We get four
@@ -1382,6 +1527,12 @@ mips_move_2words (operands, insn)
       code0 = GET_CODE (op0);
     }
 
+  if (code1 == SIGN_EXTEND)
+    {
+      op1 = XEXP (op1, 0);
+      code1 = GET_CODE (op1);
+    }
+
   while (code1 == SUBREG)
     {
       subreg_word1 += SUBREG_WORD (op1);
@@ -1389,6 +1540,12 @@ mips_move_2words (operands, insn)
       code1 = GET_CODE (op1);
     }
       
+  /* Sanity check.  */
+  if (GET_CODE (operands[1]) == SIGN_EXTEND
+      && code1 != REG
+      && code1 != CONST_INT)
+    abort ();
+
   if (code0 == REG)
     {
       int regno0 = REGNO (op0) + subreg_word0;
@@ -1567,7 +1724,9 @@ mips_move_2words (operands, insn)
 	{
 	  if (TARGET_64BIT)
 	    {
-	      if (HOST_BITS_PER_WIDE_INT < 64)
+	      if (GET_CODE (operands[1]) == SIGN_EXTEND)
+		ret = "li\t%0,%1\t\t# %X1";
+	      else if (HOST_BITS_PER_WIDE_INT < 64)
 		/* We can't use 'X' for negative numbers, because then we won't
 		   get the right value for the upper 32 bits.  */
 		ret = ((INTVAL (op1) < 0) ? "dli\t%0,%1\t\t\t# %X1"
@@ -3862,6 +4021,13 @@ print_operand (file, op, letter)
     }
 
   code = GET_CODE (op);
+
+  if (code == SIGN_EXTEND)
+    {
+      op = XEXP (op, 0);
+      code = GET_CODE (op);
+    }
+
   if (letter == 'C')
     switch (code)
       {
@@ -3919,9 +4085,14 @@ print_operand (file, op, letter)
 	fprintf (file, "%s,", reg_names[regnum]);
     }
 
-  else if (code == REG)
+  else if (code == REG || code == SUBREG)
     {
-      register int regnum = REGNO (op);
+      register int regnum;
+
+      if (code == REG)
+	regnum = REGNO (op);
+      else
+	regnum = true_regnum (op);
 
       if ((letter == 'M' && ! WORDS_BIG_ENDIAN)
 	  || (letter == 'L' && WORDS_BIG_ENDIAN)
@@ -5832,7 +6003,28 @@ mips_secondary_reload_class (class, mode, x, in_p)
 {
   int regno = -1;
 
-  if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+  if (GET_CODE (x) == SIGN_EXTEND)
+    {
+      int off = 0;
+
+      x = XEXP (x, 0);
+
+      /* We may be called with reg_renumber NULL from regclass.
+	 ??? This is probably a bug.  */
+      if (reg_renumber)
+	regno = true_regnum (x);
+      else
+	{
+	  while (GET_CODE (x) == SUBREG)
+	    {
+	      off += SUBREG_WORD (x);
+	      x = SUBREG_REG (x);
+	    }
+	  if (GET_CODE (x) == REG)
+	    regno = REGNO (x) + off;
+	}
+    }
+  else if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
   /* We always require a general register when copying anything to
