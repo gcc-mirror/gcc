@@ -372,7 +372,7 @@ h8300_emit_stack_adjustment (int sign, unsigned int size)
 {
   /* If the frame size is 0, we don't have anything to do.  */
   if (size == 0)
-    return 0;
+    return;
 
   /* H8/300 cannot add/subtract a large constant with a single
      instruction.  If a temporary register is available, load the
