@@ -276,6 +276,8 @@ extern rtx (*const insn_gen_function[]) ();
 extern optab add_optab;
 extern optab sub_optab;
 extern optab smul_optab;	/* Signed and floating-point multiply */
+extern optab smul_highpart_optab; /* Signed multiply, return high word */
+extern optab umul_highpart_optab;
 extern optab smul_widen_optab;	/* Signed multiply with result 
 				   one machine mode wider than args */
 extern optab umul_widen_optab;
