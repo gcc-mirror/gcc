@@ -32,6 +32,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define FORCE_INIT_SECTION_ALIGN do { asm (ALIGN_ASM_OP ## " 16"); } while (0)
 
+/* Add "sun" to the list of symbols defined for SVR4.  */
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES \
+  "-Di386 -Dunix -D__svr4__ -Dsun \
+   -Asystem(unix) -Asystem(svr4) -Acpu(i386) -Amachine(i386)"
+
 #undef CPP_SPEC
 #define CPP_SPEC "\
    %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
