@@ -6720,7 +6720,6 @@ expand_expr (exp, target, tmode, modifier)
 
     case CLEANUP_POINT_EXPR:
       {
-	extern int temp_slot_level;
 	/* Start a new binding layer that will keep track of all cleanup
 	   actions to be performed.  */
 	expand_start_bindings (0);
@@ -8086,6 +8085,47 @@ expand_expr (exp, target, tmode, modifier)
 	expand_eh_region_end (handler);
 
 	return op0;
+      }
+
+    case TRY_FINALLY_EXPR:
+      {
+	tree try_block = TREE_OPERAND (exp, 0);
+	tree finally_block = TREE_OPERAND (exp, 1);
+	rtx finally_label = gen_label_rtx ();
+	rtx done_label = gen_label_rtx ();
+	rtx return_link = gen_reg_rtx (Pmode);
+	tree cleanup = build (GOTO_SUBROUTINE_EXPR, void_type_node,
+			      (tree) finally_label, (tree) return_link);
+	TREE_SIDE_EFFECTS (cleanup) = 1;
+
+	/* Start a new binding layer that will keep track of all cleanup
+	   actions to be performed.  */
+	expand_start_bindings (0);
+
+	target_temp_slot_level = temp_slot_level;
+
+	expand_decl_cleanup (NULL_TREE, cleanup);
+	op0 = expand_expr (try_block, target, tmode, modifier);
+
+	preserve_temp_slots (op0);
+	expand_end_bindings (NULL_TREE, 0, 0);
+	emit_jump (done_label);
+	emit_label (finally_label);
+	expand_expr (finally_block, const0_rtx, VOIDmode, 0);
+	emit_indirect_jump (return_link);
+	emit_label (done_label);
+	return op0;
+      }
+
+      case GOTO_SUBROUTINE_EXPR:
+      {
+	rtx subr = (rtx) TREE_OPERAND (exp, 0);
+	rtx return_link = *(rtx *) &TREE_OPERAND (exp, 1);
+	rtx return_address = gen_label_rtx ();
+	emit_move_insn (return_link, gen_rtx_LABEL_REF (Pmode, return_address));
+	emit_jump (subr);
+	emit_label (return_address);
+	return const0_rtx;
       }
 
     case POPDCC_EXPR:
