@@ -1,3 +1,8 @@
+1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* invoke.texi (C Dialect Options): Remove -flang-c9x, add -std
+	documentation.
+	
 1999-12-06  David S. Miller  <davem@redhat.com>
 
 	* combine.c (check_promoted_subreg): Do not conditionalize this	upon
