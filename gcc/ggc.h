@@ -165,3 +165,36 @@ void mark_expr_status PROTO ((struct expr_status *));
 void mark_stmt_status PROTO ((struct stmt_status *));
 void mark_varasm_status PROTO ((struct varasm_status *));
 void mark_optab PROTO ((void *));
+
+/* Statistics.  */
+
+/* This structure contains the statistics common to all collectors.
+   Particular collectors can extend this structure.  */
+typedef struct ggc_statistics 
+{
+  /* The Ith element is the number of nodes allocated with code I.  */
+  unsigned num_trees[256];
+  /* The Ith element is the number of bytes allocated by nodes with 
+     code I.  */
+  size_t size_trees[256];
+  /* The Ith element is the number of nodes allocated with code I.  */
+  unsigned num_rtxs[256];
+  /* The Ith element is the number of bytes allocated by nodes with 
+     code I.  */
+  size_t size_rtxs[256];
+  /* The total number of tree nodes allocated.  */
+  unsigned total_num_trees;
+  /* The total size of the tree nodes allocated.  */
+  size_t total_size_trees;
+  /* The total number of RTL nodes allocated.  */
+  unsigned total_num_rtxs;
+  /* The total size of the RTL nodes allocated.  */
+  size_t total_size_rtxs;
+} ggc_statistics;
+
+/* Return the number of bytes allocated at the indicated address.  */
+size_t ggc_get_size PROTO ((void *));
+
+/* Used by the various collectors to gather and print statistics that
+   do not depend on the collector in use.  */
+void ggc_print_statistics PROTO ((FILE *, ggc_statistics *));

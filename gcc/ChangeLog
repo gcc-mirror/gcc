@@ -1,3 +1,19 @@
+Thu Oct 28 21:16:35 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc.h (struct ggc_statistics): New type.
+	(ggc_get_size): New function.
+	(ggc_print_statistics): Likewise.
+	* ggc-common.c (ggc_stats): New variable.
+	(ggc_mark_rtx_children): Keep statistics.
+	(ggc_mark_tree_children): Likewise.
+	(ggc_print_statistics): New function.
+	* ggc-page.c (struct globals): Add bytes_mapped field.
+	(alloc_anon): Update it.
+	(release_pages): Likewise.
+	(ggc_get_size): New function.
+	(ggc_page_print_statistics): New function.
+	* ggc-simple.c (ggc_get_size): New function.
+	
 Fri Oct 29 06:32:44 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* flow.c (propagate_block): When the last reference to a label

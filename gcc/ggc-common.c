@@ -30,6 +30,9 @@
 #include "varray.h"
 #include "ggc.h"
 
+/* Statistics about the allocation.  */
+static ggc_statistics *ggc_stats;
+
 static void ggc_mark_rtx_ptr PARAMS ((void *));
 static void ggc_mark_tree_ptr PARAMS ((void *));
 static void ggc_mark_tree_varray_ptr PARAMS ((void *));
@@ -211,10 +214,18 @@ ggc_mark_rtx_children (r)
 {
   const char *fmt;
   int i;
+  enum rtx_code code = GET_CODE (r);
+
+  /* Collect statistics, if appropriate.  */
+  if (ggc_stats)
+    {
+      ++ggc_stats->num_rtxs[(int) code];
+      ggc_stats->size_rtxs[(int) code] += ggc_get_size (r);
+    }
 
   /* ??? If (some of) these are really pass-dependant info, do we have
      any right poking our noses in?  */
-  switch (GET_CODE (r))
+  switch (code)
     {
     case JUMP_INSN:
       ggc_mark_rtx (JUMP_LABEL (r));
@@ -289,12 +300,21 @@ void
 ggc_mark_tree_children (t)
      tree t;
 {
+  enum tree_code code = TREE_CODE (t);
+
+  /* Collect statistics, if appropriate.  */
+  if (ggc_stats)
+    {
+      ++ggc_stats->num_trees[(int) code];
+      ggc_stats->size_trees[(int) code] += ggc_get_size (t);
+    }
+
   /* Bits from common.  */
   ggc_mark_tree (TREE_TYPE (t));
   ggc_mark_tree (TREE_CHAIN (t));
 
   /* Some nodes require special handling.  */
-  switch (TREE_CODE (t))
+  switch (code)
     {
     case TREE_LIST:
       ggc_mark_tree (TREE_PURPOSE (t));
@@ -349,7 +369,7 @@ ggc_mark_tree_children (t)
     }
   
   /* But in general we can handle them by class.  */
-  switch (TREE_CODE_CLASS (TREE_CODE (t)))
+  switch (TREE_CODE_CLASS (code))
     {
     case 'd': /* A decl node.  */
       ggc_mark_string (DECL_SOURCE_FILE (t));
@@ -468,4 +488,75 @@ ggc_alloc_string (contents, length)
   string[length] = 0;
 
   return string;
+}
+
+/* Print statistics that are independent of the collector in use.  */
+
+void
+ggc_print_statistics (stream, stats)
+     FILE *stream;
+     ggc_statistics *stats;
+{
+  int code;
+
+  /* Set the pointer so that during collection we will actually gather
+     the statistics.  */
+  ggc_stats = stats;
+
+  /* Then do one collection to fill in the statistics.  */
+  ggc_collect ();
+
+  /* Total the statistics.  */
+  for (code = 0; code < MAX_TREE_CODES; ++code)
+    {
+      stats->total_num_trees += stats->num_trees[code];
+      stats->total_size_trees += stats->size_trees[code];
+    }
+  for (code = 0; code < NUM_RTX_CODE; ++code)
+    {
+      stats->total_num_rtxs += stats->num_rtxs[code];
+      stats->total_size_rtxs += stats->size_rtxs[code];
+    }
+
+  /* Print the statistics for trees.  */
+  fprintf (stream, "%-22s%-16s%-16s%-7s\n", "Code", 
+	   "Number", "Bytes", "% Total");
+  for (code = 0; code < MAX_TREE_CODES; ++code)
+    if (ggc_stats->num_trees[code]) 
+      {
+	fprintf (stream, "%s%*s%-15u %-15u %7.3f\n", 
+		 tree_code_name[code],
+		 22 - strlen (tree_code_name[code]), "",
+		 ggc_stats->num_trees[code],
+		 ggc_stats->size_trees[code],
+		 (100 * ((double) ggc_stats->size_trees[code]) 
+		  / ggc_stats->total_size_trees));
+      }
+  fprintf (stream,
+	   "%-22s%-15u %-15u\n", "Total",
+	   ggc_stats->total_num_trees,
+	   ggc_stats->total_size_trees);
+
+  /* Print the statistics for RTL.  */
+  fprintf (stream, "\n%-22s%-16s%-16s%-7s\n", "Code", 
+	   "Number", "Bytes", "% Total");
+  for (code = 0; code < NUM_RTX_CODE; ++code)
+    if (ggc_stats->num_rtxs[code]) 
+      {
+	fprintf (stream, "%s%*s%-15u %-15u %7.3f\n", 
+		 rtx_name[code],
+		 22 - strlen (rtx_name[code]), "",
+		 ggc_stats->num_rtxs[code],
+		 ggc_stats->size_rtxs[code],
+		 (100 * ((double) ggc_stats->size_rtxs[code]) 
+		  / ggc_stats->total_size_rtxs));
+      }
+  fprintf (stream,
+	   "%-22s%-15u %-15u\n", "Total",
+	   ggc_stats->total_num_rtxs,
+	   ggc_stats->total_size_rtxs);
+
+
+  /* Don't gather statistics any more.  */
+  ggc_stats = NULL;
 }
