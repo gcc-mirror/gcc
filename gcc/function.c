@@ -168,6 +168,11 @@ rtx current_function_arg_offset_rtx;
 
 int current_function_varargs;
 
+/* Nonzero if current function uses stdarg.h or equivalent.
+   Zero for functions that use varargs.h.  */
+
+int current_function_stdarg;
+
 /* Quantities of various kinds of registers
    used for the current function's args.  */
 
@@ -487,6 +492,7 @@ push_function_context_to (context)
   p->pretend_args_size = current_function_pretend_args_size;
   p->arg_offset_rtx = current_function_arg_offset_rtx;
   p->varargs = current_function_varargs;
+  p->stdarg = current_function_stdarg;
   p->uses_const_pool = current_function_uses_const_pool;
   p->uses_pic_offset_table = current_function_uses_pic_offset_table;
   p->internal_arg_pointer = current_function_internal_arg_pointer;
@@ -563,6 +569,7 @@ pop_function_context_from (context)
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
   current_function_varargs = p->varargs;
+  current_function_stdarg = p->stdarg;
   current_function_uses_const_pool = p->uses_const_pool;
   current_function_uses_pic_offset_table = p->uses_pic_offset_table;
   current_function_internal_arg_pointer = p->internal_arg_pointer;
@@ -3169,6 +3176,8 @@ assign_parms (fndecl, second_time)
        && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	   != void_type_node));
 
+  current_function_stdarg = stdarg;
+
   /* If the reg that the virtual arg pointer will be translated into is
      not a fixed reg or is the stack pointer, make a copy of the virtual
      arg pointer, and address parms via the copy.  The frame pointer is
@@ -4834,8 +4843,9 @@ init_function_start (subr, filename, line)
   /* Indicate we have no need of a frame pointer yet.  */
   frame_pointer_needed = 0;
 
-  /* By default assume not varargs.  */
+  /* By default assume not varargs or stdarg.  */
   current_function_varargs = 0;
+  current_function_stdarg = 0;
 }
 
 /* Indicate that the current function uses extra args
