@@ -1180,7 +1180,7 @@ __return_interrupt:
 	ld.w	0[sp],ep
 	ld.w	4[sp],gp
 	ld.w	8[sp],r1
- 	ld.w	12[sp],r10
+	ld.w	12[sp],r10
 	add	16,sp
 	reti
 	.size	__return_interrupt,.-__return_interrupt
