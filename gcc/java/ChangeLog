@@ -1,3 +1,7 @@
+Tue Jan  5 22:15:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Make-lang.in ($(GCJ).o): Depend on prefix.h.
+
 Tue Dec 22 11:25:19 1998  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (process_jvm_instruction):  Do load_type_state after JSR.
