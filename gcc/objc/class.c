@@ -253,11 +253,7 @@ class_pose_as (Class* impostor, Class* super_class)
   new_class->instance_size = super_class->instance_size;
   new_class->ivars = super_class->ivars;
   new_class->methods = impostor->methods;
-#ifdef OBJC_SPARSE_LOOKUP
   new_class->dtable = impostor->dtable;
-#else
-  new_class->cache = impostor->cache;
-#endif
 
   /* Create the impostor meta class.  */
   new_meta_class->class_pointer = super_class->class_pointer->class_pointer;
@@ -268,11 +264,7 @@ class_pose_as (Class* impostor, Class* super_class)
   new_meta_class->instance_size = super_class->class_pointer->instance_size;
   new_meta_class->ivars = super_class->class_pointer->ivars;
   new_meta_class->methods = impostor->class_pointer->methods;
-#ifdef OBJC_SPARSE_LOOKUP
   new_meta_class->dtable = impostor->class_pointer->dtable;
-#else
-  new_meta_class->cache = impostor->class_pointer->cache;
-#endif
 
   /* Now change super/subclass links of all related classes.  This is rather
      complex, since we have both super_class link, and subclass_list for the
@@ -356,21 +348,3 @@ class_pose_as (Class* impostor, Class* super_class)
   return new_class;
 }
 
-#ifdef OBJC_HASH_LOOKUP
-__objc_class_hash_tables_size ()
-{
-  node_ptr node;
-  Class* class1;
-  int total = 0;
-
-  for (node = hash_next (__objc_class_hash, NULL); node;
-       node = hash_next (__objc_class_hash, node))
-    {
-      Class* class1 = node->value;
-      total += (class1->cache->mask)*sizeof(struct objc_bucket);
-      total += sizeof(struct objc_cache);
-    }
-
-  return total;
-}
-#endif

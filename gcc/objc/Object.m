@@ -197,7 +197,10 @@ extern int errno;
       }
     }
 
-  return NO;
+  if ([self superClass])
+    return [[self superClass] conformsTo: aProtocol];
+  else
+    return NO;
 }
 
 - (IMP)methodFor:(SEL)aSel

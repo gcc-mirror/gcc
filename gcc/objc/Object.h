@@ -26,35 +26,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __object_INCLUDE_GNU
 #define __object_INCLUDE_GNU
 
-#ifndef __objc_INCLUDE_GNU
-
-/* This is the minimal set of definitions, which may be sufficient 
-   for simple programs not interacting heavily with the runtime */
-
-typedef char  BOOL;
-#define YES   (BOOL)1
-#define NO    (BOOL)0
-
-typedef void* SEL;
-
-typedef struct objc_object {
-  struct objc_class*  class_pointer;
-} *id;
-
-typedef id (*IMP)(id, SEL, ...); 
-
-typedef struct objc_class Class;
-typedef struct objc_class MetaClass;
-
-#define nil (id)0                               /* id of Nil instance */
-#define Nil (Class*)0                          /* id of Nil class */
-typedef char *STR;                              /* String alias */
-
-@class Protocol;
-typedef struct objc_typed_stream TypedStream;
-typedef void* arglist_t;
-
-#endif /* not __objc_INCLUDE_GNU */
+#include <objc/objc.h>
+#include <objc/typedstream.h>
 
 /*
  * All classes are derived from Object.  As such,

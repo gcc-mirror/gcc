@@ -25,23 +25,10 @@ You should have received a copy of the GNU General Public License along with
    covered by the GNU General Public License.  */
 
 #include "runtime.h"
+#include "sarray.h"
 
-#ifdef OBJC_SPARSE_LOOKUP
-const char* __objc_sparse_lookup_id = "Method lookup uses sparse arrays";
-#endif
-
-#ifdef OBJC_HASH_LOOKUP
-const char* __objc_hash_lookup_id = "Method lookup uses hash caching";
-#endif
-
-#ifdef OBJC_HASH_LOOKUP
-#include "objc/cache.h"
-#endif
-
-#ifdef OBJC_SPARSE_LOOKUP
 /* The uninstalled dispatch table */
 struct sarray* __objc_uninstalled_dtable = 0;
-#endif
 
 /* Send +initialize to class */
 static void __objc_send_initialize(Class*);
@@ -49,9 +36,7 @@ static void __objc_send_initialize(Class*);
 static void __objc_install_dispatch_table_for_class (Class*);
 
 /* Forward declare some functions */
-#ifdef OBJC_SPARSE_LOOKUP
 static void __objc_init_install_dtable(id, SEL);
-#endif
 static id __objc_missing_method(id, SEL, ...);
 static Method_t search_for_method_in_hierarchy (Class* class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
@@ -67,14 +52,10 @@ nil_method(id receiver, SEL op, ...)
 __inline__ IMP
 get_imp (Class* class, SEL sel)
 {
-#ifdef OBJC_SPARSE_LOOKUP
   void* res = sarray_get (class->dtable, (size_t) sel);
   if(res == __objc_init_install_dtable)
     __objc_install_dispatch_table_for_class (class);
   return sarray_get (class->dtable, (size_t) sel);
-#else
-  return cache_get (class, sel);
-#endif
 }
 
 __inline__ BOOL
@@ -91,11 +72,7 @@ __inline__ IMP
 objc_msg_lookup(id receiver, SEL op)
 {
   if(receiver)
-#ifdef OBJC_HASH_LOOKUP
-    return cache_get(receiver->class_pointer, op);
-#else
     return sarray_get(receiver->class_pointer->dtable, (sidx)op);
-#endif
   else
     return nil_method;
 }
@@ -127,13 +104,10 @@ objc_msg_sendv(id object, SEL op, size_t frame_size, arglist_t arg_frame)
 
 void __objc_init_dispatch_tables()
 {
-#ifdef OBJC_SPARSE_LOOKUP  
   __objc_uninstalled_dtable
     = sarray_new(200, __objc_init_install_dtable);
-#endif
 }
 
-#ifdef OBJC_SPARSE_LOOKUP
 /* This one is a bit hairy.  This function is installed in the 
    premature dispatch table, and thus called once for each class,
    namely when the very first message is send to it.  */
@@ -187,18 +161,13 @@ allready_initialized:
   __builtin_return (result);
   
 }
-#endif
 
 /* Install dummy table for class which causes the first message to
    that class (or instances hereof) to be initialized properly */
 void __objc_install_premature_dtable(Class* class)
 {
-#ifdef OBJC_SPARSE_LOOKUP
   assert(__objc_uninstalled_dtable);
   class->dtable = __objc_uninstalled_dtable;
-#else
-  class->cache = (Cache_t)__objc_xcalloc(1, sizeof(Cache));
-#endif
 }   
 
 /* Send +initialize to class if not already done */
@@ -231,7 +200,6 @@ static void __objc_send_initialize(Class* class)
 static void
 __objc_install_dispatch_table_for_class (Class* class)
 {
-#ifdef OBJC_SPARSE_LOOKUP
   Class* super;
   MethodList_t mlist;
   int counter;
@@ -267,37 +235,21 @@ __objc_install_dispatch_table_for_class (Class* class)
           counter -= 1;
         }
     }
-#endif
 }
 
 void __objc_update_dispatch_table_for_class (Class* class)
 {
   Class* next;
-#ifdef OBJC_SPARSE_LOOKUP
   struct sarray* save;
-#else
-  Cache_t save;
-#endif
 
   /* not yet installed -- skip it */
-#ifdef OBJC_SPARSE_LOOKUP
   if (class->dtable == __objc_uninstalled_dtable) 
-#else
-  if (class->cache->mask == 0)
-#endif
     return;
 
-#ifdef OBJC_SPARSE_LOOKUP
   save = class->dtable;
   __objc_install_premature_dtable (class);
   sarray_free (save);
 
-#else
-  save = class->cache;
-  __objc_install_premature_dtable (class);
-  free(save);
-
-#endif
 
   if (class->subclass_list)	/* Traverse subclasses */
     for (next = class->subclass_list; next; next = next->sibling_class)
@@ -474,108 +426,24 @@ void __objc_print_dtable_stats()
 {
   int total = 0;
   printf("memory usage: (%s)\n",
-#ifdef OBJC_SPARSE_LOOKUP
 #ifdef OBJC_SPARSE2
 	 "2-level sparse arrays"
 #else
 	 "3-level sparse arrays"
 #endif
-#else
-	 "hash-cache"
-#endif
 	 );
 
-#ifdef OBJC_SPARSE_LOOKUP
   printf("arrays: %d = %d bytes\n", narrays, narrays*sizeof(struct sarray));
   total += narrays*sizeof(struct sarray);
-#ifdef OBJC_SPARSE3
-  printf("indices: %d = %d bytes\n", nindices, nindices*sizeof(struct sindex));
-  total += nindices*sizeof(struct sindex);
-#endif
   printf("buckets: %d = %d bytes\n", nbuckets, nbuckets*sizeof(struct sbucket));
   total += nbuckets*sizeof(struct sbucket);
 
   printf("idxtables: %d = %d bytes\n", idxsize, idxsize*sizeof(void*));
   total += idxsize*sizeof(void*);
-#else /* HASH_LOOKUP */
-  total = __objc_class_hash_tables_size ();
-#endif
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);
   printf("===================================\n");
 }
 
-#ifdef OBJC_HASH_LOOKUP
-static Cache_t __objc_cache_insert(Cache_t cache, SEL op, IMP imp);
-
-static Cache_t
-__objc_double_cache(Cache_t cache)
-{
-  int i;
-  Cache_t newc = (Cache_t)__objc_xcalloc(1, sizeof(Cache)
-					 +(sizeof(Cache)*2*(cache->mask+1)));
-  newc->occupied = cache->occupied;
-  newc->mask = ((cache->mask)<<1) | 1;
-  for(i=0; i <= cache->mask; i++)
-    newc = __objc_cache_insert(newc,
-			       cache->buckets[i].method_selector,
-			       cache->buckets[i].method_imp);
-  free(cache);
-  return newc;
-}
-
-
-static Cache_t
-__objc_cache_insert(Cache_t cache, SEL op, IMP imp)
-{
-  int index = ((size_t)op)&(cache)->mask;
-
-  if(op == 0)
-    return cache;
-
-  do
-    {
-      if((cache)->buckets[index].method_selector == 0)
-	{
-	  (cache)->buckets[index].method_selector = op;
-	  (cache)->buckets[index].method_imp = imp;
-	  (cache)->occupied += 1;
-	  return cache;
-	}
-    }
-  while (--index >= 0);
-    
-  cache = __objc_double_cache(cache);
-  return __objc_cache_insert(cache, op, imp);
-}
-
-void* 
-__objc_cache_miss(Class* class, SEL op) 
-{
-  Method_t m;
-  Cache_t cache = class->cache;
-  
-  if(!CLS_ISRESOLV(class))
-    __objc_resolve_class_links();
-
-  m = search_for_method_in_hierarchy(class, op);
-
-  if(!CLS_ISINITIALIZED(class))
-    if(CLS_ISMETA(class))
-      __objc_send_initialize(objc_get_class(class->name));
-    else
-      __objc_send_initialize(class);
-
-  if(m == NULL)
-    return __objc_missing_method;
-
-  if((cache->occupied+2)*2 > cache->mask)
-    class->cache = __objc_double_cache(cache);
-  
-  class->cache = __objc_cache_insert(class->cache, op, m->method_imp);
-  return m->method_imp;
-}
-
-#endif
 
 

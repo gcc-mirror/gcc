@@ -28,11 +28,10 @@ You should have received a copy of the GNU General Public License along with
 #define __objc_runtime_INCLUDE_GNU
 
 #include <stdio.h>
-#include <memory.h>
 #include <ctype.h>
 
-#include "gstdarg.h"		/* for varargs and va_list's */
-#include "gstddef.h"		/* so noone else will get system versions */
+#include "stdarg.h"		/* for varargs and va_list's */
+#include "stddef.h"		/* so noone else will get system versions */
 #include "assert.h"
 
 #include "objc/objc.h"		/* core data types */

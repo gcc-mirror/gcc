@@ -109,10 +109,8 @@ sel_is_mapped (SEL selector)
   return ((idx > 0) && (idx <= __objc_selector_max_index));
 }
 
-#ifdef OBJC_SPARSE_LOOKUP
 /* The uninstalled dispatch table */
 extern struct sarray* __objc_uninstalled_dtable;
-#endif
 
 /* Store the passed selector name in the selector record and return its
    selector value (value returned by sel_get_uid). */
@@ -134,9 +132,7 @@ sel_register_name (const char *sel)
   sarray_at_put_safe (__objc_selector_array, i, (void *) sel);
   hash_add (&__objc_selector_hash, (void *) sel, (void *) i);
 
-#ifdef OBJC_SPARSE_LOOKUP
   sarray_realloc(__objc_uninstalled_dtable, __objc_selector_max_index+1);
-#endif
 
   return (SEL) i;
 }

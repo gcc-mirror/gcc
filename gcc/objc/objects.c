@@ -37,21 +37,34 @@ id (*_objc_object_copy)(id)       = __objc_object_copy;
 id
 class_create_instance(Class* class)
 {
-  id res = (*_objc_object_alloc)(class);
-  res->class_pointer = class;
-  return res;
+  id new = nil;
+  if (CLS_ISCLASS(class))
+    new = (*_objc_object_alloc)(class);
+  if (new!=nil)
+    new->class_pointer = class;
+  return new;
 }
 
-id 
+id
 object_copy(id object)
 {
-  return (*_objc_object_copy)(object);
+  if ((object!=nil)&&CLS_ISCLASS(object->class_pointer))
+    return (*_objc_object_copy)(object);
+  else
+    return nil;
 }
 
-id 
+id
 object_dispose(id object)
 {
-  return (*_objc_object_dispose)(object);
+  if ((object!=nil)&&CLS_ISCLASS(object->class_pointer))
+    {
+      if (_objc_object_dispose)
+        (*_objc_object_dispose)(object);
+      else
+        free(object);
+    }
+  return nil;
 }
 
 id __objc_object_alloc(Class* class)
