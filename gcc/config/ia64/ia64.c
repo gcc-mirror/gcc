@@ -7142,24 +7142,7 @@ ia64_encode_section_info (decl, first)
   is_local = (*targetm.binds_local_p) (decl);
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    {
-      enum tls_model kind;
-      if (!flag_pic)
-	{
-	  if (is_local)
-	    kind = TLS_MODEL_LOCAL_EXEC;
-	  else
-	    kind = TLS_MODEL_INITIAL_EXEC;
-	}
-      else if (is_local)
-	kind = TLS_MODEL_LOCAL_DYNAMIC;
-      else
-	kind = TLS_MODEL_GLOBAL_DYNAMIC;
-      if (kind < flag_tls_default)
-	kind = flag_tls_default;
-
-      encoding = " GLil"[kind];
-    }
+    encoding = " GLil"[decl_tls_model (decl)];
   /* Determine if DECL will wind up in .sdata/.sbss.  */
   else if (is_local && ia64_in_small_data_p (decl))
     encoding = 's';

@@ -2102,7 +2102,17 @@ extern GTY(()) tree integer_types[itk_none];
 #define long_unsigned_type_node		integer_types[itk_unsigned_long]
 #define long_long_integer_type_node	integer_types[itk_long_long]
 #define long_long_unsigned_type_node	integer_types[itk_unsigned_long_long]
+
+/* Set to the default thread-local storage (tls) model to use.  */
 
+enum tls_model {
+  TLS_MODEL_GLOBAL_DYNAMIC = 1,
+  TLS_MODEL_LOCAL_DYNAMIC,
+  TLS_MODEL_INITIAL_EXEC,
+  TLS_MODEL_LOCAL_EXEC
+};
+
+extern enum tls_model flag_tls_default;
 
 #define NULL_TREE (tree) NULL
 
@@ -2988,6 +2998,7 @@ extern void make_decl_rtl		PARAMS ((tree, const char *));
 extern void make_decl_one_only		PARAMS ((tree));
 extern int supports_one_only		PARAMS ((void));
 extern void variable_section		PARAMS ((tree, int));
+enum tls_model decl_tls_model		PARAMS ((tree));
 
 /* In fold-const.c */
 extern int div_and_round_double		PARAMS ((enum tree_code, int,

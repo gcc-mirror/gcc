@@ -5542,23 +5542,7 @@ ix86_encode_section_info (decl, first)
       const char *symbol_str;
       char *newstr;
       size_t len;
-      enum tls_model kind;
-
-      if (!flag_pic)
-	{
-	  if (local_p)
-	    kind = TLS_MODEL_LOCAL_EXEC;
-	  else
-	    kind = TLS_MODEL_INITIAL_EXEC;
-	}
-      /* Local dynamic is inefficient when we're not combining the
-	 parts of the address.  */
-      else if (optimize && local_p)
-	kind = TLS_MODEL_LOCAL_DYNAMIC;
-      else
-	kind = TLS_MODEL_GLOBAL_DYNAMIC;
-      if (kind < flag_tls_default)
-	kind = flag_tls_default;
+      enum tls_model kind = decl_tls_model (decl);
 
       symbol_str = XSTR (symbol, 0);
 
