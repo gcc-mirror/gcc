@@ -1,3 +1,8 @@
+2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h(INCOMING_RETURN_ADDR_RTX): Remove so
+	that we use setjmp/longjmp exceptions.
+
 2001-09-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (POOL_ALIGN, POOL_FRONT, POOL_LIMIT, POOL_BASE,
