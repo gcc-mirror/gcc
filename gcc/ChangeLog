@@ -1,3 +1,11 @@
+2004-01-15  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (std_expand_builtin_va_arg): Align operand when needed.
+	* i386.c (init_cumulative_args): Set warn_sse; fix handling of variadic
+	functions accepting SSE arguments
+	(function_arg): Warn only when asked to warn.
+	* i386.h (ix86_args): Add warn_sse/warn_mmx fiels.
+
 2004-01-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-parse.in (stmts_and_decls): Make label at end of compound

@@ -3990,10 +3990,32 @@ std_expand_builtin_va_arg (tree valist, tree type)
   tree align, alignm1;
   tree rounded_size;
   rtx addr;
+  HOST_WIDE_INT boundary;
 
   /* Compute the rounded size of the type.  */
   align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
   alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
+  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+
+  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
+     requires greater alignment, we must perform dynamic alignment.  */
+
+  if (boundary > PARM_BOUNDARY)
+    {
+      if (!PAD_VARARGS_DOWN)
+	{
+	  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		     build (PLUS_EXPR, TREE_TYPE (valist), valist,
+			    build_int_2 (boundary / BITS_PER_UNIT - 1, 0)));
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		 build (BIT_AND_EXPR, TREE_TYPE (valist), valist,
+			build_int_2 (~(boundary / BITS_PER_UNIT - 1), -1)));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
   if (type == error_mark_node
       || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
       || TREE_OVERFLOW (type_size))

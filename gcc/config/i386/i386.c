@@ -1839,6 +1839,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     cum->nregs = ix86_regparm;
   cum->sse_nregs = SSE_REGPARM_MAX;
   cum->mmx_nregs = MMX_REGPARM_MAX;
+  cum->warn_sse = true;
+  cum->warn_mmx = true;
   cum->maybe_vaarg = false;
 
   /* Use ecx and edx registers if function has fastcall attribute */
@@ -1857,7 +1859,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      are no variable arguments.  If there are variable arguments, then
      we won't pass anything in registers */
 
-  if (cum->nregs)
+  if (cum->nregs || !TARGET_MMX || !TARGET_SSE)
     {
       for (param = (fntype) ? TYPE_ARG_TYPES (fntype) : 0;
 	   param != 0; param = next_param)
@@ -1868,6 +1870,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	      if (!TARGET_64BIT)
 		{
 		  cum->nregs = 0;
+		  cum->sse_nregs = 0;
+		  cum->mmx_nregs = 0;
+		  cum->warn_sse = 0;
+		  cum->warn_mmx = 0;
 		  cum->fastcall = 0;
 		}
 	      cum->maybe_vaarg = true;
@@ -2581,7 +2587,7 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
       case V2DFmode:
 	if (!type || !AGGREGATE_TYPE_P (type))
 	  {
-	    if (!TARGET_SSE && !warnedmmx)
+	    if (!TARGET_SSE && !warnedmmx && cum->warn_sse)
 	      {
 		warnedsse = true;
 		warning ("SSE vector argument without SSE enabled "
@@ -2597,7 +2603,7 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
       case V2SFmode:
 	if (!type || !AGGREGATE_TYPE_P (type))
 	  {
-	    if (!TARGET_MMX && !warnedmmx)
+	    if (!TARGET_MMX && !warnedmmx && cum->warn_mmx)
 	      {
 		warnedmmx = true;
 		warning ("MMX vector argument without MMX enabled "
