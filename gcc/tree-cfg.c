@@ -723,12 +723,7 @@ cleanup_tree_cfg (void)
      opportunities for itself, so iterate on it until nothing
      changes.  */
   while (thread_jumps ())
-    {
-      /* delete_unreachable_blocks() does its job only when
-	 thread_jumps() produces more unreachable blocks.  */
-      delete_unreachable_blocks ();
-      retval = true;
-    }
+    retval = true;
 
 #ifdef ENABLE_CHECKING
   if (retval)
@@ -3969,22 +3964,23 @@ thread_jumps (void)
 		}
 	    }
 
+	  /* Remove the unreachable blocks (observe that if all blocks
+	     were reachable before, only those in the path we threaded
+	     over and did not have any predecessor outside of the path
+	     become unreachable).  */
+	  for (; old_dest != dest; old_dest = tmp)
+	    {
+	      tmp = EDGE_SUCC (old_dest, 0)->dest;
+
+	      if (EDGE_COUNT (old_dest->preds) > 0)
+		break;
+
+	      delete_basic_block (old_dest);
+	    }
+
 	  /* Update the dominators.  */
 	  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
 	    {
-	      /* Remove the unreachable blocks (observe that if all blocks
-		 were reachable before, only those in the path we threaded
-		 over and did not have any predecessor outside of the path
-		 become unreachable).  */
-	      for (; old_dest != dest; old_dest = tmp)
-		{
-		  tmp = EDGE_SUCC (old_dest, 0)->dest;
-
-		  if (EDGE_COUNT (old_dest->preds) > 0)
-		    break;
-
-		  delete_basic_block (old_dest);
-		}
 	      /* If the dominator of the destination was in the path, set its
 		 dominator to the start of the redirected edge.  */
 	      if (get_immediate_dominator (CDI_DOMINATORS, old_dest) == NULL)

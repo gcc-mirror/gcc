@@ -1,5 +1,12 @@
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (cleanup_tree_cfg): Don't call
+	delete_unreachable_blosk() after thread_jumps().
+	(thread_jumps): Always remove basic blocks as they become
+	unreachable.
+
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (cleanup_tree_cfg): Remove variable
 	something_changed.  Simplify the while loop.
 
