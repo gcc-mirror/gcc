@@ -1,3 +1,12 @@
+2000-03-07  Steve Chamberlain  <sac@pobox.com>
+
+	* pj.c (pj_expand_prologue): current_function->args_info is
+	now current_function_args_info.  
+
+	* pj.h (STORE_FLAG_VALUE, USER_LABEL_PREFIX,
+	LOCAL_LABEL_PREFIX, ASM_GENERATE_INTERNAL_LABEL,
+	ASM_OUTPUT_INTERNAL_LABEL, ASM_OUTPUT_SKIP): Define.
+
 2000-03-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (PUT_SDB_TYPE): Define so that the type info is
