@@ -3888,6 +3888,10 @@ expand_float (to, from, unsignedp)
       {
 	int doing_unsigned = unsignedp;
 
+	if (fmode != GET_MODE (to)
+	    && significand_size (fmode) < GET_MODE_BITSIZE (GET_MODE (from)))
+	  continue;
+
 	icode = can_float_p (fmode, imode, unsignedp);
 	if (icode == CODE_FOR_nothing && imode != GET_MODE (from) && unsignedp)
 	  icode = can_float_p (fmode, imode, 0), doing_unsigned = 0;
