@@ -1,3 +1,8 @@
+2002-03-13  Aldy Hernandez  <aldyh@redhat.com>
+
+        * expmed.c (store_bit_field): Reset alias set for memory.
+        (extract_bit_field): Same.
+
 2002-03-12  Chris Meyer  <cmeyer@gatan.com>
 
 	* genflags.c (gen_insn): Use IS_VSPACE.
