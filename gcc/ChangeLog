@@ -1,4 +1,9 @@
-002-05-28  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+2002-05-28  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (update_life_info_in_dirty_blocks): Only do a partial
+	update if UPDATE_LIFE_LOCAL.
+
+2002-05-28  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* config/sh/sh.c: Include real.h for REAL_VALUE_TYPE.
 
