@@ -302,6 +302,12 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
+  /* ---- SuperH - SHmedia --------- */
+#ifdef SH64
+  FFI_SYSV,
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
   /* Leave this for debugging purposes */
   FFI_LAST_ABI
 
@@ -354,6 +360,10 @@ typedef struct {
 #if _MIPS_SIM == _ABIN32
   unsigned rstruct_flag;
 #endif
+#endif
+
+#ifdef SH64
+  long long flags2;
 #endif
 
 } ffi_cif;
@@ -499,6 +509,12 @@ struct ffi_ia64_trampoline_struct {
 
 #define FFI_CLOSURES 1
 #define FFI_TRAMPOLINE_SIZE 16
+#define FFI_NATIVE_RAW_API 0
+
+#elif defined(SH64)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 32
 #define FFI_NATIVE_RAW_API 0
 
 #elif defined(__x86_64__)
