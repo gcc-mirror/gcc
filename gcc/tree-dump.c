@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tree-dump.h"
 #include "langhooks.h"
+#include "tree-iterator.h"
 
 static unsigned int queue (dump_info_p, tree, int);
 static void dump_index (dump_info_p, unsigned int);
@@ -395,6 +396,18 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("purp", TREE_PURPOSE (t));
       dump_child ("valu", TREE_VALUE (t));
       dump_child ("chan", TREE_CHAIN (t));
+      break;
+
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator it;
+	for (i = 0, it = tsi_start (t); !tsi_end_p (it); tsi_next (&it), i++)
+	  {
+	    char buffer[32];
+	    sprintf (buffer, "%u", i);
+	    dump_child (buffer, tsi_stmt (it));
+	  }
+      }
       break;
 
     case TREE_VEC:
