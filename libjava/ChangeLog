@@ -1,5 +1,10 @@
 2003-09-22  Michael Koch  <konqueror@gmx.de>
 
+	* jni.cc (_Jv_LookupJNIMethod): Remove workaround that should hide a
+	compiler warning but produces a different one now.
+
+2003-09-22  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java:
 	Moves around some code, reformats and adds documentation.
 	No functional changes.
