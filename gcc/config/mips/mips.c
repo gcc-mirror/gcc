@@ -5542,7 +5542,7 @@ mips_secondary_reload_class (class, mode, x)
   if (class != HI_REG && class != LO_REG && class != MD_REGS)
     return NO_REGS;
 
-  if (GET_CODE (x) == REG)
+  if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
     {
       int regno = true_regnum (x);
 
