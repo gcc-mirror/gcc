@@ -2940,57 +2940,30 @@
 ;; ::::::::::::::::::::
 
 ;; Addition
-(define_expand "adddi3"
-  [(parallel [(set (match_operand:DI 0 "integer_register_operand" "")
-		   (plus:DI (match_operand:DI 1 "integer_register_operand" "")
-			    (match_operand:DI 2 "gpr_or_int10_operand" "")))
-	      (clobber (match_scratch:CC 3 ""))])]
+(define_insn_and_split "adddi3"
+  [(set (match_operand:DI 0 "integer_register_operand" "=&e,e")
+	(plus:DI (match_operand:DI 1 "integer_register_operand" "%e,0")
+		 (match_operand:DI 2 "gpr_or_int10_operand" "eJ,eJ")))
+   (clobber (match_scratch:CC 3 "=t,t"))]
   ""
-  "
-{
-  if (GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) == -2048
-      && !no_new_pseudos)
-    operands[2] = force_reg (DImode, operands[2]);
-}")
-
-(define_insn_and_split "*adddi3_internal"
-  [(set (match_operand:DI 0 "integer_register_operand" "=&e,e,e,&e,e,&e,e")
-	(plus:DI (match_operand:DI 1 "integer_register_operand" "%e,0,e,e,0,e,0")
-		 (match_operand:DI 2 "gpr_or_int10_operand" "e,e,0,N,N,OP,OP")))
-   (clobber (match_scratch:CC 3 "=t,t,t,t,t,t,t"))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -2048"
   "#"
   "reload_completed"
   [(match_dup 4)
    (match_dup 5)]
   "
 {
-  rtx op0_high = gen_highpart (SImode, operands[0]);
-  rtx op1_high = gen_highpart (SImode, operands[1]);
-  rtx op0_low  = gen_lowpart (SImode, operands[0]);
-  rtx op1_low  = gen_lowpart (SImode, operands[1]);
-  rtx op2 = operands[2];
-  rtx op3 = operands[3];
+  rtx parts[3][2];
+  int op, part;
 
-  if (GET_CODE (op2) != CONST_INT)
-    {
-      rtx op2_high = gen_highpart (SImode, operands[2]);
-      rtx op2_low  = gen_lowpart (SImode, operands[2]);
-      operands[4] = gen_adddi3_lower (op0_low, op1_low, op2_low, op3);
-      operands[5] = gen_adddi3_upper (op0_high, op1_high, op2_high, op3);
-    }
-  else if (INTVAL (op2) >= 0)
-    {
-      operands[4] = gen_adddi3_lower (op0_low, op1_low, op2, op3);
-      operands[5] = gen_adddi3_upper (op0_high, op1_high, const0_rtx, op3);
-    }
-  else
-    {
-      operands[4] = gen_subdi3_lower (op0_low, op1_low,
-				      GEN_INT (- INTVAL (op2)), op3);
-      operands[5] = gen_subdi3_upper (op0_high, op1_high, const0_rtx, op3);
-    }
+  for (op = 0; op < 3; op++)
+    for (part = 0; part < 2; part++)
+      parts[op][part] = simplify_gen_subreg (SImode, operands[op],
+					     DImode, part * UNITS_PER_WORD);
+
+  operands[4] = gen_adddi3_lower (parts[0][1], parts[1][1], parts[2][1],
+				  operands[3]);
+  operands[5] = gen_adddi3_upper (parts[0][0], parts[1][0], parts[2][0],
+				  copy_rtx (operands[3]));
 }"
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
@@ -3027,50 +3000,46 @@
 (define_insn "adddi3_lower"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
 	(plus:SI (match_operand:SI 1 "integer_register_operand" "d")
-		 (match_operand:SI 2 "gpr_or_int10_operand" "dOP")))
+		 (match_operand:SI 2 "gpr_or_int10_operand" "dJ")))
    (set (match_operand:CC 3 "icc_operand" "=t")
 	(compare:CC (plus:SI (match_dup 1)
 			     (match_dup 2))
 		    (const_int 0)))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) >= 0"
+  ""
   "add%I2cc %1,%2,%0,%3"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
 (define_insn "adddi3_upper"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d,d")
-	(plus:SI (match_operand:SI 1 "integer_register_operand" "d,d")
-		 (plus:SI (match_operand:SI 2 "reg_or_0_operand" "d,O")
-			  (match_operand:CC 3 "icc_operand" "t,t"))))]
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(plus:SI (match_operand:SI 1 "integer_register_operand" "d")
+		 (plus:SI (match_operand:SI 2 "gpr_or_int10_operand" "dJ")
+			  (match_operand:CC 3 "icc_operand" "t"))))]
   ""
-  "@
-   addx %1,%2,%0,%3
-   addx %1,%.,%0,%3"
+  "addx%I2 %1,%2,%0,%3"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
 (define_insn "subdi3_lower"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
 	(minus:SI (match_operand:SI 1 "integer_register_operand" "d")
-		  (match_operand:SI 2 "gpr_or_int10_operand" "dOP")))
+		  (match_operand:SI 2 "integer_register_operand" "d")))
    (set (match_operand:CC 3 "icc_operand" "=t")
 	(compare:CC (plus:SI (match_dup 1)
 			     (match_dup 2))
 		    (const_int 0)))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) >= 0"
-  "sub%I2cc %1,%2,%0,%3"
+  ""
+  "subcc %1,%2,%0,%3"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
 (define_insn "subdi3_upper"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d,d")
-	(minus:SI (match_operand:SI 1 "integer_register_operand" "d,d")
-		  (minus:SI (match_operand:SI 2 "reg_or_0_operand" "d,O")
-			    (match_operand:CC 3 "icc_operand" "t,t"))))]
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(minus:SI (match_operand:SI 1 "integer_register_operand" "d")
+		  (minus:SI (match_operand:SI 2 "integer_register_operand" "d")
+			    (match_operand:CC 3 "icc_operand" "t"))))]
   ""
-  "@
-   subx %1,%2,%0,%3
-   subx %1,%.,%0,%3"
+  "subx %1,%2,%0,%3"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
