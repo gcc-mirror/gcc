@@ -3070,9 +3070,9 @@ enum sparc_mode_class {
    they cross fixed registers).  */
 
 /* This points to either the 32 bit or the 64 bit version.  */
-int *hard_regno_mode_classes;
+const int *hard_regno_mode_classes;
 
-static int hard_32bit_mode_classes[] = {
+static const int hard_32bit_mode_classes[] = {
   S_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
@@ -3097,7 +3097,7 @@ static int hard_32bit_mode_classes[] = {
   CC_MODES
 };
 
-static int hard_64bit_mode_classes[] = {
+static const int hard_64bit_mode_classes[] = {
   D_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   O_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,

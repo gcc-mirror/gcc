@@ -397,7 +397,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern unsigned int arc_hard_regno_mode_ok[];
+extern const unsigned int arc_hard_regno_mode_ok[];
 extern unsigned int arc_mode_class[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 ((arc_hard_regno_mode_ok[REGNO] & arc_mode_class[MODE]) != 0)

@@ -1,3 +1,25 @@
+2001-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arc.c (arc_hard_regno_mode_ok): Const-ify.
+	* arc.h (arc_hard_regno_mode_ok): Likewise.
+	* i386.c (x86_64_reg_class_name): Make static.
+	* m68k.c (regno_reg_class): Const-ify.
+	* m68k.h (regno_reg_class): Likewise.
+	* mcore.c (reg_class_from_letter): Likewise.
+	* mcore.h (reg_class_from_letter): Likewise.
+	* sh.c (reg_class_from_letter, ashiftrt_insns, shift_insns,
+	ext_shift_insns, ext_shift_amounts): Likewise.
+	* sh.h (reg_class_from_letter): Likewise.
+	* sparc.c (hard_regno_mode_classes, hard_32bit_mode_classes,
+	hard_64bit_mode_classes): Likewise.
+	* sparc.h (hard_regno_mode_classes): Likewise.
+
+	* gcc.c (modify_target): Make static.
+	* gengenrtl.c (defs, formats): Likewise.
+	* reload1.c (elim_table_1, init_elim_table): Const-ify.
+	* tradcpp.c (directive, directive_table, handle_directive,
+	skip_if_group, run_directive): Likewise.
+
 2001-12-23  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (expand_call): Don't turn off ECF_LIBCALL_BLOCK for

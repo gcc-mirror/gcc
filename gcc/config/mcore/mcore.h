@@ -544,7 +544,7 @@ extern int regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Get reg_class from a letter such as appears in the machine 
    description.  */
-extern enum reg_class reg_class_from_letter[];
+extern const enum reg_class reg_class_from_letter[];
 
 #define REG_CLASS_FROM_LETTER(C) \
    ( ISLOWER (C) ? reg_class_from_letter[(C) - 'a'] : NO_REGS )

@@ -310,11 +310,11 @@ HASHNODE *hashtab[HASHSIZE];
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
 struct directive {
-  int length;			/* Length of name */
-  void (*func) PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+  const int length;		/* Length of name */
+  void (*const func) PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
   				/* Function to handle directive */
-  const char *name;		/* Name of directive */
-  enum node_type type;		/* Code which describes which directive. */
+  const char *const name;	/* Name of directive */
+  const enum node_type type;	/* Code which describes which directive. */
 };
 
 /* Last arg to output_line_command.  */
@@ -446,7 +446,7 @@ int main		PARAMS ((int, char **));
 
 /* Here is the actual list of #-directives, most-often-used first.  */
 
-struct directive directive_table[] = {
+static const struct directive directive_table[] = {
   {  6, do_define,  "define",  T_DEFINE  },
   {  7, do_include, "include", T_INCLUDE },
   {  5, do_endif,   "endif",   T_ENDIF   },
@@ -1904,7 +1904,7 @@ handle_directive (ip, op)
      FILE_BUF *ip, *op;
 {
   U_CHAR *bp, *cp;
-  struct directive *kt;
+  const struct directive *kt;
   int ident_length;
   U_CHAR *resume_p;
 
@@ -3684,7 +3684,7 @@ skip_if_group (ip, any)
 {
   U_CHAR *bp = ip->bufp, *cp;
   U_CHAR *endb = ip->buf + ip->length;
-  struct directive *kt;
+  const struct directive *kt;
   IF_STACK_FRAME *save_if_stack = if_stack; /* don't pop past here */
   U_CHAR *beg_of_line = bp;
 
@@ -5117,7 +5117,7 @@ run_directive (str, len, type)
      size_t len;
      enum node_type type;
 {
-  struct directive *kt;
+  const struct directive *kt;
   FILE_BUF *ip = &instack[++indepth];
   ip->fname = "*command line*";
 

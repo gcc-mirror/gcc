@@ -749,7 +749,7 @@ enum reg_class { NO_REGS, LO_FPA_REGS, FPA_REGS, FP_REGS,
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-extern enum reg_class regno_reg_class[];
+extern const enum reg_class regno_reg_class[];
 #define REGNO_REG_CLASS(REGNO) (regno_reg_class[(REGNO)>>3])
 
 #endif /* SUPPORT_SUN_FPA */

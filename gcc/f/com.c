@@ -437,7 +437,7 @@ static const char *const ffecom_gfrt_name_[FFECOM_gfrt]
 
 /* Whether the function returns.  */
 
-static bool ffecom_gfrt_volatile_[FFECOM_gfrt]
+static const bool ffecom_gfrt_volatile_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) VOLATILE,
@@ -447,7 +447,7 @@ static bool ffecom_gfrt_volatile_[FFECOM_gfrt]
 
 /* Whether the function returns type complex.  */
 
-static bool ffecom_gfrt_complex_[FFECOM_gfrt]
+static const bool ffecom_gfrt_complex_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) COMPLEX,
@@ -458,7 +458,7 @@ static bool ffecom_gfrt_complex_[FFECOM_gfrt]
 /* Whether the function is const
    (i.e., has no side effects and only depends on its arguments).  */
 
-static bool ffecom_gfrt_const_[FFECOM_gfrt]
+static const bool ffecom_gfrt_const_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) CONST,
@@ -468,7 +468,7 @@ static bool ffecom_gfrt_const_[FFECOM_gfrt]
 
 /* Type code for the function return value.  */
 
-static ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
+static const ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) TYPE,

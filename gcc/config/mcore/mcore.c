@@ -73,7 +73,7 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
 
 /* Provide reg_class from a letter such as appears in the machine
    description.  */
-enum reg_class reg_class_from_letter[] =
+const enum reg_class reg_class_from_letter[] =
 {
   /* a */ LRW_REGS, /* b */ ONLYR1_REGS, /* c */ C_REGS,  /* d */ NO_REGS,
   /* e */ NO_REGS, /* f */ NO_REGS, /* g */ NO_REGS, /* h */ NO_REGS,

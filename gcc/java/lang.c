@@ -43,9 +43,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 struct string_option
 {
-  const char *string;
-  int *variable;
-  int on_value;
+  const char *const string;
+  int *const variable;
+  const int on_value;
 };
 
 static const char *java_init PARAMS ((const char *));
@@ -56,8 +56,8 @@ static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
 static void java_dummy_print PARAMS ((diagnostic_context *, const char *));
 static void lang_print_error PARAMS ((diagnostic_context *, const char *));
-static int process_option_with_no PARAMS ((char *,
-					   struct string_option *,
+static int process_option_with_no PARAMS ((const char *,
+					   const struct string_option *,
 					   int));
 
 #ifndef TARGET_OBJECT_SUFFIX
@@ -166,7 +166,7 @@ static int version_flag = 0;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct string_option
+static const struct string_option
 lang_f_options[] =
 {
   {"emit-class-file", &flag_emit_class_files, 1},
@@ -182,7 +182,7 @@ lang_f_options[] =
   {"indirect-dispatch", &flag_indirect_dispatch, 1}
 };
 
-static struct string_option
+static const struct string_option
 lang_W_options[] =
 {
   { "redundant-modifiers", &flag_redundant, 1 },
@@ -222,8 +222,8 @@ const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
    Return 1 if option found, 0 otherwise.  */
 static int
 process_option_with_no (p, table, table_size)
-     char *p;
-     struct string_option *table;
+     const char *p;
+     const struct string_option *table;
      int table_size;
 {
   int j;

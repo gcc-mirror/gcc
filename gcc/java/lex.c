@@ -1567,7 +1567,7 @@ java_lex (java_lval)
      this is an identifier (possibly not respecting formation rule).  */
   if (all_ascii)
     {
-      struct java_keyword *kw;
+      const struct java_keyword *kw;
       if ((kw=java_keyword (string, ascii_index)))
 	{
 	  JAVA_LEX_KW (string);

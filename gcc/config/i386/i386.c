@@ -746,7 +746,7 @@ enum x86_64_reg_class
     X86_64_X87UP_CLASS,
     X86_64_MEMORY_CLASS
   };
-const char * const x86_64_reg_class_name[] =
+static const char * const x86_64_reg_class_name[] =
    {"no", "integer", "integerSI", "sse", "sseSF", "sseDF", "sseup", "x87", "x87up", "no"};
 
 #define MAX_CLASSES 4

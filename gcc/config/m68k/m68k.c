@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Index into this array by (register number >> 3) to find the
    smallest class which contains that register.  */
-enum reg_class regno_reg_class[]
+const enum reg_class regno_reg_class[]
   = { DATA_REGS, ADDR_REGS, FP_REGS,
       LO_FPA_REGS, LO_FPA_REGS, FPA_REGS, FPA_REGS };
 

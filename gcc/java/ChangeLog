@@ -1,3 +1,14 @@
+2001-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (keyword.h): Pass -C to gperf to const-ify
+	the static arrays that are output.
+	* jvspec.c (jvgenmain_spec): Make static.
+	* keyword.gperf (struct java_keyword, java_keyword): Const-ify.
+	* keyword.h: Regenerate.
+	* lang.c (string_option, process_option_with_no, lang_f_options,
+	lang_W_options): Const-ify.
+	* lex.c (java_lex): Likewise.
+
 2001-12-21  Richard Henderson  <rth@redhat.com>
 
 	* boehm.c (PROCEDURE_OBJECT_DESCRIPTOR): Merge into ..
