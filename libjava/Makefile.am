@@ -584,11 +584,16 @@ java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
 java/net/ContentHandlerFactory.java \
+java/net/DatagramPacket.java \
+java/net/DatagramSocket.java \
+java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java \
 java/net/InetAddress.java \
 java/net/MalformedURLException.java \
+java/net/MulticastSocket.java \
 java/net/NoRouteToHostException.java \
+java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
@@ -596,6 +601,7 @@ java/net/Socket.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
+java/net/SocketOptions.java \
 java/net/URL.java \
 java/net/URLConnection.java \
 java/net/URLDecoder.java \
@@ -718,6 +724,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/net/natInetAddress.cc \
+java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
 java/util/natDate.cc \
