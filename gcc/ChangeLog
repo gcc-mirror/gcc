@@ -1,3 +1,9 @@
+Wed Nov 22 06:40:56 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (hppa_encode_label): Account for addition of encoding
+	character when allocating persistent space for the new label
+	name.
+
 2000-11-22  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Makefile.in, config.gcc, configure.in: Expunge remaining
