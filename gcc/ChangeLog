@@ -1,3 +1,8 @@
+2003-04-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (DECL_POINTER_DEPTH): Remove.
+	(struct tree_decl): Remove pointer_depth.
+	
 2003-04-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/linux64.h (ASM_OUTPUT_LABELREF): Remove.
