@@ -1,3 +1,7 @@
+1998-05-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (do_friend): Clarify template warning.
+
 1998-05-27  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (shadow_label): Don't treat decls as identifiers.

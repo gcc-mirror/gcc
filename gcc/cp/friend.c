@@ -430,8 +430,9 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	      warning ("  declares a non-template function");
 	      if (! explained)
 		{
-		  warning ("  unless you compile with -fguiding-decls");
-		  warning ("  or add <> after the function name");
+		  warning ("  (if this is not what you intended, make sure");
+		  warning ("  the function template has already been declared,");
+		  warning ("  and add <> after the function name here)");
 		  explained = 1;
 		}
 	    }
