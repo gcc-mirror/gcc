@@ -444,8 +444,8 @@ enum dwarf_inline_attribute
     DW_INL_declared_inlined = 3
   };
 
-/* descriminant lists */
-enum dwarf_descrim_list
+/* discriminant lists */
+enum dwarf_discrim_list
   {
     DW_DSC_label = 0,
     DW_DSC_range = 1

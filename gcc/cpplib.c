@@ -16,79 +16,80 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!  */
-
-#ifdef EMACS
-#define NO_SHORTNAMES
-#include "../src/config.h"
-#ifdef open
-#undef open
-#undef read
-#undef write
-#endif /* open */
-#endif /* EMACS */
-
-/* The macro EMACS is defined when cpp is distributed as part of Emacs,
-   for the sake of machines with limited C compilers.  */
-#ifndef EMACS
 #include "config.h"
-#endif /* not EMACS */
-
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-#if 0 /* We can't get ptrdiff_t, so I arranged not to need PTR_INT_TYPE.  */
-#ifdef __STDC__
-#define PTR_INT_TYPE ptrdiff_t
-#else
-#define PTR_INT_TYPE long
-#endif
-#endif /* 0 */
-
-#include "cpplib.h"
-#include "cpphash.h"
 
 #ifndef STDC_VALUE
 #define STDC_VALUE 1
 #endif
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
-#ifdef __STDC__
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
-#ifndef VMS
-#ifndef USG
-#include <sys/time.h>		/* for __DATE__ and __TIME__ */
-#include <sys/resource.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
 #else
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
+#endif
+#endif
+
+#ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
-#include <time.h>
-#include <fcntl.h>
-#endif /* USG */
-#endif /* not VMS */
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+# else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+#endif
+#endif
+
 /* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 
+#include "cpplib.h"
+#include "cpphash.h"
+#include "gansidecl.h"
+
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
+#endif
+
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
+
+#ifdef NEED_DECLARATION_GETENV
+extern char *getenv ();
+#endif
+
 extern char *update_path ();
 
 #ifndef O_RDONLY
@@ -130,24 +131,14 @@ extern char *update_path ();
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ':'
 #endif
 
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
+#ifndef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
-#endif
-
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
@@ -290,7 +281,6 @@ static int compare_token_lists ();
 static HOST_WIDE_INT eval_if_expression ();
 static int change_newlines ();
 extern int hashf ();
-static int file_size_and_mode ();
 static struct arglist *read_token_list ();
 static void free_token_list ();
 static int safe_read ();
@@ -311,7 +301,6 @@ enum file_change_code {same_file, enter_file, leave_file};
 
 extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
-extern char *getenv ();
 extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
@@ -810,6 +799,7 @@ cpp_options_init (opts)
   opts->print_include_names = 0;
   opts->dump_macros = dump_none;
   opts->no_output = 0;
+  opts->remap = 0;
   opts->cplusplus = 0;
   opts->cplusplus_comments = 0;
 
@@ -4727,8 +4717,8 @@ cpp_get_token (pfile)
 	      }
 
 	      /* OK, now bring us back to the state we were in before we entered
-		 this branch.  We need #line b/c the newline for the pragma
-		 could fuck things up.  */
+		 this branch.  We need #line because the newline for the pragma
+		 could mess things up.  */
 	      output_line_command (pfile, 0, same_file);
 	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
 	      *(obp++) = '/';
@@ -5522,65 +5512,68 @@ open_include_file (pfile, filename, searchptr)
      char *filename;
      struct file_name_list *searchptr;
 {
-  register struct file_name_map *map;
-  register char *from;
-  char *p, *dir;
-
-  if (searchptr && ! searchptr->got_name_map)
+  if (CPP_OPTIONS (pfile)->remap)
     {
-      searchptr->name_map = read_name_map (pfile,
-					   searchptr->fname
-					   ? searchptr->fname : ".");
-      searchptr->got_name_map = 1;
-    }
+      register struct file_name_map *map;
+      register char *from;
+      char *p, *dir;
 
-  /* First check the mapping for the directory we are using.  */
-  if (searchptr && searchptr->name_map)
-    {
-      from = filename;
-      if (searchptr->fname)
-	from += strlen (searchptr->fname) + 1;
-      for (map = searchptr->name_map; map; map = map->map_next)
+      if (searchptr && ! searchptr->got_name_map)
 	{
-	  if (! strcmp (map->map_from, from))
+	  searchptr->name_map = read_name_map (pfile,
+					       searchptr->fname
+					       ? searchptr->fname : ".");
+	  searchptr->got_name_map = 1;
+	}
+
+      /* First check the mapping for the directory we are using.  */
+      if (searchptr && searchptr->name_map)
+	{
+	  from = filename;
+	  if (searchptr->fname)
+	    from += strlen (searchptr->fname) + 1;
+	  for (map = searchptr->name_map; map; map = map->map_next)
 	    {
-	      /* Found a match.  */
-	      return open (map->map_to, O_RDONLY, 0666);
+	      if (! strcmp (map->map_from, from))
+		{
+		  /* Found a match.  */
+		  return open (map->map_to, O_RDONLY, 0666);
+		}
 	    }
 	}
-    }
 
-  /* Try to find a mapping file for the particular directory we are
-     looking in.  Thus #include <sys/types.h> will look up sys/types.h
-     in /usr/include/header.gcc and look up types.h in
-     /usr/include/sys/header.gcc.  */
-  p = rindex (filename, '/');
-  if (! p)
-    p = filename;
-  if (searchptr
-      && searchptr->fname
-      && strlen (searchptr->fname) == p - filename
-      && ! strncmp (searchptr->fname, filename, p - filename))
-    {
-      /* FILENAME is in SEARCHPTR, which we've already checked.  */
-      return open (filename, O_RDONLY, 0666);
-    }
+      /* Try to find a mapping file for the particular directory we are
+	 looking in.  Thus #include <sys/types.h> will look up sys/types.h
+	 in /usr/include/header.gcc and look up types.h in
+	 /usr/include/sys/header.gcc.  */
+      p = rindex (filename, '/');
+      if (! p)
+	p = filename;
+      if (searchptr
+	  && searchptr->fname
+	  && strlen (searchptr->fname) == p - filename
+	  && ! strncmp (searchptr->fname, filename, p - filename))
+	{
+	  /* FILENAME is in SEARCHPTR, which we've already checked.  */
+	  return open (filename, O_RDONLY, 0666);
+	}
 
-  if (p == filename)
-    {
-      dir = ".";
-      from = filename;
+      if (p == filename)
+	{
+	  dir = ".";
+	  from = filename;
+	}
+      else
+	{
+	  dir = (char *) alloca (p - filename + 1);
+	  bcopy (filename, dir, p - filename);
+	  dir[p - filename] = '\0';
+	  from = p + 1;
+	}
+      for (map = read_name_map (pfile, dir); map; map = map->map_next)
+	if (! strcmp (map->map_from, from))
+	  return open (map->map_to, O_RDONLY, 0666);
     }
-  else
-    {
-      dir = (char *) alloca (p - filename + 1);
-      bcopy (filename, dir, p - filename);
-      dir[p - filename] = '\0';
-      from = p + 1;
-    }
-  for (map = read_name_map (pfile, dir); map; map = map->map_next)
-    if (! strcmp (map->map_from, from))
-      return open (map->map_to, O_RDONLY, 0666);
 
   return open (filename, O_RDONLY, 0666);
 }
@@ -5604,14 +5597,14 @@ finclude (pfile, f, fname, system_header_p, dirptr)
      int system_header_p;
      struct file_name_list *dirptr;
 {
-  int st_mode;
-  long st_size;
+  struct stat st;
+  size_t st_size;
   long i;
   int length;
   cpp_buffer *fp;			/* For input stack frame */
   int missing_newline = 0;
 
-  if (file_size_and_mode (f, &st_mode, &st_size) < 0)
+  if (fstat (f, &st) < 0)
     {
       cpp_perror_with_name (pfile, fname);
       close (f);
@@ -5630,7 +5623,13 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   fp->colno = 1;
   fp->cleanup = file_cleanup;
 
-  if (S_ISREG (st_mode)) {
+  if (S_ISREG (st.st_mode)) {
+    st_size = (size_t) st.st_size;
+    if (st_size != st.st_size || st_size + 2 < st_size) {
+      cpp_error (pfile, "file `%s' too large", fname);
+      close (f);
+      return 0;
+    }
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
     fp->alimit = fp->buf + st_size + 2;
     fp->cur = fp->buf;
@@ -5641,7 +5640,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
     fp->rlimit = fp->buf + length;
     if (length < 0) goto nope;
   }
-  else if (S_ISDIR (st_mode)) {
+  else if (S_ISDIR (st.st_mode)) {
     cpp_error (pfile, "directory `%s' specified in #include", fname);
     close (f);
     return 0;
@@ -5719,7 +5718,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
 /* This is called after options have been processed.
  * Check options for consistency, and setup for processing input
  * from the file named FNAME.  (Use standard input if FNAME==NULL.)
- * Return 1 on succes, 0 on failure.
+ * Return 1 on success, 0 on failure.
  */
 
 int
@@ -6747,6 +6746,11 @@ cpp_handle_options (pfile, argc, argv)
 #endif
 	break;
 
+      case 'r':
+	if (!strcmp (argv[i], "-remap"))
+	  opts->remap = 1;
+	break;
+
       case 'u':
 	/* Sun compiler passes undocumented switch "-undef".
 	   Let's assume it means to inhibit the predefined symbols.  */
@@ -7207,23 +7211,6 @@ free_token_list (tokens)
   }
 }
 
-/* Get the file-mode and data size of the file open on FD
-   and store them in *MODE_POINTER and *SIZE_POINTER.  */
-
-static int
-file_size_and_mode (fd, mode_pointer, size_pointer)
-     int fd;
-     int *mode_pointer;
-     long int *size_pointer;
-{
-  struct stat sbuf;
-
-  if (fstat (fd, &sbuf) < 0) return (-1);
-  if (mode_pointer) *mode_pointer = sbuf.st_mode;
-  if (size_pointer) *size_pointer = sbuf.st_size;
-  return 0;
-}
-
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
    retrying if necessary.  If MAX_READ_LEN is defined, read at most
    that bytes at a time.  Return a negative value if an error occurs,

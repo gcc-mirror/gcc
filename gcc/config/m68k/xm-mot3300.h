@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for Motorola 68000 family.
    SysV68 Motorola 3300 Delta Series
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,13 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #define USG 1
 
 #include "m68k/xm-m68k.h"
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
-#define rindex strrchr
-#define index strchr
 
 #define NO_SYS_SIGLIST
 

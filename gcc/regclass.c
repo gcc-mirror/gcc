@@ -1540,6 +1540,25 @@ record_address_regs (x, class, scale)
 	else if (code1 == SYMBOL_REF || code1 == CONST || code1 == LABEL_REF)
 	  record_address_regs (arg0, INDEX_REG_CLASS, scale);
 
+	/* If both operands are registers but one is already a hard register
+	   of index or base class, give the other the class that the hard
+	   register is not.  */
+
+	else if (code0 == REG && code1 == REG
+		 && REGNO (arg0) < FIRST_PSEUDO_REGISTER
+		 && (REG_OK_FOR_BASE_P (arg0) || REG_OK_FOR_INDEX_P (arg0)))
+	  record_address_regs (arg1,
+			       REG_OK_FOR_BASE_P (arg0)
+			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			       scale);
+	else if (code0 == REG && code1 == REG
+		 && REGNO (arg1) < FIRST_PSEUDO_REGISTER
+		 && (REG_OK_FOR_BASE_P (arg1) || REG_OK_FOR_INDEX_P (arg1)))
+	  record_address_regs (arg0,
+			       REG_OK_FOR_BASE_P (arg1)
+			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			       scale);
+
 	/* If one operand is known to be a pointer, it must be the base
 	   with the other operand the index.  Likewise if the other operand
 	   is a MULT.  */

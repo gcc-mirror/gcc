@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-96, 1997 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -6243,7 +6243,7 @@ get_delta_difference (from, to, force)
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
-      error ("   in pointer to member function conversiona");
+      error ("   in pointer to member function conversion");
       return delta;
     }
   if (binfo == 0)

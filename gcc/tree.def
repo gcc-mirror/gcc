@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in the GNU C compiler.
-   Copyright (C) 1987, 1988, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -693,7 +693,7 @@ DEFTREECODE (PREINCREMENT_EXPR, "preincrement_expr", "e", 2)
 DEFTREECODE (POSTDECREMENT_EXPR, "postdecrement_expr", "e", 2)
 DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", "e", 2)
 
-/* Evalute operand 1.  If and only if an exception is thrown during
+/* Evaluate operand 1.  If and only if an exception is thrown during
    the evaluation of operand 1, evaluate operand 2.
 
    This differs from WITH_CLEANUP_EXPR, in that operand 2 is never

@@ -200,7 +200,7 @@ do {									\
   for (; ptr1_ != 0 ; ptr1_ = ptr1_->next)				\
     {									\
       /* Advance BITMAP2 to the equivalent link, using an all		\
-	 zero element if an equavialent link doesn't exist.  */		\
+	 zero element if an equivalent link doesn't exist.  */		\
       bitmap_element *tmp2_;						\
 									\
       while (ptr2_ != 0 && ptr2_->indx < ptr1_->indx)			\

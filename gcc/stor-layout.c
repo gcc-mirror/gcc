@@ -1190,7 +1190,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
        mode = GET_MODE_WIDER_MODE (mode))
     {
       unit = GET_MODE_BITSIZE (mode);
-      if (bitpos / unit == (bitpos + bitsize - 1) / unit)
+      if ((bitpos % unit) + bitsize <= unit)
 	break;
     }
 

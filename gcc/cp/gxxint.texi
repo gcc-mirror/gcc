@@ -1425,7 +1425,7 @@ Major disadvantages when enabling exceptions are:
 @itemize @bullet
 @item
 Code that uses caller saved registers, can't, when flow can be
-transfered into that code from an exception handler.  In high performace
+transferred into that code from an exception handler.  In high performance
 code this should not usually be true, so the effects should be minimal.
 
 @end itemize
@@ -1478,7 +1478,7 @@ This can be passed in many ways, currently a tree is used.  Another
 possibility would be insns for the handler, or a label that denotes a
 handler.  I have a feeling insns might be the the best way to pass it.
 Semantics are, if an exception is thrown inside the region, control is
-transfered unconditionally to the handler.  If control passes through
+transferred unconditionally to the handler.  If control passes through
 the handler, then the backend is to rethrow the exception, in the
 context of the end of the original region.  The handler is protected by
 the conventional mechanisms; it is the frontend's responsibility to

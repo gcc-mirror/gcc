@@ -337,11 +337,13 @@ in the following sections.
 -mtail-call
 
 @emph{DEC Alpha Options}
--mfp-regs  -mno-fp-regs
--mno-soft-float  -msoft-float
+-mfp-regs  -mno-fp-regs -mno-soft-float  -msoft-float
+-malpha-as -mgas
 -mieee  -mieee-with-inexact  -mieee-conformant
--mfp-trap-mode  -mfp-rounding-mode  -mtrap-precision
--mbuild-constants
+-mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode}
+-mtrap-precision=@var{mode}  -mbuild-constants
+-mcpu=@var{cpu type}
+-mbwx -mno-bwx -mcix -mno-cix -mmax -mno-max
 
 @emph{Clipper Options}
 -mc300  -mc400
@@ -1307,6 +1309,9 @@ whenever a function is declared static but never defined, whenever a
 label is declared but not used, and whenever a statement computes a
 result that is explicitly not used.
 
+In order to get a warning about an unused function parameter, you must
+specify both @samp{-W} and @samp{-Wunused}.
+
 To suppress this warning for an expression, simply cast it to void.  For
 unused variables and parameters, use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
@@ -1784,7 +1789,7 @@ and (optionally) the complete sequence of basic blocks being executed.
 The output is appended to file @file{bb.out}.
 
 You can examine different profiling aspects without recompilation.  Your
-execuable will read a list of function names from file @file{bb.in}.
+executable will read a list of function names from file @file{bb.in}.
 Profiling starts when a function on the list is entered and stops when
 that invocation is exited.  To exclude a function from profiling, prefix
 its name with `-'.  If a function name is not unique, you can
@@ -1896,6 +1901,10 @@ block and arc execution counts from the information in the
 @samp{-fprofile-arcs}).
 @end table
 
+@item -Q
+Makes the compiler print out each function name as it is compiled, and
+print some statistics about each pass when it finishes.
+
 @item -d@var{letters}
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the compiler.  The file names
@@ -1924,11 +1933,15 @@ Dump after first jump optimization, to @file{@var{file}.jump}.
 @item s
 Dump after CSE (including the jump optimization that sometimes
 follows CSE), to @file{@var{file}.cse}.
+@item D
+Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 @item L
 Dump after loop optimization, to @file{@var{file}.loop}.
 @item t
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.cse2}.
+@item b
+Dump after computing branch probabilities, to @file{@var{file}.bp}.
 @item f
 Dump after flow analysis, to @file{@var{file}.flow}.
 @item c
@@ -4102,7 +4115,7 @@ be compiled with @samp{-mrelocatable} or @samp{-mrelocatable-lib}.
 @itemx -mno-relocatable-lib
 On embedded PowerPC systems generate code that allows (does not allow)
 the program to be relocated to a different address at runtime.  Modules
-compiled with @samp{-mreloctable-lib} can be linked with either modules
+compiled with @samp{-mrelocatable-lib} can be linked with either modules
 compiled without @samp{-mrelocatable} and @samp{-mrelocatable-lib} or
 with modules compiled with the @samp{-mrelocatable} options.
 
@@ -4247,7 +4260,7 @@ in the @samp{.data} section, and all uninitialized data in the
 @item -G @var{num}
 @cindex smaller data references (PowerPC)
 @cindex .sdata/.sdata2 references (PowerPC)
-On embbeded PowerPC systems, put global and static items less than or
+On embedded PowerPC systems, put global and static items less than or
 equal to @var{num} bytes into the small data or bss sections instead of
 the normal data or bss section.  By default, @var{num} is 8.  The
 @samp{-G @var{num}} switch is also passed to the linker.
@@ -4712,7 +4725,7 @@ functions.
 @item -mspace
 Optimize for space rather than execution time.  Currently this only
 enables out of line function prologues and epilogues.  This option is
-incompatable with PIC code generation and profiling.
+incompatible with PIC code generation and profiling.
 
 @item -mlong-load-store
 Generate 3-instruction load and store sequences as sometimes required by
@@ -4995,7 +5008,7 @@ IEEE-conformant math library routines will be linked in.
 Normally GNU CC examines a 32- or 64-bit integer constant to
 see if it can construct it from smaller constants in two or three
 instructions.  If it cannot, it will output the constant as a literal and
-generate code to load it from the data segement at runtime.
+generate code to load it from the data segment at runtime.
 
 Use this option to require GNU CC to construct @emph{all} integer constants
 using code, even if it takes more instructions (the maximum is six).
@@ -5003,6 +5016,57 @@ using code, even if it takes more instructions (the maximum is six).
 You would typically use this option to build a shared library dynamic
 loader.  Itself a shared library, it must relocate itself in memory
 before it can find the variables and constants in its own data segment.
+
+@item -malpha-as
+@itemx -mgas
+Select whether to generate code to be assembled by the vendor-supplied
+assembler (@samp{-malpha-as}) or by the GNU assembler @samp{-mgas}.
+
+@item -mbwx
+@itemx -mno-bwx
+@itemx -mcix
+@itemx -mno-cix
+@itemx -mmax
+@itemx -mno-max
+Indicate whether GNU CC should generate code to use the optional BWX,
+CIX, and MAX instruction sets.  The default is to use the instruction sets
+supported by the CPU type specified via @samp{-mcpu=} option or that
+of the CPU on which GNU CC was built if none was specified.
+
+@item -mcpu=@var{cpu type}
+@item -mcpu=@var{cpu_type}
+Set the instruction set, register set, and instruction scheduling
+parameters for machine type @var{cpu_type}.  You can specify either the
+@samp{EV} style name or the corresponding chip number.  GNU CC
+supports scheduling parameters for the EV4 and EV5 family of processors
+and will choose the default values for the instruction set from
+the processor you specify.  If you do not specify a processor type,
+GNU CC will default to the processor on which the compiler was built.
+
+Supported values for @var{cpu_type} are
+
+@table @samp
+@item ev4
+@itemx 21064
+Schedules as an EV4 and has no instruction set extensions.
+
+@item ev5
+@itemx 21164
+Schedules as an EV5 and has no instruction set extensions.
+
+@item ev56
+@itemx 21164a
+Schedules as an EV5 and supports the BWX extension.
+
+@item pca56
+@itemx 21164PC
+Schedules as an EV5 and supports the BWX and MAX extensions.
+
+@item ev6
+@itemx 21264
+Schedules as an EV5 (until Digital releases the scheduling parameters
+for the EV6) and supports the BWX, CIX, and MAX extensions.
+@end table
 @end table
 
 @node Clipper Options
@@ -5176,6 +5240,16 @@ can figure out the other form by either removing @samp{no-} or adding
 it.
 
 @table @code
+@item -fexceptions
+Enable exception handling, and generate extra code needed to propagate
+exceptions.  If you do not specify this option, GNU CC enables it by
+default for languages like C++ that normally require exception handling,
+and disabled for languages like C that do not normally require it.
+However, when compiling C code that needs to interoperate properly with
+exception handlers written in C++, you may need to enable this option.
+You may also wish to disable this option is you are compiling older C++
+programs that don't use exception handling.
+
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
 longer ones, rather than in registers.  This convention is less
@@ -5301,7 +5375,7 @@ This flag does not have a negative form, because it specifies a
 three-way choice.
 
 @item -fcall-used-@var{reg}
-Treat the register named @var{reg} as an allocatable register that is
+Treat the register named @var{reg} as an allocable register that is
 clobbered by function calls.  It may be allocated for temporaries or
 variables that do not live across a call.  Functions compiled this way
 will not save and restore the register @var{reg}.
@@ -5314,7 +5388,7 @@ This flag does not have a negative form, because it specifies a
 three-way choice.
 
 @item -fcall-saved-@var{reg}
-Treat the register named @var{reg} as an allocatable register saved by
+Treat the register named @var{reg} as an allocable register saved by
 functions.  It may be allocated even for temporaries or variables that
 live across a call.  Functions compiled this way will save and restore
 the register @var{reg} if they use it.
@@ -5341,7 +5415,7 @@ code that is suitable for a detector of bad memory accesses such as
 @code{asm} or @code{__asm__} keywords.
 
 You must also specify this option when you compile functions you call that
-have side effects.  If you do not, you may get erronous messages from
+have side effects.  If you do not, you may get erroneous messages from
 the detector.  Normally,  you should compile all your code with this option.
 If you use functions from a library that have side-effects (such as
 @code{read}), you may not be able to recompile the library and

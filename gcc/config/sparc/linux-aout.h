@@ -1,4 +1,4 @@
-/* Definitions for SPARC running Linux with a.out
+/* Definitions for SPARC running Linux-based GNU systems with a.out.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #undef HAVE_ATEXIT
 #define HAVE_ATEXIT
 
-/* Linux uses ctype from glibc.a. I am not sure how complete it is.
+/* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */
 
 #if 0
@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc Linux/a.out)");
+#define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with a.out)");
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -84,9 +84,8 @@ Boston, MA 02111-1307, USA.  */
 
 #if 1
 /* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the Linux C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
- */
+   want to profile or debug the GNU/Linux C library, please add
+   -lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
 #define LIB_SPEC \
 "%{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} %{!ggdb:-lc} %{ggdb:-lg}"
 #else    
@@ -106,7 +105,7 @@ Boston, MA 02111-1307, USA.  */
 
 #if 0
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
-   Sparc ABI says that long double is 4 words. Linux does not support
+   Sparc ABI says that long double is 4 words. GNU/Linux does not support
    long double yet.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 #endif

@@ -1715,12 +1715,11 @@ block_alloc (b)
 	  {
 	    if (GET_CODE (qty_scratch_rtx[q]) == REG)
 	      abort ();
-
 	    qty_scratch_rtx[q] = gen_rtx (REG, GET_MODE (qty_scratch_rtx[q]),
 					  qty_phys_reg[q]);
-
 	    scratch_block[scratch_index] = b;
 	    scratch_list[scratch_index++] = qty_scratch_rtx[q];
+
 	  }
       }
 }

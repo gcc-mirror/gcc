@@ -258,6 +258,10 @@ extern int rtx_equal_function_value_matters;
    whether we actually emitted it or not.  */
 extern char *emit_filename;
 extern int emit_lineno;
+
+static rtx make_jump_insn_raw		PROTO((rtx));
+static rtx make_call_insn_raw		PROTO((rtx));
+static rtx find_line_node		PROTO((rtx));
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **

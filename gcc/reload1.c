@@ -673,7 +673,14 @@ reload (first, global, dumpfile)
 	      if (i > LAST_VIRTUAL_REGISTER)
 		{
 		  if (GET_CODE (x) == MEM)
-		    reg_equiv_memory_loc[i] = x;
+		    {
+		      /* If the operand is a PLUS, the MEM may be shared,
+			 so make sure we have an unshared copy here.  */
+		      if (GET_CODE (XEXP (x, 0)) == PLUS)
+			x = copy_rtx (x);
+
+		      reg_equiv_memory_loc[i] = x;
+		    }
 		  else if (CONSTANT_P (x))
 		    {
 		      if (LEGITIMATE_CONSTANT_P (x))

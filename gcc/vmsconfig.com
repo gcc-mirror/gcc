@@ -101,18 +101,17 @@ $open ifile$ t.tmp
 $read ifile$ line
 $close ifile$
 $delete t.tmp;
-$ijk=f$locate("""",line)+1
-$line=f$extract(ijk,f$length(line)-ijk,line)
-$ijk=f$locate("""",line)
-$line=f$extract(0,ijk,line)
-$ijk=f$locate("\n",line)
-$line=f$extract(0,ijk,line)
-$ !
-$elm=f$element(1," ",line)
-$ !
-$write_ident:
+$line=f$element(1,"""",line)	!extract the portion between 1st & 2nd quotes
+$! Format of 'line' is "name-nn.nn.nn[.nn] [date text]" (without the quotes).
+$! We want "name-nn.nn.nn[.nn][-date]"; "-date" suffix is optional.
+$id = f$element(1,"-",line)		!strip "name-" prefix
+$if id.eqs."-" then  id = line		!no prefix found?
+$id = f$element(0," ",id) + "-" + f$element(1," ",id)	!first two tokens
+$id = id - "- "		!in case 2nd token was empty
+$if f$length(id).gt.15 then  id = f$extract(0,15,id)	!length limitation
+$!
 $open/write ifile$ version.opt
-$write ifile$ "ident="+""""+elm+""""
+$write ifile$ "ident="+""""+id+""""
 $close ifile$
 $purge version.opt
 $!
@@ -175,11 +174,11 @@ PROCEDURE process_makefile( )
   ! The contents are assumed to be a list of object files, and from this
   ! list a VMS linker options file is generated.
   !
-  generate_option_file ("OBJS",      "=", "independent.opt");
-  generate_option_file ("LIB2FUNCS", "=", "libgcc2.list");
+  generate_option_file ("OBJS",		 "=", "independent.opt");
+  generate_option_file ("LIB2FUNCS",	 "=", "libgcc2.list");
   generate_option_file ("CXX_LIB2FUNCS", "=", "libgcc2-cxx.list");
-  generate_option_file ("BC_ALL",    "=", "bc_all.list");
-  generate_option_file ("BI_OBJ",    "=", "bi_all.opt");
+  generate_option_file ("BC_ALL",	 "=", "bc_all.list");
+  generate_option_file ("BI_OBJ",	 "=", "bi_all.opt");
   !
   ! Now change OBJS in the Makefile, so each language specific options file
   ! does not pick up all of the language independent files.
@@ -215,7 +214,7 @@ PROCEDURE process_objc_lib( )
 
   ERASE (makefile_buf);			!discard top Makefile
   POSITION (END_OF (makefile_buf));
-  READ_FILE ("[.objc]Makefile");	!load objc one
+  READ_FILE ("[.objc]Make-lang.in");	!load objc one
   MESSAGE ("objclib");
   pat_replace (ASCII(9), " ");		!change any <tab> to <space>
   generate_option_file ("OBJC_O", "=", "objc-objs.opt");
@@ -244,7 +243,7 @@ PROCEDURE configure_makefile( )
   COPY_TEXT ("tm_file=tm.h");			SPLIT_LINE;	! 'arch'/tm-vms.h
   pat_replace ("@" &
     SPAN("abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ#~0123456789")
-		& "@", );			! strip `configure' dummy values
+		   & "@", );		! strip `configure' dummy values
 ENDPROCEDURE; !configure_makefile
 !!
 
@@ -296,6 +295,12 @@ PROCEDURE additional_compiler( cname, subdir )
   pat_replace ("_OTH_SRCS)", "_OTH_SRCS_dummy_)");
   ! Convert subdirectory references into VMS syntax.
   pat_replace ("$(srcdir)/" + subdir + "/", "[." + subdir + "]");
+
+    ! Temporary? hack for cp/Make-lang.in's mishandling of "input.c".
+    IF (subdir = 'cp') THEN
+      pat_replace ("[.cp]input.c", );	! Discard this text.
+    ENDIF;
+
   ! Add this name to compilers.list.
   POSITION (END_OF (complist_buf));
   COPY_TEXT (cname);

@@ -1,5 +1,5 @@
 /* Code to maintain a C++ template repository.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GNU CC.
@@ -41,7 +41,9 @@ Boston, MA 02111-1307, USA.  */
 extern char * getenv ();
 #endif
 
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif rindex
 extern char *getpwd PROTO((void));
 
 static tree repo_get_id PROTO((tree));

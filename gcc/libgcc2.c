@@ -42,6 +42,17 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #endif
 
+#if (SUPPORTS_WEAK == 1) && (defined (ASM_OUTPUT_DEF) || defined (ASM_OUTPUT_WEAK_ALIAS))
+#define WEAK_ALIAS
+#endif
+
+/* In a cross-compilation situation, default to inhibiting compilation
+   of routines that use libc.  */
+
+#ifdef CROSS_COMPILE
+#define inhibit_libc
+#endif
+
 /* Permit the tm.h file to select the endianness to use just for this
    file.  This is used when the endianness is determined when the
    compiler is run.  */
@@ -1526,7 +1537,7 @@ __bb_exit_func (void)
 	      continue;
 	    }
 
-	  /* ??? Should first write a header to the file.  Perferably, a 4 byte
+	  /* ??? Should first write a header to the file.  Preferably, a 4 byte
 	     magic number, 4 bytes containing the time the program was
 	     compiled, 4 bytes containing the last modification time of the
 	     source file, and 4 bytes indicating the compiler options used.

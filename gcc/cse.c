@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "expr.h"
 
 #include <setjmp.h>
 
@@ -3390,6 +3391,10 @@ simplify_binary_operation (code, mode, op0, op1)
       f1 = real_value_truncate (mode, f1);
 
 #ifdef REAL_ARITHMETIC
+#ifndef REAL_INFINITY
+      if (code == DIV && REAL_VALUES_EQUAL (f1, dconst0))
+	return 0;
+#endif
       REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
 #else
       switch (code)
@@ -4769,6 +4774,10 @@ fold_rtx (x, insn)
 	 since they are used only for lists of args
 	 in a function call's REG_EQUAL note.  */
     case EXPR_LIST:
+      /* Changing anything inside an ADDRESSOF is incorrect; we don't
+	 want to (e.g.,) make (addressof (const_int 0)) just because
+	 the location is known to be zero.  */
+    case ADDRESSOF:
       return x;
 
 #ifdef HAVE_cc0
@@ -5019,7 +5028,7 @@ fold_rtx (x, insn)
 		 && GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
 	  base = XEXP (addr, 1);
 	else if (GET_CODE (addr) == ADDRESSOF)
-	  XEXP (x, 0) = addr;
+	  return change_address (x, VOIDmode, addr);
 
 	/* If this is a constant pool reference, we can fold it into its
 	   constant to allow better value tracking.  */
@@ -6410,7 +6419,7 @@ cse_insn (insn, in_libcall_block)
 	 a pseudo that is set more than once, do not record SRC.  Using
 	 SRC as a replacement for anything else will be incorrect in that
 	 situation.  Note that this usually occurs only for stack slots,
-	 in which case all the RTL would be refering to SRC, so we don't
+	 in which case all the RTL would be referring to SRC, so we don't
 	 lose any optimization opportunities by not having SRC in the
 	 hash table.  */
 

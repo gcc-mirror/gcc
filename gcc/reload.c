@@ -260,7 +260,7 @@ static int this_insn_is_asm;
 static int hard_regs_live_known;
 
 /* Indexed by hard reg number,
-   element is nonegative if hard reg has been spilled.
+   element is nonnegative if hard reg has been spilled.
    This vector is passed to `find_reloads' as an argument
    and is not changed here.  */
 static short *static_reload_reg_p;
@@ -4940,7 +4940,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		 CALL_INSN - and it does not set CC0.
 		 But don't do this if we cannot directly address the
 		 memory location, since this will make it harder to
-		 reuse address reloads, and increses register pressure.
+		 reuse address reloads, and increases register pressure.
 		 Also don't do this if we can probably update x directly.  */
 	      rtx equiv = reg_equiv_mem[regno];
 	      int icode = (int) add_optab->handlers[(int) Pmode].insn_code;
@@ -5349,6 +5349,18 @@ find_replacement (loc)
 	    return gen_rtx (SUBREG, GET_MODE (*loc), SUBREG_REG (reloadreg),
 			    SUBREG_WORD (reloadreg) + SUBREG_WORD (*loc));
 	}
+    }
+
+  /* If *LOC is a PLUS, MINUS, or MULT, see if a replacement is scheduled for
+     what's inside and make a new rtl if so.  */
+  if (GET_CODE (*loc) == PLUS || GET_CODE (*loc) == MINUS
+      || GET_CODE (*loc) == MULT)
+    {
+      rtx x = find_replacement (&XEXP (*loc, 0));
+      rtx y = find_replacement (&XEXP (*loc, 1));
+
+      if (x != XEXP (*loc, 0) || y != XEXP (*loc, 1))
+	return gen_rtx (GET_CODE (*loc), GET_MODE (*loc), x, y);
     }
 
   return *loc;

@@ -342,7 +342,7 @@ consume_count (type)
 }
 
 
-/* Like consume_count, but for counts that are preceeded and followed
+/* Like consume_count, but for counts that are preceded and followed
    by '_' if they are greater than 10.  Also, -1 is returned for
    failure, since 0 can be a valid value.  */
 
@@ -3135,6 +3135,15 @@ static struct option long_options[] = {
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
 };
+
+/* More 'friendly' abort that prints the line and file.
+   config.h can #define abort fancy_abort if you like that sort of thing.  */
+
+void
+fancy_abort ()
+{
+  fatal ("Internal gcc abort.");
+}
 
 int
 main (argc, argv)

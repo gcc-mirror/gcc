@@ -1,4 +1,4 @@
-/* Definitions for rtems targetting a PowerPC using elf.
+/* Definitions for rtems targeting a PowerPC using elf.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

@@ -1,4 +1,4 @@
-/* Definitions for rtems targetting a SH using elf.
+/* Definitions for rtems targeting a SH using elf.
    Copyright (C) 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

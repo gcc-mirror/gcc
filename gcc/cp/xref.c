@@ -1,5 +1,5 @@
 /* Code for handling XREF output from GNU C++.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -42,7 +42,9 @@ extern char *getpwd PROTO((void));
 #include <string.h>
 #endif
 
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
 
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */
