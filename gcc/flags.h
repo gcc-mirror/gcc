@@ -73,6 +73,10 @@ extern int extra_warnings;
 
 extern int warn_unused;
 
+/* Nonzero means warn if inline function is too large.  */
+
+extern int warn_inline;
+
 /* Nonzero to warn about variables used before they are initialized.  */
 
 extern int warn_uninitialized;
