@@ -1,3 +1,9 @@
+2003-12-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.md (subdi2): Merge with _internal insn_and_split,
+	by using match_scratch.
+	(negdi2): New.
+
 2003-12-08  Jason Merrill <jason@redhat.com>
 	    Daniel Berlin  <dberlin@dberlin.org>
 
