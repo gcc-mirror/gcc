@@ -3,7 +3,7 @@
 
 /* Mostly it's like AT&T Unix System V. */
 
-#include "i386v.h"
+#include "i386/svr3.h"
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387, ie,
