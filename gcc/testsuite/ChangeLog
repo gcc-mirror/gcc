@@ -1,3 +1,8 @@
+2003-09-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9848
+	* g++.dg/warn/Wunused-4.C: New test.
+
 2003-09-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/12316

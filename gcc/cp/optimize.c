@@ -120,7 +120,6 @@ bool
 maybe_clone_body (tree fn)
 {
   tree clone;
-  bool first = true;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
@@ -139,7 +138,7 @@ maybe_clone_body (tree fn)
      list.  */
   for (clone = TREE_CHAIN (fn);
        clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone), first = false)
+       clone = TREE_CHAIN (clone))
     {
       tree parm;
       tree clone_parm;
@@ -175,13 +174,8 @@ maybe_clone_body (tree fn)
 	clone_parm = TREE_CHAIN (clone_parm);
       for (; parm;
 	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
-	{
-	  /* Update this parameter.  */
-	  update_cloned_parm (parm, clone_parm);
-	  /* We should only give unused information for one clone.  */
-	  if (!first)
-	    TREE_USED (clone_parm) = 1;
-	}
+	/* Update this parameter.  */
+	update_cloned_parm (parm, clone_parm);
 
       /* Start processing the function.  */
       push_to_top_level ();
