@@ -1343,10 +1343,20 @@ instantiate_decl (rtx x, HOST_WIDE_INT size, int valid_only)
   enum machine_mode mode;
   rtx addr;
 
+  if (x == 0)
+    return;
+
+  /* If this is a CONCAT, recurse for the pieces.  */
+  if (GET_CODE (x) == CONCAT)
+    {
+      instantiate_decl (XEXP (x, 0), size / 2, valid_only);
+      instantiate_decl (XEXP (x, 1), size / 2, valid_only);
+      return;
+    }
+
   /* If this is not a MEM, no need to do anything.  Similarly if the
      address is a constant or a register that is not a virtual register.  */
-
-  if (x == 0 || !MEM_P (x))
+  if (!MEM_P (x))
     return;
 
   addr = XEXP (x, 0);
