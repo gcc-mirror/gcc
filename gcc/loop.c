@@ -82,26 +82,11 @@ static rtx *loop_number_loop_starts, *loop_number_loop_ends;
 
 int *loop_outer_loop;
 
-#ifdef HAIFA
-/* The main output of analyze_loop_iterations is placed here */
-
-int *loop_can_insert_bct;
-
-/* For each loop, determines whether some of its inner loops has used
-   count register */
+#ifdef HAVE_decrement_and_branch_on_count
+/* Records whether resource in use by inner loop.  */
 
 int *loop_used_count_register;
-
-/* loop parameters for arithmetic loops. These loops have a loop variable
-   which is initialized to loop_start_value, incremented in each iteration
-   by "loop_increment".  At the end of the iteration the loop variable is
-   compared to the loop_comparison_value (using loop_comparison_code).  */
-
-rtx *loop_increment;
-rtx *loop_comparison_value;
-rtx *loop_start_value;
-enum rtx_code *loop_comparison_code;
-#endif  /* HAIFA */
+#endif  /* HAVE_decrement_and_branch_on_count */
 
 /* For each loop, keep track of its unrolling factor.
    Potential values:
@@ -372,20 +357,13 @@ typedef struct rtx_pair {
    && INSN_LUID (INSN) >= INSN_LUID (START)	\
    && INSN_LUID (INSN) <= INSN_LUID (END))
 
-#ifdef HAIFA
-/* This is extern from unroll.c */
-extern void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
-
-/* Two main functions for implementing bct:
-   first - to be called before loop unrolling, and the second - after */
 #ifdef HAVE_decrement_and_branch_on_count
-static void analyze_loop_iterations PROTO((rtx, rtx));
+/* Test whether BCT applicable and safe.  */
 static void insert_bct PROTO((rtx, rtx));
 
-/* Auxiliary function that inserts the bct pattern into the loop */
+/* Auxiliary function that inserts the BCT pattern into the loop.  */
 static void instrument_loop_bct PROTO((rtx, rtx, rtx));
 #endif /* HAVE_decrement_and_branch_on_count */
-#endif  /* HAIFA */
 
 /* Indirect_jump_in_function is computed once per function.  */
 int indirect_jump_in_function = 0;
@@ -500,25 +478,11 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   loop_unroll_factor = (int *) alloca (max_loop_num *sizeof (int));
   bzero ((char *) loop_unroll_factor, max_loop_num * sizeof (int));
 
-#ifdef HAIFA
+#ifdef HAVE_decrement_and_branch_on_count
   /* Allocate for BCT optimization */
-  loop_can_insert_bct = (int *) alloca (max_loop_num * sizeof (int));
-  bzero ((char *) loop_can_insert_bct, max_loop_num * sizeof (int));
-
   loop_used_count_register = (int *) alloca (max_loop_num * sizeof (int));
   bzero ((char *) loop_used_count_register, max_loop_num * sizeof (int));
-
-  loop_increment = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_comparison_value = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_start_value = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  bzero ((char *) loop_increment, max_loop_num * sizeof (rtx));
-  bzero ((char *) loop_comparison_value, max_loop_num * sizeof (rtx));
-  bzero ((char *) loop_start_value, max_loop_num * sizeof (rtx));
-
-  loop_comparison_code 
-    = (enum rtx_code *) alloca (max_loop_num * sizeof (enum rtx_code));
-  bzero ((char *) loop_comparison_code, max_loop_num * sizeof (enum rtx_code));
-#endif  /* HAIFA */
+#endif  /* HAVE_decrement_and_branch_on_count */
 
   /* Find and process each loop.
      First, find them, and record them in order of their beginnings.  */
@@ -2989,10 +2953,10 @@ mark_loop_jump (x, loop_num)
 
       if (loop_num != -1)
 	{
-#ifdef HAIFA
+#ifdef HAVE_decrement_and_branch_on_count
 	  LABEL_OUTSIDE_LOOP_P (x) = 1;
 	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
-#endif  /* HAIFA */
+#endif  /* HAVE_decrement_and_branch_on_count */
 
 	  loop_number_exit_labels[loop_num] = x;
 
@@ -4109,16 +4073,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      so that "decrement and branch until zero" insn can be used.  */
   check_dbra_loop (loop_end, insn_count, loop_start);
 
-#ifdef HAIFA
-  /* record loop-variables relevant for BCT optimization before unrolling
-     the loop.  Unrolling may update part of this information, and the
-     correct data will be used for generating the BCT.  */
-#ifdef HAVE_decrement_and_branch_on_count
-  if (HAVE_decrement_and_branch_on_count && bct_p)
-    analyze_loop_iterations (loop_start, loop_end);
-#endif
-#endif  /* HAIFA */
-
   /* Create reg_map to hold substitutions for replaceable giv regs.  */
   reg_map = (rtx *) alloca (max_reg_before_loop * sizeof (rtx));
   bzero ((char *) reg_map, max_reg_before_loop * sizeof (rtx));
@@ -4618,13 +4572,12 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   if (unroll_p)
     unroll_loop (loop_end, insn_count, loop_start, end_insert_before, 1);
 
-#ifdef HAIFA
-  /* instrument the loop with bct insn */
 #ifdef HAVE_decrement_and_branch_on_count
-  if (HAVE_decrement_and_branch_on_count && bct_p)
+  /* Instrument the loop with BCT insn.  */
+  if (HAVE_decrement_and_branch_on_count && bct_p
+      && flag_branch_on_count_reg)
     insert_bct (loop_start, loop_end);
-#endif
-#endif  /* HAIFA */
+#endif  /* HAVE_decrement_and_branch_on_count */
 
   if (loop_dump_stream)
     fprintf (loop_dump_stream, "\n");
@@ -7985,530 +7938,280 @@ get_condition_for_loop (x)
 			 XEXP (comparison, 1), XEXP (comparison, 0));
 }
 
-#ifdef HAIFA
-/* Analyze a loop in order to instrument it with the use of count register.
-   loop_start and loop_end are the first and last insns of the loop.
-   This function works in cooperation with insert_bct ().
-   loop_can_insert_bct[loop_num] is set according to whether the optimization
-   is applicable to the loop.  When it is applicable, the following variables
-   are also set:
-    loop_start_value[loop_num]
-    loop_comparison_value[loop_num]
-    loop_increment[loop_num]
-    loop_comparison_code[loop_num] */
-
 #ifdef HAVE_decrement_and_branch_on_count
-static void
-analyze_loop_iterations (loop_start, loop_end)
-  rtx loop_start, loop_end;
-{
-  rtx comparison, comparison_value;
-  rtx iteration_var, initial_value, increment;
-  enum rtx_code comparison_code;
-
-  rtx last_loop_insn;
-  rtx insn;
-  int i;
-
-  /* loop_variable mode */
-  enum machine_mode original_mode;
-
-  /* find the number of the loop */
-  int loop_num = uid_loop_num [INSN_UID (loop_start)];
-
-  /* we change our mind only when we are sure that loop will be instrumented */
-  loop_can_insert_bct[loop_num] = 0;
-
-  /* is the optimization suppressed.  */
-  if ( !flag_branch_on_count_reg )
-    return;
-
-  /* make sure that count-reg is not in use */
-  if (loop_used_count_register[loop_num]){
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "analyze_loop_iterations %d: BCT instrumentation failed: count register already in use\n",
-	      loop_num);
-    return;
-  }
-
-  /* make sure that the function has no indirect jumps.  */
-  if (indirect_jump_in_function){
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-              "analyze_loop_iterations %d: BCT instrumentation failed: indirect jump in function\n",
-	      loop_num);
-    return;
-  }
-
-  /* make sure that the last loop insn is a conditional jump */
-  last_loop_insn = PREV_INSN (loop_end);
-  if (GET_CODE (last_loop_insn) != JUMP_INSN || !condjump_p (last_loop_insn)) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-              "analyze_loop_iterations %d: BCT instrumentation failed: invalid jump at loop end\n",
-	      loop_num);
-    return;
-  }
-
-  /* First find the iteration variable.  If the last insn is a conditional
-     branch, and the insn preceding it tests a register value, make that
-     register the iteration variable.  */
-
-  /* We used to use prev_nonnote_insn here, but that fails because it might
-     accidentally get the branch for a contained loop if the branch for this
-     loop was deleted.  We can only trust branches immediately before the
-     loop_end.  */
-
-  comparison = get_condition_for_loop (last_loop_insn);
-  /* ??? Get_condition may switch position of induction variable and
-     invariant register when it canonicalizes the comparison.  */
-
-  if (comparison == 0) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "analyze_loop_iterations %d: BCT instrumentation failed: comparison not found\n",
-	      loop_num);
-    return;
-  }
-
-  comparison_code = GET_CODE (comparison);
-  iteration_var = XEXP (comparison, 0);
-  comparison_value = XEXP (comparison, 1);
-
-  original_mode = GET_MODE (iteration_var);
-  if (GET_MODE_CLASS (original_mode) != MODE_INT
-      || GET_MODE_SIZE (original_mode) != UNITS_PER_WORD) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "analyze_loop_iterations %d: BCT Instrumentation failed: loop variable not integer\n",
-	      loop_num);
-    return;
-  }
-
-  /* get info about loop bounds and increment */
-  iteration_info (iteration_var, &initial_value, &increment,
-		  loop_start, loop_end);
-
-  /* make sure that all required loop data were found */
-  if (!(initial_value && increment && comparison_value
-	&& invariant_p (comparison_value) && invariant_p (increment)
-	&& ! indirect_jump_in_function))
-    {
-      if (loop_dump_stream) {
-	fprintf (loop_dump_stream,
-                "analyze_loop_iterations %d: BCT instrumentation failed because of wrong loop: ", loop_num);
-	if (!(initial_value && increment && comparison_value)) {
-	  fprintf (loop_dump_stream, "\tbounds not available: ");
-	  if ( ! initial_value )
-	    fprintf (loop_dump_stream, "initial ");
-	  if ( ! increment )
-	    fprintf (loop_dump_stream, "increment ");
-	  if ( ! comparison_value )
-	    fprintf (loop_dump_stream, "comparison ");
-	  fprintf (loop_dump_stream, "\n");
-	}
-	if (!invariant_p (comparison_value) || !invariant_p (increment))
-	  fprintf (loop_dump_stream, "\tloop bounds not invariant\n");
-      }
-      return;
-    }
-
-  /* make sure that the increment is constant */
-  if (GET_CODE (increment) != CONST_INT) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-              "analyze_loop_iterations %d: instrumentation failed: not arithmetic loop\n",
-	      loop_num);
-    return;
-  }
-
-  /* make sure that the loop contains neither function call, nor jump on table.
-     (the count register might be altered by the called function, and might
-     be used for a branch on table).  */
-  for (insn = loop_start; insn && insn != loop_end; insn = NEXT_INSN (insn)) {
-    if (GET_CODE (insn) == CALL_INSN){
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-                "analyze_loop_iterations %d: BCT instrumentation failed: function call in the loop\n",
-		loop_num);
-      return;
-    }
-
-    if (GET_CODE (insn) == JUMP_INSN
-       && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-	   || GET_CODE (PATTERN (insn)) == ADDR_VEC)){
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-                "analyze_loop_iterations %d: BCT instrumentation failed: computed branch in the loop\n",
-		loop_num);
-      return;
-    }
-  }
-
-  /* At this point, we are sure that the loop can be instrumented with BCT.
-     Some of the loops, however, will not be instrumented - the final decision
-     is taken by insert_bct () */
-  if (loop_dump_stream)
-    fprintf (loop_dump_stream,
-            "analyze_loop_iterations: loop (luid =%d) can be BCT instrumented.\n",
-	    loop_num);
-
-  /* mark all enclosing loops that they cannot use count register */
-  /* ???: In fact, since insert_bct may decide not to instrument this loop,
-     marking here may prevent instrumenting an enclosing loop that could
-    actually be instrumented.  But since this is rare, it is safer to mark
-    here in case the order of calling  (analyze/insert)_bct would be changed.  */
-  for (i=loop_num; i != -1; i = loop_outer_loop[i])
-    loop_used_count_register[i] = 1;
-
-  /* Set data structures which will be used by the instrumentation phase */
-  loop_start_value[loop_num] = initial_value;
-  loop_comparison_value[loop_num] = comparison_value;
-  loop_increment[loop_num] = increment;
-  loop_comparison_code[loop_num] = comparison_code;
-  loop_can_insert_bct[loop_num] = 1;
-}
-
-
-/* instrument loop for insertion of bct instruction.  We distinguish between
- loops with compile-time bounds, to those with run-time bounds.  The loop
- behaviour is analized according to the following characteristics/variables:
- ; Input variables:
- ;   comparison-value: the value to which the iteration counter is compared.
- ;   initial-value: iteration-counter initial value.
- ;   increment: iteration-counter increment.
- ; Computed variables:
- ;   increment-direction: the sign of the increment.
- ;   compare-direction: '1' for GT, GTE, '-1' for LT, LTE, '0' for NE.
- ;   range-direction: sign (comparison-value - initial-value)
- We give up on the following cases:
- ; loop variable overflow.
- ; run-time loop bounds with comparison code NE.
+/* Instrument loop for insertion of bct instruction.  We distinguish between
+   loops with compile-time bounds and those with run-time bounds. 
+   Information from loop_iterations() is used to compute compile-time bounds.
+   Run-time bounds should use loop preconditioning, but currently ignored.
  */
 
 static void
 insert_bct (loop_start, loop_end)
      rtx loop_start, loop_end;
 {
-  rtx initial_value, comparison_value, increment;
-  enum rtx_code comparison_code;
+  int i;
+  unsigned HOST_WIDE_INT n_iterations;
+  rtx insn;
 
   int increment_direction, compare_direction;
-  int unsigned_p = 0;
 
-  /* if the loop condition is <= or >=, the number of iteration
-      is 1 more than the range of the bounds of the loop */
+  /* If the loop condition is <= or >=, the number of iteration
+      is 1 more than the range of the bounds of the loop.  */
   int add_iteration = 0;
 
-  /* the only machine mode we work with - is the integer of the size that the
-     machine has */
   enum machine_mode loop_var_mode = word_mode;
 
   int loop_num = uid_loop_num [INSN_UID (loop_start)];
-
-  /* get loop-variables. No need to check that these are valid - already
-     checked in analyze_loop_iterations ().  */
-  comparison_code = loop_comparison_code[loop_num];
-  initial_value = loop_start_value[loop_num];
-  comparison_value = loop_comparison_value[loop_num];
-  increment = loop_increment[loop_num];
-
-  /* check analyze_loop_iterations decision for this loop.  */
-  if (! loop_can_insert_bct[loop_num]){
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "insert_bct: [%d] - was decided not to instrument by analyze_loop_iterations ()\n",
-	      loop_num);
-    return;
-  }
 
   /* It's impossible to instrument a competely unrolled loop.  */
   if (loop_unroll_factor [loop_num] == -1)
     return;
 
-  /* make sure that the last loop insn is a conditional jump .
-     This check is repeated from analyze_loop_iterations (),
-     because unrolling might have changed that.  */
-  if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
-      || !condjump_p (PREV_INSN (loop_end))) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "insert_bct: not instrumenting BCT because of invalid branch\n");
-    return;
-  }
-
-  /* fix increment in case loop was unrolled.  */
-  if (loop_unroll_factor [loop_num] > 1)
-    increment = GEN_INT ( INTVAL (increment) * loop_unroll_factor [loop_num] );
-
-  /* determine properties and directions of the loop */
-  increment_direction = (INTVAL (increment) > 0) ? 1:-1;
-  switch ( comparison_code ) {
-  case LEU:
-    unsigned_p = 1;
-    /* fallthrough */
-  case LE:
-    compare_direction = 1;
-    add_iteration = 1;
-    break;
-  case GEU:
-    unsigned_p = 1;
-    /* fallthrough */
-  case GE:
-    compare_direction = -1;
-    add_iteration = 1;
-    break;
-  case EQ:
-    /* in this case we cannot know the number of iterations */
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-              "insert_bct: %d: loop cannot be instrumented: == in condition\n",
-	      loop_num);
-    return;
-  case LTU:
-    unsigned_p = 1;
-    /* fallthrough */
-  case LT:
-    compare_direction = 1;
-    break;
-  case GTU:
-    unsigned_p = 1;
-    /* fallthrough */
-  case GT:
-    compare_direction = -1;
-    break;
-  case NE:
-    compare_direction = 0;
-    break;
-  default:
-    abort ();
-  }
-
-
-  /* make sure that the loop does not end by an overflow */
-  if (compare_direction != increment_direction) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-              "insert_bct: %d: loop cannot be instrumented: terminated by overflow\n",
-	      loop_num);
-    return;
-  }
-
-  /* try to instrument the loop.  */
-
-  /* Handle the simpler case, where the bounds are known at compile time.  */
-  if (GET_CODE (initial_value) == CONST_INT
-      && GET_CODE (comparison_value) == CONST_INT)
+  /* Make sure that the count register is not in use.  */
+  if (loop_used_count_register [loop_num])
     {
-      int n_iterations;
-      int increment_value_abs = INTVAL (increment) * increment_direction;
-
-      /* check the relation between compare-val and initial-val */
-      int difference = INTVAL (comparison_value) - INTVAL (initial_value);
-      int range_direction = (difference > 0) ? 1 : -1;
-
-      /* make sure the loop executes enough iterations to gain from BCT */
-      if (difference > -3 && difference < 3) {
-	if (loop_dump_stream)
-	  fprintf (loop_dump_stream,
-		  "insert_bct: loop %d not BCT instrumented: too small iteration count.\n",
-		  loop_num);
-	return;
-      }
-
-      /* make sure that the loop executes at least once */
-      if ((range_direction ==  1 && compare_direction == -1)
-	  || (range_direction == -1 && compare_direction ==  1))
-	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
-		    "insert_bct: loop %d: does not iterate even once. Not instrumenting.\n",
-		    loop_num);
-	  return;
-	}
-
-      /* make sure that the loop does not end by an overflow (in compile time
-         bounds we must have an additional check for overflow, because here
-         we also support the compare code of 'NE'.  */
-      if (comparison_code == NE
-	  && increment_direction != range_direction) {
-	if (loop_dump_stream)
-	  fprintf (loop_dump_stream,
-		  "insert_bct (compile time bounds): %d: loop not instrumented: terminated by overflow\n",
-		  loop_num);
-	return;
-      }
-
-      /* Determine the number of iterations by:
-	 ;
-         ;                  compare-val - initial-val + (increment -1) + additional-iteration
-         ; num_iterations = -----------------------------------------------------------------
-         ;                                           increment
-	 */
-      difference = (range_direction > 0) ? difference : -difference;
-#if 0
-      fprintf (stderr, "difference is: %d\n", difference); /* @*/
-      fprintf (stderr, "increment_value_abs is: %d\n", increment_value_abs); /* @*/
-      fprintf (stderr, "add_iteration is: %d\n", add_iteration); /* @*/
-      fprintf (stderr, "INTVAL (comparison_value) is: %d\n", INTVAL (comparison_value)); /* @*/
-      fprintf (stderr, "INTVAL (initial_value) is: %d\n", INTVAL (initial_value)); /* @*/
-#endif
-
-      if (increment_value_abs == 0) {
-	fprintf (stderr, "insert_bct: error: increment == 0 !!!\n");
-	abort ();
-      }
-      n_iterations = (difference + increment_value_abs - 1 + add_iteration)
-	/ increment_value_abs;
-
-#if 0
-      fprintf (stderr, "number of iterations is: %d\n", n_iterations); /* @*/
-#endif
-      instrument_loop_bct (loop_start, loop_end, GEN_INT (n_iterations));
-
-      /* Done with this loop.  */
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT instrumentation failed: count register already in use\n",
+		 loop_num);
       return;
     }
 
-  /* Handle the more complex case, that the bounds are NOT known at compile time.  */
-  /* In this case we generate run_time calculation of the number of iterations */
+  /* Make sure that the function has no indirect jumps.  */
+  if (indirect_jump_in_function)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT instrumentation failed: indirect jump in function\n",
+		 loop_num);
+      return;
+    }
+
+  /* Make sure that the last loop insn is a conditional jump.  */
+  if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
+      || ! condjump_p (PREV_INSN (loop_end))
+      || simplejump_p (PREV_INSN (loop_end)))
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT instrumentation failed: invalid jump at loop end\n",
+		 loop_num);
+      return;
+    }
+
+  /* Make sure that the loop does not contain a function call
+     (the count register might be altered by the called function).  */
+  if (loop_has_call)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT instrumentation failed: function call in loop\n",
+		 loop_num);
+      return;
+    }
+
+  /* Make sure that the loop does not jump via a table.
+     (the count register might be used to perform the branch on table).  */
+  for (insn = loop_start; insn && insn != loop_end; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == JUMP_INSN
+	  && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+	      || GET_CODE (PATTERN (insn)) == ADDR_VEC))
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "insert_bct %d: BCT instrumentation failed: computed branch in the loop\n",
+		     loop_num);
+	  return;
+	}
+    }
+
+  /* Account for loop unrolling in instrumented iteration count.  */
+  if (loop_unroll_factor [loop_num] > 1)
+    n_iterations = loop_n_iterations / loop_unroll_factor [loop_num];
+  else
+    n_iterations = loop_n_iterations;
+
+  if (n_iterations != 0 && n_iterations < 3)
+    {
+      /* Allow an enclosing outer loop to benefit if possible.  */
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: Too few iterations to benefit from BCT optimization\n",
+		 loop_num);
+      return;
+    }
+
+  /* Try to instrument the loop.  */
+
+  /* Handle the simpler case, where the bounds are known at compile time.  */
+  if (n_iterations > 0)
+    {
+      /* Mark all enclosing loops that they cannot use count register.  */
+      for (i=loop_num; i != -1; i = loop_outer_loop[i])
+	loop_used_count_register[i] = 1;
+      instrument_loop_bct (loop_start, loop_end, GEN_INT (n_iterations));
+      return;
+    }
+
+  /* Handle the more complex case, that the bounds are NOT known
+     at compile time.  In this case we generate run_time calculation
+     of the number of iterations.  */
+
+  if (GET_MODE_CLASS (GET_MODE (loop_iteration_var)) != MODE_INT
+      || GET_MODE_SIZE (GET_MODE (loop_iteration_var)) != UNITS_PER_WORD)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT Instrumentation failed: loop variable not integer\n",
+		 loop_num);
+      return;
+    }
 
   /* With runtime bounds, if the compare is of the form '!=' we give up */
-  if (comparison_code == NE) {
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream,
-	      "insert_bct: fail for loop %d: runtime bounds with != comparison\n",
-	      loop_num);
-    return;
-  }
-
-  else {
-    /* We rely on the existence of run-time guard to ensure that the
-       loop executes at least once.  */
-    rtx sequence;
-    rtx iterations_num_reg;
-
-    int increment_value_abs = INTVAL (increment) * increment_direction;
-
-    /* make sure that the increment is a power of two, otherwise (an
-       expensive) divide is needed.  */
-    if (exact_log2 (increment_value_abs) == -1)
-      {
-	if (loop_dump_stream)
-	  fprintf (loop_dump_stream,
-		  "insert_bct: not instrumenting BCT because the increment is not power of 2\n");
-	return;
-      }
-
-    /* compute the number of iterations */
-    start_sequence ();
+  if (loop_comparison_code == NE)
     {
-      rtx temp_reg;
-
-      /* Again, the number of iterations is calculated by:
-	 ;
-         ;                  compare-val - initial-val + (increment -1) + additional-iteration
-         ; num_iterations = -----------------------------------------------------------------
-         ;                                           increment
-	 */
-      /* ??? Do we have to call copy_rtx here before passing rtx to
-	 expand_binop?  */
-      if (compare_direction > 0) {
-	/* <, <= :the loop variable is increasing */
-	temp_reg = expand_binop (loop_var_mode, sub_optab, comparison_value,
-				 initial_value, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-      }
-      else {
-	temp_reg = expand_binop (loop_var_mode, sub_optab, initial_value,
-				 comparison_value, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-      }
-
-      if (increment_value_abs - 1 + add_iteration != 0)
-	temp_reg = expand_binop (loop_var_mode, add_optab, temp_reg,
-				 GEN_INT (increment_value_abs - 1 + add_iteration),
-				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
-
-      if (increment_value_abs != 1)
-	{
-	  /* ??? This will generate an expensive divide instruction for
-	     most targets.  The original authors apparently expected this
-	     to be a shift, since they test for power-of-2 divisors above,
-	     but just naively generating a divide instruction will not give 
-	     a shift.  It happens to work for the PowerPC target because
-	     the rs6000.md file has a divide pattern that emits shifts.
-	     It will probably not work for any other target.  */
-	  iterations_num_reg = expand_binop (loop_var_mode, sdiv_optab,
-					     temp_reg,
-					     GEN_INT (increment_value_abs),
-					     NULL_RTX, 0, OPTAB_LIB_WIDEN);
-	}
-      else
-	iterations_num_reg = temp_reg;
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: runtime bounds with != comparison\n",
+		 loop_num);
+      return;
     }
-    sequence = gen_sequence ();
-    end_sequence ();
-    emit_insn_before (sequence, loop_start);
-    instrument_loop_bct (loop_start, loop_end, iterations_num_reg);
-  }
+/* Use common loop preconditioning code instead.  */
+#if 0
+  else
+    {
+      /* We rely on the existence of run-time guard to ensure that the
+	 loop executes at least once.  */
+      rtx sequence;
+      rtx iterations_num_reg;
+
+      unsigned HOST_WIDE_INT increment_value_abs
+	= INTVAL (increment) * increment_direction;
+
+      /* make sure that the increment is a power of two, otherwise (an
+	 expensive) divide is needed.  */
+      if (exact_log2 (increment_value_abs) == -1)
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "insert_bct: not instrumenting BCT because the increment is not power of 2\n");
+	  return;
+	}
+
+      /* compute the number of iterations */
+      start_sequence ();
+      {
+	rtx temp_reg;
+
+	/* Again, the number of iterations is calculated by:
+	   ;
+	   ;                  compare-val - initial-val + (increment -1) + additional-iteration
+	   ; num_iterations = -----------------------------------------------------------------
+	   ;                                           increment
+	 */
+	/* ??? Do we have to call copy_rtx here before passing rtx to
+	   expand_binop?  */
+	if (compare_direction > 0)
+	  {
+	    /* <, <= :the loop variable is increasing */
+	    temp_reg = expand_binop (loop_var_mode, sub_optab,
+				     comparison_value, initial_value,
+				     NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	  }
+	else
+	  {
+	    temp_reg = expand_binop (loop_var_mode, sub_optab,
+				     initial_value, comparison_value,
+				     NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	  }
+
+	if (increment_value_abs - 1 + add_iteration != 0)
+	  temp_reg = expand_binop (loop_var_mode, add_optab, temp_reg,
+				   GEN_INT (increment_value_abs - 1
+					    + add_iteration),
+				   NULL_RTX, 0, OPTAB_LIB_WIDEN);
+
+	if (increment_value_abs != 1)
+	  {
+	    /* ??? This will generate an expensive divide instruction for
+	       most targets.  The original authors apparently expected this
+	       to be a shift, since they test for power-of-2 divisors above,
+	       but just naively generating a divide instruction will not give 
+	       a shift.  It happens to work for the PowerPC target because
+	       the rs6000.md file has a divide pattern that emits shifts.
+	       It will probably not work for any other target.  */
+	    iterations_num_reg = expand_binop (loop_var_mode, sdiv_optab,
+					       temp_reg,
+					       GEN_INT (increment_value_abs),
+					       NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	  }
+	else
+	  iterations_num_reg = temp_reg;
+      }
+      sequence = gen_sequence ();
+      end_sequence ();
+      emit_insn_before (sequence, loop_start);
+      instrument_loop_bct (loop_start, loop_end, iterations_num_reg);
+    }
+
+  return;
+#endif /* Complex case */
 }
 
-/* instrument loop by inserting a bct in it. This is done in the following way:
-   1. A new register is created and assigned the hard register number of the count
-    register.
-   2. In the head of the loop the new variable is initialized by the value passed in the
-    loop_num_iterations parameter.
+/* Instrument loop by inserting a bct in it as follows:
+   1. A new counter register is created.
+   2. In the head of the loop the new variable is initialized to the value
+   passed in the loop_num_iterations parameter.
    3. At the end of the loop, comparison of the register with 0 is generated.
-    The created comparison follows the pattern defined for the
-    decrement_and_branch_on_count insn, so this insn will be generated in assembly
-    generation phase.
-   4. The compare&branch on the old variable is deleted. So, if the loop-variable was
-    not used elsewhere, it will be eliminated by data-flow analisys.  */
+   The created comparison follows the pattern defined for the
+   decrement_and_branch_on_count insn, so this insn will be generated.
+   4. The branch on the old variable are deleted.  The compare must remain
+   because it might be used elsewhere.  If the loop-variable or condition
+   register are used elsewhere, they will be eliminated by flow.  */
 
 static void
 instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
      rtx loop_start, loop_end;
      rtx loop_num_iterations;
 {
-  rtx temp_reg1, temp_reg2;
+  rtx counter_reg;
   rtx start_label;
-
   rtx sequence;
-  enum machine_mode loop_var_mode = word_mode;
 
   if (HAVE_decrement_and_branch_on_count)
     {
       if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Loop: Inserting BCT\n");
+	{
+	  fputs ("instrument_bct: Inserting BCT (", loop_dump_stream);
+	  if (GET_CODE (loop_num_iterations) == CONST_INT)
+	    fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC,
+		     INTVAL (loop_num_iterations));
+	  else
+	    fputs ("runtime", loop_dump_stream);
+	  fputs (" iterations)", loop_dump_stream);
+	}
 
       /* Discard original jump to continue loop.  Original compare result
 	 may still be live, so it cannot be discarded explicitly.  */
       delete_insn (PREV_INSN (loop_end));
 
-      /* insert the label which will delimit the start of the loop */
+      /* Insert the label which will delimit the start of the loop.  */
       start_label = gen_label_rtx ();
       emit_label_after (start_label, loop_start);
 
-      /* insert initialization of the count register into the loop header */
+      /* Insert initialization of the count register into the loop header.  */
       start_sequence ();
-      temp_reg1 = gen_reg_rtx (loop_var_mode);
-      emit_insn (gen_move_insn (temp_reg1, loop_num_iterations));
-
-      /* this will be count register */
-      temp_reg2 = gen_rtx_REG (loop_var_mode, COUNT_REGISTER_REGNUM);
-      /* we have to move the value to the count register from an GPR
-	 because rtx pointed to by loop_num_iterations could contain
-	 expression which cannot be moved into count register */
-      emit_insn (gen_move_insn (temp_reg2, temp_reg1));
-
+      counter_reg = gen_reg_rtx (word_mode);
+      emit_insn (gen_move_insn (counter_reg, loop_num_iterations));
       sequence = gen_sequence ();
       end_sequence ();
       emit_insn_before (sequence, loop_start);
 
-      /* insert new comparison on the count register instead of the
+      /* Insert new comparison on the count register instead of the
 	 old one, generating the needed BCT pattern (that will be
 	 later recognized by assembly generation phase).  */
-      emit_jump_insn_before (gen_decrement_and_branch_on_count (temp_reg2,
+      emit_jump_insn_before (gen_decrement_and_branch_on_count (counter_reg,
 								start_label),
 			     loop_end);
       LABEL_NUSES (start_label)++;
@@ -8516,8 +8219,6 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
 
 }
 #endif /* HAVE_decrement_and_branch_on_count */
-
-#endif	/* HAIFA */
 
 /* Scan the function and determine whether it has indirect (computed) jumps.
 
