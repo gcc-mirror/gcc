@@ -699,6 +699,45 @@ singlemove_string (operands)
 }
 
 
+char *
+output_zdepi (operands)
+     rtx *operands;
+{
+  unsigned long x = INTVAL (operands[1]);
+  int i;
+
+  for (i = 0; i < 32; i++)
+    {
+      if ((x & 1) != 0)
+        break;
+      x >>= 1;
+    }
+
+  if ((x & 0x10) == 0)
+    {
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, x);
+      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
+      operands[3] = gen_rtx (CONST_INT, VOIDmode, 32 - i < 4 ? 32 - i : 4);
+    }
+  else
+    {
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, (x & 0xf) - 0x10);
+      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
+
+      x >>= 5;
+      for (i = 0; i < 32; i++)
+	{
+	  if ((x & 1) == 0)
+	    break;
+	  x >>= 1;
+	}
+
+      operands[3] = gen_rtx (CONST_INT, VOIDmode, i + 5);
+    }
+
+  return "zdepi %1,%2,%3,%0";
+}
+
 /* Output assembler code to perform a doubleword move insn
    with operands OPERANDS.  */
 
