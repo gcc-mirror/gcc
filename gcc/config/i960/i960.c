@@ -570,8 +570,8 @@ emit_move_sequence (operands, mode)
   return 0;
 }
 
-/* Emit insns to load a constant.  Uses several strategies to try to use
-   as few insns as possible.  */
+/* Emit insns to load a constant to non-floating point registers.
+   Uses several strategies to try to use as few insns as possible.  */
 
 char *
 i960_output_ldconst (dst, src)
@@ -593,6 +593,30 @@ i960_output_ldconst (dst, src)
       output_asm_insn ("ldconst	%1,%0", operands);
       return "";
     }
+  else if (mode == XFmode)
+    {
+      REAL_VALUE_TYPE d;
+      long value_long[3];
+      int i;
+
+      if (fp_literal_zero (src, XFmode))
+	return "movt	0,%0";
+
+      REAL_VALUE_FROM_CONST_DOUBLE (d, src);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (d, value_long);
+
+      output_asm_insn ("# ldconst	%1,%0",operands);
+
+      for (i = 0; i < 3; i++)
+	{
+	  operands[0] = gen_rtx (REG, SImode, REGNO (dst) + i);
+	  operands[1] = GEN_INT (value_long[i]);
+	  output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
+			   operands);
+	}
+
+      return ""; 
+   }
   else if (mode == DFmode)
     {
       rtx first, second;
@@ -610,6 +634,21 @@ i960_output_ldconst (dst, src)
 		      operands);
       operands[0] = gen_rtx (REG, SImode, REGNO (dst) + 1);
       operands[1] = second;
+      output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
+		      operands);
+      return "";
+    }
+  else if (mode == SFmode)
+    {
+      REAL_VALUE_TYPE d;
+      long value;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (d, src);
+      REAL_VALUE_TO_TARGET_SINGLE (d, value);
+
+      output_asm_insn ("# ldconst	%1,%0",operands);
+      operands[0] = gen_rtx (REG, SImode, REGNO (dst));
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
       return "";
@@ -649,21 +688,6 @@ i960_output_ldconst (dst, src)
       output_asm_insn (i960_output_ldconst (xoperands[0], xoperands[1]),
 		       xoperands);
       /* The lower word is emitted as normally.  */
-    }
-  else if (mode == SFmode)
-    {
-      REAL_VALUE_TYPE d;
-      long value;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, src);
-      REAL_VALUE_TO_TARGET_SINGLE (d, value);
-
-      output_asm_insn ("# ldconst	%1,%0",operands);
-      operands[0] = gen_rtx (REG, SImode, REGNO (dst));
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
-      output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
-		      operands);
-      return "";
     }
   else
     {
@@ -1851,12 +1875,12 @@ i960_alignment (size, align)
 #define S_MODES						\
  (~C_MODES						\
   & ~ ((1 << (int) DImode) | (1 << (int) TImode)	\
-       | (1 << (int) DFmode) | (1 << (int) TFmode)))
+       | (1 << (int) DFmode) | (1 << (int) XFmode)))
 
 /* Modes for double-word (and smaller) quantities.  */
 #define D_MODES					\
   (~C_MODES					\
-   & ~ ((1 << (int) TImode) | (1 << (int) TFmode)))
+   & ~ ((1 << (int) TImode) | (1 << (int) XFmode)))
 
 /* Modes for quad-word quantities.  */
 #define T_MODES (~C_MODES)
@@ -1868,7 +1892,7 @@ i960_alignment (size, align)
 #define DF_MODES (SF_MODES | (1 << (int) DFmode) | (1 << (int) SCmode))
 
 /* Modes for quad-float quantities.  */
-#define TF_MODES (DF_MODES | (1 << (int) TFmode) | (1 << (int) DCmode))
+#define XF_MODES (DF_MODES | (1 << (int) XFmode) | (1 << (int) DCmode))
 
 unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
@@ -1876,7 +1900,7 @@ unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
 
-  TF_MODES, TF_MODES, TF_MODES, TF_MODES, C_MODES};
+  XF_MODES, XF_MODES, XF_MODES, XF_MODES, C_MODES};
 
 
 /* Return the minimum alignment of an expression rtx X in bytes.  This takes
@@ -2103,6 +2127,23 @@ i960_function_arg (cum, mode, type, named)
 }
 
 /* Floating-point support.  */
+
+void
+i960_output_long_double (file, value)
+     FILE *file;
+     REAL_VALUE_TYPE value;
+{
+  long value_long[3];
+  char dstr[30];
+
+  REAL_VALUE_TO_TARGET_LONG_DOUBLE (value, value_long);
+  REAL_VALUE_TO_DECIMAL (value, "%.20g", dstr);
+
+  fprintf (file,
+	   "\t.word\t0x%08lx\t\t# %s\n\t.word\t0x%08lx\n\t.word\t0x%08lx\n",
+	   value_long[0], dstr, value_long[1], value_long[2]);
+  fprintf (file, "\t.word\t0x0\n");
+}
 
 void
 i960_output_double (file, value)
