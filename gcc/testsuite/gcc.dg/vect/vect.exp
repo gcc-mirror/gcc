@@ -56,7 +56,7 @@ if [istarget "powerpc*-*-*"] {
     lappend DEFAULT_VECTCFLAGS "-mpaired-single"
     set dg-do-what-default run
 } elseif [istarget "sparc*-*-*"] {
-    lappend DEFAULT_VECTFLAGS "-mcpu=ultrasparc -mvis"
+    lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
     set dg-do-what-default run
 } else {
     return
