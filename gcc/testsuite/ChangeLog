@@ -1,3 +1,20 @@
+2003-01-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9403
+	* g++.dg/parse/template3.C: New test.
+	* g++.old-deja/g++.pt/memclass5.C: Add needed template keyword.
+	
+	PR c++/795
+	* g++.dg/parse/template4.C: New test.
+	
+	PR c++/9415
+	* g++.dg/template/qual2.C: New test.
+	
+	PR c++/8545
+	* g++.old-deja/g++.brendan/parse3.C: Remove XFAIL.
+
+	* g++.old-deja/g++.ns/bogus1.C: Change expected error.
+
 2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/switch-1.c: New test case.

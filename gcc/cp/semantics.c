@@ -1214,7 +1214,8 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
     }
   TREE_USED (current_class_ptr) = 1;
   if (processing_template_decl)
-    return build_min_nt (COMPONENT_REF, current_class_ref, DECL_NAME (decl));
+    return build_min (COMPONENT_REF, TREE_TYPE (decl),
+		      current_class_ref, DECL_NAME (decl));
   else
     {
       tree access_type = current_class_type;

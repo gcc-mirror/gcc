@@ -3392,16 +3392,6 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   tree scope;
   bool only_class_p;
 
-  /* If the next token is the `template' keyword, we know that we are
-     looking at a class-name.  */
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
-    return cp_parser_class_name (parser, 
-				 typename_keyword_p,
-				 template_keyword_p,
-				 type_p,
-				 /*check_access_p=*/true,
-				 check_dependency_p,
-				 /*class_head_p=*/false);
   /* Before we try to parse the class-name, we must save away the
      current PARSER->SCOPE since cp_parser_class_name will destroy
      it.  */
@@ -3410,7 +3400,7 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   saved_object_scope = parser->object_scope;
   /* Try for a class-name first.  If the SAVED_SCOPE is a type, then
      there is no need to look for a namespace-name.  */
-  only_class_p = saved_scope && TYPE_P (saved_scope);
+  only_class_p = template_keyword_p || (saved_scope && TYPE_P (saved_scope));
   if (!only_class_p)
     cp_parser_parse_tentatively (parser);
   scope = cp_parser_class_name (parser, 
@@ -3931,7 +3921,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	      postfix_expression = build_x_arrow (postfix_expression);
 	    /* Check to see whether or not the expression is
 	       type-dependent.  */
-	    dependent_p = (type_dependent_expression_p (postfix_expression));
+	    dependent_p = type_dependent_expression_p (postfix_expression);
 	    /* The identifier following the `->' or `.' is not
 	       qualified.  */
 	    parser->scope = NULL_TREE;
@@ -4761,23 +4751,26 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
       /* Restore the saved message.  */
       parser->type_definition_forbidden_message = saved_message;
 
-      /* If all went well, this is a cast.  */
+      /* If ok so far, parse the dependent expression. We cannot be
+         sure it is a cast. Consider `(T ())'.  It is a parenthesized
+         ctor of T, but looks like a cast to function returning T
+         without a dependent expression.  */
+      if (!cp_parser_error_occurred (parser))
+	expr = cp_parser_cast_expression (parser, /*address_p=*/false);
+
       if (cp_parser_parse_definitely (parser))
 	{
-	  /* Parse the dependent expression.  */
-	  expr = cp_parser_cast_expression (parser, /*address_p=*/false);
 	  /* Warn about old-style casts, if so requested.  */
 	  if (warn_old_style_cast 
 	      && !in_system_header 
 	      && !VOID_TYPE_P (type) 
 	      && current_lang_name != lang_name_c)
 	    warning ("use of old-style cast");
+	  
 	  /* Perform the cast.  */
 	  expr = build_c_cast (type, expr);
+	  return expr;
 	}
-
-      if (expr)
-	return expr;
     }
 
   /* If we get here, then it's not a cast, so it must be a
@@ -12175,12 +12168,20 @@ cp_parser_base_clause (cp_parser* parser)
 static tree
 cp_parser_base_specifier (cp_parser* parser)
 {
+  static const tree *const access_nodes[][2] =
+  {
+    /* This ordering must match the access_kind enumeration.  */
+    {&access_default_node,   &access_default_virtual_node},
+    {&access_public_node,    &access_public_virtual_node},
+    {&access_protected_node, &access_protected_virtual_node},
+    {&access_private_node,   &access_private_virtual_node}
+  };
   cp_token *token;
   bool done = false;
   bool virtual_p = false;
   bool duplicate_virtual_error_issued_p = false;
   bool duplicate_access_error_issued_p = false;
-  bool class_scope_p;
+  bool class_scope_p, template_p;
   access_kind access = ak_none;
   tree access_node;
   tree type;
@@ -12236,45 +12237,9 @@ cp_parser_base_specifier (cp_parser* parser)
 	}
     }
 
-  /* Map `virtual_p' and `access' onto one of the access 
-     tree-nodes.  */
-  if (!virtual_p)
-    switch (access)
-      {
-      case ak_none:
-	access_node = access_default_node;
-	break;
-      case ak_public:
-	access_node = access_public_node;
-	break;
-      case ak_protected:
-	access_node = access_protected_node;
-	break;
-      case ak_private:
-	access_node = access_private_node;
-	break;
-      default:
-	abort ();
-      }
-  else
-    switch (access)
-      {
-      case ak_none:
-	access_node = access_default_virtual_node;
-	break;
-      case ak_public:
-	access_node = access_public_virtual_node;
-	break;
-      case ak_protected:
-	access_node = access_protected_virtual_node;
-	break;
-      case ak_private:
-	access_node = access_private_virtual_node;
-	break;
-      default:
-	abort ();
-      }
-
+  /* Map `virtual_p' and `access' onto one of the access tree-nodes.  */
+  access_node = *access_nodes[access][virtual_p];
+  
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  The simplest way to
@@ -12296,10 +12261,12 @@ cp_parser_base_specifier (cp_parser* parser)
   /* If the base class is given by a qualified name, assume that names
      we see are type names or templates, as appropriate.  */
   class_scope_p = (parser->scope && TYPE_P (parser->scope));
+  template_p = class_scope_p && cp_parser_optional_template_keyword (parser);
+  
   /* Finally, look for the class-name.  */
   type = cp_parser_class_name (parser, 
 			       class_scope_p,
-			       class_scope_p,
+			       template_p,
 			       /*type_p=*/true,
 			       /*check_access=*/true,
 			       /*check_dependency_p=*/true,

@@ -1,3 +1,22 @@
+2003-01-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9403
+	* parser.c (cp_parser_class_or_namespace_name): Reject duplicate
+	template keyword.
+	(cp_parser_base_specifier): Look for and consume a
+	TEMPLATE keyword. Replace switch with array index.
+
+	PR c++/795
+	* semantics.c (finish_non_static_data_member): Remember the
+	field's type even in a template.
+
+	PR c++/9415
+	* pt.c (tsubst_copy_and_build, CALL_EXPR): BASELINK exprs are
+	already scoped.
+	
+	PR c++/8545
+	* parser.c (cp_parser_cast_expression): Be more tentative.
+
 2003-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* cp-tree.h (flagged_type_tree_s): Remove.
