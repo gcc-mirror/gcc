@@ -4267,12 +4267,18 @@ count_reg_references (x)
    register allocators to prioritize pseudos for allocation to hard regs.
    More accurate reference counts generally lead to better register allocation.
 
+   F is the first insn to be scanned.
+   LOOP_STEP denotes how much loop_depth should be incremented per
+   loop nesting level in order to increase the ref count more for references
+   in a loop.
+
    It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
    possibly other information which is used by the register allocators.  */
 
 void
-recompute_reg_usage (f)
+recompute_reg_usage (f, loop_step)
      rtx f;
+     int loop_step;
 {
   rtx insn;
   int i, max_reg;
@@ -4295,9 +4301,9 @@ recompute_reg_usage (f)
 	{
 	  /* Look for loop boundaries.  */
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    loop_depth--;
+	    loop_depth -= loop_step;
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    loop_depth++;
+	    loop_depth += loop_step;
 
 	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
 	     Abort now rather than setting register status incorrectly.  */
