@@ -434,12 +434,12 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls
-		{ store_parm_decls (); }
-	  save_filename save_lineno compstmt_or_error
-		{ DECL_SOURCE_FILE (current_function_decl) = $7;
-		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0, 1);
+	  old_style_parm_decls  save_filename save_lineno
+		{ DECL_SOURCE_FILE (current_function_decl) = $6;
+		  DECL_SOURCE_LINE (current_function_decl) = $7;
+		  store_parm_decls (); }
+	 compstmt_or_error
+		{ finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -448,12 +448,12 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls
-		{ store_parm_decls (); }
-	  save_filename save_lineno compstmt_or_error
-		{ DECL_SOURCE_FILE (current_function_decl) = $7;
-		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0, 1);
+	  old_style_parm_decls save_filename save_lineno
+		{ DECL_SOURCE_FILE (current_function_decl) = $6;
+		  DECL_SOURCE_LINE (current_function_decl) = $7;
+		  store_parm_decls (); }
+	  compstmt_or_error
+		{ finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -462,12 +462,12 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls
-		{ store_parm_decls (); }
-	  save_filename save_lineno compstmt_or_error
-		{ DECL_SOURCE_FILE (current_function_decl) = $6;
-		  DECL_SOURCE_LINE (current_function_decl) = $7;
-		  finish_function (0, 1);
+	  old_style_parm_decls save_filename save_lineno
+		{ DECL_SOURCE_FILE (current_function_decl) = $5;
+		  DECL_SOURCE_LINE (current_function_decl) = $6;
+		  store_parm_decls (); }
+	  compstmt_or_error
+		{ finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -1593,18 +1593,19 @@ nested_function:
 		    }
 		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
-	   old_style_parm_decls
-		{ store_parm_decls (); }
+	   old_style_parm_decls save_filename save_lineno
+		{ tree decl = current_function_decl;
+		  DECL_SOURCE_FILE (decl) = $4;
+		  DECL_SOURCE_LINE (decl) = $5;
+		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
    where the use of YYERROR1 above caused an error
    which then was handled by compstmt_or_error.
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
-	  save_filename save_lineno compstmt
+	  compstmt
 		{ tree decl = current_function_decl;
-		  DECL_SOURCE_FILE (decl) = $5;
-		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1, 1);
 		  pop_function_context ();
 		  add_decl_stmt (decl); }
@@ -1624,18 +1625,19 @@ notype_nested_function:
 		    }
 		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
-	  old_style_parm_decls
-		{ store_parm_decls (); }
+	  old_style_parm_decls save_filename save_lineno
+		{ tree decl = current_function_decl;
+		  DECL_SOURCE_FILE (decl) = $4;
+		  DECL_SOURCE_LINE (decl) = $5;
+		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
    where the use of YYERROR1 above caused an error
    which then was handled by compstmt_or_error.
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
-	  save_filename save_lineno compstmt
+	  compstmt
 		{ tree decl = current_function_decl;
-		  DECL_SOURCE_FILE (decl) = $5;
-		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1, 1);
 		  pop_function_context ();
 		  add_decl_stmt (decl); }

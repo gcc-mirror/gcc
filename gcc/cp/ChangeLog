@@ -1,3 +1,9 @@
+2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (register_specialization): Update the decl's location,
+	if necessary.
+	(check_explicit_specialization): Likewise.
+
 2003-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (dump_expr): Use HOST_WIDE_INT_PRINT_DOUBLE_HEX.

@@ -1041,7 +1041,12 @@ register_specialization (spec, tmpl, args)
 		}
 	      else if (DECL_TEMPLATE_SPECIALIZATION (fn))
 		{
-		  duplicate_decls (spec, fn);
+		  if (!duplicate_decls (spec, fn) && DECL_INITIAL (spec))
+		    /* Dup decl failed, but this is a new
+		       definition. Set the line number so any errors
+		       match this new definition. */
+		    DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (spec);
+		  
 		  return fn;
 		}
 	    }
@@ -1851,6 +1856,12 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	    {
 	      SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
 	      DECL_INITIAL (DECL_TEMPLATE_RESULT (tmpl)) = NULL_TREE;
+	      if (have_def)
+		{
+		  DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
+		  DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (tmpl))
+		    = DECL_SOURCE_LOCATION (decl);
+		}
 	      return tmpl;
 	    }
 
