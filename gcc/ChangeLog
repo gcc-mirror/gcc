@@ -1,3 +1,8 @@
+2001-11-06  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcov.c (output_data): Use IS_ABSOLUTE_PATHNAME to
+	test for absolute pathnames.
+
 2001-11-06  Olivier Hainque <hainque@act-europe.fr>
 
 	* unwind-dw2.c (execute_cfa_program): Evaluate call frame

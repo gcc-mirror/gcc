@@ -1051,12 +1051,7 @@ output_data ()
     {
       /* If this is a relative file name, and an object directory has been
 	 specified, then make it relative to the object directory name.  */
-      if (! (*s_ptr->name == '/' || *s_ptr->name == DIR_SEPARATOR
-	     /* Check for disk name on MS-DOS-based systems.  */
-	     || (DIR_SEPARATOR == '\\'
-		 && s_ptr->name[1] == ':'
-		 && (s_ptr->name[2] == DIR_SEPARATOR
-		     || s_ptr->name[2] == '/')))
+      if (! IS_ABSOLUTE_PATHNAME (s_ptr->name)
 	  && object_directory != 0
 	  && *object_directory != '\0')
 	{
