@@ -1,3 +1,8 @@
+2004-01-24  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (change_address, adjust_address_1, offset_address,
+	widen_memory_access):  Return early when there is nothing to change.
+
 2004-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_relational_operation): Don't
