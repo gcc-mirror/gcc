@@ -1,3 +1,8 @@
+Tue Oct 13 11:37:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* cse.c (equiv_constant): Check for NULL return from
+	gen_lowpart_if_possible().
+
 Tue Oct 13 11:24:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* collect2.c (main): Pass -EL/-EB through to the compiler.

@@ -5860,7 +5860,7 @@ equiv_constant (x)
       && qty_const[reg_qty[REGNO (x)]])
     x = gen_lowpart_if_possible (GET_MODE (x), qty_const[reg_qty[REGNO (x)]]);
 
-  if (x != 0 && CONSTANT_P (x))
+  if (x == 0 || CONSTANT_P (x))
     return x;
 
   /* If X is a MEM, try to fold it outside the context of any insn to see if
