@@ -1451,7 +1451,27 @@ int comp_template_parms (parms1, parms2)
   return 1;
 }
 
-/* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
+
+/* Returns 1 iff old_id is a template parameter. OLD_DECL is the decl
+   from IDENTIFIER_LOCAL_VALUE (new identifier). */
+
+int decl_template_parm_p (old_decl)
+     tree old_decl;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (old_decl)) == 'd'
+      /* For template type parameters. */
+      && ((TREE_TYPE (old_decl)
+	   && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TYPE_PARM)
+	  /* For non-type template parameters. */
+	  || (DECL_INITIAL (old_decl) 
+	      && TREE_CODE (DECL_INITIAL (old_decl)) == TEMPLATE_PARM_INDEX)))
+    return 1;
+  else
+    return 0;
+}
+
+
+ /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
    ORIG_LEVEL, DECL, and TYPE.  */
 
 static tree
