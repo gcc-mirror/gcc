@@ -1,3 +1,8 @@
+2005-03-34  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: New file.
+	* gfortran.texi: Include it; white space change; fix typo.
+
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* f95-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Remove.
