@@ -81,7 +81,10 @@ package body System.Fat_Gen is
    -----------------------
 
    procedure Decompose (XX : T; Frac : out T; Expo : out UI);
-   --  Decomposes a floating-point number into fraction and exponent parts
+   --  Decomposes a floating-point number into fraction and exponent parts.
+   --  Both results are signed, with Frac having the sign of XX, and UI has
+   --  the sign of the exponent. The absolute value of Frac is in the range
+   --  0.0 <= Frac < 1.0. If Frac = 0.0 or -0.0, then Expo is always zero.
 
    function Gradual_Scaling  (Adjustment : UI) return T;
    --  Like Scaling with a first argument of 1.0, but returns the smallest
@@ -131,7 +134,6 @@ package body System.Fat_Gen is
    function Compose (Fraction : T; Exponent : UI) return T is
       Arg_Frac : T;
       Arg_Exp  : UI;
-
    begin
       Decompose (Fraction, Arg_Frac, Arg_Exp);
       return Scaling (Arg_Frac, Exponent);
@@ -306,7 +308,6 @@ package body System.Fat_Gen is
          Y  := 2.0 ** T'Machine_Emin;
          Y1 := Y;
          Ex := Ex - T'Machine_Emin;
-
          while Ex < 0 loop
             Y := T'Machine (Y / 2.0);
 
@@ -346,7 +347,6 @@ package body System.Fat_Gen is
          Z := Scaling (Y, L);
          return Z;
       end if;
-
    end Leading_Part;
 
    -------------
@@ -361,7 +361,6 @@ package body System.Fat_Gen is
    function Machine (X : T) return T is
       Temp : T;
       pragma Volatile (Temp);
-
    begin
       Temp := X;
       return Temp;
@@ -406,10 +405,14 @@ package body System.Fat_Gen is
          --  two, then we want to subtract half of what we would otherwise
          --  subtract, since the exponent is going to be reduced.
 
-         if X_Frac = 0.5 and then X > 0.0 then
+         --  Note that X_Frac has the same sign as X, so if X_Frac is 0.5,
+         --  then we know that we have a positive number (and hence a
+         --  positive power of 2).
+
+         if X_Frac = 0.5 then
             return X - Gradual_Scaling (X_Exp - T'Machine_Mantissa - 1);
 
-         --  Otherwise the exponent stays the same
+         --  Otherwise the exponent is unchanged
 
          else
             return X - Gradual_Scaling (X_Exp - T'Machine_Mantissa);
@@ -495,7 +498,6 @@ package body System.Fat_Gen is
       end if;
 
       return Sign_X * IEEE_Rem;
-
    end Remainder;
 
    --------------
@@ -525,7 +527,6 @@ package body System.Fat_Gen is
       else
          return X;
       end if;
-
    end Rounding;
 
    -------------
@@ -590,6 +591,7 @@ package body System.Fat_Gen is
 
             --  Ex = 0
          end if;
+
          return Y;
       end;
    end Scaling;
@@ -629,10 +631,14 @@ package body System.Fat_Gen is
          --  two, then we want to add half of what we would otherwise add,
          --  since the exponent is going to be reduced.
 
-         if X_Frac = 0.5 and then X < 0.0 then
+         --  Note that X_Frac has the same sign as X, so if X_Frac is -0.5,
+         --  then we know that we have a ngeative number (and hence a
+         --  negative power of 2).
+
+         if X_Frac = -0.5 then
             return X + Gradual_Scaling (X_Exp - T'Machine_Mantissa - 1);
 
-         --  Otherwise the exponent stays the same
+         --  Otherwise the exponent is unchanged
 
          else
             return X + Gradual_Scaling (X_Exp - T'Machine_Mantissa);

@@ -278,6 +278,13 @@ struct layout
 
 #elif defined (i386)
 
+#ifdef __WIN32
+#include <windows.h>
+#define IS_BAD_PTR(ptr) (IsBadCodePtr((void *)ptr))
+#else
+#define IS_BAD_PTR(ptr) 0
+#endif
+
 #define USE_GENERIC_UNWINDER
 
 struct layout
@@ -291,7 +298,8 @@ struct layout
 #define FRAME_OFFSET 0
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
-  ((unsigned int)(CURRENT)->return_address < LOWEST_ADDR \
+  (IS_BAD_PTR((long)(CURRENT)->return_address) \
+   || (unsigned int)(CURRENT)->return_address < LOWEST_ADDR \
    || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
 
@@ -310,10 +318,11 @@ struct layout
 */
 
 #define VALID_STACK_FRAME(ptr) \
-   (((*((ptr) - 3) & 0xff) == 0xe8) \
-    || ((*((ptr) - 5) & 0xff) == 0x9a) \
-    || ((*((ptr) - 1) & 0xff) == 0xff) \
-    || (((*(ptr) & 0xd0ff) == 0xd0ff)))
+   (!IS_BAD_PTR(ptr) \
+    && (((*((ptr) - 3) & 0xff) == 0xe8) \
+        || ((*((ptr) - 5) & 0xff) == 0x9a) \
+        || ((*((ptr) - 1) & 0xff) == 0xff) \
+        || (((*(ptr) & 0xd0ff) == 0xd0ff))))
 
 /*------------------------------- mips-irix -------------------------------*/
 
@@ -323,7 +332,6 @@ struct layout
 #define PC_ADJUST -8
 
 #endif
-
 
 /*---------------------------------------------------------------------*
  *--      The post GCC 3.3 infrastructure based implementation       --*
