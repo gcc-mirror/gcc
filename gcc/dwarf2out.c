@@ -41,9 +41,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern char *getpwd ();
 
-/* IMPORTANT NOTE: Please see the file README.DWARF for important details
-   regarding the GNU implementation of DWARF.  */
-
 /* NOTE: In the comments in this file, many references are made to
    "Debugging Information Entries".  This term is abbreviated as `DIE'
    throughout the remainder of this file.  */
