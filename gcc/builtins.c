@@ -2250,14 +2250,18 @@ stabilize_va_list (valist, needs_lvalue)
    the variable.  */
 void
 std_expand_builtin_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+     int stdarg_p;
      tree valist;
      rtx nextarg;
 {
   tree t;
 
-  if (!stdarg_p)
-    nextarg = plus_constant (nextarg, -UNITS_PER_WORD);
+  if (! stdarg_p)
+    {
+      int align = PARM_BOUNDARY / BITS_PER_UNIT;
+      int offset = (((UNITS_PER_WORD + align - 1) / align) * align);
+      nextarg = plus_constant (nextarg, -offset);
+    }
 
   t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
 	     make_tree (ptr_type_node, nextarg));
