@@ -1,5 +1,8 @@
 Tue Aug 11 12:27:03 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* dwarf2out.c (ASM_OUTPUT_DWARF_ADDR_CONST): Use
+	ASM_OUTPUT_DWARF2_ADDR_CONST if defined.
+
 	* mips/mips.md (reload_outsi): Use M16_REG_P when TARGET_MIPS16.
 
 Tue Aug 11 18:12:53 1998  Dave Love  <d.love@dl.ac.uk>
