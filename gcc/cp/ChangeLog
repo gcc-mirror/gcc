@@ -1,7 +1,11 @@
 1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl2.c (arg_assoc_type): Handle METHOD_TYPE like FUNCTION_TYPE.
+	Handle TEMPLATE_TYPE_PARM.
+	(arg_assoc): Rewrite.
+
 	* pt.c (complete_template_args): Don't look at the context unless
-	we have too.
+	we have to.
 
 	* method.c (build_decl_overload_real): Fix namespace handling.
 
