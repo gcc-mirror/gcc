@@ -1,3 +1,9 @@
+2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (udivsi3): Don't save/restore
+	unused registers.  Don't jump to exitdiv.
+	(umodsi3): Likewise.
+
 2003-11-13  Mark Mitchell  <mark@codesourcery.com>
             Kean Johnston <jkj@sco.com>
 
