@@ -1,3 +1,94 @@
+Tue Aug 29 22:29:58 2000  Denis Chertykov  <denisc@overta.ru> & Marek Michalkiewicz <marekm@linux.org.pl>
+
+	* config/avr/avr-protos.h: (avr_output_ascii) Removed.
+	(avr_progmem_p): New prototype.
+	(output_movsisf): Prototype declaration changed.
+	(output_movqi): New prototype.
+	(output_movhi): New prototype.
+	(call_insn_operand): Likewise.
+	(final_prescan_insn): Likewise.	
+	(avr_simplify_comparision_p): Likewise.
+	(avr_normalize_condition): Likewise.
+	(compare_eq_p): Likewise.
+	(out_shift_with_cnt): Likewise.
+	(const_int_pow2_p): Likewise.
+	(output_reload_inhi): Prototype declaration changed.
+
+	* config/avr/avr.c: (debug_hard_reg_set): Prototype declared.
+	(ldi_reg_rtx): New. rtx for r31.
+	(avr_init_stack): Initialize as "__stack".
+	(function_prologue): Use it.
+	Replace all TARGET_ENHANCED with AVR_ENHANCED.
+	(avr_mcu_name): Initialize as "avr2".
+	(avr_enhanced_p, avr_mega_p): New variables.
+	(mcu_types, avr_override_options): Handle all known MCU types.
+	Also handle avr1 (only preprocess, assemble and link).
+	(print_operand): Using of `%K' in output template removed.
+	(out_movqi_r_mr): Optimized.
+	(out_movhi_r_mr): Likewise.
+	(output_movqi): New function.
+	(output_movhi): Likewise.
+	(out_movsi_r_mr): Optimized.
+	(output_movsisf): Compute insn length for `adjust_insn_length'
+	(out_movqi_mr_r): Optimized.
+	(out_movhi_mr_r): Optimized.
+	(adjust_insn_length): Use output_movsisf, output_movqi,
+	output_movhi for insn length adjusting.
+	(reg_unused_after): Use dead_or_set_p.
+	(preferred_reload_class): Now havn't any restriction.
+	(reg_was_0): New function.
+	(io_address_p): Likewise.
+	(const_int_pow2_p): Likewise.
+	(output_reload_inhi): Likewise.
+	(output_reload_insisf): Likewise.
+
+	* config/avr/avr.h (MULTILIB_DEFAULTS): Define.
+	(LIB_SPEC): Use -lc for all supported devices.
+	(LIBGCC_SPEC): Use -lgcc for all supported devices.
+	(AVR_MEGA): Define as avr_mega_p.
+	(AVR_ENHANCED): New, define as avr_enhanced_p.
+	(TARGET_SWITCHES): Remove -menhanced, now handled by -mmcu=...
+	(CPP_SPEC, LINK_SPEC): Handle all known MCU types.
+	(CRT_BINUTILS_SPECS): Handle all known MCU types.
+	Rename gcrt1-*.o to make file names unique on 8.3 filesystems.
+	(EXTRA_SPECS): Add CPP_AVR[1-5]_SPEC.
+	(ASM_SPEC): Pass -mmcu=... to the assembler.
+	Change all -DAVR_* to -D__AVR_*__.
+	(INIT_TARGET_OPTABS), config/avr/libgcc.S:
+	Rename library functions to start with two underscores.
+	(ASM_OUTPUT_COMMON): Outputs `.comm VAR,VAR-SIZE,1' to avoid
+	alignment.
+	(ASM_WEAKEN_LABEL): Declared for __attribute__((weak)).
+	(SUPPORTS_WEAK): Likewise.
+	(LDI_REG_REGNO): New. Register r31 will be used as temporary
+	register for loading constants to r0-r14.
+
+	* config/avr/avr.md: Replace all TARGET_ENHANCED with
+	AVR_ENHANCED.
+	(*mov_r_sp): Removed. Handled by output_movhi.
+	(*mov_sp_r): Likewise.
+	(*mov_sp_r_no_interrupts): Likewise
+	(*mov_sp_r_tiny): Likewise.
+	(*movqi): Use output_movqi.
+	(*reload_inqi): New.
+	(*movhi): Use output_movhi.
+	(*reload_inhi): New.
+	(*negsi2): Optimized.
+	(*negsf2): Likewise.
+	Added peepholes (define_peephole2) for loading constants to r0-r14
+	and for using `cpse' command.
+
+	* config/avr/libgcc.S: Rename library functions to start with two
+	underscores.
+	Add support for enhanced core.
+	(_moqhi3): Fix typo, now _modqi3.
+	(__divsi_raw): Use __zero_reg__ as loop counter, smaller by 1 word.
+	(__prologue_saves__): Remove test for stack adjust by 0.
+	(__tablejump__): New.
+
+	* config/avr/t-avr: Build libgcc2 with -mcall-prologues.
+	Add multilib support.
+
 Tue Aug 29 15:17:54 EDT 2000  John Wehle  (john@feith.com)
 
 	* loop.c (prescan_loop): Don't check unknown_address_altered

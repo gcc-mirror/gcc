@@ -56,7 +56,6 @@ extern int target_flags;
 #define MASK_CALL_PROLOGUES	0x00040000
 #define MASK_TINY_STACK		0x00080000
 #define MASK_PACK_ARGS		0x00100000
-#define MASK_ENHANCED		0x00200000
 
 #define TARGET_ORDER_1		(target_flags & MASK_ORDER_1)
 #define TARGET_ORDER_2		(target_flags & MASK_ORDER_2)
@@ -66,7 +65,6 @@ extern int target_flags;
 #define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
 #define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
 #define TARGET_PACK_ARGS	(target_flags & MASK_PACK_ARGS)
-#define TARGET_ENHANCED		(target_flags & MASK_ENHANCED)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
@@ -108,8 +106,6 @@ extern int target_flags;
     N_("Change only the low 8 bits of the stack pointer") },		\
   { "pack-args", MASK_PACK_ARGS,					\
     N_("Do not align function arguments on even numbered registers") },	\
-  { "enhanced", MASK_ENHANCED,						\
-    N_("Generate code for the enhanced AVR core") },			\
   { "rtl", MASK_RTL_DUMP, NULL },					\
   { "size", MASK_INSN_SIZE_DUMP,					\
     N_("Output instruction sizes to the asm file") },			\
@@ -137,20 +133,16 @@ extern int target_flags;
    { "68000", -1},     \
    { "", 1}}  */
 
-extern const char *avr_ram_end;
+extern const char *avr_init_stack;
 extern const char *avr_mcu_name;
+extern int avr_mega_p;
+extern int avr_enhanced_p;
 
-struct mcu_type_s {
-  char * name;
-  int stack;
-  int mega;
- };
-
-extern struct mcu_type_s *avr_mcu_type;
-#define AVR_MEGA (avr_mcu_type->mega)
+#define AVR_MEGA (avr_mega_p)
+#define AVR_ENHANCED (avr_enhanced_p)
 
 #define TARGET_OPTIONS {						      \
- { "init-stack=", &avr_ram_end, N_("Specify the initial stack address") },    \
+ { "init-stack=", &avr_init_stack, N_("Specify the initial stack address") }, \
  { "mcu=", &avr_mcu_name, N_("Specify the MCU name") } }
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -2246,7 +2238,7 @@ progmem_section (void)							      \
 do {									   \
      fputs ("\t.comm ", (STREAM));					   \
      assemble_name ((STREAM), (NAME));					   \
-     fprintf ((STREAM), ",%d\n", (SIZE));				   \
+     fprintf ((STREAM), ",%d,1\n", (SIZE));				   \
 } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM the assembler definition of a common-label named NAME whose
@@ -2459,8 +2451,16 @@ while (0)
    and after that, output the additional assembler syntax for making
    that name global, and a newline.  */
 
-/* `ASM_WEAKEN_LABEL'
-   A C statement (sans semicolon) to output to the stdio stream
+#define ASM_WEAKEN_LABEL(FILE, NAME) 	\
+  do					\
+    {					\
+      fputs ("\t.weak\t", (FILE));	\
+      assemble_name ((FILE), (NAME)); 	\
+      fputc ('\n', (FILE));		\
+    }					\
+  while (0)
+
+/* A C statement (sans semicolon) to output to the stdio stream
    STREAM some commands that will make the label NAME weak; that is,
    available for reference from other files but only used if no other
    definition is available.  Use the expression `assemble_name
@@ -2470,9 +2470,10 @@ while (0)
 
    If you don't define this macro, GNU CC will not support weak
    symbols and you should not define the `SUPPORTS_WEAK' macro.
+*/
 
-   `SUPPORTS_WEAK'
-   A C expression which evaluates to true if the target supports weak
+#define SUPPORTS_WEAK 1
+/* A C expression which evaluates to true if the target supports weak
    symbols.
 
    If you don't define this macro, `defaults.h' provides a default
@@ -2919,19 +2920,36 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    the BSD functions `bcopy' and `bzero'.  */
 
 #define CPP_SPEC "\
-%{!mmcu=*:-DAVR_AT90S8515} \
-%{mmcu=at90s2313:-DAVR_AT90S2313} \
-%{mmcu=at90s2323:-DAVR_AT90S2323} \
-%{mmcu=at90s2333:-DAVR_AT90S2333} \
-%{mmcu=at90s2343:-DAVR_AT90S2343} \
-%{mmcu=attiny22:-DAVR_ATtiny22} \
-%{mmcu=at90s4433:-DAVR_AT90S4433} \
-%{mmcu=at90s4414:-DAVR_AT90S4414} \
-%{mmcu=at90s4434:-DAVR_AT90S4434} \
-%{mmcu=at90s8515:-DAVR_AT90S8515} \
-%{mmcu=at90s8535:-DAVR_AT90S8535} \
-%{mmcu=atmega603:-DAVR_ATmega603} \
-%{mmcu=atmega103:-DAVR_ATmega103} \
+%{!mmcu*|mmcu=avr2:%(cpp_avr2)} \
+%{mmcu=at90s2313:%(cpp_avr2) -D__AVR_AT90S2313__} \
+%{mmcu=at90s2323:%(cpp_avr2) -D__AVR_AT90S2323__} \
+%{mmcu=at90s2333:%(cpp_avr2) -D__AVR_AT90S2333__} \
+%{mmcu=at90s2343:%(cpp_avr2) -D__AVR_AT90S2343__} \
+%{mmcu=attiny22: %(cpp_avr2) -D__AVR_ATtiny22__} \
+%{mmcu=at90s4433:%(cpp_avr2) -D__AVR_AT90S4433__} \
+%{mmcu=at90s4414:%(cpp_avr2) -D__AVR_AT90S4414__} \
+%{mmcu=at90s4434:%(cpp_avr2) -D__AVR_AT90S4434__} \
+%{mmcu=at90s8515:%(cpp_avr2) -D__AVR_AT90S8515__} \
+%{mmcu=at90s8535:%(cpp_avr2) -D__AVR_AT90S8535__} \
+%{mmcu=at90c8534:%(cpp_avr2) -D__AVR_AT90C8534__} \
+%{mmcu=avr3:%(cpp_avr3)} \
+%{mmcu=atmega603:%(cpp_avr3) -D__AVR_ATmega603__} \
+%{mmcu=atmega103:%(cpp_avr3) -D__AVR_ATmega103__} \
+%{mmcu=avr4:%(cpp_avr4)} \
+%{mmcu=atmega83: %(cpp_avr4) -D__AVR_ATmega83__} \
+%{mmcu=atmega85: %(cpp_avr4) -D__AVR_ATmega85__} \
+%{mmcu=avr5:%(cpp_avr5)} \
+%{mmcu=atmega161:%(cpp_avr5) -D__AVR_ATmega161__} \
+%{mmcu=atmega163:%(cpp_avr5) -D__AVR_ATmega163__} \
+%{mmcu=atmega32: %(cpp_avr5) -D__AVR_ATmega32__} \
+%{mmcu=at94k:    %(cpp_avr5) -D__AVR_AT94K__} \
+%{mmcu=avr1:%(cpp_avr1)} \
+%{mmcu=at90s1200:%(cpp_avr1) -D__AVR_AT90S1200__} \
+%{mmcu=attiny10|mmcu=attiny11: %(cpp_avr1) -D__AVR_ATtiny11__} \
+%{mmcu=attiny12: %(cpp_avr1) -D__AVR_ATtiny12__} \
+%{mmcu=attiny15: %(cpp_avr1) -D__AVR_ATtiny15__} \
+%{mmcu=attiny28: %(cpp_avr1) -D__AVR_ATtiny28__} \
+%{mno-interrupts:-D__NO_INTERRUPTS__} \
 %{mint8:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long -D__INT_MAX__=127} \
 %{!mint*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int -D__INT_MAX__=32767} \
 %{posix:-D_POSIX_SOURCE}"
@@ -2968,14 +2986,14 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    Do not define this macro unless you need to override the default
    definition.  */
 
-#define CC1_SPEC "%{!mmcu*:-mmcu=at90s8515} %{profile:-p}"
+#define CC1_SPEC "%{profile:-p}"
 /* A C string constant that tells the GNU CC driver program options to
    pass to `cc1'.  It can also specify how to translate options you
    give to GNU CC into options for GNU CC to pass to the `cc1'.
 
    Do not define this macro if it does not need to do anything.  */
 
-#define ASM_SPEC ""
+#define ASM_SPEC "%{mmcu=*:-mmcu=%*}"
 /* A C string constant that tells the GNU CC driver program options to
    pass to the assembler.  It can also specify how to translate
    options you give to GNU CC into options for GNU CC to pass to the
@@ -2995,6 +3013,14 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 %{!mmcu*:-m avr85xx} \
 %{mmcu=atmega603:-m avrmega603} \
 %{mmcu=atmega103:-m avrmega103} \
+%{mmcu=atmega161:-m avrmega161} \
+%{mmcu=atmega163:-m avrmega161} \
+%{mmcu=atmega32:-m avr5} \
+%{mmcu=at94k:-m avr5} \
+%{mmcu=atmega83:-m avr4} \
+%{mmcu=atmega85:-m avr4} \
+%{mmcu=at90s1200|mmcu=attiny1*:-m avr1200} \
+%{mmcu=attiny28:-m avr1} \
 %{mmcu=at90s2313:-m avr23xx} \
 %{mmcu=at90s2323:-m avr23xx} \
 %{mmcu=attiny22:-m avr23xx} \
@@ -3003,6 +3029,7 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 %{mmcu=at90s4433:-m avr4433} \
 %{mmcu=at90s4414:-m avr44x4} \
 %{mmcu=at90s4434:-m avr44x4} \
+%{mmcu=at90c8534:-m avr85xx} \
 %{mmcu=at90s8535:-m avr85xx} \
 %{mmcu=at90s8515:-m avr85xx}"
 
@@ -3012,9 +3039,8 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
    Do not define this macro if it does not need to do anything.  */
 
-#define LIB_SPEC "\
-%{!mmcu*|mmcu=at90s*|mmcu=attiny22: -lc} \
-%{mmcu=atmega*: -lc-mega}"
+#define LIB_SPEC \
+  "%{!mmcu=at90s1*:%{!mmcu=attiny1*:%{!mmcu=attiny28: -lc }}}"
 /* Another C string constant used much like `LINK_SPEC'.  The
    difference between the two is that `LIB_SPEC' is used at the end
    of the command given to the linker.
@@ -3022,9 +3048,8 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    If this macro is not defined, a default is provided that loads the
    standard C library from the usual place.  See `gcc.c'.  */
 
-#define LIBGCC_SPEC "\
-%{mmcu=atmega*:-lgcc} \
-%{!mmcu*|mmcu=at90s*|mmcu=attiny22:-lgcc}"
+#define LIBGCC_SPEC \
+  "%{!mmcu=at90s1*:%{!mmcu=attiny1*:%{!mmcu=attiny28: -lgcc }}}"
 /* Another C string constant that tells the GNU CC driver program how
    and when to place a reference to `libgcc.a' into the linker
    command line.  This constant is placed both before and after the
@@ -3050,21 +3075,43 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    Do not define this macro if it does not need to do anything.  */
 
 #define CRT_BINUTILS_SPECS "\
-%{!mmcu*:gcrt1-8515.o%s} \
-%{mmcu=atmega603:gcrt1-mega603.o%s} \
-%{mmcu=atmega103:gcrt1-mega103.o%s} \
-%{mmcu=at90s2313:gcrt1-2313.o%s} \
-%{mmcu=at90s2323:gcrt1-2323.o%s} \
-%{mmcu=attiny22:gcrt1-tiny22.o%s} \
-%{mmcu=at90s2333:gcrt1-2333.o%s} \
-%{mmcu=at90s2343:gcrt1-2343.o%s} \
-%{mmcu=at90s4433:gcrt1-4433.o%s} \
-%{mmcu=at90s4414:gcrt1-4414.o%s} \
-%{mmcu=at90s4434:gcrt1-4434.o%s} \
-%{mmcu=at90s8535:gcrt1-8535.o%s} \
-%{mmcu=at90s8515:gcrt1-8515.o%s}"
+%{mmcu=at90s1200|mmcu=avr1:crts1200.o%s} \
+%{mmcu=attiny10|mmcu=attiny11:crttn11.o%s} \
+%{mmcu=attiny12:crttn12.o%s} \
+%{mmcu=attiny15:crttn15.o%s} \
+%{mmcu=attiny28:crttn28.o%s} \
+%{!mmcu*|mmcu=at90s8515|mmcu=avr2:crts8515.o%s} \
+%{mmcu=at90s2313:crts2313.o%s} \
+%{mmcu=at90s2323:crts2323.o%s} \
+%{mmcu=attiny22:crttn22.o%s} \
+%{mmcu=at90s2333:crts2333.o%s} \
+%{mmcu=at90s2343:crts2343.o%s} \
+%{mmcu=at90s4433:crts4433.o%s} \
+%{mmcu=at90s4414:crts4414.o%s} \
+%{mmcu=at90s4434:crts4434.o%s} \
+%{mmcu=at90c8534:crtc8534.o%s} \
+%{mmcu=at90s8535:crts8535.o%s} \
+%{mmcu=atmega103|mmcu=avr3:crtm103.o%s} \
+%{mmcu=atmega603:crtm603.o%s} \
+%{mmcu=atmega83|mmcu=avr4:crtm83.o%s} \
+%{mmcu=atmega85:crtm85.o%s} \
+%{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
+%{mmcu=atmega163:crtm163.o%s} \
+%{mmcu=atmega32:crtm32.o%s} \
+%{mmcu=at94k:crtat94k.o%s}"
 
-#define EXTRA_SPECS				\
+#define CPP_AVR1_SPEC "-D__AVR_ARCH__=1 -D__AVR_ASM_ONLY__ "
+#define CPP_AVR2_SPEC "-D__AVR_ARCH__=2 "
+#define CPP_AVR3_SPEC "-D__AVR_ARCH__=3 -D__AVR_MEGA__ "
+#define CPP_AVR4_SPEC "-D__AVR_ARCH__=4 -D__AVR_ENHANCED__ "
+#define CPP_AVR5_SPEC "-D__AVR_ARCH__=5 -D__AVR_ENHANCED__ -D__AVR_MEGA__ "
+
+#define EXTRA_SPECS                           \
+{"cpp_avr1", CPP_AVR1_SPEC},                  \
+{"cpp_avr2", CPP_AVR2_SPEC},                  \
+{"cpp_avr3", CPP_AVR3_SPEC},                  \
+{"cpp_avr4", CPP_AVR4_SPEC},                  \
+{"cpp_avr5", CPP_AVR5_SPEC},                  \
 {"crt_binutils", CRT_BINUTILS_SPECS},
 /* Define this macro to provide additional specifications to put in
    the `specs' file that can be used in various specifications like
@@ -3110,6 +3157,9 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    #undef CPP_SYSV_DEFAULT
    #define CPP_SYSV_DEFAULT "-D_CALL_AIX"  */
 
+/* This is the default without any -mmcu=* option (AT90S*).  */
+#define MULTILIB_DEFAULTS { "mmcu=avr2" }
+
 /* This is undefined macro for collect2 disabling */
 #define LINKER_NAME "ld"
 
@@ -3141,50 +3191,50 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define INIT_TARGET_OPTABS				\
 {							\
   smul_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_mulqi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__mulqi3");		\
 							\
   sdiv_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_divqi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__divqi3");		\
 							\
   smod_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_modqi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__modqi3");		\
 							\
   udiv_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_udivqi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__udivqi3");		\
 							\
   umod_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_umodqi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__umodqi3");		\
 							\
   smul_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_mulhi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__mulhi3");		\
 							\
   sdiv_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_divhi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__divhi3");		\
 							\
   smod_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_modhi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__modhi3");		\
 							\
   udiv_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_udivhi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__udivhi3");		\
 							\
   umod_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_umodhi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__umodhi3");		\
 							\
   smul_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_mulsi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__mulsi3");		\
 							\
   sdiv_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_divsi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__divsi3");		\
 							\
   smod_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_modsi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__modsi3");		\
 							\
   udiv_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_udivsi3");		\
+    = gen_rtx (SYMBOL_REF, Pmode, "__udivsi3");		\
 							\
   umod_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "_umodsi3");		\
-  avr_init_once();					\
+    = gen_rtx (SYMBOL_REF, Pmode, "__umodsi3");		\
+  avr_init_once ();					\
 }
 
 /* Temporary register r0 */
@@ -3193,8 +3243,12 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 /* zero register r1 */
 #define ZERO_REGNO 1
 
+/* Temporary register which used for load immediate values to r0-r15  */
+#define LDI_REG_REGNO 31
+
 extern struct rtx_def *tmp_reg_rtx;
 extern struct rtx_def *zero_reg_rtx;
+extern struct rtx_def *ldi_reg_rtx;
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
