@@ -78,39 +78,39 @@ in changes outside of the parts of the compiler they maintain.
 
 
 			Write After Approval
-Ken Raeburn					raeburn@cygnus.com
-Brendan Kehoe					brendan@cygnus.com
-Benjamin Kosnik					bkoz@cygnus.com
-Andrew Macleod					amacleod@cygnus.com
-Dave Love					d.love@dl.ac.uk
-*Toon Moene					toon@moene.indiv.nluug.nl
-*HJ Lu						hjl@lucon.org
-Kaveh Ghazi					ghazi@caip.rutgers.edu
-Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
-Manfred Hollstein				mhollstein@cygnus.com
+Jason Eckhardt					jle@cygnus.com
 *Paul Eggert					eggert@twinsun.com
-Klaus Kaempf					kkaempf@progis.de
-Marc Lehmann					pcg@goof.com
-Alexandre Oliva					oliva@dcc.unicamp.br
-Catherine Moore					clm@cygnus.com
-Vladimir Markarov				vmakarov@cygnus.com
-Martin v. Löwis					loewis@informatik.hu-berlin.de
-Bernd Schmidt					crux@pool.informatik.rwth-aachen.de
-Zack Weinberg					zack@bitmover.com
-John Wehle					john@feith.com
-Nathan Sidwell					nathan@acm.org
-Tom Tromey					tromey@cygnus.com
-Andrew Haley					aph@cygnus.com
-Alexandre Petit-Bianco				apbianco@cygnus.com
+Kaveh Ghazi					ghazi@caip.rutgers.edu
 Anthony Green					green@cygnus.com
 Stu Grossman					grossman@cygnus.com
-Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
-Don Lindsay					dlindsay@cygnus.com
+Andrew Haley					aph@cygnus.com
+Manfred Hollstein				mhollstein@cygnus.com
+Klaus Kaempf					kkaempf@progis.de
 Geoff Keating					geoffk@cygnus.com
-Alex Samuel					samuel@codesourcery.com
+Brendan Kehoe					brendan@cygnus.com
+Benjamin Kosnik					bkoz@cygnus.com
+Marc Lehmann					pcg@goof.com
+Don Lindsay					dlindsay@cygnus.com
+Dave Love					d.love@dl.ac.uk
+*HJ Lu						hjl@lucon.org
+Andrew Macleod					amacleod@cygnus.com
+Vladimir Markarov				vmakarov@cygnus.com
 Greg McGary					gkm@gnu.org
-Jason Eckhardt					jle@cygnus.com
+*Toon Moene					toon@moene.indiv.nluug.nl
+Catherine Moore					clm@cygnus.com
+Alexandre Oliva					oliva@dcc.unicamp.br
+Alexandre Petit-Bianco				apbianco@cygnus.com
 Clinton Popetz					cpopetz@cygnus.com
+Ken Raeburn					raeburn@cygnus.com
+Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
+Alex Samuel					samuel@codesourcery.com
+Bernd Schmidt					crux@pool.informatik.rwth-aachen.de
+Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
+Nathan Sidwell					nathan@acm.org
+Tom Tromey					tromey@cygnus.com
+John Wehle					john@feith.com
+Zack Weinberg					zack@bitmover.com
+Martin v. Löwis					loewis@informatik.hu-berlin.de
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
 can write in the source tree
