@@ -116,17 +116,17 @@ BEGIN {nnames = 0}
       }
     counts[name]=counts[name] "+" count
     hits[name]=hits[name] "+" hit
-    if (int (hit) < (int (count) / 2))
-      hit = count - hit;
+    if (float (hit) < (float (count) / 2))
+      hit = "("count" - "hit")";
     phits[name]=phits[name] "+" hit
 
     #BC crashes on long strings.  Irritating.
-    if (length(counts[name]) > 4000)
-      {
-	counts[name] = longeval(counts[name])
-	hits[name] = longeval(hits[name])
-	phits[name] = longeval(phits[name])
-      }
+    if (length(counts[name]) > 2000)
+      counts[name] = longeval(counts[name])
+    if (length(hits[name]) > 2000)
+      hits[name] = longeval(hits[name])
+    if (length(phits[name]) > 2000)
+      phits[name] = longeval(phits[name])
   }
 END {
   # Heuristics called combined predicts just everything.
