@@ -874,6 +874,8 @@ convert_move (to, from, unsignedp)
 	       && ((code = can_extend_p (to_mode, word_mode, unsignedp))
 		   != CODE_FOR_nothing))
 	{
+	  if (GET_CODE (to) == REG)
+	    emit_insn (gen_rtx (CLOBBER, VOIDmode, to));
 	  convert_move (gen_lowpart (word_mode, to), from, unsignedp);
 	  emit_unop_insn (code, to,
 			  gen_lowpart (word_mode, to), equiv_code);
