@@ -3229,14 +3229,46 @@ first_reg_to_save ()
     if (regs_ever_live[first_reg])
       break;
 
-  /* If profiling, then we must save/restore every register that contains
-     a parameter before/after the .__mcount call.  Use registers from 30 down
-     to 23 to do this.  Don't use the frame pointer in reg 31.
+  if (profile_flag)
+    {
+      /* AIX must save/restore every register that contains a parameter
+	 before/after the .__mcount call plus an additional register
+	 for the static chain, if needed; use registers from 30 down to 22
+	 to do this.  */
+      if (DEFAULT_ABI == ABI_AIX)
+	{
+	  int last_parm_reg, profile_first_reg;
 
-     For now, save enough room for all of the parameter registers.  */
-  if (DEFAULT_ABI == ABI_AIX && profile_flag)
-    if (first_reg > 23)
-      first_reg = 23;
+	  /* Figure out last used parameter register.  The proper thing
+	     to do is to walk incoming args of the function.  A function
+	     might have live parameter registers even if it has no
+	     incoming args.  */
+	  for (last_parm_reg = 10;
+	       last_parm_reg > 2 && ! regs_ever_live [last_parm_reg];
+	       last_parm_reg--)
+	    ;
+
+	  /* Calculate first reg for saving parameter registers
+	     and static chain.
+	     Skip reg 31 which may contain the frame pointer.  */
+	  profile_first_reg = (33 - last_parm_reg
+			       - (current_function_needs_context ? 1 : 0));
+	  /* Do not save frame pointer if no parameters needs to be saved.  */
+	  if (profile_first_reg == 31)
+	    profile_first_reg = 32;
+
+	  if (first_reg > profile_first_reg)
+	    first_reg = profile_first_reg;
+	}
+
+      /* SVR4 may need one register to preserve the static chain.  */
+      else if (current_function_needs_context)
+	{
+	  /* Skip reg 31 which may contain the frame pointer.  */
+	  if (first_reg > 30)
+	    first_reg = 30;
+	}
+    }
 
   return first_reg;
 }
@@ -5051,13 +5083,20 @@ output_function_profiler (file, labelno)
 	  asm_fprintf (file, "\t{liu|lis} %s,", reg_names[12]);
 	  assemble_name (file, buf);
 	  fputs ("@ha\n", file);
-	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n", reg_names[0], reg_names[1]);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\t{cal|la} %s,", reg_names[0]);
 	  assemble_name (file, buf);
 	  asm_fprintf (file, "@l(%s)\n", reg_names[12]);
 	}
 
+      if (current_function_needs_context)
+	asm_fprintf (file, "\tmr %s,%s\n",
+		     reg_names[30], reg_names[STATIC_CHAIN_REGNUM]);
       fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+      if (current_function_needs_context)
+	asm_fprintf (file, "\tmr %s,%s\n",
+		     reg_names[STATIC_CHAIN_REGNUM], reg_names[30]);
       break;
 
     case ABI_AIX:
@@ -5089,11 +5128,13 @@ output_function_profiler (file, labelno)
 	   last_parm_reg--)
 	;
 
-  /* Save parameter registers in regs 23-30.  Don't overwrite reg 31, since
-     it might be set up as the frame pointer.  */
+  /* Save parameter registers in regs 23-30 and static chain in r22.
+     Don't overwrite reg 31, since it might be set up as the frame pointer.  */
 
       for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
 	asm_fprintf (file, "\tmr %d,%d\n", j, i);
+      if (current_function_needs_context)
+	asm_fprintf (file, "\tmr %d,%d\n", j, STATIC_CHAIN_REGNUM);
 
   /* Load location address into r3, and call mcount.  */
 
@@ -5104,10 +5145,13 @@ output_function_profiler (file, labelno)
       asm_fprintf (file, "(%s)\n\tbl %s\n\t%s\n",
 		   reg_names[2], RS6000_MCOUNT, RS6000_CALL_GLUE);
 
-  /* Restore parameter registers.  */
+  /* Restore parameter registers and static chain.  */
 
       for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
 	asm_fprintf (file, "\tmr %d,%d\n", i, j);
+      if (current_function_needs_context)
+	asm_fprintf (file, "\tmr %d,%d\n", STATIC_CHAIN_REGNUM, j);
+
       break;
     }
 }

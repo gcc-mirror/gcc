@@ -1,3 +1,14 @@
+Mon Mar 15 22:45:25 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (ASM_OUTPUT_{DOUBLE,FLOAT}): Always generate IEEE 754
+	bit-pattern directly.
+	(ASM_OUTPUT_REG_{PUSH,POP}): Delete.
+	* rs6000.c (first_reg_to_save): If profiling and context needed,
+	allocate a reg to save static chain for all ABIs.  For AIX
+	profiling, calculate parameter registers to save based on need.
+	(output_function_profiler): Save and restore static chain around
+	profile call for all ABIs. 
+
 1999-03-15 21:39 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppinit.c: Instead of one pending list, keep separate lists
