@@ -1562,7 +1562,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	using namespace java::lang;
 	jlong value = convert (POPF (), Long::MIN_VALUE, Long::MAX_VALUE);
-	PUSHI(value);
+	PUSHL(value);
       }
       NEXT_INSN;
 
