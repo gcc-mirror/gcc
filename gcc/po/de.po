@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.0-b20041128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-27 19:39+0000\n"
-"PO-Revision-Date: 2004-12-12 21:52+0100\n"
+"PO-Revision-Date: 2004-12-17 22:04+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -22,7 +22,7 @@ msgid "%qs attribute directive ignored"
 msgstr "Attribut-Anweisung %qs ignoriert"
 
 #: attribs.c:183
-#, fuzzy, c-format
+#, c-format
 msgid "wrong number of arguments specified for %qs attribute"
 msgstr "falsche Anzahl an Argumenten für das Attribut %qs angegeben"
 
@@ -2030,18 +2030,18 @@ msgid "empty precision in %s format"
 msgstr "fehlende Präzision im Format %s"
 
 #: c-format.c:1687
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support the %qs %s length modifier"
-msgstr "%s unterstützt nicht den Längenmodifizierer »%s« %s"
+msgstr "%s unterstützt nicht den Längenmodifizierer %qs %s"
 
 #: c-format.c:1737
 msgid "conversion lacks type at end of format"
-msgstr "Konvertierung fehlt der Typ am Ende des Formates"
+msgstr "bei der Konvertierung fehlt der Typ am Ende des Formates"
 
 #: c-format.c:1748
-#, fuzzy, c-format
+#, c-format
 msgid "unknown conversion type character %qc in format"
-msgstr "unbekanntes Konvertierungstyp-Zeichen »%c« im Format"
+msgstr "unbekanntes Konvertierungstyp-Zeichen %qc im Format"
 
 #: c-format.c:1751
 #, c-format
@@ -2049,14 +2049,12 @@ msgid "unknown conversion type character 0x%x in format"
 msgstr "unbekanntes Konvertierungstyp-Zeichen 0x%x im Format"
 
 #: c-format.c:1758
-#, fuzzy
 msgid "%s does not support the %<%%%c%> %s format"
-msgstr "%s unterstützt nicht das Format »%%%s%c« %s"
+msgstr "%s unterstützt nicht das Format %<%%%c%> %s"
 
 #: c-format.c:1774
-#, fuzzy
 msgid "%s used with %<%%%c%> %s format"
-msgstr "%s verwendet mit Format »%%%c« %s"
+msgstr "%s verwendet mit Format %<%%%c%> %s"
 
 #: c-format.c:1783
 #, c-format
@@ -2064,14 +2062,12 @@ msgid "%s does not support %s"
 msgstr "%s unterstützt nicht %s"
 
 #: c-format.c:1792
-#, fuzzy
 msgid "%s does not support %s with the %<%%%c%> %s format"
-msgstr "%s unterstützt nicht %s mit dem Format »%%%c« %s"
+msgstr "%s unterstützt nicht %s mit dem Format %<%%%c%> %s"
 
 #: c-format.c:1825
-#, fuzzy
 msgid "%s ignored with %s and %<%%%c%> %s format"
-msgstr "%s ignoriert mit %s und Format »%%%c« %s"
+msgstr "%s ignoriert mit %s und Format %<%%%c%> %s"
 
 #: c-format.c:1829
 #, c-format
@@ -2079,40 +2075,35 @@ msgid "%s ignored with %s in %s format"
 msgstr "%s ignoriert mit %s im Format %s"
 
 #: c-format.c:1835
-#, fuzzy
 msgid "use of %s and %s together with %<%%%c%> %s format"
-msgstr "Verwendung von %s und %s zusammen mit Format »%%%c« %s"
+msgstr "Verwendung von %s und %s zusammen mit Format %<%%%c%> %s"
 
 #: c-format.c:1839
 #, c-format
 msgid "use of %s and %s together in %s format"
-msgstr "Verwendung von %s und %s zusammen im Format %s"
+msgstr "gleichzeitige Verwendung von %s und %s im Format %s"
 
 #: c-format.c:1858
-#, fuzzy
 msgid "%<%%%c%> yields only last 2 digits of year in some locales"
-msgstr "»%%%c« liefert in manchen Locales nur die letzten 2 Ziffern des Jahres"
+msgstr "%<%%%c%> liefert in manchen Locales nur die letzten 2 Ziffern des Jahres"
 
 #: c-format.c:1861
-#, fuzzy
 msgid "%<%%%c%> yields only last 2 digits of year"
-msgstr "»%%%c« liefert nur die letzten 2 Ziffern des Jahres"
+msgstr "%<%%%c%> liefert nur die letzten 2 Ziffern des Jahres"
 
 #. The end of the format string was reached.
 #: c-format.c:1877
-#, fuzzy
 msgid "no closing %<]%> for %<%%[%> format"
-msgstr "kein schließendes »]« für »%%[«-Format"
+msgstr "kein schließendes %<]%> für %<%%[%>-Format"
 
 #: c-format.c:1890
-#, fuzzy, c-format
+#, c-format
 msgid "use of %qs length modifier with %qc type character"
-msgstr "Verwendung des »%s«-Längenmodifizierers mit »%c«-Typ-Zeichen"
+msgstr "Verwendung des %qs-Längenmodifizierers mit %qc-Typ-Zeichen"
 
 #: c-format.c:1911
-#, fuzzy
 msgid "%s does not support the %<%%%s%c%> %s format"
-msgstr "%s unterstützt nicht das Format »%%%s%c« %s"
+msgstr "%s unterstützt nicht das Format %<%%%s%c%> %s"
 
 #: c-format.c:1928
 msgid "operand number specified with suppressed assignment"
@@ -2123,61 +2114,58 @@ msgid "operand number specified for format taking no argument"
 msgstr "Operandennummer für Format ohne Argumente angegeben"
 
 #: c-format.c:2072
-#, fuzzy, c-format
+#, c-format
 msgid "writing through null pointer (argument %d)"
-msgstr "Schreiben mit Null-Zeiger (Argument %d)"
+msgstr "Schreiben über Null-Zeiger (Argument %d)"
 
 #: c-format.c:2080
-#, fuzzy, c-format
+#, c-format
 msgid "reading through null pointer (argument %d)"
-msgstr "Lesen mit Null-Zeiger (Argument %d)"
+msgstr "Lesen über Null-Zeiger (Argument %d)"
 
 #: c-format.c:2100
-#, fuzzy, c-format
+#, c-format
 msgid "writing into constant object (argument %d)"
 msgstr "Schreiben in konstantes Objekt (Argument %d)"
 
 #: c-format.c:2111
-#, fuzzy, c-format
+#, c-format
 msgid "extra type qualifiers in format argument (argument %d)"
 msgstr "zusätzliche Typqualifizierer in Format-Argument (Argument %d)"
 
 #: c-format.c:2222
 msgid "%s should have type %<%s%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "%s sollte den Typ %<%s%s%> haben, aber das Argument %d hat Typ %qT"
 
 #: c-format.c:2225
 msgid "format %q.*s expects type %<%s%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "Format %q.*s erwartet Typ %<%s%s%>, aber Argument %d hat Typ %qT"
 
 #: c-format.c:2232
 msgid "%s should have type %<%T%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "%s sollte Typ %<%T%s%> haben, aber Argument %d hat Typ %qT"
 
 #: c-format.c:2235
 msgid "format %q.*s expects type %<%T%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "format %q.*s erwartet Typ %<%T%s%>, aber Argument %d hat Typ %qT"
 
 #: c-format.c:2501
-#, fuzzy
 msgid "args to be formatted is not %<...%>"
-msgstr "zu formatierendes Argument ist nicht »...«"
+msgstr "zu formatierendes Argument ist nicht %<...%>"
 
 #: c-format.c:2510
 msgid "strftime formats cannot format arguments"
 msgstr "strftime-Formate können keine Argumente formatieren"
 
 #: c-gimplify.c:237
-#, fuzzy
 msgid "statement with no effect"
-msgstr "%HAnweisung ohne Effekt"
+msgstr "Anweisung ohne Effekt"
 
 #: c-gimplify.c:315 c-typeck.c:6728 cp/parser.c:6434
 msgid "break statement not within loop or switch"
 msgstr "break-Anweisung nicht innerhalb einer Schleife oder »switch«"
 
 #: c-gimplify.c:317
-#, fuzzy
 msgid "continue statement not within loop or switch"
 msgstr "break-Anweisung nicht innerhalb einer Schleife oder »switch«"
 
@@ -2216,20 +2204,18 @@ msgid "badly nested C headers from preprocessor"
 msgstr "schlecht geschachtelte C-Header vom Präprozessor"
 
 #: c-lex.c:307
-#, fuzzy
 msgid "%Hignoring #pragma %s %s"
-msgstr "ignoriere #pragma %s %s"
+msgstr "%H#pragma %s %s wird ignoriert"
 
 #. ... or not.
 #: c-lex.c:411
-#, fuzzy
 msgid "%Hstray %<@%> in program"
-msgstr "%Hverirrtes »@« im Programm"
+msgstr "%Hverirrtes %<@%> im Programm"
 
 #: c-lex.c:425
-#, fuzzy, c-format
+#, c-format
 msgid "stray %qs in program"
-msgstr "verirrtes »%c« im Programm"
+msgstr "verirrtes %qs im Programm"
 
 #: c-lex.c:435
 #, c-format
@@ -2237,14 +2223,13 @@ msgid "missing terminating %c character"
 msgstr "fehlendes abschließendes Zeichen %c"
 
 #: c-lex.c:437
-#, fuzzy, c-format
+#, c-format
 msgid "stray %qc in program"
-msgstr "verirrtes »%c« im Programm"
+msgstr "verirrtes %qc im Programm"
 
 #: c-lex.c:439
-#, fuzzy
 msgid "stray %<\\%o%> in program"
-msgstr "verirrtes »\\%o« im Programm"
+msgstr "verirrtes %<\\%o%> im Programm"
 
 #: c-lex.c:599
 msgid "this decimal constant is unsigned only in ISO C90"
@@ -2255,14 +2240,13 @@ msgid "this decimal constant would be unsigned in ISO C90"
 msgstr "diese Dezimalkonstante wäre in ISO-C90 vorzeichenlos"
 
 #: c-lex.c:618
-#, fuzzy, c-format
+#, c-format
 msgid "integer constant is too large for %qs type"
-msgstr "Ganzzahlkonstante ist zu groß für »%s«-Typ"
+msgstr "Ganzzahlkonstante ist zu groß für %qs-Typ"
 
 #: c-lex.c:684
-#, fuzzy
 msgid "floating constant exceeds range of %<%s%>"
-msgstr "Gleitkommakonstante überschreitet Wertebereich von »%s«"
+msgstr "Gleitkommakonstante überschreitet Wertebereich von %<%s%>"
 
 #: c-lex.c:766
 msgid "traditional C rejects string constant concatenation"
@@ -2271,72 +2255,65 @@ msgstr "traditionelles C weist Stringkonstantenverkettung zurück"
 #: c-objc-common.c:81
 #, fuzzy
 msgid "%Jfunction %qF can never be inlined because it is suppressed using -fno-inline"
-msgstr "%JFunktion »%F« kann nie inline sein, da sie mit -fno-inline unterdrückt wird"
+msgstr "%JFunktion %qF kann nie inline sein, da dies mit -fno-inline unterdrückt wird"
 
 #: c-objc-common.c:91
-#, fuzzy
 msgid "%Jfunction %qF can never be inlined because it might not be bound within this unit of translation"
-msgstr "%JFunktion »%F« kann nie inline sein, da sie nicht in diese Übersetzungseinheit gebunden wird"
+msgstr "%JFunktion %qF kann nie inline sein, da sie nicht in dieser Übersetzungseinheit gebunden wird"
 
 #: c-objc-common.c:99
-#, fuzzy
 msgid "%Jfunction %qF can never be inlined because it uses attributes conflicting with inlining"
-msgstr "%JFunktion »%F« kann nie inline sein, da sie mit inline in Konflikt stehende Attribute hat"
+msgstr "%JFunktion %qF kann nie inline sein, da sie mit inline in Konflikt stehende Attribute hat"
 
 #: c-objc-common.c:114
-#, fuzzy
 msgid "%Jfunction %qF can never be inlined because it has pending sizes"
-msgstr "%JFunktion »%F« kann nie inline sein, da sie noch offene Größen hat"
+msgstr "%JFunktion %qF kann nie inline sein, da sie noch offene Größen hat"
 
 #: c-objc-common.c:127
-#, fuzzy
 msgid "%Jnested function %qF can never be inlined because it has possibly saved pending sizes"
-msgstr "%Jdie geschachtelte Funktion »%F« kann nie inline sein, da sie möglicherweise gespeicherte, noch offene Größen hat"
+msgstr "%Jdie geschachtelte Funktion %qF kann nie inline sein, da sie möglicherweise gespeicherte, noch offene Größen hat"
 
 #: c-objc-common.c:263
-#, fuzzy
 msgid "used array that cannot be converted to pointer where scalar is required"
-msgstr "Wert eines array-Typs anstelle des geforderten Skalars verwendet"
+msgstr "Feld, das nicht in Zeiger umgewandelt werden kann, anstelle des geforderten Skalars verwendet"
 
 #: c-objc-common.c:267
-#, fuzzy
 msgid "used struct type value where scalar is required"
 msgstr "Wert eines struct-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-objc-common.c:271
-#, fuzzy
 msgid "used union type value where scalar is required"
 msgstr "Wert eines union-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-opts.c:144
-#, fuzzy, c-format
+#, c-format
 msgid "no class name specified with %qs"
-msgstr "kein Klassenname mit \"%s\" angegeben"
+msgstr "kein Klassenname mit %qs angegeben"
 
 #: c-opts.c:148
-#, fuzzy, c-format
+#, c-format
 msgid "assertion missing after %qs"
-msgstr "Behauptung fehlt hinter \"%s\""
+msgstr "Behauptung fehlt hinter %qs"
 
 #: c-opts.c:153
-#, fuzzy, c-format
+#, c-format
 msgid "macro name missing after %qs"
-msgstr "Makroname fehlt hinter \"%s\""
+msgstr "Makroname fehlt hinter %qs"
 
 #: c-opts.c:162
-#, fuzzy, c-format
+#, c-format
 msgid "missing path after %qs"
-msgstr "fehlender Pfad hinter \"%s\""
+msgstr "fehlender Pfad hinter %qs"
 
 #: c-opts.c:171
-#, fuzzy, c-format
+#, c-format
 msgid "missing filename after %qs"
-msgstr "fehlender Dateiname hinter \"%s\""
+msgstr "fehlender Dateiname hinter %qs"
 
 #: c-opts.c:176
-#, fuzzy, c-format
+#, c-format
 msgid "missing makefile target after %qs"
-msgstr "fehlendes Makefile-Ziel hinter \"%s\""
+msgstr "fehlendes Makefile-Ziel hinter %qs"
 
 #: c-opts.c:303
 msgid "-I- specified twice"
@@ -2344,12 +2321,12 @@ msgstr "-I- doppelt angegeben"
 
 #: c-opts.c:306
 msgid "obsolete option -I- used, please use -iquote instead"
-msgstr ""
+msgstr "veraltete Option -I- verwendet, bitte stattdessen -iquote verwenden"
 
 #: c-opts.c:540
-#, fuzzy, c-format
+#, c-format
 msgid "switch %qs is no longer supported"
-msgstr "Option »%s« wird nicht mehr unterstützt"
+msgstr "Schalter %qs wird nicht mehr unterstützt"
 
 #: c-opts.c:655
 msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
@@ -2395,7 +2372,7 @@ msgstr "zu viele Dateinamen angegeben. Geben sie »%s --help« für Hilfe ein"
 
 #: c-opts.c:1083
 msgid "YYDEBUG was not defined at build time, -dy ignored"
-msgstr ""
+msgstr "YYDEBUG war zur Übersetzungszeit nicht definiert, -dy ignoriert"
 
 #: c-opts.c:1124
 #, c-format
@@ -2458,18 +2435,16 @@ msgid "data definition has no type or storage class"
 msgstr "Datendefinition hat keinen Typ oder Speicherklasse"
 
 #: c-parse.y:388 objc/objc-parse.y:411
-#, fuzzy
 msgid "ISO C does not allow extra %<;%> outside of a function"
-msgstr "ISO-C erlaubt kein extra »;« außerhalb einer Funktion"
+msgstr "ISO-C erlaubt kein extra %<;%> außerhalb einer Funktion"
 
 #: c-parse.y:445
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditionelles C weist den unären Plus-Operator zurück"
 
 #: c-parse.y:498 objc/objc-parse.y:520
-#, fuzzy
 msgid "%<sizeof%> applied to a bit-field"
-msgstr "»sizeof«-Operator auf ein Bitfeld angewandt"
+msgstr "%<sizeof%> auf ein Bitfeld angewandt"
 
 #: c-parse.y:595 objc/objc-parse.y:617
 msgid "ISO C forbids omitting the middle term of a ?: expression"
@@ -2477,7 +2452,7 @@ msgstr "ISO-C verbietet das Weglassen des mittleren Terms eines ?:-Ausdruckes"
 
 #: c-parse.y:636 objc/objc-parse.y:658
 msgid "compound literal has variable size"
-msgstr ""
+msgstr "zusammengesetztes Literal hat variable Größe"
 
 #: c-parse.y:648 objc/objc-parse.y:670
 msgid "ISO C90 forbids compound literals"
@@ -2488,14 +2463,12 @@ msgid "ISO C forbids braced-groups within expressions"
 msgstr "ISO-C verbietet geklammerte Gruppen innerhalb von Ausdrücken"
 
 #: c-parse.y:697 objc/objc-parse.y:719
-#, fuzzy
 msgid "first argument to %<__builtin_choose_expr%> not a constant"
-msgstr "das erste Argument für __builtin_choose_expr ist keine Konstante"
+msgstr "das erste Argument für %<__builtin_choose_expr%> ist keine Konstante"
 
 #: c-parse.y:1224 objc/objc-parse.y:1273
-#, fuzzy
 msgid "%<typeof%> applied to a bit-field"
-msgstr "»typeof« auf ein Bitfeld angewandt"
+msgstr "%<typeof%> auf ein Bitfeld angewandt"
 
 #: c-parse.y:1358 objc/objc-parse.y:1407
 msgid "ISO C forbids empty initializer braces"
@@ -2506,14 +2479,12 @@ msgid "ISO C90 forbids specifying subobject to initialize"
 msgstr "ISO-C90 verbietet die Angabe von zu initialisierenden Unterobjekten"
 
 #: c-parse.y:1375 objc/objc-parse.y:1424
-#, fuzzy
 msgid "obsolete use of designated initializer without %<=%>"
-msgstr "veraltete Verwendung einer bestimmten Initialisierung ohne »=«"
+msgstr "veraltete Verwendung einer bestimmten Initialisierung ohne %<=%>"
 
 #: c-parse.y:1379 objc/objc-parse.y:1428
-#, fuzzy
 msgid "obsolete use of designated initializer with %<:%>"
-msgstr "veraltete Verwendung einer bestimmten Initialisierung mit »:«"
+msgstr "veraltete Verwendung einer bestimmten Initialisierung mit %<:%>"
 
 #: c-parse.y:1410 objc/objc-parse.y:1459
 msgid "ISO C forbids specifying range of elements to initialize"
@@ -2524,9 +2495,8 @@ msgid "ISO C forbids nested functions"
 msgstr "ISO-C verbietet verschachtelte Funktionen"
 
 #: c-parse.y:1623 objc/objc-parse.y:1672
-#, fuzzy
 msgid "ISO C forbids forward references to %<enum%> types"
-msgstr "ISO-C verbietet Vorwärts-Referenzen auf »enum«-Typen"
+msgstr "ISO-C verbietet Vorwärts-Referenzen auf %<enum%>-Typen"
 
 #: c-parse.y:1635 cp/parser.c:9850 objc/objc-parse.y:1684
 msgid "comma at end of enumerator list"
@@ -2561,19 +2531,17 @@ msgid "braced-group within expression allowed only inside a function"
 msgstr "geklammerte Gruppe innerhalb eines Ausdrucks nur in Funktion erlaubt"
 
 #: c-parse.y:2249 objc/objc-parse.y:2344
-#, fuzzy, c-format
+#, c-format
 msgid "%E qualifier ignored on asm"
-msgstr "%s-Qualifizierer für asm ignoriert"
+msgstr "%E-Qualifizierer für asm ignoriert"
 
 #: c-parse.y:2343 objc/objc-parse.y:2438
-#, fuzzy
 msgid "ISO C requires a named argument before %<...%>"
-msgstr "ISO-C erfordert ein benanntes Argument vor »...«"
+msgstr "ISO-C erfordert ein benanntes Argument vor %<...%>"
 
 #: c-parse.c:5309 c-parse.y:2929 gengtype-yacc.c:1555 java/parse-scan.c:3059
 #: java/parse-scan.y:1375 java/parse.c:6162 java/parse.y:16415
 #: objc/objc-parse.c:6380 objc/objc-parse.y:3519
-#, fuzzy
 msgid "syntax error; also virtual memory exhausted"
 msgstr "Syntaxfehler; auch virtueller Speicher verbraucht"
 
@@ -2583,9 +2551,9 @@ msgid "parser stack overflow"
 msgstr "Parser-Keller-Überlauf"
 
 #: c-parse.y:2849 objc/objc-parse.y:3439
-#, fuzzy, c-format
+#, c-format
 msgid "syntax error at %qs token"
-msgstr "Syntaxfehler beim Token »%s«"
+msgstr "Syntaxfehler beim Token %qs"
 
 #: c-parse.y:2928 java/parse-scan.y:1374 java/parse.y:16414
 #: objc/objc-parse.y:3518
@@ -2599,58 +2567,49 @@ msgstr "Syntaxfehler; auch virtueller Speicher verbraucht"
 
 #: c-parse.y:2932 java/parse-scan.y:1378 java/parse.y:16418
 #: objc/objc-parse.y:3522
-#, fuzzy
 msgid "parse error: cannot back up"
 msgstr "Syntaxfehler: es kann nicht zurückgesetzt werden"
 
 #: c-pch.c:130
-#, fuzzy
 msgid "can%'t create precompiled header %s: %m"
 msgstr "der vorkompilierte Header »%s« kann nicht erzeugt werden: %m"
 
 #: c-pch.c:158
-#, fuzzy
 msgid "can%'t write to %s: %m"
 msgstr "in %s kann nicht geschrieben werden: %m"
 
 #: c-pch.c:164
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is not a valid output file"
-msgstr "»%s« ist keine gültige Ausgabedatei"
+msgstr "%qs ist keine gültige Ausgabedatei"
 
 #: c-pch.c:193 c-pch.c:208 c-pch.c:222
-#, fuzzy
 msgid "can%'t write %s: %m"
 msgstr "%s kann nicht geschrieben werden: %m"
 
 #: c-pch.c:198 c-pch.c:215
-#, fuzzy
 msgid "can%'t seek in %s: %m"
 msgstr "in %s kann nicht positioniert werden: %m"
 
 #: c-pch.c:206 c-pch.c:248 c-pch.c:276 c-pch.c:281 c-pch.c:365
-#, fuzzy
 msgid "can%'t read %s: %m"
 msgstr "%s kann nicht gelesen werden: %m"
 
 #: c-pch.c:483
-#, fuzzy
 msgid "malformed #pragma GCC pch_preprocess, ignored"
-msgstr "Falsch geformtes #pragma map, ignoriert"
+msgstr "Falsch geformtes #pragma GCC pch_preprocess, ignoriert"
 
 #: c-pch.c:489
 msgid "pch_preprocess pragma should only be used with -fpreprocessed"
-msgstr ""
+msgstr "pch_preprocess-Pragma sollte nur mit -fpreprocessed verwendet werden"
 
 #: c-pch.c:490
-#, fuzzy
 msgid "use #include instead"
-msgstr "#include ist zu tief geschachtelt"
+msgstr "stattdessen #include verwenden"
 
 #: c-pch.c:498
-#, fuzzy
 msgid "%s: couldn%'t open PCH file: %m\n"
-msgstr "%s: Ausgabedatei %s konnte nicht geöffnet werden\n"
+msgstr "%s: PCH-Datei konnte nicht geöffnet werden: %m\n"
 
 #: c-pch.c:503
 msgid "use -Winvalid-pch for more information"
@@ -2659,17 +2618,16 @@ msgstr "verwenden Sie -Winvalid-pch für mehr Informationen"
 #: c-pch.c:504
 #, c-format
 msgid "%s: PCH file was invalid"
-msgstr ""
+msgstr "%s: PCH-Datei war ungültig"
 
 #: c-pragma.c:98
-#, fuzzy
 msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
-msgstr "#pragma pack (pop) gefunden ohne passendes #pragma pack (push, <n>)"
+msgstr "#pragma pack (pop) gefunden ohne passendes #pragma pack (push)"
 
 #: c-pragma.c:111
-#, fuzzy, c-format
+#, c-format
 msgid "#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
-msgstr "#pragma pack(pop, %s) gefunden ohne passendes #pragma pack(push, %s, <n>)"
+msgstr "#pragma pack(pop, %s) gefunden ohne passendes #pragma pack(push, %s)"
 
 #: c-pragma.c:125
 msgid "#pragma pack(push[, id], <n>) is not supported on this target"
@@ -2680,38 +2638,32 @@ msgid "#pragma pack(pop[, id], <n>) is not supported on this target"
 msgstr "#pragma pack(pop[, id], <n>) wird von diesem Ziel nicht unterstützt"
 
 #: c-pragma.c:148
-#, fuzzy
 msgid "missing %<(%> after %<#pragma pack%> - ignored"
-msgstr "fehlendes »(« hinter »#pragma pack« - ignoriert"
+msgstr "fehlendes %<(%> hinter %<#pragma pack%> - ignoriert"
 
 #: c-pragma.c:161 c-pragma.c:201
-#, fuzzy
 msgid "malformed %<#pragma pack%> - ignored"
-msgstr "falsch geformtes »#pragma pack« - ignoriert"
+msgstr "falsch geformtes %<#pragma pack%> - ignoriert"
 
 #: c-pragma.c:166
-#, fuzzy
 msgid "malformed %<#pragma pack(push[, id][, <n>])%> - ignored"
-msgstr "falsch geformtes »#pragma pack(push[, id], <n>)« - ignoriert"
+msgstr "falsch geformtes %<#pragma pack(push[, id][, <n>])%> - ignoriert"
 
 #: c-pragma.c:168
-#, fuzzy
 msgid "malformed %<#pragma pack(pop[, id])%> - ignored"
-msgstr "falsch geformtes »#pragma pack(pop[, id])« - ignoriert"
+msgstr "falsch geformtes %<#pragma pack(pop[, id])%> - ignoriert"
 
 #: c-pragma.c:177
-#, fuzzy
 msgid "unknown action %qs for %<#pragma pack%> - ignored"
-msgstr "unbekannte Aktion »%s« für »#pragma pack« - ignoriert"
+msgstr "unbekannte Aktion %qs für %<#pragma pack%> - ignoriert"
 
 #: c-pragma.c:204
-#, fuzzy
 msgid "junk at end of %<#pragma pack%>"
-msgstr "Ausschuss am Ende von »#pragma pack«"
+msgstr "Ausschuss am Ende von %<#pragma pack%>"
 
 #: c-pragma.c:207
 msgid "#pragma pack has no effect with -fpack-struct - ignored"
-msgstr ""
+msgstr "#pragma pack hat mit -fpack-struct keinen Effekt - ignoriert"
 
 #: c-pragma.c:227
 #, c-format
@@ -2719,9 +2671,8 @@ msgid "alignment must be a small power of two, not %d"
 msgstr "Ausrichtung muss eine kleine Zweierpotenz sein, nicht %d"
 
 #: c-pragma.c:260
-#, fuzzy
 msgid "%Japplying #pragma weak %qD after first use results in unspecified behavior"
-msgstr "%JAnwendung von #pragma weak »%D« nach erster Benutzung führt zu nicht spezifiziertem Verhalten"
+msgstr "%JAnwendung von #pragma weak %qD nach erster Benutzung führt zu nicht spezifiziertem Verhalten"
 
 #: c-pragma.c:307 c-pragma.c:312
 msgid "malformed #pragma weak, ignored"
@@ -2740,19 +2691,16 @@ msgid "junk at end of #pragma redefine_extname"
 msgstr "Ausschuss am Ende von #pragma redefine_extname"
 
 #: c-pragma.c:389
-#, fuzzy
 msgid "#pragma redefine_extname not supported on this target"
-msgstr "__builtin_eh_return für dieses Ziel nicht unterstützt"
+msgstr "#pragma redefine_extname für dieses Ziel nicht unterstützt"
 
 #: c-pragma.c:406 c-pragma.c:492
-#, fuzzy
 msgid "#pragma redefine_extname ignored due to conflict with previous rename"
-msgstr "#pragma redefine_extname steht in Konflikt mit Deklaration"
+msgstr "#pragma redefine_extname wegen Konflikt mit vorheriger Umbenennung ignoriert"
 
 #: c-pragma.c:429
-#, fuzzy
 msgid "#pragma redefine_extname ignored due to conflict with previous #pragma redefine_extname"
-msgstr "#pragma redefine_extname steht in Konflikt mit Deklaration"
+msgstr "#pragma redefine_extname wegen Konflikt mit vorherigem #pragma redefine_extname ignoriert"
 
 #: c-pragma.c:448
 msgid "malformed #pragma extern_prefix, ignored"
@@ -2763,55 +2711,49 @@ msgid "junk at end of #pragma extern_prefix"
 msgstr "Ausschuss am Ende von #pragma extern_prefix"
 
 #: c-pragma.c:457
-#, fuzzy
 msgid "#pragma extern_prefix not supported on this target"
-msgstr "Profiling wird von diesem Ziel nicht unterstützt"
+msgstr "#pragma extern_prefix wird von diesem Ziel nicht unterstützt"
 
 #: c-pragma.c:483
-#, fuzzy
 msgid "asm declaration ignored due to conflict with previous rename"
-msgstr "asm-Deklaration steht in Konflikt mit vorheriger Umbenennung"
+msgstr "asm-Deklaration wegen Konflikt mit vorheriger Umbenennung ignoriert"
 
 #: c-pragma.c:514
-#, fuzzy
 msgid "#pragma redefine_extname ignored due to conflict with __asm__ declaration"
-msgstr "#pragma redefine_extname steht in Konflikt mit Deklaration"
+msgstr "#pragma redefine_extname wegen Konflikt mit __asm__-Deklaration ignoriert"
 
 #: c-pragma.c:574
 msgid "#pragma GCC visibility must be followed by push or pop"
-msgstr ""
+msgstr "#pragma GCC visibility muss von push oder pop gefolgt werden"
 
 #: c-pragma.c:581
 msgid "No matching push for %<#pragma GCC visibility pop%>"
-msgstr ""
+msgstr "Kein passendes push für %<#pragma GCC visibility pop%>"
 
 #: c-pragma.c:592 c-pragma.c:621
-#, fuzzy
 msgid "missing %<(%> after %<#pragma GCC visibility push%> - ignored"
-msgstr "»(« hinter »#pragma %s« fehlt - ignoriert"
+msgstr "%<(%> hinter %<#pragma GCC visibility push%> fehlt - ignoriert"
 
 #: c-pragma.c:596
-#, fuzzy
 msgid "malformed #pragma GCC visibility push"
-msgstr "Falsch geformtes #pragma builtin"
+msgstr "Falsch geformtes #pragma GCC visibility push"
 
 #: c-pragma.c:600
 msgid "No more than sixteen #pragma GCC visibility pushes allowed at once"
-msgstr ""
+msgstr "Es werden nicht mehr als sechzehn #pragma GCC visibility pushes auf einmal erlaubt"
 
 #: c-pragma.c:616
 msgid "#pragma GCC visibility push() must specify default, internal, hidden or protected"
-msgstr ""
+msgstr "#pragma GCC visibility push() muss default, internal, hidden oder protected angeben"
 
 #: c-pragma.c:625
-#, fuzzy
 msgid "junk at end of %<#pragma GCC visibility%>"
-msgstr "Ausschuss am Ende von #pragma %s"
+msgstr "Ausschuss am Ende von %<#pragma GCC visibility%>"
 
 #: c-typeck.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "%qs has an incomplete type"
-msgstr "»%s« hat unvollständigen Typ"
+msgstr "%qs hat unvollständigen Typ"
 
 #: c-typeck.c:160 cp/call.c:2671
 msgid "invalid use of void expression"
@@ -2826,15 +2768,14 @@ msgid "invalid use of array with unspecified bounds"
 msgstr "falsche Benutzung eines Feldes mit unbekannten Grenzen"
 
 #: c-typeck.c:182
-#, fuzzy
 msgid "invalid use of undefined type %<%s %s%>"
-msgstr "falsche Benutzung des undefinierten Typs »%s %s«"
+msgstr "falsche Benutzung des undefinierten Typs %<%s %s%>"
 
 #. If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.
 #: c-typeck.c:186
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of incomplete typedef %qs"
-msgstr "falsche Benutzung des unvollständigen typedef »%s«"
+msgstr "falsche Benutzung des unvollständigen typedef %qs"
 
 #: c-typeck.c:373 c-typeck.c:387
 msgid "function types not truly compatible in ISO C"
@@ -2845,37 +2786,34 @@ msgid "types are not quite compatible"
 msgstr "Typen nicht sehr kompatibel"
 
 #: c-typeck.c:987
-#, fuzzy
 msgid "function return types not compatible due to %<volatile%>"
-msgstr "Funktionsrückgabetypen nicht kompatibel wegen »volatile«"
+msgstr "Funktionsrückgabetypen nicht kompatibel wegen %<volatile%>"
 
 #: c-typeck.c:1128 c-typeck.c:2362
 msgid "arithmetic on pointer to an incomplete type"
 msgstr "Arithmetik mit Zeiger auf unvollständigen Typen"
 
 #: c-typeck.c:1483
-#, fuzzy
 msgid "%qT has no member named %qs"
-msgstr "%s hat kein Element namens »%s«"
+msgstr "%qT hat kein Element namens %qs"
 
 #: c-typeck.c:1519
-#, fuzzy, c-format
+#, c-format
 msgid "request for member %qs in something not a structure or union"
-msgstr "Anfrage nach Element »%s« in etwas, was keine Struktur oder Variante ist"
+msgstr "Anfrage nach Element %qs in etwas, was keine Struktur oder Variante ist"
 
 #: c-typeck.c:1548
 msgid "dereferencing pointer to incomplete type"
 msgstr "Dereferenzierung eines Zeigers auf unvollständigen Typen"
 
 #: c-typeck.c:1552
-#, fuzzy
 msgid "dereferencing %<void *%> pointer"
-msgstr "Dereferenzierung eines »void *«-Zeigers"
+msgstr "Dereferenzierung eines %<void *%>-Zeigers"
 
 #: c-typeck.c:1569 cp/typeck.c:2150
-#, fuzzy, c-format
+#, c-format
 msgid "invalid type argument of %qs"
-msgstr "falsches Typ-Argument von »%s«"
+msgstr "falsches Typ-Argument von %qs"
 
 #: c-typeck.c:1597 cp/typeck.c:2301
 msgid "subscripted value is neither array nor pointer"
@@ -2886,28 +2824,25 @@ msgid "array subscript is not an integer"
 msgstr "Feldindex ist keine Ganzzahl"
 
 #: c-typeck.c:1614
-#, fuzzy
 msgid "subscripted value is pointer to function"
-msgstr "Verarbeiten des Zeigerargumentes an Funktion"
+msgstr "indizierter Wert ist Zeiger auf Funktion"
 
 #: c-typeck.c:1627 cp/typeck.c:2216
-#, fuzzy
 msgid "array subscript has type %<char%>"
-msgstr "Feldindex hat Typ »char«"
+msgstr "Feldindex hat Typ %<char%>"
 
 #: c-typeck.c:1667
-#, fuzzy
 msgid "ISO C forbids subscripting %<register%> array"
-msgstr "ISO-C verbietet, ein »register«-Array zu indizieren"
+msgstr "ISO-C verbietet, ein %<register%>-Feld zu indizieren"
 
 #: c-typeck.c:1669
 msgid "ISO C90 forbids subscripting non-lvalue array"
 msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Feld zu indizieren"
 
 #: c-typeck.c:1904
-#, fuzzy, c-format
+#, c-format
 msgid "called object %qE is not a function"
-msgstr "gerufenes Objekt ist keine Funktion"
+msgstr "gerufenes Objekt %qE ist keine Funktion"
 
 #. This situation leads to run-time undefined behavior.  We can't,
 #. therefore, simply error unless we can prove that all possible
@@ -2922,9 +2857,9 @@ msgid "initializer element is not constant"
 msgstr "Initialisierungselement ist nicht konstant"
 
 #: c-typeck.c:2044
-#, fuzzy, c-format
+#, c-format
 msgid "too many arguments to function %qE"
-msgstr "zu viele Argumente für Funktion"
+msgstr "zu viele Argumente für Funktion %qE"
 
 #: c-typeck.c:2071
 #, c-format
@@ -2932,59 +2867,58 @@ msgid "type of formal parameter %d is incomplete"
 msgstr "Typ des formalen Parameters %d ist unvollständig"
 
 #: c-typeck.c:2084
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as integer rather than floating due to prototype"
-msgstr "%s als Ganzzahl statt Gleitkomma aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als Ganzzahl statt Gleitkomma aufgrund des Prototyps"
 
 #: c-typeck.c:2089
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as integer rather than complex due to prototype"
-msgstr "%s als Ganzzahl statt komplex aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als Ganzzahl statt komplex aufgrund des Prototyps"
 
 #: c-typeck.c:2094
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as complex rather than floating due to prototype"
-msgstr "%s als komplex statt Gleitkomma aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als komplex statt Gleitkomma aufgrund des Prototyps"
 
 #: c-typeck.c:2099
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as floating rather than integer due to prototype"
-msgstr "%s als Gleitkomma statt Ganzzahl aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als Gleitkomma statt Ganzzahl aufgrund des Prototyps"
 
 #: c-typeck.c:2104
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as complex rather than integer due to prototype"
-msgstr "%s als komplex statt Ganzzahl aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als komplex statt Ganzzahl aufgrund des Prototyps"
 
 #: c-typeck.c:2109
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as floating rather than complex due to prototype"
-msgstr "%s als Gleitkomma statt komplex aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als Gleitkomma statt komplex aufgrund des Prototyps"
 
 #: c-typeck.c:2121
-#, fuzzy
 msgid "passing argument %d of %qE as %<float%> rather than %<double%> due to prototype"
-msgstr "%s als »float« statt »double« aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als %<float%> statt %<double%> aufgrund des Prototyps"
 
 #: c-typeck.c:2141
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE with different width due to prototype"
-msgstr "%s mit anderer Breite aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE mit anderer Breite aufgrund des Prototyps"
 
 #: c-typeck.c:2168
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as unsigned due to prototype"
-msgstr "%s als vorzeichenlos aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als vorzeichenlos aufgrund des Prototyps"
 
 #: c-typeck.c:2171
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE as signed due to prototype"
-msgstr "%s als vorzeichenbehaftet aufgrund des Prototyps"
+msgstr "Übergabe des Arguments %d von %qE als vorzeichenbehaftet aufgrund des Prototyps"
 
 #: c-typeck.c:2202
-#, fuzzy, c-format
+#, c-format
 msgid "too few arguments to function %qE"
-msgstr "zu wenige Argumente für Funktion"
+msgstr "zu wenige Argumente für Funktion %qE"
 
 #: c-typeck.c:2238
 msgid "suggest parentheses around + or - inside shift"
@@ -3023,9 +2957,8 @@ msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
 msgstr "Vergleiche wie X<=Y<=Z haben nicht ihre mathematische Bedeutung"
 
 #: c-typeck.c:2314
-#, fuzzy
 msgid "pointer of type %<void *%> used in subtraction"
-msgstr "Zeiger des Typs »void *« in Subtraktion verwendet"
+msgstr "Zeiger des Typs %<void *%> in Subtraktion verwendet"
 
 #: c-typeck.c:2316
 msgid "pointer to a function used in subtraction"
@@ -3040,9 +2973,8 @@ msgid "wrong type argument to unary minus"
 msgstr "Argument falschen Typs für unäres Minus"
 
 #: c-typeck.c:2435
-#, fuzzy
 msgid "ISO C does not support %<~%> for complex conjugation"
-msgstr "ISO-C unterstützt nicht »~« für komplexe Konjugation"
+msgstr "ISO-C unterstützt nicht %<~%> für komplexe Konjugation"
 
 #: c-typeck.c:2441
 msgid "wrong type argument to bit-complement"
@@ -3061,9 +2993,8 @@ msgid "wrong type argument to unary exclamation mark"
 msgstr "Argument falschen Typs für unäres Ausrufungszeichen"
 
 #: c-typeck.c:2512
-#, fuzzy
 msgid "ISO C does not support %<++%> and %<--%> on complex types"
-msgstr "ISO-C unterstützt kein »++« und »--« für komplexe Typen"
+msgstr "ISO-C unterstützt kein %<++%> und %<--%> für komplexe Typen"
 
 #: c-typeck.c:2528 c-typeck.c:2560
 msgid "wrong type argument to increment"
