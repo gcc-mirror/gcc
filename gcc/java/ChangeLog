@@ -1,3 +1,7 @@
+2001-04-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config-lang.in (target_libs): Copy from $libgcj_saved.
+
 2001-04-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jvspec.c (lang_specific_driver): Use concat in lieu of

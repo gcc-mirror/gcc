@@ -37,7 +37,7 @@ compilers="jc1\$(exeext) jvgenmain\$(exeext)"
 
 stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext) jv-scan\$(exeext) jcf-dump\$(exeext)"
 
-target_libs=${libgcj}
+target_libs=${libgcj_saved}
 lang_dirs="zlib fastjar"
-build_by_default=no
+#build_by_default=no
 lang_requires=c++
