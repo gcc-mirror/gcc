@@ -2893,10 +2893,27 @@ expand_decl (decl)
 	  PROMOTE_MODE (reg_mode, unsignedp, type);
 	}
 
-      DECL_RTL (decl) = gen_reg_rtx (reg_mode);
-      if (TREE_CODE (type) == POINTER_TYPE)
-	mark_reg_pointer (DECL_RTL (decl));
-      REG_USERVAR_P (DECL_RTL (decl)) = 1;
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	{
+	  rtx realpart, imagpart;
+	  enum machine_mode partmode = TYPE_MODE (TREE_TYPE (type));
+
+	  /* For a complex type variable, make a CONCAT of two pseudos
+	     so that the real and imaginary parts
+	     can be allocated separately.  */
+	  realpart = gen_reg_rtx (partmode);
+	  REG_USERVAR_P (realpart) = 1;
+	  imagpart = gen_reg_rtx (partmode);
+	  REG_USERVAR_P (imagpart) = 1;
+	  DECL_RTL (decl) = gen_rtx (CONCAT, reg_mode, realpart, imagpart);
+	}
+      else
+	{
+	  DECL_RTL (decl) = gen_reg_rtx (reg_mode);
+	  if (TREE_CODE (type) == POINTER_TYPE)
+	    mark_reg_pointer (DECL_RTL (decl));
+	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
+	}
     }
   else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
     {
