@@ -1,6 +1,6 @@
 #! /bin/sh
 # Configuration validation subroutine script, version 1.1.
-#   Copyright (C) 1991, 92-97, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1991, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
 # can handle that machine.  It does not imply ALL GNU software can.
@@ -515,6 +515,10 @@ case $basic_machine in
 	mips3*)
 		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`-unknown
 		;;
+	mmix*)
+		basic_machine=mmix-knuth
+		os=-mmixware
+		;;
 	monitor)
 		basic_machine=m68k-rom68k
 		os=-coff
@@ -925,7 +929,7 @@ case $os in
 		;;
 	-sim | -es1800* | -hms* | -xray | -os68k* | -none* | -v88r* \
 	      | -windows* | -osx | -abug | -netware* | -os9* | -beos* \
-	      | -macos* | -mpw* | -magic* | -mon960* | -lnews*)
+	      | -macos* | -mpw* | -magic* | -mmixware* | -mon960* | -lnews*)
 		;;
 	-mac*)
 		os=`echo $os | sed -e 's|mac|macos|'`
