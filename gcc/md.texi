@@ -1539,7 +1539,7 @@ System V Release 4 small data area reference
 @table @code
 @item q
 @samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
-For x86-64 it is equivalent to @samp{r} class. (for 8bit instrucitons that
+For x86-64 it is equivalent to @samp{r} class. (for 8bit instructions that
 do not use upper halves)
 
 @item Q
@@ -1552,7 +1552,10 @@ Legacy register --- equivalent to @code{r} class in i386 mode.
 instruction)
 
 @item A
-@samp{a}, or @code{d} register (for 64-bit ints)
+Specifies the @samp{a} or @samp{d} registers.  This is primarily useful
+for 64-bit integer values (when in 32-bit mode) intended to be returned
+with the @samp{d} register holding the most significant bits and the
+@samp{a} register holding the least significant bits.
 
 @item f
 Floating point register
@@ -1580,6 +1583,12 @@ Second floating point register
 
 @item S
 @samp{si} register
+
+@item x
+@samp{xmm} SSE register
+
+@item y
+MMX register
 
 @item I
 Constant in range 0 to 31 (for 32 bit shifts)
