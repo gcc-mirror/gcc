@@ -1,3 +1,15 @@
+2000-02-26  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/elfos.h (ASM_OUTPUT_LABELREF): Don't define.  The default
+	is right for most ELF targets.
+	* config/ns32k/ns32k.h (ASM_OUTPUT_LABELREF): Don't define.
+	Let the default file use %U properly.
+	* config/sh/elf.h (ASM_OUTPUT_LABELREF): Don't define.  Use the
+	default.
+
+	* config/fp-bit.c (pack_d): Properly handle rounding of denormal
+	numbers.
+
 Sat Feb 26 09:39:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (documented_lang_options): Correct spelling error.

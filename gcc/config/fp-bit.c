@@ -502,8 +502,25 @@ pack_d ( fp_number_type *  src)
 	    }
 	  else
 	    {
-	      /* Shift by the value */
-	      fraction >>= shift;
+	      int lowbit = (fraction & ((1 << shift) - 1)) ? 1 : 0;
+	      fraction = (fraction >> shift) | lowbit;
+	    }
+	  if ((fraction & GARDMASK) == GARDMSB)
+	    {
+	      if ((fraction & (1 << NGARDS)))
+		fraction += GARDROUND + 1;
+	    }
+	  else
+	    {
+	      /* Add to the guards to round up.  */
+	      fraction += GARDROUND;
+	    }
+	  /* Perhaps the rounding means we now need to change the
+             exponent.  */
+	  if (fraction >= IMPLICIT_2)
+	    {
+	      fraction >>= 1;
+	      exp += 1;
 	    }
 	  fraction >>= NGARDS;
 	}
