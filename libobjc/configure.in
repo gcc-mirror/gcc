@@ -24,6 +24,12 @@ AC_PREREQ(2.13)
 AC_INIT(objc/objc.h)
 AC_CONFIG_HEADER(config.h)
 
+dnl We need the following definitions because AC_PROG_LIBTOOL relies on them
+PACKAGE=libobjc
+dnl Version is pulled out to make it a bit easier to change using sed.
+VERSION=1:0:0
+AC_SUBST(VERSION)
+
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
@@ -76,11 +82,6 @@ case $srcdir in
 esac
 AC_SUBST(glibcpp_builddir)
 AC_SUBST(glibcpp_srcdir)
-
-# Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
-# be 'cp -p' if linking isn't available.
-#ac_cv_prog_LN_S='cp -p'
-AC_PROG_LN_S
 
 # We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
@@ -142,7 +143,7 @@ LIB_AC_PROG_CC
 
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
-AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
+AC_CHECK_TOOL(RANLIB, ranlib, :)
 AC_PROG_INSTALL
 
 
@@ -206,23 +207,7 @@ AC_LIBTOOL_WIN32_DLL
 
 AC_PROG_LIBTOOL
 
-dnl These should be inherited in the recursive make, but ensure they are
-dnl defined:
-test "$AR" || AR=ar
-AC_SUBST(AR)
-if test "$RANLIB"; then :
-  AC_SUBST(RANLIB)
-else
-  AC_PROG_RANLIB
-fi
-AC_PROG_INSTALL
 AC_PROG_MAKE_SET
-
-dnl we need the following definitions because AC_PROG_LIBTOOL relies on them
-PACKAGE=libobjc
-dnl version is pulled out to make it a bit easier to change using sed.
-VERSION=1:0:0
-AC_SUBST(VERSION)
 
 dnl Checks for header files.
 # Sanity check for the cross-compilation case:
