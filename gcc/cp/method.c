@@ -462,6 +462,7 @@ use_thunk (thunk_fndecl, emit_p)
     DECL_RESULT (thunk_fndecl) = NULL_TREE;
 
     start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
+    /* We don't bother with a body block for thunks.  */
 
     /* Adjust the this pointer by the constant.  */
     t = ssize_int (delta);

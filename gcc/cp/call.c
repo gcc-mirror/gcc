@@ -4660,8 +4660,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     }
 
   if (DECL_VINDEX (cand->fn) && ! (flags & LOOKUP_NONVIRTUAL)
-      && ((instance == current_class_ref && (dtor_label || ctor_label))
-	  || resolves_to_fixed_type_p (instance, 0)))
+      && resolves_to_fixed_type_p (instance, 0))
     flags |= LOOKUP_NONVIRTUAL;
 
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE)

@@ -390,17 +390,7 @@ finish_return_stmt (expr)
     expr = check_return_expr (expr);
   if (!processing_template_decl)
     {
-      if (DECL_CONSTRUCTOR_P (current_function_decl) && ctor_label)
-	{
-	  /* Even returns without a value in a constructor must return
-	     `this'.  We accomplish this by sending all returns in a
-	     constructor to the CTOR_LABEL; finish_function emits code to
-	     return a value there.  When we finally generate the real
-	     return statement, CTOR_LABEL is no longer set, and we fall
-	     through into the normal return-processing code below.  */
-	  return finish_goto_stmt (ctor_label);
-	}
-      else if (DECL_DESTRUCTOR_P (current_function_decl))
+      if (DECL_DESTRUCTOR_P (current_function_decl))
 	{
 	  /* Similarly, all destructors must run destructors for
 	     base-classes before returning.  So, all returns in a
@@ -678,7 +668,7 @@ finish_cleanup (cleanup, try_block)
 
 void
 finish_function_try_block (try_block)
-     tree try_block; 
+     tree try_block;
 {
   if (TREE_CHAIN (try_block) 
       && TREE_CODE (TREE_CHAIN (try_block)) == CTOR_INITIALIZER)
@@ -1155,9 +1145,12 @@ finish_mem_initializers (init_list)
   setup_vtbl_ptr (member_init_list, base_init_list);
 }
 
-/* Cache the value of this class's main virtual function table pointer
-   in a register variable.  This will save one indirection if a
-   more than one virtual function call is made this function.  */
+/* Do the initialization work necessary at the beginning of a constructor
+   or destructor.  This means processing member initializers and setting
+   vtable pointers.
+
+   ??? The call to keep_next_level at the end applies to all functions, but
+   should probably go somewhere else.  */
 
 void
 setup_vtbl_ptr (member_init_list, base_init_list)
@@ -1166,31 +1159,26 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 {
   my_friendly_assert (doing_semantic_analysis_p (), 19990919);
 
-  /* If we've already done this, there's no need to do it again.  */
+  /* If we've already done this, break.  */
   if (vtbls_set_up_p)
-    return;
+    abort ();
 
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
+  if (processing_template_decl)
+    add_stmt (build_min_nt (CTOR_INITIALIZER,
+			    member_init_list, base_init_list));
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      if (processing_template_decl)
-	add_stmt (build_min_nt
-		  (CTOR_INITIALIZER,
-		   member_init_list, base_init_list));
-      else
-	{
-	  tree ctor_stmt;
+      tree ctor_stmt;
 
-	  /* Mark the beginning of the constructor.  */
-	  ctor_stmt = build_stmt (CTOR_STMT);
-	  CTOR_BEGIN_P (ctor_stmt) = 1;
-	  add_stmt (ctor_stmt);
+      /* Mark the beginning of the constructor.  */
+      ctor_stmt = build_stmt (CTOR_STMT);
+      CTOR_BEGIN_P (ctor_stmt) = 1;
+      add_stmt (ctor_stmt);
 	  
-	  /* And actually initialize the base-classes and members.  */
-	  emit_base_init (member_init_list, base_init_list);
-	}
+      /* And actually initialize the base-classes and members.  */
+      emit_base_init (member_init_list, base_init_list);
     }
-  else if (DECL_DESTRUCTOR_P (current_function_decl)
-	   && !processing_template_decl)
+  else if (DECL_DESTRUCTOR_P (current_function_decl))
     {
       tree if_stmt;
       tree compound_stmt;
@@ -1203,7 +1191,11 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 	 virtual dispatch to an overridden function that would need to
 	 have a non-related vtable set up, we cannot avoid setting up
 	 vtables in that case.  We could change this to see if there
-	 is just one vtable.  */
+	 is just one vtable.
+
+         ??? In the destructor for a class, the vtables are set
+         appropriately for that class.  There will be no non-related
+         vtables.  jason 2001-12-11.  */
       if_stmt = begin_if_stmt ();
 
       /* If it is not safe to avoid setting up the vtables, then
@@ -2618,23 +2610,10 @@ genrtl_start_function (fn)
 
   /* Create a binding level for the parameters.  */
   expand_start_bindings (2);
-  /* Go through the PARM_DECLs for this function to see if any need
-     cleanups.  */
-  for (parm = DECL_ARGUMENTS (fn); parm; parm = TREE_CHAIN (parm))
-    if (TREE_TYPE (parm) != error_mark_node
-	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (parm)))
-      {
-	expand_function_start (fn, /*parms_have_cleanups=*/1);
-	break;
-      }
-  if (!parm)
-    expand_function_start (fn, /*parms_have_cleanups=*/0);
+  expand_function_start (fn, /*parms_have_cleanups=*/0);
   /* If this function is `main'.  */
   if (DECL_MAIN_P (fn))
     expand_main_function ();
-  /* Create a binding contour which can be used to catch
-     cleanup-generated temporaries.  */
-  expand_start_bindings (2);
 
   /* Give our named return value the same RTL as our RESULT_DECL.  */
   if (current_function_return_value)
@@ -2647,7 +2626,6 @@ static void
 genrtl_finish_function (fn)
      tree fn;
 {
-  tree no_return_label = NULL_TREE;
   tree t;
 
 #if 0
@@ -2676,59 +2654,10 @@ genrtl_finish_function (fn)
   /* Clean house because we will need to reorder insns here.  */
   do_pending_stack_adjust ();
 
-  if (!dtor_label && !DECL_CONSTRUCTOR_P (fn)
-      && return_label != NULL_RTX
-      && ! DECL_NAME (DECL_RESULT (current_function_decl)))
-    no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-  /* If this function is supposed to return a value, ensure that
-     we do not fall into the cleanups by mistake.  The end of our
-     function will look like this:
-
-     user code (may have return stmt somewhere)
-     goto no_return_label
-     cleanup_label:
-     cleanups
-     goto return_label
-     no_return_label:
-     NOTE_INSN_FUNCTION_END
-     return_label:
-     things for return
-
-     If the user omits a return stmt in the USER CODE section, we
-     will have a control path which reaches NOTE_INSN_FUNCTION_END.
-     Otherwise, we won't.  */
-  if (no_return_label)
-    {
-      DECL_CONTEXT (no_return_label) = fn;
-      DECL_INITIAL (no_return_label) = error_mark_node;
-      DECL_SOURCE_FILE (no_return_label) = input_filename;
-      DECL_SOURCE_LINE (no_return_label) = lineno;
-      expand_goto (no_return_label);
-    }
-
-  if (cleanup_label)
-    {
-      /* Remove the binding contour which is used to catch
-	 cleanup-generated temporaries.  */
-      expand_end_bindings (0, 0, 0);
-      poplevel (0, 0, 0);
-
-      /* Emit label at beginning of cleanup code for parameters.  */
-      emit_label (cleanup_label);
-    }
-
-  /* Finish building code that will trigger warnings if users forget
-     to make their functions return values.  */
-  if (return_label)
+  /* If we have a named return value, we need to force a return so that
+     the return register is USEd.  */
+  if (DECL_NAME (DECL_RESULT (fn)))
     emit_jump (return_label);
-  if (no_return_label)
-    {
-      /* We don't need to call `expand_*_return' here because we don't
-	 need any cleanups here--this path of code is only for error
-	 checking purposes.  */
-      expand_label (no_return_label);
-    }
 
   /* We hard-wired immediate_size_expand to zero in start_function.
      Expand_function_end will decrement this variable.  So, we set the

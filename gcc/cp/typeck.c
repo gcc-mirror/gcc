@@ -6585,7 +6585,7 @@ check_return_expr (retval)
     warning ("function declared `noreturn' has a `return' statement");
 
   /* Check for various simple errors.  */
-  if (dtor_label)
+  if (DECL_DESTRUCTOR_P (current_function_decl))
     {
       if (retval)
 	error ("returning a value from a destructor");

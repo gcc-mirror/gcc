@@ -8418,7 +8418,6 @@ start_cleanup_fn ()
 
   pushdecl (fndecl);
   start_function (/*specs=*/NULL_TREE, fndecl, NULL_TREE, SF_PRE_PARSED);
-  do_pushlevel ();
 
   interface_unknown = old_interface_unknown;
 
@@ -8432,8 +8431,6 @@ start_cleanup_fn ()
 static void
 end_cleanup_fn ()
 {
-  do_poplevel ();
-
   expand_body (finish_function (0));
 
   pop_from_top_level ();
@@ -13794,7 +13791,6 @@ store_parm_decls (current_function_parms)
 {
   register tree fndecl = current_function_decl;
   register tree parm;
-  int parms_have_cleanups = 0;
   tree cleanups = NULL_TREE;
 
   /* This is a chain of any other decls that came in among the parm
@@ -13875,11 +13871,6 @@ store_parm_decls (current_function_parms)
       cleanups = TREE_CHAIN (cleanups);
     }
 
-  /* Create a binding contour which can be used to catch
-     cleanup-generated temporaries.  */
-  if (parms_have_cleanups)
-    pushlevel (0);
-
   /* Do the starting of the exception specifications, if we have any.  */
   if (flag_exceptions && !processing_template_decl
       && flag_enforce_eh_specs
@@ -13935,16 +13926,6 @@ save_function_data (decl)
 static void
 finish_constructor_body ()
 {
-  /* Any return from a constructor will end up here.  */
-  if (ctor_label)
-    add_stmt (build_stmt (LABEL_STMT, ctor_label));
-
-  /* Clear CTOR_LABEL so that finish_return_stmt knows to really
-     generate the return, rather than a goto to CTOR_LABEL.  */
-  ctor_label = NULL_TREE;
-  /* In check_return_expr we translate an empty return from a
-     constructor to a return of `this'.  */
-  finish_return_stmt (NULL_TREE);
   /* Mark the end of the constructor.  */
   add_stmt (build_stmt (CTOR_STMT));
 }
@@ -14124,7 +14105,7 @@ finish_function (flags)
       else if (DECL_MAIN_P (fndecl))
 	{
 	  /* Make it so that `main' always returns 0 by default.  */
-#ifdef VMS
+#ifdef VMS_TARGET
 	  finish_return_stmt (integer_one_node);
 #else
 	  finish_return_stmt (integer_zero_node);
@@ -14575,7 +14556,6 @@ mark_lang_function (p)
 
   mark_c_language_function (&p->base);
 
-  ggc_mark_tree (p->x_ctor_label);
   ggc_mark_tree (p->x_dtor_label);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
