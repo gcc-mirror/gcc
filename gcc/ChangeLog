@@ -1,3 +1,12 @@
+2001-08-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* reload.c (find_reloads_toplev): Back out this change:
+
+	Wed Jul 26 19:44:05 2000   Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload.c (find_reloads_toplev): Reload a paradoxical subreg of a
+	mem if the address is a mode_dependent_address_p.
+
 2001-08-27  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
 
         * rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
