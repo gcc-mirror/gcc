@@ -1,3 +1,10 @@
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to
+	all array elements that need one.  Don't put an #ifdef inside
+	the initializer list; set a default for CPLUSPLUS_CPP_SPEC and
+	use it.
+
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Implement using decls inside template functions.

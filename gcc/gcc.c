@@ -766,19 +766,20 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".m",  "#Objective-C"}, {".mi",  "#Objective-C"},
-  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".cp", "#C++"},
-  {".c++", "#C++"}, {".C", "#C++"}, {".ii", "#C++"},
-  {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
-  {".f", "#Fortran"}, {".for", "#Fortran"}, {".fpp", "#Fortran"},
-  {".F", "#Fortran"}, {".FOR", "#Fortran"}, {".FPP", "#Fortran"},
-  {".r", "#Ratfor"},
-  {".p", "#Pascal"}, {".pas", "#Pascal"},
-  {".ch", "#Chill"}, {".chi", "#Chill"},
-  {".java", "#Java"}, {".class", "#Java"},
-  {".zip", "#Java"}, {".jar", "#Java"},
+  {".m",  "#Objective-C", 0}, {".mi",  "#Objective-C", 0},
+  {".cc", "#C++", 0}, {".cxx", "#C++", 0}, {".cpp", "#C++", 0},
+  {".cp", "#C++", 0}, {".c++", "#C++", 0}, {".C", "#C++", 0},
+  {".ii", "#C++", 0},
+  {".ads", "#Ada", 0}, {".adb", "#Ada", 0}, {".ada", "#Ada", 0},
+  {".f", "#Fortran", 0}, {".for", "#Fortran", 0}, {".fpp", "#Fortran", 0},
+  {".F", "#Fortran", 0}, {".FOR", "#Fortran", 0}, {".FPP", "#Fortran", 0},
+  {".r", "#Ratfor", 0},
+  {".p", "#Pascal", 0}, {".pas", "#Pascal", 0},
+  {".ch", "#Chill", 0}, {".chi", "#Chill", 0},
+  {".java", "#Java", 0}, {".class", "#Java", 0},
+  {".zip", "#Java", 0}, {".jar", "#Java", 0},
   /* Next come the entries for C.  */
-  {".c", "@c"},
+  {".c", "@c", 0},
   {"@c",
    /* cc1 has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
@@ -793,27 +794,27 @@ static struct compiler default_compilers[] =
 		    cc1 -fpreprocessed %{!pipe:%g.i} %(cc1_options)}\
 	    %{!traditional:%{!ftraditional:%{!traditional-cpp:\
 		cc1 -lang-c %{ansi:-std=c89} %(cpp_options) %(cc1_options)}}}}\
-        %{!fsyntax-only:%(invoke_as)}}}}"},
+        %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
-    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
-  {".h", "@c-header"},
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
+  {".h", "@c-header", 0},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
-  {".i", "@cpp-output"},
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
+  {".i", "@cpp-output", 0},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"},
-  {".s", "@assembler"},
+   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},
+  {".s", "@assembler", 0},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}"},
-  {".S", "@assembler-with-cpp"},
+   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}", 0},
+  {".S", "@assembler-with-cpp", 0},
   {"@assembler-with-cpp",
    "%(trad_capable_cpp) -lang-asm %(cpp_options)\
-	%{!M:%{!MM:%{!E:%(invoke_as)}}}"},
+	%{!M:%{!MM:%{!E:%(invoke_as)}}}", 0},
 #include "specs.h"
   /* Mark end of table */
-  {0, 0}
+  {0, 0, 0}
 };
 
 /* Number of elements in default_compilers, not counting the terminator.  */
