@@ -1,3 +1,9 @@
+Fri Jan 11 07:35:12 2002  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h: (MD_FALLBACK_FRAME_STATE_FOR): Fix errors.
+	Protect with IN_LIBGCC.
+	(LINK_EH_SPEC): Add required trailing space.
+
 Fri Jan 11 09:25:05 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* c-tree.h: Move function declarations so that they are listed 

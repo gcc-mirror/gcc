@@ -382,12 +382,11 @@ do {									\
 #define EH_RETURN_HANDLER_RTX \
   gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 8))
 
-#define LINK_EH_SPEC "vms-dwarf2eh.o%s"
+#define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 
 #ifdef IN_LIBGCC2
 #include <libicb.h>
 #include <pdscdef.h>
-#endif
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
  do {									\
@@ -395,10 +394,10 @@ do {									\
   PDSCDEF *pv;								\
   INVO_CONTEXT_BLK invo;						\
 									\
-  memset (&invo, 0, sizeof INVO_CONTEXT_BLK);				\
+  memset (&invo, 0, sizeof (INVO_CONTEXT_BLK));				\
 									\
   invo.libicb$q_ireg [29] = *((long long *) (CONTEXT)->reg [29]);	\
-  invo.libicb$q_ireg [30] = (long long) (CONTEXT)->cfa			\
+  invo.libicb$q_ireg [30] = (long long) (CONTEXT)->cfa;			\
   handle = LIB$GET_INVO_HANDLE (&invo);					\
   LIB$GET_INVO_CONTEXT (handle, &invo);					\
   pv = (PDSCDEF *) invo.libicb$ph_procedure_descriptor;			\
@@ -408,13 +407,13 @@ do {									\
       int i, j;								\
 									\
       (FS)->cfa_offset = pv->pdsc$l_size;				\
-      (FS)->cfg_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30; \
+      (FS)->cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30; \
       (FS)->retaddr_column = 26;					\
       (FS)->cfa_how = CFA_REG_OFFSET;					\
       (FS)->regs.reg[27].loc.offset = -pv->pdsc$l_size;			\
       (FS)->regs.reg[27].how = REG_SAVED_OFFSET;			\
       (FS)->regs.reg[26].loc.offset					\
-	 = pv->pdsc$w_rsa_offset - pv->pdsc$l_size);			\
+	 = pv->pdsc$w_rsa_offset - pv->pdsc$l_size;			\
       (FS)->regs.reg[26].how = REG_SAVED_OFFSET;			\
 									\
       for (i = 0, j = 0; i < 32; i++)					\
@@ -428,6 +427,7 @@ do {									\
       goto SUCCESS;							\
     }									\
 } while (0)
+#endif
 
 /* This is how to output an assembler line
    that says to advance the location counter
