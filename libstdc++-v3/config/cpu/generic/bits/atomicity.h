@@ -17,41 +17,35 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _ATOMICITY_H
-#define _ATOMICITY_H	1
+#ifndef _BITS_ATOMICITY_H
+#define _BITS_ATOMICITY_H	1
 
-#ifdef _GLIBCPP_HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned int	uint32_t;
-typedef int 		int32_t;
-#endif
+typedef int _Atomic_word;
 
-
-static inline int
+static inline _Atomic_word
 __attribute__ ((unused))
-exchange_and_add (uint32_t *mem, int val)
+__exchange_and_add (_Atomic_word* __mem, int __val)
 {
-  int result = *mem;
-  *mem += val;
-  return result;
+  _Atomic_word __result = *__mem;
+  *__mem += __val;
+  return __result;
 }
 
 static inline void
 __attribute__ ((unused))
-atomic_add (uint32_t *mem, int val)
+__atomic_add (_Atomic_word* __mem, int __val)
 {
-  *mem += val;
+  *__mem += __val;
 }
 
 static inline int
 __attribute__ ((unused))
-compare_and_swap (long int *p, long int oldval, long int newval)
+__compare_and_swap (long *__p, long __oldval, long __newval)
 {
-  if (*p != oldval)
+  if (*__p != __oldval)
     return 0;
 
-  *p = newval;
+  *__p = __newval;
   return 1;
 }
 
