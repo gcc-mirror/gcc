@@ -1,16 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fno-common" } */
 
-/* COFF does not support weak, and dg doesn't support UNSUPPORTED.  */
-/* { dg-do compile { xfail *-*-coff i?86-pc-cygwin h8300-*-hms *-*-darwin* } } */
-/* { dg-excess-errors "COFF does not support weak symbols" { target *-*-coff i?86-pc-cygwin h8300-*-hms } } */
-/* { dg-excess-errors "Darwin does not support weak symbols" { target *-*-darwin* } } */
-
-/* { dg-final { global target_triplet } } */
-/* { dg-final { if [string match *-*-darwin* $target_triplet ] {return} } } */
-/* { dg-final { if [string match h8300-*-hms $target_triplet ] {return} } } */
-/* { dg-final { if [string match i?86-pc-cygwin $target_triplet ] {return} } } */
-/* { dg-final { if [string match *-*-coff $target_triplet ] {return} } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1b" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1c" } } */

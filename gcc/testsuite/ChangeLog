@@ -1,3 +1,12 @@
+2002-09-06  Stan Shebs  <shebs@apple.com>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/weak: New directory.
+	* gcc.dg/weak-[1-9].c: Move to new directory, remove all
+	target-specific xfail bits.
+	* gcc.dg/typeof-2.c: Move to new directory.
+	* gcc.dg/weak.exp: New expect script.
+
 2002-09-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/execute/extzvsi.c: New test.
