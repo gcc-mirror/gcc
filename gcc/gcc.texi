@@ -155,7 +155,7 @@ instead of in the original English.
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96, 98  Free Software Foundation, Inc.
 @sp 2
-For EGCS Version 1.0@*
+For GCC Version 2.95@*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
@@ -194,19 +194,19 @@ instead of in the original English.
 @ifset USING
 This manual documents how to run, install and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to EGCS version 1.0.
+report bugs.  It corresponds to GCC version 2.95.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.0.
+bugs.  It corresponds to GCC version 2.95.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.0.
+bugs.  It corresponds to GCC version 2.95.
 @end ifclear
 
 @end ifinfo
