@@ -284,8 +284,8 @@ static void init_args(char **, int);
 static char *get_next_arg (void);
 static char *jt_strdup (char*);
 static void expand_options (int *argcp, char ***argvp);
-static inline struct zipentry *find_entry (const char *);
-static inline int looks_like_dir (const char *);
+static struct zipentry *find_entry (const char *);
+static int looks_like_dir (const char *);
 
 /* global variables */
 ub1 file_header[30];
@@ -731,7 +731,7 @@ void add_entry(struct zipentry *ze){
   number_of_entries++;
 }
 
-static inline struct zipentry *
+static struct zipentry *
 find_entry (const char *fname)
 {
   struct zipentry *ze;
@@ -745,7 +745,7 @@ find_entry (const char *fname)
 }
 
 
-static inline int
+static int
 looks_like_dir (const char *fname)
 {
   struct zipentry *ze;

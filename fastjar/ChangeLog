@@ -1,3 +1,7 @@
+2004-07-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* jartool.c (find_entry, looks_like_dir): Remove inline spec.
+
 2004-07-07  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am (jar_CPPFLAGS): Add AM_CPPFLAGS.
