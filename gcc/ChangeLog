@@ -1,3 +1,8 @@
+2000-08-31  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gthr-dce.h (__gthread_objc_mutex_allocate): Create a pthread_mutex_t
+	object before calling pthread_mutex_init.
+
 2000-09-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/t-elf, config/sh/crt1.asm, config/sh/crti.asm,
