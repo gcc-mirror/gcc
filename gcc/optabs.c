@@ -4763,7 +4763,7 @@ init_traps ()
   if (HAVE_conditional_trap)
     {
       trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);
-      ggc_add_tree_root (&trap_rtx, 1);
+      ggc_add_rtx_root (&trap_rtx, 1);
     }
 }
 #endif
