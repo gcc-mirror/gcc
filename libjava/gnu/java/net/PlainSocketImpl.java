@@ -1,5 +1,6 @@
 /* PlainSocketImpl.java -- Default socket implementation
-   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -100,7 +101,7 @@ public final class PlainSocketImpl extends SocketImpl
    *
    * When the socket is closed this is reset to -1.
    */
-  int fnum = -1;
+  int native_fd = -1;
 
   // This value is set/read by setOption/getOption.
   int timeout = 0;
@@ -129,14 +130,13 @@ public final class PlainSocketImpl extends SocketImpl
   {
     synchronized (this)
       {
-	if (fnum != -1)
+	if (native_fd != -1)
 	  try
 	    {
 	      close();
 	    }
 	  catch (IOException ex)
 	    {
-	      // ignore
 	    }
       }
     super.finalize();
@@ -144,7 +144,7 @@ public final class PlainSocketImpl extends SocketImpl
 
   public int getNativeFD()
   {
-    return fnum;
+    return native_fd;
   }
 
   /**

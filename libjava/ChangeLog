@@ -1,3 +1,13 @@
+2003-10-21  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/PlainDatagramSocketImpl.java,
+	gnu/java/net/PlainSocketImpl.java,
+	gnu/java/net/natPlainDatagramSocketImplPosix.cc,
+	gnu/java/net/natPlainDatagramSocketImplWin32.cc,
+	gnu/java/net/natPlainSocketImplPosix.cc,
+	gnu/java/net/natPlainSocketImplWin32.cc:
+	Renamed fnum to native_fd to match classpath more.
+
 2003-10-21  Jerry Quinn  <jlquinn@optonline.net>
 
         * posix-threads.cc (_Jv_CondNotify,_Jv_CondNotifyAll): Rename
