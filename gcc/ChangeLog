@@ -1,3 +1,7 @@
+Sat Apr  3 13:50:16 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc.x86-linux-gnu: Deleted.
+
 Sat Apr  3 17:05:13 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* inclhack.tpl: insert spaces between `sed -e' and '...'
