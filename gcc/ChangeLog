@@ -1,5 +1,10 @@
 2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcse.c (gcse_constant_p): COMPARE of the same registers is a constant
+	if they are not floating point registers.
+
+2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c/10962
 	* ggc.h: Add header guards.
 	* c-decl.c (finish_struct): Sort fields if

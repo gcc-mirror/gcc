@@ -2123,6 +2123,17 @@ gcse_constant_p (rtx x)
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     return true;
 
+
+  /* Consider a COMPARE of the same registers is a constant
+    if they are not floating point registers. */
+  if (GET_CODE(x) == COMPARE
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == REG
+      && REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 1))
+      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
+      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 1))))
+    return true;
+
   if (GET_CODE (x) == CONSTANT_P_RTX)
     return false;
 
