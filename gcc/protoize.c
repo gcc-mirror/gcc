@@ -245,7 +245,7 @@ static const char * const save_suffix = ".save";
    routines.  Note that we never actually do anything with this file per se,
    but we do read in its corresponding aux_info file.  */
 
-static const char * const syscalls_filename = "SYSCALLS.c";
+static const char syscalls_filename[] = "SYSCALLS.c";
 
 /* Default place to find the above file.  */
 
@@ -894,7 +894,9 @@ static int
 is_syscalls_file (fi_p)
      const file_info *fi_p;
 {
-  return (substr (fi_p->hash_entry->symbol, syscalls_filename) != NULL);
+  char const *f = fi_p->hash_entry->symbol;
+  size_t fl = strlen (f), sysl = sizeof (syscalls_filename) - 1;
+  return sysl <= fl  &&  strcmp (f + fl - sysl, syscalls_filename) == 0;
 }
 
 #endif /* !defined (UNPROTOIZE) */
@@ -1225,8 +1227,6 @@ abspath (cwd, rel_filename)
     src_p = rel_filename;
     while (*endp++ = *src_p++)
       continue;
-    if (endp[-1] == '/')
-      *endp = '\0';
   }
 
   /* Now make a copy of abs_buffer into abs_buffer, shortening the
@@ -1234,6 +1234,10 @@ abspath (cwd, rel_filename)
 
   outp = inp = abs_buffer;
   *outp++ = *inp++;        	/* copy first slash */
+#ifdef apollo
+  if (inp[0] == '/')
+    *outp++ = *inp++;        	/* copy second slash */
+#endif
   for (;;)
     {
       if (!inp[0])
@@ -1312,16 +1316,17 @@ shortpath (cwd, filename)
   char *cwd_p = cwd_buffer;
   char *path_p;
   int unmatched_slash_count = 0;
+  size_t filename_len = strlen (filename);
 
   path_p = abspath (cwd, filename);
-  rel_buf_p = rel_buffer = (char *) xmalloc (strlen (path_p) + 1);
+  rel_buf_p = rel_buffer = (char *) xmalloc (filename_len);
 
   while (*cwd_p && (*cwd_p == *path_p))
     {
       cwd_p++;
       path_p++;
     }
-  if (!*cwd_p)        		/* whole pwd matched */
+  if (!*cwd_p && (!*path_p || *path_p == '/'))	/* whole pwd matched */
     {
       if (!*path_p)        	/* input *is* the current path! */
         return ".";
@@ -1348,17 +1353,23 @@ shortpath (cwd, filename)
                 unmatched_slash_count++;
       while (unmatched_slash_count--)
         {
+	  if (rel_buffer + filename_len <= rel_buf_p + 3)
+	    return filename;
           *rel_buf_p++ = '.';
           *rel_buf_p++ = '.';
           *rel_buf_p++ = '/';
         }
-      while (*rel_buf_p++ = *path_p++)
-        continue;
+
+      do
+	{
+	  if (rel_buffer + filename_len <= rel_buf_p)
+	    return filename;
+	}
+      while (*rel_buf_p++ = *path_p++);
+
       --rel_buf_p;
       if (*(rel_buf_p-1) == '/')
         *--rel_buf_p = '\0';
-      if (strlen (rel_buffer) > (unsigned) strlen (filename))
-	strcpy (rel_buffer, filename);
       return rel_buffer;
     }
 }
@@ -2005,19 +2016,32 @@ gen_aux_info_file (base_filename)
           }
         if (!WIFEXITED (wait_status))
           {
+            fprintf (stderr, "%s: error: subprocess %ld did not exit\n",
+		     pname, (long) child_pid);
             kill (child_pid, 9);
             return 0;
           }
-        return (WEXITSTATUS (wait_status) == 0) ? 1 : 0;
+        if (WEXITSTATUS (wait_status) != 0)
+	  {
+	    fprintf (stderr, "%s: error: %s: compilation failed\n",
+		     pname, base_filename);
+	    return 0;
+	  }
+	return 1;
       }
     }
   else
     {
       if (my_execvp (compile_params[0], (char *const *) compile_params))
         {
-          fprintf (stderr, "%s: error: execvp returned: %s\n",
-		   pname, sys_errlist[errno]);
-          exit (errno);
+	  int e = errno, f = fileno (stderr);
+	  write (f, pname, strlen (pname));
+	  write (f, ": ", 2);
+	  write (f, compile_params[0], strlen (compile_params[0]));
+	  write (f, ": ", 2);
+	  write (f, sys_errlist[e], strlen (sys_errlist[e]));
+	  write (f, "\n", 1);
+          _exit (1);
         }
       return 1;		/* Never executed.  */
     }
@@ -2032,11 +2056,12 @@ process_aux_info_file (base_source_filename, keep_it, is_syscalls)
      int keep_it;
      int is_syscalls;
 {
-  char *const aux_info_filename
-    = (char *) alloca (strlen (base_source_filename)
-		       + strlen (aux_info_suffix) + 1);
+  size_t base_len = strlen (base_source_filename);
+  char * aux_info_filename
+    = (char *) alloca (base_len + strlen (aux_info_suffix) + 1);
   char *aux_info_base;
   char *aux_info_limit;
+  char *aux_info_relocated_name;
   const char *aux_info_second_line;
   time_t aux_info_mtime;
   size_t aux_info_size;
@@ -2066,7 +2091,10 @@ retry:
                 return;
               }
             if (!gen_aux_info_file (base_source_filename))
-              return;
+	      {
+		errors++;
+		return;
+	      }
             retries++;
             goto retry;
           }
@@ -2184,6 +2212,22 @@ retry:
     while (*p++ != '\n')
       continue;
     aux_info_second_line = p;
+    aux_info_relocated_name = 0;
+    if (invocation_filename[0] != '/')
+      {
+	/* INVOCATION_FILENAME is relative;
+	   append it to BASE_SOURCE_FILENAME's dir.  */
+	char *dir_end;
+	aux_info_relocated_name = xmalloc (base_len + (p-invocation_filename));
+	strcpy (aux_info_relocated_name, base_source_filename);
+	dir_end = strrchr (aux_info_relocated_name, '/');
+	if (dir_end)
+	  dir_end++;
+	else
+	  dir_end = aux_info_relocated_name;
+	strcpy (dir_end, invocation_filename);
+	invocation_filename = aux_info_relocated_name;
+      }
   }
 
 
@@ -2204,7 +2248,8 @@ retry:
             if (referenced_file_is_newer (aux_info_p, aux_info_mtime))
               {
                 free (aux_info_base);
-                if (my_unlink (aux_info_filename) == -1)
+		xfree (aux_info_relocated_name);
+                if (keep_it && my_unlink (aux_info_filename) == -1)
                   {
                     fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
 			     pname, shortpath (NULL, aux_info_filename),
@@ -2250,6 +2295,7 @@ retry:
   }
 
   free (aux_info_base);
+  xfree (aux_info_relocated_name);
 }
 
 #ifndef UNPROTOIZE
@@ -4263,14 +4309,14 @@ do_processing ()
     {
       syscalls_absolute_filename
         = (char *) xmalloc (strlen (nondefault_syscalls_dir)
-                            + strlen (syscalls_filename) + 2);
+                            + sizeof (syscalls_filename) + 1);
       strcpy (syscalls_absolute_filename, nondefault_syscalls_dir);
     }
   else
     {
       syscalls_absolute_filename
         = (char *) xmalloc (strlen (default_syscalls_dir)
-                            + strlen (syscalls_filename) + 2);
+                            + sizeof (syscalls_filename) + 1);
       strcpy (syscalls_absolute_filename, default_syscalls_dir);
     }
 
