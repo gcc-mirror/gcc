@@ -1,3 +1,8 @@
+Sun Oct 31 23:03:25 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * integrate.c (expand_inline_function): Fix bugs in previous
+        change from Oct 28, 1999.
+
 Sun Oct 31 20:27:45 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (expand_value_return): Fix typo in this change:
