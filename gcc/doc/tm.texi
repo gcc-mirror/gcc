@@ -7212,12 +7212,6 @@ writing conditional output routines in those patterns.
 If this macro is not defined, it is equivalent to a null statement.
 @end defmac
 
-@defmac FINAL_PRESCAN_LABEL
-If defined, @code{FINAL_PRESCAN_INSN} will be called on each
-@code{CODE_LABEL}.  In that case, @var{opvec} will be a null pointer and
-@var{noperands} will be zero.
-@end defmac
-
 @defmac PRINT_OPERAND (@var{stream}, @var{x}, @var{code})
 A C compound statement to output to stdio stream @var{stream} the
 assembler syntax for an instruction operand @var{x}.  @var{x} is an
