@@ -1,3 +1,28 @@
+2004-07-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (struct c_binding): Remove contour field; add
+	depth, invisible, nested fields.
+	(B_IN_SCOPE, B_IN_CURRENT_SCOPE, B_IN_FILE_SCOPE)
+	(B_IN_EXTERNAL_SCOPE): New convenience macros.
+	(bind): Add invisible and nested arguments. Initialize
+	new fields of struct c_binding; adjust loop scanning for
+	insertion point.
+	(free_binding_and_advance): Clear structure with memset.
+	(pop_scope): Adjust to match.  Set DECL_CONTEXT on everything
+	in file scope, even if it's in external scope too.
+	(pushdecl): Adjust to match.  Create invisible file-scope
+	declarations for block-scope forward declarations of static functions.
+	(pushtag, warn_if_shadowing, pushdecl_top_level, implicitly_declare)
+	(undeclared_variable, lookup_label, declare_label, define_label)
+	(lookup_tag, lookup_name, lookup_name_in_scope, builtin_function)
+	(c_make_fname_decl, store_parm_decls_newstyle, identifier_global_value)
+	(store_parm_decls_oldstyle): Adjust to match.
+	(diagnose_mismatched_decls): Correct handling of linkage clashes.
+	(merge_decls): No need to copy C_DECL_IN_EXTERNAL_SCOPE.
+
+	* c-tree.h (C_DECL_IN_EXTERNAL_SCOPE): Delete.
+	(C_DECL_DECLARED_BUILTIN, C_DECL_REGISTER): Slide down one.
+
 2004-07-02  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (grokdeclarator): Don't frob current_function_decl
@@ -118,7 +143,7 @@
 	* c-typeck.c (lvalue_p): Don't handle it.
 	* expr.c (safe_from_p): Likewise.
 	(expand_expr_real_1): Likewise.
-	* fold-const.c (non_lvalue, operand_equal_p, fold): Likewise.	
+	* fold-const.c (non_lvalue, operand_equal_p, fold): Likewise.
 	(fold_checksum_tree, tree_expr_nonnegative_p): Likewise.
 	* gengtype.c (adjust_field_tree_exp): Likewise.
 	* stmt.c (warn_if_unused_value): Likewise.
@@ -246,7 +271,7 @@
 	* builtins.c (expand_builtin_prefetch, expand_builtin_profile_func,
 	expand_builtin): Likewise.
 	* calls.c (expand_call, emit_library_call_value_1, store_one_arg):
-	Likewise. 
+	Likewise.
 	* combine.c (can_combine_p, combinable_i3pat, try_combine,
 	find_split_point, combine_simplify_rtx, simplify_set, make_extraction,
 	rtx_equal_for_field_assignment_p, gen_lowpart_for_combine,
@@ -278,12 +303,12 @@
 	emit_move_insn_1, expand_assignment, store_expr,
 	store_constructor_field, store_constructor, store_field,
 	force_operand, safe_from_p, expand_expr_real_1, expand_increment):
-	Likewise. 
+	Likewise.
 	* final.c (cleanup_subreg_operands, alter_subreg,
 	get_mem_expr_from_op): Likewise.
 	* flow.c (notice_stack_pointer_modification_1,
 	init_propagate_block_info, insn_dead_p, mark_set_1, mark_used_regs):
-	Likewise. 
+	Likewise.
 	* function.c (mark_temp_addr_taken, preserve_temp_slots,
 	preserve_rtl_expr_result, put_var_into_stack, fixup_var_refs_1,
 	optimize_bit_field, flush_addressof, purge_addressof_1,
@@ -393,7 +418,7 @@
 	import_export_class.
 	* target-def.h (TARGET_CXX): Initialise the new field.
 	(TARGET_CXX_IMPORT_EXPORT_CLASS): Provide a default value for
-	the new field.  
+	the new field.
 	* doc/tm.texi: Document the new target hook.
 
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>

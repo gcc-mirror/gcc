@@ -155,16 +155,23 @@ bool c_override_global_bindings_to_false;
    chained together by the ->prev field, which (as the name implies)
    runs in reverse order.  All the decls in a given namespace bound to
    a given identifier are chained by the ->shadowed field, which runs
-   from inner to outer scopes.  Finally, the ->contour field points
-   back to the relevant scope structure; this is mainly used to make
-   decls in the externals scope invisible (see below).
+   from inner to outer scopes.
 
    The ->decl field usually points to a DECL node, but there are two
    exceptions.  In the namespace of type tags, the bound entity is a
    RECORD_TYPE, UNION_TYPE, or ENUMERAL_TYPE node.  If an undeclared
    identifier is encountered, it is bound to error_mark_node to
    suppress further errors about that identifier in the current
-   function.  */
+   function.
+
+   The depth field is copied from the scope structure that holds this
+   decl.  It is used to preserve the proper ordering of the ->shadowed
+   field (see bind()) and also for a handful of special-case checks.
+   Finally, the invisible bit is true for a decl which should be
+   ignored for purposes of normal name lookup, and the nested bit is
+   true for a decl that's been bound a second time in an inner scope;
+   in all such cases, the binding in the outer scope will have its
+   invisible bit true.  */
 
 struct c_binding GTY((chain_next ("%h.prev")))
 {
@@ -172,8 +179,15 @@ struct c_binding GTY((chain_next ("%h.prev")))
   tree id;			/* the identifier it's bound to */
   struct c_binding *prev;	/* the previous decl in this scope */
   struct c_binding *shadowed;	/* the innermost decl shadowed by this one */
-  struct c_scope *contour;	/* the scope in which this decl is bound */
+  unsigned int depth : 28;      /* depth of this scope */
+  BOOL_BITFIELD invisible : 1;  /* normal lookup should ignore this binding */
+  BOOL_BITFIELD nested : 1;     /* do not set DECL_CONTEXT when popping */
+  /* two free bits */
 };
+#define B_IN_SCOPE(b1, b2) ((b1)->depth == (b2)->depth)
+#define B_IN_CURRENT_SCOPE(b) ((b)->depth == current_scope->depth)
+#define B_IN_FILE_SCOPE(b) ((b)->depth == 1 /*file_scope->depth*/)
+#define B_IN_EXTERNAL_SCOPE(b) ((b)->depth == 0 /*external_scope->depth*/)
 
 #define I_SYMBOL_BINDING(node) \
   (((struct lang_identifier *)IDENTIFIER_NODE_CHECK(node))->symbol_binding)
@@ -403,7 +417,7 @@ c_print_identifier (FILE *file, tree node, int indent)
    which may be any of several kinds of DECL or TYPE or error_mark_node,
    in the scope SCOPE.  */
 static void
-bind (tree name, tree decl, struct c_scope *scope)
+bind (tree name, tree decl, struct c_scope *scope, bool invisible, bool nested)
 {
   struct c_binding *b, **here;
 
@@ -418,7 +432,9 @@ bind (tree name, tree decl, struct c_scope *scope)
   b->shadowed = 0;
   b->decl = decl;
   b->id = name;
-  b->contour = scope;
+  b->depth = scope->depth;
+  b->invisible = invisible;
+  b->nested = nested;
 
   b->prev = scope->bindings;
   scope->bindings = b;
@@ -446,7 +462,7 @@ bind (tree name, tree decl, struct c_scope *scope)
   /* Locate the appropriate place in the chain of shadowed decls
      to insert this binding.  Normally, scope == current_scope and
      this does nothing.  */
-  while (*here && (*here)->contour->depth > scope->depth)
+  while (*here && (*here)->depth > scope->depth)
     here = &(*here)->shadowed;
 
   b->shadowed = *here;
@@ -462,10 +478,7 @@ free_binding_and_advance (struct c_binding *b)
 {
   struct c_binding *prev = b->prev;
 
-  b->id = 0;
-  b->decl = 0;
-  b->contour = 0;
-  b->shadowed = 0;
+  memset (b, 0, sizeof (struct c_binding));
   b->prev = binding_freelist;
   binding_freelist = b;
 
@@ -742,13 +755,15 @@ pop_scope (void)
 	common_symbol:
 	  /* All of these go in BLOCK_VARS, but only if this is the
 	     binding in the home scope.  */
-	  if (!C_DECL_IN_EXTERNAL_SCOPE (p) || scope == external_scope)
+	  if (!b->nested)
 	    {
 	      TREE_CHAIN (p) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = p;
 	    }
-	  /* If this is the file scope, must set DECL_CONTEXT on these.  */
-	  if (!C_DECL_IN_EXTERNAL_SCOPE (p) && scope == file_scope)
+	  /* If this is the file scope, must set DECL_CONTEXT on
+	     these.  Do so even for externals, so that
+	     same_translation_unit_p works.  */
+	  if (scope == file_scope)
 	    DECL_CONTEXT (p) = context;
 
 	  /* Fall through.  */
@@ -819,7 +834,8 @@ push_file_scope (void)
   start_fname_decls ();
 
   for (decl = visible_builtins; decl; decl = TREE_CHAIN (decl))
-    bind (DECL_NAME (decl), decl, file_scope);
+    bind (DECL_NAME (decl), decl, file_scope,
+	  /*invisible=*/false, /*nested=*/true);
 }
 
 void
@@ -872,7 +888,7 @@ pushtag (tree name, tree type)
   /* Record the identifier as the type's name if it has none.  */
   if (name && !TYPE_NAME (type))
     TYPE_NAME (type) = name;
-  bind (name, type, current_scope);
+  bind (name, type, current_scope, /*invisible=*/false, /*nested=*/false);
 
   /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current scope.  This fake
@@ -1211,33 +1227,47 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  locate_old_decl (olddecl, error);
 	  return false;
 	}
-      /* Mismatched non-static and static is considered poor style.
-         We only diagnose static then non-static if -Wtraditional,
-	 because it is the most convenient way to get some effects
-	 (see e.g.  what unwind-dw2-fde-glibc.c does to the definition
-	 of _Unwind_Find_FDE in unwind-dw2-fde.c).  Revisit?  */
+      /* A non-static declaration (even an "extern") followed by a
+	 static declaration is undefined behavior per C99 6.2.2p3-5,7.
+	 The same is true for a static forward declaration at block
+	 scope followed by a non-static declaration/definition at file
+	 scope.  Static followed by non-static at the same scope is
+	 not undefined behavior, and is the most convenient way to get
+	 some effects (see e.g.  what unwind-dw2-fde-glibc.c does to
+	 the definition of _Unwind_Find_FDE in unwind-dw2-fde.c), but
+	 we do diagnose it if -Wtraditional. */
       if (TREE_PUBLIC (olddecl) && !TREE_PUBLIC (newdecl))
 	{
-	  /* A static function declaration for a predeclared function
-	     that isn't actually built in, silently overrides the
-	     default.  Objective C uses these.  See also above.
-	     FIXME: Make Objective C use normal builtins.  */
-	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && DECL_IS_BUILTIN (olddecl))
-	    return false;
-	  else
+	  /* Two exceptions to the rule.  If olddecl is an extern
+	     inline, or a predeclared function that isn't actually
+	     built in, newdecl silently overrides olddecl.  The latter
+	     occur only in Objective C; see also above.  (FIXME: Make
+	     Objective C use normal builtins.)  */
+	  if (!DECL_IS_BUILTIN (olddecl)
+	      && !(DECL_EXTERNAL (olddecl)
+		   && DECL_DECLARED_INLINE_P (olddecl)))
 	    {
-	      warning ("%Jstatic declaration of '%D' follows "
-		       "non-static declaration", newdecl, newdecl);
+	      error ("%Jstatic declaration of '%D' follows "
+		     "non-static declaration", newdecl, newdecl);
+	      locate_old_decl (olddecl, error);
+	    }
+	  return false;
+	}
+      else if (TREE_PUBLIC (newdecl) && !TREE_PUBLIC (olddecl))
+	{
+	  if (DECL_CONTEXT (olddecl))
+	    {
+	      error ("%Jnon-static declaration of '%D' follows "
+		     "static declaration", newdecl, newdecl);
+	      locate_old_decl (olddecl, error);
+	      return false;
+	    }
+	  else if (warn_traditional)
+	    {
+	      warning ("%Jnon-static declaration of '%D' follows "
+		       "static declaration", newdecl, newdecl);
 	      warned = true;
 	    }
-	}
-      else if (TREE_PUBLIC (newdecl) && !TREE_PUBLIC (olddecl)
-	       && warn_traditional)
-	{
-	  warning ("%Jnon-static declaration of '%D' follows "
-		   "static declaration", newdecl, newdecl);
-	  warned = true;
 	}
     }
   else if (TREE_CODE (newdecl) == VAR_DECL)
@@ -1265,13 +1295,27 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  return false;
 	}
 
-      /* Objects declared at file scope: if at least one is 'extern',
-	 it's fine (6.2.2p4); otherwise the linkage must agree (6.2.2p7).  */
-      if (DECL_FILE_SCOPE_P (newdecl))
+      /* Objects declared at file scope: if the first declaration had
+	 external linkage (even if it was an external reference) the
+	 second must have external linkage as well, or the behavior is
+	 undefined.  If the first declaration had internal linkage, then
+	 the second must too, or else be an external reference (in which
+	 case the composite declaration still has internal linkage).
+	 As for function declarations, we warn about the static-then-
+	 extern case only for -Wtraditional.  See generally 6.2.2p3-5,7.  */
+      if (DECL_FILE_SCOPE_P (newdecl)
+	  && TREE_PUBLIC (newdecl) != TREE_PUBLIC (olddecl))
 	{
-	  if (!DECL_EXTERNAL (newdecl)
-	      && !DECL_EXTERNAL (olddecl)
-	      && TREE_PUBLIC (newdecl) != TREE_PUBLIC (olddecl))
+	  if (DECL_EXTERNAL (newdecl))
+	    {
+	      if (warn_traditional)
+		{
+		  warning ("%Jnon-static declaration of '%D' follows "
+			   "static declaration", newdecl, newdecl);
+		  warned = true;
+		}
+	    }
+	  else
 	    {
 	      if (TREE_PUBLIC (newdecl))
 		error ("%Jnon-static declaration of '%D' follows "
@@ -1286,7 +1330,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	}
       /* Two objects with the same name declared at the same block
 	 scope must both be external references (6.7p3).  */
-      else if (DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl)
+      else if (!DECL_FILE_SCOPE_P (newdecl)
+	       && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl)
 	       && (!DECL_EXTERNAL (newdecl) || !DECL_EXTERNAL (olddecl)))
 	{
 	  if (DECL_EXTERNAL (newdecl))
@@ -1618,9 +1663,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	}
     }
 
-  /* This bit must not get wiped out.  */
-  C_DECL_IN_EXTERNAL_SCOPE (newdecl) |= C_DECL_IN_EXTERNAL_SCOPE (olddecl);
-
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID.  */
   {
@@ -1682,10 +1724,9 @@ warn_if_shadowing (tree new)
       || (TREE_CODE (new) == PARM_DECL && current_scope->outer->parm_flag))
     return;
 
-  /* Is anything being shadowed?  Do not be confused by a second binding
-     to the same decl in the externals scope.  */
+  /* Is anything being shadowed?  Invisible decls do not count.  */
   for (b = I_SYMBOL_BINDING (DECL_NAME (new)); b; b = b->shadowed)
-    if (b->decl && b->decl != new && b->contour != external_scope)
+    if (b->decl && b->decl != new && !b->invisible)
       {
 	tree old = b->decl;
 
@@ -1786,6 +1827,7 @@ pushdecl (tree x)
   tree name = DECL_NAME (x);
   struct c_scope *scope = current_scope;
   struct c_binding *b;
+  bool nested = false;
 
   /* Functions need the lang_decl data.  */
   if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_LANG_SPECIFIC (x))
@@ -1802,7 +1844,7 @@ pushdecl (tree x)
   /* Anonymous decls are just inserted in the scope.  */
   if (!name)
     {
-      bind (name, x, scope);
+      bind (name, x, scope, /*invisible=*/false, /*nested=*/false);
       return x;
     }
 
@@ -1814,7 +1856,7 @@ pushdecl (tree x)
      diagnostics).  In particular, we should not consider possible
      duplicates in the external scope, or shadowing.  */
   b = I_SYMBOL_BINDING (name);
-  if (b && b->contour == scope)
+  if (b && B_IN_SCOPE (b, scope))
     {
       if (duplicate_decls (x, b->decl))
 	return b->decl;
@@ -1839,10 +1881,9 @@ pushdecl (tree x)
       if (warn_nested_externs
 	  && scope != file_scope
 	  && !DECL_IN_SYSTEM_HEADER (x))
-	warning ("nested extern declaration of `%s'",
-		 IDENTIFIER_POINTER (name));
+	warning ("nested extern declaration of '%D'", x);
 
-      while (b && b->contour != external_scope)
+      while (b && !B_IN_EXTERNAL_SCOPE (b))
 	b = b->shadowed;
 
       /* The point of the same_translation_unit_p check here is,
@@ -1855,15 +1896,39 @@ pushdecl (tree x)
 	      || same_translation_unit_p (x, b->decl))
 	  && duplicate_decls (x, b->decl))
 	{
-	  bind (name, b->decl, scope);
+	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
 	  return b->decl;
 	}
       else if (DECL_EXTERNAL (x) || TREE_PUBLIC (x))
 	{
-	  C_DECL_IN_EXTERNAL_SCOPE (x) = 1;
-	  bind (name, x, external_scope);
+	  bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
+	  nested = true;
 	}
     }
+  /* Similarly, a declaration of a function with static linkage at
+     block scope must be checked against any existing declaration
+     of that function at file scope.  */
+  else if (TREE_CODE (x) == FUNCTION_DECL && scope != file_scope
+	   && !TREE_PUBLIC (x) && !DECL_INITIAL (x))
+    {
+      if (warn_nested_externs && !DECL_IN_SYSTEM_HEADER (x))
+	warning ("nested static declaration of '%D'", x);
+
+      while (b && !B_IN_FILE_SCOPE (b))
+	b = b->shadowed;
+
+      if (b && same_translation_unit_p (x, b->decl)
+	  && duplicate_decls (x, b->decl))
+	{
+	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
+	  return b->decl;
+	}
+      else
+	{
+	  bind (name, x, file_scope, /*invisible=*/true, /*nested=*/false);
+	  nested = true;
+	}
+    }      
 
   warn_if_shadowing (x);
 
@@ -1871,7 +1936,7 @@ pushdecl (tree x)
   if (TREE_CODE (x) == TYPE_DECL)
     clone_underlying_type (x);
 
-  bind (name, x, scope);
+  bind (name, x, scope, /*invisible=*/false, nested);
 
   /* If x's type is incomplete because it's based on a
      structure or union which has not yet been fully declared,
@@ -1911,6 +1976,7 @@ tree
 pushdecl_top_level (tree x)
 {
   tree name;
+  bool nested = false;
 
   if (TREE_CODE (x) != VAR_DECL)
     abort ();
@@ -1922,11 +1988,11 @@ pushdecl_top_level (tree x)
 
   if (DECL_EXTERNAL (x) || TREE_PUBLIC (x))
     {
-      C_DECL_IN_EXTERNAL_SCOPE (x) = 1;
-      bind (name, x, external_scope);
+      bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
+      nested = true;
     }
   if (file_scope)
-    bind (name, x, file_scope);
+    bind (name, x, file_scope, /*invisible=*/false, nested);
 
   return x;
 }
@@ -1965,7 +2031,8 @@ implicitly_declare (tree functionid)
 	 file scope.  */
       if (!DECL_BUILT_IN (decl) && DECL_IS_BUILTIN (decl))
 	{
-	  bind (functionid, decl, file_scope);
+	  bind (functionid, decl, file_scope,
+		/*invisible=*/false, /*nested=*/true);
 	  return decl;
 	}
       else
@@ -1979,7 +2046,8 @@ implicitly_declare (tree functionid)
 	      implicit_decl_warning (functionid, decl);
 	      C_DECL_IMPLICIT (decl) = 1;
 	    }
-	  bind (functionid, decl, current_scope);
+	  bind (functionid, decl, current_scope,
+		/*invisible=*/false, /*nested=*/true);
 	  return decl;
 	}
     }
@@ -2039,7 +2107,7 @@ undeclared_variable (tree id)
          will be nonnull but current_function_scope will be null.  */
       scope = current_function_scope ? current_function_scope : current_scope;
     }
-  bind (id, error_mark_node, scope);
+  bind (id, error_mark_node, scope, /*invisible=*/false, /*nested=*/false);
 }
 
 /* Subroutine of lookup_label, declare_label, define_label: construct a
@@ -2093,7 +2161,8 @@ lookup_label (tree name)
   label = make_label (name, input_location);
 
   /* Ordinary labels go in the current function scope.  */
-  bind (name, label, current_function_scope);
+  bind (name, label, current_function_scope,
+	/*invisible=*/false, /*nested=*/false);
   return label;
 }
 
@@ -2109,7 +2178,7 @@ declare_label (tree name)
 
   /* Check to make sure that the label hasn't already been declared
      at this scope */
-  if (b && b->contour == current_scope)
+  if (b && B_IN_CURRENT_SCOPE (b))
     {
       error ("duplicate label declaration `%s'", IDENTIFIER_POINTER (name));
       locate_old_decl (b->decl, error);
@@ -2122,7 +2191,8 @@ declare_label (tree name)
   C_DECLARED_LABEL_FLAG (label) = 1;
 
   /* Declared labels go in the current scope.  */
-  bind (name, label, current_scope);
+  bind (name, label, current_scope,
+	/*invisible=*/false, /*nested=*/false);
   return label;
 }
 
@@ -2162,7 +2232,8 @@ define_label (location_t location, tree name)
       label = make_label (name, location);
 
       /* Ordinary labels go in the current function scope.  */
-      bind (name, label, current_function_scope);
+      bind (name, label, current_function_scope,
+	    /*invisible=*/false, /*nested=*/false);
     }
 
   if (warn_traditional && !in_system_header && lookup_name (name))
@@ -2199,8 +2270,8 @@ lookup_tag (enum tree_code code, tree name, int thislevel_only)
 	 a tag in the file scope.  (Primarily relevant to Objective-C
 	 and its builtin structure tags, which get pushed before the
 	 file scope is created.)  */
-      if (b->contour == current_scope
-	  || (current_scope == file_scope && b->contour == external_scope))
+      if (B_IN_CURRENT_SCOPE (b)
+	  || (current_scope == file_scope && B_IN_EXTERNAL_SCOPE (b)))
 	thislevel = 1;
     }
 
@@ -2248,7 +2319,7 @@ tree
 lookup_name (tree name)
 {
   struct c_binding *b = I_SYMBOL_BINDING (name);
-  if (b && (b->contour != external_scope || TREE_CODE (b->decl) == TYPE_DECL))
+  if (b && !b->invisible)
     return b->decl;
   return 0;
 }
@@ -2261,7 +2332,7 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
   struct c_binding *b;
 
   for (b = I_SYMBOL_BINDING (name); b; b = b->shadowed)
-    if (b->contour == scope)
+    if (B_IN_SCOPE (b, scope))
       return b->decl;
   return 0;
 }
@@ -2358,7 +2429,8 @@ c_make_fname_decl (tree id, int type_dep)
   if (current_function_decl)
     {
       DECL_CONTEXT (decl) = current_function_decl;
-      bind (id, decl, current_function_scope);
+      bind (id, decl, current_function_scope,
+	    /*invisible=*/false, /*nested=*/false);
     }
 
   finish_decl (decl, init, NULL_TREE);
@@ -2394,8 +2466,7 @@ builtin_function (const char *name, tree type, int function_code,
   if (I_SYMBOL_BINDING (id))
     abort ();
 
-  C_DECL_IN_EXTERNAL_SCOPE (decl) = 1;
-  bind (id, decl, external_scope);
+  bind (id, decl, external_scope, /*invisible=*/true, /*nested=*/false);
 
   /* Builtins in the implementation namespace are made visible without
      needing to be explicitly declared.  See push_file_scope.  */
@@ -5807,7 +5878,8 @@ store_parm_decls_newstyle (tree fndecl, tree arg_info)
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
-	bind (DECL_NAME (decl), decl, current_scope);
+	bind (DECL_NAME (decl), decl, current_scope,
+	      /*invisible=*/false, /*nested=*/false);
       else
 	error ("%Jparameter name omitted", decl);
     }
@@ -5820,13 +5892,15 @@ store_parm_decls_newstyle (tree fndecl, tree arg_info)
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
-	bind (DECL_NAME (decl), decl, current_scope);
+	bind (DECL_NAME (decl), decl, current_scope,
+	      /*invisible=*/false, /*nested=*/false);
     }
 
   /* And all the tag declarations.  */
   for (decl = tags; decl; decl = TREE_CHAIN (decl))
     if (TREE_PURPOSE (decl))
-      bind (TREE_PURPOSE (decl), TREE_VALUE (decl), current_scope);
+      bind (TREE_PURPOSE (decl), TREE_VALUE (decl), current_scope,
+	    /*invisible=*/false, /*nested=*/false);
 }
 
 /* Subroutine of store_parm_decls which handles old-style function
@@ -5862,7 +5936,7 @@ store_parm_decls_oldstyle (tree fndecl, tree arg_info)
 	}
 
       b = I_SYMBOL_BINDING (TREE_VALUE (parm));
-      if (b && b->contour == current_scope)
+      if (b && B_IN_CURRENT_SCOPE (b))
 	{
 	  decl = b->decl;
 	  /* If we got something other than a PARM_DECL it is an error.  */
@@ -6454,7 +6528,7 @@ identifier_global_value	(tree t)
   struct c_binding *b;
 
   for (b = I_SYMBOL_BINDING (t); b; b = b->shadowed)
-    if (b->contour == file_scope || b->contour == external_scope)
+    if (B_IN_FILE_SCOPE (b) || B_IN_EXTERNAL_SCOPE (b))
       return b->decl;
 
   return 0;
