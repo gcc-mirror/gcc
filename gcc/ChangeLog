@@ -1,3 +1,18 @@
+2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (any_shift): New code macro.
+	(optab, insn): New code attributes.
+	({ashl,ashr,lshr}[sd]i3): Redefine using :GPR and any_shift.
+	Use the standard rather than internal patterns for the MIPS16
+	double-shift optimization.
+	(*{ashl,ashr,lshr}[sd]i3): New names for the non-mips16 shift patterns.
+	Redefine using :GPR and any_shift.
+	(*{ashl,ashr,lshr}si3_extend): Generalize ashlsi3_internal1_extend
+	to cover all three shifts.
+	(*{ashl,ashr,lshr}si3_mips16): New names for the mips16 SImode shifts.
+	Redefine using any_shift.  Use :GPR and any_shift to combine splitters.
+	(*{ashl,ashr,lshr}di3_mips16): New names for the mips16 DImode shifts.
+
 2004-08-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* gimplify.c (lookup_tmp_var): Separate temporaries when not

@@ -323,12 +323,26 @@
 ;; to use the same template.
 (define_code_macro any_extend [sign_extend zero_extend])
 
+;; This code macro allows the three shift instructions to be generated
+;; from the same template.
+(define_code_macro any_shift [ashift ashiftrt lshiftrt])
+
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
+
+;; <optab> expands to the name of the optab for a particular code.
+(define_code_attr optab [(ashift "ashl")
+			 (ashiftrt "ashr")
+			 (lshiftrt "lshr")])
+
+;; <insn> expands to the name of the insn that implements a particular code.
+(define_code_attr insn [(ashift "sll")
+			(ashiftrt "sra")
+			(lshiftrt "srl")])
 
 ;; .........................
 ;;
@@ -4217,13 +4231,10 @@ beq\t%2,%.,1b\;\
 ;;
 ;;  ....................
 
-;; Many of these instructions use trivial define_expands, because we
-;; want to use a different set of constraints when TARGET_MIPS16.
-
-(define_expand "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(ashift:SI (match_operand:SI 1 "register_operand")
-		   (match_operand:SI 2 "arith_operand")))]
+(define_expand "<optab><mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(any_shift:GPR (match_operand:GPR 1 "register_operand")
+		       (match_operand:SI 2 "arith_operand")))]
   ""
 {
   /* On the mips16, a shift of more than 8 is a four byte instruction,
@@ -4238,129 +4249,71 @@ beq\t%2,%.,1b\;\
       && GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) > 8
       && INTVAL (operands[2]) <= 16
-      && ! reload_in_progress
-      && ! reload_completed)
+      && !reload_in_progress
+      && !reload_completed)
     {
-      rtx temp = gen_reg_rtx (SImode);
+      rtx temp = gen_reg_rtx (<MODE>mode);
 
-      emit_insn (gen_ashlsi3_internal2 (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_ashlsi3_internal2 (operands[0], temp,
-					GEN_INT (INTVAL (operands[2]) - 8)));
+      emit_insn (gen_<optab><mode>3 (temp, operands[1], GEN_INT (8)));
+      emit_insn (gen_<optab><mode>3 (operands[0], temp,
+				     GEN_INT (INTVAL (operands[2]) - 8)));
       DONE;
     }
 })
 
-(define_insn "ashlsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ashift:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "arith_operand" "dI")))]
+(define_insn "*<optab><mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(any_shift:GPR (match_operand:GPR 1 "register_operand" "d")
+		       (match_operand:SI 2 "arith_operand" "dI")))]
   "!TARGET_MIPS16"
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2])
+			   & (GET_MODE_BITSIZE (<MODE>mode) - 1));
 
-  return "sll\t%0,%1,%2";
+  return "<d><insn>\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "ashlsi3_internal1_extend"
+(define_insn "*<optab>si3_extend"
   [(set (match_operand:DI 0 "register_operand" "=d")
-       (sign_extend:DI (ashift:SI (match_operand:SI 1 "register_operand" "d")
-                                  (match_operand:SI 2 "arith_operand" "dI"))))]
+	(sign_extend:DI
+	   (any_shift:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "arith_operand" "dI"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
-  return "sll\t%0,%1,%2";
+  return "<insn>\t%0,%1,%2";
 }
-  [(set_attr "type"    "shift")
-   (set_attr "mode"    "DI")])
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
 
-
-(define_insn "ashlsi3_internal2"
+(define_insn "*<optab>si3_mips16"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,d")
-		   (match_operand:SI 2 "arith_operand" "d,I")))]
+	(any_shift:SI (match_operand:SI 1 "register_operand" "0,d")
+		      (match_operand:SI 2 "arith_operand" "d,I")))]
   "TARGET_MIPS16"
 {
   if (which_alternative == 0)
-    return "sll\t%0,%2";
+    return "<insn>\t%0,%2";
 
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
-  return "sll\t%0,%1,%2";
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+  return "<insn>\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
+		 (if_then_else (match_operand 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
-;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(ashift:SI (match_operand:SI 1 "register_operand")
-		   (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[2]) == CONST_INT
-   && INTVAL (operands[2]) > 8
-   && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (ashift:SI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 2)))]
-  { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
-
-(define_expand "ashldi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(ashift:DI (match_operand:DI 1 "register_operand")
-		   (match_operand:SI 2 "arith_operand")))]
-  "TARGET_64BIT"
-{
-  /* On the mips16, a shift of more than 8 is a four byte
-     instruction, so, for a shift between 8 and 16, it is just as
-     fast to do two shifts of 8 or less.  If there is a lot of
-     shifting going on, we may win in CSE.  Otherwise combine will
-     put the shifts back together again.  This can be called by
-     function_arg, so we must be careful not to allocate a new
-     register if we've reached the reload pass.  */
-  if (TARGET_MIPS16
-      && optimize
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) > 8
-      && INTVAL (operands[2]) <= 16
-      && ! reload_in_progress
-      && ! reload_completed)
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_ashldi3_internal (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_ashldi3_internal (operands[0], temp,
-				       GEN_INT (INTVAL (operands[2]) - 8)));
-      DONE;
-    }
-})
-
-
-(define_insn "ashldi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(ashift:DI (match_operand:DI 1 "register_operand" "d")
-		   (match_operand:SI 2 "arith_operand" "dI")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
-  return "dsll\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
+;; We need separate DImode MIPS16 patterns because of the irregularity
+;; of right shifts.
+(define_insn "*ashldi3_mips16"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(ashift:DI (match_operand:DI 1 "register_operand" "0,d")
 		   (match_operand:SI 2 "arith_operand" "d,I")))]
@@ -4369,154 +4322,18 @@ beq\t%2,%.,1b\;\
   if (which_alternative == 0)
     return "dsll\t%0,%2";
 
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
   return "dsll\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
+		 (if_then_else (match_operand 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
-
-;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(ashift:DI (match_operand:DI 1 "register_operand")
-		   (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_MIPS16 && TARGET_64BIT && !TARGET_DEBUG_D_MODE
-   && reload_completed
-   && GET_CODE (operands[2]) == CONST_INT
-   && INTVAL (operands[2]) > 8
-   && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (ashift:DI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (ashift:DI (match_dup 0) (match_dup 2)))]
-  { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
-
-(define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "arith_operand")))]
-  ""
-{
-  /* On the mips16, a shift of more than 8 is a four byte instruction,
-     so, for a shift between 8 and 16, it is just as fast to do two
-     shifts of 8 or less.  If there is a lot of shifting going on, we
-     may win in CSE.  Otherwise combine will put the shifts back
-     together again.  */
-  if (TARGET_MIPS16
-      && optimize
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) > 8
-      && INTVAL (operands[2]) <= 16)
-    {
-      rtx temp = gen_reg_rtx (SImode);
-
-      emit_insn (gen_ashrsi3_internal2 (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_ashrsi3_internal2 (operands[0], temp,
-					GEN_INT (INTVAL (operands[2]) - 8)));
-      DONE;
-    }
-})
-
-(define_insn "ashrsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
-  "!TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
-  return "sra\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")])
-
-(define_insn "ashrsi3_internal2"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,d")
-		     (match_operand:SI 2 "arith_operand" "d,I")))]
-  "TARGET_MIPS16"
-{
-  if (which_alternative == 0)
-    return "sra\t%0,%2";
-
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
-  return "sra\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
-
-
-;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[2]) == CONST_INT
-   && INTVAL (operands[2]) > 8
-   && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (ashiftrt:SI (match_dup 0) (match_dup 2)))]
-  { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
-
-(define_expand "ashrdi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand")
-		     (match_operand:SI 2 "arith_operand")))]
-  "TARGET_64BIT"
-{
-  /* On the mips16, a shift of more than 8 is a four byte
-     instruction, so, for a shift between 8 and 16, it is just as
-     fast to do two shifts of 8 or less.  If there is a lot of
-     shifting going on, we may win in CSE.  Otherwise combine will
-     put the shifts back together again.  */
-  if (TARGET_MIPS16
-      && optimize
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) > 8
-      && INTVAL (operands[2]) <= 16)
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_ashrdi3_internal (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_ashrdi3_internal (operands[0], temp,
-				       GEN_INT (INTVAL (operands[2]) - 8)));
-      DONE;
-    }
-})
-
-
-(define_insn "ashrdi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
-  return "dsra\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
+(define_insn "*ashrdi3_mips16"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "0,0")
 		     (match_operand:SI 2 "arith_operand" "d,I")))]
@@ -4527,104 +4344,45 @@ beq\t%2,%.,1b\;\
 
   return "dsra\t%0,%2";
 }
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
+		 (if_then_else (match_operand 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
 
-;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand")
-		     (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_MIPS16 && TARGET_64BIT && !TARGET_DEBUG_D_MODE
-   && reload_completed
-   && GET_CODE (operands[2]) == CONST_INT
-   && INTVAL (operands[2]) > 8
-   && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (ashiftrt:DI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (ashiftrt:DI (match_dup 0) (match_dup 2)))]
-  { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
-
-(define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "arith_operand")))]
-  ""
-{
-  /* On the mips16, a shift of more than 8 is a four byte instruction,
-     so, for a shift between 8 and 16, it is just as fast to do two
-     shifts of 8 or less.  If there is a lot of shifting going on, we
-     may win in CSE.  Otherwise combine will put the shifts back
-     together again.  */
-  if (TARGET_MIPS16
-      && optimize
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) > 8
-      && INTVAL (operands[2]) <= 16)
-    {
-      rtx temp = gen_reg_rtx (SImode);
-
-      emit_insn (gen_lshrsi3_internal2 (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_lshrsi3_internal2 (operands[0], temp,
-					GEN_INT (INTVAL (operands[2]) - 8)));
-      DONE;
-    }
-})
-
-(define_insn "lshrsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
-  "!TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
-  return "srl\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")])
-
-(define_insn "lshrsi3_internal2"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,d")
+(define_insn "*lshrdi3_mips16"
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand" "0,0")
 		     (match_operand:SI 2 "arith_operand" "d,I")))]
-  "TARGET_MIPS16"
+  "TARGET_64BIT && TARGET_MIPS16"
 {
-  if (which_alternative == 0)
-    return "srl\t%0,%2";
-
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
-  return "srl\t%0,%1,%2";
+  return "dsrl\t%0,%2";
 }
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"SI")
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")
    (set_attr_alternative "length"
 		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
+		 (if_then_else (match_operand 2 "m16_uimm3_b")
 			       (const_int 4)
 			       (const_int 8))])])
-
 
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "const_int_operand")))]
+  [(set (match_operand:GPR 0 "register_operand")
+	(any_shift:GPR (match_operand:GPR 1 "register_operand")
+		       (match_operand:GPR 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && GET_CODE (operands[2]) == CONST_INT
    && INTVAL (operands[2]) > 8
    && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (lshiftrt:SI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 2)))]
+  [(set (match_dup 0) (any_shift:GPR (match_dup 1) (const_int 8)))
+   (set (match_dup 0) (any_shift:GPR (match_dup 0) (match_dup 2)))]
   { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
 
 ;; If we load a byte on the mips16 as a bitfield, the resulting
@@ -4650,122 +4408,21 @@ beq\t%2,%.,1b\;\
    (set_attr "mode"	"SI")
    (set_attr "length"	"16")])
 
-(define_expand "lshrdi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand")
-		     (match_operand:SI 2 "arith_operand")))]
-  "TARGET_64BIT"
+(define_insn "rotr<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(rotatert:GPR (match_operand:GPR 1 "register_operand" "d")
+		      (match_operand:SI 2 "arith_operand" "dI")))]
+  "ISA_HAS_ROTR_<MODE>"
 {
-  /* On the mips16, a shift of more than 8 is a four byte
-     instruction, so, for a shift between 8 and 16, it is just as
-     fast to do two shifts of 8 or less.  If there is a lot of
-     shifting going on, we may win in CSE.  Otherwise combine will
-     put the shifts back together again.  */
-  if (TARGET_MIPS16
-      && optimize
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) > 8
-      && INTVAL (operands[2]) <= 16)
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_lshrdi3_internal (temp, operands[1], GEN_INT (8)));
-      emit_insn (gen_lshrdi3_internal (operands[0], temp,
-				       GEN_INT (INTVAL (operands[2]) - 8)));
-      DONE;
-    }
-})
-
-
-(define_insn "lshrdi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
-		     (match_operand:SI 2 "arith_operand" "dI")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
-  return "dsrl\t%0,%1,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "0,0")
-		     (match_operand:SI 2 "arith_operand" "d,I")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
-  return "dsrl\t%0,%2";
-}
-  [(set_attr "type"	"shift")
-   (set_attr "mode"	"DI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
-
-(define_insn "rotrsi3"
-  [(set (match_operand:SI              0 "register_operand" "=d")
-        (rotatert:SI (match_operand:SI 1 "register_operand" "d")
-                     (match_operand:SI 2 "arith_operand"    "dn")))]
-  "ISA_HAS_ROTR_SI"
-{
-  if (TARGET_SR71K && GET_CODE (operands[2]) != CONST_INT)
-    return "rorv\t%0,%1,%2";
-
   if ((GET_CODE (operands[2]) == CONST_INT)
-      && (INTVAL (operands[2]) < 0 || INTVAL (operands[2]) >= 32))
+      && (INTVAL (operands[2]) < 0
+	  || INTVAL (operands[2]) >= GET_MODE_BITSIZE (<MODE>mode)))
     abort ();
 
-  return "ror\t%0,%1,%2";
+  return "<d>ror\t%0,%1,%2";
 }
-  [(set_attr "type"     "shift")
-   (set_attr "mode"     "SI")])
-
-(define_insn "rotrdi3"
-  [(set (match_operand:DI              0 "register_operand" "=d")
-        (rotatert:DI (match_operand:DI 1 "register_operand" "d")
-                     (match_operand:DI 2 "arith_operand"    "dn")))]
-  "ISA_HAS_ROTR_DI"
-{
-  if (TARGET_SR71K)
-    {
-      if (GET_CODE (operands[2]) != CONST_INT)
-	return "drorv\t%0,%1,%2";
-
-      if (INTVAL (operands[2]) >= 32 && INTVAL (operands[2]) <= 63)
-	return "dror32\t%0,%1,%2";
-    }
-
-  if ((GET_CODE (operands[2]) == CONST_INT)
-      && (INTVAL (operands[2]) < 0 || INTVAL (operands[2]) >= 64))
-    abort ();
-
-  return "dror\t%0,%1,%2";
-}
-  [(set_attr "type"     "shift")
-   (set_attr "mode"     "DI")])
-
-
-;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand")
-		     (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[2]) == CONST_INT
-   && INTVAL (operands[2]) > 8
-   && INTVAL (operands[2]) <= 16"
-  [(set (match_dup 0) (lshiftrt:DI (match_dup 1) (const_int 8)))
-   (set (match_dup 0) (lshiftrt:DI (match_dup 0) (match_dup 2)))]
-  { operands[2] = GEN_INT (INTVAL (operands[2]) - 8); })
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<MODE>")])
 
 ;;
 ;;  ....................
