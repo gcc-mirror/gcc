@@ -1,3 +1,7 @@
+2000-08-11 Laurynas Biveinis <lauras@softhome.net>
+
+	* fixproto: Recognize DOS paths with drive letters as absolute paths.
+
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* extend.texi (Volatiles): Fix typos.

@@ -90,11 +90,14 @@ src_dir_all=$2
 # "standard" ANSI/POSIX files listed in $std_files are processed.
 src_dir_std=$3
 
-if [ `expr $rel_target_dir : '\(.\)'` != '/' ] ; then
-  abs_target_dir=$original_dir/$rel_target_dir
-else
-  abs_target_dir=$rel_target_dir
-fi
+case $rel_target_dir in
+  /* | [A-Za-z]:[\\/]*)
+     abs_target_dir=$rel_target_dir
+     ;;
+  *)
+     abs_target_dir=$original_dir/$rel_target_dir
+     ;;
+esac
 
 # Determine whether this system has symbolic links.
 if ln -s X $rel_target_dir/ShouldNotExist 2>/dev/null; then
@@ -118,11 +121,14 @@ include_path=""
 
 if [ `echo $* | wc -w` != 0 ] ; then
   for rel_source_dir in $src_dir_all $src_dir_std; do
-    if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
-      abs_source_dir=$original_dir/$rel_source_dir
-    else
-      abs_source_dir=$rel_source_dir
-    fi
+     case $rel_source_dir in
+       /* | [A-Za-z]:[\\/]*)
+         abs_source_dir=$rel_source_dir
+         ;;
+       *)
+         abs_source_dir=$original_dir/$rel_source_dir
+         ;;
+     esac
     include_path="$include_path -I$abs_source_dir"
   done
 fi
@@ -175,11 +181,14 @@ for code in ALL STD ; do
       ;;
   esac
 
-  if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
-    abs_source_dir=$original_dir/$rel_source_dir
-  else
-    abs_source_dir=$rel_source_dir
-  fi
+  case $rel_source_dir in
+    /* | [A-Za-z]:[\\/]*)
+       abs_source_dir=$rel_source_dir
+       ;;
+    *)
+       abs_source_dir=$original_dir/$rel_source_dir
+       ;;
+  esac
 
   if [ \! -d $abs_source_dir ] ; then
     echo $progname\: warning\: no such directory\: \`$rel_source_dir\'
