@@ -4826,20 +4826,21 @@ lookup_name_real (name, prefer_type, nonclass)
 	   TYPE_DECLs.  */
 	classval = lookup_field (current_class_type, name, 0, 1);
 
+      /* Add implicit 'typename' to types from template bases.  lookup_field
+         will do this for us.  If classval is actually from an enclosing
+         scope, lookup_nested_field will get it for us.  */
+      if (processing_template_decl
+	  && classval && TREE_CODE (classval) == TYPE_DECL
+	  && ! currently_open_class (DECL_CONTEXT (classval))
+	  && uses_template_parms (current_class_type)
+	  && ! DECL_ARTIFICIAL (classval))
+	classval = lookup_field (current_class_type, name, 0, 1);
+
       /* yylex() calls this with -2, since we should never start digging for
 	 the nested name at the point where we haven't even, for example,
 	 created the COMPONENT_REF or anything like that.  */
       if (classval == NULL_TREE)
 	classval = lookup_nested_field (name, ! yylex);
-
-      /* Add implicit 'typename' to types from template bases.  lookup_field
-         will do this for us.  */
-      if (processing_template_decl
-	  && classval && TREE_CODE (classval) == TYPE_DECL
-	  && DECL_CONTEXT (classval) != current_class_type
-	  && uses_template_parms (current_class_type)
-	  && ! DECL_ARTIFICIAL (classval))
-	classval = lookup_field (current_class_type, name, 0, 1);
     }
 
   if (locval && classval)

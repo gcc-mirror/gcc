@@ -4822,6 +4822,21 @@ popclass (modify)
   ;
 }
 
+/* Returns 1 if current_class_type is either T or a nested type of T.  */
+
+int
+currently_open_class (t)
+     tree t;
+{
+  int i;
+  if (t == current_class_type)
+    return 1;
+  for (i = 0; i < current_class_depth; ++i)
+    if (current_class_stack [-i*2 - 1] == t)
+      return 1;
+  return 0;
+}
+
 /* When entering a class scope, all enclosing class scopes' names with
    static meaning (static variables, static functions, types and enumerators)
    have to be visible.  This recursive function calls pushclass for all

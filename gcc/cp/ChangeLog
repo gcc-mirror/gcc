@@ -1,4 +1,10 @@
-Mon Apr 27 07:17:38 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Sat May  9 14:44:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (currently_open_class): New fn.
+	* decl.c (lookup_name_real): Use it.
+	* search.c (lookup_field): Likewise.
+
+Fri May  8 23:32:42 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.def (OVERLOAD): New node.  
 	* cp-tree.h (BINDING_TYPE, SET_IDENTIFIER_GLOBAL_VALUE,
