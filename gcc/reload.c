@@ -6004,7 +6004,7 @@ copy_replacements_1 (px, py, orig_replacements)
     }
 }
 
-/* Change any replacements being done to *X to be done to *Y */
+/* Change any replacements being done to *X to be done to *Y.  */
 
 void
 move_replacements (x, y)

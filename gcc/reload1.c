@@ -139,7 +139,7 @@ static int reg_reloaded_contents[FIRST_PSEUDO_REGISTER];
    when reg_reloaded_valid is set for this register.  */
 static rtx reg_reloaded_insn[FIRST_PSEUDO_REGISTER];
 
-/* Indicate if reg_reloaded_insn / reg_reloaded_contents is valid */
+/* Indicate if reg_reloaded_insn / reg_reloaded_contents is valid.  */
 static HARD_REG_SET reg_reloaded_valid;
 /* Indicate if the register was dead at the end of the reload.
    This is only valid if reg_reloaded_contents is set and valid.  */
@@ -1497,7 +1497,7 @@ calculate_needs_all_insns (global)
 		  && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER)
 		{
 		  delete_insn (insn);
-		  /* Delete it from the reload chain */
+		  /* Delete it from the reload chain.  */
 		  if (chain->prev)
 		    chain->prev->next = next;
 		  else

@@ -1635,7 +1635,7 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
 
   digit = rtd_divmod (&r, &pten);
 
-  /* Be prepared for error in that division via underflow ... */
+  /* Be prepared for error in that division via underflow ...  */
   if (digit == 0 && cmp_significand_0 (&r))
     {
       /* Multiply by 10 and try again.  */

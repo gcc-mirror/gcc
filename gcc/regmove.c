@@ -793,7 +793,7 @@ copy_src_to_dest (insn, src, dest, old_max_uid)
       p_move_notes = &REG_NOTES (move_insn);
       p_insn_notes = &REG_NOTES (insn);
 
-      /* Move any notes mentioning src to the move instruction */
+      /* Move any notes mentioning src to the move instruction.  */
       for (link = REG_NOTES (insn); link != NULL_RTX; link = next)
 	{
 	  next = XEXP (link, 1);
@@ -812,7 +812,7 @@ copy_src_to_dest (insn, src, dest, old_max_uid)
       *p_move_notes = NULL_RTX;
       *p_insn_notes = NULL_RTX;
 
-      /* Is the insn the head of a basic block?  If so extend it */
+      /* Is the insn the head of a basic block?  If so extend it.  */
       insn_uid = INSN_UID (insn);
       move_uid = INSN_UID (move_insn);
       if (insn_uid < old_max_uid)

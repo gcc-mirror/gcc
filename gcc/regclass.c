@@ -292,7 +292,7 @@ init_reg_sets ()
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
   memset (global_regs, 0, sizeof global_regs);
 
-  /* Do any additional initialization regsets may need */
+  /* Do any additional initialization regsets may need.  */
   INIT_ONCE_REG_SET ();
 
 #ifdef REG_ALLOC_ORDER
@@ -2296,7 +2296,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   if (renumber_p)
     reg_renumber = renumber;
 
-  /* Tell the regset code about the new number of registers */
+  /* Tell the regset code about the new number of registers.  */
   MAX_REGNO_REG_SET (num_regs, new_p, renumber_p);
 }
 

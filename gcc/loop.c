@@ -2475,7 +2475,7 @@ prescan_loop (loop)
   loop_info->first_loop_store_insn = NULL_RTX;
   loop_info->mems_idx = 0;
   loop_info->num_mem_sets = 0;
-  /* If loop opts run twice, this was set on 1st pass for 2nd. */
+  /* If loop opts run twice, this was set on 1st pass for 2nd.  */
   loop_info->preconditioned = NOTE_PRECONDITIONED (end);
 
   for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
