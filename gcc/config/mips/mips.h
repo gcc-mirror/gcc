@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989, 90-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-6, 1997 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -235,22 +235,6 @@ extern void		rdata_section ();
 extern void		readonly_data_section ();
 extern void		sdata_section ();
 extern void		text_section ();
-
-/* Functions in the rest of the compiler that we reference.  */
-extern void		abort_with_insn ();
-extern void		debug_rtx ();
-extern void		fatal_io_error ();
-extern int		get_frame_size ();
-extern int		offsettable_address_p ();
-extern void		output_address ();
-extern char	       *permalloc ();
-extern int		reg_mentioned_p ();
-
-/* Functions in the standard library that we reference.  */
-extern int		atoi ();
-extern char	       *getenv ();
-extern char	       *mktemp ();
-
 
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 
