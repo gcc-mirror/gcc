@@ -1259,6 +1259,13 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
 
+  /* Don't do anything if both args are constant.
+     This avoids confusing warnings.  The caller will fold properly.  */
+  if ((TREE_CODE (op0) == INTEGER_CST || TREE_CODE (op0) == REAL_CST)
+      &&
+      (TREE_CODE (op1) == INTEGER_CST || TREE_CODE (op1) == REAL_CST))
+    return 0;
+
   /* Throw away any conversions to wider types
      already present in the operands.  */
 
