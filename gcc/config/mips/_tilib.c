@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 
-#if _MIPS_SIM == 2 /* N32 */ || _MIPS_SIM == 3 /* 64 */
+#if _MIPS_SIM == _ABIN32 || _MIPS_SIM == _ABI64
 
 typedef int TItype __attribute__ ((mode (TI)));
 typedef int DItype __attribute__ ((mode (DI)));
