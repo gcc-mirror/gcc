@@ -138,8 +138,6 @@ static tree s390_build_builtin_va_list (void);
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST s390_address_cost
-#undef TARGET_DIRECT_POOL_LOAD_P
-#define TARGET_DIRECT_POOL_LOAD_P hook_bool_machine_mode_true
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
