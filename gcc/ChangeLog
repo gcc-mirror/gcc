@@ -1,5 +1,11 @@
 2002-03-28  Richard Henderson  <rth@redhat.com>
 
+	PR target/5715
+	* config/alpha/osf.h (ASM_SPEC): Don't pass any special options
+	to GAS.  Correct drift between alternatives.
+
+2002-03-28  Richard Henderson  <rth@redhat.com>
+
 	PR target/6087
 	* reload1.c (fixup_abnormal_edges): Move insn to edge via sequence.
 
