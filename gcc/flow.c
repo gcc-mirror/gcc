@@ -802,6 +802,9 @@ jmp_uses_reg_or_mem (x)
     case PLUS:  case MINUS:  case MULT:
       return (jmp_uses_reg_or_mem (XEXP (x, 0))
 	      || jmp_uses_reg_or_mem (XEXP (x, 1)));
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -2629,6 +2632,9 @@ mark_used_regs (needed, live, x, final, insn)
 #endif
 	    )
 	  SET_REGNO_REG_SET (live, i);
+      break;
+
+    default:
       break;
     }
 
