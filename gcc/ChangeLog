@@ -1,3 +1,14 @@
+2000-10-21  Mike Coleman  <mcoleman2@kc.rr.com>
+
+	* c-pragma.c (handle_pragma_pack): Initialize align to -1.
+	Improve error messages.  Correct parsing of 
+	#pragma pack(pop [,id]).  Do not check the user-supplied
+	alignment if we're popping.
+
+	* gcc.dg/pack-test-1.c: New test case.
+	* gcc.dg/pack-test-2.c: New test case.
+	* gcc.dg/pack-test-1.h: New file.
+
 2000-10-27  Neil Booth  <neilb@earthling.net>
 
 	* cpp.texi: Update.

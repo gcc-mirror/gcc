@@ -60,8 +60,8 @@ typedef struct align_stack
 
 static struct align_stack * alignment_stack = NULL;
 
-/* If we have a "global" #pragma pack(<n>) if effect when the first
-   #pragma push(pack,<n>) is encountered, this stores the the value of 
+/* If we have a "global" #pragma pack(<n>) in effect when the first
+   #pragma pack(push,<n>) is encountered, this stores the value of 
    maximum_field_alignment in effect.  When the final pop_alignment() 
    happens, we restore the value to this, not to a value of 0 for
    maximum_field_alignment.  Value is in bits. */
@@ -186,7 +186,7 @@ handle_pragma_pack (dummy)
      cpp_reader *dummy ATTRIBUTE_UNUSED;
 {
   tree x, id = 0;
-  int align;
+  int align = -1;
   enum cpp_ttype token;
   enum { set, push, pop } action;
 
@@ -208,6 +208,12 @@ handle_pragma_pack (dummy)
     }
   else if (token == CPP_NAME)
     {
+#define BAD_ACTION do { if (action == push) \
+	  BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
+	else \
+	  BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
+	} while (0)
+
       const char *op = IDENTIFIER_POINTER (x);
       if (!strcmp (op, "push"))
 	action = push;
@@ -216,25 +222,36 @@ handle_pragma_pack (dummy)
       else
 	BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
 
-      if (c_lex (&x) != CPP_COMMA)
-	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
-
       token = c_lex (&x);
-      if (token == CPP_NAME)
+      if (token != CPP_COMMA && action == push)
+	BAD_ACTION;
+
+      if (token == CPP_COMMA)
 	{
-	  id = x;
-	  if (c_lex (&x) != CPP_COMMA)
-	    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
 	  token = c_lex (&x);
+	  if (token == CPP_NAME)
+	    {
+	      id = x;
+	      if (action == push && c_lex (&x) != CPP_COMMA)
+		BAD_ACTION;
+	      token = c_lex (&x);
+	    }
+
+	  if (action == push)
+	    {
+	      if (token == CPP_NUMBER)
+		{
+		  align = TREE_INT_CST_LOW (x);
+		  token = c_lex (&x);
+		}
+	      else
+		BAD_ACTION;
+	    }
 	}
 
-      if (token == CPP_NUMBER)
-	align = TREE_INT_CST_LOW (x);
-      else
-	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
-
-      if (c_lex (&x) != CPP_CLOSE_PAREN)
-	BAD ("malformed '#pragma pack' - ignored");
+      if (token != CPP_CLOSE_PAREN)
+	BAD_ACTION;
+#undef BAD_ACTION
     }
   else
     BAD ("malformed '#pragma pack' - ignored");
@@ -242,19 +259,20 @@ handle_pragma_pack (dummy)
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma pack'");
 
-  switch (align)
-    {
-    case 0:
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-    case 16:
-      align *= BITS_PER_UNIT;
-      break;
-    default:
-      BAD2 ("alignment must be a small power of two, not %d", align);
-    }
+  if (action != pop)
+    switch (align)
+      {
+      case 0:
+      case 1:
+      case 2:
+      case 4:
+      case 8:
+      case 16:
+	align *= BITS_PER_UNIT;
+	break;
+      default:
+	BAD2 ("alignment must be a small power of two, not %d", align);
+      }
 
   switch (action)
     {
