@@ -1,3 +1,9 @@
+2002-02-28  Anthony Green  <green@redhat.com>
+
+	* java/lang/reflect/natMethod.cc (result): Add void* element.
+	(_Jv_CallAnyMethodA): Handle FFI_TYPE_POINTER arguments.  Move
+	constructor test.
+
 2002-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (init_properties): Use __VERSION__.
