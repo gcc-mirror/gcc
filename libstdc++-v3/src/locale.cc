@@ -70,9 +70,16 @@ namespace std
   bool
   locale::operator==(const locale& __rhs) const throw()
   {
-    string __name = this->name();
-    return (_M_impl == __rhs._M_impl 
-	    || (__name != "*" && __name == __rhs.name()));
+    bool __ret = false;
+    if (_M_impl == __rhs._M_impl)
+      __ret = true;
+    else
+      {
+	const string __name = this->name();
+	if (__name != "*" && __name == __rhs.name())
+	  __ret = true;
+      }
+    return __ret;
   }
 
   const locale&

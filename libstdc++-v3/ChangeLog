@@ -1,3 +1,8 @@
+2004-04-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/locale.cc (locale::operator==): When _M_impl == __rhs._M_impl
+	avoid constructing unnecessarily this->name().
+
 2004-04-14  Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/Makefile.am: Add definition of AM_CXXFLAGS.
