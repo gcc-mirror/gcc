@@ -50,5 +50,8 @@ int sys_mknod(const char * filename, int mode, dev_t dev)
 
 int main(void)
 {
+	if (sizeof (int) < 4)
+	  exit (0);
+
 	return sys_mknod("test",1,0x12345678);
 }
