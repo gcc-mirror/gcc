@@ -4684,7 +4684,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   if (TREE_CODE (type) == ARRAY_TYPE
       && COMPLETE_TYPE_P (type)
       && TREE_OVERFLOW (TYPE_SIZE (type)))
-    error ("size of array `%s' is too large", name);
+    {
+      error ("size of array `%s' is too large", name);
+      /* If we proceed with the array type as it is, we'll eventully
+	 crash in tree_low_cst().  */
+      type = error_mark_node;
+    }
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 

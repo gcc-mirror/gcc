@@ -1,5 +1,8 @@
 2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
 
+	* c-decl.c (grokdeclarator): Prevent crash in case of overflow in
+	array size.
+
 	* calls.c (emit_library_call_value_1): Add to call_fusage the
 	stack slot assigned to argument passed by reference.
 
