@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#include <stdio.h>
 #include "bi-defs.h"
 
 int
@@ -32,4 +33,21 @@ main()
     for (v = d->variations; v; v = v->next)
       printf("\"%s%s\",\n", d->basename, v->name);
   return 0;
+}
+
+/* Safely allocate NBYTES bytes of memory. Returns pointer to block of
+   memory. */
+char *
+xmalloc (nbytes)
+     int nbytes;
+{
+  char *tmp = (char *) malloc (nbytes);
+  
+  if (!tmp)
+    {
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      exit (1);
+    }
+
+  return tmp;
 }
