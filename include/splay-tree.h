@@ -34,7 +34,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifdef IN_GCC
-#include "gansidecl.h"
 #define PARAMS(ARGS) PROTO(ARGS)
 #else /* ! IN_GCC */
 #include <ansidecl.h>
