@@ -282,6 +282,9 @@ DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
 DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", 'x', 0)
 
+/* Represents an 'offsetof' expression during template expansion.  */
+DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", 'e', 1)
+
 /*
 Local variables:
 mode:c

@@ -5876,18 +5876,12 @@ cp_parser_builtin_offsetof (cp_parser *parser)
     }
 
  success:
-  /* We've finished the parsing, now finish with the semantics.  At present
-     we're just mirroring the traditional macro implementation.  Better
-     would be to do the lowering of the ADDR_EXPR to flat pointer arithmetic
-     here rather than in build_x_unary_op.  */
-  
-  expr = (build_reinterpret_cast 
-	  (build_reference_type (cp_build_qualified_type 
-				 (char_type_node, 
-				  TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)), 
-	   expr));
-  expr = build_x_unary_op (ADDR_EXPR, expr);
-  expr = build_reinterpret_cast (size_type_node, expr);
+  /* If we're processing a template, we can't finish the semantics yet.
+     Otherwise we can fold the entire expression now.  */
+  if (processing_template_decl)
+    expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+  else
+    expr = fold_offsetof (expr);
 
  failure:
   parser->integral_constant_expression_p = save_ice_p;

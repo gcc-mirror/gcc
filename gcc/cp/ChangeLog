@@ -1,3 +1,10 @@
+2004-08-27  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.def (OFFSETOF_EXPR): New.
+	* parser.c (cp_parser_builtin_offsetof): Either built an
+	OFFSETOF_EXPR, or call fold_offsetof immediately.
+	* pt.c (tsubst_expr): Handle OFFSETOF_EXPR.
+
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (validate_conversion_obstack): Replace
