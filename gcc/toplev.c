@@ -3096,6 +3096,8 @@ rest_of_compilation (decl)
 
       if (flag_rerun_loop_opt)
 	{
+	  cleanup_barriers ();
+
 	  /* We only want to perform unrolling once.  */
 
 	  loop_optimize (insns, rtl_dump_file, 0);
@@ -3110,6 +3112,7 @@ rest_of_compilation (decl)
 		  analysis code depends on this information.  */
 	  reg_scan (insns, max_reg_num (), 1);
 	}
+      cleanup_barriers ();
       loop_optimize (insns, rtl_dump_file,
 		     (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT);
 
@@ -3614,6 +3617,7 @@ rest_of_compilation (decl)
   /* CFG no longer kept up to date.  */
 
   purge_line_number_notes (insns);
+  cleanup_barriers ();
 
   /* If a scheduling pass for delayed branches is to be done,
      call the scheduling code.  */

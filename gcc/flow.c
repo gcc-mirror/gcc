@@ -482,6 +482,7 @@ static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void delete_dead_jumptables	PARAMS ((void));
+static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -1968,6 +1969,30 @@ redirect_edge_and_branch_force (e, target)
   return new_bb;
 }
 
+/* Helper function for split_edge.  Return true in case edge BB2 to BB1
+   is back edge of syntactic loop.  */
+static bool
+back_edge_of_syntactic_loop_p (bb1, bb2)
+	basic_block bb1, bb2;
+{
+  rtx insn;
+  int count;
+  if (bb1->index > bb2->index)
+    return false;
+  if (bb1->index == bb2->index)
+    return true;
+  for (insn = bb1->end; insn != bb2->head && count >= 0;
+       insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE)
+      {
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	  count++;
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	  count--;
+      }
+  return count >= 0;
+}
+
 /* Split a (typically critical) edge.  Return the new block.
    Abort on abnormal edges.
 
@@ -2115,7 +2140,8 @@ split_edge (edge_in)
   if (old_succ != EXIT_BLOCK_PTR
       && PREV_INSN (old_succ->head)
       && GET_CODE (PREV_INSN (old_succ->head)) == NOTE
-      && NOTE_LINE_NUMBER (PREV_INSN (old_succ->head)) == NOTE_INSN_LOOP_BEG)
+      && NOTE_LINE_NUMBER (PREV_INSN (old_succ->head)) == NOTE_INSN_LOOP_BEG
+      && !back_edge_of_syntactic_loop_p (old_succ, old_pred))
     bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
 				PREV_INSN (old_succ->head));
   else if (old_succ != EXIT_BLOCK_PTR)

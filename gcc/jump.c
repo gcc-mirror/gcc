@@ -100,6 +100,32 @@ rebuild_jump_labels (f)
       LABEL_NUSES (XEXP (insn, 0))++;
 }
 
+/* Some old code expects exactly one BARRIER as the NEXT_INSN of a
+   non-fallthru insn.  This is not generally true, as multiple barriers
+   may have crept in, or the BARRIER may be separated from the last
+   real insn by one or more NOTEs.
+
+   This simple pass moves barriers and removes duplicates so that the
+   old code is happy.
+ */
+void
+cleanup_barriers ()
+{
+  rtx insn, next, prev;
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      if (GET_CODE (insn) == BARRIER)
+	{
+	  prev = prev_nonnote_insn (insn);
+	  if (GET_CODE (prev) == BARRIER)
+	    delete_barrier (insn);
+	  else if (prev != PREV_INSN (insn))
+	    reorder_insns (insn, insn, prev);
+	}
+    }
+}
+
 void
 copy_loop_headers (f)
      rtx f;
