@@ -1,3 +1,8 @@
+2001-12-27  Geoff Keating  <geoffk@redhat.com>
+
+	* expr.c (expand_expr): Don't mark memory for non-constants as
+	constant.
+
 Thu Dec 27 20:39:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* integrate.c (copy_rtx_and_substitute, case MEM): If inlining

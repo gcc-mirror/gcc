@@ -8492,10 +8492,7 @@ expand_expr (exp, target, tmode, modifier)
 		{
 		  /* If this object is in a register, it can't be BLKmode.  */
 		  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-		  tree nt = build_qualified_type (inner_type,
-						  (TYPE_QUALS (inner_type)
-						   | TYPE_QUAL_CONST));
-		  rtx memloc = assign_temp (nt, 1, 1, 1);
+		  rtx memloc = assign_temp (inner_type, 1, 1, 1);
 
 		  if (GET_CODE (op0) == PARALLEL)
 		    /* Handle calls that pass values in multiple
