@@ -186,8 +186,7 @@ extern struct rtx_def *mips_function_value ();
    argument itself.  The pointer is passed in whatever way is appropriate
    for passing a pointer to that type.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  (mips_abi == ABI_EABI							\
-   && function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED))
+  function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
 
 /* A C expression that indicates when it is the called function's
    responsibility to make a copy of arguments passed by invisible
