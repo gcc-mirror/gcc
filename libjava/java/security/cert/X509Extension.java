@@ -29,7 +29,7 @@ package java.security.cert;
 import java.util.Set;
 
 /**
-	Public abstract interface for the X.509 Extension.
+	Public interface for the X.509 Extension.
 
 	This is used for X.509 v3 Certificates and CRL v2 (Certificate
 	Revocation Lists) for managing attributes assoicated with
@@ -61,7 +61,7 @@ import java.util.Set;
 
 	@since JDK 1.2
 */
-public abstract interface X509Extension
+public interface X509Extension
 {
 
   /**
