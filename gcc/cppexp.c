@@ -35,6 +35,10 @@ extern char *xrealloc PARAMS ((void *, unsigned));
 #include <locale.h>
 #endif
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include <stdio.h>
 
 /* This is used for communicating lists of keywords with cccp.c.  */
@@ -126,17 +130,33 @@ static long right_shift ();
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
-#ifndef HOST_BITS_PER_WIDE_INT
+/* Find the largest host integer type and set its size and type.
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
 #endif
+
+#define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
 
 struct operation {
     short op;
