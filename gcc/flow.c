@@ -1087,12 +1087,17 @@ life_analysis (f, nregs)
 #endif      
       }
 
-  /* Mark all global registers as being live at the end of the function
-     since they may be referenced by our caller.  */
+  /* Mark all global registers and all registers used by the epilogue
+     as being live at the end of the function since they may be
+     referenced by our caller.  */
 
   if (n_basic_blocks > 0)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i])
+      if (global_regs[i]
+#ifdef EPILOGUE_USES
+	  || EPILOGUE_USES (i)
+#endif
+	  )
 	{
 	  basic_block_live_at_end[n_basic_blocks - 1]
 	    [i / REGSET_ELT_BITS]
@@ -2665,7 +2670,7 @@ mark_used_regs (needed, live, x, final, insn)
     case RETURN:
       /* If exiting needs the right stack value, consider this insn as
 	 using the stack pointer.  In any event, consider it as using
-	 all global registers.  */
+	 all global registers and all registers used by return.  */
 
 #ifdef EXIT_IGNORE_STACK
       if (! EXIT_IGNORE_STACK
@@ -2675,7 +2680,11 @@ mark_used_regs (needed, live, x, final, insn)
 	  |= (REGSET_ELT_TYPE) 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (global_regs[i])
+	if (global_regs[i]
+#ifdef EPILOGUE_USES
+	    || EPILOGUE_USES (i)
+#endif
+	    )
 	  live[i / REGSET_ELT_BITS]
 	    |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
       break;
