@@ -1,6 +1,16 @@
-Tue Dec 16 00:14:29 1997  Jeffrey A Law  (law@cygnus.com)
+Tue Dec 16 00:32:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
+
+Tue Dec 16 00:14:29 1997  H.J. Lu  (hjl@gnu.org)
+
+	* frame.h (__register_frame, __register_frame_table,
+	__deregister_frame): New.
+	* frame.c (__register_frame, __register_frame_table,
+	__deregister_frame): New.
+	* frame.c (__deregister_frame_info): Return void *.
+	* frame.h (__deregister_frame_info): Ditto.
+	* collect2.c (__deregister_frame_info): Ditto.
 
 Mon Dec 15 18:40:08 1997  Richard Henderson  <rth@cygnus.com>
 

@@ -1791,7 +1791,7 @@ write_c_file_stat (stream, name)
       fprintf (stream, "};\n");
 
       fprintf (stream, "extern void __register_frame_info_table (void *, struct object *);\n");
-      fprintf (stream, "extern void __deregister_frame_info (void *);\n");
+      fprintf (stream, "extern void *__deregister_frame_info (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\tstatic struct object ob;\n");
@@ -1877,7 +1877,7 @@ write_c_file_glob (stream, name)
       fprintf (stream, "};\n");
 
       fprintf (stream, "extern void __register_frame_info_table (void *, struct object *);\n");
-      fprintf (stream, "extern void __deregister_frame_info (void *);\n");
+      fprintf (stream, "extern void *__deregister_frame_info (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\tstatic struct object ob;\n");

@@ -34,6 +34,10 @@ struct object {
   struct object *next;
 };
 
+extern void __register_frame (void * );
+extern void __register_frame_table (void *);
+extern void __deregister_frame (void *);
+
 /* Called either from crtbegin.o or a static constructor to register the
    unwind info for an object or translation unit, respectively.  */
 
@@ -46,7 +50,7 @@ extern void __register_frame_info_table (void *, struct object *);
 
 /* Called from crtend.o to deregister the unwind info for an object.  */
 
-extern void __deregister_frame_info (void *);
+extern void *__deregister_frame_info (void *);
 
 /* Called from __throw to find the registers to restore for a given
    PC_TARGET.  The caller should allocate a local variable of `struct
