@@ -1,3 +1,8 @@
+2003-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Fix link for m68k-att-sysv.
+	(Binaries): Ditto for Sinix/Reliant Unix.
+
 2003-02-16 Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_reload_in_hi): Ensure that the scratch register does
