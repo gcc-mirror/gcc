@@ -42,8 +42,43 @@
 #pragma GCC system_header
 #include <stdlib.h>
 
-// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+// Get rid of those macros defined in <stdlib.h> in lieu of real functions.
+#undef atof
+#undef atoi
+#undef atol
+#undef strtod
+#undef strtof
+#undef strtol
+#undef strtoul
+#undef rand
+#undef srand
+#undef calloc
+#undef free
+#undef malloc
+#undef realloc
+#undef abort
+#undef atexit
+#undef exit
+#undef _Exit
+#undef getenv
+#undef system
+#undef bsearch
+#undef qsort
+#undef abs
+#undef labs
+#undef llabs
+#undef div
+#undef ldiv
+#undef lldiv
 #undef mblen
+#undef mbtowc
+#undef wctomb
+#undef mbstowcs
+#undef wcstombs
+#undef atoll
+#undef strtoll
+#undef strtoull
+#undef strtold
 
 namespace std 
 {

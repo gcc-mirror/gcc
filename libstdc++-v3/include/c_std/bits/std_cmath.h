@@ -1,6 +1,6 @@
 // -*- C++ -*- C math library.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +41,31 @@
  
 #pragma GCC system_header
 #include <math.h>
+
+// Get rid of those macros defined in <math.h> in lieu of real functions.
+#undef abs
+#undef div
+#undef acos
+#undef asin
+#undef atan
+#undef atan2
+#undef ceil
+#undef cos
+#undef cosh
+#undef exp
+#undef fabs
+#undef floor
+#undef fmod
+#undef frexp
+#undef ldexp
+#undef log
+#undef log10
+#undef modf
+#undef pow
+#undef sin
+#undef sinh
+#undef tan
+#undef tanh
 
 namespace std 
 {
@@ -580,8 +605,6 @@ namespace std
   inline long double 
   tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
-
-
 } // std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

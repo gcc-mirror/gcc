@@ -42,7 +42,16 @@
 #pragma GCC system_header
 #include <time.h>
 
+// Get rid of those macros defined in <time.h> in lieu of real functions.
+#undef clock
 #undef difftime
+#undef mktime
+#undef time
+#undef asctime
+#undef ctime
+#undef gmtime
+#undef localtime
+#undef strftime
 
 namespace std
 {
