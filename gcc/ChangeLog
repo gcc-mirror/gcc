@@ -200,12 +200,6 @@ Thu Jun 13 18:18:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-12  Eric Christopher  <echristo@redhat.com>
 
-	* config/mips/mips.md (prefetch, prefetch_di, prefetch_si): New
-	patterns.
-	* config/mips/mips.h (RTX_COSTS): Fix formatting.
-
-2002-06-12  Eric Christopher  <echristo@redhat.com>
-
 	From Chris Demetriou  <cgd@broadcom.com>
 	* config/mips/mips.h (ISA_HAS_FP4): Add ISA_MIPS64 and fix
 	comment.
