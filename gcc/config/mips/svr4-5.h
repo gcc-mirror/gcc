@@ -38,7 +38,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
 	%{mips1} %{mips2} %{mips3} %{bestGnum} \
-	%{shared} %{non_shared} %{!shared: %{!non_shared: -non_shared}} \
+	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
+	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}} \
 	-systype /svr4/}"
 		    
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
