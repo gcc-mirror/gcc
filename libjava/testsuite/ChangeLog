@@ -1,3 +1,9 @@
+2003-07-20  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.mauve/mauve.exp (mauve_find_harness_files): New proc.
+	(test_mauve): Use it.
+	(test_mauve_sim): Likewise.
+
 2003-07-19  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.verify/verify.exp (gcj_verify_list_tests): Only change

@@ -74,6 +74,16 @@ proc find_mauve_sources {} {
   return 0
 }
 
+# Find all the harness files and return a list of them, with no
+# suffix.
+proc mauve_find_harness_files {} {
+  set result {}
+  foreach file [glob -nocomplain -- *.class gnu/testlet/*.class] {
+    lappend result [file root $file]
+  }
+  return $result
+}
+
 # Run all the Mauve tests.  Return 1 on success, 0 on any failure.  If
 # the tests are skipped, that is treated like success.
 proc test_mauve {} {
@@ -159,7 +169,7 @@ proc test_mauve {} {
 
   set ok 1
   set objlist {}
-  foreach base {DejaGNUTestHarness gnu/testlet/SimpleTestHarness gnu/testlet/TestHarness gnu/testlet/Testlet gnu/testlet/ResourceNotFoundException gnu/testlet/config} {
+  foreach base [mauve_find_harness_files] {
     set file $base.class
     set obj $base.o
     set x [libjava_prune_warnings \
@@ -298,9 +308,7 @@ proc test_mauve_sim {} {
 
   set ok 1
   set objlist {}
-  foreach base {gnu/testlet/SimpleTestHarness gnu/testlet/TestHarness \
-		  gnu/testlet/Testlet gnu/testlet/ResourceNotFoundException \
-		  gnu/testlet/config} {
+  foreach base [mauve_find_harness_files] {
     set file $base.class
     set obj $base.o
     set x [libjava_prune_warnings \
