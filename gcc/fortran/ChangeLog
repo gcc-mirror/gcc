@@ -1,3 +1,8 @@
+2005-03-34  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: New file.
+	* gfortran.texi: Include it; white space change; fix typo.
+
 2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* check.c (gfc_check_chdir, gfc_check_chdir_sub, gfc_check_kill,

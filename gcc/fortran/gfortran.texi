@@ -109,25 +109,31 @@ the GNU Fortran 95 compiler. You can find in this manual how to invoke
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
-under development.  While efforts are made too keep it up-to-date it might
+under development.  While efforts are made to keep it up-to-date, it might
 not accurately reflect the status of the most recent @command{gfortran}.
 @end ifset
 
+@comment
+@comment  When you add a new menu item, please keep the right hand
+@comment  aligned to the same column.  Do not use tabs.  This provides
+@comment  better formatting.
+@comment
 @menu
-* Copying::         GNU General Public License says
-                    how you can copy and share GNU Fortran.
+* Copying::              GNU General Public License says
+                         how you can copy and share GNU Fortran.
 * GNU Free Documentation License::
-		    How you can copy and share this manual.
-* Funding::         How to help assure continued work for free software.
-* Getting Started:: What you should know about @command{gfortran}.
-* GFORTRAN and GCC::	    You can compile Fortran, C, or other programs.
-* GFORTRAN and G77::     Why we choose to start from scratch.
+		         How you can copy and share this manual.
+* Funding::              How to help assure continued work for free software.
+* Getting Started::      What you should know about @command{gfortran}.
+* GFORTRAN and GCC::     You can compile Fortran, C, or other programs.
+* GFORTRAN and G77::     Why we chose to start from scratch.
 * Invoking GFORTRAN::    Command options supported by @command{gfortran}.
-* Project Status::  Status of @command{gfortran}, Roadmap, proposed extensions.
-* Contributing::    Helping you can help.
-* Standards::	    Standards supported by @command{gfortran}
-* Extensions::      Language extensions implemented by @command{gfortran}
-* Index::	    Index of this documentation.
+* Project Status::       Status of @command{gfortran}, roadmap, proposed extensions.
+* Contributing::         How you can help.
+* Standards::	         Standards supported by @command{gfortran}
+* Extensions::           Language extensions implemented by @command{gfortran}
+* Intrinsic Procedures:: Intrinsic procedures supported by @command{gfortran}
+* Index::                Index of this documentation.
 @end menu
 
 
@@ -368,7 +374,6 @@ it just seemed to be a better idea to start a new project from scratch,
 because it was expected to be easier to maintain code we
 develop ourselves than to do a major overhaul of @command{g77} first,
 and then build a Fortran 95 compiler out of it.
-
 
 @include invoke.texi
 
@@ -670,6 +675,7 @@ Examples of standard conforming code equivalent to the above example, are:
       DATA i,j,x /1,2,3*0.,1./
 @end smallexample
 
+@include intrinsic.texi
 @c ---------------------------------------------------------------------
 @c Contributing
 @c ---------------------------------------------------------------------
