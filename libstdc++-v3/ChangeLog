@@ -2,6 +2,11 @@
 
 	* config/locale/gnu/monetary_members.cc: Don't leak memory
 	on exception.
+	
+2004-01-26  Andreas Schwab  <schwab@suse.de>
+
+	* config/locale/gnu/monetary_members.cc: Restore locale before
+	rethrowing exception.
 
 2004-01-25  Paolo Carlini  <pcarlini@suse.de>
 
