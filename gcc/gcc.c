@@ -1873,10 +1873,7 @@ static int last_pipe_input;
 #ifndef OS2
 #ifdef __MSDOS__
 
-/* Declare these to avoid compilation error.  They won't be called.  */
-int execv(const char *a, const char **b){}
-int execvp(const char *a, const char **b){}
-
+#include <process.h>
 static int
 pexecute (search_flag, program, argv, not_last)
      int search_flag;
@@ -1884,6 +1881,9 @@ pexecute (search_flag, program, argv, not_last)
      char *argv[];
      int not_last;
 {
+#ifdef __GO32__
+  int i = (search_flag ? spawnv : spawnvp) (1, program, argv);
+#else
   char *scmd, *rf;
   FILE *argfile;
   int i, el = search_flag ? 0 : 4;
@@ -1912,13 +1912,13 @@ pexecute (search_flag, program, argv, not_last)
   i = system (scmd);
 
   remove (rf);
+#endif
   
   if (i == -1)
     {
       perror_exec (program);
       return MIN_FATAL_STATUS << 8;
     }
-
   return i << 8;
 }
 
