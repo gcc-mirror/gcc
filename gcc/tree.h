@@ -1014,10 +1014,10 @@ struct tree_block
   (FUNCTION_TYPE_CHECK (NODE)->type.no_force_blk_flag)
 
 /* Nonzero in a type considered volatile as a whole.  */
-#define TYPE_VOLATILE(NODE) ((NODE)->common.volatile_flag)
+#define TYPE_VOLATILE(NODE) (TYPE_CHECK (NODE)->common.volatile_flag)
 
 /* Means this type is const-qualified.  */
-#define TYPE_READONLY(NODE) ((NODE)->common.readonly_flag)
+#define TYPE_READONLY(NODE) (TYPE_CHECK (NODE)->common.readonly_flag)
 
 /* If nonzero, this type is `restrict'-qualified, in the C sense of
    the term.  */

@@ -1,5 +1,8 @@
 2001-11-09  Geoffrey Keating  <geoffk@redhat.com>
 
+	* tree.h (TYPE_VOLATILE): Trap use not on TYPEs.
+	(TYPE_READONLY): Likewise.
+
 	* flow.c (insn_dead_p): Allow for AUTO_INC notes all the time.
 
 	* config/stormy16/stormy16.h (ASM_SPEC): Revert last change,
