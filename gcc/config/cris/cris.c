@@ -2239,12 +2239,6 @@ int
 cris_legitimate_pic_operand (x)
      rtx x;
 {
-  /* This test is due to a bug in the core of GCC.  See
-     <URL:http://gcc.gnu.org/ml/gcc-patches/2001-09/msg01038.html> for the
-     real fix; we shouldn't need to test CONSTANT_P here.  */
-  if (! CONSTANT_P (x))
-    return 0;
-
   /* The PIC representation of a symbol with a GOT entry will be (for
      example; relocations differ):
       sym => [rPIC+sym:GOT]
