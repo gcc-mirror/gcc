@@ -544,11 +544,12 @@ eliminate_dead_code ()
 	    (cdbte, current_instruction, edge_number,
 	    {
 	      rtx jump_insn = (INDEX_EDGE_PRED_BB (el, edge_number))->end;
-	      if (GET_CODE (jump_insn) == JUMP_INSN &&
-		  UNNECESSARY_P (jump_insn)) {
-		RESURRECT_INSN (jump_insn);
-		VARRAY_PUSH_RTX (unprocessed_instructions, jump_insn);
-	      }
+	      if (GET_CODE (jump_insn) == JUMP_INSN
+		  && UNNECESSARY_P (jump_insn))
+		{
+		  RESURRECT_INSN (jump_insn);
+		  VARRAY_PUSH_RTX (unprocessed_instructions, jump_insn);
+		}
 	    });
 
 	  /* Propagate through the operands.  */

@@ -1,3 +1,7 @@
+Mon Jun 18 12:50:49 2001  Jeffrey A Law  (law@cygnus.com)
+
+        * dce.c (eliminate_dead_code): Fix formatting glitch.
+
 2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
 
 	* c-common.h (RETURN_NULLIFIED_P): New macro.
