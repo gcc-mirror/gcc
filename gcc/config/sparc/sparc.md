@@ -5323,7 +5323,7 @@
 (define_insn "const_mulsidi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h,r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
-		 (match_operand:SI 2 "small_int" "I,I")))
+		 (match_operand:DI 2 "small_int" "I,I")))
    (clobber (match_scratch:SI 3 "=X,&h"))]
   "TARGET_V8PLUS"
   "@
@@ -5364,7 +5364,7 @@
 (define_insn "const_mulsidi3_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "small_int" "I")))]
+		 (match_operand:DI 2 "small_int" "I")))]
   "TARGET_HARD_MUL32"
 {
   return TARGET_SPARCLET
@@ -5381,7 +5381,7 @@
 (define_insn "const_mulsidi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "small_int" "I")))]
+		 (match_operand:DI 2 "small_int" "I")))]
   "TARGET_DEPRECATED_V8_INSNS && TARGET_ARCH64"
   "smul\t%1, %2, %0"
   [(set_attr "type" "imul")])
@@ -5453,7 +5453,7 @@
   [(set (match_operand:SI 0 "register_operand" "=h,r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
-			       (match_operand 2 "small_int" "i,i"))
+			       (match_operand:DI 2 "small_int" "i,i"))
 		      (match_operand:SI 3 "const_int_operand" "i,i"))))
    (clobber (match_scratch:SI 4 "=X,&h"))]
   "TARGET_V8PLUS"
@@ -5480,7 +5480,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-			       (match_operand:SI 2 "register_operand" "r"))
+			       (match_operand:DI 2 "small_int" "i"))
 		      (const_int 32))))]
   "TARGET_HARD_MUL32"
   "smul\t%1, %2, %%g0\n\trd\t%%y, %0"
@@ -5558,12 +5558,12 @@
 (define_insn "const_umulsidi3_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "uns_small_int" "")))]
+		 (match_operand:DI 2 "uns_small_int" "")))]
   "TARGET_HARD_MUL32"
 {
   return TARGET_SPARCLET
-         ? "umuld\t%1, %2, %L0"
-         : "umul\t%1, %2, %L0\n\trd\t%%y, %H0";
+         ? "umuld\t%1, %s2, %L0"
+         : "umul\t%1, %s2, %L0\n\trd\t%%y, %H0";
 }
   [(set (attr "type")
 	(if_then_else (eq_attr "isa" "sparclet")
@@ -5575,21 +5575,21 @@
 (define_insn "const_umulsidi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "uns_small_int" "")))]
+		 (match_operand:DI 2 "uns_small_int" "")))]
   "TARGET_DEPRECATED_V8_INSNS && TARGET_ARCH64"
-  "umul\t%1, %2, %0"
+  "umul\t%1, %s2, %0"
   [(set_attr "type" "imul")])
 
 ;; XXX
 (define_insn "const_umulsidi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h,r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
-		 (match_operand:SI 2 "uns_small_int" "")))
+		 (match_operand:DI 2 "uns_small_int" "")))
    (clobber (match_scratch:SI 3 "=X,h"))]
   "TARGET_V8PLUS"
   "@
-   umul\t%1, %2, %L0\n\tsrlx\t%L0, 32, %H0
-   umul\t%1, %2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0"
+   umul\t%1, %s2, %L0\n\tsrlx\t%L0, 32, %H0
+   umul\t%1, %s2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0"
   [(set_attr "type" "multi")
    (set_attr "length" "2,3")])
 
@@ -5642,13 +5642,13 @@
   [(set (match_operand:SI 0 "register_operand" "=h,r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
-			       (match_operand:SI 2 "uns_small_int" ""))
+			       (match_operand:DI 2 "uns_small_int" ""))
 		      (match_operand:SI 3 "const_int_operand" "i,i"))))
    (clobber (match_scratch:SI 4 "=X,h"))]
   "TARGET_V8PLUS"
   "@
-   umul\t%1, %2, %0\n\tsrlx\t%0, %3, %0
-   umul\t%1, %2, %4\n\tsrlx\t%4, %3, %0"
+   umul\t%1, %s2, %0\n\tsrlx\t%0, %3, %0
+   umul\t%1, %s2, %4\n\tsrlx\t%4, %3, %0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
@@ -5669,10 +5669,10 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-			       (match_operand:SI 2 "uns_small_int" ""))
+			       (match_operand:DI 2 "uns_small_int" ""))
 		      (const_int 32))))]
   "TARGET_HARD_MUL32"
-  "umul\t%1, %2, %%g0\n\trd\t%%y, %0"
+  "umul\t%1, %s2, %%g0\n\trd\t%%y, %0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
