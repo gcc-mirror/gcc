@@ -1,3 +1,10 @@
+2004-01-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* ada/acats/run_acats: Treat 'gnatchop' the same way
+	as 'gnatmake'.  Export GCC_DRIVER.
+	* ada/acats/run_all.sh: Add target_gnatchop.  Use
+	'host_gnatchop' and 'target_gnatchop' instead of 'gnatshop'.
+
 2004-01-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/12573

@@ -7,6 +7,7 @@ fi
 
 # Set up environment to use the Ada compiler from the object tree
 
+host_gnatchop=`type gnatchop | awk '{print $3}'`
 host_gnatmake=`type gnatmake | awk '{print $3}'`
 ROOT=`${PWDCMD-pwd}`
 BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
@@ -20,13 +21,27 @@ if [ ! -d $ADA_INCLUDE_PATH ]; then
    exit 1
 fi
 
+if [ ! -f $BASE/gnatchop ]; then
+   echo gnattools missing, exiting.
+   exit 1
+fi
+
 if [ ! -f $BASE/gnatmake ]; then
    echo gnattools missing, exiting.
    exit 1
 fi
 
+GCC_DRIVER="$BASE/xgcc"
 GCC="$BASE/xgcc -B$BASE/"
-export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC
+export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_DRIVER GCC
+
+echo '#!/bin/sh' > host_gnatchop
+echo PATH=`dirname $host_gnatchop`:'$PATH' >> host_gnatchop
+echo unset ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_EXEC_PREFIX >> host_gnatchop
+echo export PATH >> host_gnatchop
+echo exec $host_gnatchop '"$@"' >> host_gnatchop
+
+chmod +x host_gnatchop
 
 echo '#!/bin/sh' > host_gnatmake
 echo PATH=`dirname $host_gnatmake`:'$PATH' >> host_gnatmake
