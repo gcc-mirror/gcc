@@ -64,11 +64,6 @@
 # newlib.  It is up to each target to turn on multilib support for the other
 # libraries as desired.
 
-# We have to handle being invoked by both Cygnus configure and Autoconf.
-#
-# Cygnus configure incoming variables:
-# srcdir, subdir, host, arguments
-#
 # Autoconf incoming variables:
 # srcdir, host, ac_configure_args
 #
@@ -78,21 +73,10 @@
 # Note that `host' in this case is GCC's `target'.  Target libraries are
 # configured for a particular host.
 
-if [ -n "${ac_configure_args}" ]; then
-  Makefile=${ac_file-Makefile}
-  ml_config_shell=${CONFIG_SHELL-/bin/sh}
-  ml_arguments="${ac_configure_args}"
-  ml_realsrcdir=${srcdir}
-else
-  Makefile=${Makefile-Makefile}
-  ml_config_shell=${config_shell-/bin/sh}
-  ml_arguments="${arguments}"
-  if [ -n "${subdir}" -a "${subdir}" != "." ] ; then
-    ml_realsrcdir=${srcdir}/${subdir}
-  else
-    ml_realsrcdir=${srcdir}
-  fi
-fi
+Makefile=${ac_file-Makefile}
+ml_config_shell=${CONFIG_SHELL-/bin/sh}
+ml_arguments="${ac_configure_args}"
+ml_realsrcdir=${srcdir}
 
 # Scan all the arguments and set all the ones we need.
 
