@@ -8990,7 +8990,7 @@ ix86_expand_int_movcc (operands)
 		emit_insn (gen_rtx_SET (VOIDmode, out, tmp));
 	    }
 	  if (out != operands[0])
-	    emit_move_insn (operands[0], out);
+	    emit_move_insn (operands[0], copy_rtx (out));
 
 	  return 1; /* DONE */
 	}
