@@ -1,3 +1,8 @@
+2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* lib/g++.exp (g++_include_flags): Tweak path to testsuite_flags.
+	Remove cruft.
+	
 2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/20020604-1.c: Use dg-xfail-if for h8300.
