@@ -922,13 +922,16 @@ assign_stack_temp (mode, size, keep)
 /* Assign a temporary of given TYPE.
    KEEP is as for assign_stack_temp.
    MEMORY_REQUIRED is 1 if the result must be addressable stack memory;
-   it is 0 if a register is OK. */
+   it is 0 if a register is OK.
+   DONT_PROMOTE is 1 if we should not promote values in register
+   to wider modes.  */
 
 rtx
-assign_temp (type, keep, memory_required)
+assign_temp (type, keep, memory_required, dont_promote)
      tree type;
      int keep;
      int memory_required;
+     int dont_promote;
 {
   enum machine_mode mode = TYPE_MODE (type);
   int unsignedp = TREE_UNSIGNED (type);
@@ -952,11 +955,9 @@ assign_temp (type, keep, memory_required)
       return tmp;
     }
 
-  if (mode == VOIDmode)
-    return const0_rtx;
-
 #ifndef PROMOTE_FOR_CALL_ONLY
-  mode = promote_mode (type, mode, &unsignedp, 0);
+  if (! dont_promote)
+    mode = promote_mode (type, mode, &unsignedp, 0);
 #endif
 
   return gen_reg_rtx (mode);
