@@ -103,11 +103,12 @@ LIBC_INTERFACE=${libc_interface}
 
 # post-target:
 
-# If cross-compiling, we install in $(tooldir).
+# If cross-compiling, we install in $(tooldir)/lib or in $(libsubdir)
+# depending on --enable-version-specific-runtime-libs.
 if [ -n "${with_cross_host}" ] ; then
     rm -f Makefile.tem
     sed \
-	-e 's|\(^[ 	]*INSTALLDIR[ 	]*=[ 	]*\)[^ 	;]*|\1$(tooldir)/lib|' \
+        -e 's|\(^[ 	]*INSTALLDIR[ 	]*=[ 	]*\)\$(libdir)|\1$(tooldir)/lib|' \
         Makefile >Makefile.tem
     mv -f Makefile.tem Makefile
 fi
