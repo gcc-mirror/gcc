@@ -2147,6 +2147,109 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
   return 0;
 }
 
+/* Generate code to perform an operation specified by UNOPPTAB
+   on operand OP0, with two results to TARG0 and TARG1.
+   We assume that the order of the operands for the instruction
+   is TARG0, TARG1, OP0.
+
+   Either TARG0 or TARG1 may be zero, but what that means is that
+   the result is not actually wanted.  We will generate it into
+   a dummy pseudo-reg and discard it.  They may not both be zero.
+
+   Returns 1 if this operation can be performed; 0 if not.  */
+
+int
+expand_twoval_unop (optab unoptab, rtx targ0, rtx targ1, rtx op0,
+		    int unsignedp)
+{
+  enum machine_mode mode = GET_MODE (targ0 ? targ0 : targ1);
+  enum mode_class class;
+  enum machine_mode wider_mode;
+  rtx entry_last = get_last_insn ();
+  rtx last;
+
+  class = GET_MODE_CLASS (mode);
+
+  op0 = protect_from_queue (op0, 0);
+
+  if (flag_force_mem)
+    {
+      op0 = force_not_mem (op0);
+    }
+
+  if (targ0)
+    targ0 = protect_from_queue (targ0, 1);
+  else
+    targ0 = gen_reg_rtx (mode);
+  if (targ1)
+    targ1 = protect_from_queue (targ1, 1);
+  else
+    targ1 = gen_reg_rtx (mode);
+
+  /* Record where to go back to if we fail.  */
+  last = get_last_insn ();
+
+  if (unoptab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      int icode = (int) unoptab->handlers[(int) mode].insn_code;
+      enum machine_mode mode0 = insn_data[icode].operand[2].mode;
+      rtx pat;
+      rtx xop0 = op0;
+
+      if (GET_MODE (xop0) != VOIDmode
+	  && GET_MODE (xop0) != mode0)
+	xop0 = convert_to_mode (mode0, xop0, unsignedp);
+
+      /* Now, if insn doesn't accept these operands, put them into pseudos.  */
+      if (! (*insn_data[icode].operand[2].predicate) (xop0, mode0))
+	xop0 = copy_to_mode_reg (mode0, xop0);
+
+      /* We could handle this, but we should always be called with a pseudo
+	 for our targets and all insns should take them as outputs.  */
+      if (! (*insn_data[icode].operand[0].predicate) (targ0, mode)
+	  || ! (*insn_data[icode].operand[1].predicate) (targ1, mode))
+	abort ();
+
+      pat = GEN_FCN (icode) (targ0, targ1, xop0);
+      if (pat)
+	{
+	  emit_insn (pat);
+	  return 1;
+	}
+      else
+	delete_insns_since (last);
+    }
+
+  /* It can't be done in this mode.  Can we do it in a wider mode?  */
+
+  if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+    {
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	{
+	  if (unoptab->handlers[(int) wider_mode].insn_code
+	      != CODE_FOR_nothing)
+	    {
+	      rtx t0 = gen_reg_rtx (wider_mode);
+	      rtx t1 = gen_reg_rtx (wider_mode);
+	      rtx cop0 = convert_modes (wider_mode, mode, op0, unsignedp);
+
+	      if (expand_twoval_unop (unoptab, t0, t1, cop0, unsignedp))
+		{
+		  convert_move (targ0, t0, unsignedp);
+		  convert_move (targ1, t1, unsignedp);
+		  return 1;
+		}
+	      else
+		delete_insns_since (last);
+	    }
+	}
+    }
+
+  delete_insns_since (entry_last);
+  return 0;
+}
+
 /* Generate code to perform an operation specified by BINOPTAB
    on operands OP0 and OP1, with two results to TARG1 and TARG2.
    We assume that the order of the operands for the instruction
@@ -5275,6 +5378,7 @@ init_optabs (void)
   round_optab = init_optab (UNKNOWN);
   btrunc_optab = init_optab (UNKNOWN);
   nearbyint_optab = init_optab (UNKNOWN);
+  sincos_optab = init_optab (UNKNOWN);
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
   exp_optab = init_optab (UNKNOWN);

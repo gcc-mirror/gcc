@@ -94,6 +94,7 @@ static rtx expand_builtin_classify_type (tree);
 static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
+static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_constant_p (tree, enum machine_mode);
 static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (tree);
@@ -1520,7 +1521,7 @@ expand_errno_check (tree exp, rtx target)
 }
 
 
-/* Expand a call to one of the builtin math functions (sin, cos, or sqrt).
+/* Expand a call to one of the builtin math functions (sqrt, exp, or log).
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  EXP is the expression that is a call to the builtin
    function; if convenient, the result should be placed in TARGET.
@@ -1544,14 +1545,6 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
-    case BUILT_IN_SIN:
-    case BUILT_IN_SINF:
-    case BUILT_IN_SINL:
-      builtin_optab = sin_optab; break;
-    case BUILT_IN_COS:
-    case BUILT_IN_COSF:
-    case BUILT_IN_COSL:
-      builtin_optab = cos_optab; break;
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
@@ -1811,6 +1804,138 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   insns = get_insns ();
   end_sequence ();
   emit_insn (insns);
+
+  return target;
+}
+
+/* Expand a call to the builtin sin and cos math functions.
+   Return 0 if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's
+   operands.  */
+
+static rtx
+expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
+{
+  optab builtin_optab;
+  rtx op0, insns, before_call;
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode mode;
+  bool errno_set = false;
+  tree arg, narg;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_SIN:
+    case BUILT_IN_SINF:
+    case BUILT_IN_SINL:
+    case BUILT_IN_COS:
+    case BUILT_IN_COSF:
+    case BUILT_IN_COSL:
+      builtin_optab = sincos_optab; break;
+    default:
+      abort ();
+    }
+
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  if (! flag_errno_math || ! HONOR_NANS (mode))
+    errno_set = false;
+
+  /* Check if sincos insn is available, otherwise fallback
+     to sin or cos insn. */
+  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing) {
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_SIN:
+      case BUILT_IN_SINF:
+      case BUILT_IN_SINL:
+	builtin_optab = sin_optab; break;
+      case BUILT_IN_COS:
+      case BUILT_IN_COSF:
+      case BUILT_IN_COSL:
+	builtin_optab = cos_optab; break;
+      default:
+	abort();
+      }
+  }
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      target = gen_reg_rtx (mode);
+
+      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+	 need to expand the argument again.  This way, we will not perform
+	 side-effects more the once.  */
+      narg = save_expr (arg);
+      if (narg != arg)
+	{
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  exp = build_function_call_expr (fndecl, arglist);
+	}
+
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+      emit_queue ();
+      start_sequence ();
+
+      /* Compute into TARGET.
+	 Set TARGET to wherever the result comes back.  */
+      if (builtin_optab == sincos_optab)
+	{
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    case BUILT_IN_SIN:
+	    case BUILT_IN_SINF:
+	    case BUILT_IN_SINL:
+	      if (! expand_twoval_unop(builtin_optab, 0, target, op0, 0))    
+		abort();
+	      break;
+	    case BUILT_IN_COS:
+	    case BUILT_IN_COSF:
+	    case BUILT_IN_COSL:
+	      if (! expand_twoval_unop(builtin_optab, target, 0, op0, 0))
+		abort();
+	      break;
+	    default:
+	      abort();
+	    }
+	}
+      else
+	{
+	  target = expand_unop (mode, builtin_optab, op0, target, 0);
+	}
+
+      if (target != 0)
+	{
+	  if (errno_set)
+	    expand_errno_check (exp, target);
+
+	  /* Output the entire sequence.  */
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insn (insns);
+	  return target;
+	}
+
+      /* If we were unable to expand via the builtin, stop the sequence
+	 (without outputting the insns) and call to the library function
+	 with the stabilized argument list.  */
+      end_sequence ();
+    }
+
+  before_call = get_last_insn ();
+
+  target = expand_call (exp, target, target == const0_rtx);
 
   return target;
 }
@@ -5042,12 +5167,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	 and IMAGPART_EXPR.  */
       abort ();
 
-    case BUILT_IN_SIN:
-    case BUILT_IN_SINF:
-    case BUILT_IN_SINL:
-    case BUILT_IN_COS:
-    case BUILT_IN_COSF:
-    case BUILT_IN_COSL:
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
@@ -5116,6 +5235,19 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (! flag_unsafe_math_optimizations)
 	break;
       target = expand_builtin_mathfn_2 (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_SIN:
+    case BUILT_IN_SINF:
+    case BUILT_IN_SINL:
+    case BUILT_IN_COS:
+    case BUILT_IN_COSF:
+    case BUILT_IN_COSL:
+      if (! flag_unsafe_math_optimizations)
+	break;
+      target = expand_builtin_mathfn_3 (exp, target, subtarget);
       if (target)
 	return target;
       break;

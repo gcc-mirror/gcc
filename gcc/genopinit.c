@@ -122,6 +122,7 @@ static const char * const optabs[] =
   "round_optab->handlers[$A].insn_code = CODE_FOR_$(round$a2$)",
   "trunc_optab->handlers[$A].insn_code = CODE_FOR_$(trunc$a2$)",
   "nearbyint_optab->handlers[$A].insn_code = CODE_FOR_$(nearbyint$a2$)",
+  "sincos_optab->handlers[$A].insn_code = CODE_FOR_$(sincos$a3$)",
   "sin_optab->handlers[$A].insn_code = CODE_FOR_$(sin$a2$)",
   "cos_optab->handlers[$A].insn_code = CODE_FOR_$(cos$a2$)",
   "exp_optab->handlers[$A].insn_code = CODE_FOR_$(exp$a2$)",
