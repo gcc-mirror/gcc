@@ -1,3 +1,9 @@
+2003-10-27  Jan Hubicka  <jh@suse.cz>
+	    Eric Botcazou
+
+	* toplev.c (enum dump_file_index, dump_file):  Fix ordering of
+	webizer pass dump.
+
 2003-10-27  Jakub Jelinek  <jakub@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 
