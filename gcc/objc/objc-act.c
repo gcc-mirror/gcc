@@ -5869,6 +5869,9 @@ build_objc_method_call (int super_flag, tree method_prototype,
   tree method, t;
 
   lookup_object = build_c_cast (rcv_p, lookup_object);
+    
+  /* Use SAVE_EXPR to avoid evaluating the receiver twice.  */
+  lookup_object = save_expr (lookup_object);
 
   if (flag_next_runtime)
     {
@@ -5895,9 +5898,8 @@ build_objc_method_call (int super_flag, tree method_prototype,
       tree object;
 
       /* First, call the lookup function to get a pointer to the method,
-	 then cast the pointer, then call it with the method arguments.
-	 Use SAVE_EXPR to avoid evaluating the receiver twice.  */
-      lookup_object = save_expr (lookup_object);
+	 then cast the pointer, then call it with the method arguments.  */
+      
       object = (super_flag ? self_decl : lookup_object);
 
       t = tree_cons (NULL_TREE, selector, NULL_TREE);
