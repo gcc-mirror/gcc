@@ -1,3 +1,11 @@
+2004-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (merge_decls): Kill different_binding_level and
+	different_tu arguments; simplify throughout.
+	(duplicate_decls): Likewise.
+	(pushdecl, merge_translation_unit_decls): Update calls to
+	duplicate_decls.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR bootstrap/12730
@@ -79,9 +87,9 @@
 
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Makefile.in (target_noncanonical, program_transform_name): Use 
+	* Makefile.in (target_noncanonical, program_transform_name): Use
 	immediate define instead of deferred.
-	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME, 
+	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME,
 	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, GCOV_INSTALL_NAME,
 	GCCBUG_INSTALL_NAME): Define via a immediate $(shell) instead of
 	deferred backquote.
