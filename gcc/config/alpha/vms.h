@@ -80,9 +80,6 @@ Boston, MA 02111-1307, USA.  */
 #define STRUCT_VALUE 0
 #undef PCC_STATIC_STRUCT_RETURN
 
-/* no floating emulation.  */
-#undef REAL_ARITHMETIC
-
 /* "long" is 32 bits.  */
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
@@ -455,10 +452,8 @@ do {									\
 #define UMODSI3_LIBCALL "OTS$REM_UI"
 #define UMODDI3_LIBCALL "OTS$REM_UL"
 
-#define DIR_SEPARATOR ']'
-
-#undef PREFIX
-#define PREFIX "GNU_ROOT:"
+/* crt0 calls __main */
+#define HAS_INIT_SECTION
 
 /* XXX Really? Even with modern CRTL? */
 #define NEED_ATEXIT
