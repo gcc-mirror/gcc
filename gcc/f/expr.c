@@ -13162,7 +13162,7 @@ again:				/* :::::::::::::::::::: */
 	  error = (expr == NULL)
 	    || ((ffeinfo_rank (info) != 0) ?
 		ffe_is_pedantic ()	/* F77 C5. */
-		: (ffeinfo_kindtype (info) != ffecom_label_kind ()))
+		: (bool) (ffeinfo_kindtype (info) != ffecom_label_kind ()))
 	    || (ffebld_op (expr) != FFEBLD_opSYMTER);
 	  break;
 

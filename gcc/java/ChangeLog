@@ -1,3 +1,7 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* class.c (build_dtable_decl): Initialize dummy.
+
 2000-07-27  Tom Tromey  <tromey@cygnus.com>
             Anthony Green  <green@cygnus.com>
 	    Alexandre Petit-Bianco  <apbianco@cygnus.com>

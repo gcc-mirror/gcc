@@ -29,6 +29,8 @@ extern void warning PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
 extern void error   PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
 extern void fatal   PARAMS ((const char *format, ...))
     ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fancy_abort PARAMS ((const char *file, int line, const char *func))
+    ATTRIBUTE_NORETURN;
 
 extern int have_error;
 extern const char *progname;

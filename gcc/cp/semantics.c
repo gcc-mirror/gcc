@@ -140,7 +140,7 @@ do_poplevel ()
 
   if (stmts_are_full_exprs_p ())
     {
-      tree scope_stmts;
+      tree scope_stmts = NULL_TREE;
 
       if (!processing_template_decl)
 	scope_stmts = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);

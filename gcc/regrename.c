@@ -347,32 +347,26 @@ regrename_optimize ()
 			if (consider_available (reg_use, avail_reg,
 						&avail_regs, rc, &du,
 						def_idx[def]))
-			  break;
+			  goto found_avail_reg;
 		      }
 
-		    if (ar_idx == FIRST_PSEUDO_REGISTER)
+		    if (rtl_dump_file)
 		      {
-			if (rtl_dump_file)
-			  {
-			    fprintf (rtl_dump_file,
-				     "Register %s in class %s",
-				     reg_names[r], reg_class_names[rc]);
-			    fprintf (rtl_dump_file,
-				     " in insn %d",
-				     INSN_UID (VARRAY_RTX (uid_ruid,
-							   def_idx[def])));
+			fprintf (rtl_dump_file, "Register %s in class %s",
+				 reg_names[r], reg_class_names[rc]);
+			fprintf (rtl_dump_file, " in insn %d",
+				 INSN_UID (VARRAY_RTX (uid_ruid,
+						       def_idx[def])));
 
-			    if (TEST_BIT (du.require_call_save_reg,
-					  def_idx[def]))
-			      fprintf (rtl_dump_file, " crosses a call");
+			if (TEST_BIT (du.require_call_save_reg,
+				      def_idx[def]))
+			  fprintf (rtl_dump_file, " crosses a call");
 
-			    fprintf (rtl_dump_file,
-				     ". No available registers\n");
-			  }
-
-			goto try_next_def;
+			fprintf (rtl_dump_file, ". No available registers\n");
 		      }
+		    goto try_next_def;
 
+		  found_avail_reg:
 		    SET_HARD_REG_BIT (renamed_regs, avail_reg);
 		    CLEAR_HARD_REG_BIT (avail_regs, avail_reg);
 
@@ -530,7 +524,7 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
   unsigned int r = REGNO (reg_def);
   rtx death_note;
   rtx reg_notes;
-  rtx reg_use;
+  rtx reg_use = 0;
   rtx new_reg = gen_rtx_REG (GET_MODE (reg_def), avail_reg);
 
   rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, def)), reg_def, new_reg,

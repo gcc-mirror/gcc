@@ -1698,7 +1698,7 @@ build_dtable_decl (type)
      TYPE. */
   if (current_class == type)
     {
-      tree dummy, aomt, n;
+      tree dummy = NULL_TREE, aomt, n;
 
       dtype = make_node (RECORD_TYPE);
       PUSH_FIELD (dtype, dummy, "class", class_ptr_type);

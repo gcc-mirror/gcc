@@ -2396,7 +2396,7 @@ legitimate_address_p (mode, addr, strict)
   if (! ix86_decompose_address (addr, &parts))
     {
       reason = "decomposition failed";
-      goto error;
+      goto report_error;
     }
 
   base = parts.base;
@@ -2417,20 +2417,20 @@ legitimate_address_p (mode, addr, strict)
       if (GET_CODE (base) != REG)
 	{
 	  reason = "base is not a register";
-	  goto error;
+	  goto report_error;
 	}
 
       if (GET_MODE (base) != Pmode)
 	{
 	  reason = "base is not in Pmode";
-	  goto error;
+	  goto report_error;
 	}
 
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (base))
 	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (base)))
 	{
 	  reason = "base is not valid";
-	  goto error;
+	  goto report_error;
 	}
     }
 
@@ -2447,20 +2447,20 @@ legitimate_address_p (mode, addr, strict)
       if (GET_CODE (index) != REG)
 	{
 	  reason = "index is not a register";
-	  goto error;
+	  goto report_error;
 	}
 
       if (GET_MODE (index) != Pmode)
 	{
 	  reason = "index is not in Pmode";
-	  goto error;
+	  goto report_error;
 	}
 
       if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (index))
 	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (index)))
 	{
 	  reason = "index is not valid";
-	  goto error;
+	  goto report_error;
 	}
     }
 
@@ -2471,13 +2471,13 @@ legitimate_address_p (mode, addr, strict)
       if (!index)
 	{
 	  reason = "scale without index";
-	  goto error;
+	  goto report_error;
 	}
 
       if (scale != 2 && scale != 4 && scale != 8)
 	{
 	  reason = "scale is not a valid multiplier";
-	  goto error;
+	  goto report_error;
 	}
     }
 
@@ -2489,13 +2489,13 @@ legitimate_address_p (mode, addr, strict)
       if (!CONSTANT_ADDRESS_P (disp))
 	{
 	  reason = "displacement is not constant";
-	  goto error;
+	  goto report_error;
 	}
 
       if (GET_CODE (disp) == CONST_DOUBLE)
 	{
 	  reason = "displacement is a const_double";
-	  goto error;
+	  goto report_error;
 	}
 
       if (flag_pic && SYMBOLIC_CONST (disp))
@@ -2503,7 +2503,7 @@ legitimate_address_p (mode, addr, strict)
 	  if (! legitimate_pic_address_disp_p (disp))
 	    {
 	      reason = "displacement is an invalid pic construct";
-	      goto error;
+	      goto report_error;
 	    }
 
           /* This code used to verify that a symbolic pic displacement
@@ -2519,7 +2519,7 @@ legitimate_address_p (mode, addr, strict)
 	         return *(&a+i);
 	       }
 
-	     This code nonsential, but results in addressing
+	     This code is nonsensical, but results in addressing
 	     GOT table with pic_offset_table_rtx base.  We can't
 	     just refuse it easilly, since it gets matched by
 	     "addsi3" pattern, that later gets split to lea in the
@@ -2534,7 +2534,7 @@ legitimate_address_p (mode, addr, strict)
 	      || (base != NULL_RTX || index != NULL_RTX))
 	    {
 	      reason = "displacement is an invalid half-pic reference";
-	      goto error;
+	      goto report_error;
 	    }
 	}
     }
@@ -2544,7 +2544,7 @@ legitimate_address_p (mode, addr, strict)
     fprintf (stderr, "Success.\n");
   return TRUE;
 
-error:
+report_error:
   if (TARGET_DEBUG_ADDR)
     {
       fprintf (stderr, "Error: %s\n", reason);
