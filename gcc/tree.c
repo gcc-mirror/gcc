@@ -2902,22 +2902,27 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
-/* Return a 1 if NEW_ATTR is valid for either declaration DECL or type TYPE 
-   and 0 otherwise.  Validity is determined the configuration macros 
-   VALID_MACHINE_DECL_ATTRIBUTE and VALID_MACHINE_TYPE_ATTRIBUTE. */
+/* Return a 1 if ATTR_NAME and ATTR_ARGS is valid for either declaration DECL
+   or type TYPE and 0 otherwise.  Validity is determined the configuration
+   macros VALID_MACHINE_DECL_ATTRIBUTE and VALID_MACHINE_TYPE_ATTRIBUTE. */
 
 int
-valid_machine_attribute (new_attr, decl, type)
-  tree new_attr;
-  tree decl;
-  tree type;
+valid_machine_attribute (attr_name, attr_args, decl, type)
+     tree attr_name, attr_args;
+     tree decl;
+     tree type;
 {
   int valid = 0;
-  tree decl_attr_list = DECL_MACHINE_ATTRIBUTES (decl);
+  tree decl_attr_list = decl != 0 ? DECL_MACHINE_ATTRIBUTES (decl) : 0;
   tree type_attr_list = TYPE_ATTRIBUTES (type);
 
+  /* For now, we don't support args.  */
+  if (attr_args != 0)
+    return 0;
+
 #ifdef VALID_MACHINE_DECL_ATTRIBUTE
-  if (VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, new_attr))
+  if (decl != 0
+      && VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, attr_name))
     {
       tree attr_list;
       int in_list = 0;
@@ -2925,11 +2930,11 @@ valid_machine_attribute (new_attr, decl, type)
       for (attr_list = decl_attr_list; 
            attr_list;
            attr_list = TREE_CHAIN (attr_list))
-	if (TREE_VALUE (attr_list) == new_attr)
+	if (TREE_VALUE (attr_list) == attr_name)
 	  in_list = 1;
 
       if (! in_list)
-        decl_attr_list = tree_cons (NULL_TREE, new_attr, decl_attr_list);
+        decl_attr_list = tree_cons (NULL_TREE, attr_name, decl_attr_list);
 
       decl = build_decl_attribute_variant (decl, decl_attr_list);
       valid = 1;
@@ -2937,7 +2942,7 @@ valid_machine_attribute (new_attr, decl, type)
 #endif
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, new_attr))
+  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name))
     {
       tree attr_list;
       int in_list = 0;
@@ -2945,13 +2950,15 @@ valid_machine_attribute (new_attr, decl, type)
       for (attr_list = type_attr_list;
            attr_list;
 	   attr_list = TREE_CHAIN (attr_list))
-	if (TREE_VALUE (attr_list) == new_attr)
+	if (TREE_VALUE (attr_list) == attr_name)
 	  in_list = 1;
 
       if (! in_list)
-        type_attr_list = tree_cons (NULL_TREE, new_attr, type_attr_list);
+        type_attr_list = tree_cons (NULL_TREE, attr_name, type_attr_list);
 
-      decl = build_type_attribute_variant (type, type_attr_list);
+      type = build_type_attribute_variant (type, type_attr_list);
+      if (decl != 0)
+	TREE_TYPE (decl) = type;
       valid = 1;
     }
 #endif
