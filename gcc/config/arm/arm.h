@@ -215,7 +215,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 "
 
 /* Default is little endian, which doesn't define anything. */
-#define CPP_ENDIAN_DEFAULT_SPEC ""
+#define CPP_ENDIAN_DEFAULT_SPEC "-D__ARMEL__"
 
 #define CC1_SPEC ""
 
@@ -313,6 +313,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Nonzero if function prologues should not load the PIC register. */
 #define ARM_FLAG_SINGLE_PIC_BASE (1 << 14)
 
+/* Nonzero if all call instructions should be indirect.  */
+#define ARM_FLAG_LONG_CALLS	(1 << 15)
+
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -336,6 +339,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_NO_SCHED_PRO		(target_flags & ARM_FLAG_NO_SCHED_PRO)
 #define TARGET_ABORT_NORETURN		(target_flags & ARM_FLAG_ABORT_NORETURN)
 #define TARGET_SINGLE_PIC_BASE		(target_flags & ARM_FLAG_SINGLE_PIC_BASE)
+#define TARGET_LONG_CALLS		(target_flags & ARM_FLAG_LONG_CALLS)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -393,6 +397,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"single-pic-base",		ARM_FLAG_SINGLE_PIC_BASE,	\
      "Do not load the PIC register in function prologues" },	\
   {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },	\
+  {"long-calls",		ARM_FLAG_LONG_CALLS,		\
+   "Generate all call instructions as indirect calls"},		\
+  {"no-long-calls",	       -ARM_FLAG_LONG_CALLS, ""},	\
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT, "" }		\
 }
@@ -2335,6 +2342,14 @@ void   aof_add_import PROTO ((char *));
 void   aof_delete_import PROTO ((char *));
 void   aof_dump_imports STDIO_PROTO ((FILE *));
 #endif
+
+/* Define in pe.c */
+int   arm_pe_return_in_memory PROTO ((Tree));
+int   arm_dllexport_p PROTO ((Tree));
+int   arm_dllimport_p PROTO ((Tree));
+int   arm_dllexport_name_p PROTO ((char *));
+int   arm_dllimport_name_p PROTO ((char *));
+
 #endif /* HAVE_CONFIG_H */
 
 #endif /* __ARM_H__ */

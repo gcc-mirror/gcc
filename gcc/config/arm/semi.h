@@ -30,11 +30,15 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
 
+#ifndef TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
+#endif
 
+#ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT ARM_FLAG_APCS_32
+#endif
 
 #include "arm/aout.h"
 
-#undef CPP_APCS_PC_DEFAULT_SPEC
+#undef  CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"

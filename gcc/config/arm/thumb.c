@@ -41,8 +41,8 @@ Boston, MA 02111-1307, USA.  */
 int current_function_anonymous_args = 0;
 
 /* Used to parse -mstructure_size_boundary command line option.  */
-char * structure_size_string = NULL;
-int    arm_structure_size_boundary = 32; /* Used to be 8 */
+const char * structure_size_string = NULL;
+int          arm_structure_size_boundary = 32; /* Used to be 8 */
 
 /* The register number to be used for the PIC offset register.  */
 const char * thumb_pic_register_string = NULL;
@@ -81,7 +81,7 @@ int
 thumb_shiftable_const (val)
      HOST_WIDE_INT val;
 {
-  unsigned HOST_WIDE_INT mask = 0xff;
+  HOST_WIDE_INT mask = 0xff;
   int i;
 
   for (i = 0; i < 25; i++)
@@ -94,8 +94,6 @@ thumb_shiftable_const (val)
 int
 thumb_trivial_epilogue ()
 {
-  int regno;
-
   /* ??? If this function ever returns 1, we get a function without any
      epilogue at all.  It appears that the intent was to cause a "return"
      insn to be emitted, but that does not happen.  */
@@ -118,7 +116,7 @@ thumb_trivial_epilogue ()
 
 /* Return TRUE if X references a SYMBOL_REF.  */
 int
-symbol_mentioned_p (x)
+thumb_symbol_mentioned_p (x)
      rtx x;
 {
   register const char * fmt;
@@ -135,10 +133,10 @@ symbol_mentioned_p (x)
 	  register int j;
 
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    if (symbol_mentioned_p (XVECEXP (x, i, j)))
+	    if (thumb_symbol_mentioned_p (XVECEXP (x, i, j)))
 	      return 1;
 	}
-      else if (fmt[i] == 'e' && symbol_mentioned_p (XEXP (x, i)))
+      else if (fmt[i] == 'e' && thumb_symbol_mentioned_p (XEXP (x, i)))
 	return 1;
     }
 
@@ -281,7 +279,7 @@ legitimize_pic_address (orig, mode, reg)
 static rtx pic_rtx;
 
 int
-is_pic(x)
+is_pic (x)
      rtx x;
 {
   if (x == pic_rtx)
@@ -413,7 +411,6 @@ add_constant (x, mode)
      enum machine_mode mode;
 {
   int i;
-  rtx lab;
   HOST_WIDE_INT offset;
 
   if (mode == SImode && GET_CODE (x) == MEM && CONSTANT_P (XEXP (x, 0))
@@ -538,10 +535,7 @@ find_barrier (from)
 	  && GET_CODE (PATTERN (from)) == SET
 	  && CONSTANT_P (SET_SRC (PATTERN (from)))
 	  && CONSTANT_POOL_ADDRESS_P (SET_SRC (PATTERN (from))))
-	{
-	  rtx src = SET_SRC (PATTERN (from));
-	  count += 2;
-	}
+	count += 2;
       else
 	count += get_attr_length (from);
 
@@ -773,7 +767,7 @@ thumb_expand_movstrqi (operands)
 
 void
 thumb_reload_out_si (operands)
-     rtx operands;
+     rtx operands ATTRIBUTE_UNUSED;
 {
   abort ();
 }
@@ -819,10 +813,10 @@ is_called_in_ARM_mode (func)
 /* Routines for emitting code */
 
 void
-final_prescan_insn(insn)
+thumb_final_prescan_insn (insn)
      rtx insn;
 {
-  extern int *insn_addresses;
+  extern int * insn_addresses;
 
   if (flag_print_asm_name)
     fprintf (asm_out_file, "%s 0x%04x\n", ASM_COMMENT_START,
@@ -871,7 +865,6 @@ thumb_exit (f, reg_containing_return_addr)
   int regs_available_for_popping;
   int regs_to_pop;
   int pops_needed;
-  int reg;
   int available;
   int required;
   int mode;
@@ -1284,10 +1277,9 @@ output_return ()
 
 void
 thumb_function_prologue (f, frame_size)
-     FILE *f;
-     int frame_size;
+     FILE * f;
+     int frame_size ATTRIBUTE_UNUSED;
 {
-  int amount = frame_size + current_function_outgoing_args_size;
   int live_regs_mask = 0;
   int high_regs_pushed = 0;
   int store_arg_regs = 0;
@@ -1358,7 +1350,7 @@ thumb_function_prologue (f, frame_size)
 	&& ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
       live_regs_mask |= 1 << regno;
 
-  if (live_regs_mask || ! leaf_function_p () || far_jump_used_p())
+  if (live_regs_mask || ! leaf_function_p () || far_jump_used_p ())
     live_regs_mask |= 1 << 14;
 
   if (TARGET_BACKTRACE)
@@ -1366,7 +1358,6 @@ thumb_function_prologue (f, frame_size)
       char * name;
       int    offset;
       int    work_register = 0;
-      
       
       /* We have been asked to create a stack backtrace structure.
          The code looks like this:
@@ -1390,7 +1381,7 @@ thumb_function_prologue (f, frame_size)
 	{
 	  /* See if the a4 register is free.  */
 
-	  if (regs_ever_live[ 3 ] == 0)
+	  if (regs_ever_live [3] == 0)
 	    work_register = 3;
 	  else	  /* We must push a register of our own */
 	    live_regs_mask |= (1 << 7);
@@ -1510,6 +1501,77 @@ thumb_function_prologue (f, frame_size)
     }
 }
 
+/* Functions to save and restore thumb_return_addr_rtx.  */
+static rtx thumb_return_addr_rtx = NULL_RTX;
+
+struct machine_function
+{
+  rtx ra_rtx;
+};
+
+static void
+thumb_save_machine_status (p)
+     struct function * p;
+{
+  struct machine_function * machine =
+    (struct machine_function *) xmalloc (sizeof (* machine));
+
+  p->machine = machine;
+  machine->ra_rtx = thumb_return_addr_rtx;
+}
+
+static void
+thumb_restore_machine_status (p)
+     struct function * p;
+{
+  struct machine_function * machine = p->machine;
+
+  thumb_return_addr_rtx = machine->ra_rtx;
+
+  free (machine);
+  
+  p->machine = (struct machine_function *) NULL;
+}
+
+/* Return an RTX indicating where the return address to the
+   calling function can be found.  */
+rtx
+thumb_return_addr (count)
+     int count;
+{
+  if (count != 0)
+    return NULL_RTX;
+
+  if (thumb_return_addr_rtx == NULL_RTX)
+    {
+      rtx init;
+      
+      thumb_return_addr_rtx = gen_reg_rtx (Pmode);
+      
+      init = gen_rtx_REG (Pmode, 14);
+
+      init = gen_rtx_SET (VOIDmode, thumb_return_addr_rtx, init);
+
+      /* Emit the insn to the prologue with the other argument copies.  */
+      push_topmost_sequence ();
+      emit_insn_after (init, get_insns ());
+      pop_topmost_sequence ();
+    }
+
+  return thumb_return_addr_rtx;
+}
+
+/* Do anything needed before RTL is emitted for each function.  */
+void
+thumb_init_expanders ()
+{
+  thumb_return_addr_rtx = NULL_RTX;
+
+  /* Arrange to save and restore machine status around nested functions.  */
+  save_machine_status    = thumb_save_machine_status;
+  restore_machine_status = thumb_restore_machine_status;
+}
+
 void
 thumb_expand_prologue ()
 {
@@ -1530,7 +1592,7 @@ thumb_expand_prologue ()
 	{
 	  int regno;
 	  rtx reg;
-
+	  
 	  /* The stack decrement is too big for an immediate value in a single
 	     insn.  In theory we could issue multiple subtracts, but after
 	     three of them it becomes more space efficient to place the full
@@ -1586,6 +1648,9 @@ thumb_expand_prologue ()
 	}
     }
 
+  /* This should only happen with optimisation disabled.  Emit the copy
+     *after* the stack adjust, as the unoptimised code will attempt to store
+     local variables at positive offsets from the frame pointer.  */
   if (frame_pointer_needed)
     {
       if (current_function_outgoing_args_size)
@@ -1606,8 +1671,8 @@ thumb_expand_prologue ()
 	emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
     }
 
-  /* if (profile_flag || profile_block_flag) */
-  emit_insn (gen_blockage ());
+  if (profile_flag || profile_block_flag)
+    emit_insn (gen_blockage ());
 }
 
 void
@@ -1615,8 +1680,6 @@ thumb_expand_epilogue ()
 {
   HOST_WIDE_INT amount = (get_frame_size ()
 			  + current_function_outgoing_args_size);
-  int regno;
-
 #ifdef THUMB_PE
   /* Naked functions don't have epilogues.  */
   if (arm_naked_function_p (current_function_decl))
@@ -1635,15 +1698,20 @@ thumb_expand_epilogue ()
 	  emit_insn (gen_movsi (reg, GEN_INT (amount)));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
 	}
-      /* if (profile_flag || profile_block_flag) */
-      emit_insn (gen_blockage ());
     }
+  
+  /* Emit a USE (stack_pointer_rtx), so that
+     the stack adjustment will not be deleted.  */
+  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+  if (profile_flag || profile_block_flag)
+    emit_insn (gen_blockage ());
 }
 
 void
 thumb_function_epilogue (f, frame_size)
-     FILE *f;
-     int frame_size;
+     FILE * f ATTRIBUTE_UNUSED;
+     int frame_size ATTRIBUTE_UNUSED;
 {
   /* ??? Probably not safe to set this here, since it assumes that a
      function will be emitted as assembly immediately after we generate

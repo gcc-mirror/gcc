@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "tree.h"
 #include "expr.h"
+#include "toplev.h"
 
 extern int current_function_anonymous_args;
 
@@ -49,7 +50,7 @@ extern int current_function_anonymous_args;
 int
 arm_pe_valid_machine_decl_attribute (decl, attributes, attr, args)
      tree decl;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree attr;
      tree args;
 {
@@ -117,6 +118,7 @@ arm_pe_merge_machine_decl_attributes (old, new)
   return a;
 }
 
+#if 0
 /* Check a type that has a virtual table, and see if any virtual methods are
    marked for import or export, and if so, arrange for the vtable to
    be imported or exported.  */
@@ -153,6 +155,7 @@ arm_check_vtable_importexport (type)
 
   return 0;
 }
+#endif
 
 /* Return non-zero if DECL is a dllexport'd object.  */
 
