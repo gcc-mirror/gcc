@@ -1819,7 +1819,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_FILE_END
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) \
-  fprintf (FILE, "\t%s\t \"%s\"\n", FILE_ASM_OP, NAME)
+  do {	fprintf (FILE, "\t%s\t ", FILE_ASM_OP);			\
+	output_quoted_string (FILE, NAME);			\
+	fprintf (FILE, "\n");					\
+  } while (0)
 
 #ifdef SDB_DEBUGGING_INFO
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\

@@ -71,7 +71,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
   do {						   \
-    fprintf (FILE, "\tfile\t\"%s\"\n", FILENAME);  \
+    fprintf (FILE, "\tfile\t");			   \
+    output_quoted_string (FILE, FILENAME);	   \
+    fprintf (FILE, "\n");			   \
     fprintf (FILE, "section ~init,\"x\"\n");	   \
     fprintf (FILE, "section ~fini,\"x\"\n");	   \
     fprintf (FILE, "section ~rodata,\"x\"\n");   \
