@@ -297,7 +297,6 @@ c_getstr (src)
      tree src;
 {
   tree offset_node;
-  HOST_WIDE_INT offset;
 
   src = string_constant (src, &offset_node);
   if (src == 0)
