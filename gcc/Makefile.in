@@ -28,8 +28,13 @@
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
+# List of language subdirectories.
+# This is overridden by configure.
+SUBDIRS =
+
 # Selection of languages to be made.
-LANGUAGES = c c++ objective-c proto
+# This is overridden by configure.
+LANGUAGES = c objective-c proto
 
 ALLOCA =
 ALLOCA_FLAGS =
@@ -53,6 +58,8 @@ T_CPPFLAGS =
 CC = cc
 BISON = bison
 BISONFLAGS =
+LEX = flex
+LEXFLAGS =
 AR = ar
 OLDAR_FLAGS = qc
 AR_FLAGS = rc
@@ -65,6 +72,8 @@ INSTALL_DATA = $(INSTALL)
 SYMLINK = ln -s
 MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
+# For GNUmake: let us decide what gets passed to recursive makes.
+MAKEOVERRIDES =
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -383,7 +392,6 @@ HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
 INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config
-SUBDIR_INCLUDES = -I.. -I../$(srcdir) -I../$(srcdir)/config
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
@@ -393,10 +401,49 @@ SUBDIR_INCLUDES = -I.. -I../$(srcdir) -I../$(srcdir)/config
 # defined in this file into the environment.
 .NOEXPORT:
 
+# Support for additional languages (other than c and objc).
+# ??? objc can be supported this way too (leave for later).
+
+# These next lines are overridden by configure.
+LANG_MAKEFILES =
+LANG_STAGESTUFF =
+LANG_DIFF_EXCLUDES =
+
+# Flags to pass to recursive makes.
+# CC is set by configure.  Hosts without symlinks need special handling
+# because we need CC="stage1/xgcc -Bstage1/" to work in the language
+# subdirectories.
+# ??? The choices here will need some experimenting with.
+FLAGS_TO_PASS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
+	"BISON=$(BISON)" \
+	"BISONFLAGS=$(BISONFLAGS)" \
+	"CC=set-by-configure" \
+	"CFLAGS=$(CFLAGS)" \
+	"CLIB=$(CLIB)" \
+	"GCC_FOR_TARGET=$(CC_FOR_TARGET)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LEX=$(LEX)" \
+	"LEXFLAGS=$(LEXFLAGS)" \
+	"MAKEINFO=$(MAKEINFO)" \
+	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
+	"MALLOC=$(MALLOC)" \
+	"OBSTACK=$(OBSTACK)" \
+	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
+	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"exec_prefix=$(exec_prefix)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" \
+	"bindir=$(bindir)" \
+	"libsubdir=$(libsubdir)"
+
 # Lists of files for various purposes.
 
 # A list of all the language-specific executables.
-COMPILERS = cc1 cc1plus cc1obj
+# This is overridden by configure.
+COMPILERS = cc1 cc1obj
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
@@ -405,14 +452,6 @@ C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
-
-# Language-specific object files for C++.
-CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
-   cp-typeck.o cp-type2.o cp-tree.o cp-ptree.o \
-   cp-cvt.o cp-search.o cp-lex.o cp-gc.o cp-call.o \
-   cp-class.o cp-init.o cp-method.o cp-except.o \
-   cp-expr.o cp-pt.o cp-edsel.o cp-xref.o \
-   $(CPLUS_INPUT) cp-spew.o c-common.o cp-error.o cp-errfn.o
 
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
@@ -445,8 +484,9 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  bc-arity.h bc-opcode.h bc-opname.h \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
  bi-arity bi-opcode bi-opname \
- $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp g++ g++-cross \
- cc1plus cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2)
+ $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp \
+ cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2) \
+ $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
 LIB1FUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
@@ -488,37 +528,56 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
 CONFIG_H =
 RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
-CPLUS_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
+
+# Language makefile fragments.
+
+# The following targets define the interface between us and the languages.
+#
+# all.build, all.cross, start.encap, rest.encap,
+# info, dvi,
+# install-normal, install-common, install-info, install-man,
+# uninstall, distdir,
+# mostlyclean, clean, distclean, extraclean, realclean,
+# stage1, stage2, stage3, stage4
+#
+# Each language is linked in with a series of hooks (since we can't use `::'
+# targets).  The name of each hooked is "lang.${target_name}" (eg: lang.info).
+# Configure computes and adds these here.
+
+####language hooks
+
+# sed inserts language fragments after the following line.
+####language fragments
+
+# End of language makefile fragments.
 
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
-   $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
+   $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file) \
+   $(LANG_MAKEFILES)
 	$(SHELL) config.status
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
-# Note that we can compile enquire using the cross-compiler just build,
+# Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
-all.cross: native gcc-cross g++-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS)
+all.cross: native gcc-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) \
+	$(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS) lang.all.cross
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc g++ $(EXTRA_PARTS)
+all.build: native xgcc $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc g++ specs $(LIBGCC1) xlimits.h
+start.encap: native xgcc specs $(LIBGCC1) xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
-rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS)
+rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-# Note that it would be nice to move the dependency on g++
-# into the C++ rule, but that needs a little bit of work
-# to do the right thing within all.cross.
 C c: cc1
-C++ c++: cc1plus
 OBJC objc: cc1obj objc-runtime
 OBJECTIVE-C objective-c: cc1obj objc-runtime
 PROTO: proto
@@ -559,26 +618,14 @@ xgcc: gcc.o version.o $(LIBDEPS)
 specs: xgcc
 	$(GCC_FOR_TARGET) -dumpspecs > specs
 
-# Create the compiler driver for g++.
-g++: g++.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o g++ g++.o $(LIBS)
-
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
 # Also create gcc-cross, so that install-common will install properly.
 gcc-cross: xgcc
 	cp xgcc gcc-cross
 
-# Create a version of the g++ driver which calls the cross-compiler.
-g++-cross: $(srcdir)/g++.c
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
-	   -DGCC_NAME=\"$(target)-gcc\" $(srcdir)/g++.c version.o $(LIBS)
-
 cc1: $(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
-
-cc1plus: $(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(BC_OBJS) $(OBJS) $(LIBS)
 
 cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
@@ -835,47 +882,6 @@ c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
 c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
-
-# C++ language specific files.
-
-cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h cp-lex.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-  `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
-
-$(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 27 shift/reduce conflicts and 14 reduce/reduce conflicts
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
-	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' cp-parse.c >>cp-parse.h
-
-cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h flags.h cp-lex.h
-cp-lex.o : cp-lex.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h $(srcdir)/cp-input.c flags.h cp-hash.h cp-lex.h
-cp-decl.o : cp-decl.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
-  cp-lex.h cp-decl.h stack.h
-cp-decl2.o : cp-decl2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
-  cp-lex.h cp-decl.h
-cp-type2.o : cp-type2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-typeck.o : cp-typeck.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-class.o : cp-class.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-call.o : cp-call.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-init.o : cp-init.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-method.o : cp-method.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-cvt.o : cp-cvt.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-search.o : cp-search.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
-cp-tree.o : cp-tree.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-ptree.o : cp-ptree.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-gc.o : cp-gc.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-except.o : cp-except.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-expr.o : cp-expr.c $(CONFIG_H) $(CPLUS_TREE_H) $(RTL_H) flags.h \
-  expr.h insn-codes.h
-cp-edsel.o : cp-edsel.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
-cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H) input.h
-cp-pt.o : cp-pt.c $(CONFIG_H) $(CPLUS_TREE_H) cp-decl.h cp-parse.h
-cp-error.o : cp-error.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-errfn.o : cp-errfn.c $(CONFIG_H) $(CPLUS_TREE_H)
-
-g++.o : g++.c $(CONFIG_H)
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
@@ -1620,19 +1626,16 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 # Remake the info files.
 
 doc: info
-info: $(srcdir)/cpp.info $(srcdir)/gcc.info
+info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info
 
 $(srcdir)/cpp.info: cpp.texi
 	cd $(srcdir); $(MAKEINFO) cpp.texi
-
-#$(srcdir)/gplus.info: gplus.texi
-#	$(MAKEINFO) `echo $(srcdir)/gplus.texi | sed 's,^\./,,'`
 
 $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
 	cd $(srcdir); $(MAKEINFO) gcc.texi
 
-dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi
+dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi lang.dvi
 
 # This works with GNU Make's default rule.
 $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
@@ -1656,9 +1659,11 @@ $(srcdir)/INSTALL: install1.texi install.texi
 # `clean' deletes everything made by running `make all'.
 # `distclean' also deletes the files made by config.
 # `realclean' also deletes everything that could be regenerated automatically.
+# We remove as much from the language subdirectories as we can
+# (less duplicated code).
 
 
-mostlyclean: bytecode.mostlyclean
+mostlyclean: bytecode.mostlyclean lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 # Clean the objc subdir if we created one.
 	if [ -d objc ]; then \
@@ -1678,9 +1683,13 @@ mostlyclean: bytecode.mostlyclean
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
+	-rm -f */stamp-* */tmp-*
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
+	-rm -f */*.greg */*.lreg */*.combine */*.flow */*.cse */*.jump */*.rtl
+	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
+	-rm -f */*.sched2 */*.stack
 # Delete some files made during installation.
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
@@ -1689,62 +1698,66 @@ mostlyclean: bytecode.mostlyclean
 	  gen-protos fixproto.list fixtmp.* fixhdr.ready
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
+	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg
 # Delete sorted indices we don't actually use.
 	-rm -f gcc.vrs gcc.kys gcc.tps gcc.pgs gcc.fns
 # Delete core dumps.
-	-rm -f core config/core
+	-rm -f core */core
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
-clean: mostlyclean bytecode.clean
+clean: mostlyclean bytecode.clean lang.clean
 # It may not be quite desirable to delete unprotoize.c here,
 # but the spec for `make clean' requires it.
 # Using unprotoize.c is not quite right in the first place, 
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready libgcc1.null
 	-rm -f *.dvi
+	-rm -f */*.dvi
 	-if [ -f md.pre-cpp ]; then \
 	  rm -f md ; \
 	fi
 # Delete the include directory.
 	-rm -rf stmp-* include objc-headers
+	-rm -f */stmp-*
 
 # Delete all files that users would normally create
 # while building and installing GCC.
-distclean: clean bytecode.distclean
+distclean: clean bytecode.distclean lang.distclean
 	-rm -f tm.h aux-output.c config.h config.status tconfig.h hconfig.h
 	-rm -f md md.pre-cpp
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
-	-rm -f cp-parse.output
+	-rm -f */stage1 */stage2 */stage3 */stage4
 	-rm -f objc-parse.output
 	-rm -f c-parse.output
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
-extraclean: distclean
+extraclean: distclean lang.extraclean
 	-rm -rf =* ./"#"* *~* config/=* config/"#"* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
 	-rm -f config/*/=* config/*/"#"* config/*/*~*
 	-rm -f config/*/*.orig config/*/*.rej
-	-rm -f objc/=* objc/"#"* objc/*~*
-	-rm -f objc/*.orig objc/*.rej
 	-rm -f *.dvi *.oaux *.d *.[zZ] *.gz
 	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
+	-rm -f */=* */"#"* */*~*
+	-rm -f */patch* */*.orig */*.rej
+	-rm -f */*.dvi */*.oaux */*.d */*.[zZ] */*.gz
+	-rm -f */*.tar */*.xtar */*diff */*.diff.* */*.tar.* */*.xtar.* */*diffs
+	-rm -f */*lose */*.s */*.s[0-9] */*.i
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
-realclean: distclean bytecode.realclean
+realclean: distclean bytecode.realclean lang.realclean
 	-rm -f c-parse.y c-gperf.h objc-parse.y
-	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
-	-rm -f gplus.info* gplus.??s gplus.*aux
 
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -1756,7 +1769,7 @@ install: $(INSTALL_TARGET) ; @true
 
 # Copy the compiler files into directories where they will be run.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    install-man install-info
+    install-man install-info lang.install-normal
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -1801,7 +1814,7 @@ install-dir:
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; fi
 
 # Install the compiler executables built during cross compilation.
-install-common: native install-dir xgcc $(EXTRA_PARTS)
+install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
@@ -1829,26 +1842,12 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	    rm -f $(tooldir)/bin/gcc; \
 	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
 	  else true; fi; \
-	  if [ -f cc1plus ] ; then \
-	    rm -f $(bindir)/$(target)-g++; \
-	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(target)-g++; \
-	    chmod a+x $(bindir)/$(target)-g++; \
-	    rm -f $(bindir)/$(target)-c++; \
-	    ln $(bindir)/$(target)-g++ $(bindir)/$(target)-c++; \
-	  fi ; \
 	else \
 	  rm -f $(bindir)/gcc; \
 	  $(INSTALL_PROGRAM) xgcc $(bindir)/gcc; \
 	  rm -f $(bindir)/$(target)-gcc-1; \
 	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
 	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
-	  if [ -f cc1plus ] ; then \
-	    rm -f $(bindir)/g++; \
-	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
-	    chmod a+x $(bindir)/g++; \
-	    rm -f $(bindir)/c++; \
-	    ln $(bindir)/g++ $(bindir)/c++; \
-	  fi ; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize ]; \
@@ -1865,22 +1864,20 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
 
 # Install the info files.
-install-info: doc install-dir
+install-info: doc install-dir lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	cd $(srcdir); for f in cpp.info* gcc.info*; \
 	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
-install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 $(srcdir)/g++.1
+install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	-rm -f $(mandir)/gcc$(manext)
 	-$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
 	-chmod a-x $(mandir)/gcc$(manext)
 	-rm -f $(mandir)/cccp$(manext)
 	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
 	-chmod a-x $(mandir)/cccp$(manext)
-	-$(INSTALL_DATA) $(srcdir)/g++.1 $(mandir)/g++$(manext)
-	-chmod a-x $(mandir)/g++$(manext)
 
 # Install the library.
 install-libgcc: libgcc.a install-dir
@@ -1966,13 +1963,12 @@ install-collect2: collect2 install-dir
 	$(INSTALL_PROGRAM) xgcc $(libsubdir)/gcc
 
 # Cancel installation by deleting the installed files.
-uninstall:
+uninstall: lang.uninstall
 	-rm -rf $(libsubdir)
 	-rm -rf $(bindir)/gcc
 	-rm -rf $(bindir)/protoize
 	-rm -rf $(bindir)/unprotoize
 	-rm -rf $(mandir)/gcc$(manext)
-	-rm -rf $(mandir)/g++$(manext)
 	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
@@ -1983,7 +1979,7 @@ uninstall:
 TAGS: force
 	cd $(srcdir);							\
 	mkdir temp;							\
-	mv -f c-parse.[ch] cp-parse.[ch] objc-parse.c cexp.c =*.[chy] temp; \
+	mv -f c-parse.[ch] objc-parse.c cexp.c =*.[chy] temp;		\
 	etags *.y *.h *.c;						\
 	mv temp/* .;							\
 	rmdir temp
@@ -2004,8 +2000,10 @@ gcc.xtar: distdir
 # Make the distribution.
 	tar -chf gcc.xtar gcc-$(version)
 
-distdir: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y cp-parse.y \
-  c-parse.c cp-parse.c objc-parse.c cexp.c
+# This target exists to do the initial work before the language specific
+# stuff gets done.
+distdir-start: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y \
+  c-parse.c objc-parse.c cexp.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
@@ -2045,19 +2043,25 @@ distdir: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y cp-parse.y \
 	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
 	done
 	ln .gdbinit tmp
+
+# Finish making `distdir', after the languages have done their thing.
+distdir-finish:
 	mv tmp gcc-$(version)
 # Get rid of everything we don't want in the distribution.
 	cd gcc-$(version); make -f Makefile.in extraclean
+
+distdir: distdir-start lang.distdir distdir-finish
 
 # make diff oldversion=M.N 
 # creates a diff file between an older distribution and this one.
 # The -P option assumes this is GNU diff.
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x c-gperf.h \
-	  -x objc-parse.y -x cp-parse.c -x cp-parse.h -x cexp.c \
-	  -x bi-parser.c -x objc-parse.c -x TAGS -x "gcc.??" -x "gcc.??s" \
-	  -x gcc.aux -x "cpp.??s" -x "cpp.??" -x cpp.aux -x "cpp.info*"
-	  -x "gcc.info*" \
+	  -x cexp.c -x bi-parser.c -x objc-parse.y -x objc-parse.c \
+	  -x TAGS \
+	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
+	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
+	  $(LANG_DIFF_EXCLUDES) \
 	  gcc-$(oldversion) gcc-$(version) > diffs
 
 # do make -f ../gcc/Makefile maketest DIR=../gcc
@@ -2112,14 +2116,32 @@ compare: force
 	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	    for file in $$dir/*.o; do \
+	      tail +16c ./$$file > tmp-foo1; \
+	      tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    done \
+	  fi \
+	done
 	-rm -f tmp-foo*
 
 # Similar, but compare with stage3 directory
 compare3: force
 	for file in *.o; do \
-	  tail +16c $$file > tmp-foo1; \
+	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	done
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	    for file in $$dir/*.o; do \
+	      tail +16c ./$$file > tmp-foo1; \
+	      tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    done \
+	  fi \
 	done
 	-rm -f tmp-foo*
 
@@ -2131,41 +2153,75 @@ gnucompare: force
 	for file in *.o; do \
 	  cmp --ignore-initial=16 $$file stage2/$$file || true ; \
 	done
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	    for file in $$dir/*.o; do \
+	      cmp --ignore-initial=16 $$file stage2/$$file || true ; \
+	    done \
+	  fi \
+	done
 
 # Similar, but compare with stage3 directory
 gnucompare3: force
 	for file in *.o; do \
 	  cmp --ignore-initial=16 $$file stage3/$$file || true ; \
 	done
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	    for file in $$dir/*.o; do \
+	      cmp --ignore-initial=16 $$file stage3/$$file || true ; \
+	    done \
+	  fi \
+	done
 
 # Copy the object files from a particular stage into a subdirectory.
-stage1: force
+stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
+	-for dir in . $(SUBDIRS) ; \
+	 do \
+	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi \
+	 done
 	-mv $(STAGESTUFF) stage1
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
+stage1: force stage1-start lang.stage1
 
-stage2: force
+stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
+	-for dir in . $(SUBDIRS) ; \
+	 do \
+	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi \
+	 done
 	-mv $(STAGESTUFF) stage2
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
+stage2: force stage2-start lang.stage2
 
-stage3: force
+stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
+	-for dir in . $(SUBDIRS) ; \
+	 do \
+	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi \
+	 done
 	-mv $(STAGESTUFF) stage3
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
+stage3: force stage3-start lang.stage3
 
-stage4: force
+stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
+	-for dir in . $(SUBDIRS) ; \
+	 do \
+	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi \
+	 done
 	-mv $(STAGESTUFF) stage4
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
+stage4: force stage4-start lang.stage4
 
 # Copy just the executable files from a particular stage into a subdirectory,
 # and delete the object files.  Use this if you're just verifying a version
