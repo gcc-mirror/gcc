@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
+#include "function.h"
 #include "basic-block.h"
 #include "toplev.h"
 #include "cfgloop.h"
@@ -510,6 +511,10 @@ establish_preds (struct loop *loop)
   struct loop *ploop, *father = loop->outer;
 
   loop->depth = father->depth + 1;
+
+  /* Remember the current loop depth if it is the largest seen so far.  */
+  cfun->max_loop_depth = MAX (cfun->max_loop_depth, loop->depth);
+
   if (loop->pred)
     free (loop->pred);
   loop->pred = xmalloc (sizeof (struct loop *) * loop->depth);
@@ -818,6 +823,10 @@ flow_loops_find (struct loops *loops, int flags)
   gcc_assert (flags & LOOP_TREE);
 
   memset (loops, 0, sizeof *loops);
+
+  /* We are going to recount the maximum loop depth,
+     so throw away the last count.  */
+  cfun->max_loop_depth = 0;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -1213,7 +1222,7 @@ remove_bb_from_loops (basic_block bb)
      loop->pred[i]->num_nodes--;
    bb->loop_father = NULL;
    bb->loop_depth = 0;
- }
+}
 
 /* Finds nearest common ancestor in loop tree for given loops.  */
 struct loop *
