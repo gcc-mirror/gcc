@@ -164,7 +164,11 @@ add_friend (tree type, tree decl, bool complain)
     }
 
   if (DECL_CLASS_SCOPE_P (decl))
-    perform_or_defer_access_check (TYPE_BINFO (DECL_CONTEXT (decl)), decl);
+    {
+      tree class_binfo = TYPE_BINFO (DECL_CONTEXT (decl));
+      if (!uses_template_parms (BINFO_TYPE (class_binfo)))
+	perform_or_defer_access_check (class_binfo, decl);
+    }
 
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 
