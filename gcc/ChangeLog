@@ -1,3 +1,12 @@
+2001-04-27  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* collect2.c (main): Add `-L' case to remove duplicate entries.
+	(is_in_args): New function to check for a duplicate argument.
+	* defaults.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): New macro.
+	* tm.texi (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): New documentation.
+	* config/mips/iris6.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES):
+	Define to be nonzero.
+
 Fri Apr 27 10:41:06 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* tm.texi (TARGET_MEM_FUNCTIONS): Update text.
