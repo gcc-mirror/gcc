@@ -3399,7 +3399,7 @@ altivec_expand_unop_builtin (icode, arglist, target)
   if (arg0 == error_mark_node)
     return target;
 
-  if (target != 0
+  if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3433,7 +3433,7 @@ altivec_expand_binop_builtin (icode, arglist, target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return target;
 
-  if (target != 0
+  if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3474,7 +3474,7 @@ altivec_expand_ternop_builtin (icode, arglist, target)
       || arg2 == error_mark_node)
     return target;
 
-  if (target != 0
+  if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3517,7 +3517,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (target != 0
+      if (target == 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3538,7 +3538,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (target != 0
+      if (target == 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3559,7 +3559,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (target != 0
+      if (target == 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3580,7 +3580,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (target != 0
+      if (target == 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -6179,7 +6179,7 @@ print_operand (file, x, code)
 	tmp = XEXP (x, 0);
 
 	if (GET_CODE (tmp) == REG)
-	  fprintf (file, "0, %s", reg_names[REGNO (tmp)]);
+	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else if (GET_CODE (tmp) == PLUS && GET_CODE (XEXP (tmp, 1)) == REG)
 	  {
 	    if (REGNO (XEXP (tmp, 0)) == 0)
