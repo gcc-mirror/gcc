@@ -1,7 +1,7 @@
-/* Test Darwin linker option -bundle_loader.  */
+/* Test Darwin linker option -dynamic.  */
 /* Developed by Devang Patel <dpatel@apple.com>.  */
 
-/* { dg-options "-bundle -bundle_loader foo" } */
+/* { dg-options "-dynamic" } */
 /* { dg-do link { target *-*-darwin* } } */
 
 int main()
