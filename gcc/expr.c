@@ -5229,7 +5229,10 @@ expand_expr (exp, target, tmode, modifier)
 
       else
 	{
-	  if (target == 0 || ! safe_from_p (target, exp))
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+	  if (target == 0 || ! safe_from_p (target, exp)
+	      || GET_CODE (target) == PARALLEL)
 	    {
 	      if (mode != BLKmode && ! TREE_ADDRESSABLE (exp))
 		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
