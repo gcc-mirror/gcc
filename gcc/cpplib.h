@@ -212,6 +212,11 @@ struct cpp_reader
   /* If non-zero, macros are not expanded. */
   char no_macro_expand;
 
+  /* If non-zero, directives cause a hard error.  Used when parsing
+     macro arguments.  */
+
+  char no_directives;
+
   /* Print column number in error messages. */
   char show_column;
 
