@@ -184,13 +184,15 @@ struct _Rb_tree_iterator : public _Rb_tree_base_iterator
   }
 };
 
-inline bool operator==(const _Rb_tree_base_iterator& __x,
-                       const _Rb_tree_base_iterator& __y) {
+template <class _Value, class _Ref, class _Ptr>
+inline bool operator==(const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __x,
+		       const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __y) {
   return __x._M_node == __y._M_node;
 }
 
-inline bool operator!=(const _Rb_tree_base_iterator& __x,
-                       const _Rb_tree_base_iterator& __y) {
+template <class _Value, class _Ref, class _Ptr>
+inline bool operator!=(const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __x,
+		       const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __y) {
   return __x._M_node != __y._M_node;
 }
 
