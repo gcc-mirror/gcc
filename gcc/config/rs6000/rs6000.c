@@ -3130,7 +3130,8 @@ rs6000_va_arg (valist, type)
       n_reg = 1;
       sav_ofs = 0;
       sav_scale = 4;
-      size = rsize = UNITS_PER_WORD;
+      size = UNITS_PER_WORD;
+      rsize = 1;
     }
   else if (FLOAT_TYPE_P (type) && ! TARGET_SOFT_FLOAT)
     {
