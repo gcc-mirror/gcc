@@ -96,6 +96,7 @@ extern int		reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int		true_reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int		simple_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int		double_memory_operand PARAMS ((rtx, enum machine_mode));
+extern int		equality_op PARAMS ((rtx, enum machine_mode));
 extern int		small_int PARAMS ((rtx, enum machine_mode));
 extern int		uns_arith_operand PARAMS ((rtx, enum machine_mode));
 extern struct rtx_def *	embedded_pic_offset PARAMS ((rtx));
