@@ -1,5 +1,7 @@
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* lex.c: Convert to ISO C.
+
 	2003-05-19  Jens-Michael Hoffmann  <jensmh@gmx.de>
 	* init.c: removes use of PARAMS macro.  Use ISO style function
 	declarations.  (Not copyright-significant change.)
