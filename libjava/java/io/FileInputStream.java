@@ -51,11 +51,8 @@ public class FileInputStream extends InputStream
 
   public void close() throws IOException
   {
-    if (fd == null)
-      return;
-
-    fd.close();
-    fd = null;
+    if (fd.valid())
+      fd.close();
   }
 
   protected void finalize() throws IOException

@@ -1,3 +1,10 @@
+2000-12-08  Warren Levy  <warrenl@redhat.com>
+
+	* java/io/FileInputStream.java (close): Check if the fd is valid.
+	* java/io/RandomAccessFile.java (close): Ditto.
+	* java/net/PlainDatagramSocketImpl.java (close): Ditto.
+	* java/net/PlainSocketImpl.java (close): Ditto.
+
 2000-12-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/GridBagConstraints.java: Filled in values for static

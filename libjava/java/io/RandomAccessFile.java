@@ -24,7 +24,8 @@ public class RandomAccessFile implements DataOutput, DataInput
 {
   public void close () throws IOException
   {
-    fd.close();
+    if (fd.valid())
+      fd.close();
   }
 
   public final FileDescriptor getFD () throws IOException

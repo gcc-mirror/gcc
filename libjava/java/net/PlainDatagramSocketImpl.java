@@ -79,7 +79,8 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
     // we'll catch the IOException here.
     try
       {
-        fd.close();
+        if (fd.valid())
+	  fd.close();
       }
     catch (IOException e)
       {

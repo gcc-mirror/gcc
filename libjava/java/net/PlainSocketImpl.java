@@ -92,6 +92,7 @@ class PlainSocketImpl extends SocketImpl
 
   protected void close () throws IOException
   {
-    fd.close();
+    if (fd.valid())
+      fd.close();
   }
 }
