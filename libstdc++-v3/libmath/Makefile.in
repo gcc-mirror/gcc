@@ -121,8 +121,7 @@ libmath_la_SOURCES =  	signbit.c signbitf.c cabs.c cabsf.c
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
-TOPLEVEL_INCLUDES = -I$(includedir)
-INCLUDES = -I../include  $(TOPLEVEL_INCLUDES)
+INCLUDES = -I$(GLIBCPP_INCLUDES) $(TOPLEVEL_INCLUDES)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

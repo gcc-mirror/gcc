@@ -25,22 +25,10 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 
 noinst_LTLIBRARIES = libio.la
 
-# Root level of the include sources.
-glibcpp_includedir = $(top_srcdir)/include
-
-# Passed down for cross compilers, canadian crosses.
-TOPLEVEL_INCLUDES = -I$(includedir)
-
-if GLIBCPP_NEED_LIBIO
-LIBIO_INCLUDES = \
-	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
-else
-LIBIO_INCLUDES = 
-endif
 
 INCLUDES = \
 	-nostdinc++ \
-	-I$(top_builddir) -I$(glibcpp_includedir) \
+	-I$(top_builddir) -I$(GLIBCPP_INCLUDES) \
 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 libio_headers = \

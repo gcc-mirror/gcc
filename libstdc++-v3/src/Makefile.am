@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.35 2000/10/07 01:05:37 bkoz Exp $
+## $Id: Makefile.am,v 1.36 2000/10/07 18:54:08 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -35,69 +35,16 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
+
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
-# AM_CXXFLAGS needs to be in each subdirectory so that it can be
-# modified in a per-library or per-sub-library way.
-# Need to manually set this option because CONFIG_CXXFLAGS has to be at
-# the end of the compile line so that -O2 can be overridden as the
-# occasion call for it. (ie, --enable-debug)
-AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
-
-# Need to explicitly set this so that AM_CXXFLAGS is last. In
-# addition, we don't use $(DEFS), which tries to set $(top_srcdir) as
-# an include diretory, which screws up shadow headers. (That way,
-# things like -O2 passed down from the toplevel can be overridden by
-# --enable-debug.)
-CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	     $(CXXFLAGS) $(AM_CXXFLAGS) 
-
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
-
-# We have a problem when building the shared libstdc++ object if the
-# rules automake generates would be used.  We cannot allow CXX to be used
-# in libtool since this would add -lstdc++ to the link line which of
-# course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
-
-
-# Root level of the include sources.
-glibcpp_includedir = $(top_srcdir)/include
-
-# Passed down for cross compilers, canadian crosses.
-TOPLEVEL_INCLUDES = -I$(includedir)
-
-LIBMATH_INCLUDES = -I$(top_srcdir)/libmath
-
-if GLIBCPP_NEED_LIBIO
-LIBIO_INCLUDES = \
-	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
-else
-LIBIO_INCLUDES = -I$(top_srcdir)/libio
-endif
-
-if GLIBCPP_USE_CSHADOW
-#CSHADOW_INCLUDES = \
-#	-I$(glibcpp_includedir)/std -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
-CSHADOW_INCLUDES = \
-	-I$(glibcpp_includedir)/std -I$(top_srcdir)/shadow 
-else
-CSHADOW_INCLUDES =
-endif
-
 INCLUDES = \
 	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) \
-	-I$(top_builddir) -I$(glibcpp_includedir) \
-	 $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
-	 $(TOPLEVEL_INCLUDES)	
-
+	-I$(top_builddir) -I$(GLIBCPP_INCLUDES) \
+	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	$(TOPLEVEL_INCLUDES)	
 
 headers = \
 	bits/std_cctype.h \
@@ -211,7 +158,7 @@ wstring_sources = \
 	wstring-inst.cc
 
 VPATH += $(top_srcdir) $(top_srcdir)/src
-VPATH += $(glibcpp_includedir) $(top_srcdir)/std
+VPATH += $(GLIBCPP_INCLUDES) $(top_srcdir)/std
 
 
 # Actual sources for the distro, but don't build these.
@@ -261,8 +208,8 @@ install: myinstallheaders
 myinstallheaders: $(headers:%=$(myincludep)%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
-	  echo "$(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep)"; \
-	        $(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep); \
+	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep)"; \
+	        $(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
 	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \
@@ -325,6 +272,33 @@ tmp-libstdc++.INC: Makefile
 	echo -I$(top_builddir) $(INCLUDES) > $@
 
 
+# AM_CXXFLAGS needs to be in each subdirectory so that it can be
+# modified in a per-library or per-sub-library way.
+# Need to manually set this option because CONFIG_CXXFLAGS has to be at
+# the end of the compile line so that -O2 can be overridden as the
+# occasion call for it. (ie, --enable-debug)
+AM_CXXFLAGS = \
+	-fno-implicit-templates \
+	$(WARN_CXXFLAGS) \
+	$(OPTIMIZE_CXXFLAGS) \
+	$(CONFIG_CXXFLAGS) 
+
+# Need to explicitly set this so that AM_CXXFLAGS is last. In
+# addition, we don't use $(DEFS), which tries to set $(top_srcdir) as
+# an include diretory, which screws up shadow headers. (That way,
+# things like -O2 passed down from the toplevel can be overridden by
+# --enable-debug.)
+CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	     $(CXXFLAGS) $(AM_CXXFLAGS) 
+
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+
+# We have a problem when building the shared libstdc++ object if the
+# rules automake generates would be used.  We cannot allow CXX to be used
+# in libtool since this would add -lstdc++ to the link line which of
+# course is impossible.
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 

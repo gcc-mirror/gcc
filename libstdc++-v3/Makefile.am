@@ -52,6 +52,32 @@ CONFIG_CXXFLAGS = \
 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
 
 
+# Root level of the include sources.
+GLIBCPP_INCLUDES = $(top_srcdir)/include
+
+# Passed down for cross compilers, canadian crosses.
+TOPLEVEL_INCLUDES = -I$(includedir)
+
+LIBMATH_INCLUDES = -I$(top_srcdir)/libmath
+
+if GLIBCPP_NEED_LIBIO
+LIBIO_INCLUDES = \
+	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
+else
+LIBIO_INCLUDES = -I$(top_srcdir)/libio
+endif
+
+# XXX may need to add this in later to enabled shadow header includes
+#	-I$(top_builddir)/cshadow
+if GLIBCPP_USE_CSHADOW
+CSHADOW_INCLUDES = \
+	-I$(GLIBCPP_INCLUDES)/std -I$(GLIBCPP_INCLUDES)/c_std
+else
+CSHADOW_INCLUDES = \
+	-I$(GLIBCPP_INCLUDES)/std -I$(GLIBCPP_INCLUDES)/c
+endif
+
+
 # Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
 # because then the paths will be full pathnames, not relative
 # pathnames. (-Wl,--rpath seems to like this better.)
@@ -149,10 +175,10 @@ AM_MAKEFLAGS = \
 	"WERROR=$(WERROR)" \
 	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" \
 	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" \
-	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" 
-
-
-
-
-
+	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" \
+	"GLIBCPP_INCLUDES=$(GLIBCPP_INCLUDES)" \
+	"TOPLEVEL_INCLUDES=$(TOPLEVEL_INCLUDES)" \
+	"LIBMATH_INCLUDES=$(LIBMATH_INCLUDES)" \
+	"LIBIO_INCLUDES=$(LIBIO_INCLUDES)" \
+	"CSHADOW_INCLUDES=$(CSHADOW_INCLUDES)"
 

@@ -1,3 +1,36 @@
+2000-10-10  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/configopts.html: Edit.
+
+	* libio/Makefile.am (INCLUDES): Remove duplicates, simplify.
+	* libio/Makefile.in: Regenerate.
+	* libmath/Makefile.am (INCLUDES): Remove duplicates, simplify.
+	* libmath/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (INCLUDES): Remove duplicate.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* Makefile.am (AM_MAKEFLAGS): Add GLIBCPP_INCLUDES,
+	TOPLEVEL_INCLUDES, LIBMATH_INCLUDES, LIBIO_INCLUDES,
+	CSHADOW_INCLUDES up here.
+	* Makefile.in: Regenerate.
+	* src/Makefile.am (CSHADOW_INCLUDES): Add include/c_std, include/c
+	for shadow headers.
+	(myinstallheaders): Change glibcpp_includedir to GLIBCPP_INCLUDES.
+	Move GLIBCPP_INCLUDES, TOPLEVEL_INCLUDES, LIBMATH_INCLUDES,
+	LIBIO_INCLUDES, CSHADOW_INCLUDES up Makefile hierarchy.
+	* src/Makefile.in: Regenerate.
+	
+	* include/c: New directory.
+	* include/c/bits/(std_cassert.h, std_cctype.h, std_cerrno.h,
+	std_cfloat.h, std_climits.h, std_clocale.h, std_cmath.h,
+	std_csetjmp.h, std_csignal.h, std_cstdarg.h, std_cstddef.h,
+	std_cstdio.h, std_cstdlib.h, std_cstring.h, std_ctime.h,
+	std_cwchar.h, std_cwctype.h): Add, moving from...
+	* include/bits: ...here.
+	* include/c_std: New directory.
+	* include/c_std/bits/*: Populate from...
+	* shadow: ...here. Remove directory.
+	
 2000-10-08   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am (INCLUDES): Add toplevel include directory.
