@@ -3325,7 +3325,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int *pretend_size;
+     int *pretend_size ATTRIBUTE_UNUSED;
      int no_rtl;
 
 {
@@ -3380,9 +3380,6 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	(GP_ARG_MIN_REG + first_reg_offset, mem,
 	 GP_ARG_NUM_REG - first_reg_offset,
 	 (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
-
-      /* ??? Does ABI_V4 need this at all?  */
-      *pretend_size = (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD;
     }
 
   /* Save FP registers if needed.  */
