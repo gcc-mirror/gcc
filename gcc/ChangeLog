@@ -1,3 +1,8 @@
+2000-09-06  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (stage_*): add more dependencies to ensure parallel
+	builds build correctly
+
 2000-09-06  Manfred Hollstein  <manfredh@redhat.com>
 
 	* Makefile.in (bootstrap-lean): Depend on bootstrap-lean_g,
