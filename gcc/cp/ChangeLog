@@ -1,3 +1,7 @@
+2003-12-18  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h (struct lang_type_header): Remove __extension__.
+
 2003-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12253

@@ -3268,10 +3268,7 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
   if (pedantic
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
-      && type_mv != boolean_type_node
-      /* Accept an enum that's equivalent to int or unsigned int.  */
-      && (TREE_CODE (*type) != ENUMERAL_TYPE
-	  || TYPE_PRECISION (*type) != TYPE_PRECISION (integer_type_node)))
+      && type_mv != boolean_type_node)
     pedwarn ("type of bit-field `%s' is a GCC extension", name);
 
   if (type_mv == boolean_type_node)

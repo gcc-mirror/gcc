@@ -490,8 +490,8 @@ extern int snprintf (char *, size_t, const char *, ...);
    FIXME: provide a complete autoconf test for buggy enum bitfields.  */
 
 #if (GCC_VERSION > 2000)
-#define ENUM_BITFIELD(TYPE) enum TYPE
-#define CHAR_BITFIELD unsigned char
+#define ENUM_BITFIELD(TYPE) __extension__ enum TYPE
+#define CHAR_BITFIELD __extension__ unsigned char
 #else
 #define ENUM_BITFIELD(TYPE) unsigned int
 #define CHAR_BITFIELD unsigned int
