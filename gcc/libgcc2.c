@@ -1050,6 +1050,14 @@ __floatdisf (u)
 #endif
 
 #if defined(L_fixunsxfsi) && LONG_DOUBLE_TYPE_SIZE == 96
+/* Reenable the normal types, in case limits.h needs them.  */
+#undef char
+#undef short
+#undef int
+#undef long
+#undef unsigned
+#undef float
+#undef double
 #include <limits.h>
 
 USItype
@@ -1063,6 +1071,14 @@ __fixunsxfsi (a)
 #endif
 
 #ifdef L_fixunsdfsi
+/* Reenable the normal types, in case limits.h needs them.  */
+#undef char
+#undef short
+#undef int
+#undef long
+#undef unsigned
+#undef float
+#undef double
 #include <limits.h>
 
 USItype
@@ -1076,6 +1092,14 @@ __fixunsdfsi (a)
 #endif
 
 #ifdef L_fixunssfsi
+/* Reenable the normal types, in case limits.h needs them.  */
+#undef char
+#undef short
+#undef int
+#undef long
+#undef unsigned
+#undef float
+#undef double
 #include <limits.h>
 
 USItype
