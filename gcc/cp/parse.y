@@ -1753,24 +1753,33 @@ reserved_declspecs:
    to redeclare a typedef-name.
    In the result, declspecs have a non-NULL TREE_VALUE, attributes do not.  */
 
+/* We use hash_tree_cons for lists of typeless declspecs so that they end
+   up on a persistent obstack.  Otherwise, they could appear at the
+   beginning of something like
+
+      static const struct { int foo () { } } b;
+
+   and would be discarded after we finish compiling foo.  We don't need to
+   worry once we see a type.  */
+
 declmods:
 	  nonempty_cv_qualifiers  %prec EMPTY
 		{ $$ = $1.t; TREE_STATIC ($$) = 1; }
 	| SCSPEC
-		{ $$ = build_decl_list (NULL_TREE, $$); }
+		{ $$ = hash_tree_cons (NULL_TREE, $$, NULL_TREE); }
 	| declmods CV_QUALIFIER
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$);
+		{ $$ = hash_tree_cons (NULL_TREE, $2, $$);
 		  TREE_STATIC ($$) = 1; }
 	| declmods SCSPEC
 		{ if (extra_warnings && TREE_STATIC ($$))
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
-		  $$ = decl_tree_cons (NULL_TREE, $2, $$);
+		  $$ = hash_tree_cons (NULL_TREE, $2, $$);
 		  TREE_STATIC ($$) = TREE_STATIC ($1); }
 	| declmods attributes
-		{ $$ = decl_tree_cons ($2, NULL_TREE, $1); }
+		{ $$ = hash_tree_cons ($2, NULL_TREE, $1); }
 	| attributes
-		{ $$ = decl_tree_cons ($1, NULL_TREE, NULL_TREE); }
+		{ $$ = hash_tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
 /* Used instead of declspecs where storage classes are not allowed
@@ -2141,11 +2150,15 @@ structsp:
 		  $<ttype>$ = finish_class_definition ($1, $5, semi); 
 		}
 	  pending_defargs
-                { finish_default_args (); }
+                {
+		  begin_inline_definitions ();
+		}
 	  pending_inlines
-                { $$.t = $<ttype>6;
+                {
+		  finish_inline_definitions ();
+		  $$.t = $<ttype>6;
 		  $$.new_type_flag = 1; 
-		  begin_inline_definitions (); }
+		}
 	| class_head  %prec EMPTY
 		{
 		  $$.new_type_flag = 0;
@@ -2689,10 +2702,10 @@ cv_qualifiers:
 
 nonempty_cv_qualifiers:
 	  CV_QUALIFIER
-		{ $$.t = build_decl_list (NULL_TREE, $1); 
+		{ $$.t = hash_tree_cons (NULL_TREE, $1, NULL_TREE);
 		  $$.new_type_flag = 0; }
 	| nonempty_cv_qualifiers CV_QUALIFIER
-		{ $$.t = decl_tree_cons (NULL_TREE, $2, $1.t); 
+		{ $$.t = hash_tree_cons (NULL_TREE, $2, $1.t); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
