@@ -790,18 +790,20 @@ struct rtx_def *function_arg();
 
 /* Extra constraints - 'U' if for an operand valid for a bset
    destination; i.e. a register, register indirect, or the
-   eightbit memory region (a SYMBOL_REF with an SYMBOL_REF_FLAG set).  */
+   eightbit memory region (a SYMBOL_REF with an SYMBOL_REF_FLAG set). 
+
+   On the H8/S 'U' can also be a 16bit or 32bit absolute.  */
 #define OK_FOR_U(OP) \
   ((GET_CODE (OP) == REG && REG_OK_FOR_BASE_P (OP)) \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG \
        && REG_OK_FOR_BASE_P (XEXP (OP, 0)))  \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF \
-       && SYMBOL_REF_FLAG (XEXP (OP, 0))) \
+       && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (OP, 0)))) \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST \
        && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
-       && SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)) \
-       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT))
+       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
+       && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0))))
  
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'U' ? OK_FOR_U (OP) : 0)
