@@ -1,3 +1,12 @@
+2001-02-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/1972
+	libstdc++/2089
+	* include/bits/std_stdexcept.h (logic_error::logic_error): Use
+	string object, not reference.
+	(runtime_error::runtime_error): Same.
+	* testsuite/19_diagnostics/stdexceptions.cc: New file.
+
 2001-02-26  Phil Edwards  <pme@sources.redhat.com>
 
 	Fixes libstdc++/2079
