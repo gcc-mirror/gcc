@@ -1,14 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
-
-/* Define if using alloca.c.  */
-#undef C_ALLOCA
-
-/* Define to empty if the keyword does not work.  */
-#undef const
-
-/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
-   This function is required for alloca.c support on those systems.  */
-#undef CRAY_STACKSEG_END
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define to the type of elements in the array set by `getgroups'.
    Usually this is either `int' or `gid_t'.  */
@@ -16,15 +6,6 @@
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef gid_t
-
-/* Define if you have alloca, as a function or macro.  */
-#undef HAVE_ALLOCA
-
-/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
-#undef HAVE_ALLOCA_H
-
-/* Define if you have a working `mmap' system call.  */
-#undef HAVE_MMAP
 
 /* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
 #undef HAVE_SYS_WAIT_H
@@ -38,23 +19,8 @@
 /* Define if your C compiler doesn't accept -c and -o together.  */
 #undef NO_MINUS_C_MINUS_O
 
-/* Define to `long' if <sys/types.h> doesn't define.  */
-#undef off_t
-
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef pid_t
-
-/* Define to `unsigned' if <sys/types.h> doesn't define.  */
-#undef size_t
-
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
- STACK_DIRECTION > 0 => grows toward higher addresses
- STACK_DIRECTION < 0 => grows toward lower addresses
- STACK_DIRECTION = 0 => direction of growth unknown
- */
-#undef STACK_DIRECTION
 
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
@@ -84,15 +50,6 @@
 /* Define if cpp should also search $prefix/include.  */
 #undef PREFIX_INCLUDE_DIR
 
-/* Define if you have the __argz_count function.  */
-#undef HAVE___ARGZ_COUNT
-
-/* Define if you have the __argz_next function.  */
-#undef HAVE___ARGZ_NEXT
-
-/* Define if you have the __argz_stringify function.  */
-#undef HAVE___ARGZ_STRINGIFY
-
 /* Define if you have the alphasort function.  */
 #undef HAVE_ALPHASORT
 
@@ -104,9 +61,6 @@
 
 /* Define if you have the clock function.  */
 #undef HAVE_CLOCK
-
-/* Define if you have the dcgettext function.  */
-#undef HAVE_DCGETTEXT
 
 /* Define if you have the dup2 function.  */
 #undef HAVE_DUP2
@@ -122,12 +76,6 @@
 
 /* Define if you have the fwrite_unlocked function.  */
 #undef HAVE_FWRITE_UNLOCKED
-
-/* Define if you have the getcwd function.  */
-#undef HAVE_GETCWD
-
-/* Define if you have the getpagesize function.  */
-#undef HAVE_GETPAGESIZE
 
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
@@ -153,38 +101,20 @@
 /* Define if you have the mmap function.  */
 #undef HAVE_MMAP
 
-/* Define if you have the munmap function.  */
-#undef HAVE_MUNMAP
-
 /* Define if you have the nl_langinfo function.  */
 #undef HAVE_NL_LANGINFO
 
 /* Define if you have the putc_unlocked function.  */
 #undef HAVE_PUTC_UNLOCKED
 
-/* Define if you have the putenv function.  */
-#undef HAVE_PUTENV
-
 /* Define if you have the scandir function.  */
 #undef HAVE_SCANDIR
-
-/* Define if you have the setenv function.  */
-#undef HAVE_SETENV
 
 /* Define if you have the setlocale function.  */
 #undef HAVE_SETLOCALE
 
 /* Define if you have the setrlimit function.  */
 #undef HAVE_SETRLIMIT
-
-/* Define if you have the stpcpy function.  */
-#undef HAVE_STPCPY
-
-/* Define if you have the strcasecmp function.  */
-#undef HAVE_STRCASECMP
-
-/* Define if you have the strchr function.  */
-#undef HAVE_STRCHR
 
 /* Define if you have the strsignal function.  */
 #undef HAVE_STRSIGNAL
@@ -197,9 +127,6 @@
 
 /* Define if you have the wcswidth function.  */
 #undef HAVE_WCSWIDTH
-
-/* Define if you have the <argz.h> header file.  */
-#undef HAVE_ARGZ_H
 
 /* Define if you have the <direct.h> header file.  */
 #undef HAVE_DIRECT_H
@@ -221,9 +148,6 @@
 
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H
-
-/* Define if you have the <nl_types.h> header file.  */
-#undef HAVE_NL_TYPES_H
 
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H
@@ -263,9 +187,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <values.h> header file.  */
-#undef HAVE_VALUES_H
 
 /* Define if you have the <wchar.h> header file.  */
 #undef HAVE_WCHAR_H
@@ -384,6 +305,9 @@
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
+
+/* Define if your <locale.h> file defines LC_MESSAGES. */
+#undef HAVE_LC_MESSAGES
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETENV
@@ -507,17 +431,9 @@
    the results of comparisons. */
 #undef EXTRA_CC_MODES
 
-/* Define if you have the stpcpy function */
-#undef HAVE_STPCPY
-
-/* Define if your locale.h file contains LC_MESSAGES. */
-#undef HAVE_LC_MESSAGES
-
-/* Define to 1 if NLS is requested */
+/* Define to 1 if translation of program messages to the 
+  user's native language is requested. */
 #undef ENABLE_NLS
-
-/* Define as 1 if you have gettext and don't want to use GNU gettext. */
-#undef HAVE_GETTEXT
 
 /* Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts. */

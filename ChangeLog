@@ -1,3 +1,8 @@
+2003-07-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.tpl (configure-gcc): Depend on maybe-configure-intl.
+	* Makefile.in: Regenerate.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.tpl (all-bootstrap): Depend on maybe-all-intl.
