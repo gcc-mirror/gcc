@@ -1292,14 +1292,16 @@ typedef struct rs6000_stack {
 		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
 	       || POINTER_TYPE_P (VALTYPE)			\
 	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
+	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT \
+               ? FP_ARG_RETURN : GP_ARG_RETURN)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)		\
-  gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	 \
-		      && TARGET_HARD_FLOAT ? 33 : 3))
+#define LIBCALL_VALUE(MODE)					\
+  gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+		      && TARGET_HARD_FLOAT			\
+		      ? FP_ARG_RETURN : GP_ARG_RETURN))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
