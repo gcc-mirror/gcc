@@ -4310,6 +4310,8 @@ expand_expr (exp, target, tmode, modifier)
 		= assign_stack_temp (mode, int_size_in_bytes (type), 0);
 	      MEM_IN_STRUCT_P (temp) = AGGREGATE_TYPE_P (type);
 	    }
+	  else if (mode == VOIDmode)
+	    temp = const0_rtx;
 	  else
 	    temp = gen_reg_rtx (promote_mode (type, mode, &unsignedp, 0));
 
@@ -4331,7 +4333,10 @@ expand_expr (exp, target, tmode, modifier)
 	      SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	    }
 
-	  store_expr (TREE_OPERAND (exp, 0), temp, 0);
+	  if (temp == const0_rtx)
+	    expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
+	  else
+	    store_expr (TREE_OPERAND (exp, 0), temp, 0);
 	}
 
       /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
