@@ -122,7 +122,7 @@ term left-most refers to the depth first left-most node.  It uses
 the things that have @code{BINFO_OFFSET}s of zero are shared and will
 have themselves as their own @code{MAIN_VARIANT}s.  The non-shared right
 ones, are copies of the left-most one, hence if it is its own
-@code{MAIN_VARIENT}, we know it IS a left-most one, if it is not, it is
+@code{MAIN_VARIANT}, we know it IS a left-most one, if it is not, it is
 a non-left-most one.
 
 @code{get_base_distance}'s path and distance matters in its use in:
