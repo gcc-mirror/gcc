@@ -555,9 +555,11 @@ fr30_print_operand (file, x, code)
       else
 	{
 	  REAL_VALUE_TYPE d;
+	  char str[30];
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  fprintf (file, "%.8f", d);
+	  REAL_VALUE_TO_DECIMAL (d, str, 8);
+	  fputs (str, file);
 	}
       return;
       
