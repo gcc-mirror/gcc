@@ -1,3 +1,7 @@
+2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* final.c (final_scan_insn): Call ADDR_VEC_ALIGN on next insn.
+
 2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
 
 	* explow.c (set_mem_attributes): Avoid returning a bogus alias set

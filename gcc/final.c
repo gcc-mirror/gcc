@@ -2343,7 +2343,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		  readonly_data_section ();
 
 #ifdef ADDR_VEC_ALIGN
-		  log_align = ADDR_VEC_ALIGN (nextbody);
+		  log_align = ADDR_VEC_ALIGN (NEXT_INSN (insn));
 #else
 		  log_align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 #endif
