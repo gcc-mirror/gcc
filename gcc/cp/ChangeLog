@@ -1,3 +1,7 @@
+2000-11-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (op_error): Make error messages clearer.
+
 2000-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (wrapup_globals_for_namespace): Don't mark things
