@@ -1,0 +1,46 @@
+970811
+
+This directory contains the f2c library packaged for use with g77 to configure
+and build automatically (in principle!) as part of the top-level configure and
+make steps.  This depends on the makefile and configure fragments in ../f.
+
+Some small changes have been made to the f2c distributions of lib[FI]77 which
+come from <ftp:bell-labs.com/netlib/f2c/> and are maintained (excellently) by
+David M. Gay <dmg@bell-labs.com>.  See the Notice files for copyright
+information.  I'll try to get the changes rolled into the f2c distribution.
+
+Files that come directly from netlib are either maintained in the
+gcc/f/runtime/ directory under their original names or, if they
+are not pertinent for g77's version of libf2c, under their original
+names with `.netlib' appended.  For example, gcc/f/runtime/permissions.netlib
+is a copy of f2c's top-level`permissions' file in the netlib distribution.
+In this case, it applies only to the relevant portions of the libF77/ and
+libI77/ directories; it does not apply to the libU77/ directory, which is
+distributed under different licensing arrangements.  Similarly,
+the `makefile.netlib' files in libF77/ and libI77/ are copies of
+the respective `makefile' files in the netlib distribution, but
+are not used when building g77's version of libf2c.
+
+The `README.netlib' files in libF77/ and libI77/ thus might be
+interesting, but should not be taken as guidelines for how to
+configure and build libf2c in g77's distribution.
+
+The packaging for auto-configuration was done by Dave Love <d.love@dl.ac.uk>.
+Minor changes have been made by James Craig Burley <burley@gnu.ai.mit.edu>,
+who probably broke things Dave had working.  :-)
+
+Among the user-visible changes (choices) g77 makes in its
+version of libf2c:
+
+-  f2c.h configured to default to padding unformatted direct reads
+   (#define Pad_UDread), because that's the behavior most users
+   expect.
+
+-  f2c.h configured to default to outputting leading zeros before
+   decimal points in formatted and list-directed output, to be compatible
+   with many other compilers (#define WANT_LEAD_0).  Either way is
+   standard-conforming, however, and you should try to avoid writing
+   code that assumes one format or another.
+
+-  dtime_() and etime_() are from Dave Love's libU77, not from
+   netlib's libF77.
