@@ -90,7 +90,7 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/optimize.o cp/mangle.o cp/cp-lang.o
 
 # Use loose warnings for this front end.
-cp-warn =
+cp-warn = $(WERROR)
 
 cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
 		  libcpp.a $(LIBDEPS)

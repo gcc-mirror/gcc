@@ -142,7 +142,7 @@ coverageexts = .{da,bbg}
 # stage1, as not all versions of gcc understand -Wno-long-long.
 LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 STRICT_WARN = -Wtraditional @strict1_warn@
-STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long
+STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long @WERROR@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.
@@ -154,7 +154,7 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 
 # This is how we control whether or not the additional warnings are applied.
 .-warn = $(STRICT_WARN)
-GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $(WERROR) $($@-warn)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
 # These files are to have -Werror bypassed in stage2:
 # These are very hard to completely clean due to target complexities.
@@ -2474,6 +2474,11 @@ specs.ready: specs
 	else \
 		$(STAMP) specs.ready; \
 	fi
+
+# Until someone fixes this recursive make nightmare (please note where
+# BUILD_CFLAGS and WARN_CFLAGS are first expanded below versus which
+# later make invocation has the fine-grain -warn markings for fixinc):
+fixinc.sh-warn = -Wno-error
 
 FIXINCSRCDIR=$(srcdir)/fixinc
 fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
