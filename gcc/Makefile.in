@@ -2221,25 +2221,28 @@ cpp.dvi: $(srcdir)/cpp.texi
 generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 
 $(srcdir)/gcov.1: $(srcdir)/gcov.texi
-	$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
-	($(POD2MAN) gcov.pod > $(srcdir)/gcov.1.T$$$$ && \
+	touch $(srcdir)/gcov.1
+	-$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
+	-($(POD2MAN) gcov.pod > $(srcdir)/gcov.1.T$$$$ && \
 		mv -f $(srcdir)/gcov.1.T$$$$ $(srcdir)/gcov.1) || \
 		(rm -f $(srcdir)/gcov.1.T$$$$ && exit 1)
-	rm -f gcov.pod
+	-rm -f gcov.pod
 
 $(srcdir)/cpp.1: $(srcdir)/cpp.texi
-	$(TEXI2POD) < $(srcdir)/cpp.texi > cpp.pod
-	($(POD2MAN) cpp.pod > $(srcdir)/cpp.1.T$$$$ && \
+	touch $(srcdir)/cpp.1
+	-$(TEXI2POD) < $(srcdir)/cpp.texi > cpp.pod
+	-($(POD2MAN) cpp.pod > $(srcdir)/cpp.1.T$$$$ && \
 		mv -f $(srcdir)/cpp.1.T$$$$ $(srcdir)/cpp.1) || \
 		(rm -f $(srcdir)/cpp.1.T$$$$ && exit 1)
-	rm -f cpp.pod
+	-rm -f cpp.pod
 
 $(srcdir)/gcc.1: $(srcdir)/invoke.texi
-	$(TEXI2POD) < $(srcdir)/invoke.texi > gcc.pod
-	($(POD2MAN) gcc.pod > $(srcdir)/gcc.1.T$$$$ && \
+	touch $(srcdir)/gcc.1
+	-$(TEXI2POD) < $(srcdir)/invoke.texi > gcc.pod
+	-($(POD2MAN) gcc.pod > $(srcdir)/gcc.1.T$$$$ && \
 		mv -f $(srcdir)/gcc.1.T$$$$ $(srcdir)/gcc.1) || \
 		(rm -f $(srcdir)/gcc.1.T$$$$ && exit 1)
-	rm -f gcc.pod
+	-rm -f gcc.pod
 
 #
 # Deletion of files made during compilation.
