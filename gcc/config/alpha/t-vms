@@ -1,1 +1,1 @@
-LIB2FUNCS_EXTRA = tramp.s
+LIB2FUNCS_EXTRA = $(srcdir)/config/alpha/vms_tramp.asm
