@@ -397,9 +397,6 @@ do { text_section ();							\
         || DECL_INITIAL (DECL))                                         \
       (* targetm.encode_section_info) (DECL, DECL_RTL (DECL), false);	\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
-    /* Avoid generating stubs for functions we've just defined by	\
-       outputting any required stub name label now.  */			\
-    machopic_output_possible_stub_label (FILE, xname);			\
   } while (0)
 
 #define ASM_DECLARE_CONSTANT_NAME(FILE, NAME, EXP, SIZE)	\

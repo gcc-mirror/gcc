@@ -1,3 +1,16 @@
+2004-09-11  Andrew Pinski  <apinski@apple.com>
+
+	PR target/17167
+	backport from the mainline:
+	2004-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
+	* config/darwin.h (machopic_finish): Output stub even if
+	the symbol is already defined.
+	2004-02-27  Dale Johannesen  <dalej@apple.com>
+	* config/darwin.c (machopic_output_possible_stub_label):
+	Remove.
+	config/darwin-protos.h:  Ditto.
+	config/darwin.h:  Remove call to it.
+
 2004-09-11  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/17277
