@@ -1,4 +1,4 @@
-2001-12-09  Aldy Hernandez  <aldyh@redhat.com>
+2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
         * attribs.c (c_common_attribute_table): Swap decl_req and type_req
 	for the mode attribute.

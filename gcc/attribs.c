@@ -120,7 +120,7 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_constructor_attribute },
   { "destructor",             0, 0, true,  false, false,
 			      handle_destructor_attribute },
-  { "mode",                   1, 1, true,  false, false,
+  { "mode",                   1, 1, false,  true, false,
 			      handle_mode_attribute },
   { "section",                1, 1, true,  false, false,
 			      handle_section_attribute },
@@ -761,8 +761,7 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
      int flags ATTRIBUTE_UNUSED;
      bool *no_add_attrs;
 {
-  tree decl = *node;
-  tree type = TREE_TYPE (decl);
+  tree type = *node;
 
   *no_add_attrs = true;
 
@@ -786,7 +785,7 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 	  p = newp;
 	}
 
-      /* Give this decl a type with the specified mode.
+      /* Change this type to have a type with the specified mode.
 	 First check for the special modes.  */
       if (! strcmp (p, "byte"))
 	mode = byte_mode;
@@ -805,12 +804,8 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 					     TREE_UNSIGNED (type))))
 	error ("no data type for mode `%s'", p);
       else
-	{
-	  TREE_TYPE (decl) = type = typefm;
-	  DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
-	  if (TREE_CODE (decl) != FIELD_DECL)
-	    layout_decl (decl, 0);
-	}
+	*node = typefm;
+        /* No need to layout the type here.  The caller should do this.  */
     }
 
   return NULL_TREE;
