@@ -161,7 +161,7 @@ extern int target_flags;
 
 /* Output a reference to a label.  */
 #define ASM_OUTPUT_LABELREF(STREAM,NAME)  \
-  fprintf ((STREAM), "%s%s", USER_LABEL_PREFIX, (NAME))
+  fprintf ((STREAM), "%s%s", user_label_prefix, (NAME))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_BYTE(STREAM,VALUE)					\
@@ -977,7 +977,7 @@ int thumb_shiftable_const ();
       rtx orig_X = X;							\
       X = copy_rtx (X);							\
       push_reload (orig_X, NULL_RTX, &X, NULL_PTR,			\
-		   reload_address_base_reg_class,			\
+		   BASE_REG_CLASS,					\
 		   Pmode, VOIDmode, 0, 0, OPNUM, TYPE);			\
       goto WIN;								\
     }									\

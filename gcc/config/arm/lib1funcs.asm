@@ -47,6 +47,15 @@ Boston, MA 02111-1307, USA.  */
 #error  __USER_LABEL_PREFIX__ not defined
 #endif
 
+/* ANSI concatenation macros.  */
+
+#define CONCAT1(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a ## b
+
+/* Use the right prefix for global labels.  */
+
+#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
+
 #ifdef __elf__
 #define __PLT__ (PLT)
 #define TYPE(x) .type SYM(x),function
@@ -56,15 +65,6 @@ Boston, MA 02111-1307, USA.  */
 #define TYPE(x)
 #define SIZE(x)
 #endif
-
-/* ANSI concatenation macros.  */
-
-#define CONCAT1(a, b) CONCAT2(a, b)
-#define CONCAT2(a, b) a ## b
-
-/* Use the right prefix for global labels.  */
-
-#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
 
 #ifdef L_udivsi3
 

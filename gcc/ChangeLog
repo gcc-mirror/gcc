@@ -1,3 +1,18 @@
+Wed Dec 23 10:27:44 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/t-arm-elf: Add multiplib option for leading
+	underscores.
+
+	* config/arm/thumb.h (ASM_OUTPUT_LABELREF): Use variable
+        'user_label_prefix' rather than macro USER_LABEL_PREFIX.
+
+	(thumb_shiftable_const): Use macro 'BASE_REG_CLASS' rather
+	than variable 'reload_address_base_reg_class'.  [Note this
+	change is unrelated to the others in this patch].
+
+	* config/arm/unknown-elf.h (USER_LABEL_PREFIX): Default to no
+        leading underscore.
+
 Wed Dec 23 09:51:32 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (record_alias_subset): Remove ignored `&'.

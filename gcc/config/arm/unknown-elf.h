@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define ENDFILE_SPEC	"crtend%O%s"
 
-#define USER_LABEL_PREFIX 	"_"	/* FIXME: This ought to be "" */
+#define USER_LABEL_PREFIX 	""
 #define LOCAL_LABEL_PREFIX 	"."
 
 #define TEXT_SECTION "		.text"
