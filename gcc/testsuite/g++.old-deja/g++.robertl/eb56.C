@@ -3,7 +3,7 @@
 
 class foo {
   public:
-        typedef int sometype;
+  typedef int sometype;
 };
 
 struct die : public foo::sometype { // ERROR - invalid base type

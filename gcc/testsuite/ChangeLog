@@ -1,5 +1,10 @@
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* testsuite/g++.old-deja/g++.other/friend9.C: Revert DR 209 changes.
+	* testsuite/g++.old-deja/g++.robertl/eb56.C: Likewise.
+
+2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* testsuite/g++.dg/overload/pmf1.C: New test.
 
 2002-03-11  Kazu Hirata  <kazu@hxi.com>
