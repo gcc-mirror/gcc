@@ -393,7 +393,7 @@ struct _STL_ERROR {
   template <class _Type>
   static _Type
   __less_than_comparable_requirement_violation(_Type __a, _Type __b) {
-    if (__a < __b || __a > __b || __a <= __b || __a >= __b) return __a;
+    if (__a < __b) return __a;
     return __b;
   }
   template <class _Type>
