@@ -1462,6 +1462,7 @@ expand_fixup_region_end (cleanup)
      tree cleanup;
 {
   struct eh_node *node;
+  int dont_issue;
 
   if (! doing_eh (0) || exceptions_via_longjmp)
     return;
@@ -1474,10 +1475,31 @@ expand_fixup_region_end (cleanup)
   if (node == 0)
     abort ();
 
+  /* If the outer context label has not been issued yet, we don't want
+     to issue it as a part of this region, unless this is the
+     correct region for the outer context. If we did, then the label for
+     the outer context will be WITHIN the begin/end labels, 
+     and we could get an infinte loop when it tried to rethrow, or just
+     generally incorrect execution following a throw. */
+
+  dont_issue = ((INSN_UID (node->entry->outer_context) == 0) 
+            && (ehstack.top->entry != node->entry));
+
   ehstack.top->entry->outer_context = node->entry->outer_context;
+
+  /* Since we are rethrowing to the OUTER region, we know we don't need
+     a jump around sequence for this region, so we'll pretend the outer 
+     context label has been issued by setting INSN_UID to 1, then clearing
+     it again afterwards. */
+
+  if (dont_issue)
+    INSN_UID (node->entry->outer_context) = 1;
 
   /* Just rethrow.  size_zero_node is just a NOP.  */
   expand_eh_region_end (size_zero_node);
+
+  if (dont_issue)
+    INSN_UID (node->entry->outer_context) = 0;
 }
 
 /* If we are using the setjmp/longjmp EH codegen method, we emit a
