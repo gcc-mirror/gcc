@@ -3,6 +3,9 @@
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
 
+/* Define to empty if the keyword does not work.  */
+#undef const
+
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
    This function is required for alloca.c support on those systems.  */
 #undef CRAY_STACKSEG_END
@@ -21,6 +24,9 @@
 
 /* Define if you have <vfork.h>.  */
 #undef HAVE_VFORK_H
+
+/* Define as __inline if that's what the C compiler calls it.  */
+#undef inline
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef pid_t
@@ -45,18 +51,6 @@
 
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
-
-/* Define if you have the sys_errlist variable.  */
-#undef HAVE_SYS_ERRLIST
-
-/* Define if you have the sys_nerr variable.  */
-#undef HAVE_SYS_NERR
-
-/* Define if you have the sys_siglist variable.  */
-#undef HAVE_SYS_SIGLIST
-
-/* Define if you have the strerror function.  */
-#undef HAVE_STRERROR
 
 /* Define if you have the asprintf function.  */
 #undef HAVE_ASPRINTF
@@ -243,4 +237,13 @@
 
 /* Define if errno must be declared even when <errno.h> is included. */
 #undef NEED_DECLARATION_ERRNO
+
+/* Define if you have the sys_errlist variable. */
+#undef HAVE_SYS_ERRLIST
+
+/* Define if you have the sys_nerr variable. */
+#undef HAVE_SYS_NERR
+
+/* Define if you have the sys_siglist variable. */
+#undef HAVE_SYS_SIGLIST
 

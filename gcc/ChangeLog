@@ -1,3 +1,8 @@
+2000-11-22  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Makefile.in, config.gcc, configure.in: Expunge remaining
+	traces of facility for running MD files through C preprocessor.
+
 2000-11-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcov.texi: Add magic comments for texi2pod.pl.

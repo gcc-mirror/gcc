@@ -16,6 +16,13 @@ extern "C" {
 
 #include "ansidecl.h"
 
+#ifdef ANSI_PROTOTYPES
+/* Get a definition for size_t.  */
+#include <stddef.h>
+/* Get a definition for va_list.  */
+#include <stdarg.h>
+#endif
+
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */
 
@@ -130,16 +137,13 @@ extern void xexit PARAMS ((int status)) ATTRIBUTE_NORETURN;
 
 extern void xmalloc_set_program_name PARAMS ((const char *));
 
+/* Report an allocation failure.  */
+extern void xmalloc_failed PARAMS ((size_t)) ATTRIBUTE_NORETURN;
+
 /* Allocate memory without fail.  If malloc fails, this will print a
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */
 
-#ifdef ANSI_PROTOTYPES
-/* Get a definition for size_t.  */
-#include <stddef.h>
-/* Get a definition for va_list.  */
-#include <stdarg.h>
-#endif
 extern PTR xmalloc PARAMS ((size_t)) ATTRIBUTE_MALLOC;
 
 /* Reallocate memory without fail.  This works like xmalloc.  Note,
