@@ -1445,34 +1445,29 @@ char *
 output_ior (operands)
      rtx *operands;
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      unsigned mask = INTVAL (operands[2]);
-      int bs0, bs1, bs2, p, len;
+  unsigned mask = INTVAL (operands[2]);
+  int bs0, bs1, bs2, p, len;
  
-      if (INTVAL (operands[2]) == 0)
-	return "copy %1,%0";
+  if (INTVAL (operands[2]) == 0)
+    return "copy %1,%0";
 
-      for (bs0 = 0; bs0 < 32; bs0++)
-	if ((mask & (1 << bs0)) != 0)
-	  break;
+  for (bs0 = 0; bs0 < 32; bs0++)
+    if ((mask & (1 << bs0)) != 0)
+      break;
 
-      for (bs1 = bs0; bs1 < 32; bs1++)
-	if ((mask & (1 << bs1)) == 0)
-	  break;
+  for (bs1 = bs0; bs1 < 32; bs1++)
+    if ((mask & (1 << bs1)) == 0)
+      break;
 
-      if (bs1 != 32 && ((unsigned) 1 << bs1) <= mask)
-	abort();
+  if (bs1 != 32 && ((unsigned) 1 << bs1) <= mask)
+    abort();
 
-      p = 31 - bs0;
-      len = bs1 - bs0;
+  p = 31 - bs0;
+  len = bs1 - bs0;
 
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
-      operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
-      return "depi -1,%2,%3,%0";
-    }
-  else
-    return "or %1,%2,%0";
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+  return "depi -1,%2,%3,%0";
 }
 
 /* Output an ascii string.  */
