@@ -168,9 +168,27 @@ read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 inline _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *context, int index)
 {
+  int size;
+  void *ptr;
+
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  size = dwarf_reg_size_table[index];
+  ptr = context->reg[index];
+
   /* This will segfault if the register hasn't been saved.  */
-  return * (_Unwind_Word *) context->reg[index];
+  if (size == sizeof(_Unwind_Ptr))
+    return * (_Unwind_Ptr *) ptr;
+
+  if (size == sizeof(_Unwind_Word))
+    return * (_Unwind_Word *) ptr;
+
+  abort ();
+}
+
+static inline void *
+_Unwind_GetPtr (struct _Unwind_Context *context, int index)
+{
+  return (void *)(_Unwind_Ptr) _Unwind_GetGR (context, index);
 }
 
 /* Get the value of the CFA as saved in CONTEXT.  */
@@ -186,8 +204,19 @@ _Unwind_GetCFA (struct _Unwind_Context *context)
 inline void
 _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
 {
+  int size;
+  void *ptr;
+
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
-  * (_Unwind_Word *) context->reg[index] = val;
+  size = dwarf_reg_size_table[index];
+  ptr = context->reg[index];
+
+  if (size == sizeof(_Unwind_Ptr))
+    * (_Unwind_Ptr *) ptr = val;
+  else if (size == sizeof(_Unwind_Word))
+    * (_Unwind_Word *) ptr = val;
+  else
+    abort ();
 }
 
 /* Get the pointer to a register INDEX as saved in CONTEXT.  */
@@ -1072,6 +1101,23 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
   return state_in;
 }
 
+typedef union { _Unwind_Ptr ptr; _Unwind_Word word; } _Unwind_SpTmp;
+
+static inline void
+_Unwind_SetSpColumn (struct _Unwind_Context *context, void *cfa,
+                     _Unwind_SpTmp *tmp_sp)
+{
+  int size = dwarf_reg_size_table[__builtin_dwarf_sp_column ()];
+  
+  if (size == sizeof(_Unwind_Ptr))
+    tmp_sp->ptr = (_Unwind_Ptr) cfa;
+  else if (size == sizeof(_Unwind_Word))
+    tmp_sp->word = (_Unwind_Ptr) cfa;
+  else
+    abort ();
+  _Unwind_SetGRPtr (context, __builtin_dwarf_sp_column (), tmp_sp);
+}
+
 static void
 uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
@@ -1095,13 +1141,10 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
      Always zap the saved stack pointer value for the next frame; carrying
      the value over from one frame to another doesn't make sense.  */
 
-  _Unwind_Word tmp_sp;
+  _Unwind_SpTmp tmp_sp;
 
   if (!_Unwind_GetGRPtr (&orig_context, __builtin_dwarf_sp_column ()))
-    {
-      tmp_sp = (_Unwind_Ptr) context->cfa;
-      _Unwind_SetGRPtr (&orig_context, __builtin_dwarf_sp_column (), &tmp_sp);
-    }
+    _Unwind_SetSpColumn (&orig_context, context->cfa, &tmp_sp);
   _Unwind_SetGRPtr (context, __builtin_dwarf_sp_column (), NULL);
 #endif
 
@@ -1109,7 +1152,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   switch (fs->cfa_how)
     {
     case CFA_REG_OFFSET:
-      cfa = (void *) (_Unwind_Ptr) _Unwind_GetGR (&orig_context, fs->cfa_reg);
+      cfa = _Unwind_GetPtr (&orig_context, fs->cfa_reg);
       cfa += fs->cfa_offset;
       break;
 
@@ -1175,7 +1218,7 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   /* Compute the return address now, since the return address column
      can change from frame to frame.  */
   context->ra = __builtin_extract_return_addr
-    ((void *) (_Unwind_Ptr) _Unwind_GetGR (context, fs->retaddr_column));
+    (_Unwind_GetPtr (context, fs->retaddr_column));
 }
 
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
@@ -1192,13 +1235,19 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     }									   \
   while (0)
 
+static inline void
+init_dwarf_reg_size_table (void)
+{
+  __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
+}
+
 static void
 uw_init_context_1 (struct _Unwind_Context *context,
 		   void *outer_cfa, void *outer_ra)
 {
   void *ra = __builtin_extract_return_addr (__builtin_return_address (0));
   _Unwind_FrameState fs;
-  _Unwind_Word sp_slot;
+  _Unwind_SpTmp sp_slot;
 
   memset (context, 0, sizeof (struct _Unwind_Context));
   context->ra = ra;
@@ -1206,9 +1255,20 @@ uw_init_context_1 (struct _Unwind_Context *context,
   if (uw_frame_state_for (context, &fs) != _URC_NO_REASON)
     abort ();
 
+#if __GTHREADS
+  {
+    static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
+    if (__gthread_once (&once_regsizes, init_dwarf_reg_size_table) != 0
+	|| dwarf_reg_size_table[0] == 0)
+      init_dwarf_reg_size_table ();
+  }
+#else
+  if (dwarf_reg_size_table[0] == 0)
+    init_dwarf_reg_size_table ();
+#endif
+
   /* Force the frame state to use the known cfa value.  */
-  sp_slot = (_Unwind_Ptr) outer_cfa;
-  _Unwind_SetGRPtr (context, __builtin_dwarf_sp_column (), &sp_slot);
+  _Unwind_SetSpColumn (context, outer_cfa, &sp_slot);
   fs.cfa_how = CFA_REG_OFFSET;
   fs.cfa_reg = __builtin_dwarf_sp_column ();
   fs.cfa_offset = 0;
@@ -1235,29 +1295,11 @@ uw_init_context_1 (struct _Unwind_Context *context,
     }									 \
   while (0)
 
-static inline void
-init_dwarf_reg_size_table (void)
-{
-  __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
-}
-
 static long
 uw_install_context_1 (struct _Unwind_Context *current,
 		      struct _Unwind_Context *target)
 {
   long i;
-
-#if __GTHREADS
-  {
-    static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
-    if (__gthread_once (&once_regsizes, init_dwarf_reg_size_table) != 0
-	|| dwarf_reg_size_table[0] == 0)
-      init_dwarf_reg_size_table ();
-  }
-#else
-  if (dwarf_reg_size_table[0] == 0)
-    init_dwarf_reg_size_table ();
-#endif
 
   for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
     {
@@ -1274,8 +1316,7 @@ uw_install_context_1 (struct _Unwind_Context *current,
 
     /* If the last frame records a saved stack pointer, use it.  */
     if (_Unwind_GetGRPtr (target, __builtin_dwarf_sp_column ()))
-      target_cfa = (void *)(_Unwind_Ptr)
-        _Unwind_GetGR (target, __builtin_dwarf_sp_column ());
+      target_cfa = _Unwind_GetPtr (target, __builtin_dwarf_sp_column ());
     else
       target_cfa = target->cfa;
 

@@ -1,3 +1,24 @@
+2003-07-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes):
+	If DWARF_FRAME_RETURN_COLUMN doesn't have a register mode, use Pmode.
+
+2003-07-15  J"orn Rennecke <joern.rennecke@superh.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2.c (_Unwind_GetGR): Use dwarf_reg_size_table
+	to decide if to access a _Unwind_Ptr or a _Unwind_Word.
+	(_Unwind_SetGR): Likewise.
+	(_Unwind_GetPtr, _Unwind_SetSpColumn): New functions.
+	(Unwind_SpTmp): New typedef.
+	(uw_update_context_1): Use _Unwind_SetSpColumn and _Unwind_GetPtr.
+	(uw_update_context): Use _Unwind_GetPtr.
+	(init_dwarf_reg_size_table): Move above uw_init_context_1.
+	(uw_init_context_1): Initialize dwarf_reg_size_table if necessary.
+	Use _Unwind_SetSpColumn.
+	(uw_install_context_1): Don't initialize dwarf_reg_size_table.
+	Use _Unwind_GetPtr.
+
 2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c.opt: Document more options.
