@@ -1,3 +1,8 @@
+2002-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* trans.c (tree_transform): Add has_scope argument to
+	expand_start_stmt_expr.
+
 2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gigi.h (truthvalue_conversion): Rename.

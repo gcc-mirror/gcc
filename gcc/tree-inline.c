@@ -854,6 +854,8 @@ expand_call_inline (tp, walk_subtrees, data)
      type of the statement expression is the return type of the
      function call.  */
   expr = build1 (STMT_EXPR, TREE_TYPE (TREE_TYPE (fn)), NULL_TREE);
+  /* There is no scope associated with the statement-expression.  */
+  STMT_EXPR_NO_SCOPE (expr) = 1;
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */

@@ -1,3 +1,10 @@
+2002-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (begin_init_stmts): Remove commented out code.
+	(finish_init_stmts): Set STMT_EXPR_NO_SCOPE.
+	* semantics.c (begin_gobal_stmt_expr): Adjust call to
+	expand_start_stmt_expr.
+	
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (register_dtor_fn): Pass the address of dso_handle, not

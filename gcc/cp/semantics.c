@@ -1186,7 +1186,7 @@ begin_global_stmt_expr ()
 
   keep_next_level (1);
   
-  return (last_tree != NULL_TREE) ? last_tree : expand_start_stmt_expr(); 
+  return last_tree ? last_tree : expand_start_stmt_expr(/*has_scope=*/1); 
 }
 
 /* Finish the STMT_EXPR last begun with begin_global_stmt_expr.  */
