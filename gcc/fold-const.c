@@ -1357,9 +1357,6 @@ split_tree (in, code, conp, litp, negate_p)
 
   if (TREE_CODE (in) == INTEGER_CST || TREE_CODE (in) == REAL_CST)
     *litp = in;
-  else if (TREE_CONSTANT (in))
-    *conp = in;
-
   else if (TREE_CODE (in) == code
 	   || (! FLOAT_TYPE_P (TREE_TYPE (in))
 	       /* We can associate addition and subtraction together (even
@@ -1399,6 +1396,8 @@ split_tree (in, code, conp, litp, negate_p)
       if (neg_conp_p) *conp = negate_expr (*conp);
       if (neg_var_p) var = negate_expr (var);
     }
+  else if (TREE_CONSTANT (in))
+    *conp = in;
   else
     var = in;
 
@@ -4711,7 +4710,7 @@ fold (expr)
   tree type = TREE_TYPE (expr);
   register tree arg0 = NULL_TREE, arg1 = NULL_TREE;
   register enum tree_code code = TREE_CODE (t);
-  register int kind;
+  register int kind = TREE_CODE_CLASS (code);
   int invert;
   /* WINS will be nonzero when the switch is done
      if all operands are constant.  */
@@ -4722,19 +4721,14 @@ fold (expr)
   if (code == RTL_EXPR || (code == SAVE_EXPR && SAVE_EXPR_RTL (t)) != 0)
     return t;
 
-  /* Return right away if already constant.  */
-  if (TREE_CONSTANT (t))
-    {
-      if (code == CONST_DECL)
-	return DECL_INITIAL (t);
-      return t;
-    }
+  /* Return right away if a constant.  */
+  if (kind == 'c')
+    return t;
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
   check_max_integer_computation_mode (expr);
 #endif
 
-  kind = TREE_CODE_CLASS (code);
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
     {
       tree subop;
