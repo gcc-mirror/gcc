@@ -40,12 +40,13 @@ mkdir ${DESTDIR} ${SRCDIR}
 cd inc
 [=
 (define sfile "")
+(define HACK  "")
 (define dfile "")              =][=
 
 FOR fix                        =][=
 
   IF (> (count "test_text") 1) =][=
-
+    (set! HACK (string-upcase! (get "hackname")))
     (set! sfile (if (exist? "files") (get "files[]") "testing.h"))
     (set! dfile (string-append
           (if (*==* sfile "/")
@@ -58,9 +59,9 @@ FOR fix                        =][=
 cat >> [=(. sfile)=] <<_HACK_EOF_
 
 
-#if defined( [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] )
+#if defined( [=(. HACK)=]_CHECK_[=(for-index)=] )
 [=test_text=]
-#endif  /* [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] */
+#endif  /* [=(. HACK)=]_CHECK_[=(for-index)=] */
 _HACK_EOF_
 echo [=(. sfile)=] | ../../fixincl
 mv -f [=(. sfile)=] [=(. dfile)=]-[=(for-index)=].h
@@ -75,17 +76,15 @@ ENDFOR  fix
 
 =][=
 
-FOR fix =][=
+FOR fix  =][=
+  (set! HACK (string-upcase! (get "hackname")))  =][=
 
   IF (not (exist? "test_text")) =][=
-    IF (not (exist? "replace")) =]
-echo No test for [=hackname=] in inc/[=
-      IF (exist? "files")       =][=
-        files[0] =][=
-      ELSE  =]testing.h[=
-      ENDIF =][=
-    ENDIF   =][=
-  ELSE      =]
+    (if (not (exist? "replace"))
+        (error (sprintf "include fix '%s' has no test text"
+                        (get "hackname") )) )
+         =][=
+  ELSE   =]
 cat >> [=
     IF (exist? "files") =][=
       files[0] =][=
@@ -93,9 +92,9 @@ cat >> [=
     ENDIF =] <<_HACK_EOF_
 
 
-#if defined( [=(string-upcase! (get "hackname"))=]_CHECK )
+#if defined( [=(. HACK)=]_CHECK )
 [=test_text=]
-#endif  /* [=(string-upcase! (get "hackname"))=]_CHECK */
+#endif  /* [=(. HACK)=]_CHECK */
 _HACK_EOF_
 [=ENDIF =][=
 
@@ -103,7 +102,7 @@ ENDFOR  fix
 
 =]
 
-find . -type f | sed 's;\./;;' | sort | ../../fixincl
+find . -type f | sed 's;^\./;;' | sort | ../../fixincl
 cd ${DESTDIR}
 
 exitok=true
