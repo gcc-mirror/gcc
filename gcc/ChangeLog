@@ -1,3 +1,15 @@
+2003-01-24  Bob Wilson  <bob.wilson@acm.org>
+
+	* config.gcc (xtensa-*-elf*): Removed assignments to with_newlib,
+	extra_parts, and fixincludes.  Add xtensa/t-elf tmake_file.
+	(xtensa-*-linux*): Add xtensa/t-linux tmake_file.
+	* config/xtensa/crti.asm: New file.
+	* config/xtensa/crtn.asm: New file.
+	* config/xtensa/t-elf: New file.
+	* config/xtensa/t-linux: New file.
+	* config/xtensa/t-xtensa: Add rules for crti.o and crtn.o.
+	Move various CFLAGS settings to new t-elf file.
+
 2003-01-24  Richard Henderson  <rth@redhat.com>
 
 	PR optimization/4382
