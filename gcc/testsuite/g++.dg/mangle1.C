@@ -26,4 +26,4 @@ C c;
 // { dg-final { scan-assembler mangle1.C "\n_ZTT1C:" } }
 // { dg-final { scan-assembler mangle1.C "\n_ZTV1A:" } }
 // { dg-final { scan-assembler mangle1.C "\n_ZTV1C:" } }
-// { dg-final { scan-assembler mangle1.C "\n_ZTv0_n12_N1A1fEv:" } }
+// { dg-final { scan-assembler mangle1.C "\n_ZTv0_n\(12|24\)_N1A1fEv:" } }
