@@ -1,3 +1,8 @@
+2002-05-02  Richard Henderson  <rth@redhat.com>
+
+	* haifa-sched.c (rank_for_schedule): Skip past last_scheduled_insn
+	emitted by cycle_display.
+
 2002-05-02  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (*-*-freebsd*): Update to latest status.
