@@ -2749,8 +2749,9 @@ gen_mem_addressof (reg, decl)
      tree decl;
 {
   tree type = TREE_TYPE (decl);
-
   rtx r = gen_rtx (ADDRESSOF, Pmode, gen_reg_rtx (GET_MODE (reg)));
+
+  REG_USERVAR_P (XEXP (r, 0)) = REG_USERVAR_P (reg);
   ADDRESSOF_REGNO (r) = REGNO (reg);
   SET_ADDRESSOF_DECL (r, decl);
 
