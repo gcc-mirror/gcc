@@ -1,6 +1,8 @@
 // Based on a testcase by Bryan Weston <bryanw@bluemoon.sps.mot.com>
 // egcs 1.1 fails to increment count
 
+// Special g++ Options: -O2
+
 #include <cstdlib>
 
 struct Base { Base() {} }; // removing the constructor fixes the problem
