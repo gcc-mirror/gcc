@@ -1,3 +1,9 @@
+2003-04-07  Glen Nakamura  <glen@imodulo.com>
+
+	PR opt/8634
+	* explow.c (maybe_set_unchanging): Don't flag non-static const
+	aggregate type initializers with RTX_UNCHANGING_P.
+
 2003-04-07  Richard Henderson  <rth@redhat.com>
 
         PR opt/8634
