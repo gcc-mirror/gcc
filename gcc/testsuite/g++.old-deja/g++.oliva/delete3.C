@@ -1,9 +1,11 @@
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2001 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 
 // Test whether dtors of vbases are called on throw within new[].
 // Variant of delete2.C.
+
+// execution test - XFAIL *-*-*
 
 extern "C" void abort();
 extern "C" void exit(int);
