@@ -1413,6 +1413,10 @@ fundamental_type_code (type)
 	if (TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? FT_unsigned_char : FT_char);
 
+	/* In C++, __java_boolean is an INTEGER_TYPE with precision == 1 */
+	if (TYPE_PRECISION (type) == 1)
+	  return FT_boolean;
+
 	abort ();
 
       case REAL_TYPE:

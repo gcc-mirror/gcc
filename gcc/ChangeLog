@@ -1,3 +1,8 @@
+Fri Aug 13 01:29:57 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* dwarfout.c (fundamental_type_code): Return FT_boolean for
+	INTEGER_TYPE with precision==1, it's __java_boolean.
+
 1999-08-11  Richard Earnshaw (rearnsha@arm.com)
 
         * emit-rtl.c (mark_reg_pointer): Don't increase the alignment of
