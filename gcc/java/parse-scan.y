@@ -1,5 +1,5 @@
 /* Parser grammar for quick source code scan of Java(TM) language programs.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -70,6 +70,10 @@ static int previous_output;
 
 /* Record modifier uses  */
 static int modifier_value;
+
+/* Keep track of number of bracket pairs after a variable declarator
+   id.  */
+static int bracket_count; 
 
 /* Record a method declaration  */
 struct method_declarator {
@@ -399,8 +403,9 @@ variable_declarator:
 
 variable_declarator_id:
 	identifier
-		{ USE_ABSORBER; }
+		{ bracket_count = 0; USE_ABSORBER; }
 |	variable_declarator_id OSB_TK CSB_TK
+		{ ++bracket_count; }
 ;
 
 variable_initializer:
@@ -456,10 +461,32 @@ formal_parameter:
 	type variable_declarator_id
 		{ 
 		  USE_ABSORBER;
-		  $$ = $1;
+		  if (bracket_count)
+		    {
+		      int i;
+		      char *n = xmalloc (bracket_count + 1 + strlen ($$));
+		      for (i = 0; i < bracket_count; ++i)
+			n[i] = '[';
+		      strcpy (n + bracket_count, $$);
+		      $$ = n;
+		    }
+		  else
+		    $$ = $1;
 		}
 |	modifiers type variable_declarator_id /* Added, JDK1.1 final locals */
-		{ $$ = $2; }
+		{
+		  if (bracket_count)
+		    {
+		      int i;
+		      char *n = xmalloc (bracket_count + 1 + strlen ($$));
+		      for (i = 0; i < bracket_count; ++i)
+			n[i] = '[';
+		      strcpy (n + bracket_count, $$);
+		      $$ = n;
+		    }
+		  else
+		    $$ = $2;
+		}
 ;
 
 throws:

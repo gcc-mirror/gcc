@@ -1,3 +1,11 @@
+1999-01-08  Tom Tromey  <tromey@cygnus.com>
+
+	* parse-scan.y (variable_declarator_id): Set or increment
+	bracket_count.
+	(bracket_count): New global.
+	(formal_parameter): Handle case where bracket pairs trail variable
+	declarator id.
+
 1999-01-07  Andrew Haley  <aph@viagra.cygnus.co.uk>
 
 	* jcf-parse.c (yyparse): variable len changed from a char to an
