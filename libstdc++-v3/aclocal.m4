@@ -324,6 +324,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     fi
 
     dnl Test for <ctype> functionality -- FreeBSD 4.0
+    if test $ctype_default = "yes"; then
     AC_MSG_CHECKING([<ctype> for freebsd 4.0 ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
@@ -336,8 +337,10 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
       ctype_include_dir="config/bsd"
       ctype_default=no
     fi
+    fi
 
     dnl Test for <ctype> functionality -- FreeBSD 3.4
+    if test $ctype_default = "yes"; then
     AC_MSG_CHECKING([<ctype> for freebsd 3.4 ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
@@ -349,6 +352,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     if test $ctype_freebsd34 = "yes"; then
       ctype_include_dir="config/bsd"
       ctype_default=no
+    fi
     fi
 
     dnl Test for <ctype> functionality -- solaris 2.6 and 2.7
