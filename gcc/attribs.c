@@ -49,6 +49,10 @@ static tree handle_common_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_noreturn_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_noinline_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
+static tree handle_used_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree handle_unused_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_const_attribute	PARAMS ((tree *, tree, tree, int,
@@ -100,6 +104,10 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_noreturn_attribute },
   { "volatile",               0, 0, true,  false, false,
 			      handle_noreturn_attribute },
+  { "noinline",               0, 0, true,  false, false,
+			      handle_noinline_attribute },
+  { "used",                   0, 0, true,  false, false,
+			      handle_used_attribute },
   { "unused",                 0, 0, false, false, false,
 			      handle_unused_attribute },
   /* The same comments as for noreturn attributes apply to const ones.  */
@@ -500,6 +508,51 @@ handle_noreturn_attribute (node, name, args, flags, no_add_attrs)
       = build_pointer_type
 	(build_type_variant (TREE_TYPE (type),
 			     TREE_READONLY (TREE_TYPE (type)), 1));
+  else
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "noinline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noinline_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    DECL_UNINLINABLE (*node) = 1;
+  else
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "used" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_used_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (*node))
+      = TREE_USED (*node) = 1;
   else
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));

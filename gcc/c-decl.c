@@ -1405,8 +1405,43 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   int errmsg = 0;
 
   if (DECL_P (olddecl))
-    DECL_ATTRIBUTES (newdecl)
-      = (*targetm.merge_decl_attributes) (olddecl, newdecl);
+    {
+      if (TREE_CODE (newdecl) == FUNCTION_DECL
+	  && TREE_CODE (olddecl) == FUNCTION_DECL
+	  && (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl)))
+	{
+	  if (DECL_DECLARED_INLINE_P (newdecl)
+	      && DECL_UNINLINABLE (newdecl)
+	      && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
+	    /* Already warned elsewhere.  */;
+	  else if (DECL_DECLARED_INLINE_P (olddecl)
+		   && DECL_UNINLINABLE (olddecl)
+		   && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+	    /* Already warned.  */;
+	  else if (DECL_DECLARED_INLINE_P (newdecl)
+		   && ! DECL_DECLARED_INLINE_P (olddecl)
+		   && DECL_UNINLINABLE (olddecl)
+		   && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+	    {
+	      warning_with_decl (newdecl,
+				 "function `%s' redeclared as inline");
+	      warning_with_decl (olddecl,
+				 "previous declaration of function `%s' with attribute noinline");
+	    }
+	  else if (DECL_DECLARED_INLINE_P (olddecl)
+		   && DECL_UNINLINABLE (newdecl)
+		   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
+	    {
+	      warning_with_decl (newdecl,
+				 "function `%s' redeclared with attribute noinline");
+	      warning_with_decl (olddecl,
+				 "previous declaration of function `%s' was inline");
+	    }
+	}
+
+      DECL_ATTRIBUTES (newdecl)
+	= (*targetm.merge_decl_attributes) (olddecl, newdecl);
+    }
 
   if (TREE_CODE (newtype) == ERROR_MARK
       || TREE_CODE (oldtype) == ERROR_MARK)
@@ -1983,6 +2018,9 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	    DECL_DECLARED_INLINE_P (olddecl) = 1;
 
 	  DECL_DECLARED_INLINE_P (newdecl) = DECL_DECLARED_INLINE_P (olddecl);
+
+	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
+	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
 	}
 
       if (DECL_BUILT_IN (olddecl))
@@ -3482,6 +3520,13 @@ start_decl (declarator, declspecs, initialized, attributes)
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (&decl, attributes, 0);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && DECL_UNINLINABLE (decl)
+      && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
+    warning_with_decl (decl,
+		       "inline function `%s' given attribute noinline");
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -6021,6 +6066,12 @@ start_function (declspecs, declarator, attributes)
     }
 
   decl_attributes (&decl1, attributes, 0);
+
+  if (DECL_DECLARED_INLINE_P (decl1)
+      && DECL_UNINLINABLE (decl1)
+      && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
+    warning_with_decl (decl1,
+		       "inline function `%s' given attribute noinline");
 
   announce_function (decl1);
 

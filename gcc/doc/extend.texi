@@ -1925,13 +1925,14 @@ carefully.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
-attribute specification inside double parentheses.  Fourteen attributes,
-@code{noreturn}, @code{pure}, @code{const}, @code{format},
-@code{format_arg}, @code{no_instrument_function}, @code{section},
-@code{constructor}, @code{destructor}, @code{unused}, @code{weak},
-@code{malloc}, @code{alias} and @code{no_check_memory_usage} are
-currently defined for functions.  Several other attributes are defined
-for functions on particular target systems.  Other attributes, including
+attribute specification inside double parentheses.  The following
+attributs are currently defined for functions on all targets:
+@code{noreturn}, @code{noinline}, @code{pure}, @code{const},
+@code{format}, @code{format_arg}, @code{no_instrument_function},
+@code{section}, @code{constructor}, @code{destructor}, @code{used},
+@code{unused}, @code{weak}, @code{malloc}, @code{alias} and
+@code{no_check_memory_usage}.  Several other attributes are defined for
+functions on particular target systems.  Other attributes, including
 @code{section} are supported for variables declarations (@pxref{Variable
 Attributes}) and for types (@pxref{Type Attributes}).
 
@@ -1986,6 +1987,11 @@ typedef void voidfn ();
 
 volatile voidfn fatal;
 @end smallexample
+
+@cindex @code{noinline} function attribute
+@item noinline
+This function attribute prevents a function from being considered for
+inlining.
 
 @cindex @code{pure} function attribute
 @item pure
@@ -2174,11 +2180,19 @@ the program.
 
 These attributes are not currently implemented for Objective-C@.
 
+@cindex @code{unused} attribute.
 @item unused
 This attribute, attached to a function, means that the function is meant
 to be possibly unused.  GCC will not produce a warning for this
 function.  GNU C++ does not currently support this attribute as
 definitions without parameters are valid in C++.
+
+@cindex @code{used} attribute.
+@item used
+This attribute, attached to a function, means that code must be emitted
+for the function even if it appears that the function is not referenced.
+This is useful, for example, when the function is referenced only in
+inline assembly.
 
 @item weak
 @cindex @code{weak} attribute
