@@ -148,6 +148,39 @@
   }
 #endif
 
+# ifdef ECOS
+
+# ifndef ECOS_GC_MEMORY_SIZE
+# define ECOS_GC_MEMORY_SIZE (448 * 1024)
+# endif /* ECOS_GC_MEMORY_SIZE */
+
+// setjmp() function, as described in ANSI para 7.6.1.1
+#define setjmp( __env__ )  hal_setjmp( __env__ )
+
+// FIXME: This is a simple way of allocating memory which is
+// compatible with ECOS early releases.  Later releases use a more
+// sophisticated means of allocating memory than this simple static
+// allocator, but this method is at least bound to work.
+static char memory[ECOS_GC_MEMORY_SIZE];
+static char *brk = memory;
+
+static void *tiny_sbrk(ptrdiff_t increment)
+{
+  void *p = brk;
+
+  brk += increment;
+
+  if (brk >  memory + sizeof memory)
+    {
+      brk -= increment;
+      return NULL;
+    }
+
+  return p;
+}
+#define sbrk tiny_sbrk
+# endif /* ECOS */
+
 # ifdef OS2
 
 # include <stddef.h>
@@ -252,7 +285,8 @@ void GC_enable_signals(void)
 # else
 
 #  if !defined(PCR) && !defined(AMIGA) && !defined(MSWIN32) \
-      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW)
+      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW) \
+      && !defined(NO_SIGSET)
 
 #   if defined(sigmask) && !defined(UTS4)
 	/* Use the traditional BSD interface */
@@ -327,7 +361,7 @@ void GC_enable_signals()
 # endif /*!OS/2 */
 
 /* Ivan Demakov: simplest way (to me) */
-#ifdef DOS4GW
+#if defined (DOS4GW) || defined (NO_SIGSET)
   void GC_disable_signals() { }
   void GC_enable_signals() { }
 #endif
@@ -478,6 +512,7 @@ ptr_t GC_get_stack_base()
     
     void GC_setup_temporary_fault_handler()
     {
+# ifndef ECOS
 #	if defined(SUNOS5SIGS) || defined(IRIX5)
 	  struct sigaction	act;
 
@@ -510,10 +545,12 @@ ptr_t GC_get_stack_base()
 	    old_bus_handler = signal(SIGBUS, GC_fault_handler);
 #	  endif
 #	endif
+# endif /* ECOS */
     }
     
     void GC_reset_fault_handler()
     {
+# ifndef ECOS
 #       if defined(SUNOS5SIGS) || defined(IRIX5)
 	  (void) sigaction(SIGSEGV, &old_segv_act, 0);
 #	  ifdef _sigargs	/* Irix 5.x, not 6.x */
@@ -525,6 +562,7 @@ ptr_t GC_get_stack_base()
 	    (void) signal(SIGBUS, old_bus_handler);
 #	  endif
 #       endif
+# endif /* ECOS */
     }
 
     /* Return the first nonaddressible location > p (up) or 	*/
@@ -533,6 +571,7 @@ ptr_t GC_get_stack_base()
     ptr_t p;
     GC_bool up;
     {
+# ifndef ECOS
         static VOLATILE ptr_t result;
     		/* Needs to be static, since otherwise it may not be	*/
     		/* preserved across the longjmp.  Can safely be 	*/
@@ -558,10 +597,14 @@ ptr_t GC_get_stack_base()
 	    result += MIN_PAGE_SIZE;
  	}
 	return(result);
+# else /* ECOS */
+	abort();
+# endif /* ECOS */
     }
 # endif
 
 
+# ifndef ECOS
 ptr_t GC_get_stack_base()
 {
     word dummy;
@@ -569,6 +612,10 @@ ptr_t GC_get_stack_base()
 
 #   define STACKBOTTOM_ALIGNMENT_M1 ((word)STACK_GRAN - 1)
 
+#  if defined(STACKBASE)
+    extern ptr_t STACKBASE;
+    return(STACKBASE);
+#   else
 #   ifdef STACKBOTTOM
 	return(STACKBOTTOM);
 #   else
@@ -604,7 +651,9 @@ ptr_t GC_get_stack_base()
 #	endif /* HEURISTIC2 */
     	return(result);
 #   endif /* STACKBOTTOM */
+#   endif /* STACKBASE */
 }
+# endif /* ECOS */
 
 # endif /* ! AMIGA */
 # endif /* ! OS2 */
@@ -1225,7 +1274,8 @@ void GC_default_push_other_roots()
 # endif /* SRC_M3 */
 
 # if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-     || defined(IRIX_THREADS) || defined LINUX_THREADS
+     || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+     || defined(QUICK_THREADS)
 
 extern void GC_push_all_stacks();
 

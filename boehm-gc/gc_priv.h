@@ -434,7 +434,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #  ifdef LINUX_THREADS
 #    include <pthread.h>
 #    ifdef __i386__
-       inline static GC_test_and_set(volatile unsigned int *addr) {
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
 	  int oldval;
 	  /* Note: the "xchg" instruction does not need a "lock" prefix */
 	  __asm__ __volatile__("xchgl %0, %1"
@@ -519,6 +519,10 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
      GC_API CRITICAL_SECTION GC_allocate_ml;
 #    define LOCK() EnterCriticalSection(&GC_allocate_ml);
 #    define UNLOCK() LeaveCriticalSection(&GC_allocate_ml);
+#  endif
+#  ifdef QUICK_THREADS
+#    define LOCK()
+#    define UNLOCK()
 #  endif
 #  ifndef SET_LOCK_HOLDER
 #      define SET_LOCK_HOLDER()
@@ -1467,6 +1471,10 @@ void GC_print_obj(/* ptr_t p */);
 			/* P points to somewhere inside an object with	*/
 			/* debugging info.  Print a human readable	*/
 			/* description of the object to stderr.		*/
+ptr_t GC_debug_object_start(/* ptr_t p */);
+			/* P points to the start of an object that may  */
+			/* have debug info at its head.  Return the     */
+			/* start of the real data.                      */
 extern void (*GC_check_heap)();
 			/* Check that all objects in the heap with 	*/
 			/* debugging info are intact.  Print 		*/
