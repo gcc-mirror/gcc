@@ -1,3 +1,8 @@
+2005-03-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg): Fix typo
+	ordering ops from earlier change.
+
 2005-03-07  Per Bothner  <per@bothner.com>
 
 	Various fixes to allow us to again build if --enable-mapped-location:
