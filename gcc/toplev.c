@@ -2560,6 +2560,12 @@ rest_of_compilation (decl)
       rtx insn;
       optimize_sibling_and_tail_recursive_calls ();
 
+      /* Recompute the CFG as sibling optimization clobbers it randomly.  */
+      free_bb_for_insn ();
+      find_exception_handler_labels ();
+      rebuild_jump_labels (insns);
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+
       /* There is pass ordering problem - we must lower NOTE_INSN_PREDICTION
          notes before simplifying cfg and we must do lowering after sibcall
          that unhides parts of RTL chain and cleans up the CFG.
@@ -2576,7 +2582,6 @@ rest_of_compilation (decl)
 
   scope_to_insns_initialize ();
   /* Complete generation of exception handling code.  */
-  find_exception_handler_labels ();
   if (doing_eh (0))
     {
       timevar_push (TV_JUMP);

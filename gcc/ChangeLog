@@ -1,3 +1,9 @@
+Mon Jun  3 19:11:53 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (except.c): Do not rebuild CFG.
+	* toplev.c (rest_of_compilation): Recompute CFG after sibcall
+	optimization.
+
 Mon Jun  3 11:53:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* integrate.c (copy_insn_list): Properly pace the INSN_SCOPE copies.
