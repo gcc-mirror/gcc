@@ -1,3 +1,8 @@
+Fri Jun 12 09:33:44 1998  Richard Henderson <rth@cygnus.com>
+
+	* fold-const.c (fold): Revert last change.  It breaks constant
+	expressions somehow.
+
 Fri Jun 12 10:23:36 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* expr.c (do_jump, case EQ_EXPR, NE_EXPR): When comparing complex

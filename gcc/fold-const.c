@@ -4433,12 +4433,9 @@ fold (expr)
 		    return convert (TREE_TYPE (t), con);
 		    
 		  /* If ARG0 is a constant, don't change things around;
-		     instead keep all the constant computations together.
-		     Notice, however, if we can merge integer constants.  */
+		     instead keep all the constant computations together.  */
 
-		  if (TREE_CONSTANT (arg0)
-		      && !(TREE_CODE (con) == INTEGER_CST
-			   && TREE_CODE (arg1) == INTEGER_CST))
+		  if (TREE_CONSTANT (arg0))
 		    return t;
 
 		  /* Otherwise return (CON +- ARG1) - VAR.  */
@@ -4453,12 +4450,9 @@ fold (expr)
 		    return convert (TREE_TYPE (t), con);
 		    
 		  /* If ARG0 is a constant, don't change things around;
-		     instead keep all the constant computations together.
-		     Notice, however, if we can merge integer constants.  */
+		     instead keep all the constant computations together.  */
 
-		  if (TREE_CONSTANT (arg0)
-		      && !(TREE_CODE (con) == INTEGER_CST
-			   && TREE_CODE (arg1) == INTEGER_CST))
+		  if (TREE_CONSTANT (arg0))
 		    return t;
 
 		  /* Otherwise return VAR +- (ARG1 +- CON).  */
@@ -4487,13 +4481,7 @@ fold (expr)
 
 	  if (split_tree (arg1, code, &var, &con, &varsign))
 	    {
-	      /* If ARG1 is a constant, don't change things around;
-		 instead keep all the constant computations together.
-		 Notice, however, if we can merge integer constants.  */
-
-	      if (TREE_CONSTANT (arg1)
-		  && !(TREE_CODE (con) == INTEGER_CST
-		       && TREE_CODE (arg0) == INTEGER_CST))
+	      if (TREE_CONSTANT (arg1))
 		return t;
 
 	      if (varsign == -1)
