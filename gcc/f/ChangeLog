@@ -1,3 +1,14 @@
+Mon Jun 15 23:39:24 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f/g77.info): Use -f when removing
+	pre-existing Info files, if any.  (This rm command
+	can go away once makeinfo has been changed to delete
+	.info-N files beyond the last one it creates.)
+
+	* Make-lang.in ($(srcdir)/f/intdoc.texi): Compile
+	using $(INCLUDES) macro to get the new hconfig.h
+	and system.h headers.  [Instead of change below.]
+
 1998-16-19  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in ($(srcdir)/f/intdoc.texi): Add $(INCLUDES).
