@@ -1,3 +1,8 @@
+2004-08-25  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/17144
+	* gfortran.dg/string_ctor_1.f90: New test.
+
 2004-08-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14428

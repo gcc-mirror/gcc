@@ -1,3 +1,32 @@
+2004-08-25  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/17144
+	* trans-array.c (gfc_trans_allocate_temp_array): Remove
+	string_length argument.
+	(gfc_trans_array_ctor_element): New function.
+	(gfc_trans_array_constructor_subarray): Use it.
+	(gfc_trans_array_constructor_value): Ditto.  Handle constant
+	character arrays.
+	(get_array_ctor_var_strlen, get_array_ctor_strlen): New functions.
+	(gfc_trans_array_constructor): Use them.
+	(gfc_add_loop_ss_code): Update to new gfc_ss layout.
+	(gfc_conv_ss_descriptor): Remember section string length.
+	(gfc_conv_scalarized_array_ref): Ditto.  Remove dead code.
+	(gfc_conv_resolve_dependencies): Update to new gfc_ss layout.
+	(gfc_conv_expr_descriptor): Ditto.
+	(gfc_conv_loop_setup): Ditto.  Spelling fixes.
+	* trans-array.h (gfc_trans_allocate_temp_array): Update prototype.
+	* trans-const.c (gfc_conv_constant):  Update to new gfc_ss layout.
+	* trans-expr.c (gfc_conv_component_ref): Turn error into ICE.
+	(gfc_conv_variable): Set string_length from section.
+	(gfc_conv_function_call): Remove extra argument.
+	(gfc_conv_expr, gfc_conv_expr_reference): Update to new gfc_ss layout.
+	* trans-types.c (gfc_get_character_type_len): New function.
+	(gfc_get_character_type): Use it.
+	(gfc_get_dtype): Return zero for internal types.
+	* trans-types.h (gfc_get_character_type_len): Add prototype.
+	* trans.h (struct gfc_ss): Move string_length out of union.
+
 2004-08-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans.h (build2_v, build3_v): New macros.

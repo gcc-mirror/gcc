@@ -231,9 +231,8 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   if (c->ts.type == BT_CHARACTER)
     {
       tmp = c->ts.cl->backend_decl;
-      assert (tmp);
-      if (!INTEGER_CST_P (tmp))
-	gfc_todo_error ("Unknown length character component");
+      /* Components must always be constant length.  */
+      assert (tmp && INTEGER_CST_P (tmp));
       se->string_length = tmp;
     }
 
@@ -260,6 +259,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 
       /* A scalarized term.  We already know the descriptor.  */
       se->expr = se->ss->data.info.descriptor;
+      se->string_length = se->ss->string_length;
       ref = se->ss->data.info.ref;
     }
   else
@@ -1040,7 +1040,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  tmp = gfc_typenode_for_spec (&sym->ts);
 	  info->dimen = se->loop->dimen;
 	  /* Allocate a temporary to store the result.  */
-	  gfc_trans_allocate_temp_array (se->loop, info, tmp, NULL_TREE);
+	  gfc_trans_allocate_temp_array (se->loop, info, tmp);
 
 	  /* Zero the first stride to indicate a temporary.  */
 	  tmp =
@@ -1711,7 +1711,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = se->ss->data.scalar.expr;
-      se->string_length = se->ss->data.scalar.string_length;
+      se->string_length = se->ss->string_length;
       gfc_advance_se_ss_chain (se);
       return;
     }
@@ -1799,7 +1799,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       && se->ss->type == GFC_SS_REFERENCE)
     {
       se->expr = se->ss->data.scalar.expr;
-      se->string_length = se->ss->data.scalar.string_length;
+      se->string_length = se->ss->string_length;
       gfc_advance_se_ss_chain (se);
       return;
     }
