@@ -29,3 +29,9 @@ fun_like (foo, bar)
 
 /* Check OK to redefine fun_like without comments in the params.  */
 #define fun_like(x, y)/**/
+
+/* Check comments in macros in directives are OK.  */
+#define ZERO 0 /* A trailing comment.  */
+
+#if ZERO
+#endif
