@@ -561,3 +561,19 @@ htab_collisions (htab)
 
   return (double) htab->collisions / (double) htab->searches;
 }
+
+/* Hash P as a null-terminated string.  */
+
+hashval_t
+htab_hash_string (p)
+     const PTR p;
+{
+  const unsigned char *str = (const unsigned char *) p;
+  hashval_t r = 0;
+  unsigned char c;
+
+  while ((c = *str++) != 0)
+    r = r * 67 + c - 113;
+
+  return r;
+}

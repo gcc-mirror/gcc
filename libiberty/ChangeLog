@@ -1,3 +1,7 @@
+2001-08-16  Richard Henderson  <rth@redhat.com>
+
+	* hashtab.c (htab_hash_string): New.
+
 2001-08-13  Andrew Cagney  <ac131313@redhat.com>
 
 	* floatformat.c (floatformat_ieee_double_littlebyte_bigword): Fix
