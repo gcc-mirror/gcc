@@ -1,3 +1,8 @@
+2001-04-13  Alan Modra  <alan@linuxcare.com.au>
+
+        * pa.h (GO_IF_LEGITIMATE_ADDRESS): Disallow PIC LO_SUM
+        fp mode addresses.
+
 2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (reg-stack.o): Depend on reload.h.
