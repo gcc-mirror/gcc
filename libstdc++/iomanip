@@ -1,0 +1,7 @@
+// -*- C++ -*- forwarding header.
+// This file is part of the GNU ANSI C++ Library.
+
+#ifndef __IOMANIP__
+#define __IOMANIP__
+#include <iomanip.h>
+#endif
