@@ -1,3 +1,8 @@
+2000-08-01  Richard Henderson  <rth@cygnus.com>
+
+	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Care for null DECL.
+	* config/ia64/sysv4.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Likewise.
+
 2000-08-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	From Joern Rennecke:
