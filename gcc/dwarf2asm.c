@@ -91,6 +91,8 @@ unaligned_integer_asm_op (size)
 }
 #endif /* UNALIGNED_INT_ASM_OP */
 
+/* Output an immediate constant in a given size.  */
+
 void
 dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
 			      const char *comment, ...))
@@ -126,6 +128,12 @@ dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
 
   va_end (ap);
 }
+
+/* Output the difference between two symbols in a given size.  */
+/* ??? There appear to be assemblers that do not like such
+   subtraction, but do support ASM_SET_OP.  It's unfortunately
+   impossible to do here, since the ASM_SET_OP for the difference
+   symbol must appear after both symbols are defined.  */
 
 void
 dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
@@ -169,9 +177,102 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
   va_end (ap);
 }
 
+/* Output a section-relative reference to a label.  In general this
+   can only be done for debugging symbols.  E.g. on most targets with
+   the GNU linker, this is accomplished with a direct reference and
+   the knowledge that the debugging section will be placed at VMA 0.
+   Some targets have special relocations for this that we must use.  */
+
 void
 dw2_asm_output_offset VPARAMS ((int size, const char *label,
 			       const char *comment, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  int size;
+  const char *label;
+  const char *comment;
+#endif
+  va_list ap;
+
+  VA_START (ap, comment);
+
+#ifndef ANSI_PROTOTYPES
+  size = va_arg (ap, int);
+  label = va_arg (ap, const char *);
+  comment = va_arg (ap, const char *);
+#endif
+
+#ifdef ASM_OUTPUT_DWARF_OFFSET
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, size, label);
+#else
+#ifdef UNALIGNED_INT_ASM_OP
+  fputs (unaligned_integer_asm_op (size), asm_out_file);
+  assemble_name (asm_out_file, label);
+#else
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, 1);
+#endif
+#endif
+
+  if (flag_debug_asm && comment)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      vfprintf (asm_out_file, comment, ap);
+    }
+  fputc ('\n', asm_out_file);
+
+  va_end (ap);
+}
+
+/* Output a self-relative reference to a label, possibly in a
+   different section or object file.  */
+
+void
+dw2_asm_output_pcrel VPARAMS ((int size, const char *label,
+			       const char *comment, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  int size;
+  const char *label;
+  const char *comment;
+#endif
+  va_list ap;
+
+  VA_START (ap, comment);
+
+#ifndef ANSI_PROTOTYPES
+  size = va_arg (ap, int);
+  label = va_arg (ap, const char *);
+  comment = va_arg (ap, const char *);
+#endif
+
+#ifdef ASM_OUTPUT_DWARF_PCREL
+  ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, label);
+#else
+#ifdef UNALIGNED_INT_ASM_OP
+  fputs (unaligned_integer_asm_op (size), asm_out_file);
+  assemble_name (asm_out_file, label);
+  fputc ('-', asm_out_file);
+  fputc ('.', asm_out_file);
+#else
+  abort ();
+#endif
+#endif
+
+  if (flag_debug_asm && comment)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      vfprintf (asm_out_file, comment, ap);
+    }
+  fputc ('\n', asm_out_file);
+
+  va_end (ap);
+}
+
+/* Output an absolute reference to a label.  */
+
+void
+dw2_asm_output_addr VPARAMS ((int size, const char *label,
+			      const char *comment, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int size;
@@ -205,47 +306,7 @@ dw2_asm_output_offset VPARAMS ((int size, const char *label,
   va_end (ap);
 }
 
-void
-dw2_asm_output_pcrel VPARAMS ((int size, const char *label,
-			       const char *comment, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  int size;
-  const char *label;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  label = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
-
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-
-  /* ??? This needs target conditionalization.  E.g. the solaris
-     assembler uses %r_disp32(label).  Others don't like "." and
-     we need to generate a temporary label here.  */
-  assemble_name (asm_out_file, label);
-  fputc ('-', asm_out_file);
-  fputc ('.', asm_out_file);
-#else
-  abort ();
-#endif
-
-  if (flag_debug_asm && comment)
-    {
-      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
-      vfprintf (asm_out_file, comment, ap);
-    }
-  fputc ('\n', asm_out_file);
-
-  va_end (ap);
-}
+/* Similar, but use an RTX expression instead of a text label.  */
 
 void
 dw2_asm_output_addr_rtx VPARAMS ((int size, rtx addr,

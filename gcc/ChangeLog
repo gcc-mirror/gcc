@@ -1,3 +1,14 @@
+2001-03-15  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2asm.c (dw2_asm_output_offset): Use ASM_OUTPUT_DWARF_OFFSET
+	if provided by the target.
+	(dw2_asm_output_pcrel): Likewise with ASM_OUTPUT_DWARF_PCREL.
+	(dw2_asm_output_addr): New.
+	* dwarf2asm.h (dw2_asm_output_addr): Declare.
+	* dwarf2out.c (output_cfi): Use it for program addresses.
+	(output_call_frame_info, output_die): Likewise.
+	(output_aranges, output_line_info): Likewise.
+
 2001-03-15  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc.c(main): make more rigorous

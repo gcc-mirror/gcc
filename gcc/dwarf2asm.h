@@ -40,6 +40,10 @@ extern void dw2_asm_output_pcrel	PARAMS ((int, const char *,
 						 const char *, ...))
      /* ATTRIBUTE_PRINTF_3 */;
 
+extern void dw2_asm_output_addr		PARAMS ((int, const char *,
+						 const char *, ...))
+     /* ATTRIBUTE_PRINTF_3 */;
+
 extern void dw2_asm_output_addr_rtx	PARAMS ((int, rtx,
 						 const char *, ...))
      /* ATTRIBUTE_PRINTF_3 */;
