@@ -36,8 +36,10 @@ x86 ports		Stan Cox		scox@cygnus.com
 *fortran		Craig Burley		burley@gnu.org
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
+chill			Dave Brolley		brolley@cygnus.com
 chill			Per Bothner		bothner@cygnus.com
 java			Per Bothner		bothner@cygnus.com
+cpplib			Dave Brolley		brolley@cygnus.com
 cpplib			Per Bothner		bothner@cygnus.com
 fixincludes		Ian Taylor		ian@cygnus.com
 alias analysis		John Carr		jfc@mit.edu
