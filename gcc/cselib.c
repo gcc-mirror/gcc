@@ -580,7 +580,7 @@ hash_rtx (x, mode, create)
 	return 0;
 
       hash += e->value;
-      return hash;
+      return hash ? hash : (unsigned int) MEM;
 
     case CONST_INT:
       hash += ((unsigned) CONST_INT << 7) + (unsigned) mode + INTVAL (x);
