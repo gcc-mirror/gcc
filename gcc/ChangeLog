@@ -1,3 +1,14 @@
+2005-03-29  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (slpeel_update_phi_nodes_for_guard): Removed.
+	(slpeel_update_phi_nodes_for_guard1): New function.
+	(slpeel_update_phi_nodes_for_guard2): New function.
+	(slpeel_tree_peel_loop_to_edge): Call above new functions instead
+	of slpeel_update_phi_nodes_for_guard.
+	(vectorize_loops): Remove call to loop_closed_rewrite.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer): Remove
+	assertion.
+
 2005-03-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/m32r/little.h (TARGET_ENDIAN_DEFAULT): Delete.
