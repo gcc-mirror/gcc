@@ -276,6 +276,61 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetForeground
   return array;
 }
 
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetBackground
+  (JNIEnv *env, jobject obj, jint red, jint green, jint blue)
+{
+  GdkColor normal_color;
+  GdkColor active_color;
+  GtkWidget *widget;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  normal_color.red = (red / 255.0) * 65535;
+  normal_color.green = (green / 255.0) * 65535;
+  normal_color.blue = (blue / 255.0) * 65535;
+
+  /* This calculation only approximates the active colors produced by
+     Sun's AWT. */
+  active_color.red = 0.85 * (red / 255.0) * 65535;
+  active_color.green = 0.85 * (green / 255.0) * 65535;
+  active_color.blue = 0.85 * (blue / 255.0) * 65535;
+
+  gdk_threads_enter ();
+
+  widget = GTK_WIDGET (ptr);
+
+  gtk_widget_modify_bg (widget, GTK_STATE_NORMAL, &normal_color);
+  gtk_widget_modify_bg (widget, GTK_STATE_ACTIVE, &active_color);
+  gtk_widget_modify_bg (widget, GTK_STATE_PRELIGHT, &normal_color);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetForeground
+  (JNIEnv *env, jobject obj, jint red, jint green, jint blue)
+{
+  GdkColor color;
+  GtkWidget *widget;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  color.red = (red / 255.0) * 65535;
+  color.green = (green / 255.0) * 65535;
+  color.blue = (blue / 255.0) * 65535;
+
+  gdk_threads_enter ();
+
+  widget = GTK_WIDGET (ptr);
+
+  gtk_widget_modify_fg (widget, GTK_STATE_NORMAL, &color);
+
+  gdk_threads_leave ();
+}
+
 void
 set_visible (GtkWidget *widget, jboolean visible)
 {

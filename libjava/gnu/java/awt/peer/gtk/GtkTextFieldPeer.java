@@ -55,7 +55,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   native void gtkEntryGetSize (int dims[]);
 
-  native void gtkSetFont(String xlfd, int size);
+  native void gtkSetFont(String name, int style, int size);
 
   public GtkTextFieldPeer (TextField tf)
   {
@@ -104,7 +104,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   public void setFont (Font f)
   {
-    gtkSetFont(f.getName(), f.getSize());
+    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
   }
 
   public void handleEvent (AWTEvent e)

@@ -86,6 +86,8 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetGetDimensions(int[] dim);
   native void gtkWidgetGetLocationOnScreen(int[] point);
   native void gtkWidgetSetCursor (int type);
+  native void gtkWidgetSetBackground (int red, int green, int blue);
+  native void gtkWidgetSetForeground (int red, int green, int blue);
 
   void create ()
   {
@@ -114,12 +116,10 @@ public class GtkComponentPeer extends GtkGenericPeer
 
       connectHooks ();
 
-      if (awtComponent.getForeground () == null)
-	awtComponent.setForeground (getForeground ());
-      if (awtComponent.getBackground () == null)
-	awtComponent.setBackground (getBackground ());
-      //        if (c.getFont () == null)
-      //  	c.setFont (cp.getFont ());
+      if (awtComponent.getForeground () != null)
+	setForeground (awtComponent.getForeground ());
+      if (awtComponent.getBackground () != null)
+	setBackground (awtComponent.getBackground ());
       if (awtComponent.getFont() != null)
 	setFont(awtComponent.getFont());
 
@@ -276,7 +276,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setBackground (Color c) 
   {
-    // System.out.println ("setBackground [UNIMPLEMENTED");
+    gtkWidgetSetBackground (c.getRed(), c.getGreen(), c.getBlue());
   }
 
   native public void setNativeBounds (int x, int y, int width, int height);
@@ -314,7 +314,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setForeground (Color c) 
   {
-    // System.out.println ("setForeground [UNIMPLEMENTED");
+    gtkWidgetSetForeground (c.getRed(), c.getGreen(), c.getBlue());
   }
 
   public Color getForeground ()
