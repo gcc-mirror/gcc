@@ -2450,7 +2450,7 @@ dbxout_parms (parms)
 	       passing a float to an unprototyped function, gcc will store a
 	       double on the stack, but if we emit a stab saying the type is a
 	       float, then gdb will only read in a single value, and this will
-	       produce an erropneous value.  */
+	       produce an erroneous value.  */
  	    dbxout_type (DECL_ARG_TYPE (parms), 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);

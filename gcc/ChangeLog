@@ -1,3 +1,12 @@
+2001-09-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* dbxout.c (dbxout_parms): Fix typo in comment.
+	* unroll.c (loop_find_equiv_value): Ditto.
+	* toplev.c (rest_of_compilation): Ditto.
+	* loop.c (scan_loop): Ditto.
+	(scan_loop): Ditto.
+	* dwarf2out.c (struct dw_fde_struct): Ditto.
+
 2001-09-10  Zack Weinberg  <zackw@panix.com>
 
 	* cpplex.c (parse_identifier): Fast-path optimize.  Avoid

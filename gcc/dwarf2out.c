@@ -155,7 +155,7 @@ typedef struct cfa_loc
 
 /* All call frame descriptions (FDE's) in the GCC generated DWARF
    refer to a single Common Information Entry (CIE), defined at
-   the beginning of the .debug_frame section.  This used of a single
+   the beginning of the .debug_frame section.  This use of a single
    CIE obviates the need to keep track of multiple CIE's
    in the DWARF generation routines below.  */
 

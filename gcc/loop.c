@@ -727,7 +727,7 @@ scan_loop (loop, flags)
 		      something after this point in the loop might
 		      depend on its value before the set).  */
 		   ! reg_in_basic_block_p (p, SET_DEST (set))
-		   /* And the set is not guaranteed to be executed one
+		   /* And the set is not guaranteed to be executed once
 		      the loop starts, or the value before the set is
 		      needed before the set occurs...
 
@@ -963,7 +963,7 @@ scan_loop (loop, flags)
 		  beginning, don't set maybe_never for that.  This must be an
 		  unconditional jump, otherwise the code at the top of the
 		  loop might never be executed.  Unconditional jumps are
-		  followed a by barrier then loop end.  */
+		  followed by a barrier then the loop_end.  */
                && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop_end
 		     && any_uncondjump_p (p)))
