@@ -1,3 +1,9 @@
+Wed Mar 14 22:39:12 CET 2001  Jan Hubicka  <jh@suse.cz>
+			      Vojtech Pavlik
+
+	* md.texi (machine constraints): Document 'Q', 'R', 'e' and 'Z'
+	constraints.
+
 Wed Mar 14 22:26:10 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_cmodel_string, ix86_cmodel): Define.

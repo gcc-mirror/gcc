@@ -1538,7 +1538,18 @@ System V Release 4 small data area reference
 @item Intel 386---@file{i386.h}
 @table @code
 @item q
-@samp{a}, @code{b}, @code{c}, or @code{d} register
+@samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
+For x86-64 it is equivalent to @samp{r} class. (for 8bit instrucitons that
+do not use upper halves)
+
+@item Q
+@samp{a}, @code{b}, @code{c}, or @code{d} register. (for 8bit instructions,
+that do use upper halves)
+
+@item R
+Legacy register --- equivalent to @code{r} class in i386 mode.
+(for non-8bit registers used together with 8bit upper halves in a single
+instruction)
 
 @item A
 @samp{a}, or @code{d} register (for 64-bit ints)
@@ -1587,6 +1598,14 @@ Constant in range 0 to 63 (for 64 bit shifts)
 
 @item N
 Constant in range 0 to 255 (for @code{out} instruction)
+
+@item Z
+Constant in range 0 to 0xffffffff or symbolic reference known to fit specified range.
+(for using immediates in zero extending 32bit to 64bit x86-64 instructions)
+
+@item e
+Constant in range -2147483648 to 2147483647 or symbolic reference known to fit specified range.
+(for using immediates in 64bit x86-64 instructions)
 
 @item G
 Standard 80387 floating point constant
