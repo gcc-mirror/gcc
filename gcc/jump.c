@@ -2166,6 +2166,7 @@ delete_barrier_successors (f)
 	 gcse.  We eliminate such insns now to avoid having them
 	 cause problems later.  */
       else if (GET_CODE (insn) == JUMP_INSN
+	       && GET_CODE (PATTERN (insn)) == SET
 	       && SET_SRC (PATTERN (insn)) == pc_rtx
 	       && SET_DEST (PATTERN (insn)) == pc_rtx)
 	insn = delete_insn (insn);

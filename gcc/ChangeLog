@@ -1,3 +1,8 @@
+1999-08-24 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* jump.c (delete_barrier_successors) Match (set (pc) (pc)) insn
+	exactly.
+
 Mon Aug 23 23:35:52 1999  Matthias Klose  <doko@cs.tu-berlin.de>
 
 	* cpp.texi: Add a node documenting macro varargs (copied
