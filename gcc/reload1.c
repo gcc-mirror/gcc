@@ -3260,6 +3260,16 @@ reload_as_needed (first, live_known)
 	    }
 #endif /* SMALL_REGISTER_CLASSES */
 
+	  /* If this is a USE and CLOBBER of a MEM, ensure that any
+	     references to eliminable registers have been removed.  */
+
+	  if ((GET_CODE (PATTERN (insn)) == USE
+	       || GET_CODE (PATTERN (insn)) == CLOBBER)
+	      && GET_CODE (XEXP (PATTERN (insn), 0)) == MEM)
+	    XEXP (XEXP (PATTERN (insn), 0), 0)
+	      = eliminate_regs (XEXP (XEXP (PATTERN (insn), 0), 0),
+				GET_MODE (XEXP (PATTERN (insn), 0)), 0);
+
 	  /* If we need to do register elimination processing, do so.
 	     This might delete the insn, in which case we are done.  */
 	  if (num_eliminable && GET_MODE (insn) == QImode)
