@@ -5335,7 +5335,7 @@ main (argc, argv)
 
   compile_file (filename);
 
-#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN__))
+#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN__)) && !defined(__INTERIX)
   if (flag_print_mem)
     {
       char *lim = (char *) sbrk (0);
@@ -5351,7 +5351,7 @@ main (argc, argv)
 #endif /* not USG */
 #endif
     }
-#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN) */
+#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN) && ! __INTERIX */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);

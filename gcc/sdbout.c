@@ -59,7 +59,7 @@ AT&T C compiler.  From the example below I would conclude the following:
    supply usable syms.h include files.  Which syms.h file to use is a
    target parameter so don't use the native one if we're cross compiling.  */
 
-#if defined(USG) && !defined(MIPS) && !defined (hpux) && !defined(_WIN32) && !defined(__linux__) && !defined(CROSS_COMPILE)
+#if defined(USG) && !defined(MIPS) && !defined (hpux) && !defined(_WIN32) && !defined(__linux__) && !defined(__INTERIX) && !defined(CROSS_COMPILE)
 #include <syms.h>
 /* Use T_INT if we don't have T_VOID.  */
 #ifndef T_VOID
