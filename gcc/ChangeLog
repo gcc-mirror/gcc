@@ -1,3 +1,9 @@
+2004-10-04  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c (array_base_name_differ_p): Fix comments.  When
+	the predicate cannot be computed, don't initialize the result to
+	false.
+
 2004-10-01  Eric Christopher  <echristo@redhat.com>
 
 	* dwarf2.h (dwarf_calling_convention): Add GNU prefix to

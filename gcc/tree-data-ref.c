@@ -96,12 +96,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-pass.h"
 #include "lambda.h"
 
-
 /* This is the simplest data dependence test: determines whether the
-   data references A and B access the same array/region. If can't determine -
-   return false; Otherwise, return true, and DIFFER_P will record
-   the result. This utility will not be necessary when alias_sets_conflict_p
-   will be less conservative.  */
+   data references A and B access the same array/region.  Returns
+   false when the property is not computable at compile time.
+   Otherwise return true, and DIFFER_P will record the result. This
+   utility will not be necessary when alias_sets_conflict_p will be
+   less conservative.  */
 
 bool
 array_base_name_differ_p (struct data_reference *a,
@@ -113,17 +113,16 @@ array_base_name_differ_p (struct data_reference *a,
   tree ta = TREE_TYPE (base_a);
   tree tb = TREE_TYPE (base_b);
 
-
-  /** Determine if same base  **/
-
-  /* array accesses: a[i],b[i] or pointer accesses: *a,*b. bases are a,b.  */
+  /* Determine if same base.  Example: for the array accesses
+     a[i], b[i] or pointer accesses *a, *b, bases are a, b.  */
   if (base_a == base_b)
     {
       *differ_p = false;
       return true;
     }
 
-  /* pointer based accesses - (*p)[i],(*q)[j]. bases are (*p),(*q)  */
+  /* For pointer based accesses, (*p)[i], (*q)[j], the bases are (*p)
+     and (*q)  */
   if (TREE_CODE (base_a) == INDIRECT_REF && TREE_CODE (base_b) == INDIRECT_REF
       && TREE_OPERAND (base_a, 0) == TREE_OPERAND (base_b, 0))
     {
@@ -140,21 +139,21 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
+  /* Determine if different bases.  */
 
-  /** Determine if different bases  **/
-
-  /* at this point we know that base_a != base_b. However, pointer accesses
-     of the form x=(*p) and y=(*q), which bases are p and q, may still by pointing
-     to the same base. In SSAed GIMPLE p and q will be SSA_NAMES in this case.
-     Therefore, here we check if it's really two different declarations.  */
+  /* At this point we know that base_a != base_b.  However, pointer
+     accesses of the form x=(*p) and y=(*q), which bases are p and q,
+     may still pointing to the same base. In SSAed GIMPLE p and q will
+     be SSA_NAMES in this case.  Therefore, here we check if it's
+     really two diferent declarations.  */
   if (TREE_CODE (base_a) == VAR_DECL && TREE_CODE (base_b) == VAR_DECL)
     {
       *differ_p = true;
       return true;
     }
 
-  /* compare two record/union bases s.a and t.b: 
-     s != t or (a != b and s and t are not unions)  */
+  /* Compare two record/union bases s.a and t.b: s != t or (a != b and
+     s and t are not unions).  */
   if (TREE_CODE (base_a) == COMPONENT_REF && TREE_CODE (base_b) == COMPONENT_REF
       && ((TREE_CODE (TREE_OPERAND (base_a, 0)) == VAR_DECL
            && TREE_CODE (TREE_OPERAND (base_b, 0)) == VAR_DECL
@@ -167,7 +166,7 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
-  /* compare a record/union access and an array access.  */ 
+  /* Compare a record/union access and an array access.  */ 
   if ((TREE_CODE (base_a) == VAR_DECL
        && (TREE_CODE (base_b) == COMPONENT_REF
            && TREE_CODE (TREE_OPERAND (base_b, 0)) == VAR_DECL))
@@ -185,10 +184,9 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
-  /* An insn writing through a restricted pointer is "independent" of any
-     insn reading or writing through a different pointer, in the same
-     block/scope.
-   */
+  /* An instruction writing through a restricted pointer is
+     "independent" of any instruction reading or writing through a
+     different pointer, in the same block/scope.  */
   if ((TREE_CODE (ta) == POINTER_TYPE && TYPE_RESTRICT (ta)
        && !DR_IS_READ(a))
       || (TREE_CODE (tb) == POINTER_TYPE && TYPE_RESTRICT (tb)
@@ -198,7 +196,6 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
-  *differ_p = false; /* Don't know, but be conservative.  */
   return false;
 }
 
