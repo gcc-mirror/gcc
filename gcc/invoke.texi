@@ -1725,6 +1725,9 @@ The ANSI type of an integer constant has a different width or
 signedness from its traditional type.  This warning is only issued if
 the base of the constant is ten.  I.e. hexadecimal or octal values, which
 typically represent bit patterns, are not warned about.
+
+@item
+Usage of ANSI string concatenation is detected.
 @end itemize
 
 @item -Wundef

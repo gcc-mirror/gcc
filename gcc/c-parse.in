@@ -892,7 +892,12 @@ end ifobjc
 string:
 	  STRING
 	| string STRING
-		{ $$ = chainon ($1, $2); }
+		{ $$ = chainon ($1, $2);
+ifc
+		  if (warn_traditional)
+		    warning ("Use of ANSI string concatenation");
+end ifc
+		}
 	;
 
 ifobjc

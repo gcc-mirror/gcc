@@ -1,5 +1,12 @@
 1999-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-parse.in (string): With -Wtraditional, warn if ANSI string
+	concatenation is utilized.
+
+	* invoke.texi (-Wtraditional): Document it.
+
+1999-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* flow.c (flow_loops_dump): Avoid ANSI string concatenation.
 	Cast a ptrdiff_t to long and pass it to printf with %ld.
 
