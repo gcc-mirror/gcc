@@ -2203,11 +2203,8 @@ gengtype-yacc.o : $(parsedir)/gengtype-yacc.c gengtype.h $(BCONFIG_H) $(SYSTEM_H
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	  $(parsedir)/gengtype-yacc.c $(OUTPUT_OPTION)
 
-# The sed command works around a bug in flex-2.5.4.
 $(parsedir)/gengtype-lex.c : $(srcdir)/gengtype-lex.l
-	$(FLEX) $(FLEXFLAGS) -t -o- $(srcdir)/gengtype-lex.l | \
-	  sed 's/^\(char msg\[\];\)/yyconst \1/' > g-$$$$ ; \
-	if test $$? -eq 0 ; then \
+	if $(FLEX) $(FLEXFLAGS) -o g-$$$$ $(srcdir)/gengtype-lex.l; then \
 	  mv -f g-$$$$ $(parsedir)/gengtype-lex.c ; \
 	else \
 	  rm -f g-$$$$ ; \
