@@ -1863,6 +1863,7 @@ print_operand (file, op, letter)
     }
   else if (GET_CODE (op) == REG)
     {
+#ifdef SUPPORT_SUN_FPA
       if (REGNO (op) < 16
 	  && (letter == 'y' || letter == 'x')
 	  && GET_MODE (op) == DFmode)
@@ -1871,6 +1872,7 @@ print_operand (file, op, letter)
 		   reg_names[REGNO (op)+1]);
 	}
       else
+#endif
 	{
 	  fprintf (file, "%s", reg_names[REGNO (op)]);
 	}
@@ -1938,6 +1940,9 @@ print_operand (file, op, letter)
    define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
    string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
    macro.  See m68k/sgs.h for an example; for versions without the bug.
+   Some assemblers refuse all the above solutions.  The workaround is to
+   emit "K(pc,d0.l*2)" with K being a small constant known to give the
+   right behaviour.
 
    They also do not like things like "pea 1.w", so we simple leave off
    the .w on small constants. 
@@ -1946,6 +1951,21 @@ print_operand (file, op, letter)
    style relocations in an address.  When generating -fpic code the
    offset is output in word mode (eg movel a5@(_foo:w), a0).  When generating
    -fPIC code the offset is output in long mode (eg movel a5@(_foo:l), a0) */
+
+#ifndef ASM_OUTPUT_CASE_FETCH
+#ifdef MOTOROLA
+#ifdef SGS
+#define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "%LLD%d(%Rpc,%s.", labelno, regname)
+#else
+#define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.", labelno, labelno, regname)
+#endif
+#else
+#define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:", labelno, labelno, regname)
+#endif
+#endif /* ASM_OUTPUT_CASE_FETCH */
 
 void
 print_operand_address (file, addr)
@@ -2083,43 +2103,17 @@ print_operand_address (file, addr)
 	      }
 	    if (GET_CODE (ireg) == SIGN_EXTEND)
 	      {
-#ifdef MOTOROLA
-#ifdef SGS
-		asm_fprintf (file, "%LLD%d(%Rpc,%s.w",
+		ASM_OUTPUT_CASE_FETCH (file,
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (XEXP (ireg, 0))]);
-#else
-		asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.w",
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (XEXP (ireg, 0))]);
-#endif
-#else
-		asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:w",
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (XEXP (ireg, 0))]);
-#endif
+		fprintf (file, "w");
 	      }
 	    else
 	      {
-#ifdef MOTOROLA
-#ifdef SGS
-		asm_fprintf (file, "%LLD%d(%Rpc,%s.l",
+		ASM_OUTPUT_CASE_FETCH (file,
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (ireg)]);
-#else
-		asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l",
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (ireg)]);
-#endif
-#else
-		asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:l",
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (ireg)]);
-#endif
+		fprintf (file, "l");
 	      }
 	    if (scale != 1)
 	      {
@@ -2135,24 +2129,10 @@ print_operand_address (file, addr)
 	if (breg != 0 && ireg == 0 && GET_CODE (addr) == LABEL_REF
 	    && ! (flag_pic && breg == pic_offset_table_rtx))
 	  {
-#ifdef MOTOROLA
-#ifdef SGS
-	    asm_fprintf (file, "%LLD%d(%Rpc,%s.l",
+	    ASM_OUTPUT_CASE_FETCH (file,
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (breg)]);
-#else
-	    asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l",
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (breg)]);
-#endif
-#else
-	    asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:l",
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (breg)]);
-#endif
-	    putc (')', file);
+	    fprintf (file, "l)");
 	    break;
 	  }
 	if (ireg != 0 || breg != 0)
@@ -2228,23 +2208,10 @@ print_operand_address (file, addr)
 	else if (reg1 != 0 && GET_CODE (addr) == LABEL_REF
 		 && ! (flag_pic && reg1 == pic_offset_table_rtx))	
 	  {
-#ifdef MOTOROLA
-#ifdef SGS
-	    asm_fprintf (file, "%LLD%d(%Rpc,%s.l)",
+	    ASM_OUTPUT_CASE_FETCH (file,
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (reg1)]);
-#else
-	    asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l)",
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (reg1)]);
-#endif
-#else
-	    asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:l)",
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (reg1)]);
-#endif
+	    fprintf (file, "l)");
 	    break;
 	  }
 	/* FALL-THROUGH (is this really what we want? */
