@@ -1,3 +1,10 @@
+2003-12-16  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/alpha/freebsd.h (FBSD_TARGET_CPU_CPP_BUILTINS): Add __LP64__.
+	* config/sparc/freebsd.h (FBSD_TARGET_CPU_CPP_BUILTINS): Likewise.
+	* config/i386/freebsd64.h (FBSD_TARGET_CPU_CPP_BUILTINS): Conditionally
+	add __LP64__.
+
 2003-12-16  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* altivec.h (vec_cmple, vec_all_numeric): Fix typo.

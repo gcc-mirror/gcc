@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define FBSD_TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
+      builtin_define ("__LP64__");		\
       if (flag_pic)				\
 	{					\
 	  builtin_define ("__PIC__");		\
