@@ -60,7 +60,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(AP)
 
 #define va_arg(AP, TYPE)						\
- (AP = ((char *) (AP)) += __va_rounded_size (TYPE),			\
+ (AP = (char *) (AP) + __va_rounded_size (TYPE),			\
   *((TYPE *) ((char *) (AP) - __va_rounded_size (TYPE))))
 #endif /* _STDARG_H */
 
