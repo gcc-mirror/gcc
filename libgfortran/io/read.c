@@ -600,8 +600,6 @@ read_f (fnode * f, char *dest, int length)
 
  bad_float:
   generate_error (ERROR_READ_VALUE, "Bad value during floating point read");
-  if (buffer != scratch)
-     free_mem (buffer);
   return;
 
   /* At this point the start of an exponent has been found */

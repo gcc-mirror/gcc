@@ -1,3 +1,8 @@
+2005-01-25  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR libfortran/19524
+	* io/read.c (read_f): Don't free uninitialized pointer.
+
 2005-01-23  James A. Morrison  <phython@gcc.gnu.org>
 	Paul Brook  <paul@codesourcery.com>
 
