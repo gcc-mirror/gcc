@@ -260,7 +260,7 @@ _Jv_PrepareCompiledClass (jclass klass)
 	  if (! found)
 	    {
 	      jstring str = _Jv_NewStringUTF (name->data);
-	      throw new java::lang::ClassNotFoundException (str);
+	      throw new java::lang::NoClassDefFoundError (str);
 	    }
 
 	  pool->data[index].clazz = found;

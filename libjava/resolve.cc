@@ -29,7 +29,7 @@ details.  */
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/AbstractMethodError.h>
-#include <java/lang/ClassNotFoundException.h>
+#include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 
@@ -98,7 +98,8 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       if (! found)
 	{
 	  jstring str = _Jv_NewStringUTF (name->data);
-	  throw new java::lang::ClassNotFoundException (str);
+	  // This exception is specified in JLS 2nd Ed, section 5.1.
+	  throw new java::lang::NoClassDefFoundError (str);
 	}
 
       if ((found->accflags & Modifier::PUBLIC) == Modifier::PUBLIC
