@@ -54,8 +54,12 @@ typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef		float DFtype	__attribute__ ((mode (DF)));
+#if 0
 typedef		float XFtype	__attribute__ ((mode (XF)));
+#endif
+#if LONG_DOUBLE_TYPE_SIZE == 128
 typedef		float TFtype	__attribute__ ((mode (TF)));
+#endif
 
 /* Make sure that we don't accidentaly use any normal C language built-in
    type names in the first part of this file.  Instead we want to use *only*
