@@ -3955,6 +3955,16 @@ insn_dead_p (pbi, x, call_ok, notes)
 		return 0;
 #endif
 
+#ifdef PIC_OFFSET_TABLE_REGNUM
+	      /* Before reload, do not allow sets of the pic register
+		 to be deleted.  Reload can insert references to
+		 constant pool memory anywhere in the function, making
+		 the PIC register live where it wasn't before.  */
+	      if (regno == PIC_OFFSET_TABLE_REGNUM && fixed_regs[regno]
+		  && ! reload_completed)
+		return 0;
+#endif
+
 	      /* Otherwise, the set is dead.  */
 	      return 1;
 	    }
