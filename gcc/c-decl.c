@@ -6450,7 +6450,7 @@ finish_function (nested)
 #endif
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno);
+  expand_function_end (input_filename, lineno, 0);
 
   /* So we can tell if jump_optimize sets it to 1.  */
   can_reach_end = 0;
