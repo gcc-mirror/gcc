@@ -1,3 +1,14 @@
+2003-07-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (announce_snapshot): Use ${RELEASE} instead
+	of ${BRANCH}-${DATE} to refer to the snapshot directory.
+	Put README file into the snapshot directory.
+
+	(RELEASE): Define as ${BRANCH}-${DATE} for snapshots.
+	(FTP_PATH): Use ${RELEASE} in case of snapshots.
+	(TAG): Ditto.
+	(OLD_TARS): Adjust to new directory scheme for snapshots.
+
 2003-07-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (announce_snapshot): Add substitution of @RELEASE@
