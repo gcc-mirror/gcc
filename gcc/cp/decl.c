@@ -64,7 +64,8 @@ static tree grok_reference_init (tree, tree, tree, tree *);
 static tree grokfndecl (tree, tree, tree, tree, tree, int,
 			enum overload_flags, cp_cv_quals,
 			tree, int, int, int, int, int, int, tree);
-static tree grokvardecl (tree, tree, cp_decl_specifier_seq *, int, int, tree);
+static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *, 
+			 int, int, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (const char *, tree, tree, int,
                                 enum built_in_class, const char *,
@@ -5708,7 +5709,7 @@ grokfndecl (tree ctype,
 static tree
 grokvardecl (tree type,
              tree name,
-	     cp_decl_specifier_seq *declspecs,
+	     const cp_decl_specifier_seq *declspecs,
              int initialized,
              int constp,
              tree scope)
@@ -6246,7 +6247,7 @@ check_special_function_return_type (special_function_kind sfk,
 
 tree
 grokdeclarator (const cp_declarator *declarator,
-		cp_decl_specifier_seq *declspecs,
+		const cp_decl_specifier_seq *declspecs,
                 enum decl_context decl_context,
                 int initialized,
                 tree* attrlist)
@@ -6299,6 +6300,14 @@ grokdeclarator (const cp_declarator *declarator,
      namespace scope.  */ 
   tree in_namespace = NULL_TREE;
   cp_decl_spec ds;
+  cp_storage_class storage_class;
+  bool unsigned_p, signed_p, short_p, long_p, thread_p;
+
+  signed_p = declspecs->specs[(int)ds_signed];
+  unsigned_p = declspecs->specs[(int)ds_unsigned];
+  short_p = declspecs->specs[(int)ds_short];
+  long_p = declspecs->specs[(int)ds_long];
+  thread_p = declspecs->specs[(int)ds_thread];
 
   if (decl_context == FUNCDEF)
     funcdef_flag = 1, decl_context = NORMAL;
@@ -6507,11 +6516,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
   /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
-  if (type == NULL_TREE
-      && (declspecs->specs[(int)ds_signed]
-	  || declspecs->specs[(int)ds_unsigned]
-	  || declspecs->specs[(int)ds_long]
-	  || declspecs->specs[(int)ds_short]))
+  if (type == NULL_TREE && (signed_p || unsigned_p || long_p || short_p))
     {
       /* These imply 'int'.  */
       type = integer_type_node;
@@ -6604,20 +6609,16 @@ grokdeclarator (const cp_declarator *declarator,
      and check for invalid combinations.  */
 
   /* Long double is a special combination.  */
-  if (declspecs->specs[(int)ds_long]
-      && TYPE_MAIN_VARIANT (type) == double_type_node)
+  if (long_p && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
-      declspecs->specs[(int)ds_long] = 0;
+      long_p = false;
       type = build_qualified_type (long_double_type_node,
 				   cp_type_quals (type));
     }
 
   /* Check all other uses of type modifiers.  */
 
-  if (declspecs->specs[(int)ds_unsigned]
-      || declspecs->specs[(int)ds_signed]
-      || declspecs->specs[(int)ds_long]
-      || declspecs->specs[(int)ds_short])
+  if (unsigned_p || signed_p || long_p || short_p)
     {
       int ok = 0;
 
@@ -6625,19 +6626,13 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("short, signed or unsigned invalid for `%s'", name);
       else if (TREE_CODE (type) != INTEGER_TYPE)
 	error ("long, short, signed or unsigned invalid for `%s'", name);
-      else if (declspecs->specs[(int)ds_long]
-	       && declspecs->specs[(int)ds_short])
+      else if (long_p && short_p)
 	error ("long and short specified together for `%s'", name);
-      else if ((declspecs->specs[(int)ds_long]
-		|| declspecs->specs[(int)ds_short])
-	       && explicit_char)
+      else if ((long_p || short_p) && explicit_char)
 	error ("long or short specified with char for `%s'", name);
-      else if ((declspecs->specs[(int)ds_long]
-		|| declspecs->specs[(int)ds_short])
-	       && TREE_CODE (type) == REAL_TYPE)
+      else if ((long_p|| short_p) && TREE_CODE (type) == REAL_TYPE)
 	error ("long or short specified with floating type for `%s'", name);
-      else if (declspecs->specs[(int)ds_signed]
-	       && declspecs->specs[(int)ds_unsigned])
+      else if (signed_p && unsigned_p)
 	error ("signed and unsigned given together for `%s'", name);
       else
 	{
@@ -6654,24 +6649,17 @@ grokdeclarator (const cp_declarator *declarator,
       /* Discard the type modifiers if they are invalid.  */
       if (! ok)
 	{
-	  declspecs->specs[(int)ds_unsigned] = 0;
-	  declspecs->specs[(int)ds_signed] = 0;
-	  declspecs->specs[(int)ds_long] = 0;
-	  declspecs->specs[(int)ds_short] = 0;
+	  unsigned_p = false;
+	  signed_p = false;
+	  long_p = false;
+	  short_p = false;
 	  longlong = 0;
 	}
     }
 
-  if (declspecs->specs[(int)ds_complex]
-      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
-    {
-      error ("complex invalid for `%s'", name);
-      declspecs->specs[(int)ds_complex] = 0;
-    }
-
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
-  if (declspecs->specs[(int)ds_unsigned]
+  if (unsigned_p
       /* [class.bit]
 
 	 It is implementation-defined whether a plain (neither
@@ -6681,7 +6669,7 @@ grokdeclarator (const cp_declarator *declarator,
 	 Naturally, we extend this to long long as well.  Note that
 	 this does not include wchar_t.  */
       || (bitfield && !flag_signed_bitfields
-	  && !declspecs->specs[(int)ds_signed]
+	  && !signed_p
 	  /* A typedef for plain `int' without `signed' can be
 	     controlled just like plain `int', but a typedef for
 	     `signed int' cannot be so controlled.  */
@@ -6693,9 +6681,9 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (longlong)
 	type = long_long_unsigned_type_node;
-      else if (declspecs->specs[(int)ds_long])
+      else if (long_p)
 	type = long_unsigned_type_node;
-      else if (declspecs->specs[(int)ds_short])
+      else if (short_p)
 	type = short_unsigned_type_node;
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
@@ -6704,28 +6692,26 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	type = unsigned_type_node;
     }
-  else if (declspecs->specs[(int)ds_signed]
-	   && type == char_type_node)
+  else if (signed_p && type == char_type_node)
     type = signed_char_type_node;
   else if (longlong)
     type = long_long_integer_type_node;
-  else if (declspecs->specs[(int)ds_long])
+  else if (long_p)
     type = long_integer_type_node;
-  else if (declspecs->specs[(int)ds_short])
+  else if (short_p)
     type = short_integer_type_node;
 
   if (declspecs->specs[(int)ds_complex])
     {
+      if (TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+	error ("complex invalid for `%s'", name);
       /* If we just have "complex", it is equivalent to
 	 "complex double", but if any modifiers at all are specified it is
 	 the complex form of TYPE.  E.g, "complex short" is
 	 "complex short int".  */
 
-      if (defaulted_int && ! longlong
-	  && ! (declspecs->specs[(int)ds_long]
-		|| declspecs->specs[(int)ds_short]
-		|| declspecs->specs[(int)ds_signed]
-		|| declspecs->specs[(int)ds_unsigned]))
+      else if (defaulted_int && ! longlong
+	       && ! (long_p || short_p || signed_p || unsigned_p))
 	type = complex_double_type_node;
       else if (type == integer_type_node)
 	type = complex_integer_type_node;
@@ -6762,7 +6748,8 @@ grokdeclarator (const cp_declarator *declarator,
   virtualp = !! declspecs->specs[(int)ds_virtual];
   explicitp = !! declspecs->specs[(int)ds_explicit];
 
-  if (declspecs->storage_class == sc_static)
+  storage_class = declspecs->storage_class;
+  if (storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
 
   if (virtualp && staticp == 2)
@@ -6784,9 +6771,9 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (declspecs->specs[(int)ds_typedef])
 	error ("typedef declaration invalid in parameter declaration");
-      else if (declspecs->storage_class == sc_static
-	       || declspecs->storage_class == sc_extern
-	       || declspecs->specs[(int)ds_thread])
+      else if (storage_class == sc_static
+	       || storage_class == sc_extern
+	       || thread_p)
 	error ("storage class specifiers invalid in parameter declarations");
     }
 
@@ -6808,29 +6795,29 @@ grokdeclarator (const cp_declarator *declarator,
      kinds of declarations (parameters, typenames, etc.).  */
   if (declspecs->multiple_storage_classes_p)
     error ("multiple storage classes in declaration of `%s'", name);
-  else if (declspecs->specs[(int)ds_thread]
-	   && ((declspecs->storage_class 
-		&& declspecs->storage_class != sc_extern
-		&& declspecs->storage_class != sc_static)
+  else if (thread_p
+	   && ((storage_class 
+		&& storage_class != sc_extern
+		&& storage_class != sc_static)
 	       || declspecs->specs[(int)ds_typedef]))
     {
       error ("multiple storage classes in declaration of `%s'", name);
-      declspecs->specs[(int)ds_thread] = 0;
+      thread_p = false;
     }
   else if (decl_context != NORMAL 
-	   && ((declspecs->storage_class != sc_none
-		&& declspecs->storage_class != sc_mutable)
-	       || declspecs->specs[(int)ds_thread]))
+	   && ((storage_class != sc_none
+		&& storage_class != sc_mutable)
+	       || thread_p))
     {
       if ((decl_context == PARM || decl_context == CATCHPARM)
-	  && (declspecs->storage_class == sc_register
-	      || declspecs->storage_class == sc_auto))
+	  && (storage_class == sc_register
+	      || storage_class == sc_auto))
 	;
       else if (declspecs->specs[(int)ds_typedef])
 	;
       else if (decl_context == FIELD
 	       /* C++ allows static class elements.  */
-	       && declspecs->storage_class == sc_static)
+	       && storage_class == sc_static)
 	/* C++ also allows inlines and signed and unsigned elements,
 	   but in those cases we don't come in here.  */
 	;
@@ -6868,14 +6855,14 @@ grokdeclarator (const cp_declarator *declarator,
 	      else
 		error ("storage class specified for typename");
 	    }
-	  if (declspecs->storage_class == sc_register
-	      || declspecs->storage_class == sc_auto
-	      || declspecs->storage_class == sc_extern
-	      || declspecs->specs[(int)ds_thread])
-	    declspecs->storage_class = sc_none;
+	  if (storage_class == sc_register
+	      || storage_class == sc_auto
+	      || storage_class == sc_extern
+	      || thread_p)
+	    storage_class = sc_none;
 	}
     }
-  else if (declspecs->storage_class == sc_extern && initialized 
+  else if (storage_class == sc_extern && initialized 
 	   && !funcdef_flag)
     {
       if (toplevel_bindings_p ())
@@ -6888,24 +6875,24 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	error ("`%s' has both `extern' and initializer", name);
     }
-  else if (declspecs->storage_class == sc_extern && funcdef_flag
+  else if (storage_class == sc_extern && funcdef_flag
 	   && ! toplevel_bindings_p ())
     error ("nested function `%s' declared `extern'", name);
   else if (toplevel_bindings_p ())
     {
-      if (declspecs->storage_class == sc_auto)
+      if (storage_class == sc_auto)
 	error ("top-level declaration of `%s' specifies `auto'", name);
     }
-  else if (declspecs->specs[(int)ds_thread]
-	   && declspecs->storage_class != sc_extern
-	   && declspecs->storage_class != sc_static)
+  else if (thread_p
+	   && storage_class != sc_extern
+	   && storage_class != sc_static)
     {
       error ("function-scope `%s' implicitly auto and declared `__thread'",
 	     name);
-      declspecs->specs[(int)ds_thread] = 0;
+      thread_p = false;
     }
 
-  if (declspecs->storage_class && friendp)
+  if (storage_class && friendp)
     error ("storage class specifiers invalid in friend function declarations");
 
   if (!id_declarator)
@@ -7334,33 +7321,33 @@ grokdeclarator (const cp_declarator *declarator,
       explicitp = 0;
     }
 
-  if (declspecs->storage_class == sc_mutable)
+  if (storage_class == sc_mutable)
     {
       if (decl_context != FIELD || friendp)
         {
 	  error ("non-member `%s' cannot be declared `mutable'", name);
-	  declspecs->storage_class = sc_none;
+	  storage_class = sc_none;
         }
       else if (decl_context == TYPENAME || declspecs->specs[(int)ds_typedef])
 	{
 	  error ("non-object member `%s' cannot be declared `mutable'", name);
-	  declspecs->storage_class = sc_none;
+	  storage_class = sc_none;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE
                || TREE_CODE (type) == METHOD_TYPE)
         {
 	  error ("function `%s' cannot be declared `mutable'", name);
-	  declspecs->storage_class = sc_none;
+	  storage_class = sc_none;
         }
       else if (staticp)
 	{
 	  error ("static `%s' cannot be declared `mutable'", name);
-	  declspecs->storage_class = sc_none;
+	  storage_class = sc_none;
 	}
       else if (type_quals & TYPE_QUAL_CONST)
 	{
 	  error ("const `%s' cannot be declared `mutable'", name);
-	  declspecs->storage_class = sc_none;
+	  storage_class = sc_none;
 	}
     }
 
@@ -7440,7 +7427,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    grok_method_quals (ctype, decl, quals);
 	}
 
-      if (declspecs->specs[(int)ds_signed]
+      if (signed_p
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
 
@@ -7857,10 +7844,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		decl = build_decl (FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
-		if (declspecs->storage_class == sc_mutable)
+		if (storage_class == sc_mutable)
 		  {
 		    DECL_MUTABLE_P (decl) = 1;
-		    declspecs->storage_class = sc_none;
+		    storage_class = sc_none;
 		  }
 	      }
 
@@ -7882,22 +7869,22 @@ grokdeclarator (const cp_declarator *declarator,
 	else
 	  original_name = unqualified_id;
 
-	if (declspecs->storage_class == sc_auto)
+	if (storage_class == sc_auto)
 	  error ("storage class `auto' invalid for function `%s'", name);
-	else if (declspecs->storage_class == sc_register)
+	else if (storage_class == sc_register)
 	  error ("storage class `register' invalid for function `%s'", name);
-	else if (declspecs->specs[(int)ds_thread])
+	else if (thread_p)
 	  error ("storage class `__thread' invalid for function `%s'", name);
 
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
 	if (! toplevel_bindings_p ()
-	    && (declspecs->storage_class == sc_static
+	    && (storage_class == sc_static
 		|| declspecs->specs[(int)ds_inline])
 	    && pedantic)
 	  {
-	    if (declspecs->storage_class == sc_static)
+	    if (storage_class == sc_static)
 	      pedwarn ("`static' specified invalid for function `%s' declared out of global scope", name);
 	    else
 	      pedwarn ("`inline' specifier invalid for function `%s' declared out of global scope", name);
@@ -7919,8 +7906,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	/* Record presence of `static'.  */
 	publicp = (ctype != NULL_TREE
-		   || declspecs->storage_class == sc_extern
-		   || declspecs->storage_class != sc_static);
+		   || storage_class == sc_extern
+		   || storage_class != sc_static);
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
 			   virtualp, flags, quals, raises,
@@ -7951,7 +7938,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (invalid_static)
 	      {
 		staticp = 0;
-		declspecs->storage_class = sc_none;
+		storage_class = sc_none;
 	      }
 	  }
       }
@@ -7975,18 +7962,18 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
                 pedwarn ("`static' may not be used when defining (as opposed to declaring) a static data member");
 	        staticp = 0;
-		declspecs->storage_class = sc_none;
+		storage_class = sc_none;
 	      }
-	    if (declspecs->storage_class == sc_register && TREE_STATIC (decl))
+	    if (storage_class == sc_register && TREE_STATIC (decl))
 	      {
 		error ("static member `%D' declared `register'", decl);
-		declspecs->storage_class = sc_none;
+		storage_class = sc_none;
 	      }
-	    if (declspecs->storage_class == sc_extern && pedantic)
+	    if (storage_class == sc_extern && pedantic)
 	      {
 	        pedwarn ("cannot explicitly declare member `%#D' to have extern linkage",
 			    decl);
-		declspecs->storage_class = sc_none;
+		storage_class = sc_none;
 	      }
 	  }
       }
@@ -7994,11 +7981,11 @@ grokdeclarator (const cp_declarator *declarator,
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
 
-    if (declspecs->storage_class == sc_register)
+    if (storage_class == sc_register)
       DECL_REGISTER (decl) = 1;
-    else if (declspecs->storage_class == sc_extern)
+    else if (storage_class == sc_extern)
       DECL_THIS_EXTERN (decl) = 1;
-    else if (declspecs->storage_class == sc_static)
+    else if (storage_class == sc_static)
       DECL_THIS_STATIC (decl) = 1;
 
     /* Record constancy and volatility.  There's no need to do this

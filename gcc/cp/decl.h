@@ -32,7 +32,7 @@ enum decl_context
 
 /* We need this in here to get the decl_context definition.  */
 extern tree grokdeclarator (const cp_declarator *, 
-			    cp_decl_specifier_seq *, 
+			    const cp_decl_specifier_seq *, 
 			    enum decl_context, int, tree*);
 
 #ifdef DEBUG_CP_BINDING_LEVELS

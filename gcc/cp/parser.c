@@ -10477,7 +10477,6 @@ cp_parser_init_declarator (cp_parser* parser,
   /* Gather the attributes that were provided with the
      decl-specifiers.  */
   prefix_attributes = decl_specifiers->attributes;
-  decl_specifiers->attributes = NULL_TREE;
 
   /* Assume that this is not the declarator for a function
      definition.  */
