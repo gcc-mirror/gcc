@@ -1,3 +1,8 @@
+2003-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi: Document removal of cast-as-lvalue extension in
+	C++.
+
 2003-09-04  Nicolas Roche  <roche@act-europe.fr>
 
 	* gcc.c (process_command): Fix typo.

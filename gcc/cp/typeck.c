@@ -3967,7 +3967,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	 is an error.  */
       else if (TREE_CODE (argtype) != FUNCTION_TYPE
 	       && TREE_CODE (argtype) != METHOD_TYPE
-	       && !non_cast_lvalue_or_else (arg, "unary `&'"))
+	       && !lvalue_or_else (arg, "unary `&'"))
 	return error_mark_node;
 
       if (argtype != error_mark_node)
@@ -4391,7 +4391,7 @@ build_static_cast (tree type, tree expr)
   if (TREE_CODE (type) == REFERENCE_TYPE
       && CLASS_TYPE_P (TREE_TYPE (type))
       && CLASS_TYPE_P (intype)
-      && real_non_cast_lvalue_p (expr)
+      && real_lvalue_p (expr)
       && DERIVED_FROM_P (intype, TREE_TYPE (type))
       && can_convert (build_pointer_type (TYPE_MAIN_VARIANT (intype)),
 		      build_pointer_type (TYPE_MAIN_VARIANT 

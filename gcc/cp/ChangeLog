@@ -1,3 +1,22 @@
+2003-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove cast-as-lvalue extension.
+	* call.c (build_conditional_expr): Correct formatting.
+	(convert_like_real): Use lvalue_p, not non_cast_lvalue_p.
+	(initialize_real): Use real_lvalue_p, not real_non_cast_lvalue_p.
+	* cp-tree.h (non_cast_lvalue_p): Remove.
+	(real_non_cast_lvalue_p): Remove.
+	(non_cast_lvalue_or_else): Remove.
+	* tree.c (lvalue_p_1): Remove allow_cast_as_lvalue parameter.
+	(real_lvalue_p): Adjust call to lvalue_p_1.
+	(non_cast_lvalue_p): Remove.
+	(non_cast_lvalue_or_else): Remove.
+	(lvalue_p): Adjust call to lvalue_p_1.
+	(lvalue_or_else): Simplify.
+	* typeck.c (build_unary_op): Use lvalue_or_else, not
+	non_cast_lvalue_or_else.
+	(build_static_cast): Use real_lvalue_p, not real_non_cast_lvalue_p.
+
 2003-09-03  DJ Delorie  <dj@redhat.com>
 
 	* decl.c (finish_function): Pass fndecl to aggregate_value_p.
