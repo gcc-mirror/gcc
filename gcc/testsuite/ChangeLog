@@ -1,3 +1,14 @@
+2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18400
+	* gcc.dg/vect/pr18400.c: New test.
+
+2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18425
+	* gcc.dg/vect/pr18425.c: New test.
+
 2004-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/tls/alias-1.c: Remove dg-warning on the SPARC.
