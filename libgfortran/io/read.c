@@ -704,7 +704,7 @@ done:
   sprintf (p, "%d", exponent);
 
   /* Do the actual conversion.  */
-  string_to_real (dest, buffer, length);
+  convert_real (dest, buffer, length);
 
   if (buffer != scratch)
      free_mem (buffer);
