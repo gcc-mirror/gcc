@@ -43,7 +43,7 @@
 2000-07-10  Nick Clifton  <nickc@cygnus.com>
 
 	* libgcc2.c (next_stack_level): Cast result of computation to
-	(void **) so that the assignment doe snot generate a warning.
+	(void **) so that the assignment does not generate a warning.
 
 2000-07-10  Chandrakala Chavva  <cchavva@redhat.com>
 
