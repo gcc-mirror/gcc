@@ -1331,11 +1331,30 @@ operand_subword (op, i, validate_address, mode)
 	 : (GET_CODE (op) == CONST_INT
 	    ? (INTVAL (op) < 0 ? ~0 : 0) : CONST_DOUBLE_HIGH (op)));
 
-  /* If BITS_PER_WORD is smaller than an int, get the appropriate bits.  */
+  /* Get the value we want into the low bits of val.  */
   if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT)
-    val = ((val >> ((i % size_ratio) * BITS_PER_WORD))
-	   & (((HOST_WIDE_INT) 1
-	       << (BITS_PER_WORD % HOST_BITS_PER_WIDE_INT)) - 1));
+    val = ((val >> ((i % size_ratio) * BITS_PER_WORD)));
+
+  /* Clear the bits that don't belong in our mode, unless they and our sign
+     bit are all one.  So we get either a reasonable negative value or a
+     reasonable unsigned value for this mode.  */
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
+      && ((val & ((HOST_WIDE_INT) (-1) << (BITS_PER_WORD - 1)))
+          != ((HOST_WIDE_INT) (-1) << (BITS_PER_WORD - 1))))
+    val &= ((HOST_WIDE_INT) 1 << BITS_PER_WORD) - 1;
+
+  /* If this would be an entire word for the target, but is not for
+     the host, then sign-extend on the host so that the number will look
+     the same way on the host that it would on the target.
+
+     For example, when building a 64 bit alpha hosted 32 bit sparc
+     targeted compiler, then we want the 32 bit unsigned value -1 to be
+     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+     The later confuses the sparc backend.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
+      && (val & ((HOST_WIDE_INT) 1 << (BITS_PER_WORD - 1))))
+    val |= ((HOST_WIDE_INT) (-1) << BITS_PER_WORD);
 
   return GEN_INT (val);
 }

@@ -1,4 +1,7 @@
-Fri Apr 10 01:29:02 1998  Jeffrey A Law  (law@cygnus.com)
+Fri Apr 10 10:43:41 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* emit-rtl.c (operand_subword): Properly handle CONST_INTs for
+	64x32 cross builds.
 
 	* configure.in: Handle --with-fast-fixincludes.
 	(fixincludes): If --with-fast-fixincludes, then use a different
