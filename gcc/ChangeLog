@@ -1,9 +1,3 @@
-Sun Feb 22 20:48:54 1998  Jeffrey A Law  (law@cygnus.com)
-
-	* pa/pa.h (TEXT_SPACE_P): Remove unnecessary indirection
-	into tree_code_type.
-	* vax/vms.h (SELECT_SECTION): Similarly.
-
 Sun Feb 22 20:46:31 1998  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* expr.c (emit_move_insn_1): When moving complex values in several
