@@ -170,7 +170,7 @@ print_operand_address (stream, x)
 	switch (GET_CODE (index))
 	  {
 	  case CONST_INT:
-	    fprintf (stream, "@(%d,%s)", INTVAL (index),
+	    fprintf (stream, "@(%d,%s)", (int) INTVAL (index),
 		     reg_names[true_regnum (base)]);
 	    break;
 
@@ -1450,7 +1450,7 @@ shl_and_kind (left_rtx, mask_rtx, attrp)
 	}
     }
   /* Try to use a scratch register to hold the AND operand.  */
-  can_ext = ((mask << left) & 0xe0000000) == 0;
+  can_ext = ((mask << left) & ((unsigned HOST_WIDE_INT)3 << 30)) == 0;
   for (i = 0; i <= 2; i++)
     {
       if (i > right)
@@ -2735,7 +2735,7 @@ struct far_branch
 
 static void gen_far_branch PARAMS ((struct far_branch *));
 enum mdep_reorg_phase_e mdep_reorg_phase;
-void
+static void
 gen_far_branch (bp)
      struct far_branch *bp;
 {
@@ -2839,7 +2839,7 @@ barrier_align (barrier_or_label)
 	 the table to the minimum for proper code alignment.  */
       return ((TARGET_SMALLCODE
 	       || (XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
-		   <= 1 << (CACHE_LOG - 2)))
+		   <= (unsigned)1 << (CACHE_LOG - 2)))
 	      ? 1 : CACHE_LOG);
     }
 
@@ -2871,7 +2871,7 @@ barrier_align (barrier_or_label)
 	 investigation.  Skip to the insn before it.  */
       prev = prev_real_insn (prev);
 
-      for (slot = 2, credit = 1 << (CACHE_LOG - 2) + 2;
+      for (slot = 2, credit = (1 << (CACHE_LOG - 2)) + 2;
 	   credit >= 0 && prev && GET_CODE (prev) == INSN;
 	   prev = prev_real_insn (prev))
 	{
@@ -3951,7 +3951,7 @@ rounded_frame_size (pushed)
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
 
-  return (size + pushed + align - 1 & -align) - pushed;
+  return ((size + pushed + align - 1) & -align) - pushed;
 }
 
 void
@@ -5047,7 +5047,7 @@ reg_unused_after (reg, insn)
   return 1;
 }
 
-extern struct obstack permanent_obstack;
+#include "ggc.h"
 
 rtx
 get_fpscr_rtx ()
@@ -5215,8 +5215,6 @@ static rtx
 get_free_reg (regs_live)
      HARD_REG_SET regs_live;
 {
-  rtx reg;
-
   if (! TEST_HARD_REG_BIT (regs_live, 1))
     return gen_rtx_REG (Pmode, 1);
 
@@ -5238,8 +5236,10 @@ fpscr_set_from_mem (mode, regs_live)
   enum attr_fp_mode fp_mode = mode;
   rtx addr_reg = get_free_reg (regs_live);
 
-  emit_insn ((fp_mode == (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
-	      ? gen_fpu_switch1 : gen_fpu_switch0) (addr_reg));
+  if (fp_mode == (enum attr_fp_mode) NORMAL_MODE (FP_MODE))
+    emit_insn (gen_fpu_switch1 (addr_reg));
+  else
+    emit_insn (gen_fpu_switch0 (addr_reg));
 }
 
 /* Is the given character a logical line separator for the assembler?  */
@@ -5361,7 +5361,7 @@ nonpic_symbol_mentioned_p (x)
 rtx
 legitimize_pic_address (orig, mode, reg)
      rtx orig;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx reg;
 {
   if (GET_CODE (orig) == LABEL_REF
