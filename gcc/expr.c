@@ -1813,6 +1813,9 @@ emit_group_load (x, y)
 		   && GET_MODE (target_reg) == word_mode)
 	    /* This might be a const_double, so we can't just use SUBREG.  */
 	    source = operand_subword (y, 0, 0, VOIDmode);
+	  else if (GET_MODE_SIZE (GET_MODE (target_reg))
+		   == GET_MODE_SIZE (GET_MODE (y)))
+	    source = gen_lowpart (GET_MODE (target_reg), y);
 	  else
 	    abort ();	    
 	}
