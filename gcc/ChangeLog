@@ -1,3 +1,8 @@
+2002-11-27  Jim Wilson  <wilson@redhat.com>
+
+        * config/rs6000/spe.md (spu_evsplatfi, spu_evsplati): Swap operands
+        in output template.
+
 2002-11-27  Casper S. Hornstrup  <chorns@users.sourceforge.net>
 
 	* config/i386/i386.h (DLL_IMPORT_EXPORT_PREFIX): Define.

@@ -1071,7 +1071,7 @@
    (clobber (reg:SI SPEFSCR_REGNO))
    (clobber (reg:V2SI SPE_ACC_REGNO))]
   "TARGET_SPE"
-  "evmhessiaaw %0,%1"
+  "evmhessiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
    (set_attr  "length" "4")])
 
@@ -1973,7 +1973,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:QI 1 "immediate_operand" "i")] 684))]
   "TARGET_SPE"
-  "evsplatfi %1,%0"
+  "evsplatfi %0,%1"
   [(set_attr "type" "vecperm")
    (set_attr  "length" "4")])
 
@@ -1981,7 +1981,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:QI 1 "immediate_operand" "i")] 685))]
   "TARGET_SPE"
-  "evsplati %1,%0"
+  "evsplati %0,%1"
   [(set_attr "type" "vecperm")
    (set_attr  "length" "4")])
 
