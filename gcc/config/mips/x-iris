@@ -11,7 +11,7 @@
 
 CC		= $(OLDCC)
 OPT		= -O1
-OLDCC		= cc -Wf,-XNg1500 -Olimit 3000 -cckr $(OPT)
+OLDCC		= cc -Wf,-XNh1500,-XNg1500 -Olimit 3000 -cckr $(OPT)
 
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.
