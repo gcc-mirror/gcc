@@ -1,5 +1,10 @@
 2000-08-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* docs/22_locale/howto.html: Add notes on codecvt implementation.
+	* docs/22_locale/codecvt.html: New file. In progress.
+	
+2000-08-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
 	* acconfig.h: Revert.
 	* acinclude.m4: Revert.
 	* libio/_G_config.h: Revert.

@@ -1,0 +1,112 @@
+<!-- ================================================================================  -->
+<!-- This HTML file was created by AbiWord.                                            -->
+<!-- AbiWord is a free, Open Source word processor.                                    -->
+<!-- You may obtain more information about AbiWord at www.abisource.com                -->
+<!-- ================================================================================  -->
+
+<!--         Build_Version     = 0.7.10 -->
+<!--         Build_Options     = LicensedTrademarks:On Debug:Off Gnome:Off -->
+<!--         Build_Target      = /var/tmp/builds/0961080942/tmp/abi-0.7.10/src/Linux_2.2.14-5.0_i386_OBJ/obj -->
+<!--         Build_CompileTime = 10:12:56 -->
+<!--         Build_CompileDate = Jun 15 2000 -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>AbiWord Document</title>
+<style type="text/css">
+<!-- 
+ P.norm { margin-top: 0pt; margin-bottom: 0pt } 
+ -->
+</style>
+</head>
+<body>
+<div>
+<p class="norm"><span style="font-weight: bold font-size: 16.000000pt;">N</span><span style="font-weight: bold font-size: 16.000000pt;">otes on the</span><span style="font-weight: bold font-size: 16.000000pt;"> codecvt implementation.</span></p>
+<p class="norm"><span style="font-weight: bold; font-style: italic font-size: 12.000000pt;">prepared by Benjamin Kosnik (bkoz@</span><span style="font-weight: bold; font-style: italic font-size: 12.000000pt;">redhat.com) on August 25, 2000</span></p>
+<p class="norm"></p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">1. </span><span style="font-weight: bold">Abst</span><span style="font-weight: bold">ract</span></p>
+<p class="norm">Around page 425 of the C++ Standard, this charming heading comes into view:</p>
+<p class="norm"></p>
+<p class="norm">22.2.1.5 - Template class codecvt [lib.locale.codecvt]</p>
+<p class="norm"></p>
+<p class="norm">The standard class codecvt attempts to address conversions between different character encoding schemes. In particular, the standard attempts to detail conversions between the implementation-defined wide characters (hereafter referred to as wchar_t) and the standard type char that is so beloved in classic "C" (which can now be referred to as narrow characters.) </p>
+<p class="norm">This document attempts to describe how the GNU libstdc++-v3 implementation deals with the conversion between wide and narrow characters, and also presents a framework for dealing with the huge number of other encodings that iconv can convert, including Unicode and UTF8. Design issues and requirements are addressed, and examples of correct usage for both the required specializations for wide and narrow characters and the implementation-provided extended functionality are given.</p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">2. </span><span style="font-weight: bold color: 000000; font-family: Times New Roman; font-size: 12.000000pt;">Intro, ,</span><span style="font-weight: bold color: 000000; font-family: Times New Roman; font-size: 12.000000pt;">standard says</span></p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">2. </span><span style="font-weight: bold">Som</span><span style="font-weight: bold">e thoughts on what </span><span style="font-weight: bold">would be useful</span></p>
+<p class="norm"></p>
+<p class="norm">Probably the most frequently asked question about code conversion is: "So dudes, what's the deal with Unicode strings?" The dude part is optional, but apparently the usefulness of Unicode strings is pretty widely appreciated. Sadly, this specific encoding (And other useful encodings like UTF8, UCS4, ISO 8859-10, etc etc etc) are not mentioned in the C++ standard. </p>
+<p class="norm"></p>
+<p class="norm">In particular, the simple implementation detail of wchar_t's size seems to repeatedly confound people. Many systems use a two byte, unsigned integral type to represent wide characters, and use an internal encoding of Unicode or UCS2. (See AIX, Microsoft NT, Java, others.) Other systems, use a four byte, unsigned integral type to represent wide characters, and use an internal encoding of UCS4. (GNU/Linux systems using glibc, in particular.) The C programming language (and thus C++) does not specify a specific size for the type wchar_t. </p>
+<p class="norm"></p>
+<p class="norm">Thus, portable C++ code cannot assume a byte size (or endianness) either.</p>
+<p class="norm"></p>
+<p class="norm">Getting back to the frequently asked question: What about Unicode strings?</p>
+<p class="norm"></p>
+<p class="norm">The text around the codecvt definition gives some clues:</p>
+<p class="norm"></p>
+<p class="norm"><span style="font-style: italic"">-1- The class codecvt&lt;internT,externT,stateT&gt; is for use when converting from one</span></p>
+<p class="norm"><span style="font-style: italic"">codeset to another, such as from wide characters to multibyte characters, between wide</span></p>
+<p class="norm"><span style="font-style: italic"">character encodings such as Unicode and EUC. </span></p>
+<p class="norm"></p>
+<p class="norm">Hmm. So, in some unspecified way, Unicode encodings and translations between other character sets should be handled by this class.</p>
+<p class="norm"></p>
+<p class="norm"><span style="font-style: italic"">-2- The stateT argument selects the pair of codesets being mapped between. </span></p>
+<p class="norm"></p>
+<p class="norm">Ah ha! Another clue...</p>
+<p class="norm"></p>
+<p class="norm"><span style="font-style: italic"">-3- The instantiations required in the Table ?? (lib.locale.category), namely</span></p>
+<p class="norm"><span style="font-style: italic"">codecvt&lt;wchar_t,char,mbstate_t&gt; and codecvt&lt;char,char,mbstate_t&gt;, convert the</span></p>
+<p class="norm"><span style="font-style: italic"">implementation-defined native character set. codecvt&lt;char,char,mbstate_t&gt; implements</span></p>
+<p class="norm"><span style="font-style: italic"">a degenerate conversion; it does not convert at all. codecvt&lt;wchar_t,char,mbstate_t&gt;</span></p>
+<p class="norm"><span style="font-style: italic"">converts between the native character sets for tiny and wide characters. Instantiations on</span></p>
+<p class="norm"><span style="font-style: italic"">mbstate_t perform conversion between encodings known to the library implementor.</span></p>
+<p class="norm"><span style="font-style: italic"">Other encodings can be converted by specializing on a user-defined stateT type. The</span></p>
+<p class="norm"><span style="font-style: italic"">stateT object can contain any state that is useful to communicate to or from the</span></p>
+<p class="norm"><span style="font-style: italic"">specialized do_convert member. </span></p>
+<p class="norm"></p>
+<p class="norm">At this point, the initial design of the library becomes clear:</p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">3. </span><span style="font-weight: bold">How to accomplish </span><span style="font-weight: bold">this: partial specialization with and iconv</span><span style="font-weight: bold"> wrapper class, __enc_traits.</span></p>
+<p class="norm"></p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">4. Design</span></p>
+<p class="norm"> 	a. goals.</p>
+<p class="norm">	b. drawbacks</p>
+<p class="norm">	c. things that are sketchy</p>
+<p class="norm"></p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">5. Examples</span></p>
+<p class="norm">	a. conversions involving string literals</p>
+<p class="norm">	b. conversions invollving std::string</p>
+<p class="norm">	c. conversions involving std::filebuf and std::ostream</p>
+<p class="norm"> </p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">6. Acknowledg</span><span style="font-weight: bold">me</span><span style="font-weight: bold">nts</span></p>
+<p class="norm">Ulrich Drepper for the iconv suggestions and patient question answering, Jason Merrill for the template partial specialization hints and wchar_t fixes, etc etc etc.</p>
+<p class="norm"></p>
+<p class="norm"></p>
+<p class="norm"><span style="font-weight: bold">7</span><span style="font-weight: bold">. Bibliography</span><span style="font-weight: bold"> / Referenced Documents</span></p>
+<p class="norm">ISO/IEC 14882:1998 Programming languages - C++</p>
+<p class="norm"></p>
+<p class="norm">ISO/IEC 9899:1999 Programming languages - C</p>
+<p class="norm"></p>
+<p class="norm">glibc-2.2 docs</p>
+<p class="norm"></p>
+<p class="norm">System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)</p>
+<p class="norm">The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</p>
+<p class="norm">http://www.opennc.org/austin/docreg.html</p>
+<p class="norm"></p>
+<p class="norm">Appendix D, The C++ Programming Language, Special Edition, Bjarne Stroustrup, Addison Wesley, Inc. 2000</p>
+<p class="norm"></p>
+<p class="norm">Standard C++ IOStreams and Locales, Advanced Programmer's Guide and Reference, Angelika Langer and Klaus Kreft, Addison Wesley Longman, Inc. 2000</p>
+<p class="norm"></p>
+<p class="norm">Numerous, late-night email correspondence with Ulrich Drepper (drepper@redhat.com).</p>
+<p class="norm"></p>
+<p class="norm"></p>
+</div>
+</body>
+</html>
