@@ -56,9 +56,9 @@ public final class DoubleBufferImpl extends DoubleBuffer
     readOnly = false;
   }
   
-  public DoubleBufferImpl(double[] array, int off, int lim)
+  public DoubleBufferImpl(double[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }

@@ -63,7 +63,7 @@ public abstract class CharBuffer extends Buffer
    */
   final public static CharBuffer wrap (char[] array, int offset, int length)
   {
-    return new CharBufferImpl (array, offset, offset + length);
+    return new CharBufferImpl (array, offset, length);
   }
   
   /**
@@ -205,7 +205,8 @@ public abstract class CharBuffer extends Buffer
    */
   public final boolean hasArray ()
   {
-    return backing_buffer != null;
+    return (backing_buffer != null
+            && ! isReadOnly ());
   }
 
   /**
@@ -359,6 +360,9 @@ public abstract class CharBuffer extends Buffer
     return new String (array (), position (), length ());
   }
 
+  /**
+   * Returns the length of the remaining chars in this buffer.
+   */
   public final int length ()
   { 
     return remaining ();
@@ -370,6 +374,9 @@ public abstract class CharBuffer extends Buffer
   public abstract ByteOrder order ();
 
   /**
+   * Creates a new character buffer that represents the specified subsequence
+   * of this buffer, relative to the current position.
+   *
    * @exception IndexOutOfBoundsException If the preconditions on start and
    * end do not hold.
    */

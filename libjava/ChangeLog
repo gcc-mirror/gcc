@@ -1,5 +1,37 @@
 2003-02-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/ByteBufferImpl.java
+	(ByteBufferImpl): Renamed two variables.
+	* gnu/java/nio/CharBufferImpl.java
+	(CharBufferImpl): Renamed two variables.
+	* gnu/java/nio/DoubleBufferImpl.java
+	(DoubleBufferImpl): Renamed two variables.
+	* gnu/java/nio/FloatBufferImpl.java
+	(FloatBufferImpl): Renamed two variables.
+	* gnu/java/nio/IntBufferImpl.java
+	(IntBufferImpl): Renamed two variables.
+	* gnu/java/nio/LongBufferImpl.java
+	(LongBufferImpl): Renamed two variables.
+	* gnu/java/nio/ShortBufferImpl.java
+	(ShortBufferImpl): Renamed two variables.
+	* java/nio/CharBuffer.java
+	(wrap): Fixed arguments to CharBufferImpl constructor.
+	(hasArray): Only not read-only buffers have backing arrays.
+	(length): Documentation added.
+	(subSequence): Documentation added.
+	* java/nio/DoubleBuffer.java
+	(hasArray): Only not read-only buffers have backing arrays.
+	* java/nio/FloatBuffer.java
+	(hasArray): Only not read-only buffers have backing arrays.
+	* java/nio/IntBuffer.java
+	(hasArray): Only not read-only buffers have backing arrays.
+	* java/nio/LongBuffer.java
+	(hasArray): Only not read-only buffers have backing arrays.
+	* java/nio/ShortBuffer.java
+	(hasArray): Only not read-only buffers have backing arrays.
+	
+2003-02-19  Michael Koch  <konqueror@gmx.de>
+
 	* javax/accessibility/AccessibleContext.java
 	(ACCESSIBLE_DESCRIPTION_PROPERTY): Fixed typo.
 

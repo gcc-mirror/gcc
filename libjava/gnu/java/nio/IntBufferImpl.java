@@ -56,9 +56,9 @@ public final class IntBufferImpl extends IntBuffer
     readOnly = false;
   }
 
-  public IntBufferImpl(int[] array, int off, int lim)
+  public IntBufferImpl(int[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }
