@@ -1,3 +1,18 @@
+2002-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/os/gnu-linux/ctype_noninline.h
+	[_GLIBCPP_USE_SHADOW_HEADERS]: Remove using _C_legacy::__ctype_*.
+	(ctype<char>::classic_table): If _GLIBCPP_C_LOCALE_GNU, return
+	_S_c_locale->__ctype_b, otherwise temporarily switch to "C" locale
+	and return __ctype_b.
+	(ctype<char>::ctype(__c_locale, const mask*, bool, size_t)): If not
+	_GLIBCPP_C_LOCALE_GNU, temporarily switch to "C" locale and
+	initialize using __ctype_{b,tolower,toupper}.
+	(ctype<char>::ctype(const mask*, bool, size_t)): If
+	_GLIBCPP_C_LOCALE_GNU, initialize using
+	_S_c_locale->__ctype_{b,tolower,toupper}, otherwise temporarily
+	switch to "C" locale and initialize using __ctype_{b,tolower,toupper}.
+
 2002-09-05  Paolo Carlini  <pcarlini@unitus.it>
             Roland McGrath  <roland@redhat.com>
 
