@@ -316,7 +316,7 @@ Objective-C and Objective-C++ Dialects}.
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
--ftree-lim @gol
+-ftree-lim -fivcanon @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 --param @var{name}=@var{value}
@@ -4482,6 +4482,12 @@ nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
 operands of conditions that are invariant out of the loop, so that we can use
 just trivial invariantness analysis in loop unswitching.  The pass also includes
 store motion.
+
+@item -fivcanon
+Create a canonical counter for number of iterations in the loop for that
+determining number of iterations requires complicated analysis.  Later
+optimizations then may determine the number easily.  Useful especially
+in connection with unrolling.
 
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure

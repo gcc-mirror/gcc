@@ -402,65 +402,6 @@ vect_debug_details (struct loop *loop)
   return false;
 }
 
-
-/*  THIS IS A COPY OF THE FUNCTION IN TREE-SSA-IVOPTS.C, MODIFIED
-    TO NOT USE FORCE_GIMPLE_OPERAND.  When that function is accepted
-    into he mainline, This function can go away and be replaced by it.
-    Creates an induction variable with value BASE + STEP * iteration in
-    LOOP.  It is expected that neither BASE nor STEP are shared with
-    other expressions (unless the sharing rules allow this).  Use VAR
-    as a base var_decl for it (if NULL, a new temporary will be
-    created).  The increment will occur at INCR_POS (after it if AFTER
-    is true, before it otherwise).  The ssa versions of the variable
-    before and after increment will be stored in VAR_BEFORE and
-    VAR_AFTER (unless they are NULL).  */
-
-static void
-vect_create_iv_simple (tree base, tree step, tree var, struct loop *loop,
-	 		   block_stmt_iterator *incr_pos, bool after,
-	 		   tree *var_before, tree *var_after)
-{
-   tree stmt, stmts, initial;
-   tree vb, va;
-   stmts = NULL;
-
-   if (!var)
-     {
-       var = create_tmp_var (TREE_TYPE (base), "ivtmp");
-       add_referenced_tmp_var (var);
-     }
-
-   vb = make_ssa_name (var, build_empty_stmt ());
-   if (var_before)
-     *var_before = vb;
-   va = make_ssa_name (var, build_empty_stmt ());
-   if (var_after)
-     *var_after = va;
-
-   stmt = build (MODIFY_EXPR, void_type_node, va,
- 		 build (PLUS_EXPR, TREE_TYPE (base), vb, step));
-   SSA_NAME_DEF_STMT (va) = stmt;
-   if (after)
-     bsi_insert_after (incr_pos, stmt, BSI_NEW_STMT);
-   else
-     bsi_insert_before (incr_pos, stmt, BSI_NEW_STMT);
-
-   /* Our base is always a GIMPLE variable, thus, we don't need to
-      force_gimple_operand it.  */
-   initial = base;
-   if (stmts)
-     {
-       edge pe = loop_preheader_edge (loop);
-       bsi_insert_on_edge (pe, stmts);
-     }
-
-   stmt = create_phi_node (vb, loop->header);
-   SSA_NAME_DEF_STMT (vb) = stmt;
-   add_phi_arg (&stmt, initial, loop_preheader_edge (loop));
-   add_phi_arg (&stmt, va, loop_latch_edge (loop));
-}
-
-
 /* Function vect_get_base_decl_and_bit_offset
    
    Get the decl from which the data reference REF is based, 
@@ -650,10 +591,8 @@ vect_create_index_for_array_ref (tree stmt, block_stmt_iterator *bsi)
       fprintf (dump_file, ")");
     }
 
-  /* both init and step are guaranted to be gimple expressions,
-     so we can use vect_create_iv_simple.  */
-  vect_create_iv_simple (init, step, NULL, loop, bsi, false, 
-	&indx_before_incr, &indx_after_incr); 
+  create_iv (init, step, NULL_TREE, loop, bsi, false, 
+	     &indx_before_incr, &indx_after_incr); 
 
   return indx_before_incr;
 }
@@ -1474,7 +1413,7 @@ static void
 vect_transform_loop_bound (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  edge exit_edge = loop->exit_edges[0];
+  edge exit_edge = loop->single_exit;
   block_stmt_iterator loop_exit_bsi = bsi_last (exit_edge->src);
   tree indx_before_incr, indx_after_incr;
   tree orig_cond_expr;
@@ -1507,10 +1446,8 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo)
   if (orig_cond_expr != bsi_stmt (loop_exit_bsi))
     abort ();
 
-  /* both init and step are guaranted to be gimple expressions,
-     so we can use vect_create_iv_simple.  */
-  vect_create_iv_simple (integer_zero_node, integer_one_node, NULL_TREE, loop, 
-	&loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
+  create_iv (integer_zero_node, integer_one_node, NULL_TREE, loop, 
+	     &loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
 
   /* bsi_insert is using BSI_NEW_STMT. We need to bump it back 
      to point to the exit condition. */
@@ -3266,21 +3203,19 @@ vect_analyze_loop_form (struct loop *loop)
   if (vect_debug_details (loop))
     fprintf (dump_file, "\n<<vect_analyze_loop_form>>\n");
 
-  if (loop->level > 1		/* FORNOW: inner-most loop  */
-      || loop->num_exits > 1 || loop->num_entries > 1 || loop->num_nodes != 2
-      || !loop->pre_header || !loop->header || !loop->latch)
+  if (loop->inner
+      || !loop->single_exit
+      || loop->num_nodes != 2)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
 	{
 	  fprintf (dump_file, "not vectorized: bad loop form. ");
-	  if (loop->level > 1)
+	  if (loop->inner)
 	    fprintf (dump_file, "nested loop.");
-	  else if (loop->num_exits > 1 || loop->num_entries > 1)
-	    fprintf (dump_file, "multiple entries or exits.");
-	  else if (loop->num_nodes != 2 || !loop->header || !loop->latch)
+	  else if (!loop->single_exit)
+	    fprintf (dump_file, "multiple exits.");
+	  else if (loop->num_nodes != 2)
 	    fprintf (dump_file, "too many BBs in loop.");
-	  else if (!loop->pre_header)
-	    fprintf (dump_file, "no pre-header BB for loop.");
 	}
 
       return NULL;
@@ -3506,8 +3441,6 @@ vectorize_loops (struct loops *loops)
 
       if (!loop)
         continue;
-
-      flow_loop_scan (loop, LOOP_ALL);
 
       loop_vinfo = vect_analyze_loop (loop);
       loop->aux = loop_vinfo;

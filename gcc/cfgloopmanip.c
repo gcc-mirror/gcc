@@ -821,6 +821,31 @@ can_duplicate_loop_p (struct loop *loop)
   return ret;
 }
 
+/* The NBBS blocks in BBS will get duplicated and the copies will be placed
+   to LOOP.  Update the single_exit information in superloops of LOOP.  */
+
+static void
+update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
+				       struct loop *loop)
+{
+  unsigned i;
+
+  for (i = 0; i < nbbs; i++)
+    bbs[i]->rbi->duplicated = 1;
+
+  for (; loop->outer; loop = loop->outer)
+    {
+      if (!loop->single_exit)
+	continue;
+
+      if (loop->single_exit->src->rbi->duplicated)
+	loop->single_exit = NULL;
+    }
+
+  for (i = 0; i < nbbs; i++)
+    bbs[i]->rbi->duplicated = 0;
+}
+
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
    LOOPS structure and dominators.  E's destination must be LOOP header for
@@ -963,6 +988,10 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       memcpy (first_active, bbs, n * sizeof (basic_block));
       first_active_latch = latch;
     }
+
+  /* Update the information about single exits.  */
+  if (loops->state & LOOPS_HAVE_MARKED_SINGLE_EXITS)
+    update_single_exits_after_duplication (bbs, n, target);
 
   /* Record exit edge in original loop body.  */
   if (orig && TEST_BIT (wont_exit, 0))

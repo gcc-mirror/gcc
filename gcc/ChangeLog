@@ -1,3 +1,55 @@
+2004-08-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-ivcanon.c: New file.
+	* tree-ssa-loop-manip.c (create_iv): New function.
+	* Makefile.in (tree-ssa-loop-ivcanon.o): Add.
+	(tree-ssa-loop.o, tree-ssa-loop-manip.o): Add SCEV_H dependency.
+	* cfgloop.c (mark_single_exit_loops): New function.
+	(verify_loop_structure): Verify single-exit loops.
+	* cfgloop.h (struct loop): Add single_exit field.
+	(LOOPS_HAVE_MARKED_SINGLE_EXITS): New constant.
+	(mark_single_exit_loops): Declare.
+	(tree_num_loop_insns): Declare.
+	* cfgloopmanip.c (update_single_exits_after_duplication): New function.
+	(duplicate_loop_to_header_edge): Use it.
+	* common.opt (fivcanon): New flag.
+	* timevar.def (TV_TREE_LOOP_IVCANON, TV_COMPLETE_UNROLL): New timevars.
+	* tree-cfg.c (tree_find_edge_insert_loc): Return newly created block.
+	(bsi_commit_edge_inserts_1): Pass null to tree_find_edge_insert_loc.
+	(bsi_insert_on_edge_immediate): New function.
+	* tree-flow.h (bsi_insert_on_edge_immediate,
+	canonicalize_induction_variables, tree_unroll_loops_completely,
+	create_iv): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_iv_canon and pass_complete_unroll.
+	* tree-pass.h (pass_iv_canon, pass_complete_unroll): Declare.
+	* tree-scalar-evolution.c (get_loop_exit_condition,
+	get_exit_conditions_rec, number_of_iterations_in_loop,
+	scev_initialize): Use single_exit information.
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Record
+	missing assumptions.
+	(loop_niter_by_eval):  Return number of iterations as unsigned
+	int.
+	* tree-ssa-loop.c (tree_ssa_loop_init): Mark single exit loops.
+	(tree_ssa_loop_ivcanon, gate_tree_ssa_loop_ivcanon, pass_iv_canon,
+	tree_complete_unroll, gate_tree_complete_unroll, pass_complete_unroll):
+	New passes.
+	(tree_ssa_loop_done): Call free_numbers_of_iterations_estimates.
+	* tree-ssanames.c (make_ssa_name): Allow creating ssa name before
+	the defining statement is ready.
+	* tree-vectorizer.c (vect_create_iv_simple): Removed.
+	(vect_create_index_for_array_ref, vect_transform_loop_bound):
+	Use create_iv.
+	(vect_transform_loop_bound): Use single_exit information.
+	(vect_analyze_loop_form): Cleanup bogus tests.
+	(vectorize_loops): Do not call flow_loop_scan.
+	* tree.h (may_negate_without_overflow_p): Declare.
+	* fold-const.c (may_negate_without_overflow_p): Split out from ...
+	(negate_expr_p): ... this function.
+	(tree_expr_nonzero_p): Handle overflowed constants correctly.
+	* doc/invoke.texi (-fivcanon): Document.
+	* doc/passes.texi: Document canonical induction variable creation.
+
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (ISA_HAS_INT_CONDMOVE): Delete.

@@ -375,8 +375,15 @@ operands of conditions that are invariant out of the loop, so that we can use
 just trivial invariantness analysis in loop unswitching.  The pass also includes
 store motion.  The pass is implemented in @file{tree-ssa-loop-im.c}.
 
+Canonical induction variable creation.  This pass creates a simple counter
+for number of iterations of the loop and replaces the exit condition of the
+loop using it, in case when a complicated analysis is necessary to determine
+the number of iterations.  Later optimizations then may determine the number
+easily.  The pass is implemented in @file{tree-ssa-loop-ivcanon.c}.
+
 The optimizations also use various utility functions contained in
-@file{cfgloop.c}, @file{cfgloopanal.c} and @file{cfgloopmanip.c}.
+@file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
+@file{cfgloopmanip.c}.
 
 @item Conditional constant propagation
 

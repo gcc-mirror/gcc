@@ -486,6 +486,7 @@ extern basic_block label_to_block (tree);
 extern void tree_optimize_tail_calls (bool, enum tree_dump_index);
 extern edge tree_block_forwards_to (basic_block bb);
 extern void bsi_insert_on_edge (edge, tree);
+extern basic_block bsi_insert_on_edge_immediate (edge, tree);
 extern void bsi_commit_edge_inserts (int *);
 extern void notice_special_calls (tree);
 extern void clear_special_calls (void);
@@ -639,6 +640,8 @@ bool empty_block_p (basic_block);
 /* In tree-ssa-loop*.c  */
 
 void tree_ssa_lim (struct loops *);
+void canonicalize_induction_variables (struct loops *);
+void tree_unroll_loops_completely (struct loops *);
 
 void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
 				struct tree_niter_desc *);
@@ -653,6 +656,8 @@ void rewrite_into_loop_closed_ssa (void);
 void verify_loop_closed_ssa (void);
 void loop_commit_inserts (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
+void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
+		tree *, tree *);
 
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);

@@ -367,6 +367,13 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 			       convert (niter_type, integer_one_node));
 	}
 
+      assumption = fold (build2 (FLOOR_MOD_EXPR, niter_type, base1, d));
+      assumption = fold (build2 (EQ_EXPR, boolean_type_node,
+				 assumption,
+				 build_int_cst (niter_type, 0, 0)));
+      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
+				  assumptions, assumption));
+
       tmp = fold (build (EXACT_DIV_EXPR, niter_type, base1, d));
       tmp = fold (build (MULT_EXPR, niter_type, tmp, inverse (s, bound)));
       niter->niter = fold (build (BIT_AND_EXPR, niter_type, tmp, bound));
@@ -877,7 +884,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	    fprintf (dump_file,
 		     "Proved that loop %d iterates %d times using brute force.\n",
 		     loop->num, i);
-	  return build_int_cst (NULL_TREE, i, 0);
+	  return build_int_cst (unsigned_type_node, i, 0);
 	}
 
       for (j = 0; j < 2; j++)

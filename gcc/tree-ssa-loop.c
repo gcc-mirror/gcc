@@ -101,6 +101,10 @@ tree_ssa_loop_init (void)
   current_loops = tree_loop_optimizer_init (dump_file);
   if (!current_loops)
     return;
+
+  /* Find the loops that are exited just through a single edge.  */
+  mark_single_exit_loops (current_loops);
+
   scev_initialize (current_loops);
 }
   
@@ -187,6 +191,72 @@ struct tree_opt_pass pass_vectorize =
   TODO_dump_func			/* todo_flags_finish */
 };
 
+/* Canonical induction variable creation pass.  */
+
+static void
+tree_ssa_loop_ivcanon (void)
+{
+  if (!current_loops)
+    return;
+
+  canonicalize_induction_variables (current_loops);
+}
+
+static bool
+gate_tree_ssa_loop_ivcanon (void)
+{
+  return flag_ivcanon != 0;
+}
+
+struct tree_opt_pass pass_iv_canon =
+{
+  "ivcanon",				/* name */
+  gate_tree_ssa_loop_ivcanon,		/* gate */
+  tree_ssa_loop_ivcanon,	       	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_LOOP_IVCANON,	  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func                	/* todo_flags_finish */
+};
+
+/* Complete unrolling of loops.  */
+
+static void
+tree_complete_unroll (void)
+{
+  if (!current_loops)
+    return;
+
+  tree_unroll_loops_completely (current_loops);
+}
+
+static bool
+gate_tree_complete_unroll (void)
+{
+  return flag_unroll_loops != 0;
+}
+
+struct tree_opt_pass pass_complete_unroll =
+{
+  "cunroll",				/* name */
+  gate_tree_complete_unroll,		/* gate */
+  tree_complete_unroll,		       	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_COMPLETE_UNROLL,	  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func                	/* todo_flags_finish */
+};
+
 /* Loop optimizer finalization.  */
 
 static void
@@ -195,12 +265,12 @@ tree_ssa_loop_done (void)
   if (!current_loops)
     return;
 
-  scev_finalize ();
-
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();
 #endif
 
+  free_numbers_of_iterations_estimates (current_loops);
+  scev_finalize ();
   loop_optimizer_finalize (current_loops,
 			   (dump_flags & TDF_DETAILS ? dump_file : NULL));
   current_loops = NULL;
