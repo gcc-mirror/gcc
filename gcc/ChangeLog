@@ -1,3 +1,27 @@
+2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Copy
+	EXPR_LOCUS from orig_cond to the new cond_stmt.
+	(vect_finish_stmt_generation): Copy EXPR_LOCUS from stmt to
+	the new vec_stmt.
+
+2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Call
+	standard_iv_increment_position. Remove call to bsi_next 
+	(no need to bump the iterator anymore).
+	(vect_create_index_for_vector_ref): Call
+	standard_iv_increment_position. Remove second function argument.
+	(vect_finish_stmt_generation): Remove call to bsi_next 
+	(no need to bump the iterator anymore).
+	(vect_create_data_ref_ptr): Remove second argument (bsi) in call
+	to vect_create_index_for_vector_ref.
+
+2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_mark_stmts_to_be_vectorized): Check if
+	phis are used out of the loop.
+
 2005-02-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/17807

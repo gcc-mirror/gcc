@@ -236,8 +236,7 @@ static tree vect_strip_conversion (tree);
 static tree vect_create_destination_var (tree, tree);
 static tree vect_create_data_ref_ptr 
   (tree, block_stmt_iterator *, tree, tree *, bool); 
-static tree vect_create_index_for_vector_ref 
-  (struct loop *, block_stmt_iterator *);
+static tree vect_create_index_for_vector_ref (struct loop *);
 static tree vect_create_addr_base_for_vector_ref (tree, tree *, tree);
 static tree get_vectype_for_scalar_type (tree);
 static tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
@@ -657,23 +656,29 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   tree indx_before_incr, indx_after_incr, cond_stmt, cond;
   tree orig_cond;
   edge exit_edge = loop->exit_edges[0];
-  block_stmt_iterator loop_exit_bsi = bsi_last (exit_edge->src);
+  block_stmt_iterator loop_cond_bsi;
+  block_stmt_iterator incr_bsi;
+  bool insert_after;
   tree begin_label = tree_block_label (loop->latch);
   tree exit_label = tree_block_label (loop->single_exit->dest);
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
   tree then_label;
   tree else_label;
+  tree incr;
 
   orig_cond = get_loop_exit_condition (loop);
+#ifdef ENABLE_CHECKING
   gcc_assert (orig_cond);
+#endif
+  loop_cond_bsi = bsi_for_stmt (orig_cond);
+
+  standard_iv_increment_position (loop, &incr_bsi, &insert_after);
   create_iv (init, step, NULL_TREE, loop,
-             &loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
-  
-  /* CREATE_IV uses BSI_INSERT with TSI_NEW_STMT, so we want to get
-     back to the exit condition statement.  */
-  bsi_next (&loop_exit_bsi);
-  gcc_assert (bsi_stmt (loop_exit_bsi) == orig_cond);
+             &incr_bsi, insert_after, &indx_before_incr, &indx_after_incr);
+  incr = bsi_stmt (incr_bsi);
+  get_stmt_operands (incr);
+  set_stmt_info (stmt_ann (incr), new_stmt_vec_info (incr, loop));
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
     {
@@ -690,10 +695,10 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 
   cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond), cond,
 		     then_label, else_label);
-  bsi_insert_before (&loop_exit_bsi, cond_stmt, BSI_SAME_STMT);
+  bsi_insert_before (&loop_cond_bsi, cond_stmt, BSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
-  bsi_remove (&loop_exit_bsi);
+  bsi_remove (&loop_cond_bsi);
 
   if (vect_debug_stats (loop) || vect_debug_details (loop))
     print_generic_expr (dump_file, cond_stmt, TDF_SLIM);
@@ -1847,10 +1852,13 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
    just before the conditional expression that ends the single block loop.  */
 
 static tree
-vect_create_index_for_vector_ref (struct loop *loop, block_stmt_iterator *bsi)
+vect_create_index_for_vector_ref (struct loop *loop)
 {
   tree init, step;
+  block_stmt_iterator incr_bsi;
+  bool insert_after;
   tree indx_before_incr, indx_after_incr;
+  tree incr;
 
   /* It is assumed that the base pointer used for vectorized access contains
      the address of the first vector.  Therefore the index used for vectorized
@@ -1859,9 +1867,12 @@ vect_create_index_for_vector_ref (struct loop *loop, block_stmt_iterator *bsi)
   init = integer_zero_node;
   step = integer_one_node;
 
-  /* Assuming that bsi_insert is used with BSI_NEW_STMT  */
-  create_iv (init, step, NULL_TREE, loop, bsi, false,
+  standard_iv_increment_position (loop, &incr_bsi, &insert_after);
+  create_iv (init, step, NULL_TREE, loop, &incr_bsi, insert_after,
 	&indx_before_incr, &indx_after_incr);
+  incr = bsi_stmt (incr_bsi);
+  get_stmt_operands (incr);
+  set_stmt_info (stmt_ann (incr), new_stmt_vec_info (incr, loop));
 
   return indx_before_incr;
 }
@@ -2196,7 +2207,7 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   if (only_init) /* No update in loop is required.  */
     return vect_ptr_init;
 
-  idx = vect_create_index_for_vector_ref (loop, bsi);
+  idx = vect_create_index_for_vector_ref (loop);
 
   /* Create: update = idx * vectype_size  */
   tmp = create_tmp_var (integer_type_node, "update");
@@ -2440,15 +2451,16 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt, block_stmt_iterator *bsi)
       print_generic_expr (dump_file, vec_stmt, TDF_SLIM);
     }
 
+#ifdef ENABLE_CHECKING
   /* Make sure bsi points to the stmt that is being vectorized.  */
-
-  /* Assumption: any stmts created for the vectorization of stmt S were
-     inserted before S. BSI is expected to point to S or some new stmt before S.
-   */
-
-  while (stmt != bsi_stmt (*bsi) && !bsi_end_p (*bsi))
-    bsi_next (bsi);
   gcc_assert (stmt == bsi_stmt (*bsi));
+#endif
+
+#ifdef USE_MAPPED_LOCATION
+  SET_EXPR_LOCATION (vec_stmt, EXPR_LOCUS (stmt));
+#else
+  SET_EXPR_LOCUS (vec_stmt, EXPR_LOCUS (stmt));
+#endif
 }
 
 
@@ -5143,9 +5155,28 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   int j;
   use_optype use_ops;
   stmt_vec_info stmt_info;
+  basic_block bb;
+  tree phi;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_mark_stmts_to_be_vectorized>>\n");
+
+  bb = loop->header;
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+    {
+      if (vect_debug_details (NULL))
+        {
+          fprintf (dump_file, "init: phi relevant? ");
+          print_generic_expr (dump_file, phi, TDF_SLIM);
+        }
+
+      if (vect_stmt_relevant_p (phi, loop_vinfo))
+	{
+	  if (vect_debug_details (NULL))
+	    fprintf (dump_file, "unsupported reduction/induction.");
+          return false;
+	}
+    }
 
   VARRAY_TREE_INIT (worklist, 64, "work list");
 
@@ -5153,7 +5184,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
   for (i = 0; i < nbbs; i++)
     {
-      basic_block bb = bbs[i];
+      bb = bbs[i];
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  stmt = bsi_stmt (si);
