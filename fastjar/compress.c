@@ -1,6 +1,11 @@
-/* $Id: compress.c,v 1.7 2000/09/13 14:02:02 cory Exp $
+/* $Id: compress.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
    $Log: compress.c,v $
+   Revision 1.1  2000/12/09 03:08:23  apbianco
+   2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+           * fastjar: Imported.
+
    Revision 1.7  2000/09/13 14:02:02  cory
    Reformatted some of the code to more closly match the layout of the orriginal
    fastjar utility.
@@ -67,15 +72,17 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef STDC_HEADERS
+#include <stdlib.h>
+#endif
 
 #include <sys/types.h>
 
 #include "jartool.h"
 #include "pushback.h"
+#include "compress.h"
 
 extern int seekable;
-
-static char rcsid[] = "$Id: compress.c,v 1.7 2000/09/13 14:02:02 cory Exp $";
 
 static z_stream zs;
 
@@ -335,7 +342,7 @@ purpose: Put out an error message corresponding to error code returned from zlib
 Be suitably cryptic seeing I don't really know exactly what these errors mean.
 */
 
-void report_str_error(int val) {
+static void report_str_error(int val) {
 	switch(val) {
 	case Z_STREAM_END:
 		break;
@@ -376,10 +383,9 @@ static Bytef *ez_inflate_str(pb_file *pbf, ub4 csize, ub4 usize) {
 	Bytef *out_buff;
 	Bytef *in_buff;
 	unsigned int rdamt;
-	ub4 crc = 0;
 
-	if(zs.next_in = in_buff = (Bytef *) malloc(csize)) {
-		if(zs.next_out = out_buff = (Bytef *) malloc(usize + 1)) { 
+	if((zs.next_in = in_buff = (Bytef *) malloc(csize))) {
+		if((zs.next_out = out_buff = (Bytef *) malloc(usize + 1))) { 
 			if((rdamt = pb_read(pbf, zs.next_in, csize)) == csize) {
 				zs.avail_in = csize;
 				zs.avail_out = usize;
@@ -430,7 +436,6 @@ static Bytef *hrd_inflate_str(pb_file *pbf, ub4 *csize, ub4 *usize) {
 	unsigned int rdamt;
 	int i;
 	int zret;
-	ub4 crc = 0;
 
 	i = 1; 
 	out_buff = NULL;
@@ -441,7 +446,7 @@ static Bytef *hrd_inflate_str(pb_file *pbf, ub4 *csize, ub4 *usize) {
 		zs.avail_out = 0;
 		zs.next_in = in_buff;
 		do {
-			if(tmp = (Bytef *) realloc(out_buff, (RDSZ * i) + 1)) {
+			if((tmp = (Bytef *) realloc(out_buff, (RDSZ * i) + 1))) {
 				out_buff = tmp;
 				zs.next_out = &(out_buff[(RDSZ * (i - 1)) - zs.avail_out]);
 				zs.avail_out += RDSZ;

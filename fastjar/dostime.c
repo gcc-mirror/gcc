@@ -20,9 +20,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: dostime.c,v 1.1.1.1 1999/12/06 03:09:12 toast Exp $
+/* $Id: dostime.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
    $Log: dostime.c,v $
+   Revision 1.1  2000/12/09 03:08:23  apbianco
+   2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+           * fastjar: Imported.
+
    Revision 1.1.1.1  1999/12/06 03:09:12  toast
    initial checkin..
 
@@ -54,8 +59,6 @@
 #endif
 
 #include "dostime.h"
-
-static char rcsid[] = "$Id: dostime.c,v 1.1.1.1 1999/12/06 03:09:12 toast Exp $";
 
 /*
 
