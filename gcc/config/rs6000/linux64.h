@@ -329,3 +329,7 @@ do									\
     sym_lineno += 1;							\
   }									\
 while (0)
+
+/* Override sysv4.h as these are ABI_V4 only.  */
+#undef	ASM_OUTPUT_REG_PUSH
+#undef	ASM_OUTPUT_REG_POP
