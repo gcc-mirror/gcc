@@ -1273,7 +1273,7 @@ main (argc, argv)
 	    case 'b':
 	      if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
                 export_flag = 1;
-	      if (arg[2] == '6' && arg[3] == '4')
+	      else if (arg[2] == '6' && arg[3] == '4')
 		aix64_flag = 1;
 	      break;
 #endif
