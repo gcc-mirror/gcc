@@ -1102,6 +1102,12 @@ update_equiv_regs ()
 		abort ();
 	      equiv_insn = XEXP (reg_equiv[regno].init_insns, 0);
 
+	      /* We may not move instructions that can throw, since
+		 that changes basic block boundaries and we are not
+		 prepared to adjust the CFG to match.  */
+	      if (can_throw_internal (equiv_insn))
+		continue;
+
 	      if (asm_noperands (PATTERN (equiv_insn)) < 0
 		  && validate_replace_rtx (regno_reg_rtx[regno],
 					   reg_equiv[regno].src, insn))
