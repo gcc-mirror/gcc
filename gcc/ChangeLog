@@ -1,5 +1,13 @@
 2001-12-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* aclocal.m4 (gcc_AC_PROG_GNAT): Run prospective ada drivers in
+	subshells.
+	* configure.in: Likewise for perl Pod::Man.
+
+	* configure: Regenerated.
+
+2001-12-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtin-attrs.def (__builtin_printf_unlocked,
 	__builtin_fprintf_unlocked, printf_unlocked, fprintf_unlocked):
 	Mark with the __printf__ attribute.
