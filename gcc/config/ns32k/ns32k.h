@@ -66,13 +66,8 @@ extern int target_flags;
 #define TARGET_32081 (target_flags & 1)
 #define TARGET_32381 (target_flags & 256)
 
-/* The use of multiply-add instructions is optional because it can
- * cause an abort due to being unable to find a spill register. The
- * main problem is that the multiply-add instructions require f0 and
- * f0 is not available for spilling because it is "explicitly
- * mentioned" in the rtl for function return values. This can be fixed
- * by defining SMALL_REGISTER_CLASSES, but that causes worse code for
- * the (more common) integer case. We really need better reload code.
+/* The use of multiply-add instructions is optional because there may
+ * be cases where it produces worse code.
  */
 
 #define TARGET_MULT_ADD (target_flags & 512)
@@ -103,27 +98,29 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES				\
-  { { "32081", 1},				\
-    { "soft-float", -257},			\
-    { "rtd", 2},				\
-    { "nortd", -2},				\
-    { "regparm", 4},				\
-    { "noregparm", -4},				\
-    { "32532", 24},				\
-    { "32332", -8},				\
-    { "32332", 16},				\
-    { "32032", -24},				\
-    { "sb", -32},				\
-    { "nosb", 32},				\
-    { "bitfield", -64},				\
-    { "nobitfield", 64},			\
-    { "himem", 128},				\
-    { "nohimem", -128},				\
-    { "32381", 256},				\
-    { "mult-add", 512},				\
-    { "nomult-add", -512},            		\
-    { "", TARGET_DEFAULT}}
+#define TARGET_SWITCHES							      \
+  { { "32081", 1, "Use hardware fp"},					      \
+    { "soft-float", -257, "Don't use hardware fp"},			      \
+    { "rtd", 2, "Alternative calling convention"},			      \
+    { "nortd", -2, "Use normal calling convention"},			      \
+    { "regparm", 4, "Pass some arguments in registers"},		      \
+    { "noregparm", -4, "Pass all arguments on stack"},			      \
+    { "32532", 24, "Optimize for 32532 cpu"},				      \
+    { "32332", 16, "Optimize for 32332 cpu"},				      \
+    { "32332", -8, 0},							      \
+    { "32032", -24, "Optimize for 32032"},				      \
+    { "sb", -32, "Register sb is zero. Use for absolute addressing"},	      \
+    { "nosb", 32, "Do not use register sb"},				      \
+    { "bitfield", -64, "Do not use bitfield instructions"},		      \
+    { "nobitfield", 64, "Use bitfield instructions"},			      \
+    { "himem", 128, "Generate code for high memory"},			      \
+    { "nohimem", -128, "Generate code for low memory"},			      \
+    { "32381", 256, "32381 fpu"},					      \
+    { "mult-add", 512, "Use multiply-accumulate fp instructions"},	      \
+    { "nomult-add", -512, "Do not use multiply-accumulate fp instructions" }, \
+    { "src", 1024, "\"Small register classes\" kludge"},		      \
+    { "nosrc", -1024, "No \"Small register classes\" kludge"},		      \
+    { "", TARGET_DEFAULT, 0}}
 
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
 
@@ -304,6 +301,11 @@ while (0)
    : (REGNO) == FRAME_POINTER_REGNUM? 17 \
    : 16)
 
+/* dwarf2out.c can't understand the funny DBX register numbering.
+ * We use dwarf2out.c for exception handling even though we use DBX
+ * for debugging
+ */
+#define DWARF_FRAME_REGNUM(REGNO) (REGNO)
 
 
 
@@ -408,13 +410,23 @@ enum reg_class
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {{0}, {0x00ff}, {0x100}, {0x300}, {0xff00}, \
-                            {0xffff00}, {0xffffff}, {0x1000000}, {0x2000000}, \
-                            {0x30000ff}, {0x3ffffff} }
+#define REG_CLASS_CONTENTS				\
+	{{0},			/* NO_REGS */		\
+	 {0x00ff},		/* GENERAL_REGS */	\
+	 {0x100},		/* FLOAT_REG0 */	\
+	 {0x300},		/* LONG_FLOAT_REG0 */	\
+	 {0xff00},		/* FLOAT_REGS */	\
+         {0xffff00},		/* FP_REGS */		\
+         {0xffffff},		/* GEN_AND_FP_REGS */	\
+         {0x1000000},		/* FRAME_POINTER_REG */	\
+         {0x2000000},		/* STACK_POINTER_REG */	\
+         {0x30000ff},		/* GEN_AND_MEM_REGS */	\
+	 {0x3ffffff}		/* ALL_REGS */		\
+	}
 
-#define SUBSET_P(CLASS1, CLASS2) \
-   ((ns32k_reg_class_contents[CLASS1][0] & ~ns32k_reg_class_contents[CLASS2][0]) \
-     == 0)
+#define SUBSET_P(CLASS1, CLASS2)			\
+   ((ns32k_reg_class_contents[CLASS1][0]		\
+     & ~ns32k_reg_class_contents[CLASS2][0]) == 0)
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1036,10 +1048,10 @@ __transfer_from_trampoline ()		\
      secondary_memory_needed(CLASS1, CLASS2, M)
 #endif
 
-/* SMALL_REGISTER_CLASSES is true only if we have said we are using the
- * multiply-add instructions.
- */
-#define SMALL_REGISTER_CLASSES (target_flags & 512)
+/* SMALL_REGISTER_CLASSES is a run time option. This should no longer
+   be necessay and should go when we have confidence that we won't run
+   out of spill registers */
+#define SMALL_REGISTER_CLASSES (target_flags & 1024)
 
 /* A C expression whose value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled
@@ -1144,13 +1156,14 @@ __transfer_from_trampoline ()		\
 
 /* Go to ADDR if X is a valid address not using indexing.
    (This much is the easy part.)  */
-#define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
-{ if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;				\
-  if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;				\
-  if (GET_CODE (X) == PLUS)						\
-    if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1)))			\
-      if (INDIRECTABLE_2_ADDRESS_P (XEXP (X, 0)))			\
-	goto ADDR;							\
+#define GO_IF_NONINDEXED_ADDRESS(X, ADDR)		\
+{ 							\
+  if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;		\
+  if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;		\
+  if (GET_CODE (X) == PLUS)				\
+    if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1)))	\
+      if (INDIRECTABLE_2_ADDRESS_P (XEXP (X, 0)))	\
+	goto ADDR;					\
 }
 
 /* Go to ADDR if X is a valid address not using indexing.
@@ -1189,11 +1202,11 @@ __transfer_from_trampoline ()		\
    ((xfoo2 < 4 && xfoo2 != 2) || xfoo2 == 7))
 
 /* Note that xfoo0, xfoo1, xfoo2 are used in some of the submacros above.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 { register rtx xfooy, xfoo0, xfoo1;					\
   unsigned xfoo2;							\
   xfooy = X;								\
-  if (flag_pic && ! current_function_uses_pic_offset_table		\
+  if (flag_pic && cfun && ! current_function_uses_pic_offset_table	\
       && global_symbolic_reference_mentioned_p (X, 1))			\
     current_function_uses_pic_offset_table = 1;				\
   GO_IF_NONINDEXED_ADDRESS (xfooy, ADDR);				\
@@ -1212,8 +1225,8 @@ __transfer_from_trampoline ()		\
   else if (GET_CODE (xfooy) == PRE_DEC)					\
     {									\
       if (REGNO (XEXP (xfooy, 0)) == STACK_POINTER_REGNUM) goto ADDR;	\
+      else abort ();							\
     }									\
-  else abort ();							\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
@@ -1679,7 +1692,7 @@ do {									\
 
 extern unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1];
 extern const char *const ns32k_out_reg_names[];
-extern enum reg_class regclass_map[];		/* smalled class containing REGNO */
+extern enum reg_class regclass_map[];		/* smallest class containing REGNO */
 
 /*
 Local variables:

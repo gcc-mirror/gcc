@@ -25,9 +25,10 @@ Boston, MA 02111-1307, USA.
 /* Compile for the floating point unit & 32532 by default;
    Don't assume SB is zero;
    Don't use bitfield instructions;
-   FPU is 32381; */
+   FPU is 32381;
+   Use multiply-add instructions */
 
-#define TARGET_DEFAULT (1 + 24 + 32 + 64 + 256)
+#define TARGET_DEFAULT (1 + 24 + 32 + 64 + 256 + 512)
 
 /* 32-bit alignment for efficiency */
 
@@ -110,4 +111,3 @@ Boston, MA 02111-1307, USA.
 /* Until they use ELF or something that handles dwarf2 unwinds
    and initialization stuff better.  */
 #define DWARF2_UNWIND_INFO 0
-

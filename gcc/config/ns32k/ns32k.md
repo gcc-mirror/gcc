@@ -53,6 +53,13 @@
 ;; but with the proper definition of LEGITIMATE_PIC_OPERAND (ns32k.h)
 ;; this is unnecessary.
 ;;
+
+;; It seems that in current CVS (2000-01-11), at least with
+;; libgcc2.a, that register allocation gets worse when changing
+;; "general_operand" "0" to "nonimmediate_operand" "0" (and
+;; similar "0"-containing constraints), if operand 0 is (e.g.)
+;; "nonimmediate_operand" "=rm".  Revisit and test later.
+
 (define_insn "tstsi"
   [(set (cc0)
 	(match_operand:SI 0 "nonimmediate_operand" "rm"))]
@@ -64,7 +71,7 @@
 
 (define_insn "tsthi"
   [(set (cc0)
-	(match_operand:HI 0 "nonimmediate_operand" "g"))]
+	(match_operand:HI 0 "nonimmediate_operand" "rm"))]
   ""
   "*
 { cc_status.flags |= CC_REVERSED;
@@ -73,7 +80,7 @@
 
 (define_insn "tstqi"
   [(set (cc0)
-	(match_operand:QI 0 "nonimmediate_operand" "g"))]
+	(match_operand:QI 0 "nonimmediate_operand" "rm"))]
   ""
   "*
 { cc_status.flags |= CC_REVERSED;
@@ -209,7 +216,7 @@
 ;; in practice, though the stack slots used are not available for
 ;; optimization.
 (define_insn "movdf"
-  [(set (match_operand:DF 0 "general_operand" "=lg<")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lrm<")
 	(match_operand:DF 1 "general_operand" "lFg"))]
   ""
   "*
@@ -243,7 +250,7 @@
 }")
 
 (define_insn "movsf"
-  [(set (match_operand:SF 0 "general_operand" "=fg<")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=frm<")
 	(match_operand:SF 1 "general_operand" "fFg"))]
   ""
   "*
@@ -292,7 +299,7 @@
   "movmd %1,%0,4")
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "general_operand" "=g<,*f,g")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm<,*f,rm")
 	(match_operand:DI 1 "general_operand" "gF,g,*f"))]
   ""
   "*
@@ -333,7 +340,7 @@
   "lprd sp,%0")
 
 (define_insn "movsi"
-  [(set (match_operand:SI 0 "general_operand" "=g<,g<,*f,g,x")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<,rm<,*f,rm,x")
 	(match_operand:SI 1 "general_operand" "g,?xy,g,*f,rmn"))]
   ""
   "*
@@ -425,7 +432,7 @@
 }")
 
 (define_insn "movhi"
-  [(set (match_operand:HI 0 "general_operand" "=g<,*f,g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<,*f,rm")
 	(match_operand:HI 1 "general_operand" "g,g,*f"))]
   ""
   "*
@@ -459,7 +466,7 @@
 }")
 
 (define_insn "movstricthi"
-  [(set (strict_low_part (match_operand:HI 0 "general_operand" "+r"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "+r"))
 	(match_operand:HI 1 "general_operand" "g"))]
   ""
   "*
@@ -471,7 +478,7 @@
 }")
 
 (define_insn "movqi"
-  [(set (match_operand:QI 0 "general_operand" "=g<,*f,g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<,*f,rm")
 	(match_operand:QI 1 "general_operand" "g,g,*f"))]
   ""
   "*
@@ -504,7 +511,7 @@
 }")
 
 (define_insn "movstrictqi"
-  [(set (strict_low_part (match_operand:QI 0 "general_operand" "+r"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "+r"))
 	(match_operand:QI 1 "general_operand" "g"))]
   ""
   "*
@@ -527,8 +534,8 @@
 ;; which can be used to generate more complex code.
 
 (define_expand "movstrsi"
-  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
-		   (match_operand:BLK 1 "general_operand" ""))
+  [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
+		   (match_operand:BLK 1 "memory_operand" ""))
 	      (use (match_operand:SI 2 "general_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   ""
@@ -566,8 +573,8 @@
   }")
 
 (define_insn "movstrsi2"
-  [(set (mem:BLK (match_operand:SI 0 "address_operand" "g"))
-	(mem:BLK (match_operand:SI 1 "address_operand" "g")))
+  [(set (mem:BLK (match_operand:SI 0 "address_operand" "p"))
+	(mem:BLK (match_operand:SI 1 "address_operand" "p")))
    (use (match_operand 2 "immediate_operand" "i"))]
   ""
   "movmd %a1,%a0,%2")
@@ -577,69 +584,51 @@
 ;; Those for integer source operand
 ;; are ordered widest source type first.
 
-(define_insn "truncsiqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(truncate:QI (match_operand:SI 1 "nonimmediate_operand" "g")))]
-  ""
-  "movb %1,%0")
-
-(define_insn "truncsihi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(truncate:HI (match_operand:SI 1 "nonimmediate_operand" "g")))]
-  ""
-  "movw %1,%0")
-
-(define_insn "trunchiqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(truncate:QI (match_operand:HI 1 "nonimmediate_operand" "g")))]
-  ""
-  "movb %1,%0")
-
 (define_insn "extendhisi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "rm")))]
   ""
   "movxwd %1,%0")
 
 (define_insn "extendqihi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "rm")))]
   ""
   "movxbw %1,%0")
 
 (define_insn "extendqisi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "rm")))]
   ""
   "movxbd %1,%0")
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "general_operand" "=lm<")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
 	(float_extend:DF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_32081"
   "movfl %1,%0")
 
 (define_insn "truncdfsf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
 	(float_truncate:SF (match_operand:DF 1 "general_operand" "lmF")))]
   "TARGET_32081"
   "movlf %1,%0")
 
 (define_insn "zero_extendhisi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "rm")))]
   ""
   "movzwd %1,%0")
 
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "rm")))]
   ""
   "movzbw %1,%0")
 
 (define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "g")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "rm")))]
   ""
   "movzbd %1,%0")
 
@@ -655,40 +644,40 @@
 ;; A register must be used to perform the conversion.
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
-	(float:SF (match_operand:SI 1 "general_operand" "rm")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
+	(float:SF (match_operand:SI 1 "nonimmediate_operand" "rm")))]
   "TARGET_32081"
   "movdf %1,%0")
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "general_operand" "=lm<")
-	(float:DF (match_operand:SI 1 "general_operand" "rm")))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
+	(float:DF (match_operand:SI 1 "nonimmediate_operand" "rm")))]
   "TARGET_32081"
   "movdl %1,%0")
 
 (define_insn "floathisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
-	(float:SF (match_operand:HI 1 "general_operand" "rm")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
+	(float:SF (match_operand:HI 1 "nonimmediate_operand" "rm")))]
   "TARGET_32081"
   "movwf %1,%0")
 
 (define_insn "floathidf2"
-  [(set (match_operand:DF 0 "general_operand" "=lm<")
-	(float:DF (match_operand:HI 1 "general_operand" "rm")))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
+	(float:DF (match_operand:HI 1 "nonimmediate_operand" "rm")))]
   "TARGET_32081"
   "movwl %1,%0")
 
 (define_insn "floatqisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
-	(float:SF (match_operand:QI 1 "general_operand" "rm")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
+	(float:SF (match_operand:QI 1 "nonimmediate_operand" "rm")))]
   "TARGET_32081"
   "movbf %1,%0")
 
 ; Some assemblers warn that this insn doesn't work.
 ; Maybe they know something we don't.
 ;(define_insn "floatqidf2"
-;  [(set (match_operand:DF 0 "general_operand" "=lm<")
-;	(float:DF (match_operand:QI 1 "general_operand" "rm")))]
+;  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
+;	(float:DF (match_operand:QI 1 "nonimmediate_operand" "rm")))]
 ;  "TARGET_32081"
 ;  "movbl %1,%0")
 
@@ -696,161 +685,165 @@
 ;; The sequent compiler always generates "trunc" insns.
 
 (define_insn "fixsfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(fix:QI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(fix:QI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfb %1,%0")
 
 (define_insn "fixsfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(fix:HI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(fix:HI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfw %1,%0")
 
 (define_insn "fixsfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(fix:SI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfd %1,%0")
 
 (define_insn "fixdfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(fix:QI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(fix:QI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "trunclb %1,%0")
 
 (define_insn "fixdfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(fix:HI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(fix:HI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "trunclw %1,%0")
 
 (define_insn "fixdfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(fix:SI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(fix:SI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "truncld %1,%0")
 
 ;; Unsigned
 
 (define_insn "fixunssfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(unsigned_fix:QI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:QI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfb %1,%0")
 
 (define_insn "fixunssfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(unsigned_fix:HI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:HI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfw %1,%0")
 
 (define_insn "fixunssfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "nonimmediate_operand" "fm"))))]
   "TARGET_32081"
   "truncfd %1,%0")
 
 (define_insn "fixunsdfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(unsigned_fix:QI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:QI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "trunclb %1,%0")
 
 (define_insn "fixunsdfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(unsigned_fix:HI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:HI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "trunclw %1,%0")
 
 (define_insn "fixunsdfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(unsigned_fix:SI (fix:DF (match_operand:DF 1 "general_operand" "lm"))))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(unsigned_fix:SI (fix:DF (match_operand:DF 1 "nonimmediate_operand" "lm"))))]
   "TARGET_32081"
   "truncld %1,%0")
 
 ;;; These are not yet used by GCC
 (define_insn "fix_truncsfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(fix:QI (match_operand:SF 1 "general_operand" "fm")))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(fix:QI (match_operand:SF 1 "nonimmediate_operand" "fm")))]
   "TARGET_32081"
   "truncfb %1,%0")
 
 (define_insn "fix_truncsfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(fix:HI (match_operand:SF 1 "general_operand" "fm")))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(fix:HI (match_operand:SF 1 "nonimmediate_operand" "fm")))]
   "TARGET_32081"
   "truncfw %1,%0")
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(fix:SI (match_operand:SF 1 "general_operand" "fm")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(fix:SI (match_operand:SF 1 "nonimmediate_operand" "fm")))]
   "TARGET_32081"
   "truncfd %1,%0")
 
 (define_insn "fix_truncdfqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
-	(fix:QI (match_operand:DF 1 "general_operand" "lm")))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
+	(fix:QI (match_operand:DF 1 "nonimmediate_operand" "lm")))]
   "TARGET_32081"
   "trunclb %1,%0")
 
 (define_insn "fix_truncdfhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
-	(fix:HI (match_operand:DF 1 "general_operand" "lm")))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
+	(fix:HI (match_operand:DF 1 "nonimmediate_operand" "lm")))]
   "TARGET_32081"
   "trunclw %1,%0")
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
-	(fix:SI (match_operand:DF 1 "general_operand" "lm")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
+	(fix:SI (match_operand:DF 1 "nonimmediate_operand" "lm")))]
   "TARGET_32081"
   "truncld %1,%0")
 
 ;; Multiply-add instructions
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=v,v")
-	(plus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF,0")
-		          (match_operand:DF 2 "general_operand" "lmF,lmF"))
-                 (match_operand:DF 3 "general_operand" "0,lmF")))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=v,v,lm")
+	(plus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF,0,0")
+		          (match_operand:DF 2 "general_operand" "lmF,lmF,lmF"))
+                 (match_operand:DF 3 "general_operand" "0,lmF,lmF")))]
   "TARGET_MULT_ADD"
   "@
    dotl %1,%2
-   polyl %2,%3")
+   polyl %2,%3
+   mull %2,%0\;addl %3,%0")
 
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=u,u")
-	(plus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF,0")
-		          (match_operand:SF 2 "general_operand" "fmF,fmF"))
-                 (match_operand:SF 3 "general_operand" "0,fmF")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=u,u,fm")
+	(plus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF,0,0")
+		          (match_operand:SF 2 "general_operand" "fmF,fmF,fmF"))
+                 (match_operand:SF 3 "general_operand" "0,fmF,fmF")))]
   "TARGET_MULT_ADD"
   "@
    dotf %1,%2
-   polyf %2,%3")
+   polyf %2,%3
+   mulf %2,%0\;addf %3,%0")
 
 
 ;; Multiply-sub instructions
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=v")
-	(minus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF")
-		          (match_operand:DF 2 "general_operand" "lmF"))
-                 (match_operand:DF 3 "general_operand" "0")))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=v,lm")
+	(minus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF,0")
+		          (match_operand:DF 2 "general_operand" "lmF,lmF"))
+                 (match_operand:DF 3 "general_operand" "lmF,lmF")))]
   "TARGET_MULT_ADD"
   "@
-   negl %0,%0\;dotl %1,%2")
+   negl %3,%0\;dotl %1,%2
+   mull %2,%0\;subl %3,%0")
 
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=u")
-	(minus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF")
-		          (match_operand:SF 2 "general_operand" "fmF"))
-                 (match_operand:SF 3 "general_operand" "0")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=u,fm")
+	(minus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF,0")
+		          (match_operand:SF 2 "general_operand" "fmF,fmF"))
+                 (match_operand:SF 3 "general_operand" "fmF,fmF")))]
   "TARGET_MULT_ADD"
   "@
-   negf %0,%0\;dotf %1,%2")
+   negf %3,%0\;dotf %1,%2
+   mulf %2,%0\;subf %3,%0")
 
 ;;- All kinds of add instructions.
 
 (define_insn "adddf3"
-  [(set (match_operand:DF 0 "general_operand" "=lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm")
 	(plus:DF (match_operand:DF 1 "general_operand" "%0")
 		 (match_operand:DF 2 "general_operand" "lmF")))]
   "TARGET_32081"
@@ -858,7 +851,7 @@
 
 
 (define_insn "addsf3"
-  [(set (match_operand:SF 0 "general_operand" "=fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm")
 	(plus:SF (match_operand:SF 1 "general_operand" "%0")
 		 (match_operand:SF 2 "general_operand" "fmF")))]
   "TARGET_32081"
@@ -890,21 +883,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(plus:SI (reg:SI 24)
 		 (match_operand:SI 1 "immediate_operand" "i")))]
   "GET_CODE (operands[1]) == CONST_INT"
   "addr %c1(fp),%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(plus:SI (reg:SI 25)
 		 (match_operand:SI 1 "immediate_operand" "i")))]
   "GET_CODE (operands[1]) == CONST_INT"
   "addr %c1(sp),%0")
 
 (define_insn "adddi3"
-  [(set (match_operand:DI 0 "general_operand" "=ro")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=ro")
 	(plus:DI (match_operand:DI 1 "general_operand" "%0")
 		 (match_operand:DI 2 "general_operand" "ron")))]
   ""
@@ -946,7 +939,7 @@
 
 ;; See Note 1
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g,=g&<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,=rm&<")
 	(plus:SI (match_operand:SI 1 "general_operand" "%0,r")
 		 (match_operand:SI 2 "general_operand" "g,i")))]
   ""
@@ -984,7 +977,7 @@
 }")
 
 (define_insn "addhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(plus:HI (match_operand:HI 1 "general_operand" "%0")
 		 (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -999,7 +992,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:HI 0 "general_operand" "=r"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=r"))
 	(plus:HI (match_operand:HI 1 "general_operand" "0")
 		 (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1012,7 +1005,7 @@
 }")
 
 (define_insn "addqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(plus:QI (match_operand:QI 1 "general_operand" "%0")
 		 (match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1027,7 +1020,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:QI 0 "general_operand" "=r"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=r"))
 	(plus:QI (match_operand:QI 1 "general_operand" "0")
 		 (match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1042,14 +1035,14 @@
 ;;- All kinds of subtract instructions.
 
 (define_insn "subdf3"
-  [(set (match_operand:DF 0 "general_operand" "=lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm")
 	(minus:DF (match_operand:DF 1 "general_operand" "0")
 		  (match_operand:DF 2 "general_operand" "lmF")))]
   "TARGET_32081"
   "subl %2,%0")
 
 (define_insn "subsf3"
-  [(set (match_operand:SF 0 "general_operand" "=fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm")
 	(minus:SF (match_operand:SF 1 "general_operand" "0")
 		  (match_operand:SF 2 "general_operand" "fmF")))]
   "TARGET_32081"
@@ -1069,7 +1062,7 @@
 }")
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "general_operand" "=ro")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=ro")
 	(minus:DI (match_operand:DI 1 "general_operand" "0")
 		  (match_operand:DI 2 "general_operand" "ron")))]
   ""
@@ -1110,7 +1103,7 @@
 }")
 
 (define_insn "subsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(minus:SI (match_operand:SI 1 "general_operand" "0")
 		  (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1126,7 +1119,7 @@
 }")
 
 (define_insn "subhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(minus:HI (match_operand:HI 1 "general_operand" "0")
 		  (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1142,7 +1135,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:HI 0 "general_operand" "=r"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=r"))
 	(minus:HI (match_operand:HI 1 "general_operand" "0")
 		  (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1155,7 +1148,7 @@
 }")
 
 (define_insn "subqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(minus:QI (match_operand:QI 1 "general_operand" "0")
 		  (match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1171,7 +1164,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:QI 0 "general_operand" "=r"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=r"))
 	(minus:QI (match_operand:QI 1 "general_operand" "0")
 		  (match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1186,14 +1179,14 @@
 ;;- Multiply instructions.
 
 (define_insn "muldf3"
-  [(set (match_operand:DF 0 "general_operand" "=lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm")
 	(mult:DF (match_operand:DF 1 "general_operand" "%0")
 		 (match_operand:DF 2 "general_operand" "lmF")))]
   "TARGET_32081"
   "mull %2,%0")
 
 (define_insn "mulsf3"
-  [(set (match_operand:SF 0 "general_operand" "=fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm")
 	(mult:SF (match_operand:SF 1 "general_operand" "%0")
 		 (match_operand:SF 2 "general_operand" "fmF")))]
   "TARGET_32081"
@@ -1201,42 +1194,42 @@
 
 ;; See note 1
 (define_insn "mulsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(mult:SI (match_operand:SI 1 "general_operand" "%0")
 		 (match_operand:SI 2 "general_operand" "g")))]
   ""
   "muld %2,%0")
 
 (define_insn "mulhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(mult:HI (match_operand:HI 1 "general_operand" "%0")
 		 (match_operand:HI 2 "general_operand" "g")))]
   ""
   "mulw %2,%0")
 
 (define_insn "mulqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(mult:QI (match_operand:QI 1 "general_operand" "%0")
 		 (match_operand:QI 2 "general_operand" "g")))]
   ""
   "mulb %2,%0")
 
 (define_insn "umulsidi3"
-  [(set (match_operand:DI 0 "general_operand" "=g")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm")
 	(mult:DI (zero_extend:DI
 		  (match_operand:SI 1 "nonimmediate_operand" "0"))
 		 (zero_extend:DI
-		  (match_operand:SI 2 "nonimmediate_operand" "g"))))]
+		  (match_operand:SI 2 "nonimmediate_operand" "rm"))))]
   ""
   "meid %2,%0")
 
 ;; divmod insns: We can only do the unsigned case.
 (define_expand "udivmodsi4"
   [(parallel
-  [(set (match_operand:SI 0 "reg_or_mem_operand" "")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(udiv:SI (match_operand:SI 1 "general_operand" "")
 		     (match_operand:SI 2 "general_operand" "")))
-   (set (match_operand:SI 3 "reg_or_mem_operand" "")
+   (set (match_operand:SI 3 "nonimmediate_operand" "")
 	(umod:SI (match_dup 1) (match_dup 2)))])]
   ""
   "
@@ -1272,8 +1265,8 @@
 ;; below. This udivmoddisi4_internal never matches anything and is only
 ;; ever used when explicitly emitted by a define_expand.
 (define_insn "udivmoddisi4_internal"
-  [(set (match_operand:DI 0 "reg_or_mem_operand" "=rm")
-        (unspec:DI [(match_operand:DI 1 "reg_or_mem_operand" "0")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm")
+        (unspec:DI [(match_operand:DI 1 "nonimmediate_operand" "0")
                     (match_operand:SI 2 "general_operand" "g")] 0))]
   ""
   "deid %2,%0")
@@ -1281,10 +1274,10 @@
 ;; Retain this insn which *does* have a pattern indicating what it does,
 ;; just in case the compiler is smart enough to recognize a substitution.
 (define_insn "udivmoddisi4"
-  [(set (subreg:SI (match_operand:DI 0 "register_operand" "=rm") 1)
-	(truncate:SI (udiv:DI (match_operand:DI 1 "reg_or_mem_operand" "0")
-		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "g")))))
-   (set (subreg:SI (match_operand:DI 3 "register_operand" "=0") 0)
+  [(set (subreg:SI (match_operand:DI 0 "nonimmediate_operand" "=rm") 1)
+	(truncate:SI (udiv:DI (match_operand:DI 1 "nonimmediate_operand" "0")
+		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "rm")))))
+   (set (subreg:SI (match_operand:DI 3 "nonimmediate_operand" "=0") 0)
 	(truncate:SI (umod:DI (match_dup 1) (zero_extend:DI (match_dup 2)))))]
   ""
   "deid %2,%0")
@@ -1297,10 +1290,10 @@
 
 (define_expand "udivmodhi4"
   [(parallel
-  [(set (match_operand:HI 0 "reg_or_mem_operand" "")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(udiv:HI (match_operand:HI 1 "general_operand" "")
 		     (match_operand:HI 2 "general_operand" "")))
-   (set (match_operand:HI 3 "reg_or_mem_operand" "")
+   (set (match_operand:HI 3 "nonimmediate_operand" "")
 	(umod:HI (match_dup 1) (match_dup 2)))])]
   ""
   "
@@ -1345,8 +1338,8 @@
 
 (define_insn "udivmoddihi4"
   [(set (subreg:HI (match_operand:DI 0 "register_operand" "=r") 1)
-	(truncate:HI (udiv:DI (match_operand:DI 1 "reg_or_mem_operand" "0")
-		 (zero_extend:DI (match_operand:HI 2 "nonimmediate_operand" "g")))))
+	(truncate:HI (udiv:DI (match_operand:DI 1 "register_operand" "0")
+		 (zero_extend:DI (match_operand:HI 2 "nonimmediate_operand" "rm")))))
    (set (subreg:HI (match_operand:DI 3 "register_operand" "=0") 0)
 	(truncate:HI (umod:DI (match_dup 1) (zero_extend:DI (match_dup 2)))))]
   ""
@@ -1354,10 +1347,10 @@
 
 (define_expand "udivmodqi4"
   [(parallel
-  [(set (match_operand:QI 0 "reg_or_mem_operand" "")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(udiv:QI (match_operand:QI 1 "general_operand" "")
 		     (match_operand:QI 2 "general_operand" "")))
-   (set (match_operand:QI 3 "reg_or_mem_operand" "")
+   (set (match_operand:QI 3 "nonimmediate_operand" "")
 	(umod:QI (match_dup 1) (match_dup 2)))])]
   ""
   "
@@ -1395,15 +1388,15 @@
 ;; way to do this, so just restrict operand 0 and 1 to be in registers.
 (define_insn "udivmoddiqi4_internal"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_operand:DI 1 "reg_or_mem_operand" "0")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "0")
                     (match_operand:QI 2 "general_operand" "g")] 0))]
   ""
   "deib %2,%0")
 
 (define_insn "udivmoddiqi4"
   [(set (subreg:QI (match_operand:DI 0 "register_operand" "=r") 1)
-	(truncate:QI (udiv:DI (match_operand:DI 1 "reg_or_mem_operand" "0")
-		 (zero_extend:DI (match_operand:QI 2 "nonimmediate_operand" "g")))))
+	(truncate:QI (udiv:DI (match_operand:DI 1 "register_operand" "0")
+		 (zero_extend:DI (match_operand:QI 2 "nonimmediate_operand" "rm")))))
    (set (subreg:QI (match_operand:DI 3 "register_operand" "=0") 0)
 	(truncate:QI (umod:DI (match_dup 1) (zero_extend:DI (match_dup 2)))))]
   ""
@@ -1412,14 +1405,14 @@
 ;;- Divide instructions.
 
 (define_insn "divdf3"
-  [(set (match_operand:DF 0 "general_operand" "=lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm")
 	(div:DF (match_operand:DF 1 "general_operand" "0")
 		(match_operand:DF 2 "general_operand" "lmF")))]
   "TARGET_32081"
   "divl %2,%0")
 
 (define_insn "divsf3"
-  [(set (match_operand:SF 0 "general_operand" "=fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm")
 	(div:SF (match_operand:SF 1 "general_operand" "0")
 		(match_operand:SF 2 "general_operand" "fmF")))]
   "TARGET_32081"
@@ -1427,21 +1420,21 @@
 
 ;; See note 1
 (define_insn "divsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(div:SI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:SI 2 "general_operand" "g")))]
   ""
   "quod %2,%0")
 
 (define_insn "divhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(div:HI (match_operand:HI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
   ""
   "quow %2,%0")
 
 (define_insn "divqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(div:QI (match_operand:QI 1 "general_operand" "0")
 		(match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1451,21 +1444,21 @@
 
 ;; See note 1
 (define_insn "modsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(mod:SI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:SI 2 "general_operand" "g")))]
   ""
   "remd %2,%0")
 
 (define_insn "modhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(mod:HI (match_operand:HI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
   ""
   "remw %2,%0")
 
 (define_insn "modqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(mod:QI (match_operand:QI 1 "general_operand" "0")
 		(match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1476,7 +1469,7 @@
 
 ;; See note 1
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(and:SI (match_operand:SI 1 "general_operand" "%0")
 		(match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1509,7 +1502,7 @@
 }")
 
 (define_insn "andhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(and:HI (match_operand:HI 1 "general_operand" "%0")
 		(match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1530,7 +1523,7 @@
 }")
 
 (define_insn "andqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(and:QI (match_operand:QI 1 "general_operand" "%0")
 		(match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1538,21 +1531,21 @@
 
 ;; See note 1
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(and:SI (not:SI (match_operand:SI 1 "general_operand" "g"))
 		(match_operand:SI 2 "general_operand" "0")))]
   ""
   "bicd %1,%0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(and:HI (not:HI (match_operand:HI 1 "general_operand" "g"))
 		(match_operand:HI 2 "general_operand" "0")))]
   ""
   "bicw %1,%0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(and:QI (not:QI (match_operand:QI 1 "general_operand" "g"))
 		(match_operand:QI 2 "general_operand" "0")))]
   ""
@@ -1562,7 +1555,7 @@
 
 ;; See note 1
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(ior:SI (match_operand:SI 1 "general_operand" "%0")
 		(match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1578,7 +1571,7 @@
 }")
 
 (define_insn "iorhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(ior:HI (match_operand:HI 1 "general_operand" "%0")
 		(match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1591,7 +1584,7 @@
 }")
 
 (define_insn "iorqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(ior:QI (match_operand:QI 1 "general_operand" "%0")
 		(match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1601,7 +1594,7 @@
 
 ;; See note 1
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(xor:SI (match_operand:SI 1 "general_operand" "%0")
 		(match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1617,7 +1610,7 @@
 }")
 
 (define_insn "xorhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(xor:HI (match_operand:HI 1 "general_operand" "%0")
 		(match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1630,27 +1623,27 @@
 }")
 
 (define_insn "xorqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(xor:QI (match_operand:QI 1 "general_operand" "%0")
 		(match_operand:QI 2 "general_operand" "g")))]
   ""
   "xorb %2,%0")
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "general_operand" "=lm<")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
 	(neg:DF (match_operand:DF 1 "general_operand" "lmF")))]
   "TARGET_32081"
   "negl %1,%0")
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
 	(neg:SF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_32081"
   "negf %1,%0")
 
 (define_insn "negdi2"
-  [(set (match_operand:DI 0 "general_operand" "=ro")
-	(neg:DI (match_operand:DI 1 "general_operand" "ro")))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=ro")
+	(neg:DI (match_operand:DI 1 "nonimmediate_operand" "ro")))]
   ""
   "*
 {
@@ -1678,38 +1671,38 @@
 
 ;; See note 1
 (define_insn "negsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(neg:SI (match_operand:SI 1 "general_operand" "g")))]
   ""
   "negd %1,%0")
 
 (define_insn "neghi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(neg:HI (match_operand:HI 1 "general_operand" "g")))]
   ""
   "negw %1,%0")
 
 (define_insn "negqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(neg:QI (match_operand:QI 1 "general_operand" "g")))]
   ""
   "negb %1,%0")
 
 ;; See note 1
 (define_insn "one_cmplsi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(not:SI (match_operand:SI 1 "general_operand" "g")))]
   ""
   "comd %1,%0")
 
 (define_insn "one_cmplhi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(not:HI (match_operand:HI 1 "general_operand" "g")))]
   ""
   "comw %1,%0")
 
 (define_insn "one_cmplqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(not:QI (match_operand:QI 1 "general_operand" "g")))]
   ""
   "comb %1,%0")
@@ -1723,7 +1716,7 @@
 ;; alternative 0 never matches on the 32532
 ;; See note 1
 (define_insn "ashlsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g,g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,rm")
 	(ashift:SI (match_operand:SI 1 "general_operand" "r,0")
 		   (match_operand:SI 2 "general_operand" "I,g")))]
   ""
@@ -1735,7 +1728,7 @@
 }")
 
 (define_insn "ashlhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(ashift:HI (match_operand:HI 1 "general_operand" "0")
 		   (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1754,7 +1747,7 @@
 }")
 
 (define_insn "ashlqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(ashift:QI (match_operand:QI 1 "general_operand" "0")
 		   (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1774,7 +1767,7 @@
 
 ;; Arithmetic right shift on the 32k works by negating the shift count.
 (define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:SI (match_operand:SI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1785,21 +1778,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:SI (match_operand:SI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ashd %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:SI (match_operand:SI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "ashd %2,%0")
 
 (define_expand "ashrhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:HI (match_operand:HI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1810,21 +1803,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:HI (match_operand:HI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ashw %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:HI (match_operand:HI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "ashw %2,%0")
 
 (define_expand "ashrqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:QI (match_operand:QI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1835,16 +1828,16 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:QI (match_operand:QI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ashb %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(ashiftrt:QI (match_operand:QI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "ashb %2,%0")
 
@@ -1852,7 +1845,7 @@
 
 ;; Logical right shift on the 32k works by negating the shift count.
 (define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:SI (match_operand:SI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1863,21 +1856,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "lshd %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "lshd %2,%0")
 
 (define_expand "lshrhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:HI (match_operand:HI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1888,21 +1881,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "lshw %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "lshw %2,%0")
 
 (define_expand "lshrqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:QI (match_operand:QI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1913,16 +1906,16 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:QI (match_operand:QI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "lshb %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(lshiftrt:QI (match_operand:QI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "lshb %2,%0")
 
@@ -1930,21 +1923,21 @@
 
 ;; See note 1
 (define_insn "rotlsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(rotate:SI (match_operand:SI 1 "general_operand" "0")
 		   (match_operand:SI 2 "general_operand" "g")))]
   ""
   "rotd %2,%0")
 
 (define_insn "rotlhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(rotate:HI (match_operand:HI 1 "general_operand" "0")
 		   (match_operand:SI 2 "general_operand" "g")))]
   ""
   "rotw %2,%0")
 
 (define_insn "rotlqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(rotate:QI (match_operand:QI 1 "general_operand" "0")
 		   (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1952,7 +1945,7 @@
 
 ;; Right rotate on the 32k works by negating the shift count.
 (define_expand "rotrsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(rotatert:SI (match_operand:SI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1963,21 +1956,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(rotatert:SI (match_operand:SI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "rotd %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
 	(rotatert:SI (match_operand:SI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "rotd %2,%0")
 
 (define_expand "rotrhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(rotatert:HI (match_operand:HI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -1988,21 +1981,21 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(rotatert:HI (match_operand:HI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "rotw %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm")
 	(rotatert:HI (match_operand:HI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "rotw %2,%0")
 
 (define_expand "rotrqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(rotatert:QI (match_operand:QI 1 "general_operand" "g")
 		     (match_operand:SI 2 "general_operand" "g")))]
   ""
@@ -2013,16 +2006,16 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(rotatert:QI (match_operand:QI 1 "general_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "rotb %n2,%0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(rotatert:QI (match_operand:QI 1 "general_operand" "0")
-		     (neg:SI (match_operand:SI 2 "general_operand" "r"))))]
+		     (neg:SI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "rotb %2,%0")
 
@@ -2031,7 +2024,7 @@
 ;; because we don't want pushl $1 turned into pushad 1.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(match_operand:QI 1 "address_operand" "p"))]
   ""
   "*
@@ -2075,7 +2068,7 @@
 
 ;; See note 1
 (define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "general_operand" "+g")
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+rm")
 			 (const_int 1)
 			 (match_operand:SI 1 "general_operand" "g"))
 	(const_int 1))]
@@ -2084,7 +2077,7 @@
 
 ;; See note 1
 (define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "general_operand" "+g")
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+rm")
 			 (const_int 1)
 			 (match_operand:SI 1 "general_operand" "g"))
 	(const_int 0))]
@@ -2093,7 +2086,7 @@
 
 ;; See note 1
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "+g")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "+rm")
 	(xor:SI (ashift:SI (const_int 1)
 			   (match_operand:SI 1 "general_operand" "g"))
 		(match_dup 0)))]
@@ -2102,7 +2095,7 @@
 
 ;; See note 1
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm")
 	(xor:QI (subreg:QI
 		 (ashift:SI (const_int 1)
 			    (match_operand:QI 1 "general_operand" "g")) 0)
@@ -2114,7 +2107,7 @@
 
 (define_insn ""
   [(set (cc0)
-	(zero_extract (match_operand:SI 0 "general_operand" "rm")
+	(zero_extract (match_operand:SI 0 "nonimmediate_operand" "rm")
 		      (const_int 1)
 		      (match_operand:SI 1 "general_operand" "g")))]
   ""
@@ -2137,7 +2130,7 @@
 ;; enough on the 32532 that such hacks are not needed.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=ro")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=ro")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "const_int_operand" "i")
 			 (match_operand:SI 3 "const_int_operand" "i")))]
@@ -2189,10 +2182,10 @@
 ;; to allow/disallow the use of these instructions.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
-			 (match_operand:SI 3 "general_operand" "rK")))]
+			 (match_operand:SI 3 "nonmemory_operand" "rK")))]
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
@@ -2201,10 +2194,10 @@
 }")
 
 (define_insn "extzv"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(zero_extract:SI (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
-			 (match_operand:SI 3 "general_operand" "rK")))]
+			 (match_operand:SI 3 "nonmemory_operand" "rK")))]
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
@@ -2215,8 +2208,8 @@
 (define_insn ""
   [(set (zero_extract:SI (match_operand:SI 0 "memory_operand" "+o")
 			 (match_operand:SI 1 "const_int_operand" "i")
-			 (match_operand:SI 2 "general_operand" "rn"))
-	(match_operand:SI 3 "general_operand" "rm"))]
+			 (match_operand:SI 2 "nonmemory_operand" "rn"))
+	(match_operand:SI 3 "nonimmediate_operand" "rm"))]
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
@@ -2240,12 +2233,12 @@
 (define_insn ""
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "const_int_operand" "i")
-			 (match_operand:SI 2 "general_operand" "rK"))
-	(match_operand:SI 3 "general_operand" "rm"))]
+			 (match_operand:SI 2 "nonmemory_operand" "rK"))
+	(match_operand:SI 3 "nonimmediate_operand" "rm"))]
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
-  {
+  {  
     if (INTVAL (operands[1]) <= 8)
       return \"inssb %3,%0,%2,%1\";
     else if (INTVAL (operands[1]) <= 16)
@@ -2257,10 +2250,10 @@
 }")
 
 (define_insn "insv"
-  [(set (zero_extract:SI (match_operand:QI 0 "general_operand" "+g")
+  [(set (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "+rm")
 			 (match_operand:SI 1 "const_int_operand" "i")
-			 (match_operand:SI 2 "general_operand" "rK"))
-	(match_operand:SI 3 "general_operand" "rm"))]
+			 (match_operand:SI 2 "nonmemory_operand" "rK"))
+	(match_operand:SI 3 "nonimmediate_operand" "rm"))]
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
@@ -2492,7 +2485,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (match_operand:SI 0 "general_operand" "+g")
+	 (ne (match_operand:SI 0 "nonimmediate_operand" "+rm")
 	     (match_operand:SI 1 "const_int_operand" "i"))
 	 (label_ref (match_operand 2 "" ""))
 	 (pc)))
@@ -2505,7 +2498,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (match_operand:SI 0 "general_operand" "+g")
+	 (ne (match_operand:SI 0 "nonimmediate_operand" "+rm")
 	     (match_operand:SI 1 "const_int_operand" "i"))
 	 (label_ref (match_operand 2 "" ""))
 	 (pc)))
@@ -2636,32 +2629,32 @@
   "ret 0")
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "general_operand" "=fm<")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=fm<")
 	(abs:SF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_32081"
   "absf %1,%0")
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "general_operand" "=lm<")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=lm<")
 	(abs:DF (match_operand:DF 1 "general_operand" "lmF")))]
   "TARGET_32081"
   "absl %1,%0")
 
 ;; See note 1
 (define_insn "abssi2"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(abs:SI (match_operand:SI 1 "general_operand" "g")))]
   ""
   "absd %1,%0")
 
 (define_insn "abshi2"
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(abs:HI (match_operand:HI 1 "general_operand" "g")))]
   ""
   "absw %1,%0")
 
 (define_insn "absqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(abs:QI (match_operand:QI 1 "general_operand" "g")))]
   ""
   "absb %1,%0")
@@ -2690,7 +2683,7 @@
 
 ;; Scondi instructions
 (define_insn "seq"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(eq:SI (cc0) (const_int 0)))]
   ""
   "*
@@ -2702,7 +2695,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(eq:HI (cc0) (const_int 0)))]
   ""
   "*
@@ -2714,7 +2707,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(eq:QI (cc0) (const_int 0)))]
   ""
   "*
@@ -2726,7 +2719,7 @@
 }")
 
 (define_insn "sne"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(ne:SI (cc0) (const_int 0)))]
   ""
   "*
@@ -2738,7 +2731,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(ne:HI (cc0) (const_int 0)))]
   ""
   "*
@@ -2750,7 +2743,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(ne:QI (cc0) (const_int 0)))]
   ""
   "*
@@ -2762,145 +2755,145 @@
 }")
 
 (define_insn "sgt"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(gt:SI (cc0) (const_int 0)))]
   ""
   "sgtd %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(gt:HI (cc0) (const_int 0)))]
   ""
   "sgtw %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(gt:QI (cc0) (const_int 0)))]
   ""
   "sgtb %0")
 
 (define_insn "sgtu"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(gtu:SI (cc0) (const_int 0)))]
   ""
   "shid %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(gtu:HI (cc0) (const_int 0)))]
   ""
   "shiw %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(gtu:QI (cc0) (const_int 0)))]
   ""
   "shib %0")
 
 (define_insn "slt"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(lt:SI (cc0) (const_int 0)))]
   ""
   "sltd %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(lt:HI (cc0) (const_int 0)))]
   ""
   "sltw %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(lt:QI (cc0) (const_int 0)))]
   ""
   "sltb %0")
 
 (define_insn "sltu"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(ltu:SI (cc0) (const_int 0)))]
   ""
   "slod %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(ltu:HI (cc0) (const_int 0)))]
   ""
   "slow %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(ltu:QI (cc0) (const_int 0)))]
   ""
   "slob %0")
 
 (define_insn "sge"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(ge:SI (cc0) (const_int 0)))]
   ""
   "sged %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(ge:HI (cc0) (const_int 0)))]
   ""
   "sgew %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(ge:QI (cc0) (const_int 0)))]
   ""
   "sgeb %0")
 
 (define_insn "sgeu"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(geu:SI (cc0) (const_int 0)))]
   ""
   "shsd %0")  
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(geu:HI (cc0) (const_int 0)))]
   ""
   "shsw %0")  
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(geu:QI (cc0) (const_int 0)))]
   ""
   "shsb %0")  
 
 (define_insn "sle"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(le:SI (cc0) (const_int 0)))]
   ""
   "sled %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(le:HI (cc0) (const_int 0)))]
   ""
   "slew %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(le:QI (cc0) (const_int 0)))]
   ""
   "sleb %0")
 
 (define_insn "sleu"
-  [(set (match_operand:SI 0 "general_operand" "=g<")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
 	(leu:SI (cc0) (const_int 0)))]
   ""
   "slsd %0")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=g<")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rm<")
 	(leu:HI (cc0) (const_int 0)))]
   ""
   "slsw %0")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=g<")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rm<")
 	(leu:QI (cc0) (const_int 0)))]
   ""
   "slsb %0")
@@ -2908,7 +2901,7 @@
 ;; ffs instructions
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=ro")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=ro")
 	(minus:SI 
 		(plus:SI (ffs:SI (zero_extract:SI 
 				(match_operand:SI 1 "general_operand" "g") 
@@ -2920,7 +2913,7 @@
   "ffsd %1,%0; bfc 1f; addqd %$-1,%0; 1:")
 
 (define_expand "ffssi2"
-  [(set (match_operand:SI 0 "general_operand" "=g") (const_int 0))
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm") (const_int 0))
    (set (match_dup 0)
 	(minus:SI 
 		(plus:SI (ffs:SI (zero_extract:SI 

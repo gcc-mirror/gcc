@@ -1,3 +1,51 @@
+2000-01-27  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
+	    Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* ns32k/xm-ns32k.h (memcpy, memset, memcmp): Delete.
+	Remove redundant include of xm-ns32k.h.
+	* ns32k/xm-genix.h (memcpy, memset, memcmp): Add definitions.
+	Remove redundant include of xm-ns32k.h.
+	* ns32k/xm-netbsd.h (memcpy, memset, memcmp): No longer undefine.
+	Remove redundant include of xm-ns32k.h.
+	* ns32k/netbsd.h (TARGET_DEFAULT): Enable multiply-add instructions.
+
+	* ns32k/ns32k.h: Update comment on multiply-add instructions.
+ 	(TARGET_SWITCHES): Add documentation strings.
+	(DWARF_FRAME_REGNUM): Override default definition.
+	(REG_CLASS_CONTENTS): Add comments.
+	(SUBSET_P): Format to reduce line length.
+	(SMALL_REGISTER_CLASSES): Make a run time option.
+	(GO_IF_NONINDEXED_ADDRESS): Reformat.
+	(GO_IF_LEGITIMATE_ADDRESS): Ensure that cfun is non NULL before
+ 	dereferencing it. Braces to avoid "ambiguous else" were misplaced.
+	(regclass_map): fix typo in comment.
+	* ns32k/ns32k.c: Add spaces before parentheses for consistant style.
+	Prefer gen_rtx_FOO(...) to gen_rtx(FOO,...).
+	(trace, reg_or_mem_operand): Delete, unused function.
+	(calc_address_cost): Small offsets are cheaper than large ones.
+	(expand_block_move): Generate more efficient code when bytes is a
+ 	known at compile time.
+	* ns32k/ns32k.md: Alternate constraints for multiply-add instructions.
+	(udivmodsi4, udivmodhi4, udivmodqi4): Use nonimmediate_operand
+ 	instead of reg_or_mem_operand.  Use VOIDmode for load or push
+ 	effective address.
+	
+	* ns32k/ns32k.md: Use nonimmediate_operand or stricter for outputs,
+	not general_operand.  Similarly use "=rm" or stricter, not "=g".
+	For input operands, use stricter constraints than "g" if not
+	general_operand.  Similarly use stricter predicate than
+	"general_operand" when stricter constraints than "g" are present,
+	except for matching constraints.
+	(movstrsi): Use "memory_operand" for operands 0 and 1.
+	(truncsiqi2, truncsihi2, trunchiqi2): Remove.
+	(udivmoddisi4_internal): Use nonimmediate_operand for operand 0,
+	not reg_or_mem_operand.
+	(udivmoddisi4): Ditto.
+	Use nonimmediate_operand for operand 1, not reg_or_mem_operand.
+	Use nonimmediate_operand for operand 3, not register_operand.
+	(udivmoddiqi4_internal): Use register_operand for operand 1, not
+	reg_or_mem_operand.
+
 2000-01-27  Fred Fish  <fnf@be.com>
 
 	* gthr-posix.h: Fix typo; compatibily -> compatibility.
