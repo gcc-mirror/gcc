@@ -55,6 +55,8 @@ typedef struct cp_token GTY (())
   unsigned char flags;
   /* True if this token is from a system header. */
   BOOL_BITFIELD in_system_header : 1;
+  /* True if this token is from a context where it is implicitly extern "C" */
+  BOOL_BITFIELD implicit_extern_c : 1;
   /* The value associated with this token, if any.  */
   tree value;
   /* The location at which this token was found.  */
@@ -418,6 +420,7 @@ static void
 cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
                                  cp_token *token)
 {
+  static int is_extern_c = 0;
   bool done;
 
   done = false;
@@ -444,6 +447,13 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   /* Now we've got our token.  */
   token->location = input_location;
   token->in_system_header = in_system_header;
+
+  /* On some systems, some header files are surrounded by an 
+     implicit extern "C" block.  Set a flag in the token if it
+     comes from such a header. */
+  is_extern_c += pending_lang_change;
+  pending_lang_change = 0;
+  token->implicit_extern_c = is_extern_c > 0;
 
   /* Check to see if this token is a keyword.  */
   if (token->type == CPP_NAME
@@ -1316,6 +1326,10 @@ typedef struct cp_parser GTY(())
      such a situation, both "type (expr)" and "type (type)" are valid
      alternatives.  */
   bool in_type_id_in_expr_p;
+
+  /* TRUE if we are currently in a header file where declarations are
+     implicitly extern "C". */
+  bool implicit_extern_c;
 
   /* TRUE if strings in expressions should be translated to the execution
      character set.  */
@@ -2425,6 +2439,9 @@ cp_parser_new (void)
   /* We are not parsing a type-id inside an expression.  */
   parser->in_type_id_in_expr_p = false;
 
+  /* Declarations aren't implicitly extern "C". */
+  parser->implicit_extern_c = false;
+
   /* String literals should be translated to the execution character set.  */
   parser->translate_strings_p = true;
 
@@ -2624,6 +2641,14 @@ cp_parser_translation_unit (cp_parser* parser)
 	  /* Get rid of the token array; we don't need it any more. */
 	  cp_lexer_destroy (parser->lexer);
 	  parser->lexer = NULL;
+
+	  /* This file might have been a context that's implicitly extern
+	     "C".  If so, pop the lang context.  (Only relevant for PCH.) */
+	  if (parser->implicit_extern_c)
+	    {
+	      pop_lang_context ();
+	      parser->implicit_extern_c = false;
+	    }
 
 	  /* Finish up.  */
 	  finish_translation_unit ();
@@ -6634,6 +6659,19 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	  continue;
 	}
 
+      /* If we're entering or exiting a region that's implicitly
+	 extern "C", modify the lang context appropriately. */
+      if (!parser->implicit_extern_c && token->implicit_extern_c)
+	{
+	  push_lang_context (lang_name_c);
+	  parser->implicit_extern_c = true;
+	}
+      else if (parser->implicit_extern_c && !token->implicit_extern_c)
+	{
+	  pop_lang_context ();
+	  parser->implicit_extern_c = false;
+	}
+
       if (token->type == CPP_PRAGMA)
 	{
 	  /* A top-level declaration can consist solely of a #pragma.
@@ -6642,19 +6680,6 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	     handled in cp_parser_statement.)  */
 	  cp_lexer_handle_pragma (parser->lexer);
 	  continue;
-	}
-
-      /* The C lexer modifies PENDING_LANG_CHANGE when it wants the
-	 parser to enter or exit implicit `extern "C"' blocks.  */
-      while (pending_lang_change > 0)
-	{
-	  push_lang_context (lang_name_c);
-	  --pending_lang_change;
-	}
-      while (pending_lang_change < 0)
-	{
-	  pop_lang_context ();
-	  ++pending_lang_change;
 	}
 
       /* Parse the declaration itself.  */

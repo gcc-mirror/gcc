@@ -1,3 +1,49 @@
+2004-09-27  Matt Austern  <austern@apple.com>
+
+	* cp/parser.c (struct cp_token): new one-bit field , implicit_extern_c
+	(cp_lexer_get_preprocessor_token): Set implicit_extern_c for
+	tokens that come from headers that are implicitly extern "C".
+	(struct cp_parser): new one-bit field, implicit_extern_c.
+	(cp_parser_new): Set parser's implicit_extern_c to false.
+	(cp_parser_translation_unit): Pop lang context if we were in a
+	header that was implicitly extern "C".
+	(cp_parser_declaration_seq_opt): Push/pop lang context as
+	required by the token's and parser's implicit_extern_c.
+	
+2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17585
+	* cp-tree.h (shared_member_p): Declare.
+	* search.c (shared_member_p): Give it external linkage.
+	* semantics.c (finish_qualified_id_expr): Use it.
+	(finish_id_expression): Likewise.
+
+	PR c++/17585
+	* semantics.c (finish_id_expression): Do not add "this->" to
+	static member functions.
+
+2004-09-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17681
+	* error.c (dump_type): Change TREE_VEC case into TREE_BINFO.
+
+	* class.c (struct count_depth_data): Remove.
+	(dfs_depth_post, dfs_depth_q): Remove.
+	(find_final_overrider): Use number of vbase classes as depth
+	bound.
+	
+	* cp-tree.h (types_overlap_p): Remove.
+	* search.c (struct overlap_info): Remove.
+	(dfs_check_overlap, dfs_no_overlap_yet, types_overlap_p): Remove.
+	
+	* pt.c (GTB_VIA_VIRTUAL, GTB_IGNORE_TYPE): Remove.
+	(get_template_base_recursive): Remove. Replace with ...
+	(get_template_base_r): ... this.
+	(struct get_template_base_data_s): New.
+	(get_template_base): Use get_template_base_r via dfs_walk.  Always
+	return NULL on failure.
+	(unify): Remove error_mark_node check from get_template_base result.
+
 2004-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17585
