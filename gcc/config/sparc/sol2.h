@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-   %{compat-bsd:-iwithprefix ucbinclude -idirafter /usr/ucbinclude}\
+   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}\
    %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
