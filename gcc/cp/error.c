@@ -448,7 +448,7 @@ dump_type (t, flags)
       break;
 
     case VECTOR_TYPE:
-      OB_PUTS ("vector ");
+      output_add_string (scratch_buffer, "vector ");
       dump_type (TREE_TYPE (t), flags);
       break;
 
