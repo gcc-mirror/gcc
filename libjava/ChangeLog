@@ -1,3 +1,8 @@
+2003-09-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/ByteBufferHelper.java:
+	Totally reworked with help from Eric Blake.
+
 2003-09-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/geom/RoundRectangle2D.java (getPathIterator): Wrote.
