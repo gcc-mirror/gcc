@@ -1,3 +1,8 @@
+Fri Jan  8 15:48:03 1999  Per Bothner  <bothner@cygnus.com>
+
+	* check-init.c (check_init):  If compiling to native, we don't
+	see THROW_EXPR.  Instead, look for a call to throw_node (_Jv_Throw).
+
 1999-01-08  Tom Tromey  <tromey@cygnus.com>
 
 	* parse-scan.y (variable_declarator_id): Set or increment
