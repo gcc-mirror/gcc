@@ -6609,8 +6609,8 @@ c_finish_return (tree retval)
 }
 
 struct c_switch {
-  /* The SWITCH_STMT being built.  */
-  tree switch_stmt;
+  /* The SWITCH_EXPR being built.  */
+  tree switch_expr;
 
   /* The original type of the testing expression, i.e. before the
      default conversion is applied.  */
@@ -6641,7 +6641,7 @@ struct c_switch {
 struct c_switch *c_switch_stack;
 
 /* Start a C switch statement, testing expression EXP.  Return the new
-   SWITCH_STMT.  */
+   SWITCH_EXPR.  */
 
 tree
 c_start_case (tree exp)
@@ -6677,16 +6677,16 @@ c_start_case (tree exp)
 	}
     }
 
-  /* Add this new SWITCH_STMT to the stack.  */
+  /* Add this new SWITCH_EXPR to the stack.  */
   cs = XNEW (struct c_switch);
-  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
+  cs->switch_expr = build3 (SWITCH_EXPR, orig_type, exp, NULL_TREE, NULL_TREE);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->blocked_stmt_expr = 0;
   cs->next = c_switch_stack;
   c_switch_stack = cs;
 
-  return add_stmt (cs->switch_stmt);
+  return add_stmt (cs->switch_expr);
 }
 
 /* Process a case label.  */
@@ -6699,7 +6699,7 @@ do_case (tree low_value, tree high_value)
   if (c_switch_stack && !c_switch_stack->blocked_stmt_expr)
     {
       label = c_add_case_label (c_switch_stack->cases,
-				SWITCH_STMT_COND (c_switch_stack->switch_stmt),
+				SWITCH_COND (c_switch_stack->switch_expr),
 				c_switch_stack->orig_type,
 				low_value, high_value);
       if (label == error_mark_node)
@@ -6729,12 +6729,12 @@ c_finish_case (tree body)
 {
   struct c_switch *cs = c_switch_stack;
 
-  SWITCH_STMT_BODY (cs->switch_stmt) = body;
+  SWITCH_BODY (cs->switch_expr) = body;
 
   gcc_assert (!cs->blocked_stmt_expr);
 
   /* Emit warnings as needed.  */
-  c_do_switch_warnings (cs->cases, cs->switch_stmt);
+  c_do_switch_expr_warnings (cs->cases, cs->switch_expr);
 
   /* Pop the stack.  */
   c_switch_stack = cs->next;
