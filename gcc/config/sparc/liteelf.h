@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Default to dwarf2 in ELF.  */
 
-#define DWARF_DEBUGGING_INFO 1
 #define DWARF2_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE

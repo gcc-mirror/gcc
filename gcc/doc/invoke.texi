@@ -252,7 +252,7 @@ in the following sections.
 -feliminate-unused-debug-symbols -fmem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -ftest-coverage  -ftime-report @gol
--g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
+-g  -g@var{level}  -gcoff -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
@@ -3025,8 +3025,7 @@ makes debugging work better in GDB but will probably make other debuggers
 crash or
 refuse to read the program.  If you want to control for certain whether
 to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
-@option{-gxcoff+}, @option{-gxcoff}, @option{-gdwarf-1+}, @option{-gdwarf-1},
-or @option{-gvms} (see below).
+@option{-gxcoff+}, @option{-gxcoff}, or @option{-gvms} (see below).
 
 Unlike most other C compilers, GCC allows you to use @option{-g} with
 @option{-O}.  The shortcuts taken by optimized code may occasionally
@@ -3088,23 +3087,6 @@ use of these extensions is likely to make other debuggers crash or
 refuse to read the program, and may cause assemblers other than the GNU
 assembler (GAS) to fail with an error.
 
-@item -gdwarf
-@opindex gdwarf
-Produce debugging information in DWARF version 1 format (if that is
-supported).  This is the format used by SDB on most System V Release 4
-systems.
-
-This option is deprecated.
-
-@item -gdwarf+
-@opindex gdwarf+
-Produce debugging information in DWARF version 1 format (if that is
-supported), using GNU extensions understood only by the GNU debugger
-(GDB)@.  The use of these extensions is likely to make other debuggers
-crash or refuse to read the program.
-
-This option is deprecated.
-
 @item -gdwarf-2
 @opindex gdwarf-2
 Produce debugging information in DWARF version 2 format (if that is
@@ -3134,9 +3116,9 @@ present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
 
 Note that in order to avoid confusion between DWARF1 debug level 2,
-and DWARF2, neither @option{-gdwarf} nor @option{-gdwarf-2} accept
-a concatenated debug level.  Instead use an additional @option{-g@var{level}}
-option to change the debug level for DWARF1 or DWARF2.
+and DWARF2 @option{-gdwarf-2} does not accept a concatenated debug
+level.  Instead use an additional @option{-g@var{level}} option to
+change the debug level for DWARF2.
 
 @item -feliminate-dwarf2-dups
 @opindex feliminate-dwarf2-dups

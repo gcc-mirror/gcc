@@ -743,14 +743,6 @@ gcoff
 Common JoinedOrMissing
 Generate debug information in COFF format
 
-gdwarf
-Common JoinedOrMissing
-Generate debug information in DWARF v1 format
-
-gdwarf+
-Common JoinedOrMissing
-Generate debug information in extended DWARF v1 format
-
 gdwarf-2
 Common JoinedOrMissing
 Generate debug information in DWARF v2 format

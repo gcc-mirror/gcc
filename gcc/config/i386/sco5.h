@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_REGISTER_NUMBER(n)	svr4_dbx_register_map[n]
 
 #define DWARF2_DEBUGGING_INFO		1
-#define DWARF_DEBUGGING_INFO		1
 #define DBX_DEBUGGING_INFO		1
 
 #undef PREFERRED_DEBUGGING_TYPE

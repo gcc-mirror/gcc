@@ -66,10 +66,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define HANDLE_SYSV_PRAGMA 1
 
-/* System V Release 4 uses DWARF debugging info.  */
-
-#define DWARF_DEBUGGING_INFO 1
-
 /* All ELF targets can support DWARF-2.  */
 
 #define DWARF2_DEBUGGING_INFO 1

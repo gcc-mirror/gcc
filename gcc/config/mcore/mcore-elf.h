@@ -31,9 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* But allow DWARF 1 if the user wants it.  */
-#define DWARF_DEBUGGING_INFO 1
-
 #define EXPORTS_SECTION_ASM_OP	"\t.section .exports"
 
 #define SUBTARGET_EXTRA_SECTIONS in_exports

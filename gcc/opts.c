@@ -1459,19 +1459,6 @@ common_handle_option (size_t scode, const char *arg,
       set_debug_level (SDB_DEBUG, false, arg);
       break;
 
-    case OPT_gdwarf:
-      if (*arg)
-	{
-	  error ("use -gdwarf -gN for DWARF v1 level N, "
-		 "and -gdwarf-2 for DWARF v2" );
-	  break;
-	}
-
-      /* Fall through.  */
-    case OPT_gdwarf_:
-      set_debug_level (DWARF_DEBUG, code == OPT_gdwarf_, arg);
-      break;
-
     case OPT_gdwarf_2:
       set_debug_level (DWARF2_DEBUG, false, arg);
       break;
