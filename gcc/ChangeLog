@@ -1,3 +1,9 @@
+2004-04-17  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/14715
+	* config/rs6000/rs6000.c (rs6000_stack_info): Make parm_size agree
+	with STARTING_FRAME_OFFSET.
+
 2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (PREDICATE_CODES): Add macc_msac_operand.
