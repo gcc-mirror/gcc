@@ -1,3 +1,13 @@
+2003-02-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR libstdc++/9234
+	* include/bits/valarray_before.h (_UnBase::operator[]): Apply unary
+	operator.
+
+	* include/bits/valarray_before.h (__not_equal_to): Use != instead of ==.
+
+	* testsuite/26_numerics/valarray_operators.cc: New test.
+
 2003-02-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html:  Correct link to libg++ information.
