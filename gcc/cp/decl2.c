@@ -1203,9 +1203,15 @@ build_anon_union_vars (tree object)
 void
 finish_anon_union (tree anon_union_decl)
 {
-  tree type = TREE_TYPE (anon_union_decl);
+  tree type;
   tree main_decl;
-  bool public_p = TREE_PUBLIC (anon_union_decl);
+  bool public_p;
+
+  if (anon_union_decl == error_mark_node)
+    return;
+
+  type = TREE_TYPE (anon_union_decl);
+  public_p = TREE_PUBLIC (anon_union_decl);
 
   /* The VAR_DECL's context is the same as the TYPE's context.  */
   DECL_CONTEXT (anon_union_decl) = DECL_CONTEXT (TYPE_NAME (type));

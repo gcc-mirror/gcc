@@ -1,3 +1,7 @@
+2004-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (finish_anon_union): Robustify.
+
 2004-10-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17393
