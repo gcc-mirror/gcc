@@ -1,3 +1,8 @@
+2002-05-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* call.c (any_strictly_viable): New.
+	(build_new_op): Use it for COMPOUND_EXPR and ADDR_EXPRs.
+
 2002-05-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* error.c (dump_type) [TYPEOF_TYPE]: Fix parenthesis printing.

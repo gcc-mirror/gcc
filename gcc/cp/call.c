@@ -62,6 +62,7 @@ static void print_z_candidates PARAMS ((struct z_candidate *));
 static tree build_this PARAMS ((tree));
 static struct z_candidate * splice_viable PARAMS ((struct z_candidate *));
 static int any_viable PARAMS ((struct z_candidate *));
+static int any_strictly_viable PARAMS ((struct z_candidate *));
 static struct z_candidate * add_template_candidate
 	PARAMS ((struct z_candidate *, tree, tree, tree, tree, tree, int,
 	       unification_kind_t));
@@ -2319,6 +2320,16 @@ any_viable (cands)
   return 0;
 }
 
+static int
+any_strictly_viable (cands)
+     struct z_candidate *cands;
+{
+  for (; cands; cands = cands->next)
+    if (cands->viable == 1)
+      return 1;
+  return 0;
+}
+
 static struct z_candidate *
 splice_viable (cands)
      struct z_candidate *cands;
@@ -3228,6 +3239,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
   enum tree_code code2 = NOP_EXPR;
   tree templates = NULL_TREE;
   tree conv;
+  bool viable_candidates;
 
   if (arg1 == error_mark_node
       || arg2 == error_mark_node
@@ -3392,7 +3404,25 @@ build_new_op (code, flags, arg1, arg2, arg3)
       (candidates, code, code2, fnname, args, flags);
   }
 
-  if (! any_viable (candidates))
+  switch (code)
+    {
+    case COMPOUND_EXPR:
+    case ADDR_EXPR:
+      /* For these, the built-in candidates set is empty
+	 [over.match.oper]/3.  We don't want non-strict matches
+	 because exact matches are always possible with built-in
+	 operators.  The built-in candidate set for COMPONENT_REF
+	 would be empty too, but since there are no such built-in
+	 operators, we accept non-strict matches for them.  */
+      viable_candidates = any_strictly_viable (candidates);
+      break;
+
+    default:
+      viable_candidates = any_viable (candidates);
+      break;
+    }      
+
+  if (! viable_candidates)
     {
       switch (code)
 	{
