@@ -1295,7 +1295,7 @@ rope<_CharT,_Alloc>::_S_compare (const _RopeRep* __left,
     __right_len = __right->_M_size;
     if (_Rope_constants::_S_leaf == __left->_M_tag) {
 	_RopeLeaf* __l = (_RopeLeaf*) __left;
-	if (_RopeRep::_S_leaf == __right->_M_tag) {
+	if (_Rope_constants::_S_leaf == __right->_M_tag) {
 	    _RopeLeaf* __r = (_RopeLeaf*) __right;
 	    return lexicographical_compare_3way(
 			__l->_M_data, __l->_M_data + __left_len,
