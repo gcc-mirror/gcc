@@ -1,3 +1,9 @@
+2003-08-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* crossconfig.m4 (*-darwin*): Add a large and boring stanza for
+	crosses to Darwin targets.
+	* configure: Regenerate.
+
 2003-08-19  Petur Runolfsson  <peturr02@ru.is>
 
         * include/ext/ropeimpl.h: #include <ostream> instead of <iostream>
