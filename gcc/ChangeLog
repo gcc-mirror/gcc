@@ -1,3 +1,8 @@
+1997-11-13  Dave Love  <d.love@dl.ac.uk>
+
+	* i386/linux.h (STACK_BOUNDARY): Define as 64 for glibc2.
+	* i386/gnu.h (STACK_BOUNDARY): Define as 64.
+
 Thu Dec 11 23:55:17 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* fixincludes (str{len,spn,cspn} return value): Handle different
