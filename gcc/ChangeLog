@@ -1,3 +1,8 @@
+Thu Sep 16 16:47:08 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/alpha-interix.h (DWARF2_UNWIND_INFO): Define to zero.
+	* alpha/osf2or3.h (DWARF2_UNWIND_INFO): Likewise.
+
 Thu Sep 16 16:35:41 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md: Revert Thu Nov 26 change that came in through the

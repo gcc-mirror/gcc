@@ -24,7 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
 
 /* As of OSF 3.2, as still can't subtract adjacent labels.  */
-
 #undef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS 0
 
+/* The frame unwind data requires the ability to subtract labels.  */
+#undef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
