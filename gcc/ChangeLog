@@ -1,3 +1,7 @@
+Sat May 2 17:47:17 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat May  2 01:37:29 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Emit USEs to mark where a pseudo
