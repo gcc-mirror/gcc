@@ -1,3 +1,8 @@
+2002-12-28  Andreas Jaeger  <aj@suse.de>
+
+	* c-parse.in (yyprint): Use HOST_WIDE_INT_PRINT_DOUBLE_HEX for
+	correct format.
+
 2002-12-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorhi_shift_8): Change the name to
@@ -50,7 +55,7 @@
 
 2002-12-26  Andreas Schwab  <schwab@suse.de>
 
-	* config.gcc (powerpc*-*-*, rs6000-*-*): Fix assignment syntax. 
+	* config.gcc (powerpc*-*-*, rs6000-*-*): Fix assignment syntax.
 
 2002-12-25  David Edelsohn  <edelsohn@gnu.org>
 
@@ -314,7 +319,7 @@ Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/alpha/alpha.h (MASK_SMALL_TEXT, TARGET_SMALL_TEXT): New.
 	(TARGET_SWITCHES): Add -msmall-text and -mlarge-text.
 	(PREDICATE_CODES): Update.
-	* config/alpha/alpha.md (call patterns): Update for 
+	* config/alpha/alpha.md (call patterns): Update for
 	samegp_function_operand rename; use !samegp reloc if
 	TARGET_EXPLICIT_RELOCS.
 	* doc/invoke.text: Document -msmall-text and -mlarge-text.
@@ -343,12 +348,12 @@ Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
         * config/ns32k/NOTES: New file.
 
 2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
-	
-       	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
+
+	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
 	option for S/390 and zSeries.
         * config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
         s390_arch_string): New variables.
-        (override_options): Checking for options and setting of 
+        (override_options): Checking for options and setting of
 	appropriate target_flags, cpu and arch flags.
         * config/s390/s390.h: (processor_type): New enum.
         (TARGET_SWITCHES): New switches -mesa/zarch.
@@ -452,7 +457,7 @@ Thu Dec 19 23:44:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-12-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* configure.in: FORBUILD when build!=host changed from 
+	* configure.in: FORBUILD when build!=host changed from
 	../$build-alias to ../build-$build_alias to match change made
 	in top directory.
 	* configure: Regenerated.
@@ -468,7 +473,7 @@ Thu Dec 19 23:44:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	.CPP extension as C++ source files
 	* cp/lang-spec.h: Same
 	* doc/invoke.texi:  Add documentation for .CPP support.
-	
+
 2002-12-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR 8553
@@ -2294,7 +2299,7 @@ Wed Nov 20 19:07:17 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(ggc_realloc): Update valgrind annotations.
 	* ggc-page.c [!ENABLE_VALGRIND_CHECKING] (VALGRIND_DISCARD):
 	Define as empty.
- 	(alloc_anon, free_page, ggc_alloc, poison_pages): Add machinery to
+	(alloc_anon, free_page, ggc_alloc, poison_pages): Add machinery to
 	valgrind-annotate memory.
 
 2002-11-20  Ulrich Weigand  <uweigand@de.ibm.com>
