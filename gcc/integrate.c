@@ -1718,7 +1718,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   expand_end_bindings (getdecls (), 1, 1);
   block = poplevel (1, 1, 0);
-  BLOCK_ABSTRACT_ORIGIN (block) = fndecl;
+  BLOCK_ABSTRACT_ORIGIN (block) = (DECL_ABSTRACT_ORIGIN (fndecl) == NULL
+				   ? fndecl : DECL_ABSTRACT_ORIGIN (fndecl));
   poplevel (0, 0, 0);
   emit_line_note (input_filename, lineno);
 
@@ -2321,33 +2322,38 @@ subst_constants (loc, insn, map)
       }
 
     case SUBREG:
-      /* SUBREG is ordinary, but don't make nested SUBREGs and try to simplify
-	 constants.  */
-      {
-	rtx inner = SUBREG_REG (x);
-	rtx new = 0;
+      /* SUBREG applied to something other than a reg
+	 should be treated as ordinary, since that must
+	 be a special hack and we don't know how to treat it specially.
+	 Consider for example mulsidi3 in m68k.md.
+	 Ordinary SUBREG of a REG needs this special treatment.  */
+      if (GET_CODE (SUBREG_REG (x)) == REG)
+	{
+	  rtx inner = SUBREG_REG (x);
+	  rtx new = 0;
 
-	/* We can't call subst_constants on &SUBREG_REG (x) because any
-	   constant or SUBREG wouldn't be valid inside our SUBEG.  Instead,
-	   see what is inside, try to form the new SUBREG and see if that is
-	   valid.  We handle two cases: extracting a full word in an 
-	   integral mode and extracting the low part.  */
-	subst_constants (&inner, NULL_RTX, map);
+	  /* We can't call subst_constants on &SUBREG_REG (x) because any
+	     constant or SUBREG wouldn't be valid inside our SUBEG.  Instead,
+	     see what is inside, try to form the new SUBREG and see if that is
+	     valid.  We handle two cases: extracting a full word in an 
+	     integral mode and extracting the low part.  */
+	  subst_constants (&inner, NULL_RTX, map);
 
-	if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
-	    && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
-	    && GET_MODE (SUBREG_REG (x)) != VOIDmode)
-	  new = operand_subword (inner, SUBREG_WORD (x), 0,
-				 GET_MODE (SUBREG_REG (x)));
+	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+	      && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
+	      && GET_MODE (SUBREG_REG (x)) != VOIDmode)
+	    new = operand_subword (inner, SUBREG_WORD (x), 0,
+				   GET_MODE (SUBREG_REG (x)));
 
-	if (new == 0 && subreg_lowpart_p (x))
-	  new = gen_lowpart_common (GET_MODE (x), inner);
+	  if (new == 0 && subreg_lowpart_p (x))
+	    new = gen_lowpart_common (GET_MODE (x), inner);
 
-	if (new)
-	  validate_change (insn, loc, new, 1);
+	  if (new)
+	    validate_change (insn, loc, new, 1);
 
-	return;
-      }
+	  return;
+	}
+      break;
 
     case MEM:
       subst_constants (&XEXP (x, 0), insn, map);
