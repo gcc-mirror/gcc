@@ -2460,13 +2460,10 @@ base_class:
 
 base_class.1:
 	  typename_sub
-		{ if ($$ == error_mark_node)
-		    ;
-                  else if (!TYPE_P ($$))
-		    $$ = error_mark_node;
-		  else 
-		    $$ = TYPE_MAIN_DECL ($1); }
+		{ if (!TYPE_P ($$))
+		    $$ = error_mark_node; }
 	| nonnested_type
+		{ $$ = TREE_TYPE ($$); }
 	;
 
 base_class_access_list:
