@@ -1,3 +1,7 @@
+2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/pr15784-1.c, gcc.dg/pr15784-2.c, gcc.dg/pr15784-3.c: New tests.
+
 2005-02-12  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-96.c: Fix typo.
