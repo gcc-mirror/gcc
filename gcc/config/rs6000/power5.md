@@ -103,7 +103,7 @@
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5")
 
-(define_insn_reservation "power5-store" 1
+(define_insn_reservation "power5-store" 12
   (and (eq_attr "type" "store")
        (eq_attr "cpu" "power5"))
   "(du1_power5,lsu1_power5,iu1_power5)\
@@ -111,18 +111,18 @@
   |(du3_power5,lsu2_power5,nothing,iu2_power5)\
   |(du4_power5,lsu1_power5,nothing,iu1_power5)")
 
-(define_insn_reservation "power5-store-update" 1
+(define_insn_reservation "power5-store-update" 12
   (and (eq_attr "type" "store_u")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5,iu1_power5")
 
-(define_insn_reservation "power5-store-update-indexed" 1
+(define_insn_reservation "power5-store-update-indexed" 12
   (and (eq_attr "type" "store_ux")
        (eq_attr "cpu" "power5"))
    "du1_power5+du2_power5+du3_power5+du4_power5,\
     iu1_power5,lsu2_power5+iu2_power5,iu2_power5")
 
-(define_insn_reservation "power5-fpstore" 1
+(define_insn_reservation "power5-fpstore" 12
   (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "power5"))
   "(du1_power5,lsu1_power5,fpu1_power5)\
@@ -130,7 +130,7 @@
   |(du3_power5,lsu2_power5,nothing,fpu2_power5)\
   |(du4_power5,lsu1_power5,nothing,fpu1_power5)")
 
-(define_insn_reservation "power5-fpstore-update" 1
+(define_insn_reservation "power5-fpstore-update" 12
   (and (eq_attr "type" "fpstore_u,fpstore_ux")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5,fpu1_power5")

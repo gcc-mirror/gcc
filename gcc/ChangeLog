@@ -1,3 +1,8 @@
+2004-09-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/power4.md: Increase store latency to 12.
+	* config/rs6000/power5.md: Same.
+
 2004-09-01  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/14064
