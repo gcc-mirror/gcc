@@ -1,3 +1,8 @@
+Thu Feb 12 11:18:37 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* mips.md (extendsidi2): Allow extension to/from a non-mips16 
+	register.
+
 Thu Feb 12 00:04:16 1998  Marc Lehmann <pcg@goof.com>
 
 	* i386.c: Conditionally include <stdlib.h>, <string.h>, and
