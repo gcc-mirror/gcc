@@ -788,7 +788,7 @@ int
 arm_backwards_branch (from, to)
 int from, to;
 {
-  return (insn_addresses[to] < insn_addresses[from]);
+  return (insn_addresses[to] <= insn_addresses[from]);
 }
 
 /* Check to see if a branch is within the distance that can be done using
