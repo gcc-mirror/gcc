@@ -2829,11 +2829,14 @@ rest_of_compilation (decl)
   if (! DECL_DEFER_OUTPUT (decl))
     TREE_ASM_WRITTEN (decl) = 1;
 
-  /* Now that integrate will no longer see our rtl, we need not distinguish
-     between the return value of this function and the return value of called
-     functions.  */
+  /* Now that integrate will no longer see our rtl, we need not
+     distinguish between the return value of this function and the
+     return value of called functions.  Also, we can remove all SETs
+     of subregs of hard registers; they are only here because of
+     integrate.*/
   rtx_equal_function_value_matters = 0;
-
+  purge_hard_subreg_sets (get_insns ());
+  
   /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
     goto exit_rest_of_compilation;
