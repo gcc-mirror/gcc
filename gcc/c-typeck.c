@@ -961,6 +961,7 @@ decl_constant_value (decl)
       && current_function_decl != 0
       && ! pedantic
       && ! TREE_THIS_VOLATILE (decl)
+      && TREE_READONLY (decl) && ! ITERATOR_P (decl)
       && DECL_INITIAL (decl) != 0
       && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
       /* This is invalid if initial value is not constant.
@@ -990,12 +991,7 @@ default_conversion (exp)
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);
   /* Replace a nonvolatile const static variable with its value.  */
-  else if (optimize
-	   && TREE_CODE (exp) == VAR_DECL
-	   && TREE_READONLY (exp)
-	   /* But not for iterators!  */
-	   && !ITERATOR_P (exp)
-	   && DECL_MODE (exp) != BLKmode)
+  else if (optimize && TREE_CODE (exp) == VAR_DECL)
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);
@@ -3846,6 +3842,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
       || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE)
     rhs = default_conversion (rhs);
+  else if (optimize && TREE_CODE (rhs) == VAR_DECL)
+    rhs = decl_constant_value (rhs);
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
@@ -4664,8 +4662,7 @@ digest_init (type, init, require_constant, constructor_constant)
 	  return error_mark_node;
 	}
 
-      if (optimize && TREE_READONLY (inside_init)
-	  && TREE_CODE (inside_init) == VAR_DECL)
+      if (optimize && TREE_CODE (inside_init) == VAR_DECL)
 	inside_init = decl_constant_value (inside_init);
 
       /* Compound expressions can only occur here if -pedantic or
