@@ -3134,6 +3134,10 @@ dfs_record_inheritance (binfo)
       tree baseclass = BINFO_TYPE (base_binfo);
       mi_boolean *base_row = BINFO_DERIVES_FROM_STAR (base_binfo);
 
+      if (TREE_CODE (baseclass) == TEMPLATE_TYPE_PARM)
+	continue;
+      my_friendly_assert (CLASSTYPE_CID (baseclass) != 0, 2365);
+
       /* Don't search if there's nothing there!  MI_SIZE can be
 	 zero as a result of parse errors.  */
       if (TYPE_BINFO_BASETYPES (baseclass) && mi_size > 0)

@@ -78,6 +78,9 @@ real_lvalue_p (ref)
     case PREDECREMENT_EXPR:
     case COMPONENT_REF:
     case SAVE_EXPR:
+    case UNSAVE_EXPR:
+    case TRY_CATCH_EXPR:
+    case WITH_CLEANUP_EXPR:
       return real_lvalue_p (TREE_OPERAND (ref, 0));
 
     case STRING_CST:
@@ -152,6 +155,9 @@ lvalue_p (ref)
     case IMAGPART_EXPR:
     case COMPONENT_REF:
     case SAVE_EXPR:
+    case UNSAVE_EXPR:
+    case TRY_CATCH_EXPR:
+    case WITH_CLEANUP_EXPR:
       return lvalue_p (TREE_OPERAND (ref, 0));
 
     case STRING_CST:
@@ -238,7 +244,7 @@ build_cplus_new (type, init)
   tree slot;
   tree rval;
 
-  if (TREE_CODE (init) == TARGET_EXPR || init == error_mark_node)
+  if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != NEW_EXPR)
     return init;
 
   slot = build (VAR_DECL, type);

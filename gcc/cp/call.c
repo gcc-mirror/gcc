@@ -1812,7 +1812,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  return cp_convert (void_type_node, instance);
 	}
 
-      if (! TYPE_HAS_DESTRUCTOR (basetype))
+      if (! TYPE_HAS_DESTRUCTOR (complete_type (basetype)))
 	return cp_convert (void_type_node, instance);
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);

@@ -1266,7 +1266,17 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
 	     && TREE_CODE (init) == TARGET_EXPR && TREE_TYPE (init) == type))
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
-      expand_assignment (exp, init, 0, 0);
+      if (TREE_CODE (init) == TRY_CATCH_EXPR)
+	/* We need to protect the initialization of a catch parm
+	   with a call to terminate(), which shows up as a TRY_CATCH_EXPR
+	   around the TARGET_EXPR for the copy constructor.  See
+	   expand_start_catch_block.  */
+	TREE_OPERAND (init, 0) = build (INIT_EXPR, TREE_TYPE (exp), exp,
+					TREE_OPERAND (init, 0));
+      else
+	init = build (INIT_EXPR, TREE_TYPE (exp), exp, init);
+      TREE_SIDE_EFFECTS (init) = 1;
+      expand_expr_stmt (init);
       return;
     }
 

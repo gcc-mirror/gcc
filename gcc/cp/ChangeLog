@@ -1,3 +1,49 @@
+Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc (struct cp_eh_info): Add handlers field.
+	(__cp_push_exception): Initialize it.
+	(__cp_pop_exception): Decrement it.  Don't pop unless it's 0.
+	(__throw_bad_exception): Remove.
+	* except.c (call_eh_info): Add handlers field.
+	(get_eh_handlers): New fn.
+	(push_eh_cleanup): Increment handlers.
+
+Mon Nov 17 02:01:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (do_friend): Warn about non-template friends in templates.
+
+	* search.c (dfs_record_inheritance): Ignore template type parms.
+
+Wed Nov 12 08:11:55 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* call.c (build_method_call): Call complete_type before checking
+ 	for destructor.
+
+Tue Nov 11 12:02:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_end_catch_block): Lose call to __sjpopnthrow.
+
+Tue Nov 11 02:53:44 1997  Jason Merrill  <jason@lasher.cygnus.com>
+
+	* except.c (do_pop_exception): Return a value.
+
+Mon Nov 10 03:04:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Complete nested exception support.
+	* except.c (do_pop_exception): Split out...
+	(push_eh_cleanup): From here.  Handle the EH region by hand.
+	(expand_start_catch_block): Add a new level for the catch parm.
+	Move the rethrow region outside the two cleanup regions.
+	Protect the initializer for the catch parm with terminate.
+	(expand_end_catch_block): Likewise.  End the region for the eh_cleanup.
+	* exception.cc (__cp_pop_exception): Now takes two parms.  Handle
+	popping off the middle of the stack.
+	* tree.c (lvalue_p, real_lvalue_p): Handle TRY_CATCH_EXPR, 
+	WITH_CLEANUP_EXPR, and UNSAVE_EXPR.
+	(build_cplus_new): Only wrap CALL_EXPRs.
+	* init.c (expand_default_init): Handle a TRY_CATCH_EXPR around 
+	the constructor call.
+
 Sun Nov  9 18:00:26 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (c++.distdir): Make inc subdirectory.

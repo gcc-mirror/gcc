@@ -318,7 +318,7 @@ call_eh_info ()
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      tree t, fields[5];
+      tree t, fields[6];
 
       /* Declare cp_eh_info * __cp_exception_info (void),
 	 as defined in exception.cc. */
@@ -341,9 +341,11 @@ call_eh_info ()
 					 boolean_type_node);
       fields[4] = build_lang_field_decl (FIELD_DECL, get_identifier ("next"),
 					 build_pointer_type (t));
+      fields[5] = build_lang_field_decl
+	(FIELD_DECL, get_identifier ("handlers"), long_integer_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t, "cp_eh_info", fields, 4, ptr_type_node);
+      finish_builtin_type (t, "cp_eh_info", fields, 5, ptr_type_node);
       t = build_pointer_type (t);
 
       /* And now the function.  */
@@ -416,6 +418,16 @@ get_eh_caught ()
 			      NULL_TREE, 0);
 }
 
+/* Returns a reference to whether or not the current exception
+   has been caught.  */
+
+static tree
+get_eh_handlers ()
+{
+  return build_component_ref (get_eh_info (), get_identifier ("handlers"),
+			      NULL_TREE, 0);
+}
+
 /* Build a type value for use at runtime for a type that is matched
    against by the exception handling system.  */
 
@@ -461,26 +473,31 @@ build_eh_type (exp)
   return build_eh_type_type (TREE_TYPE (exp));
 }
 
-/* This routine creates the cleanup for the current exception.  */
+/* Build up a call to __cp_pop_exception, to destroy the exception object
+   for the current catch block.  HANDLER is either true or false, telling
+   the library whether or not it is being called from an exception handler;
+   if it is, it avoids destroying the object on rethrow.  */
 
-static void
-push_eh_cleanup ()
+static tree
+do_pop_exception (handler)
+     tree handler;
 {
-  /* All cleanups must last longer than normal.  */
-  int yes = suspend_momentary ();
   tree fn, cleanup;
-
   fn = get_identifier ("__cp_pop_exception");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      /* Declare void __cp_pop_exception (void), as defined in exception.cc. */
+      /* Declare void __cp_pop_exception (void *),
+	 as defined in exception.cc. */
       push_obstacks_nochange ();
       end_temporary_allocation ();
-      fn = build_lang_decl (FUNCTION_DECL, fn,
-			    build_function_type (void_type_node,
-						 void_list_node));
+      fn = build_lang_decl
+	(FUNCTION_DECL, fn,
+	 build_function_type (void_type_node, tree_cons
+			      (NULL_TREE, ptr_type_node, tree_cons
+			       (NULL_TREE, boolean_type_node,
+				void_list_node))));
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
@@ -491,12 +508,30 @@ push_eh_cleanup ()
     }
 
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
-  cleanup = build_function_call (fn, NULL_TREE);
-  expand_decl_cleanup (NULL_TREE, cleanup);
-
-  resume_momentary (yes);
+  cleanup = lookup_name (get_identifier ("__exception_info"), 0);
+  cleanup = build_function_call (fn, expr_tree_cons
+				 (NULL_TREE, cleanup, expr_tree_cons
+				  (NULL_TREE, handler, NULL_TREE)));
+  return cleanup;
 }
 
+/* This routine creates the cleanup for the current exception.  */
+
+static void
+push_eh_cleanup ()
+{
+  /* All cleanups must last longer than normal.  */
+  int yes = suspend_momentary ();
+  expand_decl_cleanup_no_eh (NULL_TREE, do_pop_exception (boolean_false_node));
+  resume_momentary (yes);
+
+  expand_expr (build_unary_op (PREINCREMENT_EXPR, get_eh_handlers (), 1),
+	       const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* We don't destroy the exception object on rethrow, so we can't use
+     the normal cleanup mechanism for it.  */
+  expand_eh_region_start ();
+}
 
 /* call this to start a catch block. Typename is the typename, and identifier
    is the variable to place the object in or NULL if the variable doesn't
@@ -530,7 +565,18 @@ expand_start_catch_block (declspecs, declarator)
   if (! doing_eh (1))
     return;
 
-  /* Create a binding level for the parm.  */
+  /* If we are not doing setjmp/longjmp EH, because we are reordered
+     out of line, we arrange to rethrow in the outer context so as to
+     skip through the terminate region we are nested in, should we
+     encounter an exception in the catch handler.  We also need to do
+     this because we are not physically within the try block, if any,
+     that contains this catch block.
+
+     Matches the end in expand_end_catch_block.  */
+  expand_eh_region_start ();
+
+  /* Create a binding level for the eh_info and the exception object
+     cleanup.  */
   pushlevel (0);
   expand_start_bindings (0);
 
@@ -543,25 +589,17 @@ expand_start_catch_block (declspecs, declarator)
 
   if (declspecs)
     {
-      tree exp;
-      rtx call_rtx, return_value_rtx;
-      tree init_type;
-
       decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
       if (decl == NULL_TREE)
-	{
-	  error ("invalid catch parameter");
+	error ("invalid catch parameter");
+    }
 
-#if 0
-	  /* This is cheap, but we want to maintain the data
-             structures.  */
-
-	  expand_eh_region_start ();
-#endif
-
-	  return;
-	}
+  if (decl)
+    {
+      tree exp;
+      rtx call_rtx, return_value_rtx;
+      tree init_type;
 
       /* Make sure we mark the catch param as used, otherwise we'll get
 	 a warning about an unused ((anonymous)).  */
@@ -594,38 +632,43 @@ expand_start_catch_block (declspecs, declarator)
 
       push_eh_cleanup ();
 
-      init = convert_from_reference (save_expr (make_tree (init_type, call_rtx)));
+      /* Create a binding level for the parm.  */
+      pushlevel (0);
+      expand_start_bindings (0);
 
-      /* Do we need the below two lines? */
+      init = convert_from_reference (make_tree (init_type, call_rtx));
+
+      /* If the constructor for the catch parm exits via an exception, we
+         must call terminate.  See eh23.C.  */
+      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+	{
+	  /* Generate the copy constructor call directly so we can wrap it.
+	     See also expand_default_init.  */
+	  init = ocp_convert (TREE_TYPE (decl), init,
+			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
+			TerminateFunctionCall);
+	}
+
       /* Let `cp_finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
       decl = pushdecl (decl);
+
       cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
     {
       push_eh_cleanup ();
 
+      /* Create a binding level for the parm.  */
+      pushlevel (0);
+      expand_start_bindings (0);
+
       /* Fall into the catch all section.  */
     }
 
   init = build_modify_expr (get_eh_caught (), NOP_EXPR, integer_one_node);
   expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-#if 0
-  /* If we are not doing setjmp/longjmp EH, because we are reordered
-     out of line, we arrange to rethrow in the outer context so as to
-     skip through the terminate region we are nested in, should we
-     encounter an exception in the catch handler.
-
-     If we are doing setjmp/longjmp EH, we need to skip through the EH
-     object cleanup region.  This isn't quite right, as we really need
-     to clean the object up, but we cannot do that until we track
-     multiple EH objects.
-
-     Matches the end in expand_end_catch_block.  */
-  expand_eh_region_start ();
-#endif
 
   emit_line_note (input_filename, lineno);
 }
@@ -646,7 +689,17 @@ expand_end_catch_block ()
   if (! doing_eh (1))
     return;
 
-#if 0
+  /* Cleanup the EH parameter.  */
+  expand_end_bindings (getdecls (), kept_level_p (), 0);
+  poplevel (kept_level_p (), 1, 0);
+      
+  /* Matches push_eh_cleanup.  */
+  expand_eh_region_end (do_pop_exception (boolean_true_node));
+
+  /* Cleanup the EH object.  */
+  expand_end_bindings (getdecls (), kept_level_p (), 0);
+  poplevel (kept_level_p (), 1, 0);
+      
   t = make_node (RTL_EXPR);
   TREE_TYPE (t) = void_type_node;
   RTL_EXPR_RTL (t) = const0_rtx;
@@ -654,17 +707,7 @@ expand_end_catch_block ()
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (t);
 
-  if (exceptions_via_longjmp)
-    {
-      /* If we are doing setjmp/longjmp EH, we need to skip through
-	 the EH object cleanup region.  This isn't quite right, as we
-	 really need to clean the object up, but we cannot do that
-	 until we track multiple EH objects.  */
-
-      emit_library_call (sjpopnthrow_libfunc, 0, VOIDmode, 0);
-      emit_barrier ();
-    }
-  else
+  if (! exceptions_via_longjmp)
     {
       /* If we are not doing setjmp/longjmp EH, we need an extra
 	 region around the whole catch block to skip through the
@@ -677,9 +720,8 @@ expand_end_catch_block ()
   RTL_EXPR_SEQUENCE (t) = get_insns ();
   end_sequence ();
 
-  /* Matches the start in expand_start_catch_block.  */
+  /* For the rethrow region.  */
   expand_eh_region_end (t);
-#endif
 
   /* Fall to outside the try statement when done executing handler and
      we fall off end of handler.  This is jump Lresume in the
@@ -688,10 +730,6 @@ expand_end_catch_block ()
 
   expand_leftover_cleanups ();
 
-  /* Cleanup the EH parameter.  */
-  expand_end_bindings (getdecls (), kept_level_p (), 0);
-  poplevel (kept_level_p (), 1, 0);
-      
   /* label we emit to jump to if this catch block didn't match.  */
   /* This the closing } in the `if (eq) {' of the documentation.  */
   emit_label (pop_label_entry (&false_label_stack));
@@ -1131,7 +1169,6 @@ expand_exception_blocks ()
       rtx funcend = gen_label_rtx ();
       emit_jump (funcend);
 
-#if 0
       /* We cannot protect n regions this way if we must flow into the
 	 EH region through the top of the region, as we have to with
 	 the setjmp/longjmp approach.  */
@@ -1142,15 +1179,12 @@ expand_exception_blocks ()
 
 	  expand_eh_region_start ();
 	}
-#endif
 
       emit_insns (catch_clauses);
       catch_clauses = NULL_RTX;
 
-#if 0
       if (exceptions_via_longjmp == 0)
 	expand_eh_region_end (TerminateFunctionCall);
-#endif
 
       expand_leftover_cleanups ();
 
