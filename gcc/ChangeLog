@@ -1,5 +1,6 @@
 2004-05-17  Steven Bosscher  <stevenb@suse.de>
 
+	PR tree-optimization/15438
 	* tree-ssa-operands.c (get_expr_operands): Do not treat malloc
 	attributed functions as pure or const.
 
