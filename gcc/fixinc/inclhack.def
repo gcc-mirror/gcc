@@ -1491,7 +1491,7 @@ fix = {
     select   = 'typedef void \* _G_va_list;';
     c_fix     = format;
     c_fix_arg = "typedef __builtin_va_list _G_va_list;";
-    test_text = 'typedef __builtin_va_list _G_va_list;';
+    test_text = 'typedef void * _G_va_list;';
 };
 
 

@@ -1,3 +1,8 @@
+2002-10-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* fixinc/inclhack.def (libc1_G_va_list): Correct test_text.
+	* fixinc/tests/base/_G_config.h: New file.
+
 2002-10-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c: Fix comment formatting.
