@@ -1026,9 +1026,13 @@ struct tree_type
 #define BINFO_BASETYPE(NODE,N) TREE_VEC_ELT (BINFO_BASETYPES (NODE), (N))
 #define TYPE_BINFO_BASETYPE(NODE,N) BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
 
-/* For a BINFO record describing an inheritance, this yields a pointer
-   to the artificial FIELD_DECL node which contains the "virtual base
-   class pointer" for the given inheritance.  */
+/* For a BINFO record describing a virtual base class, i.e., one where
+   TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
+   base.  The actual contents are language-dependent.  Under the old
+   ABI, the C++ front-end uses a FIELD_DECL whose contents are a
+   pointer to the virtual base; under the new ABI this field is
+   instead a INTEGER_CST giving an offset into the vtable where the
+   offset to the virtual base can be found.  */
 #define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
 
 /* The size of a base class subobject of this type.  Not all frontends
