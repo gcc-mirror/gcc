@@ -52,11 +52,18 @@ yyparse ()
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
   ffe_init_0 ();
 
-  for (--argc, ++argv; argc > 0; --argc, ++argv)
-    {
-      if (!ffe_decode_option (argv[0]))
-	fprintf (stderr, "Unrecognized option: %s\n", argv[0]);
-    }
+  {
+    int strings_processed;
+    for (--argc, ++argv; argc > 0; argc -= strings_processed, argv += strings_processed)
+      {
+	strings_processed = ffe_decode_option (argc, argv);
+	if (strings_processed == 0)
+	  {
+	    fprintf (stderr, "Unrecognized option: %s\n", argv[0]);
+	    strings_processed = 1;
+	  }
+      }
+  }
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (!ffe_is_pedantic ())
     ffe_set_is_pedantic (pedantic);

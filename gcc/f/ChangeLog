@@ -1,3 +1,9 @@
+Wed Jun 10 13:17:32 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* top.h (ffe_decode_option): New argc/argv interface.
+	* top.c (ffe_decode_option): New argc/argv interface.
+	* parse.c (yyparse): New argc/argv interface for ffe_decode_option.
+	* com.c (lang_decode_option): New argc/argv interface.
 Mon Jun  1 19:37:42 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_init_0): Fix setup of INTEGER(KIND=7)
