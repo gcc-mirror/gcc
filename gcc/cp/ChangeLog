@@ -1,3 +1,8 @@
+Fri Jan 23 18:34:37 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* lex.c (DIR_SEPARATOR): Define to be '/' if not already defined.
+	(file_name_nondirectory): Use.
+
 Wed Jan 21 10:29:57 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (coerce_template_parms): Don't access elements of ARGLIST
