@@ -194,11 +194,14 @@ libgcj.zip: $(java_source_files) $(x_java_source_files)
 	$(MAKE) $(built_java_source_files:.java=.class)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
-	@javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
-	  for f in `cat $$dir/tmp-list`; do \
-	    echo $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
-	    $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
-	done
+	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
+	javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
+	for f in `cat $$dir/tmp-list`; do \
+	  echo $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
+	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f \
+	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
+	done; \
+	test "$$fail" = no
 	-@rm -f tmp-list libgcj.zip
 ## Note that we explicitly want to include directory information.
 	find java gnu -type d -o -type f -name '*.class' | \
