@@ -1,3 +1,8 @@
+2002-10-05  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/8120
+	* doc/cpp.texi: Update documentation of bad use of ##.
+
 Thu Oct  3 23:15:15 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (CPP_SPECS): fix defines for -msse, -msse2, -mpentium2,3.

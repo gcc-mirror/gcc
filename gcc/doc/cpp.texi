@@ -3736,9 +3736,9 @@ Here are a few more obsolete features.
 @item Attempting to paste two tokens which together do not form a valid
 preprocessing token.
 
-The preprocessor currently warns about this and outputs the two tokens
-adjacently, which is probably the behavior the programmer intends.  It
-may not work in future, though.
+The preprocessor currently warns about this, and the resulting
+preprocessed output is undefined.  The tokens remain distinct if the
+preprocessor is being used directly by the compiler front end.
 
 Most of the time, when you get this warning, you will find that @samp{##}
 is being used superstitiously, to guard against whitespace appearing
