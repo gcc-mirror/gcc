@@ -1042,11 +1042,6 @@ parse_c_expression (string)
      char *string;
 {
   lexptr = string;
-  
-  if (lexptr == 0 || *lexptr == 0) {
-    error ("empty #if expression");
-    return 0;			/* don't include the #if group */
-  }
 
   /* if there is some sort of scanning error, just return 0 and assume
      the parsing routine has printed an error message somewhere.
@@ -1054,9 +1049,9 @@ parse_c_expression (string)
   if (setjmp (parse_return_error))
     return 0;
 
-  if (yyparse ())
-    return 0;			/* actually this is never reached
-				   the way things stand. */
+  if (yyparse () != 0)
+    abort ();
+
   if (*lexptr != '\n')
     error ("Junk after end of expression.");
 
