@@ -1,3 +1,7 @@
+2003-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20031023-4.c: Don't XFAIL on SPARC64.
+
 2003-11-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12924
