@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mmix.c
-   Copyright (C) 2000, 2001  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002  Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GNU CC.
@@ -36,7 +36,6 @@ extern const char *mmix_data_section_asm_op PARAMS ((void));
 extern const char *mmix_strip_name_encoding PARAMS ((const char *));
 extern void mmix_asm_file_start PARAMS ((FILE *));
 extern void mmix_asm_file_end PARAMS ((FILE *));
-extern void mmix_asm_identify_gcc PARAMS ((FILE *));
 extern void mmix_asm_output_source_filename PARAMS ((FILE *, const char *));
 extern void mmix_output_quoted_string PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_source_line  PARAMS ((FILE *, int));

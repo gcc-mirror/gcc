@@ -1833,17 +1833,6 @@ mmix_asm_file_end (stream)
   data_section ();
 }
 
-/* ASM_IDENTIFY_GCC.  */
-
-void
-mmix_asm_identify_gcc (stream)
-     FILE * stream;
-{
-  /* No real need for the time being.  May be useful to GDB later on.  */
-  fprintf (stream, "# Compiled by GCC version %s\n",
-	   version_string);
-}
-
 /* ASM_OUTPUT_SOURCE_FILENAME.  */
 
 void
