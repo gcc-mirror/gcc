@@ -1,3 +1,11 @@
+2002-02-23  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (mulqihi3): Tighten predicates to
+	register_operand.
+	(mulhisi3): Likewise.
+	(umulqisi3): Likewise.
+	(umulhisi3): Likewise.
+
 2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (output_deps): Correct test for stdout output.
