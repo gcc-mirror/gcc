@@ -2152,7 +2152,6 @@ exception_optimize ()
 	}
     }
 }
-}
 
 /* Various hooks for the DWARF 2 __throw routine.  */
 
@@ -2307,3 +2306,4 @@ expand_builtin_set_eh_regs (handler, offset)
   /* These will be used by the stub.  */
   emit_insn (gen_rtx (USE, VOIDmode, reg1));
   emit_insn (gen_rtx (USE, VOIDmode, reg2));
+}
