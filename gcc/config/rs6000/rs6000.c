@@ -731,6 +731,11 @@ rs6000_override_options (default_cpu)
 	 MASK_STRING above when optimizing for size.  */
       if ((target_flags & MASK_STRING) != 0)
 	target_flags = target_flags & ~MASK_STRING;
+
+      /* No SPE means 64-bit long doubles, even if an E500.  */
+      if (rs6000_spe_string != 0
+          && !strcmp (rs6000_spe_string, "no"))
+	rs6000_long_double_type_size = 64;
     }
   else if (rs6000_select[1].string != NULL)
     {
@@ -745,6 +750,8 @@ rs6000_override_options (default_cpu)
 	rs6000_float_gprs = 0;
       if (rs6000_isel_string == 0)
 	rs6000_isel = 0;
+      if (rs6000_long_double_size_string == 0)
+	rs6000_long_double_type_size = 64;
     }
 
   /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
