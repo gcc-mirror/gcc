@@ -762,8 +762,8 @@ scan_loop (loop_start, end, unroll_p)
      reg_single_usage[I].  */
   
   /* Allocate extra space for REGS that might be created by
-     load_mems.  */
-  nregs = max_reg_num () + loop_mems_idx;
+     load_mems and move_movables.  */
+  nregs = max_reg_num () + loop_mems_idx + 100;
   n_times_set = (int *) alloca (nregs * sizeof (int));
   n_times_used = (int *) alloca (nregs * sizeof (int));
   may_not_optimize = (char *) alloca (nregs);
@@ -8443,6 +8443,14 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	may_not_optimize[i] = 1, n_times_set[i] = 1;
       
+#ifdef AVOID_CCMODE_COPIES
+      /* Don't try to move insns which set CC registers if we should not
+	 create CCmode register copies.  */
+      for (i = FIRST_PSEUDO_REGISTER; i < nregs - loop_mems_idx; i++)
+	if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
+	  may_not_optimize[i] = 1;
+#endif
+
       /* Set n_times_used for the new registers.  */
       bcopy ((char *) (n_times_set + old_nregs),
 	     (char *) (n_times_used + old_nregs),
