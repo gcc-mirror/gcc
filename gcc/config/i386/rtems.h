@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting an Intel i386 using coff.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -31,5 +31,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
+
+/* Get machine-independent configuration parameters for RTEMS.  */
+#include <rtems.h>
 
 /* end of i386/rtems.h */

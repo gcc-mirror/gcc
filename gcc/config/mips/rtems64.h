@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a MIPS ORION using ecoff.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -61,3 +61,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 
 /*  End of undefines to turn off .ctor/.dtor section support */
+
+/* Get machine-independent configuration parameters for RTEMS.  */
+#include <rtems.h>

@@ -1,3 +1,25 @@
+2000-01-04  Joel Sherrill (joel@OARcorp.com>
+
+	* configure.in (m68*-*-rtemscoff*): New target, formal name for
+	old m68*-*-rtems*.
+        (m68*-*-rtemself*): New target.
+	(mips64orion-*-rtems*): Remove duplicate definition of tm_file.
+	(sparc*-*-rtemsaout*): New target, formal name for old sparc*-*-rtems*.
+        (sparc*-*-rtemself*): New target.
+        (sparc*-*-rtems*): Now elf not a.out.
+	* config/i386/rtems.h: Include config/rtems.h.
+	* config/i386/rtemself.h: Include config/rtems.h.
+	* config/i960/rtems.h: Include config/rtems.h.
+	* config/m68k/rtems.h: Include config/rtems.h.
+	* config/m68k/rtemself.h: Include config/rtems.h.
+	* config/mips/rtems64.h: Include config/rtems.h.
+	* config/pa/rtems.h: Include config/rtems.h.
+	* config/rs6000/rtems.h: Include config/rtems.h.
+	* config/sh/rtems.h: Include config/rtems.h.
+	* config/sh/rtemself.h: Include config/rtems.h.
+	* config/sparc/rtems.h: Include config/rtems.h.
+	* config/sparc/rtemself.h: Include config/rtems.h
+
 Tue Jan  4 23:59:26 2000  Denis Chertykov <denisc@overta.ru>
 
 	* final.c (shorten_branches): Correctly compute length of
