@@ -1,3 +1,7 @@
+2001-11-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* MAINTAINERS (GNATS only accounts): Remove self.
+
 2001-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (noconfigdirs) [h8300*-*-*, h8500-*-*]: Disable
