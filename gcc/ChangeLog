@@ -1,3 +1,26 @@
+2001-09-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_pool): Remove locks and locked.
+	(struct cpp_context): Add member buff.
+	(struct cpp_reader): Remove member argument_pool.
+	(_cpp_lock_pool, _cpp_unlock_pool): Remove.
+	* cppinit.c (cpp_create_reader, cpp_destroy): Argument_pool is dead.
+	* cpplex.c (chunk_suitable): Remove pool argument.
+	(MIN_BUFF_SIZE, BUFF_SIZE_UPPER_BOUND, EXTENDED_BUFF_SIZE): New.
+	(new_buff, _cpp_extend_buff): Update.
+	(_cpp_get_buff): Fix silly pointer bug.  Be more selective about
+	which buffer is returned.
+	(_cpp_next_chunk, _cpp_init_pool): Pool locking removed.
+	(_cpp_lock_pool, _cpp_unlock_pool): Remove.
+	* cppmacro.c (lock_pools, unlock_pools): Remove.
+	(push_ptoken_context): Take a _cpp_buff.
+	(enter_macro_context): Pool locking removed.
+	(replace_args): Use a _cpp_buff for the replacement list with
+	arguments replaced.
+	(push_token_context): Clear buff.
+	(expand_arg): Use _cpp_pop_context.
+	(_cpp_pop_context): Free a context's buffer, if any.
+
 2001-09-26  DJ Delorie  <dj@redhat.com>
 
 	* c-typeck.c (digest_init): Check for sizeless arrays.

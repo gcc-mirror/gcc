@@ -530,9 +530,6 @@ cpp_create_reader (table, lang)
   /* Identifier pool initially 8K.  Unaligned, permanent pool.  */
   _cpp_init_pool (&pfile->ident_pool, 8 * 1024, 1, 0);
 
-  /* Argument pool initially 8K.  Aligned, temporary pool.  */
-  _cpp_init_pool (&pfile->argument_pool, 8 * 1024, 0, 1);
-
   /* Macro pool initially 8K.  Aligned, permanent pool.  */
   _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
 
@@ -590,7 +587,6 @@ cpp_destroy (pfile)
 
   _cpp_free_pool (&pfile->ident_pool);
   _cpp_free_pool (&pfile->macro_pool);
-  _cpp_free_pool (&pfile->argument_pool);
   _cpp_free_buff (pfile->free_buffs);
 
   for (run = &pfile->base_run; run; run = runn)

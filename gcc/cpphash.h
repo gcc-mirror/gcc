@@ -66,10 +66,9 @@ struct cpp_chunk
 typedef struct cpp_pool cpp_pool;
 struct cpp_pool
 {
-  struct cpp_chunk *cur, *locked, *first;
+  struct cpp_chunk *cur, *first;
   unsigned char *pos;		/* Current position.  */
   unsigned int align;
-  unsigned int locks;
 };
 
 /* A generic memory buffer.  */
@@ -133,6 +132,10 @@ struct cpp_context
      e.g. macro expansions, expanded argument tokens.  */
   union utoken first;
   union utoken last;
+
+  /* If non-NULL, a buffer used for storage related to this context.
+     When the context is popped, the buffer is freed.  */
+  _cpp_buff *buff;
 
   /* For a macro context, these are the macro and its arguments.  */
   cpp_macro *macro;
@@ -267,7 +270,6 @@ struct cpp_reader
   cpp_pool ident_pool;		/* For all identifiers, and permanent
 				   numbers and strings.  */
   cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
-  cpp_pool argument_pool;	/* For macro arguments.  Temporary.   */
 
   /* Memory buffers.  */
   _cpp_buff *free_buffs;
@@ -436,8 +438,6 @@ extern unsigned char *_cpp_pool_reserve PARAMS ((cpp_pool *, unsigned int));
 extern unsigned char *_cpp_pool_alloc	PARAMS ((cpp_pool *, unsigned int));
 extern unsigned char *_cpp_next_chunk	PARAMS ((cpp_pool *, unsigned int,
 						 unsigned char **));
-extern void _cpp_lock_pool		PARAMS ((cpp_pool *));
-extern void _cpp_unlock_pool		PARAMS ((cpp_pool *));
 
 /* In cppinit.c.  */
 extern bool _cpp_push_next_buffer	PARAMS ((cpp_reader *));
