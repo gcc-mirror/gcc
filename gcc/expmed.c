@@ -77,14 +77,17 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 
 /* Reduce conditional compilation elsewhere.  */
 #ifndef HAVE_insv
+#define HAVE_insv	0
 #define CODE_FOR_insv	CODE_FOR_nothing
 #define gen_insv(a,b,c,d) NULL_RTX
 #endif
 #ifndef HAVE_extv
+#define HAVE_extv	0
 #define CODE_FOR_extv	CODE_FOR_nothing
 #define gen_extv(a,b,c,d) NULL_RTX
 #endif
 #ifndef HAVE_extzv
+#define HAVE_extzv	0
 #define CODE_FOR_extzv	CODE_FOR_nothing
 #define gen_extzv(a,b,c,d) NULL_RTX
 #endif
@@ -232,34 +235,31 @@ mode_for_extraction (pattern, opno)
   switch (pattern)
     {
     case EP_insv:
-#ifdef HAVE_insv
       if (HAVE_insv)
 	{
 	  data = &insn_data[CODE_FOR_insv];
 	  break;
 	}
-#endif
       return MAX_MACHINE_MODE;
 
     case EP_extv:
-#ifdef HAVE_extv
       if (HAVE_extv)
 	{
 	  data = &insn_data[CODE_FOR_extv];
 	  break;
 	}
-#endif
       return MAX_MACHINE_MODE;
 
     case EP_extzv:
-#ifdef HAVE_extzv
       if (HAVE_extzv)
 	{
 	  data = &insn_data[CODE_FOR_extzv];
 	  break;
 	}
-#endif
       return MAX_MACHINE_MODE;
+
+    default:
+      abort ();
     }
 
   if (opno == -1)
@@ -304,12 +304,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   register rtx op0 = str_rtx;
 
-  unsigned HOST_WIDE_INT insv_bitsize;
-  enum machine_mode op_mode;
-
-  op_mode = mode_for_extraction (EP_insv, 3);
-  if (op_mode != MAX_MACHINE_MODE)
-    insv_bitsize = GET_MODE_BITSIZE (op_mode);
+  enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
 
   /* It is wrong to have align==0, since every object is aligned at
      least at a bit boundary.  This usually means a bug elsewhere.  */
@@ -542,13 +537,13 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */
 
-  if (op_mode != MAX_MACHINE_MODE
+  if (HAVE_insv
       && GET_MODE (value) != BLKmode
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
-      && (insv_bitsize >= bitsize)
+      && (GET_MODE_BITSIZE (op_mode) >= bitsize)
       && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos > insv_bitsize)))
+	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
     {
       int xbitpos = bitpos;
       rtx value1;
@@ -1042,18 +1037,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
   enum machine_mode int_mode;
-  unsigned HOST_WIDE_INT extv_bitsize;
-  enum machine_mode extv_mode;
-  unsigned HOST_WIDE_INT extzv_bitsize;
-  enum machine_mode extzv_mode;
-
-  extv_mode = mode_for_extraction (EP_extv, 0);
-  if (extv_mode != MAX_MACHINE_MODE)
-    extv_bitsize = GET_MODE_BITSIZE (extv_mode);
-
-  extzv_mode = mode_for_extraction (EP_extzv, 0);
-  if (extzv_mode != MAX_MACHINE_MODE)
-    extzv_bitsize = GET_MODE_BITSIZE (extzv_mode);
+  enum machine_mode extv_mode = mode_for_extraction (EP_extv, 0);
+  enum machine_mode extzv_mode = mode_for_extraction (EP_extzv, 0);
 
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
@@ -1287,10 +1272,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
   if (unsignedp)
     {
-      if (extzv_mode != MAX_MACHINE_MODE
-	  && (extzv_bitsize >= bitsize)
+      if (HAVE_extzv
+	  && (GET_MODE_BITSIZE (extzv_mode) >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos > extzv_bitsize)))
+		&& (bitsize + bitpos > GET_MODE_BITSIZE (extzv_mode))))
 	{
 	  unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
@@ -1420,10 +1405,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     }
   else
     {
-      if (extv_mode != MAX_MACHINE_MODE
-	  && (extv_bitsize >= bitsize)
+      if (HAVE_extv
+	  && (GET_MODE_BITSIZE (extv_mode) >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos > extv_bitsize)))
+		&& (bitsize + bitpos > GET_MODE_BITSIZE (extv_mode))))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
