@@ -247,13 +247,13 @@ end_directive (pfile, skip_line)
 {
   cpp_buffer *buffer = pfile->buffer;
 
-  /* Restore pfile->skipping before skip_rest_of_line.  This avoids
-     warning about poisoned identifiers in skipped #error lines.  */
-  pfile->skipping = buffer->was_skipping;
-
   /* We don't skip for an assembler #.  */
   if (skip_line)
     skip_rest_of_line (pfile);
+
+  /* Restore pfile->skipping after skip_rest_of_line.  Otherwise the
+     lexer might not return!  */
+  pfile->skipping = buffer->was_skipping;
 
   /* Restore state.  */
   pfile->la_write = pfile->la_saved;

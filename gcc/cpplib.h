@@ -498,10 +498,8 @@ struct cpp_reader
   /* Lexer state.  */
   struct lexer_state state;
 
-  /* The position of the last lexed token, last lexed directive, and
-     last macro invocation.  */
+  /* The position of the last lexed token and last lexed directive.  */
   cpp_lexer_pos lexer_pos;
-  cpp_lexer_pos macro_pos;
   cpp_lexer_pos directive_pos;
 
   /* Memory pools.  */
