@@ -390,7 +390,10 @@ alloc_class_constant (clas)
 static tree
 build_constant_data_ref ()
 {
-  if (current_constant_pool_data_ref == NULL_TREE)
+  if (TYPE_CPOOL_DATA_REF (current_class))
+    current_constant_pool_data_ref = TYPE_CPOOL_DATA_REF (current_class);
+
+  else if (current_constant_pool_data_ref == NULL_TREE)
     {
       tree decl;
       tree decl_name = mangled_classname ("_CD_", current_class);
@@ -401,7 +404,7 @@ build_constant_data_ref ()
       TREE_STATIC (decl) = 1;
       make_decl_rtl (decl, NULL, 1);
       pop_obstacks ();
-      current_constant_pool_data_ref
+      TYPE_CPOOL_DATA_REF (current_class) = current_constant_pool_data_ref
 	= build1 (ADDR_EXPR, ptr_type_node, decl);
     }
   return current_constant_pool_data_ref;

@@ -940,11 +940,10 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    pop_argument_types (TYPE_ARG_TYPES (method_type));
 
 	    /* Can't invoke <clinit> */
-	    if (method_name == clinit_identifier_node)
+	    if (ID_CLINIT_P (method_name))
 	      VERIFICATION_ERROR ("invoke opcode can't invoke <clinit>");
 	    /* Apart invokespecial, can't invoke <init> */
-	    if (op_code != OPCODE_invokespecial
-		&& method_name == init_identifier_node)
+	    if (op_code != OPCODE_invokespecial && ID_INIT_P (method_name))
 	      VERIFICATION_ERROR ("invoke opcode can't invoke <init>");
 
 	    if (op_code != OPCODE_invokestatic)

@@ -35,6 +35,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "buffer.h"
 #include "toplev.h"
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 extern struct obstack temporary_obstack;
 
 /* Base directory in which `.class' files should be written.
@@ -335,6 +339,9 @@ static void emit_goto PARAMS ((struct jcf_block *, struct jcf_partial *));
 static void emit_jsr PARAMS ((struct jcf_block *, struct jcf_partial *));
 static void call_cleanups PARAMS ((struct jcf_block *, struct jcf_partial *));
 static char *make_class_file_name PARAMS ((tree));
+static unsigned char *append_synthetic_attribute PARAMS ((struct jcf_partial *));
+static void append_innerclasses_attribute PARAMS ((struct jcf_partial *, tree));
+static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, tree, tree));
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
@@ -665,6 +672,11 @@ get_access_flags (decl)
 	flags |= ACC_ABSTRACT;
       if (CLASS_INTERFACE (decl))
 	flags |= ACC_INTERFACE;
+      if (CLASS_STATIC (decl))
+	flags |= ACC_STATIC;
+      if (ANONYMOUS_CLASS_P (TREE_TYPE (decl))
+	  || LOCAL_CLASS_P (TREE_TYPE (decl)))
+	flags |= ACC_PRIVATE;
     }
   else
     fatal ("internal error - bad argument to get_access_flags");
@@ -1159,8 +1171,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
       }
       break;
     case TRUTH_NOT_EXPR:
-      generate_bytecode_conditional (TREE_OPERAND (exp, 0), 
-				     false_label, true_label,
+      generate_bytecode_conditional (TREE_OPERAND (exp, 0), false_label, true_label,
 				     ! true_branch_first, state);
       break;
     case TRUTH_ANDIF_EXPR:
@@ -1238,7 +1249,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	    }
 	  if (integer_zerop (exp1) || integer_zerop (exp0))
 	    {
-	      generate_bytecode_insns (integer_zerop (exp1) ? exp0 : exp1,
+	      generate_bytecode_insns (integer_zerop (exp1) ? exp0 : exp0,
 				       STACK_TARGET, state);
 	      op = op + (OPCODE_ifnull - OPCODE_if_acmpeq);
 	      negop = (op & 1) ? op - 1 : op + 1;
@@ -1622,7 +1633,6 @@ generate_bytecode_insns (exp, target, state)
 	define_jcf_label (else_label, state);
 	generate_bytecode_insns (TREE_OPERAND (exp, 2), target, state);
 	define_jcf_label (end_label, state);
-
 	/* COND_EXPR can be used in a binop. The stack must be adjusted. */
 	if (TREE_TYPE (exp) != void_type_node)
 	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
@@ -2131,6 +2141,9 @@ generate_bytecode_insns (exp, target, state)
 	OP2 (index);
       }
       break;
+    case SAVE_EXPR:
+      generate_bytecode_insns (TREE_OPERAND (exp, 0), STACK_TARGET, state);
+      break;
     case CONVERT_EXPR:
     case NOP_EXPR:
     case FLOAT_EXPR:
@@ -2535,11 +2548,6 @@ generate_bytecode_insns (exp, target, state)
 	    else
 	      OP1 (OPCODE_invokevirtual);
 	    OP2 (index);
-	    if (interface)
-	      {
-		OP1 (nargs);
-		OP1 (0);
-	      }
 	    f = TREE_TYPE (TREE_TYPE (f));
 	    if (TREE_CODE (f) != VOID_TYPE)
 	      {
@@ -2548,6 +2556,11 @@ generate_bytecode_insns (exp, target, state)
 		  emit_pop (size, state);
 		else
 		  NOTE_PUSH (size);
+	      }
+	    if (interface)
+	      {
+		OP1 (nargs);
+		OP1 (0);
 	      }
 	    break;
 	  }
@@ -2836,16 +2849,24 @@ generate_classfile (clas, state)
 
   for (part = TYPE_FIELDS (clas);  part;  part = TREE_CHAIN (part))
     {
-      int have_value;
+      int have_value, attr_count = 0;
       if (DECL_NAME (part) == NULL_TREE || DECL_ARTIFICIAL (part))
 	continue;
       ptr = append_chunk (NULL, 8, state);
       i = get_access_flags (part);  PUT2 (i);
       i = find_utf8_constant (&state->cpool, DECL_NAME (part));  PUT2 (i);
-      i = find_utf8_constant (&state->cpool, build_java_signature (TREE_TYPE (part)));
+      i = find_utf8_constant (&state->cpool, 
+			      build_java_signature (TREE_TYPE (part)));
       PUT2(i);
-      have_value = DECL_INITIAL (part) != NULL_TREE && FIELD_STATIC (part);
-      PUT2 (have_value);  /* attributes_count */
+      have_value = DECL_INITIAL (part) != NULL_TREE && FIELD_STATIC (part)
+	&& TREE_CODE (TREE_TYPE (part)) != POINTER_TYPE;
+      if (have_value)
+	attr_count++;
+
+      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part))
+	attr_count++;
+
+      PUT2 (attr_count);  /* attributes_count */
       if (have_value)
 	{
 	  tree init = DECL_INITIAL (part);
@@ -2858,6 +2879,9 @@ generate_classfile (clas, state)
 	  PUT4 (2); /* attribute_length */
 	  i = find_constant_index (init, state);  PUT2 (i);
 	}
+      /* Emit the "Synthetic" attribute for val$<x> and this$<n> fields. */
+      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part))
+	ptr = append_synthetic_attribute (state);
       fields_count++;
     }
   ptr = fields_count_ptr;  UNSAFE_PUT2 (fields_count);
@@ -2875,6 +2899,7 @@ generate_classfile (clas, state)
 	: DECL_NAME (part);
       tree type = TREE_TYPE (part);
       tree save_function = current_function_decl;
+      int synthetic_p = 0;
       current_function_decl = part;
       ptr = append_chunk (NULL, 8, state);
       i = get_access_flags (part);  PUT2 (i);
@@ -2882,7 +2907,20 @@ generate_classfile (clas, state)
       i = find_utf8_constant (&state->cpool, build_java_signature (type));
       PUT2 (i);
       i = (body != NULL_TREE) + (DECL_FUNCTION_THROWS (part) != NULL_TREE);
+
+      /* Make room for the Synthetic attribute (of zero length.)  */
+      if (DECL_FINIT_P (part) 
+	  || OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part)))
+	{
+	  i++;
+	  synthetic_p = 1;
+	}
+
       PUT2 (i);   /* attributes_count */
+
+      if (synthetic_p)
+	ptr = append_synthetic_attribute (state);
+
       if (body != NULL_TREE)
 	{
 	  int code_attributes_count = 0;
@@ -2956,7 +2994,8 @@ generate_classfile (clas, state)
 	  if (state->linenumber_count > 0)
 	    {
 	      static tree LineNumberTable_node = NULL_TREE;
-	      ptr = append_chunk (NULL, 8 + 4 * state->linenumber_count, state);
+	      ptr = append_chunk (NULL, 
+				  8 + 4 * state->linenumber_count, state);
 	      if (LineNumberTable_node == NULL_TREE)
 		LineNumberTable_node = get_identifier ("LineNumberTable");
 	      i = find_utf8_constant (&state->cpool, LineNumberTable_node);
@@ -3031,7 +3070,10 @@ generate_classfile (clas, state)
 	source_file = ptr+1;
     }
   ptr = append_chunk (NULL, 10, state);
-  PUT2 (1);  /* attributes_count */
+
+  i = ((INNER_CLASS_TYPE_P (clas) 
+	|| DECL_INNER_CLASS_LIST (TYPE_NAME (clas))) ? 2 : 1);
+  PUT2 (i);			/* attributes_count */
 
   /* generate the SourceFile attribute. */
   if (SourceFile_node == NULL_TREE) 
@@ -3041,6 +3083,7 @@ generate_classfile (clas, state)
   PUT4 (2);
   i = find_utf8_constant (&state->cpool, get_identifier (source_file));
   PUT2 (i);
+  append_innerclasses_attribute (state, clas);
 
   /* New finally generate the contents of the constant pool chunk. */
   i = count_constant_pool_bytes (&state->cpool);
@@ -3049,6 +3092,103 @@ generate_classfile (clas, state)
   cpool_chunk->size = i;
   write_constant_pool (&state->cpool, ptr, i);
   return state->first;
+}
+
+static unsigned char *
+append_synthetic_attribute (state)
+     struct jcf_partial *state;
+{
+  static tree Synthetic_node = NULL_TREE;
+  unsigned char *ptr = append_chunk (NULL, 6, state);
+  int i;
+
+  if (Synthetic_node == NULL_TREE)
+    Synthetic_node = get_identifier ("Synthetic");
+  i = find_utf8_constant (&state->cpool, Synthetic_node);
+  PUT2 (i);		/* Attribute string index */
+  PUT4 (0);		/* Attribute length */
+
+  return ptr;
+}
+
+static void
+append_innerclasses_attribute (state, class)
+     struct jcf_partial *state;
+     tree class;
+{
+  static tree InnerClasses_node = NULL_TREE;
+  tree orig_decl = TYPE_NAME (class);
+  tree current, decl;
+  int length = 0, i;
+  unsigned char *ptr, *length_marker, *number_marker;
+
+  if (!INNER_CLASS_TYPE_P (class) && !DECL_INNER_CLASS_LIST (orig_decl))
+    return;
+
+  ptr = append_chunk (NULL, 8, state); /* 2+4+2 */
+  
+  if (InnerClasses_node == NULL_TREE)
+    InnerClasses_node = get_identifier ("InnerClasses");
+  i = find_utf8_constant (&state->cpool, InnerClasses_node);
+  PUT2 (i);
+  length_marker = ptr; PUT4 (0); /* length, to be later patched */
+  number_marker = ptr; PUT2 (0); /* number of classes, tblp */
+
+  /* Generate the entries: all inner classes visible from the one we
+     process: itself, up and down. */
+  while (class && INNER_CLASS_TYPE_P (class))
+    {
+      char *n;
+
+      decl = TYPE_NAME (class);
+      n = IDENTIFIER_POINTER (DECL_NAME (decl)) + 
+	IDENTIFIER_LENGTH (DECL_NAME (decl));
+
+      while (n[-1] != '$')
+	n--;
+      append_innerclasses_attribute_entry (state, decl, get_identifier (n));
+      length++;
+
+      class = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (class)));
+    }
+
+  decl = orig_decl;
+  for (current = DECL_INNER_CLASS_LIST (decl); 
+       current; current = TREE_CHAIN (current))
+    {
+      append_innerclasses_attribute_entry (state, TREE_PURPOSE (current),
+					   TREE_VALUE (current));
+      length++;
+    }
+  
+  ptr = length_marker; PUT4 (8*length+2);
+  ptr = number_marker; PUT2 (length);
+}
+
+static void
+append_innerclasses_attribute_entry (state, decl, name)
+     struct jcf_partial *state;
+     tree decl, name;
+{
+  static tree anonymous_name = NULL_TREE;
+  int icii, ocii, ini, icaf;
+  unsigned char *ptr = append_chunk (NULL, 8, state);
+
+  if (!anonymous_name)
+    anonymous_name = get_identifier ("");
+  
+  icii = find_class_constant (&state->cpool, TREE_TYPE (decl));
+  ocii = find_class_constant (&state->cpool, TREE_TYPE (DECL_CONTEXT (decl))); 
+
+  /* The specs are saying that if the class is anonymous,
+     inner_name_index must be zero. But the implementation makes it
+     point to an empty string. */
+  ini = find_utf8_constant (&state->cpool,
+			    (ANONYMOUS_CLASS_P (TREE_TYPE (decl)) ? 
+			     anonymous_name : name));
+  icaf = get_access_flags (decl);
+  
+  PUT2 (icii); PUT2 (ocii); PUT2 (ini);  PUT2 (icaf);
 }
 
 static char *

@@ -22,6 +22,13 @@ DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", '1', 1)
    Once patched, the node will bear the type of the created array.  */
 DEFTREECODE (NEW_ARRAY_EXPR, "new_array_expr", 'e', 3)
 
+/* New anonymous array creation expression.
+   Operand 0 is the base type of the anonymous array.
+   Operand 1 is the signature of the dimensions this array contains.
+   Operand 2 is the anonymous array initializer.
+   Once patched, the node will bear the type of the created array.  */
+DEFTREECODE (NEW_ANONYMOUS_ARRAY_EXPR, "new_anonymous_array", 'e', 3)
+
 /* New class creation expression.
    Operand 0 is the name of the class to be created
    Operand 1 is the argument list used to select a constructor.
@@ -75,3 +82,14 @@ DEFTREECODE (INSTANCEOF_EXPR, "instanceof", 'e', 2)
    when the node is created.
    Operand 1 is a CONSTRUCTOR node.  */
 DEFTREECODE (NEW_ARRAY_INIT, "new_array_init", '1', 1)
+
+/* Class literal.
+   Operand 0 is the name of the class we're trying to build a
+   reference from.  */
+DEFTREECODE (CLASS_LITERAL, "class_litteral", '1', 1)
+
+/* Instance initializer.
+   Operand 0 contains the intance initializer statement. This tree node
+   is used for context detection, so that special rules can be
+   enforced. */
+DEFTREECODE (INSTANCE_INITIALIZERS_EXPR, "instance_initializers_expr", '1', 1)

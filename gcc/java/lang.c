@@ -413,7 +413,7 @@ put_decl_node (node)
 	}
 #endif
       if (TREE_CODE (node) == FUNCTION_DECL
-	  && DECL_NAME (node) == init_identifier_node
+	  && DECL_INIT_P (node)
 	  && !DECL_ARTIFICIAL (node) && current_class)
 	put_decl_node (TYPE_NAME (current_class));
       else

@@ -1263,6 +1263,16 @@ lookup_field (typep, name)
 	if (DECL_NAME (field) == name)
 	  return field;
 
+      /* If *typep is an innerclass, lookup the field in its enclosing
+         contexts */
+      if (INNER_CLASS_TYPE_P (*typep))
+	{
+	  tree outer_type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (*typep)));
+
+	  if ((field = lookup_field (&outer_type, name)))
+	    return field;
+	}
+
       /* Process implemented interfaces. */
       basetype_vec = TYPE_BINFO_BASETYPES (*typep);
       n = TREE_VEC_LENGTH (basetype_vec);
@@ -1721,7 +1731,7 @@ expand_invoke (opcode, method_ref_index, nargs)
     }
   layout_class_methods (self_type);
 
-  if (method_name == init_identifier_node)
+  if (ID_INIT_P (method_name))
     method = lookup_java_constructor (CLASS_TO_HANDLE_TYPE (self_type),
 				      method_signature);
   else
@@ -1881,7 +1891,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 		     "assignment to final field `%s' not in field's class");
 	  else if (FIELD_STATIC (field_decl))
 	    {
-	      if (!IS_CLINIT (current_function_decl))
+	      if (!DECL_CLINIT_P (current_function_decl))
 		error_with_decl (field_decl, 
              "assignment to final static field `%s' not in class initializer");
 	    }
@@ -2013,10 +2023,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	if (TREE_CONSTANT (init)
 	    && ilength >= 10 && JPRIMITIVE_TYPE_P (element_type))
 	  {
-	    tree init_decl;
-	    push_obstacks (&permanent_obstack, &permanent_obstack);
-	    init_decl = build_decl (VAR_DECL, generate_name (),
-				    TREE_TYPE (init));
+	    tree init_decl = build_decl (VAR_DECL, generate_name (),
+					 TREE_TYPE (init));
 	    pushdecl_top_level (init_decl);
 	    TREE_STATIC (init_decl) = 1;
 	    DECL_INITIAL (init_decl) = init;
@@ -2024,7 +2032,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    TREE_READONLY (init_decl) = 1;
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    make_decl_rtl (init_decl, NULL, 1);
-	    pop_obstacks ();
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),

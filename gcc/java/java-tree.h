@@ -41,10 +41,13 @@ struct JCF;
 /* Usage of TREE_LANG_FLAG_?:
    0: IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (in IDENTIFIER_NODE)
       RESOLVE_EXPRESSION_NAME_P (in EXPR_WITH_FILE_LOCATION)
-      IS_FOR_LOOP_P (in LOOP_EXPR)
+      FOR_LOOP_P (in LOOP_EXPR)
+      ANONYMOUS_CLASS_P (in RECORD_TYPE)
+      ARG_FINAL_P (in TREE_LIST)
    1: CLASS_HAS_SUPER_FLAG (in TREE_VEC).
       IS_A_CLASSFILE_NAME (in IDENTIFIER_NODE)
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
+      LOCAL_CLASS_P (in RECORD_TYPE)
    2: RETURN_MAP_ADJUSTED (in TREE_VEC).
       QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
@@ -59,15 +62,17 @@ struct JCF;
       IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
       IS_INIT_CHECKED (in SAVE_EXPR)
-   6: CAN_COMPLETE_NORMALLY (in statement nodes).
+   6: CAN_COMPLETE_NORMALLY (in statement nodes)
+      OUTER_FIELD_ACCESS_IDENTIFIER_P (in IDENTIFIER_NODE)
 
    Usage of TYPE_LANG_FLAG_?:
+   0: CLASS_ACCESS0_GENERATED_P (in RECORD_TYPE)
    1: TYPE_ARRAY_P (in RECORD_TYPE).
    2: CLASS_LOADED_P (in RECORD_TYPE).
    3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
    4: CLASS_P (in RECORD_TYPE).
    5: CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (in RECORD_TYPE)
-   6: CLASS_HAS_FINIT_P (in RECORD_TYPE)
+   6: CLASS_BEING_LAIDOUT (in RECORD_TYPE)
 
    Usage of DECL_LANG_FLAG_?:
    0: METHOD_DEPRECATED (in FUNCTION_DECL).
@@ -82,6 +87,7 @@ struct JCF;
    3: METHOD_FINAL (in FUNCTION_DECL)
       FIELD_FINAL (in FIELD_DECL)
       CLASS_FINAL (in TYPE_DECL)
+      LOCAL_FINAL (in VAR_DECL)
    4: METHOD_SYNCHRONIZED (in FUNCTION_DECL).
       LABEL_IN_SUBR (in LABEL_DECL)
       CLASS_INTERFACE (in TYPE_DECL)
@@ -93,7 +99,11 @@ struct JCF;
    6: METHOD_TRANSIENT (in FUNCTION_DECL)
       LABEL_CHANGED (in LABEL_DECL)
       CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
+      FIELD_LOCAL_ALIAS (in FIELD_DECL)
    7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL).
+      CLASS_STATIC (in TYPE_DECL)
+      FIELD_LOCAL_ALIAS_USED (in FIELD_DECL)
+      FIELD_THISN (in FIELD_DECL)
 */
 
 /* True if the class whose TYPE_BINFO this is has a superclass.
@@ -230,6 +240,7 @@ extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
 extern tree super_identifier_node;  /* "super" */
 extern tree continue_identifier_node;  /* "continue" */
+extern tree access0_identifier_node; /* "access$0" */
 extern tree one_elt_array_domain_type;
 /* The type of the return address of a subroutine. */
 extern tree return_address_type_node;
@@ -296,6 +307,10 @@ extern struct CPool *outgoing_cpool;
 extern tree current_constant_pool_data_ref;
 
 extern tree wfl_operator;
+
+extern char *cyclic_inheritance_report;
+
+extern char *cyclic_inheritance_report;
 
 struct lang_identifier
 {
@@ -368,6 +383,14 @@ struct lang_identifier
    calls */
 #define DECL_CONSTRUCTOR_CALLS(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->called_constructor)
+/* When the function is an access function, the DECL it was trying to
+   access */
+#define DECL_FUNCTION_ACCESS_DECL(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->called_constructor)
+/* The identifier of the access method used to invoke this method from
+   an inner class.  */
+#define DECL_FUNCTION_INNER_ACCESS(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->inner_access)
 /* Pointer to the function's current's COMPOUND_EXPR tree (while
    completing its body) or the function's block */
 #define DECL_FUNCTION_BODY(DECL) (DECL_LANG_SPECIFIC(DECL)->function_decl_body)
@@ -380,6 +403,27 @@ struct lang_identifier
    class has been initialized in this function, and FALSE otherwise.  */
 #define DECL_FUNCTION_INIT_TEST_TABLE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->init_test_table)
+/* The Number of Artificial Parameters (NAP) DECL contains. this$<n>
+   is excluded, because sometimes created as a parameter before the
+   function decl exists. */
+#define DECL_FUNCTION_NAP(DECL) (DECL_LANG_SPECIFIC(DECL)->nap)
+
+/* For a FIELD_DECL, holds the name of the access method used to
+   read/write the content of the field from an inner class. 
+   The cast is ugly. FIXME  */
+#define FIELD_INNER_ACCESS(DECL)       ((tree)DECL_LANG_SPECIFIC (DECL))
+
+/* True when DECL aliases an outer context local variable.  */
+#define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (DECL)
+
+/* True when DECL, which aliases an outer context local variable is
+   used by the inner classe */
+#define FIELD_LOCAL_ALIAS_USED(DECL) DECL_LANG_FLAG_7 (DECL)
+
+/* True when DECL is a this$<n> field. Note that
+   FIELD_LOCAL_ALIAS_USED can be differenciated when tested against
+   FIELD_LOCAL_ALIAS.  */
+#define FIELD_THISN(DECL) DECL_LANG_FLAG_7 (DECL)
 
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
 #define LABEL_TYPE_STATE(NODE) (DECL_INITIAL (NODE))
@@ -461,7 +505,10 @@ struct lang_decl
   tree called_constructor;	/* When decl is a constructor, the
 				   list of other constructor it calls. */
   struct hash_table init_test_table;
-                                /* Class initialization test variables.  */
+				/* Class initialization test variables.  */
+  tree inner_access;		/* The identifier of the access method
+				   used for invocation from inner classes */
+  int nap;			/* Number of artificial parameters */
 };
 
 /* init_test_table hash table entry structure.  */
@@ -470,7 +517,6 @@ struct init_test_hash_entry
   struct hash_entry root;
   tree init_test_decl;
 };
-
 
 /* DECL_LANG_SPECIFIC for VAR_DECL and PARM_DECL. */
 struct lang_decl_var
@@ -481,10 +527,32 @@ struct lang_decl_var
   tree slot_chain;
 };
 
+/* Macro to access fields in `struct lang_type'.  */
+
+#define TYPE_SIGNATURE(T) (TYPE_LANG_SPECIFIC(T)->signature)
+#define TYPE_JCF(T) (TYPE_LANG_SPECIFIC(T)->jcf)
+#define TYPE_CPOOL(T) (TYPE_LANG_SPECIFIC(T)->cpool)
+#define TYPE_CPOOL_DATA_REF(T) (TYPE_LANG_SPECIFIC(T)->cpool_data_ref)
+#define MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC(T)				\
+  if (TYPE_LANG_SPECIFIC ((T)) == NULL)					\
+    {									\
+      TYPE_LANG_SPECIFIC ((T)) = 					\
+	(struct lang_type *)xmalloc (sizeof (struct lang_type));	\
+      bzero (TYPE_LANG_SPECIFIC ((T)), sizeof (struct lang_type));	\
+    }
+#define TYPE_FINIT_STMT_LIST(T)  (TYPE_LANG_SPECIFIC(T)->finit_stmt_list)
+#define TYPE_CLINIT_STMT_LIST(T) (TYPE_LANG_SPECIFIC(T)->clinit_stmt_list)
+#define TYPE_II_STMT_LIST(T)     (TYPE_LANG_SPECIFIC(T)->ii_block)
+
 struct lang_type
 {
   tree signature;
   struct JCF *jcf;
+  struct CPool *cpool;
+  tree cpool_data_ref;		/* Cached */
+  tree finit_stmt_list;		/* List of statements $finit$ will use */
+  tree clinit_stmt_list;	/* List of statements <clinit> will use  */
+  tree ii_block;		/* Instance initializer block */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -590,6 +658,7 @@ extern void set_super_info PARAMS ((int, tree, tree, int));
 extern int get_access_flags_from_decl PARAMS ((tree));
 extern int interface_of_p PARAMS ((tree, tree));
 extern int inherits_from_p PARAMS ((tree, tree));
+extern int enclosing_context_p PARAMS ((tree, tree));
 extern void complete_start_java_method PARAMS ((tree));
 extern tree build_result_decl PARAMS ((tree));
 extern void emit_handlers PARAMS ((void));
@@ -690,7 +759,19 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define METHOD_TRANSIENT(DECL) DECL_LANG_FLAG_6 (DECL)
 
+/* Other predicates on method decls  */
+
 #define DECL_CONSTRUCTOR_P(DECL) DECL_LANG_FLAG_7(DECL)
+
+#define DECL_INIT_P(DECL)   (ID_INIT_P (DECL_NAME (DECL)))
+#define DECL_FINIT_P(DECL)  (ID_FINIT_P (DECL_NAME (DECL)))
+#define DECL_CLINIT_P(DECL) (ID_CLINIT_P (DECL_NAME (DECL)))
+
+/* Predicates on method identifiers. Kept close to other macros using
+   them  */
+#define ID_INIT_P(ID)   ((ID) == init_identifier_node)
+#define ID_FINIT_P(ID)  ((ID) == finit_identifier_node)
+#define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
 
 /* Access flags etc for a variable/field (a FIELD_DECL): */
 
@@ -701,6 +782,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define FIELD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 #define FIELD_VOLATILE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define FIELD_TRANSIENT(DECL) DECL_LANG_FLAG_5 (DECL)
+#define LOCAL_FINAL(DECL) FIELD_FINAL(DECL)
 
 /* Access flags etc for a class (a TYPE_DECL): */
 
@@ -709,6 +791,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define CLASS_INTERFACE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define CLASS_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define CLASS_SUPER(DECL) DECL_LANG_FLAG_6 (DECL)
+#define CLASS_STATIC(DECL) DECL_LANG_FLAG_7 (DECL)
 
 /* @deprecated marker flag on methods, fields and classes */
 
@@ -794,6 +877,9 @@ extern tree *type_map;
 #define TYPE_IS_WIDE(TYPE) \
   ((TYPE) == double_type_node || (TYPE) == long_type_node)
 
+/* True iif CLASS has it's access$0 method generated.  */
+#define CLASS_ACCESS0_GENERATED_P(CLASS) TYPE_LANG_FLAG_0 (CLASS)
+
 /* True iff TYPE is a Java array type. */
 #define TYPE_ARRAY_P(TYPE) TYPE_LANG_FLAG_1 (TYPE)
 
@@ -817,8 +903,18 @@ extern tree *type_map;
 #define CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P(TYPE) \
   TYPE_LANG_FLAG_5 (TYPE)
 
+/* True if class TYPE is currently being laid out. Helps in detection
+   of inheritance cycle occuring as a side effect of performing the
+   layout of a class.  */
+#define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
+
+/* True if class TYPE is currently being laid out. Helps in detection
+   of inheritance cycle occuring as a side effect of performing the
+   layout of a class.  */
+#define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
+
 /* True if class TYPE has a field initializer $finit$ function */
-#define CLASS_HAS_FINIT_P(TYPE) TYPE_LANG_FLAG_6 (TYPE)
+#define CLASS_HAS_FINIT_P(TYPE) TYPE_FINIT_STMT_LIST (TYPE)
 
 /* True if identifier ID was seen while processing a single type import stmt */
 #define IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P(ID) TREE_LANG_FLAG_0 (ID)
@@ -856,7 +952,17 @@ extern tree *type_map;
 #define RESOLVE_EXPRESSION_NAME_P(WFL) TREE_LANG_FLAG_0 (WFL)
 
 /* True if EXPR (a LOOP_EXPR in that case) is part of a for statement */
-#define IS_FOR_LOOP_P(EXPR) TREE_LANG_FLAG_0 (EXPR)
+#define FOR_LOOP_P(EXPR) TREE_LANG_FLAG_0 (EXPR)
+
+/* True if NODE (a RECORD_TYPE in that case) is an anonymous class.  */
+#define ANONYMOUS_CLASS_P(NODE) TREE_LANG_FLAG_0 (NODE)
+
+/* True if NODE (a RECORD_TYPE in that case) is a block local class.  */
+#define LOCAL_CLASS_P(NODE) TREE_LANG_FLAG_1 (NODE)
+
+/* True if NODE (a TREE_LIST) hold a pair of argument name/type
+   declared with the final modifier */
+#define ARG_FINAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* True if EXPR (a WFL in that case) resolves into a package name */
 #define RESOLVE_PACKAGE_NAME_P(WFL) TREE_LANG_FLAG_3 (WFL)
@@ -879,6 +985,49 @@ extern tree *type_map;
 
 /* True if NODE (a statement) can complete normally. */
 #define CAN_COMPLETE_NORMALLY(NODE) TREE_LANG_FLAG_6(NODE)
+
+/* True if NODE (an IDENTIFIER) bears the name of a outer field from
+   inner class access function.  */
+#define OUTER_FIELD_ACCESS_IDENTIFIER_P(NODE) TREE_LANG_FLAG_6(NODE)
+
+/* Non null if NODE belongs to an inner class TYPE_DECL node.
+   Verifies that NODE as the attributes of a decl.  */
+#define INNER_CLASS_DECL_P(NODE) (TYPE_NAME (TREE_TYPE (NODE)) == NODE	\
+				  && DECL_CONTEXT (NODE))
+
+/* Non null if NODE is an top level class TYPE_DECL node: NODE isn't
+   an inner class or NODE is a static class.  */
+#define TOPLEVEL_CLASS_DECL_P(NODE) (!INNER_CLASS_DECL_P (NODE) 	\
+				     || CLASS_STATIC (NODE))
+
+/* True if the class decl NODE was declared in a inner scope and is
+   not a toplevel class */
+#define PURE_INNER_CLASS_DECL_P(NODE) \
+  (INNER_CLASS_DECL_P (NODE) && !CLASS_STATIC (NODE))
+
+/* Non null if NODE belongs to an inner class RECORD_TYPE node. Checks
+   that TYPE_NAME bears a decl. An array type wouldn't.  */
+#define INNER_CLASS_TYPE_P(NODE) (TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL \
+				  && DECL_CONTEXT (TYPE_NAME (NODE)))
+
+#define TOPLEVEL_CLASS_TYPE_P(NODE) (!INNER_CLASS_TYPE_P (NODE) 	\
+				     || CLASS_STATIC (TYPE_NAME (NODE)))
+
+/* True if the class type NODE was declared in a inner scope and is
+   not a toplevel class */
+#define PURE_INNER_CLASS_TYPE_P(NODE) \
+  (INNER_CLASS_TYPE_P (NODE) && !CLASS_STATIC (TYPE_NAME (NODE)))
+
+/* Non null if NODE (a TYPE_DECL or a RECORD_TYPE) is an inner class.  */
+#define INNER_CLASS_P(NODE) (TREE_CODE (NODE) == TYPE_DECL ? 		      \
+			     INNER_CLASS_DECL_P (NODE) :		      \
+			     (TREE_CODE (NODE) == RECORD_TYPE ? 	      \
+			      INNER_CLASS_TYPE_P (NODE) : 		      \
+			      (fatal ("INNER_CLASS_P: Wrong node type"), 0)))
+
+/* On a TYPE_DECL, hold the list of inner classes defined within the
+   scope of TYPE_DECL.  */
+#define DECL_INNER_CLASS_LIST(NODE) DECL_INITIAL (NODE)
 
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
    The field has name NAME (a char*), and type FTYPE.

@@ -374,13 +374,9 @@ check_init (exp, before)
 	  int index = DECL_BIT_INDEX (exp);
 	  if (index >= 0 && ! SET_P (before, index))
 	    {
-#if 1
-	      parse_error_context (wfl,
-				   "Variable `%s' may not have been initialized"
-				   , IDENTIFIER_POINTER (DECL_NAME (exp)));
-#else
-	      error_with_decl (exp, "variable may be used uninitialized");
-#endif
+	      parse_error_context 
+		(wfl, "Variable `%s' may not have been initialized",
+		 IDENTIFIER_POINTER (DECL_NAME (exp)));
 	      /* Suppress further errors. */
 	      DECL_BIT_INDEX (exp) = -1;
 	    }
@@ -388,11 +384,20 @@ check_init (exp, before)
       break;
     case MODIFY_EXPR:
       tmp = TREE_OPERAND (exp, 0);
-      if (TREE_CODE (tmp) == VAR_DECL && ! FIELD_STATIC (tmp))
+      /* We're interested in variable declaration and parameter
+         declaration when they're declared with the `final' modifier. */
+      if ((TREE_CODE (tmp) == VAR_DECL && ! FIELD_STATIC (tmp))
+	  || (TREE_CODE (tmp) == PARM_DECL && LOCAL_FINAL (tmp)))
 	{
 	  int index;
 	  check_init (TREE_OPERAND (exp, 1), before);
 	  index = DECL_BIT_INDEX (tmp);
+	  /* A final local already assigned or a final parameter
+             assigned must be reported as errors */
+	  if (LOCAL_FINAL (tmp) 
+	      && (index == -1 || TREE_CODE (tmp) == PARM_DECL))
+	    parse_error_context (wfl, "Can't assign here a value to the `final' variable `%s'", IDENTIFIER_POINTER (DECL_NAME (tmp)));
+
 	  if (index >= 0)
 	    SET_BIT (before, index);
 	  /* Minor optimization.  See comment for start_current_locals. */

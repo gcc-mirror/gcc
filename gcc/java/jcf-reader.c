@@ -130,6 +130,14 @@ DEFUN(get_attribute, (jcf),
     }
   else
 #endif
+#ifdef HANDLE_INNERCLASSES_ATTRIBUTE
+  if (name_length == 12 && memcmp (name_data, "InnerClasses", 12) == 0)
+    {
+      uint16 count = JCF_readu2 (jcf);
+      HANDLE_INNERCLASSES_ATTRIBUTE (count);
+    }
+  else
+#endif
     {
 #ifdef PROCESS_OTHER_ATTRIBUTE
       PROCESS_OTHER_ATTRIBUTE(jcf, attribute_name, attribute_length);
