@@ -514,7 +514,7 @@ schedule_ebb (head, tail)
 
   if (write_symbols != NO_DEBUG)
     {
-      save_line_notes (0, head, tail);
+      save_line_notes (first_bb->index, head, tail);
       rm_line_notes (head, tail);
     }
 
