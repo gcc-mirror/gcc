@@ -1,3 +1,7 @@
+2002-01-25  Douglas B Rupp  <rupp@gnat.com>
+
+	* install-sh: Use _inst.$$_ for temp file name.
+
 2002-01-24  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* MAINTAINERS (Write After Approval): Move my contact info
