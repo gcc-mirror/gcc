@@ -164,9 +164,7 @@ extern int fputs_unlocked PARAMS ((const char *, FILE *));
 #define TARGET_ESC 033
 #endif
 
-#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
 
 #include <errno.h>
 

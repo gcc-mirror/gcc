@@ -1,3 +1,7 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Don't wrap <sys/types.h> with HAVE_SYS_TYPES_H.
+
 2000-05-04  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin.h (CPP_PREDEFINES): Don't define __STDC__. Move 
