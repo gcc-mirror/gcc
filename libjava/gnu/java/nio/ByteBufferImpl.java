@@ -54,24 +54,24 @@ public final class ByteBufferImpl extends ByteBuffer
   public ByteBufferImpl (int cap, int off, int lim)
   {
     this.cap = cap;
-    position (off);
     limit (lim);
+    position (off);
     this.backing_buffer = new byte[cap];
   }
 
   public ByteBufferImpl (byte[] array, int off, int lim)
   {
     this.cap = array.length;
-    position (off);
     limit (lim);
+    position (off);
     this.backing_buffer = array;
   }
 
   public ByteBufferImpl (ByteBufferImpl copy)
   {
     this.cap = copy.capacity ();
-    position (copy.position ());
     limit (copy.limit ());
+    position (copy.position ());
     ro = copy.ro;
     backing_buffer = copy.backing_buffer;
   }
@@ -81,71 +81,50 @@ public final class ByteBufferImpl extends ByteBuffer
     position (position () + toAdd);
   }
 
-//   private static native byte[] nio_cast(byte[]copy);
-//   private static native byte[] nio_cast(char[]copy);
-//   private static native byte[] nio_cast(short[]copy);
-//   private static native byte[] nio_cast(long[]copy);
-//   private static native byte[] nio_cast(int[]copy);
-//   private static native byte[] nio_cast(float[]copy);
-//   private static native byte[] nio_cast(double[]copy);
+  private static native byte[] nio_cast(byte[]copy);
+  private static native byte[] nio_cast(char[]copy);
+  private static native byte[] nio_cast(short[]copy);
+  private static native byte[] nio_cast(long[]copy);
+  private static native byte[] nio_cast(int[]copy);
+  private static native byte[] nio_cast(float[]copy);
+  private static native byte[] nio_cast(double[]copy);
 
-  private static byte[] nio_cast(byte[]copy) { return null; };
-  private static byte[] nio_cast(char[]copy) { return null; };
-  private static byte[] nio_cast(short[]copy) { return null; };
-  private static byte[] nio_cast(long[]copy) { return null; };
-  private static byte[] nio_cast(int[]copy) { return null; };
-  private static byte[] nio_cast(float[]copy) { return null; };
-  private static byte[] nio_cast(double[]copy) { return null; };
 
   ByteBufferImpl(byte[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native byte nio_get_Byte(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Byte(ByteBufferImpl b, int index, int limit, byte value);
-  private static byte nio_get_Byte(ByteBufferImpl b, int index, int limit) { return 0; };
-  private static void nio_put_Byte(ByteBufferImpl b, int index, int limit, byte value) { };
+  private static native byte nio_get_Byte(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Byte(ByteBufferImpl b, int index, int limit, byte value);
   public ByteBuffer asByteBuffer() { ByteBufferImpl res = new ByteBufferImpl(backing_buffer); res.limit((limit()*1)/1); return res; }
 
   ByteBufferImpl(char[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native char nio_get_Char(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Char(ByteBufferImpl b, int index, int limit, char value);
-  private static char nio_get_Char(ByteBufferImpl b, int index, int limit) { return ' '; };
-  private static void nio_put_Char(ByteBufferImpl b, int index, int limit, char value) { };
+  private static native char nio_get_Char(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Char(ByteBufferImpl b, int index, int limit, char value);
   public CharBuffer asCharBuffer() { CharBufferImpl res = new CharBufferImpl(backing_buffer); res.limit((limit()*2)/1); return res; }
 
   ByteBufferImpl(short[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native short nio_get_Short(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Short(ByteBufferImpl b, int index, int limit, short value);
-  private static short nio_get_Short(ByteBufferImpl b, int index, int limit) { return 0; };
-  private static void nio_put_Short(ByteBufferImpl b, int index, int limit, short value) { };
+  private static native short nio_get_Short(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Short(ByteBufferImpl b, int index, int limit, short value);
   public ShortBuffer asShortBuffer() { ShortBufferImpl res = new ShortBufferImpl(backing_buffer); res.limit((limit()*2)/1); return res; }
 
   ByteBufferImpl(int[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native int nio_get_Int(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Int(ByteBufferImpl b, int index, int limit, int value);
-  private static int nio_get_Int(ByteBufferImpl b, int index, int limit) { return 0; };
-  private static void nio_put_Int(ByteBufferImpl b, int index, int limit, int value) { };
+  private static native int nio_get_Int(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Int(ByteBufferImpl b, int index, int limit, int value);
   public IntBuffer asIntBuffer() { IntBufferImpl res = new IntBufferImpl(backing_buffer); res.limit((limit()*4)/1); return res; }
 
   ByteBufferImpl(long[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native long nio_get_Long(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Long(ByteBufferImpl b, int index, int limit, long value);
-  private static long nio_get_Long(ByteBufferImpl b, int index, int limit) { return 0; };
-  private static void nio_put_Long(ByteBufferImpl b, int index, int limit, long value) { };
+  private static native long nio_get_Long(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Long(ByteBufferImpl b, int index, int limit, long value);
   public LongBuffer asLongBuffer() { LongBufferImpl res = new LongBufferImpl(backing_buffer); res.limit((limit()*8)/1); return res; }
 
   ByteBufferImpl(float[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native float nio_get_Float(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Float(ByteBufferImpl b, int index, int limit, float value);
-  private static float nio_get_Float(ByteBufferImpl b, int index, int limit) { return 0.0f; };
-  private static void nio_put_Float(ByteBufferImpl b, int index, int limit, float value) { };
+  private static native float nio_get_Float(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Float(ByteBufferImpl b, int index, int limit, float value);
   public FloatBuffer asFloatBuffer() { FloatBufferImpl res = new FloatBufferImpl(backing_buffer); res.limit((limit()*4)/1); return res; }
 
   ByteBufferImpl(double[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-//   private static native double nio_get_Double(ByteBufferImpl b, int index, int limit);
-//   private static native void nio_put_Double(ByteBufferImpl b, int index, int limit, double value);
-  private static double nio_get_Double(ByteBufferImpl b, int index, int limit) { return 0.0d; };
-  private static void nio_put_Double(ByteBufferImpl b, int index, int limit, double value) { };
+  private static native double nio_get_Double(ByteBufferImpl b, int index, int limit);
+  private static native void nio_put_Double(ByteBufferImpl b, int index, int limit, double value);
   public DoubleBuffer asDoubleBuffer() { DoubleBufferImpl res = new DoubleBufferImpl(backing_buffer); res.limit((limit()*8)/1); return res; }
-  
+
   public boolean isReadOnly()
   {
     return ro;
@@ -157,19 +136,19 @@ public final class ByteBufferImpl extends ByteBuffer
     A.array_offset = position();
     return A;
   }
-  
+
   public ByteBuffer duplicate()
   {
     return new ByteBufferImpl(this);
   }
-  
+
   public ByteBuffer asReadOnlyBuffer()
   {
     ByteBufferImpl a = new ByteBufferImpl(this);
     a.ro = true;
     return a;
   }
-  
+
   public ByteBuffer compact()
   {
     return this;
@@ -179,7 +158,7 @@ public final class ByteBufferImpl extends ByteBuffer
   {
     return backing_buffer != null;
   }
-
+  
   final public byte get()
   {
     byte e = backing_buffer[position()];
@@ -198,7 +177,7 @@ public final class ByteBufferImpl extends ByteBuffer
   {
     return backing_buffer[index];
   }
-
+  
   final public ByteBuffer put(int index, byte b)
   {
     backing_buffer[index] = b;
