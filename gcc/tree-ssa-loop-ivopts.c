@@ -444,8 +444,11 @@ dump_use (FILE *file, struct iv_use *use)
 
   dump_iv (file, use->iv);
 
-  fprintf (file, "  related candidates ");
-  dump_bitmap (file, use->related_cands);
+  if (use->related_cands)
+    {
+      fprintf (file, "  related candidates ");
+      dump_bitmap (file, use->related_cands);
+    }
 }
 
 /* Dumps information about the uses to FILE.  */
@@ -3116,8 +3119,20 @@ determine_use_iv_cost_generic (struct ivopts_data *data,
 			       struct iv_use *use, struct iv_cand *cand)
 {
   bitmap depends_on;
-  unsigned cost = get_computation_cost (data, use, cand, false, &depends_on);
+  unsigned cost;
 
+  /* The simple case first -- if we need to express value of the preserved
+     original biv, the cost is 0.  This also prevents us from counting the
+     cost of increment twice -- once at this use and once in the cost of
+     the candidate.  */
+  if (cand->pos == IP_ORIGINAL
+      && cand->incremented_at == use->stmt)
+    {
+      set_use_iv_cost (data, use, cand, 0, NULL);
+      return true;
+    }
+
+  cost = get_computation_cost (data, use, cand, false, &depends_on);
   set_use_iv_cost (data, use, cand, cost, depends_on);
 
   return cost != INFTY;
@@ -3311,7 +3326,18 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
   edge exit;
   tree value;
   struct loop *loop = data->current_loop;
-	  
+
+  /* The simple case first -- if we need to express value of the preserved
+     original biv, the cost is 0.  This also prevents us from counting the
+     cost of increment twice -- once at this use and once in the cost of
+     the candidate.  */
+  if (cand->pos == IP_ORIGINAL
+      && cand->incremented_at == use->stmt)
+    {
+      set_use_iv_cost (data, use, cand, 0, NULL);
+      return true;
+    }
+
   if (!cand->iv)
     {
       if (!may_replace_final_value (loop, use, &value))
