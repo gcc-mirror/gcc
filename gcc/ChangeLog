@@ -1,5 +1,12 @@
 2002-01-10  Zack Weinberg  <zack@codesourcery.com>
 
+	* toplev.c: Don't declare environ (it's not used anywhere).
+	* configure.in: Don't check for declaration of environ.
+	* config/i386/xm-mingw32.h: Don't #define environ.
+	* config.in, configure: Regenerate.
+
+2002-01-10  Zack Weinberg  <zack@codesourcery.com>
+
 	* configure.in: Set stage1_cflags for powerpc-*-darwin*.
 	* configure: Regenerate.
 
