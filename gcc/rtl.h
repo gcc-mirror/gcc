@@ -1440,6 +1440,7 @@ extern void init_optabs			PROTO ((void));
 extern void dump_local_alloc		PROTO ((FILE *));
 #endif
 extern void local_alloc			PROTO ((void));
+extern int function_invariant_p		PROTO ((rtx));
 
 /* In reload1.c */
 extern void reload_cse_regs		PROTO ((rtx));
