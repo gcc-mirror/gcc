@@ -161,6 +161,7 @@ extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
 extern const int x86_use_loop, x86_use_fiop, x86_use_mov0;
 extern const int x86_use_cltd, x86_read_modify_write;
 extern const int x86_read_modify, x86_split_long_moves;
+extern const int x86_promote_QImode;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -182,6 +183,7 @@ extern const int x86_read_modify, x86_split_long_moves;
 #define TARGET_SPLIT_LONG_MOVES (x86_split_long_moves & CPUMASK)
 #define TARGET_READ_MODIFY_WRITE (x86_read_modify_write & CPUMASK)
 #define TARGET_READ_MODIFY (x86_read_modify & CPUMASK)
+#define TARGET_PROMOTE_QImode (x86_promote_QImode & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
@@ -2437,6 +2439,7 @@ do { long l;						\
 				 UMIN, UMAX, COMPARE, MINUS, DIV, MOD,	\
 				 UDIV, UMOD, ASHIFT, ROTATE, ASHIFTRT,	\
 				 LSHIFTRT, ROTATERT}},			\
+  {"promotable_binary_operator", {PLUS, MULT, AND, IOR, XOR, ASHIFT}},	\
   {"memory_displacement_operand", {MEM}},				\
   {"cmpsi_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
 		     LABEL_REF, SUBREG, REG, MEM, AND}},		\

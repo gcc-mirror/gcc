@@ -1,5 +1,15 @@
 Fri Dec 17 01:32:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.md (HI to SImode promoting splitters): Rewrite.
+	(pushsf mem peep2): New.
+	(testhi to andhi peep2): Remove.
+	* i386.h (x86_promote_QImode): New.
+	(TARGET_PROMOTE_QImode): New.
+	(PREDICATE_CODES): Add promotable_binary_operator.
+	* i386.c (x86_promote_QImode0: New.
+	(promotable_binary_operator): New.
+	* i386-protos.h (promotable_binary_operator): New.
+
 	* i386.md (test?i_1): Use "nonmemory_operand" predicate, simplify
 	condition.
 	(one_cmpl?i*): Pass "NOT" to unary_operator_ok.
