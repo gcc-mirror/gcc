@@ -7724,3 +7724,27 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
 
   return NULL_RTX;
 }
+
+/* For the HP-UX IA64 aggregate parameters are passed stored in the
+   most significant bits of the stack slot.  */
+
+enum direction
+ia64_hpux_function_arg_padding (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+   /* Exception to normal case for structures/unions/etc. */
+
+   if (type && AGGREGATE_TYPE_P (type)
+       && int_size_in_bytes (type) < UNITS_PER_WORD)
+     return upward;
+
+   /* This is the standard FUNCTION_ARG_PADDING with !BYTES_BIG_ENDIAN
+      hardwired to be true. */
+
+   return((mode == BLKmode
+       ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+          && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+       : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
+      ? downward : upward);
+}

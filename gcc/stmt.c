@@ -3197,7 +3197,9 @@ expand_return (retval)
 	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
 	 machine, this means we must skip the empty high order bytes when
 	 calculating the bit offset.  */
-      if (BYTES_BIG_ENDIAN && bytes % UNITS_PER_WORD)
+      if (BYTES_BIG_ENDIAN
+	  && !FUNCTION_ARG_REG_LITTLE_ENDIAN
+	  && bytes % UNITS_PER_WORD)
 	big_endian_correction = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD)
 						  * BITS_PER_UNIT));
 
