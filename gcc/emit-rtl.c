@@ -1885,9 +1885,14 @@ set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
     }
 
   /* If we modified OFFSET based on T, then subtract the outstanding 
-     bit position offset.  */
+     bit position offset.  Similarly, increase the size of the accessed
+     object to contain the negative offset.  */
   if (apply_bitpos)
-    offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
+    {
+      offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
+      if (size)
+	size = plus_constant (size, apply_bitpos / BITS_PER_UNIT);
+    }
 
   /* Now set the attributes we computed above.  */
   MEM_ATTRS (ref)

@@ -1,3 +1,8 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust SIZE
+	as well as OFFSET for BITPOS.
+
 2002-09-16  Jeff Garzik  <jgarzik@mandrakesoft.com>
 
         * config.gcc: Treat winchip_c6-*|winchip2-*|c3-* as pentium-mmx.
