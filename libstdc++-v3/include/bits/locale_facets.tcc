@@ -283,9 +283,9 @@ namespace std
 	bool __negative = false;
 	if (__beg != __end)
 	  {
-	    __negative = __traits_type::eq(*__beg, __lit[_S_iminus]);
-	    if (__negative && numeric_limits<_ValueT>::is_signed
-		|| __traits_type::eq(*__beg, __lit[_S_iplus]))
+	    if (numeric_limits<_ValueT>::is_signed)
+	      __negative = __traits_type::eq(*__beg, __lit[_S_iminus]);
+	    if (__negative || __traits_type::eq(*__beg, __lit[_S_iplus]))
 	      ++__beg;
 	  }
 
@@ -353,8 +353,7 @@ namespace std
 		    else
 		      {
 			const _ValueT __new_result = __result * __base - __digit;
-			if (__result)
-			  __overflow |= __new_result >= __result;
+			__overflow |= __new_result > __result;
 			__result = __new_result;
 			++__sep_pos;
 			__found_num = true;
@@ -398,8 +397,7 @@ namespace std
 		    else
 		      {
 			const _ValueT __new_result = __result * __base + __digit;
-			if (__result)
-			  __overflow |= __new_result <= __result;
+			__overflow |= __new_result < __result;
 			__result = __new_result;
 			++__sep_pos;
 			__found_num = true;
@@ -436,8 +434,8 @@ namespace std
 	      __err |= ios_base::failbit;
 	  }
 
-	if (!(__err & ios_base::failbit)
-	    && !__overflow && __found_num)
+	if (!(__err & ios_base::failbit) && !__overflow
+	    && __found_num)
 	  __v = __result;
 	else
 	  __err |= ios_base::failbit;
