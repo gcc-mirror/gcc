@@ -119,8 +119,7 @@ static struct ffewhere_ggc_tracker
 } *ffewhere_head = NULL;
 
 static void 
-mark_ffewhere_head (arg)
-     void *arg;
+mark_ffewhere_head (void *arg)
 {
   struct ffewhere_ggc_tracker *head;
   int i;
