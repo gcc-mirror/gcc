@@ -2359,7 +2359,7 @@ LFLGRET"ID":\n\
       && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
 
 #define RTX_OK_FOR_OFFSET_P(X)						\
-  (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000)
+  (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000 - 8)
   
 #define RTX_OK_FOR_OLO10_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
@@ -2396,10 +2396,19 @@ LFLGRET"ID":\n\
 		 REG+REG address, then only one of them	\
 		 gets converted to an offsetable	\
 		 address. */				\
- 	      && (MODE != TFmode			\
-		  || (TARGET_FPU && TARGET_ARCH64	\
-		      && TARGET_V9			\
-		      && TARGET_HARD_QUAD)))		\
+ 	       && (MODE != TFmode			\
+		   || (TARGET_FPU && TARGET_ARCH64	\
+		       && TARGET_V9			\
+		       && TARGET_HARD_QUAD))		\
+	      /* We prohibit REG + REG on ARCH32 if	\
+		 not optimizing for DFmode/DImode	\
+		 because then mem_min_alignment is	\
+		 likely to be zero after reload and the \
+		 forced split would lack a matching	\
+		 splitter pattern. */			\
+	       && (TARGET_ARCH64 || optimize		\
+		   || (MODE != DFmode			\
+		       && MODE != DImode)))		\
 	      || RTX_OK_FOR_OFFSET_P (op1))		\
 	    goto ADDR;					\
 	}						\
@@ -2407,10 +2416,13 @@ LFLGRET"ID":\n\
 	{						\
 	  if ((RTX_OK_FOR_INDEX_P (op0)			\
  	      /* See the previous comment. */		\
- 	      && (MODE != TFmode			\
+ 	       && (MODE != TFmode			\
 		  || (TARGET_FPU && TARGET_ARCH64	\
 		      && TARGET_V9			\
-		      && TARGET_HARD_QUAD)))		\
+		      && TARGET_HARD_QUAD))		\
+	       && (TARGET_ARCH64 || optimize		\
+		   || (MODE != DFmode			\
+		       && MODE != DImode)))		\
 	      || RTX_OK_FOR_OFFSET_P (op0))		\
 	    goto ADDR;					\
 	}						\
