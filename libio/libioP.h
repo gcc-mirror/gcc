@@ -24,8 +24,9 @@
    General Public License.  */
 
 #include <errno.h>
-/* This is a hack until Uli gets me the real fix.  */
-#define __set_errno(Val) (errno = (Val))
+#ifndef __set_errno
+# define __set_errno(Val) errno = (Val)
+#endif
 #if defined __GLIBC__ && __GLIBC__ >= 2
 # include <bits/libc-lock.h>
 #else

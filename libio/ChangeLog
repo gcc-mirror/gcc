@@ -1,3 +1,8 @@
+1997-09-17 02:50  Ulrich Drepper  <drepper@cygnus.com>
+
+	* libioP.h: Define __set_errno if not already defined.
+	* fileops.c: Don't try to define __set_errno, it's already defined.
+
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 
 	* config/linux.mt: Rewrite for use with glibc 2.
