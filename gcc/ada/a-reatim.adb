@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.34 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1991-2001, Florida State University             --
 --                                                                          --
@@ -159,17 +159,33 @@ package body Ada.Real_Time is
    -----------
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span) is
-   begin
-      --  Extract the integer part of T
+      T_Val : Time;
 
-      if T = 0.0 then
-         SC := 0;
+   begin
+      --  Special-case for Time_First, whose absolute value is anomalous,
+      --  courtesy of two's complement.
+
+      if T = Time_First then
+         T_Val := abs (Time_Last);
       else
-         SC := Seconds_Count (Time_Span'(T - 0.5));
+         T_Val := abs (T);
       end if;
 
-      --  Since we loose precision when converting a time value to float,
-      --  we need to add this check
+      --  Extract the integer part of T, truncating towards zero.
+
+      if T_Val < 0.5 then
+            SC := 0;
+
+      else
+         SC := Seconds_Count (Time_Span' (T_Val - 0.5));
+      end if;
+
+      if T < 0.0 then
+         SC := -SC;
+      end if;
+
+      --  If original time is negative, need to truncate towards negative
+      --  infinity, to make TS non-negative, as per ARM.
 
       if Time (SC) > T then
          SC := SC - 1;

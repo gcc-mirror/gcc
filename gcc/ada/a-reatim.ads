@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.24 $                            --
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -88,7 +88,11 @@ package Ada.Real_Time is
    function Microseconds (US : Integer) return Time_Span;
    function Milliseconds (MS : Integer) return Time_Span;
 
-   type Seconds_Count is new Integer range -Integer'Last .. Integer'Last;
+   --  With duration represented as a 64-bit number with a delta of
+   --  10 ** (-9), the number of seconds in Duration'Last does not fit
+   --  in 32 bits.
+
+   type Seconds_Count is  range -2 ** 63 .. 2 ** 63 - 1;
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
