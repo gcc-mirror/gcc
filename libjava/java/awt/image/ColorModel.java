@@ -293,7 +293,7 @@ public abstract class ColorModel implements Transparency
    * @see #getRed(Object)
    */
   public int getAlpha(Object inData) {
-    return getBlue(getPixelFromArray(inData));
+    return getAlpha(getPixelFromArray(inData));
   }
 
   /**
