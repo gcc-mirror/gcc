@@ -1,6 +1,6 @@
 /* VMClassLoader.java -- Reference implementation of native interface
    required by ClassLoader
-   Copyright (C) 1998, 2001, 2002, 2003 Free Software Foundation
+   Copyright (C) 1998, 2001, 2002, 2003, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,19 +38,17 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.security.ProtectionDomain;
-import java.net.URL;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.HashMap;
+import gnu.java.util.EmptyEnumeration;
 import java.lang.reflect.Constructor;
+import java.io.IOException;
+import java.net.URL;
 import java.security.AllPermission;
 import java.security.Permission;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
-
-import gnu.java.util.EmptyEnumeration;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * java.lang.VMClassLoader is a package-private helper for VMs to implement
