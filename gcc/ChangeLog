@@ -1,3 +1,11 @@
+2001-10-17  Michael Collison  <collison@isisinc.net>
+
+	* dsp16xx.c: Fix comment formatting to match GNU standards.
+	(dsp16xx_output_function_prologue): Change type of 'size' 
+	parameter from 'int' to HOST_WIDE_INT.
+	(dsp16xx_output_function_epilogue): Change type of 'size'
+	parameter from 'int' to HOST_WIDE_INT.
+
 2001-10-16  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_AS_GOTOFF_IN_DATA): New x86 check.
