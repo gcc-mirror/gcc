@@ -45,7 +45,7 @@ import java.io.Serializable;
 
 public final class UID implements Serializable
 {
-public static final long serialVersionUID = 1086053664494604050L;
+private static final long serialVersionUID = 1086053664494604050L;
 
 private static final Object lock = UID.class;
 private static long baseTime = System.currentTimeMillis();

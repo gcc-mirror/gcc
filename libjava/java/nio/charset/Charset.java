@@ -147,19 +147,19 @@ public abstract class Charset implements Comparable
    * Retrieves a charset for the given charset name.
    *
    * @return A charset object for the charset with the specified name, or
-   *   <code>null</code> if no such charset exists.
+   * <code>null</code> if no such charset exists.
    *
    * @throws IllegalCharsetNameException  if the name is illegal
    */
-  private static Charset charsetForName (String charsetName)
+  private static Charset charsetForName(String charsetName)
   {
     checkName (charsetName);
     return provider ().charsetForName (charsetName);
   }
 
-  public static SortedMap availableCharsets ()
+  public static SortedMap availableCharsets()
   {
-    TreeMap charsets = new TreeMap (String.CASE_INSENSITIVE_ORDER);
+    TreeMap charsets = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     for (Iterator i = provider ().charsets (); i.hasNext (); )
       {
@@ -167,15 +167,15 @@ public abstract class Charset implements Comparable
         charsets.put (cs.name (), cs);
       }
 
-    return Collections.unmodifiableSortedMap (charsets);
+    return Collections.unmodifiableSortedMap(charsets);
   }
 
   // XXX: we need to support multiple providers, reading them from
   // java.nio.charset.spi.CharsetProvider in the resource directory
   // META-INF/services
-  private static CharsetProvider provider ()
+  private static CharsetProvider provider()
   {
-    return Provider.provider ();
+    return Provider.provider();
   }
 
   public final String name ()

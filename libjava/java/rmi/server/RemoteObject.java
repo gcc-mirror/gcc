@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 public abstract class RemoteObject
 	implements Remote, Serializable {
 
-public static final long serialVersionUID = -3215090123894869218l;
+private static final long serialVersionUID = -3215090123894869218l;
 
 protected transient RemoteRef ref;
 

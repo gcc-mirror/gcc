@@ -1,5 +1,5 @@
 /* Channels.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.nio.channels;
 
 import gnu.java.nio.ChannelInputStream;
@@ -62,7 +63,10 @@ public final class Channels
   /**
    * This class isn't intended to be instantiated.
    */
-  private Channels() {}
+  private Channels()
+  {
+    // Do nothing here.
+  }
 
   /**
    * Constructs a stream that reads bytes from the given channel.
