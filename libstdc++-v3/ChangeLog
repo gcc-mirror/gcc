@@ -1,3 +1,10 @@
+2001-09-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.target (LIMITSH): Set for cris.
+	(cpu_include_dir): Set for cris-*-*.
+	* config/cpu/cris/bits/atomicity.h: New file.
+	* config/cpu/cris/bits/limits.h: New file.
+
 2001-09-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/time_members_gnu.h (__timepunct::_M_get_helper): Add.

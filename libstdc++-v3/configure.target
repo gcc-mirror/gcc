@@ -30,6 +30,9 @@ case "${target_cpu}" in
   arm*)
     cpu_include_dir="config/cpu/arm"
     ;;
+  cris)
+    cpu_include_dir="config/cpu/cris"
+    ;;
   ia64)
     cpu_include_dir="config/cpu/ia64"
     ;;
@@ -139,6 +142,9 @@ case "${target}" in
      ;;
    powerpc-*-*)
      LIMITSH=config/cpu/powerpc
+     ;;
+   cris-*-*)
+     LIMITSH=config/cpu/cris
      ;;
    *)
      LIMITSH=config/cpu/generic
