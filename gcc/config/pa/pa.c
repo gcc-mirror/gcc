@@ -4316,7 +4316,7 @@ hppa_va_start (stdarg_p, valist, nextarg)
      rtx nextarg;
 {
   nextarg = expand_builtin_saveregs ();
-  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+  std_expand_builtin_va_start (1, valist, nextarg);
 }
 
 rtx
