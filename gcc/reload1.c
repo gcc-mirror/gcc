@@ -6553,17 +6553,19 @@ emit_reload_insns (insn)
 		  {
 		    for (prev1 = this_reload_insn;
 			 prev1; prev1 = PREV_INSN (prev1))
-		      if (GET_RTX_CLASS (GET_CODE (prev1) == 'i')
-			&& reg_overlap_mentioned_for_reload_p (oldequiv_reg,
-							       PATTERN (prev1)))
-		      {
-			REG_NOTES (prev1) 
-			  gen_rtx_EXPR_LIST (REG_DEAD, oldequiv_reg,
-					     REG_NOTES (prev1));
-			break;
-		      }
+		      if (GET_RTX_CLASS (GET_CODE (prev1)) == 'i'
+			  && (reg_overlap_mentioned_for_reload_p
+			      (oldequiv_reg, PATTERN (prev1))))
+			{
+			  REG_NOTES (prev1) 
+			    = gen_rtx_EXPR_LIST (REG_DEAD, oldequiv_reg,
+						 REG_NOTES (prev1));
+			  break;
+			}
+
 		    remove_death (REGNO (oldequiv_reg), prev);
 		  }
+
 		break;
 	      }
 	}
