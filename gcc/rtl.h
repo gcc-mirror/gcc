@@ -249,10 +249,10 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
 /* Define macros to access the `code' field of the rtx.  */
 
 #define GET_CODE(RTX)	    ((enum rtx_code) (RTX)->code)
-#define PUT_CODE(RTX, CODE) ((RTX)->code = (ENUM_BITFIELD(rtx_code)) (CODE))
+#define PUT_CODE(RTX, CODE) ((RTX)->code = (CODE))
 
 #define GET_MODE(RTX)	    ((enum machine_mode) (RTX)->mode)
-#define PUT_MODE(RTX, MODE) ((RTX)->mode = (ENUM_BITFIELD(machine_mode)) (MODE))
+#define PUT_MODE(RTX, MODE) ((RTX)->mode = (MODE))
 
 /* RTL vector.  These appear inside RTX's when there is a need
    for a variable number of things.  The principle use is inside
