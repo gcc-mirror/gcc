@@ -6342,34 +6342,37 @@ verify_flow_info ()
 {
   const int max_uid = get_max_uid ();
   const rtx rtx_first = get_insns ();
+  rtx last_head = get_last_insn ();
   basic_block *bb_info;
   rtx x;
   int i, last_bb_num_seen, num_bb_notes, err = 0;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
 
-  /* First pass check head/end pointers and set bb_info array used by
-     later passes.  */
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       basic_block bb = BASIC_BLOCK (i);
+      rtx head = bb->head;
+      rtx end = bb->end;
 
-      /* Check the head pointer and make sure that it is pointing into
-         insn list.  */
-      for (x = rtx_first; x != NULL_RTX; x = NEXT_INSN (x))
-	if (x == bb->head)
+      /* Verify the end of the basic block is in the INSN chain.  */
+      for (x = last_head; x != NULL_RTX; x = PREV_INSN (x))
+	if (x == end)
 	  break;
       if (!x)
 	{
-	  error ("Head insn %d for block %d not found in the insn stream.",
-		 INSN_UID (bb->head), bb->index);
+	  error ("End insn %d for block %d not found in the insn stream.",
+		 INSN_UID (end), bb->index);
 	  err = 1;
 	}
 
-      /* Check the end pointer and make sure that it is pointing into
-         insn list.  */
-      for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
+      /* Work backwards from the end to the head of the basic block
+	 to verify the head is in the RTL chain.  */
+      for ( ; x != NULL_RTX; x = PREV_INSN (x))
 	{
+	  /* While walking over the insn chain, verify insns appear
+	     in only one basic block and initialize the BB_INFO array
+	     used by other passes.  */
 	  if (bb_info[INSN_UID (x)] != NULL)
 	    {
 	      error ("Insn %d is in multiple basic blocks (%d and %d)",
@@ -6378,15 +6381,17 @@ verify_flow_info ()
 	    }
 	  bb_info[INSN_UID (x)] = bb;
 
-	  if (x == bb->end)
+	  if (x == head)
 	    break;
 	}
       if (!x)
 	{
-	  error ("End insn %d for block %d not found in the insn stream.",
-		 INSN_UID (bb->end), bb->index);
+	  error ("Head insn %d for block %d not found in the insn stream.",
+		 INSN_UID (head), bb->index);
 	  err = 1;
 	}
+
+      last_head = x;
     }
 
   /* Now check the basic blocks (boundaries etc.) */

@@ -1,3 +1,8 @@
+Thu Jul 20 18:13:52 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (verify_flow_info): Revamp code to verify that the
+	head and end of each basic block are in the insn chain.
+
 Thu Jul 20 18:02:35 2000  Michael Matz <matzmich@cs.tu-berlin.de>
 
 	* gcse.c (record_one_set): Prepend instead of append onto
