@@ -20,6 +20,7 @@
    Boston, MA 02111-1307, USA.  */
 
 
+#undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "fbsd_dynamic_linker", FBSD_DYNAMIC_LINKER }
 
