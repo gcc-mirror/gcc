@@ -3201,7 +3201,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		  ibase = elem_bitsize - 1 - i;
 		else
 		  ibase = i;
-		tmp[ibase / 32] = (*vp++ & value_mask) << i % 32;
+		tmp[ibase / 32] |= (*vp++ & value_mask) << i % 32;
 	      }
 
 	    real_from_target (&r, tmp, outer_submode);
