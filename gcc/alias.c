@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "basic-block.h"
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
@@ -104,6 +105,8 @@ static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
 static int aliases_everything_p         PARAMS ((rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
+
+static int loop_p                       PARAMS ((void));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -1863,6 +1866,96 @@ nonlocal_mentioned_p (x)
   return 0;
 }
 
+/* Return non-zero if a loop (natural or otherwise) is present.
+   Inspired by Depth_First_Search_PP described in:
+
+     Advanced Compiler Design and Implementation
+     Steven Muchnick
+     Morgan Kaufmann, 1997
+
+   and heavily borrowed from flow_depth_first_order_compute.  */
+
+static int
+loop_p ()
+{
+  edge *stack;
+  int *pre;
+  int *post;
+  int sp;
+  int prenum = 1;
+  int postnum = 1;
+  sbitmap visited;
+
+  /* Allocate the preorder and postorder number arrays.  */
+  pre = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  post = (int *) xcalloc (n_basic_blocks, sizeof (int));
+
+  /* Allocate stack for back-tracking up CFG.  */
+  stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  sp = 0;
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  visited = sbitmap_alloc (n_basic_blocks);
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (visited);
+
+  /* Push the first edge on to the stack.  */
+  stack[sp++] = ENTRY_BLOCK_PTR->succ;
+
+  while (sp)
+    {
+      edge e;
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      e = stack[sp - 1];
+      src = e->src;
+      dest = e->dest;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index))
+	{
+	  /* Mark that we have visited the destination.  */
+	  SET_BIT (visited, dest->index);
+
+	  pre[dest->index] = prenum++;
+
+	  if (dest->succ)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      stack[sp++] = dest->succ;
+	    }
+	  else
+	    post[dest->index] = postnum++;
+	}
+      else
+	{
+	  if (dest != EXIT_BLOCK_PTR
+	      && pre[src->index] >= pre[dest->index]
+	      && post[dest->index] == 0)
+	    break;
+
+	  if (! e->succ_next && src != ENTRY_BLOCK_PTR)
+	    post[src->index] = postnum++;
+
+	  if (e->succ_next)
+	    stack[sp - 1] = e->succ_next;
+	  else
+	    sp--;
+	}
+    }
+
+  free (pre);
+  free (post);
+  free (stack);
+  sbitmap_free (visited);
+
+  return sp;
+}
+
 /* Mark the function if it is constant.  */
 
 void
@@ -1876,6 +1969,10 @@ mark_constant_function ()
       || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
       || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode)
+    return;
+
+  /* A loop might not return which counts as a side effect.  */
+  if (loop_p ())
     return;
 
   nonlocal_mentioned = 0;
