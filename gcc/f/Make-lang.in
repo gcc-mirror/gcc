@@ -220,6 +220,7 @@ f77.dvi: f/g77.dvi
 
 # g77 documentation.
 f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+	    $(srcdir)/f/ffe.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
@@ -232,6 +233,7 @@ f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+	    $(srcdir)/f/ffe.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
