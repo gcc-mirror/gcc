@@ -1405,13 +1405,13 @@ static void cp_parser_block_declaration
 static void cp_parser_simple_declaration
   (cp_parser *, bool);
 static tree cp_parser_decl_specifier_seq 
-  (cp_parser *, cp_parser_flags, tree *, bool *);
+  (cp_parser *, cp_parser_flags, tree *, int *);
 static tree cp_parser_storage_class_specifier_opt
   (cp_parser *);
 static tree cp_parser_function_specifier_opt
   (cp_parser *);
 static tree cp_parser_type_specifier
-  (cp_parser *, cp_parser_flags, bool, bool, bool *, bool *);
+  (cp_parser *, cp_parser_flags, bool, bool, int *, bool *);
 static tree cp_parser_simple_type_specifier
   (cp_parser *, cp_parser_flags);
 static tree cp_parser_type_name
@@ -1446,7 +1446,7 @@ static void cp_parser_linkage_specification
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  (cp_parser *, tree, tree, bool, bool, bool *);
+  (cp_parser *, tree, tree, bool, bool, int, bool *);
 static tree cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, int *);
 static tree cp_parser_direct_declarator
@@ -1674,6 +1674,8 @@ static bool cp_parser_simulate_error
   (cp_parser *);
 static void cp_parser_check_type_definition
   (cp_parser *);
+static void cp_parser_check_for_definition_in_return_type
+  (tree, int);
 static tree cp_parser_non_constant_expression
   (const char *);
 static bool cp_parser_diagnose_invalid_type_name
@@ -1761,6 +1763,28 @@ cp_parser_check_type_definition (cp_parser* parser)
     /* Use `%s' to print the string in case there are any escape
        characters in the message.  */
     error ("%s", parser->type_definition_forbidden_message);
+}
+
+/* This function is called when a declaration is parsed.  If
+   DECLARATOR is a function declarator and DECLARES_CLASS_OR_ENUM
+   indicates that a type was defined in the decl-specifiers for DECL,
+   then an error is issued.  */
+
+static void
+cp_parser_check_for_definition_in_return_type (tree declarator, 
+					       int declares_class_or_enum)
+{
+  /* [dcl.fct] forbids type definitions in return types.
+     Unfortunately, it's not easy to know whether or not we are
+     processing a return type until after the fact.  */
+  while (declarator
+	 && (TREE_CODE (declarator) == INDIRECT_REF
+	     || TREE_CODE (declarator) == ADDR_EXPR))
+    declarator = TREE_OPERAND (declarator, 0);
+  if (declarator
+      && TREE_CODE (declarator) == CALL_EXPR 
+      && declares_class_or_enum & 2)
+    error ("new types may not be defined in a return type");
 }
 
 /* Issue an eror message about the fact that THING appeared in a
@@ -6041,7 +6065,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 {
   tree decl_specifiers;
   tree attributes;
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   bool saw_declarator;
 
   /* Defer access checks until we know what is being declared; the
@@ -6100,13 +6124,15 @@ cp_parser_simple_declaration (cp_parser* parser,
     {
       cp_token *token;
       bool function_definition_p;
+      tree decl;
 
       saw_declarator = true;
       /* Parse the init-declarator.  */
-      cp_parser_init_declarator (parser, decl_specifiers, attributes,
-				 function_definition_allowed_p,
-				 /*member_p=*/false,
-				 &function_definition_p);
+      decl = cp_parser_init_declarator (parser, decl_specifiers, attributes,
+					function_definition_allowed_p,
+					/*member_p=*/false,
+					declares_class_or_enum,
+					&function_definition_p);
       /* If an error occurred while parsing tentatively, exit quickly.
 	 (That usually happens when in the body of a function; each
 	 statement is treated as a declaration-statement until proven
@@ -6170,10 +6196,6 @@ cp_parser_simple_declaration (cp_parser* parser,
   /* Consume the `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
 
-  /* Mark all the classes that appeared in the decl-specifier-seq as
-     having received a `;'.  */
-  note_list_got_semicolon (decl_specifiers);
-
  done:
   pop_deferring_access_checks ();
 }
@@ -6208,20 +6230,29 @@ cp_parser_simple_declaration (cp_parser* parser,
    appears, and the entity that will be a friend is not going to be a
    class, then *FRIEND_IS_NOT_CLASS_P will be set to TRUE.  Note that
    even if *FRIEND_IS_NOT_CLASS_P is FALSE, the entity to which
-   friendship is granted might not be a class.  */
+   friendship is granted might not be a class.  
+
+   *DECLARES_CLASS_OR_ENUM is set to the bitwise or of the following
+   *flags:
+
+     1: one of the decl-specifiers is an elaborated-type-specifier
+     2: one of the decl-specifiers is an enum-specifier or a
+        class-specifier
+
+   */
 
 static tree
 cp_parser_decl_specifier_seq (cp_parser* parser, 
                               cp_parser_flags flags, 
                               tree* attributes,
-			      bool* declares_class_or_enum)
+			      int* declares_class_or_enum)
 {
   tree decl_specs = NULL_TREE;
   bool friend_p = false;
   bool constructor_possible_p = !parser->in_declarator_p;
   
   /* Assume no class or enumeration type is declared.  */
-  *declares_class_or_enum = false;
+  *declares_class_or_enum = 0;
 
   /* Assume there are no attributes.  */
   *attributes = NULL_TREE;
@@ -6317,7 +6348,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	 a type-specifier.  */
       if (!decl_spec && !constructor_p)
 	{
-	  bool decl_spec_declares_class_or_enum;
+	  int decl_spec_declares_class_or_enum;
 	  bool is_cv_qualifier;
 
 	  decl_spec
@@ -7913,7 +7944,7 @@ cp_parser_template_argument (cp_parser* parser)
 static void
 cp_parser_explicit_instantiation (cp_parser* parser)
 {
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   tree decl_specifiers;
   tree attributes;
   tree extension_specifier = NULL_TREE;
@@ -7965,6 +7996,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       declarator 
 	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 				/*ctor_dtor_or_conv_p=*/NULL);
+      cp_parser_check_for_definition_in_return_type (declarator, 
+						     declares_class_or_enum);
       decl = grokdeclarator (declarator, decl_specifiers, 
 			     NORMAL, 0, NULL);
       /* Turn access control back on for names used during
@@ -8055,8 +8088,9 @@ cp_parser_explicit_specialization (cp_parser* parser)
 
    If DECLARES_CLASS_OR_ENUM is non-NULL, and the type-specifier is a
    class-specifier, enum-specifier, or elaborated-type-specifier, then
-   *DECLARES_CLASS_OR_ENUM is set to TRUE.  Otherwise, it is set to
-   FALSE.
+   *DECLARES_CLASS_OR_ENUM is set to a non-zero value.  The value is 1
+   if a type is declared; 2 if it is defined.  Otherwise, it is set to
+   zero.
 
    If IS_CV_QUALIFIER is non-NULL, and the type-specifier is a
    cv-qualifier, then IS_CV_QUALIFIER is set to TRUE.  Otherwise, it
@@ -8067,7 +8101,7 @@ cp_parser_type_specifier (cp_parser* parser,
 			  cp_parser_flags flags, 
 			  bool is_friend,
 			  bool is_declaration,
-			  bool* declares_class_or_enum,
+			  int* declares_class_or_enum,
 			  bool* is_cv_qualifier)
 {
   tree type_spec = NULL_TREE;
@@ -8107,7 +8141,7 @@ cp_parser_type_specifier (cp_parser* parser,
       if (cp_parser_parse_definitely (parser))
 	{
 	  if (declares_class_or_enum)
-	    *declares_class_or_enum = true;
+	    *declares_class_or_enum = 2;
 	  return type_spec;
 	}
 
@@ -8121,7 +8155,7 @@ cp_parser_type_specifier (cp_parser* parser,
       /* We're declaring a class or enum -- unless we're using
 	 `typename'.  */
       if (declares_class_or_enum && keyword != RID_TYPENAME)
-	*declares_class_or_enum = true;
+	*declares_class_or_enum = 1;
       return type_spec;
 
     case RID_CONST:
@@ -8512,13 +8546,13 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	      error ("expected type-name");
 	      return error_mark_node;
 	    }
-	  else if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
-		   && tag_type != enum_type)
-	    error ("`%T' referred to as `%s'", TREE_TYPE (decl),
-		   tag_type == record_type ? "struct" : "class");
-	  else if (TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
-		   && tag_type == enum_type)
-	    error ("`%T' referred to as enum", TREE_TYPE (decl));
+
+	  if (TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE)
+	    check_elaborated_type_specifier 
+	      (tag_type, 
+	       TREE_TYPE (decl),
+	       (parser->num_template_parameter_lists
+		|| DECL_SELF_REFERENCE_P (decl)));
 
 	  type = TREE_TYPE (decl);
 	}
@@ -9161,6 +9195,7 @@ cp_parser_init_declarator (cp_parser* parser,
 			   tree prefix_attributes,
 			   bool function_definition_allowed_p,
 			   bool member_p,
+			   int declares_class_or_enum,
 			   bool* function_definition_p)
 {
   cp_token *token;
@@ -9197,6 +9232,9 @@ cp_parser_init_declarator (cp_parser* parser,
      further.  */
   if (declarator == error_mark_node)
     return error_mark_node;
+
+  cp_parser_check_for_definition_in_return_type (declarator,
+						 declares_class_or_enum);
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -10326,7 +10364,7 @@ static tree
 cp_parser_parameter_declaration (cp_parser *parser, 
 				 bool template_parm_p)
 {
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   bool greater_than_is_operator_p;
   tree decl_specifiers;
   tree attributes;
@@ -10561,7 +10599,7 @@ cp_parser_function_definition (cp_parser* parser, bool* friend_p)
   tree declarator;
   tree fn;
   cp_token *token;
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   bool member_p;
   /* The saved value of the PEDANTIC flag.  */
   int saved_pedantic;
@@ -10634,6 +10672,9 @@ cp_parser_function_definition (cp_parser* parser, bool* friend_p)
       pop_deferring_access_checks ();
       return error_mark_node;
     }
+
+  cp_parser_check_for_definition_in_return_type (declarator,
+						 declares_class_or_enum);
 
   /* If we are in a class scope, then we must handle
      function-definitions specially.  In particular, we save away the
@@ -11126,11 +11167,16 @@ cp_parser_class_specifier (cp_parser* parser)
   /* Look for attributes to apply to this class.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_attributes_opt (parser);
-  /* Finish the class definition.  */
-  type = finish_class_definition (type, 
-				  attributes,
-				  has_trailing_semicolon,
-				  nested_name_specifier_p);
+  /* If we got any attributes in class_head, xref_tag will stick them in
+     TREE_TYPE of the type.  Grab them now.  */
+  if (type != error_mark_node)
+    {
+      attributes = chainon (TYPE_ATTRIBUTES (type), attributes);
+      TYPE_ATTRIBUTES (type) = NULL_TREE;
+      type = finish_struct (type, attributes);
+    }
+  if (nested_name_specifier_p)
+    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   /* If this class is not itself within the scope of another class,
      then we need to parse the bodies of all of the queued function
      definitions.  Note that the queued functions defined in a class
@@ -11444,21 +11490,31 @@ cp_parser_class_head (cp_parser* parser,
 		 "enclose `%D'", type, scope, nested_name_specifier);
 	  return NULL_TREE;
 	}
+      /* [dcl.meaning]
+
+         A declarator-id shall not be qualified exception of the
+	 definition of a ... nested class outside of its class
+	 ... [or] a the definition or explicit instantiation of a
+	 class member of a namespace outside of its namespace.  */
+      if (scope == CP_DECL_CONTEXT (type))
+	{
+	  pedwarn ("extra qualification ignored");
+	  nested_name_specifier = NULL_TREE;
+	}
 
       maybe_process_partial_specialization (TREE_TYPE (type));
       class_type = current_class_type;
-      type = TREE_TYPE (handle_class_head (class_key, 
-					   nested_name_specifier,
-					   type,
-					   attributes));
-      if (type != error_mark_node)
-	{
-	  if (!class_type && TYPE_CONTEXT (type))
-	    *nested_name_specifier_p = true;
-	  else if (class_type && !same_type_p (TYPE_CONTEXT (type),
-					       class_type))
-	    *nested_name_specifier_p = true;
-	}
+      /* Enter the scope indicated by the nested-name-specifier.  */
+      if (nested_name_specifier)
+	push_scope (nested_name_specifier);
+      /* Get the canonical version of this type.  */
+      type = TYPE_MAIN_DECL (TREE_TYPE (type));
+      if (PROCESSING_REAL_TEMPLATE_DECL_P ()
+	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (type)))
+	type = push_template_decl (type);
+      type = TREE_TYPE (type);
+      if (nested_name_specifier)
+	*nested_name_specifier_p = true;
     }
   /* Indicate whether this class was declared as a `class' or as a
      `struct'.  */
@@ -11599,7 +11655,7 @@ cp_parser_member_declaration (cp_parser* parser)
   tree decl_specifiers;
   tree prefix_attributes;
   tree decl;
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   bool friend_p;
   cp_token *token;
   int saved_pedantic;
@@ -11811,6 +11867,9 @@ cp_parser_member_declaration (cp_parser* parser)
 		  cp_parser_skip_to_end_of_statement (parser);
 		  break;
 		}
+
+	      cp_parser_check_for_definition_in_return_type 
+		(declarator, declares_class_or_enum);
 
 	      /* Look for an asm-specification.  */
 	      asm_specification = cp_parser_asm_specification_opt (parser);
@@ -13543,7 +13602,7 @@ cp_parser_single_declaration (cp_parser* parser,
 			      bool member_p,
 			      bool* friend_p)
 {
-  bool declares_class_or_enum;
+  int declares_class_or_enum;
   tree decl = NULL_TREE;
   tree decl_specifiers;
   tree attributes;
@@ -13592,6 +13651,7 @@ cp_parser_single_declaration (cp_parser* parser,
 				      attributes,
 				      /*function_definition_allowed_p=*/false,
 				      member_p,
+				      declares_class_or_enum,
 				      /*function_definition_p=*/NULL);
 
   pop_deferring_access_checks ();

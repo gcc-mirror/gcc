@@ -100,7 +100,6 @@ static void reopen_tinst_level (tree);
 static tree classtype_mangled_name (tree);
 static char* mangle_class_name_for_template (const char *, tree, tree);
 static tree tsubst_initializer_list (tree, tree);
-static int list_eq (tree, tree);
 static tree get_class_bindings (tree, tree, tree);
 static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t, int);
 static void tsubst_enum	(tree, tree, tree);
@@ -4227,7 +4226,6 @@ lookup_template_class (tree d1,
 	  t = make_aggr_type (TREE_CODE (template_type));
 	  CLASSTYPE_DECLARED_CLASS (t) 
 	    = CLASSTYPE_DECLARED_CLASS (template_type);
-	  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 	  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
 	  TYPE_FOR_JAVA (t) = TYPE_FOR_JAVA (template_type);
 
@@ -5141,9 +5139,6 @@ instantiate_class_template (tree type)
 
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
   TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
-  TYPE_OVERLOADS_CALL_EXPR (type) = TYPE_OVERLOADS_CALL_EXPR (pattern);
-  TYPE_OVERLOADS_ARRAY_REF (type) = TYPE_OVERLOADS_ARRAY_REF (pattern);
-  TYPE_OVERLOADS_ARROW (type) = TYPE_OVERLOADS_ARROW (pattern);
   TYPE_HAS_NEW_OPERATOR (type) = TYPE_HAS_NEW_OPERATOR (pattern);
   TYPE_HAS_ARRAY_NEW_OPERATOR (type) = TYPE_HAS_ARRAY_NEW_OPERATOR (pattern);
   TYPE_GETS_DELETE (type) = TYPE_GETS_DELETE (pattern);
@@ -5385,7 +5380,6 @@ instantiate_class_template (tree type)
   
   unreverse_member_declarations (type);
   finish_struct_1 (type);
-  CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
   /* Clear this now so repo_template_used is happy.  */
   TYPE_BEING_DEFINED (type) = 0;
@@ -5412,21 +5406,6 @@ instantiate_class_template (tree type)
     keyed_classes = tree_cons (NULL_TREE, type, keyed_classes);
 
   return type;
-}
-
-static int
-list_eq (tree t1, tree t2)
-{
-  if (t1 == NULL_TREE)
-    return t2 == NULL_TREE;
-  if (t2 == NULL_TREE)
-    return 0;
-  /* Don't care if one declares its arg const and the other doesn't -- the
-     main variant of the arg type is all that matters.  */
-  if (TYPE_MAIN_VARIANT (TREE_VALUE (t1))
-      != TYPE_MAIN_VARIANT (TREE_VALUE (t2)))
-    return 0;
-  return list_eq (TREE_CHAIN (t1), TREE_CHAIN (t2));
 }
 
 static tree
@@ -6020,11 +5999,14 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
-	if (TREE_CODE (DECL_INITIAL (r)) != TEMPLATE_PARM_INDEX)
-	  DECL_INITIAL (r) = TREE_TYPE (r);
-	else
-	  DECL_INITIAL (r) = tsubst (DECL_INITIAL (r), args,
-				     complain, in_decl);
+	if (DECL_INITIAL (r))
+	  {
+	    if (TREE_CODE (DECL_INITIAL (r)) != TEMPLATE_PARM_INDEX)
+	      DECL_INITIAL (r) = TREE_TYPE (r);
+	    else
+	      DECL_INITIAL (r) = tsubst (DECL_INITIAL (r), args,
+					 complain, in_decl);
+	  }
 
 	DECL_CONTEXT (r) = NULL_TREE;
 

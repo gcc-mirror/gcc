@@ -1,3 +1,72 @@
+2003-08-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11703
+	* call.c (type_passed_as): Use TYPE_SIZE, not TYPE_PRECISION to
+	determine whether or not to promote types.
+	(convert_for_arg_passing): Likewise.
+	* decl2.c (cp_build_parm_decl): Do not set DECL_ARG_TYPE in
+	templates.
+	* pt.c (tsubst_decl): Do not expect it to be set.
+
+	PR c++/9512
+	PR c++/10923
+	* cp-tree.h (check_elaborated_type_specifier): Declare.
+	(handle_class_head): Remove.
+	(note_got_semicolon): Likewise.
+	(note_list_got_semicolon): Likewise.
+	(finish_class_definition): Likewise.
+	* decl.c (check_elaborated_type_specifier): Make it public.
+	Robustify.
+	(handle_class_head): Remove.
+	* parser.c (cp_parser_elaborated_type_specifier): Use
+	check_elaborated_type_specifier.
+	(cp_parser_class_specifier): Do not call finish_class_definition.
+	(cp_parser_class_head): Or handle_class_head.  Check for
+	over-qualified names.
+	* semantics.c (finish_class_definition): Remove.
+
+	* parser.c (cp_parser_check_for_definition_in_return_type): New
+	function.
+	(cp_parser_simple_declaration): Adjust call to
+	cp_parser_init_declarator.
+	(cp_parser_decl_specifier_seq): Change type of
+	declares_class_or_enum parameter.
+	(cp_parser_explicit_instantiation): Adjust accordingly.
+	(cp_parser_type_specifier): Change type of
+	declares_class_or_enum parameter.
+	(cp_parser_init_declarator): Add declares_class_or_enum
+	parameter.
+	(cp_parser_parameter_declaration): Adjust call to
+	cp_parser_decl_specifier_seq.
+	(cp_parser_function_definition): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_single_declaration): Likewise.
+	
+	* cp-tree.h (lang_type_class): Remove has_call_overloaded,
+	has_array_ref_overloaded, has_arrow_overloaded, and got_semicolon.
+	(TYPE_OVERLOADS_CALL_EXPR): Remove.
+	(TYPE_OVERLOADS_ARRAY_REF): Likewise.
+	(TYPE_OVERLOADS_ARROW): Likewise.
+	(CLASSTYPE_GOT_SEMICOLON): Likewise.
+	* class.c (check_bases): Do not set them.
+	(finish_struct_1): Likewise.
+	* decl.c (cp_finish_decl): Do not set CLASSTYPE_GOT_SEMICOLON.
+	(build_ptrmemfunc_type): Likewise.
+	(grok_op_properties): Do not set TYPE_OVERLOADS_*.
+	(start_function): Do not check CLASSTYPE_GOT_SEMICOLON.
+	* decl2.c (grokfield): Do not set CLASSTYPE_GOT_SEMICOLON.
+	* lex.c (note_got_semicolon): Remove.
+	(note_list_got_semicolon): Likewise.
+	* parser.c (cp_parser_simple_declaration): Do not call
+	note_list_got_semicolon.
+	* pt.c (list_eq): Remove.
+	(lookup_template_class): Do not set CLASSTYPE_GOT_SEMICOLON.
+	(instantiate_class_template): Do not set TYPE_OVERLOADS*.
+	(instantiate_class_template): Do not set CLASSTYPE_GOT_SEMICOLON.
+	* ptree.c (cxx_print_type): Do not print them.
+	* semantics.c (finish_member_class_template): Do not call
+	note_list_got_semicolon.
+	
 2003-08-11  Aldy Hernandez  <aldyh@redhat.com>
  
         * call.c (standard_conversion): Opaque pointers interconvert.

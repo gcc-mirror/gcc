@@ -223,7 +223,10 @@ tree
 cp_build_parm_decl (tree name, tree type)
 {
   tree parm = build_decl (PARM_DECL, name, type);
-  DECL_ARG_TYPE (parm) = type_passed_as (type);
+  /* DECL_ARG_TYPE is only used by the back end and the back end never
+     sees templates.  */
+  if (!processing_template_decl)
+    DECL_ARG_TYPE (parm) = type_passed_as (type);
   return parm;
 }
 
@@ -918,9 +921,6 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
       DECL_NONLOCAL (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
 
-      if (CLASS_TYPE_P (TREE_TYPE (value)))
-        CLASSTYPE_GOT_SEMICOLON (TREE_TYPE (value)) = 1;
-      
       if (processing_template_decl)
 	value = push_template_decl (value);
 
@@ -4213,96 +4213,6 @@ mark_used (tree decl)
 
       instantiate_decl (decl, defer);
     }
-}
-
-/* Called when a class-head is encountered.  TAG_KIND is the class-key
-   for the class.  SCOPE, if non-NULL, is the type or namespace
-   indicated in the nested-name-specifier for the declaration of the
-   class.  ID is the name of the class, if any; it may be a TYPE_DECL,
-   or an IDENTIFIER_NODE.  ATTRIBUTES are attributes that apply to the
-   class.
-
-   Return a TYPE_DECL for the class being defined.  */
-
-tree
-handle_class_head (enum tag_types tag_kind, tree scope, tree id,
-                   tree attributes)
-{
-  tree decl = NULL_TREE;
-  tree current = current_scope ();
-  bool xrefd_p = false;
-  bool new_type_p;
-  tree context;
-
-  if (current == NULL_TREE)
-    current = current_namespace;
-
-  if (scope)
-    {
-      if (TREE_CODE (id) == TYPE_DECL)
-	/* We must bash typedefs back to the main decl of the
-       	   type. Otherwise we become confused about scopes.  */
-	decl = TYPE_MAIN_DECL (TREE_TYPE (id));
-      else if (DECL_CLASS_TEMPLATE_P (id))
-	decl = DECL_TEMPLATE_RESULT (id);
-      else
-	{
-	  if (TYPE_P (scope))
-	    {
-	      /* According to the suggested resolution of core issue
-	     	 180, 'typename' is assumed after a class-key.  */
-	      decl = make_typename_type (scope, id, tf_error);
-	      if (decl != error_mark_node)
-		decl = TYPE_MAIN_DECL (decl);
-	      else
-		decl = NULL_TREE;
-	    }
-	  else if (scope == current)
-	    {
-	      /* We've been given AGGR SCOPE::ID, when we're already
-             	 inside SCOPE.  Be nice about it.  */
-	      if (pedantic)
-		pedwarn ("extra qualification `%T::' on member `%D' ignored",
-			 scope, id);
-	    }
-	  else
-	    error ("`%T' does not have a class or union named `%D'",
-		   scope, id);
-	}
-    }
-  
-  if (!decl)
-    {
-      decl = xref_tag (tag_kind, id, attributes, false, false);
-      if (decl == error_mark_node)
-	return error_mark_node;
-      decl = TYPE_MAIN_DECL (decl);
-      xrefd_p = true;
-    }
-
-  if (!TYPE_BINFO (TREE_TYPE (decl)))
-    {
-      error ("`%T' is not a class or union type", decl);
-      return error_mark_node;
-    }
-  
-  /* For a definition, we want to enter the containing scope before
-     looking up any base classes etc. Only do so, if this is different
-     to the current scope.  */
-  context = CP_DECL_CONTEXT (decl);
-  
-  new_type_p = (current != context
-		&& TREE_CODE (context) != TEMPLATE_TYPE_PARM
-		&& TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
-  if (new_type_p)
-    push_scope (context);
-  
-  if (!xrefd_p 
-      && PROCESSING_REAL_TEMPLATE_DECL_P ()
-      && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
-    decl = push_template_decl (decl);
-
-  return decl;
 }
 
 #include "gt-cp-decl2.h"
