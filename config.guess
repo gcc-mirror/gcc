@@ -733,7 +733,7 @@ EOF
        (/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
                && UNAME_MACHINE=i586
 # 5.0.4c returns "Pent II".  5.0.5 returns PentII
-       (/bin/uname -X|egrep '^Machine.*Pent *II' >/dev/null) \
+       (/bin/uname -X|egrep '^Machine.*Pent.*II' >/dev/null) \
                && UNAME_MACHINE=i686
        (/bin/uname -X|egrep '^Machine.*Pentium Pro' >/dev/null) \
                && UNAME_MACHINE=i686
