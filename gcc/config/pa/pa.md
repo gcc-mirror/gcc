@@ -65,19 +65,36 @@
 		(const_string "true")
 		(const_string "false")))
 
+;; Disallow instructions which use the FPU since they will tie up the FPU
+;; even if the instruction is nullified.
+(define_attr "in_nullified_branch_delay" "false,true"
+  (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
+		     (eq_attr "length" "1"))
+		(const_string "true")
+		(const_string "false")))
+
 ;; Unconditional branch, call, and millicode call delay slot description.
 (define_delay (eq_attr "type" "branch,call,milli")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
-;; Floating point conditional branch delay slot description.
+;; Floating point conditional branch delay slot description and
 (define_delay (eq_attr "type" "fbranch")
   [(eq_attr "in_branch_delay" "true")
-   (eq_attr "in_branch_delay" "true")
+   (eq_attr "in_nullified_branch_delay" "true")
    (nil)])
 
 ;; Integer conditional branch delay slot description.
+;; Nullification of conditional branches on the PA is dependent on the
+;; direction of the branch.  Forward branches nullify true (direction > 0),
+;; and backward branches nullify false (direction < 0).
+;; If direction == 0, then the direction is unknown and we do not allow
+;; any nullification.
 (define_delay (eq_attr "type" "cbranch")
-  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
+  [(eq_attr "in_branch_delay" "true") 
+   (and (eq_attr "in_nullified_branch_delay" "true") 
+	(attr_flag "forward"))
+   (and (eq_attr "in_nullified_branch_delay" "true")
+	(attr_flag "backward"))])
 
 ;; Function units of the HPPA. The following data is for the "Snake"
 ;; (Mustang CPU + Timex FPU) because that's what I have the docs for.
@@ -463,6 +480,52 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,3")])
 
+;; Signed/Unsigned minimum and maximum patterns.
+(define_insn "sminsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+	(smin:SI (match_operand:SI 1 "register_operand" "%r,0,0")
+		 (match_operand:SI 2 "arith11_operand" "M,r,I")))]
+  ""
+  "@
+  comclr,> %1,%2,%0\;copy %1,%0
+  comclr,> %2,%0,0\;copy %2,%0
+  comiclr,> %2,%0,0\;ldi %2,%0"
+[(set_attr "type" "multi,multi,multi")
+ (set_attr "length" "2,2,2")])
+
+(define_insn "uminsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(umin:SI (match_operand:SI 1 "register_operand" "%0,0")
+		 (match_operand:SI 2 "arith11_operand" "r,I")))]
+  ""
+  "@
+  comclr,>> %2,%0,0\;copy %2,%0
+  comiclr,>> %2,%0,0\;ldi %2,%0"
+[(set_attr "type" "multi,multi")
+ (set_attr "length" "2,2")])
+
+(define_insn "smaxsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+	(smax:SI (match_operand:SI 1 "register_operand" "%r,0,0")
+		 (match_operand:SI 2 "arith11_operand" "M,r,I")))]
+  ""
+  "@
+  comclr,< %1,%2,%0\;copy %1,%0
+  comclr,< %2,%0,0\;copy %2,%0
+  comiclr,< %2,%0,0\;ldi %2,%0"
+[(set_attr "type" "multi,multi,multi")
+ (set_attr "length" "2,2,2")])
+
+(define_insn "umaxsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(umax:SI (match_operand:SI 1 "register_operand" "%0,0")
+		 (match_operand:SI 2 "arith11_operand" "r,I")))]
+  ""
+  "@
+  comclr,<< %2,%0,0\;copy %2,%0
+  comiclr,<< %2,%0,0\;ldi %2,%0"
+[(set_attr "type" "multi,multi")
+ (set_attr "length" "2,2")])
 ;;; Experimental conditional move patterns
 
 ; We need the first constraint alternative in order to avoid
@@ -676,6 +739,9 @@
 
 ;; Match the branch patterns.
 
+
+;; Note a long backward conditional branch with an annulled delay slot
+;; has a length of 3.  
 (define_insn ""
   [(set (pc)
 	(if_then_else
@@ -687,15 +753,19 @@
   ""
   "*
 {
-  return (get_attr_length (insn) == 1
-	  ? \"com%I2b,%S3 %2,%1,%0%#\" : \"com%I2clr,%B3 %2,%1,0\;bl %0,0%#\");
+  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn), 
+			 get_attr_length (insn), 0, insn);
 }"
-  [(set_attr "type" "cbranch")
-   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						      (plus (pc) (const_int 2))))
-					  (const_int 1023))
-				      (const_int 1)
-				      (const_int 2)))])
+[(set_attr "type" "cbranch")
+ (set (attr "length") 
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 1023))
+           (const_int 1)
+	   (and (lt (match_dup 0) (pc))
+		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+		    (const_int 1)))
+	   (const_int 3)]
+	  (const_int 2)))])
 
 ;; Match the negated branch.
 
@@ -710,18 +780,21 @@
   ""
   "*
 {
-  return (get_attr_length (insn) == 1
-	  ? \"com%I2b,%B3 %2,%1,%0%#\" : \"com%I2clr,%S3 %2,%1,0%#\;bl %0,0%#\");
+  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn), 
+			 get_attr_length (insn), 1, insn);
 }"
-  [(set_attr "type" "cbranch")
-   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						      (plus (pc) (const_int 2))))
-					  (const_int 1023))
-				      (const_int 1)
-				      (const_int 2)))])
+[(set_attr "type" "cbranch")
+ (set (attr "length") 
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 1023))
+           (const_int 1)
+	   (and (lt (match_dup 0) (pc))
+		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+		    (const_int 1)))
+	   (const_int 3)]
+	  (const_int 2)))])
 
-;; Branch on bit patterns
-
+;; Branch on Bit patterns.
 (define_insn ""
   [(set (pc)
 	(if_then_else
@@ -734,19 +807,21 @@
   ""
   "*
 {
-  if (operands[3] == pc_rtx)
-    return (get_attr_length (insn) == 1
-	    ? \"bb,< %0,%1,%2%#\" : \"extrs,>= %0,%1,1,0\;bl %2,0%#\");
-  else
-    return (get_attr_length (insn) == 1
-	    ? \"bb,>= %0,%1,%3%#\" : \"extrs,< %0,%1,1,0\;bl %3,0%#\");
+  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn), 
+			 get_attr_length (insn), 
+			 (operands[3] != pc_rtx),
+			 insn, 0);
 }"
-  [(set_attr "type" "cbranch")
-   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						      (plus (pc) (const_int 2))))
-					  (const_int 1023))
-				      (const_int 1)
-				      (const_int 2)))])
+[(set_attr "type" "cbranch")
+ (set (attr "length") 
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 1023))
+           (const_int 1)
+	   (and (lt (match_dup 0) (pc))
+		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+		    (const_int 1)))
+	   (const_int 3)]
+	  (const_int 2)))])
 
 (define_insn ""
   [(set (pc)
@@ -760,19 +835,22 @@
   ""
   "*
 {
-  if (operands[3] == pc_rtx)
-    return (get_attr_length (insn) == 1
-	    ? \"bb,>= %0,%1,%2%#\" : \"extrs,< %0,%1,1,0\;bl %2,0%#\");
-  else
-    return (get_attr_length (insn) == 1
-	    ? \"bb,< %0,%1,%3%#\" : \"extrs,>= %0,%1,1,0\;bl %3,0%#\");
+  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn), 
+			 get_attr_length (insn), 
+			 (operands[3] != pc_rtx),
+			 insn, 1);
 }"
-  [(set_attr "type" "cbranch")
-   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						      (plus (pc) (const_int 2))))
-					  (const_int 1023))
-				      (const_int 1)
-				      (const_int 2)))])
+[(set_attr "type" "cbranch")
+ (set (attr "length") 
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 1023))
+           (const_int 1)
+	   (and (lt (match_dup 0) (pc))
+		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+		    (const_int 1)))
+	   (const_int 3)]
+	  (const_int 2)))])
+
 ;; Floating point branches
 
 (define_insn ""
@@ -2744,13 +2822,13 @@
   return \"depi %3,%2+%1-1,%1,%0\";
 }")
 
+;; The dbra pattern from hell.  
 ;; This insn is used for some loop tests, typically loops reversed when
 ;; strength reduction is used.  It is actually created when the instruction
 ;; combination phase combines the special loop test.  Since this insn
 ;; is both a jump insn and has an output, it must deal with it's own
 ;; reloads, hence the `m' constraints.  The `!' constraints direct reload
 ;; to not choose the register alternatives in the event a reload is needed.
-
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
 	(if_then_else
@@ -2766,44 +2844,101 @@
   "find_reg_note (insn, REG_NONNEG, 0)"
 "*
 {
-  if (which_alternative == 0)
-    if (get_attr_length (insn) == 1)
-      return \"addib,>= -1,%0,%1%#\";
-    else
-      return \"addi,< -1,%0,%0\;bl %1,0%#\";
+  if (INSN_ANNULLED_BRANCH_P (insn))
+    {
+      /* Loop counter is in a register.  */
+      if (which_alternative == 0)
+	/* Short branch.  Normal handling of nullification.  */
+        if (get_attr_length (insn) == 1)
+          return \"addib,>=,n -1,%0,%1\";
+	/* Long Conditional branch forward with delay slot nullified if
+	   branch is taken.  */
+        else if (get_attr_length (insn) == 2)
+          return \"addi,< -1,%0,%0\;bl,n %1,0\";
+	/* Long Conditional branch backwards with delay slot nullified
+	   if branch is not taken.  */
+        else
+          return \"addib,< -1,%0,.+16\;nop\;bl %1,0\";
+      else
+        {
+	  /* Must reload loop counter from memory.  Ugly.  */
+          output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
+	  /* Short branch.  Normal handling of nullification.  */
+          if (get_attr_length (insn) == 4)
+	    return \"comb,>,n 0,%2,%1\";
+	  /* Long Conditional branch forward with delay slot nullified if
+	     branch is taken.  */
+          else if (get_attr_length (insn) == 5)
+	    return \"comclr,<= 0,%2,0\;bl,n %1,0\";
+	  else 
+	  /* Long Conditional branch backwards with delay slot nullified
+	     if branch is not taken.  */
+	    return \"comb,<= 0,%2,.+16\;nop\;bl %1,0\";
+        }
+    }
   else
     {
-      output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
-      if (get_attr_length (insn) == 4)
-	return \"comb,> 0,%2,%1%#\";
+      /* We are not nullifying the delay slot.  Much simpler.  */
+      if (which_alternative == 0)
+        if (get_attr_length (insn) == 1)
+	  /* Short form.  */
+          return \"addib,>= -1,%0,%1%#\";
+        else
+	  /* Long form.  */
+          return \"addi,< -1,%0,%0\;bl%* %1,0\";
       else
-	return \"comclr,<= 0,%2,0\;bl %1,0%#\";
+        {
+	  /* Reload loop counter from memory.  */
+          output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
+	  /* Short form.  */
+          if (get_attr_length (insn) == 4)
+	    return \"comb,> 0,%2,%1%#\";
+	  /* Long form.  */
+          else
+	    return \"comclr,<= 0,%2,0\;bl%* %1,0\";
+        }
     }
 }"
+;; Do not expect to understand this the first time through.  
 [(set_attr "type" "cbranch")
  (set (attr "length")
-      (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
-		    (if_then_else (lt (abs (minus (match_dup 1)
-						  (plus (pc) (const_int 2))))
-				      (const_int 1023))
-				  (const_int 1)
-				  (const_int 2))
-		    (if_then_else (lt (match_dup 1)
-				      (pc))
-				  (if_then_else
-				   (lt (abs (minus (match_dup 1)
-						   (plus (pc)
-							 (const_int 5))))
-				       (const_int 1023))
-				   (const_int 4)
-				   (const_int 5))
-				  (if_then_else
-				   (lt (abs (minus (match_dup 1)
-						   (plus (pc)
-							 (const_int 2))))
-				       (const_int 1023))
-				   (const_int 4)
-				   (const_int 5)))))])
+      (if_then_else 
+	(eq_attr "alternative" "0")
+;; Loop counter in register case.
+	(cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 2))))
+		   (const_int 1023))
+;; Short branch has a length of 1.
+	       (const_int 1)
+;; Long backward branch with nullified delay slot has length of 3.
+	       (and (lt (match_dup 1) (pc))
+		    (eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+			(const_int 1)))
+	       (const_int 3)]
+;; Default others to 2.
+;; Long branches with unfilled delay slots  --or--
+;; Long forward with nullified delay slot.
+	      (const_int 2))
+;; Loop counter in memory case.   Similar to above except we pay
+;; 3 extra insns in each case for reloading the counter into a register.
+	(if_then_else (lt (match_dup 1) (pc))
+	  (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 5))))
+		     (const_int 1023))
+;; Short branch has length of 4 (the reloading costs 3 insns)
+		 (const_int 4)
+		 (and (lt (match_dup 1) (pc))
+		      (eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
+			  (const_int 1)))
+;; Long backward branch with nullified delay slot has length of 6.
+		 (const_int 6)]
+;; Default others to 5.
+;; Long branches with unfilled delay slots  --or--
+;; Long forward with nullified delay slot.
+		(const_int 5))
+	  (if_then_else (lt (abs (minus (match_dup 1) 
+					(plus (pc) (const_int 2))))
+			    (const_int 1023))
+			(const_int 4)
+			(const_int 5)))))])
 
 
 ;; The next four peepholes take advantage of the new 5 operand 
