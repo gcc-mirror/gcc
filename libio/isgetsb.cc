@@ -31,6 +31,8 @@ istream& istream::get(streambuf& sb, char delim /* = '\n' */)
   _gcount = 0;
   if (ipfx1())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       register streambuf* isb = rdbuf();
       for (;;)
 	{
@@ -54,6 +56,8 @@ istream& istream::get(streambuf& sb, char delim /* = '\n' */)
 	  if (delimp != NULL)
 	    break;
 	}
+      isfx();
+      _IO_cleanup_region_end (0);
     }
   return *this;
 }
