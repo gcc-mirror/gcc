@@ -17,4 +17,4 @@ ASSERT (r, sizeof ((foo ()).c) == 17);
 /* The non-lvalue array does not decay to a pointer, so the comma expression
    has (non-lvalue) array type.
 */
-ASSERT (s, sizeof (0, (foo ()).c) == 17); /* { dg-bogus "array" "bad non-lvalue array handling" { xfail *-*-* } } */
+ASSERT (s, sizeof (0, (foo ()).c) == 17); /* { dg-bogus "array" "bad non-lvalue array handling" } */

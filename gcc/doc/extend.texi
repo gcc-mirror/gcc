@@ -1540,10 +1540,12 @@ removed.
 @cindex arrays, non-lvalue
 
 @cindex subscripting and function values
-Subscripting is allowed on arrays that are not lvalues, even though the
-unary @samp{&} operator is not.  (In ISO C99, both are allowed (though
-the array may not be used after the next sequence point), but this ISO
-C99 feature is not yet fully supported in GCC@.)  For example,
+In ISO C99, arrays that are not lvalues still decay to pointers, and
+may be subscripted, although they may not be modified or used after
+the next sequence point and the unary @samp{&} operator may not be
+applied to them.  As an extension, GCC allows such arrays to be
+subscripted in C89 mode, though otherwise they do not decay to
+pointers outside C99 mode.  For example,
 this is valid in GNU C though not valid in C89:
 
 @example

@@ -16,6 +16,6 @@ bar (void)
   (foo ()).c + 1; /* { dg-bogus "warning" "warning in place of error" } */
 }
 /* { dg-error "non-lvalue" "array not decaying to lvalue" { target *-*-* } 14 }
-   { dg-error "non-lvalue" "array not decaying to lvalue" { target *-*-* } 15 }
-   { dg-error "non-lvalue" "array not decaying to lvalue" { target *-*-* } 16 }
+   { dg-error "non-lvalue|incompatible" "array not decaying to lvalue" { target *-*-* } 15 }
+   { dg-error "non-lvalue|invalid" "array not decaying to lvalue" { target *-*-* } 16 }
 */

@@ -1,3 +1,29 @@
+2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (c_expand_expr_stmt): Apply default conversions to
+	non-lvalue arrays if C99.
+	* c-typeck.c (default_conversion): Split out code handling
+	array-to-pointer and function-to-pointer conversions into a
+	separate default_function_array_conversion function.
+	(default_function_array_conversion): New function.  Keep track of
+	whether any NON_LVALUE_EXPRs were stripped.  Return non-lvalue
+	arrays unchanged outside C99 mode instead of giving an error for
+	them.
+	(build_component_ref): Use pedantic_non_lvalue when handling
+	COMPOUND_EXPR.  Don't handle COND_EXPR specially.
+	(convert_arguments): Use default_function_array_conversion.
+	(build_unary_op): For ADDR_EXPR, take a flag indicating whether
+	non-lvalues are OK.
+	(unary_complex_lvalue): Likewise.
+	(internal_build_compound_expr): Use
+	default_function_array_conversion.  Apply default conversions to
+	function in compound expression.
+	(build_c_cast, build_modify_expr, digest_init, build_asm_stmt):
+	Use default_function_array_conversion.
+	* doc/extend.texi: Update documentation of subscripting non-lvalue
+	arrays.
+	Fixes PR c/461.
+
 2001-11-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4: (AM_WITH_NLS): Don't look at ALL_LINGUAS.
