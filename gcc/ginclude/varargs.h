@@ -36,7 +36,7 @@
 #if defined (__H8300__) || defined (__H8300H__) || defined (__H8300S__)
 #include <va-h8300.h>
 #else
-#if defined (__PPC__) && defined (_CALL_SYSV)
+#if defined (__PPC__) && (defined (_CALL_SYSV) || defined (__WIN32__))
 #include <va-ppc.h>
 #else
 #ifdef __sh__
