@@ -858,7 +858,8 @@ struct cum_arg
         && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS			\
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF	\
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)	\
-        && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0))))	\
+        && (TARGET_H8300S						\
+	    || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\
        && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (OP, 0)))			\
    || (GET_CODE (OP) == MEM && TARGET_H8300S				\
