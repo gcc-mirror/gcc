@@ -478,26 +478,12 @@ namespace std
       basic_string& 
       assign(const basic_string& __str, size_type __pos, size_type __n)
       {
-	if (__pos > __str.size())
+	const size_type __strsize = __str.size();
+	if (__pos > __strsize)
 	  __throw_out_of_range("basic_string::assign");
-	if (_M_rep()->_M_is_shared() || _M_rep() != __str._M_rep())
-	  return _M_replace_safe(_M_ibegin(), _M_iend(), 
-				 __str._M_check(__pos),
-				 __str._M_fold(__pos, __n));
-	else
-	  {
-	    // Work in-place.
-	    bool __testn = __n < __str.size() - __pos;
-	    const size_type __newsize = __testn ? __n : __str.size() - __pos;
-	    // Avoid move, if possible.
-	    if (__pos >= __newsize)
-	      traits_type::copy(_M_data(), __str._M_data() + __pos, __newsize);
-	    else if (__pos)	      
-	      traits_type::move(_M_data(), __str._M_data() + __pos, __newsize);
-	    // else nothing (avoid calling move unnecessarily)
-	    _M_rep()->_M_length = __newsize;
-	    return *this;
-	  }
+	const bool __testn = __n < __strsize - __pos;
+	const size_type __newsize = __testn ? __n : __strsize - __pos;
+	return this->assign(__str._M_data() + __pos, __newsize);
       }
 
       basic_string& 
@@ -517,6 +503,7 @@ namespace std
 	    else if (__pos)
 	      traits_type::move(_M_data(), __s, __n);
 	    _M_rep()->_M_length = __n;
+	    _M_data()[__n] = _Rep::_S_terminal;
 	    return *this;
 	  }
       }
