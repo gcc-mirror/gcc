@@ -1,5 +1,5 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -284,9 +284,9 @@ static void
 cb_line_change (pfile, token, parsing_args)
      cpp_reader *pfile;
      const cpp_token *token;
-     int parsing_args;
+     int parsing_args ATTRIBUTE_UNUSED;
 {
-  if (token->type == CPP_EOF || parsing_args)
+  if (token->type == CPP_EOF)
     return;
 
   maybe_print_line (pfile, pfile->print.map, token->line);
