@@ -394,7 +394,7 @@ build_up_reference (type, arg, flags, decl)
 	}
       else
 	{
-	  /* automatic; make sure we handle the cleanup properly.  */
+	  /* Automatic; make sure we handle the cleanup properly.  */
 	  maybe_push_cleanup_level (argtype);
 	  arg = pushdecl (arg);
 	}
