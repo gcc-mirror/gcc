@@ -68,7 +68,7 @@ $!
 $! We do this by hand, since the VMS compiler driver does not have a way
 $! of specifying an alternate location for the compiler executables.
 $!
-$ gcc_cpp "-I[]" "-I[.CONFIG]" "-D''flnm'"  LIBGCC2.C 'cpp_file'
+$ gcc_cpp "-I[]" "-I[.config.]" "-D''flnm'"  libgcc2.c 'cpp_file'
 $ gcc_cc1 'cpp_file' -dumpbase 'objname' -
         -quiet -mgnu -g "-O1" -mvaxc-alignment   -o 's_file'
 $ delete/nolog 'cpp_file';
