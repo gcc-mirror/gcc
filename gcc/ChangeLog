@@ -1,3 +1,7 @@
+Sun Nov 18 14:13:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sdbout.c (sdbout_symbol): Avoid warning due to &DECL_RTL.
+
 2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (c_decode_option): Give deprecation warning for

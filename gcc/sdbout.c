@@ -796,7 +796,7 @@ sdbout_symbol (decl, local)
 	 particular compilation.  */
       if (GET_CODE (value) == REG)
 	{
-	  regno = REGNO (DECL_RTL (decl));
+	  regno = REGNO (value);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
 	    return;
 	}
@@ -809,8 +809,8 @@ sdbout_symbol (decl, local)
 	      if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 		return;
 	    }
-	  regno = REGNO (alter_subreg (&DECL_RTL (decl)));
-	  value = DECL_RTL (decl);
+	  regno = REGNO (alter_subreg (&value));
+	  SET_DECL_RTL (decl, value);
 	}
       /* Don't output anything if an auto variable
 	 gets RTL that is static.
