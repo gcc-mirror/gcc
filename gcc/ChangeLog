@@ -1,3 +1,7 @@
+Tue Oct  5 16:34:12 1999  Paul Burchard <burchard@pobox.com>
+
+	* ggc-page.c (GGC_ALWAYS_COLLECT): Fix typo when undef'ing.
+
 Tue Oct  5 16:14:40 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* libgcc1-test.c (toplevel): Include stddef.h to get size_t.
