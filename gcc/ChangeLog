@@ -1,3 +1,13 @@
+Sun Feb 18 17:05:50 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (rtlanal.o): Depend on hard-reg-set.h.
+	($HOST_PREFIX_1)rtlanal.o: Remove rules for building
+	(mostlyclean): Corresponding changes.
+	* rtlanal.c (hard-reg-set.h): Include.
+	(rtx_unstable_p): Do not treat the argument pointer specially
+	if it is not a fixed register.
+	(rtx_varies_p, rtx_addr_can_trap_p): Similarly.
+
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Compare
