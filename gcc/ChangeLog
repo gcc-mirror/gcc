@@ -1,3 +1,9 @@
+2004-04-01  Serge Belyshev  <1319@bot.ru>
+
+        PR target/14702
+        * config/i386/i386.md: fix source operand constraints in
+        mmx_pshufw, sse2_pshufd, sse2_pshuflw, sse2_pshufhw
+
 2004-04-01  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	* fold-const.c (folda): Preserve types of comparisons.
