@@ -1,3 +1,7 @@
+2004-11-30  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/pr18596-1.c: New test.
+
 2004-11-30  Ben Elliston  <bje@au.ibm.com>
 
 	* g++.old-deja/g++.other/decl5.C: Remove remaining XFAILs.

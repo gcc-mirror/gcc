@@ -4428,8 +4428,15 @@ grokdeclarator (const struct c_declarator *declarator,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
+	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
+	decl = build_decl_attribute_variant (decl, decl_attr);
+
 	if (storage_class == csc_register || threadp)
-	  error ("invalid storage class for function %qs", name);
+	  {
+	    error ("invalid storage class for function %qs", name);
+	    if (DECL_INITIAL (decl) != NULL_TREE)
+	      DECL_INITIAL (decl) = error_mark_node;
+	   }
 	else if (current_scope != file_scope)
 	  {
 	    /* Function declaration not at file scope.  Storage
@@ -4443,11 +4450,12 @@ grokdeclarator (const struct c_declarator *declarator,
 		  pedwarn ("invalid storage class for function %qs", name);
 	      }
 	    if (storage_class == csc_static)
-	      error ("invalid storage class for function %qs", name);
+	      {
+	        error ("invalid storage class for function %qs", name);
+		if (DECL_INITIAL (decl) != NULL_TREE)
+		  DECL_INITIAL (decl) = error_mark_node;
+	      }
 	  }
-
-	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
-	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
 

@@ -1,3 +1,9 @@
+2004-11-30  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR middle-end/18596
+	* c-decl.c (grokdeclarator): Reset DECL_INTIAL to error_mark_node
+	on errors.
+
 2004-11-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr_real_1, case NOP_EXPR): Properly handle
