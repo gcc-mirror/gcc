@@ -1,3 +1,9 @@
+2005-03-31  J"orn Rennecke <joern.rennecke@st.com>
+
+	* postreload-gcse.c: Include target.h.
+	(gcse_after_reload_main): Return early if we cannot modify jumps.
+	* Makefile.in (postreload-gcse.o): Depend on $(TARGET_H).
+
 2005-03-31  David Edelsohn  <edelsohn@gnu.org>
 
 	* tree-ssa-loop-im.c (stmt_cost): Add RDIV_EXPR to list of
