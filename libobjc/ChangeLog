@@ -1,3 +1,11 @@
+2003-10-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (CC1OBJ): Remove.
+	(runtime-info.h): Invoke $(CC) so all MULTIFLAGS are handled
+	correctly.
+	Use .m extension for temporary file.
+	Remove assembler temp file.
+
 2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* objc/hash.h (hash_string): Don't use a cast as an lvalue.
