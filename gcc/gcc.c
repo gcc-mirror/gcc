@@ -281,12 +281,30 @@ or with constant text in a single argument.
  %b     substitute the basename of the input file being processed.
 	This is the substring up to (and not including) the last period
 	and not including the directory.
- %g     substitute the temporary-file-name-base.  This is a string chosen
-	once per compilation.  Different temporary file names are made by
-	concatenation of constant strings on the end, as in `%g.s'.
-	%g also has the same effect of %d.
- %u	like %g, but make the temporary file name unique.
- %U	returns the last file name generated with %u.
+ %gSUFFIX
+	substitute a file name that has suffix SUFFIX and is chosen
+	once per compilation, and mark the argument a la %d.  To reduce
+	exposure to denial-of-service attacks, the file name is now
+	chosen in a way that is hard to predict even when previously
+	chosen file names are known.  For example, `%g.s ... %g.o ... %g.s'
+	might turn into `ccUVUUAU.s ccXYAXZ12.o ccUVUUAU.s'.  SUFFIX matches
+	the regexp "[.A-Za-z]*" or the special string "%O", which is
+	treated exactly as if %O had been pre-processed.  Previously, %g
+	was simply substituted with a file name chosen once per compilation,
+	without regard to any appended suffix (which was therefore treated
+	just like ordinary text), making such attacks more likely to succeed.
+ %uSUFFIX
+	like %g, but generates a new temporary file name even if %uSUFFIX
+	was already seen.
+ %USUFFIX
+	substitutes the last file name generated with %uSUFFIX, generating a
+	new one if there is no such last file name.  In the absence of any
+	%uSUFFIX, this is just like %gSUFFIX, except they don't share
+	the same suffix "space", so `%g.s ... %U.s ... %g.s ... %U.s'
+	would involve the generation of two distinct file names, one
+	for each `%g.s' and another for each `%U.s'.  Previously, %U was
+	simply substituted with a file name chosen for the previous %u,
+	without regard to any appended suffix.
  %d	marks the argument containing or following the %d as a
 	temporary file name, so that that file will be deleted if CC exits
 	successfully.  Unlike %g, this contributes no text to the argument.
@@ -303,7 +321,13 @@ or with constant text in a single argument.
 	Input files whose names have no recognized suffix are not compiled
 	at all, but they are included among the output files, so they will
 	be linked.
- %O	substitutes the suffix for object files.
+ %O	substitutes the suffix for object files.  Note that this is
+	handled specially when it immediately follows %g, %u, or %U,
+	because of the need for those to form complete file names.  The
+	handling is such that %O is treated exactly as if it had already
+	been substituted, except that %g, %u, and %U do not currently
+	support additional SUFFIX characters following %O as they would
+	following, for example, `.o'.
  %p	substitutes the standard macro predefinitions for the
 	current target machine.  Use this when running cpp.
  %P	like %p, but puts `__' before and after the name of each macro.
@@ -3620,16 +3644,30 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		   That matters for the names of object files.
 		   In 2.4, do something about that.  */
 		struct temp_name *t;
+		int suffix_length;
 		char *suffix = p;
-		while (*p == '.' || ISALPHA (*p)
-		       || (p[0] == '%' && p[1] == 'O'))
-		  p++;
+
+		if (p[0] == '%' && p[1] == 'O')
+		  {
+		    /* We don't support extra suffix characters after %O.  */
+		    if (*p == '.' || ISALPHA (*p))
+		      abort ();
+		    suffix = OBJECT_SUFFIX;
+		    suffix_length = strlen (OBJECT_SUFFIX);
+		    p += 2;
+		  }
+		else
+		  {
+		    while (*p == '.' || ISALPHA (*p))
+		      p++;
+		    suffix_length = p - suffix;
+		  }
 
 		/* See if we already have an association of %g/%u/%U and
 		   suffix.  */
 		for (t = temp_names; t; t = t->next)
-		  if (t->length == p - suffix
-		      && strncmp (t->suffix, suffix, p - suffix) == 0
+		  if (t->length == suffix_length
+		      && strncmp (t->suffix, suffix, suffix_length) == 0
 		      && t->unique == (c != 'g'))
 		    break;
 
@@ -3642,21 +3680,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			t->next = temp_names;
 			temp_names = t;
 		      }
-		    if (strncmp (suffix, "%O", 2) == 0)
-		      {
-			t->length = strlen(OBJECT_SUFFIX);
-			t->suffix = save_string (OBJECT_SUFFIX,
-						 strlen(OBJECT_SUFFIX));
-			t->unique = (c != 'g');
-			temp_filename = make_temp_file (OBJECT_SUFFIX);
-		      }
-		    else
-		      {
-			t->length = p - suffix;
-			t->suffix = save_string (suffix, p - suffix);
-			t->unique = (c != 'g');
-			temp_filename = make_temp_file (t->suffix);
-		      }
+		    t->length = suffix_length;
+		    t->suffix = save_string (suffix, suffix_length);
+		    t->unique = (c != 'g');
+		    temp_filename = make_temp_file (t->suffix);
 		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;
