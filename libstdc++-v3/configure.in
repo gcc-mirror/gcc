@@ -87,7 +87,7 @@ fi
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
-  GLIBCPP_IS_CROSS_COMPILING=1
+  GLIBCPP_IS_CROSS_COMPILING=true
 
   # This lets us hard-code the functionality we know we'll have in the cross
   # target environment.  "Let" is a sugar-coated word placed on an especially
@@ -397,7 +397,7 @@ else
   # We are being configured natively. We can do more elaborate tests
   # that include AC_TRY_COMPILE now, as the linker is assumed to be
   # working.
-  GLIBCPP_IS_CROSS_COMPILING=0
+  GLIBCPP_IS_CROSS_COMPILING=false
   CANADIAN=no
 
   # Check for available headers.

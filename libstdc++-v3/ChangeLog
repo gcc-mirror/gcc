@@ -1,3 +1,10 @@
+2003-07-17  Greg Schafer  <gschafer@zip.com.au>
+
+	* configure.in: Use 'true' and 'false' for
+	GLIBCPP_IS_CROSS_COMPILING, otherwise memory limits are
+	not checked when not cross compiling.
+	* configure: Regenerate.
+
 2003-07-17  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11528
