@@ -4971,6 +4971,7 @@ choose_reload_regs (insn, avoid_return_reg)
 			    reload_override_in[r] = reg_last_reload_reg[regno];
 			  else
 			    {
+			      int k;
 			      /* We can use this as a reload reg.  */
 			      /* Mark the register as in use for this part of
 				 the insn.  */
@@ -4983,8 +4984,9 @@ choose_reload_regs (insn, avoid_return_reg)
 			      reload_inheritance_insn[r]
 				= reg_reloaded_insn[i];
 			      reload_spill_index[r] = i;
-			      SET_HARD_REG_BIT (reload_reg_used_for_inherit,
-						spill_regs[i]);
+			      for (k = 0; k < nr; k++)
+				SET_HARD_REG_BIT (reload_reg_used_for_inherit,
+						  spill_regs[i + k]);
 			    }
 			}
 		    }
@@ -5073,10 +5075,13 @@ choose_reload_regs (insn, avoid_return_reg)
 		  i = spill_reg_order[regno];
 		  if (i >= 0)
 		    {
+		      int nr = HARD_REGNO_NREGS (regno, reload_mode[r]);
+		      int k;
 		      mark_reload_reg_in_use (regno, reload_opnum[r],
 					      reload_when_needed[r],
 					      reload_mode[r]);
-		      SET_HARD_REG_BIT (reload_reg_used_for_inherit, regno);
+		      for (k = 0; k < nr; k++)
+			SET_HARD_REG_BIT (reload_reg_used_for_inherit, regno + k);
 		    }
 		}
 	    }
