@@ -1,5 +1,8 @@
 2003-01-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (layout_class_type): Correct handling of unnamed
+	bitfields wider than their types.
+
 	PR c++/9189
 	* parser.c (cp_parser): Remove default_arg_types.  Update
 	documentation for unparsed_functions_queues.

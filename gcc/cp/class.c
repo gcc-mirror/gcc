@@ -4993,6 +4993,7 @@ layout_class_type (tree t, tree *virtuals_p)
     {
       tree type;
       tree padding;
+      bool was_unnamed_p = false;
 
       /* We still pass things that aren't non-static data members to
 	 the back-end, in case it wants to do something with them.  */
@@ -5024,7 +5025,6 @@ layout_class_type (tree t, tree *virtuals_p)
 	{
 	  integer_type_kind itk;
 	  tree integer_type;
-
 	  /* We must allocate the bits as if suitably aligned for the
 	     longest integer type that fits in this many bits.  type
 	     of the field.  Then, we are supposed to use the left over
@@ -5053,6 +5053,17 @@ layout_class_type (tree t, tree *virtuals_p)
 	      padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
 				    TYPE_SIZE (integer_type));
 	    }
+	  /* An unnamed bitfield does not normally affect the
+	     alignment of the containing class on a target where
+	     PCC_BITFIELD_TYPE_MATTERS.  But, the C++ ABI does not
+	     make any exceptions for unnamed bitfields when the
+	     bitfields are longer than their types.  Therefore, we
+	     temporarily give the field a name.  */
+	  if (PCC_BITFIELD_TYPE_MATTERS && !DECL_NAME (field))
+	    {
+	      was_unnamed_p = true;
+	      DECL_NAME (field) = make_anon_name ();
+	    }
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
@@ -5062,6 +5073,10 @@ layout_class_type (tree t, tree *virtuals_p)
 
       layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				     empty_base_offsets);
+      /* If the bit-field had no name originally, remove the name
+	 now.  */
+      if (was_unnamed_p)
+	DECL_NAME (field) = NULL_TREE;
 
       /* Remember the location of any empty classes in FIELD.  */
       if (abi_version_at_least (2))
