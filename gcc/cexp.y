@@ -738,7 +738,8 @@ yylex ()
 	{
 	  int num_bits = num_chars * width;
 
-	  if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
+	  if (lookup ((U_CHAR *) "__CHAR_UNSIGNED__",
+		      sizeof ("__CHAR_UNSIGNED__") - 1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
 	      = result & (~ (unsigned HOST_WIDE_INT) 0
