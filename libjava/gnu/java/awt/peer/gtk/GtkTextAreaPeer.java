@@ -40,22 +40,45 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.TextArea;
 import java.awt.peer.TextAreaPeer;
 
 public class GtkTextAreaPeer extends GtkTextComponentPeer
   implements TextAreaPeer
 {
-  native void create (int scrollbarVisibility);
+  native void create (int width, int height, int scrollbarVisibility);
 
-  native void gtkSetFont(String name, int style, int size);
+  native void gtkSetFont (String name, int style, int size);
 
   void create ()
   {
-    create (((TextArea)awtComponent).getScrollbarVisibility ());
-  }
+    Font f = awtComponent.getFont ();
 
-  native void gtkTextGetSize (int dims[]);
+    // By default, Sun sets a TextArea's font when its peer is
+    // created.  If f != null then the peer's font is set by
+    // GtkComponent.create.
+    if (f == null)
+      {
+	f = new Font ("Fixed", Font.PLAIN, 12);
+	awtComponent.setFont (f);
+      }
+
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
+
+    TextArea ta = ((TextArea) awtComponent);
+    int rows = ta.getRows ();
+    int cols = ta.getColumns ();
+
+    int width = cols * fm.getMaxAdvance ();
+    int height = rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+
+    create (width, height, ta.getScrollbarVisibility ());
+  }
 
   public GtkTextAreaPeer (TextArea ta)
   {
@@ -67,31 +90,80 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 
   public Dimension getMinimumSize (int rows, int cols)
   {
-    int dims[] = new int[2];
-
-    gtkTextGetSize (dims);
-
-    return (new Dimension (dims[0], dims[1]));
+    return minimumSize (rows, cols);
   }
 
   public Dimension getPreferredSize (int rows, int cols)
   {
-    int dims[] = new int[2];
-
-    gtkTextGetSize (dims);
-
-    return (new Dimension (dims[0], dims[1]));
+    return preferredSize (rows, cols);
   }
 
-  /* Deprecated */
+  native int getHScrollbarHeight ();
+  native int getVScrollbarWidth ();
+
+  // Deprecated
   public Dimension minimumSize (int rows, int cols)
   {
-    return getMinimumSize (rows, cols);
+    TextArea ta = ((TextArea) awtComponent);
+    int hScrollbarHeight = 0;
+    int vScrollbarWidth = 0;
+    int height = 0;
+    int width = 0;
+
+    if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
+	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
+      height = getHScrollbarHeight ();
+
+    if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
+	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
+      width = getVScrollbarWidth ();
+
+    Font f = awtComponent.getFont ();
+    if (f == null)
+      return new Dimension (width, height);
+
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
+
+    width += cols * fm.getMaxAdvance ();
+    height += rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+
+    return new Dimension (width, height);
   }
 
   public Dimension preferredSize (int rows, int cols)
   {
-    return getPreferredSize (rows, cols);
+    TextArea ta = ((TextArea) awtComponent);
+    int hScrollbarHeight = 0;
+    int vScrollbarWidth = 0;
+    int height = 0;
+    int width = 0;
+
+    if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
+	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
+      height = getHScrollbarHeight ();
+
+    if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
+	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
+      width = getVScrollbarWidth ();
+
+    Font f = awtComponent.getFont ();
+    if (f == null)
+      return new Dimension (width, height);
+
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
+
+    width += cols * fm.getMaxAdvance ();
+    height += rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+
+    return new Dimension (width, height);
   }
 
   public void replaceText (String str, int start, int end)
@@ -106,6 +178,6 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 
   public void setFont (Font f)
   {
-    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
+    gtkSetFont (f.getName (), f.getStyle (), f.getSize ());
   }
 }
