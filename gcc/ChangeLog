@@ -1,3 +1,9 @@
+Sun Sep 20 20:57:02 1998  Robert Lipe  <robertl@dgii.com>
+	
+	* configure.in (i*86-*-sysv5*): Use fixinc.svr4 to patch byteorder
+	problems.
+	* configure: Regenerate.
+
 Sun Sep 20 19:01:51 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_sr_alias_set): New variable.
