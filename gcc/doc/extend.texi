@@ -3913,18 +3913,19 @@ The ordinary output operands must be write-only; GCC will assume that
 the values in these operands before the instruction are dead and need
 not be generated.  Extended asm supports input-output or read-write
 operands.  Use the constraint character @samp{+} to indicate such an
-operand and list it with the output operands.
+operand and list it with the output operands.  You should only use
+read-write operands when the constraints for the operand (or the
+operand in which only some of the bits are to be changed) allow a
+register.
 
-When the constraints for the read-write operand (or the operand in which
-only some of the bits are to be changed) allows a register, you may, as
-an alternative, logically split its function into two separate operands,
-one input operand and one write-only output operand.  The connection
-between them is expressed by constraints which say they need to be in
-the same location when the instruction executes.  You can use the same C
-expression for both operands, or different expressions.  For example,
-here we write the (fictitious) @samp{combine} instruction with
-@code{bar} as its read-only source operand and @code{foo} as its
-read-write destination:
+You may, as an alternative, logically split its function into two
+separate operands, one input operand and one write-only output
+operand.  The connection between them is expressed by constraints
+which say they need to be in the same location when the instruction
+executes.  You can use the same C expression for both operands, or
+different expressions.  For example, here we write the (fictitious)
+@samp{combine} instruction with @code{bar} as its read-only source
+operand and @code{foo} as its read-write destination:
 
 @example
 asm ("combine %2,%0" : "=r" (foo) : "0" (foo), "g" (bar));
