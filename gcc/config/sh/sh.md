@@ -2554,7 +2554,7 @@
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
 			   (match_operand:SI 2 "const_int_operand" "n"))
 		(match_operand:SI 3 "const_int_operand" "n")))]
-  "TARGET_SH1 && (unsigned)INTVAL (operands[2]) < 32"
+  "TARGET_SH1 && reload_completed && (unsigned)INTVAL (operands[2]) < 32"
   [(use (reg:SI R0_REG))]
   "if (gen_shl_and (operands[0], operands[2], operands[3], operands[1])) FAIL;
    DONE;")
@@ -2565,7 +2565,7 @@
 			   (match_operand:SI 2 "const_int_operand" "n"))
 		(match_operand:SI 3 "const_int_operand" "n")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && (unsigned)INTVAL (operands[2]) < 32"
+  "TARGET_SH1 && reload_completed && (unsigned)INTVAL (operands[2]) < 32"
   [(use (reg:SI R0_REG))]
   "if (gen_shl_and (operands[0], operands[2], operands[3], operands[1])) FAIL;
    DONE;")
