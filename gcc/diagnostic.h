@@ -40,7 +40,7 @@ struct output_buffer
   /* The obstack where the text is built up.  */  
   struct obstack obstack;
   /* The prefix for each new line.   */
-  const char *prefix;
+  char *prefix;
   /* The amount of characters output so far.  */  
   int line_length;
   /* The real upper bound of number of characters per line, taking into
@@ -72,10 +72,10 @@ struct output_buffer
 extern printer_fn lang_printer;
 
 /* Prototypes */
-void init_output_buffer		PARAMS ((output_buffer *, const char *, int));
+void init_output_buffer		PARAMS ((output_buffer *, char *, int));
 void output_clear		PARAMS ((output_buffer *));
-const char *output_get_prefix	PARAMS ((const output_buffer *));
-void output_set_prefix		PARAMS ((output_buffer *, const char *));
+char *output_get_prefix		PARAMS ((const output_buffer *));
+void output_set_prefix		PARAMS ((output_buffer *, char *));
 void output_set_maximum_length  PARAMS ((output_buffer *, int));
 void output_emit_prefix		PARAMS ((output_buffer *));
 void output_add_newline		PARAMS ((output_buffer *));

@@ -135,4 +135,5 @@ extern void sbitmap_intersection_of_preds  PARAMS ((sbitmap, sbitmap *, int));
 extern void sbitmap_union_of_succs	   PARAMS ((sbitmap, sbitmap *, int));
 extern void sbitmap_union_of_preds	   PARAMS ((sbitmap, sbitmap *, int));
 
+extern void debug_sbitmap		   PARAMS ((sbitmap));
 #endif /* _SBITMAP_H */

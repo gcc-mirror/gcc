@@ -37,6 +37,9 @@ struct queue_elem {
 
 static struct queue_elem *rtx_ready_queue;
 
+static void remove_constraints PARAMS ((rtx));
+static void process_rtx PARAMS ((rtx *));
+
 /* Recursively remove constraints from an rtx.  */
 
 static void

@@ -2069,6 +2069,7 @@ extern tree size_int_type_wide		PARAMS ((HOST_WIDE_INT, tree));
 #define sbitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), SBITSIZETYPE)
 
 extern tree round_up			PARAMS ((tree, int));
+extern tree round_down			PARAMS ((tree, int));
 extern tree get_pending_sizes		PARAMS ((void));
 extern void put_pending_sizes		PARAMS ((tree));
 
@@ -2674,7 +2675,7 @@ extern void mark_varargs		PARAMS ((void));
 extern void init_dummy_function_start	PARAMS ((void));
 extern void expand_dummy_function_end	PARAMS ((void));
 extern void init_function_for_compilation	PARAMS ((void));
-extern void init_function_start		PARAMS ((tree, char *, int));
+extern void init_function_start		PARAMS ((tree, const char *, int));
 extern void assign_parms		PARAMS ((tree));
 extern void put_var_into_stack		PARAMS ((tree));
 extern void flush_addressof		PARAMS ((tree));

@@ -153,7 +153,7 @@ static int coalesce_reg_in_phi
 static int coalesce_regs_in_successor_phi_nodes
   PARAMS ((basic_block bb, partition p, conflict_graph conflicts));
 static partition compute_coalesced_reg_partition
-  PARAMS (());
+  PARAMS ((void));
 static int mark_reg_in_phi 
   PARAMS ((rtx *ptr, void *data));
 static void mark_phi_and_copy_regs

@@ -166,6 +166,8 @@ static void free_scope_forest_1		PARAMS ((scope));
 static void free_scope_forest		PARAMS ((scope_forest_info *));
 void dump_scope_forest			PARAMS ((scope_forest_info *));
 static void dump_scope_forest_1		PARAMS ((scope, int));
+static rtx get_next_bb_note		PARAMS ((rtx));
+static rtx get_prev_bb_note		PARAMS ((rtx));
 
 /* Skip over inter-block insns occurring after BB which are typically
    associated with BB (e.g., barriers). If there are any such insns,

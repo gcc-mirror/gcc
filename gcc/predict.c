@@ -216,12 +216,10 @@ estimate_probability (loops_info)
    expected values of registers.  Generate branch probabilities 
    based off these values.  */
 
-static rtx find_expected_value		PARAMS ((rtx, rtx));
-
 void
 expected_value_to_br_prob ()
 {
-  rtx insn, cond, ev = NULL_RTX, ev_reg;
+  rtx insn, cond, ev = NULL_RTX, ev_reg = NULL_RTX;
 
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {

@@ -1113,7 +1113,7 @@ extern void validate_varying_array_ref          PARAMS ((tree, tree));
 /* in function.c */
 extern void expand_function_end                 PARAMS ((char *, int, int));
 extern void expand_function_start               PARAMS ((tree, int));
-extern void init_function_start                 PARAMS ((tree, char *, int));
+extern void init_function_start                 PARAMS ((tree, const char *, int));
 extern void pop_function_context                PARAMS ((void));
 extern void push_function_context               PARAMS ((void));
 
