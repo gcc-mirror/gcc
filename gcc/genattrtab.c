@@ -90,9 +90,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 
-static struct obstack obstack, obstack1;
+static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;
 struct obstack *hash_obstack = &obstack1;
+struct obstack *temp_obstack = &obstack2;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -233,7 +234,7 @@ static rtx true_rtx, false_rtx;
 
 /* Used to reduce calls to `strcmp' */
 
-static char *alternative_name = "alternative";
+static char *alternative_name;
 
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
@@ -250,7 +251,7 @@ static rtx attr_rtx ();
 static char *attr_printf ();
 static char *attr_string ();
 static rtx check_attr_test ();
-static void check_attr_value ();
+static rtx check_attr_value ();
 static rtx convert_set_attr_alternative ();
 static rtx convert_set_attr ();
 static void check_defs ();
@@ -258,6 +259,7 @@ static rtx convert_const_symbol_ref ();
 static rtx make_canonical ();
 static struct attr_value *get_attr_value ();
 static rtx copy_rtx_unchanging ();
+static rtx copy_boolean ();
 static void expand_delays ();
 static rtx operate_exp ();
 static void expand_units ();
@@ -375,8 +377,13 @@ attr_hash_add_string (hashcode, str)
   attr_hash_table[hashcode % RTL_HASH_SIZE] = h;
 }
 
-/* Generate an RTL expression, but allow sharing.  Like gen_rtx, but the 
-   mode is not used:
+/* Generate an RTL expression, but avoid duplicates.
+   Set the RTX_INTEGRATED_P flag for these permanent objects.
+
+   In some cases we cannot uniquify; then we return an ordinary
+   impermanent rtx with RTX_INTEGRATED_P clear.
+
+   Args are like gen_rtx, but without the mode:
 
    rtx attr_rtx (code, [element1, ..., elementn])  */
 
@@ -405,6 +412,15 @@ attr_rtx (va_alist)
     {
       rtx arg0 = va_arg (p, rtx);
 
+      /* A permanent object cannot point to impermanent ones.  */
+      if (! RTX_INTEGRATED_P (arg0))
+	{
+	  rt_val = rtx_alloc (code);
+	  XEXP (rt_val, 0) = arg0;
+	  va_end (p);
+	  return rt_val;
+	}
+
       hashcode = ((int) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
@@ -425,6 +441,16 @@ attr_rtx (va_alist)
     {
       rtx arg0 = va_arg (p, rtx);
       rtx arg1 = va_arg (p, rtx);
+
+      /* A permanent object cannot point to impermanent ones.  */
+      if (! RTX_INTEGRATED_P (arg0) || ! RTX_INTEGRATED_P (arg1))
+	{
+	  rt_val = rtx_alloc (code);
+	  XEXP (rt_val, 0) = arg0;
+	  XEXP (rt_val, 1) = arg1;
+	  va_end (p);
+	  return rt_val;
+	}
 
       hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
@@ -447,6 +473,9 @@ attr_rtx (va_alist)
     {
       char * arg0 = va_arg (p, char *);
 
+      if (code == SYMBOL_REF)
+	arg0 = attr_string (arg0, strlen (arg0));
+
       hashcode = ((int) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
@@ -465,8 +494,8 @@ attr_rtx (va_alist)
 	   && GET_RTX_FORMAT (code)[0] == 's'
 	   && GET_RTX_FORMAT (code)[1] == 's')
     {
-      char * arg0 = va_arg (p, char *);
-      char * arg1 = va_arg (p, char *);
+      char *arg0 = va_arg (p, char *);
+      char *arg1 = va_arg (p, char *);
 
       hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
@@ -484,8 +513,18 @@ attr_rtx (va_alist)
 	  XSTR (rt_val, 1) = arg1;
 	}
     }
+  else if (code == CONST_INT)
+    {
+      int arg0 = va_arg (p, int);
+      if (arg0 == 0)
+	return false_rtx;
+      if (arg0 == 1)
+	return true_rtx;
+      goto nohash;
+    }
   else
     {
+    nohash:
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */
       
       fmt = GET_RTX_FORMAT (code);	/* Find the right format...  */
@@ -524,6 +563,7 @@ attr_rtx (va_alist)
   rtl_obstack = old_obstack;
   va_end (p);
   attr_hash_add_rtx (hashcode, rt_val);
+  RTX_INTEGRATED_P (rt_val) = 1;
   return rt_val;
 
  found:
@@ -577,6 +617,21 @@ attr_printf (len, fmt, arg1, arg2, arg3)
 }
 #endif /* not HAVE_VPRINTF */
 
+rtx
+attr_eq (name, value)
+     char *name, *value;
+{
+  return attr_rtx (EQ_ATTR, attr_string (name, strlen (name)),
+		   attr_string (value, strlen (value)));
+}
+
+char *
+attr_numeral (n)
+     int n;
+{
+  return XSTR (make_numeric_value (n), 0);
+}
+
 /* Return a permanent (possibly shared) copy of a string STR (not assumed
    to be null terminated) with LEN bytes.  */
 
@@ -599,7 +654,7 @@ attr_string (str, len)
 
   /* Search the table for the string.  */
   for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
-    if (h->hashcode == -hashcode
+    if (h->hashcode == -hashcode && h->u.str[0] == str[0]
 	&& !strncmp (h->u.str, str, len))
       return h->u.str;			/* <-- return if found.  */
 
@@ -610,6 +665,88 @@ attr_string (str, len)
   attr_hash_add_string (hashcode, new_str);
 
   return new_str;			/* Return the new string.  */
+}
+
+/* Check two rtx's for equality of contents,
+   taking advantage of the fact that if both are hashed
+   then they can't be equal unless they are the same object.  */
+
+int
+attr_equal_p (x, y)
+     rtx x, y;
+{
+  return (x == y || (! (RTX_INTEGRATED_P (x) && RTX_INTEGRATED_P (y))
+		     && rtx_equal_p (x, y)));
+}
+
+/* Copy an attribute value expression,
+   descending to all depths, but not copying any
+   permanent hashed subexpressions.  */
+
+rtx
+attr_copy_rtx (orig)
+     register rtx orig;
+{
+  register rtx copy;
+  register int i, j;
+  register RTX_CODE code;
+  register char *format_ptr;
+
+  /* No need to copy a permanent object.  */
+  if (RTX_INTEGRATED_P (orig))
+    return orig;
+
+  code = GET_CODE (orig);
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+      return orig;
+    }
+
+  copy = rtx_alloc (code);
+  PUT_MODE (copy, GET_MODE (orig));
+  copy->in_struct = orig->in_struct;
+  copy->volatil = orig->volatil;
+  copy->unchanging = orig->unchanging;
+  copy->integrated = orig->integrated;
+  
+  format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
+
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  if (XEXP (orig, i) != NULL)
+	    XEXP (copy, i) = attr_copy_rtx (XEXP (orig, i));
+	  break;
+
+	case 'E':
+	case 'V':
+	  XVEC (copy, i) = XVEC (orig, i);
+	  if (XVEC (orig, i) != NULL)
+	    {
+	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
+	      for (j = 0; j < XVECLEN (copy, i); j++)
+		XVECEXP (copy, i, j) = attr_copy_rtx (XVECEXP (orig, i, j));
+	    }
+	  break;
+
+	default:
+	  XINT (copy, i) = XINT (orig, i);
+	  break;
+	}
+    }
+  return copy;
 }
 
 /* Given a test expression for an attribute, ensure it is validly formed.
@@ -642,9 +779,8 @@ check_attr_test (exp, is_const)
       /* Handle negation test.  */
       if (XSTR (exp, 1)[0] == '!')
 	return check_attr_test (attr_rtx (NOT,
-					  attr_rtx (EQ_ATTR,
-						    XSTR (exp, 0),
-						    &XSTR(exp, 1)[1])),
+					  attr_eq (XSTR (exp, 0),
+						   &XSTR (exp, 1)[1])),
 				is_const);
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
@@ -667,7 +803,9 @@ check_attr_test (exp, is_const)
 	    fatal ("Constant expression uses insn attribute `%s' in EQ_ATTR",
 		   XEXP (exp, 0));
 
-	  XSTR (exp, 0) = attr->name;
+	  /* Copy this just to make it permanent,
+	     so expressions using it can be permanent too.  */
+	  exp = attr_eq (XSTR (exp, 0), XSTR (exp, 1));
 
 	  if (attr->is_numeric)
 	    {
@@ -695,7 +833,7 @@ check_attr_test (exp, is_const)
 	  name_ptr = XSTR (exp, 1);
 	  while ((p = next_comma_elt (&name_ptr)) != NULL)
 	    {
-	      newexp = attr_rtx (EQ_ATTR, XSTR (exp, 0), p);
+	      newexp = attr_eq (XSTR (exp, 0), p);
 	      orexp = insert_right_side (IOR, orexp, newexp, -2);
 	    }
 
@@ -724,10 +862,18 @@ check_attr_test (exp, is_const)
       if (is_const)
 	fatal ("RTL operator \"%s\" not valid in constant attribute test",
 	       GET_RTX_NAME (MATCH_OPERAND));
+      /* These cases can't be simplified.  */
+      RTX_UNCHANGING_P (exp) = 1;
+      break;
 
     case LE:  case LT:  case GT:  case GE:
     case LEU: case LTU: case GTU: case GEU:
     case NE:  case EQ:
+      if (GET_CODE (XEXP (exp, 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (exp, 1)) == SYMBOL_REF)
+	exp = attr_rtx (GET_CODE (exp),
+			attr_rtx (SYMBOL_REF, XSTR (XEXP (exp, 0), 0)),
+			attr_rtx (SYMBOL_REF, XSTR (XEXP (exp, 1), 0)));
       /* These cases can't be simplified.  */
       RTX_UNCHANGING_P (exp) = 1;
       break;
@@ -737,7 +883,7 @@ check_attr_test (exp, is_const)
 	{
 	  /* These cases are valid for constant attributes, but can't be
 	     simplified.  */
-	  exp = copy_rtx (exp);
+	  exp = attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 	  RTX_UNCHANGING_P (exp) = 1;
 	  break;
 	}
@@ -751,9 +897,11 @@ check_attr_test (exp, is_const)
 
 /* Given an expression, ensure that it is validly formed and that all named
    attribute values are valid for the given attribute.  Issue a fatal error
-   if not.  If no attribute is specified, assume a numeric attribute.  */
+   if not.  If no attribute is specified, assume a numeric attribute.
 
-static void
+   Return a perhaps modified replacement expression for the value.  */
+
+static rtx
 check_attr_value (exp, attr)
      rtx exp;
      struct attr_desc *attr;
@@ -797,14 +945,14 @@ check_attr_value (exp, attr)
 	fatal ("Unknown value `%s' for `%s' attribute",
 	       XSTR (exp, 0), attr ? attr->name : "internal");
 
-      return;
+      break;
 
     case IF_THEN_ELSE:
       XEXP (exp, 0) = check_attr_test (XEXP (exp, 0),
 				       attr ? attr->is_const : 0);
-      check_attr_value (XEXP (exp, 1), attr);
-      check_attr_value (XEXP (exp, 2), attr);
-      return;
+      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
+      XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
+      break;
 
     case COND:
       if (XVECLEN (exp, 0) % 2 != 0)
@@ -814,23 +962,26 @@ check_attr_value (exp, attr)
 	{
 	  XVECEXP (exp, 0, i) = check_attr_test (XVECEXP (exp, 0, i),
 						 attr ? attr->is_const : 0);
-	  check_attr_value (XVECEXP (exp, 0, i + 1), attr);
+	  XVECEXP (exp, 0, i + 1)
+	    = check_attr_value (XVECEXP (exp, 0, i + 1), attr);
 	}
 
-      check_attr_value (XEXP (exp, 1), attr);
-      return;
+      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
+      break;
 
     case SYMBOL_REF:
       if (attr && attr->is_const)
 	/* A constant SYMBOL_REF is valid as a constant attribute test and
 	   is expanded later by make_canonical into a COND.  */
-	return;
+	return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
       /* Otherwise, fall through... */
 
     default:
       fatal ("Illegal operation `%s' for attribute value",
 	     GET_RTX_NAME (GET_CODE (exp)));
     }
+
+  return exp;
 }
 
 /* Given an SET_ATTR_ALTERNATIVE expression, convert to the canonical SET.
@@ -858,12 +1009,15 @@ convert_set_attr_alternative (exp, num_alt, insn_code, insn_index)
   for (i = 0; i < num_alt - 1; i++)
     {
       char *p;
-      p = attr_printf (3, "%d", i);
+      p = attr_numeral (i);
 
+      XVECEXP (condexp, 0, 2 * i) = attr_eq (alternative_name, p);
+#if 0
       /* Sharing this EQ_ATTR rtl causes trouble.  */   
       XVECEXP (condexp, 0, 2 * i) = rtx_alloc (EQ_ATTR);
       XSTR (XVECEXP (condexp, 0, 2 * i), 0) = alternative_name;
       XSTR (XVECEXP (condexp, 0, 2 * i), 1) = p;
+#endif
       XVECEXP (condexp, 0, 2 * i + 1) = XVECEXP (exp, 1, i);
     }
 
@@ -955,7 +1109,7 @@ check_defs ()
 		   XSTR (XEXP (value, 0), 0), id->insn_index);
 
 	  XVECEXP (id->def, id->vec_idx, i) = value;
-	  check_attr_value (XEXP (value, 1), attr);
+	  XEXP (value, 1) = check_attr_value (XEXP (value, 1), attr);
 	}
     }
 }
@@ -987,22 +1141,23 @@ convert_const_symbol_ref (exp, attr)
 
   for (i = num_alt - 2; av = av->next, i >= 0; i--)
     {
-      char * p;
+      char *p, *string;
       rtx value;
 
-      XVECEXP (condexp, 0, 2 * i) = rtx_alloc (EQ);
-      XEXP (XVECEXP (condexp, 0, 2 * i), 0) = exp;
-      XEXP (XVECEXP (condexp, 0, 2 * i), 1) = value = rtx_alloc (SYMBOL_REF);
-      RTX_UNCHANGING_P (value) = 1;
-      XSTR (value, 0) = p = (char *) xmalloc (2
-					      + strlen (attr->name)
-					      + strlen (XSTR (av->value, 0)));
+      string = p = (char *) xmalloc (2
+				     + strlen (attr->name)
+				     + strlen (XSTR (av->value, 0)));
       strcpy (p, attr->name);
       strcat (p, "_");
       strcat (p, XSTR (av->value, 0));
       for (; *p != '\0'; p++)
 	if (*p >= 'a' && *p <= 'z')
 	  *p -= 'a' - 'A';
+
+      value = attr_rtx (SYMBOL_REF, string);
+      RTX_UNCHANGING_P (value) = 1;
+      
+      XVECEXP (condexp, 0, 2 * i) = attr_eq (exp, value);
 
       XVECEXP (condexp, 0, 2 * i + 1) = av->value;
     }
@@ -1044,7 +1199,7 @@ make_canonical (attr, exp)
 	break;
       exp = convert_const_symbol_ref (exp, attr);
       RTX_UNCHANGING_P (exp) = 1;
-      check_attr_value (exp, attr);
+      exp = check_attr_value (exp, attr);
       /* Goto COND case since this is now a COND.  Note that while the
          new expression is rescanned, all symbol_ref notes are mared as
 	 unchanging.  */
@@ -1074,6 +1229,7 @@ make_canonical (attr, exp)
 
 	for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	  {
+	    XVECEXP (exp, 0, i) = copy_boolean (XVECEXP (exp, 0, i));
 	    XVECEXP (exp, 0, i + 1)
 	      = make_canonical (attr, XVECEXP (exp, 0, i + 1));
 	    if (! rtx_equal_p (XVECEXP (exp, 0, i + 1), defval))
@@ -1085,6 +1241,16 @@ make_canonical (attr, exp)
       }
     }
 
+  return exp;
+}
+
+static rtx
+copy_boolean (exp)
+     rtx exp;
+{
+  if (GET_CODE (exp) == AND || GET_CODE (exp) == IOR)
+    return attr_rtx (GET_CODE (exp), copy_boolean (XEXP (exp, 0)),
+		     copy_boolean (XEXP (exp, 1)));
   return exp;
 }
 
@@ -1437,7 +1603,7 @@ expand_units ()
 	     and busy cost.  Then make an attribute for use in the conflict
 	     function.  */
 	  op->condexp = check_attr_test (op->condexp, 0);
-	  check_attr_value (op->busyexp, 0);
+	  op->busyexp = check_attr_value (op->busyexp, 0);
 	  str = attr_printf (strlen (unit->name) + 11, "*%s_case_%d",
 			     unit->name, op->num);
 	  make_internal_attr (str, make_canonical (0, op->busyexp));
@@ -1704,7 +1870,7 @@ simplify_cond (exp, insn_code, insn_index)
   char *spacer, *first_spacer;
 
   /* This lets us free all storage allocated below, if appropriate.  */
-  first_spacer = (char *) obstack_next_free (rtl_obstack);
+  first_spacer = (char *) obstack_finish (rtl_obstack);
 
   bcopy (&XVECEXP (exp, 0, 0), tests, len * sizeof (rtx));
 
@@ -1712,16 +1878,15 @@ simplify_cond (exp, insn_code, insn_index)
   if (GET_CODE (defval) == COND)
     new_defval = simplify_cond (defval, insn_code, insn_index);
 
-  /* Simplify now, just to see what tests we can get rid of.  */
+  /* Simplify the subexpressions, and see what tests we can get rid of.  */
 
-  /* Work from back to front, so if all values match the default,
-     we get rid of all of them.  */
-  for (i = len - 2; i >= 0; i -= 2)
+  for (i = 0; i < len; i += 2)
     {
       rtx newtest, newval;
 
       /* Simplify this test.  */
       newtest = SIMPLIFY_TEST_EXP (tests[i], insn_code, insn_index);
+      tests[i] = newtest;
 
       newval = tests[i + 1];
       /* See if this value may need simplification.  */
@@ -1743,78 +1908,64 @@ simplify_cond (exp, insn_code, insn_index)
 	  /* If test is false, discard it and its value.  */
 	  for (j = i; j < len - 2; j++)
 	    tests[j] = tests[j + 2];
-
 	  len -= 2;
 	}
 
-      /* If this is the last condition in a COND and our value is the same
-	 as the default value, our test isn't needed.  */
-      else if (i == len - 2 && rtx_equal_p (newval, new_defval))
-	len -= 2;
+      else if (i > 0 && attr_equal_p (newval, tests[i - 1]))
+	{
+	  /* If this value and the value for the prev test are the same,
+	     merge the tests.  */
+
+	  tests[i - 2]
+	    = insert_right_side (IOR, tests[i - 2], newtest,
+				 insn_code, insn_index);
+
+	  /* Delete this test/value.  */
+	  for (j = i; j < len - 2; j++)
+	    tests[j] = tests[j + 2];
+	  len -= 2;
+	}
+
+      else
+	tests[i + 1] = newval;
     }
 
-  obstack_free (rtl_obstack, first_spacer);
+  /* If the last test in a COND has the same value
+     as the default value, that test isn't needed.  */
+
+  while (len > 0 && attr_equal_p (tests[len - 1], new_defval))
+    len -= 2;
+
+  /* See if we changed anything.  */
+  if (len != XVECLEN (exp, 0) || new_defval != XEXP (exp, 1))
+    allsame = 0;
+  else
+    for (i = 0; i < len; i++)
+      if (! attr_equal_p (tests[i], XVECEXP (exp, 0, i)))
+	{
+	  allsame = 0;
+	  break;
+	}
 
   if (len == 0)
     {
+      obstack_free (rtl_obstack, first_spacer);
       if (GET_CODE (defval) == COND)
 	return simplify_cond (defval, insn_code, insn_index);
       return defval;
     }
+  else if (allsame)
+    {
+      obstack_free (rtl_obstack, first_spacer);
+      return exp;
+    }
   else
     {
-      rtx newexp;
-
-      /* Simplify again, for real this time.  */
-
-      if (GET_CODE (defval) == COND)
-	defval = simplify_cond (defval, insn_code, insn_index);
-
-      for (i = len - 2; i >= 0; i -= 2)
-	{
-	  /* See if this value may need simplification.  */
-	  if (GET_CODE (tests[i + 1]) == COND)
-	    tests[i + 1] = simplify_cond (tests[i + 1], insn_code, insn_index);
-
-	  /* Simplify this test.  */
-	  tests[i] = SIMPLIFY_TEST_EXP (tests[i], insn_code, insn_index);
-
-	  /* If this value and the value for the next test are the same, merge the
-	     tests.  */
-	  if (i != len - 2
-	      && rtx_equal_p (tests[i + 1], tests[i + 3]))
-	    {
-	      /* Merge following test into this one.  */
-	      tests[i]
-		= insert_right_side (IOR, tests[i], tests[i + 2],
-				     insn_code, insn_index);
-
-	      /* Delete the following test/value.  */
-	      for (j = i + 2; j < len - 2; j++)
-		tests[j] = tests[j + 2];
-	      len -= 2;
-	    }
-	}
-
-      /* See if we changed anything.  */
-      if (len != XVECLEN (exp, 0) || defval != XEXP (exp, 1))
-	allsame = 0;
-      else
-	for (i = 0; i < len; i++)
-	  if (! rtx_equal_p (tests[i], XVECEXP (exp, 0, i)))
-	    {
-	      allsame = 0;
-	      break;
-	    }
-
-      if (allsame)
-	return exp;
-
-      newexp = rtx_alloc (COND);
+      rtx newexp = rtx_alloc (COND);
 
       XVEC (newexp, 0) = rtvec_alloc (len);
       bcopy (tests, &XVECEXP (newexp, 0, 0), len * sizeof (rtx));
-      XEXP (newexp, 1) = defval;
+      XEXP (newexp, 1) = new_defval;
       return newexp;
     }
 }
@@ -1891,7 +2042,7 @@ insert_right_side (code, exp, term, insn_code, insn_index)
     return true_rtx;
   if (code == IOR && exp == false_rtx)
     return term;
-  if (rtx_equal_p (exp, term))
+  if (attr_equal_p (exp, term))
     return exp;
 
   if (GET_CODE (term) == code)
@@ -1968,9 +2119,7 @@ make_alternative_compare (mask)
   for (i = 0; (mask & (1 << i)) == 0; i++)
     ;
 
-  alternative = attr_printf (3, "%d", i);
-
-  newexp = attr_rtx (EQ_ATTR, alternative_name, alternative);
+  newexp = attr_rtx (EQ_ATTR, alternative_name, attr_numeral (i));
   RTX_UNCHANGING_P (newexp) = 1;
 
   return newexp;
@@ -2174,23 +2323,23 @@ simplify_and_tree (exp, pterm, insn_code, insn_index)
 
   else if (GET_CODE (exp) == NOT && GET_CODE (*pterm) == NOT)
     {
-      if (rtx_equal_p (XEXP (exp, 0), XEXP (*pterm, 0)))
+      if (attr_equal_p (XEXP (exp, 0), XEXP (*pterm, 0)))
 	return true_rtx;
     }
 
   else if (GET_CODE (exp) == NOT)
     {
-      if (rtx_equal_p (XEXP (exp, 0), *pterm))
+      if (attr_equal_p (XEXP (exp, 0), *pterm))
 	return false_rtx;
     }
 
   else if (GET_CODE (*pterm) == NOT)
     {
-      if (rtx_equal_p (XEXP (*pterm, 0), exp))
+      if (attr_equal_p (XEXP (*pterm, 0), exp))
 	return false_rtx;
     }
 
-  else if (rtx_equal_p (exp, *pterm))
+  else if (attr_equal_p (exp, *pterm))
     return true_rtx;
 
   return exp;
@@ -2244,13 +2393,13 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
 	}
     }
 
-  if (rtx_equal_p (exp, *pterm))
+  if (attr_equal_p (exp, *pterm))
     return false_rtx;
 
-  else if (GET_CODE (exp) == NOT && rtx_equal_p (XEXP (exp, 0), *pterm))
+  else if (GET_CODE (exp) == NOT && attr_equal_p (XEXP (exp, 0), *pterm))
     return true_rtx;
 
-  else if (GET_CODE (*pterm) == NOT && rtx_equal_p (XEXP (*pterm, 0), exp))
+  else if (GET_CODE (*pterm) == NOT && attr_equal_p (XEXP (*pterm, 0), exp))
     return true_rtx;
 
   else if (GET_CODE (*pterm) == EQ_ATTR && GET_CODE (exp) == NOT
@@ -2286,7 +2435,7 @@ simplify_test_exp (exp, insn_code, insn_index)
   struct insn_ent *ie;
   int i;
   rtx newexp = exp;
-  char *spacer = (char *) obstack_next_free (rtl_obstack);
+  char *spacer = (char *) obstack_finish (rtl_obstack);
 
   static rtx loser = 0;
   static int count = 0;
@@ -2425,7 +2574,7 @@ simplify_test_exp (exp, insn_code, insn_index)
        */
 
       else if (GET_CODE (left) == AND && GET_CODE (right) == AND
-	  && rtx_equal_p (XEXP (left, 0), XEXP (right, 0)))
+	  && attr_equal_p (XEXP (left, 0), XEXP (right, 0)))
 	{
 	  newexp = attr_rtx (IOR, XEXP (left, 1), XEXP (right, 1));
 
@@ -2565,19 +2714,26 @@ optimize_attrs ()
 	for (av = attr->first_value; av; av = av->next)
 	    for (ie = av->first_insn; ie; ie = nextie)
 	      {
+		struct obstack *old = rtl_obstack;
+		char *spacer = (char *) obstack_finish (temp_obstack);
+
 		nextie = ie->next;
 		if (GET_CODE (av->value) != COND)
 		  continue;
 
+		rtl_obstack = temp_obstack;
 		newexp = simplify_cond (av->value, ie->insn_code,
 					ie->insn_index);
+		rtl_obstack = old;
 		if (newexp != av->value)
 		  {
+		    newexp = attr_copy_rtx (newexp);
 		    remove_insn_ent (av, ie);
 		    insert_insn_ent (get_attr_value (newexp, attr,
 						     ie->insn_code), ie);
 		    something_changed = 1;
 		  }
+		obstack_free (temp_obstack, spacer);
 	      }
     }
 }
@@ -2629,7 +2785,7 @@ gen_attr (exp)
     fatal ("`length' attribute must take numeric values");
 
   /* Set up the default value. */
-  check_attr_value (XEXP (exp, 2), attr);
+  XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
   attr->default_val = get_attr_value (XEXP (exp, 2), attr, -2);
 }
 
@@ -3826,7 +3982,7 @@ find_attr (name, create)
 
   /* Otherwise, do it the slow way.  */
   for (attr = attrs; attr; attr = attr->next)
-    if (! strcmp (name, attr->name))
+    if (name[0] == attr->name[0] && ! strcmp (name, attr->name))
       return attr;
 
   if (! create)
@@ -3962,6 +4118,9 @@ copy_rtx_unchanging (orig)
   register rtx copy;
   register RTX_CODE code;
 
+  if (RTX_UNCHANGING_P (orig))
+    return orig;
+
   code = GET_CODE (orig);
 
   switch (code)
@@ -4016,6 +4175,7 @@ main (argc, argv)
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);
+  obstack_init (temp_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");
@@ -4030,9 +4190,14 @@ main (argc, argv)
   init_rtl ();
 
   /* Set up true and false rtx's */
-  true_rtx = attr_rtx (CONST_INT, 1);
-  false_rtx = attr_rtx (CONST_INT, 0);
+  true_rtx = rtx_alloc (CONST_INT);
+  XINT (true_rtx, 0) = 1;
+  false_rtx = rtx_alloc (CONST_INT);
+  XINT (false_rtx, 0) = 0;
   RTX_UNCHANGING_P (true_rtx) = RTX_UNCHANGING_P (false_rtx) = 1;
+  RTX_INTEGRATED_P (true_rtx) = RTX_INTEGRATED_P (false_rtx) = 1;
+
+  alternative_name = attr_string ("alternative", strlen ("alternative"));
 
   printf ("/* Generated automatically by the program `genattrtab'\n\
 from the machine description file `md'.  */\n\n");
@@ -4116,7 +4281,8 @@ from the machine description file `md'.  */\n\n");
   check_defs ();
   for (attr = attrs; attr; attr = attr->next)
     {
-      check_attr_value (attr->default_val->value, attr);
+      attr->default_val->value
+	= check_attr_value (attr->default_val->value, attr);
       fill_attr (attr);
     }
 
