@@ -2064,6 +2064,8 @@ output_logical_op (mode, operands)
   /* Break up DET into pieces.  */
   const unsigned HOST_WIDE_INT b0 = (det >>  0) & 0xff;
   const unsigned HOST_WIDE_INT b1 = (det >>  8) & 0xff;
+  const unsigned HOST_WIDE_INT b2 = (det >> 16) & 0xff;
+  const unsigned HOST_WIDE_INT b3 = (det >> 24) & 0xff;
   const unsigned HOST_WIDE_INT w0 = (det >>  0) & 0xffff;
   const unsigned HOST_WIDE_INT w1 = (det >> 16) & 0xffff;
   int lower_half_easy_p = 0;
@@ -2092,8 +2094,8 @@ output_logical_op (mode, operands)
     case HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
-	  && ((det & 0x00ff) != 0)
-	  && ((det & 0xff00) != 0))
+	  && b0 != 0
+	  && b1 != 0)
 	{
 	  sprintf (insn_buf, "%s.w\t%%T2,%%T0", opname);
 	  output_asm_insn (insn_buf, operands);
@@ -2101,13 +2103,13 @@ output_logical_op (mode, operands)
       else
 	{
 	  /* Take care of the lower byte.  */
-	  if ((det & 0x00ff) != 0)
+	  if (b0 != 0)
 	    {
 	      sprintf (insn_buf, "%s\t%%s2,%%s0", opname);
 	      output_asm_insn (insn_buf, operands);
 	    }
 	  /* Take care of the upper byte.  */
-	  if ((det & 0xff00) != 0)
+	  if (b1 != 0)
 	    {
 	      sprintf (insn_buf, "%s\t%%t2,%%t0", opname);
 	      output_asm_insn (insn_buf, operands);
@@ -2146,46 +2148,46 @@ output_logical_op (mode, operands)
 	     1) the special insn (in case of AND or XOR),
 	     2) the word-wise insn, and
 	     3) The byte-wise insn.  */
-	  if ((det & 0x0000ffff) == 0x0000ffff
+	  if (w0 == 0xffff
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%f0,%f0" : "not.w\t%f0",
 			     operands);
 	  else if ((TARGET_H8300H || TARGET_H8300S)
-		   && ((det & 0x000000ff) != 0)
-		   && ((det & 0x0000ff00) != 0))
+		   && (b0 != 0)
+		   && (b1 != 0))
 	    {
 	      sprintf (insn_buf, "%s.w\t%%f2,%%f0", opname);
 	      output_asm_insn (insn_buf, operands);
 	    }
 	  else
 	    {
-	      if ((det & 0x000000ff) != 0)
+	      if (b0 != 0)
 		{
 		  sprintf (insn_buf, "%s\t%%w2,%%w0", opname);
 		  output_asm_insn (insn_buf, operands);
 		}
-	      if ((det & 0x0000ff00) != 0)
+	      if (b1 != 0)
 		{
 		  sprintf (insn_buf, "%s\t%%x2,%%x0", opname);
 		  output_asm_insn (insn_buf, operands);
 		}
 	    }
 
-	  if ((det & 0xffff0000) == 0xffff0000
+	  if ((w1 == 0xffff)
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%e0,%e0" : "not.w\t%e0",
 			     operands);
 	  else if ((TARGET_H8300H || TARGET_H8300S)
 		   && code == AND
-		   && (det & 0xffff0000) == 0xff000000)
+		   && w1 == 0xff00)
 	    {
 	      output_asm_insn ("extu.w\t%e0", operands);
 	    }
 	  else if (TARGET_H8300H || TARGET_H8300S)
 	    {
-	      if ((det & 0xffff0000) != 0)
+	      if (w1 != 0)
 		{
 		  sprintf (insn_buf, "%s.w\t%%e2,%%e0", opname);
 		  output_asm_insn (insn_buf, operands);
@@ -2193,12 +2195,12 @@ output_logical_op (mode, operands)
 	    }
 	  else
 	    {
-	      if ((det & 0x00ff0000) != 0)
+	      if (b2 != 0)
 		{
 		  sprintf (insn_buf, "%s\t%%y2,%%y0", opname);
 		  output_asm_insn (insn_buf, operands);
 		}
-	      if ((det & 0xff000000) != 0)
+	      if (b3 != 0)
 		{
 		  sprintf (insn_buf, "%s\t%%z2,%%z0", opname);
 		  output_asm_insn (insn_buf, operands);
@@ -2229,6 +2231,8 @@ compute_logical_op_length (mode, operands)
   /* Break up DET into pieces.  */
   const unsigned HOST_WIDE_INT b0 = (det >>  0) & 0xff;
   const unsigned HOST_WIDE_INT b1 = (det >>  8) & 0xff;
+  const unsigned HOST_WIDE_INT b2 = (det >> 16) & 0xff;
+  const unsigned HOST_WIDE_INT b3 = (det >> 24) & 0xff;
   const unsigned HOST_WIDE_INT w0 = (det >>  0) & 0xffff;
   const unsigned HOST_WIDE_INT w1 = (det >> 16) & 0xffff;
   int lower_half_easy_p = 0;
@@ -2241,8 +2245,8 @@ compute_logical_op_length (mode, operands)
     case HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
-	  && ((det & 0x00ff) != 0)
-	  && ((det & 0xff00) != 0))
+	  && b0 != 0
+	  && b1 != 0)
 	{
 	  if (REG_P (operands[2]))
 	    length += 2;
@@ -2252,11 +2256,11 @@ compute_logical_op_length (mode, operands)
       else
 	{
 	  /* Take care of the lower byte.  */
-	  if ((det & 0x00ff) != 0)
+	  if (b0 != 0)
 	    length += 2;
 
 	  /* Take care of the upper byte.  */
-	  if ((det & 0xff00) != 0)
+	  if (b1 != 0)
 	    length += 2;
 	}
       break;
@@ -2294,48 +2298,48 @@ compute_logical_op_length (mode, operands)
 	     1) the special insn (in case of AND or XOR),
 	     2) the word-wise insn, and
 	     3) The byte-wise insn.  */
-	  if ((det & 0x0000ffff) == 0x0000ffff
+	  if (w0 == 0xffff
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    {
 	      length += 2;
 	    }
 	  else if ((TARGET_H8300H || TARGET_H8300S)
-		   && ((det & 0x000000ff) != 0)
-		   && ((det & 0x0000ff00) != 0))
+		   && (b0 != 0)
+		   && (b1 != 0))
 	    {
 	      length += 4;
 	    }
 	  else
 	    {
-	      if ((det & 0x000000ff) != 0)
+	      if (b0 != 0)
 		length += 2;
 
-	      if ((det & 0x0000ff00) != 0)
+	      if (b1 != 0)
 		length += 2;
 	    }
 
-	  if ((det & 0xffff0000) == 0xffff0000
+	  if (w1 == 0xffff
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    {
 	      length += 2;
 	    }
 	  else if ((TARGET_H8300H || TARGET_H8300S)
 		   && code == AND
-		   && (det & 0xffff0000) == 0xff000000)
+		   && w1 == 0xff00)
 	    {
 	      length += 2;
 	    }
 	  else if (TARGET_H8300H || TARGET_H8300S)
 	    {
-	      if ((det & 0xffff0000) != 0)
+	      if (w1 != 0)
 		length += 4;
 	    }
 	  else
 	    {
-	      if ((det & 0x00ff0000) != 0)
+	      if (b2 != 0)
 		length += 2;
 
-	      if ((det & 0xff000000) != 0)
+	      if (b3 != 0)
 		length += 2;
 	    }
 	}
@@ -2375,8 +2379,8 @@ compute_logical_op_cc (mode, operands)
     case HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
-	  && ((det & 0x00ff) != 0)
-	  && ((det & 0xff00) != 0))
+	  && b0 != 0
+	  && b1 != 0)
 	{
 	  cc = CC_SET_ZNV;
 	}
