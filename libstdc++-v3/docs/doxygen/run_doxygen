@@ -215,14 +215,14 @@ mv s20_3_5_negators.3       Negation_functors.3
 mv s20_3_6_binder.3         Binder_functors.3
 mv s20_3_7_adaptors.3       Func_ptr_functors.3
 mv s20_3_8_memadaptors.3    Member_ptr_functors.3
-mv std.3                    Namespace_Std.3
 mv iterator_tags.3          Iterator_types.3
+mv std.3                    Namespace_std.3
+mv __gnu_cxx.3              Namespace___gnu_cxx.3
 
 # man pages are for functions/types/other entities, not source files
 # directly.  who the heck would type "man foo.h" anyhow?
 find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
-rm -f *.h.3 *config* *.cc.3 *.tcc.3
-rm -f *_t.3  # workaround doxygen template parsing bug for now
+rm -f *.h.3 *config* *.cc.3 *.tcc.3 *_t.3
 # this is used to examine what we would have deleted, for debugging
 #mkdir trash
 #find . -name "[a-z]*" -a ! -name "std_*" -print | xargs -i mv {} trash
@@ -247,8 +247,7 @@ rm stdheader
 # implementations of man(1), e.g., Linux's.  We need to have another top-level
 # *roff tag to /stop/ the .SH NAME entry.
 #problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
-problematic='Containers.3 Sequences.3 Assoc_containers.3 Allocators.3
-             Iterator_types.3'
+problematic='Containers.3 Sequences.3 Assoc_containers.3 Iterator_types.3'
 for f in $problematic; do
     sed '/^\.SH NAME/{
 n
@@ -280,8 +279,12 @@ for f in __gnu_cxx_*; do
     newname=`echo $f | sed 's/^__gnu_cxx_/__gnu_cxx::/'`
     mv $f $newname
 done
-for f in *__policy_*; do
-    newname=`echo $f | sed 's/__policy_/__policy::/'`
+for f in __gnu_debug_*; do
+    newname=`echo $f | sed 's/^__gnu_debug_/__gnu_debug::/'`
+    mv $f $newname
+done
+for f in GLIBCXXSTD_*; do
+    newname=`echo $f | sed 's/^GLIBCXXSTD_/std::/'`
     mv $f $newname
 done
 
