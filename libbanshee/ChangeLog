@@ -1,3 +1,16 @@
+2004-05-28  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in: Rename to ...
+	* configure.ac: this.  Update to modern autoconf style. 
+	Correct AC_INIT macro with the actual package name.
+	Replace gcc_AC_HEADER_STDBOOL and GCC_AC_C__BOOL with AC_HEADER_STDBOOL.
+	* acinclude.m4, stamp.h-in: Delete.
+	* config.h, configure: Regenerate with autoconf 2.59.
+	* aclocal.m4, Makefile.in: Regenerate with automake 1.7.9.
+	* engine/Makefile.in: Likewise.
+	* libcompat/Makefile.in: Likewise.
+	* points-to/Makefile.in: Likewise.
+
 2004-05-24  Daniel Berlin  <dberlin@dberlin.org>
 	
 	PR other/15627

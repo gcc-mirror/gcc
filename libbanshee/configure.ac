@@ -1,7 +1,9 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(engine/flowrow-sort.c, 0.9, dberlin@dberlin.org)
-AM_INIT_AUTOMAKE(libbanshee, 0.9)
-AM_CONFIG_HEADER(config.h)
+AC_PREREQ(2.59)
+AC_INIT(libbanshee,0.9,dberlin@dberlin.org)
+AC_CONFIG_SRCDIR(engine/flowrow-sort.c)
+AC_CONFIG_HEADERS(config.h)
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_PROG_CC
@@ -23,9 +25,8 @@ AM_MAINTAINER_MODE
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h limits.h stddef.h stdlib.h string.h sys/param.h unistd.h])
+AC_HEADER_STDBOOL
 
-gcc_AC_HEADER_STDBOOL
-gcc_AC_C__BOOL
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
@@ -38,7 +39,8 @@ AC_FUNC_MMAP
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit dup2 floor getpagesize memset munmap])
 
-AC_OUTPUT([Makefile
+AC_CONFIG_FILES([Makefile
                  engine/Makefile
                  libcompat/Makefile
                  points-to/Makefile])
+AC_OUTPUT
