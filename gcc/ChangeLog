@@ -1,3 +1,7 @@
+2003-03-17  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (TAGS): Remove obsolete handling of =*.[chy].
+
 2003-03-17  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (TARGET_64BIT): Redefine.

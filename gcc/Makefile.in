@@ -3424,7 +3424,7 @@ TAGS: lang.tags
 	  fi;							     \
 	done;							     \
 	mkdir tmp-tags;						     \
-	mv -f c-parse.[ch] =*.[chy] tmp-tags;			     \
+	mv -f c-parse.[ch] tmp-tags;				     \
 	etags *.y *.h *.c $$incs;				     \
 	mv tmp-tags/* .;					     \
 	rmdir tmp-tags)
