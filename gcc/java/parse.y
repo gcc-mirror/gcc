@@ -4364,7 +4364,7 @@ check_method_redefinition (class, method)
 {
   tree redef, name;
   tree cl = DECL_NAME (method);
-  tree sig = TYPE_LANG_SPECIFIC (TREE_TYPE (method))->signature;
+  tree sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
   /* decl name of artificial <clinit> and <finit> doesn't need to be fixed and
      checked */
 
@@ -4378,11 +4378,10 @@ check_method_redefinition (class, method)
   
   for (redef = TYPE_METHODS (class); redef; redef = TREE_CHAIN (redef))
     {
-      struct lang_type *t = TYPE_LANG_SPECIFIC (TREE_TYPE (redef));
-      
-      if (! t || (redef == method))
+      if (redef == method)
 	break;
-      if (DECL_NAME (redef) == name && sig == t->signature)
+      if (DECL_NAME (redef) == name 
+	  && sig == TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (redef)))
 	{
 	  parse_error_context 
 	    (cl, "Duplicate %s declaration `%s'",
@@ -6629,6 +6628,10 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 	  field = resolve_field_access (wfl, NULL, &type);
 	  if (field == error_mark_node)
 	    PATCH_METHOD_RETURN_ERROR ();
+	  /* field is used in lieu of a primary. It alows us not to
+	   report errors on erroneous use of `this' in
+	   constructors. */
+	  primary = field;	
 	  
 	  /* 2- Do the layout of the class where the last field
 	     was found, so we can search it. */
@@ -6762,10 +6765,14 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 
   is_static_flag = METHOD_STATIC (list);
 
-  /* In the context of an explicit constructor invocation, we can't invoke
-     any method relying on `this' */
+  /* In the context of an explicit constructor invocation, we can't
+     invoke any method relying on `this'. Exceptions are: we're
+     invoking a static function, primary exists and is not the current
+     this, we're creating a new object. */
   if (ctxp->explicit_constructor_p 
-      && !is_static_flag && (!primary || primary == current_this))
+      && !is_static_flag 
+      && (!primary || primary == current_this)
+      && (TREE_CODE (patch) != NEW_CLASS_EXPR))
     {
       parse_error_context 
 	(wfl, "Can't reference `this' before the superclass constructor has "
