@@ -1,3 +1,7 @@
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/lib1funcs.asm: Fix comment typos.
+
 2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* iris6.h (ASM_DECLARE_OBJECT_NAME, ASM_FINISH_DECLARE_OBJECT):
