@@ -2920,6 +2920,26 @@ expand_assignment (to, from, want_value, suggest_reg)
 #endif
 	    }
 
+	  if (GET_CODE (to_rtx) == MEM
+	      && GET_MODE (to_rtx) == BLKmode
+	      && bitsize
+	      && (bitpos % bitsize) == 0 
+	      && (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
+	      && (alignment * BITS_PER_UNIT) == GET_MODE_ALIGNMENT (mode1))
+	    {
+	      rtx temp = change_address (to_rtx, mode1,
+				         plus_constant (XEXP (to_rtx, 0),
+						        (bitpos /
+						         BITS_PER_UNIT)));
+	      if (GET_CODE (XEXP (temp, 0)) == REG)
+	        to_rtx = temp;
+	      else
+		to_rtx = change_address (to_rtx, mode1,
+				         force_reg (GET_MODE (XEXP (temp, 0)),
+						    XEXP (temp, 0)));
+	      bitpos = 0;
+	    }
+
 	  to_rtx = change_address (to_rtx, VOIDmode,
 				   gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
 						 force_reg (ptr_mode, offset_rtx)));
@@ -5917,6 +5937,27 @@ expand_expr (exp, target, tmode, modifier)
 		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
 	      }
+
+	    if (GET_CODE (op0) == MEM
+		&& GET_MODE (op0) == BLKmode
+		&& bitsize
+		&& (bitpos % bitsize) == 0 
+		&& (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
+		&& (alignment * BITS_PER_UNIT) == GET_MODE_ALIGNMENT (mode1))
+	      {
+		rtx temp = change_address (op0, mode1,
+					   plus_constant (XEXP (op0, 0),
+							  (bitpos /
+							   BITS_PER_UNIT)));
+		if (GET_CODE (XEXP (temp, 0)) == REG)
+		  op0 = temp;
+		else
+		  op0 = change_address (op0, mode1,
+					force_reg (GET_MODE (XEXP (temp, 0)),
+						   XEXP (temp, 0)));
+		bitpos = 0;
+	      }
+
 
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx_PLUS (ptr_mode, XEXP (op0, 0),
