@@ -1,3 +1,10 @@
+2004-09-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16566
+	* gcc.c-torture/compile/pr16566-1.c,
+	gcc.c-torture/compile/pr16566-2.c,
+	gcc.c-torture/compile/pr16566-3.c: New tests.
+
 2004-09-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/17512

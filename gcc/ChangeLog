@@ -1,3 +1,9 @@
+2004-09-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16566
+	* c-typeck.c (build_component_ref): Don't special-case
+	COMPOUND_EXPR.
+
 2004-09-22  Frank Ch. Eigler  <fche@redhat.com>
 
 	* dominance.c (verify_dominators): Don't SEGV if recount_dominator
