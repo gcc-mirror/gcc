@@ -1,3 +1,18 @@
+2002-06-13  Jeffrey Law  <law@redhat.com>
+
+	* alias.c (argument_registers): Remove.
+	(init_alias_once): Initialize static_reg_base_value here.  Remove
+	initialization of argument_registers.
+	(init_alias_once_per_function): Remove.
+	(init_alias_analysis): Copy all the entries from static_reg_base_value
+	into new_reg_base_value all at once.
+	* rtl.h (init_alias_once_per_function): Remove declaration.
+	* function.c (prepare_function_start): Do not call
+	init_alias_once_per_function.
+
+	* caller-save.c (init_caller_save): Use gen_rtx_INSN instead of
+	starting a sequence and emitting an INSN.
+
 2002-06-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/r3900.h (MIPS_CPU_STRING_DEFAULT): Make lower case.
