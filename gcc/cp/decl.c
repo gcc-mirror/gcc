@@ -12514,7 +12514,7 @@ finish_function (lineno, call_poplevel, nested)
 			{
 			  tree vb = get_vbase
 			    (BINFO_TYPE (vbases),
-			     TYPE_BINFO (current_class_type), 0);
+			     TYPE_BINFO (current_class_type));
 			  expand_expr_stmt
 			    (build_scoped_method_call
 			     (current_class_ref, vb, dtor_identifier,
