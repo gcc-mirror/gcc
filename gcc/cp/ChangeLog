@@ -1,5 +1,8 @@
 Wed Sep  3 11:09:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (c_expand_return): Always convert_for_initialization
+ 	before checking for returning a pointer to local.
+
 	* pt.c (type_unification): If strict and the function parm doesn't
 	use template parms, just compare types.
 
