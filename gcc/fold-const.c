@@ -4791,12 +4791,14 @@ fold (expr)
 	 to A || (B && C).  Note that either operator can be any of the four
 	 truth and/or operations and the transformation will still be
 	 valid.   Also note that we only care about order for the
-	 ANDIF and ORIF operators.  */
+	 ANDIF and ORIF operators.  If B contains side effects, this
+	 might change the truth-value of A. */
       if (TREE_CODE (arg0) == TREE_CODE (arg1)
 	  && (TREE_CODE (arg0) == TRUTH_ANDIF_EXPR
 	      || TREE_CODE (arg0) == TRUTH_ORIF_EXPR
 	      || TREE_CODE (arg0) == TRUTH_AND_EXPR
-	      || TREE_CODE (arg0) == TRUTH_OR_EXPR))
+	      || TREE_CODE (arg0) == TRUTH_OR_EXPR)
+	  && ! TREE_SIDE_EFFECTS (TREE_OPERAND (arg0, 1)))
 	{
 	  tree a00 = TREE_OPERAND (arg0, 0);
 	  tree a01 = TREE_OPERAND (arg0, 1);
