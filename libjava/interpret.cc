@@ -22,7 +22,6 @@ details.  */
 #include <jvm.h>
 #include <java-cpool.h>
 #include <java-interp.h>
-// #include <java/lang/fdlibm.h>
 #include <java/lang/System.h>
 #include <java/lang/String.h>
 #include <java/lang/Integer.h>
@@ -36,6 +35,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/Thread.h>
 #include <java-insns.h>
 #include <java-signal.h>
 
@@ -744,10 +744,27 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 }
 #endif /* DIRECT_THREADED */
 
+// This function exists so that the stack-tracing code can find the
+// boundaries of the interpreter.
+void
+_Jv_StartOfInterpreter (void)
+{
+}
+
 void
 _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 {
   using namespace java::lang::reflect;
+
+  // FRAME_DESC registers this particular invocation as the top-most
+  // interpreter frame.  This lets the stack tracing code (for
+  // Throwable) print information about the method being interpreted
+  // rather than about the interpreter itself.  FRAME_DESC has a
+  // destructor so it cleans up automatically when the interpreter
+  // returns.
+  java::lang::Thread *thread = java::lang::Thread::currentThread();
+  _Jv_MethodChain frame_desc (this,
+			      (_Jv_MethodChain **) &thread->interp_frame);
 
   _Jv_word stack[max_stack];
   _Jv_word *sp = stack;
@@ -3167,6 +3184,13 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       // No handler, so re-throw.
       throw ex;
     }
+}
+
+// This function exists so that the stack-tracing code can find the
+// boundaries of the interpreter.
+void
+_Jv_EndOfInterpreter (void)
+{
 }
 
 static void

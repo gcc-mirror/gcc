@@ -10,6 +10,8 @@ details.  */
 
 package java.lang;
 
+import gnu.gcj.RawData;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date August 24, 1998 
@@ -310,6 +312,9 @@ public class Thread implements Runnable
   private boolean alive_flag;
   private boolean startable_flag;
   private ClassLoader context_class_loader;
+
+  // This describes the top-most interpreter frame for this thread.
+  RawData interp_frame;
 
   // Our native data - points to an instance of struct natThread.
   private Object data;

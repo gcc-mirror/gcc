@@ -173,17 +173,26 @@ public class NameFinder
   native private String getAddrAsString(RawData addrs, int n);
 
   /**
+   * If nth element of stack is an interpreted frame, return the
+   * element representing the method being interpreted.
+   */
+  native private StackTraceElement lookupInterp(RawData addrs, int n);
+
+  /**
    * Creates the nth StackTraceElement from the given native stacktrace.
    */
   private StackTraceElement lookup(RawData addrs, int n)
   {
     StackTraceElement result;
 
-    result = dladdrLookup(addrs, n);
+    result = lookupInterp(addrs, n);
+    if (result == null)
+      result = dladdrLookup(addrs, n);
     if (result == null)
       {
 	String name = null;
 	String file = null;
+
 	String hex = getAddrAsString(addrs, n);
 	
 	if (addr2line != null)
