@@ -1,3 +1,9 @@
+2003-09-04  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/faq/index.html: Note that a namespace alias can't be
+	used when specialising templates in extension namespace.
+	* docs/html/faq/index.txt: Regenerate.
+
 2003-09-03  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12048
