@@ -68,7 +68,9 @@ struct _Jv_Field
 
   jclass getClass ()
   {
-    JvAssert (isResolved ());
+    // We can't use JvAssert here because it is not in a public
+    // header.
+    // JvAssert (isResolved ());
     return type;
   }
 
