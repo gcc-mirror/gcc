@@ -1,1 +1,1 @@
-char *ffe_version_string = "0.5.24-19980704";
+char *ffe_version_string = "0.5.24-19980711";
