@@ -2082,7 +2082,7 @@ struct reachable_info
 /* A subroutine of reachable_next_level.  Return true if TYPE, or a
    base class of TYPE, is in HANDLED.  */
 
-int
+static int
 check_handled (tree handled, tree type)
 {
   tree t;
