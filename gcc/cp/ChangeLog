@@ -1,3 +1,10 @@
+2000-06-02  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* exception.cc (__cp_pop_exception): If we aren't popping or
+	rethrowing, push down past any uncaught exceptions.
+	(__uncatch_exception): Rethrow the currently handled exception.
+	Move it to the top of the exception stack.
+
 Fri Jun  2 19:38:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp-tree.h: Use struct tree_common instead of a char array.
