@@ -1,3 +1,8 @@
+Wed Dec 13 19:48:04 MET 2000  Jan hubicka  <jh@suse.cz>
+
+	* flow.c (notice_stack_pointer_modification_1): Notice midifications
+	using PRE_MODIFY and POST_MODIFY.
+
 Wed Dec 13 17:25:32 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* genoutput.c (process_template): Add sanity checking for '@' templates.

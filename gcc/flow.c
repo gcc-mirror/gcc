@@ -3159,6 +3159,8 @@ notice_stack_pointer_modification_1 (x, pat, data)
       || (GET_CODE (x) == MEM
 	  && (GET_CODE (XEXP (x, 0)) == PRE_DEC
 	      || GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == PRE_MODIFY
+	      || GET_CODE (XEXP (x, 0)) == POST_MODIFY
 	      || GET_CODE (XEXP (x, 0)) == POST_DEC
 	      || GET_CODE (XEXP (x, 0)) == POST_INC)
 	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
