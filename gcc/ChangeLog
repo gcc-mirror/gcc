@@ -1,5 +1,14 @@
 2003-01-02  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*iorhi3_zext): Relax the condition.
+	(*iorhi3_two_qi): Likewise.
+	(*iorsi3_zexthi): Likewise.
+	(*xorhi3_zextqi): Likewise.
+	(*xorsi3_zexthi): Likewise.
+	(*xorsi3_zextqi): Likewise.
+
+2003-01-02  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (stack_pointer_operand): New.
 	(const_int_gt_2_operand): Likewise.
 	(const_int_ge_8_operand): Likewise.
