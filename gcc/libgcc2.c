@@ -2470,7 +2470,8 @@ unsigned int __shtab[] = {
 #define INSN_CACHE_PLANE_SIZE (INSN_CACHE_SIZE / INSN_CACHE_DEPTH)
 
 void
-__clear_cache (char *beg, char *end)
+__clear_cache (char *beg __attribute__((__unused__)),
+	       char *end __attribute__((__unused__)))
 {
 #ifdef CLEAR_INSN_CACHE 
   CLEAR_INSN_CACHE (beg, end);
