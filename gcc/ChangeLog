@@ -1,3 +1,10 @@
+2004-11-26  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/16356
+	* config/rs6000/rs6000.md (floatdisf2_internal2): Rewrite with
+	separate output register and one less jump.  Enable for powerpc64.
+	(floatdisf2): Adjust for above.
+
 2004-11-25  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (STARTFILE_SPEC): Add crt0.
@@ -32,8 +39,8 @@
 2004-11-25  Richard Henderson  <rth@redhat.com>
 
 	PR c++/6764
-        * reload1.c (set_initial_eh_label_offset): New.
-        (set_initial_label_offsets): Use it.
+	* reload1.c (set_initial_eh_label_offset): New.
+	(set_initial_label_offsets): Use it.
 
 2004-11-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -80,13 +87,13 @@
 	PR tree-optimization/18587
 	* tree-flow-inline.h (mark_call_clobbered, mark_non_addressable): Flag
 	call clobbered caches as invalid.
-	* tree-ssa-operands.c (ssa_call_clobbered_cache_valid): New.  Flag 
+	* tree-ssa-operands.c (ssa_call_clobbered_cache_valid): New.  Flag
 	indicating whether the call clobbered operand cache is valid.
 	(ssa_ro_call_cache_valid): New.  Flag indicating whether the
 	pure/const call operand cache is valid.
-	(clobbered_v_may_defs, clobbered_vuses, ro_call_vuses): New.  Cached 
+	(clobbered_v_may_defs, clobbered_vuses, ro_call_vuses): New.  Cached
 	list of operands for cached call virtual operands.
-	(clobbered_aliased_loads, clobbered_aliased_stores, 
+	(clobbered_aliased_loads, clobbered_aliased_stores,
 	ro_call_aliased_load): New.  flags caching whether alias bits are
 	to be set in call stmt's.
 	(fini_ssa_operands): Remove call operand caches if present.
@@ -104,7 +111,7 @@
 	build array
 	(finalize_ssa_vuses): Use cleanup_v_may_defs and remove redundant
 	VUSES by checking the in_v_may_def_list bit.
-	(append_v_may_def, append_vuse): Use the in_list bit rather than 
+	(append_v_may_def, append_vuse): Use the in_list bit rather than
 	scanning the array for duplicates.
 
 2004-11-25  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -295,7 +302,7 @@
 	* config/i386/i386.c (i386_dwarf_output_addr_const): Likewise.
 	* config/i386/i386-protos.h (i386_dwarf_output_addr_const):
 	Likewise.
-	
+
 2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-sra.c (sra_walk_modify_expr): Handle RHS first, then LHS.
@@ -352,7 +359,7 @@
 	* recog.c (recog_memoized_1): Remove.
 	* recog.h (recog_memoized_1): Remove declaration.
 	(recog_memoized): Change from macro to inline function.
-	
+
 2004-11-24  Devang Patel  <dpatel@apple.com>
 
 	PR/18555
@@ -362,7 +369,7 @@
 2004-11-24  Devang Patel  <dpatel@apple.com>
 
 	* gcc.c (process_command): Supply -v to linker.
-	
+
 2004-11-24  David Edelsohn  <edelsohn@gnu.org>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
@@ -417,7 +424,7 @@
 
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/i386/sol2.h (X86_FILE_START_VERSION_DIRECTIVE): 
+	* config/i386/sol2.h (X86_FILE_START_VERSION_DIRECTIVE):
 	Define to false.
 
 2004-11-24  Joseph Myers  <joseph@codesourcery.com>
@@ -448,7 +455,7 @@
 
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
-	* expr.c (expand_expr_real_1): Remove cases for EXIT_BLOCK_EXPR 
+	* expr.c (expand_expr_real_1): Remove cases for EXIT_BLOCK_EXPR
 	and LABELED_BLOCK_EXPR.
 	* gimplify.c (gimplify_labeled_block_expr): Remove.
 	(gimplify_exit_block_expr): Remove.
@@ -23717,31 +23724,7 @@
 	(c_initialize_diagnostics): Declare.
 	* objc/objc-lang.c (LANG_HOOKS_INITIALIZE_DIAGNOSTICS): Define.
 	* c-format.c (format_type_warning): New function.  Improve
-	diagnostics for incorrect format argument types.
-	(check_format_types): Use it.  Add two parameters.  Use the
-	TYPE_MAIN_VARIANT of wanted_type.
-	(check_format_info_main): Pass new parameters to
-	check_format_types.
-	(struct format_wanted_type): Update comment.
-
-2004-07-01  Nick Clifton  <nickc@redhat.com>
-
-	* target.h (struct gcc_target): Add new field to struct cxx:
-	import_export_class.
-	* target-def.h (TARGET_CXX): Initialise the new field.
-	(TARGET_CXX_IMPORT_EXPORT_CLASS): Provide a default value for
-	the new field.
-	* doc/tm.texi: Document the new target hook.
-
-2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
-
-	* builtins.c (fold_builtin_classify): Fix typo.
-
-2004-07-01  Richard Henderson  <rth@redhat.com>
-
-	* function.c (identify_blocks, identify_blocks_1): Remove.
-	* function.h (identify_blocks): Remove.
-	* rtl.h (NOTE_INSN_BLOCK_BEG): Update comment.
+	di                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            _BEG): Update comment.
 
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
