@@ -1,3 +1,9 @@
+2005-01-12  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/19389
+	* config/rs6000/rs6000.md (movtf_internal): Replace r->o and m->r
+	with r->Y and Y->r.
+
 2005-01-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/iq2000/iq2000.h (ASM_SPEC): Undefine (to stop -Qy being
