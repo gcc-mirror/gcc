@@ -2410,52 +2410,6 @@
 "
 [(set_attr "conds" "set")])
 
-;; XXX The movhi stuff isn't as correct or as nice as it could be...
-
-;; Subroutine to load a half word into a register from memory.
-;; Operand 0 is the destination register (HImode).
-;; Operand 1 is the source address (SImode).
-;; Operand 2 is a temporary (SImode).
-
-;;(define_expand "loadhi"
-;;  [;; load the whole word (ARM realigns it if not on word boundary)
-;;   (set (match_operand:SI 2 "s_register_operand" "")
-;;        (mem:SI (match_operand:SI 1 "address_operand" "")))
-;;   ;; quietly forget the upper 16 bits
-;;   (set (match_operand:HI 0 "s_register_operand" "")
-;;        (subreg:HI (match_dup 2) 0))]
-;;  ""
-;;  ""
-;;)
-
-;; Load op0 from mem:op1.  Subroutine in case we're reloading and the normal
-;; loadhi is not allowed.
-
-;;(define_expand "reloadhi"
-;;  [(set (reg:SI 10)
-;;	(mem:SI (match_operand:SI 1 "address_operand" "")))
-;;   (set (match_operand:HI 0 "s_register_operand" "")
-;;	(subreg:HI (reg:SI 10) 0))]
-;;  "" "")
-
-;; Store op0 into mem:op1.  Subroutine in case we're reloading and the normal
-;; storehi is not allowed.
-
-(define_expand "restorehi"
-  [(set (mem:QI (match_operand:SI 1 "" ""))
-	(match_dup 2))
-   (set (reg:SI 10)
-	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
-   (set (mem:QI (match_dup 3))
-	(reg:QI 10))]
-  ""
-  "
-{
-  operands[2] = gen_lowpart (QImode, operands[0]);
-  operands[0] = gen_lowpart (SImode, operands[0]);
-  operands[3] = plus_constant (operands[1], 1);
-}")
-
 ;; Subroutine to store a half word from a register into memory.
 ;; Operand 0 is the source register (HImode)
 ;; Operand 1 is the destination address in a register (SImode)
@@ -2525,12 +2479,7 @@
   rtx insn;
 
   if (reload_in_progress || reload_completed)
-    {
-      if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) == REG)
-	insn = gen_restorehi (operands[1], XEXP (operands[0], 0));
-      else
-	insn = gen_rtx (SET, VOIDmode, operands[0], operands[1]);
-    }
+    insn = gen_rtx (SET, VOIDmode, operands[0], operands[1]);
   else
     {
       if (GET_CODE (operands[0]) == MEM)
@@ -2610,6 +2559,16 @@
     }
 "
 [(set_attr "type" "*,*,load,store1")])
+
+(define_expand "reload_outhi"
+  [(parallel [(match_operand:HI 0 "reload_memory_operand" "=o")
+	      (match_operand:HI 1 "s_register_operand" "r")
+	      (match_operand:SI 2 "s_register_operand" "=&r")])]
+  ""
+  "
+  arm_reload_out_hi (operands);
+  DONE;
+")
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -3724,9 +3683,16 @@
   return (arm_output_asm_insn (\"b\\t%l0\", operands));
 }")
 
-(define_insn "call"
-  [(call (match_operand 0 "memory_operand" "m")
-	 (match_operand 1 "general_operand" "g"))
+(define_expand "call"
+  [(parallel [(call (match_operand 0 "memory_operand" "")
+	            (match_operand 1 "general_operand" ""))
+	      (clobber (reg:SI 14))])]
+  ""
+  "")
+
+(define_insn ""
+  [(call (mem:SI (match_operand:SI 0 "s_register_operand" "r"))
+         (match_operand 1 "" "g"))
    (clobber (reg:SI 14))]
   ""
   "*
@@ -3755,10 +3721,18 @@
  (set_attr "length" "3")
  (set_attr "type" "call")])
 
-(define_insn "call_value"
+(define_expand "call_value"
+  [(parallel [(set (match_operand 0 "" "=rf")
+	           (call (match_operand 1 "memory_operand" "m")
+		         (match_operand 2 "general_operand" "g")))
+	      (clobber (reg:SI 14))])]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand 0 "" "=rf")
-	(call (match_operand 1 "memory_operand" "m")
-	(match_operand 2 "general_operand" "g")))
+        (call (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
+	      (match_operand 2 "general_operand" "g")))
    (clobber (reg:SI 14))]
   ""
   "*
