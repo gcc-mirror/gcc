@@ -3233,8 +3233,8 @@ expand_return (retval)
 	      dst = gen_reg_rtx (word_mode);
 	      result_pseudos[xbitpos / BITS_PER_WORD] = dst;
 
-	      /* Clobber the destination before we move anything into it.  */
-	      emit_insn (gen_rtx_CLOBBER (VOIDmode, dst));
+	      /* Clear the destination before we move anything into it.  */
+	      emit_move_insn (dst, CONST0_RTX (GET_MODE (dst)));
 	    }
 
 	  /* We need a new source operand each time bitpos is on a word
