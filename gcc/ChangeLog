@@ -1,5 +1,6 @@
 2002-09-26  David S. Miller  <davem@redhat.com>
 
+	PR optimization/7335
 	* calls.c (emit_library_call_value_1): Passing args by reference
 	converts a CONST function into a PURE one.
 
