@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
-   darwin_closures.S - Copyright (c) 2002 Free Software Foundation, Inc.
-   based on ppc_closures.S
+   darwin_closure.S - Copyright (c) 2002 2003 Free Software Foundation, 
+   Inc. based on ppc_closure.S
  
    PowerPC Assembly glue.
 
@@ -37,20 +37,20 @@
 .text
 	.align 2
 _ffi_closure_ASM:
-	
-	mflr r0			/* extract return address */
-	stw r0, 8(r1)		/* save the return address */
-	
+LFB1:		
+	mflr r0			/* extract return address  */
+	stw r0, 8(r1)		/* save the return address  */
+LCFI0:	
 	/* 24 Bytes (Linkage Area) */
 	/* 32 Bytes (outgoing parameter area, always reserved) */
 	/* 104 Bytes (13*8 from FPR) */ 
 	/* 4 Bytes (result)
 	/* 164 Bytes */
 	
-	stwu r1,-164(r1)	/* skip over caller save area */
-	
-/* we want to build up an area for the parameters passed */
-/* in registers (both floating point and integer) */
+	stwu r1,-164(r1)	/* skip over caller save area  */
+LCFI1:		
+	/* we want to build up an area for the parameters passed
+	in registers (both floating point and integer)  */
 	
 	/* we store gpr 3 to gpr 10 (aligned to 4) */
 	/* in the parents outgoing area		   */
@@ -111,7 +111,9 @@ _ffi_closure_ASM:
 	lwzx r3,r4,r3		/* get the contents of that table value */
 	add r3,r3,r4		/* add contents of table to table address */
 	mtctr r3
-	bctr			/* jump to it */
+	bctr			/* jump to it  */
+LFE1:
+	.align	2
 
 .L60:
 	.long .L44-.L60    /* FFI_TYPE_VOID */
@@ -185,5 +187,49 @@ _ffi_closure_ASM:
 	mtlr r0			/* reset link register */
 	blr
 	
-/* END(ffi_closure_ASM) */
+/* END(ffi_closure_ASM)  */
+
+.data
+.section __TEXT,__eh_frame
+Lframe1:
+	.set	L$set$0,LECIE1-LSCIE1
+	.long	L$set$0	; Length of Common Information Entry
+LSCIE1:
+	.long	0x0	; CIE Identifier Tag
+	.byte	0x1	; CIE Version
+	.ascii	"zR\0"	; CIE Augmentation
+	.byte	0x1	; uleb128 0x1; CIE Code Alignment Factor
+	.byte	0x7c	; sleb128 -4; CIE Data Alignment Factor
+	.byte	0x41	; CIE RA Column
+	.byte	0x1	; uleb128 0x1; Augmentation size
+	.byte	0x10	; FDE Encoding (pcrel)
+	.byte	0xc	; DW_CFA_def_cfa
+	.byte	0x1	; uleb128 0x1
+	.byte	0x0	; uleb128 0x0
+	.align	2
+LECIE1:
+LSFDE1:
+	.set	L$set$1,LEFDE1-LASFDE1
+	.long	L$set$1	; FDE Length
+
+LASFDE1:
+	.set	L$set$2,LASFDE1-Lframe1
+	.long	L$set$2	; FDE CIE offset
+	.long	LFB1-.	; FDE initial location
+	.set	L$set$3,LFE1-LFB1
+	.long	L$set$3	; FDE address range
+	.byte   0x0     ; uleb128 0x0; Augmentation size
+	.byte	0x4	; DW_CFA_advance_loc4
+	.set	L$set$3,LCFI1-LCFI0
+	.long	L$set$3
+	.byte	0xe	; DW_CFA_def_cfa_offset
+ 	.byte	164,1	; uleb128 164
+	.byte	0x4	; DW_CFA_advance_loc4
+	.set	L$set$4,LCFI0-LFB1
+	.long	L$set$4
+	.byte   0x11    ; DW_CFA_offset_extended_sf
+	.byte	0x41	; uleb128 0x41
+	.byte   0x7e    ; sleb128 -2
+	.align	2
+LEFDE1:
 

@@ -1,3 +1,8 @@
+2003-01-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/powerpc/darwin.S: Add unwind info.
+	* src/powerpc/darwin_closure.S: Likewise.
+
 2003-01-14  Andrew Haley  <aph@redhat.com>
 
 	* src/x86/ffi64.c (ffi_prep_args): Check for void retval.
