@@ -1,5 +1,5 @@
 /* AbstractSet.java -- Abstract implementation of most of Set
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,7 +36,8 @@ package java.util;
  * class simply provides implementations of equals() and hashCode() to fulfil
  * the requirements placed on them by the Set interface.
  */
-public abstract class AbstractSet extends AbstractCollection implements Set {
+public abstract class AbstractSet extends AbstractCollection implements Set
+{
 
   /**
    * Tests whether the given object is equal to this Set. This implementation
@@ -48,14 +49,14 @@ public abstract class AbstractSet extends AbstractCollection implements Set {
    * @param o the Object to be tested for equality with this Set
    * @return true if the given object is equal to this Set
    */
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object o)
+  {
+    if (o == this)
       return true;
-    } else if (o instanceof Set && ((Set)o).size() == size()) {
-      return containsAll((Collection)o);
-    } else {
+    else if (o instanceof Set && ((Set) o).size() == size())
+      return containsAll((Collection) o);
+    else
       return false;
-    }
   }
 
   /**
@@ -66,15 +67,17 @@ public abstract class AbstractSet extends AbstractCollection implements Set {
    *
    * @return a hash code for this Set
    */
-  public int hashCode() {
+  public int hashCode()
+  {
+    Iterator itr = iterator();
+    int size = size();
     int hash = 0;
-    Iterator i = iterator();
-    while (i.hasNext()) {
-      try {
-        hash += i.next().hashCode();
-      } catch (NullPointerException e) {
+    for (int pos = 0; pos < size; pos++)
+      {
+	Object obj = itr.next();
+	if (obj != null)
+	  hash += obj.hashCode();
       }
-    }
     return hash;
   }
 }

@@ -1,3 +1,71 @@
+2000-10-29  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/AbstractCollection.java (addAll): Use size() instead of
+	hasNext() in iterator loop.
+	(clear): Ditto.
+	(contains): Ditto. Simplify loop.
+	(containsAll): Ditto.
+	(remove): Ditto.
+	(removeAll): Ditto.
+	(retainAll): Ditto.
+	(toArray): Ditto.
+	(toString): Ditto. Use string concatenation operators, not
+	StringBuffer.
+	* java/util/AbstractList.java (addAll): Use size() instead of
+	hasNext() in iterator loop.
+	(equals): Ditto.
+	(hashCode): Ditto.
+	(indexOf): Ditto. Don't take null check outside of the loop.
+	(iterator): Return an AbstractListItr instead of anonymous class.
+	(lastIndexOf): Use a for loop bounded by size() instead of 
+	hasPrevious() in iterator loop.
+	(listIterator): Return an AbstractListItr.
+	(removeRange): Remove bounds checking code and docs.
+	(AbstractListItr): New inner class. Code moved here from 
+	listIterator().
+	(SubList.iterator): Removed. Use default implementation from 
+	AbstractList instead.
+	(SubList.listIterator): As above.
+	* java/util/AbstractMap.java (clear): Use a for loop bounded by size() 
+	instead of hasNext() in iterator loop.
+	(containsValue): Ditto.
+	(equals): Ditto.
+	(get): Ditto.
+	(put): Ditto.
+	(putAll): Ditto.
+	(remove): Ditto.
+	(toString): Ditto. Use string concatenation operators, not
+	StringBuffer.
+	* java/util/AbstractSequentialList.java (addAll): Use a for loop 
+	bounded by size() instead of hasNext() in iterator loop.
+	* java/util/AbstractSet.java (hashCode): Don't catch exception as
+	part of normal execution flow. Do an explicit null check instead.
+	* java/util/ArrayList.java (_iSize): Rename to `size'.
+	(_arData): Rename to `data'.
+	(get): Check lower bounds also. Simplify IndexOutOfBoundsException
+	message.
+	(remove): Ditto.
+	(removeRange): Make protected. Don't check bounds.
+	(add): Check lower bounds also. Simplify IndexOutOfBoundsException
+	message.
+	(addAll (Collection)): Use a size-bounded for loop instead of hasNext() 
+	check.
+	(addAll (int, Collection)): Check lower bounds. Simplify exception
+	string.
+	(clone): Clone the data array too.
+	(indexOf): Inline doesEqual().
+	(lastIndexOf): Ditto.
+	(clear): Don't set array data to null.
+	(set): Check lower bounds. Simplify exception string.
+	(toArray): Correct comment.
+	(trimToSize): Don't update modCount, this is not a structural change.
+	Add comment.
+	
+	* java/util/BitSet.java: Merged with classpath, new JDK 1.2 methods
+	implemented.
+	(toString): Declare `bit' as long, not int.
+	(data): Made package-private, not private.	
+
 2000-10-27  Warren Levy  <warrenl@cygnus.com>
 
 	* java/util/natGregorianCalendar.cc (computeFields): Set the isSet__

@@ -1,5 +1,5 @@
 /* AbstractCollection.java -- Abstract implementation of most of Collection
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,8 +43,8 @@ import java.lang.reflect.Array;
  * precise implementation used by AbstractCollection is documented, so that
  * subclasses can tell which methods could be implemented more efficiently.
  */
-public abstract class AbstractCollection implements Collection {
-
+public abstract class AbstractCollection implements Collection
+{
   /**
    * Return an Iterator over this collection. The iterator must provide the
    * hasNext and next methods and should in addition provide remove if the
@@ -67,7 +67,8 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if the add operation is not
    *   supported on this collection
    */
-  public boolean add(Object o) {
+  public boolean add(Object o)
+  {
     throw new java.lang.UnsupportedOperationException();
   }
 
@@ -82,12 +83,15 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if the add operation is not
    *   supported on this collection
    */
-  public boolean addAll(Collection c) {
-    Iterator i = c.iterator();
+  public boolean addAll(Collection c)
+  {
+    Iterator itr = c.iterator();
+    int size = c.size();
     boolean modified = false;
-    while (i.hasNext()) {
-      modified |= add(i.next());
-    }
+    for (int pos = 0; pos < size; pos++)
+      {
+	modified |= add(itr.next());
+      }
     return modified;
   }
 
@@ -101,12 +105,15 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if the Iterator returned by
    *   iterator does not provide an implementation of remove
    */
-  public void clear() {
-    Iterator i = iterator();
-    while (i.hasNext()) {
-      i.next();
-      i.remove();
-    }
+  public void clear()
+  {
+    Iterator itr = iterator();
+    int size = size();
+    for (int pos = 0; pos < size; pos++)
+      {
+	itr.next();
+	itr.remove();
+      }
   }
 
   /**
@@ -120,25 +127,15 @@ public abstract class AbstractCollection implements Collection {
    * @param o the object to remove from this collection
    * @return true if this collection contains an object equal to o
    */
-  public boolean contains(Object o) {
-    Iterator i = iterator();
-
-    // This looks crazily inefficient, but it takes the test o==null outside
-    // the loop, saving time, and also saves needing to store the result of
-    // i.next() each time.
-    if (o == null) {
-      while (i.hasNext()) {
-        if (i.next() == null) {
-          return true;
-        }
+  public boolean contains(Object o)
+  {
+    Iterator itr = iterator();
+    int size = size();
+    for (int pos = 0; pos < size; pos++)
+      {
+	if (o == null ? itr.next() == null : o.equals(itr.next()))
+	  return true;
       }
-    } else {
-      while (i.hasNext()) {
-        if (o.equals(i.next())) {
-          return true;
-        }
-      }
-    }
     return false;
   }
 
@@ -152,13 +149,15 @@ public abstract class AbstractCollection implements Collection {
    * @return true if this collection contains all the elements in the given
    *   collection
    */
-  public boolean containsAll(Collection c) {
-    Iterator i = c.iterator();
-    while (i.hasNext()) {
-      if (!contains(i.next())) {
-        return false;
+  public boolean containsAll(Collection c)
+  {
+    Iterator itr = c.iterator();
+    int size = c.size();
+    for (int pos = 0; pos < size; pos++)
+      {
+	if (!contains(itr.next()))
+	  return false;
       }
-    }
     return true;
   }
 
@@ -168,7 +167,8 @@ public abstract class AbstractCollection implements Collection {
    *
    * @return true if this collection is empty.
    */
-  public boolean isEmpty() {
+  public boolean isEmpty()
+  {
     return size() == 0;
   }
 
@@ -189,27 +189,18 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if this collection's Iterator
    *   does not support the remove method
    */
-  public boolean remove(Object o) {
-    Iterator i = iterator();
-
-    // This looks crazily inefficient, but it takes the test o==null outside
-    // the loop, saving time, and also saves needing to store the result of
-    // i.next() each time.
-    if (o == null) {
-      while (i.hasNext()) {
-        if (i.next() == null) {
-          i.remove();
-	  return true;
-        }
+  public boolean remove(Object o)
+  {
+    Iterator itr = iterator();
+    int size = size();
+    for (int pos = 0; pos < size; pos++)
+      {
+	if (o == null ? itr.next() == null : o.equals(itr.next()))
+	  {
+	    itr.remove();
+	    return true;
+	  }
       }
-    } else {
-      while (i.hasNext()) {
-        if (o.equals(i.next())) {
-          i.remove();
-          return true;
-        }
-      }
-    }
     return false;
   }
 
@@ -226,16 +217,20 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if this collection's Iterator
    *   does not support the remove method
    */
-  public boolean removeAll(Collection c) {
-    Iterator i = iterator();
-    boolean changed = false;
-    while (i.hasNext()) {
-      if (c.contains(i.next())) {
-        i.remove();
-        changed = true;
+  public boolean removeAll(Collection c)
+  {
+    Iterator itr = iterator();
+    int size = size();
+    boolean modified = false;
+    for (int pos = 0; pos < size; pos++)
+      {
+	if (c.contains(itr.next()))
+	  {
+	    itr.remove();
+	    modified = true;
+	  }
       }
-    }
-    return changed;
+    return modified;
   }
 
   /**
@@ -251,16 +246,20 @@ public abstract class AbstractCollection implements Collection {
    * @exception UnsupportedOperationException if this collection's Iterator
    *   does not support the remove method
    */
-  public boolean retainAll(Collection c) {
-    Iterator i = iterator();
-    boolean changed = false;
-    while (i.hasNext()) {
-      if (!c.contains(i.next())) {
-        i.remove();
-        changed = true;
+  public boolean retainAll(Collection c)
+  {
+    Iterator itr = iterator();
+    int size = size();
+    boolean modified = false;
+    for (int pos = 0; pos < size; pos++)
+      {
+	if (!c.contains(itr.next()))
+	  {
+	    itr.remove();
+	    modified = true;
+	  }
       }
-    }
-    return changed;
+    return modified;
   }
 
   /**
@@ -271,12 +270,14 @@ public abstract class AbstractCollection implements Collection {
    *
    * @return an array containing the elements of this collection
    */
-  public Object[] toArray() {
-    Object[] a = new Object[size()];
-    Iterator i = iterator();
-    for (int pos = 0; pos < a.length; pos++) {
-      a[pos] = i.next();
-    }
+  public Object[] toArray()
+  {
+    Iterator itr = iterator();
+    Object[]a = new Object[size()];
+    for (int pos = 0; pos < a.length; pos++)
+      {
+	a[pos] = itr.next();
+      }
     return a;
   }
 
@@ -298,18 +299,23 @@ public abstract class AbstractCollection implements Collection {
    * @exception ClassCastException if the type of the array precludes holding
    *   one of the elements of the Collection
    */
-  public Object[] toArray(Object[] a) {
-    final int n = size();
-    if (a.length < n) {
-      a = (Object[])Array.newInstance(a.getClass().getComponentType(), n);
-    }
-    Iterator i = iterator();
-    for (int pos = 0; pos < n; pos++) {
-      a[pos] = i.next();
-    }
-    if (a.length > n) {
-      a[n] = null;
-    }
+  public Object[] toArray(Object[]a)
+  {
+    int size = size();
+    if (a.length < size)
+      {
+	a = (Object[])Array.newInstance(a.getClass().getComponentType(),
+					size);
+      }
+    Iterator itr = iterator();
+    for (int pos = 0; pos < size; pos++)
+      {
+	a[pos] = itr.next();
+      }
+    if (a.length > size)
+      {
+	a[size] = null;
+      }
     return a;
   }
 
@@ -322,18 +328,18 @@ public abstract class AbstractCollection implements Collection {
    *
    * @return a String representation of the Collection
    */
-  public String toString() {
-    StringBuffer s = new StringBuffer();
-    s.append('[');
-    Iterator i = iterator();
-    boolean more = i.hasNext();
-    while(more) {
-      s.append(i.next());
-      if (more = i.hasNext()) {
-        s.append(", ");
+  public String toString()
+  {
+    Iterator itr = iterator();
+    int size = size();
+    String r = "[";
+    for (int pos = 0; pos < size; pos++)
+      {
+	r += itr.next();
+	if (pos < size - 1)
+	  r += ", ";
       }
-    }
-    s.append(']');
-    return s.toString();
+    r += "]";
+    return r;
   }
 }
