@@ -1,3 +1,8 @@
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
+	* trans-types.h: Add comments.
+	(intmax_type_node, string_type_node, const_string_type_node): Remove.
+
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
 	* Make-lang.in (fortran/f95-lang.o): Update dependencies.
