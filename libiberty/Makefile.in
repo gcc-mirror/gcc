@@ -145,7 +145,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	partition.c							\
 	 pex-djgpp.c pex-mpw.c pex-msdos.c pex-os2.c			\
 	 pex-unix.c pex-win32.c						\
-         putenv.c							\
+         physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
 	safe-ctype.c setenv.c sigsetmask.c sort.c spaces.c		\
 	 splay-tree.c strcasecmp.c strchr.c strdup.c strerror.c		\
@@ -170,7 +170,7 @@ REQUIRED_OFILES = regex.o cplus-dem.o cp-demangle.o md5.o		\
 	make-relative-prefix.o						\
 	make-temp-file.o						\
 	objalloc.o obstack.o						\
-	partition.o @pexecute@						\
+	partition.o physmem.o @pexecute@						\
 	safe-ctype.o sort.o spaces.o splay-tree.o strerror.o		\
 	 strsignal.o							\
 	ternary.o							\

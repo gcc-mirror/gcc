@@ -246,6 +246,10 @@ extern char *xstrdup PARAMS ((const char *)) ATTRIBUTE_MALLOC;
 
 extern PTR xmemdup PARAMS ((const PTR, size_t, size_t)) ATTRIBUTE_MALLOC;
 
+/* Physical memory routines.  */
+extern double physmem_total PARAMS ((void));
+extern double physmem_available PARAMS ((void));
+
 /* hex character manipulation routines */
 
 #define _hex_array_size 256
