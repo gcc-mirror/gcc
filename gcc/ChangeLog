@@ -1,3 +1,8 @@
+2004-03-16  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	PR target/14577
+	* config.gcc: Switch sh-*-rtems* to ELF.  Add sh-*-rtemscoff.
+
 2004-03-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (combine_simplify_rtx): Remove the "last"
