@@ -2094,10 +2094,27 @@ glibcpp_min_gnu_ld_version=21200
 # above.  
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
-    test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version &&
     test $glibcpp_shared_libgcc = yes ;
   then
-    enable_symvers=gnu
+    if test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version ; then
+        enable_symvers=gnu
+    else
+      ac_test_CFLAGS="${CFLAGS+set}"
+      ac_save_CFLAGS="$CFLAGS"
+      CFLAGS='-shared -Wl,--version-script,conftest.map'
+      enable_symvers=no
+      changequote(,)
+      echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
+      changequote([,])
+      AC_TRY_LINK([int foo;],, enable_symvers=gnu)
+      if test "$ac_test_CFLAGS" = set; then
+	CFLAGS="$ac_save_CFLAGS"
+      else
+	# this is the suspicious part
+	CFLAGS=''
+      fi
+      rm -f conftest.map
+    fi
   else
     # just fail for now
     enable_symvers=no
