@@ -1,3 +1,10 @@
+2003-12-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/ia64/hpux.h (TARGET_HAVE_TLS): Define it to false.
+	* config/ia64/ia64.h (TARGET_HAVE_TLS): Define it to true if
+	HAVE_AS_TLS is true.
+	* config/ia64/ia64.c (TARGET_HAVE_TLS): Do not define it.
+
 2003-12-03  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc-page.c (extra_order_size_tab): Correct comment.
