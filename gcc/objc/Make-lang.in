@@ -50,8 +50,8 @@ OBJC_FLAGS_TO_PASS = \
 
 #
 # Define the names for selecting Objective-C in LANGUAGES.
-OBJC objc: cc1obj objc-runtime
-OBJECTIVE-C objective-c: cc1obj objc-runtime
+OBJC objc: cc1obj$(exeext) objc-runtime
+OBJECTIVE-C objective-c: cc1obj$(exeext) objc-runtime
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: objective-c objc ObjC
@@ -62,7 +62,7 @@ OBJC_THREAD_FILE=thr-$(GCC_THREAD_FILE)
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
 
-cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
+cc1obj$(exeext): $(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(OBJS) \
 		$(LIBS)
 

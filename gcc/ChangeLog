@@ -3,6 +3,9 @@ Sun Mar 22 00:50:42 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* Makefile.in: Various fixes for building cygwin32 native toolchains.
 
+        * objc/Makefile.in: Various fixes for building cygwin32 native toolchains.
+        * objc/Make-lang.in: Likewise.
+
 Sun Mar 22 00:21:46 1998  R. Ganesan  <rganesan@novell.com>
 
 	* configure.in: Handle with-PACKAGE=no correctly

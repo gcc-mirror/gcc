@@ -63,7 +63,7 @@ OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
 all.indirect: Makefile compiler objc-runtime
 
 compiler:
-	cd ..; $(MAKE) cc1obj
+	cd ..; $(MAKE) cc1obj$(exeext)
 
 objc-runtime:
 	cd ..; $(MAKE) libobjc.a
