@@ -1,5 +1,12 @@
 2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
 
+	* acinclude.m4: Include no-executables.m4.
+	* configure.ac: Uncomment GCC_NO_EXECUTABLES.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
+2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
+
 	* acinclude.m4: Don't call AC_ISC_POSIX.
 	* aclocal.m4: Regenerated.
 	* configure: Regenerated.

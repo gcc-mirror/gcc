@@ -178,6 +178,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
 
 
 m4_include([linkage.m4])
+m4_include([../config/no-executables.m4])
 
 
 dnl
