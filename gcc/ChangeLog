@@ -1,3 +1,8 @@
+2003-03-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): Don't use
+	reg_overlap_mentioned_p.
+
 2003-03-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-pch.c: Include langhooks.h.
