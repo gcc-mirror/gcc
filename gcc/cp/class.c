@@ -4906,18 +4906,18 @@ finish_struct_1 (t)
 
   if (TYPE_CONTAINS_VPTR_P (t))
     {
+      if (TYPE_BINFO_VTABLE (t))
+	my_friendly_assert (DECL_VIRTUAL_P (TYPE_BINFO_VTABLE (t)),
+			    20000116);
+      if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+	my_friendly_assert (TYPE_BINFO_VIRTUALS (t) == NULL_TREE,
+			    20000116);
+
       CLASSTYPE_VSIZE (t) = has_virtual;
-      if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-	{
-	  if (pending_virtuals)
-	    TYPE_BINFO_VIRTUALS (t) = chainon (TYPE_BINFO_VIRTUALS (t),
-						pending_virtuals);
-	}
-      else if (has_virtual)
-	{
-	  TYPE_BINFO_VIRTUALS (t) = pending_virtuals;
-	  DECL_VIRTUAL_P (TYPE_BINFO_VTABLE (t)) = 1;
-	}
+      /* Entries for virtual functions defined in the primary base are
+	 followed by entries for new functions unique to this class.  */
+      TYPE_BINFO_VIRTUALS (t) 
+	= chainon (TYPE_BINFO_VIRTUALS (t), pending_virtuals);
     }
 
   /* Now lay out the virtual function table.  */

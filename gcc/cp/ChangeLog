@@ -1,5 +1,8 @@
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (finish_struct_1): Replace redundant code with
+	assertions.
+
 	* cp-tree.h (flag_new_abi): Move.
 	(flag_use_cxa_atexit): Likewise.
 	(flag_honor_std): Likewise.
