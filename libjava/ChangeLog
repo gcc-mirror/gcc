@@ -1,5 +1,21 @@
 2002-12-08  Mark Wielaard  <mark@klomp.org>
 
+	* gnu/gcj/protocol/jar/Connection.java (getJarFile): download and
+	cache remote jar files.
+	* gnu/gcj/runtime/VMClassLoader.java: Don't construct jar URL, only
+	add File.separator to URL when it is a directory.
+	* java/lang/ClassLoader.java: Add Classpath javadoc.
+	(parent): final.
+	(getParent): Add (disabled) security check.
+	(findLibrary): New default method.
+	* java/net/JarURLConnection.java (getManifest): Implement.
+	(getInputStream): Only create InputStream when entry exists.
+	(getHeaders): Only use jarFileURLConnection or JarEntry to set length
+	when they exist.
+	* java/net/URLClassLoader.java: New/Rewritten version from Classpath.
+
+2002-12-08  Mark Wielaard  <mark@klomp.org>
+
 	* java/util/ResourceBundle.java (resourceBundleCache): Not final.
 	(lastDefaultLocale): New field.
 	(getBundle): When Locale.getDefault != lastDefaultLocale reset

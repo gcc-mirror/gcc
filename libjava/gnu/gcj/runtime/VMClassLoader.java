@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,23 +33,10 @@ public final class VMClassLoader extends java.net.URLClassLoader
 	String e = st.nextToken ();
 	try
 	  {
-	    if (e.endsWith(".jar") || e.endsWith (".zip"))
-	      {
-		File archive = new File (e);
-		try {
-		  p.addElement(new URL("jar", "", -1, "file://"
-				       + archive.getCanonicalPath ()
-				       + "!/"));
-		} catch (IOException ex) {
-		  // empty
-		}
-	      }
-	    else if (e.endsWith ("/"))
-	      p.addElement (new URL("file", "", -1, e));
-	    else if (new File (e).isDirectory ())
-	      p.addElement (new URL("file", "", -1, e + "/"));
+	    if (!e.endsWith (File.separator) && new File (e).isDirectory ())
+	      p.addElement (new URL("file", "", -1, e + File.separator));
 	    else
-	      /* Ignore path element. */;
+	      p.addElement (new URL("file", "", -1, e));
 	  } 
 	catch (java.net.MalformedURLException x)
 	  {
