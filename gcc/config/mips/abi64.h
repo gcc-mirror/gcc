@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  64 bit ABI support.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,77 +21,9 @@ Boston, MA 02111-1307, USA.  */
 /* Macros to implement the 64 bit ABI.  This file is meant to be included
    after mips.h.  */
 
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT
-
-/* For Irix 6, -mips3 implies TARGET_LONG64.  */
-#undef TARGET_LONG64
-#define TARGET_LONG64		(mips_abi == ABI_64)
-
 #undef SUBTARGET_TARGET_OPTIONS
 #define SUBTARGET_TARGET_OPTIONS\
   { "abi=", &mips_abi_string	},
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -D_MIPSEB -DSYSTYPE_SVR4 \
-  -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
-  -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
-
-/* We must make -mips3 do what -mlong64 used to do.  */
-/* ??? If no mipsX option given, but a mabi=X option is, then should set
-   _MIPS_ISA based on the mabi=X option.  */
-/* ??? If no mabi=X option give, but a mipsX option is, then should set
-   _MIPS_SIM based on the mipsX option.  */
-/* ??? Same for _MIPS_SZINT.  */
-/* ??? Same for _MIPS_SZPTR.  */
-/* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
-%{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D_LANGUAGE_OBJECTIVE_C -D_LANGUAGE_C} \
-%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{!.S:%{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}\
-%{mfp32: -D_MIPS_FPSET=16}%{!mfp32: -D_MIPS_FPSET=32} \
-%{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
-%{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
-%{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
-%{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS3}}}} \
-%{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
-%{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32}}}	\
-%{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{mabi=32: -D_MIPS_SZLONG=32} \
-%{mabi=n32: -D_MIPS_SZLONG=32} \
-%{mabi=64: -D_MIPS_SZLONG=64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZLONG=32}}} \
-%{mabi=32: -D_MIPS_SZPTR=32} \
-%{mabi=n32: -D_MIPS_SZPTR=32} \
-%{mabi=64: -D_MIPS_SZPTR=64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZPTR=32}}} \
-%{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
-%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}} \
-%{mips3: -U__mips -D__mips=3} \
-%{mips4: -U__mips -D__mips=4} \
-%{!mips1:%{!mips2:%{!mips3:%{!mips4: -U__mips -D__mips=3}}}} \
-%{mgp32: -U__mips64}%{mgp64: -D__mips64} \
-%{mabi=32: -U__mips64} \
-%{mabi=n32: -D__mips64} \
-%{mabi=64: -D__mips64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips64}}} \
-%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
-%{m4650:%{!msoft-float:-D__mips_single_float}} \
-%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 
 #undef EMPTY_FIELD_BOUNDARY
 #define EMPTY_FIELD_BOUNDARY	32
