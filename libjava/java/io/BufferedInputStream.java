@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -131,7 +131,7 @@ public class BufferedInputStream extends FilterInputStream
     return origN - n;
   }
 
-  private boolean refill() throws IOException
+  boolean refill() throws IOException
   {
     if (markpos < 0)
       count = pos = 0;

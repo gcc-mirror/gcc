@@ -1,6 +1,6 @@
 // Input_iconv.java -- Java side of iconv() reader.
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,7 +17,10 @@ details.  */
 
 #include <gnu/gcj/convert/Input_iconv.h>
 #include <gnu/gcj/convert/Output_iconv.h>
+#include <java/io/CharConversionException.h>
 #include <java/io/UnsupportedEncodingException.h>
+
+#include <errno.h>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
@@ -84,7 +87,14 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
   size_t r = iconv_adapter (iconv, (iconv_t) handle,
 			    &inbuf, &inavail,
 			    &outbuf, &outavail);
-  // FIXME: what if R==-1?
+
+  if (r == (size_t) -1)
+    {
+      // Incomplete character.
+      if (errno == EINVAL)
+	return 0;
+      throw new java::io::CharConversionException ();
+    }
 
   if (iconv_byte_swap)
     {

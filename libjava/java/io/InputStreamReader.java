@@ -44,6 +44,11 @@ public class InputStreamReader extends Reader
 
   private InputStreamReader(InputStream in, BytesToUnicode decoder)
   {
+    // FIXME: someone could pass in a BufferedInputStream whose buffer
+    // is smaller than the longest encoded character for this
+    // encoding.  We will probably go into an infinite loop in this
+    // case.  We probably ought to just have our own byte buffering
+    // here.
     this.in = in instanceof BufferedInputStream
               ? (BufferedInputStream) in
               : new BufferedInputStream(in);
@@ -76,28 +81,11 @@ public class InputStreamReader extends Reader
 
 	if (wpos < wcount)
 	  return true;
-	if (work == null)
-	  {
-	    work = new char[100];
-	    wpos = 0;
-	    wcount = 0;
-	  }
-	for (;;)
-	  {
-	    if (in.available() <= 0)
-	      return false;
-	    in.mark(1);
-	    int b = in.read();
-	    if (b < 0)
-	      return true;
-	    in.reset();
-	    converter.setInput(in.buf, in.pos, in.count);
-	    wpos = 0;
-	    wcount = converter.read(work, 0, work.length);
-	    in.skip(converter.inpos - in.pos);
-	    if (wcount > 0)
-	      return true;
-	  }
+
+	// According to the spec, an InputStreamReader is ready if its
+	// input buffer is not empty (above), or if bytes are
+	// available on the underlying byte stream.
+	return in.available () > 0;
       }
   }
 
@@ -108,33 +96,23 @@ public class InputStreamReader extends Reader
 	if (in == null)
 	  throw new IOException("Stream closed");
 
+	if (length == 0)
+	  return 0;
+
 	int wavail = wcount - wpos;
-	if (wavail > 0)
+	if (wavail <= 0)
 	  {
-	    if (length > wavail)
-	      length = wavail;
-	    System.arraycopy(work, wpos, buf, offset, length);
-	    wpos += length;
-	    return length;
+	    // Nothing waiting, so refill our buffer.
+	    if (! refill ())
+	      return -1;
+	    wavail = wcount - wpos;
 	  }
-	else
-	  {
-	    if (length == 0)
-	      return 0;
-	    for (;;)
-	      {
-		in.mark(1);
-		int b = in.read();
-		if (b < 0)
-		  return -1;
-		in.reset();
-		converter.setInput(in.buf, in.pos, in.count);
-		int count = converter.read (buf, offset, length);
-		in.skip(converter.inpos - in.pos);
-		if (count > 0)
-		  return count;
-	      }
-	  }
+
+	if (length > wavail)
+	  length = wavail;
+	System.arraycopy(work, wpos, buf, offset, length);
+	wpos += length;
+	return length;
       }
   }
 
@@ -146,24 +124,43 @@ public class InputStreamReader extends Reader
 	  throw new IOException("Stream closed");
 
 	int wavail = wcount - wpos;
-	if (wavail > 0)
-	  return work[wpos++];
-	if (work == null)
+	if (wavail <= 0)
 	  {
-	    work = new char[100];
-	    wpos = 0;
-	    wcount = 0;
+	    // Nothing waiting, so refill our buffer.
+	    if (! refill ())
+	      return -1;
 	  }
-	else if (wavail == 0)
-	  {
-	    wpos = 0;
-	    wcount = 0;
-	  }
-	int count = read(work, wpos, work.length-wpos);
-	if (count <= 0)
-	  return -1;
-	wcount = wpos + count;
+
 	return work[wpos++];
+      }
+  }
+
+  // Read more bytes and convert them into the WORK buffer.
+  // Return false on EOF.
+  private boolean refill () throws IOException
+  {
+    wcount = wpos = 0;
+
+    if (work == null)
+      work = new char[100];
+
+    for (;;)
+      {
+	// We have knowledge of the internals of BufferedInputStream
+	// here.  Eww.
+	in.mark (0);
+	boolean r = in.refill ();
+	in.reset ();
+	if (! r)
+	  return false;
+	converter.setInput(in.buf, in.pos, in.count);
+	int count = converter.read (work, wpos, work.length - wpos);
+	in.skip(converter.inpos - in.pos);
+	if (count > 0)
+	  {
+	    wcount += count;
+	    return true;
+	  }
       }
   }
 }
