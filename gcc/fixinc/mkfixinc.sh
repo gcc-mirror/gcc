@@ -21,23 +21,23 @@ case $machine in
 		fixincludes=fixinc.svr4
 		;;
 
-	i[34567]86-*-sysv5* | \
-	i[34567]86-*-udk* | \
-	i[34567]86-*-solaris2.[0-4] | \
+	i?86-*-sysv5* | \
+	i?86-*-udk* | \
+	i?86-*-solaris2.[0-4] | \
 	powerpcle-*-solaris2.[0-4] | \
 	sparc-*-solaris2.[0-4] )
 		fixincludes=fixinc.svr4
 		;;
 
-	i[34567]86-*-interix* | \
+	i?86-*-interix* | \
 	alpha-*-interix*)
 		fixincludes=fixinc.interix
 		;;
 
 	*-*-netbsd* | \
 	alpha*-*-linux-gnulibc1* | \
-	i[34567]86-*-openbsd* | \
-	i[34567]86-*-solaris2* | \
+	i?86-*-openbsd* | \
+	i?86-*-solaris2* | \
 	sparcv9-*-solaris2* | \
 	powerpcle-*-solaris2*  | \
 	sparc-*-solaris2* )
@@ -45,11 +45,11 @@ case $machine in
 		;;
 
 	alpha*-*-winnt* | \
-	i[34567]86-*-winnt3*)
+	i?86-*-winnt3*)
 		fixincludes=fixinc.winnt
 		;;
 
-	i[34567]86-sequent-ptx* | i[34567]86-sequent-sysv[34]*)
+	i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
 		fixincludes=fixinc.ptx
 		;;
 
@@ -65,12 +65,12 @@ case $machine in
 	hppa*-*-lites* | \
 	*-*-linux-gnu* | \
 	*-*-gnu* | \
-	i[34567]86-moss-msdos* | i[34567]86-*-moss* | \
-	i[34567]86-*-osf1* | \
-	i[34567]86-*-win32 | \
-	i[34567]86-*-pe | i[34567]86-*-cygwin* | \
-	i[34567]86-*-mingw32* | \
-	i[34567]86-*-uwin* | \
+	i?86-moss-msdos* | i?86-*-moss* | \
+	i?86-*-osf1* | \
+	i?86-*-win32 | \
+	i?86-*-pe | i?86-*-cygwin* | \
+	i?86-*-mingw32* | \
+	i?86-*-uwin* | i?86-*-msdosdjgpp* | \
 	mips-sgi-irix5cross64 | \
 	powerpc-*-eabiaix* | \
 	powerpc-*-eabisim* | \
