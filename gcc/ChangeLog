@@ -1,3 +1,8 @@
+2003-01-07  Richard Henderson  <rth@redhat.com>
+
+	* alias.c (find_base_value): Only use new_reg_base_value shortcut
+	if the register is set once.
+
 2003-01-07  Sylvain Pion <Sylvain.Pion@mpi-sb.mpg.de>
   
         * config/i386/i386.c (ix86_init_mmx_sse_builtins):
