@@ -1,6 +1,6 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1997,
-   1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -133,15 +133,17 @@ convert_to_real (type, expr)
   /* Disable until we figure out how to decide whether the functions are
      present in runtime.  */
   /* Convert (float)sqrt((double)x) where x is float into sqrtf(x) */
-  if ((fcode == BUILT_IN_SQRT
-       || fcode == BUILT_IN_SQRTL
-       || fcode == BUILT_IN_SIN
-       || fcode == BUILT_IN_SINL
-       || fcode == BUILT_IN_COS
-       || fcode == BUILT_IN_COSL
-       || fcode == BUILT_IN_EXP
-       || fcode == BUILT_IN_EXPL)
-      && optimize
+  if (optimize
+      && (fcode == BUILT_IN_SQRT
+	  || fcode == BUILT_IN_SQRTL
+	  || fcode == BUILT_IN_SIN
+	  || fcode == BUILT_IN_SINL
+	  || fcode == BUILT_IN_COS
+	  || fcode == BUILT_IN_COSL
+	  || fcode == BUILT_IN_EXP
+	  || fcode == BUILT_IN_EXPL
+	  || fcode == BUILT_IN_LOG
+	  || fcode == BUILT_IN_LOGL)
       && (TYPE_MODE (type) == TYPE_MODE (double_type_node)
           || TYPE_MODE (type) == TYPE_MODE (float_type_node)))
     {

@@ -1,3 +1,8 @@
+2003-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* convert.c (convert_to_real): Also optimize (float)log(x) into
+	logf(x) where x is a float, i.e. also handle BUILT_IN_LOG{,L}.
+
 2003-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
         * config/sh/sh.c (unspec_caller_rtx_p): New.
