@@ -442,10 +442,32 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		: "0"(1), "m"(*(addr)));
 	  return oldval;
        }
+       inline static void GC_clear(volatile unsigned int *addr) {
+          *(addr) = 0;
+       }
+#    elif defined(__alpha__)
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
+        long oldval, temp;
+
+        __asm__ __volatile__(
+              "1:\tldl_l %0,%3\n"
+              "\tbne %0,2f\n"
+              "\tor $31,1,%1\n"
+              "\tstl_c %1,%2\n"
+              "\tbeq %1,1b\n"
+              "2:\tmb\n"
+              : "=&r"(oldval), "=&r"(temp), "=m"(*(addr))
+              : "m"(*(addr))
+              : "memory");
+        return (int)oldval;
+       }
+       inline static void GC_clear(volatile unsigned int *addr) {
+          __asm__ __volatile__("mb": : :"memory");
+          *(addr) = 0;
+       }
 #    else
        -- > Need implementation of GC_test_and_set()
 #    endif
-#    define GC_clear(addr) (*(addr) = 0)
 
      extern volatile unsigned int GC_allocate_lock;
 	/* This is not a mutex because mutexes that obey the (optional)     */

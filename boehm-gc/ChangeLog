@@ -1,5 +1,11 @@
 1999-06-21  Tom Tromey  <tromey@cygnus.com>
 
+	Alpha patch from Jeff Sturm:
+	* os_dep.c (GC_init_linuxalpha): New function.
+	* misc.c: Initialize for alpha linux.
+	* gc_priv.h (GC_test_and_set): Define for alpha.
+	* config.h: Don't assume __data_start on alpha.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (libgcjgc_la_LDFLAGS): Use -version-info, not
 	-release.

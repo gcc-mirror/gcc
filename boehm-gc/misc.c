@@ -436,6 +436,9 @@ void GC_init_inner()
 #   if defined(LINUX) && defined(POWERPC)
 	GC_init_linuxppc();
 #   endif
+#   if defined(LINUX) && defined(ALPHA)
+      GC_init_linuxalpha();
+#   endif
 #   ifdef SOLARIS_THREADS
 	GC_thr_init();
 	/* We need dirty bits in order to find live stack sections.	*/
