@@ -1,3 +1,16 @@
+2002-10-04  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.h (processor_costs): Add new fields fadd,
+	fmul, fdiv, fabs, fchs and fsqrt to costs structure.
+	(RTX_COSTS): Use these fields to determine the RTX costs
+	of floating point addition/subtraction, multiplication,
+	division, fabs, negation and square root respectively.
+	* config/i386/i386.c (size_cost): Provide instruction sizes
+	for these new fields.
+	(i386_cost, i486_cost, pentium_cost, pentiumpro_cost,
+	k6_cost, athlon_cost, pentium4_cost): Provide typical cycle
+	counts for these new fields for all x86 processor variants.
+
 2002-10-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (mips_const_double_ok): Delete unused variable.
