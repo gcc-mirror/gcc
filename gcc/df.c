@@ -1196,7 +1196,7 @@ df_insn_refs_record (struct df *df, basic_block bb, rtx insn)
 		if (global_regs[i])
 		  {
 		    x = df_reg_use_gen (i);
-		    df_uses_record (df, &SET_DEST (x),
+		    df_uses_record (df, &XEXP (x, 0),
 				    DF_REF_REG_USE, bb, insn, 0);
 		  }
 	    }
