@@ -117,9 +117,24 @@ public abstract class Charset implements Comparable
   {
     return charsetForName (charsetName) != null;
   }
- 
+
+  /**
+   * Returns the Charset instance for the charset of the given name.
+   * 
+   * @param charsetName
+   * @return
+   * @throws UnsupportedCharsetException if this VM does not support
+   * the charset of the given name.
+   * @throws IllegalCharsetNameException if the given charset name is
+   * legal.
+   * @throws IllegalArgumentException if <code>charsetName</code> is null.
+   */
   public static Charset forName (String charsetName)
   {
+    // Throws IllegalArgumentException as the JDK does.
+    if(charsetName == null)
+        throw new IllegalArgumentException("Charset name must not be null.");
+    
     Charset cs = charsetForName (charsetName);
     if (cs == null)
       throw new UnsupportedCharsetException (charsetName);
