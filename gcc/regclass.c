@@ -561,7 +561,8 @@ regclass (f, nregs)
 		{
 		  decode_asm_operands (PATTERN (insn), recog_operand, NULL_PTR,
 				       constraints, modes);
-		  nalternatives = n_occurrences (',', constraints[0]) + 1;
+		  nalternatives = (noperands == 0 ? 0
+				   : n_occurrences (',', constraints[0]) + 1);
 		}
 	      else
 		{
@@ -733,7 +734,7 @@ regclass (f, nregs)
 		 second operand is a constant since that is the case
 		 for which the constraints should have been written.  */
 	      
-	      for (i = 0; i < noperands; i++)
+	      for (i = 0; i < noperands - 1; i++)
 		if (constraints[i][0] == '%'
 		    && ! CONSTANT_P (recog_operand[i+1]))
 		  {
