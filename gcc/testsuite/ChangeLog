@@ -1,3 +1,7 @@
+Mon Jul  6 18:20:27 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* gcc.c-torture/compile/980706-1.c: New test.
+
 1998-07-01  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/980701-0.f,
