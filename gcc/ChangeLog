@@ -1,3 +1,9 @@
+2004-01-13  Devang Patel <dpatel@apple.com
+
+	PR debug/7078
+	* dbxout.c (dbxout_symbol_name): Emit mangled names for 
+	NAMESPACE_DECL memebers.
+	
 2004-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/12709
