@@ -4059,52 +4059,52 @@ vec_any_out (vector float a1, vector float a2)
 template<typename _Tp>
 struct __vec_step_help
 {
-  // All proper vector types will specialize elem.
+  // All proper vector types will specialize _S_elem.
 };
 
 template<>
 struct __vec_step_help<vector signed short>
 {
-  static const int elem = 8;
+  static const int _S_elem = 8;
 };
 
 template<>
 struct __vec_step_help<vector unsigned short>
 {
-  static const int elem = 8;
+  static const int _S_elem = 8;
 };
 
 template<>
 struct __vec_step_help<vector signed int>
 {
-  static const int elem = 4;
+  static const int _S_elem = 4;
 };
 
 template<>
 struct __vec_step_help<vector unsigned int>
 {
-  static const int elem = 4;
+  static const int _S_elem = 4;
 };
 
 template<>
 struct __vec_step_help<vector unsigned char>
 {
-  static const int elem = 16;
+  static const int _S_elem = 16;
 };
 
 template<>
 struct __vec_step_help<vector signed char>
 {
-  static const int elem = 16;
+  static const int _S_elem = 16;
 };
 
 template<>
 struct __vec_step_help<vector float>
 {
-  static const int elem = 4;
+  static const int _S_elem = 4;
 };
 
-#define vec_step(t)  __vec_step_help<t>::elem
+#define vec_step(t)  __vec_step_help<t>::_S_elem
 
 #else /* not C++ */
 
