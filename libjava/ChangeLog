@@ -1,3 +1,7 @@
+2003-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* gij.cc (help): Document -? and -X.
+
 2003-08-12  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/Font.java: 
