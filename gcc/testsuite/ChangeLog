@@ -1,3 +1,8 @@
+2004-05-10  Eric Christopher  <echristo@redhat.com>
+
+	* gcc.dg/sibcall-3.c: Remove xfail for mips.
+	* gcc.dg/sibcall-4.c: Ditto.
+
 2004-05-10  Ziemowit Laski  <zlaski@apple.com>
 
 	* g++.dg/ext/altivec-8.C: New test case.
@@ -34,7 +39,7 @@
 2004-05-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-40.c: New test.
-	
+
 2004-05-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/torture/mips-hilo-2.c: Provide dummy __mips16 version.
@@ -126,7 +131,7 @@
 
 	PR c++/15119
 	* g++.dg/other/vararg-1.C: New test.
-	
+
 	PR c++/4794
 	* g++.dg/eh/cleanup3.C: New test.
 
@@ -136,7 +141,7 @@
 	and ad8011a (target_insn).
 	* ada/acats/support/macro.dfs: Likewise.
 	* ada/acats/support/impbit.adb: New file.
-	
+
 2004-04-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/const-elim-1.c: XFAIL on s390*-*-*.
