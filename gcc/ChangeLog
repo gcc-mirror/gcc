@@ -1,5 +1,8 @@
 2000-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* scan-types.sh (VALUE) Wrap use with double quotes to protect
+	variable against filename expansion when it contains "char *".
+
 	* system.h (SSIZE_MAX): Delete backup definition.
 
 	* cppfiles.c (read_include_file): Use INTTYPE_MAXIMUM(ssize_t)
