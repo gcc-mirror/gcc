@@ -1,3 +1,8 @@
+2004-09-20  Steven Bosscher  <stevenb@suse.de>
+
+	* lex.c (cxx_init): Don't set the ridpointer for RID_NULL
+	to null_node.
+
 2004-09-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (determine_visibility): Allow class visibility
