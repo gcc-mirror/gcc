@@ -595,7 +595,7 @@ static struct compiler default_compilers[] =
    {
 #if USE_CPPLIB
      "%{E|M|MM:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %I\
+	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -631,7 +631,7 @@ static struct compiler default_compilers[] =
                      %{!pipe:%g.s} %A\n }}}}"
 #else /* ! USE_CPPLIB */
     "cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %I\
+	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -659,7 +659,7 @@ static struct compiler default_compilers[] =
   }},
   {"-",
    {"%{E:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %I\
+	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -676,9 +676,9 @@ static struct compiler default_compilers[] =
   {".h", {"@c-header"}},
   {"@c-header",
    {"%{!E:%eCompilation of header file requested} \
-    cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+    cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 	%{!undef:%{!std=*:%p}%{std=gnu*:%p} %P} %{trigraphs}\
@@ -707,7 +707,7 @@ static struct compiler default_compilers[] =
 			    %i %A\n }}}}"}},
   {".S", {"@assembler-with-cpp"}},
   {"@assembler-with-cpp",
-   {"cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
         -$ %{!undef:%p %P} -D__ASSEMBLER__ \
