@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -384,7 +384,7 @@ DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
    it contains helps to build the mapping function between the rtx's of
    the function to be inlined and the current function being expanded.  */
 
-DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieiiEe", 'x')
+DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEe", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
