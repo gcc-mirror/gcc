@@ -3155,7 +3155,7 @@ loc_mentioned_in_p (rtx *loc, rtx in)
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
-      if (loc == &in->u.fld[i].rtx)
+      if (loc == &in->u.fld[i].rt_rtx)
 	return 1;
       if (fmt[i] == 'e')
 	{
