@@ -1,3 +1,8 @@
+2004-09-21  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_fold_objc_type_ref): New function.
+	* objc-act.h (objc_fold_objc_type_ref): New prototype.
+
 2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* objc-act.c (objc_start_function, really_start_method,

@@ -7530,6 +7530,33 @@ comp_proto_with_proto (tree proto1, tree proto2)
   return (!type1 && !type2);
 }
 
+/* Fold an OBJ_TYPE_REF expression for ObjC method dispatches, where
+   this occurs.  ObjC method dispatches are _not_ like C++ virtual
+   member function dispatches, and we account for the difference here.  */
+tree
+#ifdef OBJCPLUS
+objc_fold_obj_type_ref (tree ref, tree known_type)
+#else
+objc_fold_obj_type_ref (tree ref ATTRIBUTE_UNUSED,
+			tree known_type ATTRIBUTE_UNUSED)
+#endif
+{
+#ifdef OBJCPLUS
+  tree v = BINFO_VIRTUALS (TYPE_BINFO (known_type));
+
+  /* If the receiver does not have virtual member functions, there
+     is nothing we can (or need to) do here.  */
+  if (!v)
+    return NULL_TREE;
+
+  /* Let C++ handle C++ virtual functions.  */
+  return cp_fold_obj_type_ref (ref, known_type);
+#else
+  /* For plain ObjC, we currently do not need to do anything.  */
+  return NULL_TREE;
+#endif
+}
+
 static void
 objc_start_function (tree name, tree type, tree attrs,
 #ifdef OBJCPLUS
