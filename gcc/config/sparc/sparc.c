@@ -2556,10 +2556,14 @@ finalize_pic ()
   /* If we havn't emitted the special get_pc helper function, do so now.  */
   if (get_pc_symbol_name[0] == 0)
     {
-      ASM_GENERATE_INTERNAL_LABEL (get_pc_symbol_name, "LGETPC", 0);
+      int align;
 
+      ASM_GENERATE_INTERNAL_LABEL (get_pc_symbol_name, "LGETPC", 0);
       text_section ();
-      ASM_OUTPUT_ALIGN (asm_out_file, 3);
+
+      align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+      if (align > 0)
+	ASM_OUTPUT_ALIGN (asm_out_file, align);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LGETPC", 0);
       fputs ("\tretl\n\tadd %o7,%l7,%l7\n", asm_out_file);
     }
@@ -7235,10 +7239,14 @@ static void
 sparc_output_deferred_case_vectors ()
 {
   rtx t;
+  int align;
 
   /* Align to cache line in the function's code section.  */
   function_section (current_function_decl);
-  ASM_OUTPUT_ALIGN (asm_out_file, 5);
+
+  align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  if (align > 0)
+    ASM_OUTPUT_ALIGN (asm_out_file, 5);
   
   for (t = sparc_addr_list; t ; t = XEXP (t, 1))
     sparc_output_addr_vec (XEXP (t, 0));

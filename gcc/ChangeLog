@@ -1,3 +1,9 @@
+Tue Sep  1 15:55:17 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (finalize_pic): Don't output arbitrary
+	alignment, use FUNCTION_BOUNDARY instead.
+	(sparc_output_deferred_case_vectors): Likewise.
+
 Mon Aug 31 17:25:41 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movsf_const_intreg): Kill warning.
