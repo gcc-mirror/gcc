@@ -1,3 +1,9 @@
+2002-07-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/run_doxygen:  Remove template parameter names from
+	"Compound List" summary page.  Reformat.
+	* docs/html/documentation.html:  XHTML fixes.
+
 2002-07-16  Andreas Schwab  <schwab@suse.de>
 
 	* libsupc++/new (set_new_handler): Declare to not throw any
