@@ -101,7 +101,9 @@ extern int pwait PROTO ((int, int *, int));
 #endif
 
 /* By default there is no special suffix for executables.  */
-#ifndef EXECUTABLE_SUFFIX
+#ifdef EXECUTABLE_SUFFIX
+#define HAVE_EXECUTABLE_SUFFIX
+#else
 #define EXECUTABLE_SUFFIX ""
 #endif
 
@@ -2097,6 +2099,51 @@ static int warn_std;
 /* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
 static int *warn_std_ptr = 0;
 
+
+#if defined(HAVE_OBJECT_SUFFIX) || defined(HAVE_EXECUTABLE_SUFFIX)
+
+/* Convert NAME to a new name if it is the standard suffix.  DO_EXE
+   is true if we should look for an executable suffix as well.  */
+
+static char *
+convert_filename (name, do_exe)
+     char *name;
+     int do_exe;
+{
+  int i;
+  int len = strlen (name);
+
+#ifdef HAVE_OBJECT_SUFFIX
+  /* Convert x.o to x.obj if OBJECT_SUFFIX is ".obj".  */
+  if (len > 2
+      && name[len - 2] == '.'
+      && name[len - 1] == 'o')
+    {
+      obstack_grow (&obstack, name[i], len - 2);
+      obstack_grow0 (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
+      name = obstack_finish (&obstack);
+    }
+#endif
+
+#ifdef HAVE_EXECUTABLE_SUFFIX
+  /* If there is no filetype, make it the executable suffix (which includes
+     the ".").  But don't get confused if we have just "-o".  */
+  if (! do_exe || EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
+    return name;
+
+  for (i = 0; i < len; i++)
+    if (name[i] == '.')
+      return name;
+
+  obstack_grow (&obstack, name, len);
+  obstack_grow0 (&obstack, EXECUTABLE_SUFFIX, strlen (EXECUTABLE_SUFFIX));
+  name = obstack_finish (&obstack);
+#endif
+
+  return name;
+}
+#endif
+
 /* Create the vector `switches' and its contents.
    Store its length in `n_switches'.  */
 
@@ -2476,6 +2523,11 @@ process_command (argc, argv)
 
 	    case 'o':
 	      have_o = 1;
+#if defined(HAVE_EXECUTABLE_SUFFIX) || defined(HAVE_OBJECT_SUFFIX)
+	      argv[i] = convert_filename (argv[i], 1);
+	      if (p[1] == 0)
+		argv[i+1] = convert_filename (argv[i+1], 1);
+#endif
 	      goto normal_switch;
 
 	    default:
@@ -2706,20 +2758,7 @@ process_command (argc, argv)
       else
 	{
 #ifdef HAVE_OBJECT_SUFFIX
-	  /* Convert x.o to x.obj if OBJECT_SUFFIX is ".obj".  */
-	  if (strlen (argv[i]) > 2
-	      && argv[i][strlen (argv[i]) - 2] == '.'
-	      && argv[i][strlen (argv[i]) - 1] == 'o')
-	    {
-	      int j;
-
-	      for (j = 0; j < strlen (argv[i]) - 2; j++)
-		obstack_1grow (&obstack, argv[i][j]);
-
-	      obstack_grow (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
-	      obstack_1grow (&obstack, 0);
-	      argv[i] = obstack_finish (&obstack);
-	    }
+	  argv[i] = convert_filename (argv[i], 0);
 #endif
 
 	  if (strcmp (argv[i], "-") != 0 && access (argv[i], R_OK) < 0)
