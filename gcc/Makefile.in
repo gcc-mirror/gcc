@@ -429,7 +429,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
-all.cross: native gcc-cross libgcc.a cross-test $(EXTRA_PARTS)
+all.cross: native gcc-cross specs libgcc.a cross-test $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
@@ -1474,8 +1474,6 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	  else true; fi; \
 	done
 # Don't mess with specs if it doesn't exist yet.
-# We can't make it a dependency because with a cross compiler
-# you have to make specs on the target machine or not at all.
 	-if [ -f specs ] ; then \
 	  rm -f $(libsubdir)/specs; \
 	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
