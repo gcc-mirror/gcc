@@ -1,3 +1,7 @@
+Sat May 20 08:29:28 2000  H.J. Lu  <hjl@gnu.org>
+
+	* Makefile.in (bootstrap): Unset LANG_LIB2FUNCS for stage 1.
+
 Sat May 20 07:27:35 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* fold-const.c (make_range): Handle degenerated intervals.
