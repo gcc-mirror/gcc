@@ -1746,12 +1746,32 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		 case to be a branch past the end of the loop, and the
 		 original jump label case to fall_through.  */
 
-	      if (! invert_exp (pattern, copy)
-		  || ! redirect_exp (&pattern,
-				     map->label_map[CODE_LABEL_NUMBER
-						    (JUMP_LABEL (insn))],
-				     exit_label, copy))
-		abort ();
+	      if (invert_exp (pattern, copy))
+		{
+		  if (! redirect_exp (&pattern,
+				      map->label_map[CODE_LABEL_NUMBER
+						     (JUMP_LABEL (insn))],
+				      exit_label, copy))
+		    abort ();
+		}
+	      else
+		{
+		  rtx jmp;
+		  rtx lab = gen_label_rtx ();
+		  /* Can't do it by reversing the jump (probably becasue we
+		     couln't reverse the conditions), so emit a new
+		     jump_insn after COPY, and redirect the jump around
+		     that.  */
+		  jmp = emit_jump_insn_after (gen_jump (exit_label), copy);
+		  jmp = emit_barrier_after (jmp);
+		  emit_label_after (lab, jmp);
+		  LABEL_NUSES (lab) = 0;
+		  if (! redirect_exp (&pattern,
+				      map->label_map[CODE_LABEL_NUMBER
+						     (JUMP_LABEL (insn))],
+				      lab, copy))
+		    abort ();
+		}
 	    }
 	  
 #ifdef HAVE_cc0
