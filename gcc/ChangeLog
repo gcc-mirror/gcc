@@ -1,5 +1,9 @@
 Tue Feb  2 16:39:39 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* mips/iris5.h (SWITCHES_NEED_SPACES): New macro.
+	* collect2.c (main): Only allow -ofoo if SWITCHES_NEED_SPACES
+	does not include 'o'.
+
 	* final.c (output_source_line): If MIPS debugging info and
 	ASM_OUTPUT_SOURCE_FILENAME defined, call it.
 
