@@ -97,13 +97,28 @@ do {						\
       (CONTEXT)->br_loc[0] = &(sc_->sc_br[0]);				\
       (CONTEXT)->br_loc[6] = &(sc_->sc_br[6]);				\
       (CONTEXT)->br_loc[7] = &(sc_->sc_br[7]);				\
-      (CONTEXT)->bsp = sc_->sc_ar_bsp;					\
       (CONTEXT)->pr = sc_->sc_pr;					\
       (CONTEXT)->psp = sc_->sc_gr[12];					\
       (CONTEXT)->gp = sc_->sc_gr[1];					\
       /* Signal frame doesn't have an associated reg. stack frame 	\
          other than what we adjust for below.	  */			\
       (FS) -> no_reg_stack_frame = 1;					\
+									\
+      if (sc_->sc_rbs_base)						\
+	{								\
+	  /* Need to switch from alternate register backing store.  */	\
+	  long ndirty, loadrs = sc_->sc_loadrs >> 16;			\
+	  unsigned long alt_bspstore = (CONTEXT)->bsp - loadrs;		\
+	  unsigned long bspstore;					\
+	  unsigned long *ar_bsp = (unsigned long *)(sc_->sc_ar_bsp);	\
+									\
+	  ndirty = ia64_rse_num_regs ((unsigned long *) alt_bspstore,	\
+				      (unsigned long *) (CONTEXT)->bsp);\
+	  bspstore = (unsigned long)					\
+		     ia64_rse_skip_regs (ar_bsp, -ndirty);		\
+	  ia64_copy_rbs ((CONTEXT), bspstore, alt_bspstore, loadrs,	\
+			 sc_->sc_ar_rnat);				\
+	}								\
 									\
       /* Don't touch the branch registers o.t. b0, b6 and b7.		\
 	 The kernel doesn't pass the preserved branch registers		\
@@ -154,12 +169,27 @@ do {						\
       (CONTEXT)->br_loc[0] = &(sc_->sc_br[0]);				\
       (CONTEXT)->br_loc[6] = &(sc_->sc_br[6]);				\
       (CONTEXT)->br_loc[7] = &(sc_->sc_br[7]);				\
-      (CONTEXT)->bsp = sc_->sc_ar_bsp;					\
       (CONTEXT)->pr = sc_->sc_pr;					\
       (CONTEXT)->gp = sc_->sc_gr[1];					\
       /* Signal frame doesn't have an associated reg. stack frame 	\
          other than what we adjust for below.	  */			\
       (FS) -> no_reg_stack_frame = 1;					\
+									\
+      if (sc_->sc_rbs_base)						\
+	{								\
+	  /* Need to switch from alternate register backing store.  */	\
+	  long ndirty, loadrs = sc_->sc_loadrs >> 16;			\
+	  unsigned long alt_bspstore = (CONTEXT)->bsp - loadrs;		\
+	  unsigned long bspstore;					\
+	  unsigned long *ar_bsp = (unsigned long *)(sc_->sc_ar_bsp);	\
+									\
+	  ndirty = ia64_rse_num_regs ((unsigned long *) alt_bspstore,	\
+				      (unsigned long *) (CONTEXT)->bsp);\
+	  bspstore = (unsigned long)					\
+		     ia64_rse_skip_regs (ar_bsp, -ndirty);		\
+	  ia64_copy_rbs ((CONTEXT), bspstore, alt_bspstore, loadrs,	\
+			 sc_->sc_ar_rnat);				\
+	}								\
 									\
       /* Don't touch the branch registers o.t. b0, b6 and b7.		\
 	 The kernel doesn't pass the preserved branch registers		\
