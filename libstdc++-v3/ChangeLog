@@ -1,3 +1,12 @@
+2002-02-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Also check version.
+	(GLIBCPP_ENABLE_SYMVERS):  Redo logic, use linker version.
+	* configure.in (GLIBCPP_ENABLE_SYMVERS):  Move later in the script.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* config/linker-map.dummy:  New file.  Contains nothing useful.
+
 2002-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/money_put_members_char.cc: Fix.	

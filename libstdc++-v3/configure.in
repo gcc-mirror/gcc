@@ -49,7 +49,6 @@ GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
 GLIBCPP_ENABLE_CONCEPT_CHECKS
-GLIBCPP_ENABLE_SYMVERS([no])
 
 
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
@@ -250,6 +249,8 @@ else
   GLIBCPP_CONFIGURE_TESTSUITE
 fi
 
+# This depends on the possibly-skipped linker test above.
+GLIBCPP_ENABLE_SYMVERS([no])
 
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits
