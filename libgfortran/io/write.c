@@ -375,7 +375,8 @@ output_float (fnode *f, double value, int len)
     case FMT_E:
     case FMT_D:
       i = g.scale_factor;
-      e -= i;
+      if (value != 0.0)
+	e -= i;
       if (i < 0)
 	{
 	  nbefore = 0;
