@@ -3854,7 +3854,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (CONSTANT_P (op0))
 	  {
 	    enum machine_mode mode = TYPE_MODE (TREE_TYPE (tem));
-	    if (LEGITIMATE_CONSTANT_P (op0))
+	    if (mode != BLKmode && LEGITIMATE_CONSTANT_P (op0))
 	      op0 = force_reg (mode, op0);
 	    else
 	      op0 = validize_mem (force_const_mem (mode, op0));
