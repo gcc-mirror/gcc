@@ -16350,8 +16350,12 @@ attach_init_test_initialization_flags (void **entry, void *ptr)
 
   if (block != error_mark_node)
     {
+      tree body = BLOCK_SUBBLOCKS (block);
       TREE_CHAIN (ite->value) = BLOCK_EXPR_DECLS (block);
       BLOCK_EXPR_DECLS (block) = ite->value;
+      body = build2 (COMPOUND_EXPR, void_type_node,
+                     build1 (DECL_EXPR, void_type_node, ite->value), body);
+      BLOCK_SUBBLOCKS (block) = body;
     }
   return true;
 }

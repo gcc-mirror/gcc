@@ -1,3 +1,13 @@
+2004-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR java/15576
+	* check-init.c (check_init): Ignore DECL_EXPR.
+	* expr.c (always_initialize_class_p): Reenable.
+	(build_class_init): Use a variable to store the decl.  Also use
+	boolean_false_node instead of integer_zero_node.
+	* parse.y (attach_init_test_initialization_flags): Add a decl_expr
+	to the block.
+
 2004-11-08  Tom Tromey  <tromey@redhat.com>
 
 	PR java/16843:

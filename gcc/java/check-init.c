@@ -844,6 +844,7 @@ check_init (tree exp, words before)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
+    case DECL_EXPR:
     case JAVA_EXC_OBJ_EXPR:
       break;
 

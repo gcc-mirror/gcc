@@ -95,8 +95,7 @@ tree dtable_ident = NULL_TREE;
 
 /* Set to nonzero value in order to emit class initialization code
    before static field references.  */
-/* FIXME: Make this work with gimplify.  */
-int always_initialize_class_p = 1;
+int always_initialize_class_p = 0;
 
 /* We store the stack state in two places:
    Within a basic block, we use the quick_stack, which is a
@@ -1768,6 +1767,7 @@ build_class_init (tree clas, tree expr)
   else
     {
       tree *init_test_decl;
+      tree decl;
       init_test_decl = java_treetreehash_new
 	(DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl), clas);
 
@@ -1775,19 +1775,20 @@ build_class_init (tree clas, tree expr)
 	{
 	  /* Build a declaration and mark it as a flag used to track
 	     static class initializations. */
-	  *init_test_decl = build_decl (VAR_DECL, NULL_TREE,
-				       boolean_type_node);
-	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (*init_test_decl);
-	  LOCAL_CLASS_INITIALIZATION_FLAG (*init_test_decl) = 1;
-	  DECL_CONTEXT (*init_test_decl) = current_function_decl;
-	  DECL_FUNCTION_INIT_TEST_CLASS (*init_test_decl) = clas;
+	  decl = build_decl (VAR_DECL, NULL_TREE,
+			     boolean_type_node);
+	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+	  LOCAL_CLASS_INITIALIZATION_FLAG (decl) = 1;
+	  DECL_CONTEXT (decl) = current_function_decl;
+	  DECL_FUNCTION_INIT_TEST_CLASS (decl) = clas;
 	  /* Tell the check-init code to ignore this decl when not
              optimizing class initialization. */
 	  if (!STATIC_CLASS_INIT_OPT_P ())
-	    DECL_BIT_INDEX(*init_test_decl) = -1;
-	  DECL_INITIAL (*init_test_decl) = integer_zero_node;
+	    DECL_BIT_INDEX (decl) = -1;
+	  DECL_INITIAL (decl) = boolean_false_node;
 	  /* Don't emit any symbolic debugging info for this decl.  */
-	  DECL_IGNORED_P (*init_test_decl) = 1;
+	  DECL_IGNORED_P (decl) = 1;	  
+	  *init_test_decl = decl;
 	}
 
       init = build3 (CALL_EXPR, void_type_node,
