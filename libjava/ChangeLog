@@ -6,8 +6,9 @@
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Call 
 	_Jv_InterfaceAssignableFrom if target is an interface and source is an
 	interface or an abstract class.	Remove redundant initializeClass calls. 
-	Remove duplicate if_idt test. 
-	* java/lang/Class.h (_Jv_InterfaceAssignableFrom): New function.
+	Remove duplicate if_idt test.
+	(_Jv_InterfaceAssignableFrom): New function.
+	* java/lang/Class.h (_Jv_InterfaceAssignableFrom): Prototype.
 
 2000-05-31  Tom Tromey  <tromey@cygnus.com>
 
