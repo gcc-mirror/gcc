@@ -1,3 +1,9 @@
+2003-08-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/11924
+	* config/mips/mips.c (INTERNAL_SYMBOL_P): New macro.
+	(mips_classify_symbol, m16_usym8_4, m16_usym5_4): Use it.
+
 2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	PR c/11207
