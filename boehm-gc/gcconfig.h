@@ -326,8 +326,8 @@
                     /*		   RT	      ==> IBM PC/RT		*/
                     /*		   HP_PA      ==> HP9000/700 & /800	*/
                     /*				  HP/UX			*/
-		    /*		   SPARC      ==> SPARC under SunOS	*/
-		    /*			(SUNOS4, SUNOS5,		*/
+		    /*		   SPARC      ==> SPARC	v7/v8/v9	*/
+		    /*			(SUNOS4, SUNOS5, LINUX,		*/
 		    /*			 DRSNX variants)		*/
 		    /* 		   ALPHA      ==> DEC Alpha 		*/
 		    /*			(OSF1 and LINUX variants)	*/
@@ -595,7 +595,11 @@
 
 # ifdef SPARC
 #   define MACH_TYPE "SPARC"
-#   define ALIGNMENT 4	/* Required by hardware	*/
+#   if defined(__arch64__) || defined(__sparcv9)
+#     define ALIGNMENT 8
+#   else
+#     define ALIGNMENT 4	/* Required by hardware	*/
+#   endif
 #   define ALIGN_DOUBLE
     extern int etext;
 #   ifdef SUNOS5
@@ -656,15 +660,22 @@
 #   ifdef LINUX
 #     define OS_TYPE "LINUX"
 #     ifdef __ELF__
-#       define LINUX_DATA_START
 #       define DYNAMIC_LOADING
 #     else
-          Linux Sparc non elf ?
+          Linux Sparc/a.out not supported
 #     endif
+      extern int _etext;
       extern int _end;
 #     define DATAEND (&_end)
 #     define SVR4
-#     define STACKBOTTOM ((ptr_t) 0xf0000000)
+#     ifdef __arch64__
+#       define STACKBOTTOM ((ptr_t) 0x80000000000ULL)
+#	define DATASTART (ptr_t)GC_SysVGetDataStart(0x100000, &_etext)
+#	define CPP_WORDSZ 64
+#     else
+#       define STACKBOTTOM ((ptr_t) 0xf0000000)
+#	define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, &_etext)
+#     endif
 #   endif
 #   ifdef OPENBSD
 #     define OS_TYPE "OPENBSD"
@@ -1331,7 +1342,7 @@
 	/* Use setjmp based hack to mark from callee-save registers. */
 #	define USE_GENERIC_PUSH_REGS
 # endif
-# if defined(SPARC) && !defined(LINUX)
+# if defined(SPARC)
 #   define SAVE_CALL_CHAIN
 #   define ASM_CLEAR_CODE	/* Stack clearing is crucial, and we 	*/
 				/* include assembly code to do it well.	*/

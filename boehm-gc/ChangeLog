@@ -1,3 +1,21 @@
+<<<<<<< ChangeLog
+2000-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcconfig.h (SPARC): Define ALIGNMENT to 8 for 64bit SPARC.
+	(SPARC/LINUX): Use GC_SysVGetDataStart instead of LINUX_DATA_START
+	- sparc glibc does not provide it.
+	(SAVE_CALL_CHAIN, ASM_CLEAR_CODE): Define on sparc*-linux*.
+	Make STACKBOTTOM depend on the wordsize.
+	* os_dep.c (GC_SysVGetDataStart): Compile in on sparc*-linux*.
+	(struct frame): Declare on sparc*-linux*.
+	(GC_save_callers): Bias the frame pointers if needed (sparc64).
+	* mach_dep.c (GC_save_regs_in_stack): Optimize on sparc32.
+	Implement on sparc64.
+	(GC_clear_stack_inner): Implement on sparc64.
+	* gc_priv.h (GC_test_and_set): Implement for sparc.
+	* linux_threads.c (GC_suspend_handler, GC_push_all_stacks): Use
+	GC_save_regs_in_stack on sparc.
+
 2000-04-23  Tom Tromey  <tromey@cygnus.com>
 
 	* gcconfig.h (DYNAMIC_LOADING): Define for PPC Linux.

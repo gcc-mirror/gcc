@@ -437,10 +437,16 @@ ptr_t cold_gc_frame;
       asm("	.globl	_GC_save_regs_in_stack");
       asm("_GC_save_regs_in_stack:");
 #   endif
+#   if defined(__arch64__) || defined(__sparcv9)
+    asm("	save	%sp,-128,%sp");
+    asm("	flushw");
+    asm("	ret");
+    asm("	restore %sp,2047+128,%o0");
+#   else
     asm("	ta	0x3   ! ST_FLUSH_WINDOWS");
-    asm("	mov	%sp,%o0");
     asm("	retl");
-    asm("	nop");
+    asm("	mov	%sp,%o0");
+#endif
 #   ifdef SVR4
       asm("	.GC_save_regs_in_stack_end:");
       asm("	.size GC_save_regs_in_stack,.GC_save_regs_in_stack_end-GC_save_regs_in_stack");
@@ -488,6 +494,21 @@ ptr_t cold_gc_frame;
     asm("GC_clear_stack_inner:");
     asm(".type GC_save_regs_in_stack,#function");
 # endif
+#if defined(__arch64__) || defined(__sparcv9)
+  asm("mov %sp,%o2");		/* Save sp			*/
+  asm("add %sp,2047-8,%o3");	/* p = sp+bias-8		*/
+  asm("add %o1,-2047-192,%sp");	/* Move sp out of the way,	*/
+  				/* so that traps still work.	*/
+  				/* Includes some extra words	*/
+  				/* so we can be sloppy below.	*/
+  asm("loop:");
+  asm("stx %g0,[%o3]");		/* *(long *)p = 0		*/
+  asm("cmp %o3,%o1");
+  asm("bgu,pt %xcc, loop");	/* if (p > limit) goto loop	*/
+    asm("add %o3,-8,%o3");	/* p -= 8 (delay slot) */
+  asm("retl");
+    asm("mov %o2,%sp");		/* Restore sp., delay slot	*/
+#else
   asm("mov %sp,%o2");		/* Save sp	*/
   asm("add %sp,-8,%o3");	/* p = sp-8	*/
   asm("clr %g1");		/* [g0,g1] = 0	*/
@@ -502,6 +523,7 @@ ptr_t cold_gc_frame;
     asm("add %o3,-8,%o3");	/* p -= 8 (delay slot) */
   asm("retl");
     asm("mov %o2,%sp");		/* Restore sp., delay slot	*/
+#endif
   /* First argument = %o0 = return value */
 #   ifdef SVR4
       asm("	.GC_clear_stack_inner_end:");

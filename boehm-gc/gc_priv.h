@@ -439,7 +439,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #  endif
 #  if defined(LINUX_THREADS) 
 #   if defined(I386)|| defined(POWERPC) || defined(ALPHA) || defined(IA64) \
-    || defined(M68K)
+    || defined(M68K) || defined(SPARC)
 #    include <pthread.h>
 #    define USE_SPIN_LOCK
 #    if defined(I386)
@@ -464,6 +464,16 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 	 __asm__ __volatile__("st4.rel %0=r0" : "=m" (*addr));
        }
 #      define GC_CLEAR_DEFINED
+#    endif
+#    ifdef SPARC
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
+	 int oldval;
+
+	 __asm__ __volatile__("ldstub %1,%0"
+	 : "=r"(oldval), "=m"(*addr)
+	 : "m"(*addr));
+	 return oldval;
+       }
 #    endif
 #    ifdef M68K
        /* Contributed by Tony Mantler.  I'm not sure how well it was	*/
