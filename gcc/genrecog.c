@@ -509,10 +509,8 @@ validate_pattern (pattern, insn, set_dest)
 	    && allows_non_lvalue)
 	  {
 	    message_with_line (pattern_lineno,
-			       "warning: `%s' allows non-lvalue,",
-			       pred_name);
-	    message_with_line (pattern_lineno,
-			       "  and used as destination of a set");
+			"warning: destination operand 0 allows non-lvalue",
+			XINT (pattern, 0));
 	  }
 
 	/* A modeless MATCH_OPERAND can be handy when we can

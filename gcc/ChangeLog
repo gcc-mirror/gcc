@@ -1,3 +1,8 @@
+Thu Oct 14 04:00:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (validate_pattern): Condense the destination
+	non-lvalue message.
+
 Thu Oct 14 03:23:08 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (call-1): Supply missing mode for operator.
