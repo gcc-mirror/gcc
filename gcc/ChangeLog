@@ -1,3 +1,7 @@
+2002-10-24  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (init_cumulative_args): Test fntype for zero.
+
 2002-10-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* expr.c (convert_move): If unsignedp is less then zero there
