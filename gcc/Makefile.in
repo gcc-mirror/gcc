@@ -66,6 +66,7 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
+AWK = @AWK@
 CC = @CC@
 BISON = bison
 BISONFLAGS =
@@ -234,6 +235,9 @@ includedir = $(local_prefix)/include
 assertdir = $(tooldir)/include
 # where the info files go
 infodir = @infodir@
+# where the locale files go
+datadir = $(prefix)/@DATADIRNAME@
+localedir = $(datadir)/locale
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
@@ -246,6 +250,19 @@ mandir = @mandir@/man1
 tooldir = $(exec_prefix)/$(target_alias)
 # Dir for temp files.
 tmpdir = /tmp
+
+# Top build directory, relative to here.
+top_builddir = .
+
+# Whether we were configured with NLS.
+USE_NLS = @USE_NLS@
+
+# Internationalization library.
+INTLLIBS = @INTLLIBS@
+
+# List of internationalization subdirectories.
+POSUB = @POSUB@
+INTL_SUBDIRS = intl $(POSUB)
 
 # Additional system libraries to link with.
 CLIB=
@@ -394,6 +411,7 @@ HOST_PREFIX_1=loser-
 HOST_CC=$(CC)
 HOST_CFLAGS=$(ALL_CFLAGS)
 HOST_CLIB=$(CLIB)
+HOST_INTLLIBS=$(INTLLIBS)
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_ALLOCA=$(ALLOCA)
@@ -456,8 +474,7 @@ all: all.indirect
 
 all.indirect: $(ALL)
 
-# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
-# ??? IN_GCC should be obsolete now.
+# IN_GCC tells a few source files (e.g. config.h) that we are compiling gcc.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 
 # This is the variable actually used when we compile.
@@ -476,21 +493,21 @@ USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBST
 # Dependency on obstack, alloca, malloc or whatever library facilities
 # are not installed in the system libraries.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-LIBDEPS= $(OBSTACK) $(ALLOCA) $(MALLOC)
+LIBDEPS= $(INTLLIBS) $(OBSTACK) $(ALLOCA) $(MALLOC)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_INTLLIBS) $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(CLIB)
+LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(INTLLIBS) @LIBS@ $(CLIB)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
-	    $(HOST_CLIB)
+	    $(HOST_INTLLIBS) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
@@ -525,12 +542,11 @@ LANG_EXTRA_HEADERS = @all_headers@
 # because we need CC="stage1/xgcc -Bstage1/" to work in the language
 # subdirectories.
 # ??? The choices here will need some experimenting with.
-FLAGS_TO_PASS = \
+ORDINARY_FLAGS_TO_PASS = \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
-	"CC=@cc_set_by_configure@" \
 	"CFLAGS=$(CFLAGS)" \
 	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
@@ -550,7 +566,19 @@ FLAGS_TO_PASS = \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
 	"bindir=$(bindir)" \
-	"libsubdir=$(libsubdir)"
+	"libsubdir=$(libsubdir)" \
+	"datadir=$(datadir)" \
+	"distdir=../tmp/\$$(subdir)" \
+	"localedir=$(localedir)"
+FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@"
+PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
+	-e 's|^ *[^ /][^ /]*/|%&|' \
+	-e 's| -B| -B%|g' \
+	-e 's|% *[^- /]|%&|g' \
+	-e 's|%% *|../|g' \
+	-e 's|%||g'
+SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
+  "CC=`echo @cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
 #
 # Lists of files for various purposes.
 
@@ -570,7 +598,7 @@ BC_ALL = bc-arity.h bc-opcode.h bc-opname.h
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o \
- varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
+ intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
@@ -581,7 +609,8 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
 #  them before rtl.o is compiled.
-GEN= genemit genoutput genrecog genextract genflags gencodes genconfig genpeep
+GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
+ genpeep gencheck
 
 CCCP=cccp
 # Uncomment this line if you want to use cppmain (w/cpplib) as cpp.
@@ -590,13 +619,13 @@ CCCP=cccp
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
- insn-attr.h insn-attrtab.c insn-opinit.c \
+ insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
  s-flags s-config s-codes s-mlib s-under\
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-proto s-crt s-crtS s-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
- genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
+ genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) gencheck$(exeext) \
  $(BC_ALL) \
  s-bcarity s-bcopcode s-bcopname \
  bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
@@ -736,7 +765,7 @@ start.encap: native xgcc specs $(LIBGCC1) xlimits.h lang.start.encap
 rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-config.h cpp $(LANGUAGES) \
+native: config.status auto-config.h cpp intl.all $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -771,10 +800,10 @@ stamp-objlist: $(OBJS) $(BC_OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
-   $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
-	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
+GCC_OBJS = gcc.o choose-temp.o intl.o pexecute.o prefix.o version.o
+xgcc: $(GCC_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	  $(GCC_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc
@@ -1198,10 +1227,10 @@ $(srcdir)/c-gperf.h: c-parse.gperf
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h output.h
-c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h output.h
+c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h intl.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
-    input.h flags.h $(srcdir)/c-gperf.h c-pragma.h
+    input.h intl.h flags.h $(srcdir)/c-gperf.h c-pragma.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H) except.h function.h \
@@ -1214,14 +1243,15 @@ ld: collect2
 	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1 \
 	   || cp collect2$(exeext) ld$(exeext)
 
-collect2 : collect2.o cplus-dem.o underscore.o version.o \
-	choose-temp.o $(LIBDEPS)
+COLLECT2_OBJS = collect2.o choose-temp.o cplus-dem.o \
+ intl.o underscore.o version.o
+collect2 : $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o \
-	  cplus-dem.o underscore.o version.o choose-temp.o $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(COLLECT2_OBJS) $(LIBS)
 
-collect2.o : collect2.c $(CONFIG_H) gansidecl.h gstab.h obstack.h $(DEMANGLE_H)
+collect2.o : collect2.c $(CONFIG_H) gansidecl.h gstab.h intl.h \
+    obstack.h $(DEMANGLE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
@@ -1255,7 +1285,8 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
-gcc.o: gcc.c $(CONFIG_H) gansidecl.h multilib.h Makefile $(lang_specs_files)
+gcc.o: gcc.c $(CONFIG_H) gansidecl.h intl.h multilib.h \
+    Makefile $(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
@@ -1266,9 +1297,13 @@ s-check : tree.def gencheck $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-check.h tree-check.h
 	touch s-check
 
-gencheck : gencheck.o tree.h tree.def
+gencheck : gencheck.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
+
+gencheck.o: gencheck.c tree.def $(CONFIG_H)
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	  $(srcdir)/gencheck.c
 
 dumpvers: dumpvers.c
 
@@ -1288,8 +1323,8 @@ print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) flags.h function.h
 fold-const.o : fold-const.c $(CONFIG_H) $(TREE_H) flags.h 
 toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) bytecode.h bc-emit.h \
-   flags.h input.h insn-attr.h insn-codes.h insn-config.h recog.h xcoffout.h \
-   defaults.h output.h Makefile \
+   flags.h input.h insn-attr.h insn-codes.h insn-config.h intl.h recog.h \
+   xcoffout.h defaults.h output.h Makefile \
    $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
@@ -1344,7 +1379,7 @@ getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
    insn-flags.h insn-config.h insn-codes.h expr.h real.h regs.h function.h \
-   bytecode.h output.h $(RECOG_H) except.h
+   intl.h bytecode.h output.h $(RECOG_H) except.h
 
 jump.o : jump.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
    insn-config.h insn-flags.h $(RECOG_H) expr.h real.h except.h
@@ -1387,7 +1422,7 @@ regmove.o : regmove.c $(CONFIG_H) $(RTL_H) insn-config.h \
    expr.h insn-flags.h
 sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) $(RTL_H) $(BASIC_BLOCK_H) regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
-final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h regs.h \
+final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h intl.h regs.h \
    $(RECOG_H) conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
@@ -1747,7 +1782,49 @@ bytecode.distclean bytecode.clean:	bytecode.mostlyclean
 
 bytecode.maintainer-clean: bytecode.clean
 	-rm -f bi-parser.c bi-parser.h
+#
+# Remake internationalization support.
 
+intl.o: intl.c intl.h gansidecl.h Makefile
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DLOCALEDIR=\"$(localedir)\" \
+	  -c `echo $(srcdir)/intl.c | sed 's,^\./,,'`
+
+# This is needed to when doing a partial build after a `make clean'.
+# libintl.a does not depend on intl.all,
+# as that would force a lot of recompiling.
+$(top_builddir)/intl/libintl.a:
+	@echo "$(MAKE) intl.all"
+	@$(MAKE) $(FLAGS_TO_PASS) intl.all
+
+# Make sure all the headers are there for xgettext to scan.
+# FIXME: extend the language interface
+# so that we needn't jump into language build internals like this.
+intl.all intl.install intl.distdir: \
+    $(srcdir)/bi-parser.c $(srcdir)/bi-parser.h $(srcdir)/c-gperf.h \
+    $(srcdir)/c-parse.c $(srcdir)/c-parse.h $(srcdir)/cexp.c \
+    $(srcdir)/cp/parse.c $(srcdir)/objc/objc-parse.c
+$(srcdir)/cp/parse.c:
+	@cp_srcdir=`sed -n 's/^srcdir[ 	]*=[	 ]*//p' cp/Makefile` && \
+	echo "cd cp && $(MAKE) $$cp_srcdir/parse.c" && \
+	cd cp && \
+	  $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
+	    $$cp_srcdir/parse.c
+
+intl.all intl.install intl.uninstall intl.distdir \
+  intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
+	@for d in $(INTL_SUBDIRS); do \
+	  target=`expr $@ : 'intl.\(.*\)'` && \
+	  echo "(cd $$d && $(MAKE) $$target)" && \
+	  (cd $$d && AWK='$(AWK)' $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $$target); \
+	done
+
+# intl.distdir doesn't copy the intl makefiles (since they aren't distributed),
+# but we need them for the `make extraclean' in distdir-finish.
+intl.distdir-fixup:
+	for d in $(INTL_SUBDIRS); do \
+	  ln $$d/Makefile tmp/$$d || cp $$d/Makefile tmp/$$d || exit; \
+	done
 #
 # Remake cpp and protoize.
 
@@ -1756,15 +1833,15 @@ cpp: $(CCCP)
 	-rm -f cpp$(exeext)
 	ln $(CCCP)$(exeext) cpp$(exeext) > /dev/null 2>&1 \
 	 || cp $(CCCP)$(exeext) cpp$(exeext)
-cccp: cccp.o cexp.o version.o prefix.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
-	  version.o $(LIBS)
+CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o
+cccp: $(CCCP_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
-cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
+cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1774,14 +1851,14 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
-  prefix.o version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
-	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
+CPPMAIN_OBJS = cppmain.o cppalloc.o cpperror.o cppexp.o cpphash.o cpplib.o \
+ intl.o prefix.o version.o
+cppmain: $(CPPMAIN_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CPPMAIN_OBJS) $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h
 
-cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
+cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h intl.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1791,7 +1868,7 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h
 
 cppexp.o: cppexp.c $(CONFIG_H) cpplib.h
 
@@ -1804,21 +1881,18 @@ cppalloc.o: cppalloc.c $(CONFIG_H)
 
 proto: config.status protoize unprotoize SYSCALLS.c.X
 
-protoize: protoize.o getopt.o getopt1.o getpwd.o version.o \
-    pexecute.o choose-temp.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	  protoize.o getopt.o getopt1.o getpwd.o version.o \
-	  pexecute.o choose-temp.o $(LIBS)
+PROTO_OBJS = choose-temp.o getopt.o getopt1.o getpwd.o \
+  intl.o pexecute.o version.o
+
+protoize: protoize.o $(PROTO_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
 protoize.o: s-proto ; @true
 
-unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o \
-    pexecute.o choose-temp.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
-	  pexecute.o choose-temp.o $(LIBS)
+unprotoize: unprotoize.o $(OTHER_PROTO_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ unprotoize.o $(PROTO_OBJS) $(LIBS)
 unprotoize.o:	s-proto ; @true
 
-s-proto: protoize.c getopt.h $(CONFIG_H)
+s-proto: protoize.c getopt.h $(CONFIG_H) intl.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1878,10 +1952,11 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
 	-rm -f tmp-proto.[cs] tmp-proto$(objext)
 
-gcov.o: gcov.c gcov-io.h
+gcov.o: gcov.c gcov-io.h intl.h
 
-gcov: gcov.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) gcov.o $(LIBS) -o $@
+GCOV_OBJS = gcov.o intl.o
+gcov: $(GCOV_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
 #
 # Build the include directory.  The stamp files are stmp-* rather than
 # s-* so that mostlyclean does not force the include directory to
@@ -1953,9 +2028,11 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
 
-gen-protos: gen-protos.o scan.o cppalloc.o $(HOST_LIBDEPS)
+GEN_PROTOS_OBJS = gen-protos.o cppalloc.o cpperror.o cppexp.o \
+  cpphash.o cpplib.o prefix.o scan.o version.o
+gen-protos: $(GEN_PROTOS_OBJS) $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	  gen-protos.o scan.o cppalloc.o $(HOST_LIBS)
+	  $(GEN_PROTOS_OBJS) $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
@@ -2051,7 +2128,7 @@ $(srcdir)/INSTALL: install1.texi install.texi
 # (less duplicated code).
 
 
-mostlyclean: bytecode.mostlyclean lang.mostlyclean
+mostlyclean: bytecode.mostlyclean intl.mostlyclean lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
@@ -2088,7 +2165,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
-clean: mostlyclean bytecode.clean lang.clean
+clean: mostlyclean bytecode.clean intl.clean lang.clean
 # It may not be quite desirable to delete unprotoize.c here,
 # but the spec for `make clean' requires it.
 # Using unprotoize.c is not quite right in the first place, 
@@ -2112,7 +2189,8 @@ clean: mostlyclean bytecode.clean lang.clean
 
 # Delete all files that users would normally create
 # while building and installing GCC.
-distclean: clean bytecode.distclean lang.distclean
+INTL_DISTCLEAN = intl.distclean
+distclean: clean bytecode.distclean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f tm.h config.h auto-config.h tconfig.h hconfig.h md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
@@ -2122,6 +2200,7 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f c-parse.output
 	-rm -f *.asm
 	-rm -f float.h
+	-rm -f intl/libintl.h libintl.h
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
@@ -2134,6 +2213,7 @@ extraclean: distclean lang.extraclean
 	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i config/ChangeLog
+	-rm -f y.tab.c yacc.*
 	-rm -f */=* */"#"* */*~*
 	-rm -f */patch* */*.orig */*.rej
 	-rm -f */*.dvi */*.oaux */*.d */*.[zZ] */*.gz
@@ -2142,10 +2222,13 @@ extraclean: distclean lang.extraclean
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
+# We define INTL_DISTCLEAN to be empty in the submake, so that
+# we don't descend into intl after its makefile has been removed.
 maintainer-clean:
 	@echo 'This command is intended for maintainers to use; it'
 	@echo 'deletes files that may need special tools to rebuild.'
-	$(MAKE) distclean bytecode.maintainer-clean lang.maintainer-clean
+	$(MAKE) INTL_DISTCLEAN= distclean bytecode.maintainer-clean \
+		intl.maintainer-clean lang.maintainer-clean
 	-rm -f c-parse.y c-gperf.h
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
@@ -2164,7 +2247,7 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    install-man install-info lang.install-normal install-driver
+    install-man install-info intl.install lang.install-normal install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -2393,7 +2476,7 @@ install-collect2: collect2 installdirs
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
-uninstall: lang.uninstall
+uninstall: intl.uninstall lang.uninstall
 	-rm -rf $(libsubdir)
 	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
@@ -2435,12 +2518,17 @@ distdir-cvs: force
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
   $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in \
   $(srcdir)/bi-parser.h $(srcdir)/bi-parser.c $(srcdir)/version.c TAGS
+	@case '$(USE_NLS)' in \
+	yes) ;; \
+	*) echo "configure with --enable-nls before making a distribution"; \
+	   exit 1;; \
+	esac
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
 	fi
 # Update the version number in README
-	awk '$$1 " " $$2 " " $$3 == "This directory contains" \
+	$(AWK) '$$1 " " $$2 " " $$3 == "This directory contains" \
 		{ $$6 = version; print $$0 } \
 	     $$1 " " $$2 " " $$3 != "This directory contains"' \
 	  version=$(version) README > tmp.README
@@ -2451,6 +2539,8 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	mkdir tmp
 	mkdir tmp/config
 	mkdir tmp/ginclude
+	mkdir tmp/intl
+	mkdir tmp/po
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
 	done
@@ -2482,9 +2572,21 @@ distdir-finish:
 # Get rid of everything we don't want in the distribution.  We'd want
 # this to use Makefile.in, but it doesn't have the `lang.foo' targets
 # expanded.
-	cd gcc-$(version); make extraclean VERSION_DEP=
+	cd gcc-$(version); make extraclean distdir-check VERSION_DEP=
 
-distdir: distdir-cvs distdir-start lang.distdir distdir-finish
+distdir-check:
+	($(AWK) '/^[^#]/{print} /^#[A-Za-z]/{print substr($$1, 2)}' | sort) \
+	  < po/POTFILES.in > tmp.POTFILES
+	ls [A-Za-z]*.[ch] [a-z]*/[A-Za-z]*.[ch] \
+	  [a-z]*/[a-z]*/[A-Za-z]*.[ch] | sort > tmp.src
+	diff tmp.POTFILES tmp.src || { \
+	  echo "po/POTFILES.in and sources do not match -- please fix"; \
+	  exit 1; \
+	}
+	rm -f tmp.*
+
+distdir: distdir-cvs distdir-start intl.distdir intl.distdir-fixup \
+  lang.distdir distdir-finish
 
 # make diff oldversion=M.N 
 # creates a diff file between an older distribution and this one.
@@ -2531,7 +2633,7 @@ compare: force
 	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	done
-	for dir in tmp-foo $(SUBDIRS); do \
+	for dir in intl $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      tail +16c ./$$file > tmp-foo1; \
@@ -2549,7 +2651,7 @@ compare3: force
 	  tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs) || true; \
 	done
-	for dir in tmp-foo $(SUBDIRS); do \
+	for dir in intl $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      tail +16c ./$$file > tmp-foo1; \
@@ -2568,7 +2670,7 @@ gnucompare: force
 	for file in *$(objext); do \
 	  cmp --ignore-initial=16 $$file stage2/$$file || true ; \
 	done
-	for dir in tmp-foo $(SUBDIRS); do \
+	for dir in intl $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      cmp --ignore-initial=16 $$file stage2/$$file || true ; \
@@ -2581,7 +2683,7 @@ gnucompare3: force
 	for file in *$(objext); do \
 	  cmp --ignore-initial=16 $$file stage3/$$file || true ; \
 	done
-	for dir in tmp-foo $(SUBDIRS); do \
+	for dir in intl $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      cmp --ignore-initial=16 $$file stage3/$$file || true ; \
@@ -2592,11 +2694,12 @@ gnucompare3: force
 # Copy the object files from a particular stage into a subdirectory.
 stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
-	-for dir in . $(SUBDIRS) ; \
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage1
+	-mv intl/*$(objext) stage1/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN) ../as$(exeext) stage1 ; else true ; fi
@@ -2613,11 +2716,12 @@ stage1: force stage1-start lang.stage1
 
 stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
-	-for dir in . $(SUBDIRS) ; \
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage2
+	-mv intl/*$(objext) stage2/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN) ../as$(exeext) stage2 ; else true ; fi
@@ -2634,11 +2738,12 @@ stage2: force stage2-start lang.stage2
 
 stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
-	-for dir in . $(SUBDIRS) ; \
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage3
+	-mv intl/*$(objext) stage3/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN) ../as$(exeext) stage3 ; else true ; fi
@@ -2655,11 +2760,12 @@ stage3: force stage3-start lang.stage3
 
 stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
-	-for dir in . $(SUBDIRS) ; \
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage4
+	-mv intl/*$(objext) stage4/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN) ../as$(exeext) stage4 ; else true ; fi
