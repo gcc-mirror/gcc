@@ -19,6 +19,6 @@ alias analysis			John Carr
 loop unrolling			Jim Wilson
 scheduler (including haifa)	Jeff Law, Jim Wilson, Michael Meissner
 delay slot filling		Jeff Law
-dwarf debugging			Jim Wilson (Jason Merrill also knows the dwarf
-				debugging code well).
+debugging output code		Jim Wilson (Jason Merrill co-maintains the
+				dwarf debug code).
 libio/libstdc++			Ulrich Drepper
