@@ -996,7 +996,7 @@ expand_throw (exp)
 	  pop_obstacks ();
 	}
 
-      if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
+      if (TYPE_PTR_P (TREE_TYPE (exp)))
 	throw_type = build_eh_type (exp);
       else
 	{
