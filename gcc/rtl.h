@@ -683,7 +683,6 @@ extern char *xrealloc ();
 
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
-extern void free			PROTO((void *));
 extern rtx rtx_alloc			PROTO((RTX_CODE));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx find_reg_note		PROTO((rtx, enum reg_note, rtx));
