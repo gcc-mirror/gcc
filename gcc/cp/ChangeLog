@@ -1,5 +1,7 @@
 Wed Aug 27 02:03:34 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* typeck.c (expand_target_expr): Make definition match declaration.
+
 	* class.c (get_basefndecls): Make definition match declaration.
 
 Mon Aug 25 14:30:02 1997  Jason Merrill  <jason@yorick.cygnus.com>
