@@ -1,3 +1,15 @@
+2002-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6429
+	* Makefile.in (libgcc.mk): Pass SHLIB_SLIBDIR_SUFFIXES to mklibgcc.
+	* mklibgcc.in: If SHLIB_SLIBDIR_SUFFIXES is defined, put libgcc_s
+	shared libraries into multilib dirs, with SONAME libgcc_s.so.1 for
+	base multilibs.
+	* config/t-slibgcc-elf-ver (SHLIB_LINK): Adjust for the above.
+	* config/t-slibgcc-sld (SHLIB_LINK): Likewise.
+	* config/sparc/t-linux64 (SHLIB_SLIBDIR_SUFFIXES): Define.
+	* config/sparc/t-sol2-64 (SHLIB_SLIBDIR_SUFFIXES): Define.
+
 2002-05-09  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md: Use define_constants for unspec numbers.
