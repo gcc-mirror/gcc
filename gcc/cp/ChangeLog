@@ -1,3 +1,32 @@
+1999-08-18  Mark Mitchell  <mark@codesourcery.com>
+
+        * cp-tree.h (build_lang_field_decl): Remove.
+	* class.c (build_vtable): Replace calls to build_lang_field_decl
+	with build_lang_decl.
+	(prepare_fresh_vtable): Likewise.
+	(finish_struct_1): Likewise.
+	(init_class_processing): Likewise.
+	* decl.c (push_using_decl): Likewise.
+	(init_decl_processsing): Likewise.
+	(grokvardecl): Likewise.
+	(build_ptrmemfunc_type): Likewise.
+	(grokdeclarator): Likewise.
+	(build_enumerator): Likewise.
+	* decl2.c (grok_x_components): Likewise.
+	(do_class_using_decl): Likewise.
+	* except.c (call_eh_info): Likewise.
+	* init.c (init_init_processing): Likewise.
+	* rtti.c (expand_class_decl): Likewise.
+	* tree.c (build_base_fields): Likewise.
+	(build_vbase_pointer_fields): Likewise.
+	* lex.c (build_lang_decl): Build declarations on the permanent
+	obstack if we're building statmeent trees.
+	(retrofit_lang_decl): Handle both the full lang_decl and also the
+	smaller lang_decl_flags here.
+	(build_lang_field_decl): Remove.
+	* pt.c (push_template_decl_real): Issue errors for variable
+	declarations that are not static members.
+
 1999-08-18  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (search_tree): Handle TRUTH_{AND,OR,XOR}_EXPR too.

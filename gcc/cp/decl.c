@@ -4492,7 +4492,7 @@ push_using_decl (scope, name)
       break;
   if (decl)
     return NULL_TREE;
-  decl = build_lang_field_decl (USING_DECL, name, void_type_node);
+  decl = build_lang_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (decl) = scope;
   TREE_CHAIN (decl) = current_binding_level->usings;
   current_binding_level->usings = decl;
@@ -6511,12 +6511,12 @@ init_decl_processing ()
   else
     {
       vtable_entry_type = make_lang_type (RECORD_TYPE);
-      fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
-					 delta_type_node);
-      fields[1] = build_lang_field_decl (FIELD_DECL, index_identifier,
-					 delta_type_node);
-      fields[2] = build_lang_field_decl (FIELD_DECL, pfn_identifier,
-					 ptr_type_node);
+      fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
+				   delta_type_node);
+      fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
+				   delta_type_node);
+      fields[2] = build_lang_decl (FIELD_DECL, pfn_identifier,
+				   ptr_type_node);
       finish_builtin_type (vtable_entry_type, VTBL_PTR_TYPE, fields, 2,
 			   double_type_node);
 
@@ -8624,7 +8624,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	 can be initialized, the code will reach here.  */
       tree basetype = TYPE_OFFSET_BASETYPE (type);
       type = TREE_TYPE (type);
-      decl = build_lang_field_decl (VAR_DECL, declarator, type);
+      decl = build_lang_decl (VAR_DECL, declarator, type);
       DECL_CONTEXT (decl) = basetype;
       DECL_CLASS_CONTEXT (decl) = basetype;
       DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
@@ -8645,7 +8645,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	  /* If we're in a template, we need DECL_LANG_SPECIFIC so that
 	     we can call push_template_decl.  */
 	  push_permanent_obstack ();
-	  decl = build_lang_field_decl (VAR_DECL, declarator,
+	  decl = build_lang_decl (VAR_DECL, declarator,
 					complete_type (type));
 	  pop_obstacks ();
 	}
@@ -8742,9 +8742,9 @@ build_ptrmemfunc_type (type)
 
   u = make_lang_type (UNION_TYPE);
   SET_IS_AGGR_TYPE (u, 0);
-  fields[0] = build_lang_field_decl (FIELD_DECL, pfn_identifier, type);
-  fields[1] = build_lang_field_decl (FIELD_DECL, delta2_identifier,
-				     delta_type_node);
+  fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
+  fields[1] = build_lang_decl (FIELD_DECL, delta2_identifier,
+			       delta_type_node);
   finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
   TYPE_NAME (u) = NULL_TREE;
 
@@ -8755,11 +8755,11 @@ build_ptrmemfunc_type (type)
   /* ... and not really an aggregate.  */
   SET_IS_AGGR_TYPE (t, 0);
 
-  fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
-				     delta_type_node);
-  fields[1] = build_lang_field_decl (FIELD_DECL, index_identifier,
-				     delta_type_node);
-  fields[2] = build_lang_field_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
+  fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
+			       delta_type_node);
+  fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
+			       delta_type_node);
+  fields[2] = build_lang_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
   finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
 
   pop_obstacks ();
@@ -11044,16 +11044,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      {
 		/* C++ allows static class members.
 		   All other work for this is done by grokfield.
-		   This VAR_DECL is built by build_lang_field_decl.
+		   This VAR_DECL is built by build_lang_decl.
 		   All other VAR_DECLs are built by build_decl.  */
-		decl = build_lang_field_decl (VAR_DECL, declarator, type);
+		decl = build_lang_decl (VAR_DECL, declarator, type);
 		TREE_STATIC (decl) = 1;
 		/* In class context, 'static' means public access.  */
 		TREE_PUBLIC (decl) = DECL_EXTERNAL (decl) = 1;
 	      }
 	    else
 	      {
-		decl = build_lang_field_decl (FIELD_DECL, declarator, type);
+		decl = build_lang_decl (FIELD_DECL, declarator, type);
 		if (RIDBIT_SETP (RID_MUTABLE, specbits))
 		  {
 		    DECL_MUTABLE_P (decl) = 1;
@@ -12701,7 +12701,7 @@ build_enumerator (name, value, type)
  context = current_scope ();
  if (context && context == current_class_type)
    /* This enum declaration is local to the class.  */
-   decl = build_lang_field_decl (CONST_DECL, name, type);
+   decl = build_lang_decl (CONST_DECL, name, type);
  else
    /* It's a global enum, or it's local to a function.  (Note local to
       a function could mean local to a class method.  */

@@ -901,9 +901,7 @@ grok_x_components (specs)
     return;
 
   fixup_anonymous_aggr (t);
-  finish_member_declaration (build_lang_field_decl (FIELD_DECL,
-						    NULL_TREE,
-						    t)); 
+  finish_member_declaration (build_lang_decl (FIELD_DECL, NULL_TREE, t)); 
 
   /* Ignore any inline function definitions in the anonymous union
      since an anonymous union may not have function members.  */
@@ -5130,7 +5128,7 @@ do_class_using_decl (decl)
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
 
-  value = build_lang_field_decl (USING_DECL, name, void_type_node);
+  value = build_lang_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
   return value;
 }

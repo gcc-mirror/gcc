@@ -82,7 +82,7 @@ void init_init_processing ()
      arrays allocated via operator new.  */
   BI_header_type = make_lang_type (RECORD_TYPE);
   nc_nelts_field_id = get_identifier ("nelts");
-  fields[0] = build_lang_field_decl (FIELD_DECL, nc_nelts_field_id, sizetype);
+  fields[0] = build_lang_decl (FIELD_DECL, nc_nelts_field_id, sizetype);
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
 		       0, double_type_node);
   BI_header_size = size_in_bytes (BI_header_type);

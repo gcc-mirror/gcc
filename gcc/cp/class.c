@@ -737,8 +737,8 @@ build_vtable (binfo, type)
       tree offset;
 
       virtuals = copy_list (BINFO_VIRTUALS (binfo));
-      decl = build_lang_field_decl (VAR_DECL, name, 
-				    TREE_TYPE (BINFO_VTABLE (binfo)));
+      decl = build_lang_decl (VAR_DECL, name, 
+			      TREE_TYPE (BINFO_VTABLE (binfo)));
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
@@ -748,7 +748,7 @@ build_vtable (binfo, type)
   else
     {
       virtuals = NULL_TREE;
-      decl = build_lang_field_decl (VAR_DECL, name, void_type_node);
+      decl = build_lang_decl (VAR_DECL, name, void_type_node);
     }
 
 #ifdef GATHER_STATISTICS
@@ -898,7 +898,7 @@ prepare_fresh_vtable (binfo, for_type)
       buf2 = new_buf2;
     }
 
-  new_decl = build_lang_field_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
+  new_decl = build_lang_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
   /* Remember which class this vtable is really for.  */
   DECL_CONTEXT (new_decl) = for_type;
 
@@ -3841,7 +3841,7 @@ finish_struct_1 (t)
 	 bounds.  That's better than using `void*' or some such; it's
 	 cleaner, and it let's the alias analysis code know that these
 	 stores cannot alias stores to void*!  */
-      vfield = build_lang_field_decl (FIELD_DECL, get_vfield_name (t),
+      vfield = build_lang_decl (FIELD_DECL, get_vfield_name (t),
 				      vtbl_ptr_type_node);
       /* If you change any of the below, take a look at all the
 	 other VFIELD_BASEs and VTABLE_BASEs in the code, and change
@@ -3908,7 +3908,7 @@ finish_struct_1 (t)
   if (empty)
     {
       /* C++: do not let empty structures exist.  */
-      tree decl = build_lang_field_decl
+      tree decl = build_lang_decl
 	(FIELD_DECL, NULL_TREE, char_type_node);
       TREE_CHAIN (decl) = fields;
       TYPE_FIELDS (t) = decl;
@@ -4507,7 +4507,7 @@ init_class_processing ()
   access_private_virtual_node = build_int_2 (7, 0);
 
   /* Keep these values lying around.  */
-  base_layout_decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, error_mark_node);
+  base_layout_decl = build_lang_decl (FIELD_DECL, NULL_TREE, error_mark_node);
   TREE_TYPE (base_layout_decl) = make_node (RECORD_TYPE);
 
   gcc_obstack_init (&class_obstack);

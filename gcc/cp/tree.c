@@ -888,7 +888,7 @@ build_base_fields (rec)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	continue;
 
-      decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, basetype);
+      decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
       DECL_ARTIFICIAL (decl) = 1;
       DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = rec;
       DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
@@ -1000,8 +1000,8 @@ build_vbase_pointer_fields (rec)
 		goto got_it;
 	    }
 	  FORMAT_VBASE_NAME (name, basetype);
-	  decl = build_lang_field_decl (FIELD_DECL, get_identifier (name),
-					build_pointer_type (basetype));
+	  decl = build_lang_decl (FIELD_DECL, get_identifier (name),
+				  build_pointer_type (basetype));
 	  /* If you change any of the below, take a look at all the
 	     other VFIELD_BASEs and VTABLE_BASEs in the code, and change
 	     them too.  */
