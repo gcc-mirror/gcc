@@ -1,3 +1,7 @@
+Mon Jul 30 23:20:34 EDT 2001  John Wehle  (john@feith.com)
+
+        * flow.c (merge_blocks): Return 1 if an extra jump is inserted.
+
 2001-07-30  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.h (DEBUG_RANGES_SECTION): New.

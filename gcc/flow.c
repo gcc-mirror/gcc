@@ -3193,6 +3193,8 @@ merge_blocks (e, b, c, mode)
 	  if (GET_CODE (barrier) != BARRIER)
 	    abort ();
 	  flow_delete_insn (barrier);
+
+	  return 1;
         }
 
       return 0;
