@@ -1466,8 +1466,11 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   int i;
 
   /* Create a stack of the subexpressions so later we can walk them in
-     order from inner to outer.  */
-  VARRAY_TREE_INIT (stack, 10, "stack");
+     order from inner to outer.  
+
+     This array is very memory consuming.  Don't even think of making
+     it VARRAY_TREE.  */
+  VARRAY_GENERIC_PTR_NOGC_INIT (stack, 10, "stack");
 
   /* We can either handle REALPART_EXPR, IMAGEPART_EXPR anything that
      handled_components can deal with.  */
@@ -1475,7 +1478,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
        (handled_component_p (*p)
 	|| TREE_CODE (*p) == REALPART_EXPR || TREE_CODE (*p) == IMAGPART_EXPR);
        p = &TREE_OPERAND (*p, 0))
-    VARRAY_PUSH_TREE (stack, *p);
+    VARRAY_PUSH_GENERIC_PTR_NOGC (stack, *p);
 
 #if defined ENABLE_CHECKING
   if (VARRAY_ACTIVE_SIZE (stack) == 0)
@@ -1496,7 +1499,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
      then we gimplify any indices, from left to right.  */
   for (i = VARRAY_ACTIVE_SIZE (stack) - 1; i >= 0; i--)
     {
-      tree t = VARRAY_TREE (stack, i);
+      tree t = VARRAY_GENERIC_PTR_NOGC (stack, i);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
@@ -1614,6 +1617,8 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
       canonicalize_component_ref (expr_p);
       ret = MIN (ret, GS_OK);
     }
+
+  VARRAY_FREE (stack);
 
   return ret;
 }
