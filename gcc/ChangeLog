@@ -1,3 +1,12 @@
+2000-07-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (STRIP_NOPS): Check for error_mark_node.
+	(STRIP_SIGN_NOPS, STRIP_TYPE_NOPS): Likewise.
+	(dwarf2out_*): Remove duplicate declarations.
+
+	* c-decl.c (duplicate_decls): Copy DECL_ABSTRACT_ORIGIN from
+	DECL_ABSTRACT_ORIGIN, not DECL_ORIGIN.
+
 2000-07-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (wrap_text): New function.
