@@ -24,24 +24,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Fundamental storage type for bitmap.  */
 
-/* typedef unsigned HOST_WIDE_INT BITMAP_WORD; */
-/* #define nBITMAP_WORD_BITS HOST_BITS_PER_WIDE_INT */
 typedef unsigned long BITMAP_WORD;
-#define nBITMAP_WORD_BITS (CHAR_BIT * SIZEOF_LONG)
-#define BITMAP_WORD_BITS (unsigned) nBITMAP_WORD_BITS
+/* BITMAP_WORD_BITS needs to be unsigned, but cannot contain casts as
+   it is used in preprocessor directives -- hence the 1u.  */
+#define BITMAP_WORD_BITS (CHAR_BIT * SIZEOF_LONG * 1u)
 
 /* Number of words to use for each element in the linked list.  */
 
 #ifndef BITMAP_ELEMENT_WORDS
-#define BITMAP_ELEMENT_WORDS ((128 + nBITMAP_WORD_BITS - 1) / nBITMAP_WORD_BITS)
+#define BITMAP_ELEMENT_WORDS ((128 + BITMAP_WORD_BITS - 1) / BITMAP_WORD_BITS)
 #endif
 
-/* Number of bits in each actual element of a bitmap.  We get slightly better
-   code for bit % BITMAP_ELEMENT_ALL_BITS and bit / BITMAP_ELEMENT_ALL_BITS if
-   bits is unsigned, assuming it is a power of 2.  */
+/* Number of bits in each actual element of a bitmap.  */
 
-#define BITMAP_ELEMENT_ALL_BITS \
-  ((unsigned) (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS))
+#define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
 /* Bitmap set element.  We use a linked list to hold only the bits that
    are set.  This allows for use to grow the bitset dynamically without
@@ -132,8 +128,7 @@ extern void bitmap_release_memory (void);
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
-extern int bitmap_first_set_bit (bitmap);
-extern int bitmap_last_set_bit (bitmap);
+extern unsigned bitmap_first_set_bit (bitmap);
 
 /* Allocate a bitmap with oballoc.  */
 #define BITMAP_OBSTACK_ALLOC(OBSTACK)				\

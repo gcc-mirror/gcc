@@ -1,5 +1,24 @@
 2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (nBITMAP_WORD_BITS): Remove.
+	(BITMAP_WORD_BITS): Force unsigned by use of 1u.
+	(BITMAP_ELEMENT_WORDS, BITMAP_ELEMENT_ALL_BITS): Remove
+	unnecessary casts.
+	(bitmap_first_set_bit): Return unsigned, use ctzl.
+	(bitmap_last_set_bit): Remove.
+	* bitmap.c (bitmap_element_zerop, bitmap_copy): Make iterator
+	unsigned.
+	(bitmap_first_set_bit): Return unsigned, require non-empty bitmap,
+	remove special case code for two word elements.
+	(bitmap_last_set_bit): Remove.
+	* ra-build.c (livethrough_conflicts_bb): Replace unnecessary use of
+	bitmap_first_set_bit with bitmap_empty_p.
+	* tree-outof-ssa.c (analyze_edges_for_bb): Likewise.
+	* tree-ssa-pre.c (bitmap_print_value): Use simple flag rather than
+	bitmap_last_bit_set.
+
+2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR target/16796
 	* config/rs6000/rs6000.md: Add DF & SF reg move peepholes.
 
