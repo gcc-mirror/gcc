@@ -1,3 +1,8 @@
+2004-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* convert.c (convert_to_integer): Ensure `long_integer_type_node'
+	isn't NULL before using it.
+
 2004-04-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/15189
