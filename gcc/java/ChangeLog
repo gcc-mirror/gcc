@@ -1,3 +1,12 @@
+2003-03-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* jcf-io.c (caching_stat): Account for both DIR_SEPARATOR
+	and DIR_SEPARATOR_2 for a target.
+	Correct minor typos.
+
+	* jcf-write.c (make_class_file_name): Take both DIR_SEPARATOR
+	and DIR_SEPARATOR_2 for a target into account.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_init): Update prototype, move code to java_post_options.

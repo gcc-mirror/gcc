@@ -3263,6 +3263,7 @@ make_class_file_name (tree clas)
   const char *dname, *cname, *slash;
   char *r;
   struct stat sb;
+  char sep;
 
   cname = IDENTIFIER_POINTER (identifier_subst (DECL_NAME (TYPE_NAME (clas)),
 						"", '.', DIR_SEPARATOR,
@@ -3274,24 +3275,45 @@ make_class_file_name (tree clas)
       char *t;
       dname = DECL_SOURCE_FILE (TYPE_NAME (clas));
       slash = strrchr (dname, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
       if (! slash)
-	{
-	  dname = ".";
-	  slash = dname + 1;
-	}
+        slash = strrchr (dname, DIR_SEPARATOR_2);
+#endif
+      if (! slash)
+        {
+          dname = ".";
+          slash = dname + 1;
+          sep = DIR_SEPARATOR;
+        }
+      else
+        sep = *slash;
+
       t = strrchr (cname, DIR_SEPARATOR);
       if (t)
 	cname = t + 1;
     }
   else
     {
+      char *s;
+
       dname = jcf_write_base_directory;
+
+      s = strrchr (dname, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+      if (! s)
+        s = strrchr (dname, DIR_SEPARATOR_2);
+#endif
+      if (s)
+        sep = *s;
+      else
+        sep = DIR_SEPARATOR;
+
       slash = dname + strlen (dname);
     }
 
   r = xmalloc (slash - dname + strlen (cname) + 2);
   strncpy (r, dname, slash - dname);
-  r[slash - dname] = DIR_SEPARATOR;
+  r[slash - dname] = sep;
   strcpy (&r[slash - dname + 1], cname);
 
   /* We try to make new directories when we need them.  We only do
@@ -3303,7 +3325,7 @@ make_class_file_name (tree clas)
   dname = r + (slash - dname) + 1;
   while (1)
     {
-      char *s = strchr (dname, DIR_SEPARATOR);
+      char *s = strchr (dname, sep);
       if (s == NULL)
 	break;
       *s = '\0';
@@ -3312,9 +3334,9 @@ make_class_file_name (tree clas)
 	  && mkdir (r, 0755) == -1)
 	fatal_io_error ("can't create directory %s", r);
 
-      *s = DIR_SEPARATOR;
+      *s = sep;
       /* Skip consecutive separators.  */
-      for (dname = s + 1; *dname && *dname == DIR_SEPARATOR; ++dname)
+      for (dname = s + 1; *dname && *dname == sep; ++dname)
 	;
     }
 

@@ -336,6 +336,7 @@ caching_stat (char *filename, struct stat *buf)
 {
 #if JCF_USE_SCANDIR
   char *sep;
+  char origsep;
   char *base;
   memoized_dirlist_entry *dent;
   void **slot;
@@ -349,15 +350,20 @@ caching_stat (char *filename, struct stat *buf)
 
   /* Get the name of the directory.  */
   sep = strrchr (filename, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+  if (! sep)
+    sep = strrchr (filename, DIR_SEPARATOR_2);
+#endif
   if (sep)
     {
+      origsep = *sep;
       *sep = '\0';
       base = sep + 1;
     }
   else
     base = filename;
 
-  /* Obtain the entry for this directory form the hash table.  */
+  /* Obtain the entry for this directory from the hash table.  */
   slot = htab_find_slot (memoized_dirlists, filename, INSERT);
   if (!*slot)
     {
@@ -380,7 +386,7 @@ caching_stat (char *filename, struct stat *buf)
 
   /* Put the separator back.  */
   if (sep)
-    *sep = DIR_SEPARATOR;
+    *sep = origsep;
 
   /* If the file is not in the list, there is no need to stat it; it
      does not exist.  */
