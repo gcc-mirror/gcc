@@ -2903,7 +2903,10 @@
 
   /* Try dividing the constant by 2, then 4, and finally 8 to see
      if we can get a constant which can be loaded into a register
-     in a single instruction (cint_ok_for_move).  */
+     in a single instruction (cint_ok_for_move). 
+
+     If that fails, try to negate the constant and subtract it
+     from our input operand.  */
   if (intval % 2 == 0 && cint_ok_for_move (intval / 2))
     {
       operands[2] = GEN_INT (intval / 2);
@@ -2918,6 +2921,12 @@
     {
       operands[2] = GEN_INT (intval / 8);
       operands[3] = GEN_INT (8);
+    }
+  else if (cint_ok_for_move (-intval))
+    {
+      emit_insn (gen_rtx (SET, VOIDmode, operands[4], GEN_INT (-intval)));
+      emit_insn (gen_subsi3 (operands[0], operands[1], operands[4]));
+      DONE;
     }
   else
     FAIL;
