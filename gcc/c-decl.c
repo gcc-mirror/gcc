@@ -3485,7 +3485,7 @@ start_decl (declarator, declspecs, initialized, attributes)
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
-	error ("typedef `%s' is initialized",
+	error ("typedef `%s' is initialized (use __typeof__ instead)",
 	       IDENTIFIER_POINTER (DECL_NAME (decl)));
 	initialized = 0;
 	break;
