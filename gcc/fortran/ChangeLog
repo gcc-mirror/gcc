@@ -1,6 +1,6 @@
 2004-07-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	PR fortran/15455
+	PR fortran/16455
 	* module.c (gfc_dump_module, gfc_use_module): Print locus
 	when opening of module file fails.
 
