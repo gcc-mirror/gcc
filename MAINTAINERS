@@ -23,7 +23,7 @@ Maintainers
 John Carr					jfc@mit.edu
 Richard Earnshaw				rearnsha@arm.com
 Richard Henderson                               rth@redhat.com
-Geoffrey Keating				geoffk@redhat.com
+Geoffrey Keating				geoffk@geoffk.org
 Richard Kenner					kenner@nyu.edu
 Jeff Law					law@redhat.com
 Jason Merrill					jason@redhat.com
@@ -64,7 +64,7 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-rs6000 port		Geoff Keating		geoffk@redhat.com
+rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
@@ -77,7 +77,7 @@ v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
 vax port		Dave Anglin		dave.anglin@nrc.ca
 x86-64 port		Jan Hubicka		jh@suse.cz
-xstormy16 port		Geoffrey Keating	geoffk@redhat.com
+xstormy16 port		Geoffrey Keating	geoffk@geoffk.org
 xtensa port		Bob Wilson		bob.wilson@acm.org
 
 			OS Port Maintainers	(OS alphabetical order)
@@ -142,13 +142,15 @@ docs co-maintainer	Joseph Myers		jsm28@cam.ac.uk
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill
 predict.def		Jan Hubicka		jh@suse.cz
-contrib/regression	Geoff Keating		geoffk@redhat.com
+contrib/regression	Geoff Keating		geoffk@geoffk.org
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
 
 
 			Write After Approval	(last name alphabetical order)
+
+Matt Austern                                    austern@apple.com
 Scott Bambrough					scottb@netwinder.org
 Daniel Berlin					dan@dberlin.org
 David Billinghurst				David.Billinghurst@riotinto.com
@@ -208,6 +210,7 @@ David O'Brien					obrien@FreeBSD.org
 Turly O'Connor					turly@apple.com
 Jeffrey D. Oldham				oldham@codesourcery.com
 Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
+Devang Patel					dpatel@apple.com
 Nicola Pero					n.pero@mi.flashnet.it
 Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
@@ -230,7 +233,7 @@ Danny Smith					dannysmith@users.sourceforge.net
 Michael Sokolov					msokolov@ivan.Harhan.ORG
 Richard Stallman				rms@gnu.org
 Graham Stott					grahams@redhat.com
-Mike Stump					mrs@windriver.com
+Mike Stump					mrs@apple.com
 Ian Taylor					ian@zembu.com
 Michael Tiemann					tiemann@redhat.com
 Philipp Thomas					pthomas@suse.de
