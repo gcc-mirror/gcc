@@ -1,3 +1,9 @@
+2000-05-18  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (insn_dependant_p, insn_dependant_p_1): New.
+	* rtl.h (insn_dependant_p): Declare it.
+	* loop.c (strength_reduce): Use it.
+
 2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.c (expand_prologue, expand_epilogue):

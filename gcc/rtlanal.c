@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 static int rtx_addr_can_trap_p	PARAMS ((rtx));
 static void reg_set_p_1		PARAMS ((rtx, rtx, void *));
+static void insn_dependant_p_1	PARAMS ((rtx, rtx, void *));
 static void reg_set_last_1	PARAMS ((rtx, rtx, void *));
 
 
@@ -686,6 +687,45 @@ modified_in_p (x, insn)
     }
 
   return 0;
+}
+
+/* Return true if anything in insn X is (anti,output,true) dependant on
+   anything in insn Y.  */
+
+int
+insn_dependant_p (x, y)
+     rtx x, y;
+{
+  rtx tmp;
+
+  if (! INSN_P (x) || ! INSN_P (y))
+    abort ();
+
+  tmp = PATTERN (y);
+  note_stores (PATTERN (x), insn_dependant_p_1, &tmp);
+  if (tmp == NULL_RTX)
+    return 1;
+
+  tmp = PATTERN (x);
+  note_stores (PATTERN (y), insn_dependant_p_1, &tmp);
+  if (tmp == NULL_RTX)
+    return 1;
+
+  return 0;
+}
+
+/* A helper routine for insn_dependant_p called through note_stores.  */
+
+static void
+insn_dependant_p_1 (x, pat, data)
+     rtx x;
+     rtx pat ATTRIBUTE_UNUSED;
+     void *data;
+{
+  rtx * pinsn = (rtx *) data;
+
+  if (*pinsn && reg_mentioned_p (x, *pinsn))
+    *pinsn = NULL_RTX;
 }
 
 /* Given an INSN, return a SET expression if this insn has only a single SET.

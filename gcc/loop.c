@@ -4119,10 +4119,9 @@ strength_reduce (loop, insn_count, flags)
 
 		  for (next = NEXT_INSN (dominator); ; next = NEXT_INSN (next))
 		    {
-		      if ((INSN_P (next)
-			   && (reg_mentioned_p (giv, PATTERN (next))
-			       || reg_set_p (bl2->biv->src_reg, next)))
-			  || GET_CODE (next) == JUMP_INSN)
+		      if (GET_CODE (next) == JUMP_INSN
+			  || (INSN_P (next)
+			      && insn_dependant_p (giv_insn, next)))
 			break;
 #ifdef HAVE_cc0
 		      if (! INSN_P (next)
