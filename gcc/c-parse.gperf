@@ -29,6 +29,8 @@ __asm, ASM_KEYWORD, NORID
 __asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
+__bounded, TYPE_QUAL, RID_BOUNDED
+__bounded__, TYPE_QUAL, RID_BOUNDED
 __builtin_va_arg, VA_ARG, NORID
 __complex, TYPESPEC, RID_COMPLEX
 __complex__, TYPESPEC, RID_COMPLEX
@@ -42,6 +44,12 @@ __inline__, SCSPEC, RID_INLINE
 __iterator, SCSPEC, RID_ITERATOR
 __iterator__, SCSPEC, RID_ITERATOR
 __label__, LABEL, NORID
+__ptrbase, PTR_BASE, NORID
+__ptrbase__, PTR_BASE, NORID
+__ptrextent, PTR_EXTENT, NORID
+__ptrextent__, PTR_EXTENT, NORID
+__ptrvalue, PTR_VALUE, NORID
+__ptrvalue__, PTR_VALUE, NORID
 __real, REALPART, NORID
 __real__, REALPART, NORID
 __restrict, TYPE_QUAL, RID_RESTRICT
@@ -50,6 +58,8 @@ __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED
 __typeof, TYPEOF, NORID
 __typeof__, TYPEOF, NORID
+__unbounded, TYPE_QUAL, RID_UNBOUNDED
+__unbounded__, TYPE_QUAL, RID_UNBOUNDED
 __volatile, TYPE_QUAL, RID_VOLATILE
 __volatile__, TYPE_QUAL, RID_VOLATILE
 asm, ASM_KEYWORD, NORID

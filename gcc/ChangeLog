@@ -1,3 +1,12 @@
+2000-03-14  Greg McGary  <gkm@gnu.org>
+
+	* c-lex.h (enum rid): Add RID_BOUNDED & RID_UNBOUNDED.
+	* c-lex.c (init_lex): Handle RID_BOUNDED & RID_UNBOUNDED.
+	* c-parse.gperf (__bounded, __bounded__, __ptrbase, __ptrbase__,
+	__ptrextent, __ptrextent__, __ptrvalue, __ptrvalue__,
+	__unbounded, __unbounded__): New keywords.
+	* c-parse.in (PTR_VALUE PTR_BASE PTR_EXTENT): New tokens.
+
 2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cselib.h: New file.
