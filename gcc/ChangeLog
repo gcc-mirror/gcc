@@ -1,3 +1,12 @@
+2003-04-22  Vincent Celier <celier@gnat.com>
+
+        * gthr-gnat.h, gthr-gnat.c: new sources for implementation of
+        --enable-threads=gnat.
+        * Makefile.in: Add gthr-gnat.c to LIB2ADDEH.
+        * configure.in: Add gnat to the list of thread packages
+        * configure: Rebuild.
+        * config/t-linux: Add gthr-gnat.c to LIB2ADDEH and LIB2ADDEHDEP
+
 2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpplex.c (_cpp_get_fresh_line): Pop the buffer if return_at_eof.
