@@ -564,39 +564,46 @@ struct file_name_list
 /* #include "file" looks in source file dir, then stack. */
 /* #include <file> just looks in the stack. */
 /* -I directories are added to the end, then the defaults are added. */
-static struct default_include { char *fname; int cplusplus; } include_defaults_array[]
+/* The */
+static struct default_include {
+  char *fname;			/* The name of the directory.  */
+  int cplusplus;		/* Only look here if we're compiling C++.  */
+  int cxx_aware;		/* Includes in this directory don't need to
+				   be wrapped in extern "C" when compiling
+				   C++.  */
+} include_defaults_array[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, 1},
+    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0},
+    { GCC_INCLUDE_DIR, 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0 },
+    { CROSS_INCLUDE_DIR, 0, 0 },
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0},
+    { TOOL_INCLUDE_DIR, 0, 1 },
 #else /* not CROSS_COMPILE */
-    /* This should be /use/local/include and should come before
+    /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0},
+    { LOCAL_INCLUDE_DIR, 0, 1 },
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0},
+    { TOOL_INCLUDE_DIR, 0, 1 },
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0},
+    { GCC_INCLUDE_DIR, 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0},
+    { SYSTEM_INCLUDE_DIR, 0, 0 },
 #endif
-    { STANDARD_INCLUDE_DIR, 0},
+    { STANDARD_INCLUDE_DIR, 0, 0 },
 #endif /* not CROSS_COMPILE */
-    { 0, 0}
+    { 0, 0, 0 }
     };
 #endif /* no INCLUDE_DEFAULTS */
 
@@ -1745,6 +1752,7 @@ main (argc, argv)
 
 	  include_defaults[num_dirs].fname = savestring (nstore);
 	  include_defaults[num_dirs].cplusplus = cplusplus;
+	  include_defaults[num_dirs].cxx_aware = 1;
 	  num_dirs++;
 	  if (*endp == '\0')
 	    break;
@@ -1790,7 +1798,7 @@ main (argc, argv)
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
 	    new->control_macro = 0;
-	    new->c_system_include_path = !p->cplusplus;
+	    new->c_system_include_path = !p->cxx_aware;
 	    new->got_name_map = 0;
 	    append_include_chain (new, new);
 	    if (first_system_include == 0)
@@ -1805,7 +1813,7 @@ main (argc, argv)
 	struct file_name_list *new
 	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	new->control_macro = 0;
-	new->c_system_include_path = !p->cplusplus;
+	new->c_system_include_path = !p->cxx_aware;
 	new->fname = p->fname;
 	new->got_name_map = 0;
 	append_include_chain (new, new);
