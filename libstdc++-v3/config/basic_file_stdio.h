@@ -38,13 +38,8 @@ namespace std
   // Generic definitions for __basic_file
   template<typename _CharT>
     __basic_file<_CharT>::__basic_file(__c_lock* /*__lock*/) 
-    : _M_fileno(-1), _M_cfile(NULL) { }
+    : _M_cfile(NULL), _M_cfile_created(false) { }
 
-  template<typename _CharT>
-    int 
-    __basic_file<_CharT>::get_fileno(void)
-    { return _M_fileno; }
- 
   template<typename _CharT>
     __basic_file<_CharT>::~__basic_file()
     {
@@ -85,24 +80,15 @@ namespace std
   
   template<typename _CharT>
     __basic_file<_CharT>*
-    __basic_file<_CharT>::sys_open(int __fd, ios_base::openmode __mode) 
+    __basic_file<_CharT>::sys_open(__c_file_type* __file, ios_base::openmode) 
     {
       __basic_file* __ret = NULL;
-      int __p_mode = 0;
-      int __rw_mode = 0;
-      char __c_mode[4];
 
-      _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
-
-      int __dupfd = dup(__fd);
-
-      if (__dupfd != -1 && !this->is_open())
+      if (!this->is_open() && __file)
 	{
-	  if ((_M_cfile = fdopen(__dupfd, __c_mode)))
-	    {
-	      _M_fileno = __dupfd;
-	      __ret = this;
-	    }
+	  _M_cfile = __file;
+	  _M_cfile_created = false;
+	  __ret = this;
 	}
 
       return __ret;
@@ -124,7 +110,7 @@ namespace std
 	{
 	  if ((_M_cfile = fopen(__name, __c_mode)))
 	    {
-	      _M_fileno = fileno(_M_cfile);
+	      _M_cfile_created = true;
 	      __ret = this;
 	    }
 	}
@@ -133,19 +119,15 @@ namespace std
   
   template<typename _CharT>
     bool 
-    __basic_file<_CharT>::is_open() { return _M_fileno >= 0; }
+    __basic_file<_CharT>::is_open() { return _M_cfile != 0; }
   
   template<typename _CharT>
     __basic_file<_CharT>* 
     __basic_file<_CharT>::close()
     { 
       __basic_file* __retval = static_cast<__basic_file*>(NULL);
-      bool __testopen = fclose(_M_cfile);
-      if (!__testopen)
-	{
-	  __retval = this;
-	  _M_fileno = -1;
-	}  
+      if (_M_cfile_created && fclose(_M_cfile))
+	__retval = this;
       return __retval;
     }
  

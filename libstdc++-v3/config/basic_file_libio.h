@@ -127,12 +127,6 @@ namespace std
     __basic_file<wchar_t>::doallocate();
 #endif
 
-  // Generic definitions for __basic_file
-  template<typename _CharT>
-    int 
-    __basic_file<_CharT>::get_fileno(void)
-    { return _fileno; }
- 
   template<typename _CharT>
     __basic_file<_CharT>::~__basic_file()
     { _IO_file_finish(this, 0); }
@@ -189,9 +183,11 @@ namespace std
   
   template<typename _CharT>
     __basic_file<_CharT>*
-    __basic_file<_CharT>::sys_open(int __fd, ios_base::openmode __mode) 
+    __basic_file<_CharT>::sys_open(__c_file_type* __f, 
+				   ios_base::openmode __mode) 
     {
       __basic_file* __ret = NULL;
+      int __fd = fileno(__f);
       int __p_mode = 0;
       int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
       char __c_mode[4];
@@ -201,7 +197,7 @@ namespace std
       if (!_IO_file_is_open(this))
 	{
 	  _fileno = __fd;
-	  _flags &= ~(_IO_NO_READS+_IO_NO_WRITES);
+	  _flags &= ~(_IO_NO_READS + _IO_NO_WRITES);
 	  _flags |= _IO_DELETE_DONT_CLOSE;
 	  _offset = _IO_pos_BAD;
 	  int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;

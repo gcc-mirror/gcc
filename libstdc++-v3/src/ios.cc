@@ -140,9 +140,9 @@ namespace std
 	// NB: std_iostream.h creates the four standard files with
 	// NULL buffers. At this point, we swap out these placeholder
 	// objects for the properly-constructed ones
-       	_M_cout = new filebuf(1, "stdout", ios_base::out);
-	_M_cin = new filebuf(0, "stdin", ios_base::in);
-	_M_cerr = new filebuf(2, "stderr", ios_base::out);
+       	_M_cout = new filebuf(stdout, ios_base::out);
+	_M_cin = new filebuf(stdin, ios_base::in);
+	_M_cerr = new filebuf(stderr, ios_base::out);
 	new (&cout) ostream(_M_cout);
 	new (&cin) istream(_M_cin);
 	new (&cerr) ostream(_M_cerr);
@@ -151,9 +151,9 @@ namespace std
 	cerr.flags(ios_base::unitbuf);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-	_M_wcout = new wfilebuf(1, "stdout", ios_base::out);
-	_M_wcin = new wfilebuf(0, "stdin", ios_base::in);
-	_M_wcerr = new wfilebuf(2, "stderr", ios_base::out);
+	_M_wcout = new wfilebuf(stdout, ios_base::out);
+	_M_wcin = new wfilebuf(stdin, ios_base::in);
+	_M_wcerr = new wfilebuf(stderr, ios_base::out);
 	new (&wcout) wostream(_M_wcout);
 	new (&wcin) wistream(_M_wcin);
 	new (&wcerr) wostream(_M_wcerr);

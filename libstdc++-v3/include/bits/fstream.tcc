@@ -90,24 +90,14 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
-    basic_filebuf(int __fd, const char* /*__name*/, ios_base::openmode __mode)
+    basic_filebuf(__c_file_type* __f, ios_base::openmode __mode)
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
       _M_filebuf_init();
-      _M_file->sys_open(__fd, __mode);
+      _M_file->sys_open(__f, __mode);
       if (this->is_open())
-	{
-	  _M_allocate_buffers();
-	  _M_mode = __mode;
-
-	  // XXX So that istream::getc() will only need to get 1 char,
-	  // as opposed to BUF_SIZE.
-	  if (__fd == 0)
-	    _M_buf_size = 1;
-
-	  this->_M_set_indeterminate();
-	}
+	_M_mode = __mode;
    }
 
   template<typename _CharT, typename _Traits>
@@ -382,12 +372,12 @@ namespace std
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testpos = _M_out_cur && _M_out_cur >= _M_buf + _M_buf_size;
+      bool __testput = _M_out_cur && _M_out_cur < _M_buf + _M_buf_size;
       bool __testout = _M_mode & ios_base::out;
       
       if (__testout)
 	{
-	  if (!__testpos)
+	  if (__testput)
 	    {
 	      *_M_out_cur = traits_type::to_char_type(__c);
 	      _M_out_cur_move(1);
@@ -408,20 +398,24 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-      
-      if (__testput)
+      bool __testunbuffered = _M_file && !_M_buf_size;
+
+      if (__testput || __testunbuffered)
 	{
-	  bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
 #if 1
 	  int __plen = _M_out_end - _M_out_beg;
-	  streamsize __len = _M_file->xsputn(_M_out_beg, __plen);
-	  if (!__testeof)
+	  streamsize __len = 0;
+
+	  if (__plen)
+	    __len = _M_file->xsputn(_M_out_beg, __plen);
+
+	  if (__c !=traits_type::eof())
 	    {
-	      char_type __pending = traits_type::to_char_type(__c);
-	      __len += _M_file->xsputn(&__pending, 1);
-	      ++__plen;
+ 	      char_type __pending = traits_type::to_char_type(__c);
+ 	      __len += _M_file->xsputn(&__pending, 1);
+  	      ++__plen;
 	    }
-	  traits_type::to_char_type(__c);
+
 	  // NB: Need this so that external byte sequence reflects
 	  // internal buffer.
 	  _M_file->sync();
