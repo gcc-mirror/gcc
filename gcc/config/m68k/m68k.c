@@ -519,14 +519,6 @@ m68k_output_function_prologue (stream, size)
         num_saved_regs++;
       }
 
-#if NEED_PROBE
-#ifdef MOTOROLA
-  asm_fprintf (stream, "\ttst.l %d(%Rsp)\n", NEED_PROBE - num_saved_regs * 4);
-#else
-  asm_fprintf (stream, "\ttstl %Rsp@(%d)\n", NEED_PROBE - num_saved_regs * 4);
-#endif
-#endif
-
   /* If the stack limit is not a symbol, check it here.  
      This has the disadvantage that it may be too late...  */
   if (current_function_limit_stack)

@@ -1448,13 +1448,6 @@ allocate_dynamic_stack_space (size, target, known_align)
 			    NULL_RTX, 1);
     }
 
-  /* Some systems require a particular insn to refer to the stack
-     to make the pages exist.  */
-#ifdef HAVE_probe
-  if (HAVE_probe)
-    emit_insn (gen_probe ());
-#endif
-
   /* Record the new stack level for nonlocal gotos.  */
   if (nonlocal_goto_handler_slots != 0)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);

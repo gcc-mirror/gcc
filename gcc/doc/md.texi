@@ -3270,18 +3270,6 @@ Some machines require other operations such as stack probes or
 maintaining the back chain.  Define this pattern to emit those
 operations in addition to updating the stack pointer.
 
-@cindex @code{probe} instruction pattern
-@item @samp{probe}
-Some machines require instructions to be executed after space is
-allocated from the stack, for example to generate a reference at
-the bottom of the stack.
-
-If you need to emit instructions before the stack has been adjusted,
-put them into the @samp{allocate_stack} pattern.  Otherwise, define
-this pattern to emit the required instructions.
-
-No operands are provided.
-
 @cindex @code{check_stack} instruction pattern
 @item @samp{check_stack}
 If stack checking cannot be done on your system by probing the stack with

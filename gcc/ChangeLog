@@ -1,3 +1,13 @@
+2003-05-23  Larin Hennessy <larin@science.oregonstate.edu>
+	    Zack Weinberg <zack@codesourcery.com>
+
+	* explow.c (allocate_dynamic_stack_space): Remove call to gen_probe.
+	* config/m68k/m68k.c (m68k_output_function_prologue):
+	Remove code under #if NEED_PROBE.
+	* config/m68k/m68k.h: Don't define NEED_PROBE.
+	* config/m68k/m68k.md: Remove "probe" insn.
+	* doc/md.texi: Remove documentation of "probe" pattern.
+
 2003-05-23  Dorit Naishlos  <gcchaifa@il.ibm.com>
 
 	* config/rs6000/rs6000.md (save_fpregs_{si,di}): Add branch attribute.
