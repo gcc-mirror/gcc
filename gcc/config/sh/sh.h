@@ -2681,9 +2681,6 @@ while (0)
 #define STRIP_DATALABEL_ENCODING(VAR, SYM_NAME) \
   (VAR) = (SYM_NAME) + (DATALABEL_SYMNAME_P (SYM_NAME) \
 			? strlen (SH_DATALABEL_ENCODING) : 0)
-#define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
-  STRIP_DATALABEL_ENCODING((VAR), (SYM_NAME)), \
-  (VAR) += (*(VAR) == '*')
 
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */

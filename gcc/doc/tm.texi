@@ -4781,8 +4781,8 @@ The best way to modify the name string is by adding text to the
 beginning, with suitable punctuation to prevent any ambiguity.  Allocate
 the new name in @code{saveable_obstack}.  You will have to modify
 @code{ASM_OUTPUT_LABELREF} to remove and decode the added text and
-output the name accordingly, and define @code{STRIP_NAME_ENCODING} to
-access the original name string.
+output the name accordingly, and define @code{TARGET_STRIP_NAME_ENCODING}
+to access the original name string.
 
 You can check the information stored here into the @code{symbol_ref} in
 the definitions of the macros @code{GO_IF_LEGITIMATE_ADDRESS} and
@@ -5765,12 +5765,6 @@ section, along with the assembler instructions.  Otherwise, the
 readonly data section is used.
 
 This macro is irrelevant if there is no separate readonly data section.
-
-@findex STRIP_NAME_ENCODING
-@item STRIP_NAME_ENCODING (@var{var}, @var{sym_name})
-Decode @var{sym_name} and store the real name part in @var{var}, sans
-the characters that encode section info.  Define this macro if
-@code{TARGET_ENCODE_SECTION_INFO} alters the symbol's name string.
 @end table
 
 @deftypefn {Target Hook} void TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
@@ -5836,6 +5830,12 @@ The usual thing for this hook to do is to record a flag in the
 @code{symbol_ref} (such as @code{SYMBOL_REF_FLAG}) or to store a
 modified name string in the @code{symbol_ref} (if one bit is not
 enough information).
+@end deftypefn
+
+@deftypefn {Target Hook} const char *TARGET_STRIP_NAME_ENCODING (const char *name)
+Decode @var{name} and return the real name part, sans
+the characters that @code{TARGET_ENCODE_SECTION_INFO}
+may have added.
 @end deftypefn
 
 @node PIC

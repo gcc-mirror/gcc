@@ -66,6 +66,7 @@ static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
 static void h8300_encode_label PARAMS ((tree));
 static void h8300_encode_section_info PARAMS ((tree, int));
+static const char *h8300_strip_name_encoding PARAMS ((const char *));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -115,6 +116,8 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 #define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING h8300_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3475,6 +3478,15 @@ h8300_encode_section_info (decl, first)
       else if (first && h8300_tiny_data_p (decl))
 	h8300_encode_label (decl);
     }
+}
+
+/* Undo the effects of the above.  */
+
+static const char *
+h8300_strip_name_encoding (str)
+     const char *str;
+{
+  return str + (*str == '*' || *str == '@' || *str == '&');
 }
 
 const char *

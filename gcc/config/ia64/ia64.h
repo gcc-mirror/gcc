@@ -1777,18 +1777,6 @@ do {									\
 #define SDATA_NAME_FLAG_CHAR '@'
 
 #define IA64_DEFAULT_GVALUE 8
-
-/* Decode SYM_NAME and store the real name part in VAR, sans the characters
-   that encode section info.  */
-
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)	\
-do {						\
-  (VAR) = (SYMBOL_NAME);			\
-  if ((VAR)[0] == SDATA_NAME_FLAG_CHAR)		\
-    (VAR)++;					\
-  if ((VAR)[0] == '*')				\
-    (VAR)++;					\
-} while (0)
 
 /* Position Independent Code.  */
 

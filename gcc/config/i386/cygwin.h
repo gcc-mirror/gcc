@@ -255,45 +255,16 @@ do {									\
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
 
-extern void i386_pe_encode_section_info PARAMS ((TREE, int));
-
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
-
-/* Utility used only in this file.  */
-#define I386_PE_STRIP_ENCODING(SYM_NAME) \
-  ((SYM_NAME) + ((SYM_NAME)[0] == '@' \
-		  ? ((SYM_NAME)[3] == '*' ? 4 : 3) : 0) \
-	      + ((SYM_NAME)[0] == '*' ? 1 : 0))
-
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by targetm.encode_section_info.  */
-#undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
-do {									\
-  const char *_p;							\
-  const char *_name = I386_PE_STRIP_ENCODING (SYMBOL_NAME);		\
-  for (_p = _name; *_p && *_p != '@'; ++_p)				\
-    ;									\
-  if (*_p == '@')							\
-    {									\
-      int _len = _p - _name;						\
-      char *_new_name = (char *) alloca (_len + 1);			\
-      strncpy (_new_name, _name, _len);					\
-      _new_name[_len] = '\0';						\
-      (VAR) = _new_name;						\
-    }									\
-  else									\
-    (VAR) = _name;							\
-} while (0)
-      
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
 
 /* Output a reference to a label.  */
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)  		\
   fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, 		\
-	   I386_PE_STRIP_ENCODING (NAME))		\
+	   i386_pe_strip_name_encoding (NAME))		\
 
 /* Output a common block.  */
 #undef ASM_OUTPUT_COMMON

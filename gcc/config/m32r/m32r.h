@@ -1611,15 +1611,6 @@ sbss_section ()								\
  /*|| SMALL_NAME_P (SYMBOL_NAME)*/ \
  || MEDIUM_NAME_P (SYMBOL_NAME) \
  || LARGE_NAME_P (SYMBOL_NAME))
-
-/* Decode SYM_NAME and store the real name part in VAR, sans
-   the characters that encode section info.  */
-/* Note that we have to handle symbols like "%*start".  */
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
-do {							\
-  (VAR) = (SYMBOL_NAME) + ENCODED_NAME_P (SYMBOL_NAME);	\
-  (VAR) += *(VAR) == '*';				\
-} while (0)
 
 /* PIC */
 
@@ -1707,14 +1698,8 @@ do {							\
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
 #undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME) 	\
-  do						\
-    {						\
-      const char * real_name;			\
-      STRIP_NAME_ENCODING (real_name, (NAME));	\
-      asm_fprintf (FILE, "%U%s", real_name);	\
-    }						\
-  while (0)           
+#define ASM_OUTPUT_LABELREF(FILE, NAME) \
+  asm_fprintf (FILE, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 /* If -Os, don't force line number labels to begin at the beginning of
    the word; we still want the assembler to try to put things in parallel,

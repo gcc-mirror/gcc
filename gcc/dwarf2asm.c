@@ -739,7 +739,7 @@ dw2_force_const_mem (x)
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
 
-  STRIP_NAME_ENCODING (str, XSTR (x, 0));
+  str = (* targetm.strip_name_encoding) (XSTR (x, 0));
   node = splay_tree_lookup (indirect_pool, (splay_tree_key) str);
   if (node)
     decl = (tree) node->value;

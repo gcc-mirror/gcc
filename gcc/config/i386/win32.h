@@ -104,30 +104,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
-
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by targetm.encode_section_info. 
-   Do we need the stripping of leading '*'?  */
-#undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
-do {									\
-  const char *_p;							\
-  const char *const _name = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'));\
-  for (_p = _name; *_p && *_p != '@'; ++_p)				\
-    ;									\
-  if (*_p == '@')							\
-    {									\
-      int _len = _p - _name;						\
-      char *_new_name = (char *) alloca (_len + 1);			\
-      strncpy (_new_name, _name, _len);					\
-      _new_name[_len] = '\0';						\
-      (VAR) = _new_name;						\
-    }									\
-  else									\
-    (VAR) = _name;							\
-} while (0)
-      
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
 
 /* Emit code to check the stack when allocating more that 4000
    bytes in one go.  */

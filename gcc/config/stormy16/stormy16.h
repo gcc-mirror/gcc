@@ -2489,10 +2489,6 @@ do {							\
 
    This macro is irrelevant if there is no separate readonly data section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
-
-/* Decode SYM_NAME and store the real name part in VAR, sans the characters
-   that encode section info.  */
-/* #define STRIP_NAME_ENCODING(VAR, SYM_NAME) */
 
 /* Position Independent Code.  */
 

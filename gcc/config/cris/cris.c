@@ -2591,7 +2591,7 @@ cris_asm_output_mi_thunk (stream, thunkdecl, delta, funcdecl)
     {
       const char *name = XSTR (XEXP (DECL_RTL (funcdecl), 0), 0);
 
-      STRIP_NAME_ENCODING (name, name);
+      name = (* targetm.strip_name_encoding) (name);
       fprintf (stream, "add.d ");
       assemble_name (stream, name);
       fprintf (stream, "%s,$pc\n", CRIS_PLT_PCOFFSET_SUFFIX);
@@ -2889,7 +2889,7 @@ restart:
 	  const char *origstr = XSTR (x, 0);
 	  const char *str;
 
-	  STRIP_NAME_ENCODING (str, origstr);
+	  str = (* targetm.strip_name_encoding) (origstr);
 
 	  if (is_plt)
 	    {

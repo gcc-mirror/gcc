@@ -1119,8 +1119,8 @@ switch_to_section (section, decl)				\
 /* Output a reference to a label.  */
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)  \
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, MCORE_STRIP_NAME_ENCODING (NAME))
-
+  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, \
+	   (* targetm.strip_name_encoding) (NAME))
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1132,16 +1132,6 @@ switch_to_section (section, decl)				\
 #ifndef ASM_DECLARE_RESULT
 #define ASM_DECLARE_RESULT(FILE, RESULT)
 #endif
-
-/* Strip export encoding from a function name.  */
-#define MCORE_STRIP_NAME_ENCODING(SYM_NAME) \
-  ((SYM_NAME) + ((SYM_NAME)[0] == '@' ? 3 : 0))
-
-/* Strip any text from SYM_NAME added by targetm.encode_section_info
-   and store the result in VAR.  */
-#undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
-  (VAR) = MCORE_STRIP_NAME_ENCODING (SYM_NAME)
 
 #define MULTIPLE_SYMBOL_SPACES 1
 

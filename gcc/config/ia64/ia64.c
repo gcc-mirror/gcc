@@ -127,6 +127,7 @@ static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
 static bool ia64_in_small_data_p PARAMS ((tree));
 static void ia64_encode_section_info PARAMS ((tree, int));
+static const char *ia64_strip_name_encoding PARAMS ((const char *));
 static void process_epilogue PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
@@ -211,6 +212,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO ia64_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING ia64_strip_name_encoding
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
@@ -6980,6 +6983,17 @@ ia64_encode_section_info (decl, first)
      targetm.encode_section_info was first called.  Remove the '@'.  */
   else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     XSTR (symbol, 0) = ggc_strdup (symbol_str + 1);
+}
+
+static const char *
+ia64_strip_name_encoding (str)
+     const char *str;
+{
+  if (str[0] == SDATA_NAME_FLAG_CHAR)
+    str++;
+  if (str[0] == '*')
+    str++;
+  return str;
 }
 
 /* Output assembly directives for prologue regions.  */

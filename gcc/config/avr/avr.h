@@ -1742,12 +1742,6 @@ progmem_section (void)							      \
    This macro is irrelevant if there is no separate readonly data
    section.  */
 
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*' || (SYMBOL_NAME)[0] == '@');
-/* `STRIP_NAME_ENCODING (VAR, SYM_NAME)'
-   Decode SYM_NAME and store the real name part in VAR, sans the
-   characters that encode section info.  */
-
 #define ASM_FILE_START(STREAM) asm_file_start (STREAM)
 /* A C expression which outputs to the stdio stream STREAM some
    appropriate text to go at the start of an assembler file.

@@ -911,12 +911,8 @@ struct cum_arg {int nbytes; };
    `assemble_name' uses this.  */
 
 #undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME)	          \
-  do {                                            \
-  const char* real_name;                          \
-  STRIP_NAME_ENCODING (real_name, (NAME));        \
-  fprintf (FILE, "_%s", real_name);               \
-  } while (0)           
+#define ASM_OUTPUT_LABELREF(FILE, NAME) \
+  fprintf (FILE, "_%s", (*targetm.strip_name_encoding) (NAME))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.

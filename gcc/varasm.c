@@ -1207,7 +1207,7 @@ assemble_start_function (decl, fnname)
 	  const char *p;
 	  char *name;
 
-	  STRIP_NAME_ENCODING (p, fnname);
+	  p = (* targetm.strip_name_encoding) (fnname);
 	  name = permalloc (strlen (p) + 1);
 	  strcpy (name, p);
 
@@ -1527,7 +1527,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       const char *p;
       char *xname;
 
-      STRIP_NAME_ENCODING (p, name);
+      p = (* targetm.strip_name_encoding) (name);
       xname = permalloc (strlen (p) + 1);
       strcpy (xname, p);
       first_global_object_name = xname;
@@ -1786,7 +1786,7 @@ assemble_name (file, name)
   const char *real_name;
   tree id;
 
-  STRIP_NAME_ENCODING (real_name, name);
+  real_name = (* targetm.strip_name_encoding) (name);
 
   id = maybe_get_identifier (real_name);
   if (id)
@@ -5477,7 +5477,7 @@ default_unique_section (decl, reloc)
   plen = strlen (prefix);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  STRIP_NAME_ENCODING (name, name);
+  name = (* targetm.strip_name_encoding) (name);
   nlen = strlen (name);
 
   string = alloca (nlen + plen + 1);
@@ -5534,4 +5534,14 @@ default_elf_select_rtx_section (mode, x, align)
       }
 
   mergeable_constant_section (mode, align, 0);
+}
+
+/* By default, we do nothing for encode_section_info, so we need not
+   do anything but discard the '*' marker.  */
+
+const char *
+default_strip_name_encoding (str)
+     const char *str;
+{
+  return str + (*str == '*');
 }

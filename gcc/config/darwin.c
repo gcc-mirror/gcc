@@ -278,7 +278,7 @@ machopic_non_lazy_ptr_name (name)
 	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
     }
 
-  STRIP_NAME_ENCODING (name, name);
+  name = darwin_strip_name_encoding (name);
 
   /* Try again, but comparing names this time.  */
   for (temp = machopic_non_lazy_pointers;
@@ -288,7 +288,7 @@ machopic_non_lazy_ptr_name (name)
       if (TREE_VALUE (temp))
 	{
 	  temp_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-	  STRIP_NAME_ENCODING (temp_name, temp_name);
+	  temp_name = darwin_strip_name_encoding (temp_name);
 	  if (strcmp (name, temp_name) == 0)
 	    return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
 	}
@@ -360,7 +360,7 @@ machopic_stub_name (name)
 	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
     }
 
-  STRIP_NAME_ENCODING (name, name);
+  name = darwin_strip_name_encoding (name);
 
   {
     char *buffer;
@@ -414,7 +414,8 @@ machopic_validate_stub_or_non_lazy_ptr (name, validate_stub)
           TREE_USED (temp) = 1;
 	  if (TREE_CODE (TREE_VALUE (temp)) == IDENTIFIER_NODE)
 	    TREE_SYMBOL_REFERENCED (TREE_VALUE (temp)) = 1;
-	  STRIP_NAME_ENCODING (real_name, IDENTIFIER_POINTER (TREE_VALUE (temp)));
+	  real_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+	  real_name = darwin_strip_name_encoding (real_name);
 	  id2 = maybe_get_identifier (real_name);
 	  if (id2)
 	    TREE_SYMBOL_REFERENCED (id2) = 1;
@@ -846,7 +847,7 @@ machopic_finish (asm_out_file)
       if (sym_name[0] == '!' && sym_name[1] == 'T')
 	continue;
 
-      STRIP_NAME_ENCODING (sym_name, sym_name);
+      sym_name = darwin_strip_name_encoding (sym_name);
 
       sym = alloca (strlen (sym_name) + 2);
       if (sym_name[0] == '*' || sym_name[0] == '&')
@@ -1015,6 +1016,15 @@ darwin_encode_section_info (decl, first)
     update_stubs (XSTR (sym_ref, 0));
 }
 
+/* Undo the effects of the above.  */
+
+const char *
+darwin_strip_name_encoding (str)
+     const char *str;
+{
+  return str[0] == '!' ? str + 4 : str;
+}
+
 /* Scan the list of non-lazy pointers and update any recorded names whose
    stripped name matches the argument.  */
 
@@ -1025,7 +1035,7 @@ update_non_lazy_ptrs (name)
   const char *name1, *name2;
   tree temp;
 
-  STRIP_NAME_ENCODING (name1, name);
+  name1 = darwin_strip_name_encoding (name);
 
   for (temp = machopic_non_lazy_pointers;
        temp != NULL_TREE; 
@@ -1035,7 +1045,7 @@ update_non_lazy_ptrs (name)
 
       if (*sym_name == '!')
 	{
-	  STRIP_NAME_ENCODING (name2, sym_name);
+	  name2 = darwin_strip_name_encoding (sym_name);
 	  if (strcmp (name1, name2) == 0)
 	    {
 	      IDENTIFIER_POINTER (TREE_VALUE (temp)) = name;
@@ -1089,7 +1099,7 @@ update_stubs (name)
   const char *name1, *name2;
   tree temp;
 
-  STRIP_NAME_ENCODING (name1, name);
+  name1 = darwin_strip_name_encoding (name);
 
   for (temp = machopic_stubs;
        temp != NULL_TREE; 
@@ -1099,7 +1109,7 @@ update_stubs (name)
 
       if (*sym_name == '!')
 	{
-	  STRIP_NAME_ENCODING (name2, sym_name);
+	  name2 = darwin_strip_name_encoding (sym_name);
 	  if (strcmp (name1, name2) == 0)
 	    {
 	      IDENTIFIER_POINTER (TREE_VALUE (temp)) = name;

@@ -235,28 +235,28 @@ do { text_section ();							\
    Make Objective-C internal symbols local.  */
 
 #undef	ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  do {									\
-       STRIP_NAME_ENCODING (NAME, NAME);  \
-       if (NAME[0] == '&' || NAME[0] == '*')				\
-         {								\
-           int len = strlen (NAME);					\
-	   if (len > 6 && !strcmp ("$stub", NAME + len - 5))		\
-	     machopic_validate_stub_or_non_lazy_ptr (NAME, 1);		\
-	   else if (len > 7 && !strcmp ("$stub\"", NAME + len - 6))	\
-	     machopic_validate_stub_or_non_lazy_ptr (NAME, 1);		\
-	   else if (len > 14 && !strcmp ("$non_lazy_ptr", NAME + len - 13)) \
-	     machopic_validate_stub_or_non_lazy_ptr (NAME, 0);		\
-	   fputs (&NAME[1], FILE); \
-	 } \
-       else if (NAME[0] == '+' || NAME[0] == '-')   \
-         fprintf (FILE, "\"%s\"", NAME); \
-       else if (!strncmp (NAME, "_OBJC_", 6))  \
-         fprintf (FILE, "L%s", NAME);   \
-       else if (!strncmp (NAME, ".objc_class_name_", 17))		\
-	 fprintf (FILE, "%s", NAME);					\
-       else								\
-         fprintf (FILE, "_%s", NAME);					\
+#define ASM_OUTPUT_LABELREF(FILE,NAME)					     \
+  do {									     \
+       const char *xname = darwin_strip_name_encoding (NAME);		     \
+       if (xname[0] == '&' || xname[0] == '*')				     \
+         {								     \
+           int len = strlen (xname);					     \
+	   if (len > 6 && !strcmp ("$stub", xname + len - 5))		     \
+	     machopic_validate_stub_or_non_lazy_ptr (xname, 1);		     \
+	   else if (len > 7 && !strcmp ("$stub\"", xname + len - 6))	     \
+	     machopic_validate_stub_or_non_lazy_ptr (xname, 1);		     \
+	   else if (len > 14 && !strcmp ("$non_lazy_ptr", xname + len - 13)) \
+	     machopic_validate_stub_or_non_lazy_ptr (xname, 0);		     \
+	   fputs (&xname[1], FILE);					     \
+	 }								     \
+       else if (xname[0] == '+' || xname[0] == '-')			     \
+         fprintf (FILE, "\"%s\"", xname);				     \
+       else if (!strncmp (xname, "_OBJC_", 6))				     \
+         fprintf (FILE, "L%s", xname);					     \
+       else if (!strncmp (xname, ".objc_class_name_", 17))		     \
+	 fprintf (FILE, "%s", xname);					     \
+       else								     \
+         fprintf (FILE, "_%s", xname);					     \
   } while (0)
 
 #undef	ALIGN_ASM_OP
@@ -553,9 +553,7 @@ enum machopic_addr_class {
 #define MACHOPIC_PURE          (flag_pic == 2)
 
 #define TARGET_ENCODE_SECTION_INFO  darwin_encode_section_info
-
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)  \
-  ((VAR) = ((SYMBOL_NAME[0] == '!') ? (SYMBOL_NAME) + 4 : (SYMBOL_NAME)))
+#define TARGET_STRIP_NAME_ENCODING  darwin_strip_name_encoding
 
 #define GEN_BINDER_NAME_FOR_STUB(BUF,STUB,STUB_LENGTH)		\
   do {								\
@@ -591,12 +589,11 @@ enum machopic_addr_class {
 
 #define GEN_LAZY_PTR_NAME_FOR_SYMBOL(BUF,SYMBOL,SYMBOL_LENGTH)	\
   do {								\
-    const char *symbol_ = (SYMBOL);				\
+    const char *symbol_ = darwin_strip_name_encoding (SYMBOL);	\
     char *buffer_ = (BUF);					\
-    STRIP_NAME_ENCODING (symbol_, symbol_);  \
     if (symbol_[0] == '"')					\
       {								\
-        strcpy (buffer_, "\"L");					\
+        strcpy (buffer_, "\"L");				\
         strcpy (buffer_ + 2, symbol_ + 1);			\
 	strcpy (buffer_ + (SYMBOL_LENGTH), "$lazy_ptr\"");	\
       }								\

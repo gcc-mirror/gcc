@@ -1,3 +1,51 @@
+2002-05-19  Richard Henderson  <rth@redhat.com>
+
+	* system.h (STRIP_NAME_ENCODING): Poison it.
+	* output.h (STRIP_NAME_ENCODING): Remove.
+	(default_strip_name_encoding): Declare.
+	* target-def.h (TARGET_STRIP_NAME_ENCODING): New.
+	* target.h (strip_name_encoding): New.
+	* varasm.c (default_strip_name_encoding): New.
+
+	* dwarf2asm.c, varasm.c, config/darwin.c, config/darwin.h,
+	config/alpha/alpha.c, config/arm/pe.c, config/avr/avr.c,
+	config/cris/cris.c, config/i386/cygwin.h, config/i386/interix.c,
+	config/i386/winnt.c, config/m32r/m32r.h, config/mcore/mcore-elf.h,
+	config/mcore/mcore-pe.h, config/mcore/mcore.c, config/mcore/mcore.h,
+	config/mips/mips.c, config/mn10200/mn10200.h, config/mn10300/mn10300.h,
+	config/pa/pa.c, config/pa/pa.h, config/pa/som.h,
+	config/rs6000/rs6000.c, config/rs6000/sysv4.h, config/rs6000/xcoff.h,
+	config/v850/v850.h: Use the hook, not the macro.
+
+	* config/darwin-protos.h, config/darwin.c, config/darwin.h,
+	config/alpha/alpha.c, config/alpha/alpha.h, config/h8300/h8300.c,
+	config/h8300/h8300.h, config/i386/cygwin.h, config/i386/i386-interix.h,
+	config/i386/i386-protos.h, config/i386/win32.h, config/i386/winnt.c,
+	config/ia64/ia64.c, config/ia64/ia64.h, config/m32r/m32r.c,
+	config/m32r/m32r.h, config/mcore/mcore.c, config/mcore/mcore.h,
+	config/pa/pa.c, config/rs6000/rs6000.c, config/rs6000/sysv4.h, 
+	config/rs6000/xcoff.h, config/sh/sh.c, config/sh/sh.h,
+	config/v850/v850.c, config/v850/v850.h:
+	Move STRIP_NAME_ENCODING to out-of-line function and add
+	TARGET_STRIP_NAME_ENCODING.
+
+	* config/arm/arm.c, config/arm/arm.h, config/mmix/mmix-protos.h,
+	config/mmix/mmix.c, config/mmix/mmix.h: Replace STRIP_NAME_ENCODING
+	with TARGET_STRIP_NAME_ENCODING referencing existing function;
+	make function static.
+
+	* xcoffout.c: Include target.h
+	* Makefile.in (xcoffout.o): Update.
+
+	* config/avr/avr.c (avr_encode_section_info): Correct prototype.
+	* config/avr/avr.h (STRIP_NAME_ENCODING): Remove.
+	* config/rs6000/rs6000.c (rs6000_xcoff_unique_section): Mark
+	reloc argument unused.
+	* config/sh/sh.c (TARGET_ENCODE_SECTION_INFO): New.
+
+	* doc/tm.texi (TARGET_STRIP_NAME_ENCODING): Update from previous
+	STRIP_NAME_ENCODING docs.
+
 2002-05-19  Andreas Jaeger  <aj@suse.de>
 
 	* gengenrtl.c: Add prototype for excluded_rtx.

@@ -65,7 +65,7 @@ static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
-extern void   avr_encode_section_info PARAMS ((tree, int));
+static void   avr_encode_section_info PARAMS ((tree, int));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -4517,9 +4517,9 @@ avr_unique_section (decl, reloc)
   int len;
   const char *name, *prefix;
   char *string;
+
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  /* Strip off any encoding in name.  */
-  STRIP_NAME_ENCODING (name, name);
+  name = (* targetm.strip_name_encoding) (name);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -4770,7 +4770,7 @@ avr_encode_section_info (decl, first)
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
       TREE_READONLY (decl) = 1;
     }
-}   
+}
 
 /* Outputs to the stdio stream FILE some
    appropriate text to go at the start of an assembler file.  */

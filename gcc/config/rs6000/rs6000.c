@@ -169,6 +169,7 @@ static void rs6000_elf_unique_section PARAMS ((tree, int));
 static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT));
 static void rs6000_elf_encode_section_info PARAMS ((tree, int));
+static const char *rs6000_elf_strip_name_encoding PARAMS ((const char *));
 #endif
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
@@ -177,6 +178,7 @@ static void rs6000_xcoff_select_section PARAMS ((tree, int,
 static void rs6000_xcoff_unique_section PARAMS ((tree, int));
 static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
+static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 #endif
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
@@ -10385,7 +10387,7 @@ output_toc (file, x, labelno, mode)
   else
     abort ();
 
-  STRIP_NAME_ENCODING (real_name, name);
+  real_name = (*targetm.strip_name_encoding) (name);
   if (TARGET_MINIMAL_TOC)
     fputs (TARGET_32BIT ? "\t.long " : DOUBLE_INT_ASM_OP, file);
   else
@@ -10557,7 +10559,7 @@ output_profile_hook (labelno)
       rtx fun;
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-      STRIP_NAME_ENCODING (label_name, ggc_strdup (buf));
+      label_name = (*targetm.strip_name_encoding) (ggc_strdup (buf));
       fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
 
       emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
@@ -11075,7 +11077,8 @@ rs6000_elf_unique_section (decl, reloc)
 	}
     }
 
-  STRIP_NAME_ENCODING (name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  name = (*targetm.strip_name_encoding) (name);
   prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
   len    = strlen (name) + strlen (prefix);
   string = alloca (len + 1);
@@ -11165,6 +11168,15 @@ rs6000_elf_encode_section_info (decl, first)
 	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
 	}
     }
+}
+
+static const char *
+rs6000_elf_strip_name_encoding (str)
+     const char *str;
+{
+  while (*str == '*' || *str == '@')
+    str++;
+  return str;
 }
 
 #endif /* USING_ELFOS_H */
@@ -11432,7 +11444,7 @@ machopic_output_stub (file, symb, stub)
   static int label = 0;
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
-  STRIP_NAME_ENCODING (symb, symb);
+  symb = (*targetm.strip_name_encoding) (symb);
 
   label += 1;
 
@@ -11671,7 +11683,7 @@ rs6000_xcoff_select_section (exp, reloc, align)
 static void
 rs6000_xcoff_unique_section (decl, reloc)
      tree decl;
-     int reloc;
+     int reloc ATTRIBUTE_UNUSED;
 {
   const char *name;
   char *string;
@@ -11704,6 +11716,23 @@ rs6000_xcoff_select_rtx_section (mode, x, align)
   else
     read_only_private_data_section ();
 }
+
+/* Remove any trailing [DS] or the like from the symbol name.  */
+
+static const char *
+rs6000_xcoff_strip_name_encoding (name)
+     const char *name;
+{
+  size_t len;
+  if (*name == '*')
+    name++;
+  len = strlen (name);
+  if (name[len - 1] == ']')
+    return ggc_alloc_string (name, len - 4);
+  else
+    return name;
+}
+
 #endif /* OBJECT_FORMAT_COFF */
 
 /* Note that this is also used for ELF64.  */
