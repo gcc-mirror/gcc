@@ -1,3 +1,7 @@
+2002-11-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/assembler.S, gcc.dg/cpp/trad/directive.c: Update.
+
 2002-11-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8389
