@@ -2304,20 +2304,6 @@ pushdecl_top_level (x)
   current_binding_level = b;
   return t;
 }
-
-
-/* Invoke finish_decl at the global binding level.  */
-
-void
-finish_decl_top_level (d, i, a)
-     tree d, i, a;
-{
-  register struct binding_level *b = current_binding_level;
-
-  current_binding_level = global_binding_level;
-  finish_decl (d, i, a);
-  current_binding_level = b;
-}
 
 /* Generate an implicit declaration for identifier FUNCTIONID
    as a function of type int ().  Print a warning if appropriate.  */
