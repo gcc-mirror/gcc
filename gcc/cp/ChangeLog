@@ -1,3 +1,11 @@
+2000-08-08  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_aggr_type): Bail if creating the argvec fails.
+	(tsubst_template_arg_vector): Likewise.
+
+	* decl2.c (build_anon_union_vars): Choose the largest field; don't
+	assume that one will be as large as the union.
+
 2000-08-07  Kazu Hirata  <kazu@hxi.com>
 
 	* cp-tree.h (CLASSTYPE_HAS_PRIMARY_BASE_P): Fix a comment typo.
