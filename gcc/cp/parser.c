@@ -1702,7 +1702,7 @@ static bool cp_parser_parse_definitely
   (cp_parser *);
 static inline bool cp_parser_parsing_tentatively
   (cp_parser *);
-static bool cp_parser_committed_to_tentative_parse
+static bool cp_parser_uncommitted_to_tentative_parse_p
   (cp_parser *);
 static void cp_parser_error
   (cp_parser *, const char *);
@@ -1838,8 +1838,7 @@ cp_parser_name_lookup_error (cp_parser* parser,
 static bool
 cp_parser_simulate_error (cp_parser* parser)
 {
-  if (cp_parser_parsing_tentatively (parser)
-      && !cp_parser_committed_to_tentative_parse (parser))
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
     {
       parser->context->status = CP_PARSER_STATUS_KIND_ERROR;
       return true;
@@ -1907,8 +1906,7 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
       else
 	error ("invalid template-id");
       /* Remember the location of the invalid "<".  */
-      if (cp_parser_parsing_tentatively (parser)
-	  && !cp_parser_committed_to_tentative_parse (parser))
+      if (cp_parser_uncommitted_to_tentative_parse_p (parser))
 	start = cp_lexer_token_position (parser->lexer, true);
       /* Consume the "<".  */
       cp_lexer_consume_token (parser->lexer);
@@ -2076,8 +2074,8 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
   unsigned brace_depth = 0;
   int result;
 
-  if (recovering && !or_comma && cp_parser_parsing_tentatively (parser)
-      && !cp_parser_committed_to_tentative_parse (parser))
+  if (recovering && !or_comma
+      && cp_parser_uncommitted_to_tentative_parse_p (parser))
     return 0;
 
   while (true)
@@ -3324,8 +3322,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
     }
 
   /* Remember where the nested-name-specifier starts.  */
-  if (cp_parser_parsing_tentatively (parser)
-      && !cp_parser_committed_to_tentative_parse (parser))
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
     start = cp_lexer_token_position (parser->lexer, false);
 
   push_deferring_access_checks (dk_deferred);
@@ -6946,8 +6943,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  /* If we have already issued an error message we don't need
 	     to issue another one.  */
 	  if (decl != error_mark_node
-	      || (cp_parser_parsing_tentatively (parser)
-		  && !cp_parser_committed_to_tentative_parse (parser)))
+	      || cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    cp_parser_error (parser, "expected %<,%> or %<;%>");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
@@ -8314,8 +8310,7 @@ cp_parser_template_id (cp_parser *parser,
     }
 
   /* Remember where the template-id starts.  */
-  if (cp_parser_parsing_tentatively (parser)
-      && !cp_parser_committed_to_tentative_parse (parser))
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
     start_of_id = cp_lexer_token_position (parser->lexer, false);
 
   push_deferring_access_checks (dk_deferred);
@@ -8544,14 +8539,9 @@ cp_parser_template_name (cp_parser* parser,
 	  error ("non-template %qD used as template", identifier);
 	  inform ("use %<%T::template %D%> to indicate that it is a template",
 		  parser->scope, identifier);
-	  /* If parsing tentatively, find the location of the "<"
-	     token.  */
-	  if (cp_parser_parsing_tentatively (parser)
-	      && !cp_parser_committed_to_tentative_parse (parser))
-	    {
-	      cp_parser_simulate_error (parser);
-	      start = cp_lexer_token_position (parser->lexer, true);
-	    }
+	  /* If parsing tentatively, find the location of the "<" token.  */
+	  if (cp_parser_simulate_error (parser))
+	    start = cp_lexer_token_position (parser->lexer, true);
 	  /* Parse the template arguments so that we can issue error
 	     messages about them.  */
 	  cp_lexer_consume_token (parser->lexer);
@@ -11620,8 +11610,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	     list.  */
 	  if (!parser->in_template_argument_list_p
 	      && !parser->in_type_id_in_expr_p
-	      && cp_parser_parsing_tentatively (parser)
-	      && !cp_parser_committed_to_tentative_parse (parser)
+	      && cp_parser_uncommitted_to_tentative_parse_p (parser)
 	      /* However, a parameter-declaration of the form
 		 "foat(f)" (which is a valid declaration of a
 		 parameter "f") can also be interpreted as an
@@ -11632,8 +11621,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       else
 	{
 	  cp_parser_error (parser, "expected %<,%> or %<...%>");
-	  if (!cp_parser_parsing_tentatively (parser)
-	      || cp_parser_committed_to_tentative_parse (parser))
+	  if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    cp_parser_skip_to_closing_parenthesis (parser,
 						   /*recovering=*/true,
 						   /*or_comma=*/false,
@@ -11736,8 +11724,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	     function-type (taking a "char" as a parameter) or a cast
 	     of some object of type "char" to "int".  */
 	  && !parser->in_type_id_in_expr_p
-	  && cp_parser_parsing_tentatively (parser)
-	  && !cp_parser_committed_to_tentative_parse (parser)
+	  && cp_parser_uncommitted_to_tentative_parse_p (parser)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
 	cp_parser_commit_to_tentative_parse (parser);
       /* Parse the declarator.  */
@@ -15847,14 +15834,14 @@ cp_parser_parse_definitely (cp_parser* parser)
   return !error_occurred;
 }
 
-/* Returns true if we are parsing tentatively -- but have decided that
-   we will stick with this tentative parse, even if errors occur.  */
+/* Returns true if we are parsing tentatively and are not committed to
+   this tentative parse.  */
 
 static bool
-cp_parser_committed_to_tentative_parse (cp_parser* parser)
+cp_parser_uncommitted_to_tentative_parse_p (cp_parser* parser)
 {
   return (cp_parser_parsing_tentatively (parser)
-	  && parser->context->status == CP_PARSER_STATUS_KIND_COMMITTED);
+	  && parser->context->status != CP_PARSER_STATUS_KIND_COMMITTED);
 }
 
 /* Returns nonzero iff an error has occurred during the most recent

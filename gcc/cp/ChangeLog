@@ -1,3 +1,17 @@
+2004-12-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* parser.c (cp_parser_uncommitted_to_tentative_parse_p): New function.
+	(cp_parser_name_lookup_error): Use it.
+	(cp_parser_check_for_invalid_template_id): Likewise.
+	(cp_parser_skip_to_closing_parenthesis): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_simple_declaration, cp_parser_template_id): Likewise.
+	(cp_parser_parameter_declaration_list): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_template_name): Let cp_parser_simulate_error perform
+	the checking.
+	(cp_parser_committed_to_tentative_parse): Remove.
+
 2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/18968
