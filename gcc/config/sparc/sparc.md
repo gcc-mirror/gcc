@@ -1,5 +1,5 @@
 ;;- Machine description for SPARC chip for GNU C compiler
-;;   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+;;   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 ;;   Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
@@ -2525,9 +2525,16 @@
 (define_insn "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "shift_operand" "rI")))]
+		   (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "sll %1,%2,%0")
+  "*
+{
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (unsigned) INTVAL (operands[2]) > 31)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return \"sll %1,%2,%0\";
+}")
 
 (define_insn ""
   [(set (reg:CC_NOOV 0)
@@ -2551,16 +2558,30 @@
 (define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "shift_operand" "rI")))]
+		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "sra %1,%2,%0")
+  "*
+{
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (unsigned) INTVAL (operands[2]) > 31)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return \"sra %1,%2,%0\";
+}")
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "shift_operand" "rI")))]
+		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "srl %1,%2,%0")
+  "*
+{
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (unsigned) INTVAL (operands[2]) > 31)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return \"srl %1,%2,%0\";
+}")
 
 ;; Unconditional and other jump instructions
 ;; On the Sparc, by setting the annul bit on an unconditional branch, the
