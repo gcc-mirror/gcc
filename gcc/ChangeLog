@@ -1,5 +1,7 @@
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
+	* collect2.c (is_ctor_dtor): Remove CFRONT_LOSSAGE dependend code.
+
 	* fix-header.c: Remove ADD_MISSING_EXTERN_C dependend variables.
 	(write_lbrac): Remove ADD_MISSING_EXTERN_C dependend code.
 	(recognized_function): Likewise.
