@@ -1,4 +1,5 @@
 /* next.h:  definitions for NeXT.
+Copyright (c) 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -185,29 +186,69 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? fprintf (FILE, "\t.double 0r%s99e999\n", ((VALUE) > 0 ? "" : "-")) \
-   : fprintf (FILE, "\t.double 0r%.20e\n", (VALUE)))
+ do { if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            fprintf (FILE, "\t.double 0r-99e999\n");			\
+          else								\
+            fprintf (FILE, "\t.double 0r99e999\n");			\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
+          fprintf (FILE, "\t.double 0r%s\n", dstr);			\
+        }								\
+    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? fprintf (FILE, "\t.single 0r%s99e999\n", ((VALUE) > 0 ? "" : "-")) \
-   : fprintf (FILE, "\t.single 0r%.20e\n", (VALUE)))
+ do { if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            fprintf (FILE, "\t.single 0r-99e999\n");			\
+          else								\
+            fprintf (FILE, "\t.single 0r99e999\n");			\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
+          fprintf (FILE, "\t.single 0r%s\n", dstr);			\
+        }								\
+    } while (0)
 
 #undef ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(FILE,VALUE)				\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? fprintf (FILE, "#0r%s99e999", ((VALUE) > 0 ? "" : "-")) \
-   : fprintf (FILE, "#0r%.9g", (VALUE)))
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)			\
+  do{ if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            fprintf (FILE, "#0r-99e999");				\
+          else								\
+            fprintf (FILE, "#0r99e999");				\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);		\
+          fprintf (FILE, "#0r%s", dstr);				\
+        }								\
+    } while (0)
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? fprintf (FILE, "#0r%s99e999", ((VALUE) > 0 ? "" : "-")) \
-   : fprintf (FILE, "#0r%.20g", (VALUE)))
+ do { if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            fprintf (FILE, "#0r-99e999");				\
+          else								\
+            fprintf (FILE, "#0r99e999");				\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20g", dstr);		\
+          fprintf (FILE, "#0r%s", dstr);				\
+        }								\
+    } while (0)
 
 #if 0 /* This is for system verson 3.0, which isn't out yet.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
