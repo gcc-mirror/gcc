@@ -1,3 +1,10 @@
+1999-09-03  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Check for fstat function.
+	* java/io/natFileDescriptorPosix.cc (available): Use fstat() if
+	FIONREAD fails.
+
 1999-09-02  Tom Tromey  <tromey@cygnus.com>
 
 	* include/java-array.h (jobjectArrayjchar): Removed unused
