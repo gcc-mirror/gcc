@@ -1,3 +1,12 @@
+2004-08-04  Thomas Fitzsimmons <fitzsim@redhat.com>
+	    Michael Koch  <konqueror@gmx.de>
+
+	* acinclude.m4: Correctly quote PKG_CHECK_MODULES.
+	* configure.in: Replaced all usages of AC_LINK_FILES by
+	AC_CONFIG_LINKS.
+	* aclocal.m4,
+	configure: Regenerated.
+
 2004-08-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
 	    Michael Koch  <konqueror@gmx.de>
 
