@@ -1,3 +1,12 @@
+2004-06-22  Richard Henderson  <rth@redhat.com>
+
+	* class.c (build_vfn_ref): Take a pointer not object.  Build
+	an OBJ_TYPE_REF.
+	(cp_fold_obj_type_ref): New.
+	* call.c (build_over_call): Update build_vfn_ref call.
+	* cp-lang.c (LANG_HOOKS_FOLD_OBJ_TYPE_REF): New.
+	* cp-tree.h (cp_fold_obj_type_ref): Declare.
+
 2004-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16112

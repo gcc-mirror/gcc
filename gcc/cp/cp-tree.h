@@ -3678,6 +3678,7 @@ extern tree get_vtt_name                        (tree);
 extern tree get_primary_binfo                   (tree);
 extern void debug_class				(tree);
 extern void debug_thunks 			(tree);
+extern tree cp_fold_obj_type_ref		(tree, tree);
 
 /* in cvt.c */
 extern tree convert_to_reference (tree, tree, int, int, tree);

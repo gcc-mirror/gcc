@@ -111,7 +111,7 @@ Boston, MA 02111-1307, USA.  */
        op0 -> lhs
        op1 -> rhs
    call-stmt: CALL_EXPR
-     op0 -> ID | '&' ID
+     op0 -> ID | '&' ID | OBJ_TYPE_REF
      op1 -> arglist
 
    addr-expr-arg : compref | ID
@@ -158,6 +158,7 @@ Boston, MA 02111-1307, USA.  */
 	      | unop val
 	      | val binop val
 	      | '(' cast ')' val
+	      | method_ref
 
 	      (cast here stands for all valid C typecasts)
 
@@ -240,6 +241,7 @@ is_gimple_rhs (tree t)
     case STRING_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
+    case OBJ_TYPE_REF:
       return 1;
 
     default:
@@ -493,6 +495,14 @@ is_gimple_cast (tree t)
           || TREE_CODE (t) == FIX_ROUND_EXPR);
 }
 
+/* Return true if T is a valid op0 of a CALL_EXPR.  */
+
+bool
+is_gimple_call_addr (tree t)
+{
+  return (TREE_CODE (t) == OBJ_TYPE_REF
+	  || is_gimple_val (t));
+}
 
 /* If T makes a function call, return the corresponding CALL_EXPR operand.
    Otherwise, return NULL_TREE.  */

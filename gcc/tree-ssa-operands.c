@@ -1169,7 +1169,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       || code == TRUTH_AND_EXPR
       || code == TRUTH_OR_EXPR
       || code == TRUTH_XOR_EXPR
-      || code == COMPOUND_EXPR)
+      || code == COMPOUND_EXPR
+      || code == OBJ_TYPE_REF)
     {
       tree op0 = TREE_OPERAND (expr, 0);
       tree op1 = TREE_OPERAND (expr, 1);

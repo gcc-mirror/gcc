@@ -1742,7 +1742,6 @@ This macro returns the attributes on the type @var{type}.
 @tindex SAVE_EXPR
 @tindex TARGET_EXPR
 @tindex AGGR_INIT_EXPR
-@tindex VTABLE_REF
 @tindex VA_ARG_EXPR
 
 The internal representation for expressions is for the most part quite
@@ -2344,17 +2343,6 @@ is taken, and this value replaces the first argument in the argument
 list.
 
 In either case, the expression is void.
-
-@item VTABLE_REF
-A @code{VTABLE_REF} indicates that the interior expression computes
-a value that is a vtable entry.  It is used with @option{-fvtable-gc}
-to track the reference through to front end to the middle end, at
-which point we transform this to a @code{REG_VTABLE_REF} note, which
-survives the balance of code generation.
-
-The first operand is the expression that computes the vtable reference.
-The second operand is the @code{VAR_DECL} of the vtable.  The third
-operand is an @code{INTEGER_CST} of the byte offset into the vtable.
 
 @item VA_ARG_EXPR
 This node is used to implement support for the C/C++ variable argument-list

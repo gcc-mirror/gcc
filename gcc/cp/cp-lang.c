@@ -182,6 +182,8 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR cp_gimplify_expr
+#undef LANG_HOOKS_FOLD_OBJ_TYPE_REF
+#define LANG_HOOKS_FOLD_OBJ_TYPE_REF cp_fold_obj_type_ref
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

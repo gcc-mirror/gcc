@@ -1367,14 +1367,15 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_character (buffer, ':');
       break;
 
-    case VTABLE_REF:
-      pp_string (buffer, "VTABLE_REF <(");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, "),");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_character (buffer, ',');
-      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+    case OBJ_TYPE_REF:
+      pp_string (buffer, "OBJ_TYPE_REF(");
+      dump_generic_node (buffer, OBJ_TYPE_REF_EXPR (node), spc, flags, false);
+      pp_character (buffer, ';');
+      dump_generic_node (buffer, OBJ_TYPE_REF_OBJECT (node), spc, flags, false);
+      pp_character (buffer, '-');
       pp_character (buffer, '>');
+      dump_generic_node (buffer, OBJ_TYPE_REF_TOKEN (node), spc, flags, false);
+      pp_character (buffer, ')');
       break;
 
     case PHI_NODE:
@@ -1880,6 +1881,7 @@ print_call_name (pretty_printer *buffer, tree node)
       break;
 
     case SSA_NAME:
+    case OBJ_TYPE_REF:
       dump_generic_node (buffer, op0, 0, 0, false);
       break;
 
