@@ -997,15 +997,16 @@ union tree_node
 /* At present, don't prototype xrealloc, since all of the callers don't
    cast their pointers to char *, and all of the xrealloc's don't use
    void * yet.  */
-extern char *xrealloc			PROTO((void *, unsigned));
+extern char *xmalloc			PROTO((size_t));
+extern char *xrealloc			PROTO((void *, size_t));
 #else
+extern char *xmalloc ();
 extern char *xrealloc ();
 #endif
 
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
-extern char *xmalloc			PROTO((unsigned));
 extern void free			PROTO((void *));
 
 /* Lowest level primitive for allocating a node.
