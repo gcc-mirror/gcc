@@ -13232,6 +13232,12 @@ store_parm_decls ()
 
   /* Initialize RTL machinery.  */
   init_function_start (fndecl, input_filename, lineno);
+  /* Even though we're inside a function body, we still don't want to
+     call expand_expr to calculate the size of a variable-sized array.
+     We haven't necessarily assigned RTL to all variables yet, so it's
+     not safe to try to expand expressions involving them.  */
+  immediate_size_expand = 0;
+  get_pending_sizes ();
 
   /* Create a binding level for the parms.  */
   expand_start_bindings (0);
@@ -13818,6 +13824,12 @@ finish_function (lineno, flags, nested)
 	     for error checking purposes.  */
 	  expand_label (no_return_label);
 	}
+
+      /* We hard-wired immediate_size_expand to zero in
+	 start_function.  Expand_function_end will decrement this
+	 variable.  So, we set the variable to one here, so that after
+	 the decrement it will remain zero.  */
+      immediate_size_expand = 0;
 
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 1);
