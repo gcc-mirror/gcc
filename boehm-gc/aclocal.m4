@@ -31,41 +31,6 @@ dnl PARTICULAR PURPOSE.
 
 AC_DEFUN(GC_CONFIGURE,
 [
-dnl Default to --enable-multilib
-AC_ARG_ENABLE(multilib,
-[  --enable-multilib       build many library versions (default)],
-[case "${enableval}" in
-  yes) multilib=yes ;;
-  no)  multilib=no ;;
-  *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
- esac], [multilib=yes])dnl
-
-dnl We may get other options which we don't document:
-dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
-
-dnl I needed to add the -n test to allow configuration in src directory - HB
-if test "[$]{srcdir}" = "."; then
-  if test "[$]{with_target_subdir}" != "." -a -n "[$]{with_target_subdir}"; then
-    gc_basedir="[$]{srcdir}/[$]{with_multisrctop}../$1"
-  else
-    gc_basedir="[$]{srcdir}/[$]{with_multisrctop}$1"
-  fi
-else
-  gc_basedir="[$]{srcdir}/$1"
-fi
-AC_SUBST(gc_basedir)
-AC_CONFIG_AUX_DIR($gc_basedir/..)
-if :; then :; else
-  # This overrides the previous occurrence for automake, but not for
-  # autoconf, which is exactly what we want.
-  AC_CONFIG_AUX_DIR(..)
-fi
-
-AC_CANONICAL_SYSTEM
-
-# This works around an automake problem.
-mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
-AC_SUBST(mkinstalldirs)
 
 AM_INIT_AUTOMAKE(gc, 6.0, no-define)
 
