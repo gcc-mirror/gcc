@@ -971,7 +971,7 @@ dump_decl (tree t, int flags)
       else if (DECL_INITIAL (t))
 	dump_expr (DECL_INITIAL (t), flags | TFF_EXPR_IN_PARENS);
       else
-	print_identifier (scratch_buffer, "enumerator");
+	print_identifier (scratch_buffer, "<enumerator>");
       break;
 
     case USING_DECL:
@@ -1844,9 +1844,19 @@ dump_expr (tree t, int flags)
 		}
 	    }
 	}
-      output_add_character (scratch_buffer, '{');
-      dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
-      output_add_character (scratch_buffer, '}');
+      if (TREE_TYPE (t) && !CONSTRUCTOR_ELTS (t))
+	{
+	  dump_type (TREE_TYPE (t), 0);
+	  output_add_character (scratch_buffer, '(');
+	  output_add_character (scratch_buffer, ')');
+	}
+      else
+	{
+	  output_add_character (scratch_buffer, '{');
+	  dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
+	  output_add_character (scratch_buffer, '}');
+	}
+      
       break;
 
     case OFFSET_REF:

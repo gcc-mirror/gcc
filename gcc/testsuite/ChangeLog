@@ -1,3 +1,8 @@
+2003-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9898
+	* g++.dg/other/error4.C: New test.
+
 2003-03-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/friend17.C: New test.
