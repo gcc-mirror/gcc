@@ -41,11 +41,17 @@ Boston, MA 02111-1307, USA.  */
 #define	SUCCESS_EXIT_CODE	0
 #define	FATAL_EXIT_CODE		33
 
-/* If not compiled with GNU C, use the builtin alloca.  */
-#if !defined(__GNUC__) && !defined(_WIN32)
+/* If compiled with GNU C, use the builtin alloca.  */
+#ifndef alloca
+#if defined(__GNUC__) && !defined(USE_C_ALLOCA)
+#define alloca __builtin_alloca
+#else
+#if !defined(_WIN32) && !defined(USE_C_ALLOCA)
 #include <alloca.h>
 #else
 extern void *alloca ();
+#endif
+#endif
 #endif
 
 /* The host compiler has problems with enum bitfields since it makes

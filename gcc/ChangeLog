@@ -1,3 +1,8 @@
+Wed Aug 27 16:35:29 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/xm-alpha.h (alloca): Define alloca to builtin_alloca for GNUC
+	if not already defined, and USE_C_ALLOCA not defined.
+
 Wed Aug 27 16:08:43 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* config.guess: Replace with script that uses ../config.guess.
