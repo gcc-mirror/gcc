@@ -1,0 +1,12 @@
+/* Shift right, logical. */
+
+DEFTREECODE (URSHIFT_EXPR, "urshift_expr", "2", 2)
+
+/* Return -1, 0, 1 depending on whether the first argument is
+   less, equal, or greater to the second argument. */
+DEFTREECODE (COMPARE_EXPR, "compare_expr", "2", 2)
+
+/* Same as COMPARE_EXPR, but if either value is NaN, the result is -1. */
+DEFTREECODE (COMPARE_L_EXPR, "compare_l_expr", "2", 2)
+/* Same as COMPARE_EXPR, but if either value is NaN, the result is 1. */
+DEFTREECODE (COMPARE_G_EXPR, "compare_g_expr", "2", 2)

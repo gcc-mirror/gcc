@@ -1,0 +1,258 @@
+# Makefile for GNU compiler for the Java(TM) language.
+#   Copyright (C) 1987, 88, 90-4, 1995, 1998 Free Software Foundation, Inc.
+
+#This file is part of GNU CC.
+
+#GNU CC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#GNU CC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GNU CC; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330,
+#Boston, MA 02111-1307, USA.
+
+#Java and all Java-based marks are trademarks or registered trademarks
+#of Sun Microsystems, Inc. in the United States and other countries.
+#The Free Software Foundation is independent of Sun Microsystems, Inc.
+
+# The makefile built from this file lives in the language subdirectory.
+# Its purpose is to provide support for:
+#
+# 1) recursion where necessary, and only then (building .o's), and
+# 2) building and debugging cc1 from the language subdirectory, and
+# 3) nothing else.
+#
+# The parent makefile handles all other chores, with help from the
+# language makefile fragment, of course.
+#
+# The targets for external use are:
+# all, TAGS, ???mostlyclean, ???clean.
+
+# Suppress smart makes who think they know how to automake Yacc files
+.y.c:
+
+# Variables that exist for you to override.
+# See below for how to change them for certain systems.
+
+ALLOCA =
+
+# Various ways of specifying flags for compilations:  
+# CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
+# BOOT_CFLAGS is the value of CFLAGS to pass
+# to the stage2 and stage3 compilations
+# XCFLAGS is used for most compilations but not when using the GCC just built.
+XCFLAGS =
+CFLAGS = -g
+BOOT_CFLAGS = -O $(CFLAGS)
+# These exists to be overridden by the x-* and t-* files, respectively.
+X_CFLAGS =
+T_CFLAGS =
+
+X_CPPFLAGS =
+T_CPPFLAGS =
+
+CC = @CC@
+BISON = `if [ -f ../../bison/bison ] ; then echo ../../bison/bison -L $(srcdir)/../../bison/ ;  else echo bison ; fi`
+BISONFLAGS =
+JAVABISONFLAGS = --name-prefix=java_
+LEX = `if [ -f ../../flex/flex ] ; then echo ../../flex/flex ;  else echo flex ; fi`
+LEXFLAGS =
+AR = ar
+AR_FLAGS = rc
+SHELL = /bin/sh
+MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
+
+# Define this as & to perform parallel make on a Sequent.
+# Note that this has some bugs, and it seems currently necessary 
+# to compile all the gen* files first by hand to avoid erroneous results.
+P =
+
+# This is used in the definition of SUBDIR_USE_ALLOCA.
+# ??? Perhaps it would be better if it just looked for *gcc*.
+OLDCC = cc
+
+# This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
+# It omits XCFLAGS, and specifies -B./.
+# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
+
+# Tools to use when building a cross-compiler.
+# These are used because `configure' appends `cross-make'
+# to the makefile when making a cross-compiler.
+
+# We don't use cross-make.  Instead we use the tools
+# from the build tree, if they are available.
+# program_transform_name and objdir are set by configure.in.
+program_transform_name =
+objdir = .
+
++target=@target@
++xmake_file=@dep_host_xmake_file@
++tmake_file=@dep_tmake_file@
+#version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
+#mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
+
+# Directory where sources are, from where we are.
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+# Additional system libraries to link with.
+CLIB=
+
+# Change this to a null string if obstacks are installed in the
+# system library.
+OBSTACK=obstack.o
+
+# Choose the real default target.
+ALL=all
+
+# End of variables for you to override.
+
+# Definition of `all' is here so that new rules inserted by sed
+# do not specify the default target.
+all: all.indirect
+
+# This tells GNU Make version 3 not to put all variables in the environment.
+.NOEXPORT:
+
+# sed inserts variable overrides after the following line.
+####target overrides
+@target_overrides@
+####host overrides
+@host_overrides@
+####cross overrides
+@cross_overrides@
+####build overrides
+@build_overrides@
+####site overrides
+
+# Now figure out from those variables how to compile and link.
+
+all.indirect: Makefile ../jc1$(exeext) ../jcf-dump$(exeext) \
+	../jvgenmain$(exeext) ../gcjh$(exeext) ../jv-scan$(exeext)
+
+# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
+
+# This is the variable actually used when we compile.
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
+
+# Likewise.
+ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+
+# Even if ALLOCA is set, don't use it if compiling with GCC.
+
+SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
+SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
+SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
+
+# How to link with both our special library facilities
+# and the system's installed libraries.
+LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+
+# Specify the directories to be searched for header files.
+# Both . and srcdir are used, in that order,
+# so that tm.h and config.h will be found in the compilation
+# subdirectory rather than in the source directory.
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
+
+# Always use -I$(srcdir)/config when compiling.
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+# This tells GNU make version 3 not to export all the variables
+# defined in this file into the environment.
+.NOEXPORT:
+
+# Lists of files for various purposes.
+
+# Language-specific object files for Gcc/Java:
+
+# Remember to keep this list in sync with JAVA_SRCS in Make-lang.in!!!
+#
+JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
+  except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
+  buffer.o
+
+JAVA_OBJS_LITE = parse-scan.o jv-scan.o
+
+# Language-independent object files.
+OBJS = `cat ../stamp-objlist`
+OBJDEPS = ../stamp-objlist
+
+compiler: ../jc1$(exeext) ../jv-scan$(exeext)
+../jc1$(exeext): $(P) $(JAVA_OBJS) $(OBJDEPS) $(LIBDEPS)
+	rm -f ../jc1$(exeext)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	      $(JAVA_OBJS) $(OBJS) $(LIBS)
+../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) $(OBJDEPS) $(LIBDEPS)
+	rm -f ../jv-scan$(exeext)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	      $(JAVA_OBJS_LITE) $(LIBS)
+
+../jcf-dump$(exeext): jcf-dump.o jcf-io.o zextract.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o zextract.o
+
+# Dependencies here must be kept in sync with dependencies in Make-lang.in.
+../jvgenmain$(exeext):  jvgenmain.o mangle.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o
+
+../gcjh$(exeext): gjavah.o jcf-io.o zextract.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o zextract.o
+
+Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
+	cd ..; $(SHELL) config.status
+
+native: config.status ../jc1$(exeext)
+
+# Compiling object files from source files.
+
+PARSE_H = $(srcdir)/parse.h
+PARSE_C = $(srcdir)/parse.c
+PARSE_SCAN_C = $(srcdir)/parse-scan.c
+
+$(PARSE_H): $(PARSE_C)
+$(PARSE_C):  $(srcdir)/parse.y $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
+	$(BISON) -t -v $(BISONFLAGS) $(JAVABISONFLAGS) -o $(PARSE_C) \
+	  $(srcdir)/parse.y
+$(PARSE_SCAN_C):  $(srcdir)/parse-scan.y $(srcdir)/lex.c $(PARSE_H) \
+		$(srcdir)/lex.h
+	$(BISON) -t -v $(BISONFLAGS) -o $(PARSE_SCAN_C) $(srcdir)/parse-scan.y
+
+lex.c: keyword.h lex.h
+
+keyword.h: keyword.gperf
+	gperf -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
+	keyword.gperf > keyword.h
+
+# These exist for maintenance purposes.
+
+# Update the tags table.
+TAGS: force
+	cd $(srcdir) ;				\
+	etags *.c *.h ;				\
+	echo 'l' | tr 'l' '\f' >> TAGS ;	\
+	echo 'parse.y,0' >> TAGS ; 		\
+	etags -a ../*.h ../*.c;
+
+.PHONY: TAGS
+
+mostlyclean:
+	rm -f *.o
+
+clean:  mostlyclean
+	rm -f parse.c
+
+force:
+
+parse.o: $(PARSE_C) jcf-reader.c
+jcf-dump.o: jcf-reader.c jcf.h javaop.h javaop.def
+gjavah.o: jcf-reader.c jcf.h javaop.h
