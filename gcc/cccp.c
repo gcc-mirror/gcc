@@ -1157,6 +1157,7 @@ static void vwarning PROTO((char *, va_list));
 static void error_with_line PRINTF_PROTO_2((int, char *, ...));
 static void verror_with_line PROTO((int, char *, va_list));
 static void vwarning_with_line PROTO((int, char *, va_list));
+static void warning_with_line PROTO((int, char *, ...));
 void pedwarn PRINTF_PROTO_1((char *, ...));
 void pedwarn_with_line PRINTF_PROTO_2((int, char *, ...));
 static void pedwarn_with_file_and_line PRINTF_PROTO_3((char *, int, char *, ...));
@@ -2487,7 +2488,7 @@ trigraph_pcp (buf)
   buf->length -= fptr - bptr;
   buf->buf[buf->length] = '\0';
   if (warn_trigraphs && fptr != bptr)
-    warning ("%d trigraph(s) encountered", (fptr - bptr) / 2);
+    warning_with_line (0, "%d trigraph(s) encountered", (fptr - bptr) / 2);
 }
 
 /* Move all backslash-newline pairs out of embarrassing places.
@@ -9003,6 +9004,22 @@ verror_with_line (line, msg, args)
 }
 
 static void
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+warning_with_line (int line, PRINTF_ALIST (msg))
+#else
+warning_with_line (line, PRINTF_ALIST (msg))
+     int line;
+     PRINTF_DCL (msg)
+#endif
+{
+  va_list args;
+
+  VA_START (args, msg);
+  vwarning_with_line (line, msg, args);
+  va_end (args);
+}
+
+static void
 vwarning_with_line (line, msg, args)
      int line;
      char *msg;
@@ -9026,7 +9043,7 @@ vwarning_with_line (line, msg, args)
     }
 
   if (ip != NULL)
-    fprintf (stderr, "%s:%d: ", ip->nominal_fname, line);
+    fprintf (stderr, line ? "%s:%d: " : "%s: ", ip->nominal_fname, line);
   fprintf (stderr, "warning: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
