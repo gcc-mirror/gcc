@@ -1,3 +1,9 @@
+2004-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_cabs, fold_builtin): Use
+	`mathfn_built_in' to determine the new builtin.
+	* fold-const.c (fold): Likewise.
+
 2004-04-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Rename MIPS's -mfix-vr4122-bugs to -mfix-vr4120.

@@ -5973,18 +5973,7 @@ fold_builtin_cabs (tree fndecl, tree arglist, tree type)
 
   if (flag_unsafe_math_optimizations)
     {
-      enum built_in_function fcode;
-      tree sqrtfn;
-
-      fcode = DECL_FUNCTION_CODE (fndecl);
-      if (fcode == BUILT_IN_CABS)
-	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRT];
-      else if (fcode == BUILT_IN_CABSF)
-	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTF];
-      else if (fcode == BUILT_IN_CABSL)
-	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTL];
-      else
-	sqrtfn = NULL_TREE;
+      tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
 
       if (sqrtfn != NULL_TREE)
 	{
@@ -7097,17 +7086,7 @@ fold_builtin (tree exp)
 	      if (flag_unsafe_math_optimizations
 		  && REAL_VALUES_EQUAL (c, dconsthalf))
 		{
-		  tree sqrtfn;
-
-		  fcode = DECL_FUNCTION_CODE (fndecl);
-		  if (fcode == BUILT_IN_POW)
-		    sqrtfn = implicit_built_in_decls[BUILT_IN_SQRT];
-		  else if (fcode == BUILT_IN_POWF)
-		    sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTF];
-		  else if (fcode == BUILT_IN_POWL)
-		    sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTL];
-		  else
-		    sqrtfn = NULL_TREE;
+		  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
 
 		  if (sqrtfn != NULL_TREE)
 		    {

@@ -6509,25 +6509,7 @@ fold (tree expr)
 		  && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
 				      TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
 		{
-		  tree sinfn;
-
-		  switch (fcode0)
-		    {
-		    case BUILT_IN_TAN:
-		    case BUILT_IN_COS:
-		      sinfn = implicit_built_in_decls[BUILT_IN_SIN];
-		      break;
-		    case BUILT_IN_TANF:
-		    case BUILT_IN_COSF:
-		      sinfn = implicit_built_in_decls[BUILT_IN_SINF];
-		      break;
-		    case BUILT_IN_TANL:
-		    case BUILT_IN_COSL:
-		      sinfn = implicit_built_in_decls[BUILT_IN_SINL];
-		      break;
-		    default:
-		      sinfn = NULL_TREE;
-		    }
+		  tree sinfn = mathfn_built_in (type, BUILT_IN_SIN);
 
 		  if (sinfn != NULL_TREE)
 		    return build_function_call_expr (sinfn,
@@ -6588,16 +6570,7 @@ fold (tree expr)
 	      if (! optimize_size
 		  && operand_equal_p (arg0, arg1, 0))
 		{
-		  tree powfn;
-
-		  if (type == double_type_node)
-		    powfn = implicit_built_in_decls[BUILT_IN_POW];
-		  else if (type == float_type_node)
-		    powfn = implicit_built_in_decls[BUILT_IN_POWF];
-		  else if (type == long_double_type_node)
-		    powfn = implicit_built_in_decls[BUILT_IN_POWL];
-		  else
-		    powfn = NULL_TREE;
+		  tree powfn = mathfn_built_in (type, BUILT_IN_POW);
 
 		  if (powfn)
 		    {
@@ -6831,16 +6804,7 @@ fold (tree expr)
 	      && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
 				  TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
 	    {
-	      tree tanfn;
-
-	      if (fcode0 == BUILT_IN_SIN)
-		tanfn = implicit_built_in_decls[BUILT_IN_TAN];
-	      else if (fcode0 == BUILT_IN_SINF)
-		tanfn = implicit_built_in_decls[BUILT_IN_TANF];
-	      else if (fcode0 == BUILT_IN_SINL)
-		tanfn = implicit_built_in_decls[BUILT_IN_TANL];
-	      else
-		tanfn = NULL_TREE;
+	      tree tanfn = mathfn_built_in (type, BUILT_IN_TAN);
 
 	      if (tanfn != NULL_TREE)
 		return build_function_call_expr (tanfn,
@@ -6854,16 +6818,7 @@ fold (tree expr)
 	      && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
 				  TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
 	    {
-	      tree tanfn;
-
-	      if (fcode0 == BUILT_IN_COS)
-		tanfn = implicit_built_in_decls[BUILT_IN_TAN];
-	      else if (fcode0 == BUILT_IN_COSF)
-		tanfn = implicit_built_in_decls[BUILT_IN_TANF];
-	      else if (fcode0 == BUILT_IN_COSL)
-		tanfn = implicit_built_in_decls[BUILT_IN_TANL];
-	      else
-		tanfn = NULL_TREE;
+	      tree tanfn = mathfn_built_in (type, BUILT_IN_TAN);
 
 	      if (tanfn != NULL_TREE)
 		{
