@@ -271,10 +271,10 @@ namespace std {
   { 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
-    bool __retval = __ioinit._M_cin->_M_file->get_fileno() == 0;
+    bool __ret = __ioinit._M_cin->_M_file->get_fileno() == 0;
 
     // Turn off sync with C FILE* for cin, cout, cerr, clog.
-    if (!__sync && __retval)
+    if (!__sync && __ret)
       {
 	// Need to dispose of the buffers created at initialization.
 	__ioinit._M_cout->~filebuf();
@@ -309,7 +309,7 @@ namespace std {
 #endif
       }
     
-    return __retval; 
+    return __ret; 
 #endif
   }
 

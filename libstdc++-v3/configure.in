@@ -17,11 +17,11 @@ AC_ARG_WITH(cross-host,
 
 GLIBCPP_CONFIGURE(.)
 AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
 GLIBCPP_CHECK_GNU_MAKE
   if test "x$_cv_gnu_make_command" = "x"; then
     AC_MSG_ERROR([GNU make not found. Please install it or correct your path.])
   fi
-AM_PROG_LIBTOOL
 AM_CONFIG_HEADER(config.h)
 
 # Check for c++ or library specific bits that don't require linking.
@@ -185,23 +185,23 @@ then
   AC_MSG_WARN([no point in rebuilding libgcc.a if namespaces aren't used])
 fi
 
-# Trying to get more people to read documentation.  Possibly remove check
-# and warn all the time.
+# Trying to get more people to read documentation.  Possibly remove
+# check and warn all the time. There is no "informational" AC_MSG_
+# macro, so these are going to be printed even when --quiet/--silent
+# is given.
 if test ! -f stamp-sanity-warned; then
   touch stamp-sanity-warned
-  # There is no "informational" AC_MSG_ macro, so these are going to be
-  # printed even when --quiet/--silent is given.
-  echo ''
-  echo 'Please make certain that you read the installation information here:'
+  echo ""
+  echo "Please make certain that you read the installation information here:"
   echo "  faster => ${srcdir}/docs/install.html"
-  echo '  slower => <URL:http://sources.redhat.com/libstdc++/install.html>'
-  echo ''
-  echo 'and the configuration information here:'
+  echo "  slower => <URL:http://sources.redhat.com/libstdc++/install.html>"
+  echo ""
+  echo "and the configuration information here:"
   echo "  faster => ${srcdir}/docs/configopts.html"
-  echo '  slower => <URL:http://sources.redhat.com/libstdc++/configopts.html>'
-  echo ''
-  echo 'before proceeding with "make".'
-  echo ''
+  echo "  slower => <URL:http://sources.redhat.com/libstdc++/configopts.html>"
+  echo ""
+  echo "before proceeding with make."
+  echo ""
 fi
 
 

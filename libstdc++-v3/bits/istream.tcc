@@ -876,17 +876,17 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     sync(void)
     {
-      int __retval = traits_type::eof();
+      int __ret = traits_type::eof();
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
 	  try {
 	    __streambuf_type* __sb = this->rdbuf();
-	    if (!__sb || __retval == __sb->pubsync())
+	    if (!__sb || __ret == __sb->pubsync())
 	      this->setstate(ios_base::badbit);		    
 	    else 
-	      __retval = 0;
+	      __ret = 0;
 	  }
 	  catch(exception& __fail){
 	    // 27.6.1.3 paragraph 1
@@ -896,7 +896,7 @@ namespace std {
 	      throw;
 	  }
 	}
-      return __retval;
+      return __ret;
     }
   
   template<typename _CharT, typename _Traits>
@@ -904,14 +904,13 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     tellg(void)
     {
-      pos_type __retval = pos_type(-1);
+      pos_type __ret = pos_type(-1);
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
 	  try {
-	    __retval = this->rdbuf()->pubseekoff(0, ios_base::cur, 
-						 ios_base::in);
+	    __ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
 	  }
 	  catch(exception& __fail){
 	    // 27.6.1.3 paragraph 1
@@ -921,7 +920,7 @@ namespace std {
 	      throw;
 	  }
 	}
-      return __retval;
+      return __ret;
     }
 
 

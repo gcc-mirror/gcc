@@ -360,12 +360,12 @@ namespace std {
     typename basic_ostream<_CharT, _Traits>::pos_type
     basic_ostream<_CharT, _Traits>::tellp()
     {
-      pos_type __retval = pos_type(-1);
+      pos_type __ret = pos_type(-1);
       bool __testok = this->fail() != true;
       
       if (__testok)
-	__retval = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
-      return __retval;
+	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
+      return __ret;
     }
 
 

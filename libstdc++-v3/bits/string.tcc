@@ -613,16 +613,16 @@ namespace std
     find(_CharT __c, size_type __pos) const
     {
       size_type __size = this->size();
-      size_type __retval = npos;
+      size_type __ret = npos;
       if (__pos < __size)
 	{
 	  const _CharT* __data = _M_data();
 	  const _CharT* __end = __data + __size;
 	  const _CharT* __p = _S_find(__data + __pos, __end, __c);
 	  if (__p != __end)
-	    __retval = __p - __data;
+	    __ret = __p - __data;
 	}
-      return __retval;
+      return __ret;
     }
 
 

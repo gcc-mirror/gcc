@@ -10,6 +10,7 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
+
 dnl
 dnl Initialize configure bits.
 dnl
@@ -39,9 +40,10 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   fi
   AC_SUBST(glibcpp_basedir)
 
-  AC_CANONICAL_HOST
-
   AM_INIT_AUTOMAKE(libstdc++, 2.90.8)
+
+
+#  AC_PROG_CC
 
 # FIXME: We temporarily define our own version of AC_PROG_CC.  This is
 # copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We
@@ -85,6 +87,9 @@ fi
 
 LIB_AC_PROG_CC
 
+# Can't just call these here as g++ requires libstc++ to be built....
+#  AC_PROG_CXX
+
 # Likewise for AC_PROG_CXX.
 AC_DEFUN(LIB_AC_PROG_CXX,
 [AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
@@ -119,49 +124,42 @@ fi
 
 LIB_AC_PROG_CXX
 
-# AC_CHECK_TOOL does AC_REQUIRE (AC_CANONICAL_BUILD).  If we dont
-# run it explicitly here, it will be run implicitly before
-# LIBGCJ_CONFIGURE, which doesn't work because that means that it will
-# be run before AC_CANONICAL_HOST.
-AC_CANONICAL_BUILD
+  AC_CHECK_TOOL(AS, as)
+  AC_CHECK_TOOL(AR, ar)
+  AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-AC_CHECK_TOOL(AS, as)
-AC_CHECK_TOOL(AR, ar)
-AC_CHECK_TOOL(RANLIB, ranlib, :)
+  AC_PROG_INSTALL
 
-AC_PROG_INSTALL
+  AM_MAINTAINER_MODE
 
-AM_MAINTAINER_MODE
+  # We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
+  # at least currently, we never actually build a program, so we never
+  # need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
+  # fails, because we are probably configuring with a cross compiler
+  # which cant create executables.  So we include AC_EXEEXT to keep
+  # automake happy, but we dont execute it, since we dont care about
+  # the result.
+  if false; then
+    AC_EXEEXT
+  fi
 
-# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
-# at least currently, we never actually build a program, so we never
-# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
-# fails, because we are probably configuring with a cross compiler
-# which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we dont execute it, since we dont care about
-# the result.
-if false; then
-  AC_EXEEXT
-fi
+  # configure.host sets the following important variables
+  #	glibcpp_cflags    - host specific C compiler flags
+  #	glibcpp_cxxflags  - host specific C++ compiler flags
+  glibcpp_cflags=
+  glibcpp_cxxflags=
 
-# configure.host sets the following important variables
-#	glibcpp_cflags    - host specific C compiler flags
-#	glibcpp_cxxflags  - host specific C++ compiler flags
+  . [$]{glibcpp_basedir}/configure.host
 
-glibcpp_cflags=
-glibcpp_cxxflags=
+  case [$]{glibcpp_basedir} in
+    /* | [A-Za-z]:[/\\]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
+    *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
+  esac
 
-. [$]{glibcpp_basedir}/configure.host
-
-case [$]{glibcpp_basedir} in
-/* | [A-Za-z]:[/\\]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
-*) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
-esac
-
-GLIBCPP_CFLAGS="[$]{glibcpp_cflags}"
-GLIBCPP_CXXFLAGS="[$]{glibcpp_cxxflags}"
-AC_SUBST(GLIBCPP_CFLAGS)
-AC_SUBST(GLIBCPP_CXXFLAGS)
+  GLIBCPP_CFLAGS="[$]{glibcpp_cflags}"
+  GLIBCPP_CXXFLAGS="[$]{glibcpp_cxxflags}"
+  AC_SUBST(GLIBCPP_CFLAGS)
+  AC_SUBST(GLIBCPP_CXXFLAGS)
 ])
 
 
@@ -688,7 +686,7 @@ dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
     AC_MSG_CHECKING([for cpu primitives directory])
     CPU_FLAGS=			
-    case "$target_cpu" in
+    case "${target_cpu}" in
       alpha*)
 	cpu_include_dir="config/cpu/alpha"
         ;;
@@ -1051,14 +1049,15 @@ AC_ARG_ENABLE(debug,
 changequote(<<, >>)dnl
 <<  --enable-debug          extra debugging, turn off optimization [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
 changequote([, ])dnl
-[case "$enableval" in
+[case "${enableval}" in
  yes) enable_debug=yes ;;
  no)  enable_debug=no ;;
  *)   AC_MSG_ERROR([Unknown argument to enable/disable extra debugging]) ;;
  esac],
 enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
+
 dnl Option parsed, now set things appropriately
-case "$enable_debug" in
+case "${enable_debug}" in
     yes) 
 	DEBUG_FLAGS='-O0 -ggdb'			
 	;;
@@ -1093,13 +1092,20 @@ changequote(<<, >>)dnl
                                 [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
 changequote([, ])dnl
 [case "x$enableval" in
- xyes)   AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
- xno|x)  enable_cxx_flags='' ;;
- *)      enable_cxx_flags="$enableval" ;;
+ xyes)   
+	AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
+ xno|x)  
+	enable_cxx_flags='' ;;
+ *)      
+	enable_cxx_flags="$enableval" ;;
  esac],
-enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')dnl
+enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')
+
 dnl Thinko on my part during design.  This kludge is the workaround.
-if test "$enable_cxx_flags" = "none"; then enable_cxx_flags=''; fi
+if test "$enable_cxx_flags" = "none"; then 
+  enable_cxx_flags=''; 
+fi
+
 dnl Run through flags (either default or command-line) and set anything
 dnl extra (e.g., #defines) that must accompany particular g++ options.
 if test -n "$enable_cxx_flags"; then
@@ -1401,30 +1407,31 @@ AC_ARG_ENABLE(cshadow-headers,
 changequote(<<, >>)dnl
 <<  --enable-cshadow-headers construct "shadowed" C header files for
                            g++ [default=>>GLIBCPP_ENABLE_SHADOW_DEFAULT],
-changequote([, ])dnl
-[case "$enableval" in
- yes) enable_cshadow_headers=yes 
+changequote([, ])
+  [case "$enableval" in
+   yes) enable_cshadow_headers=yes 
 	;;
- no)  enable_cshadow_headers=no 
+   no)  enable_cshadow_headers=no 
 	;;
- *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) 
+   *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) 
 	;;
- esac],
-enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
-AC_MSG_RESULT($enable_cshadow_headers)
-dnl Option parsed, now set things appropriately
-dnl CSHADOWFLAGS is currently unused, but may be useful in the future.
-case "$enable_cshadow_headers" in
+  esac],
+  enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)
+  AC_MSG_RESULT($enable_cshadow_headers)
+
+  dnl Option parsed, now set things appropriately
+  dnl CSHADOWFLAGS is currently unused, but may be useful in the future.
+  case "$enable_cshadow_headers" in
     yes) 
 	CSHADOWFLAGS=""
 	;;
     no)   
 	CSHADOWFLAGS=""
         ;;
-esac
+  esac
 
-AC_SUBST(CSHADOWFLAGS)
-AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
+  AC_SUBST(CSHADOWFLAGS)
+  AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
 ])
 
 
@@ -1546,8 +1553,6 @@ dnl string, '#' otherwise
   fi
   AC_SUBST(ifGNUmake)
 ])
-
-
 
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.

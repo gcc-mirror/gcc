@@ -111,7 +111,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     open(const char* __s, ios_base::openmode __mode)
     {
-      __filebuf_type *__retval = NULL;
+      __filebuf_type *__ret = NULL;
       if (!this->is_open())
 	{
 	  _M_filebuf_init();
@@ -126,10 +126,10 @@ namespace std
 	      if (__mode & ios_base::ate
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		this->close();
-	      __retval = this;
+	      __ret = this;
 	    }
 	}
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -137,7 +137,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     close()
     {
-      __filebuf_type *__retval = NULL;
+      __filebuf_type *__ret = NULL;
       if (this->is_open())
 	{
 	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
@@ -164,7 +164,7 @@ namespace std
 	  _M_pback = NULL;
 	  this->setg(NULL, NULL, NULL);
 	  this->setp(NULL, NULL);
-	  __retval = this;
+	  __ret = this;
 	}
 
       // Can actually allocate this file as part of an open and never
@@ -175,7 +175,7 @@ namespace std
 	  _M_file = NULL;
 	}
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -183,7 +183,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     showmanyc()
     {
-      streamsize __retval = -1;
+      streamsize __ret = -1;
       bool __testin = _M_mode & ios_base::in;
 
       if (__testin)
@@ -192,10 +192,10 @@ namespace std
 	  if (_M_in_cur >= _M_in_end)
 	    __testeof = this->underflow() == traits_type::eof();
 	  if (!__testeof)
-	    __retval = _M_in_end - _M_in_cur;
+	    __ret = _M_in_end - _M_in_cur;
 	}
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -203,7 +203,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     underflow()
     {
-      int_type __retval = traits_type::eof();
+      int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
       
       if (__testin)
@@ -265,7 +265,7 @@ namespace std
 		    {
 		      if (__testout)
 			_M_out_cur = _M_in_cur;
-		      __retval = traits_type::to_int_type(*_M_in_cur);
+		      __ret = traits_type::to_int_type(*_M_in_cur);
 		    }
 
 		  // Part three: Sync the current internal buffer
@@ -281,7 +281,7 @@ namespace std
 	    }	      
 	}
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
   
   template<typename _CharT, typename _Traits>
@@ -289,14 +289,14 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     pbackfail(int_type __i)
     {
-      int_type __retval = traits_type::eof();
+      int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
 
       if (__testin)
 	{
 	  bool __testpb = _M_in_beg < _M_in_cur;
 	  char_type __c = traits_type::to_char_type(__i);
-	  bool __testeof = traits_type::eq_int_type(__i, __retval);
+	  bool __testeof = traits_type::eq_int_type(__i, __ret);
 
 	  if (__testpb)
 	    {
@@ -310,14 +310,14 @@ namespace std
 		  --_M_in_cur;
 		  if (__testout)
 		    --_M_out_cur;
-		  __retval = __i;
+		  __ret = __i;
 		}
 	      else if (__testeof)
 		{
 		  --_M_in_cur;
 		  if (__testout)
 		    --_M_out_cur;
-		  __retval = traits_type::not_eof(__i);
+		  __ret = traits_type::not_eof(__i);
 		}
 	      else if (!__testeof)
 		{
@@ -326,7 +326,7 @@ namespace std
 		    --_M_out_cur;
 		  _M_pback_create();
 		  *_M_in_cur = __c; 
-		  __retval = __i;
+		  __ret = __i;
 		}
 	    }
 	  else
@@ -342,14 +342,14 @@ namespace std
 		      _M_pback_create();
 		      *_M_in_cur = __c;
 		    }
- 		  __retval = __i;
+ 		  __ret = __i;
  		}
  	      else
- 		__retval = traits_type::not_eof(__i);
+ 		__ret = traits_type::not_eof(__i);
  	    }
 	}
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -357,7 +357,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     overflow(int_type __c)
     {
-      int_type __retval = traits_type::eof();
+      int_type __ret = traits_type::eof();
       bool __testpos = _M_out_cur && _M_out_cur >= _M_buf + _M_buf_size;
       bool __testout = _M_mode & ios_base::out;
       
@@ -367,14 +367,14 @@ namespace std
 	    {
 	      *_M_out_cur = traits_type::to_char_type(__c);
 	      _M_out_cur_move(1);
-	      __retval = traits_type::not_eof(__c);
+	      __ret = traits_type::not_eof(__c);
 	    }
 	  else 
-	    __retval = this->_M_really_overflow(__c);
+	    __ret = this->_M_really_overflow(__c);
 	}
 
       _M_last_overflowed = false;    // Set in _M_really_overflow, below.
-      return __retval;
+      return __ret;
     }
   
   template<typename _CharT, typename _Traits>
@@ -382,7 +382,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_really_overflow(int_type __c)
     {
-      int_type __retval = traits_type::eof();
+      int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
       bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
       
@@ -424,12 +424,12 @@ namespace std
 	      if (__len == __plen)
 		{
 		  _M_set_indeterminate();
-		  __retval = traits_type::not_eof(__c);
+		  __ret = traits_type::not_eof(__c);
 		}
 	    }
 	}	      
       _M_last_overflowed = true;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -437,7 +437,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
-      pos_type __retval =  pos_type(off_type(-1)); 
+      pos_type __ret =  pos_type(off_type(-1)); 
       bool __testopen = this->is_open();
       bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
       bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
@@ -471,19 +471,19 @@ namespace std
 	      else if (__testget && __way == ios_base::cur)
 		__computed_off += _M_in_cur - _M_in_beg;
 	  
-	      __retval = _M_file->seekoff(__computed_off, __way, __mode);
+	      __ret = _M_file->seekoff(__computed_off, __way, __mode);
 	      _M_set_indeterminate();
 	    }
 	  // NB: Need to do this in case _M_file in indeterminate
 	  // state, ie _M_file->_offset == -1
 	  else
 	    {
-	      __retval = _M_file->seekoff(__off, ios_base::cur, __mode);
-	      __retval += max(_M_out_cur, _M_in_cur) - _M_buf;
+	      __ret = _M_file->seekoff(__off, ios_base::cur, __mode);
+	      __ret += max(_M_out_cur, _M_in_cur) - _M_buf;
 	    }
 	}
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -491,13 +491,13 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     seekpos(pos_type __pos, ios_base::openmode __mode)
     {
-      pos_type __retval;
+      pos_type __ret;
       off_type __off = __pos;
 
-      __retval = this->seekoff(__off, ios_base::beg, __mode); 
+      __ret = this->seekoff(__off, ios_base::beg, __mode); 
 
       _M_last_overflowed = false;	
-      return __retval;
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>

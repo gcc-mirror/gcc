@@ -42,128 +42,205 @@ namespace std {
   // Some of these member functions are based on libio/filebuf.cc.
   // Also note that the order and number of virtual functions has to precisely
   // match the order and number in the _IO_jump_t struct defined in libioP.h.
+  template<typename _CharT>
 #if _GLIBCPP_BASIC_FILE_INHERITANCE
-  class __basic_file: public __c_file_type
+    class __basic_file: public __c_file_type
 #else
-  class __basic_file
+    class __basic_file
 #endif
-  {
+    {
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
-    int 		_M_fileno;
-    __c_file_type* 	_M_cfile;
+      int 		_M_fileno;
+      __c_file_type* 	_M_cfile;
 #endif
 
-  public:
-    __basic_file(__c_lock* __lock = 0);
+    public:
+      __basic_file(__c_lock* __lock = 0);
+      
+      void 
+      __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
+				 int& __rw_mode);
+      
+      // Eqivalent to the normal fopen function.
+      __basic_file* 
+      open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
-    void 
-    __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
-			       int& __rw_mode);
+      // Used for opening the standard streams, cin, cout, cerr, clog,
+      // and their wide-stream equivalents. Instead of calling open, it
+      // just sets __c_file_type->_fileno and the respective _flags bits, and
+      // returns.
+      __basic_file*
+      sys_open(int __fd, ios_base::openmode __mode);
 
-    // Eqivalent to the normal fopen function.
-    __basic_file* 
-    open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
+      __basic_file* 
+      close(); 
 
-    // Used for opening the standard streams, cin, cout, cerr, clog,
-    // and their wide-stream equivalents. Instead of calling open, it
-    // just sets __c_file_type->_fileno and the respective _flags bits, and
-    // returns.
-    __basic_file*
-    sys_open(int __fd, ios_base::openmode __mode);
+      bool 
+      is_open();
 
-    __basic_file* 
-    close(); 
+      // Needed by ios_base::sync_with_stdio.
+      int get_fileno(void);
 
-    bool 
-    is_open();
+      // NB: Must match FILE specific jump table starting here--this
+      // means all virtual functions starting with the dtor must match,
+      // slot by slot. For glibc-based dystems, this means the _IO_FILE
+      // as the FILE struct and _IO_jump_t as the jump table.
+      virtual 
+      ~__basic_file(); // Takes the place of __finish.
 
-    // Needed by ios_base::sync_with_stdio.
-    int get_fileno(void);
+      virtual int 
+      overflow(int __c = EOF);
 
-    // NB: Must match FILE specific jump table starting here--this
-    // means all virtual functions starting with the dtor must match,
-    // slot by slot. For glibc-based dystems, this means the _IO_FILE
-    // as the FILE struct and _IO_jump_t as the jump table.
-    virtual 
-    ~__basic_file(); // Takes the place of __finish.
+      virtual int 
+      underflow();
 
-    virtual int 
-    overflow(int __c = EOF);
+      virtual int 
+      uflow();
 
-    virtual int 
-    underflow();
+      virtual int 
+      pbackfail(int __c);
 
-    virtual int 
-    uflow();
+      // A complex "write" function that sets all of __c_file_type's
+      // ponters and associated data members correctly and manages it's
+      // relation to the external byte sequence.
+      virtual streamsize 
+      xsputn(const char* __s, streamsize __n);
 
-    virtual int 
-    pbackfail(int __c);
+      // A complex "read" function that sets all of __c_file_type's
+      // ponters and associated data members correctly and manages it's
+      // relation to the external byte sequence.
+      virtual streamsize 
+      xsgetn(char* __s, streamsize __n);
 
-    // A complex "write" function that sets all of __c_file_type's
-    // ponters and associated data members correctly and manages it's
-    // relation to the external byte sequence.
-    virtual streamsize 
-    xsputn(const char* __s, streamsize __n);
+      // A complex "seekoff" function that sets all of __c_file_type's
+      // ponters and associated data members correctly and manages it's
+      // relation to the external byte sequence.
+      virtual streamoff
+      seekoff(streamoff __off, ios_base::seekdir __way,
+	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-    // A complex "read" function that sets all of __c_file_type's
-    // ponters and associated data members correctly and manages it's
-    // relation to the external byte sequence.
-    virtual streamsize 
-    xsgetn(char* __s, streamsize __n);
+      // A complex "seekpos" function that sets all of __c_file_type's
+      // pointers and associated data members correctly and manages it's
+      // relation to the external byte sequence.
+      virtual streamoff
+      seekpos(streamoff __pos, 
+	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-    // A complex "seekoff" function that sets all of __c_file_type's
-    // ponters and associated data members correctly and manages it's
-    // relation to the external byte sequence.
-    virtual streamoff
-    seekoff(streamoff __off, ios_base::seekdir __way,
-	    ios_base::openmode __mode = ios_base::in | ios_base::out);
+      virtual streambuf* 
+      setbuf(_CharT* __b, int __len);
 
-    // A complex "seekpos" function that sets all of __c_file_type's
-    // pointers and associated data members correctly and manages it's
-    // relation to the external byte sequence.
-    virtual streamoff
-    seekpos(streamoff __pos, 
-	    ios_base::openmode __mode = ios_base::in | ios_base::out);
+      virtual int 
+      sync();
 
-    virtual streambuf* 
-    setbuf(char* __b, int __len);
+      virtual int 
+      doallocate();
 
-    virtual int 
-    sync();
+      // A simple read function for the external byte sequence, that
+      // does no mucking around with or setting of the pointers or flags
+      // in __c_file_type.
+      virtual streamsize 
+      sys_read(char* __s, streamsize __n);
 
-    virtual int 
-    doallocate();
+      // A simple write function for the external byte sequence, that
+      // does no mucking around with or setting of the pointers or flags
+      // in __c_file_type.
+      virtual streamsize 
+      sys_write(const char* __s, streamsize __n);
 
-    // A simple read function for the external byte sequence, that
-    // does no mucking around with or setting of the pointers or flags
-    // in __c_file_type.
-    virtual streamsize 
-    sys_read(char* __s, streamsize __n);
+      // A simple seek function for the external byte sequence, that
+      // does no mucking around with or setting of the pointers or flags
+      // in __c_file_type.
+      virtual streamoff
+      sys_seek(streamoff __off, ios_base::seekdir __way);
 
-    // A simple write function for the external byte sequence, that
-    // does no mucking around with or setting of the pointers or flags
-    // in __c_file_type.
-    virtual streamsize 
-    sys_write(const char* __s, streamsize __n);
+      virtual int 
+      sys_close();
 
-    // A simple seek function for the external byte sequence, that
-    // does no mucking around with or setting of the pointers or flags
-    // in __c_file_type.
-    virtual streamoff
-    sys_seek(streamoff __off, ios_base::seekdir __way);
+      virtual int 
+      sys_stat(void* __v);
 
-    virtual int 
-    sys_close();
+      virtual int 
+      showmanyc();
 
-    virtual int 
-    sys_stat(void* __v);
-
-    virtual int 
-    showmanyc();
-
-    virtual void 
-    imbue(void* __v);
+      virtual void 
+      imbue(void* __v);
     };
+
+  // __basic_file<char> specializations
+  template<>
+    __basic_file<char>::__basic_file(__c_lock* __lock);
+
+  template<>
+    int 
+    __basic_file<char>::overflow(int __c);
+
+  template<>
+    int 
+    __basic_file<char>::underflow();
+
+  template<>
+    streamsize 
+    __basic_file<char>::xsputn(const char* __s, streamsize __n);
+
+  template<>
+    streamoff
+    __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
+				ios_base::openmode __mode);
+
+  template<>
+    streamoff
+    __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode __mode);
+
+  template<>
+    streambuf* 
+    __basic_file<char>::setbuf(char* __b, int __len);
+
+  template<>
+    int 
+    __basic_file<char>::sync();
+
+  template<>
+    int 
+    __basic_file<char>::doallocate();
+
+  // __basic_file<wchar_t> specializations
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    __basic_file<wchar_t>::__basic_file(__c_lock* __lock);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::overflow(int __c);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::underflow();
+
+  template<>
+    streamsize 
+    __basic_file<wchar_t>::xsputn(const char* __s, streamsize __n);
+
+  template<>
+    streamoff
+    __basic_file<wchar_t>::seekoff(streamoff __off, ios_base::seekdir __way, 
+				ios_base::openmode __mode);
+
+  template<>
+    streamoff
+    __basic_file<wchar_t>::seekpos(streamoff __pos, ios_base::openmode __mode);
+
+  template<>
+    streambuf* 
+    __basic_file<wchar_t>::setbuf(wchar_t* __b, int __len);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::sync();
+
+  template<>
+    int 
+    __basic_file<wchar_t>::doallocate();
+#endif
 
 } // namespace std
 

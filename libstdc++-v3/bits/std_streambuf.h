@@ -232,12 +232,12 @@ namespace std {
       bool
       _M_is_indeterminate(void)
       { 
-	bool __retval = false;
+	bool __ret = false;
 	if (_M_mode & ios_base::in)
-	  __retval = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
+	  __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
 	if (_M_mode & ios_base::out)
-	  __retval = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
-	return __retval;
+	  __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	return __ret;
       }
 
   public:
@@ -294,21 +294,21 @@ namespace std {
       streamsize 
       in_avail() 
       { 
-	streamsize __retval;
+	streamsize __ret;
 	if (_M_in_cur && _M_in_cur < _M_in_end)
 	  {
 	    if (_M_pback_init)
 	      {
 		int_type __save_len =  _M_pback_end_save - _M_pback_cur_save;
 		int_type __pback_len = _M_in_cur - _M_pback;
-		__retval = __save_len - __pback_len;
+		__ret = __save_len - __pback_len;
 	      }
 	    else
-	      __retval = this->egptr() - this->gptr();
+	      __ret = this->egptr() - this->gptr();
 	  }
 	else
-	  __retval = this->showmanyc();
-	return __retval;
+	  __ret = this->showmanyc();
+	return __ret;
       }
 
       int_type 
@@ -324,12 +324,12 @@ namespace std {
       int_type 
       sgetc()
       {
-	int_type __retval;
+	int_type __ret;
 	if (_M_in_cur && _M_in_cur < _M_in_end)
-	  __retval = traits_type::to_int_type(*gptr());
+	  __ret = traits_type::to_int_type(*gptr());
 	else 
-	  __retval = this->underflow();
-	return __retval;
+	  __ret = this->underflow();
+	return __ret;
       }
 
       streamsize 
@@ -457,18 +457,18 @@ namespace std {
       virtual int_type 
       uflow() 
       {
-	int_type __retval = traits_type::eof();
-	bool __testeof = this->underflow() == __retval;
+	int_type __ret = traits_type::eof();
+	bool __testeof = this->underflow() == __ret;
 	bool __testpending = _M_in_cur && _M_in_cur < _M_in_end;
 	
 	if (!__testeof && __testpending)
 	  {
-	    __retval = traits_type::to_int_type(*_M_in_cur);
+	    __ret = traits_type::to_int_type(*_M_in_cur);
 	    ++_M_in_cur;
 	    if (_M_buf_unified && _M_mode & ios_base::out)
 	      ++_M_out_cur;
 	  }
-	return __retval;    
+	return __ret;    
       }
 
       // Putback:

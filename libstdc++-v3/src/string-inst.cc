@@ -209,8 +209,8 @@ namespace std
     const char* 
     string::_S_find(const char* __beg, const char* __end, char __c)
     { 
-      const char* __retval = strchr(__beg, __c); 
-      return (__retval ? __retval : __end);
+      const char* __ret = strchr(__beg, __c); 
+      return (__ret ? __ret : __end);
     }
 #else
   template<>
