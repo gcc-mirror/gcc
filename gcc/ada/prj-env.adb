@@ -804,6 +804,10 @@ package body Prj.Env is
       --  Put the mapping of the spec or body contained in Data in the file
       --  (3 lines).
 
+      ---------
+      -- Put --
+      ---------
+
       procedure Put (S : String) is
          Last : Natural;
 
@@ -813,8 +817,11 @@ package body Prj.Env is
          if Last /= S'Length then
             Osint.Fail ("Disk full");
          end if;
-
       end Put;
+
+      --------------
+      -- Put_Data --
+      --------------
 
       procedure Put_Data (Spec : Boolean) is
       begin
@@ -832,6 +839,8 @@ package body Prj.Env is
          Put (Get_Name_String (Data.Path));
          Put (S => (1 => ASCII.LF));
       end Put_Data;
+
+   --  Start of processing for Create_Mapping_File
 
    begin
       GNAT.OS_Lib.Create_Temp_File (File, Name => Name);
@@ -938,7 +947,7 @@ package body Prj.Env is
       for Current in reverse Units.First .. Units.Last loop
          Unit := Units.Table (Current);
 
-         --  If it is a unit of the same project
+         --  Case of unit of the same project
 
          if Unit.File_Names (Body_Part).Project = Project then
             declare
@@ -946,7 +955,7 @@ package body Prj.Env is
                                 Unit.File_Names (Body_Part).Name;
 
             begin
-               --  If there is a body
+               --  Case of a body present
 
                if Current_Name /= No_Name then
                   if Current_Verbosity = High then
@@ -987,7 +996,7 @@ package body Prj.Env is
             end;
          end if;
 
-         --  If it is a unit of the same project
+         --  Case of a unit of the same project
 
          if Units.Table (Current).File_Names (Specification).Project =
                                                                  Project
@@ -997,7 +1006,7 @@ package body Prj.Env is
                                 Unit.File_Names (Specification).Name;
 
             begin
-               --  If there is a spec
+               --  Case of spec present
 
                if Current_Name /= No_Name then
                   if Current_Verbosity = High then
@@ -1007,8 +1016,7 @@ package body Prj.Env is
                      Write_Eol;
                   end if;
 
-                  --  If it has the same name as the original name,
-                  --  return the original name
+                  --  If name same as the original name, return original name
 
                   if Unit.Name = The_Original_Name
                     or else Current_Name = The_Original_Name
@@ -1020,7 +1028,7 @@ package body Prj.Env is
                      return Get_Name_String (Current_Name);
 
                   --  If it has the same name as the extended spec name,
-                  --  return the extended spec name
+                  --  return the extended spec name.
 
                   elsif Current_Name = The_Spec_Name then
                      if Current_Verbosity = High then

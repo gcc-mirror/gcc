@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Fmap;
+with Fmap;     use Fmap;
 with Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -996,16 +996,16 @@ package body Osint is
          --  directory where the user said it was.
 
          elsif Look_In_Primary_Directory_For_Current_Main
-           and then Current_Main = N then
+           and then Current_Main = N
+         then
             return Locate_File (N, T, Primary_Directory, File_Name);
 
          --  Otherwise do standard search for source file
 
          else
-
             --  Check the mapping of this file name
 
-            File := Fmap.Path_Name_Of (N);
+            File := Mapped_Path_Name (N);
 
             --  If the file name is mapped to a path name, return the
             --  corresponding path name

@@ -610,8 +610,9 @@ package body Switch is
 
                   when 'c' =>
                      Ptr := Ptr + 1;
+
                      if Ptr > Max then
-                        Osint.Fail ("Invalid switch: ", "ec");
+                        raise Bad_Switch;
                      end if;
 
                      Config_File_Name :=
@@ -623,18 +624,17 @@ package body Switch is
 
                   when 'm' =>
                      Ptr := Ptr + 1;
+
                      if Ptr > Max then
-                        Osint.Fail ("Invalid switch: ", "em");
+                        raise Bad_Switch;
                      end if;
 
                      Mapping_File_Name :=
                        new String'(Switch_Chars (Ptr .. Max));
-
                      return;
 
                   when others =>
-                     Osint.Fail ("Invalid switch: ",
-                                   (1 => 'e', 2 => Switch_Chars (Ptr)));
+                     raise Bad_Switch;
                end case;
 
             --  Processing for E switch
