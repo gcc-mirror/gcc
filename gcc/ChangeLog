@@ -1,3 +1,16 @@
+Sun Jul 15 14:07:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Fix register_life_up_to_date
+	handling; move unconditional splitting before mode switching.
+
+	* i386.md (type): Add fistp type.
+	(i387, length_attr, scheduling definitions): Handle this type.
+	(fix_trunc?f?i2): Revamp to use mode switching.
+	(fix_trunct?f?i_nonmemory, fix_trunc?f?i_memory): New patterns.
+	* i386.h (fp_cw_mode): New enum
+	(OPTIMIZE_MODE_SWITCHING, NUM_MODES_FOR_MODE_SWITCHING, MODE_NEEDED,
+	MODE_PRIORITY_TO_MODE, ENUM_MODE_SET): New macros.
+
 Sun Jul 15 12:53:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (integrate.o): Add debug.h.
