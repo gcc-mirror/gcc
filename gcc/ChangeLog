@@ -1,3 +1,9 @@
+2000-12-14  Jim Wilson  <wilson@redhat.com>
+
+	* alias.c (get_alias_set): Call record_component_aliases for
+	COMPLEX_TYPE.
+	(record_component_aliases): Handle COMPLEX_TYPE.
+	
 2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/gnu-regex.c: Disable NLS.
