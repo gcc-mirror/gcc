@@ -129,6 +129,7 @@ else
   AC_MSG_RESULT(no)
 fi
 
+AC_CHECK_FUNCS(mkstemp)
 AC_CHECK_FUNCS(tempnam)
 
 # posix will guarantee the right behaviour for sprintf, else we can't be

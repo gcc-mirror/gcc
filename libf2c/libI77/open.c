@@ -133,10 +133,11 @@ integer f_open(olist *a)
 #endif
 {	unit *b;
 	integer rv;
-	char buf[256], *s;
+	char buf[256], *s, *env;
 	cllist x;
 	int ufmt;
 	FILE *tf;
+	int fd, len;
 #ifndef NON_UNIX_STDIO
 	int n;
 #endif
@@ -209,6 +210,19 @@ integer f_open(olist *a)
 	 case 's':
 	 case 'S':
 		b->uscrtch=1;
+#ifdef HAVE_MKSTEMP             /* Allow use of TMPDIR preferentially. */
+		env = getenv("TMPDIR");
+		if (!env) env = getenv("TEMP");
+		if (!env) env = "/tmp";
+		len = strlen(env);
+		if (len > 256 - sizeof "/tmp.FXXXXXX")
+		  err (a->oerr, 132, "open");
+		strcpy(buf, env);
+		strcat(buf, "/tmp.FXXXXXX");
+		fd = mkstemp(buf);
+		if (fd == -1 || close(fd))
+		  err (a->oerr, 132, "open");
+#else /* ! defined (HAVE_MKSTEMP) */
 #ifdef HAVE_TEMPNAM		/* Allow use of TMPDIR preferentially. */
 		s = tempnam (0, buf);
 		if (strlen (s) >= sizeof (buf))
@@ -223,6 +237,7 @@ integer f_open(olist *a)
 		(void) mktemp(buf);
 #endif
 #endif /* ! defined (HAVE_TEMPNAM) */
+#endif /* ! defined (HAVE_MKSTEMP) */
 		goto replace;
 	case 'n':
 	case 'N':
