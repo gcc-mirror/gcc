@@ -1271,6 +1271,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  rtx stack_slot
 	    = assign_stack_temp (TYPE_MODE (TREE_TYPE (arg)),
 				 int_size_in_bytes (TREE_TYPE (arg)), 1);
+	  MEM_IN_STRUCT_P (stack_slot) = AGGREGATE_TYPE_P (TREE_TYPE (arg));
 
 	  store_expr (arg, stack_slot, 0);
 

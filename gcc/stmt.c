@@ -3248,6 +3248,7 @@ expand_decl (decl)
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
 	DECL_RTL (decl) = gen_rtx (MEM, BLKmode, gen_reg_rtx (Pmode));
+      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (type);
     }
   else if (DECL_MODE (decl) != BLKmode
 	   /* If -ffloat-store, don't put explicit float vars
@@ -3309,6 +3310,7 @@ expand_decl (decl)
 			       + BITS_PER_UNIT - 1)
 			      / BITS_PER_UNIT),
 			     1);
+      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
 
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT

@@ -3727,6 +3727,7 @@ save_noncopied_parts (lhs, list)
 	tree to_be_saved = build (COMPONENT_REF, part_type, lhs, part);
 	rtx target = assign_stack_temp (TYPE_MODE (part_type),
 					int_size_in_bytes (part_type), 0);
+	MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (part_type);
 	if (! memory_address_p (TYPE_MODE (part_type), XEXP (target, 0)))
 	  target = change_address (target, TYPE_MODE (part_type), NULL_RTX);
 	parts = tree_cons (to_be_saved,
@@ -5025,6 +5026,7 @@ expand_expr (exp, target, tmode, modifier)
 					      (TREE_INT_CST_LOW (TYPE_SIZE (type))
 					       + BITS_PER_UNIT - 1)
 					      / BITS_PER_UNIT, 0);
+		  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (type);
 		}
 	      else
 		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
@@ -6014,6 +6016,7 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      {
 		target = assign_stack_temp (mode, int_size_in_bytes (type), 2);
+		MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (type);
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
@@ -6222,6 +6225,7 @@ expand_expr (exp, target, tmode, modifier)
 	      rtx memloc
 		= assign_stack_temp (inner_mode,
 				     int_size_in_bytes (inner_type), 1);
+	      MEM_IN_STRUCT_P (memloc) = AGGREGATE_TYPE_P (inner_type);
 
 	      mark_temp_addr_taken (memloc);
 	      emit_move_insn (memloc, op0);
