@@ -120,6 +120,7 @@ proc g77_link_flags { paths } {
     setenv  SHLIB_PATH          $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
+    setenv  DYLD_LIBRARY_PATH   $ld_library_path
 
     return "$flags"
 }

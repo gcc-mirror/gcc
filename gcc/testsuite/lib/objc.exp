@@ -194,6 +194,7 @@ proc objc_target_compile { source dest type options } {
     setenv  SHLIB_PATH          $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
+    setenv  DYLD_LIBRARY_PATH   $ld_library_path 
 
     return [target_compile $source $dest $type $options]
 }

@@ -1,3 +1,11 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* g++.dg/compat/compat.exp: Add DYLD_LIBRARY_PATH for darwin.
+	* lib/g77.exp: Likewise.
+	* lib/objc.exp: Likewise.
+	* lib/g++.exp: Likewise, add -multiply_defined suppress flag
+	for darwin.
+
 2003-11-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12932
