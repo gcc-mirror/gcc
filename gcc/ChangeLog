@@ -1,3 +1,9 @@
+2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/cppinternals.texi, doc/install.texi, doc/invoke.texi,
+	doc/md.texi, doc/sourcebuild.texi, doc/tm.texi, doc/trouble.texi:
+	Use terminology "testsuite" and "enumerated".
+
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (reg_save): Use INVALID_REGNUM.

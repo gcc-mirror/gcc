@@ -226,7 +226,7 @@ foo
 @end smallexample
 
 This is a good example of the subtlety of getting token spacing correct
-in the preprocessor; there are plenty of tests in the test suite for
+in the preprocessor; there are plenty of tests in the testsuite for
 corner cases like this.
 
 The lexer is written to treat each of @samp{\r}, @samp{\n}, @samp{\r\n}
