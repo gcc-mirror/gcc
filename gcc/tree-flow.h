@@ -736,6 +736,8 @@ tree vn_lookup (tree, vuse_optype);
 void vn_init (void);
 void vn_delete (void);
 
+/* In tree-ssa-sink.c  */
+bool is_hidden_global_store (tree);
 
 /* In tree-sra.c  */
 void insert_edge_copies (tree, basic_block);

@@ -501,6 +501,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_sra = 1;
       flag_tree_copyrename = 1;
       flag_tree_fre = 1;
+      flag_tree_sink = 1;
 
       if (!optimize_size)
 	{

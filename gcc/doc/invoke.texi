@@ -264,6 +264,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-copyrename@r{[}-@var{n}@r{]} @gol
 -fdump-tree-nrv -fdump-tree-vect @gol
+-fdump-tree-sink @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
@@ -319,7 +320,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
--ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
+-ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
@@ -3843,6 +3844,11 @@ made by appending @file{.mudflap} to the source file name.
 Dump each function after performing scalar replacement of aggregates.  The
 file name is made by appending @file{.sra} to the source file name.
 
+@item sink
+@opindex fdump-tree-sink
+Dump each function after performing code sinking.  The file name is made
+by appending @file{.sink} to the source file name. 
+
 @item dom
 @opindex fdump-tree-dom
 Dump each function after applying dominator tree optimizations.  The file
@@ -4678,6 +4684,10 @@ between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
+
+@item -ftree-sink
+Perform forward store motion  on trees.  This flag is
+enabled by default at @option{-O} and higher.
 
 @item -ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This flag
