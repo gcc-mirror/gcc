@@ -1,3 +1,9 @@
+2004-09-16  Victor Leikehman  <lei@il.ibm.com>
+
+	PR/15364
+	* trans-io.c (transfer_array_component): New function.
+	(transfer_expr): For array fields, call transfer_array_component.
+
 2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gfortran.texi: Fix a typo.

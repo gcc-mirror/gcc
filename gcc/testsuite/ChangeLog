@@ -1,3 +1,10 @@
+2004-09-16  Victor Leikehman  <lei@il.ibm.com>
+
+	PR/15364
+	* gfortran.dg/der_array_io_1.f90: New test.
+	* gfortran.dg/der_array_io_2.f90: New test.
+	* gfortran.dg/der_array_io_3.f90: New test.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/g++.old-deja/g++.abi/cxa_vec.C: Adjust for ARM
