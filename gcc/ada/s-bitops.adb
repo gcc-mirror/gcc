@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2002 Free Software Foundation, Inc.           --
+--         Copyright (C) 1996-2004 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,10 +123,7 @@ package body System.Bit_Ops is
             Bitc : constant Natural := Llen mod 8;
 
          begin
-            if Llen /= Rlen then
-               return False;
-
-            elsif LeftB (1 .. BLen) /= RightB (1 .. BLen) then
+            if LeftB (1 .. BLen) /= RightB (1 .. BLen) then
                return False;
 
             elsif Bitc /= 0 then
