@@ -218,6 +218,11 @@ struct reg_info_data {
 
 static struct reg_info_data *reg_info_head;
 
+/* No more global register vairiables may be declared; true once
+   regclass has been initialized. */
+
+static int no_global_reg_vars = 0;
+
 
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
@@ -625,6 +630,9 @@ void
 globalize_reg (i)
      int i;
 {
+  if (no_global_reg_vars)
+    error ("global register variable follows a function definition");
+
   if (global_regs[i])
     {
       warning ("register used for two global register variables");
@@ -758,6 +766,9 @@ regclass_init ()
   /* This prevents dump_flow_info from losing if called
      before regclass is run.  */
   reg_pref = NULL;
+
+  /* No more global register vairiables may be declared. */
+  no_global_reg_vars = 1;
 }
 
 /* Dump register costs.  */

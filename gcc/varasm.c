@@ -149,10 +149,6 @@ int size_directive_output;
 
 tree last_assemble_variable_decl;
 
-/* Nonzero if at least one function definition has been seen.  */
-
-static int function_defined;
-
 static const char *strip_reg_name	PROTO((const char *));
 static int contains_pointers_p		PROTO((tree));
 static void decode_addr_const		PROTO((tree, struct addr_const *));
@@ -579,9 +575,6 @@ make_function_rtl (decl)
 	ENCODE_SECTION_INFO (decl);
 #endif
     }
-
-  /* Record at least one function has been defined.  */
-  function_defined = 1;
 }
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
@@ -729,9 +722,6 @@ make_decl_rtl (decl, asmspec, top_level)
 	      DECL_INITIAL (decl) = 0;
 	      error ("global register variable has initial value");
 	    }
-	  if (fixed_regs[reg_number] == 0
-	      && function_defined && top_level)
-	    error ("global register variable follows a function definition");
 	  if (TREE_THIS_VOLATILE (decl))
 	    warning ("volatile register variables don't work as you might wish");
 
