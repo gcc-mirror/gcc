@@ -3647,18 +3647,26 @@ restageprofile: unstageprofile
 restagefeedback: unstagefeedback
 	$(MAKE) LANGUAGES="$(LANGUAGES)" stagefeedback_build
 
+# Bubble up a bugfix through all the stages.  Primarily useful for fixing
+# bugs that cause the compiler to crash while building stage 2.
 bubblestrap:
-	if test -f stage3_build; then true; else \
-	  echo; echo You must \"make bootstrap\" first.; \
-	  exit 1; \
+	if test -f stage_last; then \
+	  LAST=`cat stage_last|sed -e 's/_build//'`; \
+	  if test "$$LAST" != "stage1"; then \
+	    $(MAKE) $$LAST; \
+	    $(STAMP) $${LAST}_copy; \
+	  fi; \
 	fi
-	for i in stage3 \
-		unstage1 stage1_build stage1_copy \
-		unstage2 stage2_build stage2_copy \
-		unstage3 stage3_build ; \
-	do \
-	  $(MAKE) LANGUAGES="$(LANGUAGES)" $$i || exit 1 ; \
-	done
+	if test -f stage1_copy; then $(MAKE) unstage1; fi
+	$(MAKE) LANGUAGES="$(LANGUAGES)" stage1_copy
+	if test -f stage2_copy; then $(MAKE) unstage2; fi
+	$(MAKE) LANGUAGES="$(LANGUAGES)" stage2_copy
+	if test -f stage3_copy; then $(MAKE) unstage3; fi
+	$(MAKE) LANGUAGES="$(LANGUAGES)" stage3_build
+	if test -f stage4_copy; then \
+	  $(MAKE) stage3_copy; $(MAKE) unstage4; \
+	  $(MAKE) LANGUAGES="$(LANGUAGES)" stage4_build || exit 1; \
+	fi
 
 quickstrap:
 	if test -f stage_last ; then \

@@ -2445,6 +2445,11 @@ extern int fields_length (tree);
 
 extern bool initializer_zerop (tree);
 
+/* Given an initializer INIT, return TRUE if INIT is at least 3/4 zeros.
+   Otherwise return FALSE.  */
+
+extern int mostly_zeros_p (tree);
+
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0 */
 
 extern int integer_zerop (tree);
