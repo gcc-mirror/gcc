@@ -9359,7 +9359,7 @@ output_description ()
       if (decl->mode == dm_reserv)
 	{
           fprintf (output_description_file, "reservation ");
-          fprintf (output_description_file, DECL_RESERV (decl)->name);
+          fprintf (output_description_file, "%s", DECL_RESERV (decl)->name);
           fprintf (output_description_file, ": ");
           output_regexp (DECL_RESERV (decl)->regexp);
           fprintf (output_description_file, "\n");
@@ -9433,7 +9433,7 @@ output_automaton_units (automaton)
 	      curr_line_length += strlen (name) + 1;
 	      fprintf (output_description_file, " ");
 	    }
-	  fprintf (output_description_file, name);
+	  fprintf (output_description_file, "%s", name);
 	}
     }
   if (!there_is_an_automaton_unit)
@@ -9506,7 +9506,7 @@ output_state_arcs (state)
                   fprintf (output_description_file, ", ");
                 }
             }
-          fprintf (output_description_file, insn_name);
+          fprintf (output_description_file, "%s", insn_name);
           ainsn = ainsn->next_same_reservs_insn;
         }
       while (ainsn != NULL);
