@@ -1,3 +1,8 @@
+2000-05-23  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/stringconst.out: New file.
+	* libjava.lang/stringconst.java: New file.
+
 2000-05-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/PR232B.java: Additional PR gcj/232 test.
