@@ -1,4 +1,4 @@
-/* AbstractSelectableChannel.java --
+/* AbstractSelectableChannel.java
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,18 +37,171 @@ exception statement from your version. */
 
 package java.nio.channels.spi;
 
+import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
-public abstract class AbstractSelectableChannel
-  extends SelectableChannel
+public abstract class AbstractSelectableChannel extends SelectableChannel
 {
+  int registered;
+  boolean blocking = true;
+  Object LOCK = new Object ();
+  SelectorProvider provider;
+  List keys;
+
+  /**
+   * Initializes the channel
+   */
   protected AbstractSelectableChannel (SelectorProvider provider)
   {
+    this.provider = provider;
   }
+
+  /**
+   * Retrieves the object upon which the configureBlocking and register
+   * methods synchronize.
+   */
+  public final Object blockingLock ()
+  {
+    return LOCK;
+  }
+    
+  /**
+   * Adjusts this channel's blocking mode.
+   */
+  public final SelectableChannel configureBlocking (boolean block)
+  {
+    synchronized (LOCK)
+      {
+    	blocking = true;
+    	implConfigureBlocking (block);
+      }
+    
+    return this;
+  }
+
+  /**
+   * Closes this channel.
+   */
+  protected final void implCloseChannel ()
+  {
+    implCloseSelectableChannel ();
+  }
+
+  /**
+   * Closes this selectable channel.
+   */
+  protected abstract void implCloseSelectableChannel ();
   
+  /**
+   * Adjusts this channel's blocking mode.
+   */
+  protected abstract void implConfigureBlocking (boolean block);
+
+  /**
+   * Tells whether or not every I/O operation on this channel will block
+   * until it completes.
+   */
   public final boolean isBlocking()
   {
-    return true;
+    return blocking;
+  }
+
+  /**
+   * Tells whether or not this channel is currently registered with
+   * any selectors.
+   */
+  public final boolean isRegistered()
+  {
+    return registered > 0;
+  }
+
+  /**
+   * Retrieves the key representing the channel's registration with the
+   * given selector.
+   */
+  public final SelectionKey keyFor(Selector selector)
+  {
+    try
+      {
+        return register (selector, 0, null);
+      }
+    catch (Exception e)
+      {
+        return null;
+      }
+  }
+
+  /**
+   * Returns the provider that created this channel.
+   */
+  public final SelectorProvider provider ()
+  {
+    return provider;
+  }
+
+  private SelectionKey locate (Selector selector)
+  {
+    if (keys == null)
+      return null;
+    
+    SelectionKey k = null;
+    ListIterator it = keys.listIterator ();
+    
+    while (it.hasNext ())
+      {
+    	k = (SelectionKey) it.next ();
+    	if (k.selector () == selector)
+          {
+            return k;
+          }
+      }
+    
+    return k;
+  }
+
+  private void add (SelectionKey key)
+  {
+    if (keys == null)
+      keys = new LinkedList ();
+    
+    keys.add (key);
+  }
+
+  /**
+   * Registers this channel with the given selector, returning a selection key.
+   */
+  public final SelectionKey register (Selector selin, int ops, Object att)
+    throws ClosedChannelException
+  {
+    if (!isOpen ())
+      throw new ClosedChannelException();
+
+    SelectionKey k = null;
+    AbstractSelector selector = (AbstractSelector) selin;
+
+    synchronized (LOCK)
+      {
+    	k = locate (selector);
+
+    	if (k != null)
+          {
+            k.attach (att);
+          }
+    	else
+          {
+            k = selector.register (this, ops, att);
+    		
+            if (k != null)
+              add (k);
+    	  }
+      }
+
+    return k;
   }
 }
-

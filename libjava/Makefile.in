@@ -1621,6 +1621,15 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
+gnu/java/nio/charset/ISO_8859_1.java \
+gnu/java/nio/charset/Provider.java \
+gnu/java/nio/charset/US_ASCII.java \
+gnu/java/nio/charset/UTF_16.java \
+gnu/java/nio/charset/UTF_16BE.java \
+gnu/java/nio/charset/UTF_16Decoder.java \
+gnu/java/nio/charset/UTF_16Encoder.java \
+gnu/java/nio/charset/UTF_16LE.java \
+gnu/java/nio/charset/UTF_8.java \
 gnu/java/security/der/DEREncodingException.java \
 gnu/java/security/provider/DERReader.java \
 gnu/java/security/provider/DERWriter.java \
@@ -1713,6 +1722,8 @@ java/nio/BufferOverflowException.java \
 java/nio/BufferUnderflowException.java \
 java/nio/ByteBuffer.java \
 java/nio/ByteOrder.java \
+java/nio/CharBuffer.java \
+java/nio/InvalidMarkException.java \
 java/nio/MappedByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/ByteChannel.java \
@@ -1732,14 +1743,16 @@ java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
 java/nio/channels/WritableByteChannel.java \
 java/nio/channels/spi/AbstractSelectableChannel.java \
-java/nio/channels/spi/AbstractChannel.java \
 java/nio/channels/spi/AbstractInterruptibleChannel.java \
 java/nio/channels/spi/AbstractSelectionKey.java \
 java/nio/channels/spi/AbstractSelector.java \
 java/nio/channels/spi/SelectorProvider.java \
 java/nio/charset/Charset.java \
 java/nio/charset/CharacterCodingException.java \
+java/nio/charset/CharsetDecoder.java \
+java/nio/charset/CharsetEncoder.java \
 java/nio/charset/CoderMalfunctionError.java \
+java/nio/charset/CoderResult.java \
 java/nio/charset/CodingErrorAction.java \
 java/nio/charset/IllegalCharsetNameException.java \
 java/nio/charset/MalformedInputException.java \
@@ -2514,7 +2527,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/locale/LocaleInformation_zh_HK.P \
 .deps/gnu/java/locale/LocaleInformation_zh_SG.P \
 .deps/gnu/java/locale/LocaleInformation_zh_TW.P \
-.deps/gnu/java/math/MPN.P \
+.deps/gnu/java/math/MPN.P .deps/gnu/java/nio/charset/ISO_8859_1.P \
+.deps/gnu/java/nio/charset/Provider.P \
+.deps/gnu/java/nio/charset/US_ASCII.P \
+.deps/gnu/java/nio/charset/UTF_16.P \
+.deps/gnu/java/nio/charset/UTF_16BE.P \
+.deps/gnu/java/nio/charset/UTF_16Decoder.P \
+.deps/gnu/java/nio/charset/UTF_16Encoder.P \
+.deps/gnu/java/nio/charset/UTF_16LE.P \
+.deps/gnu/java/nio/charset/UTF_8.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \
@@ -2981,7 +3002,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/natPlainSocketImpl.P .deps/java/nio/Buffer.P \
 .deps/java/nio/BufferOverflowException.P \
 .deps/java/nio/BufferUnderflowException.P .deps/java/nio/ByteBuffer.P \
-.deps/java/nio/ByteOrder.P .deps/java/nio/MappedByteBuffer.P \
+.deps/java/nio/ByteOrder.P .deps/java/nio/CharBuffer.P \
+.deps/java/nio/InvalidMarkException.P .deps/java/nio/MappedByteBuffer.P \
 .deps/java/nio/channels/AlreadyConnectedException.P \
 .deps/java/nio/channels/ByteChannel.P .deps/java/nio/channels/Channel.P \
 .deps/java/nio/channels/ClosedChannelException.P \
@@ -2998,7 +3020,6 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/ServerSocketChannel.P \
 .deps/java/nio/channels/SocketChannel.P \
 .deps/java/nio/channels/WritableByteChannel.P \
-.deps/java/nio/channels/spi/AbstractChannel.P \
 .deps/java/nio/channels/spi/AbstractInterruptibleChannel.P \
 .deps/java/nio/channels/spi/AbstractSelectableChannel.P \
 .deps/java/nio/channels/spi/AbstractSelectionKey.P \
@@ -3006,7 +3027,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/spi/SelectorProvider.P \
 .deps/java/nio/charset/CharacterCodingException.P \
 .deps/java/nio/charset/Charset.P \
+.deps/java/nio/charset/CharsetDecoder.P \
+.deps/java/nio/charset/CharsetEncoder.P \
 .deps/java/nio/charset/CoderMalfunctionError.P \
+.deps/java/nio/charset/CoderResult.P \
 .deps/java/nio/charset/CodingErrorAction.P \
 .deps/java/nio/charset/IllegalCharsetNameException.P \
 .deps/java/nio/charset/MalformedInputException.P \

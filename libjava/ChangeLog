@@ -1,3 +1,22 @@
+2002-11-12  Michael Koch <konqueror@gmx.de>
+
+	* java/nio/Buffer.java: Implemented.
+	* java/nio/CharBuffer.java: New file.
+	* java/nio/InvalidMarkException.java: New file.
+	* java/nio/channels/DatagramChannel.java: Implemented.
+	* java/nio/channels/ServerSocketChannel.java: Implemented.
+	* java/nio/channels/SocketChannel.java: Implemented.
+	* java/nio/channels/spi/AbstractChannel.java: Removed.
+	* java/nio/channels/spi/AbstractSelectableChannel.java:
+	Implemented.
+	* java/nio/charset/Charset.java:
+	Merge from Classpath.
+	* java/nio/charset/CharsetDecoder.java: New file.
+	* java/nio/charset/CharsetEncoder.java: New file.
+	* java/nio/charset/CoderResult.java: New file.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* Makefile.in: Regenerated.
+	
 2002-11-11  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	* gnu/java/nio/charset/ISO_8859_1.java,
@@ -9,10 +28,7 @@
 	gnu/java/nio/charset/UTF_16Encoder.java,
 	gnu/java/nio/charset/UTF_16LE.java,
 	gnu/java/nio/charset/UTF_8.java: New files.
-	* Makefile.am ():
-	Added new files.
-	* Makefile.in: Regenerated.
-	
+
 2002-11-11  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/charset/CharacterCodingException.java:

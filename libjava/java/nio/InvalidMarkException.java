@@ -1,4 +1,4 @@
-/* AbstractChannel.java -- 
+/* InvalidMarkException.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,23 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels.spi;
+package java.nio;
 
-import java.io.IOException;
-import java.nio.channels.Channel;
-
-public abstract class AbstractChannel implements Channel
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
+public class InvalidMarkException extends IllegalStateException
 {
-  boolean opened;
-
-  public boolean isOpen()
+  /**
+   * Creates the exception
+   */
+  public InvalidMarkException ()
   {
-    return opened;
-  }
-
-  public void close() throws IOException
-  {
-    if (! isOpen())
-      return;
   }
 }

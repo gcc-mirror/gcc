@@ -39,12 +39,127 @@ package java.nio.channels;
 
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.nio.ByteBuffer;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketAddress;
 
-public abstract class SocketChannel
-  extends AbstractSelectableChannel
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
+abstract public class SocketChannel extends AbstractSelectableChannel
 {
-  public SocketChannel (SelectorProvider provider)
+  /**
+   * Initializes this socket.
+   */
+  protected SocketChannel (SelectorProvider provider)
   {
     super (provider);
   }
+ 
+  /**
+   * Opens a socket channel.
+   */
+  public static SocketChannel open () throws IOException
+  {
+    return SelectorProvider.provider ().openSocketChannel ();
+  }
+  
+  /**
+   * Opens a channel and connects it to a remote address.
+   */
+  public static SocketChannel open (SocketAddress remote) throws IOException
+  {
+    SocketChannel ch = open ();
+	
+    if (ch.connect (remote))
+      {
+      }
+    
+    return ch;
+  }
+    
+  /**
+   * Reads data from the channel.
+   */
+  public final long read (ByteBuffer[] dsts)
+  {
+    long b = 0;
+    
+    for (int i = 0; i < dsts.length; i++)
+      {
+        b += read (dsts [i]);
+      }
+    
+    return b;
+  }
+    
+  /**
+   * Writes data to the channel.
+   */
+  public final long write (ByteBuffer[] dsts)
+  {
+    long b = 0;
+
+    for (int  i= 0; i < dsts.length; i++)
+      {
+        b += write (dsts [i]);
+      }
+    
+    return b;
+  }    
+   
+  /**
+   * Retrieves the valid operations for this channel.
+   */
+  public final int validOps ()
+  {
+    return SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+  }
+
+  /**
+   * Reads data from the channel.
+   */
+  public abstract int read (ByteBuffer dst);
+
+  /**
+   * Connects the channel's socket to the remote address.
+   */
+  public abstract boolean connect (SocketAddress remote) throws IOException;
+  
+  /**
+   * Finishes the process of connecting a socket channel.
+   */
+  public abstract boolean finishConnect ();
+ 
+  /**
+   * Tells whether or not the channel's socket is connected.
+   */
+  public abstract boolean isConnected ();
+  
+  /**
+   * Tells whether or not a connection operation is in progress on this channel.
+   */
+  public abstract boolean isConnectionPending ();
+  
+  /**
+   * Reads data from the channel.
+   */
+  public abstract long read (ByteBuffer[] dsts, int offset, int length);
+ 
+  /**
+   * Retrieves the channel's socket.
+   */
+  public abstract Socket socket ();
+  
+  /**
+   * Writes data to the channel.
+   */
+  public abstract int write (ByteBuffer src);
+  
+  /**
+   * Writes data to the channel.
+   */
+  public abstract long write (ByteBuffer[] srcs, int offset, int length);
 }

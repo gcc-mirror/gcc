@@ -39,12 +39,49 @@ package java.nio.channels;
 
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.nio.ByteOrder;
+import java.nio.ByteBuffer;
+import java.io.IOException;
+import java.net.ServerSocket;
 
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
 public abstract class ServerSocketChannel
   extends AbstractSelectableChannel
 {
+  /**
+   * Initializes this channel.
+   */
   public ServerSocketChannel (SelectorProvider provider)
   {
     super (provider);
   }
+  
+  /**
+   *  Accepts a connection made to this channel's socket.
+   */
+  public abstract SocketChannel accept ();
+  
+  /**
+   * Retrieves the channels socket.
+   */
+  public abstract ServerSocket socket ();
+    
+  /**
+   * Opens a server socker channel.
+   */
+  public static ServerSocketChannel open () throws IOException
+  {
+    return SelectorProvider.provider ().openServerSocketChannel ();
+  }
+
+  /**
+   * Retrieves the valid operations for this channel.
+   */
+  public final int validOps ()
+  {
+    return SelectionKey.OP_ACCEPT;
+  } 
 }

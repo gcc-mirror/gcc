@@ -39,4 +39,155 @@ package java.nio;
 
 public abstract class Buffer
 {
+  int cap = 0;
+  int limit = 0;
+  int pos = 0;
+  int mark = -1;
+
+  /**
+   * Retrieves the capacity of the buffer.
+   */
+  public final int capacity ()
+  {
+    return cap;
+  }
+
+  /**
+   * Clears the buffer.
+   */
+  public final Buffer clear ()
+  {
+    limit = cap;
+    pos = 0;
+    mark = -1;
+    return this;
+  }
+    
+  /**
+   * Flips the buffer.
+   */
+  public final Buffer flip ()
+  {
+    limit = pos;
+    pos = 0;
+    mark = -1;
+    return this;
+  }
+    
+  /**
+   * Tells whether the buffer has remaining data to read or not.
+   */
+  public final boolean hasRemaining ()
+  {
+    return limit > pos;
+  }
+
+  /**
+   * Tells whether this buffer is read only or not.
+   */
+  public abstract boolean isReadOnly ();
+
+  /**
+   * Retrieves the current limit of the buffer.
+   */
+  public final int limit ()
+  {
+    return limit;
+  }
+
+  /**
+   * Sets this buffer's limit.
+   * 
+   * @param newLimit The new limit value; must be non-negative and no larger
+   * than this buffer's capacity.
+   *
+   * @exception IllegalArgumentException If the preconditions on newLimit
+   * do not hold.
+   */
+  public final Buffer limit (int newLimit)
+  {
+    if ((newLimit < 0) || (newLimit > cap))
+      throw new IllegalArgumentException ();
+
+    if (newLimit <= mark)
+        mark = -1;
+
+    if (pos > newLimit)
+        pos = newLimit - 1;
+
+    limit = newLimit;
+    return this;
+  }
+
+  /**
+   * Sets this buffer's mark at its position.
+   */
+  public final Buffer mark ()
+  {
+    mark = pos;
+    return this;
+  }
+
+  /**
+   * Retrieves the current position of this buffer.
+   */
+  public final int position ()
+  {
+    return pos;
+  }
+    
+  /**
+   * Sets this buffer's position. If the mark is defined and larger than the
+   * new position then it is discarded.
+   * 
+   * @param newPosition The new position value; must be non-negative and no
+   * larger than the current limit.
+   * 
+   * @exception IllegalArgumentException If the preconditions on newPosition
+   * do not hold
+   */
+  public final Buffer position (int newPosition)
+  {
+    if ((newPosition < 0) || (newPosition > limit))
+      throw new IllegalArgumentException ();
+
+    if (newPosition <= mark)
+        mark = -1;
+
+    pos = newPosition;
+    return this;
+  }
+
+  /**
+   * Returns the number of elements between the current position and the limit.
+   */
+  public final int remaining()
+  {
+    return limit - pos;
+  }
+
+  /**
+   * Resets this buffer's position to the previously-marked position.
+   * 
+   * @exception InvalidMarkException If the mark has not been set.
+   */
+  public final Buffer reset()
+  {
+    if (mark == -1)
+      throw new InvalidMarkException ();
+
+    pos = mark;
+    return this;
+  }
+
+  /**
+   * Rewinds this buffer. The position is set to zero and the mark
+   * is discarded.
+   */
+  public final Buffer rewind()
+  {
+    pos = 0;
+    mark = -1;
+    return this;
+  }
 }
