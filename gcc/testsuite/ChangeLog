@@ -1,3 +1,7 @@
+2005-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20050105-1.c: New test.
+
 2005-01-02  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/pr12092-1.c: Do not run on x86_64.
