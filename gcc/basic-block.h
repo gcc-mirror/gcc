@@ -303,7 +303,7 @@ extern void make_edge			PARAMS ((sbitmap *, basic_block,
 						 basic_block, int));
 extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
-extern void redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
+extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern void create_basic_block		PARAMS ((int, rtx, rtx, rtx));
 extern int flow_delete_block		PARAMS ((basic_block));

@@ -1,5 +1,9 @@
 2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
-        
+
+	* flow.c (redirect_edge_succ_nodup): Return new edge.
+	(try_simplify_condjump): Use new edge.
+	* basic-block.h (redirect_edge_succ_nodup): Update prototype.
+
 	* cse.c (cse_basic_block): Skip note instructions.
 
 2001-08-27  Richard Henderson  <rth@redhat.com>
@@ -67,7 +71,7 @@
 
 2001-08-27  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
 
-        * rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
+	* rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
 	PRESENCE_SET, ABSENCE_SET, DEFINE_BYPASS, DEFINE_AUTOMATON,
 	AUTOMATA_OPTION, DEFINE_RESERVATION, DEFINE_INSN_RESERVATION): New
 	RTL constructions.
@@ -92,7 +96,7 @@
 
 	* rtl.h (LINK_COST_ZERO, LINK_COST_FREE): Remove them.
 	
-        * sched-int.h: (curr_state): Add the external definition for
+	* sched-int.h: (curr_state): Add the external definition for
 	automaton pipeline interface.
 	(haifa_insn_data): Add comments for members blockage and units.
 	
@@ -111,7 +115,7 @@
 	first_cycle_multipass_dfa_lookahead, init_dfa_bubbles,
 	dfa_bubble): New members in gcc_target.sched.
 	
-        * haifa-sched.c (insert_schedule_bubbles_p): New variable.
+	* haifa-sched.c (insert_schedule_bubbles_p): New variable.
 	(MAX_INSN_QUEUE_INDEX): New macro for automaton interface.
 	(insn_queue): Redefine it as pointer to array.
 	(NEXT_Q, NEXT_Q_AFTER): Use MAX_INSN_QUEUE_INDEX instead of
@@ -153,7 +157,7 @@
 	(get_visual_tbl_length): Add code for automaton interface.
 	(target_units, print_block_visualization):  Add comments.
 	
-        * Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
+	* Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
 	USE_HOST_GETRUNTIME, USE_HOST_HASHTAB, HOST_VARRAY): New variables.
 	(sched-rgn.o, sched-vis.o): Add new dependency file target.h.
 	(getruntime.o, genautomata.o): New entries.
