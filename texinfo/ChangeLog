@@ -1,3 +1,8 @@
+1999-07-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in (zlib.h, libz): Disable checks.
+	* configure, config.h.in: Updated.
+
 Thu Jul  1 01:44:00 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* acconfig.h (_, N_): Macros removed.

@@ -245,9 +245,6 @@
 /* Define if you have the i library (-li).  */
 #undef HAVE_LIBI
 
-/* Define if you have the z library (-lz).  */
-#undef HAVE_LIBZ
-
 
 /* Leave that blank line there!!  Autoheader needs it.
    If you're adding to this file, keep in mind:

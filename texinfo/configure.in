@@ -27,7 +27,7 @@ AM_MAINTAINER_MODE
 AM_EXEEXT
 
 dnl Checks for libraries.
-AC_CHECK_HEADERS(zlib.h, [AC_CHECK_LIB(z, gzdopen)])
+dnl AC_CHECK_HEADERS(zlib.h, [AC_CHECK_LIB(z, gzdopen)])
 
 # Needed on sysV68 for sigblock, sigsetmask.  But check for it in libc first.
 AC_CHECK_FUNC(sigblock, , AC_CHECK_LIB(bsd, sigblock))
