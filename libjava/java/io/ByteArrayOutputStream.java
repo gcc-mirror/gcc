@@ -247,10 +247,11 @@ public class ByteArrayOutputStream extends OutputStream
 
   static
   {
-    initial_buffer_size
+    int r
       = Integer.getInteger ("gnu.java.io.ByteArrayOutputStream.initialBufferSize",
 			    DEFAULT_INITIAL_BUFFER_SIZE).intValue ();
-    if (initial_buffer_size <= 0)
-      initial_buffer_size = DEFAULT_INITIAL_BUFFER_SIZE;
+    if (r <= 0)
+      r = DEFAULT_INITIAL_BUFFER_SIZE;
+    initial_buffer_size = r;
   }
 }
