@@ -1,3 +1,18 @@
+2001-10-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* darwin-protos.h (constructor_section, destructor_section,
+	mod_init_section, mod_term_section): Prototype.
+	* darwin.c (machopic_finish, update_non_lazy_ptrs, update_stubs):
+	Const-ify.
+	* darwin.h (ASM_DECLARE_OBJECT_NAME, ASM_DECLARE_FUNCTION_NAME):
+	Likewise.
+	(SECTION_FUNCTION): Prototype `FUNCTION'.  Delete
+	objc_section_init declaration.
+	(EXTRA_SECTION_FUNCTIONS): Prototype objc_section_init.
+	(objc_section_init, try_section_alias): Make static.
+	(alias_section): Make static and hide unused function.
+	(ASM_GENERATE_INTERNAL_LABEL): Fix format specifier warning.
+
 Tue Oct 23 13:05:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (can_address_p): Compnonents are not addressable if
