@@ -1239,7 +1239,7 @@ mark_all_temps_used ()
 
   for (p = temp_slots; p; p = p->next)
     {
-      p->in_use = 1;
+      p->in_use = p->keep = 1;
       p->level = MIN (p->level, temp_slot_level);
     }
 }
