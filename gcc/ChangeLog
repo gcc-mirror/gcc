@@ -1,3 +1,8 @@
+Tue Nov 11 16:25:49 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* i386/cygwin32.h (CPP_PREDEFINES): Delete -DPOSIX.
+	* i386/xm-cygwin32.h (POSIX): Define.
+
 Mon Nov 10 20:53:11 1997  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (MASK_DEBUG_H): Set to zero, so this bit

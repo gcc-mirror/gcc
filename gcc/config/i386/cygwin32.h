@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA. */
 #endif
 
 #define CPP_PREDEFINES "-Di386 -D_WIN32 \
-  -DPOSIX -D__CYGWIN32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
+  -D__CYGWIN32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
@@ -199,3 +199,6 @@ do {								\
 	     TREE_CODE (DECL) == FUNCTION_DECL			\
 	     ? "discard" : "same_size");			\
 } while (0)
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START " #"
