@@ -581,7 +581,7 @@ init_decl_processing ()
   dtable_type = make_node (RECORD_TYPE);
   dtable_ptr_type = build_pointer_type (dtable_type);
 
-  PUSH_FIELD (object_type_node, field, "dtable", dtable_ptr_type);
+  PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
   PUSH_FIELD (object_type_node, field, "sync_info", ptr_type_node);
   for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
@@ -609,12 +609,12 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "constants", constants_type_node);
   PUSH_FIELD (class_type_node, field, "methods", method_ptr_type_node);
   PUSH_FIELD (class_type_node, field, "method_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "dtable_method_count", short_type_node);
+  PUSH_FIELD (class_type_node, field, "vtable_method_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "fields", field_ptr_type_node);
   PUSH_FIELD (class_type_node, field, "size_in_bytes", int_type_node);
   PUSH_FIELD (class_type_node, field, "field_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "static_field_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "dtable", dtable_ptr_type);
+  PUSH_FIELD (class_type_node, field, "vtable", dtable_ptr_type);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);

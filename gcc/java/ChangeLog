@@ -1,3 +1,10 @@
+1998-12-11  Tom Tromey  <tromey@cygnus.com>
+
+	* expr.c (invoke_build_dtable): Renamed dtable -> vtable.
+	* decl.c (init_decl_processing): Renamed dtable -> vtable.
+	* class.c (make_class_data): Renamed dtable -> vtable, and
+	dtable_method_count -> vtable_method_count.
+
 Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
 
 	* decl.c (long_zero_node, float_zero_node, double_zero_node): New
