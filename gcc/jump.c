@@ -4223,15 +4223,19 @@ delete_insn (insn)
   if (was_code_label)
     remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
 
-  /* Don't delete user-declared labels.  Convert them to special NOTEs
-     instead.  */
-  if (was_code_label && LABEL_NAME (insn) != 0
-      && optimize && ! dont_really_delete)
+  /* Don't delete user-declared labels.  When optimizing, convert them
+     to special NOTEs instead.  When not optimizing, leave them alone.  */
+  if (was_code_label && LABEL_NAME (insn) != 0)
     {
-      PUT_CODE (insn, NOTE);
-      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
-      NOTE_SOURCE_FILE (insn) = 0;
-      dont_really_delete = 1;
+      if (! optimize)
+	dont_really_delete = 1;
+      else if (! dont_really_delete)
+	{
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	  dont_really_delete = 1;
+	}
     }
   else
     /* Mark this insn as deleted.  */
