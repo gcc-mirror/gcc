@@ -3496,6 +3496,19 @@ fold (expr)
 	      code = BIT_IOR_EXPR;
 	      goto bit_ior;
 	    }
+
+	  /* (A * C) + (B * C) -> (A+B) * C.  Since we are most concerned
+	     about the case where C is a constant, just try one of the
+	     four possibilities.  */
+
+	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 1),
+				  TREE_OPERAND (arg1, 1), 0))
+	    return fold (build (MULT_EXPR, type,
+				fold (build (PLUS_EXPR, type,
+					     TREE_OPERAND (arg0, 0),
+					     TREE_OPERAND (arg1, 0))),
+				TREE_OPERAND (arg0, 1)));
 	}
       /* In IEEE floating point, x+0 may not equal x.  */
       else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
@@ -3622,6 +3635,19 @@ fold (expr)
 	    return build1 (NEGATE_EXPR, type, arg1);
 	  if (integer_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
+
+	  /* (A * C) - (B * C) -> (A-B) * C.  Since we are most concerned
+	     about the case where C is a constant, just try one of the
+	     four possibilities.  */
+
+	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 1),
+				  TREE_OPERAND (arg1, 1), 0))
+	    return fold (build (MULT_EXPR, type,
+				fold (build (MINUS_EXPR, type,
+					     TREE_OPERAND (arg0, 0),
+					     TREE_OPERAND (arg1, 0))),
+				TREE_OPERAND (arg0, 1)));
 	}
       /* Convert A - (-B) to A + B.  */
       else if (TREE_CODE (arg1) == NEGATE_EXPR)
@@ -3778,46 +3804,73 @@ fold (expr)
       if (integer_zerop (arg1))
 	return t;
 
-      /* If we have ((a * C1) / C2) and C1 % C2 == 0, we can replace this with
-	 (a * (C1/C2).  Also look for when we have a SAVE_EXPR in
-	 between.  */
+      /* Look for ((a * C1) / C3) or (((a * C1) + C2) / C3),
+	 where C1 % C3 == 0 or C3 % C1 == 0.  We can simplify these
+	 expressions, which often appear in the offsets or sizes of
+	 objects with a varying size.  Only deal with positive divisors
+	 and multiplicands. 
+
+	 Look for NOPs and SAVE_EXPRs inside.  */
+
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && TREE_INT_CST_LOW (arg1) > 0 && TREE_INT_CST_HIGH (arg1) == 0
-	  && TREE_CODE (arg0) == MULT_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) > 0
-	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
-	  && 0 == (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
-		   % TREE_INT_CST_LOW (arg1)))
+	  && tree_int_cst_lt (integer_zero_node, arg1))
 	{
-	  tree new_op
-	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
-			   / TREE_INT_CST_LOW (arg1), 0);
+	  int have_save_expr = 0;
+	  tree c2 = integer_zero_node;
+	  tree xarg0 = arg0;
 
-	  TREE_TYPE (new_op) = type;
-	  return build (MULT_EXPR, type, TREE_OPERAND (arg0, 0), new_op);
-	}
+	  if (TREE_CODE (xarg0) == SAVE_EXPR)
+	    have_save_expr = 1, xarg0 = TREE_OPERAND (xarg0, 0);
 
-      else if (TREE_CODE (arg1) == INTEGER_CST
-	       && TREE_INT_CST_LOW (arg1) > 0 && TREE_INT_CST_HIGH (arg1) == 0
-	       && TREE_CODE (arg0) == SAVE_EXPR
-	       && TREE_CODE (TREE_OPERAND (arg0, 0)) == MULT_EXPR
-	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-		   == INTEGER_CST)
-	       && (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-		   > 0)
-	       && (TREE_INT_CST_HIGH (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-		   == 0)
-	       && (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-		   % TREE_INT_CST_LOW (arg1)) == 0)
-	{
-	  tree new_op
-	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-			   / TREE_INT_CST_LOW (arg1), 0);
-	  
-	  TREE_TYPE (new_op) = type;
-	  return build (MULT_EXPR, type,
-			TREE_OPERAND (TREE_OPERAND (arg0, 0), 0), new_op);
+	  STRIP_NOPS (xarg0);
+
+	  if (TREE_CODE (xarg0) == PLUS_EXPR
+	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+	    c2 = TREE_OPERAND (xarg0, 1), xarg0 = TREE_OPERAND (xarg0, 0);
+	  else if (TREE_CODE (xarg0) == MINUS_EXPR
+		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+	    {
+	      c2 = fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (xarg0, 1)));
+	      xarg0 = TREE_OPERAND (xarg0, 0);
+	    }
+
+	  if (TREE_CODE (xarg0) == SAVE_EXPR)
+	    have_save_expr = 1, xarg0 = TREE_OPERAND (xarg0, 0);
+
+	  STRIP_NOPS (xarg0);
+
+	  if (TREE_CODE (xarg0) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
+	      && tree_int_cst_lt (integer_zero_node, TREE_OPERAND (xarg0, 1))
+	      && (integer_zerop (const_binop (TRUNC_MOD_EXPR,
+					      TREE_OPERAND (xarg0, 1), arg1, 1))
+		  || integer_zerop (const_binop (TRUNC_MOD_EXPR, arg1,
+						 TREE_OPERAND (xarg0, 1), 1))))
+	    {
+	      tree outer_div = integer_one_node;
+	      tree c1 = TREE_OPERAND (xarg0, 1);
+	      tree c3 = arg1;
+
+	      /* If C3 > C1, set them equal and do a divide by
+		 C3/C1 at the end of the operation.  */
+	      if (tree_int_cst_lt (c1, c3))
+		outer_div = const_binop (code, c3, c1, 0), c3 = c1;
+		
+	      /* The result is A * (C1/C3) + (C2/C3).  */
+	      t = fold (build (PLUS_EXPR, type,
+			       fold (build (MULT_EXPR, type,
+					    TREE_OPERAND (xarg0, 0),
+					    const_binop (code, c1, c3, 1))),
+			       const_binop (code, c2, c3, 1)));
+
+	      if (! integer_onep (outer_div))
+		t = fold (build (code, type, t, outer_div));
+
+	      if (have_save_expr)
+		t = save_expr (t);
+
+	      return t;
+	    }
 	}
 
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
@@ -3838,6 +3891,39 @@ fold (expr)
 	return omit_one_operand (type, integer_zero_node, arg0);
       if (integer_zerop (arg1))
 	return t;
+
+      /* Look for ((a * C1) % C3) or (((a * C1) + C2) % C3),
+	 where C1 % C3 == 0.  Handle similarly to the division case,
+	 but don't bother with SAVE_EXPRs.  */
+
+      if (TREE_CODE (arg1) == INTEGER_CST
+	  && ! integer_zerop (arg1))
+	{
+	  tree c2 = integer_zero_node;
+	  tree xarg0 = arg0;
+
+	  if (TREE_CODE (xarg0) == PLUS_EXPR
+	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+	    c2 = TREE_OPERAND (xarg0, 1), xarg0 = TREE_OPERAND (xarg0, 0);
+	  else if (TREE_CODE (xarg0) == MINUS_EXPR
+		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+	    {
+	      c2 = fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (xarg0, 1)));
+	      xarg0 = TREE_OPERAND (xarg0, 0);
+	    }
+
+	  STRIP_NOPS (xarg0);
+
+	  if (TREE_CODE (xarg0) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
+	      && integer_zerop (const_binop (TRUNC_MOD_EXPR,
+					     TREE_OPERAND (xarg0, 1),
+					     arg1, 1)))
+	    /* The result is (C2%C3).  */
+	    return omit_one_operand (type, const_binop (code, c2, arg1, 1),
+				     TREE_OPERAND (xarg0, 0));
+	}
+
       goto binary;
 
     case LSHIFT_EXPR:
