@@ -2583,6 +2583,32 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
     
+# Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
+file=sys/time.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if egrep '^extern struct sigevent;' ${LIB}/$file >/dev/null 2>&1; then
+    echo Fixing $file
+    sed -e 's/^extern struct sigevent;/struct sigevent;/' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+    
 # Another bad dependency in VxWorks 5.2 <time.h>.
 file=time.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
