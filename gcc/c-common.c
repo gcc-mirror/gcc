@@ -1324,6 +1324,11 @@ static international_format_info *international_format_list = NULL;
 
 static void check_format_info	PARAMS ((function_format_info *, tree));
 
+static void init_dollar_format_checking		PARAMS ((int, tree));
+static int maybe_read_dollar_number		PARAMS ((const char **, int,
+							 tree, tree *));
+static void finish_dollar_format_checking	PARAMS ((void));
+
 /* Initialize the table of functions to perform format checking on.
    The ISO C functions are always checked (whether <stdio.h> is
    included or not), since it is common to call printf without
@@ -1501,6 +1506,169 @@ check_function_format (name, assembler_name, params)
     }
 }
 
+
+/* Variables used by the checking of $ operand number formats.  */
+static char *dollar_arguments_used = NULL;
+static int dollar_arguments_alloc = 0;
+static int dollar_arguments_count;
+static int dollar_first_arg_num;
+static int dollar_max_arg_used;
+static int dollar_format_warned;
+
+/* Initialize the checking for a format string that may contain $
+   parameter number specifications; we will need to keep track of whether
+   each parameter has been used.  FIRST_ARG_NUM is the number of the first
+   argument that is a parameter to the format, or 0 for a vprintf-style
+   function; PARAMS is the list of arguments starting at this argument.  */
+
+static void
+init_dollar_format_checking (first_arg_num, params)
+     int first_arg_num;
+     tree params;
+{
+  dollar_first_arg_num = first_arg_num;
+  dollar_arguments_count = 0;
+  dollar_max_arg_used = 0;
+  dollar_format_warned = 0;
+  if (first_arg_num > 0)
+    {
+      while (params)
+	{
+	  dollar_arguments_count++;
+	  params = TREE_CHAIN (params);
+	}
+    }
+  if (dollar_arguments_alloc < dollar_arguments_count)
+    {
+      if (dollar_arguments_used)
+	free (dollar_arguments_used);
+      dollar_arguments_alloc = dollar_arguments_count;
+      dollar_arguments_used = xmalloc (dollar_arguments_alloc);
+    }
+  if (dollar_arguments_alloc)
+    memset (dollar_arguments_used, 0, dollar_arguments_alloc);
+}
+
+
+/* Look for a decimal number followed by a $ in *FORMAT.  If DOLLAR_NEEDED
+   is set, it is an error if one is not found; otherwise, it is OK.  If
+   such a number is found, check whether it is within range and mark that
+   numbered operand as being used for later checking.  Returns the operand
+   number if found and within range, zero if no such number was found and
+   this is OK, or -1 on error.  PARAMS points to the first operand of the
+   format; PARAM_PTR is made to point to the parameter referred to.  If
+   a $ format is found, *FORMAT is updated to point just after it.  */
+
+static int
+maybe_read_dollar_number (format, dollar_needed, params, param_ptr)
+     const char **format;
+     int dollar_needed;
+     tree params;
+     tree *param_ptr;
+{
+  int argnum;
+  int overflow_flag;
+  const char *fcp = *format;
+  if (*fcp < '0' || *fcp > '9')
+    {
+      if (dollar_needed)
+	{
+	  warning ("missing $ operand number in format");
+	  return -1;
+	}
+      else
+	return 0;
+    }
+  argnum = 0;
+  overflow_flag = 0;
+  while (*fcp >= '0' && *fcp <= '9')
+    {
+      int nargnum;
+      nargnum = 10 * argnum + (*fcp - '0');
+      if (nargnum < 0 || nargnum / 10 != argnum)
+	overflow_flag = 1;
+      argnum = nargnum;
+      fcp++;
+    }
+  if (*fcp != '$')
+    {
+      if (dollar_needed)
+	{
+	  warning ("missing $ operand number in format");
+	  return -1;
+	}
+      else
+	return 0;
+    }
+  *format = fcp + 1;
+  if (pedantic && !dollar_format_warned)
+    {
+      warning ("ISO C does not support %%n$ operand number formats");
+      dollar_format_warned = 1;
+    }
+  if (overflow_flag || argnum == 0
+      || (dollar_first_arg_num && argnum > dollar_arguments_count))
+    {
+      warning ("operand number out of range in format");
+      return -1;
+    }
+  if (argnum > dollar_max_arg_used)
+    dollar_max_arg_used = argnum;
+  /* For vprintf-style functions we may need to allocate more memory to
+     track which arguments are used.  */
+  while (dollar_arguments_alloc < dollar_max_arg_used)
+    {
+      int nalloc;
+      nalloc = 2 * dollar_arguments_alloc + 16;
+      dollar_arguments_used = xrealloc (dollar_arguments_used, nalloc);
+      memset (dollar_arguments_used + dollar_arguments_alloc, 0,
+	      nalloc - dollar_arguments_alloc);
+      dollar_arguments_alloc = nalloc;
+    }
+  dollar_arguments_used[argnum - 1] = 1;
+  if (dollar_first_arg_num)
+    {
+      int i;
+      *param_ptr = params;
+      for (i = 1; i < argnum && *param_ptr != 0; i++)
+	*param_ptr = TREE_CHAIN (*param_ptr);
+
+      if (*param_ptr == 0)
+	{
+	  /* This case shouldn't be caught here.  */
+	  abort ();
+	}
+    }
+  else
+    *param_ptr = 0;
+  return argnum;
+}
+
+
+/* Finish the checking for a format string that used $ operand number formats
+   instead of non-$ formats.  We check for unused operands before used ones
+   (a serious error, since the implementation of the format function
+   can't know what types to pass to va_arg to find the later arguments).
+   and for unused operands at the end of the format (if we know how many
+   arguments the format had, so not for vprintf).  If there were operand
+   numbers out of range on a non-vprintf-style format, we won't have reached
+   here.  */
+
+static void
+finish_dollar_format_checking ()
+{
+  int i;
+  for (i = 0; i < dollar_max_arg_used; i++)
+    {
+      if (!dollar_arguments_used[i])
+	warning ("format argument %d unused before used argument %d in $-style format",
+		 i + 1, dollar_max_arg_used);
+    }
+  if (dollar_first_arg_num && dollar_max_arg_used < dollar_arguments_count)
+    warning ("unused arguments in $-style format");
+}
+
+
 /* Check the argument list of a call to printf, scanf, etc.
    INFO points to the function_format_info structure.
    PARAMS is the list of argument values.  */
@@ -1524,7 +1692,9 @@ check_format_info (info, params)
   const char *format_chars;
   format_char_info *fci = NULL;
   char flag_chars[8];
-  int has_operand_number = 0;
+  /* -1 if no conversions taking an operand have been found; 0 if one has
+     and it didn't use $; 1 if $ formats are in use.  */
+  int has_operand_number = -1;
 
   /* Skip to format argument.  If the argument isn't available, there's
      no work for us to do; prototype checking will catch the problem.  */
@@ -1624,6 +1794,7 @@ check_format_info (info, params)
     }
 
   first_fillin_param = params;
+  init_dollar_format_checking (info->first_arg_num, first_fillin_param);
   while (1)
     {
       int aflag;
@@ -1633,8 +1804,11 @@ check_format_info (info, params)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
 	    warning ("embedded `\\0' in format");
-	  if (info->first_arg_num != 0 && params != 0 && ! has_operand_number)
+	  if (info->first_arg_num != 0 && params != 0
+	      && has_operand_number <= 0)
 	    warning ("too many arguments for format");
+	  if (has_operand_number > 0)
+	    finish_dollar_format_checking ();
 	  return;
 	}
       if (*format_chars++ != '%')
@@ -1657,6 +1831,22 @@ check_format_info (info, params)
 	  suppressed = *format_chars == '*';
 	  if (suppressed)
 	    ++format_chars;
+	  else if (has_operand_number != 0)
+	    {
+	      int opnum;
+	      opnum = maybe_read_dollar_number (&format_chars,
+						has_operand_number == 1,
+						first_fillin_param, &params);
+	      if (opnum == -1)
+		return;
+	      else if (opnum > 0)
+		{
+		  has_operand_number = 1;
+		  arg_num = opnum + info->first_arg_num - 1;
+		}
+	      else
+		has_operand_number = 0;
+	    }
 	  while (ISDIGIT (*format_chars))
 	    {
 	      wide = TRUE;
@@ -1709,35 +1899,21 @@ check_format_info (info, params)
 	}
       else if (info->format_type == printf_format_type)
 	{
-	  /* See if we have a number followed by a dollar sign.  If we do,
-	     it is an operand number, so set PARAMS to that operand.  */
-	  if (*format_chars >= '0' && *format_chars <= '9')
+	  if (has_operand_number != 0)
 	    {
-	      const char *p = format_chars;
-
-	      while (*p >= '0' && *p++ <= '9')
-		;
-
-	      if (*p == '$')
+	      int opnum;
+	      opnum = maybe_read_dollar_number (&format_chars,
+						has_operand_number == 1,
+						first_fillin_param, &params);
+	      if (opnum == -1)
+		return;
+	      else if (opnum > 0)
 		{
-		  int opnum = atoi (format_chars);
-
-		  if (pedantic)
-		    warning ("ISO C does not support printf %%n$");
-
-		  params = first_fillin_param;
-		  format_chars = p + 1;
 		  has_operand_number = 1;
-
-		  for (i = 1; i < opnum && params != 0; i++)
-		    params = TREE_CHAIN (params);
-
-		  if (opnum == 0 || params == 0)
-		    {
-		      warning ("operand number out of range in format");
-		      return;
-		    }
+		  arg_num = opnum + info->first_arg_num - 1;
 		}
+	      else
+		has_operand_number = 0;
 	    }
 
 	  while (*format_chars != 0 && index (" +#0-'", *format_chars) != 0)
@@ -1774,11 +1950,25 @@ check_format_info (info, params)
 		  tfaff ();
 		  return;
 		}
+	      if (has_operand_number > 0)
+		{
+		  int opnum;
+		  opnum = maybe_read_dollar_number (&format_chars, 1,
+						    first_fillin_param,
+						    &params);
+		  if (opnum <= 0)
+		    return;
+		  else
+		    arg_num = opnum + info->first_arg_num - 1;
+		}
 	      if (info->first_arg_num != 0)
 		{
 		  cur_param = TREE_VALUE (params);
-		  params = TREE_CHAIN (params);
-		  ++arg_num;
+		  if (has_operand_number <= 0)
+		    {
+		      params = TREE_CHAIN (params);
+		      ++arg_num;
+		    }
 		  /* size_t is generally not valid here.
 		     It will work on most machines, because size_t and int
 		     have the same mode.  But might as well warn anyway,
@@ -1807,17 +1997,31 @@ check_format_info (info, params)
 		 In this case, an int argument supplies the...precision."  */
 	      if (*format_chars == '*')
 		{
+		  ++format_chars;
+		  if (has_operand_number > 0)
+		    {
+		      int opnum;
+		      opnum = maybe_read_dollar_number (&format_chars, 1,
+							first_fillin_param,
+							&params);
+		      if (opnum <= 0)
+			return;
+		      else
+			arg_num = opnum + info->first_arg_num - 1;
+		    }
 		  if (info->first_arg_num != 0)
 		    {
-		      ++format_chars;
 		      if (params == 0)
 		        {
 			  tfaff ();
 			  return;
 			}
 		      cur_param = TREE_VALUE (params);
-		      params = TREE_CHAIN (params);
-		      ++arg_num;
+		      if (has_operand_number <= 0)
+			{
+			  params = TREE_CHAIN (params);
+			  ++arg_num;
+			}
 		      if ((TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
 			   != integer_type_node)
 			  &&
