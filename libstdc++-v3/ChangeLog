@@ -1,3 +1,9 @@
+2002-05-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/os/irix/irix5.2/bits/ctype_noninline.h (classic_table):
+	Return __ctype + 1.
+	(ctype:_M_table): Initialize to classic_table(), not __ctype.
+
 2002-05-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Update local install.html, configopts.html paths.
