@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file/law */
 /* Definitions of target machine for GNU compiler. 
    NEC V850 series
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
@@ -1416,4 +1415,3 @@ extern void expand_epilogue ();
 extern void notice_update_cc ();
 extern int v850_valid_machine_decl_attribute ();
 extern int v850_interrupt_function_p ();
-/* END CYGNUS LOCAL */

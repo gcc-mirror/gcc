@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file v850/law */
 /* Configuration for NEC V850. 
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
@@ -48,4 +47,3 @@ extern void free ();
    tm.h is a symbolic link to the actual target specific file.   */
 
 #include "tm.h"
-/* END CYGNUS LOCAL */
