@@ -507,15 +507,19 @@ int main(int argc, char **argv){
       if(!strcmp(arg, "-C")){
 	const char *dir_to_change = get_next_arg ();
 	const char *file_to_add = get_next_arg ();
-        if(!dir_to_change 
-	   || !file_to_add
-	   || add_to_jar(jarfd, dir_to_change, file_to_add)){
-          printf("Error adding %s to jar archive!\n", arg);
+        if (!dir_to_change || !file_to_add) {
+          fprintf(stderr, "Error: missing argument for -C.\n");
+          exit(1);
+        }
+	if (add_to_jar(jarfd, dir_to_change, file_to_add)) {
+          fprintf(stderr,
+                 "Error adding %s (in directory %s) to jar archive!\n",
+                 file_to_add, dir_to_change);
           exit(1);
         }
       } else {
         if(add_to_jar(jarfd, NULL, arg)){
-          printf("Error adding %s to jar archive!\n", arg);
+          fprintf(stderr, "Error adding %s to jar archive!\n", arg);
           exit(1);
         }
       }
@@ -817,8 +821,8 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
   struct dirent *de;
   zipentry *ze;
   int stat_return;
-  char *old_dir = NULL;
-  
+  char old_dir[MAXPATHLEN];
+
   /* This is a quick compatibility fix -- Simon Weijgers <simon@weijgers.com> 
    * It fixes this:
    *   "normal" jar : org/apache/java/io/LogRecord.class
@@ -830,10 +834,12 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
     file+=2;
   
   /* If new_dir isn't null, we need to change to that directory.  However,
-     we also need to return to the old directory when we're done */
+     we also need to return to the old directory when we're done.  See below.*/
   if(new_dir != NULL){
-    old_dir = getcwd(NULL, 0);
-
+    if (getcwd(old_dir, MAXPATHLEN) == NULL) {
+      perror("getcwd");
+      return 1;
+    }
     if(chdir(new_dir) == -1){
       perror(new_dir);
       return 1;
@@ -957,11 +963,13 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
     fprintf(stderr, "Illegal file specified: %s\n", file);
   }
   
-  if(old_dir != NULL){
-    if(chdir(old_dir))
+  /* If (and only if!) new_dir != NULL, we switched directories, so
+     we have to switch back to the old directory. */
+  if (new_dir != NULL) {
+    if (chdir(old_dir) == -1) {
       perror(old_dir);
-    
-    free(old_dir);
+      return 1;
+    }
   }
 
   return 0;
