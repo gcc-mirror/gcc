@@ -1,3 +1,16 @@
+2004-06-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c:  Update comments.
+	(val_expr_pair_eq): Factor code from here.
+	(expr_pred_trans_eq): and here.
+	(expressions_equal_p): To here.
+	(print_value_set): Print value for expression.
+	(phi_trans_lookup): Rename some variables.
+	(lookup): Ditto.
+	(value_exists_in_set_bitmap): Ditto.
+	(value_remove_from_set_bitmap): Ditto.
+	(value_insert_into_set_bitmap): Ditto.
+
 2004-06-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-modes.def (CCL3mode): New machine mode.
