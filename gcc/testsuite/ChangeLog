@@ -1,6 +1,7 @@
 2004-08-14  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/torture/builtin-attr-1.c: Fix scalbln prototype.
+	* gcc.dg/pack-test-4.c (main): Return 0.
 
 2004-08-14  Richard Henderson  <rth@redhat.com>
 
