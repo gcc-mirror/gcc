@@ -5487,7 +5487,7 @@ s390_function_profiler (file, labelno)
   rtx op[7];
 
   char label[128];
-  sprintf (label, "%sP%d", LPREFIX, labelno);
+  ASM_GENERATE_INTERNAL_LABEL (label, "LP", labelno);
 
   fprintf (file, "# function profiler \n");
 
