@@ -1,3 +1,11 @@
+2000-03-29  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/rs6000/aix41.h (CPP_SPEC): Define _ANSI_C_SOURCE if -ansi
+	is given.
+	* config/rs6000/aix43.h (CPP_SPEC): Likewise.
+	* config/rs6000/rs6000.h (CPP_SPEC): Moved to...
+	* config/rs6000/aix.h: then modified likewise.
+
 2000-03-28  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.h: Redistribute enum reg_note documentation. 

@@ -105,6 +105,7 @@ do {									\
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+   %{ansi: -D_ANSI_C_SOURCE}\
    %{maix64: -D__64BIT__ -D_ARCH_PPC}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
    %{mthreads: -D_THREAD_SAFE}\
