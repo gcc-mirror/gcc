@@ -1,5 +1,9 @@
 2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-pretty-print.c (dump_generic_node, case CONVERT_EXPR): Add
+	blank after ')'.
+	(op_symbol, case *_{DIV,MOD}_EXPR): Say what rounding is being used.
+
 	* c-common.c (c_alignof_expr): Use DECL_ALIGN_UNIT and TYPE_ALIGN_UNIT.
 	(c_sizeof_of_alignof_type): Likewise.
 	* expr.c (array_ref_element_size): Likewise.
