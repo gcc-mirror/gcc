@@ -1,3 +1,8 @@
+2004-01-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* testsuite/testsuite_hooks.cc (try_mkfifo): Avoid calling
+	mkfifo for mingw32.
+
 2004-01-15  Stefan Olsson  <stefan@snon.net>
 
 	* include/ext/mt_allocator.h: Reuse thread id's as soon as
