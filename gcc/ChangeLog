@@ -20,8 +20,6 @@
 
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
-2001-12-31  Graham Stott  <grahams@redhat.com>
-
 	* c-lex.c: Include tree.h before expr.h
 
 2001-12-31  Graham Stott  <grahams@redhat.com>
