@@ -102,6 +102,7 @@ gcc/testsuite/g77.sum
 gcc/testsuite/objc.sum"
 # $H_TARGET/libstdc++-v3/testsuite/libstdc++-v3.sum
 # $H_TARGET/libjava/testsuite/libjava.sum
+# $H_TARGET/libffi/testsuite/libffi.sum
 
 # Build.
 echo build > $RESULT
@@ -124,6 +125,9 @@ make -k check-gcc
 
 # Test libstd++-v3
 make check-target-libstdc++-v3
+
+# Test libffi
+make check-target-libffi
 
 # Test libjava
 make check-target-libjava
