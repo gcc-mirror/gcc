@@ -1,3 +1,13 @@
+2003-03-11  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/initfield.java: New file.
+	* libjava.lang/initfield.out: New file.
+
+2003-03-08  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/initfield.java: New file.
+	* libjava.lang/initfield.out: New file.
+
 2003-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: Updated to reflect reality.
