@@ -50,96 +50,92 @@ typedef struct cpp_hashnode cpp_hashnode;
 #define CPP_FIRST_DIGRAPH CPP_HASH
 
 #define TTYPE_TABLE				\
-  T(CPP_EQ = 0,		"=")			\
-  T(CPP_NOT,		"!")			\
-  T(CPP_GREATER,	">")	/* compare */	\
-  T(CPP_LESS,		"<")			\
-  T(CPP_PLUS,		"+")	/* math */	\
-  T(CPP_MINUS,		"-")			\
-  T(CPP_MULT,		"*")			\
-  T(CPP_DIV,		"/")			\
-  T(CPP_MOD,		"%")			\
-  T(CPP_AND,		"&")	/* bit ops */	\
-  T(CPP_OR,		"|")			\
-  T(CPP_XOR,		"^")			\
-  T(CPP_RSHIFT,		">>")			\
-  T(CPP_LSHIFT,		"<<")			\
+  OP(CPP_EQ = 0,	"=")			\
+  OP(CPP_NOT,		"!")			\
+  OP(CPP_GREATER,	">")	/* compare */	\
+  OP(CPP_LESS,		"<")			\
+  OP(CPP_PLUS,		"+")	/* math */	\
+  OP(CPP_MINUS,		"-")			\
+  OP(CPP_MULT,		"*")			\
+  OP(CPP_DIV,		"/")			\
+  OP(CPP_MOD,		"%")			\
+  OP(CPP_AND,		"&")	/* bit ops */	\
+  OP(CPP_OR,		"|")			\
+  OP(CPP_XOR,		"^")			\
+  OP(CPP_RSHIFT,	">>")			\
+  OP(CPP_LSHIFT,	"<<")			\
 \
-  T(CPP_COMPL,		"~")			\
-  T(CPP_AND_AND,	"&&")	/* logical */	\
-  T(CPP_OR_OR,		"||")			\
-  T(CPP_QUERY,		"?")			\
-  T(CPP_COLON,		":")			\
-  T(CPP_COMMA,		",")	/* grouping */	\
-  T(CPP_OPEN_PAREN,	"(")			\
-  T(CPP_CLOSE_PAREN,	")")			\
-  T(CPP_EQ_EQ,		"==")	/* compare */	\
-  T(CPP_NOT_EQ,		"!=")			\
-  T(CPP_GREATER_EQ,	">=")			\
-  T(CPP_LESS_EQ,	"<=")			\
+  OP(CPP_COMPL,		"~")			\
+  OP(CPP_AND_AND,	"&&")	/* logical */	\
+  OP(CPP_OR_OR,		"||")			\
+  OP(CPP_QUERY,		"?")			\
+  OP(CPP_COLON,		":")			\
+  OP(CPP_COMMA,		",")	/* grouping */	\
+  OP(CPP_OPEN_PAREN,	"(")			\
+  OP(CPP_CLOSE_PAREN,	")")			\
+  OP(CPP_EQ_EQ,		"==")	/* compare */	\
+  OP(CPP_NOT_EQ,	"!=")			\
+  OP(CPP_GREATER_EQ,	">=")			\
+  OP(CPP_LESS_EQ,	"<=")			\
 \
-  T(CPP_PLUS_EQ,	"+=")	/* math */	\
-  T(CPP_MINUS_EQ,	"-=")			\
-  T(CPP_MULT_EQ,	"*=")			\
-  T(CPP_DIV_EQ,		"/=")			\
-  T(CPP_MOD_EQ,		"%=")			\
-  T(CPP_AND_EQ,		"&=")	/* bit ops */	\
-  T(CPP_OR_EQ,		"|=")			\
-  T(CPP_XOR_EQ,		"^=")			\
-  T(CPP_RSHIFT_EQ,	">>=")			\
-  T(CPP_LSHIFT_EQ,	"<<=")			\
+  OP(CPP_PLUS_EQ,	"+=")	/* math */	\
+  OP(CPP_MINUS_EQ,	"-=")			\
+  OP(CPP_MULT_EQ,	"*=")			\
+  OP(CPP_DIV_EQ,	"/=")			\
+  OP(CPP_MOD_EQ,	"%=")			\
+  OP(CPP_AND_EQ,	"&=")	/* bit ops */	\
+  OP(CPP_OR_EQ,		"|=")			\
+  OP(CPP_XOR_EQ,	"^=")			\
+  OP(CPP_RSHIFT_EQ,	">>=")			\
+  OP(CPP_LSHIFT_EQ,	"<<=")			\
   /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */	\
-  T(CPP_HASH,		"#")	/* digraphs */	\
-  T(CPP_PASTE,		"##")			\
-  T(CPP_OPEN_SQUARE,	"[")			\
-  T(CPP_CLOSE_SQUARE,	"]")			\
-  T(CPP_OPEN_BRACE,	"{")			\
-  T(CPP_CLOSE_BRACE,	"}")			\
-  /* The remainder of the punctuation.  Order is not significant. */	\
-  T(CPP_SEMICOLON,	";")	/* structure */	\
-  T(CPP_ELLIPSIS,	"...")			\
-  T(CPP_BACKSLASH,	"\\")			\
-  T(CPP_PLUS_PLUS,	"++")	/* increment */	\
-  T(CPP_MINUS_MINUS,	"--")			\
-  T(CPP_DEREF,		"->")	/* accessors */	\
-  T(CPP_DOT,		".")			\
-  T(CPP_SCOPE,		"::")			\
-  T(CPP_DEREF_STAR,	"->*")			\
-  T(CPP_DOT_STAR,	".*")			\
-  T(CPP_MIN,		"<?")	/* extension */	\
-  T(CPP_MAX,		">?")			\
-  T(CPP_PLACEMARKER,	"")	/* Placemarker token.  */  \
-  C(CPP_OTHER,		0)	/* stray punctuation */    \
+  OP(CPP_HASH,		"#")	/* digraphs */	\
+  OP(CPP_PASTE,		"##")			\
+  OP(CPP_OPEN_SQUARE,	"[")			\
+  OP(CPP_CLOSE_SQUARE,	"]")			\
+  OP(CPP_OPEN_BRACE,	"{")			\
+  OP(CPP_CLOSE_BRACE,	"}")			\
+  /* The remainder of the punctuation.  Order is not significant.  */	\
+  OP(CPP_SEMICOLON,	";")	/* structure */	\
+  OP(CPP_ELLIPSIS,	"...")			\
+  OP(CPP_BACKSLASH,	"\\")			\
+  OP(CPP_PLUS_PLUS,	"++")	/* increment */	\
+  OP(CPP_MINUS_MINUS,	"--")			\
+  OP(CPP_DEREF,		"->")	/* accessors */	\
+  OP(CPP_DOT,		".")			\
+  OP(CPP_SCOPE,		"::")			\
+  OP(CPP_DEREF_STAR,	"->*")			\
+  OP(CPP_DOT_STAR,	".*")			\
+  OP(CPP_MIN,		"<?")	/* extension */	\
+  OP(CPP_MAX,		">?")			\
 \
-  I(CPP_NAME,		0)	/* word */	\
-  S(CPP_INT,		0)	/* 23 */	\
-  S(CPP_FLOAT,		0)	/* 3.14159 */	\
-  S(CPP_NUMBER,		0)	/* 34_be+ta  */	\
-  S(CPP_CHAR,		0)	/* 'char' */	\
-  S(CPP_WCHAR,		0)	/* L'char' */	\
-  S(CPP_STRING,		0)	/* "string" */	\
-  S(CPP_WSTRING,	0)	/* L"string" */	\
+  TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
+  TK(CPP_INT,		SPELL_STRING)	/* 23 */			\
+  TK(CPP_FLOAT,		SPELL_STRING)	/* 3.14159 */			\
+  TK(CPP_NUMBER,	SPELL_STRING)	/* 34_be+ta  */			\
 \
-  S(CPP_COMMENT,	0)	/* Only if output comments.  */ \
-  N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
-  N(CPP_EOF,		0)	/* End of file.  */		\
-  S(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */
+  TK(CPP_CHAR,		SPELL_STRING)	/* 'char' */			\
+  TK(CPP_WCHAR,		SPELL_STRING)	/* L'char' */			\
+  TK(CPP_OTHER,		SPELL_CHAR)	/* stray punctuation */		\
+\
+  TK(CPP_STRING,	SPELL_STRING)	/* "string" */			\
+  TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
+  TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
+\
+  TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
+  TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
+  TK(CPP_PLACEMARKER,	SPELL_NONE)	/* Placemarker token.  */	\
+  TK(CPP_EOF,		SPELL_NONE)	/* End of file.	 */
 
-#define T(e, s) e,
-#define I(e, s) e,
-#define S(e, s) e,
-#define C(e, s) e,
-#define N(e, s) e,
+#define OP(e, s) e,
+#define TK(e, s) e,
 enum cpp_ttype
 {
   TTYPE_TABLE
   N_TTYPES
 };
-#undef T
-#undef I
-#undef S
-#undef C
-#undef N
+#undef OP
+#undef TK
 
 /* Payload of a NUMBER, FLOAT, STRING, or COMMENT token.  */
 struct cpp_string

@@ -1,3 +1,11 @@
+2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (_cpp_push_token): If the token being pushed back
+	is the previous token in this context, just subtract one from
+	context->posn.
+	* cppmacro.c (save_expansion): Clear aux field when storing a
+	placemarker.
+
 2000-07-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/noncompile/redecl-1.c: New test.

@@ -1,3 +1,27 @@
+2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (TTYPE_TABLE): Rearrange to use only two per-entry
+          macros, not five.
+
+	* cpphash.h (TOKEN_NAME): New macro.
+	(_cpp_spell_operator): Deleted.
+	(token_spellings): Now _cpp_token_spellings.
+
+	* cppexp.c: Use TOKEN_NAME or TYPE_NAME, not _cpp_spell_operator.
+	* cpplex.c: Use OP and TK macros when expanding the
+	TTYPE_TABLE.  Eliminate token_names.  For non-OPERATOR tokens,
+	store the stringification of the enumeration name (CPP_CHAR,
+	etc.) in the name slot of token_spellings.
+	Use TOKEN_NAME and/or TOKEN_SPELL, do not reference
+	token_spellings directly.
+	* cpplib.c: Use TOKEN_SPELL.
+	
+	* cpplex.c (_cpp_push_token): If the token being pushed back
+	is the previous token in this context, just subtract one from
+	context->posn.
+	* cppmacro.c (save_expansion): Clear aux field when storing a
+	placemarker.
+
 2000-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplex.c (cpp_scan_buffer): Output line command even at the stop

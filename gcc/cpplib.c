@@ -1252,7 +1252,7 @@ _cpp_parse_assertion (pfile, answerp)
       dest = &list->tokens[list->tokens_used++];
       *dest = *token;
 
-      if (token_spellings[token->type].type == SPELL_STRING)
+      if (TOKEN_SPELL (token) == SPELL_STRING)
 	{
 	  _cpp_expand_name_space (list, token->val.str.len);
 	  dest->val.str.text = list->namebuf + list->name_used;

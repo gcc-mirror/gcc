@@ -495,6 +495,7 @@ save_expansion (pfile, info)
     {
       dest->type = CPP_PLACEMARKER;
       dest->flags = 0;
+      dest->val.aux = 0;
     }
 
   return list;
