@@ -117,6 +117,11 @@ package specific installation instructions.
 We recommend you browse the entire generic installation instructions before
 you proceed.
 
+A
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,list of successful builds}
+for GCC 3.0 releases is available at our web pages.  This list is updated
+as new information becomes available.
+
 The installation procedure itself is broken into five steps.
 
 @ifinfo
@@ -1094,14 +1099,25 @@ parts of the compiler in @file{@var{libdir}/gcc-lib}; documentation in
 info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 
 If you don't mind, please quickly review the
-@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0 build status page}.
 If your system is not listed, send a note to
 @email{gcc@@gcc.gnu.org} indicating
 that you successfully built and installed GCC.
 
 Include the output from running @file{@var{srcdir}/config.guess}.  (Do
 not send us the @file{config.guess} file itself, just the one-line output from
-running it!)
+running it!)  Also specify which version you built.
+
+We'd also like to know if the
+@ifnothtml
+@ref{Specific, host/target specific installation notes}
+@end ifnothtml
+@ifhtml
+@uref{specific.html,,host/target specific installation notes}
+@end ifhtml
+didn't include your host/target information or if that information is
+incomplete or out of date.  Send a note to
+@email{gcc@@gcc.gnu.org} telling us how the information should be changed.
 
 If you find a bug, please report it following our
 @uref{../bugs.html,,bug reporting guidelines}.
@@ -1234,6 +1250,11 @@ works.
 
 Please read this document carefully @emph{before} installing the
 GNU Compiler Collection on your machine.
+
+A
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,list of successful builds}
+for GCC 3.0 releases is available at our web pages.  This list is updated
+as new information becomes available.
 
 @ifhtml
 @itemize
