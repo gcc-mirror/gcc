@@ -1346,7 +1346,7 @@ do_line (pfile, keyword)
     }      
   CPP_SET_WRITTEN (pfile, old_written);
 
-  if (CPP_PEDANTIC (pfile) && new_lineno <= 0)
+  if (CPP_PEDANTIC (pfile) && (new_lineno <= 0 || new_lineno > 32767))
     cpp_pedwarn (pfile, "line number out of range in `#line' command");
 
   token = get_directive_token (pfile);
