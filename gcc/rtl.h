@@ -642,6 +642,7 @@ extern char *decode_asm_operands ();
 #ifdef BITS_PER_WORD
 /* Conditional is to detect when config.h has been included.  */
 extern enum reg_class reg_preferred_class ();
+extern enum reg_class reg_alternate_class ();
 #endif
 
 extern rtx get_first_nonparm_insn ();

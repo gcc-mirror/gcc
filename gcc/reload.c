@@ -1502,7 +1502,7 @@ operands_match_p (x, y)
 
 /* Return the number of times character C occurs in string S.  */
 
-static int
+int
 n_occurrences (c, s)
      char c;
      char *s;
@@ -2045,7 +2045,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   ? reg_preferred_class (REGNO (recog_operand[i])) : NO_REGS);
       pref_or_nothing[i]
 	= (code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER
-	   && reg_preferred_or_nothing (REGNO (recog_operand[i])));
+	   && reg_alternate_class (REGNO (recog_operand[i])) == NO_REGS);
     }
 
   /* If this is simply a copy from operand 1 to operand 0, merge the
