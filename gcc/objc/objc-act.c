@@ -3912,8 +3912,7 @@ build_protocol_initializer (tree type, tree protocol_name,
   /* Filling the "isa" in with one allows the runtime system to
      detect that the version change...should remove before final release.  */
 
-  expr = build_int_cst (NULL_TREE, PROTOCOL_VERSION, 0);
-  TREE_TYPE (expr) = cast_type;
+  expr = build_int_cst (cast_type, PROTOCOL_VERSION, 0);
   initlist = tree_cons (NULL_TREE, expr, initlist);
   initlist = tree_cons (NULL_TREE, protocol_name, initlist);
   initlist = tree_cons (NULL_TREE, protocol_list, initlist);
@@ -4848,8 +4847,7 @@ generate_protocol_list (tree i_or_p)
   /* Build initializer.  */
   initlist = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, 0, 0), NULL_TREE);
 
-  e = build_int_cst (NULL_TREE, size, 0);
-  TREE_TYPE (e) = cast_type;
+  e = build_int_cst (cast_type, size, 0);
   initlist = tree_cons (NULL_TREE, e, initlist);
 
   for (lproto = plist; lproto; lproto = TREE_CHAIN (lproto))
@@ -9019,8 +9017,7 @@ handle_impent (struct imp_entry *impent)
     {
       tree decl, init;
 
-      init = build_int_cst (NULL_TREE, 0, 0);
-      TREE_TYPE (init) = c_common_type_for_size (BITS_PER_WORD, 1);
+      init = build_int_cst (c_common_type_for_size (BITS_PER_WORD, 1), 0, 0);
       decl = build_decl (VAR_DECL, get_identifier (string), TREE_TYPE (init));
       TREE_PUBLIC (decl) = 1;
       TREE_READONLY (decl) = 1;
