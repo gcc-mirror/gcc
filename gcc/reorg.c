@@ -3170,7 +3170,7 @@ relax_delay_slots (rtx first)
 
       /* See if we have a RETURN insn with a filled delay slot followed
 	 by a RETURN insn with an unfilled a delay slot.  If so, we can delete
-	 the first RETURN (but not it's delay insn).  This gives the same
+	 the first RETURN (but not its delay insn).  This gives the same
 	 effect in fewer instructions.
 
 	 Only do so if optimizing for size since this results in slower, but

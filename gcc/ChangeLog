@@ -1,3 +1,9 @@
+2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, cfgcleanup.c, cgraphunit.c, c-pretty-print.c,
+	expmed.c, ggc-common.c, jump.c, passes.c, recog.c, regmove.c,
+	reorg.c, tree.h: Fix comment typos.
+
 2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c, attribs.c, bt-load.c, builtins.c, c-common.c,

@@ -932,7 +932,7 @@ pp_c_constant (c_pretty_printer *pp, tree e)
     }
 }
 
-/* Pretty-print an IDENTIFIER_NODE, precedeed by whitespace is necessary.  */
+/* Pretty-print an IDENTIFIER_NODE, preceded by whitespace is necessary.  */
 
 void
 pp_c_identifier (c_pretty_printer *pp, const char *id)

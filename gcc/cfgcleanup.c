@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    cleanup_cfg.  Following optimizations are performed:
 
    - Unreachable blocks removal
-   - Edge forwarding (edge to the forwarder block is forwarded to it's
+   - Edge forwarding (edge to the forwarder block is forwarded to its
      successor.  Simplification of the branch instruction is performed by
      underlying infrastructure so branch can be converted to simplejump or
      eliminated).

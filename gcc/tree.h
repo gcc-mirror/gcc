@@ -1000,7 +1000,7 @@ struct tree_block GTY(())
 /* See tree.def for documentation of the use of these fields.
    Look at the documentation of the various ..._TYPE tree codes.
 
-   Note that the type.values, type.minval, and type.maxval fiels are
+   Note that the type.values, type.minval, and type.maxval fields are
    overloaded and used for different macros in different kinds of types.
    Each macro must check to ensure the tree node is of the proper kind of
    type.  Note also that some of the front-ends also overload these fields,
