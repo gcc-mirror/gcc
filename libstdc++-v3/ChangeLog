@@ -1,3 +1,16 @@
+2003-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_performance.h (__gnu_cxx_test): Change
+	output name to libstdc++-v3-performance.sum.
+	* testsuite/Makefile.am (CLEANFILES): Remove .performance.
+	* testsuite/Makefile.in: Regenerate.
+	
+2003-06-27  Matthias Klose  <doko@debian.org>
+
+	* testsuite/Makefile.am (check-abi, check-abi-verbose): Save
+	output of abi-check in libstdc++-v3-abi.sum.
+	* testsuite/Makefile.in: Regenerate.
+
 2003-06-27  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/os/bsd/netbsd/ctype_noninline.h
