@@ -1,3 +1,7 @@
+2004-11-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/ia64-postinc.c: New test.
+
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
 
 	* gcc.dg/format/cmn-err-1.c: Add tests for "%p".
