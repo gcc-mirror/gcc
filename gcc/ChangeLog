@@ -1,8 +1,3 @@
-2000-07-29  Marc Espie <espie@openbsd.org>
-
-	* Makefile.in: Generate objc parser along with the C parser.
-        * objc/Make-lang.in:  Remove generation of objc parser.
-
 2000-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	Put phi nodes after NOTE_INSN_BASIC_BLOCK.
