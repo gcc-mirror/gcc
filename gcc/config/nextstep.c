@@ -45,12 +45,12 @@ extern char *get_directive_line ();
    The result is 1 if the pragma was handled.  */
 
 int
-handle_pragma (finput, node)
-     FILE *finput;
-     tree node;
+handle_pragma (p_getc, p_ungetc, name)
+     int (*  p_getc) PROTO ((void));
+     void (* p_ungetc) PROTO ((int));
+     char * pname;
 {
   int retval = 0;
-  register char *pname;
 
   /* Record initial setting of optimize flag, so we can restore it.  */
   if (!pragma_initialized)
@@ -58,11 +58,6 @@ handle_pragma (finput, node)
       pragma_initialized = 1;
       initial_optimize_flag = optimize;
     }
-
-  if (TREE_CODE (node) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (node);
 
   if (strcmp (pname, "CC_OPT_ON") == 0)
     {

@@ -1358,11 +1358,17 @@ do { char dstr[30];					\
 
 /* Define this macro if you want to implement any pragmas.  If defined, it
    should be a C expression to be executed when #pragma is seen.  The
-   argument STREAM is the stdio input stream from which the source
-   text can be read.  CH is the first character after the #pragma.  The
-   result of the expression is the terminating character found
-   (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, NODE) handle_pragma (FILE, NODE)
+   argument GETC is a function which will return the next character in the
+   input stream, or EOF if no characters are left.  The argument UNGETC is
+   a function which will push a character back into the input stream.  The
+   argument NAME is the word following #pragma in the input stream.  The input
+   stream pointer will be pointing just beyond the end of this word.  The
+   expression should return true if it handled the pragma, false otherwise.
+   The input stream should be left undistrubed if false is returned, otherwise
+   it should be pointing at the last character after the end of the pragma
+   (newline or end-of-file).  */
+#define HANDLE_PRAGMA(GETC, UNGETC, NAME) handle_pragma (GETC, UNGETC, NAME)
+extern int handle_pragma ();
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 
