@@ -1,3 +1,10 @@
+2004-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18096
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Check that
+	the stack adjustment, "size", is valid for Pmode.  If the stack
+	frame is too large, generate a trap insn and issue a warning.
+
 2004-10-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c: Fix comment typos.
