@@ -2973,9 +2973,11 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  size *= GET_MODE_SIZE (best_mode);
 
 	  /* Check the access right of the pointer.  */
-	  emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3, to_addr,
-			     ptr_mode, GEN_INT (size), TYPE_MODE (sizetype),
-			     GEN_INT (MEMORY_USE_WO), QImode);
+	  if (size)
+	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+			       to_addr, ptr_mode,
+			       GEN_INT (size), TYPE_MODE (sizetype),
+			       GEN_INT (MEMORY_USE_WO), QImode);
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
@@ -8836,12 +8838,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  if (! (*insn_operand_predicate[(int)icode][0]) (result, insn_mode))
 	    result = gen_reg_rtx (insn_mode);
-
 	  src_rtx = memory_address (BLKmode,
 				    expand_expr (src, NULL_RTX, ptr_mode,
 						 EXPAND_NORMAL));
+
 	  if (! (*insn_operand_predicate[(int)icode][1]) (src_rtx, Pmode))
 	    src_rtx = copy_to_mode_reg (Pmode, src_rtx);
+
+	  /* Check the string is readable and has an end.  */
+	  if (flag_check_memory_usage)
+	    emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
+			       src_rtx, ptr_mode,
+			       GEN_INT (MEMORY_USE_RO), QImode);
 
 	  char_rtx = const0_rtx;
 	  char_mode = insn_operand_mode[(int)icode][2];
@@ -8915,7 +8923,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem, src_mem, dest_addr;;
+	  rtx dest_rtx, dest_mem, src_mem, src_rtx, dest_addr, len_rtx;
 
 	  /* If either SRC or DEST is not a pointer type, don't do
 	     this operation in-line.  */
@@ -8934,11 +8942,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    dest = TREE_OPERAND (dest, 0);
 	  type = TREE_TYPE (TREE_TYPE (dest));
 	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
+	  src_rtx = expand_expr (src, NULL_RTX, ptr_mode, EXPAND_SUM);
 	  src_mem = gen_rtx (MEM, BLKmode,
-			     memory_address (BLKmode,
-					     expand_expr (src, NULL_RTX,
-							  ptr_mode,
-							  EXPAND_SUM)));
+			     memory_address (BLKmode, src_rtx));
+	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+
+	  /* Just copy the rights of SRC to the rights of DEST.  */
+	  if (flag_check_memory_usage)
+	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
+			       src_rtx, ptr_mode,
+			       dest_rtx, ptr_mode,
+			       len_rtx, TYPE_MODE (sizetype));
+
 	  /* There could be a void* cast on top of the object.  */
 	  while (TREE_CODE (src) == NOP_EXPR)
 	    src = TREE_OPERAND (src, 0);
@@ -8947,8 +8962,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  /* Copy word part most expediently.  */
 	  dest_addr
-	    = emit_block_move (dest_mem, src_mem,
-			       expand_expr (len, NULL_RTX, VOIDmode, 0),
+	    = emit_block_move (dest_mem, src_mem, len_rtx,
 			       MIN (src_align, dest_align));
 
 	  if (dest_addr == 0)
@@ -8983,7 +8997,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem, dest_addr;
+	  rtx dest_rtx, dest_mem, dest_addr, len_rtx;
 
 	  /* If DEST is not a pointer type, don't do this 
 	     operation in-line.  */
@@ -8997,15 +9011,23 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
 	  dest_mem = gen_rtx (MEM, BLKmode,
 			      memory_address (BLKmode, dest_rtx));
+	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+
+	  /* Just check DST is writable and mark it as readable.  */
+	  if (flag_check_memory_usage)
+	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+			       dest_rtx, ptr_mode,
+			       len_rtx, TYPE_MODE (sizetype),
+			       GEN_INT (MEMORY_USE_WO), QImode);
+
+
 	  /* There could be a void* cast on top of the object.  */
 	  while (TREE_CODE (dest) == NOP_EXPR)
 	    dest = TREE_OPERAND (dest, 0);
 	  type = TREE_TYPE (TREE_TYPE (dest));
 	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 
-	  dest_addr = clear_storage (dest_mem,
-				     expand_expr (len, NULL_RTX, VOIDmode, 0),
-				     dest_align);
+	  dest_addr = clear_storage (dest_mem, len_rtx, dest_align);
 
 	  if (dest_addr == 0)
 	    dest_addr = force_operand (dest_rtx, NULL_RTX);
@@ -9020,6 +9042,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_STRCMP:
       /* If not optimizing, call the library function.  */
       if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
+	break;
+
+      /* If we need to check memory accesses, call the library function.  */
+      if (flag_check_memory_usage)
 	break;
 
       if (arglist == 0
@@ -9073,6 +9099,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_MEMCMP:
       /* If not optimizing, call the library function.  */
       if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
+	break;
+
+      /* If we need to check memory accesses, call the library function.  */
+      if (flag_check_memory_usage)
 	break;
 
       if (arglist == 0
