@@ -1,3 +1,12 @@
+Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.h (struct induction): Add multi_insn_incr.
+	* loop.c (basic_induction_var): New multi_insn_incr argument.
+	Set it if we search back through previous insns for the biv.
+	(record_biv): New multi_insn_incr argument; fill in struct induction.
+	(strength_reduce): Discard an iv with multiple bivs, any of
+	which require multiple insns to increment.
+
 1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* invoke.texi (C Dialect Options): Remove -flang-c9x, add -std
