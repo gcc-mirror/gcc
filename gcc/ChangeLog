@@ -1,3 +1,19 @@
+2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* system.h (GCOV_SIZE_TYPE): Unposion.
+	* gcov-io.h (GCOV_TYPE_NODE): Delete, replacing with...
+	(GCOV_TYPE_SIZE): ...this new macro.
+	* coverage.h (get_gcov_type, GCOV_TYPE_NODE): Declare.
+	* coverage.c (get_gcov_type, get_gcov_unsigned_t): New functions.
+	(rtl_coverage_counter_ref): Use GCOV_TYPE_SIZE.
+	(build_fn_info_type, build_fn_info_value, build_ctr_info_type)
+	(build_ctr_info_value, build_gcov_info): Use get_gcov_unsigned_t
+	instead of unsigned_intSI_type_node.
+	* rtl-profile.c (rtl_gen_interval_profiler, rtl_gen_pow2_profiler)
+	(rtl_gen_one_value_profiler_no_edge_manipulation)
+	(rtl_gen_const_delta_profiler): Use GCOV_TYPE_SIZE.
+	* value-prof.c: Include coverage.h.
+
 2005-04-02  Daniel Berlin  <dberlin@dberlin.org>
 	    Diego Novillo <dnovillo@redhat.com>
 	    

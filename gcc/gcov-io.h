@@ -214,11 +214,7 @@ typedef HOST_WIDEST_INT gcov_type;
 #include <sys/types.h>
 #endif
 #else /*!IN_GCOV */
-#if LONG_LONG_TYPE_SIZE > 32
-#define GCOV_TYPE_NODE intDI_type_node
-#else
-#define GCOV_TYPE_NODE intSI_type_node
-#endif
+#define GCOV_TYPE_SIZE (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32)
 #endif
 
 #if defined (HOST_HAS_F_SETLKW)

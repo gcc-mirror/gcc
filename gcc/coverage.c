@@ -120,7 +120,22 @@ static tree build_ctr_info_type (void);
 static tree build_ctr_info_value (unsigned, tree);
 static tree build_gcov_info (void);
 static void create_coverage (void);
+
+/* Return the type node for gcov_type.  */
 
+tree
+get_gcov_type (void)
+{
+  return lang_hooks.types.type_for_size (GCOV_TYPE_SIZE, false);
+}
+
+/* Return the type node for gcov_unsigned_t.  */
+
+static tree
+get_gcov_unsigned_t (void)
+{
+  return lang_hooks.types.type_for_size (32, true);
+}
 
 static hashval_t
 htab_counts_entry_hash (const void *of)
@@ -399,8 +414,7 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 rtx
 rtl_coverage_counter_ref (unsigned counter, unsigned no)
 {
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx ref;
 
   gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
@@ -412,7 +426,8 @@ rtl_coverage_counter_ref (unsigned counter, unsigned no)
 			       (tree_ctr_tables[counter]))));
         SYMBOL_REF_FLAGS (ctr_labels[counter]) = SYMBOL_FLAG_LOCAL;
       }
-  ref = plus_constant (ctr_labels[counter], gcov_size / BITS_PER_UNIT * no);
+  ref = plus_constant (ctr_labels[counter],
+		       GCOV_TYPE_SIZE / BITS_PER_UNIT * no);
   ref = gen_rtx_MEM (mode, ref);
   set_mem_alias_set (ref, new_alias_set ());
   MEM_NOTRAP_P (ref) = 1;
@@ -602,10 +617,10 @@ build_fn_info_type (unsigned int counters)
   tree array_type;
 
   /* ident */
-  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  fields = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
 
   /* checksum */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -636,12 +651,12 @@ build_fn_info_value (const struct function_list *function, tree type)
   tree array_value = NULL_TREE;
 
   /* ident */
-  value = tree_cons (fields, build_int_cstu (unsigned_intSI_type_node,
+  value = tree_cons (fields, build_int_cstu (get_gcov_unsigned_t (),
 					     function->ident), value);
   fields = TREE_CHAIN (fields);
 
   /* checksum */
-  value = tree_cons (fields, build_int_cstu (unsigned_intSI_type_node,
+  value = tree_cons (fields, build_int_cstu (get_gcov_unsigned_t (),
 					     function->checksum), value);
   fields = TREE_CHAIN (fields);
 
@@ -674,7 +689,7 @@ build_ctr_info_type (void)
   tree gcov_merge_fn_type;
 
   /* counters */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -711,7 +726,7 @@ build_ctr_info_value (unsigned int counter, tree type)
 
   /* counters */
   value = tree_cons (fields,
-		     build_int_cstu (unsigned_intSI_type_node,
+		     build_int_cstu (get_gcov_unsigned_t (),
 				     prg_n_ctrs[counter]),
 		     value);
   fields = TREE_CHAIN (fields);
@@ -785,11 +800,11 @@ build_gcov_info (void)
   const_type = build_qualified_type (type, TYPE_QUAL_CONST);
 
   /* Version ident */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cstu (unsigned_intSI_type_node,
-					    GCOV_VERSION), value);
+  value = tree_cons (field, build_int_cstu (TREE_TYPE (field), GCOV_VERSION),
+		     value);
 
   /* next -- NULL */
   field = build_decl (FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
@@ -798,11 +813,11 @@ build_gcov_info (void)
   value = tree_cons (field, null_pointer_node, value);
 
   /* stamp */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cstu (unsigned_intSI_type_node,
-					    local_tick), value);
+  value = tree_cons (field, build_int_cstu (TREE_TYPE (field), local_tick),
+		     value);
 
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,

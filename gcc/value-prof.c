@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
 #include "diagnostic.h"
+#include "coverage.h"
 #include "tree.h"
 #include "gcov-io.h"
 
