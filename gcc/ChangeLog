@@ -397,7 +397,6 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* cpp.texi: Update.
 
->>>>>>> 1.7094
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c: (cpp_reader_init): Allow digraphs by default.
