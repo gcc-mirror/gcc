@@ -1,3 +1,8 @@
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
+	* combine.c (combine_simplify_rtx): Update comment and
+	remove erroneous test.
+
 2001-08-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (cpp_finish): Pop the final buffer without comment.

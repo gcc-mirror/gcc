@@ -3856,13 +3856,12 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 					      XEXP (XEXP (x, 0), 1))))
 	return reversed;
 
-      /* (ashiftrt foo C) where C is the number of bits in FOO minus 1
-	 is (lt foo (const_int 0)) if STORE_FLAG_VALUE is -1, so we can
+      /* (not (ashiftrt foo C)) where C is the number of bits in FOO minus 1
+	 is (ge foo (const_int 0)) if STORE_FLAG_VALUE is -1, so we can
 	 perform the above simplification.  */
 
       if (STORE_FLAG_VALUE == -1
 	  && GET_CODE (XEXP (x, 0)) == ASHIFTRT
-	  && XEXP (x, 1) == const1_rtx
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode) - 1)
 	return gen_rtx_GE (mode, XEXP (XEXP (x, 0), 0), const0_rtx);
