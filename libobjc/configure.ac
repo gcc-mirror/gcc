@@ -159,7 +159,16 @@ AC_SUBST(toolexeclibdir)
 # --------
 
 GCC_NO_EXECUTABLES
+
+# We must force CC to /not/ be a precious variable; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
 
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
