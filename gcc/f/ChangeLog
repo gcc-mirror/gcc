@@ -1,3 +1,7 @@
+1998-07-12  Dave Love  <d.love@dl.ac.uk>
+
+	* version.c: Bump version.
+
 Sat Jul 11 19:24:32 1998  Craig Burley  <burley@gnu.org>
 
 	Fix 980616-0.f:
