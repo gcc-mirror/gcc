@@ -11,7 +11,7 @@
 
 #if defined( SCO_REGSET_CHECK )
 union u_fps {
-    struct rsfpstate
+    struct	rsfpstate
     {
        int whatever;
     }

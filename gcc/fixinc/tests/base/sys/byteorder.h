@@ -56,9 +56,7 @@ htonl (unsigned long __arg)
 {
   register unsigned long __result;
 
-  __asm__ ("xchg%B0 %b0,%h0
-	ror%L0 $16,%0
-	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  __asm__ ("xchg%B0 %b0,%h0 ; ror%L0 $16,%0 ; xchg%B0 %b0,%h0"     : "=q" (__result) : "0" (__arg));
   return __result;
 }
 

@@ -2331,12 +2331,6 @@ link with GNU malloc instead of the malloc that comes with the system.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-*-sco3.2v4}i?86-*-sco3.2v4
-Use this configuration for SCO release 3.2 version 4.
-
-@html
-<hr />
-@end html
 @heading @anchor{ix86-*-sco3.2v5*}i?86-*-sco3.2v5*
 Use this for the SCO OpenServer Release 5 family of operating systems.
 
@@ -2349,64 +2343,34 @@ maintain.  GCC now emits only DWARF 2 for this target.  This means you
 may use either the UDK debugger or GDB to debug programs built by this
 version of GCC@.
 
-Use of the @option{-march=pentiumpro} flag can result in
-unrecognized opcodes when using the native assembler on OS versions before
-5.0.6.  (Support for P6 opcodes was added to the native ELF assembler in
-that version.)  While it's rather rare to see these emitted by GCC yet,
-errors of the basic form:
+GCC is now only supported on releases 5.0.4 and later, and requires that
+you install Support Level Supplement OSS646B or later, and the latest
+version of the Supplement Graphics, Web and X11 Libraries (GWXLIBS)
+package.  If you are using release 5.0.7 of OpenServer, you must have at
+least the first maintenance pack installed (this includes the relevant
+portions of OSS646 and GWXLIBS).  OSS646, also known as the "Execution
+Environment Update", provides updated link editors and assemblers, as well
+as updated standard C and math libraries.  The C startup modules are also
+updated to support the System V gABI draft, and GCC relies on that
+behavior.  GWXLIBS provides a collection of commonly used open source
+libraries, some of which GCC depends on (such as GNU gettext and zlib).
+SCO OpenServer Release 5.0.7 has all of this built in by default, but
+GWXLIBS is significantly updated in Maintenance Pack 1.  Please visit
+@uref{ftp://ftp.sco.com/pub/openserver5,,ftp://ftp.sco.com/pub/openserver5}
+and
+@uref{ftp://ftp.sco.com/pub/openserver5/opensrc,,ftp://ftp.sco.com/pub/openserver5/opensrc}
+for the latest versions of these (and other potentially useful) supplements.
 
-@example
-  /usr/tmp/ccaNlqBc.s:22:unknown instruction: fcomip
-  /usr/tmp/ccaNlqBc.s:50:unknown instruction: fucomip
-@end example
-
-are symptoms of this problem.  You may work around this by not
-building affected files with that flag, by using the GNU assembler, or
-by using the assembler provided with the current version of the OS@.
-Users of GNU assembler should see the note below for hazards on doing
-so.
-
-The native SCO assembler that is provided with the OS at no
-charge is normally required.  If, however, you must be able to use
-the GNU assembler (perhaps you're compiling code with asms that
-require GAS syntax) you may configure this package using the flags
-@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You must
-use a recent version of GNU binutils; versions past 2.9.1 seem to work
-well.
-
-In general, the @option{--with-gnu-as} option isn't as well tested
-as the native assembler.
-
-Look in @file{gcc/config/i386/sco5.h} (search for ``messy'') for
-additional OpenServer-specific flags.
-
-Systems based on OpenServer before 5.0.4 (@samp{uname -X}
-will tell you what you're running) require TLS597 from
-@uref{ftp://stage.caldera.com/TLS/,,ftp://stage.caldera.com/TLS/}
-for C++ constructors and destructors to work right.
-
-The system linker in (at least) 5.0.4 and 5.0.5 will sometimes
-do the wrong thing for a construct that GCC will emit for PIC
-code.  This can be seen as execution testsuite failures when using
-@option{-fPIC} on @file{921215-1.c}, @file{931002-1.c}, @file{nestfunc-1.c}, and @file{gcov-1.c}.
-For 5.0.5, an updated linker that will cure this problem is
-available.  You must install both
-@uref{ftp://ftp.sco.com/pub/openserver5/rs505a,,ftp://ftp.sco.com/pub/openserver5/rs505a}
-and @uref{ftp://ftp.sco.com/pub/openserver5,,OSS499A}.
-
-The dynamic linker in OpenServer 5.0.5 (earlier versions may show
-the same problem) aborts on certain G77-compiled programs.  It's particularly
-likely to be triggered by building Fortran code with the @option{-fPIC} flag.
-Although it's conceivable that the error could be triggered by other
-code, only G77-compiled code has been observed to cause this abort.
-If you are getting core dumps immediately upon execution of your
-G77 program---and especially if it's compiled with @option{-fPIC}---try applying
-@uref{sco_osr5_g77.patch,,@file{sco_osr5_g77.patch}} to your @samp{libf2c} and
-rebuilding GCC@.
-Affected faults, when analyzed in a debugger, will show a stack
-backtrace with a fault occurring in @code{rtld()} and the program
-running as @file{/usr/lib/ld.so.1}.  This problem has been reported to SCO
-engineering and will hopefully be addressed in later releases.
+Although there is support for using the native assembler, it is recommended
+that you configure GCC to use the GNU assembler.  You do this by using the
+flags @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You
+should use a modern version of GNU binutils.  Version 2.14 was used for all
+testing.  In general, only the @option{--with-gnu-as} option is tested.  A
+modern bintuils (as well as a plethora of other development related GNU
+utilities) can be found in the GNU Development Tools package.  See the
+SCO web and ftp sites for details.  That package also contains the
+currently "officially supported" version of GCC, version 2.95.3.  It is
+useful for bootstrapping this version.  
 
 
 @html

@@ -297,19 +297,17 @@ fix = {
 
 /*
  *  Completely replace <sys/byteorder.h>; with a file that implements gcc's
- *  optimized byteswapping.  Restricted to "SVR4" machines until either
- *  it is shown to be safe to replace this file always, or we get bolder ;-)
+ *  optimized byteswapping.
  */
 fix = {
     hackname = AAB_svr4_replace_byteorder;
-#ifndef SVR5
     mach = "*-*-sysv4*";
     mach = "i[34567]86-*-sysv5*";
+    mach = "i[34567]86-*-sco3.2v5*";
     mach = "i[34567]86-*-udk*";
     mach = "i[34567]86-*-solaris2.[0-4]";
     mach = "powerpcle-*-solaris2.[0-4]";
     mach = "sparc-*-solaris2.[0-4]";
-#endif /* SVR5 */
     files    = sys/byteorder.h;
     replace  = '#ifndef _SYS_BYTEORDER_H
 \#define _SYS_BYTEORDER_H
@@ -360,9 +358,8 @@ htonl (unsigned long __arg)
 {
   register unsigned long __result;
 
-  __asm__ ("xchg%B0 %b0,%h0
-	ror%L0 $16,%0
-	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  __asm__ ("xchg%B0 %b0,%h0 ; ror%L0 $16,%0 ; xchg%B0 %b0,%h0" \
+    : "=q" (__result) : "0" (__arg));
   return __result;
 }
 
@@ -2213,6 +2210,110 @@ fix = {
 
 
 /*
+ *  On OpenServer and on UnixWare 7, <math.h> uses the native compiler
+ *  __builtin_generic. We fix that usage to use the GCC equivalent.
+ * It also has a plethora of inline functions that conflict with libstdc++.
+ */
+fix = {
+    hackname = sco_math;
+    files    = math.h;
+    files    = ansi/math.h;
+    files    = posix/math.h;
+    files    = xpg4/math.h;
+    files    = xpg4v2/math.h;
+    files    = xpg4plus/math.h;
+    files    = ods_30_compat/math.h;
+    files    = oldstyle/math.h;
+    select   = "inline double abs";
+    sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
+	       "#ifndef __GNUC__\n";
+    sed      =
+"/.*__builtin_generic/a\\\n"
+"#else\\\n"
+"#define __fp_class(a) \\\\\\\n"
+"  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
+"   __fpclassifyl(a), \\\\\\\n"
+"    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
+"      __fpclassifyf(a),__fpclassify(a)))\\\n"
+"#endif";
+
+    sed      = "/extern \"C\\+\\+\"/N;"
+	       "/inline double abs/i\\\n"
+               "#ifndef __GNUC__\n";
+    sed      = "/inline long double trunc/N;"
+	       "/inline long double trunc.*}.*extern \"C\\+\\+\"/a\\\n"
+	       "#endif /* ! __GNUC__ */";
+
+    test_text =
+    "#define __fp_class(a) \\\\\n"
+    " __builtin_generic(a,\"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify\")\n";
+
+};
+
+
+/*
+ *  On SCO OpenServer prior to 5.0.7MP1, <sys/regset.h> and <ieeefp.h>
+ *  have a clash on struct _fpstate and struct fpstate.
+ */
+fix = {
+    hackname  = sco_regset;
+    files     = sys/regset.h;
+    mach      = "*-*-sco3.2v5*";
+    select    = "(struct[ \t]+_*)fpstate";
+    c_fix     = format;
+    c_fix_arg = "%1rsfpstate";
+
+    test_text =
+    "union u_fps {\n"
+    "    struct\tfpstate\n"
+    "    {\n"
+    "       int whatever;\n"
+    "    }\n"
+    "};\n"
+    "union _u_fps {\n"
+    "    struct _fpstate\n"
+    "    {\n"
+    "       int whatever;\n"
+    "    }\n"
+    "};\n";
+};
+
+
+/*
+ * The string.h header file on SCO Open Server has some inline C++ functions
+ * that confuse and upset libstdc++ horribly. Protect them from being defined
+ * when using GCC.
+ */
+fix = {
+    hackname = sco_string;
+    files    = string.h;
+    files    = ansi/string.h;
+    files    = posix/string.h;
+    files    = xpg4/string.h;
+    files    = xpg4v2/string.h;
+    files    = xpg4plus/string.h;
+    files    = ods_30_compat/string.h;
+    files    = oldstyle/string.h;
+    mach      = "*-*-sco3.2v5*";
+    select   = "inline char";
+    sed      = "/extern \"C\\+\\+\"/N;"
+               "/inline void.*memchr/i\\\n"
+	       "#ifndef __GNUC__\n";
+    sed      = "/return.*strstr/N;"
+               "/return.*strstr.*}/a\\\n"
+	       "#endif /* ! __GNUC__ */";
+
+    test_text =
+  "extern \"C++\" {\n"
+  "inline void *memchr(void *__1, int __2, size_t __3)\n"
+  "	{ return (void *)memchr((const void *)__1, __2, __3); }\n"
+  "inline char *strstr(char *__1, const char *__2)\n"
+  "	{ return (char *)strstr((const char *)__1, __2); }\n"
+  "}\n";
+};
+
+
+/*
  *  The static functions lstat() and fchmod() in <sys/stat.h>
  *  cause G++ grief since they're not wrapped in "if __cplusplus".
  *
@@ -2725,14 +2826,13 @@ fix = {
  *  that is visible to any ANSI compiler using this include.  Simply
  *  delete the lines that #define some string functions to internal forms.
  */
-#ifdef SVR4
 fix = {
     hackname = svr4_disable_opt;
     files    = string.h;
     select   = '#define.*__std_hdr_';
     sed      = '/#define.*__std_hdr_/d';
+    test_text = "#define strlen __std_hdr_strlen\n";
 };
-#endif
 
 
 /*

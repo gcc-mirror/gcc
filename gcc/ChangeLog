@@ -1,3 +1,28 @@
+2003-08-08  Kean Johnston  <jkj@sco.com>
+
+	PR target/9877
+	PR target/8336
+	* config.gcc (sco3.2v5*): Use elfos.h and dbxelf.h in tm_file;
+	Eliminate need for t-sco5gas target fragment.
+	No longer build crt{begin,end}S.o, that were used for COFF support.
+	* tlink.c (recompile_files): Add missing = in putenv() calls.
+	* unwind-dw2.c (_Unwind_GetCFA): Correct return cast.
+	* config/i386/sco5.h: Major overhaul to remove all COFF support
+	* config/i386/t-sco5: Multilib for PIC support
+	* config/i386/t-sco5gas: Remove
+	* config/i386/i386.c: Check value as well as presence of
+        SUPPORTS_ONE_ONLY
+	* doc/install.texi: Update for modern SCO instructions
+	* fixinc/check.tpl: Allow user to specify diff program for make check
+	* fixinc/inclhack.def: Fix several SCO header files, namely string.h,
+	math.h, sys/byteorder.h and sys/regset.h.
+	* fixinc/fixincl.x: Regenerate
+	* fixinc/tests/base/math.h: Update
+	* fixinc/tests/base/sys/byteorder.h: Update
+	* fixinc/tests/base/string.h: Added
+	* fixinc/tests/base/sys/regset.h: Added
+	* testsuite/gcc.dg/nest.c: Allow failure on SCO (-pg not supported)
+
 2003-08-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/11370
