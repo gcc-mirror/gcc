@@ -3596,7 +3596,7 @@ store_constructor (exp, target, cleared)
 	     It is also needed to check for missing elements.  */
 	  for (elt = CONSTRUCTOR_ELTS (exp);
 	       elt != NULL_TREE;
-	       elt = TREE_CHAIN (elt), i++)
+	       elt = TREE_CHAIN (elt))
 	    {
 	      tree index = TREE_PURPOSE (elt);
 	      HOST_WIDE_INT this_node_count;
