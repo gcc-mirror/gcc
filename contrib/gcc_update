@@ -71,9 +71,6 @@ gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 # And then, language-specific files
 gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
-gcc/java/parse.c: gcc/java/parse.y
-gcc/java/parse-scan.c: gcc/java/parse-scan.y
-gcc/java/keyword.h: gcc/java/keyword.gperf
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in

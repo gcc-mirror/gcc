@@ -1,3 +1,10 @@
+2001-09-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	Revert:
+	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c 
+	gcc/java/parse-scan.c and gcc/java/keyword.h to list of files to
+	touch.
+
 2001-09-04  David.Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c 
