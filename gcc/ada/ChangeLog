@@ -1,3 +1,7 @@
+2004-11-07  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (install-gnatlib): Remove spurious hyphen.
+
 2004-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR ada/18228
