@@ -543,11 +543,6 @@ enum reg_note
      throw, nor will it execute a non-local goto.  */
   REG_EH_REGION,
 
-  /* Indicates that a call is actually a call to rethrow, and specifies the
-     rethrow symbol for the region the rethrow is targetting.  This provides
-     a way to generate the non standard flow edges required for a rethrow.  */
-  REG_EH_RETHROW,
-
   /* Used by haifa-sched to save NOTE_INSN notes across scheduling.  */
   REG_SAVE_NOTE,
 
