@@ -1,3 +1,8 @@
+Tue May 19 17:19:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p): New function.
+	(allocate_reload_reg, choose_reload_regs): Use it.
+
 Tue May 19 11:51:00 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* except.c (expand_start_catch): Correct logic for when to
