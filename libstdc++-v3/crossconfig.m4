@@ -43,7 +43,6 @@ case "${host}" in
     ;;
 
   *-freebsd*)
-    #os_include_dir="os/bsd/freebsd"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h locale.h float.h inttypes.h sys/resource.h sys/stat.h \
@@ -101,7 +100,6 @@ case "${host}" in
     fi
     ;;
   *-hpux*)
-    #os_include_dir="os/hpux"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h locale.h float.h inttypes.h])
@@ -126,7 +124,6 @@ case "${host}" in
     esac
     ;;
   *-linux* | *-uclinux* | *-gnu*)
-    #os_include_dir="os/gnu-linux"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h locale.h float.h inttypes.h])
@@ -155,14 +152,12 @@ case "${host}" in
     fi
     ;;
   *-mingw32*)
-    #os_include_dir="os/mingw32"
     AC_CHECK_HEADERS([sys/types.h locale.h float.h])
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
     GLIBCXX_CHECK_WCHAR_T_SUPPORT
     ;;
   *-netbsd*)
-    #os_include_dir="os/bsd/netbsd"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h locale.h float.h inttypes.h])
@@ -188,7 +183,6 @@ case "${host}" in
     fi
     ;;
   *-qnx6.1* | *-qnx6.2*)
-    #os_include_dir="os/qnx/qnx6.1"
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS) 
     GLIBCXX_CHECK_LINKER_FEATURES
@@ -330,32 +324,75 @@ case "${host}" in
     AC_DEFINE(HAVE_MODFF)
     AC_DEFINE(HAVE_HYPOT)
     ;;
-  *-windiss*)
-    #os_include_dir="os/windiss"
+  *-vxworks)
+    AC_DEFINE(HAVE_MMAP)
     AC_DEFINE(HAVE_ACOSF)
     AC_DEFINE(HAVE_ASINF)
     AC_DEFINE(HAVE_ATAN2F)
     AC_DEFINE(HAVE_ATANF)
     AC_DEFINE(HAVE_CEILF)
-    AC_DEFINE(HAVE_COPYSIGN)
-    AC_DEFINE(HAVE_COPYSIGNF)
     AC_DEFINE(HAVE_COSF)
     AC_DEFINE(HAVE_COSHF)
     AC_DEFINE(HAVE_EXPF)
     AC_DEFINE(HAVE_FABSF)
     AC_DEFINE(HAVE_FLOORF)
     AC_DEFINE(HAVE_FMODF)
-    AC_DEFINE(HAVE_FREXPF)
-    AC_DEFINE(HAVE_LDEXPF)
+    AC_DEFINE(HAVE_HYPOT)
     AC_DEFINE(HAVE_LOG10F)
     AC_DEFINE(HAVE_LOGF)
-    AC_DEFINE(HAVE_MODFF)
     AC_DEFINE(HAVE_POWF)
     AC_DEFINE(HAVE_SINF)
     AC_DEFINE(HAVE_SINHF)
     AC_DEFINE(HAVE_SQRTF)
     AC_DEFINE(HAVE_TANF)
     AC_DEFINE(HAVE_TANHF)
+    ;;
+  *-windiss*)
+    AC_DEFINE(HAVE_ACOSF)
+    AC_DEFINE(HAVE_ACOSL)
+    AC_DEFINE(HAVE_ASINF)
+    AC_DEFINE(HAVE_ASINL)
+    AC_DEFINE(HAVE_ATAN2F)
+    AC_DEFINE(HAVE_ATAN2L)
+    AC_DEFINE(HAVE_ATANF)
+    AC_DEFINE(HAVE_ATANL)
+    AC_DEFINE(HAVE_CEILF)
+    AC_DEFINE(HAVE_CEILL)
+    AC_DEFINE(HAVE_COPYSIGN)
+    AC_DEFINE(HAVE_COPYSIGNF)
+    AC_DEFINE(HAVE_COSF)
+    AC_DEFINE(HAVE_COSL)
+    AC_DEFINE(HAVE_COSHF)
+    AC_DEFINE(HAVE_COSHL)
+    AC_DEFINE(HAVE_EXPF)
+    AC_DEFINE(HAVE_EXPL)
+    AC_DEFINE(HAVE_FABSF)
+    AC_DEFINE(HAVE_FABSL)
+    AC_DEFINE(HAVE_FLOORF)
+    AC_DEFINE(HAVE_FLOORL)
+    AC_DEFINE(HAVE_FMODF)
+    AC_DEFINE(HAVE_FMODL)
+    AC_DEFINE(HAVE_FREXPF)
+    AC_DEFINE(HAVE_FREXPL)
+    AC_DEFINE(HAVE_LDEXPF)
+    AC_DEFINE(HAVE_LDEXPL)
+    AC_DEFINE(HAVE_LOG10F)
+    AC_DEFINE(HAVE_LOG10L)
+    AC_DEFINE(HAVE_LOGF)
+    AC_DEFINE(HAVE_MODFF)
+    AC_DEFINE(HAVE_MODFL)
+    AC_DEFINE(HAVE_POWF)
+    AC_DEFINE(HAVE_POWL)
+    AC_DEFINE(HAVE_SINF)
+    AC_DEFINE(HAVE_SINL)
+    AC_DEFINE(HAVE_SINHF)
+    AC_DEFINE(HAVE_SINHL)
+    AC_DEFINE(HAVE_SQRTF)
+    AC_DEFINE(HAVE_SQRTL)
+    AC_DEFINE(HAVE_TANF)
+    AC_DEFINE(HAVE_TANL)
+    AC_DEFINE(HAVE_TANHF)
+    AC_DEFINE(HAVE_TANHL)
     ;;
   *)
     AC_MSG_ERROR([No support for this host/target combination.])

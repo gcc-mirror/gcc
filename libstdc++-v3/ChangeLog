@@ -1,3 +1,17 @@
+2003-10-20  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.ac:  Fix comment typo.
+	* configure.host:  Add vxworks to host_os switch.
+	* crossconfig.m4:  Remove old commented os_include_dir variables
+	left over from autotools transition.
+	(*-vxworks):  New stanza.
+	(*-windiss):  Add missing symbols.
+	* configure:  Regenerate.
+	* config/os/vxworks/ctype_base.h, config/os/vxworks/ctype_inline.h,
+	config/os/vxworks/ctype_noninline.h, config/os/vxworks/os_defines.h:
+	New files.
+	* config/os/windiss/os_defines.h:  Define __C9X__.
+
 2003-10-19  David Edelsohn  <edelsohn@gnu.org>
 
 	PR other/12506

@@ -1,6 +1,6 @@
-// Specific definitions for generic platforms  -*- C++ -*-
+// Specific definitions for VxWorks  -*- C++ -*-
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,11 +28,10 @@
 // the GNU General Public License.
 
 
-#ifndef _GLIBCXX_OS_DEFINES
-#define _GLIBCXX_OS_DEFINES 1
+#ifndef _GLIBCPP_OS_DEFINES
+#define _GLIBCPP_OS_DEFINES 1
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
-#define __C9X__ 1 // for sinf etc
 
 #endif

@@ -297,7 +297,7 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 
 dnl In autoconf 2.5x, AC_OUTPUT is replaced by four AC_CONFIG_* macros,
 dnl which can all be called multiple times as needed, plus one (different)
-dnl AC_OUPUT macro.  This one lists the files to be created:
+dnl AC_OUTPUT macro.  This one lists the files to be created:
 AC_CONFIG_FILES( \
   Makefile \
   AC_FOREACH([DIR], glibcxx_SUBDIRS, [DIR/Makefile ])

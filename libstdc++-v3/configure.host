@@ -186,6 +186,9 @@ case "${host_os}" in
   solaris2.[789] | solaris2.1[0-9])
     os_include_dir="os/solaris/solaris2.7"
     ;;
+  vxworks)
+    os_include_dir="os/vxworks"
+    ;;
   windiss*)
     os_include_dir="os/windiss"
     ;;
