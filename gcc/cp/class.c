@@ -1027,7 +1027,7 @@ add_method (tree type, tree method)
 	VEC_quick_insert (tree, method_vec, slot, overload);
     }
   else
-    /* Replace the current slot. */
+    /* Replace the current slot.  */
     VEC_replace (tree, method_vec, slot, overload);
 }
 
@@ -4068,7 +4068,7 @@ check_bases_and_members (tree t)
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
 
-  /* Synthesize any needed methods.   */
+  /* Synthesize any needed methods.  */
   add_implicitly_declared_members (t, cant_have_default_ctor,
 				   cant_have_const_ctor,
 				   no_const_asn_ref);

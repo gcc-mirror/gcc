@@ -214,7 +214,7 @@ complete_type_check_abstract (tree type)
 
 	  /* Tweak input_location so that the diagnostic appears at the correct
 	    location. Notice that this is only needed if the decl is an
-	    IDENTIFIER_NODE, otherwise cp_error_at. */
+	    IDENTIFIER_NODE, otherwise cp_error_at.  */
 	  input_location = pat->locus;
 	  abstract_virtuals_error (pat->decl, pat->type);
 	  pat = pat->next;

@@ -2783,7 +2783,7 @@ push_class_level_binding (tree name, tree x)
   gcc_assert (TYPE_BEING_DEFINED (current_class_type));
   /* We could have been passed a tree list if this is an ambiguous
      declaration. If so, pull the declaration out because
-     check_template_shadow will not handle a TREE_LIST. */
+     check_template_shadow will not handle a TREE_LIST.  */
   if (TREE_CODE (decl) == TREE_LIST 
       && TREE_TYPE (decl) == error_mark_node)
     decl = TREE_VALUE (decl);

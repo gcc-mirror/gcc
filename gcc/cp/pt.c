@@ -3570,7 +3570,7 @@ convert_nontype_argument (tree type, tree expr)
 	 A template-argument for a non-type, non-template template-parameter
 	 shall be one of: [...]
 
-	 -- the address of an object or function with external linkage.   */
+	 -- the address of an object or function with external linkage.  */
       if (!DECL_EXTERNAL_LINKAGE_P (expr))
 	{
 	  error ("%qE is not a valid template argument for type %qT "
@@ -10792,7 +10792,7 @@ bt_instantiate_type_proc (binding_entry entry, void *data)
 
 /* Called from do_type_instantiation to instantiate a member
    (a member function or a static member variable) of an
-   explicitly instantiated class template. */
+   explicitly instantiated class template.  */
 static void
 instantiate_class_member (tree decl, int extern_p)
 {
@@ -10911,7 +10911,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
        we don't have any arguments for them.  Note that the standard
        is unclear on whether the instantiation of the members are
        *explicit* instantiations or not.  However, the most natural
-       interpretation is that it should be an explicit instantiation. */
+       interpretation is that it should be an explicit instantiation.  */
 
     if (! static_p)
       for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -11089,7 +11089,7 @@ template_for_substitution (tree decl)
    If UNDEFINED_OK is nonzero, then instead we treat it as an implicit
    instantiation.  UNDEFINED_OK is nonzero only if we are being used
    to instantiate the members of an explicitly instantiated class
-   template. */
+   template.  */
 
 
 tree
