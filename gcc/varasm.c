@@ -1005,11 +1005,12 @@ assemble_start_function (decl, fnname)
 	  strcpy (*name, p);
 	}
 
-      ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, fnname);
+      else
 #endif
+      ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
     }
 
   /* Do any machine/system dependent processing of the function name */
@@ -1425,11 +1426,12 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* First make the assembler name(s) global if appropriate.  */
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
-      ASM_GLOBALIZE_LABEL (asm_out_file, name);
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, name);
+      else
 #endif
+      ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 #if 0
   for (d = equivalents; d; d = TREE_CHAIN (d))
@@ -4259,7 +4261,6 @@ weak_finish ()
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  ASM_GLOBALIZE_LABEL (asm_out_file, t->name);
 	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
 	  if (t->value)
 	    ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
@@ -4282,11 +4283,12 @@ assemble_alias (decl, target)
 
   if (TREE_PUBLIC (decl))
     {
-      ASM_GLOBALIZE_LABEL (asm_out_file, name);
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, name);
+      else
 #endif
+	ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));

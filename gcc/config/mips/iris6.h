@@ -187,6 +187,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
  do {						\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);		\
   fputs ("\t.weakext\t", FILE);			\
   assemble_name (FILE, NAME);			\
   if (VALUE)					\
