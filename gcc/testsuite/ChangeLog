@@ -1,3 +1,7 @@
+2004-06-02  Eric Christopher  <echristo@redhat.com>
+
+	* gcc.c-torture/compile/20040602-1.c: New.
+
 2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/tree-ssa/ssa-sra-1.C: Fix comment.
@@ -5,7 +9,7 @@
 
 	PR tree-optimization/14736
 	* g++.dg/tree-ssa/ssa-cast-1.C: New Test.
-	
+
 	PR tree-optimization/14042
 	* g++.dg/tree-ssa/ssa-sra-1.C: New Test.
 
