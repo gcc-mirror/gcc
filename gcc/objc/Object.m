@@ -116,6 +116,18 @@ extern int errno;
   return self==anObject;
 }
 
+- (int)compare:anotherObject;
+{
+  if ([self isEqual:anotherObject])
+    return 0;
+  // Ordering objects by their address is pretty useless, 
+  // so subclasses should override this is some useful way.
+  else if (self > anotherObject)
+    return 1;
+  else 
+    return -1;
+}
+
 - (BOOL)isMetaClass
 {
   return NO;
@@ -285,6 +297,12 @@ extern int errno;
 - notImplemented:(SEL)aSel
 {
   return [self error:"method %s not implemented", sel_get_name(aSel)];
+}
+
+- shouldNotImplement:(SEL)aSel
+{
+  return [self error:"%s should not implement %s", 
+	             object_get_class_name(self), sel_get_name(aSel)];
 }
 
 - doesNotRecognize:(SEL)aSel
