@@ -1,3 +1,7 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* misc.c (LANG_HOOKS_HONOR_READONLY): Remove.
+
 2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cuintp.c (UI_To_gnu): Be more conservative with build_int_cst

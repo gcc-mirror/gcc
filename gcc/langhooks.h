@@ -325,9 +325,6 @@ struct lang_hooks
      have their results reduced to the precision of the type.  */
   bool reduce_bit_field_operations;
 
-  /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
-  bool honor_readonly;
-
   /* Nonzero if this front end does not generate a dummy BLOCK between
      the outermost scope of the function and the FUNCTION_DECL.  See
      is_body_block in stmt.c, and its callers.  */
