@@ -2610,62 +2610,71 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       while ((c = *p))
 	{
 	  p += CONSTRAINT_LEN (c, p);
-	  if (c == '=')
-	    modified[i] = RELOAD_WRITE;
-	  else if (c == '+')
-	    modified[i] = RELOAD_READ_WRITE;
-	  else if (c == '%')
+	  switch (c)
 	    {
-	      /* The last operand should not be marked commutative.  */
-	      if (i == noperands - 1)
-		abort ();
+	    case '=':
+	      modified[i] = RELOAD_WRITE;
+	      break;
+	    case '+':
+	      modified[i] = RELOAD_READ_WRITE;
+	      break;
+	    case '%':
+	      {
+		/* The last operand should not be marked commutative.  */
+		if (i == noperands - 1)
+		  abort ();
 
-	      /* We currently only support one commutative pair of
-		 operands.  Some existing asm code currently uses more
-		 than one pair.  Previously, that would usually work,
-		 but sometimes it would crash the compiler.  We
-		 continue supporting that case as well as we can by
-		 silently ignoring all but the first pair.  In the
-		 future we may handle it correctly.  */
-	      if (commutative < 0)
-		commutative = i;
-	      else if (!this_insn_is_asm)
-		abort ();
-	    }
-	  else if (ISDIGIT (c))
-	    {
-	      c = strtoul (p - 1, &p, 10);
+		/* We currently only support one commutative pair of
+		   operands.  Some existing asm code currently uses more
+		   than one pair.  Previously, that would usually work,
+		   but sometimes it would crash the compiler.  We
+		   continue supporting that case as well as we can by
+		   silently ignoring all but the first pair.  In the
+		   future we may handle it correctly.  */
+		if (commutative < 0)
+		  commutative = i;
+		else if (!this_insn_is_asm)
+		  abort ();
+	      }
+	      break;
+	    /* Use of ISDIGIT is tempting here, but it may get expensive because
+	       of locale support we don't want.  */
+	    case '0': case '1': case '2': case '3': case '4':
+	    case '5': case '6': case '7': case '8': case '9':
+	      {
+		c = strtoul (p - 1, &p, 10);
 
-	      operands_match[c][i]
-		= operands_match_p (recog_data.operand[c],
-				    recog_data.operand[i]);
+		operands_match[c][i]
+		  = operands_match_p (recog_data.operand[c],
+				      recog_data.operand[i]);
 
-	      /* An operand may not match itself.  */
-	      if (c == i)
-		abort ();
+		/* An operand may not match itself.  */
+		if (c == i)
+		  abort ();
 
-	      /* If C can be commuted with C+1, and C might need to match I,
-		 then C+1 might also need to match I.  */
-	      if (commutative >= 0)
-		{
-		  if (c == commutative || c == commutative + 1)
-		    {
-		      int other = c + (c == commutative ? 1 : -1);
-		      operands_match[other][i]
-			= operands_match_p (recog_data.operand[other],
-					    recog_data.operand[i]);
-		    }
-		  if (i == commutative || i == commutative + 1)
-		    {
-		      int other = i + (i == commutative ? 1 : -1);
-		      operands_match[c][other]
-			= operands_match_p (recog_data.operand[c],
-					    recog_data.operand[other]);
-		    }
-		  /* Note that C is supposed to be less than I.
-		     No need to consider altering both C and I because in
-		     that case we would alter one into the other.  */
-		}
+		/* If C can be commuted with C+1, and C might need to match I,
+		   then C+1 might also need to match I.  */
+		if (commutative >= 0)
+		  {
+		    if (c == commutative || c == commutative + 1)
+		      {
+			int other = c + (c == commutative ? 1 : -1);
+			operands_match[other][i]
+			  = operands_match_p (recog_data.operand[other],
+					      recog_data.operand[i]);
+		      }
+		    if (i == commutative || i == commutative + 1)
+		      {
+			int other = i + (i == commutative ? 1 : -1);
+			operands_match[c][other]
+			  = operands_match_p (recog_data.operand[c],
+					      recog_data.operand[other]);
+		      }
+		    /* Note that C is supposed to be less than I.
+		       No need to consider altering both C and I because in
+		       that case we would alter one into the other.  */
+		  }
+	      }
 	    }
 	}
     }
