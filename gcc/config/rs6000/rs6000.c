@@ -4319,16 +4319,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		  return;
 		}
 #endif
-	      if (mode == DImode)
-		{
-		  emit_insn (gen_macho_high_di (target, operands[1]));
-		  emit_insn (gen_macho_low_di (operands[0], target, operands[1]));
-		}
-	      else
-		{
-		  emit_insn (gen_macho_high (target, operands[1]));
-		  emit_insn (gen_macho_low (operands[0], target, operands[1]));
-		}
+	      emit_insn (gen_macho_high (target, operands[1]));
+	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
 	      return;
 	    }
 
