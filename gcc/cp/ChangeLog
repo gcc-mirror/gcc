@@ -1,3 +1,8 @@
+2000-01-29  Nathan Sidwell  <nathan@acm.org>
+
+	* new2.cc (operator delete[]): Use operator delete, don't assume
+	implementation.
+
 2000-01-29  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	* class.c (build_vtbl_initializer): Add argument to
