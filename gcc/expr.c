@@ -7034,14 +7034,22 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		|| GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
 	      {
-		tree nt = build_qualified_type (TREE_TYPE (tem),
-						(TYPE_QUALS (TREE_TYPE (tem))
-						 | TYPE_QUAL_CONST));
-		rtx memloc = assign_temp (nt, 1, 1, 1);
+		/* If the operand is a SAVE_EXPR, we can deal with this by
+		   forcing the SAVE_EXPR into memory.  */
+		if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
+		  put_var_into_stack (TREE_OPERAND (exp, 0));
+		else
+		  {
+		    tree nt
+		      = build_qualified_type (TREE_TYPE (tem),
+					      (TYPE_QUALS (TREE_TYPE (tem))
+					       | TYPE_QUAL_CONST));
+		    rtx memloc = assign_temp (nt, 1, 1, 1);
 
-		mark_temp_addr_taken (memloc);
-		emit_move_insn (memloc, op0);
-		op0 = memloc;
+		    mark_temp_addr_taken (memloc);
+		    emit_move_insn (memloc, op0);
+		    op0 = memloc;
+		  }
 	      }
 
 	    if (GET_CODE (op0) != MEM)

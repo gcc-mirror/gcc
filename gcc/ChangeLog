@@ -1,3 +1,8 @@
+Sat Jun 16 20:20:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case ADDR_EXPR): If taking address of SAVE_EXPR,
+	use put_var_into_stack.
+
 2001-06-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gccspec.c (lang_specific_driver): If compiling ObjC, add
