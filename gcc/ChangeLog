@@ -1,3 +1,9 @@
+2001-09-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* som.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	* pa.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP): Define
+
 2001-09-05  Jeffrey A Law  (law@cygnus.com)
 	    Jason Merrill (jason@redhat.com)
 

@@ -1755,6 +1755,13 @@ while (0)
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
+/* C string constants giving the pseudo-op to use for a sequence of
+   2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */
+
+#define UNALIGNED_SHORT_ASM_OP		(TARGET_GAS ? "\t.half " : NULL)
+#define UNALIGNED_INT_ASM_OP		(TARGET_GAS ? "\t.word " : NULL)
+#define UNALIGNED_DOUBLE_INT_ASM_OP	(TARGET_GAS ? "\t.dword " : NULL)
+
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
   do {									\
     /* We only handle DATA objects here, functions are globalized in	\
