@@ -1,5 +1,10 @@
 2003-11-30  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/gnu/codecvt_members.cc (codecvt::do_in,
+	codecvt::do_length): More minor tweaks.
+
+2003-11-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/locale/gnu/codecvt_members.cc (codecvt::do_in):
 	Minor stylistic tweak.
 
