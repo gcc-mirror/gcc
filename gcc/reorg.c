@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -3594,6 +3594,12 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 		  if (own_thread)
 		    {
 		      update_block (trial, thread);
+		      if (trial == thread)
+			{
+			  thread = next_active_insn (thread);
+			  if (new_thread == trial)
+			    new_thread = thread;
+			}
 		      delete_insn (trial);
 		    }
 		  else
@@ -3745,6 +3751,12 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  if (own_thread)
 	    {
 	      update_block (trial, thread);
+	      if (trial == thread)
+		{
+		  thread = next_active_insn (thread);
+		  if (new_thread == trial)
+		    new_thread = thread;
+		}
 	      delete_insn (trial);
 	    }
 	  else
