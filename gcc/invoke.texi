@@ -1927,7 +1927,7 @@ Dump after first jump optimization, to @file{@var{file}.jump}.
 @item s
 Dump after CSE (including the jump optimization that sometimes
 follows CSE), to @file{@var{file}.cse}.
-@item D
+@item F
 Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 @item L
 Dump after loop optimization, to @file{@var{file}.loop}.
