@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -260,7 +260,8 @@ layout_decl (decl, known_align)
 
   if (DECL_BIT_FIELD (decl)
       && TYPE_SIZE (type) != 0
-      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
     {
       register enum machine_mode xmode
 	= mode_for_size (TREE_INT_CST_LOW (DECL_SIZE (decl)), MODE_INT, 1);
