@@ -19,6 +19,9 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if HAVE_STDLIB_H
+#  include <stdlib.h>
+#endif
 #if HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
