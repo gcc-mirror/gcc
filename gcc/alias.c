@@ -859,6 +859,11 @@ mode_alias_check (x, y, varies)
      register rtx x, y;
      int (*varies) PROTO ((rtx));
 {
+#if 1
+  /* gcc rules: all type aliasing allowed  */
+  return 1;
+#else
+  /* ANSI C rules: different types do not alias. */
   enum machine_mode x_mode = GET_MODE (x), y_mode = GET_MODE (y);
   rtx x_addr = XEXP (x, 0), y_addr = XEXP (y, 0);
   int x_varies, y_varies, x_struct, y_struct;
@@ -903,6 +908,7 @@ mode_alias_check (x, y, varies)
   /* Both are varying structs or fixed scalars.  Check that they are not
      the same type.  */
   return (x_struct == y_struct);
+#endif
 }
 
 /* Read dependence: X is read after read in MEM takes place.  There can

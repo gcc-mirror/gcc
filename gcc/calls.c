@@ -901,8 +901,12 @@ expand_call (exp, target, ignore)
       else if (! strcmp (tname, "malloc")
 	       || ! strcmp (tname, "calloc")
 	       || ! strcmp (tname, "realloc")
-	       || ! strcmp (tname, "__builtin_new")
-	       || ! strcmp (tname, "__builtin_vec_new"))
+	       /* Note use of NAME rather than TNAME here.  These functions
+		  are only reserved when preceded with __.  */
+	       || ! strcmp (name, "__vn")	/* mangled __builtin_vec_new */
+	       || ! strcmp (name, "__nw")	/* mangled __builtin_new */
+	       || ! strcmp (name, "__builtin_new")
+	       || ! strcmp (name, "__builtin_vec_new"))
 	is_malloc = 1;
     }
 
