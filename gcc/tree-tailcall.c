@@ -238,6 +238,11 @@ independent_of_stmt_p (tree expr, tree at, block_stmt_iterator bsi)
 	abort ();
 
       expr = PHI_ARG_DEF_FROM_EDGE (at, e);
+      if (TREE_CODE (expr) != SSA_NAME)
+	{
+	  /* The value is a constant.  */
+	  break;
+	}
     }
 
   /* Unmark the blocks.  */

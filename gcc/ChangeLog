@@ -1,3 +1,9 @@
+2004-07-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/16461
+	* tree-tailcall.c (independent_of_stmt_p): Handle non-SSA name
+	arguments of phi nodes.
+
 2004-07-12  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi (Darwin Options): Document -gused and -gfull.
