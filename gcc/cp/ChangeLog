@@ -1,3 +1,7 @@
+1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (primary): Fix up the type of string constants.
+
 1998-08-24  Mark Mitchell  <mark@markmitchell.com>
 
 	* typeck.c (convert_for_initialization): Move check for odd uses
