@@ -6311,4 +6311,42 @@ operand_equal_for_phi_arg_p (tree arg0, tree arg1)
   return operand_equal_p (arg0, arg1, 0);
 }
 
+/* Returns number of zeros at the end of binary representation of X.
+   
+   ??? Use ffs if available?  */
+
+tree
+num_ending_zeros (tree x)
+{
+  unsigned HOST_WIDE_INT fr, nfr;
+  unsigned num, abits;
+  tree type = TREE_TYPE (x);
+
+  if (TREE_INT_CST_LOW (x) == 0)
+    {
+      num = HOST_BITS_PER_WIDE_INT;
+      fr = TREE_INT_CST_HIGH (x);
+    }
+  else
+    {
+      num = 0;
+      fr = TREE_INT_CST_LOW (x);
+    }
+
+  for (abits = HOST_BITS_PER_WIDE_INT / 2; abits; abits /= 2)
+    {
+      nfr = fr >> abits;
+      if (nfr << abits == fr)
+	{
+	  num += abits;
+	  fr = nfr;
+	}
+    }
+
+  if (num > TYPE_PRECISION (type))
+    num = TYPE_PRECISION (type);
+
+  return build_int_cst_type (type, num);
+}
+
 #include "gt-tree.h"

@@ -123,9 +123,6 @@ struct version_info
 /* Information attached to loop.  */
 struct loop_data
 {
-  struct tree_niter_desc niter;
-			/* Number of iterations.  */
-
   unsigned regs_used;	/* Number of registers used.  */
 };
 
@@ -198,6 +195,9 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
+
+  /* Numbers of iterations for all exits of the current loop.  */
+  htab_t niters;
 
   /* The size of version_info array allocated.  */
   unsigned version_info_size;
@@ -639,6 +639,86 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, tree stmt)
     }
 }
 
+/* Element of the table in that we cache the numbers of iterations obtained
+   from exits of the loop.  */
+
+struct nfe_cache_elt
+{
+  /* The edge for that the number of iterations is cached.  */
+  edge exit;
+
+  /* True if the # of iterations was succesfully determined.  */
+  bool valid_p;
+
+  /* Description of # of iterations.  */
+  struct tree_niter_desc niter;
+};
+
+/* Hash function for nfe_cache_elt E.  */
+
+static hashval_t
+nfe_hash (const void *e)
+{
+  const struct nfe_cache_elt *elt = e;
+
+  return htab_hash_pointer (elt->exit);
+}
+
+/* Equality function for nfe_cache_elt E1 and edge E2.  */
+
+static int
+nfe_eq (const void *e1, const void *e2)
+{
+  const struct nfe_cache_elt *elt1 = e1;
+
+  return elt1->exit == e2;
+}
+
+/*  Returns structure describing number of iterations determined from
+    EXIT of DATA->current_loop, or NULL if something goes wrong.  */
+
+static struct tree_niter_desc *
+niter_for_exit (struct ivopts_data *data, edge exit)
+{
+  struct nfe_cache_elt *nfe_desc;
+  PTR *slot;
+
+  slot = htab_find_slot_with_hash (data->niters, exit,
+				   htab_hash_pointer (exit),
+				   INSERT);
+
+  if (!*slot)
+    {
+      nfe_desc = xmalloc (sizeof (struct nfe_cache_elt));
+      nfe_desc->exit = exit;
+      nfe_desc->valid_p = number_of_iterations_exit (data->current_loop,
+						     exit, &nfe_desc->niter);
+      *slot = nfe_desc;
+    }
+  else
+    nfe_desc = *slot;
+
+  if (!nfe_desc->valid_p)
+    return NULL;
+
+  return &nfe_desc->niter;
+}
+
+/* Returns structure describing number of iterations determined from
+   single dominating exit of DATA->current_loop, or NULL if something
+   goes wrong.  */
+
+static struct tree_niter_desc *
+niter_for_single_dom_exit (struct ivopts_data *data)
+{
+  edge exit = single_dom_exit (data->current_loop);
+
+  if (!exit)
+    return NULL;
+
+  return niter_for_exit (data, exit);
+}
+
 /* Initializes data structures used by the iv optimization pass, stored
    in DATA.  LOOPS is the loop tree.  */
 
@@ -653,6 +733,7 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
   data->relevant = BITMAP_XMALLOC ();
   data->important_candidates = BITMAP_XMALLOC ();
   data->max_inv_id = 0;
+  data->niters = htab_create (10, nfe_hash, nfe_eq, free);
 
   for (i = 1; i < loops->num; i++)
     if (loops->parray[i])
@@ -1009,20 +1090,6 @@ find_givs (struct ivopts_data *data)
   free (body);
 }
 
-/* Determine the number of iterations of the current loop.  */
-
-static void
-determine_number_of_iterations (struct ivopts_data *data)
-{
-  struct loop *loop = data->current_loop;
-  edge exit = single_dom_exit (loop);
-
-  if (!exit)
-    return;
-
-  number_of_iterations_exit (loop, exit, &loop_data (loop)->niter);
-}
-
 /* For each ssa name defined in LOOP determines whether it is an induction
    variable and if so, its initial value and step.  */
 
@@ -1030,7 +1097,6 @@ static bool
 find_induction_variables (struct ivopts_data *data)
 {
   unsigned i;
-  struct loop *loop = data->current_loop;
   bitmap_iterator bi;
 
   if (!find_bivs (data))
@@ -1038,25 +1104,21 @@ find_induction_variables (struct ivopts_data *data)
 
   find_givs (data);
   mark_bivs (data);
-  determine_number_of_iterations (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (loop_data (loop)->niter.niter)
+      struct tree_niter_desc *niter;
+
+      niter = niter_for_single_dom_exit (data);
+
+      if (niter)
 	{
 	  fprintf (dump_file, "  number of iterations ");
-	  print_generic_expr (dump_file, loop_data (loop)->niter.niter,
-			      TDF_SLIM);
+	  print_generic_expr (dump_file, niter->niter, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 
     	  fprintf (dump_file, "  may be zero if ");
-    	  print_generic_expr (dump_file, loop_data (loop)->niter.may_be_zero,
-    			      TDF_SLIM);
-    	  fprintf (dump_file, "\n");
-
-    	  fprintf (dump_file, "  bogus unless ");
-    	  print_generic_expr (dump_file, loop_data (loop)->niter.assumptions,
-    			      TDF_SLIM);
+    	  print_generic_expr (dump_file, niter->may_be_zero, TDF_SLIM);
     	  fprintf (dump_file, "\n");
     	  fprintf (dump_file, "\n");
     	};
@@ -1958,16 +2020,11 @@ static void
 add_iv_outer_candidates (struct ivopts_data *data, struct iv_use *use)
 {
   struct tree_niter_desc *niter;
-  struct loop *loop = data->current_loop;
 
   /* We must know where we exit the loop and how many times does it roll.  */
-  if (!single_dom_exit (loop))
-    return;
-
-  niter = &loop_data (loop)->niter;
-  if (!niter->niter
-      || !operand_equal_p (niter->assumptions, boolean_true_node, 0)
-      || !operand_equal_p (niter->may_be_zero, boolean_false_node, 0))
+  niter = niter_for_single_dom_exit (data);
+  if (!niter
+      || !zero_p (niter->may_be_zero))
     return;
 
   add_candidate_1 (data, NULL, NULL, false, IP_NORMAL, use, NULL_TREE);
@@ -3233,19 +3290,44 @@ cand_value_at (struct loop *loop, struct iv_cand *cand, tree at, tree niter)
   return val;
 }
 
+/* Returns period of induction variable iv.  */
+
+static tree
+iv_period (struct iv *iv)
+{
+  tree step = iv->step, period, type;
+  tree pow2div;
+
+  gcc_assert (step && TREE_CODE (step) == INTEGER_CST);
+
+  /* Period of the iv is gcd (step, type range).  Since type range is power
+     of two, it suffices to determine the maximum power of two that divides
+     step.  */
+  pow2div = num_ending_zeros (step);
+  type = unsigned_type_for (TREE_TYPE (step));
+
+  period = build_low_bits_mask (type,
+				(TYPE_PRECISION (type)
+				 - tree_low_cst (pow2div, 1)));
+
+  return period;
+}
+
 /* Check whether it is possible to express the condition in USE by comparison
    of candidate CAND.  If so, store the comparison code to COMPARE and the
    value compared with to BOUND.  */
 
 static bool
-may_eliminate_iv (struct loop *loop,
+may_eliminate_iv (struct ivopts_data *data,
 		  struct iv_use *use, struct iv_cand *cand,
 		  enum tree_code *compare, tree *bound)
 {
   basic_block ex_bb;
   edge exit;
-  struct tree_niter_desc niter, new_niter;
-  tree wider_type, type, base;
+  struct tree_niter_desc *niter;
+  tree nit, nit_type;
+  tree wider_type, period, per_type;
+  struct loop *loop = data->current_loop;
   
   /* For now works only for exits that dominate the loop latch.  TODO -- extend
      for other conditions inside loop body.  */
@@ -3262,11 +3344,31 @@ may_eliminate_iv (struct loop *loop,
   if (flow_bb_inside_loop_p (loop, exit->dest))
     return false;
 
-  niter.niter = NULL_TREE;
-  number_of_iterations_exit (loop, exit, &niter);
-  if (!niter.niter
-      || !integer_nonzerop (niter.assumptions)
-      || !integer_zerop (niter.may_be_zero))
+  niter = niter_for_exit (data, exit);
+  if (!niter
+      || !zero_p (niter->may_be_zero))
+    return false;
+
+  nit = niter->niter;
+  nit_type = TREE_TYPE (nit);
+
+  /* Determine whether we may use the variable to test whether niter iterations
+     elapsed.  This is the case iff the period of the induction variable is
+     greater than the number of iterations.  */
+  period = iv_period (cand->iv);
+  if (!period)
+    return false;
+  per_type = TREE_TYPE (period);
+
+  wider_type = TREE_TYPE (period);
+  if (TYPE_PRECISION (nit_type) < TYPE_PRECISION (per_type))
+    wider_type = per_type;
+  else
+    wider_type = nit_type;
+
+  if (!integer_nonzerop (fold (build2 (GE_EXPR, boolean_type_node,
+				       fold_convert (wider_type, period),
+				       fold_convert (wider_type, nit)))))
     return false;
 
   if (exit->flags & EDGE_TRUE_VALUE)
@@ -3274,31 +3376,7 @@ may_eliminate_iv (struct loop *loop,
   else
     *compare = NE_EXPR;
 
-  *bound = cand_value_at (loop, cand, use->stmt, niter.niter);
-
-  /* Let us check there is not some problem with overflows, by checking that
-     the number of iterations is unchanged.  */
-  base = cand->iv->base;
-  type = TREE_TYPE (base);
-  if (stmt_after_increment (loop, cand, use->stmt))
-    base = fold (build2 (PLUS_EXPR, type, base, cand->iv->step));
-
-  new_niter.niter = NULL_TREE;
-  number_of_iterations_cond (TREE_TYPE (cand->iv->base), base,
-			     cand->iv->step, NE_EXPR, *bound, NULL_TREE,
-			     &new_niter);
-  if (!new_niter.niter
-      || !integer_nonzerop (new_niter.assumptions)
-      || !integer_zerop (new_niter.may_be_zero))
-    return false;
-
-  wider_type = TREE_TYPE (new_niter.niter);
-  if (TYPE_PRECISION (wider_type) < TYPE_PRECISION (TREE_TYPE (niter.niter)))
-    wider_type = TREE_TYPE (niter.niter);
-  if (!operand_equal_p (fold_convert (wider_type, niter.niter),
-			fold_convert (wider_type, new_niter.niter), 0))
-    return false;
-
+  *bound = cand_value_at (loop, cand, use->stmt, nit);
   return true;
 }
 
@@ -3318,7 +3396,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       return false;
     }
 
-  if (may_eliminate_iv (data->current_loop, use, cand, &compare, &bound))
+  if (may_eliminate_iv (data, use, cand, &compare, &bound))
     {
       bitmap depends_on = NULL;
       unsigned cost = force_var_cost (data, bound, &depends_on);
@@ -3345,8 +3423,10 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
    a direct computation.  If so, the formula is stored to *VALUE.  */
 
 static bool
-may_replace_final_value (struct loop *loop, struct iv_use *use, tree *value)
+may_replace_final_value (struct ivopts_data *data, struct iv_use *use,
+			 tree *value)
 {
+  struct loop *loop = data->current_loop;
   edge exit;
   struct tree_niter_desc *niter;
 
@@ -3357,10 +3437,9 @@ may_replace_final_value (struct loop *loop, struct iv_use *use, tree *value)
   gcc_assert (dominated_by_p (CDI_DOMINATORS, exit->src,
 			      bb_for_stmt (use->stmt)));
 
-  niter = &loop_data (loop)->niter;
-  if (!niter->niter
-      || !operand_equal_p (niter->assumptions, boolean_true_node, 0)
-      || !operand_equal_p (niter->may_be_zero, boolean_false_node, 0))
+  niter = niter_for_single_dom_exit (data);
+  if (!niter
+      || !zero_p (niter->may_be_zero))
     return false;
 
   *value = iv_value (use->iv, niter->niter);
@@ -3393,7 +3472,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
 
   if (!cand->iv)
     {
-      if (!may_replace_final_value (loop, use, &value))
+      if (!may_replace_final_value (data, use, &value))
 	{
 	  set_use_iv_cost (data, use, cand, INFTY, NULL);
 	  return false;
@@ -4749,8 +4828,7 @@ rewrite_use_compare (struct ivopts_data *data,
   block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   enum tree_code compare;
   
-  if (may_eliminate_iv (data->current_loop,
-			use, cand, &compare, &bound))
+  if (may_eliminate_iv (data, use, cand, &compare, &bound))
     {
       op = force_gimple_operand (unshare_expr (bound), &stmts,
 				 true, NULL_TREE);
@@ -4924,7 +5002,7 @@ rewrite_use_outer (struct ivopts_data *data,
     {
       if (!cand->iv)
 	{
-	  bool ok = may_replace_final_value (data->current_loop, use, &value);
+	  bool ok = may_replace_final_value (data, use, &value);
 	  gcc_assert (ok);
 	}
       else
@@ -5045,6 +5123,8 @@ free_loop_data (struct ivopts_data *data)
   unsigned i, j;
   bitmap_iterator bi;
 
+  htab_empty (data->niters);
+
   EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
     {
       struct version_info *info;
@@ -5122,6 +5202,7 @@ tree_ssa_iv_optimize_finalize (struct loops *loops, struct ivopts_data *data)
   free (data->version_info);
   BITMAP_XFREE (data->relevant);
   BITMAP_XFREE (data->important_candidates);
+  htab_delete (data->niters);
 
   VARRAY_FREE (decl_rtl_to_reset);
   VARRAY_FREE (data->iv_uses);
@@ -5188,8 +5269,6 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   /* Remove the ivs that are unused after rewriting.  */
   remove_unused_ivs (data);
-
-  loop_commit_inserts ();
 
   /* We have changed the structure of induction variables; it might happen
      that definitions in the scev database refer to some of them that were

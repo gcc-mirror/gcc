@@ -1,3 +1,38 @@
+2005-02-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18687
+	* tree-flow.h (find_loop_niter): Declare.
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables):
+	Try using scev even for loops with more than one exit.
+	* tree-ssa-loop-ivopts.c (struct loop_data): Removed niter field.
+	(struct ivopts_data): Added niters field.
+	(struct nfe_cache_elt): New.
+	(nfe_hash, nfe_eq, niter_for_exit, niter_for_single_dom_exit): New
+	functions.
+	(tree_ssa_iv_optimize_init): Initialize niters cache.
+	(determine_number_of_iterations): Removed.
+	(find_induction_variables): Do not call determine_number_of_iterations.
+	Access niters for single exit through niter_for_single_dom_exit.
+	(add_iv_outer_candidates): Access niters for single exit through
+	niter_for_single_dom_exit.
+	(may_eliminate_iv): Take data argument.  Use niter_for_exit.  Do not use
+	number_of_iterations_cond.
+	(iv_period): New function.
+	(determine_use_iv_cost_condition): Pass data to may_eliminate_iv.
+	(may_replace_final_value): Take data argument.  Use
+	niter_for_single_dom_exit.
+	(determine_use_iv_cost_outer): Pass data to may_replace_final_value.
+	(rewrite_use_compare): Pass data to may_eliminate_iv.
+	(rewrite_use_outer): Pass data to may_replace_final_value.
+	(free_loop_data): Clean up the niters cache.
+	(tree_ssa_iv_optimize_finalize): Free the niters cache.
+	(tree_ssa_iv_optimize_loop): Do not call loop_commit_inserts.
+	* tree-ssa-loop-niter.c (find_loop_niter): New function.
+	(find_loop_niter_by_eval): Use tree_int_cst_lt.
+	(num_ending_zeros): Moved to tree.c.
+	* tree.h (num_ending_zeros): Declare.
+	* tree.c (num_ending_zeros): Moved from tree.c.
+
 2005-02-09  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (DEF_BUILTIN): Add COND argument.
