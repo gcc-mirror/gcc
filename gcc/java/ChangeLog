@@ -1,3 +1,7 @@
+2001-06-05  Jeff Sturm  <jsturm@one-point.com>
+
+	* decl.c (create_primitive_vtable): Don't call make_decl_rtl.
+
 2001-06-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* expr.c (force_evaluation_order): Match wrapped ctor calls, locate
