@@ -24,9 +24,14 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+#include "config.h"
 #include "runtime.h"
 #include "typedstream.h"
 #include "encoding.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 extern int fflush(FILE*);
 
@@ -357,8 +362,11 @@ __objc_write_extension (struct objc_typed_stream* stream, unsigned char code)
       return (*stream->write)(stream->physical, &buf, 1);
     }
   else 
-    objc_error(nil, OBJC_ERR_BAD_OPCODE,
-	       "__objc_write_extension: bad opcode %c\n", code);
+    {
+      objc_error(nil, OBJC_ERR_BAD_OPCODE,
+		 "__objc_write_extension: bad opcode %c\n", code);
+      return -1;
+    }
 }
 
 __inline__ int
@@ -391,7 +399,7 @@ objc_write_object_reference (struct objc_typed_stream* stream, id object)
 int 
 objc_write_root_object (struct objc_typed_stream* stream, id object)
 {
-  int len;
+  int len = 0;
   if (stream->writing_root_p)
     objc_error (nil, OBJC_ERR_RECURSE_ROOT, 
 		"objc_write_root_object called recursively");
@@ -425,12 +433,6 @@ objc_write_object (struct objc_typed_stream* stream, id object)
       return length;
     }
 }
-
-#ifdef __alpha__
-extern int atoi (const char*);
-extern size_t strlen(const char*);
-extern size_t strcpy(char*, const char*);
-#endif
 
 __inline__ int
 __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
@@ -1065,8 +1067,11 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     }
 
   default:
-    objc_error(nil, OBJC_ERR_BAD_TYPE,
-	       "objc_write_type: cannot parse typespec: %s\n", type);
+    {
+      objc_error(nil, OBJC_ERR_BAD_TYPE,
+		 "objc_write_type: cannot parse typespec: %s\n", type);
+      return 0;
+    }
   }
 }
 
@@ -1158,8 +1163,11 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
     }
 
   default:
-    objc_error(nil, OBJC_ERR_BAD_TYPE,
-	       "objc_read_type: cannot parse typespec: %s\n", type);
+    {
+      objc_error(nil, OBJC_ERR_BAD_TYPE,
+		 "objc_read_type: cannot parse typespec: %s\n", type);
+      return 0;
+    }
   }
 }
 
@@ -1423,12 +1431,14 @@ static int
 __objc_no_write(FILE* file, char* data, int len)
 {
   objc_error (nil, OBJC_ERR_NO_WRITE, "TypedStream not open for writing");
+  return 0;
 }
 
 static int 
 __objc_no_read(FILE* file, char* data, int len)
 {
   objc_error (nil, OBJC_ERR_NO_READ, "TypedStream not open for reading");
+  return 0;
 }
 
 static int

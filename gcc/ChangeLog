@@ -1,3 +1,7 @@
+Sat Jun 27 23:02:04 1998  Richard Henderson  <rth@cygnus.com>
+
+	* objc/archive.c: Remove <string.h> prototypes.
+
 Sat Jun 27 22:37:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* tm.texi (NEED_MATH_LIBRARY): Document new target macro.
