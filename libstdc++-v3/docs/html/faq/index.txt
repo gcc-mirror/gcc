@@ -396,7 +396,7 @@
    solution.
      _________________________________________________________________
 
-Threading is broken on i386
+3.7 Threading is broken on i386
 
    Support for atomic integer operations is/was broken on i386 platforms.
    The assembly code accidentally used opcodes that are only available on
@@ -406,6 +406,18 @@ Threading is broken on i386
    will the problem appear.
 
    This is fixed in 3.2.2.
+     _________________________________________________________________
+
+3.8 Recent GNU/Linux glibc required?
+
+   For 3.2.1 (shared library version 5.0.1) and later, the library uses
+   localization and formatting code from the system C library (glibc)
+   version 2.2.5. That version of glibc is over a year old and contains
+   necessary bugfixes. Many GNU/Linux distros make glibc version 2.3.x
+   available now.
+
+   The guideline is simple: the more recent the C++ library, the more
+   recent the C library.
      _________________________________________________________________
 
                           4.0 Known Bugs and Non-Bugs

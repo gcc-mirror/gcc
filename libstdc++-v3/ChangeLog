@@ -1,3 +1,11 @@
+2003-02-03  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/9527, PR libstdc++/8713
+	* docs/html/install.html:  Mention glibc version requirement.
+	* docs/html/faq/index.html (3.8):  New note, glibc 2.2.5+ is needed
+	with 3.2.1+ (formatting bugfixes).
+	* docs/html/faq/index.txt:  Regenerate.
+
 2003-02-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR libstdc++/9234
