@@ -68,15 +68,13 @@ static apply_fix_p_t test ( tCC* fname ATTRIBUTE_UNUSED, \
 
 TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 {
-#ifndef MN_NAME_PAT
-  return SKIP_FIX;
-#else
   regex_t *label_re, *name_re;
   regmatch_t match[2];
   tCC *base, *limit;
   IGNORE_ARG(fname);
 
-  mn_get_regexps(&label_re, &name_re, "machine_name_test");
+  if (!mn_get_regexps (&label_re, &name_re, "machine_name_test"))
+    return SKIP_FIX;
 
   for (base = text;
        xregexec (label_re, base, 2, match, 0) == 0;
@@ -114,7 +112,6 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
       /* Otherwise, keep looking... */
     }
   return SKIP_FIX;
-#endif
 }
 
 

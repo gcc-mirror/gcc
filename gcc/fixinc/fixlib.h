@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 
 #include "xregex.h"
-#include "machname.h"
 #include "libiberty.h"
 
 #ifndef STDIN_FILENO
@@ -117,11 +116,18 @@ typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
   _ENV_( pz_dest_dir,  BOOL_TRUE, "DESTDIR",         \
          "output directory" )                        \
                                                      \
+  _ENV_( pz_mn_name_pat, BOOL_FALSE, "MN_NAME_PAT",  \
+         "regex matching forbidden identifiers" )    \
+                                                     \
   _ENV_( pz_verbose,  BOOL_FALSE, "VERBOSE",         \
          "amount of user entertainment" )            \
                                                      \
   _ENV_( pz_find_base, BOOL_TRUE, "FIND_BASE",       \
          "leader to trim from file names" )
+
+#define _ENV_(v,m,n,t)   extern tCC* v;
+ENV_TABLE
+#undef _ENV_
 
 /*  Test Descriptor
 
@@ -219,7 +225,5 @@ apply_fix_p_t
 char*  make_raw_shell_str ( char* pz_d, tCC* pz_s, size_t smax );
 #endif
 
-#ifdef MN_NAME_PAT
-void   mn_get_regexps ( regex_t** label_re, regex_t** name_re, tCC *who );
-#endif
+t_bool mn_get_regexps ( regex_t** label_re, regex_t** name_re, tCC *who );
 #endif /* ! GCC_FIXLIB_H */
