@@ -1,3 +1,7 @@
+2000-02-11  Geoff Keating  <geoffk@cygnus.com>
+
+	* haifa-sched.c (BUF_LEN): Increase a lot.
+
 2000-02-11  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Add tm_p_file specification for thumb targets.
@@ -9,7 +13,8 @@
 2000-02-11  Robert Lipe  <robertl@sco.com>
 
 	* Makefile.in (bootstrap-lean): Remove additional files.
-	(bootstrap2-lean): Likewise.                                                    (VOL_FILES): List of files for above.                                   
+	(bootstrap2-lean): Likewise.
+	(VOL_FILES): List of files for above.
 
 2000-02-11  Nathan Sidwell  <nathan@acm.org>
 
