@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 by Red Hat, Inc. All rights reserved.
+# Copyright (c) 1999, 2000, 2001, 2002 by Red Hat, Inc. All rights reserved.
 # 
 # THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
 # OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -14,6 +14,12 @@
 dnl Process this file with autoconf to produce configure.
 
 AC_INIT(gcj_mlc.c)
+
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 dnl Can't be done in GC_CONFIGURE because that confuses automake. 
 AC_CONFIG_AUX_DIR(.)
@@ -272,6 +278,7 @@ dnl Put all the -D options in a file.
 echo "$DEFS" > boehm-cflags
 
 if test -n "$CONFIG_FILES"; then
+  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
   ac_file=Makefile . ${gc_basedir}/../config-ml.in
 fi],
 srcdir=${srcdir}
