@@ -6419,14 +6419,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
    optabs would emit if we didn't have TFmode patterns.  */
 
 void
-sparc_emit_floatunsdi (rtx *operands)
+sparc_emit_floatunsdi (rtx *operands, enum machine_mode mode)
 {
   rtx neglab, donelab, i0, i1, f0, in, out;
-  enum machine_mode mode;
 
   out = operands[0];
   in = force_reg (DImode, operands[1]);
-  mode = GET_MODE (out);
   neglab = gen_label_rtx ();
   donelab = gen_label_rtx ();
   i0 = gen_reg_rtx (DImode);
@@ -6446,6 +6444,47 @@ sparc_emit_floatunsdi (rtx *operands)
   emit_insn (gen_iordi3 (i0, i0, i1));
   emit_insn (gen_rtx_SET (VOIDmode, f0, gen_rtx_FLOAT (mode, i0)));
   emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
+
+  emit_label (donelab);
+}
+
+/* Generate an FP to unsigned DImode conversion.  This is the same code
+   optabs would emit if we didn't have TFmode patterns.  */
+
+void
+sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
+{
+  rtx neglab, donelab, i0, i1, f0, in, out, limit;
+
+  out = operands[0];
+  in = force_reg (mode, operands[1]);
+  neglab = gen_label_rtx ();
+  donelab = gen_label_rtx ();
+  i0 = gen_reg_rtx (DImode);
+  i1 = gen_reg_rtx (DImode);
+  limit = gen_reg_rtx (mode);
+  f0 = gen_reg_rtx (mode);
+
+  emit_move_insn (limit,
+		  CONST_DOUBLE_FROM_REAL_VALUE (
+		    REAL_VALUE_ATOF ("9223372036854775808.0", mode), mode));
+  emit_cmp_and_jump_insns (in, limit, GE, NULL_RTX, mode, 0, neglab);
+
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  out,
+			  gen_rtx_FIX (DImode, gen_rtx_FIX (mode, in))));
+  emit_jump_insn (gen_jump (donelab));
+  emit_barrier ();
+
+  emit_label (neglab);
+
+  emit_insn (gen_rtx_SET (VOIDmode, f0, gen_rtx_MINUS (mode, in, limit)));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  i0,
+			  gen_rtx_FIX (DImode, gen_rtx_FIX (mode, f0))));
+  emit_insn (gen_movdi (i1, const1_rtx));
+  emit_insn (gen_ashldi3 (i1, i1, GEN_INT (63)));
+  emit_insn (gen_xordi3 (out, i0, i1));
 
   emit_label (donelab);
 }
