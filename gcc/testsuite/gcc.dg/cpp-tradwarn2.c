@@ -10,5 +10,5 @@ enum { SIGN_EXTEND = 23 };
 
 int fun(void)
 {
-  return SIGN_EXTEND;	/* { dg-warning "in non-function context" } */
+  return SIGN_EXTEND;	/* { dg-warning "must be used with arguments" } */
 }

@@ -411,27 +411,7 @@ parse_include (pfile, name)
 
   len = CPP_WRITTEN (pfile) - old_written;
 
-  if (token == CPP_STRING)
-    ; /* No special treatment required.  */
-#ifdef VMS
-  else if (token == CPP_NAME)
-    {
-      /* Support '#include xyz' like VAX-C.  It is taken as
-         '#include <xyz.h>' and generates a warning.  */
-      cpp_warning (pfile, "#%s filename is obsolete, use #%s <filename.h>",
-		   name, name);
-
-      /* Rewrite the token to <xyz.h>.  */
-      CPP_RESERVE (pfile, 4);
-      len += 4;
-      memmove (pfile->token_buffer + old_written + 1,
-	       pfile->token_buffer + old_written,
-	       CPP_WRITTEN (pfile) - old_written);
-      pfile->token_buffer[old_written] = '<';
-      CPP_PUTS_Q (pfile, ".h>", 2);
-    }
-#endif
-  else
+  if (token != CPP_STRING)
     {
       cpp_error (pfile, "#%s expects \"FILENAME\" or <FILENAME>", name);
       CPP_SET_WRITTEN (pfile, old_written);

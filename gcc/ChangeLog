@@ -1,3 +1,15 @@
+2000-06-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (maybe_macroexpand): Use CPP_WTRADITIONAL.  Improve
+	error message.
+	* cpplib.c (parse_include): Remove support for VAX-C 
+	"#include starlet" misfeature.
+
+2000-05-31 Laurynas Biveinis <lauras@softhome.net>
+
+	* cppfiles.c: conditionally define O_BINARY.
+	(open_include_file): pass O_BINARY to open().
+
 2000-06-01  Richard Henderson  <rth@cygnus.com>
 
 	* i960.c (i960_br_predict_opcode): Remove.
