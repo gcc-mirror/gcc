@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993-1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -103,6 +103,17 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
   FP_REGS, FP_REGS, FP_REGS, FP_REGS,
   FP_REGS, FP_REGS, FP_REGS, FP_REGS,
   FP_REGS, FP_REGS, FP_REGS, FP_REGS,
+  DF_REGS, DF_REGS, DF_REGS, DF_REGS,
+  DF_REGS, DF_REGS, DF_REGS, DF_REGS,
+  FPSCR_REGS,
+};
+
+char fp_reg_names[][5] =
+{
+  "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
+  "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15",
+  "fpul",
+  "xd0","xd2","xd4", "xd6", "xd8", "xd10", "xd12", "xd14",
 };
 
 /* Provide reg_class from a letter such as appears in the machine
@@ -110,7 +121,7 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
 
 enum reg_class reg_class_from_letter[] =
 {
-  /* a */ NO_REGS, /* b */ NO_REGS, /* c */ NO_REGS, /* d */ NO_REGS,
+  /* a */ ALL_REGS, /* b */ NO_REGS, /* c */ FPSCR_REGS, /* d */ DF_REGS,
   /* e */ NO_REGS, /* f */ FP_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
   /* i */ NO_REGS, /* j */ NO_REGS, /* k */ NO_REGS, /* l */ PR_REGS,
   /* m */ NO_REGS, /* n */ NO_REGS, /* o */ NO_REGS, /* p */ NO_REGS,
@@ -118,6 +129,12 @@ enum reg_class reg_class_from_letter[] =
   /* u */ NO_REGS, /* v */ NO_REGS, /* w */ FP0_REGS, /* x */ MAC_REGS,
   /* y */ FPUL_REGS, /* z */ R0_REGS
 };
+
+int assembler_dialect;
+
+rtx get_fpscr_rtx ();
+void emit_sf_insn ();
+void emit_df_insn ();
 
 static void split_branches PROTO ((rtx));
 
@@ -131,7 +148,8 @@ print_operand_address (stream, x)
   switch (GET_CODE (x))
     {
     case REG:
-      fprintf (stream, "@%s", reg_names[REGNO (x)]);
+    case SUBREG:
+      fprintf (stream, "@%s", reg_names[true_regnum (x)]);
       break;
 
     case PLUS:
@@ -143,13 +161,19 @@ print_operand_address (stream, x)
 	  {
 	  case CONST_INT:
 	    fprintf (stream, "@(%d,%s)", INTVAL (index),
-		     reg_names[REGNO (base)]);
+		     reg_names[true_regnum (base)]);
 	    break;
 
 	  case REG:
-	    fprintf (stream, "@(r0,%s)",
-		     reg_names[MAX (REGNO (base), REGNO (index))]);
-	    break;
+	  case SUBREG:
+	    {
+	      int base_num = true_regnum (base);
+	      int index_num = true_regnum (index);
+
+	      fprintf (stream, "@(r0,%s)",
+		       reg_names[MAX (base_num, index_num)]);
+	      break;
+	    }
 
 	  default:
 	    debug_rtx (x);
@@ -159,11 +183,11 @@ print_operand_address (stream, x)
       break;
 
     case PRE_DEC:
-      fprintf (stream, "@-%s", reg_names[REGNO (XEXP (x, 0))]);
+      fprintf (stream, "@-%s", reg_names[true_regnum (XEXP (x, 0))]);
       break;
 
     case POST_INC:
-      fprintf (stream, "@%s+", reg_names[REGNO (XEXP (x, 0))]);
+      fprintf (stream, "@%s+", reg_names[true_regnum (XEXP (x, 0))]);
       break;
 
     default:
@@ -182,7 +206,8 @@ print_operand_address (stream, x)
    'O'  print a constant without the #
    'R'  print the LSW of a dp value - changes if in little endian
    'S'  print the MSW of a dp value - changes if in little endian
-   'T'  print the next word of a dp value - same as 'R' in big endian mode.  */
+   'T'  print the next word of a dp value - same as 'R' in big endian mode.
+   'o'  output an operator.  */
 
 void
 print_operand (stream, x, code)
@@ -230,16 +255,31 @@ print_operand (stream, x, code)
 	  fputs (reg_names[REGNO (x) + 1], (stream));
 	  break;
 	case MEM:
-	  print_operand_address (stream,
-				 XEXP (adj_offsettable_operand (x, 4), 0));
+	  if (GET_CODE (XEXP (x, 0)) != PRE_DEC
+	      && GET_CODE (XEXP (x, 0)) != POST_INC)
+	    x = adj_offsettable_operand (x, 4);
+	  print_operand_address (stream, XEXP (x, 0));
 	  break;
+	}
+      break;
+    case 'o':
+      switch (GET_CODE (x))
+	{
+	case PLUS:  fputs ("add", stream); break;
+	case MINUS: fputs ("sub", stream); break;
+	case MULT:  fputs ("mul", stream); break;
+	case DIV:   fputs ("div", stream); break;
 	}
       break;
     default:
       switch (GET_CODE (x))
 	{
 	case REG:
-	  fputs (reg_names[REGNO (x)], (stream));
+	  if (REGNO (x) >= FIRST_FP_REG && REGNO (x) <= LAST_FP_REG
+	      && GET_MODE_SIZE (GET_MODE (x)) > 4)
+	    fprintf ((stream), "d%s", reg_names[REGNO (x)]+1);
+	  else
+	    fputs (reg_names[REGNO (x)], (stream));
 	  break;
 	case MEM:
 	  output_address (XEXP (x, 0));
@@ -273,6 +313,55 @@ expand_block_move (operands)
   if (! constp || align < 4 || (bytes % 4 != 0))
     return 0;
 
+  if (TARGET_HARD_SH4)
+    {
+      if (bytes < 12)
+	return 0;
+      else if (bytes == 12)
+	{
+	  tree entry_name;
+	  rtx func_addr_rtx;
+	  rtx r4 = gen_rtx (REG, SImode, 4);
+	  rtx r5 = gen_rtx (REG, SImode, 5);
+
+	  entry_name = get_identifier ("__movstrSI12_i4");
+
+	  func_addr_rtx
+	    = copy_to_mode_reg (Pmode,
+				gen_rtx_SYMBOL_REF (Pmode,
+						    IDENTIFIER_POINTER (entry_name)));
+	  emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
+	  emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
+	  return 1;
+	}
+      else if (! TARGET_SMALLCODE)
+	{
+	  tree entry_name;
+	  rtx func_addr_rtx;
+	  int dwords;
+	  rtx r4 = gen_rtx (REG, SImode, 4);
+	  rtx r5 = gen_rtx (REG, SImode, 5);
+	  rtx r6 = gen_rtx (REG, SImode, 6);
+
+	  entry_name = get_identifier (bytes & 4
+				       ? "__movstr_i4_odd"
+				       : "__movstr_i4_even");
+	  func_addr_rtx
+	    = copy_to_mode_reg (Pmode,
+				gen_rtx_SYMBOL_REF (Pmode,
+						    IDENTIFIER_POINTER (entry_name)));
+	  emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
+	  emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+
+	  dwords = bytes >> 3;
+	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
+	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx));
+	  return 1;
+	}
+      else
+	return 0;
+    }
   if (bytes < 64)
     {
       char entry[30];
@@ -405,9 +494,17 @@ prepare_scc_operands (code)
       || TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT)
     sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
-  emit_insn (gen_rtx (SET, VOIDmode, t_reg,
-		      gen_rtx (code, SImode, sh_compare_op0,
-			       sh_compare_op1)));
+  if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    (mode == SFmode ? emit_sf_insn : emit_df_insn)
+     (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (2,
+		gen_rtx (SET, VOIDmode, t_reg,
+			 gen_rtx (code, SImode,
+				  sh_compare_op0, sh_compare_op1)),
+		gen_rtx (USE, VOIDmode, get_fpscr_rtx ()))));
+  else
+    emit_insn (gen_rtx (SET, VOIDmode, t_reg,
+			gen_rtx (code, SImode, sh_compare_op0,
+				 sh_compare_op1)));
 
   return t_reg;
 }
@@ -443,7 +540,15 @@ from_compare (operands, code)
     insn = gen_rtx (SET, VOIDmode,
 		    gen_rtx (REG, SImode, 18),
 		    gen_rtx (code, SImode, sh_compare_op0, sh_compare_op1));
-  emit_insn (insn);
+  if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    {
+      insn = gen_rtx (PARALLEL, VOIDmode,
+		      gen_rtvec (2, insn,
+				 gen_rtx (USE, VOIDmode, get_fpscr_rtx ())));
+      (mode == SFmode ? emit_sf_insn : emit_df_insn) (insn);
+    }
+  else
+    emit_insn (insn);
 }
 
 /* Functions to output assembly code.  */
@@ -1722,7 +1827,8 @@ static int pool_size;
 /* Add a constant to the pool and return its label.  */
 
 static rtx
-add_constant (x, mode)
+add_constant (x, mode, last_value)
+     rtx last_value;
      rtx x;
      enum machine_mode mode;
 {
@@ -1741,13 +1847,27 @@ add_constant (x, mode)
 		continue;
 	    }
 	  if (rtx_equal_p (x, pool_vector[i].value))
-	    return pool_vector[i].label;
+	    {
+	      lab = 0;
+	      if (! last_value
+		  || ! i
+		  || ! rtx_equal_p (last_value, pool_vector[i-1].value))
+		{
+		  lab = pool_vector[i].label;
+		  if (! lab)
+		    pool_vector[i].label = lab = gen_label_rtx ();
+		}
+	      return lab;
+	    }
 	}
     }
 
   /* Need a new one.  */
   pool_vector[pool_size].value = x;
-  lab = gen_label_rtx ();
+  if (last_value && rtx_equal_p (last_value, pool_vector[pool_size - 1].value))
+    lab = 0;
+  else
+    lab = gen_label_rtx ();
   pool_vector[pool_size].mode = mode;
   pool_vector[pool_size].label = lab;
   pool_size++;
@@ -1965,7 +2085,8 @@ find_barrier (num_mova, mova, from)
 	  /* We must explicitly check the mode, because sometimes the
 	     front end will generate code to load unsigned constants into
 	     HImode targets without properly sign extending them.  */
-	  if (mode == HImode || (mode == SImode && hi_const (src)))
+	  if (mode == HImode
+	      || (mode == SImode && hi_const (src) && REGNO (dst) != FPUL_REG))
 	    {
 	      found_hi += 2;
 	      /* We put the short constants before the long constants, so
@@ -2130,7 +2251,7 @@ sfunc_uses_reg (insn)
   for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
     {
       part = XVECEXP (pattern, 0, i);
-      if (part == reg_part)
+      if (part == reg_part || GET_CODE (part) == CLOBBER)
 	continue;
       if (reg_mentioned_p (reg, ((GET_CODE (part) == SET
 				  && GET_CODE (SET_DEST (part)) == REG)
@@ -2470,6 +2591,13 @@ gen_far_branch (bp)
     }
   else
     jump = emit_jump_insn_after (gen_return (), insn);
+  /* Emit a barrier so that reorg knows that any following instructions
+     are not reachable via a fall-through path.
+     But don't do this when not optimizing, since we wouldn't supress the
+     alignment for the barrier then, and could end up with out-of-range
+     pc-relative loads.  */
+  if (optimize)
+    emit_barrier_after (jump);
   emit_label_after (bp->near_label, insn);
   JUMP_LABEL (jump) = bp->far_label;
   if (! invert_jump (insn, label))
@@ -2556,36 +2684,42 @@ barrier_align (barrier_or_label)
   if (! TARGET_SH3 || ! optimize)
     return CACHE_LOG;
 
-  /* Check if there is an immediately preceding branch to the insn beyond
-     the barrier.  We must weight the cost of discarding useful information
-     from the current cache line when executing this branch and there is
-     an alignment, against that of fetching unneeded insn in front of the
-     branch target when there is no alignment.  */
-
-  /* PREV is presumed to be the JUMP_INSN for the barrier under
-     investigation.  Skip to the insn before it.  */
-  prev = prev_real_insn (prev);
-
-  for (slot = 2, credit = 1 << (CACHE_LOG - 2) + 2;
-       credit >= 0 && prev && GET_CODE (prev) == INSN;
-       prev = prev_real_insn (prev))
+  /* When fixing up pcloads, a constant table might be inserted just before
+     the basic block that ends with the barrier.  Thus, we can't trust the
+     instruction lengths before that.  */
+  if (mdep_reorg_phase > SH_FIXUP_PCLOAD)
     {
-      if (GET_CODE (PATTERN (prev)) == USE
-          || GET_CODE (PATTERN (prev)) == CLOBBER)
-        continue;
-      if (GET_CODE (PATTERN (prev)) == SEQUENCE)
-	prev = XVECEXP (PATTERN (prev), 0, 1);
-      if (slot &&
-          get_attr_in_delay_slot (prev) == IN_DELAY_SLOT_YES)
-        slot = 0;
-      credit -= get_attr_length (prev);
+      /* Check if there is an immediately preceding branch to the insn beyond
+	 the barrier.  We must weight the cost of discarding useful information
+	 from the current cache line when executing this branch and there is
+	 an alignment, against that of fetching unneeded insn in front of the
+	 branch target when there is no alignment.  */
+
+      /* PREV is presumed to be the JUMP_INSN for the barrier under
+	 investigation.  Skip to the insn before it.  */
+      prev = prev_real_insn (prev);
+
+      for (slot = 2, credit = 1 << (CACHE_LOG - 2) + 2;
+	   credit >= 0 && prev && GET_CODE (prev) == INSN;
+	   prev = prev_real_insn (prev))
+	{
+	  if (GET_CODE (PATTERN (prev)) == USE
+	      || GET_CODE (PATTERN (prev)) == CLOBBER)
+	    continue;
+	  if (GET_CODE (PATTERN (prev)) == SEQUENCE)
+	    prev = XVECEXP (PATTERN (prev), 0, 1);
+	  if (slot &&
+	      get_attr_in_delay_slot (prev) == IN_DELAY_SLOT_YES)
+	    slot = 0;
+	  credit -= get_attr_length (prev);
+	}
+      if (prev
+	  && GET_CODE (prev) == JUMP_INSN
+	  && JUMP_LABEL (prev)
+	  && next_real_insn (JUMP_LABEL (prev)) == next_real_insn (barrier_or_label)
+	  && (credit - slot >= (GET_CODE (SET_SRC (PATTERN (prev))) == PC ? 2 : 0)))
+	return 0;
     }
-  if (prev
-      && GET_CODE (prev) == JUMP_INSN
-      && JUMP_LABEL (prev)
-      && next_real_insn (JUMP_LABEL (prev)) == next_real_insn (barrier_or_label)
-      && (credit - slot >= (GET_CODE (SET_SRC (PATTERN (prev))) == PC ? 2 : 0)))
-    return 0;
 
   return CACHE_LOG;
 }
@@ -2914,7 +3048,8 @@ machine_dependent_reorg (first)
 		  dst = SET_DEST (pat);
 		  mode = GET_MODE (dst);
 
-		  if (mode == SImode && hi_const (src))
+		  if (mode == SImode && hi_const (src)
+		      && REGNO (dst) != FPUL_REG)
 		    {
 		      int offset = 0;
 
@@ -2929,7 +3064,7 @@ machine_dependent_reorg (first)
 
 		  if (GET_CODE (dst) == REG
 		      && ((REGNO (dst) >= FIRST_FP_REG
-			   && REGNO (dst) <= LAST_FP_REG)
+			   && REGNO (dst) <= LAST_XD_REG)
 			  || REGNO (dst) == FPUL_REG))
 		    {
 		      if (last_float
@@ -2943,7 +3078,8 @@ machine_dependent_reorg (first)
 		      last_float_move = scan;
 		      last_float = src;
 		      newsrc = gen_rtx (MEM, mode,
-					(REGNO (dst) == FPUL_REG
+					((TARGET_SH4 && ! TARGET_FMOVD
+					  || REGNO (dst) == FPUL_REG)
 					 ? r0_inc_rtx
 					 : r0_rtx));
 		      last_float_addr = &XEXP (newsrc, 0);
@@ -2983,6 +3119,16 @@ machine_dependent_reorg (first)
 	  emit_insn_before (gen_use_sfunc_addr (reg), insn);
 	}
     }
+#if 0
+  /* fpscr is not actually a user variable, but we pretend it is for the
+     sake of the previous optimization passes, since we want it handled like
+     one.  However, we don't have eny debugging information for it, so turn
+     it into a non-user variable now.  */
+  if (TARGET_SH4)
+    REG_USERVAR_P (get_fpscr_rtx ()) = 0;
+#endif
+  if (optimize)
+    sh_flag_remove_dead_before_cse = 1;
   mdep_reorg_phase = SH_AFTER_MDEP_REORG;
 }
 
@@ -3386,8 +3532,16 @@ push (rn)
      int rn;
 {
   rtx x;
-  if ((rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
-      || rn == FPUL_REG)
+  if (rn == FPUL_REG)
+    x = gen_push_fpul ();
+  else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
+	   && rn >= FIRST_FP_REG && rn <= LAST_XD_REG)
+    {
+      if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
+	return;
+      x = gen_push_4 (gen_rtx (REG, DFmode, rn));
+    }
+  else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
     x = gen_push_e (gen_rtx (REG, SFmode, rn));
   else
     x = gen_push (gen_rtx (REG, SImode, rn));
@@ -3404,8 +3558,16 @@ pop (rn)
      int rn;
 {
   rtx x;
-  if ((rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
-      || rn == FPUL_REG)
+  if (rn == FPUL_REG)
+    x = gen_pop_fpul ();
+  else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
+	   && rn >= FIRST_FP_REG && rn <= LAST_XD_REG)
+    {
+      if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
+	return;
+      x = gen_pop_4 (gen_rtx (REG, DFmode, rn));
+    }
+  else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
     x = gen_pop_e (gen_rtx (REG, SFmode, rn));
   else
     x = gen_pop (gen_rtx (REG, SImode, rn));
@@ -3453,6 +3615,16 @@ calc_live_regs (count_ptr, live_regs_mask2)
   int count;
 
   *live_regs_mask2 = 0;
+  /* If we can save a lot of saves by switching to double mode, do that.  */
+  if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
+    for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
+      if (regs_ever_live[reg] && regs_ever_live[reg+1]
+	  && (! call_used_regs[reg] || (pragma_interrupt && ! pragma_trapa))
+	  && ++count > 2)
+	{
+	  target_flags &= ~FPU_SINGLE_BIT;
+	  break;
+	}
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
       if ((pragma_interrupt && ! pragma_trapa)
@@ -3463,7 +3635,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 		  && regs_ever_live[PR_REG]))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
-	     && reg != T_REG && reg != GBR_REG)
+	     && reg != T_REG && reg != GBR_REG && reg != FPSCR_REG)
 	  : (/* Only push those regs which are used and need to be saved.  */
 	     regs_ever_live[reg] && ! call_used_regs[reg]))
 	{
@@ -3472,6 +3644,24 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	  else
 	    live_regs_mask |= 1 << reg;
 	  count++;
+	  if (TARGET_SH4 && TARGET_FMOVD && reg >= FIRST_FP_REG)
+	    if (reg <= LAST_FP_REG)
+	      {
+		if (! TARGET_FPU_SINGLE && ! regs_ever_live[reg ^ 1])
+		  {
+		    if (reg >= 32)
+		      *live_regs_mask2 |= 1 << ((reg ^ 1) - 32);
+		    else
+		      live_regs_mask |= 1 << (reg ^ 1);
+		    count++;
+		  }
+	      }
+	    else if (reg <= LAST_XD_REG)
+	      {
+		/* Must switch to double mode to access these registers.  */
+		target_flags &= ~FPU_SINGLE_BIT;
+		count++;
+	      }
 	}
     }
 
@@ -3487,6 +3677,7 @@ sh_expand_prologue ()
   int live_regs_mask;
   int d, i;
   int live_regs_mask2;
+  int save_flags = target_flags;
   int double_align = 0;
 
   /* We have pretend args if we had an object sent partially in registers
@@ -3524,10 +3715,18 @@ sh_expand_prologue ()
     emit_insn (gen_sp_switch_1 ());
 
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
+  /* ??? Maybe we could save some switching if we can move a mode switch
+     that already happens to be at the function start into the prologue.  */
+  if (target_flags != save_flags)
+    emit_insn (gen_toggle_sz ());
   push_regs (live_regs_mask, live_regs_mask2);
+  if (target_flags != save_flags)
+    emit_insn (gen_toggle_sz ());
 
   if (TARGET_ALIGN_DOUBLE && d & 1)
     double_align = 4;
+
+  target_flags = save_flags;
 
   output_stack_adjust (-get_frame_size () - double_align,
 		       stack_pointer_rtx, 3);
@@ -3543,6 +3742,7 @@ sh_expand_epilogue ()
   int d, i;
 
   int live_regs_mask2;
+  int save_flags = target_flags;
   int frame_size = get_frame_size ();
 
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
@@ -3573,7 +3773,8 @@ sh_expand_epilogue ()
 
   /* Pop all the registers.  */
 
-  live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
+  if (target_flags != save_flags)
+    emit_insn (gen_toggle_sz ());
   if (live_regs_mask & (1 << PR_REG))
     pop (PR_REG);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -3584,6 +3785,9 @@ sh_expand_epilogue ()
       else if (j >= 32 && (live_regs_mask2 & (1 << (j - 32))))
 	pop (j);
     }
+  if (target_flags != save_flags)
+    emit_insn (gen_toggle_sz ());
+  target_flags = save_flags;
 
   output_stack_adjust (extra_push + current_function_pretend_args_size,
 		       stack_pointer_rtx, 7);
@@ -3651,6 +3855,25 @@ sh_builtin_saveregs (arglist)
   emit_move_insn (fpregs, XEXP (regbuf, 0));
   emit_insn (gen_addsi3 (fpregs, fpregs,
 			 GEN_INT (n_floatregs * UNITS_PER_WORD)));
+  if (TARGET_SH4)
+    {
+      for (regno = NPARM_REGS (DFmode) - 2; regno >= first_floatreg; regno -= 2)
+	{
+	  emit_insn (gen_addsi3 (fpregs, fpregs,
+				 GEN_INT (-2 * UNITS_PER_WORD)));
+	  emit_move_insn (gen_rtx (MEM, DFmode, fpregs),
+			  gen_rtx (REG, DFmode, BASE_ARG_REG (DFmode) + regno));
+	}
+      regno = first_floatreg;
+      if (regno & 1)
+	{
+	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
+	  emit_move_insn (gen_rtx (MEM, SFmode, fpregs),
+			  gen_rtx (REG, SFmode, BASE_ARG_REG (SFmode) + regno
+						- (TARGET_LITTLE_ENDIAN != 0)));
+	}
+    }
+  else
     for (regno = NPARM_REGS (SFmode) - 1; regno >= first_floatreg; regno--)
       {
 	emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
@@ -3677,6 +3900,8 @@ initial_elimination_offset (from, to)
 
   int live_regs_mask, live_regs_mask2;
   live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
+  if (TARGET_ALIGN_DOUBLE && regs_saved & 1)
+    total_auto_space += 4;
   target_flags = save_flags;
 
   total_saved_regs_space = (regs_saved) * 4;
@@ -3885,10 +4110,46 @@ arith_reg_operand (op, mode)
       else
 	return 1;
 
-      return (regno != T_REG && regno != PR_REG && regno != FPUL_REG
+      return (regno != T_REG && regno != PR_REG
+	      && (regno != FPUL_REG || TARGET_SH4)
 	      && regno != MACH_REG && regno != MACL_REG);
     }
   return 0;
+}
+
+int
+fp_arith_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (register_operand (op, mode))
+    {
+      int regno;
+
+      if (GET_CODE (op) == REG)
+	regno = REGNO (op);
+      else if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
+	regno = REGNO (SUBREG_REG (op));
+      else
+	return 1;
+
+      return (regno != T_REG && regno != PR_REG && regno > 15
+	      && regno != MACH_REG && regno != MACL_REG);
+    }
+  return 0;
+}
+
+int
+fp_extended_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == FLOAT_EXTEND && GET_MODE (op) == mode)
+    {
+      op = XEXP (op, 0);
+      mode = GET_MODE (op);
+    }
+  return fp_arith_reg_operand (op, mode);
 }
 
 /* Returns 1 if OP is a valid source operand for an arithmetic insn.  */
@@ -3990,6 +4251,73 @@ braf_label_ref_operand(op, mode)
   prev = SET_SRC (prev);
   if (GET_CODE (prev) != PLUS || XEXP (prev, 1) != op)
     return 0;
+}
+
+int
+tertiary_reload_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+  return code == MEM || (TARGET_SH4 && code == CONST_DOUBLE);
+}
+
+int
+fpscr_operand (op)
+     rtx op;
+{
+  return (GET_CODE (op) == REG && REGNO (op) == FPSCR_REG
+	  && GET_MODE (op) == PSImode);
+}
+
+int
+commutative_float_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case PLUS:
+    case MULT:
+      return 1;
+    }
+  return 0;
+}
+
+int
+noncommutative_float_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case MINUS:
+    case DIV:
+      return 1;
+    }
+  return 0;
+}
+
+int
+binary_float_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case PLUS:
+    case MINUS:
+    case MULT:
+    case DIV:
+      return 1;
+    }
+  return 0;
 }
 
 /* Return the destination address of a branch.  */
@@ -4101,4 +4429,305 @@ reg_unused_after (reg, insn)
 	return 1;
     }
   return 1;
+}
+
+extern struct obstack permanent_obstack;
+
+rtx
+get_fpscr_rtx ()
+{
+  static rtx fpscr_rtx;
+
+  if (! fpscr_rtx)
+    {
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      fpscr_rtx = gen_rtx (REG, PSImode, 48);
+      REG_USERVAR_P (fpscr_rtx) = 1;
+      pop_obstacks ();
+      mark_user_reg (fpscr_rtx);
+    }
+  if (! reload_completed || mdep_reorg_phase != SH_AFTER_MDEP_REORG)
+    mark_user_reg (fpscr_rtx);
+  return fpscr_rtx;
+}
+
+void
+emit_sf_insn (pat)
+     rtx pat;
+{
+  rtx addr;
+  /* When generating reload insns,  we must not create new registers.  FPSCR
+     should already have the correct value, so do nothing to change it.  */
+  if (! TARGET_FPU_SINGLE && ! reload_in_progress)
+    {
+      addr = gen_reg_rtx (SImode);
+      emit_insn (gen_fpu_switch0 (addr));
+    }
+  emit_insn (pat);
+  if (! TARGET_FPU_SINGLE && ! reload_in_progress)
+    {
+      addr = gen_reg_rtx (SImode);
+      emit_insn (gen_fpu_switch1 (addr));
+    }
+}
+
+void
+emit_df_insn (pat)
+     rtx pat;
+{
+  rtx addr;
+  if (TARGET_FPU_SINGLE && ! reload_in_progress)
+    {
+      addr = gen_reg_rtx (SImode);
+      emit_insn (gen_fpu_switch0 (addr));
+    }
+  emit_insn (pat);
+  if (TARGET_FPU_SINGLE && ! reload_in_progress)
+    {
+      addr = gen_reg_rtx (SImode);
+      emit_insn (gen_fpu_switch1 (addr));
+    }
+}
+
+void
+expand_sf_unop (fun, operands)
+     rtx (*fun)();
+     rtx *operands;
+{
+  emit_sf_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
+}
+
+void
+expand_sf_binop (fun, operands)
+     rtx (*fun)();
+     rtx *operands;
+{
+  emit_sf_insn ((*fun) (operands[0], operands[1], operands[2],
+			 get_fpscr_rtx ()));
+}
+
+void
+expand_df_unop (fun, operands)
+     rtx (*fun)();
+     rtx *operands;
+{
+  emit_df_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
+}
+
+void
+expand_df_binop (fun, operands)
+     rtx (*fun)();
+     rtx *operands;
+{
+  emit_df_insn ((*fun) (operands[0], operands[1], operands[2],
+			 get_fpscr_rtx ()));
+}
+
+void
+expand_fp_branch (compare, branch)
+     rtx (*compare) (), (*branch) ();
+{
+  (GET_MODE (sh_compare_op0)  == SFmode ? emit_sf_insn : emit_df_insn)
+    ((*compare) ());
+  emit_jump_insn ((*branch) ());
+}
+
+/* We don't want to make fpscr call-saved, because that would prevent
+   channging it, and it would also cost an exstra instruction to save it.
+   We don't want it to be known as a global register either, because
+   that disables all flow analysis.  But it has to be live at the function
+   return.  Thus, we need to insert a USE at the end of the function.  */
+/* This should best be called at about the time FINALIZE_PIC is called,
+   but not dependent on flag_pic.  Alas, there is no suitable hook there,
+   so this gets called from HAVE_RETURN.  */
+int
+emit_fpscr_use ()
+{
+  static int fpscr_uses = 0;
+
+  if (rtx_equal_function_value_matters)
+    {
+      emit_insn (gen_rtx (USE, VOIDmode, get_fpscr_rtx ()));
+      fpscr_uses++;
+    }
+  else
+    {
+      if (fpscr_uses > 1)
+	{
+	  /* Due to he crude way we emit the USEs, we might end up with
+	     some extra ones.  Delete all but the last one.  */
+	  rtx insn;
+
+	  for (insn = get_last_insn(); insn; insn = PREV_INSN (insn))
+	    if (GET_CODE (insn) == INSN
+		&& GET_CODE (PATTERN (insn)) == USE
+		&& GET_CODE (XEXP (PATTERN (insn), 0)) == REG
+		&& REGNO (XEXP (PATTERN (insn), 0)) == FPSCR_REG)
+	      {
+		insn = PREV_INSN (insn);
+		break;
+	      }
+	  for (; insn; insn = PREV_INSN (insn))
+	    if (GET_CODE (insn) == INSN
+		&& GET_CODE (PATTERN (insn)) == USE
+		&& GET_CODE (XEXP (PATTERN (insn), 0)) == REG
+		&& REGNO (XEXP (PATTERN (insn), 0)) == FPSCR_REG)
+	      {
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+	      }
+	}
+      fpscr_uses = 0;
+    }
+}
+
+/* ??? gcc does flow analysis strictly after common subexpression
+   elimination.  As a result, common subespression elimination fails
+   when there are some intervening statements setting the same register.
+   If we did nothing about this, this would hurt the precision switching
+   for SH4 badly.  There is some cse after reload, but it is unable to
+   undo the extra register pressure from the unused instructions, and
+   it cannot remove auto-increment loads.
+
+   A C code example that shows this flow/cse weakness for (at least) SH
+   and sparc (as of gcc ss-970706) is this:
+
+double
+f(double a)
+{
+  double d;
+  d = 0.1;
+  a += d;
+  d = 1.1;
+  d = 0.1;
+  a *= d;
+  return a;
+}
+
+   So we add another pass before common subexpression elimination, to
+   remove assignments that are dead due to a following assignment in the
+   same basic block.  */
+
+int sh_flag_remove_dead_before_cse;
+
+static void 
+mark_use (x, reg_set_block)
+     rtx x, *reg_set_block;
+{
+  enum rtx_code code;
+
+  if (! x)
+    return;
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case REG:
+      {
+	int regno = REGNO (x);
+	int nregs = (regno < FIRST_PSEUDO_REGISTER
+		     ? HARD_REGNO_NREGS (regno, GET_MODE (x))
+		     : 1);
+	do
+	  {
+	    reg_set_block[regno + nregs - 1] = 0;
+	  }
+	while (--nregs);
+	break;
+      }
+    case SET:
+      {
+	rtx dest = SET_DEST (x);
+
+	if (GET_CODE (dest) == SUBREG)
+	  dest = SUBREG_REG (dest);
+	if (GET_CODE (dest) != REG)
+	  mark_use (dest, reg_set_block);
+	mark_use (SET_SRC (x), reg_set_block);
+	break;
+      }
+    case CLOBBER:
+      break;
+    default:
+      {
+	char *fmt = GET_RTX_FORMAT (code);
+	int i, j;
+	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+	  {
+	    if (fmt[i] == 'e')
+	      mark_use (XEXP (x, i), reg_set_block);
+	    else if (fmt[i] == 'E')
+	      for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+		mark_use (XVECEXP (x, i, j), reg_set_block);
+	  }
+	break;
+      }
+    }
+}
+
+int
+remove_dead_before_cse ()
+{
+  rtx *reg_set_block, last, last_call, insn, set;
+  int in_libcall = 0;
+
+  /* This pass should run just once, after rtl generation.  */
+
+  if (! sh_flag_remove_dead_before_cse
+      || rtx_equal_function_value_matters
+      || reload_completed)
+    return;
+
+  sh_flag_remove_dead_before_cse = 0;
+
+  reg_set_block = (rtx *)alloca (max_reg_num () * sizeof (rtx));
+  bzero ((char *)reg_set_block, max_reg_num () * sizeof (rtx));
+  last_call = last = get_last_insn ();
+  for (insn = last; insn; insn = PREV_INSN (insn))
+    {
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+      if (GET_CODE (insn) == JUMP_INSN)
+	{
+	  last_call = last = insn;
+	  continue;
+	}
+      set = single_set (insn);
+
+      /* Don't delete parts of libcalls, since that would confuse cse, loop
+	 and flow.  */
+      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	in_libcall = 1;
+      else if (in_libcall)
+	{
+	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	    in_libcall = 0;
+	}
+      else if (set && GET_CODE (SET_DEST (set)) == REG)
+	{
+	  int regno = REGNO (SET_DEST (set));
+	  rtx ref_insn = (regno < FIRST_PSEUDO_REGISTER && call_used_regs[regno]
+			  ? last_call
+			  : last);
+	  if (reg_set_block[regno] == ref_insn
+	      && (regno >= FIRST_PSEUDO_REGISTER
+		  || HARD_REGNO_NREGS (regno, GET_MODE (SET_DEST (set))) == 1)
+	      && (GET_CODE (insn) != CALL_INSN || CONST_CALL_P (insn)))
+	    {
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+	      continue;
+	    }
+	  else
+	    reg_set_block[REGNO (SET_DEST (set))] = ref_insn;
+	}
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  last_call = insn;
+	  mark_use (CALL_INSN_FUNCTION_USAGE (insn), reg_set_block);
+	}
+      mark_use (PATTERN (insn), reg_set_block);
+    }
+  return 0;
 }

@@ -770,6 +770,64 @@ ___movstr:
 	add	#64,r4
 #endif
 
+#ifdef L_movstr_i4
+#if defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+	.text
+	.global	___movstr_i4_even
+	.global	___movstr_i4_odd
+	.global	___movstrSI12_i4
+
+	.p2align	5
+L_movstr_2mod4_end:
+	mov.l	r0,@(16,r4)
+	rts
+	mov.l	r1,@(20,r4)
+
+	.p2align	2
+
+___movstr_i4_odd:
+	mov.l	@r5+,r1
+	add	#-4,r4
+	mov.l	@r5+,r2
+	mov.l	@r5+,r3
+	mov.l	r1,@(4,r4)
+	mov.l	r2,@(8,r4)
+
+L_movstr_loop:
+	mov.l	r3,@(12,r4)
+	dt	r6
+	mov.l	@r5+,r0
+	bt/s	L_movstr_2mod4_end
+	mov.l	@r5+,r1
+	add	#16,r4
+L_movstr_start_even:
+	mov.l	@r5+,r2
+	mov.l	@r5+,r3
+	mov.l	r0,@r4
+	dt	r6
+	mov.l	r1,@(4,r4)
+	bf/s	L_movstr_loop
+	mov.l	r2,@(8,r4)
+	rts
+	mov.l	r3,@(12,r4)
+
+___movstr_i4_even:
+	mov.l	@r5+,r0
+	bra	L_movstr_start_even
+	mov.l	@r5+,r1
+
+	.p2align	4
+___movstrSI12_i4:
+	mov.l	@r5,r0
+	mov.l	@(4,r5),r1
+	mov.l	@(8,r5),r2
+	mov.l	r0,@r4
+	mov.l	r1,@(4,r4)
+	rts
+	mov.l	r2,@(8,r4)
+#endif /* ! __SH4__ */
+#endif
+
 #ifdef L_mulsi3
 
 
@@ -808,9 +866,47 @@ hiset:	sts	macl,r0		! r0 = bb*dd
 
 
 #endif
-#ifdef L_sdivsi3
+#ifdef L_sdivsi3_i4
 	.title "SH DIVIDE"
 !! 4 byte integer Divide code for the Hitachi SH
+#ifdef __SH4__
+!! args in r4 and r5, result in fpul, clobber dr0, dr2
+
+	.global	___sdivsi3_i4
+___sdivsi3_i4:
+	lds r4,fpul
+	float fpul,dr0
+	lds r5,fpul
+	float fpul,dr2
+	fdiv dr2,dr0
+	rts
+	ftrc dr0,fpul
+
+#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+!! args in r4 and r5, result in fpul, clobber r2, dr0, dr2
+
+	.global	___sdivsi3_i4
+___sdivsi3_i4:
+	sts.l fpscr,@-r15
+	mov #8,r2
+	swap.w r2,r2
+	lds r2,fpscr
+	lds r4,fpul
+	float fpul,dr0
+	lds r5,fpul
+	float fpul,dr2
+	fdiv dr2,dr0
+	ftrc dr0,fpul
+	rts
+	lds.l @r15+,fpscr
+
+#endif /* ! __SH4__ */
+#endif
+
+#ifdef L_sdivsi3
+/* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
+   sh3e code.  */
+#if ! defined(__SH4__) && ! defined (__SH4_SINGLE__)
 !!
 !! Steve Chamberlain
 !! sac@cygnus.com
@@ -904,11 +1000,109 @@ ___sdivsi3:
 div0:	rts
 	mov	#0,r0
 
+#endif /* ! __SH4__ */
 #endif
-#ifdef L_udivsi3
+#ifdef L_udivsi3_i4
 
 	.title "SH DIVIDE"
 !! 4 byte integer Divide code for the Hitachi SH
+#ifdef __SH4__
+!! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
+
+	.global	___udivsi3_i4
+___udivsi3_i4:
+	mov #1,r1
+	cmp/hi r1,r5
+	bf trivial
+	rotr r1
+	xor r1,r4
+	lds r4,fpul
+	mova L1,r0
+#ifdef FMOVD_WORKS
+	fmov.d @r0+,dr4
+#else
+#ifdef __LITTLE_ENDIAN__
+	fmov.s @r0+,fr5
+	fmov.s @r0,fr4
+#else
+	fmov.s @r0+,fr4
+	fmov.s @r0,fr5
+#endif
+#endif
+	float fpul,dr0
+	xor r1,r5
+	lds r5,fpul
+	float fpul,dr2
+	fadd dr4,dr0
+	fadd dr4,dr2
+	fdiv dr2,dr0
+	rts
+	ftrc dr0,fpul
+
+trivial:
+	rts
+	lds r4,fpul
+
+	.align 2
+L1:
+	.double 2147483648
+
+#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+!! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
+
+	.global	___udivsi3_i4
+___udivsi3_i4:
+	mov #1,r1
+	cmp/hi r1,r5
+	bf trivial
+	sts.l fpscr,@-r15
+	mova L1,r0
+	lds.l @r0+,fpscr
+	rotr r1
+	xor r1,r4
+	lds r4,fpul
+#ifdef FMOVD_WORKS
+	fmov.d @r0+,dr4
+#else
+#ifdef __LITTLE_ENDIAN__
+	fmov.s @r0+,fr5
+	fmov.s @r0,fr4
+#else
+	fmov.s @r0+,fr4
+	fmov.s @r0,fr5
+#endif
+#endif
+	float fpul,dr0
+	xor r1,r5
+	lds r5,fpul
+	float fpul,dr2
+	fadd dr4,dr0
+	fadd dr4,dr2
+	fdiv dr2,dr0
+	ftrc dr0,fpul
+	rts
+	lds.l @r15+,fpscr
+
+trivial:
+	rts
+	lds r4,fpul
+
+	.align 2
+L1:
+#ifdef __LITTLE_ENDIAN__
+	.long 0x80000
+#else
+	.long 0x180000
+#endif
+	.double 2147483648
+
+#endif /* ! __SH4__ */
+#endif
+
+#ifdef L_udivsi3
+/* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
+   sh3e code.  */
+#if ! defined(__SH4__) && ! defined (__SH4_SINGLE__)
 !!
 !! Steve Chamberlain
 !! sac@cygnus.com
@@ -966,22 +1160,40 @@ vshortway:
 ret:	rts
 	mov	r4,r0
 
+#endif /* __SH4__ */
 #endif
 #ifdef L_set_fpscr
-#if defined (__SH3E__)
+#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 	.global ___set_fpscr
 ___set_fpscr:
 	lds r4,fpscr
 	mov.l ___set_fpscr_L1,r1
 	swap.w r4,r0
 	or #24,r0
+#ifndef FMOVD_WORKS
 	xor #16,r0
+#endif
+#if defined(__SH4__)
+	swap.w r0,r3
+	mov.l r3,@(4,r1)
+#else /* defined(__SH3E__) || defined(__SH4_SINGLE*__) */
 	swap.w r0,r2
 	mov.l r2,@r1
+#endif
+#ifndef FMOVD_WORKS
 	xor #8,r0
+#else
+	xor #24,r0
+#endif
+#if defined(__SH4__)
+	swap.w r0,r2
+	rts
+	mov.l r2,@r1
+#else /* defined(__SH3E__) || defined(__SH4_SINGLE*__) */
 	swap.w r0,r3
 	rts
 	mov.l r3,@(4,r1)
+#endif
 	.align 2
 ___set_fpscr_L1:
 	.long ___fpscr_values
@@ -990,5 +1202,5 @@ ___set_fpscr_L1:
 #else
         .comm   ___fpscr_values,8
 #endif /* ELF */
-#endif /* SH3E */
+#endif /* SH3E / SH4 */
 #endif /* L_set_fpscr */

@@ -37,7 +37,7 @@
 #undef FLT_MAX_10_EXP
 #define FLT_MAX_10_EXP 38
 
-#ifdef __SH3E__
+#if defined (__SH3E__) || defined (__SH4_SINGLE_ONLY__)
 
    /* Number of base-FLT_RADIX digits in the significand of a double */
 #undef DBL_MANT_DIG
