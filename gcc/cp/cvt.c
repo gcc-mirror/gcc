@@ -929,8 +929,11 @@ convert_to_void (tree expr, const char *implicit)
 		 turned into a call to "__builtin_memcpy", with a
 		 conversion of the return value to an appropriate
 		 type.)  So, to avoid false positives, we strip
-		 conversions.  */
-	      STRIP_NOPS (e);
+		 conversions.  Do not use STRIP_NOPs because it will
+		 not strip conversions to "void", as that is not a
+		 mode-preserving conversion.  */
+	      while (TREE_CODE (e) == NOP_EXPR)
+		e = TREE_OPERAND (e, 0);
 
 	      code = TREE_CODE (e);
 	      class = TREE_CODE_CLASS (code);
