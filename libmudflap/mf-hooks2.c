@@ -1206,6 +1206,8 @@ WRAPPER2(struct dirent *, readdir, DIR *dir)
 }
 #endif
 
+#ifdef HAVE_SYS_SOCKET_H
+
 #ifdef WRAP_recv
 #include <sys/socket.h>
 WRAPPER2(int, recv, int s, void *buf, size_t len, int flags)
@@ -1327,6 +1329,8 @@ WRAPPER2(int, connect, int sockfd, const struct sockaddr  *addr,
 }
 #endif
 
+#endif /* HAVE_SYS_SOCKET_H */
+
 #ifdef WRAP_gethostname
 WRAPPER2(int, gethostname, char *name, size_t len)
 {
@@ -1344,6 +1348,8 @@ WRAPPER2(int, sethostname, const char *name, size_t len)
   return sethostname (name, len);
 }
 #endif
+
+#ifdef HAVE_NETDB_H
 
 #ifdef WRAP_gethostbyname
 #include <netdb.h>
@@ -1425,6 +1431,10 @@ WRAPPER2(struct hostent *, gethostbyname, const char *name)
 }
 #endif
 
+#endif /* HAVE_NETDB_H */
+
+#ifdef SYS_WAIT_H
+
 #ifdef WRAP_wait
 #include <sys/wait.h>
 WRAPPER2(pid_t, wait, int *status)
@@ -1448,6 +1458,8 @@ WRAPPER2(pid_t, waitpid, pid_t pid, int *status, int options)
   return waitpid (pid, status, options);
 }
 #endif
+
+#endif /* HAVE_SYS_WAIT_H */
 
 #ifdef WRAP_popen
 WRAPPER2(FILE *, popen, const char *command, const char *mode)
@@ -1651,6 +1663,8 @@ WRAPPER2(void *, dlsym, void *handle, char *symbol)
 }
 #endif
 
+#if defined(HAVE_SYS_IPC_H) && defined(HAVE_SYS_SEM_H)
+
 #ifdef WRAP_semop
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -1764,4 +1778,6 @@ WRAPPER2(int, shmdt, const void *shmaddr)
   return resp;
 }
 #endif
+
+#endif /* defined(HAVE_SYS_IPC_H) && defined(HAVE_SYS_SEM_H) */
 
