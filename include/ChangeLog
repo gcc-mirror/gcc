@@ -1,3 +1,7 @@
+1998-10-21  Mark Mitchell  <mark@markmitchell.com>
+
+	* splay-tree.h: New file.
+
 Fri Oct  9 00:02:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge devo and egcs include directories.
