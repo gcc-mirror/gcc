@@ -1,3 +1,7 @@
+2000-01-12  Robert Lipe  <robertl@sco.com>
+
+	* i386/sysv5.h (CPP_SPEC, LIBSPEC): Add -pthreadT.
+
 2000-01-12  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (reload_reg_unavailable): New static variable.
