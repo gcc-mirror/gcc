@@ -671,7 +671,10 @@ class_declaration:
 |	CLASS_TK error
 		{yyerror ("Missing class name"); RECOVER;}
 |       CLASS_TK identifier error
-		{if (!ctxp->class_err) yyerror ("'{' expected"); DRECOVER(class1);}
+		{
+		  if (!ctxp->class_err) yyerror ("'{' expected"); 
+		  DRECOVER(class1);
+		}
 |       modifiers CLASS_TK identifier error
 		{if (!ctxp->class_err) yyerror ("'{' expected"); RECOVER;}
 ;
@@ -734,6 +737,8 @@ class_body_declaration:
 
 class_member_declaration:
 	field_declaration
+|	field_declaration SC_TK
+		{ $$ = $1; }
 |	method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
 		{ $$ = parse_jdk1_1_error ("inner classe declaration"); }
@@ -1044,9 +1049,9 @@ interface_declaration:
 		  $$ = $6;
 		}
 |	INTERFACE_TK identifier error
-		{yyerror ("(here)'{' expected"); RECOVER;}
+		{yyerror ("'{' expected"); RECOVER;}
 |	modifiers INTERFACE_TK identifier error
-		{yyerror ("(there)'{' expected"); RECOVER;}
+		{yyerror ("'{' expected"); RECOVER;}
 ;
 
 extends_interfaces:
@@ -8903,10 +8908,16 @@ patch_binop (node, wfl_op1, wfl_op2)
       /* Change the division operator if necessary */
       if (code == RDIV_EXPR && TREE_CODE (prom_type) == INTEGER_TYPE)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
-      /* This one is more complicated. FLOATs are processed by a function
-	 call to soft_fmod. */
+
+      /* This one is more complicated. FLOATs are processed by a
+	 function call to soft_fmod. Duplicate the value of the
+	 COMPOUND_ASSIGN_P flag. */
       if (code == TRUNC_MOD_EXPR)
-	return build_java_binop (TRUNC_MOD_EXPR, prom_type, op1, op2);
+	{
+	  tree mod = build_java_binop (TRUNC_MOD_EXPR, prom_type, op1, op2);
+	  COMPOUND_ASSIGN_P (mod) = COMPOUND_ASSIGN_P (node);
+	  return mod;
+	}
       break;
 
     /* 15.17 Additive Operators */
@@ -8981,13 +8992,17 @@ patch_binop (node, wfl_op1, wfl_op2)
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
 	{
+	  tree to_return;
           tree utype = unsigned_type (prom_type);
           op1 = convert (utype, op1);
 	  TREE_SET_CODE (node, RSHIFT_EXPR);
           TREE_OPERAND (node, 0) = op1;
           TREE_OPERAND (node, 1) = op2;
           TREE_TYPE (node) = utype;
-          return convert (prom_type, node);
+	  to_return = convert (prom_type, node);
+	  /* Copy the original value of the COMPOUND_ASSIGN_P flag */
+	  COMPOUND_ASSIGN_P (to_return) = COMPOUND_ASSIGN_P (node);
+	  return to_return;
 	}
       break;
 
@@ -9656,11 +9671,20 @@ patch_cast (node, wfl_operator)
       if (cast_type == op_type)
 	return node;
 
+      /* float and double type are converted to the original type main
+	 variant and then to the target type. */
+      if (JFLOAT_TYPE_P (op_type) && TREE_CODE (cast_type) == CHAR_TYPE)
+	op = convert (integer_type_node, op);
+
       /* Try widening/narowwing convertion. Potentially, things need
 	 to be worked out in gcc so we implement the extreme cases
 	 correctly. fold_convert() needs to be fixed. */
       return convert (cast_type, op);
     }
+
+  /* It's also valid to cast a boolean into a boolean */
+  if (op_type == boolean_type_node && cast_type == boolean_type_node)
+    return node;
 
   /* null can be casted to references */
   if (op == null_pointer_node && JREFERENCE_TYPE_P (cast_type))

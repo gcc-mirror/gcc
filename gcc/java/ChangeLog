@@ -154,6 +154,22 @@ Thu Jan 28 14:45:39 1999  Per Bothner  <bothner@cygnus.com>
 	Handle TRUTH_AND_EXPR, TRUTH_OR_EXPR, and TRUTH_XOR_EXPR.
 	* jcf-write.c (generate_bytecode_insns):  Likewise.
 
+Thu Jan 28 11:50:11 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (jcf_parse): Don't parse the same class file twice.
+	* parse.y (patch_cast): Allow a boolean to be cast into a
+ 	boolean.
+
+Wed Jan 27 10:19:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y: (class_declaration:): Fixed indentation.
+	(class_member_declaration:): Extra `;' after field declaration now
+ 	accepted.
+	(interface_declaration:): Removed debug messages in error reports.
+	(patch_binop): Nodes created and returned inherit the orignal
+ 	node's COMPOUND_ASSIGN_P flag value.
+	(patch_cast): Fix cast from char to floating point.
+
 Mon Jan 25 17:39:19 1999  Andrew Haley  <aph@cygnus.com>
 
         * except.c, java-except.h (expand_resume_after_catch): new
