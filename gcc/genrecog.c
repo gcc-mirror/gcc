@@ -300,7 +300,8 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 		}
 	    if (!found_it)
 	      {
-		message_with_line (pattern_lineno, "match_code \"%.*s\" matches nothing", n, code);
+		message_with_line (pattern_lineno, "match_code \"%.*s\" matches nothing",
+				   (int) n, code);
 		error_count ++;
 		for (i = 0; i < NUM_RTX_CODE; i++)
 		  if (!strncasecmp (code, GET_RTX_NAME (i), n)
