@@ -1243,6 +1243,7 @@ assemble_real (d, mode)
 #endif
 
 #ifdef ASM_OUTPUT_LONG_DOUBLE
+    case XFmode:
     case TFmode:
       ASM_OUTPUT_LONG_DOUBLE (asm_out_file, d);
       break;
