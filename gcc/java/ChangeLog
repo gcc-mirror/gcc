@@ -1,3 +1,8 @@
+Fri Aug 27 23:31:57 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gjavah.c, jcf-write.c, verify.c: Do not use C++ style
+	comments in C code.
+
 1999-08-26  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_cxx_classname): Print "::" before qualified
