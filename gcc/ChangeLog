@@ -1,5 +1,7 @@
 2000-12-20  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* reload1.c (free_for_value_p): Fix error in last change.
+
 	2000-03-22  Richard Henderson  <rth@cygnus.com>
 	* stmt.c (expand_asm_operands): Don't promote the temporary.
 
