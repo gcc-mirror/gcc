@@ -8021,14 +8021,15 @@ subrange_type_die (tree type, dw_die_ref context_die)
   dw_die_ref subrange_die;
   tree name = TYPE_NAME (type);
   const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
+  tree subtype = TREE_TYPE (type);
 
   if (context_die == NULL)
     context_die = comp_unit_die;
 
-  if (TREE_CODE (TREE_TYPE (type)) == ENUMERAL_TYPE)
-    subtype_die = gen_enumeration_type_die (TREE_TYPE (type), context_die);
+  if (TREE_CODE (subtype) == ENUMERAL_TYPE)
+    subtype_die = gen_enumeration_type_die (subtype, context_die);
   else
-    subtype_die = base_type_die (TREE_TYPE (type));
+    subtype_die = base_type_die (subtype);
 
   subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
 
@@ -8039,7 +8040,7 @@ subrange_type_die (tree type, dw_die_ref context_die)
       add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
     }
 
-  if (int_size_in_bytes (TREE_TYPE (type)) != size_in_bytes)
+  if (int_size_in_bytes (subtype) != size_in_bytes)
     {
       /* The size of the subrange type and its base type do not match,
          so we need to generate a size attribute for the subrange type.  */

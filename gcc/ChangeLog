@@ -1,3 +1,8 @@
+2004-03-17  Joel Brobecker  <brobecker@gnat.com>
+
+	* dwarf2out.c (subrange_type_die): Define new variable "subtype"
+	to hold the subtype tree instead of recomputing it several times.
+
 2004-03-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mn10300/mn10300.c (notice_update_cc): Don't handle
