@@ -4298,12 +4298,10 @@ joust (cand1, cand2, warn)
     }
 
   /* warn about confusing overload resolution */
-  if (winner && cand1->second_conv
-      && ! DECL_CONSTRUCTOR_P (cand1->fn)
-      && ! DECL_CONSTRUCTOR_P (cand2->fn))
+  if (winner && cand1->second_conv)
     {
       int comp = compare_ics (cand1->second_conv, cand2->second_conv);
-      if (comp && comp != winner)
+      if (comp != winner)
 	{
 	  struct z_candidate *w, *l;
 	  if (winner == 1)
@@ -4316,7 +4314,7 @@ joust (cand1, cand2, warn)
 	      cp_warning ("  for conversion from `%T' to `%T'",
 			  TREE_TYPE (source_type (TREE_VEC_ELT (w->convs, 0))),
 			  TREE_TYPE (w->second_conv));
-	      cp_warning ("  because conversion sequence for `this' argument is better");
+	      cp_warning ("  because conversion sequence for the argument is better");
 	    }
 	  else
 	    add_warning (w, l);
