@@ -1,3 +1,11 @@
+Mon Nov 17 02:01:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (do_friend): Warn about non-template friends in templates.
+
+	* call.c (build_op_delete_call): Fix handling of inherited delete.
+
+	* search.c (dfs_record_inheritance): Ignore template type parms.
+
 Sat Nov 15 00:30:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_new_op): Fix copy error.

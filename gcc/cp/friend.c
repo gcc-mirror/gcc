@@ -381,10 +381,26 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	DECL_CLASS_CONTEXT (decl) = current_class_type;
 
       if (! DECL_USE_TEMPLATE (decl))
-	/* We can call pushdecl here, because the TREE_CHAIN of this
-	   FUNCTION_DECL is not needed for other purposes.  Don't do this
-	   for a template instantiation. */
-	decl = pushdecl (decl);
+	{
+	  /* We can call pushdecl here, because the TREE_CHAIN of this
+	     FUNCTION_DECL is not needed for other purposes.  Don't do this
+	     for a template instantiation. */
+	  decl = pushdecl (decl);
+
+	  if (! funcdef_flag && ! flag_guiding_decls
+	      && current_template_parms && uses_template_parms (decl))
+	    {
+	      static int explained;
+	      cp_warning ("friend declaration `%#D'", decl);
+	      warning ("  will not be treated as a template instantiation");
+	      if (! explained)
+		{
+		  warning ("  unless you compile with -fguiding-decls");
+		  warning ("  or add <> after the function name");
+		  explained = 1;
+		}
+	    }
+	}
 
       make_decl_rtl (decl, NULL_PTR, 1);
       add_friend (current_class_type, decl);
