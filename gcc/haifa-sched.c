@@ -170,6 +170,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
+#include "sched-int.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -523,7 +524,7 @@ static void swap_sort PARAMS ((rtx *, int));
 static void queue_insn PARAMS ((rtx, int));
 static void schedule_insn PARAMS ((rtx, struct ready_list *, int));
 static void find_insn_reg_weight PARAMS ((int));
-static int schedule_block PARAMS ((int, int));
+static void schedule_block PARAMS ((int, int));
 static char *safe_concat PARAMS ((char *, char *, const char *));
 static int insn_issue_delay PARAMS ((rtx));
 static void adjust_priority PARAMS ((rtx));
@@ -789,6 +790,7 @@ static void rm_redundant_line_notes PARAMS ((void));
 static void rm_other_notes PARAMS ((rtx, rtx));
 static rtx reemit_notes PARAMS ((rtx, rtx));
 
+static int no_real_insns_p PARAMS ((rtx, rtx));
 static void get_block_head_tail PARAMS ((int, rtx *, rtx *));
 static void get_bb_head_tail PARAMS ((int, rtx *, rtx *));
 
@@ -829,6 +831,9 @@ static void propagate_deps PARAMS ((int, struct deps *, int));
 
 #endif /* INSN_SCHEDULING */
 
+/* Point to state used for the current scheduling pass.  */
+struct sched_info *current_sched_info;
+
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
@@ -1137,13 +1142,6 @@ schedule_insns (dump_file)
 {
 }
 #else
-#ifndef __GNUC__
-#define __inline
-#endif
-
-#ifndef HAIFA_INLINE
-#define HAIFA_INLINE __inline
-#endif
 
 /* Computation of memory dependencies.  */
 
@@ -4170,7 +4168,7 @@ rank_for_schedule (x, y)
   rtx tmp2 = *(const rtx *) x;
   rtx link;
   int tmp_class, tmp2_class, depend_count1, depend_count2;
-  int val, priority_val, spec_val, prob_val, weight_val;
+  int val, priority_val, weight_val, info_val;
 
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
@@ -4182,24 +4180,9 @@ rank_for_schedule (x, y)
       (weight_val = INSN_REG_WEIGHT (tmp) - INSN_REG_WEIGHT (tmp2)))
     return (weight_val);
 
-  /* Some comparison make sense in interblock scheduling only.  */
-  if (INSN_BB (tmp) != INSN_BB (tmp2))
-    {
-      /* Prefer an inblock motion on an interblock motion.  */
-      if ((INSN_BB (tmp2) == target_bb) && (INSN_BB (tmp) != target_bb))
-	return 1;
-      if ((INSN_BB (tmp) == target_bb) && (INSN_BB (tmp2) != target_bb))
-	return -1;
-
-      /* Prefer a useful motion on a speculative one.  */
-      if ((spec_val = IS_SPECULATIVE_INSN (tmp) - IS_SPECULATIVE_INSN (tmp2)))
-	return (spec_val);
-
-      /* Prefer a more probable (speculative) insn.  */
-      prob_val = INSN_PROBABILITY (tmp2) - INSN_PROBABILITY (tmp);
-      if (prob_val)
-	return (prob_val);
-    }
+  info_val = (*current_sched_info->rank) (tmp, tmp2);
+  if (info_val)
+    return info_val;
 
   /* Compare insns based on their relation to the last-scheduled-insn.  */
   if (last_scheduled_insn)
@@ -4284,10 +4267,8 @@ queue_insn (insn, n_cycles)
 
   if (sched_verbose >= 2)
     {
-      fprintf (sched_dump, ";;\t\tReady-->Q: insn %d: ", INSN_UID (insn));
-
-      if (INSN_BB (insn) != target_bb)
-	fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
+      fprintf (sched_dump, ";;\t\tReady-->Q: insn %s: ",
+	       (*current_sched_info->print_insn) (insn, 0));
 
       fprintf (sched_dump, "queued for %d cycles.\n", n_cycles);
     }
@@ -4420,24 +4401,13 @@ schedule_insn (insn, ready, clock)
 	{
 	  int effective_cost = INSN_TICK (next) - clock;
 
-	  /* For speculative insns, before inserting to ready/queue,
-	     check live, exception-free, and issue-delay.  */
-	  if (INSN_BB (next) != target_bb
-	      && (!IS_VALID (INSN_BB (next))
-		  || CANT_MOVE (next)
-		  || (IS_SPECULATIVE_INSN (next)
-		      && (insn_issue_delay (next) > 3
-			  || !check_live (next, INSN_BB (next))
-		 || !is_exception_free (next, INSN_BB (next), target_bb)))))
+	  if (! (*current_sched_info->new_ready) (next))
 	    continue;
 
 	  if (sched_verbose >= 2)
 	    {
-	      fprintf (sched_dump, ";;\t\tdependences resolved: insn %d ",
-		       INSN_UID (next));
-
-	      if (current_nr_blocks > 1 && INSN_BB (next) != target_bb)
-		fprintf (sched_dump, "/b%d ", BLOCK_NUM (next));
+	      fprintf (sched_dump, ";;\t\tdependences resolved: insn %s ",
+		       (*current_sched_info->print_insn) (next, 0));
 
 	      if (effective_cost < 1)
 		fprintf (sched_dump, "into ready\n");
@@ -4549,13 +4519,9 @@ get_block_head_tail (b, headp, tailp)
      rtx *headp;
      rtx *tailp;
 {
-
-  rtx head;
-  rtx tail;
-
   /* HEAD and TAIL delimit the basic block being scheduled.  */
-  head = BLOCK_HEAD (b);
-  tail = BLOCK_END (b);
+  rtx head = BLOCK_HEAD (b);
+  rtx tail = BLOCK_END (b);
 
   /* Don't include any notes or labels at the beginning of the
      basic block, or notes at the ends of basic blocks.  */
@@ -4582,6 +4548,21 @@ get_bb_head_tail (bb, headp, tailp)
      rtx *tailp;
 {
   get_block_head_tail (BB_TO_BLOCK (bb), headp, tailp);
+}
+
+/* Return nonzero if there are no real insns in the range [ HEAD, TAIL ].  */
+
+static int
+no_real_insns_p (head, tail)
+     rtx head, tail;
+{
+  while (head != NEXT_INSN (tail))
+    {
+      if (GET_CODE (head) != NOTE && GET_CODE (head) != CODE_LABEL)
+	return 0;
+      head = NEXT_INSN (head);
+    }
+  return 1;
 }
 
 /* Delete line notes from bb. Save them so they can be later restored
@@ -4878,10 +4859,8 @@ queue_to_ready (ready)
       q_size -= 1;
 
       if (sched_verbose >= 2)
-	fprintf (sched_dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
-
-      if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-	fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
+	fprintf (sched_dump, ";;\t\tQ-->Ready: insn %s: ",
+		 (*current_sched_info->print_insn) (insn, 0));
 
       ready_add (ready, insn);
       if (sched_verbose >= 2)
@@ -4905,11 +4884,8 @@ queue_to_ready (ready)
 		  q_size -= 1;
 
 		  if (sched_verbose >= 2)
-		    fprintf (sched_dump, ";;\t\tQ-->Ready: insn %d: ",
-			     INSN_UID (insn));
-
-		  if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-		    fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
+		    fprintf (sched_dump, ";;\t\tQ-->Ready: insn %s: ",
+			     (*current_sched_info->print_insn) (insn, 0));
 
 		  ready_add (ready, insn);
 		  if (sched_verbose >= 2)
@@ -4943,11 +4919,7 @@ debug_ready_list (ready)
 
   p = ready_lastpos (ready);
   for (i = 0; i < ready->n_ready; i++)
-    {
-      fprintf (sched_dump, "  %d", INSN_UID (p[i]));
-      if (current_nr_blocks > 1 && INSN_BB (p[i]) != target_bb)
-	fprintf (sched_dump, "/b%d", BLOCK_NUM (p[i]));
-    }
+    fprintf (sched_dump, "  %s", (*current_sched_info->print_insn) (p[i], 0));
   fprintf (sched_dump, "\n");
 }
 
@@ -5655,16 +5627,16 @@ print_insn (buf, x, verbose)
     case INSN:
       print_pattern (t, PATTERN (x), verbose);
       if (verbose)
-	sprintf (buf, "b%d: i% 4d: %s", INSN_BB (x),
-		 INSN_UID (x), t);
+	sprintf (buf, "%s: %s", (*current_sched_info->print_insn) (x, 1),
+		 t);
       else
 	sprintf (buf, "%-4d %s", INSN_UID (x), t);
       break;
     case JUMP_INSN:
       print_pattern (t, PATTERN (x), verbose);
       if (verbose)
-	sprintf (buf, "b%d: i% 4d: jump %s", INSN_BB (x),
-		 INSN_UID (x), t);
+	sprintf (buf, "%s: jump %s", (*current_sched_info->print_insn) (x, 1),
+		 t);
       else
 	sprintf (buf, "%-4d %s", INSN_UID (x), t);
       break;
@@ -5678,8 +5650,7 @@ print_insn (buf, x, verbose)
       else
 	strcpy (t, "call <...>");
       if (verbose)
-	sprintf (buf, "b%d: i% 4d: %s", INSN_BB (insn),
-		 INSN_UID (insn), t);
+	sprintf (buf, "%s: %s", (*current_sched_info->print_insn) (x, 1), t);
       else
 	sprintf (buf, "%-4d %s", INSN_UID (insn), t);
       break;
@@ -5819,6 +5790,292 @@ visualize_stall_cycles (b, stalls)
   sprintf (visual_tbl + strlen (visual_tbl), "\n");
 }
 
+/* The number of insns from the current block scheduled so far.  */
+static int sched_target_n_insns;
+/* The number of insns from the current block to be scheduled in total.  */
+static int target_n_insns;
+/* The number of insns from the entire region scheduled so far.  */
+static int sched_n_insns;
+
+/* Implementations of the sched_info functions for region scheduling.  */
+static void init_ready_list PARAMS ((struct ready_list *));
+static int can_schedule_ready_p PARAMS ((rtx));
+static int new_ready PARAMS ((rtx));
+static int schedule_more_p PARAMS ((void));
+static const char *rgn_print_insn PARAMS ((rtx, int));
+static int rgn_rank PARAMS ((rtx, rtx));
+
+/* Return nonzero if there are more insns that should be scheduled.  */
+
+static int
+schedule_more_p ()
+{
+  return sched_target_n_insns < target_n_insns;
+}
+
+/* Add all insns that are initially ready to the ready list READY.  Called
+   once before scheduling a set of insns.  */
+
+static void
+init_ready_list (ready)
+     struct ready_list *ready;
+{
+  rtx prev_head = current_sched_info->prev_head;
+  rtx next_tail = current_sched_info->next_tail;
+  int bb_src;
+  rtx insn;
+
+  target_n_insns = 0;
+  sched_target_n_insns = 0;
+  sched_n_insns = 0;
+
+  /* Print debugging information.  */
+  if (sched_verbose >= 5)
+    debug_dependencies ();
+
+  /* Prepare current target block info.  */
+  if (current_nr_blocks > 1)
+    {
+      candidate_table = (candidate *) xmalloc (current_nr_blocks
+					       * sizeof (candidate));
+
+      bblst_last = 0;
+      /* bblst_table holds split blocks and update blocks for each block after
+	 the current one in the region.  split blocks and update blocks are
+	 the TO blocks of region edges, so there can be at most rgn_nr_edges
+	 of them.  */
+      bblst_size = (current_nr_blocks - target_bb) * rgn_nr_edges;
+      bblst_table = (int *) xmalloc (bblst_size * sizeof (int));
+
+      bitlst_table_last = 0;
+      bitlst_table_size = rgn_nr_edges;
+      bitlst_table = (int *) xmalloc (rgn_nr_edges * sizeof (int));
+
+      compute_trg_info (target_bb);
+    }
+
+  /* Initialize ready list with all 'ready' insns in target block.
+     Count number of insns in the target block being scheduled.  */
+  for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
+    {
+      rtx next;
+
+      if (! INSN_P (insn))
+	continue;
+      next = NEXT_INSN (insn);
+
+      if (INSN_DEP_COUNT (insn) == 0
+	  && (SCHED_GROUP_P (next) == 0 || ! INSN_P (next)))
+	ready_add (ready, insn);
+      if (!(SCHED_GROUP_P (insn)))
+	target_n_insns++;
+    }
+
+  /* Add to ready list all 'ready' insns in valid source blocks.
+     For speculative insns, check-live, exception-free, and
+     issue-delay.  */
+  for (bb_src = target_bb + 1; bb_src < current_nr_blocks; bb_src++)
+    if (IS_VALID (bb_src))
+      {
+	rtx src_head;
+	rtx src_next_tail;
+	rtx tail, head;
+
+	get_bb_head_tail (bb_src, &head, &tail);
+	src_next_tail = NEXT_INSN (tail);
+	src_head = head;
+
+	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
+	  {
+	    if (! INSN_P (insn))
+	      continue;
+
+	    if (!CANT_MOVE (insn)
+		&& (!IS_SPECULATIVE_INSN (insn)
+		    || (insn_issue_delay (insn) <= 3
+			&& check_live (insn, bb_src)
+			&& is_exception_free (insn, bb_src, target_bb))))
+	      {
+		rtx next;
+
+		/* Note that we havn't squirrled away the notes for
+		   blocks other than the current.  So if this is a
+		   speculative insn, NEXT might otherwise be a note.  */
+		next = next_nonnote_insn (insn);
+		if (INSN_DEP_COUNT (insn) == 0
+		    && (! next
+			|| SCHED_GROUP_P (next) == 0
+			|| ! INSN_P (next)))
+		  ready_add (ready, insn);
+	      }
+	  }
+      }
+}
+
+/* Called after taking INSN from the ready list.  Returns nonzero if this
+   insn can be scheduled, nonzero if we should silently discard it.  */
+
+static int
+can_schedule_ready_p (insn)
+     rtx insn;
+{
+  /* An interblock motion?  */
+  if (INSN_BB (insn) != target_bb)
+    {
+      rtx temp;
+      basic_block b1;
+
+      if (IS_SPECULATIVE_INSN (insn))
+	{
+	  if (!check_live (insn, INSN_BB (insn)))
+	    return 0;
+	  update_live (insn, INSN_BB (insn));
+
+	  /* For speculative load, mark insns fed by it.  */
+	  if (IS_LOAD_INSN (insn) || FED_BY_SPEC_LOAD (insn))
+	    set_spec_fed (insn);
+
+	  nr_spec++;
+	}
+      nr_inter++;
+
+      /* Find the beginning of the scheduling group.  */
+      /* ??? Ought to update basic block here, but later bits of
+	 schedule_block assumes the original insn block is
+	 still intact.  */
+
+      temp = insn;
+      while (SCHED_GROUP_P (temp))
+	temp = PREV_INSN (temp);
+
+      /* Update source block boundaries.   */
+      b1 = BLOCK_FOR_INSN (temp);
+      if (temp == b1->head && insn == b1->end)
+	{
+	  /* We moved all the insns in the basic block.
+	     Emit a note after the last insn and update the
+	     begin/end boundaries to point to the note.  */
+	  rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
+	  b1->head = note;
+	  b1->end = note;
+	}
+      else if (insn == b1->end)
+	{
+	  /* We took insns from the end of the basic block,
+	     so update the end of block boundary so that it
+	     points to the first insn we did not move.  */
+	  b1->end = PREV_INSN (temp);
+	}
+      else if (temp == b1->head)
+	{
+	  /* We took insns from the start of the basic block,
+	     so update the start of block boundary so that
+	     it points to the first insn we did not move.  */
+	  b1->head = NEXT_INSN (insn);
+	}
+    }
+  else
+    {
+      /* In block motion.  */
+      sched_target_n_insns++;
+    }
+  sched_n_insns++;
+
+  return 1;
+}
+
+/* Called after INSN has all its dependencies resolved.  Return nonzero
+   if it should be moved to the ready list or the queue, or zero if we
+   should silently discard it.  */
+static int
+new_ready (next)
+     rtx next;
+{
+  /* For speculative insns, before inserting to ready/queue,
+     check live, exception-free, and issue-delay.  */
+  if (INSN_BB (next) != target_bb
+      && (!IS_VALID (INSN_BB (next))
+	  || CANT_MOVE (next)
+	  || (IS_SPECULATIVE_INSN (next)
+	      && (insn_issue_delay (next) > 3
+		  || !check_live (next, INSN_BB (next))
+		  || !is_exception_free (next, INSN_BB (next), target_bb)))))
+    return 0;
+  return 1;
+}
+
+/* Return a string that contains the insn uid and optionally anything else
+   necessary to identify this insn in an output.  It's valid to use a
+   static buffer for this.  The ALIGNED parameter should cause the string
+   to be formatted so that multiple output lines will line up nicely.  */
+
+static const char *
+rgn_print_insn (insn, aligned)
+     rtx insn;
+     int aligned;
+{
+  static char tmp[80];
+
+  if (aligned)
+    sprintf (tmp, "b%3d: i%4d", INSN_BB (insn), INSN_UID (insn));
+  else
+    {
+      sprintf (tmp, "%d", INSN_UID (insn));
+      if (current_nr_blocks > 1 && INSN_BB (insn) != target_bb)
+	sprintf (tmp, "/b%d ", INSN_BB (insn));
+    }
+  return tmp;
+}
+
+/* Compare priority of two insns.  Return a positive number if the second
+   insn is to be preferred for scheduling, and a negative one if the first
+   is to be preferred.  Zero if they are equally good.  */
+
+static int
+rgn_rank (insn1, insn2)
+     rtx insn1, insn2;
+{
+  /* Some comparison make sense in interblock scheduling only.  */
+  if (INSN_BB (insn1) != INSN_BB (insn2))
+    {
+      int spec_val, prob_val;
+
+      /* Prefer an inblock motion on an interblock motion.  */
+      if ((INSN_BB (insn2) == target_bb) && (INSN_BB (insn1) != target_bb))
+	return 1;
+      if ((INSN_BB (insn1) == target_bb) && (INSN_BB (insn2) != target_bb))
+	return -1;
+
+      /* Prefer a useful motion on a speculative one.  */
+      spec_val = IS_SPECULATIVE_INSN (insn1) - IS_SPECULATIVE_INSN (insn2);
+      if (spec_val)
+	return spec_val;
+
+      /* Prefer a more probable (speculative) insn.  */
+      prob_val = INSN_PROBABILITY (insn2) - INSN_PROBABILITY (insn1);
+      if (prob_val)
+	return prob_val;
+    }
+  return 0;
+}
+
+/* Used in schedule_insns to initialize current_sched_info for scheduling
+   regions (or single basic blocks).  */
+
+static struct sched_info region_sched_info =
+{
+  init_ready_list,
+  can_schedule_ready_p,
+  schedule_more_p,
+  new_ready,
+  rgn_rank,
+  rgn_print_insn,
+
+  NULL, NULL,
+  NULL, NULL,
+  0
+};
+
 /* move_insn1: Remove INSN from insn chain, and link it after LAST insn.  */
 
 static rtx
@@ -5950,40 +6207,25 @@ group_leader (insn)
 }
 
 /* Use forward list scheduling to rearrange insns of block BB in region RGN,
-   possibly bringing insns from subsequent blocks in the same region.
-   Return number of insns scheduled.  */
+   possibly bringing insns from subsequent blocks in the same region.  */
 
-static int
+static void
 schedule_block (bb, rgn_n_insns)
      int bb;
      int rgn_n_insns;
 {
-  /* Local variables.  */
-  rtx insn, last;
+  rtx last;
   struct ready_list ready;
   int can_issue_more;
 
   /* Flow block of this bb.  */
   int b = BB_TO_BLOCK (bb);
 
-  /* target_n_insns == number of insns in b before scheduling starts.
-     sched_target_n_insns == how many of b's insns were scheduled.
-     sched_n_insns == how many insns were scheduled in b.  */
-  int target_n_insns = 0;
-  int sched_target_n_insns = 0;
-  int sched_n_insns = 0;
-
-#define NEED_NOTHING	0
-#define NEED_HEAD	1
-#define NEED_TAIL	2
-  int new_needs;
-
   /* Head/tail info for this block.  */
-  rtx prev_head;
-  rtx next_tail;
-  rtx head;
-  rtx tail;
-  int bb_src;
+  rtx prev_head = current_sched_info->prev_head;
+  rtx next_tail = current_sched_info->next_tail;
+  rtx head = NEXT_INSN (prev_head);
+  rtx tail = PREV_INSN (next_tail);
 
   /* We used to have code to avoid getting parameters moved from hard
      argument registers into pseudos.
@@ -5991,42 +6233,9 @@ schedule_block (bb, rgn_n_insns)
      However, it was removed when it proved to be of marginal benefit
      and caused problems because schedule_block and compute_forward_dependences
      had different notions of what the "head" insn was.  */
-  get_bb_head_tail (bb, &head, &tail);
 
-  /* rm_other_notes only removes notes which are _inside_ the
-     block---that is, it won't remove notes before the first real insn
-     or after the last real insn of the block.  So if the first insn
-     has a REG_SAVE_NOTE which would otherwise be emitted before the
-     insn, it is redundant with the note before the start of the
-     block, and so we have to take it out.
-
-     FIXME: Probably the same thing should be done with REG_SAVE_NOTEs
-     referencing NOTE_INSN_SETJMP at the end of the block.  */
-  if (INSN_P (head))
-    {
-      rtx note;
-
-      for (note = REG_NOTES (head); note; note = XEXP (note, 1))
-	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
-	  {
-	    if (INTVAL (XEXP (note, 0)) != NOTE_INSN_SETJMP)
-	      {
-		remove_note (head, note);
-		note = XEXP (note, 1);
-		remove_note (head, note);
-	      }
-	    else
-	      note = XEXP (note, 1);
-	  }
-    }
-
-  next_tail = NEXT_INSN (tail);
-  prev_head = PREV_INSN (head);
-
-  /* If the only insn left is a NOTE or a CODE_LABEL, then there is no need
-     to schedule this block.  */
   if (head == tail && (! INSN_P (head)))
-    return (sched_n_insns);
+    abort ();
 
   /* Debug info.  */
   if (sched_verbose)
@@ -6043,35 +6252,6 @@ schedule_block (bb, rgn_n_insns)
       init_block_visualization ();
     }
 
-  /* Remove remaining note insns from the block, save them in
-     note_list.  These notes are restored at the end of
-     schedule_block ().  */
-  note_list = 0;
-  rm_other_notes (head, tail);
-
-  target_bb = bb;
-
-  /* Prepare current target block info.  */
-  if (current_nr_blocks > 1)
-    {
-      candidate_table = (candidate *) xmalloc (current_nr_blocks
-					       * sizeof (candidate));
-
-      bblst_last = 0;
-      /* bblst_table holds split blocks and update blocks for each block after
-	 the current one in the region.  split blocks and update blocks are
-	 the TO blocks of region edges, so there can be at most rgn_nr_edges
-	 of them.  */
-      bblst_size = (current_nr_blocks - bb) * rgn_nr_edges;
-      bblst_table = (int *) xmalloc (bblst_size * sizeof (int));
-
-      bitlst_table_last = 0;
-      bitlst_table_size = rgn_nr_edges;
-      bitlst_table = (int *) xmalloc (rgn_nr_edges * sizeof (int));
-
-      compute_trg_info (bb);
-    }
-
   clear_units ();
 
   /* Allocate the ready list.  */
@@ -6080,69 +6260,7 @@ schedule_block (bb, rgn_n_insns)
   ready.vec = (rtx *) xmalloc (ready.veclen * sizeof (rtx));
   ready.n_ready = 0;
 
-  /* Print debugging information.  */
-  if (sched_verbose >= 5)
-    debug_dependencies ();
-
-  /* Initialize ready list with all 'ready' insns in target block.
-     Count number of insns in the target block being scheduled.  */
-  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    {
-      rtx next;
-
-      if (! INSN_P (insn))
-	continue;
-      next = NEXT_INSN (insn);
-
-      if (INSN_DEP_COUNT (insn) == 0
-	  && (SCHED_GROUP_P (next) == 0 || ! INSN_P (next)))
-	ready_add (&ready, insn);
-      if (!(SCHED_GROUP_P (insn)))
-	target_n_insns++;
-    }
-
-  /* Add to ready list all 'ready' insns in valid source blocks.
-     For speculative insns, check-live, exception-free, and
-     issue-delay.  */
-  for (bb_src = bb + 1; bb_src < current_nr_blocks; bb_src++)
-    if (IS_VALID (bb_src))
-      {
-	rtx src_head;
-	rtx src_next_tail;
-	rtx tail, head;
-
-	get_bb_head_tail (bb_src, &head, &tail);
-	src_next_tail = NEXT_INSN (tail);
-	src_head = head;
-
-	if (head == tail && (! INSN_P (head)))
-	  continue;
-
-	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
-	  {
-	    if (! INSN_P (insn))
-	      continue;
-
-	    if (!CANT_MOVE (insn)
-		&& (!IS_SPECULATIVE_INSN (insn)
-		    || (insn_issue_delay (insn) <= 3
-			&& check_live (insn, bb_src)
-			&& is_exception_free (insn, bb_src, target_bb))))
-	      {
-		rtx next;
-
-		/* Note that we havn't squirrled away the notes for
-		   blocks other than the current.  So if this is a
-		   speculative insn, NEXT might otherwise be a note.  */
-		next = next_nonnote_insn (insn);
-		if (INSN_DEP_COUNT (insn) == 0
-		    && (! next
-			|| SCHED_GROUP_P (next) == 0
-			|| ! INSN_P (next)))
-		  ready_add (&ready, insn);
-	      }
-	  }
-      }
+  (*current_sched_info->init_ready_list) (&ready);
 
 #ifdef MD_SCHED_INIT
   MD_SCHED_INIT (sched_dump, sched_verbose);
@@ -6151,7 +6269,8 @@ schedule_block (bb, rgn_n_insns)
   /* No insns scheduled in this block yet.  */
   last_scheduled_insn = 0;
 
-  /* Q_SIZE is the total number of insns in the queue.  */
+  /* Initialize INSN_QUEUE.  Q_SIZE is the total number of insns in the
+     queue.  */
   q_ptr = 0;
   q_size = 0;
   last_clock_var = 0;
@@ -6163,14 +6282,8 @@ schedule_block (bb, rgn_n_insns)
   /* We start inserting insns after PREV_HEAD.  */
   last = prev_head;
 
-  /* Initialize INSN_QUEUE, LIST and NEW_NEEDS.  */
-  new_needs = (NEXT_INSN (prev_head) == BLOCK_HEAD (b)
-	       ? NEED_HEAD : NEED_NOTHING);
-  if (PREV_INSN (next_tail) == BLOCK_END (b))
-    new_needs |= NEED_TAIL;
-
   /* Loop until all the insns in BB are scheduled.  */
-  while (sched_target_n_insns < target_n_insns)
+  while ((*current_sched_info->schedule_more_p) ())
     {
       clock_var++;
 
@@ -6220,70 +6333,11 @@ schedule_block (bb, rgn_n_insns)
 	      continue;
 	    }
 
-	  /* An interblock motion?  */
-	  if (INSN_BB (insn) != target_bb)
-	    {
-	      rtx temp;
-	      basic_block b1;
-
-	      if (IS_SPECULATIVE_INSN (insn))
-		{
-		  if (!check_live (insn, INSN_BB (insn)))
-		    continue;
-		  update_live (insn, INSN_BB (insn));
-
-		  /* For speculative load, mark insns fed by it.  */
-		  if (IS_LOAD_INSN (insn) || FED_BY_SPEC_LOAD (insn))
-		    set_spec_fed (insn);
-
-		  nr_spec++;
-		}
-	      nr_inter++;
-
-	      /* Find the beginning of the scheduling group.  */
-	      /* ??? Ought to update basic block here, but later bits of
-		 schedule_block assumes the original insn block is
-		 still intact.  */
-
-	      temp = insn;
-	      while (SCHED_GROUP_P (temp))
-		temp = PREV_INSN (temp);
-
-	      /* Update source block boundaries.   */
-	      b1 = BLOCK_FOR_INSN (temp);
-	      if (temp == b1->head && insn == b1->end)
-		{
-		  /* We moved all the insns in the basic block.
-		     Emit a note after the last insn and update the
-		     begin/end boundaries to point to the note.  */
-		  rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
-		  b1->head = note;
-		  b1->end = note;
-		}
-	      else if (insn == b1->end)
-		{
-		  /* We took insns from the end of the basic block,
-		     so update the end of block boundary so that it
-		     points to the first insn we did not move.  */
-		  b1->end = PREV_INSN (temp);
-		}
-	      else if (temp == b1->head)
-		{
-		  /* We took insns from the start of the basic block,
-		     so update the start of block boundary so that
-		     it points to the first insn we did not move.  */
-		  b1->head = NEXT_INSN (insn);
-		}
-	    }
-	  else
-	    {
-	      /* In block motion.  */
-	      sched_target_n_insns++;
-	    }
+	  if (! (*current_sched_info->can_schedule_ready_p) (insn))
+	    goto next;
 
 	  last_scheduled_insn = insn;
 	  last = move_insn (insn, last);
-	  sched_n_insns++;
 
 #ifdef MD_SCHED_VARIABLE_ISSUE
 	  MD_SCHED_VARIABLE_ISSUE (sched_dump, sched_verbose, insn,
@@ -6294,6 +6348,7 @@ schedule_block (bb, rgn_n_insns)
 
 	  schedule_insn (insn, &ready, clock_var);
 
+	next:
 	  /* Close this block after scheduling its jump.  */
 	  if (GET_CODE (last_scheduled_insn) == JUMP_INSN)
 	    break;
@@ -6314,8 +6369,7 @@ schedule_block (bb, rgn_n_insns)
 
   /* Sanity check -- queue must be empty now.  Meaningless if region has
      multiple bbs.  */
-  if (current_nr_blocks > 1)
-    if (!flag_schedule_interblock && q_size != 0)
+  if (current_sched_info->queue_must_finish_empty && q_size != 0)
       abort ();
 
   /* Update head/tail boundaries.  */
@@ -6341,32 +6395,21 @@ schedule_block (bb, rgn_n_insns)
       head = note_head;
     }
 
-  /* Update target block boundaries.  */
-  if (new_needs & NEED_HEAD)
-    BLOCK_HEAD (b) = head;
-
-  if (new_needs & NEED_TAIL)
-    BLOCK_END (b) = tail;
-
   /* Debugging.  */
   if (sched_verbose)
     {
-      fprintf (sched_dump, ";;   total time = %d\n;;   new basic block head = %d\n",
-	       clock_var, INSN_UID (BLOCK_HEAD (b)));
-      fprintf (sched_dump, ";;   new basic block end = %d\n\n",
-	       INSN_UID (BLOCK_END (b)));
+      fprintf (sched_dump, ";;   total time = %d\n;;   new head = %d\n",
+	       clock_var, INSN_UID (head));
+      fprintf (sched_dump, ";;   new tail = %d\n\n",
+	       INSN_UID (tail));
     }
 
-  /* Clean up.  */
-  if (current_nr_blocks > 1)
-    {
-      free (candidate_table);
-      free (bblst_table);
-      free (bitlst_table);
-    }
+  current_sched_info->head = head;
+  current_sched_info->tail = tail;
+
   free (ready.vec);
 
-  return (sched_n_insns);
+  return 1;
 }
 
 /* Print the bit-set of registers, S, callable from debugger.  */
@@ -6869,7 +6912,6 @@ set_priorities (bb)
   n_insn = 0;
   for (insn = tail; insn != prev_head; insn = PREV_INSN (insn))
     {
-
       if (GET_CODE (insn) == NOTE)
 	continue;
 
@@ -6921,17 +6963,9 @@ schedule_region (rgn)
       compute_forward_dependences (head, tail);
     }
 
-  /* Delete line notes and set priorities.  */
+  /* Set priorities.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
-    {
-      if (write_symbols != NO_DEBUG)
-	{
-	  save_line_notes (bb);
-	  rm_line_notes (bb);
-	}
-
-      rgn_n_insns += set_priorities (bb);
-    }
+    rgn_n_insns += set_priorities (bb);
 
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
@@ -6979,7 +7013,79 @@ schedule_region (rgn)
 
   /* Now we can schedule all blocks.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
-    sched_rgn_n_insns += schedule_block (bb, rgn_n_insns);
+    {
+      rtx head, tail;
+      int b = BB_TO_BLOCK (bb);
+
+      get_block_head_tail (b, &head, &tail);
+
+      if (no_real_insns_p (head, tail))
+	continue;
+
+      current_sched_info->prev_head = PREV_INSN (head);
+      current_sched_info->next_tail = NEXT_INSN (tail);
+
+      if (write_symbols != NO_DEBUG)
+	{
+	  save_line_notes (bb);
+	  rm_line_notes (bb);
+	}
+
+      /* rm_other_notes only removes notes which are _inside_ the
+	 block---that is, it won't remove notes before the first real insn
+ 	 or after the last real insn of the block.  So if the first insn
+	 has a REG_SAVE_NOTE which would otherwise be emitted before the
+	 insn, it is redundant with the note before the start of the
+	 block, and so we have to take it out.
+
+	 FIXME: Probably the same thing should be done with REG_SAVE_NOTEs
+	 referencing NOTE_INSN_SETJMP at the end of the block.  */
+      if (INSN_P (head))
+	{
+	  rtx note;
+
+	  for (note = REG_NOTES (head); note; note = XEXP (note, 1))
+	    if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
+	      {
+		if (INTVAL (XEXP (note, 0)) != NOTE_INSN_SETJMP)
+		  {
+		    remove_note (head, note);
+		    note = XEXP (note, 1);
+		    remove_note (head, note);
+		  }
+		else
+		  note = XEXP (note, 1);
+	      }
+	}
+
+      /* Remove remaining note insns from the block, save them in
+	 note_list.  These notes are restored at the end of
+	 schedule_block ().  */
+      note_list = 0;
+      rm_other_notes (head, tail);
+
+      target_bb = bb;
+
+      current_sched_info->queue_must_finish_empty
+	= current_nr_blocks > 1 && !flag_schedule_interblock;
+
+      schedule_block (bb, rgn_n_insns);
+      sched_rgn_n_insns += sched_n_insns;
+
+      /* Update target block boundaries.  */
+      if (head == BLOCK_HEAD (b))
+	BLOCK_HEAD (b) = current_sched_info->head;
+      if (tail == BLOCK_END (b))
+	BLOCK_END (b) = current_sched_info->tail;
+
+      /* Clean up.  */
+      if (current_nr_blocks > 1)
+	{
+	  free (candidate_table);
+	  free (bblst_table);
+	  free (bitlst_table);
+	}
+    }
 
   /* Sanity check: verify that all region insns were scheduled.  */
   if (sched_rgn_n_insns != rgn_n_insns)
@@ -7240,6 +7346,8 @@ schedule_insns (dump_file)
 
   init_regions ();
 
+  current_sched_info = &region_sched_info;
+  
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     schedule_region (rgn);

@@ -1,3 +1,30 @@
+2000-12-03  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* sched-int.h: New file.
+	* Makefile.in (haifa-sched.o): Depend on it.
+	* haifa-sched.c: Include it.
+	(no_real_insns_p): New function.
+	(current_sched_info): New static variable.
+	(__inline, HAIFA_INLINE): Moved to sched-int.h.
+	(get_block_head_tail): Minor cleanup.
+	(init_ready_list, can_schedule_ready_p, new_ready, schedule_more_p,
+	rgn_print_insn, rgn_rank): New functions, broken out of
+	rank_for_schedule, schedule_insn and schedule_block, where they
+	are now called through function pointers in current_sched_info.
+	(queue_insn, schedule_insn, queue_to_ready, debug_ready_list,
+	print_insn): To display uid and block number, call the print_insn
+	function pointer in current_schedule_info.
+	(region_sched_info): New static variable.
+	(sched_target_n_insns, sched_n_insns, target_n_insns): New global
+	variables, moved out of schedule_block.
+	(schedule_block): Return void.  All callers changed.
+	Move some of the setup code into schedule_region.  Get head/tail
+	from current_sched_info, and update it when done.
+	(schedule_region): Slightly rearranged, some code moved here from
+	schedule_block.  Call no_real_insns_p to avoid doing work for a
+	block that consists only of notes and labels.
+	(schedule_insns): Initialize current_sched_info.
+
 2000-12-03  Neil Booth  <neilb@earthling.net>
 
         * cppmacro.c (funlike_invocation_p): Re-disable macros enabled
