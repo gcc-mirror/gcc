@@ -3477,6 +3477,60 @@ simplify_binary_operation (code, mode, op0, op1)
 		   && GET_CODE (op0) == CONST_INT)
 	    return plus_constant (op1, INTVAL (op0));
 
+	  /* See if this is something like X * C - X or vice versa or
+	     if the multiplication is written as a shift.  If so, we can
+	     distribute and make a new multiply, shift, or maybe just
+	     have X (if C is 2 in the example above).  But don't make
+	     real multiply if we didn't have one before.  */
+
+	  if (! FLOAT_MODE_P (mode))
+	    {
+	      HOST_WIDE_INT coeff0 = 1, coeff1 = 1;
+	      rtx lhs = op0, rhs = op1;
+	      int had_mult = 0;
+
+	      if (GET_CODE (lhs) == NEG)
+		coeff0 = -1, lhs = XEXP (lhs, 0);
+	      else if (GET_CODE (lhs) == MULT
+		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT)
+		{
+		  coeff0 = INTVAL (XEXP (lhs, 1)), lhs = XEXP (lhs, 0);
+		  had_mult = 1;
+		}
+	      else if (GET_CODE (lhs) == ASHIFT
+		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT
+		       && INTVAL (XEXP (lhs, 1)) >= 0
+		       && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
+		{
+		  coeff0 = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (lhs, 1));
+		  lhs = XEXP (lhs, 0);
+		}
+
+	      if (GET_CODE (rhs) == NEG)
+		coeff1 = -1, rhs = XEXP (rhs, 0);
+	      else if (GET_CODE (rhs) == MULT
+		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT)
+		{
+		  coeff1 = INTVAL (XEXP (rhs, 1)), rhs = XEXP (rhs, 0);
+		  had_mult = 1;
+		}
+	      else if (GET_CODE (rhs) == ASHIFT
+		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT
+		       && INTVAL (XEXP (rhs, 1)) >= 0
+		       && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
+		{
+		  coeff1 = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (rhs, 1));
+		  rhs = XEXP (rhs, 0);
+		}
+
+	      if (rtx_equal_p (lhs, rhs))
+		{
+		  tem = cse_gen_binary (MULT, mode, lhs,
+					GEN_INT (coeff0 + coeff1));
+		  return (GET_CODE (tem) == MULT && ! had_mult) ? 0 : tem;
+		}
+	    }
+
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
 	     simplify this by the associative law. 
 	     Don't use the associative law for floating point.
@@ -3531,6 +3585,60 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* Subtracting 0 has no effect.  */
 	  if (op1 == CONST0_RTX (mode))
 	    return op0;
+
+	  /* See if this is something like X * C - X or vice versa or
+	     if the multiplication is written as a shift.  If so, we can
+	     distribute and make a new multiply, shift, or maybe just
+	     have X (if C is 2 in the example above).  But don't make
+	     real multiply if we didn't have one before.  */
+
+	  if (! FLOAT_MODE_P (mode))
+	    {
+	      HOST_WIDE_INT coeff0 = 1, coeff1 = 1;
+	      rtx lhs = op0, rhs = op1;
+	      int had_mult = 0;
+
+	      if (GET_CODE (lhs) == NEG)
+		coeff0 = -1, lhs = XEXP (lhs, 0);
+	      else if (GET_CODE (lhs) == MULT
+		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT)
+		{
+		  coeff0 = INTVAL (XEXP (lhs, 1)), lhs = XEXP (lhs, 0);
+		  had_mult = 1;
+		}
+	      else if (GET_CODE (lhs) == ASHIFT
+		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT
+		       && INTVAL (XEXP (lhs, 1)) >= 0
+		       && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
+		{
+		  coeff0 = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (lhs, 1));
+		  lhs = XEXP (lhs, 0);
+		}
+
+	      if (GET_CODE (rhs) == NEG)
+		coeff1 = - 1, rhs = XEXP (rhs, 0);
+	      else if (GET_CODE (rhs) == MULT
+		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT)
+		{
+		  coeff1 = INTVAL (XEXP (rhs, 1)), rhs = XEXP (rhs, 0);
+		  had_mult = 1;
+		}
+	      else if (GET_CODE (rhs) == ASHIFT
+		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT
+		       && INTVAL (XEXP (rhs, 1)) >= 0
+		       && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
+		{
+		  coeff1 = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (rhs, 1));
+		  rhs = XEXP (rhs, 0);
+		}
+
+	      if (rtx_equal_p (lhs, rhs))
+		{
+		  tem = cse_gen_binary (MULT, mode, lhs,
+					GEN_INT (coeff0 - coeff1));
+		  return (GET_CODE (tem) == MULT && ! had_mult) ? 0 : tem;
+		}
+	    }
 
 	  /* (a - (-b)) -> (a + b).  */
 	  if (GET_CODE (op1) == NEG)
