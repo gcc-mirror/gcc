@@ -2153,42 +2153,57 @@ rs6000_replace_regno (x, from, reg)
 void
 rs6000_finalize_pic ()
 {
-  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  /* Loop through all of the insns, replacing the special GOT_TOC_REGNUM
+     with an appropriate pseduo register.  If we find we need GOT/TOC,
+     add the appropriate init code.  */
+  if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
-      /* Loop through all of the insns, replacing the special GOT_TOC_REGNUM
-	 with an appropriate pseduo register.  If we find we need GOT/TOC,
-	 add the appropriate init code.  */
-      if (flag_pic)
+      rtx insn = get_insns ();
+      rtx reg = NULL_RTX;
+      rtx first_insn;
+
+      if (GET_CODE (insn) == NOTE)
+	insn = next_nonnote_insn (insn);
+
+      first_insn = insn;
+      for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	{
-	  rtx insn = get_insns ();
-	  rtx reg = NULL_RTX;
-	  rtx first_insn;
-
-	  if (GET_CODE (insn) == NOTE)
-	    insn = next_nonnote_insn (insn);
-
-	  first_insn = insn;
-	  for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
-	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-		{
-		  PATTERN (insn) = rs6000_replace_regno (PATTERN (insn),
+	      PATTERN (insn) = rs6000_replace_regno (PATTERN (insn),
+						     GOT_TOC_REGNUM,
+						     &reg);
+
+	      if (REG_NOTES (insn))
+		REG_NOTES (insn) = rs6000_replace_regno (REG_NOTES (insn),
 							 GOT_TOC_REGNUM,
 							 &reg);
-
-		  if (REG_NOTES (insn))
-		    REG_NOTES (insn) = rs6000_replace_regno (REG_NOTES (insn),
-							     GOT_TOC_REGNUM,
-							     &reg);
-		}
-	    }
-
-	  if (reg)
-	    {
-	      rtx init = gen_init_v4_pic (reg);
-	      emit_insn_before (init, first_insn);
 	    }
 	}
+
+      if (reg)
+	{
+	  rtx init = gen_init_v4_pic (reg);
+	  emit_insn_before (init, first_insn);
+	}
+    }
+}
+
+
+/* Search for any occurrance of the GOT_TOC register marker that should
+   have been eliminated, but may have crept back in.  */
+
+void
+rs6000_reorg (insn)
+     rtx insn;
+{
+  if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+    {
+      rtx got_reg = gen_rtx (REG, Pmode, GOT_TOC_REGNUM);
+      for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
+	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	    && reg_mentioned_p (got_reg, PATTERN (insn)))
+	  fatal_insn ("GOT/TOC register marker not removed:", PATTERN (insn));
     }
 }
 
