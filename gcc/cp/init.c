@@ -1551,9 +1551,6 @@ build_offset_ref (tree type, tree name, bool address_p)
       return member;
     }
 
-  /* In member functions, the form `type::name' is no longer
-     equivalent to `this->type::name', at least not until
-     resolve_offset_ref.  */
   member = build2 (OFFSET_REF, TREE_TYPE (member), decl, member);
   PTRMEM_OK_P (member) = 1;
   return member;
