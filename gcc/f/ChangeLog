@@ -1,3 +1,10 @@
+Tue Apr 28 09:23:10 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980427-0.f:
+	* global.c (ffeglobal_ref_progunit_): When transitioning
+	from EXT to FUNC, discard hook, since the decl, if any, is
+	probably wrong.
+
 Tue Apr 14 14:40:40 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_start_progunit_): Mark function decl
