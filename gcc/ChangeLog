@@ -1,3 +1,9 @@
+Sat Oct  2 10:57:56 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (mov?i patterns): Fix handling of TARGET_USE_MOV0
+	(mov $-1 to or peepholer): Enable for pentium when optimizing for
+	speed.
+
 Sat Oct  2 10:55:25 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* builtins.c (expand_builtin_strlen): Fix best mode searching loop.
