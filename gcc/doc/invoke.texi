@@ -5111,14 +5111,14 @@ this is the right thing to do.
 
 If, instead, you use the GCC driver to create shared libraries, you may
 find that they will not always be linked with the shared @file{libgcc}.
-If GCC finds, at its configuration time, that you have a GNU linker that
-does not support option @option{--eh-frame-hdr}, it will link the shared
-version of @file{libgcc} into shared libraries by default.  Otherwise,
-it will take advantage of the linker and optimize away the linking with
-the shared version of @file{libgcc}, linking with the static version of
-libgcc by default.  This allows exceptions to propagate through such
-shared libraries, without incurring relocation costs at library load
-time.
+If GCC finds, at its configuration time, that you have a non-GNU linker
+or a GNU linker that does not support option @option{--eh-frame-hdr},
+it will link the shared version of @file{libgcc} into shared libraries
+by default.  Otherwise, it will take advantage of the linker and optimize
+away the linking with the shared version of @file{libgcc}, linking with
+the static version of libgcc by default.  This allows exceptions to
+propagate through such shared libraries, without incurring relocation
+costs at library load time.
 
 However, if a library or main executable is supposed to throw or catch
 exceptions, you must link it using the G++ or GCJ driver, as appropriate
