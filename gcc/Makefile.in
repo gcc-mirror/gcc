@@ -351,6 +351,10 @@ TAROUTOPTS = xpBf
 # This value is overridden directly by configure.
 FIXINCLUDES = @fixincludes@
 
+# Set to ChangeLog if we are in a CVS working directory.  This lets
+# us automatically build version.c.
+VERSION_DEP = @version_dep@
+
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
 # just as /usr/include is.
@@ -669,7 +673,7 @@ RECOG_H = recog.h gansidecl.h
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
 
-$(srcdir)/version.c: @version_dep@
+$(srcdir)/version.c: $(VERSION_DEP)
 	cd $(srcdir); cvs log -h $? >tmp-ver
 	tag=`sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q' tmp-ver`; \
 	ver=`echo $${tag} | sed 's/-.*//' | sed 's/_/./g'`; \
@@ -2463,7 +2467,7 @@ distdir-finish:
 # Get rid of everything we don't want in the distribution.  We'd want
 # this to use Makefile.in, but it doesn't have the `lang.foo' targets
 # expanded.
-	cd gcc-$(version); make extraclean
+	cd gcc-$(version); make extraclean VERSION_DEP=
 
 distdir: distdir-cvs distdir-start lang.distdir distdir-finish
 
