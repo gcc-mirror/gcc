@@ -1,3 +1,10 @@
+2000-05-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* inc/cxxabi.h: Use __SIZE_TYPE_ and __PTRDIFF_TYPE__ in place
+	of std::size_t and std::ptrdiff_t respectively.
+	* tinfo.cc: Likewise.
+	* vec.cc: Likewise.
+
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
 	* typeck.c (build_c_cast): Don't warn integer->pointer size
