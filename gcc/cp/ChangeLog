@@ -1,3 +1,24 @@
+2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* error.c: Fix comment formatting.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* friend.c: Likewise.
+	* g++spec.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* optimize.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* spew.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2002-09-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (unify, ARRAY_TYPE): Element type can be more qualified.

@@ -185,7 +185,7 @@ build_forced_zero_init (type)
       init = integer_zero_node;
       
       if (TREE_CODE (type) == ENUMERAL_TYPE)
-        /* We must make enumeral types the right type. */
+        /* We must make enumeral types the right type.  */
         init = fold (build1 (NOP_EXPR, type, init));
     }
 
@@ -2126,7 +2126,7 @@ build_new (placement, decl, init, use_global_new)
   return rval;
 }
 
-/* Given a Java class, return a decl for the corresponding java.lang.Class. */
+/* Given a Java class, return a decl for the corresponding java.lang.Class.  */
 
 tree
 build_java_class_ref (type)
@@ -3218,7 +3218,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  /* We will use ADDR multiple times so we must save it.  */
 	  addr = save_expr (addr);
-	  /* Delete the object. */
+	  /* Delete the object.  */
 	  do_delete = build_builtin_delete_call (addr);
 	  /* Otherwise, treat this like a complete object destructor
 	     call.  */

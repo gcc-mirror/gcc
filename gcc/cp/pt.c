@@ -381,7 +381,7 @@ maybe_begin_member_template_processing (decl)
   ++inline_parm_levels_used;
 }
 
-/* Undo the effects of begin_member_template_processing. */
+/* Undo the effects of begin_member_template_processing.  */
 
 void 
 maybe_end_member_template_processing ()
@@ -617,7 +617,7 @@ check_specialization_scope ()
     error ("enclosing class templates are not explicitly specialized");
 }
 
-/* We've just seen template <>. */
+/* We've just seen template <>.  */
 
 void
 begin_specialization ()
@@ -638,7 +638,7 @@ end_specialization ()
 }
 
 /* Any template <>'s that we have seen thus far are not referring to a
-   function specialization. */
+   function specialization.  */
 
 void
 reset_specialization ()
@@ -981,7 +981,7 @@ determine_specialization (template_id, decl, targs_out,
   if (fns == error_mark_node)
     return error_mark_node;
 
-  /* Check for baselinks. */
+  /* Check for baselinks.  */
   if (BASELINK_P (fns))
     fns = BASELINK_FUNCTIONS (fns);
 
@@ -1141,7 +1141,7 @@ determine_specialization (template_id, decl, targs_out,
       return error_mark_node;
     }
 
-  /* We have one, and exactly one, match. */
+  /* We have one, and exactly one, match.  */
   if (candidates)
     {
       /* It was a specialization of an ordinary member function in a
@@ -2631,7 +2631,7 @@ push_template_decl_real (decl, is_friend)
 	      && DECL_TEMPLATE_SPECIALIZATION (decl))
 	    {
 	      /* A specialization of a member template of a template
-		 class. */
+		 class.  */
 	      SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
 	      DECL_TEMPLATE_INFO (tmpl) = DECL_TEMPLATE_INFO (decl);
 	      DECL_TEMPLATE_INFO (decl) = NULL_TREE;
@@ -2998,7 +2998,7 @@ convert_nontype_argument (type, expr)
     case ENUMERAL_TYPE:
       /* For a non-type template-parameter of integral or enumeration
          type, integral promotions (_conv.prom_) and integral
-         conversions (_conv.integral_) are applied. */
+         conversions (_conv.integral_) are applied.  */
       if (!INTEGRAL_TYPE_P (expr_type))
 	return error_mark_node;
       
@@ -4726,7 +4726,7 @@ tsubst_friend_function (decl, args)
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
-	 into the namespace of the template. */
+	 into the namespace of the template.  */
       ns = decl_namespace_context (new_friend);
       push_nested_namespace (ns);
       old_decl = pushdecl_namespace_level (new_friend);
@@ -5789,7 +5789,7 @@ tsubst_decl (t, args, type, complain)
 
 	/* The template parameters for this new template are all the
 	   template parameters for the old template, except the
-	   outermost level of parameters. */
+	   outermost level of parameters.  */
 	DECL_TEMPLATE_PARMS (r) 
 	  = tsubst_template_parms (DECL_TEMPLATE_PARMS (t), args,
 				   complain);
@@ -6774,7 +6774,7 @@ tsubst (t, args, complain, in_decl)
 	if (fntype == error_mark_node)
 	  return error_mark_node;
 
-	/* Substitue the exception specification. */
+	/* Substitue the exception specification.  */
 	raises = TYPE_RAISES_EXCEPTIONS (t);
 	if (raises)
 	  {
@@ -7422,7 +7422,7 @@ tsubst_expr (t, args, complain, in_decl)
 	    if (decl != error_mark_node)
 	      {
                 if (TREE_CODE (decl) != TYPE_DECL)
-                  /* Make sure the type is instantiated now. */
+                  /* Make sure the type is instantiated now.  */
                   complete_type (TREE_TYPE (decl));
 	        if (init)
 	          DECL_INITIAL (decl) = error_mark_node;
@@ -7696,7 +7696,7 @@ instantiate_template (tmpl, targ_ptr)
       tree spec = instantiate_template (DECL_CLONED_FUNCTION (tmpl), targ_ptr);
       tree clone;
       
-      /* Look for the clone. */
+      /* Look for the clone.  */
       for (clone = TREE_CHAIN (spec);
 	   clone && DECL_CLONED_FUNCTION_P (clone);
 	   clone = TREE_CHAIN (clone))
@@ -8893,7 +8893,7 @@ unify (tparms, targs, parm, arg, strict)
 	  {
 	    /* Avoid getting confused about cv-quals; don't recurse here.
 	       Pointers to members should really be just OFFSET_TYPE, not
-	       this two-level nonsense... */
+	       this two-level nonsense...  */
 
 	    parm = TREE_TYPE (parm);
 	    arg = TREE_TYPE (arg);
@@ -10074,7 +10074,7 @@ instantiate_decl (d, defer_ok)
 	  /* Don't simply tsubst the function type, as that will give
 	     duplicate warnings about poor parameter qualifications.
 	     The function arguments are the same as the decl_arguments
-	     without the top level cv qualifiers. */
+	     without the top level cv qualifiers.  */
 	  type = TREE_TYPE (type);
 	}
       tsubst (type, args, tf_error | tf_warning, d);

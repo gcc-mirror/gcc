@@ -114,7 +114,7 @@ is_friend (type, supplicant)
   else
     context = NULL_TREE;
 
-  /* A namespace is not friend to anybody. */
+  /* A namespace is not friend to anybody.  */
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
     context = NULL_TREE;
 
@@ -230,7 +230,7 @@ make_friend_class (type, friend_type)
      A friend of a class or class template can be a function or
      class template, a specialization of a function template or
      class template, or an ordinary (nontemplate) function or
-     class. */
+     class.  */
   if (!is_template_friend)
     ;/* ok */
   else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
@@ -396,14 +396,14 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	    /* This must be a local class, so pushdecl will be ok, and
 	       insert an unqualified friend into the local scope
 	       (rather than the containing namespace scope, which the
-	       next choice will do). */
+	       next choice will do).  */
 	    decl = pushdecl (decl);
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template
 	         class specialization, and pushdecl will insert an
 	         unqualified friend decl into the template parameter
-	         scope, rather than the namespace containing it. */
+	         scope, rather than the namespace containing it.  */
 	      tree ns = decl_namespace_context (decl);
 	      
 	      push_nested_namespace (ns);

@@ -586,7 +586,7 @@ finish_switch_stmt (switch_stmt)
   do_poplevel ();
 }
 
-/* Generate the RTL for T, which is a TRY_BLOCK. */
+/* Generate the RTL for T, which is a TRY_BLOCK.  */
 
 static void 
 genrtl_try_block (t)
@@ -623,7 +623,7 @@ genrtl_try_block (t)
     }
 }
 
-/* Generate the RTL for T, which is an EH_SPEC_BLOCK. */
+/* Generate the RTL for T, which is an EH_SPEC_BLOCK.  */
 
 static void 
 genrtl_eh_spec_block (t)
@@ -732,7 +732,7 @@ finish_function_handler_sequence (try_block)
   check_handlers (TRY_HANDLERS (try_block));
 }
 
-/* Generate the RTL for T, which is a HANDLER. */
+/* Generate the RTL for T, which is a HANDLER.  */
 
 static void
 genrtl_handler (t)
@@ -1003,7 +1003,7 @@ finish_eh_cleanup (cleanup)
   add_stmt (r);
 }
 
-/* Generate the RTL for a RETURN_INIT. */
+/* Generate the RTL for a RETURN_INIT.  */
 
 static void
 genrtl_named_return_value ()
@@ -1633,7 +1633,7 @@ finish_translation_unit ()
   while (current_namespace != global_namespace)
     pop_namespace ();
 
-  /* Do file scope __FUNCTION__ et al. */
+  /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
   
   finish_file ();
@@ -1724,7 +1724,7 @@ begin_class_definition (t)
   if (t == error_mark_node)
     return error_mark_node;
 
-  /* Check the bases are accessible. */
+  /* Check the bases are accessible.  */
   decl_type_access_control (TYPE_NAME (t));
   reset_type_access_control ();
   

@@ -102,7 +102,7 @@ cxx_expand_expr (exp, target, tmode, modifier)
 			  target, tmode, modifier);
 
     case OFFSET_REF:
-      /* Offset refs should not make it through to here. */
+      /* Offset refs should not make it through to here.  */
       abort ();
       return const0_rtx;
       

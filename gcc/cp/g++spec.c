@@ -299,11 +299,11 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   *in_added_libraries = added_libraries;
 }
 
-/* Called before linking.  Returns 0 on success and -1 on failure. */
-int lang_specific_pre_link ()  /* Not used for C++. */
+/* Called before linking.  Returns 0 on success and -1 on failure.  */
+int lang_specific_pre_link ()  /* Not used for C++.  */
 {
   return 0;
 }
 
-/* Number of extra output files that lang_specific_pre_link may generate. */
-int lang_specific_extra_outfiles = 0;  /* Not used for C++. */
+/* Number of extra output files that lang_specific_pre_link may generate.  */
+int lang_specific_extra_outfiles = 0;  /* Not used for C++.  */

@@ -196,7 +196,7 @@ static inline void start_mangling PARAMS ((void));
 static inline const char *finish_mangling PARAMS ((void));
 static tree mangle_special_for_type PARAMS ((tree, const char *));
 
-/* Foreign language functions. */
+/* Foreign language functions.  */
 
 static void write_java_integer_type_codes PARAMS ((tree));
 
@@ -205,7 +205,7 @@ static void write_java_integer_type_codes PARAMS ((tree));
 #define write_char(CHAR)                                              \
   obstack_1grow (&G.name_obstack, (CHAR))
 
-/* Append a sized buffer to the end of the mangled representation. */
+/* Append a sized buffer to the end of the mangled representation.  */
 #define write_chars(CHAR, LEN)                                        \
   obstack_grow (&G.name_obstack, (CHAR), (LEN))
 
@@ -575,7 +575,7 @@ find_substitution (node)
     }
 
   /* Now check the list of available substitutions for this mangling
-     operation.    */
+     operation.  */
   for (i = 0; i < size; ++i)
     {
       tree candidate = VARRAY_TREE (G.substitutions, i);
@@ -1080,7 +1080,7 @@ write_number (number, unsigned_p, base)
 
 /* Write out an integral CST in decimal. Most numbers are small, and
    representable in a HOST_WIDE_INT. Occasionally we'll have numbers
-   bigger than that, which we must deal with. */
+   bigger than that, which we must deal with.  */
 
 static inline void
 write_integer_cst (cst)
@@ -1091,7 +1091,7 @@ write_integer_cst (cst)
   if (TREE_INT_CST_HIGH (cst) + (sign < 0))
     {
       /* A bignum. We do this in chunks, each of which fits in a
-	 HOST_WIDE_INT. */
+	 HOST_WIDE_INT.  */
       char buffer[sizeof (HOST_WIDE_INT) * 8 * 2];
       unsigned HOST_WIDE_INT chunk;
       unsigned chunk_digits;
@@ -1101,13 +1101,13 @@ write_integer_cst (cst)
       int done;
 
       /* HOST_WIDE_INT must be at least 32 bits, so 10^9 is
-	 representable. */
+	 representable.  */
       chunk = 1000000000;
       chunk_digits = 9;
       
       if (sizeof (HOST_WIDE_INT) >= 8)
 	{
-	  /* It is at least 64 bits, so 10^18 is representable. */
+	  /* It is at least 64 bits, so 10^18 is representable.  */
 	  chunk_digits = 18;
 	  chunk *= chunk;
 	}
@@ -1275,7 +1275,7 @@ static void
 write_discriminator (discriminator)
      int discriminator;
 {
-  /* If discriminator is zero, don't write anything.  Otherwise... */
+  /* If discriminator is zero, don't write anything.  Otherwise...  */
   if (discriminator > 0)
     {
       write_char ('_');
@@ -1810,7 +1810,7 @@ write_expression (expr)
       code = TREE_CODE (expr);
     }
 
-  /* Handle template parameters. */
+  /* Handle template parameters.  */
   if (code == TEMPLATE_TYPE_PARM 
       || code == TEMPLATE_TEMPLATE_PARM
       || code == BOUND_TEMPLATE_TEMPLATE_PARM

@@ -117,7 +117,7 @@ prepare_eh_type (type)
 }
 
 /* Build the address of a typeinfo decl for use in the runtime
-   matching field of the exception model.   */
+   matching field of the exception model.  */
 
 static tree
 build_eh_type_type (type)

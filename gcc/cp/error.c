@@ -410,7 +410,7 @@ dump_type (t, flags)
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
-      /* For parameters inside template signature. */
+      /* For parameters inside template signature.  */
       if (TYPE_IDENTIFIER (t))
 	print_tree_identifier (scratch_buffer, TYPE_IDENTIFIER (t));
       else
@@ -472,7 +472,7 @@ dump_type (t, flags)
 
     default:
       sorry_for_unsupported_tree (t);
-      /* Fall through to error. */
+      /* Fall through to error.  */
 
     case ERROR_MARK:
       print_identifier (scratch_buffer, "<type error>");
@@ -848,7 +848,7 @@ dump_decl (t, flags)
 	  {
 	    if ((flags & TFF_DECL_SPECIFIERS)
 	        && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
-	      /* Say `class T' not just `T'. */
+	      /* Say `class T' not just `T'.  */
 	      output_add_string (scratch_buffer, "class ");
 
 	    dump_type (TREE_TYPE (t), flags);
@@ -1043,7 +1043,7 @@ dump_template_decl (t, flags)
       nreverse(orig_parms);
 
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
-	/* Say `template<arg> class TT' not just `template<arg> TT'. */
+	/* Say `template<arg> class TT' not just `template<arg> TT'.  */
 	output_add_string (scratch_buffer, "class ");
     }
 
@@ -1073,7 +1073,7 @@ dump_template_decl (t, flags)
 /* Pretty print a function decl. There are several ways we want to print a
    function declaration. The TFF_ bits in FLAGS tells us how to behave.
    As error can only apply the '#' flag once to give 0 and 1 for V, there
-   is %D which doesn't print the throw specs, and %F which does. */
+   is %D which doesn't print the throw specs, and %F which does.  */
 
 static void
 dump_function_decl (t, flags)
@@ -1167,7 +1167,7 @@ dump_function_decl (t, flags)
 
 /* Print a parameter list. If this is for a member function, the
    member object ptr (and any other hidden args) should have
-   already been removed. */
+   already been removed.  */
 
 static void
 dump_parameters (parmtypes, flags)
@@ -1201,7 +1201,7 @@ dump_parameters (parmtypes, flags)
   print_right_paren (scratch_buffer);
 }
 
-/* Print an exception specification. T is the exception specification. */
+/* Print an exception specification. T is the exception specification.  */
 
 static void
 dump_exception_spec (t, flags)
@@ -1417,7 +1417,7 @@ dump_expr_list (l, flags)
     }
 }
 
-/* Print out an expression E under control of FLAGS. */
+/* Print out an expression E under control of FLAGS.  */
 
 static void
 dump_expr (t, flags)
