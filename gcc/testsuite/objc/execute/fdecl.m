@@ -5,7 +5,7 @@
 
 @interface test
 {
-        AClass foo;
+        AClass *foo;
 }
 @end
 
