@@ -1319,10 +1319,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	olddecl = TREE_VALUE (olddecl);
       cp_error_at ("previous declaration of `%#D'", olddecl);
 
-      /* New decl is completely inconsistent with the old one =>
-	 tell caller to replace the old one.  */
-
-      return NULL_TREE;
+      return error_mark_node;
     }
   else if (!types_match)
     {

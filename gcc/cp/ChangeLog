@@ -1,4 +1,20 @@
+2004-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14199
+	* pt.c (tsubst_copy): Call mark_used for a PARM_DECL.
+
+	PR c++/14173
+	* semantics.c (begin_class_definition): Set TYPE_PACKED correctly
+	for all type variants.
+
 2004-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13927
+	* decl.c (duplicate_decls): Return error_mark_node for invalid
+	redeclarations.
+	* name-lookup.c (push_namespace): Ignore the return value from
+	pushdecl.
+	* pt.c (push_template_decl_real): Robustify.
 
 	PR c++/14186
 	* name-lookup.c (push_class_level_binding): Do not complain about

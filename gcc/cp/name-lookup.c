@@ -3080,7 +3080,7 @@ push_namespace (tree name)
       /* Make a new namespace, binding the name to it.  */
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
-      d = pushdecl (d);
+      pushdecl (d);
       if (anon)
 	{
 	  /* Clear DECL_NAME for the benefit of debugging back ends.  */

@@ -5,8 +5,8 @@
 
 void foo(void)
 {
-  union { int alpha; int beta; }; // { dg-error "previous declaration `int alpha'" }
-  double alpha;  // { dg-error "declaration of" }
+  union { int alpha; int beta; }; // { dg-error "previous declaration of `int alpha'" }
+  double alpha;  // { dg-error "redeclared" }
 }
 
 // This checks both the templated version, and the position of the diagnostic
@@ -22,5 +22,5 @@ void tfoo(void)
 }
 
 // The duplicated error messages are xfailed for now (tracked in the PR)
-// { dg-bogus "" "duplicate error messages" { xfail *-*-* } 8 }
-// { dg-bogus "" "duplicate error messages" { xfail *-*-* } 9 }
+// { dg-bogus "" "duplicate error messages" { target *-*-* } 8 }
+// { dg-bogus "" "duplicate error messages" { target *-*-* } 9 }
