@@ -537,6 +537,9 @@ static unsigned lookup_filename ();
 #ifndef TYPE_NAME_FMT
 #define TYPE_NAME_FMT		".L_T%u"
 #endif
+#ifndef DECL_NAME_FMT
+#define DECL_NAME_FMT		".L_E%u"
+#endif
 #ifndef LINE_CODE_LABEL_FMT
 #define LINE_CODE_LABEL_FMT	".L_LC%u"
 #endif
@@ -798,7 +801,7 @@ dwarf_tag_name (tag)
     case TAG_function_template:		return "TAG_function_template";
     case TAG_class_template:		return "TAG_class_template";
 
-    default:				return "<unknown tag>";
+    default:				return "TAG_<unknown>";
     }
 }
 
@@ -858,7 +861,7 @@ dwarf_attr_name (attr)
     case AT_public:			return "AT_public";
     case AT_pure_virtual:		return "AT_pure_virtual";
     case AT_return_addr:		return "AT_return_addr";
-    case AT_specification:		return "AT_specification";
+    case AT_abstract_origin:		return "AT_abstract_origin";
     case AT_start_scope:		return "AT_start_scope";
     case AT_stride_size:		return "AT_stride_size";
     case AT_upper_bound_ref:		return "AT_upper_bound_ref";
@@ -874,7 +877,7 @@ dwarf_attr_name (attr)
     case AT_mac_info:			return "AT_mac_info";
     case AT_src_coords:			return "AT_src_coords";
 
-    default:				return "<unknown attribute>";
+    default:				return "AT_<unknown>";
     }
 }
 
@@ -891,7 +894,7 @@ dwarf_stack_op_name (op)
     case OP_DEREF2:		return "OP_DEREF2";
     case OP_DEREF4:		return "OP_DEREF4";
     case OP_ADD:		return "OP_ADD";
-    default:			return "<unknown stack operator>";
+    default:			return "OP_<unknown>";
     }
 }
 
@@ -905,7 +908,7 @@ dwarf_typemod_name (mod)
     case MOD_reference_to:	return "MOD_reference_to";
     case MOD_const:		return "MOD_const";
     case MOD_volatile:		return "MOD_volatile";
-    default:			return "<unknown modifier>";
+    default:			return "MOD_<unknown>";
     }
 }
 
@@ -924,7 +927,7 @@ dwarf_fmt_byte_name (fmt)
     case FMT_UT_X_C:	return "FMT_UT_X_C";
     case FMT_UT_X_X:	return "FMT_UT_X_X";
     case FMT_ET:	return "FMT_ET";
-    default:		return "<unknown array bound format byte>";
+    default:		return "FMT_<unknown>";
     }
 }
 static char *
@@ -985,6 +988,26 @@ dwarf_fund_type_name (ft)
 }
 
 /**************** utility functions for attribute functions ******************/
+
+/* Given a pointer to a BLOCK node return non-zero if (and only if) the
+   node in question represents the outermost block (i.e. the "body block")
+   of a function or method.
+
+   For any BLOCK node representing a "body block", the BLOCK_SUPERCONTEXT
+   of the node will point to another BLOCK node which represents the outer-
+   most (function) scope for the function or method.  The BLOCK_SUPERCONTEXT
+   of that node in turn will point to the relevant FUNCTION_DECL node.
+*/
+
+inline int
+is_body_block (stmt)
+     register tree stmt;
+{
+  register enum tree_code code
+    = TREE_CODE (BLOCK_SUPERCONTEXT (BLOCK_SUPERCONTEXT (stmt)));
+
+  return (code == FUNCTION_DECL);
+}
 
 /* Given a pointer to a tree node for some type, return a Dwarf fundamental
    type code for the given type.
@@ -1228,9 +1251,40 @@ type_is_fundamental (type)
   return 0;
 }
 
+/* Given a pointer to some ..._DECL tree node, generate an assembly language
+   equate directive which will associate a symbolic name with the current DIE.
+
+   The name used is an artificial label generated from the DECL_UID number
+   associated with the given decl node.  The name it gets equated to is the
+   symbolic label that we (previously) output at the start of the DIE that
+   we are currently generating.
+
+   Calling this function while generating some "decl related" form of DIE
+   makes it possible to later refer to the DIE which represents the given
+   decl simply by re-generating the symbolic name from the ..._DECL node's
+   UID number.	*/
+
+static void
+equate_decl_number_to_die_number (decl)
+     register tree decl;
+{
+  /* In the case where we are generating a DIE for some ..._DECL node
+     which represents either some inline function declaration or some
+     entity declared within an inline function declaration/definition,
+     setup a symbolic name for the current DIE so that we have a name
+     for this DIE that we can easily refer to later on within
+     AT_abstract_origin attributes.  */
+
+  char decl_label[MAX_ARTIFICIAL_LABEL_BYTES];
+  char die_label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  sprintf (decl_label, DECL_NAME_FMT, DECL_UID (decl));
+  sprintf (die_label, DIE_BEGIN_LABEL_FMT, current_dienum);
+  ASM_OUTPUT_DEF (asm_out_file, decl_label, die_label);
+}
+
 /* Given a pointer to some ..._TYPE tree node, generate an assembly language
-   equate directive which will associate an easily remembered symbolic name
-   with the current DIE.
+   equate directive which will associate a symbolic name with the current DIE.
 
    The name used is an artificial label generated from the TYPE_UID number
    associated with the given type node.  The name it gets equated to is the
@@ -2372,6 +2426,31 @@ containing_type_attribute (containing_type)
 }
 
 inline void
+abstract_origin_attribute (origin)
+     register tree origin;
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_abstract_origin);
+  switch (TREE_CODE_CLASS (TREE_CODE (origin)))
+    {
+    case 'd':
+      sprintf (label, DECL_NAME_FMT, DECL_UID (origin));
+      break;
+
+    case 't':
+      sprintf (label, TYPE_NAME_FMT, TYPE_UID (origin));
+      break;
+
+    default:
+      abort ();		/* Should never happen.  */
+
+    }
+  ASM_OUTPUT_DWARF_REF (asm_out_file, label);
+}
+
+#ifdef DWARF_DECL_COORDINATES
+inline void
 src_coords_attribute (src_fileno, src_lineno)
      register unsigned src_fileno;
      register unsigned src_lineno;
@@ -2379,6 +2458,21 @@ src_coords_attribute (src_fileno, src_lineno)
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_src_coords);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, src_fileno);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, src_lineno);
+}
+#endif /* defined(DWARF_DECL_COORDINATES) */
+
+inline void
+pure_or_virtual_attribute (func_decl)
+     register tree func_decl;
+{
+  if (DECL_VIRTUAL_P (func_decl))
+    {
+      if (DECL_ABSTRACT_VIRTUAL_P (func_decl))
+        ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_pure_virtual);
+      else
+        ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+    }
 }
 
 /************************* end of attributes *****************************/
