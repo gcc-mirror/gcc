@@ -944,7 +944,9 @@ default_conversion (exp)
     {
       type = type_for_size (MAX (TYPE_PRECISION (type),
 				 TYPE_PRECISION (integer_type_node)),
-			    (flag_traditional && TREE_UNSIGNED (type)));
+			    ((flag_traditional
+			      || TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node))
+			     && TREE_UNSIGNED (type)));
       return convert (type, exp);
     }
 
