@@ -1,3 +1,9 @@
+2004-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15890
+	* pt.c (push_template_decl_real): Disallow template allocation
+	functions with fewer than two parameters.
+
 2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (build_shared_int_cst): Remove.
