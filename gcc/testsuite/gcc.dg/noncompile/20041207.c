@@ -4,5 +4,5 @@
 void f()
 {
   float x;
-  switch (x) {case 0: break;}; /* {dg-error "not an integer" } */
+  switch (x) {case 0: break;}; /* { dg-error "not an integer" } */
 }
