@@ -1,6 +1,12 @@
 2004-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17585
+	* cp-tree.h (shared_member_p): Declare.
+	* search.c (shared_member_p): Give it external linkage.
+	* semantics.c (finish_qualified_id_expr): Use it.
+	(finish_id_expression): Likewise.
+
+	PR c++/17585
 	* semantics.c (finish_id_expression): Do not add "this->" to
 	static member functions.
 
