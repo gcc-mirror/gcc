@@ -679,7 +679,6 @@ struct saved_scope GTY(())
   tree x_previous_class_type;
   tree x_previous_class_values;
   tree x_saved_tree;
-  tree last_parms;
 
   HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
@@ -836,6 +835,14 @@ struct language_function GTY(())
 
 #define current_function_return_value \
   (cp_function_chain->x_return_value)
+
+/* True if NAME is the IDENTIFIER_NODE for an overloaded "operator
+   new" or "operator delete".  */
+#define NEW_DELETE_OPNAME_P(NAME)		\
+  ((NAME) == ansi_opname (NEW_EXPR) 		\
+   || (NAME) == ansi_opname (VEC_NEW_EXPR) 	\
+   || (NAME) == ansi_opname (DELETE_EXPR) 	\
+   || (NAME) == ansi_opname (VEC_DELETE_EXPR))
 
 #define ansi_opname(CODE) \
   (operator_name_info[(int) (CODE)].identifier)
@@ -3693,7 +3700,6 @@ extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
 extern void warn_extern_redeclared_static (tree, tree);
 
 extern bool have_extern_spec;
-extern GTY(()) tree last_function_parms;
 
 /* in decl2.c */
 extern bool check_java_method (tree);
@@ -3774,7 +3780,7 @@ extern tree cplus_expand_constant               (tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend                          (tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, tree, enum overload_flags, tree, int);
+extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, tree, int);
 
 /* in init.c */
 extern tree expand_member_init			(tree);

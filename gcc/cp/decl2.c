@@ -336,11 +336,10 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags, tree quals)
       qual_type = cp_build_qualified_type (type, this_quals);
       parm = build_artificial_parm (this_identifier, qual_type);
       c_apply_type_quals_to_decl (this_quals, parm);
-      TREE_CHAIN (parm) = last_function_parms;
-      last_function_parms = parm;
+      TREE_CHAIN (parm) = DECL_ARGUMENTS (function);
+      DECL_ARGUMENTS (function) = parm;
     }
 
-  DECL_ARGUMENTS (function) = last_function_parms;
   DECL_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG)

@@ -33,10 +33,6 @@ enum decl_context
 /* We need this in here to get the decl_context definition.  */
 extern tree grokdeclarator (tree, tree, enum decl_context, int, tree*);
 
-/* Parsing a function declarator leaves a list of parameter names
-   or a chain or parameter decls here.  */
-extern GTY(()) tree last_function_parms;
-
 #ifdef DEBUG_CP_BINDING_LEVELS
 /* Purely for debugging purposes.  */
 extern int debug_bindings_indentation;
