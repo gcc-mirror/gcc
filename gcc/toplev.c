@@ -1141,21 +1141,13 @@ announce_function (decl)
     }
 }
 
-/* Prints out, if necessary, the name of the current function
-   which caused an error.  Called from all error and warning functions.  */
+/* The default function to print out name of current function that caused
+   an error.  */
 
 void
-report_error_function (file)
+default_print_error_function (file)
      char *file;
 {
-  struct file_stack *p;
-
-  if (need_error_newline)
-    {
-      fprintf (stderr, "\n");
-      need_error_newline = 0;
-    }
-
   if (last_error_function != current_function_decl)
     {
       char *kind = "function";
@@ -1176,6 +1168,30 @@ report_error_function (file)
 
       last_error_function = current_function_decl;
     }
+}
+
+/* Called by report_error_function to print out function name.
+ * Default may be overridden by language front-ends. */
+
+void (*print_error_function) PROTO((char*)) = default_print_error_function;
+
+/* Prints out, if necessary, the name of the current function
+  that caused an error.  Called from all error and warning functions.  */
+
+void
+report_error_function (file)
+     char *file;
+{
+  struct file_stack *p;
+
+  if (need_error_newline)
+    {
+      fprintf (stderr, "\n");
+      need_error_newline = 0;
+    }
+
+  (*print_error_function) (file);
+
   if (input_file_stack && input_file_stack->next != 0
       && input_file_stack_tick != last_error_tick)
     {
