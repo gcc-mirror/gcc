@@ -1,3 +1,7 @@
+Wed Dec 15 02:19:32 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (tablejumpdi): Generate DImode LABEL_REF.
+
 1999-12-14  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/m68k/m68020-elf.h (ENDFILE_SPEC): Delete.
@@ -2955,7 +2959,7 @@ Fri Oct 29 15:25:07 1999  Arnaud Charlet  <charlet@ACT-Europe.FR>
 
 Fri Oct 29 07:44:26 1999  Vasco Pedro  <vp@di.fct.unl.pt>
 
-	* fold-const.c (merge_ranges): In not in0, but in1, handle
+	* fold-const.c (merge_ranges): If not in0, but in1, handle
 	upper bounds equal like subset case.
 
 Thu Oct 28 19:22:24 1999  Douglas Rupp <rupp@gnat.com>
@@ -3005,7 +3009,7 @@ Thu Oct 28 18:06:50 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* loop.c (unknown_constant_address_altered): New variable.
 	(prescan_loop): Initialize it.
 	(note_addr_stored): Set it for RTX_UNCHANGING_P MEM.
-	(invariant_p, case MEM): Remove handling for volatile and readony;
+	(invariant_p, case MEM): Remove handling for volatile and readonly;
 	check new variable if readonly.
 	(check_dbra_loop): Chdeck unknown_constant_address_altered.
 
@@ -4411,7 +4415,7 @@ Thu Oct 14 19:44:08 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	to (not (and (arg0) (arg1))). Similary for and.
 
 	* fold-const.c (fold): Move bit_rotate code to the EXPR_PLUS case,
-	falltrought to assocate code.
+	fallthrough to associate code.
 	Convert XOR to OR in code like (a&c1)^(a&c2) where c1 and c2 don't have
 	bits in common.
 
