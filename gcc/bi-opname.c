@@ -1,5 +1,5 @@
 /* Utility to generate opcode name list from bytecode definition file.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "hconfig.h"
+#include <stdio.h>
 #include "bi-defs.h"
 
 int
@@ -60,7 +60,7 @@ xmalloc (nbytes)
 }
 
 /* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
+   hconfig.h can #define abort fancy_abort if you like that sort of thing.  */
 
 void
 fancy_abort ()
