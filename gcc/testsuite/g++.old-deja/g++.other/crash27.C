@@ -1,8 +1,6 @@
 // Build don't link:
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
-// excess errors test - XFAIL *-*-*
-
 X(Y(long, Type, CLink)); break; default: break; } } }	// ERROR - 
 
 struct A {
