@@ -1219,9 +1219,10 @@ aligned_memory_operand (rtx op, enum machine_mode mode)
 	}
     }
 
-  if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode)
+  if (GET_CODE (op) != MEM)
     return 0;
+  if (MEM_ALIGN (op) >= 32)
+    return 1;
   op = XEXP (op, 0);
 
   /* LEGITIMIZE_RELOAD_ADDRESS creates (plus (plus reg const_hi) const_lo)
@@ -1261,8 +1262,9 @@ unaligned_memory_operand (rtx op, enum machine_mode mode)
 	}
     }
 
-  if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode)
+  if (GET_CODE (op) != MEM)
+    return 0;
+  if (MEM_ALIGN (op) >= 32)
     return 0;
   op = XEXP (op, 0);
 
@@ -2876,13 +2878,24 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	    {
 	      rtx aligned_mem, bitnum;
 	      rtx scratch = gen_reg_rtx (SImode);
+	      rtx subtarget;
+	      bool copyout;
 
 	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+
+	      subtarget = operands[0];
+	      if (GET_CODE (subtarget) == REG)
+		subtarget = gen_lowpart (DImode, subtarget), copyout = false;
+	      else
+		subtarget = gen_reg_rtx (DImode), copyout = true;
 
 	      emit_insn ((mode == QImode
 			  ? gen_aligned_loadqi
 			  : gen_aligned_loadhi)
-			 (operands[0], aligned_mem, bitnum, scratch));
+			 (subtarget, aligned_mem, bitnum, scratch));
+
+	      if (copyout)
+		emit_move_insn (operands[0], gen_lowpart (mode, subtarget));
 	    }
 	}
       else
@@ -2891,16 +2904,28 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	     code depend on parameter evaluation order which will cause
 	     bootstrap failures.  */
 
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx seq = ((mode == QImode
-		      ? gen_unaligned_loadqi
-		      : gen_unaligned_loadhi)
-		     (operands[0], get_unaligned_address (operands[1], 0),
-		      temp1, temp2));
+	  rtx temp1, temp2, seq, subtarget;
+	  bool copyout;
 
+	  temp1 = gen_reg_rtx (DImode);
+	  temp2 = gen_reg_rtx (DImode);
+
+	  subtarget = operands[0];
+	  if (GET_CODE (subtarget) == REG)
+	    subtarget = gen_lowpart (DImode, subtarget), copyout = false;
+	  else
+	    subtarget = gen_reg_rtx (DImode), copyout = true;
+
+	  seq = ((mode == QImode
+		  ? gen_unaligned_loadqi
+		  : gen_unaligned_loadhi)
+		 (subtarget, get_unaligned_address (operands[1], 0),
+		  temp1, temp2));
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
+
+	  if (copyout)
+	    emit_move_insn (operands[0], gen_lowpart (mode, subtarget));
 	}
       return true;
     }
