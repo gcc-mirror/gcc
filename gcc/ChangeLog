@@ -1,3 +1,8 @@
+2000-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (emit_input_reload_insns): Honour forcing of constants
+	into memory by PREFERRED_RELOAD_CLASS NO_REGS.
+
 2000-11-14  Michael Matz  <matzmich@cs.tu-berlin.de>
 
 	* dominance.c: New file.
