@@ -1,3 +1,8 @@
+2000-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (sort_member_init): Fix typo in error message generation
+	code.
+
 2000-05-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Update new-abi upcast algorithm.

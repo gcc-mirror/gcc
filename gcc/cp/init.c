@@ -365,7 +365,8 @@ sort_member_init (t)
       /* Give a warning, if appropriate.  */
       if (warn_reorder && !f)
 	{
-	  cp_warning_at ("member initializers for `%#D'", last_field);
+	  cp_warning_at ("member initializers for `%#D'", 
+			 TREE_PURPOSE (last_field));
 	  cp_warning_at ("  and `%#D'", initialized_field);
 	  warning ("  will be re-ordered to match declaration order");
 	}
