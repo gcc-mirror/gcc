@@ -61,6 +61,7 @@ static tree h8300_handle_eightbit_data_attribute PARAMS ((tree *, tree, tree, in
 static tree h8300_handle_tiny_data_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void h8300_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void h8300_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void h8300_insert_attributes PARAMS ((tree, tree *));
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
@@ -118,6 +119,9 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 #define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING h8300_strip_name_encoding
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3407,6 +3411,22 @@ h8300_tiny_data_p (decl)
 
   a = lookup_attribute ("tiny_data", DECL_ATTRIBUTES (decl));
   return a != NULL_TREE;
+}
+
+/* Generate an 'interrupt_handler' attribute for decls.  */
+
+static void
+h8300_insert_attributes (node, attributes)
+     tree node;
+     tree *attributes;
+{
+  if (!interrupt_handler
+      || TREE_CODE (node) != FUNCTION_DECL)
+    return;
+
+  /* Add an 'interrupt_handler' attribute.  */
+  *attributes = tree_cons (get_identifier ("interrupt_handler"),
+			   NULL, *attributes);
 }
 
 /* Supported attributes:
