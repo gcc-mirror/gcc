@@ -9033,7 +9033,7 @@ rs6000_output_function_prologue (file, size)
   if (! HAVE_prologue)
     {
       start_sequence ();
-      
+
       /* A NOTE_INSN_DELETED is supposed to be at the start and end of
 	 the "toplevel" insn chain.  */
       emit_note (0, NOTE_INSN_DELETED);
@@ -9050,7 +9050,7 @@ rs6000_output_function_prologue (file, size)
 	    addr += 4;
 	  }
       }
-      
+
       if (TARGET_DEBUG_STACK)
 	debug_rtx_list (get_insns (), 100);
       final (get_insns (), file, FALSE, FALSE);
@@ -10455,8 +10455,6 @@ output_profile_hook (labelno)
       char buf[30];
       const char *label_name;
       rtx fun;
-
-      labelno += 1;
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       STRIP_NAME_ENCODING (label_name, ggc_strdup (buf));
