@@ -1,3 +1,8 @@
+2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.in (HAVE_BACKTRACE) [s390*-*-linux*]: Define.
+	* configure: Regenerate.
+
 2003-03-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/File.java:
