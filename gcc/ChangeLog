@@ -1,3 +1,12 @@
+2002-11-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.c (tree_vec_elt_check_failed): New function.
+	* tree.h (TREE_VEC_ELT_CHECK): New checking macro.
+	(TREE_VEC_ELT): Use it.
+
+	* tree-inline.c (optimize_inline_calls): Don't copy a
+	zero-length vector.
+
 2002-11-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* diagnostic.c (sorry): Don't repeat "sorry, unimplemented" text.

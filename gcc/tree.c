@@ -4665,6 +4665,22 @@ tree_class_check_failed (node, cl, file, line, function)
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
 
+/* Similar to above, except that the check is for the bounds of a TREE_VEC's
+   (dynamically sized) vector.  */
+
+void
+tree_vec_elt_check_failed (idx, len, file, line, function)
+     int idx;
+     int len;
+     const char *file;
+     int line;
+     const char *function;
+{
+  internal_error
+    ("tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d",
+     idx + 1, len, function, trim_filename (file), line);
+}
+
 #endif /* ENABLE_TREE_CHECKING */
 
 /* For a new vector type node T, build the information necessary for

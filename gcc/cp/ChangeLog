@@ -1,3 +1,10 @@
+2002-11-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* search.c (dfs_push_decls): Do not try to reorder elements
+	3..n of method_vec if method_vec has only two elements.
+	Reverse order of two tests to avoid accessing unallocated
+	memory.
+
 2002-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (dfs_find_final_overrider): Adjust so that the most

@@ -317,11 +317,25 @@ struct tree_common GTY(())
 			       __FUNCTION__);				\
     __t; })
 
+#define TREE_VEC_ELT_CHECK(t, i) __extension__				\
+(*({const tree __t = t;							\
+    const int __i = (i);						\
+    if (TREE_CODE (__t) != TREE_VEC)					\
+      tree_check_failed (__t, TREE_VEC,					\
+			 __FILE__, __LINE__, __FUNCTION__);		\
+    if (__i < 0 || __i >= __t->vec.length)				\
+      tree_vec_elt_check_failed (__i, __t->vec.length,			\
+				 __FILE__, __LINE__, __FUNCTION__);	\
+    &__t->vec.a[__i]; }))
+
 extern void tree_check_failed PARAMS ((const tree, enum tree_code,
 				       const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 extern void tree_class_check_failed PARAMS ((const tree, int,
 					     const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
+					       int, const char *))
     ATTRIBUTE_NORETURN;
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
@@ -330,6 +344,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 #define TREE_CLASS_CHECK(t, code)	(t)
 #define CST_OR_CONSTRUCTOR_CHECK(t)	(t)
 #define EXPR_CHECK(t)			(t)
+#define TREE_VEC_ELT_CHECK(t, i)	((t)->vec.a[i])
 
 #endif
 
@@ -810,9 +825,10 @@ struct tree_list GTY(())
 
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->vec.length)
-#define TREE_VEC_ELT(NODE,I) (TREE_VEC_CHECK (NODE)->vec.a[I])
 #define TREE_VEC_END(NODE) \
   ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.length]))
+
+#define TREE_VEC_ELT(NODE,I) TREE_VEC_ELT_CHECK (NODE, I)
 
 struct tree_vec GTY(())
 {
