@@ -1,3 +1,38 @@
+2004-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (saved_scope): Remove x_previous_class_type and
+	x_previous_class_values; add x_previous_class_level.
+	(previous_class_type): Remove.
+	(previous_class_values): Remove.
+	(previous_class_level): New macro.
+	* class.c (pushclass): Restore the identifier cache more
+	expeditiously.
+	(invalidate_class_lookup_cache): Use vector for class_shadowed and
+	previous_class_values.
+	* decl.c (poplevel): Likewise.
+	* name-lookup.c (cxx_binding_init): New function.
+	(cxx_binding_make): Use it.
+	(push_binding): For a binding in a class level, use a vector of
+	cp_class_binding nodes.
+	(push_binding_level): New function.
+	(begin_scope): Use it.
+	(leave_scope): Do not put class binding levels on the free list.
+	(print_binding_level): Adjust for the fact that class_shadowed is
+	a vector.
+	(poplevel_class): Likewise.
+	(clear_identifier_class_values): Likewise.
+	(push_class_level_binding): Likewise.
+	(set_class_shadows): Remove.
+	(store_binding): New function.
+	(store_class_bindings): New function.
+	(push_to_top_level): Use store_class_bindings as appropriate.
+	(pop_from_top_level): Use previous_class_level, not
+	previous_class_type.
+	* name-lookup.h (cp_class_binding): New type.
+	(cp_binding_level): Use a vector object for class_shadowed.
+	(push_binding_level): Declare.
+	(set_class_shadows): Remove.
+
 2004-07-07  Andrew Pinski  <apinski@apple.com>
 
 	* class.c (instantiate_type): BUFFER_REF is dead.

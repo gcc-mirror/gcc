@@ -328,6 +328,17 @@ binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
 
 static GTY((deletable)) cxx_binding *free_bindings;
 
+/* Initialize VALUE and TYPE field for BINDING, and set the PREVIOUS
+   field to NULL.  */
+
+static inline void
+cxx_binding_init (cxx_binding *binding, tree value, tree type)
+{
+  binding->value = value;
+  binding->type = type;
+  binding->previous = NULL;
+}
+
 /* (GC)-allocate a binding object with VALUE and TYPE member initialized.  */
 
 static cxx_binding *
@@ -342,9 +353,7 @@ cxx_binding_make (tree value, tree type)
   else
     binding = ggc_alloc (sizeof (cxx_binding));
 
-  binding->value = value;
-  binding->type = type;
-  binding->previous = NULL;
+  cxx_binding_init (binding, value, type);
 
   return binding;
 }
@@ -365,8 +374,31 @@ cxx_binding_free (cxx_binding *binding)
 static void
 push_binding (tree id, tree decl, cxx_scope* level)
 {
-   cxx_binding *binding = cxx_binding_make (decl, NULL);
+  cxx_binding *binding;
 
+  if (level != class_binding_level)
+    binding = cxx_binding_make (decl, NULL_TREE);
+  else
+    {
+      cp_class_binding *cb;
+      size_t length;
+      size_t i;
+      bool need_fixup;
+
+      length = VEC_length (cp_class_binding, level->class_shadowed);
+      need_fixup = (length && length == level->class_shadowed->alloc);
+      cb = VEC_safe_push (cp_class_binding, level->class_shadowed, NULL);
+      cb->identifier = id;
+      binding = &cb->base;
+      cxx_binding_init (binding, decl, NULL_TREE);
+      if (need_fixup)
+	for (i = 0; i < length; ++i)
+	  {
+	    cb = VEC_index (cp_class_binding, level->class_shadowed, i);
+	    IDENTIFIER_BINDING (cb->identifier) = &cb->base;
+	  }
+    }
+			      
   /* Now, fill in the binding information.  */
   binding->previous = IDENTIFIER_BINDING (id);
   binding->scope = level;
@@ -1261,6 +1293,26 @@ namespace_scope_ht_size (tree ns)
 
 static GTY((deletable)) struct cp_binding_level *free_binding_level;
 
+/* Insert SCOPE as the innermost binding level.  */
+
+void
+push_binding_level (struct cp_binding_level *scope)
+{
+  /* Add it to the front of currently active scopes stack.  */
+  scope->level_chain = current_binding_level;
+  current_binding_level = scope;
+  keep_next_level_flag = false;
+
+  if (ENABLE_SCOPE_CHECKING)
+    {
+      scope->binding_depth = binding_depth;
+      indent (binding_depth);
+      cxx_scope_debug (scope, input_line, "push");
+      is_class_level = 0;
+      binding_depth++;
+    }
+}
+
 /* Create a new KIND scope and make it the top of the active scopes stack.
    ENTITY is the scope of the associated C++ entity (namespace, class,
    function); it is NULL otherwise.  */
@@ -1319,19 +1371,7 @@ begin_scope (scope_kind kind, tree entity)
     }
   scope->kind = kind;
 
-  /* Add it to the front of currently active scopes stack.  */
-  scope->level_chain = current_binding_level;
-  current_binding_level = scope;
-  keep_next_level_flag = false;
-
-  if (ENABLE_SCOPE_CHECKING)
-    {
-      scope->binding_depth = binding_depth;
-      indent (binding_depth);
-      cxx_scope_debug (scope, input_line, "push");
-      is_class_level = 0;
-      binding_depth++;
-    }
+  push_binding_level (scope);
 
   return scope;
 }
@@ -1366,11 +1406,13 @@ leave_scope (void)
   /* Move one nesting level up.  */
   current_binding_level = scope->level_chain;
 
-  /* Namespace-scopes are left most probably temporarily, not completely;
-     they can be reopen later, e.g. in namespace-extension or any name
-     binding activity that requires us to resume a namespace.  For other
+  /* Namespace-scopes are left most probably temporarily, not
+     completely; they can be reopen later, e.g. in namespace-extension
+     or any name binding activity that requires us to resume a
+     namespace.  For classes, we cache some binding levels.  For other
      scopes, we just make the structure available for reuse.  */
-  if (scope->kind != sk_namespace)
+  if (scope->kind != sk_namespace
+      && scope->kind != sk_class)
     {
       scope->level_chain = free_binding_level;
       if (scope->kind == sk_class)
@@ -1628,13 +1670,17 @@ print_binding_level (struct cp_binding_level* lvl)
       if (i)
 	fprintf (stderr, "\n");
     }
-  if (lvl->class_shadowed)
+  if (VEC_length (cp_class_binding, lvl->class_shadowed))
     {
+      size_t i;
+      cp_class_binding *b;
       fprintf (stderr, " class-shadowed:");
-      for (t = lvl->class_shadowed; t; t = TREE_CHAIN (t))
-	{
-	  fprintf (stderr, " %s ", IDENTIFIER_POINTER (TREE_PURPOSE (t)));
-	}
+      for (i = 0; 
+	   (b = VEC_iterate(cp_class_binding, 
+			    lvl->class_shadowed,
+			    i));
+	   ++i) 
+	fprintf (stderr, " %s ", IDENTIFIER_POINTER (b->identifier));
       fprintf (stderr, "\n");
     }
   if (lvl->type_shadowed)
@@ -2576,6 +2622,8 @@ void
 poplevel_class (void)
 {
   struct cp_binding_level *level = class_binding_level;
+  cp_class_binding *cb;
+  size_t i;
   tree shadowed;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -2589,12 +2637,11 @@ poplevel_class (void)
   if (current_class_depth != 1)
     {
       struct cp_binding_level* b;
+      cp_class_binding* cb;
+      size_t i;
 
       /* Clear out our IDENTIFIER_CLASS_VALUEs.  */
-      for (shadowed = level->class_shadowed;
-	   shadowed;
-	   shadowed = TREE_CHAIN (shadowed))
-	IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed)) = NULL_TREE;
+      clear_identifier_class_values ();
 
       /* Find the next enclosing class, and recreate
 	 IDENTIFIER_CLASS_VALUEs appropriate for that class.  */
@@ -2603,38 +2650,36 @@ poplevel_class (void)
 	b = b->level_chain;
 
       if (b)
-	for (shadowed = b->class_shadowed;
-	     shadowed;
-	     shadowed = TREE_CHAIN (shadowed))
+	for (i = 0;
+	     (cb = VEC_iterate (cp_class_binding, 
+				b->class_shadowed, 
+				i));
+	     ++i)
 	  {
 	    cxx_binding *binding;
             
-	    binding = IDENTIFIER_BINDING (TREE_PURPOSE (shadowed));
+	    binding = IDENTIFIER_BINDING (cb->identifier);
 	    while (binding && binding->scope != b)
 	      binding = binding->previous;
 
 	    if (binding)
-	      IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed))
-		= binding->value;
+	      IDENTIFIER_CLASS_VALUE (cb->identifier) = binding->value;
 	  }
     }
   else
     /* Remember to save what IDENTIFIER's were bound in this scope so we
        can recover from cache misses.  */
-    {
-      previous_class_type = current_class_type;
-      previous_class_values = class_binding_level->class_shadowed;
-    }
+    previous_class_level = level;
   for (shadowed = level->type_shadowed;
        shadowed;
        shadowed = TREE_CHAIN (shadowed))
     SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (shadowed), TREE_VALUE (shadowed));
 
   /* Remove the bindings for all of the class-level declarations.  */
-  for (shadowed = level->class_shadowed;
-       shadowed;
-       shadowed = TREE_CHAIN (shadowed))
-    pop_binding (TREE_PURPOSE (shadowed), TREE_TYPE (shadowed));
+  for (i = 0;
+       (cb = VEC_iterate (cp_class_binding, level->class_shadowed, i));
+       ++i)
+    IDENTIFIER_BINDING (cb->identifier) = cb->base.previous;
 
   /* Now, pop out of the binding level which we created up in the
      `pushlevel_class' routine.  */
@@ -2707,15 +2752,16 @@ push_class_binding (tree id, tree decl)
 void
 clear_identifier_class_values (void)
 {
-  tree t;
+  size_t i;
+  cp_class_binding *cb;
 
-  if (!class_binding_level)
-    return;
-
-  for (t = class_binding_level->class_shadowed;
-       t;
-       t = TREE_CHAIN (t))
-    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
+  if (class_binding_level)
+    for (i = 0;
+	 (cb = VEC_iterate (cp_class_binding, 
+			    class_binding_level->class_shadowed, 
+			    i));
+	 ++i)
+      IDENTIFIER_CLASS_VALUE (cb->identifier) = NULL_TREE;
 }
 
 /* Make the declaration of X appear in CLASS scope.  */
@@ -2859,22 +2905,25 @@ push_class_level_binding (tree name, tree x)
 	old_decl = bval;
       else if (TREE_CODE (bval) == USING_DECL && is_overloaded_fn (x))
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
-      
+
       if (old_decl)
 	{
-	  tree shadow;
-	  
+	  cp_class_binding *cb;
+	  size_t i;
+
 	  /* Find the previous binding of name on the class-shadowed
              list, and update it.  */
-	  for (shadow = class_binding_level->class_shadowed;
-	       shadow;
-	       shadow = TREE_CHAIN (shadow))
-	    if (TREE_PURPOSE (shadow) == name
-		&& TREE_TYPE (shadow) == old_decl)
+	  for (i = 0; 
+	       (cb = VEC_iterate (cp_class_binding,
+				  class_binding_level->class_shadowed,
+				  i));
+	       ++i)
+	    if (cb->identifier == name
+		&& (cb->base.value == old_decl
+		    || cb->base.type == old_decl))
 	      {
 		binding->value = x;
 		INHERITED_VALUE_BINDING_P (binding) = 0;
-		TREE_TYPE (shadow) = x;
 		IDENTIFIER_CLASS_VALUE (name) = x;
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 	      }
@@ -2884,15 +2933,7 @@ push_class_level_binding (tree name, tree x)
   /* If we didn't replace an existing binding, put the binding on the
      stack of bindings for the identifier, and update the shadowed list.  */
   if (push_class_binding (name, x))
-    {
-      class_binding_level->class_shadowed
-	= tree_cons (name, NULL,
-		     class_binding_level->class_shadowed);
-      /* Record the value we are binding NAME to so that we can know
-	 what to pop later.  */
-      TREE_TYPE (class_binding_level->class_shadowed) = x;
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
-    }
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
 }
@@ -2945,11 +2986,6 @@ do_class_using_decl (tree decl)
   return value;
 }
 
-void
-set_class_shadows (tree shadows)
-{
-  class_binding_level->class_shadowed = shadows;
-}
 
 /* Return the binding value for name in scope.  */
 
@@ -4796,6 +4832,41 @@ struct cxx_saved_binding GTY(())
    scope isn't enough, because more binding levels may be pushed.  */
 struct saved_scope *scope_chain;
 
+/* If ID is not already in the SEARCH_BINDINGS, prepend its binding
+   information to OLD_BINDINGS.  Returns the new OLD_BINDINGS
+   list.  */
+
+static cxx_saved_binding *
+store_binding (tree id,
+	       cxx_saved_binding *old_bindings,
+	       cxx_saved_binding *search_bindings)
+{
+  cxx_saved_binding *saved;
+  cxx_saved_binding *t1;
+
+  if (!id
+      /* Note that we may have an IDENTIFIER_CLASS_VALUE even when
+	 we have no IDENTIFIER_BINDING if we have left the class
+	 scope, but cached the class-level declarations.  */
+      || !(IDENTIFIER_BINDING (id) || IDENTIFIER_CLASS_VALUE (id)))
+     return old_bindings;
+
+  for (t1 = search_bindings; t1; t1 = t1->previous)
+    if (t1->identifier == id)
+     return old_bindings;
+
+  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
+  saved = cxx_saved_binding_make ();
+  saved->previous = old_bindings;
+  saved->identifier = id;
+  saved->binding = IDENTIFIER_BINDING (id);
+  saved->class_value = IDENTIFIER_CLASS_VALUE (id);;
+  saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
+  IDENTIFIER_BINDING (id) = NULL;
+  IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
+  return saved;
+}
+
 static cxx_saved_binding *
 store_bindings (tree names, cxx_saved_binding *old_bindings)
 {
@@ -4806,38 +4877,35 @@ store_bindings (tree names, cxx_saved_binding *old_bindings)
   for (t = names; t; t = TREE_CHAIN (t))
     {
       tree id;
-      cxx_saved_binding *saved;
-      cxx_saved_binding *t1;
 
       if (TREE_CODE (t) == TREE_LIST)
 	id = TREE_PURPOSE (t);
       else
 	id = DECL_NAME (t);
 
-      if (!id
-	  /* Note that we may have an IDENTIFIER_CLASS_VALUE even when
-	     we have no IDENTIFIER_BINDING if we have left the class
-	     scope, but cached the class-level declarations.  */
-	  || !(IDENTIFIER_BINDING (id) || IDENTIFIER_CLASS_VALUE (id)))
-	continue;
-
-      for (t1 = search_bindings; t1; t1 = t1->previous)
-	if (t1->identifier == id)
-	  goto skip_it;
-
-      my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
-      saved = cxx_saved_binding_make ();
-      saved->previous = old_bindings;
-      saved->identifier = id;
-      saved->binding = IDENTIFIER_BINDING (id);
-      saved->class_value = IDENTIFIER_CLASS_VALUE (id);;
-      saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
-      IDENTIFIER_BINDING (id) = NULL;
-      IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
-      old_bindings = saved;
-    skip_it:
-      ;
+      old_bindings 
+	= store_binding (id, old_bindings, search_bindings);
     }
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old_bindings);
+}
+
+/* Like store_bindings, but NAMES is a vector of cp_class_binding
+   objects, rather than a TREE_LIST.  */
+
+static cxx_saved_binding *
+store_class_bindings (VEC(cp_class_binding) *names, 
+		      cxx_saved_binding *old_bindings)
+{
+  size_t i;
+  cp_class_binding *cb;
+  cxx_saved_binding *search_bindings = old_bindings;
+
+  timevar_push (TV_NAME_LOOKUP);
+  for (i = 0; 
+       (cb = VEC_iterate(cp_class_binding, names, i));
+       ++i)
+    old_bindings 
+      = store_binding (cb->identifier, old_bindings, search_bindings);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old_bindings);
 }
 
@@ -4864,8 +4932,9 @@ push_to_top_level (void)
     need_pop = 0;
 
   old_bindings = NULL;
-  if (scope_chain && previous_class_type)
-    old_bindings = store_bindings (previous_class_values, old_bindings);
+  if (scope_chain && previous_class_level)
+    old_bindings = store_class_bindings (previous_class_level->class_shadowed,
+					 old_bindings);
 
   /* Have to include the global scope, because class-scope decls
      aren't listed anywhere useful.  */
@@ -4884,7 +4953,7 @@ push_to_top_level (void)
       /* We also need to check class_shadowed to save class-level type
 	 bindings, since pushclass doesn't fill in b->names.  */
       if (b->kind == sk_class)
-	old_bindings = store_bindings (b->class_shadowed, old_bindings);
+	old_bindings = store_class_bindings (b->class_shadowed, old_bindings);
 
       /* Unwind type-value slots back to top level.  */
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
@@ -4912,7 +4981,7 @@ pop_from_top_level (void)
 
   timevar_push (TV_NAME_LOOKUP); 
   /* Clear out class-level bindings cache.  */
-  if (previous_class_type)
+  if (previous_class_level)
     invalidate_class_lookup_cache ();
 
   current_lang_base = 0;

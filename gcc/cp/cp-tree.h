@@ -640,8 +640,7 @@ struct saved_scope GTY(())
   varray_type lang_base;
   tree lang_name;
   tree template_parms;
-  tree x_previous_class_type;
-  tree x_previous_class_values;
+  struct cp_binding_level *x_previous_class_level;
   tree x_saved_tree;
 
   HOST_WIDE_INT x_processing_template_decl;
@@ -694,16 +693,10 @@ struct saved_scope GTY(())
 #define processing_specialization scope_chain->x_processing_specialization
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 
-/* _TYPE: the previous type that was a class */
+/* The cached class binding level, from the most recently exited
+   class, or NULL if none.  */
 
-#define previous_class_type scope_chain->x_previous_class_type
-
-/* This is a copy of the class_shadowed list of the previous class
-   binding contour when at global scope.  It's used to reset
-   IDENTIFIER_CLASS_VALUEs when entering another class scope (i.e. a
-   cache miss).  */
-
-#define previous_class_values scope_chain->x_previous_class_values
+#define previous_class_level scope_chain->x_previous_class_level
 
 /* A list of private types mentioned, for deferred access checking.  */
 

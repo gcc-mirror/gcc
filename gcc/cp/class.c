@@ -5486,9 +5486,8 @@ pushclass (tree type)
 			      ? access_private_node 
 			      : access_public_node);
 
-  if (previous_class_type != NULL_TREE
-      && (type != previous_class_type 
-	  || !COMPLETE_TYPE_P (previous_class_type))
+  if (previous_class_level
+      && type != previous_class_level->this_entity
       && current_class_depth == 1)
     {
       /* Forcibly remove any old class remnants.  */
@@ -5500,10 +5499,11 @@ pushclass (tree type)
   if (current_class_depth > 1)
     clear_identifier_class_values ();
 
-  pushlevel_class ();
-
-  if (type != previous_class_type || current_class_depth > 1)
+  if (!previous_class_level 
+      || type != previous_class_level->this_entity
+      || current_class_depth > 1)
     {
+      pushlevel_class ();
       push_class_decls (type);
       if (CLASSTYPE_TEMPLATE_INFO (type) && !CLASSTYPE_USE_TEMPLATE (type))
 	{
@@ -5520,22 +5520,33 @@ pushclass (tree type)
     }
   else
     {
-      tree item;
+      cp_class_binding *cb;
+      size_t i;
 
       /* We are re-entering the same class we just left, so we don't
 	 have to search the whole inheritance matrix to find all the
 	 decls to bind again.  Instead, we install the cached
 	 class_shadowed list, and walk through it binding names and
 	 setting up IDENTIFIER_TYPE_VALUEs.  */
-      set_class_shadows (previous_class_values);
-      for (item = previous_class_values; item; item = TREE_CHAIN (item))
+      push_binding_level (previous_class_level);
+      class_binding_level = previous_class_level;
+      for (i = 0; 
+	   (cb = VEC_iterate (cp_class_binding, 
+			      previous_class_level->class_shadowed,
+			      i));
+	   ++i)
 	{
-	  tree id = TREE_PURPOSE (item);
-	  tree decl = TREE_TYPE (item);
-	  
-	  push_class_binding (id, decl);
-	  if (TREE_CODE (decl) == TYPE_DECL)
-	    set_identifier_type_value (id, decl);
+	  tree id;
+	  tree type_decl;
+
+	  id = cb->identifier;
+	  cb->base.previous = IDENTIFIER_BINDING (id);
+	  IDENTIFIER_BINDING (id) = &cb->base;
+	  type_decl = cb->base.value;
+	  if (!type_decl || TREE_CODE (type_decl) != TYPE_DECL)
+	    type_decl = cb->base.type;
+	  if (type_decl && TREE_CODE (type_decl) == TYPE_DECL)
+	    set_identifier_type_value (id, type_decl);
 	}
       unuse_fields (type);
     }
@@ -5551,14 +5562,17 @@ pushclass (tree type)
 void
 invalidate_class_lookup_cache (void)
 {
-  tree t;
+  size_t i;
+  cp_class_binding *cb;
   
   /* The IDENTIFIER_CLASS_VALUEs are no longer valid.  */
-  for (t = previous_class_values; t; t = TREE_CHAIN (t))
-    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
+  for (i = 0;
+       (cb = VEC_iterate (cp_class_binding, 
+			  previous_class_level->class_shadowed, i));
+       ++i)
+    IDENTIFIER_CLASS_VALUE (cb->identifier) = NULL_TREE;
 
-  previous_class_values = NULL_TREE;
-  previous_class_type = NULL_TREE;
+  previous_class_level = NULL;
 }
  
 /* Get out of the current class scope. If we were in a class scope
