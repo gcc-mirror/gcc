@@ -3008,7 +3008,7 @@ push_template_decl_real (tree decl, int is_friend)
 	}
     }
 
-  /* The DECL_TI_ARGS of DECL contains full set of arguments refering
+  /* The DECL_TI_ARGS of DECL contains full set of arguments referring
      back to its most general template.  If TMPL is a specialization,
      ARGS may only have the innermost set of arguments.  Add the missing
      argument levels if necessary.  */

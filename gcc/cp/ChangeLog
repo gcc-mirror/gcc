@@ -1,3 +1,8 @@
+2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c, cp-tree.h, decl.c, decl2.c, pt.c, rtti.c: Fix
+	comment typos.
+
 2004-04-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/15064
