@@ -1408,7 +1408,10 @@ duplicate_decls (newdecl, olddecl)
 	{
 	  error_with_decl (newdecl, errmsg);
 	  error_with_decl (olddecl,
-			   "`%s' previously declared here");
+			   ((DECL_INITIAL (olddecl)
+			     && current_binding_level == global_binding_level)
+			    ? "`%s' previously defined here"
+			    : "`%s' previously declared here"));
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != 0
