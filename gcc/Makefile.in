@@ -1968,17 +1968,17 @@ cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
 	libcpp.a $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
-cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h
-cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h
-cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
+cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
+cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
+cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
+cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 
-cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h \
+cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h \
 		cpphash.h prefix.h output.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
@@ -2193,10 +2193,10 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o libcpp.a $(HOST_LIBS)
 
 fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
-	xsys-protos.h $(build_xm_file) system.h cpplib.h machmode.h cpphash.h
+	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
-scan-decls.o: scan-decls.c scan.h cpplib.h machmode.h $(build_xm_file) system.h
+scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.
