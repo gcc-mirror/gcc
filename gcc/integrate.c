@@ -2976,7 +2976,6 @@ output_inline_function (fndecl)
 
   cfun = f;
   current_function_decl = fndecl;
-  clear_emit_caches ();
 
   set_new_last_label_num (f->inl_max_label_num);
 

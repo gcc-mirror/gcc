@@ -1,3 +1,11 @@
+2002-05-29  David S. Miller  <davem@redhat.com>
+
+	* rtl.h (clear_emit_caches): Delete.
+	* integrate.c (output_inline_function): Don't call it.
+	* emit-rtl.c (restore_emit_status, init_emit): Likewise.
+	(clear_emit_caches): Delete definition.
+	(SEQUENCE_RESULT_SIZE, sequence_result, free_insn): Likewise.
+
 2002-05-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c: Include real.h.
