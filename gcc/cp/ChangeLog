@@ -1,3 +1,8 @@
+1999-01-25  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (decls_match): Return 1 if old and new are identical.
+	(push_overloaded_decl): Set OVL_USED when PUSH_USING.
+
 1999-01-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_function): Make member functions one_only on windows.
