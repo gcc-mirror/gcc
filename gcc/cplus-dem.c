@@ -3393,6 +3393,8 @@ demangle_nested_args (work, mangled, declp)
     string_delete (work->previous_argument);
   work->previous_argument = saved_previous_argument;
   work->nrepeats = saved_nrepeats;
+
+  return result;
 }
 
 static void
