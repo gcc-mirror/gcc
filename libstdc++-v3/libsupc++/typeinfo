@@ -85,7 +85,7 @@ namespace std
     { return __name; }
 
 #if !__GXX_MERGED_TYPEINFO_NAMES
-    bool before(const type_info& arg) const;
+    bool before(const type_info& __arg) const;
     // In old abi, or when weak symbols are not supported, there can
     // be multiple instances of a type_info object for one
     // type. Uniqueness must use the _name value, not object address.

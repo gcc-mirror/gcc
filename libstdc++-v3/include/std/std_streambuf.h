@@ -126,8 +126,8 @@ namespace std
       // requirements. The only basic_streambuf member function that
       // needs access to these data members is in_avail...
       // NB: pbacks of over one character are not currently supported.
-      int_type    		_M_pback_size; 
-      char_type*		_M_pback; 
+      static const int_type    	_S_pback_size = 1; 
+      char_type			_M_pback[_S_pback_size]; 
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
       bool			_M_pback_init; 
@@ -141,7 +141,7 @@ namespace std
 	if (!_M_pback_init)
 	  {
 	    int_type __dist = _M_in_end - _M_in_cur;
-	    int_type __len = min(_M_pback_size, __dist);
+	    int_type __len = min(_S_pback_size, __dist);
 	    traits_type::copy(_M_pback, _M_in_cur, __len);
 	    _M_pback_cur_save = _M_in_cur;
 	    _M_pback_end_save = _M_in_end;
@@ -388,8 +388,8 @@ namespace std
       _M_buf_size_opt(static_cast<int_type>(BUFSIZ)), _M_buf_unified(false), 
       _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0), _M_out_cur(0), 
       _M_out_end(0), _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
-      _M_buf_locale_init(false), _M_pback_size(1), _M_pback(NULL), 
-      _M_pback_cur_save(NULL), _M_pback_end_save(NULL), _M_pback_init(false)
+      _M_buf_locale_init(false), _M_pback_cur_save(0), _M_pback_end_save(0), 
+      _M_pback_init(false)
       { }
 
       // Get area:

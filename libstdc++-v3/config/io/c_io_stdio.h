@@ -49,7 +49,7 @@ namespace std
   typedef __gthread_mutex_t __c_lock;
 
 // for basic_file.h
-  typedef FILE __c_file_type;
+  typedef FILE __c_file;
 
 // for ios_base.h
   struct __ios_flags

@@ -48,6 +48,10 @@ namespace std
       _M_truename = "true";
       _M_falsename = "false";
     }
+
+  template<> 
+    numpunct<char>::~numpunct()
+    { }
       
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
@@ -61,5 +65,9 @@ namespace std
       _M_truename = L"true";
       _M_falsename = L"false";
     }
+
+  template<> 
+    numpunct<wchar_t>::~numpunct()
+    { }
 #endif
 }

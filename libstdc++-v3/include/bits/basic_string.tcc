@@ -443,7 +443,7 @@ namespace std
       void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
       _Rep *__p = new (__place) _Rep;
       __p->_M_capacity = __capacity;
-      __p->_M_set_sharable();  // one reference
+      __p->_M_set_sharable();  // One reference.
       __p->_M_length = 0;
       return __p;
     }
