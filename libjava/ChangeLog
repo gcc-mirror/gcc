@@ -1,3 +1,8 @@
+2004-12-02  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/16675:
+	* testsuite/libjava.compile/PR16675.java: New file.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
