@@ -7163,8 +7163,7 @@ emit_reload_insns (chain)
 		    for (k = 1; k < nnr; k++)
 		      reg_last_reload_reg[nregno + k]
 			= (nr == nnr
-			   ? gen_rtx_REG (reg_raw_mode[REGNO (rld[r].reg_rtx) + k],
-					  REGNO (rld[r].reg_rtx) + k)
+			   ? regno_reg_rtx[REGNO (rld[r].reg_rtx) + k]
 			   : 0);
 
 		  /* Now do the inverse operation.  */
@@ -7213,8 +7212,7 @@ emit_reload_insns (chain)
 		    for (k = 1; k < nnr; k++)
 		      reg_last_reload_reg[nregno + k]
 			= (nr == nnr
-			   ? gen_rtx_REG (reg_raw_mode[REGNO (rld[r].reg_rtx) + k],
-					  REGNO (rld[r].reg_rtx) + k)
+			   ? regno_reg_rtx[REGNO (rld[r].reg_rtx) + k]
 			   : 0);
 
 		  /* Unless we inherited this reload, show we haven't
