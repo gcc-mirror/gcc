@@ -3959,10 +3959,14 @@ The rule has no commands.
 Passing @option{-M} to the driver implies @option{-E}.
 
 @item -MM
-Like @option{-M}, but mention only the files included with @code{@w{#include
-"@var{file}"}} or with @option{-include} or @option{-imacros} command line
-options.  System header files included with @code{@w{#include <@var{file}>}}
-are omitted.
+Like @option{-M} but do not mention header files that are found in
+system header directories, nor header files that are included,
+directly or indirectly, from such a header.
+
+This implies that the choice of angle brackets or double quotes in an
+@samp{#include} directive does not in itself determine whether that
+header will appear in @option{-MM} dependency output.  This is a
+slight change in semantics from GCC versions 3.0 and earlier.
 
 @item -MF @var{file}
 @anchor{-MF}
