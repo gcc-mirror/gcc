@@ -265,6 +265,25 @@ sbitmap_a_or_b (dst, a, b)
     }
   return changed;
 }
+/* Return non-zero if A is a subset of B.  */
+
+int
+sbitmap_a_subset_b_p (a, b)
+     sbitmap a, b;
+{
+  int i;
+  sbitmap_ptr ap, bp;
+
+  ap = a->elms;
+  bp = b->elms;
+  for (i = 0; i < a->size; i++)
+    {
+      if ((*ap | *bp) != *bp)
+	return 0;
+      ap++; bp++;
+    }
+  return 1;
+}
 
 /* Set DST to be (A or (B and C)).
    Return non-zero if any change is made.  */

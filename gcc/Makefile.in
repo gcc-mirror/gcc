@@ -748,6 +748,7 @@ DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
+LOOP_H = loop.h varray.h
 #
 # Language makefile fragments.
 
@@ -1484,7 +1485,7 @@ function.o : function.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h ggc.h
 stmt.o : stmt.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h $(EXPR_H) except.h \
-   loop.h $(RECOG_H) toplev.h output.h varray.h ggc.h
+   $(LOOP_H) $(RECOG_H) toplev.h output.h varray.h ggc.h
 except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h except.h toplev.h intl.h ggc.h
@@ -1527,7 +1528,7 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    integrate.h insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
-   intl.h function.h output.h $(RECOG_H) except.h toplev.h loop.h
+   intl.h function.h output.h $(RECOG_H) except.h toplev.h $(LOOP_H)
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h insn-attr.h
@@ -1550,11 +1551,11 @@ lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
    ggc.h
-loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
+loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h $(LOOP_H) insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
-   integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h varray.h
+   integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h varray.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    insn-flags.h function.h except.h

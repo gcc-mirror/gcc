@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef _BASIC_BLOCK_H
+#define _BASIC_BLOCK_H 1
 
 #include "bitmap.h"
 #include "sbitmap.h"
@@ -222,6 +224,92 @@ extern void remove_fake_edges		PROTO ((void));
 extern void add_noreturn_fake_exit_edges	PROTO ((void));
 extern void flow_delete_insn_chain	PROTO((rtx, rtx));
 
+
+/* Structure to hold information for each natural loop.  */
+struct loop
+{
+  int num;
+
+  /* Basic block of loop header.  */
+  basic_block header;
+
+  /* Basic block of loop latch.  */
+  basic_block latch;
+
+  /* Basic block of loop pre-header or NULL if it does not exist.  */
+  basic_block pre_header;
+
+  /* Bitmap of blocks contained within the loop.  */
+  sbitmap nodes;
+
+  /* Number of blocks contained within the loop.  */
+  int num_nodes;
+
+  /* Array of edges that exit the loop.  */
+  edge *exits;
+
+  /* Number of edges that exit the loop.  */
+  int num_exits;
+
+  /* The loop nesting depth.  */
+  int depth;
+
+  /* The height of the loop (enclosed loop levels) within the loop
+     hierarchy tree.  */
+  int level;
+
+  /* The outer (parent) loop or NULL if outermost loop.  */
+  struct loop *outer;
+
+  /* The first inner (child) loop or NULL if innermost loop.  */
+  struct loop *inner;
+
+  /* Link to the next (sibling) loop.  */
+  struct loop *next;
+
+  /* Non-zero if the loop shares a header with another loop.  */
+  int shared;
+
+  /* Non-zero if the loop is invalid (e.g., contains setjmp.).  */
+  int invalid;
+
+  /* Auxiliary info specific to a pass.  */
+  void *info;
+};
+
+
+/* Structure to hold CFG information about natural loops within a function.  */
+struct loops
+{
+  /* Number of natural loops in the function.  */
+  int num;
+
+  /* Array of natural loop descriptors (scanning this array in reverse order
+     will find the inner loops before their enclosing outer loops).  */
+  struct loop *array;
+
+  /* Pointer to root of loop heirachy tree.  */
+  struct loop *tree;
+
+  /* Information derived from the CFG.  */
+  struct cfg
+  {
+    /* The bitmap vector of dominators or NULL if not computed.  */
+    sbitmap *dom;
+
+    /* The ordering of the basic blocks in a depth first search.  */
+    int *dfs_order;
+  } cfg;
+
+  /* Headers shared by multiple loops that should be merged.  */
+  sbitmap shared_headers;
+};
+
+extern int flow_loops_find PROTO ((struct loops *));
+extern void flow_loops_free PROTO ((struct loops *));
+extern void flow_loops_dump PROTO ((const struct loops *, FILE *, int));
+
+
 /* This structure maintains an edge list vector.  */
 struct edge_list 
 {
@@ -295,3 +383,5 @@ extern void compute_available		PROTO ((sbitmap *, sbitmap *,
 /* In emit-rtl.c.  */
 extern rtx emit_block_insn_after	PROTO((rtx, rtx, basic_block));
 extern rtx emit_block_insn_before	PROTO((rtx, rtx, basic_block));
+
+#endif /* _BASIC_BLOCK_H */
