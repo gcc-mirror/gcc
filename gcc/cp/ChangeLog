@@ -1,5 +1,41 @@
 1998-07-11  Mark Mitchell  <mark@markmitchell.com>
 
+	* method.c (flush_repeats): Add nrepeats parameter.
+	(issue_nrepeats): Likewise.
+	(is_back_referenceable_type): New function.  Don't back-reference
+	TEMPLATE_TYPE_PARMs as well as simple types like integers.
+	(build_mangled_name_for_type): Likewise.
+	(build_mangled_name_for_type_with_Gcode): Likewise.
+	(lasttype): Remove.
+	(nrepeats): Likewise.
+	(Nrepeats): Likewise.
+	(start_squangling): Don't clear the variables removed above.
+	(end_squangling): Likewise.
+	(flush_repeats): Tidy.  Use nrepeats parameter rather than
+	Nrepeats global.
+	(issue_nrepeats): Likewise, but with nrepeats global.  Use
+	is_backreferenceable_type.
+	(build_overload_nested_name): Tidy.  Add comment.  Use
+	build_mangled_name_for_type.
+	(build_underscore_int): Comment.
+	(build_overload_scope_ref): Use build_mangled_name_for_type.
+	(build_overload_int): Likewise.
+	(build_template_template_parm_names): Tidy.
+	(build_template_parm_names): Use build_mangled_name_for_type.
+	(build_overload_identifier): Add comments.
+	(build_mangled_name_for_type_with_Gcode): Split out from
+	build_mangled_name.
+	(build_mangled_name_for_type): Use it.
+	(build_mangled_name): Rework to use build_mangled_name_for_type
+	and to not use global nrepeats/Nrepeats.  Tidy.
+	(process_modifiers): Tidy.
+	(check_btype): Use is_backreferenceable_type.  Add comment.
+	Rename `node' to `type'.
+	(process_overload_item): Set numeric_output_need_bar here.
+	Use build_mangled_name_for_type.  Tidy.
+	(build_decl_overload_real): Tidy.  Don't use Nrepeats.  Use
+	build_mangled_name_for_type.
+
 	* pt.c (push_template_decl_real): Don't look at DECL_TEMPLATE_INFO
 	for TYPE_DECLs.
 
