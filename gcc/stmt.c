@@ -1908,12 +1908,14 @@ expand_expr_stmt (exp)
      except inside a ({...}) where they may be useful.  */
   if (expr_stmts_for_value == 0 && exp != error_mark_node)
     {
-      if (! TREE_SIDE_EFFECTS (exp)
-	  && (extra_warnings || warn_unused_value)
-	  && !(TREE_CODE (exp) == CONVERT_EXPR
-	       && VOID_TYPE_P (TREE_TYPE (exp))))
-	warning_with_file_and_line (emit_filename, emit_lineno,
-				    "statement with no effect");
+      if (! TREE_SIDE_EFFECTS (exp))
+	{
+	  if ((extra_warnings || warn_unused_value)
+	      && !(TREE_CODE (exp) == CONVERT_EXPR
+		   && VOID_TYPE_P (TREE_TYPE (exp))))
+	    warning_with_file_and_line (emit_filename, emit_lineno,
+				        "statement with no effect");
+	}
       else if (warn_unused_value)
 	warn_if_unused_value (exp);
     }
@@ -1978,6 +1980,12 @@ warn_if_unused_value (exp)
   if (TREE_USED (exp))
     return 0;
 
+  /* Don't warn about void constructs.  This includes casting to void,
+     void function calls, and statement expressions with a final cast
+     to void.  */
+  if (VOID_TYPE_P (TREE_TYPE (exp)))
+    return 0;
+
   switch (TREE_CODE (exp))
     {
     case PREINCREMENT_EXPR:
@@ -2023,9 +2031,6 @@ warn_if_unused_value (exp)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
-      /* Don't warn about values cast to void.  */
-      if (VOID_TYPE_P (TREE_TYPE (exp)))
-	return 0;
       /* Don't warn about conversions not explicit in the user's program.  */
       if (TREE_NO_UNUSED_WARNING (exp))
 	return 0;
