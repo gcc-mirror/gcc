@@ -4162,15 +4162,25 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 {
   struct nesting *thisblock = current_function == 0 ? 0 : block_stack;
   rtx x;
+  tree t;
 
+  /* If any of the elements are addressable, so is the entire union.  */
+  for (t = decl_elts; t; t = TREE_CHAIN (t))
+    if (TREE_ADDRESSABLE (TREE_VALUE (t)))
+      {
+	TREE_ADDRESSABLE (decl) = 1;
+	break;
+      }
+	  
   expand_decl (decl);
   expand_decl_cleanup (decl, cleanup);
   x = DECL_RTL (decl);
 
-  while (decl_elts)
+  /* Go through the elements, assigning RTL to each.  */
+  for (t = decl_elts; t; t = TREE_CHAIN (t))
     {
-      tree decl_elt = TREE_VALUE (decl_elts);
-      tree cleanup_elt = TREE_PURPOSE (decl_elts);
+      tree decl_elt = TREE_VALUE (t);
+      tree cleanup_elt = TREE_PURPOSE (t);
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (decl_elt));
 
       /* Propagate the union's alignment to the elements.  */
@@ -4213,8 +4223,6 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 	thisblock->data.block.cleanups
 	  = temp_tree_cons (decl_elt, cleanup_elt,
 			    thisblock->data.block.cleanups);
-
-      decl_elts = TREE_CHAIN (decl_elts);
     }
 }
 
