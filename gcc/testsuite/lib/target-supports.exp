@@ -280,3 +280,60 @@ proc check_named_sections_available { } {
     verbose "check_named_sections_available  returning $answer" 2
     return $answer
 }
+
+# Return 1 if the target supports executing AltiVec instructions, 0
+# otherwise.  Cache the result.
+
+proc check_vmx_hw_available { } {
+    global vmx_hw_available_saved
+    global tool
+
+    if [info exists vmx_hw_available_saved] {
+	verbose "check_hw_available  returning saved $vmx_hw_available_saved" 2
+    } else {
+	set vmx_hw_available_saved 0
+
+	# Some simulators are known to not support VMX instructions.
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] } {
+	    verbose "check_hw_available  returning 0" 2
+	    return $vmx_hw_available_saved
+	}
+
+	# Set up, compile, and execute a test program containing VMX
+	# instructions.  Include the current process ID in the file
+	# names to prevent conflicts with invocations for multiple
+	# testsuites.
+	set src vmx[pid].c
+	set exe vmx[pid].x
+
+	set f [open $src "w"]
+	puts $f "int main() {"
+	puts $f "#ifdef __MACH__"
+	puts $f "  asm volatile (\"vor v0,v0,v0\");"
+	puts $f "#else"
+	puts $f "  asm volatile (\"vor 0,0,0\");"
+	puts $f "#endif"
+	puts $f "  return 0; }"
+	close $f
+
+	verbose "check_vmx_hw_available  compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+	    verbose "check_vmx_hw_available testfile status is <$status>" 2
+
+	    if { $status == "pass" } then {
+		set vmx_hw_available_saved 1
+	    }
+	} else {
+	    verbose "check_vmx_hw_availalble testfile compilation failed" 2
+	}
+    }
+
+    return $vmx_hw_available_saved
+}
