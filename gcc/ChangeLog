@@ -1,5 +1,10 @@
 Mon Nov  9 23:05:51 1998  Richard Earnshaw (rearnsha@arm.com)
 
+	Restore ABI compatibility for NetBSD.
+	* arm/netbsd.h (DEFAULT_PCC_STRUCT_RETURN): Override setting in
+	arm.h
+	(RETURN_IN_MEMORY): Likewise.
+
 	* arm.c (add_constant): When taking the address of an item in the
 	pool, get the mode of the item addressed.
 
