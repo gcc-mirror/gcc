@@ -1,3 +1,9 @@
+2004-04-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_LayoutInterfaceMethods): New method.
+	Set method->index values for interface methods to their itable index.
+	(initializeClass): Call _Jv_LayoutInterfaceMethods.
+
 2004-04-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/DirectByteBufferImpl.java
