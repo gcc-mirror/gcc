@@ -1,3 +1,8 @@
+2004-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-mudflap.c (mflang_flush_calls): Fix thinkos resulting from
+	2004-06-23 change.
+
 2004-06-25  Paul Brook  <paul@codesourcery.com>
 
 	* decl2.c (get_guard): Call targetm.cxx.guard_type.
