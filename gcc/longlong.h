@@ -411,33 +411,34 @@
 	   : "=d" ((USItype)(count))					\
 	   : "od" ((USItype)(x)), "n" (0))
 #else /* not mc68020 */
+/* %/ inserts REGISTER_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm
-	movel	%2,d0
-	movel	%3,d1
-	movel	d0,d2
-	swap	d0
-	movel	d1,d3
-	swap	d1
-	movew	d2,d4
-	mulu	d3,d4
-	mulu	d1,d2
-	mulu	d0,d3
-	mulu	d0,d1
-	movel	d4,d0
-	eorw	d0,d0
-	swap	d0
-	addl	d0,d2
-	addl	d3,d2
+	movel	%2,%/d0
+	movel	%3,%/d1
+	movel	%/d0,%/d2
+	swap	%/d0
+	movel	%/d1,%/d3
+	swap	%/d1
+	movew	%/d2,%/d4
+	mulu	%/d3,%/d4
+	mulu	%/d1,%/d2
+	mulu	%/d0,%/d3
+	mulu	%/d0,%/d1
+	movel	%/d4,%/d0
+	eorw	%/d0,%/d0
+	swap	%/d0
+	addl	%/d0,%/d2
+	addl	%/d3,%/d2
 	jcc	1f
-	addl	#65536,d1
-1:	swap	d2
-	moveq	#0,d0
-	movew	d2,d0
-	movew	d4,d2
-	movel	d2,%1
-	addl	d1,d0
-	movel	d0,%0"							\
+	addl	#65536,%/d1
+1:	swap	%/d2
+	moveq	#0,%/d0
+	movew	%/d2,%/d0
+	movew	%/d4,%/d2
+	movel	%/d2,%1
+	addl	%/d1,%/d0
+	movel	%/d0,%0"						\
 	   : "=g" ((USItype)(xh)),					\
 	     "=g" ((USItype)(xl))					\
 	   : "g" ((USItype)(a)),					\
