@@ -1,3 +1,9 @@
+2002-10-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PRs C++/6803, C++/7721 and C++/7803
+	* decl.c (grokdeclarator): Gracefully handle template-name as
+	decl-specifier. 
+
 2002-10-09  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/7353

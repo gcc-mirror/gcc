@@ -10060,6 +10060,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    next = 0;
 	    break;
 
+	  case TEMPLATE_DECL:
+	    /* Sometimes, we see a template-name used as part of a 
+	       decl-specifier like in 
+	             std::allocator alloc;
+               Handle that gracefully.  */
+	    error ("invalid use of template-name '%E' as type-specifier", 
+		   decl);
+	    return error_mark_node;
+	    break;
+
 	  default:
 	    internal_error ("`%D' as declarator", decl);
 	  }
