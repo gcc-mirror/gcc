@@ -5638,7 +5638,8 @@ memory_address_info (addr, disp_length)
 
   /* Scaling can not be encoded without base or displacement.  
      Except for scale == 1 where we can encode reg + reg instead of reg * 2.  */
-  if (!base && index && scale != 1)
+  if (!base && index
+      && (!scale || GET_CODE (scale) != CONST_INT || (INTVAL (scale) != 1)))
     disp = const0_rtx;
 
   /* Find the length of the displacement constant.  */
