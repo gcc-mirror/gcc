@@ -1,3 +1,9 @@
+1999-11-10  Benjamin Kosnik  <bkoz@haight.constant.com>
+            Matthias Klose  <doko@cs.tu-berlin.de>
+
+	* stl_rope.h: Fix initialization order.
+	* stl_deque.h: Use static_casts<size_type>(signed_type).
+
 1999-11-06  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* bitset (class bitset): Declare reference as our friend.
