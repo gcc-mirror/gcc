@@ -1169,10 +1169,10 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		start_sequence ();
 
-		/* If we're not dealing with a register or the insn is more
-		   complex than a simple SET, duplicate the computation and
-		   replace the destination with a new temporary.  */
-		if (register_operand (temp2, GET_MODE (var))
+		/* If we're not dealing with a simple operand or the insn is
+		   more complex than a simple SET, duplicate the computation
+		   and replace the destination with a new temporary.  */
+		if (general_operand (temp2, GET_MODE (var))
 		    && GET_CODE (PATTERN (temp)) == SET)
 		  bval = temp2;
 		else
