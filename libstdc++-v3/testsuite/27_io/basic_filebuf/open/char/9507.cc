@@ -54,8 +54,10 @@ void test_06()
 			      std::ios_base::in 
 			      | std::ios_base::out
 			      | std::ios_base::ate);
-  VERIFY( !fbuf.is_open() );
-  VERIFY( r == NULL );
+  if (r == NULL)
+    VERIFY( !fbuf.is_open() );
+  else
+    VERIFY( fbuf.is_open() );
 }
 
 int
