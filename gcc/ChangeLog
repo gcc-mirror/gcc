@@ -1,3 +1,9 @@
+2005-03-30  Dale Johannesen  <dalej@apple.com>
+
+	PR middle-end/19225
+	* calls.c (expand_call):  Flush pending deferrals before
+	throwing call.
+
 2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/772
