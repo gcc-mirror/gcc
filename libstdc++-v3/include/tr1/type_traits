@@ -280,6 +280,10 @@ namespace tr1
     struct has_trivial_destructor
     : public integral_constant<bool, is_pod<_Tp>::value> { };
 
+  template<typename _Tp>
+    struct has_nothrow_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
   template<typename>
     struct has_virtual_destructor
     : public false_type { };
