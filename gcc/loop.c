@@ -213,6 +213,9 @@ static int num_mem_sets;
    A pseudo has valid regscan info if its number is < max_reg_before_loop.  */
 int max_reg_before_loop;
 
+/* The value to pass to the next call of reg_scan_update.  */
+static int loop_max_reg;
+
 /* This obstack is used in product_cheap_p to allocate its rtl.  It
    may call gen_reg_rtx which, in turn, may reallocate regno_reg_rtx.
    If we used the same obstack that it did, we would be deallocating
@@ -467,6 +470,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   init_recog_no_volatile ();
 
   max_reg_before_loop = max_reg_num ();
+  loop_max_reg = max_reg_before_loop;
 
   regs_may_share = 0;
 
@@ -516,7 +520,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   /* Now find all register lifetimes.  This must be done after
      find_and_verify_loops, because it might reorder the insns in the
      function.  */
-  reg_scan (f, max_reg_num (), 1);
+  reg_scan (f, max_reg_before_loop, 1);
 
   /* This must occur after reg_scan so that registers created by gcse
      will have entries in the register tables.
@@ -660,7 +664,7 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
   int insn_count;
   int in_libcall = 0;
   int tem;
-  rtx temp;
+  rtx temp, update_start, update_end;
   /* The SET from an insn, if it is the only SET in the insn.  */
   rtx set, set1;
   /* Chain describing insns movable in current loop.  */
@@ -1178,12 +1182,24 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
   load_mems_and_recount_loop_regs_set (scan_start, end, loop_top,
 				       loop_start, &insn_count);
 
+  for (update_start = loop_start;
+       PREV_INSN (update_start) && GET_CODE (PREV_INSN (update_start)) != CODE_LABEL;
+       update_start = PREV_INSN (update_start))
+    ;
+  update_end = NEXT_INSN (end);
+
+  reg_scan_update (update_start, update_end, loop_max_reg);
+  loop_max_reg = max_reg_num ();
+
   if (flag_strength_reduce)
     {
       the_movables = movables;
       strength_reduce (scan_start, end, loop_top,
 		       insn_count, loop_start, end,
 		       loop_info, loop_cont, unroll_p, bct_p);
+
+      reg_scan_update (update_start, update_end, loop_max_reg);
+      loop_max_reg = max_reg_num ();
     }
 
   VARRAY_FREE (reg_single_usage);
