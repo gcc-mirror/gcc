@@ -93,6 +93,7 @@ static Mfix *    create_fix_barrier		PARAMS ((Mfix *, Hint));
 static void	 push_minipool_barrier	        PARAMS ((rtx, Hint));
 static void	 push_minipool_fix		PARAMS ((rtx, Hint, rtx *, Mmode, rtx));
 static void	 note_invalid_constants	        PARAMS ((rtx, Hint));
+static int       current_file_function_operand	PARAMS ((rtx));
 
 #undef Hint
 #undef Mmode
@@ -1822,7 +1823,7 @@ arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
   if (TARGET_LONG_CALLS && flag_function_sections)
     return 1;
   
-  if (current_file_function_operand (sym_ref, VOIDmode))
+  if (current_file_function_operand (sym_ref))
     return 0;
   
   return (call_cookie & CALL_LONG)
@@ -7067,6 +7068,7 @@ emit_multi_reg_push (mask)
   int i, j;
   rtx par;
   rtx dwarf;
+  int dwarf_par_index;
   rtx tmp, reg;
 
   for (i = 0; i <= LAST_ARM_REGNUM; i++)
@@ -7076,9 +7078,42 @@ emit_multi_reg_push (mask)
   if (num_regs == 0 || num_regs > 16)
     abort ();
 
+  /* For the body of the insn we are going to generate an UNSPEC in
+     parallel with several USEs.  This allows the insn to be recognised
+     by the push_multi pattern in the arm.md file.  The insn looks
+     something like this:
+
+       (parallel [ 
+           (set (mem:BLK (pre_dec:BLK (reg:SI sp))) (unspec:BLK [(reg:SI r4)] 2))
+           (use (reg:SI 11 fp))
+           (use (reg:SI 12 ip))
+           (use (reg:SI 14 lr))
+           (use (reg:SI 15 pc))
+        ])
+
+     For the frame note however, we try to be more explicit and actually
+     show each register being stored into the stack frame, plus a (single)
+     decrement of the stack pointer.  We do it this way in order to be
+     friendly to the stack unwinding code, which only wants to see a single
+     stack decrement per instruction.  The RTL we generate for the note looks
+     something like this:
+
+      (sequence [ 
+           (set (reg:SI sp) (plus:SI (reg:SI sp) (const_int -20)))
+           (set (mem:SI (reg:SI sp)) (reg:SI r4))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 4))) (reg:SI fp))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 8))) (reg:SI ip))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 12))) (reg:SI lr))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 16))) (reg:SI pc))
+        ])
+
+      This sequence is used both by the code to support stack unwinding for
+      exceptions handlers and the code to generate dwarf2 frame debugging.  */
+  
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
-  dwarf = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
+  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_regs + 1));
   RTX_FRAME_RELATED_P (dwarf) = 1;
+  dwarf_par_index = 1;
 
   for (i = 0; i <= LAST_ARM_REGNUM; i++)
     {
@@ -7096,12 +7131,11 @@ emit_multi_reg_push (mask)
 					   2));
 
 	  tmp = gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (SImode,
-					  gen_rtx_PRE_DEC (BLKmode,
-							   stack_pointer_rtx)),
+			     gen_rtx_MEM (SImode, stack_pointer_rtx),
 			     reg);
 	  RTX_FRAME_RELATED_P (tmp) = 1;
-	  XVECEXP (dwarf, 0, num_regs - 1) = tmp;	  
+	  XVECEXP (dwarf, 0, dwarf_par_index) = tmp;
+	  dwarf_par_index ++;
 
 	  break;
 	}
@@ -7117,17 +7151,27 @@ emit_multi_reg_push (mask)
 
 	  tmp = gen_rtx_SET (VOIDmode,
 			     gen_rtx_MEM (SImode,
-					  gen_rtx_PRE_DEC (BLKmode,
-							   stack_pointer_rtx)),
+					  gen_rtx_PLUS (SImode,
+							stack_pointer_rtx,
+							GEN_INT (4 * j))),
 			     reg);
 	  RTX_FRAME_RELATED_P (tmp) = 1;
-	  XVECEXP (dwarf, 0, num_regs - j - 1) = tmp;
+	  XVECEXP (dwarf, 0, dwarf_par_index ++) = tmp;
 			   
 	  j++;
 	}
     }
 
   par = emit_insn (par);
+  
+  tmp = gen_rtx_SET (SImode,
+		     stack_pointer_rtx,
+		     gen_rtx_PLUS (SImode,
+				   stack_pointer_rtx,
+				   GEN_INT (-4 * num_regs)));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (dwarf, 0, 0) = tmp;
+  
   REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
 				       REG_NOTES (par));
   return par;

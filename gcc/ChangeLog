@@ -1,3 +1,9 @@
+2000-07-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (emit_multi_reg_push): Generate a
+	REG_FRAME_RELEATED_NOTE that is compatable with the code in
+	dwarf2out_debug_frame_expr.
+
 2000-07-24  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c: Complain if DWARF2_DEBUGGING_INFO is defined without
