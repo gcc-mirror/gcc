@@ -1631,6 +1631,16 @@ subst_stack_regs_pat (insn, regstack, pat)
 		SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
 		replace_reg (dest, get_hard_regnum (regstack, *dest));
 	      }
+
+	    /* Keep operand 1 maching with destination.  */
+	    if (GET_RTX_CLASS (GET_CODE (pat_src)) == 'c'
+		&& REG_P (*src1) && REG_P (*src2)
+		&& REGNO (*src1) != REGNO (*dest))
+	     {
+		rtx tmp = *src1;
+		*src1 = *src2;
+		*src2 = tmp;
+	     }
 	    break;
 
 	  case UNSPEC:
