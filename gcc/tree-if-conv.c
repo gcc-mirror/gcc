@@ -271,9 +271,8 @@ static void
 tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 			   block_stmt_iterator *bsi)
 {
-  tree c, c2, new_cond;
+  tree c, c2;
   edge true_edge, false_edge;
-  new_cond = NULL_TREE;
 
   gcc_assert (TREE_CODE (stmt) == COND_EXPR);
 
@@ -294,8 +293,8 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   /* Add new condition into destination's predicate list.  */
 
   /* If 'c' is true then TRUE_EDGE is taken.  */
-  new_cond = add_to_dst_predicate_list (loop, true_edge->dest, cond,
-					unshare_expr (c), bsi);
+  add_to_dst_predicate_list (loop, true_edge->dest, cond,
+			     unshare_expr (c), bsi);
 
   if (!is_gimple_reg(c) && is_gimple_condexpr (c))
     {
@@ -859,7 +858,8 @@ combine_blocks (struct loop *loop)
   unsigned int orig_loop_num_nodes = loop->num_nodes;
   unsigned int i;
   unsigned int n_exits;
-  edge *exits = get_loop_exit_edges (loop, &n_exits);
+
+  get_loop_exit_edges (loop, &n_exits);
   /* Process phi nodes to prepare blocks for merge.  */
   process_phi_nodes (loop);
 
@@ -880,11 +880,10 @@ combine_blocks (struct loop *loop)
 
       if (bb == exit_bb)
 	{
-	  edge new_e;
 	  edge_iterator ei;
 
 	  /* Connect this node with loop header.  */
-	  new_e = make_edge (ifc_bbs[0], bb, EDGE_FALLTHRU);
+	  make_edge (ifc_bbs[0], bb, EDGE_FALLTHRU);
 	  set_immediate_dominator (CDI_DOMINATORS, bb, ifc_bbs[0]);
 
 	  if (exit_bb != loop->latch)
@@ -914,7 +913,6 @@ combine_blocks (struct loop *loop)
  	 loop->header and loop->latch blocks.  */
       if (bb == loop->latch && n_exits == 0)
  	{
-	  exits = NULL; /* To suppress unused warning.  */
  	  make_edge (loop->header, loop->latch, EDGE_FALLTHRU);
  	  set_immediate_dominator (CDI_DOMINATORS, loop->latch, loop->header);
 	  continue;
