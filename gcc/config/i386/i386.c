@@ -759,7 +759,7 @@ enum processor_type ix86_cpu;
 enum processor_type ix86_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
-const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
+const char *ix86_cpu_string;		/* for -mtune=<xxx> */
 const char *ix86_arch_string;		/* for -march=<xxx> */
 const char *ix86_fpmath_string;		/* for -mfpmath=<xxx> */
 
@@ -1238,7 +1238,7 @@ override_options ()
   if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
     x86_prefetch_sse = true;
   if (i == pta_size)
-    error ("bad value (%s) for -mcpu= switch", ix86_cpu_string);
+    error ("bad value (%s) for -mtune= switch", ix86_cpu_string);
 
   if (optimize_size)
     ix86_cost = &size_cost;

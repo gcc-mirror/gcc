@@ -4,7 +4,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -mcpu=pentium3 -w" { target i?86-*-* } } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target i?86-*-* } } */
 
 struct reload
 {

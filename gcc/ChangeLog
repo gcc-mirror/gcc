@@ -1,3 +1,11 @@
+2003-02-22  Kelley Cook <kelleycook@comcast.net>
+
+        * config/i386/i386.c: Replace "mcpu" with "mtune".
+        * config/i386/i386.h (TARGET_OPTIONS): Likewise.
+        (CC1_CPU_SPEC): Likewise. New warning for "-mcpu".
+        * doc/invoke.texi (i386 and x86-64 Options): Replace "mcpu"
+        with "mtune".  Note that "mcpu" is a deprecated synonym for "mtune".
+
 2003-02-23  Andreas Schwab  <schwab@suse.de>
 
 	* config.gcc: Delete references to m68k/t-linux and

@@ -5,7 +5,7 @@
    is not valid general_operand in HImode.  */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -mcpu=i686" { target i?86-*-* } } */
+/* { dg-options "-O2 -mtune=i686" { target i?86-*-* } } */
 
 void
 foo (unsigned short *cp)

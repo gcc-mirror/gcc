@@ -1,5 +1,5 @@
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-options "-O -ffast-math -mcpu=i486" } */
+/* { dg-options "-O -ffast-math -mtune=i486" } */
 
 /* Test that floating point greater-than tests are compiled correctly with
    -ffast-math.  */

@@ -1,5 +1,5 @@
 // Skip if not target: i?86-*-*
-// Special g++ Options: -mcpu=i686 -O2 -fpic
+// Special g++ Options: -mtune=i686 -O2 -fpic
 class G {};
 
 struct N {

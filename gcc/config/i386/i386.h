@@ -432,7 +432,7 @@ extern int x86_prefetch_sse;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS						\
-{ { "cpu=",		&ix86_cpu_string,			\
+{ { "tune=",		&ix86_cpu_string,			\
     N_("Schedule code for given CPU")},				\
   { "fpmath=",		&ix86_fpmath_string,			\
     N_("Generate floating point mathematics using given instruction set")},\
@@ -487,15 +487,18 @@ extern int x86_prefetch_sse;
 
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC "\
-%{!mcpu*: \
-%{m386:-mcpu=i386 \
-%n`-m386' is deprecated. Use `-march=i386' or `-mcpu=i386' instead.\n} \
-%{m486:-mcpu=i486 \
-%n`-m486' is deprecated. Use `-march=i486' or `-mcpu=i486' instead.\n} \
-%{mpentium:-mcpu=pentium \
-%n`-mpentium' is deprecated. Use `-march=pentium' or `-mcpu=pentium' instead.\n} \
-%{mpentiumpro:-mcpu=pentiumpro \
-%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.\n}} \
+%{!mtune*: \
+%{m386:mtune=i386 \
+%n`-m386' is deprecated. Use `-march=i386' or `-mtune=i386' instead.\n} \
+%{m486:-mtune=i486 \
+%n`-m486' is deprecated. Use `-march=i486' or `-mtune=i486' instead.\n} \
+%{mpentium:-mtune=pentium \
+%n`-mpentium' is deprecated. Use `-march=pentium' or `-mtune=pentium' instead.\n} \
+%{mpentiumpro:-mtune=pentiumpro \
+%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mtune=pentiumpro' instead.\n} \
+%{mcpu=*:-mtune=%* \
+%n`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.\n}} \
+%<mcpu=* \
 %{mintel-syntax:-masm=intel \
 %n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
 %{mno-intel-syntax:-masm=att \
@@ -525,7 +528,7 @@ extern int x86_prefetch_sse;
 	  builtin_define_std ("i386");				\
 	}							\
 								\
-      /* Built-ins based on -mcpu= (or -march= if no		\
+      /* Built-ins based on -mtune= (or -march= if no		\
 	 CPU given).  */					\
       if (TARGET_386)						\
 	builtin_define ("__tune_i386__");			\
