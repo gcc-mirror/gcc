@@ -1,3 +1,8 @@
+2001-09-30  H.J. Lu <hjl@gnu.org>
+
+	* acconfig.h (PREFIX_INCLUDE_DIR): New variable.
+	* config.in: Rebuild.
+
 2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("cmpqi_1"): Fix constraints.

@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -79,6 +79,9 @@
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
+
+/* Define if cpp should also search $prefix/include. */
+#undef PREFIX_INCLUDE_DIR
 
 /* Define if you have the __argz_count function.  */
 #undef HAVE___ARGZ_COUNT
@@ -509,8 +512,6 @@
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
 
-/* Define if cpp should also search $prefix/include. */
-#undef PREFIX_INCLUDE_DIR
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor
    __cplusplus are defined.  That's a problem since we use `const' in
