@@ -2668,7 +2668,7 @@ emit_move_insn_1 (x, y)
 
 		      rtx cmem = change_address (mem, mode, NULL_RTX);
 
-		      cfun->cannot_inline = "function uses short complex types";
+		      cfun->cannot_inline = N_("function using short complex types cannot be inline");
 
 		      if (packed_dest_p)
 			{
