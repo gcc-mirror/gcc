@@ -1,3 +1,30 @@
+Sun Apr 18 15:50:33 EDT 1999  John Wehle  (john@feith.com)
+
+	* output.h (current_function_is_leaf,
+	current_function_uses_only_leaf_regs): Declare.
+	* function.c (current_function_is_leaf,
+	current_function_uses_only_leaf_regs): Define.
+	(init_function_start): Initialize current_function_is_leaf
+	and current_function_uses_only_leaf_regs.
+	* final.c (leaf_function): Don't define.
+	(final_start_function): Replace uses of leaf_function with
+	current_function_uses_only_leaf_regs.
+	* toplev.c (rest_of_compilation): Set current_function_is_leaf
+	prior to invoking local register allocation.
+	(rest_of_compilation): Replace uses of leaf_function with
+	current_function_uses_only_leaf_regs.
+	* dbxout.c (dbxout_symbol, dbxout_parms): Likewise.
+	* dwarf2out.c (add_location_or_const_vaule_attribute): Likewise.
+	* dwarfout.c (add_location_or_const_value_attribute): Likewise.
+	* sdbout.c (sdbout_symbol): Likewise.
+	* sparc.h (FUNCTION_PROLOGUE, FUNCTION_EPILOGUE): Likewise.
+	* sparc.c (eligible_for_epilogue_delay, output_return,
+	sparc_return_peephole_ok): Likewise.
+	* sparc.md (leaf_function attribute, untyped_return): Likewise.
+	* i386.c (ix86_compute_frame_size): Don't align the stack
+	for leaf functions which don't allocate any stack slots.
+	* tm.texi: Update documentation.
+
 Sun Apr 18 02:15:09 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
@@ -1150,7 +1177,7 @@ Fri Apr  2 14:12:06 1999  John Wehle  (john@feith.com)
 	* i386.md: Delete floating point compare, add, subtract,
 	multiply, and divide patterns which allowed integer
 	operands.
-	* i386.c (output_386_binary_op): Delete unused code.
+	* i386.c (output_387_binary_op): Delete unused code.
 	(output_float_compare): Likewise.
 
 Fri Apr  2 11:53:37 1999  John Wehle  (john@feith.com)

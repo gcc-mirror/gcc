@@ -1838,10 +1838,10 @@ do {									\
    to do a "save" insn.  The decision about whether or not
    to do this is made in regclass.c.  */
 
-extern int leaf_function;
 #define FUNCTION_PROLOGUE(FILE, SIZE) \
   (TARGET_FLAT ? sparc_flat_output_function_prologue (FILE, (int)SIZE) \
-   : output_function_prologue (FILE, (int)SIZE, leaf_function))
+   : output_function_prologue (FILE, (int)SIZE, \
+			       current_function_uses_only_leaf_regs))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.
@@ -2216,7 +2216,8 @@ extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
   (TARGET_FLAT ? sparc_flat_output_function_epilogue (FILE, (int)SIZE) \
-   : output_function_epilogue (FILE, (int)SIZE, leaf_function))
+   : output_function_epilogue (FILE, (int)SIZE, \
+			       current_function_uses_only_leaf_regs))
 
 #define DELAY_SLOTS_FOR_EPILOGUE \
   (TARGET_FLAT ? sparc_flat_epilogue_delay_slots () : 1)

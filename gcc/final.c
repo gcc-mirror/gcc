@@ -131,11 +131,6 @@ Boston, MA 02111-1307, USA.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #endif
 
-/* Nonzero means this function is a leaf function, with no function calls. 
-   This variable exists to be examined in FUNCTION_PROLOGUE
-   and FUNCTION_EPILOGUE.  Always zero, unless set by some action.  */
-int leaf_function;
-
 /* Last insn processed by final_scan_insn.  */
 static rtx debug_insn = 0;
 
@@ -1634,7 +1629,7 @@ final_start_function (first, file, optimize)
 	output_source_line (file, first);
 
 #ifdef LEAF_REG_REMAP
-  if (leaf_function)
+  if (current_function_uses_only_leaf_regs)
     leaf_renumber_regs (first);
 #endif
 
