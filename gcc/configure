@@ -5241,7 +5241,7 @@ for machine in $build $host $target; do
 		then
 			xmake_file=rs6000/x-aix41-gld
 		else
-			xmake_file=rx6000/x-aix41
+			xmake_file=rs6000/x-aix41
 		fi
 		float_format=none
 		use_collect2=yes
