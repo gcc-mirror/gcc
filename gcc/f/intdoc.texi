@@ -2709,14 +2709,14 @@ to one type for @var{X}.
 
 @noindent
 @example
-CALL CTime(@var{Result}, @var{STime})
+CALL CTime(@var{STime}, @var{Result})
 @end example
 
 @noindent
-@var{Result}: @code{CHARACTER}; scalar; INTENT(OUT).
+@var{STime}: @code{INTEGER}; scalar; INTENT(IN).
 
 @noindent
-@var{STime}: @code{INTEGER}; scalar; INTENT(IN).
+@var{Result}: @code{CHARACTER}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -4120,14 +4120,14 @@ to one type for @var{X}.
 
 @noindent
 @example
-CALL DTime(@var{Result}, @var{TArray})
+CALL DTime(@var{TArray}, @var{Result})
 @end example
 
 @noindent
-@var{Result}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{TArray}: @code{REAL(KIND=1)}; DIMENSION(2); INTENT(OUT).
 
 @noindent
-@var{TArray}: @code{REAL(KIND=1)}; DIMENSION(2); INTENT(OUT).
+@var{Result}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -4294,14 +4294,14 @@ See @code{erfc(3m)}, which provides the implementation.
 
 @noindent
 @example
-CALL ETime(@var{Result}, @var{TArray})
+CALL ETime(@var{TArray}, @var{Result})
 @end example
 
 @noindent
-@var{Result}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{TArray}: @code{REAL(KIND=1)}; DIMENSION(2); INTENT(OUT).
 
 @noindent
-@var{TArray}: @code{REAL(KIND=1)}; DIMENSION(2); INTENT(OUT).
+@var{Result}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -10495,14 +10495,14 @@ external procedure.
 
 @noindent
 @example
-CALL TtyNam(@var{Name}, @var{Unit})
+CALL TtyNam(@var{Unit}, @var{Name})
 @end example
 
 @noindent
-@var{Name}: @code{CHARACTER}; scalar; INTENT(OUT).
+@var{Unit}: @code{INTEGER}; scalar; INTENT(IN).
 
 @noindent
-@var{Unit}: @code{INTEGER}; scalar; INTENT(IN).
+@var{Name}: @code{CHARACTER}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -10511,7 +10511,7 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Sets @var{Name} to the name of the terminal device open on logical unit
-@var{Unit} or a blank string if @var{Unit} is not connected to a
+@var{Unit} or to a blank string if @var{Unit} is not connected to a
 terminal.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
