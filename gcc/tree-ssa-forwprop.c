@@ -212,6 +212,11 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 			  || !CONSTANT_CLASS_P (op1)
 			  || !INTEGRAL_TYPE_P (TREE_TYPE (op1)))
 			continue;
+		      
+		      /* Don't propagate if the first operand occurs in
+		         an abnormal PHI.  */
+		      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+		        continue;
 		    }
 
 		  /* These cases require comparisons of a naked SSA_NAME or
@@ -235,6 +240,18 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 			      || (TREE_CODE (op1) != SSA_NAME
 				  && !is_gimple_min_invariant (op1)))
 			    continue;
+		      
+			  /* Don't propagate if the first operand occurs in
+			     an abnormal PHI.  */
+			  if (TREE_CODE (op0) == SSA_NAME
+			      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+			    continue;
+		      
+			  /* Don't propagate if the second operand occurs in
+			     an abnormal PHI.  */
+			  if (TREE_CODE (op1) == SSA_NAME
+			      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))
+			    continue;
 		        }
 
 		      /* If TEST_VAR is set from a TRUTH_NOT_EXPR, then it
@@ -246,6 +263,12 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 			  /* DEF_RHS must be an SSA_NAME or constant.  */
 			  if (TREE_CODE (def_rhs) != SSA_NAME
 			      && !is_gimple_min_invariant (def_rhs))
+			    continue;
+		      
+			  /* Don't propagate if the operand occurs in
+			     an abnormal PHI.  */
+			  if (TREE_CODE (def_rhs) == SSA_NAME
+			      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def_rhs))
 			    continue;
 			}
 
@@ -267,6 +290,13 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 				  && INTEGRAL_TYPE_P (outer_type)))
 			    ;
 			  else
+			    continue;
+		      
+			  /* Don't propagate if the operand occurs in
+			     an abnormal PHI.  */
+			  if (TREE_CODE (TREE_OPERAND (def_rhs, 0)) == SSA_NAME
+			      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND
+					                          (def_rhs, 0)))
 			    continue;
 			}
 		      else

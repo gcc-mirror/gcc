@@ -1,3 +1,9 @@
+2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17624
+	* tree-ssa-forwprop.c (record_single_argument_cond_exprs):
+	Reject if any of the operands occur in an abnormal PHI.
+
 2004-09-24  Andreas Schwab  <schwab@suse.de>
 
 	* tree-ssa-dom.c (record_range): Fix violation of strict aliasing
