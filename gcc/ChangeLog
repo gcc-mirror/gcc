@@ -1,3 +1,9 @@
+2002-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* stor-layout.c (place_union_field): For bitfields if
+	PCC_BITFIELD_TYPE_MATTERS and TYPE_USER_ALIGN, set record's
+	TYPE_USER_ALIGN.
+
 2002-08-07  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
