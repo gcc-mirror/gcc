@@ -914,7 +914,7 @@ OBJS-common = \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
  simplify-rtx.o sreal.o stmt.o stor-layout.o stringpool.o 	 	  \
  targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o unroll.o	   \
- varasm.o varray.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
+ varasm.o varray.o vec.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
  et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
  rtl-profile.o tree-profile.o rtlhooks.o cfgexpand.o
 
@@ -1990,6 +1990,7 @@ global.o : global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS
    toplev.h $(TM_P_H)
 varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h $(GGC_H) errors.h \
    $(HASHTAB_H)
+vec.o : vec.c $(CONFIG_H) coretypes.h vec.h ggc.h errors.h
 ra.o : ra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h \
    $(RECOG_H) $(INTEGRATE_H) function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) $(DF_H) $(EXPR_H) output.h toplev.h $(FLAGS_H) reload.h $(RA_H)
@@ -2515,7 +2516,7 @@ gengtype.o : gengtype.c gengtype.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)
   real.h $(RTL_BASE_H) gtyp-gen.h
 
 gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h \
-  $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)
+  $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) vec.h
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	 $< $(OUTPUT_OPTION)
 
