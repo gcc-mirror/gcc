@@ -185,9 +185,8 @@ static void store_unaligned_arguments_into_pseudos PARAMS ((struct arg_data *,
 static int finalize_must_preallocate		PARAMS ((int, int,
 							 struct arg_data *,
 							 struct args_size *));
-static void precompute_arguments 		PARAMS ((int, int, int,
-							 struct arg_data *,
-							 struct args_size *));
+static void precompute_arguments 		PARAMS ((int, int,
+							 struct arg_data *));
 static int compute_argument_block_size		PARAMS ((int, 
 							 struct args_size *,
 							 int));
@@ -1417,23 +1416,17 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 
    FLAGS is mask of ECF_* constants.
 
-   MUST_PREALLOCATE indicates that we must preallocate stack space for
-   any stack arguments.
-
    NUM_ACTUALS is the number of arguments.
 
    ARGS is an array containing information for each argument; this routine
-   fills in the INITIAL_VALUE and VALUE fields for each precomputed argument.
-
-   ARGS_SIZE contains information about the size of the arg list.  */
+   fills in the INITIAL_VALUE and VALUE fields for each precomputed argument.  
+   */
 
 static void
-precompute_arguments (flags, must_preallocate, num_actuals, args, args_size)
+precompute_arguments (flags, num_actuals, args)
      int flags;
-     int must_preallocate;
      int num_actuals;
      struct arg_data *args;
-     struct args_size *args_size;
 {
   int i;
 
@@ -1448,15 +1441,13 @@ precompute_arguments (flags, must_preallocate, num_actuals, args, args_size)
      on the stack, then we must precompute any parameter which contains a
      function call which will store arguments on the stack.
      Otherwise, evaluating the parameter may clobber previous parameters
-     which have already been stored into the stack.  */
+     which have already been stored into the stack.  (we have code to avoid
+     such case by saving the ougoing stack arguments, but it results in
+     worse code)  */
 
   for (i = 0; i < num_actuals; i++)
     if ((flags & (ECF_CONST | ECF_PURE))
-	|| ((args_size->var != 0 || args_size->constant != 0)
-	    && calls_function (args[i].tree_value, 1))
-	|| (must_preallocate
-	    && (args_size->var != 0 || args_size->constant != 0)
-	    && calls_function (args[i].tree_value, 0)))
+	|| calls_function (args[i].tree_value, !ACCUMULATE_OUTGOING_ARGS))
       {
 	/* If this is an addressable type, we cannot pre-evaluate it.  */
 	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
@@ -2481,8 +2472,7 @@ expand_call (exp, target, ignore)
 	structure_value_addr = copy_to_reg (structure_value_addr);
 
       /* Precompute any arguments as needed.  */
-      precompute_arguments (flags, must_preallocate, num_actuals,
-			    args, &args_size);
+      precompute_arguments (flags, num_actuals, args);
 
       /* Now we are about to start emitting insns that can be deleted
 	 if a libcall is deleted.  */
