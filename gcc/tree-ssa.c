@@ -289,7 +289,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
     {
       tree op = PHI_ARG_DEF (phi, i);
 
-      e = PHI_ARG_EDGE (phi, i);
+      e = EDGE_PRED (bb, i);
 
       if (op == NULL_TREE)
 	{
