@@ -1,3 +1,8 @@
+1998-06-11  Benjamin Kosnik  <bkoz@elmo.cygnus.com>
+
+	* friend.c (do_friend): Add support for nested classes using
+ 	member functions of the enclosing class as friends.
+
 1998-06-10  Mark Mitchell  <mark@markmitchell.com>
 
 	* call.c (convert_default_arg): Make global, not static.
