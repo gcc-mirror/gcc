@@ -1,3 +1,13 @@
+2003-11-17  Scott Snyder  <snyder@fnal.gov>
+
+	PR debug/11325
+	* dwarf2out.c (struct die_struct): Add die_definition field.
+	(add_AT_specification): New.
+	(gen_subprogram_die, gen_variable_die,
+	gen_struct_or_union_type_die): Use it.
+	(prune_unused_types_mark): If we're marking a forward declaration,
+	also mark the full definition, if it exists.
+
 2003-11-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.h (BUILD_VA_LIST_TYPE): Delete.
