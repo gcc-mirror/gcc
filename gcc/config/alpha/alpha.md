@@ -38,6 +38,7 @@
 ;;	3	builtin_longjmp
 ;;	4	trapb
 ;;	5	prologue_stack_probe_loop
+;;	6	realign
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -51,8 +52,12 @@
 ;; separately.
 
 (define_attr "type"
-  "ild,fld,ldsym,ist,fst,ibr,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof"
+  "ild,fld,ldsym,ist,fst,ibr,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   (const_string "iadd"))
+
+;; Describe a user's asm statement.
+(define_asm_attributes
+  [(set_attr "type" "multi")])
 
 ;; Define the operand size an insn operates on.  Used primarily by mul
 ;; and div operations that have size dependant timings.
@@ -3833,12 +3838,6 @@
   "jmp $31,(%0),0"
   [(set_attr "type" "ibr")])
 
-(define_insn "nop"
-  [(const_int 0)]
-  ""
-  "nop"
-  [(set_attr "type" "ilog")])
-
 (define_expand "tablejump"
   [(use (match_operand:SI 0 "register_operand" ""))
    (use (match_operand:SI 1 "" ""))]
@@ -5124,7 +5123,8 @@
 
   return \"\";
 }"
-  [(set_attr "length" "16")])
+  [(set_attr "length" "16")
+   (set_attr "type" "multi")])
 
 (define_expand "prologue"
   [(clobber (const_int 0))]
@@ -5171,13 +5171,15 @@
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT && TARGET_AS_CAN_SUBTRACT_LABELS"
   "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)"
-  [(set_attr "length" "8")])
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
 
 (define_insn ""
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "br $27,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($27)"
-  [(set_attr "length" "12")])
+  [(set_attr "length" "12")
+   (set_attr "type" "multi")])
 
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)
@@ -5209,7 +5211,8 @@
    (clobber (reg:DI 0))]
   "TARGET_OPEN_VMS"
   "lda $0,OTS$HOME_ARGS\;ldq $0,8($0)\;jsr $0,OTS$HOME_ARGS"
-  [(set_attr "length" "16")])
+  [(set_attr "length" "16")
+   (set_attr "type" "multi")])
 
 ;; Close the trap shadow of preceeding instructions.  This is generated
 ;; by alpha_reorg.
@@ -5219,6 +5222,31 @@
   ""
   "trapb"
   [(set_attr "type" "misc")])
+
+;; No-op instructions used by machine-dependant reorg to preserve
+;; alignment for instruction issue.
+
+(define_insn "nop"
+  [(const_int 0)]
+  ""
+  "nop"
+  [(set_attr "type" "ilog")])
+
+(define_insn "fnop"
+  [(const_int 1)]
+  "TARGET_FP"
+  "fnop"
+  [(set_attr "type" "fcpys")])
+
+(define_insn "unop"
+  [(const_int 2)]
+  ""
+  "unop")
+
+(define_insn "realign"
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] 6)]
+  ""
+  ".align %0 #realign")
 
 ;; Peepholes go at the end.
 

@@ -1416,7 +1416,7 @@ alpha_emit_conditional_move (cmp, mode)
       abort ();
     }
 
-  /* ??? We mark the the branch mode to be CCmode to prevent the compare
+  /* ??? We mark the branch mode to be CCmode to prevent the compare
      and cmov from being combined, since the compare insn follows IEEE
      rules that the cmov does not.  */
   if (alpha_compare_fp_p && !flag_fast_math)
@@ -4090,10 +4090,7 @@ alpha_handle_trap_shadows (insns)
 {
   struct shadow_summary shadow;
   int trap_pending, exception_nesting;
-  rtx i;
-
-  if (alpha_tp == ALPHA_TP_PROG && !flag_exceptions)
-    return;
+  rtx i, n;
 
   trap_pending = 0;
   exception_nesting = 0;
@@ -4196,7 +4193,9 @@ alpha_handle_trap_shadows (insns)
 	      else
 		{
 		close_shadow:
-		  emit_insn_before (gen_trapb (), i);
+		  n = emit_insn_before (gen_trapb (), i);
+		  PUT_MODE (n, TImode);
+		  PUT_MODE (i, TImode);
 		  trap_pending = 0;
 		  shadow.used.i = 0;
 		  shadow.used.fp = 0;
@@ -4218,14 +4217,344 @@ alpha_handle_trap_shadows (insns)
 	}
     }
 }
+
+#ifdef HAIFA
+/* Alpha can only issue instruction groups simultaneously if they are
+   suitibly aligned.  This is very processor-specific.  */
 
+enum alphaev5_pipe {
+  EV5_STOP = 0,
+  EV5_NONE = 1,
+  EV5_E01 = 2,
+  EV5_E0 = 4,
+  EV5_E1 = 8,
+  EV5_FAM = 16,
+  EV5_FA = 32,
+  EV5_FM = 64
+};
+
+static enum alphaev5_pipe
+alphaev5_insn_pipe (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) < 0)
+    return EV5_STOP;
+  if (get_attr_length (insn) != 4)
+    return EV5_STOP;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_ILD:
+    case TYPE_FLD:
+    case TYPE_LDSYM:
+    case TYPE_IADD:
+    case TYPE_ILOG:
+    case TYPE_ICMOV:
+    case TYPE_ICMP:
+      return EV5_E01;
+
+    case TYPE_IST:
+    case TYPE_FST:
+    case TYPE_SHIFT:
+    case TYPE_IMUL:
+    case TYPE_MISC:
+    case TYPE_MVI:
+      return EV5_E0;
+
+    case TYPE_IBR:
+    case TYPE_JSR:
+      return EV5_E1;
+
+    case TYPE_FCPYS:
+      return EV5_FAM;
+
+    case TYPE_FBR:
+    case TYPE_FCMOV:
+    case TYPE_FADD:
+    case TYPE_FDIV:
+      return EV5_FA;
+
+    case TYPE_FMUL:
+      return EV5_FM;
+    }
+  abort();
+}
+
+/* IN_USE is a mask of the slots currently filled within the
+   insn group.  The mask bits come from alphaev5_pipe above.
+   If EV5_E01 is set, then the insn in EV5_E0 can be swapp
+   by the hardware into EV5_E1. 
+
+   LEN is, of course, the length of the group in bytes.  */
+
+static rtx
+alphaev5_next_group (insn, pin_use, plen)
+     rtx insn;
+     int *pin_use, *plen;
+{
+  int len, in_use;
+
+  len = in_use = 0;
+
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    goto next;
+
+  do
+    {
+      enum alphaev5_pipe pipe;
+      rtx prev;
+
+      pipe = alphaev5_insn_pipe (insn);
+      switch (pipe)
+	{
+	case EV5_STOP:
+	  /* Force complex instructions to start new groups.  */
+	  if (in_use)
+	    goto done;
+
+	  /* If this is a completely unrecognized insn, its an asm.
+	     We don't know how long it is, so record length as -1 to
+	     signal a needed realignment.  */
+	  if (recog_memoized (insn) < 0)
+	    len = -1;
+	  else
+	    len = get_attr_length (insn);
+	  goto next;
+
+	/* ??? Most of the places below, we would like to abort, as 
+	   it would indicate an error either in Haifa, or in the 
+	   scheduling description.  Unfortunately, Haifa never 
+	   schedules the last instruction of the BB, so we don't
+	   have an accurate TI bit to go off.  */
+	case EV5_E01:
+	  if (in_use & EV5_E0)
+	    {
+	      if (in_use & EV5_E1)
+		goto done;
+	      in_use |= EV5_E1;
+	    }
+	  else
+	    in_use |= EV5_E0 | EV5_E01;
+	  break;
+
+	case EV5_E0:
+	  if (in_use & EV5_E0)
+	    {
+	      if (!(in_use & EV5_E01) || in_use & EV5_E1)
+		goto done;
+	      in_use |= EV5_E1;
+	    }
+	  in_use |= EV5_E0;
+	  break;
+
+	case EV5_E1:
+	  if (in_use & EV5_E1)
+	    goto done;
+	  in_use |= EV5_E1;
+	  break;
+
+	case EV5_FAM:
+	  if (in_use & EV5_FA)
+	    {
+	      if (in_use & EV5_FM)
+		goto done;
+	      in_use |= EV5_FM;
+	    }
+	  else
+	    in_use |= EV5_FA | EV5_FAM;
+	  break;
+
+	case EV5_FA:
+	  if (in_use & EV5_FA)
+	    goto done;
+	  in_use |= EV5_FA;
+	  break;
+
+	case EV5_FM:
+	  if (in_use & EV5_FM)
+	    goto done;
+	  in_use |= EV5_FM;
+	  break;
+
+	case EV5_NONE:
+	  break;
+
+	default:
+	  abort();
+	}
+      len += 4;
+      
+      /* Haifa doesn't do well scheduling branches.  */
+      /* ??? If this is predicted not-taken, slotting continues, except
+	 that no more IBR, FBR, or JSR insns may be slotted.  */
+      if (GET_CODE (insn) == JUMP_INSN)
+	goto next;
+
+      insn = next_nonnote_insn (insn);
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	goto done;
+
+      /* Let Haifa tell us where it thinks insn group boundaries are.  */
+      if (GET_MODE (insn) == TImode)
+	goto done;
+
+    }
+  while (insn);
+
+ done:
+  *plen = len;
+  *pin_use = in_use;
+  return insn;
+
+ next:
+  insn = next_nonnote_insn (insn);
+  goto done;
+}
+
+static void
+alphaev5_align_insns (insns)
+     rtx insns;
+{
+  /* ALIGN is the known alignment for the insn group.  */
+  int align;
+  /* OFS is the offset of the current insn in the insn group.  */
+  int ofs;
+  int prev_in_use, in_use, len;
+  rtx i, next;
+
+  /* Let shorten branches care for assigning alignments to code labels.  */
+  shorten_branches (insns);
+
+  ofs = prev_in_use = 0;
+  if (alpha_does_function_need_gp())
+    {
+      ofs = 8;
+      prev_in_use = EV5_E01 | EV5_E0;
+    }
+  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < 16
+	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : 16);
+
+  i = insns;
+  if (GET_CODE (i) == NOTE)
+    i = next_nonnote_insn (i);
+
+  while (i)
+    {
+      next = alphaev5_next_group (i, &in_use, &len);
+
+      /* When we see a label, resync alignment etc.  */
+      if (GET_CODE (i) == CODE_LABEL)
+	{
+	  int new_align = 1 << label_to_alignment (i);
+	  if (new_align >= align)
+	    {
+	      align = new_align < 16 ? new_align : 16;
+	      ofs = 0;
+	    }
+	  else if (ofs & (new_align-1))
+	    ofs = (ofs | (new_align-1)) + 1;
+	  if (len != 0)
+	    abort();
+	}
+
+      /* Handle complex instructions special.  */
+      else if (in_use == 0)
+	{
+	  /* Asms will have length < 0.  This is a signal that we have
+	     lost alignment knowledge.  Assume, however, that the asm
+	     will not mis-align instructions.  */
+	  if (len < 0)
+	    {
+	      ofs = 0;
+	      align = 4;
+	      len = 0;
+	    }
+	}
+
+      /* If the known alignment is smaller than the recognized insn group,
+	 realign the output.  */
+      else if (align < len)
+	{
+	  int new_log_align = len > 8 ? 4 : 3;
+	  rtx where;
+
+	  where = prev_nonnote_insn (i);
+	  if (!where || GET_CODE (where) != CODE_LABEL)
+	    where = i;
+
+	  emit_insn_before (gen_realign (GEN_INT (new_log_align)), where);
+	  align = 1 << new_log_align;
+	  ofs = 0;
+	}
+
+      /* If the group won't fit in the same INT16 as the previous,
+	 we need to add padding to keep the group together.  Rather
+	 than simply leaving the insn filling to the assembler, we
+	 can make use of the knowledge of what sorts of instructions
+	 were issued in the previous group to make sure that all of
+	 the added nops are really free.  */
+      else if (ofs + len > align)
+	{
+	  int nop_count = (align - ofs) / 4;
+	  rtx where;
+
+	  where = prev_nonnote_insn (i);
+	  if (!where || GET_CODE (where) != CODE_LABEL)
+	    where = i;
+
+	  do 
+	    {
+	      if (!(prev_in_use & EV5_E1))
+		{
+		  prev_in_use |= EV5_E1;
+		  emit_insn_before (gen_nop(), where);
+		}
+	      else if (TARGET_FP && !(prev_in_use & EV5_FA))
+		{
+		  prev_in_use |= EV5_FA;
+		  emit_insn_before (gen_fnop(), where);
+		}
+	      else if (TARGET_FP && !(prev_in_use & EV5_FM))
+		{
+		  prev_in_use |= EV5_FM;
+		  emit_insn_before (gen_fnop(), where);
+		}
+	      else
+		emit_insn_before (gen_unop(), where);
+	    }
+	  while (--nop_count);
+	  ofs = 0;
+	}
+
+      ofs = (ofs + len) & (align - 1);
+      prev_in_use = in_use;
+      i = next;
+    }
+}
+#endif /* HAIFA */
+
 /* Machine dependant reorg pass.  */
 
 void
 alpha_reorg (insns)
      rtx insns;
 {
-  alpha_handle_trap_shadows (insns);
+  if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
+    alpha_handle_trap_shadows (insns);
+
+#ifdef HAIFA
+  /* Due to the number of extra trapb insns, don't bother fixing up
+     alignment when trap precision is instruction.  Moreover, we can
+     only do our job when sched2 is run and Haifa is our scheduler.  */
+  if (optimize && !optimize_size
+      && alpha_tp != ALPHA_TP_INSN
+      && flag_schedule_insns_after_reload)
+    {
+      if (alpha_cpu == PROCESSOR_EV5)
+	alphaev5_align_insns (insns);
+    }
+#endif
 }
 
 

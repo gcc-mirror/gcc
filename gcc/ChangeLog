@@ -1,3 +1,22 @@
+Wed Aug 26 18:38:15 1998  Richard Henderson  <rth@cygnus.com>
+
+        * haifa-sched.c (last_clock_var): New.
+        (schedule_block): Initialize it.
+        (schedule_insn): Use it to fill insn modes with issue information.
+
+	* alpha.c (alpha_handle_trap_shadows): Remove do-nothing exit.
+	Tag trapb and next insn with TImode.
+	(alphaev5_insn_pipe, alphaev5_next_group, alphaev5_align_insns): New.
+	(alpha_reorg): Add conditional for alpha_handle_trap_shadows.
+	Invoke alphaev5_align_insns as appropriate.
+	* alpha.h (LABEL_ALIGN_AFTER_BARRIER): Was ALIGN_LABEL_AFTER_BARRIER.
+	(MD_SCHED_VARIABLE_ISSUE): New.
+	* alpha.md (attr type): Add multi.
+	(define_asm_attributes): New.
+	(prologue_stack_probe_loop, builtin_setjmp_receiver): Set type multi.
+	(arg_home): Likewise.
+	(fnop, unop, realign): New.
+
 Wed Aug 26 15:55:41 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* iris5.h (PREFERRED_DEBUGGING_TYPE): Undef.
