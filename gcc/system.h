@@ -610,4 +610,9 @@ extern void abort PARAMS ((void));
 #define UNION_INIT_ZERO
 #endif
 
+/* GCC now gives implicit declaration warnings for undeclared builtins.  */
+#if defined(__GNUC__) && defined (__SIZE_TYPE__)
+extern void *alloca (__SIZE_TYPE__);
+#endif
+
 #endif /* __GCC_SYSTEM_H__ */
