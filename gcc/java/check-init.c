@@ -695,8 +695,6 @@ check_init (exp, before)
 	check_init (TREE_OPERAND (exp, 1), before);
 	done_alternative (before, &alt);
 	FREE_BUFFER(alt.saved, buf);
-	if (alt.saved != buf)
-	  FREE_WORDS (alt.saved);
 	END_ALTERNATIVES (before, alt);
 	return;
       }
