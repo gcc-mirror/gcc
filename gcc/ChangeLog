@@ -1,3 +1,8 @@
+2001-05-15  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/sysv4.h (ASM_PREFERRED_EH_DATA_FORMAT): Treat
+	TARGET_RELOCATABLE like flag_pic for now.
+
 2001-05-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movdi splitter): Sign extend more efficiently.
