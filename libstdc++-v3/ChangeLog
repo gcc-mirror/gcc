@@ -1,3 +1,10 @@
+2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/10063
+	* config/io/basic_file_stdio.cc (__basic_file::sys_open): Sync.
+	* testsuite/ext/stdio_filebuf/char/10063-1.cc: New.
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: New.
+	
 2003-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_put::do_put(void*)):
