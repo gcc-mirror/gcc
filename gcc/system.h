@@ -505,6 +505,19 @@ extern int snprintf (char *, size_t, const char *, ...);
 extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
+/* Use gcc_assert(EXPR) to test invariants.  */
+#if ENABLE_ASSERT_CHECKING
+#define gcc_assert(EXPR) 						\
+   ((void)(__builtin_expect (!(EXPR), 0)				\
+	   ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
+#else
+#define gcc_assert(EXPR) ((void)0)
+#endif
+
+/* Use gcc_unreachable() to mark unreachable locations (like an
+   unreachable default case of a switch.  Do not use gcc_assert(0).  */
+#define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
+
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
    and even if it is, it is liable to be buggy.

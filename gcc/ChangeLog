@@ -1,3 +1,12 @@
+2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.ac: Add ENABLE_ASSERT_CHECKING control.
+	Add is_release variable, use it for --enable-werror and
+	--enable-checking defaults.
+	* system.h (gcc_assert, gcc_unreachable): New.
+	* doc/install.texi (--enable-checking): Update.
+	* configure, config.in: Rebuilt.
+
 2004-08-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	* rtl.h (read_rtx): Change prototype.

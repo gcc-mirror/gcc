@@ -21,6 +21,9 @@
    __cxa_atexit in libc. */
 #undef DEFAULT_USE_CXA_ATEXIT
 
+/* Define if you want assertions enabled. This is a cheap check. */
+#undef ENABLE_ASSERT_CHECKING
+
 /* Define if you want more run-time sanity checks. This one gets a grab bag of
    miscellaneous but relatively cheap checks. */
 #undef ENABLE_CHECKING
