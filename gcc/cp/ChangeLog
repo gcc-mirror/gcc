@@ -1,5 +1,7 @@
 1998-06-04  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* tree.c (really_overloaded_fn): Only see through one TREE_LIST.
+
 	* error.c (dump_expr): Clean up NEW_EXPR case.
 
 1998-06-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
