@@ -1584,6 +1584,7 @@ output_func_start_profiler ()
   char *name, *cfnname;
   rtx table_address;
   enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
+  int save_flag_inline_functions = flag_inline_functions;
 
   /* It's either already been output, or we don't need it because we're
      not doing profile-arcs. */
@@ -1628,7 +1629,17 @@ output_func_start_profiler ()
 
   expand_function_end (input_filename, lineno, 0);
   poplevel (1, 0, 1);
+
+  /* Since fndecl isn't in the list of globals, it would never be emitted
+     when it's considered to be 'safe' for inlining, so turn off
+     flag_inline_functions.  */
+  flag_inline_functions = 0;
+
   rest_of_compilation (fndecl);
+
+  /* Reset flag_inline_functions to its original value.  */
+  flag_inline_functions = save_flag_inline_functions;
+
   fflush (asm_out_file);
   current_function_decl = NULL_TREE;
 

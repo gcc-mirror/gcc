@@ -1,3 +1,8 @@
+Fri Oct 31 00:16:55 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* profile.c (output_func_start_profiler): Clear flag_inline_functions
+	for the duration of the call to rest_of_compilation.
+
 Thu Oct 30 14:40:10 1997  Doug Evans  <devans@canuck.cygnus.com>
 
 	* configure.in (sparc-*-elf*): Use sparc/elf.h, sparc/t-elf.
