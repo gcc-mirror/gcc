@@ -1,3 +1,41 @@
+2004-12-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (top_builddir): Set to `.'.
+	(OUTPUT_OPTION): Removed.
+	(LIBTOOL): New.
+	(LTLIBOBJS): New.
+	(EXTRA_LTOFILES): New.
+	(FLAGS_TO_PASS): Add EXTRA_LTOFILES.
+	(all): Remove stamp-picdir.
+	(LTCOMPILE): New.
+	(.c.lo): New rule.
+	(REQUIRED_LTOFILES): New.
+	(CONFIGURED_LTOFILES): New.
+	($(TARGETLIB)): Check .libs for PIC object files. Depend on
+	$(REQUIRED_LTOFILES) $(EXTRA_LTOFILES) $(LTLIBOBJS).
+	(stamp-picdir): Completely removed.
+	(maint-missing): Pass $(REQUIRED_LTOFILES)
+	$(CONFIGURED_LTOFILES) instead of (REQUIRED_OFILES)
+	$(CONFIGURED_OFILES)
+	(maint-buildall): Depend on $(REQUIRED_LTOFILES)
+	$(CONFIGURED_LTOFILES).
+	(mostlyclean): Also remove *.lo .libs.
+	Run "make maint-deps".
+
+	* aclocal.m4: Include ../libtool.m4.
+
+	* config.table: Don't check --enable-shared.
+
+	* configure.ac (AC_PROG_LIBTOOL): Add.
+	(AC_PROG_CC_C_O): Removed.
+	(OUTPUT_OPTION): Removed.
+	(NO_MINUS_C_MINUS_O): Removed.
+	(ltpexecute): New substitute.
+	(LIBOBJS): Cleanup.
+	* configure: Regenerated.
+
+	* maint-tool: Updated for .lo/libtool.
+
 2004-12-11  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac: Invoke AC_CHECK_SIZEOF for sizeof (int).
