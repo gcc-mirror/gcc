@@ -368,9 +368,6 @@ delete_basic_block (basic_block bb)
   while (EDGE_COUNT (bb->succs) != 0)
     remove_edge (EDGE_SUCC (bb, 0));
 
-  VEC_truncate (edge, bb->preds, 0);
-  VEC_truncate (edge, bb->succs, 0);
-
   if (dom_computed[CDI_DOMINATORS])
     delete_from_dominance_info (CDI_DOMINATORS, bb);
   if (dom_computed[CDI_POST_DOMINATORS])
