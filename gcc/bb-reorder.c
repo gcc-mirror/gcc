@@ -1318,7 +1318,7 @@ dump_scope_forest_1 (s, indent)
 
   fprintf (stderr, "%*s", indent, "");
   fprintf (stderr, "{ level %d (block %p)\n", s->level,
-	   NOTE_BLOCK (s->note_beg));
+	   (PTR) NOTE_BLOCK (s->note_beg));
 
   fprintf (stderr, "%*s%s", indent, "", "bbs:");
   for (i = 0; i < s->num_bbs; i++)

@@ -1,3 +1,11 @@
+2000-07-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* bitmap.c (debug_bitmap_file): Cast pointers to PTR for printing
+	with %p.
+	* ggc-page.c (debug_print_page_list, alloc_page, free_page,
+	ggc_alloc): Likewise.
+	* bb-reorder.c (dump_scope_forest_1): Likewise.
+
 2000-07-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* reload.c (find_reloads_toplev): Add new parameter
