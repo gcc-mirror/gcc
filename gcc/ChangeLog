@@ -1,3 +1,13 @@
+2002-03-24  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("*subsi3_zero_extendhi"): Allow address
+	register for operand 2.
+	("*subsi3_zero_extendqi"): Likewise.
+	("*iorhi3_gen"): Do the operation on the upper bits and then lower
+	bits so that it is compatible with a pop.
+	("*andhi3_gen"): Likewise.
+	("xorhi3"): Likewise.
+
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
 	PR optimization/5742
