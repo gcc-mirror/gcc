@@ -1,3 +1,8 @@
+2001-10-16  H.J. Lu <hjl@gnu.org>
+
+	* cp-tree.h (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK): Defined
+	for tree checking disabled.
+
 2001-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* cp-tree.h (VFIELD_NAME_FORMAT) [NO_DOLLAR_IN_LABEL &&
