@@ -1,5 +1,15 @@
 2003-06-10  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/compat/fp2-struct-check.h: New file.
+	* gcc.dg/compat/fp2-struct-defs.h: New file.
+	* gcc.dg/compat/fp2-struct-init.h: New file.
+	* gcc.dg/compat/struct-by-value-10_main.c: New file.
+	* gcc.dg/compat/struct-by-value-10_x.c: New file.
+	* gcc.dg/compat/struct-by-value-10_y.c: New file.
+	* gcc.dg/compat/struct-return-10_main.c: New file.
+	* gcc.dg/compat/struct-return-10_x.c: New file.
+	* gcc.dg/compat/struct-return-10_y.c: New file.
+
 	* gcc.dg/compat/compat-common.h: New file.
 	* gcc.dg/compat/fp-struct-check.h: Improve debugging output.
 	* gcc.dg/compat/fp-struct-test-by-value-x.h: Ditto.
