@@ -1,3 +1,8 @@
+Sun Jan 25 13:20:00 1998  Jason Merrill  <jason@rhino.cygnus.com>
+
+	* decl.c (cp_finish_decl): When bailing on a comdat variable, also
+	unset DECL_NOT_REALLY_EXTERN.
+
 Sat Dec 20 13:00:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Defer all templates but inline functions.

@@ -6737,9 +6737,12 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      if (flag_weak)
 		make_decl_one_only (decl);
 	      else
-		/* we can't do anything useful; leave vars for explicit
-                   instantiation.  */
-		DECL_EXTERNAL (decl) = 1;
+		{
+		  /* we can't do anything useful; leave vars for explicit
+		     instantiation.  */
+		  DECL_EXTERNAL (decl) = 1;
+		  DECL_NOT_REALLY_EXTERN (decl) = 0;
+		}
 	    }
 	}
 
