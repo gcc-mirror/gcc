@@ -340,7 +340,7 @@ give you comprehensive C++ source-level editing capabilities
 
 For each language compiled by GCC for which there is a standard, GCC
 attempts to follow one or more versions of that standard, possibly
-with some limitations.
+with some exceptions, and possibly with some extensions.
 
 GCC supports three versions of the C standard, although support for
 the most recent version is not yet complete.
