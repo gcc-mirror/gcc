@@ -1,3 +1,8 @@
+2001-03-05  Andrew Haley  <aph@redhat.com>
+
+	* typeck.c (convert_arguments): Don't do ellipsis conversion for
+	__built_in_constant_p.
+
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (build_static_cast): Allow enum to enum conversions
