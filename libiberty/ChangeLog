@@ -1,3 +1,8 @@
+2000-01-04  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* pexecute.c: Conditionally include string.h.
+	(fix_argv): Handle embedded whitespace in args for Mingw32. 
+
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (ac_libiberty_warn_cflags): Turn on warnings if
