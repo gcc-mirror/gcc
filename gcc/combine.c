@@ -739,14 +739,16 @@ combine_instructions (f, nregs)
 	  ;
 	}
     }
+  clear_bb_flags ();
 
+  EXECUTE_IF_SET_IN_SBITMAP (refresh_blocks, 0, this_basic_block,
+			     BASIC_BLOCK (this_basic_block)->flags |= BB_DIRTY);
+  new_direct_jump_p |= purge_all_dead_edges (0);
   delete_noop_moves (f);
 
-  if (need_refresh)
-    {
-      update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
-			PROP_DEATH_NOTES);
-    }
+  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+				    PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+				    | PROP_KILL_DEAD_CODE);
 
   /* Clean up.  */
   sbitmap_free (refresh_blocks);

@@ -3058,10 +3058,6 @@ rest_of_compilation (decl)
       rebuild_jump_labels_after_combine
 	= combine_instructions (insns, max_reg_num ());
 
-      /* Always purge dead edges, as we may eliminate an insn throwing
-         exception.  */
-      rebuild_jump_labels_after_combine |= purge_all_dead_edges (true);
-
       /* Combining insns may have turned an indirect jump into a
 	 direct jump.  Rebuid the JUMP_LABEL fields of jumping
 	 instructions.  */
