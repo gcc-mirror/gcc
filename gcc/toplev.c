@@ -4666,7 +4666,7 @@ main (argc, argv)
 		       lang);
 		}
 	    }
-	  if (argv[i][0] == '-' && argv[i][1] == 'g')
+	  else if (argv[i][0] == '-' && argv[i][1] == 'g')
 	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
 	  else
 	    error ("Unrecognized option `%s'", argv[i]);
