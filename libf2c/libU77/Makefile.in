@@ -105,7 +105,7 @@ ${srcdir}/stamp-h.in: configure.in acconfig.h
 	echo timestamp > ${srcdir}/stamp-h.in
 
 config.h: stamp-h
-stamp-h: config.h.in config.status
+stamp-h: config.hin config.status
 	$(SHELL) config.status
 	echo timestamp > stamp-h
 
