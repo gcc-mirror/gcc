@@ -140,14 +140,16 @@ Boston, MA 02111-1307, USA.  */
    the location counter to a multiple of 2**LOG bytes using the
    "nop" instruction as padding.  */
 
-#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)                    \
-  do {                                                         \
-    if ((LOG) < 3) {                                           \
-      ASM_OUTPUT_ALIGN (FILE,LOG);                             \
-    }                                                          \
-    else /* nop == ori r0,r0,0 */                              \
-      fprintf (FILE, "\t.align32 %d,0x60000000\n", (LOG));     \
-  } while (0);
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)                   \
+  do                                                          \
+    {                                                         \
+      if ((LOG) < 3)                                          \
+        {                                                     \
+          ASM_OUTPUT_ALIGN (FILE,LOG);                        \
+        }                                                     \
+      else /* nop == ori r0,r0,0 */                           \
+        fprintf (FILE, "\t.align32 %d,0x60000000\n", (LOG));  \
+    } while (0)
 
 /* Generate insns to call the profiler.  */
 
