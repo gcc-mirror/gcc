@@ -96,15 +96,13 @@ proc libstdc++_init { testfile } {
     # headers, or without assertions.
     global DEFAULT_CXXFLAGS
     if ![info exists DEFAULT_CXXFLAGS] then {
-	set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT"
-
 	# Set up includes for stdc++.h.gch, the precompiled header file.
 	if { [file exists $flags_file] } {
 	    set cxxpchflags [exec sh $flags_file --cxxpchflags]
 	} else {
 	    set cxxpchflags ""
 	}
-	append DEFAULT_CXXFLAGS " ${cxxpchflags}"
+	set DEFAULT_CXXFLAGS " ${cxxpchflags}"
 
 	# Host specific goo here.
 	if { [string match "powerpc-*-darwin*" $target_triplet] } {
@@ -195,7 +193,7 @@ proc libstdc++_init { testfile } {
             return "untested"
         }
       set cxx [transform "g++"]
-      set cxxflags "-ggdb3 -D_GLIBCXX_ASSERT"
+      set cxxflags "-ggdb3"
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
@@ -205,7 +203,7 @@ proc libstdc++_init { testfile } {
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set cxxflags "-ggdb3 -D_GLIBCXX_ASSERT"
+            set cxxflags "-ggdb3"
             set includes "-I${srcdir}"
         }
     }
