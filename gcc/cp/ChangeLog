@@ -1,3 +1,8 @@
+1998-11-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Add diagnostics for invalid array, reference
+	and pointer to member types.
+
 1998-11-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (my_friendly_abort): Don't fatal twice in a row.

@@ -5577,7 +5577,7 @@ tsubst (t, args, in_decl)
      tree t, args;
      tree in_decl;
 {
-  tree type;
+  tree type, r;
 
   if (t == NULL_TREE || t == error_mark_node
       || t == integer_type_node
@@ -5641,6 +5641,14 @@ tsubst (t, args, in_decl)
 	    return itype;
 	  }
 
+	if (pedantic && integer_zerop (max))
+	  pedwarn ("creating array with size zero");
+	else if (INT_CST_LT (max, integer_zero_node))
+	  {
+	    cp_error ("creating array with size `%E'", max);
+	    max = integer_one_node;
+	  }
+
 	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node, 1));
 	return build_index_type (max);
       }
@@ -5652,7 +5660,8 @@ tsubst (t, args, in_decl)
 	int idx;
 	int level;
 	int levels;
-	tree r = NULL_TREE;
+
+	r = NULL_TREE;
 
 	if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
 	    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
@@ -5693,7 +5702,6 @@ tsubst (t, args, in_decl)
 			   a template template parameter */
 			tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
 					      args, in_decl);
-			tree r;
 
 			/* We can get a TEMPLATE_TEMPLATE_PARM here when 
 			   we are resolving nested-types in the signature of 
@@ -5820,14 +5828,14 @@ tsubst (t, args, in_decl)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	tree r;
 	enum tree_code code;
 
 	if (type == TREE_TYPE (t))
 	  return t;
 
 	code = TREE_CODE (t);
-	if (TREE_CODE (type) == REFERENCE_TYPE) 
+	if (TREE_CODE (type) == REFERENCE_TYPE
+	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
 	  {
 	    static int   last_line = 0;
 	    static char* last_file = 0;
@@ -5838,9 +5846,12 @@ tsubst (t, args, in_decl)
 	    if (last_line != lineno ||
 		last_file != input_filename)
 	      {
-		cp_error ("cannot form type %s to reference type %T during template instantiation",
-			  (code == POINTER_TYPE) ? "pointer" : "reference",
-			  type);
+		if (TREE_CODE (type) == VOID_TYPE)
+		  cp_error ("forming reference to void");
+		else
+		  cp_error ("forming %s to reference type `%T'",
+			    (code == POINTER_TYPE) ? "pointer" : "reference",
+			    type);
 		last_line = lineno;
 		last_file = input_filename;
 	      }
@@ -5864,8 +5875,12 @@ tsubst (t, args, in_decl)
 	return r;
       }
     case OFFSET_TYPE:
-      return build_offset_type
-	(tsubst (TYPE_OFFSET_BASETYPE (t), args, in_decl), type);
+      {
+	r = tsubst (TYPE_OFFSET_BASETYPE (t), args, in_decl);
+	if (! IS_AGGR_TYPE (r))
+	  cp_error ("creating pointer to member of non-class type `%T'", r);
+	return build_offset_type (r, type);
+      }
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
@@ -5882,11 +5897,15 @@ tsubst (t, args, in_decl)
 	/* Construct a new type node and return it.  */
 	if (TREE_CODE (t) == FUNCTION_TYPE)
 	  fntype = build_function_type (type, arg_types);
-	else 
-	  fntype 
-	    = build_cplus_method_type (TREE_TYPE (TREE_VALUE (arg_types)),
-				       type,
-				       TREE_CHAIN (arg_types));
+	else
+	  {
+	    r = TREE_TYPE (TREE_VALUE (arg_types));
+	    if (! IS_AGGR_TYPE (r))
+	      cp_error ("creating pointer to member function of non-class type `%T'",
+			r);
+	      
+	    fntype = build_cplus_method_type (r, type, TREE_CHAIN (arg_types));
+	  }
 	fntype = build_qualified_type (fntype, TYPE_QUALS (t));
 
 	/* Substitue the exception specification. */
@@ -5901,9 +5920,26 @@ tsubst (t, args, in_decl)
     case ARRAY_TYPE:
       {
 	tree domain = tsubst (TYPE_DOMAIN (t), args, in_decl);
-	tree r;
 	if (type == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
 	  return t;
+
+	/* These checks should match the ones in grokdeclarator.  */
+	if (TREE_CODE (type) == VOID_TYPE)
+	  {
+	    cp_error ("creating array of void");
+	    type = build_pointer_type (type);
+	  }
+	else if (TREE_CODE (type) == FUNCTION_TYPE)
+	  {
+	    cp_error ("creating array of functions `%T'", type);
+	    type = build_pointer_type (type);
+	  }
+	else if (TREE_CODE (type) == REFERENCE_TYPE)
+	  {
+	    cp_error ("creating array of references `%T'", type);
+	    type = TREE_TYPE (type);
+	  }
+
 	r = build_cplus_array_type (type, domain);
 	return r;
       }
