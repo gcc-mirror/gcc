@@ -1,3 +1,8 @@
+2003-01-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (CONSTANT_ADDRESS_P): Allow CONST and
+	HIGH on all variants.
+
 Wed Jan  8 14:06:34 CET 2003  Josef Zlomek <zlomj9am@artax.karlin.mff.cuni.cz>
 	
 	* Makefile.in (PARTITION_H): New.
