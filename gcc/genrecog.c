@@ -396,8 +396,6 @@ add_to_sequence (pattern, last, position)
 	      new = add_to_sequence (XVECEXP (pattern, 2, i),
 				     &new->success, newpos);
 	    }
-
-	  this->success.first->enforce_mode = 0;
 	}
 
       return new;
@@ -413,7 +411,6 @@ add_to_sequence (pattern, last, position)
 	  new = add_to_sequence (XVECEXP (pattern, 1, i),
 				 &new->success, newpos);
 	}
-      this->success.first->enforce_mode = 0;
       return new;
 
     case MATCH_DUP:
