@@ -1,3 +1,15 @@
+2003-03-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (finish_options): New.
+	(COMMAND_LINE_OPTIONS, c_common_decode_option): Add -imacros.
+	(missing_arg): Handle OPT_include and OPT_imacros.
+	(c_common_init, c_common_parse_file): Use finish_options.
+	(handle_deferred_opts): Update.
+	* cppinit.c (struct cpp_pending): Remove imacros_head and imacros_tail.
+	(cpp_finish_options): Don't handle -imacros here.
+	(no_fil): Remove.
+	(COMMAND_LINE_OPTIONS, cpp_handle_option): Don't handle -imacros.
+
 2003-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Don't call
