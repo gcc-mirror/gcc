@@ -122,7 +122,7 @@ public abstract class EnumSyntax implements Cloneable, Serializable
    *
    * @return the enumeration values as strings
    */
-  public String[] getStringTable()
+  protected String[] getStringTable()
   {
     return null;
   }
@@ -134,7 +134,7 @@ public abstract class EnumSyntax implements Cloneable, Serializable
    *
    * @return the enumeration values
    */
-  public EnumSyntax[] getEnumValueTable()
+  protected EnumSyntax[] getEnumValueTable()
   {
     return null;
   }

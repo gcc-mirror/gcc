@@ -1,5 +1,19 @@
 2004-01-10  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/EnumSyntax.java
+	(getStringTable): Made protected.
+	(getEnumValueTable): Likewise.
+	* javax/print/attribute/standard/JobKOctetsProcessed.java
+	(JobKOctetsProcessed): Don't implement PrintRequestAttribute.
+	* javax/print/attribute/standard/JobMediaSheetsCompleted.java
+	(JobMediaSheetsCompleted): Made class final.
+	* javax/print/attribute/standard/OutputDeviceAssigned.java
+	(getName): Fixed typo.
+	* javax/print/attribute/standard/RequestingUserName.java
+	(serialVersionUID): Fixed value.
+
+2004-01-10  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/plaf/basic/BasicButtonUI.java,
 	javax/swing/plaf/basic/BasicCheckBoxUI.java,
 	javax/swing/plaf/basic/BasicListUI.java,
