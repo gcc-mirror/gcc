@@ -2087,6 +2087,13 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{smin@var{m}3}, @samp{smax@var{m}3}, @samp{umin@var{m}3}, @samp{umax@var{m}3}
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
+@cindex @code{min@var{m}3} instruction pattern
+@cindex @code{max@var{m}3} instruction pattern
+@itemx @samp{min@var{m}3}, @samp{max@var{m}3}
+Floating point min and max operations.  If both operands are zeros,
+or if either operand is NaN, then it is unspecified which of the two
+operands is returned as the result.
+
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
