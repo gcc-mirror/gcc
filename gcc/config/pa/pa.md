@@ -6121,7 +6121,7 @@
 }")
 
 (define_insn "call_value_internal_symref"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 1))
@@ -6138,7 +6138,7 @@
    (set (attr "length") (symbol_ref "attr_length_call (insn, 0)"))])
 
 (define_insn "call_value_internal_reg_64bit"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
          (call (mem:SI (match_operand:DI 1 "register_operand" "r"))
 	       (match_operand 2 "" "i")))
    (clobber (reg:SI 2))
@@ -6154,7 +6154,7 @@
    (set (attr "length") (const_int 12))])
 
 (define_insn "call_value_internal_reg"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (reg:SI 22))
 	      (match_operand 1 "" "i")))
    (clobber (reg:SI 1))
@@ -6376,7 +6376,7 @@
 }")
 
 (define_insn "sibcall_value_internal_symref"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 1))
@@ -6392,7 +6392,7 @@
    (set (attr "length") (symbol_ref "attr_length_call (insn, 1)"))])
 
 (define_insn "sibcall_value_internal_symref_64bit"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 1))
