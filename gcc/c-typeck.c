@@ -231,12 +231,12 @@ common_type (t1, t2)
 
       /* Same precision.  Prefer longs to ints even when same size.  */
 
-      if (t1 == long_unsigned_type_node
-	  || t2 == long_unsigned_type_node)
+      if (TYPE_MAIN_VARIANT (t1) == long_unsigned_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_unsigned_type_node)
 	return long_unsigned_type_node;
 
-      if (t1 == long_integer_type_node
-	  || t2 == long_integer_type_node)
+      if (TYPE_MAIN_VARIANT (t1) == long_integer_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_integer_type_node)
 	{
 	  /* But preserve unsignedness from the other type,
 	     since long cannot hold all the values of an unsigned int.  */
@@ -1787,7 +1787,8 @@ check_format (info, params)
 	  /* Don't warn about differences merely in signedness.  */
 	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
 	       && TREE_CODE (cur_type) == INTEGER_TYPE
-	       && TYPE_PRECISION (wanted_type) == TYPE_PRECISION (cur_type)))
+	       && (wanted_type == (TREE_UNSIGNED (wanted_type)
+				   ? unsigned_type : signed_type) (cur_type))))
 	{
 	  register char *this;
 	  register char *that;
@@ -1998,6 +1999,7 @@ convert_arguments (typelist, values, name, fundecl)
 	  else
 	    {
 	      tree parmname;
+	      tree type0 = type;
 #ifdef PROMOTE_PROTOTYPES
 	      /* Rather than truncating and then reextending,
 		 convert directly to int, if that's the type we will want.  */
