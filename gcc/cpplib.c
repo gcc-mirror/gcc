@@ -66,8 +66,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PATH_SEPARATOR ':'
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
@@ -600,7 +598,7 @@ cpp_grow_buffer (pfile, n)
 {
   long old_written = CPP_WRITTEN (pfile);
   pfile->token_buffer_size = n + 2 * pfile->token_buffer_size;
-  pfile->token_buffer = (char*)
+  pfile->token_buffer = (U_CHAR*)
     xrealloc(pfile->token_buffer, pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, old_written);
 }
@@ -6246,7 +6244,7 @@ init_parse_file (pfile)
   pfile->get_token = cpp_get_token;
 
   pfile->token_buffer_size = 200;
-  pfile->token_buffer = (char*)xmalloc (pfile->token_buffer_size);
+  pfile->token_buffer = (U_CHAR*)xmalloc (pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, 0);
 
   pfile->system_include_depth = 0;
