@@ -1,3 +1,7 @@
+2004-08-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/tc1/dr147.C: Add reference to PR.
+
 2004-08-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/mips-args-[23].c: Declare abort() and exit().

@@ -1,6 +1,6 @@
 // { dg-do compile }
 // Origin: Giovanni Bajo <giovannibajo at gcc dot gnu dot org>
-// DR147: Naming the constructor
+// DR147: Naming the constructor (PR 11764) 
 
 namespace N1 {
 
