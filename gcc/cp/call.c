@@ -6470,7 +6470,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	     itself the result of a function call), turn it into a
 	     TARGET_EXPR here.  It is important that EXPR be a
 	     TARGET_EXPR below since otherwise the INIT_EXPR will
-	     attempt to make a bitwise copy of EXPR to intialize
+	     attempt to make a bitwise copy of EXPR to initialize
 	     VAR. */
 	  if (TREE_CODE (expr) != TARGET_EXPR)
 	    expr = get_target_expr (expr);
