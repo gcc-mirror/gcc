@@ -1,3 +1,12 @@
+2004-11-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/16882
+
+	* tree.c (make_vector_type): Move qualifiers to the vector type,
+	use the inner type's main variant and build a main variant for
+	the vector type if necessary.
+	(type_hash_eq): Check a vector type's TYPE_VECTOR_SUBPARTS.
+
 2004-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* target.h (late_rtl_prologue_epilogue): Remove.

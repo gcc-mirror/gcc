@@ -6425,6 +6425,10 @@ ptr_reasonably_similar (tree to, tree from)
 			COMPARE_BASE | COMPARE_DERIVED))
 	continue;
 
+      if (TREE_CODE (to) == VECTOR_TYPE
+	  && vector_types_convertible_p (to, from))
+	return 1;
+
       if (TREE_CODE (to) == INTEGER_TYPE
 	  && TYPE_PRECISION (to) == TYPE_PRECISION (from))
 	return 1;
