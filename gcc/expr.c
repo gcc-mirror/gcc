@@ -5549,7 +5549,7 @@ force_operand (value, target)
     {
       if (!target)
 	target = gen_reg_rtx (GET_MODE (value));
-      convert_move (force_operand (XEXP (value, 0), NULL), target,
+      convert_move (target, force_operand (XEXP (value, 0), NULL),
 		    code == ZERO_EXTEND);
       return target;
     }
