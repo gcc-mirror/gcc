@@ -1,3 +1,8 @@
+Wed Jul 10 19:50:03 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* combine.c (gen_lowpart_for_combine): Handle vector modes.
+	Supply non-VOID mode to simplify_gen_subreg.
+
 Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_init_mmx_sse_builtins): Fix thinko.
