@@ -199,7 +199,7 @@ namespace std
   private:
     // Data Members.
     _Atomic_word			_M_references;
-    facet** 				_M_facets;
+    const facet**			_M_facets;
     size_t 				_M_facets_size;
 
     char* 				_M_names[_S_categories_size
@@ -260,7 +260,7 @@ namespace std
     _M_replace_facet(const _Impl*, const locale::id*);
 
     void 
-    _M_install_facet(const locale::id*, facet*);
+    _M_install_facet(const locale::id*, const facet*);
 
     template<typename _Facet>
       inline void 
@@ -291,7 +291,7 @@ namespace std
     friend class locale;
     friend class locale::_Impl;
 
-    _Atomic_word 			_M_references;
+    mutable _Atomic_word		_M_references;
 
   protected:
     // Contains data from the underlying "C" library for the classic locale.
@@ -318,10 +318,10 @@ namespace std
 
   private:
     void 
-    _M_add_reference() throw();
+    _M_add_reference() const throw();
 
     void 
-    _M_remove_reference() throw();
+    _M_remove_reference() const throw();
 
     facet(const facet&);  // Not defined.
 

@@ -94,7 +94,7 @@ namespace std
   {
     try
       { 
-	_M_facets = new facet*[_M_facets_size]; 
+	_M_facets = new const facet*[_M_facets_size]; 
 	for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	  _M_facets[__i] = 0;
       }
@@ -130,7 +130,7 @@ namespace std
 
     try
       { 
-	_M_facets = new facet*[_M_facets_size]; 
+	_M_facets = new const facet*[_M_facets_size]; 
 	for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	  _M_facets[__i] = 0;
       }
@@ -214,7 +214,7 @@ namespace std
     locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, 
 				      locale::facet::_S_c_name);
 
-    _M_facets = new(&facet_vec) facet*[_M_facets_size];
+    _M_facets = new(&facet_vec) const facet*[_M_facets_size];
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       _M_facets[__i] = 0;
 
@@ -310,7 +310,7 @@ namespace std
 
   void
   locale::_Impl::
-  _M_install_facet(const locale::id* __idp, facet* __fp)
+  _M_install_facet(const locale::id* __idp, const facet* __fp)
   {
     if (__fp)
       {
@@ -319,10 +319,10 @@ namespace std
 	// Check size of facet vector to ensure adequate room.
 	if (__index > _M_facets_size - 1)
 	  {
-	    facet** __old = _M_facets;
-	    facet** __new;
+	    const facet** __old = _M_facets;
+	    const facet** __new;
 	    const size_t __new_size = __index + 4;
-	    __new = new facet*[__new_size]; 
+	    __new = new const facet*[__new_size]; 
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __new[__i] = _M_facets[__i];
 	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
@@ -334,7 +334,7 @@ namespace std
 	  }
 
 	__fp->_M_add_reference();
-	facet*& __fpr = _M_facets[__index];
+	const facet*& __fpr = _M_facets[__index];
 	if (__fpr)
 	  {
 	    // Replacing an existing facet. Order matters.
