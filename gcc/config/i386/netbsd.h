@@ -10,8 +10,8 @@
 #include <netbsd.h>
 
 /* This goes away when the math-emulator is fixed */
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
+#undef TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT \
   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
 
 #undef CPP_PREDEFINES

@@ -23,8 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* By default, target has a 80387, with IEEE FP.  */
 
-#undef	TARGET_DEFAULT
-#define TARGET_DEFAULT  (MASK_80387 | MASK_IEEE_FP)
+#undef	TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT  (MASK_80387 | MASK_IEEE_FP)
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 

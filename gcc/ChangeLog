@@ -1,3 +1,13 @@
+Fri Mar  9 17:38:08 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (mask_64bit): New constant.
+	(target_64bit): New macro.
+	(target_options): Add '64'/'32'
+	(target_default): Define.
+	* cygwin.h freebsd-aout.h i386-interix.h i386.h i386elf.h isc.h
+	isccoff.h netbsd.h next.h openbsd.h p sco.h sco5.h scodbx.h sequent.h
+	unix.h win32.h (TARGET_DEFAULT): Rename to TARGET_SUBTARGET_DEFAULT.
+
 Thu Mar  8 23:36:56 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/som.h (MAKE_DECL_ONE_ONLY, ASM_WEAKEN_LABEL): Disable.

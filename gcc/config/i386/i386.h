@@ -119,6 +119,7 @@ extern int target_flags;
 #define MASK_SSE2		0x00040000	/* Support SSE2 regs/builtins */
 #define MASK_128BIT_LONG_DOUBLE 0x00080000	/* long double size is 128bit */
 #define MASK_MIX_SSE_I387	0x00100000	/* Mix SSE and i387 instructions */
+#define MASK_64BIT		0x00200000	/* Produce 64bit code */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -177,6 +178,9 @@ extern int target_flags;
 
 /* Debug FUNCTION_ARG macros */
 #define TARGET_DEBUG_ARG (target_flags & MASK_DEBUG_ARG)
+
+/* 64bit Sledgehammer mode */
+#define TARGET_64BIT (target_flags & MASK_64BIT)
 
 #define TARGET_386 (ix86_cpu == PROCESSOR_I386)
 #define TARGET_486 (ix86_cpu == PROCESSOR_I486)
@@ -330,8 +334,18 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
     N_("sizeof(long double) is 16.") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 12.") },					      \
+  { "64",			MASK_64BIT,				      \
+    N_("Generate 64bit x86-64 code") },					      \
+  { "32",			-MASK_64BIT,				      \
+    N_("Generate 32bit i386 code") },					      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
+
+#ifdef TARGET_64BIT_DEFAULT
+#define TARGET_DEFAULT (MASK_64BIT | TARGET_SUBTARGET_DEFAULT)
+#else
+#define TARGET_DEFAULT TARGET_SUBTARGET_DEFAULT
+#endif
 
 /* Which processor to schedule for. The cpu attribute defines a list that
    mirrors this list, so changes to i386.md must be made at the same time.  */
