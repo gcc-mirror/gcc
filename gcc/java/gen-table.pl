@@ -19,6 +19,10 @@
 
 # gen-table.pl - Generate tables for gcj from Unicode data.
 # Usage: perl gen-table.pl DATA-FILE
+#
+# A suitable DATA-FILE is available at:
+# ftp://www.unicode.org/Public/3.0-Update/UnicodeData-3.0.0.txt
+
 
 # Names of fields in Unicode data table.
 $CODE = 0;
@@ -191,11 +195,11 @@ sub print_tables
 
     for ($count = 0; $count <= $last; $count += 256)
     {
-	$row[$count / 256] = &print_row ($count, '(char *) ', 'char', 1,
+	$row[$count / 256] = &print_row ($count, '(char *) ', 'const char', 1,
 					 'page');
     }
 
-    print OUT "static char *type_table[256] = {\n";
+    print OUT "static const char *const type_table[256] = {\n";
     for ($count = 0; $count <= $last; $count += 256)
     {
 	print OUT ",\n" if $count > 0;
