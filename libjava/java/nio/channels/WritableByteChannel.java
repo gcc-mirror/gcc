@@ -56,5 +56,5 @@ public interface WritableByteChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing
    */
-  public int write(ByteBuffer src) throws IOException;
+  int write (ByteBuffer src) throws IOException;
 }
