@@ -4956,7 +4956,7 @@ basereg_operand (op, mode)
      selection using the basereg only (rather than effective address)
      screwing us over.  */
   if (TARGET_NO_SPACE_REGS || reload_in_progress || reload_completed)
-    return (GET_CODE (op) == REG || GET_CODE (op) == CONST_INT);
+    return (GET_CODE (op) == REG);
 
   /* Stack is always OK for indexing.  */
   if (op == stack_pointer_rtx)
