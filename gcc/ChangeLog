@@ -1,3 +1,8 @@
+Thu May 21 09:04:42 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gengenrtl.c (type_from_format, accessor_from_format): Change
+ 	type of parameter `c' from `char' to `int'.
+
 Wed May 20 22:28:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* warn_summary, test_summary: New scripts from
