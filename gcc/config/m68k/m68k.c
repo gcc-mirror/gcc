@@ -3573,11 +3573,7 @@ m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   else
     {
 #if defined (MOTOROLA) && !defined (USE_GAS)
-#ifdef MOTOROLA_BSR
-      fmt = "bra %0";
-#else
       fmt = "jmp %0";
-#endif
 #else
       fmt = "jra %0";
 #endif

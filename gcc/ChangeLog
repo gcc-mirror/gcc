@@ -1,3 +1,9 @@
+2003-08-20  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_output_mi_thunk): delete obsolete code
+	depending on MOTOROLA_BSR
+	* config/m68k/m68k.md (anonymous define_insn): Likewise
+
 2003-08-20  Jason Merrill  <jason@redhat.com>
 
 	* builtins.c (expand_builtin_mathfn): Use get_callee_fndecl.
