@@ -13884,11 +13884,9 @@ store_parm_decls (int is_main_program UNUSED)
   DECL_ARGUMENTS (fndecl) = storedecls (nreverse (getdecls ()));
 
   /* Initialize the RTL code for the function.  */
-
-  init_function_start (fndecl, input_filename, input_line);
+  init_function_start (fndecl);
 
   /* Set up parameters and prepare for return, for the function.  */
-
   expand_function_start (fndecl, 0);
 }
 

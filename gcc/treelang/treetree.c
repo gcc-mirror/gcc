@@ -382,8 +382,7 @@ tree_code_create_function_initial (tree prev_saved,
      execute this?  */
   make_decl_rtl (fn_decl, NULL);
 
-  /* Use filename/lineno from above.  */
-  init_function_start (fn_decl, loc.file, loc.line);
+  init_function_start (fn_decl);
 
   /* Create rtl for startup code of function, such as saving registers.  */
 

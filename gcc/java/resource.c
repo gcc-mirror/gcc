@@ -113,6 +113,7 @@ write_resource_constructor (void)
   init_type = build_function_type (void_type_node, end_params_node);
 
   init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
+  DECL_SOURCE_LINE (init_decl) = 0;
   SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
   TREE_STATIC (init_decl) = 1;
   current_function_decl = init_decl;
@@ -125,7 +126,7 @@ write_resource_constructor (void)
 
   pushlevel (0);
   make_decl_rtl (init_decl, NULL);
-  init_function_start (init_decl, input_filename, 0);
+  init_function_start (init_decl);
   expand_function_start (init_decl, 0);
 
   /* Write out entries in the same order in which they were defined.  */

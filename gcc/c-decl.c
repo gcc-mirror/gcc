@@ -6163,7 +6163,7 @@ store_parm_decls ()
   gen_aux_info_record (fndecl, 1, 0, prototype);
 
   /* Initialize the RTL code for the function.  */
-  init_function_start (fndecl, input_filename, input_line);
+  init_function_start (fndecl);
 
   /* Begin the statement tree for this function.  */
   begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
@@ -6422,7 +6422,7 @@ c_expand_body_1 (fndecl, nested_p)
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
   input_location = DECL_SOURCE_LOCATION (fndecl);
-  init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
+  init_function_start (fndecl);
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;

@@ -1,3 +1,15 @@
+2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (init_function_start): Remove filename and line paramters.
+	* function.c (init_function_start): Remove filename and line
+	parameters. Use DECL_SOURCE_LOCATION.
+	* c-decl.c (store_parm_decls): Adjust init_function_start call.
+	(c_expand_body_1): Likewise.
+	* coverage.c (create_coverage): Likewise.
+	* objc/objc-act.c (build_tmp_function_decl): Set line number to
+	zero.
+	(hack_method_prototype): Adjust init_function_start call.
+
 2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/3724

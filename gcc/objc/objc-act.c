@@ -2932,7 +2932,8 @@ build_tmp_function_decl ()
 {
   tree decl_specs, expr_decl, parms;
   char buffer[80];
-
+  tree tmp_decl;
+  
   /* struct objc_object *objc_xxx (id, SEL, ...); */
   pushlevel (0);
   decl_specs = build_tree_list (NULL_TREE, objc_object_reference);
@@ -2956,7 +2957,10 @@ build_tmp_function_decl ()
   expr_decl = build_nt (CALL_EXPR, get_identifier (buffer), parms, NULL_TREE);
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, expr_decl);
 
-  return define_decl (expr_decl, decl_specs);
+  tmp_decl = define_decl (expr_decl, decl_specs);
+  DECL_SOURCE_LINE (tmp_decl) = 0;
+  
+  return tmp_decl;
 }
 
 /* Generate the prototypes for protocol methods.  This is used to
@@ -3007,7 +3011,7 @@ hack_method_prototype (nst_methods, tmp_decl)
   for (parm = DECL_ARGUMENTS (tmp_decl); parm; parm = TREE_CHAIN (parm))
     DECL_CONTEXT (parm) = tmp_decl;
 
-  init_function_start (tmp_decl, "objc-act", 0);
+  init_function_start (tmp_decl);
 
   /* Typically called from expand_function_start for function definitions.  */
   assign_parms (tmp_decl);

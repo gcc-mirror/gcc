@@ -1774,7 +1774,7 @@ begin_subprog_body (subprog_decl)
   /* Store back the PARM_DECL nodes. They appear in the right order. */
   DECL_ARGUMENTS (subprog_decl) = getdecls ();
 
-  init_function_start (subprog_decl, input_filename, input_line);
+  init_function_start (subprog_decl);
   expand_function_start (subprog_decl, 0);
 
   /* If this function is `main', emit a call to `__main'

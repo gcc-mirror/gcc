@@ -2539,7 +2539,7 @@ genrtl_start_function (fn)
   /* Tell everybody what function we're processing.  */
   current_function_decl = fn;
   /* Get the RTL machinery going for this function.  */
-  init_function_start (fn, DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn));
+  init_function_start (fn);
   /* Let everybody know that we're expanding this function, not doing
      semantic analysis.  */
   expanding_p = 1;

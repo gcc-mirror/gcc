@@ -2003,6 +2003,7 @@ emit_register_classes (void)
       
       init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
       SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
+      DECL_SOURCE_LINE (init_decl) = 0;
       TREE_STATIC (init_decl) = 1;
       current_function_decl = init_decl;
       DECL_RESULT (init_decl) = build_decl (RESULT_DECL, NULL_TREE,
@@ -2017,7 +2018,7 @@ emit_register_classes (void)
 
       pushlevel (0);
       make_decl_rtl (init_decl, NULL);
-      init_function_start (init_decl, input_filename, 0);
+      init_function_start (init_decl);
       expand_function_start (init_decl, 0);
 
       /* Do not allow the function to be deferred.  */
