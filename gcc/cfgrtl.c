@@ -611,9 +611,9 @@ merge_blocks_nomove (a, b)
 	  rtx x;
 
 	  for (x = a_end; x != b_end; x = NEXT_INSN (x))
-	    BLOCK_FOR_INSN (x) = a;
+	    set_block_for_insn (x, a);
 
-	  BLOCK_FOR_INSN (b_end) = a;
+	  set_block_for_insn (b_end, a);
 	}
 
       a_end = b_end;
