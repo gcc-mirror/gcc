@@ -518,7 +518,14 @@ alignof:
 cast_expr:
 	unary_expr
 	| '(' typename ')' cast_expr  %prec UNARY
-		{ tree type = groktypename ($2);
+		{ tree type;
+		  int SAVED_warn_strict_prototypes = warn_strict_prototypes;
+		  /* This avoids warnings about unprototyped casts on
+                     integers.  E.g. "#define SIG_DFL (void(*)())0".  */
+		  if (TREE_CODE ($4) == INTEGER_CST)
+		    warn_strict_prototypes = 0;
+		  type = groktypename ($2);
+		  warn_strict_prototypes = SAVED_warn_strict_prototypes;
 		  $$ = build_c_cast (type, $4); }
 	| '(' typename ')' '{' 
 		{ start_init (NULL_TREE, NULL, 0);

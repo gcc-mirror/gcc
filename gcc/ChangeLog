@@ -1,3 +1,8 @@
+2000-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (cast_expr): Avoid -Wstrict-prototype warnings for
+	unprototyped function pointer casts on integer constants.
+
 2000-08-11 Laurynas Biveinis <lauras@softhome.net>
 
 	* fixproto: Recognize DOS paths with drive letters as absolute paths.
