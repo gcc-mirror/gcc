@@ -1,3 +1,8 @@
+Thu May 20 01:40:55 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (can_reverse_comparison_p): Do not abort if the comparison
+	insn for a conditional jump can not be found.
+
 Wed May 19 23:58:58 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.h (ENCODE_SECTION_INFO): Do not perform GP optimizations
