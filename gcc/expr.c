@@ -619,6 +619,14 @@ convert_move (to, from, unsignedp)
 	}
 #endif
 
+#ifdef HAVE_extendhftqf2
+      if (HAVE_extendhftqf2 && from_mode == HFmode && to_mode == TQFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendhftqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+
 #ifdef HAVE_extendhfsf2
       if (HAVE_extendhfsf2 && from_mode == HFmode && to_mode == SFmode)
 	{
@@ -716,6 +724,14 @@ convert_move (to, from, unsignedp)
       if (HAVE_trunctfqf2 && from_mode == TFmode && to_mode == QFmode)
 	{
 	  emit_unop_insn (CODE_FOR_trunctfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+
+#ifdef HAVE_trunctqfhf2
+      if (HAVE_trunctqfhf2 && from_mode == TQFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_trunctqfhf2, to, from, UNKNOWN);
 	  return;
 	}
 #endif
