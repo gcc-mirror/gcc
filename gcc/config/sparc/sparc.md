@@ -7108,8 +7108,8 @@
 			     (match_operand:SI 2 "arith_operand" "rI")])
 	 (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")
-	(match_dup 3))]
-  ""
+	(match_operator:SI 4 "cc_arithop" [(match_dup 1) (match_dup 2)]))]
+  "GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "%A3cc\\t%1, %2, %0"
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
@@ -7122,8 +7122,8 @@
 			     (match_operand:DI 2 "arith_double_operand" "rHI")])
 	 (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")
-	(match_dup 3))]
-  "TARGET_ARCH64"
+	(match_operator:DI 4 "cc_arithop" [(match_dup 1) (match_dup 2)]))]
+  "TARGET_ARCH64 && GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "%A3cc\\t%1, %2, %0"
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
@@ -7208,8 +7208,9 @@
 			     (match_operand:SI 2 "reg_or_0_operand" "rJ")])
 	 (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")
-	(match_dup 3))]
-  ""
+	(match_operator:SI 4 "cc_arithopn"
+			    [(not:SI (match_dup 1)) (match_dup 2)]))]
+  "GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "%B3cc\\t%r2, %1, %0"
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
@@ -7222,8 +7223,9 @@
 			     (match_operand:DI 2 "reg_or_0_operand" "rJ")])
 	 (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")
-	(match_dup 3))]
-  "TARGET_ARCH64"
+	(match_operator:DI 4 "cc_arithopn"
+			    [(not:DI (match_dup 1)) (match_dup 2)]))]
+  "TARGET_ARCH64 && GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "%B3cc\\t%r2, %1, %0"
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
