@@ -1,3 +1,8 @@
+2002-11-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (grokdeclarator): Make error for duplicate type
+	qualifiers into a pedwarn, disabled for C99.
+
 2002-11-10  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.h (FUNCTION_ARG_CALLEE_COPIES): Define the same

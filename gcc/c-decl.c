@@ -3541,7 +3541,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    }
 		}
 	      else if (specbits & (1 << (int) i))
-		error ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		{
+		  if (i == RID_CONST || i == RID_VOLATILE || i == RID_RESTRICT)
+		    {
+		      if (!flag_isoc99)
+			pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		    }
+		  else
+		    error ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		}
 
 	      /* Diagnose "__thread extern".  Recall that this list
 		 is in the reverse order seen in the text.  */
