@@ -28,4 +28,5 @@ struct unw_table_entry
 
 extern struct unw_table_entry *
 _Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
-			unsigned long *gp);
+			unsigned long *gp)
+			__attribute__ ((__visibility__ ("hidden")));
