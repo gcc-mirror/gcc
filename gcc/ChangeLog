@@ -1,3 +1,7 @@
+2001-07-13  H.J. Lu  (hjl@gnu.org)
+
+	* config/elfos.h (UNIQUE_SECTION): Enable .bss section.
+
 2001-07-13  Marc Espie  <espie@cvs.openbsd.org>
 
 	* config.gcc (*-*-openbsd*):  Add fragment to compile libgcc
