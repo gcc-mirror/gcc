@@ -594,13 +594,23 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
 	   && GET_CODE (x) == CONST_INT
 	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_WIDE_INT)
+#ifdef REAL_ARITHMETIC
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i;
+
+      i = INTVAL (x);
+      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
+      return immed_real_const_1 (r, mode);
+    }
+#else
     {
       union {HOST_WIDE_INT i; float d; } u;
 
       u.i = INTVAL (x);
       return immed_real_const_1 (u.d, mode);
     }
-
+#endif
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
@@ -610,6 +620,28 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE (x) == VOIDmode
 	   && (sizeof (double) * HOST_BITS_PER_CHAR
 	       == 2 * HOST_BITS_PER_WIDE_INT))
+#ifdef REAL_ARITHMETIC
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i[2];
+      HOST_WIDE_INT low, high;
+
+      if (GET_CODE (x) == CONST_INT)
+	low = INTVAL (x), high = low >> (HOST_BITS_PER_WIDE_INT -1);
+      else
+	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
+
+/* TARGET_DOUBLE takes the addressing order of the target machine. */
+#ifdef WORDS_BIG_ENDIAN
+      i[0] = high, i[1] = low;
+#else
+      i[0] = low, i[1] = high;
+#endif
+
+      r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
+      return immed_real_const_1 (r, mode);
+    }
+#else
     {
       union {HOST_WIDE_INT i[2]; double d; } u;
       HOST_WIDE_INT low, high;
@@ -627,7 +659,7 @@ gen_lowpart_common (mode, x)
 
       return immed_real_const_1 (u.d, mode);
     }
-
+#endif
   /* Similarly, if this is converting a floating-point value into a
      single-word integer.  Only do this is the host and target parameters are
      compatible.  */
