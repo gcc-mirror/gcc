@@ -1,3 +1,10 @@
+2002-03-06  Adam Megacz  <adam@xwt.org>
+
+        * java/io/FileDescriptor.java: Initialize in/out/err in init().
+        * java/io/natFileDescriptorWin32.cc (init()): Added function.
+        * java/io/natFileDescriptorPosix.cc (init()): Added function.
+        * java/io/natFileDescriptorEcos.cc (init()): Added function.
+
 2002-03-06  Eric Blake  <ebb9@email.byu.edu>
 
 	* scripts/unicode-decomp.pl: Move from chartables.pl, and remove
