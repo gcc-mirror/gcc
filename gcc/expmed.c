@@ -305,12 +305,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      memory, any naturally sized, unit aligned field can be done directly.  */
      
   if (bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
-	  || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode)
-	  || (GET_CODE (op0) == MEM
-	      && (! SLOW_UNALIGNED_ACCESS (fieldmode, align)
-		  || (offset * BITS_PER_UNIT % bitsize == 0
-		      && align % GET_MODE_BITSIZE (fieldmode) == 0))))
+      && (GET_CODE (op0) != MEM
+	  ? (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
+	  : (! SLOW_UNALIGNED_ACCESS (fieldmode, align)
+	     || (offset * BITS_PER_UNIT % bitsize == 0
+		 && align % GET_MODE_BITSIZE (fieldmode) == 0)))
       && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0))
     {
       if (GET_MODE (op0) != fieldmode)
