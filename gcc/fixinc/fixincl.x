@@ -58,8 +58,8 @@ tTestDesc aAix_SyswaitTests[] = {
  *  Fix Command Arguments for Aix_Syswait
  */
 const char* apzAix_SyswaitPatch[] = { "sed",
-    "-e", "/^extern pid_t wait3();$/i\\\n"
-       "struct rusage;\n",
+    "-e", "/^extern pid_t wait3();$/i\\\n\
+struct rusage;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -324,18 +324,18 @@ tSCC zAvoid_BoolList[] =
  *  Fix Command Arguments for Avoid_Bool
  */
 const char* apzAvoid_BoolPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n"
-       "#endif\n",
-    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
-       "#endif\n",
-    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n"
-       "#endif\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n\
+#endif\n",
+    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -470,8 +470,8 @@ tTestDesc aBroken_Assert_StdioTests[] = {
  *  Fix Command Arguments for Broken_Assert_Stdio
  */
 const char* apzBroken_Assert_StdioPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#include <stdio.h>\n",
+    "-e", "1i\\\n\
+#include <stdio.h>\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -512,10 +512,10 @@ tTestDesc aBroken_Assert_StdlibTests[] = {
  *  Fix Command Arguments for Broken_Assert_Stdlib
  */
 const char* apzBroken_Assert_StdlibPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#include <stdlib.h>\\\n"
-       "#endif\n",
+    "-e", "1i\\\n\
+#ifdef __cplusplus\\\n\
+#include <stdlib.h>\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -575,10 +575,10 @@ tSCC zDec_Intern_AsmList[] =
  *  Fix Command Arguments for Dec_Intern_Asm
  */
 const char* apzDec_Intern_AsmPatch[] = { "sed",
-    "-e", "/^[ \t]*float[ \t]*fasm/i\\\n"
-       "#ifdef __DECC\n",
-    "-e", "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n"
-       "#endif\n",
+    "-e", "/^[ \t]*float[ \t]*fasm/i\\\n\
+#ifdef __DECC\n",
+    "-e", "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -673,15 +673,15 @@ tSCC* apzSco5_Stat_WrappersMachs[] = {
  *  Fix Command Arguments for Sco5_Stat_Wrappers
  */
 const char* apzSco5_Stat_WrappersPatch[] = { "sed",
-    "-e", "/^static int[ \t]*[a-z]*stat(/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "extern \"C\"\\\n"
-       "{\\\n"
-       "#endif\\\n",
-    "-e", "/^}$/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "}\\\n"
-       "#endif /* __cplusplus */\\\n",
+    "-e", "/^static int[ \t]*[a-z]*stat(/i\\\n\
+#ifdef __cplusplus\\\n\
+extern \"C\"\\\n\
+{\\\n\
+#endif\\\n",
+    "-e", "/^}$/a\\\n\
+#ifdef __cplusplus\\\n\
+}\\\n\
+#endif /* __cplusplus */\\\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -714,13 +714,13 @@ tTestDesc aElse_LabelTests[] = {
  *  Fix Command Arguments for Else_Label
  */
 const char* apzElse_LabelPatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "s%^\\([ \t]*#[ \t]*else\\)[ \t]*/[^*].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*else\\)[ \t]*[^/ \t].*%\\1%",
+    "-e", ":loop\n\
+/\\\\$/N\n\
+s/\\\\$/\\\\+++fixinc_eol+++/\n\
+/\\\\$/b loop\n\
+s/\\\\+++fixinc_eol+++/\\\\/g\n\
+s%^\\([ \t]*#[ \t]*else\\)[ \t]*/[^*].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*else\\)[ \t]*[^/ \t].*%\\1%",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -753,14 +753,14 @@ tTestDesc aEndif_LabelTests[] = {
  *  Fix Command Arguments for Endif_Label
  */
 const char* apzEndif_LabelPatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*/[^*].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*\\*[^/].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*[^/* \t].*%\\1%",
+    "-e", ":loop\n\
+/\\\\$/N\n\
+s/\\\\$/\\\\+++fixinc_eol+++/\n\
+/\\\\$/b loop\n\
+s/\\\\+++fixinc_eol+++/\\\\/g\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t]*/[^*].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t]*\\*[^/].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t]*[^/* \t].*%\\1%",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -863,15 +863,15 @@ tTestDesc aCxx_UnreadyTests[] = {
  *  Fix Command Arguments for Cxx_Unready
  */
 const char* apzCxx_UnreadyPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "extern \"C\" {\\\n"
-       "#endif\\\n"
-       "\n",
-    "-e", "$a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "}\\\n"
-       "#endif\n",
+    "-e", "1i\\\n\
+#ifdef __cplusplus\\\n\
+extern \"C\" {\\\n\
+#endif\\\n\
+\n",
+    "-e", "$a\\\n\
+#ifdef __cplusplus\\\n\
+}\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -897,10 +897,10 @@ tSCC zHpux_MaxintList[] =
  *  Fix Command Arguments for Hpux_Maxint
  */
 const char* apzHpux_MaxintPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n"
-       "#ifndef MAXINT\n",
-    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n"
-       "#endif\n",
+    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n\
+#ifndef MAXINT\n",
+    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1205,8 +1205,8 @@ tTestDesc aIrix_SockaddrTests[] = {
  *  Fix Command Arguments for Irix_Sockaddr
  */
 const char* apzIrix_SockaddrPatch[] = { "sed",
-    "-e", "/authdes_create.*struct sockaddr/i\\\n"
-       "struct sockaddr;\n",
+    "-e", "/authdes_create.*struct sockaddr/i\\\n\
+struct sockaddr;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1232,8 +1232,8 @@ tSCC zIrix_Struct__FileList[] =
  *  Fix Command Arguments for Irix_Struct__File
  */
 const char* apzIrix_Struct__FilePatch[] = { "sed",
-    "-e", "/xdrstdio_create.*struct __file_s/i\\\n"
-       "struct __file_s;\n",
+    "-e", "/xdrstdio_create.*struct __file_s/i\\\n\
+struct __file_s;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1399,30 +1399,30 @@ tTestDesc aLimits_IfndefsTests[] = {
  *  Fix Command Arguments for Limits_Ifndefs
  */
 const char* apzLimits_IfndefsPatch[] = { "sed",
-    "-e", "/[ \t]FLT_MIN[ \t]/i\\\n"
-       "#ifndef FLT_MIN\n",
-    "-e", "/[ \t]FLT_MIN[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]FLT_MAX[ \t]/i\\\n"
-       "#ifndef FLT_MAX\n",
-    "-e", "/[ \t]FLT_MAX[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]FLT_DIG[ \t]/i\\\n"
-       "#ifndef FLT_DIG\n",
-    "-e", "/[ \t]FLT_DIG[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_MIN[ \t]/i\\\n"
-       "#ifndef DBL_MIN\n",
-    "-e", "/[ \t]DBL_MIN[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_MAX[ \t]/i\\\n"
-       "#ifndef DBL_MAX\n",
-    "-e", "/[ \t]DBL_MAX[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_DIG[ \t]/i\\\n"
-       "#ifndef DBL_DIG\n",
-    "-e", "/[ \t]DBL_DIG[ \t]/a\\\n"
-       "#endif\n",
+    "-e", "/[ \t]FLT_MIN[ \t]/i\\\n\
+#ifndef FLT_MIN\n",
+    "-e", "/[ \t]FLT_MIN[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]FLT_MAX[ \t]/i\\\n\
+#ifndef FLT_MAX\n",
+    "-e", "/[ \t]FLT_MAX[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]FLT_DIG[ \t]/i\\\n\
+#ifndef FLT_DIG\n",
+    "-e", "/[ \t]FLT_DIG[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_MIN[ \t]/i\\\n\
+#ifndef DBL_MIN\n",
+    "-e", "/[ \t]DBL_MIN[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_MAX[ \t]/i\\\n\
+#ifndef DBL_MAX\n",
+    "-e", "/[ \t]DBL_MAX[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_DIG[ \t]/i\\\n\
+#ifndef DBL_DIG\n",
+    "-e", "/[ \t]DBL_DIG[ \t]/a\\\n\
+#endif\n",
     "-e", "/^\\(\\/\\*#define\tHUGE_VAL\t3\\.[0-9e+]* *\\)\\/\\*/s//\\1/",
     (char*)NULL };
 
@@ -1520,19 +1520,19 @@ tSCC* apzM88k_Bad_Hypot_OptMachs[] = {
  */
 const char* apzM88k_Bad_Hypot_OptPatch[] = { "sed",
     "-e", "s/extern double floor(), ceil(), fmod(), fabs();/extern double floor(), ceil(), fmod(), fabs _PARAMS((double));/",
-    "-e", "/^extern double hypot();$/a\\\n"
-       "\\/* Workaround a stupid Motorola optimization if one\\\n"
-       "   of x or y is 0.0 and the other is negative!  *\\/\\\n"
-       "#ifdef __STDC__\\\n"
-       "static __inline__ double fake_hypot (double x, double y)\\\n"
-       "#else\\\n"
-       "static __inline__ double fake_hypot (x, y)\\\n"
-       "\tdouble x, y;\\\n"
-       "#endif\\\n"
-       "{\\\n"
-       "\treturn fabs (hypot (x, y));\\\n"
-       "}\\\n"
-       "#define hypot\tfake_hypot\n",
+    "-e", "/^extern double hypot();$/a\\\n\
+\\/* Workaround a stupid Motorola optimization if one\\\n\
+   of x or y is 0.0 and the other is negative!  *\\/\\\n\
+#ifdef __STDC__\\\n\
+static __inline__ double fake_hypot (double x, double y)\\\n\
+#else\\\n\
+static __inline__ double fake_hypot (x, y)\\\n\
+\tdouble x, y;\\\n\
+#endif\\\n\
+{\\\n\
+\treturn fabs (hypot (x, y));\\\n\
+}\\\n\
+#define hypot\tfake_hypot\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1605,12 +1605,12 @@ tTestDesc aM88k_Multi_InclTests[] = {
  *  Fix Command Arguments for M88k_Multi_Incl
  */
 const char* apzM88k_Multi_InclPatch[] = { "sh", "-c",
-    "echo Fixing $file, to protect against multiple inclusion. >&2\n"
-       "      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`\n"
-       "      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"\n"
-       "      echo \"#define __GCC_GOT_${cpp_wrapper}_\"\n"
-       "      cat\n"
-       "      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"",
+    "echo Fixing $file, to protect against multiple inclusion. >&2\n\
+      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`\n\
+      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"\n\
+      echo \"#define __GCC_GOT_${cpp_wrapper}_\"\n\
+      cat\n\
+      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1645,41 +1645,41 @@ tTestDesc aMachine_NameTests[] = {
  *  Fix Command Arguments for Machine_Name
  */
 const char* apzMachine_NamePatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "/#[\t ]*[el]*if/ {\n"
-       "\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n"
-       "\ts/ M32 / __M32__ /g\n"
-       "\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n"
-       "\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n"
-       "\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n"
-       "\ts/ _*host_mips / __host_mips__ /g\n"
-       "\ts/ _*i386 / __i386__ /g\n"
-       "\ts/ _*mips / __mips__ /g\n"
-       "\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n"
-       "\ts/ is68k / __is68k__ /g\n"
-       "\ts/ m68k / __m68k__ /g\n"
-       "\ts/ m88k / __m88k__ /g\n"
-       "\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n"
-       "\ts/ news\\([0-9]*\\) / __news\\1__ /g\n"
-       "\ts/ ns32000 / __ns32000__ /g\n"
-       "\ts/ pdp11 / __pdp11__ /g\n"
-       "\ts/ pyr / __pyr__ /g\n"
-       "\ts/ sel / __sel__ /g\n"
-       "\ts/ sony_news / __sony_news__ /g\n"
-       "\ts/ sparc / __sparc__ /g\n"
-       "\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n"
-       "\ts/ tahoe / __tahoe__ /g\n"
-       "\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n"
-       "\ts/ u370 / __u370__ /g\n"
-       "\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n"
-       "\ts/ unix / __unix__ /g\n"
-       "\ts/ vax / __vax__ /g\n"
-       "\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n"
-       "\t}",
+    "-e", ":loop\n\
+/\\\\$/N\n\
+s/\\\\$/\\\\+++fixinc_eol+++/\n\
+/\\\\$/b loop\n\
+s/\\\\+++fixinc_eol+++/\\\\/g\n\
+/#[\t ]*[el]*if/ {\n\
+\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n\
+\ts/ M32 / __M32__ /g\n\
+\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n\
+\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n\
+\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n\
+\ts/ _*host_mips / __host_mips__ /g\n\
+\ts/ _*i386 / __i386__ /g\n\
+\ts/ _*mips / __mips__ /g\n\
+\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n\
+\ts/ is68k / __is68k__ /g\n\
+\ts/ m68k / __m68k__ /g\n\
+\ts/ m88k / __m88k__ /g\n\
+\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n\
+\ts/ news\\([0-9]*\\) / __news\\1__ /g\n\
+\ts/ ns32000 / __ns32000__ /g\n\
+\ts/ pdp11 / __pdp11__ /g\n\
+\ts/ pyr / __pyr__ /g\n\
+\ts/ sel / __sel__ /g\n\
+\ts/ sony_news / __sony_news__ /g\n\
+\ts/ sparc / __sparc__ /g\n\
+\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n\
+\ts/ tahoe / __tahoe__ /g\n\
+\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n\
+\ts/ u370 / __u370__ /g\n\
+\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n\
+\ts/ unix / __unix__ /g\n\
+\ts/ vax / __vax__ /g\n\
+\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n\
+\t}",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1713,22 +1713,22 @@ tTestDesc aMath_ExceptionTests[] = {
  *  Fix Command Arguments for Math_Exception
  */
 const char* apzMath_ExceptionPatch[] = { "sed",
-    "-e", "/struct exception/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#define exception __math_exception\\\n"
-       "#endif\n",
-    "-e", "/struct exception/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#undef exception\\\n"
-       "#endif\n",
-    "-e", "/matherr/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#define exception __math_exception\\\n"
-       "#endif\n",
-    "-e", "/matherr/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#undef exception\\\n"
-       "#endif\n",
+    "-e", "/struct exception/i\\\n\
+#ifdef __cplusplus\\\n\
+#define exception __math_exception\\\n\
+#endif\n",
+    "-e", "/struct exception/a\\\n\
+#ifdef __cplusplus\\\n\
+#undef exception\\\n\
+#endif\n",
+    "-e", "/matherr/i\\\n\
+#ifdef __cplusplus\\\n\
+#define exception __math_exception\\\n\
+#endif\n",
+    "-e", "/matherr/a\\\n\
+#ifdef __cplusplus\\\n\
+#undef exception\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1754,19 +1754,19 @@ tSCC zMath_Gcc_IfndefsList[] =
  *  Fix Command Arguments for Math_Gcc_Ifndefs
  */
 const char* apzMath_Gcc_IfndefsPatch[] = { "sh", "-c",
-    "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h 2>/dev/null`\n"
-       "\n"
-       "\tif ( test -n \"${dbl_max_def}\" \\\n"
-       "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
-       "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
-       "\t   ) > /dev/null 2>&1\n"
-       "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'\n"
-       "\telse cat ; fi |\n"
-       "\tsed -e'/define[ \t]HUGE_VAL[ \t]/i\\\n"
-       "#ifndef HUGE_VAL\n"
-       "' -e'/define[ \t]HUGE_VAL[ \t]/a\\\n"
-       "#endif\n"
-       "'",
+    "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h 2>/dev/null`\n\
+\n\
+\tif ( test -n \"${dbl_max_def}\" \\\n\
+\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n\
+\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n\
+\t   ) > /dev/null 2>&1\n\
+\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'\n\
+\telse cat ; fi |\n\
+\tsed -e'/define[ \t]HUGE_VAL[ \t]/i\\\n\
+#ifndef HUGE_VAL\n\
+' -e'/define[ \t]HUGE_VAL[ \t]/a\\\n\
+#endif\n\
+'",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1826,10 +1826,10 @@ tTestDesc aNews_Os_RecursionTests[] = {
  *  Fix Command Arguments for News_Os_Recursion
  */
 const char* apzNews_Os_RecursionPatch[] = { "sed",
-    "-e", "/^#include <stdlib.h>/i\\\n"
-       "#ifdef BOGUS_RECURSION\n",
-    "-e", "/^#include <stdlib.h>/a\\\n"
-       "#endif\n",
+    "-e", "/^#include <stdlib.h>/i\\\n\
+#ifdef BOGUS_RECURSION\n",
+    "-e", "/^#include <stdlib.h>/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2085,10 +2085,10 @@ tTestDesc aOsf_Namespace_BTests[] = {
  *  Fix Command Arguments for Osf_Namespace_B
  */
 const char* apzOsf_Namespace_BPatch[] = { "sed",
-    "-e", "/#include <reg_types.h>/a\\\n"
-       "typedef __regex_t\tregex_t;\\\n"
-       "typedef __regoff_t\tregoff_t;\\\n"
-       "typedef __regmatch_t\tregmatch_t;\n",
+    "-e", "/#include <reg_types.h>/a\\\n\
+typedef __regex_t\tregex_t;\\\n\
+typedef __regoff_t\tregoff_t;\\\n\
+typedef __regmatch_t\tregmatch_t;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2156,10 +2156,10 @@ tTestDesc aRs6000_DoubleTests[] = {
  *  Fix Command Arguments for Rs6000_Double
  */
 const char* apzRs6000_DoublePatch[] = { "sed",
-    "-e", "/class[(]/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/class[(]/a\\\n"
-       "#endif\n",
+    "-e", "/class[(]/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/class[(]/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2313,24 +2313,24 @@ tSCC zStdio_Va_ListList[] =
  *  Fix Command Arguments for Stdio_Va_List
  */
 const char* apzStdio_Va_ListPatch[] = { "sh", "-c",
-    "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then\n"
-       "    :\n"
-       "  else\n"
-       "    echo \"#define __need___va_list\"\n"
-       "    echo \"#include <stdarg.h>\"\n"
-       "  fi\n"
-       "\n"
-       "  sed -e 's@ va_list @ __gnuc_va_list @' \\\n"
-       "      -e 's@ va_list)@ __gnuc_va_list)@' \\\n"
-       "      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\\n"
-       "      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\\n"
-       "      -e 's@ va_list@ __va_list__@' \\\n"
-       "      -e 's@\\*va_list@*__va_list__@' \\\n"
-       "      -e 's@ __va_list)@ __gnuc_va_list)@' \\\n"
-       "      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\\n"
-       "      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\\n"
-       "      -e 's@VA_LIST@DUMMY_VA_LIST@' \\\n"
-       "      -e 's@_Va_LIST@_VA_LIST@'",
+    "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then\n\
+    :\n\
+  else\n\
+    echo \"#define __need___va_list\"\n\
+    echo \"#include <stdarg.h>\"\n\
+  fi\n\
+\n\
+  sed -e 's@ va_list @ __gnuc_va_list @' \\\n\
+      -e 's@ va_list)@ __gnuc_va_list)@' \\\n\
+      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\\n\
+      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\\n\
+      -e 's@ va_list@ __va_list__@' \\\n\
+      -e 's@\\*va_list@*__va_list__@' \\\n\
+      -e 's@ __va_list)@ __gnuc_va_list)@' \\\n\
+      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\\n\
+      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\\n\
+      -e 's@VA_LIST@DUMMY_VA_LIST@' \\\n\
+      -e 's@_Va_LIST@_VA_LIST@'",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2432,12 +2432,12 @@ tTestDesc aSun_CatmacroTests[] = {
  *  Fix Command Arguments for Sun_Catmacro
  */
 const char* apzSun_CatmacroPatch[] = { "sed",
-    "-e", "/^#define[ \t]CAT(a,b)/ i\\\n"
-       "#ifdef __STDC__ \\\n"
-       "#define CAT(a,b) a##b\\\n"
-       "#else\n",
-    "-e", "/^#define[ \t]CAT(a,b)/ a\\\n"
-       "#endif\n",
+    "-e", "/^#define[ \t]CAT(a,b)/ i\\\n\
+#ifdef __STDC__ \\\n\
+#define CAT(a,b) a##b\\\n\
+#else\n",
+    "-e", "/^#define[ \t]CAT(a,b)/ a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2500,26 +2500,26 @@ tTestDesc aSun_MemcpyTests[] = {
  *  Fix Command Arguments for Sun_Memcpy
  */
 const char* apzSun_MemcpyPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "/* This file was generated by fixincludes */\\\n"
-       "#ifndef __memory_h__\\\n"
-       "#define __memory_h__\\\n"
-       "\\\n"
-       "#ifdef __STDC__\\\n"
-       "extern void *memccpy();\\\n"
-       "extern void *memchr();\\\n"
-       "extern void *memcpy();\\\n"
-       "extern void *memset();\\\n"
-       "#else\\\n"
-       "extern char *memccpy();\\\n"
-       "extern char *memchr();\\\n"
-       "extern char *memcpy();\\\n"
-       "extern char *memset();\\\n"
-       "#endif /* __STDC__ */\\\n"
-       "\\\n"
-       "extern int memcmp();\\\n"
-       "\\\n"
-       "#endif /* __memory_h__ */\n",
+    "-e", "1i\\\n\
+/* This file was generated by fixincludes */\\\n\
+#ifndef __memory_h__\\\n\
+#define __memory_h__\\\n\
+\\\n\
+#ifdef __STDC__\\\n\
+extern void *memccpy();\\\n\
+extern void *memchr();\\\n\
+extern void *memcpy();\\\n\
+extern void *memset();\\\n\
+#else\\\n\
+extern char *memccpy();\\\n\
+extern char *memchr();\\\n\
+extern char *memcpy();\\\n\
+extern char *memset();\\\n\
+#endif /* __STDC__ */\\\n\
+\\\n\
+extern int memcmp();\\\n\
+\\\n\
+#endif /* __memory_h__ */\n",
     "-e", "1,$d",
     (char*)NULL };
 
@@ -2588,12 +2588,12 @@ tTestDesc aSun_SignalTests[] = {
  *  Fix Command Arguments for Sun_Signal
  */
 const char* apzSun_SignalPatch[] = { "sed",
-    "-e", "/^void\t(\\*signal())();$/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "void\t(*signal(...))(...);\\\n"
-       "#else\n",
-    "-e", "/^void\t(\\*signal())();$/a\\\n"
-       "#endif\n",
+    "-e", "/^void\t(\\*signal())();$/i\\\n\
+#ifdef __cplusplus\\\n\
+void\t(*signal(...))(...);\\\n\
+#else\n",
+    "-e", "/^void\t(\\*signal())();$/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2634,12 +2634,12 @@ tTestDesc aSun_Auth_ProtoTests[] = {
  *  Fix Command Arguments for Sun_Auth_Proto
  */
 const char* apzSun_Auth_ProtoPatch[] = { "sed",
-    "-e", "s/^\\(.*(\\*[a-z][a-z_]*)(\\)\\();.*\\)/\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\\1...\\2\\\n"
-       "#else\\\n"
-       "\\1\\2\\\n"
-       "#endif/",
+    "-e", "s/^\\(.*(\\*[a-z][a-z_]*)(\\)\\();.*\\)/\\\n\
+#ifdef __cplusplus\\\n\
+\\1...\\2\\\n\
+#else\\\n\
+\\1\\2\\\n\
+#endif/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2666,8 +2666,8 @@ tSCC zSunos_Matherr_DeclList[] =
  */
 const char* apzSunos_Matherr_DeclPatch[] = { "sed",
     "-e", "/^struct exception/,$b",
-    "-e", "/matherr/i\\\n"
-       "struct exception;\n",
+    "-e", "/matherr/i\\\n\
+struct exception;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2728,29 +2728,29 @@ tTestDesc aSystypesTests[] = {
  */
 const char* apzSystypesPatch[] = { "sed",
     "-e", "/^[ \t]*\\*[ \t]*typedef unsigned int size_t;/N",
-    "-e", "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n[ \t]*\\*\\/\\)/\\1\\\n"
-       "#ifndef __SIZE_TYPE__\\\n"
-       "#define __SIZE_TYPE__ long unsigned int\\\n"
-       "#endif\\\n"
-       "typedef __SIZE_TYPE__ size_t;\\\n"
-       "/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n"
-       "#ifndef __SIZE_TYPE__\\\n"
-       "#define __SIZE_TYPE__ long unsigned int\\\n"
-       "#endif\n",
+    "-e", "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n[ \t]*\\*\\/\\)/\\1\\\n\
+#ifndef __SIZE_TYPE__\\\n\
+#define __SIZE_TYPE__ long unsigned int\\\n\
+#endif\\\n\
+typedef __SIZE_TYPE__ size_t;\\\n\
+/",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n\
+#ifndef __SIZE_TYPE__\\\n\
+#define __SIZE_TYPE__ long unsigned int\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/typedef __SIZE_TYPE__ size_t/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n"
-       "#ifndef __PTRDIFF_TYPE__\\\n"
-       "#define __PTRDIFF_TYPE__ long int\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n\
+#ifndef __PTRDIFF_TYPE__\\\n\
+#define __PTRDIFF_TYPE__ long int\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/typedef __PTRDIFF_TYPE__ ptrdiff_t/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n"
-       "#ifndef __WCHAR_TYPE__\\\n"
-       "#define __WCHAR_TYPE__ int\\\n"
-       "#endif\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n\
+#ifndef __WCHAR_TYPE__\\\n\
+#define __WCHAR_TYPE__ int\\\n\
+#endif\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/typedef __WCHAR_TYPE__ wchar_t/",
     (char*)NULL };
 
@@ -2792,11 +2792,11 @@ tTestDesc aSystypes_For_AixTests[] = {
  *  Fix Command Arguments for Systypes_For_Aix
  */
 const char* apzSystypes_For_AixPatch[] = { "sed",
-    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2828,9 +2828,9 @@ const char* apzSysv68_StringPatch[] = { "sed",
     "-e", "/^extern char$/N",
     "-e", "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/",
     "-e", "/^\tstrncmp(),$/N",
-    "-e", "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n"
-       "extern unsigned int\\\n"
-       "\\2/",
+    "-e", "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n\
+extern unsigned int\\\n\
+\\2/",
     "-e", "/^extern int$/N",
     "-e", "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/",
     (char*)NULL };
@@ -2864,11 +2864,11 @@ const char* apzSysz_Stdlib_For_SunPatch[] = { "sed",
     "-e", "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g",
     "-e", "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g",
     "-e", "s/int[ \t][ \t]*exit/void\texit/g",
-    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2894,21 +2894,21 @@ tSCC zSysz_Stdtypes_For_SunList[] =
  *  Fix Command Arguments for Sysz_Stdtypes_For_Sun
  */
 const char* apzSysz_Stdtypes_For_SunPatch[] = { "sed",
-    "-e", "/[\t ]size_t.*;/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/[\t ]size_t.*;/a\\\n"
-       "#endif\n",
-    "-e", "/[\t ]ptrdiff_t.*;/i\\\n"
-       "#ifndef _GCC_PTRDIFF_T\\\n"
-       "#define _GCC_PTRDIFF_T\n",
-    "-e", "/[\t ]ptrdiff_t.*;/a\\\n"
-       "#endif\n",
-    "-e", "/[\t ]wchar_t.*;/i\\\n"
-       "#ifndef _GCC_WCHAR_T\\\n"
-       "#define _GCC_WCHAR_T\n",
-    "-e", "/[\t ]wchar_t.*;/a\\\n"
-       "#endif\n",
+    "-e", "/[\t ]size_t.*;/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/[\t ]size_t.*;/a\\\n\
+#endif\n",
+    "-e", "/[\t ]ptrdiff_t.*;/i\\\n\
+#ifndef _GCC_PTRDIFF_T\\\n\
+#define _GCC_PTRDIFF_T\n",
+    "-e", "/[\t ]ptrdiff_t.*;/a\\\n\
+#endif\n",
+    "-e", "/[\t ]wchar_t.*;/i\\\n\
+#ifndef _GCC_WCHAR_T\\\n\
+#define _GCC_WCHAR_T\n",
+    "-e", "/[\t ]wchar_t.*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2968,8 +2968,8 @@ tTestDesc aUltrix_Ansi_CompatTests[] = {
  *  Fix Command Arguments for Ultrix_Ansi_Compat
  */
 const char* apzUltrix_Ansi_CompatPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "/* This file intentionally left blank. */\n",
+    "-e", "1i\\\n\
+/* This file intentionally left blank. */\n",
     "-e", "1,$d",
     (char*)NULL };
 
@@ -3004,8 +3004,8 @@ tTestDesc aUltrix_Fix_FixprotoTests[] = {
  *  Fix Command Arguments for Ultrix_Fix_Fixproto
  */
 const char* apzUltrix_Fix_FixprotoPatch[] = { "sed",
-    "-e", "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n"
-       "struct utsname;\n",
+    "-e", "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n\
+struct utsname;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3205,8 +3205,8 @@ tTestDesc aUndefine_NullTests[] = {
  *  Fix Command Arguments for Undefine_Null
  */
 const char* apzUndefine_NullPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n"
-       "#undef NULL\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n\
+#undef NULL\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3312,21 +3312,21 @@ tTestDesc aVxworks_Gcc_ProblemTests[] = {
  */
 const char* apzVxworks_Gcc_ProblemPatch[] = { "sed",
     "-e", "s/#ifdef __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__/#if 1/",
-    "-e", "/[ \t]size_t/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/[ \t]size_t/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]ptrdiff_t/i\\\n"
-       "#ifndef _GCC_PTRDIFF_T\\\n"
-       "#define _GCC_PTRDIFF_T\n",
-    "-e", "/[ \t]ptrdiff_t/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]wchar_t/i\\\n"
-       "#ifndef _GCC_WCHAR_T\\\n"
-       "#define _GCC_WCHAR_T\n",
-    "-e", "/[ \t]wchar_t/a\\\n"
-       "#endif\n",
+    "-e", "/[ \t]size_t/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/[ \t]size_t/a\\\n\
+#endif\n",
+    "-e", "/[ \t]ptrdiff_t/i\\\n\
+#ifndef _GCC_PTRDIFF_T\\\n\
+#define _GCC_PTRDIFF_T\n",
+    "-e", "/[ \t]ptrdiff_t/a\\\n\
+#endif\n",
+    "-e", "/[ \t]wchar_t/i\\\n\
+#ifndef _GCC_WCHAR_T\\\n\
+#define _GCC_WCHAR_T\n",
+    "-e", "/[ \t]wchar_t/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3407,8 +3407,8 @@ tTestDesc aVxworks_Needs_VxworksTests[] = {
  *  Fix Command Arguments for Vxworks_Needs_Vxworks
  */
 const char* apzVxworks_Needs_VxworksPatch[] = { "sed",
-    "-e", "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n"
-       "#include <types/vxTypesOld.h>\n",
+    "-e", "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n\
+#include <types/vxTypesOld.h>\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3449,15 +3449,15 @@ tTestDesc aVxworks_TimeTests[] = {
  *  Fix Command Arguments for Vxworks_Time
  */
 const char* apzVxworks_TimePatch[] = { "sed",
-    "-e", "/VOIDFUNCPTR/i\\\n"
-       "#ifndef __gcc_VOIDFUNCPTR_defined\\\n"
-       "#ifdef __cplusplus\\\n"
-       "typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n"
-       "#else\\\n"
-       "typedef void (*__gcc_VOIDFUNCPTR) ();\\\n"
-       "#endif\\\n"
-       "#define __gcc_VOIDFUNCPTR_defined\\\n"
-       "#endif\n",
+    "-e", "/VOIDFUNCPTR/i\\\n\
+#ifndef __gcc_VOIDFUNCPTR_defined\\\n\
+#ifdef __cplusplus\\\n\
+typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n\
+#else\\\n\
+typedef void (*__gcc_VOIDFUNCPTR) ();\\\n\
+#endif\\\n\
+#define __gcc_VOIDFUNCPTR_defined\\\n\
+#endif\n",
     "-e", "s/VOIDFUNCPTR/__gcc_VOIDFUNCPTR/g",
     (char*)NULL };
 
@@ -3492,12 +3492,12 @@ tTestDesc aX11_ClassTests[] = {
  *  Fix Command Arguments for X11_Class
  */
 const char* apzX11_ClassPatch[] = { "sed",
-    "-e", "/char \\*class;/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\tchar *c_class;\\\n"
-       "#else\n",
-    "-e", "/char \\*class;/a\\\n"
-       "#endif\n",
+    "-e", "/char \\*class;/i\\\n\
+#ifdef __cplusplus\\\n\
+\tchar *c_class;\\\n\
+#else\n",
+    "-e", "/char \\*class;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3565,12 +3565,12 @@ tTestDesc aX11_NewTests[] = {
  *  Fix Command Arguments for X11_New
  */
 const char* apzX11_NewPatch[] = { "sed",
-    "-e", "/Widget\told, new;/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\tWidget\told, c_new;\\\n"
-       "#else\n",
-    "-e", "/Widget\told, new;/a\\\n"
-       "#endif\n",
+    "-e", "/Widget\told, new;/i\\\n\
+#ifdef __cplusplus\\\n\
+\tWidget\told, c_new;\\\n\
+#else\n",
+    "-e", "/Widget\told, new;/a\\\n\
+#endif\n",
     "-e", "s/Widget new,/Widget c_new,/g",
     (char*)NULL };
 
@@ -3597,9 +3597,9 @@ tSCC zX11_SprintfList[] =
  *  Fix Command Arguments for X11_Sprintf
  */
 const char* apzX11_SprintfPatch[] = { "sed",
-    "-e", "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
-       "extern char *\tsprintf();\\\n"
-       "#endif /* !defined __STDC__ */,",
+    "-e", "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n\
+extern char *\tsprintf();\\\n\
+#endif /* !defined __STDC__ */,",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3633,9 +3633,9 @@ tTestDesc aZzz_Ki_IfaceTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Iface
  */
 const char* apzZzz_Ki_IfacePatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3669,9 +3669,9 @@ tTestDesc aZzz_KiTests[] = {
  *  Fix Command Arguments for Zzz_Ki
  */
 const char* apzZzz_KiPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3705,9 +3705,9 @@ tTestDesc aZzz_Ki_CallsTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Calls
  */
 const char* apzZzz_Ki_CallsPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3741,9 +3741,9 @@ tTestDesc aZzz_Ki_DefsTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Defs
  */
 const char* apzZzz_Ki_DefsPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3769,9 +3769,9 @@ tSCC zZzz_Bad_FixesList[] =
  *  Fix Command Arguments for Zzz_Bad_Fixes
  */
 const char* apzZzz_Bad_FixesPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3805,9 +3805,9 @@ tTestDesc aZzz_TimeTests[] = {
  *  Fix Command Arguments for Zzz_Time
  */
 const char* apzZzz_TimePatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

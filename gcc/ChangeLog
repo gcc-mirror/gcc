@@ -6,7 +6,7 @@ Tue May 18 11:20:48 1999  Mark Mitchell  <mark@codesourcery.com>
 Wed May 19 03:10:08 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/fixincl.tpl: Avoid depending on ANSI C features for
-	filename lists.
+	filename lists.  Utilizes new AutoGen function "krstr".
 	* fixinc/fixincl.x: Rebuilt.
 
 Wed May 19 02:47:11 1999  Jan Hubicka  (hubicka@freesoft.cz)
