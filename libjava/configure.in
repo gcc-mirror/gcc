@@ -1004,7 +1004,7 @@ case "${host}" in
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
  powerpc-*-linux*)
-    SIGNAL_HANDLER=include/dwarf2-signal.h
+    SIGNAL_HANDLER=include/powerpc-signal.h
     ;;
  alpha*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h

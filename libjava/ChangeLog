@@ -1,3 +1,9 @@
+2003-06-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* include/powerpc-signal.h: New File.
+	* configure.in: Use it.
+	* configure: Regenerated.
+
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/Locale.java
