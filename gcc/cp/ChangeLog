@@ -1,3 +1,8 @@
+2000-08-07  Kazu Hirata  <kazu@hxi.com>
+
+	* cp-tree.h (CLASSTYPE_HAS_PRIMARY_BASE_P): Fix a comment typo.
+	* decl.c (pop_labels): Likewise.
+
 2000-08-04  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* inc/cxxabi.h (__pbase_type_info): Changed member names to match

@@ -1241,7 +1241,7 @@ pop_label (label, old_value)
   SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), old_value);
 }
 
-/* At the end of a function, all labels declared within the fucntion
+/* At the end of a function, all labels declared within the function
    go out of scope.  BLOCK is the top-level block for the
    function.  */
 
