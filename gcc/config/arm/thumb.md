@@ -470,7 +470,7 @@
 ")
 
 (define_insn "*extendqisi2_insn"
-  [(set (match_operand:SI 0 "register_operand" "=l,&l")
+  [(set (match_operand:SI 0 "register_operand" "=l,l")
 	(sign_extend:SI (match_operand:QI 1 "memory_operand" "V,m")))]
   ""
   "*
@@ -484,16 +484,21 @@
     {
       ops[1] = XEXP (XEXP (operands[1], 0), 0);
       ops[2] = XEXP (XEXP (operands[1], 0), 1);
+      output_asm_insn (\"ldrsb\\t%0, [%1, %2]\", ops);
+    }
+  else if (REGNO (operands[0]) == REGNO (XEXP (operands[1], 0)))
+    {
+      output_asm_insn (\"ldrb\\t%0, [%0, #0]\;lsl\\t%0, %0, #24\;asr\\t%0, %0, #24\", ops);
     }
   else
     {
       ops[1] = XEXP (operands[1], 0);
       ops[2] = const0_rtx;
+      output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
     }
-  output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
   return \"\";
 }"
-[(set_attr "length" "2,4")])
+[(set_attr "length" "2,6")])
 
 ;; We don't really have extzv, but defining this using shifts helps
 ;; to reduce register pressure later on.
