@@ -928,6 +928,9 @@ force_nonfallthru_and_redirect (e, target)
       /* Change the existing edge's source to be the new block, and add
 	 a new edge from the entry block to the new block.  */
       e->src = bb;
+      bb->count = e->count;
+      bb->frequency = EDGE_FREQUENCY (e);
+      bb->loop_depth = 0;
       for (pe1 = &ENTRY_BLOCK_PTR->succ; *pe1; pe1 = &(*pe1)->succ_next)
 	if (*pe1 == e)
 	  {
@@ -1214,6 +1217,7 @@ split_edge (edge_in)
 			   : edge_in->dest->index, before, NULL);
   bb->count = edge_in->count;
   bb->frequency = EDGE_FREQUENCY (edge_in);
+  bb->loop_depth = edge_in->dest->loop_depth;
 
   /* ??? This info is likely going to be out of date very soon.  */
   if (edge_in->dest->global_live_at_start)

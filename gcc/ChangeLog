@@ -1,3 +1,13 @@
+Fri Mar 22 16:00:06 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (outgoing_edges_math): Fix condition; relax
+	frequencies match; avoid match on different loop depths.
+	(try_crossjump_to_bb): Kill tests that no longer brings time
+	savings.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Fix loop_depth
+	updating code.
+	(split_edge): Likewise.
+
 2002-03-21  Richard Henderson  <rth@redhat.com>
 
 	PR target/5996
