@@ -1,3 +1,10 @@
+Mon Mar 29 11:50:34 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* pa.h (HAVE_PRE_INCREMENT): Disable when optimizing for a PA8000
+	class machine.
+	(HAVE_PRE_DECREMENT, HAVE_POST_INCREMENT): Likewise.
+	(HAVE_POST_DECREMENT): Likewise.
+
 Mon Mar 29 08:24:43 1999  Bruce Korb <korb@datadesign.com>
 
 	* fixinc/mkfixinc.sh:  Heredoc portability problem
