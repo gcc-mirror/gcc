@@ -1,3 +1,7 @@
+2000-09-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/wtr-int-type-1.c: Don't expect a warning from system headers.
+
 2000-09-26  Jakub Jelinek  <jakub@redhat.com>
 
         * gcc.c-torture/compile/20000923-1.c: New test.

@@ -42,4 +42,3 @@ testfunc (void)
 
 /* Ignore "decimal constant is so large that it is unsigned" warnings.  */
 /* { dg-warning "decimal constant" "decimal constant" { target *-*-* } 26 } */
-/* { dg-warning "decimal constant" "decimal constant" { target *-*-* } 40 } */
