@@ -1,3 +1,11 @@
+2001-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (do_build_assign_ref): Don't use build_modify_expr for
+	anonymous aggregates, since they don't have assignment operator
+	method.
+	* decl.c (fixup_anonymous_aggr): Disallow ctors, dtors and copy
+	assignment operators for anonymous structure fields.
+
 2001-03-21  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Abort if we see a member constant
