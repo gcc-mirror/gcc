@@ -1,3 +1,10 @@
+2002-06-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpptrad.c (scan_out_logical_line): Check recursing only when
+	we know we have a macro invocation in the function-like case.
+	Only call _cpp_handle_directive if we know we have a good
+	directive, or we want to reject a bad directive.
+
 2002-06-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* doloop.c (doloop_valid_p): Correct comment.
