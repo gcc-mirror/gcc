@@ -1,3 +1,15 @@
+2002-10-24  David Edelsohn  <edelsohn@gnu.org>
+
+	PR c++/7228
+	* cp-tree.h (CLASSTYPE_READONLY_FIELDS_NEED_INIT): Check that
+	lang_type structure exists before accessing field.
+	(SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT): New macro.
+	(CLASSTYPE_REF_FIELDS_NEED_INIT): Similar.
+	(SET_CLASSTYPE_REF_FIELDS_NEED_INIT): New macro.
+	* class.c (check_field_decls): Use new macros.
+	* typeck2.c (process_init_constructor): Remove redundant check for
+	existence of lang_type structure.
+
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8067
