@@ -3435,7 +3435,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* In IEEE floating point, x+0 is not the same as x.  Similarly
 	     for the other optimizations below.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && GET_MODE_CLASS (mode) != MODE_INT)
+	      && FLOAT_MODE_P (mode))
 	    break;
 
 	  if (op1 == CONST0_RTX (mode))
@@ -3462,8 +3462,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
 
-	  if ((GET_MODE_CLASS (mode) == MODE_INT
-	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	  if (INTEGRAL_MODE_P (mode)
 	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
 		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
 	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
@@ -3479,7 +3478,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     In IEEE floating point, x-0 is not the same as x.  */
 
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || GET_MODE_CLASS (mode) == MODE_INT)
+	       || ! FLOAT_MODE_P (mode))
 	      && op1 == CONST0_RTX (mode))
 	    return op0;
 #else
@@ -3491,15 +3490,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && GET_MODE_CLASS (mode) != MODE_INT
-	      && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
+	      && ! FLOAT_MODE_P (mode))
 	    break;
 
 	  /* We can't assume x-x is 0 even with non-IEEE floating point.  */
 	  if (rtx_equal_p (op0, op1)
 	      && ! side_effects_p (op0)
-	      && GET_MODE_CLASS (mode) != MODE_FLOAT
-	      && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+	      && ! FLOAT_MODE_P (mode))
 	    return const0_rtx;
 
 	  /* Change subtraction from zero into negation.  */
@@ -3524,8 +3521,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
 
-	  if ((GET_MODE_CLASS (mode) == MODE_INT
-	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	  if (INTEGRAL_MODE_P (mode)
 	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
 		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
 	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
@@ -3546,7 +3542,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* In IEEE floating point, x*0 is not always 0.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || GET_MODE_CLASS (mode) == MODE_INT)
+	       && ! FLOAT_MODE_P (mode))
 	      && op1 == CONST0_RTX (mode)
 	      && ! side_effects_p (op0))
 	    return op1;
@@ -3646,7 +3642,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* In IEEE floating point, 0/x is not always 0.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || GET_MODE_CLASS (mode) == MODE_INT)
+	       || ! FLOAT_MODE_P (mode))
 	      && op0 == CONST0_RTX (mode)
 	      && ! side_effects_p (op1))
 	    return op0;
@@ -4182,7 +4178,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	 the result.  */
       if (rtx_equal_p (op0, op1)
 	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || GET_MODE_CLASS (GET_MODE (op0)) != MODE_FLOAT))
+	      || ! FLOAT_MODE_P (GET_MODE (op0))))
 	return (code == EQ || code == GE || code == LE || code == LEU
 		|| code == GEU) ? const_true_rtx : const0_rtx;
 
@@ -4307,14 +4303,12 @@ simplify_relational_operation (code, mode, op0, op1)
 	case GEU:
 	  /* Unsigned values are never negative, but we must be sure we are
 	     actually comparing a value, not a CC operand.  */
-	  if (op1 == const0_rtx
-	      && GET_MODE_CLASS (mode) == MODE_INT)
+	  if (op1 == const0_rtx && INTEGRAL_MODE_P (mode))
 	    return const_true_rtx;
 	  break;
 
 	case LTU:
-	  if (op1 == const0_rtx
-	      && GET_MODE_CLASS (mode) == MODE_INT)
+	  if (op1 == const0_rtx && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
 
@@ -4323,14 +4317,14 @@ simplify_relational_operation (code, mode, op0, op1)
 	     unsigned value.  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && INTVAL (op1) == GET_MODE_MASK (mode)
-	      && GET_MODE_CLASS (mode) == MODE_INT)
+	      && INTEGRAL_MODE_P (mode))
 	    return const_true_rtx;
 	  break;
 
 	case GTU:
 	  if (GET_CODE (op1) == CONST_INT
 	      && INTVAL (op1) == GET_MODE_MASK (mode)
-	      && GET_MODE_CLASS (mode) == MODE_INT)
+	      && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
 	}
@@ -5088,7 +5082,7 @@ fold_rtx (x, insn)
 		 since x might be a NaN.  */
 
 	      if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		   || GET_MODE_CLASS (mode_arg0) != MODE_FLOAT)
+		   || ! FLOAT_MODE_P (mode_arg0))
 		  && (folded_arg0 == folded_arg1
 		      || (GET_CODE (folded_arg0) == REG
 			  && GET_CODE (folded_arg1) == REG
@@ -5116,7 +5110,7 @@ fold_rtx (x, insn)
 		      && (comparison_dominates_p (qty_comparison_code[qty], code)
 			  || (comparison_dominates_p (qty_comparison_code[qty],
 						      reverse_condition (code))
-			      && GET_MODE_CLASS (mode_arg0) == MODE_INT))
+			      && ! FLOAT_MODE_P (mode_arg0)))
 		      && (rtx_equal_p (qty_comparison_const[qty], folded_arg1)
 			  || (const_arg1
 			      && rtx_equal_p (qty_comparison_const[qty],
@@ -5588,7 +5582,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
      If we record the equality, we might inadvertently delete code
      whose intent was to change -0 to +0.  */
 
-  if (code != EQ || GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+  if (code != EQ || FLOAT_MODE_P (GET_MODE (op0)))
     {
       /* If we reversed a floating-point comparison, if OP0 is not a
 	 register, or if OP1 is neither a register or constant, we can't
@@ -5597,7 +5591,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       if (GET_CODE (op1) != REG)
 	op1 = equiv_constant (op1);
 
-      if ((reversed_nonequality && GET_MODE_CLASS (mode) != MODE_INT)
+      if ((reversed_nonequality && FLOAT_MODE_P (mode))
 	  || GET_CODE (op0) != REG || op1 == 0)
 	return;
 
@@ -6695,7 +6689,7 @@ cse_insn (insn, in_libcall_block)
 	{
 	  this_insn_cc0 = src_const && mode != VOIDmode ? src_const : src;
 	  this_insn_cc0_mode = mode;
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	  if (FLOAT_MODE_P (mode))
 	    this_insn_cc0 = gen_rtx (COMPARE, VOIDmode, this_insn_cc0,
 				     CONST0_RTX (mode));
 	}
@@ -6861,7 +6855,7 @@ cse_insn (insn, in_libcall_block)
 	   memory.  */
 	if ((flag_float_store
 	     && GET_CODE (dest) == MEM
-	     && GET_MODE_CLASS (GET_MODE (dest)) == MODE_FLOAT)
+	     && FLOAT_MODE_P (GET_MODE (dest)))
 	    /* Don't record values of destinations set inside a libcall block
 	       since we might delete the libcall.  Things should have been set
 	       up so we won't want to reuse such a value, but we play it safe
