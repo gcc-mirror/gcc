@@ -1,3 +1,5 @@
+// Build don't link:
+
 struct Base_bitset {
   unsigned M_w[2];
   void M_do_right_shift();
