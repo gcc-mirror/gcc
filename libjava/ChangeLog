@@ -1,3 +1,9 @@
+2003-09-25  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/image/Raster.java(Raster): Interpret null origin as (0,0).
+	* java/awt/image/WritableRaster.java(WritableRaster): Likewise.
+	* java/awt/image/BufferedImage.java (toString): Implement.
+
 2003-09-25  Jeff Sturm  <jsturm@one-point.com>
 
 	* aclocal.m4: Rebuilt.
