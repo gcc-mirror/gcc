@@ -1,3 +1,8 @@
+2002-08-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* bugs.texi, news.texi: Update URLs for online news and bugs
+	lists.
+
 2002-08-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* where.h (struct _ffewhere_file_): Mark GTY.
