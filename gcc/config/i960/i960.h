@@ -255,8 +255,8 @@ extern int target_flags;
     {"intel-asm",TARGET_FLAG_ASM_COMPAT},		\
     {"strict-align", TARGET_FLAG_STRICT_ALIGN},		\
     {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN)},	\
-    {"old-align", TARGET_FLAG_OLD_ALIGN},		\
-    {"no-old-align", -(TARGET_FLAG_OLD_ALIGN)},		\
+    {"old-align", (TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)},	 \
+    {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)}, \
     {"link-relax", 0},					\
     {"no-link-relax", 0},				\
     { "", TARGET_DEFAULT}}
@@ -374,7 +374,7 @@ extern int target_flags;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.
    80960 will work even with unaligned data, but it is slow.  */
-#define STRICT_ALIGNMENT TARGET_OLD_ALIGN
+#define STRICT_ALIGNMENT TARGET_STRICT_ALIGN
 
 /* Specify alignment for string literals (which might be higher than the
    base type's minimal alignment requirement.  This allows strings to be
