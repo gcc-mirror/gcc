@@ -1,3 +1,22 @@
+2004-06-21  Daniel Berlin  <dberlin@dberlin.org>
+    
+    Fix PR optimization/15982
+    * tree-ssa-pre.c: Update a few comments and todos to
+    reflect constants change.
+    (get_value_handle): Constants now value number to themselves.
+    (lookup): Constants lookup to themselves.
+    (add_to_value): Adjust to always be on.
+    (set_contains_value): Adjust for constants change.
+    (find_leader): Ditto.
+    (phi_translate): 'r' nodes are never ANTIC right now.
+    (valid_in_set): Ditto.
+    (get_expr_set): New function.
+    (find_or_generate_expression): New function, broken out from
+    insert_aux.
+    (create_expression_by_pieces): Ditto, plus additional
+    machinery to handle complex values.
+    (compute_avail): Remove dead RETURN_EXPR handling.
+
 2004-06-21  Steven Bosscher  <stevenb@suse.de>
 
 	* config/i386/i386.c: Include insn-codes.h
