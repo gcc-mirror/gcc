@@ -52,7 +52,7 @@ _IO_vsscanf (string, format, args)
 weak_alias (_IO_vsscanf, __vsscanf)
 weak_alias (_IO_vsscanf, vsscanf)
 #else
-#ifdef __ELF__
+#ifdef __linux__
 #pragma weak vsscanf = _IO_vsscanf
 #endif
 #endif

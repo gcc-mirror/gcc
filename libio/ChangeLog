@@ -1,3 +1,13 @@
+Wed Oct 22 19:19:32 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* libio.h (_IO_LOCK_T): Handle glibc 2 when _IO_MTSAFE_IO is
+	not defined.
+
+	* iovsscanf.c (vsscanf): Make it weak alias of _IO_vsscanf if
+	__linux__ is defined instead of __ELF__
+
+	* config/linuxlibc1.mt (USER_INCLUDES): Add libio.h.
+
 1997-10-15  Ulrich Drepper  <drepper@cygnus.com>
 
 	* configure.in: Create compatibility code in bits/libc-lock.h file.
