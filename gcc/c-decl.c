@@ -6028,13 +6028,10 @@ store_parm_decls (void)
    all the way to assembler language output.  The free the storage
    for the function definition.
 
-   This is called after parsing the body of the function definition.
-
-   NESTED is nonzero if the function being finished is nested in another.
-   CAN_DEFER_P is nonzero if the function may be deferred.  */
+   This is called after parsing the body of the function definition.  */
 
 void
-finish_function (int nested, int can_defer_p)
+finish_function ()
 {
   tree fndecl = current_function_decl;
 
@@ -6107,74 +6104,13 @@ finish_function (int nested, int can_defer_p)
      DECL_SAVED_INSNS, and we'll restore it in tree_rest_of_compilation.  */
   cfun = NULL;
 
-  if (flag_unit_at_a_time && can_defer_p)
-    {
-      cgraph_finalize_function (fndecl, DECL_SAVED_TREE (fndecl));
-      current_function_decl = NULL;
-      return;
-    }
-
-  if (! nested)
-    {
-      /* Function is parsed.
-	 Generate RTL for the body of this function or defer
-	 it for later expansion.  */
-      bool uninlinable = true;
-
-      /* There's no reason to do any of the work here if we're only doing
-	 semantic analysis; this code just generates RTL.  */
-      if (flag_syntax_only)
-	{
-	  current_function_decl = NULL;
-	  DECL_SAVED_TREE (fndecl) = NULL_TREE;
-	  return;
-	}
-
-      if (flag_inline_trees)
-	{
-	  /* First, cache whether the current function is inlinable.  Some
-	     predicates depend on cfun and current_function_decl to
-	     function completely.  */
-	  timevar_push (TV_INTEGRATION);
-	  uninlinable = !tree_inlinable_function_p (fndecl);
-
-	  if (can_defer_p
-	      /* We defer functions marked inline *even if* the function
-		 itself is not inlinable.  This is because we don't yet
-		 know if the function will actually be used; we may be
-		 able to avoid emitting it entirely.  */
-	      && (!uninlinable || DECL_DECLARED_INLINE_P (fndecl))
-	      /* Save function tree for inlining.  Should return 0 if the
-		 language does not support function deferring or the
-		 function could not be deferred.  */
-	      && defer_fn (fndecl))
-	    {
-	      /* Let the back-end know that this function exists.  */
-	      (*debug_hooks->deferred_inline_function) (fndecl);
-	      timevar_pop (TV_INTEGRATION);
-	      current_function_decl = NULL;
-	      return;
-	    }
-
-	  /* Then, inline any functions called in it.  */
-	  optimize_inline_calls (fndecl);
-	  timevar_pop (TV_INTEGRATION);
-	}
-
-      c_expand_body (fndecl);
-
-      /* Keep the function body if it's needed for inlining or dumping.  */
-      if (uninlinable && !dump_enabled_p (TDI_all))
-	{
-	  /* Allow the body of the function to be garbage collected.  */
-	  DECL_SAVED_TREE (fndecl) = NULL_TREE;
-	}
-
-      /* Let the error reporting routines know that we're outside a
-	 function.  For a nested function, this value is used in
-	 c_pop_function_context and then reset via pop_function_context.  */
-      current_function_decl = NULL;
-    }
+  /* ??? Objc emits functions after finalizing the compilation unit.
+     This should be cleaned up later and this conditional removed.  */
+  if (!cgraph_global_info_ready)
+    cgraph_finalize_function (fndecl, DECL_SAVED_TREE (fndecl));
+  else
+    c_expand_body (fndecl);
+  current_function_decl = NULL;
 }
 
 /* Generate the RTL for a deferred function FNDECL.  */
@@ -6199,8 +6135,7 @@ c_expand_deferred_function (tree fndecl)
 
 /* Generate the RTL for the body of FNDECL.  If NESTED_P is nonzero,
    then we are already in the process of generating RTL for another
-   function.  If can_defer_p is zero, we won't attempt to defer the
-   generation of RTL.  */
+   function.  */
 
 static void
 c_expand_body_1 (tree fndecl, int nested_p)

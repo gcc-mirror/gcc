@@ -192,7 +192,7 @@ extern tree declare_label (tree);
 extern tree define_label (location_t, tree);
 extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
-extern void finish_function (int, int);
+extern void finish_function (void);
 extern tree finish_struct (tree, tree, tree);
 extern tree get_parm_info (int);
 extern tree grokfield (tree, tree, tree);
