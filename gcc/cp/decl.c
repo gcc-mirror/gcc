@@ -8033,7 +8033,9 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 
   GNU_xref_decl (current_function_decl, decl);
 
-  /* Add this declaration to the statement-tree.  */
+  /* Add this declaration to the statement-tree.  This needs to happen
+     after the call to check_initializer so that the DECL_STMT for a
+     reference temp is added before the DECL_STMT for the reference itself.  */
   if (building_stmt_tree ()
       && at_function_scope_p ()
       && TREE_CODE (decl) != RESULT_DECL)
