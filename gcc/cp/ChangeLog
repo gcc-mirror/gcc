@@ -1,3 +1,9 @@
+2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* errfn.c (cp_deprecated): Tweak diagnostic text.
+	* parse.y (new_initializer): Deprecate initializer lists
+	extension.
+
 2001-02-12  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove old ABI support.

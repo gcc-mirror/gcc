@@ -265,8 +265,7 @@ cp_deprecated (msg)
   extern int warn_deprecated;
   if (!warn_deprecated)
     return;
-  cp_warning ("%s is deprecated.", msg);
-  cp_warning ("Please see the documentation for details.");
+  cp_warning ("%s is deprecated, please see the documentation for details", msg);
 }
 
 void
