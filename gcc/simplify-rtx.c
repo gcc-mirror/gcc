@@ -2707,8 +2707,7 @@ simplify_subreg (outermode, op, innermode, byte)
       int offset, part;
       unsigned HOST_WIDE_INT val = 0;
 
-      if (GET_MODE_CLASS (outermode) == MODE_VECTOR_INT
-	  || GET_MODE_CLASS (outermode) == MODE_VECTOR_FLOAT)
+      if (VECTOR_MODE_P (outermode))
 	{
 	  /* Construct a CONST_VECTOR from individual subregs.  */
 	  enum machine_mode submode = GET_MODE_INNER (outermode);

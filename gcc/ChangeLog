@@ -1,3 +1,11 @@
+2003-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+        * c-common.c (handle_mode_attribute): Use VECTOR_MODE_P macro.
+
+        * simplify-rtx.c (simplify_subreg): Same.
+
+        * emit-rtl.c (gen_lowpart_common): Same.
+
 2003-06-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c: Fix comment typos.

@@ -5215,9 +5215,7 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 	{
 	  /* If this is a vector, make sure we either have hardware
 	     support, or we can emulate it.  */
-	  if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	      && !vector_mode_valid_p (mode))
+	  if (VECTOR_MODE_P (mode) && !vector_mode_valid_p (mode))
 	    {
 	      error ("unable to emulate '%s'", GET_MODE_NAME (mode));
 	      return NULL_TREE;
