@@ -32,7 +32,7 @@
 <!-- ####################################################### -->
 <hr />
 <h3 class="left">
-  <a name="C++interface">The C++ interface</a>
+  <a name="CXXinterface">The C++ interface</a>
 </h3>
 
 <p> C++ applications often dependent on specific language support
@@ -101,7 +101,7 @@ given compiler ABI. In a nutshell:
 </p>
 
 <h3 class="left">
-  <a name="ABI versioning">Versioning</a>
+  <a name="ABI_versioning">Versioning</a>
 </h3>
 
 <p> The C++ interface has evolved throughout the history of the GNU
@@ -170,8 +170,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: libgcc_s.so.1</li>
     <li>gcc-3.4.0: libgcc_s.so.1</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
     <li>Release versioning on the libstdc++.so binary, implemented in the same was as the libgcc_s.so binary, above.
 
@@ -195,8 +195,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: libstdc++.so.5.0.5</li>
     <li>gcc-3.4.0: libstdc++.so.6.0.0</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
     <li>Symbol versioning on the libgcc_s.so binary.
     <p>mapfile: gcc/libgcc-std.ver</p>
@@ -220,8 +220,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: GCC_3.0</li>
     <li>gcc-3.4.0: GCC_3.0</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
     <li>Symbol versioning on the libstdc++.so binary.
 
@@ -254,8 +254,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</li>
     <li>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</li>
     </ul>
-    </li>
     <p></p>
+    </li>
   
     <li>
     <p>Incremental bumping of a compiler pre-defined macro,
@@ -266,22 +266,26 @@ on ELF systems).</p>
     </p>
     
     <p>
-    This macro is defined in the file "lang-specs.h" in the gcc/cp directory.
-    Later versions define it in "c-common.c" in the gcc directory.
+    This macro was defined in the file "lang-specs.h" in the gcc/cp directory.
+    Later versions defined it in "c-common.c" in the gcc directory, and from
+    G++ 3.4 it is defined in c-cppbuiltin.c and its value determined by the
+    '-fabi-version' command line option.
     </p>
 
     <p>
-    It is versioned as follows:
+    It is versioned as follows, where 'n' is given by '-fabi-version=n':
     </p>
     <ul>
     <li>gcc-3.0.x: 100</li>
     <li>gcc-3.1.x: 100 (Error, should be 101)</li>
     <li>gcc-3.2.x: 102</li>
     <li>gcc-3.3.x: 102</li>
-    <li>gcc-3.4.x: 1002</li>
+    <li>gcc-3.4.x: 102 (when n=1)</li>
+    <li>gcc-3.4.x: 1000+n (when n&gt;1)</li>
+    <li>gcc-3.4.x: 999999 (when n=0)</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
     <li>
     <p>Changes to the default compiler option for
@@ -297,8 +301,8 @@ on ELF systems).</p>
     <li>gcc-3.3.x: <code>-fabi-version=1</code></li>
     <li>gcc-3.4.x: <code>-fabi-version=2</code></li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
    <li>
     <p>Incremental bumping of a library pre-defined macro. For releases
@@ -335,8 +339,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: 20040214</li>
     <li>gcc-3.4.0: 20040419</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
 
     <li>
@@ -344,7 +348,8 @@ on ELF systems).</p>
     Incremental bumping of a library pre-defined macro,
     _GLIBCPP_VERSION. This macro is defined as the released version of
     the library, as a string literal. This is only implemented in
-    gcc-3.1.0 releases and higher, and is deprecated in 3.4.
+    gcc-3.1.0 releases and higher, and is deprecated in 3.4 (where it
+    is called _GLIBCXX_VERSION).
     </p>
 
     <p>
@@ -375,8 +380,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: "3.3.3"</li>
     <li>gcc-3.4.0: "version-unused"</li>
     </ul>
-    </li>
     <p></p>
+    </li>
 
     <li>
     <p>
@@ -389,7 +394,7 @@ on ELF systems).</p>
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
     "libstdc++-v3/acinclude.m4," and more details can be found in that
-    file's macro GLIBCPP_CONFIGURE.
+    file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
     </p>
     <p>
     C++ includes are versioned as follows:
@@ -412,8 +417,8 @@ on ELF systems).</p>
     <li>gcc-3.3.3: include/c++/3.3.3</li>
     <li>gcc-3.4.0: include/c++/3.4.0</li>
     </ul>
-    </li>
     <p></p>
+    </li>
   </ul>
 <p>
   Taken together, these techniques can accurately specify interface
@@ -457,7 +462,7 @@ on ELF systems).</p>
   impact versioning and compatibility.
 </p>
 
-</p>
+<p>
   For more information on configure options, including ABI impacts, see:
   http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html
 </p>
@@ -507,11 +512,11 @@ int main()
 %g++ hello.cc -o hello.out
 
 %ldd hello.out
-        libstdc++.so.5 => /usr/lib/libstdc++.so.5 (0x00764000)
-        libm.so.6 => /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 => /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
-        libc.so.6 => /lib/tls/libc.so.6 (0x0036d000)
-        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x00355000)
+        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
+        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %nm hello.out
 </pre>
@@ -524,7 +529,7 @@ of the name, then the executable is versioned. Here's an example:
    <code>      U _ZNSt8ios_base4InitC1Ev@@GLIBCXX_3.4 </code>
 
 <h3 class="left">
-  <a name="ABI allowed">Library allowed ABI changes</a>
+  <a name="ABI_allowed">Library allowed ABI changes</a>
 </h3>
 <p>
 The following will cause the library minor version number to
@@ -543,7 +548,7 @@ Other allowed changes are possible.
 
 
 <h3 class="left">
-  <a name="ABI disallowed">Library disallowed ABI changes</a>
+  <a name="ABI_disallowed">Library disallowed ABI changes</a>
 </h3>
 
 <p>
@@ -574,24 +579,24 @@ number to increase, say from "libstdc++.so.3.0.4" to
 </h3>
 
 <ul>
- <li>Separation of interface and implementation</li>
+ <li>Separation of interface and implementation
 <p>This is accomplished by two techniques that separate the API from
 the ABI: forcing undefined references to link against a library binary
 for definitions.
 </p>
 
- <ul>
- <li>Include files have declarations, source files have defines</li>
+ <dl>
+  <dt>Include files have declarations, source files have defines</dt>
 
-<p> For non-templatized types, such as much of <code>class
-locale</code>, the appropriate standard C++ include, say
-<code>locale</code>, can contain full declarations, while various
-source files (say <code> locale.cc, locale_init.cc,
-localename.cc</code>) contain definitions.</p>
+   <dd> For non-templatized types, such as much of <code>class
+   locale</code>, the appropriate standard C++ include, say
+   <code>locale</code>, can contain full declarations, while various
+   source files (say <code> locale.cc, locale_init.cc,
+   localename.cc</code>) contain definitions.</dd>
 
-  <li>Extern template on required types</li>
+  <dt>Extern template on required types</dt>
 
-   <p>For parts of the standard that have an explicit list of required
+   <dd>For parts of the standard that have an explicit list of required
    instantiations, the GNU extension syntax <code> extern template
    </code> can be used to control where template definitions
    reside. By marking required instantiations as <code> extern
@@ -601,14 +606,15 @@ localename.cc</code>) contain definitions.</p>
    on parts of the standard that require <code> char</code> and <code>
    wchar_t</code> instantiations, and includes <code>
    basic_string</code>, the locale facets, and the types in <code>
-   iostreams</code>.</p>
+   iostreams</code>.</dd>
 
- </ul>
+ </dl>
  <p> In addition, these techniques have the additional benefit that
  they reduce binary size, which can increase runtime performance.
  </p>
+ </li>
 
- <li>Namespaces linking symbol definitions to export mapfiles</li>
+ <li>Namespaces linking symbol definitions to export mapfiles
 
 <p>All symbols in the shared library binary are processed by a linker
 script at build time that either allows or disallows external
@@ -623,34 +629,37 @@ impacting ABI compatibility.
 
 <p>The following namespaces are transformed by the mapfile:</p>
 
-<ul>
-<li><code>namespace std</code></li>
-<p> Defaults to exporting all symbols in label
+<dl>
+<dt><code>namespace std</code></dt>
+<dd> Defaults to exporting all symbols in label
 <code>GLIBCXX</code> that do not begin with an underscore, ie
 <code>__test_func</code> would not be exported by default. Select
-exceptional symbols are allowed to be visible.</p>
+exceptional symbols are allowed to be visible.</dd>
 
-<li><code>namespace __gnu_cxx</code></li>
-<p> Defaults to not exporting any symbols in label
-<code>GLIBCXX</code>, select items are allowed to be visible.</p>
+<dt><code>namespace __gnu_cxx</code></dt>
+<dd> Defaults to not exporting any symbols in label
+<code>GLIBCXX</code>, select items are allowed to be visible.</dd>
 
-<li><code>namespace __gnu_internal</code></li>
-<p> Defaults to not exported, no items are allowed to be visible.</p>
+<dt><code>namespace __gnu_internal</code></dt>
+<dd> Defaults to not exported, no items are allowed to be visible.</dd>
 
-<li><code>namespace __cxxabiv1</code>, aliased to <code> namespace abi</code></li>
-<p> Defaults to not exporting any symbols in label
-<code>CXXABI</code>, select items are allowed to be visible.</p>
-</ul>
+<dt><code>namespace __cxxabiv1</code>, aliased to <code> namespace abi</code></dt>
+<dd> Defaults to not exporting any symbols in label
+<code>CXXABI</code>, select items are allowed to be visible.</dd>
+</dl>
 <p>
 </p>
+</li>
 
- <li>Freezing the API</li>
+ <li>Freezing the API
  <p>Disallowed changes, as above, are not made on a stable release
 branch. Enforcement tends to be less strict with GNU extensions that
-standard includes.</p> </ul>
+standard includes.</p>
+</li>
+</ul>
 
 <h3 class="left">
-  <a name="ABI testing">Testing ABI changes</a>
+  <a name="ABI_testing">Testing ABI changes</a>
 </h3>
 
 <p>
@@ -743,7 +752,7 @@ us. We'd like to know about them!
 </p>
 
 <h3 class="left">
-  <a name="ABI multi testing">Testing Multi-ABI binaries</a>
+  <a name="ABI_multi_testing">Testing Multi-ABI binaries</a>
 </h3>
 
 <p>
@@ -784,18 +793,18 @@ exceptions, locale, etc.
 <p> ...with the resulting libraries looking like </p>
 <pre>
 %ldd libone.so.1.0.0
-        libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x40016000)
-        libm.so.6 => /lib/tls/libm.so.6 (0x400fa000)
-        libgcc_s.so.1 => /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
-        libc.so.6 => /lib/tls/libc.so.6 (0x40125000)
-        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x00355000)
+        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40016000)
+        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400fa000)
+        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
+        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x40125000)
+        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %ldd libtwo.so.1.0.0
-        libstdc++.so.5 => /usr/lib/libstdc++.so.5 (0x40027000)
-        libm.so.6 => /lib/tls/libm.so.6 (0x400e1000)
-        libgcc_s.so.1 => /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
-        libc.so.6 => /lib/tls/libc.so.6 (0x4010c000)
-        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x00355000)
+        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x40027000)
+        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400e1000)
+        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
+        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x4010c000)
+        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 </pre>
 
@@ -810,12 +819,12 @@ Which gives the expected:
 </p>
 <pre>
 %ldd a.out
-        libstdc++.so.5 => /usr/lib/libstdc++.so.5 (0x00764000)
-        libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x40015000)
-        libc.so.6 => /lib/tls/libc.so.6 (0x0036d000)
-        libm.so.6 => /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 => /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
-        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x00355000)
+        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40015000)
+        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
+        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 </pre>
 
 <p>
@@ -830,28 +839,42 @@ dependent libstdc++.so.5.
 
 <p>
 ABIcheck, a vague idea of checking ABI compatibility
-http://abicheck.sourceforge.net/
+<br />
+<a href="http://abicheck.sourceforge.net/">http://abicheck.sourceforge.net/</a>
+</p>
 
 <p>
 C++ ABI reference
-http://www.codesourcery.com/cxx-abi/
+<br />
+<a href="http://www.codesourcery.com/cxx-abi/">http://www.codesourcery.com/cxx-abi/</a>
 </p>
 
 <p>
 Intel ABI documentation
+<br />
 "Intel® Compilers for Linux* -Compatibility with the GNU Compilers"
+<br />
 (included in icc 6.0)
 </p>
 
 <p>
 Sun Solaris 2.9 docs
+<br />
 Linker and Libraries Guide (document 816-1386)
+<br />
 C++ Migration Guide (document 816-2459)
-http://docs.sun.com/db/prod/solaris.9
-http://docs.sun.com/?p=/doc/816-1386&a=load
+<br />
+<a href="http://docs.sun.com/db/prod/solaris.9">http://docs.sun.com/db/prod/solaris.9</a>
+<br />
+<a href="http://docs.sun.com/?p=/doc/816-1386&amp;a=load">http://docs.sun.com/?p=/doc/816-1386&amp;a=load</a>
 </p>
 
 <p>
 Ulrich Drepper, "ELF Symbol Versioning"
-http://people.redhat.com/drepper/symbol-versioning
+<br />
+<a href="http://people.redhat.com/drepper/symbol-versioning">http://people.redhat.com/drepper/symbol-versioning</a>
 </p>
+
+</body>
+</html>
+

@@ -1,3 +1,9 @@
+2004-05-13  Jonathan Wakely  <redi@gcc.gnu.org>
+	
+	* docs/html/abi.html: Document effect of -fabi-version on value
+	of __GXX_ABI_VERSION, and that it's defined in c-cppbuiltin.c.
+	Fix markup.
+
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15074	
