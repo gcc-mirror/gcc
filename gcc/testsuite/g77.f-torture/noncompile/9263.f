@@ -1,0 +1,7 @@
+      PARAMETER (Q=1)
+      PARAMETER (P=10)
+      INTEGER C(10),D(10),E(10),F(10)
+      DATA (C(I),I=1,P)      /10*10/  ! TERMINAL NOT INTEGER
+      DATA (D(I),I=Q,10)     /10*10/  ! START NOT INTEGER
+      DATA (E(I),I=1,10,Q)   /10*10/  ! INCREMENT NOT INTEGER
+      END

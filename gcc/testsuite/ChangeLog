@@ -1,3 +1,10 @@
+2003-04-11  Bud Davis <bdavis9659@comcast.net>
+
+	PR Fortran/9263
+	* g77.f-torture/noncompile/9263.f: New test
+	PR Fortran/1832
+	* g77.f-torture/execute/1832.f: New test
+
 2003-04-11  David Chad  <davidc@freebsd.org>
 	    Loren J. Rittle  <ljrittle@acm.org>
 

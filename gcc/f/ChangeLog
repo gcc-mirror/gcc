@@ -1,3 +1,10 @@
+2003-04-11  Bud Davis <bdavis9659@comcast.net>
+
+	PR Fortran/9263
+	* gcc/f/data.c (ffedata_advance_): Check initial, final and
+	increment values for INTEGER typeness.
+	* gcc/f/news.texi: Document these fixes.
+
 2003-03-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ffe.texi: Don't mention dead file proj.c.
