@@ -2536,11 +2536,11 @@ ix86_expand_prologue ()
 
   if (allocate == 0)
     ;
-  else if (! TARGET_STACK_PROBE || frame.to_allocate < CHECK_STACK_LIMIT)
+  else if (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT)
     {
       insn = emit_insn (gen_pro_epilogue_adjust_stack
 			(stack_pointer_rtx, stack_pointer_rtx,
-			 GEN_INT (-frame.to_allocate)));
+			 GEN_INT (-allocate)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
