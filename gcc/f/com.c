@@ -11187,9 +11187,9 @@ ffecom_init_0 ()
   tree field;
   ffetype type;
   ffetype base_type;
-  tree double_ftype_double;
-  tree float_ftype_float;
-  tree ldouble_ftype_ldouble;
+  tree double_ftype_double, double_ftype_double_double;
+  tree float_ftype_float, float_ftype_float_float;
+  tree ldouble_ftype_ldouble, ldouble_ftype_ldouble_ldouble;
   tree ffecom_tree_ptr_to_fun_type_void;
 
   /* This block of code comes from the now-obsolete cktyps.c.  It checks
@@ -11322,18 +11322,21 @@ ffecom_init_0 ()
 
   endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
-  float_ftype_float
-    = build_function_type (float_type_node,
-			   tree_cons (NULL_TREE, float_type_node, endlink));
+  t = tree_cons (NULL_TREE, float_type_node, endlink);
+  float_ftype_float = build_function_type (float_type_node, t);
+  t = tree_cons (NULL_TREE, float_type_node, t);
+  float_ftype_float_float = build_function_type (float_type_node, t);
 
-  double_ftype_double
-    = build_function_type (double_type_node,
-			   tree_cons (NULL_TREE, double_type_node, endlink));
+  t = tree_cons (NULL_TREE, double_type_node, endlink);
+  double_ftype_double = build_function_type (double_type_node, t);
+  t = tree_cons (NULL_TREE, double_type_node, t);
+  double_ftype_double_double = build_function_type (double_type_node, t);
 
-  ldouble_ftype_ldouble
-    = build_function_type (long_double_type_node,
-			   tree_cons (NULL_TREE, long_double_type_node,
-				      endlink));
+  t = tree_cons (NULL_TREE, long_double_type_node, endlink);
+  ldouble_ftype_ldouble = build_function_type (long_double_type_node, t);
+  t = tree_cons (NULL_TREE, long_double_type_node, t);
+  ldouble_ftype_ldouble_ldouble = build_function_type (long_double_type_node,
+                                                       t);
 
   for (i = 0; ((size_t) i) < ARRAY_SIZE (ffecom_tree_type); ++i)
     for (j = 0; ((size_t) j) < ARRAY_SIZE (ffecom_tree_type[0]); ++j)
@@ -11750,24 +11753,68 @@ ffecom_init_0 ()
   ffecom_tree_blockdata_type
     = build_function_type (void_type_node, NULL_TREE);
 
-  builtin_function ("__builtin_sqrtf", float_ftype_float,
-		    BUILT_IN_SQRTF, BUILT_IN_NORMAL, "sqrtf", NULL_TREE);
-  builtin_function ("__builtin_sqrt", double_ftype_double,
-		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt", NULL_TREE);
-  builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
-		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl", NULL_TREE);
-  builtin_function ("__builtin_sinf", float_ftype_float,
-		    BUILT_IN_SINF, BUILT_IN_NORMAL, "sinf", NULL_TREE);
-  builtin_function ("__builtin_sin", double_ftype_double,
-		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin", NULL_TREE);
-  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
-		    BUILT_IN_SINL, BUILT_IN_NORMAL, "sinl", NULL_TREE);
+  builtin_function ("__builtin_atan2f", float_ftype_float_float,
+		    BUILT_IN_ATAN2F, BUILT_IN_NORMAL, "atan2f", NULL_TREE);
+  builtin_function ("__builtin_atan2", double_ftype_double_double,
+		    BUILT_IN_ATAN2, BUILT_IN_NORMAL, "atan2", NULL_TREE);
+  builtin_function ("__builtin_atan2l", ldouble_ftype_ldouble_ldouble,
+		    BUILT_IN_ATAN2L, BUILT_IN_NORMAL, "atan2l", NULL_TREE);
+
   builtin_function ("__builtin_cosf", float_ftype_float,
 		    BUILT_IN_COSF, BUILT_IN_NORMAL, "cosf", NULL_TREE);
   builtin_function ("__builtin_cos", double_ftype_double,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos", NULL_TREE);
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
 		    BUILT_IN_COSL, BUILT_IN_NORMAL, "cosl", NULL_TREE);
+
+  builtin_function ("__builtin_expf", float_ftype_float,
+		    BUILT_IN_EXPF, BUILT_IN_NORMAL, "expf", NULL_TREE);
+  builtin_function ("__builtin_exp", double_ftype_double,
+		    BUILT_IN_EXP, BUILT_IN_NORMAL, "exp", NULL_TREE);
+  builtin_function ("__builtin_expl", ldouble_ftype_ldouble,
+		    BUILT_IN_EXPL, BUILT_IN_NORMAL, "expl", NULL_TREE);
+
+  builtin_function ("__builtin_floorf", float_ftype_float,
+		    BUILT_IN_FLOORF, BUILT_IN_NORMAL, "floorf", NULL_TREE);
+  builtin_function ("__builtin_floor", double_ftype_double,
+		    BUILT_IN_FLOOR, BUILT_IN_NORMAL, "floor", NULL_TREE);
+  builtin_function ("__builtin_floorl", ldouble_ftype_ldouble,
+		    BUILT_IN_FLOORL, BUILT_IN_NORMAL, "floorl", NULL_TREE);
+
+  builtin_function ("__builtin_fmodf", float_ftype_float_float,
+		    BUILT_IN_FMODF, BUILT_IN_NORMAL, "fmodf", NULL_TREE);
+  builtin_function ("__builtin_fmod", double_ftype_double_double,
+		    BUILT_IN_FMOD, BUILT_IN_NORMAL, "fmod", NULL_TREE);
+  builtin_function ("__builtin_fmodl", ldouble_ftype_ldouble_ldouble,
+		    BUILT_IN_FMODL, BUILT_IN_NORMAL, "fmodl", NULL_TREE);
+
+  builtin_function ("__builtin_logf", float_ftype_float,
+		    BUILT_IN_LOGF, BUILT_IN_NORMAL, "logf", NULL_TREE);
+  builtin_function ("__builtin_log", double_ftype_double,
+		    BUILT_IN_LOG, BUILT_IN_NORMAL, "log", NULL_TREE);
+  builtin_function ("__builtin_logl", ldouble_ftype_ldouble,
+		    BUILT_IN_LOGL, BUILT_IN_NORMAL, "logl", NULL_TREE);
+
+  builtin_function ("__builtin_powf", float_ftype_float_float,
+		    BUILT_IN_POWF, BUILT_IN_NORMAL, "powf", NULL_TREE);
+  builtin_function ("__builtin_pow", double_ftype_double_double,
+		    BUILT_IN_POW, BUILT_IN_NORMAL, "pow", NULL_TREE);
+  builtin_function ("__builtin_powl", ldouble_ftype_ldouble_ldouble,
+		    BUILT_IN_POWL, BUILT_IN_NORMAL, "powl", NULL_TREE);
+
+  builtin_function ("__builtin_sinf", float_ftype_float,
+		    BUILT_IN_SINF, BUILT_IN_NORMAL, "sinf", NULL_TREE);
+  builtin_function ("__builtin_sin", double_ftype_double,
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin", NULL_TREE);
+  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
+		    BUILT_IN_SINL, BUILT_IN_NORMAL, "sinl", NULL_TREE);
+
+  builtin_function ("__builtin_sqrtf", float_ftype_float,
+		    BUILT_IN_SQRTF, BUILT_IN_NORMAL, "sqrtf", NULL_TREE);
+  builtin_function ("__builtin_sqrt", double_ftype_double,
+		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt", NULL_TREE);
+  builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
+		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl", NULL_TREE);
 
   pedantic_lvalues = FALSE;
 
@@ -13342,6 +13389,9 @@ duplicate_decls (tree newdecl, tree olddecl)
 	 are assigned.  */
       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
+
+      /* Copy the assembler name.  */
+      COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
