@@ -1557,7 +1557,7 @@ recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) function.h $(BASIC_BLOCK_H) \
    $(REGS_H) $(RECOG_H) hard-reg-set.h flags.h insn-config.h $(INSN_ATTR_H) \
    real.h toplev.h output.h reload.h $(TM_P_H)
 reg-stack.o : reg-stack.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) $(RECOG_H) \
-   $(REGS_H) hard-reg-set.h flags.h insn-config.h toplev.h \
+   $(REGS_H) hard-reg-set.h flags.h insn-config.h toplev.h reload.h \
    varray.h function.h $(TM_P_H)
 predict.o: predict.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
@@ -1696,7 +1696,8 @@ s-peep : $(md_file) genpeep$(build_exeext) $(srcdir)/move-if-change
 	touch s-peep
 
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h \
-    output.h $(INSN_ATTR_H) insn-config.h $(SYSTEM_H) toplev.h $(RECOG_H) $(TM_P_H)
+    output.h $(INSN_ATTR_H) insn-config.h $(SYSTEM_H) toplev.h $(RECOG_H) \
+	$(TM_P_H) flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c
 
 insn-attr.h: s-attr ; @true

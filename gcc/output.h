@@ -375,11 +375,6 @@ extern int which_alternative;
 extern rtx final_sequence;
 #endif
 
-/* Nonzero means generate position-independent code.
-   This is not fully implemented yet.  */
-
-extern int flag_pic;
-
 /* The line number of the beginning of the current function.
    sdbout.c needs this so that it can output relative linenumbers.  */
 
