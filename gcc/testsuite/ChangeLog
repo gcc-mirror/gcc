@@ -1,3 +1,7 @@
+2004-06-14  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/20040614-1.c: New test.
+
 2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15211

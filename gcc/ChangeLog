@@ -1,3 +1,9 @@
+2004-06-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa.c (kill_redundant_phi_nodes): More correctly handle
+	PHIs where the destination or an argument is marked with
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
 2004-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/15945

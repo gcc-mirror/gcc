@@ -885,6 +885,14 @@ kill_redundant_phi_nodes (void)
 	{
 	  var = PHI_RESULT (phi);
 
+	  /* If the destination of the PHI is associated with an
+	     abnormal edge, then we can not propagate this PHI away.  */
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (var))
+	    {
+	      raise_value (phi, var, eq_to);
+	      continue;
+	    }
+
 	  for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
 	    {
 	      t = PHI_ARG_DEF (phi, i);
@@ -897,12 +905,20 @@ kill_redundant_phi_nodes (void)
 
 	      stmt = SSA_NAME_DEF_STMT (t);
 
+	      /* If any particular PHI argument is associated with
+		 an abnormal edge, then we know that we should not
+		 be propagating away this PHI.  Go ahead and raise
+		 the result of this PHI to the top of the lattice.  */
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (t))
+		{
+		  raise_value (phi, var, eq_to);
+		  continue;
+		}
+	      
 	      /* If the defining statement for this argument is not a
-		 phi node or the argument is associated with an abnormal
-		 edge, then we need to recursively start the forward
+		 phi node then we need to recursively start the forward
 		 dataflow starting with PHI.  */
-	      if (TREE_CODE (stmt) != PHI_NODE
-		  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (t))
+	      if (TREE_CODE (stmt) != PHI_NODE)
 		{
 		  eq_to[SSA_NAME_VERSION (t)] = t;
 		  raise_value (phi, t, eq_to);
