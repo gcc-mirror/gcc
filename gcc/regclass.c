@@ -518,7 +518,7 @@ init_reg_sets_1 ()
 		  }
 		else
 		  {
-		    cost = i == j ? 2 : REGISTER_MOVE_COST (m, i, j);
+		    cost = REGISTER_MOVE_COST (m, i, j);
 
 		    for (p2 = &reg_class_subclasses[j][0];
 			 *p2 != LIM_REG_CLASSES;
