@@ -1,12 +1,12 @@
 /* ARM and Thumb asm statements should be able to access the constant
    pool.  */
-/* { dg-do compile { target sparc*-*-* } } */
+/* { dg-do compile { target arm*-*-* } } */
 extern unsigned x[];
 unsigned *trapTable()
 {
   unsigned *i;
 
-  asm volatile("ldr %0,%1" : "=r"(i) : "m"(x[0]));
+  __asm__ volatile("ldr %0,%1" : "=r"(i) : "m"(x[0]));
 
   return i;
 }

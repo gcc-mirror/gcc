@@ -1,3 +1,8 @@
+2002-04-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/arm-asm.c: Run this test on ARM chips, not SPARC.  Use
+	__asm__ so that it works correctly even if -ansi -pedantic-errors.
+
 2002-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.misc-tests/linkage.exp: Update last change to handle
