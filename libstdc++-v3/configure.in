@@ -72,8 +72,8 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 	# Construct linux crosses by hand, eliminating bits that need ld...
         # Check for available headers.
         AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
-	machine/endian.h machine/param.h sys/machine.h fp.h locale.h \
-	float.h inttypes.h])
+	machine/endian.h machine/param.h sys/machine.h sys/types.h \
+	fp.h locale.h float.h inttypes.h])
 
 	# GLIBCPP_CHECK_COMPILER_FEATURES
 	SECTION_FLAGS='-ffunction-sections -fdata-sections'

@@ -2619,7 +2619,7 @@ if eval "test \"`echo '$''{'_cv_gnu_make_command'+set}'`\" = set"; then
 else
   _cv_gnu_make_command='' ;
           for a in "${MAKE-make}" make gmake gnumake ; do
-                  if ( $a --version 2> /dev/null | grep -c GNU > /dev/null )
+                  if ($a --version 2> /dev/null | grep -c GNU > /dev/null )
                   then
                           _cv_gnu_make_command=$a ;
                           break;
@@ -3836,8 +3836,8 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 	# Construct linux crosses by hand, eliminating bits that need ld...
         # Check for available headers.
         for ac_hdr in nan.h ieeefp.h endian.h sys/isa_defs.h \
-	machine/endian.h machine/param.h sys/machine.h fp.h locale.h \
-	float.h inttypes.h
+	machine/endian.h machine/param.h sys/machine.h sys/types.h \
+	fp.h locale.h float.h inttypes.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
