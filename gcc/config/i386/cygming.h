@@ -86,6 +86,9 @@ Boston, MA 02111-1307, USA.  */
 	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
 	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
 	  }								\
+	/* Even though linkonce works with static libs, this is needed 	\
+	    to compare typeinfo symbols across dll boundaries.  */	\
+	builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");		\
 	MAYBE_UWIN_CPP_BUILTINS ();					\
 	EXTRA_OS_CPP_BUILTINS ();					\
   }									\
