@@ -50,6 +50,20 @@ Boston, MA 02111-1307, USA.  */
 #if defined (L_divdi3) || defined (L_moddi3)
 static inline
 #endif
+DWtype
+__negdi2 (DWtype u)
+{
+  DWunion w;
+  DWunion uu;
+
+  uu.ll = u;
+
+  w.s.low = -uu.s.low;
+  w.s.high = -uu.s.high - ((UWtype) w.s.low > 0);
+
+  return w.ll;
+}
+#endif
 
 #ifdef L_addvsi3
 SItype
@@ -64,6 +78,7 @@ __addvsi3 (SItype a, SItype b)
 
   return w;
 } 
+#endif
 
 #ifdef L_addvdi3
 DItype
@@ -126,8 +141,7 @@ __mulvsi3 (SItype a, SItype b)
 
   w = a * b;
 
-  if ((a >= 0 && b >= 0) ? w < 0
-                         : (a >= 0 || b >= 0) ? w > 0 : w < 0)
+  if (((u >= 0) == (v >= 0)) ? w < 0 : w > 0)
     abort ();
 
   return w;
@@ -212,29 +226,14 @@ __mulvdi3 (DItype u, DItype v)
 
   w = u * v;
 
-  if ((u >= 0 && v >= 0) ? w < 0
-                         : (u >= 0 || v >= 0) ? w > 0 : w < 0)
+  if (((u >= 0) == (v >= 0)) ? w < 0 : w > 0)
     abort ();
 
   return w;
 }
 #endif
 
-DWtype
-__negdi2 (DWtype u)
-{
-  DWunion w;
-  DWunion uu;
 
-  uu.ll = u;
-
-  w.s.low = -uu.s.low;
-  w.s.high = -uu.s.high - ((UWtype) w.s.low > 0);
-
-  return w.ll;
-}
-#endif
-
 /* Unless shift functions are defined whith full ANSI prototypes,
    parameter b will be promoted to int if word_type is smaller than an int.  */
 #ifdef L_lshrdi3
