@@ -8,10 +8,11 @@ details.  */
 
 #include <gnu/java/awt/EmbeddedWindow.h>
 #include <gnu/java/awt/peer/EmbeddedWindowPeer.h>
+#include <java/awt/peer/ComponentPeer.h>
 
 void
 gnu::java::awt::EmbeddedWindow::setWindowPeer (gnu::java::awt::peer::EmbeddedWindowPeer* w)
 {
   if (!peer)
-    (::java::lang::Object*) peer = (::java::lang::Object*) w;
+    peer = reinterpret_cast< ::java::awt::peer::ComponentPeer *> (w);
 }
