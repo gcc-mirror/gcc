@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 91, 92, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -910,6 +910,34 @@ preserve_temp_slots (x)
   for (p = temp_slots; p; p = p->next)
     if (p->in_use && p->level == temp_slot_level && ! p->keep)
       p->level--;
+}
+
+/* X is the result of an RTL_EXPR.  If it is a temporary slot associated
+   with that RTL_EXPR, promote it into a temporary slot at the present
+   level so it will not be freed when we free slots made in the
+   RTL_EXPR.  */
+
+void
+preserve_rtl_expr_result (x)
+     rtx x;
+{
+  struct temp_slot *p;
+
+  /* If X is not in memory or is at a constant address, it cannot be in
+     a temporary slot.  */
+  if (x == 0 || GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+    return;
+
+  /* If we can find a match, move it to our level.  */
+  for (p = temp_slots; p; p = p->next)
+    if (p->in_use && rtx_equal_p (x, p->slot))
+      {
+	p->level = temp_slot_level;
+	p->rtl_expr = 0;
+	return;
+      }
+
+  return;
 }
 
 /* Free all temporaries used so far.  This is normally called at the end
