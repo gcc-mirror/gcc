@@ -1571,11 +1571,14 @@ objc-headers: stmp-fixinc
 deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
 	  export CC; \
-	  $(srcdir)/scan-types.sh >tmp-deduced.h
+	  $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
 
 gen-protos: gen-protos.o scan.o
 	${HOST_CC} -o gen-protos gen-protos.o scan.o
+
+gen-protos.o: gen-protos.c scan.h
+scan.o: scan.c scan.h
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
@@ -1587,7 +1590,8 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
 	$(HOST_CC) -o fix-header fix-header.o scan-decls.o scan.o $(HOST_OBSTACK)
 
-fix-header.o: xsys-protos.h
+fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h
+scan-decls.o: scan-decls.c scan.h
 
 # stmp-fixproto depends on this, not on fix-header directly.
 # The idea is to make sure fix-header gets built,
