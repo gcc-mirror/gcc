@@ -40,7 +40,7 @@ public class PropertyResourceBundle extends ResourceBundle
                                      parent.getKeys ());
     }
 
-  protected Object handleGetObject (String key)
+  public Object handleGetObject (String key)
     {
       return properties.getProperty(key);
     }

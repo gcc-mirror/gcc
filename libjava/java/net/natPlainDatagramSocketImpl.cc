@@ -113,9 +113,9 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     {
       socklen_t addrlen = sizeof(u);
       if (lport != 0)
-        localport = lport;
+        localPort = lport;
       else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
-        localport = ntohs (u.address.sin_port);
+        localPort = ntohs (u.address.sin_port);
       else
         goto error;
       return;

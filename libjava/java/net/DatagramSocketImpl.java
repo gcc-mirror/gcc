@@ -25,7 +25,7 @@ import java.io.FileDescriptor;
 
 public abstract class DatagramSocketImpl implements SocketOptions
 {
-  protected int localport;
+  protected int localPort;
   protected FileDescriptor fd;
 
   public DatagramSocketImpl()
@@ -57,6 +57,6 @@ public abstract class DatagramSocketImpl implements SocketOptions
 
   protected int getLocalPort()
   {
-    return localport;
+    return localPort;
   }
 }
