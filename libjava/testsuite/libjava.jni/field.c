@@ -1,7 +1,7 @@
 #include <jni.h>
 #include <field.h>
 
-jobjectArray
+JNIEXPORT jobjectArray JNICALL
 Java_field_fetch (JNIEnv *env, jobject this)
 {
   jclass cls;

@@ -1,6 +1,6 @@
 #include <noclass.h>
 
-void
+JNIEXPORT void JNICALL
 Java_noclass_find_1it (JNIEnv *env, jclass k)
 {
   /* We cause an exception by asking for a class we know does not
