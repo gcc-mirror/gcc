@@ -24,7 +24,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 
 # Initialization.
 dg-init
-libstdc++-v3-init
+v3-init
 
 # Main loop.
 dg-runtest [v3-list-tests testsuite_files] "" $DEFAULT_CXXFLAGS

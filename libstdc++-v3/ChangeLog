@@ -1,5 +1,16 @@
 2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
 
+	* testsuite/Makefile.am (DEJATOOL,EXPECT,RUNTEST,RUNTESTFLAGS):
+	Remove unneeded variable assignments.  Leave them for automake.
+	* testsuite/lib/libstdc++-v3.exp:  Rename...
+	* testsuite/lib/libstdc++.exp:  ...to this.  Adjust function names
+	accordingly.
+	* testsuite/libstdc++-v3.dg/dg.exp:  Rename...
+	* testsuite/libstdc++-dg/normal.exp:  ...to this.  Adjust function
+	names accordingly.
+
+2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/doxygen/guide.html:  run_doxygen uses bash.
 	* docs/doxygen/mainpage.html:  We'll be shipping tag files.
 	* docs/doxygen/run_doxygen:  Tweaks and improvements.

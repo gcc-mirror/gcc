@@ -21,23 +21,12 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-AUTOMAKE_OPTIONS =  cygnus dejagnu
+AUTOMAKE_OPTIONS = dejagnu
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
-DEJATOOL = libstdc++-v3
-
-EXPECT = `if [ -f @glibcxx_builddir@/../../expect/expect ] ; then \
-            echo @glibcxx_builddir@/../../expect/expect ; \
-          else echo expect ; fi`
-
-RUNTEST = `if [ -f @glibcxx_srcdir@/../dejagnu/runtest ] ; then \
-	       echo @glibcxx_srcdir@/../dejagnu/runtest ; \
-	    else echo runtest; fi`
-
 AM_MAKEFLAGS = -j1
 AM_RUNTESTFLAGS =
-RUNTESTFLAGS =
 PWD_COMMAND = $${PWDCMD-pwd}
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
