@@ -29,7 +29,7 @@
 
 #include "algobase.h"
 #include "alloc.h"  
-#include <bits/stl_vector.h>
+#include <bits/std_vector.h>
 
 using std::vector;
 
