@@ -1059,7 +1059,7 @@ do {									\
     %{mcall-nt: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
     %{mcall-linux: -D_BIG_ENDIAN -Amachine(bigendian)} \
     %{mcall-aixdesc:  -D_BIG_ENDIAN -Amachine(bigendian)} \
-    %{!mcall-solaris: %{!mcall-linux: %{!mcall-nt: %{!mcall-aixdesc: %(cpp_endian_default_spec) }}}}}}}}"
+    %{!mcall-solaris: %{!mcall-linux: %{!mcall-nt: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}"
 
 #undef	CPP_ENDIAN_DEFAULT_SPEC
 #define	CPP_ENDIAN_DEFAULT_SPEC "-D_BIG_ENDIAN -Amachine(bigendian)"
