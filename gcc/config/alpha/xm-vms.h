@@ -30,8 +30,8 @@ Boston, MA 02111-1307, USA.  */
 /* Specify the list of include file directories.  */
 #define INCLUDE_DEFAULTS		\
 {					\
-  { "/gnu_gxx_include", "G++", 1, 1 },	\
-  { "/gnu_cc_include", "GCC", 0, 0 },	\
+  { "/gnu_gxx_include", 0, 1, 1 },	\
+  { "/gnu_cc_include", 0, 0, 0 },	\
   { 0, 0, 0, 0 }			\
 }
 
