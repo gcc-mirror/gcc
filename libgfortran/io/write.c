@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -104,9 +104,8 @@ extract_real (const void *p, int len)
 }
 
 
-/* calculate sign()-- Given a flag that indicate if a value is
- * negative or not, return a sign_t that gives the sign that we need
- * to produce. */
+/* Given a flag that indicate if a value is negative or not, return a
+   sign_t that gives the sign that we need to produce.  */
 
 static sign_t
 calculate_sign (int negative_flag)
@@ -133,7 +132,7 @@ calculate_sign (int negative_flag)
 }
 
 
-/* calculate_exp()-- returns the value of 10**d.  */
+/* Returns the value of 10**d.  */
 
 static double
 calculate_exp (int d)
@@ -150,8 +149,7 @@ calculate_exp (int d)
 }
 
 
-/* calculate_G_format()-- geneate corresponding I/O format for
-   FMT_G output.
+/* Generate corresponding I/O format for FMT_G output.
    The rules to translate FMT_G to FMT_E or FNT_F from DEC fortran
    LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
 
@@ -252,8 +250,7 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
 }
 
 
-/* output_float() -- output a real number according to its format
-                     which is FMT_G free */
+/* Output a real number according to its format which is FMT_G free.  */
 
 static void
 output_float (fnode *f, double value, int len)
@@ -275,17 +272,17 @@ output_float (fnode *f, double value, int len)
   int intval = 0, intlen = 0;
   int j;
   
-  /* EXP value for this number */
+  /* EXP value for this number.  */
   neval = 0;
 
-  /* Width of EXP and it's sign*/
+  /* Width of EXP and it's sign.  */
   nesign = 0;
 
   ft = f->format;
   w = f->u.real.w;
   d = f->u.real.d + 1;
 
-  /* Width of the EXP */
+  /* Width of the EXP.  */
   e = 0;
 
   sca = g.scale_factor;
@@ -295,7 +292,7 @@ output_float (fnode *f, double value, int len)
   if (n < 0)
     n = -n;
 
-  /* Width of the sign for the whole number */
+  /* Width of the sign for the whole number.  */
   nsign = (sign == SIGN_NONE ? 0 : 1);
 
   digits = 0;
@@ -312,8 +309,8 @@ output_float (fnode *f, double value, int len)
       minv = 0.1;
       maxv = 1.0;
 
-      /* Here calculate the new val of the number with consideration
-         of Globle Scale value */
+      /* Calculate the new val of the number with consideration
+         of global scale value.  */
       while (sca >  0)
         {
           minv *= 10.0;
@@ -323,7 +320,7 @@ output_float (fnode *f, double value, int len)
           neval --;
         }
 
-      /* Now calculate the new Exp value for this number */
+      /* Now calculate the new Exp value for this number.  */
       sca = g.scale_factor;
       while(sca >= 1)
         {
@@ -343,7 +340,7 @@ output_float (fnode *f, double value, int len)
        maxv = 10.0;
      }
 
-   /* OK, let's scale the number to appropriate range */
+   /* OK, let's scale the number to appropriate range.  */
    while (scale_flag && n > 0.0 && n < minv)
      {
        if (n < minv)
@@ -361,12 +358,11 @@ output_float (fnode *f, double value, int len)
          }
      }
 
-  /* It is time to process the EXP part of the number. 
-     Value of 'nesign' is 0 unless following codes is executed.
-  */
+  /* It is time to process the EXP part of the number.
+     Value of 'nesign' is 0 unless following codes is executed.  */
   if (ft != FMT_F)
     {
-     /* Sign of the EXP value */
+     /* Sign of the EXP value.  */
      if (neval >= 0)
        esign = SIGN_PLUS;
      else
@@ -375,7 +371,7 @@ output_float (fnode *f, double value, int len)
          neval = - neval ;
        }
 
-      /* Width of the EXP*/
+      /* Width of the EXP.  */
       e_new = 0;
       j = neval;
       while (j > 0)
@@ -386,15 +382,15 @@ output_float (fnode *f, double value, int len)
       if (e <= e_new)
          e = e_new;
 
-     /* Got the width of EXP */
+     /* Got the width of EXP.  */
      if (e < digits)
        e = digits ;
 
-     /* Minimum value of the width would be 2 */
+     /* Minimum value of the width would be 2.  */
      if (e < 2)
        e = 2;
 
-     nesign =  1 ;  /* We must give a position for the 'exp_char' */
+     nesign =  1 ;  /* We must give a position for the 'exp_char'  */
      if (e > 0)
        nesign = e + nesign + (esign != SIGN_NONE ? 1 : 0);
    }
@@ -424,7 +420,7 @@ output_float (fnode *f, double value, int len)
        nesign -= 1;
        nblank = w - (nsign + intlen + d + nesign);
      }
-  /* don't let a leading '0' cause field overflow */
+  /* Don't let a leading '0' cause field overflow.  */
   if (nblank == -1 && ft == FMT_F && q[0] == '0')
      {
         q++;
@@ -487,7 +483,7 @@ write_l (fnode * f, char *source, int len)
 {
   char *p;
   int64_t n;
-                                                                                
+
   p = write_block (f->u.w);
   if (p == NULL)
     return;
@@ -497,7 +493,7 @@ write_l (fnode * f, char *source, int len)
   p[f->u.w - 1] = (n) ? 'T' : 'F';
 }
 
-/* write_float() -- output a real number according to its format */
+/* Output a real number according to its format.  */
 
 static void
 write_float (fnode *f, const char *source, int len)
@@ -562,7 +558,7 @@ write_float (fnode *f, const char *source, int len)
           p = write_block (nb);
           memset (p, ' ', nb);
         }
-   }
+    }
 }
 
 
@@ -579,7 +575,7 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
 
   n = extract_int (source, len);
 
-  /* Special case */
+  /* Special case:  */
 
   if (m == 0 && n == 0)
     {
@@ -606,7 +602,7 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
-   * print something. */
+     print something.  */
 
   if (w == 0)
     w = ((digits < m) ? m : digits);
@@ -619,7 +615,7 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
   if (digits < m)
     nzero = m - digits;
 
-  /* See if things will work */
+  /* See if things will work.  */
 
   nblank = w - (nzero + digits);
 
@@ -654,7 +650,7 @@ write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
 
   n = extract_int (source, len);
 
-  /* Special case */
+  /* Special case:  */
 
   if (m == 0 && n == 0)
     {
@@ -679,7 +675,7 @@ write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
-   * print something. */
+     print something.  */
 
   if (w == 0)
     w = ((digits < m) ? m : digits) + nsign;
@@ -692,7 +688,7 @@ write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
   if (digits < m)
     nzero = m - digits;
 
-  /* See if things will work */
+  /* See if things will work.  */
 
   nblank = w - (nsign + nzero + digits);
 
@@ -727,7 +723,7 @@ done:
 }
 
 
-/* otoa()-- Convert unsigned octal to ascii */
+/* Convert unsigned octal to ascii.  */
 
 static char *
 otoa (uint64_t n)
@@ -755,7 +751,7 @@ otoa (uint64_t n)
 }
 
 
-/* btoa()-- Convert unsigned binary to ascii */
+/* Convert unsigned binary to ascii.  */
 
 static char *
 btoa (uint64_t n)
@@ -816,6 +812,7 @@ write_z (fnode * f, const char *p, int len)
 void
 write_d (fnode *f, const char *p, int len)
 {
+
   write_float (f, p, len);
 }
 
@@ -823,6 +820,7 @@ write_d (fnode *f, const char *p, int len)
 void
 write_e (fnode *f, const char *p, int len)
 {
+
   write_float (f, p, len);
 }
 
@@ -830,6 +828,7 @@ write_e (fnode *f, const char *p, int len)
 void
 write_f (fnode *f, const char *p, int len)
 {
+
   write_float (f, p, len);
 }
 
@@ -837,6 +836,7 @@ write_f (fnode *f, const char *p, int len)
 void
 write_en (fnode *f, const char *p, int len)
 {
+
   write_float (f, p, len);
 }
 
@@ -844,11 +844,12 @@ write_en (fnode *f, const char *p, int len)
 void
 write_es (fnode *f, const char *p, int len)
 {
+
   write_float (f, p, len);
 }
 
 
-/* write_x()-- Take care of the X/TR descriptor */
+/* Take care of the X/TR descriptor.  */
 
 void
 write_x (fnode * f)
@@ -863,11 +864,11 @@ write_x (fnode * f)
 }
 
 
-/* List-directed writing */
+/* List-directed writing.  */
 
 
-/* write_char()-- Write a single character to the output.  Returns
- * nonzero if something goes wrong. */
+/* Write a single character to the output.  Returns nonzero if
+   something goes wrong.  */
 
 static int
 write_char (char c)
@@ -884,7 +885,7 @@ write_char (char c)
 }
 
 
-/* write_logical()-- Write a list-directed logical value */
+/* Write a list-directed logical value.  */
 
 static void
 write_logical (const char *source, int length)
@@ -893,7 +894,7 @@ write_logical (const char *source, int length)
 }
 
 
-/* write_integer()-- Write a list-directed integer value. */
+/* Write a list-directed integer value.  */
 
 static void
 write_integer (const char *source, int length)
@@ -939,9 +940,8 @@ write_integer (const char *source, int length)
 }
 
 
-/* write_character()-- Write a list-directed string.  We have to worry
- * about delimiting the strings if the file has been opened in that
- * mode. */
+/* Write a list-directed string.  We have to worry about delimiting
+   the strings if the file has been opened in that mode.  */
 
 static void
 write_character (const char *source, int length)
@@ -995,8 +995,8 @@ write_character (const char *source, int length)
 }
 
 
-/* Output the Real number with default format.
-   REAL(4) is 1PG14.7E2, and REAL(8) is 1PG23.15E3  */
+/* Output a real number with default format.
+   This is 1PG14.7E2 for REAL(4) and 1PG23.15E3 for REAL(8).  */
 
 static void
 write_real (const char *source, int length)
@@ -1038,7 +1038,7 @@ write_complex (const char *source, int len)
 }
 
 
-/* write_separator()-- Write the separator between items. */
+/* Write the separator between items.  */
 
 static void
 write_separator (void)
@@ -1053,9 +1053,9 @@ write_separator (void)
 }
 
 
-/* list_formatted_write()-- Write an item with list formatting.
- * TODO: handle skipping to the next record correctly, particularly
- * with strings. */
+/* Write an item with list formatting.
+   TODO: handle skipping to the next record correctly, particularly
+   with strings.  */
 
 void
 list_formatted_write (bt type, void *p, int len)
@@ -1160,4 +1160,3 @@ namelist_write (void)
      write_character("/",1);
 
 }
-
