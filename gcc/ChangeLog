@@ -1,3 +1,8 @@
+2002-05-21  NIIBE Yutaka  <gniibe@m17n.org>
+
+	* reload1.c (do_output_reload): Run delete_output_reload
+	only if optimizing.
+
 2002-05-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/6600
