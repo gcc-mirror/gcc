@@ -575,7 +575,7 @@ extern int ix86_arch;
 #endif
 /* Tell real.c that this is the 80-bit Intel extended float format
    packaged in a 128-bit or 96bit entity.  */
-#define INTEL_EXTENDED_IEEE_FORMAT
+#define INTEL_EXTENDED_IEEE_FORMAT 1
 
 
 #define SHORT_TYPE_SIZE 16

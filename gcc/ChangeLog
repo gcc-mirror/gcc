@@ -1,3 +1,26 @@
+2001-06-25  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (ia64*-*-hpux*): Add ia64/hpux_longdouble.h to tm_file.
+	Define tmake_file to include ia64/t-hpux.
+	* real.c (INTEL_EXTENDED_IEEE_FORMAT): Test for value instead of
+	testing to see if it is defined.
+	* real.h (INTEL_EXTENDED_IEEE_FORMAT): Likewise.  Default to 0 if
+	undefined.
+	* config/ia64/hpux_longdouble.h: New.
+	* config/ia64/ia64.c (hfa_element_mode): Add comment about incorrect
+	handling of long doubles.
+	(ia64_function_arg, ia64_function_value): Add checks for TFmode
+	and INTEL_EXTENDED_IEEE_FORMAT.
+	* config/ia64/ia64.h (INTEL_EXTENDED_IEEE_FORMAT): Define to one.
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK, LIBCALL_VALUE): Add checks for
+	TFmode and INTEL_EXTENDED_IEEE_FORMAT.
+	* config/ia64/ia64.md (all TFmode patterns): Test
+	INTEL_EXTENDED_IEEE_FORMAT in condition.
+	(floatdidf2, floatdisf2): New, for !INTEL_EXTENDED_IEEE_FORMAT.
+	* config/ia64/quadlib.c: New.
+	* config/ia64/t-hpux: New.
+	* config/i386/i386.h (INTEL_EXTENDED_IEEE_FORMAT): Define to one.
+	
 2001-06-25  Jim Wilson  <wilson@redhat.com>
 
 	* config/i960/t-960bare (i960-c.o): Add missing header dependencies.

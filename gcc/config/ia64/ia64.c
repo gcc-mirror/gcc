@@ -2714,6 +2714,7 @@ hfa_element_mode (type, nested)
 	return VOIDmode;
 
     case REAL_TYPE:
+      /* ??? Should exclude 128-bit long double here.  */
       /* We want to return VOIDmode for raw REAL_TYPEs, but the actual
 	 mode if this is contained within an aggregate.  */
       if (nested)
@@ -2888,7 +2889,8 @@ ia64_function_arg (cum, mode, type, named, incoming)
   /* Integral and aggregates go in general registers.  If we have run out of
      FR registers, then FP values must also go in general registers.  This can
      happen when we have a SFmode HFA.  */
-  else if (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS)
+  else if (((mode == TFmode) && ! INTEL_EXTENDED_IEEE_FORMAT)
+          || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
     return gen_rtx_REG (mode, basereg + cum->words + offset);
 
   /* If there is a prototype, then FP values go in a FR register when
@@ -3168,7 +3170,8 @@ ia64_function_value (valtype, func)
       else
 	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
-  else if (FLOAT_TYPE_P (valtype))
+  else if (FLOAT_TYPE_P (valtype) &&
+           ((mode != TFmode) || INTEL_EXTENDED_IEEE_FORMAT))
     return gen_rtx_REG (mode, FR_ARG_FIRST);
   else
     return gen_rtx_REG (mode, GR_RET_FIRST);

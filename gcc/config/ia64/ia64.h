@@ -470,7 +470,8 @@ while (0)
 
 /* Tell real.c that this is the 80-bit Intel extended float format
    packaged in a 128-bit entity.  */
-#define INTEL_EXTENDED_IEEE_FORMAT
+
+#define INTEL_EXTENDED_IEEE_FORMAT 1
 
 /* An expression whose value is 1 or 0, according to whether the type `char'
    should be signed or unsigned by default.  The user can always override this
@@ -824,7 +825,7 @@ while (0)
   ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
    : PR_REGNO_P (REGNO) && (MODE) == BImode ? 2				\
    : PR_REGNO_P (REGNO) && (MODE) == CCImode ? 1			\
-   : FR_REGNO_P (REGNO) && (MODE) == TFmode ? 1				\
+   : FR_REGNO_P (REGNO) && (MODE) == TFmode && INTEL_EXTENDED_IEEE_FORMAT ? 1 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* A C expression that is nonzero if it is permissible to store a value of mode
@@ -833,7 +834,10 @@ while (0)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)				\
   (FR_REGNO_P (REGNO) ?						\
-     GET_MODE_CLASS (MODE) != MODE_CC && (MODE) != TImode && (MODE) != BImode \
+     GET_MODE_CLASS (MODE) != MODE_CC &&			\
+     (MODE) != TImode &&					\
+     (MODE) != BImode &&					\
+     ((MODE) != TFmode || INTEL_EXTENDED_IEEE_FORMAT) 		\
    : PR_REGNO_P (REGNO) ?					\
      (MODE) == BImode || GET_MODE_CLASS (MODE) == MODE_CC	\
    : GR_REGNO_P (REGNO) ? (MODE) != CCImode && (MODE) != TFmode	\
@@ -1423,8 +1427,9 @@ do {									\
 
 #define LIBCALL_VALUE(MODE) \
   gen_rtx_REG (MODE,							\
-	       ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
+	       (((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
+		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) &&	\
+		      ((MODE) != TFmode || INTEL_EXTENDED_IEEE_FORMAT))	\
 		? FR_RET_FIRST : GR_RET_FIRST))
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in

@@ -95,9 +95,9 @@ netlib.att.com: netlib/cephes.   */
 
    The case LONG_DOUBLE_TYPE_SIZE = 128 activates TFmode support
    and may deactivate XFmode since `long double' is used to refer
-   to both modes.  Defining INTEL_EXTENDED_IEEE_FORMAT at the same 
-   time enables 80387-style 80-bit floats in a 128-bit padded
-   image, as seen on IA-64.
+   to both modes.  Defining INTEL_EXTENDED_IEEE_FORMAT to non-zero
+   at the same time enables 80387-style 80-bit floats in a 128-bit
+   padded image, as seen on IA-64.
 
    The macros FLOAT_WORDS_BIG_ENDIAN, HOST_FLOAT_WORDS_BIG_ENDIAN,
    contributed by Richard Earnshaw <Richard.Earnshaw@cl.cam.ac.uk>,
@@ -247,7 +247,7 @@ unknown arithmetic type
    in memory, with no holes.  */
 
 #if MAX_LONG_DOUBLE_TYPE_SIZE == 96 || \
-    (defined(INTEL_EXTENDED_IEEE_FORMAT) && MAX_LONG_DOUBLE_TYPE_SIZE == 128)
+    ((INTEL_EXTENDED_IEEE_FORMAT != 0) && MAX_LONG_DOUBLE_TYPE_SIZE == 128)
 /* Number of 16 bit words in external e type format */
 # define NE 6
 # define MAXDECEXP 4932
@@ -407,7 +407,7 @@ static void emul	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
 static void e53toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void e64toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 static void e113toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 #endif
 static void e24toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
@@ -441,7 +441,7 @@ static void etoasc	PARAMS ((unsigned EMUSHORT *, char *, int));
 static void asctoe24	PARAMS ((const char *, unsigned EMUSHORT *));
 static void asctoe53	PARAMS ((const char *, unsigned EMUSHORT *));
 static void asctoe64	PARAMS ((const char *, unsigned EMUSHORT *));
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 static void asctoe113	PARAMS ((const char *, unsigned EMUSHORT *));
 #endif
 static void asctoe	PARAMS ((const char *, unsigned EMUSHORT *));
@@ -504,7 +504,7 @@ endian (e, x, mode)
       switch (mode)
 	{
 	case TFmode:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 	  /* Swap halfwords in the fourth long.  */
 	  th = (unsigned long) e[6] & 0xffff;
 	  t = (unsigned long) e[7] & 0xffff;
@@ -548,7 +548,7 @@ endian (e, x, mode)
       switch (mode)
 	{
 	case TFmode:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 	  /* Pack the fourth long.  */
 	  th = (unsigned long) e[7] & 0xffff;
 	  t = (unsigned long) e[6] & 0xffff;
@@ -749,7 +749,7 @@ ereal_atof (s, t)
       break;
 
     case TFmode:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
       asctoe113 (s, tem);
       e113toe (tem, e);
       break;
@@ -886,7 +886,7 @@ ereal_from_int (d, i, j, mode)
       break;
 
     case 128:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
       etoe113 (dg, df);
       e113toe (df, dg);
 #else
@@ -945,7 +945,7 @@ ereal_from_uint (d, i, j, mode)
       break;
 
     case 128:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
       etoe113 (dg, df);
       e113toe (df, dg);
 #else
@@ -1094,7 +1094,7 @@ real_value_truncate (mode, arg)
   switch (mode)
     {
     case TFmode:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
       etoe113 (e, t);
       e113toe (t, t);
       break;
@@ -1513,7 +1513,7 @@ ereal_isneg (x)
 
 /*  e type constants used by high precision check routines */
 
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && !defined(INTEL_EXTENDED_IEEE_FORMAT)
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* 0.0 */
 unsigned EMUSHORT ezero[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
@@ -3331,7 +3331,7 @@ bigend_nan:
     *q++ = *p++;
 }
 
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* Convert 128-bit long double precision float PE to e type Y.  */
 
 static void
@@ -4587,7 +4587,7 @@ enormlz (x)
 #define NTEN 12
 #define MAXP 4096
 
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && !defined(INTEL_EXTENDED_IEEE_FORMAT)
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && (INTEL_EXTENDED_IEEE_FORMAT == 0)
 static unsigned EMUSHORT etens[NTEN + 1][NE] =
 {
   {0x6576, 0x4a92, 0x804a, 0x153f,
@@ -5107,7 +5107,7 @@ asctoe64 (s, y)
   asctoeg (s, y, 64);
 }
 
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* Convert ASCII string S to 128-bit long double Y.  */
 
 static void
@@ -6305,7 +6305,7 @@ make_nan (nan, sign, mode)
    used like NaN's, but probably not in the same way as IEEE.  */
 #if !defined(DEC) && !defined(IBM) && !defined(C4X)
     case TFmode:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
       n = 8;
       if (REAL_WORDS_BIG_ENDIAN)
 	p = TFbignan;
@@ -6926,7 +6926,7 @@ switch (GET_MODE_BITSIZE (mode))
     return 64;
 
   case 128:
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
     return 113;
 #else
     return 64;
