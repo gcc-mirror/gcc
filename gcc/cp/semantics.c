@@ -2411,8 +2411,13 @@ expand_body (fn)
 
   timevar_push (TV_INTEGRATION);
 
-  /* Optimize the body of the function before expanding it.  */
-  optimize_function (fn);
+  /* Optimize the body of the function before expanding it.  We do not
+     optimize thunks, as (1) the backend tries to optimize the call to
+     the thunkee, (b) the tree based inliner breaks that optimization,
+     (c) virtual functions are rarely inlineable, and (d)
+     ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
+  if (!DECL_THUNK_P (fn))
+    optimize_function (fn);
 
   timevar_pop (TV_INTEGRATION);
   timevar_push (TV_EXPAND);

@@ -1,3 +1,8 @@
+2001-05-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/2823
+	* semantics.c (expand_body): Don't optimize thunks.
+
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (duplicate_decls): Tidy.
