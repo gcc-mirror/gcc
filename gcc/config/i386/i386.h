@@ -1460,11 +1460,13 @@ do { union { float f; long l;} tem;			\
    If CODE is 'h', pretend the reg is the `high' byte register.
    If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op. */
 
+extern char *hi_reg_name[];
+extern char *qi_reg_name[];
+extern char *qi_high_reg_name[];
+
 #define PRINT_REG(X, CODE, FILE) \
-  do { static char *hi_reg_name[] = HI_REGISTER_NAMES;	\
-       static char *qi_reg_name[] = QI_REGISTER_NAMES;	\
-       static char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;	\
-       if (REGNO (X) == ARG_POINTER_REGNUM) abort ();	\
+  do { if (REGNO (X) == ARG_POINTER_REGNUM)		\
+	 abort ();					\
        fprintf (FILE, "%s", RP);			\
        switch ((CODE == 'w' ? 2 			\
 		: CODE == 'b' ? 1			\
@@ -1475,8 +1477,12 @@ do { union { float f; long l;} tem;			\
 	 {						\
 	 case 3:					\
 	   if (STACK_TOP_P (X))				\
-	     { fputs ("st(0)", FILE); break; }		\
-	 case 4: case 8:				\
+	     {						\
+	       fputs ("st(0)", FILE);			\
+	       break;					\
+	     }						\
+	 case 4:					\
+	 case 8:					\
 	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
 	 case 2:					\
 	   fputs (hi_reg_name[REGNO (X)], FILE);	\
@@ -1495,6 +1501,33 @@ do { union { float f; long l;} tem;			\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
   print_operand_address (FILE, ADDR)
+
+/* Print the name of a register for based on its machine mode and number.
+   This macro is used to print debugging output.
+   This macro is different from PRINT_REG in that it may be used in
+   programs that are not linked with aux-output.o.  */
+
+#define DEBUG_PRINT_REG(X, CODE, FILE) \
+  do { static char *hi_name[] = HI_REGISTER_NAMES;	\
+       static char *qi_name[] = QI_REGISTER_NAMES;	\
+       fprintf (FILE, "%s", RP);			\
+       if (REGNO (X) == ARG_POINTER_REGNUM)		\
+	 { fputs ("argp", FILE); break; }		\
+       if (STACK_TOP_P (X))				\
+	 { fputs ("st(0)", FILE); break; }		\
+       switch (GET_MODE_SIZE (GET_MODE (X)))		\
+	 {						\
+	 case 8:					\
+	 case 4:					\
+	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
+	 case 2:					\
+	   fputs (hi_name[REGNO (X)], FILE);		\
+	   break;					\
+	 case 1:					\
+	   fputs (qi_name[REGNO (X)], FILE);		\
+	   break;					\
+	 }						\
+     } while (0)
 
 /* Output the prefix for an immediate operand, or for an offset operand.  */
 #define PRINT_IMMED_PREFIX(FILE)  fputs (IP, (FILE))
