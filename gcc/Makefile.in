@@ -524,6 +524,9 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
+ *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop \
+ *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack \
+ *.[si] \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
