@@ -1,3 +1,15 @@
+Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (stor_constructor_field): Always call adjust_address.
+	Copy TARGET before changing its alias set.
+	(store_field): Likewise, for TO_RTX.
+	(get_inner_reference): Stop at PLACEHOLDER_EXPR if can't find
+	replacement.
+	(safe_from_p, case ADDR_EXPR): Properly check for conflict.
+	(find_placeholder): Return 0 if can't find object.
+	(expand_expr, case PLACEHOLDER_EXPR): Abort if find_placeholder
+	returns 0.
+
 Sat Oct 27 16:31:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (if_convert): Call clear_aux_for_blocks.
