@@ -245,10 +245,14 @@ proc v3_target_compile { source dest type options } {
 # Called once, from libstdc++*/dg.exp.
 proc v3-list-tests { filename } {
     global srcdir
-    global outdir
-    
-    set tests_file "${outdir}/${filename}"
+    global blddir
+
+    set tests_file "${blddir}/testsuite/${filename}"
     set sfiles ""
+
+    verbose -log "In v3-list-tests"
+    verbose -log "blddir = ${blddir}"
+    verbose -log "tests_file = $tests_file"
 
     # If there is a testsuite_file, use it. 
     if { [file exists $tests_file] } {

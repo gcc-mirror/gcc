@@ -1,3 +1,9 @@
+2004-03-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite/lib/libstdc++.exp (v3-list-tests): Use 
+	testsuite_files from correct multilib blddir when running
+	testsuite.
+
 2004-02-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* 22_locale/collate/compare/wchar_t/2.cc: Change input-charset
