@@ -1330,7 +1330,7 @@ distclean: clean
 extraclean: distclean
 	-rm -rf =* #* *~* config/=* config/#* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
-	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar
+	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar *diff
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
 # Get rid of every file that's generated from some other file.
