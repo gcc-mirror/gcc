@@ -15,6 +15,8 @@ template <class T> void f()
 
 template void f<float> ();
 
+int foo (int) { return 0;}
+
 namespace B
 {
   int foo (int) { return 1;}
@@ -27,8 +29,6 @@ namespace B
   }
   template int baz<float> ();
 };
-
-int foo (int) { return 0;}
 
 int main ()
 {
