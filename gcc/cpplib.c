@@ -28,10 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "symcat.h"
 
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-#endif
-
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
 
@@ -168,9 +164,6 @@ _cpp_check_directive (pfile, token, bol)
 	if (!bol && dtable[i].origin == KANDR && CPP_WTRADITIONAL (pfile))
 	  cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		       dtable[i].name);
-	      
-	if (!bol && CPP_TRADITIONAL (pfile))
-	  return 0;
 
 	/* Issue -pedantic warnings for extended directives.   */
 	if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
@@ -212,10 +205,7 @@ _cpp_check_linemarker (pfile, token, bol)
   if (!bol && CPP_WTRADITIONAL (pfile))
     cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		 dtable[T_LINE].name);
-	      
-  if (!bol && CPP_TRADITIONAL (pfile))
-    return 0;
-  
+
   return &dtable[T_LINE];
 }  
 
@@ -977,15 +967,12 @@ parse_ifdef (pfile, name)
   const cpp_token *token = _cpp_get_token (pfile);
   type = token->type;
 
-  if (!CPP_TRADITIONAL (pfile))
-    {
-      if (type == CPP_EOF)
-	cpp_pedwarn (pfile, "#%s with no argument", name);
-      else if (type != CPP_NAME)
-	cpp_pedwarn (pfile, "#%s with invalid argument", name);
-      else if (_cpp_get_token (pfile)->type != CPP_EOF)
-	cpp_pedwarn (pfile, "garbage at end of #%s", name);
-    }
+  if (type == CPP_EOF)
+    cpp_pedwarn (pfile, "#%s with no argument", name);
+  else if (type != CPP_NAME)
+    cpp_pedwarn (pfile, "#%s with invalid argument", name);
+  else if (_cpp_get_token (pfile)->type != CPP_EOF)
+    cpp_pedwarn (pfile, "garbage at end of #%s", name);
 
   if (type == CPP_NAME)
     node = token->val.node;
@@ -995,7 +982,7 @@ parse_ifdef (pfile, name)
 		 node->name);
       node = 0;
     }
-    
+
   return node;
 }
 
@@ -1527,9 +1514,10 @@ cpp_push_buffer (pfile, buffer, length)
   new = xobnew (pfile->buffer_ob, cpp_buffer);
   memset (new, 0, sizeof (cpp_buffer));
 
-  new->buf = new->cur = buffer;
+  new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + length;
   new->prev = buf;
+  new->lineno = 1;
 
   CPP_BUFFER (pfile) = new;
   return new;
@@ -1542,34 +1530,8 @@ cpp_pop_buffer (pfile)
   cpp_buffer *buf = CPP_BUFFER (pfile);
 
   unwind_if_stack (pfile, buf);
-#ifdef HAVE_MMAP_FILE
-  if (buf->mapped)
-    munmap ((caddr_t) buf->buf, buf->rlimit - buf->buf);
-  else
-#endif
-    if (buf->inc)
-      free ((PTR) buf->buf);
-
   if (buf->inc)
-    {
-      if (pfile->system_include_depth)
-	pfile->system_include_depth--;
-      if (pfile->include_depth)
-	pfile->include_depth--;
-      if (pfile->potential_control_macro)
-	{
-	  if (buf->inc->cmacro != NEVER_REREAD)
-	    buf->inc->cmacro = pfile->potential_control_macro;
-	  pfile->potential_control_macro = 0;
-	}
-      pfile->input_stack_listing_current = 0;
-      /* If the file will not be included again, then close it.  */
-      if (DO_NOT_REREAD (buf->inc))
-	{
-	  close (buf->inc->fd);
-	  buf->inc->fd = -1;
-	}
-    }
+    _cpp_pop_file_buffer (pfile, buf);
 
   CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
   obstack_free (pfile->buffer_ob, buf);

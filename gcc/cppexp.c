@@ -298,7 +298,7 @@ parse_charconst (pfile, tok)
     SYNTAX_ERROR ("empty character constant");
   else if (num_chars > max_chars)
     SYNTAX_ERROR ("character constant too long");
-  else if (num_chars != 1 && ! CPP_TRADITIONAL (pfile))
+  else if (num_chars != 1)
     cpp_warning (pfile, "multi-character character constant");
 
   /* If char type is signed, sign-extend the constant.  */

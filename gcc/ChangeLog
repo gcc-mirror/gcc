@@ -1,3 +1,24 @@
+2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c, cpphash.c, cpphash.h, cppinit.c, cpplex.c,
+	cpplib.c, cpplib.h: Eradicate all traces of code dependent on
+	traditional, lang_chill, or lang_fortran.
+
+	* cppfiles.c: #undef strcmp to suppress warning about macros
+	used without arguments.
+	(_cpp_execute_include): Use f, not fname, in "No include path"
+	error.
+	(_cpp_pop_file_buffer): New function.
+	* cpplib.c: Don't include <sys/mman.h>.
+	(cpp_push_buffer): Set line_base and lineno in new buffer.
+	(cpp_pop_buffer): Use _cpp_pop_file_buffer.
+
+	* cpplex.c: Move all prototypes and structure declarations to the
+	top of the file.  Properly parenthesise some macro arguments.
+	(cpp_scan_line): New function.
+	(special_symbol [case T_INCLUDE_DEPTH]): Use pfile->include_depth,
+	don't need to walk up the stack counting.
+
 2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (combine_strings): Emit a pedantic warning when a

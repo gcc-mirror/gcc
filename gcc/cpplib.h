@@ -314,15 +314,6 @@ struct cpp_options
      likely to be in comments).  */
   unsigned char lang_asm;
 
-  /* Nonzero means this is Fortran, and we don't know where the
-     comments are, so permit unbalanced ' strings.  Unlike lang_asm,
-     this does not ignore unrecognized directives.  */
-  unsigned char lang_fortran;
-
-  /* Nonzero means handle CHILL comment syntax and output CHILL string
-     delimiters for __DATE__ etc. */
-  unsigned char chill;
-
   /* Nonzero means don't copy comments into the output file.  */
   unsigned char discard_comments;
 
@@ -366,9 +357,8 @@ struct cpp_options
   /* Nonzero means warn if #import is used.  */
   unsigned char warn_import;
 
-  /* Nonzero means warn if a macro argument is (or would be)
-     stringified with -traditional, and warn about directives
-     with the # indented from the beginning of the line.  */
+  /* Nonzero means warn about various incompatibilities with
+     traditional C.  */
   unsigned char warn_traditional;
 
   /* Nonzero means warn if ## is applied to two tokens that cannot be
@@ -395,9 +385,6 @@ struct cpp_options
 
   /* Zero means dollar signs are punctuation. */
   unsigned char dollars_in_ident;
-
-  /* Nonzero means try to imitate old fashioned non-ISO preprocessor.  */
-  unsigned char traditional;
 
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
@@ -701,6 +688,7 @@ extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
 extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
+extern void cpp_scan_line		PARAMS ((cpp_reader *));
 extern int cpp_ideq			PARAMS ((const cpp_token *,
 						 const char *));
 

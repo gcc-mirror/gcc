@@ -194,7 +194,6 @@ extern unsigned char _cpp_IStable[256];
 
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
-#define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
   (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->inc \
    && CPP_BUFFER (PFILE)->inc->sysp)
@@ -228,6 +227,7 @@ extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
 extern const char *_cpp_fake_include	PARAMS ((cpp_reader *, const char *));
+extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *, cpp_buffer *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));

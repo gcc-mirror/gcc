@@ -502,34 +502,33 @@ save_expansion (pfile, first, first_param, info)
   ntokens = len = 0;
   for (token = first; token->type != CPP_EOF; token++)
     {
-      const char *msg;
-
       if (token->type == CPP_PASTE)
 	{
-	  /* Token-paste ##, but is a normal token if traditional.  */
-	  if (! CPP_TRADITIONAL (pfile))
+	  /* Token-paste ##, can appear in both object-like and
+	     function-like macros, but not at the ends.  Constraint
+	     6.10.3.3.1 */
+	  if (token == first || token[1].type == CPP_EOF)
 	    {
-	      msg = "\"##\" cannot appear at either end of a macro expansion";
-	      /* Constraint 6.10.3.3.1  */
-	      if (token == first || token[1].type == CPP_EOF)
-		goto error;
-	      continue;
+	      cpp_error_with_line (pfile, token->line, token->col,
+		"'##' cannot appear at either end of a macro expansion");
+	      return 0;
 	    }
+	  continue;
 	}
       else if (token->type == CPP_HASH)
 	{
-	  /* Stringifying #, but is a normal character if traditional,
-	     or in object-like macros.  Constraint 6.10.3.2.1.  */
-	  if (info->paramc >= 0 && ! CPP_TRADITIONAL (pfile))
+	  /* Stringifying #, but a normal character in object-like
+             macros.  Must come before a parameter name.  Constraint
+             6.10.3.2.1.  */
+	  if (info->paramc >= 0)
 	    {
 	      if (token[1].type == CPP_NAME
 		  && find_param (first_param, token + 1))
 		continue;
 	      if (! CPP_OPTION (pfile, lang_asm))
 		{
-		  msg = "'#' is not followed by a macro parameter";
-		error:
-		  cpp_error_with_line (pfile, token->line, token->col, msg);
+		  cpp_error_with_line (pfile, token->line, token->col,
+			       "'#' is not followed by a macro parameter");
 		  return 0;
 		}
 	    }
@@ -583,7 +582,7 @@ save_expansion (pfile, first, first_param, info)
 	  dest->val.aux = param_no - 1;
 
 	  dest->type = CPP_MACRO_ARG;
-	  if (token[-1].type == CPP_HASH && ! CPP_TRADITIONAL (pfile))
+	  if (token[-1].type == CPP_HASH)
 	    dest->flags = token[-1].flags | STRINGIFY_ARG;
 	  else
 	    dest->flags = token->flags;  /* Particularly PREV_WHITE.  */
@@ -591,17 +590,12 @@ save_expansion (pfile, first, first_param, info)
 	  continue;
 
 	case CPP_PASTE:
-	  if (! CPP_TRADITIONAL (pfile))
-	    {
-	      dest[-1].flags |= PASTE_LEFT;
-	      continue;
-	    }
-	  break;
+	  dest[-1].flags |= PASTE_LEFT;
+	  continue;
 
 	case CPP_HASH:
 	  /* Stringifying #.  Constraint 6.10.3.2.1  */
-	  if (list->paramc >= 0 && ! CPP_TRADITIONAL (pfile)
-	      && token[1].type == CPP_NAME
+	  if (list->paramc >= 0 && token[1].type == CPP_NAME
 	      && find_param (first_param, token + 1))
 	    continue;
 	  break;

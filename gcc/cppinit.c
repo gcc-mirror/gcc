@@ -571,12 +571,7 @@ initialize_builtins (pfile)
 	}
       else
 	{
-	  cpp_hashnode *hp;
-	  
-	  if (b->type == T_STDC && CPP_TRADITIONAL (pfile))
-	    continue;
-
-	  hp = cpp_lookup (pfile, b->name, b->len);
+	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
 	  hp->type = b->type;
 	}
     }
@@ -762,22 +757,12 @@ cpp_start_read (pfile, print, fname)
       return 0;
     }
 
-  /* Chill should not be used with -trigraphs. */
-  if (CPP_OPTION (pfile, chill) && CPP_OPTION (pfile, trigraphs))
-    {
-      cpp_warning (pfile, "-lang-chill and -trigraphs are mutually exclusive");
-      CPP_OPTION (pfile, trigraphs) = 0;
-    }
-
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
-  /* Do not warn about illegal token pasting if -traditional,
-     -lang-fortran, or -lang-asm.  */
-  if (CPP_OPTION (pfile, traditional)
-      || CPP_OPTION (pfile, lang_fortran)
-      || CPP_OPTION (pfile, lang_asm))
+  /* Do not warn about illegal token pasting if -lang-asm.  */
+  if (CPP_OPTION (pfile, lang_asm))
     CPP_OPTION (pfile, warn_paste) = 0;
 
   /* Set this if it hasn't been set already. */
@@ -1028,8 +1013,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("lang-c",                   0,      OPT_lang_c)                     \
   DEF_OPT("lang-c++",                 0,      OPT_lang_cplusplus)             \
   DEF_OPT("lang-c89",                 0,      OPT_lang_c89)                   \
-  DEF_OPT("lang-chill",               0,      OPT_lang_chill)                 \
-  DEF_OPT("lang-fortran",             0,      OPT_lang_fortran)               \
   DEF_OPT("lang-objc",                0,      OPT_lang_objc)                  \
   DEF_OPT("lang-objc++",              0,      OPT_lang_objcplusplus)          \
   DEF_OPT("nostdinc",                 0,      OPT_nostdinc)                   \
@@ -1048,7 +1031,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("std=iso9899:199409",       0,      OPT_std_iso9899_199409)         \
   DEF_OPT("std=iso9899:1999",         0,      OPT_std_iso9899_1999)           \
   DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)           \
-  DEF_OPT("traditional",              0,      OPT_traditional)                \
   DEF_OPT("trigraphs",                0,      OPT_trigraphs)                  \
   DEF_OPT("v",                        0,      OPT_v)                          \
   DEF_OPT("w",                        0,      OPT_w)
@@ -1267,13 +1249,6 @@ handle_option (pfile, argc, argv)
 	case OPT_pedantic:
  	  CPP_OPTION (pfile, pedantic) = 1;
 	  break;
-	case OPT_traditional:
-	  CPP_OPTION (pfile, traditional) = 1;
-	  CPP_OPTION (pfile, cplusplus_comments) = 0;
-	  CPP_OPTION (pfile, trigraphs) = 0;
-	  CPP_OPTION (pfile, digraphs) = 0;
-	  CPP_OPTION (pfile, warn_trigraphs) = 0;
-	  break;
 	case OPT_trigraphs:
  	  CPP_OPTION (pfile, trigraphs) = 1;
 	  break;
@@ -1320,18 +1295,6 @@ handle_option (pfile, argc, argv)
  	  CPP_OPTION (pfile, lang_asm) = 1;
 	  CPP_OPTION (pfile, dollars_in_ident) = 0;
 	  new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
-	  break;
-	case OPT_lang_fortran:
- 	  CPP_OPTION (pfile, lang_fortran) = 1;
-	  CPP_OPTION (pfile, traditional) = 1;
-	  CPP_OPTION (pfile, cplusplus_comments) = 0;
-	  new_pending_directive (pend, "_LANGUAGE_FORTRAN", cpp_define);
-	  break;
-	case OPT_lang_chill:
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, chill) = 1;
-	  CPP_OPTION (pfile, traditional) = 1;
 	  break;
 	case OPT_nostdinc:
 	  /* -nostdinc causes no default include directories.
@@ -1721,18 +1684,15 @@ Switches:\n\
   fputs (_("\
   -pedantic                 Issue all warnings demanded by strict ISO C\n\
   -pedantic-errors          Issue -pedantic warnings as errors instead\n\
-  -traditional              Follow K&R pre-processor behaviour\n\
   -trigraphs                Support ISO C trigraphs\n\
   -lang-c                   Assume that the input sources are in C\n\
   -lang-c89                 Assume that the input sources are in C89\n\
-  -lang-c++                 Assume that the input sources are in C++\n\
 "), stdout);
   fputs (_("\
+  -lang-c++                 Assume that the input sources are in C++\n\
   -lang-objc                Assume that the input sources are in ObjectiveC\n\
   -lang-objc++              Assume that the input sources are in ObjectiveC++\n\
   -lang-asm                 Assume that the input sources are in assembler\n\
-  -lang-fortran		    Assume that the input sources are in Fortran\n\
-  -lang-chill               Assume that the input sources are in Chill\n\
 "), stdout);
   fputs (_("\
   -std=<std name>           Specify the conformance standard; one of:\n\
@@ -1746,9 +1706,8 @@ Switches:\n\
 "), stdout);
   fputs (_("\
   -Wno-comment{s}           Do not warn about comments\n\
-  -Wtraditional             Warn if a macro argument is/would be turned into\n\
-                             a string if -traditional is specified\n\
-  -Wno-traditional          Do not warn about stringification\n\
+  -Wtraditional             Warn about features not present in traditional C\n\
+  -Wno-traditional          Do not warn about traditional C\n\
   -Wundef                   Warn if an undefined macro is used by #if\n\
   -Wno-undef                Do not warn about testing undefined macros\n\
   -Wimport                  Warn about the use of the #import directive\n\

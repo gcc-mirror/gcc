@@ -43,6 +43,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define O_BINARY 0
 #endif
 
+/* Suppress warning about function macros used w/o arguments in traditional
+   C.  It is unlikely that glibc's strcmp macro helps this file at all.  */
+#undef strcmp
+
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
@@ -423,7 +427,7 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
 
   if (!search_start)
     {
-      cpp_error (pfile, "No include path in which to find %s", fname);
+      cpp_error (pfile, "No include path in which to find %s", f);
       return;
     }
 
@@ -760,6 +764,44 @@ read_with_read (fp, fd, size)
   fp->buf = buf;
   fp->mapped = 0;
   return offset;
+}
+
+/* Do appropriate cleanup when a file buffer is popped off the input
+   stack.  */
+void
+_cpp_pop_file_buffer (pfile, buf)
+     cpp_reader *pfile;
+     cpp_buffer *buf;
+{
+  struct include_file *inc = buf->inc;
+
+  if (pfile->system_include_depth)
+    pfile->system_include_depth--;
+  if (pfile->include_depth)
+    pfile->include_depth--;
+  if (pfile->potential_control_macro)
+    {
+      if (inc->cmacro != NEVER_REREAD)
+	inc->cmacro = pfile->potential_control_macro;
+      pfile->potential_control_macro = 0;
+    }
+  pfile->input_stack_listing_current = 0;
+
+  /* Discard file buffer.  XXX Would be better to cache these instead
+     of the file descriptors.  */
+#ifdef HAVE_MMAP_FILE
+  if (buf->mapped)
+    munmap ((caddr_t) buf->buf, buf->rlimit - buf->buf);
+  else
+#endif
+    free ((PTR) buf->buf);
+
+  /* If the file will not be included again, close it.  */
+  if (DO_NOT_REREAD (inc))
+    {
+      close (inc->fd);
+      inc->fd = -1;
+    }
 }
 
 /* The file_name_map structure holds a mapping of file names for a
