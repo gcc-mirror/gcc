@@ -12,6 +12,8 @@
 
 	* loop-iv.c (get_biv_step_1): Remove lhs.
 
+	* loop-unroll.c (analyze_insns_in_loop): Remove preheader.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed

@@ -1648,7 +1648,6 @@ analyze_insns_in_loop (struct loop *loop)
   PTR *slot1;
   PTR *slot2;
   edge *edges = get_loop_exit_edges (loop, &n_edges);
-  basic_block preheader;
   bool can_apply = false;
   
   iv_analysis_loop_init (loop);
@@ -1662,7 +1661,7 @@ analyze_insns_in_loop (struct loop *loop)
   /* Record the loop exit bb and loop preheader before the unrolling.  */
   if (!loop_preheader_edge (loop)->src)
     {
-      preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+      loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       opt_info->loop_preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
     }
   else
