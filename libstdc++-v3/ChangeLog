@@ -1,5 +1,10 @@
 2003-03-07  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/fstream.tcc (_M_convert_to_external):
+	Set __elen to zero if codecvt::out eventually fails.
+
+2003-03-07  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9182
 	* include/bits/fstream.tcc (_M_really_overflow): Check
 	for _M_convert_to_external possible failures.
