@@ -1039,7 +1039,7 @@ pushlevel_temporary (tag_transparent)
 /* For a binding between a name and an entity at a block scope,
    this is the `struct binding_level' for the block.  */
 #define BINDING_LEVEL(NODE) \
-   ((struct binding_level*) ((struct tree_binding*)NODE)->scope)
+   (((struct tree_binding*)NODE)->scope.level)
 
 /* These are currently unused, but permanent, CPLUS_BINDING nodes.
    They are kept here because they are allocated from the permanent
