@@ -1603,6 +1603,10 @@ may_trap_p (x)
 	 we can link this file into other programs.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
 	return 1;
+    case EXPR_LIST:
+      /* An EXPR_LIST is used to represent a function call.  This
+	 certainly may trap.  */
+      return 1;
     default:
       /* Any floating arithmetic may trap.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
