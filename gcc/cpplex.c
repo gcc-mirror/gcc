@@ -3157,6 +3157,11 @@ _cpp_get_token (pfile)
 	 be taken as a control macro.  */
       pfile->potential_control_macro = 0;
 
+      /* If we are rescanning preprocessed input, no macro expansion or
+	 token pasting may occur.  */
+      if (CPP_OPTION (pfile, preprocessed))
+	return token;
+
       old_token = token;
 
       /* See if there's a token to paste with this one.  */

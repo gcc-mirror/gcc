@@ -1,3 +1,12 @@
+2000-08-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.h (IN_I): New flag for directive table.
+	* cpplib.c (DIRECTIVE_TABLE): Mark #define, #undef, #ident, and
+	#pragma with IN_I.
+	(_cpp_check_directive): If -fpreprocessed, execute directives
+	marked with IN_I.  Issue no warnings in this case.
+	* cpplex.c (_cpp_get_token): Expand no macros if -fpreprocessed.
+
 2000-08-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (print_char_table): Allow 'I' flag with %d, %i and

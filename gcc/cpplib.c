@@ -79,21 +79,21 @@ static void unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 #endif
 
 #define DIRECTIVE_TABLE							\
-D(define,	T_DEFINE = 0,	KANDR,     COMMENTS)	   /* 270554 */ \
+D(define,	T_DEFINE = 0,	KANDR,     COMMENTS | IN_I)/* 270554 */ \
 D(include,	T_INCLUDE,	KANDR,     EXPAND | INCL)  /*  52262 */ \
 D(endif,	T_ENDIF,	KANDR,     COND)	   /*  45855 */ \
 D(ifdef,	T_IFDEF,	KANDR,     COND)	   /*  22000 */ \
 D(if,		T_IF,		KANDR,     COND | EXPAND)  /*  18162 */ \
 D(else,		T_ELSE,		KANDR,     COND)	   /*   9863 */ \
 D(ifndef,	T_IFNDEF,	KANDR,     COND)	   /*   9675 */ \
-D(undef,	T_UNDEF,	KANDR,     0)		   /*   4837 */ \
+D(undef,	T_UNDEF,	KANDR,     IN_I)	   /*   4837 */ \
 D(line,		T_LINE,		KANDR,     EXPAND)    	   /*   2465 */ \
 D(elif,		T_ELIF,		KANDR,     COND | EXPAND)  /*    610 */ \
 D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
-D(pragma,	T_PRAGMA,	STDC89,    0)		   /*    195 */ \
+D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
 D(warning,	T_WARNING,	EXTENSION, 0)		   /*     22 GNU   */ \
 D(include_next,	T_INCLUDE_NEXT,	EXTENSION, EXPAND | INCL)  /*     19 GNU   */ \
-D(ident,	T_IDENT,	EXTENSION, 0)		   /*     11 SVR4  */ \
+D(ident,	T_IDENT,	EXTENSION, IN_I)	   /*     11 SVR4  */ \
 D(import,	T_IMPORT,	EXTENSION, EXPAND | INCL)  /*      0 ObjC  */ \
 D(assert,	T_ASSERT,	EXTENSION, 0)  		   /*      0 SVR4  */ \
 D(unassert,	T_UNASSERT,	EXTENSION, 0)  		   /*      0 SVR4  */ \
@@ -140,14 +140,19 @@ _cpp_check_directive (pfile, token, bol)
 {
   unsigned int i;
 
-  /* If we are rescanning preprocessed input, don't obey any directives
-     other than # nnn.  */
-  if (CPP_OPTION (pfile, preprocessed))
-    return 0;
-
   for (i = 0; i < N_DIRECTIVES; i++)
     if (pfile->spec_nodes->dirs[i] == token->val.node)
       {
+	/* If we are rescanning preprocessed input, only directives
+	   tagged with IN_I are to be honored, and the warnings below
+	   are suppressed.  */
+	if (CPP_OPTION (pfile, preprocessed))
+	  {
+	    if (dtable[i].flags & IN_I)
+	      return &dtable[i];
+	    return 0;
+	  }
+
 	/* In -traditional mode, a directive is ignored unless its #
 	   is in column 1.  In code intended to work with K+R compilers,
 	   therefore, directives added by C89 must have their # indented,
