@@ -134,20 +134,17 @@ static tree build_vtbl_initializer PARAMS ((tree, tree, tree, tree, int *));
 static int count_fields PARAMS ((tree));
 static int add_fields_to_vec PARAMS ((tree, tree, int));
 static void check_bitfield_decl PARAMS ((tree));
-static void check_field_decl PARAMS ((tree, tree, int *, int *, int *, int *));
-static void check_field_decls PARAMS ((tree, tree *, int *, int *, int *, 
-				     int *));
-static tree *build_base_field PARAMS ((record_layout_info, tree, int *,
-				       splay_tree, tree *));
-static void build_base_fields PARAMS ((record_layout_info, int *,
-				      splay_tree, tree *));
+static void check_field_decl (tree, tree, int *, int *, int *, int *);
+static void check_field_decls (tree, tree *, int *, int *, int *);
+static tree *build_base_field (record_layout_info, tree, splay_tree, tree *);
+static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
-static void check_bases_and_members PARAMS ((tree, int *));
-static tree create_vtable_ptr PARAMS ((tree, int *, tree *));
+static void check_bases_and_members (tree);
+static tree create_vtable_ptr (tree, tree *);
 static void include_empty_classes (record_layout_info);
-static void layout_class_type PARAMS ((tree, int *, int *, tree *));
+static void layout_class_type (tree, int *, tree *);
 static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
 static void set_primary_base PARAMS ((tree, tree, int *));
@@ -3201,15 +3198,10 @@ check_field_decl (field, t, cant_have_const_ctor,
    fields can be added by adding to this chain.  */
 
 static void
-check_field_decls (t, access_decls, empty_p, 
-		   cant_have_default_ctor_p, cant_have_const_ctor_p,
-		   no_const_asn_ref_p)
-     tree t;
-     tree *access_decls;
-     int *empty_p;
-     int *cant_have_default_ctor_p;
-     int *cant_have_const_ctor_p;
-     int *no_const_asn_ref_p;
+check_field_decls (tree t, tree *access_decls,
+		   int *cant_have_default_ctor_p, 
+		   int *cant_have_const_ctor_p,
+		   int *no_const_asn_ref_p)
 {
   tree *field;
   tree *next;
@@ -3245,7 +3237,7 @@ check_field_decls (t, access_decls, empty_p,
 	  else
 	    {
 	      /* The class is non-empty.  */
-	      *empty_p = 0;
+	      CLASSTYPE_EMPTY_P (t) = 0;
 	      /* The class is not even nearly empty.  */
 	      CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	    }
@@ -3821,8 +3813,7 @@ layout_empty_base (binfo, eoc, offsets, t)
 }
 
 /* Layout the the base given by BINFO in the class indicated by RLI.
-   If the new object is non-empty, and EMPTY_P is non-NULL, clear
-   *EMPTY_P.  *BASE_ALIGN is a running maximum of the alignments of
+   *BASE_ALIGN is a running maximum of the alignments of
    any base class.  OFFSETS gives the location of empty base
    subobjects.  T is the most derived type.  Return nonzero if the new
    object cannot be nearly-empty.  A new FIELD_DECL is inserted at
@@ -3831,7 +3822,7 @@ layout_empty_base (binfo, eoc, offsets, t)
    Returns the location at which the next field should be inserted.  */
 
 static tree *
-build_base_field (record_layout_info rli, tree binfo, int *empty_p, 
+build_base_field (record_layout_info rli, tree binfo,
 		  splay_tree offsets, tree *next_field)
 {
   tree t = rli->t;
@@ -3849,8 +3840,7 @@ build_base_field (record_layout_info rli, tree binfo, int *empty_p,
 
       /* The containing class is non-empty because it has a non-empty
 	 base class.  */
-      if (empty_p)
-	*empty_p = 0;
+      CLASSTYPE_EMPTY_P (t) = 0;
       
       /* Create the FIELD_DECL.  */
       decl = build_decl (FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
@@ -3888,6 +3878,11 @@ build_base_field (record_layout_info rli, tree binfo, int *empty_p,
 	 create CONSTRUCTORs for the class by iterating over the
 	 FIELD_DECLs, and the back end does not handle overlapping
 	 FIELD_DECLs.  */
+
+      /* An empty virtual base causes a class to be non-empty
+	 -- but in that case we do not need to clear CLASSTYPE_EMPTY_P
+	 here because that was already done when the virtual table
+	 pointer was created.  */
     }
 
   /* Record the offsets of BINFO and its base subobjects.  */
@@ -3906,7 +3901,7 @@ build_base_field (record_layout_info rli, tree binfo, int *empty_p,
    *NEXT_FIELD.  */
 
 static void
-build_base_fields (record_layout_info rli, int *empty_p, 
+build_base_fields (record_layout_info rli,
 		   splay_tree offsets, tree *next_field)
 {
   /* Chain to hold all the new FIELD_DECLs which stand in for base class
@@ -3918,7 +3913,7 @@ build_base_fields (record_layout_info rli, int *empty_p,
   /* The primary base class is always allocated first.  */
   if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     next_field = build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (t),
-				   empty_p, offsets, next_field);
+				   offsets, next_field);
 
   /* Now allocate the rest of the bases.  */
   for (i = 0; i < n_baseclasses; ++i)
@@ -3939,7 +3934,7 @@ build_base_fields (record_layout_info rli, int *empty_p,
 	  && !BINFO_PRIMARY_P (base_binfo))
 	continue;
 
-      next_field = build_base_field (rli, base_binfo, empty_p,
+      next_field = build_base_field (rli, base_binfo,
 				     offsets, next_field);
     }
 }
@@ -4330,9 +4325,7 @@ type_requires_array_cookie (type)
    level: i.e., independently of the ABI in use.  */
 
 static void
-check_bases_and_members (t, empty_p)
-     tree t;
-     int *empty_p;
+check_bases_and_members (tree t)
 {
   /* Nonzero if we are not allowed to generate a default constructor
      for this case.  */
@@ -4351,16 +4344,12 @@ check_bases_and_members (t, empty_p)
   cant_have_const_ctor = 0;
   no_const_asn_ref = 0;
 
-  /* Assume that the class is nearly empty; we'll clear this flag if
-     it turns out not to be nearly empty.  */
-  CLASSTYPE_NEARLY_EMPTY_P (t) = 1;
-
   /* Check all the base-classes.  */
   check_bases (t, &cant_have_default_ctor, &cant_have_const_ctor,
 	       &no_const_asn_ref);
 
   /* Check all the data member declarations.  */
-  check_field_decls (t, &access_decls, empty_p,
+  check_field_decls (t, &access_decls,
 		     &cant_have_default_ctor,
 		     &cant_have_const_ctor,
 		     &no_const_asn_ref);
@@ -4423,9 +4412,8 @@ check_bases_and_members (t, empty_p)
    on VIRTUALS_P.  */
 
 static tree
-create_vtable_ptr (t, empty_p, virtuals_p)
+create_vtable_ptr (t, virtuals_p)
      tree t;
-     int *empty_p;
      tree *virtuals_p;
 {
   tree fn;
@@ -4483,7 +4471,7 @@ create_vtable_ptr (t, empty_p, virtuals_p)
       TYPE_VFIELD (t) = field;
       
       /* This class is non-empty.  */
-      *empty_p = 0;
+      CLASSTYPE_EMPTY_P (t) = 0;
 
       if (CLASSTYPE_N_BASECLASSES (t))
 	/* If there were any baseclasses, they can't possibly be at
@@ -4688,7 +4676,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 
 	  /* This virtual base is not a primary base of any class in the
 	     hierarchy, so we have to add space for it.  */
-	  next_field = build_base_field (rli, vbase, /*empty_p=*/NULL, 
+	  next_field = build_base_field (rli, vbase,
 					 offsets, next_field);
 
 	  /* If the first virtual base might have been placed at a
@@ -4843,11 +4831,7 @@ include_empty_classes (record_layout_info rli)
    pointer.  Accumulate declared virtual functions on VIRTUALS_P.  */
 
 static void
-layout_class_type (t, empty_p, vfuns_p, virtuals_p)
-     tree t;
-     int *empty_p;
-     int *vfuns_p;
-     tree *virtuals_p;
+layout_class_type (tree t, int *vfuns_p, tree *virtuals_p)
 {
   tree non_static_data_members;
   tree field;
@@ -4874,7 +4858,7 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   determine_primary_base (t, vfuns_p);
 
   /* Create a pointer to our virtual function table.  */
-  vptr = create_vtable_ptr (t, empty_p, virtuals_p);
+  vptr = create_vtable_ptr (t, virtuals_p);
 
   /* The vptr is always the first thing in the class.  */
   if (vptr)
@@ -4890,7 +4874,7 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   /* Build FIELD_DECLs for all of the non-virtual base-types.  */
   empty_base_offsets = splay_tree_new (splay_tree_compare_integer_csts, 
 				       NULL, NULL);
-  build_base_fields (rli, empty_p, empty_base_offsets, next_field);
+  build_base_fields (rli, empty_base_offsets, next_field);
   
   /* Layout the non-static data members.  */
   for (field = non_static_data_members; field; field = TREE_CHAIN (field))
@@ -5028,13 +5012,27 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   /* Create the version of T used for virtual bases.  We do not use
      make_aggr_type for this version; this is an artificial type.  For
      a POD type, we just reuse T.  */
-  if (CLASSTYPE_NON_POD_P (t) || *empty_p)
+  if (CLASSTYPE_NON_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
       base_t = make_node (TREE_CODE (t));
       
-      /* Set the size and alignment for the new type.  */
-      TYPE_SIZE (base_t) = rli_size_so_far (rli);
-      TYPE_SIZE_UNIT (base_t) = rli_size_unit_so_far (rli);
+      /* Set the size and alignment for the new type.  In G++ 3.2, all
+	 empty classes were considered to have size zero when used as
+	 base classes.  */
+      if (!abi_version_at_least (2) && CLASSTYPE_EMPTY_P (t))
+	{
+	  TYPE_SIZE (base_t) = bitsize_zero_node;
+	  TYPE_SIZE_UNIT (base_t) = size_zero_node;
+	  if (warn_abi && !integer_zerop (rli_size_unit_so_far (rli)))
+	    warning ("layout of classes derived from empty class `%T' "
+		     "may change in a future version of GCC",
+		     t);
+	}
+      else
+	{
+	  TYPE_SIZE (base_t) = rli_size_so_far (rli);
+	  TYPE_SIZE_UNIT (base_t) = rli_size_unit_so_far (rli);
+	}
       TYPE_ALIGN (base_t) = rli->record_align;
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
 
@@ -5075,7 +5073,7 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   include_empty_classes(rli);
 
   /* Make sure not to create any structures with zero size.  */
-  if (integer_zerop (rli_size_unit_so_far (rli)) && *empty_p)
+  if (integer_zerop (rli_size_unit_so_far (rli)) && CLASSTYPE_EMPTY_P (t))
     place_field (rli, 
 		 build_decl (FIELD_DECL, NULL_TREE, char_type_node));
 
@@ -5126,7 +5124,6 @@ finish_struct_1 (t)
   tree virtuals = NULL_TREE;
   int n_fields = 0;
   tree vfield;
-  int empty = 1;
 
   if (COMPLETE_TYPE_P (t))
     {
@@ -5148,12 +5145,17 @@ finish_struct_1 (t)
 
   fixup_inline_methods (t);
   
+  /* Assume that the class is both empty and nearly empty; we'll clear
+     these flag if necessary.  */
+  CLASSTYPE_EMPTY_P (t) = 1;
+  CLASSTYPE_NEARLY_EMPTY_P (t) = 1;
+
   /* Do end-of-class semantic processing: checking the validity of the
      bases and members and add implicitly generated methods.  */
-  check_bases_and_members (t, &empty);
+  check_bases_and_members (t);
 
   /* Layout the class itself.  */
-  layout_class_type (t, &empty, &vfuns, &virtuals);
+  layout_class_type (t, &vfuns, &virtuals);
 
   /* Make sure that we get our own copy of the vfield FIELD_DECL.  */
   vfield = TYPE_VFIELD (t);
@@ -6437,7 +6439,12 @@ is_empty_class (type)
   if (! IS_AGGR_TYPE (type))
     return 0;
 
-  return integer_zerop (CLASSTYPE_SIZE (type));
+  /* In G++ 3.2, whether or not a class was empty was determined by
+     looking at its size.  */
+  if (abi_version_at_least (2))
+    return CLASSTYPE_EMPTY_P (type);
+  else
+    return integer_zerop (CLASSTYPE_SIZE (type));
 }
 
 /* Returns true if TYPE contains an empty class.  */
