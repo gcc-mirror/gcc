@@ -22,11 +22,18 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-struct Punct: std::numpunct<wchar_t>
+struct Punct1: std::numpunct<wchar_t>
 {
   std::string do_grouping() const { return "\1"; }
   wchar_t do_thousands_sep() const { return L'2'; }
   wchar_t do_decimal_point() const { return L'4'; }
+};
+
+struct Punct2: std::numpunct<wchar_t>
+{
+  std::string do_grouping() const { return "\1"; }
+  wchar_t do_thousands_sep() const { return L'2'; }
+  wchar_t do_decimal_point() const { return L'2'; }
 };
 
 // http://gcc.gnu.org/ml/libstdc++/2003-12/msg00201.html
@@ -37,30 +44,62 @@ void test01()
   
   bool test __attribute__((unused)) = true;
 
-  wistringstream iss;
-  iss.imbue(locale(iss.getloc(), static_cast<numpunct<wchar_t>*>(new Punct)));
-  const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 
+  wistringstream iss1, iss2;
+  iss1.imbue(locale(iss1.getloc(), static_cast<numpunct<wchar_t>*>(new Punct1)));
+  iss2.imbue(locale(iss2.getloc(), static_cast<numpunct<wchar_t>*>(new Punct2)));
+  const num_get<wchar_t>& ng1 = use_facet<num_get<wchar_t> >(iss1.getloc()); 
+  const num_get<wchar_t>& ng2 = use_facet<num_get<wchar_t> >(iss2.getloc()); 
+
   ios_base::iostate err = ios_base::goodbit;
   iterator_type end;
   double d = 0.0;
   double d1 = 13.0;
+  double d2 = 1.0;
+  double d3 = 30.0;
   long l = 0l;
   long l1 = 13l;
+  long l2 = 10l;
   
-  iss.str(L"1234");
+  iss1.str(L"1234");
   err = ios_base::goodbit;
-  end = ng.get(iss.rdbuf(), 0, iss, err, d);
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
   VERIFY( err == ios_base::eofbit );
   VERIFY( d == d1 );
 
-  iss.str(L"1234");
-  iss.clear();
+  iss1.str(L"142");
+  iss1.clear();
   err = ios_base::goodbit;
-  end = ng.get(iss.rdbuf(), 0, iss, err, l);
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
+  VERIFY( err == ios_base::goodbit );
+  VERIFY( d == d2 );
+
+  iss1.str(L"3e14");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
+  VERIFY( err == ios_base::goodbit );
+  VERIFY( d == d3 );
+
+  iss1.str(L"1234");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
   VERIFY( err == ios_base::goodbit );
   VERIFY( l == l1 );
-}
 
+  iss2.str(L"123");
+  err = ios_base::goodbit;
+  end = ng2.get(iss2.rdbuf(), 0, iss2, err, d);
+  VERIFY( err == ios_base::eofbit );
+  VERIFY( d == d1 );
+
+  iss2.str(L"120");
+  iss2.clear();
+  err = ios_base::goodbit;
+  end = ng2.get(iss2.rdbuf(), 0, iss2, err, l);
+  VERIFY( err == ios_base::eofbit );
+  VERIFY( l == l2 );
+}
 
 int main()
 {

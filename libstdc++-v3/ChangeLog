@@ -1,3 +1,15 @@
+2003-12-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int,
+	num_get::_M_extract_float): According to 22.2.2.1.2, p8-9,
+	_first_ look for thousands_sep, then for decimal_point and
+	finally for digits.
+	(num_get::_M_extract_float): After the decimal_point or
+	'e'/'E', decimal_point and thousands_sep just break out the
+	parsing loop.
+	* testsuite/22_locale/num_get/get/char/11.cc: Add tests.
+	* testsuite/22_locale/num_get/get/wchar_t/11.cc: Likewise.
+
 2003-12-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13369
