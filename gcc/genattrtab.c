@@ -3304,6 +3304,9 @@ optimize_attrs ()
   /* For each insn code, make a list of all the insn_ent's for it,
      for all values for all attributes.  */
 
+  if (num_insn_ents == 0)
+    return;
+
   /* Make 2 extra elements, for "code" values -2 and -1.  */
   insn_code_values
     = (struct attr_value_list **) alloca ((insn_code_number + 2)
