@@ -1,3 +1,8 @@
+2004-01-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* builtins.c (expand_builtin_apply_args_1) [STACK_GROWS_DOWNWARD]:
+	Call force_operand on plus_constant result.
+
 2004-01-01  Jan Hubicka  <jh@suse.cz>
 
 	* expmed.c (store_bit_field, extract_bit_field): Use new named patterns
