@@ -1842,7 +1842,10 @@ pushdecl (x)
       char *file;
       int line;
 
-      if (DECL_EXTERNAL (x) && TREE_PUBLIC (x))
+      /* Don't type check externs here when -traditional.  This is so that
+	 code with conflicting declarations inside blocks will get warnings
+	 not errors.  X11 for instance depends on this.  */
+      if (DECL_EXTERNAL (x) && TREE_PUBLIC (x) && ! flag_traditional)
 	t = lookup_name_current_level_global (name);
       else
 	t = lookup_name_current_level (name);
@@ -1953,20 +1956,26 @@ pushdecl (x)
         }
 
       /* Multiple external decls of the same identifier ought to match.
-	 Check against out of scope (limbo) block level declarations.
-
-	 If this is a block level declaration, then DECL_EXTERNAL must also
-	 be set, so we have already checked against global declarations above
-	 via the lookup_name call.
+	 Check against both global declarations (when traditional) and out of
+	 scope (limbo) block level declarations.
 
 	 We get warnings about inline functions where they are defined.
 	 Avoid duplicate warnings where they are used.  */
-      if (TREE_PUBLIC (x) && ! DECL_INLINE (x)
-	  && IDENTIFIER_LIMBO_VALUE (name))
+      if (TREE_PUBLIC (x) && ! DECL_INLINE (x))
 	{
-	  tree decl = IDENTIFIER_LIMBO_VALUE (name);
+	  tree decl;
 
-	  if (! comptypes (TREE_TYPE (x), TREE_TYPE (decl))
+	  if (flag_traditional && IDENTIFIER_GLOBAL_VALUE (name) != 0
+	      && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
+		  || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name))))
+	    decl = IDENTIFIER_GLOBAL_VALUE (name);
+	  else if (IDENTIFIER_LIMBO_VALUE (name) != 0)
+	    /* Decls in limbo are always extern, so no need to check that.  */
+	    decl = IDENTIFIER_LIMBO_VALUE (name);
+	  else
+	    decl = 0;
+
+	  if (decl && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl))
 	      /* If old decl is built-in, we already warned if we should.  */
 	      && !DECL_BUILT_IN (decl))
 	    {
