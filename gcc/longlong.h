@@ -552,11 +552,9 @@
 
 #if defined (__mips__)
 #define umul_ppmm(w1, w0, u, v) \
-  __asm__ ("multu %2,%3
-	mflo %0
-	mfhi %1"							\
-	   : "=d" ((USItype)(w0)),					\
-	     "=d" ((USItype)(w1))					\
+  __asm__ ("multu %2,%3"						\
+	   : "=l" ((USItype)(w0)),					\
+	     "=h" ((USItype)(w1))					\
 	   : "d" ((USItype)(u)),					\
 	     "d" ((USItype)(v)))
 #define UMUL_TIME 10
