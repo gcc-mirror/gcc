@@ -138,6 +138,7 @@ and this may cause problems with other languages.
 
 @node Global Actions, Directives, Top, Top
 @section Transformations Made Globally
+@cindex ASCII NUL handling
 
 Most C preprocessor features are inactive unless you give specific directives
 to request their use.  (Preprocessing directives are lines starting with
@@ -212,6 +213,43 @@ recognize the trigraph.
 
 This exception is relevant only if you use the @samp{-trigraphs}
 option to enable trigraph processing.  @xref{Invocation}.
+@end itemize
+
+The preprocessor handles null characters embedded in the input file
+depending upon the context in which the null appears.  Note that here we
+are referring not to the two-character escape sequence "\0", but to the
+single character ASCII NUL.
+
+There are three different contexts in which a null character may
+appear:-
+
+@itemize @bullet
+@item
+Within comments.  Here, null characters are silently ignored.
+
+@item
+Within a string or character constant.  Here the preprocessor emits a
+warning, but preserves the null character and passes it through to the
+output file.
+
+@item
+In any other context, the preprocessor issues a warning, and discards
+the null character.  In all other respects the preprocessor treats it
+like whitespace, combining it with any surrounding whitespace to become
+a single whitespace token.  Representing the null character by "^@@",
+this means that code like
+
+@example
+#define X^@@1
+@end example
+
+is equivalent to
+
+@example
+#define X 1
+@end example
+
+and X is defined with replacement text "1".
 @end itemize
 
 @node Directives, Header Files, Global Actions, Top
