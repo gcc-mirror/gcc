@@ -3085,7 +3085,7 @@ assign_parms (fndecl, second_time)
     }
 			       
   parm_reg_stack_loc = (rtx *) oballoc (nparmregs * sizeof (rtx));
-  bzero (parm_reg_stack_loc, nparmregs * sizeof (rtx));
+  bzero ((char *) parm_reg_stack_loc, nparmregs * sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
@@ -3569,8 +3569,9 @@ assign_parms (fndecl, second_time)
 
 	      nparmregs = regno + 5;
 	      new = (rtx *) oballoc (nparmregs * sizeof (rtx));
-	      bcopy (parm_reg_stack_loc, new, old_nparmregs * sizeof (rtx));
-	      bzero (new + old_nparmregs,
+	      bcopy ((char *) parm_reg_stack_loc, (char *) new,
+		     old_nparmregs * sizeof (rtx));
+	      bzero ((char *) (new + old_nparmregs),
 		     (nparmregs - old_nparmregs) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }

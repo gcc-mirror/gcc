@@ -399,7 +399,7 @@ dbxout_init (asm_file, input_file_name, syms)
 
   typevec_len = 100;
   typevec = (enum typestatus *) xmalloc (typevec_len * sizeof typevec[0]);
-  bzero (typevec, typevec_len * sizeof typevec[0]);
+  bzero ((char *) typevec, typevec_len * sizeof typevec[0]);
 
   /* Convert Ltext into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
@@ -940,8 +940,10 @@ dbxout_type (type, full, show_arg_types)
 
       if (next_type_number == typevec_len)
 	{
-	  typevec = (enum typestatus *) xrealloc (typevec, typevec_len * 2 * sizeof typevec[0]);
-	  bzero (typevec + typevec_len, typevec_len * sizeof typevec[0]);
+	  int len = typevec_len * 2 * sizeof typevec[0];
+
+	  typevec = (enum typestatus *) xrealloc (typevec, len);
+	  bzero ((char *) (typevec + typevec_len), len);
 	  typevec_len *= 2;
 	}
     }

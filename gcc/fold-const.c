@@ -339,7 +339,7 @@ mul_double (l1, h1, l2, h2, lv, hv)
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
 
-  bzero (prod, sizeof prod);
+  bzero ((char *) prod, sizeof prod);
 
   for (i = 0; i < MAX_SHORTS; i++)
     for (j = 0; j < MAX_SHORTS; j++)
@@ -595,10 +595,10 @@ div_and_round_double (code, uns,
       goto finish_up;
     }
 
-  bzero (quo, sizeof quo);
+  bzero ((char *) quo, sizeof quo);
 
-  bzero (num, sizeof num);	/* to zero 9th element */
-  bzero (den, sizeof den);
+  bzero ((char *) num, sizeof num);	/* to zero 9th element */
+  bzero ((char *) den, sizeof den);
 
   encode (num, lnum, hnum); 
   encode (den, lden, hden);
@@ -1837,7 +1837,8 @@ operand_equal_p (arg0, arg1, only_const)
   /* Detect when real constants are equal.  */
   if (TREE_CODE (arg0) == TREE_CODE (arg1)
       && TREE_CODE (arg0) == REAL_CST)
-    return !bcmp (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1),
+    return !bcmp ((char *) &TREE_REAL_CST (arg0),
+		  (char *) &TREE_REAL_CST (arg1),
 		  sizeof (REAL_VALUE_TYPE));
 
   if (only_const)

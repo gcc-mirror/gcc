@@ -479,8 +479,8 @@ reload (first, global, dumpfile)
   bcopy (regs_ever_live, regs_explicitly_used, sizeof regs_ever_live);
 
   /* We don't have a stack slot for any spill reg yet.  */
-  bzero (spill_stack_slot, sizeof spill_stack_slot);
-  bzero (spill_stack_slot_width, sizeof spill_stack_slot_width);
+  bzero ((char *) spill_stack_slot, sizeof spill_stack_slot);
+  bzero ((char *) spill_stack_slot_width, sizeof spill_stack_slot_width);
 
   /* Initialize the save area information for caller-save, in case some
      are needed.  */
@@ -513,17 +513,17 @@ reload (first, global, dumpfile)
      be substituted eventually by altering the REG-rtx's.  */
 
   reg_equiv_constant = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_equiv_constant, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_constant, max_regno * sizeof (rtx));
   reg_equiv_memory_loc = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_equiv_memory_loc, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_memory_loc, max_regno * sizeof (rtx));
   reg_equiv_mem = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_equiv_mem, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_mem, max_regno * sizeof (rtx));
   reg_equiv_init = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_equiv_init, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_init, max_regno * sizeof (rtx));
   reg_equiv_address = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_equiv_address, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_address, max_regno * sizeof (rtx));
   reg_max_ref_width = (int *) alloca (max_regno * sizeof (int));
-  bzero (reg_max_ref_width, max_regno * sizeof (int));
+  bzero ((char *) reg_max_ref_width, max_regno * sizeof (int));
   cannot_omit_stores = (char *) alloca (max_regno);
   bzero (cannot_omit_stores, max_regno);
 
@@ -711,7 +711,7 @@ reload (first, global, dumpfile)
   if (global)
     for (i = 0; i < N_REG_CLASSES; i++)
       {
-	basic_block_needs[i] = (char *)alloca (n_basic_blocks);
+	basic_block_needs[i] = (char *) alloca (n_basic_blocks);
 	bzero (basic_block_needs[i], n_basic_blocks);
       }
 
@@ -763,13 +763,13 @@ reload (first, global, dumpfile)
       static char *reg_class_names[] = REG_CLASS_NAMES;
 
       something_changed = 0;
-      bzero (max_needs, sizeof max_needs);
-      bzero (max_groups, sizeof max_groups);
-      bzero (max_nongroups, sizeof max_nongroups);
-      bzero (max_needs_insn, sizeof max_needs_insn);
-      bzero (max_groups_insn, sizeof max_groups_insn);
-      bzero (max_nongroups_insn, sizeof max_nongroups_insn);
-      bzero (group_size, sizeof group_size);
+      bzero ((char *) max_needs, sizeof max_needs);
+      bzero ((char *) max_groups, sizeof max_groups);
+      bzero ((char *) max_nongroups, sizeof max_nongroups);
+      bzero ((char *) max_needs_insn, sizeof max_needs_insn);
+      bzero ((char *) max_groups_insn, sizeof max_groups_insn);
+      bzero ((char *) max_nongroups_insn, sizeof max_nongroups_insn);
+      bzero ((char *) group_size, sizeof group_size);
       for (i = 0; i < N_REG_CLASSES; i++)
 	group_mode[i] = VOIDmode;
 
@@ -802,7 +802,7 @@ reload (first, global, dumpfile)
 
       num_not_at_initial_offset = 0;
 
-      bzero (&offsets_known_at[get_first_label_num ()], num_labels);
+      bzero ((char *) &offsets_known_at[get_first_label_num ()], num_labels);
 
       /* Set a known offset for each forced label to be at the initial offset
 	 of each elimination.  We do this because we assume that all
@@ -1020,7 +1020,7 @@ reload (first, global, dumpfile)
 		continue;
 
 	      something_needs_reloads = 1;
-	      bzero (&insn_needs, sizeof insn_needs);
+	      bzero ((char *) &insn_needs, sizeof insn_needs);
 
 	      /* Count each reload once in every class
 		 containing the reload's own class.  */
@@ -3060,9 +3060,9 @@ eliminate_regs (x, mem_mode, insn)
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
-	      bcopy (x, new_x, (sizeof (*new_x) - sizeof (new_x->fld)
-				+ (sizeof (new_x->fld[0])
-				   * GET_RTX_LENGTH (code))));
+	      bcopy ((char *) x, (char *) new_x,
+		     (sizeof (*new_x) - sizeof (new_x->fld)
+		      + sizeof (new_x->fld[0]) * GET_RTX_LENGTH (code)));
 	      x = new_x;
 	      copied = 1;
 	    }
@@ -3081,9 +3081,10 @@ eliminate_regs (x, mem_mode, insn)
 		  if (! copied)
 		    {
 		      rtx new_x = rtx_alloc (code);
-		      bcopy (x, new_x, (sizeof (*new_x) - sizeof (new_x->fld)
-					+ (sizeof (new_x->fld[0])
-					   * GET_RTX_LENGTH (code))));
+		      bcopy ((char *) x, (char *) new_x,
+			     (sizeof (*new_x) - sizeof (new_x->fld)
+			      + (sizeof (new_x->fld[0])
+				 * GET_RTX_LENGTH (code))));
 		      x = new_x;
 		      copied = 1;
 		    }
@@ -3640,10 +3641,10 @@ reload_as_needed (first, live_known)
   rtx x;
   rtx after_call = 0;
 
-  bzero (spill_reg_rtx, sizeof spill_reg_rtx);
-  bzero (spill_reg_store, sizeof spill_reg_store);
+  bzero ((char *) spill_reg_rtx, sizeof spill_reg_rtx);
+  bzero ((char *) spill_reg_store, sizeof spill_reg_store);
   reg_last_reload_reg = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (reg_last_reload_reg, max_regno * sizeof (rtx));
+  bzero ((char *) reg_last_reload_reg, max_regno * sizeof (rtx));
   reg_has_output_reload = (char *) alloca (max_regno);
   for (i = 0; i < n_spills; i++)
     {
@@ -4817,8 +4818,8 @@ choose_reload_regs (insn, avoid_return_reg)
   HARD_REG_SET save_reload_reg_used_at_all;
 
   bzero (reload_inherited, MAX_RELOADS);
-  bzero (reload_inheritance_insn, MAX_RELOADS * sizeof (rtx));
-  bzero (reload_override_in, MAX_RELOADS * sizeof (rtx));
+  bzero ((char *) reload_inheritance_insn, MAX_RELOADS * sizeof (rtx));
+  bzero ((char *) reload_override_in, MAX_RELOADS * sizeof (rtx));
 
   CLEAR_HARD_REG_SET (reload_reg_used);
   CLEAR_HARD_REG_SET (reload_reg_used_at_all);
@@ -4939,13 +4940,15 @@ choose_reload_regs (insn, avoid_return_reg)
   if (n_reloads > 1)
     qsort (reload_order, n_reloads, sizeof (short), reload_reg_class_lower);
 
-  bcopy (reload_reg_rtx, save_reload_reg_rtx, sizeof reload_reg_rtx);
+  bcopy ((char *) reload_reg_rtx, (char *) save_reload_reg_rtx,
+	 sizeof reload_reg_rtx);
   bcopy (reload_inherited, save_reload_inherited, sizeof reload_inherited);
-  bcopy (reload_inheritance_insn, save_reload_inheritance_insn,
+  bcopy ((char *) reload_inheritance_insn,
+	 (char *) save_reload_inheritance_insn,
 	 sizeof reload_inheritance_insn);
-  bcopy (reload_override_in, save_reload_override_in,
+  bcopy ((char *) reload_override_in, (char *) save_reload_override_in,
 	 sizeof reload_override_in);
-  bcopy (reload_spill_index, save_reload_spill_index,
+  bcopy ((char *) reload_spill_index, (char *) save_reload_spill_index,
 	 sizeof reload_spill_index);
   COPY_HARD_REG_SET (save_reload_reg_used, reload_reg_used);
   COPY_HARD_REG_SET (save_reload_reg_used_at_all, reload_reg_used_at_all);
@@ -5312,13 +5315,16 @@ choose_reload_regs (insn, avoid_return_reg)
       /* Loop around and try without any inheritance.  */
       /* First undo everything done by the failed attempt
 	 to allocate with inheritance.  */
-      bcopy (save_reload_reg_rtx, reload_reg_rtx, sizeof reload_reg_rtx);
-      bcopy (save_reload_inherited, reload_inherited, sizeof reload_inherited);
-      bcopy (save_reload_inheritance_insn, reload_inheritance_insn,
+      bcopy ((char *) save_reload_reg_rtx, (char *) reload_reg_rtx,
+	     sizeof reload_reg_rtx);
+      bcopy ((char *) save_reload_inherited, (char *) reload_inherited,
+	     sizeof reload_inherited);
+      bcopy ((char *) save_reload_inheritance_insn,
+	     (char *) reload_inheritance_insn,
 	     sizeof reload_inheritance_insn);
-      bcopy (save_reload_override_in, reload_override_in,
+      bcopy ((char *) save_reload_override_in, (char *) reload_override_in,
 	     sizeof reload_override_in);
-      bcopy (save_reload_spill_index, reload_spill_index,
+      bcopy ((char *) save_reload_spill_index, (char *) reload_spill_index,
 	     sizeof reload_spill_index);
       COPY_HARD_REG_SET (reload_reg_used, save_reload_reg_used);
       COPY_HARD_REG_SET (reload_reg_used_at_all, save_reload_reg_used_at_all);

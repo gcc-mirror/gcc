@@ -705,12 +705,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      to access the splittable_regs[] and addr_combined_regs[] arrays.  */
 
   splittable_regs = (rtx *) alloca (maxregnum * sizeof (rtx));
-  bzero (splittable_regs, maxregnum * sizeof (rtx));
+  bzero ((char *) splittable_regs, maxregnum * sizeof (rtx));
   splittable_regs_updates = (int *) alloca (maxregnum * sizeof (int));
-  bzero (splittable_regs_updates, maxregnum * sizeof (int));
+  bzero ((char *) splittable_regs_updates, maxregnum * sizeof (int));
   addr_combined_regs
     = (struct induction **) alloca (maxregnum * sizeof (struct induction *));
-  bzero (addr_combined_regs, maxregnum * sizeof (struct induction *));
+  bzero ((char *) addr_combined_regs, maxregnum * sizeof (struct induction *));
 
   /* If this loop requires exit tests when unrolled, check to see if we
      can precondition the loop so as to make the exit tests unnecessary.
@@ -913,9 +913,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	      emit_label_after (labels[unroll_number - i],
 				PREV_INSN (loop_start));
 
-	      bzero (map->insn_map, max_insnno * sizeof (rtx));
-	      bzero (map->const_equiv_map, maxregnum * sizeof (rtx));
-	      bzero (map->const_age_map, maxregnum * sizeof (unsigned));
+	      bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
+	      bzero ((char *) map->const_equiv_map, maxregnum * sizeof (rtx));
+	      bzero ((char *) map->const_age_map,
+		     maxregnum * sizeof (unsigned));
 	      map->const_age = 0;
 
 	      for (j = 0; j < max_labelno; j++)
@@ -1050,9 +1051,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   for (i = 0; i < unroll_number; i++)
     {
-      bzero (map->insn_map, max_insnno * sizeof (rtx));
-      bzero (map->const_equiv_map, new_maxregnum * sizeof (rtx));
-      bzero (map->const_age_map, new_maxregnum * sizeof (unsigned));
+      bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
+      bzero ((char *) map->const_equiv_map, new_maxregnum * sizeof (rtx));
+      bzero ((char *) map->const_age_map, new_maxregnum * sizeof (unsigned));
       map->const_age = 0;
 
       for (j = 0; j < max_labelno; j++)

@@ -51,8 +51,9 @@ debug_tree (node)
      tree node;
 {
   char *object = (char *) oballoc (0);
+
   table = (struct bucket **) oballoc (HASH_SIZE * sizeof (struct bucket *));
-  bzero (table, HASH_SIZE * sizeof (struct bucket *));
+  bzero ((char *) table, HASH_SIZE * sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
   table = 0;
   obfree (object);

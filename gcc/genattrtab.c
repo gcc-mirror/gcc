@@ -1883,7 +1883,7 @@ expand_units ()
 	    * sizeof (struct function_unit_op *));
 
   for (unit = units, i = 0; unit; i += unit->num_opclasses, unit = unit->next)
-    bcopy (unit_ops[unit->num], &op_array[i],
+    bcopy ((char *) unit_ops[unit->num], (char *) &op_array[i],
 	   unit->num_opclasses * sizeof (struct function_unit_op *));
 
   /* Compute the ready cost function for each unit by computing the
@@ -2425,7 +2425,7 @@ simplify_cond (exp, insn_code, insn_index)
   /* This lets us free all storage allocated below, if appropriate.  */
   first_spacer = (char *) obstack_finish (rtl_obstack);
 
-  bcopy (&XVECEXP (exp, 0, 0), tests, len * sizeof (rtx));
+  bcopy ((char *) &XVECEXP (exp, 0, 0), (char *) tests, len * sizeof (rtx));
 
   /* See if default value needs simplification.  */
   if (GET_CODE (defval) == COND)
@@ -2517,7 +2517,8 @@ simplify_cond (exp, insn_code, insn_index)
       rtx newexp = rtx_alloc (COND);
 
       XVEC (newexp, 0) = rtvec_alloc (len);
-      bcopy (tests, &XVECEXP (newexp, 0, 0), len * sizeof (rtx));
+      bcopy ((char *) tests, (char *) &XVECEXP (newexp, 0, 0),
+	     len * sizeof (rtx));
       XEXP (newexp, 1) = new_defval;
       return newexp;
     }
@@ -3301,8 +3302,9 @@ optimize_attrs ()
   insn_code_values
     = (struct attr_value_list **) alloca ((insn_code_number + 2)
 					  * sizeof (struct attr_value_list *));
-  bzero (insn_code_values,
+  bzero ((char *) insn_code_values,
 	 (insn_code_number + 2) * sizeof (struct attr_value_list *));
+
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
@@ -5436,7 +5438,7 @@ copy_rtx_unchanging (orig)
   PUT_MODE (copy, GET_MODE (orig));
   RTX_UNCHANGING_P (copy) = 1;
   
-  bcopy (&XEXP (orig, 0), &XEXP (copy, 0),
+  bcopy ((char *) &XEXP (orig, 0), (char *) &XEXP (copy, 0),
 	 GET_RTX_LENGTH (GET_CODE (copy)) * sizeof (rtx));
   return copy;
 #endif

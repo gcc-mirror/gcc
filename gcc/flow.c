@@ -808,29 +808,36 @@ life_analysis (f, nregs)
   allocate_for_life_analysis ();
 
   reg_next_use = (rtx *) alloca (nregs * sizeof (rtx));
-  bzero (reg_next_use, nregs * sizeof (rtx));
+  bzero ((char *) reg_next_use, nregs * sizeof (rtx));
 
   /* Set up several regset-vectors used internally within this function.
      Their meanings are documented above, with their declarations.  */
 
-  basic_block_live_at_end = (regset *) alloca (n_basic_blocks * sizeof (regset));
+  basic_block_live_at_end
+    = (regset *) alloca (n_basic_blocks * sizeof (regset));
+
   /* Don't use alloca since that leads to a crash rather than an error message
      if there isn't enough space.
      Don't use oballoc since we may need to allocate other things during
      this function on the temporary obstack.  */
   tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero (tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_live_at_end, tem, n_basic_blocks, regset_bytes);
+  bzero ((char *) tem, n_basic_blocks * regset_bytes);
+  init_regset_vector (basic_block_live_at_end, tem,
+		      n_basic_blocks, regset_bytes);
 
-  basic_block_new_live_at_end = (regset *) alloca (n_basic_blocks * sizeof (regset));
+  basic_block_new_live_at_end
+    = (regset *) alloca (n_basic_blocks * sizeof (regset));
   tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero (tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_new_live_at_end, tem, n_basic_blocks, regset_bytes);
+  bzero ((char *) tem, n_basic_blocks * regset_bytes);
+  init_regset_vector (basic_block_new_live_at_end, tem,
+		      n_basic_blocks, regset_bytes);
 
-  basic_block_significant = (regset *) alloca (n_basic_blocks * sizeof (regset));
+  basic_block_significant
+    = (regset *) alloca (n_basic_blocks * sizeof (regset));
   tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero (tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_significant, tem, n_basic_blocks, regset_bytes);
+  bzero ((char *) tem, n_basic_blocks * regset_bytes);
+  init_regset_vector (basic_block_significant, tem,
+		      n_basic_blocks, regset_bytes);
 
   /* Record which insns refer to any volatile memory
      or for any reason can't be deleted just because they are dead stores.
@@ -1035,10 +1042,10 @@ life_analysis (f, nregs)
 	    {
 	      /* Update the basic_block_live_at_start
 		 by propagation backwards through the block.  */
-	      bcopy (basic_block_new_live_at_end[i],
-		     basic_block_live_at_end[i], regset_bytes);
-	      bcopy (basic_block_live_at_end[i],
-		     basic_block_live_at_start[i], regset_bytes);
+	      bcopy ((char *) basic_block_new_live_at_end[i],
+		     (char *) basic_block_live_at_end[i], regset_bytes);
+	      bcopy ((char *) basic_block_live_at_end[i],
+		     (char *) basic_block_live_at_start[i], regset_bytes);
 	      propagate_block (basic_block_live_at_start[i],
 			       basic_block_head[i], basic_block_end[i], 0,
 			       first_pass ? basic_block_significant[i]
@@ -1168,31 +1175,33 @@ allocate_for_life_analysis ()
   regset_bytes = regset_size * sizeof (*(regset)0);
 
   reg_n_refs = (int *) oballoc (max_regno * sizeof (int));
-  bzero (reg_n_refs, max_regno * sizeof (int));
+  bzero ((char *) reg_n_refs, max_regno * sizeof (int));
 
   reg_n_sets = (short *) oballoc (max_regno * sizeof (short));
-  bzero (reg_n_sets, max_regno * sizeof (short));
+  bzero ((char *) reg_n_sets, max_regno * sizeof (short));
 
   reg_n_deaths = (short *) oballoc (max_regno * sizeof (short));
-  bzero (reg_n_deaths, max_regno * sizeof (short));
+  bzero ((char *) reg_n_deaths, max_regno * sizeof (short));
 
   reg_live_length = (int *) oballoc (max_regno * sizeof (int));
-  bzero (reg_live_length, max_regno * sizeof (int));
+  bzero ((char *) reg_live_length, max_regno * sizeof (int));
 
   reg_n_calls_crossed = (int *) oballoc (max_regno * sizeof (int));
-  bzero (reg_n_calls_crossed, max_regno * sizeof (int));
+  bzero ((char *) reg_n_calls_crossed, max_regno * sizeof (int));
 
   reg_basic_block = (int *) oballoc (max_regno * sizeof (int));
   for (i = 0; i < max_regno; i++)
     reg_basic_block[i] = REG_BLOCK_UNKNOWN;
 
-  basic_block_live_at_start = (regset *) oballoc (n_basic_blocks * sizeof (regset));
+  basic_block_live_at_start
+    = (regset *) oballoc (n_basic_blocks * sizeof (regset));
   tem = (regset) oballoc (n_basic_blocks * regset_bytes);
-  bzero (tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_live_at_start, tem, n_basic_blocks, regset_bytes);
+  bzero ((char *) tem, n_basic_blocks * regset_bytes);
+  init_regset_vector (basic_block_live_at_start, tem,
+		      n_basic_blocks, regset_bytes);
 
   regs_live_at_setjmp = (regset) oballoc (regset_bytes);
-  bzero (regs_live_at_setjmp, regset_bytes);
+  bzero ((char *) regs_live_at_setjmp, regset_bytes);
 }
 
 /* Make each element of VECTOR point at a regset,
@@ -1294,7 +1303,7 @@ propagate_block (old, first, last, final, significant, bnum)
 
       num_scratch = 0;
       maxlive = (regset) alloca (regset_bytes);
-      bcopy (old, maxlive, regset_bytes);
+      bcopy ((char *) old, (char *) maxlive, regset_bytes);
       regs_sometimes_live
 	= (struct sometimes *) alloca (max_regno * sizeof (struct sometimes));
 

@@ -292,7 +292,7 @@ init_obstacks ()
   rtl_obstack = saveable_obstack = &permanent_obstack;
 
   /* Init the hash table of identifiers.  */
-  bzero (hash_table, sizeof hash_table);
+  bzero ((char *) hash_table, sizeof hash_table);
 }
 
 void
@@ -812,11 +812,11 @@ init_tree_codes ()
   tree_code_type = (char **) xmalloc (sizeof (standard_tree_code_type));
   tree_code_length = (int *) xmalloc (sizeof (standard_tree_code_length));
   tree_code_name = (char **) xmalloc (sizeof (standard_tree_code_name));
-  bcopy (standard_tree_code_type, tree_code_type,
+  bcopy ((char *) standard_tree_code_type, (char *) tree_code_type,
 	 sizeof (standard_tree_code_type));
-  bcopy (standard_tree_code_length, tree_code_length,
+  bcopy ((char *) standard_tree_code_length, (char *) tree_code_length,
 	 sizeof (standard_tree_code_length));
-  bcopy (standard_tree_code_name, tree_code_name,
+  bcopy ((char *) standard_tree_code_name, (char *) tree_code_name,
 	 sizeof (standard_tree_code_name));
 }
 

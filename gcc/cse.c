@@ -763,10 +763,11 @@ new_basic_block ()
 
   next_qty = max_reg;
 
-  bzero (reg_tick, max_reg * sizeof (int));
+  bzero ((char *) reg_tick, max_reg * sizeof (int));
 
-  bcopy (all_minus_one, reg_in_table, max_reg * sizeof (int));
-  bcopy (consec_ints, reg_qty, max_reg * sizeof (int));
+  bcopy ((char *) all_minus_one, (char *) reg_in_table,
+	 max_reg * sizeof (int));
+  bcopy ((char *) consec_ints, (char *) reg_qty, max_reg * sizeof (int));
   CLEAR_HARD_REG_SET (hard_regs_in_table);
 
   /* The per-quantity values used to be initialized here, but it is
@@ -782,7 +783,7 @@ new_basic_block ()
 	}
     }
 
-  bzero (table, sizeof table);
+  bzero ((char *) table, sizeof table);
 
   prev_insn = 0;
 
@@ -4092,7 +4093,7 @@ simplify_plus_minus (code, mode, op0, op1)
   int first = 1, negate = 0, changed;
   int i, j;
 
-  bzero (ops, sizeof ops);
+  bzero ((char *) ops, sizeof ops);
   
   /* Set up the two operands and then expand them until nothing has been
      changed.  If we run out of room in our array, give up; this should
@@ -7989,7 +7990,7 @@ cse_main (f, nregs, after_loop, file)
 
   /* Discard all the free elements of the previous function
      since they are allocated in the temporarily obstack.  */
-  bzero (table, sizeof table);
+  bzero ((char *) table, sizeof table);
   free_element_chain = 0;
   n_elements_made = 0;
 
@@ -7997,7 +7998,7 @@ cse_main (f, nregs, after_loop, file)
 
   max_uid = get_max_uid ();
   uid_cuid = (int *) alloca ((max_uid + 1) * sizeof (int));
-  bzero (uid_cuid, (max_uid + 1) * sizeof (int));
+  bzero ((char *) uid_cuid, (max_uid + 1) * sizeof (int));
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
@@ -8418,7 +8419,7 @@ delete_dead_from_cse (insns, nreg)
   int in_libcall = 0;
 
   /* First count the number of times each register is used.  */
-  bzero (counts, sizeof (int) * nreg);
+  bzero ((char *) counts, sizeof (int) * nreg);
   for (insn = next_real_insn (insns); insn; insn = next_real_insn (insn))
     count_reg_usage (insn, counts, NULL_RTX, 1);
 

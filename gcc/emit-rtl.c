@@ -501,8 +501,9 @@ gen_reg_rtx (mode)
       regno_pointer_flag = new;
 
       new1 = (rtx *) oballoc (regno_pointer_flag_length * 2 * sizeof (rtx));
-      bcopy (regno_reg_rtx, new1, regno_pointer_flag_length * sizeof (rtx));
-      bzero (&new1[regno_pointer_flag_length],
+      bcopy ((char *) regno_reg_rtx, (char *) new1,
+	     regno_pointer_flag_length * sizeof (rtx));
+      bzero ((char *) &new1[regno_pointer_flag_length],
 	     regno_pointer_flag_length * sizeof (rtx));
       regno_reg_rtx = new1;
 
@@ -1523,8 +1524,9 @@ copy_rtx_if_shared (orig)
       register rtx copy;
 
       copy = rtx_alloc (code);
-      bcopy (x, copy, (sizeof (*copy) - sizeof (copy->fld)
-		       + sizeof (copy->fld[0]) * GET_RTX_LENGTH (code)));
+      bcopy ((char *) x, (char *) copy,
+	     (sizeof (*copy) - sizeof (copy->fld)
+	      + sizeof (copy->fld[0]) * GET_RTX_LENGTH (code)));
       x = copy;
       copied = 1;
     }
@@ -3087,8 +3089,9 @@ restore_reg_data_1 (orig)
 		  bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
 
 		  new1 = (rtx *) oballoc (newlen * sizeof (rtx));
-		  bzero (new1, newlen * sizeof (rtx));
-		  bcopy (regno_reg_rtx, new1, regno_pointer_flag_length * sizeof (rtx));
+		  bzero ((char *) new1, newlen * sizeof (rtx));
+		  bcopy ((char *) regno_reg_rtx, (char *) new1,
+			 regno_pointer_flag_length * sizeof (rtx));
 
 		  regno_pointer_flag = new;
 		  regno_reg_rtx = new1;
@@ -3166,7 +3169,7 @@ init_emit ()
 
   regno_reg_rtx 
     = (rtx *) oballoc (regno_pointer_flag_length * sizeof (rtx));
-  bzero (regno_reg_rtx, regno_pointer_flag_length * sizeof (rtx));
+  bzero ((char *) regno_reg_rtx, regno_pointer_flag_length * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
   regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
@@ -3257,10 +3260,10 @@ init_emit_once (line_numbers)
 	  rtx tem = rtx_alloc (CONST_DOUBLE);
 	  union real_extract u;
 
-	  bzero (&u, sizeof u);  /* Zero any holes in a structure.  */
+	  bzero ((char *) &u, sizeof u);  /* Zero any holes in a structure.  */
 	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
 
-	  bcopy (&u, &CONST_DOUBLE_LOW (tem), sizeof u);
+	  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (tem), sizeof u);
 	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
 	  PUT_MODE (tem, mode);
 

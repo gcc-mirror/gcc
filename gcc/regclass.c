@@ -219,7 +219,7 @@ init_reg_sets ()
 
   /* Compute number of hard regs in each class.  */
 
-  bzero (reg_class_size, sizeof reg_class_size);
+  bzero ((char *) reg_class_size, sizeof reg_class_size);
   for (i = 0; i < N_REG_CLASSES; i++)
     for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
       if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
@@ -702,7 +702,7 @@ regclass (f, nregs)
     {
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
-      bzero (costs, nregs * sizeof (struct costs));
+      bzero ((char *) costs, nregs * sizeof (struct costs));
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
       bzero (in_inc_dec, nregs);
@@ -1662,10 +1662,11 @@ reg_scan (f, nregs, repeat)
 	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
     }
 
-  bzero (regno_first_uid, highest_regno_in_uid_map * sizeof (int));
-  bzero (regno_last_uid, highest_regno_in_uid_map * sizeof (int));
-  bzero (regno_last_note_uid, highest_regno_in_uid_map * sizeof (int));
-  bzero (reg_n_sets, highest_regno_in_uid_map * sizeof (short));
+  bzero ((char *) regno_first_uid, highest_regno_in_uid_map * sizeof (int));
+  bzero ((char *) regno_last_uid, highest_regno_in_uid_map * sizeof (int));
+  bzero ((char *) regno_last_note_uid,
+	 highest_regno_in_uid_map * sizeof (int));
+  bzero ((char *) reg_n_sets, highest_regno_in_uid_map * sizeof (short));
 
   max_parallel = 3;
 

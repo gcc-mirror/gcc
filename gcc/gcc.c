@@ -1031,11 +1031,12 @@ read_specs (filename)
 	    = ((struct compiler *)
 	       xrealloc (compilers, (n_compilers + 2) * sizeof (struct compiler)));
 	  compilers[n_compilers].suffix = suffix;
-	  bzero (compilers[n_compilers].spec,
+	  bzero ((char *) compilers[n_compilers].spec,
 		 sizeof compilers[n_compilers].spec);
 	  compilers[n_compilers].spec[0] = spec;
 	  n_compilers++;
-	  bzero (&compilers[n_compilers], sizeof compilers[n_compilers]);
+	  bzero ((char *) &compilers[n_compilers],
+		 sizeof compilers[n_compilers]);
 	}
 
       if (*suffix == 0)
@@ -1526,7 +1527,8 @@ putenv (str)
   /* Add a new environment variable */
   environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
   *environ = str;
-  bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
+  bcopy ((char *) old_environ, (char *) (environ + 1),
+	 sizeof (char *) * (num_envs+1));
 
 #endif	/* VMS */
 }
@@ -3951,7 +3953,8 @@ main (argc, argv)
      This means one element containing 0s, as a terminator.  */
 
   compilers = (struct compiler *) xmalloc (sizeof default_compilers);
-  bcopy (default_compilers, compilers, sizeof default_compilers);
+  bcopy ((char *) default_compilers, (char *) compilers,
+	 sizeof default_compilers);
   n_compilers = n_default_compilers;
 
   /* Read specs from a file if there is one.  */
@@ -4054,7 +4057,7 @@ main (argc, argv)
      that correspond to the input files.  */
 
   outfiles = (char **) xmalloc (n_infiles * sizeof (char *));
-  bzero (outfiles, n_infiles * sizeof (char *));
+  bzero ((char *) outfiles, n_infiles * sizeof (char *));
 
   /* Record which files were specified explicitly as link input.  */
 
@@ -4262,8 +4265,8 @@ lookup_compiler (name, length, language)
 	      language = cp->spec[0] + 1;
 	      new = (struct compiler *) xmalloc (sizeof (struct compiler));
 	      new->suffix = cp->suffix;
-	      bcopy (lookup_compiler (NULL_PTR, 0, language)->spec,
-		     new->spec, sizeof new->spec);
+	      bcopy ((char *) lookup_compiler (NULL_PTR, 0, language)->spec,
+		     (char *) new->spec, sizeof new->spec);
 	      return new;
 	    }
 	  /* A non-alias entry: return it.  */

@@ -4527,7 +4527,7 @@ expand_end_case (orig_index)
 
 	  ncases = TREE_INT_CST_LOW (range) + 1;
 	  labelvec = (rtx *) alloca (ncases * sizeof (rtx));
-	  bzero (labelvec, ncases * sizeof (rtx));
+	  bzero ((char *) labelvec, ncases * sizeof (rtx));
 
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {
@@ -4756,7 +4756,7 @@ estimate_case_costs (node)
   if (cost_table == NULL)
     {
       cost_table = ((short *) xmalloc (129 * sizeof (short))) + 1;
-      bzero (cost_table - 1, 129 * sizeof (short));
+      bzero ((char *) (cost_table - 1), 129 * sizeof (short));
 
       for (i = 0; i < 128; i++)
 	{

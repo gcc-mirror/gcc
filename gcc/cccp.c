@@ -1157,11 +1157,11 @@ main (argc, argv)
   cplusplus = 0;
   cplusplus_comments = 0;
 
-  bzero (pend_files, argc * sizeof (char *));
-  bzero (pend_defs, argc * sizeof (char *));
-  bzero (pend_undefs, argc * sizeof (char *));
-  bzero (pend_assertions, argc * sizeof (char *));
-  bzero (pend_includes, argc * sizeof (char *));
+  bzero ((char *) pend_files, argc * sizeof (char *));
+  bzero ((char *) pend_defs, argc * sizeof (char *));
+  bzero ((char *) pend_undefs, argc * sizeof (char *));
+  bzero ((char *) pend_assertions, argc * sizeof (char *));
+  bzero ((char *) pend_includes, argc * sizeof (char *));
 
   /* Process switches and find input file name.  */
 
@@ -1790,7 +1790,8 @@ main (argc, argv)
 	  endp++;
       }
       /* Put the usual defaults back in at the end.  */
-      bcopy (include_defaults_array, &include_defaults[num_dirs],
+      bcopy ((char *) include_defaults_array,
+	     (char *) &include_defaults[num_dirs],
 	     sizeof (include_defaults_array));
     }
   }
@@ -2229,17 +2230,19 @@ trigraph_pcp (buf)
       continue;
     }
     len = sptr - fptr - 2;
+
+    /* BSD doc says bcopy () works right for overlapping strings.  In ANSI
+       C, this will be memmove (). */
     if (bptr != fptr && len > 0)
-      bcopy (fptr, bptr, len);	/* BSD doc says bcopy () works right
-				   for overlapping strings.  In ANSI
-				   C, this will be memmove (). */
+      bcopy ((char *) fptr, (char *) bptr, len);
+
     bptr += len;
     *bptr++ = c;
     fptr = ++sptr;
   }
   len = buf->length - (fptr - buf->buf);
   if (bptr != fptr && len > 0)
-    bcopy (fptr, bptr, len);
+    bcopy ((char *) fptr, (char *) bptr, len);
   buf->length -= fptr - bptr;
   buf->buf[buf->length] = '\0';
   if (warn_trigraphs && fptr != bptr)
@@ -2538,7 +2541,7 @@ do { ip = &instack[indepth];		\
 	if (*ibp == '(') {
 	  ip->bufp = ibp;
 	  skip_paren_group (ip);
-	  bcopy (ibp, obp, ip->bufp - ibp);
+	  bcopy ((char *) ibp, (char *) obp, ip->bufp - ibp);
 	  obp += ip->bufp - ibp;
 	  ibp = ip->bufp;
 	}
@@ -2753,7 +2756,7 @@ do { ip = &instack[indepth];		\
 	  while (ibp < limit) {
 	    if (ibp[-1] != '\\' && *ibp == '\n') {
 	      if (put_out_comments) {
-		bcopy (before_bp, obp, ibp - before_bp);
+		bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
 		obp += ibp - before_bp;
 	      }
 	      break;
@@ -2789,14 +2792,14 @@ do { ip = &instack[indepth];		\
 	if (lintcmd != NULL) {
 	  /* I believe it is always safe to emit this newline: */
 	  obp[-1] = '\n';
-	  bcopy ("#pragma lint ", obp, 13);
+	  bcopy ("#pragma lint ", (char *) obp, 13);
 	  obp += 13;
-	  bcopy (lintcmd, obp, cmdlen);
+	  bcopy (lintcmd, (char *) obp, cmdlen);
 	  obp += cmdlen;
 
 	  if (arglen != 0) {
 	    *(obp++) = ' ';
-	    bcopy (argbp, obp, arglen);
+	    bcopy (argbp, (char *) obp, arglen);
 	    obp += arglen;
 	  }
 
@@ -2854,7 +2857,7 @@ do { ip = &instack[indepth];		\
 	else {
 	  ibp++;
 	  if (put_out_comments) {
-	    bcopy (before_bp, obp, ibp - before_bp);
+	    bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
 	    obp += ibp - before_bp;
 	  }
 	}
@@ -3616,7 +3619,7 @@ handle_directive (ip, op)
 	/* Output arguments.  */
 	len = (bp - buf);
 	check_expand (op, len);
-	bcopy (buf, op->bufp, len);
+	bcopy (buf, (char *) op->bufp, len);
 	op->bufp += len;
 	/* Take account of any (escaped) newlines just output.  */
 	while (--len >= 0)
@@ -3735,14 +3738,14 @@ handle_directive (ip, op)
 	/* Output directive name.  */
         check_expand (op, kt->length + 1);
         *op->bufp++ = '#';
-        bcopy (kt->name, op->bufp, kt->length);
+        bcopy (kt->name, (char *) op->bufp, kt->length);
         op->bufp += kt->length;
 
 	if (kt->pass_thru || dump_macros == dump_definitions) {
 	  /* Output arguments.  */
 	  len = (cp - buf);
 	  check_expand (op, len);
-	  bcopy (buf, op->bufp, len);
+	  bcopy (buf, (char *) op->bufp, len);
 	  op->bufp += len;
 	} else if (kt->type == T_DEFINE && dump_macros == dump_names) {
 	  U_CHAR *xp = buf;
@@ -3957,7 +3960,7 @@ oops:
   }
   len = strlen (buf);
   check_expand (op, len);
-  bcopy (buf, op->bufp, len);
+  bcopy (buf, (char *) op->bufp, len);
   op->bufp += len;
 
   return;
@@ -4131,7 +4134,7 @@ get_filename:
     } else {
       trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
       buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
-      bcopy (trybuf.buf, buf, trybuf.bufp - trybuf.buf);
+      bcopy ((char *) trybuf.buf, (char *) buf, trybuf.bufp - trybuf.buf);
       limit = buf + (trybuf.bufp - trybuf.buf);
       free (trybuf.buf);
       retried++;
@@ -4351,7 +4354,8 @@ get_filename:
 	    struct stat s;
 
 	    fstat (pcf, &s);
-	    if (bcmp (&stat_f.st_ino, &s.st_ino, sizeof (s.st_ino))
+	    if (bcmp ((char *) &stat_f.st_ino, (char *) &s.st_ino,
+		      sizeof (s.st_ino))
 		|| stat_f.st_dev != s.st_dev)
 	      {
 		pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
@@ -4672,7 +4676,7 @@ finclude (f, fname, op, system_header_p, dirptr)
     }
 
   fp = &instack[indepth + 1];
-  bzero (fp, sizeof (FILE_BUF));
+  bzero ((char *) fp, sizeof (FILE_BUF));
   fp->nominal_fname = fp->fname = fname;
   fp->length = 0;
   fp->lineno = 1;
@@ -4845,7 +4849,7 @@ lookup_import (filename, searchptr)
     while (i) {
       /* Compare the inode and the device.
 	 Supposedly on some systems the inode is not a scalar.  */
-      if (!bcmp (&i->inode, &sb.st_ino, sizeof (sb.st_ino))
+      if (!bcmp ((char *) &i->inode, (char *) &sb.st_ino, sizeof (sb.st_ino))
 	  && i->dev == sb.st_dev) {
         close (fd);
         return -2;		/* return found */
@@ -4872,7 +4876,7 @@ add_import (fd, fname)
   i = (struct import_file *)xmalloc (sizeof (struct import_file));
   i->name = (char *)xmalloc (strlen (fname)+1);
   strcpy (i->name, fname);
-  bcopy (&sb.st_ino, &i->inode, sizeof (sb.st_ino));
+  bcopy ((char *) &sb.st_ino, (char *) &i->inode, sizeof (sb.st_ino));
   i->dev = sb.st_dev;
   i->next = import_hash_table[hashval];
   import_hash_table[hashval] = i;
@@ -5193,11 +5197,11 @@ pass_thru_directive (buf, limit, op, keyword)
 
   check_expand (op, 1 + keyword_length + (limit - buf));
   *op->bufp++ = '#';
-  bcopy (keyword->name, op->bufp, keyword_length);
+  bcopy (keyword->name, (char *) op->bufp, keyword_length);
   op->bufp += keyword_length;
   if (limit != buf && buf[0] != ' ')
     *op->bufp++ = ' ';
-  bcopy (buf, op->bufp, limit - buf);
+  bcopy ((char *) buf, (char *) op->bufp, limit - buf);
   op->bufp += (limit - buf);
 #if 0
   *op->bufp++ = '\n';
@@ -5425,7 +5429,7 @@ do_define (buf, limit, op, keyword)
 
 	msg = (U_CHAR *) alloca (mdef.symlen + 22);
 	*msg = '`';
-	bcopy (mdef.symnam, msg + 1, mdef.symlen);
+	bcopy ((char *) mdef.symnam, (char *) (msg + 1), mdef.symlen);
 	strcpy ((char *) (msg + mdef.symlen + 1), "' redefined");
 	pedwarn (msg);
 	if (hp->type == T_MACRO)
@@ -5471,7 +5475,7 @@ check_macro_name (symname, usage)
   else if (!is_idstart[*symname]) {
     U_CHAR *msg;			/* what pain... */
     msg = (U_CHAR *) alloca (sym_length + 1);
-    bcopy (symname, msg, sym_length);
+    bcopy ((char *) symname, (char *) msg, sym_length);
     msg[sym_length] = 0;
     error ("invalid %s name `%s'", usage, msg);
   } else {
@@ -6124,7 +6128,7 @@ read_token_list (bpp, limit, error_flag)
 
     temp = (struct arglist *) xmalloc (sizeof (struct arglist));
     temp->name = (U_CHAR *) xmalloc (bp - beg + 1);
-    bcopy (beg, temp->name, bp - beg);
+    bcopy ((char *) beg, (char *) temp->name, bp - beg);
     temp->name[bp - beg] = 0;
     temp->next = token_ptrs;
     token_ptrs = temp;
@@ -6457,7 +6461,7 @@ do_error (buf, limit, op, keyword)
 {
   int length = limit - buf;
   U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
-  bcopy (buf, copy, length);
+  bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
   error ("#error %s", copy);
@@ -6478,7 +6482,7 @@ do_warning (buf, limit, op, keyword)
 {
   int length = limit - buf;
   U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
-  bcopy (buf, copy, length);
+  bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
   warning ("#warning %s", copy);
@@ -6530,19 +6534,19 @@ do_ident (buf, limit)
 
   trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
   buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
-  bcopy (trybuf.buf, buf, trybuf.bufp - trybuf.buf);
+  bcopy ((char *) trybuf.buf, (char *) buf, trybuf.bufp - trybuf.buf);
   limit = buf + (trybuf.bufp - trybuf.buf);
   len = (limit - buf);
   free (trybuf.buf);
 
   /* Output directive name.  */
   check_expand (op, 8);
-  bcopy ("#ident ", op->bufp, 7);
+  bcopy ("#ident ", (char *) op->bufp, 7);
   op->bufp += 7;
 
   /* Output the expanded argument line.  */
   check_expand (op, len);
-  bcopy (buf, op->bufp, len);
+  bcopy ((char *) buf, (char *) op->bufp, len);
   op->bufp += len;
 
   return 0;
@@ -6803,7 +6807,7 @@ do_xifdef (buf, limit, op, keyword)
     skip = (hp == NULL) ^ (keyword->type == T_IFNDEF);
     if (start_of_file && !skip) {
       control_macro = (U_CHAR *) xmalloc (end - buf + 1);
-      bcopy (buf, control_macro, end - buf);
+      bcopy ((char *) buf, (char *) control_macro, end - buf);
       control_macro[end - buf] = 0;
     }
   }
@@ -7551,7 +7555,7 @@ output_line_command (ip, op, conditional, file_change)
   check_expand (op, len + 1);
   if (op->bufp > op->buf && op->bufp[-1] != '\n')
     *op->bufp++ = '\n';
-  bcopy (line_cmd_buf, op->bufp, len);
+  bcopy ((char *) line_cmd_buf, (char *) op->bufp, len);
   op->bufp += len;
   op->lineno = ip->lineno;
 }
@@ -7881,7 +7885,7 @@ macroexpand (hp, op)
 	    }
 	  }
 
-	  bcopy (p1, xbuf + totlen, l1 - p1);
+	  bcopy ((char *) p1, (char *) (xbuf + totlen), l1 - p1);
 	  totlen += l1 - p1;
 	  if (!traditional && !ap->raw_after) {
 	    /* Ordinary expanded use of the argument.
@@ -7896,7 +7900,8 @@ macroexpand (hp, op)
 	    xbuf[totlen++] = '\n';
 	    xbuf[totlen++] = ' ';
 	  }
-	  bcopy (arg->expanded, xbuf + totlen, arg->expand_length);
+	  bcopy ((char *) arg->expanded, (char *) (xbuf + totlen),
+		 arg->expand_length);
 	  totlen += arg->expand_length;
 	  if (!traditional) {
 	    xbuf[totlen++] = '\n';
@@ -8016,7 +8021,7 @@ macarg (argptr, rest_args)
     U_CHAR *buffer = (U_CHAR *) xmalloc (bufsize + extra + 1);
     int final_start = 0;
 
-    bcopy (ip->bufp, buffer, bufsize);
+    bcopy ((char *) ip->bufp, (char *) buffer, bufsize);
     ip->bufp = bp;
     ip->lineno += newlines;
 
@@ -8037,7 +8042,8 @@ macarg (argptr, rest_args)
       bufsize += bp - ip->bufp;
       extra += newlines;
       buffer = (U_CHAR *) xrealloc (buffer, bufsize + extra + 1);
-      bcopy (ip->bufp, buffer + bufsize - (bp - ip->bufp), bp - ip->bufp);
+      bcopy ((char *) ip->bufp, (char *) (buffer + bufsize - (bp - ip->bufp)),
+	     bp - ip->bufp);
       ip->bufp = bp;
       ip->lineno += newlines;
     }

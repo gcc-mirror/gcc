@@ -197,7 +197,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      we make.  */
   max_jump_chain = max_uid * 14 / 10;
   jump_chain = (rtx *) alloca (max_jump_chain * sizeof (rtx));
-  bzero (jump_chain, max_jump_chain * sizeof (rtx));
+  bzero ((char *) jump_chain, max_jump_chain * sizeof (rtx));
 
   /* Mark the label each jump jumps to.
      Combine consecutive labels, and count uses of labels.
@@ -2082,7 +2082,7 @@ duplicate_loop_exit_test (loop_start)
 	    if (reg_map == 0)
 	      {
 		reg_map = (rtx *) alloca (max_reg * sizeof (rtx));
-		bzero (reg_map, max_reg * sizeof (rtx));
+		bzero ((char *) reg_map, max_reg * sizeof (rtx));
 	      }
 
 	    REG_LOOP_TEST_P (SET_DEST (set)) = 1;
@@ -4052,7 +4052,8 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  bzero (modified_regs, max_reg * sizeof (char));
 	  modified_mem = 0;
 
-	  bcopy (all_reset, same_regs, max_reg * sizeof (int));
+	  bcopy ((char *) all_reset, (char *) same_regs,
+		 max_reg * sizeof (int));
 	  num_same_regs = 0;
 
 	  label = JUMP_LABEL (b1);
