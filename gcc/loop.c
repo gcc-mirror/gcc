@@ -1,5 +1,5 @@
 /* Perform various loop optimizations, including strength reduction.
-   Copyright (C) 1987, 88, 89, 91-4, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5672,14 +5672,26 @@ combine_givs (bl)
 		/* g2->new_reg set by `combine_givs_p'  */
 		g2->same = g1;
 		g1->combined_with = 1;
-		g1->benefit += g2->benefit;
+
+		/* If one of these givs is a DEST_REG that was only used
+		   once, by the other giv, this is actually a single use.  */
+		if ((g1->giv_type != DEST_REG
+		     || n_times_used[REGNO (g1->dest_reg)] != 1
+		     || ! reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
+		    && (g2->giv_type != DEST_REG
+			|| n_times_used[REGNO (g2->dest_reg)] != 1
+			|| ! reg_mentioned_p (g2->dest_reg,
+					      PATTERN (g1->insn))))
+		  {
+		    g1->benefit += g2->benefit;
+		    g1->times_used += g2->times_used;
+		  }
 		/* ??? The new final_[bg]iv_value code does a much better job
 		   of finding replaceable giv's, and hence this code may no
 		   longer be necessary.  */
 		if (! g2->replaceable && REG_USERVAR_P (g2->dest_reg))
 		  g1->benefit -= copy_cost;
 		g1->lifetime += g2->lifetime;
-		g1->times_used += g2->times_used;
 		
 		if (loop_dump_stream)
 		  fprintf (loop_dump_stream, "giv at %d combined with giv at %d\n",
