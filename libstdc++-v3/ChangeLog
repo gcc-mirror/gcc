@@ -1,3 +1,21 @@
+2000-12-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* config/os/generic/bits/ctype_base.h (ctype_base): Change space mask.
+
+	* config/os/generic/bits/ctype_noninline.h (ctype): Remove default
+	arguments in definition.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h (ctype): Same.
+	* config/os/newlib/bits/ctype_noninline.h (ctype): Same.
+	* config/os/irix/bits/ctype_noninline.h (ctype): Same.
+	* config/os/hpux/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h (ctype): Same.
+	* config/os/aix/bits/ctype_noninline.h (ctype): Same.
+
+	* include/bits/locale_facets.h: Tweak.
+	
 2000-12-06  Benjamin Kosnik  <bkoz@kredhat.com>
 
 	* include/bits/locale_facets.h (ctype): Remove _Ctype_nois and

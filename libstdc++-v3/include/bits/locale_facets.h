@@ -223,7 +223,7 @@ namespace std
       __to_type const& 	       _M_toupper;
       __to_type const& 	       _M_tolower;
       const mask* const&       _M_ctable;
-      const mask*       _M_table;
+      const mask*              _M_table;
       
     public:
       static locale::id        id;
