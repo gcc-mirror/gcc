@@ -4289,6 +4289,26 @@ A C expression that is nonzero the machine supports post-increment addressing.
 @itemx HAVE_PRE_DECREMENT
 Similar for other kinds of addressing.
 
+@findex HAVE_POST_MODIFY_DISP
+@item HAVE_POST_MODIFY_DISP
+Define this macro if the machine supports post-modify addressing
+with a constant displacement.
+
+@findex HAVE_PRE_MODIFY_DISP
+@item HAVE_PRE_MODIFY_DISP
+Define this macro if the machine supports pre-modify addressing
+with a constant displacement.
+
+@findex HAVE_POST_MODIFY_REG
+@item HAVE_POST_MODIFY_REG
+Define this macro if the machine supports post-modify addressing
+by the contents of a register.
+
+@findex HAVE_PRE_MODIFY_REG
+@item HAVE_PRE_MODIFY_REG
+Define this macro if the machine supports pre-modify addressing
+by the contents of a register.
+
 @findex CONSTANT_ADDRESS_P
 @item CONSTANT_ADDRESS_P (@var{x})
 A C expression that is 1 if the RTX @var{x} is a constant which
