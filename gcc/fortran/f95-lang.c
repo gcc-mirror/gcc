@@ -504,7 +504,7 @@ pushdecl (tree decl)
   TREE_CHAIN (decl) = current_binding_level->names;
   current_binding_level->names = decl;
 
-  /* For the declartion of a type, set its name if it is not already set.  */
+  /* For the declaration of a type, set its name if it is not already set.  */
 
   if (TREE_CODE (decl) == TYPE_DECL && TYPE_NAME (TREE_TYPE (decl)) == 0)
     {

@@ -763,7 +763,7 @@ operator_correspondence (gfc_formal_arglist * f1, gfc_formal_arglist * f2)
 
 
 /* Perform the correspondence test in rule 2 of section 14.1.2.3.
-   Returns zero if no argument is found that satisifes rule 2, nonzero
+   Returns zero if no argument is found that satisfies rule 2, nonzero
    otherwise.
 
    This test is also not symmetric in f1 and f2 and must be called

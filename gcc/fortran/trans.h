@@ -272,7 +272,7 @@ void gfc_conv_string_parameter (gfc_se * se);
 tree gfc_chainon_list (tree, tree);
 
 /* When using the gfc_conv_* make sure you understand what they do, i.e.
-   when a POST chain may be created, and what the retured expression may be
+   when a POST chain may be created, and what the returned expression may be
    used for.  Note that character strings have special handling.  This
    should not be a problem as most statements/operations only deal with
    numeric/logical types.  */
@@ -332,7 +332,7 @@ void gfc_add_modify_expr (stmtblock_t *, tree, tree);
 
 /* Initialize a statement block.  */
 void gfc_init_block (stmtblock_t *);
-/* Start a new satement block.  Like gfc_init_block but also starts a new
+/* Start a new statement block.  Like gfc_init_block but also starts a new
    variable scope.  */
 void gfc_start_block (stmtblock_t *);
 /* Finish a statement block.  Also closes the scope if the block was created
@@ -396,7 +396,7 @@ void gfc_restore_sym (gfc_symbol *, gfc_saved_var *);
 /* Returns true if a variable of specified size should go on the stack.  */
 int gfc_can_put_var_on_stack (tree);
 
-/* Allocate the lang-spcific part of a decl node.  */
+/* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
 /* Advance along a TREE_CHAIN.  */

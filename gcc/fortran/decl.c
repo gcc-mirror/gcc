@@ -401,7 +401,7 @@ match_old_style_init (const char *name)
 /* Match the stuff following a DATA statement. If ERROR_FLAG is set,
    we are matching a DATA statement and are therefore issuing an error
    if we encounter something unexpected, if not, we're trying to match 
-   an old-style intialization expression of the form INTEGER I /2/.  */
+   an old-style initialization expression of the form INTEGER I /2/.  */
 
 match
 gfc_match_data (void)
@@ -896,7 +896,7 @@ variable_decl (void)
 
   /* OK, we've successfully matched the declaration.  Now put the
      symbol in the current namespace, because it might be used in the
-     optional intialization expression for this symbol, e.g. this is
+     optional initialization expression for this symbol, e.g. this is
      perfectly legal:
 
      integer, parameter :: i = huge(i)

@@ -1,3 +1,8 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* decl.c, f95-lang.c, interface.c, module.c, trans-stmt.c,
+	trans.h: Fix comment typos.
+
 2005-03-29  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.h (option_t): Change d8, i8, r8 to flag_default_double,
