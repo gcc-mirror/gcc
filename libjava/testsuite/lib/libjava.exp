@@ -323,6 +323,7 @@ proc libjava_arguments {{mode compile}} {
     global tool_root_dir
     global libgcj_jar
     global libjava_libgcc_s_path
+    global libjava_ld_library_path
     global ld_library_path
     global target_triplet
 
@@ -338,7 +339,7 @@ proc libjava_arguments {{mode compile}} {
     # Basically we want to build up a colon separated path list from
     # the value of $libjava.
 
-    set lpath {}
+    set lpath "."
     foreach dir [list $libjava] {
 	foreach item [split $dir " "] {
 	    switch -glob -- $item {
@@ -352,6 +353,7 @@ proc libjava_arguments {{mode compile}} {
     set lpath [concat $lpath $libjava_libgcc_s_path]
     verbose "lpath = $lpath ; libgcc_s_path = $libjava_libgcc_s_path"
     set ld_library_path [join $lpath :]
+    set libjava_ld_library_path "$ld_library_path"
 
     # That's enough to make things work for the normal case.
     # If we wanted to handle an arbitrary value of libjava,
@@ -453,9 +455,10 @@ proc gcj_link {program main files {options {}}} {
 # Invoke the program and see what happens.  Return 0 on failure.
 proc gcj_invoke {program expectFile ld_library_additions} {
   global env
+  global libjava_ld_library_path
   global ld_library_path
 
-  set ld_library_path .
+  set ld_library_path "$libjava_ld_library_path"
   if {[llength $ld_library_additions] > 0} {
     append ld_library_path :[join $ld_library_additions :]
   }
@@ -498,9 +501,10 @@ proc gcj_invoke {program expectFile ld_library_additions} {
 proc libjava_invoke {errname testName optName executable inpfile resultfile
 		      ld_library_additions args} {
     global env
+    global libjava_ld_library_path
     global ld_library_path
 
-    set ld_library_path .
+    set ld_library_path "$libjava_ld_library_path"
     if {[llength $ld_library_additions] > 0} {
 	append ld_library_path :[join $ld_library_additions :]
     }
