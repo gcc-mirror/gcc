@@ -742,6 +742,8 @@ char *lang_options[] =
   "-Wno-traditional",
   "-Wtrigraphs",
   "-Wno-trigraphs",
+  "-Wundef",
+  "-Wno-undef",
   "-Wwrite-strings",
   "-Wno-write-strings",
 
