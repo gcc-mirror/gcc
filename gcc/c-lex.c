@@ -820,17 +820,6 @@ linenum:
     c = GETC();
   return c;
 }
-
-void
-lang_init ()
-{
-#if !USE_CPPLIB
-  /* the beginning of the file is a new line; check for # */
-  /* With luck, we discover the real source file's name from that
-     and put it in input_filename.  */
-  UNGETC (check_newline ());
-#endif
-}
 
 #ifdef HANDLE_SYSV_PRAGMA
 
