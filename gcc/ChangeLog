@@ -1,3 +1,35 @@
+2004-10-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.md (spe_extendsfdf2): New.
+	(movdf_e500_double): New.
+	(spe_truncdfsf2): New.
+	(spe_absdf2): New.
+	(spe_nabsdf2): New.
+	(spe_negdf2): New.
+	(sub_adddf3): New.
+	(spe_subdf3): New.
+	(spe_muldf3): New.
+	(spe_floatsidf2): New.
+	(spe_floatunssidf2): New.
+	(fix_truncdfsi2): New.
+	(spe_fixuns_truncdfsi2): New.
+
+	* config/rs6000/rs6000.md (truncdfsf2): Change to expander.
+	(fpr_truncdfsf2): New.
+	(negdf2): Change to expander.
+	(fpr_negdf2): New.
+	(fpr_nabsdf2): Name pattern.
+	(adddf3): Change to expander.
+	(fpr_adddf3): Nem.
+	(subdf3): Change to expander.
+	(fpr_subdf3): New.
+	(muldf3): Change to expander.
+	(fpr_muldf3): New.
+	(divdf3): Change to expander.
+	(fpr_divdf3): New.
+	(movdf_softfloat32): Change !TARGET_FPRS to TARGET_E500_SINGLE.
+	(cmpdf): Allow for TARGET_E500_DOUBLE.
+
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-semantics.c (re_push_stmt_list): Remove.
