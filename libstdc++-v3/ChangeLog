@@ -1,5 +1,10 @@
 2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/ctype/is/char/3.cc (test03): Use the classic
+	locale to construct this hybrid locale, not the global locale.
+
+2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc: Add
 	instantiation for AIX.
 	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
