@@ -1,6 +1,6 @@
 2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* call.c (java_iface_lookup_fn): Fix local declarations.
+	* call.c (build_java_interface_fn_ref): Fix local declarations.
 
 2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
