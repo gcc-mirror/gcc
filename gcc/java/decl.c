@@ -1371,7 +1371,6 @@ insert_block (block)
      tree block;
 {
   TREE_USED (block) = 1;
-  abort ();
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
 }
