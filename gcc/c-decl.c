@@ -2964,6 +2964,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 
   decl = grokdeclarator (declarator, declspecs,
 			 NORMAL, initialized, NULL);
+  if (!decl)
+    return 0;
 
   deprecated_state = DEPRECATED_NORMAL;
 
@@ -4437,14 +4439,9 @@ grokdeclarator (const struct c_declarator *declarator,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
-	decl = build_decl_attribute_variant (decl, decl_attr);
-
 	if (storage_class == csc_register || threadp)
 	  {
 	    error ("invalid storage class for function %qs", name);
-	    if (DECL_INITIAL (decl) != NULL_TREE)
-	      DECL_INITIAL (decl) = error_mark_node;
 	   }
 	else if (current_scope != file_scope)
 	  {
@@ -4458,13 +4455,18 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (pedantic)
 		  pedwarn ("invalid storage class for function %qs", name);
 	      }
-	    if (storage_class == csc_static)
+	    else if (storage_class == csc_static)
 	      {
 	        error ("invalid storage class for function %qs", name);
-		if (DECL_INITIAL (decl) != NULL_TREE)
-		  DECL_INITIAL (decl) = error_mark_node;
+	        if (funcdef_flag)
+		  storage_class = declspecs->storage_class = csc_none;
+		else
+		  return 0;
 	      }
 	  }
+
+	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
+	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
 

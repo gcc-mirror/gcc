@@ -1,3 +1,12 @@
+2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c/18596
+	* gcc.dg/funcdef-storage-1.c (foo): Remove.
+	* gcc.dg/pr18596-1.c: Use dg-error.
+	(dg-options): Use -fno-unit-at-a-time.
+	* gcc.dg/pr18596-2.c: New test.
+	* gcc.dg/pr18596-3.c: New test.
+	
 2004-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18683
