@@ -1,7 +1,0 @@
-# Don't run fixproto
-STMP_FIXPROTO =
-
-# We don't need GCC's own include files but we do need lang specific ones.
-USER_H = ${LANG_EXTRA_HEADERS}
-INSTALL_ASSERT_H =
-
