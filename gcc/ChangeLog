@@ -1,3 +1,8 @@
+2001-11-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (negdf2, negsf2): Use multiplication rather than subtraction
+	to implement floating negation on processors prior to PA 2.0.
+
 2001-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2asm.c (mark_indirect_pool_entry, mark_indirect_pool): New.
