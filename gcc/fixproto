@@ -56,7 +56,6 @@
 progname=$0
 progname=`basename $progname`
 original_dir=`pwd`
-CPP=${CPP-./cpp}
 FIX_HEADER=${FIX_HEADER-$original_dir/fix-header}
 DEFINES="-D__STDC__=0 -D__cplusplus ${FIXPROTO_DEFINES}"
 
@@ -243,92 +242,10 @@ for code in ALL STD ; do
 	  && grep "$rel_source_file" fixproto.list >/dev/null
 	then true
 	else
-	  # echo doing $rel_source_file from $abs_source_dir
-	  required_list=
-	  extra_check_list=
-	  case $rel_source_file in
-	    ctype.h)
-	      required_list="isalnum isalpha iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit tolower toupper" ;;
-	    dirent.h)
-	      required_list="closedir opendir readdir rewinddir" ;;
-	    errno.h)
-	      extra_check_list="errno" ;;
-	    curses.h)
-	      required_list="box delwin endwin getcurx getcury initscr mvcur mvwprintw mvwscanw newwin overlay overwrite scroll subwin touchwin waddstr wclear wclrtobot wclrtoeol waddch wdelch wdeleteln werase wgetch wgetstr winsch winsertln wmove wprintw wrefresh wscanw wstandend wstandout" ;;
-	    fcntl.h)
-	      required_list="creat fcntl open" ;;
-	    grp.h)
-	      #Maybe also "getgrent fgetgrent setgrent endgrent" */
-	      required_list="getgrgid getgrnam" ;;
-	    limit.h)
-	      required_list= /* Lots of macros */ ;;
-	    locale.h)
-	      required_list="localeconv setlocale" ;;
-	    math.h)
-	      required_list="acos asin atan atan2 ceil cos cosh exp fabs floor fmod frexp ldexp log10 log modf pow sin sinh sqrt tan tanh"
-	      extra_check_list="HUGE_VAL" ;;
-	    pwd.h)
-	      required_list="getpwnam getpwuid" ;;
-	    setjmp.h)
-	      # Left out siglongjmp sigsetjmp - these depend on sigjmp_buf.
-	      required_list="longjmp setjmp" ;;
-	    signal.h)
-	      # Left out signal() - its prototype is too complex for us!
-	      # Also left out "sigaction sigaddset sigdelset sigemptyset
-	      # sigfillset sigismember sigpending sigprocmask sigsuspend"
-	      # because these need sigset_t or struct sigaction.
-	      # Most systems that provide them will also declare them.
-	      required_list="kill raise" ;;
-	    stdio.h)
-	      required_list="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets pclose perror popen printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf vprintf vsprintf vfprintf tmpfile tmpnam ungetc"
-	      if grep '[^_a-zA-Z0-9]_flsbuf' <$abs_source_file >/dev/null; then
-		required_list="$required_list _flsbuf _filbuf"
-	      fi
-	      # Should perhaps also handle NULL, EOF, ... ?
-	      ;;
-	    stdlib.h)
-	      required_list="$required_stdlib_h" ;;
-	    string.h)
-	      required_list="memchr memcmp memcpy memmove memset strcat strchr strcmp strcoll strcpy strcspn strerror strlen strncat strncmp strncpy strpbrk strrchr strspn strstr strtok strxfrm" ;;
-# Should perhaps also add NULL and size_t
-	    sys/stat.h)
-	      required_list="chmod fstat mkdir mkfifo stat lstat umask"
-	      extra_check_list="S_ISDIR S_ISBLK S_ISCHR S_ISFIFO S_ISREG S_ISLNK S_IFDIR S_IFBLK S_IFCHR S_IFIFO S_IFREG S_IFLNK" ;;
-	    sys/times.h)
-	      required_list="times" ;;
-# "sys/types.h" add types (not in old g++-include)
-	    sys/utsname.h)
-	      required_list="uname" ;;
-	    sys/wait.h)
-	      required_list="wait waitpid"
-	      extra_check_list="WEXITSTATUS WIFEXITED WIFSIGNALED WIFSTOPPED WSTOPSIG WTERMSIG WNOHANG WNOTRACED" ;;
-	    tar.h)
-	      required_list=  ;;
-	    termios.h)
-	      required_list="cfgetispeed cfgetospeed cfsetispeed cfsetospeed tcdrain tcflow tcflush tcgetattr tcsendbreak tcsetattr" ;;
-	    time.h)
-	      required_list="asctime clock ctime difftime gmtime localtime mktime strftime time tzset" ;;
-	    unistd.h)
-	      required_list="$required_unistd_h" ;;
-	  esac
-	  rm -f fixtmp.c fixtmp.i
-	  echo "#include <${rel_source_file}>" >fixtmp.c
-	  for macro in ${required_list} ${extra_check_list}
-	  do
-	    echo "#ifdef ${macro}" >>fixtmp.c
-	    echo "__DEFINED_MACRO_${macro};" >>fixtmp.c
-	    echo "#endif" >>fixtmp.c
-	  done
-	  if ${CPP} ${DEFINES} $include_path fixtmp.c >fixtmp.i 2>/dev/null
-	  then
-	   $FIX_HEADER $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
-	  else
-	    echo "${progname}: cpp could not parse ${abs_source_file} (ignored)"
-	  fi
+	  $FIX_HEADER $rel_source_file $abs_source_file $abs_target_file ${DEFINES} $include_path
 	  echo "${rel_source_file}" >>fixproto.list
 	fi
       done
-      rm -f fixtmp.c fixtmp.i
     done
     done_dirs="$done_dir $rel_source_dir"
 done
@@ -348,7 +265,7 @@ do
 #define ${rel_source_ident}
 #endif
 EOF
-    ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
+    ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file ${DEFINES} $include_path
     rm tmp.h
   fi
 done

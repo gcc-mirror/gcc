@@ -1736,9 +1736,9 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
 
-gen-protos: gen-protos.o scan.o $(HOST_LIBDEPS)
+gen-protos: gen-protos.o scan.o cppalloc.o $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
-	  gen-protos.o scan.o $(HOST_LIBS)
+	  gen-protos.o scan.o cppalloc.o $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
@@ -1755,9 +1755,9 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	mv xsys-protos.hT xsys-protos.h
 	rm -rf fixtmp.c
 
-fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS)
+fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o version.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o fix-header \
-	  fix-header.o scan-decls.o scan.o $(HOST_LIBS)
+	  fix-header.o scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o version.o cppexp.o $(HOST_LIBS)
 
 fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
@@ -1785,9 +1785,8 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	-if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
-	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
-	    FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
-	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
+	  FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
+	  $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
 	  touch include/fixed; \
 	fi
 	touch stmp-fixproto
