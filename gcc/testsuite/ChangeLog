@@ -1,3 +1,9 @@
+1999-11-02  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcc.dg/ultrasp1.c: Removed xfail.
+	* gcc.dg/struct-ret-2.c: Likewise.
+	* gcc.dg/array-1.c: Likewise.
+
 1999-11-01  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/struct-ret-2.c: New test.
