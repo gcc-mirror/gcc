@@ -1,3 +1,8 @@
+2004-09-02  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc (arm*-*-eabi* | arm*-*-symbianelf*): Set
+	default_use_cxa_atexit=yes.
+
 2004-09-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h: Don't include signal.h or sys/ucontext.h.
