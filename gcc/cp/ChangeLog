@@ -1,3 +1,15 @@
+2001-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3416
+	* call.c (build_conditional_expr): Recheck args after
+	conversions.
+	* cp-tree.h (build_conditional_expr): Move to correct file.
+	* typeck.c (decay_conversion): Diagnose any unknown types
+	reaching here.
+	(build_binary_op): Don't do initial decay or default
+	conversions on overloaded functions.
+	(build_static_cast): Don't do a decay conversion here.
+
 2001-07-25  Jason Merrill  <jason_merrill@redhat.com>
 
 	PR c++/3529

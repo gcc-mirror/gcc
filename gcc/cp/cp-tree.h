@@ -3715,6 +3715,7 @@ extern int get_arglist_len_in_bytes		PARAMS ((tree));
 
 extern tree build_vfield_ref			PARAMS ((tree, tree));
 extern tree build_scoped_method_call		PARAMS ((tree, tree, tree, tree));
+extern tree build_conditional_expr		PARAMS ((tree, tree, tree));
 extern tree build_addr_func			PARAMS ((tree));
 extern tree build_call				PARAMS ((tree, tree));
 extern tree build_method_call			PARAMS ((tree, tree, tree, tree, int));
@@ -4499,7 +4500,6 @@ extern tree build_x_unary_op			PARAMS ((enum tree_code, tree));
 extern tree unary_complex_lvalue		PARAMS ((enum tree_code, tree));
 extern int mark_addressable			PARAMS ((tree));
 extern tree build_x_conditional_expr		PARAMS ((tree, tree, tree));
-extern tree build_conditional_expr		PARAMS ((tree, tree, tree));
 extern tree build_x_compound_expr		PARAMS ((tree));
 extern tree build_compound_expr			PARAMS ((tree));
 extern tree build_static_cast			PARAMS ((tree, tree));

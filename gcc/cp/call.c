@@ -3082,6 +3082,9 @@ build_conditional_expr (arg1, arg2, arg3)
     arg3 = decay_conversion (arg3);
   arg3_type = TREE_TYPE (arg3);
 
+  if (arg2 == error_mark_node || arg3 == error_mark_node)
+    return error_mark_node;
+  
   /* [expr.cond]
      
      After those conversions, one of the following shall hold:
