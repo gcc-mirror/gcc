@@ -3359,11 +3359,19 @@ tree
 groktypename (typename)
      tree typename;
 {
+  tree specs, attrs;
+
   if (TREE_CODE (typename) != TREE_LIST)
     return typename;
-  return grokdeclarator (TREE_VALUE (typename),
-			 TREE_PURPOSE (typename),
-			 TYPENAME, 0);
+
+  split_specs_attrs (TREE_PURPOSE (typename), &specs, &attrs);
+
+  typename = grokdeclarator (TREE_VALUE (typename), specs, TYPENAME, 0);
+
+  /* Apply attributes.  */
+  decl_attributes (&typename, attrs, 0);
+
+  return typename;
 }
 
 /* Return a PARM_DECL node for a given pair of specs and declarator.  */

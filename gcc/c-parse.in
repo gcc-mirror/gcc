@@ -669,6 +669,7 @@ primary:
 		{ $$ = build_function_call ($1, $3); }
 	| VA_ARG '(' expr_no_commas ',' typename ')'
 		{ $$ = build_va_arg ($3, groktypename ($5)); }
+
       | CHOOSE_EXPR '(' expr_no_commas ',' expr_no_commas ',' expr_no_commas ')'
 		{
                   tree c;
@@ -1906,13 +1907,8 @@ enumerator:
 
 typename:
 	  declspecs_nosc
-		{ tree specs, attrs;
-		  pending_xref_error ();
-		  split_specs_attrs ($1, &specs, &attrs);
-		  /* We don't yet support attributes here.  */
-		  if (attrs != NULL_TREE)
-		    warning ("attributes on type name ignored");
-		  $<ttype>$ = specs; }
+		{ pending_xref_error ();
+		  $<ttype>$ = $1; }
 	  absdcl
 		{ $$ = build_tree_list ($<ttype>2, $3); }
 	;
