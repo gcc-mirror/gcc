@@ -1,3 +1,9 @@
+2004-07-06  Anssi Hannula  <anssi.hannula@mbnet.fi>
+
+	PR libstdc++/15928
+	* crossconfig.m4: Add in bits for djgpp.
+	* configure: Regenerate.
+	
 2004-07-05  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* testsuite/23_containers/{set,multiset}/14340.cc: Fix typos in
