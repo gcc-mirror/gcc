@@ -1,7 +1,6 @@
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* call.c (build_scoped_method_call): Fix thinko.
-	(build_method_call): Likewise.
+	* call.c (build_method_call): Fix thinko.
 
 1998-06-10  Dave Brolley  <brolley@cygnus.com>
 
