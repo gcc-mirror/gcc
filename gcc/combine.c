@@ -6833,15 +6833,13 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
     mask &= GET_MODE_MASK (op_mode);
 
   /* When we have an arithmetic operation, or a shift whose count we
-     do not know, we need to assume that all bit the up to the highest-order
+     do not know, we need to assume that all bits up to the highest-order
      bit in MASK will be needed.  This is how we form such a mask.  */
-  if (op_mode)
-    fuller_mask = (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT
-		   ? GET_MODE_MASK (op_mode)
-		   : (((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1))
-		      - 1));
+  if (mask & ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+    fuller_mask = ~(unsigned HOST_WIDE_INT) 0;
   else
-    fuller_mask = ~(HOST_WIDE_INT) 0;
+    fuller_mask = (((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1))
+		   - 1);
 
   /* Determine what bits of X are guaranteed to be (non)zero.  */
   nonzero = nonzero_bits (x, mode);
