@@ -268,6 +268,12 @@ struct propagate_block_info
   /* Bit N is set if register N is conditionally or unconditionally live.  */
   regset reg_live;
 
+  /* Bit N is set if register N is unconditionally dead this insn.  */
+  regset new_dead;
+
+  /* Bit N is set if register N is live this insn.  */
+  regset new_live;
+
   /* Element N is the next insn that uses (hard or pseudo) register N
      within the current basic block; or zero, if there is no such insn.  */
   rtx *reg_next_use;
@@ -335,12 +341,11 @@ static int insn_dead_p			PARAMS ((struct propagate_block_info *,
 static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx, rtx));
 static void mark_set_regs		PARAMS ((struct propagate_block_info *,
-						 regset, rtx, rtx));
+						 rtx, rtx));
 static void mark_set_1			PARAMS ((struct propagate_block_info *,
-						 regset, rtx, rtx, rtx));
+						 rtx, rtx, rtx));
 static int mark_set_reg			PARAMS ((struct propagate_block_info *,
-						 regset, rtx, rtx,
-						 int *, int *));
+						 rtx, rtx, int *, int *));
 #ifdef AUTO_INC_DEC
 static void find_auto_inc		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx));
@@ -349,9 +354,9 @@ static int try_pre_increment_1		PARAMS ((struct propagate_block_info *,
 static int try_pre_increment		PARAMS ((rtx, rtx, HOST_WIDE_INT));
 #endif
 static void mark_used_reg		PARAMS ((struct propagate_block_info *,
-						 regset, rtx, rtx, rtx));
+						 rtx, rtx, rtx));
 static void mark_used_regs		PARAMS ((struct propagate_block_info *,
-						 regset, rtx, rtx, rtx));
+						 rtx, rtx, rtx));
 void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
 static void dump_edge_info		PARAMS ((FILE *, edge, int));
@@ -3313,8 +3318,7 @@ propagate_block (bb, live, local_set, flags)
 {
   struct propagate_block_info pbi;
   rtx insn, prev;
-  regset_head tmp_head;
-  regset tmp;
+  regset_head new_live_head, new_dead_head;
   
   pbi.bb = bb;
   pbi.reg_live = live;
@@ -3328,7 +3332,8 @@ propagate_block (bb, live, local_set, flags)
   else
     pbi.reg_next_use = NULL;
 
-  tmp = INITIALIZE_REG_SET (tmp_head);
+  pbi.new_live = INITIALIZE_REG_SET (new_live_head);
+  pbi.new_dead = INITIALIZE_REG_SET (new_dead_head);
 
   if (flags & PROP_REG_INFO)
     {
@@ -3443,7 +3448,8 @@ propagate_block (bb, live, local_set, flags)
 	  }
 #endif /* AUTO_INC_DEC */
 
-	  CLEAR_REG_SET (tmp);
+	  CLEAR_REG_SET (pbi.new_live);
+	  CLEAR_REG_SET (pbi.new_dead);
 
 	  /* If this is not the final pass, and this insn is copying the
 	     value of a library call and it's dead, don't scan the
@@ -3452,8 +3458,7 @@ propagate_block (bb, live, local_set, flags)
 	  if (libcall_is_dead)
 	    {
 	      /* Record the death of the dest reg.  */
-	      mark_set_regs (&pbi, tmp, PATTERN (insn), insn);
-	      AND_COMPL_REG_SET (pbi.reg_live, tmp);
+	      mark_set_regs (&pbi, PATTERN (insn), insn);
 
 	      insn = XEXP (note, 0);
 	      prev = PREV_INSN (insn);
@@ -3482,48 +3487,7 @@ propagate_block (bb, live, local_set, flags)
 	      /* Record sets.  Do this even for dead instructions,
 		 since they would have killed the values if they hadn't
 		 been deleted.  */
-	      mark_set_regs (&pbi, tmp, PATTERN (insn), insn);
-
-	      /* Each call clobbers all call-clobbered regs that are not
-		 global or fixed.  Note that the function-value reg is a
-		 call-clobbered reg, and mark_set_regs has already had
-		 a chance to handle it.  */
-	      if (GET_CODE (insn) == CALL_INSN)
-		{
-		  register int i;
-		  rtx cond;
-
-		  cond = NULL_RTX;
-		  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
-		    cond = COND_EXEC_TEST (PATTERN (insn));
-
-		  /* Non-constant calls clobber memory.  */
-		  if (! CONST_CALL_P (insn))
-		    free_EXPR_LIST_list (&pbi.mem_set_list);
-
-		  /* There may be extra registers to be clobbered.  */
-	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
-		       note;
-		       note = XEXP (note, 1))
-		    if (GET_CODE (XEXP (note, 0)) == CLOBBER)
-		      mark_set_1 (&pbi, tmp, XEXP (XEXP (note, 0), 0),
-				  cond, insn);
-
-		  /* Calls change all call-used and global registers.  */
-		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (call_used_regs[i] && ! global_regs[i]
-			&& ! fixed_regs[i])
-		      {
-			int dummy;
-		        mark_set_reg (&pbi, tmp,
-				      gen_rtx_REG (reg_raw_mode[i], i),
-				      cond, &dummy, &dummy);
-		      }
-		}
-
-	      /* Update live for the registers killed.  */
-	      AND_COMPL_REG_SET (pbi.reg_live, tmp);
-	      CLEAR_REG_SET (tmp);
+	      mark_set_regs (&pbi, PATTERN (insn), insn);
 
 	      /* If an insn doesn't use CC0, it becomes dead since we 
 		 assume that every insn clobbers it.  So show it dead here;
@@ -3532,7 +3496,7 @@ propagate_block (bb, live, local_set, flags)
 
 	      /* Record uses.  */
 	      if (! insn_is_dead)
-		mark_used_regs (&pbi, tmp, PATTERN (insn), NULL_RTX, insn);
+		mark_used_regs (&pbi, PATTERN (insn), NULL_RTX, insn);
 
 	      /* Sometimes we may have inserted something before INSN
 		 (such as a move) when we make an auto-inc.  So ensure
@@ -3550,28 +3514,51 @@ propagate_block (bb, live, local_set, flags)
 		  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
 		    cond = COND_EXEC_TEST (PATTERN (insn));
 
+		  /* Non-constant calls clobber memory.  */
+		  if (! CONST_CALL_P (insn))
+		    free_EXPR_LIST_list (&pbi.mem_set_list);
+
+		  /* There may be extra registers to be clobbered.  */
+	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
+		       note;
+		       note = XEXP (note, 1))
+		    if (GET_CODE (XEXP (note, 0)) == CLOBBER)
+		      mark_set_1 (&pbi, XEXP (XEXP (note, 0), 0),
+				  cond, insn);
+
+		  /* Calls change all call-used and global registers.  */
+		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		    if (call_used_regs[i] && ! global_regs[i]
+			&& ! fixed_regs[i])
+		      {
+			int dummy;
+		        mark_set_reg (&pbi, gen_rtx_REG (reg_raw_mode[i], i),
+				      cond, &dummy, &dummy);
+		      }
+
+		  /* Calls use their arguments.  */
 	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
 		       note;
 		       note = XEXP (note, 1))
 		    if (GET_CODE (XEXP (note, 0)) == USE)
-		      mark_used_regs (&pbi, tmp, XEXP (XEXP (note, 0), 0),
+		      mark_used_regs (&pbi, XEXP (XEXP (note, 0), 0),
 				      cond, insn);
 
 		  /* The stack ptr is used (honorarily) by a CALL insn.  */
-		  SET_REGNO_REG_SET (tmp, STACK_POINTER_REGNUM);
+		  SET_REGNO_REG_SET (pbi.new_live, STACK_POINTER_REGNUM);
 
 		  /* Calls may also reference any of the global registers,
 		     so they are made live.  */
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (global_regs[i])
-		      mark_used_reg (&pbi, tmp,
-				     gen_rtx_REG (reg_raw_mode[i], i),
+		      mark_used_reg (&pbi, gen_rtx_REG (reg_raw_mode[i], i),
 				     cond, insn);
 		}
-
-	      /* Update live for the registers used.  */
-	      IOR_REG_SET (pbi.reg_live, tmp);
 	    }
+
+	  /* Update reg_live for the registers killed and used.  */
+	  AND_COMPL_REG_SET (pbi.reg_live, pbi.new_dead);
+	  IOR_REG_SET (pbi.reg_live, pbi.new_live);
 
 	  /* On final pass, update counts of how many insns in which
 	     each reg is live.  */
@@ -3584,7 +3571,8 @@ propagate_block (bb, live, local_set, flags)
 	break;
     }
 
-  FREE_REG_SET (tmp);
+  FREE_REG_SET (pbi.new_live);
+  FREE_REG_SET (pbi.new_dead);
   free_EXPR_LIST_list (&pbi.mem_set_list);
 
   if (pbi.reg_next_use)
@@ -3905,9 +3893,8 @@ invalidate_mems_from_autoinc (pbi, insn)
    FLAGS is the set of operations to perform.  */
 
 static void
-mark_set_regs (pbi, new_dead, x, insn)
+mark_set_regs (pbi, x, insn)
      struct propagate_block_info *pbi;
-     regset new_dead;
      rtx x, insn;
 {
   rtx cond = NULL_RTX;
@@ -3917,7 +3904,7 @@ mark_set_regs (pbi, new_dead, x, insn)
     {
     case SET:
     case CLOBBER:
-      mark_set_1 (pbi, new_dead, SET_DEST (x), cond, insn);
+      mark_set_1 (pbi, SET_DEST (x), cond, insn);
       return;
 
     case COND_EXEC:
@@ -3945,7 +3932,7 @@ mark_set_regs (pbi, new_dead, x, insn)
 
 	      case SET:
 	      case CLOBBER:
-		mark_set_1 (pbi, new_dead, SET_DEST (sub), cond, insn);
+		mark_set_1 (pbi, SET_DEST (sub), cond, insn);
 		break;
 
 	      default:
@@ -3963,9 +3950,8 @@ mark_set_regs (pbi, new_dead, x, insn)
 /* Process a single SET rtx, X.  */
 
 static void
-mark_set_1 (pbi, new_dead, reg, cond, insn)
+mark_set_1 (pbi, reg, cond, insn)
      struct propagate_block_info *pbi;
-     regset new_dead;
      rtx reg, cond, insn;
 {
   register int regno = -1;
@@ -3980,21 +3966,25 @@ mark_set_1 (pbi, new_dead, reg, cond, insn)
       register int i;
 
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	mark_set_1 (pbi, new_dead, XVECEXP (reg, 0, i), cond, insn);
+	mark_set_1 (pbi, XVECEXP (reg, 0, i), cond, insn);
       return;
     }
 
-  /* Modifying just one hardware register of a multi-reg value
-     or just a byte field of a register
-     does not mean the value from before this insn is now dead.
-     But it does mean liveness of that register at the end of the block
-     is significant.
+  /* Modifying just one hardware register of a multi-reg value or just a
+     byte field of a register does not mean the value from before this insn
+     is now dead.  But it does mean liveness of that register at the end of
+     the block is significant.
 
-     Within mark_set_1, however, we treat it as if the register is
-     indeed modified.  mark_used_regs will, however, also treat this
-     register as being used.  Thus, we treat these insns as setting a
-     new value for the register as a function of its old value.  This
-     cases LOG_LINKS to be made appropriately and this will help combine.  */
+     Within mark_set_1, however, we treat it as if the register is indeed
+     modified.  mark_used_regs will, however, also treat this register as
+     being used.  Thus, we treat these insns as setting a new value for the
+     register as a function of its old value.  This cases LOG_LINKS to be
+     made appropriately and this will help combine. 
+
+     ??? This is all done incorrectly.  We should not be setting bits in
+     new_dead for these registers, since, as we just explained, they are
+     not dead.  We should be setting bits in local_set, and updating
+     LOG_LINKS, but that is different.  */
 
   while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
 	 || GET_CODE (reg) == SIGN_EXTRACT
@@ -4065,8 +4055,7 @@ mark_set_1 (pbi, new_dead, reg, cond, insn)
       int some_was_live, some_was_dead;
 
       /* Perform the pbi datastructure update.  */
-      if (! mark_set_reg (pbi, new_dead, reg, cond,
-			  &some_was_live, &some_was_dead))
+      if (! mark_set_reg (pbi, reg, cond, &some_was_live, &some_was_dead))
 	return;
 
       /* Additional data to record if this is the final pass.  */
@@ -4210,9 +4199,8 @@ mark_set_1 (pbi, new_dead, reg, cond, insn)
    Return true if REG is now unconditionally dead.  */
 
 static int
-mark_set_reg (pbi, new_dead, reg, cond, p_some_was_live, p_some_was_dead)
+mark_set_reg (pbi, reg, cond, p_some_was_live, p_some_was_dead)
      struct propagate_block_info *pbi;
-     regset new_dead;
      rtx reg;
      rtx cond ATTRIBUTE_UNUSED;
      int *p_some_was_live, *p_some_was_dead;
@@ -4252,12 +4240,12 @@ mark_set_reg (pbi, new_dead, reg, cond, p_some_was_live, p_some_was_dead)
     return 0;
 
   /* Mark it as dead before this insn.  */
-  SET_REGNO_REG_SET (new_dead, regno);
+  SET_REGNO_REG_SET (pbi->new_dead, regno);
   if (regno < FIRST_PSEUDO_REGISTER)
     {
       int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
       while (--n > 0)
-	SET_REGNO_REG_SET (new_dead, regno + n);
+	SET_REGNO_REG_SET (pbi->new_dead, regno + n);
     }
 
   /* Unconditionally dead.  */
@@ -4444,9 +4432,8 @@ find_auto_inc (pbi, x, insn)
 #endif /* AUTO_INC_DEC */
 
 static void
-mark_used_reg (pbi, new_live, reg, cond, insn)
+mark_used_reg (pbi, reg, cond, insn)
      struct propagate_block_info *pbi;
-     regset new_live;
      rtx reg;
      rtx cond ATTRIBUTE_UNUSED;
      rtx insn;
@@ -4455,7 +4442,7 @@ mark_used_reg (pbi, new_live, reg, cond, insn)
   int some_was_live = REGNO_REG_SET_P (pbi->reg_live, regno);
   int some_was_dead = ! some_was_live;
 
-  SET_REGNO_REG_SET (new_live, regno);
+  SET_REGNO_REG_SET (pbi->new_live, regno);
 
   /* A hard reg in a wide mode may really be multiple registers.
      If so, mark all of them just like the first.  */
@@ -4467,7 +4454,7 @@ mark_used_reg (pbi, new_live, reg, cond, insn)
 	  int regno_n = regno + n;
 	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, regno_n);
 
-	  SET_REGNO_REG_SET (new_live, regno_n);
+	  SET_REGNO_REG_SET (pbi->new_live, regno_n);
 	  some_was_live |= needed_regno;
 	  some_was_dead |= ! needed_regno;
 	}
@@ -4520,17 +4507,24 @@ mark_used_reg (pbi, new_live, reg, cond, insn)
 
   /* Record and count the insns in which a reg dies.  If it is used in
      this insn and was dead below the insn then it dies in this insn.
-
      If it was set in this insn, we do not make a REG_DEAD note;
-     likewise if we already made such a note.  Recall that dead_or_set_p
-     checks for complete overlap, and thus is not suitable for the first
-     case.  But it does handle the existing note case.  Also recall that
-     reg_set_p, when presented with the complete insn, will try to infer
-     things about a call_insn that we do not wish.  */
+     likewise if we already made such a note. 
+
+     ??? This could be done better.  In new_dead we have a record of 
+     which registers are set or clobbered this insn (which in itself is
+     slightly incorrect, see the commentary near strict_low_part in
+     mark_set_1), which should be the set of registers that we do not
+     wish to create death notes for under the above rule.  Note that
+     we have not yet processed the call-clobbered/call-used registers,
+     and they do not quite follow the above rule, since we do want death
+     notes for call-clobbered register arguments.  Which begs the whole
+     question of whether we should in fact have death notes for registers
+     used and clobbered (but not set) in the same insn.  The only useful
+     thing we ought to be getting from dead_or_set_p is detection of
+     duplicate death notes.  */
 
   if ((pbi->flags & PROP_DEATH_NOTES)
       && some_was_dead
-      && ! reg_set_p (reg, PATTERN (insn))
       && ! dead_or_set_p (insn, reg))
     {
       int n;
@@ -4578,9 +4572,8 @@ mark_used_reg (pbi, new_live, reg, cond, insn)
    is not called.  */
 
 static void
-mark_used_regs (pbi, new_live, x, cond, insn)
+mark_used_regs (pbi, x, cond, insn)
      struct propagate_block_info *pbi;
-     regset new_live;
      rtx x, cond, insn;
 {
   register RTX_CODE code;
@@ -4611,7 +4604,7 @@ mark_used_regs (pbi, new_live, x, cond, insn)
       /* If we are clobbering a MEM, mark any registers inside the address
 	 as being used.  */
       if (GET_CODE (XEXP (x, 0)) == MEM)
-	mark_used_regs (pbi, new_live, XEXP (XEXP (x, 0), 0), cond, insn);
+	mark_used_regs (pbi, XEXP (XEXP (x, 0), 0), cond, insn);
       return;
 
     case MEM:
@@ -4676,7 +4669,7 @@ mark_used_regs (pbi, new_live, x, cond, insn)
 
     case REG:
       /* See a register other than being set => mark it as needed.  */
-      mark_used_reg (pbi, new_live, x, cond, insn);
+      mark_used_reg (pbi, x, cond, insn);
       return;
 
     case SET:
@@ -4692,8 +4685,8 @@ mark_used_regs (pbi, new_live, x, cond, insn)
 	    if (flags & PROP_AUTOINC)
 	      find_auto_inc (pbi, testreg, insn);
 #endif
-	    mark_used_regs (pbi, new_live, XEXP (testreg, 0), cond, insn);
-	    mark_used_regs (pbi, new_live, SET_SRC (x), cond, insn);
+	    mark_used_regs (pbi, XEXP (testreg, 0), cond, insn);
+	    mark_used_regs (pbi, SET_SRC (x), cond, insn);
 	    return;
 	  }
 	    
@@ -4745,12 +4738,10 @@ mark_used_regs (pbi, new_live, x, cond, insn)
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
 		))
-	  /* We used to exclude global_regs here, but that seems wrong.
-	     Storing in them is like storing in mem.  */
 	  {
-	    mark_used_regs (pbi, new_live, SET_SRC (x), cond, insn);
 	    if (mark_dest)
-	      mark_used_regs (pbi, new_live, SET_DEST (x), cond, insn);
+	      mark_used_regs (pbi, SET_DEST (x), cond, insn);
+	    mark_used_regs (pbi, SET_SRC (x), cond, insn);
 	    return;
 	  }
       }
@@ -4787,8 +4778,7 @@ mark_used_regs (pbi, new_live, x, cond, insn)
 	    int j;
 
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
-	      mark_used_regs (pbi, new_live, ASM_OPERANDS_INPUT (x, j),
-			      cond, insn);
+	      mark_used_regs (pbi, ASM_OPERANDS_INPUT (x, j), cond, insn);
 	  }
 	break;
       }
@@ -4797,7 +4787,7 @@ mark_used_regs (pbi, new_live, x, cond, insn)
       if (cond != NULL_RTX)
 	abort ();
 
-      mark_used_regs (pbi, new_live, COND_EXEC_TEST (x), NULL_RTX, insn);
+      mark_used_regs (pbi, COND_EXEC_TEST (x), NULL_RTX, insn);
 
       cond = COND_EXEC_TEST (x);
       x = COND_EXEC_CODE (x);
@@ -4831,13 +4821,13 @@ mark_used_regs (pbi, new_live, x, cond, insn)
 		x = XEXP (x, 0);
 		goto retry;
 	      }
-	    mark_used_regs (pbi, new_live, XEXP (x, i), cond, insn);
+	    mark_used_regs (pbi, XEXP (x, i), cond, insn);
 	  }
 	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
-	      mark_used_regs (pbi, new_live, XVECEXP (x, i, j), cond, insn);
+	      mark_used_regs (pbi, XVECEXP (x, i, j), cond, insn);
 	  }
       }
   }
