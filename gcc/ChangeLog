@@ -1,3 +1,10 @@
+2003-07-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* config/arm/pe.c (arm_mark_dllimport): Don't use xxx_with_decl.
+	* config/mcore/mcore.c (mcore_mark_dllimport): Likewise.
+	* config/v850/v850.c (v850_handle_data_area_attribute): Likewise.
+	(v850_handle_data_area_attribute): Likewise.
+
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (libbackend.o): Remove options_.h.
