@@ -126,17 +126,20 @@ provide these macros.  Note that this file does not have to include a
 header file that defines @code{off_t}, or the other types; you simply
 have to provide the macros.
 
-In addition, several libstdc++-v3 source files unconditionally define the macro
-@code{_POSIX_SOURCE}.  On many systems, defining this macro causes large
-portions of the C library header files to be eliminated at preprocessing
-time.  Therefore, you may have to @code{#undef} this macro, or define
-other macros (like @code{_LARGEFILE_SOURCE} or @code{__EXTENSIONS__}).
-You won't know what macros to define or undefine at this point; you'll
-have to try compiling the library and seeing what goes wrong.  If you
-see errors about calling functions that have not been declared, look in
-your C library headers to see if the functions are declared there, and
-then figure out what macros you should but in @file{bits/os_defines.h}
-to make these declarations available.
+In addition, several libstdc++-v3 source files unconditionally define
+the macro @code{_POSIX_SOURCE}.  On many systems, defining this macro
+causes large portions of the C library header files to be eliminated
+at preprocessing time.  Therefore, you may have to @code{#undef} this
+macro, or define other macros (like @code{_LARGEFILE_SOURCE} or
+@code{__EXTENSIONS__}).  You won't know what macros to define or
+undefine at this point; you'll have to try compiling the library and
+seeing what goes wrong.  If you see errors about calling functions
+that have not been declared, look in your C library headers to see if
+the functions are declared there, and then figure out what macros you
+need to define.  You will need to add them to the
+@code{CPLUSPLUS_CPP_SPEC} macro in the GCC configuration file for your
+target.  It will not work to simply define these macros in
+@file{os_defines.h}.
 
 Finally, you should bracket the entire file in an include-guard, like
 this:
