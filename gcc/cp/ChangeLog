@@ -1,3 +1,14 @@
+1999-11-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (language_function): Remove x_last_dtor_insn and
+	x_last_parm_cleanup_insn.
+	* decl.c (last_dtor_insn): Remove.
+	(last_parm_cleanup_insn): Likewise.
+	(expand_start_early_try_stmts): Don't set them.
+	(store_parm_decls): Likewise.
+	(save_function_data): Or save them.
+	(mark_lang_function): Or mark them.
+
 1999-11-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (store_parm_decls): Generate cleanup code at
