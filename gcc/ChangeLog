@@ -1,5 +1,8 @@
 Wed Dec 30 23:38:55 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (invalidate_skipped_block): Call invalidate_from_clobbers
+	for each insn in the skipped block.
+
 	* reload1.c (reload_as_needed): Verify that the insn satisfies its
 	constraints after replacing a register address with an autoincrement
 	address for reload inheritance purposes.
