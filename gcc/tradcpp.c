@@ -779,6 +779,10 @@ main (argc, argv)
 	no_standard_includes = 1;
 	break;
 
+      case 'q':
+	/* Accept -quiet silently.  */
+	break;
+
       case '\0': /* JF handle '-' as file name meaning stdin or stdout */
 	if (in_fname == NULL) {
 	  in_fname = "";

@@ -372,6 +372,9 @@ extern void c_mark_lang_decl                    PARAMS ((struct c_lang_decl *));
 
 extern c_language_kind c_language;
 
+/* Nonzero if prepreprocessing only.  */
+extern int flag_preprocess_only;
+
 /* Nonzero means give string constants the type `const char *', rather
    than `char *'.  */
 

@@ -658,11 +658,12 @@ static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
    appropriate -B options.  */
 
 static const char *trad_capable_cpp =
-"%{traditional|ftraditional|traditional-cpp:trad}cpp0";
+"%{traditional|ftraditional|traditional-cpp:tradcpp0}\
+ %{!traditional:%{!ftraditional:%{!traditional-cpp:cc1 -E}}}";
 
 static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
- %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
+ %{!Q:-quiet} %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-M -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{MMD:-MM -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
