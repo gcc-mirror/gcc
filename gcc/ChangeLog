@@ -1,3 +1,13 @@
+2004-10-30  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.h (objc_lookup_ivar): Add second parameter to
+	prototype.
+	* c-typeck.c (build_external_ref): After looking up symbol,
+	pass it to objc_lookup_ivar() to decide whether it or the
+	ivar should be used, rather than deciding the issue locally.
+	* stub-objc.c (objc_lookup_ivar): Add an OTHER parameter,
+	which is simply returned in the non-ObjC case.
+
 2004-10-30  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* sdbout.c (sdbout_symbol): Do not output type .def statements

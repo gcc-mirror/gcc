@@ -46,9 +46,10 @@ objc_is_object_ptr (tree ARG_UNUSED (arg))
 }
 
 tree
-objc_lookup_ivar (tree ARG_UNUSED (arg))
+objc_lookup_ivar (tree other, tree ARG_UNUSED (arg))
 {
-  return 0;
+  /* Just use whatever C/C++ found.  */
+  return other;
 }
 
 void

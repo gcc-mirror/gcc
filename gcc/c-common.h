@@ -905,7 +905,7 @@ extern void objc_check_decl (tree);
 extern int objc_is_reserved_word (tree);
 extern int objc_comptypes (tree, tree, int);
 extern tree objc_message_selector (void);
-extern tree objc_lookup_ivar (tree);
+extern tree objc_lookup_ivar (tree, tree);
 extern void objc_clear_super_receiver (void);
 extern int objc_is_public (tree, tree);
 extern tree objc_is_id (tree);

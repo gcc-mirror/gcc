@@ -1724,24 +1724,13 @@ build_external_ref (tree id, int fun)
 {
   tree ref;
   tree decl = lookup_name (id);
-  tree objc_ivar = objc_lookup_ivar (id);
+
+  /* In Objective-C, an instance variable (ivar) may be preferred to
+     whatever lookup_name() found.  */
+  decl = objc_lookup_ivar (decl, id);
 
   if (decl && decl != error_mark_node)
-    {
-      /* Properly declared variable or function reference.  */
-      if (!objc_ivar)
-	ref = decl;
-      else if (decl != objc_ivar && !DECL_FILE_SCOPE_P (decl))
-	{
-	  warning ("local declaration of %qs hides instance variable",
-		   IDENTIFIER_POINTER (id));
-	  ref = decl;
-	}
-      else
-	ref = objc_ivar;
-    }
-  else if (objc_ivar)
-    ref = objc_ivar;
+    ref = decl;
   else if (fun)
     /* Implicit function declaration.  */
     ref = implicitly_declare (id);

@@ -1,3 +1,11 @@
+2004-10-30  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_lookup_ivar): The new OTHER parameter
+	contains the result of the ID lookup by the C or C++
+	front-end; in class methods, use OTHER if it exists;
+	in instance methods, use OTHER only if it is locally
+	declared.
+
 2004-10-26  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (finish_class): Do not synthesize bogus
