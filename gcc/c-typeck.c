@@ -6603,6 +6603,10 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  expand_expr (build_modify_expr (o[i], NOP_EXPR, TREE_VALUE (tail)),
 		       NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	  free_temp_slots ();
+
+	  /* Restore the original value so that it's correct the next
+	     time we expand this function.  */
+	  TREE_VALUE (tail) = o[i];
 	}
       /* Detect modification of read-only values.
 	 (Otherwise done by build_modify_expr.)  */
