@@ -4052,14 +4052,23 @@ compilation time.
 
 @option{-O} turns on the following optimization flags:
 @gccoptlist{-fdefer-pop @gol
--fmerge-constants @gol
--fthread-jumps @gol
+-fdelayed-branch @gol
+-fguess-branch-probability @gol
+-fcprop-registers @gol
 -floop-optimize @gol
 -fif-conversion @gol
 -fif-conversion2 @gol
--fdelayed-branch @gol
--fguess-branch-probability @gol
--fcprop-registers}
+-ftree-ccp @gol
+-ftree-dce @gol
+-ftree-dom @gol
+-ftree-dse @gol
+-ftree-ter @gol
+-ftree-live_range_split @gol
+-ftree-sra @gol
+-ftree-copyrename @gol
+-ftree-fre @gol
+-ftree-ch @gol
+-fmerge-constants}
 
 @option{-O} also turns on @option{-fomit-frame-pointer} on machines
 where doing so does not interfere with debugging.
@@ -4074,25 +4083,27 @@ and the performance of the generated code.
 
 @option{-O2} turns on all optimization flags specified by @option{-O}.  It
 also turns on the following optimization flags:
-@gccoptlist{-fforce-mem @gol
+@gccoptlist{-fthread-jumps @gol
+-fcrossjumping @gol
 -foptimize-sibling-calls @gol
--fstrength-reduce @gol
 -fcse-follow-jumps  -fcse-skip-blocks @gol
--frerun-cse-after-loop  -frerun-loop-opt @gol
--fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las @gol
--fdelete-null-pointer-checks @gol
+-fgcse  -fgcse-lm  @gol
 -fexpensive-optimizations @gol
--fregmove @gol
+-fstrength-reduce @gol
+-frerun-cse-after-loop  -frerun-loop-opt @gol
+-fcaller-saves @gol
+-fforce-mem @gol
+-fpeephole2 @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsched-interblock  -fsched-spec @gol
--fcaller-saves @gol
--fpeephole2 @gol
--freorder-blocks  -freorder-functions @gol
+-fregmove @gol
 -fstrict-aliasing @gol
+-fdelete-null-pointer-checks @gol
+-freorder-blocks  -freorder-functions @gol
 -funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels @gol
--fcrossjumping}
+-ftree-pre}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -4101,7 +4112,7 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-fweb} and @option{-fgcse-after-reload} options.
+@option{-funswitch-loops} and @option{-fgcse-after-reload} options.
 
 @item -O0
 @opindex O0
@@ -4372,7 +4383,7 @@ so, the first branch is redirected to either the destination of the
 second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps
@@ -4436,7 +4447,7 @@ stores out of loops.  When used in conjunction with @option{-fgcse-lm},
 loops containing a load/store sequence can be changed to a load before
 the loop and a store after the loop.
 
-Enabled by default when gcse is enabled.
+Not enabled at any optimization level.
 
 @item -fgcse-las
 @opindex fgcse-las
@@ -4444,7 +4455,7 @@ When @option{-fgcse-las} is enabled, the global common subexpression
 elimination pass eliminates redundant loads that come after stores to the
 same memory location (both partial and full redundancies).
 
-Enabled by default when gcse is enabled.
+Not enabled at any optimization level.
 
 @item -fgcse-after-reload
 @opindex fgcse-after-reload
@@ -4629,7 +4640,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftree-pre
 Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O2} and @option{-O3}.
 
 @item -ftree-fre
 Perform Full Redundancy Elimination (FRE) on trees.  The difference

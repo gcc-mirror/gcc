@@ -1,3 +1,9 @@
+2005-02-02  Steven Bosscher  <stevenb@suse.de>
+
+	* doc/invoke.texi: Update the options enabled at -O1, -O2,
+	and -O3.  Update the documentation for -fgcse-sm, -fgcse-las,
+	-ftree-pre, and -fthread-jumps.
+
 2005-02-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR tree-optimization/19578
