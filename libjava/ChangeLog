@@ -1,3 +1,12 @@
+2004-05-04  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/security/interfaces/DSAKeyPairGenerator.java,
+	java/security/interfaces/DSAPrivateKey.java,
+	java/security/interfaces/DSAPublicKey.java,
+	java/security/interfaces/RSAPrivateKey.java,
+	java/security/interfaces/RSAPublicKey.java:
+	Cleaned up imports.
+
 2004-05-04  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteBuffer.java,
