@@ -1,3 +1,8 @@
+2001-07-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Configuration): Properly link the host
+	specific instructions also when generating HTML.
+
 2001-07-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* glimits.h (_MACH_MACHLIMITS_H_): Delete.
