@@ -1817,7 +1817,7 @@ do {									    \
    This macro is optional; do not define it if the default cost
    assumptions are adequate for the target machine.  */
 
-#define ADDRESS_COST(ADDRESS) address_cost (ADDRESS)
+#define ADDRESS_COST(ADDRESS) avr_address_cost (ADDRESS)
 
 /* An expression giving the cost of an addressing mode that contains
    ADDRESS.  If not defined, the cost is computed from the ADDRESS
