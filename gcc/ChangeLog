@@ -1,3 +1,7 @@
+Fri May 21 21:19:02 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.c (output_mi_thunk): Enable full support again.
+
 Fri May 21 20:09:52 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (BRANCH_COST): Define.
