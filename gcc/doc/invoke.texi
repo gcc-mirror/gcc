@@ -3583,7 +3583,7 @@ specified individually by using @option{--param @var{name}=@var{value}}.
 The @option{-finline-limit=@var{n}} option sets some of these parameters 
 as follows:
 
- at table @gcctabopt
+ @table @gcctabopt
  @item max-inline-insns
   is set to @var{n}.
  @item max-inline-insns-single
@@ -3594,7 +3594,7 @@ as follows:
   is set to 130 or @var{n}/4, whichever is smaller.
  @item max-inline-insns-rtl
   is set to @var{n}.
- at end table
+ @end table
 
 Using @option{-finline-limit=600} thus results in the default settings
 for these parameters.  See below for a documentation of the individual
