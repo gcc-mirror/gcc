@@ -1,7 +1,8 @@
 ALL		= Makefile start.encap libgcc.a
 EXTRA_PASSES	= ld
+EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
-CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h
+CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic.h
 
 # Add additional dependencies to recompile selected modules whenever the
 # tm.h file changes.  The files compiled are:
@@ -35,6 +36,8 @@ cccp.o: $(CONFIG2_H)
 explow.o: $(CONFIG2_H)
 recog.o: $(CONFIG2_H)
 reload.o: $(CONFIG2_H)
+
+halfpic.o: halfpic.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H) $(TREE_H)
 
 # Build collect
 
