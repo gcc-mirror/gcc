@@ -3106,13 +3106,15 @@ fold_range_test (exp)
 	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)
 	   && operand_equal_p (lhs, rhs, 0))
     {
-      /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR.  */
+      /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR
+	 unless we are at top level, in which case we can't do this.  */
       if (simple_operand_p (lhs))
 	return build (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
 		      ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
 		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
 		      TREE_OPERAND (exp, 1));
-      else
+
+      else if (current_function_decl != 0)
 	{
 	  tree common = save_expr (lhs);
 
@@ -3764,9 +3766,10 @@ fold (expr)
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
 		      fold (build (code, type,
 				   arg0, TREE_OPERAND (arg1, 1))));
-      else if (TREE_CODE (arg1) == COND_EXPR
-	       || (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
-		   && TREE_CODE_CLASS (code) != '<'))
+      else if ((TREE_CODE (arg1) == COND_EXPR
+		|| (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
+		    && TREE_CODE_CLASS (code) != '<'))
+	       && (! TREE_SIDE_EFFECTS (arg0) || current_function_decl != 0))
 	{
 	  tree test, true_value, false_value;
 
@@ -3804,7 +3807,8 @@ fold (expr)
 	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs))
 		return fold (build (COND_EXPR, type, test, lhs, rhs));
 
-	      arg0 = save_expr (arg0);
+	      if (current_function_decl != 0)
+		arg0 = save_expr (arg0);
 	    }
 
 	  test = fold (build (COND_EXPR, type, test,
@@ -3821,9 +3825,10 @@ fold (expr)
       else if (TREE_CODE (arg0) == COMPOUND_EXPR)
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
 		      fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
-      else if (TREE_CODE (arg0) == COND_EXPR
-	       || (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
-		   && TREE_CODE_CLASS (code) != '<'))
+      else if ((TREE_CODE (arg0) == COND_EXPR
+		|| (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+		    && TREE_CODE_CLASS (code) != '<'))
+	       && (! TREE_SIDE_EFFECTS (arg1) || current_function_decl != 0))
 	{
 	  tree test, true_value, false_value;
 
@@ -3853,7 +3858,8 @@ fold (expr)
 		  || TREE_CONSTANT (arg1))
 		return fold (build (COND_EXPR, type, test, lhs, rhs));
 
-	      arg1 = save_expr (arg1);
+	      if (current_function_decl != 0)
+		arg1 = save_expr (arg1);
 	    }
 
 	  test = fold (build (COND_EXPR, type, test,
@@ -4374,7 +4380,7 @@ fold (expr)
 	  if (real_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
 	  /* x*2 is x+x */
-	  if (! wins && real_twop (arg1))
+	  if (! wins && real_twop (arg1) && current_function_decl != 0)
 	    {
 	      tree arg = save_expr (arg0);
 	      return build (PLUS_EXPR, type, arg, arg);
