@@ -1,3 +1,12 @@
+2000-05-03  Vadim Egorov  <egorovv@mailandnews.com>
+	    Benjamin Kosnik  <bkoz@gnu.org>
+	    Nathan Myers  <ncm@cantrip.org>
+	    Dietmar Kuehl  <dietmar_kuehl@yahoo.com> 
+
+        * bits/streambuf.tcc (basic_streambuf::xsgetn): Fix uflow case.
+	(basic_streambuf::xsputn): Make consistent.
+	* testsuite/27_io/filebuf.cc: Add tests.
+	
 2000-05-08  Steven King  <sxking@uswest.net>
 
         * bits/char_traits.h: use wchar_t utility functions for
