@@ -1,3 +1,11 @@
+2005-01-02  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+	    James E. Wilson  <wilson@specifixinc.com>
+
+	PR rtl-optimization/12092
+	* loop.c (emit_prefetch_instructions): Do nothing if PREFETCH_BLOCK
+	is zero.
+
 2004-12-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19175

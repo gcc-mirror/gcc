@@ -1,3 +1,9 @@
+2005-01-02  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR rtl-optimization/12092
+	* gcc.dg/pr12092-1.c: New test case.
+
 2004-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/18384, c++/18327

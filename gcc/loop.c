@@ -3859,7 +3859,7 @@ emit_prefetch_instructions (struct loop *loop)
   struct prefetch_info info[MAX_PREFETCHES];
   struct loop_ivs *ivs = LOOP_IVS (loop);
 
-  if (!HAVE_prefetch)
+  if (!HAVE_prefetch || PREFETCH_BLOCK == 0)
     return;
 
   /* Consider only loops w/o calls.  When a call is done, the loop is probably
