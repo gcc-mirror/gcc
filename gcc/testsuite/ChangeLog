@@ -1,3 +1,7 @@
+2002-03-31  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.dg/weak-1.c: Disable on h8300 port.
+
 2002-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.old-deja/g++.other/builtins5.C: New test.
