@@ -1,3 +1,8 @@
+2003-07-05  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c: Remove code protected by CRDS.
+	* config/m68k/m68k.md: Likewise.
+
 2003-07-05  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR driver/11417
