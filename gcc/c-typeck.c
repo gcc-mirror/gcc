@@ -4251,7 +4251,7 @@ store_init_value (decl, init)
   DECL_INITIAL (decl) = value;
 }
 
-/* Methods for storing and printing names for error messages.
+/* Methods for storing and printing names for error messages.  */
 
 /* Implement a spelling stack that allows components of a name to be pushed
    and popped.  Each element on the stack is this structure.  */
