@@ -1,3 +1,8 @@
+2004-09-12  Andrew Pinski  <apinski@apple.com>
+
+	* lib/objc.exp (objc_target_compile): Look for libobjc-gnu.a also when
+	-fgnu-runtime is passed.
+
 2004-09-12  Richard Henderson  <rth@redhat.com>
 
 	* lib/fortran-torture.exp (add-ieee-options): Replace ieee-options;

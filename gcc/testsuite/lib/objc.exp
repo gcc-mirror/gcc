@@ -173,7 +173,14 @@ proc objc_target_compile { source dest type options } {
     # at it (and associated headers).
 
     set objcpath "[get_multilibs]"
+
     set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
+    if { $libobjc_dir == ""} {
+      verbose "see if we have -fgnu-runtime in [target_info name]"
+      if [regexp ".*-fgnu-runtime.*" [target_info name]] {
+        set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
+      }
+    }
     if { $libobjc_dir != "" } {
 	set objc_include_dir "${srcdir}/../../libobjc"
 	lappend options "additional_flags=-I${objc_include_dir}"
