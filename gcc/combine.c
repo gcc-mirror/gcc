@@ -6697,18 +6697,7 @@ force_to_mode (x, mode, mask, reg, just_select)
   /* If X is a CONST_INT, return a new one.  Do this here since the
      test below will fail.  */
   if (GET_CODE (x) == CONST_INT)
-    {
-      HOST_WIDE_INT cval = INTVAL (x) & mask;
-      int width = GET_MODE_BITSIZE (mode);
-
-      /* If MODE is narrower that HOST_WIDE_INT and CVAL is a negative
-	 number, sign extend it.  */
-      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
-	  && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
-	cval |= (HOST_WIDE_INT) -1 << width;
-
-      return GEN_INT (cval);
-    }
+    return gen_int_mode (INTVAL (x) & mask, mode);
 
   /* If X is narrower than MODE and we want all the bits in X's mode, just
      get X in the proper mode.  */
@@ -6913,14 +6902,6 @@ force_to_mode (x, mode, mask, reg, just_select)
       op1 = gen_lowpart_for_combine (op_mode,
 				     force_to_mode (XEXP (x, 1), mode, mask,
 						    reg, next_select));
-
-      /* If OP1 is a CONST_INT and X is an IOR or XOR, clear bits outside
-	 MASK since OP1 might have been sign-extended but we never want
-	 to turn on extra bits, since combine might have previously relied
-	 on them being off.  */
-      if (GET_CODE (op1) == CONST_INT && (code == IOR || code == XOR)
-	  && (INTVAL (op1) & mask) != 0)
-	op1 = GEN_INT (INTVAL (op1) & mask);
 
       if (op_mode != GET_MODE (x) || op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
 	x = gen_binary (code, op_mode, op0, op1);

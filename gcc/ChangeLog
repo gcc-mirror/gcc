@@ -1,5 +1,10 @@
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* combine.c (force_to_mode): Use gen_int_mode.
+	Don't clear CONST_INT bits outside of mode.
+
+2002-05-23  Jakub Jelinek  <jakub@redhat.com>
+
 	* configure.in: Fix as version test for binutils 2.12.1 releases
 	(without dates).
 	* configure: Rebuilt.
