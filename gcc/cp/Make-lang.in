@@ -117,8 +117,15 @@ c++.install-info:
 
 c++.install-man: $(srcdir)/cp/g++.1
 	-if [ -f cc1plus ] ; then \
-	  $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/g++$(manext) ; \
-	  chmod a-x $(mandir)/g++$(manext) ; \
+	  if [ -f g++-cross ] ; then \
+	    rm -f $(mandir)/$(GXX_CROSS_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_CROSS_NAME)$(manext); \
+	    chmod a-x $(mandir)/$(GXX_CROSS_NAME)$(manext); \
+	  else \
+	    rm -f $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
+	    chmod a-x $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
+	  fi; \
 	else true; fi
 
 c++.uninstall:
@@ -126,7 +133,8 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(CXX_CROSS_NAME)
 	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)
 	-rm -rf $(bindir)/$(GXX_CROSS_NAME)
-	-rm -rf $(mandir)/g++$(manext)
+	-rm -rf $(mandir)/$(GXX_INSTALL_NAME)$(manext)
+	-rm -rf $(mandir)/$(GXX_CROSS_NAME)$(manext)
 
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
