@@ -1,5 +1,8 @@
 2005-04-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/20746
+	* g++.dg/abi/covariant5.C: New.
+
 	PR debug/20505
 	* g++.dg/debug/const2.C: New.
 
