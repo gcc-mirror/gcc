@@ -4080,9 +4080,7 @@ sparc_type_code (type)
    (to store insns).  This is a bit excessive.  Perhaps a different
    mechanism would be better here.
 
-   Emit 3 FLUSH instructions to synchronize the data and instruction caches.
-
-   ??? v9: We assume the top 32 bits of function addresses are 0.  */
+   Emit enough FLUSH insns to synchronize the data and instruction caches.  */
 
 void
 sparc_initialize_trampoline (tramp, fnaddr, cxt)
@@ -4122,48 +4120,25 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
 					       plus_constant (tramp, 16)))));
 }
 
+/* The 64 bit version is simpler because it makes more sense to load the
+   values as "immediate" data out of the trampoline.  It's also easier since
+   we can read the PC without clobbering a register.  */
+
 void
 sparc64_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
-  rtx fnaddrdi = gen_reg_rtx (Pmode);
-  rtx fnaddrsi = (emit_move_insn (fnaddrdi, fnaddr),
-		gen_rtx (SUBREG, SImode, fnaddrdi, 0));
-  rtx cxtdi = gen_reg_rtx (Pmode);
-  rtx cxtsi = (emit_move_insn (cxtdi, cxt),
-		gen_rtx (SUBREG, SImode, cxtdi, 0));
-  rtx high_cxt = expand_shift (RSHIFT_EXPR, SImode, cxtsi,
-			      size_int (10), 0, 1);
-  rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddrsi,
-			     size_int (10), 0, 1);
-  rtx low_cxt = expand_and (cxtsi, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0); 
-  rtx low_fn = expand_and (fnaddrsi, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0); 
-  rtx g1_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x03000000));
-  rtx g2_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x05000000));
-  rtx g1_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x82106000));
-  rtx g2_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));
-  rtx tem = gen_reg_rtx (SImode);
-  emit_move_insn (tem, g2_sethi);
-  emit_insn (gen_iorsi3 (high_fn, high_fn, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 0)), high_fn);
-  emit_move_insn (tem, g2_ori);
-  emit_insn (gen_iorsi3 (low_fn, low_fn, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 4)), low_fn);
-  emit_move_insn (tem, g1_sethi);
-  emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 8)), high_cxt);
-  emit_move_insn (tem, g1_ori);
-  emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
+  emit_move_insn (gen_rtx (MEM, DImode, plus_constant (tramp, 24)), cxt);
+  emit_move_insn (gen_rtx (MEM, DImode, plus_constant (tramp, 32)), fnaddr);
   emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode, tramp))));
   emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
 					       plus_constant (tramp, 8)))));
   emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
 					       plus_constant (tramp, 16)))));
+  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
+					       plus_constant (tramp, 24)))));
+  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
+					       plus_constant (tramp, 32)))));
 }
 
 /* Subroutines to support a flat (single) register window calling
