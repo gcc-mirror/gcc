@@ -7684,6 +7684,11 @@
   sparc_expand_epilogue ();
 })
 
+(define_expand "return"
+  [(return)]
+  "sparc_can_use_return_insn_p ()"
+  "")
+
 (define_insn "*return_internal"
   [(return)]
   ""

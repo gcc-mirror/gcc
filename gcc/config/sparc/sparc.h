@@ -1121,8 +1121,7 @@ extern int sparc_mode_class[];
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.
-   Used in flow.c, global.c, and reload1.c.  */
+   Used in flow.c, global.c, ra.c and reload1.c.  */
 #define FRAME_POINTER_REQUIRED	\
   (! (leaf_function_p () && only_leaf_regs_used ()))
 
@@ -1594,9 +1593,10 @@ extern char leaf_reg_remap[];
    is a leaf function, we guessed right!  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) 			\
   do {									\
-    (OFFSET) = 0;							\
     if ((TO) == STACK_POINTER_REGNUM)					\
       (OFFSET) = sparc_compute_frame_size (get_frame_size (), 1);	\
+    else								\
+      (OFFSET) = 0;							\
     (OFFSET) += SPARC_STACK_BIAS;					\
   } while (0)
 
