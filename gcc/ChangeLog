@@ -1,3 +1,8 @@
+Tue Apr 18 16:04:12 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/sysv4.h (SELECT_SECTION): Use data_section if
+	flag_pic and RELOC.
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cccp.c, cexp.y, cexp.c, cccp.1: Removed.
