@@ -1,3 +1,9 @@
+Wed Mar 12 16:30:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c: Include basic-block.h.
+	(sh_output_mi_thunk, emit_load_ptr): New functions.
+	(TARGET_ASM_OUTPUT_MI_THUNK, TARGET_ASM_CAN_OUTPUT_MI_THUNK): Redefine.
+
 2003-03-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/pe.h (FIXED_REGISTERS): Add Maverick registers.
