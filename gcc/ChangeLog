@@ -1,3 +1,9 @@
+Tue Jul 21 08:56:42 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (fix_truncdfsi2, fix_truncsfsi2): Remove the define_expands,
+	but keep the insns and splits.  Adjust so when the ultimate destination
+	is memory, use cvtql.
+
 Tue Jul 21 08:55:09 1998  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (regno_uninitialized): Fixed regs are never uninitialized.
