@@ -1,3 +1,8 @@
+2001-01-16  Phil Edwards  <pme@sources.redhat.com>
+
+	* gcc.c:  When -fsyntax-only is given, do not complain about
+	  unused libraries.
+
 2001-01-15  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (asm_output_function_prefix): Remove.

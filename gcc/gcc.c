@@ -96,6 +96,9 @@ static char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 #define MIN_FATAL_STATUS 1
 
+/* If nonzero, -fsyntax-only was passed. */
+static int flag_syntax_only;
+
 /* Flag saying to pass the greatest exit code returned by a sub-process
    to the calling program.  */
 static int pass_exit_codes;
@@ -3155,6 +3158,11 @@ process_command (argc, argv)
 	  printf ("%s\n", spec_machine);
 	  exit (0);
 	}
+      else if (strcmp (argv[i], "-fsyntax-only") == 0)
+	{
+	  /* remember this so we don't complain about libraries */
+	  flag_syntax_only = 1;
+	}
       else if (strcmp (argv[i], "-fhelp") == 0)
 	{
 	  /* translate_options () has turned --help into -fhelp.  */
@@ -3781,6 +3789,7 @@ process_command (argc, argv)
 	  switches[n_switches].ordering = 0;
 	  /* These are always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps")
+	      || !strcmp (p, "fsyntax-only")
 	      || !strcmp (p, "static-libgcc")
 	      || !strcmp (p, "shared-libgcc"))
 	    switches[n_switches].validated = 1;
@@ -5849,7 +5858,7 @@ main (argc, argv)
   /* If options said don't run linker,
      complain about input files to be given to the linker.  */
 
-  if (! linker_was_run && error_count == 0)
+  if (! linker_was_run && error_count == 0 && flag_syntax_only == 0)
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i])
 	error ("%s: linker input file unused because linking not done",
