@@ -1,3 +1,8 @@
+2000-09-18  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/eabi-cn.asm: Use /**/ to delimit comments, not #.
+	* config/rs6000/eabi-ci.asm: Likewise.
+
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
 	* emit-rtl.c (init_emit_once): Initialize const_tiny_rtx
