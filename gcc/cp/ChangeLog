@@ -1,4 +1,14 @@
-2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
+2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp/decl2.c (start_static_storage_duration_function): Take count
+	arg, don't check if it wraps round.
+	(generate_ctor_or_dtor_function): Add locus arg, use it.
+	(generate_ctor_and_dtor_functions_for_priority): Data arg is a
+	locus.
+	(finish_file): Set line numbers to past EOF for synthesized
+	functions.
+
+2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10405
 	* search.c (lookup_field_1): Final scan goes backwards for

@@ -1862,16 +1862,13 @@ output_lines (gcov_file, src)
 	    {
 	      retval = fgets (string, STRING_SIZE, source_file);
 	      if (!retval)
-		{
-		  fnotice (stderr, "%s:unexpected EOF\n", src->name);
-		  break;
-		}
+		break;
 	      fputs (retval, gcov_file);
 	    }
 	  while (!retval[0] || retval[strlen (retval) - 1] != '\n');
 	}
       if (!retval)
-	fputs ("??\n", gcov_file);
+	fputs ("/*EOF*/\n", gcov_file);
 
       if (flag_all_blocks)
 	{
