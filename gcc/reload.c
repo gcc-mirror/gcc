@@ -890,6 +890,13 @@ push_reload (in, out, inloc, outloc, class,
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != NIL)
 #endif
+#ifdef WORD_REGISTER_OPERATIONS
+		  || ((GET_MODE_SIZE (inmode)
+		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
+			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1)
+			   / UNITS_PER_WORD)))
+#endif
 		  ))
 	  || (GET_CODE (SUBREG_REG (in)) == REG
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
@@ -927,7 +934,7 @@ push_reload (in, out, inloc, outloc, class,
       in_subreg_loc = inloc;
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#ifndef LOAD_EXTEND_OP
+#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
       if (GET_CODE (in) == MEM)
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
@@ -989,7 +996,15 @@ push_reload (in, out, inloc, outloc, class,
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
 	       || GET_CODE (SUBREG_REG (out)) == MEM)
 	      && ((GET_MODE_SIZE (outmode)
-		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))))
+		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+#ifdef WORD_REGISTER_OPERATIONS
+		  || ((GET_MODE_SIZE (outmode)
+		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
+			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
+			   / UNITS_PER_WORD)))
+#endif
+	          ))
 	  || (GET_CODE (SUBREG_REG (out)) == REG
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
 	      && ((GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
@@ -1023,7 +1038,7 @@ push_reload (in, out, inloc, outloc, class,
       out_subreg_loc = outloc;
       outloc = &SUBREG_REG (out);
       out = *outloc; 
-#ifndef LOAD_EXTEND_OP
+#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
      if (GET_CODE (out) == MEM
 	  && GET_MODE_SIZE (GET_MODE (out)) > GET_MODE_SIZE (outmode))
 	abort ();
@@ -2757,10 +2772,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     register access.  If the data is, in fact, in memory we
 		     must always load using the size assumed to be in the
 		     register and let the insn do the different-sized 
-		     accesses.  */
+		     accesses.
+
+		     This is doubly true if WORD_REGISTER_OPERATIONS.  In 
+		     this case eliminate_regs has left non-paradoxical
+		     subregs for push_reloads to see.  Make sure it does
+		     by forcing the reload.
+
+		     ??? When is it right at this stage to have a subreg
+		     of a mem that is _not_ to be handled specialy?  IMO
+		     those should have been reduced to just a mem.  */
 		  || ((GET_CODE (operand) == MEM
 		       || (GET_CODE (operand)== REG
 			   && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
+#ifndef WORD_REGISTER_OPERATIONS
 		      && (((GET_MODE_BITSIZE (GET_MODE (operand))
 			    < BIGGEST_ALIGNMENT)
 			   && (GET_MODE_SIZE (operand_mode[i])
@@ -2775,7 +2800,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			      && INTEGRAL_MODE_P (GET_MODE (operand))
 			      && LOAD_EXTEND_OP (GET_MODE (operand)) != NIL)
 #endif
-			  ))
+			  )
+#endif
+		      )
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
@@ -4161,6 +4188,29 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 				     SUBREG_WORD (x), 0,
 				     GET_MODE (SUBREG_REG (x)))) != 0)
 	return tem;
+
+      /* If the SUBREG is wider than a word, the above test will fail.
+	 For example, we might have a SImode SUBREG of a DImode SUBREG_REG
+	 for a 16 bit target, or a DImode SUBREG of a TImode SUBREG_REG for
+	 a 32 bit target.  We still can - and have to - handle this
+	 for non-paradoxical subregs of CONST_INTs.  */
+      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
+	  && reg_equiv_constant[regno] != 0
+	  && GET_CODE (reg_equiv_constant[regno]) == CONST_INT
+	  && (GET_MODE_SIZE (GET_MODE (x))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	  {
+	    int shift = SUBREG_WORD (x) * BITS_PER_WORD;
+	    if (WORDS_BIG_ENDIAN)
+	      shift = (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))
+		       - GET_MODE_BITSIZE (GET_MODE (x))
+		       - shift);
+	    /* Here we use the knowledge that CONST_INTs have a
+	       HOST_WIDE_INT field.  */
+	    if (shift >= HOST_BITS_PER_WIDE_INT)
+	      shift = HOST_BITS_PER_WIDE_INT - 1;
+	    return GEN_INT (INTVAL (reg_equiv_constant[regno]) >> shift);
+	  }
 
       if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
 	  && reg_equiv_constant[regno] != 0

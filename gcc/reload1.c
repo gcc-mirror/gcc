@@ -3108,30 +3108,21 @@ eliminate_regs (x, mem_mode, insn, storing)
 	  int x_size = GET_MODE_SIZE (GET_MODE (x));
 	  int new_size = GET_MODE_SIZE (GET_MODE (new));
 
-	  /* When asked to spill a partial word subreg, we need to go
-	     ahead and spill the whole thing against the possibility
-	     that we reload the whole reg and find garbage at the top.  */
-	  if (storing
-	      && GET_CODE (new) == MEM
-	      && x_size < new_size
-	      && ((x_size + UNITS_PER_WORD-1) / UNITS_PER_WORD
-		  == (new_size + UNITS_PER_WORD-1) / UNITS_PER_WORD))
-	    return new;
-	  else if (GET_CODE (new) == MEM
-		   && x_size <= new_size
-#ifdef LOAD_EXTEND_OP
-	           /* On these machines we will be reloading what is
-		      inside the SUBREG if it originally was a pseudo and
-		      the inner and outer modes are both a word or
-		      smaller.  So leave the SUBREG then.  */
-	           && ! (GET_CODE (SUBREG_REG (x)) == REG
-		         && x_size <= UNITS_PER_WORD
-		         && new_size <= UNITS_PER_WORD
-		         && x_size > new_size
-		         && INTEGRAL_MODE_P (GET_MODE (new))
-		         && LOAD_EXTEND_OP (GET_MODE (new)) != NIL)
+	  if (GET_CODE (new) == MEM
+	      && ((x_size < new_size
+#ifdef WORD_REGISTER_OPERATIONS
+		   /* On these machines, combine can create rtl of the form
+		      (set (subreg:m1 (reg:m2 R) 0) ...)
+		      where m1 < m2, and expects something interesting to 
+		      happen to the entire word.  Moreover, it will use the
+		      (reg:m2 R) later, expecting all bits to be preserved.
+		      So if the number of words is the same, preserve the 
+		      subreg so that push_reloads can see it.  */
+		   && ! ((x_size-1)/UNITS_PER_WORD == (new_size-1)/UNITS_PER_WORD)
 #endif
-	           )
+		   )
+		  || (x_size == new_size))
+	      )
 	    {
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	      enum machine_mode mode = GET_MODE (x);
@@ -3270,12 +3261,6 @@ eliminate_regs (x, mem_mode, insn, storing)
 	    && insn != 0 && GET_CODE (insn) != EXPR_LIST
 	    && GET_CODE (insn) != INSN_LIST)
 	  emit_insn_after (gen_rtx (CLOBBER, VOIDmode, SET_DEST (x)), insn);
-
-	/* If SET_DEST was a partial-word subreg, NEW0 may have been widened
-	   to spill the entire register (see SUBREG case above).  If the 
-	   widths of SET_DEST and NEW0 no longer match, adjust NEW1.  */
-	if (GET_MODE (SET_DEST (x)) != GET_MODE (new0))
-	  new1 = gen_rtx (SUBREG, GET_MODE (new0), new1, 0);
 
 	if (new0 != SET_DEST (x) || new1 != SET_SRC (x))
 	  return gen_rtx (SET, VOIDmode, new0, new1);

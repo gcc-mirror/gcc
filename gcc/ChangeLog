@@ -1,3 +1,29 @@
+Mon Apr 20 02:17:37 1998  Richard Henderson  <rth@cygnus.com>               
+			  Jim Wilson  <wilson@cygnus.com>
+			  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (eliminate_regs): Delete LOAD_EXTENDED_OP code that
+	boiled down to && ! 0.                                         
+
+	* reload.c (find_reloads): Always force (subreg (mem)) to be
+	reloaded if WORD_REGISTER_OPERATIONS.
+
+	* reload.c (find_reloads_toplev): Handle arbitrary non-paradoxical    
+	SUBREGs of CONST_INTs.                                         
+
+	* reload.c (push_reload): If WORD_REGISTER_OPERATIONS, reload the 
+	SUBREG_REG if the word count is unchanged, also in the input reload   
+	case.  Disable non-applicable sanity checks.
+
+	* reload.c (push_reload): In WORD_REGISTER_OPERATIONS code, add test
+	to require the SUBREG mode to be smaller than the SUBREG_REG mode.
+	* reload1.c (eliminate_regs): Likewise.                               
+        
+	* reload.c (push_reload): If WORD_REGISTER_OPERATIONS, reload the
+	SUBREG_REG if the word count is unchanged.           
+	* reload1.c (eliminate_regs) [case SET]: If W_R_O, preserve
+	subregs of identical word size for push_reload.                 
+
 Mon Apr 20 00:58:48 1998  H.J. Lu  (hjl@gnu.org)
 
 	* reg-stack.c (subst_asm_stack_regs): Change to return the last
