@@ -21,11 +21,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_TOPLEV_H
 #define GCC_TOPLEV_H
 
-#ifdef ANSI_PROTOTYPES
-union tree_node;
-struct rtx_def;
-#endif
-
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
 #define skip_leading_substring(whole,  part) \
