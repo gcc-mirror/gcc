@@ -344,8 +344,17 @@ test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
 # Get the version number from the toplevel
-version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/../gcc/version.c`
-AC_SUBST(version)
+if test x${with_gcc_version} = x; then
+  # Try to get the version number from a hopefully existing gcc directory.
+  if test -d ${srcdir}/../gcc; then
+    gcc_version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/../gcc/version.c`
+  else
+    gcc_version=UNKNOWN
+  fi
+else
+  gcc_version=${with_gcc_version}
+fi
+AC_SUBST(gcc_version)
 AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
 
