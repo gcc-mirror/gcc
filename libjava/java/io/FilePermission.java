@@ -1,5 +1,5 @@
 /* java.lang.FilePermission
-   Copyright (C) 1998, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,23 +46,21 @@ public final class FilePermission extends Permission implements Serializable
 
   private static final String CURRENT_DIRECTORY = 
     System.getProperty("user.dir");
-  private boolean usingPerms = false;
   private boolean readPerm = false;
   private boolean writePerm = false;
   private boolean executePerm = false;
   private boolean deletePerm = false;
-  private String actionsString;
+  private final String actionsString;
   
-  private void cachePerms() 
+  // Checks and caches the actions
+  private void checkPerms() throws IllegalArgumentException
   {
-    // While race conditions could occur, they don't matter at all.
-    
     String action;
     int i = actionsString.indexOf(',');
     int startI = 0;
     while(i != -1) 
       {
-        action = actionsString.substring(startI,i);
+        action = actionsString.substring(startI,i).trim().toLowerCase();
         if(action.equals("read"))
           readPerm = true;
         else if(action.equals("write"))
@@ -71,12 +69,14 @@ public final class FilePermission extends Permission implements Serializable
           executePerm = true;
         else if(action.equals("delete"))
           deletePerm = true;
+	else
+	  throw new IllegalArgumentException("Unknown action: " + action);
       
         startI = i+1;
         i = actionsString.indexOf(',',startI);
       }
     
-    action = actionsString.substring(startI);
+    action = actionsString.substring(startI).trim().toLowerCase();
     if(action.equals("read"))
       readPerm = true;
     else if(action.equals("write"))
@@ -85,19 +85,30 @@ public final class FilePermission extends Permission implements Serializable
       executePerm = true;
     else if(action.equals("delete"))
       deletePerm = true;
+    else
+      throw new IllegalArgumentException("Unknown action: " + action);
   }
   
-  /** Create a new FilePermission.
-   ** @param pathExpression an expression specifying the paths this
-   **        permission represents.
-   ** @param actionsString a comma-separated list of the actions this
-   **        permission represents.
-   ** FIXME: what to do when the file string is malformed?
-   **/
+  /*
+   * Create a new FilePermission.
+   *
+   * @param pathExpression an expression specifying the paths this
+   *        permission represents.
+   * @param actionsString a comma-separated list of the actions this
+   *        permission represents. The actions must be "read", "write",
+   *        "execute" and/or "delete".
+   *
+   * FIXME: what to do when the file string is malformed?
+   */
   public FilePermission(String pathExpression, String actionsString) 
   {
     super(pathExpression);
+    if (pathExpression == null)
+      throw new NullPointerException("pathExpression");
+    if (actionsString == null)
+      throw new IllegalArgumentException("actionsString");
     this.actionsString = actionsString;
+    checkPerms();
   }
   
   /** Get the actions this FilePermission supports.
@@ -132,10 +143,6 @@ public final class FilePermission extends Permission implements Serializable
     if(!(o instanceof FilePermission))
       return false;
     FilePermission p = (FilePermission)o;
-    if(!usingPerms)
-      cachePerms();
-    if(!p.usingPerms)
-      p.cachePerms();
     
     String f1 = getName();
     String f2 = p.getName();
@@ -282,11 +289,6 @@ public final class FilePermission extends Permission implements Serializable
             }
          break;
       }
-    
-    if(!usingPerms)
-      cachePerms();
-    if(!fp.usingPerms)
-      fp.cachePerms();
     
     if(readPerm && !fp.readPerm)
       return false;

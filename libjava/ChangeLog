@@ -1,3 +1,14 @@
+2004-06-27 Mark Wielaard  <mark@klomp.org>
+
+	* java/io/FilePermission.java (usingPerms): Removed.
+	(actionsString): Made final.
+	(cachePerms): Renamed to checkPerms.
+	(checkPerms): Renamed from cachePerms. Call trim() and toLowerCase()
+	on action String.
+	(FilePermission): Check arguments, call checkPerms().
+	(equals): Remove cachePerms() call.
+	(implies): Likewise.
+
 2004-06-27  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/net/protocol/http/Connection.java (userAgent): New static
