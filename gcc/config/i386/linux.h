@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -21,13 +21,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define LINUX_DEFAULT_ELF
-
-/* A lie, I guess, but the general idea behind linux/ELF is that we are
-   supposed to be outputting something that will assemble under SVr4.
-   This gets us pretty close.  */
-#include <i386/i386.h>	/* Base i386 target machine definitions */
-#include <i386/att.h>	/* Use the i386 AT&T assembler syntax */
-#include <linux.h>	/* some common stuff */
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running MOSS
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2001 Free Software Foundation, Inc.
    Contributed by Bryan Ford <baford@cs.utah.edu>
 
 This file is part of GNU CC.
@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-/* I believe in reuse... */
-#include "i386/linux.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dmoss -Asystem=posix"

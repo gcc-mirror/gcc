@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 using ELF
-   Copyright (C) 1988, 1991, 1995, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1995, 2000, 2001 Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
 
@@ -20,11 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Use stabs instead of DWARF debug format.  */
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#include "i386/i386.h"
-#include "i386/att.h"
-#include "elfos.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 bare ELF target)");
