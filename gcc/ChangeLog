@@ -1,3 +1,24 @@
+Wed May 20 23:44:28 EDT 1998  John Wehle  (john@feith.com)
+
+	* acconfig.h (HAVE_GAS_MAX_SKIP_P2ALIGN): New tag.
+	* configure.in: Check for it.
+	* i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Use it.
+	* final.c (uid_align, uid_shuid, label_align): Make static.
+	(label_align): Change type to struct label_alignment pointer.
+	(LABEL_TO_ALIGNMENT, shorten_branches): Update due to type change.
+	(LABEL_TO_MAX_SKIP): Define.
+	(LABEL_ALIGN_MAX_SKIP, LOOP_ALIGN_MAX_SKIP,
+	LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Provide defaults.
+	(shorten_branches): Record the maximum bytes to skip when
+	aligning a label.
+	(final_scan_insn): Use the maximum bytes to skip when aligning a label
+	if ASM_OUTPUT_MAX_SKIP_ALIGN is available.
+	* i386.h (LOOP_ALIGN_MAX_SKIP,
+	LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Define.
+	* i386.c (override_options): i386_align_jumps and i386_align_loops
+	default to 4 if ASM_OUTPUT_MAX_SKIP_ALIGN is available.
+	* invoke.texi: Document new i386 align-loops and align-jumps behavior.
+
 1998-05-21  Mark Mitchell  <mmitchell@usa.net>
 
 	* cplus-dem.c (do_type): Handle volatile qualification.

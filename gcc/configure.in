@@ -3226,6 +3226,46 @@ if [[ -f ../ld/Makefile ]]; then
 #	fi
 fi
 
+# Figure out what assembler alignment features are present.
+AC_MSG_CHECKING(assembler alignment features)
+gcc_cv_as=
+gcc_cv_as_alignment_features=
+if [[ -x as$host_exeext ]]; then
+	# Build using assembler in the current directory.
+	gcc_cv_as=./as$host_exeext
+elif [[ -f $srcdir/../gas/configure.in ]]; then
+	# Single tree build which includes gas.
+	for f in $srcdir/../gas/configure.in $srcdir/../gas/Makefile.in
+	do
+		gcc_cv_gas_version=`grep '^VERSION=[[0-9]]*\.[[0-9]]*' $f`
+		if [[ x$gcc_cv_gas_version != x ]]; then
+			break
+		fi
+	done
+	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([[0-9]]*\)"`
+	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.\([[0-9]]*\)"`
+	# Gas version 2.8 and later support specifying the maximum
+	# bytes to skip when using .p2align.
+	if [[ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2 ]]; then
+		gcc_cv_as_alignment_features=".p2align including maximum skip"
+		AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
+	fi
+elif [[ x$host = x$target ]]; then
+	# Native build.
+	gcc_cv_as=as$host_exeext
+fi
+if [[ x$gcc_cv_as != x ]]; then
+	# Check if specifying the maximum bytes to skip when
+	# using .p2align is supported.
+	echo ".p2align 4,,7" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_alignment_features=".p2align including maximum skip"
+		AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
+	fi
+	rm -f conftest.s conftest.o
+fi
+AC_MSG_RESULT($gcc_cv_as_alignment_features)
+
 # Figure out what language subdirectories are present.
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
