@@ -1113,7 +1113,7 @@ namespace std {
       typedef typename __istream_type::__ctype_type 	__ctype_type;
       typedef basic_string<_CharT, _Traits, _Alloc> 	__string_type;
       typedef typename __string_type::size_type		__size_type;
-      __int_type __extracted = 0;
+      __size_type __extracted = 0;
 
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb) 
