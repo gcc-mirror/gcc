@@ -89,6 +89,9 @@ Boston, MA 02111-1307, USA. */
   { "no-nop-fun-dllimport",	-0x20000 },	\
   { "windows",			 0x0     },
 
+/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
+
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */

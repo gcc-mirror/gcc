@@ -23,6 +23,9 @@ Boston, MA 02111-1307, USA. */
 
 #define YES_UNDERSCORES
 
+/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
+
 #define DBX_DEBUGGING_INFO 
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG

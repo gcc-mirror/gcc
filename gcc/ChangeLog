@@ -1,5 +1,17 @@
 Wed Oct  7 14:40:43 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* config/i386/i386.h: Remove definition of
+	HANDLE_PRAGMA_PACK_PUSH_POP.
+	
+	* config/i386/go32.h: Add definition of
+	HANDLE_PRAGMA_PACK_PUSH_POP.
+	
+	* config/i386/win32.h: Add definition of
+	HANDLE_PRAGMA_PACK_PUSH_POP.
+	
+	* config/i386/cygwin32.h: Add definition of
+	HANDLE_PRAGMA_PACK_PUSH_POP.
+
 	* c-pragma.c (insert_pack_attributes): Do not insert
 	attributes unless #pragma pack(push,<n>) is in effect.
 
