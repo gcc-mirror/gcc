@@ -1628,6 +1628,9 @@ non_lvalue (x)
     {
       if (TREE_CODE (x) == INTEGER_CST && integer_zerop (x))
 	{
+	  /* Use NOP_EXPR instead of NON_LVALUE_EXPR
+	     so convert_for_assignment won't strip it.
+	     This is so this 0 won't be treated as a null pointer constant.  */
 	  result = build1 (NOP_EXPR, TREE_TYPE (x), x);
 	  TREE_CONSTANT (result) = TREE_CONSTANT (x);
 	  return result;
