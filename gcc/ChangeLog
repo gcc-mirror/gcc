@@ -1,3 +1,15 @@
+2001-09-25  Bernd Schmidt  <bernds@redhat.com>
+
+	From Graham Stott  <grahams@redhat.com>
+	(def_builtin): Only define builtins appropriate for target_flags.  All
+	callers changed.
+	(builtin_decsription): Add new field mask which is used to determine
+	when to define the builtin via the macro def_builtin.
+
+	(bdesc_comi): Initialise new mask fields.
+	(bdesc_2srg): Likewise.
+	(bdesc_1arg): Likewise.
+
 2001-09-25  Graham Stott  <grahams@redhat.com>
 
 	* sibcall.c (skip_copy_to_return_value): Tighten return value
