@@ -106,13 +106,7 @@ Here are the rules for making fixes in the inclhack.def file:
         of stdin in order to avoid pipe stalls.  They may choose to
         discard the input.
 
-    3.  A C language subroutine method for both tests and fixes.
-        See ``fixtests.c'' for instructions on writing C-language
-        applicability tests and ``fixfixes.c'' for C-language fixing.
-        These files also contain tables that describe the currently
-        implemented fixes and tests.
-
-    4.  Replacement text.  If the replacement is empty, then no
+    3.  Replacement text.  If the replacement is empty, then no
         fix is applied.  Otherwise, the replacement text is
         written to the output file and no further fixes are
         applied.  If you really want a no-op file, replace the
@@ -120,8 +114,69 @@ Here are the rules for making fixes in the inclhack.def file:
 
         Replacement text "fixes" must be first in this file!!
 
-    Examples of fixes:
-    ------------------
+    4.  A C language subroutine method for both tests and fixes.
+        See ``fixtests.c'' for instructions on writing C-language
+        applicability tests and ``fixfixes.c'' for C-language fixing.
+        These files also contain tables that describe the currently
+        implemented fixes and tests.
+
+    If at all possible, you should try to use one of the C language
+    fixes as it is far more efficient.  There are currently five
+    such fixes, three of which are very special purpose:
+
+    i) char_macro_def - This function repairs the definition of an
+        ioctl macro that presumes CPP macro substitution within
+        pairs of single quote characters.
+
+    ii) char_macro_use - This function repairs the usage of ioctl
+        macros that no longer can wrap an argument with single quotes.
+
+    iii) machine_name - This function will look at "#if", "#ifdef",
+        "#ifndef" and "#elif" directive lines and replace the first
+        occurrence of a non-reserved name that is traditionally
+        pre-defined by the native compiler.
+
+    The next two are for general use:
+
+    iv) wrap - wraps the entire file with "#ifndef", "#define" and
+        "#endif" self-exclusionary text.  It also, optionally, inserts
+        a prolog after the "#define" and an epilog just before the
+        "#endif".  You can use this for a fix as follows:
+
+            c_fix     = wrap;
+            c_fix_arg = "/* prolog text */";
+            c_fix_arg = "/* epilog text */";
+
+        If you want an epilog without a prolog, set the first "c_fix_arg"
+        to the empty string.  Both or the second "c_fix_arg"s may be
+        omitted and the file will still be wrapped.
+
+    v) format - Replaces text selected with a regular expression with
+        a specialized formating string.  The formatting works as follows:
+        The format text is copied to the output until a '%' character
+        is found.  If the character after the '%' is another '%', then
+        one '%' is output and processing continues.  If the following
+        character is not a digit, then the '%' and that character are
+        copied and processing continues.  Finally, if the '%' *is*
+        followed by a digit, that digit is used as an index into the
+        regmatch_t array to replace the two characters with the matched
+        text.  i.e.: "%0" is replaced by the full matching text, "%1"
+        is the first matching sub-expression, etc.
+
+        This is used as follows:
+
+            c_fix     = format;
+            c_fix_arg = "#ifndef %1\n%0\n#endif";
+            c_fix_arg = "#define[ \t]+([A-Z][A-Z0-9a-z_]*).*";
+
+        This would wrap a traditional #define inside of a "#ifndef"/"#endif"
+        pair.  The second "c_fix_arg" may be omitted *IF* there is
+        a select clause and the first one matches the text you want
+        replaced.  You may delete text by supplying an empty string for
+        the format (the first "c_fix_arg").
+
+EXAMPLES OF FIXES:
+==================
 
       hackname = AAA_ki_iface;
       replace; /* empty replacement -> no fixing the file */
@@ -150,44 +205,22 @@ Here are the rules for making fixes in the inclhack.def file:
 
     ------------------
 
-      hackname = dec_intern_asm;
-      files    = c_asm.h;
-      sed = "/^[ \t]*float[ \t]*fasm/i\\\n#ifdef __DECC\n";
-      sed = "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n"
-            "#endif\n";
+        hackname  = hpux11_fabsf;
+        files     = math.h;
+        select    = "^[ \t]*#[ \t]*define[ \t]+fabsf\\(.*";
+        bypass    = "__cplusplus";
 
-    When this ``fix'' is invoked, sed will be run on the original
-    file with two "-e" arguments.  Since these arguments have double
-    quoted string values, the strings actually passed to ``sed''
-    will have been processed in the same fashion that the C compiler
-    processes its string specifications.  Including the concatenation
-    of the two pieces of the second sed "-e" argument.
+        c_fix     = format;
+        c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
 
-    ------------------
+        test_text =
+        "#  define fabsf(x) ((float)fabs((double)(float)(x)))\n";
 
-      hackname = m88k_multi_incl;
-      shell    =
-        "echo Fixing $file, to protect against multiple inclusion. >&2
-        cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`
-        echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"
-        echo \"#define __GCC_GOT_${cpp_wrapper}_\"
-        cat
-        echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"";
-
-    This is a shell script fix.  Note the ``cat'' without any arguments.
-    This will drain stdin.  If the contents of the file were to be
-    discarded, you would have to have something like ``cat > /dev/null''
-    in the script.
+    This fix will ensure that the #define for fabs is wrapped
+    with C++ protection, providing the header is not already
+    C++ aware.
 
     ------------------
-
-      hackname = no_double_slash;
-      c_fix    = "no_double_slash";
-
-    This specifies a fix to be supplied via a hand coded internal
-    function named ``no_double_slash_fix()''.  See ``fixfixes.c''
-    for documentation on how to include new functions into that
-    module.
 
 5.  Testing fixes.
 
