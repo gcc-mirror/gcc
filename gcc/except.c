@@ -1111,21 +1111,40 @@ convert_from_eh_region_ranges_1 (pinsns, orig_sp, cur)
 	}
       else if (INSN_P (insn))
 	{
-	  if (cur > 0
-	      && ! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
-	      /* Calls can always potentially throw exceptions, unless
-		 they have a REG_EH_REGION note with a value of 0 or less.
-		 Which should be the only possible kind so far.  */
-	      && (GET_CODE (insn) == CALL_INSN
-		  /* If we wanted exceptions for non-call insns, then
-		     any may_trap_p instruction could throw.  */
-		  || (flag_non_call_exceptions
-		      && GET_CODE (PATTERN (insn)) != CLOBBER
-		      && GET_CODE (PATTERN (insn)) != USE
-		      && may_trap_p (PATTERN (insn)))))
+	  rtx note;
+	  switch (cur)
 	    {
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION, GEN_INT (cur),
+	    default:
+	      /* An existing region note may be present to suppress
+		 exception handling.  Anything with a note value of -1
+		 cannot throw an exception of any kind.  A note value
+		 of 0 means that "normal" exceptions are suppressed,
+		 but not necessarily "forced unwind" exceptions.  */
+	      note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (note)
+		{
+		  if (flag_forced_unwind_exceptions
+		      && INTVAL (XEXP (note, 0)) >= 0)
+		    XEXP (note, 0) = GEN_INT (cur);
+		  break;
+		}
+
+	      /* Calls can always potentially throw exceptions; if we wanted
+		 exceptions for non-call insns, then any may_trap_p
+		 instruction can throw.  */
+	      if (GET_CODE (insn) != CALL_INSN
+		  && (!flag_non_call_exceptions
+		      || GET_CODE (PATTERN (insn)) == CLOBBER
+		      || GET_CODE (PATTERN (insn)) == USE
+		      || !may_trap_p (PATTERN (insn))))
+		break;
+
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION,
+						  GEN_INT (cur),
 						  REG_NOTES (insn));
+
+	    case 0:
+	      break;
 	    }
 
 	  if (GET_CODE (insn) == CALL_INSN
@@ -1683,9 +1702,15 @@ build_post_landing_pads ()
 	    struct eh_region *c;
 	    for (c = region->u.try.catch; c ; c = c->u.catch.next_catch)
 	      {
-		/* ??? _Unwind_ForcedUnwind wants no match here.  */
 		if (c->u.catch.type_list == NULL)
-		  emit_jump (c->label);
+		  {
+		    if (flag_forced_unwind_exceptions)
+		      emit_cmp_and_jump_insns
+			(cfun->eh->filter, const0_rtx, GT, NULL_RTX,
+			 word_mode, 0, c->label);
+		    else
+		      emit_jump (c->label);
+		  }
 		else
 		  {
 		    /* Need for one cmp/jump per type caught. Each type
@@ -1746,8 +1771,33 @@ build_post_landing_pads ()
 	  break;
 
 	case ERT_CLEANUP:
-	case ERT_MUST_NOT_THROW:
 	  region->post_landing_pad = region->label;
+	  break;
+
+	case ERT_MUST_NOT_THROW:
+	  /* See maybe_remove_eh_handler about removing region->label.  */
+	  if (flag_forced_unwind_exceptions && region->label)
+	    {
+	      region->post_landing_pad = gen_label_rtx ();
+
+	      start_sequence ();
+
+	      emit_label (region->post_landing_pad);
+	      emit_cmp_and_jump_insns (cfun->eh->filter, const0_rtx, GT,
+				       NULL_RTX, word_mode, 0, region->label);
+
+	      region->resume
+	        = emit_jump_insn (gen_rtx_RESX (VOIDmode,
+						region->region_number));
+	      emit_barrier ();
+
+	      seq = get_insns ();
+	      end_sequence ();
+
+	      emit_insn_before (seq, region->label);
+	    }
+	  else
+	    region->post_landing_pad = region->label;
 	  break;
 
 	case ERT_CATCH:
@@ -1927,6 +1977,19 @@ sjlj_find_directly_reachable_regions (lp_info)
 	  if (rc != RNL_NOT_CAUGHT)
 	    break;
 	}
+
+      /* Forced unwind exceptions aren't blocked.  */
+      if (flag_forced_unwind_exceptions && rc == RNL_BLOCKED)
+	{
+          struct eh_region *r;
+	  for (r = region->outer; r ; r = r->outer)
+	    if (r->type == ERT_CLEANUP)
+	      {
+		rc = RNL_MAYBE_CAUGHT;
+		break;
+	      }
+	}
+
       if (rc == RNL_MAYBE_CAUGHT || rc == RNL_CAUGHT)
 	{
 	  lp_info[region->region_number].directly_reachable = 1;
@@ -2581,8 +2644,6 @@ reachable_next_level (region, type_thrown, info)
 	for (c = region->u.try.catch; c ; c = c->u.catch.next_catch)
 	  {
 	    /* A catch-all handler ends the search.  */
-	    /* ??? _Unwind_ForcedUnwind will want outer cleanups
-	       to be run as well.  */
 	    if (c->u.catch.type_list == NULL)
 	      {
 		add_reachable_handler (info, region, c);
@@ -2767,7 +2828,21 @@ reachable_handlers (insn)
   while (region)
     {
       if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)
-	break;
+	{
+	  /* Forced unwind exceptions are neither BLOCKED nor CAUGHT.
+	     Make sure the cleanup regions are reachable.  */
+	  if (flag_forced_unwind_exceptions)
+	    {
+	      while ((region = region->outer) != NULL)
+		if (region->type == ERT_CLEANUP)
+		  {
+		    add_reachable_handler (&info, region, region);
+		    break;
+		  }
+	    }
+	  break;
+	}
+
       /* If we have processed one cleanup, there is no point in
 	 processing any more of them.  Each cleanup will have an edge
 	 to the next outer cleanup region, so the flow graph will be
@@ -2888,6 +2963,10 @@ can_throw_external (insn)
     }
   if (INTVAL (XEXP (note, 0)) <= 0)
     return false;
+
+  /* Forced unwind excptions are not catchable.  */
+  if (flag_forced_unwind_exceptions && GET_CODE (insn) == CALL_INSN)
+    return true;
 
   region = cfun->eh->region_array[INTVAL (XEXP (note, 0))];
 
@@ -3243,12 +3322,26 @@ collect_one_action_chain (ar_hash, region)
 	{
 	  if (c->u.catch.type_list == NULL)
 	    {
+	      int filter;
+
+	      /* Forced exceptions run cleanups, always.  Record them if
+		 they exist.  */
+	      next = 0;
+	      if (flag_forced_unwind_exceptions)
+		{
+		  struct eh_region *r;
+		  for (r = c->outer; r ; r = r->outer)
+		    if (r->type == ERT_CLEANUP)
+		      {
+			next = add_action_record (ar_hash, 0, 0);
+			break;
+		      }
+		}
+
 	      /* Retrieve the filter from the head of the filter list
 		 where we have stored it (see assign_filter_values).  */
-	      int filter
-		= TREE_INT_CST_LOW (TREE_VALUE (c->u.catch.filter_list));
-
-	      next = add_action_record (ar_hash, filter, 0);
+	      filter = TREE_INT_CST_LOW (TREE_VALUE (c->u.catch.filter_list));
+	      next = add_action_record (ar_hash, filter, next);
 	    }
 	  else
 	    {
@@ -3293,6 +3386,13 @@ collect_one_action_chain (ar_hash, region)
 	 requires no call-site entry.  Note that this differs from
 	 the no handler or cleanup case in that we do require an lsda
 	 to be generated.  Return a magic -2 value to record this.  */
+      if (flag_forced_unwind_exceptions)
+	{
+	  struct eh_region *r;
+	  for (r = region->outer; r ; r = r->outer)
+	    if (r->type == ERT_CLEANUP)
+	      return 0;
+	}
       return -2;
 
     case ERT_CATCH:
