@@ -58,6 +58,13 @@ when the generated code wants to link to the one
 in @code{libf2c} (@code{libg2c}).
 
 @item
+@code{g77} no longer produces incorrect code
+and initial values
+for @samp{EQUIVALENCE} and @samp{COMMON}
+aggregates that, due to ``unnatural'' ordering of members
+vis-a-vis their types, require initial padding.
+
+@item
 @code{g77} no longer crashes when compiling code
 containing specification statements such as
 @samp{INTEGER(KIND=7) PTR}.

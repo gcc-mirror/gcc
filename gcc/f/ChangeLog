@@ -1,3 +1,51 @@
+Mon Jun 29 09:47:33 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980628-*.f:
+	* bld.h: New `pad' field and accessor macros for
+	ACCTER, ARRTER, and CONTER ops.
+	* bld.c (ffebld_new_accter, ffebld_new_arrter,
+	ffebld_new_conter_with_orig): Initialize `pad' field
+	to zero.
+	* com.c (ffecom_transform_common_): Include initial
+	padding (aka modulo aka offset) in size calculation.
+	Copy initial padding value into FFE initialization expression
+	so the GBE transformation of that expression includes it.
+	Make array low bound 0 instead of 1, for consistency.
+	(ffecom_transform_equiv_): Include initial
+	padding (aka modulo aka offset) in size calculation.
+	Copy initial padding value into FFE initialization expression
+	so the GBE transformation of that expression includes it.
+	Make array low bound 0 instead of 1, for consistency.
+	(ffecom_expr_, case FFEBLD_opACCTER): Delete unused `size'
+	variable.
+	Track destination offset separately, allowing for
+	initial padding.
+	Don't bother setting initial PURPOSE offset if zero.
+	Include initial padding in size calculation.
+	(ffecom_expr_, case FFEBLD_opARRTER): Allow for
+	initial padding.
+	Include initial padding in size calculation.
+	Make array low bound 0 instead of 1, for consistency.
+	(ffecom_finish_global_): Make array low bound 0 instead
+	of 1, for consistency.
+	(ffecom_notify_init_storage): Copy `pad' field from old
+	ACCTER to new ARRTER.
+	(ffecom_notify_init_symbol): Ditto.
+	* data.c (ffedata_gather_): Initialize `pad' field in new
+	ARRTER to 0.
+	(ffedata_value_): Ditto.
+	* equiv.c (ffeequiv_layout_local_): When lowering start
+	of equiv area, extend lowering to maintain needed alignment.
+	* target.c (ffetarget_align): Handle negative offset correctly.
+
+	* global.c (ffeglobal_pad_common): Warn about non-zero
+	padding only the first time its seen.
+	If new padding larger than old, update old.
+	(ffeglobal_save_common): Use correct type for size throughout.
+	* global.h: Use correct type for size throughout.
+	(ffeglobal_common_pad): New macro.
+	(ffeglobal_pad): Delete this unused and broken macro.
+
 Fri Jun 26 11:54:19 1998  Craig Burley  <burley@gnu.org>
 
 	* g77spec.c (lang_specific_driver): Put `-lg2c' in

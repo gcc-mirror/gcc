@@ -435,18 +435,26 @@ ffeequiv_layout_local_ (ffeequiv eq)
 		{
 		  ffetargetOffset new_size;
 
+		  /* First, calculate the initial padding necessary
+		     to preserve the current alignment/modulo requirements
+		     for the storage area.  */
+		  pad = (-item_offset) % ffestorag_alignment (st);
+		  if (pad != 0)
+		    pad = ffestorag_alignment (st) - pad;
+
 		  /* Increase size of equiv area to start for lower offset relative
 		     to root symbol.  */
-
-		  if (!ffetarget_offset_add (&new_size,
-					     ffestorag_offset (st) - item_offset,
+		  if (! ffetarget_offset_add (&new_size,
+					     (ffestorag_offset (st)
+					      - item_offset)
+					     + pad,
 					     ffestorag_size (st)))
 		    ffetarget_offset_overflow (ffesymbol_text (s));
 		  else
 		    ffestorag_set_size (st, new_size);
 
 		  ffestorag_set_symbol (st, item_sym);
-		  ffestorag_set_offset (st, item_offset);
+		  ffestorag_set_offset (st, item_offset - pad);
 
 #if FFEEQUIV_DEBUG
 		  fprintf (stderr, " [eq offset=%" ffetargetOffset_f

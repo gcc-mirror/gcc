@@ -2771,10 +2771,12 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	ffebitCount i;
 	ffebit bits = ffebld_accter_bits (expr);
 	ffetargetOffset source_offset = 0;
-	size_t size;
+	ffetargetOffset dest_offset = ffebld_accter_pad (expr);
 	tree purpose;
 
-	size = ffetype_size (ffeinfo_type (bt, kt));
+	assert (dest_offset == 0
+		|| (bt == FFEINFO_basictypeCHARACTER
+		    && kt == FFEINFO_kindtypeCHARACTER1));
 
 	list = item = NULL;
 	for (;;)
@@ -2797,8 +2799,9 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 
 		    t = ffecom_constantunion (&cu, bt, kt, tree_type);
 
-		    if (i == 0)
-		      purpose = build_int_2 (source_offset, 0);
+		    if (i == 0
+			&& dest_offset != 0)
+		      purpose = build_int_2 (dest_offset, 0);
 		    else
 		      purpose = NULL_TREE;
 
@@ -2812,10 +2815,12 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 		  }
 	      }
 	    source_offset += length;
+	    dest_offset += length;
 	  }
       }
 
-      item = build_int_2 (ffebld_accter_size (expr), 0);
+      item = build_int_2 ((ffebld_accter_size (expr)
+			   + ffebld_accter_pad (expr)) - 1, 0);
       ffebit_kill (ffebld_accter_bits (expr));
       TREE_TYPE (item) = ffecom_integer_type_node;
       item
@@ -2833,7 +2838,18 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       {
 	ffetargetOffset i;
 
-	list = item = NULL_TREE;
+	list = NULL_TREE;
+	if (ffebld_arrter_pad (expr) == 0)
+	  item = NULL_TREE;
+	else
+	  {
+	    assert (bt == FFEINFO_basictypeCHARACTER
+		    && kt == FFEINFO_kindtypeCHARACTER1);
+
+	    /* Becomes PURPOSE first time through loop.  */
+	    item = build_int_2 (ffebld_arrter_pad (expr), 0);
+	  }
+
 	for (i = 0; i < ffebld_arrter_size (expr); ++i)
 	  {
 	    ffebldConstantUnion cu
@@ -2842,7 +2858,8 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	    t = ffecom_constantunion (&cu, bt, kt, tree_type);
 
 	    if (list == NULL_TREE)
-	      list = item = build_tree_list (NULL_TREE, t);
+	      /* Assume item is PURPOSE first time through loop.  */
+	      list = item = build_tree_list (item, t);
 	    else
 	      {
 		TREE_CHAIN (item) = build_tree_list (NULL_TREE, t);
@@ -2851,13 +2868,14 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	  }
       }
 
-      item = build_int_2 (ffebld_arrter_size (expr), 0);
+      item = build_int_2 ((ffebld_arrter_size (expr)
+			  + ffebld_arrter_pad (expr)) - 1, 0);
       TREE_TYPE (item) = ffecom_integer_type_node;
       item
 	= build_array_type
 	  (tree_type,
 	   build_range_type (ffecom_integer_type_node,
-			     ffecom_integer_one_node,
+			     ffecom_integer_zero_node,
 			     item));
       list = build (CONSTRUCTOR, item, NULL_TREE, list);
       TREE_CONSTANT (list) = 1;
@@ -6654,11 +6672,13 @@ ffecom_finish_global_ (ffeglobal global)
 
   /* Give the array a size now.  */
 
-  size = build_int_2 (ffeglobal_common_size (global), 0);
+  size = build_int_2 ((ffeglobal_common_size (global)
+		      + ffeglobal_common_pad (global)) - 1,
+		      0);
 
   cbtype = TREE_TYPE (cbt);
   TYPE_DOMAIN (cbtype) = build_range_type (integer_type_node,
-					   integer_one_node,
+					   integer_zero_node,
 					   size);
   if (!TREE_TYPE (size))
     TREE_TYPE (size) = TYPE_DOMAIN (cbtype);
@@ -9199,6 +9219,7 @@ ffecom_transform_common_ (ffesymbol s)
   tree cbt;
   tree cbtype;
   tree init;
+  tree high;
   bool is_init = ffestorag_is_init (st);
 
   assert (st != NULL);
@@ -9231,7 +9252,30 @@ ffecom_transform_common_ (ffesymbol s)
     {
       if (ffestorag_init (st) != NULL)
 	{
-	  init = ffecom_expr (ffestorag_init (st));
+	  ffebld sexp;
+
+	  /* Set the padding for the expression, so ffecom_expr
+	     knows to insert that many zeros.  */
+	  switch (ffebld_op (sexp = ffestorag_init (st)))
+	    {
+	    case FFEBLD_opCONTER:
+	      ffebld_conter_set_pad (sexp, ffestorag_modulo (st));
+	      break;
+
+	    case FFEBLD_opARRTER:
+	      ffebld_arrter_set_pad (sexp, ffestorag_modulo (st));
+	      break;
+
+	    case FFEBLD_opACCTER:
+	      ffebld_accter_set_pad (sexp, ffestorag_modulo (st));
+	      break;
+
+	    default:
+	      assert ("bad op for cmn init (pad)" == NULL);
+	      break;
+	    }
+
+	  init = ffecom_expr (sexp);
 	  if (init == error_mark_node)
 	    {			/* Hopefully the back end complained! */
 	      init = NULL_TREE;
@@ -9250,13 +9294,16 @@ ffecom_transform_common_ (ffesymbol s)
 
   /* cbtype must be permanently allocated!  */
 
+  /* Allocate the MAX of the areas so far, seen filewide.  */
+  high = build_int_2 ((ffeglobal_common_size (g)
+		       + ffeglobal_common_pad (g)) - 1, 0);
+  TREE_TYPE (high) = ffecom_integer_type_node;
+
   if (init)
     cbtype = build_array_type (char_type_node,
 			       build_range_type (integer_type_node,
-						 integer_one_node,
-						 build_int_2
-						 (ffeglobal_common_size (g),
-						  0)));
+						 integer_zero_node,
+						 high));
   else
     cbtype = build_array_type (char_type_node, NULL_TREE);
 
@@ -9308,7 +9355,8 @@ ffecom_transform_common_ (ffesymbol s)
 			      DECL_SIZE (cbt),
 			      size_int (BITS_PER_UNIT));
       assert (TREE_INT_CST_HIGH (size_tree) == 0);
-      assert (TREE_INT_CST_LOW (size_tree) == ffeglobal_common_size (g));
+      assert (TREE_INT_CST_LOW (size_tree)
+	      == ffeglobal_common_size (g) + ffeglobal_common_pad (g));
     }
 
   ffeglobal_set_hook (g, cbt);
@@ -9346,7 +9394,30 @@ ffecom_transform_equiv_ (ffestorag eqst)
     {
       if (ffestorag_init (eqst) != NULL)
 	{
-	  init = ffecom_expr (ffestorag_init (eqst));
+	  ffebld sexp;
+
+	  /* Set the padding for the expression, so ffecom_expr
+	     knows to insert that many zeros.  */
+	  switch (ffebld_op (sexp = ffestorag_init (eqst)))
+	    {
+	    case FFEBLD_opCONTER:
+	      ffebld_conter_set_pad (sexp, ffestorag_modulo (eqst));
+	      break;
+
+	    case FFEBLD_opARRTER:
+	      ffebld_arrter_set_pad (sexp, ffestorag_modulo (eqst));
+	      break;
+
+	    case FFEBLD_opACCTER:
+	      ffebld_accter_set_pad (sexp, ffestorag_modulo (eqst));
+	      break;
+
+	    default:
+	      assert ("bad op for eqv init (pad)" == NULL);
+	      break;
+	    }
+
+	  init = ffecom_expr (sexp);
 	  if (init == error_mark_node)
 	    init = NULL_TREE;	/* Hopefully the back end complained! */
 	}
@@ -9365,12 +9436,13 @@ ffecom_transform_equiv_ (ffestorag eqst)
 
   yes = suspend_momentary ();
 
-  high = build_int_2 (ffestorag_size (eqst), 0);
+  high = build_int_2 ((ffestorag_size (eqst)
+		       + ffestorag_modulo (eqst)) - 1, 0);
   TREE_TYPE (high) = ffecom_integer_type_node;
 
   eqtype = build_array_type (char_type_node,
 			     build_range_type (ffecom_integer_type_node,
-					       ffecom_integer_one_node,
+					       ffecom_integer_zero_node,
 					       high));
 
   eqt = build_decl (VAR_DECL,
@@ -9429,7 +9501,8 @@ ffecom_transform_equiv_ (ffestorag eqst)
 			    DECL_SIZE (eqt),
 			    size_int (BITS_PER_UNIT));
     assert (TREE_INT_CST_HIGH (size_tree) == 0);
-    assert (TREE_INT_CST_LOW (size_tree) == ffestorag_size (eqst));
+    assert (TREE_INT_CST_LOW (size_tree)
+	    == ffestorag_size (eqst) + ffestorag_modulo (eqst));
   }
 
   ffestorag_set_hook (eqst, eqt);
@@ -12842,6 +12915,7 @@ ffecom_notify_init_storage (ffestorag st)
   ffebld init;			/* The initialization expression. */
 #if 0 && FFECOM_targetCURRENT == FFECOM_targetGCC
   ffetargetOffset size;		/* The size of the entity. */
+  ffetargetAlign pad;		/* Its initial padding. */
 #endif
 
   if (ffestorag_init (st) == NULL)
@@ -12854,10 +12928,12 @@ ffecom_notify_init_storage (ffestorag st)
 #if 0 && FFECOM_targetCURRENT == FFECOM_targetGCC
       /* For GNU backend, just turn ACCTER into ARRTER and proceed. */
       size = ffebld_accter_size (init);
+      pad = ffebld_accter_pad (init);
       ffebit_kill (ffebld_accter_bits (init));
       ffebld_set_op (init, FFEBLD_opARRTER);
       ffebld_set_arrter (init, ffebld_accter (init));
       ffebld_arrter_set_size (init, size);
+      ffebld_arrter_set_pad (init, size);
 #endif
 
 #if FFECOM_TWOPASS
@@ -12928,6 +13004,7 @@ ffecom_notify_init_symbol (ffesymbol s)
   ffebld init;			/* The initialization expression. */
 #if 0 && FFECOM_targetCURRENT == FFECOM_targetGCC
   ffetargetOffset size;		/* The size of the entity. */
+  ffetargetAlign pad;		/* Its initial padding. */
 #endif
 
   if (ffesymbol_storage (s) == NULL)
@@ -12943,10 +13020,12 @@ ffecom_notify_init_symbol (ffesymbol s)
 #if 0 && FFECOM_targetCURRENT == FFECOM_targetGCC
       /* For GNU backend, just turn ACCTER into ARRTER and proceed. */
       size = ffebld_accter_size (init);
+      pad = ffebld_accter_pad (init);
       ffebit_kill (ffebld_accter_bits (init));
       ffebld_set_op (init, FFEBLD_opARRTER);
       ffebld_set_arrter (init, ffebld_accter (init));
       ffebld_arrter_set_size (init, size);
+      ffebld_arrter_set_pad (init, size);
 #endif
 
 #if FFECOM_TWOPASS

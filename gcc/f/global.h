@@ -108,7 +108,7 @@ struct _ffeglobal_
       ffewhereLine save_where_line;
       ffewhereColumn save_where_col;
       bool have_size;		/* Size info avail for COMMON? */
-      long size;		/* Size info for COMMON. */
+      ffetargetOffset size;	/* Size info for COMMON. */
       bool blank;		/* TRUE if blank COMMON. */
     } common;
     struct {
@@ -148,7 +148,7 @@ void ffeglobal_ref_intrinsic (ffesymbol s, ffelexToken t, bool explicit);
 bool ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type);
 void ffeglobal_save_common (ffesymbol s, bool save, ffewhereLine wl,
 			    ffewhereColumn wc);
-bool ffeglobal_size_common (ffesymbol s, long size);
+bool ffeglobal_size_common (ffesymbol s, ffetargetOffset size);
 void ffeglobal_terminate_1 (void);
 
 /* Define macros. */
@@ -164,6 +164,7 @@ void ffeglobal_terminate_1 (void);
 #define ffeglobal_common_init(g) ((g)->tick != 0)
 #define ffeglobal_common_have_pad(g) ((g)->u.common.have_pad)
 #define ffeglobal_common_have_size(g) ((g)->u.common.have_size)
+#define ffeglobal_common_pad(g) ((g)->u.common.pad)
 #define ffeglobal_common_size(g) ((g)->u.common.size)
 #define ffeglobal_hook(g) ((g)->hook)
 #define ffeglobal_init_0()
@@ -178,7 +179,6 @@ void ffeglobal_terminate_1 (void);
       ffeglobal_new_progunit_(s,t,FFEGLOBAL_typeMAIN)
 #define ffeglobal_new_subroutine(s,t) \
       ffeglobal_new_progunit_(s,t,FFEGLOBAL_typeSUBR)
-#define ffeglobal_pad(g) ((g)->pad)
 #define ffeglobal_ref_blockdata(s,t) \
       ffeglobal_ref_progunit_(s,t,FFEGLOBAL_typeBDATA)
 #define ffeglobal_ref_external(s,t) \
