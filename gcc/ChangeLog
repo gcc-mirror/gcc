@@ -1,3 +1,7 @@
+Thu Oct 29 12:14:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* alpha/linux.h (CPP_PREDEFINES): Add missing space.
+
 Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* collect2.c (aix64_flag): New variable.
