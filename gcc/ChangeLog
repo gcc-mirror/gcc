@@ -1,11 +1,6 @@
-Wed Nov 28 06:52:27 2001  Arnaud Charlet  <charlet@ACT-Europe.FR>
-
-	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Remove STAGE_PREFIX.
-	(FLAGS_TO_PASS): Add STAGE_PREFIX.
-	(SUBDIR_FLAGS_TO_PASS): Apply PREPEND_DOTDOT_TO_RELATIVE_PATH
-	to STAGE_PREFIX.
-
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* langhooks.c (lhd_safe_from_p): Add ATTRIBUTE_UNUSED.
 
 	* df.c (iterate_dataflow_sbitmap, iterate_dataflow_bitmap):
 	Add casts to remove warnings.
@@ -14,6 +9,13 @@ Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* print-rtl.c (print_rtx): If RTX code is bad, just say so.
 	Also minor cleanups.
+
+Wed Nov 28 06:52:27 2001  Arnaud Charlet  <charlet@ACT-Europe.FR>
+
+	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Remove STAGE_PREFIX.
+	(FLAGS_TO_PASS): Add STAGE_PREFIX.
+	(SUBDIR_FLAGS_TO_PASS): Apply PREPEND_DOTDOT_TO_RELATIVE_PATH
+	to STAGE_PREFIX.
 
 Wed Nov 28 10:42:19 CET 2001  Jan Hubicka  <jh@suse.cz>
 
