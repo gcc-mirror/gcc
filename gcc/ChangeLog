@@ -1,4 +1,10 @@
+2002-05-31  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (HOT_TEXT_SECTION_NAME): Define.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Define.
+
 2002-05-31  Alan Lehotsky <apl@alum.mit.edu>
+
 	* varasm.c (mark_constant_pool): Walk epilogue delay list
 	checking the insn, not the chain for potential constants.
 	
