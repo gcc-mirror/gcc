@@ -78,15 +78,80 @@ Boston, MA 02111-1307, USA.  */
 
 static int next_qty;
 
-/* In all the following vectors indexed by quantity number.  */
+/* Information we maitain about each quantity.  */
+struct qty
+{
+  /* The number of refs to quantity Q.  */
 
-/* Element Q is the hard reg number chosen for quantity Q,
-   or -1 if none was found.  */
+  int n_refs;
 
-static short *qty_phys_reg;
+  /* Insn number (counting from head of basic block)
+     where quantity Q was born.  -1 if birth has not been recorded.  */
+
+  int birth;
+
+  /* Insn number (counting from head of basic block)
+     where given quantity died.  Due to the way tying is done,
+     and the fact that we consider in this pass only regs that die but once,
+     a quantity can die only once.  Each quantity's life span
+     is a set of consecutive insns.  -1 if death has not been recorded.  */
+
+  int death;
+
+  /* Number of words needed to hold the data in given quantity.
+     This depends on its machine mode.  It is used for these purposes:
+     1. It is used in computing the relative importances of qtys,
+	which determines the order in which we look for regs for them.
+     2. It is used in rules that prevent tying several registers of
+	different sizes in a way that is geometrically impossible
+	(see combine_regs).  */
+
+  int size;
+
+  /* Number of times a reg tied to given qty lives across a CALL_INSN.  */
+
+  int n_calls_crossed;
+
+  /* The register number of one pseudo register whose reg_qty value is Q.
+     This register should be the head of the chain
+     maintained in reg_next_in_qty.  */
+
+  int first_reg;
+
+  /* Reg class contained in (smaller than) the preferred classes of all
+     the pseudo regs that are tied in given quantity.
+     This is the preferred class for allocating that quantity.  */
+
+  enum reg_class min_class;
+
+  /* Register class within which we allocate given qty if we can't get
+     its preferred class.  */
+
+  enum reg_class alternate_class;
+
+  /* This holds the mode of the registers that are tied to given qty,
+     or VOIDmode if registers with differing modes are tied together.  */
+
+  enum machine_mode mode;
+
+  /* the hard reg number chosen for given quantity,
+     or -1 if none was found.  */
+
+  short phys_reg;
+
+  /* Nonzero if this quantity has been used in a SUBREG that changes
+     its size.  */
+
+  char changes_size;
+
+};
+
+static struct qty *qty;
+
+/* These fields are kept separately to speedup their clearing.  */
 
 /* We maintain two hard register sets that indicate suggested hard registers
-   for each quantity.  The first, qty_phys_copy_sugg, contains hard registers
+   for each quantity.  The first, phys_copy_sugg, contains hard registers
    that are tied to the quantity by a simple copy.  The second contains all
    hard registers that are tied to the quantity via an arithmetic operation.
 
@@ -111,67 +176,10 @@ static short *qty_phys_num_copy_sugg;
 
 static short *qty_phys_num_sugg;
 
-/* Element Q is the number of refs to quantity Q.  */
-
-static int *qty_n_refs;
-
-/* Element Q is a reg class contained in (smaller than) the
-   preferred classes of all the pseudo regs that are tied in quantity Q.
-   This is the preferred class for allocating that quantity.  */
-
-static enum reg_class *qty_min_class;
-
-/* Insn number (counting from head of basic block)
-   where quantity Q was born.  -1 if birth has not been recorded.  */
-
-static int *qty_birth;
-
-/* Insn number (counting from head of basic block)
-   where quantity Q died.  Due to the way tying is done,
-   and the fact that we consider in this pass only regs that die but once,
-   a quantity can die only once.  Each quantity's life span
-   is a set of consecutive insns.  -1 if death has not been recorded.  */
-
-static int *qty_death;
-
-/* Number of words needed to hold the data in quantity Q.
-   This depends on its machine mode.  It is used for these purposes:
-   1. It is used in computing the relative importances of qtys,
-      which determines the order in which we look for regs for them.
-   2. It is used in rules that prevent tying several registers of
-      different sizes in a way that is geometrically impossible
-      (see combine_regs).  */
-
-static int *qty_size;
-
-/* This holds the mode of the registers that are tied to qty Q,
-   or VOIDmode if registers with differing modes are tied together.  */
-
-static enum machine_mode *qty_mode;
-
-/* Number of times a reg tied to qty Q lives across a CALL_INSN.  */
-
-static int *qty_n_calls_crossed;
-
-/* Register class within which we allocate qty Q if we can't get
-   its preferred class.  */
-
-static enum reg_class *qty_alternate_class;
-
-/* Element Q is nonzero if this quantity has been used in a SUBREG
-   that changes its size.  */
-
-static char *qty_changes_size;
-
-/* Element Q is the register number of one pseudo register whose
-   reg_qty value is Q.  This register should be the head of the chain
-   maintained in reg_next_in_qty.  */
-
-static int *qty_first_reg;
 
 /* If (REG N) has been assigned a quantity number, is a register number
    of another register assigned the same quantity number, or -1 for the
-   end of the chain.  qty_first_reg point to the head of this chain.  */
+   end of the chain.  qty->first_reg point to the head of this chain.  */
 
 static int *reg_next_in_qty;
 
@@ -278,21 +286,21 @@ alloc_qty (regno, mode, size, birth)
      enum machine_mode mode;
      int size, birth;
 {
-  register int qty = next_qty++;
+  register int qtyno = next_qty++;
 
-  reg_qty[regno] = qty;
+  reg_qty[regno] = qtyno;
   reg_offset[regno] = 0;
   reg_next_in_qty[regno] = -1;
 
-  qty_first_reg[qty] = regno;
-  qty_size[qty] = size;
-  qty_mode[qty] = mode;
-  qty_birth[qty] = birth;
-  qty_n_calls_crossed[qty] = REG_N_CALLS_CROSSED (regno);
-  qty_min_class[qty] = reg_preferred_class (regno);
-  qty_alternate_class[qty] = reg_alternate_class (regno);
-  qty_n_refs[qty] = REG_N_REFS (regno);
-  qty_changes_size[qty] = REG_CHANGES_SIZE (regno);
+  qty[qtyno].first_reg = regno;
+  qty[qtyno].size = size;
+  qty[qtyno].mode = mode;
+  qty[qtyno].birth = birth;
+  qty[qtyno].n_calls_crossed = REG_N_CALLS_CROSSED (regno);
+  qty[qtyno].min_class = reg_preferred_class (regno);
+  qty[qtyno].alternate_class = reg_alternate_class (regno);
+  qty[qtyno].n_refs = REG_N_REFS (regno);
+  qty[qtyno].changes_size = REG_CHANGES_SIZE (regno);
 }
 
 /* Main entry point of this file.  */
@@ -326,25 +334,12 @@ local_alloc ()
      See the declarations of these variables, above,
      for what they mean.  */
 
-  qty_phys_reg = (short *) xmalloc (max_qty * sizeof (short));
+  qty = (struct qty *) xmalloc (max_qty * sizeof (struct qty));
   qty_phys_copy_sugg
     = (HARD_REG_SET *) xmalloc (max_qty * sizeof (HARD_REG_SET));
   qty_phys_num_copy_sugg = (short *) xmalloc (max_qty * sizeof (short));
   qty_phys_sugg = (HARD_REG_SET *) xmalloc (max_qty * sizeof (HARD_REG_SET));
   qty_phys_num_sugg = (short *) xmalloc (max_qty * sizeof (short));
-  qty_birth = (int *) xmalloc (max_qty * sizeof (int));
-  qty_death = (int *) xmalloc (max_qty * sizeof (int));
-  qty_first_reg = (int *) xmalloc (max_qty * sizeof (int));
-  qty_size = (int *) xmalloc (max_qty * sizeof (int));
-  qty_mode
-    = (enum machine_mode *) xmalloc (max_qty * sizeof (enum machine_mode));
-  qty_n_calls_crossed = (int *) xmalloc (max_qty * sizeof (int));
-  qty_min_class
-    = (enum reg_class *) xmalloc (max_qty * sizeof (enum reg_class));
-  qty_alternate_class
-    = (enum reg_class *) xmalloc (max_qty * sizeof (enum reg_class));
-  qty_n_refs = (int *) xmalloc (max_qty * sizeof (int));
-  qty_changes_size = (char *) xmalloc (max_qty * sizeof (char));
 
   reg_qty = (int *) xmalloc (max_regno * sizeof (int));
   reg_offset = (char *) xmalloc (max_regno * sizeof (char));
@@ -413,21 +408,11 @@ local_alloc ()
       block_alloc (b);
     }
 
-  free (qty_phys_reg);
+  free (qty);
   free (qty_phys_copy_sugg);
   free (qty_phys_num_copy_sugg);
   free (qty_phys_sugg);
   free (qty_phys_num_sugg);
-  free (qty_birth);
-  free (qty_death);
-  free (qty_first_reg);
-  free (qty_size);
-  free (qty_mode);
-  free (qty_n_calls_crossed);
-  free (qty_min_class);
-  free (qty_alternate_class);
-  free (qty_n_refs);
-  free (qty_changes_size);
 
   free (reg_qty);
   free (reg_offset);
@@ -1356,10 +1341,10 @@ block_alloc (b)
     {
       q = qty_order[i];
       if (qty_phys_num_sugg[q] != 0 || qty_phys_num_copy_sugg[q] != 0)
-	qty_phys_reg[q] = find_free_reg (qty_min_class[q], qty_mode[q], q,
-					 0, 1, qty_birth[q], qty_death[q]);
+	qty[q].phys_reg = find_free_reg (qty[q].min_class, qty[q].mode, q,
+					 0, 1, qty[q].birth, qty[q].death);
       else
-	qty_phys_reg[q] = -1;
+	qty[q].phys_reg = -1;
     }
 
   /* Order the qtys so we assign them registers in order of 
@@ -1406,7 +1391,7 @@ block_alloc (b)
   for (i = 0; i < next_qty; i++)
     {
       q = qty_order[i];
-      if (qty_phys_reg[q] < 0)
+      if (qty[q].phys_reg < 0)
 	{
 #ifdef INSN_SCHEDULING
 	  /* These values represent the adjusted lifetime of a qty so
@@ -1426,9 +1411,9 @@ block_alloc (b)
 
 	     If allocation using the extended lifetime fails we will try
 	     again with the qty's unadjusted lifetime.  */
-	  int fake_birth = MAX (0, qty_birth[q] - 2 + qty_birth[q] % 2);
+	  int fake_birth = MAX (0, qty[q].birth - 2 + qty[q].birth % 2);
 	  int fake_death = MIN (insn_number * 2 + 1,
-				qty_death[q] + 2 - qty_death[q] % 2);
+				qty[q].death + 2 - qty[q].death % 2);
 #endif
 
 	  if (N_REG_CLASSES > 1)
@@ -1446,17 +1431,17 @@ block_alloc (b)
 		  && !SMALL_REGISTER_CLASSES)
 		{
 		
-		  qty_phys_reg[q] = find_free_reg (qty_min_class[q], 
-						   qty_mode[q], q, 0, 0,
+		  qty[q].phys_reg = find_free_reg (qty[q].min_class, 
+						   qty[q].mode, q, 0, 0,
 						   fake_birth, fake_death);
-		  if (qty_phys_reg[q] >= 0)
+		  if (qty[q].phys_reg >= 0)
 		    continue;
 		}
 #endif
-	      qty_phys_reg[q] = find_free_reg (qty_min_class[q], 
-					       qty_mode[q], q, 0, 0,
-					       qty_birth[q], qty_death[q]);
-	      if (qty_phys_reg[q] >= 0)
+	      qty[q].phys_reg = find_free_reg (qty[q].min_class, 
+					       qty[q].mode, q, 0, 0,
+					       qty[q].birth, qty[q].death);
+	      if (qty[q].phys_reg >= 0)
 		continue;
 	    }
 
@@ -1465,15 +1450,15 @@ block_alloc (b)
 	  if (flag_schedule_insns_after_reload
 	      && !optimize_size
 	      && !SMALL_REGISTER_CLASSES
-	      && qty_alternate_class[q] != NO_REGS)
-	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
-					     qty_mode[q], q, 0, 0,
+	      && qty[q].alternate_class != NO_REGS)
+	    qty[q].phys_reg = find_free_reg (qty[q].alternate_class,
+					     qty[q].mode, q, 0, 0,
 					     fake_birth, fake_death);
 #endif
-	  if (qty_alternate_class[q] != NO_REGS)
-	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
-					     qty_mode[q], q, 0, 0,
-					     qty_birth[q], qty_death[q]);
+	  if (qty[q].alternate_class != NO_REGS)
+	    qty[q].phys_reg = find_free_reg (qty[q].alternate_class,
+					     qty[q].mode, q, 0, 0,
+					     qty[q].birth, qty[q].death);
 	}
     }
 
@@ -1481,10 +1466,10 @@ block_alloc (b)
      to the pseudo regs belonging to the qtys.  */
 
   for (q = 0; q < next_qty; q++)
-    if (qty_phys_reg[q] >= 0)
+    if (qty[q].phys_reg >= 0)
       {
-	for (i = qty_first_reg[q]; i >= 0; i = reg_next_in_qty[i])
-	  reg_renumber[i] = qty_phys_reg[q] + reg_offset[i];
+	for (i = qty[q].first_reg; i >= 0; i = reg_next_in_qty[i])
+	  reg_renumber[i] = qty[q].phys_reg + reg_offset[i];
       }
 
   /* Clean up.  */
@@ -1509,8 +1494,8 @@ block_alloc (b)
    QTY_CMP_PRI is also used by qty_sugg_compare.  */
 
 #define QTY_CMP_PRI(q)		\
-  ((int) (((double) (floor_log2 (qty_n_refs[q]) * qty_n_refs[q] * qty_size[q]) \
-	  / (qty_death[q] - qty_birth[q])) * 10000))
+  ((int) (((double) (floor_log2 (qty[q].n_refs) * qty[q].n_refs * qty[q].size) \
+	  / (qty[q].death - qty[q].birth)) * 10000))
 
 static int
 qty_compare (q1, q2)
@@ -1656,7 +1641,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       /* Do not combine with a smaller already-assigned object
 	 if that smaller object is already combined with something bigger.  */
       || (ssize > usize && ureg >= FIRST_PSEUDO_REGISTER
-	  && usize < qty_size[reg_qty[ureg]])
+	  && usize < qty[reg_qty[ureg]].size)
       /* Can't combine if SREG is not a register we can allocate.  */
       || (sreg >= FIRST_PSEUDO_REGISTER && reg_qty[sreg] == -1)
       /* Don't combine with a pseudo mentioned in a REG_NO_CONFLICT note.
@@ -1745,30 +1730,30 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
      are compatible.  */
 
   if ((already_dead || find_regno_note (insn, REG_DEAD, ureg))
-      && reg_meets_class_p (sreg, qty_min_class[reg_qty[ureg]]))
+      && reg_meets_class_p (sreg, qty[reg_qty[ureg]].min_class))
     {
       /* Add SREG to UREG's quantity.  */
       sqty = reg_qty[ureg];
       reg_qty[sreg] = sqty;
       reg_offset[sreg] = reg_offset[ureg] + offset;
-      reg_next_in_qty[sreg] = qty_first_reg[sqty];
-      qty_first_reg[sqty] = sreg;
+      reg_next_in_qty[sreg] = qty[sqty].first_reg;
+      qty[sqty].first_reg = sreg;
 
-      /* If SREG's reg class is smaller, set qty_min_class[SQTY].  */
+      /* If SREG's reg class is smaller, set qty[SQTY].min_class.  */
       update_qty_class (sqty, sreg);
 
       /* Update info about quantity SQTY.  */
-      qty_n_calls_crossed[sqty] += REG_N_CALLS_CROSSED (sreg);
-      qty_n_refs[sqty] += REG_N_REFS (sreg);
+      qty[sqty].n_calls_crossed += REG_N_CALLS_CROSSED (sreg);
+      qty[sqty].n_refs += REG_N_REFS (sreg);
       if (usize < ssize)
 	{
 	  register int i;
 
-	  for (i = qty_first_reg[sqty]; i >= 0; i = reg_next_in_qty[i])
+	  for (i = qty[sqty].first_reg; i >= 0; i = reg_next_in_qty[i])
 	    reg_offset[i] -= offset;
 
-	  qty_size[sqty] = ssize;
-	  qty_mode[sqty] = GET_MODE (setreg);
+	  qty[sqty].size = ssize;
+	  qty[sqty].mode = GET_MODE (setreg);
 	}
     }
   else
@@ -1791,23 +1776,23 @@ reg_meets_class_p (reg, class)
 	  || reg_class_subset_p (class, rclass));
 }
 
-/* Update the class of QTY assuming that REG is being tied to it.  */
+/* Update the class of QTYNO assuming that REG is being tied to it.  */
 
 static void
-update_qty_class (qty, reg)
-     int qty;
+update_qty_class (qtyno, reg)
+     int qtyno;
      int reg;
 {
   enum reg_class rclass = reg_preferred_class (reg);
-  if (reg_class_subset_p (rclass, qty_min_class[qty]))
-    qty_min_class[qty] = rclass;
+  if (reg_class_subset_p (rclass, qty[qtyno].min_class))
+    qty[qtyno].min_class = rclass;
 
   rclass = reg_alternate_class (reg);
-  if (reg_class_subset_p (rclass, qty_alternate_class[qty]))
-    qty_alternate_class[qty] = rclass;
+  if (reg_class_subset_p (rclass, qty[qtyno].alternate_class))
+    qty[qtyno].alternate_class = rclass;
 
   if (REG_CHANGES_SIZE (reg))
-    qty_changes_size[qty] = 1;
+    qty[qtyno].changes_size = 1;
 }
 
 /* Handle something which alters the value of an rtx REG.
@@ -1870,7 +1855,7 @@ reg_is_born (reg, birth)
 
       /* If this register has a quantity number, show that it isn't dead.  */
       if (reg_qty[regno] >= 0)
-	qty_death[reg_qty[regno]] = -1;
+	qty[reg_qty[regno]].death = -1;
     }
 }
 
@@ -1931,7 +1916,7 @@ wipe_dead_reg (reg, output_p)
     }
 
   else if (reg_qty[regno] >= 0)
-    qty_death[reg_qty[regno]] = 2 * this_insn_number + output_p;
+    qty[reg_qty[regno]].death = 2 * this_insn_number + output_p;
 }
 
 /* Find a block of SIZE words of hard regs in reg_class CLASS
@@ -1940,18 +1925,18 @@ wipe_dead_reg (reg, output_p)
    and still free between insn BORN_INDEX and insn DEAD_INDEX,
    and return the number of the first of them.
    Return -1 if such a block cannot be found. 
-   If QTY crosses calls, insist on a register preserved by calls,
+   If QTYNO crosses calls, insist on a register preserved by calls,
    unless ACCEPT_CALL_CLOBBERED is nonzero.
 
    If JUST_TRY_SUGGESTED is non-zero, only try to see if the suggested
    register is available.  If not, return -1.  */
 
 static int
-find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
+find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
 	       born_index, dead_index)
      enum reg_class class;
      enum machine_mode mode;
-     int qty;
+     int qtyno;
      int accept_call_clobbered;
      int just_try_suggested;
      int born_index, dead_index;
@@ -1972,12 +1957,12 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
   /* Don't let a pseudo live in a reg across a function call
      if we might get a nonlocal goto.  */
   if (current_function_has_nonlocal_label
-      && qty_n_calls_crossed[qty] > 0)
+      && qty[qtyno].n_calls_crossed > 0)
     return -1;
 
   if (accept_call_clobbered)
     COPY_HARD_REG_SET (used, call_fixed_reg_set);
-  else if (qty_n_calls_crossed[qty] == 0)
+  else if (qty[qtyno].n_calls_crossed == 0)
     COPY_HARD_REG_SET (used, fixed_reg_set);
   else
     COPY_HARD_REG_SET (used, call_used_reg_set);
@@ -2009,7 +1994,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 #endif
 
 #ifdef CLASS_CANNOT_CHANGE_SIZE
-  if (qty_changes_size[qty])
+  if (qty[qtyno].changes_size)
     IOR_HARD_REG_SET (used,
 		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
 #endif
@@ -2024,10 +2009,10 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 
   if (just_try_suggested)
     {
-      if (qty_phys_num_copy_sugg[qty] != 0)
-	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_copy_sugg[qty]);
+      if (qty_phys_num_copy_sugg[qtyno] != 0)
+	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_copy_sugg[qtyno]);
       else
-	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_sugg[qty]);
+	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_sugg[qtyno]);
     }
 
   /* If all registers are excluded, we can't do anything.  */
@@ -2044,7 +2029,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 #endif
       if (! TEST_HARD_REG_BIT (first_used, regno)
 	  && HARD_REGNO_MODE_OK (regno, mode)
-	  && (qty_n_calls_crossed[qty] == 0
+	  && (qty[qtyno].n_calls_crossed == 0
 	      || accept_call_clobbered
 	      || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	{
@@ -2072,12 +2057,12 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
   
   /* If it would be profitable to allocate a call-clobbered register
      and save and restore it around calls, do that.  */
-  if (just_try_suggested && qty_phys_num_copy_sugg[qty] != 0
-      && qty_phys_num_sugg[qty] != 0)
+  if (just_try_suggested && qty_phys_num_copy_sugg[qtyno] != 0
+      && qty_phys_num_sugg[qtyno] != 0)
     {
       /* Don't try the copy-suggested regs again.  */
-      qty_phys_num_copy_sugg[qty] = 0;
-      return find_free_reg (class, mode, qty, accept_call_clobbered, 1,
+      qty_phys_num_copy_sugg[qtyno] = 0;
+      return find_free_reg (class, mode, qtyno, accept_call_clobbered, 1,
 			    born_index, dead_index);
     }
 
@@ -2088,10 +2073,10 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
   if (! accept_call_clobbered
       && flag_caller_saves
       && ! just_try_suggested
-      && qty_n_calls_crossed[qty] != 0
-      && CALLER_SAVE_PROFITABLE (qty_n_refs[qty], qty_n_calls_crossed[qty]))
+      && qty[qtyno].n_calls_crossed != 0
+      && CALLER_SAVE_PROFITABLE (qty[qtyno].n_refs, qty[qtyno].n_calls_crossed))
     {
-      i = find_free_reg (class, mode, qty, 1, 0, born_index, dead_index);
+      i = find_free_reg (class, mode, qtyno, 1, 0, born_index, dead_index);
       if (i >= 0)
 	caller_save_needed = 1;
       return i;
