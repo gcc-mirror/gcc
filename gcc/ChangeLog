@@ -1,3 +1,8 @@
+2002-02-02  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (xor patterns): Tighten the predicates
+	of operands[1] to register_operand.
+
 2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct spec_nodes): Remove n__CHAR_UNSIGNED__.
