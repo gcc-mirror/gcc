@@ -181,9 +181,9 @@ namespace std
   
   // codecvt
   inline template class __codecvt_abstract_base<char, char, mbstate_t>;
-  inline template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
   template class codecvt_byname<char, char, mbstate_t>;
 #ifdef _GLIBCPP_USE_WCHAR_T
+  inline template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
   template class codecvt_byname<wchar_t, char, mbstate_t>;
 #endif
 
