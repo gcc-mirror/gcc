@@ -1,3 +1,8 @@
+2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (an anonymous pattern): Relax the
+	condition to accept the same operands and/or subregs.
+
 2002-11-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/sh/sh.c (gen_shl_and): Revert previous patch.
