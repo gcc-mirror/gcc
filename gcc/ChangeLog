@@ -147,6 +147,10 @@ Tue Feb 11 19:06:24 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/install.texi: Squeeze and streamline section on
 	testing and regression checking.
 
+2003-02-07  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/t-netbsd (USER_H): Revert previous change.
+
 2003-02-07  Richard Henderson  <rth@redhat.com>
 
         PR 9226
