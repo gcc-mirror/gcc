@@ -3260,16 +3260,10 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (op0_mode))
 	return SUBREG_REG (x);
 
-      /* If we are narrowing an integral object, we need to see if we can
-	 simplify the expression for the object knowing that we only need the
-	 low-order bits.  */
+      /* Note that we cannot do any narrowing for non-constants since
+	 we might have been counting on using the fact that some bits were
+	 zero.  We now do this in the SET.  */
 
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-	  && subreg_lowpart_p (x))
-	return force_to_mode (SUBREG_REG (x), mode, GET_MODE_MASK (mode),
-			      NULL_RTX, 0);
       break;
 
     case NOT:
@@ -4200,6 +4194,13 @@ simplify_set (x)
   /* (set (pc) (return)) gets written as (return).  */
   if (GET_CODE (dest) == PC && GET_CODE (src) == RETURN)
     return src;
+
+  /* Now that we know for sure which bits of SRC we are using, see if we can
+     simplify the expression for the object knowing that we only need the
+     low-order bits.  */
+
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    src = force_to_mode (src, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
 
   /* Convert this into a field assignment operation, if possible.  */
   x = make_field_assignment (x);
