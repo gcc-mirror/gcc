@@ -2593,6 +2593,10 @@ note_addr_stored (x)
      This affects heuristics in strength_reduce.  */
   num_mem_sets++;
 
+  /* BLKmode MEM means all memory is clobbered.  */
+  if (GET_MODE (x) == BLKmode)
+    unknown_address_altered = 1;
+
   if (unknown_address_altered)
     return;
 
@@ -2601,10 +2605,9 @@ note_addr_stored (x)
 	&& MEM_IN_STRUCT_P (x) == MEM_IN_STRUCT_P (loop_store_mems[i]))
       {
 	/* We are storing at the same address as previously noted.  Save the
-	   wider reference, treating BLKmode as wider.  */
-	if (GET_MODE (x) == BLKmode
-	    || (GET_MODE_SIZE (GET_MODE (x))
-		> GET_MODE_SIZE (GET_MODE (loop_store_mems[i]))))
+	   wider reference.  */
+	if (GET_MODE_SIZE (GET_MODE (x))
+	    > GET_MODE_SIZE (GET_MODE (loop_store_mems[i])))
 	  loop_store_mems[i] = x;
 	break;
       }
