@@ -342,7 +342,7 @@
              (const_string "false")))
 
 (define_attr "not_repeat_reg" "false,true"
-       (cond [(eq_attr "type" "unary,unarycc,compare,lda,store")
+       (cond [(eq_attr "type" "unary,unarycc,compare,lda,ldp,store")
                        (if_then_else (and (match_operand 0 "not_rc_reg" "")
                                           (match_operand 1 "not_rc_reg" ""))
                                      (const_string "true") (const_string "false"))
@@ -353,6 +353,9 @@
                                      (const_string "true") (const_string "false"))]
              (const_string "false")))
 
+/* Disable compare because the c4x contains a bug. The cmpi insn sets the CC
+   in the read phase of the pipeline instead of the execution phase when
+   two registers are compared.  */
 (define_attr "in_annul_slot_1" "false,true"
   (if_then_else (and (and (eq_attr "cpu" "c4x")
 		          (eq_attr "type" "!jump,call,rets,jmpc,compare,db,dbc,repeat,repeat_top,laj,push,pop,lda,ldp,multi"))
