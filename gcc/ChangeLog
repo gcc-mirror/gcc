@@ -1,6 +1,7 @@
 2003-09-26  Loren James Rittle  <ljrittle@acm.org>
 
 	* objc/objc-act.c (tm_p.h): Tweak order.
+	* objc/Make-lang.in (objc/objc-act.o): Add $(TM_P_H).
 
 2003-09-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
