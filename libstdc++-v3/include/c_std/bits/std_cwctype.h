@@ -56,6 +56,7 @@
 #undef towupper
 #undef towctrans
 #undef wctrans
+#undef wctype
 
 namespace std
 {
@@ -82,6 +83,7 @@ namespace std
   using ::towupper;
   using ::towctrans;
   using ::wctrans;
+  using ::wctype;
 }
 
 #endif 

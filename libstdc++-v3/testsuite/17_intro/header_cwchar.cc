@@ -27,5 +27,8 @@ int main(void)
 {
   // Make sure size_t is in namespace std
   std::size_t i = 5;
+
+  std::tm mytime;
+
   return 0;
 }

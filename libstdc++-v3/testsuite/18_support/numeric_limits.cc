@@ -1,6 +1,6 @@
 // 1999-08-23 bkoz
 
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -80,9 +80,21 @@ bool test01()
   return test;
 }
 
+// test linkage of the generic bits
+void test02()
+{
+  typedef std::numeric_limits<B> b_nl_type;
+  
+  // Should probably do all of them...
+  const int* pi1 = &b_nl_type::digits;
+  const int* pi2 = &b_nl_type::digits10;
+  const int* pi3 = &b_nl_type::max_exponent10;
+  const bool* pb1 = &b_nl_type::traps;
+}
+
 int main()
 {
   test01();
-
+  test02();
   return 0;
 }
