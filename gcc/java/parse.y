@@ -5868,18 +5868,20 @@ do_resolve_class (enclosing, class_type, decl, cl)
      applicable and use the matching DECL instead. */
   if (!decl_result && QUALIFIED_P (TYPE_NAME (class_type)))
     {
-      tree name = TYPE_NAME (class_type);
       char *separator;
+      tree name = TYPE_NAME (class_type);
+      char *namebuffer = alloca (IDENTIFIER_LENGTH (name) + 1);
+
+      strcpy (namebuffer, IDENTIFIER_POINTER (name));
+
       do {
 
        /* Reach the last '.', and if applicable, replace it by a `$' and
           see if this exists as a type. */
-       if ((separator = strrchr (IDENTIFIER_POINTER (name), '.')))
+       if ((separator = strrchr (namebuffer, '.')))
          {
-           int c = *separator;
            *separator = '$';
-           name = get_identifier (IDENTIFIER_POINTER (name));
-           *separator = c;
+           name = get_identifier (namebuffer);
            decl_result = IDENTIFIER_CLASS_VALUE (name);
          }
       } while (!decl_result && separator);
