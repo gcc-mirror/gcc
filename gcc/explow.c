@@ -1010,3 +1010,41 @@ hard_libcall_value (mode)
 {
   return LIBCALL_VALUE (mode);
 }
+
+/* Look up the tree code for a given rtx code
+   to provide the arithmetic operation for REAL_ARITHMETIC.
+   The function returns an int because the caller may not know
+   what `enum tree_code' means.  */
+
+int
+rtx_to_tree_code (code)
+     enum rtx_code code;
+{
+  enum tree_code tcode;
+
+  switch (code)
+    {
+    case PLUS:
+      tcode = PLUS_EXPR;
+      break;
+    case MINUS:
+      tcode = MINUS_EXPR;
+      break;
+    case MULT:
+      tcode = MULT_EXPR;
+      break;
+    case DIV:
+      tcode = RDIV_EXPR;
+      break;
+    case SMIN:
+      tcode = MIN_EXPR;
+      break;
+    case SMAX:
+      tcode = MAX_EXPR;
+      break;
+    default:
+      tcode = LAST_AND_UNUSED_TREE_CODE;
+      break;
+    }
+  return ((int) tcode);
+}
