@@ -1418,12 +1418,12 @@ copy_rtx_if_shared (orig)
 	  if (XVEC (x, i) != NULL)
 	    {
 	      register int j;
+	      int len = XVECLEN (x, i);
 
-	      if (copied)
-		XVEC (x, i) = gen_rtvec_v (XVECLEN (x, i), &XVECEXP (x, i, 0));
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		XVECEXP (x, i, j)
-		  = copy_rtx_if_shared (XVECEXP (x, i, j));
+	      if (copied && len > 0)
+		XVEC (x, i) = gen_rtvec_v (len, &XVECEXP (x, i, 0));
+	      for (j = 0; j < len; j++)
+		XVECEXP (x, i, j) = copy_rtx_if_shared (XVECEXP (x, i, j));
 	    }
 	  break;
 	}
