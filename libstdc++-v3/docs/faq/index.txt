@@ -4,7 +4,7 @@
                      libstdc++ Frequently Asked Questions
                                        
    The latest version of this document is always available at
-   [2]http://sourceware.cygnus.com/libstdc++/faq/.
+   [2]http://sources.redhat.com/libstdc++/faq/.
    
    To the [3]libstdc++-v3 homepage.
      _________________________________________________________________
@@ -111,8 +111,8 @@
    
 1.5 When is libstdc++ going to be finished?
 
-   Nathan Myers gave the best of all possible answers in [42]a recent
-   Usenet article.
+   Nathan Myers gave the best of all possible answers in [42]a Usenet
+   article.
      _________________________________________________________________
    
 1.6 How do I contribute to the effort?
@@ -167,7 +167,7 @@
    not need to be subscribed to the list to send a message to it. More
    information is available on the homepage (including how to browse the
    list archives); to send to the list, use
-   [46]libstdc++@sourceware.cygnus.com.
+   [46]libstdc++@sources.redhat.com.
    
    If you have a question that you think should be included here, or if
    you have a question about a question/answer here, contact [47]Phil
@@ -218,9 +218,10 @@
 2.3 What is this CVS thing that you keep mentioning?
 
    The Concurrent Versions System is one of several revision control
-   packages. It was selected for GNU projects because it's free and very
-   high quality. The [53]CVS entry in the GNU software catalogue has a
-   better description as well as a [54]link to the makers of CVS.
+   packages. It was selected for GNU projects because it's free (speech),
+   free (beer), and very high quality. The [53]CVS entry in the GNU
+   software catalogue has a better description as well as a [54]link to
+   the makers of CVS.
    
    The "anonymous client checkout" feature of CVS is similar to anonymous
    FTP in that it allows anyone to retrieve the latest libstdc++ sources.
@@ -292,12 +293,10 @@
    the test does not hang, the zero-division is in fact trapped. That
    doesn't prevent hanging elsewhere.
    
-   You have two options. You can wait until the signal-handling in Cygwin
-   is reworked and released; this is planned to take "a few weeks" and
-   will result in a fix sometime in late December or early January. Or
-   you can get a prebuilt set of bits/std_limits.h and
-   src/limitsMEMBERS.cc files from Mumit Khan's [55]Cygwin-related
-   website.
+   You have two options. You can get a newer cygwin1.dll (see the Cygwin
+   paragraph in the [55]installation instructions). Or you can get a
+   prebuilt set of bits/std_limits.h and src/limitsMEMBERS.cc files from
+   Mumit Khan's [56]Cygwin-related website.
      _________________________________________________________________
    
                           4.0 Known Bugs and Non-Bugs
@@ -367,16 +366,16 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
 4.3 Bugs in the C++ language/lib specification
 
-   Yes, unfortunately, there are some. In a [56]message to the list,
+   Yes, unfortunately, there are some. In a [57]message to the list,
    Nathan Myers announced that he has started a list of problems in the
    ISO C++ Standard itself, especially with regard to the chapters that
-   concern the library. The list itself is [57]posted on his website.
+   concern the library. The list itself is [58]posted on his website.
    Developers who are having problems interpreting the Standard may wish
    to consult his notes.
    
    For those people who are not part of the ISO Library Group (i.e.,
    nearly all of us needing to read this page in the first place :-), a
-   public list of the library defects is occasionally published [58]here.
+   public list of the library defects is occasionally published [59]here.
      _________________________________________________________________
    
 4.4 Things in libstdc++ that look like bugs
@@ -397,16 +396,16 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
 
    If you have found a bug in the library and you think you have a
    working fix, then send it in! The main GCC site has a page on
-   [59]submitting patches that covers the procedure, but for libstdc++
+   [60]submitting patches that covers the procedure, but for libstdc++
    you should of course send the patch to our mailing list, not the GCC
-   mailing list. The libstdc++ [60]contributors' page also talks about
+   mailing list. The libstdc++ [61]contributors' page also talks about
    how to submit patches.
    
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test for the presence of the bug that your patch fixes. Bugs have a
    way of being reintroduced; if an old bug creeps back in, it will be
-   caught immediately by the [61]testsuite -- but only if such a test
+   caught immediately by the [62]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
    
@@ -442,13 +441,13 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    Bugfixes and rewrites (to improve or fix thread safety, for instance)
    will of course be a continuing task.
    
-   [62]This question about the next libstdc++ prompted some brief but
-   interesting [63]speculation.
+   [63]This question about the next libstdc++ prompted some brief but
+   interesting [64]speculation.
      _________________________________________________________________
    
 5.3 What about the STL from SGI?
 
-   The [64]STL from SGI is merged into libstdc++-v3 with changes as
+   The [65]STL from SGI is merged into libstdc++-v3 with changes as
    necessary. Currently release 3.3 is being used. Changes in the STL
    usually produce some weird bugs and lots of changes in the rest of the
    libstd++ source as we scramble to keep up. :-)
@@ -484,7 +483,7 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    your libraries each time you get a new compiler snapshot.)
    
    Towards the end of July 1999, this subject was brought up again on the
-   mailing list under a different name. The related [65]thread (by the
+   mailing list under a different name. The related [66]thread (by the
    name HOWTO-honor-std) is very instructive. More info is at the end of
    RELEASE-NOTES.
    
@@ -498,8 +497,8 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
    This is assuming that your idea of "multithreaded" is the same as
    ours... The general question of multithreading and libstdc++-v3 is
-   addressed in the chapter-specific advice for [66]Library Introduction.
-   Threadsafe containers are covered in more detail in [67]the Received
+   addressed in the chapter-specific advice for [67]Library Introduction.
+   Threadsafe containers are covered in more detail in [68]the Received
    Wisdom section on containers.
      _________________________________________________________________
    
@@ -511,22 +510,22 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    their two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right [68]here. (And if you've already registered with them, clicking
-   this link will take you to directly to the place where you can [69]buy
+   right [69]here. (And if you've already registered with them, clicking
+   this link will take you to directly to the place where you can [70]buy
    the standard on-line.
    
-   Who is your country's member body? Visit the [70]ISO homepage and find
+   Who is your country's member body? Visit the [71]ISO homepage and find
    out!
      _________________________________________________________________
    
-   Comments and suggestions are welcome, and may be sent to [71]Phil
-   Edwards or [72]Gabriel Dos Reis.
-   $Id: index.html,v 1.3 2000/05/24 18:35:37 pme Exp $ 
+   Comments and suggestions are welcome, and may be sent to [72]Phil
+   Edwards or [73]Gabriel Dos Reis.
+   $Id: index.html,v 1.4 2000/06/28 18:57:27 pme Exp $ 
 
 References
 
-   1. http://sourceware.cygnus.com/libstdc++/
-   2. http://sourceware.cygnus.com/libstdc++/faq/index.html
+   1. http://sources.redhat.com/libstdc++/
+   2. http://sources.redhat.com/libstdc++/faq/index.html
    3. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
    4. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_0
    5. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_1
@@ -559,41 +558,42 @@ References
   32. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_5
   33. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_6
   34. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_7
-  35. ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
+  35. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
   36. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/DESIGN
   37. http://gcc.gnu.org/
   38. http://gcc.gnu.org/gcc-2.95/buildstat.html
   39. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
-  40. ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
+  40. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
   41. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
   42. http://www.deja.com/getdoc.xp?AN=469581698&fmt=text
   43. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/contribute.html
   44. http://www.boost.org/
   45. http://gcc.gnu.org/fom_serv/cache/33.html
-  46. mailto:libstdc++@sourceware.cygnus.com
-  47. mailto:pme@sourceware.cygnus.com
+  46. mailto:libstdc++@sources.redhat.com
+  47. mailto:pme@sources.redhat.com
   48. mailto:gdr@egcs.cygnus.com
-  49. http://sourceware.cygnus.com/autoconf/
-  50. http://sourceware.cygnus.com/automake/
+  49. http://sources.redhat.com/autoconf/
+  50. http://sources.redhat.com/automake/
   51. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/documentation.html
   52. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/RELEASE-NOTES
   53. http://www.gnu.org/software/cvs/cvs.html
   54. http://www.cyclic.com/
-  55. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
-  56. file://localhost/ml/libstdc++/1998/msg00006.html
-  57. http://www.cantrip.org/draft-bugs.txt
-  58. http://anubis.dkuug.dk/jtc1/sc22/wg21/
-  59. http://gcc.gnu.org/contribute.html
-  60. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/contribute.html
-  61. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_4
-  62. http://sourceware.cygnus.com/ml/libstdc++/1999/msg00080.html
-  63. http://sourceware.cygnus.com/ml/libstdc++/1999/msg00084.html
-  64. http://www.sgi.com/Technology/STL/
-  65. file://localhost/ml/libstdc++/1999-q3/msg00066.html
-  66. http://sourceware.cygnus.com/libstdc++/17_intro/howto.html#3
-  67. http://sourceware.cygnus.com/libstdc++/23_containers/howto.html
-  68. http://www.ansi.org/
-  69. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
-  70. http://www.iso.ch/
-  71. mailto:pme@sourceware.cygnus.com
-  72. mailto:gdr@egcs.cygnus.com
+  55. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/install.html
+  56. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
+  57. file://localhost/ml/libstdc++/1998/msg00006.html
+  58. http://www.cantrip.org/draft-bugs.txt
+  59. http://anubis.dkuug.dk/jtc1/sc22/wg21/
+  60. http://gcc.gnu.org/contribute.html
+  61. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/contribute.html
+  62. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_4
+  63. http://sources.redhat.com/ml/libstdc++/1999/msg00080.html
+  64. http://sources.redhat.com/ml/libstdc++/1999/msg00084.html
+  65. http://www.sgi.com/Technology/STL/
+  66. file://localhost/ml/libstdc++/1999-q3/msg00066.html
+  67. http://sources.redhat.com/libstdc++/17_intro/howto.html#3
+  68. http://sources.redhat.com/libstdc++/23_containers/howto.html
+  69. http://www.ansi.org/
+  70. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+  71. http://www.iso.ch/
+  72. mailto:pme@sources.redhat.com
+  73. mailto:gdr@egcs.cygnus.com

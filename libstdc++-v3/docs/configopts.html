@@ -2,14 +2,14 @@
 <HTML>
 <HEAD>
    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
    <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, egcs, g++">
    <META NAME="DESCRIPTION" CONTENT="Configuration options for libstdc++-v3.">
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
-<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.4 2000/05/19 19:55:50 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.5 2000/07/07 21:13:27 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -17,8 +17,8 @@
 options</A></H1>
 
 <P>The latest version of this document is always available at
-   <A HREF="http://sourceware.cygnus.com/libstdc++/configopts.html">
-   http://sourceware.cygnus.com/libstdc++/configopts.html</A>.
+   <A HREF="http://sources.redhat.com/libstdc++/configopts.html">
+   http://sources.redhat.com/libstdc++/configopts.html</A>.
 </P>
 
 <P>To the <A HREF="index.html">libstdc++-v3 homepage</A>.
@@ -29,17 +29,17 @@ options</A></H1>
 <P>Here are some of the non-obvious options to libstdc++'s configure.
    Keep in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <A HREF="http://sourceware.cygnus.com/autoconf/autoconf.html#SEC74">they
+   <A HREF="http://sources.redhat.com/autoconf/autoconf.html#SEC74">they
    all have opposite forms as well</A>
    (enable/disable and with/without).  The defaults are for the latest
    snapshot, 2.90.8.
 <DL>
  <DT><TT>--enable-multilib  </TT>[default]
  <DD><P>This is part of the generic multilib support for building
- 	cross compilers. As such, targets like "powerpc-elf" will be
- 	have libstdc++ built many different ways: "-msoft-float" and
- 	not, etc. A different libstdc++ will be built for each of the
- 	different multilib versions. This option is on by default.
+ 	cross compilers.  As such, targets like "powerpc-elf" will
+ 	have libstdc++ built many different ways:  "-msoft-float" and
+ 	not, etc.  A different libstdc++ will be built for each of the
+ 	different multilib versions.  This option is on by default.
      </P>
 
  <DT><TT>--enable-debug  </TT>
@@ -61,7 +61,7 @@ options</A></H1>
  <DD><P>Select a target-specific I/O package.  As of libstdc++-v3
         snapshot 2.90.8, the choices are 'libio' to specify the GNU
         I/O package (from
-        <A HREF="http://sourceware.cygnus.com/glibc/">glibc</A>, the
+        <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
         GNU C library), or 'wince' to specify the Microsoft Windows CE
         library.  Eventually a generic cstdio interface will be added
         so that people who want to use libstdc++-v3 with say, the Palm
@@ -115,11 +115,11 @@ options</A></H1>
         at it.  It's described in <A HREF="gccrebuild.html">its own
         little page</A>.  Note that other --enable flags will
         interact with this one.  In libstdc++-v3 snapshot 2.90.8,
-        this is enabled by default, with DIR
-        set to <TT> '../..' </TT>, so that building
-        the complete GCC sources with libstdc++-v3 in place works
-        transparently.  Since then, library sources have been merged
-        into the compiler sources, and this option has been removed.
+        this is enabled by default, with DIR set to
+	<TT> '../..' </TT>, so that building the complete GCC sources
+	with libstdc++-v3 in place works transparently.  Since then,
+	library sources have been merged into the compiler sources,
+	and this option has been removed.
      </P>
 
  <DT><TT>--enable-cxx-flags=FLAGS</TT>
@@ -149,7 +149,7 @@ options</A></H1>
      </P>
 </DL>
 </P>
-<P>Return <A HREF="#top">to the top of the README</A> or
+<P>Return <A HREF="#top">to the top of the page</A> or
    <A HREF="index.html">to the homepage</A>.
 </P>
 
@@ -158,7 +158,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.4 2000/05/19 19:55:50 pme Exp $
+$Id: configopts.html,v 1.5 2000/07/07 21:13:27 pme Exp $
 </EM></P>
 
 
