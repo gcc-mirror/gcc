@@ -1,3 +1,10 @@
+1998-02-18  Doug Evans  <devans@cygnus.com>
+
+	* decl.c (duplicate_decls): Call merge_machine_decl_attributes.
+	Update olddecl's attributes too.
+	(strip_attrs): Remove function.
+	* typeck.c (common_type): Call merge_machine_type_attributes.
+
 Tue Feb 17 14:07:52 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* parse.y (initdcl0_innards): New grammar symbol.

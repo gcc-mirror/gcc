@@ -1422,7 +1422,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   char *errmsg = 0;
 
   if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
-    DECL_MACHINE_ATTRIBUTES (newdecl) = DECL_MACHINE_ATTRIBUTES (olddecl);
+    DECL_MACHINE_ATTRIBUTES (newdecl)
+      =  merge_machine_decl_attributes (olddecl, newdecl);
 
   if (TREE_CODE (newtype) == ERROR_MARK
       || TREE_CODE (oldtype) == ERROR_MARK)
@@ -1999,6 +2000,10 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	   sizeof (struct tree_decl) - sizeof (struct tree_common));
     DECL_UID (olddecl) = olddecl_uid;
   }
+
+  /* NEWDECL contains the merged attribute lists.
+     Update OLDDECL to be the same.  */
+  DECL_MACHINE_ATTRIBUTES (olddecl) = DECL_MACHINE_ATTRIBUTES (newdecl);
 
   return 1;
 }
@@ -3530,8 +3535,13 @@ shadow_tag_warned (declspecs, warned)
 {
   int found_tag = 0;
   register tree link;
+  tree specs, attrs;
 
   pending_invalid_xref = 0;
+
+  /* Remove the attributes from declspecs, since they will confuse the
+     following code.  */
+  split_specs_attrs (declspecs, &specs, &attrs);
 
   for (link = declspecs; link; link = TREE_CHAIN (link))
     {

@@ -2444,7 +2444,8 @@ duplicate_decls (newdecl, olddecl)
     return 1;
 
   if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
-    DECL_MACHINE_ATTRIBUTES (newdecl) = DECL_MACHINE_ATTRIBUTES (olddecl);
+    DECL_MACHINE_ATTRIBUTES (newdecl)
+      = merge_machine_decl_attributes (olddecl, newdecl);
 
   types_match = decls_match (newdecl, olddecl);
 
@@ -3081,6 +3082,10 @@ duplicate_decls (newdecl, olddecl)
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
     DECL_FRIEND_P (olddecl) = 1;
+
+  /* NEWDECL contains the merged attribute lists.
+     Update OLDDECL to be the same.  */
+  DECL_MACHINE_ATTRIBUTES (olddecl) = DECL_MACHINE_ATTRIBUTES (newdecl);
 
   return 1;
 }
@@ -13160,30 +13165,3 @@ in_function_p ()
 {
   return function_depth != 0;
 }
-
-/* FSF LOCAL dje prefix attributes */
-/* Strip attributes from SPECS_ATTRS, a list of declspecs and attributes.
-   This function is used by the parser when a rule will accept attributes
-   in a particular position, but we don't want to support that just yet.
-
-   A warning is issued for every ignored attribute.  */
-
-tree
-strip_attrs (specs_attrs)
-     tree specs_attrs;
-{
-  tree specs, attrs;
-
-  split_specs_attrs (specs_attrs, &specs, &attrs);
-
-  while (attrs)
-    {
-      warning ("`%s' attribute ignored",
-	       IDENTIFIER_POINTER (TREE_PURPOSE (attrs)));
-      attrs = TREE_CHAIN (attrs);
-    }
-
-  return specs;
-}
-/* END FSF LOCAL */
-
