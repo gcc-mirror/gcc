@@ -115,6 +115,7 @@ static tree maybe_get_template_decl_from_type_decl PROTO((tree));
 static int check_cv_quals_for_unify PROTO((int, tree, tree));
 static tree tsubst_template_arg_vector PROTO((tree, tree));
 static void regenerate_decl_from_template PROTO((tree, tree));
+static int is_member_template_class PROTO((tree));
 
 /* Nonzero if ARGVEC contains multiple levels of template arguments.  */
 #define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) 		\
@@ -376,6 +377,31 @@ is_member_template (t)
     }
 
   return 0;
+}
+
+/* Returns non-zero iff T is a member template class.  See
+   is_member_template for a description of what precisely constitutes
+   a member template.  */
+
+int
+is_member_template_class (t)
+     tree t;
+{
+  if (!DECL_CLASS_TEMPLATE_P (t))
+    /* Anything that isn't a class template, is certainly not a member
+       template.  */
+    return 0;
+
+  if (!DECL_CLASS_SCOPE_P (t))
+    /* Anything whose context isn't a class type is surely not a
+       member template.  */
+    return 0;
+
+  /* If there are more levels of template parameters than there are
+     template classes surrounding the declaration, then we have a
+     member template.  */
+  return  (list_length (DECL_TEMPLATE_PARMS (t)) > 
+	   template_class_depth (DECL_CONTEXT (t)));
 }
 
 /* Return a new template argument vector which contains all of ARGS
@@ -1784,9 +1810,10 @@ push_template_decl_real (decl, is_friend)
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
       
-      if (is_member_template (tmpl))
+      if (is_member_template (tmpl) || is_member_template_class (tmpl))
 	{
-	  if (DECL_TEMPLATE_INFO (decl) && DECL_TI_ARGS (decl) 
+	  if (DECL_FUNCTION_TEMPLATE_P (tmpl)
+	      && DECL_TEMPLATE_INFO (decl) && DECL_TI_ARGS (decl) 
 	      && DECL_TEMPLATE_SPECIALIZATION (decl))
 	    {
 	      tree new_tmpl;
@@ -1812,7 +1839,7 @@ push_template_decl_real (decl, is_friend)
 	    }
 	  
 	  a = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
-	  t = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (decl));
+	  t = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
 	  if (TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (a))
 	    {
 	      cp_error ("got %d template parameters for `%#D'",
