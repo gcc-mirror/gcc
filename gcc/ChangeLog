@@ -1,5 +1,10 @@
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
+	* config/alpha/t-crtbe (crtbegin.o): Add "-I.".
+	(crtend.o, crtbeginS.o, crtendS.o): Likewise.
+
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (struct reg_cond_life_info): New.
 	(struct propagate_block_info): Add reg_cond_dead and reg_cond_reg.
 	(init_propagate_block_info): Initialize them.

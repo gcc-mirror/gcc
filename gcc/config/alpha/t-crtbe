@@ -3,10 +3,10 @@ T = disable
 
 # Assemble startup files.
 crtbegin.o: $(srcdir)/config/alpha/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtbegin.o -x assembler-with-cpp $(srcdir)/config/alpha/crtbegin.asm
+	$(GCC_FOR_TARGET) -c -o crtbegin.o -x assembler-with-cpp -I. $(srcdir)/config/alpha/crtbegin.asm
 crtend.o: $(srcdir)/config/alpha/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtend.o -x assembler-with-cpp $(srcdir)/config/alpha/crtend.asm
+	$(GCC_FOR_TARGET) -c -o crtend.o -x assembler-with-cpp -I. $(srcdir)/config/alpha/crtend.asm
 crtbeginS.o: $(srcdir)/config/alpha/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -DSHARED -c -o crtbeginS.o -x assembler-with-cpp $(srcdir)/config/alpha/crtbegin.asm
+	$(GCC_FOR_TARGET) -DSHARED -c -o crtbeginS.o -x assembler-with-cpp -I. $(srcdir)/config/alpha/crtbegin.asm
 crtendS.o: $(srcdir)/config/alpha/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -DSHARED -c -o crtendS.o -x assembler-with-cpp $(srcdir)/config/alpha/crtend.asm
+	$(GCC_FOR_TARGET) -DSHARED -c -o crtendS.o -x assembler-with-cpp -I. $(srcdir)/config/alpha/crtend.asm
