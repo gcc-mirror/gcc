@@ -341,20 +341,11 @@ LIBICONV = @LIBICONV@
 # List of internationalization subdirectories.
 INTL_SUBDIRS = intl
 
-# Change this to a null string if obstacks are installed in the
-# system library.
-OBSTACK=obstack.o
-
 # The GC method to be used on this system.
 GGC=@GGC@.o
 
 # If a supplementary library is being used for the GC.
 GGC_LIB=
-
-# Configure will set these if you need vfprintf and possibly _doprnt support.
-VFPRINTF=@vfprintf@
-DOPRINT=@doprint@
-STRSTR=@strstr@
 
 # libgcc.a may be built directly or via stmp-multilib,
 # and installed likewise.  Overridden by t-fragment.
@@ -478,10 +469,6 @@ HOST_CC=$(CC)
 HOST_CFLAGS=$(ALL_CFLAGS) -DGENERATOR_FILE
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
-HOST_OBSTACK=$(OBSTACK)
-HOST_VFPRINTF=$(VFPRINTF)
-HOST_DOPRINT=$(DOPRINT)
-HOST_STRSTR=$(STRSTR)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `echo gcc|sed '$(program_transform_name)'`
@@ -606,34 +593,28 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) \
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
-USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
-USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
-USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
-USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR} ;; esac `
+# Build and host support libraries.  FORBUILD is either
+# .. or ../$(build_alias) depending on whether host != build.
+LIBIBERTY = ../libiberty/libiberty.a
+BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
-# Dependency on obstack or whatever library facilities
-# are not installed in the system libraries.
-# We don't use USE_* because backquote expansion doesn't work in deps.
-LIBDEPS= $(INTLDEPS) $(OBSTACK) $(VFPRINTF) $(DOPRINT) $(STRSTR)
+# Dependencies on the intl and portability libraries.
+LIBDEPS= $(INTLDEPS) $(LIBIBERTY)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) \
-	$(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT) \
-	$(HOST_PREFIX)$(HOST_STRSTR)
+HOST_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS =	$(OBSTACK) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) \
-	$(STRSTR) ../libiberty/libiberty.a
+LIBS =	$(INTLLIBS) @LIBS@ $(LIBIBERTY)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
-HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_VFPRINTF) \
-	    $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR)
+HOST_LIBS = $(BUILD_LIBIBERTY)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o read-rtl.o $(HOST_PREFIX)bitmap.o \
-		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o safe-ctype.o
+		$(HOST_PREFIX)ggc-none.o gensupport.o
 
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
@@ -745,7 +726,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	\
  profile.o real.o recog.o reg-stack.o regclass.o regmove.o regrename.o	\
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	\
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	\
- sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	\
+ sibcall.o simplify-rtx.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	\
  stor-layout.o stringpool.o timevar.o toplev.o tree.o tree-dump.o 	\
  tree-inline.o unroll.o varasm.o varray.o version.o xcoffout.o 		\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
@@ -1209,29 +1190,6 @@ tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) $(SYSTEM_H) collect2.h intl.h
 hash.o: hash.c hash.h $(SYSTEM_H) toplev.h $(GCONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(GCONFIG_H) $(SYSTEM_H)
-	rm -f vfprintf.c
-	$(LN_S) $(srcdir)/../libiberty/vfprintf.c vfprintf.c
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		vfprintf.c $(OUTPUT_OPTION)
-
-doprint.o: $(srcdir)/doprint.c $(GCONFIG_H) $(SYSTEM_H)
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/doprint.c $(OUTPUT_OPTION)
-
-strstr.o: $(srcdir)/../libiberty/strstr.c $(GCONFIG_H) $(SYSTEM_H)
-	rm -f strstr.c
-	$(LN_S) $(srcdir)/../libiberty/strstr.c strstr.c
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		strstr.c $(OUTPUT_OPTION)
-
-splay-tree.o: $(srcdir)/../libiberty/splay-tree.c $(GCONFIG_H) \
-  $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h
-	rm -f splay-tree.c
-	$(LN_S) $(srcdir)/../libiberty/splay-tree.c splay-tree.c
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		splay-tree.c $(OUTPUT_OPTION)
-
 underscore.c: s-under ; @true
 
 s-under: $(GCC_PASSES)
@@ -1333,12 +1291,6 @@ line-map.o: line-map.c line-map.h intl.h $(CONFIG_H) $(SYSTEM_H)
 
 ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-obstack.o: $(srcdir)/../libiberty/obstack.c $(GCONFIG_H)
-	rm -f obstack.c
-	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		obstack.c $(OUTPUT_OPTION)
 
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1794,16 +1746,6 @@ read-rtl.o: read-rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
 gensupport.o: gensupport.c $(RTL_H) $(OBSTACK_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c
 
-hashtab.o: $(srcdir)/../libiberty/hashtab.c $(GCONFIG_H)
-	rm -f hashtab.c
-	$(LN_S) $(srcdir)/../libiberty/hashtab.c hashtab.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) hashtab.c
-
-safe-ctype.o: $(srcdir)/../libiberty/safe-ctype.c $(GCONFIG_H)
-	rm -f safe-ctype.c
-	$(LN_S) $(srcdir)/../libiberty/safe-ctype.c safe-ctype.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) safe-ctype.c
-
 genconfig$(build_exeext) : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
@@ -1913,7 +1855,7 @@ genpreds.o : genpreds.c $(RTL_BASE_H) $(HCONFIG_H) $(SYSTEM_H)
 #
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
-# and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
+# and HOST_PREFIX_1 is `loser-', just to ensure these rules don't conflict
 # with the rules for rtl.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   real.h $(GGC_H) errors.h
@@ -1933,38 +1875,10 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
 
-$(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(HCONFIG_H)
-	rm -f $(HOST_PREFIX)obstack.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/obstack.c > $(HOST_PREFIX)obstack.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
-
-$(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(HCONFIG_H) \
-  $(SYSTEM_H)
-	rm -f $(HOST_PREFIX)vfprintf.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/vfprintf.c > $(HOST_PREFIX)vfprintf.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)vfprintf.c
-
-$(HOST_PREFIX_1)doprint.o: doprint.c $(HCONFIG_H) $(SYSTEM_H)
-	rm -f $(HOST_PREFIX)doprint.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/doprint.c > $(HOST_PREFIX)doprint.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)doprint.c
-
-$(HOST_PREFIX_1)strstr.o: $(srcdir)/../libiberty/strstr.c $(HCONFIG_H) \
-  $(SYSTEM_H)
-	rm -f $(HOST_PREFIX)strstr.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/strstr.c > $(HOST_PREFIX)strstr.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)strstr.c
-
 $(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H) errors.h
 	rm -f $(HOST_PREFIX)errors.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c
-
-
-# This satisfies the dependency that we get if you cross-compile a compiler
-# that does not need to compile doprint or whatever.
-$(HOST_PREFIX_1):
-	$(STAMP) $(HOST_PREFIX_1)
 
 $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H) $(GCC_H)
 	rm -f $(HOST_PREFIX)ggc-none.c
@@ -2244,7 +2158,7 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 GEN_PROTOS_OBJS = gen-protos.o scan.o
 gen-protos$(build_exeext): $(GEN_PROTOS_OBJS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	  $(GEN_PROTOS_OBJS) ../libiberty/libiberty.a
+	  $(GEN_PROTOS_OBJS) $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h $(HCONFIG_H) $(SYSTEM_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
@@ -2432,8 +2346,9 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
-	-rm -f $(HOST_PREFIX_1)rtl.c
-	-rm -f $(HOST_PREFIX_1)obstack.c
+	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)print-rtl.c
+	-rm -f $(HOST_PREFIX_1)bitmap.c $(HOST_PREFIX_1)errors.c
+	-rm -f $(HOST_PREFIX_1)ggc-none.c
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h
 # Delete other built files.
@@ -2502,7 +2417,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/{gcc,g++}.{log,sum}
 	-rm -f intl/libintl.h libintl.h
-	-rm -f cxxmain.c splay-tree.c obstack.c hashtab.c safe-ctype.c
+	-rm -f cxxmain.c
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile

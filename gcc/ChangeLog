@@ -1,3 +1,36 @@
+2001-11-29  Zack Weinberg  <zack@codesourcery.com>
+
+	Purge cruft now we have build libiberty.
+
+	* Makefile.in (OBSTACK, VFPRINTF, DOPRINT, STRSTR,
+	HOST_OBSTACK, HOST_VFPRINTF, HOST_DOPRINT, HOST_STRSTR,
+	USE_HOST_OBSTACK, USE_HOST_VFPRINTF, USE_HOST_DOPRINT,
+	USE_HOST_STRSTR): Delete variables.
+	(vfprintf.o, doprint.o, strstr.o, splay-tree.o, obstack.o,
+	hashtab.o, safe-ctype.o, $(HOST_PREFIX_1)obstack.o,
+	$(HOST_PREFIX_1)vfprintf.o, $(HOST_PREFIX_1)doprint.o,
+	$(HOST_PREFIX_1)strstr.o), $(HOST_PREFIX_1)): Delete rules.
+	(LIBIBERTY, BUILD_LIBIBERTY): New variables.
+	(LIBDEPS): Now just $(INTLDEPS) $(LIBIBERTY).
+	(LIBS): Now just $(INTLLIBS) @LIBS@ $(LIBIBERTY).
+	(HOST_LIBDEPS): Now just $(BUILD_LIBIBERTY).
+	(HOST_LIBS): Ditto.
+	(HOST_RTL): Remove hashtab.o safe-ctype.o.
+	(OBJS): Remove splay-tree.o.
+	(gen-protos): Depend on $(HOST_LIBS), not ../libiberty/libiberty.a.
+	(distclean): No need to delete splay-tree.c obstack.c
+	hashtab.c safe-ctype.c.
+	(mostlyclean): Delete build copies of print-rtl.c bitmap.c
+	errors.c ggc-none.c (all prefixed with $(HOST_PREFIX_1).
+	* aclocal.m4 (gcc_AC_FUNC_VFPRINTF_DOPRNT, gcc_AC_FUNC_STRSTR):
+	Delete.
+	* configure.in: Don't use them.
+	Set and substitute @FORBUILD@.
+	* config.in, configure: Regenerate.
+	* doprint.c: Move to libiberty/_doprnt.c.
+	* doc/configterms.texi: Document that libiberty is now built
+	up to three times.  Fix typo.
+
 2001-11-30  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (add_data_member_location_attribute): Do the
@@ -11,7 +44,7 @@
 
 2001-11-29  Aldy Hernandez  <aldyh@redhat.com>
 
-	* config/rs6000/rs6000.c (function_arg): Unnamed vector arguments 
+	* config/rs6000/rs6000.c (function_arg): Unnamed vector arguments
 	go in memory.
 	Remove unused attribute for named.
 
@@ -33,7 +66,7 @@
 	* config/cris/cris.h (EXTRA_CONSTRAINT_T): Fix spacing and FIXME.
 	Fix typo in comment.
 	(LINK_SPEC): Remove whitespace at end of line.
-	
+
 2001-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.c (init_c_lex): Canonicalize "-" filename to "".
@@ -52,9 +85,9 @@
 
 Thu Nov 29 11:12:59 2001  Geoffrey Keating (geoffk@redhat.com)
 
-        * emit-rtl.c (gen_lowpart_common): Fix conversion of 
-        REAL_VALUE_TYPEs to an array of target integers.  Fix extraction
-        of low part of those arrays for 32bit and 64bit hosts.
+	* emit-rtl.c (gen_lowpart_common): Fix conversion of
+	REAL_VALUE_TYPEs to an array of target integers.  Fix extraction
+	of low part of those arrays for 32bit and 64bit hosts.
 
 2001-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -71,8 +104,8 @@ Thu Nov 29 11:12:59 2001  Geoffrey Keating (geoffk@redhat.com)
 2001-11-29  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/crti.asm (_init): Add .thumb_func if compiled
-        with -mthumb.
-        (_fini): Add .thumb_func if compiled with -mthumb.
+	with -mthumb.
+	(_fini): Add .thumb_func if compiled with -mthumb.
 
 2001-11-28  Eric Christopher  <echristo@redhat.com>
 
@@ -563,7 +596,7 @@ Thu Nov 22 06:49:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	targets.
 
 	* config.gcc (xscale-coff): Add necessary header files to
-        tm_file variable.
+	tm_file variable.
 
 2001-11-20  Zack Weinberg  <zack@codesourcery.com>
 
