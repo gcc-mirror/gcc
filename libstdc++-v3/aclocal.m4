@@ -637,7 +637,7 @@ AC_DEFUN(GLIBCXX_EXPORT_INCLUDES, [
 
   # For Canadian crosses, pick this up too.
   if test $CANADIAN = yes; then
-    GLIBCXX_INCLUDES="$GLIBCXX_INCLUDES '-I${includedir}'"
+    GLIBCXX_INCLUDES="$GLIBCXX_INCLUDES -I\${includedir}"
   fi
 
   # Stuff in the actual top level.  Currently only used by libsupc++ to
