@@ -1,3 +1,8 @@
+2002-12-18  Andrew Haley  <aph@redhat.com>
+
+	* parse.y (patch_invoke): Force evaluation order when `check' is
+	set.  For PR libgcj/8945.
+
 2002-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcj.texi: Change version number to 3.4.
