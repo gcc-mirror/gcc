@@ -2249,18 +2249,13 @@ expand_call (exp, target, ignore)
 
 	if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (exp))
 	  {
-	    /* The structure value address arg is already in actparms.  */
-	    if (struct_value_rtx == 0)
-	      /* We want to pass it as a normal argument, so leave it.  */
-	      structure_value_addr_parm = 1;
-	    else
-	      {
-		/* We want to pass it in a special location.  */
-		tree return_arg = TREE_VALUE (actparms);
-		actparms = TREE_CHAIN (actparms);
-		structure_value_addr = expand_expr (return_arg, struct_value_rtx,
-						    VOIDmode, EXPAND_NORMAL);
-	      }
+	    /* The structure value address arg is already in actparms.
+	       Pull it out.  It might be nice to just leave it there, but
+	       we need to set structure_value_addr.  */
+	    tree return_arg = TREE_VALUE (actparms);
+	    actparms = TREE_CHAIN (actparms);
+	    structure_value_addr = expand_expr (return_arg, NULL_RTX,
+						VOIDmode, EXPAND_NORMAL);
 	  }
 	else if (target && GET_CODE (target) == MEM)
 	  structure_value_addr = XEXP (target, 0);
