@@ -12526,6 +12526,7 @@ patch_assignment (node, wfl_op1)
   tree lhs_type = NULL_TREE, rhs_type, new_rhs = NULL_TREE;
   int error_found = 0;
   int lvalue_from_array = 0;
+  int is_return = 0;
 
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 
@@ -12546,7 +12547,15 @@ patch_assignment (node, wfl_op1)
     lhs_type = TREE_TYPE (lvalue);
   /* Or a function return slot */
   else if (TREE_CODE (lvalue) == RESULT_DECL)
-    lhs_type = TREE_TYPE (lvalue);
+    {
+      /* If the return type is an integral type, then we create the
+	 RESULT_DECL with a promoted type, but we need to do these
+	 checks against the unpromoted type to ensure type safety.  So
+	 here we look at the real type, not the type of the decl we
+	 are modifying.  */
+      lhs_type = TREE_TYPE (TREE_TYPE (current_function_decl));
+      is_return = 1;
+    }
   /* Otherwise, we might want to try to write into an optimized static
      final, this is an of a different nature, reported further on. */
   else if (TREE_CODE (wfl_op1) == EXPR_WITH_FILE_LOCATION
@@ -12561,6 +12570,7 @@ patch_assignment (node, wfl_op1)
     }
 
   rhs_type = TREE_TYPE (rhs);
+
   /* 5.1 Try the assignment conversion for builtin type. */
   new_rhs = try_builtin_assignconv (wfl_op1, lhs_type, rhs);
 
@@ -12598,7 +12608,7 @@ patch_assignment (node, wfl_op1)
 	  wfl = wfl_operator;
 	  if (COMPOUND_ASSIGN_P (TREE_OPERAND (node, 1)))
 	    strcpy (operation, "assignment");
-	  else if (TREE_CODE (TREE_OPERAND (node, 0)) == RESULT_DECL)
+	  else if (is_return)
 	    strcpy (operation, "`return'");
 	  else
 	    strcpy (operation, "`='");
@@ -12617,6 +12627,11 @@ patch_assignment (node, wfl_op1)
 
   if (error_found)
     return error_mark_node;
+
+  /* If we're processing a `return' statement, promote the actual type
+     to the promoted type.  */
+  if (is_return)
+    new_rhs = convert (TREE_TYPE (lvalue), new_rhs);
 
   /* 10.10: Array Store Exception runtime check */
   if (!flag_emit_class_files
@@ -14645,18 +14660,6 @@ patch_return (node)
     {
       tree exp = java_complete_tree (return_exp);
       tree modify, patched;
-
-      /* If the function returned value and EXP are booleans, EXP has
-      to be converted into the type of DECL_RESULT, which is integer
-      (see complete_start_java_method) */
-      if (TREE_TYPE (exp) == boolean_type_node &&
-	  TREE_TYPE (TREE_TYPE (meth)) == boolean_type_node)
-	exp = convert_to_integer (TREE_TYPE (DECL_RESULT (meth)), exp);
-
-      /* `null' can be assigned to a function returning a reference */
-      if (JREFERENCE_TYPE_P (TREE_TYPE (TREE_TYPE (meth))) &&
-	  exp == null_pointer_node)
-	exp = build_null_of_type (TREE_TYPE (TREE_TYPE (meth)));
 
       if ((patched = patch_string (exp)))
 	exp = patched;
