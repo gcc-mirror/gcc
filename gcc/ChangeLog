@@ -1,3 +1,7 @@
+2003-07-30  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (stack_file, open_file_failed): Use path for deps.
+
 2003-07-30  Andi Kleen  <ak@muc.de>
 
 	* loop.c (check_dbra_loop): Allow LTU in the loop condition.
