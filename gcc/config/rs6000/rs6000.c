@@ -4121,7 +4121,7 @@ static struct builtin_description bdesc_spe_evsel[] =
   { 0, CODE_FOR_spe_evfststeq, "__builtin_spe_evsel_fststeq", SPE_BUILTIN_EVSEL_FSTSTEQ },
 };
 
-/* ABS* opreations.  */
+/* ABS* operations.  */
 
 static const struct builtin_description bdesc_abs[] =
 {
@@ -5254,7 +5254,7 @@ rs6000_init_builtins ()
 
 /* Search through a set of builtins and enable the mask bits.
    DESC is an array of builtins.
-   SIZE is the totaly number of builtins.
+   SIZE is the total number of builtins.
    START is the builtin enum at which to start.
    END is the builtin enum at which to end.  */
 static void
@@ -6943,7 +6943,7 @@ includes_rshift_p (shiftop, andop)
 
 /* Return 1 if ANDOP is a mask suitable for use with an rldic insn
    to perform a left shift.  It must have exactly SHIFTOP least
-   signifigant 0's, then one or more 1's, then zero or more 0's.  */
+   significant 0's, then one or more 1's, then zero or more 0's.  */
 
 int
 includes_rldic_lshift_p (shiftop, andop)
@@ -6961,7 +6961,7 @@ includes_rldic_lshift_p (shiftop, andop)
       shift_mask = ~0;
       shift_mask <<= INTVAL (shiftop);
 
-      /* Find the least signifigant one bit.  */
+      /* Find the least significant one bit.  */
       lsb = c & -c;
 
       /* It must coincide with the LSB of the shift mask.  */
@@ -8379,7 +8379,7 @@ rs6000_generate_compare (code)
 	     bit3  bit2  bit1  bit0
 
 	     ... bit 2 would be a GT CR alias, so later on we
-	     look in the GT bits for the branch instructins.
+	     look in the GT bits for the branch instructions.
 	     However, we must be careful to emit correct RTL in
 	     the meantime, so optimizations don't get confused.  */
 
@@ -8694,7 +8694,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   if (GET_CODE (op1) == CONST_DOUBLE)
     REAL_VALUE_FROM_CONST_DOUBLE (c1, op1);
     
-  /* We're going to try to implement comparions by performing
+  /* We're going to try to implement comparisons by performing
      a subtract, then comparing against zero.  Unfortunately,
      Inf - Inf is NaN which is not zero, and so if we don't
      know that the operand is finite and the comparison

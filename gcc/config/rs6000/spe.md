@@ -1,5 +1,5 @@
 ;; e500 SPE description
-;; Copyright (C) 2002 Free Software Foundation, Inc.
+;; Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GNU CC.
@@ -736,7 +736,7 @@
 
 ;; SPE SIMD load instructions.
 
-;; Only the hardware engineer who designed the SPE inderstands the
+;; Only the hardware engineer who designed the SPE understands the
 ;; plethora of load and store instructions ;-).  We have no way of
 ;; differentiating between them with RTL so use an unspec of const_int 0 
 ;; to avoid identical RTL.

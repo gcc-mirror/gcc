@@ -965,7 +965,7 @@ extern int rs6000_default_long_calls;
    we end up clobbering r11.
 
    The AltiVec case needs to be fixed.  Dunno if we should break ABI
-   compatability and reserve a register for it as well..  */
+   compatibility and reserve a register for it as well..  */
 
 #define FIXED_SCRATCH (TARGET_SPE ? 14 : 11)
 
@@ -1362,7 +1362,7 @@ typedef struct rs6000_stack {
   enum rs6000_abi abi;		/* which ABI to use */
   int gp_save_offset;		/* offset to save GP regs from initial SP */
   int fp_save_offset;		/* offset to save FP regs from initial SP */
-  int altivec_save_offset;	/* offset to save AltiVec regs from inital SP */
+  int altivec_save_offset;	/* offset to save AltiVec regs from initial SP */
   int lr_save_offset;		/* offset to save LR from initial SP */
   int cr_save_offset;		/* offset to save CR from initial SP */
   int vrsave_save_offset;	/* offset to save VRSAVE from initial SP */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.3.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
 This file is part of GNU CC.
@@ -62,7 +62,7 @@ do {									\
 #undef ASM_SPEC
 #define ASM_SPEC "-u %{maix64:-a64 -mppc64} %(asm_cpu)"
 
-/* Common ASM definitions used by ASM_SPEC amonst the various targets
+/* Common ASM definitions used by ASM_SPEC amongst the various targets
    for handling -mcpu=xxx switches.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
