@@ -1227,8 +1227,8 @@ lookup_label (pc)
      int pc;
 {
   tree name;
-  char buf[20];
-  sprintf (buf, "LJpc=%d", pc);
+  char buf[32];
+  ASM_GENERATE_INTERNAL_LABEL(buf, "LJpc=", pc);
   name = get_identifier (buf);
   if (IDENTIFIER_LOCAL_VALUE (name))
     return IDENTIFIER_LOCAL_VALUE (name);
@@ -1249,8 +1249,9 @@ tree
 generate_name ()
 {
   static int l_number = 0;
-  char buff [20];
-  sprintf (buff, "$LJv%d", l_number++);
+  char buff [32];
+  ASM_GENERATE_INTERNAL_LABEL(buff, "LJv", l_number);
+  l_number++;
   return get_identifier (buff);
 }
 
