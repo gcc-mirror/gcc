@@ -1065,7 +1065,10 @@ decompile_method (out, jcf, code_len)
     }
   else if (code_len == 2
 	   && codes[0] == OPCODE_aload_0
-	   && codes[1] == OPCODE_areturn)
+	   && codes[1] == OPCODE_areturn
+	   /* We're going to generate `return this'.  This only makes
+	      sense for non-static methods.  */
+	   && ! (method_access & ACC_STATIC))
     {
       decompile_return_statement (out, jcf, method_signature, -1,
 				  JPOOL_USHORT1 (jcf, jcf->this_class));
