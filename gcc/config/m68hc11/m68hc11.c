@@ -2635,7 +2635,7 @@ m68hc11_split_move (to, from, scratch)
 
   if (offset)
     {
-      high_from = adj_offsettable_operand (high_from, offset);
+      high_from = adjust_address (high_from, mode, offset);
       low_from = high_from;
     }
   if (mode == SImode)

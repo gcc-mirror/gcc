@@ -2538,7 +2538,7 @@ mips_move_2words (operands, insn)
 
 	  else if (double_memory_operand (op1, GET_MODE (op1)))
 	    {
-	      operands[2] = adj_offsettable_operand (op1, 4);
+	      operands[2] = adjust_address (op1, SImode, 4);
 	      ret = (reg_mentioned_p (op0, op1)
 		     ? "lw\t%D0,%2\n\tlw\t%0,%1"
 		     : "lw\t%0,%1\n\tlw\t%D0,%2");
@@ -2632,7 +2632,7 @@ mips_move_2words (operands, insn)
 
 	  else if (double_memory_operand (op0, GET_MODE (op0)))
 	    {
-	      operands[2] = adj_offsettable_operand (op0, 4);
+	      operands[2] = adjust_address (op0, SImode, 4);
 	      ret = "sw\t%1,%0\n\tsw\t%D1,%2";
 	    }
 	}
@@ -2647,7 +2647,7 @@ mips_move_2words (operands, insn)
 	    ret = "sd\t%.,%0";
 	  else
 	    {
-	      operands[2] = adj_offsettable_operand (op0, 4);
+	      operands[2] = adjust_address (op0, SImode, 4);
 	      ret = "sw\t%.,%0\n\tsw\t%.,%2";
 	    }
 	}

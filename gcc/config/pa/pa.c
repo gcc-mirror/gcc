@@ -2061,14 +2061,14 @@ output_move_double (operands)
   if (optype0 == REGOP)
     latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 4);
+    latehalf[0] = adjust_address (operands[0], SImode, 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
     latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 4);
+    latehalf[1] = adjust_address (operands[1], SImode, 4);
   else if (optype1 == CNSTOP)
     split_double (operands[1], &operands[1], &latehalf[1]);
   else

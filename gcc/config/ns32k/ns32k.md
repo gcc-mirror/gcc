@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000
+;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000, 2001
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -2217,8 +2217,8 @@
     {
       if (INTVAL (operands[2]) >= 8)
 	{
-	  operands[0] = adj_offsettable_operand (operands[0],
-					        INTVAL (operands[2]) / 8);
+	  operands[0] = adjust_address (operands[0], QImode,
+					INTVAL (operands[2]) / 8);
           operands[2] = GEN_INT (INTVAL (operands[2]) % 8);
 	}
       if (INTVAL (operands[1]) <= 8)

@@ -2484,8 +2484,8 @@ ix86_emit_save_regs ()
    is restored from POINTER + OFFSET.  */
 static void
 ix86_emit_save_regs_using_mov (pointer, offset)
-	rtx pointer;
-	HOST_WIDE_INT offset;
+     rtx pointer;
+     HOST_WIDE_INT offset;
 {
   int regno;
   rtx insn;
@@ -2493,9 +2493,8 @@ ix86_emit_save_regs_using_mov (pointer, offset)
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (ix86_save_reg (regno, true))
       {
-	insn = emit_move_insn (adj_offsettable_operand (gen_rtx_MEM (Pmode,
-								     pointer),
-							offset),
+	insn = emit_move_insn (adjust_address (gen_rtx_MEM (Pmode, pointer),
+					       Pmode, offset),
 			       gen_rtx_REG (Pmode, regno));
 	RTX_FRAME_RELATED_P (insn) = 1;
 	offset += UNITS_PER_WORD;
@@ -2606,9 +2605,8 @@ ix86_emit_restore_regs_using_mov (pointer, offset, maybe_eh_return)
     if (ix86_save_reg (regno, maybe_eh_return))
       {
 	emit_move_insn (gen_rtx_REG (Pmode, regno),
-			adj_offsettable_operand (gen_rtx_MEM (Pmode,
-							      pointer),
-						 offset));
+			adjust_address (gen_rtx_MEM (Pmode, pointer),
+					Pmode, offset));
 	offset += UNITS_PER_WORD;
       }
 }
@@ -4411,10 +4409,8 @@ split_di (operands, num, lo_half, hi_half)
 	}
       else if (offsettable_memref_p (op))
 	{
-	  rtx hi_addr = XEXP (adj_offsettable_operand (op, 4), 0);
-
 	  lo_half[num] = adjust_address (op, SImode, 0);
-	  hi_half[num] = change_address (op, SImode, hi_addr);
+	  hi_half[num] = adjust_address (op, SImode, 4);
 	}
       else
 	abort ();
@@ -6870,9 +6866,9 @@ ix86_split_to_parts (operand, parts, mode)
 	    {
 	      operand = adjust_address (operand, SImode, 0);
 	      parts[0] = operand;
-	      parts[1] = adj_offsettable_operand (operand, 4);
+	      parts[1] = adjust_address (operand, SImode, 4);
 	      if (size == 3)
-		parts[2] = adj_offsettable_operand (operand, 8);
+		parts[2] = adjust_address (operand, SImode, 8);
 	    }
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {
@@ -6913,10 +6909,9 @@ ix86_split_to_parts (operand, parts, mode)
 	    }
 	  else if (offsettable_memref_p (operand))
 	    {
-	      operand = change_address (operand, DImode, XEXP (operand, 0));
+	      operand = adjust_address (operand, DImode, 0);
 	      parts[0] = operand;
-	      parts[1] = adj_offsettable_operand (operand, 8);
-	      parts[1] = change_address (parts[1], SImode, XEXP (parts[1], 0));
+	      parts[1] = adjust_address (operand, SImode, 8);
 	    }
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {
@@ -7031,12 +7026,9 @@ ix86_split_long_move (operands)
 	  part[1][0] = change_address (part[1][0],
 				       TARGET_64BIT ? DImode : SImode,
 				       part[0][nparts - 1]);
-	  part[1][1] = adj_offsettable_operand (part[1][0],
-					        UNITS_PER_WORD);
-	  part[1][1] = change_address (part[1][1], GET_MODE (part[0][1]),
-			 	       XEXP (part[1][1], 0));
+	  part[1][1] = adjust_address (part[1][0], VOIDmode, UNITS_PER_WORD);
 	  if (nparts == 3)
-	    part[1][2] = adj_offsettable_operand (part[1][0], 8);
+	    part[1][2] = adjust_address (part[1][0], VOIDmode, 8);
 	}
     }
 
@@ -10197,18 +10189,17 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 
     case IX86_BUILTIN_SETPS:
       target = assign_386_stack_local (V4SFmode, 0);
-      op0 = adjust_address (target, SFmode, 0);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
       arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-      emit_move_insn (op0,
+      emit_move_insn (adjust_address (op0, SFmode, 0),
 		      expand_expr (arg0, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adj_offsettable_operand (op0, 4),
+      emit_move_insn (adjust_address (op0, SFmode, 4),
 		      expand_expr (arg1, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adj_offsettable_operand (op0, 8),
+      emit_move_insn (adjust_address (op0, SFmode, 8),
 		      expand_expr (arg2, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adj_offsettable_operand (op0, 12),
+      emit_move_insn (adjust_address (op0, SFmode, 12),
 		      expand_expr (arg3, NULL_RTX, VOIDmode, 0));
       op0 = gen_reg_rtx (V4SFmode);
       emit_insn (gen_sse_movaps (op0, target));

@@ -1190,7 +1190,6 @@ print_operand (file, x, code)
 	    fprintf (file, "%s", names_upper_extended[REGNO (x)]);
 	  break;
 	case MEM:
-	  x = adj_offsettable_operand (x, 0);
 	  print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
@@ -1220,7 +1219,7 @@ print_operand (file, x, code)
 	    fprintf (file, "%s", names_big[REGNO (x)]);
 	  break;
 	case MEM:
-	  x = adj_offsettable_operand (x, 2);
+	  x = adjust_address (x, HImode, 2);
 	  print_operand (file, x, 0);
 	  break;
 	case CONST_INT:

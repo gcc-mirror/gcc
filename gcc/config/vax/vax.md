@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, Vax Version
-;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000
+;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001
 ;; Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
@@ -1322,7 +1322,9 @@
     }
   else
     operands[0]
-      = adj_offsettable_operand (operands[0], INTVAL (operands[2]) / 8);
+      = adjust_address (operands[0],
+			INTVAL (operands[1]) == 8 ? QImode : HImode,
+			INTVAL (operands[2]) / 8);
 
   CC_STATUS_INIT;
   if (INTVAL (operands[1]) == 8)
@@ -1348,7 +1350,9 @@
     }
   else
     operands[1]
-      = adj_offsettable_operand (operands[1], INTVAL (operands[3]) / 8);
+      = adjust_address (operands[1],
+			INTVAL (operands[2]) == 8 ? QImode : HImode,
+			INTVAL (operands[3]) / 8);
 
   if (INTVAL (operands[2]) == 8)
     return \"movzbl %1,%0\";
@@ -1373,7 +1377,9 @@
     }
   else
     operands[1]
-      = adj_offsettable_operand (operands[1], INTVAL (operands[3]) / 8);
+      = adjust_address (operands[1],
+			INTVAL (operands[2]) == 8 ? QImode : HImode,
+			INTVAL (operands[3]) / 8);
 
   if (INTVAL (operands[2]) == 8)
     return \"cvtbl %1,%0\";

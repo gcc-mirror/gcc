@@ -1066,14 +1066,14 @@ output_scc_di(op, operand1, operand2, dest)
   if (GET_CODE (operand1) == REG)
     loperands[1] = gen_rtx_REG (SImode, REGNO (operand1) + 1);
   else
-    loperands[1] = adj_offsettable_operand (operand1, 4);
+    loperands[1] = adjust_address (operand1, SImode, 4);
   if (operand2 != const0_rtx)
     {
       loperands[2] = operand2;
       if (GET_CODE (operand2) == REG)
 	loperands[3] = gen_rtx_REG (SImode, REGNO (operand2) + 1);
       else
-	loperands[3] = adj_offsettable_operand (operand2, 4);
+	loperands[3] = adjust_address (operand2, SImode, 4);
     }
   loperands[4] = gen_label_rtx();
   if (operand2 != const0_rtx)
@@ -1244,7 +1244,7 @@ output_btst (operands, countop, dataop, insn, signpos)
 	{
 	  int offset = (count & ~signpos) / 8;
 	  count = count & signpos;
-	  operands[1] = dataop = adj_offsettable_operand (dataop, offset);
+	  operands[1] = dataop = adjust_address (dataop, QImode, offset);
 	}
       if (count == signpos)
 	cc_status.flags = CC_NOT_POSITIVE | CC_Z_IN_NOT_N;
@@ -1879,8 +1879,8 @@ output_move_double (operands)
 	}
       else if (optype0 == OFFSOP)
 	{
-	  middlehalf[0] = adj_offsettable_operand (operands[0], 4);
-	  latehalf[0] = adj_offsettable_operand (operands[0], size - 4);
+	  middlehalf[0] = adjust_address (operands[0], SImode, 4);
+	  latehalf[0] = adjust_address (operands[0], SImode, size - 4);
 	}
       else
 	{
@@ -1895,8 +1895,8 @@ output_move_double (operands)
 	}
       else if (optype1 == OFFSOP)
 	{
-	  middlehalf[1] = adj_offsettable_operand (operands[1], 4);
-	  latehalf[1] = adj_offsettable_operand (operands[1], size - 4);
+	  middlehalf[1] = adjust_address (operands[1], SImode, 4);
+	  latehalf[1] = adjust_address (operands[1], SImode, size - 4);
 	}
       else if (optype1 == CNSTOP)
 	{
@@ -1934,14 +1934,14 @@ output_move_double (operands)
       if (optype0 == REGOP)
 	latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       else if (optype0 == OFFSOP)
-	latehalf[0] = adj_offsettable_operand (operands[0], size - 4);
+	latehalf[0] = adjust_address (operands[0], SImode, size - 4);
       else
 	latehalf[0] = operands[0];
 
       if (optype1 == REGOP)
 	latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
       else if (optype1 == OFFSOP)
-	latehalf[1] = adj_offsettable_operand (operands[1], size - 4);
+	latehalf[1] = adjust_address (operands[1], SImode, size - 4);
       else if (optype1 == CNSTOP)
 	split_double (operands[1], &operands[1], &latehalf[1]);
       else
@@ -1976,16 +1976,16 @@ compadr:
 	  xops[0] = latehalf[0];
 	  xops[1] = XEXP (operands[1], 0);
 	  output_asm_insn ("lea %a1,%0", xops);
-	  if( GET_MODE (operands[1]) == XFmode )
+	  if (GET_MODE (operands[1]) == XFmode )
 	    {
 	      operands[1] = gen_rtx_MEM (XFmode, latehalf[0]);
-	      middlehalf[1] = adj_offsettable_operand (operands[1], size-8);
-	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	      middlehalf[1] = adjust_address (operands[1], DImode, size - 8);
+	      latehalf[1] = adjust_address (operands[1], DImode, size - 4);
 	    }
 	  else
 	    {
 	      operands[1] = gen_rtx_MEM (DImode, latehalf[0]);
-	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	      latehalf[1] = adjust_address (operands[1], DImode, size - 4);
 	    }
 	}
       else if (size == 12
@@ -3492,7 +3492,7 @@ output_andsi3 (operands)
       && !TARGET_5200)
     {
       if (GET_CODE (operands[0]) != REG)
-        operands[0] = adj_offsettable_operand (operands[0], 2);
+        operands[0] = adjust_address (operands[0], HImode, 2);
       operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
       /* Do not delete a following tstl %0 insn; that would be incorrect.  */
       CC_STATUS_INIT;
@@ -3511,7 +3511,7 @@ output_andsi3 (operands)
         }
       else
         {
-	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
         }
       /* This does not set condition codes in a standard way.  */
@@ -3533,7 +3533,7 @@ output_iorsi3 (operands)
       && !TARGET_5200)
     {
       if (GET_CODE (operands[0]) != REG)
-        operands[0] = adj_offsettable_operand (operands[0], 2);
+        operands[0] = adjust_address (operands[0], HImode, 2);
       /* Do not delete a following tstl %0 insn; that would be incorrect.  */
       CC_STATUS_INIT;
       if (INTVAL (operands[2]) == 0xffff)
@@ -3546,12 +3546,10 @@ output_iorsi3 (operands)
 	  || offsettable_memref_p (operands[0])))
     {
       if (DATA_REG_P (operands[0]))
-	{
-	  operands[1] = GEN_INT (logval);
-	}
+	operands[1] = GEN_INT (logval);
       else
         {
-	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
       CC_STATUS_INIT;
@@ -3571,7 +3569,7 @@ output_xorsi3 (operands)
       && !TARGET_5200)
     {
       if (! DATA_REG_P (operands[0]))
-	operands[0] = adj_offsettable_operand (operands[0], 2);
+	operands[0] = adjust_address (operands[0], HImode, 2);
       /* Do not delete a following tstl %0 insn; that would be incorrect.  */
       CC_STATUS_INIT;
       if (INTVAL (operands[2]) == 0xffff)
@@ -3584,12 +3582,10 @@ output_xorsi3 (operands)
 	  || offsettable_memref_p (operands[0])))
     {
       if (DATA_REG_P (operands[0]))
-	{
-	  operands[1] = GEN_INT (logval);
-	}
+	operands[1] = GEN_INT (logval);
       else
         {
-	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
       CC_STATUS_INIT;

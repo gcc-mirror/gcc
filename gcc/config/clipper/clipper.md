@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Clipper Version
-;;  Copyright (C) 1987, 88, 91, 93, 94, 97, 98, 1999
+;;  Copyright (C) 1987, 1988, 1991, 1993, 1994, 1997, 1998, 1999, 2001
 ;;  Free Software Foundation, Inc.
 ;; Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
@@ -181,7 +181,7 @@
       xops[0] = operands[0];
       xops[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       xops[2] = operands[1];
-      xops[3] = adj_offsettable_operand (operands[1], 4);
+      xops[3] = adjust_address (operands[1], SImode, 4);
       output_asm_insn (\"loadw  %2,%0\;loadw  %3,%1\", xops);
       return \"\";
     }
@@ -214,7 +214,7 @@
     return \"stord  %1,%0\";
 
   xops[0] = operands[0];		/* r -> o */
-  xops[1] = adj_offsettable_operand (operands[0], 4);
+  xops[1] = adjust_address (operands[0], SImode, 4);
   xops[2] = operands[1];
   xops[3] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);
@@ -350,7 +350,7 @@
     }
 					/* m -> r */
   output_asm_insn (\"loadw  %1,%0\", operands);
-  xoperands[1] = adj_offsettable_operand (operands[1], 4);
+  xoperands[1] = adjust_address (operands[1], SImode, 4);
   output_asm_insn (\"loadw  %1,%0\", xoperands);
   return \"\";
 }" 
@@ -365,7 +365,7 @@
 {
   rtx xops[4];
   xops[0] = operands[0];
-  xops[1] = adj_offsettable_operand (operands[0], 4);
+  xops[1] = adjust_address (operands[0], SImode, 4);
   xops[2] = operands[1];
   xops[3] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);

@@ -200,7 +200,7 @@ print_operand (file, x, code)
 	  {
 	  case MEM:
 	    fputc ('(', file);
-	    x = adj_offsettable_operand (x, 4);
+	    x = adjust_address (x, SImode, 4);
 	    output_address (XEXP (x, 0));
 	    fputc (')', file);
 	    break;

@@ -55,7 +55,6 @@ Boston, MA 02111-1307, USA.  */
 
 static void validate_replace_rtx_1	PARAMS ((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1		PARAMS ((rtx, rtx *));
-static rtx *find_constant_term_loc	PARAMS ((rtx *));
 static void validate_replace_src_1 	PARAMS ((rtx *, void *));
 static rtx split_insn			PARAMS ((rtx));
 
@@ -1829,7 +1828,7 @@ asm_operand_ok (op, constraint)
    return the location (type rtx *) of the pointer to that constant term.
    Otherwise, return a null pointer.  */
 
-static rtx *
+rtx *
 find_constant_term_loc (p)
      rtx *p;
 {
@@ -2014,52 +2013,6 @@ mode_independent_operand (op, mode)
   /* Label `lose' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS. */
  lose: ATTRIBUTE_UNUSED_LABEL
   return 0;
-}
-
-/* Given an operand OP that is a valid memory reference which
-   satisfies offsettable_memref_p, return a new memory reference whose
-   address has been adjusted by OFFSET.  OFFSET should be positive and
-   less than the size of the object referenced.  */
-
-rtx
-adj_offsettable_operand (op, offset)
-     rtx op;
-     int offset;
-{
-  register enum rtx_code code = GET_CODE (op);
-
-  if (code == MEM) 
-    {
-      register rtx y = XEXP (op, 0);
-      register rtx new;
-
-      if (CONSTANT_ADDRESS_P (y))
-	{
-	  new = gen_rtx_MEM (GET_MODE (op), plus_constant (y, offset));
-	  MEM_COPY_ATTRIBUTES (new, op);
-	  return new;
-	}
-
-      if (GET_CODE (y) == PLUS)
-	{
-	  rtx z = y;
-	  register rtx *const_loc;
-
-	  op = copy_rtx (op);
-	  z = XEXP (op, 0);
-	  const_loc = find_constant_term_loc (&z);
-	  if (const_loc)
-	    {
-	      *const_loc = plus_constant (*const_loc, offset);
-	      return op;
-	    }
-	}
-
-      new = gen_rtx_MEM (GET_MODE (op), plus_constant (y, offset));
-      MEM_COPY_ATTRIBUTES (new, op);
-      return new;
-    }
-  abort ();
 }
 
 /* Like extract_insn, but save insn extracted and don't extract again, when

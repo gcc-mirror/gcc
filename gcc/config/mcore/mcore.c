@@ -309,8 +309,8 @@ mcore_print_operand (stream, x, code)
 	  fputs (reg_names[REGNO (x) + 1], (stream));
 	  break;
 	case MEM:
-	  mcore_print_operand_address (stream,
-				       XEXP (adj_offsettable_operand (x, 4), 0));
+	  mcore_print_operand_address
+	    (stream, XEXP (adjust_address (x, SImode, 4), 0));
 	  break;
 	default:
 	  abort ();

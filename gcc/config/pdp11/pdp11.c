@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001
    Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
@@ -404,14 +404,14 @@ output_move_double (operands)
   if (optype0 == REGOP)
     latehalf[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 2);
+    latehalf[0] = adjust_address (operands[0], HImode, 2);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
     latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 2);
+    latehalf[1] = adjust_address (operands[1], HImode, 2);
   else if (optype1 == CNSTOP)
     {
 	if (CONSTANT_P (operands[1]))
@@ -616,14 +616,14 @@ output_move_quad (operands)
   if (optype0 == REGOP)
     latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 2);
   else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 4);
+    latehalf[0] = adjust_address (operands[0], SImode, 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
     latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 2);
   else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 4);
+    latehalf[1] = adjust_address (operands[1], SImode, 4);
   else if (optype1 == CNSTOP)
     {
       if (GET_CODE (operands[1]) == CONST_DOUBLE)

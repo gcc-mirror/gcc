@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
@@ -590,8 +590,10 @@ i960_output_move_double (dst, src)
 	  operands[1] = src;
 	  operands[2] = gen_rtx_REG (Pmode, REGNO (dst) + 1);
 	  operands[3] = gen_rtx_MEM (word_mode, operands[2]);
-	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
-	  output_asm_insn ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0", operands);
+	  operands[4] = adjust_address (operands[3], word_mode,
+					UNITS_PER_WORD);
+	  output_asm_insn
+	    ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0", operands);
 	  return "";
 	}
       else
@@ -603,7 +605,7 @@ i960_output_move_double (dst, src)
       if (REGNO (src) & 1)
 	{
 	  operands[0] = dst;
-	  operands[1] = adj_offsettable_operand (dst, UNITS_PER_WORD);
+	  operands[1] = adjust_address (dst, word_mode, UNITS_PER_WORD);
 	  if (! memory_address_p (word_mode, XEXP (operands[1], 0)))
 	    abort ();
 	  operands[2] = src;
@@ -626,7 +628,7 @@ i960_output_move_double_zero (dst)
 
   operands[0] = dst;
     {
-      operands[1] = adj_offsettable_operand (dst, 4);
+      operands[1] = adjust_address (dst, word_mode, 4);
       output_asm_insn ("st	g14,%0\n\tst	g14,%1", operands);
     }
   return "";
@@ -680,9 +682,12 @@ i960_output_move_quad (dst, src)
 	  operands[1] = src;
 	  operands[2] = gen_rtx_REG (Pmode, REGNO (dst) + 3);
 	  operands[3] = gen_rtx_MEM (word_mode, operands[2]);
-	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
-	  operands[5] = adj_offsettable_operand (operands[4], UNITS_PER_WORD);
-	  operands[6] = adj_offsettable_operand (operands[5], UNITS_PER_WORD);
+	  operands[4]
+	    = adjust_address (operands[3], word_mode, UNITS_PER_WORD);
+	  operands[5]
+	    = adjust_address (operands[4], word_mode, UNITS_PER_WORD);
+	  operands[6]
+	    = adjust_address (operands[5], word_mode, UNITS_PER_WORD);
 	  output_asm_insn ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0\n\tld	%5,%E0\n\tld	%6,%F0", operands);
 	  return "";
 	}
@@ -695,9 +700,9 @@ i960_output_move_quad (dst, src)
       if (REGNO (src) & 3)
 	{
 	  operands[0] = dst;
-	  operands[1] = adj_offsettable_operand (dst, UNITS_PER_WORD);
-	  operands[2] = adj_offsettable_operand (dst, 2*UNITS_PER_WORD);
-	  operands[3] = adj_offsettable_operand (dst, 3*UNITS_PER_WORD);
+	  operands[1] = adjust_address (dst, word_mode, UNITS_PER_WORD);
+	  operands[2] = adjust_address (dst, word_mode, 2 * UNITS_PER_WORD);
+	  operands[3] = adjust_address (dst, word_mode, 3 * UNITS_PER_WORD);
 	  if (! memory_address_p (word_mode, XEXP (operands[3], 0)))
 	    abort ();
 	  operands[4] = src;
@@ -720,9 +725,9 @@ i960_output_move_quad_zero (dst)
 
   operands[0] = dst;
     {
-      operands[1] = adj_offsettable_operand (dst, 4);
-      operands[2] = adj_offsettable_operand (dst, 8);
-      operands[3] = adj_offsettable_operand (dst, 12);
+      operands[1] = adjust_address (dst, word_mode, 4);
+      operands[2] = adjust_address (dst, word_mode, 8);
+      operands[3] = adjust_address (dst, word_mode, 12);
       output_asm_insn ("st	g14,%0\n\tst	g14,%1\n\tst	g14,%2\n\tst	g14,%3", operands);
     }
   return "";

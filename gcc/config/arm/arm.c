@@ -6569,7 +6569,7 @@ output_move_double (operands)
                 }
               else
                 {
-		  otherops[1] = adj_offsettable_operand (operands[1], 4);
+		  otherops[1] = adjust_address (operands[1], VOIDmode, 4);
 		  /* Take care of overlapping base/data reg.  */
 		  if (reg_mentioned_p (operands[0], operands[1]))
 		    {
@@ -6635,7 +6635,7 @@ output_move_double (operands)
 	  /* Fall through */
 
         default:
-	  otherops[0] = adj_offsettable_operand (operands[0], 4);
+	  otherops[0] = adjust_address (operands[0], VOIDmode, 4);
 	  otherops[1] = gen_rtx_REG (SImode, 1 + REGNO (operands[1]));
 	  output_asm_insn ("str%?\t%1, %0", operands);
 	  output_asm_insn ("str%?\t%1, %0", otherops);

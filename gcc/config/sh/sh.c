@@ -294,7 +294,7 @@ print_operand (stream, x, code)
 	case MEM:
 	  if (GET_CODE (XEXP (x, 0)) != PRE_DEC
 	      && GET_CODE (XEXP (x, 0)) != POST_INC)
-	    x = adj_offsettable_operand (x, 4);
+	    x = adjust_address (x, SImode, 4);
 	  print_operand_address (stream, XEXP (x, 0));
 	  break;
 	default:
