@@ -1,3 +1,9 @@
+Wed Sep 23 10:45:44 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (find_barrier): Revert change of Apr 23.  Handle table
+	jumps as a single entity, taking into account the size of the
+	table.
+
 Tue Sep 22 15:13:34 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* tree.def (SWITCH_EXPR): New tree node definition.
