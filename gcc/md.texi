@@ -728,13 +728,6 @@ postincrement) is allowed.
 A register operand is allowed provided that it is in a general
 register.
 
-@cindex @samp{d} in constraint
-@item @samp{d}, @samp{a}, @samp{f}, @dots{}
-Other letters can be defined in machine-dependent fashion to stand for
-particular classes of registers.  @samp{d}, @samp{a} and @samp{f} are
-defined on the 68000/68020 to stand for data, address and floating
-point registers.
-
 @cindex constants in constraints
 @cindex @samp{i} in constraint
 @item @samp{i}
@@ -866,22 +859,21 @@ as the predicate in the @code{match_operand}.  This predicate interprets
 the mode specified in the @code{match_operand} as the mode of the memory
 reference for which the address would be valid.
 
+@cindex other register constraints
 @cindex extensible constraints
-@cindex @samp{Q}, in constraint
-@item @samp{Q}, @samp{R}, @samp{S}, @dots{} @samp{U}
-Letters in the range @samp{Q} through @samp{U} may be defined in a
-machine-dependent fashion to stand for arbitrary operand types.
+@item @var{other letters}
+Other letters can be defined in machine-dependent fashion to stand for
+particular classes of registers or other arbitrary operand types.
+@samp{d}, @samp{a} and @samp{f} are defined on the 68000/68020 to stand
+for data, address and floating point registers.
+
 @ifset INTERNALS
-The machine description macro @code{EXTRA_CONSTRAINT} is passed the
-operand as its first argument and the constraint letter as its
-second operand.
+The machine description macro @code{REG_CLASS_FROM_LETTER} has first
+cut at the otherwise unused letters.  If it evaluates to @code{NO_REGS},
+then @code{EXTRA_CONSTRAINT} is evaluated.
 
-A typical use for this would be to distinguish certain types of
-memory references that affect other insn operands.
-
-Do not define these constraint letters to accept register references
-(@code{reg}); the reload pass does not expect this and would not handle
-it properly.
+A typical use for @code{EXTRA_CONSTRANT} would be to distinguish certain
+types of memory references that affect other insn operands.
 @end ifset
 @end table
 

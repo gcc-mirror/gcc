@@ -1561,17 +1561,6 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		win = 1;
 		break;
 
-#ifdef EXTRA_CONSTRAINT
-              case 'Q':
-              case 'R':
-              case 'S':
-              case 'T':
-              case 'U':
-		if (EXTRA_CONSTRAINT (op, c))
-		  win = 1;
-		break;
-#endif
-
 	      case 'g':
 		if (GET_CODE (op) == MEM
 		    || (CONSTANT_P (op)
@@ -1587,9 +1576,15 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		break;
 
 	      default:
-		classes[i]
-		  = reg_class_subunion[(int) classes[i]]
-		    [(int) REG_CLASS_FROM_LETTER (c)];
+		if (REG_CLASS_FROM_LETTER (c) != NO_REGS)
+		  classes[i]
+		    = reg_class_subunion[(int) classes[i]]
+		      [(int) REG_CLASS_FROM_LETTER (c)];
+#ifdef EXTRA_CONSTRAINT
+		else if (EXTRA_CONSTRAINT (op, c))
+		  win = 1;
+#endif
+		break;
 	      }
 
 	  constraints[i] = p;

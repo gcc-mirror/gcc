@@ -2180,17 +2180,19 @@ between these kinds.
 @findex EXTRA_CONSTRAINT
 @item EXTRA_CONSTRAINT (@var{value}, @var{c})
 A C expression that defines the optional machine-dependent constraint
-letters (@samp{Q}, @samp{R}, @samp{S}, @samp{T}, @samp{U}) that can
-be used to segregate specific types of operands, usually memory
-references, for the target machine.  Normally this macro will not be
-defined.  If it is required for a particular target machine, it should
-return 1 if @var{value} corresponds to the operand type represented by
-the constraint letter @var{c}.  If @var{c} is not defined as an extra
+letters that can be used to segregate specific types of operands, usually
+memory references, for the target machine.  Any letter that is not
+elsewhere defined and not matched by @code{REG_CLASS_FROM_LETTER}
+may be used.  Normally this macro will not be defined.
+
+If it is required for a particular target machine, it should return 1
+if @var{value} corresponds to the operand type represented by the
+constraint letter @var{c}.  If @var{c} is not defined as an extra
 constraint, the value returned should be 0 regardless of @var{value}.
 
-For example, on the ROMP, load instructions cannot have their output in r0 if
-the memory reference contains a symbolic address.  Constraint letter
-@samp{Q} is defined as representing a memory address that does
+For example, on the ROMP, load instructions cannot have their output
+in r0 if the memory reference contains a symbolic address.  Constraint
+letter @samp{Q} is defined as representing a memory address that does
 @emph{not} contain a symbolic address.  An alternative is specified with
 a @samp{Q} constraint on the input and @samp{r} on the output.  The next
 alternative specifies @samp{m} on the input and a register class that
