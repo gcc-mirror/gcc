@@ -261,4 +261,25 @@ do { char dstr[30];							\
 #define ASM_COMMENT_START "@"
 #endif
 
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+do {								\
+  int mi_delta = (DELTA);					\
+  char *mi_op = mi_delta < 0 ? "sub" : "add";			\
+  unsigned int mi_mask = 0xff000000;				\
+  if (mi_delta < 0) mi_delta = -mi_delta;			\
+  while (mi_mask)						\
+    {								\
+      if (mi_delta & mi_mask)					\
+	fprintf (FILE, "\t%s %s, %s, #%d\n",			\
+		 mi_op, reg_names[0], reg_names[0], mi_delta & mi_mask); \
+      arm_increase_location (4);				\
+      mi_mask >>= 8;						\
+    }								\
+  fprintf (FILE, "\tldr pc, 1f\n1:");				\
+  arm_increase_location (4);					\
+  ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));		\
+} while (0)
+
 #include "arm/arm.h"
