@@ -1,3 +1,10 @@
+2000-10-23  Jim Wilson  <wilson@cygnus.com>
+
+	* ia64.c (ia64_print_operand, case 'r'): Correct comment.  Handle
+	CONST_INT.
+	* ia64.md (cmpsi_adjusted): Use %r3.
+	(cmpdi_adjusted): Likewise.
+
 2000-10-23  Diego Novillo  <dnovillo@cygnus.com>
 
 	* config/i386/att.h (ASM_FILE_START): Define.

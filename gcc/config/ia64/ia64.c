@@ -3261,11 +3261,14 @@ ia64_print_operand (file, x, code)
       break;
 
     case 'r':
-      /* If this operand is the constant zero, write it as zero.  */
+      /* If this operand is the constant zero, write it as register zero.
+	 Any register, zero, or CONST_INT value is OK here.  */
       if (GET_CODE (x) == REG)
 	fputs (reg_names[REGNO (x)], file);
       else if (x == CONST0_RTX (GET_MODE (x)))
 	fputs ("r0", file);
+      else if (GET_CODE (x) == CONST_INT)
+	output_addr_const (file, x);
       else
 	output_operand_lossage ("invalid %%r value");
       return;
