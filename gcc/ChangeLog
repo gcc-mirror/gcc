@@ -1,3 +1,8 @@
+2003-06-28  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpptrad.c (skip_macro_block_comment): New.
+	(copy_comment): Use it if appropriate.
+
 2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c (compute_ld_motion_mems): Use INSN_P instead of its
