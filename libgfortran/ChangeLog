@@ -1,5 +1,9 @@
 2004-05-16  Paul Brook  <paul@codesourcery.com>
 
+	* io/format.c (write_real): Don't include padding in format.
+
+2004-05-16  Paul Brook  <paul@codesourcery.com>
+
 	* io/format.c (format_lex): Make c an int.
 
 2004-05-16  Janne Blomqvist  <jblomqvi@cc.hut.fi>

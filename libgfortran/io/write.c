@@ -986,8 +986,7 @@ write_character (const char *source, int length)
 
 
 /* Output the Real number with default format.
-   According to DEC fortran LRM, default format for
-   REAL(4) is 1PG15.7E2, and for REAL(8) is 1PG25.15E3  */
+   REAL(4) is 1PG14.7E2, and REAL(8) is 1PG23.15E3  */
 
 static void
 write_real (const char *source, int length)
@@ -998,13 +997,13 @@ write_real (const char *source, int length)
   g.scale_factor = 1;
   if (length < 8)
     {
-      f.u.real.w = 15;
+      f.u.real.w = 14;
       f.u.real.d = 7;
       f.u.real.e = 2;
     }
   else
     {
-      f.u.real.w = 24;
+      f.u.real.w = 23;
       f.u.real.d = 15;
       f.u.real.e = 3;
     }
