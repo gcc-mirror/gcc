@@ -59,9 +59,9 @@ tree ridpointers[(int) RID_MAX];
 
 #if USE_CPPLIB
 extern unsigned char *yy_cur, *yy_lim;
-  
+
 extern int yy_get_token ();
-  
+
 #define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
 #define UNGETC(c) ((c), yy_cur--)
 #else
@@ -167,7 +167,7 @@ remember_protocol_qualifiers ()
     else if (wordlist[i].rid == RID_BYREF)
       wordlist[i].name = "byref";
     else if (wordlist[i].rid == RID_ONEWAY)
-      wordlist[i].name = "oneway";   
+      wordlist[i].name = "oneway";
 }
 
 char *
@@ -486,7 +486,7 @@ extend_token_buffer (p)
   return token_buffer + offset;
 }
 
-#if defined HANDLE_PRAGMA 
+#if defined HANDLE_PRAGMA
 /* Local versions of these macros, that can be passed as function pointers.  */
 static int
 pragma_getc ()
@@ -560,7 +560,7 @@ check_newline ()
 	      if (token != IDENTIFIER)
 		goto skipline;
 #endif /* HANDLE_PRAGMA || HANDLE_GENERIC_PRAGMAS */
-	      
+
 #ifdef HANDLE_PRAGMA
 	      /* We invoke HANDLE_PRAGMA before HANDLE_GENERIC_PRAGMAS (if
 		 both are defined), in order to give the back end a chance to
@@ -572,7 +572,7 @@ check_newline ()
 		  UNGETC (c);
 		}
 #endif /* !USE_CPPLIB */
-	      
+
 	      if (TREE_CODE (yylval.ttype) != IDENTIFIER_NODE)
 		goto skipline;
 
@@ -580,19 +580,19 @@ check_newline ()
 				 IDENTIFIER_POINTER (yylval.ttype)))
 		return GETC ();
 #endif /* HANDLE_PRAGMA */
-	      
+
 #ifdef HANDLE_GENERIC_PRAGMAS
 	      if (handle_generic_pragma (token))
 		return GETC ();
 #endif /* HANDLE_GENERIC_PRAGMAS */
-	      
+
 	      /* Issue a warning message if we have been asked to do so.
 		 Ignoring unknown pragmas in system header file unless
 		 an explcit -Wunknown-pragmas has been given. */
 	      if (warn_unknown_pragmas > 1
 		  || (warn_unknown_pragmas && ! in_system_header))
 		warning ("ignoring pragma: %s", token_buffer);
-	      
+
 	      goto skipline;
 	    }
 	}
@@ -782,7 +782,7 @@ linenum:
 		  struct file_stack *p = input_file_stack;
 		  if (indent_level != p->indent_level)
 		    {
-		      warning_with_file_and_line 
+		      warning_with_file_and_line
 			(p->name, old_lineno,
 			 "This file contains more `%c's than `%c's.",
 			 indent_level > p->indent_level ? '{' : '}',
@@ -889,7 +889,7 @@ handle_generic_pragma (token)
       while (c == ' ' || c == '\t')
 	c = GETC ();
       UNGETC (c);
-      
+
       if (c == '\n' || c == EOF)
 	return handle_pragma_token (NULL, NULL);
 
@@ -1076,7 +1076,7 @@ struct try_type
   char long_long_flag;
 };
 
-struct try_type type_sequence[] = 
+struct try_type type_sequence[] =
 {
   { &integer_type_node, 0, 0, 0},
   { &unsigned_type_node, 1, 0, 0},
@@ -1278,7 +1278,7 @@ yylex ()
 		   && TREE_CODE (DECL_INITIAL (lastiddecl)) == STRING_CST)
 	    {
 	      tree stringval = DECL_INITIAL (lastiddecl);
-	      
+
 	      /* Copy the string value so that we won't clobber anything
 		 if we put something in the TREE_CHAIN of this one.  */
 	      yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
@@ -1387,7 +1387,7 @@ yylex ()
 		  floatflag = AFTER_POINT;
 
 		if (base == 8)
-		base = 10;
+		  base = 10;
 		*p++ = c = GETC();
 		/* Accept '.' as the start of a floating-point number
 		   only when it is followed by a digit.
@@ -1508,7 +1508,7 @@ yylex ()
 		/* Exponent is decimal, even if string is a hex float.  */
 		if (! ISDIGIT (c))
 		  error ("floating constant exponent has no digits");
-	        while (ISDIGIT (c))
+		while (ISDIGIT (c))
 		  {
 		    if (p >= token_buffer + maxtoken - 3)
 		      p = extend_token_buffer (p);
@@ -1593,7 +1593,7 @@ yylex ()
 		    if (base == 16)
 		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
 		    else
-		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    /* A diagnostic is required here by some ANSI C testsuites.
 		       This is not pedwarn, because some people don't want
@@ -1608,7 +1608,7 @@ yylex ()
 		    if (base == 16)
 		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
 		    else
-		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
 		      warning ("floating point number exceeds range of `long double'");
@@ -1619,7 +1619,7 @@ yylex ()
 		    if (base == 16)
 		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
 		    else
-		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
 		      warning ("floating point number exceeds range of `double'");
@@ -1726,7 +1726,7 @@ yylex ()
 			 << (i * HOST_BITS_PER_CHAR));
 		low |= (HOST_WIDE_INT) parts[i] << (i * HOST_BITS_PER_CHAR);
 	      }
-	    
+
 	    yylval.ttype = build_int_2 (low, high);
 	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
