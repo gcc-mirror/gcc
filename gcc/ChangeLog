@@ -1,3 +1,8 @@
+2002-01-21  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config.gcc: Add entries to supported PowerPC --with-cpu
+	types.
+
 2002-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_function_arg_regno_p): Never return

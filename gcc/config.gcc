@@ -3414,14 +3414,14 @@ powerpc*-*-* | rs6000-*-*)
 		x)
 			;;
 
-		xcommon | xpower | xpower2 | xpowerpc | xrios \
-		  | xrios1 | xrios2 | xrsc | xrsc1 \
-		  | x601 | x602 | x603 | x603e | x604 | x604e | x620 \
-		  | x740 | x750 | x505)
+		xcommon | xpower | xpower2 | xpower3 | xpowerpc | xpowerpc64 \
+		  | xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
+		  | x601 | x602 | x603 | x603e | x604 | x604e | x620 | x630 \
+		  | x740 | x750 | x7400 | x7450 | x505)
 			target_cpu_default2="\\\"$with_cpu\\\""
 			;;
 
-		x401 | x403 | xec603e | x801 | x821 | x823 | x860)
+		x401 | x403 | x405 | xec603e | x801 | x821 | x823 | x860)
 			target_cpu_default2="\\\"$with_cpu\\\""
 			tm_file="$tm_file rs6000/softfloat.h"
 			;;
