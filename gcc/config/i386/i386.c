@@ -402,7 +402,6 @@ static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
 static enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 static enum rtx_code ix86_prepare_fp_compare_args PARAMS ((enum rtx_code,
 							   rtx *, rtx *));
-static rtx ix86_expand_compare PARAMS ((enum rtx_code));
 static rtx gen_push PARAMS ((rtx));
 static int memory_address_length PARAMS ((rtx addr));
 static int ix86_flags_dependant PARAMS ((rtx, rtx, enum attr_type));
@@ -4897,7 +4896,7 @@ ix86_expand_fp_compare (code, op0, op1, scratch)
 			 const0_rtx);
 }
 
-static rtx
+rtx
 ix86_expand_compare (code)
      enum rtx_code code;
 {
