@@ -7245,10 +7245,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return op0;
 
     case PLUS_EXPR:
-      this_optab = ! unsignedp && flag_trapv
-                   && (GET_MODE_CLASS (mode) == MODE_INT)
-                   ? addv_optab : add_optab;
-
       /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
 	 then to the other thing.  This case can occur during strength
@@ -7383,10 +7379,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    return REDUCE_BIT_FIELD (gen_rtx_MINUS (mode, op0, op1));
 	}
 
-      this_optab = ! unsignedp && flag_trapv
-                   && (GET_MODE_CLASS(mode) == MODE_INT)
-                   ? subv_optab : sub_optab;
-
       /* No sense saving up arithmetic to be done
 	 if it's all in the wrong mode to form part of an address.
 	 And force_operand won't know whether to sign-extend or
@@ -7490,7 +7482,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    expand_operands (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
 				     TREE_OPERAND (TREE_OPERAND (exp, 1), 0),
 				     NULL_RTX, &op0, &op1, 0);
-		  goto binop2;
+		  goto binop3;
 		}
 	      else if (other_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
 		       && innermode == word_mode)
@@ -7548,7 +7540,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 					    build_real (type, dconst1),
 					    TREE_OPERAND (exp, 1))),
 			    target, tmode, modifier);
-      this_optab = sdiv_optab;
+
       goto binop;
 
     case TRUNC_MOD_EXPR:
@@ -7591,9 +7583,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       temp = expand_unop (mode,
-			  ! unsignedp && flag_trapv
-			  && (GET_MODE_CLASS(mode) == MODE_INT)
-			  ? negv_optab : neg_optab, op0, target, 0);
+      			  optab_for_tree_code (NEGATE_EXPR, type),
+			  op0, target, 0);
       if (temp == 0)
 	abort ();
       return REDUCE_BIT_FIELD (temp);
@@ -7632,10 +7623,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* First try to do it with a special MIN or MAX instruction.
 	 If that does not win, use a conditional jump to select the proper
 	 value.  */
-      this_optab = (unsignedp
-		    ? (code == MIN_EXPR ? umin_optab : umax_optab)
-		    : (code == MIN_EXPR ? smin_optab : smax_optab));
-
+      this_optab = optab_for_tree_code (code, type);
       temp = expand_binop (mode, this_optab, op0, op1, target, unsignedp,
 			   OPTAB_WIDEN);
       if (temp != 0)
@@ -7704,18 +7692,18 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 how to recognize those cases.  */
 
     case TRUTH_AND_EXPR:
+      code = BIT_AND_EXPR;
     case BIT_AND_EXPR:
-      this_optab = and_optab;
       goto binop;
 
     case TRUTH_OR_EXPR:
+      code = BIT_OR_EXPR;
     case BIT_IOR_EXPR:
-      this_optab = ior_optab;
       goto binop;
 
     case TRUTH_XOR_EXPR:
+      code = BIT_XOR_EXPR;
     case BIT_XOR_EXPR:
-      this_optab = xor_optab;
       goto binop;
 
     case LSHIFT_EXPR:
@@ -8198,12 +8186,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 				     modifier, alt_rtl);
     }
 
-  /* Here to do an ordinary binary operator, generating an instruction
-     from the optab already placed in `this_optab'.  */
+  /* Here to do an ordinary binary operator.  */
  binop:
   expand_operands (TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 		   subtarget, &op0, &op1, 0);
  binop2:
+  this_optab = optab_for_tree_code (code, type);
+ binop3:
   if (modifier == EXPAND_STACK_PARM)
     target = 0;
   temp = expand_binop (mode, this_optab, op0, op1, target,

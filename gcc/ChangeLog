@@ -1,4 +1,8 @@
-2004-07-24  Paolo Bonzini  <bonzini@gnu.org>
+2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (expand_expr_real_1): Use optab_for_tree_code.
+
+2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (var_rtx): Remove.
 	(expand_expr_real_1) <LOOP_EXPR, EXIT_EXPR,
@@ -2606,7 +2610,7 @@
 	* objc/objc-act.c (get_super_receiver): Update calls to
 	build_compound_expr.
 
-2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
+2004-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sh/sh.c (sh_use_dfa_interface): Remove.
 	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Set to
