@@ -1,3 +1,7 @@
+1998-02-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (emit_throw): Lose throw_used.
+
 Fri Feb 13 20:36:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sched.c (update_flow_info, REG_WAS_0): Ignore if setting insn
