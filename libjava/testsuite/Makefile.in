@@ -71,17 +71,22 @@ COMPPATH = @COMPPATH@
 CPP = @CPP@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+DLLTOOL = @DLLTOOL@
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 EXEEXT = @EXEEXT@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
+LD = @LD@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+NM = @NM@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
@@ -229,6 +234,7 @@ clean-am:  clean-generic mostlyclean-am
 clean: clean-am
 
 distclean-am:  distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-am
 

@@ -79,6 +79,26 @@ proc libjava_init { args } {
     set libjava_initialized 1
 }
 
+# Find a library.  We know where libtool puts the actual libraries,
+# and we look there.
+proc libjava_find_lib {dir name} {
+    global base_dir
+    set gp [get_multilibs]
+    foreach sub {.libs _libs} {
+	if {$gp != ""} {
+	    if {[file exists $gp/$dir/$sub/lib${name}.a]} then {
+		return "-L$gp/$dir/$sub -l$name"
+	    }
+	}
+	set lib [findfile $base_dir/../../$dir/$sub/lib${name}.a \
+		   "-L$base_dir/../../$dir/$sub -l$name" ""]
+	if {$lib != ""} {
+	    return $lib
+	}
+    }
+    return ""
+}
+
 # Compute arguments needed for compiler.
 proc libjava_arguments {} {
     global base_dir
@@ -93,47 +113,19 @@ proc libjava_arguments {} {
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
     } else {
-	set gp [get_multilibs];
-	if { $gp != "" } {
-	    if [file exists "$gp/libjava/libgcj.a"] {
-		set libjava "-L$gp/libjava -lgcj";
-	    }
-	}
-	if ![info exists libjava] {
-	  set libjava [findfile $base_dir/../../libjava/libgcj.a "-L$base_dir/../../libjava -lgcj" -lgcj]
-	}
+	set libjava [libjava_find_lib libjava gcj]
     }
 
     if [info exists LIBGC] {
 	set libgc $LIBGC;
     } else {
-	set gp [get_multilibs];
-	if { $gp != "" } {
-	    if [file exists "$gp/boehm-gc/libgcjgc.a"] {
-		set libgc "-L$gp/boehm-gc -lgcjgc";
-	    }
-	}
-	if ![info exists libgc] {
-	  set libgc [findfile $base_dir/../../boehm-gc/libgcjgc.a \
-		       "-L$base_dir/../../boehm-gc -lgcjgc" \
-		       {}]
-	}
+	set libgc [libjava_find_lib boehm-gc gcjgc]
     }
 
     if [info exists LIBQTHREADS] {
 	set libqthreads $LIBQTHREADS
     } else {
-	set gp [get_multilibs]
-	if { $gp != "" } {
-	    if [file exists "$gp/qthreads/libgcjcoop.a"] {
-		set libqthreads "-L$gp/qthreads -lgcjcoop";
-	    }
-	}
-	if ![info exists libqthreads] {
-	    set libqthreads [findfile $base_dir/../../qthreads/libgcjcoop.a \
-			       "-L$base_dir/../../qthreads -lgcjcoop" \
-			       {}]
-	}
+	set libqthreads [libjava_find_lib qthreads gcjcoop]
     }
 
     # FIXME: there's no way to determine whether -lpthread is
@@ -175,6 +167,7 @@ proc libjava_arguments {} {
 
     global wrapper_file wrap_compile_flags;
     lappend args "additional_flags=$wrap_compile_flags";
+    lappend args "additional_flags=-static"
     lappend args "libs=$wrapper_file";
     lappend args "libs=$libjava";
     lappend args "libs=$libgc";
