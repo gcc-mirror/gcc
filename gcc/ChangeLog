@@ -1,3 +1,49 @@
+Sat Dec 20 13:36:06 1997  Paul Eggert  <eggert@twinsun.com>
+                          Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+                          H.J. Lu  (hjl@gnu.org)
+
+	* frame.h (__register_frame, __register_frame_table,
+	__deregister_frame): New.
+	* frame.c (__register_frame, __register_frame_table,
+	__deregister_frame): New.
+	* frame.c (__deregister_frame_info): Return void *.
+	* frame.h (__deregister_frame_info): Ditto.
+	* collect2.c (__deregister_frame_info): Ditto.
+
+	* frame.h (__register_frame_info_table): Fix typo in declaration.
+
+	* frame.c (__register_frame_info): Renamed from __register_frame.
+	(__register_frame_info_table, __deregister_frame_info): Similarly.
+	* frame.h (__{,de}register_frame_info): Likewise.
+	(__register_frame_info_table): New declaration.
+	* crtstuff.c (__do_global_dtors{,_aux}): Rename __deregister_frame.
+	(frame_dummy, __do_global_ctors): Likewise for __register_frame.
+	* collect2.c (write_c_file_{stat,glob}): Rename __register_frame
+	to __register_frame_info and similarly for __deregister_frame and
+	__register_frame_table.
+
+	* collect2.c (write_c_file_glob):
+	Allocate initial frame object in static storage and pass its address.
+
+	* crtstuff.c (__do_global_ctors): Fix typo in last change.
+
+	* crtstuff.c (__do_global_ctors): Add missing arg to __register_frame.
+
+	* collect2.c (write_c_file_stat): Fix error in last change;
+	use __SIZE_TYPE__, not size_t.
+
+	Alter C startup code so that it doesn't invoke malloc on Solaris.
+	* frame.h (struct object): Decl moved here from frame.c.
+	* frame.c (struct object): Move decl to frame.h.
+	("frame.h"): Include after <stddef.h>, so that size_t is defined.
+	(__register_frame, __register_frame_table, __deregister_frame):
+	It's now the caller's responsibility to allocate storage for object.
+	* crtstuff.c (frame_dummy), collect2.c (write_c_file_stat):
+	Allocate initial frame object in static storage and pass its address.
+	* crtstuff.c (<stddef.h>, "frame.h"): Include.
+	* Makefile.in ($(T)crtbegin.o, $(T)crtend.o, stamp-crtS):
+	Depend on defaults.h and frame.h.
+
 Fri Dec 19 10:02:57 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* i386.h (INITIAL_ELIMINATION_OFFSET): Correctly test for PIC
