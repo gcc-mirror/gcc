@@ -1,3 +1,8 @@
+2004-09-03  David Daney  <ddaney@avtrex.com>
+
+	* configure.host: Use -fno-use-divide-subroutine for mips*-*-linux*.
+	* include/mips-signal.h: Added HANDLE_FPE support.
+	
 2004-08-31  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/plaf/basic/BasicTextAreaUI.java

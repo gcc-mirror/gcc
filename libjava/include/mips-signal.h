@@ -22,7 +22,7 @@ details.  */
    sys/ucontext.h included by java-signal.h from prims.cc */
 
 #define HANDLE_SEGV 1
-#undef HANDLE_FPE
+#define HANDLE_FPE 1
 
 /* The third parameter to the signal handler points to something with
  * this structure defined in asm/ucontext.h, but the name clashes with
@@ -83,7 +83,19 @@ do                                                   \
     syscall (SYS_sigaction, SIGSEGV, &kact, NULL);   \
   }                                                  \
 while (0)
-								
+
+#define INIT_FPE                                     \
+do                                                   \
+  {                                                  \
+    struct kernel_sigaction kact;                    \
+    kact.k_sa_handler = catch_fpe;                   \
+    kact.k_sa_flags = SA_SIGINFO | SA_NODEFER;       \
+    sigemptyset (&kact.k_sa_mask);                   \
+    syscall (SYS_sigaction, SIGFPE, &kact, NULL);    \
+  }                                                  \
+while (0)
+
+#undef HANDLE_DIVIDE_OVERFLOW
 
 #endif /* JAVA_SIGNAL_H */
   
