@@ -1,4 +1,4 @@
-# Copyright (C) 1999 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,16 @@ load_lib g++-dg.exp
 ###########
 
 dg-init
-dg-runtest "$srcdir/$subdir/conpr-1.C" "" ""
+set lines [g++_target_compile "$srcdir/$subdir/conpr-1.C" "$srcdir/$subdir/a.out" executable ""]
+if [string match "*init_priority*" $lines] then {
+    xfail "conpr-1.C"
+    file delete $srcdir/$subdir/a.out
+} elseif ![string match "" $lines] then {
+    fail "conpr-1.C"
+} else {
+    dg-runtest "$srcdir/$subdir/conpr-1.C" "" "" 
+    file delete $srcdir/$subdir/a.out
+}
 dg-finish
 
 
@@ -40,7 +49,9 @@ dg-finish
 dg-init
 
 set lines [g++_target_compile "$srcdir/$subdir/conpr-2a.C" "conpr-2a.o" object ""]
-if ![string match "" $lines] then {
+if [string match "*init_priority*" $lines] then {
+    xfail "conpr-2a.o"
+} elseif ![string match "" $lines] then {
     fail "conpr-2a.o"
 } else {
     dg-runtest "$srcdir/$subdir/conpr-2.C" "conpr-2a.o" "" 
@@ -56,7 +67,9 @@ dg-finish
 dg-init
 
 set lines [g++_target_compile "$srcdir/$subdir/conpr-3a.C" "conpr-3a.o" object ""]
-if ![string match "" $lines] then {
+if [string match "*init_priority*" $lines] then {
+    xfail "conpr-3a.o"
+} elseif ![string match "" $lines] then {
     fail "conpr-3a.o"
 } else {
     set lines [g++_target_compile "$srcdir/$subdir/conpr-3b.C" "conpr-3b.o" object ""]

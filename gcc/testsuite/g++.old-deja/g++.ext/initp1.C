@@ -1,5 +1,6 @@
 // Test for proper handling of the init_priority attribute.
 // Contributed by Hugo Tyson <hmt@cygnus.co.uk>
+// excess errors test - XFAIL mips*-sgi-irix*
 
 class Two {
 private:
