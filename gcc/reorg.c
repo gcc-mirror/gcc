@@ -3009,6 +3009,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 
 	      if (new_label != 0)
 		new_label = get_label_before (new_label);
+	      else
+		new_label = find_end_label ();
 
 	      delay_list 
 		= add_to_delay_list (copy_rtx (next_trial), delay_list);
