@@ -2257,7 +2257,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
+#line 3 "/home/green/cygnus/njava/i0/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2450,7 +2450,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/lib/bison.simple"
+#line 196 "/home/green/cygnus/njava/i0/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4750,7 +4750,7 @@ case 495:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/lib/bison.simple"
+#line 498 "/home/green/cygnus/njava/i0/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -12821,9 +12821,9 @@ build_string_concatenation (op1, op2)
   if (!IS_CRAFTED_STRING_BUFFER_P (op1))
     {
       /* Two solutions here: 
-	 1) OP1 is a string reference, we call new StringBuffer(OP1)
-	 2) OP1 is something else, we call new StringBuffer().append(OP1). */
-      if (JSTRING_TYPE_P (TREE_TYPE (op1)))
+	 1) OP1 is a constant string reference, we call new StringBuffer(OP1)
+	 2) OP1 is something else, we call new StringBuffer().append(OP1).  */
+      if (TREE_CONSTANT (op1) && JSTRING_TYPE_P (TREE_TYPE (op1)))
 	op1 = BUILD_STRING_BUFFER (op1);
       else
 	{
