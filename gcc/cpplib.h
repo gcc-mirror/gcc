@@ -251,9 +251,9 @@ struct cpp_options
   /* -fleading_underscore sets this to "_".  */
   const char *user_label_prefix;
 
-  /* Precision for target CPP arithmetic, target characters and target
-     wide characters, respectively.  */
-  size_t precision, char_precision, wchar_precision;
+  /* Precision for target CPP arithmetic, target characters, target
+     ints and target wide characters, respectively.  */
+  size_t precision, char_precision, int_precision, wchar_precision;
 
   /* The language we're preprocessing.  */
   enum c_lang lang;

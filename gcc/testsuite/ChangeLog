@@ -1,3 +1,7 @@
+2002-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/charconst.c: Update tests.
+
 2002-05-05  Tim Josling  <tej@melbpc.org.au>
 
 	* treelang: Added directory for new sample language treelang. Also

@@ -1883,11 +1883,13 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen, unsignedp)
   if (token->type == CPP_CHAR)
     {
       width = CPP_OPTION (pfile, char_precision);
+      max_chars = CPP_OPTION (pfile, int_precision) / width;
       unsigned_p = CPP_OPTION (pfile, signed_char) == 0;
     }
   else
     {
       width = CPP_OPTION (pfile, wchar_precision);
+      max_chars = 1;
       unsigned_p = WCHAR_UNSIGNED;
     }
 
@@ -1895,7 +1897,6 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen, unsignedp)
     mask = ((cppchar_t) 1 << width) - 1;
   else
     mask = ~0;
-  max_chars = BITS_PER_CPPCHAR_T / width;
 
   while (str < limit)
     {
