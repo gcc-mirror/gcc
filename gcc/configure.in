@@ -215,7 +215,7 @@ AC_ARG_ENABLE(haifa,
 #
 # This is a work in progress...
 AC_ARG_WITH(fast-fixincludes,
-[  --with-fast-fixincludes    use a faster fixinclude program (experimental)],
+[  --with-fast-fixincludes use a faster fixinclude program (experimental)],
 fast_fixinc="$with_fast_fixincludes",
 fast_fixinc=no)
 
