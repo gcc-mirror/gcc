@@ -1,8 +1,30 @@
-2001-01-14  David Billinghurst <David.Billinghurst@riotinto.com>
+2002-01-22  Zack Weinberg  <zack@codesourcery.com>
 
-        PR fortran/3807
-        * f/intrin.c (ffeintrin_check_):  Allow for case of intrinsic
-        control string have COL-spec an integer > 0.
+	* bad.c: Include intl.h.
+	(FFEBAD_MSGS1, FFEBAD_MSGS2): Replace by FFEBAD_MSG, SHORT,
+	LONG.  Adjust definitions to work with exgettext.
+	(ffebad_start_): Translate all error messages.
+	(ffebad_finish): Mark constant strings for translation.
+	* bad.h: Use FFEBAD_MSG.  Adjust prototype of ffebad_start_
+	and definitions of ffebad_start_msg, ffebad_start_msg_lex to
+	work with exgettext.
+	* bad.def: Use FFEBAD_MSG, SHORT, LONG throughout.
+
+	* com.c: Include intl.h.
+	(lang_print_error_function): Always use ffeinfo_kind_message
+	to get the kind label for a non-nested construct.  Translate
+	it.  Translate constant strings.
+	* info.c (FFEINFO_KIND): Adjust definition to work with exgettext.
+	* info-k.def: Block xgettext from slurping copyright notice
+	into gcc.pot.  Adjust strings for their sole use, in com.c.
+
+	* Make-lang.in (f/bad.o, f/com.o): Depend on intl.h.
+
+2002-01-14  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR fortran/3807
+	* f/intrin.c (ffeintrin_check_):  Allow for case of intrinsic
+	control string have COL-spec an integer > 0.
 
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -46,7 +68,7 @@ Sun Dec 16 16:08:57 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
 Sun Dec 16 10:36:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (f/version.o): Depend on f/version.h.
-	* version.c: Include ansidecl.h and f/version.h.	
+	* version.c: Include ansidecl.h and f/version.h.
 
 Sun Dec 16 08:52:48 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

@@ -1,5 +1,5 @@
 /* info-k.def -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -25,13 +25,17 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Modifications:
 */
 
-FFEINFO_KIND (FFEINFO_kindNONE, "an unknown kind", "")
-FFEINFO_KIND (FFEINFO_kindENTITY, "an entity", "e")
-FFEINFO_KIND (FFEINFO_kindFUNCTION, "a function", "f")
-FFEINFO_KIND (FFEINFO_kindSUBROUTINE, "a subroutine", "u")
-FFEINFO_KIND (FFEINFO_kindPROGRAM, "a program", "p")
-FFEINFO_KIND (FFEINFO_kindBLOCKDATA, "a block-data unit", "b")
-FFEINFO_KIND (FFEINFO_kindCOMMON, "a common block", "c")
-FFEINFO_KIND (FFEINFO_kindCONSTRUCT, "a construct", ":")
-FFEINFO_KIND (FFEINFO_kindNAMELIST, "a namelist", "n")
-FFEINFO_KIND (FFEINFO_kindANY, "anything", "~")
+#
+/* Kind messages are used in diagnostic location reports of the
+   form "<file>: In function `foo': <error message>". */
+
+FFEINFO_KIND (FFEINFO_kindNONE, "In unknown kind", "")
+FFEINFO_KIND (FFEINFO_kindENTITY, "In entity", "e")
+FFEINFO_KIND (FFEINFO_kindFUNCTION, "In function", "f")
+FFEINFO_KIND (FFEINFO_kindSUBROUTINE, "In subroutine", "u")
+FFEINFO_KIND (FFEINFO_kindPROGRAM, "In program", "p")
+FFEINFO_KIND (FFEINFO_kindBLOCKDATA, "In block-data unit", "b")
+FFEINFO_KIND (FFEINFO_kindCOMMON, "In common block", "c")
+FFEINFO_KIND (FFEINFO_kindCONSTRUCT, "In construct", ":")
+FFEINFO_KIND (FFEINFO_kindNAMELIST, "In namelist", "n")
+FFEINFO_KIND (FFEINFO_kindANY, "In anything", "~")

@@ -89,6 +89,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "convert.h"
 #include "ggc.h"
 #include "diagnostic.h"
+#include "intl.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -13669,33 +13670,12 @@ lang_print_error_function (diagnostic_context *context __attribute__((unused)),
       if (ffecom_nested_entry_ == NULL)
 	{
 	  s = ffecom_primary_entry_;
-	  switch (ffesymbol_kind (s))
-	    {
-	    case FFEINFO_kindFUNCTION:
-	      kind = "function";
-	      break;
-
-	    case FFEINFO_kindSUBROUTINE:
-	      kind = "subroutine";
-	      break;
-
-	    case FFEINFO_kindPROGRAM:
-	      kind = "program";
-	      break;
-
-	    case FFEINFO_kindBLOCKDATA:
-	      kind = "block-data";
-	      break;
-
-	    default:
-	      kind = ffeinfo_kind_message (ffesymbol_kind (s));
-	      break;
-	    }
+	  kind = _(ffeinfo_kind_message (ffesymbol_kind (s)));
 	}
       else
 	{
 	  s = ffecom_nested_entry_;
-	  kind = "statement function";
+	  kind = _("In statement function");
 	}
     }
 
@@ -13705,12 +13685,12 @@ lang_print_error_function (diagnostic_context *context __attribute__((unused)),
 	fprintf (stderr, "%s: ", file);
 
       if (s == NULL)
-	fprintf (stderr, "Outside of any program unit:\n");
+	fprintf (stderr, _("Outside of any program unit:\n"));
       else
 	{
 	  const char *name = ffesymbol_text (s);
 
-	  fprintf (stderr, "In %s `%s':\n", kind, name);
+	  fprintf (stderr, "%s `%s':\n", kind, name);
 	}
 
       last_g = g;
