@@ -695,6 +695,11 @@ layout_type (type)
 	 of the language-specific code.  */
       abort ();
 
+    case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill. */
+      if (TYPE_PRECISION (type) == 0)
+	TYPE_PRECISION (type) = 1; /* default to one byte/boolean. */
+      /* ... fall through ... */
+
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case CHAR_TYPE:
@@ -945,18 +950,7 @@ layout_type (type)
 	}
       break;
 
-    /* Pascal and Chill types */
-    case BOOLEAN_TYPE:		 /* store one byte/boolean for now.  */
-      TYPE_MODE (type) = QImode;
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_PRECISION (type) = 1;
-      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
-      if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
- 	TREE_UNSIGNED (type) = 1;
-      break;
-
-    case SET_TYPE:
+    case SET_TYPE:  /* Used by Chill and Pascal. */
       if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST)
 	abort();
