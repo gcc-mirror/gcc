@@ -1,3 +1,8 @@
+2000-05-18 Mark Elbrecht <snowball3@bigfoot.com>
+
+        * configure.in (*-pc-msdosdjgpp): Set float_format to none.
+	* configure: Rebuilt.
+
 2000-05-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* genopinit.c: Use $ for escape sequences in optab patterns.
