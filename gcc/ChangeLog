@@ -1,5 +1,7 @@
 Sat Apr 18 18:30:22 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* i386.md (fix_truncsfdi2+[123]): Add + to operand 1 constraints.
+
 	* i386.h (CPP_CPU_DEFAULT): Renamed to CPP_CPU_DEFAULT_SPEC.
 	Add missing -Dpentium* options.
 	(CPP_CPU_SPEC): Delete redundant definition.  Include cpp_cpu_default
