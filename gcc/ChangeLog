@@ -1,5 +1,9 @@
 Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_type, set_sizetype): early_type_list is
+	now a list of TREE_LIST entries, not types.
+	* tree.c (build_common_tree_nodes_2): Eliminate dupliate type sets.
+
 	* expmed.c (extract_bit_field): Ensure BITS_PER_WORD is signed in MAX.
 	* config/arm/pe.c (arm_pe_return_in_memory): Use host_integerp and
 	int_bit_position.

@@ -1427,10 +1427,7 @@ layout_type (type)
   /* If this type is created before sizetype has been permanently set,
      record it so set_sizetype can fix it up.  */
   if (! sizetype_set)
-    {
-      TREE_CHAIN (type) = early_type_list;
-      early_type_list = type;
-    }
+    early_type_list = tree_cons (NULL_TREE, type, early_type_list);
 }
 
 /* Create and return a type for signed integers of PRECISION bits.  */
@@ -1508,7 +1505,7 @@ set_sizetype (type)
   int precision = MIN (oprecision + BITS_PER_UNIT_LOG + 1,
 		       2 * HOST_BITS_PER_WIDE_INT);
   unsigned int i;
-  tree t, next;
+  tree t;
 
   if (sizetype_set)
     abort ();
@@ -1561,16 +1558,13 @@ set_sizetype (type)
 
   /* Go down each of the types we already made and set the proper type
      for the sizes in them.  */
-  for (t = early_type_list; t != 0; t = next)
+  for (t = early_type_list; t != 0; t = TREE_CHAIN (t))
     {
-      next = TREE_CHAIN (t);
-      TREE_CHAIN (t) = 0;
-
-      if (TREE_CODE (t) != INTEGER_TYPE)
+      if (TREE_CODE (TREE_VALUE (t)) != INTEGER_TYPE)
 	abort ();
 
-      TREE_TYPE (TYPE_SIZE (t)) = bitsizetype;
-      TREE_TYPE (TYPE_SIZE_UNIT (t)) = sizetype;
+      TREE_TYPE (TYPE_SIZE (TREE_VALUE (t))) = bitsizetype;
+      TREE_TYPE (TYPE_SIZE_UNIT (TREE_VALUE (t))) = sizetype;
     }
 
   early_type_list = 0;

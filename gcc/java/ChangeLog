@@ -1,3 +1,9 @@
+Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (init_decl_processing): Only call initialize_sizetypes once.
+	Adjust order of making types.
+	Make bitsize_*_node values.
+
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (make_field_value): Use byte_position.
