@@ -218,6 +218,10 @@ const int x86_qimode_math = ~(0);
 const int x86_promote_qi_regs = 0;
 const int x86_himode_math = ~(m_PPRO);
 const int x86_promote_hi_regs = m_PPRO;
+const int x86_sub_esp_4 = m_ATHLON | m_PPRO;
+const int x86_sub_esp_8 = m_ATHLON | m_PPRO | m_386 | m_486;
+const int x86_add_esp_4 = m_ATHLON | m_K6;
+const int x86_add_esp_8 = m_ATHLON | m_PPRO | m_K6 | m_386 | m_486;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
@@ -1968,51 +1972,16 @@ static void
 ix86_emit_epilogue_esp_adjustment (tsize)
      int tsize;
 {
-  /* Intel's docs say that for 4 or 8 bytes of stack frame one should
-     use `pop' and not `add'.  */
-  int use_pop = tsize == 4;
-  rtx edx = 0, ecx;
-
-  /* Use two pops only for the Pentium processors.  */
-  if (tsize == 8 && !TARGET_386 && !TARGET_486)
-    {
-      rtx retval = current_function_return_rtx;
-
-      edx = gen_rtx_REG (SImode, 1);
-
-      /* This case is a bit more complex.  Since we cannot pop into
-         %ecx twice we need a second register.  But this is only
-         available if the return value is not of DImode in which
-         case the %edx register is not available.  */
-      use_pop = (retval == NULL
-		 || !reg_overlap_mentioned_p (edx, retval));
-    }
-
-  if (use_pop)
-    {
-      ecx = gen_rtx_REG (SImode, 2);
-
-      /* We have to prevent the two pops here from being scheduled.
-         GCC otherwise would try in some situation to put other
-         instructions in between them which has a bad effect.  */
-      emit_insn (gen_blockage ());
-      emit_insn (gen_popsi1 (ecx));
-      if (tsize == 8)
-	emit_insn (gen_popsi1 (edx));
-    }
+  /* If a frame pointer is present, we must be sure to tie the sp
+     to the fp so that we don't mis-schedule.  */
+  if (frame_pointer_needed)
+    emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
+					      stack_pointer_rtx,
+					      GEN_INT (tsize),
+					      hard_frame_pointer_rtx));
   else
-    {
-      /* If a frame pointer is present, we must be sure to tie the sp
-	 to the fp so that we don't mis-schedule.  */
-      if (frame_pointer_needed)
-        emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
-						  stack_pointer_rtx,
-						  GEN_INT (tsize),
-						  hard_frame_pointer_rtx));
-      else
-        emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       GEN_INT (tsize)));
-    }
+    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			   GEN_INT (tsize)));
 }
 
 /* Emit code to restore saved registers using MOV insns.  First register
