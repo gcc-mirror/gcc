@@ -1388,7 +1388,7 @@ _unord_f2 (FLO_type arg_a, FLO_type arg_b)
   unpack_d (&au, &a);
   unpack_d (&bu, &b);
 
-  return (isnan (&a) || isnan (&b);
+  return (isnan (&a) || isnan (&b));
 }
 #endif
 
