@@ -173,7 +173,7 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/doc/include/gpl.texi \
 		$(srcdir)/doc/include/funding.texi \
 		$(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi
 
 $(srcdir)/f/g77.1: $(srcdir)/f/invoke.texi
