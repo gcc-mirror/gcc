@@ -2006,7 +2006,26 @@ emit_group_store (orig_dst, src, ssize, align)
   /* If we won't be storing directly into memory, protect the real destination
      from strange tricks we might play.  */
   dst = orig_dst;
-  if (GET_CODE (dst) != MEM)
+  if (GET_CODE (dst) == PARALLEL)
+    {
+      rtx temp;
+
+      /* We can get a PARALLEL dst if there is a conditional expression in
+	 a return statement.  In that case, the dst and src are the same,
+	 so no action is necessary.  */
+      if (rtx_equal_p (dst, src))
+	return;
+
+      /* It is unclear if we can ever reach here, but we may as well handle
+	 it.  Allocate a temporary, and split this into a store/load to/from
+	 the temporary.  */
+
+      temp = assign_stack_temp (GET_MODE (dst), ssize, 0);
+      emit_group_store (temp, src, ssize, align);
+      emit_group_load (dst, temp, ssize, align);
+      return;
+    }
+  else if (GET_CODE (dst) != MEM)
     {
       dst = gen_reg_rtx (GET_MODE (orig_dst));
       /* Make life a bit easier for combine.  */
