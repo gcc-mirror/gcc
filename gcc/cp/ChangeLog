@@ -1,5 +1,8 @@
 1999-07-01  Gavin Romig-Koch  <gavin@cygnus.com>
 
+	* lex.c (real_yylex) : Change integer literal overflow handling to
+	be like c-lex.c.
+
 	* lex.c (real_yylex): Improve 'integer constant out of range' messages.
 
 1999-06-28  Richard Henderson  <rth@cygnus.com>

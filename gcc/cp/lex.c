@@ -3857,7 +3857,7 @@ real_yylex ()
 	    int spec_long = 0;
 	    int spec_long_long = 0;
 	    int spec_imag = 0;
-	    int bytes, warn;
+	    int warn;
 
 	    while (1)
 	      {
@@ -3895,25 +3895,10 @@ real_yylex ()
 		c = getch ();
 	      }
 
-	    /* If the constant is not long long and it won't fit in an
-	       unsigned long, or if the constant is long long and won't fit
-	       in an unsigned long long, then warn that the constant is out
-	       of range.  */
-
-	    /* ??? This assumes that long long and long integer types are
-	       a multiple of 8 bits.  This better than the original code
-	       though which assumed that long was exactly 32 bits and long
-	       long was exactly 64 bits.  */
-
-	    if (spec_long_long)
-	      bytes = TYPE_PRECISION (long_long_integer_type_node) / 8;
-	    else
-	      bytes = TYPE_PRECISION (long_integer_type_node) / 8;
+	    /* If it won't fit in the host's representation for integers,
+	       then pedwarn. */
 
 	    warn = overflow;
-	    for (i = bytes; i < TOTAL_PARTS; i++)
-	      if (parts[i])
-		warn = 1;
 	    if (warn)
 	      pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
 
