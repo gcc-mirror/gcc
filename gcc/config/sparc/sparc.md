@@ -6951,8 +6951,6 @@
 		   (match_operand:SI 2 "arith_operand" "rI")))]
   ""
 {
-  if (operands[2] == const1_rtx)
-    return "add\t%1, %1, %0";
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "sll\t%1, %2, %0";
@@ -6982,8 +6980,6 @@
 		   (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
 {
-  if (operands[2] == const1_rtx)
-    return "add\t%1, %1, %0";
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
   return "sllx\t%1, %2, %0";
