@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.249 1998/07/02 14:20:32 karl Exp $
+% $Id: texinfo.tex,v 2.252 1998/07/10 14:39:30 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.249 $
+\deftexinfoversion$Revision: 2.252 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -130,11 +130,21 @@
 % since that produces some useless output on the terminal.
 %
 \def\gloggingall{\begingroup \globaldefs = 1 \loggingall \endgroup}%
+\ifx\eTeXversion\undefined
 \def\loggingall{\tracingcommands2 \tracingstats2
    \tracingpages1 \tracingoutput1 \tracinglostchars1
    \tracingmacros2 \tracingparagraphs1 \tracingrestores1
    \showboxbreadth\maxdimen\showboxdepth\maxdimen
 }%
+\else
+\def\loggingall{\tracingcommands3 \tracingstats2
+   \tracingpages1 \tracingoutput1 \tracinglostchars1
+   \tracingmacros2 \tracingparagraphs1 \tracingrestores1
+   \tracingscantokens1 \tracingassigns1 \tracingifs1
+   \tracinggroups1 \tracingnesting2
+   \showboxbreadth\maxdimen\showboxdepth\maxdimen
+}%
+\fi
 
 % For @cropmarks command.
 % Do @cropmarks to get crop marks.
@@ -688,10 +698,10 @@ where each line of input produces a line of output.}
 % @c is the same as @comment
 % @ignore ... @end ignore  is another way to write a comment
 
-\def\comment{\catcode 64=\other \catcode 123=\other \catcode 125=\other%
-\parsearg \commentxxx}
-
-\def\commentxxx #1{\catcode 64=0 \catcode 123=1 \catcode 125=2 }
+\def\comment{\begingroup \catcode`\^^M=\other%
+\catcode`\@=\other \catcode`\{=\other \catcode`\}=\other%
+\commentxxx}
+{\catcode`\^^M=\other \gdef\commentxxx#1^^M{\endgroup}}
 
 \let\c=\comment
 
@@ -912,6 +922,9 @@ where each line of input produces a line of output.}
     %
     % Do not execute instructions in @tex
     \def\tex{\doignore{tex}}%
+    % Do not execute macro definitions.
+    % `c' is a comment character, so the word `macro' will get cut off.
+    \def\macro{\doignore{ma}}%
 }
 
 % @set VAR sets the variable VAR to an empty value.
@@ -2982,7 +2995,7 @@ width0pt\relax} \fi
 \def\chapteryyy #1{\numhead0{#1}} % normally numhead0 calls chapterzzz
 \def\chapterzzz #1{%
 \secno=0 \subsecno=0 \subsubsecno=0
-\global\advance \chapno by 1 \message{\putwordChapter \the\chapno}%
+\global\advance \chapno by 1 \message{\putwordChapter\space \the\chapno}%
 \chapmacro {#1}{\the\chapno}%
 \gdef\thissection{#1}%
 \gdef\thischaptername{#1}%
@@ -3003,7 +3016,8 @@ width0pt\relax} \fi
 \def\appendixyyy #1{\apphead0{#1}} % normally apphead0 calls appendixzzz
 \def\appendixzzz #1{%
 \secno=0 \subsecno=0 \subsubsecno=0
-\global\advance \appendixno by 1 \message{Appendix \appendixletter}%
+\global\advance \appendixno by 1
+\message{\putwordAppendix\space \appendixletter}%
 \chapmacro {#1}{\putwordAppendix{} \appendixletter}%
 \gdef\thissection{#1}%
 \gdef\thischaptername{#1}%
@@ -4413,19 +4427,27 @@ width0pt\relax} \fi
 % which we arrange to emulate with a temporary file in ordinary TeX.
 \ifx\eTeXversion\undefined
  \newwrite\macscribble
- \def\scantokens#1{%
+ \def\scanmacro#1{%
+   \begingroup \newlinechar`\^^M
    \immediate\openout\macscribble=\jobname.tmp
    \immediate\write\macscribble{#1}%
    \immediate\closeout\macscribble
+   \let\xeatspaces\eatspaces
    \input \jobname.tmp
+   \endgroup
 }
+\else
+\def\scanmacro#1{%
+\begingroup \newlinechar`\^^M
+\let\xeatspaces\eatspaces\scantokens{#1}\endgroup}
 \fi
 
 \newcount\paramno   % Count of parameters
 \newtoks\macname    % Macro name
 \newif\ifrecursive  % Is it recursive?
 
-% Utility: does \let #1 = #2, except with \csnames.
+% Utility routines.
+% Thisdoes \let #1 = #2, except with \csnames.
 \def\cslet#1#2{%
 \expandafter\expandafter
 \expandafter\let
@@ -4433,13 +4455,30 @@ width0pt\relax} \fi
 \csname#1\endcsname
 \csname#2\endcsname}
 
+% Trim leading and trailing spaces off a string.
+% Concepts from aro-bend problem 15 (see CTAN).
+{\catcode`\@=11
+\gdef\eatspaces #1{\expandafter\trim@\expandafter{#1 }}
+\gdef\trim@ #1{\trim@@ @#1 @ #1 @ @@}
+\gdef\trim@@ #1@ #2@ #3@@{\trim@@@\empty #2 @}
+\def\unbrace#1{#1}
+\unbrace{\gdef\trim@@@ #1 } #2@{#1}
+}
+
+% Trim a single trailing ^^M off a string.
+{\catcode`\^^M=12\catcode`\Q=3%
+\gdef\eatcr #1{\eatcra #1Q^^MQ}%
+\gdef\eatcra#1^^MQ{\eatcrb#1Q}%
+\gdef\eatcrb#1Q#2Q{#1}%
+}
+
 % Macro bodies are absorbed as an argument in a context where
 % all characters are catcode 10, 11 or 12, except \ which is active
 % (as in normal texinfo). It is necessary to change the definition of \.
 
-% It's necessary to get hard CRs in the scribble file when using Knuth
-% TeX, and it can't hurt with e-TeX.  Texinfo sets \newlinechar=`^^J,
-% so we redefine the \endlinechar to ^^J when reading the macro body.
+% It's necessary to have hard CRs when the macro is executed. This is 
+% done by  making ^^M (\endlinechar) catcode 12 when reading the macro 
+% body, and then making it the \newlinechar in \scanmacro.
 
 \def\macrobodyctxt{%
   \catcode`\~=12
@@ -4452,7 +4491,7 @@ width0pt\relax} \fi
   \catcode`\{=12
   \catcode`\}=12
   \catcode`\@=12
-  \endlinechar`^^J%
+  \catcode`\^^M=12
   \usembodybackslash}
 
 % \mbodybackslash is the definition of \ in @macro bodies.
@@ -4514,78 +4553,77 @@ width0pt\relax} \fi
 % The technique used is stolen from LaTeX:  let \hash be something
 % unexpandable, insert that wherever you need a #, and then redefine
 % it to # just before using the token list produced.
+%
+% The same technique is used to protect \eatspaces till just before
+% the macro is used.
 
 \def\parsemargdef#1;{\paramno=0\def\paramlist{}%
-        \let\hash\relax\parsemargdefxxx#1,;,}
+        \let\hash\relax\let\xeatspaces\relax\parsemargdefxxx#1,;,}
 \def\parsemargdefxxx#1,{%
   \if#1;\let\next=\relax
   \else \let\next=\parsemargdefxxx
     \advance\paramno by 1%
-    \eatspaces#1 \relax% output to \toks0
-    \expandafter\edef\csname macarg.\the\toks0\endcsname
-        {\ignorespaces \hash\the\paramno}%
+    \expandafter\edef\csname macarg.\eatspaces{#1}\endcsname
+        {\xeatspaces{\hash\the\paramno}}%
     \edef\paramlist{\paramlist\hash\the\paramno,}%
   \fi\next}
-\def\eatspaces#1 #2\relax{\def\temp{#1}%
-  \ifx\temp\empty \let\nexteat\eatspaces
-  \else \toks0={#1}\let\nexteat\eatspacesx \fi
-  \nexteat#2 \relax}
-\def\eatspacesx#1 \relax{}
 
 % These two commands read recursive and nonrecursive macro bodies.
 % (They're different since rec and nonrec macros end differently.)
 
-\long\def\parsemacbody#1^^J@end macro^^J%
-{\xdef\temp{#1}\endgroup\defmacro}%
-\long\def\parsermacbody#1^^J@end rmacro^^J%
-{\xdef\temp{#1}\endgroup\defmacro}%
+\long\def\parsemacbody#1@end macro%
+{\xdef\temp{\eatcr{#1}}\endgroup\defmacro}%
+\long\def\parsermacbody#1@end rmacro%
+{\xdef\temp{\eatcr{#1}}\endgroup\defmacro}%
 
 % This defines the macro itself. There are six cases: recursive and
 % nonrecursive macros of zero, one, and many arguments.
 % Much magic with \expandafter here.
+% \xdef is used so that macro definitions will survive the file
+% they're defined in; @include reads the file inside a group.
 \def\defmacro{%
   \let\hash=##% convert placeholders to macro parameter chars
   \ifrecursive
     \ifcase\paramno
     % 0
-      \expandafter\edef\csname\the\macname\endcsname{%
-        \noexpand\scantokens{\temp}}%
+      \expandafter\xdef\csname\the\macname\endcsname{%
+        \noexpand\scanmacro{\temp}}%
     \or % 1
-      \expandafter\edef\csname\the\macname\endcsname{%
+      \expandafter\xdef\csname\the\macname\endcsname{%
          \noexpand\braceorline\csname\the\macname xxx\endcsname}%
-      \expandafter\edef\csname\the\macname xxx\endcsname##1{%
-         \noexpand\scantokens{\temp}}%
+      \expandafter\xdef\csname\the\macname xxx\endcsname##1{%
+         \noexpand\scanmacro{\temp}}%
     \else % many
-      \expandafter\edef\csname\the\macname\endcsname##1{%
+      \expandafter\xdef\csname\the\macname\endcsname##1{%
           \csname\the\macname xxx\endcsname ##1,}%
       \expandafter\expandafter
-      \expandafter\edef
+      \expandafter\xdef
       \expandafter\expandafter
         \csname\the\macname xxx\endcsname 
-          \paramlist{\noexpand\scantokens{\temp}}%
+          \paramlist{\noexpand\scanmacro{\temp}}%
     \fi
   \else
     \ifcase\paramno
     % 0
-      \expandafter\edef\csname\the\macname\endcsname{%
+      \expandafter\xdef\csname\the\macname\endcsname{%
         \noexpand\norecurse{\the\macname}%
-        \noexpand\scantokens{\temp}\egroup}%
+        \noexpand\scanmacro{\temp}\egroup}%
     \or % 1
-      \expandafter\edef\csname\the\macname\endcsname{%
+      \expandafter\xdef\csname\the\macname\endcsname{%
          \noexpand\braceorline\csname\the\macname xxx\endcsname}%
-      \expandafter\edef\csname\the\macname xxx\endcsname##1{%
+      \expandafter\xdef\csname\the\macname xxx\endcsname##1{%
         \noexpand\norecurse{\the\macname}%
-        \noexpand\scantokens{\temp}\egroup}%
+        \noexpand\scanmacro{\temp}\egroup}%
     \else % many
-      \expandafter\edef\csname\the\macname\endcsname##1{%
+      \expandafter\xdef\csname\the\macname\endcsname##1{%
           \csname\the\macname xxx\endcsname ##1,}%
       \expandafter\expandafter
-      \expandafter\edef
+      \expandafter\xdef
       \expandafter\expandafter
       \csname\the\macname xxx\endcsname
       \paramlist{%
           \noexpand\norecurse{\the\macname}%
-          \noexpand\scantokens{\temp}\egroup}%
+          \noexpand\scanmacro{\temp}\egroup}%
     \fi
   \fi}
 
