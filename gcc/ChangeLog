@@ -1,3 +1,9 @@
+2003-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/8555
+	* config/i386/i386.md (sse_mov?fcc split): Handle op2 == op3 case
+	instead of aborting.
+
 2003-02-04  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (UNSPEC_BSF): Remove.
