@@ -1926,7 +1926,7 @@ gfc_check_do_variable (gfc_symtree *st)
     if (s->do_variable == st)
       {
 	gfc_error_now("Variable '%s' at %C cannot be redefined inside "
-		      "loop beginning at %L", st->name, &s->tail->loc);
+		      "loop beginning at %L", st->name, &s->head->loc);
 	return 1;
       }
 

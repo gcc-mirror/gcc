@@ -5,6 +5,9 @@
 	* lib/gfortran-dg.exp (gfortran-dg-runtest): Only test with all
 	of TORTURE_OPTIONS if test contains 'dg-do run'.
 
+	PR fortran/16404
+	* gfortran.dg/do_iterator.f90: New test.
+
 2004-07-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR rtl-optimization/16536
