@@ -5027,6 +5027,7 @@ init_optabs (void)
   exp10_optab = init_optab (UNKNOWN);
   exp2_optab = init_optab (UNKNOWN);
   expm1_optab = init_optab (UNKNOWN);
+  ldexp_optab = init_optab (UNKNOWN);
   logb_optab = init_optab (UNKNOWN);
   ilogb_optab = init_optab (UNKNOWN);
   log_optab = init_optab (UNKNOWN);

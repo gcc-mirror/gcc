@@ -1,3 +1,7 @@
+2005-02-12  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-34.c: Also check ldexp*.
+
 2005-02-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/tree-ssa/20040703-1.c: Quote decimal dot.
