@@ -1,3 +1,7 @@
+Thu Aug 12 10:14:47 1999  Andreas Schwab  <schwab@suse.de>
+
+	* rtl.texi: Fix typo.
+
 Wed Aug 11 23:50:57 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* invoke.texi (C++ Dialect Options): Add -fms-extensions.

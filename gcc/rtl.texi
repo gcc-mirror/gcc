@@ -866,7 +866,7 @@ mode @var{m}.  This macro can only be used for modes whose bitsize is
 less than or equal to @code{HOST_BITS_PER_INT}.
 
 @findex GET_MODE_ALIGNMENT
-@item GET_MODE_ALIGNMENT (@var{m)})
+@item GET_MODE_ALIGNMENT (@var{m})
 Return the required alignment, in bits, for an object of mode @var{m}.
 
 @findex GET_MODE_UNIT_SIZE
