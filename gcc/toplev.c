@@ -2854,7 +2854,7 @@ rest_of_compilation (decl)
 	 functions that we are supposed to defer.  */
 
       if (DECL_DEFER_OUTPUT (decl)
-	  || (DECL_INLINE (decl)
+	  || ((specd || DECL_INLINE (decl))
 	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 		   && ! flag_keep_inline_functions)
 		  || DECL_EXTERNAL (decl))))
