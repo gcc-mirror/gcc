@@ -8699,10 +8699,8 @@ rs6000_elf_section_type_flags (decl, name, reloc)
 {
   unsigned int flags = default_section_type_flags (decl, name, reloc);
 
-  /* ??? The flag_pic check appears redundant with the DECL_READONLY_SECTION
-     check in default_section_type_flags.  */
-  if (TARGET_RELOCATABLE || flag_pic)
-    flags &= ~SECTION_WRITE;
+  if (TARGET_RELOCATABLE)
+    flags |= SECTION_WRITE;
 
   /* Solaris doesn't like @nobits, and gas can handle .sbss without it.  */
   flags &= ~SECTION_BSS;
