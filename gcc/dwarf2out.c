@@ -1355,16 +1355,27 @@ dwarf2out_frame_debug_expr (expr, label)
 	    }
 	  else
 	    {
-	      if (GET_CODE (src) != PLUS
-		  || XEXP (src, 1) != stack_pointer_rtx)
+	      if (GET_CODE (src) != PLUS)
 		abort ();
-	      if (GET_CODE (XEXP (src, 0)) != REG
-		  || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
-		abort ();
-	      if (cfa.reg != STACK_POINTER_REGNUM)
-		abort ();
-	      cfa_store.reg = REGNO (dest);
-	      cfa_store.offset = cfa.offset - cfa_temp_value;
+
+	      if (GET_CODE (XEXP (src, 0)) == REG
+		  && REGNO (XEXP (src, 0)) == cfa.reg
+		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		/* Setting the FP (or a scratch that will be copied into the FP
+		   later on) from SP + const.  */
+		cfa.reg = REGNO (dest);
+	      else
+		{
+		  if (XEXP (src, 1) != stack_pointer_rtx)
+		    abort ();
+		  if (GET_CODE (XEXP (src, 0)) != REG
+		      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
+		    abort ();
+		  if (cfa.reg != STACK_POINTER_REGNUM)
+		    abort ();
+		  cfa_store.reg = REGNO (dest);
+		  cfa_store.offset = cfa.offset - cfa_temp_value;
+		}
 	    }
 	  break;
 
