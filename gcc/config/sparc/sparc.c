@@ -5329,6 +5329,7 @@ sparc_va_arg (valist, type)
 	    {
 	      indirect = 1;
 	      size = rsize = UNITS_PER_WORD;
+	      align = 0;
 	    }
 	  /* SPARC v9 ABI states that structures up to 8 bytes in size are
 	     given one 8 byte slot.  */
