@@ -1,6 +1,6 @@
 // natThrowable.cc - Superclass for all exceptions.
 
-/* Copyright (C) 2000  Red Hat Inc
+/* Copyright (C) 2000  Free Software Foundation, Inc
 
    This file is part of libgcj.
 

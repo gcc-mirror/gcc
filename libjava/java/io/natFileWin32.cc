@@ -1,6 +1,6 @@
 // natFileWin32.cc - Native part of File class for Win32.
 
-/* Copyright (C) 1998, 1999, 2001  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation, Inc.
 
    This file is part of libgcj.
 
