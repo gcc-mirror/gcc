@@ -287,7 +287,9 @@ in the following sections.
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -frounding-math -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
--fsched-spec-load-dangerous  -fsched2-use-superblocks @gol
+-fsched-spec-load-dangerous  @gol
+-fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
+-fsched2-use-superblocks @gol
 -fsched2-use-traces  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa  -fssa-ccp  -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
@@ -432,6 +434,7 @@ in the following sections.
 -mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mdynamic-no-pic @gol
 -mprioritize-restricted-insns=@var{priority} @gol
+-msched-costly-dep=@var{dependence_type} @gol
 -mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=altivec  -mabi=no-altivec @gol
@@ -4115,6 +4118,18 @@ Allow speculative motion of more load instructions.  This only makes
 sense when scheduling before register allocation, i.e.@: with
 @option{-fschedule-insns} or at @option{-O2} or higher.
 
+@item -fsched-stalled-insns=@var{n}
+@opindex fsched-stalled-insns
+Define how many insns (if any) can be moved prematurely from the queue
+of stalled insns into the ready list, during the second scheduling pass.
+
+@item -fsched-stalled-insns-dep=@var{n}
+@opindex fsched-stalled-insns-dep
+Define how many insn groups (cycles) will be examined for a dependency 
+on a stalled insn that is candidate for premature removal from the queue 
+of stalled insns.  Has an effect only during the second scheduling pass, 
+and only if @option{-fsched-stalled-insns} is used and its value is not zero.
+
 @item -fsched2-use-superblocks
 @opindex fsched2-use-superblocks
 When scheduling after register allocation, do use superblock scheduling
@@ -7535,6 +7550,17 @@ pass.  The argument @var{priority} takes the value @var{0/1/2} to assign
 @var{no/highest/second-highest} priority to dispatch slot restricted 
 instructions.
 
+@item -msched-costly-dep=@var{dependence_type}
+@opindex msched-costly-dep
+This option controls which dependences are considered costly
+by the target during instruction scheduling.  The argument
+@var{dependence_type} takes one of the following values:
+@var{no}: no dependence is costly, 
+@var{all}: all dependences are costly, 
+@var{true_store_to_load}: a true dependence from store to load is costly,
+@var{store_to_load}: any dependence from store to load is costly,
+@var{number}: any dependence which latency >= @var{number} is costly.
+ 
 @item -mcall-sysv
 @opindex mcall-sysv
 On System V.4 and embedded PowerPC systems compile code using calling

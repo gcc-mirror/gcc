@@ -592,6 +592,22 @@ fschedule-insns2
 Common
 Reschedule instructions after register allocation
 
+fsched-stalled-insns
+Common
+Allow premature scheduling of queued insns
+
+fsched-stalled-insns=
+Common RejectNegative Joined UInteger 
+-fsched-stalled-insns=<number>       Set number of queued insns that can be prematurely scheduled
+
+fsched-stalled-insns-dep
+Common
+Set dependence distance checking in premature scheduling of queued insns
+
+fsched-stalled-insns-dep=
+Common RejectNegative Joined UInteger
+-fsched-stalled-insns-dep=<number>   Set dependence distance checking in premature scheduling of queued insns
+
 fshared-data
 Common
 Mark data as shared rather than private

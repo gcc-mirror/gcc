@@ -1,3 +1,32 @@
+2003-10-09  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* haifa-sched.c (ok_for_early_schedule): New function.
+	(early_queue_to_ready): New function. 
+	(schedule_block): Allow early removal of insns from Q.
+	(schedule_insn): Update INSN_TICK in case of premature
+	issue.
+	* common.opt (sched_stalled_insns): New flag.
+	(sched_stalled_insns_dep): New flag.
+	* flags.h: Same above flags.
+	* opts.c: Same as above.
+	* toplev.c: Same as above.
+	* target.h (targetm.sched.is_costly_dependence): New
+	hook.
+	* target-def.h: Same as above.
+	* config/rs6000/rs6000.h: (rs6000_sched_costly_dep):
+	Support new flag -msched-costly-dep.
+	(DEFAULT_SCHED_COSTLY_DEP): Define.
+	* config/rs6000/rs6000.c: 	
+	(rs6000_is_costly_dependence): New function.
+	(is_load_insn, is_store_insn): New functions.
+	(is_load_insn1, is_store_insn1, is_mem_ref): New 
+	functions.
+	* doc/invoke.texi (-fsched-stalled-insns-dep)
+	(-fsched-stalled-insns, -msched-costly-dep): Document
+	options.
+	* doc/tm.texi (is_costly_dependence): Define new 
+	scheduler target hook.
+
 2003-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/6392
