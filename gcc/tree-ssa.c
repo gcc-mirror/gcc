@@ -572,17 +572,22 @@ tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
 
   /* If both the inner and outer types are integral types, then the
      conversion is not necessary if they have the same mode and
-     signedness and precision.  Note that type _Bool can have size of
-     4 (only happens on powerpc-darwin right now but can happen on any
-     target that defines BOOL_TYPE_SIZE to be INT_TYPE_SIZE) and a
-     precision of 1 while unsigned int is the same expect for a
-     precision of 4 so testing of precision is necessary.  */
+     signedness and precision, and both or neither are boolean.  Some
+     code assumes an invariant that boolean types stay boolean and do
+     not become 1-bit bit-field types.  Note that types with precision
+     not using all bits of the mode (such as bit-field types in C)
+     mean that testing of precision is necessary.  */
   else if (INTEGRAL_TYPE_P (inner_type)
            && INTEGRAL_TYPE_P (outer_type)
 	   && TYPE_MODE (inner_type) == TYPE_MODE (outer_type)
 	   && TYPE_UNSIGNED (inner_type) == TYPE_UNSIGNED (outer_type)
 	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return true;
+    {
+      bool first_boolean = (TREE_CODE (inner_type) == BOOLEAN_TYPE);
+      bool second_boolean = (TREE_CODE (outer_type) == BOOLEAN_TYPE);
+      if (first_boolean == second_boolean)
+	return true;
+    }
 
   /* Recurse for complex types.  */
   else if (TREE_CODE (inner_type) == COMPLEX_TYPE

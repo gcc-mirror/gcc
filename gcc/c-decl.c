@@ -5162,9 +5162,11 @@ finish_struct (tree t, tree fieldlist, tree attributes)
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.
-     Also process specified field sizes,m which is found in the DECL_INITIAL.
-     Store 0 there, except for ": 0" fields (so we can find them
-     and delete them, below).  */
+     Also process specified field sizes, found in the DECL_INITIAL,
+     storing 0 there after the type has been changed to precision equal
+     to its width, rather than the precision of the specified standard
+     type.  (Correct layout requires the original type to have been preserved
+     until now.)  */
 
   saw_named_field = 0;
   for (x = fieldlist; x; x = TREE_CHAIN (x))
@@ -5208,8 +5210,6 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  SET_DECL_C_BIT_FIELD (x);
 	}
 
-      DECL_INITIAL (x) = 0;
-
       /* Detect flexible array member in an invalid context.  */
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
@@ -5250,12 +5250,21 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
   layout_type (t);
 
-  /* Delete all zero-width bit-fields from the fieldlist.  */
+  /* Give bit-fields their proper types.  */
   {
     tree *fieldlistp = &fieldlist;
     while (*fieldlistp)
-      if (TREE_CODE (*fieldlistp) == FIELD_DECL && DECL_INITIAL (*fieldlistp))
-	*fieldlistp = TREE_CHAIN (*fieldlistp);
+      if (TREE_CODE (*fieldlistp) == FIELD_DECL && DECL_INITIAL (*fieldlistp)
+	  && TREE_TYPE (*fieldlistp) != error_mark_node)
+	{
+	  unsigned HOST_WIDE_INT width
+	    = tree_low_cst (DECL_INITIAL (*fieldlistp), 1);
+	  tree type = TREE_TYPE (*fieldlistp);
+	  if (width != TYPE_PRECISION (type))
+	    TREE_TYPE (*fieldlistp)
+	      = build_nonstandard_integer_type (width, TYPE_UNSIGNED (type));
+	  DECL_INITIAL (*fieldlistp) = 0;
+	}
       else
 	fieldlistp = &TREE_CHAIN (*fieldlistp);
   }

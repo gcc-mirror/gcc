@@ -3472,6 +3472,7 @@ extern int real_minus_onep (tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (int);
 extern void build_common_tree_nodes_2 (int);
+extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
 
 /* In function.c */

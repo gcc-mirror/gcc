@@ -11,13 +11,13 @@ struct bf
   int b: 2;
 };
 
-struct bf p = {4, 0};		/* { dg-warning "truncated" "" { xfail *-*-* } } */
-struct bf q = {0, 2};		/* { dg-warning "overflow" "" { xfail *-*-* } } */
+struct bf p = {4, 0};		/* { dg-warning "truncated" "" } */
+struct bf q = {0, 2};		/* { dg-warning "overflow" "" } */
 struct bf r = {3, -2};		/* { dg-bogus "(truncated|overflow)" } */
 
 void foo ()
 {
-  p.a = 4, p.b = 0;		/* { dg-warning "truncated" "" { xfail *-*-* } } */
-  q.a = 0, q.b = 2;		/* { dg-warning "overflow" "" { xfail *-*-* } } */
+  p.a = 4, p.b = 0;		/* { dg-warning "truncated" "" } */
+  q.a = 0, q.b = 2;		/* { dg-warning "overflow" "" } */
   r.a = 3, r.b = -2;		/* { dg-bogus "(truncated|overflow)" } */
 }

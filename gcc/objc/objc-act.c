@@ -4257,6 +4257,16 @@ check_ivars (tree inter, tree imp)
 
       t1 = TREE_TYPE (intdecls); t2 = TREE_TYPE (impdecls);
 
+      if (TREE_VALUE (TREE_VALUE (rawimpdecls)))
+	{
+	  /* t1 is the bit-field type, so t2 must be converted to the
+	     bit-field type for comparison as well.  */
+	  unsigned HOST_WIDE_INT width
+	    = tree_low_cst (TREE_VALUE (TREE_VALUE (rawimpdecls)), 1);
+	  if (width != TYPE_PRECISION (t2))
+	    t2 = build_nonstandard_integer_type (width, TYPE_UNSIGNED (t2));
+	}
+
       if (!comptypes (t1, t2)
 	  || !tree_int_cst_equal (TREE_VALUE (TREE_VALUE (rawintdecls)),
 				  TREE_VALUE (TREE_VALUE (rawimpdecls))))

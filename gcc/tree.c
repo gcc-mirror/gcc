@@ -4133,6 +4133,28 @@ build_index_type (tree maxval)
     return itype;
 }
 
+/* Builds a signed or unsigned integer type of precision PRECISION.
+   Used for C bitfields whose precision does not match that of
+   built-in target types.  */
+tree
+build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
+				int unsignedp)
+{
+  tree itype = make_node (INTEGER_TYPE);
+
+  TYPE_PRECISION (itype) = precision;
+
+  if (unsignedp)
+    fixup_unsigned_type (itype);
+  else
+    fixup_signed_type (itype);
+
+  if (host_integerp (TYPE_MAX_VALUE (itype), 1))
+    return type_hash_canon (tree_low_cst (TYPE_MAX_VALUE (itype), 1), itype);
+
+  return itype;
+}
+
 /* Create a range of some discrete type TYPE (an INTEGER_TYPE,
    ENUMERAL_TYPE, BOOLEAN_TYPE, or CHAR_TYPE), with
    low bound LOWVAL and high bound HIGHVAL.

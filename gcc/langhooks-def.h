@@ -116,6 +116,7 @@ extern int lhd_gimplify_expr (tree *, tree *, tree *);
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP	lhd_return_null_tree
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
 #define LANG_HOOKS_CAN_USE_BIT_FIELDS_P lhd_can_use_bit_fields_p
+#define LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS false
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_NO_BODY_BLOCKS	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
@@ -294,6 +295,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_MAYBE_BUILD_CLEANUP, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_CAN_USE_BIT_FIELDS_P, \
+  LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_NO_BODY_BLOCKS, \
   LANG_HOOKS_PRINT_STATISTICS, \
