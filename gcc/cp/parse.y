@@ -1507,7 +1507,7 @@ do_id:
 		     don't do_identifier; we only do that for unqualified
 		     identifiers.  */
 	          if (!lastiddecl || TREE_CODE (lastiddecl) != TREE_LIST)
-		    $$ = do_identifier ($<ttype>-1, 1, NULL_TREE);
+		    $$ = do_identifier ($<ttype>-1, 3, NULL_TREE);
 		  else
 		    $$ = $<ttype>-1;
 		}
