@@ -1,3 +1,7 @@
+Sun Dec 20 16:15:44 1998  John F. Carr  <jfc@mit.edu>
+
+	* Make-lang.in: Comment out control-Ls; they upset some makes.
+
 1998-12-18  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (check_class_interface_creation): Use DIR_SEPARATOR

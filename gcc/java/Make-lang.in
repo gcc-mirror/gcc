@@ -40,7 +40,7 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: jc1)
 # - define the names for selecting the language in LANGUAGES.
-
+#
 # Extra flags to pass to recursive makes.
 JAVA_FLAGS_TO_PASS = \
 	"JAVA_FOR_BUILD=$(JAVA_FOR_BUILD)" \
@@ -53,7 +53,7 @@ JAVA_INSTALL_NAME = `t='$(program_transform_name)'; echo gcj | sed $$t`
 # Actual names to use when installing a cross-compiler.
 JAVA_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcj | sed $$t`
 
-
+#
 GCJ = gcj
 
 # Define the names for selecting java in LANGUAGES.
@@ -139,7 +139,7 @@ JCF_DUMP_SOURCES = $(srcdir)/java/jcf-dump.c $(srcdir)/java/jcf-io.c \
 jcf-dump$(exeext): $(JCF_DUMP_SOURCES)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jcf-dump$(exeext)
 
-
+#
 # Build hooks:
 
 java.all.build: $(GCJ)$(exeext)
@@ -184,7 +184,7 @@ java.uninstall:
 
 java.install-info:
 
-
+#
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -198,7 +198,7 @@ java.distclean:
 java.extraclean:
 java.maintainer-clean:
 	-rm -f java/parse.c java/parse-scan.c java/parse.output java/y.tab.c
-
+#
 # Stage hooks:
 # The main makefile has already created stage?/java.
 
@@ -210,7 +210,7 @@ java.stage3:
 	-mv java/*$(objext) stage3/java
 java.stage4:
 	-mv java/*$(objext) stage4/java
-
+#
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the
