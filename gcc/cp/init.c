@@ -2390,10 +2390,14 @@ build_new_1 (exp)
 	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
 		      save_expr (rval), init, nelts);
 
-      /* If any part of the object initialization terminates by throwing
-	 an exception and the new-expression does not contain a
-	 new-placement, then the deallocation function is called to free
-	 the memory in which the object was being constructed.  */
+      /* If any part of the object initialization terminates by throwing an
+	 exception and a suitable deallocation function can be found, the
+	 deallocation function is called to free the memory in which the
+	 object was being constructed, after which the exception continues
+	 to propagate in the context of the new-expression. If no
+	 unambiguous matching deallocation function can be found,
+	 propagating the exception does not cause the object's memory to be
+	 freed.  */
       if (flag_exceptions && alloc_expr && ! use_java_new)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
