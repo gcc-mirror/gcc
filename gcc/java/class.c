@@ -128,7 +128,6 @@ make_class ()
 #else
   TYPE_BINFO (type) = make_tree_vec (6);
 #endif
-  CLASS_P (type) = 1;
   pop_obstacks ();
 
   return type;
@@ -157,6 +156,7 @@ push_class (class_type, class_name)
   int save_lineno = lineno;
   tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
   push_obstacks (&permanent_obstack, &permanent_obstack);
+  CLASS_P (class_type) = 1;
   input_filename = IDENTIFIER_POINTER (source_name);
   lineno = 0;
   decl = build_decl (TYPE_DECL, class_name, class_type);
