@@ -1,3 +1,8 @@
+Thu Jul 15 15:40:09 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* tree.c (build_type_attribute_variant): Move current_obstack restore
+	after build_qualified_type call.
+
 1999-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Use t-iris6, even with GNU LD.
