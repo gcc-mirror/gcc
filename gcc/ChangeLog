@@ -1,3 +1,10 @@
+Sun Jul  1 11:53:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cse.c (new_label_ref): Variable deleted.
+	(insert): Remove set of new_label_ref.
+	(check_for_label_ref): New function.
+	(cse_basic_block): Don't check new_label_ref; call check_for_label_ref.
+
 2001-06-30  Zack Weinberg  <zackw@stanford.edu>
 
 	* rtl.def (DEFINE_INSN, DEFINE_INSN_AND_SPLIT, DEFINE_PEEPHOLE):

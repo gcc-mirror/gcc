@@ -386,10 +386,6 @@ static int cse_jumps_altered;
    REG_LABEL, we have to rerun jump after CSE to put in the note.  */
 static int recorded_label_ref;
 
-/* Says which LABEL_REF was put in the hash table.  Used to see if we need
-   to set the above flag.  */
-static rtx new_label_ref;
-
 /* canon_hash stores 1 in do_not_record
    if it notices a reference to CC0, PC, or some other volatile
    subexpression.  */
@@ -692,6 +688,7 @@ static void cse_check_loop_start PARAMS ((rtx, rtx, void *));
 static void cse_set_around_loop	PARAMS ((rtx, rtx, rtx));
 static rtx cse_basic_block	PARAMS ((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PARAMS ((rtx, int *, rtx, int));
+static int check_for_label_ref	PARAMS ((rtx *, void *));
 extern void dump_class          PARAMS ((struct table_elt*));
 static struct cse_reg_info * get_cse_reg_info PARAMS ((unsigned int));
 static int check_dependence	PARAMS ((rtx *, void *));
@@ -718,6 +715,7 @@ dump_class (classp)
 }
 
 /* Subroutine of approx_reg_cost; called through for_each_rtx.  */
+
 static int
 approx_reg_cost_1 (xp, data)
      rtx *xp;
@@ -1580,12 +1578,6 @@ insert (x, classp, hash, mode)
 	SET_HARD_REG_BIT (hard_regs_in_table, i);
     }
 
-  /* If X is a label, show we recorded it.  */
-  if (GET_CODE (x) == LABEL_REF
-      || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF))
-    new_label_ref = x;
-
   /* Put an element for X into the right hash bucket.  */
 
   elt = free_element_chain;
@@ -1823,6 +1815,7 @@ struct check_dependence_data
   enum machine_mode mode;
   rtx exp;
 };
+
 static int
 check_dependence (x, data)
      rtx *x;
@@ -7290,16 +7283,13 @@ cse_basic_block (from, to, next_branch, around_loop)
 		libcall_insn = 0;
 	    }
 
-	  new_label_ref = 0;
 	  cse_insn (insn, libcall_insn);
 
-	  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL
-	     note for it, we must rerun jump since it needs to place the
-	     note.  If this is a LABEL_REF for a CODE_LABEL that isn't in
-	     the insn chain, don't do this since no REG_LABEL will be added. */
-	  if (new_label_ref != 0 && INSN_UID (XEXP (new_label_ref, 0)) != 0
-	      && reg_mentioned_p (new_label_ref, PATTERN (insn))
-	      && ! find_reg_note (insn, REG_LABEL, XEXP (new_label_ref, 0)))
+	  /* If we haven't already found an insn where we added a LABEL_REF,
+	     check this one.  */
+	  if (GET_CODE (insn) == INSN && ! recorded_label_ref
+	      && for_each_rtx (&PATTERN (insn), check_for_label_ref,
+			       (void *) insn))
 	    recorded_label_ref = 1;
 	}
 
@@ -7406,6 +7396,25 @@ cse_basic_block (from, to, next_branch, around_loop)
   free (qty_table + max_reg);
 
   return to ? NEXT_INSN (to) : 0;
+}
+
+/* Called via for_each_rtx to see if an insn is using a LABEL_REF for which
+   there isn't a REG_DEAD note.  Return one if so.  DATA is the insn.  */
+
+static int
+check_for_label_ref (rtl, data)
+     rtx *rtl;
+     void *data;
+{
+  rtx insn = (rtx) data;
+
+  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL note for it,
+     we must rerun jump since it needs to place the note.  If this is a
+     LABEL_REF for a CODE_LABEL that isn't in the insn chain, don't do this
+     since no REG_LABEL will be added. */
+  return (GET_CODE (*rtl) == LABEL_REF
+	  && INSN_UID (XEXP (*rtl, 0)) != 0
+	  && ! find_reg_note (insn, REG_LABEL, XEXP (*rtl, 0)));
 }
 
 /* Count the number of times registers are used (not set) in X.
