@@ -1,3 +1,8 @@
+2002-04-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* function.c (fixup_var_refs_1) <SET, handling VAR in SET_SRC>:
+	For paradoxical (subreg VAR), replace VAR, don't try the subreg.
+
 Fri Apr 12 10:51:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (broken_move): Constant 0. / 1. load is OK if there is
