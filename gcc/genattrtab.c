@@ -183,8 +183,8 @@ struct attr_desc
   unsigned unsigned_p	: 1;	/* Make the output function unsigned int.  */
   unsigned is_const	: 1;	/* Attribute value constant for each run.  */
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
-  unsigned func_units_p	: 1;	/* this is the function_units attribute */
-  unsigned blockage_p	: 1;	/* this is the blockage range function */
+  unsigned func_units_p	: 1;	/* This is the function_units attribute.  */
+  unsigned blockage_p	: 1;	/* This is the blockage range function.  */
   unsigned static_p	: 1;	/* Make the output function static.  */
 };
 

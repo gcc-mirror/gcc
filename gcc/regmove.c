@@ -2032,7 +2032,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 }
 
 
-/* return nonzero if X is stable and mentions no registers but for
+/* Return nonzero if X is stable and mentions no registers but for
    mentioning SRC or mentioning / changing DST .  If in doubt, presume
    it is unstable.
    The rationale is that we want to check if we can move an insn easily

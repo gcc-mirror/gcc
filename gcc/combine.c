@@ -9686,7 +9686,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	  break;
 
 	case EQ:
-	  /* convert (lshiftrt (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
+	  /* Convert (lshiftrt (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
 	     says that the sign bit can be tested, FOO has mode MODE, C is
 	     GET_MODE_BITSIZE (MODE) - 1, and FOO has only its low-order bit
 	     that may be nonzero.  */

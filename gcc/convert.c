@@ -203,7 +203,7 @@ convert_to_real (tree type, tree expr)
   if (itype != type && FLOAT_TYPE_P (type))
     switch (TREE_CODE (expr))
       {
-	/* convert (float)-x into -(float)x.  This is always safe.  */
+	/* Convert (float)-x into -(float)x.  This is always safe.  */
 	case ABS_EXPR:
 	case NEGATE_EXPR:
 	  if (TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (expr)))
@@ -211,7 +211,7 @@ convert_to_real (tree type, tree expr)
 			   fold (convert_to_real (type,
 						  TREE_OPERAND (expr, 0))));
 	  break;
-	/* convert (outertype)((innertype0)a+(innertype1)b)
+	/* Convert (outertype)((innertype0)a+(innertype1)b)
 	   into ((newtype)a+(newtype)b) where newtype
 	   is the widest mode from all of these.  */
 	case PLUS_EXPR:

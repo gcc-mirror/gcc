@@ -572,7 +572,7 @@ poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
 	  goto normal;
 
 	case VAR_DECL:
-	  /* keep this in sync with stmt.c:warn_about_unused_variables.
+	  /* Keep this in sync with stmt.c:warn_about_unused_variables.
 	     No warnings when the global scope is popped because the
 	     global scope isn't popped for the last translation unit,
 	     so the warnings are done in c_write_global_declaration.  */
