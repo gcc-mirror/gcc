@@ -336,6 +336,7 @@ static int new_spill_reg		PROTO((int, int, int *, int *, int,
 					       FILE *));
 static void delete_dead_insn		PROTO((rtx));
 static void alter_reg  			PROTO((int, int));
+static void mark_scratch_live		PROTO((rtx));
 static void set_label_offsets		PROTO((rtx, rtx, int));
 static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void mark_not_eliminable		PROTO((rtx, rtx));
@@ -490,6 +491,10 @@ reload (first, global, dumpfile)
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     mark_home_live (i);
+
+  for (i = 0; i < scratch_list_length; i++)
+    if (scratch_list[i])
+      mark_scratch_live (scratch_list[i]);
 
   /* Make sure that the last insn in the chain
      is not something that needs reloading.  */
@@ -1992,6 +1997,11 @@ reload (first, global, dumpfile)
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;
 
+  free (scratch_list);
+  scratch_list = 0;
+  free (scratch_block);
+  scratch_block = 0;
+
   return failure;
 }
 
@@ -2393,6 +2403,20 @@ mark_home_live (regno)
   lim = i + HARD_REGNO_NREGS (i, PSEUDO_REGNO_MODE (regno));
   while (i < lim)
     regs_ever_live[i++] = 1;
+}
+
+/* Mark the registers used in SCRATCH as being live.  */
+
+static void
+mark_scratch_live (scratch)
+     rtx scratch;
+{
+  register int i;
+  int regno = REGNO (scratch);
+  int lim = regno + HARD_REGNO_NREGS (regno, GET_MODE (scratch));
+
+  for (i = regno; i < lim; i++)
+    regs_ever_live[i] = 1;
 }
 
 /* This function handles the tracking of elimination offsets around branches.
@@ -3279,6 +3303,7 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
      FILE *dumpfile;
      int cant_eliminate;
 {
+  enum reg_class class = REGNO_REG_CLASS (regno);
   int something_changed = 0;
   register int i;
 
@@ -3295,8 +3320,6 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 				PSEUDO_REGNO_MODE (i))
 	    > regno))
       {
-	enum reg_class class = REGNO_REG_CLASS (regno);
-
 	/* If this register belongs solely to a basic block which needed no
 	   spilling of any class that this register is contained in,
 	   leave it be, unless we are spilling this register because
@@ -3335,6 +3358,29 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 		       i, reg_renumber[i]);
 	  }
       }
+  for (i = 0; i < scratch_list_length; i++)
+    {
+      if (scratch_list[i] && REGNO (scratch_list[i]) == regno)
+	{
+	  if (! cant_eliminate && basic_block_needs[0]
+	      && ! basic_block_needs[(int) class][scratch_block[i]])
+	    {
+	      enum reg_class *p;
+
+	      for (p = reg_class_superclasses[(int) class];
+		   *p != LIM_REG_CLASSES; p++)
+		if (basic_block_needs[(int) *p][scratch_block[i]] > 0)
+		  break;
+
+	      if (*p == LIM_REG_CLASSES)
+		continue;
+	    }
+	  PUT_CODE (scratch_list[i], SCRATCH);
+	  scratch_list[i] = 0;
+	  something_changed = 1;
+	  continue;
+	}
+    }
 
   return something_changed;
 }
