@@ -5878,8 +5878,8 @@ create_definition (buf, limit, op)
 	SKIP_WHITE_SPACE (bp);
 	/* A comma at this point can only be followed by an identifier.  */
 	if (!is_idstart[*bp]
-	    && (c9x && limit - bp <= (long) REST_EXTENSION_LENGTH
-		||  bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) != 0)) {
+	    && !(c9x && limit - bp > (long) REST_EXTENSION_LENGTH
+		&&  bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0)) {
 	  error ("badly punctuated parameter list in `#define'");
 	  goto nope;
 	}
