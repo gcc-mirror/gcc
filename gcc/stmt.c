@@ -2294,6 +2294,30 @@ expand_start_loop_continue_elsewhere (exit_flag)
   return thisloop;
 }
 
+/* Begin a null, aka do { } while (0) "loop".  But since the contents
+   of said loop can still contain a break, we must frob the loop nest.  */
+
+struct nesting *
+expand_start_null_loop ()
+{
+  register struct nesting *thisloop = ALLOC_NESTING ();
+
+  /* Make an entry on loop_stack for the loop we are entering.  */
+
+  thisloop->next = loop_stack;
+  thisloop->all = nesting_stack;
+  thisloop->depth = ++nesting_depth;
+  thisloop->data.loop.start_label = emit_note (NULL, NOTE_INSN_DELETED);
+  thisloop->data.loop.end_label = gen_label_rtx ();
+  thisloop->data.loop.alt_end_label = NULL_RTX;
+  thisloop->data.loop.continue_label = NULL_RTX;
+  thisloop->exit_label = thisloop->data.loop.end_label;
+  loop_stack = thisloop;
+  nesting_stack = thisloop;
+
+  return thisloop;
+}
+
 /* Specify the continuation point for a loop started with
    expand_start_loop_continue_elsewhere.
    Use this at the point in the code to which a continue statement
@@ -2613,6 +2637,19 @@ expand_end_loop ()
       emit_jump (start_label);
       emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
     }
+  emit_label (loop_stack->data.loop.end_label);
+
+  POPSTACK (loop_stack);
+
+  last_expr_type = 0;
+}
+
+/* Finish a null loop, aka do { } while (0).  */
+
+void
+expand_end_null_loop ()
+{
+  do_pending_stack_adjust ();
   emit_label (loop_stack->data.loop.end_label);
 
   POPSTACK (loop_stack);
