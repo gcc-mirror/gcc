@@ -4209,11 +4209,45 @@ update_life_info (blocks, extent, prop_flags)
 
   tmp = INITIALIZE_REG_SET (tmp_head);
 
+  /* Changes to the CFG are only allowed when
+     doing a global update for the entire CFG.  */
+  if ((prop_flags & PROP_ALLOW_CFG_CHANGES)
+      && (extent == UPDATE_LIFE_LOCAL || blocks))
+    abort ();
+
   /* For a global update, we go through the relaxation process again.  */
   if (extent != UPDATE_LIFE_LOCAL)
     {
-      calculate_global_regs_live (blocks, blocks,
-				  prop_flags & PROP_SCAN_DEAD_CODE);
+      for ( ; ; )
+	{
+	  int changed = 0;
+
+	  calculate_global_regs_live (blocks, blocks,
+				prop_flags & (PROP_SCAN_DEAD_CODE
+					      | PROP_ALLOW_CFG_CHANGES));
+
+	  if ((prop_flags & (PROP_KILL_DEAD_CODE | PROP_ALLOW_CFG_CHANGES))
+	      != (PROP_KILL_DEAD_CODE | PROP_ALLOW_CFG_CHANGES))
+	    break;
+
+	  /* Removing dead code may allow the CFG to be simplified which
+	     in turn may allow for further dead code detection / removal.  */
+	  for (i = n_basic_blocks - 1; i >= 0; --i)
+	    {
+	      basic_block bb = BASIC_BLOCK (i);
+
+	      COPY_REG_SET (tmp, bb->global_live_at_end);
+	      changed |= propagate_block (bb, tmp, NULL, NULL,
+				prop_flags & (PROP_SCAN_DEAD_CODE
+					      | PROP_KILL_DEAD_CODE));
+	    }
+
+	  if (! changed || ! try_optimize_cfg (CLEANUP_EXPENSIVE))
+	    break;
+
+	  delete_unreachable_blocks ();
+	  mark_critical_edges ();
+	}
 
       /* If asked, remove notes from the blocks we'll update.  */
       if (extent == UPDATE_LIFE_GLOBAL_RM_NOTES)
@@ -5365,9 +5399,11 @@ free_propagate_block_info (pbi)
    and cleared in COND_LOCAL_SET.
    It is valid for LOCAL_SET and COND_LOCAL_SET to be the same set.  In this
    case, the resulting set will be equal to the union of the two sets that
-   would otherwise be computed.  */
+   would otherwise be computed.
 
-void
+   Return non-zero if an INSN is deleted (i.e. by dead code removal).  */
+
+int
 propagate_block (bb, live, local_set, cond_local_set, flags)
      basic_block bb;
      regset live;
@@ -5377,6 +5413,7 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
 {
   struct propagate_block_info *pbi;
   rtx insn, prev;
+  int changed;
 
   pbi = init_propagate_block_info (bb, live, local_set, cond_local_set, flags);
 
@@ -5392,6 +5429,7 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
 
   /* Scan the block an insn at a time from end to beginning.  */
 
+  changed = 0;
   for (insn = bb->end;; insn = prev)
     {
       /* If this is a call to `setjmp' et al, warn if any
@@ -5402,12 +5440,15 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
 	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 
       prev = propagate_one_insn (pbi, insn);
+      changed |= NEXT_INSN (prev) != insn;
 
       if (insn == bb->head)
 	break;
     }
 
   free_propagate_block_info (pbi);
+
+  return changed;
 }
 
 /* Return 1 if X (the body of an insn, or part of it) is just dead stores
