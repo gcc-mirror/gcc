@@ -325,7 +325,8 @@ cp_parse_init ()
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
 %type <ttype> PFUNCNAME maybe_identifier
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
-%type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
+%type <ttype> expr_no_commas expr_no_comma_rangle
+%type <ttype> cast_expr unary_expr primary string STRING
 %type <ttype> reserved_declspecs boolean.literal
 %type <ttype> reserved_typespecquals
 %type <ttype> SCSPEC TYPESPEC CV_QUALIFIER maybe_cv_qualifier
@@ -641,7 +642,7 @@ template_parm:
 		{ $$ = build_tree_list (groktypename ($3.t), $1); }
 	| parm
 		{ $$ = build_tree_list (NULL_TREE, $1.t); }
-	| parm '=' expr_no_commas  %prec ARITHCOMPARE
+	| parm '=' expr_no_comma_rangle
 		{ $$ = build_tree_list ($3, $1.t); }
 	| template_template_parm
 		{ $$ = build_tree_list (NULL_TREE, $1); }
@@ -1065,7 +1066,7 @@ template_arg:
 		  if (DECL_TEMPLATE_TEMPLATE_PARM_P ($$))
 		    $$ = TREE_TYPE ($$);
 		}
-	| expr_no_commas  %prec ARITHCOMPARE
+	| expr_no_comma_rangle
 	;
 
 unop:
@@ -1368,19 +1369,59 @@ expr_no_commas:
 		{ $$ = build_throw (NULL_TREE); }
 	| THROW expr_no_commas
 		{ $$ = build_throw ($2); }
-/* These extensions are not defined.  The second arg to build_m_component_ref
-   is old, build_m_component_ref now does an implicit
-   build_indirect_ref (x, NULL_PTR) on the second argument.
-	| object '&' expr_no_commas  %prec UNARY
-		{ $$ = build_m_component_ref ($$, build_x_unary_op (ADDR_EXPR, $3)); }
-	| object unop expr_no_commas  %prec UNARY
-		{ $$ = build_m_component_ref ($$, build_x_unary_op ($2, $3)); }
-	| object '(' type_id ')' expr_no_commas  %prec UNARY
-		{ tree type = groktypename ($3.t);
-		  $$ = build_m_component_ref ($$, build_c_cast (type, $5)); }
-	| object primary_no_id  %prec UNARY
-		{ $$ = build_m_component_ref ($$, $2); }
-*/
+	;
+
+expr_no_comma_rangle:
+	  cast_expr
+	/* Handle general members.  */
+	| expr_no_comma_rangle POINTSAT_STAR expr_no_comma_rangle
+		{ $$ = build_x_binary_op (MEMBER_REF, $$, $3); }
+	| expr_no_comma_rangle DOT_STAR expr_no_comma_rangle
+		{ $$ = build_m_component_ref ($$, $3); }
+	| expr_no_comma_rangle '+' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '-' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '*' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '/' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '%' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle LSHIFT expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle RSHIFT expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle ARITHCOMPARE expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '<' expr_no_comma_rangle
+		{ $$ = build_x_binary_op (LT_EXPR, $$, $3); }
+	| expr_no_comma_rangle EQCOMPARE expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle MIN_MAX expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '&' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '|' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle '^' expr_no_comma_rangle
+		{ $$ = build_x_binary_op ($2, $$, $3); }
+	| expr_no_comma_rangle ANDAND expr_no_comma_rangle
+		{ $$ = build_x_binary_op (TRUTH_ANDIF_EXPR, $$, $3); }
+	| expr_no_comma_rangle OROR expr_no_comma_rangle
+		{ $$ = build_x_binary_op (TRUTH_ORIF_EXPR, $$, $3); }
+	| expr_no_comma_rangle '?' xexpr ':' expr_no_comma_rangle
+		{ $$ = build_x_conditional_expr ($$, $3, $5); }
+	| expr_no_comma_rangle '=' expr_no_comma_rangle
+		{ $$ = build_x_modify_expr ($$, NOP_EXPR, $3);
+		  if ($$ != error_mark_node)
+                    C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
+	| expr_no_comma_rangle ASSIGN expr_no_comma_rangle
+		{ $$ = build_x_modify_expr ($$, $2, $3); }
+	| THROW
+		{ $$ = build_throw (NULL_TREE); }
+	| THROW expr_no_comma_rangle
+		{ $$ = build_throw ($2); }
 	;
 
 notype_unqualified_id:
