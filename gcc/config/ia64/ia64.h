@@ -261,16 +261,16 @@ extern const char *ia64_tune_string;
 
 /* Driver configuration */
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   `cc1'.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the `cc1'.  */
+/* A C string constant that tells the GCC driver program options to pass to
+   `cc1'.  It can also specify how to translate options you give to GCC into
+   options for GCC to pass to the `cc1'.  */
 
 #undef CC1_SPEC
 #define CC1_SPEC "%{G*}"
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   `cc1plus'.  It can also specify how to translate options you give to GNU CC
-   into options for GNU CC to pass to the `cc1plus'.  */
+/* A C string constant that tells the GCC driver program options to pass to
+   `cc1plus'.  It can also specify how to translate options you give to GCC
+   into options for GCC to pass to the `cc1plus'.  */
 
 /* #define CC1PLUS_SPEC "" */
 
@@ -651,7 +651,7 @@ while (0)
 /* Order of allocation of registers */
 
 /* If defined, an initializer for a vector of integers, containing the numbers
-   of hard registers in the order in which GNU CC should prefer to use them
+   of hard registers in the order in which GCC should prefer to use them
    (from most preferred to least).
 
    If this macro is not defined, registers are used lowest numbered first (all
@@ -1555,7 +1555,7 @@ do {									\
 
 /* Implicit Calls to Library Routines */
 
-/* Define this macro if GNU CC should generate calls to the System V (and ANSI
+/* Define this macro if GCC should generate calls to the System V (and ANSI
    C) library functions `memcpy' and `memset' rather than the BSD functions
    `bcopy' and `bzero'.  */
 
@@ -2120,7 +2120,7 @@ do {									\
 
 /* Macros for SDB and Dwarf Output.  */
 
-/* Define this macro if GNU CC should produce dwarf version 2 format debugging
+/* Define this macro if GCC should produce dwarf version 2 format debugging
    output in response to the `-g' option.  */
 
 #define DWARF2_DEBUGGING_INFO 1

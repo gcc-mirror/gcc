@@ -3,20 +3,20 @@
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
+along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
@@ -127,7 +127,7 @@ extern int avr_asm_only_p;
 
 #define CAN_DEBUG_WITHOUT_FP
 /* Define this macro if debugging can be performed even without a
-   frame pointer.  If this macro is defined, GNU CC will turn on the
+   frame pointer.  If this macro is defined, GCC will turn on the
    `-fomit-frame-pointer' option whenever `-O' is specified.  */
 
 /* Define this if most significant byte of a word is the lowest numbered. */
@@ -356,7 +356,7 @@ extern int avr_asm_only_p;
     32,33,34,35					\
     }
 /* If defined, an initializer for a vector of integers, containing the
-   numbers of hard registers in the order in which GNU CC should
+   numbers of hard registers in the order in which GCC should
    prefer to use them (from most preferred to least).
 
    If this macro is not defined, registers are used lowest numbered
@@ -1014,7 +1014,7 @@ enum reg_class {
    stack when an instruction attempts to push NPUSHED bytes.
 
    If the target machine does not have a push instruction, do not
-   define this macro.  That directs GNU CC to use an alternate
+   define this macro.  That directs GCC to use an alternate
    strategy: to allocate the entire argument block and then store the
    arguments into it.
 
@@ -1931,7 +1931,7 @@ do {									 \
    output the additional assembler syntax for making that name weak,
    and a newline.
 
-   If you don't define this macro, GNU CC will not support weak
+   If you don't define this macro, GCC will not support weak
    symbols and you should not define the `SUPPORTS_WEAK' macro.
 */
 
@@ -2320,33 +2320,33 @@ extern int avr_case_values_threshold;
    alignment may be required.  */
 
 #define TARGET_MEM_FUNCTIONS
-/* Define this macro if GNU CC should generate calls to the System V
+/* Define this macro if GCC should generate calls to the System V
    (and ANSI C) library functions `memcpy' and `memset' rather than
    the BSD functions `bcopy' and `bzero'.  */
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
-/* A C string constant that tells the GNU CC driver program options to
+/* A C string constant that tells the GCC driver program options to
    pass to CPP.  It can also specify how to translate options you
-   give to GNU CC into options for GNU CC to pass to the CPP.
+   give to GCC into options for GCC to pass to the CPP.
 
    Do not define this macro if it does not need to do anything.  */
 
 #define CC1_SPEC "%{profile:-p}"
-/* A C string constant that tells the GNU CC driver program options to
+/* A C string constant that tells the GCC driver program options to
    pass to `cc1'.  It can also specify how to translate options you
-   give to GNU CC into options for GNU CC to pass to the `cc1'.
+   give to GCC into options for GCC to pass to the `cc1'.
 
    Do not define this macro if it does not need to do anything.  */
 
 #define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
     %{!fenforce-eh-specs:-fno-enforce-eh-specs} \
     %{!fexceptions:-fno-exceptions}"
-/* A C string constant that tells the GNU CC drvier program options to
+/* A C string constant that tells the GCC drvier program options to
    pass to `cc1plus'.  */
 
 #define ASM_SPEC "%{mmcu=*:-mmcu=%*}"
-/* A C string constant that tells the GNU CC driver program how to
+/* A C string constant that tells the GCC driver program how to
    run any programs which cleanup after the normal assembler.
    Normally, this is not needed.  See the file `mips.h' for an
    example of this.
@@ -2361,9 +2361,9 @@ extern int avr_case_values_threshold;
 %{mmcu=atmega16*|mmcu=atmega32*|mmcu=atmega64|mmcu=atmega128|mmcu=at94k:-m avr5}\
 %{mmcu=atmega64|mmcu=atmega128|mmcu=atmega162|mmcu=atmega169: -Tdata 0x800100} "
 
-/* A C string constant that tells the GNU CC driver program options to
+/* A C string constant that tells the GCC driver program options to
    pass to the linker.  It can also specify how to translate options
-   you give to GNU CC into options for GNU CC to pass to the linker.
+   you give to GCC into options for GCC to pass to the linker.
 
    Do not define this macro if it does not need to do anything.  */
 
@@ -2381,12 +2381,12 @@ extern int avr_case_values_threshold;
 
 #define LIBGCC_SPEC \
   "%{!mmcu=at90s1*:%{!mmcu=attiny1*:%{!mmcu=attiny28: -lgcc }}}"
-/* Another C string constant that tells the GNU CC driver program how
+/* Another C string constant that tells the GCC driver program how
    and when to place a reference to `libgcc.a' into the linker
    command line.  This constant is placed both before and after the
    value of `LIB_SPEC'.
 
-   If this macro is not defined, the GNU CC driver provides a default
+   If this macro is not defined, the GCC driver provides a default
    that passes the string `-lgcc' to the linker unless the `-shared'
    option is specified.  */
 

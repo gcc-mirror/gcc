@@ -3,20 +3,20 @@
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
-   This file is part of GNU CC.
+   This file is part of GCC.
 
-   GNU CC is free software; you can redistribute it and/or modify
+   GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
-   GNU CC is distributed in the hope that it will be useful,
+   GCC is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU CC; see the file COPYING.  If not, write to
+   along with GCC; see the file COPYING.  If not, write to
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
@@ -376,7 +376,7 @@ do {									\
 /* Order of allocation of registers */
 
 /* If defined, an initializer for a vector of integers, containing the numbers
-   of hard registers in the order in which GNU CC should prefer to use them
+   of hard registers in the order in which GCC should prefer to use them
    (from most preferred to least).
 
    If this macro is not defined, registers are used lowest numbered first (all
@@ -1224,7 +1224,7 @@ typedef struct d30v_stack {
    `INIT_CUMULATIVE_ARGS' is used instead.
 
    The value passed for LIBNAME is always 0, since library routines with
-   special calling conventions are never compiled with GNU CC.  The argument
+   special calling conventions are never compiled with GCC.  The argument
    LIBNAME exists for symmetry with `INIT_CUMULATIVE_ARGS'.  */
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
@@ -1354,7 +1354,7 @@ typedef struct machine_function GTY(())
    `fprintf'.
 
    The details of how the address should be passed to `mcount' are determined
-   by your operating system environment, not by GNU CC.  To figure them out,
+   by your operating system environment, not by GCC.  To figure them out,
    compile a small program for profiling using the system's installed C
    compiler and look at the assembler code that results.  */
 
@@ -1617,7 +1617,7 @@ extern int d30v_branch_cost;
 extern const char *d30v_branch_cost_string;
 
 /* Here are additional macros which do not specify precise relative costs, but
-   only that certain actions are more expensive than GNU CC would ordinarily
+   only that certain actions are more expensive than GCC would ordinarily
    expect.  */
 
 /* Define this macro as a C expression which is nonzero if accessing less than
@@ -1875,7 +1875,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    knows about and DBX does not, or vice versa.  In such cases, some register
    may need to have one number in the compiler and another for DBX.
 
-   If two registers have consecutive numbers inside GNU CC, and they can be
+   If two registers have consecutive numbers inside GCC, and they can be
    used as a pair to hold a multiword value, then they *must* have consecutive
    numbers after renumbering with `DBX_REGISTER_NUMBER'.  Otherwise, debuggers
    will be unable to access such a pair, because they expect register pairs to
@@ -1906,9 +1906,9 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
  : (REGNO) == CR_INT_M		 ? (66 + 17)				\
  :				   -1)
 
-/* A C expression that returns the type of debugging output GNU CC produces
+/* A C expression that returns the type of debugging output GCC produces
    when the user specifies `-g' or `-ggdb'.  Define this if you have arranged
-   for GNU CC to support more than one format of debugging output.  Currently,
+   for GCC to support more than one format of debugging output.  Currently,
    the allowable values are `DBX_DEBUG', `SDB_DEBUG', `DWARF_DEBUG',
    `DWARF2_DEBUG', and `XCOFF_DEBUG'.
 

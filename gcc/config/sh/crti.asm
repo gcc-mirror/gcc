@@ -1,9 +1,9 @@
 /* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    This file was adapted from glibc sources.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify it
+GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2, or (at your option) any
 later version.
@@ -17,7 +17,7 @@ do apply in other respects; for example, they cover modification of
 the file, and distribution when not linked into a combine
 executable.)
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
