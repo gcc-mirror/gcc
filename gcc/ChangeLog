@@ -1,3 +1,10 @@
+2004-01-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR java/13824
+	* tree.c (unsafe_for_reeval): Handle EXIT_BLOCK_EXPR nodes specially
+	as their EXIT_BLOCK_LABELED_BLOCK operands can lead to unbounded
+	recursion.
+
 2004-01-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Change predicate of a peephole2 pattern from reg_or_0_operand
