@@ -1127,8 +1127,11 @@ make_node (code)
   return t;
 }
 
-/* Return a new node with the same contents as NODE
-   except that its TREE_CHAIN is zero and it has a fresh uid.  */
+/* Return a new node with the same contents as NODE except that its
+   TREE_CHAIN is zero and it has a fresh uid.  Unlike make_node, this
+   function always performs the allocation on the CURRENT_OBSTACK;
+   it's up to the caller to pick the right obstack before calling this
+   function.  */
 
 tree
 copy_node (node)
@@ -2244,7 +2247,7 @@ array_type_nelts (type)
   if (! TREE_CONSTANT (min))
     {
       STRIP_NOPS (min);
-      if (TREE_CODE (min) == SAVE_EXPR)
+      if (TREE_CODE (min) == SAVE_EXPR && SAVE_EXPR_RTL (min))
 	min = build (RTL_EXPR, TREE_TYPE (TYPE_MIN_VALUE (index_type)), 0,
 		     SAVE_EXPR_RTL (min));
       else
@@ -2254,7 +2257,7 @@ array_type_nelts (type)
   if (! TREE_CONSTANT (max))
     {
       STRIP_NOPS (max);
-      if (TREE_CODE (max) == SAVE_EXPR)
+      if (TREE_CODE (max) == SAVE_EXPR && SAVE_EXPR_RTL (max))
 	max = build (RTL_EXPR, TREE_TYPE (TYPE_MAX_VALUE (index_type)), 0,
 		     SAVE_EXPR_RTL (max));
       else
