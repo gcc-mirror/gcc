@@ -1299,8 +1299,9 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
 	  fprintf(rtl_dump_file,
-	    "Basic block %d: count = %lld loop-depth = %d idom = %d\n",
-	    i, bb->count, bb->loop_depth,
+	    "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
+	    " loop-depth = %d idom = %d\n",
+	    i, (HOST_WIDEST_INT) bb->count, bb->loop_depth,
 	    get_immediate_dominator (dom, bb)->index);
 	}
     }

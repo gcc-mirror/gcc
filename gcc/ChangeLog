@@ -1,5 +1,7 @@
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
+	* bt-load.c (migrate_btr_defs): Correct printf arguments.
+
 	* protoize.c: Fix breakage from last patch.
 
 2003-06-19  J"orn Rennecke <joern.rennecke@superh.com>
