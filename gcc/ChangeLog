@@ -1,3 +1,7 @@
+2000-01-27  Andrew Hobson  <ahobson@eng.mindspring.net>
+
+	* configure.in (alpha-dec-osf5): Enable MASK_SUPPORT_ARCH.
+
 2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_handle_option): Recognize C++ comments under

@@ -694,7 +694,7 @@ changequote([,])dnl
 		esac
 		case $machine in
 changequote(,)dnl
-		  *-*-osf4.0[b-z] | *-*-osf4.[1-9]*)
+		  *-*-osf4.0[b-z] | *-*-osf4.[1-9]* | *-*-osf5*)
 changequote([,])dnl
 		    target_cpu_default=MASK_SUPPORT_ARCH
 		    ;;
