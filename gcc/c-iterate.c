@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -343,7 +343,9 @@ iterator_loop_epilogue (idecl, start_note, end_note)
   ITERATOR_BOUND_P (idecl) = 0;
   /* we can reset rtl since there is not chance that this expansion */
   /* would be superseded by a higher level one */
-  if (top_level_ixpansion_p ())
+  /* but don't do this if the decl is static, since we need to share */
+  /* the same decl in that case.  */
+  if (top_level_ixpansion_p () && ! TREE_STATIC (idecl))
     DECL_RTL (idecl) = 0;
   if (end_note)
     *end_note = emit_note (0, NOTE_INSN_DELETED);
