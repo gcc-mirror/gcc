@@ -2328,10 +2328,10 @@ get_filename:
     if (print_deps > (system_header_p || (system_include_depth > 0))) {
       if (system_header_p)
 	warning ("nonexistent file <%.*s> omitted from dependency output",
-		 fend - fbeg, fbeg);
+		 flen, fbeg);
       else
 	{
-	  deps_output ((const char *)fbeg, fend - fbeg);
+	  deps_output ((const char *)fbeg, flen);
 	  deps_output (" ", 0);
 	}
     }

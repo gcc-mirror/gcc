@@ -1,3 +1,7 @@
+2000-12-08  Brad Lucier <lucier@math.purdue.edu>
+
+        * tradcpp.c (do_include): Make pointer differences 64-bit clean.
+
 Fri Dec  8 08:23:29 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* fp-bit.c (_fpmul_parts): Use USItype variables as inputs
