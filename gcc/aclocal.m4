@@ -5,7 +5,7 @@ AC_DEFUN(gcc_AC_HEADER_STRING,
 [AC_TRY_COMPILE([#include <string.h>
 #include <strings.h>], , gcc_cv_header_string=yes, gcc_cv_header_string=no)])
 if test $gcc_cv_header_string = yes; then
-  AC_DEFINE(STRING_WITH_STRINGS)
+  AC_DEFINE(STRING_WITH_STRINGS, 1, [Define if you can safely include both <string.h> and <strings.h>.])
 fi
 ])
 
@@ -98,7 +98,7 @@ main()
 	gcc_cv_func_printf_ptr=no)
 rm -f core core.* *.core])
 if test $gcc_cv_func_printf_ptr = yes ; then
-  AC_DEFINE(HAVE_PRINTF_PTR)
+  AC_DEFINE(HAVE_PRINTF_PTR, 1, [Define if printf supports "%p".])
 fi
 ])
 
@@ -172,7 +172,7 @@ AC_DEFUN(gcc_AC_C_VOLATILE,
 [AC_TRY_COMPILE(, [volatile int foo;],
         gcc_cv_c_volatile=yes, gcc_cv_c_volatile=no)])
 if test $gcc_cv_c_volatile = yes ; then
-  AC_DEFINE(HAVE_VOLATILE)
+  AC_DEFINE(HAVE_VOLATILE, 1, [Define if your compiler understands volatile.])
 fi
 ])
 
@@ -212,7 +212,7 @@ AC_DEFUN(gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,
 #endif], [mkdir ("foo", 0);], 
         gcc_cv_mkdir_takes_one_arg=no, gcc_cv_mkdir_takes_one_arg=yes)])
 if test $gcc_cv_mkdir_takes_one_arg = yes ; then
-  AC_DEFINE(MKDIR_TAKES_ONE_ARG)
+  AC_DEFINE(MKDIR_TAKES_ONE_ARG, 1, [Define if host mkdir takes a single argument.])
 fi
 ])
 

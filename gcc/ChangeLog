@@ -1,5 +1,19 @@
 2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* aclocal.m4 (gcc_AC_HEADER_STRING, gcc_AC_FUNC_PRINTF_PTR,
+	gcc_AC_C_VOLATILE, gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG): Use the three
+	argument form of AC_DEFINE.
+
+	* configure.in (DEFAULT_LINKER, DEFAULT_ASSEMBLER,
+	HAVE_INTTYPES_H, PACKAGE, VERSION, ENABLE_WIN32_REGISTRY,
+	WIN32_REGISTRY_KEY, HAVE_GAS_SUBSECTION_ORDERING, HAVE_GAS_WEAK,
+	HAVE_GAS_HIDDEN, HAVE_AS_REGISTER_PSEUDO_OP, AS_SPARC64_FLAG,
+	HAVE_AS_OFFSETABLE_LO10, ENABLE_NEW_GXX_ABI): Likewise.
+
+	* acconfig.h: Delete stubs made redundant by 3-arg AC_DEFINE.
+
+2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (GCC_FOR_TARGET, GCC_CFLAGS, LIBGCC2_INCLUDES,
 	deduced.h): Use -isystem, not -I, for including system headers.
 
