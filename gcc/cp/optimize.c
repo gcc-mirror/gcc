@@ -614,6 +614,11 @@ expand_call_inline (tp, walk_subtrees, data)
   STMT_EXPR_STMT (expr) = scope_stmt;
   id->scope_stmt = scope_stmt;
 
+  /* Tell the debugging backends that this block represents the
+     outermost scope of the inlined function.  */
+  if (SCOPE_STMT_BLOCK (scope_stmt))
+    BLOCK_ABSTRACT_ORIGIN (SCOPE_STMT_BLOCK (scope_stmt)) = DECL_ORIGIN (fn);
+
   /* Declare the return variable for the function.  */
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), 
