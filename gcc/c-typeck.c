@@ -3651,7 +3651,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		       || target_cmp)
 		;
 	      /* If there is a mismatch, do warn.  */
-	      else
+	      else if (warn_pointer_sign)
 		WARN_FOR_ASSIGNMENT (N_("pointer targets in passing argument "
 					"%d of %qE differ in signedness"),
 				     N_("pointer targets in assignment "
