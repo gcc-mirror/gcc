@@ -1,3 +1,8 @@
+2002-11-04  Andrew Haley  <aph@redhat.com>
+
+	* libjava.lang/utilTest.java: New.
+	* libjava.lang/utilTest.out: New.
+
 2002-11-04  Anthony Green  <green@redhat.com>
 
 	* libjava.loader/MyLoader.java: New constructor.
