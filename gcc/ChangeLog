@@ -1,5 +1,10 @@
 Mon Feb 15 11:33:51 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c: Include insn-attr.h.
+	(delete_computation): If reload has completed and insn scheduling
+	after reload is enabled, then do not depend on REG_DEAD notes.
+	* Makefile.in (jump.o): Depend on insn-attr.h.
+
 	* sparc.c (output_scc_insn): Add missing argument to output_cbranch.
 
 	* loop.c (mark_loop_jump): Handle LO_SUM.  If we encounter something

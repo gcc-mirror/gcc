@@ -1429,7 +1429,7 @@ integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h \
-   toplev.h
+   toplev.h insn-attr.h
 stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h toplev.h
 

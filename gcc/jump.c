@@ -59,6 +59,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "insn-flags.h"
+#include "insn-attr.h"
 #include "recog.h"
 #include "expr.h"
 #include "real.h"
@@ -3647,6 +3648,17 @@ delete_computation (insn)
 	    REG_NOTES (prev) = gen_rtx_EXPR_LIST (REG_UNUSED,
 						  cc0_rtx, REG_NOTES (prev));
 	}
+    }
+#endif
+
+#ifdef INSN_SCHEDULING
+  /* ?!? The schedulers do not keep REG_DEAD notes accurate after
+     reload has completed.  The schedulers need to be fixed.  Until
+     they are, we must not rely on the death notes here.  */
+  if (reload_completed && flag_schedule_insns_after_reload)
+    {
+      delete_insn (insn);
+      return;
     }
 #endif
 
