@@ -91,6 +91,9 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
              
       r = pthread_cond_timedwait (cv, pmu, &ts);
+      /* A timeout is a normal result.  */
+      if (r && errno == ETIME)
+	r = 0;
     }
   return r;
 }
