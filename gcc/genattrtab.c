@@ -2003,16 +2003,19 @@ expand_units ()
 
 	  for (op = unit->ops; op; op = op->next)
 	    {
-	      rtx blockage = readycost;
-	      int delay = op->ready - 1;
+	      rtx blockage = operate_exp (POS_MINUS_OP, readycost,
+					  make_numeric_value (1));
 
 	      if (unit->simultaneity != 0)
-		delay = MIN (delay, ((unit->simultaneity - 1)
-				     * unit->issue_delay.min));
+		{
+		  rtx filltime = make_numeric_value ((unit->simultaneity - 1)
+						     * unit->issue_delay.min);
+		  blockage = operate_exp (MIN_OP, blockage, filltime);
+		}
 
-	      if (delay > 0)
-		blockage = operate_exp (POS_MINUS_OP,
-					make_numeric_value (delay), blockage);
+	      blockage = operate_exp (POS_MINUS_OP,
+				      make_numeric_value (op->ready),
+				      blockage);
 
 	      blockage = operate_exp (MAX_OP, blockage, op->issue_exp);
 	      blockage = simplify_knowing (blockage, unit->condexp);
