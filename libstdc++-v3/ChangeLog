@@ -1,3 +1,10 @@
+2001-12-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3679
+	* src/locale.cc (locale::locale(const char*)): Deal with locales
+	named "".
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): Modify.
+	
 2001-12-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/ext/ropeimpl.h (rope::_S_leaf_concat_char_iter,

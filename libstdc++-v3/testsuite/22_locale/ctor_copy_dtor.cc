@@ -126,7 +126,7 @@ void test01()
   locale loc07("");
   VERIFY (loc07 != loc01);  
   VERIFY (loc07 != loc02);  
-  VERIFY (loc07.name() == "");
+  VERIFY (loc07.name() != "");
   try
     { locale loc08(static_cast<const char*>(NULL)); }
   catch(runtime_error& obj)
