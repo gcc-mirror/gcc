@@ -214,7 +214,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
--Wdisabled-optimization  -Wno-div-by-zero  -Wendif-labels @gol
+-Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
 -Werror  -Werror-implicit-function-declaration @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
@@ -2876,9 +2876,10 @@ GCC versions before GCC 3.0.  @xref{Mixed Declarations}.
 @opindex Wundef
 Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 
-@item -Wendif-labels
+@item -Wno-endif-labels
+@opindex Wno-endif-labels
 @opindex Wendif-labels
-Warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
+Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
 
 @item -Wshadow
 @opindex Wshadow
