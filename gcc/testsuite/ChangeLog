@@ -1,3 +1,7 @@
+2001-09-22  George Helffrich  <george@geo.titech.ac.jp>
+
+	* g77.dg/strlen0.f: New test.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.abi/ptrmem.C: Update for ia64 c++ abi.
