@@ -1,3 +1,7 @@
+Fri Mar 26 20:41:46 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (stmp-fixinc): Use tooldir instead of gcc_tooldir.
+
 Fri Mar 26 16:02:37 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in (arm-*-vxworks*): Just include arm/vxarm.h

@@ -2140,13 +2140,15 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi
 	chmod a+r include/syslimits.h
-# If $(SYSTEM_HEADER_DIR) is $(gcc_tooldir)/sys-include, and
+# If $(SYSTEM_HEADER_DIR) is $(tooldir)/sys-include, and
 # that directory exists, then make sure that $(libsubdir) exists.
-# This is because cpp is compiled to find $(gcc_tooldir)/include via
+# This is because cpp is compiled to find $(tooldir)/include via
 # $(libsubdir)/$(unlibsubdir), which will only work if $(libsubdir)
 # exists.
-	if [ "$(SYSTEM_HEADER_DIR)" = "$(gcc_tooldir)/sys-include" ] \
-	   && [ -d $(gcc_tooldir)/sys-include ]; then \
+# We deliberately use tooldir instead of gcc_tooldir here.  gcc_tooldir
+# won't work because libsubdir doesn't exist yet.
+	if [ "$(SYSTEM_HEADER_DIR)" = "$(tooldir)/sys-include" ] \
+	   && [ -d $(tooldir)/sys-include ]; then \
 	  if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi; \
 	  if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
