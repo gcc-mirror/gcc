@@ -902,16 +902,6 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
   if (offset == 0)
     return true;
 
-  /* If X refers to a string constant, and that constant is put into a
-     mergeable section, the linker will need to know which string is
-     being accessed.  It has no way of distinguishing an out-of-bounds
-     access to X from an in-bounds access to a later or earlier string.  */
-  if (GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_DECL (x) != 0
-      && TREE_CODE (SYMBOL_REF_DECL (x)) == STRING_CST
-      && !(offset > 0 && offset < TREE_STRING_LENGTH (SYMBOL_REF_DECL (x))))
-    return false;
-
   /* Check whether a nonzero offset is valid for the underlying
      relocations.  */
   switch (*symbol_type)
@@ -927,9 +917,11 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
       return (offset > 0 && offset < mips_section_threshold);
 
     case SYMBOL_CONSTANT_POOL:
-      /* We don't generate out-of-bounds accesses to normal constant
-	 pool entries.  String constants were handled above.  */
-      return true;
+      /* Similarly check the range of offsets for mips16 constant
+	 pool entries.  */
+      return (CONSTANT_POOL_ADDRESS_P (x)
+	      && offset > 0
+	      && offset < (int) GET_MODE_SIZE (get_pool_mode (x)));
 
     case SYMBOL_GOT_LOCAL:
     case SYMBOL_GOTOFF_PAGE:
