@@ -2384,6 +2384,57 @@ output_deferred_addressed_constants ()
 
   deferred_constants = 0;
 }
+
+/* Make a copy of the whole tree structure for a constant.
+   This handles the same types of nodes that compare_constant
+   and record_constant handle.  */
+
+static tree
+copy_constant (exp)
+     tree exp;
+{
+  switch (TREE_CODE (exp))
+    {
+    case INTEGER_CST:
+    case REAL_CST:
+    case STRING_CST:
+    case ADDR_EXPR:
+      /* For ADDR_EXPR, we do not want to copy the decl
+	 whose address is requested.  */
+      return copy_node (exp);
+
+    case COMPLEX_CST:
+      return build_complex (copy_constant (TREE_REALPART (exp)),
+			    copy_constant (TREE_IMAGPART (exp)));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      return build (TREE_CODE (exp), TREE_TYPE (exp),
+		    copy_constant (TREE_OPERAND (exp, 0)),
+		    copy_constant (TREE_OPERAND (exp, 1)));
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      return build1 (TREE_CODE (exp), TREE_TYPE (exp),
+		     copy_constant (TREE_OPERAND (exp, 0)));
+
+    case CONSTRUCTOR:
+      {
+	tree copy = copy_node (exp);
+	tree list = copy_list (CONSTRUCTOR_ELTS (exp));
+	tree tail;
+
+	CONSTRUCTOR_ELTS (exp) = list;
+	for (tail = list; tail; tail = TREE_CHAIN (tail))
+	  TREE_VALUE (tail) = copy_constant (TREE_VALUE (tail));
+
+	return copy;
+      }
+
+    default:
+      abort ();
+    }
+}
 
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
@@ -2493,15 +2544,9 @@ output_constant_def (exp)
 	  struct deferred_constant *p;
 	  p = (struct deferred_constant *) xmalloc (sizeof (struct deferred_constant));
 
-	  /* We really should copy trees in depth here,
-	     but since this case is the only one that should happen now,
-	     let's do it later.  */
-	  if (TREE_CODE (exp) != STRING_CST)
-	    abort ();
-
 	  push_obstacks_nochange ();
 	  suspend_momentary ();
-	  p->exp = copy_node (exp);
+	  p->exp = copy_constant (exp);
 	  pop_obstacks ();
 	  p->reloc = reloc;
 	  p->labelno = const_labelno++;
@@ -3415,7 +3460,8 @@ output_constructor (exp, size)
   if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
     field = TYPE_FIELDS (TREE_TYPE (exp));
 
-  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+      && TYPE_DOMAIN (TREE_TYPE (exp)) != 0)
     min_index
       = TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (exp))));
 
