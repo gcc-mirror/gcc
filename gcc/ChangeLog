@@ -1,5 +1,7 @@
 Fri Feb 27 11:02:47 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* invoke.texi: Use @itemx for a secondary item in a @table.
+
 	* config/m68k/m68k.md (movsf+1): Optimize moving a CONST_DOUBLE
 	zero.
 
