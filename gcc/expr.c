@@ -4854,9 +4854,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
 
       if (arglist == 0
-	  /* Arg could be non-integer if user redeclared this fcn wrong.  */
+	  /* Arg could be wrong type if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
-	return const0_rtx;
+	return CONST0_RTX (TYPE_MODE (TREE_TYPE (exp)));
 
       /* Compute the argument.  */
       op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
