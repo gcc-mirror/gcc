@@ -2,9 +2,8 @@
 # GNATS PR 3743
 
 global target_triplet
-if { [istarget "mips*-sgi-irix6*"] || [istarget "sparc-sun-solaris2.8"] } {
+if { [istarget "mips*-sgi-irix6*"] || [istarget "sparc-sun-solaris2.*"] } {
 	set torture_compile_xfail "$target_triplet"
-	return 1
 }
 
 return 0
