@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
@@ -281,8 +281,10 @@ tlink_init (void)
 static int
 tlink_execute (const char *prog, char **argv, const char *redir)
 {
-  collect_execute (prog, argv, redir);
-  return collect_wait (prog);
+  struct pex_obj *pex;
+
+  pex = collect_execute (prog, argv, redir);
+  return collect_wait (prog, pex);
 }
 
 static char *

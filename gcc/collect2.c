@@ -35,19 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #  define SIGCHLD SIGCLD
 #endif
 
-#ifdef vfork /* Autoconf may define this to fork for us.  */
-# define VFORK_STRING "fork"
-#else
-# define VFORK_STRING "vfork"
-#endif
-#ifdef HAVE_VFORK_H
-#include <vfork.h>
-#endif
-#ifdef VMS
-#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
-               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
-#endif /* VMS */
-
 #ifndef LIBRARY_PATH_ENV
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
 #endif
@@ -217,9 +204,6 @@ static struct head frame_tables;	/* list of frame unwind info tables */
 struct obstack temporary_obstack;
 char * temporary_firstobj;
 
-/* Holds the return value of pexecute and fork.  */
-int pid;
-
 /* Structure to hold all the directories in which to search for files to
    execute.  */
 
@@ -251,7 +235,7 @@ static char *find_a_file (struct path_prefix *, const char *);
 static void add_prefix (struct path_prefix *, const char *);
 static void prefix_from_env (const char *, struct path_prefix *);
 static void prefix_from_string (const char *, struct path_prefix *);
-static void do_wait (const char *);
+static void do_wait (const char *, struct pex_obj *);
 static void fork_execute (const char *, char **);
 static void maybe_unlink (const char *);
 static void add_to_list (struct head *, const char *);
@@ -420,7 +404,7 @@ handler (int signo)
 #endif
 
   signal (signo, SIG_DFL);
-  kill (getpid (), signo);
+  raise (signo);
 }
 
 
@@ -1501,11 +1485,14 @@ main (int argc, char **argv)
 /* Wait for a process to finish, and exit if a nonzero status is found.  */
 
 int
-collect_wait (const char *prog)
+collect_wait (const char *prog, struct pex_obj *pex)
 {
   int status;
 
-  pwait (pid, &status, 0);
+  if (!pex_get_status (pex, 1, &status))
+    fatal_perror ("can't get program status");
+  pex_free (pex);
+
   if (status)
     {
       if (WIFSIGNALED (status))
@@ -1524,9 +1511,9 @@ collect_wait (const char *prog)
 }
 
 static void
-do_wait (const char *prog)
+do_wait (const char *prog, struct pex_obj *pex)
 {
-  int ret = collect_wait (prog);
+  int ret = collect_wait (prog, pex);
   if (ret != 0)
     {
       error ("%s returned %d exit status", prog, ret);
@@ -1537,14 +1524,12 @@ do_wait (const char *prog)
 
 /* Execute a program, and wait for the reply.  */
 
-void
+struct pex_obj *
 collect_execute (const char *prog, char **argv, const char *redir)
 {
-  char *errmsg_fmt;
-  char *errmsg_arg;
-  int redir_handle = -1;
-  int stdout_save = -1;
-  int stderr_save = -1;
+  struct pex_obj *pex;
+  const char *errmsg;
+  int err;
 
   if (vflag || debug)
     {
@@ -1571,47 +1556,35 @@ collect_execute (const char *prog, char **argv, const char *redir)
   if (argv[0] == 0)
     fatal ("cannot find '%s'", prog);
 
-  if (redir)
+  pex = pex_init (0, "collect2", NULL);
+  if (pex == NULL)
+    fatal_perror ("pex_init failed");
+
+  errmsg = pex_run (pex,
+		    (PEX_LAST | PEX_SEARCH
+		     | (redir ? PEX_STDERR_TO_STDOUT : 0)),
+		    argv[0], argv, redir, NULL, &err);
+  if (errmsg != NULL)
     {
-      /* Open response file.  */
-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
-
-      /* Duplicate the stdout and stderr file handles
-	 so they can be restored later.  */
-      stdout_save = dup (STDOUT_FILENO);
-      if (stdout_save == -1)
-	fatal_perror ("redirecting stdout: %s", redir);
-      stderr_save = dup (STDERR_FILENO);
-      if (stderr_save == -1)
-	fatal_perror ("redirecting stdout: %s", redir);
-
-      /* Redirect stdout & stderr to our response file.  */
-      dup2 (redir_handle, STDOUT_FILENO);
-      dup2 (redir_handle, STDERR_FILENO);
+      if (err != 0)
+	{
+	  errno = err;
+	  fatal_perror (errmsg);
+	}
+      else
+	fatal (errmsg);
     }
 
-  pid = pexecute (argv[0], argv, argv[0], NULL, &errmsg_fmt, &errmsg_arg,
-		  (PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH));
-
-  if (redir)
-    {
-      /* Restore stdout and stderr to their previous settings.  */
-      dup2 (stdout_save, STDOUT_FILENO);
-      dup2 (stderr_save, STDERR_FILENO);
-
-      /* Close response file.  */
-      close (redir_handle);
-    }
-
- if (pid == -1)
-   fatal_perror (errmsg_fmt, errmsg_arg);
+  return pex;
 }
 
 static void
 fork_execute (const char *prog, char **argv)
 {
-  collect_execute (prog, argv, NULL);
-  do_wait (prog);
+  struct pex_obj *pex;
+
+  pex = collect_execute (prog, argv, NULL);
+  do_wait (prog, pex);
 }
 
 /* Unlink a file unless we are debugging.  */
@@ -2033,11 +2006,15 @@ static void
 scan_prog_file (const char *prog_name, enum pass which_pass)
 {
   void (*int_handler) (int);
+#ifdef SIGQUIT
   void (*quit_handler) (int);
+#endif
   char *real_nm_argv[4];
   const char **nm_argv = (const char **) real_nm_argv;
   int argc = 0;
-  int pipe_fd[2];
+  struct pex_obj *pex;
+  const char *errmsg;
+  int err;
   char *p, buf[1024];
   FILE *inf;
 
@@ -2055,13 +2032,6 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
   nm_argv[argc++] = prog_name;
   nm_argv[argc++] = (char *) 0;
 
-  if (pipe (pipe_fd) < 0)
-    fatal_perror ("pipe");
-
-  inf = fdopen (pipe_fd[0], "r");
-  if (inf == (FILE *) 0)
-    fatal_perror ("fdopen");
-
   /* Trace if needed.  */
   if (vflag)
     {
@@ -2077,35 +2047,30 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
   fflush (stdout);
   fflush (stderr);
 
-  /* Spawn child nm on pipe.  */
-  pid = vfork ();
-  if (pid == -1)
-    fatal_perror (VFORK_STRING);
+  pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
+  if (pex == NULL)
+    fatal_perror ("pex_init failed");
 
-  if (pid == 0)			/* child context */
+  errmsg = pex_run (pex, 0, nm_file_name, real_nm_argv, NULL, NULL, &err);
+  if (errmsg != NULL)
     {
-      /* setup stdout */
-      if (dup2 (pipe_fd[1], 1) < 0)
-	fatal_perror ("dup2 %d 1", pipe_fd[1]);
-
-      if (close (pipe_fd[0]) < 0)
-	fatal_perror ("close %d", pipe_fd[0]);
-
-      if (close (pipe_fd[1]) < 0)
-	fatal_perror ("close %d", pipe_fd[1]);
-
-      execv (nm_file_name, real_nm_argv);
-      fatal_perror ("execv %s", nm_file_name);
+      if (err != 0)
+	{
+	  errno = err;
+	  fatal_perror (errmsg);
+	}
+      else
+	fatal (errmsg);
     }
 
-  /* Parent context from here on.  */
   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
   quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
 #endif
 
-  if (close (pipe_fd[1]) < 0)
-    fatal_perror ("close %d", pipe_fd[1]);
+  inf = pex_read_output (pex, 0);
+  if (inf == NULL)
+    fatal_perror ("can't open nm output");
 
   if (debug)
     fprintf (stderr, "\nnm output with constructors/destructors.\n");
@@ -2179,10 +2144,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
   if (debug)
     fprintf (stderr, "\n");
 
-  if (fclose (inf) != 0)
-    fatal_perror ("fclose");
-
-  do_wait (nm_file_name);
+  do_wait (nm_file_name, pex);
 
   signal (SIGINT,  int_handler);
 #ifdef SIGQUIT
@@ -2202,11 +2164,15 @@ scan_libraries (const char *prog_name)
   static struct head libraries;		/* list of shared libraries found */
   struct id *list;
   void (*int_handler) (int);
+#ifdef SIGQUIT
   void (*quit_handler) (int);
+#endif
   char *real_ldd_argv[4];
   const char **ldd_argv = (const char **) real_ldd_argv;
   int argc = 0;
-  int pipe_fd[2];
+  struct pex_obj *pex;
+  const char *errmsg;
+  int err;
   char buf[1024];
   FILE *inf;
 
@@ -2220,13 +2186,6 @@ scan_libraries (const char *prog_name)
   ldd_argv[argc++] = ldd_file_name;
   ldd_argv[argc++] = prog_name;
   ldd_argv[argc++] = (char *) 0;
-
-  if (pipe (pipe_fd) < 0)
-    fatal_perror ("pipe");
-
-  inf = fdopen (pipe_fd[0], "r");
-  if (inf == (FILE *) 0)
-    fatal_perror ("fdopen");
 
   /* Trace if needed.  */
   if (vflag)
@@ -2243,35 +2202,30 @@ scan_libraries (const char *prog_name)
   fflush (stdout);
   fflush (stderr);
 
-  /* Spawn child ldd on pipe.  */
-  pid = vfork ();
-  if (pid == -1)
-    fatal_perror (VFORK_STRING);
+  pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
+  if (pex == NULL)
+    fatal_perror ("pex_init failed");
 
-  if (pid == 0)			/* child context */
+  errmsg = pex_run (pex, 0, ldd_file_name, real_ldd_argv, NULL, NULL, &err);
+  if (errmsg != NULL)
     {
-      /* setup stdout */
-      if (dup2 (pipe_fd[1], 1) < 0)
-	fatal_perror ("dup2 %d 1", pipe_fd[1]);
-
-      if (close (pipe_fd[0]) < 0)
-	fatal_perror ("close %d", pipe_fd[0]);
-
-      if (close (pipe_fd[1]) < 0)
-	fatal_perror ("close %d", pipe_fd[1]);
-
-      execv (ldd_file_name, real_ldd_argv);
-      fatal_perror ("execv %s", ldd_file_name);
+      if (err != 0)
+	{
+	  errno = err;
+	  fatal_perror (errmsg);
+	}
+      else
+	fatal (errmsg);
     }
 
-  /* Parent context from here on.  */
   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
   quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
 #endif
 
-  if (close (pipe_fd[1]) < 0)
-    fatal_perror ("close %d", pipe_fd[1]);
+  inf = pex_read_output (pex, 0);
+  if (inf == NULL)
+    fatal_perror ("can't open ldd output");
 
   if (debug)
     notice ("\nldd output with constructors/destructors.\n");
@@ -2309,10 +2263,7 @@ scan_libraries (const char *prog_name)
   if (debug)
     fprintf (stderr, "\n");
 
-  if (fclose (inf) != 0)
-    fatal_perror ("fclose");
-
-  do_wait (ldd_file_name);
+  do_wait (ldd_file_name, pex);
 
   signal (SIGINT,  int_handler);
 #ifdef SIGQUIT
