@@ -120,12 +120,6 @@ struct hashnode
   enum node_type type;		/* type of special token */
 };
 
-/* Directive flags.  */
-
-#define SYNTAX_INCLUDE (1 << 8)
-#define SYNTAX_ASSERT  (1 << 9)
-typedef int (* directive_handler) PARAMS ((cpp_reader *));
-
 /* List of directories to look for include files in. */
 struct file_name_list
 {
@@ -315,6 +309,7 @@ extern enum cpp_ttype _cpp_get_directive_token
 					PARAMS ((cpp_reader *));
 extern enum cpp_ttype _cpp_get_define_token
 					PARAMS ((cpp_reader *));
+extern void _cpp_scan_line		PARAMS ((cpp_reader *, cpp_toklist *));
 
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));

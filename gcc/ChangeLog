@@ -1,3 +1,19 @@
+2000-04-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (enum cpp_ttype): Add token types for all
+	punctuators.  Distinguish pp-numbers from valid C numbers.
+	Give some tokens better names.  Initialize from macro.    
+	(struct cpp_name, cpp_token, cpp_toklist): New data   
+	structures.
+	Update prototypes.
+	* cpplex.c (bump_column, expand_name_space,
+	expand_token_space, init_token_list, cpp_output_list,
+	_cpp_scan_line):  New functions.
+	(output_line_command): Add third argument, new line number.
+	* cpphash.h: Update prototypes.
+	* cppexp.c, cpphash.c, cpplib.c, scan-decls.c: Update for new
+	token names.
+
 2000-04-20  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (alpha_emit_floatuns): Emit missing barrier.
@@ -1836,7 +1852,7 @@ Wed Apr  5 12:35:18 2000  Hans-Peter Nilsson  <hp@axis.com>
 	all (op (minus A B) 0) with (op A B).
 
 Wed Apr  5 18:03:31 2000  Toshiyasu Morita  (toshi.morita@sega.com)
-	                  J"orn Rennecke <amylaar@cygnus.co.uk>
+			  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (block_lump_real_i4): Add missing clobber of T_REG
 	(block_lump_real): Likewise.

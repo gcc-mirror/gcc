@@ -377,7 +377,7 @@ do_define (pfile)
   token = _cpp_get_directive_token (pfile);
   if (token == CPP_VSPACE)
     empty = 0;  /* Empty definition of object like macro.  */
-  else if (token == CPP_LPAREN && ADJACENT_TO_MARK (pfile))
+  else if (token == CPP_OPEN_PAREN && ADJACENT_TO_MARK (pfile))
     funlike = 1;
   else if (ADJACENT_TO_MARK (pfile))
     /* If this is an object-like macro, C99 requires white space after
@@ -688,11 +688,13 @@ do_line (pfile)
 	  if (action_number == 1)
 	    {
 	      pfile->buffer_stack_depth++;
+	      ip->system_header_p = 0;
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
 	      pfile->buffer_stack_depth--;
+	      ip->system_header_p = 0;
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
@@ -1108,7 +1110,7 @@ detect_if_not_defined (pfile)
   /* ...then an optional '(' and the name, */
   token_offset = CPP_WRITTEN (pfile);
   token = _cpp_get_directive_token (pfile);
-  if (token == CPP_LPAREN)
+  if (token == CPP_OPEN_PAREN)
     {
       token_offset = CPP_WRITTEN (pfile);
       need_rparen = 1;
@@ -1120,7 +1122,7 @@ detect_if_not_defined (pfile)
   token_len = CPP_WRITTEN (pfile) - token_offset;
 
   /* ...then the ')', if necessary, */
-  if (need_rparen && _cpp_get_directive_token (pfile) != CPP_RPAREN)
+  if (need_rparen && _cpp_get_directive_token (pfile) != CPP_CLOSE_PAREN)
     goto restore;
 
   /* ...and make sure there's nothing else on the line.  */
