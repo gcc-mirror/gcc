@@ -1168,8 +1168,21 @@ tSCC zAvoid_Wchar_T_TypeName[] =
 tSCC zAvoid_Wchar_T_TypeSelect0[] =
        "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;";
 
-#define    AVOID_WCHAR_T_TYPE_TEST_CT  1
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zAvoid_Wchar_T_TypeBypass0[] =
+       "we must use the C\\+\\+ compiler's type";
+tSCC zAvoid_Wchar_T_TypeBypass1[] =
+       "_LINUX_NLS_H";
+tSCC zAvoid_Wchar_T_TypeBypass2[] =
+       "XFree86: xc/lib/X11/Xlib\\.h";
+
+#define    AVOID_WCHAR_T_TYPE_TEST_CT  4
 static tTestDesc aAvoid_Wchar_T_TypeTests[] = {
+  { TT_NEGREP,   zAvoid_Wchar_T_TypeBypass0, (regex_t*)NULL },
+  { TT_NEGREP,   zAvoid_Wchar_T_TypeBypass1, (regex_t*)NULL },
+  { TT_NEGREP,   zAvoid_Wchar_T_TypeBypass2, (regex_t*)NULL },
   { TT_EGREP,    zAvoid_Wchar_T_TypeSelect0, (regex_t*)NULL }, };
 
 /*
@@ -4323,7 +4336,7 @@ tSCC zStdio_Va_ListList[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zStdio_Va_ListBypass0[] =
-       "__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list";
+       "__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list";
 
 #define    STDIO_VA_LIST_TEST_CT  1
 static tTestDesc aStdio_Va_ListTests[] = {
@@ -4377,16 +4390,19 @@ tSCC zStrict_Ansi_NotSelect0[] =
  */
 tSCC zStrict_Ansi_NotBypass0[] =
        "GNU and MIPS C compilers define __STDC__ differently";
+tSCC zStrict_Ansi_NotBypass1[] =
+       "__SCO_VERSION__.*__STDC__ != 1";
 
 /*
  *  perform the C function call test
  */
 tSCC zStrict_Ansi_NotFTst0[] = "stdc_0_in_system_headers";
 
-#define    STRICT_ANSI_NOT_TEST_CT  3
+#define    STRICT_ANSI_NOT_TEST_CT  4
 static tTestDesc aStrict_Ansi_NotTests[] = {
   { TT_FUNCTION, zStrict_Ansi_NotFTst0,   0 /* unused */ },
   { TT_NEGREP,   zStrict_Ansi_NotBypass0, (regex_t*)NULL },
+  { TT_NEGREP,   zStrict_Ansi_NotBypass1, (regex_t*)NULL },
   { TT_EGREP,    zStrict_Ansi_NotSelect0, (regex_t*)NULL }, };
 
 /*
@@ -6170,7 +6186,7 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          167
+#define REGEX_COUNT          171
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            157
 

@@ -1,3 +1,13 @@
+2003-07-01  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 2873
+	* fixinc/inclhack.def (avoid_wchar_t_type): Add bypass
+	expressions to prevent triggering on recent curses.h,
+	linux/nls.h, or X11/Xlib.h.
+	(stdio_va_list): Add _G_va_list to bypass pattern.
+	(strict_ansi_not): Add bypass pattern for __SCO_VERSION__.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (irix_stdio_va_list): Apply to IRIX 6.5
@@ -34,9 +44,9 @@
 
 	* config/s390/s390.h (SECONDARY_OUTPUT_RELOAD_CLASS): Define.
 	* config/s390/s390.c (s390_secondary_output_reload_class): New function.
-	* config/s390/s390-protos.h (s390_secondary_output_reload_class): 
+	* config/s390/s390-protos.h (s390_secondary_output_reload_class):
 	Declare it.
-	* config/s390/s390.md ("reload_outti", "reload_outdi", 
+	* config/s390/s390.md ("reload_outti", "reload_outdi",
 	"reload_outdf"): New expanders.
 
 	* config/s390/s390.md ("movti" + splitters): Handle non-offsettable
