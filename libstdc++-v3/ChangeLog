@@ -1,5 +1,10 @@
 2004-09-17  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/fstream.tcc (xsgetn): Slightly tweak conditional,
+	as per Nathan's original suggestion.
+
+2004-09-17  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/ext/mt_allocator/tune-1.cc: Use VERIFY, clean
 	up a bit.
 	* testsuite/ext/mt_allocator/tune-2.cc: Likewise.
