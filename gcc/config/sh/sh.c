@@ -9413,7 +9413,7 @@ int
 sh_dwarf_calling_convention (tree func)
 {
   if (sh_attr_renesas_p (func))
-    return DW_CC_renesas_sh;
+    return DW_CC_GNU_renesas_sh;
 
   return DW_CC_normal;
 }
@@ -10095,7 +10095,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
       pcum->prototype_p = FALSE;
       if (mode != VOIDmode)
 	{
-	  pcum->call_cookie = 
+	  pcum->call_cookie =
 	    CALL_COOKIE_RET_TRAMP (TARGET_SHCOMPACT
 				   && GET_MODE_SIZE (mode) > 4
 				   && BASE_RETURN_VALUE_REG (mode) == FIRST_RET_REG);
