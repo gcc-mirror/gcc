@@ -2422,8 +2422,12 @@ pushdecl (x)
 	    b->shadowed = tree_cons (name, oldlocal, b->shadowed);
 	}
 
-      /* Keep count of variables in this level with incomplete type.  */
-      if (!COMPLETE_TYPE_P (TREE_TYPE (x)))
+      /* Keep count of variables in this level with incomplete type.
+	 If the input is erroneous, we can have error_mark in the type
+	 slot (e.g. "f(void a, ...)") - that doesn't count as an
+	 incomplete type.  */
+      if (TREE_TYPE (x) != error_mark_node
+	  && !COMPLETE_TYPE_P (TREE_TYPE (x)))
 	++b->n_incomplete;
     }
 
