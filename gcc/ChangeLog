@@ -10,6 +10,11 @@
 	arm_fast_multiply, arm_arch4, arm_arch5, arm_ld_sched,
 	arm_is_strong, and arm_is_6_or_7.
 
+	Thu Jul 29 19:01:58 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+	* arm.h (Hint): Delete macro.
+	Substitute HOST_WIDE_INT for Hint in some prototypes.
+	* arm.c: Substitute HOST_WIDE_INT for Hint in one prototype.
+
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.

@@ -2148,7 +2148,6 @@ struct rtx_def;
 #ifndef HOST_WIDE_INT
 #include "hwint.h"
 #endif
-#define Hint HOST_WIDE_INT
 
 #ifndef HAVE_MACHINE_MODES
 #include "machmode.h"
@@ -2164,8 +2163,8 @@ struct rtx_def;
 
 void   arm_override_options PROTO ((void));
 int    use_return_insn PROTO ((int));
-int    const_ok_for_arm PROTO ((Hint));
-int    arm_split_constant RTX_CODE_PROTO ((Rcode, Mmode, Hint, Rtx, Rtx, int));
+int    const_ok_for_arm PROTO ((HOST_WIDE_INT));
+int    arm_split_constant RTX_CODE_PROTO ((Rcode, Mmode, HOST_WIDE_INT, Rtx, Rtx, int));
 Rcode  arm_canonicalize_comparison RTX_CODE_PROTO ((Rcode,  Rtx *));
 int    arm_return_in_memory PROTO ((Tree));
 int    legitimate_pic_operand_p PROTO ((Rtx));
@@ -2206,9 +2205,9 @@ Rcode  minmax_code PROTO ((Rtx));
 int    adjacent_mem_locations PROTO ((Rtx, Rtx));
 int    load_multiple_operation PROTO ((Rtx, Mmode));
 int    store_multiple_operation PROTO ((Rtx, Mmode));
-int    load_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
+int    load_multiple_sequence PROTO ((Rtx *, int, int *, int *, HOST_WIDE_INT *));
 char * emit_ldm_seq PROTO ((Rtx *, int));
-int    store_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
+int    store_multiple_sequence PROTO ((Rtx *, int, int *, int *, HOST_WIDE_INT *));
 char * emit_stm_seq PROTO ((Rtx *, int));
 int    arm_valid_machine_decl_attribute PROTO ((Tree, Tree, Tree));
 Rtx    arm_gen_load_multiple PROTO ((int, int, Rtx, int, int, int, int, int));
