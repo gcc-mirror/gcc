@@ -1,5 +1,6 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1224,14 +1225,14 @@ int warn_cast_align;
    characters.  The value N is in `id_clash_len'.  */
 
 int warn_id_clash;
-unsigned id_clash_len;
+int id_clash_len;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */
  
 int warn_larger_than;
-unsigned larger_than_size;
+HOST_WIDE_INT larger_than_size;
 
 /* Nonzero means warn if inline function is too large.  */
 
@@ -4094,8 +4095,8 @@ decode_f_option (arg)
   else if (!strncmp (arg, "align-loops=", 12))
     align_loops = read_integral_parameter (arg + 12, arg - 2, align_loops);
   else if (!strncmp (arg, "align-functions=", 16))
-    align_functions =
-      read_integral_parameter (arg + 16, arg - 2, align_functions);
+    align_functions
+      = read_integral_parameter (arg + 16, arg - 2, align_functions);
   else if (!strncmp (arg, "align-jumps=", 12))
     align_jumps = read_integral_parameter (arg + 12, arg - 2, align_jumps);
   else if (!strncmp (arg, "align-labels=", 13))
@@ -4132,6 +4133,7 @@ decode_f_option (arg)
 /* Parse a -W... comand line switch.  ARG is the value after the -W.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
+
 static int
 decode_W_option (arg)
      const char * arg;
@@ -4158,23 +4160,17 @@ decode_W_option (arg)
 
   if (!strncmp (arg, "id-clash-", 9))
     {
-      const int id_clash_val = read_integral_parameter (arg + 9, arg - 2, -1);
+      id_clash_len = read_integral_parameter (arg + 9, arg - 2, -1);
       
-      if (id_clash_val != -1)
-	{
-	  id_clash_len = id_clash_val;
-	  warn_id_clash = 1;
-	}
+      if (id_clash_len != -1)
+	warn_id_clash = 1;
     }
   else if (!strncmp (arg, "larger-than-", 12))
     {
-      const int larger_than_val =
-	read_integral_parameter (arg + 12, arg - 2, -1);
-      if (larger_than_val != -1)
-	{
-	  larger_than_size = larger_than_val;
-	  warn_larger_than = 1;
-	}
+      larger_than_size = read_integral_parameter (arg + 12, arg - 2, -1);
+
+      if (larger_than_size != -1)
+	warn_larger_than = 1;
     }
   else
     return 0;
