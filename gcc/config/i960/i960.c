@@ -1980,30 +1980,6 @@ i960_function_arg (cum, mode, type, named)
 
   return ret;
 }
-
-/* Return the rtx for the register representing the return value, or 0
-   if the return value must be passed through the stack.  */
-
-rtx
-i960_function_value (type)
-     tree type;
-{
-  int mode = TYPE_MODE (type);
-
-  if (mode == BLKmode)
-    {
-      unsigned int size = int_size_in_bytes (type);
-
-      if (size <= 16)
-	mode = mode_for_size (i960_object_bytes_bitalign (size), MODE_INT, 0);
-    }
-
-  if (mode == BLKmode || mode == VOIDmode)
-    /* Tell stmt.c and expr.c to pass in address */
-    return 0;
-  else
-    return gen_rtx (REG, mode, 0);
-}
 
 /* Floating-point support.  */
 
