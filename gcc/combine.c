@@ -1471,17 +1471,31 @@ try_combine (i3, i2, i1)
       && asm_noperands (newpat) < 0)
     {
       rtx m_split, *split;
+      rtx ni2dest = i2dest;
 
       /* See if the MD file can split NEWPAT.  If it can't, see if letting it
-	 use I2DEST as a scratch register will help.  */
+	 use I2DEST as a scratch register will help.  In the latter case,
+	 convert I2DEST to the mode of the source of NEWPAT if we can.  */
 
       m_split = split_insns (newpat, i3);
       if (m_split == 0)
-	m_split = split_insns (gen_rtx (PARALLEL, VOIDmode,
-					gen_rtvec (2, newpat,
-						   gen_rtx (CLOBBER, VOIDmode,
-							    i2dest))),
-			       i3);
+	{
+	  /* If I2DEST is a hard register or the only use of a pseudo,
+	     we can change its mode.  */
+	  if (GET_MODE (SET_DEST (newpat)) != GET_MODE (i2dest)
+	      && (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
+		  || (reg_n_sets[REGNO (i2dest)] == 1 && ! added_sets_2
+		      && ! REG_USERVAR_P (i2dest))))
+	    ni2dest = gen_rtx (REG, GET_MODE (SET_DEST (newpat)),
+			       REGNO (i2dest));
+
+	  m_split = split_insns (gen_rtx (PARALLEL, VOIDmode,
+					  gen_rtvec (2, newpat,
+						     gen_rtx (CLOBBER,
+							      VOIDmode,
+							      ni2dest))),
+				 i3);
+	}
 
       if (m_split && GET_CODE (m_split) == SEQUENCE
 	  && XVECLEN (m_split, 0) == 2
@@ -1491,6 +1505,13 @@ try_combine (i3, i2, i1)
 	{
 	  newi2pat = PATTERN (XVECEXP (m_split, 0, 0));
 	  newpat = PATTERN (XVECEXP (m_split, 0, 1));
+
+	  /* In case we changed the mode of I2DEST, replace it in the
+	     pseudo-register table here.  We can't do it above in case this
+	     code doesn't get executed and we do a split the other way.  */
+
+	  if (REGNO (i2dest) >= FIRST_PSEUDO_REGISTER)
+	    SUBST (regno_reg_rtx[REGNO (i2dest)], ni2dest);
 
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 	  if (i2_code_number >= 0)
@@ -2945,6 +2966,18 @@ subst (x, from, to, in_dest, unique_copy)
 				      - INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
 	  goto restart;
 	}
+
+      /* If we are adding two things that have no bits in common, convert
+	 the addition into an IOR.  This will often be further simplified,
+	 for example in cases like ((a & 1) + (a & 2)), which can
+	 become a & 3.  */
+
+      if ((significant_bits (XEXP (x, 0), mode)
+	   & significant_bits (XEXP (x, 1), mode)) == 0)
+	{
+	  x = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+	  goto restart;
+	}
       break;
 
     case MULT:
@@ -4194,8 +4227,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
    We try, as much as possible, to re-use rtl expressions to save memory.
 
    IN_CODE says what kind of expression we are processing.  Normally, it is
-   SET.  In a memory address (inside a MEM or PLUS, the latter being a
-   kludge), it is MEM.  When processing the arguments of a comparison
+   SET.  In a memory address (inside a MEM, PLUS or minus, the latter two
+   being kludges), it is MEM.  When processing the arguments of a comparison
    or a COMPARE against zero, it is COMPARE.  */
 
 static rtx
@@ -4215,7 +4248,7 @@ make_compound_operation (x, in_code)
      address, we stay there.  If we have a comparison, set to COMPARE,
      but once inside, go back to our default of SET.  */
 
-  next_code = (code == MEM || code == PLUS ? MEM
+  next_code = (code == MEM || code == PLUS || code == MINUS ? MEM
 	       : ((code == COMPARE || GET_RTX_CLASS (code) == '<')
 		  && XEXP (x, 1) == const0_rtx) ? COMPARE
 	       : in_code == COMPARE ? SET : in_code);

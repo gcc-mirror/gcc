@@ -2134,7 +2134,6 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 
 #if BYTES_BIG_ENDIAN
   lbitpos = lnbitsize - lbitsize - lbitpos;
-  rbitpos = rnbitsize - rbitsize - rbitpos;
 #endif
 
   /* Make the mask to be used against the extracted field.  */
