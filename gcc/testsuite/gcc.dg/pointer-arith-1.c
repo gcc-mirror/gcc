@@ -32,8 +32,8 @@ g (void)
   f -= 1;
   p[0]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
   0[p]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
-  f[0]; /* { dg-error "error: subscripted value is neither array nor pointer" } */
-  0[f]; /* { dg-error "error: subscripted value is neither array nor pointer" } */
+  f[0]; /* { dg-error "error: subscripted value is pointer to function" } */
+  0[f]; /* { dg-error "error: subscripted value is pointer to function" } */
   p - p;
   f - f;
 }

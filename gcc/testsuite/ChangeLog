@@ -1,3 +1,10 @@
+2004-11-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/Wchar-subscripts-1.c, gcc.dg/array-8.c: New tests.
+	* gcc.dg/pointer-arith-1.c, gcc.dg/pointer-arith-2.c,
+	gcc.dg/pointer-arith-3.c, gcc.dg/pointer-arith-4.c: Update
+	expected diagnostics.
+
 2004-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18580
