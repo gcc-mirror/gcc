@@ -519,7 +519,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	if (GET_CODE (insn) == JUMP_INSN
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && SET_DEST (PATTERN (insn)) == pc_rtx
-	    && GET_CODE (SET_SRC (PATTERN (insn))) == REG)
+	    && (GET_CODE (SET_SRC (PATTERN (insn))) == REG
+		|| GET_CODE (SET_SRC (PATTERN (insn))) == MEM))
 	  {
 	    rtx x;
 	    for (x = label_value_list; x; x = XEXP (x, 1))

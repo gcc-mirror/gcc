@@ -467,6 +467,7 @@ print_node (file, prefix, node, indent)
 	case BIND_EXPR:
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);
 	  print_node (file, "body", TREE_OPERAND (node, 1), indent + 4);
+	  print_node (file, "block", TREE_OPERAND (node, 2), indent + 4);
 	  return;
 	}
 

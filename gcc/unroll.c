@@ -2435,25 +2435,21 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
       if (v->new_reg)
 	{
-	  /* If the giv is an address destination, it could be something other
-	     than a simple register, these have to be treated differently.  */
-	  if (v->giv_type == DEST_REG)
-	    splittable_regs[REGNO (v->new_reg)] = value;
-
-	  /* If an addr giv was combined with another addr giv, then we
-	     can only split this giv if the addr giv it was combined with
-	     was reduced.  This is because the value of v->new_reg is
-	     meaningless in this case.  (There is no problem if it was
-	     combined with a dest_reg giv which wasn't reduced, v->new_reg
-	     is still meaningful in this case.)  */
-
-	  else if (v->same && v->same->giv_type == DEST_ADDR
-		  && ! v->same->new_reg) 
+	  /* If a giv was combined with another giv, then we can only split
+	     this giv if the giv it was combined with was reduced.  This
+	     is because the value of v->new_reg is meaningless in this
+	     case.  */
+	  if (v->same && ! v->same->new_reg)
 	    {
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream,
-			 "DEST_ADDR giv not split, because combined with unreduced DEST_ADDR giv.\n");
+			 "giv combined with unreduced giv not split.\n");
+	      continue;
 	    }
+	  /* If the giv is an address destination, it could be something other
+	     than a simple register, these have to be treated differently.  */
+	  else if (v->giv_type == DEST_REG)
+	    splittable_regs[REGNO (v->new_reg)] = value;
 	  else
 	    {
 	      /* Splitting address givs is useful since it will often allow us
