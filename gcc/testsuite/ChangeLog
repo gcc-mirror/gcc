@@ -1,3 +1,8 @@
+2004-08-22  Andrew Pinski  <apinski@apple.com>
+
+	* g++.dg/opt/pr14029.C: New test.
+	* gcc.c-torture/execute/pr15262.c: New test.
+
 2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/reduction.f90: Add checks with complex arguments.
