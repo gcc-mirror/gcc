@@ -446,13 +446,21 @@ extern void tree_operand_check_failed (int, enum tree_code,
   (TREE_CODE (TYPE) == INTEGER_TYPE || TREE_CODE (TYPE) == ENUMERAL_TYPE  \
    || TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == CHAR_TYPE)
 
+/* Nonzero if TYPE represents a scalar floating-point type.  */
+
+#define SCALAR_FLOAT_TYPE_P(TYPE) (TREE_CODE (TYPE) == REAL_TYPE)
+
+/* Nonzero if TYPE represents a complex floating-point type.  */
+
+#define COMPLEX_FLOAT_TYPE_P(TYPE)	\
+  (TREE_CODE (TYPE) == COMPLEX_TYPE	\
+   && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE)
+
 /* Nonzero if TYPE represents a floating-point type, including complex
    floating-point types.  */
 
 #define FLOAT_TYPE_P(TYPE)		\
-  (TREE_CODE (TYPE) == REAL_TYPE	\
-   || (TREE_CODE (TYPE) == COMPLEX_TYPE \
-       && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE))
+  (SCALAR_FLOAT_TYPE_P (TYPE) || COMPLEX_FLOAT_TYPE_P (TYPE))
 
 /* Nonzero if TYPE represents an aggregate (multi-component) type.  */
 
