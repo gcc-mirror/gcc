@@ -1,3 +1,7 @@
+Wed Apr 18 20:32:03 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/xm-cygwin.h (CPP_SPEC): Fix typo.
+
 2001-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpp.texi (-Wwhite-space): Remove.
