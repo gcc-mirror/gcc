@@ -786,14 +786,13 @@ c_alignof (type)
   return size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 }
 
-/* Print a warning if a constant expression had overflow in folding.
-   This doesn't really work--it is waiting for changes in fold.  */
+/* Print a warning if a constant expression had overflow in folding.  */
 
 void
 constant_expression_warning (value)
      tree value;
 {
-  if (TREE_CODE (value) == NON_LVALUE_EXPR && TREE_CONSTANT_OVERFLOW (value))
+  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
     pedwarn ("overflow in constant expression");
 }
 
@@ -801,6 +800,7 @@ constant_expression_warning (value)
    alignment of EXPR, measured in bytes.  For VAR_DECL's and
    FIELD_DECL's return DECL_ALIGN (which can be set from an
    "aligned" __attribute__ specification).  */
+
 tree
 c_alignof_expr (expr)
      tree expr;
