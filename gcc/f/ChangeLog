@@ -1,3 +1,8 @@
+2003-03-13  Andreas Jaeger  <aj@suse.de>
+
+	* g77spec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* g77.texi, invoke.texi, g77spec.c, lang-specs.h: GCC, not
