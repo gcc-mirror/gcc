@@ -76,7 +76,7 @@ rm -rf $dir/support
 mkdir -p $dir/support
 cd $dir/support
 
-cp $testdir/support/{*.ada,*.a,*.tst} $dir/support
+cp $testdir/support/*.ada $testdir/support/*.a $testdir/support/*.tst $dir/support
 
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   < $testdir/support/impdef.a > $dir/support/impdef.a
@@ -95,14 +95,14 @@ mkdir -p $dir/run
 
 cp -pr $testdir/tests $dir/
 
-for i in $dir/support/{*.ada,*.a}; do 
-   gnatchop $i > /dev/null 2>&1
+for i in $dir/support/*.ada $dir/support/*.a; do 
+   gnatchop $i >> $dir/acats.log 2>&1
 done
 
 # These tools are used to preprocess some ACATS sources
 # they need to be compiled native on the host.
 
-host_gnatmake -q -gnatws macrosub
+host_gnatmake -q -gnatws macrosub.adb
 if [ $? -ne 0 ]; then
    display "**** Failed to compile macrosub"
    exit 1
@@ -110,14 +110,17 @@ fi
 ./macrosub > macrosub.out 2>&1
 
 host_gcc -c cd300051.c
-host_gnatmake -q -gnatws widechr
+host_gnatmake -q -gnatws widechr.adb
 if [ $? -ne 0 ]; then
    display "**** Failed to compile widechr"
    exit 1
 fi
 ./widechr > widechr.out 2>&1
 
-rm -f $dir/support/{macrosub,widechr,*.ali,*.o}
+rm -f $dir/support/macrosub
+rm -f $dir/support/widechr
+rm -f $dir/support/*.ali
+rm -f $dir/support/*.o
 
 display " done."
 
@@ -131,7 +134,7 @@ if [ $? -ne 0 ]; then
    exit 1
 fi
 
-gnatchop *.adt > gnatchop.out 2>&1
+gnatchop *.adt >> $dir/acats.log 2>&1
 
 target_gnatmake -c -gnato -gnatE *.ads > /dev/null 2>&1
 target_gnatmake -c -gnato -gnatE *.adb
@@ -159,7 +162,7 @@ for chapter in $chapters; do
    fi
 
    cd $dir/tests/$chapter
-   ls *.{a,ada,adt,am,dep} 2> /dev/null | sed -e 's/\(.*\)\..*/\1/g' | \
+   ls *.a *.ada *.adt *.am *.dep 2> /dev/null | sed -e 's/\(.*\)\..*/\1/g' | \
    cut -c1-7 | sort | uniq | comm -23 - $testdir/norun.lst \
      > $dir/tests/$chapter/${chapter}.lst 
    countn=`wc -l < $dir/tests/$chapter/${chapter}.lst`
@@ -176,9 +179,10 @@ for chapter in $chapters; do
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -gnatE"
       fi
-      mkdir $dir/tests/$chapter/$i
-      cd $dir/tests/$chapter/$i
-      gnatchop -c -w `ls $dir/tests/${chapter}/${i}*.{a,ada,adt,am,dep} 2> /dev/null` > /dev/null 2>&1
+      test=$dir/tests/$chapter/$i
+      mkdir $test
+      cd $test
+      gnatchop -c -w `ls ${test}*.a ${test}*.ada ${test}*.adt ${test}*.am ${test}*.dep 2> /dev/null` >> $dir/acats.log 2>&1
       ls ${i}?.adb > ${i}.lst 2> /dev/null
       ls ${i}*m.adb >> ${i}.lst 2> /dev/null
       ls ${i}.adb >> ${i}.lst 2> /dev/null

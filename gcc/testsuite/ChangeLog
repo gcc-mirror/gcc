@@ -1,6 +1,10 @@
 2003-10-29  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Redirect mv output to /dev/null
+	Avoid non pure sh syntax. Add more logging.
+
+	* ada/acats/norun.lst: Disable cdd2a03, since it is expected to
+	fail.
 
 2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
