@@ -1,3 +1,8 @@
+2005-01-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure.ac (DWARF-2 debug_line): Use objdump.
+	* configure: Regenerate.
+
 2005-01-08  Jeff Law  <law@redhat.com>
 	    Diego Novillo  <dnovillo@redhat.com>
 
