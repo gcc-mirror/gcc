@@ -1,3 +1,30 @@
+2004-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14035
+	* call.c (struct conversion): Add base_p.
+	(convert_like): Add c_cast_p argument.
+	(convert_like_with_conversion): Likewise.
+	(build_conv): Clear base_p.
+	(standard_conversion): Set it, for derived-to-base conversions.
+	(convert_like_real): Add c_cast_p parameter.  Handle pointer
+	conversions directly rather than relying on ocp_convert.
+	(perform_direct_initialization_if_possible): Add c_cast_p
+	parameter.
+	* cp-tree.h (perform_direct_initialization_if_possible): Change
+	prototype.
+	(convert_member_func_to_ptr): New function.
+	* typeck.c (check_for_casting_away_constness): Add diag_fn
+	parameter.
+	(build_static_cast_1): New function, split out from ...
+	(build_static_cast): ... here.  Use build_static_cast_1.
+	(build_reinterpret_cast_1): New function, split out from ...
+	(build_reinterpret_cast): ... here.  Use build_reinterpret_cast_1.
+	(build_const_cast_1): New function, split out from ...
+	(build_const_cast): ... here.  Use build_const_cast_1.
+	(build_c_cast): Rewrite to use build_const_cast_1,
+	build_static_cast_1, and build_reinterpret_cast_1.
+	(convert_member_func_to_ptr): New function.
+
 2004-10-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/18047

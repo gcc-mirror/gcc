@@ -1,3 +1,17 @@
+2004-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14035
+	* g++.dg/conversion/reinterpret1.C: Adjust error markers.
+	* g++.dg/conversion/const2.C: New test.
+	* g++.dg/expr/reinterpret2.C: New test.
+	* g++.dg/expr/reinterpret3.C: New test.
+	* g++.dg/expr/cast2.C: New test.
+	* g++.dg/expr/copy1.C: New test.
+	* g++.dg/other/conversion1.C: Change error message.
+	* g++.dg/parse/comma1.C: Use __extension__ to allow casts from
+	function pointers to void *.
+	* g++.old-deja/g++.mike/p10148.C: Likewise.
+
 2004-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/smod-1.c: Pass -mtune=i486 only on x86.
