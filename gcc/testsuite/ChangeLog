@@ -1,6 +1,10 @@
 2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
-	PR 11596
+	PR c++/11617
+	* g++.dg/template/lookup2.C: New test.
+	* g++.dg/template/memclass1.C: Remove instantiated from error.
+
+	PR c++/11596
 	* g++.dg/template/defarg3.C: New test.
 
 	* g++.dg/ext/packed2.C: Pack member struct too. Explain why.
