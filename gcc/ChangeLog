@@ -1,3 +1,17 @@
+2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makfile.in: Remove traces of mbchar.
+	* c-parse.in (MULTIBYTE_CHARS): Remove.
+	* config.in (MULTIBYTE_CHARS): Remove.
+	* configure: Remove --enable-mbchar.
+	* configure.in: Remove --enable-mbchar.
+	* mbchar.c, mbchar.h: Remove.
+	* system.h: Poison MULTIBYTE_CHARS.
+	* config/linux-aout.h (MULTIBYTE_CHARS): Remove.
+	* config/linux.h (MULTIBYTE_CHARS): Remove.
+	* config/svr4.h (MULTIBYTE_CHARS): Remove.
+	* config/sparc/linux.h (MULTIBYTE_CHARS): Remove.
+
 2003-07-06  Andreas Jaeger  <aj@suse.de>
 
 	* varray.c (varray_check_failed): Fix typo.

@@ -50,10 +50,6 @@ end ifc
 #include "toplev.h"
 #include "ggc.h"
 
-#ifdef MULTIBYTE_CHARS
-#include <locale.h>
-#endif
-
 ifobjc
 #include "objc-act.h"
 end ifobjc
