@@ -1,3 +1,17 @@
+2005-02-13  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Rename a field: base
+	to base_address.
+	* tree-vectorizer.c (new_stmt_vec_info): Rename the above field of
+	stmt_vec_info.
+	(vect_get_base_and_offset): Always return an address.
+	(vect_create_addr_base_for_vector_ref): Remove treatment for
+	different data reference types.
+	(vect_compute_data_ref_alignment): Rename base to base_address in
+	stmt_vec_info. Get the object in order to force its alignment.
+	(vect_get_memtag_and_dr): Rename base to base_address in
+	stmt_vec_info. Extract the object for memtag analysis.
+
 2005-02-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR regression/19898.

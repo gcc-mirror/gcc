@@ -1282,7 +1282,7 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_VEC_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_MEMTAG (res) = NULL;
-  STMT_VINFO_VECT_DR_BASE (res) = NULL;
+  STMT_VINFO_VECT_DR_BASE_ADDRESS (res) = NULL;
   STMT_VINFO_VECT_INIT_OFFSET (res) = NULL_TREE;
   STMT_VINFO_VECT_STEP (res) = NULL_TREE;
   STMT_VINFO_VECT_BASE_ALIGNED_P (res) = false;
@@ -1690,7 +1690,7 @@ vect_get_base_and_offset (struct data_reference *dr,
       *misalign = ssize_int (0);
       if (DECL_ALIGN (expr) >= TYPE_ALIGN (vectype))
 	*base_aligned_p = true;
-      return expr;
+      return build_fold_addr_expr (expr);
 
     case SSA_NAME:
       if (TREE_CODE (TREE_TYPE (expr)) != POINTER_TYPE)
@@ -1960,7 +1960,8 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree data_ref_base = unshare_expr (STMT_VINFO_VECT_DR_BASE (stmt_info));
+  tree data_ref_base = 
+    unshare_expr (STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
   tree base_name = unshare_expr (DR_BASE_NAME (dr));
   tree ref = DR_REF (dr);
   tree scalar_type = TREE_TYPE (ref);
@@ -1970,33 +1971,6 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   tree addr_base, addr_expr;
   tree dest, new_stmt;
   tree base_offset = unshare_expr (STMT_VINFO_VECT_INIT_OFFSET (stmt_info));
-
-  if (TREE_CODE (TREE_TYPE (data_ref_base)) != POINTER_TYPE)
-    /* After the analysis stage, we expect to get here only with RECORD_TYPE
-       and ARRAY_TYPE. */
-    /* Add '&' to ref_base.  */
-    data_ref_base = build_fold_addr_expr (data_ref_base);
-  else
-    {
-      /* Create '(scalar_type*) base' for pointers.  */
-      tree dest, new_stmt, new_temp, vec_stmt, tmp_base;
-      tree scalar_array_type = build_array_type (scalar_type, 0);
-      tree scalar_array_ptr_type = build_pointer_type (scalar_array_type);
-      tree array_ptr = create_tmp_var (scalar_array_ptr_type, "array_ptr");
-      add_referenced_tmp_var (array_ptr);
-
-      dest = create_tmp_var (TREE_TYPE (data_ref_base), "dataref");
-      add_referenced_tmp_var (dest);
-      tmp_base = force_gimple_operand (data_ref_base, &new_stmt, false, dest);  
-      append_to_statement_list_force (new_stmt,  new_stmt_list);
-      
-      vec_stmt = fold_convert (scalar_array_ptr_type, tmp_base);
-      vec_stmt = build2 (MODIFY_EXPR, void_type_node, array_ptr, vec_stmt);
-      new_temp = make_ssa_name (array_ptr, vec_stmt);
-      TREE_OPERAND (vec_stmt, 0) = new_temp;
-      append_to_statement_list_force (vec_stmt,  new_stmt_list);
-      data_ref_base = new_temp;
-    }
 
   /* Create base_offset */
   dest = create_tmp_var (TREE_TYPE (base_offset), "base_off");
@@ -4253,7 +4227,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   misalign = STMT_VINFO_VECT_MISALIGNMENT (stmt_info);
   base_aligned_p = STMT_VINFO_VECT_BASE_ALIGNED_P (stmt_info);
-  base = STMT_VINFO_VECT_DR_BASE (stmt_info);
+  base = build_fold_indirect_ref (STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
   vectype = STMT_VINFO_VECTYPE (stmt_info);
 
   if (!misalign)
@@ -4877,7 +4851,8 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
 	  /* Fall through.  */
 	
 	case ADDR_EXPR:
-	  symbl = STMT_VINFO_VECT_DR_BASE (stmt_info);
+	  symbl = build_fold_indirect_ref (
+		       STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
 	  break; /* For recursive call.  */
 
 	case PLUS_EXPR:
@@ -4965,7 +4940,7 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
 
       STMT_VINFO_VECT_BASE_ALIGNED_P (stmt_info) = base_aligned_p;
       STMT_VINFO_VECT_MISALIGNMENT (stmt_info) = misalign;
-      STMT_VINFO_VECT_DR_BASE (stmt_info) = dr_base;	     
+      STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info) = dr_base;	     
     }
 
   if (!symbl)

@@ -174,20 +174,25 @@ typedef struct _stmt_vec_info {
   tree memtag;
 
   /** The following fields are used to store the information about 
-      data-reference. {base + initial_offset} is the first location accessed by
-      data-ref in the loop, and step is the stride of data-ref in the loop;
+      data-reference. {base_address + initial_offset} is the first location 
+      accessed by data-ref in the loop, and step is the stride of data-ref in 
+      the loop in bytes;
       e.g.:
     
                        Example 1                      Example 2
       data-ref         a[j].b[i][j]                   a + 4B (a is int*)
-
-      base             a                              a
+      
+      base_address     &a                             a
       initial_offset   j_0*D_j + i_0*D_i + C          4
       step             D_j                            4
 
+      data-reference structure info:
+      base_name        a                              NULL
+      access_fn        <access_fns of indexes of b>   (0, +, 1)
+
   **/
-  /* The above base, offset and step.  */
-  tree base;
+  /* The above base_address, offset and step.  */
+  tree base_address;
   tree initial_offset;
   tree step;
 
@@ -208,7 +213,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
 #define STMT_VINFO_DATA_REF(S)            (S)->data_ref_info
 #define STMT_VINFO_MEMTAG(S)              (S)->memtag
-#define STMT_VINFO_VECT_DR_BASE(S)        (S)->base
+#define STMT_VINFO_VECT_DR_BASE_ADDRESS(S)(S)->base_address
 #define STMT_VINFO_VECT_INIT_OFFSET(S)    (S)->initial_offset
 #define STMT_VINFO_VECT_STEP(S)           (S)->step
 #define STMT_VINFO_VECT_BASE_ALIGNED_P(S) (S)->base_aligned_p
