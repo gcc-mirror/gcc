@@ -329,4 +329,6 @@ local_mb_cur_max ()
   return 1; /* default */
 #endif
 }
+#else  /* MULTIBYTE_CHARS */
+extern int dummy;  /* silence 'ANSI C forbids an empty source file' warning */
 #endif /* MULTIBYTE_CHARS */

@@ -225,7 +225,7 @@ eq_HASHNODE (x, y)
   const HASHNODE *b = (const HASHNODE *)y;
 
   return (a->length == b->length
-	  && !strncmp (a->name, b->name, a->length));
+	  && !ustrncmp (a->name, b->name, a->length));
 }
 
 /* Destroy a HASHNODE.  */
@@ -377,7 +377,7 @@ warn_trad_stringify (pfile, p, len, argc, argv)
 	break;
 
       for (i = 0; i < argc; i++)
-	if (!strncmp (p, argv[i].name, argv[i].len)
+	if (!ustrncmp (p, argv[i].name, argv[i].len)
 	    && ! is_idchar (p[argv[i].len]))
 	  {
 	    cpp_warning (pfile,
@@ -416,7 +416,7 @@ trad_stringify (pfile, base, len, argc, argv, pat, endpat, last)
 	break;
 
       for (i = 0; i < argc; i++)
-	if (!strncmp (p, argv[i].name, argv[i].len)
+	if (!ustrncmp (p, argv[i].name, argv[i].len)
 	    && ! is_idchar (p[argv[i].len]))
 	  {
 	    if (CPP_WTRADITIONAL (pfile))
@@ -618,11 +618,11 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
 		warn_trad_stringify (pfile, tok, len, argc, argv);
 	      goto norm;
 	    }
-	  
+
 	case CPP_NAME:
 	  for (j = 0; j < argc; j++)
 	    if (argv[j].len == len
-		&& !strncmp (tok, argv[j].name, argv[j].len))
+		&& !ustrncmp (tok, argv[j].name, argv[j].len))
 	      goto addref;
 
 	  /* fall through */
@@ -683,12 +683,12 @@ static int
 duplicate_arg_p (args, new)
      U_CHAR *args, *new;
 {
-  size_t newlen = strlen (new) + 1;
+  size_t newlen = ustrlen (new) + 1;
   size_t oldlen;
 
   while (args < new)
     {
-      oldlen = strlen (args) + 1;
+      oldlen = ustrlen (args) + 1;
       if (!memcmp (args, new, MIN (oldlen, newlen)))
 	return 1;
       args += oldlen;
@@ -795,7 +795,7 @@ collect_params (pfile, list, arglist)
 	  }
 	if (CPP_PEDANTIC (pfile) && CPP_OPTION (pfile, c99)
 	    && len == sizeof "__VA_ARGS__" - 1
-	    && !strcmp (p, "__VA_ARGS__"))
+	    && !ustrcmp (p, U"__VA_ARGS__"))
 	  cpp_pedwarn (pfile,
 	"C99 does not permit use of __VA_ARGS__ as a macro argument name");
 	argv[a].len = len;
@@ -817,7 +817,7 @@ collect_params (pfile, list, arglist)
 	    argv[a].len = sizeof "__VA_ARGS__" - 1;
 	    argv[a].name = p;
 	    argv[a].rest_arg = 1;
-	    strcpy (p, "__VA_ARGS__");
+	    strcpy ((char *)p, "__VA_ARGS__");
 	  }
 	else
 	  {
@@ -868,8 +868,8 @@ _cpp_create_definition (pfile, list, hp)
     ntype = T_EMPTY;    /* Empty definition of object-like macro.  */
   else if (list->tokens_used == 3 && TOK_TYPE (list, 1) == CPP_NAME
 	   && TOK_LEN (list, 0) == TOK_LEN (list, 1)
-	   && !strncmp (TOK_NAME (list, 0), TOK_NAME (list, 1),
-			TOK_LEN (list, 0)))
+	   && !ustrncmp (TOK_NAME (list, 0), TOK_NAME (list, 1),
+			 TOK_LEN (list, 0)))
     ntype = T_IDENTITY;  /* Object like macro defined to itself.  */
 
   /* The macro is function-like only if the next character,
@@ -926,8 +926,8 @@ _cpp_create_definition (pfile, list, hp)
     case T_MACRO:
       ok = (ntype == hp->type
 	    && odefn->length == hp->value.odefn->length
-	    && !strncmp (odefn->expansion, hp->value.odefn->expansion,
-			 odefn->length));
+	    && !ustrncmp (odefn->expansion, hp->value.odefn->expansion,
+			  odefn->length));
       break;
     case T_FMACRO:
       ok = (ntype == hp->type
@@ -1050,7 +1050,7 @@ static const char * const monthnames[] =
 void
 _cpp_quote_string (pfile, src)
      cpp_reader *pfile;
-     const char *src;
+     const U_CHAR *src;
 {
   U_CHAR c;
 
@@ -1091,8 +1091,9 @@ special_symbol (pfile, hp)
      cpp_reader *pfile;
      HASHNODE *hp;
 {
-  const char *buf;
+  const U_CHAR *buf;
   cpp_buffer *ip;
+  size_t len;
 
   switch (hp->type)
     {
@@ -1108,8 +1109,9 @@ special_symbol (pfile, hp)
 	while (CPP_PREV_BUFFER (ip) != NULL)
 	  ip = CPP_PREV_BUFFER (ip);
 
-      buf = ip->nominal_fname;
-      CPP_RESERVE (pfile, 3 + 4 * strlen (buf));
+      buf = (const U_CHAR *) ip->nominal_fname;
+      len = ustrlen (buf);
+      CPP_RESERVE (pfile, 3 + 4 * len);
       _cpp_quote_string (pfile, buf);
       return;
 
@@ -1124,8 +1126,9 @@ special_symbol (pfile, hp)
 	  }
 
 	CPP_RESERVE (pfile, 10);
-	sprintf (CPP_PWRITTEN (pfile), "%d", true_indepth);
-	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+	sprintf ((char *)CPP_PWRITTEN (pfile), "%d", true_indepth);
+	len = ustrlen (CPP_PWRITTEN (pfile));
+	CPP_ADJUST_WRITTEN (pfile, len);
 	return;
       }
 
@@ -1144,7 +1147,8 @@ special_symbol (pfile, hp)
       if (!buf || *buf == '\0')
 	return;
 
-      CPP_PUTS (pfile, buf, strlen (buf));
+      len = ustrlen (buf);
+      CPP_PUTS (pfile, buf, len);
       return;
 
     case T_SPECLINE:
@@ -1155,8 +1159,9 @@ special_symbol (pfile, hp)
 	  return;
 	}
       CPP_RESERVE (pfile, 10);
-      sprintf (CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (ip));
-      CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+      sprintf ((char *)CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (ip));
+      len = ustrlen (CPP_PWRITTEN (pfile));
+      CPP_ADJUST_WRITTEN (pfile, len);
       return;
 
     case T_DATE:
@@ -1231,7 +1236,7 @@ _cpp_macroexpand (pfile, hp)
     {
       const U_CHAR *cpval = hp->value.cpval;
       if (cpval && *cpval != '\0')
-	push_macro_expansion (pfile, cpval, strlen (cpval), hp);
+	push_macro_expansion (pfile, cpval, ustrlen (cpval), hp);
       return;
     }
 
@@ -1782,7 +1787,7 @@ compare_defs (pfile, d1, d2)
 
   if (d1->nargs != d2->nargs)
     return 1;
-  if (strcmp (d1->expansion, d2->expansion))
+  if (ustrcmp (d1->expansion, d2->expansion))
     return 1;
   if (CPP_PEDANTIC (pfile)
       && d1->argnames && d2->argnames)
@@ -1793,8 +1798,8 @@ compare_defs (pfile, d1, d2)
       int i = d1->nargs;
       while (i--)
 	{
-	  len = strlen (arg1) + 1;
-	  if (strcmp (arg1, arg2))
+	  len = ustrlen (arg1) + 1;
+	  if (ustrcmp (arg1, arg2))
 	    return 1;
 	  arg1 += len;
 	  arg2 += len;
@@ -1871,7 +1876,7 @@ dump_funlike_macro (pfile, defn)
   for (i = 0; i < defn->nargs; i++)
     {
       argv[i] = x;
-      argl[i] = strlen (x);
+      argl[i] = ustrlen (x);
       x += argl[i] + 1;
     }
       
@@ -1881,7 +1886,7 @@ dump_funlike_macro (pfile, defn)
     {
       CPP_RESERVE (pfile, argl[i] + 2);
       if (!(i == defn->nargs-1 && defn->rest_args
-	    && !strcmp (argv[i], "__VA_ARGS__")))
+	    && !ustrcmp (argv[i], U"__VA_ARGS__")))
 	CPP_PUTS_Q (pfile, argv[i], argl[i]);
       if (i < defn->nargs-1)
 	CPP_PUTS_Q (pfile, ", ", 2);

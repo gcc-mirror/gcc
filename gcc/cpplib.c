@@ -32,7 +32,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 struct directive
 {
   directive_handler func;	/* Function to handle directive.  */
-  const char *name;		/* Name of directive.  */
+  const U_CHAR *name;		/* Name of directive.  */
   unsigned short length;	/* Length of name.  */
   unsigned short flags;	        /* Flags describing this directive.  */
 };
@@ -52,9 +52,9 @@ typedef struct if_stack IF_STACK;
 
 /* Forward declarations.  */
 
-static void validate_else		PARAMS ((cpp_reader *, const char *));
-static int parse_ifdef			PARAMS ((cpp_reader *, const char *));
-static unsigned int parse_include	PARAMS ((cpp_reader *, const char *));
+static void validate_else		PARAMS ((cpp_reader *, const U_CHAR *));
+static int parse_ifdef			PARAMS ((cpp_reader *, const U_CHAR *));
+static unsigned int parse_include	PARAMS ((cpp_reader *, const U_CHAR *));
 static int conditional_skip		PARAMS ((cpp_reader *, int, int,
 						 U_CHAR *));
 static int skip_if_group		PARAMS ((cpp_reader *));
@@ -140,7 +140,8 @@ enum
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
 #define D(name, t, flags) \
-{ CONCAT2(do_,name), STRINGX(name), sizeof STRINGX(name) - 1, flags },
+{ CONCAT2(do_,name), (const U_CHAR *) STRINGX(name), \
+  sizeof STRINGX(name) - 1, flags },
 static const struct directive dtable[] =
 {
 DIRECTIVE_TABLE
@@ -155,7 +156,7 @@ _cpp_check_directive (list, token)
      cpp_toklist *list;
      cpp_token *token;
 {
-  const char *name = list->namebuf + token->val.name.offset;
+  const U_CHAR *name = list->namebuf + token->val.name.offset;
   size_t len = token->val.name.len;
   unsigned int i;
 
@@ -163,7 +164,7 @@ _cpp_check_directive (list, token)
   list->dir_flags = 0;
 
   for (i = 0; i < N_DIRECTIVES; i++)
-    if (dtable[i].length == len && !strncmp (dtable[i].name, name, len)) 
+    if (dtable[i].length == len && !ustrncmp (dtable[i].name, name, len)) 
       {
 	list->dir_handler = dtable[i].func;
 	list->dir_flags = dtable[i].flags;
@@ -237,7 +238,7 @@ _cpp_handle_directive (pfile)
       for (i = 0; i < N_DIRECTIVES; i++)
 	{
 	  if (dtable[i].length == len
-	      && !strncmp (dtable[i].name, ident, len)) 
+	      && !ustrncmp (dtable[i].name, ident, len)) 
 	    goto real_directive;
 	}
       /* Don't complain about invalid directives in assembly source,
@@ -361,7 +362,7 @@ do_define (pfile)
 
   /* That NAME is not allowed to be "defined".  (Not clear if the
      standard requires this.)  */
-  if (len == 7 && !strncmp (sym, "defined", 7))
+  if (len == 7 && !ustrncmp (sym, U"defined", 7))
     {
       cpp_error_with_line (pfile, list->line, TOK_COL (list, 0),
 			   "\"defined\" is not a legal macro name");
@@ -398,7 +399,7 @@ do_define (pfile)
 static unsigned int
 parse_include (pfile, name)
      cpp_reader *pfile;
-     const char *name;
+     const U_CHAR *name;
 {
   long old_written = CPP_WRITTEN (pfile);
   enum cpp_ttype token;
@@ -457,12 +458,12 @@ do_include (pfile)
      cpp_reader *pfile;
 {
   unsigned int len;
-  char *token;
+  U_CHAR *token;
 
   len = parse_include (pfile, dtable[T_INCLUDE].name);
   if (len == 0)
     return 0;
-  token = alloca (len + 1);
+  token = (U_CHAR *) alloca (len + 1);
   memcpy (token, CPP_PWRITTEN (pfile), len);
   token[len] = '\0';
   
@@ -478,7 +479,7 @@ do_import (pfile)
      cpp_reader *pfile;
 {
   unsigned int len;
-  char *token;
+  U_CHAR *token;
 
   if (CPP_OPTION (pfile, warn_import)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
@@ -491,7 +492,7 @@ do_import (pfile)
   len = parse_include (pfile, dtable[T_IMPORT].name);
   if (len == 0)
     return 0;
-  token = alloca (len + 1);
+  token = (U_CHAR *) alloca (len + 1);
   memcpy (token, CPP_PWRITTEN (pfile), len);
   token[len] = '\0';
   
@@ -507,13 +508,13 @@ do_include_next (pfile)
      cpp_reader *pfile;
 {
   unsigned int len;
-  char *token;
+  U_CHAR *token;
   struct file_name_list *search_start = 0;
 
   len = parse_include (pfile, dtable[T_INCLUDE_NEXT].name);
   if (len == 0)
     return 0;
-  token = alloca (len + 1);
+  token = (U_CHAR *) alloca (len + 1);
   memcpy (token, CPP_PWRITTEN (pfile), len);
   token[len] = '\0';
   
@@ -590,7 +591,8 @@ do_line (pfile)
     }
 
   CPP_PUTC (pfile, '\0');  /* not terminated for us */
-  new_lineno = strtoul (pfile->token_buffer + old_written, &x, 10);
+  new_lineno = strtoul ((const char *) (pfile->token_buffer + old_written),
+			&x, 10);
   if (x[0] != '\0')
     {
       cpp_error (pfile, "token after `#line' is not an integer");
@@ -643,12 +645,12 @@ do_line (pfile)
       
       *end_name = '\0';
       
-      if (strcmp (fname, ip->nominal_fname))
+      if (strcmp ((const char *)fname, ip->nominal_fname))
 	{
-	  if (!strcmp (fname, ip->ihash->name))
+	  if (!strcmp ((const char *)fname, ip->ihash->name))
 	    ip->nominal_fname = ip->ihash->name;
 	  else
-	    ip->nominal_fname = _cpp_fake_ihash (pfile, fname);
+	    ip->nominal_fname = _cpp_fake_ihash (pfile, (const char *)fname);
 	}
     }
   else if (token != CPP_VSPACE && token != CPP_EOF)
@@ -888,7 +890,7 @@ do_pragma_once (pfile)
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "`#pragma once' outside include file");
   else
-    ip->ihash->control_macro = (const U_CHAR *) "";  /* never repeat */
+    ip->ihash->control_macro = U"";  /* never repeat */
 
   return 1;
 }
@@ -902,7 +904,7 @@ do_pragma_implementation (pfile)
   enum cpp_ttype token;
   long written = CPP_WRITTEN (pfile);
   U_CHAR *name;
-  U_CHAR *copy;
+  char *copy;
   size_t len;
 
   token = _cpp_get_directive_token (pfile);
@@ -917,7 +919,7 @@ do_pragma_implementation (pfile)
   /* Trim the leading and trailing quote marks from the string.  */
   name = pfile->token_buffer + written + 1;
   len = CPP_PWRITTEN (pfile) - name;
-  copy = (U_CHAR *) alloca (len);
+  copy = alloca (len);
   memcpy (copy, name, len - 1);
   copy[len - 1] = '\0';
   
@@ -1026,7 +1028,7 @@ detect_if_not_defined (pfile)
   token = _cpp_get_directive_token (pfile);
   if (token != CPP_NAME)
     goto restore;
-  if (strncmp (pfile->token_buffer + token_offset, "defined", 7))
+  if (ustrncmp (pfile->token_buffer + token_offset, U"defined", 7))
     goto restore;
 
   /* ...then an optional '(' and the name, */
@@ -1122,7 +1124,7 @@ do_elif (pfile)
 static int
 parse_ifdef (pfile, name)
      cpp_reader *pfile;
-     const char *name;
+     const U_CHAR *name;
 {
   U_CHAR *ident;
   unsigned int len;
@@ -1194,7 +1196,7 @@ do_ifndef (pfile)
   skip = parse_ifdef (pfile, dtable[T_IFNDEF].name);
 
   if (start_of_file && !skip)
-    control_macro = (U_CHAR *) xstrdup (CPP_PWRITTEN (pfile));
+    control_macro = uxstrdup (CPP_PWRITTEN (pfile));
 
   return conditional_skip (pfile, skip, T_IFNDEF, control_macro);
 }
@@ -1256,7 +1258,7 @@ consider_directive_while_skipping (pfile, stack)
   for (i = 0; i < N_DIRECTIVES; i++)
     {
       if (dtable[i].length == len
-	  && !strncmp (dtable[i].name, pfile->token_buffer + ident, len)) 
+	  && !ustrncmp (dtable[i].name, pfile->token_buffer + ident, len)) 
 	goto real_directive;
     }
   return 0;
@@ -1446,7 +1448,7 @@ do_endif (pfile)
 static void
 validate_else (pfile, directive)
      cpp_reader *pfile;
-     const char *directive;
+     const U_CHAR *directive;
 {
   long old_written;
   if (! CPP_PEDANTIC (pfile))
@@ -1520,7 +1522,7 @@ do_assert (pfile)
       goto error;
     }
       
-  blen = (U_CHAR *) strchr (sym, '(') - sym;
+  blen = ustrchr (sym, '(') - sym;
   base = _cpp_lookup (pfile, sym, blen);
   if (base->type == T_VOID)
     {
@@ -1581,7 +1583,7 @@ do_unassert (pfile)
     }
   else
     {
-      baselen = (U_CHAR *) strchr (sym, '(') - sym;
+      baselen = ustrchr (sym, '(') - sym;
       base = _cpp_lookup (pfile, sym, baselen);
       if (base->type == T_VOID) goto out;
       this = _cpp_lookup (pfile, sym, thislen);
@@ -1644,7 +1646,7 @@ cpp_define (pfile, str)
       strcpy (&buf[count-4], " 1\n");
     }
 
-  if (cpp_push_buffer (pfile, buf, count - 1) != NULL)
+  if (cpp_push_buffer (pfile, (U_CHAR *)buf, count - 1) != NULL)
     {
       do_define (pfile);
       cpp_pop_buffer (pfile);
@@ -1663,7 +1665,7 @@ cpp_undef (pfile, macro)
   memcpy (buf, macro, len);
   buf[len]     = '\n';
   buf[len + 1] = '\0';
-  if (cpp_push_buffer (pfile, buf, len + 1) != NULL)
+  if (cpp_push_buffer (pfile, (U_CHAR *)buf, len + 1) != NULL)
     {
       do_undef (pfile);
       cpp_pop_buffer (pfile);
@@ -1676,7 +1678,7 @@ cpp_assert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
+  if (cpp_push_buffer (pfile, (const U_CHAR *)str, strlen (str)) != NULL)
     {
       do_assert (pfile);
       cpp_pop_buffer (pfile);
@@ -1689,7 +1691,7 @@ cpp_unassert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
+  if (cpp_push_buffer (pfile, (const U_CHAR *)str, strlen (str)) != NULL)
     {
       do_unassert (pfile);
       cpp_pop_buffer (pfile);

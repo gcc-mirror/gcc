@@ -23,6 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define __GCC_CPPHASH__
 
 typedef unsigned char U_CHAR;
+#define U (const U_CHAR *)  /* Intended use: U"string" */
 
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
@@ -60,7 +61,7 @@ struct hashnode
   char disabled;			/* macro turned off for rescan? */
 
   union {
-    const char *cpval;			/* some predefined macros */
+    const U_CHAR *cpval;		/* some predefined macros */
     const struct object_defn *odefn;	/* #define foo bar */
     const struct funct_defn *fdefn;	/* #define foo(x) bar(x) */
     struct hashnode *aschain;		/* #assert */
@@ -217,14 +218,14 @@ extern void _cpp_free_definition	PARAMS ((HASHNODE *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *,
 						 cpp_toklist *, HASHNODE *));
 extern void _cpp_dump_definition	PARAMS ((cpp_reader *, HASHNODE *));
-extern void _cpp_quote_string		PARAMS ((cpp_reader *, const char *));
+extern void _cpp_quote_string		PARAMS ((cpp_reader *, const U_CHAR *));
 extern void _cpp_macroexpand		PARAMS ((cpp_reader *, HASHNODE *));
 extern void _cpp_init_macro_hash	PARAMS ((cpp_reader *));
 extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern void _cpp_simplify_pathname	PARAMS ((char *));
-extern void _cpp_execute_include	PARAMS ((cpp_reader *, char *,
+extern void _cpp_execute_include	PARAMS ((cpp_reader *, U_CHAR *,
 						 unsigned int, int,
 						 struct file_name_list *));
 extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
@@ -254,6 +255,43 @@ extern void _cpp_scan_line		PARAMS ((cpp_reader *, cpp_toklist *));
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
 extern void _cpp_unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
-extern void _cpp_check_directive        PARAMS((cpp_toklist *, cpp_token *));
+extern void _cpp_check_directive        PARAMS ((cpp_toklist *, cpp_token *));
+
+/* These are inline functions (if __GNUC__) instead of macros so we
+   can get type checking.  */
+#if GCC_VERSION >= 2007 && defined __OPTIMIZE__
+extern inline int ustrcmp (const U_CHAR *, const U_CHAR *);
+extern inline int ustrncmp (const U_CHAR *, const U_CHAR *, size_t);
+extern inline size_t ustrlen (const U_CHAR *);
+extern inline U_CHAR *uxstrdup (const U_CHAR *);
+extern inline U_CHAR *ustrchr (const U_CHAR *, int);
+
+extern inline int
+ustrcmp (const U_CHAR *s1, const U_CHAR *s2)
+{ return strcmp ((const char *)s1, (const char *)s2); }
+
+extern inline int
+ustrncmp (const U_CHAR *s1, const U_CHAR *s2, size_t n)
+{ return strncmp ((const char *)s1, (const char *)s2, n); }
+
+extern inline size_t
+ustrlen (const U_CHAR *s1)
+{ return strlen ((const char *)s1); }
+
+extern inline U_CHAR *
+uxstrdup (const U_CHAR *s1)
+{ return (U_CHAR *) xstrdup ((const char *)s1); }
+
+extern inline U_CHAR *
+ustrchr (const U_CHAR *s1, int c)
+{ return (U_CHAR *) strchr ((const char *)s1, c); }
+
+#else
+#define ustrcmp(s1_, s2_) strcmp((const char *)s1_, (const char *)s2_)
+#define ustrncmp(s1_, s2_, n_) strncmp((const char *)s1_, (const char *)s2_, n_)
+#define ustrlen(s1_) strlen((const char *)s1_)
+#define uxstrdup(s1_) (U_CHAR *) xstrdup((const char *)s1_)
+#define ustrchr(s1_, c_) (U_CHAR *) strchr((const char *)s1_, c_)
+#endif
 
 #endif
