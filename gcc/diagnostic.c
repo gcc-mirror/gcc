@@ -37,11 +37,41 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "toplev.h"
 #include "intl.h"
+#include "obstack.h"
 
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free  free
+
+struct output_buffer
+{
+  struct obstack obstack;       /* where we build the text to output */
+  const char *prefix;           /* prefix of every new line  */
+  int line_length;              /* current line length (in characters) */
+  int max_length;               /* maximum characters per line */
+};
 
 /* Prototypes. */
+static int doing_line_wrapping PROTO((void));
+static void init_output_buffer PROTO((struct output_buffer*,
+                                      const char *, int));
+static const char *get_output_prefix PROTO((const struct output_buffer *));
+static int output_space_left PROTO((const struct output_buffer *));
+static void emit_output_prefix PROTO((struct output_buffer *));
+static void output_newline PROTO((struct output_buffer *));
+static void output_append PROTO((struct output_buffer *, const char *,
+                                 const char *));
+static void output_puts PROTO((struct output_buffer *, const char *));
+static void dump_output PROTO((struct output_buffer *, FILE *));
+static const char *vbuild_message_string PROTO((const char *, va_list));
+static const char *build_message_string PVPROTO((const char *, ...));
+static const char *build_location_prefix PROTO((const char *, int, int));
+static void voutput_notice PROTO((struct output_buffer *, const char *,
+                                  va_list));
+static void output_printf PVPROTO((struct output_buffer *, const char *, ...));
+static void line_wrapper_printf PVPROTO((FILE *, const char *, ...));
+static void vline_wrapper_message_with_location PROTO((const char *, int, int,
+                                                       const char *, va_list));
 static void notice PVPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
-static void vmessage PROTO((const char *, const char *, va_list));
 static void v_message_with_file_and_line PROTO((const char *, int, int,
 						const char *, va_list));
 static void v_message_with_decl PROTO((tree, int, const char *, va_list));
@@ -88,7 +118,296 @@ static int last_error_tick;
 void (*print_error_function) PROTO((const char *)) =
   default_print_error_function;
 
+/* Maximum characters per line in automatic line wrapping mode.
+   Non Zero means don't wrap lines. */
+
+static int output_maximum_width = 0;
 
+/* Predicate. Return 1 if we're in automatic line wrapping mode.  */
+
+static int
+doing_line_wrapping ()
+{
+  return output_maximum_width > 0;
+}
+
+/* Set Maximum characters per line in automatic line wrapping mode.  */
+
+void
+set_message_length (n)
+     int n;
+{
+    output_maximum_width = n;
+}
+
+/* Construct an output BUFFER with PREFIX and of MAX_LENGTH characters
+   per line.  */
+
+static void
+init_output_buffer (buffer, prefix, max_length)
+     struct output_buffer *buffer;
+     const char *prefix;
+     int max_length;
+{
+  obstack_init (&buffer->obstack);
+  buffer->prefix = prefix;
+  buffer->line_length = 0;
+  buffer->max_length = max_length;
+}
+
+/* Return BUFFER's prefix.  */
+
+static const char *
+get_output_prefix (buffer)
+     const struct output_buffer *buffer;
+{
+  return buffer->prefix;
+}
+
+/* Return the amount of characters BUFFER can accept to
+   make a full line.  */
+
+static int
+output_space_left (buffer)
+     const struct output_buffer *buffer;
+{
+  return buffer->max_length - buffer->line_length;
+}
+
+/* Dump BUFFER's prefix.  */
+
+static void
+emit_output_prefix (buffer)
+     struct output_buffer *buffer;
+{
+  if (buffer->prefix)
+    {
+      buffer->line_length = strlen (buffer->prefix);
+      obstack_grow (&buffer->obstack, buffer->prefix, buffer->line_length);
+    }
+}
+
+/* Have BUFFER start a new line.  */
+
+static void
+output_newline (buffer)
+     struct output_buffer *buffer;
+{
+  obstack_1grow (&buffer->obstack, '\n');
+  buffer->line_length = 0;
+}
+
+/* Append a string deliminated by START and END to BUFFER.  No wrapping is
+   done.  The caller must ensure that it is safe to do so.  */
+
+static void
+output_append (buffer, start, end)
+     struct output_buffer *buffer;
+     const char *start;
+     const char *end;
+{
+  int n;
+
+  /* Emit prefix and skip whitespace if we're starting a new line.  */
+  if (buffer->line_length == 0)
+    {
+      emit_output_prefix (buffer);
+      while (start != end && *start == ' ')
+        ++start;
+    }
+  n = end - start;
+  obstack_grow (&buffer->obstack, start, n);
+  buffer->line_length += n;
+}
+
+/* Wrap a STRing into BUFFER.  */
+
+static void
+output_puts (buffer, str)
+     struct output_buffer *buffer;
+     const char *str;
+{
+  const char *p = str;
+  
+  while (*str)
+    {
+      while (*p && *p != ' ' && *p != '\n')
+        ++p;
+      
+      if (p - str < output_space_left (buffer))
+        output_append (buffer, str, p);
+      else
+        {
+          output_newline (buffer);
+          output_append (buffer, str, p);
+        }
+      
+      while (*p && *p == '\n')
+        {
+          output_newline (buffer);
+          ++p;
+        }
+
+      str = p++;
+    }
+}
+
+/* Dump the content of BUFFER into FILE.  */
+
+static void
+dump_output (buffer, file)
+     struct output_buffer *buffer;
+     FILE *file;
+{
+  const char *text;
+  
+  obstack_1grow (&buffer->obstack, '\0');
+  text = obstack_finish (&buffer->obstack);
+  fputs (text, file);
+  obstack_free (&buffer->obstack, (char *)text);
+  buffer->line_length = 0;
+}
+
+static const char *
+vbuild_message_string (msgid, ap)
+     const char *msgid;
+     va_list ap;
+{
+  char *str;
+
+  vasprintf (&str, msgid, ap);
+  return str;
+}
+
+/*  Return a malloc'd string containing MSGID formatted a la
+    printf.  The caller is reponsible for freeing the memory.  */
+
+static const char *
+build_message_string VPROTO((const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+  const char *str;
+
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+
+  str = vbuild_message_string (msgid, ap);
+
+  va_end (ap);
+
+  return str;
+}
+
+
+/* Return a malloc'd string describing a location.  The caller is
+   responsible for freeing the memory.  */
+
+static const char *
+build_location_prefix (file, line, warn)
+     const char *file;
+     int line;
+     int warn;
+{
+  const char *fmt = file
+    ? (warn ? "%s:%d: warning: " : "%s:%d: ")
+    : (warn ? "%s: warning: " : "%s: ");
+
+  return file
+    ? build_message_string (fmt, file, line)
+    : build_message_string (fmt, progname);
+}
+
+/* Format a MESSAGE into BUFFER.  Automatically wrap lines.  */
+
+static void
+voutput_notice (buffer, msgid, ap)
+     struct output_buffer *buffer;
+     const char *msgid;
+     va_list ap;
+{
+  const char *message = vbuild_message_string (msgid, ap);
+
+  output_puts (buffer, message);
+  free ((char *)message);
+}
+
+
+/* Format a message into BUFFER a la printf.  */
+
+static void
+output_printf VPROTO((struct output_buffer *buffer, const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  struct output_buffer *buffer;
+  const char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  buffer = va_arg (ap, struct output_buffer *);
+  msgid = va_arg (ap, const char *);
+#endif
+
+  voutput_notice (buffer, msgid, ap);
+  va_end (ap);
+}
+
+
+/* Format a MESSAGE into FILE.  Do line wrapping, starting new lines
+   with PREFIX.  */
+
+static void
+line_wrapper_printf VPROTO((FILE *file, const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  FILE *file;
+  const char *msgid;
+#endif
+  struct output_buffer buffer;
+  va_list ap;
+  
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  file = va_arg (ap, FILE *);
+  msgid = va_arg (ap, const char *);
+#endif  
+
+  init_output_buffer (&buffer, (const char *)NULL, output_maximum_width);
+  voutput_notice (&buffer, msgid, ap);
+  dump_output (&buffer, file);
+
+  va_end (ap);
+}
+
+
+static void
+vline_wrapper_message_with_location (file, line, warn, msgid, ap)
+     const char *file;
+     int line;
+     int warn;
+     const char *msgid;
+     va_list ap;
+{
+  struct output_buffer buffer;
+  
+  init_output_buffer
+    (&buffer, build_location_prefix (file, line, warn), output_maximum_width);
+  voutput_notice (&buffer, msgid, ap);
+  dump_output (&buffer, stderr);
+  free ((char*)get_output_prefix (&buffer));
+  fputc ('\n', stderr);
+}
+
+
 /* Print the message MSGID in FILE.  */
 
 static void
@@ -137,20 +456,6 @@ report_file_and_line (file, line, warn)
     notice ("warning: ");
 }
 
-/* Print a PREFIXed MSGID.  */
-
-static void
-vmessage (prefix, msgid, ap)
-     const char *prefix;
-     const char *msgid;
-     va_list ap;
-{
-  if (prefix)
-    fprintf (stderr, "%s: ", prefix);
-
-  vfprintf (stderr, msgid, ap);
-}
-
 /* Print a message relevant to line LINE of file FILE.  */
 
 static void
@@ -176,9 +481,17 @@ v_message_with_decl (decl, warn, msgid, ap)
      va_list ap;
 {
   const char *p;
+  struct output_buffer buffer;
 
-  report_file_and_line (DECL_SOURCE_FILE (decl),
-			DECL_SOURCE_LINE (decl), warn);
+  if (doing_line_wrapping ())
+    init_output_buffer
+      (&buffer,
+       build_location_prefix (DECL_SOURCE_FILE (decl),
+                              DECL_SOURCE_LINE (decl), warn),
+       output_maximum_width);
+  else
+    report_file_and_line (DECL_SOURCE_FILE (decl),
+                          DECL_SOURCE_LINE (decl), warn);
 
   /* Do magic to get around lack of varargs support for insertion
      of arguments into existing list.  We know that the decl is first;
@@ -198,14 +511,22 @@ v_message_with_decl (decl, warn, msgid, ap)
     }
 
   if (p > _(msgid))			/* Print the left-hand substring.  */
-    fprintf (stderr, "%.*s", (int)(p - _(msgid)), _(msgid));
+    {
+      if (doing_line_wrapping ())
+        output_printf (&buffer, "%.*s", (int)(p - _(msgid)), _(msgid));
+      else
+        fprintf (stderr, "%.*s", (int)(p - _(msgid)), _(msgid));
+    }
 
   if (*p == '%')		/* Print the name.  */
     {
       const char *n = (DECL_NAME (decl)
 		 ? (*decl_printable_name) (decl, 2)
 		 : "((anonymous))");
-      fputs (n, stderr);
+      if (doing_line_wrapping ())
+        output_puts (&buffer, n);
+      else
+        fputs (n, stderr);
       while (*p)
 	{
 	  ++p;
@@ -215,8 +536,19 @@ v_message_with_decl (decl, warn, msgid, ap)
     }
 
   if (*p)			/* Print the rest of the message.  */
-    vmessage ((char *)NULL, p, ap);
+    {
+      if (doing_line_wrapping ())
+        voutput_notice (&buffer, p, ap);
+      else
+        vfprintf (stderr, p, ap);
+    }
 
+  if (doing_line_wrapping())
+    {
+      dump_output (&buffer, stderr);
+      free ((char *)get_output_prefix (&buffer));
+    }
+  
   fputc ('\n', stderr);
 }
 
@@ -268,7 +600,10 @@ v_error_with_file_and_line (file, line, msgid, ap)
 {
   count_error (0);
   report_error_function (file);
-  v_message_with_file_and_line (file, line, 0, msgid, ap);
+  if (doing_line_wrapping ())
+    vline_wrapper_message_with_location (file, line, 0, msgid, ap);
+  else
+    v_message_with_file_and_line (file, line, 0, msgid, ap);
 }
 
 /* Report an error at the declaration DECL.
@@ -347,7 +682,10 @@ v_warning_with_file_and_line (file, line, msgid, ap)
   if (count_error (1))
     {
       report_error_function (file);
-      v_message_with_file_and_line (file, line, 1, msgid, ap);
+      if (doing_line_wrapping ())
+        vline_wrapper_message_with_location (file, line, 1, msgid, ap);
+      else
+        v_message_with_file_and_line (file, line, 1, msgid, ap);
     }
 }
 
@@ -635,7 +973,13 @@ announce_function (decl)
       if (rtl_dump_and_exit)
 	fprintf (stderr, "%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
-	fprintf (stderr, " %s", (*decl_printable_name) (decl, 2));
+        {
+          if (doing_line_wrapping ())
+            line_wrapper_printf
+              (stderr, " %s", (*decl_printable_name) (decl, 2));
+          else
+            fprintf (stderr, " %s", (*decl_printable_name) (decl, 2));
+        }
       fflush (stderr);
       need_error_newline = 1;
       last_error_function = current_function_decl;
@@ -651,22 +995,57 @@ default_print_error_function (file)
 {
   if (last_error_function != current_function_decl)
     {
+      const char *prefix = NULL;
+      struct output_buffer buffer;
+      
       if (file)
-	fprintf (stderr, "%s: ", file);
+        prefix = build_message_string ("%s: ", file);
 
+      if (doing_line_wrapping ())
+        init_output_buffer (&buffer, prefix, output_maximum_width);
+      else
+        {
+          if (file)
+            fprintf (stderr, "%s: ", file);
+        }
+      
       if (current_function_decl == NULL)
-	notice ("At top level:\n");
+        {
+          if (doing_line_wrapping ())
+            output_printf (&buffer, "At top level:\n");
+          else
+            notice ("At top level:\n");
+        }
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-	    notice ("In method `%s':\n",
-		    (*decl_printable_name) (current_function_decl, 2));
+            {
+              if (doing_line_wrapping ())
+                output_printf
+                  (&buffer, "In method `%s':\n",
+                   (*decl_printable_name) (current_function_decl, 2));
+              else
+                notice ("In method `%s':\n",
+                        (*decl_printable_name) (current_function_decl, 2));
+            }
 	  else
-	    notice ("In function `%s':\n",
-		    (*decl_printable_name) (current_function_decl, 2));
+            {
+              if (doing_line_wrapping ())
+                output_printf
+                  (&buffer, "In function `%s':\n",
+                   (*decl_printable_name) (current_function_decl, 2));
+              else
+                notice ("In function `%s':\n",
+                        (*decl_printable_name) (current_function_decl, 2));
+            }
 	}
 
       last_error_function = current_function_decl;
+
+      if (doing_line_wrapping ())
+        dump_output (&buffer, stderr);
+      
+      free ((char *)prefix);
     }
 }
 
