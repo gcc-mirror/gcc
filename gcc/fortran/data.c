@@ -329,7 +329,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
     last_con->expr = expr;
 }
 
-/* Similarly, but initialize REPEAT consectutive values in LVALUE the same
+/* Similarly, but initialize REPEAT consecutive values in LVALUE the same
    value in RVALUE.  For the nonce, LVALUE must refer to a full array, not
    an array section.  */
 

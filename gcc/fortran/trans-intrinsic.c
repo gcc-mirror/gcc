@@ -1466,7 +1466,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   /* Initialize the position to the first element.  If the array has zero
      size we need to return zero.  Otherwise use the first element of the
      array, in case all elements are equal to the limit.
-     ie. pos = (ubound >= lbound) ? lbound, lbound - 1;  */
+     i.e. pos = (ubound >= lbound) ? lbound, lbound - 1;  */
   tmp = fold (build2 (MINUS_EXPR, gfc_array_index_type,
 		      loop.from[0], gfc_index_one_node));
   cond = fold (build2 (GE_EXPR, boolean_type_node,

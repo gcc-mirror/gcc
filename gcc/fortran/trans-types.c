@@ -944,7 +944,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   mpz_init (delta);
 
   /* We don't use build_array_type because this does not include include
-     lang-specific information (ie. the bounds of the array) when checking
+     lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
   type = make_node (ARRAY_TYPE);
 

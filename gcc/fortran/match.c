@@ -2102,7 +2102,7 @@ cleanup:
 
 
 /* Given a name, return a pointer to the common head structure,
-   creating it if it does not exist. If FROM_MODULE is non-zero, we
+   creating it if it does not exist. If FROM_MODULE is nonzero, we
    mangle the name so that it doesn't interfere with commons defined 
    in the using namespace.
    TODO: Add to global symbol tree.  */

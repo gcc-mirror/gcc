@@ -136,7 +136,7 @@ get_segment_info (gfc_symbol * sym, HOST_WIDE_INT offset)
   /* Create the segment_info and fill it in.  */
   s = (segment_info *) gfc_getmem (sizeof (segment_info));
   s->sym = sym;
-  /* We will use this type when building the segment aggreagate type.  */
+  /* We will use this type when building the segment aggregate type.  */
   s->field = gfc_sym_type (sym);
   s->length = int_size_in_bytes (s->field);
   s->offset = offset;

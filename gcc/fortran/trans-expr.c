@@ -1581,7 +1581,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
     }
   else if (expr->ts.type == BT_DERIVED)
     {
-      /* Nested dervived type.  */
+      /* Nested derived type.  */
       tmp = gfc_trans_structure_assign (dest, expr);
       gfc_add_expr_to_block (&block, tmp);
     }
@@ -1603,7 +1603,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   return gfc_finish_block (&block);
 }
 
-/* Assign a derived type contructor to a variable.  */
+/* Assign a derived type constructor to a variable.  */
 
 static tree
 gfc_trans_structure_assign (tree dest, gfc_expr * expr)
