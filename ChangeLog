@@ -1,3 +1,9 @@
+Sun Jan  4 01:06:55 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* config.sub: Add mingw32 support.
+	* configure.in: Likewise.
+	* config/mh-mingw32: New file.
+
 Sat Jan  3 12:11:05 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* configure.in: Finalize support for {alpha|powerpc}*-*-linux-gnulibc1
