@@ -1,3 +1,7 @@
+2000-10-16 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* machmode.def: Correct comment.
+
 2000-10-16  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* print-rtl.c (print_rtx_head): Constify.
