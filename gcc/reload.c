@@ -6641,7 +6641,7 @@ debug_reload_to_stream (f)
 	fprintf (f, ", optional");
 
       if (rld[r].nongroup)
-	fprintf (stderr, ", nongroup");
+	fprintf (f, ", nongroup");
 
       if (rld[r].inc != 0)
 	fprintf (f, ", inc by %d", rld[r].inc);
@@ -6685,13 +6685,13 @@ debug_reload_to_stream (f)
       prefix = "\n\t";
       if (rld[r].secondary_in_icode != CODE_FOR_nothing)
 	{
-	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix,
+	  fprintf (f, "%ssecondary_in_icode = %s", prefix,
 		   insn_data[rld[r].secondary_in_icode].name);
 	  prefix = ", ";
 	}
 
       if (rld[r].secondary_out_icode != CODE_FOR_nothing)
-	fprintf (stderr, "%ssecondary_out_icode = %s", prefix,
+	fprintf (f, "%ssecondary_out_icode = %s", prefix,
 		 insn_data[rld[r].secondary_out_icode].name);
 
       fprintf (f, "\n");
