@@ -1392,7 +1392,7 @@ poplevel (int keep, int reverse, int functionbody)
 		 there only for backward compatibility.  */
 	      DECL_DEAD_FOR_LOCAL (link) = 1;
 
-	      /* Keep track of what should of have happened when we
+	      /* Keep track of what should have happened when we
 		 popped the binding.  */
 	      if (outer_binding && BINDING_VALUE (outer_binding))
 		DECL_SHADOWED_FOR_VAR (link)
