@@ -4,6 +4,8 @@
 
 	* g++.dg/opt/vt1.C: New test.
 
+	* gcc.dg/20020531-1.c: New test.
+
 2002-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20020607-2.c: New test case.
