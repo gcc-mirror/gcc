@@ -2686,3 +2686,98 @@ pod_type_p (t)
 
   return 1;
 }
+
+/* A list of objects which have constructors or destructors
+   which reside in the global scope.  The decl is stored in
+   the TREE_VALUE slot and the initializer is stored
+   in the TREE_PURPOSE slot.  */
+tree static_aggregates_initp;
+
+/* Return a 1 if ATTR_NAME and ATTR_ARGS denote a valid C++-specific
+   attribute for either declaration DECL or type TYPE and 0 otherwise.
+   Plugged into valid_lang_attribute.  */
+
+int
+cp_valid_lang_attribute (attr_name, attr_args, decl, type)
+  tree attr_name;
+  tree attr_args ATTRIBUTE_UNUSED;
+  tree decl ATTRIBUTE_UNUSED;
+  tree type ATTRIBUTE_UNUSED;
+{
+  if (attr_name == get_identifier ("com_interface"))
+    {
+      if (! flag_vtable_thunks)
+	{
+	  error ("`com_interface' only supported with -fvtable-thunks");
+	  return 0;
+	}
+
+      if (attr_args != NULL_TREE
+	  || decl != NULL_TREE
+	  || ! CLASS_TYPE_P (type)
+	  || type != TYPE_MAIN_VARIANT (type))
+	{
+	  warning ("`com_interface' attribute can only be applied to class definitions");
+	  return 0;
+	}
+
+      CLASSTYPE_COM_INTERFACE (type) = 1;
+      return 1;
+    }
+  else if (attr_name == get_identifier ("init_priority"))
+    {
+      tree initp_expr = (attr_args ? TREE_VALUE (attr_args): NULL_TREE);
+      int pri;
+
+      if (initp_expr)
+	STRIP_NOPS (initp_expr);
+	  
+      if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
+	{
+	  error ("requested init_priority is not an integer constant");
+	  return 0;
+	}
+
+      pri = TREE_INT_CST_LOW (initp_expr);
+	
+      while (TREE_CODE (type) == ARRAY_TYPE)
+	type = TREE_TYPE (type);
+
+      if (decl == NULL_TREE
+	  || TREE_CODE (decl) != VAR_DECL
+	  || ! TREE_STATIC (decl)
+	  || DECL_EXTERNAL (decl)
+	  || (TREE_CODE (type) != RECORD_TYPE
+	      && TREE_CODE (type) != UNION_TYPE)
+	  /* Static objects in functions are initialized the
+	     first time control passes through that
+	     function. This is not precise enough to pin down an
+	     init_priority value, so don't allow it. */
+	  || current_function_decl) 
+	{
+	  error ("can only use init_priority attribute on file-scope definitions of objects of class type");
+	  return 0;
+	}
+
+      if (pri > MAX_INIT_PRIORITY || pri <= 0)
+	{
+	  error ("requested init_priority is out of range");
+	  return 0;
+	}
+
+      /* Check for init_priorities that are reserved for
+	 language and runtime support implementations.*/
+      if (pri <= MAX_RESERVED_INIT_PRIORITY)
+	{
+	  warning 
+	    ("requested init_priority is reserved for internal use");
+	}
+
+      static_aggregates_initp
+	= perm_tree_cons (initp_expr, decl, static_aggregates_initp);
+
+      return 1;
+    }
+
+  return 0;
+}

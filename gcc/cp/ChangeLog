@@ -1,3 +1,10 @@
+1999-04-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (cp_valid_lang_attribute): New fn.  Handle init_priority
+	and com_interface.
+	* cp-tree.h: Add prototype.
+	* decl.c (init_decl_processing): Set valid_lang_attribute.
+
 1999-04-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_struct_1): Look at the const-ness of the field's

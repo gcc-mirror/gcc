@@ -61,6 +61,7 @@ extern tree current_namespace;
 extern tree global_namespace;
 
 extern void (*print_error_function) PROTO((char *));
+extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
 /* Stack of places to restore the search obstack back to.  */
    
@@ -6723,6 +6724,7 @@ init_decl_processing ()
 
   print_error_function = lang_print_error_function;
   lang_get_alias_set = &c_get_alias_set;
+  valid_lang_attribute = cp_valid_lang_attribute;
 
   /* Maintain consistency.  Perhaps we should just complain if they
      say -fwritable-strings?  */
