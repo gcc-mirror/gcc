@@ -129,7 +129,7 @@ crtbegin.o%s \
    misnamed.  These should all refer to explicit sizes (half/word/xword?),
    anything other than short/int/long/etc.  */
 
-#define UNALIGNED_LONGLONG_ASM_OP	".uaxword"
+#define UNALIGNED_LONGLONG_ASM_OP	"\t.uaxword\t"
 
 /* DWARF stuff.  */
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Tahoe version.
-   Copyright (C) 1989, 93, 94, 95, 96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 94, 95, 96, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -730,11 +730,11 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 
 /* what to output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* what to output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* this is what we call each of the regs. notice that the FPP reg is   */
 /* called "ac". This should never get used due to the way we've set    */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SunOS 4.x with gas
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,9 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* gas supports unaligned data.  */
-#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"
-#define UNALIGNED_INT_ASM_OP	".uaword"
-#define UNALIGNED_SHORT_ASM_OP	".uahalf"
+#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.uaxword\t"
+#define UNALIGNED_INT_ASM_OP	"\t.uaword\t"
+#define UNALIGNED_SHORT_ASM_OP	"\t.uahalf\t"
 
 /* defaults.h will define DWARF2_UNWIND_INFO for us.  */
 #undef DWARF2_UNWIND_INFO
