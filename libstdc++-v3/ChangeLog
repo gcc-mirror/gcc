@@ -1,3 +1,7 @@
+2005-01-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_tree.h: Add a few missing std:: qualifications.
+
 2005-01-16  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/ext/rope: Qualify calls to std::copy() by sequence_buffer.
