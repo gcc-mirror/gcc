@@ -38,7 +38,7 @@
 ;; * Fix true frame pointer omission.
 ;; * Make the jump tables contain branches, not addresses!  This would
 ;;   save us one instruction.
-;; * Could the compilcated scheme for compares be simplyfied, if we had
+;; * Could the complicated scheme for compares be simplified, if we had
 ;;   no named cmpqi or cmphi patterns, and instead anonymous patterns for
 ;;   the less-than-word compare cases pyr can handle???
 ;; * The jump insn seems to accept more than just IR addressing.  Would
@@ -84,6 +84,7 @@
   rtx br_insn = NEXT_INSN (insn);
   RTX_CODE br_code;
 
+  extern int swap_operands;
   if (GET_CODE (br_insn) != JUMP_INSN)
     abort();
   br_code =  GET_CODE (XEXP (XEXP (PATTERN (br_insn), 1), 0));
@@ -144,7 +145,7 @@
 
 (define_insn ""
   [(set (cc0)
-	(match_operand:SI 0 "general_operand" "r"))]
+	(match_operand:SI 0 "nonimmediate_operand" "r"))]
   ""
   "*
 {
@@ -183,7 +184,7 @@
 
 (define_expand "tsthi"
   [(set (cc0)
-	(match_operand:HI 0 "general_operand" ""))]
+	(match_operand:HI 0 "nonimmediate_operand" ""))]
   ""
   "
 {
@@ -200,6 +201,7 @@
   "weird_memory_memory (operands[0], operands[1])"
   "*
 {
+  extern int swap_operands;
   rtx br_insn = NEXT_INSN (insn);
 
   if (GET_CODE (br_insn) != JUMP_INSN)
@@ -253,7 +255,7 @@
 
 (define_expand "tstqi"
   [(set (cc0)
-	(match_operand:QI 0 "general_operand" ""))]
+	(match_operand:QI 0 "nonimmediate_operand" ""))]
   ""
   "
 {
@@ -270,6 +272,7 @@
   "weird_memory_memory (operands[0], operands[1])"
   "*
 {
+  extern int swap_operands;
   rtx br_insn = NEXT_INSN (insn);
   RTX_CODE br_code;
 
@@ -678,7 +681,7 @@
 
 ;; If the destination is a memory operand, indexed source operands are
 ;; disallowed.  Big DImode constants are always loaded into a reg pair,
-;; although offsetable memory addresses really could be dealt with.
+;; although offsettable memory addresses really could be dealt with.
 
 (define_insn ""
   [(set (match_operand:DI 0 "memory_operand" "=m")
@@ -1203,6 +1206,8 @@
 	(match_operand:SI 3 "general_operand" "g"))]
   "movdi_possible (operands)"
   "*
+{
+  extern int swap_operands;
   output_asm_insn (\"# COMBINE movw %1,%0\", operands);
   output_asm_insn (\"# COMBINE movw %3,%2\", operands);
   movdi_possible (operands);
@@ -1210,7 +1215,7 @@
     return (swap_operands) ? \"movl %3,%0\" : \"movl %1,%2\";
 
   return (swap_operands) ? \"movl %1,%0\" : \"movl %3,%2\";
-")
+}")
 
 ;; Optimize certain tests after memory stores.
 
@@ -1360,6 +1365,12 @@
   output_asm_insn (\"xorw %1,%0\", xoperands);
   return \"xorw %2,%0\";
 }")
+
+;; My version, modelled after Jonathan Stone's and "tablejump" - S.P.
+(define_insn "indirect_jump"
+  [(set (pc) (match_operand:SI 0 "general_operand" "r"))]
+  ""
+  "jump (%0)")
 
 ;;- Local variables:
 ;;- mode:emacs-lisp
