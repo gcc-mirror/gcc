@@ -1796,7 +1796,7 @@ emit_block_move (x, y, size, align)
       retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 #else
       emit_library_call (bcopy_libfunc, 0,
-			 VOIDmode, 3, y, Pmode, x, Pmode
+			 VOIDmode, 3, y, Pmode, x, Pmode,
 			 convert_to_mode (TYPE_MODE (integer_type_node), size,
 					  TREE_UNSIGNED (integer_type_node)),
 			 TYPE_MODE (integer_type_node));
@@ -2562,7 +2562,7 @@ clear_storage (object, size, align)
 	  retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 #else
 	  emit_library_call (bzero_libfunc, 0,
-			     VOIDmode, 2, object, Pmode, size
+			     VOIDmode, 2, object, Pmode, size,
 			     TYPE_MODE (integer_type_node));
 #endif
 	}
