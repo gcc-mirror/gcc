@@ -3174,7 +3174,7 @@ machine_dependent_reorg (first)
 			     LAST_FLOAT_MOVE; we have to change it to REG_INC,
 			     lest reorg:mark_target_live_regs will not
 			     consider r0 to be used, and we end up with delay
-			     slot insn in front of SCAN that clobber r0.  */
+			     slot insn in front of SCAN that clobbers r0.  */
 			  rtx note
 			    = find_regno_note (last_float_move, REG_UNUSED, 0);
 
