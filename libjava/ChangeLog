@@ -1,3 +1,9 @@
+2003-01-03  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/TreeMap.java (fabricateTree): Fix off-by-one error.
+	(TreeIterator.remove): Prefer IllegalStateException over
+	ConcurrentModificationException, to match Sun.
+
 2002-12-22  Anthony Green  <green@redhat.com>
 
 	* boehm.cc (_Jv_MarkObj): Mark the protectionDomain of a class.
