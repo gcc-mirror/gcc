@@ -127,19 +127,91 @@ Boston, MA 02111-1307, USA.  */
   if ((TO) == STACK_POINTER_REGNUM)					\
     (OFFSET) += ALPHA_ROUND (current_function_outgoing_args_size);	\
 }
+
+/* Define a data type for recording info about an argument list
+   during the scan of that argument list.  This data type should
+   hold all necessary information about the function itself
+   and about the args processed so far, enough to enable macros
+   such as FUNCTION_ARG to determine where the next arg should go.
+
+   On Alpha/VMS, this is a structure that contains the number of
+   arguments and, for each argument, the datatype of that argument.
+
+   The number of arguments is a number of words of arguments scanned so far.
+   Thus 6 or more means all following args should go on the stack.  */
+
+enum avms_arg_type {I64, FF, FD, FG, FS, FT};
+typedef struct {char num_args; enum avms_arg_type atypes[6];} avms_arg_info;
+
+#undef CUMULATIVE_ARGS
+#define CUMULATIVE_ARGS avms_arg_info
+
+/* Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is 0.  */
+
+#undef INIT_CUMULATIVE_ARGS
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
+  (CUM).num_args = 0;						\
+  (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	\
+  (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+extern enum avms_arg_type alpha_arg_type ();
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode (or VOIDmode for no more args).
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+
+   On Alpha the first 6 words of args are normally in registers
+   and the rest are pushed.  */
+
+extern struct rtx_def *alpha_arg_info_reg_val ();
+#undef FUNCTION_ARG
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
+((MODE) == VOIDmode ? alpha_arg_info_reg_val (CUM)		\
+ : ((CUM.num_args) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
+    ? gen_rtx(REG, (MODE),					\
+	      ((CUM).num_args + 16				\
+	       + ((TARGET_FPREGS				\
+		   && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
+		       || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		  * 32)))			\
+    : 0))
 
 #undef FUNCTION_ARG_ADVANCE
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
   if (MUST_PASS_IN_STACK (MODE, TYPE))					\
-    (CUM) = (CUM & ~0xff) + 6;						\
+    (CUM).num_args += 6;						\
   else									\
-    (CUM) += ALPHA_ARG_SIZE (MODE, TYPE, NAMED)
+    {									\
+      if ((CUM).num_args < 6)						\
+        (CUM).atypes[(CUM).num_args] = alpha_arg_type (MODE);		\
+									\
+     (CUM).num_args += ALPHA_ARG_SIZE (MODE, TYPE, NAMED);		\
+    }
+
+/* For an arg passed partly in registers and partly in memory,
+   this is the number of registers used.
+   For args passed entirely in registers or entirely in memory, zero.  */
 
 #undef FUNCTION_ARG_PARTIAL_NREGS
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)		\
-((CUM & 0xff) < 6 && 6 < (CUM & 0xff)					\
+((CUM).num_args < 6 && 6 < (CUM).num_args				\
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
- ? 6 - (CUM & 0xff) : 0)
+ ? 6 - (CUM).num_args : 0)
 
 extern char *vmskrunch ();
 #undef ENCODE_SECTION_INFO
@@ -178,7 +250,7 @@ do {								\
 
 #undef SETUP_INCOMING_VARARGS
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM) < 6)					\
+{ if ((CUM).num_args < 6)				\
     {							\
       if (! (NO_RTL))					\
 	{						\
@@ -264,10 +336,6 @@ link_section ()							\
 #define READONLY_DATA_SECTION readonly_section
 
 #define ASM_FILE_END(FILE) alpha_write_linkage (FILE);
-
-#undef FUNCTION_ARG
-void *function_arg ();
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	function_arg (&CUM, MODE, TYPE, NAMED)
 
 #undef CASE_VECTOR_MODE
 #define CASE_VECTOR_MODE DImode
