@@ -1,5 +1,8 @@
 Sat Feb 28 07:54:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* system.h: Remove sys/stat.h.
+	* gcc.c: Add sys/stat.h.
+
 	* genattr.c: Wrap prototype of `free' in NEED_DECLARATION_FREE.
 	* genattrtab.c: Likewise.
 	* genconfig.c: Likewise.
