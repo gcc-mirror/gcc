@@ -1,3 +1,9 @@
+2005-01-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/19038
+	* tree-ssa-dom.c (cprop_operand): Don't replace loop invaeriant
+	copies with loop variant ones.
+
 2005-01-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfganal.c, real.h, reorg.c, timevar.def, tree-ssa-ccp.c,

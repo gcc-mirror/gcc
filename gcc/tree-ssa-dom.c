@@ -2819,6 +2819,14 @@ cprop_operand (tree stmt, use_operand_p op_p)
 	 extensions.  */
       else if (!may_propagate_copy (op, val))
 	return false;
+      
+      /* Do not propagate copies if the propagated value is at a deeper loop
+	 depth than the propagatee.  Otherwise, this may move loop variant
+	 variables outside of their loops and prevent coalescing
+	 opportunities.  If the value was loop invariant, it will be hoisted
+	 by LICM and exposed for copy propagation.  */
+      if (loop_depth_of_name (val) > loop_depth_of_name (op))
+	return false;
 
       /* Dump details.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
