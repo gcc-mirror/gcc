@@ -892,13 +892,15 @@ print_multi_reg (stream, instr, mask, hat)
   int i;
   int not_first = FALSE;
 
-  fprintf (stream, "\t%s, {", instr);
+  fputc ('\t', stream);
+  fprintf (stream, instr, ARM_REG_PREFIX);
+  fputs (", {", stream);
   for (i = 0; i < 16; i++)
     if (mask & (1 << i))
       {
 	if (not_first)
 	  fprintf (stream, ", ");
-	fprintf (stream, "%s", reg_names[i]);
+	fprintf (stream, "%s%s", ARM_REG_PREFIX, reg_names[i]);
 	not_first = TRUE;
       }
 
@@ -916,10 +918,10 @@ output_call (operands)
   if (REGNO (operands[0]) == 14)
     {
       operands[0] = gen_rtx (REG, SImode, 12);
-      output_asm_insn ("mov%?\t%0, lr", operands);
+      output_asm_insn ("mov%?\t%0, %|lr", operands);
     }
-  output_asm_insn ("mov%?\tlr, pc", operands);
-  output_asm_insn ("mov%?\tpc, %0", operands);
+  output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+  output_asm_insn ("mov%?\t%|pc, %0", operands);
   return "";
 }
 
@@ -965,10 +967,10 @@ output_call_mem (operands)
   /* Handle calls using lr by using ip (which may be clobbered in subr anyway).
    */
   if (eliminate_lr2ip (&operands[0]))
-    output_asm_insn ("mov%?\tip, lr", operands);
+    output_asm_insn ("mov%?\t%|ip, %|lr", operands);
 
-  output_asm_insn ("mov%?\tlr, pc", operands);
-  output_asm_insn ("ldr%?\tpc, %0", operands);
+  output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+  output_asm_insn ("ldr%?\t%|pc, %0", operands);
   return "";
 }
 
@@ -991,8 +993,8 @@ output_mov_long_double_fpu_from_arm (operands)
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
   ops[2] = gen_rtx (REG, SImode, 2 + arm_reg0);
   
-  output_asm_insn ("stm%?fd\tsp!, {%0, %1, %2}", ops);
-  output_asm_insn ("ldf%?e\t%0, [sp], #12", operands);
+  output_asm_insn ("stm%?fd\t%|sp!, {%0, %1, %2}", ops);
+  output_asm_insn ("ldf%?e\t%0, [%|sp], #12", operands);
   return "";
 }
 
@@ -1014,8 +1016,8 @@ output_mov_long_double_arm_from_fpu (operands)
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
   ops[2] = gen_rtx (REG, SImode, 2 + arm_reg0);
 
-  output_asm_insn ("stf%?e\t%1, [sp, #-12]!", operands);
-  output_asm_insn ("ldm%?fd\tsp!, {%0, %1, %2}", ops);
+  output_asm_insn ("stf%?e\t%1, [%|sp, #-12]!", operands);
+  output_asm_insn ("ldm%?fd\t%|sp!, {%0, %1, %2}", ops);
   return "";
 }
 
@@ -1070,8 +1072,8 @@ output_mov_double_fpu_from_arm (operands)
     abort();
   ops[0] = gen_rtx (REG, SImode, arm_reg0);
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
-  output_asm_insn ("stm%?fd\tsp!, {%0, %1}", ops);
-  output_asm_insn ("ldf%?d\t%0, [sp], #8", operands);
+  output_asm_insn ("stm%?fd\t%|sp!, {%0, %1}", ops);
+  output_asm_insn ("ldf%?d\t%0, [%|sp], #8", operands);
   return "";
 }
 
@@ -1091,8 +1093,8 @@ output_mov_double_arm_from_fpu (operands)
 
   ops[0] = gen_rtx (REG, SImode, arm_reg0);
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
-  output_asm_insn ("stf%?d\t%1, [sp, #-8]!", operands);
-  output_asm_insn ("ldm%?fd\tsp!, {%0, %1}", ops);
+  output_asm_insn ("stf%?d\t%1, [%|sp, #-8]!", operands);
+  output_asm_insn ("ldm%?fd\t%|sp!, {%0, %1}", ops);
   return "";
 }
 
@@ -1675,13 +1677,14 @@ output_return_instruction (operand, really_return)
         live_regs++;
 
       if (frame_pointer_needed)
-        strcpy (instr, "ldm%?%d0ea\tfp, {");
+        strcpy (instr, "ldm%?%d0ea\t%|fp, {");
       else
-        strcpy (instr, "ldm%?%d0fd\tsp!, {");
+        strcpy (instr, "ldm%?%d0fd\t%|sp!, {");
 
       for (reg = 0; reg <= 10; reg++)
         if (regs_ever_live[reg] && ! call_used_regs[reg])
           {
+	    strcat (instr, "%|");
             strcat (instr, reg_names[reg]);
 	    if (--live_regs)
               strcat (instr, ", ");
@@ -1689,20 +1692,27 @@ output_return_instruction (operand, really_return)
 
       if (frame_pointer_needed)
         {
+	  strcat (instr, "%|");
           strcat (instr, reg_names[11]);
           strcat (instr, ", ");
+	  strcat (instr, "%|");
           strcat (instr, reg_names[13]);
           strcat (instr, ", ");
+	  strcat (instr, "%|");
           strcat (instr, really_return ? reg_names[15] : reg_names[14]);
         }
       else
-        strcat (instr, really_return ? reg_names[15] : reg_names[14]);
+	{
+	  strcat (instr, "%|");
+	  strcat (instr, really_return ? reg_names[15] : reg_names[14]);
+	}
       strcat (instr, (TARGET_6 || !really_return) ? "}" : "}^");
       output_asm_insn (instr, &operand);
     }
   else if (really_return)
     {
-      strcpy (instr, TARGET_6 ? "mov%?%d0\tpc, lr" : "mov%?%d0s\tpc, lr");
+      strcpy (instr,
+	      TARGET_6 ? "mov%?%d0\t%|pc, lr" : "mov%?%d0s\t%|pc, %|lr");
       output_asm_insn (instr, &operand);
     }
 
@@ -1780,11 +1790,12 @@ output_func_prologue (f, frame_size)
   return_used_this_function = 0;
   lr_save_eliminated = 0;
   
-  fprintf (f, "\t@ args = %d, pretend = %d, frame = %d\n",
-	   current_function_args_size, current_function_pretend_args_size,
-	   frame_size);
-  fprintf (f, "\t@ frame_needed = %d, current_function_anonymous_args = %d\n",
-	   frame_pointer_needed, current_function_anonymous_args);
+  fprintf (f, "\t%c args = %d, pretend = %d, frame = %d\n",
+	   ARM_COMMENT_CHAR, current_function_args_size,
+	   current_function_pretend_args_size, frame_size);
+  fprintf (f, "\t%c frame_needed = %d, current_function_anonymous_args = %d\n",
+	   ARM_COMMENT_CHAR, frame_pointer_needed,
+	   current_function_anonymous_args);
 
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
@@ -1796,14 +1807,15 @@ output_func_prologue (f, frame_size)
   if (frame_pointer_needed)
     {
       live_regs_mask |= 0xD800;
-      fputs ("\tmov\tip, sp\n", f);
+      fprintf (f, "\tmov\t%sip, %ssp\n", ARM_REG_PREFIX, ARM_REG_PREFIX);
     }
   else if (regs_ever_live[14])
     {
       if (! current_function_args_size
 	  && ! function_really_clobbers_lr (get_insns ()))
 	{
-	  fprintf (f,"\t@ I don't think this function clobbers lr\n");
+	  fprintf (f,"\t%c I don't think this function clobbers lr\n",
+		   ARM_COMMENT_CHAR);
 	  lr_save_eliminated = 1;
         }
       else
@@ -1823,7 +1835,7 @@ output_func_prologue (f, frame_size)
 	  for (reg = 3, arg_size = current_function_pretend_args_size;
 	       arg_size > 0; reg--, arg_size -= 4)
 	    mask |= (1 << reg);
-	  print_multi_reg (f, "stmfd\tsp!", mask, FALSE);
+	  print_multi_reg (f, "stmfd\t%ssp!", mask, FALSE);
 	}
       else
 	{
@@ -1845,12 +1857,13 @@ output_func_prologue (f, frame_size)
       lr_save_eliminated = 0;
 
       /* Now push all the call-saved regs onto the stack */
-      print_multi_reg (f, "stmfd\tsp!", live_regs_mask, FALSE);
+      print_multi_reg (f, "stmfd\t%ssp!", live_regs_mask, FALSE);
     }
 
   for (reg = 23; reg > 15; reg--)
     if (regs_ever_live[reg] && !call_used_regs[reg])
-      fprintf (f, "\tstfe\t%s, [sp, #-12]!\n", reg_names[reg]);
+      fprintf (f, "\tstfe\t%s%s, [%ssp, #-12]!\n", ARM_REG_PREFIX,
+	       reg_names[reg], ARM_REG_PREFIX);
 
   if (frame_pointer_needed)
     {
@@ -1902,14 +1915,14 @@ output_func_epilogue (f, frame_size)
       for (reg = 23; reg > 15; reg--)
 	if (regs_ever_live[reg] && ! call_used_regs[reg])
 	  {
-	    fprintf (f, "\tldfe\t%s, [fp, #-%d]\n", reg_names[reg],
-		     floats_offset);
+	    fprintf (f, "\tldfe\t%s%s, [%sfp, #-%d]\n", ARM_REG_PREFIX,
+		     reg_names[reg], ARM_REG_PREFIX, floats_offset);
 	    floats_offset += 12;
 	    code_size += 4;
 	  }
 
       live_regs_mask |= 0xA800;
-      print_multi_reg (f, "ldmea\tfp", live_regs_mask,
+      print_multi_reg (f, "ldmea\t%sfp", live_regs_mask,
 		       TARGET_6 ? FALSE : TRUE);
       code_size += 4;
     }
@@ -1926,12 +1939,13 @@ output_func_epilogue (f, frame_size)
       for (reg = 16; reg < 24; reg++)
 	if (regs_ever_live[reg] && ! call_used_regs[reg])
 	  {
-	    fprintf (f, "\tldfe\t%s, [sp], #12\n", reg_names[reg]);
+	    fprintf (f, "\tldfe\t%s%s, [%ssp], #12\n", ARM_REG_PREFIX,
+		     reg_names[reg], ARM_REG_PREFIX);
 	    code_size += 4;
 	  }
       if (current_function_pretend_args_size == 0 && regs_ever_live[14])
 	{
-	  print_multi_reg (f, "ldmfd\tsp!", live_regs_mask | 0x8000,
+	  print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask | 0x8000,
 			   TARGET_6 ? FALSE : TRUE);
 	  code_size += 4;
 	}
@@ -1940,7 +1954,7 @@ output_func_epilogue (f, frame_size)
 	  if (live_regs_mask || regs_ever_live[14])
 	    {
 	      live_regs_mask |= 0x4000;
-	      print_multi_reg (f, "ldmfd\tsp!", live_regs_mask, FALSE);
+	      print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
 	      code_size += 4;
 	    }
 	  if (current_function_pretend_args_size)
@@ -1950,7 +1964,9 @@ output_func_epilogue (f, frame_size)
 				     current_function_pretend_args_size);
 	      output_add_immediate (operands);
 	    }
-	  fputs (TARGET_6 ? "\tmov\tpc, lr\n" : "\tmovs\tpc, lr\n", f);
+	  fprintf (f,
+		   TARGET_6 ? "\tmov\t%spc, %slr\n" : "\tmovs\t%spc, %slr\n",
+		   ARM_REG_PREFIX, ARM_REG_PREFIX, f);
 	  code_size += 4;
 	}
     }
@@ -2056,10 +2072,12 @@ arm_print_operand (stream, x, code)
     case 'R':
       if (REGNO (x) > 15)
 	abort ();
+      fputs (ARM_REG_PREFIX, stream);
       fputs (reg_names[REGNO (x) + 1], stream);
       return;
 
     case 'm':
+      fputs (ARM_REG_PREFIX, stream);
       if (GET_CODE (XEXP (x, 0)) == REG)
 	fputs (reg_names[REGNO (XEXP (x, 0))], stream);
       else
@@ -2067,11 +2085,11 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'M':
-      fprintf (stream, "{%s-%s}", reg_names[REGNO (x)],
-	       reg_names[REGNO (x) - 1
-			 + ((GET_MODE_SIZE (GET_MODE (x))
-			     + GET_MODE_SIZE (SImode) - 1)
-			    / GET_MODE_SIZE (SImode))]);
+      fprintf (stream, "{%s%s-%s%s}", ARM_REG_PREFIX, reg_names[REGNO (x)],
+	       ARM_REG_PREFIX, reg_names[REGNO (x) - 1
+					 + ((GET_MODE_SIZE (GET_MODE (x))
+					     + GET_MODE_SIZE (SImode) - 1)
+					    / GET_MODE_SIZE (SImode))]);
       return;
 
     case 'd':
@@ -2096,7 +2114,10 @@ arm_print_operand (stream, x, code)
 	abort ();
 
       if (GET_CODE (x) == REG)
-	fputs (reg_names[REGNO (x)], stream);
+	{
+	  fputs (ARM_REG_PREFIX, stream);
+	  fputs (reg_names[REGNO (x)], stream);
+	}
       else if (GET_CODE (x) == MEM)
 	{
 	  output_memory_reference_mode = GET_MODE (x);
@@ -2228,7 +2249,7 @@ output_load_symbol (insn, operands)
     {
       if (inst == 8)
 	{
-	  strcpy (buffer, "sub%?\t%0, pc, #(8 + . -%a1)");
+	  strcpy (buffer, "sub%?\t%0, %|pc, #(8 + . -%a1)");
 	  if ((never_mask | mask) != 0xffffffff)
 	    sprintf (buffer + strlen (buffer), " & 0x%x", mask | never_mask);
 	}
@@ -2257,7 +2278,7 @@ output_lcomm_directive (stream, name, size, rounded)
      char *name;
      int size, rounded;
 {
-  fputs ("\n\t.bss\t@ .lcomm\n", stream);
+  fprintf (stream, "\n\t.bss\t%c .lcomm\n", ARM_COMMENT_CHAR);
   assemble_name (stream, name);
   fprintf (stream, ":\t.space\t%d\n", rounded);
   if (in_text_section ())
