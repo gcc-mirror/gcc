@@ -1060,7 +1060,7 @@ print_operand (file, x, code)
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 	  REAL_VALUE_TO_TARGET_SINGLE (rv, value);
-	  asm_fprintf (file, "0x%x", value);
+	  fprintf (file, "0x%lx", value);
         }
       break;
 

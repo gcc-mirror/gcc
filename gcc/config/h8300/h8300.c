@@ -1153,10 +1153,10 @@ print_operand (file, x, code)
 	}
       break;
     case 'j':
-      asm_fprintf (file, cond_string (GET_CODE (x)));
+      fputs (cond_string (GET_CODE (x)), file);
       break;
     case 'k':
-      asm_fprintf (file, cond_string (reverse_condition (GET_CODE (x))));
+      fputs (cond_string (reverse_condition (GET_CODE (x))), file);
       break;
     case 's':
       if (GET_CODE (x) == CONST_INT)

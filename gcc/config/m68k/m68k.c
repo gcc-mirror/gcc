@@ -279,13 +279,15 @@ m68k_output_function_prologue (stream, size)
 	{
 	/* on the 68040, pea + move is faster than link.w 0 */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tpea (%s)\n\tmove.l %s,%s\n",
-	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
-	       reg_names[FRAME_POINTER_REGNUM]);
+	  fprintf (stream, "\tpea (%s)\n\tmove.l %s,%s\n",
+		   reg_names[FRAME_POINTER_REGNUM],
+		   reg_names[STACK_POINTER_REGNUM],
+		   reg_names[FRAME_POINTER_REGNUM]);
 #else
-	  asm_fprintf (stream, "\tpea %s@\n\tmovel %s,%s\n",
-	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
-	       reg_names[FRAME_POINTER_REGNUM]);
+	  fprintf (stream, "\tpea %s@\n\tmovel %s,%s\n",
+		   reg_names[FRAME_POINTER_REGNUM],
+		   reg_names[STACK_POINTER_REGNUM],
+		   reg_names[FRAME_POINTER_REGNUM]);
 #endif
 	}
       else if (fsize < 0x8000)
@@ -778,7 +780,7 @@ m68k_output_function_epilogue (stream, size)
     {
       /* Output just a no-op so that debuggers don't get confused
 	 about which function the pc is in at this address.  */
-      asm_fprintf (stream, "\tnop\n");
+      fprintf (stream, "\tnop\n");
       return;
     }
 
@@ -878,9 +880,9 @@ m68k_output_function_epilogue (stream, size)
 			     reg_names[FRAME_POINTER_REGNUM],
 			     reg_names[i]);
 #else
-		asm_fprintf (stream, "\tmovel %s@(-%d),%s\n",
-			     reg_names[FRAME_POINTER_REGNUM],
-			     offset + fsize, reg_names[i]);
+		fprintf (stream, "\tmovel %s@(-%d),%s\n",
+			 reg_names[FRAME_POINTER_REGNUM],
+			 offset + fsize, reg_names[i]);
 #endif
 	      }
             offset = offset - 4;
@@ -990,14 +992,14 @@ m68k_output_function_epilogue (stream, size)
 	  else
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tfpmovd -%d(%s), %s\n",
-			   fpoffset + fsize,
-			   reg_names[FRAME_POINTER_REGNUM],
-			   reg_names[regno]);
+	      fprintf (stream, "\tfpmovd -%d(%s), %s\n",
+		       fpoffset + fsize,
+		       reg_names[FRAME_POINTER_REGNUM],
+		       reg_names[regno]);
 #else
-	      asm_fprintf (stream, "\tfpmoved %s@(-%d), %s\n",
-			   reg_names[FRAME_POINTER_REGNUM],
-			   fpoffset + fsize, reg_names[regno]);
+	      fprintf (stream, "\tfpmoved %s@(-%d), %s\n",
+		       reg_names[FRAME_POINTER_REGNUM],
+		       fpoffset + fsize, reg_names[regno]);
 #endif
 	    }
 	  fpoffset -= 8;
@@ -2959,7 +2961,7 @@ print_operand (file, op, letter)
   if (letter == '.')
     {
 #if defined (MOTOROLA) && !defined (CRDS)
-      asm_fprintf (file, ".");
+      fprintf (file, ".");
 #endif
     }
   else if (letter == '#')

@@ -1,3 +1,32 @@
+2002-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arc.c (output_shift): Use stdio instead of asm_fprintf.
+	* arm.c (thumb_output_function_prologue): Likewise.
+	* avr.c (print_operand): Likewise.
+	* c4x.c (c4x_print_operand): Likewise.
+	* c4x.h (ASM_OUTPUT_INTERNAL_LABEL, TRAMPOLINE_TEMPLATE,
+	ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Likewise.
+	* cris.c (cris_target_asm_function_prologue,
+	cris_asm_output_mi_thunk): Likewise.
+	* h8300.c (print_operand): Likewise.
+	* h8300.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	* ip2k.c (print_operand): Likewise.  Fix format specifier.
+	* m68hc11.c (asm_print_register, print_operand,
+	print_operand_address): Use stdio instead of asm_fprintf.
+	(print_operand_address): Fix format specifier.
+	* m68hc11.h (FUNCTION_PROFILER, ASM_OUTPUT_ADDR_DIFF_ELT,
+	ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ALIGN): Use stdio instead of
+	asm_fprintf.
+	* m68k/amix.h (ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	* m68k/atari.h (ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	* m68k.c (m68k_output_function_prologue,
+	m68k_output_function_epilogue, print_operand): Likewise.
+	* mmix.c (mmix_asm_output_mi_thunk, mmix_asm_weaken_label):
+	Likewise.  Fix format specifier.
+	* mn10200.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	* mn10300.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	* v850.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+
 2002-08-15  Eric Christopher  <echristo@redhat.com>
 	    Jeff Knaggs  <jknaggs@redhat.com>
 

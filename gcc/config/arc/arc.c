@@ -1553,24 +1553,24 @@ output_shift (operands)
 	      output_asm_insn ("sr %4,[lp_end]", operands);
 	      output_asm_insn ("nop\n\tnop", operands);
 	      if (flag_pic)
-		asm_fprintf (asm_out_file, "\t%s single insn loop\n",
-			     ASM_COMMENT_START);
+		fprintf (asm_out_file, "\t%s single insn loop\n",
+			 ASM_COMMENT_START);
 	      else
-		asm_fprintf (asm_out_file, "1:\t%s single insn loop\n",
-			     ASM_COMMENT_START);
+		fprintf (asm_out_file, "1:\t%s single insn loop\n",
+			 ASM_COMMENT_START);
 	      output_asm_insn (shift_one, operands);
 	    }
 	  else 
 	    {
-	      asm_fprintf (asm_out_file, "1:\t%s begin shift loop\n",
-			   ASM_COMMENT_START);
+	      fprintf (asm_out_file, "1:\t%s begin shift loop\n",
+		       ASM_COMMENT_START);
 	      output_asm_insn ("sub.f %4,%4,1", operands);
 	      output_asm_insn ("nop", operands);
 	      output_asm_insn ("bn.nd 2f", operands);
 	      output_asm_insn (shift_one, operands);
 	      output_asm_insn ("b.nd 1b", operands);
-	      asm_fprintf (asm_out_file, "2:\t%s end shift loop\n",
-			   ASM_COMMENT_START);
+	      fprintf (asm_out_file, "2:\t%s end shift loop\n",
+		       ASM_COMMENT_START);
 	    }
 	}
     }
