@@ -804,16 +804,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      rtx q;
 #endif
 
-	      if (!(GET_CODE (SET_SRC (temp4)) == REG
-		    || GET_CODE (SET_SRC (temp4)) == SUBREG
-		    || (GET_CODE (SET_SRC (temp4)) == MEM
-			&& RTX_UNCHANGING_P (SET_SRC (temp4)))
-		    || CONSTANT_P (SET_SRC (temp4))))
-		{
-		  fprintf(stderr, "\nxyzzy 1\n");
-		  debug_rtx (temp4);
-		}
-
 	      /* Set P to the first jump insn that goes around "x = a;".  */
 	      for (p = temp; nuses && p; p = prev_nonnote_insn (p))
 		{
@@ -1206,16 +1196,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 #endif
 	      )
 	    {
-	      if (! (GET_CODE (temp2) == REG
-		     || (GET_CODE (temp2) == MEM && RTX_UNCHANGING_P (temp2))
-		     || GET_CODE (temp2) == SUBREG
-		     /* ??? How about floating point constants?  */
-		     || CONSTANT_P (temp2)))
-		{
-		  fprintf(stderr, "\nxyzzy 2\n");
-		  debug_rtx (PATTERN (temp));
-		}
-
 #ifdef HAVE_conditional_move
 	      /* First try a conditional move.  */
 	      {
