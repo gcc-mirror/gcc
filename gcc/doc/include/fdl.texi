@@ -1,5 +1,20 @@
+@ignore
+@c Set file name and title for man page.
+@setfilename gfdl
+@settitle GNU Free Documentation License
+@c man begin SEEALSO
+gpl(7), fsf-funding(7).
+@c man end
+@c man begin COPYRIGHT
+Copyright @copyright{} 2000 Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
 
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+@c man end
+@end ignore
 @node GNU Free Documentation License
+@c man begin DESCRIPTION
 @unnumbered GNU Free Documentation License
 
 @cindex FDL, GNU Free Documentation License
@@ -401,3 +416,4 @@ to permit their use in free software.
 @c ispell-local-pdict: "ispell-dict"
 @c End:
 
+@c man end

@@ -1,4 +1,13 @@
+@ignore
+@c Set file name and title for man page.
+@setfilename fsf-funding
+@settitle Funding Free Software
+@c man begin SEEALSO
+gpl(7), gfdl(7).
+@c man end
+@end ignore
 @node Funding
+@c man begin DESCRIPTION
 @unnumbered Funding Free Software
 
 If you want to have more free software a few years from now, it makes
@@ -40,9 +49,12 @@ major new features or packages contribute the most.
 By establishing the idea that supporting further development is ``the
 proper thing to do'' when distributing free software for a fee, we can
 assure a steady flow of resources into making more free software.
+@c man end
 
 @display
-Copyright (C) 1994 Free Software Foundation, Inc.
+@c man begin COPYRIGHT
+Copyright @copyright{} 1994 Free Software Foundation, Inc.
 Verbatim copying and redistribution of this section is permitted
 without royalty; alteration is not permitted.
+@c man end
 @end display

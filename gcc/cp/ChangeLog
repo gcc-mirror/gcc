@@ -1,3 +1,7 @@
+2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in: Change all uses of $(manext) to $(man1ext).
+
 2001-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/4206
