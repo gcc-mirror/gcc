@@ -1,3 +1,26 @@
+2002-08-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (expr_hash_table_size, n_exprs, set_hash_table_size,
+	n_sets): Removed.
+	(expr_hash_table, set_hash_table): Type changed to ...
+	(struct hash_table): New type.
+	(hash_scan_insn, hash_scan_set, hash_scan_clobber, hash_scan_call,
+	insert_expr_in_table, insert_set_in_table, compute_hash_table,
+	dump_hash_table, lookup_expr, lookup_set, compute_local_properties,
+	compute_ae_gen, compute_ae_kill): Modified to pass the table explicitly.
+	(alloc_set_hash_table, alloc_expr_hash_table): Merged to ...
+	(alloc_hash_table): New.
+	(free_set_hash_table, free_expr_hash_table): Merged to ...
+	(free_hash_table): New.
+	(compute_set_hash_table, compute_expr_hash_table): Merged to ...
+	(compute_hash_table_work): New.
+	(classic_gcse, one_classic_gcse_pass, compute_cprop_data,
+	find_avail_set, one_cprop_pass, find_bypass_set, compute_pre_data,
+	pre_edge_insert, pre_insert_copies, pre_delete, pre_gcse,
+	one_pre_gcse_pass, compute_transpout, compute_code_hoist_vbeinout,
+	hoist_code, one_code_hoisting_pass,
+	trim_ld_motion_mems): Altered due to changed type of hash tables.
+
 2002-08-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* final.c (output_alternate_entry_point):
