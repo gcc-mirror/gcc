@@ -1,3 +1,9 @@
+Wed May 22 17:08:48 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* t-sh (LIB2FUNCS_EXTRA): Now embed-bb.c.
+	(embed-bb.c): New rule.
+	* config/sh/embed_bb.c: Delete.
+
 2002-05-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*andorqi3): New.
