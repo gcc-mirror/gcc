@@ -758,7 +758,8 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif /* __ns32000__ */
 
-#if (defined (_ARCH_PPC) || defined (_IBMR2)) && W_TYPE_SIZE == 32
+#if (defined (_ARCH_PPC) || defined (_IBMR2))
+#if W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (bh) && (bh) == 0)				\
@@ -823,6 +824,7 @@ UDItype __umulsidi3 (USItype, USItype);
 		 "rI" ((USItype) (al)),					\
 		 "r" ((USItype) (bl)));					\
   } while (0)
+#endif /* W_TYPE_SIZE */
 #define count_leading_zeros(count, x) \
   __asm__ ("{cntlz|cntlzw} %0,%1"					\
 	   : "=r" ((USItype) (count))					\
@@ -850,7 +852,7 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #define SMUL_TIME 14
 #define UDIV_TIME 120
-#else
+#elif defined (_ARCH_POWER)
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
