@@ -2051,37 +2051,39 @@ initdcl:
 		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 1, 0); }
 	;
 
-        /* This rule assumes a certain configuration of the parser
-	   stack.  In particular, $0, the element directly before the
-	   beginning of this rule on the stack, must be a declarator,
-	   or notype_declarator.  And, $-1 must be some declmods, or
-	   declspecs.  */
+        /* This rule assumes a certain configuration of the parser stack.
+	   In particular, $0, the element directly before the beginning of
+	   this rule on the stack, must be a maybeasm.  $-1 must be a
+	   declarator or notype_declarator.  And $-2 must be some declmods
+	   or declspecs.  We can't move the maybeasm into this rule because
+	   we need that reduce so we prefer fn.def1 when appropriate.  */
 initdcl0_innards:
-	  maybeasm maybe_attribute '='
-		{ $<itype>3 = parse_decl ($<ttype>0, $<ttype>-1, 
-					   $2, 1, &$<ttype>$); }
+	  maybe_attribute '='
+		{ $<itype>2 = parse_decl ($<ttype>-1, $<ttype>-2, 
+					   $1, 1, &$<ttype>$); }
           /* Note how the declaration of the variable is in effect
 	     while its init is parsed! */ 
 	  init
-		{ cp_finish_decl ($<ttype>4, $5, $1, 1, LOOKUP_ONLYCONVERTING);
-		  $$ = $<itype>3; }
-	| maybeasm maybe_attribute
+		{ cp_finish_decl ($<ttype>3, $4, $<ttype>0, 1,
+				  LOOKUP_ONLYCONVERTING);
+		  $$ = $<itype>2; }
+	| maybe_attribute
 		{ tree d;
-		  $$ = parse_decl ($<ttype>0, $<ttype>-1, $2, 0, &d);
-		  cp_finish_decl (d, NULL_TREE, $1, 1, 0); }
+		  $$ = parse_decl ($<ttype>-1, $<ttype>-2, $1, 0, &d);
+		  cp_finish_decl (d, NULL_TREE, $<ttype>0, 1, 0); }
   	;
   
 initdcl0:
-	  declarator initdcl0_innards
-            { $$ = $2; }
+	  declarator maybeasm initdcl0_innards
+            { $$ = $3; }
   
 notype_initdcl0:
-          notype_declarator initdcl0_innards
-            { $$ = $2; }
+          notype_declarator maybeasm initdcl0_innards
+            { $$ = $3; }
         ;
   
 nomods_initdcl0:
-          notype_declarator 
+          notype_declarator maybeasm
             { /* Set things up as initdcl0_innards expects.  */
 	      $<ttype>$ = $1; 
               $1 = NULL_TREE; }

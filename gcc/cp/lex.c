@@ -1886,7 +1886,8 @@ do_pending_defargs ()
 	{
 	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
 	  pushlevel (0);
-	  maybe_begin_member_template_processing (defarg_fn);
+	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	    maybe_begin_member_template_processing (defarg_fn);
 
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    {
@@ -1914,7 +1915,8 @@ do_pending_defargs ()
 	    return;
 	  }
 
-      maybe_end_member_template_processing (defarg_fn);
+      if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	maybe_end_member_template_processing (defarg_fn);
       poplevel (0, 0, 0);
       pop_nested_class (1);
     }

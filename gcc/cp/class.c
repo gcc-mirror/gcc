@@ -4785,9 +4785,13 @@ pushclass (type, modify)
 
       if (type != previous_class_type || current_class_depth > 1)
 	{
+#ifdef MI_MATRIX
 	  build_mi_matrix (type);
 	  push_class_decls (type);
 	  free_mi_matrix ();
+#else
+	  push_class_decls (type);
+#endif
 	}
       else
 	{
