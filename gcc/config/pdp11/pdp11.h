@@ -104,11 +104,14 @@ extern int target_flags;
 /* split instruction and data memory? */ 			\
     { "split", 1024, "Target has split I&D" },			\
     { "no-split", -1024, "Target does not have split I&D" },	\
+/* UNIX assembler syntax?  */					\
+    { "unix-asm", 2048, "Use UNIX assembler syntax" },		\
+    { "dec-asm", 2048, "Use DEC assembler syntax" },		\
 /* default */			\
     { "", TARGET_DEFAULT, NULL}	\
 }
 
-#define TARGET_DEFAULT (1 | 8 | 128)
+#define TARGET_DEFAULT (1 | 8 | 128 | TARGET_UNIX_ASM_DEFAULT)
 
 #define TARGET_FPU 		(target_flags & 1)
 #define TARGET_SOFT_FLOAT 	(!TARGET_FPU)
@@ -135,6 +138,10 @@ extern int target_flags;
 
 #define TARGET_SPLIT		(target_flags & 1024)
 #define TARGET_NOSPLIT		(! TARGET_SPLIT)
+
+#define TARGET_UNIX_ASM		(target_flags & 2048)
+#define TARGET_UNIX_ASM_DEFAULT	0
+
 
 
 /* TYPE SIZES */
@@ -1070,7 +1077,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{"r0", "r1", "r2", "r3", "r4", "fp", "sp", "pc",     \
+{"r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc",     \
  "ac0", "ac1", "ac2", "ac3", "ac4", "ac5" }
 
 /* How to renumber registers for dbx and gdb.  */
@@ -1169,8 +1176,16 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  if ((LOG) != 0)			\
-    fprintf (FILE, "\t.align %d\n", 1<<(LOG))
+  switch (LOG)				\
+    {					\
+      case 0:				\
+	break;				\
+      case 1:				\
+	fprintf (FILE, "\t.even\n");	\
+	break;				\
+      default:				\
+	abort ();			\
+    }
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.=.+ %d\n", (SIZE))

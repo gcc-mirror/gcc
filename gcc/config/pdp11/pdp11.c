@@ -741,28 +741,20 @@ output_ascii (file, p, size)
 {
   int i;
 
-  fprintf (file, "\t.byte \"");
+  /* This used to output .byte "string", which doesn't work with the UNIX
+     assembler and I think not with DEC ones either.  */
+  fprintf (file, "\t.byte ");
 
   for (i = 0; i < size; i++)
     {
       register int c = p[i];
-      if (c == '\"' || c == '\\')
-	putc ('\\', file);
-      if (c >= ' ' && c < 0177)
-	putc (c, file);
-      else
-	{
-	  fprintf (file, "\\%03o", c);
-	  /* After an octal-escape, if a digit follows,
-	     terminate one string constant and start another.
-	     The Vax assembler fails to stop reading the escape
-	     after three digits, so this is the only way we
-	     can get it to parse the data properly.  */
-	  if (i < size - 1 && p[i + 1] >= '0' && p[i + 1] <= '9')
-	    fprintf (file, "\"\n\tstring \"");
-	}
+      if (c < 0)
+	c += 256;
+      fprintf (file, "%o", c);
+      if (i < size - 1)
+	putc (',', file);
     }
-  fprintf (file, "\"\n");
+  putc ('\n', file);
 }
 
 
@@ -781,7 +773,10 @@ print_operand_address (file, addr)
   switch (GET_CODE (addr))
     {
     case MEM:
-      fprintf (file, "@");
+      if (TARGET_UNIX_ASM)
+	fprintf (file, "*");
+      else
+	fprintf (file, "@");
       addr = XEXP (addr, 0);
       goto retry;
 

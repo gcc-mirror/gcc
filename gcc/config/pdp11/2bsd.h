@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for a PDP with 2BSD
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -85,3 +85,6 @@ do {							\
 ASM_OUTPUT_LABEL (STREAM, NAME);			\
 fprintf (STREAM, "~~%s:\n", NAME); 			\
 } while (0)
+
+#undef TARGET_UNIX_ASM_DEFAULT
+#define TARGET_UNIX_ASM_DEFAULT 2048
