@@ -393,6 +393,7 @@ emit_handlers ()
       emit_jump (funcend);
 
       emit_insns (catch_clauses);
+      catch_clauses = NULL_RTX;
       expand_leftover_cleanups ();
 
       emit_label (funcend);
