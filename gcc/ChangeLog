@@ -1,6 +1,81 @@
 2005-02-03  Leehod Baruch  <leehod@il.ibm.com>
 	    Dorit Naishlos  <dorit@il.ibm.com>
 
+	* tree-vectorizer.h (LOC): New type.
+	(UNKNOWN_LOC, EXPR_LOC, LOC_FILE, LOC_LINE): New macros.
+	(loop_line_number): New field in struct _loop_vec_info.
+	(LOOP_VINFO_LOC, LOOP_LOC): New macros.
+
+	* tree-vectorizer.c (input.h): Included.
+	(find_loop_location): New function.
+	(vect_debug_stats): Argument changed from loop to LOC. Computation of
+	loop line number removed.
+	(vect_debug_details): Likewise.
+	(new_loop_vec_info): Initialize new field LOOP_VINFO_LOC.
+
+	(slpeel_make_loop_iterate_ntimes): Call find_loop_location. Argument in
+	call to vect_debug_details/stats changed from loop to loop_loc.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+
+	(vect_analyze_offset_expr): Argument in call to vect_debug_details/stats
+	changed from NULL to UNKNOWN_LOC.
+	(vect_get_base_and_offset):
+	(vect_create_addr_base_for_vector_ref):
+	(get_vectype_for_scalar_type):
+	(vect_create_data_ref_ptr):
+	(vect_init_vector):
+	(vect_get_vec_def_for_operand):
+	(vect_finish_stmt_generation):
+	(vectorizable_assignment):
+	(vectorizable_operation):
+	(vectorizable_store):
+	(vectorizable_load):
+	(vect_transform_stmt):
+	(vect_update_ivs_after_vectorizer):
+	(vect_do_peeling_for_loop_bound):
+	(vect_do_peeling_for_alignment):
+	(vect_transform_loop):
+	(vect_is_simple_use):
+	(vect_analyze_operations):
+	(vect_is_simple_iv_evolution):
+	(vect_analyze_scalar_cycles):
+	(vect_analyze_data_ref_dependences):
+	(vect_compute_data_ref_alignment):
+	(vect_enhance_data_refs_alignment):
+	(vect_analyze_data_ref_access):
+	(vect_analyze_data_ref_accesses):
+	(vect_analyze_pointer_ref_access):
+	(vect_get_memtag_and_dr):
+	(vect_analyze_data_refs):
+	(vect_mark_relevant):
+	(vect_stmt_relevant_p):
+	(vect_mark_stmts_to_be_vectorized):
+	(vect_can_advance_ivs_p):
+	(vect_get_loop_niters):
+	(vect_analyze_loop):
+	(vectorize_loops): Likewise.
+
+	(vectorizable_load): Argument in call to vect_debug_details/stats
+	changed from loop to LOOP_LOC (loop_vinfo).
+	(vect_transform_loop):
+	(vect_analyze_operations):
+	(vect_analyze_scalar_cycles):
+	(vect_analyze_data_ref_dependence):
+	(vect_enhance_data_refs_alignment):
+	(vect_analyze_data_ref_accesses):
+	(vect_analyze_pointer_ref_access):
+	(vect_analyze_data_refs):
+	(vect_analyze_loop): Likewise.
+
+	(vect_analyze_loop_form): Argument in call to vect_debug_details/stats
+	changed from loop to loop_loc.
+
+	(vect_enhance_data_refs_alignment): Removed unused variable loop.	
+
+2005-02-03  Leehod Baruch  <leehod@il.ibm.com>
+	    Dorit Naishlos  <dorit@il.ibm.com>
+
 	* tree-vectorizer.c (vect_analyze_data_ref_dependence): Function
 	declaration added.
 	(vect_analyze_data_ref_dependences): Likewise.
