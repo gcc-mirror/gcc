@@ -1881,10 +1881,12 @@ objc-headers: stmp-fixinc
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
-	$(MAKE) -f $${srcdir1}/objc/Makefile copy-headers \
-	srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-	GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
-	GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include
+	if [ -f $${srcdir1}/objc/Makefile ]; then \
+	  $(MAKE) -f $${srcdir1}/objc/Makefile copy-headers \
+	  srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	  GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
+	  GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include; \
+	fi
 	touch objc-headers
 
 # Files related to the fixproto script.
