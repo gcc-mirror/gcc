@@ -1,3 +1,35 @@
+1999-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (CLEANUP_STMT): Fix spelling in dumps.
+	(TRY_BLOCK): Likewise.
+	(HANDLER): Likewise.
+	(START_CATCH_STMT): New tree node.
+	(SCOPE_STMT): Likewise.
+	* cp-tree.h (SCOPE_BEGIN_P): New macro.
+	(SCOPE_NULLIFIED_P): Likewise.
+	(struct lang_decl_flags): Add pending_inline_p.  Adjust dummy.
+	(struct lang_decl): Add saved_language_function.
+	(DECL_PENDING_INLINE_INFO): Adjust documentation.
+	(DECL_PENDING_INLINE_P): New macro.
+	(TYPE_TI_ARGS): Fix typo in comment.
+	(DECL_SAVED_TREE): Add to documentation.
+	(DECL_SAVED_FUNCTION_DATA): New macro.
+	(START_CATCH_TYPE): Likewise.
+	(SCOPE_END_P): New macro.
+	(declare_parm_level): Don't declare.
+	* decl.c (mark_lang_function): New function, split out from
+	mark_cp_function_context.
+	(save_function_data): New function.
+	(declare_parm_level): Remove.
+	(finish_function): Use save_function_data to squirrel away
+	important stuff for later use.
+	(mark_cp_function_context): Use mark_function_data.
+	(lang_mark_tree): Likewise.
+	* lex.c (begin_definition_of_inclass_inline): Set
+	DECL_PENDING_INLINE_P.
+	(store_pending_inline): Clear it.
+	* pt.c (tsubst_decl): Likewise.
+
 1999-09-17  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (perform_implicit_conversion): Deal with error_mark_node.

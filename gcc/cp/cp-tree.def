@@ -238,12 +238,22 @@ DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
 /* A CLEANUP_STMT marks the point at which a declaration is fully
    constructed.  If, after this point, the CLEANUP_DECL goes out of
    scope, the CLEANUP_EXPR must be run.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup", 'e', 2)
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 2)
+/* A START_CATCH_STMT marks the beginning of a catch handler for the
+   the START_CATCH_TYPE.  If this is CATCH_ALL_TYPE, then the handler
+   catches all types.  */
+DEFTREECODE (START_CATCH_STMT, "start_catch_stmt", 'e', 0)
+/* A SCOPE_STMT marks the beginning or end of a scope.  If
+   SCOPE_BEGIN_P holds, then this is the start of a scope.  If
+   SCOPE_END_P holds, then this is the end of a scope.  If
+   SCOPE_NULLIFIED_P holds then there turned out to be no variables in
+   this scope.  */
+DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 0)
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 2)
 DEFTREECODE (CASE_LABEL, "case_label", 'e', 2)
 DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
-DEFTREECODE (TRY_BLOCK, "try_stmt", 'e', 2)
-DEFTREECODE (HANDLER, "catch_stmt", 'e', 2)
+DEFTREECODE (TRY_BLOCK, "try_block", 'e', 2)
+DEFTREECODE (HANDLER, "handler", 'e', 2)
 
 /* A STMT_EXPR represents a statement-expression.  The
    STMT_EXPR_STMT is the statement given by the expression.  */
