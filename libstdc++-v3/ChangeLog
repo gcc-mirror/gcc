@@ -1,3 +1,16 @@
+2001-04-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Make sure required C99
+	support is enabled correctly before long long is activated.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
+	* include/backward/backward_warning.h: Format correctly.
+
+	* testsuite/26_numerics/c99_classification_macros_c.cc: Add.
+	* testsuite/26_numerics/c99_classification_macros_c++.cc: Add.
+	* testsuite/26_numerics/c99_macros.cc: Remove.
+	
 2001-04-20  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/stl_bvector.h:  Replace __ITERATOR_CATEGORY with

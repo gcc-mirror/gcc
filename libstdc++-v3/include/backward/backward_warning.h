@@ -29,10 +29,10 @@
 #define _CPP_BACKWARD_BACKWARD_WARNING_H 1
 
 #ifdef __DEPRECATED
-# warning "This file includes at least one deprecated or antiquated header."
-# warning "Please use the <X> file instead of <X.h> file for "C++" includes"
-# warning "and use the <cX> file instead of <X.h> file for "C" includes."
-# warning "To disable this warning use -Wno-deprecated."
+#warning This file includes at least one deprecated or antiquated header. \
+         Please use the <X> header instead of <X.h> header for 'C++' includes \
+         and use the <cX> header instead of <X.h> header for 'C' includes. \
+         To disable this warning use -Wno-deprecated.
 #endif
 
 #endif
