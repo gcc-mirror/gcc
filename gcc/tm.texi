@@ -810,9 +810,9 @@ the default value is @code{BIGGEST_ALIGNMENT}.
 
 @findex DATA_ALIGNMENT
 @item DATA_ALIGNMENT (@var{type}, @var{basic-align})
-If defined, a C expression to compute the alignment for a static
-variable.  @var{type} is the data type, and @var{basic-align} is the
-alignment that the object would ordinarily have.  The value of this
+If defined, a C expression to compute the alignment for a variables in
+the static store.  @var{type} is the data type, and @var{basic-align} is
+the alignment that the object would ordinarily have.  The value of this
 macro is used instead of that alignment to align the object.
 
 If this macro is not defined, then @var{basic-align} is used.

@@ -1275,6 +1275,42 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       strcpy (first_global_object_name, p);
     }
 
+  /* Compute the alignment of this data.  */
+
+  align = DECL_ALIGN (decl);
+
+  /* In the case for initialing an array whose length isn't specified,
+     where we have not yet been able to do the layout,
+     figure out the proper alignment now.  */
+  if (dont_output_data && DECL_SIZE (decl) == 0
+      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    align = MAX (align, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
+
+  /* Some object file formats have a maximum alignment which they support.
+     In particular, a.out format supports a maximum alignment of 4.  */
+#ifndef MAX_OFILE_ALIGNMENT
+#define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
+#endif
+  if (align > MAX_OFILE_ALIGNMENT)
+    {
+      warning_with_decl (decl,
+	  "alignment of `%s' is greater than maximum object file alignment");
+      align = MAX_OFILE_ALIGNMENT;
+    }
+
+  /* On some machines, it is good to increase alignment sometimes.  */
+#ifdef DATA_ALIGNMENT
+  align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
+#endif
+#ifdef CONSTANT_ALIGNMENT
+  if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
+    align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+#endif
+
+  /* Reset the alignment in case we have made it tighter, so we can benefit
+     from it in get_pointer_alignment.  */
+  DECL_ALIGN (decl) = align;
+
   /* Handle uninitialized definitions.  */
 
   if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
@@ -1464,42 +1500,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (in_section != saved_in_section)
     variable_section (decl, reloc);
 
-  /* Compute and output the alignment of this data.  */
-
-  align = DECL_ALIGN (decl);
-  /* In the case for initialing an array whose length isn't specified,
-     where we have not yet been able to do the layout,
-     figure out the proper alignment now.  */
-  if (dont_output_data && DECL_SIZE (decl) == 0
-      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    align = MAX (align, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
-
-  /* Some object file formats have a maximum alignment which they support.
-     In particular, a.out format supports a maximum alignment of 4.  */
-#ifndef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
-#endif
-  if (align > MAX_OFILE_ALIGNMENT)
-    {
-      warning_with_decl (decl,
-	  "alignment of `%s' is greater than maximum object file alignment");
-      align = MAX_OFILE_ALIGNMENT;
-    }
-#ifdef DATA_ALIGNMENT
-  /* On some machines, it is good to increase alignment sometimes.  */
-  align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
-#endif
-#ifdef CONSTANT_ALIGNMENT
-  if (DECL_INITIAL (decl))
-    align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
-#endif
-
-  /* Reset the alignment in case we have made it tighter, so we can benefit
-     from it in get_pointer_alignment.  */
-  DECL_ALIGN (decl) = align;
-
+  /* Output the alignment of this data.  */
   if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    ASM_OUTPUT_ALIGN (asm_out_file,
+		      floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT));
 
   /* Do any machine/system dependent processing of the object.  */
 #ifdef ASM_DECLARE_OBJECT_NAME
