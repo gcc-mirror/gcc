@@ -21,6 +21,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT 0
 #endif
 
+/* HPUX 7 has the old assembler.  */
+#define HP_FP_ARG_DESCRIPTOR_REVERSED
+
 #include "pa/pa.h"
 
 /* Make GCC agree with types.h.  */
