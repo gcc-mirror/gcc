@@ -545,7 +545,7 @@ static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
-			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+			%{L*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
 #else
 /* Use -L and have the linker do the search for -lgcc.  */
 static char *link_command_spec = "\
