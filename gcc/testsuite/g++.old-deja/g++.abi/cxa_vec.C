@@ -187,7 +187,7 @@ void test3 ()
     {
       // we expect to get here (via terminate)
       if (ctor_count || dtor_count || blocks != 1)
-        longjmp (jump, 3);
+	longjmp (jump, 3);
       longjmp (jump, -1);
     }
   return;

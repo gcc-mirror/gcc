@@ -42,5 +42,8 @@ track (int n)
   if (n == 0)
     trackpoint = stackpos;
   else if (n != 7 || trackpoint != stackpos)
-    abort ();
+    {
+      printf ("%d %p %p\n", n, trackpoint, stackpos);
+      abort ();
+    }
 }
