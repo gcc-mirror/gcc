@@ -1,5 +1,12 @@
 Mon Mar 23 23:26:42 1998  Philippe De Muyter  <phdm@macqel.be>
 
+	* m68k/m68k.md (zero_extendqidi2, zero_extendhidi2): New patterns.
+	(zero_extendsidi2): Avoid useless copy.
+	(iordi_zext): New pattern.
+	(iorsi_zexthi_ashl16): Pattern reworked to avoid "0" constraint for
+	operand 2.
+	(iorsi_zext): New name for old unnamed pattern; indentation fixes.
+
 	* m68k/m68k.md (ashldi_const): Allow shift count in range ]32,63].
 	(ashldi3): Allow constant shift count in range ]32,63].
 	(ashrdi_const, ashrid3, lshrdi_const, lshrdi3): Likewise.
