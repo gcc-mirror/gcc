@@ -1,3 +1,14 @@
+2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11617
+	* cp-tree.h (qualified_name_lookup_error): Declare.
+	* pt.c (tsubst_qualified_id): Use qualified_name_lookup_error for
+	errors.
+	(tsubst_expr) <DECL_STMT case>: Likewise.
+	(tsubst_copy_and_build) <COMPONENT_REF case>: Likewise.
+	* semantics.c (qualified_name_lookup_error): New, broken out of ...
+	(finish_id_expression): ... here. Use it.
+
 2003-07-25  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
 	* cfns.gperf: Add '%%' delimiter to placate gperf 3.0.

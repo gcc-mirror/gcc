@@ -15,4 +15,4 @@ template <typename T> struct C
     typedef typename A<T>::template B<U> X; // { dg-error "declared|invalid" }
 };
 
-C<void> c;			// { dg-error "instantiated" }
+C<void> c;

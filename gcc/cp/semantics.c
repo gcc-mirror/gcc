@@ -2248,6 +2248,24 @@ check_multiple_declarators (void)
     error ("multiple declarators in template declaration");
 }
 
+/* Issue a diagnostic that NAME cannot be found in SCOPE.  */
+
+void
+qualified_name_lookup_error (tree scope, tree name)
+{
+  if (TYPE_P (scope))
+    {
+      if (!COMPLETE_TYPE_P (scope))
+	error ("incomplete type `%T' used in nested name specifier", scope);
+      else
+	error ("`%D' is not a member of `%T'", name, scope);
+    }
+  else if (scope != global_namespace)
+    error ("`%D' is not a member of `%D'", name, scope);
+  else
+    error ("`::%D' has not been declared", name);
+}
+	      
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
    id-expression.  (See cp_parser_id_expression for details.)  SCOPE,
    if non-NULL, is the type or namespace used to explicitly qualify
@@ -2307,17 +2325,9 @@ finish_id_expression (tree id_expression,
 	  if (scope && (!TYPE_P (scope) || !dependent_type_p (scope)))
 	    {
 	      /* Qualified name lookup failed, and the qualifying name
-		 was not a dependent type.  That is always an
-		 error.  */
-	      if (TYPE_P (scope) && !COMPLETE_TYPE_P (scope))
-		error ("incomplete type `%T' used in nested name "
-		       "specifier",
-		       scope);
-	      else if (scope != global_namespace)
-		error ("`%D' is not a member of `%D'",
-		       id_expression, scope);
-	      else
-		error ("`::%D' has not been declared", id_expression);
+      		 was not a dependent type.  That is always an
+      		 error.  */
+	      qualified_name_lookup_error (scope, id_expression);
 	      return error_mark_node;
 	    }
 	  else if (!scope)
