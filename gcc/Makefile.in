@@ -2030,7 +2030,7 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(libsubdir)/cpp$(exeexy)
+	-rm -f $(libsubdir)/cpp$(exeext)
 	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
 
 # Install the info files.
