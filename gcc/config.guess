@@ -39,7 +39,7 @@ trap 'rm -f dummy.c dummy.o dummy; exit 1' 1 2 15
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     *:NetBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/-.*//'`
+	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*//'`
 	exit 0 ;;
     alpha:OSF1:1.*:*)
 	# 1.2 uses "1.2" for uname -r.
