@@ -123,7 +123,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Maths operation domain error number, EDOM */
 #define TARGET_EDOM 33
-#include "arm/arm.h"
+#include "arm/aout.h"
 
 /* The native RISCiX assembler does not support stabs of any kind; because
    the native assembler is not used by the compiler, Acorn didn't feel it was
