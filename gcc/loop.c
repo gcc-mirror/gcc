@@ -6550,7 +6550,42 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	  return 1;
 
 #ifdef HAVE_cc0
-      if (SET_DEST (x) == cc0_rtx && SET_SRC (x) == reg)
+      /* The idea here is to replace the SET of cc0 by a REG with
+	 a comparison involving related induction variables.
+	 Unfortunately, however, such a replacement does not work
+	 correctly if the REG is being used as signed and the
+	 replacement value is unsigned, or vice versa.  For
+	 example, in:
+
+	    for (int i = n; i >= 0; --i)
+	      s[i] = 3;
+
+	 `s' is an address (an unsigned quantity), while `i' is a
+	 signed quantity.  The exit test for the loop might look
+	 something like:
+
+	    (SET cc0 i)
+	    (JUMP (SET (PC) (IF_THEN_ELSE (LT (CC0) (CONST_INT 0))
+			     (LABEL_REF L) (PC))))
+
+	 If we replace the SET of cc0 with a comparison of the
+	 induction variable for `s + i' and the original value of `s',
+	 however, we should be change the comparison in the
+	 IF_THEN_ELSE to be unsigned.  Otherwise, an array the spans
+	 the boundary between "negative" and "positive" addresses will
+	 confuse us.
+
+	 There are related problems with overflow.  If an induction
+	 variable "wraps around" but the original value doest not, we
+	 can get confused when doing the comparison.
+
+	 Pointers can't wrap around, or overflow, in a conformant
+	 program.  Therefore, it's safe to do these optimizations if
+	 both the original REG and the values in the replacement are
+	 pointers.  For now, though, we just disable these
+	 optimizations.  */
+
+      if (0 && SET_DEST (x) == cc0_rtx && SET_SRC (x) == reg)
 	{
 	  /* Can replace with any giv that was reduced and
 	     that has (MULT_VAL != 0) and (ADD_VAL == 0).
