@@ -3070,11 +3070,51 @@ expand_float (to, from, unsignedp)
 	if (GET_MODE_BITSIZE (GET_MODE (from)) < GET_MODE_BITSIZE (fmode)
 	    && can_float_p (fmode, GET_MODE (from), 0) != CODE_FOR_nothing)
 	  break;
+
       if (fmode == VOIDmode)
 	{
-	  /* There is no such mode.  Pretend the target is wide enough.
-	     This may cause rounding problems, unfortunately.  */
+	  /* There is no such mode.  Pretend the target is wide enough.  */
 	  fmode = GET_MODE (to);
+
+	  /* Avoid double-rounding when TO is narrower than FROM. */
+	  if ((significand_size (fmode) + 1)
+	      < GET_MODE_BITSIZE (GET_MODE (from)))
+	    {
+	      rtx temp1;
+	      rtx neglabel = gen_label_rtx ();
+
+	      imode = GET_MODE (from);
+	      do_pending_stack_adjust ();
+
+	      /* Test whether the sign bit is set.  */
+	      emit_cmp_insn (from, const0_rtx, GE, NULL_RTX, imode, 0, 0);
+	      emit_jump_insn (gen_blt (neglabel));
+
+	      /* The sign bit is not set.  Convert as signed.  */
+	      expand_float (target, from, 0);
+	      emit_jump_insn (gen_jump (label));
+
+	      /* The sign bit is set.
+		 Convert to a usable (positive signed) value by shifting right
+		 one bit, while remembering if a nonzero bit was shifted
+		 out; i.e., compute  (from & 1) | (from >> 1).  */
+
+	      emit_label (neglabel);
+	      temp = expand_binop (imode, and_optab, from, const1_rtx,
+				    0, 1, 0);
+	      temp1 = expand_binop (imode, lshr_optab, from, const1_rtx,
+				   from, 1, 0);
+	      temp = expand_binop (imode, ior_optab, temp, temp1,
+				   temp, 1, 0);
+	      expand_float (target, temp, 0);
+
+	      /* Multiply by 2 to undo the shift above.  */
+	      target = expand_binop (fmode, add_optab, target, target,
+				   target, 0, 0);
+	      do_pending_stack_adjust ();
+	      emit_label (label);
+	      goto done;
+	    }
 	}
 
       /* If we are about to do some arithmetic to correct for an
@@ -3102,6 +3142,7 @@ expand_float (to, from, unsignedp)
 			   target, 0, OPTAB_LIB_WIDEN);
       if (temp != target)
 	emit_move_insn (target, temp);
+
       do_pending_stack_adjust ();
       emit_label (label);
     }
@@ -3182,6 +3223,8 @@ expand_float (to, from, unsignedp)
       emit_libcall_block (insns, target, value,
 			  gen_rtx (FLOAT, GET_MODE (to), from));
     }
+
+ done:
 
   /* Copy result to requested destination
      if we have been computing in a temp location.  */
