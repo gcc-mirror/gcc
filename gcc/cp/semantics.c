@@ -2079,20 +2079,28 @@ tree
 finish_typeof (expr)
      tree expr;
 {
+  tree type;
+
   if (processing_template_decl)
     {
-      tree t;
+      type = make_aggr_type (TYPEOF_TYPE);
+      TYPE_FIELDS (type) = expr;
 
-      t = make_aggr_type (TYPEOF_TYPE);
-      TYPE_FIELDS (t) = expr;
-
-      return t;
+      return type;
     }
 
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
 
-  return TREE_TYPE (expr);
+  type = TREE_TYPE (expr);
+
+  if (!type || type == unknown_type_node)
+    {
+      error ("type of `%E' is unknown", expr);
+      return error_mark_node;
+    }
+
+  return type;
 }
 
 /* Compute the value of the `sizeof' operator.  */
