@@ -3,7 +3,7 @@
 # subdirectories which conform to the old GCC configure mechanism
 # for such subdirectories.
 
-# Copyright (C) 1997 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -180,7 +180,7 @@ $program_transform_name/" \
 	rm Makefile.sed
 	echo 's|||' > Makefile.sed
 	echo "s|^target=.*$|target=${target}|" >> Makefile.sed
-	echo "s|^target_alias=.*$|target=${target_alias}|" >> Makefile.sed
+	echo "s|^target_alias=.*$|target_alias=${target_alias}|" >> Makefile.sed
 	echo "s|^xmake_file=.*$|xmake_file=${dep_host_xmake_file}|" >> Makefile.sed
 	echo "s|^tmake_file=.*$|tmake_file=${dep_tmake_file}|" >> Makefile.sed
 	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
