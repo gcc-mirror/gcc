@@ -139,5 +139,4 @@ Makefile: Makefile.in ../config.status
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 machname.h: ../specs
-	$(SHELL) $(srcdir)/gen-machname.h < ../specs > machname.T
-	mv -f machname.T machname.h
+	$(SHELL) $(srcdir)/genfixes $@

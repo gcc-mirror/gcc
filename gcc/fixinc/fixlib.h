@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 
 #include "gnu-regex.h"
+#include "machname.h"
 
 #ifndef STDIN_FILENO
 # define STDIN_FILENO   0
@@ -99,6 +100,8 @@ char * load_file_data _P_(( FILE* fp ));
 t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
 void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
 			    tCC *e1, tCC *e2 ));
-int    mn_get_regexps _P_(( regex_t** label_re, regex_t** name_re,
+#ifdef MN_NAME_PAT
+void   mn_get_regexps _P_(( regex_t** label_re, regex_t** name_re,
 			    tCC *who ));
+#endif
 #endif /* FIXINCLUDES_FIXLIB_H */
