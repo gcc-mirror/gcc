@@ -1,6 +1,8 @@
 2004-06-21  Jason Merrill  <jason@redhat.com>
 
-	* cp-gimplify.c (cp_gimplify_init_expr): Look throug
+	PR c++/16112
+	* cp-gimplify.c (cp_gimplify_init_expr): Look through
+	CLEANUP_POINT_EXPR.
 
 2004-06-21  Mark Mitchell  <mark@codesourcery.com>
 
