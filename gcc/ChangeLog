@@ -1,3 +1,7 @@
+Sun Mar 28 00:44:27 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.cps, cpp.cps: Delete unwanted files.
+
 Sat Mar 27 23:37:40 EST 1999  John Wehle  (john@feith.com)
 
 	* i386.md (movdicc+3, movdicc+4): Rewrite using split_di.
