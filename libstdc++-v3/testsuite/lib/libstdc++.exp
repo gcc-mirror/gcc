@@ -325,6 +325,7 @@ proc dg-test { args } {
     global tool
     global srcdir		;# eg: /calvin/dje/devo/gcc/./testsuite/
     global host_triplet target_triplet
+    global which_library
 
     set keep 0
     set i 0
@@ -410,6 +411,9 @@ proc dg-test { args } {
     rename unknown ""
     rename dg-save-unknown unknown
 
+    # Record the final set of flags, to tag log entries with.
+    set label "$which_library $tool_flags ${dg-extra-tool-flags}"
+
     # If we're not supposed to try this test on this target, we're done.
     if { [lindex ${dg-do-what} 1] == "N" } {
 	unsupported "$name"
@@ -457,28 +461,28 @@ proc dg-test { args } {
 	scan $line ${dg-linenum-format} line
 	switch [lindex $i 1] {
 	    "ERROR" {
-		$ok "$name $comment (test for errors, line $line), $tool_flags ${dg-extra-tool-flags}"
+		$ok "$name $comment (test for errors, line $line), $label"
 	    }
 	    "XERROR" {
-		x$ok "$name $comment (test for errors, line $line), $tool_flags ${dg-extra-tool-flags}"
+		x$ok "$name $comment (test for errors, line $line), $label"
 	    }
 	    "WARNING" {
-		$ok "$name $comment (test for warnings, line $line), $tool_flags ${dg-extra-tool-flags}"
+		$ok "$name $comment (test for warnings, line $line), $label"
 	    }
 	    "XWARNING" {
-		x$ok "$name $comment (test for warnings, line $line), $tool_flags ${dg-extra-tool-flags}"
+		x$ok "$name $comment (test for warnings, line $line), $label"
 	    }
 	    "BOGUS" {
-		$uhoh "$name $comment (test for bogus messages, line $line), $tool_flags ${dg-extra-tool-flags}"
+		$uhoh "$name $comment (test for bogus messages, line $line), $label"
 	    }
 	    "XBOGUS" {
-		x$uhoh "$name $comment (test for bogus messages, line $line), $tool_flags ${dg-extra-tool-flags}"
+		x$uhoh "$name $comment (test for bogus messages, line $line), $label"
 	    }
 	    "BUILD" {
-		$uhoh "$name $comment (test for build failure, line $line), $tool_flags ${dg-extra-tool-flags}"
+		$uhoh "$name $comment (test for build failure, line $line), $label"
 	    }
 	    "XBUILD" {
-		x$uhoh "$name $comment (test for build failure, line $line), $tool_flags ${dg-extra-tool-flags}"
+		x$uhoh "$name $comment (test for build failure, line $line), $label"
 	    }
 	    "EXEC" { }
 	    "XEXEC" { }
@@ -525,10 +529,10 @@ proc dg-test { args } {
 	    setup_xfail "*-*-*"
 	}
 	if ![string match "" $comp_output] {
-	    fail "$name (test for excess errors), $tool_flags ${dg-extra-tool-flags}"
+	    fail "$name (test for excess errors), $label"
 	    send_log "Excess errors:\n$comp_output\n"
 	} else {
-	    pass "$name (test for excess errors), $tool_flags ${dg-extra-tool-flags}"
+	    pass "$name (test for excess errors), $label"
 	}
     }
 
@@ -548,7 +552,7 @@ proc dg-test { args } {
 		setup_xfail "*-*-*"
 	    }
 	    if { "$status" == "pass" } {
-		pass "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+		pass "$name (execution test), $label"
 		verbose "Exec succeeded." 3
 		if { [llength ${dg-output-text}] > 1 } {
 		    #send_user "${dg-output-text}\n"
@@ -572,9 +576,9 @@ proc dg-test { args } {
 		} else {
 		    verbose "Exec failed, errorCode not defined!" 3
 		}
-		fail "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+		fail "$name (execution test), $label"
 	    } else {
-		$status "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+		$status "$name (execution test), $label"
 	    }
 	}
     }

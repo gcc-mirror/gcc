@@ -1,3 +1,10 @@
+2001-04-02  Zack Weinberg  <zackw@stanford.edu>
+
+	* testsuite/lib/libstdc++.exp (dg-test): Annotate result
+	messages with $which_library as well as $tool_flags and
+	${dg-extra-tool-flags}.  Factor out annotation text into
+	a single variable.
+
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	* config/os/aix/bits/ctype_base.h (mask): Use unsigned int.
