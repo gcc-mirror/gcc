@@ -9,9 +9,6 @@ namespace std
     template void
     __valarray_copy(const size_t* __restrict__, size_t, size_t* __restrict__);
 
-    template size_t
-    __valarray_product(const size_t* __restrict__, const size_t* __restrict__);
-
     template valarray<size_t>::valarray(size_t);
     template valarray<size_t>::valarray(const valarray<size_t>&);
     template valarray<size_t>::~valarray();
