@@ -100,7 +100,7 @@ extern int target_flags;
   { "soft-float",   -1, N_("Don't use hardware fp")},                  \
   { "backchain",     2, N_("Set backchain")},                          \
   { "no-backchain", -2, N_("Don't set backchain (faster, but debug harder")}, \
-  { "small-exec",    4, N_("Use bras for execucable < 64k")},          \
+  { "small-exec",    4, N_("Use bras for executable < 64k")},          \
   { "no-small-exec",-4, N_("Don't use bras")},                         \
   { "debug",         8, N_("Additional debug prints")},                \
   { "no-debug",     -8, N_("Don't print additional debug prints")},    \

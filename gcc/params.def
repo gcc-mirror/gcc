@@ -94,7 +94,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS,
    value specified by the "min-inline-insns" parameter.  */
 DEFPARAM (PARAM_MAX_INLINE_SLOPE,
 	  "max-inline-slope",
-	  "The slope of the linear funtion throttling inlining after the recursive inlining limit has been reached is given by the negative reciprocal value of this parameter",
+	  "The slope of the linear function throttling inlining after the recursive inlining limit has been reached is given by the negative reciprocal value of this parameter",
 	  32)
 
 /* When gcc has inlined so many instructions (by repeated

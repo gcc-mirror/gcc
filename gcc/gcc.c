@@ -3022,7 +3022,7 @@ display_help ()
   fputs (_("  -o <file>                Place the output into <file>\n"), stdout);
   fputs (_("\
   -x <language>            Specify the language of the following input files\n\
-                           Permissable languages include: c c++ assembler none\n\
+                           Permissible languages include: c c++ assembler none\n\
                            'none' means revert to the default behavior of\n\
                            guessing the language based on the file's extension\n\
 "), stdout);

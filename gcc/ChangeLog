@@ -1,3 +1,14 @@
+2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* c-pragma.c (maybe_apply_renaming_pragma): Fix typo.
+	* gcc.c (display_help): Likewise.
+	* toplev.c (f_options): Likewise.
+	* params.def (PARAM_MAX_INLINE_SCOPE): Likewise.
+	* config/c4x/c4x.h (TARGET_SWITCHES): Likewise.
+	* config/mcore/mcore.h (TARGET_SWITCHES): Likewise.
+	* config/s390/s390.h (TARGET_SWITCHES): Likewise.
+	* config/v850/v850.h (TARGET_SWITCHES): Likewise.
+
 2003-04-29  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* varasm.c (default_assemble_visibility): Use assemble_name.
