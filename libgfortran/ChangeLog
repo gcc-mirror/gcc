@@ -1,3 +1,7 @@
+2004-10-30  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+
+	*  intrinsics/system.c ("libgfortran.h"): Move after system headers.
+
 2004-10-30  Canqun Yang  <canqun@nudt.edu.cn>
 
 	* intrinsics/rand.c (irand): Handle NULL argument.
