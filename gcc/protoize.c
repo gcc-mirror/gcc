@@ -2540,8 +2540,8 @@ reverse_def_dec_list (hp)
      const hash_table_entry *hp;
 {
   file_info *file_p = hp->fip;
-  const def_dec_info *prev = NULL;
-  const def_dec_info *current = file_p->defs_decs;
+  def_dec_info *prev = NULL;
+  def_dec_info *current = file_p->defs_decs;
 
   if (!( current = file_p->defs_decs))
     return;        		/* no list to reverse */
@@ -2550,13 +2550,13 @@ reverse_def_dec_list (hp)
   if (! (current = current->next_in_file))
     return;        		/* can't reverse a single list element */
 
-  ((NONCONST def_dec_info *) prev)->next_in_file = NULL;
+  prev->next_in_file = NULL;
 
   while (current)
     {
-      const def_dec_info *next = current->next_in_file;
+      def_dec_info *next = current->next_in_file;
 
-      ((NONCONST def_dec_info *) current)->next_in_file = prev;
+      current->next_in_file = prev;
       prev = current;
       current = next;
     }
