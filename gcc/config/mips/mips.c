@@ -6039,7 +6039,8 @@ mips_global_pointer (void)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!regs_ever_live[regno]
 	  && call_used_regs[regno]
-	  && !fixed_regs[regno])
+	  && !fixed_regs[regno]
+	  && regno != PIC_FUNCTION_ADDR_REGNUM)
 	return regno;
 
   return GLOBAL_POINTER_REGNUM;

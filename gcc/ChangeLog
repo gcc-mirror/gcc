@@ -1,3 +1,7 @@
+2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_global_pointer): Don't try to use $25.
+
 2003-10-30  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/mips.c (mips_build_builtin_va_list): Use runtime
