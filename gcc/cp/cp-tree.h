@@ -2785,7 +2785,7 @@ extern tree convert_arg_to_ellipsis             PROTO((tree));
 extern int is_properly_derived_from             PROTO((tree, tree));
 extern tree initialize_reference                PROTO((tree, tree));
 extern tree strip_top_quals                     PROTO((tree));
-extern tree ncp_convert                         PROTO((tree, tree));
+extern tree perform_implicit_conversion         PROTO((tree, tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
