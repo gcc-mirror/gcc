@@ -4,8 +4,6 @@ CROSS_LIBGCC1 =
 
 EXTRA_PARTS = crti.o crtn.o
 
-EXTRA_HEADERS = $(srcdir)/ginclude/ppc-asm.h
-
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-sparclite]
 LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c ntstack.S
