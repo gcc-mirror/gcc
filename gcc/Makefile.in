@@ -949,10 +949,7 @@ STAGECOPYSTUFF = insn-flags.h insn-config.h insn-codes.h \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-gen.h
 
 # Files to be moved away after each stage in building.
-STAGEMOVESTUFF = *$(objext) \
- s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype \
- s-gtyp-gen s-output s-recog s-emit s-extract s-peep s-check s-conditions \
- s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
+STAGEMOVESTUFF = *$(objext) s-* \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
