@@ -146,6 +146,7 @@ set -e
 set +e
 
 test $do_html = yes && {
+    cp ${srcdir}/docs/doxygen/mainpage.html ${outdir}/html_${mode}/index.html
     echo ::
     echo :: HTML pages begin with
     echo :: ${outdir}/html_${mode}/index.html
