@@ -1,3 +1,8 @@
+2001-11-07  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_assignment): Removed unused third argument.
+	(java_complete_lhs): Removed unused third argument to patch_assignment.
+
 2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* lang.c: Include langhooks-def.h.
