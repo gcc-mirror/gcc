@@ -387,6 +387,7 @@ set_named_section_flags (section, flags)
       *slot = entry;
       entry->name = ggc_strdup (section);
       entry->flags = flags;
+      entry->declared = false;
     }
   else if (entry->flags != flags)
     return false;
