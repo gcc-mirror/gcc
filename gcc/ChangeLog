@@ -1,3 +1,8 @@
+Wed Feb 28 18:50:15 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Do post-reload splitting unconditionally
+	for STACK_REGS
+
 Wed Feb 28 18:47:37 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse_andti3, sse_nandti_3, sse_xorti3): Add SSE2 versions;
