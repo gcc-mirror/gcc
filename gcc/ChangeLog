@@ -1,3 +1,8 @@
+2002-05-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* optabs.c (expand_cmplxdiv_wide): Use complex_part_zero_p.
+	(expand_binop): Ditto (3 times).
+
 2002-05-19  Mark Mitchell  <mitchell@doubledemon.codesourcery.com>
 
 	* Makefile.in (distclean): Remove QMTest stuff.
