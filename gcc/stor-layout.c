@@ -924,14 +924,14 @@ make_signed_type (precision)
 		    ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
 		   (((HOST_WIDE_INT) (-1)
 		     << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-			 ? precision-HOST_BITS_PER_WIDE_INT - 1
+			 ? precision - HOST_BITS_PER_WIDE_INT - 1
 			 : 0))));
   TYPE_MAX_VALUE (type)
-    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0 
+    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
 		    ? -1 : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
 		   (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
 		    ? (((HOST_WIDE_INT) 1
-			<< (precision - HOST_BITS_PER_INT - 1)))-1
+			<< (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
 		    : 0));
 
   /* Give this type's extreme values this type as their type.  */
@@ -977,7 +977,7 @@ make_unsigned_type (precision)
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,
-   the lay it out.  Used when make_signed_type won't do
+   then lay it out.  Used when make_signed_type won't do
    because the tree code is not INTEGER_TYPE.
    E.g. for Pascal, when the -fsigned-char option is given.  */
 
@@ -988,14 +988,18 @@ fixup_signed_type (type)
   register int precision = TYPE_PRECISION (type);
 
   TYPE_MIN_VALUE (type)
-    = build_int_2 ((precision-BITS_PER_WORD > 0 ? 0 : (-1)<<(precision-1)),
-		   (-1)<<(precision-BITS_PER_WORD-1 > 0
-			  ? precision-BITS_PER_WORD-1
-			  : 0));
+    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
+		    ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
+		   (((HOST_WIDE_INT) (-1)
+		     << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+			 ? precision - HOST_BITS_PER_WIDE_INT - 1
+			 : 0))));
   TYPE_MAX_VALUE (type)
-    = build_int_2 ((precision-BITS_PER_WORD > 0 ? -1 : (1<<(precision-1))-1),
-		   (precision-BITS_PER_WORD-1 > 0
-		    ? (1<<(precision-BITS_PER_WORD-1))-1
+    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
+		    ? -1 : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
+		   (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+		    ? (((HOST_WIDE_INT) 1
+			<< (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
 		    : 0));
 
   TREE_TYPE (TYPE_MIN_VALUE (type)) = type;
@@ -1007,7 +1011,7 @@ fixup_signed_type (type)
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,
-   the lay it out.  This is used both in `make_unsigned_type'
+   then lay it out.  This is used both in `make_unsigned_type'
    and for enumeral types.  */
 
 void
@@ -1019,7 +1023,7 @@ fixup_unsigned_type (type)
   TYPE_MIN_VALUE (type) = build_int_2 (0, 0);
   TYPE_MAX_VALUE (type)
     = build_int_2 (precision - HOST_BITS_PER_WIDE_INT >= 0
-		   ? -1 : ((HOST_WIDE_INT) 1<< precision) - 1,
+		   ? -1 : ((HOST_WIDE_INT) 1 << precision) - 1,
 		   precision - HOST_BITS_PER_WIDE_INT > 0
 		   ? ((unsigned HOST_WIDE_INT) ~0
 		      >> (HOST_BITS_PER_WIDE_INT
