@@ -54,6 +54,7 @@ static struct gimplify_ctx
   tree conditional_cleanups;
   int conditions;
   tree exit_label;
+  tree return_temp;
   varray_type case_labels;
   /* The formal temporary table.  Should this be persistent?  */
   htab_t temp_htab;
@@ -888,7 +889,7 @@ static enum gimplify_status
 gimplify_return_expr (tree stmt, tree *pre_p)
 {
   tree ret_expr = TREE_OPERAND (stmt, 0);
-  tree result;
+  tree result_decl, result;
 
   if (!ret_expr || TREE_CODE (ret_expr) == RESULT_DECL)
     return GS_ALL_DONE;
@@ -897,24 +898,51 @@ gimplify_return_expr (tree stmt, tree *pre_p)
     return GS_ERROR;
 
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
-    result = NULL_TREE;
+    result_decl = NULL_TREE;
   else
     {
-      result = TREE_OPERAND (ret_expr, 0);
+      result_decl = TREE_OPERAND (ret_expr, 0);
 #ifdef ENABLE_CHECKING
       if ((TREE_CODE (ret_expr) != MODIFY_EXPR
 	   && TREE_CODE (ret_expr) != INIT_EXPR)
-	  || TREE_CODE (result) != RESULT_DECL)
+	  || TREE_CODE (result_decl) != RESULT_DECL)
 	abort ();
 #endif
     }
 
-  /* We need to pass the full MODIFY_EXPR down so that special handling
-     can replace it with something else.  */
+  /* If aggregate_value_p is true, then we can return the bare RESULT_DECL.
+     Recall that aggregate_value_p is FALSE for any aggregate type that is
+     returned in registers.  If we're returning values in registers, then
+     we don't want to extend the lifetime of the RESULT_DECL, particularly
+     across another call.  In addition, for those aggregates for which 
+     hard_function_value generates a PARALLEL, we'll abort during normal
+     expansion of structure assignments; there's special code in expand_return
+     to handle this case that does not exist in expand_expr.  */
+  if (!result_decl
+      || aggregate_value_p (result_decl, TREE_TYPE (current_function_decl)))
+    result = result_decl;
+  else if (gimplify_ctxp->return_temp)
+    result = gimplify_ctxp->return_temp;
+  else
+    {
+      result = create_tmp_var (TREE_TYPE (result_decl), NULL);
+      gimplify_ctxp->return_temp = result;
+    }
+
+  /* Smash the lhs of the MODIFY_EXPR to the temporary we plan to use.
+     Then gimplify the whole thing.  */
+  if (result != result_decl)
+    TREE_OPERAND (ret_expr, 0) = result;
   gimplify_stmt (&TREE_OPERAND (stmt, 0));
   append_to_statement_list (TREE_OPERAND (stmt, 0), pre_p);
 
-  TREE_OPERAND (stmt, 0) = result;
+  /* If we didn't use a temporary, then the result is just the result_decl.
+     Otherwise we need a simple copy.  This should already be gimple.  */
+  if (result == result_decl)
+    ret_expr = result;
+  else
+    ret_expr = build (MODIFY_EXPR, TREE_TYPE (result), result_decl, result);
+  TREE_OPERAND (stmt, 0) = ret_expr;
 
   return GS_ALL_DONE;
 }
