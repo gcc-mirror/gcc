@@ -1,3 +1,9 @@
+2004-06-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR rtl-optimization/15717
+	* config/i386/i386.c (legitimate_constant_p): Do not allow
+	x - symbol_ref.
+
 2004-06-07  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/15569
