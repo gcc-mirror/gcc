@@ -2156,6 +2156,12 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   rtx adjusted_op0 = op0;
   optab optab1, optab2;
 
+  /* We shouldn't be called with op1 == const1_rtx, but some of the
+     code below will malfunction if we are, so check here and handle
+     the special case if so.  */
+  if (op1 == const1_rtx)
+    return rem_flag ? const0_rtx : op0;
+
   /* Don't use the function value register as a target
      since we have to read it as well as write it,
      and function-inlining gets confused by this.  */
@@ -2273,7 +2279,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
     case TRUNC_DIV_EXPR:
       if (log >= 0 && ! unsignedp)
 	{
-	  rtx label = gen_label_rtx ();
 	  if (! can_clobber_op0)
 	    {
 	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
@@ -2282,11 +2287,32 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		 which will screw up mem refs for autoincrements.  */
 	      op0 = force_reg (compute_mode, op0);
 	    }
-	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
-			 NULL_RTX, compute_mode, 0, 0);
-	  emit_jump_insn (gen_bge (label));
-	  expand_inc (adjusted_op0, plus_constant (op1, -1));
-	  emit_label (label);
+	  /* Here we need to add OP1-1 if OP0 is negative, 0 otherwise.
+	     This can be computed without jumps by arithmetically shifting
+	     OP0 right LOG-1 places and then shifting right logically
+	     SIZE-LOG bits.  The resulting value is unconditionally added
+	     to OP0.  */
+	  if (log == 1 || BRANCH_COST >= 3)
+	    {
+	      rtx temp = gen_reg_rtx (compute_mode);
+	      temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
+	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
+				   build_int_2 (log - 1, 0), NULL_RTX, 0);
+	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
+				   build_int_2 (GET_MODE_BITSIZE (mode) - log,
+						0),
+				   temp, 1);
+	      expand_inc (adjusted_op0, temp);
+	    }
+	  else
+	    {
+	      rtx label = gen_label_rtx ();
+	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
+			     NULL_RTX, compute_mode, 0, 0);
+	      emit_jump_insn (gen_bge (label));
+	      expand_inc (adjusted_op0, plus_constant (op1, -1));
+	      emit_label (label);
+	    }
 	  mod_insn_no_good = 1;
 	}
       break;
@@ -2364,12 +2390,28 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			      integer_one_node, NULL_RTX, 0);
 	  if (! unsignedp)
 	    {
-	      rtx label = gen_label_rtx ();
-	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, NULL_RTX,
-			     compute_mode, 0, 0);
-	      emit_jump_insn (gen_bge (label));
-	      expand_unop (compute_mode, neg_optab, op1, op1, 0);
-	      emit_label (label);
+	      if (BRANCH_COST >= 2)
+		{
+		  /* Negate OP1 if OP0 < 0.  Do this by computing a temporary
+		     that has all bits equal to the sign bit and exclusive
+		     or-ing it with OP1.  */
+		  rtx temp = gen_reg_rtx (compute_mode);
+		  temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
+		  temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
+				       build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
+				       NULL_RTX, 0);
+		  op1 = expand_binop (compute_mode, xor_optab, op1, temp, op1,
+				      unsignedp, OPTAB_LIB_WIDEN);
+		}
+	      else
+		{
+		  rtx label = gen_label_rtx ();
+		  emit_cmp_insn (adjusted_op0, const0_rtx, GE, NULL_RTX,
+				 compute_mode, 0, 0);
+		  emit_jump_insn (gen_bge (label));
+		  expand_unop (compute_mode, neg_optab, op1, op1, 0);
+		  emit_label (label);
+		}
 	    }
 	  expand_inc (adjusted_op0, op1);
 	}
