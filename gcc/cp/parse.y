@@ -211,7 +211,7 @@ empty_parms ()
 %type <ttype> component_declarator component_declarator0
 %type <ttype> notype_component_declarator notype_component_declarator0
 %type <ttype> after_type_component_declarator after_type_component_declarator0
-%type <ttype> enumlist enumerator
+%type <ttype> enumlist_opt enumlist enumerator
 %type <ttype> absdcl cv_qualifiers
 %type <ttype> direct_abstract_declarator conversion_declarator
 %type <ttype> new_declarator direct_new_declarator
@@ -2104,31 +2104,23 @@ structsp:
 		{ $<itype>3 = suspend_momentary ();
 		  $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum ($2); }
-	  enumlist maybecomma_warn '}'
+	  enumlist_opt '}'
 		{ TYPE_VALUES (current_enum_type) = $5;
 		  $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>4;
 		  resume_momentary ((int) $<itype>3);
 		  check_for_missing_semicolon ($$.t); }
-	| ENUM identifier '{' '}'
-		{ $$.t = finish_enum (start_enum ($2));
-		  $$.new_type_flag = 1;
-		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{'
 		{ $<itype>2 = suspend_momentary ();
 		  $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum (make_anon_name ()); }
-	  enumlist maybecomma_warn '}'
+	  enumlist_opt '}'
                 { TYPE_VALUES (current_enum_type) = $4;
 		  $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>3;
 		  resume_momentary ((int) $<itype>1);
-		  check_for_missing_semicolon ($$.t); }
-	| ENUM '{' '}'
-		{ $$.t = finish_enum (start_enum (make_anon_name()));
-		  $$.new_type_flag = 1;
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM identifier
 		{ $$.t = xref_tag (enum_type_node, $2, 1); 
@@ -2679,6 +2671,12 @@ notype_component_declarator:
 	| ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
 		  cplus_decl_attributes ($$, $3, prefix_attributes); }
+	;
+
+enumlist_opt:
+	  enumlist maybecomma_warn
+	| maybecomma_warn
+	  { $$ = NULL_TREE; }
 	;
 
 /* We chain the enumerators in reverse order.

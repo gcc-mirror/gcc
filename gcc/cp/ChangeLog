@@ -1,3 +1,9 @@
+1999-08-03  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (start_enum): Show location of previous definition.
+	* parse.y (enumlist_opt): New reduction.
+	(structsp): Simplify enum rules to use enumlist_opt.
+
 1999-08-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (yyprint): Handle PFUNCNAME.
