@@ -2051,7 +2051,7 @@ alpha_expand_block_clear (operands)
     {
       words = bytes / 8;
 
-      alpha_expand_unaligned_store_words (NULL, orig_dst, words);
+      alpha_expand_unaligned_store_words (NULL, orig_dst, words, 0);
 
       bytes -= words * 8;
       ofs = words * 8;
