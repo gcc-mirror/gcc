@@ -8,6 +8,15 @@
 
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/avr/avr.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP):
+	Call abort instead of fatal.
+	(TRAMPOLINE_TEMPLATE): Call internal_error instead of fatal.
+	* config/dsp16xx/dsp16xx.h (FUNCTION_PROFILER): Likewise.
+	(FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER): Likewise.
+	(TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE): Likewise.
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Likewise.
+	* config/rs6000/rs6000.h (RETURN_ADDRESS_OFFSET): Likewise.
+
 	* diagnostic.h (set_internal_error_function): Renamed.
 	* toplev.h (internal_error): Renamed from fatal.
 	(pfatal_with_name): Deleted.

@@ -1,6 +1,5 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-
    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -2695,7 +2694,7 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
   if (REGNO > 31)				\
-    fatal("regno error in push");		\
+    abort ();					\
   fprintf (STREAM, "\tpush\tr%d", REGNO);	\
 }
 /* A C expression to output to STREAM some assembler code which will
@@ -2705,7 +2704,7 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO)	\
 {						\
   if (REGNO > 31)				\
-    fatal("regno error in pop");		\
+    abort ();					\
   fprintf (STREAM, "\tpop\tr%d", REGNO);	\
 }
 /* A C expression to output to STREAM some assembler code which will
@@ -2896,7 +2895,8 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 
 
-#define TRAMPOLINE_TEMPLATE(FILE) fatal ("Trampolines not supported\n")
+#define TRAMPOLINE_TEMPLATE(FILE) \
+  internal_error ("Trampolines not supported\n")
 
 /* Length in units of the trampoline for entering a nested function.  */
 
