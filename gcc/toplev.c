@@ -3021,10 +3021,14 @@ main (argc, argv, envp)
 		      if (*endp >= '0' && *endp <= '9')
 			endp++;
 		      else
-			error ("Invalid option `%s'", argv[i]);
+			{
+			  error ("Invalid option `%s'", argv[i]);
+			  goto id_clash_lose;
+			}
 		    }
 		  warn_id_clash = 1;
 		  id_clash_len = atoi (str + 10);
+		id_clash_lose: ;
 		}
 	      else
 		error ("Invalid option `%s'", argv[i]);
