@@ -456,9 +456,8 @@ java::lang::String::init(jcharArray chars, jint offset, jint count,
     }
   else
     {
-      JvAssert (offset == 0);
       array = chars;
-      pdst = elements (array);
+      pdst = &(elements(array)[offset]);
     }
 
   data = array;
