@@ -2749,9 +2749,14 @@ finish_file (void)
 	     calling import_export_decl will make an inline template
 	     instantiation "static", which will result in errors about
 	     the use of undefined functions if there is no body for
-	     the function.  */
+	     the function.  In fact, all the functions in this list
+	     *should* have a body.  */
 	  if (!DECL_SAVED_TREE (decl))
-	    continue;
+	    {
+	      if (! DECL_DECLARED_INLINE_P (decl) || ! TREE_USED (decl))
+		abort ();
+	      continue;
+	    }
 
 	  import_export_decl (decl);
 
@@ -2776,7 +2781,6 @@ finish_file (void)
 	     gotten around to synthesizing yet.)  */
 	  if (!DECL_EXTERNAL (decl)
 	      && DECL_NEEDED_P (decl)
-	      && DECL_SAVED_TREE (decl)
 	      && !TREE_ASM_WRITTEN (decl)
 	      && (!flag_unit_at_a_time 
 		  || !cgraph_node (decl)->local.finalized))
