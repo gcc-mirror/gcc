@@ -3765,7 +3765,10 @@ finish_decl (decl, init, asmspec_tree)
       else
 	{
 	  if (asmspec)
-	    DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+	    {
+	      DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+	      DECL_C_HARD_REGISTER (decl) = 1;
+	    }
 	  add_decl_stmt (decl);
 	}
 

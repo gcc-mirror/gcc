@@ -313,9 +313,9 @@ emit_local_var (decl)
   /* Create RTL for this variable.  */
   if (!DECL_RTL (decl))
     {
-      if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-	/* The user must have specified an assembler name for this
-	   variable.  Set that up now.  */
+      if (DECL_C_HARD_REGISTER (decl))
+	/* The user specified an assembler name for this variable.
+	   Set that up now.  */
 	rest_of_decl_compilation
 	  (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 	   /*top_level=*/0, /*at_end=*/0);
