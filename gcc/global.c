@@ -251,7 +251,7 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare	PROTO((int *, int *));
+static int allocno_compare	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void global_conflicts	PROTO((void));
 static void expand_preferences	PROTO((void));
 static void prune_preferences	PROTO((void));
@@ -584,27 +584,29 @@ global_alloc (file)
    Returns -1 (1) if *v1 should be allocated before (after) *v2.  */
 
 static int
-allocno_compare (v1, v2)
-     int *v1, *v2;
+allocno_compare (v1p, v2p)
+     const GENERIC_PTR v1p;
+     const GENERIC_PTR v2p;
 {
+  int v1 = *(int *)v1p, v2 = *(int *)v2p;
   /* Note that the quotient will never be bigger than
      the value of floor_log2 times the maximum number of
      times a register can occur in one insn (surely less than 100).
      Multiplying this by 10000 can't overflow.  */
   register int pri1
-    = (((double) (floor_log2 (allocno_n_refs[*v1]) * allocno_n_refs[*v1])
-	/ allocno_live_length[*v1])
-       * 10000 * allocno_size[*v1]);
+    = (((double) (floor_log2 (allocno_n_refs[v1]) * allocno_n_refs[v1])
+	/ allocno_live_length[v1])
+       * 10000 * allocno_size[v1]);
   register int pri2
-    = (((double) (floor_log2 (allocno_n_refs[*v2]) * allocno_n_refs[*v2])
-	/ allocno_live_length[*v2])
-       * 10000 * allocno_size[*v2]);
+    = (((double) (floor_log2 (allocno_n_refs[v2]) * allocno_n_refs[v2])
+	/ allocno_live_length[v2])
+       * 10000 * allocno_size[v2]);
   if (pri2 - pri1)
     return pri2 - pri1;
 
   /* If regs are equally good, sort by allocno,
      so that the results of qsort leave nothing to chance.  */
-  return *v1 - *v2;
+  return v1 - v2;
 }
 
 /* Scan the rtl code and record all conflicts and register preferences in the
