@@ -775,8 +775,6 @@ c_lex (value)
       *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok.val.node));
       break;
 
-    case CPP_INT:
-    case CPP_FLOAT:
     case CPP_NUMBER:
       *value = lex_number ((const char *)tok.val.str.text, tok.val.str.len);
       break;

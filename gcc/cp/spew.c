@@ -340,8 +340,6 @@ read_token (t)
       t->yychar = read_process_identifier (&t->yylval);
       break;
 
-    case CPP_INT:
-    case CPP_FLOAT:
     case CPP_NUMBER:
     case CPP_CHAR:
     case CPP_WCHAR:
@@ -1490,9 +1488,7 @@ yyerror (msgid)
   else if (last_token == CPP_STRING
 	   || last_token == CPP_WSTRING)
     error ("%s before string constant", string);
-  else if (last_token == CPP_NUMBER
-	   || last_token == CPP_INT
-	   || last_token == CPP_FLOAT)
+  else if (last_token == CPP_NUMBER)
     error ("%s before numeric constant", string);
   else if (last_token == CPP_NAME)
     {
