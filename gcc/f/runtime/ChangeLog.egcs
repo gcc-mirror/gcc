@@ -1,3 +1,7 @@
+Tue Aug 26 20:14:08 1997  Robert Lipe  (robertl@dgii.com)
+
+	* hostnm_.c: Include errno.h
+
 Mon Aug 25 23:26:05 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* Makefile.in (mostlyclean, clean): Check if Makefile exists
