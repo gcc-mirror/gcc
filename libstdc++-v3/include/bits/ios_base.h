@@ -414,7 +414,7 @@ namespace std
     }
 
     // Destructor
-    ~ios_base();
+    virtual ~ios_base();
 
   protected:
     ios_base();

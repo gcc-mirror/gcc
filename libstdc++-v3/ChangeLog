@@ -1,3 +1,8 @@
+2002-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/8463
+	* include/bits/ios_base.h (~ios_base): Make virtual.
+
 2002-11-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Export string operator+.
