@@ -1,3 +1,24 @@
+2003-11-24  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/BoxLayout.java
+	(serialVersionUIR): New member variable.
+	(X_AXIS, Y_AXIS): Documentation added.
+	(LINE_AXIS, PAGE_AXIS): New constants.
+	(grid): Renamed from gridbag.
+	(BoxLayout): Use new constants, throw exception if invalid value for
+	way, added documentation.
+	(BoxLayout): Removed.
+	(addLayoutComponent): Use new constants, added documentation.
+	(removeLayoutComponent): Likewise.
+	(addLayoutContainer): Added documentation.
+	(preferredLayoutSize): Added documentation, check given argument.
+	(minimumLayoutSize): Likewise.
+	(layoutContainer): Likewise.
+	(getLayoutAlignmentX): Likewise.
+	(getLayoutAlignmentY): Likewise.
+	(invalidateLayout): Likewise.
+	(maximumLayoutSize): Likewise.
+
 2003-11-22  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/natPlainDatagramSocketImplWin32.cc
