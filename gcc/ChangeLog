@@ -1,3 +1,10 @@
+2002-02-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (init_dependency_output): Take deps output file
+	from -o if none given with -MF.  Suppress normal output.
+	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.	
+	* doc/cpp.texi, doc/invoke.texi: Update.
+
 2002-02-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* toplev.c (output_quoted_string): Write unprintable

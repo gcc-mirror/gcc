@@ -1084,7 +1084,7 @@ output_deps (pfile)
   const char *const deps_mode =
     CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
 
-  if (CPP_OPTION (pfile, deps_file) == 0)
+  if (CPP_OPTION (pfile, deps_file)[0] == '\0')
     deps_stream = stdout;
   else
     {
@@ -1835,7 +1835,8 @@ cpp_post_options (pfile)
     cpp_fatal (pfile, "you must additionally specify either -M or -MM");
 }
 
-/* Set up dependency-file output.  */
+/* Set up dependency-file output.  On exit, if print_deps is non-zero
+   then deps_file is not NULL; stdout is the empty string.  */
 static void
 init_dependency_output (pfile)
      cpp_reader *pfile;
@@ -1874,21 +1875,22 @@ init_dependency_output (pfile)
       else
 	output_file = spec;
 
-      /* Command line overrides environment variables.  */
-      if (CPP_OPTION (pfile, deps_file) == 0)
-	CPP_OPTION (pfile, deps_file) = output_file;
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
+  else
+    /* If -M or -MM was seen, default output to wherever was specified
+       with -o.  out_fname is non-NULL here.  */
+    output_file = CPP_OPTION (pfile, out_fname);
 
-  /* If dependencies go to standard output, or -MG is used, we should
-     suppress output, including -dM, -dI etc.  */
-  if (CPP_OPTION (pfile, deps_file) == 0
-      || CPP_OPTION (pfile, print_deps_missing_files))
-    {
-      CPP_OPTION (pfile, no_output) = 1;
-      CPP_OPTION (pfile, dump_macros) = 0;
-      CPP_OPTION (pfile, dump_includes) = 0;
-    }
+  /* Command line -MF overrides environment variables and default.  */
+  if (CPP_OPTION (pfile, deps_file) == 0)
+    CPP_OPTION (pfile, deps_file) = output_file;
+
+  /* When doing dependencies, we should suppress all output, including
+     -dM, -dI etc.  */
+  CPP_OPTION (pfile, no_output) = 1;
+  CPP_OPTION (pfile, dump_macros) = 0;
+  CPP_OPTION (pfile, dump_includes) = 0;
 }
 
 /* Handle --help output.  */
