@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 88, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2153,34 +2153,6 @@ do { long l;						\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
-/* Define functions defined in aux-output.c and used in templates.  */
-
-extern char *output_move_const_into_data_reg ();
-extern char *output_move_simode_const ();
-extern char *output_move_simode ();
-extern char *output_move_himode ();
-extern char *output_move_qimode ();
-extern char *output_move_stricthi ();
-extern char *output_move_strictqi ();
-extern char *output_move_double ();
-extern char *output_move_const_single ();
-extern char *output_move_const_double ();
-extern char *output_btst ();
-extern char *output_scc_di ();
-extern char *output_addsi3 ();
-extern char *output_andsi3 ();
-extern char *output_iorsi3 ();
-extern char *output_xorsi3 ();
-extern void output_dbcc_and_branch ();
-extern int const_uint32_operand ();
-extern int const_sint32_operand ();
-extern int floating_exact_log2 ();
-extern int not_sp_operand ();
-extern int valid_dbcc_comparison_p ();
-extern int extend_operator ();
-extern int flags_in_68881 ();
-extern int strict_low_part_peephole_ok ();
-
 /* Variables in m68k.c */
 extern const char *m68k_align_loops_string;
 extern const char *m68k_align_jumps_string;
@@ -2189,20 +2161,6 @@ extern int m68k_align_loops;
 extern int m68k_align_jumps;
 extern int m68k_align_funcs;
 extern int m68k_last_compare_had_fp_operands;
-
-/* Functions from m68k.c used in macros.  */
-extern int symbolic_operand ();
-extern int const_int_cost ();
-extern int standard_68881_constant_p ();
-extern int standard_sun_fpa_constant_p ();
-extern void output_function_prologue ();
-extern void output_function_epilogue ();
-extern int use_return_insn ();
-extern void print_operand_address ();
-extern void print_operand ();
-extern void notice_update_cc ();
-extern void finalize_pic ();
-extern void override_options ();
 
 
 /*

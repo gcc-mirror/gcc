@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93-99, 2000 Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
@@ -376,14 +376,14 @@ dtors_section ()							\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\t%s 0x%x,0x%x\n", ASM_LONG, l[0], l[1]); \
+     fprintf (FILE, "\t%s 0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]); \
    } while (0)
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\t%s 0x%x,0x%x,0x%x\n", ASM_LONG, l[0], l[1], l[2]);	\
+     fprintf (FILE, "\t%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -392,7 +392,7 @@ do { long l[3];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
 do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\t%s 0x%x\n", ASM_LONG, l);	\
+     fprintf ((FILE), "\t%s 0x%lx\n", ASM_LONG, l);	\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -522,7 +522,7 @@ do { long l;					\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
-  sprintf ((LABEL), "%s%s%d", LOCAL_LABEL_PREFIX, (PREFIX), (NUM))
+  sprintf ((LABEL), "%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

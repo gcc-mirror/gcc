@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
@@ -51,9 +52,9 @@ enum reg_class regno_reg_class[]
    if SGS_SWITCH_TABLE.  */
 int switch_table_difference_label_flag;
 
-static rtx find_addr_reg ();
-rtx legitimize_pic_address ();
-void print_operand_address ();
+static rtx find_addr_reg PARAMS ((rtx));
+rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
+static const char *singlemove_string PARAMS ((rtx *));
 
 
 /* Alignment to use for loops and jumps */
@@ -1030,7 +1031,7 @@ output_dbcc_and_branch (operands)
     }
 }
 
-char *
+const char *
 output_scc_di(op, operand1, operand2, dest)
      rtx op;
      rtx operand1;
@@ -1217,7 +1218,7 @@ output_scc_di(op, operand1, operand2, dest)
   return "";
 }
 
-char *
+const char *
 output_btst (operands, countop, dataop, insn, signpos)
      rtx *operands;
      rtx countop, dataop;
@@ -1404,9 +1405,11 @@ legitimize_pic_address (orig, mode, reg)
 
 typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ } CONST_METHOD;
 
+static CONST_METHOD const_method PARAMS ((rtx));
+
 #define USE_MOVQ(i)	((unsigned)((i) + 128) <= 255)
 
-CONST_METHOD
+static CONST_METHOD
 const_method (constant)
      rtx constant;
 {
@@ -1462,7 +1465,7 @@ const_int_cost (constant)
     }
 }
 
-char *
+const char *
 output_move_const_into_data_reg (operands)
      rtx *operands;
 {
@@ -1515,7 +1518,7 @@ output_move_const_into_data_reg (operands)
     }
 }
 
-char *
+const char *
 output_move_simode_const (operands)
      rtx *operands;
 {
@@ -1546,7 +1549,7 @@ output_move_simode_const (operands)
   return "move%.l %1,%0";
 }
 
-char *
+const char *
 output_move_simode (operands)
      rtx *operands;
 {
@@ -1563,7 +1566,7 @@ output_move_simode (operands)
   return "move%.l %1,%0";
 }
 
-char *
+const char *
 output_move_himode (operands)
      rtx *operands;
 {
@@ -1632,7 +1635,7 @@ output_move_himode (operands)
   return "move%.w %1,%0";
 }
 
-char *
+const char *
 output_move_qimode (operands)
      rtx *operands;
 {
@@ -1706,7 +1709,7 @@ output_move_qimode (operands)
   return "move%.b %1,%0";
 }
 
-char *
+const char *
 output_move_stricthi (operands)
      rtx *operands;
 {
@@ -1719,7 +1722,7 @@ output_move_stricthi (operands)
   return "move%.w %1,%0";
 }
 
-char *
+const char *
 output_move_strictqi (operands)
      rtx *operands;
 {
@@ -1735,7 +1738,7 @@ output_move_strictqi (operands)
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
-static char *
+static const char *
 singlemove_string (operands)
      rtx *operands;
 {
@@ -1752,7 +1755,7 @@ singlemove_string (operands)
 /* Output assembler code to perform a doubleword move insn
    with operands OPERANDS.  */
 
-char *
+const char *
 output_move_double (operands)
      rtx *operands;
 {
@@ -2130,7 +2133,7 @@ find_addr_reg (addr)
 
 /* Output assembler code to perform a 32 bit 3 operand add.  */
 
-char *
+const char *
 output_addsi3 (operands)
      rtx *operands;
 {
@@ -2336,7 +2339,7 @@ notice_update_cc (exp, insn)
     cc_status.flags = CC_IN_68881;
 }
 
-char *
+const char *
 output_move_const_double (operands)
      rtx *operands;
 {
@@ -2370,7 +2373,7 @@ output_move_const_double (operands)
     }
 }
 
-char *
+const char *
 output_move_const_single (operands)
      rtx *operands;
 {
@@ -2413,7 +2416,7 @@ output_move_const_single (operands)
   
 static int inited_68881_table = 0;
 
-char *strings_68881[7] = {
+static const char *const strings_68881[7] = {
   "0.0",
   "1.0",
   "10.0",
@@ -2545,7 +2548,7 @@ floating_exact_log2 (x)
 
 static int inited_FPA_table = 0;
 
-char *strings_FPA[38] = {
+static const char *const strings_FPA[38] = {
 /* small rationals */
   "0.0",
   "1.0",
@@ -3464,13 +3467,13 @@ memory_src_operand (op, mode)
 int
 pcrel_address (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF
 	  || GET_CODE (op) == CONST);
 }
 
-char *
+const char *
 output_andsi3 (operands)
      rtx *operands;
 {
@@ -3511,7 +3514,7 @@ output_andsi3 (operands)
   return "and%.l %2,%0";
 }
 
-char *
+const char *
 output_iorsi3 (operands)
      rtx *operands;
 {
@@ -3550,7 +3553,7 @@ output_iorsi3 (operands)
   return "or%.l %2,%0";
 }
 
-char *
+const char *
 output_xorsi3 (operands)
      rtx *operands;
 {
