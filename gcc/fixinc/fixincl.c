@@ -938,6 +938,7 @@ process (pz_data, pz_file_name)
   tFixDesc *p_fixd = fixDescList;
   int todo_ct = FIX_COUNT;
   t_fd_pair fdp = { -1, -1 };
+  int num_children = 0;
 
   /*  IF this is the first time through,
       THEN put the 'file' environment variable into the environment.
@@ -1086,6 +1087,7 @@ process (pz_data, pz_file_name)
           if (fd != -1)
             {
               fdp.read_fd = fd;
+              num_children++;
               break;
             }
 
@@ -1172,4 +1174,9 @@ process (pz_data, pz_file_name)
     fclose (in_fp);
   }
   close (fdp.read_fd);  /* probably redundant, but I'm paranoid */
+
+  /* Wait for child processes created by chain_open()
+     to avoid creating zombies.  */
+  while (--num_children >= 0)
+    wait ((int *) NULL);
 }
