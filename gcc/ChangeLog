@@ -1,3 +1,7 @@
+Mon May 25 12:07:12 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* cplus-dem.c (MBUF_SIZE): Bumped from 512 to 32767.
+
 Sun May 24 21:50:12 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
 
 	* i386/linux{,-aout,oldld}.h (ASM_COMMENT_START): Define.
