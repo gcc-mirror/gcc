@@ -1013,6 +1013,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   struct data_reference *dr0 = NULL;
   unsigned int i, j;
 
+  /* Sigh, a hack to make targets that do not define UNITS_PER_SIMD_WORD
+     bootstrap.  Copy UNITS_PER_SIMD_WORD to a local variable to avoid a
+     "division by zero" error.  This error would be issued because we
+     we do "... % UNITS_PER_SIMD_WORD" below, and UNITS_PER_SIMD_WORD
+     defaults to 0 if it is not defined by the target.  */
+  int units_per_simd_word = UNITS_PER_SIMD_WORD;
+
   /*
      This pass will require a cost model to guide it whether to apply peeling 
      or versioning or a combination of the two. For example, the scheme that
@@ -1167,7 +1174,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		  int drsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
 
 		  DR_MISALIGNMENT (dr) += npeel * drsize;
-		  DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
+		  DR_MISALIGNMENT (dr) %= units_per_simd_word;
 		}
 	      else
 		DR_MISALIGNMENT (dr) = -1;

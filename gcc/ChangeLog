@@ -1,4 +1,11 @@
 2005-03-16  Steven Bosscher  <stevenb@suse.de>
+            Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_enhance_data_refs_alignment): Copy 
+	UNITS_PER_SIMD_WORD to a local variable to avoid a "division by zero" 
+	error.
+
+2005-03-16  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-inline.c (walk_type_fields, walk_tree,
 	walk_tree_without_duplicates): Move from here...
