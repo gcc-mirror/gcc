@@ -1,3 +1,7 @@
+2003-12-03  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Make it 64bit clean.
+
 2003-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_output_external): Replace checks for
