@@ -1,3 +1,7 @@
+2001-10-09  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/SocketImpl.java: Merge with Classpath
+
 2001-10-08  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/DatagramSocketImpl.java: Merge with Classpath
