@@ -31,6 +31,9 @@ struct cfg_hooks
 
   /* Basic CFG manipulation.  */
 
+  /* Return new basic block */
+  basic_block (*create_basic_block)	PARAMS ((void *head, void *end, basic_block after));
+
   /* Redirect edge E to the given basic block B and update underlying program
      representation.  Returns false when edge is not easily redirectable for
      whatever reason.  */
@@ -47,6 +50,12 @@ struct cfg_hooks
   /* Split basic block B after specified instruction I.  */
   edge (*split_block) (basic_block b, void * i);
 
+  /* Return true when blocks A and B can be merged into single basic block.  */
+  bool (*can_merge_blocks_p)		PARAMS ((basic_block a, basic_block b));
+
+  /* Merge blocks A and B.  */
+  void (*merge_blocks)			PARAMS ((basic_block a, basic_block b));
+
   /* Higher level functions representable by primitive operations above if
      we didn't have some oddities in RTL and Tree representations.  */
   basic_block (*cfgh_split_edge) (edge);
@@ -57,6 +66,9 @@ struct cfg_hooks
 #define split_block(e,i)                     cfg_hooks->split_block (e,i)
 #define delete_block(b)			     cfg_hooks->delete_block (b)
 #define split_edge(e)                        cfg_hooks->cfgh_split_edge (e)
+#define create_basic_block(h,e,a)            cfg_hooks->create_basic_block (h,e,a)
+#define can_merge_blocks_p(a,b)		     cfg_hooks->can_merge_blocks_p (a,b)
+#define merge_blocks(a,b)		     cfg_hooks->merge_blocks (a,b)
 
 /* Hooks containers.  */
 extern struct cfg_hooks rtl_cfg_hooks;

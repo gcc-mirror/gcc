@@ -377,7 +377,7 @@ unswitch_loop (loops, loop, unswitch_on)
   entry->flags |= irred_flag;
 
   /* Record the block with condition we unswitch on.  */
-  unswitch_on_alt = RBI (unswitch_on)->copy;
+  unswitch_on_alt = unswitch_on->rbi->copy;
 
   /* Make a copy of the block containing the condition; we will use
      it as switch to decide which loop we want to use.  */
@@ -395,14 +395,14 @@ unswitch_loop (loops, loop, unswitch_on)
       switch_bb->succ->succ_next->flags &= ~EDGE_IRREDUCIBLE_LOOP;
     }
   add_to_dominance_info (loops->cfg.dom, switch_bb);
-  RBI (unswitch_on)->copy = unswitch_on_alt;
+  unswitch_on->rbi->copy = unswitch_on_alt;
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
-  for (latch_edge = RBI (loop->latch)->copy->succ;
+  for (latch_edge = loop->latch->rbi->copy->succ;
        latch_edge->dest != loop->header;
        latch_edge = latch_edge->succ_next);
   nloop = loopify (loops, latch_edge,
-		   RBI (loop->header)->copy->pred, switch_bb);
+		   loop->header->rbi->copy->pred, switch_bb);
 
   /* Remove branches that are now unreachable in new loops.  We rely on the
      fact that cfg_layout_duplicate_bb reverses list of edges.  */

@@ -294,8 +294,7 @@ extern int fix_loop_placement (struct loop *);
 
 enum
 {
-  CP_SIMPLE_PREHEADERS = 1,
-  CP_INSIDE_CFGLAYOUT = 2
+  CP_SIMPLE_PREHEADERS = 1
 };
 
 extern void create_preheaders (struct loops *, int);

@@ -113,7 +113,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,                       /* loop_father */
     0,				/* count */
     0,				/* frequency */
-    0				/* flags */
+    0,				/* flags */
+    NULL			/* rbi */
   },
   {
     NULL,			/* head */
@@ -134,7 +135,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,                       /* loop_father */
     0,				/* count */
     0,				/* frequency */
-    0				/* flags */
+    0,				/* flags */
+    NULL			/* rbi */
   }
 };
 

@@ -860,7 +860,7 @@ copy_bbs (basic_block *bbs, int n, edge entry, edge latch_edge,
       /* Duplicate.  */
       bb = bbs[i];
       new_bb = (*new_bbs)[i] = cfg_layout_duplicate_bb (bb, NULL);
-      RBI (new_bb)->duplicated = 1;
+      new_bb->rbi->duplicated = 1;
       /* Add to loop.  */
       add_bb_to_loop (new_bb, bb->loop_father->copy);
       add_to_dominance_info (loops->cfg.dom, new_bb);
@@ -886,7 +886,7 @@ copy_bbs (basic_block *bbs, int n, edge entry, edge latch_edge,
 	{
 	  /* For anything else than loop header, just copy it.  */
 	  dom_bb = get_immediate_dominator (loops->cfg.dom, bb);
-	  dom_bb = RBI (dom_bb)->copy;
+	  dom_bb = dom_bb->rbi->copy;
 	}
       else
 	{
@@ -910,7 +910,7 @@ copy_bbs (basic_block *bbs, int n, edge entry, edge latch_edge,
 
 	  e_pred = e->pred_next;
 
-	  if (!RBI (src)->duplicated)
+	  if (!src->rbi->duplicated)
 	    continue;
 
 	  /* Leads to copied loop and it is not latch edge, redirect it.  */
@@ -919,24 +919,24 @@ copy_bbs (basic_block *bbs, int n, edge entry, edge latch_edge,
 
 	  if (add_irreducible_flag
 	      && (bb->loop_father == header->loop_father
-		  || RBI (src)->original->loop_father == header->loop_father))
+		  || src->rbi->original->loop_father == header->loop_father))
 	    e->flags |= EDGE_IRREDUCIBLE_LOOP;
 	}
     }
 
   /* Redirect header edge.  */
-  bb = RBI (latch_edge->src)->copy;
+  bb = latch_edge->src->rbi->copy;
   for (e = bb->succ; e->dest != latch_edge->dest; e = e->succ_next);
   *header_edge = e;
   loop_redirect_edge (*header_edge, header);
 
   /* Redirect entry to copy of header.  */
-  loop_redirect_edge (entry, RBI (header)->copy);
+  loop_redirect_edge (entry, header->rbi->copy);
   *copy_header_edge = entry;
 
   /* Clear information about duplicates.  */
   for (i = 0; i < n; i++)
-    RBI ((*new_bbs)[i])->duplicated = 0;
+    (*new_bbs)[i]->rbi->duplicated = 0;
 }
 
 /* Check whether LOOP's body can be duplicated.  */
@@ -995,7 +995,7 @@ record_exit_edges (edge orig, basic_block *bbs, int nbbs, edge *to_remove,
 	  return;
 	}
 
-      for (e = RBI (orig->src)->copy->succ; e; e = e->succ_next)
+      for (e = orig->src->rbi->copy->succ; e; e = e->succ_next)
 	if (e->dest == orig->dest)
 	  break;
       if (!e)
@@ -1175,7 +1175,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       copy_bbs (bbs, n, e, latch_edge, &new_bbs, loops,
 		&e, &he, add_irreducible_flag);
       if (is_latch)
-	loop->latch = RBI (latch)->copy;
+	loop->latch = latch->rbi->copy;
 
       /* Record exit edges in this copy.  */
       if (TEST_BIT (wont_exit, j + 1))
@@ -1209,7 +1209,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       if (!first_active_latch)
 	{
 	  memcpy (first_active, new_bbs, n * sizeof (basic_block));
-	  first_active_latch = RBI (latch)->copy;
+	  first_active_latch = latch->rbi->copy;
 	}
 
       free (new_bbs);
@@ -1217,11 +1217,11 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       /* Original loop header is dominated by latch copy
 	 if we duplicated on its only entry edge.  */
       if (!is_latch && !header->pred->pred_next->pred_next)
-	set_immediate_dominator (loops->cfg.dom, header, RBI (latch)->copy);
+	set_immediate_dominator (loops->cfg.dom, header, latch->rbi->copy);
       if (is_latch && j == 0)
 	{
 	  /* Update edge from latch.  */
-	  for (latch_edge = RBI (header)->copy->pred;
+	  for (latch_edge = header->rbi->copy->pred;
 	       latch_edge->src != latch;
 	       latch_edge = latch_edge->pred_next);
 	}
@@ -1409,33 +1409,20 @@ loop_split_edge_with (edge e, rtx insns, struct loops *loops)
 
   /* Create basic block for it.  */
 
-  new_bb = create_basic_block (NULL_RTX, NULL_RTX, EXIT_BLOCK_PTR->prev_bb);
+  new_bb = split_edge (e);
   add_to_dominance_info (loops->cfg.dom, new_bb);
   add_bb_to_loop (new_bb, loop_c);
   new_bb->flags = insns ? BB_SUPERBLOCK : 0;
 
-  new_e = make_edge (new_bb, dest, EDGE_FALLTHRU);
-  new_e->probability = REG_BR_PROB_BASE;
-  new_e->count = e->count;
+  new_e = new_bb->succ;
   if (e->flags & EDGE_IRREDUCIBLE_LOOP)
     {
       new_bb->flags |= BB_IRREDUCIBLE_LOOP;
       new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
 
-  new_bb->count = e->count;
-  new_bb->frequency = EDGE_FREQUENCY (e);
-  redirect_edge_and_branch_force (e, new_bb);
-
-  alloc_aux_for_block (new_bb, sizeof (struct reorder_block_def));
   if (insns)
-    {
-      start_sequence ();
-      emit_insn (insns);
-      insns = get_insns ();
-      end_sequence ();
-      emit_insn_after (insns, new_bb->end);
-    }
+    emit_insn_after (insns, new_bb->end);
 
   set_immediate_dominator (loops->cfg.dom, new_bb, src);
   set_immediate_dominator (loops->cfg.dom, dest,

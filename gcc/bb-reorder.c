@@ -205,7 +205,7 @@ find_traces (int *n_traces, struct trace *traces)
 	  basic_block bb;
 	  fprintf (rtl_dump_file, "Trace %d (round %d):  ", i + 1,
 		   traces[i].round + 1);
-	  for (bb = traces[i].first; bb != traces[i].last; bb = RBI (bb)->next)
+	  for (bb = traces[i].first; bb != traces[i].last; bb = bb->rbi->next)
 	    fprintf (rtl_dump_file, "%d [%d] ", bb->index, bb->frequency);
 	  fprintf (rtl_dump_file, "%d [%d]\n", bb->index, bb->frequency);
 	}
@@ -237,14 +237,14 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
       edge e;
       for (e = bb->succ; e; e = e->succ_next)
 	if (e->dest != EXIT_BLOCK_PTR
-	    && RBI (e->dest)->visited != trace_n
+	    && e->dest->rbi->visited != trace_n
 	    && (e->flags & EDGE_CAN_FALLTHRU)
 	    && !(e->flags & EDGE_COMPLEX))
 	{
 	  if (is_preferred)
 	    {
 	      /* The best edge is preferred.  */
-	      if (!RBI (e->dest)->visited
+	      if (!e->dest->rbi->visited
 		  || bbd[e->dest->index].start_of_trace >= 0)
 		{
 		  /* The current edge E is also preferred.  */
@@ -260,7 +260,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	    }
 	  else
 	    {
-	      if (!RBI (e->dest)->visited
+	      if (!e->dest->rbi->visited
 		  || bbd[e->dest->index].start_of_trace >= 0)
 		{
 		  /* The current edge E is preferred.  */
@@ -283,7 +283,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		}
 	    }
 	}
-      bb = RBI (bb)->next;
+      bb = bb->rbi->next;
     }
   while (bb != back_edge->dest);
 
@@ -293,17 +293,17 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	 the trace.  */
       if (back_edge->dest == trace->first)
 	{
-	  trace->first = RBI (best_bb)->next;
+	  trace->first = best_bb->rbi->next;
 	}
       else
 	{
 	  basic_block prev_bb;
 
 	  for (prev_bb = trace->first;
-	       RBI (prev_bb)->next != back_edge->dest;
-	       prev_bb = RBI (prev_bb)->next)
+	       prev_bb->rbi->next != back_edge->dest;
+	       prev_bb = prev_bb->rbi->next)
 	    ;
-	  RBI (prev_bb)->next = RBI (best_bb)->next;
+	  prev_bb->rbi->next = best_bb->rbi->next;
 
 	  /* Try to get rid of uncond jump to cond jump.  */
 	  if (prev_bb->succ && !prev_bb->succ->succ_next)
@@ -324,7 +324,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
       /* We have not found suitable loop tail so do no rotation.  */
       best_bb = back_edge->src;
     }
-  RBI (best_bb)->next = NULL;
+  best_bb->rbi->next = NULL;
   return best_bb;
 }
 
@@ -333,7 +333,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 static void
 mark_bb_visited (basic_block bb, int trace)
 {
-  RBI (bb)->visited = trace;
+  bb->rbi->visited = trace;
   if (bbd[bb->index].heap)
     {
       fibheap_delete_node (bbd[bb->index].heap, bbd[bb->index].node);
@@ -420,8 +420,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      if (e->dest == EXIT_BLOCK_PTR)
 		continue;
 
-	      if (RBI (e->dest)->visited
-		  && RBI (e->dest)->visited != *n_traces)
+	      if (e->dest->rbi->visited
+		  && e->dest->rbi->visited != *n_traces)
 		continue;
 
 	      prob = e->probability;
@@ -453,7 +453,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	    {
 	      if (e == best_edge
 		  || e->dest == EXIT_BLOCK_PTR
-		  || RBI (e->dest)->visited)
+		  || e->dest->rbi->visited)
 		continue;
 
 	      key = bb_to_key (e->dest);
@@ -508,7 +508,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 	  if (best_edge) /* Suitable successor was found.  */
 	    {
-	      if (RBI (best_edge->dest)->visited == *n_traces)
+	      if (best_edge->dest->rbi->visited == *n_traces)
 		{
 		  /* We do nothing with one basic block loops.  */
 		  if (best_edge->dest != bb)
@@ -528,7 +528,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 					   "Rotating loop %d - %d\n",
 					   best_edge->dest->index, bb->index);
 				}
-			      RBI (bb)->next = best_edge->dest;
+			      bb->rbi->next = best_edge->dest;
 			      bb = rotate_loop (best_edge, trace, *n_traces);
 			    }
 			}
@@ -583,7 +583,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		    if (e != best_edge
 			&& (e->flags & EDGE_CAN_FALLTHRU)
 			&& !(e->flags & EDGE_COMPLEX)
-			&& !RBI (e->dest)->visited
+			&& !e->dest->rbi->visited
 			&& !e->dest->pred->pred_next
 			&& e->dest->succ
 			&& (e->dest->succ->flags & EDGE_CAN_FALLTHRU)
@@ -599,7 +599,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			break;
 		      }
 
-		  RBI (bb)->next = best_edge->dest;
+		  bb->rbi->next = best_edge->dest;
 		  bb = best_edge->dest;
 		}
 	    }
@@ -615,7 +615,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  if (e->dest == EXIT_BLOCK_PTR
-	      || RBI (e->dest)->visited)
+	      || e->dest->rbi->visited)
 	    continue;
 
 	  if (bbd[e->dest->index].heap)
@@ -656,15 +656,15 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
   new_bb = cfg_layout_duplicate_bb (old_bb, e);
   if (e->dest != new_bb)
     abort ();
-  if (RBI (e->dest)->visited)
+  if (e->dest->rbi->visited)
     abort ();
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
 	     "Duplicated bb %d (created bb %d)\n",
 	     old_bb->index, new_bb->index);
-  RBI (new_bb)->visited = trace;
-  RBI (new_bb)->next = RBI (bb)->next;
-  RBI (bb)->next = new_bb;
+  new_bb->rbi->visited = trace;
+  new_bb->rbi->next = bb->rbi->next;
+  bb->rbi->next = new_bb;
 
   if (new_bb->index >= array_size || last_basic_block > array_size)
     {
@@ -826,7 +826,7 @@ connect_traces (int n_traces, struct trace *traces)
 	    }
 	  if (best)
 	    {
-	      RBI (best->src)->next = best->dest;
+	      best->src->rbi->next = best->dest;
 	      t2 = bbd[best->src->index].end_of_trace;
 	      connected[t2] = true;
 	      if (rtl_dump_file)
@@ -840,7 +840,7 @@ connect_traces (int n_traces, struct trace *traces)
 	}
 
       if (last_trace >= 0)
-	RBI (traces[last_trace].last)->next = traces[t2].first;
+	traces[last_trace].last->rbi->next = traces[t2].first;
       last_trace = t;
 
       /* Find the successor traces.  */
@@ -876,7 +876,7 @@ connect_traces (int n_traces, struct trace *traces)
 			   best->src->index, best->dest->index);
 		}
 	      t = bbd[best->dest->index].start_of_trace;
-	      RBI (traces[last_trace].last)->next = traces[t].first;
+	      traces[last_trace].last->rbi->next = traces[t].first;
 	      connected[t] = true;
 	      last_trace = t;
 	    }
@@ -964,7 +964,7 @@ connect_traces (int n_traces, struct trace *traces)
 		  if (next_bb && next_bb != EXIT_BLOCK_PTR)
 		    {
 		      t = bbd[next_bb->index].start_of_trace;
-		      RBI (traces[last_trace].last)->next = traces[t].first;
+		      traces[last_trace].last->rbi->next = traces[t].first;
 		      connected[t] = true;
 		      last_trace = t;
 		    }
@@ -982,7 +982,7 @@ connect_traces (int n_traces, struct trace *traces)
       basic_block bb;
 
       fprintf (rtl_dump_file, "Final order:\n");
-      for (bb = traces[0].first; bb; bb = RBI (bb)->next)
+      for (bb = traces[0].first; bb; bb = bb->rbi->next)
 	fprintf (rtl_dump_file, "%d ", bb->index);
       fprintf (rtl_dump_file, "\n");
       fflush (rtl_dump_file);
@@ -1064,7 +1064,7 @@ reorder_basic_blocks (void)
   if ((* targetm.cannot_modify_jumps_p) ())
     return;
 
-  cfg_layout_initialize (NULL);
+  cfg_layout_initialize ();
 
   set_edge_can_fallthru_flag ();
   mark_dfs_back_edges ();

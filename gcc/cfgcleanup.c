@@ -77,7 +77,6 @@ static bool label_is_jump_target_p (rtx, rtx);
 static bool tail_recursion_label_p (rtx);
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
-static basic_block merge_blocks (edge,basic_block,basic_block, int);
 static bool try_optimize_cfg (int);
 static bool try_simplify_condjump (basic_block);
 static bool try_forward_edges (int, basic_block);
@@ -704,7 +703,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
   link_block (a, b->prev_bb);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
-  merge_blocks_nomove (a, b);
+  merge_blocks (a, b);
 }
 
 /* Blocks A and B are to be merged into a single block.  B has no outgoing
@@ -758,7 +757,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 	     b->index, a->index);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
-  merge_blocks_nomove (a, b);
+  merge_blocks (a, b);
 }
 
 /* Attempt to merge basic blocks that are potentially non-adjacent.
@@ -774,7 +773,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
    relative ordering of these two.  Hopefully it is not too common.  */
 
 static basic_block
-merge_blocks (edge e, basic_block b, basic_block c, int mode)
+merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 {
   basic_block next;
   /* If C has a tail recursion label, do not merge.  There is no
@@ -790,7 +789,7 @@ merge_blocks (edge e, basic_block b, basic_block c, int mode)
   if (e->flags & EDGE_FALLTHRU)
     {
       int b_index = b->index, c_index = c->index;
-      merge_blocks_nomove (b, c);
+      merge_blocks (b, c);
       update_forwarder_flag (b);
 
       if (rtl_dump_file)
@@ -1686,7 +1685,8 @@ try_optimize_cfg (int mode)
 			     b->index);
 
 		  delete_block (b);
-		  changed = true;
+		  if (!(mode & CLEANUP_CFGLAYOUT))
+		    changed = true;
 		  b = c;
 		}
 
@@ -1712,15 +1712,24 @@ try_optimize_cfg (int mode)
 		{
 		  rtx label = b->head;
 
-		  b->head = NEXT_INSN (b->head);
 		  delete_insn_chain (label, label);
+		  /* In the case label is undeletable, move it after the
+		     BASIC_BLOCK note.  */
+		  if (NOTE_LINE_NUMBER (b->head) == NOTE_INSN_DELETED_LABEL)
+		    {
+		      rtx bb_note = NEXT_INSN (b->head);
+
+		      reorder_insns_nobb (label, label, bb_note);
+		      b->head = bb_note;
+		    }
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file, "Deleted label in block %i.\n",
 			     b->index);
 		}
 
 	      /* If we fall through an empty block, we can remove it.  */
-	      if (b->pred->pred_next == NULL
+	      if (!(mode & CLEANUP_CFGLAYOUT)
+		  && b->pred->pred_next == NULL
 		  && (b->pred->flags & EDGE_FALLTHRU)
 		  && GET_CODE (b->head) != CODE_LABEL
 		  && FORWARDER_BLOCK_P (b)
@@ -1746,21 +1755,39 @@ try_optimize_cfg (int mode)
 		  && !(s->flags & EDGE_COMPLEX)
 		  && (c = s->dest) != EXIT_BLOCK_PTR
 		  && c->pred->pred_next == NULL
-		  && b != c
-		  /* If the jump insn has side effects,
-		     we can't kill the edge.  */
-		  && (GET_CODE (b->end) != JUMP_INSN
-		      || (flow2_completed
-			  ? simplejump_p (b->end)
-			  : onlyjump_p (b->end)))
-		  && (next = merge_blocks (s, b, c, mode)))
-	        {
-		  b = next;
-		  changed_here = true;
+		  && b != c)
+		{
+		  /* When not in cfg_layout mode use code aware of reordering
+		     INSN.  This code possibly creates new basic blocks so it
+		     does not fit merge_blocks interface and is kept here in
+		     hope that it will become useless once more of compiler
+		     is transformed to use cfg_layout mode.  */
+		     
+		  if ((mode & CLEANUP_CFGLAYOUT)
+		      && can_merge_blocks_p (b, c))
+		    {
+		      merge_blocks (b, c);
+		      update_forwarder_flag (b);
+		      changed_here = true;
+		    }
+		  else if (!(mode & CLEANUP_CFGLAYOUT)
+			   /* If the jump insn has side effects,
+			      we can't kill the edge.  */
+			   && (GET_CODE (b->end) != JUMP_INSN
+			       || (flow2_completed
+				   ? simplejump_p (b->end)
+				   : onlyjump_p (b->end)))
+			   && (next = merge_blocks_move (s, b, c, mode)))
+		      {
+			b = next;
+			changed_here = true;
+		      }
 		}
 
 	      /* Simplify branch over branch.  */
-	      if ((mode & CLEANUP_EXPENSIVE) && try_simplify_condjump (b))
+	      if ((mode & CLEANUP_EXPENSIVE)
+		   && !(mode & CLEANUP_CFGLAYOUT)
+		   && try_simplify_condjump (b))
 		changed_here = true;
 
 	      /* If B has a single outgoing edge, but uses a
