@@ -2702,21 +2702,28 @@ extern int ultrasparc_variable_issue ();
   if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
     ultrasparc_sched_init (DUMP, SCHED_VERBOSE)
 
-#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY)		\
+#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
+do {									\
   if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
-    ultrasparc_sched_reorder (DUMP, SCHED_VERBOSE, READY, N_READY)
+    ultrasparc_sched_reorder (DUMP, SCHED_VERBOSE, READY, N_READY);	\
+  CIM = issue_rate;							\
+} while (0)
 
 #define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
-  if (sparc_cpu == PROCESSOR_ULTRASPARC)			\
-    (CAN_ISSUE_MORE) = ultrasparc_variable_issue (INSN);	\
-  else								\
-    (CAN_ISSUE_MORE)--
+do {									\
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
+    (CAN_ISSUE_MORE) = ultrasparc_variable_issue (INSN);		\
+  else									\
+    (CAN_ISSUE_MORE)--;							\
+} while (0)
 
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)				\
+do {									\
   if (GET_CODE (INSN) == CALL_INSN					\
       || (GET_CODE (INSN) == JUMP_INSN && ! simplejump_p (insn)))	\
-    LENGTH += 1; else
+    LENGTH += 1;							\
+} while (0)
 
 /* Control the assembler format that we output.  */
 
