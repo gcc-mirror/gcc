@@ -2256,8 +2256,7 @@ rtl_verify_flow_info (void)
 	    }
 	}
 
-      if (INSN_P (x)
-	  && JUMP_P (x)
+      if (JUMP_P (x)
 	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (NEXT_INSN (x) && BARRIER_P (NEXT_INSN (x))))
 	    fatal_insn ("return not followed by barrier", x);
