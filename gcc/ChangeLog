@@ -1,3 +1,8 @@
+2005-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/19012
+	* config/i386/i386.md (addqi_1_slp): Set memory attribute.
+
 2005-01-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (HAVE_AS_OFFSETABLE_LO10): Fix typo.
