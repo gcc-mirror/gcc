@@ -1110,6 +1110,7 @@ open_base_files (void)
       "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       "tree-alias-type.h", "tree-flow.h", "reload.h",
       "cpp-id-data.h",
+      "tree-chrec.h",
       NULL
     };
     const char *const *ifp;
