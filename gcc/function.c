@@ -3031,6 +3031,14 @@ put_addressof_into_stack (r, ht)
 
 /* List of replacements made below in purge_addressof_1 when creating
    bitfield insertions.  */
+static rtx purge_bitfield_addressof_replacements;
+
+/* List of replacements made below in purge_addressof_1 for patterns
+   (MEM (ADDRESSOF (REG ...))).  The key of the list entry is the
+   corresponding (ADDRESSOF (REG ...)) and value is a substitution for
+   the all pattern.  List PURGE_BITFIELD_ADDRESSOF_REPLACEMENTS is not
+   enough in complex cases, e.g. when some field values can be
+   extracted by usage MEM with narrower mode. */
 static rtx purge_addressof_replacements;
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
@@ -3110,51 +3118,54 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		 was replaced by.  */
 	      rtx tem;
 
-	      for (tem = purge_addressof_replacements; tem != NULL_RTX;
+	      for (tem = purge_bitfield_addressof_replacements;
+		   tem != NULL_RTX;
 		   tem = XEXP (XEXP (tem, 1), 1))
-		{
-		  rtx y = XEXP (tem, 0);
-		  if (GET_CODE (y) == MEM
-		      && rtx_equal_p (XEXP (x, 0), XEXP (y, 0)))
-		    {
-		      /* It can happen that the note may speak of things in
-			 a wider (or just different) mode than the code did. 
-			 This is especially true of REG_RETVAL.  */
+		if (rtx_equal_p (x, XEXP (tem, 0)))
+		  {
+		    *loc = XEXP (XEXP (tem, 1), 0);
+		    return;
+		  }
 
-		      rtx z = XEXP (XEXP (tem, 1), 0);
-		      if (GET_MODE (x) != GET_MODE (y))
-			{
-			  if (GET_CODE (z) == SUBREG && SUBREG_WORD (z) == 0)
-			    z = SUBREG_REG (z);
+	      /* See comment for purge_addressof_replacements. */
+	      for (tem = purge_addressof_replacements;
+		   tem != NULL_RTX;
+		   tem = XEXP (XEXP (tem, 1), 1))
+		if (rtx_equal_p (XEXP (x, 0), XEXP (tem, 0)))
+		  {
+		    rtx z = XEXP (XEXP (tem, 1), 0);
 
-			  /* ??? If we'd gotten into any of the really complex
-			     cases below, I'm not sure we can do a proper
-			     replacement.  Might we be able to delete the
-			     note in some cases?  */
-			  if (GET_MODE_SIZE (GET_MODE (x))
-			      < GET_MODE_SIZE (GET_MODE (y)))
-			    abort ();
+		    if (GET_MODE (x) == GET_MODE (z)
+			|| (GET_CODE (XEXP (XEXP (tem, 1), 0)) != REG
+			    && GET_CODE (XEXP (XEXP (tem, 1), 0)) != SUBREG))
+		      abort ();
 
-			  if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
-			      && (GET_MODE_SIZE (GET_MODE (x))
-				  > GET_MODE_SIZE (GET_MODE (z))))
-			    {
-			      /* This can occur as a result in invalid
-				 pointer casts, e.g. float f; ... 
-				 *(long long int *)&f.
-				 ??? We could emit a warning here, but
-				 without a line number that wouldn't be
-				 very helpful.  */
-			      z = gen_rtx_SUBREG (GET_MODE (x), z, 0);
-			    }
-			  else
-			    z = gen_lowpart (GET_MODE (x), z);
-			}
+		    /* It can happen that the note may speak of things
+		       in a wider (or just different) mode than the
+		       code did.  This is especially true of
+		       REG_RETVAL. */
 
-		      *loc = z;
-		      return;
-		    }
-		}
+		    if (GET_CODE (z) == SUBREG && SUBREG_WORD (z) == 0)
+		      z = SUBREG_REG (z);
+		    
+		    if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+			&& (GET_MODE_SIZE (GET_MODE (x))
+			    > GET_MODE_SIZE (GET_MODE (z))))
+		      {
+			/* This can occur as a result in invalid
+			   pointer casts, e.g. float f; ... 
+			   *(long long int *)&f.
+			   ??? We could emit a warning here, but
+			   without a line number that wouldn't be
+			   very helpful.  */
+			z = gen_rtx_SUBREG (GET_MODE (x), z, 0);
+		      }
+		    else
+		      z = gen_lowpart (GET_MODE (x), z);
+
+		    *loc = z;
+		    return;
+		  }
 
 	      /* There should always be such a replacement.  */
 	      abort ();
@@ -3242,10 +3253,11 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
 	      /* Remember the replacement so that the same one can be done
 		 on the REG_NOTES.  */
-	      purge_addressof_replacements
+	      purge_bitfield_addressof_replacements
 		= gen_rtx_EXPR_LIST (VOIDmode, x,
-				     gen_rtx_EXPR_LIST (VOIDmode, val,
-							purge_addressof_replacements));
+				     gen_rtx_EXPR_LIST
+				     (VOIDmode, val,
+				      purge_bitfield_addressof_replacements));
 
 	      /* We replaced with a reg -- all done.  */
 	      return;
@@ -3255,10 +3267,24 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	{
 	  /* Remember the replacement so that the same one can be done
 	     on the REG_NOTES.  */
-	  purge_addressof_replacements
-	    = gen_rtx_EXPR_LIST (VOIDmode, x,
-				 gen_rtx_EXPR_LIST (VOIDmode, sub,
-						    purge_addressof_replacements));
+	  if (GET_CODE (sub) == REG || GET_CODE (sub) == SUBREG)
+	    {
+	      rtx tem;
+
+	      for (tem = purge_addressof_replacements;
+		   tem != NULL_RTX;
+		   tem = XEXP (XEXP (tem, 1), 1))
+		if (rtx_equal_p (XEXP (x, 0), XEXP (tem, 0)))
+		  {
+		    XEXP (XEXP (tem, 1), 0) = sub;
+		    return;
+		  }
+	      purge_addressof_replacements
+		= gen_rtx (EXPR_LIST, VOIDmode, XEXP (x, 0),
+			   gen_rtx_EXPR_LIST (VOIDmode, sub,
+					      purge_addressof_replacements));
+	      return;
+	    }
 	  goto restart;
 	}
     give_up:;
@@ -3440,6 +3466,7 @@ purge_addressof (insns)
 
   /* Clean up.  */
   hash_table_free (&ht);
+  purge_bitfield_addressof_replacements = 0;
   purge_addressof_replacements = 0;
 }
 
