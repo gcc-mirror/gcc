@@ -10342,10 +10342,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
       switch (REG_NOTE_KIND (note))
 	{
 	case REG_UNUSED:
-	  /* If this note is from any insn other than i3, then we have no
-	     use for it, and must ignore it.
-
-	     Any clobbers for i3 may still exist, and so we must process
+	  /* Any clobbers for i3 may still exist, and so we must process
 	     REG_UNUSED notes from that insn.
 
 	     Any clobbers from i2 or i1 can only exist if they were added by
@@ -10355,14 +10352,18 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	     if it is for the same register as the original i3 dest.
 	     In that case, we will notice that the register is set in i3,
 	     and then add a REG_UNUSED note for the destination of i3, which
-	     is wrong.  */
-	  if (from_insn != i3)
-	    break;
+	     is wrong.  However, it is possible to have REG_UNUSED notes from
+	     i2 or i1 for register which were both used and clobbered, so
+	     we keep notes from i2 or i1 if they will turn into REG_DEAD
+	     notes.  */
 
 	  /* If this register is set or clobbered in I3, put the note there
 	     unless there is one already.  */
-	  else if (reg_set_p (XEXP (note, 0), PATTERN (i3)))
+	  if (reg_set_p (XEXP (note, 0), PATTERN (i3)))
 	    {
+	      if (from_insn != i3)
+		break;
+
 	      if (! (GET_CODE (XEXP (note, 0)) == REG
 		     ? find_regno_note (i3, REG_UNUSED, REGNO (XEXP (note, 0)))
 		     : find_reg_note (i3, REG_UNUSED, XEXP (note, 0))))
