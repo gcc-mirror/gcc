@@ -38,5 +38,3 @@ Boston, MA 02111-1307, USA. */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s}"
 
-#undef MATH_LIBRARY
-#define MATH_LIBRARY "-lcrtdll"

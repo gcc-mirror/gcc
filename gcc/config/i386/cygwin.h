@@ -45,12 +45,13 @@ Boston, MA 02111-1307, USA. */
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-{ "no-cygwin",                       MASK_WIN32, "Use the Mingw32 interface" }, \
-{ "cygwin",                          MASK_CYGWIN, "Use the Cygwin interface" },  \
-{ "windows",                         MASK_WINDOWS, "Use the bare Windows interface" }, \
-{ "dll",                             MASK_DLL, "Generate code for a DLL" },     \
-{ "nop-fun-dllimport",               MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
-{ "no-nop-fun-dllimport",            MASK_NOP_FUN_DLLIMPORT, "" },
+{ "cygwin",		  MASK_CYGWIN, "Use the Cygwin interface" },  \
+{ "no-cygwin",		  MASK_WIN32, "Use the Mingw32 interface" }, \
+{ "windows",		  MASK_WINDOWS, "Create GUI application" }, \
+{ "console",		  -MASK_WINDOWS, "Create console application" }, \
+{ "dll",		  MASK_DLL, "Generate code for a DLL" },     \
+{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
+{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },
 
 
 /* Support the __declspec keyword by turning them into attributes.
@@ -78,8 +79,7 @@ Boston, MA 02111-1307, USA. */
    by calling the init function from the prologue. */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll: %{!mno-cygwin:dllcrt0%O%s} \
-                                %{mno-cygwin:dllcrt1%O%s}} \
+#define STARTFILE_SPEC "%{mdll: %{mno-cygwin:dllcrt1%O%s}} \
                         %{!mdll: %{!mno-cygwin:crt0%O%s} \
                                  %{mno-cygwin:crt1%O%s} %{pg:gcrt0%O%s}}"
 
@@ -117,6 +117,7 @@ Boston, MA 02111-1307, USA. */
 		  -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 #define LINK_SPEC "%{mwindows:--subsystem windows} \
+                   %{mconsole:--subsystem console} \
                    %{mdll:--dll -e _DllMainCRTStartup@12}"
 
 

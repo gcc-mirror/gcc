@@ -1,3 +1,15 @@
+Mon Apr 12 19:11:38 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin.h (SUBTARGET_SWITCHES): Add -mconsole; fix
+	-mno-nop-fun-dllimport and minor doc fixes.
+	(STARTFILE_SPEC): Cygwin DLLs don't have dllcrt0.
+	(LINK_SPEC): Add -mconsole support.
+	* i386/mingw32.h (LIB_SPEC): Make libraries consistent with 
+	Cygwin.
+	(LINK_SPEC): Remove. Use Cygwin's version.
+	(MATH_LIBRARY): Make it null.
+	* i386/crtdll.h (MATH_LIBRARY): Likewise.
+
 Fri Apr  12 15:00:52 1999  Stan Cox  <scox@cygnus.com>
 
 	* c-decl.c (c_decode_option, start_decl, start_function,
