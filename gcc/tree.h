@@ -3318,11 +3318,6 @@ extern GTY(()) tree current_function_decl;
 
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
 extern GTY(()) tree current_function_func_begin_label;
-
-/* A DECL for the current file-scope context.  When using IMA, this heads a
-   chain of FILE_DECLs; currently only C uses it.  */
-
-extern GTY(()) tree current_file_decl;
 
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);

@@ -225,11 +225,6 @@ tree current_function_decl;
    if none.  */
 tree current_function_func_begin_label;
 
-/* A DECL for the current file-scope context.  When using IMA, this heads a
-   chain of FILE_DECLs; currently only C uses it.  */
-
-tree current_file_decl;
-
 /* Temporarily suppress certain warnings.
    This is set while reading code from a system header file.  */
 
