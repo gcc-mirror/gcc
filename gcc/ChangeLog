@@ -1,5 +1,10 @@
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/19666
+	2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
+	* fold-const.c (fold_convert): Treat OFFSET_TYPE like
+	POINTER_TYPE and INTEGER_TYPE.
+
 	* config/rs6000/sysv4.h (ENDFILE_LINUX_SPEC): Use crtendS.o instead of
 	crtend.o if -pie.  Use %{x:a;:b} spec syntax.
 
