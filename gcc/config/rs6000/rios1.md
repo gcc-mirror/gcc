@@ -88,7 +88,7 @@
 ; compare executes on integer unit, but feeds insns which
 ; execute on the branch unit.
 (define_insn_reservation "rios1-compare" 4
-  (and (eq_attr "type" "cmp,compare")
+  (and (eq_attr "type" "cmp,fast_compare,compare")
        (eq_attr "cpu" "rios1"))
   "iu_rios1,nothing*2,bpu_rios1")
 
