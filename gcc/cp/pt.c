@@ -3394,6 +3394,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	    = CLASSTYPE_DECLARED_CLASS (template_type);
 	  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 	  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
+	  TYPE_FOR_JAVA (t) = TYPE_FOR_JAVA (template_type);
 	}
 
       /* If we called tsubst_enum above, this information will already
