@@ -1774,17 +1774,15 @@ typedef struct rs6000_args
 { if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG		\
     && GET_CODE (XEXP (X, 1)) == CONST_INT				\
     && (unsigned) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000)		\
-    { int high_int, low_int;						\
-      high_int = INTVAL (XEXP (X, 1)) >> 16;				\
+    { HOST_WIDE_INT high_int, low_int;					\
+      rtx sum;								\
+      high_int = INTVAL (XEXP (X, 1)) & (~ (HOST_WIDE_INT) 0xffff);	\
       low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
       if (low_int & 0x8000)						\
-	high_int += 1, low_int |= 0xffff0000;				\
-      (X) = gen_rtx (PLUS, Pmode,					\
-		     force_operand					\
-		     	(gen_rtx (PLUS, Pmode, XEXP (X, 0),		\
-				  gen_rtx (CONST_INT, VOIDmode,		\
-						      high_int << 16)), 0), \
-		     gen_rtx (CONST_INT, VOIDmode, low_int));		\
+	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;	\
+      sum = force_operand (gen_rtx (PLUS, Pmode, XEXP (X, 0),		\
+				    GEN_INT (high_int)), 0);		\
+      (X) = gen_rtx (PLUS, Pmode, sum, GEN_INT (low_int));		\
       goto WIN;								\
     }									\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
@@ -2771,6 +2769,10 @@ do {									\
 /* indicate that issue rate is defined for this machine
    (no need to use the default) */
 #define MACHINE_issue_rate
+
+/* General optimization flags.  */
+extern int optimize;
+extern int flag_expensive_optimizations;
 
 /* Declare functions in rs6000.c */
 extern void output_options ();
