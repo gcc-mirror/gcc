@@ -521,8 +521,7 @@ all: all.indirect
 
 all.indirect: $(ALL)
 
-# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
-# ??? IN_GCC should be obsolete now.
+# IN_GCC tells various files that system.h, toplev.c, etc are available.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 
 # This is the variable actually used when we compile.
@@ -1295,8 +1294,8 @@ collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o tlink.o hash.o \
 	  cplus-dem.o underscore.o version.o choose-temp.o mkstemp.o $(LIBS)
 
-collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h obstack.h \
-	$(DEMANGLE_H)
+collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h \
+	$(srcdir)/../include/obstack.h $(DEMANGLE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
@@ -1369,7 +1368,11 @@ gencheck.o : gencheck.c hconfig.h system.h
 dumpvers: dumpvers.c
 
 version.o: version.c
-obstack.o: obstack.c $(CONFIG_H)
+obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
+	rm -f obstack.c
+	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) obstack.c
+
 choose-temp.o: $(srcdir)/../libiberty/choose-temp.c $(CONFIG_H) gansidecl.h \
 	system.h
 	rm -f choose-temp.c
@@ -1436,7 +1439,8 @@ dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    toplev.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) defaults.h real.h \
-   insn-config.h obstack.h xcoffout.h c-pragma.h sdbout.h toplev.h
+   insn-config.h $(srcdir)/../include/obstack.h xcoffout.h c-pragma.h \
+   sdbout.h toplev.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
@@ -1446,7 +1450,7 @@ xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h toplev.h output.h dbxout.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    except.h function.h $(REGS_H) insn-config.h $(RECOG_H) real.h \
-   $(EXPR_H) obstack.h hard-reg-set.h bitmap.h
+   $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 getpwd.o : getpwd.c $(CONFIG_H) system.h
 
@@ -1815,9 +1819,9 @@ $(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
 	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)alloca.c
 
-$(HOST_PREFIX_1)obstack.o: obstack.c
+$(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c
 	rm -f $(HOST_PREFIX)obstack.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
 
 $(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c
@@ -2092,8 +2096,8 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
 	   version.o cppexp.o $(HOST_LIBS)
 
-fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file) \
-	system.h cpplib.h cpphash.h
+fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
+	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
 scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h gansidecl.h
