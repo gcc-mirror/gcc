@@ -1,3 +1,7 @@
+2001-01-18  Per Bothner  <per@bothner.com>
+
+	* gcj.texi (Input Options): Mention .java files.
+
 2001-01-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lang-options.h (-Wunsupported-jdk11): Removed.
