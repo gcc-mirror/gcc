@@ -1,3 +1,7 @@
+2003-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* stmt.c (expand_start_case): Call emit_queue ().
+
 2003-03-14  Chris Demetriou  <cgd@broadcom.com>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (FUNCTION_PROFILER): _mcount() doesn't pop 2
