@@ -7,8 +7,7 @@ TARGET_LIBGCC2_CFLAGS = -fPIC
 # the symbol versions that glibc used.
 SHLIB_MAPFILES += $(srcdir)/config/s390/libgcc-glibc.ver
 
-# Use unwind-dw2-fde and extra tpf-eh support routines.
+# Use unwind-dw2-fde.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c \
-  $(srcdir)/config/s390/tpf-eh.c
+  $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
 LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h
