@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, NetBSD/arm ELF version.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
@@ -97,7 +97,8 @@
 {							\
   asm_fprintf (STREAM, "\tmov\t%Rip, %Rlr\n");		\
   asm_fprintf (STREAM, "\tbl\t__mcount%s\n",		\
-	       NEED_PLT_RELOC ? "(PLT)" : "");		\
+	       (TARGET_ARM && NEED_PLT_RELOC)		\
+	       ? "(PLT)" : "");				\
 }
 
 /* VERY BIG NOTE: Change of structure alignment for NetBSD/arm.
