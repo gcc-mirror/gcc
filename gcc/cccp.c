@@ -993,7 +993,13 @@ safe_read (desc, ptr, len)
   while (left > 0) {
     int nchars = read (desc, ptr, left);
     if (nchars < 0)
-      return nchars;
+      {
+#ifdef EINTR
+	if (errno == EINTR)
+	  continue;
+#endif
+	return nchars;
+      }
     if (nchars == 0)
       break;
     ptr += nchars;
@@ -1014,7 +1020,13 @@ safe_write (desc, ptr, len)
   while (len > 0) {
     int written = write (desc, ptr, len);
     if (written < 0)
-      pfatal_with_name (out_fname);
+      {
+#ifdef EINTR
+	if (errno == EINTR)
+	  continue;
+#endif
+	pfatal_with_name (out_fname);
+      }
     ptr += written;
     len -= written;
   }
