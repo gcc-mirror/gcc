@@ -1,3 +1,8 @@
+1999-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (expand_static_init): Tweak handling of static
+	initializations for objects without constructors.
+
 1999-09-03  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (build_indirect_ref): Reject dereference of pointer to
