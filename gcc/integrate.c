@@ -736,6 +736,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	return (rtx) (size_t) -1;
     }
 
+  /* If there is a TARGET which is a readonly BLKmode MEM and DECL_RESULT
+     is also a mem, we are going to lose the readonly on the stores, so don't
+     inline.  */
+  if (target != 0 && GET_CODE (target) == MEM && GET_MODE (target) == BLKmode
+      && RTX_UNCHANGING_P (target) && DECL_RTL_SET_P (DECL_RESULT (fndecl))
+      && GET_CODE (DECL_RTL (DECL_RESULT (fndecl))) == MEM)
+    return (rtx) (size_t) -1;
+
   /* Extra arguments are valid, but will be ignored below, so we must
      evaluate them here for side-effects.  */
   for (; actual; actual = TREE_CHAIN (actual))
