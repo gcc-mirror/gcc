@@ -1,5 +1,10 @@
 Fri Nov 27 08:07:53 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha.c (sext_add_operand): Use reg_not_elim_operand.
+	(reg_not_elim_or_8bit_operand): New function.
+	* alpha.h (PREDICATE_CODE): Add new entry and alphabetize.
+	* alpha.md (mult patterns): Ensure eliminable reg not any input.
+
 	* Makefile.in (STAGESTUFF): Remove s-ver.
 	(s-ver): Remove rule and revert back to version.c as target.
 
