@@ -1,3 +1,8 @@
+2005-01-21  Daniel Berlin  <dberlin@dberlin.org>
+
+	* doc/tree-ssa.texi (Statement Operands): Add example for new
+	must-def macro. Note deprecation of old operands interface.
+
 2005-01-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR tree-optimization/19484

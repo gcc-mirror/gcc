@@ -817,7 +817,12 @@ inside each statement's annotation and can be accessed with
 @code{DEF_OPS}, @code{USE_OPS}, @code{V_MAY_DEF_OPS},
 @code{V_MUST_DEF_OPS} and @code{VUSE_OPS}.  The following are all the
 accessor macros available to access USE operands.  To access all the
-other operand arrays, just change the name accordingly:
+other operand arrays, just change the name accordingly.  Note that
+this interface to the operands is deprecated, and is slated for
+removal in a future version of gcc.  The preferred interface is the
+operand iterator interface.  Unless you need to discover the number of
+operands of a given type on a statement, you are strongly urged not to
+use this interface.
 
 @defmac USE_OPS (@var{ann})
 Returns the array of operands used by the statement with annotation
@@ -977,10 +982,10 @@ aren't using operand pointers, use and defs flags can be mixed.
     @}
 @end smallexample
 
-Note that @code{V_MAY_DEFS} are broken into 2 flags, one for the
+@code{V_MAY_DEF}s are broken into two flags, one for the
 @code{DEF} portion (@code{SSA_OP_VMAYDEF}) and one for the USE portion
 (@code{SSA_OP_VMAYUSE}).  If all you want to look at are the
-@code{V_MAY_DEFS} together, there is a fourth iterator macro for this,
+@code{V_MAY_DEF}s together, there is a fourth iterator macro for this,
 which returns both a def_operand_p and a use_operand_p for each
 @code{V_MAY_DEF} in the statement.  Note that you don't need any flags for
 this one.
@@ -991,6 +996,25 @@ this one.
   ssa_op_iter iter;
 
   FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
+    @{
+      my_code;
+    @}
+@end smallexample
+
+@code{V_MUST_DEF}s are broken into two flags, one for the
+@code{DEF} portion (@code{SSA_OP_VMUSTDEF}) and one for the kill portion
+(@code{SSA_OP_VMUSTDEFKILL}).  If all you want to look at are the
+@code{V_MUST_DEF}s together, there is a fourth iterator macro for this,
+which returns both a def_operand_p and a use_operand_p for each
+@code{V_MUST_DEF} in the statement.  Note that you don't need any flags for
+this one.
+
+@smallexample
+  use_operand_p kill_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
+
+  FOR_EACH_SSA_MUSTDEF_OPERAND (def_p, kill_p, stmt, iter)
     @{
       my_code;
     @}
