@@ -29,8 +29,6 @@ GLIBCPP_CHECK_COMPILER_VERSION
 GLIBCPP_CHECK_CPU
 GLIBCPP_CHECK_OS
 
-AC_CACHE_SAVE
-
 # Enable all the crazy c++ stuff.  C_MBCHAR must come early.
 GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)
 GLIBCPP_ENABLE_C_MBCHAR([yes])
@@ -73,11 +71,12 @@ if test -n "$with_cross_host"; then
 	AC_DEFINE(HAVE_MODF)
 
 	ctype_include_dir="config/os/wince"
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
+	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
+	include/bits/ctype_base.h)
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
-	bits/ctype_inline.h)
+	include/bits/ctype_inline.h)
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-	bits/ctype_noninline.h)
+	include/bits/ctype_noninline.h)
 
 
 	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
@@ -95,11 +94,12 @@ if test -n "$with_cross_host"; then
 	AC_DEFINE(HAVE_ISINFF)
 
 	ctype_include_dir="config/os/newlib"
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
+	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
+	include/bits/ctype_base.h)
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
-	bits/ctype_inline.h)
+	include/bits/ctype_inline.h)
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-	bits/ctype_noninline.h)
+	include/bits/ctype_noninline.h)
 
 	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
 
@@ -129,7 +129,6 @@ else
   GLIBCPP_CHECK_MATH_SUPPORT
   GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
   GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT
-  AC_CACHE_SAVE
   GLIBCPP_CHECK_WCHAR_T_SUPPORT
   GLIBCPP_CHECK_CTYPE_SUPPORT
   GLIBCPP_CHECK_STDLIB_SUPPORT
@@ -143,6 +142,7 @@ AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 
+AC_CACHE_SAVE
 AC_LC_MESSAGES
 
 if test "${multilib}" = "yes"; then
@@ -214,6 +214,14 @@ fi
 GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_EXPORT_FLAGS
 
+# This should be done by mkincludedir, but hack around it now.
+blddir=`pwd`
+echo "checking for $blddir/include"
+
+if test ! -d "$blddir/include"; then
+  mkdir "$blddir/include"
+fi
+
 # NB: Multilibs need MULTISUBDIR defined correctly in src/Makefile.am
 # so that multilib installs will end up installed in the correct
 # place. To work around this not being passed down from config-ml.in
@@ -238,7 +246,6 @@ CXX="${CXX}"
 )
 
 
-blddir=`pwd`
 # Generate bits/c++config.h
 # NB: This must be the first generated file as others include it. . .
 AC_OUTPUT_COMMANDS([$srcdir/mkc++config $blddir $srcdir])
@@ -253,8 +260,6 @@ fi
 # Sanity checking & User-visible messages.
 # Checks down here, otherwise they get scrolled off before
 # the user will notice.
-### warnings removed; none were applicable anymore
-
 
 # Trying to get more people to read documentation.  Possibly remove
 # check and warn all the time. There is no "informational" AC_MSG_

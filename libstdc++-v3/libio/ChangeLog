@@ -1,3 +1,7 @@
+2000-10-29  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am (INCLUDES): Change to $(top_builddir)/include.
+
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* iofopen.c (_IO_new_fopen): Don't define `_IO_wide_data wd'

@@ -1,3 +1,27 @@
+2000-10-29   Mark Harig <mharig@landmark.com>
+
+	* src/Makefile.am: Change logic for include dir options.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Ditto.
+	* libsupc++/Makefile.in: Regenerate.
+	
+2000-10-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in: Simplify use of AC_CACHE_SAVE.  Put linked files
+	in $(top_builddir)/include/bits, not $(top_builddir)/bits, to help
+	with libgcj build issues and improve consistency with the source
+	directory's include directory setup.
+	* configure: Regenerate.
+	* acinclude.m4: Same here.
+	* aclocal.m4: Regenerate.
+	* mknumeric_limits (OUT_H): Also change paths here.
+	* mkcheck.in (C_DIR): And here.
+	* mkc++config (OUT_H): And here.
+	* libmath/Makefile.am (INCLUDES): And here.
+	* src/Makefile.am (INCLUDES): Change to $(top_builddir)/include.
+	* libio/Makefile.am: Ditto.
+	* libsupc++/Makefile.am (INCLUDES): Ditto.
+
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/c_io_libio.cc (basic_file<char>::__basic_file): 
@@ -182,43 +206,6 @@
         * mkcheck.in:  Limit the available heap size for testsuite
           binaries, initially at 2MB.
 
-2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
-
-	* testsuite/21_strings/compare.cc (test01): Add using declarations.
-
-	* include/c_std/bits/std_cerrno.h: And here.
-	* include/c_std/bits/std_cassert.h: Tweaks.
-
-	* mkcheck.in: Simplify.
-	
-	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Simplify.
-	(GLIBCPP_ENABLE_LONG_LONG): Same.
-	* aclocal.m4: Regenerate.
-
-	* src/Makefile.am (c_shadow_headers): Add features.h,
-	bits/wrap_features.h.
-	* src/Makefile.in: Regenerate.
-	* include/c_std/features.h: New file.
-	* include/c_std/bits/wrap_features.h (_CPP_WRAP_FEATURES_H): New
-	file. Need to have c++config.h included before this file so
-	_ISOC99_SOURCE around.
-
-	* include/c_std/sys/cdefs.h: Hack.
-	* include/c_std/stdlib.h: Same, use c++config.h.
-	* include/c_std/bits/std_cstdlib.h: Use _GLIBCPP_HAVE_STRTOLD.
-
-	* include/c_std/bits/std_cassert.h: Fix.
-	* include/c_std/bits/std_cerrno.h: Make consistent.
-
-	* include/c_std/bits/std_csetjmp.h (setjmp): Unscope global
-	declaration from ::_C_legacy to _C_legacy.
-
-	* include/c_std/bits/std_cstdio.h: same with printf.
-	* include/c_std/stdio.h: And here.
-
-	* include/c_std/bits/std_cstdlib.h: abort, exit comment.
-	* include/c_std/stdlib.h: Same here.
-	
 2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/compare.cc (test01): Add using declarations.

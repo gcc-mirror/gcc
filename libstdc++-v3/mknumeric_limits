@@ -23,14 +23,19 @@ if [ ! -d "$BUILD_DIR" ]; then
   exit 1
 fi
 
-if [ ! -d "$BUILD_DIR/bits" ]; then
-  mkdir  "$BUILD_DIR/bits"
+if [ ! -d "$BUILD_DIR/include" ]; then
+  mkdir  "$BUILD_DIR/include"
 fi
+
+if [ ! -d "$BUILD_DIR/include/bits" ]; then
+  mkdir  "$BUILD_DIR/include/bits"
+fi
+
 if [ ! -d "$BUILD_DIR/src" ]; then
   mkdir  "$BUILD_DIR/src"
 fi
 
-OUT_H="$BUILD_DIR/bits/std_limits.h"
+OUT_H="$BUILD_DIR/include/bits/std_limits.h"
 OUT_C="$BUILD_DIR/src/limitsMEMBERS.cc"
 
 if [ -f $OUT_C ]; then
@@ -46,7 +51,7 @@ fi
 XCOMPILE=$3
 if [ $XCOMPILE -eq 1 ]; then
   echo "using default values for cross compiles"
-  cp $SRC_DIR/bits/limits_generic.h $OUT_H
+  cp $SRC_DIR/include/bits/limits_generic.h $OUT_H
   cp $SRC_DIR/src/limits_generic.cc $OUT_C
   exit 0;
 fi   
@@ -163,11 +168,11 @@ namespace std {
 
 EOF
 
-echo "$CXX $CPPFLAGS -I$BUILD_DIR \
+echo "$CXX $CPPFLAGS -I$BUILD_DIR/include \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
      $LDFLAGS"
 
-$CXX $CPPFLAGS -I$BUILD_DIR \
+$CXX $CPPFLAGS -I$BUILD_DIR/include \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
      $LDFLAGS
 

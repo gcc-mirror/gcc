@@ -36,7 +36,7 @@ CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
 INCLUDES = \
 	-nostdinc++ \
-	-I$(top_builddir) -I$(GLIBCPP_INCLUDE_DIR) \
+	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) \
 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 libio_headers = \
