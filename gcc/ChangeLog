@@ -1,3 +1,8 @@
+Sat Oct 23 21:13:00 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* integrate.c (integrate_decl_tree): Tweak setting of DECL_CONTEXT
+	for inlined declarations.
+
 Fri Oct 22 18:05:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* arm.c (logical_binary_operator): New fucntion.
