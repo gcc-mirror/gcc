@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -96,6 +96,10 @@ Boston, MA 02111-1307, USA.  */
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
 
+#ifndef LONG_TYPE_SIZE
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#endif
+
 /* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
    null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
@@ -135,6 +139,9 @@ static char *last_filename;
 /* Number of basic blocks seen so far;
    used if profile_block_flag is set.  */
 static int count_basic_blocks;
+
+/* Number of instrumented arcs when profile_arc_flag is set.  */
+extern int count_instrumented_arcs;
 
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't abort.
@@ -310,14 +317,21 @@ end_final (filename)
 {
   int i;
 
-  if (profile_block_flag)
+  if (profile_block_flag || profile_arc_flag)
     {
       char name[20];
       int align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
-      int size = (POINTER_SIZE / BITS_PER_UNIT) * count_basic_blocks;
-      int rounded = size;
+      int size, rounded;
       struct bb_list *ptr;
       struct bb_str *sptr;
+      int long_bytes = LONG_TYPE_SIZE / BITS_PER_UNIT;
+      int pointer_bytes = POINTER_SIZE / BITS_PER_UNIT;
+
+      if (profile_block_flag)
+	size = long_bytes * count_basic_blocks;
+      else
+	size = long_bytes * count_instrumented_arcs;
+      rounded = size;
 
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
@@ -345,45 +359,61 @@ end_final (filename)
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 0);
       /* zero word */
-      assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+      assemble_integer (const0_rtx, long_bytes, 1);
 
       /* address of filename */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 1);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
 
       /* address of count table */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
 
-      /* count of the # of basic blocks */
-      assemble_integer (GEN_INT (count_basic_blocks), UNITS_PER_WORD, 1);
+      /* count of the # of basic blocks or # of instrumented arcs */
+      if (profile_block_flag)
+	assemble_integer (GEN_INT (count_basic_blocks), long_bytes, 1);
+      else
+	assemble_integer (GEN_INT (count_instrumented_arcs), long_bytes,
+			  1);
 
       /* zero word (link field) */
-      assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+      assemble_integer (const0_rtx, pointer_bytes, 1);
 
       /* address of basic block start address table */
-      ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+      if (profile_block_flag)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+			    1);
+	}
+      else
+	assemble_integer (const0_rtx, pointer_bytes, 1);
 
       /* byte count for extended structure.  */
-      assemble_integer (GEN_INT (11 * UNITS_PER_WORD), UNITS_PER_WORD, 1);
+      assemble_integer (GEN_INT (10 * UNITS_PER_WORD), long_bytes, 1);
 
       /* address of function name table */
-      ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+      if (profile_block_flag)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+			    1);
+	}
+      else
+	assemble_integer (const0_rtx, pointer_bytes, 1);
 
       /* address of line number and filename tables if debugging.  */
-      if (write_symbols != NO_DEBUG)
+      if (write_symbols != NO_DEBUG && profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 5);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 6);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
 	}
       else
 	{
-	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
-	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	  assemble_integer (const0_rtx, pointer_bytes, 1);
+	  assemble_integer (const0_rtx, pointer_bytes, 1);
 	}
 
       /* space for extension ptr (link field) */
@@ -401,7 +431,10 @@ end_final (filename)
 	strcat (data_file, "/");
 	strcat (data_file, filename);
 	strip_off_ending (data_file, len);
-	strcat (data_file, ".d");
+	if (profile_block_flag)
+	  strcat (data_file, ".d");
+	else
+	  strcat (data_file, ".da");
 	assemble_string (data_file, strlen (data_file) + 1);
       }
 
@@ -431,54 +464,65 @@ end_final (filename)
 	}
 
       /* Output any basic block strings */
-      readonly_data_section ();
-      if (sbb_head)
+      if (profile_block_flag)
 	{
-	  ASM_OUTPUT_ALIGN (asm_out_file, align);
-	  for (sptr = sbb_head; sptr != 0; sptr = sptr->next)
+	  readonly_data_section ();
+	  if (sbb_head)
 	    {
-	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBC", sptr->label_num);
-	      assemble_string (sptr->string, sptr->length);
+	      ASM_OUTPUT_ALIGN (asm_out_file, align);
+	      for (sptr = sbb_head; sptr != 0; sptr = sptr->next)
+		{
+		  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBC",
+					     sptr->label_num);
+		  assemble_string (sptr->string, sptr->length);
+		}
 	    }
 	}
 
       /* Output the table of addresses.  */
-      /* Realign in new section */
-      ASM_OUTPUT_ALIGN (asm_out_file, align);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 3);
-      for (i = 0; i < count_basic_blocks; i++)
+      if (profile_block_flag)
 	{
-	  ASM_GENERATE_INTERNAL_LABEL (name, "LPB", i);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
-			    UNITS_PER_WORD, 1);
+	  /* Realign in new section */
+	  ASM_OUTPUT_ALIGN (asm_out_file, align);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 3);
+	  for (i = 0; i < count_basic_blocks; i++)
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (name, "LPB", i);
+	      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+				pointer_bytes, 1);
+	    }
 	}
 
       /* Output the table of function names.  */
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 4);
-      for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
+      if (profile_block_flag)
 	{
-	  if (ptr->func_label_num >= 0)
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 4);
+	  for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
 	    {
-	      ASM_GENERATE_INTERNAL_LABEL (name, "LPBC", ptr->func_label_num);
-	      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
-				UNITS_PER_WORD, 1);
+	      if (ptr->func_label_num >= 0)
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
+					       ptr->func_label_num);
+		  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+				    pointer_bytes, 1);
+		}
+	      else
+		assemble_integer (const0_rtx, pointer_bytes, 1);
 	    }
-	  else
-	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+
+	  for ( ; i < count_basic_blocks; i++)
+	    assemble_integer (const0_rtx, pointer_bytes, 1);
 	}
 
-      for ( ; i < count_basic_blocks; i++)
-	assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
-
-      if (write_symbols != NO_DEBUG)
+      if (write_symbols != NO_DEBUG && profile_block_flag)
 	{
 	  /* Output the table of line numbers.  */
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 5);
 	  for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
-	    assemble_integer (GEN_INT (ptr->line_num), UNITS_PER_WORD, 1);
+	    assemble_integer (GEN_INT (ptr->line_num), long_bytes, 1);
 
 	  for ( ; i < count_basic_blocks; i++)
-	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	    assemble_integer (const0_rtx, long_bytes, 1);
 
 	  /* Output the table of file names.  */
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 6);
@@ -486,22 +530,27 @@ end_final (filename)
 	    {
 	      if (ptr->file_label_num >= 0)
 		{
-		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC", ptr->file_label_num);
+		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
+					       ptr->file_label_num);
 		  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
-				    UNITS_PER_WORD, 1);
+				    pointer_bytes, 1);
 		}
 	      else
-		assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+		assemble_integer (const0_rtx, pointer_bytes, 1);
 	    }
 
 	  for ( ; i < count_basic_blocks; i++)
-	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	    assemble_integer (const0_rtx, pointer_bytes, 1);
 	}
 
       /* End with the address of the table of addresses,
 	 so we can find it easily, as the last word in the file's text.  */
-      ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+      if (profile_block_flag)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+			    1);
+	}
     }
 }
 
@@ -988,14 +1037,14 @@ static void
 profile_function (file)
      FILE *file;
 {
-  int align = MIN (BIGGEST_ALIGNMENT, POINTER_SIZE);
+  int align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);
   int sval = current_function_returns_struct;
   int cxt = current_function_needs_context;
 
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
   ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
-  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, 1);
 
   text_section ();
 
@@ -1135,6 +1184,8 @@ add_bb (file)
      count of times it was entered.  */
 #ifdef BLOCK_PROFILER
   BLOCK_PROFILER (file, count_basic_blocks);
+#endif
+#ifdef HAVE_cc0
   CC_STATUS_INIT;
 #endif
 
@@ -3077,7 +3128,7 @@ leaf_function_p ()
 {
   rtx insn;
 
-  if (profile_flag || profile_block_flag)
+  if (profile_flag || profile_block_flag || profile_arc_flag)
     return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
