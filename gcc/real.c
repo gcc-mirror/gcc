@@ -640,6 +640,9 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
   r->cl = rvc_normal;
   r->sign = sign;
   SET_REAL_EXP (r, exp);
+  /* Zero out the remaining fields.  */
+  r->signalling = 0;
+  r->canonical = 0;
 
   /* Re-normalize the result.  */
   normalize (r);
@@ -1957,6 +1960,7 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
     get_zero (r, 0);
   else
     {
+      memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
       r->sign = high < 0 && !unsigned_p;
       SET_REAL_EXP (r, 2 * HOST_BITS_PER_WIDE_INT);
@@ -1974,7 +1978,6 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	{
 	  r->sig[SIGSZ-1] = high;
 	  r->sig[SIGSZ-2] = low;
-	  memset (r->sig, 0, sizeof(long)*(SIGSZ-2));
 	}
       else
 	{
@@ -1983,8 +1986,6 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	  r->sig[SIGSZ-2] = high;
 	  r->sig[SIGSZ-3] = low >> (HOST_BITS_PER_LONG - 1) >> 1;
 	  r->sig[SIGSZ-4] = low;
-	  if (SIGSZ > 4)
-	    memset (r->sig, 0, sizeof(long)*(SIGSZ-4));
 	}
 
       normalize (r);

@@ -1,3 +1,9 @@
+2005-01-25  J"orn Rennecke <joern.rennecke@st.com>
+
+	* real.c (do_add): Initialize signalling and canonical members.
+
+	* real.c (real_from_integer): Zero out destination.
+
 2005-01-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/19337
