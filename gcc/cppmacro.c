@@ -75,8 +75,7 @@ static void make_string_token PARAMS ((cpp_pool *, cpp_token *,
 static void make_number_token PARAMS ((cpp_reader *, cpp_token *, int));
 static void stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, cpp_token *));
-static void paste_payloads PARAMS ((cpp_reader *, cpp_token *,
-				    const cpp_token *));
+static int paste_tokens PARAMS ((cpp_reader *, cpp_token *, cpp_token *));
 static int funlike_invocation_p PARAMS ((cpp_reader *, const cpp_hashnode *,
 					  struct toklist *));
 static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *,
@@ -260,40 +259,6 @@ unlock_pools (pfile)
   _cpp_unlock_pool (&pfile->argument_pool);
 }
 
-static void
-paste_payloads (pfile, lhs, rhs)
-     cpp_reader *pfile;
-     cpp_token *lhs;
-     const cpp_token *rhs;
-{
-  unsigned int total_len = cpp_token_len (lhs) + cpp_token_len (rhs);
-  unsigned char *result, *end;
-  cpp_pool *pool;
-
-  pool = lhs->type == CPP_NAME ? &pfile->ident_pool: pfile->string_pool;
-  result = _cpp_pool_alloc (pool, total_len + 1);
-
-  /* Paste the spellings and null terminate.  */
-  end = cpp_spell_token (pfile, rhs, cpp_spell_token (pfile, lhs, result));
-  *end = '\0';
-  total_len = end - result;
-
-  if (lhs->type == CPP_NAME)
-    {
-      lhs->val.node = cpp_lookup (pfile, result, total_len);
-      if (lhs->val.node->flags & NODE_OPERATOR)
-	{
-	  lhs->flags |= NAMED_OP;
-	  lhs->type = lhs->val.node->value.operator;
-	}
-    }
-  else
-    {
-      lhs->val.str.text = result;
-      lhs->val.str.len = total_len;
-    }
-}
-
 /* Adds backslashes before all backslashes and double quotes appearing
    in strings.  Non-printable characters are converted to octal.  */
 static U_CHAR *
@@ -398,64 +363,109 @@ stringify_arg (pfile, arg)
   arg->stringified->val.str.len = total_len;
 }
 
+/* Try to paste two tokens.  On success, the LHS becomes the pasted
+   token, and 0 is returned.  For failure, we update the flags of the
+   RHS appropriately and return non-zero.  */
+static int
+paste_tokens (pfile, lhs, rhs)
+     cpp_reader *pfile;
+     cpp_token *lhs, *rhs;
+{
+  unsigned char flags;
+  int digraph = 0;
+  enum cpp_ttype type;
+
+  type = cpp_can_paste (pfile, lhs, rhs, &digraph);
+  
+  if (type == CPP_EOF)
+    {
+      if (CPP_OPTION (pfile, warn_paste))
+	cpp_warning (pfile,
+	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
+		     cpp_token_as_text (pfile, lhs),
+		     cpp_token_as_text (pfile, rhs));
+
+      /* The standard states that behaviour is undefined.  By the
+	 principle of least surpise, we step back before the RHS, and
+	 mark it to prevent macro expansion.  Tests in the testsuite
+	 rely on clearing PREV_WHITE here, though you could argue we
+	 should actually set it.  */
+      rhs->flags &= ~PREV_WHITE;
+      rhs->flags |= NO_EXPAND;
+      return 1;
+    }
+
+  flags = lhs->flags & ~DIGRAPH;
+  if (digraph)
+    flags |= DIGRAPH;
+
+  /* Identifiers and numbers need spellings to be pasted.  */
+  if (type == CPP_NAME || type == CPP_NUMBER)
+    {
+      unsigned int total_len = cpp_token_len (lhs) + cpp_token_len (rhs);
+      unsigned char *result, *end;
+      cpp_pool *pool;
+
+      pool = type == CPP_NAME ? &pfile->ident_pool: pfile->string_pool;
+      result = _cpp_pool_alloc (pool, total_len + 1);
+
+      /* Paste the spellings and null terminate.  */
+      end = cpp_spell_token (pfile, rhs, cpp_spell_token (pfile, lhs, result));
+      *end = '\0';
+      total_len = end - result;
+
+      if (type == CPP_NAME)
+	{
+	  lhs->val.node = cpp_lookup (pfile, result, total_len);
+	  if (lhs->val.node->flags & NODE_OPERATOR)
+	    {
+	      flags |= NAMED_OP;
+	      lhs->type = lhs->val.node->value.operator;
+	    }
+	}
+      else
+	{
+	  lhs->val.str.text = result;
+	  lhs->val.str.len = total_len;
+	}
+    }
+  else if (type == CPP_WCHAR || type == CPP_WSTRING)
+    lhs->val.str = rhs->val.str;
+
+  /* Set type and flags after pasting spellings.  */
+  lhs->type = type;
+  lhs->flags = flags;
+
+  return 0;
+}
+
 /* Handles an arbitrarily long sequence of ## operators.  This
    implementation is left-associative, non-recursive, and finishes a
-   paste before handling succeeding ones.  If the paste fails, the
-   right hand side of the ## operator is placed in the then-current
-   context's lookahead buffer, with the effect that it appears in the
-   output stream normally.  */
+   paste before handling succeeding ones.  If the paste fails, we back
+   up a token to just after the ## operator, with the effect that it
+   appears in the output stream normally.  */
 static void
 paste_all_tokens (pfile, lhs)
      cpp_reader *pfile;
      cpp_token *lhs;
 {
-  unsigned char orig_flags = lhs->flags;
   cpp_token *rhs;
+  unsigned char orig_flags = lhs->flags;
 
   do
     {
-      int digraph = 0;
-      enum cpp_ttype type;
-
       /* Take the token directly from the current context.  We can do
 	 this, because we are in the replacement list of either an
 	 object-like macro, or a function-like macro with arguments
 	 inserted.  In either case, the constraints to #define
-	 guarantee we have at least one more token (empty arguments
-	 become placemarkers).  */
+	 guarantee we have at least one more token.  */
       rhs = pfile->context->list.first++;
-
-      type = cpp_can_paste (pfile, lhs, rhs, &digraph);
-      if (type == CPP_EOF)
+      if (paste_tokens (pfile, lhs, rhs))
 	{
-	  if (CPP_OPTION (pfile, warn_paste))
-	    cpp_warning (pfile,
-	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
-			 cpp_token_as_text (pfile, lhs),
-			 cpp_token_as_text (pfile, rhs));
-
-	  /* The standard states that behaviour is undefined.  By the
-	     principle of least surpise, we step back before the RHS,
-	     and mark it to prevent macro expansion.  Tests in the
-	     testsuite rely on clearing PREV_WHITE here, though you
-	     could argue we should actually set it.  */
-	  rhs->flags &= ~PREV_WHITE;
-	  rhs->flags |= NO_EXPAND;
-
-	  /* Step back so we read the RHS in next.  */
+	  /* We failed.  Step back so we read the RHS in next.  */
 	  pfile->context->list.first--;
 	  break;
 	}
-
-      lhs->type = type;
-      lhs->flags &= ~DIGRAPH;
-      if (digraph)
-	lhs->flags |= DIGRAPH;
-
-      if (type == CPP_NAME || type == CPP_NUMBER)
-	paste_payloads (pfile, lhs, rhs);
-      else if (type == CPP_WCHAR || type == CPP_WSTRING)
-	lhs->val.str = rhs->val.str;
     }
   while (rhs->flags & PASTE_LEFT);
 
