@@ -1,3 +1,11 @@
+2001-07-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Only use -ffloat-store only on
+	i[34567]86-*-*.
+	Delete handling of ieee_multilib_flags.
+	Pass -mieee for alpha*-*-* and sh-*-*.
+	* gcc.c-torture/execute/20010114-2.c: Move into ieee subdir.
+
 2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove old-abi tests.

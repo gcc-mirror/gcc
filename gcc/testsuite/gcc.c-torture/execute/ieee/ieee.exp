@@ -31,15 +31,18 @@ if $tracelevel then {
     strace $tracelevel
 }
 
-if [target_info exists ieee_multilib_flags] {
-    set additional_flags [target_info ieee_multilib_flags];
-} else {
-    set additional_flags "";
+set additional_flags "";
+
+# We must use -ffloat-store/-mieee to ensure that excess precision on some
+# machines does not cause problems
+if [istarget "i\[34567\]86-*-*"] then {
+  lappend additional_flags "-ffloat-store"
 }
 
-# We must use -ffloat-store to ensure that excess precision on some machines
-# does not cause problems
-lappend additional_flags "-ffloat-store"
+if { [istarget "alpha*-*-*"] 
+     || [istarget "sh-*-*"] } then {
+  lappend additional_flags "-mieee"
+}
 
 # load support procs
 load_lib c-torture.exp
