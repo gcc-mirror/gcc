@@ -1236,23 +1236,26 @@ extern struct rtx_def *legitimize_pic_address ();
    subtract insn is used to set the condition code.  Different branches are
    used in this case for some operations.
 
-   We also have a mode to indicate that the relevant condition code is
-   in the floating-point condition code.  This really should be a separate
-   register, but we don't want to go to 65 registers.  */
-#define EXTRA_CC_MODES CC_NOOVmode, CCFPmode
+   We also have two modes to indicate that the relevant condition code is
+   in the floating-point condition code register.  One for comparisons which
+   will generate an exception if the result is unordered (CCFPEmode) and
+   one for comparisons which will never trap (CCFPmode).  This really should
+   be a separate register, but we don't want to go to 65 registers.  */
+#define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode
 
 /* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CC_NOOV", "CCFP"
+#define EXTRA_CC_NAMES "CC_NOOV", "CCFP", "CCFPE"
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
-   return the mode to be used for the comparison.  For floating-point, CCFPmode
-   should be used.  CC_NOOVmode should be used when the first operand is a
+   return the mode to be used for the comparison.  For floating-point,
+   CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand is a
    PLUS, MINUS, or NEG.  CCmode should be used when no special processing is
    needed.  */
 #define SELECT_CC_MODE(OP,X) \
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CCFPmode		    \
-   : (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS || GET_CODE (X) == NEG) \
-   ? CC_NOOVmode : CCmode)
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
+   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)		\
+   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS || GET_CODE (X) == NEG) \
+      ? CC_NOOVmode : CCmode))
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)
