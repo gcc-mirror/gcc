@@ -156,11 +156,13 @@ INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) $(EH_COMMON
 
 nat_files = $(nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
-javao_files = $(java_source_files:.java=.lo)
+javao_files = $(java_source_files:.java=.lo) \
+	$(built_java_source_files:.java=.lo)
+
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	$(c_source_files) $(java_source_files)
+	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
@@ -177,7 +179,9 @@ CLEANFILES = libgcj.zip
 
 SUFFIXES = .class .java .h
 
-nat_headers = $(ordinary_java_source_files:.java=.h)
+nat_headers = $(ordinary_java_source_files:.java=.h) \
+	$(built_java_source_files:.java=.h)
+
 
 FTFRIEND = void JvRunMain (jclass klass, int argc, const char **argv)
 
@@ -278,6 +282,8 @@ java/awt/peer/WindowPeer.java
 
 
 # $(awt_java_source_files)
+
+built_java_source_files = java/lang/ConcreteProcess.java
 
 ordinary_java_source_files = $(convert_source_files) \
 gnu/gcj/text/BaseBreakIterator.java \
@@ -543,6 +549,7 @@ java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
+java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
 java/lang/natFirstThread.cc \
 java/lang/natFloat.cc \
@@ -721,8 +728,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/ClassNotFoundException.P \
 .deps/java/lang/CloneNotSupportedException.P \
 .deps/java/lang/Cloneable.P .deps/java/lang/Comparable.P \
-.deps/java/lang/Compiler.P .deps/java/lang/Double.P \
-.deps/java/lang/Error.P .deps/java/lang/Exception.P \
+.deps/java/lang/Compiler.P .deps/java/lang/ConcreteProcess.P \
+.deps/java/lang/Double.P .deps/java/lang/Error.P \
+.deps/java/lang/Exception.P \
 .deps/java/lang/ExceptionInInitializerError.P \
 .deps/java/lang/FirstThread.P .deps/java/lang/Float.P \
 .deps/java/lang/IllegalAccessError.P \
@@ -1341,7 +1349,13 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 $(java_source_files:.java=.class): libgcj.zip
 
+$(built_java_source_files:.java=.class): $(built_java_source_files)
+	javac="$(JAVAC)"; \
+	$$javac $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	  -d $(here) $?
+
 libgcj.zip: $(java_source_files)
+	$(MAKE) $(built_java_source_files:.java=.class)
 	javac="$(JAVAC)"; cd $(srcdir); \
 	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)

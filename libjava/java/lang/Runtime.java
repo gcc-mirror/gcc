@@ -52,8 +52,7 @@ public class Runtime
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkExec(progarray[0]);
-    // FIXME.
-    return null;
+    return new ConcreteProcess (progarray, envp);
   }
 
   private final static void checkExit (int status)

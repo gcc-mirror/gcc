@@ -36,7 +36,7 @@ sub scan
 {
     local ($dir, $indent) = @_;
     local (@subdirs) = ();
-    local (@classes) = ();
+    local (%classes) = ();
 
     local ($d) = new DirHandle $dir;
     local (*JFILE);
@@ -72,7 +72,7 @@ sub scan
 		# For now assume that class names start with upper
 		# case letter.
 		next unless /(class|interface) ([A-Z][A-Za-z0-9]+)/;
-		push (@classes, $2);
+		$classes{$2} = 1;
 	    }
 	    close (FILE);
 	}
@@ -86,7 +86,7 @@ sub scan
     print $spaces, "namespace ", $classname, "\n";
     print $spaces, "{\n";
 
-    foreach (sort @classes)
+    foreach (sort keys %classes)
     {
 	print $spaces, "  class ", $_, ";\n";
     }
