@@ -1079,6 +1079,15 @@ split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
 {
   tree t, s, a, next, specs, attrs;
 
+  /* This can happen after an __extension__ in pedantic mode.  */
+  if (specs_attrs != NULL_TREE 
+      && TREE_CODE (specs_attrs) == INTEGER_CST)
+    {
+      *declspecs = NULL_TREE;
+      *prefix_attributes = NULL_TREE;
+      return;
+    }
+
   /* This can happen in c++ (eg: decl: typespec initdecls ';').  */
   if (specs_attrs != NULL_TREE
       && TREE_CODE (specs_attrs) != TREE_LIST)

@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from objc-parse.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -99,7 +100,7 @@ const char * const language_string = "GNU Obj-C";
 #line 65 "objc-parse.y"
 typedef union {long itype; tree ttype; enum tree_code code;
 	char *filename; int lineno; int ends_in_label; } YYSTYPE;
-#line 198 "objc-parse.y"
+#line 196 "objc-parse.y"
 
 /* Number of statements (loosely speaking) and compound statements 
    seen so far.  */
@@ -123,9 +124,11 @@ static int undeclared_variable_notice;
 
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
-#define SAVE_WARN_FLAGS() (pedantic | (warn_pointer_arith << 1))
-#define RESTORE_WARN_FLAGS(val) \
+#define SAVE_WARN_FLAGS()	\
+	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
+#define RESTORE_WARN_FLAGS(tval) \
   do {                                     \
+    int val = TREE_INT_CST_LOW (tval);     \
     pedantic = val & 1;                    \
     warn_pointer_arith = (val >> 1) & 1;   \
   } while (0)
@@ -1746,8 +1749,8 @@ static const short yycheck[] = {    56,
     46,    47,    48,    49,    50,    51,    52,    53,    54
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/misc/bison.simple"
-/* This file comes from bison-1.28.  */
+#line 3 "/usr/share/bison.simple"
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1960,7 +1963,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/share/misc/bison.simple"
+#line 216 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2325,7 +2328,7 @@ case 10:
     break;}
 case 11:
 #line 294 "objc-parse.y"
-{ RESTORE_WARN_FLAGS (yyvsp[-1].itype); ;
+{ RESTORE_WARN_FLAGS (yyvsp[-1].ttype); ;
     break;}
 case 12:
 #line 299 "objc-parse.y"
@@ -2495,7 +2498,7 @@ case 49:
 case 50:
 #line 432 "objc-parse.y"
 { yyval.ttype = yyvsp[0].ttype;
-		  RESTORE_WARN_FLAGS (yyvsp[-1].itype); ;
+		  RESTORE_WARN_FLAGS (yyvsp[-1].ttype); ;
     break;}
 case 51:
 #line 435 "objc-parse.y"
@@ -3093,7 +3096,7 @@ case 136:
     break;}
 case 137:
 #line 982 "objc-parse.y"
-{ RESTORE_WARN_FLAGS (yyvsp[-1].itype); ;
+{ RESTORE_WARN_FLAGS (yyvsp[-1].ttype); ;
     break;}
 case 138:
 #line 992 "objc-parse.y"
@@ -3652,7 +3655,7 @@ case 282:
 case 283:
 #line 1569 "objc-parse.y"
 { yyval.ttype = yyvsp[0].ttype;
-		  RESTORE_WARN_FLAGS (yyvsp[-1].itype); ;
+		  RESTORE_WARN_FLAGS (yyvsp[-1].ttype); ;
     break;}
 case 285:
 #line 1576 "objc-parse.y"
@@ -4471,7 +4474,7 @@ case 417:
     break;}
 case 418:
 #line 2402 "objc-parse.y"
-{ yyval.itype = SAVE_WARN_FLAGS();
+{ yyval.ttype = SAVE_WARN_FLAGS();
 		  pedantic = 0;
 		  warn_pointer_arith = 0; ;
     break;}
@@ -5150,7 +5153,7 @@ case 570:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/share/misc/bison.simple"
+#line 542 "/usr/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;

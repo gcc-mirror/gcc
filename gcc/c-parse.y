@@ -154,7 +154,7 @@ const char * const language_string = "GNU C";
 %type <ttype> init maybeasm
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> any_word
+%type <ttype> any_word extension
 
 %type <ttype> compstmt compstmt_nostart compstmt_primary_start
 
@@ -172,8 +172,6 @@ const char * const language_string = "GNU C";
 %type <ttype> parmlist parmlist_1 parmlist_2
 %type <ttype> parmlist_or_identifiers parmlist_or_identifiers_1
 %type <ttype> identifiers_or_typenames
-
-%type <itype> extension
 
 %type <itype> setspecs
 
@@ -206,9 +204,11 @@ static int undeclared_variable_notice;
 
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
-#define SAVE_WARN_FLAGS() (pedantic | (warn_pointer_arith << 1))
-#define RESTORE_WARN_FLAGS(val) \
+#define SAVE_WARN_FLAGS()	\
+	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
+#define RESTORE_WARN_FLAGS(tval) \
   do {                                     \
+    int val = TREE_INT_CST_LOW (tval);     \
     pedantic = val & 1;                    \
     warn_pointer_arith = (val >> 1) & 1;   \
   } while (0)
