@@ -2155,10 +2155,11 @@
 
 (define_insn "shl_sext_sub"
   [(set (match_operand:SI 0 "register_operand" "=z")
-        (sign_extract:SI (ashift:SI (match_operand:SI 1 "register_operand" "0")
-				    (match_operand:SI 2 "const_int_operand" "n"))
-			 (match_operand:SI 3 "const_int_operand" "n")
-			 (const_int 0)))
+        (sign_extract:SI
+	 (ashift:SI (match_operand:SI 1 "register_operand" "0")
+		    (match_operand:SI 2 "const_int_operand" "n"))
+	 (match_operand:SI 3 "const_int_operand" "n")
+	 (const_int 0)))
    (clobber (reg:SI T_REG))]
   "(shl_sext_kind (operands[2], operands[3], 0) & ~1) == 6"
   "#"
@@ -2392,7 +2393,7 @@
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (set (subreg:SI (mem:QI (plus:SI (reg:SI SP_REG) (const_int 12)) 0) 0)
-;; (made from (set (subreg:SI (reg:QI 73) 0) ) into T.
+;; (made from (set (subreg:SI (reg:QI ###) 0) ) into T.
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,m,<,<,xl,x,l,r")
 	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,mr,xl,t,r,x,l,r,>,>,i"))]
@@ -2418,7 +2419,7 @@
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
-;; (subreg:SI (reg:SF 38 fr14) 0) into T (compiling stdlib/strtod.c -m3e -O2)
+;; (subreg:SI (reg:SF FR14_REG) 0) into T (compiling stdlib/strtod.c -m3e -O2)
 ;; ??? This allows moves from macl to fpul to be recognized, but these moves
 ;; will require a reload.
 (define_insn "movsi_ie"
@@ -3213,8 +3214,7 @@
 ;; The const_int_operand is distinct for each branch target; it avoids
 ;; unwanted matches with redundant_insn.
 (define_insn "block_branch_redirect"
-  [(set (pc) (unspec [(match_operand 0 "const_int_operand" "")]
-		     UNSPEC_BBR))]
+  [(set (pc) (unspec [(match_operand 0 "const_int_operand" "")] UNSPEC_BBR))]
   ""
   ""
   [(set_attr "length" "0")])
@@ -3718,7 +3718,7 @@
   [(set (reg:SI R0_REG) (unspec [(label_ref (match_dup 2))] UNSPEC_MOVA))
    (parallel [(set (match_dup 0)
 	      (unspec [(reg:SI R0_REG) (match_dup 1)
-		        (label_ref (match_dup 2))] UNSPEC_CASESI))
+		       (label_ref (match_dup 2))] UNSPEC_CASESI))
 	      (clobber (match_dup 3))])
    (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
   "LABEL_NUSES (operands[2])++;")
