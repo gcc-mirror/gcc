@@ -1,3 +1,9 @@
+2005-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_primary_expression): Don't complain about
+	floating-point literals in integral constant expressions when
+	!pedantic.
+
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* parser.c (cp_parser_template_id): Revert comment patch too.
