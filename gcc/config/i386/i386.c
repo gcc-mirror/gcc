@@ -6897,7 +6897,10 @@ ix86_split_long_move (operands)
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (operands[1], 0)))
 	operands[1] = get_pool_constant (XEXP (operands[1], 0));
       if (push_operand (operands[0], VOIDmode))
-	operands[0] = change_address (operands[0], DImode, XEXP (operands[0], 0));
+	{
+	  operands[0] = copy_rtx (operands[0]);
+	  PUT_MODE (operands[0], Pmode);
+	}
       else
         operands[0] = gen_lowpart (DImode, operands[0]);
       operands[1] = gen_lowpart (DImode, operands[1]);
