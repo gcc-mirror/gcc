@@ -1720,3 +1720,12 @@ do {									\
   arm_increase_location (4);						\
   ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));			\
 } while (0)
+
+/* Used to mask out junk bits from the return address, such as
+   processor state, interrupt status, condition codes and the like.  */
+#define MASK_RETURN_ADDR \
+  /* If we are generating code for an ARM2/ARM3 machine or for an ARM6	\
+     in 26 bit mode, the condition codes must be masked out of the	\
+     return address.  This does not apply to ARM6 and later processors	\
+     when running in 32 bit mode.  */					\
+  ((!TARGET_6) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
