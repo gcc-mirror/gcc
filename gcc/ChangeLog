@@ -1,3 +1,8 @@
+2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* i386.h (CPP_CPU_SPEC): Allow for -std=c* and -std=i* as
+	equivalent to -ansi in disabling -Di386.
+
 Wed Jan 10 16:38:31 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_fp_compare_code_to_integer, ix86_fp_comparison_codes):
