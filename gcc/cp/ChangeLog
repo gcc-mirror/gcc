@@ -1,3 +1,289 @@
+Fri Jun  3 02:10:56 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (cp_convert): Replace constants with their values before
+	converting.
+
+Thu Jun  2 03:53:30 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck2.c (build_x_arrow): Resolve OFFSET_REFs first.
+
+Wed Jun  1 18:57:35 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck2.c (digest_init): Handle initializing a pmf with an
+	overloaded method.
+	* typeck.c (build_ptrmemfunc): Handle overloaded methods.
+
+	* decl.c (pushtag): Use build_decl to make TYPE_DECLs.
+	(xref_defn_tag): Ditto.
+	* pt.c (process_template_parm): Ditto.
+	(lookup_template_class): Ditto.
+	(push_template_decls): Ditto.
+	(instantiate_class_template): Ditto.
+	(create_nested_upt): Ditto.
+	* class.c (finish_struct): Don't try to set DECL_CLASS_CONTEXT on
+	TYPE_DECLs.
+
+	* typeck.c (convert_arguments): Make sure type is not NULL before
+	checking its TREE_CODE.
+
+Wed Jun  1 17:40:39 1994  Mike Stump  (mrs@cygnus.com)
+
+	* class.c (get_derived_offset): New routine.
+	* class.c (finish_base_struct): Make sure we set BINFO_VTABLE and
+	BINFO_VIRTUALS when we choose a new base class to inherit from.
+	* class.c (modify_one_vtable): Use get_derived_offset to get the
+	offset to the most base class subobject that we derived this binfo
+	from.
+	* class.c (finish_struct): Move code to calculate the
+	DECL_FIELD_BITPOS of the vfield up, as we need might need it for
+	new calls to get_derived_offset in modify_one_vtable.
+
+Wed Jun  1 16:50:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* init.c (build_member_call): Use build_pointer_type instead of
+	TYPE_POINTER_TO.
+
+Wed Jun  1 11:11:15 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl.c (grokdeclarator): Make sure we have a DNAME set before we
+	try to use it in an error.
+
+Wed Jun  1 09:48:49 1994  Mike Stump  (mrs@cygnus.com)
+
+	* typeck.c (convert_arguments, convert_for_initialization): Don't
+	strip NOP_EXPRs, when we are converting to a reference.
+
+Wed Jun  1 01:11:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_modify_expr): Don't dereference references when
+	initializing them.
+
+	* decl2.c (grokfield): Don't check for grokdeclarator returning
+	error_mark_node any more.
+
+	* decl.c (grokfndecl): Return NULL_TREE instead of error_mark_node.
+	(start_method): Return void_type_node instead of error_mark_node.
+
+	* typeck.c (build_modify_expr): Resolve offset refs earlier.
+
+Tue May 31 16:06:58 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): Resolve OFFSET_REFs in the object.
+
+	* typeck.c (build_modify_expr): Dereference references before trying
+	to assign to them.
+
+	* call.c (build_method_call): Don't confuse type conversion
+	operators with constructors.
+	* typeck2.c (build_functional_cast): Just call build_c_cast if there
+	was only one parameter.
+	* method.c (build_typename_overload): Don't set
+	IDENTIFIER_GLOBAL_VALUE on these identifiers.
+	* decl.c (grok_op_properties): Warn about defining a type conversion
+	operator that converts to a base class (or reference to it).
+	* cvt.c (cp_convert): Don't try to use a type conversion operator
+	when converting to a base class.
+	(build_type_conversion_1): Don't call constructor_name_full on an
+	identifier.
+	* cp-tree.h (DERIVED_FROM_P): Should be self-explanatory.
+
+	* decl.c (start_decl): Don't complain that error_mark_node is an
+	incomplete type.
+	(finish_decl): Check for type == error_mark_node.
+
+Mon May 30 23:38:55 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (start_function): Set DECL_DEFER_OUTPUT on implicit
+	instantiations and inline members.
+
+	* spew.c (yylex): Set looking_for_template if the next token is a '<'.
+
+	* lex.h: Declare looking_for_template.
+
+	* decl.c (lookup_name_real): Use looking_for_template to arbitrate
+	between type and template interpretations of an identifier.
+
+Sat May 28 04:07:40 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (instantiate_template): Zero out p if we found a
+	specialization.
+
+	* decl.c (grokdeclarator): Elucidate warning.
+	(grokdeclarator): If pedantic AND -ansi, complain about long long.
+
+	Make explicit instantiation work reasonably.  It is now appropriate
+	to deprecate the use of -fexternal-templates.
+	* pt.c (instantiate_template): Set DECL_TEMPLATE_SPECIALIZATION or
+	DECL_IMPLICIT_INSTANTIATION on fndecl as appropriate.
+	(end_template_instantiation): Reflect changes in USE_TEMPLATE
+	semantics.
+	(do_pending_expansions): if (!flag_implicit_templates) DECIDE(0);
+	(do_function_instantiation): Don't set EXPLICIT_INST if
+	flag_external_templates is set.  Do set TREE_PUBLIC and DECL_EXTERN
+	appropriately otherwise.
+	(do_type_instantiation): Set interface info for class.  Set
+	TREE_PUBLIC and DECL_EXTERN for methods.  Do none of this if
+	flag_external_templates is set.
+	* parse.y: Reflect changes in USE_TEMPLATE semantics.
+	* decl2.c: New flag flag_implicit_templates determines whether or
+	not implicit instantiations get emitted.  This flag currently
+	defaults to true, and must be true for -fexternal-templates to work.
+	(finish_file): Consider flag_implement_inlines when
+	setting DECL_EXTERNAL.  Consider flag_implicit_templates when
+	deciding whether or not to emit a static copy.
+	* decl.c (start_function): Set TREE_PUBLIC and DECL_EXTERNAL
+	properly for template instantiations.
+	(start_method): Set DECL_IMPLICIT_INSTANTIATION on methods of a
+	template class.
+	* cp-tree.h (CLASSTYPE_USE_TEMPLATE): Change semantics.
+	(DECL_USE_TEMPLATE): Parallel macro for FUNCTION and VAR_DECLs.
+	(various others): Accessor macros for the above.
+
+Fri May 27 13:57:40 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_binary_op_nodefault): Division by constant zero is
+	an error.
+
+Fri May 27 13:50:15 1994  Mike Stump  (mrs@cygnus.com)
+
+	* class.c (override_one_vtable): Don't modify things we don't own.
+
+Fri May 27 01:42:58 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (finish_decl): Don't postpone processing the initializer of
+	a decl with DECL_EXTERNAL set, and do call rest_of_compilation for a
+	PUBLIC const at toplevel.
+	(grokdeclarator): pedwarn about initializing non-const or
+	non-integral statics in the class body.
+
+	* decl.c (pushtag): Don't try to set DECL_CLASS_CONTEXT on a
+	TYPE_DECL.
+
+	* call.c (convert_harshness): Dereference reference on rhs before
+	proceeding, properly grok passing const things to non-const
+	references.
+
+	* typeck.c (build_unary_op): Soften error about taking the address
+	of main() to a pedwarn.
+
+	* lex.c (default_copy_constructor_body): Unambiguously specify base
+	classes (i.e. A((const class ::A&)_ctor_arg) ).
+	(default_assign_ref_body): Ditto.
+
+Thu May 26 13:13:55 1994  Gerald Baumgartner  (gb@mexican.cygnus.com)
+
+	* decl2.c (grokfield): Don't complain about local signature
+	method declaration without definition.
+
+	* call.c (convert_harshness): If `type' is a signature pointer
+	and `parmtype' is a pointer to a signature, just return 0.  We
+	don't really convert in this case; it's a result of making the
+	`this' parameter of a signature method a signature pointer.
+
+	* call.c (build_method_call): Distinguish calling the default copy
+	constructor of a signature pointer/reference from a signature
+	member function call.
+
+Thu May 26 12:56:25 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl2.c (grokfield): Don't set TREE_PUBLIC on member function
+	declarations.
+
+	* decl.c (duplicate_decls): A previous function declaration as
+	static overrides a subsequent non-static definition.
+	(grokdeclarator): Don't set TREE_PUBLIC on inline method
+	declarations.
+
+Wed May 25 14:36:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): Handle initialization of static const
+	members.
+	(finish_decl): Ditto.
+
+	* decl2.c (grokfield): Allow initialization of static const members
+	even when pedantic.
+
+	* decl2.c (grokfield): Deal with grokdeclarator returning
+	error_mark_node.
+
+	* decl.c (grok_ctor_properties): Return 0 for A(A) constructor.
+	(grokfndecl): Check the return value of grok_ctor_properties.
+	(start_method): Ditto.
+
+	* parse.y (absdcl): Expand type_quals inline.
+
+Tue May 24 19:10:32 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (pushtag): Use IS_AGGR_TYPE rather than checking for a
+	RECORD_TYPE.
+
+Tue May 24 18:09:16 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	* cp-tree.h (VTABLE_NAME_FORMAT):  If flag_vtable_thunks,
+	always use "__vt_%s".
+	* decl2.c (finish_vtable_vardecl):  Don't consider abstract virtuals
+	when looking for a "sentinal" method (to decide on emitting vtables).
+	* decl2.c (finish_file):  Scan all decls for thunks that need
+	to be emitted.
+	* decl2.c (finish_vtable_vardecl):  Don't bother calling emit_thunk.
+	* method.c (make_thunk):  Use a more meaningful label.  If there
+	exists a matching top-level THUNK_DECL re-use it;  otherwise
+	create a new THUNK_DECL (and declare it).
+	* method.c (emit_thunk):  Make thunk external/public depending
+	on the underlying method.
+
+Tue May 24 00:22:04 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (tsubst): Use lookup_name_nonclass to find guiding decls, not
+	lookup_name.
+
+	* call.c (build_overload_call_real): Don't immediately pick a
+	function which matches perfectly.
+
+	* decl.c (grokdeclarator): Use c_build_type_variant for arrays.
+	(grokdeclarator): Warn about, and throw away, cv-quals attached to a
+	reference (like 'int &const j').
+
+	* typeck.c (convert_arguments): Don't mess with i for methods.
+	* call.c (build_method_call): Pass the function decl to
+	convert_arguments.
+
+	* typeck.c (comp_ptr_ttypes_real): New function.  Implements the
+	checking for which multi-level pointer conversions are allowed.
+	(comp_target_types): Call it.
+	(convert_for_assignment): Check const parity on the ultimate target
+	type, too.  And make those warnings pedwarns.
+
+Mon May 23 14:11:24 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* error.c (dump_char): Use TARGET_* for character constants.
+
+Mon May 23 13:03:03 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* tree.c (debug_no_list_hash): Make static.
+
+	* decl.c (decls_match): Say the types don't match if newdecl ends up
+	with a null type, after we've checked if olddecl does.
+	(pushdecl): Check if the decls themselves match before looking for
+	an extern redeclared as static, to avoid inappropriate and incorrect
+	warnings.
+
+Fri May 20 14:04:34 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): Make warning about duplicate short, etc.
+	a pedwarn.
+
+	* typeck.c (build_c_cast): Casting to function or method type is an
+	error.
+
+	* class.c (finish_struct): Make warning for anonymous class with no
+	instances a pedwarn.
+
+	* Makefile.in (stamp-parse): Expect a s/r conflict.
+
+	* typeck.c (build_modify_expr): pedwarn about using a non-lvalue
+	cast as an lvalue.
+
 Thu May 19 12:08:48 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* cvt.c (type_promotes_to): Make sure bool promotes to int rather
@@ -29,17 +315,6 @@ Wed May 18 14:27:06 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (init_decl_processing): Make bool unsigned.
 
 	* class.c (finish_struct): Allow bool bitfields.
-
-Wed May 18 14:41:59 1994  Mike Stump  (mrs@cygnus.com)
-
-	* class.c (finish_base_struct): Make sure we set BINFO_VTABLE and
-	BINFO_VIRTUALS when we choose a new base class to inherit from.
-	* class.c (modify_one_vtable): Use get_vfield_offset to get the
-	offset to the most base class subobject that we derived this binfo
-	from.
-	* class.c (finish_struct): Move code to calculate the
-	DECL_FIELD_BITPOS of the vfield up, as we need might need it for
-	new calls to get_vfield_offset in modify_one_vtable.
 
 Wed May 18 12:35:27 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 

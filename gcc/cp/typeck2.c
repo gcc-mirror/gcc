@@ -655,6 +655,7 @@ digest_init (type, init, tail)
       && ((TREE_CODE (init) == ADDR_EXPR
 	   && TREE_CODE (TREE_TYPE (init)) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (TREE_TYPE (init))) == METHOD_TYPE)
+	  || TREE_CODE (init) == TREE_LIST
 	  || integer_zerop (init)
 	  || (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))))
     {
@@ -1237,6 +1238,12 @@ build_x_arrow (datum)
   if (type == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (rval) == OFFSET_REF)
+    {
+      rval = resolve_offset_ref (datum);
+      type = TREE_TYPE (rval);
+    }
+
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       rval = convert_from_reference (rval);
@@ -1268,7 +1275,6 @@ build_x_arrow (datum)
   else
     last_rval = default_conversion (rval);
 
- more:
   /* Signature pointers are not dereferenced.  */
   if (TYPE_LANG_SPECIFIC (TREE_TYPE (last_rval))
       && IS_SIGNATURE_POINTER (TREE_TYPE (last_rval)))
@@ -1276,20 +1282,6 @@ build_x_arrow (datum)
 
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
     return build_indirect_ref (last_rval, NULL_PTR);
-
-  if (TREE_CODE (TREE_TYPE (last_rval)) == OFFSET_TYPE)
-    {
-      if (TREE_CODE (last_rval) == OFFSET_REF
-	  && TREE_STATIC (TREE_OPERAND (last_rval, 1)))
-	{
-	  last_rval = TREE_OPERAND (last_rval, 1);
-	  if (TREE_CODE (TREE_TYPE (last_rval)) == REFERENCE_TYPE)
-	    last_rval = convert_from_reference (last_rval);
-	  goto more;
-	}
-      compiler_error ("invalid member type in build_x_arrow");
-      return error_mark_node;
-    }
 
   if (types_memoized)
     error ("result of `operator->()' yields non-pointer result");
@@ -1372,7 +1364,6 @@ build_functional_cast (exp, parms)
      or a C cast in C++'s `functional' notation.  */
   tree type, name = NULL_TREE;
   tree expr_as_ctor = NULL_TREE;
-  tree expr_as_conversion = NULL_TREE;
 
   if (exp == error_mark_node || parms == error_mark_node)
     return error_mark_node;
@@ -1423,7 +1414,12 @@ build_functional_cast (exp, parms)
       /* this must build a C cast */
       if (parms == NULL_TREE)
 	return build1 (NOP_EXPR, type, integer_zero_node);
-      return build_c_cast (type, build_compound_expr (parms));
+      else if (TREE_CHAIN (parms) != NULL_TREE)
+	{
+	  pedwarn ("initializer list being treated as compound expression");
+	  parms = build_compound_expr (parms);
+	}
+      return build_c_cast (type, parms);
     }
 
   if (TYPE_SIZE (type) == NULL_TREE)
@@ -1433,90 +1429,45 @@ build_functional_cast (exp, parms)
     }
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    expr_as_conversion
-      = build_type_conversion (CONVERT_EXPR, type, TREE_VALUE (parms), 0);
-    
-  if (! TYPE_HAS_CONSTRUCTOR (type) && parms != NULL_TREE)
-    {
-      char *msg = 0;
+    return build_c_cast (type, parms);
 
-      if (parms == NULL_TREE)
-	msg = "argument missing in cast to `%T' type";
-      else if (TREE_CHAIN (parms) == NULL_TREE)
-	{
-	  if (expr_as_conversion == NULL_TREE)
-	    msg = "conversion to type `%T' failed";
-	}
-      else msg = "type `%T' does not have a constructor";
+  expr_as_ctor = build_method_call (NULL_TREE, name, parms,
+				    NULL_TREE, LOOKUP_NORMAL);
 
-      if (expr_as_conversion)
-	return expr_as_conversion;
+  if (expr_as_ctor == error_mark_node)
+    return error_mark_node;
 
-      cp_error (msg, type);
-      return error_mark_node;
-    }
+  if (current_function_decl)
+    return build_cplus_new (type, expr_as_ctor, 0);
 
   {
-    int flags = LOOKUP_SPECULATIVELY|LOOKUP_NORMAL;
+    register tree parm = TREE_OPERAND (expr_as_ctor, 1);
 
-    if (parms && TREE_CHAIN (parms) == NULL_TREE)
-      flags |= LOOKUP_NO_CONVERSION;
-
-    expr_as_ctor = build_method_call (NULL_TREE, name, parms,
-				      NULL_TREE, flags);
-
-    if (expr_as_ctor == error_mark_node)
-      return error_mark_node;
-
-    else if (expr_as_ctor)
-      {
-	if (expr_as_conversion && expr_as_conversion != error_mark_node)
-	  {
-	    /* ANSI C++ June 5 1992 WP 12.3.2.6.1 */
-	    cp_error ("ambiguity between conversion to `%T' and constructor",
-		      type);
-	    return error_mark_node;
-	  }
-
-	if (current_function_decl)
-	  return build_cplus_new (type, expr_as_ctor, 0);
-
-	{
-	  register tree parm = TREE_OPERAND (expr_as_ctor, 1);
-
-	  /* Initializers for static variables and parameters have
-	     to handle doing the initialization and cleanup themselves.  */
-	  my_friendly_assert (TREE_CODE (expr_as_ctor) == CALL_EXPR, 322);
+    /* Initializers for static variables and parameters have
+       to handle doing the initialization and cleanup themselves.  */
+    my_friendly_assert (TREE_CODE (expr_as_ctor) == CALL_EXPR, 322);
 #if 0
-	  /* The following assertion fails in cases where we are initializing
-	     a static member variable of a particular instance of a template
-	     class with a call to a constructor of the given instance, as in:
-
-		TMPL<int> object = TMPL<int>();
-
-	     Curiously, the assertion does not fail if we do the same thing
-	     for a static member of a non-template class, as in:
-
-		T object = T();
-
-	     I can't see why we should care here whether or not the initializer
-	     expression involves a call to `new', so for the time being, it
-	     seems best to just avoid doing this assertion.  */
-	  my_friendly_assert (TREE_CALLS_NEW (TREE_VALUE (parm)), 323);
+    /* The following assertion fails in cases where we are initializing
+       a static member variable of a particular instance of a template
+       class with a call to a constructor of the given instance, as in:
+       
+       TMPL<int> object = TMPL<int>();
+       
+       Curiously, the assertion does not fail if we do the same thing
+       for a static member of a non-template class, as in:
+       
+       T object = T();
+       
+       I can't see why we should care here whether or not the initializer
+       expression involves a call to `new', so for the time being, it
+       seems best to just avoid doing this assertion.  */
+    my_friendly_assert (TREE_CALLS_NEW (TREE_VALUE (parm)), 323);
 #endif
-	  TREE_VALUE (parm) = NULL_TREE;
-	  expr_as_ctor = build_indirect_ref (expr_as_ctor, NULL_PTR);
-	  TREE_HAS_CONSTRUCTOR (expr_as_ctor) = 1;
-	}
-	return expr_as_ctor;
-      }
-
-    if (expr_as_conversion)
-      return expr_as_conversion;
-
-    cp_error ("no suitable conversion to `%T' exists", type);
-    return error_mark_node;
+    TREE_VALUE (parm) = NULL_TREE;
+    expr_as_ctor = build_indirect_ref (expr_as_ctor, NULL_PTR);
+    TREE_HAS_CONSTRUCTOR (expr_as_ctor) = 1;
   }
+  return expr_as_ctor;
 }
 
 /* Return the character string for the name that encodes the

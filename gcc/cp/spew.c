@@ -236,6 +236,7 @@ probe_obstack (h, obj, nlevels)
    a typename (when it may be a local variable or a class variable).
    Value is 0 if we treat this name in a default fashion. */
 extern int looking_for_typename;
+int looking_for_template;
 
 extern struct obstack *current_obstack, *saveable_obstack;
 tree got_scope;
@@ -298,6 +299,8 @@ yylex()
       if (nth_token (1)->yychar == SCOPE)
 	/* Don't interfere with the setting from an 'aggr' prefix.  */
 	looking_for_typename++;
+      else if (nth_token (1)->yychar == '<')
+	looking_for_template = 1;
 
       trrr = lookup_name (tmp_token.yylval.ttype, -2);
 
@@ -334,6 +337,7 @@ yylex()
       consume_token ();
       if (looking_for_typename > 0)
 	looking_for_typename--;
+      looking_for_template = 0;
       break;
 
     case SCSPEC:

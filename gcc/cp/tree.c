@@ -860,7 +860,7 @@ list_hash_add (hashcode, list)
    This function frees the list you pass in if it is a duplicate.  */
 
 /* Set to 1 to debug without canonicalization.  Never set by program.  */
-int debug_no_list_hash = 0;
+static int debug_no_list_hash = 0;
 
 tree
 list_hash_canon (hashcode, list)

@@ -1936,15 +1936,17 @@ default_assign_ref_body (bufp, lenp, type, fields)
 	  name = TYPE_NESTED_NAME (btype);
 	  s = IDENTIFIER_POINTER (name);
 
-	  tneed = (2 * strlen (s)) + 33;
+	  tneed = (2 * strlen (s)) + 42;
 	  if (tgot < tneed)
 	    {
 	      tgot = tneed;
 	      tbuf = (char *) alloca (tgot);
 	    }
 
-	  sprintf (tbuf, "%s::operator=((%s%s&)_ctor_arg);", s,
-		   TYPE_READONLY (type) ? "const " : "", s);
+	  sprintf (tbuf, "%s::operator=((%s%s ::%s&)_ctor_arg);", s,
+		   TYPE_READONLY (type) ? "const " : "",
+		   CLASSTYPE_DECLARED_CLASS (btype) ? "class" : "struct",
+		   s);
 	  obstack_grow (&body, tbuf, strlen (tbuf));
 	}
     }
@@ -2101,15 +2103,17 @@ default_copy_constructor_body (bufp, lenp, type, fields)
 	  name = TYPE_NESTED_NAME (btype);
 	  s = IDENTIFIER_POINTER (name);
 
-	  tneed = (2 * strlen (s)) + 30;
+	  tneed = (2 * strlen (s)) + 39;
 	  if (tgot < tneed)
 	    {
 	      tgot = tneed;
 	      tbuf = (char *) alloca (tgot);
 	    }
 
-	  sprintf (tbuf, "%c%s((%s%s&)_ctor_arg)", sep, s,
-		   TYPE_READONLY (type) ? "const " : "", s);
+	  sprintf (tbuf, "%c%s((%s%s ::%s&)_ctor_arg)", sep, s,
+		   TYPE_READONLY (type) ? "const " : "",
+		   CLASSTYPE_DECLARED_CLASS (btype) ? "class" : "struct",
+		   s);
 	  sep = ',';
 	  obstack_grow (&prologue, tbuf, strlen (tbuf));
 	}

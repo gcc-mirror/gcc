@@ -131,6 +131,13 @@ convert_harshness (type, parmtype, parm)
   if (TYPE_PTRMEMFUNC_P (parmtype))
     parmtype = TYPE_PTRMEMFUNC_FN_TYPE (parmtype);
 
+  if (TREE_CODE (parmtype) == REFERENCE_TYPE)
+    {
+      if (parm)
+	parm = convert_from_reference (parm);
+      parmtype = TREE_TYPE (parmtype);
+    }
+
   codel = TREE_CODE (type);
   coder = TREE_CODE (parmtype);
 
@@ -474,196 +481,138 @@ convert_harshness (type, parmtype, parm)
 	}
     }
 
-  /* C++: one of the types must be a reference type.  */
-  {
-    tree ttl, ttr;
-    register tree intype = TYPE_MAIN_VARIANT (parmtype);
-    register enum tree_code form = TREE_CODE (intype);
-    int penalty = 0;
+  /* C++: Since the `this' parameter of a signature member function
+     is represented as a signature pointer to handle default implementations
+     correctly, we can have the case that `type' is a signature pointer
+     while `parmtype' is a pointer to a signature table.  We don't really
+     do any conversions in this case, so just return 0.  */
 
-    if (codel == REFERENCE_TYPE || coder == REFERENCE_TYPE)
-      {
-	ttl = TYPE_MAIN_VARIANT (type);
+  if (codel == RECORD_TYPE && coder == POINTER_TYPE
+      && IS_SIGNATURE_POINTER (type) && IS_SIGNATURE (TREE_TYPE (parmtype)))
+    return ZERO_RETURN (h);
 
-	if (codel == REFERENCE_TYPE)
-	  {
-	    ttl = TREE_TYPE (ttl);
+  if (codel == REFERENCE_TYPE)
+    {
+      tree ttl, ttr;
+      int constp = parm ? TREE_READONLY (parm) : TYPE_READONLY (parmtype);
+      int volatilep = (parm ? TREE_THIS_VOLATILE (parm)
+		       : TYPE_VOLATILE (parmtype));
+      register tree intype = TYPE_MAIN_VARIANT (parmtype);
+      register enum tree_code form = TREE_CODE (intype);
+      int penalty = 0;
 
-	    /* When passing a non-const argument into a const reference,
-	       dig it a little, so a non-const reference is preferred over
-	       this one. (mrs) */
-	    if (parm && TREE_READONLY (ttl) && ! TREE_READONLY (parm))
-	      penalty = 2;
-	    else
-	      penalty = 0;
+      ttl = TREE_TYPE (type);
 
-	    ttl = TYPE_MAIN_VARIANT (ttl);
+      /* When passing a non-const argument into a const reference (or vice
+	 versa), dig it a little, so a non-const reference is preferred
+	 over this one. (mrs) */
+      if (TYPE_READONLY (ttl) != constp
+	  || TYPE_VOLATILE (ttl) != volatilep)
+	penalty = 2;
+      else
+	penalty = 0;
 
-	    if (form == OFFSET_TYPE)
-	      {
-		intype = TREE_TYPE (intype);
-		form = TREE_CODE (intype);
-	      }
+      ttl = TYPE_MAIN_VARIANT (ttl);
 
-	    if (form == REFERENCE_TYPE)
-	      {
-		intype = TYPE_MAIN_VARIANT (TREE_TYPE (intype));
+      if (form == OFFSET_TYPE)
+	{
+	  intype = TREE_TYPE (intype);
+	  form = TREE_CODE (intype);
+	}
 
-		if (ttl == intype)
-		  return ZERO_RETURN (h);
-		penalty = 2;
-	      }
-	    else
-	      {
-		/* Can reference be built up?  */
-		if (ttl == intype && penalty == 0) {
-		  /* Because the READONLY and VIRTUAL bits are not always in
-		     the type, this extra check is necessary.  The problem
-		     should be fixed someplace else, and this extra code
-		     removed.
+      if (ttl == intype && penalty == 0)
+	return ZERO_RETURN (h);
+      else
+	penalty = 2;
 
-		     Also, if type if a reference, the readonly bits could
-		     either be in the outer type (with reference) or on the
-		     inner type (the thing being referenced).  (mrs)  */
-		  if (parm
-		      && ((TREE_READONLY (parm)
-			   && ! (TYPE_READONLY (type)
-				 || (TREE_CODE (type) == REFERENCE_TYPE
-				     && TYPE_READONLY (TREE_TYPE (type)))))
-			  || (TREE_SIDE_EFFECTS (parm)
-			      && ! (TYPE_VOLATILE (type)
-				    || (TREE_CODE (type) == REFERENCE_TYPE
-					&& TYPE_VOLATILE (TREE_TYPE (type)))))))
-		    penalty = 2;
-		  else
-		    return ZERO_RETURN (h);
-		}
-		else
-		  penalty = 2;
-	      }
-	  }
-	else if (form == REFERENCE_TYPE)
-	  {
-	    if (parm)
-	      {
-		tree tmp = convert_from_reference (parm);
-		intype = TYPE_MAIN_VARIANT (TREE_TYPE (tmp));
-	      }
-	    else
-	      {
-		intype = parmtype;
-		do
-		  intype = TREE_TYPE (intype);
-		while (TREE_CODE (intype) == REFERENCE_TYPE);
-		intype = TYPE_MAIN_VARIANT (intype);
-	      }
+      if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
+	{
+	  ttl = unsigned_type (ttl);
+	  intype = unsigned_type (intype);
+	  penalty += 2;
+	}
 
-	    if (ttl == intype)
-	      return ZERO_RETURN (h);
-	    else
-	      penalty = 2;
-	  }
+      ttr = intype;
 
-	if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
-	  {
-	    ttl = unsigned_type (ttl);
-	    intype = unsigned_type (intype);
-	    penalty += 2;
-	  }
+      /* If the initializer is not an lvalue, then it does not
+	 matter if we make life easier for the programmer
+	 by creating a temporary variable with which to
+	 hold the result.  */
+      if (parm && (INTEGRAL_CODE_P (coder)
+		   || coder == REAL_TYPE)
+	  && ! lvalue_p (parm))
+	{
+	  h = convert_harshness (ttl, ttr, NULL_TREE);
+	  if (penalty > 2 || h.code != 0)
+	    h.code |= STD_CODE;
+	  else
+	    h.code |= TRIVIAL_CODE;
+	  h.distance = 0;
+	  return h;
+	}
 
-	ttr = intype;
-
-	/* If the initializer is not an lvalue, then it does not
-	   matter if we make life easier for the programmer
-	   by creating a temporary variable with which to
-	   hold the result.  */
-	if (parm && (INTEGRAL_CODE_P (coder)
-		     || coder == REAL_TYPE)
-	    && ! lvalue_p (parm))
-	  {
-	    h = convert_harshness (ttl, ttr, NULL_TREE);
-	    if (penalty > 2 || h.code != 0)
-	      h.code |= STD_CODE;
-	    else
-	      h.code |= TRIVIAL_CODE;
-	    h.distance = 0;
-	    return h;
-	  }
-
-	if (ttl == ttr)
-	  {
-	    if (penalty > 2)
-	      {
-		h.code = STD_CODE;
-		h.distance = 0;
-	      }
-	    else
-	      {
-		h.code = TRIVIAL_CODE;
-		/* We set this here so that build_overload_call_real will be
-		   able to see the penalty we found, rather than just looking
-		   at a TRIVIAL_CODE with no other information.  */
-		h.int_penalty = penalty;
-	      }
-	    return h;
-	  }
-
-	/* Pointers to voids always convert for pointers.  But
-	   make them less natural than more specific matches.  */
-	if (TREE_CODE (ttl) == POINTER_TYPE && TREE_CODE (ttr) == POINTER_TYPE)
-	  {
-	    if (TREE_TYPE (ttl) == void_type_node
-		|| TREE_TYPE (ttr) == void_type_node)
-	      {
-		h.code = STD_CODE;
-		h.distance = 0;
-		return h;
-	      }
-	  }
-
-	if (parm && codel != REFERENCE_TYPE)
-	  {
-	    h = convert_harshness (ttl, ttr, NULL_TREE);
-	    if (penalty == 2)
-	      h.code |= QUAL_CODE;
-	    else if (penalty == 4)
-	      h.code |= STD_CODE;
-	    h.distance = 0;
-	    return h;
-	  }
-
-	/* Here it does matter.  If this conversion is from derived to base,
-	   allow it.  Otherwise, types must be compatible in the strong sense.  */
-	if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
-	  {
-	    int b_or_d = get_base_distance (ttl, ttr, 0, 0);
-	    if (b_or_d < 0)
-	      {
-		b_or_d = get_base_distance (ttr, ttl, 0, 0);
-		if (b_or_d < 0)
-		  return EVIL_RETURN (h);
-		h.distance = -b_or_d;
-	      }
-	    /* Say that this conversion is relatively painless.
-	       If it turns out that there is a user-defined X(X&)
-	       constructor, then that will be invoked, but that's
-	       preferable to dealing with other user-defined conversions
-	       that may produce surprising results.  */
-	    else
-	      h.distance = b_or_d;
-	    h.code = STD_CODE;
-	    return h;
-	  }
-
-	if (comp_target_types (ttl, intype, 1))
-	  {
-	    if (penalty)
+      if (ttl == ttr)
+	{
+	  if (penalty > 2)
+	    {
 	      h.code = STD_CODE;
-	    h.distance = 0;
-	    return h;
-	  }
-      }
-  }
+	      h.distance = 0;
+	    }
+	  else
+	    {
+	      h.code = TRIVIAL_CODE;
+	      /* We set this here so that build_overload_call_real will be
+		 able to see the penalty we found, rather than just looking
+		 at a TRIVIAL_CODE with no other information.  */
+	      h.int_penalty = penalty;
+	    }
+	  return h;
+	}
+
+      /* Pointers to voids always convert for pointers.  But
+	 make them less natural than more specific matches.  */
+      if (TREE_CODE (ttl) == POINTER_TYPE && TREE_CODE (ttr) == POINTER_TYPE)
+	{
+	  if (TREE_TYPE (ttl) == void_type_node
+	      || TREE_TYPE (ttr) == void_type_node)
+	    {
+	      h.code = STD_CODE;
+	      h.distance = 0;
+	      return h;
+	    }
+	}
+
+      /* Here it does matter.  If this conversion is from derived to base,
+	 allow it.  Otherwise, types must be compatible in the strong sense.  */
+      if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
+	{
+	  int b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	  if (b_or_d < 0)
+	    {
+	      b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	      if (b_or_d < 0)
+		return EVIL_RETURN (h);
+	      h.distance = -b_or_d;
+	    }
+	  /* Say that this conversion is relatively painless.
+	     If it turns out that there is a user-defined X(X&)
+	     constructor, then that will be invoked, but that's
+	     preferable to dealing with other user-defined conversions
+	     that may produce surprising results.  */
+	  else
+	    h.distance = b_or_d;
+	  h.code = STD_CODE;
+	  return h;
+	}
+
+      if (comp_target_types (ttl, intype, 1))
+	{
+	  if (penalty)
+	    h.code = STD_CODE;
+	  h.distance = 0;
+	  return h;
+	}
+    }
   if (codel == RECORD_TYPE && coder == RECORD_TYPE)
     {
       int b_or_d = get_base_distance (type, parmtype, 0, 0);
@@ -1789,6 +1738,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	 && TREE_CODE (TREE_OPERAND (instance, 0)) == NOP_EXPR
 	 && TREE_OPERAND (TREE_OPERAND (instance, 0), 0) == error_mark_node);
 
+      if (TREE_CODE (instance) == OFFSET_REF)
+	instance = resolve_offset_ref (instance);
+
       /* the base type of an instance variable is pointer to class */
       basetype = TREE_TYPE (instance);
 
@@ -1808,8 +1760,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if (! IS_AGGR_TYPE (basetype))
 	    goto non_aggr_error;
 
-	  if (IS_SIGNATURE_POINTER (basetype)
-	      || IS_SIGNATURE_REFERENCE (basetype))
+	  /* If `instance' is a signature pointer/reference and `name' is
+	     not a constructor, we are calling a signature member function.
+	     In that case set the `basetype' to the signature type.  */
+	  if ((IS_SIGNATURE_POINTER (basetype)
+	       || IS_SIGNATURE_REFERENCE (basetype))
+	      && TYPE_IDENTIFIER (basetype) != name)
 	    basetype = SIGNATURE_TYPE (basetype);
 
 	  if ((IS_SIGNATURE (basetype)
@@ -2001,8 +1957,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
   /* Look up function name in the structure type definition.  */
 
   if ((IDENTIFIER_HAS_TYPE_VALUE (name)
+       && ! IDENTIFIER_OPNAME_P (name)
        && IS_AGGR_TYPE (IDENTIFIER_TYPE_VALUE (name))
-       && TREE_CODE(IDENTIFIER_TYPE_VALUE (name)) != UNINSTANTIATED_P_TYPE)
+       && TREE_CODE (IDENTIFIER_TYPE_VALUE (name)) != UNINSTANTIATED_P_TYPE)
       || name == constructor_name (basetype))
     {
       tree tmp = NULL_TREE;
@@ -2494,11 +2451,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
       return error_mark_node;
     }
 
-  /* We do not pass FUNCTION into `convert_arguments', because by
-     now everything should be ok.  If not, then we have a serious error.  */
   if (DECL_STATIC_FUNCTION_P (function))
     parms = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
-			       TREE_CHAIN (parms), NULL_TREE, LOOKUP_NORMAL);
+			       TREE_CHAIN (parms), function, LOOKUP_NORMAL);
   else if (need_vtbl == unneeded)
     {
       int sub_flags = DECL_CONSTRUCTOR_P (function) ? flags : LOOKUP_NORMAL;
@@ -2511,7 +2466,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  instance = build_indirect_ref (instance_ptr, NULL_PTR);
 	}
       parms = tree_cons (NULL_TREE, instance_ptr,
-			 convert_arguments (NULL_TREE, TREE_CHAIN (TYPE_ARG_TYPES (fntype)), TREE_CHAIN (parms), NULL_TREE, sub_flags));
+			 convert_arguments (NULL_TREE, TREE_CHAIN (TYPE_ARG_TYPES (fntype)), TREE_CHAIN (parms), function, sub_flags));
     }
   else
     {
@@ -2559,7 +2514,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    instance = build_indirect_ref (instance_ptr, NULL_PTR);
 	}
       parms = tree_cons (NULL_TREE, instance_ptr,
-			 convert_arguments (NULL_TREE, TREE_CHAIN (TYPE_ARG_TYPES (fntype)), TREE_CHAIN (parms), NULL_TREE, LOOKUP_NORMAL));
+			 convert_arguments (NULL_TREE, TREE_CHAIN (TYPE_ARG_TYPES (fntype)), TREE_CHAIN (parms), function, LOOKUP_NORMAL));
     }
 
 #if 0
@@ -2861,18 +2816,6 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	  if ((cp[0].h.code & EVIL_CODE) == 0)
 	    {
 	      cp[1].h.code = EVIL_CODE;
-
-	      /* int_penalty is set by convert_harshness_ansi for cases
-		 where we need to know about any penalties that would
-		 otherwise make a TRIVIAL_CODE pass.  */
-	      if (final_cp
-		  && template_cost == 0
-		  && cp[0].h.code <= TRIVIAL_CODE
-		  && cp[0].h.int_penalty == 0)
-		{
-		  final_cp[0].h = cp[0].h;
-		  return function;
-		}
 	      cp++;
 	    }
 	}

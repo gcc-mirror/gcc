@@ -837,25 +837,25 @@ dump_char (c)
 {
   switch (c)
     {
-    case '\n':
+    case TARGET_NEWLINE:
       OB_PUTS ("\\n");
       break;
-    case '\t':
+    case TARGET_TAB:
       OB_PUTS ("\\t");
       break;
-    case '\v':
+    case TARGET_VT:
       OB_PUTS ("\\v");
       break;
-    case '\b':
+    case TARGET_BS:
       OB_PUTS ("\\b");
       break;
-    case '\r':
+    case TARGET_CR:
       OB_PUTS ("\\r");
       break;
-    case '\f':
+    case TARGET_FF:
       OB_PUTS ("\\f");
       break;
-    case '\a':
+    case TARGET_BELL:
       OB_PUTS ("\\a");
       break;
     case '\\':

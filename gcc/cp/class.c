@@ -1123,6 +1123,24 @@ get_vfield_offset (binfo)
 		     BINFO_OFFSET (binfo));
 }
 
+/* Get the offset to the start of the original binfo that we derived this
+   binfo from.  */
+tree get_derived_offset (binfo)
+     tree binfo;
+{
+  tree offset1 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
+  tree offset2;
+  int i;
+  while (BINFO_BASETYPES (binfo)
+	 && (i=CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo))) != -1)
+    {
+      tree binfos = BINFO_BASETYPES (binfo);
+      binfo = TREE_VEC_ELT (binfos, i);
+    }
+  offset2 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
+  return size_binop (MINUS_EXPR, offset1, offset2);
+}
+
 /* If FOR_TYPE needs to reinitialize virtual function table pointers
    for TYPE's sub-objects, add such reinitializations to BASE_INIT_LIST.
    Returns BASE_INIT_LIST appropriately modified.  */
@@ -2171,8 +2189,13 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  /* Find the right offset for the this pointer based on the
 	     base class we just found.  We have to take into
 	     consideration the virtual base class pointers that we
-	     stick in before the virtual function table pointer.  */
-	  base_offset = get_vfield_offset (binfo);
+	     stick in before the virtual function table pointer.
+
+	     Also, we want just the delta bewteen the most base class
+	     that we derived this vfield from and us.  */
+	  base_offset = size_binop (PLUS_EXPR,
+				    get_derived_offset (binfo),
+				    BINFO_OFFSET (binfo));
 	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
 
 	  /* Make sure we can modify the derived association with immunity.  */
@@ -2374,8 +2397,8 @@ override_one_vtable (binfo, old, t)
 		  override_one_vtable (binfo, old, t);
 		  return;
 		}
+	      TREE_VALUE (virtuals) = TREE_VALUE (old_virtuals);
 	    }
-	  TREE_VALUE (virtuals) = TREE_VALUE (old_virtuals);
 	}
       else
 	{
@@ -2547,7 +2570,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   int ref_sans_init = 0;
   int nonprivate_method = 0;
   tree t_binfo = TYPE_BINFO (t);
-  tree access_decls = 0;
+  tree access_decls = NULL_TREE;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -2578,7 +2601,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (name))
-    warning ("anonymous class type not used to declare any objects");
+    pedwarn ("anonymous class type not used to declare any objects");
 
   if (TYPE_SIZE (t))
     {
@@ -2599,7 +2622,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
 
-  TYPE_SIZE (t) = 0;
+  TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
   /* A signature type will contain the fields of the signature table.
@@ -3025,7 +3048,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		      
 		  if (code == UNION_TYPE)
 		    {
-		      char * fie = 0;
+		      char *fie = NULL;
 		      if (TYPE_NEEDS_CONSTRUCTING (type))
 			fie = "constructor";
 		      else if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -3252,9 +3275,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
 	    {
 	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	      cp_error_at ("because of local method `%#D' with same name",
+	      cp_error_at ("  because of local method `%#D' with same name",
 			   TREE_VEC_ELT (method_vec, i));
-	      fdecl = 0;
+	      fdecl = NULL_TREE;
 	      break;
 	    }
 
@@ -3265,8 +3288,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  if (DECL_NAME (tmp) == name)
 	    {
 	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	      cp_error_at ("because of local field `%#D' with same name", tmp);
-	      fdecl = 0;
+	      cp_error_at ("  because of local field `%#D' with same name", tmp);
+	      fdecl = NULL_TREE;
 	      break;
 	    }
 
@@ -3315,7 +3338,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	}
       else if (last_x)
 	{
-	  my_friendly_assert (TREE_CHAIN (last_x) == 0, 175);
+	  my_friendly_assert (TREE_CHAIN (last_x) == NULL_TREE, 175);
 	  TREE_CHAIN (last_x) = vfield;
 	  last_x = vfield;
 	}
@@ -3378,7 +3401,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	   moved into the type of this field, but nothing seems to break
 	   by doing this.  */
 
-	if (DECL_NAME (field) == 0
+	if (DECL_NAME (field) == NULL_TREE
 	    && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  {
 	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
@@ -3405,7 +3428,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       TYPE_ALIGN (pseudo_basetype) = CLASSTYPE_ALIGN (t);
       DECL_ALIGN (base_layout_decl) = TYPE_ALIGN (pseudo_basetype);
       /* Don't re-use old size. */
-      DECL_SIZE (base_layout_decl) = 0;
+      DECL_SIZE (base_layout_decl) = NULL_TREE;
     }
 
   layout_type (t);
@@ -3432,7 +3455,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	   moved into the type of this field, but nothing seems to break
 	   by doing this.  */
 
-	if (DECL_NAME (field) == 0
+	if (DECL_NAME (field) == NULL_TREE
 	    && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  {
 	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
@@ -3709,12 +3732,11 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       while (x)
 	{
 #if 0 /* What's wrong with using the decl the type already has? */
-	  tree tag = build_lang_decl (TYPE_DECL, TREE_PURPOSE (x), TREE_VALUE (x));
+	  tree tag = build_decl (TYPE_DECL, TREE_PURPOSE (x), TREE_VALUE (x));
 	  DECL_CONTEXT (tag) = t;
 #else
 	  tree tag = TYPE_NAME (TREE_VALUE (x));
 #endif
-	  DECL_CLASS_CONTEXT (tag) = t;
 
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)
@@ -3729,7 +3751,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  x = TREE_CHAIN (x);
 	  last_x = chainon (last_x, tag);
 	}
-      if (TYPE_FIELDS (t) == 0)
+      if (TYPE_FIELDS (t) == NULL_TREE)
 	TYPE_FIELDS (t) = last_x;
       CLASSTYPE_LOCAL_TYPEDECLS (t) = 1;
     }
@@ -4220,7 +4242,9 @@ popclass (modify)
     {
       if (CLASSTYPE_VTBL_PTR (current_class_type))
 	{
-	  current_vtable_decl = lookup_name (DECL_NAME (CLASSTYPE_VTBL_PTR (current_class_type)), 0);
+	  current_vtable_decl
+	    = lookup_name (DECL_NAME (CLASSTYPE_VTBL_PTR (current_class_type)),
+			   0);
 	  if (current_vtable_decl)
 	    current_vtable_decl = build_indirect_ref (current_vtable_decl,
 						      NULL_PTR);
@@ -4525,9 +4549,10 @@ instantiate_type (lhstype, rhs, complain)
 		  {
 		    if (complain)
 		      {
-			cp_error ("cannot resolve overload to target type `%#T';", lhstype);
-			cp_error_at ("ambiguity between `%#D'", save_elem);
-			cp_error_at ("and `%#D', at least", elem);
+			cp_error ("cannot resolve overload to target type `%#T'",
+				  lhstype);
+			cp_error_at ("  ambiguity between `%#D'", save_elem);
+			cp_error_at ("  and `%#D', at least", elem);
 		      }
 		    return error_mark_node;
 		  }
@@ -4547,9 +4572,9 @@ instantiate_type (lhstype, rhs, complain)
 	      }
 	    if (complain)
 	      {
-		cp_error ("cannot resolve overload to target type `%#T';",
+		cp_error ("cannot resolve overload to target type `%#T'",
 			  lhstype);
-		cp_error ("no suitable overload of function `%D' exists",
+		cp_error ("  because no suitable overload of function `%D' exists",
 			  TREE_PURPOSE (rhs));
 	      }
 	    return error_mark_node;
@@ -4631,10 +4656,12 @@ instantiate_type (lhstype, rhs, complain)
     case PLUS_EXPR:
     case MINUS_EXPR:
     case COMPOUND_EXPR:
-      TREE_OPERAND (rhs, 0) = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+      TREE_OPERAND (rhs, 0)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
       if (TREE_OPERAND (rhs, 0) == error_mark_node)
 	return error_mark_node;
-      TREE_OPERAND (rhs, 1) = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+      TREE_OPERAND (rhs, 1)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
 
@@ -4701,10 +4728,12 @@ instantiate_type (lhstype, rhs, complain)
 	    error ("not enough type information");
 	  return error_mark_node;
 	}
-      TREE_OPERAND (rhs, 1) = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+      TREE_OPERAND (rhs, 1)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
-      TREE_OPERAND (rhs, 2) = instantiate_type (lhstype, TREE_OPERAND (rhs, 2), complain);
+      TREE_OPERAND (rhs, 2)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 2), complain);
       if (TREE_OPERAND (rhs, 2) == error_mark_node)
 	return error_mark_node;
 
@@ -4712,7 +4741,8 @@ instantiate_type (lhstype, rhs, complain)
       return rhs;
 
     case MODIFY_EXPR:
-      TREE_OPERAND (rhs, 1) = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+      TREE_OPERAND (rhs, 1)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
 
@@ -4730,8 +4760,8 @@ instantiate_type (lhstype, rhs, complain)
 	}
       TREE_TYPE (rhs) = lhstype;
       lhstype = TREE_TYPE (lhstype);
-      TREE_OPERAND (rhs, 0) = instantiate_type (lhstype, TREE_OPERAND (rhs, 0),
-						complain);
+      TREE_OPERAND (rhs, 0)
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
       if (TREE_OPERAND (rhs, 0) == error_mark_node)
 	return error_mark_node;
 

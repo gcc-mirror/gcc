@@ -115,6 +115,7 @@ extern char *token_buffer;	/* Pointer to token buffer.  */
 
 /* Back-door communication channel to the lexer.  */
 extern int looking_for_typename;
+extern int looking_for_template;
 
 /* Tell the lexer where to look for names.  */
 extern tree got_scope;

@@ -543,11 +543,12 @@ datadef:
 		&& TREE_PURPOSE (t) == NULL_TREE)
 	      {
 		t = TREE_VALUE (t);
-		if (TREE_CODE (t) == RECORD_TYPE)
+		if (IS_AGGR_TYPE (t)
+		    && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (t)))
 		  {
 		    if (CLASSTYPE_USE_TEMPLATE (t) == 0)
-		      CLASSTYPE_USE_TEMPLATE (t) = 2;
-		    else if (CLASSTYPE_USE_TEMPLATE (t) == 1)
+		      SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
+		    else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
 		      error ("override declaration for already-expanded template");
 		  }
 	      }
@@ -2914,14 +2915,18 @@ absdcl:
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| '*' absdcl
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
-	| '*' type_quals  %prec EMPTY
+	| '*' nonempty_type_quals  %prec EMPTY
 		{ $$ = make_pointer_declarator ($2, NULL_TREE); }
+	| '*' %prec EMPTY
+		{ $$ = make_pointer_declarator (NULL_TREE, NULL_TREE); }
 	| '&' nonempty_type_quals absdcl
 		{ $$ = make_reference_declarator ($2, $3); }
 	| '&' absdcl
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
-	| '&' type_quals %prec EMPTY
+	| '&' nonempty_type_quals %prec EMPTY
 		{ $$ = make_reference_declarator ($2, NULL_TREE); }
+	| '&' %prec EMPTY
+		{ $$ = make_reference_declarator (NULL_TREE, NULL_TREE); }
 	| ptr_to_mem type_quals %prec EMPTY
 		{ tree arg = make_pointer_declarator ($2, NULL_TREE);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);

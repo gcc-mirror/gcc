@@ -1226,6 +1226,9 @@ cp_convert (type, expr, convtype, flags)
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 
+  if (TREE_READONLY_DECL_P (e))
+    e = decl_constant_value (e);
+
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (expr);
@@ -1332,8 +1335,12 @@ cp_convert (type, expr, convtype, flags)
 	{
 	  tree binfo;
 
-	  tree conversion = TYPE_HAS_CONVERSION (dtype)
-	    ? build_type_conversion (CONVERT_EXPR, type, e, 1) : NULL_TREE;
+	  tree conversion;
+
+	  if (! DERIVED_FROM_P (type, dtype) && TYPE_HAS_CONVERSION (dtype))
+	    conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
+	  else
+	    conversion = NULL_TREE;
 
 	  if (TYPE_HAS_CONSTRUCTOR (type))
 	    {
@@ -1493,8 +1500,7 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
   else
     flags = LOOKUP_NORMAL;
 
-  rval = build_method_call (first_arg, constructor_name_full (typename),
-			    NULL_TREE, NULL_TREE, flags);
+  rval = build_method_call (first_arg, typename, NULL_TREE, NULL_TREE, flags);
   if (rval == error_mark_node)
     {
       if (for_sure == 0)

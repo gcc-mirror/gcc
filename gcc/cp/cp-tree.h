@@ -362,6 +362,7 @@ enum languages { lang_c, lang_cplusplus };
 #define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) >= 0)
 #define ACCESSIBLY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, -1, (tree *)0) >= 0)
 #define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 1, (tree *)0) >= 0)
+#define DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) != -1)
 
 enum conversion_type { ptr_conv, constptr_conv, int_conv,
 		       real_conv, last_conversion_type };
@@ -497,8 +498,11 @@ struct lang_type
   union tree_node *signature_reference_to;
 };
 
-/* Indicates whether a template should be (or has been) expanded for this
-   class definition.  0=do, 1=did, 2=don't, 3=didn't.  */
+/* Indicates whether or not (and how) a template was expanded for this class.
+     0=no information yet/non-template class
+     1=implicit template instantiation
+     2=explicit template specialization
+     3=explicit template instantiation  */
 #define CLASSTYPE_USE_TEMPLATE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.use_template)
 
 /* Fields used for storing information before the class is defined.
@@ -931,7 +935,9 @@ struct lang_decl_flags
   unsigned mutable_flag : 1;
   unsigned is_default_implementation : 1;
   unsigned saved_inline : 1;
-  unsigned dummy : 10;
+  unsigned use_template : 2;
+
+  unsigned dummy : 8;
 
   tree access;
   tree context;
@@ -1101,7 +1107,7 @@ struct lang_decl
 
 #if 0
 /* Same, but tells if this field is private in current context.  */
-#define DECL_PRIVATE(NODE) NOTHING
+#define DECL_PRIVATE(NODE) (DECL_LANG_FLAG_5 (NODE))
 
 /* Same, but tells if this field is private in current context.  */
 #define DECL_PROTECTED(NODE) (DECL_LANG_FLAG_6 (NODE))
@@ -1266,11 +1272,39 @@ struct lang_decl
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
 
-/* Macros for a DECL or TYPE generated from a template to indicate that it
-   was explicitly instantiated.  */
-#define DECL_EXPLICITLY_INSTANTIATED(NODE) (DECL_LANG_FLAG_5 (NODE))
-#define CLASSTYPE_EXPLICITLY_INSTANTIATED(NODE) \
-  (DECL_EXPLICITLY_INSTANTIATED (TYPE_NAME (NODE)))
+/* Indicates whether or not (and how) a template was expanded for this
+   FUNCTION_DECL or VAR_DECL.
+     0=normal declaration, e.g. int min (int, int);
+     1=implicit template instantiation
+     2=explicit template specialization, e.g. int min<int> (int, int);
+     3=explicit template instantiation, e.g. template int min<int> (int, int);
+ */
+#define DECL_USE_TEMPLATE(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.use_template)
+
+#define DECL_TEMPLATE_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) & 1)
+#define CLASSTYPE_TEMPLATE_INSTANTIATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE (NODE) & 1)
+
+#define DECL_TEMPLATE_SPECIALIZATION(NODE) (DECL_USE_TEMPLATE (NODE) == 2)
+#define SET_DECL_TEMPLATE_SPECIALIZATION(NODE) (DECL_USE_TEMPLATE (NODE) = 2)
+#define CLASSTYPE_TEMPLATE_SPECIALIZATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE (NODE) == 2)
+#define SET_CLASSTYPE_TEMPLATE_SPECIALIZATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE (NODE) = 2)
+
+#define DECL_IMPLICIT_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) == 1)
+#define SET_DECL_IMPLICIT_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) = 1)
+#define CLASSTYPE_IMPLICIT_INSTANTIATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE(NODE) == 1)
+#define SET_CLASSTYPE_IMPLICIT_INSTANTIATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE(NODE) = 1)
+
+#define DECL_EXPLICIT_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) == 3)
+#define SET_DECL_EXPLICIT_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) = 3)
+#define CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE(NODE) == 3)
+#define SET_CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
+  (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
@@ -1309,6 +1343,7 @@ extern void check_function_format		PROTO((tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
+extern tree c_build_type_variant                PROTO((tree, int, int));
 extern void c_expand_expr_stmt                  PROTO((tree));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value                    PROTO((tree));
@@ -1462,7 +1497,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_NAME "_$tmp_"
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
 #define VTABLE_BASE "$vb"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT$%s" : "_vt$%s")
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt$%s")
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
@@ -1484,7 +1519,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_NAME "_.tmp_"
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
 #define VTABLE_BASE ".vb"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT.%s" : "_vt.%s")
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt.%s")
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
@@ -1513,7 +1548,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_FORMAT "__tmp_%d"
 #define VTABLE_BASE "__vtb"
 #define VTABLE_NAME "__vt_"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT_%s" : "_vt_%s")
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt_%s")
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))
@@ -1668,6 +1703,11 @@ extern int flag_gc;
 
 extern int flag_dossier;
 
+/* Nonzero means do emit exported implementations of functions even if
+   they can be inlined.  */
+
+extern int flag_implement_inlines;
+
 /* Nonzero means templates obey #pragma interface and implementation.  */
 
 extern int flag_external_templates;
@@ -1675,6 +1715,10 @@ extern int flag_external_templates;
 /* Nonzero means templates are emitted where they are instantiated.  */
 
 extern int flag_alt_external_templates;
+
+/* Nonzero means implicit template instantatiations are emitted.  */
+
+extern int flag_implicit_templates;
 
 /* Current end of entries in the gc obstack for stack pointer variables.  */
 
@@ -1875,7 +1919,7 @@ extern tree lookup_name_current_level		PROTO((tree));
 extern void init_decl_processing		PROTO((void));
 /* skipped define_function */
 extern void shadow_tag				PROTO((tree));
-extern void grok_ctor_properties		PROTO((tree, tree));
+extern int grok_ctor_properties			PROTO((tree, tree));
 extern tree groktypename			PROTO((tree));
 extern tree start_decl				PROTO((tree, tree, int, tree));
 extern void finish_decl				PROTO((tree, tree, tree, int));

@@ -938,7 +938,9 @@ build_typename_overload (type)
   build_overload_name (type, 0, 1);
   id = get_identifier (obstack_base (&scratch_obstack));
   IDENTIFIER_OPNAME_P (id) = 1;
+#if 0
   IDENTIFIER_GLOBAL_VALUE (id) = TYPE_NAME (type);
+#endif
   TREE_TYPE (id) = type;
   return id;
 }
@@ -1676,8 +1678,9 @@ make_thunk (function, delta)
      int delta;
 {
   char buffer[250];
-  tree thunk_fndecl;
+  tree thunk_fndecl, thunk_id;
   tree thunk;
+  char *func_name;
   static int thunk_number = 0;
   tree func_decl;
   if (TREE_CODE (function) != ADDR_EXPR)
@@ -1685,14 +1688,26 @@ make_thunk (function, delta)
   func_decl = TREE_OPERAND (function, 0);
   if (TREE_CODE (func_decl) != FUNCTION_DECL)
     abort ();
-  sprintf (buffer, "__thunk_%d_%d", -delta, thunk_number++);
-  thunk = build_decl (THUNK_DECL, get_identifier (buffer),
-		      TREE_TYPE (func_decl));
-  DECL_RESULT (thunk)
-    = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (vtable_entry_type));
-  make_function_rtl (thunk);
-  DECL_INITIAL (thunk) = function;
-  THUNK_DELTA (thunk) = delta;
+  func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func_decl));
+  sprintf (buffer, "__thunk_%d_%s", -delta, func_name);
+  thunk_id = get_identifier (buffer);
+  thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
+  if (thunk && TREE_CODE (thunk) != THUNK_DECL)
+    {
+      error_with_decl ("implementation-reserved name `%s' used");
+      IDENTIFIER_GLOBAL_VALUE (thunk_id) = thunk = NULL_TREE;
+    }
+  if (thunk == NULL_TREE)
+    {
+      thunk = build_decl (THUNK_DECL, thunk_id, TREE_TYPE (func_decl));
+      DECL_RESULT (thunk)
+	= build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (vtable_entry_type));
+      make_function_rtl (thunk);
+      DECL_INITIAL (thunk) = function;
+      THUNK_DELTA (thunk) = delta;
+      /* So that finish_file can write out any thunks that need to be: */
+      pushdecl_top_level (thunk);
+    }
   return thunk;
 }
 
@@ -1724,6 +1739,19 @@ emit_thunk (thunk_fndecl)
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
+
+  TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+
+  if (TREE_PUBLIC (function))
+    {
+      TREE_PUBLIC (thunk_fndecl) = 1;
+      if (DECL_EXTERNAL (function))
+	{
+	  DECL_EXTERNAL (thunk_fndecl) = 1;
+	  assemble_external (thunk_fndecl);
+	  return;
+	}
+    }
 
   decl_printable_name = thunk_printable_name;
   if (current_function_decl)
@@ -1833,8 +1861,6 @@ emit_thunk (thunk_fndecl)
   expand_end_bindings (NULL, 1, 0);
   poplevel (0, 0, 0);
 
-  TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-
   /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
      Note that that may have been done above, in save_for_inline_copying.
      The call to resume_temporary_allocation near the end of this function
@@ -1847,10 +1873,6 @@ emit_thunk (thunk_fndecl)
   /* Copy any shared structure that should not be shared.  */
 
   unshare_all_rtl (insns);
-
-  /* Instantiate all virtual registers.  */
-
-  instantiate_virtual_regs (current_function_decl, get_insns ());
 
   /* We are no longer anticipating cse in this function, at least.  */
 
