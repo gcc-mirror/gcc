@@ -161,9 +161,14 @@ print_rtx (in_rtx)
 
       case 'u':
 	if (XEXP (in_rtx, i) != NULL)
-	  fprintf(outfile, " %d", INSN_UID (XEXP (in_rtx, i)));
+	  fprintf (outfile, " %d", INSN_UID (XEXP (in_rtx, i)));
 	else
-	  fprintf(outfile, " 0");
+	  fprintf (outfile, " 0");
+	sawclose = 0;
+	break;
+
+      case '*':
+	fprintf (outfile, " Unknown");
 	sawclose = 0;
 	break;
 
