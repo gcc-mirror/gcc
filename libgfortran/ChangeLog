@@ -1,3 +1,12 @@
+2004-01-22  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/19314
+	* io/inquire.c(inquire_via_unit): implement POSITION=.
+	* io/transfer.c(next_record): update position for 
+	INQUIRE.
+	* io/rewind.c(st_rewind): update position for
+	INQUIRE.
+
 2004-01-16  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18778
