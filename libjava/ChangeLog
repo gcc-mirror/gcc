@@ -1,3 +1,7 @@
+2002-04-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/posix-threads.h: Support <.../pal.h> on FreeBSD/alpha.
+
 2002-04-01  Mark Wielaard  <mark@klomp.org>
 
         * java/util/BitSet.java (BitSet(int)): if nbits < 0 throw
