@@ -1105,6 +1105,7 @@ copy_for_inline (orig)
    is used properly in the presence of recursion.  */
 
 rtx *global_const_equiv_map;
+int global_const_equiv_map_size;
 
 #define FIXED_BASE_PLUS_P(X) \
   (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT	\
@@ -1376,7 +1377,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  if (GET_CODE (copy) != REG)
 	    {
 	      temp = copy_addr_to_reg (copy);
-	      if (CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+	      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+		  && REGNO (temp) < map->const_equiv_map_size)
 		{
 		  map->const_equiv_map[REGNO (temp)] = copy;
 		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
@@ -1413,7 +1415,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	    {
 	      temp = copy_to_mode_reg (GET_MODE (loc), copy);
 	      REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
-	      if (CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+	      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+		  && REGNO (temp) < map->const_equiv_map_size)
 		{
 		  map->const_equiv_map[REGNO (temp)] = copy;
 		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
@@ -1447,7 +1450,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	    {
 	      temp = copy_to_mode_reg (GET_MODE (locreal), copyreal);
 	      REG_USERVAR_P (temp) = REG_USERVAR_P (locreal);
-	      if (CONSTANT_P (copyreal) || FIXED_BASE_PLUS_P (copyreal))
+	      if ((CONSTANT_P (copyreal) || FIXED_BASE_PLUS_P (copyreal))
+		  && REGNO (temp) < map->const_equiv_map_size)
 		{
 		  map->const_equiv_map[REGNO (temp)] = copyreal;
 		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
@@ -1464,7 +1468,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	    {
 	      temp = copy_to_mode_reg (GET_MODE (locimag), copyimag);
 	      REG_USERVAR_P (temp) = REG_USERVAR_P (locimag);
-	      if (CONSTANT_P (copyimag) || FIXED_BASE_PLUS_P (copyimag))
+	      if ((CONSTANT_P (copyimag) || FIXED_BASE_PLUS_P (copyimag))
+		  && REGNO (temp) < map->const_equiv_map_size)
 		{
 		  map->const_equiv_map[REGNO (temp)] = copyimag;
 		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
@@ -1537,10 +1542,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	{
 	  temp = force_reg (Pmode, structure_value_addr);
 	  map->reg_map[REGNO (XEXP (loc, 0))] = temp;
-	  if (CONSTANT_P (structure_value_addr)
-	      || (GET_CODE (structure_value_addr) == PLUS
-		  && XEXP (structure_value_addr, 0) == virtual_stack_vars_rtx
-		  && GET_CODE (XEXP (structure_value_addr, 1)) == CONST_INT))
+	  if ((CONSTANT_P (structure_value_addr)
+	       || (GET_CODE (structure_value_addr) == PLUS
+		   && XEXP (structure_value_addr, 0) == virtual_stack_vars_rtx
+		   && GET_CODE (XEXP (structure_value_addr, 1)) == CONST_INT))
+	      && REGNO (temp) < map->const_equiv_map_size)
 	    {
 	      map->const_equiv_map[REGNO (temp)] = structure_value_addr;
 	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
@@ -1608,6 +1614,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   /* Save a copy of the location of const_equiv_map for mark_stores, called
      via note_stores.  */
   global_const_equiv_map = map->const_equiv_map;
+  global_const_equiv_map_size = map->const_equiv_map_size;
 
   /* Now copy the insns one by one.  Do this in two passes, first the insns and
      then their REG_NOTES, just like save_for_inline.  */
@@ -2013,8 +2020,12 @@ copy_rtx_and_substitute (orig, map)
 #endif
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
-	      map->const_equiv_map[REGNO (temp)] = loc;
-	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+
+	      if (REGNO (temp) < map->const_equiv_map_size)
+		{
+		  map->const_equiv_map[REGNO (temp)] = loc;
+		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		}
 
 	      seq = gen_sequence ();
 	      end_sequence ();
@@ -2039,8 +2050,12 @@ copy_rtx_and_substitute (orig, map)
 #endif
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
-	      map->const_equiv_map[REGNO (temp)] = loc;
-	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+
+	      if (REGNO (temp) < map->const_equiv_map_size)
+		{
+		  map->const_equiv_map[REGNO (temp)] = loc;
+		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		}
 
 	      seq = gen_sequence ();
 	      end_sequence ();
@@ -2372,11 +2387,12 @@ try_constants (insn, map)
 	{
 	  int regno = REGNO (map->equiv_sets[i].dest);
 
-	  if (map->const_equiv_map[regno] == 0
-	      /* Following clause is a hack to make case work where GNU C++
-		 reassigns a variable to make cse work right.  */
-	      || ! rtx_equal_p (map->const_equiv_map[regno],
-				map->equiv_sets[i].equiv))
+	  if (regno < map->const_equiv_map_size
+	      && (map->const_equiv_map[regno] == 0
+		  /* Following clause is a hack to make case work where GNU C++
+		     reassigns a variable to make cse work right.  */
+		  || ! rtx_equal_p (map->const_equiv_map[regno],
+				    map->equiv_sets[i].equiv)))
 	    {
 	      map->const_equiv_map[regno] = map->equiv_sets[i].equiv;
 	      map->const_age_map[regno] = map->const_age;
@@ -2689,7 +2705,8 @@ mark_stores (dest, x)
       int i;
 
       for (i = regno; i <= last_reg; i++)
-	global_const_equiv_map[i] = 0;
+	if (i < global_const_equiv_map_size)
+	  global_const_equiv_map[i] = 0;
     }
 }
 
