@@ -1,5 +1,5 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,6 +24,19 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define TARGET_VERSION fprintf (stderr, " (MIPS GNU/ELF)");
 #endif
+
+#undef MD_EXEC_PREFIX
+#undef MD_STARTFILE_PREFIX
+
+/* Output at beginning of assembler file.  */
+/* The .file command should always begin the output.  */
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)						\
+  do {									\
+	mips_asm_file_start (FILE);					\
+	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
+  } while (0)
+
 
 /* Required to keep collect2.c happy */
 #undef OBJECT_FORMAT_COFF 
