@@ -1,3 +1,8 @@
+2003-10-03  Robert Bowdidge <bowdidge@apple.com>
+        * ggc-page.c: (ggc_pch_write_object) replace fseek() with fwrite() in 
+        PCH generation, avoiding too-frequent flushes when writing to NFS 
+        file system.
+
 2003-10-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (lookup_category): Mark as 'inline'.
