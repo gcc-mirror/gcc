@@ -1,9 +1,19 @@
+2004-09-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* parser.c (cp_lexer_peek_token, cp_lexer_consume_token):
+	Don't handle CPP_PRAGMA tokens specially.
+	(cp_lexer_handle_pragma): Use cp_lexer_consume_token.  Don't
+	purge the token; do clear token->value after processing.  Add
+	assertion at beginning that token->value is nonzero.
+	(cp_parser_statement, cp_parser_declaration_seq_opt): Handle
+	CPP_PRAGMA as a full statement or declaration in its own right.
+
 2004-09-21  Matt Austern  <austern@apple.com>
 
 	PR c++/15049
 	* decl.c (grokvardecl): Accept declarations of global variables
 	using anonymous types.
-	
+
 2004-09-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/7503

@@ -496,9 +496,6 @@ cp_lexer_peek_token (cp_lexer *lexer)
   if (lexer->next_token->type == CPP_PURGED)
     cp_lexer_skip_purged_tokens (lexer);
 
-  if (lexer->next_token->type == CPP_PRAGMA)
-    cp_lexer_handle_pragma (lexer);
-
   token = lexer->next_token;
 
   /* Provide debugging output.  */
@@ -601,9 +598,6 @@ cp_lexer_consume_token (cp_lexer* lexer)
   if (lexer->next_token->type == CPP_PURGED)
     cp_lexer_skip_purged_tokens (lexer);
 
-  if (lexer->next_token->type == CPP_PRAGMA)
-    cp_lexer_handle_pragma (lexer);
-
   token = lexer->next_token++;
 
   /* Provide debugging output.  */
@@ -652,27 +646,24 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
     }
 }
 
-/* Handle a pragma token and skip over it. We need the loop because
-   the next token might also be a pragma token. */
+/* Consume and handle a pragma token.   */
 static void
 cp_lexer_handle_pragma (cp_lexer *lexer)
 {
-  gcc_assert (lexer->next_token->type == CPP_PRAGMA);
+  cpp_string s;
+  cp_token *token = cp_lexer_consume_token (lexer);
+  gcc_assert (token->type == CPP_PRAGMA);
+  gcc_assert (token->value);
 
-  while (lexer->next_token->type == CPP_PRAGMA)
-    {
-      tree t = lexer->next_token->value;
-      cpp_string s;
-      s.len = TREE_STRING_LENGTH (t);
-      s.text = (const unsigned char *) TREE_STRING_POINTER (t);
+  s.len = TREE_STRING_LENGTH (token->value);
+  s.text = (const unsigned char *) TREE_STRING_POINTER (token->value);
 
-      cp_lexer_set_source_position_from_token (lexer, lexer->next_token);
-      cpp_handle_deferred_pragma (parse_in, &s);
+  cp_lexer_set_source_position_from_token (lexer, token);
+  cpp_handle_deferred_pragma (parse_in, &s);
 
-      /* Make sure we don't run this pragma twice. */
-      cp_lexer_purge_token (lexer);
-      cp_lexer_skip_purged_tokens (lexer);
-    }
+  /* Clearing token->value here means that we will get an ICE if we
+     try to process this #pragma again (which should be impossible).  */
+  token->value = NULL;
 }
 
 /* Begin saving tokens.  All tokens consumed after this point will be
@@ -5892,6 +5883,13 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
     statement = cp_parser_compound_statement (parser, NULL, false);
+  /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
+     a statement all its own.  */
+  else if (token->type == CPP_PRAGMA)
+    {
+      cp_lexer_handle_pragma (parser->lexer);
+      return;
+    }
 
   /* Everything else must be a declaration-statement or an
      expression-statement.  Try for the declaration-statement
@@ -6646,6 +6644,16 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	  if (pedantic && !in_system_header)
 	    pedwarn ("extra `;'");
 	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+
+      if (token->type == CPP_PRAGMA)
+	{
+	  /* A top-level declaration can consist solely of a #pragma.
+	     A nested declaration cannot, so this is done here and not
+	     in cp_parser_declaration.  (A #pragma at block scope is
+	     handled in cp_parser_statement.)  */
+	  cp_lexer_handle_pragma (parser->lexer);
 	  continue;
 	}
 
