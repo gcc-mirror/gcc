@@ -1,3 +1,12 @@
+2003-09-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Component.java: Indentation cleanup from Classpath.
+
+2003-09-20  Dalibor Topic  <robilad@kaffe.org>
+
+       * java/awt/BasicStroke.java (BasicStroke): Fixed illegal argument
+       checking to follow 1.4.2 spec.
+
 2003-08-11  Ingo Proetel  <proetel@aicas.com>
 
         * gnu/java/rmi/server/UnicastRef.java: make constructor public and check if serverobject  
