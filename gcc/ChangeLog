@@ -1,5 +1,10 @@
 2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cse.c (fold_rtx): Replace the equality comparison of INTVALs
+	with a pointer equality comparison.
+
+2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* rtlanal.c (reg_mentioned_p): Return 0 earlier if REG and IN
 	are known to be not equivalent.
 
