@@ -1,3 +1,9 @@
+Wed 10 May 09:08:30 2000  Neil Booth  <NeilB@earthling.net>
+
+        * cpplex.c (_cpp_lex_line): Maintain PREV_WHITESPACE flag
+        when removing escaped newlines.  Reverse sense of test for
+        escaped newline.
+
 2000-05-09  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (find_basic_blocks_1): Do not delete the first

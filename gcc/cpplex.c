@@ -3010,30 +3010,31 @@ _cpp_lex_line (pfile, list)
 	case '\n':
 	case '\r':
 	  handle_newline (cur, buffer->rlimit, c);
-	  if (PREV_TOKEN_TYPE != CPP_BACKSLASH || !IMMED_TOKEN ())
+	  if (PREV_TOKEN_TYPE == CPP_BACKSLASH && IMMED_TOKEN ())
 	    {
-	      if (PREV_TOKEN_TYPE == CPP_BACKSLASH)
-		{
-		  buffer->cur = cur;
-		  cpp_warning (pfile,
-			       "backslash and newline separated by space");
-		}
-	      PUSH_TOKEN (CPP_VSPACE);
-	      goto out;
-	    }
-	  /* Remove the escaped newline.  Then continue to process
-	     any interrupted name or number.  */
-	  cur_token--;
-	  if (IMMED_TOKEN ())
-	    {
+	      /* Remove the escaped newline.  Then continue to process
+		 any interrupted name or number.  */
 	      cur_token--;
-	      if (cur_token->type == CPP_NAME)
-		goto continue_name;
-	      else if (cur_token->type == CPP_NUMBER)
-		goto continue_number;
-	      cur_token++;
+	      if (IMMED_TOKEN ())
+		{
+		  cur_token--;
+		  if (cur_token->type == CPP_NAME)
+		    goto continue_name;
+		  else if (cur_token->type == CPP_NUMBER)
+		    goto continue_number;
+		  cur_token++;
+		}
+	      /* Remember whitespace setting.  */
+	      flags = cur_token->flags;
+	      break;
 	    }
-	  break;
+	  if (PREV_TOKEN_TYPE == CPP_BACKSLASH)
+	    {
+	      buffer->cur = cur;
+	      cpp_warning (pfile, "backslash and newline separated by space");
+	    }
+	  PUSH_TOKEN (CPP_VSPACE);
+	  goto out;
 
 	case '-':
 	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_MINUS)
