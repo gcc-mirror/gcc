@@ -7,10 +7,10 @@ fi
 
 # Set up environment to use the Ada compiler from the object tree
 
-host_gnatmake=`which gnatmake`
-host_gcc=`which gcc`
-ROOT=`pwd`
-BASE=`cd $ROOT/../../..; pwd`
+host_gnatmake=`type gnatmake | awk '{print $3}`
+host_gcc=`type gcc | awk '{print $3}`
+ROOT=`${PWDCMD-pwd}`
+BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
 PATH=$BASE:$ROOT:$PATH
 ADA_INCLUDE_PATH=$BASE/ada/rts
 ADA_OBJECTS_PATH=$ADA_INCLUDE_PATH

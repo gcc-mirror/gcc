@@ -35,7 +35,7 @@ log () {
   echo "$@" >> $dir/acats.log
 }
 
-dir=`pwd`
+dir=`${PWDCMD-pwd}`
 
 if [ "$testdir" = "" ]; then
    echo You must use make check or make check-ada
