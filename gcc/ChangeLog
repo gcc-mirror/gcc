@@ -8,6 +8,7 @@
 
 2003-11-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	PR optimization/10080
 	* cfgloopanal.c (variable_initial_value, variable_initial_values,
 	simple_loop_exit_p): Record the fact that initial value is extended
 	from inner mode.
