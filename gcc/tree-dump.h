@@ -19,8 +19,8 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#ifndef GCC_C_DUMP_H
-#define GCC_C_DUMP_H
+#ifndef GCC_TREE_DUMP_H
+#define GCC_TREE_DUMP_H
 
 /* Flags used with queue functions.  */
 #define DUMP_NONE     0
@@ -92,4 +92,4 @@ extern void queue_and_dump_index
 extern void queue_and_dump_type 
   PARAMS ((dump_info_p, tree));
 
-#endif /* ! GCC_C_DUMP_H */
+#endif /* ! GCC_TREE_DUMP_H */

@@ -1,3 +1,24 @@
+2001-11-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* tree-dump.c: Rename from c-dump.c. Include c-tree.h, not c-common.h.
+	(lang_type_quals): Declare.
+	(dequeue_and_dump): Use lang_hooks.tree_dump.type_quals function to 
+	retrieve language-specific qualifiers for a type node, instead of 
+	C_TYPE_QUALS. Likewise for lang_hooks.tree_dump.dump_tree instead of 
+	lang_dump_tree.
+	* tree-dump.h: Rename from c-dump.h.
+	* c-common.h (C_TYPE_QUALS): Removed.
+	Move declarations for tree-dump.c interface to...
+	* tree.h: ... here. Remove lang_dump_tree.
+	* langhooks.h (struct lang_hooks_for_tree_dump): New.
+	(struct lang_hooks): Add tree_dump hooks.
+	* langhooks.c (lhd_tree_dump_dump_tree): New function.
+	(lhd_tree_dump_type_quals): New function.
+	* langhooks-def.h (lhd_tree_dump_dump_tree, lhd_tree_dump_type_quals):
+	Declare.
+	(LANG_HOOKS_INITIALIZER): Add tree_dump hooks.
+	* Makefile.in: Move tree-dump.o to language-independent back-end.
+
 2001-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a.h (DBX_REGISTER_NUMBER): Don't define.

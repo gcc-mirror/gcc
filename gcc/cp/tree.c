@@ -490,7 +490,7 @@ build_cplus_array_type (elt_type, index_type)
      tree index_type;
 {
   tree t;
-  int type_quals = CP_TYPE_QUALS (elt_type);
+  int type_quals = cp_type_quals (elt_type);
 
   if (type_quals != TYPE_UNQUALIFIED)
     elt_type = cp_build_qualified_type (elt_type, TYPE_UNQUALIFIED);
@@ -521,7 +521,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
   if (type == error_mark_node)
     return type;
 
-  if (type_quals == CP_TYPE_QUALS (type))
+  if (type_quals == cp_type_quals (type))
     return type;
 
   /* A restrict-qualified pointer type must be a pointer (or reference)
@@ -624,7 +624,7 @@ tree
 canonical_type_variant (t)
      tree t;
 {
-  return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), CP_TYPE_QUALS (t));
+  return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), cp_type_quals (t));
 }
 
 /* Makes new binfos for the indirect bases under BINFO, and updates

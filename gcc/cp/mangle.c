@@ -509,7 +509,7 @@ find_substitution (node)
   	         std::basic_string <char,
 		 		    std::char_traits<char>,
 				    std::allocator<char> > .  */
-	  if (CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED
+	  if (cp_type_quals (type) == TYPE_UNQUALIFIED
 	      && CLASSTYPE_USE_TEMPLATE (type))
 	    {
 	      tree args = CLASSTYPE_TI_ARGS (type);
@@ -535,7 +535,7 @@ find_substitution (node)
 
   /* Check for basic_{i,o,io}stream.  */
   if (TYPE_P (node)
-      && CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED
+      && cp_type_quals (type) == TYPE_UNQUALIFIED
       && CLASS_TYPE_P (type)
       && CLASSTYPE_USE_TEMPLATE (type)
       && CLASSTYPE_TEMPLATE_INFO (type) != NULL)

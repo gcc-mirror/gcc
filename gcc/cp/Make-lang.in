@@ -96,7 +96,7 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 # The compiler itself.
 # Shared with C front end:
 CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
- c-dump.o $(CXX_TARGET_OBJS)
+ $(CXX_TARGET_OBJS)
 
 # Language-specific object files.
 CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
@@ -279,7 +279,7 @@ cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H) diagnostic.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
   flags.h $(GGC_H) debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H) \
   tree-inline.h
-cp/dump.o: cp/dump.c $(CXX_TREE_H) c-dump.h
+cp/dump.o: cp/dump.c $(CXX_TREE_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h

@@ -5905,7 +5905,7 @@ tsubst_decl (t, args, type)
       {
 	r = copy_node (t);
 	TREE_TYPE (r) = type;
-	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
+	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	if (TREE_CODE (DECL_INITIAL (r)) != TEMPLATE_PARM_INDEX)
 	  DECL_INITIAL (r) = TREE_TYPE (r);
@@ -5928,7 +5928,7 @@ tsubst_decl (t, args, type)
       {
 	r = copy_decl (t);
 	TREE_TYPE (r) = type;
-	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
+	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	/* We don't have to set DECL_CONTEXT here; it is set by
 	   finish_member_declaration.  */
@@ -6007,7 +6007,7 @@ tsubst_decl (t, args, type)
 
 	r = copy_decl (t);
 	TREE_TYPE (r) = type;
-	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
+	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 	DECL_CONTEXT (r) = ctx;
 	/* Clear out the mangled name and RTL for the instantiation.  */
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
@@ -6394,7 +6394,7 @@ tsubst (t, args, complain, in_decl)
 		  {
 		    my_friendly_assert (TYPE_P (arg), 0);
 		    return cp_build_qualified_type_real
-		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t),
+		      (arg, cp_type_quals (arg) | cp_type_quals (t),
 		       complain);
 		  }
 		else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
@@ -6445,10 +6445,10 @@ tsubst (t, args, complain, in_decl)
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
 	  case BOUND_TEMPLATE_TEMPLATE_PARM:
-	    if (CP_TYPE_QUALS (t))
+	    if (cp_type_quals (t))
 	      {
 		r = tsubst (TYPE_MAIN_VARIANT (t), args, complain, in_decl);
-		r = cp_build_qualified_type_real (r, CP_TYPE_QUALS (t),
+		r = cp_build_qualified_type_real (r, cp_type_quals (t),
 						  complain);
 	      }
 	    else
@@ -6755,8 +6755,8 @@ tsubst (t, args, complain, in_decl)
 	if (f == error_mark_node)
 	  return f;
 	return cp_build_qualified_type_real (f, 
-					     CP_TYPE_QUALS (f) 
-					     | CP_TYPE_QUALS (t),
+					     cp_type_quals (f) 
+					     | cp_type_quals (t),
 					     complain);
       }
 
@@ -8667,8 +8667,8 @@ unify (tparms, targs, parm, arg, strict)
 	     PARM is `const T'.  Then, T should be `volatile int'.  */
 	  arg = 
 	    cp_build_qualified_type_real (arg,
-					  CP_TYPE_QUALS (arg) 
-					  & ~CP_TYPE_QUALS (parm),
+					  cp_type_quals (arg) 
+					  & ~cp_type_quals (parm),
 					  /*complain=*/0);
 	  if (arg == error_mark_node)
 	    return 1;

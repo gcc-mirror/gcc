@@ -551,7 +551,7 @@ do_build_copy_constructor (fndecl)
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
       tree member_init_list = NULL_TREE;
       tree base_init_list = NULL_TREE;
-      int cvquals = CP_TYPE_QUALS (TREE_TYPE (parm));
+      int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
       /* Initialize all the base-classes with the parameter converted to
@@ -640,7 +640,7 @@ do_build_assign_ref (fndecl)
       tree fields = TYPE_FIELDS (current_class_type);
       int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
-      int cvquals = CP_TYPE_QUALS (TREE_TYPE (parm));
+      int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
       for (i = 0; i < n_bases; ++i)
@@ -919,7 +919,7 @@ locate_copy (type, client_)
         continue;
       if (!sufficient_parms_p (TREE_CHAIN (parms)))
         continue;
-      quals = CP_TYPE_QUALS (src_type);
+      quals = cp_type_quals (src_type);
       if (client->quals & ~quals)
         continue;
       excess = quals & ~client->quals;

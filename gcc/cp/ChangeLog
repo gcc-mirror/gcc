@@ -1,3 +1,17 @@
+2001-11-22  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* cp-tree.h (CP_TYPE_QUALS): Removed.
+	* decl.c (cxx_init_decl_processing): Don't set lang_dump_tree.
+	* cp-lang.c: Set LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN and 
+	LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN.
+	* dump.c (cp_dump_tree): Use void* dump_info argument to match 
+	lang-hooks prototype.
+	* call.c, cp-tree.h, cvt.c, decl.c, init.c, mangle.c, method.c, pt.c,
+	rtti.c, semantics.c, tree.c, typeck.c, typeck2.c: All references to
+	CP_TYPE_QUALS changed to cp_type_quals.
+	* Make-lang.in: References to c-dump.h changed to tree-dump.h.
+	(CXX_C_OBJS): Remove c-dump.o.
+
 2001-11-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/3637

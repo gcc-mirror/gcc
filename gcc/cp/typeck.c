@@ -223,7 +223,7 @@ qualify_type_recursive (t1, t2)
       else
 	b1 = NULL_TREE;
 
-      type_quals = (CP_TYPE_QUALS (tt1) | CP_TYPE_QUALS (tt2));
+      type_quals = (cp_type_quals (tt1) | cp_type_quals (tt2));
       tgt = qualify_type_recursive (tt1, tt2);
       tgt = cp_build_qualified_type (tgt, type_quals);
       if (b1)
@@ -486,8 +486,8 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
       t1 = TREE_TYPE (t1);
       t2 = TREE_TYPE (t2);
       result_type = cp_build_qualified_type (void_type_node,
-					     (CP_TYPE_QUALS (t1)
-					      | CP_TYPE_QUALS (t2)));
+					     (cp_type_quals (t1)
+					      | cp_type_quals (t2)));
       result_type = build_pointer_type (result_type);
     }
   else
@@ -617,7 +617,7 @@ common_type (t1, t2)
 	else
 	  b1 = b2 = NULL_TREE;
 
-	type_quals = (CP_TYPE_QUALS (tt1) | CP_TYPE_QUALS (tt2));
+	type_quals = (cp_type_quals (tt1) | cp_type_quals (tt2));
 	tt1 = TYPE_MAIN_VARIANT (tt1);
 	tt2 = TYPE_MAIN_VARIANT (tt2);
 
@@ -795,7 +795,7 @@ comp_except_types (a, b, exact)
     return 1;
   else if (!exact)
     {
-      if (CP_TYPE_QUALS (a) || CP_TYPE_QUALS (b))
+      if (cp_type_quals (a) || cp_type_quals (b))
         return 0;
       
       if (TREE_CODE (a) == POINTER_TYPE
@@ -803,7 +803,7 @@ comp_except_types (a, b, exact)
         {
           a = TREE_TYPE (a);
           b = TREE_TYPE (b);
-          if (CP_TYPE_QUALS (a) || CP_TYPE_QUALS (b))
+          if (cp_type_quals (a) || cp_type_quals (b))
             return 0;
         }
       
@@ -983,7 +983,7 @@ comptypes (t1, t2, strict)
     return 0;
 
   /* Qualifiers must match.  */
-  if (CP_TYPE_QUALS (t1) != CP_TYPE_QUALS (t2))
+  if (cp_type_quals (t1) != cp_type_quals (t2))
     return 0;
   if (strict == COMPARE_STRICT 
       && TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
@@ -1327,8 +1327,8 @@ at_least_as_qualified_p (type1, type2)
      tree type2;
 {
   /* All qualifiers for TYPE2 must also appear in TYPE1.  */
-  return ((CP_TYPE_QUALS (type1) & CP_TYPE_QUALS (type2))
-	  == CP_TYPE_QUALS (type2));
+  return ((cp_type_quals (type1) & cp_type_quals (type2))
+	  == cp_type_quals (type2));
 }
 
 /* Returns 1 if TYPE1 is more qualified than TYPE2.  */
@@ -1338,7 +1338,7 @@ more_qualified_p (type1, type2)
      tree type1;
      tree type2;
 {
-  return (CP_TYPE_QUALS (type1) != CP_TYPE_QUALS (type2)
+  return (cp_type_quals (type1) != cp_type_quals (type2)
 	  && at_least_as_qualified_p (type1, type2));
 }
 
@@ -1350,7 +1350,7 @@ comp_cv_qualification (type1, type2)
      tree type1;
      tree type2;
 {
-  if (CP_TYPE_QUALS (type1) == CP_TYPE_QUALS (type2))
+  if (cp_type_quals (type1) == cp_type_quals (type2))
     return 0;
 
   if (at_least_as_qualified_p (type1, type2))
@@ -2241,8 +2241,8 @@ build_component_ref (datum, component, basetype_path, protect)
     ;
   else
     {
-      type_quals = (CP_TYPE_QUALS (field_type)  
-		    | CP_TYPE_QUALS (TREE_TYPE (datum)));
+      type_quals = (cp_type_quals (field_type)  
+		    | cp_type_quals (TREE_TYPE (datum)));
 
       /* A field is const (volatile) if the enclosing object, or the
 	 field itself, is const (volatile).  But, a mutable field is
@@ -6892,7 +6892,8 @@ comp_ptr_ttypes_reinterpret (to, from)
     }
 }
 
-/* Returns the type-qualifier set corresponding to TYPE.  */
+/* Returns the type qualifiers for this type, including the qualifiers on the
+   elements for an array type.  */
 
 int
 cp_type_quals (type)
@@ -6958,14 +6959,14 @@ casts_away_constness_r (t1, t2)
       || TREE_CODE (*t2) != POINTER_TYPE)
     {
       *t1 = cp_build_qualified_type (void_type_node,
-				     CP_TYPE_QUALS (*t1));
+				     cp_type_quals (*t1));
       *t2 = cp_build_qualified_type (void_type_node,
-				     CP_TYPE_QUALS (*t2));
+				     cp_type_quals (*t2));
       return;
     }
   
-  quals1 = CP_TYPE_QUALS (*t1);
-  quals2 = CP_TYPE_QUALS (*t2);
+  quals1 = cp_type_quals (*t1);
+  quals2 = cp_type_quals (*t2);
   *t1 = TREE_TYPE (*t1);
   *t2 = TREE_TYPE (*t2);
   casts_away_constness_r (t1, t2);

@@ -48,6 +48,18 @@ struct lang_hooks_for_tree_inlining
   int (*anon_aggr_type_p) PARAMS ((union tree_node *));
 };
 
+/* The following hooks are used by tree-dump.c.  */
+
+struct lang_hooks_for_tree_dump
+{
+  /* Dump language-specific parts of tree nodes.  Returns non-zero if it 
+     does not want the usual dumping of the second argument.  */
+  int (*dump_tree) PARAMS ((void *, tree));
+
+  /* Determine type qualifiers in a language-specific way.  */
+  int (*type_quals) PARAMS ((tree));
+};
+
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */
 
 struct lang_hooks
@@ -116,8 +128,10 @@ struct lang_hooks
   void (*set_yydebug) PARAMS ((int));
 
   struct lang_hooks_for_tree_inlining tree_inlining;
+  
+  struct lang_hooks_for_tree_dump tree_dump;
 
-  /* Whenever you add entries here, make sure you adjust langhooks.h
+  /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };
 

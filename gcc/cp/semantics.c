@@ -2128,7 +2128,7 @@ finish_base_specifier (access_specifier, base_class)
     result = NULL_TREE;
   else
     {
-      if (CP_TYPE_QUALS (base_class) != 0)
+      if (cp_type_quals (base_class) != 0)
         {
           cp_error ("base class `%T' has cv qualifiers", base_class);
           base_class = TYPE_MAIN_VARIANT (base_class);

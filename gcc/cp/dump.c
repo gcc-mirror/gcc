@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
-#include "c-dump.h"
+#include "tree-dump.h"
 
 static void dump_access
   PARAMS ((dump_info_p, tree));
@@ -208,11 +208,12 @@ dump_op (di, t)
 }
 
 int
-cp_dump_tree (di, t)
-     dump_info_p di;
+cp_dump_tree (dump_info, t)
+     void *dump_info;
      tree t;
 {
   enum tree_code code;
+  dump_info_p di = (dump_info_p) dump_info;
 
   /* Figure out what kind of node this is.  */
   code = TREE_CODE (t);

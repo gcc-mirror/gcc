@@ -103,7 +103,19 @@ int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
   LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
 } \
 
-/* The whole thing.  The structure is defined in toplev.h.  */
+/* Tree dump hooks.  */
+int lhd_tree_dump_dump_tree 			PARAMS ((void *, tree));
+int lhd_tree_dump_type_quals			PARAMS ((tree));
+
+#define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN lhd_tree_dump_dump_tree
+#define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN lhd_tree_dump_type_quals
+
+#define LANG_HOOKS_TREE_DUMP_INITIALIZER { \
+  LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN, \
+  LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN \
+} \
+
+/* The whole thing.  The structure is defined in langhooks.h.  */
 #define LANG_HOOKS_INITIALIZER { \
   LANG_HOOKS_NAME, \
   LANG_HOOKS_IDENTIFIER_SIZE, \
@@ -121,7 +133,8 @@ int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
   LANG_HOOKS_PRINT_TYPE, \
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_SET_YYDEBUG, \
-  LANG_HOOKS_TREE_INLINING_INITIALIZER \
+  LANG_HOOKS_TREE_INLINING_INITIALIZER, \
+  LANG_HOOKS_TREE_DUMP_INITIALIZER \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

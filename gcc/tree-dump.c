@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "splay-tree.h"
 #include "diagnostic.h"
 #include "toplev.h"
-#include "c-dump.h"
+#include "tree-dump.h"
 #include "langhooks.h"
 
 static unsigned int queue PARAMS ((dump_info_p, tree, int));

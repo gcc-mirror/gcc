@@ -1128,28 +1128,24 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* True if this a "Java" type, defined in 'extern "Java"'. */
 #define TYPE_FOR_JAVA(NODE) TYPE_LANG_FLAG_3(NODE)
 
-/* The type qualifiers for this type, including the qualifiers on the
-   elements for an array type.  */
-#define CP_TYPE_QUALS(NODE) C_TYPE_QUALS (NODE)
-
 /* Nonzero if this type is const-qualified.  */
 #define CP_TYPE_CONST_P(NODE)				\
-  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_CONST) != 0)
+  ((cp_type_quals (NODE) & TYPE_QUAL_CONST) != 0)
 
 /* Nonzero if this type is volatile-qualified.  */
 #define CP_TYPE_VOLATILE_P(NODE)			\
-  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_VOLATILE) != 0)
+  ((cp_type_quals (NODE) & TYPE_QUAL_VOLATILE) != 0)
 
 /* Nonzero if this type is restrict-qualified.  */
 #define CP_TYPE_RESTRICT_P(NODE)			\
-  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_RESTRICT) != 0)
+  ((cp_type_quals (NODE) & TYPE_QUAL_RESTRICT) != 0)
 
 /* Nonzero if this type is const-qualified, but not
    volatile-qualified.  Other qualifiers are ignored.  This macro is
    used to test whether or not it is OK to bind an rvalue to a
    reference.  */
 #define CP_TYPE_CONST_NON_VOLATILE_P(NODE)				\
-  ((CP_TYPE_QUALS (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
+  ((cp_type_quals (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
    == TYPE_QUAL_CONST)
 
 #define FUNCTION_ARG_CHAIN(NODE) \
@@ -4341,7 +4337,7 @@ extern tree mangle_guard_variable               PARAMS ((tree));
 extern tree mangle_ref_init_variable            PARAMS ((tree));
 
 /* in dump.c */
-extern int cp_dump_tree                         PARAMS ((dump_info_p, tree));
+extern int cp_dump_tree                         PARAMS ((void *, tree));
 
 /* -- end of C++ */
 
