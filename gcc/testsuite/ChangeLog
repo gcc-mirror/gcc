@@ -1,3 +1,8 @@
+2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/18644
+	* g++.old-deja/g++.jason/warning9.C: Adjust.
+
 2005-04-01  Dale Ranta  <dir@lanl.gov>
             Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 

@@ -1,3 +1,9 @@
+2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	 
+        PR c++/18644
+        * doc/invoke.texi (-Wsynth): Don't document, as it now is void of
+        semantics. 
+	
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/19345
