@@ -1,3 +1,7 @@
+2004-10-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* objc-act.c: Fix comment typos.
+
 2004-09-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (init_objc_symtab, init_module_descriptor,
