@@ -186,6 +186,7 @@ static tree start_cleanup_fn PARAMS ((void));
 static void end_cleanup_fn PARAMS ((void));
 static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
 static void initialize_predefined_identifiers PARAMS ((void));
+static void initialize_java_fundamental_types PARAMS ((void));
 static tree check_special_function_return_type 
   PARAMS ((special_function_kind, tree, tree, tree));
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
@@ -260,6 +261,10 @@ tree error_mark_list;
 */
 
 tree cp_global_trees[CPTI_MAX];
+
+/* The fundamental Java types.  */
+
+tree java_fundamental_types[jtk_last];
 
 /* Indicates that there is a type value in some namespace, although
    that is not necessarily in scope at the moment.  */
@@ -6142,9 +6147,9 @@ record_builtin_type (rid_index, name, type)
 }
 
 /* Record one of the standard Java types.
- * Declare it as having the given NAME.
- * If SIZE > 0, it is the size of one of the integral types;
- * otherwise it is the negative of the size of one of the other types.  */
+   Declare it as having the given NAME.
+   If SIZE > 0, it is the size of one of the integral types;
+   otherwise it is the negative of the size of one of the other types.  */
 
 static tree
 record_builtin_java_type (name, size)
@@ -6246,6 +6251,38 @@ initialize_predefined_identifiers ()
       if (pid->ctor_or_dtor_p)
 	IDENTIFIER_CTOR_OR_DTOR_P (*pid->node) = 1;
     }
+}
+
+/* Create nodes representing the fundamental Java types.  */
+
+static void
+initialize_java_fundamental_types ()
+{
+  typedef struct jft_info 
+  {
+    /* The name of the type.  */
+    const char *name;
+    /* The number of bits in the type.  */
+    int size;
+  } jft_info;
+
+  static jft_info jft_infos[jtk_last] = {
+    { "__java_byte", 8 },
+    { "__java_short", 16 },
+    { "__java_int", 32 },
+    { "__java_long", 64 },
+    { "__java_float", -32 },
+    { "__java_double", -64 },
+    { "__java_char", -16 },
+    { "__java_boolean", -1 }
+  };
+
+  java_fundamental_type_kind jtk;
+
+  for (jtk = jtk_first; jtk < jtk_last; ++jtk)
+    java_fundamental_types[jtk]
+      = record_builtin_java_type (jft_infos[jtk].name, 
+				  jft_infos[jtk].size);
 }
 
 /* Create the predefined scalar types of C,
@@ -6397,14 +6434,7 @@ init_decl_processing ()
 
   build_common_tree_nodes_2 (flag_short_double);
 
-  java_byte_type_node = record_builtin_java_type ("__java_byte", 8);
-  java_short_type_node = record_builtin_java_type ("__java_short", 16);
-  java_int_type_node = record_builtin_java_type ("__java_int", 32);
-  java_long_type_node = record_builtin_java_type ("__java_long", 64);
-  java_float_type_node = record_builtin_java_type ("__java_float", -32);
-  java_double_type_node = record_builtin_java_type ("__java_double", -64);
-  java_char_type_node = record_builtin_java_type ("__java_char", -16);
-  java_boolean_type_node = record_builtin_java_type ("__java_boolean", -1);
+  initialize_java_fundamental_types ();
 
   integer_two_node = build_int_2 (2, 0);
   TREE_TYPE (integer_two_node) = integer_type_node;
@@ -6656,6 +6686,8 @@ init_decl_processing ()
   /* Add GC roots for all of our global variables.  */
   ggc_add_tree_root (c_global_trees, sizeof c_global_trees / sizeof(tree));
   ggc_add_tree_root (cp_global_trees, sizeof cp_global_trees / sizeof(tree));
+  ggc_add_tree_root (java_fundamental_types, 
+		     sizeof (java_fundamental_types) / sizeof (tree));
   ggc_add_tree_root (&integer_three_node, 1);
   ggc_add_tree_root (&integer_two_node, 1);
   ggc_add_tree_root (&signed_size_zero_node, 1);
