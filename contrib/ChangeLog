@@ -1,3 +1,7 @@
+1998-11-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary: updated to version in development branch
+
 1998-08-14  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_installed: new script for testing already-installed
