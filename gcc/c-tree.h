@@ -504,11 +504,6 @@ extern int warn_missing_braces;
 
 extern int warn_sign_compare;
 
-/* Nonzero means this is a function to call to perform comptypes
-   on two record types.  */
-
-extern int (*comptypes_record_hook) ();
-
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
@@ -516,5 +511,8 @@ extern int system_header_p;
 /* Nonzero enables objc features.  */
 
 extern int doing_objc_thang;
+
+/* In c-decl.c */
+extern void finish_incomplete_decl PROTO((tree));
 
 #endif /* not _C_TREE_H */
