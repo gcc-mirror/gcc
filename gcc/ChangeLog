@@ -1,3 +1,19 @@
+2003-09-22  David Edelsohn  <edelsohn@gnu.org>
+	    Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_in_gprs_p): Rename to ...
+	(gpr_or_gpr_p): Change to bool.
+	(rs6000_split_altivec_in_gprs): Rename to ...
+	(rs6000_split_multireg_move): Add support for update addressing.
+	* config/rs6000/rs6000-protos.h: Same.
+	* config/rs6000/altivec.md: Same.
+	* config/rs6000/rs6000.md (movdi_internal32): Use new splitter for
+	multiple GPRs.
+	(movti): Remove TARGET_STRING || TARGET_POWERPC64 final condition.
+	(movti_power): Use new splitter for multiple GPRs.
+	(movti_string): Same.
+	(movti_ppc64): Same.
+
 2003-09-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h: Convert to ISO C90.

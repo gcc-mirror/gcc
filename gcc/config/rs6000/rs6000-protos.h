@@ -100,16 +100,16 @@ extern int includes_rldic_lshift_p (rtx, rtx);
 extern int includes_rldicr_lshift_p (rtx, rtx);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int addrs_ok_for_quad_peep (rtx, rtx);
-extern int altivec_in_gprs_p (rtx, rtx);
+extern bool gpr_or_gpr_p (rtx, rtx);
 extern enum reg_class secondary_reload_class (enum reg_class,
-						      enum machine_mode, rtx);
+					      enum machine_mode, rtx);
 extern int ccr_bit (rtx, int);
 extern int extract_MB (rtx);
 extern int extract_ME (rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
-						       enum rtx_code);
+					       enum rtx_code);
 extern void rs6000_emit_sCOND (enum rtx_code, rtx);
 extern void rs6000_emit_cbranch (enum rtx_code, rtx);
 extern char * output_cbranch (rtx, const char *, int, rtx);
@@ -125,7 +125,7 @@ extern int mfcr_operation (rtx, enum machine_mode);
 extern int mtcrf_operation (rtx, enum machine_mode);
 extern int lmw_operation (rtx, enum machine_mode);
 extern struct rtx_def *create_TOC_reference (rtx);
-extern void rs6000_split_altivec_in_gprs (rtx *);
+extern void rs6000_split_multireg_move (rtx *);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,
