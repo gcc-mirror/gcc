@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,97,1998 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,97,98,1999 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1032,7 +1032,7 @@ Define this macro to be a C expression for the default value of that flag.
 If @code{DEFAULT_VTABLE_THUNKS} is 0, GNU CC uses the traditional
 implementation by default.  The ``thunk'' implementation is more efficient
 (especially if you have provided an implementation of
-@code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
+@code{ASM_OUTPUT_MI_THUNK}, @pxref{Function Entry}), but is not binary
 compatible with code compiled using the traditional implementation.  
 If you are writing a new ports, define @code{DEFAULT_VTABLE_THUNKS} to 1.
 

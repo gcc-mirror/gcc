@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96,97,1998 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92-98,1999 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4629,7 +4629,7 @@ there.
 You can specify that an individual function is called with this calling
 sequence with the function attribute @samp{stdcall}.  You can also
 override the @samp{-mrtd} option by using the function attribute
-@samp{cdecl}. @xref{Function Attributes}
+@samp{cdecl}. @xref{Function Attributes}.
 
 @strong{Warning:} this calling convention is incompatible with the one
 normally used on Unix, so you cannot use it if you need to call
@@ -4655,7 +4655,8 @@ supported letters are: @code{a} allocate EAX; @code{b} allocate EBX;
 Control how many registers are used to pass integer arguments.  By
 default, no registers are used to pass arguments, and at most 3
 registers can be used.  You can control this behavior for a specific
-function by using the function attribute @samp{regparm}.   @xref{Function Attributes}
+function by using the function attribute @samp{regparm}.  @xref{Function
+Attributes}.
 
 @strong{Warning:} if you use this switch, and
 @var{num} is nonzero, then you must build all modules with the same

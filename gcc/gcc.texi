@@ -96,7 +96,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -3616,8 +3616,8 @@ multi-word integers.
 @findex HOST_FLOAT_FORMAT
 @item HOST_FLOAT_FORMAT
 A numeric code distinguishing the floating point format for the host
-machine.  See @code{TARGET_FLOAT_FORMAT} in @ref{Storage Layout} for the
-alternatives and default.
+machine.  For the alternatives and default, see
+@code{TARGET_FLOAT_FORMAT} in @ref{Storage Layout}.
 
 @findex HOST_BITS_PER_CHAR
 @item HOST_BITS_PER_CHAR

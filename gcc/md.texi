@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 89, 92, 93, 94, 96, 1998 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,98,1999 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2151,7 +2151,7 @@ pattern or a @samp{tst@var{m}} pattern.
 
 Machines that use a pseudo register for the condition code value, or
 where the mode used for the comparison depends on the condition being
-tested, should also use the above mechanism.  @xref{Jump Patterns}
+tested, should also use the above mechanism.  @xref{Jump Patterns}.
 
 The above discussion also applies to the @samp{mov@var{mode}cc} and
 @samp{s@var{cond}} patterns.
