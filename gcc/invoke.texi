@@ -277,7 +277,7 @@ in the following sections.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt
 -mnew-mnemonics  -mno-new-mnemonics
 -mfull-toc   -mminimal-toc  -mno-fop-in-toc  -mno-sum-in-toc
--mxl-call  -mno-xl-call  -mthreads  -mpe
+-maix64  -maix32  -mxl-call  -mno-xl-call  -mthreads  -mpe
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple
 -mstring  -mno-string  -mupdate  -mno-update
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align
@@ -3822,11 +3822,14 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-powerpc-gpopt
 @itemx -mpowerpc-gfxopt
 @itemx -mno-powerpc-gfxopt
+@itemx -mpowerpc64
+@itemx -mno-powerpc64
 @kindex -mpower
 @kindex -mpower2
 @kindex -mpowerpc
 @kindex -mpowerpc-gpopt
 @kindex -mpowerpc-gfxopt
+@kindex -mpowerpc64
 GNU CC supports two related instruction set architectures for the
 RS/6000 and PowerPC.  The @dfn{POWER} instruction set are those
 instructions supported by the @samp{rios} chip set used in the original
@@ -3860,6 +3863,11 @@ General Purpose group, including floating-point square root.  Specifying
 use the optional PowerPC architecture instructions in the Graphics
 group, including floating-point select.
 
+The @samp{-mpowerpc64} option allows GNU CC to generate the additional
+64-bit instructions that are found in the full PowerPC64 architecture
+and to treat GPRs as 64-bit, doubleword quantities.  GNU CC defaults to
+@samp{-mno-powerpc64}.
+
 If you specify both @samp{-mno-power} and @samp{-mno-powerpc}, GNU CC
 will use only the instructions in the common subset of both
 architectures plus some special AIX common-mode calls, and will not use
@@ -3879,18 +3887,14 @@ Instructions defined in only one architecture have only one mnemonic;
 GNU CC uses that mnemonic irrespective of which of these options is
 specified.
 
-PowerPC assemblers support both the old and new mnemonics, as will later
-POWER assemblers.  Current POWER assemblers only support the old
-mnemonics.  Specify @samp{-mnew-mnemonics} if you have an assembler that
-supports them, otherwise specify @samp{-mold-mnemonics}.
-
-The default value of these options depends on how GNU CC was configured.
-Specifying @samp{-mcpu=@var{cpu_type}} sometimes overrides the value of
-these option.  Unless you are building a cross-compiler, you should
-normally not specify either @samp{-mnew-mnemonics} or
+GNU CC defaults to the mnemonics appropriate for the architecture in
+use.  Specifying @samp{-mcpu=@var{cpu_type}} sometimes overrides the
+value of these option.  Unless you are building a cross-compiler, you
+should normally not specify either @samp{-mnew-mnemonics} or
 @samp{-mold-mnemonics}, but should instead accept the default.
 
 @item -mcpu=@var{cpu_type}
+@kindex -mcpu
 Set architecture type, register usage, choice of mnemonics, and
 instruction scheduling parameters for machine type @var{cpu_type}.
 Supported values for @var{cpu_type} are @samp{rs6000}, @samp{rios1},
@@ -3964,6 +3968,7 @@ instruction scheduling parameters.
 @itemx -mno-fp-in-toc
 @itemx -mno-sum-in-toc
 @itemx -mminimal-toc
+@kindex -mminimal-toc
 Modify generation of the TOC (Table Of Contents), which is created for
 every executable file.  The @samp{-mfull-toc} option is selected by
 default.  In that case, GNU CC will allocate at least one TOC entry for
@@ -3988,26 +3993,39 @@ option, GNU CC will produce code that is slower and larger but which
 uses extremely little TOC space.  You may wish to use this option
 only on files that contain less frequently executed code. @refill
 
+@item -maix64
+@itemx -maix32
+@kindex -maix64
+@kindex -maix32
+Enable AIX 64-bit ABI and calling convention: 64-bit pointers, 64-bit
+@code{long} type, and the infrastructure needed to support them.
+Specifying @samp{-maix64} implies @samp{-mpowerpc64} and
+@samp{-mpowerpc}, while @samp{-maix32} disables the 64-bit ABI and
+implies @samp{-mno-powerpc64}.  GNU CC defaults to @samp{-maix32}.
+
 @item -mxl-call
 @itemx -mno-xl-call
+@kindex -mxl-call
 On AIX, pass floating-point arguments to prototyped functions beyond the
 register save area (RSA) on the stack in addition to argument FPRs.  The
 AIX calling convention was extended but not initially documented to
 handle an obscure K&R C case of calling a function that takes the
 address of its arguments with fewer arguments than declared.  AIX XL
-compilers assume that floating point arguments which do not fit in the
-RSA are on the stack when they compile a subroutine without
+compilers access floating point arguments which do not fit in the
+RSA from the stack when a subroutine is compiled without
 optimization.  Because always storing floating-point arguments on the
 stack is inefficient and rarely needed, this option is not enabled by
 default and only is necessary when calling subroutines compiled by AIX
 XL compilers without optimization.
 
 @item -mthreads
+@kindex -mthreads
 Support @dfn{AIX Threads}.  Link an application written to use
 @dfn{pthreads} with special libraries and startup code to enable the
 application to run.
 
 @item -mpe
+@kindex -mpe
 Support @dfn{IBM RS/6000 SP} @dfn{Parallel Environment} (PE).  Link an
 application written to use message passing with special startup code to
 enable the application to run.  The system must have PE installed in the
@@ -4019,6 +4037,7 @@ option are incompatible.
 
 @item -msoft-float
 @itemx -mhard-float
+@kindex -msoft-float
 Generate code that does not use (uses) the floating-point register set.
 Software floating point emulation is provided if you use the
 @samp{-msoft-float} option, and pass the option to GNU CC when linking.
@@ -4034,6 +4053,7 @@ processor is in little endian mode.
 
 @item -mstring
 @itemx -mno-string
+@kindex -mstring
 Generate code that uses (does not use) the load string instructions and the
 store string word instructions to save multiple registers and do small block
 moves.  These instructions are generated by default on POWER systems, and not
@@ -4043,6 +4063,7 @@ little endian mode.
 
 @item -mupdate
 @itemx -mno-update
+@kindex -mupdate
 Generate code that uses (does not use) the load or store instructions
 that update the base register to the address of the calculated memory
 location.  These instructions are generated by default.  If you use
@@ -4053,12 +4074,14 @@ signals may get corrupted data.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
+@kindex -mfused-madd
 Generate code that uses (does not use) the floating point multiply and
 accumulate instructions.  These instructions are generated by default if
 hardware floating is used.
 
 @item -mno-bit-align
 @itemx -mbit-align
+@kindex -mbit-align
 On System V.4 and embedded PowerPC systems do not (do) force structures
 and unions that contain bit fields to be aligned to the base type of the
 bit field.
@@ -4071,11 +4094,13 @@ size.
 
 @item -mno-strict-align
 @itemx -mstrict-align
+@kindex -mstrict-align
 On System V.4 and embedded PowerPC systems do not (do) assume that
 unaligned memory references will be handled by the system.
 
 @item -mrelocatable
 @itemx -mno-relocatable
+@kindex -mrelocatable
 On embedded PowerPC systems generate code that allows (does not allow)
 the program to be relocated to a different address at runtime.  If you
 use @samp{-mrelocatable} on any module, all objects linked together must
