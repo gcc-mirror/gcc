@@ -1304,7 +1304,8 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 
 # Build the include directory except for float.h (which depends upon
 # enquire).
-stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h objc-headers
+stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h \
+  xlimits.h objc-headers
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1317,13 +1318,6 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h
 	  cp $$realfile $$objdir/include; \
 	  chmod a+r $$objdir/include/$$realfile; \
 	done
-	rm -f include/syslimits.h
-	if [ -f include/limits.h ]; then \
-	  mv include/limits.h include/syslimits.h; \
-	else \
-	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
-	fi
-	chmod a+r include/syslimits.h
 	rm -f include/varargs.h
 	cp $(srcdir)/gvarargs.h include/varargs.h
 	chmod a+r include/varargs.h
@@ -1350,7 +1344,7 @@ stmp-headers: stmp-int-hdrs gfloat.h
 	touch stmp-headers
 
 # Build fixed copies of system files.
-stmp-fixinc: $(srcdir)/$(FIXINCLUDES)
+stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
 	rm -rf include
 	mkdir include
 	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
@@ -1363,6 +1357,13 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES)
 	  done; \
 	else true; \
 	fi
+	rm -f include/syslimits.h
+	if [ -f include/limits.h ]; then \
+	  mv include/limits.h include/syslimits.h; \
+	else \
+	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
+	fi
+	chmod a+r include/syslimits.h
 	touch stmp-fixinc
 
 # copy objc header files
