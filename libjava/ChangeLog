@@ -1,5 +1,10 @@
 2003-06-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URLStreamHandler.java
+	(hostsEqual): Rewritten.
+
+2003-06-20  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/MappedByteFileBuffer.java,
 	gnu/java/nio/natMappedByteFileBuffer.cc:
 	Removed
