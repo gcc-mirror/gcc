@@ -575,6 +575,8 @@ enum reg_class mips_char_to_class[256] =
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.align 0\n\t.half\t"
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.align 0\n\t.word\t"
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP "\t.align 0\n\t.dword\t"
 #endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -6343,13 +6345,14 @@ mips_asm_file_start (stream)
 
   if (TARGET_GAS)
     {
-#if defined(OBJECT_FORMAT_ELF)
+#if defined(OBJECT_FORMAT_ELF) && !(TARGET_IRIX5 || TARGET_IRIX6)
       /* Generate a special section to describe the ABI switches used to
 	 produce the resultant binary.  This used to be done by the assembler
 	 setting bits in the ELF header's flags field, but we have run out of
 	 bits.  GDB needs this information in order to be able to correctly
-	 debug these binaries. See the function mips_gdbarch_init() in
-	 gdb/mips-tdep.c.  */
+	 debug these binaries.  See the function mips_gdbarch_init() in
+	 gdb/mips-tdep.c.  This is unnecessary for the IRIX 5/6 ABIs and
+	 causes unnecessary IRIX 6 ld warnings.  */
       const char * abi_string = NULL;
 
       switch (mips_abi)

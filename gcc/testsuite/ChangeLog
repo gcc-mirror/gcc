@@ -1,3 +1,8 @@
+2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gcc.misc-tests/linkage.exp: Handle mips-sgi-irix6*o32
+	configuration and IRIX 6 O32 ABI.
+
 2002-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/builtin-noret-1.c: Test non-ANSI functions.

@@ -1592,6 +1592,15 @@ if test x"$gcc_cv_as_hidden" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_hidden)
 libgcc_visibility=$gcc_cv_as_hidden
+case "$target" in
+  mips-sgi-irix6*o32)
+    if test x"$gnu_ld_flag" = x"no"; then
+      # Even if using gas with .hidden support, the resulting object files
+      # cannot be linked with the IRIX 6 O32 linker.
+      libgcc_visibility=no
+    fi
+    ;;
+esac
 AC_SUBST(libgcc_visibility)
 
 AC_MSG_CHECKING(assembler leb128 support)

@@ -1,0 +1,7 @@
+# omit -g, gcc doesn't support the o32 mdebug debugging format and warns about
+# every invokation with -g*
+# add -save-temps to avoid comparison failure due to embedded temp file names
+BOOT_CFLAGS = -O2 -save-temps
+
+# omit -g1
+LIBGCC2_DEBUG_CFLAGS =

@@ -1,3 +1,38 @@
+2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (mips-sgi-irix6*o32): New configuration.
+
+	* configure.in (libgcc_visibility): Disable for mips-sgi-irix6*o32
+	configurations.
+	* configure: Regenerate.
+
+	* config/mips/iris6-o32-as.h: New file.
+	* config/mips/iris6-o32.h: New file.
+	
+	* config/mips/iris5gas.h (TARGET_ASM_NAMED_SECTION): Define.
+	(NM_FLAGS): Define.
+	(HAVE_AS_SHF_MERGE): Undefine.
+
+	* config/mips/t-iris5-as: New file.
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): Use it.
+
+	* config/mips/t-iris6 (SHLIB_EXT, SHLIB_SOLINK, SHLIB_SONAME,
+	SHLIB_NAME, SHLIB_MAP, SHLIB_OBJS, SHLIB_SLIBDIR_QUAL, SHLIB_LINK,
+	SHLIB_INSTALL, SHLIB_MKMAP, SHLIB_MAPFILES, FPBIT, DPBIT,
+	dp-bit.c, fp-bit.c): Move ...
+	* config/mips/t-iris5-6: ... here.
+	New file, shared by IRIX 5 and IRIX 6.
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix6*,
+	mips-sgi-irix5*): Use it.
+
+	* config/mips/iris6.h: Remove duplicate comment.
+
+	* config/mips/mips.c (TARGET_ASM_UNALIGNED_DI_OP) [TARGET_IRIX5 &&
+	!TARGET_IRIX6]: Define.
+	(mips_asm_file_start): Don't emit mdebug.<ABI> sections on IRIX 5/6.
+
+	* config/mips/mips.h (ASM_DECLARE_FUNCTION_NAME): Fix comment.
+
 2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (adddi3): Change predicate of operand 2 to adddi3_operand
