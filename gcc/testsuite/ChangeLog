@@ -1,3 +1,8 @@
+2004-04-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/14888
+	* g++.dg/opt/pr14888.C: New test case.
+
 2004-04-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/valid-1.c, gcc.dg/pch/valid-2.c, gcc.dg/pch/valid-3.c,
