@@ -1,3 +1,8 @@
+1999-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* std/bastring.h (class basic_string::Rep): Use proper defines
+	for sparc v9 and fix asm for sparc64.
+
 1999-11-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION): Don't forget
