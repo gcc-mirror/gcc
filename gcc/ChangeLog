@@ -1,3 +1,9 @@
+2004-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libstdc++/17005 partial fix.
+	* pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define _INCLUDE__STDC_A1_SOURCE
+	except when generating ANSI/C89 code.
+
 2004-08-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.c (shorten_compare): Use force_fit_type directly.
