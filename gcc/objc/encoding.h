@@ -28,6 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __encoding_INCLUDE_GNU
 #define __encoding_INCLUDE_GNU
 
+#include <ctype.h>
 #include "objc/objc-api.h"
 
 #define _C_CONST    'r'
