@@ -1000,9 +1000,7 @@ locate_copy (tree type, void *client_)
       parms = TREE_CHAIN (parms);
       if (!parms)
         continue;
-      src_type = TREE_VALUE (parms);
-      if (TREE_CODE (src_type) == REFERENCE_TYPE)
-        src_type = TREE_TYPE (src_type);
+      src_type = non_reference (TREE_VALUE (parms));
       if (!same_type_ignoring_top_level_qualifiers_p (src_type, type))
         continue;
       if (!sufficient_parms_p (TREE_CHAIN (parms)))

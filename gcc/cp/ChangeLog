@@ -1,3 +1,59 @@
+2003-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (build_scoped_method_call): Remove.
+	(lookup_qualified_name): Remove parameter.
+	(tsubst_copy_and_build): Declare.
+	(finish_qualified_object_call_expr): Remove.
+	(check_accessibility_of_qualified_id): New function.
+	(finish_qualified_id_expr): Likewise.
+	(non_reference): Likewise.
+	(build_expr_from-tree): Remove.
+	* call.c (non_reference): Remove.
+	(build_scoped_method_call): Likewise.
+	(build_method_call): Use error_operand_p.  Assert that we are not
+	processing a template.
+	(standard_conversion): Use non_reference.
+	* class.c (build_vtbl_entry_ref): Likewise.
+	(build_vtbl_ref_1): Likewise.
+	* cvt.c (build_expr_type_conversion): Use non_reference.
+	* decl.c (lookup_qualified_name): Remove flags parameter.
+	(grok_op_properties): Use non_reference.
+	* decl2.c (grok_array_decl): Likewise.
+	(build_expr_from_tree): Remove.
+	(build_offset_ref_call_from_tree): Update comment.
+	* error.c (parm_to_string): Call reinit_global_formatting_buffer.
+	* except.c (prepare_eh_types): Use non_reference.
+	(can_convert_eh): Likewise.
+	* init.c (build_dtor_call): Avoid using build_method_call.
+	* mangle.c (write_template_param): Remove misleading comment.
+	* method.c (locate_copy): Use non_reference.
+	* parser.c (cp_parser_scope_through_which_access_occurs): Remove.
+	(cp_parser_primary_expression): Do not create SCOPE_REFs is
+	non-dependent contexts.
+	(cp_parser_postfix_expression): Use finish_qualified_id_expr.
+	(cp_parser_direct_declarator): Use tsubst_copy_and_build, not
+	build_expr_from_tree.
+	(cp_parser_lookup_name): Adjust call to lookup_qualified_name.
+	Use check_accessibility_of_qualified_id.
+	* pt.c (maybe_fold_nontype_arg): Use tsubst_copy_and_build, not
+	build_expr_from_tree.
+	(tsubst_baselink): New function.
+	(tsubst_qualified_id): Likewise.
+	(tsubst_copy): Use them.  Remove support for METHOD_CALL_EXPR.
+	(tsubst_expr): Adjust call to lookup_qualified_name.
+	(tsubst_copy_and_build): Handle SCOPE_REFs specially.  Adjust
+	handling of CALL_EXPRs.
+	(value_dependent_expression_p): Use INTEGRAL_OR_ENUMERATION_TYPE_P.
+	* rtti.c (get_tinfo_decl_dynamic): Use non_reference.
+	* search.c (check_final_overrider): Likewise.
+	* semantics.c (check_accessibility_of_qualified_id): New function.
+	(finish_qualified_object_call_expr): Remove.
+	* typeck.c (target_type): Use non_reference.
+	(cxx_sizeof_or_alignof_type): Likewise.
+	(dubious_conversion_warnings): Likewise.
+	(convert_for_initialization): Likewise.
+	(non_reference): New function.
+
 2003-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (print_binding_level, print_other_binding_stack,

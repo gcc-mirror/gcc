@@ -1077,9 +1077,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       if (winner && winner == cand)
 	continue;
 
-      candidate = TREE_TYPE (TREE_TYPE (cand));
-      if (TREE_CODE (candidate) == REFERENCE_TYPE)
-	candidate = TREE_TYPE (candidate);
+      candidate = non_reference (TREE_TYPE (TREE_TYPE (cand)));
 
       switch (TREE_CODE (candidate))
 	{
@@ -1117,9 +1115,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 
   if (winner)
     {
-      tree type = TREE_TYPE (TREE_TYPE (winner));
-      if (TREE_CODE (type) == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
+      tree type = non_reference (TREE_TYPE (TREE_TYPE (winner)));
       return build_user_type_conversion (type, expr, LOOKUP_NORMAL);
     }
 

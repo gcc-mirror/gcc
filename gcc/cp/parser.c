@@ -1717,8 +1717,6 @@ static bool cp_parser_is_string_literal
   (cp_token *);
 static bool cp_parser_is_keyword 
   (cp_token *, enum rid);
-static tree cp_parser_scope_through_which_access_occurs
-  (tree, tree, tree);
 
 /* Returns nonzero if we are parsing tentatively.  */
 
@@ -1742,62 +1740,6 @@ static bool
 cp_parser_is_keyword (cp_token* token, enum rid keyword)
 {
   return token->keyword == keyword;
-}
-
-/* Returns the scope through which DECL is being accessed, or
-   NULL_TREE if DECL is not a member.  If OBJECT_TYPE is non-NULL, we
-   have just seen `x->' or `x.' and OBJECT_TYPE is the type of `*x',
-   or `x', respectively.  If the DECL was named as `A::B' then
-   NESTED_NAME_SPECIFIER is `A'.  */
-
-static tree
-cp_parser_scope_through_which_access_occurs (tree decl, 
-					     tree object_type,
-					     tree nested_name_specifier)
-{
-  tree scope;
-  tree qualifying_type = NULL_TREE;
-  
-  /* Determine the SCOPE of DECL.  */
-  scope = context_for_name_lookup (decl);
-  /* If the SCOPE is not a type, then DECL is not a member.  */
-  if (!TYPE_P (scope))
-    return NULL_TREE;
-  /* Figure out the type through which DECL is being accessed.  */
-  if (object_type 
-      /* OBJECT_TYPE might not be a class type; consider:
-
-	   class A { typedef int I; };
-	   I *p;
-	   p->A::I::~I();
-
-         In this case, we will have "A::I" as the DECL, but "I" as the
-	 OBJECT_TYPE.  */
-      && CLASS_TYPE_P (object_type)
-      && DERIVED_FROM_P (scope, object_type))
-    /* If we are processing a `->' or `.' expression, use the type of the
-       left-hand side.  */
-    qualifying_type = object_type;
-  else if (nested_name_specifier)
-    {
-      /* If the reference is to a non-static member of the
-	 current class, treat it as if it were referenced through
-	 `this'.  */
-      if (DECL_NONSTATIC_MEMBER_P (decl)
-	  && current_class_ptr
-	  && DERIVED_FROM_P (scope, current_class_type))
-	qualifying_type = current_class_type;
-      /* Otherwise, use the type indicated by the
-	 nested-name-specifier.  */
-      else
-	qualifying_type = nested_name_specifier;
-    }
-  else
-    /* Otherwise, the name must be from the current class or one of
-       its bases.  */
-    qualifying_type = currently_open_derived_class (scope);
-
-  return qualifying_type;
 }
 
 /* Issue the indicated error MESSAGE.  */
@@ -2600,7 +2542,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	else
 	  {
 	    bool dependent_p;
-	    
+
 	    /* If the declaration was explicitly qualified indicate
 	       that.  The semantics of `A::f(3)' are different than
 	       `f(3)' if `f' is virtual.  */
@@ -2710,7 +2652,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	       we will resolve the name at instantiation time.  */
 	    if (dependent_p)
 	      {
-		/* Create a SCOPE_REF for qualified names.  */
+		/* Create a SCOPE_REF for qualified names, if the
+		   scope is dependent.  */
 		if (parser->scope)
 		  {
 		    if (TYPE_P (parser->scope))
@@ -2720,9 +2663,13 @@ cp_parser_primary_expression (cp_parser *parser,
 		       might be constant when things are instantiated.  */
 		    if (parser->constant_expression_p)
 		      parser->non_constant_expression_p = true;
-		    return build_nt (SCOPE_REF, 
-				     parser->scope, 
-				     id_expression);
+		    if (TYPE_P (parser->scope)
+			&& dependent_type_p (parser->scope))
+		      return build_nt (SCOPE_REF, 
+				       parser->scope, 
+				       id_expression);
+		    else
+		      return decl;
 		  }
 		/* A TEMPLATE_ID already contains all the information
 		   we need.  */
@@ -3523,7 +3470,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
      form a pointer-to-member.  In that case, QUALIFYING_CLASS is the
      class used to qualify the member.  */
   tree qualifying_class = NULL_TREE;
-  bool done;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -3752,68 +3698,28 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
       break;
     }
 
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  done = (token->type != CPP_OPEN_SQUARE
-	  && token->type != CPP_OPEN_PAREN
-	  && token->type != CPP_DOT
-	  && token->type != CPP_DEREF
-	  && token->type != CPP_PLUS_PLUS
-	  && token->type != CPP_MINUS_MINUS);
-
-  /* If the postfix expression is complete, finish up.  */
-  if (address_p && qualifying_class && done)
-    {
-      if (TREE_CODE (postfix_expression) == SCOPE_REF)
-	postfix_expression = TREE_OPERAND (postfix_expression, 1);
-      postfix_expression 
-	= build_offset_ref (qualifying_class, postfix_expression);
-      return postfix_expression;
-    }
-
-  /* Otherwise, if we were avoiding committing until we knew
-     whether or not we had a pointer-to-member, we now know that
-     the expression is an ordinary reference to a qualified name.  */
+  /* If we were avoiding committing to the processing of a
+     qualified-id until we knew whether or not we had a
+     pointer-to-member, we now know.  */
   if (qualifying_class)
     {
-      if (TREE_CODE (postfix_expression) == FIELD_DECL)
-	postfix_expression 
-	  = finish_non_static_data_member (postfix_expression,
-					   qualifying_class);
-      else if (BASELINK_P (postfix_expression) 
-	       && !processing_template_decl)
-	{
-	  tree fn;
-	  tree fns;
+      bool done;
 
-	  /* See if any of the functions are non-static members.  */
-	  fns = BASELINK_FUNCTIONS (postfix_expression);
-	  if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-	    fns = TREE_OPERAND (fns, 0);
-	  for (fn = fns; fn; fn = OVL_NEXT (fn))
-	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-	      break;
-	  /* If so, the expression may be relative to the current
-	     class.  */
-	  if (fn && current_class_type 
-	      && DERIVED_FROM_P (qualifying_class, current_class_type))
-	    postfix_expression 
-	      = (build_class_member_access_expr 
-		 (maybe_dummy_object (qualifying_class, NULL),
-		  postfix_expression,
-		  BASELINK_ACCESS_BINFO (postfix_expression),
-		  /*preserve_reference=*/false));
-	  else if (done)
-	    {
-	      /* The expression is a qualified name whose address is not
-		 being taken.  */
-	      postfix_expression = build_offset_ref (qualifying_class,
-						     postfix_expression);
-	      if (TREE_CODE (postfix_expression) == OFFSET_REF)
-		postfix_expression = resolve_offset_ref (postfix_expression);
-	      return postfix_expression;
-	    }
-	}
+      /* Peek at the next token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+      done = (token->type != CPP_OPEN_SQUARE
+	      && token->type != CPP_OPEN_PAREN
+	      && token->type != CPP_DOT
+	      && token->type != CPP_DEREF
+	      && token->type != CPP_PLUS_PLUS
+	      && token->type != CPP_MINUS_MINUS);
+
+      postfix_expression = finish_qualified_id_expr (qualifying_class,
+						     postfix_expression,
+						     done,
+						     address_p);
+      if (done)
+	return postfix_expression;
     }
 
   /* Remember that there was a reference to this entity.  */
@@ -3915,7 +3821,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		if (!arg)
 		  {
 		    postfix_expression 
-		      = lookup_arg_dependent(identifier, functions, args);
+		      = lookup_arg_dependent (identifier, functions, args);
 		    if (!postfix_expression)
 		      {
 			/* The unqualified name could not be resolved.  */
@@ -4014,8 +3920,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		   may have reference type even when the standard says
 		   it does not.  Therefore, we have to manually obtain
 		   the underlying type here.  */
-		if (TREE_CODE (scope) == REFERENCE_TYPE)
-		  scope = TREE_TYPE (scope);
+		scope = non_reference (scope);
 		/* If the SCOPE is an OFFSET_TYPE, then we grab the
 		   type of the field.  We get an OFFSET_TYPE for
 		   something like:
@@ -10031,7 +9936,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  saved_processing_template_decl = processing_template_decl;
 		  processing_template_decl = 0;
-		  bounds = build_expr_from_tree (bounds);
+		  bounds = tsubst_copy_and_build (bounds, 
+						  /*args=*/NULL_TREE,
+						  tf_error,
+						  /*in_decl=*/NULL_TREE);
 		  processing_template_decl = saved_processing_template_decl;
 		}
 	    }
@@ -13209,8 +13117,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */
-	  decl = lookup_qualified_name (parser->scope, name, is_type,
-					/*flags=*/0);
+	  decl = lookup_qualified_name (parser->scope, name, is_type);
 	  if (dependent_p)
 	    pop_scope (parser->scope);
 	}
@@ -13282,18 +13189,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
      During an explicit instantiation, access is not checked at all,
      as per [temp.explicit].  */
   if (DECL_P (decl))
-    {
-      tree qualifying_type;
-      
-      /* Figure out the type through which DECL is being
-	 accessed.  */
-      qualifying_type 
-	= cp_parser_scope_through_which_access_occurs (decl,
-						       object_type,
-						       parser->scope);
-      if (qualifying_type)
-	perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl);
-    }
+    check_accessibility_of_qualified_id (decl, object_type, parser->scope);
 
   return decl;
 }

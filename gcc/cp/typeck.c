@@ -72,8 +72,7 @@ static tree lookup_destructor (tree, tree, tree);
 tree
 target_type (tree type)
 {
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  type = non_reference (type);
   while (TREE_CODE (type) == POINTER_TYPE
 	 || TREE_CODE (type) == ARRAY_TYPE
 	 || TREE_CODE (type) == FUNCTION_TYPE
@@ -1421,9 +1420,8 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
     return build_min_nt (op, type);
   
   op_name = operator_name_info[(int) op].name;
-  
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+
+  type = non_reference (type);
   type_code = TREE_CODE (type);
 
   if (type_code == METHOD_TYPE)
@@ -5888,8 +5886,7 @@ tree
 dubious_conversion_warnings (tree type, tree expr,
 			     const char *errtype, tree fndecl, int parmnum)
 {
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  type = non_reference (type);
   
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
   if (ARITHMETIC_TYPE_P (type) && expr == null_node)
@@ -6102,8 +6099,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
   if (exp == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (rhstype) == REFERENCE_TYPE)
-    rhstype = TREE_TYPE (rhstype);
+  rhstype = non_reference (rhstype);
 
   type = complete_type (type);
 
@@ -6707,4 +6703,15 @@ strip_all_pointer_quals (tree type)
 			      strip_all_pointer_quals (TREE_TYPE (type)));
   else
     return TYPE_MAIN_VARIANT (type);
+}
+
+/* If T is a REFERENCE_TYPE return the type to which T refers.
+   Otherwise, return T itself.  */
+
+tree
+non_reference (tree t)
+{
+  if (TREE_CODE (t) == REFERENCE_TYPE)
+    t = TREE_TYPE (t);
+  return t;
 }

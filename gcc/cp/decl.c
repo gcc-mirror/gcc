@@ -5770,8 +5770,10 @@ qualify_lookup (tree val, int flags)
    declaration found.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, bool is_type_p, int flags)
+lookup_qualified_name (tree scope, tree name, bool is_type_p)
 {
+  int flags = 0;
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       cxx_binding binding;
@@ -5780,12 +5782,15 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, int flags)
       flags |= LOOKUP_COMPLAIN;
       if (is_type_p)
 	flags |= LOOKUP_PREFER_TYPES;
-      if (!qualified_lookup_using_namespace (name, scope, &binding, flags))
+      if (!qualified_lookup_using_namespace (name, scope, &binding, 
+					     flags))
 	return NULL_TREE;
       return select_decl (&binding, flags);
     }
-  else
+  else if (is_aggr_type (scope, /*or_else=*/1))
     return lookup_member (scope, name, 0, is_type_p);
+  else
+    return error_mark_node;
 }
 
 /* Check to see whether or not DECL is a variable that would have been
@@ -12320,9 +12325,7 @@ grok_op_properties (tree decl, int friendp)
 	      if (p)
 		for (; TREE_CODE (TREE_VALUE (p)) != VOID_TYPE ; p = TREE_CHAIN (p))
 		  {
-		    tree arg = TREE_VALUE (p);
-		    if (TREE_CODE (arg) == REFERENCE_TYPE)
-		      arg = TREE_TYPE (arg);
+		    tree arg = non_reference (TREE_VALUE (p));
 
 		    /* This lets bad template code slip through.  */
 		    if (IS_AGGR_TYPE (arg)

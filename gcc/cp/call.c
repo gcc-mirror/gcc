@@ -87,7 +87,6 @@ static struct z_candidate *add_function_candidate
 static tree implicit_conversion (tree, tree, tree, int);
 static tree standard_conversion (tree, tree, tree);
 static tree reference_binding (tree, tree, tree, int);
-static tree non_reference (tree);
 static tree build_conv (enum tree_code, tree, tree);
 static bool is_subseq (tree, tree);
 static tree maybe_handle_ref_bind (tree *);
@@ -203,106 +202,6 @@ check_dtor_name (tree basetype, tree name)
   if (name && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (name))
     return true;
   return false;
-}
-
-/* Build a method call of the form `EXP->SCOPES::NAME (PARMS)'.
-   This is how virtual function calls are avoided.  */
-
-tree
-build_scoped_method_call (tree exp, tree basetype, tree name, tree parms)
-{
-  /* Because this syntactic form does not allow
-     a pointer to a base class to be `stolen',
-     we need not protect the derived->base conversion
-     that happens here.
-     
-     @@ But we do have to check access privileges later.  */
-  tree binfo, decl;
-  tree type = TREE_TYPE (exp);
-
-  if (type == error_mark_node
-      || basetype == error_mark_node)
-    return error_mark_node;
-
-  if (processing_template_decl)
-    {
-      name = build_min_nt (SCOPE_REF, basetype, name);
-      return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, NULL_TREE);
-    }
-
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
-
-  if (TREE_CODE (basetype) == TREE_VEC)
-    {
-      binfo = basetype;
-      basetype = BINFO_TYPE (binfo);
-    }
-  else
-    binfo = NULL_TREE;
-
-  /* Check the destructor call syntax.  */
-  if (TREE_CODE (name) == BIT_NOT_EXPR)
-    {
-      /* We can get here if someone writes their destructor call like
-	 `obj.NS::~T()'; this isn't really a scoped method call, so hand
-	 it off.  */
-      if (TREE_CODE (basetype) == NAMESPACE_DECL)
-	return build_method_call (exp, name, parms, NULL_TREE, LOOKUP_NORMAL);
-
-      if (! check_dtor_name (basetype, name))
-	error ("qualified type `%T' does not match destructor name `~%T'",
-		  basetype, TREE_OPERAND (name, 0));
-
-      /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
-	 that explicit ~int is caught in the parser; this deals with typedefs
-	 and template parms.  */
-      if (! IS_AGGR_TYPE (basetype))
-	{
-	  if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
-	    error ("type of `%E' does not match destructor type `%T' (type was `%T')",
-		      exp, basetype, type);
-
-	  return convert_to_void (exp, /*implicit=*/NULL);
-	}
-    }
-
-  if (TREE_CODE (basetype) == NAMESPACE_DECL)
-    {
-      error ("`%D' is a namespace", basetype);
-      return error_mark_node;
-    }
-  if (! is_aggr_type (basetype, 1))
-    return error_mark_node;
-
-  if (! IS_AGGR_TYPE (type))
-    {
-      error ("base object `%E' of scoped method call is of non-aggregate type `%T'",
-		exp, type);
-      return error_mark_node;
-    }
-
-  decl = build_scoped_ref (exp, basetype, &binfo);
-
-  if (binfo)
-    {
-      /* Call to a destructor.  */
-      if (TREE_CODE (name) == BIT_NOT_EXPR)
-	{
-	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
-	    return convert_to_void (exp, /*implicit=*/NULL);
-	  
-	  return build_delete (TREE_TYPE (decl), decl, 
-			       sfk_complete_destructor,
-			       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR,
-			       0);
-	}
-
-      /* Call to a method.  */
-      return build_method_call (decl, name, parms, binfo,
-				LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
-    }
-  return error_mark_node;
 }
 
 /* We want the address of a function or method.  We avoid creating a
@@ -460,14 +359,12 @@ build_method_call (tree instance, tree name, tree parms,
   n_build_method_call++;
 #endif
 
-  if (instance == error_mark_node
+  if (error_operand_p (instance)
       || name == error_mark_node
-      || parms == error_mark_node
-      || (instance && TREE_TYPE (instance) == error_mark_node))
+      || parms == error_mark_node)
     return error_mark_node;
 
-  if (processing_template_decl)
-    return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
+  my_friendly_assert (!processing_template_decl, 20030707);
 
   if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
     instance = convert_from_reference (instance);
@@ -518,7 +415,7 @@ build_method_call (tree instance, tree name, tree parms,
   else
     fn = lookup_member (object_type, name, /*protect=*/2, /*want_type=*/false);
   
-  if (fn && TREE_CODE (fn) == TREE_LIST && !BASELINK_P (fn))
+  if (fn && TREE_CODE (fn) == TREE_LIST)
     {
       error ("request for member `%D' is ambiguous", name);
       print_candidates (fn);
@@ -669,17 +566,6 @@ build_conv (enum tree_code code, tree type, tree from)
   return t;
 }
 
-/* If T is a REFERENCE_TYPE return the type to which T refers.
-   Otherwise, return T itself.  */
-
-static tree
-non_reference (tree t)
-{
-  if (TREE_CODE (t) == REFERENCE_TYPE)
-    t = TREE_TYPE (t);
-  return t;
-}
-
 tree
 strip_top_quals (tree t)
 {
@@ -699,8 +585,7 @@ standard_conversion (tree to, tree from, tree expr)
   tree conv;
   bool fromref = false;
 
-  if (TREE_CODE (to) == REFERENCE_TYPE)
-    to = TREE_TYPE (to);
+  to = non_reference (to);
   if (TREE_CODE (from) == REFERENCE_TYPE)
     {
       fromref = true;
