@@ -1372,11 +1372,7 @@ add_exception_specifier (list, spec, complain)
         if (same_type_p (TREE_VALUE (probe), spec))
           break;
       if (!probe)
-        {
-          spec = build_tree_list (NULL_TREE, spec);
-          TREE_CHAIN (spec) = list;
-          list = spec;
-        }
+	list = tree_cons (NULL_TREE, spec, list);
     }
   else if (complain)
     cxx_incomplete_type_error (NULL_TREE, core);

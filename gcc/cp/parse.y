@@ -130,6 +130,7 @@ static tree parse_bitfield PARAMS ((tree, tree, tree));
 static tree parse_method PARAMS ((tree, tree, tree));
 static void frob_specs PARAMS ((tree, tree));
 static void check_class_key PARAMS ((tree, tree));
+static tree parse_scoped_id PARAMS ((tree));
 
 /* Cons up an empty parameter list.  */
 static inline tree
@@ -1706,14 +1707,14 @@ primary:
 		  check_for_new_type ("typeid", $3);
 		  $$ = get_typeid (type); }
 	| global_scope IDENTIFIER
-		{ $$ = do_scoped_id ($2, 1); }
+		{ $$ = parse_scoped_id ($2); }
 	| global_scope template_id
 		{ $$ = $2; }
 	| global_scope operator_name
 		{
 		  got_scope = NULL_TREE;
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    $$ = do_scoped_id ($2, 1);
+		    $$ = parse_scoped_id ($2);
 		  else
 		    $$ = $2;
 		}
@@ -4020,6 +4021,25 @@ free_parser_stacks ()
       free (malloced_yyss);
       free (malloced_yyvs);
     }
+}
+
+/* Return the value corresponding to TOKEN in the global scope.  */
+
+static tree
+parse_scoped_id (token)
+     tree token;
+{
+  tree id;
+
+  id = make_node (CPLUS_BINDING);
+  if (!qualified_lookup_using_namespace (token, global_namespace, id, 0))
+    id = NULL_TREE;
+  else
+    id = BINDING_VALUE (id);
+  if (yychar == YYEMPTY)
+    yychar = yylex();
+
+  return do_scoped_id (token, id);
 }
 
 #include "gt-cp-parse.h"

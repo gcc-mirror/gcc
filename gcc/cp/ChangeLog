@@ -1,3 +1,13 @@
+2002-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* parse.y (parse_scoped_id): New function.
+	(primary): Use it.
+	* cp-tree.h (do_scoped_id): Adjust declaration.
+	* lex.c (do_scoped_id): Remove call to yylex.
+	* decl2.c (build_expr_from_tree): Adjust use of do_scoped_id.
+	* typeck2.c (add_exception_specifier): Use tree_cons, rather than
+	expanding it inline.
+	
 2002-06-23  Matt Thomas  <matt@3am-software.com>
 
 	* decl.c (finish_function): Change "#ifdef VMS_TARGET" to

@@ -3652,7 +3652,10 @@ build_expr_from_tree (t)
 
     case LOOKUP_EXPR:
       if (LOOKUP_EXPR_GLOBAL (t))
-	return do_scoped_id (TREE_OPERAND (t, 0), 0);
+	{
+	  tree token = TREE_OPERAND (t, 0);
+	  return do_scoped_id (token, IDENTIFIER_GLOBAL_VALUE (token));
+	}
       else
 	return do_identifier (TREE_OPERAND (t, 0), 0, NULL_TREE);
 
