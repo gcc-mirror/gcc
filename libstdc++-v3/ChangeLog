@@ -14,8 +14,8 @@
 
 2003-06-30  Paolo Carlini  <pcarlini@unitus.it>
 
-	* include/std/std_streambuf.h (_M_mode): Move from here to
-	filebuf and stringbuf.
+	* include/std/std_streambuf.h (_M_mode): Unused by streambuf, move
+	from here to filebuf and stringbuf.
 	(~basic_streambuf()): Don't set _M_mode.
 	(basic_streambuf()): Don't set _M_mode.
 	* include/std/std_fstream.h (_M_mode): Move here, from streambuf.
@@ -45,8 +45,8 @@
 
 2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
 
-	* include/bits/stl_algo.h (LOTS): Fully qualify standard
-	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/stl_algo.h: Fully qualify standard functions
+	with std::, thus avoiding Koenig lookup.
 
 2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
 
