@@ -54,3 +54,15 @@ enum rid
    for the reserved type names and storage classes.
    It is indexed by a RID_... value.  */
 extern tree ridpointers[(int) RID_MAX];
+
+/* the declaration found for the last IDENTIFIER token read in.
+   yylex must look this up to detect typedefs, which get token type TYPENAME,
+   so it is left around in case the identifier is not a typedef but is
+   used in a context which makes it a reference to a variable.  */
+extern tree lastiddecl;
+
+extern char *token_buffer;	/* Pointer to token buffer.  */
+
+extern tree make_pointer_declarator ();
+extern void reinit_parse_for_function ();
+extern int yylex ();
