@@ -1232,6 +1232,17 @@ two definitions were merged.
 This option is no longer useful on most targets, now that support has
 been added for putting variables into BSS without making them common.
 
+@item -fno-const-strings 
+Give string constants type @code{char *} instead of type @code{const
+char *}.  By default, G++ uses type @code{const char *} as required by
+the standard.  Even if you use @samp{-fno-const-strings}, you cannot
+actually modify the value of a string constant, unless you also use
+@samp{-fwritable-strings}.
+
+This option might be removed in a future release of G++.  For maximum
+portability, you should structure your code so that it works with
+string constants that have type @code{const char *}.
+
 @item -fdollars-in-identifiers
 Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
 @samp{$} with the option @samp{-fno-dollars-in-identifiers}.  (GNU C allows
@@ -1321,6 +1332,11 @@ errors if these functions are not inlined everywhere they are called.
 Disable pedantic warnings about constructs used in MFC, such as implicit
 int and getting a pointer to member function via non-standard syntax.
 
+@item -fno-nonansi-builtins
+Disable builtin declarations of functions that are not mandated by
+ANSI/ISO C.  These include @code{ffs}, @code{alloca}, @code{_exit},
+@code{index}, @code{bzero}, @code{conjf}, and other related functions.
+
 @item -fno-operator-names
 Do not treat the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
@@ -1350,6 +1366,10 @@ of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
 needed.
 
+@item -fstats
+Emit statistics about front-end processing at the end of the compilation.
+This information is generally only useful to the G++ development team.
+
 @item -ftemplate-depth-@var{n}
 Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
@@ -1378,6 +1398,13 @@ those.
 
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc.a} must be built with the same setting of this option.
+
+@item -fno-weak 
+Do not use weak symbol support, even if it is provied by the linker.
+By default, G++ will use weak symbols if they are available.  This
+option exists only for testing, and should not be used by end-users;
+it will result in inferior code and has no benefits.  This option may
+be removed in a future release of G++.
 
 @item -nostdinc++
 Do not search for header files in the standard directories specific to
