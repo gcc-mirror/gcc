@@ -76,11 +76,8 @@ CSTDIO_H = @CSTDIO_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
-DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
-GCJ = @GCJ@
-GCJFLAGS = @GCJFLAGS@
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
@@ -94,8 +91,6 @@ LIMITS_INC_SRCDIR = @LIMITS_INC_SRCDIR@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-OBJDUMP = @OBJDUMP@
-OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 OS_INC_SRCDIR = @OS_INC_SRCDIR@
@@ -103,7 +98,6 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
-STRIP = @STRIP@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
@@ -377,18 +371,18 @@ ${target_builddir}/c++config.h: ../config.h \
 ${thread_builddir}/gthr.h:
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
 ${thread_builddir}/gthr-single.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr-single.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
 ${thread_builddir}/gthr-default.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/${glibcpp_thread_h} > $@
+	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
 install-data-local:
 	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \

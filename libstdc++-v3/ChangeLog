@@ -1,3 +1,9 @@
+2001-08-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/Makefile.am: Use toplevel_srcdir to refer to src files
+	outside this component.
+	* include/Makefile.in: Regenerate.
+
 2001-08-28  Phil Edwards  <pme@sources.redhat.com>
 
 	Move testsuite_hooks changes onto the branch.  This is the 08-06
