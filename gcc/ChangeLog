@@ -1,3 +1,9 @@
+2002-02-02  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (os_task): Make it static.
+	(monitor): Likewise.
+	(pragma_saveall): Likewise.
+
 2002-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (ic_invalidate_line): Make sure the immediate
