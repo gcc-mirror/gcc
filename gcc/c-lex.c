@@ -47,6 +47,9 @@ Boston, MA 02111-1307, USA.  */
 cpp_reader parse_in;
 cpp_options parse_options;
 static enum cpp_token cpp_token;
+#else
+/* Stream for reading from the input file.  */
+FILE *finput;
 #endif
 
 /* The elements of `ridpointers' are identifier nodes
@@ -182,12 +185,30 @@ remember_protocol_qualifiers ()
       wordlist[i].name = "oneway";   
 }
 
-#if USE_CPPLIB
 void
 init_parse (filename)
      char *filename;
 {
+#if !USE_CPPLIB
+  /* Open input file.  */
+  if (filename == 0 || !strcmp (filename, "-"))
+    {
+      finput = stdin;
+      filename = "stdin";
+    }
+  else
+    finput = fopen (filename, "r");
+  if (finput == 0)
+    pfatal_with_name (filename);
+
+#ifdef IO_BUFFER_SIZE
+  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+#endif
+#endif /* !USE_CPPLIB */
+
   init_lex ();
+
+#if USE_CPPLIB
   yy_cur = "\n";
   yy_lim = yy_cur+1;
 
@@ -198,14 +219,18 @@ init_parse (filename)
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();
+#endif
 }
 
 void
 finish_parse ()
 {
+#if USE_CPPLIB
   cpp_finish (&parse_in);
-}
+#else
+  fclose (finput);
 #endif
+}
 
 void
 init_lex ()

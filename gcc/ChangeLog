@@ -1,3 +1,14 @@
+Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
+
+	* c-lex.c (finput): New global.
+	(init_parse): Always included.  Handle !USE_CPPLIB using
+	code originally in compile_file.
+	(finish_parse): Update for CPPLIB.
+	* toplev.c (init_parse, finish_parse): Declare.
+	(finput): Delete variable.  Now in front-ends.
+	(compile_file): Remove code which is now handled by init_parse
+	which is unconditionally called.  Similarly for finish_parse.
+
 Wed Apr  8 23:13:50 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/r3900.h (ASM_OUTPUT_DEF,SUPPORTS_WEAK,
