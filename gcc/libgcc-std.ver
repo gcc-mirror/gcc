@@ -190,3 +190,7 @@ GCC_3.3.1 {
   __gcc_personality_sj0
   __gcc_personality_v0
 }
+
+%inherit GCC_3.3.2 GCC_3.3.1
+GCC_3.3.2 {
+}

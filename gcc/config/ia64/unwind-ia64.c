@@ -1665,6 +1665,14 @@ _Unwind_GetCFA (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->psp;
 }
 
+/* Get the value of the Backing Store Pointer as saved in CONTEXT.  */
+
+_Unwind_Word
+_Unwind_GetBSP (struct _Unwind_Context *context)
+{
+  return (_Unwind_Ptr) context->bsp;
+}
+
 
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)

@@ -210,6 +210,9 @@ _Unwind_GetTextRelBase (struct _Unwind_Context *_C)
   abort ();
   return 0;
 }
+
+/* @@@ Retrieve the Backing Store Pointer of the given context.  */
+extern _Unwind_Word _Unwind_GetBSP (struct _Unwind_Context *);
 #else
 extern _Unwind_Ptr _Unwind_GetDataRelBase (struct _Unwind_Context *);
 extern _Unwind_Ptr _Unwind_GetTextRelBase (struct _Unwind_Context *);
