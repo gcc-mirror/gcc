@@ -155,6 +155,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
       rport = ntohs (u.address.sin_port);
     }
 #ifdef HAVE_INET6
+  else if (u.address.sin_family == AF_INET6)
     {
       raddr = JvNewByteArray (16);
       memcpy (elements (raddr), &u.address6.sin6_addr, 16);
