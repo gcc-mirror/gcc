@@ -74,8 +74,8 @@ EXCEPTION_DISPOSITION __gnat_SEH_error_handler
 EXCEPTION_DISPOSITION
 __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 			  void *EstablisherFrame,
-			  struct _CONTEXT* ContextRecord,
-			  void *DispatcherContext)
+			  struct _CONTEXT* ContextRecord ATTRIBUTE_UNUSED,
+			  void *DispatcherContext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
