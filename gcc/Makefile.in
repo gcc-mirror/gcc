@@ -2001,6 +2001,7 @@ stmp-headers: stmp-int-hdrs gfloat.h
 stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 	rm -rf include
 	mkdir include
+	-chmod a+rx include
 	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
 	then \
 	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
@@ -2077,7 +2078,7 @@ fixhdr.ready: fix-header
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	@echo "Various warnings and error messages from fixproto are normal"
-	-if [ -d include ] ; then true; else mkdir include; fi
+	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	-if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
@@ -2402,7 +2403,7 @@ install-libgcc: libgcc.a installdirs
 install-multilib: stmp-multilib installdirs
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; fi; \
+	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; chmod a+rx $(libsubdir)/$${dir}; fi; \
 	  for f in libgcc.a $(EXTRA_MULTILIB_PARTS); do \
 	    rm -f $(libsubdir)/$${dir}/$${f}; \
 	    $(INSTALL_DATA) $${dir}/$${f} $(libsubdir)/$${dir}/$${f}; \
