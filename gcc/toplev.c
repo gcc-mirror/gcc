@@ -587,10 +587,10 @@ int flag_inhibit_size_directive = 0;
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
    generated assembly code (perhaps while debugging the compiler itself).
-   -fverbose-asm is the default.  -fno-verbose-asm causes the extra information
+   -fno-verbose-asm, the default, causes the extra information
    to be omitted and is useful when comparing two assembler files.  */
 
-int flag_verbose_asm = 1;
+int flag_verbose_asm = 0;
 
 /* -dA causes debug commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
