@@ -30,7 +30,7 @@ load_lib target-supports.exp
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CHARSETCFLAGS
 if ![info exists DEFAULT_CHARSETCFLAGS] then {
-    set DEFAULT_CHARSETCFLAGS "-fexec-charset=IBM-1047"
+    set DEFAULT_CHARSETCFLAGS "-fexec-charset=IBM1047"
 }
 
 # Initialize `dg'.

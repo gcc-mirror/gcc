@@ -1,6 +1,6 @@
 /* Test extern statments not being translated. */
 /* { dg-do compile }
-   { dg-require-iconv "IBM-1047" }
+   { dg-require-iconv "IBM1047" }
 */
 
 extern  "C" {
