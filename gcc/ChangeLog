@@ -1,3 +1,8 @@
+2000-09-05  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (finish_incomplete_decl): Don't call complete_array_type
+	for 'extern' arrays.
+
 2000-09-05  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/lib1func.asm (__divtf3): Rebundle for Itanium.
@@ -33,7 +38,7 @@
 
 2000-09-05  Bruce Korb  <bkorb@gnu.org>
 
-        * gcc/fixinc/fixincl.c(load_file): always read header files
+        * fixinc/fixincl.c (load_file): always read header files
         with sizes that are a multiple of the page size.
 	& use libiberty's getpagesize for determining that.
 
