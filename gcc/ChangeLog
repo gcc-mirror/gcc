@@ -1,3 +1,8 @@
+2002-07-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (tablejump_mips161): Use gen_rtx_LABEL_REF.
+	(tablejump_mips162): Likewise.
+
 Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simpify-rtx.c (simplify_subreg): Don't pass MODE_CC mode to

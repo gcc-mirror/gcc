@@ -9533,7 +9533,7 @@ move\\t%0,%z4\\n\\
       t2 = gen_reg_rtx (SImode);
       t3 = gen_reg_rtx (SImode);
       emit_insn (gen_extendhisi2 (t1, operands[0]));
-      emit_move_insn (t2, gen_rtx (LABEL_REF, SImode, operands[1]));
+      emit_move_insn (t2, gen_rtx_LABEL_REF (SImode, operands[1]));
       emit_insn (gen_addsi3 (t3, t1, t2));
       emit_jump_insn (gen_tablejump_internal1 (t3, operands[1]));
       DONE;
@@ -9555,7 +9555,7 @@ move\\t%0,%z4\\n\\
       t2 = gen_reg_rtx (DImode);
       t3 = gen_reg_rtx (DImode);
       emit_insn (gen_extendhidi2 (t1, operands[0]));
-      emit_move_insn (t2, gen_rtx (LABEL_REF, DImode, operands[1]));
+      emit_move_insn (t2, gen_rtx_LABEL_REF (DImode, operands[1]));
       emit_insn (gen_adddi3 (t3, t1, t2));
       emit_jump_insn (gen_tablejump_internal2 (t3, operands[1]));
       DONE;
