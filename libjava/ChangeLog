@@ -1,3 +1,11 @@
+2000-08-05  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PrintWriter.java: Merged comments from Classpath.
+	(printlnUnsynchronized): Removed.
+	(println()): Print the separator.
+	(println): Call println(), not printlnUnsynchronized.
+	(out): Now protected, to match spec.
+
 2000-08-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/StreamTokenizer.java (TT_NONE): Now private.
