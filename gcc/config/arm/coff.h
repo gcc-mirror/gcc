@@ -30,9 +30,10 @@ Boston, MA 02111-1307, USA.  */
    point the default.  NOT --nfp!  --with{enable?} is supposed to replace it
    (right?), so let's stop using it.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT + TARGET_CPU_DEFAULT)
+#define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT /*+ TARGET_CPU_DEFAULT*/)
 
-#if TARGET_CPU_DEFAULT & ARM_FLAG_BIG_END
+/* ??? Is a big-endian default intended to be supported?  */
+#if 0 /*TARGET_CPU_DEFAULT & ARM_FLAG_BIG_END*/
 #define MULTILIB_DEFAULTS { "mbe", "mbig-endian" }
 #else
 #define MULTILIB_DEFAULTS { "mle", "mlittle-endian" }
