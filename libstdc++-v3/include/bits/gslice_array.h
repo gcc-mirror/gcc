@@ -41,23 +41,48 @@
 
 namespace std {
 
+  /**
+   *  @brief  Reference to multi-dimensional subset of an array.
+   *
+   *  A gslice_array is a reference to the actual elements of an array
+   *  specified by a gslice.  The way to get a gslice_array is to call
+   *  operator[](gslice) on a valarray.  The returned gslice_array then
+   *  permits carrying operations out on the referenced subset of elements in
+   *  the original valarray.  For example, operator+=(valarray) will add
+   *  values to the subset of elements in the underlying valarray this
+   *  gslice_array refers to.
+   *
+   *  @param  Tp  Element type.
+   */
   template<typename _Tp>
     class gslice_array
     {
     public:
       typedef _Tp value_type;
 
+      ///  Assign slice elements to corresponding elements of @a v.
       void operator=(const valarray<_Tp>&) const;
+      ///  Multiply slice elements by corresponding elements of @a v.
       void operator*=(const valarray<_Tp>&) const;
+      ///  Divide slice elements by corresponding elements of @a v.
       void operator/=(const valarray<_Tp>&) const;
+      ///  Modulo slice elements by corresponding elements of @a v.
       void operator%=(const valarray<_Tp>&) const;
+      ///  Add corresponding elements of @a v to slice elements.
       void operator+=(const valarray<_Tp>&) const;
+      ///  Subtract corresponding elements of @a v from slice elements.
       void operator-=(const valarray<_Tp>&) const;
+      ///  Logical xor slice elements with corresponding elements of @a v.
       void operator^=(const valarray<_Tp>&) const;
+      ///  Logical and slice elements with corresponding elements of @a v.
       void operator&=(const valarray<_Tp>&) const;
+      ///  Logical or slice elements with corresponding elements of @a v.
       void operator|=(const valarray<_Tp>&) const;
+      ///  Left shift slice elements by corresponding elements of @a v.
       void operator<<=(const valarray<_Tp>&) const;
+      ///  Right shift slice elements by corresponding elements of @a v.
       void operator>>=(const valarray<_Tp>&) const;
+      ///  Assign all slice elements to @a t.
       void operator=(const _Tp&) const;
 
       template<class _Dom>
@@ -92,10 +117,14 @@ namespace std {
       gslice_array(_Array<_Tp>, const valarray<size_t>&);
 
       // this constructor needs to be implemented.
+      ///  Copy constructor.  Both slices refer to the same underlying array.
       gslice_array(const gslice_array&);
 
       // not implemented
       gslice_array();
+
+      ///  Assignment operator.  Assigns slice elements to corresponding
+      ///  elements of @a a.
       gslice_array& operator= (const gslice_array&);
     };
 

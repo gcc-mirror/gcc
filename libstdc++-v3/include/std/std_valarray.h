@@ -95,6 +95,17 @@ namespace std
   
 namespace std
 {
+  /**
+   *  @brief  Smart array designed to support numeric processing.
+   *
+   *  A valarray is an array that provides constraints intended to allow for
+   *  effective optimization of numeric array processing by reducing the
+   *  aliasing that can result from pointer representations.  It represents a
+   *  one-dimensional array from which different multidimensional subsets can
+   *  be accessed and modified.
+   *  
+   *  @param  Tp  Type of object in the array.
+   */
   template<class _Tp> 
     class valarray
     {
@@ -108,25 +119,95 @@ namespace std
       typedef _Tp value_type;
       
 	// _lib.valarray.cons_ construct/destroy:
+      ///  Construct an empty array.
       valarray();
+
+      ///  Construct an array with @a n elements.
       explicit valarray(size_t);
+
+      ///  Construct an array with @a n elements initialized to @a t.
       valarray(const _Tp&, size_t);
+
+      ///  Construct an array initialized to the first @a n elements of @a t.
       valarray(const _Tp* __restrict__, size_t);
+
+      ///  Copy constructor.
       valarray(const valarray&);
+
+      ///  Construct an array with the same size and values in @a sa.
       valarray(const slice_array<_Tp>&);
+
+      ///  Construct an array with the same size and values in @a ga.
       valarray(const gslice_array<_Tp>&);
+
+      ///  Construct an array with the same size and values in @a ma.
       valarray(const mask_array<_Tp>&);
+
+      ///  Construct an array with the same size and values in @a ia.
       valarray(const indirect_array<_Tp>&);
+
       template<class _Dom>
 	valarray(const _Expr<_Dom,_Tp>& __e);
       ~valarray();
 
       // _lib.valarray.assign_ assignment:
+      /**
+       *  @brief  Assign elements to an array.
+       *
+       *  Assign elements of array to values in @a v.  Results are undefined
+       *  if @a v is not the same size as this array.
+       *
+       *  @param  v  Valarray to get values from.
+       */
       valarray<_Tp>& operator=(const valarray<_Tp>&);
+
+      /**
+       *  @brief  Assign elements to a value.
+       *
+       *  Assign all elements of array to @a t.
+       *
+       *  @param  t  Value for elements.
+       */
       valarray<_Tp>& operator=(const _Tp&);
+
+      /**
+       *  @brief  Assign elements to an array subset.
+       *
+       *  Assign elements of array to values in @a sa.  Results are undefined
+       *  if @a sa is not the same size as this array.
+       *
+       *  @param  sa  Array slice to get values from.
+       */
       valarray<_Tp>& operator=(const slice_array<_Tp>&);
+
+      /**
+       *  @brief  Assign elements to an array subset.
+       *
+       *  Assign elements of array to values in @a ga.  Results are undefined
+       *  if @a ga is not the same size as this array.
+       *
+       *  @param  ga  Array slice to get values from.
+       */
       valarray<_Tp>& operator=(const gslice_array<_Tp>&);
+
+      /**
+       *  @brief  Assign elements to an array subset.
+       *
+       *  Assign elements of array to values in @a ma.  Results are undefined
+       *  if @a ma is not the same size as this array.
+       *
+       *  @param  ma  Array slice to get values from.
+       */
       valarray<_Tp>& operator=(const mask_array<_Tp>&);
+
+      /**
+       *  @brief  Assign elements to an array subset.
+       *
+       *  Assign elements of array to values in @a ia.  Results are undefined
+       *  if @a ia is not the same size as this array.
+       *
+       *  @param  ia  Array slice to get values from.
+       */
       valarray<_Tp>& operator=(const indirect_array<_Tp>&);
 
       template<class _Dom> valarray<_Tp>&
@@ -134,45 +215,196 @@ namespace std
 
       // _lib.valarray.access_ element access:
       // XXX: LWG to be resolved.
+      /**
+       *  Return a reference to the i'th array element.  
+       *
+       *  The C++ spec defines the const version to return Tp instead of
+       *  the more useful const Tp&.  This issue is being reviewed in DR389.
+       *
+       *  @param  i  Index of element to return.
+       *  @return  Reference to the i'th element.
+       */
       const _Tp&                 operator[](size_t) const;
+
+      ///  Return a reference to the i'th array element.
       _Tp&                operator[](size_t);		
+
       // _lib.valarray.sub_ subset operations:
+      /**
+       *  @brief  Return an array subset.
+       *
+       *  Returns a new valarray containing the elements of the array
+       *  indicated by the slice argument.  The new valarray is the size of
+       *  the input slice.  @see slice.
+       *
+       *  @param  s  The source slice.
+       *  @return  New valarray containing elements in @a s.
+       */
       _Expr<_SClos<_ValArray,_Tp>, _Tp> operator[](slice) const;
+
+      /**
+       *  @brief  Return a reference to an array subset.
+       *
+       *  Returns a new valarray containing the elements of the array
+       *  indicated by the slice argument.  The new valarray is the size of
+       *  the input slice.  @see slice.
+       *
+       *  @param  s  The source slice.
+       *  @return  New valarray containing elements in @a s.
+       */
       slice_array<_Tp>    operator[](slice);
+
+      /**
+       *  @brief  Return an array subset.
+       *
+       *  Returns a slice_array referencing the elements of the array
+       *  indicated by the slice argument.  @see gslice.
+       *
+       *  @param  s  The source slice.
+       *  @return  Slice_array referencing elements indicated by @a s.
+       */
       _Expr<_GClos<_ValArray,_Tp>, _Tp> operator[](const gslice&) const;
+
+      /**
+       *  @brief  Return a reference to an array subset.
+       *
+       *  Returns a new valarray containing the elements of the array
+       *  indicated by the gslice argument.  The new valarray is
+       *  the size of the input gslice.  @see gslice.
+       *
+       *  @param  s  The source gslice.
+       *  @return  New valarray containing elements in @a s.
+       */
       gslice_array<_Tp>   operator[](const gslice&);
+
+      /**
+       *  @brief  Return an array subset.
+       *
+       *  Returns a new valarray containing the elements of the array
+       *  indicated by the argument.  The input is a valarray of bool which
+       *  represents a bitmask indicating which elements should be copied into
+       *  the new valarray.  Each element of the array is added to the return
+       *  valarray if the corresponding element of the argument is true.
+       *
+       *  @param  m  The valarray bitmask.
+       *  @return  New valarray containing elements indicated by @a m.
+       */
       valarray<_Tp>     	 operator[](const valarray<bool>&) const;
+
+      /**
+       *  @brief  Return a reference to an array subset.
+       *
+       *  Returns a new mask_array referencing the elements of the array
+       *  indicated by the argument.  The input is a valarray of bool which
+       *  represents a bitmask indicating which elements are part of the
+       *  subset.  Elements of the array are part of the subset if the
+       *  corresponding element of the argument is true.
+       *
+       *  @param  m  The valarray bitmask.
+       *  @return  New valarray containing elements indicated by @a m.
+       */
       mask_array<_Tp>     operator[](const valarray<bool>&);
+
+      /**
+       *  @brief  Return an array subset.
+       *
+       *  Returns a new valarray containing the elements of the array
+       *  indicated by the argument.  The elements in the argument are
+       *  interpreted as the indices of elements of this valarray to copy to
+       *  the return valarray.
+       *
+       *  @param  i  The valarray element index list.
+       *  @return  New valarray containing elements in @a s.
+       */
       _Expr<_IClos<_ValArray, _Tp>, _Tp>
         operator[](const valarray<size_t>&) const;
+
+      /**
+       *  @brief  Return a reference to an array subset.
+       *
+       *  Returns an indirect_array referencing the elements of the array
+       *  indicated by the argument.  The elements in the argument are
+       *  interpreted as the indices of elements of this valarray to include
+       *  in the subset.  The returned indirect_array refers to these
+       *  elements.
+       *
+       *  @param  i  The valarray element index list.
+       *  @return  Indirect_array referencing elements in @a i.
+       */
       indirect_array<_Tp> operator[](const valarray<size_t>&);
 
       // _lib.valarray.unary_ unary operators:
+      ///  Return a new valarray by applying unary + to each element.
       typename _UnaryOp<__unary_plus>::_Rt  operator+() const;
+
+      ///  Return a new valarray by applying unary - to each element.
       typename _UnaryOp<__negate>::_Rt      operator-() const;
+
+      ///  Return a new valarray by applying unary ~ to each element.
       typename _UnaryOp<__bitwise_not>::_Rt operator~() const;
+
+      ///  Return a new valarray by applying unary ! to each element.
       typename _UnaryOp<__logical_not>::_Rt operator!() const;
 
       // _lib.valarray.cassign_ computed assignment:
+      ///  Multiply each element of array by @a t.
       valarray<_Tp>& operator*=(const _Tp&);
+
+      ///  Divide each element of array by @a t.
       valarray<_Tp>& operator/=(const _Tp&);
+
+      ///  Set each element e of array to e % @a t.
       valarray<_Tp>& operator%=(const _Tp&);
+
+      ///  Add @a t to each element of array.
       valarray<_Tp>& operator+=(const _Tp&);
+
+      ///  Subtract @a t to each element of array.
       valarray<_Tp>& operator-=(const _Tp&);
+
+      ///  Set each element e of array to e ^ @a t.
       valarray<_Tp>& operator^=(const _Tp&);
+
+      ///  Set each element e of array to e & @a t.
       valarray<_Tp>& operator&=(const _Tp&);
+
+      ///  Set each element e of array to e | @a t.
       valarray<_Tp>& operator|=(const _Tp&);
+
+      ///  Left shift each element e of array by @a t bits.
       valarray<_Tp>& operator<<=(const _Tp&);
+
+      ///  Right shift each element e of array by @a t bits.
       valarray<_Tp>& operator>>=(const _Tp&);
+
+      ///  Multiply elements of array by corresponding elements of @a v.
       valarray<_Tp>& operator*=(const valarray<_Tp>&);
+
+      ///  Divide elements of array by corresponding elements of @a v.
       valarray<_Tp>& operator/=(const valarray<_Tp>&);
+
+      ///  Modulo elements of array by corresponding elements of @a v.
       valarray<_Tp>& operator%=(const valarray<_Tp>&);
+
+      ///  Add corresponding elements of @a v to elements of array.
       valarray<_Tp>& operator+=(const valarray<_Tp>&);
+
+      ///  Subtract corresponding elements of @a v from elements of array.
       valarray<_Tp>& operator-=(const valarray<_Tp>&);
+
+      ///  Logical xor corresponding elements of @a v with elements of array.
       valarray<_Tp>& operator^=(const valarray<_Tp>&);
+
+      ///  Logical or corresponding elements of @a v with elements of array.
       valarray<_Tp>& operator|=(const valarray<_Tp>&);
+
+      ///  Logical and corresponding elements of @a v with elements of array.
       valarray<_Tp>& operator&=(const valarray<_Tp>&);
+
+      ///  Left shift elements of array by corresponding elements of @a v.
       valarray<_Tp>& operator<<=(const valarray<_Tp>&);
+
+      ///  Right shift elements of array by corresponding elements of @a v.
       valarray<_Tp>& operator>>=(const valarray<_Tp>&);
 
       template<class _Dom>
@@ -198,18 +430,93 @@ namespace std
 
 
       // _lib.valarray.members_ member functions:
+      ///  Return the number of elements in array.
       size_t size() const;
-      _Tp    sum() const;	
+
+      /**
+       *  @brief  Return the sum of all elements in the array.
+       *
+       *  Accumulates the sum of all elements into a Tp using +=.  The order
+       *  of adding the elements is unspecified.
+       */
+      _Tp    sum() const;
+
+      ///  Return the minimum element using operator<().
       _Tp    min() const;	
+
+      ///  Return the maximum element using operator<().
       _Tp    max() const;	
 
   //           // FIXME: Extension
   //       _Tp    product () const;
 
+      /**
+       *  @brief  Return a shifted array.
+       *
+       *  A new valarray is constructed as a copy of this array with elements
+       *  in shifted positions.  For an element with index i, the new position
+       *  is i - n.  The new valarray is the same size as the current one.
+       *  New elements without a value are set to 0.  Elements whos new
+       *  position is outside the bounds of the array are discarded.
+       *
+       *  Positive arguments shift toward index 0, discarding elements [0, n).
+       *  Negative arguments discard elements from the top of the array.
+       *
+       *  @param  n  Number of element positions to shift.
+       *  @return  New valarray with elements in shifted positions.
+       */
       valarray<_Tp> shift (int) const;
+
+      /**
+       *  @brief  Return a rotated array.
+       *
+       *  A new valarray is constructed as a copy of this array with elements
+       *  in shifted positions.  For an element with index i, the new position
+       *  is (i - n) % size().  The new valarray is the same size as the
+       *  current one.  Elements that are shifted beyond the array bounds are
+       *  shifted into the other end of the array.  No elements are lost.
+       *
+       *  Positive arguments shift toward index 0, wrapping around the top.
+       *  Negative arguments shift towards the top, wrapping around to 0.
+       *
+       *  @param  n  Number of element positions to rotate.
+       *  @return  New valarray with elements in shifted positions.
+       */
       valarray<_Tp> cshift(int) const;
+
+      /**
+       *  @brief  Apply a function to the array.
+       *
+       *  Returns a new valarray with elements assigned to the result of
+       *  applying func to the corresponding element of this array.  The new
+       *  array is the same size as this one.
+       *
+       *  @param  func  Function of Tp returning Tp to apply.
+       *  @return  New valarray with transformed elements.
+       */
       _Expr<_ValFunClos<_ValArray,_Tp>,_Tp> apply(_Tp func(_Tp)) const;
+
+      /**
+       *  @brief  Apply a function to the array.
+       *
+       *  Returns a new valarray with elements assigned to the result of
+       *  applying func to the corresponding element of this array.  The new
+       *  array is the same size as this one.
+       *
+       *  @param  func  Function of const Tp& returning Tp to apply.
+       *  @return  New valarray with transformed elements.
+       */
       _Expr<_RefFunClos<_ValArray,_Tp>,_Tp> apply(_Tp func(const _Tp&)) const;
+
+      /**
+       *  @brief  Resize array.
+       *
+       *  Resize this array to be @a size and set all elements to @a c.  All
+       *  references and iterators are invalidated.
+       *
+       *  @param  size  New array size.
+       *  @param  c  New value for all elements.
+       */
       void resize(size_t __size, _Tp __c = _Tp());
 
     private:
