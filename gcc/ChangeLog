@@ -1,3 +1,9 @@
+2004-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config.gcc: Remove --enable-altivec support.
+
+	* config/rs6000/altivec-defs.h: Remove.
+
 2004-05-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (svr4_profil): Don't apply on IRIX 5/6.

@@ -2580,10 +2580,6 @@ fi
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
-		if test x$enable_altivec = xyes
-		then
-			tm_file="$tm_file rs6000/altivec-defs.h"
-		fi
 		# FIXME: The PowerPC port uses the value set at compile time,
 		# although it's only cosmetic.
 		if test "x$with_cpu" != x
