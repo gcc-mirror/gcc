@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.7.7 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.8 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -606,9 +606,13 @@ dnl
 dnl Check whether LFS support is available.
 dnl
 AC_DEFUN(GLIBCXX_CHECK_LFS, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS	
   AC_CACHE_VAL(glibcxx_cv_LFS, [
     AC_TRY_LINK(
-      [#include <unistd.h>],
+      [#include <unistd.h>
+       #include <stdio.h>
+      ],
       [fopen64("t", "w");
        lseek64(1, 0, SEEK_CUR);],	
       [glibcxx_cv_LFS=yes],
@@ -617,6 +621,7 @@ AC_DEFUN(GLIBCXX_CHECK_LFS, [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS)
   fi
+  AC_LANG_RESTORE	
 ])
 
 
@@ -2004,7 +2009,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.7])])
+	 [AM_AUTOMAKE_VERSION([1.7.8])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 

@@ -593,9 +593,13 @@ dnl
 dnl Check whether LFS support is available.
 dnl
 AC_DEFUN(GLIBCXX_CHECK_LFS, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS	
   AC_CACHE_VAL(glibcxx_cv_LFS, [
     AC_TRY_LINK(
-      [#include <unistd.h>],
+      [#include <unistd.h>
+       #include <stdio.h>
+      ],
       [fopen64("t", "w");
        lseek64(1, 0, SEEK_CUR);],	
       [glibcxx_cv_LFS=yes],
@@ -604,6 +608,7 @@ AC_DEFUN(GLIBCXX_CHECK_LFS, [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS)
   fi
+  AC_LANG_RESTORE	
 ])
 
 
