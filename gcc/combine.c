@@ -7815,14 +7815,14 @@ make_field_assignment (rtx x)
       return x;
     }
 
-  else if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == SUBREG
-	   && subreg_lowpart_p (XEXP (src, 0))
-	   && (GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
-	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (src, 0)))))
-	   && GET_CODE (SUBREG_REG (XEXP (src, 0))) == ROTATE
-	   && GET_CODE (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == CONST_INT
-	   && INTVAL (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == -2
-	   && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
+  if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == SUBREG
+      && subreg_lowpart_p (XEXP (src, 0))
+      && (GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
+	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (src, 0)))))
+      && GET_CODE (SUBREG_REG (XEXP (src, 0))) == ROTATE
+      && GET_CODE (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == CONST_INT
+      && INTVAL (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == -2
+      && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
     {
       assign = make_extraction (VOIDmode, dest, 0,
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
@@ -7834,15 +7834,46 @@ make_field_assignment (rtx x)
 
   /* If SRC is (ior (ashift (const_int 1) POS) DEST), this is a set of a
      one-bit field.  */
-  else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == ASHIFT
-	   && XEXP (XEXP (src, 0), 0) == const1_rtx
-	   && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
+  if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == ASHIFT
+      && XEXP (XEXP (src, 0), 0) == const1_rtx
+      && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
     {
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
       if (assign != 0)
 	return gen_rtx_SET (VOIDmode, assign, const1_rtx);
       return x;
+    }
+
+  /* If DEST is already a field assignment, i.e. ZERO_EXTRACT, and the
+     SRC is an AND with all bits of that field set, then we can discard
+     the AND.  */
+  if (GET_CODE (dest) == ZERO_EXTRACT
+      && GET_CODE (XEXP (dest, 1)) == CONST_INT
+      && GET_CODE (src) == AND
+      && GET_CODE (XEXP (src, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT width = INTVAL (XEXP (dest, 1));
+      unsigned HOST_WIDE_INT and_mask = INTVAL (XEXP (src, 1));
+      unsigned HOST_WIDE_INT ze_mask;
+
+      if (width >= HOST_BITS_PER_WIDE_INT)
+	ze_mask = -1;
+      else
+	ze_mask = ((unsigned HOST_WIDE_INT)1 << width) - 1;
+
+      /* Complete overlap.  We can remove the source AND.  */
+      if ((and_mask & ze_mask) == ze_mask)
+	return gen_rtx_SET (VOIDmode, dest, XEXP (src, 0));
+
+      /* Partial overlap.  We can reduce the source AND.  */
+      if ((and_mask & ze_mask) != and_mask)
+	{
+	  mode = GET_MODE (src);
+	  src = gen_rtx_AND (mode, XEXP (src, 0),
+			     gen_int_mode (mode, and_mask & ze_mask));
+	  return gen_rtx_SET (VOIDmode, dest, src);
+	}
     }
 
   /* The other case we handle is assignments into a constant-position
