@@ -1,3 +1,8 @@
+2003-07-30  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (SIZE_TYPE, PTRDIFF_TYPE): Undef these
+	macros before defining them.
+
 2003-07-31  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (UNSPEC_ROUND, UNSPEC_SETHIGH, 

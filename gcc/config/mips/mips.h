@@ -3817,13 +3817,11 @@ while (0)
 /* Default definitions for size_t and ptrdiff_t.  We must override the
    definitions from ../svr4.h on mips-*-linux-gnu.  */
 
-#ifndef SIZE_TYPE
+#undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
-#endif
 
-#ifndef PTRDIFF_TYPE
+#undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
-#endif
 
 /* See mips_expand_prologue's use of loadgp for when this should be
    true.  */
