@@ -1,0 +1,16 @@
+This directory contains scripts that are used for identifying the
+patch that introduced a regression.  General information about such
+searches is covered in http://gcc.gnu.org/bugs/reghunt.html.
+
+  reg_search searches for a small time interval within a range of
+  dates in which results for a test changed, using a binary search.
+  The functionality for getting sources, building the component to
+  test, and running the test are in other scripts that are run from
+  here.
+
+  reg_periodic invokes separate tools (the same scripts invoked by
+  reg_search) over a range of dates at specified intervals.
+
+  reg_test_template shows the format for the script that runs a test
+  and determines whether to continue the search with a later or
+  earlier date.
