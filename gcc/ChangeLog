@@ -1,3 +1,8 @@
+Sat Aug 29 14:59:32 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't emit
+	.linkonce directive after the first time.
+
 Sat Aug 29 14:48:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.md (beq0_di): Generate correct (and more efficient) code when
