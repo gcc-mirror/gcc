@@ -138,8 +138,8 @@ NOTE:	f2c.h defines several types, e.g., real, integer, doublereal.
 	by compiling libI77 with -DAllow_TYQUAD, and by adjusting
 	libF77/makefile as described in libF77/README.
 
-	Some machines may have sizeof(int) == 4 and
-	sizeof(long long) == 8.  On such machines, adjust f2c.h
+	Some machines may have sizeof(int) == 4, sizeof(float) == 8,
+	and sizeof(long long) == 8.  On such machines, adjust f2c.h
 	by changing "long int " to "long long ", e.g., by saying
 		mv f2c.h f2c.h0
 		sed 's/long int /long long /' f2c.h0 >f2c.h
@@ -594,15 +594,37 @@ Sun Apr  5 19:26:50 EDT 1998
   libi77: wsfe.c: make $ format item work: this was lost in the changes
 of 17 March 1998.
 
+Sat May 16 19:08:51 EDT 1998
+  Adjust output of ftnlen constants: rather than appending L,
+prepend (ftnlen).  This should make the resulting C more portable,
+e.g., to systems (such as DEC Alpha Unix systems) on which long
+may be longer than ftnlen.
+  Adjust -r so it also casts REAL expressions passed to intrinsic
+functions to REAL.
+
+Wed May 27 16:02:35 EDT 1998
+  libf2c.zip: tweak description of compiling libf2c for INTEGER*8
+to accord with makefile.u rather than libF77/makefile.
+
+Thu May 28 22:45:59 EDT 1998
+  libi77: backspace.c dfe.c due.c iio.c lread.c rsfe.c sue.c wsfe.c:
+set f__curunit sooner so various error messages will correctly
+identify the I/O unit involved.
+  libf2c.zip: above, plus tweaks to PC makefiles: for some purposes,
+it's still best to compile with -DMSDOS (even for use with NT).
+
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
 obtain source files with a timestamp later than the time shown in your
 version.c.  Note that the time shown in the current version.c is the
 timestamp of the source module that immediately follows version.c below:
 
- 4/03/1998  17:20:55  xsum0.out
+ 5/16/1998  19:07:45  xsum0.out
+ 5/16/1998  17:17:01  f2c.1
+ 5/16/1998  17:16:53  f2c.1t
+ 5/16/1998  16:56:15  version.c
+ 5/16/1998  16:55:49  output.c
  4/03/1998  17:15:05  gram.c
- 4/03/1998  17:15:05  version.c
  4/03/1998  17:14:59  gram.dcl
  3/09/1998   0:30:23  putpcc.c
  2/25/1998   8:18:04  makefile
@@ -614,7 +636,6 @@ timestamp of the source module that immediately follows version.c below:
  7/24/1997  16:06:19  Notice
  7/21/1997  12:58:44  proc.c
  2/11/1997  23:39:14  vax.c
-12/22/1996  11:51:22  output.c
 12/04/1996  13:07:53  gram.exec
 10/01/1996  14:36:18  defs.h
 10/01/1996  14:36:18  init.c
@@ -628,8 +649,8 @@ timestamp of the source module that immediately follows version.c below:
  7/04/1996   9:55:45  sysdep.h
  7/04/1996   9:55:43  put.c
  7/04/1996   9:55:41  pread.c
- 7/04/1996   9:55:40  p1output.c
  7/04/1996   9:55:40  parse_args.c
+ 7/04/1996   9:55:40  p1output.c
  7/04/1996   9:55:37  misc.c
  7/04/1996   9:55:36  memset.c
  7/04/1996   9:55:36  mem.c
@@ -642,8 +663,6 @@ timestamp of the source module that immediately follows version.c below:
  6/19/1996   7:04:27  f2c.h
  6/19/1996   2:52:05  defines.h
  5/13/1996   0:40:32  gram.head
- 5/12/1996  23:37:11  f2c.1
- 5/12/1996  23:37:02  f2c.1t
  2/25/1994   2:07:19  parse.h
  2/22/1994  19:07:20  iob.h
  2/22/1994  18:56:53  p1defs.h
