@@ -1813,8 +1813,8 @@ i860_saveregs (void)
 
    The tree representing the va_list declaration is returned.  */
 
-tree
-i860_build_va_list (void)
+static tree
+i860_build_builtin_va_list (void)
 {
   tree f_gpr, f_fpr, f_mem, f_sav, record, type_decl;
 
@@ -2117,5 +2117,7 @@ i860_init_libfuncs (void)
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS i860_init_libfuncs
 
-struct gcc_target targetm = TARGET_INITIALIZER;
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST i860_build_builtin_va_list
 
+struct gcc_target targetm = TARGET_INITIALIZER;

@@ -76,6 +76,7 @@ static bool s390_rtx_costs (rtx, int, int, int *);
 static int s390_address_cost (rtx);
 static void s390_reorg (void);
 static bool s390_valid_pointer_mode (enum machine_mode);
+static tree s390_build_builtin_va_list (void);
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -139,6 +140,9 @@ static bool s390_valid_pointer_mode (enum machine_mode);
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE s390_valid_pointer_mode
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6107,7 +6111,6 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
             long __fpr;
             void *__overflow_arg_area;
             void *__reg_save_area;
-
         } va_list[1];
 
    where __gpr and __fpr hold the number of general purpose
@@ -6119,8 +6122,8 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
    saves all registers used for argument passing into this
    area if the function uses variable arguments.  */
 
-tree
-s390_build_va_list (void)
+static tree
+s390_build_builtin_va_list (void)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
 

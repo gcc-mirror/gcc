@@ -6080,8 +6080,8 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   return gen_rtx_REG (mode, regnum);
 }
 
-tree
-alpha_build_va_list (void)
+static tree
+alpha_build_builtin_va_list (void)
 {
   tree base, ofs, record, type_decl;
 
@@ -10187,6 +10187,9 @@ alpha_init_libfuncs (void)
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

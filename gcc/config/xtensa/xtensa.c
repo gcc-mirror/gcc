@@ -205,6 +205,7 @@ static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 static void xtensa_select_rtx_section (enum machine_mode, rtx,
 				       unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, int, int, int *);
+static tree xtensa_build_builtin_va_list (void);
 
 static int current_function_arg_words;
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
@@ -232,6 +233,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST xtensa_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2318,8 +2322,8 @@ xtensa_return_addr (int count, rtx frame)
    references argument word N for 0 <= N < 6, and __va_stk[N*4] references
    argument word N for N >= 6.  */
 
-tree
-xtensa_build_va_list (void)
+static tree
+xtensa_build_builtin_va_list (void)
 {
   tree f_stk, f_reg, f_ndx, record, type_decl;
 

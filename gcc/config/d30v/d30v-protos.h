@@ -103,7 +103,6 @@ extern rtx d30v_expand_builtin_saveregs	PARAMS ((void));
 extern void d30v_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int *, int));
-extern tree d30v_build_va_list		PARAMS ((void));
 #ifdef RTX_CODE
 extern void d30v_expand_builtin_va_start PARAMS ((tree, rtx));
 extern rtx d30v_expand_builtin_va_arg	PARAMS ((tree, tree));

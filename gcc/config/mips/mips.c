@@ -275,6 +275,7 @@ static int mips_adjust_cost (rtx, rtx, rtx, int);
 static int mips_issue_rate (void);
 static int mips_use_dfa_pipeline_interface (void);
 static void mips_init_libfuncs (void);
+static tree mips_build_builtin_va_list (void);
 
 #if TARGET_IRIX
 static void irix_asm_named_section_1 (const char *, unsigned int,
@@ -791,6 +792,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS mips_init_libfuncs
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST mips_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3982,9 +3986,8 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
      and two offsets, although we could have designed this with two pointers
      and three offsets.  */
 
-
-tree
-mips_build_va_list (void)
+static tree
+mips_build_builtin_va_list (void)
 {
   if (EABI_FLOAT_VARARGS_P)
     {
@@ -4028,7 +4031,15 @@ mips_build_va_list (void)
       return record;
     }
   else
-    return ptr_type_node;
+    {
+#if defined(TARGET_IRIX) && !TARGET_IRIX5
+      /* On IRIX 6, this type is 'char *'.  */
+      return build_pointer_type (char_type_node);
+#else
+      /* Otherwise, we use 'void *'.  */
+      return ptr_type_node;
+#endif
+    }
 }
 
 /* Implement va_start.  */

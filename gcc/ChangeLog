@@ -1,3 +1,33 @@
+2003-10-29  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (std_build_builtin_va_list): New.
+	* expr.h (std_build_builtin_va_list): Declare.
+	* defaults.h (BUILD_VA_LIST_TYPE): New.
+	* system.h (BUILD_VA_LIST_TYPE): Poison.
+	* target-def.h (TARGET_BUILD_BUILTIN_VA_LIST): New.
+	* target.h (struct gcc_target): Add build_builtin_va_list.
+	* tree.c (build_common_tree_nodes_2): Use it.
+
+	* config/alpha/alpha-protos.h, config/alpha/alpha.c, 
+	config/alpha/alpha.h, config/alpha/unicosmk.h,
+	config/d30v/d30v-protos.h, config/d30v/d30v.c, config/d30v/d30v.h,
+	config/i386/i386-protos.h, config/i386/i386.c, config/i386/i386.h,
+	config/i860/i860-protos.h, config/i860/i860.c, config/i860/i860.h,
+	config/i960/i960-protos.h, config/i960/i960.c, config/i960/i960.h,
+	config/mips/iris6.h, config/mips/mips-protos.h, config/mips/mips.c,
+	config/mips/mips.h, config/rs6000/rs6000-protos.h, 
+	config/rs6000/rs6000.c, config/rs6000/rs6000.h,
+	config/s390/s390-protos.h, config/s390/s390.c, config/s390/s390.h,
+	config/sh/sh-protos.h, config/sh/sh.c, config/sh/sh.h,
+	config/xtensa/xtensa-protos.h, config/xtensa/xtensa.c,
+	config/xtensa/xtensa.h: Rename foo_build_va_list to
+	foo_build_builtin_va_list; make it static.  Define
+	TARGET_BUILD_BUILTIN_VA_LIST.  Remove BUILD_VA_LIST_TYPE.
+	Update protos.
+
+	* config/i386/i386.c (ix86_expand_carry_flag_compare): Make static.
+	* config/iq2000/iq2000.h (BUILD_VA_LIST_TYPE): Remove.
+
 2003-10-29  James E Wilson  <wilson@specifixinc.com>
 
 	* recog.c (asm_operand_ok): Add missing break after case 'X'.

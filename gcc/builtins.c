@@ -3910,6 +3910,14 @@ stabilize_va_list (tree valist, int needs_lvalue)
   return valist;
 }
 
+/* The "standard" definition of va_list is void*.  */
+
+tree
+std_build_builtin_va_list (void)
+{
+  return ptr_type_node;
+}
+
 /* The "standard" implementation of va_start: just assign `nextarg' to
    the variable.  */
 

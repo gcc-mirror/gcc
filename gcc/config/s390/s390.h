@@ -750,9 +750,6 @@ CUMULATIVE_ARGS;
 
 /* Implementing the varargs macros.  */
 
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = s390_build_va_list ()
-
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   s390_va_start (valist, nextarg)
 

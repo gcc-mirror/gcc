@@ -166,7 +166,6 @@ extern enum direction function_arg_padding (enum machine_mode, tree);
 extern void optimization_options (int, int);
 extern void rs6000_override_options (const char *);
 extern int direct_return (void);
-extern union tree_node *rs6000_build_va_list (void);
 extern int first_reg_to_save (void);
 extern int first_fp_reg_to_save (void);
 extern rs6000_stack_t *rs6000_stack_info (void);

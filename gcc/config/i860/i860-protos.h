@@ -51,9 +51,5 @@ extern rtx i860_va_arg (tree, tree);
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern tree i860_build_va_list (void);
-#endif /* TREE_CODE */
-
 extern void tdesc_section (void);
 

@@ -382,6 +382,9 @@ struct gcc_target
      delayed-branch scheduling.  */
   void (* machine_dependent_reorg) (void);
 
+  /* Create the __builtin_va_list type.  */
+  tree (* build_builtin_va_list) (void);
+
   /* Validity-checking routines for PCH files, target-specific.
      get_pch_validity returns a pointer to the data to be stored,
      and stores the size in its argument.  pch_valid_p gets the same

@@ -2412,10 +2412,6 @@ typedef struct mips_args {
    : ((LOC) + 15) & ~15)
 
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = mips_build_va_list ()
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   mips_va_start (valist, nextarg)

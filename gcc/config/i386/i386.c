@@ -830,7 +830,8 @@ static void x86_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static bool x86_can_output_mi_thunk (tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void x86_file_start (void);
 static void ix86_reorg (void);
-bool ix86_expand_carry_flag_compare (enum rtx_code, rtx, rtx, rtx*);
+static bool ix86_expand_carry_flag_compare (enum rtx_code, rtx, rtx, rtx*);
+static tree ix86_build_builtin_va_list (void);
 
 struct ix86_address
 {
@@ -1011,6 +1012,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG ix86_reorg
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2825,8 +2829,8 @@ ix86_value_regno (enum machine_mode mode)
 
 /* Create the va_list data type.  */
 
-tree
-ix86_build_va_list (void)
+static tree
+ix86_build_builtin_va_list (void)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
 
@@ -9454,9 +9458,9 @@ ix86_expand_setcc (enum rtx_code code, rtx dest)
   return 1; /* DONE */
 }
 
-/* Expand comparison setting or clearing carry flag.  Return true when successful
-   and set pop for the operation.  */
-bool
+/* Expand comparison setting or clearing carry flag.  Return true when
+   successful and set pop for the operation.  */
+static bool
 ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 {
   enum machine_mode mode =

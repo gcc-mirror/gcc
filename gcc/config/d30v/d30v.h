@@ -1407,13 +1407,6 @@ typedef struct machine_function GTY(())
   d30v_setup_incoming_varargs (&ARGS_SO_FAR, (int) MODE, TYPE,		\
 			       &PRETEND_ARGS_SIZE, SECOND_TIME)
 
-/* Build up the stdarg/varargs va_list type tree, assinging it to NODE.  If not
-   defined, it is assumed that va_list is a void * pointer.  */
-
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = d30v_build_va_list ()
-
-
 /* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the

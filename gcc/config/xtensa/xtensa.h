@@ -930,10 +930,6 @@ typedef struct xtensa_args {
 		       0, VOIDmode, 1, addr, Pmode);			\
   } while (0)
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = xtensa_build_va_list ()
-
 /* If defined, is a C expression that produces the machine-specific
    code for a call to '__builtin_saveregs'.  This code will be moved
    to the very beginning of the function, before any parameter access

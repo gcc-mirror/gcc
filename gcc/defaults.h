@@ -382,10 +382,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #define POINTER_SIZE BITS_PER_WORD
 #endif
 
-#ifndef BUILD_VA_LIST_TYPE
-#define BUILD_VA_LIST_TYPE(X) ((X) = ptr_type_node)
-#endif
-
 #ifndef PIC_OFFSET_TABLE_REGNUM
 #define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
 #endif

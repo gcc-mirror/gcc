@@ -1869,10 +1869,6 @@ typedef struct rs6000_args
    the ABIs at the moment.  For now, only AIX gets fixed.  */
 #define SPLIT_COMPLEX_ARGS (DEFAULT_ABI == ABI_AIX)
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = rs6000_build_va_list ()
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   rs6000_va_start (valist, nextarg)

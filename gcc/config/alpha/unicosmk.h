@@ -496,7 +496,6 @@ ssib_section ()			\
 #undef LIB_SPEC
 #define LIB_SPEC "-L/opt/ctl/craylibs/craylibs -lu -lm -lc -lsma"
 
-#undef BUILD_VA_LIST_TYPE
 #undef EXPAND_BUILTIN_VA_START
 #undef EXPAND_BUILTIN_VA_ARG
 

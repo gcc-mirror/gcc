@@ -203,7 +203,6 @@ extern rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 
 #ifdef TREE_CODE
 extern int ix86_return_pops_args (tree, tree, int);
-extern tree ix86_build_va_list (void);
 
 extern int ix86_data_alignment (tree, int);
 extern int ix86_local_alignment (tree, int);

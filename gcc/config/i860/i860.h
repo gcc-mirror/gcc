@@ -571,10 +571,6 @@ struct cumulative_args { int ints, floats; };
 #define EXPAND_BUILTIN_SAVEREGS() \
   i860_saveregs()
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = i860_build_va_list ()
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   i860_va_start (valist, nextarg)
