@@ -847,7 +847,8 @@ yyerror (s)
 static void
 integer_overflow ()
 {
-  pedwarn ("integer overflow in preprocessor expression");
+  if (pedantic)
+    pedwarn ("integer overflow in preprocessor expression");
 }
 
 static long
