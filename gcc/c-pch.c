@@ -194,7 +194,6 @@ c_common_write_pch (void)
     fatal_error ("can't write %s: %m", pch_file);
   
   buf = xmalloc (16384);
-  fflush (asm_out_file);
 
   if (fseek (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
     fatal_error ("can't seek in %s: %m", asm_file_name);
@@ -211,8 +210,10 @@ c_common_write_pch (void)
       written += size;
     }
   free (buf);
-  /* asm_out_file can be written afterwards, so must be flushed first.  */
-  fflush (asm_out_file);
+  /* asm_out_file can be written afterwards, so fseek to clear
+     _IOREAD flag.  */
+  if (fseek (asm_out_file, 0, SEEK_END) != 0)
+    fatal_error ("can't seek in %s: %m", asm_file_name);
 
   gt_pch_save (pch_outfile);
   cpp_write_pch_state (parse_in, pch_outfile);

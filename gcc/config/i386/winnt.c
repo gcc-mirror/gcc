@@ -769,13 +769,13 @@ i386_pe_declare_function_type (FILE *file, const char *name, int public)
 
 /* Keep a list of external functions.  */
 
-struct extern_list
+struct extern_list GTY(())
 {
   struct extern_list *next;
   const char *name;
 };
 
-static struct extern_list *extern_head;
+static GTY(()) struct extern_list *extern_head;
 
 /* Assemble an external function reference.  We need to keep a list of
    these, so that we can output the function types at the end of the
@@ -788,7 +788,7 @@ i386_pe_record_external_function (const char *name)
 {
   struct extern_list *p;
 
-  p = (struct extern_list *) xmalloc (sizeof *p);
+  p = (struct extern_list *) ggc_alloc (sizeof *p);
   p->next = extern_head;
   p->name = name;
   extern_head = p;
@@ -796,14 +796,14 @@ i386_pe_record_external_function (const char *name)
 
 /* Keep a list of exported symbols.  */
 
-struct export_list
+struct export_list GTY(())
 {
   struct export_list *next;
   const char *name;
   int is_data;		/* used to type tag exported symbols.  */
 };
 
-static struct export_list *export_head;
+static GTY(()) struct export_list *export_head;
 
 /* Assemble an export symbol entry.  We need to keep a list of
    these, so that we can output the export list at the end of the
@@ -816,7 +816,7 @@ i386_pe_record_exported_symbol (const char *name, int is_data)
 {
   struct export_list *p;
 
-  p = (struct export_list *) xmalloc (sizeof *p);
+  p = (struct export_list *) ggc_alloc (sizeof *p);
   p->next = export_head;
   p->name = name;
   p->is_data = is_data;
@@ -861,3 +861,5 @@ i386_pe_file_end (void)
 	}
     }
 }
+
+#include "gt-winnt.h"
