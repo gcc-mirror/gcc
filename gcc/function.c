@@ -6565,12 +6565,15 @@ expand_function_start (tree subr, int parms_have_cleanups)
   /* If function gets a static chain arg, store it.  */
   if (cfun->static_chain_decl)
     {
-      rtx x;
+      tree parm = cfun->static_chain_decl;
+      rtx local = gen_reg_rtx (Pmode);
 
-      expand_var (cfun->static_chain_decl);
-      x = expand_expr (cfun->static_chain_decl, NULL_RTX,
-		       VOIDmode, EXPAND_WRITE);
-      emit_move_insn (x, static_chain_incoming_rtx);
+      set_decl_incoming_rtl (parm, static_chain_incoming_rtx);
+      SET_DECL_RTL (parm, local);
+      maybe_set_unchanging (local, parm);
+      mark_reg_pointer (local, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm))));
+
+      emit_move_insn (local, static_chain_incoming_rtx);
     }
 
   /* If the function receives a non-local goto, then store the
