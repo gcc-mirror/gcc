@@ -1702,8 +1702,6 @@ tree
 truthvalue_conversion (expr)
      tree expr;
 {
-  register enum tree_code code;
-
   if (TREE_CODE (expr) == ERROR_MARK)
     return expr;
 
