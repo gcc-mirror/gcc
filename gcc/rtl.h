@@ -2147,7 +2147,7 @@ struct md_constant { char *name, *value; };
 
 /* In read-rtl.c */
 extern int read_skip_spaces (FILE *);
-extern rtx read_rtx (FILE *);
+extern bool read_rtx (FILE *, rtx *, int *);
 extern const char *read_rtx_filename;
 extern int read_rtx_lineno;
 
