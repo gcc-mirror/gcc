@@ -292,6 +292,25 @@ commonparms (p1, p2)
   return newargs;
 }
 
+/* Given a type, perhaps copied for a typedef,
+   find the "original" version of it.  */
+tree
+original_type (t)
+     tree t;
+{
+  while (TYPE_NAME (t) != NULL_TREE)
+    {
+      tree x = TYPE_NAME (t);
+      if (TREE_CODE (x) != TYPE_DECL)
+	break;
+      x = DECL_ORIGINAL_TYPE (x);
+      if (x == NULL_TREE)
+	break;
+      t = x;
+    }
+  return t;
+}
+
 /* Return the common type of two types.
    We assume that comptypes has already been done and returned 1;
    if that isn't so, this may crash.
@@ -311,8 +330,12 @@ common_type (t1, t2)
   tree attributes;
 
   /* Save time if the two types are the same.  */
-
-  if (t1 == t2) return t1;
+  if (t1 == t2)
+    return t1;
+  t1 = original_type (t1);
+  t2 = original_type (t2);
+  if (t1 == t2)
+    return t1;
 
   /* If one type is nonsense, use the other.  */
   if (t1 == error_mark_node)
