@@ -1,3 +1,8 @@
+2002-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (process_init_element): Don't save_expr
+	COMPOUND_LITERAL_EXPR if just its initializer will be used.
+
 2002-01-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Do not
