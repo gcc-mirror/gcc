@@ -759,9 +759,13 @@ extern const char *rs6000_warn_altivec_long_switch;
    store_bit_field() will force (subreg:DI (reg:V2SI x))'s to the
    back-end.  Because a single GPR can hold a V2SI, but not a DI, the
    best thing to do is set structs to BLKmode and avoid Severe Tire
-   Damage.  */
+   Damage.
+
+   On e500 v2, DF and DI modes suffer from the same anomaly.  DF can
+   fit into 1, whereas DI still needs two.  */
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
-  (TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)
+  ((TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE) \
+   || (TARGET_E500_DOUBLE && (MODE) == DFmode))
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
