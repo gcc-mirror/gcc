@@ -2078,6 +2078,10 @@ extern union tree_node *current_function_decl;
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled) \
   (TARGET_FLAT ? sparc_flat_eligible_for_epilogue_delay (trial, slots_filled) \
    : eligible_for_epilogue_delay (trial, slots_filled))
+
+/* Define registers used by the epilogue and return instruction.  */
+#define EPILOGUE_USES(REGNO) \
+  (!TARGET_FLAT && REGNO == 31)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
