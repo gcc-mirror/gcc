@@ -625,7 +625,6 @@ read_scan_file (in_fname, argc, argv)
   scan_in = cpp_create_reader (CLK_GNUC89);
   cb = cpp_get_callbacks (scan_in);
   cb->file_change = cb_file_change;
-  cb->simplify_path = simplify_path;
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
