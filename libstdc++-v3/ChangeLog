@@ -1,3 +1,24 @@
+2001-12-03  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/ext/howto.html: Update commentary.
+	* include/bits/c++config: Update threading configuration comment.
+	(__STL_GTHREADS): Remove macro definition.
+	(__STL_THREADS): Likewise.
+	* include/bits/stl_threads.h: Leave only the configuration
+	path which had been guarded by __STL_GTHREADS.  Remove all
+	guards related to __STL_GTHREADS, __STL_SGI_THREADS,
+	__STL_PTHREADS, __STL_UITHREADS and __STL_WIN32THREADS.
+	* include/bits/stl_alloc.h: Leave only the configuration path
+	which had been guarded by __STL_THREADS.  Remove configuration
+	path and guards for __STL_SGI_THREADS.
+	(__NODE_ALLOCATOR_THREADS): Remove macro definition.  Unroll its use.
+	(__NODE_ALLOCATOR_LOCK): Likewise.
+	(__NODE_ALLOCATOR_UNLOCK): Likewise.
+	(_NOTHREADS): Remove guards related to macro.
+	* include/ext/stl_rope.h: Remove configuration path and guards
+	for __STL_SGI_THREADS.
+	* src/stl-inst.cc: Remove use of __NODE_ALLOCATOR_THREADS.
+
 2001-12-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/ext/howto.html:  Update list of implemented DRs.

@@ -73,39 +73,7 @@
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstring.h>
 #include <bits/std_cassert.h>
-
-// To see the effects of this block of macro wrangling, jump to
-// "Default node allocator" below.
-#ifdef __STL_THREADS
-# include <bits/stl_threads.h>
-# define __NODE_ALLOCATOR_THREADS true
-# ifdef __STL_SGI_THREADS
-  // We test whether threads are in use before locking.
-  // Perhaps this should be moved into stl_threads.h, but that
-  // probably makes it harder to avoid the procedure call when
-  // it isn't needed.
-    extern "C" {
-      extern int __us_rsthread_malloc;
-    }
-	// The above is copied from malloc.h.  Including <malloc.h>
-	// would be cleaner but fails with certain levels of standard
-	// conformance.
-#   define __NODE_ALLOCATOR_LOCK if (__threads && __us_rsthread_malloc) \
-                { _S_node_allocator_lock._M_acquire_lock(); }
-#   define __NODE_ALLOCATOR_UNLOCK if (__threads && __us_rsthread_malloc) \
-                { _S_node_allocator_lock._M_release_lock(); }
-# else /* !__STL_SGI_THREADS */
-#   define __NODE_ALLOCATOR_LOCK \
-        { if (__threads) _S_node_allocator_lock._M_acquire_lock(); }
-#   define __NODE_ALLOCATOR_UNLOCK \
-        { if (__threads) _S_node_allocator_lock._M_release_lock(); }
-# endif
-#else
-//  Thread-unsafe
-#   define __NODE_ALLOCATOR_LOCK
-#   define __NODE_ALLOCATOR_UNLOCK
-#   define __NODE_ALLOCATOR_THREADS false
-#endif
+#include <bits/stl_threads.h>
 
 namespace std
 {
@@ -364,9 +332,7 @@ private:
   static char* _S_end_free;
   static size_t _S_heap_size;
 
-#ifdef __STL_THREADS
-    static _STL_mutex_lock _S_node_allocator_lock;
-#endif
+  static _STL_mutex_lock _S_node_allocator_lock;
 
   // It would be nice to use _STL_auto_lock here.  But we
   // don't need the NULL check.  And we do need a test whether
@@ -375,8 +341,8 @@ private:
   friend class _Lock;
   class _Lock {
     public:
-      _Lock() { __NODE_ALLOCATOR_LOCK; }
-      ~_Lock() { __NODE_ALLOCATOR_UNLOCK; }
+      _Lock() { if (__threads) _S_node_allocator_lock._M_acquire_lock(); }
+      ~_Lock() { if (__threads) _S_node_allocator_lock._M_release_lock(); }
   };
 
 public:
@@ -394,10 +360,7 @@ public:
 	// Acquire the lock here with a constructor call.
 	// This ensures that it is released in exit or during stack
 	// unwinding.
-#     ifndef _NOTHREADS
-	/*REFERENCED*/
 	_Lock __lock_instance;
-#     endif
 	_Obj* __restrict__ __result = *__my_free_list;
 	if (__result == 0)
 	  __ret = _S_refill(_S_round_up(__n));
@@ -423,10 +386,7 @@ public:
 	_Obj* __q = (_Obj*)__p;
 	
 	// acquire lock
-#       ifndef _NOTHREADS
-	/*REFERENCED*/
 	_Lock __lock_instance;
-#       endif /* _NOTHREADS */
 	__q -> _M_free_list_link = *__my_free_list;
 	*__my_free_list = __q;
 	// lock is released here
@@ -582,13 +542,10 @@ __default_alloc_template<threads, inst>::reallocate(void* __p,
     return(__result);
 }
 
-#ifdef __STL_THREADS
-    template <bool __threads, int __inst>
-    _STL_mutex_lock
-    __default_alloc_template<__threads, __inst>::_S_node_allocator_lock
-        __STL_MUTEX_INITIALIZER;
-#endif
-
+template <bool __threads, int __inst>
+_STL_mutex_lock
+__default_alloc_template<__threads, __inst>::_S_node_allocator_lock
+  __STL_MUTEX_INITIALIZER;
 
 template <bool __threads, int __inst>
 char* __default_alloc_template<__threads, __inst>::_S_start_free = 0;
@@ -606,8 +563,7 @@ __default_alloc_template<__threads, __inst> ::_S_free_list[
 ] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
-// __NODE_ALLOCATOR_THREADS is predicated on __STL_THREADS being defined or not
-typedef __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0> alloc;
+typedef __default_alloc_template<true, 0> alloc;
 typedef __default_alloc_template<false, 0> single_client_alloc;
 
 

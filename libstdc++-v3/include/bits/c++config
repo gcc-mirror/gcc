@@ -55,16 +55,12 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
 
-// Map gthr.h abstraction to that required for STL.  Do not key off of
-// __GTHREADS at this point since we haven't seen the correct symbol
-// yet, instead setup so that include/bits/stl_threads.h will know to
-// include gthr.h instead of any other type of thread support.  Note:
-// that gthr.h may well map to gthr-single.h which is a correct way to
-// express no threads support in gcc.  As a user, do not define
-// _NOTHREADS without consideration of the consequences (e.g. it is an
-// internal ABI change).
-#define __STL_GTHREADS
-#define __STL_THREADS
+// In those parts of the standard C++ library that use a mutex instead
+// of a spin-lock, we now unconditionally use GCC's gthr.h mutex
+// abstraction layer.  All support to directly map to various
+// threading models has been removed.  Note: gthr.h may well map to
+// gthr-single.h which is a correct way to express no threads support
+// in gcc.  Support for the undocumented _NOTHREADS has been removed.
 
 // Default to the typically high-speed, pool-based allocator (as
 // libstdc++-v2) instead of the malloc-based allocator (libstdc++-v3
