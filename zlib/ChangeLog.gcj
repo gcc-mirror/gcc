@@ -1,3 +1,10 @@
+2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Add in libz_a_CFLAGS as recommended by automake doc.
+	* Makefile.in: Regenerate with automake 1.7.9.
+	* aclocal.m4: Likewise.
+	* configure: Regenerate.
+
 2004-04-10  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Rename file to ...
