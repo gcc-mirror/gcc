@@ -1,3 +1,7 @@
+2004-12-02  Richard Henderson  <rth@redhat.com>
+
+	* simplify-rtx.c (simplify_immed_subreg): Fail complex modes.
+
 2004-12-03  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Edges): Update. Document the edge_iterator data
