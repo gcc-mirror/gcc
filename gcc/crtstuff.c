@@ -110,6 +110,9 @@ asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 static void
 __do_global_ctors_aux ()	/* prologue goes in .init section */
 {
+#ifdef FORCE_INIT_SECTION_ALIGN
+  FORCE_INIT_SECTION_ALIGN;	/* Explicit align before switch to .text */
+#endif
   asm (TEXT_SECTION_ASM_OP);	/* don't put epilogue and body in .init */
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
