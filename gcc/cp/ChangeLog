@@ -1,5 +1,7 @@
 1998-10-07  Mark Mitchell  <mark@markmitchell.com>
 
+	* class.c (finish_struct_1): Add commentary on prevous change.
+
 	* cp-tree.h (vtbl_ptr_type_node): New variable.
 	* class.c (build_vtbl_ref): Don't indirect through the vptr; it's
 	already of the right type.
