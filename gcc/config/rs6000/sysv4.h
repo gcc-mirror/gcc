@@ -1374,9 +1374,3 @@ ncrtn.o%s"
 
 /* Generate entries in .fixup for relocatable addresses.  */
 #define RELOCATABLE_NEEDS_FIXUP
-
-/* Define target-specific symbol_ref flags, beginning with
-   SYMBOL_REF_FLAG_DEP.  */
-#define SYMBOL_FLAG_SMALL_V4  (SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_REF_SMALL_V4_P(RTX) \
-  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_SMALL_V4) != 0)
