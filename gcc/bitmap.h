@@ -145,10 +145,8 @@ bitmap_initialize (bitmap head, bitmap_obstack *obstack)
 
 /* Allocate and free bitmaps from obstack, malloc and gc'd memory.  */
 extern bitmap bitmap_obstack_alloc (bitmap_obstack *obstack);
-extern bitmap bitmap_malloc_alloc (void);
 extern bitmap bitmap_gc_alloc (void);
 extern void bitmap_obstack_free (bitmap);
-extern void bitmap_malloc_free (bitmap);
 
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
@@ -162,21 +160,14 @@ extern unsigned bitmap_first_set_bit (bitmap);
 #define BITMAP_GGC_ALLOC() bitmap_gc_alloc ()
 
 /* Allocate a bitmap with xmalloc.  */
-#define BITMAP_XMALLOC() bitmap_malloc_alloc ()
+#define BITMAP_XMALLOC() BITMAP_OBSTACK_ALLOC (NULL)
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
 #define BITMAP_FREE(BITMAP)			\
       	((void)(bitmap_obstack_free (BITMAP), (BITMAP) = NULL))
 
 /* Do any cleanup needed on an xmalloced bitmap when it is no longer used.  */
-#define BITMAP_XFREE(BITMAP)			\
-do {						\
-  if (BITMAP)					\
-    {						\
-      bitmap_malloc_free (BITMAP);		\
-      (BITMAP) = 0;				\
-    }						\
-} while (0)
+#define BITMAP_XFREE(BITMAP) BITMAP_OBSTACK_FREE (BITMAP)
 
 /* Iterator for bitmaps.  */
 
