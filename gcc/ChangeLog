@@ -1,3 +1,8 @@
+Tue Feb 27 16:01:13 CET 2001  Jan Hubicka  <jh@suse.cz>
+			      Fergus Henderson
+
+	* md.texi (min, max): Document
+	
 Tue Feb 27 15:51:35 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsf, movdf): Use movaps for reg-reg moves if
