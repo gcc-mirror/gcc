@@ -1247,7 +1247,7 @@ mark_irreducible_loops (struct loops *loops)
 	           : e->dest->index + 1;
           if (closed[sidx])
 	    {
-	      if (!closed[mri[sidx]])
+	      if (mri[sidx] != -1 && !closed[mri[sidx]])
 		{
 		  if (mr[sidx] < mr[idx])
 		    {
