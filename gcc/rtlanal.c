@@ -25,6 +25,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "tm_p.h"
 
 /* Forward declarations */
@@ -3140,17 +3142,15 @@ keep_with_call_p (insn)
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 	return true;
-      /* There may be stack pop just after the call and
-         before actual store of return register.  Search
-	 for the actual store when deciding if we can break
-	 or not.  */
+      /* There may be a stack pop just after the call and before the store
+	 of the return register.  Search for the actual store when deciding
+	 if we can break or not.  */
       if (SET_DEST (set) == stack_pointer_rtx)
 	{
 	  rtx i2 = next_nonnote_insn (insn);
-	  if (i2 && keep_with_call_p (insn))
+	  if (i2 && keep_with_call_p (i2))
 	    return true;
 	}
     }
   return false;
 }
-
