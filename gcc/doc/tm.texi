@@ -168,11 +168,12 @@ multilibs.  Example nonsensical definition, where @code{-malt-abi},
 A list of specs for the driver itself.  It should be a suitable
 initializer for an array of strings, with no surrounding braces.
 
-The driver applies these specs to its own command line before choosing
-the multilib directory or running any subcommands.  It applies them in
-the order given, so each spec can depend on the options added by
-earlier ones.  It is also possible to remove options using
-@samp{%<@var{option}} in the usual way.
+The driver applies these specs to its own command line between loading
+default @file{specs} files (but not command-line specified ones) and
+choosing the multilib directory or running any subcommands.  It
+applies them in the order given, so each spec can depend on the
+options added by earlier ones.  It is also possible to remove options
+using @samp{%<@var{option}} in the usual way.
 
 This macro can be useful when a port has several interdependent target
 options.  It provides a way of standardizing the command line so

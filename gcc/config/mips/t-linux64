@@ -1,0 +1,41 @@
+MULTILIB_OPTIONS = mabi=32/mabi=n32/mabi=64
+MULTILIB_DIRNAMES = o32 32 64
+MULTILIB_OSDIRNAMES = ../lib ../lib32 ../lib64
+
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+
+LIB2FUNCS_EXTRA = $(srcdir)/config/mips/_tilib.c
+
+TPBIT = tp-bit.c
+
+tp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#ifdef __MIPSEL__' > tp-bit.c
+	echo '# define FLOAT_BIT_ORDER_MISMATCH' >> tp-bit.c
+	echo '#endif' >> tp-bit.c
+	echo '#if __LDBL_MANT_DIG__ == 113' >> tp-bit.c
+	echo '# define TFLOAT' >> tp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> tp-bit.c
+	echo '#endif' >> tp-bit.c
+
+# This arranges for us to extract the built-in specs of the compiler
+# into specs.install.  It's this file that we're going to install as
+# specs.  Howver, at toolchain build time, we must use specs that
+# enforce the defaults that the compiler expects, namely, the o32 ABI,
+# instead of n32, that we want to use as the default post install.
+SPECS = specs.install
+specs: specs.install
+	# Changing the build-time default ABI from n32 to o32
+	# The post-install default ABI will remain n32
+	@if test "x`grep '!mabi=\*:-mabi=n32' specs.install`" = \
+		"x%{!mabi=*:-mabi=n32}"; then \
+	  sed 's,\(!mabi=\*:-mabi\)=n32,\1=32,' < specs.install > $@ ; \
+	else \
+	  echo failed, gcc/config/mips/t-linux64 needs updating >&2; \
+	  false; \
+	fi
+
+# This arranges for anyone who uses gcc -print-multi-lib post
+# installation to get lists of options for each multilib to get
+# options that actually work.
+MULTILIB_EXTRA_OPTS = mabi-fake-default
+CRTSTUFF_T_CFLAGS = -mabi-fake-default

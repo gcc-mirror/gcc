@@ -534,6 +534,7 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_SWITCHES							\
 {									\
+  SUBTARGET_TARGET_SWITCHES						\
   {"no-crt0",          0,                                               \
      N_("No default crt0.o") },					 	\
   {"int64",		  MASK_INT64 | MASK_LONG64,			\
@@ -993,6 +994,7 @@ extern void		sbss_section PARAMS ((void));
 
 #define GAS_ASM_SPEC "%{mtune=*} %{v}"
 
+#define SUBTARGET_TARGET_SWITCHES
 
 extern int mips_abi;
 

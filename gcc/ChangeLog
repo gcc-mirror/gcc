@@ -1,3 +1,21 @@
+2003-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config.gcc (mips64*-*-linux*): Added.
+	* config/mips/linux64.h, config/mips/t-linux64: New file.
+	* config/mips/iris6.h (MIPS_TFMODE_FORMAT): Define.
+	* config/mips/mips.c (override_options): Use it.
+	* config/mips/mips.h (TARGET_SWITCHES): Added...
+	(SUBTARGET_TARGET_SWITCHES): New, empty by default.
+	* Makefile.in (SPECS): New.
+	(STAGESTUFF, specs, mostlyclean, install-common): Use it.
+	* gcc.c (process_command): Move self-spec processing past spec
+	file loading.
+	* doc/tm.texi (DRIVER_SELF_SPECS): Document the change.
+	* doc/fragments.texi (MULTILIB_EXTRA_OPTS): Document need for
+	CRTSTUFF_T_CFLAGS.
+	(SPECS): Document.
+	* doc/invoke.texi (-mabi-fake-default): Document.
+
 2003-01-19  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (stack_push_word, stack_pop_word,

@@ -5359,6 +5359,10 @@ override_options ()
   else
     mips16 = 0;
 
+#ifdef MIPS_TFMODE_FORMAT
+  real_format_for_mode[TFmode - QFmode] = &MIPS_TFMODE_FORMAT;
+#endif
+  
   mips_print_operand_punct['?'] = 1;
   mips_print_operand_punct['#'] = 1;
   mips_print_operand_punct['&'] = 1;
