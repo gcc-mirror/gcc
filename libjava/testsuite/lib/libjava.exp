@@ -80,18 +80,24 @@ proc libjava_init { args } {
 }
 
 # Find a library.  We know where libtool puts the actual libraries,
-# and we look there.
+# and we look there.  The implementation is fairly hacky.  We can't
+# compile with -nodefaultlibs, because that will also eliminate the
+# system libraries we need.  In order to have gcj still work, it must
+# find the appropriate libraries so we must add -L options for their
+# paths.  However we can't simply use those libraries; we still need
+# libtool for linking.
 proc libjava_find_lib {dir name} {
     global base_dir
     set gp [get_multilibs]
     foreach sub {.libs _libs} {
 	if {$gp != ""} {
 	    if {[file exists $gp/$dir/$sub/lib${name}.a]} then {
-		return "$gp/$dir/lib${name}.la"
+		return "$gp/$dir/lib${name}.la -L$gp/$dir/$sub"
 	    }
 	}
 	set lib [findfile $base_dir/../../$dir/$sub/lib${name}.a \
-		   "$base_dir/../../$dir/lib${name}.la" ""]
+		   "$base_dir/../../$dir/lib${name}.la -L$base_dir/../../$dir/$sub" \
+		   ""]
 	if {$lib != ""} {
 	    return $lib
 	}
@@ -192,10 +198,6 @@ proc libjava_arguments {{mode compile}} {
 	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST"
 	    break
 	}
-    }
-
-    if {$mode == "link"} {
-	lappend args "additional_flags=-nodefaultlibs -lm -lgcc -lc -lgcc"
     }
 
     return $args
