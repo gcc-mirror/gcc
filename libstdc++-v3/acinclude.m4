@@ -173,14 +173,19 @@ dnl specific precautions need to be taken.
 dnl 
 dnl GLIBCPP_CHECK_COMPILER_VERSION
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
-  # Sanity check that g++ is capable of dealing with v-3.
-  AC_MSG_CHECKING([for g++ that will successfully compile this code])
-  AC_EGREP_CPP([ok], [
-  #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
+if test ! -f stamp-sanity-compiler; then
+  AC_MSG_CHECKING([for g++ that will successfully compile libstdc++-v3])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_EGREP_CPP(ok, [
+  #if (__GNUC__ > 2) || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
     ok
   #endif
   ], gpp_satisfactory=yes, AC_MSG_ERROR([please upgrade to gcc-2.95 or above]))
+  AC_LANG_RESTORE
   AC_MSG_RESULT($gpp_satisfactory)
+  touch stamp-sanity-compiler
+fi
 ])
 
 

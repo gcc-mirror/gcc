@@ -1,3 +1,10 @@
+2000-11-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4: Only sanity check for compiler version when
+	configuring. More fixes for 'make clean'.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove cabsl.c 
