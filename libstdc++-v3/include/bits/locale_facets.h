@@ -527,14 +527,38 @@ namespace std
   // 22.2.1.5  Template class codecvt
   #include <bits/codecvt.h>
 
-
-  // 22.2.2  The numeric category.
+ // 22.2.2  The numeric category.
   class __num_base 
   {
+  public:
+    // NB: Code depends on the order of _S_atoms_out elements.
+    // Below are the indices into _S_atoms_out.
+    enum 
+      {  
+        _S_minus, 
+        _S_plus, 
+        _S_x, 
+        _S_X, 
+        _S_digits,
+        _S_digits_end = _S_digits + 16,
+        _S_udigits = _S_digits_end,  
+        _S_udigits_end = _S_udigits + 16,
+        _S_e = _S_digits + 14,  // For scientific notation, 'e'
+        _S_E = _S_udigits + 14, // For scientific notation, 'E'
+	_S_end = _S_udigits_end
+      };
+    
+    // A list of valid numeric literals for output.  This array
+    // contains chars that will be passed through the current locale's
+    // ctype<_CharT>.widen() and then used to render numbers.
+    // For the standard "C" locale, this is
+    // "-+xX0123456789abcdef0123456789ABCDEF".
+    static const char* _S_atoms_out;
+
   protected:
     // String literal of acceptable (narrow) input, for num_get.
     // "0123456789eEabcdfABCDF"
-    static const char _S_atoms[];
+    static const char* _S_atoms_in;
 
     enum 
     {  
@@ -547,7 +571,7 @@ namespace std
     // num_put
     // Construct and return valid scanf format for floating point types.
     static void
-    _S_format_float(const ios_base& __io, char* __fptr, char __mod,
+    _S_format_float(const ios_base& __io, char* __fptr, char __mod, 
 		    streamsize __prec);
     
     // Construct and return valid scanf format for integer types.
@@ -828,7 +852,6 @@ namespace std
       // Types:
       typedef _CharT       	char_type;
       typedef _OutIter     	iter_type;
-
       static locale::id		id;
 
       explicit 
@@ -878,6 +901,27 @@ namespace std
         _M_convert_float(iter_type, ios_base& __io, char_type __fill, 
 			 char __mod, _ValueT __v) const;
 
+      void
+      _M_group_float(const string& __grouping, char_type __sep, 
+		     const char_type* __p, char_type* __new, char_type* __cs,
+		     int& __len) const;
+
+      template<typename _ValueT>
+        iter_type
+        _M_convert_int(iter_type, ios_base& __io, char_type __fill, 
+		       _ValueT __v) const;
+
+      void
+      _M_group_int(const string& __grouping, char_type __sep, 
+		   ios_base& __io, char_type* __new, char_type* __cs, 
+		   int& __len) const;
+
+      void
+      _M_pad(char_type __fill, streamsize __w, ios_base& __io, 
+	     char_type* __new, const char_type* __cs, int& __len) const;
+
+#if 1
+      // XXX GLIBCXX_ABI Deprecated, compatibility only.
       template<typename _ValueT>
         iter_type
         _M_convert_int(iter_type, ios_base& __io, char_type __fill, 
@@ -894,8 +938,9 @@ namespace std
       iter_type
       _M_insert(iter_type, ios_base& __io, char_type __fill, 
 		const char_type* __ws, int __len) const;
+#endif
 
-      virtual 
+     virtual 
       ~num_put() { };
 
       virtual iter_type 

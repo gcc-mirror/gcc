@@ -64,17 +64,59 @@ GLIBCPP_3.2 {
       std::locale::_S_num_categories;
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
-      std::[A-Zm-z]*;
+      std::[A-Zm]*;
+      std::n[a-t]*;
+      std::num_put_[cw];
+      std::numeric*;
+      std::numpunct*;
+      std::num_get*;
+      std::num_get_[cw];
+      std::n[v-z]*;
+      std::ostrstream*;
+      std::overflow_error*;
+      std::out_of_range*;
+      std::[A-Zp-z]*;
       std::__throw_*;
       std::__basic_file*;
-      std::__num_base*;
-      std::__timepunct*;
       std::__numeric_limits_base*;
+      std::__timepunct*;
       std::_S_bit_count;
       std::_S_first_one
     };
 
+     _ZNSo*;
+   
     # Names not in an 'extern' block are mangled names.
+    _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEC*;
+    _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED*;
+    _ZNSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEC*;
+    _ZNSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEED*;
+
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE6do_put*;
+
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3put*;
+    _ZNSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
+
+    _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE14_M_convert_intI[lmxy]EES3_S3_RSt8ios_basecccT_;
+
+    _ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE14_M_convert_intI[lmxy]EES3_S3_RSt8ios_basewccT_;
+
+    _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE16_M_convert_floatI[de]EES3_S3_RSt8ios_baseccT_;
+
+    _ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE16_M_convert_floatI[de]EES3_S3_RSt8ios_basewcT_;
+
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE12_M_widen_int*;
+
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE14_M_widen_float*;
+
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE9_M_insert*;
+
+    _ZSt9use_facetISt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEERKT_RKSt6locale;
+
+    # __num_base
+    _ZNSt10__num_base13_S_format_intERKSt8ios_basePccc;
+    _ZNSt10__num_base15_S_format_floatERKSt8ios_basePcci;
+    _ZNSt10__num_base8_S_atomsE;
 
     # std::string minus binary operator plus
     _ZNKSs*;
@@ -252,6 +294,12 @@ GLIBCPP_3.2.1 {
 
 GLIBCPP_3.2.2 {
 
+  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
+
+} GLIBCPP_3.2.1;
+
+GLIBCPP_3.2.3 {
+
   global:
 
     extern "C++"
@@ -259,12 +307,21 @@ GLIBCPP_3.2.2 {
       # Needed only when generic cpu's atomicity.h is in use.
       __gnu_cxx::_Atomic_add_mutex;
       __gnu_cxx::_Atomic_add_mutex_once;
-      __gnu_cxx::__gthread_atomic_add_mutex_once
+      __gnu_cxx::__gthread_atomic_add_mutex_once;
+	
+      std::__num_base::_S_atoms_in;
+      std::__num_base::_S_atoms_out
     };
 
-  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
+    _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE6_M_pad*;
 
-} GLIBCPP_3.2.1;
+    _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE14_M_convert_intI[yxml]EES3_S3_RSt8ios_base[cw]T_;
+
+    _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE14_M_group_float*;
+
+  _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE12_M_group_int*;
+
+} GLIBCPP_3.2.2;
 
 
 # Symbols in the support library (libsupc++) have their own tag.

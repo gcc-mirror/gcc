@@ -266,6 +266,14 @@ namespace __gnu_cxx
   _GLIBCPP_mutex_address_init ()
   { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCPP_mutex_address); }
 #endif
+
+  // GLIBCXX_ABI.
+  struct __compat
+  {
+    static const char _S_atoms[];
+  };
+  const char __compat::_S_atoms[] = "0123456789eEabcdfABCDF";
+  _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx8__compat8_S_atomsE, _ZNSt10__num_base8_S_atomsE, GLIBCPP_3.2)
 } // namespace __gnu_cxx
 
 namespace std
