@@ -19,11 +19,11 @@
 ;; Free Software Foundation, 59 Temple Place - Suite 330, Boston,
 ;; MA 02111-1307, USA.
 
-(define_automaton "ppc6xx,ppc6xxfp,ppc6xxfp2,ppc6xxother")
+(define_automaton "ppc6xx,ppc6xxfp,ppc6xxfp2")
 (define_cpu_unit "iu1_6xx,iu2_6xx,mciu_6xx" "ppc6xx")
 (define_cpu_unit "fpu_6xx" "ppc6xxfp")
 (define_cpu_unit "fpu1_6xx,fpu2_6xx" "ppc6xxfp2")
-(define_cpu_unit "lsu_6xx,bpu_6xx,cru_6xx" "ppc6xxother")
+(define_cpu_unit "lsu_6xx,bpu_6xx,cru_6xx" "ppc6xx")
 
 ;; PPC604  32-bit 2xSCIU, MCIU, LSU, FPU, BPU
 ;; PPC604e  32-bit 2xSCIU, MCIU, LSU, FPU, BPU, CRU
