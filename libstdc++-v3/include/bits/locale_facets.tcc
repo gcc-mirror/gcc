@@ -2279,7 +2279,7 @@ namespace std
 	}
       if (__builtin_expect(has_facet<ctype<_CharT> >(__loc), true))
 	{
-	  const ctype<_CharT>& __ct = use_facet< ctype<_CharT> >(__loc);
+	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
 	  __ct.widen(__num_base::_S_atoms_out,
 		     __num_base::_S_atoms_out + __num_base::_S_end, 
 		     _M_literals);

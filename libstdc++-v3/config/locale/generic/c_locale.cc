@@ -227,8 +227,11 @@ namespace std
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale&)
   { return __c_locale(); }
+} // namespace std
 
-  const char* locale::_S_categories[_S_categories_size] = 
+namespace __gnu_cxx
+{
+  const char* category_names[6 + _GLIBCPP_NUM_CATEGORIES] =
     {
       "LC_CTYPE", 
       "LC_NUMERIC",
@@ -237,4 +240,9 @@ namespace std
       "LC_MONETARY",
       "LC_MESSAGES"
     };
+}  
+
+namespace std
+{
+  const char** locale::_S_categories = __gnu_cxx::category_names;
 }  // namespace std
