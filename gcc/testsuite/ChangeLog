@@ -1,3 +1,7 @@
+2003-01-31  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030129-1.c: New test.
+
 2003-01-31  Paolo Carlini  <pcarlini@unitus.it>
 
 	Further tweaks for Bison-1.875.
