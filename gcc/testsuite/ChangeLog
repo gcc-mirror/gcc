@@ -1,3 +1,7 @@
+2000-04-08  Neil Booth  <NeilB@earthling.net>
+	
+	* gcc.dg/cpp-nullchar.c: New test.
+
 2000-04-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp-mi2.c: New test.
