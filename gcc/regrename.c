@@ -1025,16 +1025,7 @@ kill_value_regno (regno, vd)
 	   vd->e[i].next_regno != regno;
 	   i = vd->e[i].next_regno)
 	continue;
-
-      next = vd->e[regno].next_regno;
-      while (1)
-	{
-	  vd->e[i].next_regno = next;
-	  if (next == INVALID_REGNUM)
-	    break;
-	  i = next;
-	  next = vd->e[next].next_regno;
-	}
+      vd->e[i].next_regno = vd->e[regno].next_regno;
     }
   else if ((next = vd->e[regno].next_regno) != INVALID_REGNUM)
     {
@@ -1052,7 +1043,7 @@ kill_value_regno (regno, vd)
 }
 
 /* Kill X.  This is a convenience function for kill_value_regno
-   so that we don't have to check that X is a register first.  */
+   so that we mind the mode the register is in.  */
 
 static void
 kill_value (x, vd)
@@ -1060,7 +1051,14 @@ kill_value (x, vd)
      struct value_data *vd;
 {
   if (REG_P (x))
-    kill_value_regno (REGNO (x), vd);
+    {
+      unsigned int regno = REGNO (x);
+      unsigned int n = HARD_REGNO_NREGS (regno, GET_MODE (x));
+      unsigned int i;
+
+      for (i = 0; i < n; ++i)
+	kill_value_regno (regno + i, vd);
+    }
 }
 
 /* Initialize VD such that there are no known relationships between regs.  */
@@ -1103,9 +1101,8 @@ kill_set_value (x, set, data)
   struct value_data *vd = data;
   if (GET_CODE (set) != CLOBBER && REG_P (x))
     {
-      unsigned int regno = REGNO (x);
-      kill_value_regno (regno, vd);
-      vd->e[regno].mode = GET_MODE (x);
+      kill_value (x, vd);
+      vd->e[REGNO (x)].mode = GET_MODE (x);
     }
 }
 
@@ -1123,9 +1120,9 @@ kill_autoinc_value (px, data)
 
   if (GET_RTX_CLASS (GET_CODE (x)) == 'a')
     {
-      unsigned int regno = REGNO (XEXP (x, 0));
-      kill_value_regno (regno, vd);
-      vd->e[regno].mode = Pmode;
+      x = XEXP (x, 0);
+      kill_value (x, vd);
+      vd->e[REGNO (x)].mode = Pmode;
       return -1;
     }
 
@@ -1547,13 +1544,11 @@ copyprop_hardreg_forward_1 (bb, vd)
 void
 copyprop_hardreg_forward ()
 {
-  int b, need_refresh;
-  sbitmap refresh_blocks;
   struct value_data *all_vd;
+  bool need_refresh;
+  int b;
 
-  refresh_blocks = sbitmap_alloc (n_basic_blocks);
-  sbitmap_zero (refresh_blocks);
-  need_refresh = 0;
+  need_refresh = false;
 
   all_vd = xmalloc (sizeof (struct value_data) * n_basic_blocks);
 
@@ -1574,10 +1569,7 @@ copyprop_hardreg_forward ()
         init_value_data (all_vd + b);
 
       if (copyprop_hardreg_forward_1 (bb, all_vd + b))
-	{
-	  SET_BIT (refresh_blocks, b);
-	  need_refresh = 1;
-	}
+	need_refresh = true;
     }
 
   if (need_refresh)
@@ -1585,13 +1577,16 @@ copyprop_hardreg_forward ()
       if (rtl_dump_file)
 	fputs ("\n\n", rtl_dump_file);
 
-      update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
+      /* ??? Irritatingly, delete_noop_moves does not take a set of blocks
+	 to scan, so we have to do a life update with no initial set of
+	 blocks Just In Case.  */
+      delete_noop_moves (get_insns ());
+      update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
 			PROP_DEATH_NOTES
 			| PROP_SCAN_DEAD_CODE
 			| PROP_KILL_DEAD_CODE);
     }
 
-  sbitmap_free (refresh_blocks);
   free (all_vd);
 }
 
