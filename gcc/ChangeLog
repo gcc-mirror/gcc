@@ -1,5 +1,7 @@
 Mon Nov 23 07:00:57 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case ADDR_EXPR): Non-constant can be ADDRESSOF.
+
 	* expr.c (store_constructor_{,field}): New parameter ALIGN and
 	use it when making recursive calls and clearing memory.
 	(expand_expr, case CONSTRUCTOR): Call with new parameter.
