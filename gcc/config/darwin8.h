@@ -1,5 +1,5 @@
-/* Target definitions for Darwin 7.x (Mac OS X) systems.
-   Copyright (C) 2004
+/* Target definitions for Darwin 8.0 and above (Mac OS X) systems.
+   Copyright (C) 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -22,8 +22,11 @@ Boston, MA 02111-1307, USA.  */
 /* Darwin 7.0 and above have C99 functions.   */
 #define TARGET_C99_FUNCTIONS 1
 
-/* Machine dependent libraries, include libmx when compiling on Darwin 7.0
-   and above.  */
+/* Machine dependent libraries.  Include libmx when compiling on Darwin 7.0
+   and above.  Include libSystemStubs when compiling on 8.0 and above and
+   not 64-bit long double.  */
 
 #undef	LIB_SPEC
-#define LIB_SPEC "%{!static:-lSystem -lmx}"
+#define LIB_SPEC "%{!static:\
+  %{!mlong-double-64:%{pg:-lSystemStubs_profile;:-lSystemStubs}} \
+  -lSystem -lmx}"

@@ -1,3 +1,9 @@
+2005-02-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc (*-*-darwin*): Separate darwin7 and darwin8 configs.
+	* config/darwin8.h: New.
+	* config/darwin7.h: Update comment.
+
 2005-02-03  Leehod Baruch  <leehod@il.ibm.com>
 	    Dorit Naishlos  <dorit@il.ibm.com>
 

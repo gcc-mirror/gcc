@@ -336,8 +336,10 @@ esac
 case ${target} in
 *-*-darwin*)
   case ${target} in
+    *-darwin1[0-9]*) tm_file="${tm_file} darwin8.h" ;;
     *-darwin[0-6]*) ;;
-    *) tm_file="${tm_file} darwin7.h" ;;
+    *-darwin7*) tm_file="${tm_file} darwin7.h" ;;
+    *) tm_file="${tm_file} darwin8.h" ;;
   esac
   tm_file="${tm_file} darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
