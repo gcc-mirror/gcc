@@ -1,3 +1,8 @@
+2002-03-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/cpp.texi: Clarify documentation of relationship between
+	#line and #include.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (store_bit_field): Prevent generation of CONCATs;
