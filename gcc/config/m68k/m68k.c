@@ -1473,6 +1473,9 @@ output_move_simode_const (operands)
 	  || !(GET_CODE (operands[0]) == MEM
 	       && MEM_VOLATILE_P (operands[0]))))
     return "clr%.l %0";
+  else if (operands[1] == const0_rtx
+	   && ADDRESS_REG_P (operands[0]))
+    return "sub%.l %0,%0";
   else if (DATA_REG_P (operands[0]))
     return output_move_const_into_data_reg (operands);
   else if (ADDRESS_REG_P (operands[0])
@@ -1520,6 +1523,9 @@ output_move_himode (operands)
 	      || !(GET_CODE (operands[0]) == MEM
 		   && MEM_VOLATILE_P (operands[0]))))
 	return "clr%.w %0";
+      else if (operands[1] == const0_rtx
+	       && ADDRESS_REG_P (operands[0]))
+	return "sub%.l %0,%0";
       else if (DATA_REG_P (operands[0])
 	       && INTVAL (operands[1]) < 128
 	       && INTVAL (operands[1]) >= -128)
@@ -1634,6 +1640,8 @@ output_move_qimode (operands)
       return "moveq %1,%0";
 #endif
     }
+  if (operands[1] == const0_rtx && ADDRESS_REG_P (operands[0]))
+    return "sub%.l %0,%0";
   if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
     return "move%.l %1,%0";
   /* 68k family doesn't support byte moves to from address registers.  The
