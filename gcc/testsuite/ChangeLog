@@ -1,3 +1,7 @@
+Wed Dec 30 23:05:28 1998  Zack Weinberg <zack@rabi.columbia.edu>
+
+	* gcc.c-torture/compile/981223-1.c: New test.
+
 Tue Dec 29 11:33:25 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/bcp-1.c (bad10): Rename from opt3.
