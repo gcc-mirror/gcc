@@ -3065,6 +3065,14 @@ gen_block_redirect (jump, addr, need_block)
       else if (recog_memoized (prev) == CODE_FOR_block_branch_redirect)
 	need_block = 0;
     }
+  if (GET_CODE (PATTERN (jump)) == RETURN)
+    {
+      if (! need_block)
+	return prev;
+      /* Reorg even does nasty things with return insns that cause branches
+	 to go out of range - see find_end_label and callers.  */
+      return emit_insn_before (gen_block_branch_redirect (GEN_INT (0)) , jump);
+    }
   /* We can't use JUMP_LABEL here because it might be undefined
      when not optimizing.  */
   dest = XEXP (SET_SRC (PATTERN (jump)), 0);
@@ -3233,11 +3241,16 @@ gen_far_branch (bp)
   JUMP_LABEL (jump) = bp->far_label;
   if (! invert_jump (insn, label, 1))
     abort ();
-  (emit_insn_after
-   (gen_stuff_delay_slot
-    (GEN_INT (INSN_UID (XEXP (SET_SRC (PATTERN (jump)), 0))),
-     GEN_INT (recog_memoized (insn) == CODE_FOR_branch_false)),
-    insn));
+  /* If we are branching around a jump (rather than a return), prevent
+     reorg from using an insn from the jump target as the delay slot insn -
+     when reorg did this, it pessimized code (we rather hide the delay slot)
+     and it could cause branches to go out of range.  */
+  if (bp->far_label)
+    (emit_insn_after
+     (gen_stuff_delay_slot
+      (GEN_INT (INSN_UID (XEXP (SET_SRC (PATTERN (jump)), 0))),
+       GEN_INT (recog_memoized (insn) == CODE_FOR_branch_false)),
+      insn));
   /* Prevent reorg from undoing our splits.  */
   gen_block_redirect (jump, bp->address += 2, 2);
 }

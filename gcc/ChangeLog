@@ -1,3 +1,10 @@
+2004-01-14  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/9365
+	* sh.c (gen_block_redirect): Add special handling of RETURN.
+	(gen_far_branch) Don't call gen_stuff_delay_slot if there is no
+	far branch target (i.e. it's a return).
+
 2004-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (rs6000_stack_info)
