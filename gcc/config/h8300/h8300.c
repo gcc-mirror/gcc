@@ -626,9 +626,9 @@ call_insn_operand (op, mode)
   return 0;
 }
 
-/* Return 1 if a addition/subtraction of a constant integer can be
+/* Return 1 if an addition/subtraction of a constant integer can be
    transformed into two consecutive adds/subs that are faster than the
-   straightforward way.  Otherwise, return 0. */
+   straightforward way.  Otherwise, return 0.  */
 
 int
 two_insn_adds_subs_operand (op, mode)
@@ -654,7 +654,7 @@ two_insn_adds_subs_operand (op, mode)
 		  || value == 4 + 1
 		  || value == 4 + 2
 		  || value == 4 + 4))
-	      return 1;
+	    return 1;
 	}
       else
 	{
