@@ -646,7 +646,6 @@ h8300-*-*)
 hppa*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_GAS | MASK_JUMP_IN_DELAY)"
 	tm_file="${tm_file} pa/elf.h linux.h pa/pa-linux.h"
-	xm_file=pa/xm-linux.h
 	tmake_file="t-linux pa/t-linux"
 	extra_parts="crtbegin.o crtend.o"
 	xmake_file=none
@@ -922,7 +921,7 @@ hppa*-*-mpeix*)
 	;; 
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines=USG
-	xm_file=i370/xm-oe.h
+	xm_file=i370/xm-mvs.h	 # close enough
 	tm_file=i370/oe.h
 	xmake_file=i370/x-oe
 	tmake_file=i370/t-oe
@@ -934,7 +933,6 @@ i370-*-mvs*)
 	tmake_file=i370/t-mvs
 	;;
 i370-*-linux*)
-	xm_file=i370/xm-linux.h
 	xmake_file=x-linux
 	tm_file="i370/linux.h ${tm_file}"
 	tmake_file="t-linux i370/t-linux"
@@ -2132,7 +2130,7 @@ mips-wrs-vxworks)
 mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 	tm_file="mips/iris6.h mips/cross64.h"
 	xm_defines=USG
-	xm_file="mips/xm-mips.h mips/xm-iris5.h"
+	xm_file=mips/xm-iris5.h
 	xmake_file=mips/x-iris
 	tmake_file=mips/t-cross64
 	# See comment in mips/iris[56].h files.
@@ -2173,7 +2171,7 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		tm_file=mips/iris5.h
 	fi
 	xm_defines=USG
-	xm_file="mips/xm-mips.h mips/xm-iris5.h"
+	xm_file=mips/xm-iris5.h
 	xmake_file=mips/x-iris
 	# mips-tfile doesn't work yet
 	tmake_file=mips/t-mips-gas
@@ -2680,12 +2678,11 @@ powerpc-*-beos*)
 	xmake_file=rs6000/x-beos
 	;;
 powerpc-*-darwin*)
-	xm_file="rs6000/xm-rs6000.h rs6000/xm-darwin.h"
+	xm_file=rs6000/xm-darwin.h
 	xmake_file=rs6000/x-darwin
 	;;
 powerpc-*-sysv*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h"
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	extra_headers=ppc-asm.h
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
@@ -2738,7 +2735,6 @@ powerpc-*-rtems*)
 powerpc-*-linux*libc1)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
 	xm_defines='USG POSIX'
-	xm_file=rs6000/xm-sysv4.h
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
 	xmake_file=x-linux
@@ -2749,7 +2745,6 @@ powerpc-*-linux*libc1)
 	;;
 powerpc-*-linux*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG ${xm_defines}"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-linux rs6000/t-ppccomm"
@@ -2761,7 +2756,6 @@ powerpc-*-linux*)
 	;;
 powerpc-wrs-vxworks*)
         cpu_type=rs6000
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG POSIX"
         tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/vxppc.h"
         tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
@@ -2770,7 +2764,6 @@ powerpc-wrs-vxworks*)
         ;;
 powerpcle-wrs-vxworks*)
         cpu_type=rs6000
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG POSIX"
         tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/vxppc.h"
         tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
@@ -2779,7 +2772,6 @@ powerpcle-wrs-vxworks*)
         ;;
 powerpcle-*-sysv*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h"
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	xmake_file=rs6000/x-sysv4
@@ -2805,7 +2797,6 @@ powerpcle-*-eabi*)
 	;;
 powerpcle-*-solaris2*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/sol2.h"
-	xm_file="rs6000/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	xmake_file=rs6000/x-sysv4
@@ -2866,13 +2857,11 @@ rs6000-bull-bosx)
 rs6000-*-mach*)
 	tm_file=rs6000/mach.h
 	xm_defines=USG
-	xm_file="${xm_file} rs6000/xm-mach.h"
 	xmake_file=rs6000/x-mach
 	use_collect2=yes
 	;;
 rs6000-*-lynxos*)
 	tm_file=rs6000/lynx.h
-	xm_file=rs6000/xm-lynx.h
 	tmake_file=rs6000/t-rs6000
 	xmake_file=rs6000/x-lynx
 	use_collect2=yes
@@ -3194,21 +3183,18 @@ strongarm-*-elf*)
 	tm_file=arm/strongarm-elf.h
 	tmake_file=arm/t-strongarm-elf
 	out_file=arm/arm.c
-	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	;;
 strongarm-*-coff*)
 	tm_file=arm/strongarm-coff.h
 	tmake_file=arm/t-strongarm-coff
 	out_file=arm/arm.c
-	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	;;
 strongarm-*-pe)
 	tm_file=arm/strongarm-pe.h
 	tmake_file=arm/t-strongarm-pe
 	out_file=arm/arm.c
-	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	extra_objs=pe.o
 	;;
@@ -3284,14 +3270,12 @@ xscale-*-elf)
 	tm_file=arm/xscale-elf.h
 	tmake_file=arm/t-xscale-elf
 	out_file=arm/arm.c
-	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	;;
 xscale-*-coff)
 	tm_file=arm/xscale-coff.h
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
-	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	;;
 *)

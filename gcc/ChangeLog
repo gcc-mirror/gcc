@@ -1,3 +1,35 @@
+2001-03-14  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4 (gcc_AC_C_CHARSET, gcc_AC_C_COMPILE_BIGENDIAN,
+	gcc_AC_C_FLOAT_FORMAT): New macros.
+	* configure.in: Add AC_PROG_CPP after CC tests;
+	gcc_AC_C_CHARSET and gcc_AC_C_FLOAT_FORMAT after the sizeof
+	tests; and gcc_AC_C_COMPILE_BIGENDIAN after gcc_AC_C_CHAR_BIT.
+	* configure, config.in: Regenerate.
+
+	* config/a29k/xm-a29k.h, config/arc/xm-arc.h,
+	config/arm/xm-arm.h, config/c4x/xm-c4x.h,
+	config/convex/xm-convex.h, config/d30v/xm-d30v.h,
+	config/i370/xm-linux.h, config/i370/xm-oe.h,
+	config/ia64/xm-ia64.h, config/m32r/xm-m32r.h,
+	config/m68k/xm-m68k.h, config/mips/xm-mips.h,
+	config/pa/xm-linux.h, config/pa/xm-pa.h,
+	config/rs6000/xm-lynx.h, config/rs6000/xm-mach.h,
+	config/rs6000/xm-rs6000.h, config/rs6000/xm-sysv4.h,
+	config/sparc/xm-sparc.h, config/vax/xm-vax.h,
+	config/we32k/xm-we32k.h: Delete.
+
+	* config/i370/xm-mvs.h, config/m88k/m88k.h,
+	config/romp/xm-romp.h, config/rs6000/xm-beos.h,
+	config/vax/xm-vms.h: Don't define any of:
+	HOST_FLOAT_FORMAT, HOST_EBCDIC, HOST_WORDS_BIG_ENDIAN
+
+	* config/rs6000/aix.h: Define COLLECT_EXPORT_LIST here.
+
+	* config.gcc: Remove references to deleted files.
+	(i370-*-opened*): Use i370/xm-mvs.h (which now defines only
+	FATAL_EXIT_CODE, which is the same between oe and mvs).
+
 2001-03-14  DJ Delorie  <dj@redhat.com>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -36,7 +68,7 @@ Wed Mar 14 22:26:54 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (stack_include_file): Only increase the include
+	* cppfiles.c (stack_include_file): Only increase the include
 	count if we actually process the file properly, as opposed
 	to treating it as length zero.  Only call read_include_file
 	if not DO_NOT_REREAD.  Handle the -H include file output

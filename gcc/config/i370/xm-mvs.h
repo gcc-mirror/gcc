@@ -20,10 +20,5 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This describes the machine the compiler is hosted on.  */
-
-#define HOST_FLOAT_FORMAT	IBM_FLOAT_FORMAT
-#define HOST_EBCDIC		1
-
 /* Arguments to use with `exit'.  */
 #define FATAL_EXIT_CODE		12
