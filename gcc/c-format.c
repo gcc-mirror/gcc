@@ -71,6 +71,11 @@ static bool decode_format_attr		PARAMS ((tree,
 						 function_format_info *, int));
 static enum format_type decode_format_type	PARAMS ((const char *));
 
+static bool check_format_string (tree argument,
+				 unsigned HOST_WIDE_INT format_num,
+				 int flags, bool *no_add_attrs);
+static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
+			  int validated_p);
 
 
 /* Handle a "format_arg" attribute; arguments as in
@@ -86,46 +91,20 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
   tree type = *node;
   tree format_num_expr = TREE_VALUE (args);
   unsigned HOST_WIDE_INT format_num;
-  unsigned HOST_WIDE_INT arg_num;
   tree argument;
 
-  /* Strip any conversions from the first arg number and verify it
-     is a constant.  */
-  while (TREE_CODE (format_num_expr) == NOP_EXPR
-	 || TREE_CODE (format_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-    format_num_expr = TREE_OPERAND (format_num_expr, 0);
-
-  if (TREE_CODE (format_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (format_num_expr) != 0)
+  if (!get_constant (format_num_expr, &format_num, 0))
     {
       error ("format string has invalid operand number");
       *no_add_attrs = true;
       return NULL_TREE;
     }
 
-  format_num = TREE_INT_CST_LOW (format_num_expr);
-
-  /* If a parameter list is specified, verify that the format_num
-     argument is actually a string, in case the format attribute
-     is in error.  */
   argument = TYPE_ARG_TYPES (type);
   if (argument)
     {
-      for (arg_num = 1; argument != 0 && arg_num != format_num;
-	   ++arg_num, argument = TREE_CHAIN (argument))
-	;
-
-      if (! argument
-	  || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-	      != char_type_node))
-	{
-	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	    error ("format string arg not a string type");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
+      if (!check_format_string (argument, format_num, flags, no_add_attrs))
+	return NULL_TREE;
     }
 
   if (TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
@@ -141,6 +120,57 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
+/* Verify that the format_num argument is actually a string, in case
+   the format attribute is in error.  */
+bool
+check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
+		     int flags, bool *no_add_attrs)
+{
+  unsigned HOST_WIDE_INT i;
+
+  for (i = 1; i != format_num; i++)
+    {
+      if (argument == 0)
+	break;
+      argument = TREE_CHAIN (argument);
+    }
+
+  if (!argument
+      || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+	  != char_type_node))
+    {
+      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	error ("format string arg not a string type");
+      *no_add_attrs = true;
+      return false;
+    }
+
+  return true;
+}
+
+/* Strip any conversions from the expression, verify it is a constant,
+   and store its value. If validated_p is true, abort on errors.
+   Returns true on success, false otherwise. */
+bool
+get_constant(tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
+{
+  while (TREE_CODE (expr) == NOP_EXPR
+	 || TREE_CODE (expr) == CONVERT_EXPR
+	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  if (TREE_CODE (expr) != INTEGER_CST || TREE_INT_CST_HIGH (expr) != 0)
+    {
+      if (validated_p)
+	abort ();
+      return false;
+    }
+
+  *value = TREE_INT_CST_LOW (expr);
+
+  return true;
+}
 
 /* Decode the arguments to a "format" attribute into a function_format_info
    structure.  It is already known that the list is of the right length.
@@ -182,31 +212,18 @@ decode_format_attr (args, info, validated_p)
 	}
     }
 
-  /* Strip any conversions from the string index and first arg number
-     and verify they are constants.  */
-  while (TREE_CODE (format_num_expr) == NOP_EXPR
-	 || TREE_CODE (format_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-    format_num_expr = TREE_OPERAND (format_num_expr, 0);
-
-  while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
-	 || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
-    first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
-
-  if (TREE_CODE (format_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (format_num_expr) != 0
-      || TREE_CODE (first_arg_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (first_arg_num_expr) != 0)
+  if (!get_constant (format_num_expr, &info->format_num, validated_p))
     {
-      if (validated_p)
-	abort ();
       error ("format string has invalid operand number");
       return false;
     }
 
-  info->format_num = TREE_INT_CST_LOW (format_num_expr);
-  info->first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
+  if (!get_constant (first_arg_num_expr, &info->first_arg_num, validated_p))
+    {
+      error ("'...' has invalid operand number");
+      return false;
+    }
+
   if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
     {
       if (validated_p)
@@ -2363,7 +2380,6 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
   tree type = *node;
   function_format_info info;
   tree argument;
-  unsigned HOST_WIDE_INT arg_num;
 
   if (!decode_format_attr (args, &info, 0))
     {
@@ -2371,29 +2387,17 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
       return NULL_TREE;
     }
 
-  /* If a parameter list is specified, verify that the format_num
-     argument is actually a string, in case the format attribute
-     is in error.  */
   argument = TYPE_ARG_TYPES (type);
   if (argument)
     {
-      for (arg_num = 1; argument != 0 && arg_num != info.format_num;
-	   ++arg_num, argument = TREE_CHAIN (argument))
-	;
+      if (!check_format_string (argument, info.format_num, flags,
+				no_add_attrs))
+	return NULL_TREE;
 
-      if (! argument
-	  || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-	      != char_type_node))
+      if (info.first_arg_num != 0)
 	{
-	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	    error ("format string arg not a string type");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
+	  unsigned HOST_WIDE_INT arg_num = 1;
 
-      else if (info.first_arg_num != 0)
-	{
 	  /* Verify that first_arg_num points to the last arg,
 	     the ...  */
 	  while (argument)
