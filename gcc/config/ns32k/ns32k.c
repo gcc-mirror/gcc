@@ -627,7 +627,7 @@ print_operand_address (file, addr)
 	        off = XEXP (tmp1,1);
 	      if (GET_CODE (sym) == SYMBOL_REF)
 		{
-	  if (GET_CODE (off) != CONST_INT)
+		  if (GET_CODE (off) != CONST_INT)
 		    abort ();
 
 		  if (CONSTANT_POOL_ADDRESS_P (sym)
@@ -772,9 +772,10 @@ print_operand_address (file, addr)
       /* Abs. addresses don't need a base (I think). */
       if (GET_CODE (offset) != CONST_INT
 #ifndef PC_RELATIVE
-           && GET_CODE (offset) != LABEL_REF
-	   && GET_CODE (offset) != SYMBOL_REF
-	   && GET_CODE (offset) != CONST
+	  && GET_CODE (offset) != LABEL_REF
+	  && GET_CODE (offset) != SYMBOL_REF
+	  && GET_CODE (offset) != CONST
+	  && GET_CODE (offset) != PLUS
 #endif
          )
         {
@@ -794,7 +795,8 @@ print_operand_address (file, addr)
 #ifdef PC_RELATIVE
   else if (GET_CODE (offset) == LABEL_REF
 	   || GET_CODE (offset) == SYMBOL_REF
-	   || GET_CODE (offset) == CONST)
+	   || GET_CODE (offset) == CONST
+	   || GET_CODE (offset) == PLUS)
     fprintf (file, "(pc)");
 #endif
 #ifdef BASE_REG_NEEDED		/* this is defined if the assembler always
