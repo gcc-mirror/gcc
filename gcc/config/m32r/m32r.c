@@ -737,8 +737,10 @@ move_src_operand (op, mode)
     case CONST :
       return addr24_operand (op, mode);
     case CONST_INT :
-      /* FIXME: We allow more cse opportunities if we only allow constants
-	 loadable with one insn, and split the rest into two.  */
+      /* ??? We allow more cse opportunities if we only allow constants
+	 loadable with one insn, and split the rest into two.  The instances
+	 where this would help should be rare and the current way is
+	 simpler.  */
       return INT32_P (INTVAL (op));
     case LABEL_REF :
       return TARGET_ADDR24;
@@ -1082,18 +1084,6 @@ m32r_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       *pretend_size = (size * UNITS_PER_WORD);
     }
 }
-
-/* Implements EXPAND_BUILTIN_SAVEREGS macro.  */
-/* FIXME: Not currently used ('cus it might be unnecessary).  */
-
-struct rtx_def *
-m32r_expand_builtin_saveregs (args)
-     tree args;
-{
-  return gen_rtx (PLUS, Pmode,
-		  virtual_incoming_args_rtx,
-		  GEN_INT (- UNITS_PER_WORD * M32R_MAX_PARM_REGS));
-}
 
 /* Cost functions.  */
 
@@ -1275,7 +1265,7 @@ m32r_compute_frame_size (size)
 	       * UNITS_PER_WORD);
   total_size += reg_size;
 
-  /* FIXME: Not sure this is necessary, and I don't think the epilogue
+  /* ??? Not sure this is necessary, and I don't think the epilogue
      handler will do the right thing if this changes total_size.  */
   total_size = M32R_STACK_ALIGN (total_size);
 
@@ -1477,17 +1467,9 @@ m32r_output_function_epilogue (file, size)
 	fprintf (file, "\tpop %s\n", fp_str);
 
       /* Remove varargs area if present.  */
-#if 1
-      /* FIXME: Must decide whether to use pretend_size or not.  */
       if (current_frame_info.pretend_size != 0)
 	fprintf (file, "\taddi %s,%d\n",
 		 sp_str, current_frame_info.pretend_size);
-#else
-      /* This is the other way of doing it.  */
-      if (current_function_stdarg || current_function_varargs)
-	fprintf (file, "\taddi %s,%d\n",
-		 sp_str, M32R_MAX_PARM_REGS * UNITS_PER_WORD);
-#endif
 	
       /* Emit the return instruction.  */
       if (M32R_INTERRUPT_P (fn_type))
