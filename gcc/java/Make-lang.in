@@ -240,7 +240,7 @@ java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) java/jcf-dump.c \
 java/gjavah.o: $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) java/gjavah.c \
   java/jcf-reader.c java/jcf.h java/javaop.h version.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(JAVA_TREE_H) \
-  java/parse.h
+  java/parse.h toplev.h
 java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) toplev.h
 java/check-init.o: java/check-init.c $(CONFIG_H) \
   $(JAVA_TREE_H) $(SYSTEM_H) toplev.h

@@ -1,5 +1,26 @@
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (ifcvt.o): Depend on toplev.h.
+
+	* c-semantics.c: Include expr.h.
+
+	* ifcvt.c: Include toplev.h.
+
+	* expr.h (rtx_equal_p): Delete prototype.
+
+	* rtl.h (exact_log2_wide, floor_log2_wide, permalloc,
+	protect_from_queue, gen_jump, gen_beq, gen_bge, gen_ble,
+	eliminate_constant_term, expand_complex_abs, find_single_use,
+	make_tree, init_expr_once, init_optabs, supports_one_only):
+	Likewise.
+	
+	* tree.h (exact_log2_wide, floor_log2_wide, expand_null_return,
+	rest_of_type_compilation, emit_queue, do_pending_stack_adjust,
+	expand_assignment, store_expr, emit_line_note_after,
+	emit_line_note_force, split_specs_attrs, label_rtx): Likewise.
+	
+	* toplev.h (exact_log2_wide, floor_log2_wide): Add prototype.
+
 	* sparc-protos.h: Delete redundant prototypes.
 
 2001-04-11  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>

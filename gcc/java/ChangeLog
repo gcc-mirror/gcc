@@ -1,3 +1,9 @@
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (java/boehm.o): Depend on toplev.h.
+
+	* boehm.c: Include toplev.h.
+
 2001-04-06  Tom Tromey  <tromey@redhat.com>
 	    Alexandre Petit-Bianco  <apbianco@redhat.com>
 

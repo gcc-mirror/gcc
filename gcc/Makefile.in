@@ -1567,7 +1567,7 @@ timevar.o : timevar.c $(CONFIG_H) $(SYSTEM_H) $(TIMEVAR_H) flags.h intl.h
 regrename.o : regrename.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h $(RECOG_H) function.h \
    resource.h $(OBSTACK_H) flags.h $(TM_P_H)
-ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) \
+ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) toplev.h \
    flags.h insn-config.h function.h $(RECOG_H) $(BASIC_BLOCK_H) $(EXPR_H) \
    output.h $(TM_P_H)
 dependence.o : dependence.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) \

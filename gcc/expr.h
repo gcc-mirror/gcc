@@ -1168,9 +1168,6 @@ extern void set_mem_attributes PARAMS ((rtx, tree, int));
 /* Assemble the static constant template for function entry trampolines.  */
 extern rtx assemble_trampoline_template PARAMS ((void));
 
-/* Return 1 if two rtx's are equivalent in structure and elements.  */
-extern int rtx_equal_p PARAMS ((rtx, rtx));
-
 /* Given rtx, return new rtx whose address won't be affected by
    any side effects.  It has been copied to a new temporary reg.  */
 extern rtx stabilize PARAMS ((rtx));

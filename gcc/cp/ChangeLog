@@ -1,3 +1,9 @@
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (cp/semantics.o): Depend on $(EXPR_H).
+
+	* semantics.c: Include expr.h.
+
 2001-04-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* method.c (implicitly_declare_fn): Commonize code for copy ctor
