@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989, 90-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-97, 1998 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -75,21 +75,20 @@ enum processor_type {
 /* Recast the cpu class to be the cpu attribute.  */
 #define mips_cpu_attr ((enum attr_cpu)mips_cpu)
 
-/* Which ABI to use.  This is only used by the Irix 6 port currently.  */
+/* Which ABI to use.  These are constants because abi64.h must check their
+   value at preprocessing time.  */
 
-enum mips_abi_type {
-  ABI_32,
-  ABI_N32,
-  ABI_64,
-  ABI_EABI
-};
+#define ABI_32  0
+#define ABI_N32 1
+#define ABI_64  2
+#define ABI_EABI 3
 
 #ifndef MIPS_ABI_DEFAULT
 /* We define this away so that there is no extra runtime cost if the target
    doesn't support multiple ABIs.  */
 #define mips_abi ABI_32
 #else
-extern enum mips_abi_type mips_abi;
+extern int mips_abi;
 #endif
 
 /* Whether to emit abicalls code sequences or not.  */
