@@ -1,3 +1,7 @@
+Wed Sep 29 23:48:44 1999  Donn Terry <donn@interix.com>
+
+	* gcc.misc-tests/mg.exp: delete extraneous redirection.
+
 Tue Sep 28 13:19:15 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/decl6.C: New test.
