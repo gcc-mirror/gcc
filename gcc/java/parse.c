@@ -2211,7 +2211,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
+#line 3 "/usr/local/gnu/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2404,7 +2404,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/lib/bison.simple"
+#line 196 "/usr/local/gnu/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4690,7 +4690,7 @@ case 495:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/lib/bison.simple"
+#line 498 "/usr/local/gnu/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -5850,7 +5850,6 @@ static void
 maybe_generate_clinit ()
 {
   tree mdecl, c;
-  int has_non_primitive_fields = 0;
 
   if (!ctxp->static_initialized || java_error_count)
     return;
@@ -7735,9 +7734,9 @@ static int
 find_in_imports_on_demand (class_type)
      tree class_type;
 {
-  tree node, import, node_to_use;
+  tree node, import, node_to_use = NULL_TREE;
   int seen_once = -1;
-  tree cl;
+  tree cl = NULL_TREE;
 
   for (import = ctxp->import_demand_list; import; import = TREE_CHAIN (import))
     {
@@ -11811,7 +11810,7 @@ patch_binop (node, wfl_op1, wfl_op2)
   tree op2 = TREE_OPERAND (node, 1);
   tree op1_type = TREE_TYPE (op1);
   tree op2_type = TREE_TYPE (op2);
-  tree prom_type;
+  tree prom_type = NULL_TREE;
   int code = TREE_CODE (node);
 
   /* If 1, tell the routine that we have to return error_mark_node
@@ -12437,7 +12436,7 @@ patch_unaryop (node, wfl_op)
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
-  tree prom_type, value, decl;
+  tree prom_type = NULL_TREE, value, decl;
   int code = TREE_CODE (node);
   int error_found = 0;
 

@@ -559,7 +559,7 @@ build_utf8_ref (name)
   int name_len = IDENTIFIER_LENGTH(name);
   char buf[60];
   char *buf_ptr;
-  tree ctype, field, str_type, cinit, string;
+  tree ctype, field = NULL_TREE, str_type, cinit, string;
   static int utf8_count = 0;
   int name_hash;
   tree ref = IDENTIFIER_UTF8_REF (name);
