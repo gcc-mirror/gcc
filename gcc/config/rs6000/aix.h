@@ -149,6 +149,29 @@
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 64)		\
    : MAX ((COMPUTED), (SPECIFIED)))
 
+/* The AIX ABI isn't explicit on whether aggregates smaller than a
+   word/doubleword should be padded upward or downward.  One could
+   reasonably assume that they follow the normal rules for structure
+   layout treating the parameter area as any other block of memory,
+   then map the reg param area to registers, i.e., pad upward, which
+   is the way IBM Compilers for AIX behave.
+   Setting both of the following defines results in this behaviour.  */
+#define AGGREGATE_PADDING_FIXED 1
+#define AGGREGATES_PAD_UPWARD_ALWAYS 1
+
+/* We don't want anything in the reg parm area being passed on the
+   stack.  */
+#define MUST_PASS_IN_STACK(MODE, TYPE)				\
+   ((TYPE) != 0							\
+    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST		\
+	|| TREE_ADDRESSABLE (TYPE)))
+
+/* Specify padding for the last element of a block move between
+   registers and memory.  FIRST is nonzero if this is the only
+   element.  */
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
+  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+
 /* Indicate that jump tables go in the text section.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
