@@ -1,3 +1,7 @@
+2003-10-21  Matt Thomas  <matt@3am-software.com>
+
+	* MAINTAINERS: Add myself as a vax port maintainer.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
