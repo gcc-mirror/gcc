@@ -1,3 +1,11 @@
+2001-01-14  Richard Henderson  <rth@redhat.com>
+
+	* genrecog.c (DT_veclen_ge): New.
+	(add_to_sequence) [MATCH_PARALLEL]: Generate one.
+	(maybe_both_true_2): Simplify DT_veclen vs DT_veclen_ge.
+	(nodes_identical_1): Handle DT_veclen_ge.
+	(write_cond, debug_decision_2): Likewise.
+
 2001-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (ldmsi_postinc, ldmsi, stmsi_postinc, smsi): Delete.  Replace

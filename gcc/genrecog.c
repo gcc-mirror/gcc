@@ -87,7 +87,7 @@ struct decision_test
   enum decision_type {
     DT_mode, DT_code, DT_veclen,
     DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide,
-    DT_dup, DT_pred, DT_c_test, 
+    DT_veclen_ge, DT_dup, DT_pred, DT_c_test, 
     DT_accept_op, DT_accept_insn
   } type;
 
@@ -802,10 +802,19 @@ add_to_sequence (pattern, last, position, insn_type, top)
       /* Else nothing special.  */
       break;
 
+    case MATCH_PARALLEL:
+      /* The explicit patterns within a match_parallel enforce a minimum
+	 length on the vector.  The match_parallel predicate may allow
+	 for more elements.  We do need to check for this minimum here
+	 or the code generated to match the internals may reference data
+	 beyond the end of the vector.  */
+      test = new_decision_test (DT_veclen_ge, &place);
+      test->u.veclen = XVECLEN (pattern, 2);
+      /* FALLTHRU */
+
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
     case MATCH_OPERATOR:
-    case MATCH_PARALLEL:
     case MATCH_INSN:
       {
 	const char *pred_name;
@@ -1122,6 +1131,12 @@ maybe_both_true_2 (d1, d2)
 	}
     }
 
+  /* Tests vs veclen may be known when strict equality is involved.  */
+  if (d1->type == DT_veclen && d2->type == DT_veclen_ge)
+    return d1->u.veclen >= d2->u.veclen;
+  if (d1->type == DT_veclen_ge && d2->type == DT_veclen)
+    return d2->u.veclen >= d1->u.veclen;
+
   return -1;
 }
 
@@ -1252,6 +1267,7 @@ nodes_identical_1 (d1, d2)
       return strcmp (d1->u.c_test, d2->u.c_test) == 0;
 
     case DT_veclen:
+    case DT_veclen_ge:
       return d1->u.veclen == d2->u.veclen;
 
     case DT_dup:
@@ -1950,6 +1966,10 @@ write_cond (p, depth, subroutine_type)
     case DT_elt_zero_wide:
       printf ("XWINT (x%d, 0) == ", depth);
       printf (HOST_WIDE_INT_PRINT_DEC, p->u.intval);
+      break;
+
+    case DT_veclen_ge:
+      printf ("XVECLEN (x%d, 0) >= %d", depth, p->u.veclen);
       break;
 
     case DT_dup:
@@ -2714,6 +2734,9 @@ debug_decision_2 (test)
     case DT_elt_zero_wide:
       fprintf (stderr, "elt0_w=");
       fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
+      break;
+    case DT_veclen_ge:
+      fprintf (stderr, "veclen>=%d", test->u.veclen);
       break;
     case DT_dup:
       fprintf (stderr, "dup=%d", test->u.dup);
