@@ -3561,6 +3561,13 @@ while (0)
   (((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4) \
    + memory_move_secondary_cost ((MODE), (CLASS), (TO_P)))
 
+/* Define if copies to/from condition code registers should be avoided.
+
+   This is needed for the MIPS because reload_outcc is not complete;
+   it needs to handle cases where the source is a general or another
+   condition code register.  */
+#define AVOID_CCMODE_COPIES
+
 /* A C expression for the cost of a branch instruction.  A value of
    1 is the default; other values are interpreted relative to that.  */
 

@@ -3302,6 +3302,22 @@ The option @samp{-ds} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse} to
 the input file name.
 
+@cindex global common subexpression elimination
+@cindex constant propagation
+@cindex copy propagation
+@item               
+Global common subexpression elimination.  This pass performs GCSE
+using Morel-Renvoise Partial Redundancy Elimination, with the exception
+that it does not try to move invariants out of loops - that is left to
+the loop optimization pass.  This pass also performs global constant
+and copy propagation.
+
+The source file for this pass is gcse.c.
+
+The option @samp{-dG} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.gcse} to
+the input file name.
+
 @cindex loop optimization
 @cindex code motion
 @cindex strength-reduction

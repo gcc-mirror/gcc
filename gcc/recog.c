@@ -537,6 +537,25 @@ validate_replace_rtx (from, to, insn)
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn);
   return apply_change_group ();
 }
+
+/* Try replacing every occurrence of FROM in INSN with TO, avoiding
+   SET_DESTs.  After all changes have been made, validate by seeing if
+   INSN is still valid.  */
+
+int
+validate_replace_src (from, to, insn)
+     rtx from, to, insn;
+{
+  if ((GET_CODE (insn) != INSN && GET_CODE (insn) != JUMP_INSN)
+      || GET_CODE (PATTERN (insn)) != SET)
+    abort ();
+
+  validate_replace_rtx_1 (&SET_SRC (PATTERN (insn)), from, to, insn);
+  if (GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
+    validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 0),
+			    from, to, insn);
+  return apply_change_group ();
+}
 
 #ifdef HAVE_cc0
 /* Return 1 if the insn using CC0 set by INSN does not contain
