@@ -5,6 +5,7 @@
 */
 
 typedef int __attribute__((mode(V4SI))) vecint;
+typedef int __attribute__((mode(SI))) siint;
 
 vecint i = { 150, 100, 150, 200 };
 vecint j = { 10, 13, 20, 30 };
@@ -12,13 +13,13 @@ vecint k;
 
 union {
   vecint v;
-  int i[4];
+  siint i[4];
 } res;
 
 /* This should go away once we can use == and != on vector types.  */
 void
-verify (int a1, int a2, int a3, int a4,
-	int b1, int b2, int b3, int b4)
+verify (siint a1, siint a2, siint a3, siint a4,
+	siint b1, siint b2, siint b3, siint b4)
 {
   if (a1 != b1
       || a2 != b2
