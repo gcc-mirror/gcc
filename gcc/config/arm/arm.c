@@ -2994,7 +2994,7 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 	   && GET_MODE_SIZE (mode) <= 4
 	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
 	   && GET_CODE (XEXP (x, 1)) == PLUS
-	   && XEXP (XEXP (x, 1), 0) == XEXP (x, 0))
+	   && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
     return arm_legitimate_index_p (mode, XEXP (XEXP (x, 1), 1), outer,
 				   strict_p);
 
