@@ -39,6 +39,6 @@ extern int test_assertion PARAMS ((unsigned char **));
 #define is_idchar(x)	ISIDNUM(x)
 #define is_idstart(x)	ISIDST(x)
 #define is_space(x)	ISSPACE(x)
-#define is_nvspace(x)	IS_NVSPACE(x)
+#define is_nvspace(x)	(IS_NVSPACE(x) && x != '\0')
 
 #endif /* ! _TRADCPP_H_ */
