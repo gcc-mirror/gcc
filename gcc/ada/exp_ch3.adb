@@ -286,6 +286,11 @@ package body Exp_Ch3 is
    --  Freeze entities of all predefined primitive operations. This is needed
    --  because the bodies of these operations do not normally do any freezeing.
 
+   function Stream_Operations_OK (Typ : Entity_Id) return Boolean;
+   --  Check whether stream operations must be emitted for a given type.
+   --  Various restrictions prevent the generation of these operations, as
+   --  a useful optimization or for certification purposes.
+
    --------------------------
    -- Adjust_Discriminants --
    --------------------------
@@ -5364,10 +5369,7 @@ package body Exp_Ch3 is
       --  We also skip these operations if dispatching is not available
       --  or if streams are not available (since what's the point?)
 
-      if not Is_Limited_Type (Tag_Typ)
-        and then RTE_Available (RE_Tag)
-        and then RTE_Available (RE_Root_Stream_Type)
-      then
+      if Stream_Operations_OK (Tag_Typ) then
          Append_To (Res,
            Predef_Stream_Attr_Spec (Loc, Tag_Typ, TSS_Stream_Read));
          Append_To (Res,
@@ -5819,11 +5821,9 @@ package body Exp_Ch3 is
 
       --  Bodies for Dispatching stream IO routines. We need these only for
       --  non-limited types (in the limited case there is no dispatching).
-      --  We also skip them if dispatching is not available.
+      --  We also skip them if dispatching or finalization are not available.
 
-      if not Is_Limited_Type (Tag_Typ)
-        and then not Restriction_Active (No_Finalization)
-      then
+      if Stream_Operations_OK (Tag_Typ) then
          if No (TSS (Tag_Typ, TSS_Stream_Read)) then
             Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
             Append_To (Res, Decl);
@@ -6034,4 +6034,18 @@ package body Exp_Ch3 is
 
       return Res;
    end Predefined_Primitive_Freeze;
+
+   --------------------------
+   -- Stream_Operations_OK --
+   --------------------------
+
+   function Stream_Operations_OK (Typ : Entity_Id) return Boolean is
+   begin
+      return
+        not Is_Limited_Type (Typ)
+          and then RTE_Available (RE_Tag)
+          and then RTE_Available (RE_Root_Stream_Type)
+          and then not Restriction_Active (No_Dispatch)
+          and then not Restriction_Active (No_Streams);
+   end Stream_Operations_OK;
 end Exp_Ch3;
