@@ -102,6 +102,7 @@ Implementation Defined Pragmas
 * Pragma Abort_Defer::
 * Pragma Ada_83::
 * Pragma Ada_95::
+* Pragma Ada_05::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Ast_Entry::
@@ -629,6 +630,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Abort_Defer::
 * Pragma Ada_83::
 * Pragma Ada_95::
+* Pragma Ada_05::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Ast_Entry::
@@ -779,6 +781,24 @@ This mode is set automatically for the @code{Ada} and @code{System}
 packages and their children, so you need not specify it in these
 contexts.  This pragma is useful when writing a reusable component that
 itself uses Ada 95 features, but which is intended to be usable from
+either Ada 83 or Ada 95 programs.
+
+@node Pragma Ada_05
+@unnumberedsec Pragma Ada_05
+@findex Ada_05
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_05;
+@end smallexample
+
+@noindent
+A configuration pragma that establishes Ada 2005 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+This mode is set automatically for the @code{Ada} and @code{System}
+packages and their children, so you need not specify it in these
+contexts.  This pragma is useful when writing a reusable component that
+itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
 
 @node Pragma Annotate
@@ -9553,15 +9573,34 @@ thus the same lack of restriction applies.  For example, if you declare:
 then a component clause for a component of type R may start on any
 specified bit boundary, and may specify a value of 49 bits or greater.
 
-Packed bit arrays that are longer than 64 bits must always be placed
-on a storage unit (byte) boundary. Any component clause that does not
+For packed bit arrays that are longer than 64 bits, there are two
+cases. If the component size is a power of 2 (1,2,4,8,16,32 bits),
+including the important case of single bits or boolean values, then
+there are no limitations on placement of such components, and they
+may start and end at arbitrary bit boundaries.
+
+If the component size is not a power of 2 (e.g. 3 or 5), then
+an array of this type longer than 64 bits must always be placed on
+on a storage unit (byte) boundary and occupy an integral number
+of storage units (bytes). Any component clause that does not
 meet this requirement will be rejected.
 
-The rules for other types are different for GNAT 3 and GNAT 5 versions
-(based on GCC 2 and GCC 3 respectively). In GNAT 5, larger components
-(other than packed arrays)
-may also be placed on arbitrary boundaries, so for example, the following
-is permitted:
+Any aliased component, or component of an aliased type, must
+have its normal alignment and size. A component clause that
+does not meet this requirement will be rejected.
+
+The tag field of a tagged type always occupies an address sized field at
+the start of the record.  No component clause may attempt to overlay this
+tag. When a tagged type appears as a component, the tag field must have
+proper alignment
+
+In the case of a record extension T1, of a type T, no component clause applied
+to the type T1 can specify a storage location that would overlap the first
+T'Size bytes of the record.
+
+For all other component types, including non-bit-packed arrays,
+the component can be placed at an arbitrary bit boundary,
+so for example, the following is permitted:
 
 @smallexample @c ada
    type R is array (1 .. 10) of Boolean;
@@ -9581,22 +9620,12 @@ is permitted:
 @end smallexample
 
 @noindent
+Note: the above rules apply to recent releases of GNAT 5.
 In GNAT 3, there are more severe restrictions on larger components.
 For non-primitive types, including packed arrays with a size greater than
 64 bits, component clauses must respect the alignment requirement of the
 type, in particular, always starting on a byte boundary, and the length
 must be a multiple of the storage unit.
-
-The following rules regarding tagged types are enforced in both GNAT 3 and
-GNAT 5:
-
-The tag field of a tagged type always occupies an address sized field at
-the start of the record.  No component clause may attempt to overlay this
-tag.
-
-In the case of a record extension T1, of a type T, no component clause applied
-to the type T1 can specify a storage location that would overlap the first
-T'Size bytes of the record.
 
 @node Enumeration Clauses
 @section Enumeration Clauses
@@ -11810,6 +11839,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
+* GNAT.UTF_32 (g-utf_32.ads)::
 * GNAT.Table (g-table.ads)::
 * GNAT.Task_Lock (g-tasloc.ads)::
 * GNAT.Threads (g-thread.ads)::
@@ -12670,6 +12700,22 @@ a string wherever the separators appear, and provide direct access
 to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
+@node GNAT.UTF_32 (g-utf_32.ads)
+@section @code{GNAT.UTF_32} (@file{g-table.ads})
+@cindex @code{GNAT.UTF_32} (@file{g-table.ads})
+@cindex Wide character codes
+
+@noindent
+This is a package intended to be used in conjunction with the
+@code{Wide_Character} type in Ada 95 and the
+@code{Wide_Wide_Character} type in Ada 2005 (available
+in @code{GNAT} in Ada 2005 mode). This package contains
+Unicode categorization routines, as well as lexical
+categorization routines corresponding to the Ada 2005
+lexical rules for identifiers and strings, and also a
+lower case to upper case fold routine corresponding to
+the Ada 2005 rules for identifier equivalence.
+
 @node GNAT.Table (g-table.ads)
 @section @code{GNAT.Table} (@file{g-table.ads})
 @cindex @code{GNAT.Table} (@file{g-table.ads})
@@ -12709,7 +12755,7 @@ Provides facilities for creating and destroying threads with explicit calls.
 These threads are known to the GNAT run-time system.  These subprograms are
 exported C-convention procedures intended to be called from foreign code.
 By using these primitives rather than directly calling operating systems
-routines, compatibility with the Ada tasking runt-time is provided.
+routines, compatibility with the Ada tasking run-time is provided.
 
 @node GNAT.Traceback (g-traceb.ads)
 @section @code{GNAT.Traceback} (@file{g-traceb.ads})
