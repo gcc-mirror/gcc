@@ -14,8 +14,6 @@
         * c-typeck.c (comptypes): Take into account
         TARGET_VECTOR_TYPES_COMPATIBLE.
         (convert_for_assignment): Same.
-        (really_start_incremental_init): Disallow initialization of
-        ev64_opaque types.
 
         * config/rs6000/rs6000.c (is_ev64_opaque_type): New.
         (rs6000_spe_vector_types_compatible): New.
