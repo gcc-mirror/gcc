@@ -101,6 +101,10 @@ struct gcc_debug_hooks
   /* Called from final_scan_insn for any CODE_LABEL insn whose
      LABEL_NAME is non-null.  */
   void (* label) PARAMS ((rtx));
+
+  /* Called after the start and before the end of writing a PCH file.  
+     The parameter is 0 if after the start, 1 if before the end.  */
+  void (* handle_pch) PARAMS ((unsigned int));
 };
 
 extern const struct gcc_debug_hooks *debug_hooks;

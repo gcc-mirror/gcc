@@ -1294,7 +1294,8 @@ const struct gcc_debug_hooks dwarf_debug_hooks =
   dwarfout_global_decl,
   dwarfout_deferred_inline_function,
   debug_nothing_tree,		/* outlining_inline_function */
-  debug_nothing_rtx		/* label */
+  debug_nothing_rtx,		/* label */
+  debug_nothing_int		/* handle_pch */
 };
 
 /************************ general utility functions **************************/

@@ -1,3 +1,30 @@
+2003-04-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* dbxout.c (scope_labelno): Add GTY.
+	(have_used_extensions): Add GTY.
+	(source_label_number): Add GTY.
+	(lastfile): Add GTY.
+	(lastfile_is_base): New.
+	(base_input_file): New.
+	(dbxout_handle_pch): New.
+	(dbx_debug_hooks): Add handle_pch.
+	(xcoff_debug_hooks): Likewise.
+	(dbxout_function_end): Remove scope_labelno.
+	(dbxout_init): Set base_input_file.
+	(dbxout_handle_pch): New.
+	(dbxout_source_file): Honour lastfile_is_base.
+	* dwarfout.c (dwarf_debug_hooks): Add dummy handle_pch.
+	* sdbout.c (sdb_debug_hooks): Add dummy handle_pch.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add dummy handle_pch.
+	* dwarf2out.c (dwarf2_debug_hooks): Add dummy handle_pch.
+	* debug.c (do_nothing_debug_hooks): Add dummy handle_pch.
+	* debug.h (struct gcc_debug_hooks): Add handle_pch.
+	* c-pch.c (pch_init): Don't call start_source_file, but do call
+	handle_pch.
+	(c_common_write_pch): Call handle_pch.
+	(c_common_read_pch): Don't call start_source_file,
+	or end_source_file.	
+
 Fri Apr  4 17:43:52 2003  Olivier Hainque <hainque@act-europe.fr>
 
         * emit-rtl.c (get_mem_attrs): Adjust alignment tests determining

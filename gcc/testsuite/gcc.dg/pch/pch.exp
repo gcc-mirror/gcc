@@ -41,8 +41,11 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     catch { file delete "$bname.s-gch" }
 
     # We don't try to use the loop-optimizing options, since they are highly
-    # unlikely to make any difference to PCH.
-    foreach flags $torture_without_loops {
+    # unlikely to make any difference to PCH.  However, we do want to
+    # add -O0 -g, since users who want PCH usually want debugging and quick
+    # compiles.
+    set pch_torture [concat [list {-O0 -g}] $torture_without_loops]
+    foreach flags $pch_torture {
 	verbose "Testing $nshort, $flags" 1
 
 	# For the header files, the default is to precompile.

@@ -68,10 +68,6 @@ pch_init ()
   
   if (pch_file)
     {
-      /* We're precompiling a header file, so when it's actually used,
-	 it'll be at least one level deep.  */
-      (*debug_hooks->start_source_file) (lineno, input_filename);
-
       f = fopen (pch_file, "w+b");
       if (f == NULL)
 	fatal_io_error ("can't open %s", pch_file);
@@ -88,6 +84,9 @@ pch_init ()
 
       asm_file_startpos = ftell (asm_out_file);
       
+      /* Let the debugging format deal with the PCHness.  */
+      (*debug_hooks->handle_pch) (0);
+
       cpp_save_state (parse_in, f);
     }
 }
@@ -99,6 +98,8 @@ c_common_write_pch ()
   long asm_file_end;
   long written;
   struct c_pch_header h;
+
+  (*debug_hooks->handle_pch) (1);
 
   cpp_write_pch_deps (parse_in, pch_outfile);
 
@@ -195,17 +196,13 @@ c_common_read_pch (pfile, name, fd, orig_name)
      cpp_reader *pfile;
      const char *name;
      int fd;
-     const char *orig_name;
+     const char *orig_name ATTRIBUTE_UNUSED;
 {
   FILE *f;
   struct c_pch_header h;
   char *buf;
   unsigned long written;
   struct save_macro_data *smd;
-  
-  /* Before we wrote the file, we started a source file, so we have to start
-     one here to match.  */
-  (*debug_hooks->start_source_file) (lineno, orig_name);
   
   f = fdopen (fd, "rb");
   if (f == NULL)
@@ -243,6 +240,4 @@ c_common_read_pch (pfile, name, fd, orig_name)
     return;
 
   fclose (f);
-
-  (*debug_hooks->end_source_file) (lineno);
 }

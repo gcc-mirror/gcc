@@ -1,3 +1,9 @@
+2003-04-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/static-3.c: New.
+	* gcc.dg/pch/static-3.hs: New.
+	* gcc.dg/pch/pch.exp: Test with -O0 -g too.
+
 2003-04-04  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/eh/forced1.C: Use _Unwind_SjLj_ForcedUnwind as appropriate.
