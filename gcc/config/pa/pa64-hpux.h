@@ -174,6 +174,20 @@ Boston, MA 02111-1307, USA.  */
 /* This is how we globalize a label.  */
 #define GLOBAL_ASM_OP	"\t.globl\t"
 
+/* Hacked version from defaults.h that uses assemble_name_raw
+   instead of assemble_name.  A symbol in a type directive that
+   isn't otherwise referenced doesn't cause the symbol to be
+   placed in the symbol table of the assembled object.  */
+#undef ASM_OUTPUT_TYPE_DIRECTIVE
+#define ASM_OUTPUT_TYPE_DIRECTIVE(STREAM, NAME, TYPE)		\
+do {								\
+  fputs (TYPE_ASM_OP, STREAM);					\
+  assemble_name_raw (STREAM, NAME);				\
+  fputs (", ", STREAM);						\
+  fprintf (STREAM, TYPE_OPERAND_FMT, TYPE);			\
+  putc ('\n', STREAM);						\
+} while (0)
+
 /* Hacked version from elfos.h that doesn't output a label.  */
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
@@ -186,15 +200,12 @@ do {								\
    dynamic loader to work correctly.  This is equivalent to the
    HP assembler's .IMPORT directive but relates more directly to
    ELF object file types.  */
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
-do {									\
-  int save_referenced;							\
-  save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL));\
-  if (FUNCTION_NAME_P (NAME))						\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");			\
-  else									\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
-  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)) = save_referenced;\
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)			\
+do {								\
+  if (FUNCTION_NAME_P (NAME))					\
+    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");		\
+  else								\
+    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
 } while (0)
 
 /* We need set the type for external libcalls.  Also note that not all

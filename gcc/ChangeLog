@@ -1,3 +1,10 @@
+2005-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/elf.h, pa/som.h (ASM_OUTPUT_EXTERNAL): Use assemble_name_raw
+	instead of trying to save and restore TREE_SYMBOL_REFERENCED.
+	* pa/pa64-hpux.h (ASM_OUTPUT_TYPE_DIRECTIVE): Define.
+	(ASM_OUTPUT_EXTERNAL): Don't save and restore TREE_SYMBOL_REFERENCED.
+
 2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/20188
