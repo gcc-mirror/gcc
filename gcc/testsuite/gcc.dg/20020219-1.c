@@ -9,6 +9,9 @@
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mdisable-indexing" { target hppa*-*-hpux* } } */
 
+/* Disable the test entirely for 16-bit targets.  */
+#if __INT_MAX__ > 32767
+
 extern void abort (void);
 extern void exit (int);
 struct A {
@@ -31,3 +34,9 @@ int main (void)
   foo (x - 1, 9999);
   exit (0);
 }
+
+#else
+
+int main () { return 0; }
+
+#endif /* __INT_MAX__ */
