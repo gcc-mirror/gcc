@@ -1738,10 +1738,14 @@ cfg_remove_useless_stmts_bb (basic_block bb)
 	  continue;
 	}
 
-      /* Invalidate the var if we encounter something that could modify it.  */
+      /* Invalidate the var if we encounter something that could modify it.
+	 Likewise for the value it was previously set to.  Note that we only
+	 consider values that are either a VAR_DECL or PARM_DECL so we
+	 can test for conflict very simply.  */
       if (TREE_CODE (stmt) == ASM_EXPR
 	  || (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_OPERAND (stmt, 0) == var))
+	      && (TREE_OPERAND (stmt, 0) == var
+		  || TREE_OPERAND (stmt, 0) == val)))
 	return;
   
       bsi_next (&bsi);
