@@ -1133,6 +1133,10 @@ struct tree_type
    multiple translation units should be merged.  */
 #define DECL_ONE_ONLY(NODE) (DECL_CHECK (NODE)->decl.transparent_union)
 
+/* Used in FUNCTION_DECLs to indicate that check-memory-usage should be
+   disabled in this function.  */
+#define DECL_NO_CHECK_MEMORY_USAGE(NODE) ((NODE)->decl.no_check_memory_usage)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) (DECL_CHECK (NODE)->decl.lang_flag_1)
@@ -1173,7 +1177,9 @@ struct tree_decl
   unsigned static_dtor_flag : 1;
   unsigned artificial_flag : 1;
   unsigned weak_flag : 1;
-  /* room for no more */
+
+  unsigned no_check_memory_usage : 1;
+  /* room for 31 more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
