@@ -222,7 +222,7 @@ struct nesting
 	     and no `else' has been seen yet.  */
 	  rtx endif_label;
 	  /* Label for the end of this alternative.
-	     This may be the end of the if or the next else/elseif. */
+	     This may be the end of the if or the next else/elseif.  */
 	  rtx next_label;
 	} cond;
       /* For loops.  */
@@ -246,7 +246,7 @@ struct nesting
 	     in order of entry.  */
 	  int block_start_count;
 	  /* Nonzero => value to restore stack to on exit.  Complemented by
-	     bc_stack_level (see below) when generating bytecodes. */
+	     bc_stack_level (see below) when generating bytecodes.  */
 	  rtx stack_level;
 	  /* The NOTE that starts this contour.
 	     Used by expand_goto to check whether the destination
@@ -285,7 +285,7 @@ struct nesting
 	  rtx start;
 	  /* For bytecodes, the case table is in-lined right in the code.
 	     A label is needed for skipping over this block. It is only
-	     used when generating bytecodes. */
+	     used when generating bytecodes.  */
 	  rtx skip_label;
 	  /* A list of case labels; it is first built as an AVL tree.
 	     During expand_end_case, this is converted to a list, and may be
@@ -773,7 +773,7 @@ expand_goto_internal (body, label, last_insn)
   /* NOTICE!  If a bytecode instruction other than `jump' is needed,
      then the caller has to call bc_expand_goto_internal()
      directly. This is rather an exceptional case, and there aren't
-     that many places where this is necessary. */
+     that many places where this is necessary.  */
   if (output_bytecode)
     {
       expand_goto_internal (body, label, last_insn);
@@ -808,8 +808,9 @@ expand_goto_internal (body, label, last_insn)
 
       if (stack_level)
 	{
-	  /* Ensure stack adjust isn't done by emit_jump, as this would clobber
-	     the stack pointer.  This one should be deleted as dead by flow. */
+	  /* Ensure stack adjust isn't done by emit_jump, as this
+	     would clobber the stack pointer.  This one should be
+	     deleted as dead by flow.  */
 	  clear_pending_stack_adjust ();
 	  do_pending_stack_adjust ();
 	  emit_stack_restore (SAVE_BLOCK, stack_level, NULL_RTX);
@@ -833,7 +834,7 @@ expand_goto_internal (body, label, last_insn)
 }
 
 /* Generate a jump with OPCODE to the given bytecode LABEL which is
-   found within BODY. */
+   found within BODY.  */
 
 static void
 bc_expand_goto_internal (opcode, label, body)
@@ -846,7 +847,7 @@ bc_expand_goto_internal (opcode, label, body)
 
   /* If the label is defined, adjust the stack as necessary.
      If it's not defined, we have to push the reference on the
-     fixup list. */
+     fixup list.  */
 
   if (label->defined)
     {
@@ -874,7 +875,7 @@ bc_expand_goto_internal (opcode, label, body)
 	 must do so after the jump, since the jump may depend on
 	 what's on the stack.  Thus, any stack-modifying conditional
 	 jumps (these are the only ones that rely on what's on the
-	 stack) go into the fixup list. */
+	 stack) go into the fixup list.  */
 
       if (stack_level >= 0
 	  && stack_depth != stack_level
@@ -1212,7 +1213,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 
   /* For any still-undefined labels, do the cleanups for this block now.
      We must do this now since items in the cleanup list may go out
-     of scope when the block ends. */
+     of scope when the block ends.  */
   for (prev = 0, f = goto_fixup_chain; f; prev = f, f = f->next)
     if (f->before_jump != 0
 	&& PREV_INSN (f->target_rtl) == 0
@@ -1299,7 +1300,7 @@ bc_fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
       bc_emit_bytecode_labeldef (f->label);
 
       /* Save stack_depth across call, since bc_adjust_stack () will alter
-         the perceived stack depth via the instructions generated. */
+         the perceived stack depth via the instructions generated.  */
 
       if (f->bc_stack_level >= 0)
 	{
@@ -1842,7 +1843,7 @@ warn_if_unused_value (exp)
 	 the user cannot control it.  */
       if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
 	return warn_if_unused_value (TREE_OPERAND (exp, 0));
-      /* ... fall through ... */
+      /* ... fall through ...  */
       
     default:
       /* Referencing a volatile value is a side effect, so don't warn.  */
@@ -1920,7 +1921,7 @@ expand_end_stmt_expr (t)
 	 of adding code to inhibit dropping the last expression value, it
 	 is here recovered by undoing the `drop'.  Since `drop' is
 	 equivalent to `adjustackSI [1]', it can be undone with `adjstackSI
-	 [-1]'. */
+	 [-1]'.  */
       
       bc_adjust_stack (-1);
       
@@ -2040,7 +2041,7 @@ expand_start_else ()
 
   emit_jump (cond_stack->data.cond.endif_label);
   emit_label (cond_stack->data.cond.next_label);
-  cond_stack->data.cond.next_label = 0;  /* No more _else or _elseif calls. */
+  cond_stack->data.cond.next_label = 0;  /* No more _else or _elseif calls.  */
 }
 
 /* After calling expand_start_else, turn this "else" into an "else if"
@@ -2081,7 +2082,7 @@ expand_end_cond ()
 /* Generate code for the start of an if-then.  COND is the expression
    whose truth is to be tested; if EXITFLAG is nonzero this conditional
    is to be visible to exit_something.  It is assumed that the caller
-   has pushed the previous context on the cond stack. */
+   has pushed the previous context on the cond stack.  */
 
 static void
 bc_expand_start_cond (cond, exitflag)
@@ -2620,7 +2621,7 @@ expand_return (retval)
   struct nesting *block;
 
   /* Bytecode returns are quite simple, just leave the result on the
-     arithmetic stack. */
+     arithmetic stack.  */
   if (output_bytecode)
     {
       bc_expand_expr (retval);
@@ -3624,7 +3625,7 @@ expand_decl_init (decl)
 
 /* Expand initialization for variable-sized types. Allocate array
    using newlocalSI and set local variable, which is a pointer to the
-   storage. */
+   storage.  */
 
 static void
 bc_expand_variable_local_init (decl)
@@ -3648,7 +3649,7 @@ bc_expand_variable_local_init (decl)
      using expand_address() since that would cause the pointer to be
      pushed rather than its address. Hence the hard-coded reference;
      notice also that the variable is always local (no global
-     variable-size type variables). */
+     variable-size type variables).  */
 
   bc_load_localaddr (DECL_RTL (decl));
   bc_emit_instruction (storeP);
@@ -3673,7 +3674,7 @@ bc_expand_decl_init (decl)
 
   /* If the type is variable-size, we first create its space (we ASSUME
      it CAN'T be static).  We do this regardless of whether there's an
-     initializer assignment or not. */
+     initializer assignment or not.  */
 
   if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
     bc_expand_variable_local_init (decl);
@@ -3961,7 +3962,7 @@ expand_start_case (exit_flag, expr, type, printname)
 
 
 /* Enter a case statement. It is assumed that the caller has pushed
-   the current context onto the case stack. */
+   the current context onto the case stack.  */
 
 static void
 bc_expand_start_case (thiscase, expr, type, printname)
@@ -4177,11 +4178,11 @@ pushcase_range (value1, value2, converter, label, duplicate)
   case_stack->data.case_stmt.seenlabel = 1;
 
   /* Convert VALUEs to type in which the comparisons are nominally done.  */
-  if (value1 == 0)  /* Negative infinity. */
+  if (value1 == 0)  /* Negative infinity.  */
     value1 = TYPE_MIN_VALUE(index_type);
   value1 = (*converter) (nominal_type, value1);
 
-  if (value2 == 0)  /* Positive infinity. */
+  if (value2 == 0)  /* Positive infinity.  */
     value2 = TYPE_MAX_VALUE(index_type);
   value2 = (*converter) (nominal_type, value2);
 
@@ -4435,7 +4436,7 @@ add_case_node (low, high, label, duplicate)
    2 and do nothing.  If VALUE is out of range, return 3 and do nothing.
    Return 0 on success.  This function is a leftover from the earlier
    bytecode compiler, which was based on gcc 1.37.  It should be
-   merged into pushcase. */
+   merged into pushcase.  */
 
 static int
 bc_pushcase (value, label)
@@ -4519,7 +4520,7 @@ all_cases_count (type, spareness)
 	  /* count
 	     = TREE_INT_CST_LOW (TYPE_MAX_VALUE (type))
 	     - TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) + 1
-	     but with overflow checking. */
+	     but with overflow checking.  */
 	  tree mint = TYPE_MIN_VALUE (type);
 	  tree maxt = TYPE_MAX_VALUE (type);
 	  HOST_WIDE_INT lo, hi;
@@ -4564,11 +4565,11 @@ all_cases_count (type, spareness)
 
 
 #define BITARRAY_TEST(ARRAY, INDEX) \
-  ((ARRAY)[(unsigned)(INDEX) / HOST_BITS_PER_CHAR]\
-			  & (1 << ((unsigned)(INDEX) % HOST_BITS_PER_CHAR)))
+  ((ARRAY)[(unsigned) (INDEX) / HOST_BITS_PER_CHAR]\
+			  & (1 << ((unsigned) (INDEX) % HOST_BITS_PER_CHAR)))
 #define BITARRAY_SET(ARRAY, INDEX) \
-  ((ARRAY)[(unsigned)(INDEX) / HOST_BITS_PER_CHAR]\
-			  |= 1 << ((unsigned)(INDEX) % HOST_BITS_PER_CHAR))
+  ((ARRAY)[(unsigned) (INDEX) / HOST_BITS_PER_CHAR]\
+			  |= 1 << ((unsigned) (INDEX) % HOST_BITS_PER_CHAR))
 
 /* Set the elements of the bitstring CASES_SEEN (which has length COUNT),
    with the case values we have seen, assuming the case expression
@@ -4718,17 +4719,17 @@ check_for_full_enumeration_handling (type)
   register tree chain;
   int all_values = 1;
 
-  /* True iff the selector type is a numbered set mode. */
+  /* True iff the selector type is a numbered set mode.  */
   int sparseness = 0;
 
-  /* The number of possible selector values. */
+  /* The number of possible selector values.  */
   HOST_WIDE_INT size;
 
   /* For each possible selector value. a one iff it has been matched
-     by a case value alternative. */
+     by a case value alternative.  */
   unsigned char *cases_seen;
 
-  /* The allocated size of cases_seen, in chars. */
+  /* The allocated size of cases_seen, in chars.  */
   long bytes_needed;
   tree t;
 
@@ -4745,7 +4746,7 @@ check_for_full_enumeration_handling (type)
   bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
 
   if (size > 0 && size < 600000
-      /* We deliberately use malloc here - not xmalloc. */
+      /* We deliberately use malloc here - not xmalloc.  */
       && (cases_seen = (unsigned char *) malloc (bytes_needed)) != NULL)
     {
       long i;
@@ -4755,7 +4756,7 @@ check_for_full_enumeration_handling (type)
       /* The time complexity of this code is normally O(N), where
 	 N being the number of members in the enumerated type.
 	 However, if type is a ENUMERAL_TYPE whose values do not
-	 increase monotonically, O(N*log(N)) time may be needed. */
+	 increase monotonically, O(N*log(N)) time may be needed.  */
 
       mark_seen_cases (type, cases_seen, size, sparseness);
 
@@ -4772,7 +4773,7 @@ check_for_full_enumeration_handling (type)
   /* Now we go the other way around; we warn if there are case
      expressions that don't correspond to enumerators.  This can
      occur since C and C++ don't enforce type-checking of
-     assignments to enumeration variables. */
+     assignments to enumeration variables.  */
 
   if (case_stack->data.case_stmt.case_list
       && case_stack->data.case_stmt.case_list->left)
@@ -5402,7 +5403,7 @@ bc_expand_end_case (expr)
 }
 
 
-/* Return unique bytecode ID. */
+/* Return unique bytecode ID.  */
 
 int 
 bc_new_uid ()
@@ -5843,7 +5844,7 @@ emit_case_nodes (index, node, default_label, index_type)
   else if (tree_int_cst_equal (node->low, node->high))
     {
       /* Node is single valued.  First see if the index expression matches
-	 this node and then check our children, if any. */
+	 this node and then check our children, if any.  */
 
       do_jump_if_equal (index, expand_expr (node->low, NULL_RTX, VOIDmode, 0),
 			label_rtx (node->code_label), unsignedp);

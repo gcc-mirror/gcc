@@ -3007,7 +3007,7 @@ reg_dead_after_loop (reg, loop_start, loop_end)
 	      if (GET_CODE (PATTERN (insn)) == RETURN)
 		break;
 	      else if (! simplejump_p (insn)
-		       /* Prevent infinite loop following infinite loops. */
+		       /* Prevent infinite loop following infinite loops.  */
 		       || jump_count++ > 20)
 		return 0;
 	      else

@@ -76,8 +76,8 @@ enum cpp_token {
 #endif
 #endif /* !PARAMS */
 
-typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader*));
-typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader*));
+typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
+typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
 /* A parse_marker indicates a previous position,
    which we can backtrack to. */
@@ -88,18 +88,18 @@ struct parse_marker {
   int position;
 };
 
-extern void parse_set_mark PARAMS ((struct parse_marker*, cpp_reader*));
-extern void parse_clear_mark PARAMS ((struct parse_marker*));
-extern void parse_goto_mark PARAMS((struct parse_marker*, cpp_reader*));
-extern void parse_move_mark PARAMS((struct parse_marker*, cpp_reader*));
+extern void parse_set_mark PARAMS ((struct parse_marker *, cpp_reader *));
+extern void parse_clear_mark PARAMS ((struct parse_marker *));
+extern void parse_goto_mark PARAMS((struct parse_marker *, cpp_reader *));
+extern void parse_move_mark PARAMS((struct parse_marker *, cpp_reader *));
 
-extern int cpp_handle_options PARAMS ((cpp_reader*, int, char**));
-extern enum cpp_token cpp_get_token PARAMS ((struct parse_marker*));
-extern void cpp_skip_hspace PARAMS((cpp_reader*));
+extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
+extern enum cpp_token cpp_get_token PARAMS ((struct parse_marker *));
+extern void cpp_skip_hspace PARAMS((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 
 /* This frees resources used by PFILE. */
-extern void cpp_cleanup PARAMS ((cpp_reader* PFILE));
+extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
 /* Maintain and search list of included files, for #import.  */
 
@@ -304,7 +304,7 @@ struct cpp_reader {
 #define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
-#define CPP_OPTIONS(PFILE) ((cpp_options*)(PFILE)->data)
+#define CPP_OPTIONS(PFILE) ((cpp_options *) (PFILE)->data)
 
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)+1)
@@ -631,9 +631,9 @@ struct if_stack {
 };
 typedef struct if_stack IF_STACK_FRAME;
 
-extern void cpp_buf_line_and_col PARAMS((cpp_buffer*, long*, long*));
-extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader*));
-extern void cpp_define PARAMS ((cpp_reader*, unsigned char*));
+extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
+extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
+extern void cpp_define PARAMS ((cpp_reader*, unsigned char *));
 
 extern void cpp_error ();
 extern void cpp_warning ();
@@ -646,13 +646,13 @@ extern void cpp_error_from_errno ();
 extern void cpp_perror_with_name ();
 extern void cpp_pfatal_with_name ();
 
-extern void cpp_grow_buffer PARAMS ((cpp_reader*, long));
-extern int cpp_parse_escape PARAMS ((cpp_reader*, char**));
-extern cpp_buffer* cpp_push_buffer PARAMS ((cpp_reader *,
-					    unsigned char*, long));
-extern cpp_buffer* cpp_pop_buffer PARAMS ((cpp_reader *));
+extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
+extern int cpp_parse_escape PARAMS ((cpp_reader *, char **));
+extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
+					    unsigned char *, long));
+extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 
-extern cpp_hashnode* cpp_lookup PARAMS ((cpp_reader*, const unsigned char*,
+extern cpp_hashnode *cpp_lookup PARAMS ((cpp_reader *, const unsigned char *,
 					 int, int));
 
 #ifdef __cplusplus

@@ -51,22 +51,22 @@ struct fn_decl
 };
 
 extern int lineno;
-extern void sstring_append _PARAMS((sstring*, sstring*));
-extern void make_sstring_space _PARAMS((sstring*, int));
-extern int skip_spaces _PARAMS((FILE*, int));
+extern void sstring_append _PARAMS((sstring *, sstring *));
+extern void make_sstring_space _PARAMS((sstring *, int));
+extern int skip_spaces _PARAMS((FILE *, int));
 extern int scan_ident _PARAMS((FILE *, sstring *, int));
-extern int scan_string _PARAMS((FILE*, sstring *, int));
-extern int read_upto _PARAMS((FILE*, sstring*, int));
+extern int scan_string _PARAMS((FILE *, sstring *, int));
+extern int read_upto _PARAMS((FILE *, sstring *, int));
 extern char *xmalloc _PARAMS((unsigned));
 extern char *xrealloc _PARAMS((char *, unsigned));
-extern unsigned long hash _PARAMS((const char*));
+extern unsigned long hash _PARAMS((const char *));
 
 /* get_token is a simple C lexer. */
 #define IDENTIFIER_TOKEN 300
 #define CHAR_TOKEN 301
 #define STRING_TOKEN 302
 #define INT_TOKEN 303
-extern int get_token _PARAMS ((FILE*, sstring*));
+extern int get_token _PARAMS ((FILE *, sstring *));
 
 /* Current file and line numer, taking #-directives into account */
 extern int source_lineno;

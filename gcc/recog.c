@@ -1765,8 +1765,9 @@ constrain_operands (insn_code_num, strict)
 		break;
 
 	      case 'X':
-		/* This is used for a MATCH_SCRATCH in the cases when we
-		   don't actually need anything.  So anything goes any time. */
+		/* This is used for a MATCH_SCRATCH in the cases when
+		   we don't actually need anything.  So anything goes
+		   any time.  */
 		win = 1;
 		break;
 
@@ -1921,7 +1922,7 @@ constrain_operands (insn_code_num, strict)
 		  if ((GET_CODE (recog_operand[opno]) == MEM
 		       || op_types[opno] != OP_OUT)
 		      && opno != eopno
-		      /* Ignore things like match_operator operands. */
+		      /* Ignore things like match_operator operands.  */
 		      && *constraints[opno] != 0
 		      && ! (matching_operands[opno] == eopno
 			    && rtx_equal_p (recog_operand[opno],

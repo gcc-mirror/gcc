@@ -207,10 +207,10 @@ extern char *oballoc ();
 struct movable
 {
   rtx insn;			/* A movable insn */
-  rtx set_src;			/* The expression this reg is set from. */
-  rtx set_dest;			/* The destination of this SET. */
+  rtx set_src;			/* The expression this reg is set from.  */
+  rtx set_dest;			/* The destination of this SET.  */
   rtx dependencies;		/* When INSN is libcall, this is an EXPR_LIST
-				   of any registers used within the LIBCALL. */
+				   of any registers used within the LIBCALL.  */
   int consec;			/* Number of consecutive following insns 
 				   that must be moved with this one.  */
   int regno;			/* The register it sets */
@@ -233,7 +233,7 @@ struct movable
 				   invariant.  */
   unsigned int move_insn : 1;	/* 1 means that we call emit_move_insn to
 				   load SRC, rather than copying INSN.  */
-  unsigned int is_equiv : 1;	/* 1 means a REG_EQUIV is present on INSN. */
+  unsigned int is_equiv : 1;	/* 1 means a REG_EQUIV is present on INSN.  */
   enum machine_mode savemode;   /* Nonzero means it is a mode for a low part
 				   that we should avoid changing when clearing
 				   the rest of the reg.  */
@@ -346,7 +346,7 @@ loop_optimize (f, dumpfile)
 
   regs_may_share = 0;
 
-  /* Count the number of loops. */
+  /* Count the number of loops.  */
 
   max_loop_num = 0;
   for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -877,7 +877,7 @@ scan_loop (loop_start, end, nregs)
 
 		     If this insn was made by loop, we don't know its
 		     INSN_LUID and hence must make a conservative
-		     assumption. */
+		     assumption.  */
 		  m->global = (INSN_UID (p) >= max_uid_for_loop
 			       || (uid_luid[regno_last_uid[regno]]
 				   > INSN_LUID (end))
@@ -1116,7 +1116,7 @@ libcall_benefit (last)
     {
       if (GET_CODE (insn) == CALL_INSN)
 	benefit += 10;		/* Assume at least this many insns in a library
-				   routine. */
+				   routine.  */
       else if (GET_CODE (insn) == INSN
 	       && GET_CODE (PATTERN (insn)) != USE
 	       && GET_CODE (PATTERN (insn)) != CLOBBER)
@@ -1723,7 +1723,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		    {
 		      rtx i1, temp;
 
-		      /* If first insn of libcall sequence, skip to end. */
+		      /* If first insn of libcall sequence, skip to end.  */
 		      /* Do this at start of loop, since p is guaranteed to 
 			 be an insn here.  */
 		      if (GET_CODE (p) != NOTE
@@ -1875,7 +1875,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* This isn't needed because REG_NOTES is copied
 			 below and is wrong since P might be a PARALLEL.  */
 		      if (REG_NOTES (i1) == 0
-			  && ! m->partial /* But not if it's a zero-extend clr. */
+			  && ! m->partial /* But not if it's a zero-extend clr.  */
 			  && ! m->global /* and not if used outside the loop
 					    (since it might get set outside).  */
 			  && CONSTANT_P (SET_SRC (PATTERN (p))))
@@ -2415,7 +2415,7 @@ find_and_verify_loops (f)
 		    LABEL_NUSES (cond_label)++;
 
 		    /* Verify that uid_loop_num is large enough and that
-		       we can invert P. */
+		       we can invert P.  */
 		   if (invert_jump (p, new_label))
 		     {
 		       rtx q, r;
@@ -2458,7 +2458,7 @@ find_and_verify_loops (f)
 				loop_num = loop_outer_loop[loop_num])
 			     loop_number_exit_count[loop_num]--;
 
-			   /* If we didn't find it, then something is wrong. */
+			   /* If we didn't find it, then something is wrong.  */
 			   if (! r)
 			     abort ();
 			 }
@@ -3175,10 +3175,10 @@ static rtx addr_placeholder;
    it is safe to keep the value in a register for the duration of the
    loop. One tricky thing is that the copying of the value back from the
    register has to be done on all exits from the loop.  You need to check that
-   all the exits from the loop go to the same place. */
+   all the exits from the loop go to the same place.  */
 
 /* ??? The interaction of biv elimination, and recognition of 'constant'
-   bivs, may cause problems. */
+   bivs, may cause problems.  */
 
 /* ??? Add heuristics so that DEST_ADDR strength reduction does not cause
    performance problems.
@@ -3590,7 +3590,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      ((benefit = general_induction_var (SET_SRC (set),
 						 &src_reg, &add_val,
 						 &mult_val))
-	       /* Equivalent expression is a giv. */
+	       /* Equivalent expression is a giv.  */
 	       || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
 		   && (benefit = general_induction_var (XEXP (regnote, 0),
 							&src_reg,
@@ -3602,7 +3602,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      && dest_reg != src_reg
 	      /* This must be the only place where the register is set.  */
 	      && (n_times_set[REGNO (dest_reg)] == 1
-		  /* or all sets must be consecutive and make a giv. */
+		  /* or all sets must be consecutive and make a giv.  */
 		  || (benefit = consec_sets_giv (benefit, p,
 						 src_reg, dest_reg,
 						 &add_val, &mult_val))))
@@ -4141,14 +4141,14 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	     or otherwise drop straight in, based on this test, then
 	     we might want to rewrite it also.  This way some later
 	     pass has more hope of removing the initialization of this
-	     biv entirely. */
+	     biv entirely.  */
 
 	  /* If final_value != 0, then the biv may be used after loop end
 	     and we must emit an insn to set it just in case.
 
 	     Reversed bivs already have an insn after the loop setting their
 	     value, so we don't need another one.  We can't calculate the
-	     proper final value for such a biv here anyways. */
+	     proper final value for such a biv here anyways.  */
 	  if (final_value != 0 && ! bl->reversed)
 	    {
 	      rtx insert_before;
@@ -4509,7 +4509,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 
       /* If the lifetime is zero, it means that this register is
 	 really a dead store.  So mark this as a giv that can be
-	 ignored.  This will not prevent the biv from being eliminated. */
+	 ignored.  This will not prevent the biv from being eliminated.  */
       if (v->lifetime == 0)
 	v->ignore = 1;
 
@@ -4988,7 +4988,7 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
 				     : GET_MODE (SET_SRC (set))),
 				    dest_reg, insn,
 				    inc_val, mult_val);
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
       /* Can accept constant setting of biv only when inside inner most loop.
   	 Otherwise, a biv of an inner loop may be incorrectly recognized
@@ -5264,7 +5264,7 @@ simplify_giv_expr (x, benefit)
 				benefit);
 
     case MINUS:
-      /* Handle "a - b" as "a + b * (-1)". */
+      /* Handle "a - b" as "a + b * (-1)".  */
       return simplify_giv_expr (gen_rtx (PLUS, mode,
 					 XEXP (x, 0),
 					 gen_rtx (MULT, mode,
@@ -5304,7 +5304,7 @@ simplify_giv_expr (x, benefit)
 	  return GEN_INT (INTVAL (arg0) * INTVAL (arg1));
 
 	case USE:
-	  /* invar * invar.  Not giv. */
+	  /* invar * invar.  Not giv.  */
 	  return 0;
 
 	case MULT:
@@ -5645,7 +5645,7 @@ combine_givs (bl)
 	  {
 	    g2 = giv_array[j];
 	    if (g1 != g2
-		/* First try to combine with replaceable givs, then all givs. */
+		/* First try to combine with replaceable givs, then all givs.  */
 		&& (g1->replaceable || pass == 1)
 		/* If either has already been combined or is to be ignored, can't
 		   combine.  */
@@ -5692,7 +5692,7 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
   a = copy_rtx (a);
   b = copy_rtx (b);
 
-  /* Increase the lifetime of any invariants moved further in code. */
+  /* Increase the lifetime of any invariants moved further in code.  */
   update_reg_last_use (a, insert_before);
   update_reg_last_use (b, insert_before);
   update_reg_last_use (m, insert_before);
@@ -5721,7 +5721,7 @@ product_cheap_p (a, b)
   char *storage = (char *) obstack_alloc (&temp_obstack, 0);
   int win = 1;
 
-  /* If only one is constant, make it B. */
+  /* If only one is constant, make it B.  */
   if (GET_CODE (a) == CONST_INT)
     tmp = a, a = b, b = tmp;
 
@@ -6057,7 +6057,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		{
 		  JUMP_LABEL (tem) = XEXP (jump_label, 0);
 
-		  /* Increment of LABEL_NUSES done above. */
+		  /* Increment of LABEL_NUSES done above.  */
 		  /* Register is now always nonnegative,
 		     so add REG_NONNEG note to the branch.  */
 		  REG_NOTES (tem) = gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,

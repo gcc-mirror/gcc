@@ -120,7 +120,7 @@ netlib.att.com: netlib/cephes.   */
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
 #define IEEE
 #else /* it's not IEEE either */
-/* UNKnown arithmetic.  We don't support this and can't go on. */
+/* UNKnown arithmetic.  We don't support this and can't go on.  */
 unknown arithmetic type
 #define UNK 1
 #endif /* not IEEE */
@@ -163,7 +163,7 @@ unknown arithmetic type
 #define NANS
 #endif
 
-/* Support of NaNs requires support of infinity. */
+/* Support of NaNs requires support of infinity.  */
 #ifdef NANS
 #ifndef INFINITY
 #define INFINITY
@@ -171,7 +171,7 @@ unknown arithmetic type
 #endif
 
 /* Find a host integer type that is at least 16 bits wide,
-   and another type at least twice whatever that size is. */
+   and another type at least twice whatever that size is.  */
 
 #if HOST_BITS_PER_CHAR >= 16
 #define EMUSHORT char
@@ -193,7 +193,7 @@ unknown arithmetic type
 #define EMUSHORT_SIZE HOST_BITS_PER_LONG
 #define EMULONG_SIZE (2 * HOST_BITS_PER_LONG)
 #else
-/*  You will have to modify this program to have a smaller unit size. */
+/*  You will have to modify this program to have a smaller unit size.  */
 #define EMU_NON_COMPILE
 #endif
 #endif
@@ -212,7 +212,7 @@ unknown arithmetic type
 #if HOST_BITS_PER_LONG_LONG >= EMULONG_SIZE
 #define EMULONG long long int
 #else
-/*  You will have to modify this program to have a smaller unit size. */
+/*  You will have to modify this program to have a smaller unit size.  */
 #define EMU_NON_COMPILE
 #endif
 #endif
@@ -220,12 +220,12 @@ unknown arithmetic type
 #endif
 
 
-/* The host interface doesn't work if no 16-bit size exists. */
+/* The host interface doesn't work if no 16-bit size exists.  */
 #if EMUSHORT_SIZE != 16
 #define EMU_NON_COMPILE
 #endif
 
-/* OK to continue compilation. */
+/* OK to continue compilation.  */
 #ifndef EMU_NON_COMPILE
 
 /* Construct macros to translate between REAL_VALUE_TYPE and e type.
@@ -253,12 +253,12 @@ unknown arithmetic type
 #define MINDECEXP -4956
 #ifdef REAL_ARITHMETIC
 /* Emulator uses target format internally
-   but host stores it in host endian-ness. */
+   but host stores it in host endian-ness.  */
 
 #define GET_REAL(r,e)						\
 do {								\
      if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)	\
-       e53toe ((unsigned EMUSHORT*) (r), (e));			\
+       e53toe ((unsigned EMUSHORT *) (r), (e));			\
      else							\
        {							\
 	 unsigned EMUSHORT w[4];				\
@@ -440,7 +440,7 @@ endian (e, x, mode)
 	{
 
 	case TFmode:
-	  /* Swap halfwords in the fourth long. */
+	  /* Swap halfwords in the fourth long.  */
 	  th = (unsigned long) e[6] & 0xffff;
 	  t = (unsigned long) e[7] & 0xffff;
 	  t |= th << 16;
@@ -448,7 +448,7 @@ endian (e, x, mode)
 
 	case XFmode:
 
-	  /* Swap halfwords in the third long. */
+	  /* Swap halfwords in the third long.  */
 	  th = (unsigned long) e[4] & 0xffff;
 	  t = (unsigned long) e[5] & 0xffff;
 	  t |= th << 16;
@@ -480,14 +480,14 @@ endian (e, x, mode)
     }
   else
     {
-      /* Pack the output array without swapping. */
+      /* Pack the output array without swapping.  */
 
       switch (mode)
 	{
 
 	case TFmode:
 
-	  /* Pack the fourth long. */
+	  /* Pack the fourth long.  */
 	  th = (unsigned long) e[7] & 0xffff;
 	  t = (unsigned long) e[6] & 0xffff;
 	  t |= th << 16;
@@ -545,7 +545,7 @@ earith (value, icode, r1, r2)
   GET_REAL (r1, d1);
   GET_REAL (r2, d2);
 #ifdef NANS
-/*  Return NaN input back to the caller. */
+/*  Return NaN input back to the caller.  */
   if (eisnan (d1))
     {
       PUT_REAL (d1, value);
@@ -945,7 +945,7 @@ ereal_ldexp (x, n)
 
 #ifdef REAL_ARITHMETIC
 
-/* Check for infinity in a REAL_VALUE_TYPE. */
+/* Check for infinity in a REAL_VALUE_TYPE.  */
 
 int
 target_isinf (x)
@@ -961,7 +961,7 @@ target_isinf (x)
 #endif
 }
 
-/* Check whether a REAL_VALUE_TYPE item is a NaN. */
+/* Check whether a REAL_VALUE_TYPE item is a NaN.  */
 
 int
 target_isnan (x)
@@ -979,7 +979,7 @@ target_isnan (x)
 
 
 /* Check for a negative REAL_VALUE_TYPE number.
-   This just checks the sign bit, so that -0 counts as negative. */
+   This just checks the sign bit, so that -0 counts as negative.  */
 
 int
 target_negative (x)
@@ -1330,7 +1330,7 @@ ereal_isneg (x)
   ensure that these values are correct for your computer.
  
   For ANSI C compatibility, define ANSIC equal to 1.  Currently
-  this affects only the atan2 function and others that use it. */
+  this affects only the atan2 function and others that use it.  */
 
 /* Constant definitions for math error conditions.  */
 
@@ -1507,7 +1507,7 @@ eisnan (x)
   /* NaN has maximum exponent */
   if ((x[NE - 1] & 0x7fff) != 0x7fff)
     return (0);
-  /* ... and non-zero significand field. */
+  /* ... and non-zero significand field.  */
   for (i = 0; i < NE - 1; i++)
     {
       if (*x++ != 0)
@@ -1519,7 +1519,7 @@ eisnan (x)
 }
 
 /*  Fill e-type number X with infinity pattern (IEEE)
-    or largest possible number (non-IEEE). */
+    or largest possible number (non-IEEE).  */
 
 static void 
 einfin (x)
@@ -1675,7 +1675,7 @@ ecleaz (xi)
     *xi++ = 0;
 }
 
-/* Clear out exploded e-type XI, but don't touch the sign. */
+/* Clear out exploded e-type XI, but don't touch the sign.  */
 
 static void 
 ecleazs (xi)
@@ -1716,7 +1716,7 @@ einan (x)
   x[M + 1] = 0xc000;
 }
 
-/* Return nonzero if exploded e-type X is a NaN. */
+/* Return nonzero if exploded e-type X is a NaN.  */
 
 static int 
 eiisnan (x)
@@ -1757,7 +1757,7 @@ eiinfin (x)
   x[E] = 0x7fff;
 }
 
-/* Return nonzero if exploded e-type X is infinite. */
+/* Return nonzero if exploded e-type X is infinite.  */
 
 static int 
 eiisinf (x)
@@ -2090,6 +2090,7 @@ edivm (den, num)
 
 
 /* Multiply significands */
+
 int 
 emulm (a, b)
      unsigned EMUSHORT a[], b[];
@@ -2140,7 +2141,7 @@ emulm (a, b)
 /* Radix 65536 versions of multiply and divide.  */
 
 /* Multiply significand of e-type number B
-   by 16-bit quantity A, return e-type result to C. */
+   by 16-bit quantity A, return e-type result to C.  */
 
 static void
 m16m (a, b, c)
@@ -2208,17 +2209,17 @@ edivm (den, num)
   tdenm = den[M+1];
   for (i=M; i<NI; i++)
     {
-      /* Find trial quotient digit (the radix is 65536). */
+      /* Find trial quotient digit (the radix is 65536).  */
       tnum = (((unsigned EMULONG) num[M]) << 16) + num[M+1];
 
-      /* Do not execute the divide instruction if it will overflow. */
+      /* Do not execute the divide instruction if it will overflow.  */
       if ((tdenm * 0xffffL) < tnum)
 	tquot = 0xffff;
       else
 	tquot = tnum / tdenm;
-      /* Multiply denominator by trial quotient digit. */
+      /* Multiply denominator by trial quotient digit.  */
       m16m ((unsigned int)tquot, den, tprod);
-      /* The quotient digit may have been overestimated. */
+      /* The quotient digit may have been overestimated.  */
       if (ecmpm (tprod, num) > 0)
 	{
 	  tquot -= 1;
@@ -2341,7 +2342,7 @@ emdnorm (s, lost, subflg, exp, rcntrl)
   /* Normalize */
   j = enormlz (s);
 
-  /* a blank significand could mean either zero or infinity. */
+  /* a blank significand could mean either zero or infinity.  */
 #ifndef INFINITY
   if (j > NBITS)
     {
@@ -2375,10 +2376,10 @@ emdnorm (s, lost, subflg, exp, rcntrl)
 	  return;
 	}
     }
-  /* Round off, unless told not to by rcntrl. */
+  /* Round off, unless told not to by rcntrl.  */
   if (rcntrl == 0)
     goto mdfin;
-  /* Set up rounding parameters if the control register changed. */
+  /* Set up rounding parameters if the control register changed.  */
   if (rndprc != rlast)
     {
       ecleaz (rbit);
@@ -2475,7 +2476,7 @@ emdnorm (s, lost, subflg, exp, rcntrl)
       eaddm (rbit, s);
     }
  mddone:
-/* Undo the temporary shift for denormal values. */
+/* Undo the temporary shift for denormal values.  */
   if ((exp <= 0) && (rndprc != NBITS)
       && ((rndprc != 64) || ((rndprc == 64) && ! REAL_WORDS_BIG_ENDIAN)))
     {
@@ -2544,7 +2545,7 @@ esub (a, b, c)
       return;
     }
 /* Infinity minus infinity is a NaN.
-   Test for subtracting infinities of the same sign. */
+   Test for subtracting infinities of the same sign.  */
   if (eisinf (a) && eisinf (b)
       && ((eisneg (a) ^ eisneg (b)) == 0))
     {
@@ -2557,7 +2558,7 @@ esub (a, b, c)
   eadd1 (a, b, c);
 }
 
-/* Add.  C = A + B, all e type. */
+/* Add.  C = A + B, all e type.  */
 
 static void 
 eadd (a, b, c)
@@ -2565,7 +2566,7 @@ eadd (a, b, c)
 {
 
 #ifdef NANS
-/* NaN plus anything is a NaN. */
+/* NaN plus anything is a NaN.  */
   if (eisnan (a))
     {
       emov (a, c);
@@ -2577,7 +2578,7 @@ eadd (a, b, c)
       return;
     }
 /* Infinity minus infinity is a NaN.
-   Test for adding infinities of opposite signs. */
+   Test for adding infinities of opposite signs.  */
   if (eisinf (a) && eisinf (b)
       && ((eisneg (a) ^ eisneg (b)) != 0))
     {
@@ -2716,7 +2717,7 @@ ediv (a, b, c)
   sign = eisneg(a) ^ eisneg(b);
 
 #ifdef NANS
-/* Return any NaN input. */
+/* Return any NaN input.  */
   if (eisnan (a))
     {
     emov (a, c);
@@ -2727,7 +2728,7 @@ ediv (a, b, c)
     emov (b, c);
     return;
     }
-/* Zero over zero, or infinity over infinity, is a NaN. */
+/* Zero over zero, or infinity over infinity, is a NaN.  */
   if (((ecmp (a, ezero) == 0) && (ecmp (b, ezero) == 0))
       || (eisinf (a) && eisinf (b)))
     {
@@ -2736,14 +2737,14 @@ ediv (a, b, c)
     return;
     }
 #endif
-/* Infinity over anything else is infinity. */
+/* Infinity over anything else is infinity.  */
 #ifdef INFINITY
   if (eisinf (b))
     {
       einfin (c);
       goto divsign;
     }
-/* Anything else over infinity is zero. */
+/* Anything else over infinity is zero.  */
   if (eisinf (a))
     {
       eclear (c);
@@ -2755,7 +2756,7 @@ ediv (a, b, c)
   lta = ai[E];
   ltb = bi[E];
   if (bi[E] == 0)
-    {				/* See if numerator is zero. */
+    {				/* See if numerator is zero.  */
       for (i = 1; i < NI - 1; i++)
 	{
 	  if (bi[i] != 0)
@@ -2820,7 +2821,7 @@ emul (a, b, c)
   sign = eisneg(a) ^ eisneg(b);
 
 #ifdef NANS
-/* NaN times anything is the same NaN. */
+/* NaN times anything is the same NaN.  */
   if (eisnan (a))
     {
     emov (a, c);
@@ -2831,7 +2832,7 @@ emul (a, b, c)
     emov (b, c);
     return;
     }
-/* Zero times infinity is a NaN. */
+/* Zero times infinity is a NaN.  */
   if ((eisinf (a) && (ecmp (b, ezero) == 0))
       || (eisinf (b) && (ecmp (a, ezero) == 0)))
     {
@@ -2840,7 +2841,7 @@ emul (a, b, c)
     return;
     }
 #endif
-/* Infinity times anything else is infinity. */
+/* Infinity times anything else is infinity.  */
 #ifdef INFINITY
   if (eisinf (a) || eisinf (b))
     {
@@ -2965,7 +2966,7 @@ e53toe (pe, y)
 #endif  /* INFINITY */
   r >>= 4;
   /* If zero exponent, then the significand is denormalized.
-     So take back the understood high significand bit. */
+     So take back the understood high significand bit.  */
 
   if (r == 0)
     {
@@ -3017,7 +3018,7 @@ e64toe (pe, y)
   p = yy;
   for (i = 0; i < NE - 5; i++)
     *p++ = 0;
-/* This precision is not ordinarily supported on DEC or IBM. */
+/* This precision is not ordinarily supported on DEC or IBM.  */
 #ifdef DEC
   for (i = 0; i < 5; i++)
     *p++ = *e++;
@@ -3197,7 +3198,7 @@ e113toe (pe, y)
 	*p++ = *e++;
     }
 #endif
-/* If denormal, remove the implied bit; else shift down 1. */
+/* If denormal, remove the implied bit; else shift down 1.  */
   if (r == 0)
     {
       yy[M] = 0;
@@ -3272,7 +3273,7 @@ e24toe (pe, y)
 #endif  /* INFINITY */
   r >>= 7;
   /* If zero exponent, then the significand is denormalized.
-     So take back the understood high significand bit. */
+     So take back the understood high significand bit.  */
   if (r == 0)
     {
       denorm = 1;
@@ -3360,7 +3361,7 @@ toe113 (a, b)
   else
     q = b + 7;			/* point to output exponent */
 
-  /* If not denormal, delete the implied bit. */
+  /* If not denormal, delete the implied bit.  */
   if (a[E] != 0)
     {
       eshup1 (a);
@@ -3649,7 +3650,8 @@ toe53 (x, y)
 
   i = *p++;
   if (i >= (unsigned int) 2047)
-    {				/* Saturate at largest number less than infinity. */
+    {
+      /* Saturate at largest number less than infinity.  */
 #ifdef INFINITY
       *y |= 0x7ff0;
       if (! REAL_WORDS_BIG_ENDIAN)
@@ -3800,7 +3802,7 @@ toe24 (x, y)
     *y = 0x8000;		/* output sign bit */
 
   i = *p++;
-/* Handle overflow cases. */
+/* Handle overflow cases.  */
   if (i >= 255)
     {
 #ifdef INFINITY
@@ -4160,7 +4162,7 @@ euifrac (x, i, frac)
       *i = (HOST_WIDE_INT) xi[M] & 0xffff;
     }
 
-  if (xi[0])  /* A negative value yields unsigned integer 0. */
+  if (xi[0])  /* A negative value yields unsigned integer 0.  */
     *i = 0L;
 
   xi[0] = 0;
@@ -4528,7 +4530,7 @@ etoasc (x, string, ndigs)
     }
  tnzro:
 
-  /* Test for infinity. */
+  /* Test for infinity.  */
   if (y[NE - 1] == 0x7fff)
     {
       if (sign)
@@ -4558,7 +4560,7 @@ etoasc (x, string, ndigs)
 
   if (i < 0)
     {				/* Number is greater than 1 */
-      /* Convert significand to an integer and strip trailing decimal zeros. */
+      /* Convert significand to an integer and strip trailing decimal zeros.  */
       emov (y, u);
       u[NE - 1] = EXONE + NBITS - 1;
 
@@ -4588,7 +4590,7 @@ etoasc (x, string, ndigs)
       emov (eone, t);
       m = MAXP;
       p = &etens[0][0];
-      /* An unordered compare result shouldn't happen here. */
+      /* An unordered compare result shouldn't happen here.  */
       while (ecmp (ten, u) <= 0)
 	{
 	  if (ecmp (p, u) <= 0)
@@ -4605,7 +4607,7 @@ etoasc (x, string, ndigs)
     }
   else
     {				/* Number is less than 1.0 */
-      /* Pad significand with trailing decimal zeros. */
+      /* Pad significand with trailing decimal zeros.  */
       if (y[NE - 1] == 0)
 	{
 	  while ((y[NE - 2] & 0x8000) == 0)
@@ -4663,7 +4665,7 @@ etoasc (x, string, ndigs)
       ediv (t, eone, t);
     }
  isone:
-  /* Find the first (leading) digit. */
+  /* Find the first (leading) digit.  */
   emovi (t, w);
   emovz (w, t);
   emovi (y, w);
@@ -4686,7 +4688,7 @@ etoasc (x, string, ndigs)
     *s++ = '-';
   else
     *s++ = ' ';
-  /* Examine number of digits requested by caller. */
+  /* Examine number of digits requested by caller.  */
   if (ndigs < 0)
     ndigs = 0;
   if (ndigs > NDEC)
@@ -4707,7 +4709,7 @@ etoasc (x, string, ndigs)
       *s++ = (char)digit + '0';
       *s++ = '.';
     }
-  /* Generate digits after the decimal point. */
+  /* Generate digits after the decimal point.  */
   for (k = 0; k <= ndigs; k++)
     {
       /* multiply current number by 10, without normalizing */
@@ -4725,7 +4727,7 @@ etoasc (x, string, ndigs)
   /* round off the ASCII string */
   if (digit > 4)
     {
-      /* Test for critical rounding case in ASCII output. */
+      /* Test for critical rounding case in ASCII output.  */
       if (digit == 5)
 	{
 	  emovo (y, t);
@@ -4846,7 +4848,7 @@ asctoe (s, y)
 }
 
 /* Convert ASCII string SS to e type Y, with a specified rounding precision
-   of OPREC bits. */
+   of OPREC bits.  */
 
 static void 
 asctoeg (ss, y, oprec)
@@ -4861,7 +4863,7 @@ asctoeg (ss, y, oprec)
   unsigned EMUSHORT nsign, *p;
   char *sp, *s, *lstr;
 
-  /* Copy the input string. */
+  /* Copy the input string.  */
   lstr = (char *) alloca (strlen (ss) + 1);
   s = ss;
   while (*s == ' ')		/* skip leading spaces */
@@ -4890,7 +4892,7 @@ asctoeg (ss, y, oprec)
       /* Ignore leading zeros */
       if ((prec == 0) && (decflg == 0) && (k == 0))
 	goto donchr;
-      /* Identify and strip trailing zeros after the decimal point. */
+      /* Identify and strip trailing zeros after the decimal point.  */
       if ((trail == 0) && (decflg != 0))
 	{
 	  sp = s;
@@ -5038,7 +5040,7 @@ read_expnt:
 
  daldone:
   nexp = exp - nexp;
-  /* Pad trailing zeros to minimize power of 10, per IEEE spec. */
+  /* Pad trailing zeros to minimize power of 10, per IEEE spec.  */
   while ((nexp > 0) && (yy[2] == 0))
     {
       emovz (yy, xt);
@@ -5080,7 +5082,7 @@ read_expnt:
       esign = -1;
       if (nexp > 4096)
 	{
-	  /* Punt.  Can't handle this without 2 divides. */
+	  /* Punt.  Can't handle this without 2 divides.  */
 	  emovi (etens[0], tt);
 	  lexp -= tt[E];
 	  k = edivm (tt, yy);
@@ -5640,7 +5642,7 @@ toibm (x, y, mode)
 
 /* If special NaN bit patterns are required, define them in tm.h
    as arrays of unsigned 16-bit shorts.  Otherwise, use the default
-   patterns here. */
+   patterns here.  */
 #ifdef TFMODE_NAN
 TFMODE_NAN;
 #else
@@ -5692,7 +5694,7 @@ make_nan (nan, sign, mode)
   switch (mode)
     {
 /* Possibly the `reserved operand' patterns on a VAX can be
-   used like NaN's, but probably not in the same way as IEEE. */
+   used like NaN's, but probably not in the same way as IEEE.  */
 #if !defined(DEC) && !defined(IBM)
     case TFmode:
       n = 8;
@@ -5759,9 +5761,9 @@ ereal_from_float (f)
       s[0] = (unsigned EMUSHORT) f;
       s[1] = (unsigned EMUSHORT) (f >> 16);
     }
-  /* Convert and promote the target float to E-type. */
+  /* Convert and promote the target float to E-type.  */
   e24toe (s, e);
-  /* Output E-type to REAL_VALUE_TYPE. */
+  /* Output E-type to REAL_VALUE_TYPE.  */
   PUT_REAL (e, &r);
   return r;
 }
@@ -5813,9 +5815,9 @@ ereal_from_double (d)
       s[3] = (unsigned EMUSHORT) (d[0] >> 48);
 #endif
     }
-  /* Convert target double to E-type. */
+  /* Convert target double to E-type.  */
   e53toe (s, e);
-  /* Output E-type to REAL_VALUE_TYPE. */
+  /* Output E-type to REAL_VALUE_TYPE.  */
   PUT_REAL (e, &r);
   return r;
 }
@@ -5827,7 +5829,7 @@ ereal_from_double (d)
 
 static void
 uditoe (di, e)
-     unsigned EMUSHORT *di;  /* Address of the 64-bit int. */
+     unsigned EMUSHORT *di;  /* Address of the 64-bit int.  */
      unsigned EMUSHORT *e;
 {
   unsigned EMUSHORT yi[NI];
@@ -5852,11 +5854,11 @@ uditoe (di, e)
   emovo (yi, e);
 }
 
-/* Convert target computer signed 64-bit integer to e-type. */
+/* Convert target computer signed 64-bit integer to e-type.  */
 
 static void
 ditoe (di, e)
-     unsigned EMUSHORT *di;  /* Address of the 64-bit int. */
+     unsigned EMUSHORT *di;  /* Address of the 64-bit int.  */
      unsigned EMUSHORT *e;
 {
   unsigned EMULONG acc;
@@ -5901,7 +5903,7 @@ ditoe (di, e)
 }
 
 
-/* Convert e-type to unsigned 64-bit int. */
+/* Convert e-type to unsigned 64-bit int.  */
 
 static void 
 etoudi (x, i)
@@ -5984,7 +5986,7 @@ noshift:
 }
 
 
-/* Convert e-type to signed 64-bit int. */
+/* Convert e-type to signed 64-bit int.  */
 
 static void 
 etodi (x, i)
@@ -6082,7 +6084,7 @@ etodi (x, i)
 }
 
 
-/* Longhand square root routine. */
+/* Longhand square root routine.  */
 
 
 static int esqinited = 0;
@@ -6124,7 +6126,7 @@ esqrt (x, y)
       return;
     }
 #endif
-  /* Bring in the arg and renormalize if it is denormal. */
+  /* Bring in the arg and renormalize if it is denormal.  */
   emovi (x, xx);
   m = (EMULONG) xx[1];		/* local long word exponent */
   if (m == 0)
@@ -6153,7 +6155,7 @@ esqrt (x, y)
       /* bring in next word of arg */
       if (j < NE)
 	num[NI - 1] = xx[j + 3];
-      /* Do additional bit on last outer loop, for roundoff. */
+      /* Do additional bit on last outer loop, for roundoff.  */
       if (nlups <= 8)
 	n = nlups + 1;
       for (i = 0; i < n; i++)
@@ -6179,15 +6181,15 @@ esqrt (x, y)
       j += 1;
     }
 
-  /* Adjust for extra, roundoff loop done. */
+  /* Adjust for extra, roundoff loop done.  */
   exp += (NBITS - 1) - rndprc;
 
-  /* Sticky bit = 1 if the remainder is nonzero. */
+  /* Sticky bit = 1 if the remainder is nonzero.  */
   k = 0;
   for (i = 3; i < NI; i++)
     k |= (int) num[i];
 
-  /* Renormalize and round off. */
+  /* Renormalize and round off.  */
   emdnorm (sq, k, 0, exp, 64);
   emovo (sq, y);
 }

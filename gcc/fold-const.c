@@ -4626,7 +4626,7 @@ fold (expr)
 	      /* For NE, we can only do this simplification if integer.  */
 	      if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
 		break;
-	      /* ... fall through ... */
+	      /* ... fall through ...  */
 	    case GT_EXPR:
 	    case LT_EXPR:
 	      t = build_int_2 (0, 0);

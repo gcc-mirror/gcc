@@ -571,7 +571,7 @@ dbxout_source_line (file, filename, lineno)
 
 /* At the end of compilation, finish writing the symbol table.
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is
-   to do nothing. */
+   to do nothing.  */
 
 void
 dbxout_finish (file, filename)
@@ -873,7 +873,7 @@ dbxout_type_methods (type)
 		      /* Get past const and volatile qualifiers.  */
 		      while (*method_name == 'C' || *method_name == 'V')
 			method_name++;
-		      /* Skip digits for length of type_encoding. */
+		      /* Skip digits for length of type_encoding.  */
 		      while (*method_name == *length_ptr && *length_ptr)
 			  length_ptr++, method_name++;
 		      if (! strncmp (method_name,
@@ -890,7 +890,7 @@ dbxout_type_methods (type)
 		  char *length_ptr = formatted_type_identifier_length;
 		  while (*ctor_name == 'C' || *ctor_name == 'V')
 		    ctor_name++;
-		  /* Skip digits for length of type_encoding. */
+		  /* Skip digits for length of type_encoding.  */
 		  while (*ctor_name == *length_ptr && *length_ptr)
 		      length_ptr++, ctor_name++;
 		  if (!strncmp (IDENTIFIER_POINTER (type_encoding), ctor_name,
@@ -925,7 +925,7 @@ dbxout_type_methods (type)
 
 /* Emit a "range" type specification, which has the form:
    "r<index type>;<lower bound>;<upper bound>;".
-   TYPE is an INTEGER_TYPE. */
+   TYPE is an INTEGER_TYPE.  */
 
 static void
 dbxout_range_type (type)
@@ -942,7 +942,7 @@ dbxout_range_type (type)
 	 were defined to be sub-ranges of int.  Unfortunately, this
 	 does not allow us to distinguish true sub-ranges from integer
 	 types.  So, instead we define integer (non-sub-range) types as
-	 sub-ranges of themselves. */
+	 sub-ranges of themselves.  */
       dbxout_type_index (type);
     }
   if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
@@ -1222,7 +1222,7 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, "@s%d;",
 		   BITS_PER_UNIT * int_size_in_bytes (type));
 	  /* Check if a bitstring type, which in Chill is
-	     different from a [power]set. */
+	     different from a [power]set.  */
 	  if (TYPE_STRING_FLAG (type))
 	    fprintf (asmfile, "@S;");
 	}
@@ -1237,7 +1237,7 @@ dbxout_type (type, full, show_arg_types)
 	 followed by a reference to the target-type.
 	 ar1;0;N;M for a C array of type M and size N+1.  */
       /* Check if a character string type, which in Chill is
-	 different from an array of characters. */
+	 different from an array of characters.  */
       if (TYPE_STRING_FLAG (type) && use_gnu_debug_info_extensions)
 	{
 	  have_used_extensions = 1;

@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 
-extern char* xmalloc ();
+extern char *xmalloc ();
 
 enum formals_style_enum {
   ansi,
@@ -37,26 +37,26 @@ enum formals_style_enum {
 typedef enum formals_style_enum formals_style;
 
 
-static char* data_type;
+static char *data_type;
 
-static char * concat ();
-static char * concat3 ();
-static char * gen_formal_list_for_type ();
-static int    deserves_ellipsis ();
-static char * gen_formal_list_for_func_def ();
-static char * gen_type ();
-static char * gen_decl ();
+static char *concat ();
+static char *concat3 ();
+static char *gen_formal_list_for_type ();
+static int   deserves_ellipsis ();
+static char *gen_formal_list_for_func_def ();
+static char *gen_type ();
+static char *gen_decl ();
 void   gen_aux_info_record ();
 
 /*  Take two strings and mash them together into a newly allocated area.  */
 
-static char*
+static char *
 concat (s1, s2)
-     char* s1;
-     char* s2;
+     char *s1;
+     char *s2;
 {
   int size1, size2;
-  char* ret_val;
+  char *ret_val;
 
   if (!s1)
     s1 = "";
@@ -73,14 +73,14 @@ concat (s1, s2)
 
 /*  Take three strings and mash them together into a newly allocated area.  */
 
-static char*
+static char *
 concat3 (s1, s2, s3)
-     char* s1;
-     char* s2;
-     char* s3;
+     char *s1;
+     char *s2;
+     char *s3;
 {
   int size1, size2, size3;
-  char* ret_val;
+  char *ret_val;
 
   if (!s1)
     s1 = "";
@@ -113,7 +113,7 @@ concat3 (s1, s2, s3)
    `const char *foo;' and *not* `char const *foo;' so we try to create types
    that look as expected.  */
 
-static char*
+static char *
 affix_data_type (type_or_decl)
      char *type_or_decl;
 {
@@ -156,14 +156,14 @@ affix_data_type (type_or_decl)
    this function type.  Return the whole formal parameter list (including
    a pair of surrounding parens) as a string.   Note that if the style
    we are currently aiming for is non-ansi, then we just return a pair
-   of empty parens here. */
+   of empty parens here.  */
 
-static char*
+static char *
 gen_formal_list_for_type (fntype, style)
      tree fntype;
      formals_style style;
 {
-  char* formal_list = "";
+  char *formal_list = "";
   tree formal_type;
 
   if (style != ansi)
@@ -172,7 +172,7 @@ gen_formal_list_for_type (fntype, style)
   formal_type = TYPE_ARG_TYPES (fntype);
   while (formal_type && TREE_VALUE (formal_type) != void_type_node)
     {
-      char* this_type;
+      char *this_type;
 
       if (*formal_list)
         formal_list = concat (formal_list, ", ");
@@ -278,12 +278,12 @@ deserves_ellipsis (fntype)
    This routine returns a string which is the source form for the entire
    function formal parameter list.  */
 
-static char*
+static char *
 gen_formal_list_for_func_def (fndecl, style)
      tree fndecl;
      formals_style style;
 {
-  char* formal_list = "";
+  char *formal_list = "";
   tree formal_decl;
 
   formal_decl = DECL_ARGUMENTS (fndecl);
@@ -353,9 +353,9 @@ gen_formal_list_for_func_def (fndecl, style)
    to do at this point is for the initial caller to prepend the "data_type"
    string onto the returned "seed".  */
 
-static char*
+static char *
 gen_type (ret_val, t, style)
-     char* ret_val;
+     char *ret_val;
      tree t;
      formals_style style;
 {
@@ -517,13 +517,13 @@ gen_type (ret_val, t, style)
    associated with a function definition.  In this case, we can assume that
    an attached list of DECL nodes for function formal arguments is present.  */
 
-static char*
+static char *
 gen_decl (decl, is_func_definition, style)
      tree decl;
      int is_func_definition;
      formals_style style;
 {
-  char* ret_val;
+  char *ret_val;
 
   if (DECL_NAME (decl))
     ret_val = IDENTIFIER_POINTER (DECL_NAME (decl));
@@ -591,7 +591,7 @@ gen_decl (decl, is_func_definition, style)
   return ret_val;
 }
 
-extern FILE* aux_info_file;
+extern FILE *aux_info_file;
 
 /* Generate and write a new line of info to the aux-info (.X) file.  This
    routine is called once for each function declaration, and once for each

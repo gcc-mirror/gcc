@@ -154,7 +154,8 @@ int n_basic_blocks;
 
 int max_regno;
 
-/* Maximum number of SCRATCH rtx's used in any basic block of this function. */
+/* Maximum number of SCRATCH rtx's used in any basic block of this
+   function.  */
 
 int max_scratch;
 
@@ -327,7 +328,7 @@ flow_analysis (f, nregs, file)
 #endif
 
   /* Record which registers will be eliminated.  We use this in
-     mark_used_regs. */
+     mark_used_regs.  */
 
   CLEAR_HARD_REG_SET (elim_reg_set);
 
@@ -969,7 +970,7 @@ life_analysis (f, nregs)
 
   /* Record which insns refer to any volatile memory
      or for any reason can't be deleted just because they are dead stores.
-     Also, delete any insns that copy a register to itself. */
+     Also, delete any insns that copy a register to itself.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
@@ -1300,7 +1301,7 @@ allocate_for_life_analysis ()
   register regset tem;
 
   regset_size = ((max_regno + REGSET_ELT_BITS - 1) / REGSET_ELT_BITS);
-  regset_bytes = regset_size * sizeof (*(regset)0);
+  regset_bytes = regset_size * sizeof (*(regset) 0);
 
   reg_n_refs = (int *) oballoc (max_regno * sizeof (int));
   bzero ((char *) reg_n_refs, max_regno * sizeof (int));
@@ -1775,7 +1776,7 @@ insn_dead_p (x, needed, call_ok)
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* Make sure insns to set arg pointer are never deleted
 		 (if the arg pointer isn't fixed, there will be a USE for
-		 it, so we can treat it normally). */
+		 it, so we can treat it normally).  */
 	      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
 	      || (needed[offset] & bit) != 0)
@@ -2430,7 +2431,7 @@ mark_used_regs (needed, live, x, final, insn)
 	  return;
 	}
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case REG:
       /* See a register other than being set
@@ -2720,7 +2721,7 @@ try_pre_increment_1 (insn)
   if (y != 0
       && BLOCK_NUM (y) == BLOCK_NUM (insn)
       /* Don't do this if the reg dies, or gets set in y; a standard addressing
-	 mode would be better. */
+	 mode would be better.  */
       && ! dead_or_set_p (y, SET_DEST (x))
       && try_pre_increment (y, SET_DEST (PATTERN (insn)),
 			    amount))

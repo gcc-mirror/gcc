@@ -395,7 +395,7 @@ common_type (t1, t2)
 	  }
 
 	t1 = build_function_type (valtype, newargs);
-	/* ... falls through ... */
+	/* ... falls through ...  */
       }
 
     default:
@@ -1721,7 +1721,7 @@ convert_arguments (typelist, values, name, fundecl)
 		}
 
 	      parmval = convert_for_assignment (type, val, 
-					        (char *)0, /* arg passing  */
+					        (char *) 0, /* arg passing  */
 						fundecl, name, parmnum + 1);
 	      
 #ifdef PROMOTE_PROTOTYPES
@@ -3284,7 +3284,7 @@ mark_addressable (exp)
 	    return 0;
 	  }
 
-	/* ... fall through ... */
+	/* ... fall through ...  */
 
       case ADDR_EXPR:
       case ARRAY_REF:
@@ -4079,7 +4079,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	  if (! memb_types)
 	    {
 	      /* We have only a marginally acceptable member type;
-		 it needs a warning. */
+		 it needs a warning.  */
 	      register tree ttl = TREE_TYPE (marginal_memb_type);
 	      register tree ttr = TREE_TYPE (rhstype);
 
@@ -5035,7 +5035,7 @@ static tree constructor_pending_elts;
 static int constructor_depth;
 
 /* 0 if implicitly pushing constructor levels is allowed.  */
-int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages. */
+int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages.  */
 
 /* 1 if this constructor level was entered implicitly.  */
 static int constructor_implicit;
@@ -6369,7 +6369,7 @@ process_init_element (value)
 	      break;
 	    }
 
-	  /* In the case of [LO .. HI] = VALUE, only evaluate VALUE once. */
+	  /* In the case of [LO .. HI] = VALUE, only evaluate VALUE once.  */
 	  if (constructor_range_end)
 	    value = save_expr (value);
 

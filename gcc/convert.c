@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* These routines are somewhat language-independent utility function
-   intended to be called by the language-specific convert () functions. */
+   intended to be called by the language-specific convert () functions.  */
 
 #include "config.h"
 #include "tree.h"
@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 /* Convert EXPR to some pointer or reference type TYPE.
 
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
-   in other cases error is called. */
+   in other cases error is called.  */
 
 tree
 convert_to_pointer (type, expr)
@@ -74,7 +74,7 @@ convert_to_pointer (type, expr)
 /* Convert EXPR to some floating-point type TYPE.
 
    EXPR must be float, integer, or enumeral;
-   in other cases error is called. */
+   in other cases error is called.  */
 
 tree
 convert_to_real (type, expr)

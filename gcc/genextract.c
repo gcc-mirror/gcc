@@ -140,7 +140,7 @@ gen_insn (insn)
   link = (struct code_ptr *) xmalloc (sizeof (struct code_ptr));
   link->insn_code = insn_code_number;
 
-  /* See if we find something that already had this extraction method. */
+  /* See if we find something that already had this extraction method.  */
 
   for (p = extractions; p; p = p->next)
     {

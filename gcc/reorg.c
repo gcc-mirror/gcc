@@ -170,8 +170,8 @@ static rtx *unfilled_firstobj;
 struct resources
 {
   char memory;			/* Insn sets or needs a memory location.  */
-  char unch_memory;		/* Insn sets of needs a "unchanging" MEM. */
-  char volatil;			/* Insn sets or needs a volatile memory loc. */
+  char unch_memory;		/* Insn sets of needs a "unchanging" MEM.  */
+  char volatil;			/* Insn sets or needs a volatile memory loc.  */
   char cc;			/* Insn sets or needs the condition codes.  */
   HARD_REG_SET regs;		/* Which registers are set or needed.  */
 };
@@ -395,7 +395,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	  rtx next = NEXT_INSN (x);
 	  int i;
 
-	  /* If we are part of a delay slot sequence, point at the SEQUENCE. */
+	  /* If we are part of a delay slot sequence, point at the SEQUENCE.  */
 	  if (NEXT_INSN (insn) != x)
 	    {
 	      next = NEXT_INSN (NEXT_INSN (insn));
@@ -454,7 +454,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	  }
 	}
 
-      /* ... fall through to other INSN processing ... */
+      /* ... fall through to other INSN processing ...  */
 
     case INSN:
     case JUMP_INSN:
@@ -813,7 +813,7 @@ find_end_label ()
       end_of_function_label = gen_label_rtx ();
       LABEL_NUSES (end_of_function_label) = 0;
 
-      /* Put the label before an USE insns that may proceed the RETURN insn. */
+      /* Put the label before an USE insns that may proceed the RETURN insn.  */
       while (GET_CODE (temp) == USE)
 	temp = PREV_INSN (temp);
 
@@ -870,14 +870,14 @@ emit_delay_sequence (insn, list, length, avail)
   register rtx li;
   int had_barrier = 0;
 
-  /* Allocate the the rtvec to hold the insns and the SEQUENCE. */
+  /* Allocate the the rtvec to hold the insns and the SEQUENCE.  */
   rtvec seqv = rtvec_alloc (length + 1);
   rtx seq = gen_rtx (SEQUENCE, VOIDmode, seqv);
   rtx seq_insn = make_insn_raw (seq);
   rtx first = get_insns ();
   rtx last = get_last_insn ();
 
-  /* Make a copy of the insn having delay slots. */
+  /* Make a copy of the insn having delay slots.  */
   rtx delay_insn = copy_rtx (insn);
 
   /* If INSN is followed by a BARRIER, delete the BARRIER since it will only
@@ -1227,6 +1227,7 @@ optimize_skip (insn)
 
     Non conditional branches return no direction information and
     are predicted as very likely taken.  */
+
 static int
 get_jump_flags (insn, label)
      rtx insn, label;
@@ -1382,7 +1383,7 @@ mostly_true_jump (jump_insn, condition)
     }
 
   /* Look at the relative rarities of the fallthrough and destination.  If
-     they differ, we can predict the branch that way. */
+     they differ, we can predict the branch that way.  */
 
   switch (rare_fallthrough - rare_dest)
     {

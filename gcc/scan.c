@@ -111,7 +111,7 @@ scan_string (fp, s, init)
   return c;
 }
 
-/* Skip horizontal white spaces (spaces, tabs, and C-style comments). */
+/* Skip horizontal white spaces (spaces, tabs, and C-style comments).  */
 
 int
 skip_spaces (fp, c)

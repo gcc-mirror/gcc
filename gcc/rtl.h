@@ -47,16 +47,16 @@ enum rtx_code  {
 				/* The cast here, saves many elsewhere.  */
 
 extern int rtx_length[];
-#define GET_RTX_LENGTH(CODE)		(rtx_length[(int)(CODE)])
+#define GET_RTX_LENGTH(CODE)		(rtx_length[(int) (CODE)])
 
 extern char *rtx_name[];
-#define GET_RTX_NAME(CODE)		(rtx_name[(int)(CODE)])
+#define GET_RTX_NAME(CODE)		(rtx_name[(int) (CODE)])
 
 extern char *rtx_format[];
-#define GET_RTX_FORMAT(CODE)		(rtx_format[(int)(CODE)])
+#define GET_RTX_FORMAT(CODE)		(rtx_format[(int) (CODE)])
 
 extern char rtx_class[];
-#define GET_RTX_CLASS(CODE)		(rtx_class[(int)(CODE)])
+#define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
 /* Common union for an element of an rtx.  */
 
@@ -311,7 +311,7 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 /* Names for REG_NOTE's in EXPR_LIST insn's.  */
 
 extern char *reg_note_name[];
-#define GET_REG_NOTE_NAME(MODE) (reg_note_name[(int)(MODE)])
+#define GET_REG_NOTE_NAME(MODE) (reg_note_name[(int) (MODE)])
 
 /* This field is only present on CALL_INSNs.  It holds a chain of EXPR_LIST of
    USE and CLOBBER expressions.
@@ -709,7 +709,7 @@ extern int get_pool_offset		PROTO((rtx));
 extern rtx simplify_subtraction		PROTO((rtx));
 extern rtx assign_stack_local		PROTO((enum machine_mode, int, int));
 extern rtx assign_stack_temp		PROTO((enum machine_mode, int, int));
-extern rtx assign_temp			PROTO((union tree_node*, int,
+extern rtx assign_temp			PROTO((union tree_node *, int,
 					       int, int));
 extern rtx protect_from_queue		PROTO((rtx, int));
 extern void emit_queue			PROTO((void));

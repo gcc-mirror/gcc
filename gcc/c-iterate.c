@@ -412,7 +412,7 @@ void
 push_iterator_stack ()
 {
   struct iter_stack_node *new_top
-    = (struct iter_stack_node*) 
+    = (struct iter_stack_node *) 
       obstack_alloc (&ixp_obstack, sizeof (struct iter_stack_node));
 
   new_top->first = 0;
@@ -445,15 +445,15 @@ add_ixpansion (idecl, pro_start, pro_end, epi_start, epi_end)
      tree idecl;
      rtx pro_start, pro_end, epi_start, epi_end;
 {
-  struct ixpansion* newix;
+  struct ixpansion *newix;
     
   /* Do nothing if we are not inside "({...})",
      as in that case this expansion can't need subsequent RTL modification.  */
   if (iter_stack == 0)
     return;
 
-  newix = (struct ixpansion*) obstack_alloc (&ixp_obstack,
-					     sizeof (struct ixpansion));
+  newix = (struct ixpansion *) obstack_alloc (&ixp_obstack,
+					      sizeof (struct ixpansion));
   newix->ixdecl = idecl;
   newix->ixprologue_start = pro_start;
   newix->ixprologue_end   = pro_end;
@@ -474,7 +474,7 @@ static void
 delete_ixpansion (idecl)
      tree idecl;
 {
-  struct ixpansion* previx = 0, *ix;
+  struct ixpansion *previx = 0, *ix;
 
   for (ix = sublevel_ixpansions.first; ix; ix = ix->next)
     if (ix->ixdecl == idecl)
@@ -580,7 +580,7 @@ pixl (head)
   return head;
 }
 
-/* Print Iterator Stack*/
+/* Print Iterator Stack.  */
 
 void
 pis ()

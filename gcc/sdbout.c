@@ -572,8 +572,8 @@ plain_type_1 (type, level)
 	       only if the .def has already been finished.
 	       At least on 386, the Unix assembler
 	       cannot handle forward references to tags.  */
-	    /* But the 88100, it requires them, sigh... */
-	    /* And the MIPS requires unknown refs as well... */
+	    /* But the 88100, it requires them, sigh...  */
+	    /* And the MIPS requires unknown refs as well...  */
 	    tag = KNOWN_TYPE_TAG (type);
 	    PUT_SDB_TAG (tag);
 	    /* These 3 lines used to follow the close brace.
@@ -947,7 +947,7 @@ sdbout_toplevel_data (decl)
 
 #ifdef SDB_ALLOW_FORWARD_REFERENCES
 
-/* Machinery to record and output anonymous types. */
+/* Machinery to record and output anonymous types.  */
 
 static tree anonymous_types;
 

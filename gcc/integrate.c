@@ -394,7 +394,7 @@ save_for_inline_copying (fndecl)
   char *new, *new1;
 
   /* Make and emit a return-label if we have not already done so. 
-     Do this before recording the bounds on label numbers. */
+     Do this before recording the bounds on label numbers.  */
 
   if (return_label == 0)
     {
@@ -1466,7 +1466,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	     that flag set if it is a register.
 
 	     Also, don't allow hard registers here; they might not be valid
-	     when substituted into insns. */
+	     when substituted into insns.  */
 
 	  if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
 	      || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
@@ -1497,7 +1497,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	     that flag set if it is a register.
 
 	     Also, don't allow hard registers here; they might not be valid
-	     when substituted into insns. */
+	     when substituted into insns.  */
 	  rtx locreal = gen_realpart (GET_MODE (XEXP (loc, 0)), loc);
 	  rtx locimag = gen_imagpart (GET_MODE (XEXP (loc, 0)), loc);
 	  rtx copyreal = gen_realpart (GET_MODE (locreal), copy);
@@ -2152,7 +2152,7 @@ copy_rtx_and_substitute (orig, map)
 	  else if (regno == VIRTUAL_INCOMING_ARGS_REGNUM)
 	    {
 	      /* Do the same for a block to contain any arguments referenced
-		 in memory. */
+		 in memory.  */
 	      rtx loc, seq;
 	      int size = FUNCTION_ARGS_SIZE (DECL_SAVED_INSNS (map->fndecl));
 
@@ -2161,7 +2161,7 @@ copy_rtx_and_substitute (orig, map)
 	      loc = XEXP (loc, 0);
 	      /* When arguments grow downward, the virtual incoming 
 		 args pointer points to the top of the argument block,
-		 so the remapped location better do the same. */
+		 so the remapped location better do the same.  */
 #ifdef ARGS_GROW_DOWNWARD
 	      loc = plus_constant (loc, size);
 #endif
@@ -2345,7 +2345,7 @@ copy_rtx_and_substitute (orig, map)
 	 will not have valid reg_map entries.  This can cause try_constants()
 	 to fail because assumes that all registers in the rtx have valid
 	 reg_map entries, and it may end up replacing one of these new
-	 registers with junk. */
+	 registers with junk.  */
 
       if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
 	temp = change_address (temp, GET_MODE (temp), XEXP (temp, 0));

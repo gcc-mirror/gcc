@@ -356,7 +356,7 @@ stupid_find_reg (call_preserved, class, mode,
 #endif
 
   /* If this register's life is more than 5,000 insns, we probably
-     can't allocate it, so don't waste the time trying.  This avoid
+     can't allocate it, so don't waste the time trying.  This avoids
      quadratic behavior on programs that have regularly-occurring
      SAVE_EXPRs.  */
   if (dead_insn > born_insn + 5000)

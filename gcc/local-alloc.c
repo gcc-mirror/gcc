@@ -103,7 +103,7 @@ static HARD_REG_SET *qty_phys_sugg;
 
 static short *qty_phys_num_copy_sugg;
 
-/* Element Q is the number of suggested registers in qty_phys_sugg. */
+/* Element Q is the number of suggested registers in qty_phys_sugg.  */
 
 static short *qty_phys_num_sugg;
 
@@ -737,7 +737,7 @@ optimize_reg_copy_1 (insn, dest, src)
 	break;
 
       /* See if all of SRC dies in P.  This test is slightly more
-	 conservative than it needs to be. */
+	 conservative than it needs to be.  */
       if ((note = find_regno_note (p, REG_DEAD, sregno)) != 0
 	  && GET_MODE (XEXP (note, 0)) == GET_MODE (src))
 	{
@@ -1461,13 +1461,13 @@ block_alloc (b)
       if (qty_sugg_compare (1, 2) > 0)
 	EXCHANGE (2, 1);
 
-      /* ... Fall through ... */
+      /* ... Fall through ...  */
     case 2:
       /* Put the best one to allocate in qty_order[0].  */
       if (qty_sugg_compare (0, 1) > 0)
 	EXCHANGE (0, 1);
 
-      /* ... Fall through ... */
+      /* ... Fall through ...  */
 
     case 1:
     case 0:
@@ -1510,13 +1510,13 @@ block_alloc (b)
       if (qty_compare (1, 2) > 0)
 	EXCHANGE (2, 1);
 
-      /* ... Fall through ... */
+      /* ... Fall through ...  */
     case 2:
       /* Put the best one to allocate in qty_order[0].  */
       if (qty_compare (0, 1) > 0)
 	EXCHANGE (0, 1);
 
-      /* ... Fall through ... */
+      /* ... Fall through ...  */
 
     case 1:
     case 0:
@@ -1782,7 +1782,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       || (offset > 0 && usize + offset > ssize)
       || (offset < 0 && usize + offset < ssize)
       /* Do not combine with a smaller already-assigned object
-	 if that smaller object is already combined with something bigger. */
+	 if that smaller object is already combined with something bigger.  */
       || (ssize > usize && ureg >= FIRST_PSEUDO_REGISTER
 	  && usize < qty_size[reg_qty[ureg]])
       /* Can't combine if SREG is not a register we can allocate.  */
@@ -2139,7 +2139,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
     SET_HARD_REG_BIT (used, eliminables[i].from);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   /* If FRAME_POINTER_REGNUM is not a real register, then protect the one
-     that it might be eliminated into. */
+     that it might be eliminated into.  */
   SET_HARD_REG_BIT (used, HARD_FRAME_POINTER_REGNUM);
 #endif
 #else

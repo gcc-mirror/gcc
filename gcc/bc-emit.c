@@ -55,12 +55,13 @@ extern enum machine_mode byte_mode;
 /* Mode whose width is BITS_PER_WORD */
 extern enum machine_mode word_mode;
 
-/* Vector indexed by opcode giving info about the args for each opcode. */
+/* Vector indexed by opcode giving info about the args for each opcode.  */
 static struct arityvec arityvec[] = {
 #include "bc-arity.h"
 };
 
 /* How to print a symbol name for the assembler.  */
+
 static void
 prsym (file, s)
      FILE *file;
@@ -78,7 +79,7 @@ prsym (file, s)
 
 }
 
-/* Maintain a bucket hash table for symbol names. */
+/* Maintain a bucket hash table for symbol names.  */
 
 #define HASH_BITS 32
 #define HASH_SIZE 509
@@ -101,7 +102,8 @@ hash (name)
 }
 
 
-/* Look up the named symbol, creating it if it doesn't exist. */
+/* Look up the named symbol, creating it if it doesn't exist.  */
+
 struct bc_sym *
 sym_lookup (name)
      char *name;
@@ -126,6 +128,7 @@ sym_lookup (name)
 
 
 /* Write out .globl and common symbols to the named file.  */
+
 static void
 bc_sym_write (file)
      FILE *file;
@@ -160,7 +163,8 @@ bc_sym_write (file)
 
 
 
-/* Create and initialize a new segment. */
+/* Create and initialize a new segment.  */
+
 static struct bc_seg *
 seg_create ()
 {
@@ -176,7 +180,8 @@ seg_create ()
 }
 
 
-/* Advance the segment index to the next alignment boundary. */
+/* Advance the segment index to the next alignment boundary.  */
+
 static void
 seg_align (seg, log)
      struct bc_seg *seg;
@@ -195,7 +200,8 @@ seg_align (seg, log)
 }
 
 
-/* Append the given data to the given segment. */
+/* Append the given data to the given segment.  */
+
 static void
 seg_data (seg, data, size)
      struct bc_seg *seg;
@@ -215,6 +221,7 @@ seg_data (seg, data, size)
 
 
 /* Append a zero-filled skip to the given segment.  */
+
 static void
 seg_skip (seg, size)
      struct bc_seg *seg;
@@ -234,7 +241,8 @@ seg_skip (seg, size)
 
 /* Define the given name as the current offset in the given segment.  It
    is an error if the name is already defined.  Return 0 or 1 indicating
-   failure or success respectively. */
+   failure or success respectively.  */
+
 static int
 seg_defsym (seg, name)
      struct bc_seg *seg;
@@ -258,7 +266,8 @@ seg_defsym (seg, name)
 
 
 /* Generate in seg's data a reference to the given sym, adjusted by
-   the given offset. */
+   the given offset.  */
+
 static void
 seg_refsym (seg, name, offset)
      struct bc_seg *seg;
@@ -278,7 +287,8 @@ seg_refsym (seg, name, offset)
 }
 
 
-/* Concatenate the contents of given segments into the first argument. */
+/* Concatenate the contents of given segments into the first argument.  */
+
 static void
 seg_concat (result, seg)
      struct bc_seg *result, *seg;
@@ -293,7 +303,7 @@ seg_concat (result, seg)
   free (seg->data);
 
   /* Go through the symbols and relocs of SEG, adjusting their offsets
-     for their new location in RESULT. */
+     for their new location in RESULT.  */
   if (seg->syms)
     {
       segsym = seg->syms;
@@ -317,6 +327,7 @@ seg_concat (result, seg)
 }
 
 /* Write a segment to a file.  */
+
 static void
 bc_seg_write (seg, file)
      struct bc_seg *seg;
@@ -391,11 +402,12 @@ bc_seg_write (seg, file)
 
 
 
-/* Text and data segments of the object file in making. */
+/* Text and data segments of the object file in making.  */
 static struct bc_seg *bc_text_seg;
 static struct bc_seg *bc_data_seg;
 
-/* Called before anything else in this module. */
+/* Called before anything else in this module.  */
+
 void
 bc_initialize ()
 {
@@ -443,25 +455,26 @@ bc_initialize ()
    require us to provide hairy location info and possibly obey alignment
    rules imposed by the architecture) we build an auxiliary table of
    pointer constants, and encode just offsets into this table into the
-   actual bytecode. */
+   actual bytecode.  */
 static struct bc_seg *ptrconsts;
 
 /* Trampoline code for the function entry.  */
 struct bc_seg *trampoline;
 
-/* Actual byte code of the function. */
+/* Actual byte code of the function.  */
 struct bc_seg *bytecode;
 
-/* List of labels defined in the function. */
+/* List of labels defined in the function.  */
 struct bc_label *labels;
 
-/* List of label references in the function. */
+/* List of label references in the function.  */
 struct bc_labelref *labelrefs;
 
 
 /* Add symbol to pointer table.  Return offset into table where
    pointer was stored.  The offset usually goes into the bytecode
-   stream as a constP literal. */
+   stream as a constP literal.  */
+
 int
 bc_define_pointer (p)
      char *p;
@@ -474,6 +487,7 @@ bc_define_pointer (p)
 
 
 /* Begin a bytecoded function.  */
+
 int
 bc_begin_function (name)
     char *name;
@@ -486,6 +500,7 @@ bc_begin_function (name)
 
 
 /* Force alignment in inline bytecode.  */
+
 void
 bc_align_bytecode (align)
     int align;
@@ -495,6 +510,7 @@ bc_align_bytecode (align)
 
 
 /* Emit data inline into bytecode.  */
+
 void
 bc_emit_bytecode_const (data, size)
      char *data;
@@ -507,7 +523,8 @@ bc_emit_bytecode_const (data, size)
 
 /* Create a new "bytecode label", to have its value defined later.
    Bytecode labels have nothing to do with the object file symbol table,
-   and are purely local to a given bytecoded function. */
+   and are purely local to a given bytecoded function.  */
+
 struct bc_label *
 bc_get_bytecode_label ()
 {
@@ -522,7 +539,8 @@ bc_get_bytecode_label ()
 }
 
 
-/* Define the given label with the current location counter. */
+/* Define the given label with the current location counter.  */
+
 int
 bc_emit_bytecode_labeldef (label)
      struct bc_label *label;
@@ -545,7 +563,8 @@ bc_emit_bytecode_labeldef (label)
 
 
 /* Generate a location-relative reference to the given bytecode label.
-   It need not be defined yet; label references will be backpatched later. */
+   It need not be defined yet; label references will be backpatched later.  */
+
 void
 bc_emit_bytecode_labelref (label)
      struct bc_label *label;
@@ -568,7 +587,8 @@ bc_emit_bytecode_labelref (label)
 
 
 /* Emit a reference to an external address; generate the reference in the
-   ptrconst area, and emit an offset in the bytecode. */
+   ptrconst area, and emit an offset in the bytecode.  */
+
 void
 bc_emit_code_labelref (name, offset)
      char *name;
@@ -589,6 +609,7 @@ bc_emit_code_labelref (name, offset)
 /* Backpatch label references in the byte code, and concatenate the bytecode
    and pointer constant segments to the cumulative text for the object file.
    Return a label name for the pointer constants region.  */
+
 char *
 bc_end_function ()
 {
@@ -598,7 +619,7 @@ bc_end_function ()
   char ptrconsts_label[20];
   static int nlab;
 
-  /* Backpatch bytecode label references. */
+  /* Backpatch bytecode label references.  */
   for (ref = labelrefs; ref; ref = ref->next)
     if (ref->label->defined)
       {
@@ -606,7 +627,7 @@ bc_end_function ()
 	bcopy ((char *) &addr, bytecode->data + ref->offset, sizeof addr);
       }
 
-  /* Free the chains of labelrefs and labeldefs. */
+  /* Free the chains of labelrefs and labeldefs.  */
   for (ref = labelrefs; ref; ref = nextref)
     {
       nextref = ref->next;
@@ -635,7 +656,8 @@ bc_end_function ()
   return sym_lookup (ptrconsts_label)->name;
 }
 
-/* Force alignment in const data. */
+/* Force alignment in const data.  */
+
 void
 bc_align_const (align)
      int align;
@@ -643,7 +665,8 @@ bc_align_const (align)
   seg_align (bc_text_seg, align);
 }
 
-/* Emit const data. */
+/* Emit const data.  */
+
 void
 bc_emit_const (data, size)
      char *data;
@@ -652,7 +675,8 @@ bc_emit_const (data, size)
   seg_data (bc_text_seg, data, size);
 }
 
-/* Emit a zero-filled constant skip. */
+/* Emit a zero-filled constant skip.  */
+
 void
 bc_emit_const_skip (size)
      unsigned int size;
@@ -660,7 +684,8 @@ bc_emit_const_skip (size)
   seg_skip (bc_text_seg, size);
 }
 
-/* Emit a label definition in const data. */
+/* Emit a label definition in const data.  */
+
 int
 bc_emit_const_labeldef (name)
      char *name;
@@ -668,7 +693,8 @@ bc_emit_const_labeldef (name)
   return seg_defsym (bc_text_seg, name);
 }
 
-/* Emit a label reference in const data. */
+/* Emit a label reference in const data.  */
+
 void
 bc_emit_const_labelref (name, offset)
      char *name;
@@ -677,7 +703,8 @@ bc_emit_const_labelref (name, offset)
   seg_refsym (bc_text_seg, name, offset);
 }
 
-/* Force alignment in data. */
+/* Force alignment in data.  */
+
 void
 bc_align_data (align)
      int align;
@@ -685,7 +712,8 @@ bc_align_data (align)
   seg_align (bc_data_seg, align);
 }
 
-/* Emit data. */
+/* Emit data.  */
+
 void
 bc_emit_data (data, size)
      char *data;
@@ -695,6 +723,7 @@ bc_emit_data (data, size)
 }
 
 /* Emit a zero-filled data skip.  */
+
 void
 bc_emit_data_skip (size)
      unsigned int size;
@@ -702,7 +731,8 @@ bc_emit_data_skip (size)
   seg_skip (bc_data_seg, size);
 }
 
-/* Emit label definition in data. */
+/* Emit label definition in data.  */
+
 int
 bc_emit_data_labeldef (name)
      char *name;
@@ -710,7 +740,8 @@ bc_emit_data_labeldef (name)
   return seg_defsym (bc_data_seg, name);
 }
 
-/* Emit label reference in data. */
+/* Emit label reference in data.  */
+
 void
 bc_emit_data_labelref (name, offset)
      char *name;
@@ -722,6 +753,7 @@ bc_emit_data_labelref (name, offset)
 /* Emit a common block of the given name and size.  Note that
    when the .o file is actually written non-global "common"
    blocks will have to be turned into space in the data section.  */
+
 int
 bc_emit_common (name, size)
      char *name;
@@ -739,7 +771,8 @@ bc_emit_common (name, size)
   return 1;
 }
 
-/* Globalize the given label. */
+/* Globalize the given label.  */
+
 void
 bc_globalize_label (name)
      char *name;
@@ -846,6 +879,7 @@ bc_gen_rtx (label, offset, bc_label)
 
 
 /* Print bytecode rtx */
+
 void
 bc_print_rtl (fp, r)
      FILE *fp;
@@ -860,6 +894,7 @@ bc_print_rtl (fp, r)
 
 
 /* Emit a bytecode, keeping a running tally of the stack depth.  */
+
 void
 bc_emit_bytecode (bytecode)
      enum bytecode_opcode bytecode;
@@ -883,7 +918,7 @@ bc_emit_bytecode (bytecode)
      will cause an interpreter stack undeflow when executed.  Instead of
      dumping core on such occasions, we omit the bytecode.  Erroneous code
      should not be executed, regardless.  This makes life much easier, since
-     we don't have to deceive ourselves about the known stack depth. */
+     we don't have to deceive ourselves about the known stack depth.  */
 
   bc_emit_bytecode_const (&byte, 1);
 
@@ -907,7 +942,8 @@ bc_emit_bytecode (bytecode)
 
 /* Emit a complete bytecode instruction, expecting the correct number
    of literal values in the call.  First argument is the instruction, the
-   remaining arguments are literals of size HOST_WIDE_INT or smaller. */
+   remaining arguments are literals of size HOST_WIDE_INT or smaller.  */
+
 void
 bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
 {
@@ -965,6 +1001,7 @@ bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
    coded function.  The argument is a label name of the interpreter
    bytecode callinfo structure; the return value is a label name for
    the beginning of the actual bytecode.  */
+
 char *
 bc_emit_trampoline (callinfo)
      char *callinfo;

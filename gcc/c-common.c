@@ -284,7 +284,7 @@ init_attributes ()
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
    and install them in NODE, which is either a DECL (including a TYPE_DECL)
    or a TYPE.  PREFIX_ATTRIBUTES can appear after the declaration specifiers
-   and declaration modifiers but before the declaration proper. */
+   and declaration modifiers but before the declaration proper.  */
 
 void
 decl_attributes (node, attributes, prefix_attributes)
@@ -645,7 +645,7 @@ decl_attributes (node, attributes, prefix_attributes)
 		if (first_arg_num != 0)
 		  {
 		    /* Verify that first_arg_num points to the last arg,
-		       the ... */
+		       the ...  */
 		    while (argument)
 		      arg_num++, argument = TREE_CHAIN (argument);
 		  if (arg_num != first_arg_num)
@@ -2292,7 +2292,7 @@ truthvalue_conversion (expr)
       if (TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE
 	  || TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
 	break;
-      /* fall through... */
+      /* fall through...  */
     case NOP_EXPR:
       /* If this is widening the argument, we can ignore it.  */
       if (TYPE_PRECISION (TREE_TYPE (expr))
@@ -2306,7 +2306,7 @@ truthvalue_conversion (expr)
       if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE)
 	break;
-      /* fall through... */
+      /* fall through...  */
     case BIT_XOR_EXPR:
       /* This and MINUS_EXPR can be changed into a comparison of the
 	 two objects.  */

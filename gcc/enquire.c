@@ -1,5 +1,5 @@
 /* Everything you wanted to know about your machine and C compiler,
-   but didn't know who to ask. */
+   but didn't know who to ask.  */
 
 #ifndef VERSION
 #define VERSION "4.3"
@@ -307,7 +307,7 @@
 #endif /* NO_FILE */
 #endif /* FILENAME */
 
-/* If PASS isn't defined, then this is the first pass over this file. */
+/* If PASS isn't defined, then this is the first pass over this file.  */
 #ifndef PASS
 #ifndef SEP
 #define PASS 1
@@ -620,7 +620,7 @@ Procedure croak(place) int place; {
 	farewell(bugs+1); /* An exit isn't essential here, but avoids loops */
 }
 
-/* This is here in case alloca.c is used, which calls this. */
+/* This is here in case alloca.c is used, which calls this.  */
 char *xmalloc(size) unsigned size; {
 	char *value = (char *)malloc(size);
 	if (value == 0) {
@@ -806,7 +806,7 @@ Procedure i_define(desc, extra, sort, name, val, lim, req, mark)
 	} else if (val + lim < 0) {
 		/* We may not produce a constant like -1024 if the max
 		   allowable value is 1023. It has then to be output as
-		   -1023-1. lim is the max allowable value. */
+		   -1023-1. lim is the max allowable value.  */
 		printf("#define %s%s (%ld%s%ld%s)\n",
 		       sort, name, -lim, mark, val+lim, mark);
 	} else {
@@ -1090,7 +1090,7 @@ int promotions() {
 	    eek_a_bug("promotions don't work properly in conditional expressions\n");
 	  }
 
-	showtype("unsigned short promotes to", Promoted((unsigned short)0));
+	showtype("unsigned short promotes to", Promoted((unsigned short) 0));
 	showtype("long+unsigned gives", sl+ui);
 	return 0;
 }
@@ -1108,7 +1108,7 @@ Procedure check_defines() {
 	usign= Signed;
 #else
 	/* Implementations promote unsigned short differently */
-	usign= is_signed((unsigned short)0);
+	usign= is_signed((unsigned short) 0);
 #endif
 
 	if (L) {
@@ -1554,7 +1554,7 @@ if (V) printf ("%s%s %s %s%s\n", co, "Type size_t is",
 	/* Alignment constants ********************************************/
 
 #define alignment(TYPE) \
-	((long)((char *)&((struct{char c; TYPE d;}*)0)->d - (char *)0))
+	((long)((char *)&((struct{char c; TYPE d;}*)0)->d - (char *) 0))
 
 	Vprintf("\n%sALIGNMENTS%s\n", co, oc);
 
@@ -2691,7 +2691,7 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 		mantbits=floor_log(2, (Long_double)f_radix)*f_mant_dig;
 		if (mantbits == 64
 		    && iexp == 15
-		    && f_max_exp+f_min_exp > 0 /* ??? f_min_exp may be wrong. */
+		    && f_max_exp+f_min_exp > 0 /* ??? f_min_exp may be wrong.  */
 		    && mantbits+iexp+17 == (int)sizeof(Number)*bits_per_byte) {
 			Vprintf("%sArithmetic probably doesn't use a hidden bit%s\n", co, oc);
 			Vprintf("%sIt's probably 80387 or 68881 extended real%s\n", co, oc);

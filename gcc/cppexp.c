@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!
 
-Written by Per Bothner 1994. */
+Written by Per Bothner 1994.  */
 
 /* Parse a C expression from text in a string  */
    
@@ -60,7 +60,7 @@ struct arglist {
 #endif
 
 #ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR)0)
+#define NULL_PTR ((GENERIC_PTR) 0)
 #endif
 
 extern char *xmalloc ();
@@ -122,7 +122,7 @@ static long right_shift ();
 #define RIGHT_OPERAND_REQUIRED 2
 #define HAVE_VALUE 4
 /* SKIP_OPERAND is set for '&&' '||' '?' and ':' when the
-   following operand should be short-circuited instead of evaluated. */
+   following operand should be short-circuited instead of evaluated.  */
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
@@ -140,10 +140,10 @@ static long right_shift ();
 
 struct operation {
     short op;
-    char rprio; /* Priority of op (relative to it right operand). */
+    char rprio; /* Priority of op (relative to it right operand).  */
     char flags;
     char unsignedp;    /* true if value should be treated as unsigned */
-    HOST_WIDE_INT value;        /* The value logically "right" of op. */
+    HOST_WIDE_INT value;        /* The value logically "right" of op.  */
 };
 
 /* Take care of parsing a number (anything that starts with a digit).
@@ -186,7 +186,7 @@ parse_number (pfile, start, olen)
   else if (*p == '0')
     base = 8;
 
-  /* Some buggy compilers (e.g. MPW C) seem to need both casts. */
+  /* Some buggy compilers (e.g. MPW C) seem to need both casts.  */
   ULONG_MAX_over_base = ((unsigned long) -1) / ((unsigned long) base);
 
   for (; len > 0; len--) {
@@ -275,7 +275,7 @@ static struct token tokentab2[] = {
   {NULL, ERROR}
 };
 
-/* Read one token. */
+/* Read one token.  */
 
 struct operation
 cpp_lex (pfile)
@@ -310,7 +310,7 @@ cpp_lex (pfile)
   pfile->limit = tok_start;
   switch (token)
   {
-    case CPP_EOF: /* Should not happen ... */
+    case CPP_EOF: /* Should not happen ...  */
     case CPP_VSPACE:
       op.op = 0;
       return op;
@@ -630,7 +630,7 @@ right_shift (pfile, a, unsignedp, b)
     return a >> b;
 }
 
-/* These priorities are all even, so we can handle associatively. */
+/* These priorities are all even, so we can handle associatively.  */
 #define PAREN_INNER_PRIO 0
 #define COMMA_PRIO 4
 #define COND_PRIO (COMMA_PRIO+2)
@@ -688,7 +688,7 @@ cpp_parse_expr (pfile)
 
       /* See if the token is an operand, in which case go to set_value.
 	 If the token is an operator, figure out its left and right
-	 priorities, and then goto maybe_reduce. */
+	 priorities, and then goto maybe_reduce.  */
 
       switch (op.op)
 	{
@@ -745,7 +745,7 @@ cpp_parse_expr (pfile)
 	}
 
     set_value:
-      /* Push a value onto the stack. */
+      /* Push a value onto the stack.  */
       if (top->flags & HAVE_VALUE)
 	{
 	  cpp_error (pfile, "syntax error in #if");
@@ -755,7 +755,7 @@ cpp_parse_expr (pfile)
       continue;
 
     maybe_reduce:
-      /* Push an operator, and check if we can reduce now. */
+      /* Push an operator, and check if we can reduce now.  */
       while (top->rprio > lprio)
 	{
 	  long v1 = top[-1].value, v2 = top[0].value;
@@ -985,22 +985,22 @@ cpp_parse_expr (pfile)
 	}
       top++;
       
-      /* Check for and handle stack overflow. */
+      /* Check for and handle stack overflow.  */
       if (top == limit)
 	{
 	  struct operation *new_stack;
-	  int old_size = (char*)limit - (char*)stack;
+	  int old_size = (char *) limit - (char *) stack;
 	  int new_size = 2 * old_size;
 	  if (stack != init_stack)
-	    new_stack = (struct operation*) xrealloc (stack, new_size);
+	    new_stack = (struct operation *) xrealloc (stack, new_size);
 	  else
 	    {
-	      new_stack = (struct operation*) xmalloc (new_size);
+	      new_stack = (struct operation *) xmalloc (new_size);
 	      bcopy ((char *) stack, (char *) new_stack, old_size);
 	    }
 	  stack = new_stack;
-	  top = (struct operation*)((char*) new_stack + old_size);
-	  limit = (struct operation*)((char*) new_stack + new_size);
+	  top = (struct operation *) ((char *) new_stack + old_size);
+	  limit = (struct operation *) ((char *) new_stack + new_size);
 	}
       
       top->flags = flags;

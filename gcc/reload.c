@@ -212,10 +212,10 @@ static int n_replacements;
 /* Used to track what is modified by an operand.  */
 struct decomposition
 {
-  int reg_flag;		/* Nonzero if referencing a register. */
-  int safe;		/* Nonzero if this can't conflict with anything. */
-  rtx base;		/* Base address for MEM. */
-  HOST_WIDE_INT start;	/* Starting offset or register number. */
+  int reg_flag;		/* Nonzero if referencing a register.  */
+  int safe;		/* Nonzero if this can't conflict with anything.  */
+  rtx base;		/* Base address for MEM.  */
+  HOST_WIDE_INT start;	/* Starting offset or register number.  */
   HOST_WIDE_INT end;	/* Ending offset or register number.  */
 };
 
@@ -849,7 +849,7 @@ push_reload (in, out, inloc, outloc, class,
      the class whose registers cannot be referenced in a different size
      and M1 is not the same size as M2.  If SUBREG_WORD is nonzero, we
      cannot reload just the inside since we might end up with the wrong
-     register class. */
+     register class.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG && SUBREG_WORD (in) == 0
 #ifdef CLASS_CANNOT_CHANGE_SIZE
@@ -1579,7 +1579,7 @@ combine_reloads ()
 	reload_out[output_reload] = 0;
 	/* The combined reload is needed for the entire insn.  */
 	reload_when_needed[i] = RELOAD_OTHER;
-	/* If the output reload had a secondary reload, copy it. */
+	/* If the output reload had a secondary reload, copy it.  */
 	if (reload_secondary_out_reload[output_reload] != -1)
 	  {
 	    reload_secondary_out_reload[i]
@@ -1594,7 +1594,7 @@ combine_reloads ()
 	  secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[i]]
 	    = secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]];
 #endif
-	/* If required, minimize the register class. */
+	/* If required, minimize the register class.  */
 	if (reg_class_subset_p (reload_reg_class[output_reload],
 				reload_reg_class[i]))
 	  reload_reg_class[i] = reload_reg_class[output_reload];
@@ -3689,7 +3689,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   /* If we have a pair of reloads for parts of an address, they are reloading
      the same object, the operands themselves were not reloaded, and they
      are for two operands that are supposed to match, merge the reloads and
-     change the type of the surviving reload to RELOAD_FOR_OPERAND_ADDRESS. */
+     change the type of the surviving reload to RELOAD_FOR_OPERAND_ADDRESS.  */
 
   for (i = 0; i < n_reloads; i++)
     {
@@ -3747,7 +3747,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      || reload_optional[operand_reloadnum[reload_opnum[i]]]))
 	{
 	  /* If we have a secondary reload to go along with this reload,
-	     change its type to RELOAD_FOR_OPADDR_ADDR. */
+	     change its type to RELOAD_FOR_OPADDR_ADDR.  */
 
 	  if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
 	      && reload_secondary_in_reload[i] != -1)
@@ -3757,7 +3757,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      reload_when_needed[secondary_in_reload] = 
 		RELOAD_FOR_OPADDR_ADDR;
 
-	      /* If there's a tertiary reload we have to change it also. */
+	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_in_reload > 0
 		  && reload_secondary_in_reload[secondary_in_reload] != -1)
 		reload_when_needed[reload_secondary_in_reload[secondary_in_reload]] 
@@ -3772,7 +3772,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      reload_when_needed[secondary_out_reload] = 
 		RELOAD_FOR_OPADDR_ADDR;
 
-	      /* If there's a tertiary reload we have to change it also. */
+	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_out_reload
 		  && reload_secondary_out_reload[secondary_out_reload] != -1)
 		reload_when_needed[reload_secondary_out_reload[secondary_out_reload]] 
@@ -5465,7 +5465,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
       if (p == 0 || GET_CODE (p) == CODE_LABEL)
 	return 0;
       if (GET_CODE (p) == INSN
-	  /* If we don't want spill regs ... */
+	  /* If we don't want spill regs ...  */
 	  && (! (reload_reg_p != 0
 		 && reload_reg_p != (short *) (HOST_WIDE_INT) 1)
 	  /* ... then ignore insns introduced by reload; they aren't useful

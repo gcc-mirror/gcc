@@ -129,7 +129,8 @@ GNU_xref_end ()
   fatal ("GCC does not yet support XREF");
 }
 
-/* called at end of parsing, but before end-of-file processing.  */
+/* Called at end of parsing, but before end-of-file processing.  */
+
 void
 finish_file ()
 {

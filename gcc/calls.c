@@ -261,7 +261,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
   funexp = protect_from_queue (funexp, 0);
 
   if (fndecl != 0)
-    /* Get possible static chain value for nested function in C. */
+    /* Get possible static chain value for nested function in C.  */
     static_chain_value = lookup_static_chain (fndecl);
 
   /* Make a valid memory address and copy constants thru pseudo-regs,
@@ -1392,8 +1392,9 @@ expand_call (exp, target, ignore)
 
       int needed = args_size.constant;
 
-      /* Store the maximum argument space used.  It will be pushed by the
-	 prologue (if ACCUMULATE_OUTGOING_ARGS, or stack overflow checking). */
+      /* Store the maximum argument space used.  It will be pushed by
+	 the prologue (if ACCUMULATE_OUTGOING_ARGS, or stack overflow
+	 checking).  */
 
       if (needed > current_function_outgoing_args_size)
 	current_function_outgoing_args_size = needed;
@@ -1611,7 +1612,7 @@ expand_call (exp, target, ignore)
     }
 
   /* Precompute all register parameters.  It isn't safe to compute anything
-     once we have started filling any specific hard regs. */
+     once we have started filling any specific hard regs.  */
   reg_parm_seen = 0;
   for (i = 0; i < num_actuals; i++)
     if (args[i].reg != 0 && ! args[i].pass_on_stack)
@@ -2212,7 +2213,7 @@ expand_call (exp, target, ignore)
 
   /* If this was alloca, record the new stack level for nonlocal gotos.  
      Check for the handler slots since we might not have a save area
-     for non-local gotos. */
+     for non-local gotos.  */
 
   if (may_be_alloca && nonlocal_goto_handler_slot != 0)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
@@ -2380,7 +2381,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	abort ();
 #endif
 
-      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree)0, 1);
+      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
     }
   va_end (p);
 
@@ -2639,7 +2640,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	  )
 	args_size.constant += argvec[count].size.constant;
 
-      FUNCTION_ARG_ADVANCE (args_so_far, Pmode, (tree)0, 1);
+      FUNCTION_ARG_ADVANCE (args_so_far, Pmode, (tree) 0, 1);
 
       count++;
     }
@@ -2728,7 +2729,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	abort ();
 #endif
 
-      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree)0, 1);
+      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
     }
   va_end (p);
 
@@ -2971,8 +2972,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   if (argblock && ! variable_size && arg->stack)
     {
 #ifdef ARGS_GROW_DOWNWARD
-      /* stack_slot is negative, but we want to index stack_usage_map */
-      /* with positive values. */
+      /* stack_slot is negative, but we want to index stack_usage_map
+         with positive values.  */
       if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
 	upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
       else

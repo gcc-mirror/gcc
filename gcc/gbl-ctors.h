@@ -45,7 +45,7 @@ extern void atexit (void (*) (void));
 #define ON_EXIT(FUNC,ARG) atexit ((FUNC))
 #else
 #ifdef sun
-extern int on_exit (void*, void*);	/* The man page says it returns int. */
+extern int on_exit (void *, void *);	/* The man page says it returns int. */
 #define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
 #endif
 #endif

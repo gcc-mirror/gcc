@@ -143,12 +143,12 @@ static tree static_instances_decl;
 
 /*** Private Interface (procedures) ***/
 
-/* Used by compile_file. */
+/* Used by compile_file.  */
 
 static void init_objc				PROTO((void));
 static void finish_objc				PROTO((void));
 
-/* Code generation. */
+/* Code generation.  */
 
 static void synth_module_prologue		PROTO((void));
 static tree build_constructor			PROTO((tree, tree));
@@ -230,13 +230,13 @@ static tree build_objc_string_decl		PROTO((tree,
 						       enum string_section));
 static tree build_selector_reference_decl	PROTO((tree));
 
-/* Protocol additions. */
+/* Protocol additions.  */
 
 static tree add_protocol			PROTO((tree));
 static tree lookup_protocol			PROTO((tree));
 static tree lookup_and_install_protocols	PROTO((tree));
 
-/* Type encoding. */
+/* Type encoding.  */
 
 static void encode_type_qualifiers		PROTO((tree));
 static void encode_pointer			PROTO((tree, int, int));
@@ -252,7 +252,7 @@ static int comp_proto_with_proto		PROTO((tree, tree));
 static tree get_arg_type_list			PROTO((tree, int, int));
 static tree expr_last				PROTO((tree));
 
-/* Utilities for debugging and error diagnostics. */
+/* Utilities for debugging and error diagnostics.  */
 
 static void warn_with_method			PROTO((char *, int, tree));
 static void error_with_ivar			PROTO((char *, tree, tree));
@@ -263,7 +263,7 @@ static int is_complex_decl			PROTO((tree));
 static void adorn_decl				PROTO((tree, char *));
 static void dump_interface			PROTO((FILE *, tree));
 
-/* Everything else. */
+/* Everything else.  */
 
 static void objc_fatal				PROTO((void));
 static tree define_decl				PROTO((tree, tree));
@@ -323,7 +323,7 @@ static void handle_class_ref			PROTO((tree));
 
 /*** Private Interface (data) ***/
 
-/* Reserved tag definitions. */
+/* Reserved tag definitions.  */
 
 #define TYPE_ID			"id"
 #define TAG_OBJECT		"objc_object"
@@ -388,23 +388,24 @@ static tree alias_chain = NULL_TREE;
 static tree interface_chain = NULL_TREE;
 static tree protocol_chain = NULL_TREE;
 
-/* Chains to manage selectors that are referenced and defined in the module. */
+/* Chains to manage selectors that are referenced and defined in the
+   module.  */
 
-static tree cls_ref_chain = NULL_TREE;	/* Classes referenced. */
-static tree sel_ref_chain = NULL_TREE;	/* Selectors referenced. */
+static tree cls_ref_chain = NULL_TREE;	/* Classes referenced.  */
+static tree sel_ref_chain = NULL_TREE;	/* Selectors referenced.  */
 
-/* Chains to manage uniquing of strings. */
+/* Chains to manage uniquing of strings.  */
 
 static tree class_names_chain = NULL_TREE;
 static tree meth_var_names_chain = NULL_TREE;
 static tree meth_var_types_chain = NULL_TREE;
 
-/* Hash tables to manage the global pool of method prototypes. */
+/* Hash tables to manage the global pool of method prototypes.  */
 
 static hash *nst_method_hash_list = 0;
 static hash *cls_method_hash_list = 0;
 
-/* Backend data declarations. */
+/* Backend data declarations.  */
 
 static tree UOBJC_SYMBOLS_decl;
 static tree UOBJC_INSTANCE_VARIABLES_decl, UOBJC_CLASS_VARIABLES_decl;
@@ -457,7 +458,7 @@ static int  method_slot = 0;	/* Used by start_method_def, */
 
 static char *errbuf;	/* Buffer for error diagnostics */
 
-/* Data imported from tree.c. */
+/* Data imported from tree.c.  */
 
 extern enum debug_info_type write_symbols;
 
@@ -482,7 +483,7 @@ int flag_gen_declaration = 0;
 FILE *gen_declaration_file;
 
 /* Warn if multiple methods are seen for the same selector, but with
-   different argument types. */
+   different argument types.  */
 
 int warn_selector = 0;
 
@@ -496,7 +497,7 @@ int flag_warn_protocol = 1;
    type descriptors for instance variables (as opposed to methods).
    Type descriptors for instance variables contain more information
    than methods (for static typing and embedded structures). This
-   was added to support features being planned for dbkit2. */
+   was added to support features being planned for dbkit2.  */
 
 static int generating_instance_variables = 0;
 
@@ -677,7 +678,7 @@ lookup_protocol_in_reflist (rproto_list, lproto)
 {
    tree rproto, p;
 
-   /* Make sure the protocol is support by the object on the rhs. */
+   /* Make sure the protocol is support by the object on the rhs.  */
    if (TREE_CODE (lproto) == PROTOCOL_INTERFACE_TYPE)
      {
        tree fnd = 0;
@@ -699,7 +700,7 @@ lookup_protocol_in_reflist (rproto_list, lproto)
 	 }
      }
    else
-     ; /* An identifier...if we could not find a protocol. */
+     ; /* An identifier...if we could not find a protocol.  */
 
    return 0;
 }
@@ -715,7 +716,7 @@ objc_comptypes (lhs, rhs, reflexive)
      tree rhs;
      int reflexive;
 {
-  /* New clause for protocols. */
+  /* New clause for protocols.  */
 
   if (TREE_CODE (lhs) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (lhs)) == RECORD_TYPE
@@ -767,7 +768,7 @@ objc_comptypes (lhs, rhs, reflexive)
 		      rproto_list = CLASS_PROTOCOL_LIST (rinter);
 		      rproto = lookup_protocol_in_reflist (rproto_list, p);
 
-		      /* Check for protocols adopted by categories. */
+		      /* Check for protocols adopted by categories.  */
 		      cat = CLASS_CATEGORY_LIST (rinter);
 		      while (cat && !rproto)
 			{
@@ -802,7 +803,7 @@ objc_comptypes (lhs, rhs, reflexive)
   else if (TREE_CODE (lhs) == RECORD_TYPE && TREE_CODE (rhs) == RECORD_TYPE)
     ; /* Fall thru.  This is the case we have been handling all along */
   else
-    /* Defer to comptypes. */
+    /* Defer to comptypes.  */
     return -1;
 
   /* `id' = `<class> *', `<class> *' = `id' */
@@ -847,7 +848,7 @@ objc_comptypes (lhs, rhs, reflexive)
       return 0;
     }
   else
-    /* Defer to comptypes. */
+    /* Defer to comptypes.  */
     return -1;
 }
 
@@ -987,7 +988,7 @@ lookup_and_install_protocols (protocols)
 	}
       else
 	{
-	  /* Replace identifier with actual protocol node. */
+	  /* Replace identifier with actual protocol node.  */
 	  TREE_VALUE (proto) = p;
 	  prev = proto;
 	}
@@ -1620,7 +1621,7 @@ build_module_descriptor ()
 
   finish_struct (objc_module_template, field_decl_chain, NULL_TREE);
 
-  /* Create an instance of "objc_module". */
+  /* Create an instance of "objc_module".  */
 
   decl_specs = tree_cons (NULL_TREE, objc_module_template,
 			  build_tree_list (NULL_TREE,
@@ -1635,13 +1636,13 @@ build_module_descriptor ()
 	       init_module_descriptor (TREE_TYPE (UOBJC_MODULES_decl)),
 	       NULL_TREE);
 
-  /* Mark the decl to avoid "defined but not used" warning. */
+  /* Mark the decl to avoid "defined but not used" warning.  */
   DECL_IN_SYSTEM_HEADER (UOBJC_MODULES_decl) = 1;
 
   /* Generate a constructor call for the module descriptor.
      This code was generated by reading the grammar rules
      of c-parse.in;  Therefore, it may not be the most efficient
-     way of generating the requisite code. */
+     way of generating the requisite code.  */
 
   if (flag_next_runtime)
     return 0;
@@ -1652,7 +1653,7 @@ build_module_descriptor ()
     extern tree get_file_function_name ();
     tree init_function_name = get_file_function_name ('I');
 
-    /* Declare void __objc_execClass (void*); */
+    /* Declare void __objc_execClass (void *); */
 
     void_list_node = build_tree_list (NULL_TREE, void_type_node);
     function_type
@@ -1823,7 +1824,7 @@ generate_static_references ()
   finish_decl (static_instances_decl, expr, NULL_TREE);
 }
 
-/* Output all strings. */
+/* Output all strings.  */
 
 static void
 generate_strings ()
@@ -2012,7 +2013,7 @@ build_selector_translation_table ()
       /* Cause the variable and its initial value to be actually output.  */
       DECL_EXTERNAL (UOBJC_SELECTOR_TABLE_decl) = 0;
       TREE_STATIC (UOBJC_SELECTOR_TABLE_decl) = 1;
-      /* NULL terminate the list and fix the decl for output. */
+      /* NULL terminate the list and fix the decl for output.  */
       initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), initlist);
       DECL_INITIAL (UOBJC_SELECTOR_TABLE_decl) = (tree) 1;
       initlist = build_constructor (TREE_TYPE (UOBJC_SELECTOR_TABLE_decl),
@@ -2214,7 +2215,7 @@ get_class_reference (ident)
    generation.
 
    For each string section we have a chain which maps identifier nodes
-   to decls for the strings. */
+   to decls for the strings.  */
 
 static tree
 add_objc_string (ident, section)
@@ -2497,7 +2498,7 @@ build_private_template (class)
   return ivar_context;
 }
 
-/* Begin code generation for protocols... */
+/* Begin code generation for protocols...  */
 
 /* struct objc_protocol {
      char *protocol_name;
@@ -2616,7 +2617,7 @@ build_method_prototype_list_template (list_type, size)
   tree objc_ivar_list_record;
   tree decl_specs, field_decl, field_decl_chain;
 
-  /* Generate an unnamed struct definition. */
+  /* Generate an unnamed struct definition.  */
 
   objc_ivar_list_record = start_struct (RECORD_TYPE, NULL_TREE);
 
@@ -2682,7 +2683,7 @@ build_method_prototype_template ()
   return proto_record;
 }
 
-/* True if last call to forwarding_offset yielded a register offset. */
+/* True if last call to forwarding_offset yielded a register offset.  */
 static int offset_is_register;
 
 static int
@@ -2742,15 +2743,15 @@ encode_method_prototype (method_decl, func_decl)
   char buf[40];
   tree result;
 
-  /* ONEWAY and BYCOPY, for remote object are the only method qualifiers. */
+  /* ONEWAY and BYCOPY, for remote object are the only method qualifiers.  */
   encode_type_qualifiers (TREE_PURPOSE (TREE_TYPE (method_decl)));
 
-  /* C type. */
+  /* C type.  */
   encode_type (TREE_TYPE (TREE_TYPE (func_decl)),
 	       obstack_object_size (&util_obstack),
 	       OBJC_ENCODE_INLINE_DEFS);
 
-  /* Stack size. */
+  /* Stack size.  */
   for (parms = DECL_ARGUMENTS (func_decl); parms;
        parms = TREE_CHAIN (parms))
     {
@@ -2769,26 +2770,26 @@ encode_method_prototype (method_decl, func_decl)
 
   user_args = METHOD_SEL_ARGS (method_decl);
 
-  /* Argument types. */
+  /* Argument types.  */
   for (parms = DECL_ARGUMENTS (func_decl), i = 0; parms;
        parms = TREE_CHAIN (parms), i++)
     {
-      /* Process argument qualifiers for user supplied arguments. */
+      /* Process argument qualifiers for user supplied arguments.  */
       if (i > 1)
         {
 	  encode_type_qualifiers (TREE_PURPOSE (TREE_TYPE (user_args)));
 	  user_args = TREE_CHAIN (user_args);
  	}
 
-      /* Type. */
+      /* Type.  */
       encode_type (TREE_TYPE (parms),
 		   obstack_object_size (&util_obstack),
 		   OBJC_ENCODE_INLINE_DEFS);
 
-      /* Compute offset. */
+      /* Compute offset.  */
       sprintf (buf, "%d", forwarding_offset (parms));
 
-      /* Indicate register. */
+      /* Indicate register.  */
       if (offset_is_register)
 	obstack_1grow (&util_obstack, '+');
       
@@ -2928,7 +2929,7 @@ hack_method_prototype (nst_methods, tmp_decl)
   tree parms;
   tree parm;
 
-  /* Hack to avoid problem with static typing of self arg. */
+  /* Hack to avoid problem with static typing of self arg.  */
   TREE_SET_CODE (nst_methods, CLASS_METHOD_DECL);
   start_method_def (nst_methods);
   TREE_SET_CODE (nst_methods, INSTANCE_METHOD_DECL);
@@ -2974,7 +2975,7 @@ generate_protocol_references (plist)
 {
   tree lproto;
 
-  /* Forward declare protocols referenced. */
+  /* Forward declare protocols referenced.  */
   for (lproto = plist; lproto; lproto = TREE_CHAIN (lproto))
     {
       tree proto = TREE_VALUE (lproto);
@@ -3018,7 +3019,7 @@ generate_protocols ()
       if (! PROTOCOL_FORWARD_DECL (p))
 	continue;
 
-      /* Make sure we link in the Protocol class. */
+      /* Make sure we link in the Protocol class.  */
       add_class_reference (get_identifier (PROTOCOL_OBJECT_CLASS_NAME));
 
       while (nst_methods)
@@ -3086,7 +3087,7 @@ generate_protocols ()
 					     UOBJC_CLASS_METHODS_decl);
       finish_decl (decl, initlist, NULL_TREE);
 
-      /* Mark the decl as used to avoid "defined but not used" warning. */
+      /* Mark the decl as used to avoid "defined but not used" warning.  */
       TREE_USED (decl) = 1;
     }
 }
@@ -3424,7 +3425,7 @@ synth_forward_declarations ()
   TREE_USED (UOBJC_METACLASS_decl) = 1;
   DECL_ARTIFICIAL(UOBJC_METACLASS_decl) = 1;
 
-  /* Pre-build the following entities - for speed/convenience. */
+  /* Pre-build the following entities - for speed/convenience.  */
 
   an_id = get_identifier ("super_class");
   ucls_super_ref = build_component_ref (UOBJC_CLASS_decl, an_id);
@@ -3696,17 +3697,17 @@ build_ivar_list_initializer (type, field_decl)
     {
       tree ivar = NULL_TREE;
 
-      /* Set name. */
+      /* Set name.  */
       if (DECL_NAME (field_decl))
 	ivar = tree_cons (NULL_TREE,
 			  add_objc_string (DECL_NAME (field_decl),
 					   meth_var_names),
 			  ivar);
       else
-	/* Unnamed bit-field ivar (yuck). */
+	/* Unnamed bit-field ivar (yuck).  */
 	ivar = tree_cons (NULL_TREE, build_int_2 (0, 0), ivar);
 
-      /* Set type. */
+      /* Set type.  */
       encode_field_decl (field_decl,
 			 obstack_object_size (&util_obstack),
 			 OBJC_ENCODE_DONT_INLINE_DEFS);
@@ -3786,7 +3787,7 @@ generate_ivar_lists ()
   variable_length_type = groktypename (cast);
 
   /* Only generate class variables for the root of the inheritance
-     hierarchy since these will be the same for every class. */
+     hierarchy since these will be the same for every class.  */
 
   if (CLASS_SUPER_NAME (implementation_template) == NULL_TREE
       && (chain = TYPE_FIELDS (objc_class_template)))
@@ -3997,7 +3998,7 @@ generate_dispatch_tables ()
 				     "_OBJC_INSTANCE_METHODS",
 				     size, initlist);
       else
-	/* We have a category. */
+	/* We have a category.  */
 	UOBJC_INSTANCE_METHODS_decl
 	  = generate_dispatch_table (method_list_template,
 				     "_OBJC_CATEGORY_INSTANCE_METHODS",
@@ -4034,13 +4035,13 @@ generate_protocol_list (i_or_p)
 				     get_identifier (UTAG_PROTOCOL))),
 	  build1 (INDIRECT_REF, NULL_TREE, NULL_TREE)));
 
-  /* Compute size. */
+  /* Compute size.  */
   for (lproto = plist; lproto; lproto = TREE_CHAIN (lproto))
     if (TREE_CODE (TREE_VALUE (lproto)) == PROTOCOL_INTERFACE_TYPE
 	&& PROTOCOL_FORWARD_DECL (TREE_VALUE (lproto)))
       size++;
 
-  /* Build initializer. */
+  /* Build initializer.  */
   initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), NULL_TREE);
 
   e = build_int_2 (size, 0);
@@ -4260,6 +4261,7 @@ build_shared_structure_initializer (type, isa, super, name, size, status,
 }
 
 /* static struct objc_category _OBJC_CATEGORY_<name> = { ... };  */
+
 static void
 generate_category (cat)
      tree cat;
@@ -4340,7 +4342,7 @@ generate_shared_structures ()
       while (1);
     }
   else
-    /* No super class. */
+    /* No super class.  */
     my_root_id = CLASS_NAME (implementation_template);
 
   cast_type
@@ -4352,7 +4354,7 @@ generate_shared_structures ()
   name_expr = add_objc_string (CLASS_NAME (implementation_template),
 			       class_names);
 
-  /* Install class `isa' and `super' pointers at runtime. */
+  /* Install class `isa' and `super' pointers at runtime.  */
   if (my_super_id)
     {
       super_expr = add_objc_string (my_super_id, class_names);
@@ -4436,7 +4438,7 @@ synth_id_with_class_suffix (preamble, ctxt)
   else if (TREE_CODE (ctxt) == CATEGORY_IMPLEMENTATION_TYPE
 	   || TREE_CODE (ctxt) == CATEGORY_INTERFACE_TYPE)
     {
-      /* We have a category. */
+      /* We have a category.  */
       char *class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (implementation_context));
       char *class_super_name
@@ -4526,7 +4528,7 @@ build_keyword_decl (key_name, arg_type, arg_name)
 {
   tree keyword_decl;
 
-  /* If no type is specified, default to "id". */
+  /* If no type is specified, default to "id".  */
   arg_type = adjust_type_for_id_default (arg_type);
 
   keyword_decl = make_node (KEYWORD_DECL);
@@ -4558,7 +4560,7 @@ build_keyword_selector (selector)
       if (key_name)
 	len += IDENTIFIER_LENGTH (key_name) + 1;
       else
-	/* Just a ':' arg. */
+	/* Just a ':' arg.  */
 	len++;
     }
 
@@ -4580,7 +4582,7 @@ build_keyword_selector (selector)
   return get_identifier (buf);
 }
 
-/* Used for declarations and definitions. */
+/* Used for declarations and definitions.  */
 
 tree
 build_method_decl (code, ret_type, selector, add_args)
@@ -4591,7 +4593,7 @@ build_method_decl (code, ret_type, selector, add_args)
 {
   tree method_decl;
 
-  /* If no type is specified, default to "id". */
+  /* If no type is specified, default to "id".  */
   ret_type = adjust_type_for_id_default (ret_type);
 
   method_decl = make_node (code);
@@ -4633,7 +4635,7 @@ get_arg_type_list (meth, context, superflag)
 {
   tree arglist, akey;
 
-  /* Receiver type. */
+  /* Receiver type.  */
   if (flag_next_runtime && superflag)
     arglist = build_tree_list (NULL_TREE, super_type);
   else if (context == METHOD_DEF)
@@ -4641,10 +4643,10 @@ get_arg_type_list (meth, context, superflag)
   else
     arglist = build_tree_list (NULL_TREE, id_type);
 
-  /* Selector type - will eventually change to `int'. */
+  /* Selector type - will eventually change to `int'.  */
   chainon (arglist, build_tree_list (NULL_TREE, selector_type));
 
-  /* Build a list of argument types. */
+  /* Build a list of argument types.  */
   for (akey = METHOD_SEL_ARGS (meth); akey; akey = TREE_CHAIN (akey))
     {
       tree arg_decl = groktypename_in_parm_context (TREE_TYPE (akey));
@@ -4680,7 +4682,7 @@ check_duplicates (hsh)
 
       if (hsh->list)
         {
-	  /* We have two methods with the same name and different types. */
+	  /* We have two methods with the same name and different types.  */
 	  attr loop;
 	  char type = (TREE_CODE (meth) == INSTANCE_METHOD_DECL) ? '-' : '+';
 
@@ -4709,7 +4711,7 @@ receiver_is_class_object (receiver)
       /* The receiver is a variable created by build_class_reference_decl.  */
       if (TREE_CODE (receiver) == VAR_DECL
 	  && TREE_TYPE (receiver) == objc_class_type)
-	/* Look up the identifier. */
+	/* Look up the identifier.  */
 	for (chain = cls_ref_chain; chain; chain = TREE_CHAIN (chain))
 	  if (TREE_PURPOSE (chain) == receiver)
 	    return TREE_VALUE (chain);
@@ -4741,7 +4743,7 @@ receiver_is_class_object (receiver)
 
 /* If we are currently building a message expr, this holds
    the identifier of the selector of the message.  This is
-   used when printing warnings about argument mismatches. */
+   used when printing warnings about argument mismatches.  */
 
 static tree building_objc_message_expr = 0;
 
@@ -4781,7 +4783,7 @@ build_message_expr (mess)
   if (TREE_CODE (receiver) == ERROR_MARK)
     return error_mark_node;
 
-  /* Determine receiver type. */
+  /* Determine receiver type.  */
   rtype = TREE_TYPE (receiver);
   super = IS_SUPER (rtype);
 
@@ -4808,7 +4810,7 @@ build_message_expr (mess)
       if (statically_allocated)
 	receiver = build_unary_op (ADDR_EXPR, receiver, 0);
 
-      /* Don't evaluate the receiver twice. */
+      /* Don't evaluate the receiver twice.  */
       receiver = save_expr (receiver);
       self_object = receiver;
     }
@@ -4819,7 +4821,7 @@ build_message_expr (mess)
   /* Obtain the full selector name.  */
 
   if (TREE_CODE (args) == IDENTIFIER_NODE)
-    /* A unary selector. */
+    /* A unary selector.  */
     sel_name = args;
   else if (TREE_CODE (args) == TREE_LIST)
     sel_name = build_keyword_selector (args);
@@ -4917,7 +4919,8 @@ build_message_expr (mess)
 
 	  if (! method_prototype
 	      && implementation_template != implementation_context)
-	    /* The method is not published in the interface.  Check locally. */
+	    /* The method is not published in the interface.  Check
+               locally.  */
 	    method_prototype
 	      = lookup_method (CLASS_NST_METHODS (implementation_context),
 			       sel_name);
@@ -4954,7 +4957,8 @@ build_message_expr (mess)
 
 	  if (!method_prototype
 	      && implementation_template != implementation_context)
-	    /* The method is not published in the interface. Check locally. */
+	    /* The method is not published in the interface. Check
+               locally.  */
 	    method_prototype
 	      = lookup_method (CLASS_CLS_METHODS (implementation_context),
 			       sel_name);
@@ -4990,7 +4994,7 @@ build_message_expr (mess)
 	  warning ("method `%s' not implemented by protocol.",
 		   IDENTIFIER_POINTER (sel_name));
 
-          /* Try and find the method signature in the global pools. */
+          /* Try and find the method signature in the global pools.  */
 
           if (!(hsh = hash_lookup (nst_method_hash_list, sel_name)))
 	    hsh = hash_lookup (cls_method_hash_list, sel_name);
@@ -5007,7 +5011,7 @@ build_message_expr (mess)
       hsh = hash_lookup (nst_method_hash_list, sel_name);
       if (!hsh)
 	/* For various loopholes, like sending messages to self in a
-	   factory context. */
+	   factory context.  */
 	hsh = hash_lookup (cls_method_hash_list, sel_name);
 
       method_prototype = check_duplicates (hsh);
@@ -5221,9 +5225,9 @@ build_selector_expr (selnamelist)
   if (!doing_objc_thang)
     objc_fatal ();
 
-  /* Obtain the full selector name. */
+  /* Obtain the full selector name.  */
   if (TREE_CODE (selnamelist) == IDENTIFIER_NODE)
-    /* A unary selector. */
+    /* A unary selector.  */
     selname = selnamelist;
   else if (TREE_CODE (selnamelist) == TREE_LIST)
     selname = build_keyword_selector (selnamelist);
@@ -5249,7 +5253,7 @@ build_encode_expr (type)
   obstack_1grow (&util_obstack, 0);    /* null terminate string */
   string = obstack_finish (&util_obstack);
 
-  /* Synthesize a string that represents the encoded struct/union. */
+  /* Synthesize a string that represents the encoded struct/union.  */
   result = my_build_string (strlen (string) + 1, string);
   obstack_free (&util_obstack, util_firstobj);
   return result;
@@ -5530,7 +5534,7 @@ add_class_method (class, method)
 	       IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
       else
         {
-	  /* Check types; if different, complain. */
+	  /* Check types; if different, complain.  */
 	  if (!comp_proto_with_proto (method, mth))
 	    error ("duplicate declaration of class method `%s'.",
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
@@ -5539,12 +5543,12 @@ add_class_method (class, method)
 
   if (!(hsh = hash_lookup (cls_method_hash_list, METHOD_SEL_NAME (method))))
     {
-      /* Install on a global chain. */
+      /* Install on a global chain.  */
       hash_enter (cls_method_hash_list, method);
     }
   else
     {
-      /* Check types; if different, add to a list. */
+      /* Check types; if different, add to a list.  */
       if (!comp_proto_with_proto (method, hsh->key))
         hash_add_attr (hsh, method);
     }
@@ -5576,7 +5580,7 @@ add_instance_method (class, method)
 	       IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
       else
         {
-	  /* Check types; if different, complain. */
+	  /* Check types; if different, complain.  */
 	  if (!comp_proto_with_proto (method, mth))
 	    error ("duplicate declaration of instance method `%s'.",
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
@@ -5585,7 +5589,7 @@ add_instance_method (class, method)
 
   if (!(hsh = hash_lookup (nst_method_hash_list, METHOD_SEL_NAME (method))))
     {
-      /* Install on a global chain. */
+      /* Install on a global chain.  */
       hash_enter (nst_method_hash_list, method);
     }
   else
@@ -5601,7 +5605,7 @@ static tree
 add_class (class)
      tree class;
 {
-  /* Put interfaces on list in reverse order. */
+  /* Put interfaces on list in reverse order.  */
   TREE_CHAIN (class) = interface_chain;
   interface_chain = class;
   return interface_chain;
@@ -5612,7 +5616,7 @@ add_category (class, category)
       tree class;
       tree category;
 {
-  /* Put categories on list in reverse order. */
+  /* Put categories on list in reverse order.  */
   tree cat = CLASS_CATEGORY_LIST (class);
 
   while (cat)
@@ -5653,7 +5657,7 @@ add_instance_variable (class, public, declarator, declspecs, width)
   field_decl = grokfield (input_filename, lineno,
 			  declarator, declspecs, width);
 
-  /* Overload the public attribute, it is not used for FIELD_DECLs. */
+  /* Overload the public attribute, it is not used for FIELD_DECLs.  */
   switch (public)
     {
     case 0:
@@ -5768,7 +5772,7 @@ is_public (expr, identifier)
   return 1;
 }
 
-/* Implement @defs (<classname>) within struct bodies. */
+/* Implement @defs (<classname>) within struct bodies.  */
 
 tree
 get_class_ivars (interface)
@@ -5780,7 +5784,7 @@ get_class_ivars (interface)
   return build_ivar_chain (interface, 1);
 }
 
-/* Make sure all entries in CHAIN are also in LIST. */
+/* Make sure all entries in CHAIN are also in LIST.  */
 
 static int
 check_methods (chain, list, mtype)
@@ -5846,7 +5850,7 @@ conforms_to_protocol (class, protocol)
 }
 
 /* Make sure all methods in CHAIN are accessible as MTYPE methods in 
-   CONTEXT.  This is one of two mechanisms to check protocol integrity. */
+   CONTEXT.  This is one of two mechanisms to check protocol integrity.  */
 
 static int
 check_methods_accessible (chain, context, mtype)
@@ -5906,7 +5910,7 @@ check_methods_accessible (chain, context, mtype)
 		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
 	}
 
-      chain = TREE_CHAIN (chain); /* next method... */
+      chain = TREE_CHAIN (chain); /* next method...  */
     }
     return first;
 }
@@ -5925,7 +5929,7 @@ check_protocols (proto_list, type, name)
 	{
 	  int f1, f2;
 	  
-	  /* Ensure that all protocols have bodies. */
+	  /* Ensure that all protocols have bodies.  */
 	  if (flag_warn_protocol) {
 	    f1 = check_methods (PROTOCOL_CLS_METHODS (p),
 				CLASS_CLS_METHODS (implementation_context),
@@ -5950,7 +5954,7 @@ check_protocols (proto_list, type, name)
       else
 	; /* An identifier if we could not find a protocol.  */
 
-      /* Check protocols recursively. */
+      /* Check protocols recursively.  */
       if (PROTOCOL_LIST (p))
 	{
 	  tree super_class
@@ -6017,7 +6021,7 @@ start_class (code, class_name, super_name, protocol_list)
 					      implemented_classes);
       }
 
-      /* Pre-build the following entities - for speed/convenience. */
+      /* Pre-build the following entities - for speed/convenience.  */
       if (!self_id)
 	  self_id = get_identifier ("self");
       if (!ucmd_id)
@@ -6033,7 +6037,7 @@ start_class (code, class_name, super_name, protocol_list)
 
       implementation_context = class;
 
-      /* Lookup the interface for this implementation. */
+      /* Lookup the interface for this implementation.  */
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
@@ -6099,7 +6103,7 @@ start_class (code, class_name, super_name, protocol_list)
 
   else if (code == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      /* Pre-build the following entities for speed/convenience. */
+      /* Pre-build the following entities for speed/convenience.  */
       if (!self_id)
         self_id = get_identifier ("self");
       if (!ucmd_id)
@@ -6117,7 +6121,7 @@ start_class (code, class_name, super_name, protocol_list)
 
       /* For a category, class_name is really the name of the class that
 	 the following set of methods will be associated with.  We must
-	 find the interface so that can derive the objects template. */
+	 find the interface so that can derive the objects template.  */
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
@@ -6139,7 +6143,7 @@ continue_class (class)
       struct imp_entry *imp_entry;
       tree ivar_context;
 
-      /* Check consistency of the instance variables. */
+      /* Check consistency of the instance variables.  */
 
       if (CLASS_IVARS (class))
 	check_ivars (implementation_template, class);
@@ -6163,7 +6167,7 @@ continue_class (class)
       imp_entry->class_decl = UOBJC_CLASS_decl;
       imp_entry->meta_decl = UOBJC_METACLASS_decl;
 
-      /* Append to front and increment count. */
+      /* Append to front and increment count.  */
       imp_list = imp_entry;
       if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
 	imp_count++;
@@ -6201,11 +6205,11 @@ finish_class (class)
 {
   if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
     {
-      /* All code generation is done in finish_objc. */
+      /* All code generation is done in finish_objc.  */
 
       if (implementation_template != implementation_context)
 	{
-	  /* Ensure that all method listed in the interface contain bodies. */
+	  /* Ensure that all method listed in the interface contain bodies.  */
 	  check_methods (CLASS_CLS_METHODS (implementation_template),
 			 CLASS_CLS_METHODS (implementation_context), '+');
 	  check_methods (CLASS_NST_METHODS (implementation_template),
@@ -6222,7 +6226,7 @@ finish_class (class)
     {
       tree category = CLASS_CATEGORY_LIST (implementation_template);
 
-      /* Find the category interface from the class it is associated with. */
+      /* Find the category interface from the class it is associated with.  */
       while (category)
 	{
 	  if (CLASS_SUPER_NAME (class) == CLASS_SUPER_NAME (category))
@@ -6232,7 +6236,7 @@ finish_class (class)
 
       if (category)
 	{
-	  /* Ensure all method listed in the interface contain bodies. */
+	  /* Ensure all method listed in the interface contain bodies.  */
 	  check_methods (CLASS_CLS_METHODS (category),
 			 CLASS_CLS_METHODS (implementation_context), '+');
 	  check_methods (CLASS_NST_METHODS (category),
@@ -6266,7 +6270,7 @@ static tree
 add_protocol (protocol)
      tree protocol;
 {
-  /* Put protocol on list in reverse order. */
+  /* Put protocol on list in reverse order.  */
   TREE_CHAIN (protocol) = protocol_chain;
   protocol_chain = protocol;
   return protocol_chain;
@@ -6464,12 +6468,12 @@ encode_aggregate (type, curtype, format)
 	  {
 	    tree name = TYPE_NAME (type);
 
-	    /* We have a reference; this is a NeXT extension. */
+	    /* We have a reference; this is a NeXT extension.  */
 
 	    if (obstack_object_size (&util_obstack) - curtype == 1
 		&& format == OBJC_ENCODE_INLINE_DEFS)
 	      {
-		/* Output format of struct for first level only. */
+		/* Output format of struct for first level only.  */
 		tree fields = TYPE_FIELDS (type);
 
 		if (name && TREE_CODE (name) == IDENTIFIER_NODE)
@@ -6500,7 +6504,7 @@ encode_aggregate (type, curtype, format)
 	      }
 
 	    else
-	      /* We have an untagged structure or a typedef. */
+	      /* We have an untagged structure or a typedef.  */
 	      obstack_grow (&util_obstack, "{?}", 3);
 	  }
 
@@ -6554,7 +6558,7 @@ encode_aggregate (type, curtype, format)
 				IDENTIFIER_POINTER (name),
 				strlen (IDENTIFIER_POINTER (name)));
 		else
-		  /* We have an untagged structure or a typedef. */
+		  /* We have an untagged structure or a typedef.  */
 		  obstack_1grow (&util_obstack, '?');
 
 		obstack_1grow (&util_obstack, '}');
@@ -6581,7 +6585,7 @@ encode_aggregate (type, curtype, format)
 	      }
 
 	    else
-	      /* We have an untagged structure or a typedef. */
+	      /* We have an untagged structure or a typedef.  */
 	      obstack_grow (&util_obstack, "(?)", 3);
 	  }
 	else
@@ -6637,7 +6641,7 @@ encode_type (type, curtype, format)
       if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0
 	  && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) == 0)
 	{
-	  /* Unsigned integer types. */
+	  /* Unsigned integer types.  */
 
 	  if (TYPE_MODE (type) == QImode)
 	    obstack_1grow (&util_obstack, 'C');
@@ -6655,7 +6659,7 @@ encode_type (type, curtype, format)
 	}
 
       else
-	/* Signed integer types. */
+	/* Signed integer types.  */
 	{
 	  if (TYPE_MODE (type) == QImode)
 	    obstack_1grow (&util_obstack, 'c');
@@ -6676,7 +6680,7 @@ encode_type (type, curtype, format)
 
   else if (code == REAL_TYPE)
     {
-      /* Floating point types. */
+      /* Floating point types.  */
 
       if (TYPE_MODE (type) == SFmode)
 	obstack_1grow (&util_obstack, 'f');
@@ -6711,7 +6715,7 @@ encode_field_decl (field_decl, curtype, format)
 
  /* If this field is obviously a bitfield, or is a bitfield that has been
      clobbered to look like a ordinary integer mode, go ahead and generate
-     the bitfield typing information. */
+     the bitfield typing information.  */
   type = TREE_TYPE (field_decl);
   if (DECL_BIT_FIELD (field_decl))
     encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
@@ -6794,7 +6798,7 @@ start_method_def (method)
 		   build_tree_list (unused_list, NULL_TREE)));
 #endif /* not OBJC_INT_SELECTORS */
 
-  /* Generate argument declarations if a keyword_decl. */
+  /* Generate argument declarations if a keyword_decl.  */
   if (METHOD_SEL_ARGS (method))
     {
       tree arglist = METHOD_SEL_ARGS (method);
@@ -6807,13 +6811,13 @@ start_method_def (method)
 	    {
 	      tree last_expr = expr_last (arg_decl);
 
-	      /* Unite the abstract decl with its name. */
+	      /* Unite the abstract decl with its name.  */
 	      TREE_OPERAND (last_expr, 0) = KEYWORD_ARG_NAME (arglist);
 	      push_parm_decl (build_tree_list
 			      (build_tree_list (arg_spec, arg_decl),
 			       build_tree_list (NULL_TREE, NULL_TREE)));
 
-	      /* Unhook: restore the abstract declarator. */
+	      /* Unhook: restore the abstract declarator.  */
 	      TREE_OPERAND (last_expr, 0) = NULL_TREE;
 	    }
 
@@ -6830,7 +6834,7 @@ start_method_def (method)
 
   if (METHOD_ADD_ARGS (method) > (tree)1)
     {
-      /* We have a variable length selector - in "prototype" format. */
+      /* We have a variable length selector - in "prototype" format.  */
       tree akey = TREE_PURPOSE (METHOD_ADD_ARGS (method));
       while (akey)
 	{
@@ -6861,7 +6865,7 @@ warn_with_method (message, mtype, method)
 	   message, mtype, gen_method_decl (method, errbuf));
 }
 
-/* Return 1 if METHOD is consistent with PROTO. */
+/* Return 1 if METHOD is consistent with PROTO.  */
 
 static int
 comp_method_with_proto (method, proto)
@@ -6869,7 +6873,7 @@ comp_method_with_proto (method, proto)
 {
   static tree function_type = 0;
 
-  /* Create a function_type node once. */
+  /* Create a function_type node once.  */
   if (!function_type)
     {
       push_obstacks_nochange ();
@@ -6887,7 +6891,7 @@ comp_method_with_proto (method, proto)
   return comptypes (TREE_TYPE (METHOD_DEFINITION (method)), function_type);
 }
 
-/* Return 1 if PROTO1 is consistent with PROTO2. */
+/* Return 1 if PROTO1 is consistent with PROTO2.  */
 
 static int
 comp_proto_with_proto (proto1, proto2)
@@ -6895,7 +6899,7 @@ comp_proto_with_proto (proto1, proto2)
 {
   static tree function_type1 = 0, function_type2 = 0;
 
-  /* Create a couple function_type node's once. */
+  /* Create a couple function_type node's once.  */
   if (!function_type1)
     {
       push_obstacks_nochange ();
@@ -6909,7 +6913,7 @@ comp_proto_with_proto (proto1, proto2)
   TYPE_ARG_TYPES (function_type1) = get_arg_type_list (proto1, METHOD_REF, 0);
   TYPE_ARG_TYPES (function_type2) = get_arg_type_list (proto2, METHOD_REF, 0);
 
-  /* Install return type. */
+  /* Install return type.  */
   TREE_TYPE (function_type1) = groktypename (TREE_TYPE (proto1));
   TREE_TYPE (function_type2) = groktypename (TREE_TYPE (proto2));
 
@@ -6930,7 +6934,7 @@ really_start_method (method, parmlist)
   tree method_decl, method_id;
   char *buf, *sel_name, *class_name, *cat_name;
 
-  /* Synth the storage class & assemble the return type. */
+  /* Synth the storage class & assemble the return type.  */
   sc_spec = tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
   ret_spec = TREE_PURPOSE (TREE_TYPE (method));
   decl_specs = chainon (sc_spec, ret_spec);
@@ -6954,7 +6958,7 @@ really_start_method (method, parmlist)
 
   method_decl = build_nt (CALL_EXPR, method_id, parmlist, NULL_TREE);
 
-  /* Check the declarator portion of the return type for the method. */
+  /* Check the declarator portion of the return type for the method.  */
   if ((ret_decl = TREE_VALUE (TREE_TYPE (method))))
     {
       /* Unite the complex decl (specified in the abstract decl) with the
@@ -6964,10 +6968,10 @@ really_start_method (method, parmlist)
       TREE_OPERAND (save_expr, 0) = method_decl;
       method_decl = ret_decl;
 
-      /* Fool the parser into thinking it is starting a function. */
+      /* Fool the parser into thinking it is starting a function.  */
       start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE, 0);
 
-      /* Unhook: this has the effect of restoring the abstract declarator. */
+      /* Unhook: this has the effect of restoring the abstract declarator.  */
       TREE_OPERAND (save_expr, 0) = NULL_TREE;
     }
 
@@ -6975,10 +6979,10 @@ really_start_method (method, parmlist)
     {
       TREE_VALUE (TREE_TYPE (method)) = method_decl;
 
-      /* Fool the parser into thinking it is starting a function. */
+      /* Fool the parser into thinking it is starting a function.  */
       start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE, 0);
 
-      /* Unhook: this has the effect of restoring the abstract declarator. */
+      /* Unhook: this has the effect of restoring the abstract declarator.  */
       TREE_VALUE (TREE_TYPE (method)) = NULL_TREE;
     }
 
@@ -7044,7 +7048,7 @@ add_objc_decls ()
 
       finish_decl (UOBJC_SUPER_decl, NULL_TREE, NULL_TREE);
 
-      /* This prevents `unused variable' warnings when compiling with -Wall. */
+      /* This prevents `unused variable' warnings when compiling with -Wall.  */
       TREE_USED (UOBJC_SUPER_decl) = 1;
       DECL_ARTIFICIAL (UOBJC_SUPER_decl) = 1;
     }
@@ -7063,12 +7067,12 @@ get_super_receiver ()
     {
       tree super_expr, super_expr_list;
 
-      /* Set receiver to self. */
+      /* Set receiver to self.  */
       super_expr = build_component_ref (UOBJC_SUPER_decl, self_id);
       super_expr = build_modify_expr (super_expr, NOP_EXPR, self_decl);
       super_expr_list = build_tree_list (NULL_TREE, super_expr);
 
-      /* Set class to begin searching. */
+      /* Set class to begin searching.  */
       super_expr = build_component_ref (UOBJC_SUPER_decl,
 					get_identifier ("class"));
 
@@ -7085,7 +7089,7 @@ get_super_receiver ()
 	}
 
       else
-	/* We have a category. */
+	/* We have a category.  */
 	{
 	  tree super_name = CLASS_SUPER_NAME (implementation_template);
 	  tree super_class;
@@ -7148,12 +7152,12 @@ encode_method_def (func_decl)
   char buffer[40];
   tree result;
 
-  /* Return type. */
+  /* Return type.  */
   encode_type (TREE_TYPE (TREE_TYPE (func_decl)),
 	       obstack_object_size (&util_obstack),
 	       OBJC_ENCODE_INLINE_DEFS);
 
-  /* Stack size. */
+  /* Stack size.  */
   for (parms = DECL_ARGUMENTS (func_decl); parms;
        parms = TREE_CHAIN (parms))
     {
@@ -7170,19 +7174,19 @@ encode_method_def (func_decl)
   sprintf (buffer, "%d", stack_size);
   obstack_grow (&util_obstack, buffer, strlen (buffer));
 
-  /* Argument types. */
+  /* Argument types.  */
   for (parms = DECL_ARGUMENTS (func_decl); parms;
        parms = TREE_CHAIN (parms))
     {
-      /* Type. */
+      /* Type.  */
       encode_type (TREE_TYPE (parms),
 		   obstack_object_size (&util_obstack),
 		   OBJC_ENCODE_INLINE_DEFS);
 
-      /* Compute offset. */
+      /* Compute offset.  */
       sprintf (buffer, "%d", forwarding_offset (parms));
 
-      /* Indicate register. */
+      /* Indicate register.  */
       if (offset_is_register)
 	obstack_1grow (&util_obstack, '+');
 
@@ -7381,7 +7385,7 @@ gen_declarator (decl, buf, name)
 	  strcpy (buf, name);
 	  str = buf;
 
-	  /* This clause is done iteratively rather than recursively. */
+	  /* This clause is done iteratively rather than recursively.  */
 	  do
 	    {
 	      op = (is_complex_decl (TREE_TYPE (decl))
@@ -7410,7 +7414,7 @@ gen_declarator (decl, buf, name)
 	  break;
 
 	case IDENTIFIER_NODE:
-	  /* Will only happen if we are processing a "raw" expr-decl. */
+	  /* Will only happen if we are processing a "raw" expr-decl.  */
 	  strcpy (buf, IDENTIFIER_POINTER (decl));
 	  return buf;
 	}
@@ -7419,7 +7423,7 @@ gen_declarator (decl, buf, name)
     }
 
   else
-    /* We have an abstract declarator or a _DECL node. */
+    /* We have an abstract declarator or a _DECL node.  */
     {
       strcpy (buf, name);
       return buf;
@@ -7531,7 +7535,7 @@ gen_declspecs (declspecs, buf, raw)
     }
   else
     {
-      /* Type qualifiers. */
+      /* Type qualifiers.  */
       if (TREE_READONLY (declspecs))
 	strcat (buf, "const ");
       if (TYPE_VOLATILE (declspecs))
@@ -7539,7 +7543,7 @@ gen_declspecs (declspecs, buf, raw)
 
       switch (TREE_CODE (declspecs))
 	{
-	  /* Type specifiers. */
+	  /* Type specifiers.  */
 
 	case INTEGER_TYPE:
 	  declspecs = TYPE_MAIN_VARIANT (declspecs);
@@ -7558,7 +7562,7 @@ gen_declspecs (declspecs, buf, raw)
 		   || declspecs == char_type_node)
 	    strcat (buf, "char ");
 
-	  /* Unsigned integer types. */
+	  /* Unsigned integer types.  */
 
 	  else if (declspecs == short_unsigned_type_node)
 	    strcat (buf, "unsigned short ");
@@ -7684,9 +7688,9 @@ gen_declaration (atype_or_adecl, buf)
   if (TREE_CODE (atype_or_adecl) == TREE_LIST)
     {
       tree declspecs;	/* "identifier_node", "record_type" */
-      tree declarator;	/* "array_ref", "indirect_ref", "call_expr"... */
+      tree declarator;	/* "array_ref", "indirect_ref", "call_expr"...  */
 
-      /* We have a "raw", abstract declarator (typename). */
+      /* We have a "raw", abstract declarator (typename).  */
       declarator = TREE_VALUE (atype_or_adecl);
       declspecs  = TREE_PURPOSE (atype_or_adecl);
 
@@ -7701,22 +7705,22 @@ gen_declaration (atype_or_adecl, buf)
   else
     {
       tree atype;
-      tree declspecs;	/* "integer_type", "real_type", "record_type"... */
-      tree declarator;	/* "array_type", "function_type", "pointer_type". */
+      tree declspecs;	/* "integer_type", "real_type", "record_type"...  */
+      tree declarator;	/* "array_type", "function_type", "pointer_type".  */
 
       if (TREE_CODE (atype_or_adecl) == FIELD_DECL
 	  || TREE_CODE (atype_or_adecl) == PARM_DECL
 	  || TREE_CODE (atype_or_adecl) == FUNCTION_DECL)
 	atype = TREE_TYPE (atype_or_adecl);
       else
-	/* Assume we have a *_type node. */
+	/* Assume we have a *_type node.  */
 	atype = atype_or_adecl;
 
       if (is_complex_decl (atype))
 	{
 	  tree chain;
 
-	  /* Get the declaration specifier; it is at the end of the list. */
+	  /* Get the declaration specifier; it is at the end of the list.  */
 	  declarator = chain = atype;
 	  do
 	    chain = TREE_TYPE (chain); /* not TREE_CHAIN (chain); */
@@ -7781,7 +7785,7 @@ gen_method_decl (method, buf)
   chain = METHOD_SEL_ARGS (method);
   if (chain)
     {
-      /* We have a chain of keyword_decls. */
+      /* We have a chain of keyword_decls.  */
       do
         {
 	  if (KEYWORD_KEY_NAME (chain))
@@ -7808,7 +7812,7 @@ gen_method_decl (method, buf)
 	  /* We have a tree list node as generate by get_parm_info.  */
 	  chain  = TREE_PURPOSE (METHOD_ADD_ARGS (method));
 
-          /* Know we have a chain of parm_decls. */
+          /* Know we have a chain of parm_decls.  */
           while (chain)
             {
 	      strcat (buf, ", ");
@@ -7819,7 +7823,7 @@ gen_method_decl (method, buf)
     }
 
   else
-    /* We have a unary selector. */
+    /* We have a unary selector.  */
     strcat (buf, IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
 
   return buf;
@@ -7991,7 +7995,7 @@ finish_objc ()
   for (impent = imp_list; impent; impent = impent->next)
     handle_impent (impent);
 
-  /* Dump the string table last. */
+  /* Dump the string table last.  */
 
   generate_strings ();
 
@@ -8007,7 +8011,7 @@ finish_objc ()
       hash hsh;
 
       /* Run through the selector hash tables and print a warning for any
-         selector which has multiple methods. */
+         selector which has multiple methods.  */
 
       for (slot = 0; slot < SIZEHASHTABLE; slot++)
 	for (hsh = cls_method_hash_list[slot]; hsh; hsh = hsh->next)
@@ -8163,7 +8167,7 @@ handle_impent (impent)
 
       /* Do the same for categories.  Even though no references to these
 	 symbols are generated automatically by the compiler, it gives
-	 you a handle to pull them into an archive by hand. */
+	 you a handle to pull them into an archive by hand.  */
       if (flag_next_runtime)
 	{
 	  /* Grossly unportable.  */
@@ -8203,7 +8207,7 @@ objc_debug (fp)
       {
 	if (TREE_CODE (loop) == FUNCTION_DECL && DECL_INITIAL (loop))
 	  {
-	    /* We have a function definition: generate prototype. */
+	    /* We have a function definition: generate prototype.  */
             bzero (errbuf, BUFSIZE);
 	    gen_declaration (loop, errbuf);
 	    fprintf (fp, "%s;\n", errbuf);
@@ -8212,7 +8216,7 @@ objc_debug (fp)
       }
   }
   {
-    /* Dump global chains. */
+    /* Dump global chains.  */
     tree loop;
     int i, index = 0, offset = 0;
     hash hashlist;

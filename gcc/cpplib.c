@@ -84,7 +84,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif /* USG */
 #endif /* not VMS */
 
-/* This defines "errno" properly for VMS, and gives us EACCES. */
+/* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 
 extern char *index ();
@@ -136,7 +136,7 @@ extern char *rindex ();
 #endif
 
 #ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR)0)
+#define NULL_PTR ((GENERIC_PTR) 0)
 #endif
 
 #ifndef INCLUDE_LEN_FUDGE
@@ -204,7 +204,7 @@ struct assertion_hashnode {
   struct assertion_hashnode *prev;
   /* also, a back pointer to this node's hash
      chain is kept, in case the node is the head
-     of the chain and gets deleted. */
+     of the chain and gets deleted.  */
   struct assertion_hashnode **bucket_hdr;
   int length;			/* length of token, for quick comparison */
   U_CHAR *name;			/* the actual name */
@@ -233,7 +233,7 @@ struct assertion_hashnode {
 #define NEWLINE_FIX \
   do {while (PEEKC() == '\\' && PEEKN(1) == '\n') FORWARD(2); } while(0)
 
-/* Same, but assume we've already read the potential '\\' into C. */
+/* Same, but assume we've already read the potential '\\' into C.  */
 #define NEWLINE_FIX1(C) do { \
     while ((C) == '\\' && PEEKC() == '\n') { FORWARD(1); (C) = GETC(); }\
   } while(0)
@@ -287,8 +287,8 @@ static struct arglist *read_token_list ();
 static void free_token_list ();
 static int safe_read ();
 static void push_macro_expansion PARAMS ((cpp_reader *,
-					  U_CHAR*, int, HASHNODE*));
-static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending*));
+					  U_CHAR *, int, HASHNODE *));
+static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
 extern char *xrealloc ();
 static char *xcalloc ();
 static char *savestring ();
@@ -301,7 +301,7 @@ enum file_change_code {same_file, enter_file, leave_file};
 
 /* External declarations.  */
 
-extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader*));
+extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
 extern char *getenv ();
 extern FILE *fdopen ();
@@ -347,12 +347,12 @@ struct file_name_list
   };
 
 /* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
-   via the same directory as the file that #included it. */
-#define SELF_DIR_DUMMY ((struct file_name_list*)(~0))
+   via the same directory as the file that #included it.  */
+#define SELF_DIR_DUMMY ((struct file_name_list *) (~0))
 
-/* #include "file" looks in source file dir, then stack. */
-/* #include <file> just looks in the stack. */
-/* -I directories are added to the end, then the defaults are added. */
+/* #include "file" looks in source file dir, then stack.  */
+/* #include <file> just looks in the stack.  */
+/* -I directories are added to the end, then the defaults are added.  */
 /* The */
 static struct default_include {
   char *fname;			/* The name of the directory.  */
@@ -403,8 +403,8 @@ struct directive {
   int length;			/* Length of name */
   int (*func)();		/* Function to handle directive */
   char *name;			/* Name of directive */
-  enum node_type type;		/* Code which describes which directive. */
-  char command_reads_line;      /* One if rest of line is read by func. */
+  enum node_type type;		/* Code which describes which directive.  */
+  char command_reads_line;      /* One if rest of line is read by func.  */
   char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
   char pass_thru;		/* Copy preprocessed directive to output file.*/
 };
@@ -437,9 +437,9 @@ static struct directive directive_table[] = {
   {  -1, 0, "", T_UNUSED},
 };
 
-/* table to tell if char can be part of a C identifier. */
+/* table to tell if char can be part of a C identifier.  */
 U_CHAR is_idchar[256];
-/* table to tell if char can be first char of a c identifier. */
+/* table to tell if char can be first char of a c identifier.  */
 U_CHAR is_idstart[256];
 /* table to tell if c is horizontal space.  */
 U_CHAR is_hor_space[256];
@@ -490,7 +490,8 @@ initialize_char_syntax (opts)
 
 
 /* Place into PFILE a quoted string representing the string SRC.
-   Caller must reserve enough space in pfile->token_buffer. */
+   Caller must reserve enough space in pfile->token_buffer.  */
+
 static void
 quote_string (pfile, src)
      cpp_reader *pfile;
@@ -525,7 +526,7 @@ quote_string (pfile, src)
       }
 }
 
-/* Re-allocates PFILE->token_buffer so it will hold at least N more chars. */
+/* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
 void
 cpp_grow_buffer (pfile, n)
@@ -534,7 +535,7 @@ cpp_grow_buffer (pfile, n)
 {
   long old_written = CPP_WRITTEN (pfile);
   pfile->token_buffer_size = n + 2 * pfile->token_buffer_size;
-  pfile->token_buffer = (U_CHAR*)
+  pfile->token_buffer = (U_CHAR *)
     xrealloc(pfile->token_buffer, pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, old_written);
 }
@@ -827,7 +828,7 @@ macro_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
      cpp_reader *pfile;
 {
-  HASHNODE *macro = (HASHNODE*)pbuf->data;
+  HASHNODE *macro = (HASHNODE *) pbuf->data;
   if (macro->type == T_DISABLED)
     macro->type = T_MACRO;
   if (macro->type != T_MACRO || pbuf->buf != macro->value.defn->expansion)
@@ -852,7 +853,7 @@ file_cleanup (pbuf, pfile)
    If this is the start of a comment (followed by '*' or '/'),
    skip to the end of the comment, and return ' '.
    Return EOF if we reached the end of file before the end of the comment.
-   If not the start of a comment, return '/'. */
+   If not the start of a comment, return '/'.  */
 
 static int
 skip_comment (pfile, linep)
@@ -894,7 +895,7 @@ skip_comment (pfile, linep)
 	{
 	  c = GETC ();
 	  if (c == EOF)
-	    return ' '; /* Allow // to be terminated by EOF. */
+	    return ' '; /* Allow // to be terminated by EOF.  */
 	  while (c == '\\' && PEEKC() == '\n')
 	    {
 	      FORWARD(1);
@@ -904,7 +905,7 @@ skip_comment (pfile, linep)
 	    }
 	  if (c == '\n')
 	    {
-	      /* Don't consider final '\n' to be part of comment. */
+	      /* Don't consider final '\n' to be part of comment.  */
 	      FORWARD(-1);
 	      return ' ';
 	    }
@@ -915,6 +916,7 @@ skip_comment (pfile, linep)
 }     
 
 /* Skip whitespace \-newline and comments.  Does not macro-expand.  */
+
 void
 cpp_skip_hspace (pfile)
      cpp_reader *pfile;
@@ -951,7 +953,7 @@ cpp_skip_hspace (pfile)
 }
 
 /* Read the rest of the current line.
-   The line is appended to PFILE's output buffer. */
+   The line is appended to PFILE's output buffer.  */
 
 static void
 copy_rest_of_line (pfile)
@@ -1036,7 +1038,7 @@ handle_directive (pfile)
       goto done_a_directive;
     }
 
-  /* Now find the directive name. */
+  /* Now find the directive name.  */
   CPP_PUTC (pfile, '#');
   parse_name (pfile, GETC());
   ident = pfile->token_buffer + old_written + 1;
@@ -1114,7 +1116,7 @@ handle_directive (pfile)
       || (kt->type == T_DEFINE
 	  && CPP_OPTIONS (pfile)->dump_macros == dump_definitions))
     {
-      /* Just leave the entire #define in the output stack. */
+      /* Just leave the entire #define in the output stack.  */
     }
   else if (kt->type == T_DEFINE
 	   && CPP_OPTIONS (pfile)->dump_macros == dump_names)
@@ -1170,7 +1172,7 @@ pass_thru_directive (buf, limit, pfile, keyword)
    appeared.  So the arglist is just convenience data passed
    between these two routines.  It is not kept around after
    the current #define has been processed and entered into the
-   hash table. */
+   hash table.  */
 
 struct arglist {
   struct arglist *next;
@@ -1212,7 +1214,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
   /* Scan thru the replacement list, ignoring comments and quoted
      strings, picking up on the macro calls.  It does a linear search
      thru the arg list on every potential symbol.  Profiling might say
-     that something smarter should happen. */
+     that something smarter should happen.  */
 
   if (limit < buf)
     abort ();
@@ -1228,7 +1230,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
      leading and trailing newline-marker and final null.  */
   maxsize = (sizeof (DEFINITION)
 	     + (limit - p) + 5);
-  /* Occurrences of '@' get doubled, so allocate extra space for them. */
+  /* Occurrences of '@' get doubled, so allocate extra space for them.  */
   while (p < limit)
     if (*p++ == '@')
       maxsize++;
@@ -1241,7 +1243,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
   p = buf;
 
   /* Add one initial space escape-marker to prevent accidental
-     token-pasting (often removed by macroexpand). */
+     token-pasting (often removed by macroexpand).  */
   *exp_p++ = '@';
   *exp_p++ = ' ';
 
@@ -1278,7 +1280,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 
       case '@':
 	/* An '@' in a string or character constant stands for itself,
-	   and does not need to be escaped. */
+	   and does not need to be escaped.  */
 	if (!expected_delimiter)
 	  *exp_p++ = c;
 	break;
@@ -1475,7 +1477,8 @@ static char rest_extension[] = "...";
 #define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
 
 /* Create a DEFINITION node from a #define directive.  Arguments are 
-   as for do_define. */
+   as for do_define.  */
+
 static MACRODEF
 create_definition (buf, limit, pfile, predefinition)
      U_CHAR *buf, *limit;
@@ -1506,7 +1509,7 @@ create_definition (buf, limit, pfile, predefinition)
 
   /* Lossage will occur if identifiers or control keywords are broken
      across lines using backslash.  This is not the right place to take
-     care of that. */
+     care of that.  */
 
   if (*bp == '(') {
     struct arglist *arg_ptrs = NULL;
@@ -1580,7 +1583,7 @@ create_definition (buf, limit, pfile, predefinition)
 
     ++bp;			/* skip paren */
     SKIP_WHITE_SPACE (bp);
-    /* now everything from bp before limit is the definition. */
+    /* now everything from bp before limit is the definition.  */
     defn = collect_expansion (pfile, bp, limit, argno, arg_ptrs);
     defn->rest_args = rest_args;
 
@@ -1627,7 +1630,7 @@ create_definition (buf, limit, pfile, predefinition)
 	  }
 	}
       }
-    /* now everything from bp before limit is the definition. */
+    /* now everything from bp before limit is the definition.  */
     defn = collect_expansion (pfile, bp, limit, -1, NULL_PTR);
     defn->args.argnames = (U_CHAR *) "";
   }
@@ -1666,7 +1669,7 @@ check_macro_name (pfile, symname, usage)
   if (sym_length == 0)
     cpp_error (pfile, "invalid %s name", usage);
   else if (!is_idstart[*symname]) {
-    U_CHAR *msg;			/* what pain... */
+    U_CHAR *msg;			/* what pain...  */
     msg = (U_CHAR *) alloca (sym_length + 1);
     bcopy (symname, msg, sym_length);
     msg[sym_length] = 0;
@@ -1678,9 +1681,8 @@ check_macro_name (pfile, symname, usage)
   return sym_length;
 }
 
-/*
- * return zero if two DEFINITIONs are isomorphic
- */
+/* Return zero if two DEFINITIONs are isomorphic.  */
+
 static int
 compare_defs (d1, d2)
      DEFINITION *d1, *d2;
@@ -1795,7 +1797,7 @@ do_define (pfile, keyword, buf, limit)
       /* Print the warning if it's not ok.  */
       if (!ok)
 	{
-	  U_CHAR *msg;		/* what pain... */
+	  U_CHAR *msg;		/* what pain...  */
 
 	  /* If we are passing through #define and #undef directives, do
 	     that for this re-definition now.  */
@@ -1840,7 +1842,7 @@ nope:
    if stringified.
    `use_count' is the number of times this macro arg is substituted
    into the macro.  If the actual use count exceeds 10, 
-   the value stored is 10. */
+   the value stored is 10.  */
 
 /* raw and expanded are relative to ARG_BASE */
 #define ARG_BASE ((pfile)->token_buffer)
@@ -1857,9 +1859,9 @@ struct argdata {
 /* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
    If BUFFER != NULL, then use the LENGTH characters in BUFFER
    as the new input buffer.
-   Return the new buffer, or NULL on failure. */
+   Return the new buffer, or NULL on failure.  */
 
-cpp_buffer*
+cpp_buffer *
 cpp_push_buffer (pfile, buffer, length)
      cpp_reader *pfile;
      U_CHAR *buffer;
@@ -1884,7 +1886,7 @@ cpp_push_buffer (pfile, buffer, length)
   return buf;
 }
 
-cpp_buffer*
+cpp_buffer *
 cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
@@ -1894,7 +1896,7 @@ cpp_pop_buffer (pfile)
 }
 
 /* Scan until CPP_BUFFER (PFILE) is exhausted into PFILE->token_buffer.
-   Pop the buffer when done. */
+   Pop the buffer when done.  */
 
 void
 cpp_scan_buffer (pfile)
@@ -1904,7 +1906,7 @@ cpp_scan_buffer (pfile)
   for (;;)
     {
       enum cpp_token token = cpp_get_token (pfile);
-      if (token == CPP_EOF) /* Should not happen ... */
+      if (token == CPP_EOF) /* Should not happen ...  */
 	break;
       if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
 	{
@@ -1989,7 +1991,7 @@ adjust_position (buf, limit, linep, colp)
     }
 }
 
-/* Move line_base forward, updating lineno and colno. */
+/* Move line_base forward, updating lineno and colno.  */
 
 static void
 update_position (pbuf)
@@ -2028,9 +2030,9 @@ cpp_buf_line_and_col (pbuf, linep, colp)
     }
 }
 
-/* Return the cpp_buffer that corresponds to a file (not a macro). */
+/* Return the cpp_buffer that corresponds to a file (not a macro).  */
 
-cpp_buffer*
+cpp_buffer *
 cpp_file_buffer (pfile)
      cpp_reader *pfile;
 {
@@ -2199,7 +2201,7 @@ macarg (pfile, rest_args)
 	    goto found;
 	  break;
 	found:
-	  /* Remove ',' or ')' from argument buffer. */
+	  /* Remove ',' or ')' from argument buffer.  */
 	  CPP_ADJUST_WRITTEN (pfile, -1);
 	  goto done;
       default: ;
@@ -2261,7 +2263,7 @@ timestamp (pfile)
      cpp_reader *pfile;
 {
   if (!pfile->timebuf) {
-    time_t t = time ((time_t *)0);
+    time_t t = time ((time_t *) 0);
     pfile->timebuf = localtime (&t);
   }
   return pfile->timebuf;
@@ -2420,7 +2422,7 @@ special_symbol (hp, pfile)
 	  if (pcp_outfile && pcp_inside_if
 	      && (hp->type == T_CONST
 		  || (hp->type == T_MACRO && hp->value.defn->predefined)))
-	    /* Output a precondition for this macro use. */
+	    /* Output a precondition for this macro use.  */
 	    fprintf (pcp_outfile, "#define %s\n", hp->name);
 #endif
 	  buf = " 1 ";
@@ -2535,7 +2537,7 @@ initialize_builtins (pfile)
 }
 
 /* Return 1 iff a token ending in C1 followed directly by a token C2
-   could cause mis-tokenization. */
+   could cause mis-tokenization.  */
 
 static int
 unsafe_chars (c1, c2)
@@ -2556,7 +2558,7 @@ unsafe_chars (c1, c2)
       goto letter;
     case 'L':
       if (c2 == '\'' || c2 == '\"')
-	return 1;   /* Could turn into L"xxx" or L'xxx'. */
+	return 1;   /* Could turn into L"xxx" or L'xxx'.  */
       goto letter;
     letter:
     case '_':
@@ -2570,7 +2572,7 @@ unsafe_chars (c1, c2)
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
-      /* We're in the middle of either a name or a pre-processing number. */
+      /* We're in the middle of either a name or a pre-processing number.  */
       return (is_idchar[c2] || c2 == '.');
     case '<': case '>': case '!': case '%': case '#': case ':':
     case '^': case '&': case '|': case '*': case '/': case '=':
@@ -2638,7 +2640,7 @@ macroexpand (pfile, hp)
       /* Parse all the macro args that are supplied.  I counts them.
 	 The first NARGS args are stored in ARGS.
 	 The rest are discarded.  If rest_args is set then we assume
-	 macarg absorbed the rest of the args. */
+	 macarg absorbed the rest of the args.  */
       i = 0;
       rest_args = 0;
       rest_args = 0;
@@ -2746,7 +2748,7 @@ macroexpand (pfile, hp)
 		  int c;
 		  /* Initially need_space is -1.  Otherwise, 1 means the
 		     previous character was a space, but we suppressed it;
-		     0 means the previous character was a non-space. */
+		     0 means the previous character was a non-space.  */
 		  int need_space = -1;
 		  i = 0;
 		  arg->stringified = CPP_WRITTEN (pfile);
@@ -2956,7 +2958,7 @@ macroexpand (pfile, hp)
       }
 
       /* if there is anything left of the definition
-	 after handling the arg list, copy that in too. */
+	 after handling the arg list, copy that in too.  */
 
       for (i = offset; i < defn->length; i++)
 	{
@@ -2980,7 +2982,7 @@ macroexpand (pfile, hp)
   push_macro_expansion (pfile, xbuf, xbuf_len, hp);
   CPP_BUFFER (pfile)->has_escapes = 1;
 
-  /* Pop the space we've used in the token_buffer for argument expansion. */
+  /* Pop the space we've used in the token_buffer for argument expansion.  */
   CPP_SET_WRITTEN (pfile, old_written);
     
   /* Recursive macro use sometimes works traditionally.
@@ -3048,7 +3050,7 @@ get_directive_token (pfile)
       case CPP_POP:
 	  if (! CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
 	      return token;
-	  /* ... else fall though ... */
+	  /* ... else fall though ...  */
       case CPP_HSPACE:  case CPP_COMMENT:
 	  CPP_SET_WRITTEN (pfile, old_written);
 	  break;
@@ -3064,7 +3066,7 @@ get_directive_token (pfile)
    The input is normally in part of the output_buffer following
    CPP_WRITTEN, and will get overwritten by output_line_command.
    I.e. in input file specification has been popped by handle_directive.
-   This is safe. */
+   This is safe.  */
 
 static int
 do_include (pfile, keyword, unused1, unused2)
@@ -3091,7 +3093,7 @@ do_include (pfile, keyword, unused1, unused2)
   int f;			/* file number */
 
   int retried = 0;		/* Have already tried macro
-				   expanding the include line*/
+				   expanding the include line */
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int pcf = -1;
   char *pcfbuf;
@@ -3133,12 +3135,12 @@ do_include (pfile, keyword, unused1, unused2)
 	  if (CPP_OPTIONS (pfile)->first_bracket_include)
 	    search_start = CPP_OPTIONS (pfile)->first_bracket_include;
 	}
-      /* If -I- was specified, don't search current dir, only spec'd ones. */
+      /* If -I- was specified, don't search current dir, only spec'd ones.  */
       else if (! CPP_OPTIONS (pfile)->ignore_srcdir)
 	{
 	  cpp_buffer *fp = CPP_BUFFER (pfile);
 	  /* We have "filename".  Figure out directory this source
-	     file is coming from and put it on the front of the list. */
+	     file is coming from and put it on the front of the list.  */
 
 	  for ( ; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
 	    {
@@ -3379,18 +3381,18 @@ do_include (pfile, keyword, unused1, unused2)
     /* Check to see if this include file is a once-only include file.
        If so, give up.  */
 
-    struct file_name_list* ptr;
+    struct file_name_list *ptr;
 
     for (ptr = pfile->dont_repeat_files; ptr; ptr = ptr->next) {
       if (!strcmp (ptr->fname, fname)) {
 	close (f);
-        return 0;				/* This file was once'd. */
+        return 0;				/* This file was once'd.  */
       }
     }
 
     for (ptr = pfile->all_include_files; ptr; ptr = ptr->next) {
       if (!strcmp (ptr->fname, fname))
-        break;				/* This file was included before. */
+        break;				/* This file was included before.  */
     }
 
     if (ptr == 0) {
@@ -3425,7 +3427,7 @@ do_include (pfile, keyword, unused1, unused2)
 
     /* Actually process the file.  */
 
-    /* Record file on "seen" list for #import. */
+    /* Record file on "seen" list for #import.  */
     add_import (pfile, f, fname);
 
     pcftry = (char *) alloca (strlen (fname) + 30);
@@ -3546,6 +3548,7 @@ is_system_include (pfile, filename)
  * If HASH is >= 0, it is the precomputed hash code.
  * Otherwise, compute the hash code.
  */
+
 static ASSERTION_HASHNODE *
 assertion_install (pfile, name, len, hash)
      cpp_reader *pfile;
@@ -3623,8 +3626,8 @@ delete_assertion (hp)
       tail = next;
     }
 
-  /* make sure that the bucket chain header that
-     the deleted guy was on points to the right thing afterwards. */
+  /* Make sure that the bucket chain header that
+     the deleted guy was on points to the right thing afterwards.  */
   if (hp == *hp->bucket_hdr)
     *hp->bucket_hdr = hp->next;
 
@@ -3637,7 +3640,7 @@ delete_assertion (hp)
    The value returned in the end of the string written to RESULT,
    or NULL on error.  */
 
-static U_CHAR*
+static U_CHAR *
 convert_string (pfile, result, in, limit, handle_escapes)
      cpp_reader *pfile;
      register U_CHAR *result, *in, *limit;
@@ -3940,7 +3943,7 @@ do_ident (pfile, keyword, buf, limit)
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
-  /* Leave rest of line to be read by later calls to cpp_get_token. */
+  /* Leave rest of line to be read by later calls to cpp_get_token.  */
 
   return 0;
 }
@@ -4102,6 +4105,7 @@ do_elif (pfile, keyword, buf, limit)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
+
 static HOST_WIDE_INT
 eval_if_expression (pfile, buf, length)
      cpp_reader *pfile;
@@ -4138,7 +4142,7 @@ do_xifdef (pfile, keyword, unused1, unused2)
 {
   int skip;
   cpp_buffer *ip = CPP_BUFFER (pfile);
-  U_CHAR* ident;
+  U_CHAR *ident;
   int ident_length;
   enum cpp_token token;
   int start_of_file = 0;
@@ -4246,6 +4250,7 @@ conditional_skip (pfile, skip, type, control_macro)
  * leaves input ptr at the sharp sign found.
  * If ANY is nonzero, return at next directive of any sort.
  */
+
 static void
 skip_if_group (pfile, any)
      cpp_reader *pfile;
@@ -4363,7 +4368,7 @@ skip_if_group (pfile, any)
 	}
       c = GETC ();
     }
-  /* We're in the middle of a line.  Skip the rest of it. */
+  /* We're in the middle of a line.  Skip the rest of it.  */
   for (;;) {
     switch (c)
       {
@@ -4542,9 +4547,8 @@ validate_else (pfile, directive)
 }
 
 /* Get the next token, and add it to the text in pfile->token_buffer.
-   Return the kind of token we got. */
+   Return the kind of token we got.  */
   
-
 enum cpp_token
 cpp_get_token (pfile)
      cpp_reader *pfile;
@@ -4577,7 +4581,7 @@ cpp_get_token (pfile)
 	    {
 	      /* We're about to return from an #include file.
 		 Emit #line information now (as part of the CPP_POP) result.
-		 But the #line refers to the file we will pop to. */
+		 But the #line refers to the file we will pop to.  */
 	      cpp_buffer *cur_buffer = CPP_BUFFER (pfile);
 	      CPP_BUFFER (pfile) = next_buf;
 	      pfile->input_stack_listing_current = 0;
@@ -4612,7 +4616,7 @@ cpp_get_token (pfile)
 				   "unterminated comment");
 	      goto handle_eof;
 	    }
-	  c = '/';  /* Initial letter of comment. */
+	  c = '/';  /* Initial letter of comment.  */
 	return_comment:
 	  /* Comments are equivalent to spaces.
 	     For -traditional, a comment is equivalent to nothing.  */
@@ -4637,7 +4641,7 @@ cpp_get_token (pfile)
 	    {
 #if 0
 	      /* This may not work if cpp_get_token is called recursively,
-		 since many places look for horizontal space. */
+		 since many places look for horizontal space.  */
 	      if (newlines)
 		{
 		  /* Copy the newlines into the output buffer, in order to
@@ -4678,7 +4682,7 @@ cpp_get_token (pfile)
 
 	      /* OK, now bring us back to the state we were in before we entered
 		 this branch.  We need #line b/c the newline for the pragma
-		 could fuck things up. */
+		 could fuck things up.  */
 	      output_line_command (pfile, 0, same_file);
 	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
 	      *(obp++) = '/';
@@ -4776,7 +4780,7 @@ cpp_get_token (pfile)
 		  cc = GETC();
 		  if (cc == '\n')
 		    {
-		      /* Backslash newline is replaced by nothing at all. */
+		      /* Backslash newline is replaced by nothing at all.  */
 		      CPP_ADJUST_WRITTEN (pfile, -1);
 		      pfile->lineno++;
 		    }
@@ -4840,7 +4844,7 @@ cpp_get_token (pfile)
 	      /* Chill style comment */
 	      if (opts->put_out_comments)
 		parse_set_mark (&start_mark, pfile);
-	      FORWARD(1);  /* Skip second '-'. */
+	      FORWARD(1);  /* Skip second '-'.  */
 	      for (;;)
 		{
 		  c = GETC ();
@@ -4848,7 +4852,7 @@ cpp_get_token (pfile)
 		    break;
 		  if (c == '\n')
 		    {
-		      /* Don't consider final '\n' to be part of comment. */
+		      /* Don't consider final '\n' to be part of comment.  */
 		      FORWARD(-1);
 		      break;
 		    }
@@ -5061,7 +5065,7 @@ cpp_get_token (pfile)
 	    if (hp->type == T_DISABLED)
 	      {
 		if (pfile->output_escapes)
-		  { /* Return "@-IDENT", followed by '\0'. */
+		  { /* Return "@-IDENT", followed by '\0'.  */
 		    int i;
 		    CPP_RESERVE (pfile, 3);
 		    ident = pfile->token_buffer + before_name_written;
@@ -5107,7 +5111,7 @@ cpp_get_token (pfile)
 	      if (!is_macro_call)
 		return CPP_NAME;
 	    }
-	    /* This is now known to be a macro call. */
+	    /* This is now known to be a macro call.  */
 
 	    /* it might not actually be a macro.  */
 	    if (hp->type != T_MACRO) {
@@ -5131,7 +5135,7 @@ cpp_get_token (pfile)
 	    /* An extra "@ " is added to the end of a macro expansion
 	       to prevent accidental token pasting.  We prefer to avoid
 	       unneeded extra spaces (for the sake of cpp-using tools like
-	       imake).  Here we remove the space if it is safe to do so. */
+	       imake).  Here we remove the space if it is safe to do so.  */
 	    if (pfile->buffer->rlimit - pfile->buffer->cur >= 3
 		&& pfile->buffer->rlimit[-2] == '@'
 		&& pfile->buffer->rlimit[-1] == ' ')
@@ -5188,7 +5192,8 @@ cpp_get_token (pfile)
     }
 }
 
-/* Like cpp_get_token, but skip spaces and comments. */
+/* Like cpp_get_token, but skip spaces and comments.  */
+
 enum cpp_token
 cpp_get_non_space_token (pfile)
      cpp_reader *pfile;
@@ -5204,7 +5209,7 @@ cpp_get_non_space_token (pfile)
     }
 }
 
-/* Parse an identifier starting with C. */
+/* Parse an identifier starting with C.  */
 
 int
 parse_name (pfile, c)
@@ -5223,7 +5228,7 @@ parse_name (pfile, c)
 	  break;
       }
 
-      CPP_RESERVE(pfile, 2); /* One more for final NUL. */
+      CPP_RESERVE(pfile, 2); /* One more for final NUL.  */
       CPP_PUTC_Q (pfile, c);
       c = GETC();
       if (c == EOF)
@@ -5368,7 +5373,8 @@ read_filename_string (ch, f)
   return alloc;
 }
 
-/* This structure holds a linked list of file name maps, one per directory. */
+/* This structure holds a linked list of file name maps, one per directory.  */
+
 struct file_name_map_list
 {
   struct file_name_map_list *map_list_next;
@@ -5591,7 +5597,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   } else {
     /* Cannot count its file size before reading.
        First read the entire file into heap and
-       copy them into buffer on stack. */
+       copy them into buffer on stack.  */
 
     int bsize = 2000;
 
@@ -5783,7 +5789,7 @@ cpp_start_read (pfile, fname)
   /* Now handle the command line options.  */
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
-  /* First reverse the list. */
+  /* First reverse the list.  */
   opts->pending = nreverse_pending (opts->pending);
 
   for (pend = opts->pending;  pend;  pend = pend->next)
@@ -5811,8 +5817,8 @@ cpp_start_read (pfile, fname)
 
   opts->done_initializing = 1;
 
-  { /* read the appropriate environment variable and if it exists
-       replace include_defaults with the listed path. */
+  { /* Read the appropriate environment variable and if it exists
+       replace include_defaults with the listed path.  */
     char *epath = 0;
     switch ((opts->objc << 1) + opts->cplusplus)
       {
@@ -6139,7 +6145,7 @@ cpp_start_read (pfile, fname)
     }
   pfile->no_record_file--;
 
-  /* Free the pending list. */
+  /* Free the pending list.  */
   for (pend = opts->pending;  pend; )
     {
       struct cpp_pending *next = pend->next;
@@ -6173,7 +6179,7 @@ cpp_reader_init (pfile)
   pfile->get_token = cpp_get_token;
 
   pfile->token_buffer_size = 200;
-  pfile->token_buffer = (U_CHAR*)xmalloc (pfile->token_buffer_size);
+  pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, 0);
 
   pfile->system_include_depth = 0;
@@ -6207,7 +6213,7 @@ push_pending (pfile, cmd, arg)
      char *arg;
 {
   struct cpp_pending *pend
-    = (struct cpp_pending*)xmalloc (sizeof (struct cpp_pending));
+    = (struct cpp_pending *) xmalloc (sizeof (struct cpp_pending));
   pend->cmd = cmd;
   pend->arg = arg;
   pend->next = CPP_OPTIONS (pfile)->pending;
@@ -6736,7 +6742,7 @@ cpp_finish (pfile)
 }
 
 /* Free resources used by PFILE.
-   This is the cpp_reader 'finalizer' or 'destructor' (in C++ terminology). */
+   This is the cpp_reader 'finalizer' or 'destructor' (in C++ terminology).  */
 
 void
 cpp_cleanup (pfile)
@@ -7209,7 +7215,8 @@ savestring (input)
   return output;
 }
 
-/* Initialize PMARK to remember the current position of PFILE. */
+/* Initialize PMARK to remember the current position of PFILE.  */
+
 void
 parse_set_mark (pmark, pfile)
      struct parse_marker *pmark;
@@ -7222,7 +7229,8 @@ parse_set_mark (pmark, pfile)
   pmark->position = pbuf->cur - pbuf->buf;
 }
 
-/* Cleanup PMARK - we no longer need it. */
+/* Cleanup PMARK - we no longer need it.  */
+
 void
 parse_clear_mark (pmark)
      struct parse_marker *pmark;
@@ -7235,7 +7243,7 @@ parse_clear_mark (pmark)
   *pp = pmark->next;
 }
 
-/* Backup the current position of PFILE to that saved in PMARK. */
+/* Backup the current position of PFILE to that saved in PMARK.  */
 
 void
 parse_goto_mark (pmark, pfile)
@@ -7249,7 +7257,7 @@ parse_goto_mark (pmark, pfile)
 }
 
 /* Reset PMARK to point to the current position of PFILE.  (Same
-   as parse_clear_mark (PMARK), parse_set_mark (PMARK, PFILE) but faster. */
+   as parse_clear_mark (PMARK), parse_set_mark (PMARK, PFILE) but faster.  */
 
 void
 parse_move_mark (pmark, pfile)
@@ -7427,7 +7435,7 @@ cpp_pedwarn_with_file_and_line (pfile, file, line, msg, arg1, arg2, arg3)
 	       msg, arg1, arg2, arg3);
 }
 
-/* This defines "errno" properly for VMS, and gives us EACCES. */
+/* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 #ifndef errno
 extern int errno;
@@ -7448,9 +7456,8 @@ char *strerror ();
 char *strerror (int,...);
 #endif
 
-/*
- * my_strerror - return the descriptive text associated with an `errno' code.
- */
+/* my_strerror - return the descriptive text associated with an
+   `errno' code.  */
 
 char *
 my_strerror (errnum)

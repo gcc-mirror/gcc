@@ -533,7 +533,7 @@ __udivmoddi4 (n, d, rp)
 	      udiv_qrnnd (q1, n1, n2, n1, d0);
 	    }
 
-	  /* n1 != d0... */
+	  /* n1 != d0...  */
 
 	  udiv_qrnnd (q0, n0, n1, n0, d0);
 
@@ -1404,7 +1404,7 @@ asm ("___builtin_saveregs:");
   asm ("	sw	$7,12($30)");
   asm ("	j	$31");
   asm ("	.end __builtin_saveregs");
-#else /* not __mips__, etc. */
+#else /* not __mips__, etc.  */
 
 void *
 __builtin_saveregs ()
@@ -1517,7 +1517,7 @@ __bb_exit_func (void)
       /* We check the length field explicitly in order to allow compatibility
 	 with older GCC's which did not provide it.  */
 
-      for (ptr = bb_head; ptr != (struct bb *)0; ptr = ptr->next)
+      for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
 	{
 	  int i;
 	  int func_p	= (ptr->nwords >= sizeof (struct bb) && ptr->nwords <= 1000);
@@ -1609,7 +1609,7 @@ void
 __bb_init_func (struct bb *blocks)
 {
   /* User is supposed to check whether the first word is non-0,
-     but just in case.... */
+     but just in case....  */
 
   if (blocks->zero_word)
     return;
@@ -1635,16 +1635,16 @@ __bb_init_func (struct bb *blocks)
 
 #include <string.h>
 
-/* Number of buckets in hashtable of basic block addresses. */
+/* Number of buckets in hashtable of basic block addresses.  */
 
 #define BB_BUCKETS 311
 
-/* Maximum length of string in file bb.in. */
+/* Maximum length of string in file bb.in.  */
 
 #define BBINBUFSIZE 500
 
 /* BBINBUFSIZE-1 with double quotes. We could use #BBINBUFSIZE or
-   "BBINBUFSIZE" but want to avoid trouble with preprocessors. */
+   "BBINBUFSIZE" but want to avoid trouble with preprocessors.  */
 
 #define BBINBUFSIZESTR "499"
 
@@ -1671,7 +1671,7 @@ struct bb_func
 
 /* This is the connection to the outside world.
    The BLOCK_PROFILER macro must set __bb.blocks
-   and __bb.blockno. */
+   and __bb.blockno.  */
 
 struct {
   unsigned long blockno;
@@ -1679,18 +1679,18 @@ struct {
 } __bb;
 
 /* Vars to store addrs of source and destination basic blocks 
-   of a jump. */
+   of a jump.  */
 
 static unsigned long bb_src = 0;
 static unsigned long bb_dst = 0;
 
-static FILE *bb_tracefile = (FILE*)0;
-static struct bb_edge **bb_hashbuckets = (struct bb_edge**)0;
-static struct bb_func *bb_func_head = (struct bb_func*)0;
+static FILE *bb_tracefile = (FILE *) 0;
+static struct bb_edge **bb_hashbuckets = (struct bb_edge **) 0;
+static struct bb_func *bb_func_head = (struct bb_func *) 0;
 static unsigned long bb_callcount = 0;
 static int bb_mode = 0;
 
-static unsigned long *bb_stack = (unsigned long *)0;
+static unsigned long *bb_stack = (unsigned long *) 0;
 static size_t bb_stacksize = 0;
 
 static int reported = 0;
@@ -1710,14 +1710,14 @@ bb_mode & 8 != 0   :   Insert return instructions in basic block flow.
 #include <sys/stat.h>
 /*#include <malloc.h>*/
 
-/* Commands executed by gopen. */
+/* Commands executed by gopen.  */
 
 #define GOPENDECOMPRESS "gzip -cd "
 #define GOPENCOMPRESS "gzip -c >"
 
 /* Like fopen but pipes through gzip.  mode may only be "r" or "w".
    If it does not compile, simply replace gopen by fopen and delete
-   '.gz' from any first parameter to gopen. */
+   '.gz' from any first parameter to gopen.  */
 
 static FILE *
 gopen (fn, mode)
@@ -1728,10 +1728,10 @@ gopen (fn, mode)
   char *p;
 
   if (mode[1])
-    return (FILE*)0;
+    return (FILE *) 0;
 
   if (mode[0] != 'r' && mode[0] != 'w') 
-    return (FILE*)0;
+    return (FILE *) 0;
 
   p = fn + strlen (fn)-1;
   use_gzip = ((p[-1] == '.' && (p[0] == 'Z' || p[0] == 'z')) ||
@@ -1742,8 +1742,8 @@ gopen (fn, mode)
       if (mode[0]=='r')
         {
           FILE *f;
-          char *s = (char*) malloc (sizeof (char) * strlen (fn)
-                                    + sizeof (GOPENDECOMPRESS));
+          char *s = (char *) malloc (sizeof (char) * strlen (fn)
+				     + sizeof (GOPENDECOMPRESS));
           strcpy (s, GOPENDECOMPRESS);
           strcpy (s + (sizeof (GOPENDECOMPRESS)-1), fn);
           f = popen (s, mode);
@@ -1754,8 +1754,8 @@ gopen (fn, mode)
       else
         {
           FILE *f;
-          char *s = (char*) malloc (sizeof (char) * strlen (fn)
-                                    + sizeof (GOPENCOMPRESS));
+          char *s = (char *) malloc (sizeof (char) * strlen (fn)
+				     + sizeof (GOPENCOMPRESS));
           strcpy (s, GOPENCOMPRESS);
           strcpy (s + (sizeof (GOPENCOMPRESS)-1), fn);
           if (!(f = popen (s, mode)))
@@ -1787,7 +1787,7 @@ gclose (f)
 
 #endif /* HAVE_POPEN */
 
-/* Called once per program. */
+/* Called once per program.  */
 
 static void
 __bb_exit_trace_func ()
@@ -1812,7 +1812,7 @@ __bb_exit_trace_func ()
 #endif /* HAVE_POPEN */
     }
 
-  /* Check functions in `bb.in'. */
+  /* Check functions in `bb.in'.  */
 
   if (file)
     {
@@ -1822,14 +1822,14 @@ __bb_exit_trace_func ()
       struct bb *ptr;
       long blk;
 
-      /* This is somewhat type incorrect. */
+      /* This is somewhat type incorrect.  */
       time ((void *) &time_value);
 
-      for (p = bb_func_head; p != (struct bb_func *)0; p = p->next)
+      for (p = bb_func_head; p != (struct bb_func *) 0; p = p->next)
         {
-          for (ptr = bb_head; ptr != (struct bb *)0; ptr = ptr->next)
+          for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
             {
-              if (!ptr->filename || p->filename != (char *)0 && strcmp (p->filename, ptr->filename))
+              if (!ptr->filename || p->filename != (char *) 0 && strcmp (p->filename, ptr->filename))
                 continue;
               for (blk = 0; blk < ptr->ncounts; blk++)
                 {
@@ -1894,7 +1894,7 @@ found:        ;
               break;
 
               case 4:
-		/* Print nothing. */
+		/* Print nothing.  */
               break;
 
               case 8:
@@ -1945,7 +1945,7 @@ found:        ;
    if (file)
      fclose (file);
 
-   /* Free allocated memory. */
+   /* Free allocated memory.  */
 
    f = bb_func_head;
    while (f)
@@ -1983,7 +1983,7 @@ found:        ;
      if (b->flags) free (b->flags);
 }
 
-/* Called once per program. */
+/* Called once per program.  */
 
 static void
 __bb_init_prg ()
@@ -2025,31 +2025,31 @@ __bb_init_prg ()
         bb_mode |= 8;
       else 
         {
-          struct bb_func *f = (struct bb_func*) malloc (sizeof (struct bb_func));
+          struct bb_func *f = (struct bb_func *) malloc (sizeof (struct bb_func));
           if (f)
             {
               unsigned long l;
               f->next = bb_func_head;
               if (pos = strchr (p, ':'))
                 {
-                  if (!(f->funcname = (char*) malloc (strlen (pos+1)+1)))
+                  if (!(f->funcname = (char *) malloc (strlen (pos+1)+1)))
                     continue;
                   strcpy (f->funcname, pos+1);
                   l = pos-p;
-                  if ((f->filename = (char*) malloc (l+1)))
+                  if ((f->filename = (char *) malloc (l+1)))
                     {
                       strncpy (f->filename, p, l);
                       f->filename[l] = '\0';
                     }
                   else
-                    f->filename = (char*)0;
+                    f->filename = (char *) 0;
                 }
               else
                 {
-                  if (!(f->funcname = (char*) malloc (strlen (p)+1)))
+                  if (!(f->funcname = (char *) malloc (strlen (p)+1)))
                     continue;
                   strcpy (f->funcname, p);
-                  f->filename = (char*)0;
+                  f->filename = (char *) 0;
                 }
               f->mode = m;
               bb_func_head = f;
@@ -2091,7 +2091,7 @@ __bb_init_prg ()
 
 }
 
-/* Called upon entering a basic block. */
+/* Called upon entering a basic block.  */
 
 void
 __bb_trace_func ()
@@ -2116,7 +2116,7 @@ __bb_trace_func ()
       struct bb_edge **startbucket, **oldnext;
 
       oldnext = startbucket =
-          & bb_hashbuckets[ (((int)bb_src*8)^(int)bb_dst) % BB_BUCKETS ];
+          & bb_hashbuckets[ (((int) bb_src*8) ^ (int) bb_dst) % BB_BUCKETS ];
       bucket = *startbucket;
 
       for (bucket = *startbucket; bucket; 
@@ -2164,7 +2164,7 @@ skip:
 
 }
 
-/* Called when returning from a function and `__bb_showret__' is set. */
+/* Called when returning from a function and `__bb_showret__' is set.  */
 
 static void
 __bb_trace_func_ret ()
@@ -2179,7 +2179,7 @@ __bb_trace_func_ret ()
       struct bb_edge **startbucket, **oldnext;
 
       oldnext = startbucket =
-          & bb_hashbuckets[ (((int)bb_dst*8)^(int)bb_src) % BB_BUCKETS ];
+          & bb_hashbuckets[ (((int) bb_dst * 8) ^ (int) bb_src) % BB_BUCKETS ];
       bucket = *startbucket;
 
       for (bucket = *startbucket; bucket; 
@@ -2225,7 +2225,7 @@ skip:
 
 }
 
-/* Called upon entering the first function of a file. */
+/* Called upon entering the first function of a file.  */
 
 static void
 __bb_init_file (blocks)
@@ -2243,7 +2243,7 @@ __bb_init_file (blocks)
 
   blocks->flags = 0;
   if (!bb_func_head ||
-      !(blocks->flags = (char*) malloc (sizeof (char) * blocks->ncounts)))
+      !(blocks->flags = (char *) malloc (sizeof (char) * blocks->ncounts)))
     return;
 
   for (blk = 0; blk < ncounts; blk++)
@@ -2263,7 +2263,7 @@ __bb_init_file (blocks)
 
 }
 
-/* Called when exiting from a function. */
+/* Called when exiting from a function.  */
 
 void
 __bb_trace_ret ()
@@ -2287,7 +2287,7 @@ __bb_trace_ret ()
 
 }
 
-/* Called when entering a function. */
+/* Called when entering a function.  */
 
 void
 __bb_init_trace_func (blocks, blockno)
@@ -2360,11 +2360,11 @@ stack_overflow:;
 #endif /* L_bb */
 
 /* Default free-store management functions for C++, per sections 12.5 and
-   17.3.3 of the Working Paper. */
+   17.3.3 of the Working Paper.  */
 
 #ifdef L_op_new
 /* operator new (size_t), described in 17.3.3.5.  This function is used by
-   C++ programs to allocate a block of memory to hold a single object. */
+   C++ programs to allocate a block of memory to hold a single object.  */
 
 typedef void (*vfp)(void);
 extern vfp __new_handler;
@@ -2420,7 +2420,7 @@ __builtin_vec_new (size_t sz)
 #ifdef L_new_handler
 /* set_new_handler (fvoid_t *) and the default new handler, described in
    17.3.3.2 and 17.3.3.5.  These functions define the result of a failure
-   to allocate the amount of memory requested from operator new or new []. */
+   to allocate the amount of memory requested from operator new or new [].  */
 
 #ifndef inhibit_libc
 /* This gets us __GNU_LIBRARY__.  */
@@ -2437,7 +2437,7 @@ __builtin_vec_new (size_t sz)
 typedef void (*vfp)(void);
 void __default_new_handler (void);
 
-vfp __new_handler = (vfp)0;
+vfp __new_handler = (vfp) 0;
 
 vfp
 set_new_handler (vfp handler)
@@ -2470,7 +2470,7 @@ __default_new_handler ()
 #ifdef L_op_delete
 /* operator delete (void *), described in 17.3.3.3.  This function is used
    by C++ programs to return to the free store a block of memory allocated
-   as a single object. */
+   as a single object.  */
 
 #ifdef WEAK_ALIAS
 void __builtin_delete (void *ptr)
@@ -2490,7 +2490,7 @@ __builtin_delete (void *ptr)
 #ifdef L_op_vdel
 /* operator delete [] (void *), described in 17.3.3.4.  This function is
    used by C++ programs to return to the free store a block of memory
-   allocated as an array. */
+   allocated as an array.  */
 
 extern void __builtin_delete (void *);
 
@@ -2560,7 +2560,7 @@ __clear_cache (beg, end)
 	    = JUMP_AHEAD_INSTRUCTION + INSN_CACHE_LINE_WIDTH;
 	  ptr += INSN_CACHE_LINE_WIDTH;
 	}
-      *(INSTRUCTION_TYPE *)(ptr - INSN_CACHE_LINE_WIDTH) = RETURN_INSTRUCTION;
+      *(INSTRUCTION_TYPE *) (ptr - INSN_CACHE_LINE_WIDTH) = RETURN_INSTRUCTION;
 
       initialized = 1;
     }
@@ -2739,14 +2739,14 @@ __enable_execute_stack ()
       lowest = current;
     }
 
-  /* Clear instruction cache in case an old trampoline is in it. */
+  /* Clear instruction cache in case an old trampoline is in it.  */
   asm ("pich");
 }
 #endif /* __convex__ */
 
 #ifdef __DOLPHIN__
 
-/* Modified from the convex -code above. */
+/* Modified from the convex -code above.  */
 
 #include <sys/param.h>
 #include <errno.h>
@@ -2786,7 +2786,7 @@ __enable_execute_stack ()
 #include <sys/vmmac.h>
 
 /* Modified from the convex -code above.
-   mremap promises to clear the i-cache. */
+   mremap promises to clear the i-cache.  */
 
 void
 __enable_execute_stack ()
@@ -2809,7 +2809,7 @@ __enable_execute_stack ()
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither. */
+   must define both, or neither.  */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
 #define SYMBOL__MAIN __main
@@ -3008,7 +3008,7 @@ static struct exception_table_node *exception_table_list;
 
 static exception_table *
 find_exception_table (pc)
-     void* pc;
+     void *pc;
 {
   register struct exception_table_node *table = exception_table_list;
   for ( ; table != 0; table = table->next)
@@ -3041,9 +3041,7 @@ find_exception_table (pc)
    return the tightest match...
 
    In the advent of a tie, we have to give the last entry, as it represents
-   an inner block.
- */
-
+   an inner block.  */
 
 void *
 __find_first_exception_table_match(pc)
@@ -3053,9 +3051,9 @@ void *pc;
   int pos = 0;
   int best = 0;
   if (table == 0)
-    return (void*)0;
+    return (void *) 0;
 #if 0
-  printf("find_first_exception_table_match(): pc = %x!\n",pc);
+  printf ("find_first_exception_table_match(): pc = %x!\n", pc);
 #endif
 
   except_pc = pc;
@@ -3068,24 +3066,24 @@ void *pc;
       /* found the first table[pos].start > except_pc, so the previous
 	 entry better be the one we want! */
       break;
-  } while(table[pos].exception_handler != (void*)-1);
+  } while (table[pos].exception_handler != (void *) -1);
 
   --pos;
   if (table[pos].start <= except_pc && table[pos].end > except_pc)
     {
       except_table_pos = pos;
 #if 0
-      printf("find_first_eh_table_match(): found match: %x\n",table[pos].exception_handler);
+      printf ("find_first_eh_table_match(): found match: %x\n", table[pos].exception_handler);
 #endif
       return table[pos].exception_handler;
     }
 #else
-  while (table[++pos].exception_handler != (void*)-1) {
+  while (table[++pos].exception_handler != (void *) -1) {
     if (table[pos].start <= except_pc && table[pos].end > except_pc)
       {
 	/* This can apply.  Make sure it is better or as good as the previous
 	   best.  */
-	/* The best one ends first. */
+	/* The best one ends first.  */
 	if (best == 0 || (table[pos].end <= table[best].end
 			  /* The best one starts last.  */
 			  && table[pos].start >= table[best].start))
@@ -3120,18 +3118,18 @@ __register_exceptions (exception_table *table)
   struct exception_table_node *node;
   exception_table *range = table + 1;
 
-  if (range->start == (void*)-1)
+  if (range->start == (void *) -1)
     return;
 
-  node = (struct exception_table_node*)
+  node = (struct exception_table_node *)
     malloc (sizeof (struct exception_table_node));
   node->table = table;
 
   /* This look can be optimized away either if the table
-     is sorted, or if we pass in extra parameters. */
+     is sorted, or if we pass in extra parameters.  */
   node->start = range->start;
   node->end = range->end;
-  for (range++ ; range->start != (void*)(-1); range++)
+  for (range++ ; range->start != (void *) (-1); range++)
     {
       if (range->start < node->start)
 	node->start = range->start;
@@ -3159,9 +3157,9 @@ __unwind_function(void *ptr)
   /* like ret, but stay here */
   asm("addl $4,%esp");
   
-  /* Now, undo previous frame. */
+  /* Now, undo previous frame.  */
   /* This is a test routine, as we have to dynamically probe to find out
-     what to pop for certain, this is just a guess. */
+     what to pop for certain, this is just a guess.  */
   asm("leal -16(%ebp),%esp");
   asm("pop %ebx");
   asm("pop %esi");
@@ -3182,7 +3180,7 @@ __unwind_function(void *ptr)
 
   asm("mr 31,1");
   asm("l 1,0(1)");
-  /* use 31 as a scratch register to restore the link register. */
+  /* use 31 as a scratch register to restore the link register.  */
   asm("l 31, 8(1);mtlr 31 # l lr,8(1)");
   asm("l 31,-4(1)");
   asm("# br");
@@ -3198,7 +3196,7 @@ __unwind_function(void *ptr)
 
   asm("mr 31,1");
   asm("lwz 1,0(1)");
-  /* use 31 as a scratch register to restore the link register. */
+  /* use 31 as a scratch register to restore the link register.  */
   asm("lwz 31, 8(1);mtlr 31 # l lr,8(1)");
   asm("lwz 31,-4(1)");
   asm("# br");

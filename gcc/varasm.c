@@ -224,7 +224,7 @@ readonly_data_section ()
 #endif
 }
 
-/* Determine if we're in the text section. */
+/* Determine if we're in the text section.  */
 
 int
 in_text_section ()
@@ -232,7 +232,7 @@ in_text_section ()
   return in_section == in_text;
 }
 
-/* Determine if we're in the data section. */
+/* Determine if we're in the data section.  */
 
 int
 in_data_section ()
@@ -1563,7 +1563,7 @@ contains_pointers_p (type)
     }
 }
 
-/* Output text storage for constructor CONSTR. */
+/* Output text storage for constructor CONSTR.  */
 
 void
 bc_output_constructor (constr, size)
@@ -1573,7 +1573,7 @@ bc_output_constructor (constr, size)
   int i;
 
   /* Must always be a literal; non-literal constructors are handled
-     differently. */
+     differently.  */
 
   if (!TREE_CONSTANT (constr))
     abort ();
@@ -1592,7 +1592,7 @@ bc_output_constructor (constr, size)
   output_constant (constr, size);
 }
 
-/* Create storage for constructor CONSTR. */
+/* Create storage for constructor CONSTR.  */
 
 void
 bc_output_data_constructor (constr)
@@ -1608,7 +1608,7 @@ bc_output_data_constructor (constr)
   if (i > 0)
     BC_OUTPUT_ALIGN (asm_out_file, i);
 
-  /* The constructor is filled in at runtime. */
+  /* The constructor is filled in at runtime.  */
   BC_OUTPUT_SKIP (asm_out_file, int_size_in_bytes (TREE_TYPE (constr)));
 }
 
@@ -1819,7 +1819,7 @@ assemble_integer (x, size, force)
      int force;
 {
   /* First try to use the standard 1, 2, 4, 8, and 16 byte
-     ASM_OUTPUT... macros. */
+     ASM_OUTPUT... macros.  */
 
   switch (size)
     {
@@ -2329,7 +2329,7 @@ const_hash (exp)
   else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
     {
       len = int_size_in_bytes (TREE_TYPE (exp));
-      p = (char*) alloca (len);
+      p = (char *) alloca (len);
       get_set_constructor_bytes (exp, (unsigned char *) p, len);
     }
   else if (code == CONSTRUCTOR)
@@ -2366,7 +2366,7 @@ const_hash (exp)
 	  hi = value.offset;
 	  p = XSTR (value.base, 0);
 	  for (i = 0; p[i] != 0; i++)
-	    hi = ((hi * 613) + (unsigned)(p[i]));
+	    hi = ((hi * 613) + (unsigned) (p[i]));
 	}
       else if (GET_CODE (value.base) == LABEL_REF)
 	hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
@@ -2384,7 +2384,7 @@ const_hash (exp)
   /* Compute hashing function */
   hi = len;
   for (i = 0; i < len; i++)
-    hi = ((hi * 613) + (unsigned)(p[i]));
+    hi = ((hi * 613) + (unsigned) (p[i]));
 
   hi &= (1 << HASHBITS) - 1;
   hi %= MAX_HASH_TABLE;
@@ -2460,7 +2460,7 @@ compare_constant_1 (exp, p)
   else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
     {
       int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
-      strp = (char*) alloca (len);
+      strp = (char *) alloca (len);
       get_set_constructor_bytes (exp, (unsigned char *) strp, len);
       if (bcmp ((char *) &xlen, p, sizeof xlen))
 	return 0;
@@ -3113,7 +3113,7 @@ decode_rtx_const (mode, x, value)
       *p++ = 0;
   }
 
-  value->kind = RTX_INT;	/* Most usual kind. */
+  value->kind = RTX_INT;	/* Most usual kind.  */
   value->mode = mode;
 
   switch (GET_CODE (x))
@@ -3342,7 +3342,7 @@ force_const_mem (mode, x)
 	 copy of X that is in the saveable obstack in case we are being
 	 called from combine or some other phase that discards memory
 	 it allocates.  We need only do this if it is a CONST, since
-	 no other RTX should be allocated in this situation. */
+	 no other RTX should be allocated in this situation.  */
       if (rtl_obstack != saveable_obstack
 	  && GET_CODE (x) == CONST)
 	{
@@ -3737,7 +3737,7 @@ output_constant (exp, size)
     assemble_zeros (size);
 }
 
-/* Bytecode specific code to output assembler for integer. */
+/* Bytecode specific code to output assembler for integer.  */
 
 static void
 bc_assemble_integer (exp, size)
@@ -4123,6 +4123,7 @@ output_constructor (exp, size)
 }
 
 /* Output asm to handle ``#pragma weak'' */
+
 void
 handle_pragma_weak (what, name, value)
      enum pragma_state what;
@@ -4193,7 +4194,7 @@ assemble_alias (decl, target)
 #ifdef ASM_OUTPUT_DEF
   char *name;
 
-  make_decl_rtl (decl, (char*)0, 1);
+  make_decl_rtl (decl, (char *) 0, 1);
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
   /* Make name accessible from other files, if appropriate.  */

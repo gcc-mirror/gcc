@@ -934,7 +934,7 @@ layout_type (type)
       break;
 
     /* Pascal and Chill types */
-    case BOOLEAN_TYPE:		 /* store one byte/boolean for now. */
+    case BOOLEAN_TYPE:		 /* store one byte/boolean for now.  */
       TYPE_MODE (type) = QImode;
       TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_PRECISION (type) = 1;

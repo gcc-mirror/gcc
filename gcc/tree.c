@@ -753,7 +753,7 @@ print_obstack_name (object, file, prefix)
       obstack_name = "temp_decl_obstack";
     }
 
-  /* Check to see if the object is in the free area of the obstack. */
+  /* Check to see if the object is in the free area of the obstack.  */
   if (obstack != NULL)
     {
       if (object >= obstack->next_free
@@ -1170,7 +1170,7 @@ copy_node (node)
 	 the copy is different from the original type.
 	 The two statements usually duplicate each other
 	 (because they clear fields of the same union),
-	 but the optimizer should catch that. */
+	 but the optimizer should catch that.  */
       TYPE_SYMTAB_POINTER (t) = 0;
       TYPE_SYMTAB_ADDRESS (t) = 0;
     }
@@ -1228,9 +1228,9 @@ get_identifier (text)
     hash_len = id_clash_len;
 
   /* Compute hash code */
-  hi = hash_len * 613 + (unsigned)text[0];
+  hi = hash_len * 613 + (unsigned) text[0];
   for (i = 1; i < hash_len; i += 2)
-    hi = ((hi * 613) + (unsigned)(text[i]));
+    hi = ((hi * 613) + (unsigned) (text[i]));
 
   hi &= (1 << HASHBITS) - 1;
   hi %= MAX_HASH_TABLE;
@@ -1464,6 +1464,7 @@ build_complex (real, imag)
 }
 
 /* Build a newly constructed TREE_VEC node of length LEN.  */
+
 tree
 make_tree_vec (len)
      int len;
@@ -1711,7 +1712,7 @@ binfo_member (elem, list)
   return NULL_TREE;
 }
 
-/* Return nonzero if ELEM is part of the chain CHAIN. */
+/* Return nonzero if ELEM is part of the chain CHAIN.  */
 
 int
 chain_member (elem, chain)
@@ -1728,7 +1729,7 @@ chain_member (elem, chain)
 }
 
 /* Return nonzero if ELEM is equal to TREE_VALUE (CHAIN) for any piece of
-   chain CHAIN. */
+   chain CHAIN.  */
 /* ??? This function was added for machine specific attributes but is no
    longer used.  It could be deleted if we could confirm all front ends
    don't use it.  */
@@ -1748,7 +1749,7 @@ chain_member_value (elem, chain)
 }
 
 /* Return nonzero if ELEM is equal to TREE_PURPOSE (CHAIN)
-   for any piece of chain CHAIN. */
+   for any piece of chain CHAIN.  */
 /* ??? This function was added for machine specific attributes but is no
    longer used.  It could be deleted if we could confirm all front ends
    don't use it.  */
@@ -2130,7 +2131,7 @@ save_expr (expr)
      fact (i.e. this allows further folding, and direct checks for constants).
      However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the 
-     literal node. */
+     literal node.  */
 
   if (TREE_CONSTANT (t) || (TREE_READONLY (t) && ! TREE_SIDE_EFFECTS (t))
       || TREE_CODE (t) == SAVE_EXPR || TREE_CODE (t) == ERROR_MARK)
@@ -2160,6 +2161,7 @@ save_expr (expr)
 /* Arrange for an expression to be expanded multiple independent
    times.  This is useful for cleanup actions, as the backend can
    expand them multiple times in different places.  */
+
 tree
 unsave_expr (expr)
      tree expr;
@@ -2177,6 +2179,7 @@ unsave_expr (expr)
 
 /* Modify a tree in place so that all the evaluate only once things
    are cleared out.  Return the EXPR given.  */
+
 tree
 unsave_expr_now (expr)
      tree expr;
@@ -2681,6 +2684,7 @@ build VPROTO((enum tree_code code, tree tt, ...))
 /* Same as above, but only builds for unary operators.
    Saves lions share of calls to `build'; cuts down use
    of varargs, which is expensive for RISC machines.  */
+
 tree
 build1 (code, type, node)
      enum tree_code code;
@@ -2860,7 +2864,7 @@ build_block (vars, tags, subblocks, supercontext, chain)
 }
 
 /* Return a declaration like DDECL except that its DECL_MACHINE_ATTRIBUTE
-   is ATTRIBUTE. */
+   is ATTRIBUTE.  */
 
 tree
 build_decl_attribute_variant (ddecl, attribute)
@@ -2930,7 +2934,7 @@ build_type_attribute_variant (ttype, attribute)
 
 /* Return a 1 if ATTR_NAME and ATTR_ARGS is valid for either declaration DECL
    or type TYPE and 0 otherwise.  Validity is determined the configuration
-   macros VALID_MACHINE_DECL_ATTRIBUTE and VALID_MACHINE_TYPE_ATTRIBUTE. */
+   macros VALID_MACHINE_DECL_ATTRIBUTE and VALID_MACHINE_TYPE_ATTRIBUTE.  */
 
 int
 valid_machine_attribute (attr_name, attr_args, decl, type)
@@ -3715,7 +3719,7 @@ build_index_type (maxval)
 /* Create a range of some discrete type TYPE (an INTEGER_TYPE,
    ENUMERAL_TYPE, BOOLEAN_TYPE, or CHAR_TYPE), with
    low bound LOWVAL and high bound HIGHVAL.
-   if TYPE==NULL_TREE, sizetype is used. */
+   if TYPE==NULL_TREE, sizetype is used.  */
 
 tree
 build_range_type (type, lowval, highval)
@@ -3744,7 +3748,7 @@ build_range_type (type, lowval, highval)
 }
 
 /* Just like build_index_type, but takes lowval and highval instead
-   of just highval (maxval). */
+   of just highval (maxval).  */
 
 tree
 build_index_2_type (lowval,highval)
@@ -4340,7 +4344,7 @@ dump_tree_statistics ()
 extern char * first_global_object_name;
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
-   If KIND=='D', return a suitable global clean-up (destructor) name. */
+   If KIND=='D', return a suitable global clean-up (destructor) name.  */
 
 tree
 get_file_function_name (kind)
@@ -4377,7 +4381,7 @@ get_file_function_name (kind)
 #ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
 	       || *p == '$'
 #endif
-#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but... */
+#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
 	       || *p == '.'
 #endif
 	       || (*p >= 'A' && *p <= 'Z')
@@ -4395,7 +4399,7 @@ get_file_function_name (kind)
    with one bit in each char ('\000' or '\001').
 
    If the constructor is constant, NULL_TREE is returned.
-   Otherwise, a TREE_LIST of the non-constant elements is emitted. */
+   Otherwise, a TREE_LIST of the non-constant elements is emitted.  */
 
 tree
 get_set_constructor_bits (init, buffer, bit_size)
@@ -4421,7 +4425,7 @@ get_set_constructor_bits (init, buffer, bit_size)
 	  tree_cons (TREE_PURPOSE (vals), TREE_VALUE (vals), non_const_bits);
       else if (TREE_PURPOSE (vals) != NULL_TREE)
 	{
-	  /* Set a range of bits to ones. */
+	  /* Set a range of bits to ones.  */
 	  HOST_WIDE_INT lo_index
 	    = TREE_INT_CST_LOW (TREE_PURPOSE (vals)) - domain_min;
 	  HOST_WIDE_INT hi_index
@@ -4434,7 +4438,7 @@ get_set_constructor_bits (init, buffer, bit_size)
 	}
       else
 	{
-	  /* Set a single bit to one. */
+	  /* Set a single bit to one.  */
 	  HOST_WIDE_INT index
 	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
 	  if (index < 0 || index >= bit_size)
@@ -4451,7 +4455,7 @@ get_set_constructor_bits (init, buffer, bit_size)
 /* Expand (the constant part of) a SET_TYPE CONSTRUCTOR node.
    The result is placed in BUFFER (which is an array of bytes).
    If the constructor is constant, NULL_TREE is returned.
-   Otherwise, a TREE_LIST of the non-constant elements is emitted. */
+   Otherwise, a TREE_LIST of the non-constant elements is emitted.  */
 
 tree
 get_set_constructor_bytes (init, buffer, wd_size)
@@ -4465,7 +4469,7 @@ get_set_constructor_bytes (init, buffer, wd_size)
   int bit_size = wd_size * set_word_size;
   int bit_pos = 0;
   unsigned char *bytep = buffer;
-  char *bit_buffer = (char*)alloca(bit_size);
+  char *bit_buffer = (char *) alloca(bit_size);
   tree non_const_bits = get_set_constructor_bits (init, bit_buffer, bit_size);
 
   for (i = 0; i < wd_size; i++)

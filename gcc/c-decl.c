@@ -455,7 +455,7 @@ int flag_no_nonansi_builtin;
 int flag_traditional;
 
 /* Nonzero means to allow single precision math even if we're generally
-   being traditional. */
+   being traditional.  */
 int flag_allow_single_precision = 0;
 
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
@@ -525,7 +525,7 @@ int warn_redundant_decls = 0;
 
 int warn_nested_externs = 0;
 
-/* Warn about *printf or *scanf format/argument anomalies. */
+/* Warn about *printf or *scanf format/argument anomalies.  */
 
 int warn_format;
 
@@ -2807,7 +2807,7 @@ lookup_name_current_level (name)
 }
 
 /* Create the predefined scalar types of C,
-   and some nodes representing standard constants (0, 1, (void *)0).
+   and some nodes representing standard constants (0, 1, (void *) 0).
    Initialize the global binding level.
    Make definitions for built-in primitive functions.  */
 
@@ -6086,7 +6086,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
   tree restype;
   int old_immediate_size_expand = immediate_size_expand;
 
-  current_function_returns_value = 0;  /* Assume, until we see it does. */
+  current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
   warn_about_return_type = 0;
   current_extern_inline = 0;

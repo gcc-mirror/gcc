@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Safely allocate NBYTES bytes of memory.  Returns pointer to block of
-   memory. */
+   memory.  */
 
 static char *
 xmalloc (nbytes)
@@ -43,7 +43,7 @@ xmalloc (nbytes)
 
 
 /* Safely reallocate BLOCK so its size becomes NBYTES.
-   The block returned may be different from the one supplied. */
+   The block returned may be different from the one supplied.  */
 
 static char *
 xrealloc (block, nbytes)
@@ -68,7 +68,7 @@ xrealloc (block, nbytes)
    purposes here, a sequence of characters that starts with the regexp
    ``[^ #\t\n(),]'' and is then followed by the regexp ``[^#(),]*''. Any
    character is accepted if preceded by a backslash, "\\".  It is assumed
-   that the first character has already been checked by the main loop. */
+   that the first character has already been checked by the main loop.  */
 
 static char *
 scan_string ()
