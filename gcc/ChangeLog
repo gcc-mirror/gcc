@@ -1,3 +1,8 @@
+2003-08-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (load_register_parameters): Arrange for call_fusage to
+	report the whole register as used when shifting to the msb.
+
 2003-08-05  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin): When not optimizing, call the library
