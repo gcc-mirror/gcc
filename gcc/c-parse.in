@@ -1973,16 +1973,16 @@ direct_absdcl1:
 /* The [...] part of a declarator for an array type.  */
 
 array_declarator:
-	'[' maybe_type_quals_attrs expr ']'
+	'[' maybe_type_quals_attrs expr_no_commas ']'
 		{ $$ = build_array_declarator ($3, $2, 0, 0); }
 	| '[' maybe_type_quals_attrs ']'
 		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 0); }
 	| '[' maybe_type_quals_attrs '*' ']'
 		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 1); }
-	| '[' STATIC maybe_type_quals_attrs expr ']'
+	| '[' STATIC maybe_type_quals_attrs expr_no_commas ']'
 		{ $$ = build_array_declarator ($4, $3, 1, 0); }
 	/* declspecs_nosc_nots is a synonym for type_quals_attrs.  */
-	| '[' declspecs_nosc_nots STATIC expr ']'
+	| '[' declspecs_nosc_nots STATIC expr_no_commas ']'
 		{ $$ = build_array_declarator ($4, $2, 1, 0); }
 	;
 
