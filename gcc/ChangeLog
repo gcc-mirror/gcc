@@ -1,3 +1,17 @@
+2004-01-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR target/13069
+	Backport the following from mainline: 
+
+	2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+        * config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of
+        CPP_PREDEFINES.
+        * config/sh/rtems.h (TARGET_OS_CPP_BUILTINS): Use instead of
+        CPP_PREDEFINES.
+
+	2003-09-27  Kelley Cook  <kcook@gcc.gnu.org>
+	* config/sh/rtemself.h, config/sh/rtems.h: GNU CC -> GCC.
+
 2004-01-02  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (integer_nonzerop): Use PARAMS macro with prototype.
