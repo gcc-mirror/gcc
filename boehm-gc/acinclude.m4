@@ -137,6 +137,10 @@ AM_MAINTAINER_MODE
 # automake happy, but we don't execute it, since we don't care about
 # the result.
 if false; then
+  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
+  # to nothing, so nothing would remain between `then' and `fi' if it
+  # were not for the `:' below.
+  :
   AC_EXEEXT
 fi
 
