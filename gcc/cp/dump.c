@@ -443,6 +443,9 @@ dequeue_and_dump (di)
       /* All types have alignments.  */
       dump_int (di, "algn", TYPE_ALIGN (t));
     }
+  else if (code_class == 'c' && dump_children_p)
+    /* All constants can have types.  */
+    queue_and_dump_type (di, t, 1);
 
   /* Now handle the various kinds of nodes.  */
   switch (code)
@@ -583,7 +586,10 @@ dequeue_and_dump (di)
     case FIELD_DECL:
       if (dump_children_p)
 	{
-	  dump_child ("init", DECL_INITIAL (t));
+	  if (TREE_CODE (t) == PARM_DECL)
+	    dump_child ("argt", DECL_ARG_TYPE (t));
+	  else
+	    dump_child ("init", DECL_INITIAL (t));
 	  dump_child ("size", DECL_SIZE (t));
 	}
       dump_int (di, "algn", DECL_ALIGN (t));
@@ -817,6 +823,7 @@ dequeue_and_dump (di)
     case COMPONENT_REF:
     case COMPOUND_EXPR:
     case COND_EXPR:
+    case ARRAY_REF:
       /* These nodes are binary, but do not have code class `2'.  */
       if (dump_children_p)
 	{
