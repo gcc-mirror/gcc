@@ -2139,7 +2139,7 @@ output_floatsisf2 (operands)
     return "fldws %1,%0\n\tfcnvxf,sgl,sgl %0,%0";
   else if (FP_REG_P (operands[1]))
     return "fcnvxf,sgl,sgl %1,%0";
-  return "stwm %r1,4(0,30)\n\tfldws,mb -4(0,30),%0\n\tfcnvxf,sgl,sgl %0,%0";
+  abort();
 }
 
 char *
@@ -2150,7 +2150,7 @@ output_floatsidf2 (operands)
     return "fldws %1,%0\n\tfcnvxf,sgl,dbl %0,%0";
   else if (FP_REG_P (operands[1]))
     return "fcnvxf,sgl,dbl %1,%0";
-  return "stwm %r1,4(0,30)\n\tfldws,mb -4(0,30),%0\n\tfcnvxf,sgl,dbl %0,%0";
+  abort();
 }
 
 enum rtx_code
