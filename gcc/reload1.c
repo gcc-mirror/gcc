@@ -327,7 +327,7 @@ struct hard_reg_n_uses { int regno; int uses; };
 
 static int possible_group_p		PROTO((int, int *));
 static void count_possible_groups	PROTO((int *, enum machine_mode *,
-					       int *));
+					       int *, int));
 static int modes_equiv_for_class_p	PROTO((enum machine_mode,
 					       enum machine_mode,
 					       enum reg_class));
@@ -1603,7 +1603,8 @@ reload (first, global, dumpfile)
 	      /* If any single spilled regs happen to form groups,
 		 count them now.  Maybe we don't really need
 		 to spill another group.  */
-	      count_possible_groups (group_size, group_mode, max_groups);
+	      count_possible_groups (group_size, group_mode, max_groups,
+				     class);
 
 	      if (max_groups[class] <= 0)
 		break;
@@ -2063,68 +2064,65 @@ possible_group_p (regno, max_groups)
   return 0;
 }
 
-/* Count any groups that can be formed from the registers recently spilled.
-   This is done class by class, in order of ascending class number.  */
+/* Count any groups of CLASS that can be formed from the registers recently
+   spilled.  */
 
 static void
-count_possible_groups (group_size, group_mode, max_groups)
+count_possible_groups (group_size, group_mode, max_groups, class)
      int *group_size;
      enum machine_mode *group_mode;
      int *max_groups;
+     int class;
 {
-  int i;
+  HARD_REG_SET new;
+  int i, j;
+
   /* Now find all consecutive groups of spilled registers
      and mark each group off against the need for such groups.
      But don't count them against ordinary need, yet.  */
 
-  for (i = 0; i < N_REG_CLASSES; i++)
-    if (group_size[i] > 1)
+  if (group_size[class] == 0)
+    return;
+
+  CLEAR_HARD_REG_SET (new);
+
+  /* Make a mask of all the regs that are spill regs in class I.  */
+  for (i = 0; i < n_spills; i++)
+    if (TEST_HARD_REG_BIT (reg_class_contents[class], spill_regs[i])
+	&& ! TEST_HARD_REG_BIT (counted_for_groups, spill_regs[i])
+	&& ! TEST_HARD_REG_BIT (counted_for_nongroups, spill_regs[i]))
+      SET_HARD_REG_BIT (new, spill_regs[i]);
+
+  /* Find each consecutive group of them.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER && max_groups[class] > 0; i++)
+    if (TEST_HARD_REG_BIT (new, i)
+	&& i + group_size[class] <= FIRST_PSEUDO_REGISTER
+	&& HARD_REGNO_MODE_OK (i, group_mode[class]))
       {
-	HARD_REG_SET new;
-	int j;
+	for (j = 1; j < group_size[class]; j++)
+	  if (! TEST_HARD_REG_BIT (new, i + j))
+	    break;
 
-	CLEAR_HARD_REG_SET (new);
+	if (j == group_size[class])
+	  {
+	    /* We found a group.  Mark it off against this class's need for
+	       groups, and against each superclass too.  */
+	    register enum reg_class *p;
 
-	/* Make a mask of all the regs that are spill regs in class I.  */
-	for (j = 0; j < n_spills; j++)
-	  if (TEST_HARD_REG_BIT (reg_class_contents[i], spill_regs[j])
-	      && ! TEST_HARD_REG_BIT (counted_for_groups, spill_regs[j])
-	      && ! TEST_HARD_REG_BIT (counted_for_nongroups,
-				      spill_regs[j]))
-	    SET_HARD_REG_BIT (new, spill_regs[j]);
+	    max_groups[class]--;
+	    p = reg_class_superclasses[class];
+	    while (*p != LIM_REG_CLASSES)
+	      max_groups[(int) *p++]--;
 
-	/* Find each consecutive group of them.  */
-	for (j = 0; j < FIRST_PSEUDO_REGISTER && max_groups[i] > 0; j++)
-	  if (TEST_HARD_REG_BIT (new, j)
-	      && j + group_size[i] <= FIRST_PSEUDO_REGISTER
-	      /* Next line in case group-mode for this class
-		 demands an even-odd pair.  */
-	      && HARD_REGNO_MODE_OK (j, group_mode[i]))
-	    {
-	      int k;
-	      for (k = 1; k < group_size[i]; k++)
-		if (! TEST_HARD_REG_BIT (new, j + k))
-		  break;
-	      if (k == group_size[i])
-		{
-		  /* We found a group.  Mark it off against this class's
-		     need for groups, and against each superclass too.  */
-		  register enum reg_class *p;
-		  max_groups[i]--;
-		  p = reg_class_superclasses[i];
-		  while (*p != LIM_REG_CLASSES)
-		    max_groups[(int) *p++]--;
-		  /* Don't count these registers again.  */
-		  for (k = 0; k < group_size[i]; k++)
-		    SET_HARD_REG_BIT (counted_for_groups, j + k);
-		}
-	      /* Skip to the last reg in this group.  When j is incremented
-		 above, it will then point to the first reg of the next
-		 possible group.  */
-	      j += k - 1;
-	    }
+	    /* Don't count these registers again.  */
+	    for (j = 0; j < group_size[j]; j++)
+	      SET_HARD_REG_BIT (counted_for_groups, i + j);
+	  }
+
+	/* Skip to the last reg in this group.  When i is incremented above,
+	   it will then point to the first reg of the next possible group.  */
+	i += j - 1;
       }
-
 }
 
 /* ALLOCATE_MODE is a register mode that needs to be reloaded.  OTHER_MODE is
