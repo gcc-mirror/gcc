@@ -1646,7 +1646,7 @@
    (set_attr "length" "8,8,16,8,16,16,4,4,4")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
+  [(set (match_operand:DI 0 "register_operand" "=r,&r")
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "0,r")
 		   (match_operand:DI 2 "immediate_operand" "i,i")))]
   ""
