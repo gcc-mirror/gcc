@@ -1,5 +1,5 @@
 /* InputStreamReader.java -- Reader than transforms bytes to chars
-   Copyright (C) 1998, 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -82,7 +82,7 @@ import gnu.gcj.convert.*;
  * @see InputStream
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  * @date April 22, 1998.  
  */
 public class InputStreamReader extends Reader
