@@ -1,7 +1,7 @@
 // test of rtti of single inheritance and multiple inheritance with 
 // virtual inheritance
 // dynamic casting
-// Special g++ Options: -frtti -w
+// Special g++ Options: -w
 
 #include <typeinfo>
 
@@ -95,11 +95,12 @@ int main ()
   vp = dynamic_cast<D *> (dp);
   if (vp != (void *)dp) error(21);
 
-  vp = dynamic_cast<B *> (dp);
-  if (vp == (void *)dp) error(21);
+  // Ill-formed: dynamic_cast to private or ambiguous base
+  //   vp = dynamic_cast<B *> (dp);
+  //   if (vp == (void *)dp) error(21);
 
-  vp = dynamic_cast<B *> (fp);
-  if (vp == (void *)bbp) error(22);
+  //   vp = dynamic_cast<B *> (fp);
+  //   if (vp == (void *)bbp) error(22);
 
   vp = dynamic_cast<void *> (aap);
   if (vp != (void *)fp) error(23);
@@ -108,4 +109,3 @@ int main ()
   if (vp == (void *)bbp) error(24);
 
 }
-
