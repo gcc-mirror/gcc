@@ -4723,7 +4723,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       tree elt;
       int i;
       int need_to_clear;
-      tree domain = TYPE_DOMAIN (type);
+      tree domain;
       tree elttype = TREE_TYPE (type);
       int const_bounds_p;
       HOST_WIDE_INT minelt = 0;
@@ -4733,13 +4733,14 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       int elt_size = 0;
       unsigned n_elts = 0;
 
-      /* Vectors are like arrays, but the domain is stored via an array
-	 type indirectly.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	domain = TYPE_DOMAIN (type);
+      else
+	/* Vectors do not have domains; look up the domain of
+	   the array embedded in the debug representation type.
+	   FIXME Would probably be more efficient to treat vectors
+	   separately from arrays.  */
 	{
-	  /* Note that although TYPE_DEBUG_REPRESENTATION_TYPE uses
-	     the same field as TYPE_DOMAIN, we are not guaranteed that
-	     it always will.  */
 	  domain = TYPE_DEBUG_REPRESENTATION_TYPE (type);
 	  domain = TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (domain)));
 	  if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))

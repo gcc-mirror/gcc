@@ -483,8 +483,8 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #define FUNC_OR_METHOD_CHECK(T)	TREE_CHECK2 (T, FUNCTION_TYPE, METHOD_TYPE)
 #define PTR_OR_REF_CHECK(T)	TREE_CHECK2 (T, POINTER_TYPE, REFERENCE_TYPE)
 
-#define SET_ARRAY_OR_VECTOR_CHECK(T) \
-  TREE_CHECK3 (T, ARRAY_TYPE, SET_TYPE, VECTOR_TYPE)
+#define SET_OR_ARRAY_CHECK(T) \
+  TREE_CHECK2 (T, ARRAY_TYPE, SET_TYPE)
 
 #define REC_OR_UNION_CHECK(T)	\
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
@@ -1075,7 +1075,7 @@ struct tree_block GTY(())
 #define TYPE_MODE(NODE) (TYPE_CHECK (NODE)->type.mode)
 #define TYPE_ORIG_SIZE_TYPE(NODE) (INTEGER_TYPE_CHECK (NODE)->type.values)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
-#define TYPE_DOMAIN(NODE) (SET_ARRAY_OR_VECTOR_CHECK (NODE)->type.values)
+#define TYPE_DOMAIN(NODE) (SET_OR_ARRAY_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (REC_OR_UNION_CHECK (NODE)->type.values)
 #define TYPE_METHODS(NODE) (REC_OR_UNION_CHECK (NODE)->type.maxval)
 #define TYPE_VFIELD(NODE) (REC_OR_UNION_CHECK (NODE)->type.minval)
@@ -1101,7 +1101,7 @@ struct tree_block GTY(())
 /* For a VECTOR_TYPE node, this describes a different type which is emitted
    in the debugging output.  We use this to describe a vector as a
    structure containing an array.  */
-#define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) (TYPE_CHECK (NODE)->type.values)
+#define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) (VECTOR_TYPE_CHECK (NODE)->type.values)
 
 /* For aggregate types, information about this type, as a base type
    for itself.  Used in a language-dependent way for types that are
