@@ -376,6 +376,15 @@ wrap_value (JNIEnv *env, jobject value)
   return value == NULL ? value : _Jv_JNI_NewLocalRef (env, value);
 }
 
+template<>
+static jclass
+wrap_value (JNIEnv *env, jclass value)
+{
+  return (value == NULL
+	  ? value
+	  : (jclass) _Jv_JNI_NewLocalRef (env, (jobject) value));
+}
+
 
 
 static jint
