@@ -1,3 +1,9 @@
+2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_output_division): Use the division
+	instruction to fill the delay slot of a zero check.
+	(mips_idiv_insns): Adjust accordingly.
+
 2004-03-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Create a default tmake_file for linux, and use

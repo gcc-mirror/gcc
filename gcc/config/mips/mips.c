@@ -1359,12 +1359,7 @@ mips_idiv_insns (void)
 
   count = 1;
   if (TARGET_CHECK_ZERO_DIV)
-    {
-      if (TARGET_MIPS16)
-	count += 2;
-      else
-	count += 3;
-    }
+    count += 2;
   if (TARGET_FIX_R4000)
     count++;
   return count;
@@ -9225,16 +9220,22 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
 const char *
 mips_output_division (const char *division, rtx *operands)
 {
-  const char *s = division;
+  const char *s;
 
+  s = division;
   if (TARGET_CHECK_ZERO_DIV)
     {
-      output_asm_insn (s, operands);
-
       if (TARGET_MIPS16)
-	s = "bnez\t%2,1f\n\tbreak\t7\n1:";
+	{
+	  output_asm_insn (s, operands);
+	  s = "bnez\t%2,1f\n\tbreak\t7\n1:";
+	}
       else
-	s = "bne\t%2,%.,1f%#\n\tbreak\t7\n1:";
+	{
+	  output_asm_insn ("%(bne\t%2,%.,1f", operands);
+	  output_asm_insn (s, operands);
+	  s = "break\t7%)\n1:";
+	}
     }
   if (TARGET_FIX_R4000)
     {
