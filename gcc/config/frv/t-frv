@@ -90,4 +90,4 @@ MULTILIB_EXCEPTIONS	= mcpu=frv/mno-pack* mcpu=simple/mno-pack*
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-EXTRA_HEADERS = $(srcdir)/config/frv/frv-asm.h $(srcdir)/config/frv/media.h
+EXTRA_HEADERS = $(srcdir)/config/frv/frv-asm.h
