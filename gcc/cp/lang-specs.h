@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
-        %{fhonor-std:-D__HONOR_STD} %{fnew-abi:-D__HONOR_STD}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
@@ -46,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
                             -D__GNUC_MINOR__=%v2\
                             %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
                             %{!fno-exceptions:-D__EXCEPTIONS}\
-                            %{fhonor-std:-D__HONOR_STD} %{fnew-abi:-D__HONOR_STD}\
                             %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
                             %{trigraphs}\
 			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
@@ -66,7 +64,6 @@ Boston, MA 02111-1307, USA.  */
 	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
-        %{fhonor-std:-D__HONOR_STD} %{fnew-abi:-D__HONOR_STD}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",

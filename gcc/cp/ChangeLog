@@ -1,3 +1,16 @@
+1998-08-24  Nathan Sidwell  <nathan@acm.org>
+
+        * lex.c (real_yylex): Don't warn about long long constants if
+        we're allowing long long.
+
+1998-08-23  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (pushdecl): Use IDENTIFIER_NAMESPACE_VALUE instead of
+	accessing bindings directly.
+
+	* lang-specs.h: Remove __HONOR_STD.
+	* inc/exception, inc/new, inc/new.h, inc/typeinfo: Likewise.
+
 1998-08-23  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Complain about in-class initialization
