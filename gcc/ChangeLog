@@ -1,3 +1,11 @@
+2002-05-03  Richard Henderson  <rth@redhat.com>
+
+	PR opt/6534
+	* ifcvt.c (noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_inc, noce_try_store_flag_mask, noce_try_cmove,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs): Insert new
+	code before JUMP, not EARLIEST.
+
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/6489
