@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
    Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
-   Contributed by Michael Tiemann (tiemann@cygnus.com)
+   Contributed by Michael Tiemann (tiemann@cygnus.com).
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.69 $"
+#define VERSION_INFO2   "$Revision: 1.70 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.69 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.70 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -2036,6 +2036,11 @@ do {									 \
     assemble_name (FILE, NAME);				\
     putc ('\n', FILE);					\
   } while (0)
+
+/* The prefix to add to user-visible assembler symbols.
+   Override svr[34].h.  */
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
 
 /* This is how to output a reference to a user-level label named NAME.
    Override svr[34].h.  */
