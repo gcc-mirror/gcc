@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
-	if (TARGET_THUMB)				\
+	if (TARGET_ARM)					\
 	  builtin_define ("__arm__");			\
 	else						\
 	  builtin_define ("__thumb__");			\
@@ -2134,7 +2134,8 @@ typedef struct
     goto WIN;								\
   /* This is PC relative data before MACHINE_DEPENDENT_REORG runs.  */	\
   else if (GET_MODE_SIZE (MODE) >= 4 && CONSTANT_P (X)			\
-	   && CONSTANT_POOL_ADDRESS_P (X) && ! flag_pic)		\
+	   && GET_CODE (X) == SYMBOL_REF 				\
+           && CONSTANT_POOL_ADDRESS_P (X) && ! flag_pic)		\
     goto WIN;								\
   /* This is PC relative data after MACHINE_DEPENDENT_REORG runs.  */	\
   else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
