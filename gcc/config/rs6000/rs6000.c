@@ -1167,6 +1167,35 @@ init_cumulative_args (cum, fntype, libname, incoming)
     }
 }
 
+/* If defined, a C expression which determines whether, and in which
+   direction, to pad out an argument with extra space.  The value
+   should be of type `enum direction': either `upward' to pad above
+   the argument, `downward' to pad below, or `none' to inhibit
+   padding.
+
+   For the AIX ABI structs are always stored left shifted in their
+   argument slot.  */
+
+enum direction
+function_arg_padding (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  if (type && TREE_CODE (type) == RECORD_TYPE)
+    {
+      return upward;
+    }
+
+  /* This is the default definition.  */
+  return (! BYTES_BIG_ENDIAN
+          ? upward
+          : ((mode == BLKmode
+              ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+                 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+              : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
+             ? downward : upward));
+}
+
 /* If defined, a C expression that gives the alignment boundary, in bits,
    of an argument with the specified mode and type.  If it is not defined, 
    PARM_BOUNDARY is used for all arguments.
