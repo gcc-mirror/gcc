@@ -1,5 +1,11 @@
 Wed Apr 14 00:18:22 1999  Jan Hubicka <hubicka@freesoft.cz>
 
+	* i386.md (SImode logical compare): Avoid outputing non-pariable testw
+	and testl on Pentium.
+	(register and memory bit tests): Likewise.
+	(setcc, normal and reversed conditional branches): Use shorter
+	sequence for testing flags stored in EAX.
+
 	* i386.md (xorsi3): Do not output NOT instrctions on Pentium.
 	(xorqi3): Likewise.
 	(xorhi3): Likewise.
