@@ -937,7 +937,7 @@ case $os in
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
-	      | -interix* )
+	      | -interix* | -uwin* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	# EGCS LOCAL
