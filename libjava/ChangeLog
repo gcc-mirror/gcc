@@ -1,3 +1,7 @@
+2001-12-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.in: Rebuilt with automake-gcj.
+
 2001-12-03  Tom Tromey  <tromey@redhat.com>
 
 	* defineclass.cc (handleMethodsEnd): Invoke verifier here...
