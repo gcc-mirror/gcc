@@ -5178,7 +5178,10 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			      arg1_tree);
 
 	arg2_tree = ffecom_arg_ptr_to_expr (arg2, &arg2_len);
-	arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
+	if (arg3 != NULL)
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
+	else
+	  arg3_tree = NULL_TREE;
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -5193,9 +5196,10 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  arg1_tree,
 				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
 				  ffebld_nonter_hook (expr));
-	expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
-				   convert (TREE_TYPE (arg3_tree),
-					    expr_tree));
+	if (arg3_tree != NULL_TREE)
+	  expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
+				     convert (TREE_TYPE (arg3_tree),
+					      expr_tree));
       }
       return expr_tree;
 
