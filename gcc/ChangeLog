@@ -1,3 +1,8 @@
+Fri Jan  8 10:51:13 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* config/m68k/m68k.h: Declare output_function_epilogue.
+	* recog.h: Declare next_insn_tests_no_inequality.
+
 Fri Jan  8 01:43:53 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (compile_file): Move call to output_func_start_profiler
