@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 88, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 94-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -517,3 +517,9 @@ enum graph_dump_types
   vcg
 };
 extern enum graph_dump_types graph_dump_format;
+
+/* Nonzero means ignore `#ident' directives.  0 means handle them.
+   On SVR4 targets, it also controls whether or not to emit a
+   string identifying the compiler.  */
+
+extern int flag_no_ident;

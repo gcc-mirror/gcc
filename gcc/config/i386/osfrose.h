@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1996, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -752,7 +752,7 @@ do									\
     if (HALF_PIC_P ())							\
       HALF_PIC_FINISH (STREAM);						\
 									\
-    if (TARGET_IDENT)							\
+    if (TARGET_IDENT && !flag_no_ident)					\
       {									\
 	char *fstart = main_input_filename;				\
 	char *fname;							\

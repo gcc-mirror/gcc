@@ -1,5 +1,5 @@
 /* Definitions for specs for GNU CHILL.
-   Copyright (C) 1995, 1998 Free Software Foundation, Inc..
+   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc..
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 		   %{!Q:-quiet} -dumpbase %b.ch %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{itu} \
 		   %{v:-version} %{pg:-p} %{p} %{f*} %{I*} \
-		   %{aux-info*} %X \
+		   %{aux-info*} %{Qn:-fno-ident} %X \
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y \

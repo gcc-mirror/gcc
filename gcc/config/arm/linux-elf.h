@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
 This file is part of GNU CC.
@@ -88,8 +88,9 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define ASM_FILE_END(FILE)					\
 do {				 				\
-     fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
-	      IDENT_ASM_OP, version_string);			\
+     if (!flag_no_ident)					\
+	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+		 IDENT_ASM_OP, version_string);			\
    } while (0)
 #endif
 

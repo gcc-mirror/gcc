@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS GNU Hurd version.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,8 +52,9 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_FILE_END(FILE)						\
   do {				 					\
 	mips_asm_file_end(FILE);					\
-	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",			\
-		IDENT_ASM_OP, version_string);				\
+	if (!flag_no_ident)						\
+	  fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",			\
+		   IDENT_ASM_OP, version_string);			\
   } while (0)
 
 #undef ASM_OUTPUT_SOURCE_LINE

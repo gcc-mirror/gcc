@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for Alliant FX/2800
    running Concentrix 2.2
-   Copyright (C) 1991, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Howard Chu (hyc@hanauma.jpl.nasa.gov).
 
 This file is part of GNU CC.
@@ -351,6 +351,7 @@ do {				 				\
        text_section();						\
        fputs("__ETEXT:\n", (FILE));				\
      }								\
-     fprintf ((FILE), "\t.ident\t\"GCC: (GNU) %s\"\n",		\
-	      version_string);					\
+     if (!flag_no_ident)					\
+	fprintf ((FILE), "\t.ident\t\"GCC: (GNU) %s\"\n",	\
+		 version_string);				\
    } while (0)

@@ -1,6 +1,6 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1999 Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
@@ -41,8 +41,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_FILE_END(FILE)					\
 do {				 				\
-     fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
-	      IDENT_ASM_OP, version_string);			\
+     if (!flag_no_ident)					\
+	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+		 IDENT_ASM_OP, version_string);			\
    } while (0)
 
 /* Output #ident as a .ident.  */
