@@ -2682,17 +2682,19 @@
 
 (define_insn "*andsi_movu"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%r,Q>,m")
+	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%r,Q,To")
 		(match_operand:SI 2 "const_int_operand" "n,n,n")))]
-  "INTVAL (operands[2]) == 255 || INTVAL (operands[2]) == 65535"
+  "(INTVAL (operands[2]) == 255 || INTVAL (operands[2]) == 65535)
+   && (GET_CODE (operands[1]) != MEM || ! MEM_VOLATILE_P (operands[1]))"
   "movu.%z2 %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
 (define_insn "*andsi_clear"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,Q>,Q>,m,m")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,Q,Q,To,To")
 	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%0,0,0,0,0,0")
 		(match_operand:SI 2 "const_int_operand" "P,n,P,n,P,n")))]
-  "INTVAL (operands[2]) == -65536 || INTVAL (operands[2]) == -256"
+  "(INTVAL (operands[2]) == -65536 || INTVAL (operands[2]) == -256)
+   && (GET_CODE (operands[0]) != MEM || ! MEM_VOLATILE_P (operands[0]))"
   "@
    cLear.b %0
    cLear.w %0
@@ -2770,27 +2772,17 @@
 
 (define_insn "*andhi_movu"
   [(set (match_operand:HI 0 "register_operand" "=r,r,r")
-	(and:HI (match_operand:HI 1 "nonimmediate_operand" "r,Q>,m")
+	(and:HI (match_operand:HI 1 "nonimmediate_operand" "r,Q,To")
 		(const_int 255)))]
-  ""
+  "GET_CODE (operands[1]) != MEM || ! MEM_VOLATILE_P (operands[1])"
   "mOvu.b %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
-(define_insn "*andhi_clear_signed"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,Q>,m")
+(define_insn "*andhi_clear"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,Q,To")
 	(and:HI (match_operand:HI 1 "nonimmediate_operand" "0,0,0")
 		(const_int -256)))]
-  ""
-  "cLear.b %0"
-  [(set_attr "slottable" "yes,yes,no")
-   (set_attr "cc" "none")])
-
-;; FIXME: Either this or the pattern above should be redundant.
-(define_insn "*andhi_clear_unsigned"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,Q>,m")
-	(and:HI (match_operand:HI 1 "nonimmediate_operand" "0,0,0")
-		(const_int 65280)))]
-  ""
+  "GET_CODE (operands[0]) != MEM || ! MEM_VOLATILE_P (operands[0])"
   "cLear.b %0"
   [(set_attr "slottable" "yes,yes,no")
    (set_attr "cc" "none")])

@@ -1,3 +1,14 @@
+2004-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14209
+	* config/cris/cris.md ("*andsi_movu", "*andhi_movu"): Tweak
+	constraints to not match postincrement.  Adjust the predicate to
+	exclude a volatile memory reference.
+	("*andsi_clear"): Tweak constraints to not match postincrement.
+	Adjust the predicate to exclude a volatile memory reference.
+	("*andhi_clear"): Ditto.  Rename from "*andhi_clear_signed".
+	("*andhi_clear_unsigned"): Remove, non-matching pattern.
+
 2004-02-21  Christopher Faylor  <cgf@redhat.com>
 
 	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): Specify extra host
