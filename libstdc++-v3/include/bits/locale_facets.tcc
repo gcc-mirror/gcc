@@ -2219,6 +2219,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
+#if _GLIBCPP_EXTERN_TEMPLATE
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
@@ -2471,6 +2472,7 @@ namespace std
   extern template 
     bool
     has_facet<messages<wchar_t> >(const locale&);
+#endif
 #endif
 } // namespace std
 

@@ -1,3 +1,16 @@
+2003-02-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config (_GLIBCPP_EXTERN_TEMPLATE): Define.
+	* include/bits/basic_ios.tcc: Guard use of extern template.
+	* include/std/std_iomanip.h: Same.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/stl_alloc.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/basic_string.tcc: Same.
+
 2003-02-13  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/ostream.tcc (sentry::sentry): Improve
