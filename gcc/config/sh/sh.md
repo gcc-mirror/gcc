@@ -898,7 +898,7 @@
   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
       && GET_MODE (sh_compare_op0) == DImode
       && sh_compare_op1 == const0_rtx)
-    operands[1] = gen_rtx (GET_CODE (operands[1]), VOIDmode,
+    operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
 			   sh_compare_op0, sh_compare_op1);
   else
     {
@@ -8261,7 +8261,7 @@ mov.l\\t1f,r0\\n\\
   operands[7] = gen_rtx_REG (SFmode,
 			     (true_regnum (operands[0])
 			      + (INTVAL (operands[3]) ^ endian)));
-  operands[6] = gen_rtx (GET_CODE (operands[2]), SFmode, op1);
+  operands[6] = gen_rtx_fmt_e (GET_CODE (operands[2]), SFmode, op1);
 }"
   [(set_attr "type" "fparith_media")])
 
@@ -8297,7 +8297,7 @@ mov.l\\t1f,r0\\n\\
   operands[8] = gen_rtx_REG (SFmode,
 			     (true_regnum (operands[0])
 			      + (INTVAL (operands[4]) ^ endian)));
-  operands[9] = gen_rtx (GET_CODE (operands[3]), SFmode, op1, op2);
+  operands[9] = gen_rtx_fmt_ee (GET_CODE (operands[3]), SFmode, op1, op2);
 }"
   [(set_attr "type" "fparith_media")])
 

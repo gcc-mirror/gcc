@@ -1243,7 +1243,7 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode,
 					gen_rtx_MINUS (mode, temp, source)));
 	      else
 		emit_insn (gen_rtx_SET (VOIDmode, target,
-					gen_rtx (code, mode, source, temp)));
+					gen_rtx_fmt_ee (code, mode, source, temp)));
 	      return 2;
 	    }
 	}
@@ -1406,7 +1406,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
     {
       if (generate)
 	emit_insn (gen_rtx_SET (VOIDmode, target,
-				(source ? gen_rtx (code, mode, source,
+				(source ? gen_rtx_fmt_ee (code, mode, source,
 						   GEN_INT (val))
 				 : GEN_INT (val))));
       return 1;
@@ -1561,7 +1561,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 
 		  emit_insn (gen_rtx_SET (VOIDmode, sub, GEN_INT (val)));
 		  emit_insn (gen_rtx_SET (VOIDmode, target, 
-					  gen_rtx (code, mode, source, sub)));
+					  gen_rtx_fmt_ee (code, mode, source, sub)));
 		}
 	      return 2;
 	    }

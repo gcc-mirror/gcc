@@ -9664,8 +9664,8 @@ rs6000_generate_compare (enum rtx_code code)
 	}
       validate_condition_mode (or1, comp_mode);
       validate_condition_mode (or2, comp_mode);
-      or1_rtx = gen_rtx (or1, SImode, compare_result, const0_rtx);
-      or2_rtx = gen_rtx (or2, SImode, compare_result, const0_rtx);
+      or1_rtx = gen_rtx_fmt_ee (or1, SImode, compare_result, const0_rtx);
+      or2_rtx = gen_rtx_fmt_ee (or2, SImode, compare_result, const0_rtx);
       compare2_rtx = gen_rtx_COMPARE (CCEQmode,
 				      gen_rtx_IOR (SImode, or1_rtx, or2_rtx),
 				      const_true_rtx);
@@ -9677,7 +9677,7 @@ rs6000_generate_compare (enum rtx_code code)
 
   validate_condition_mode (code, GET_MODE (compare_result));
   
-  return gen_rtx (code, VOIDmode, compare_result, const0_rtx);
+  return gen_rtx_fmt_ee (code, VOIDmode, compare_result, const0_rtx);
 }
 
 
@@ -9704,7 +9704,7 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
       
       cc_mode = GET_MODE (XEXP (condition_rtx, 0));
 
-      rev_cond_rtx = gen_rtx (rs6000_reverse_condition (cc_mode, cond_code),
+      rev_cond_rtx = gen_rtx_fmt_ee (rs6000_reverse_condition (cc_mode, cond_code),
 			      SImode, XEXP (condition_rtx, 0), const0_rtx);
       not_op = gen_rtx_COMPARE (CCEQmode, rev_cond_rtx, const0_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, not_result, not_op));

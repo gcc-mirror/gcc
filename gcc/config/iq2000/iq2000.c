@@ -1171,7 +1171,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
   else
     {
       reg = (invert || eqne_p) ? gen_reg_rtx (mode) : result;
-      convert_move (reg, gen_rtx (p_info->test_code, mode, cmp0, cmp1), 0);
+      convert_move (reg, gen_rtx_fmt_ee (p_info->test_code, mode, cmp0, cmp1), 0);
     }
 
   if (test == ITEST_NE)
@@ -1242,7 +1242,7 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
 
       /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result == 0.  */
       emit_insn (gen_rtx_SET (VOIDmode, reg,
-			      gen_rtx (test_code == NE ? EQ : test_code,
+			      gen_rtx_fmt_ee (test_code == NE ? EQ : test_code,
 				       CCmode, cmp0, cmp1)));
 
       test_code = test_code == NE ? EQ : NE;
@@ -1253,7 +1253,7 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
       break;
 
     default:
-      abort_with_insn (gen_rtx (test_code, VOIDmode, cmp0, cmp1), "bad test");
+      abort_with_insn (gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1), "bad test");
     }
 
   /* Generate the branch.  */
@@ -1268,7 +1268,7 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
 
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
-						     gen_rtx (test_code, mode,
+						     gen_rtx_fmt_ee (test_code, mode,
 							      cmp0, cmp1),
 						     label1, label2)));
 }

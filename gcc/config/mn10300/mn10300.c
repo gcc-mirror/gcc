@@ -1800,7 +1800,7 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	  regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
 	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
 	  regx1 = force_reg (Pmode,
-			     gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+			     gen_rtx_fmt_ee (GET_CODE (y), Pmode, regx1, regy2));
 	  return force_reg (Pmode, gen_rtx_PLUS (Pmode, regx1, regy1));
 	}
     }

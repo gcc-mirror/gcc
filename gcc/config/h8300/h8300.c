@@ -2733,7 +2733,7 @@ expand_a_shift (enum machine_mode mode, int code, rtx operands[])
 	     (VOIDmode,
 	      gen_rtvec (2,
 			 gen_rtx_SET (VOIDmode, operands[0],
-				      gen_rtx (code, mode, operands[0],
+				      gen_rtx_fmt_ee (code, mode, operands[0],
 					       operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_SCRATCH (QImode)))));
@@ -3876,7 +3876,7 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
       emit_label (start_label);
 
       /* Rotate by one bit.  */
-      tmp = gen_rtx (code, mode, dst, GEN_INT (1));
+      tmp = gen_rtx_fmt_ee (code, mode, dst, GEN_INT (1));
       emit_insn (gen_rtx_SET (mode, dst, tmp));
 
       /* Decrement the counter by 1.  */
@@ -3893,7 +3893,7 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
   else
     {
       /* Rotate by AMOUNT bits.  */
-      tmp = gen_rtx (code, mode, dst, rotate_amount);
+      tmp = gen_rtx_fmt_ee (code, mode, dst, rotate_amount);
       emit_insn (gen_rtx_SET (mode, dst, tmp));
     }
 
@@ -4101,7 +4101,7 @@ fix_bit_operand (rtx *operands, int what, enum rtx_code type)
   {
     rtx res = gen_reg_rtx (QImode);
     emit_insn (gen_rtx_SET (VOIDmode, res,
-			    gen_rtx (type, QImode, operands[1], operands[2])));
+			    gen_rtx_fmt_ee (type, QImode, operands[1], operands[2])));
     emit_insn (gen_rtx_SET (VOIDmode, operands[0], res));
   }
   return 1;

@@ -1,5 +1,6 @@
 ;; Machine description of the Argonaut ARC cpu for GNU C compiler
-;; Copyright (C) 1994, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1997, 1998, 1999, 2000, 2004
+;; Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -582,7 +583,7 @@
     = gen_rtx_REG (SELECT_CC_MODE (code, arc_compare_op0, arc_compare_op1),
 		   61);
 
-  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
 }")
 
 ;(define_expand "movdicc"
@@ -598,7 +599,7 @@
 ;   = gen_rtx_REG (SELECT_CC_MODE (code, arc_compare_op0, arc_compare_op1),
 ;		   61);
 ;
-;  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+;  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
 ;}")
 
 (define_expand "movsfcc"
@@ -614,7 +615,7 @@
     = gen_rtx_REG (SELECT_CC_MODE (code, arc_compare_op0, arc_compare_op1),
 		   61);
 
-  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
 }")
 
 ;(define_expand "movdfcc"
@@ -630,7 +631,7 @@
 ;   = gen_rtx_REG (SELECT_CC_MODE (code, arc_compare_op0, arc_compare_op1),
 ;		   61);
 ;
-;  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+;  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
 ;}")
 
 (define_insn "*movsicc_insn"

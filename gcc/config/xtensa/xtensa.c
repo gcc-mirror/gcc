@@ -981,7 +981,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
       cmp1 = temp;
     }
 
-  return gen_rtx (p_info->test_code, VOIDmode, cmp0, cmp1);
+  return gen_rtx_fmt_ee (p_info->test_code, VOIDmode, cmp0, cmp1);
 }
 
 
@@ -1006,7 +1006,7 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     case LT: reverse_regs = 0; invert = 0; gen_fn = gen_slt_sf; break;
     case GE: reverse_regs = 1; invert = 0; gen_fn = gen_sle_sf; break;
     default:
-      fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
+      fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
       reverse_regs = 0; invert = 0; gen_fn = 0; /* avoid compiler warnings */
     }
 
@@ -1020,7 +1020,7 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
   brtmp = gen_rtx_REG (CCmode, FPCC_REGNUM);
   emit_insn (gen_fn (brtmp, cmp0, cmp1));
 
-  return gen_rtx (invert ? EQ : NE, VOIDmode, brtmp, const0_rtx);
+  return gen_rtx_fmt_ee (invert ? EQ : NE, VOIDmode, brtmp, const0_rtx);
 }
 
 
@@ -1038,7 +1038,7 @@ xtensa_expand_conditional_branch (rtx *operands, enum rtx_code test_code)
     {
     case CMP_DF:
     default:
-      fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
+      fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
 
     case CMP_SI:
       invert = FALSE;
@@ -1047,7 +1047,7 @@ xtensa_expand_conditional_branch (rtx *operands, enum rtx_code test_code)
 
     case CMP_SF:
       if (!TARGET_HARD_FLOAT)
-	fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
+	fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
       invert = FALSE;
       cmp = gen_float_relational (test_code, cmp0, cmp1);
       break;
@@ -1093,7 +1093,7 @@ gen_conditional_move (rtx cmp)
 	  code = GE;
 	  op1 = const0_rtx;
 	}
-      cmp = gen_rtx (code, VOIDmode, cc0_rtx, const0_rtx);
+      cmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
 
       if (boolean_operator (cmp, VOIDmode))
 	{
@@ -1134,7 +1134,7 @@ gen_conditional_move (rtx cmp)
       else
 	return 0;
 
-      return gen_rtx (code, VOIDmode, op0, op1);
+      return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
     }
 
   if (TARGET_HARD_FLOAT && (branch_type == CMP_SF))
