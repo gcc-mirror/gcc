@@ -1,3 +1,8 @@
+Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* lang-options.h: Added a comma after the last element to avoid
+	syntax errors when other languages define additional options.
+
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in (jc1, jv-scan): Depend on $(BACKEND), not stamp-objlist.
