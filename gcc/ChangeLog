@@ -1,3 +1,8 @@
+Wed Jan  6 07:51:05 1999  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (expand_builtin) [case BUILT_IN_CONSTANT_P]: Use
+	value_mode for the return mode.
+
 Wed Jan  6 17:55:19 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* configure.in: New flag --with-dwarf2.   If set, enables DWARF-2

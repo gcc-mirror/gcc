@@ -9031,7 +9031,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  tmp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
 	  tmp = gen_rtx_CONSTANT_P_RTX (ptr_mode, tmp);
 	  tmp = gen_rtx_CONST (ptr_mode, tmp);
-	  tmp = convert_to_mode (mode, tmp, 0);
+	  tmp = convert_to_mode (value_mode, tmp, 0);
 	  return tmp;
 	}
 
