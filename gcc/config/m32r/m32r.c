@@ -503,7 +503,8 @@ addr24_operand (op, mode)
   if (GET_CODE (op) == SYMBOL_REF)
     return (SMALL_NAME_P (XSTR (op, 0))
 	    || (TARGET_ADDR24
-		&& CONSTANT_POOL_ADDRESS_P (op)));
+		&& (CONSTANT_POOL_ADDRESS_P (op)
+		    || LIT_NAME_P (XSTR (op, 0)))));
 
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
@@ -514,7 +515,8 @@ addr24_operand (op, mode)
       rtx sym = XEXP (XEXP (op, 0), 0);
       return (SMALL_NAME_P (XSTR (sym, 0))
 	      || (TARGET_ADDR24
-		  && CONSTANT_POOL_ADDRESS_P (op)));
+		  && (CONSTANT_POOL_ADDRESS_P (op)
+		      || LIT_NAME_P (XSTR (op, 0)))));
     }
 
   return 0;
@@ -1323,15 +1325,17 @@ m32r_output_function_prologue (file, size)
 #if 1
   /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size != 0)
-    fprintf (file, "\taddi %s,%d\n",
-	     sp_str, -current_frame_info.pretend_size);
+    fprintf (file, "\taddi %s,%s%d\n",
+	     sp_str, IMMEDIATE_PREFIX,
+	     -current_frame_info.pretend_size);
 #else
   /* If there are unnamed args in registers, save them.  */
   if (current_function_stdarg || current_function_varargs)
     {
       int i;
-      fprintf (file, "\taddi %s,%d\n",
-	       sp_str, - M32R_MAX_PARM_REGS * UNITS_PER_WORD);
+      fprintf (file, "\taddi %s,%s%d\n",
+	       sp_str, IMMEDIATE_PREFIX,
+	       - M32R_MAX_PARM_REGS * UNITS_PER_WORD);
       for (i = 0; i < M32R_MAX_PARM_REGS; ++i)
 	fprintf (file, "\tst %s,@(sp,%d)\n",
 		 reg_names[i], i * UNITS_PER_WORD);
@@ -1362,14 +1366,15 @@ m32r_output_function_prologue (file, size)
   if (frame_size == 0)
     ; /* nothing to do */
   else if (frame_size <= 128)
-    fprintf (file, "\taddi %s,%d\n",
-	     sp_str, -frame_size);
+    fprintf (file, "\taddi %s,%s%d\n",
+	     sp_str, IMMEDIATE_PREFIX, -frame_size);
   else if (frame_size <= 32768)
-    fprintf (file, "\tadd3 %s,%s,%d\n",
-	     sp_str, sp_str, -frame_size);
+    fprintf (file, "\tadd3 %s,%s,%s%d\n",
+	     sp_str, sp_str, IMMEDIATE_PREFIX, -frame_size);
   else
-    fprintf (file, "\tld24 %s,%d\n\tsub %s,%s\n",
-	     reg_names[PROLOGUE_TMP_REGNUM], frame_size,
+    fprintf (file, "\tld24 %s,%s%d\n\tsub %s,%s\n",
+	     reg_names[PROLOGUE_TMP_REGNUM],
+	     IMMEDIATE_PREFIX, frame_size,
 	     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 
   if (frame_pointer_needed)
@@ -1428,12 +1433,16 @@ m32r_output_function_epilogue (file, size)
 	  unsigned int reg_offset = var_size + args_size;
 	  if (reg_offset == 0)
 	    ; /* nothing to do */
+	  else if (reg_offset < 128)
+	    fprintf (file, "\taddi %s,%s%d\n",
+		     sp_str, IMMEDIATE_PREFIX, reg_offset);
 	  else if (reg_offset < 32768)
-	    fprintf (file, "\tadd3 %s,%s,%d\n",
-		     sp_str, sp_str, reg_offset);
+	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
+		     sp_str, sp_str, IMMEDIATE_PREFIX, reg_offset);
 	  else
-	    fprintf (file, "\tld24 %s,%d\n\tadd %s,%s\n",
-		     reg_names[PROLOGUE_TMP_REGNUM], reg_offset,
+	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else if (frame_pointer_needed)
@@ -1442,11 +1451,12 @@ m32r_output_function_epilogue (file, size)
 	  if (reg_offset == 0)
 	    fprintf (file, "\tmv %s,%s\n", sp_str, fp_str);
 	  else if (reg_offset < 32768)
-	    fprintf (file, "\tadd3 %s,%s,%d\n",
-		     sp_str, fp_str, reg_offset);
+	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
+		     sp_str, fp_str, IMMEDIATE_PREFIX, reg_offset);
 	  else
-	    fprintf (file, "\tld24 %s,%d\n\tadd %s,%s\n",
-		     reg_names[PROLOGUE_TMP_REGNUM], reg_offset,
+	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else
@@ -1468,8 +1478,8 @@ m32r_output_function_epilogue (file, size)
 
       /* Remove varargs area if present.  */
       if (current_frame_info.pretend_size != 0)
-	fprintf (file, "\taddi %s,%d\n",
-		 sp_str, current_frame_info.pretend_size);
+	fprintf (file, "\taddi %s,%s%d\n",
+		 sp_str, IMMEDIATE_PREFIX, current_frame_info.pretend_size);
 	
       /* Emit the return instruction.  */
       if (M32R_INTERRUPT_P (fn_type))
