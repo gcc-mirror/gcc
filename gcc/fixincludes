@@ -1525,6 +1525,7 @@ if [ -r ${LIB}/$file ]; then
   # Don't claim to have defined va_list.
   sed -e 's@ va_list @ __gnuc_va_list @' \
       -e 's@ va_list)@ __gnuc_va_list)@' \
+      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
       -e 's@ va_list@ __va_list__@' \
       -e 's@\*va_list@*__va_list__@' \
