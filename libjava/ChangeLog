@@ -1,3 +1,16 @@
+1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* java/lang/natSystem.cc (getpwuid_adaptor): New overloaded
+	function that detects the signature of getpwuid_r.
+	(init_properties): Use it.
+	* java/util/natDate.cc (ctime_adaptor): Likewise for ctime_r.
+	(toString): Use it.
+
+Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (sched_yield): Try librt first, then libposix4.
+	Add -lrt, -lposix4 to THREADSPEC.
+
 1999-08-06  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
