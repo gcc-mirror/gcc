@@ -718,11 +718,24 @@
 ;;- truncation instructions
 
 (define_insn  "truncdfsf2"
-  [(set (match_operand:SF 0 "memory_operand" "=R,Q")
-	(float_truncate:SF (match_operand:DF 1 "register_operand" "a,a")))]
+  [(set (match_operand:SF 0 "general_operand" "=r,R,Q")
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "a,a,a")))]
   "TARGET_FPU"
-  "stcdf %1, %0"
-  [(set_attr "length" "1,2")])
+  "* if (which_alternative ==0)
+     {
+       output_asm_insn(\"stcdf %1, -(sp)\", operands);
+       output_asm_insn(\"mov (sp)+, %0\", operands);
+       operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       output_asm_insn(\"mov (sp)+, %0\", operands);
+       return \"\";
+     }
+     else if (which_alternative == 1)
+       return \"stcdf %1, %0\";
+     else 
+       return \"stcdf %1, %0\";
+  "
+  [(set_attr "length" "3,1,2")])
+
 
 (define_expand "truncsihi2"
   [(set (match_operand:HI 0 "general_operand" "=g")
@@ -758,11 +771,14 @@
 ;;- sign extension instructions
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=a,a")
-	(float_extend:SF (match_operand:SF 1 "memory_operand" "R,Q")))]
+  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
+	(float_extend:SF (match_operand:SF 1 "general_operand" "r,R,Q")))]
   "TARGET_FPU"
-  "ldcfd %1, %0"
-  [(set_attr "length" "1,2")])
+  "@
+   mov %1, -(sp)\;ldcfd (sp)+,%0
+   ldcfd %1, %0
+   ldcfd %1, %0"
+  [(set_attr "length" "2,1,2")])
 
 ;; does movb sign extend in register-to-register move?
 (define_insn "extendqihi2"
@@ -887,11 +903,29 @@
 ;; what do pdp library routines do to fpu mode ?
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "register_operand" "=a,a")
-	(float:DF (match_operand:SI 1 "memory_operand" "R,Q")))]
+  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
+	(float:DF (match_operand:SI 1 "general_operand" "r,R,Q")))]
   "TARGET_FPU"
-  "setl\;ldcld %1, %0\;seti"
-  [(set_attr "length" "3,4")])
+  "* if (which_alternative ==0)
+     {
+       rtx latehalf[2];
+
+       latehalf[0] = NULL; 
+       latehalf[1] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       output_asm_insn(\"mov %1, -(sp)\", latehalf);
+       output_asm_insn(\"mov %1, -(sp)\", operands);
+       
+       output_asm_insn(\"setl\", operands);
+       output_asm_insn(\"ldcld (sp)+, %0\", operands);
+       output_asm_insn(\"seti\", operands);
+       return \"\";
+     }
+     else if (which_alternative == 1)
+       return \"setl\;ldcld %1, %0\;seti\";
+     else 
+       return \"setl\;ldcld %1, %0\;seti\";
+  "
+  [(set_attr "length" "5,3,4")])
 
 (define_insn "floathidf2"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
@@ -902,11 +936,25 @@
 	
 ;; cut float to int
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "memory_operand" "=R,Q")
-	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "a,a"))))]
+  [(set (match_operand:SI 0 "general_operand" "=r,R,Q")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "a,a,a"))))]
   "TARGET_FPU"
-  "setl\;stcdl %1, %0\;seti"
-  [(set_attr "length" "3,4")])
+  "* if (which_alternative ==0)
+     {
+       output_asm_insn(\"setl\", operands);
+       output_asm_insn(\"stcdl %1, -(sp)\", operands);
+       output_asm_insn(\"seti\", operands);
+       output_asm_insn(\"mov (sp)+, %0\", operands);
+       operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       output_asm_insn(\"mov (sp)+, %0\", operands);
+       return \"\";
+     }
+     else if (which_alternative == 1)
+       return \"setl\;stcdl %1, %0\;seti\";
+     else 
+       return \"setl\;stcdl %1, %0\;seti\";
+  "
+  [(set_attr "length" "5,3,4")])
 
 (define_insn "fix_truncdfhi2"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
