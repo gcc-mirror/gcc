@@ -1,3 +1,10 @@
+Sat Oct 17 11:02:47 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (display_help): Prepend '-m' to target specific
+	options. 
+	(check_lang_option): Ignore text after end of first word of a
+	language specific option.
+
 Sat Oct 17 02:26:03 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
 
 	* reload1.c (reg_used_by_pseudo): New static variable.

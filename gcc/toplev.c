@@ -4120,7 +4120,7 @@ display_help ()
 	  else if (description == NULL)
 	    undoc = 1;
 	  else if (* description != 0)
-	    doc += printf ("  %-23.23s %s\n", option, description);
+	    doc += printf ("  -m%-21.21s %s\n", option, description);
 	}
       
 #ifdef TARGET_OPTIONS      
@@ -4134,7 +4134,7 @@ display_help ()
 	  else if (description == NULL)
 	    undoc = 1;
 	  else if (* description != 0)
-	    doc += printf ("  %-23.23s %s\n", option, description);
+	    doc += printf ("  -m%-21.21s %s\n", option, description);
 	}
 #endif
       if (undoc)
@@ -4159,55 +4159,59 @@ check_lang_option (option, lang_option)
   lang_independent_options * indep_options;
   int    len;
   long    k;
-
+  char * space;
+  
   /* Ignore NULL entries.  */
   if (option == NULL || lang_option == NULL)
     return 0;
 
-  len = strlen (lang_option);
-
+  if ((space = strchr (lang_option, ' ')) != NULL)
+    len = space - lang_option;
+  else
+    len = strlen (lang_option);
+  
   /* If they do not match to the first n characters then fail.  */
   if (strncmp (option, lang_option, len) != 0)
     return 0;
-	  
+  
   /* Do not accept a lang option, if it matches a normal -f or -W
      option.  Chill defines a -fpack, but we want to support
      -fpack-struct.  */
-	  
+  
   /* An exact match is OK  */
   if (strlen (option) == len)
     return 1;
-
+  
   /* If it is not an -f or -W option allow the match */
   if (option[0] != '-')
     return 1;
-
+  
   switch (option[1])
     {
     case 'f': indep_options = f_options; break;
     case 'W': indep_options = W_options; break;
     default:  return 1;
     }
-
+  
   /* The option is a -f or -W option.
      Skip past the prefix and search for the remainder in the
      appropriate table of options.  */
   option += 2;
-	  
+  
   if (option[0] == 'n' && option[1] == 'o' && option[2] == '-')
     option += 3;
-
+  
   for (k = NUM_ELEM (indep_options); k--;)
     {
       if (!strcmp (option, indep_options[k].string))
 	{
 	  /* The option matched a language independent option,
 	     do not allow the language specific match.  */
-
+	  
 	  return 0;
 	}
     }
-
+  
   /* The option matches the start of the langauge specific option
      and it is not an exact match for a language independent option.  */
   return 1;
