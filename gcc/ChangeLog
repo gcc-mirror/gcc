@@ -1,3 +1,8 @@
+2000-05-01  Richard Henderson  <rth@cygnus.com>
+
+	* ifcvt.c (noce_emit_cmove): Conditionally compile call to
+	emit_conditional_move.
+
 2000-05-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/linux.h (LINK_SPEC): Use /lib/ld-linux-ia64.so.1

@@ -758,10 +758,18 @@ noce_emit_cmove (if_info, x, code, cmp_a, cmp_b, vfalse, vtrue)
       || ! general_operand (cmp_b, GET_MODE (cmp_b)))
     return NULL_RTX;
 
+#if HAVE_conditional_move
   return emit_conditional_move (x, code, cmp_a, cmp_b, VOIDmode,
 				vtrue, vfalse, GET_MODE (x),
 			        (code == LTU || code == GEU
 				 || code == LEU || code == GTU));
+#else
+  /* We'll never get here, as noce_process_if_block doesn't call the
+     functions involved.  Ifdef code, however, should be discouraged
+     because it leads to typos in the code not selected.  However, 
+     emit_conditional_move won't exist either.  */
+  return NULL_RTX;
+#endif
 }
 
 /* Try only simple constants and registers here.  More complex cases
