@@ -1074,7 +1074,7 @@ delete_duplicate_fields_1 (field, fields)
 		}
 	    }
 	  else if (TREE_CODE (field) == USING_DECL)
-	    /* A using declaration may is allowed to appear more than
+	    /* A using declaration is allowed to appear more than
 	       once.  We'll prune these from the field list later, and
 	       handle_using_decl will complain about invalid multiple
 	       uses.  */

@@ -1,3 +1,12 @@
+2001-12-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (instantiate_clone): Remove, fold into ...
+	(instantiate_template): ... here. Simplify by removing mutual
+	recursion.
+	* typeck2.c (build_m_component_ref): Don't cv qualify the function
+	pointed to by a pointer to function.
+	* class.c (delete_duplicate_fields_1): Typo.
+
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
 	C++ ABI change: destroy value arguments in caller.
