@@ -1,3 +1,13 @@
+2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
+
+	* gnat_rm.texi: Do not include texiplus.texi.  Include fdl.texi
+	instead of gfdl.texi
+
+	* xgnatug.adb, ug_words: New files.
+
+	* Makefile.in (doc, dvi): New targets.  Build gnat_ug_*,
+        gnat_rm and gnat-style manuals.
+
 2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gigi.h (incomplete_type_error): Remove.

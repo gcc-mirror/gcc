@@ -2140,6 +2140,42 @@ nmake.ads :  sinfo.ads nmake.adt xnmake.adb
 	$(CP) $^ bldtools
 	(cd bldtools; gnatmake -q xnmake ; ./xnmake -s ../nmake.ads )
 
+# We remove the generated .texi files to force regeneration.
+doctools/xgnatug : xgnatug.adb
+	-$(MKDIR) doctools
+	$(CP) $^ doctools
+	(cd doctools ; gnatmake -q xgnatug)
+	-rm gnat_ug_*.texi
+
+# We cannot list the dependency on the xgnatug binary here because we
+# have to (a) use the VPATH feature, and (b) include the target flag.
+gnat_ug_vms.texi : gnat_ug.texi ug_words
+	doctools/xgnatug vms $^
+
+gnat_ug_wnt.texi : gnat_ug.texi ug_words
+	doctools/xgnatug wnt $^
+
+gnat_ug_unx.texi : gnat_ug.texi ug_words
+	doctools/xgnatug unx $^
+
+gnat_ug_vxw.texi : gnat_ug.texi ug_words
+	doctools/xgnatug vxworks $^
+
+%.info : %.texi
+	$(MAKEINFO) -I $(srcdir)/../doc/include -o $@ $<
+
+%.dvi : %.texi
+	$(TEXI2DVI) -I $(srcdir)/../doc/include $<
+
+# List the dependency on the xgnatug binary explicitly (see above).
+doc : doctools/xgnatug \
+	gnat_ug_vms.info gnat_ug_wnt.info gnat_ug_unx.info gnat_ug_vxw.info \
+	gnat_rm.info gnat-style.info
+
+dvi : doctools/xgnatug \
+	gnat_ug_vms.dvi gnat_ug_wnt.dvi gnat_ug_unx.dvi gnat_ug_vxw.dvi \
+	gnat_rm.dvi gnat-style.dvi
+
 update-sources : treeprs.ads einfo.h sinfo.h nmake.adb nmake.ads
 	$(CP) $^ $(srcdir)
 

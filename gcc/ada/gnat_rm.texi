@@ -1,5 +1,4 @@
 \input texinfo   @c -*-texinfo-*-
-@input texiplus
 
 @c %**start of header
 
@@ -9,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.254 $
+@c                            $Revision: 1.5 $
 @c                                                                            o
 @c              Copyright (C) 1995-2002 Free Software Foundation              o
 @c                                                                            o
@@ -11980,7 +11979,7 @@ attributes are recognized, although only a subset of them can sensibly
 be implemented.  The description of pragmas in this reference manual
 indicates whether or not they are applicable to non-VMS systems.
 
-@include gfdl.texi
+@include fdl.texi
 @c GNU Free Documentation License
 
 @node Index,,GNU Free Documentation License, Top
