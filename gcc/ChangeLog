@@ -10,6 +10,9 @@ Tue Jan 11 06:14:39 2000  David Starner <dstarner98@aasaa.ofe.org>
 
 Tue Jan 11 05:49:01 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.c (ix86_expand_setcc): Fix typo.
+	(ix86_expand_movcc): Similarly.
+
 	* Band-aid until haifa's bitset implementation is nuked.
 	* haifa-sched.c (extract_bitlst): New parameter for size of the
 	bitset in bits.  All callers changed.  Avoid looking at undefined
