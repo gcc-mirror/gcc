@@ -1,3 +1,7 @@
+2003-05-18  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md: Use define_constants for unspec numbers.
+
 2003-05-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/sparc/sparc.h: Define sparc for now.
