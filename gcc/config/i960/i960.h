@@ -1289,9 +1289,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
   do {								\
-    fputs (".globl ", (FILE));					\
-    assemble_name ((FILE), (NAME));				\
-    fputs ("\n", (FILE));					\
     ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
   } while (0)
 

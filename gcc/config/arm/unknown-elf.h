@@ -1,5 +1,6 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
    This file is part of GCC.
@@ -60,8 +61,6 @@
 	named_section (DECL, NULL, 0);					\
       else								\
 	bss_section ();							\
-      									\
-      (*targetm.asm_out.globalize_label) (FILE, NAME);			\
       									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
 									\

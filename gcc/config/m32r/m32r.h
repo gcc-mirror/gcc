@@ -1800,7 +1800,6 @@ extern char m32r_punct_chars[256];
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
   do								\
     {								\
-      (*targetm.asm_out.globalize_label) (FILE, NAME);		\
       ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);	\
     }								\
   while (0)

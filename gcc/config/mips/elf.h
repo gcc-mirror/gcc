@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.  MIPS R3000 version with
    GOFAST floating point library.
-   Copyright (C) 1994, 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1997, 1999, 2000, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,7 +106,6 @@ do {						\
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
 do {									\
-  (*targetm.asm_out.globalize_label) (FILE, NAME);			\
   if (SIZE > 0 && SIZE <= mips_section_threshold)			\
     sbss_section ();							\
   else									\

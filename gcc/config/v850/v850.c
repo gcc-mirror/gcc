@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -2815,8 +2815,6 @@ v850_output_aligned_bss (file, decl, name, size, align)
      int size;
      int align;
 {
-  (*targetm.asm_out.globalize_label) (file, name);
-
   switch (v850_get_data_area (decl))
     {
     case DATA_AREA_ZDA:

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
@@ -156,7 +156,6 @@ do {									\
 #undef  ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
-  (*targetm.asm_out.globalize_label) (FILE, NAME);	       		\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
