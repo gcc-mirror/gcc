@@ -1,3 +1,8 @@
+2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* configure.in (target_libs): Revert 2000-12-08 patch.
+	(noconfigdirs): Added target-libjava.
+
 2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
 
 	* djunpack.bat: removed.

@@ -75,6 +75,7 @@ target_libs="target-libiberty \
 		target-libf2c \
 		target-libchill \
 		target-libffi \
+		target-libjava \
 		target-zlib \
 		target-boehm-gc \
 		target-qthreads \
@@ -548,7 +549,7 @@ esac
 # target this usually means that a port of the program doesn't
 # exist yet.
 
-noconfigdirs=""
+noconfigdirs="target-libjava"
 
 case "${host}" in
   hppa*64*-*-*)
