@@ -514,8 +514,8 @@ new_insn_chain ()
     {
       c = (struct insn_chain *)
 	obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
-      c->live_throughout = OBSTACK_ALLOC_REG_SET (&reload_obstack);
-      c->dead_or_set = OBSTACK_ALLOC_REG_SET (&reload_obstack);
+      INIT_REG_SET (&c->live_throughout);
+      INIT_REG_SET (&c->dead_or_set);
     }
   else
     {
@@ -1295,8 +1295,8 @@ maybe_fix_stack_asms ()
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allowed, i))
 	  {
-	    CLEAR_REGNO_REG_SET (chain->live_throughout, i);
-	    CLEAR_REGNO_REG_SET (chain->dead_or_set, i);
+	    CLEAR_REGNO_REG_SET (&chain->live_throughout, i);
+	    CLEAR_REGNO_REG_SET (&chain->dead_or_set, i);
 	  }
     }
 
@@ -1516,8 +1516,8 @@ order_regs_for_reload (chain)
       /* Test the various reasons why we can't use a register for
 	 spilling in this insn.  */
       if (fixed_regs[i]
-	  || REGNO_REG_SET_P (chain->live_throughout, i)
-	  || REGNO_REG_SET_P (chain->dead_or_set, i))
+	  || REGNO_REG_SET_P (&chain->live_throughout, i)
+	  || REGNO_REG_SET_P (&chain->dead_or_set, i))
 	SET_HARD_REG_BIT (bad_spill_regs, i);
     }
   /* Now find out which pseudos are allocated to it, and update
@@ -1525,12 +1525,12 @@ order_regs_for_reload (chain)
   CLEAR_REG_SET (&pseudos_counted);
 
   EXECUTE_IF_SET_IN_REG_SET
-    (chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
+    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
      {
        count_pseudo (j);
      });
   EXECUTE_IF_SET_IN_REG_SET
-    (chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
+    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
      {
        count_pseudo (j);
      });
@@ -1645,12 +1645,12 @@ find_reg (chain, order, dumpfile)
   rl->regno = best_reg;
 
   EXECUTE_IF_SET_IN_REG_SET
-    (chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
+    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
      {
        count_spilled_pseudo (best_reg, rl->nregs, j);
      });
   EXECUTE_IF_SET_IN_REG_SET
-    (chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
+    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
      {
        count_spilled_pseudo (best_reg, rl->nregs, j);
      });
@@ -3496,13 +3496,13 @@ finish_spills (global, dumpfile)
       for (chain = insns_need_reload; chain; chain = chain->next_need_reload)
 	{
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (chain->live_throughout, FIRST_PSEUDO_REGISTER, i,
+	    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i,
 	     {
 	       ior_hard_reg_set (pseudo_forbidden_regs + i,
 				 &chain->used_spill_regs);
 	     });
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (chain->dead_or_set, FIRST_PSEUDO_REGISTER, i,
+	    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i,
 	     {
 	       ior_hard_reg_set (pseudo_forbidden_regs + i,
 				 &chain->used_spill_regs);
@@ -3535,22 +3535,22 @@ finish_spills (global, dumpfile)
       HARD_REG_SET used_by_pseudos;
       HARD_REG_SET used_by_pseudos2;
 
-      AND_COMPL_REG_SET (chain->live_throughout, &spilled_pseudos);
-      AND_COMPL_REG_SET (chain->dead_or_set, &spilled_pseudos);
+      AND_COMPL_REG_SET (&chain->live_throughout, &spilled_pseudos);
+      AND_COMPL_REG_SET (&chain->dead_or_set, &spilled_pseudos);
 
       /* Mark any unallocated hard regs as available for spills.  That
 	 makes inheritance work somewhat better.  */
       if (chain->need_reload)
 	{
-	  REG_SET_TO_HARD_REG_SET (used_by_pseudos, chain->live_throughout);
-	  REG_SET_TO_HARD_REG_SET (used_by_pseudos2, chain->dead_or_set);
+	  REG_SET_TO_HARD_REG_SET (used_by_pseudos, &chain->live_throughout);
+	  REG_SET_TO_HARD_REG_SET (used_by_pseudos2, &chain->dead_or_set);
 	  IOR_HARD_REG_SET (used_by_pseudos, used_by_pseudos2);
 
 	  /* Save the old value for the sanity test below.  */
 	  COPY_HARD_REG_SET (used_by_pseudos2, chain->used_spill_regs);
 
-	  compute_use_by_pseudos (&used_by_pseudos, chain->live_throughout);
-	  compute_use_by_pseudos (&used_by_pseudos, chain->dead_or_set);
+	  compute_use_by_pseudos (&used_by_pseudos, &chain->live_throughout);
+	  compute_use_by_pseudos (&used_by_pseudos, &chain->dead_or_set);
 	  COMPL_HARD_REG_SET (chain->used_spill_regs, used_by_pseudos);
 	  AND_HARD_REG_SET (chain->used_spill_regs, used_spill_regs);
 
@@ -5040,12 +5040,12 @@ choose_reload_regs_init (chain, save_reload_reg_rtx)
   CLEAR_HARD_REG_SET (reg_used_in_insn);
   {
     HARD_REG_SET tmp;
-    REG_SET_TO_HARD_REG_SET (tmp, chain->live_throughout);
+    REG_SET_TO_HARD_REG_SET (tmp, &chain->live_throughout);
     IOR_HARD_REG_SET (reg_used_in_insn, tmp);
-    REG_SET_TO_HARD_REG_SET (tmp, chain->dead_or_set);
+    REG_SET_TO_HARD_REG_SET (tmp, &chain->dead_or_set);
     IOR_HARD_REG_SET (reg_used_in_insn, tmp);
-    compute_use_by_pseudos (&reg_used_in_insn, chain->live_throughout);
-    compute_use_by_pseudos (&reg_used_in_insn, chain->dead_or_set);
+    compute_use_by_pseudos (&reg_used_in_insn, &chain->live_throughout);
+    compute_use_by_pseudos (&reg_used_in_insn, &chain->dead_or_set);
   }
   for (i = 0; i < reload_n_operands; i++)
     {

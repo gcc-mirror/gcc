@@ -162,7 +162,7 @@ find_clobbered_regs (reg, setter, data)
     nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
   while (nregs-- > 0)
     {
-      SET_REGNO_REG_SET (current_chain->live_throughout, regno++);
+      SET_REGNO_REG_SET (&current_chain->live_throughout, regno++);
     }
 }
 
@@ -285,7 +285,7 @@ stupid_life_analysis (f, nregs, file)
 	  chain->insn = insn;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (regs_live[i])
-	      SET_REGNO_REG_SET (chain->live_throughout, i);
+	      SET_REGNO_REG_SET (&chain->live_throughout, i);
 	}
 
       /* Update which hard regs are currently live
@@ -403,14 +403,14 @@ stupid_life_analysis (f, nregs, file)
 	continue;
 
       chain = reg_where_dead_chain[i];
-      SET_REGNO_REG_SET (chain->dead_or_set, i);
+      SET_REGNO_REG_SET (&chain->dead_or_set, i);
 
       while ((chain = chain->prev)
 	     && INSN_SUID (chain->insn) > reg_where_born_exact[i])
-	SET_REGNO_REG_SET (chain->live_throughout, i);
+	SET_REGNO_REG_SET (&chain->live_throughout, i);
 
       if (chain)
-	SET_REGNO_REG_SET (chain->dead_or_set, i);
+	SET_REGNO_REG_SET (&chain->dead_or_set, i);
     }
 
   if (file)
@@ -577,7 +577,7 @@ mark_hard_ref (reg, live_before_p, chain)
     {
       if (! fixed_regs[regno+j]
 	  && (! live_before_p || ! live[regno+j]))
-	SET_REGNO_REG_SET (chain->dead_or_set, regno+j);
+	SET_REGNO_REG_SET (&chain->dead_or_set, regno+j);
       regs_ever_live[regno+j] = 1;
       live[regno+j] = live_before_p;
     }
@@ -634,7 +634,7 @@ stupid_mark_refs (x, chain)
 		     they do get stored even though never used again.  */
 		  MARK_LIVE_AFTER (insn, regno+j);
 
-		  CLEAR_REGNO_REG_SET (chain->live_throughout, regno + j);
+		  CLEAR_REGNO_REG_SET (&chain->live_throughout, regno + j);
 
 		  /* When a hard reg is clobbered, mark it in use
 		     just before this insn, so it is live all through.  */

@@ -225,8 +225,8 @@ struct insn_chain
   rtx insn;
   /* Register life information: record all live hard registers, and all
      live pseudos that have a hard register.  */
-  regset live_throughout;
-  regset dead_or_set;
+  regset_head live_throughout;
+  regset_head dead_or_set;
 
   /* Copies of the global variables computed by find_reloads.  */
   struct reload *rld;

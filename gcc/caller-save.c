@@ -379,9 +379,9 @@ save_call_clobbered_regs ()
 	      /* Use the register life information in CHAIN to compute which
 		 regs are live during the call.  */
 	      REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
-				       chain->live_throughout);
+				       &chain->live_throughout);
 	      compute_use_by_pseudos (&hard_regs_to_save,
-				      chain->live_throughout);
+				      &chain->live_throughout);
 
 	      /* Record all registers set in this call insn.  These don't need
 		 to be saved.  N.B. the call insn might set a subreg of a
@@ -618,7 +618,7 @@ insert_restore (chain, before_p, regno, maxrestore)
   for (k = 0; k < i; k++)
     {
       CLEAR_HARD_REG_BIT (hard_regs_saved, regno + k);
-      SET_REGNO_REG_SET (new->dead_or_set, regno + k);
+      SET_REGNO_REG_SET (&new->dead_or_set, regno + k);
       n_regs_saved--;
     }
 
@@ -687,7 +687,7 @@ insert_save (chain, before_p, regno, to_save)
   for (k = 0; k < numregs; k++)
     {
       SET_HARD_REG_BIT (hard_regs_saved, regno + k);
-      SET_REGNO_REG_SET (new->dead_or_set, regno + k);
+      SET_REGNO_REG_SET (&new->dead_or_set, regno + k);
       n_regs_saved++;
     }
 
@@ -735,7 +735,7 @@ insert_one_insn (chain, before_p, code, pat)
       new->insn = emit_insn_before (pat, insn);
       /* ??? It would be nice if we could exclude the already / still saved
 	 registers from the live sets.  */
-      COPY_REG_SET (new->live_throughout, chain->live_throughout);
+      COPY_REG_SET (&new->live_throughout, &chain->live_throughout);
       /* Registers that die in CHAIN->INSN still live in the new insn.  */
       for (link = REG_NOTES (chain->insn); link; link = XEXP (link, 1))
 	{
@@ -754,10 +754,10 @@ insert_one_insn (chain, before_p, code, pat)
 		continue;
 	      for (i = HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1;
 		   i >= 0; i--)
-		SET_REGNO_REG_SET (new->live_throughout, regno + i);
+		SET_REGNO_REG_SET (&new->live_throughout, regno + i);
 	    }
 	}
-      CLEAR_REG_SET (new->dead_or_set);
+      CLEAR_REG_SET (&new->dead_or_set);
       if (chain->insn == BLOCK_HEAD (chain->block))
 	BLOCK_HEAD (chain->block) = new->insn;
     }
@@ -771,13 +771,13 @@ insert_one_insn (chain, before_p, code, pat)
       new->insn = emit_insn_after (pat, insn);
       /* ??? It would be nice if we could exclude the already / still saved
 	 registers from the live sets, and observe REG_UNUSED notes.  */
-      COPY_REG_SET (new->live_throughout, chain->live_throughout);
+      COPY_REG_SET (&new->live_throughout, &chain->live_throughout);
       /* Registers that are set in CHAIN->INSN live in the new insn.
          (Unless there is a REG_UNUSED note for them, but we don't
 	  look for them here.) */
       note_stores (PATTERN (chain->insn), add_stored_regs,
-		   new->live_throughout);
-      CLEAR_REG_SET (new->dead_or_set);
+		   &new->live_throughout);
+      CLEAR_REG_SET (&new->dead_or_set);
       if (chain->insn == BLOCK_END (chain->block))
 	BLOCK_END (chain->block) = new->insn;
     }
