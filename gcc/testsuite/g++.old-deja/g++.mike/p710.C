@@ -29,10 +29,10 @@ class B
    int x;
    virtual ~B() {}
    void operator delete(void*,size_t s)
-  {// ERROR - previous declaration as.*
+  {
       printf("B::delete() %d\n",s);
    }
-   void operator delete(void*){} // ERROR - .B::operator.*overloaded
+   void operator delete(void*){}
 };
 
 main()
