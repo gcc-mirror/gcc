@@ -1,5 +1,12 @@
 Wed Apr 14 00:18:22 1999  Jan Hubicka <hubicka@freesoft.cz>
 
+	* i386.md (xorsi3): Do not output NOT instrctions on Pentium.
+	(xorqi3): Likewise.
+	(xorhi3): Likewise.
+	(notsi2): Likewise.
+	(notqi2): Likewise.
+	(nothi2): Likewise; do not output prefixed opcodes when possible.
+
 	* i386.md (neghi2): Do not output prefixed opcode when possible.
 	(ashlhi3): Likewise.
 
