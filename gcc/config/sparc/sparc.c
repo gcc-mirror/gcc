@@ -140,9 +140,11 @@ sparc_override_options ()
     char *name;
   } cpu_default[] = {
     { TARGET_CPU_sparc, "cypress" },
+    { TARGET_CPU_v8, "v8" },
+    { TARGET_CPU_supersparc, "supersparc" },
     { TARGET_CPU_sparclet, "tsc701" },
     { TARGET_CPU_sparclite, "f930" },
-    { TARGET_CPU_sparc64, "ultrasparc" },
+    { TARGET_CPU_ultrasparc, "ultrasparc" },
     { 0 }
   };
   struct cpu_default *def;
