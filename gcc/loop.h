@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "varray.h"
 #include "bitmap.h"
 
 /* Flags passed to loop_optimize.  */
@@ -236,42 +235,48 @@ typedef struct loop_mem_info
 } loop_mem_info;
 
 
-struct loop_regs
-{
-  int num;
 
-  /* Indexed by register number, contains the number of times the reg
-     is set during the loop being scanned.
-     During code motion, a negative value indicates a reg that has been
-     made a candidate; in particular -2 means that it is an candidate that
-     we know is equal to a constant and -1 means that it is an candidate
-     not known equal to a constant.
-     After code motion, regs moved have 0 (which is accurate now)
-     while the failed candidates have the original number of times set.
+struct loop_reg
+{
+  /* Number of times the reg is set during the loop being scanned.
+     During code motion, a negative value indicates a reg that has
+     been made a candidate; in particular -2 means that it is an
+     candidate that we know is equal to a constant and -1 means that
+     it is an candidate not known equal to a constant.  After code
+     motion, regs moved have 0 (which is accurate now) while the
+     failed candidates have the original number of times set.
 
      Therefore, at all times, == 0 indicates an invariant register;
      < 0 a conditionally invariant one.  */
-  varray_type set_in_loop;
+  int set_in_loop;
 
   /* Original value of set_in_loop; same except that this value
      is not set negative for a reg whose sets have been made candidates
      and not set to 0 for a reg that is moved.  */
-  varray_type n_times_set;
-
-  /* Index by register number, 1 indicates that the register
-     cannot be moved or strength reduced.  */
-  varray_type may_not_optimize;
+  int n_times_set;
 
   /* Contains the insn in which a register was used if it was used
      exactly once; contains const0_rtx if it was used more than once.  */
-  varray_type single_usage;
+  rtx single_usage;
+
+  /* Nonzero indicates that the register cannot be moved or strength
+     reduced.  */
+  char may_not_optimize;
 
   /* Nonzero means reg N has already been moved out of one loop.
      This reduces the desire to move it out of another.  */
-  char *moved_once;
-
-  int multiple_uses;
+  char moved_once;
 };
+
+
+struct loop_regs
+{
+  int num;			/* Number of regs used in table.  */
+  int size;			/* Size of table.  */
+  struct loop_reg *array;	/* Register usage info. array.  */
+  int multiple_uses;		/* Nonzero if a reg has multiple uses.  */
+};
+
 
 
 struct loop_movables

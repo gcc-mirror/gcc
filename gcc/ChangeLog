@@ -1,5 +1,18 @@
 2001-01-05  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.h (struct loop_reg): New.
+	(struct loop_regs): Change to use array of `struct loop_reg'.
+	* loop.c: Replace assortment of varrays with single regs array.
+	(count_one_set): Delete may_not_move array argument
+	and use regs array instead.  All caller's changed.
+	(count_loop_regs_set): Delete may_not_move and single_usage
+	arguments and use regs array instead.  All caller's changed.
+	(find_single_use_in_loop): Replace usage array argument with pointer
+	to regs structure.  All caller's changed.
+	(loop_optimize): Delete `moved_once' array.
+
+2001-01-05  Michael Hayes  <mhayes@redhat.com>
+	
 	* loop.c (prescan_loop): Set loop_info->has_nonconst_call.
 	Use it instead of loop_info->has_call for scanning loop mems.
 	(check_dbra_loop): Replace loop_info->has_call test with
