@@ -1,3 +1,7 @@
+1999-09-17  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (perform_implicit_conversion): Deal with error_mark_node.
+
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (warn_extern_redeclared_static): Don't get confused by
@@ -6,10 +10,6 @@
 
 	* decl.c (expand_static_init): Make sure assignments to local
 	statics actually occur.
-
-1999-09-17  Nathan Sidwell  <nathan@acm.org>
-
-	* call.c (perform_implicit_conversion): Deal with error_mark_node.
 
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
