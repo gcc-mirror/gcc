@@ -1,3 +1,45 @@
+2003-07-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_FULLY_COMPLIANT_HEADERS): Remove.
+	(_GLIBCXX_NO_TEMPLATE_EXPORT): To _GLIBCXX_EXPORT_TEMPLATE.
+	(_GLIBCXX_AT_AT): Remove.
+	(__USE_MALLOC): Remove.
+	* include/std/std_fstream.h: Modify.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/valarray_array.h: Same.
+	* include/c_std/std_cmath.h: Same.
+	* include/c_std/cmath.tcc: Same.
+	* include/std/std_vector.h: Same.
+	* include/std/std_string.h: Same.
+	* include/std/std_stack.h: Same.
+	* include/std/std_queue.h: Same.
+	* include/std/std_list.h: Same.
+	* include/std/std_deque.h: Same.
+	* include/std/std_streambuf.h: Same.
+	* include/std/std_sstream.h: Same.
+	* include/std/std_ostream.h: Same.
+	* include/std/std_istream.h: Same.
+	* include/bits/valarray_array.tcc: Same, format.
+
+	* include/c/std_cctype.h: Fix include guards.
+	* include/c/std_cerrno.h: Same.
+	* include/c/std_cfloat.h: Same.
+	* include/c/std_climits.h: Same.
+	* include/c/std_clocale.h: Same.
+	* include/c/std_cmath.h: Same.
+	* include/c/std_csetjmp.h: Same.
+	* include/c/std_csignal.h: Same.
+	* include/c/std_cstdarg.h: Same.
+	* include/c/std_cstddef.h: Same.
+	* include/c/std_cstdio.h: Same.
+	* include/c/std_cstdlib.h: Same.
+	* include/c/std_cstring.h: Same.
+	* include/c/std_ctime.h: Same.
+	* include/c/std_cwchar.h: Same.
+	* include/c/std_cwctype.h: Same.
+	* include/c_std/cmath.tcc: Same.
+	* include/c_std/std_cmath.h: Same.
+	
 2003-07-30  Gawain Bolton  <gp.bolton@computer.org>
 
 	PR libstdc++/11504.  

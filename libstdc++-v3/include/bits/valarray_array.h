@@ -1,6 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2003
+//  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -615,16 +616,10 @@ _Array_augmented_##_Name (_Array<_Tp> __a, _Array<bool> __m,		\
    _DEFINE_ARRAY_FUNCTION(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_FUNCTION    
+} // namespace std
 
-} // std::
-
-#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
-# define export 
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/valarray_array.tcc>    
 #endif
            
 #endif /* _ARRAY_H */
-
-// Local Variables:
-// mode:c++
-// End:

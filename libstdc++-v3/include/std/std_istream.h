@@ -768,10 +768,7 @@ namespace std
     ws(basic_istream<_CharT, _Traits>& __is);
 } // namespace std
 
-#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
-# define export
-#endif
-#ifdef  _GLIBCXX_FULLY_COMPLIANT_HEADERS
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/istream.tcc>
 #endif
 

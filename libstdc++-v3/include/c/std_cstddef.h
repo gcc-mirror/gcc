@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,8 @@
 // ISO C++ 14882: 18.1  Types
 //
 
-#ifndef _CSTDDEF
-#define _CSTDDEF 1
+#ifndef _GLIBCXX_CSTDDEF
+#define _GLIBCXX_CSTDDEF 1
 
 #pragma GCC system_header
 
