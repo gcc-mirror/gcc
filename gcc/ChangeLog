@@ -1,3 +1,9 @@
+Mon Mar  1 15:03:51 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/m68k/lb1sf68.asm (udivsi3): Change jmi to jcs.  Fix comments.
+	* config/m68k/m68k.h (LEGITIMATE_INDEX_REG_P): Reject SIGN_EXTEND of
+	HImode reg when TARGET_5200.
+
 Mon Mar  1 21:44:30 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	From Toshiyasu Morita:
