@@ -1,3 +1,8 @@
+2002-12-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* expr.c (expand_assignment): Apply special treatment to
+	ARRAY_TYPE.
+
 2002-12-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Update the prototype of
