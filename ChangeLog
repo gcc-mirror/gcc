@@ -1,3 +1,7 @@
+2000-02-15  Denis Chertykov  <denisc@overta.ru>
+
+	* config.sub: Add support for avr target.
+
 2000-02-14  Nick Clifton  <nickc@cygnus.com>
 
 	* MAINTAINERS: Add maintainers for MCore port.
