@@ -2605,7 +2605,7 @@ emit_library_call_value (va_alist)
   /* Now load any reg parms into their regs.  */
 
   if (mem_value != 0 && struct_value_rtx != 0)
-    emit_move_insn (struct_value_rtx, addr);
+    emit_move_insn (struct_value_rtx, XEXP (mem_value, 0));
 
   for (count = 0; count < nargs; count++, argnum += inc)
     {
