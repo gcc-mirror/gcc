@@ -420,6 +420,31 @@ EOF
   fi
 fi
 
+# Incorrect sprintf declaration in X11/Xmu/Xmu.h
+# (It's not clear whether the right file name is this or X11/Xmu.h.)
+file=X11/Xmu/Xmu.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/X11/Xmu 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file sprintf declaration
+  ex ${LIB}/$file <<EOF
+  /^extern char \*	sprintf();$/c
+#ifndef __STDC__
+extern char *	sprintf();
+#endif /* !defined __STDC__ */
+.
+  wq
+EOF
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm ${LIB}/$file
+  fi
+fi
+
 # Check for missing ';' in struct
 file=netinet/ip.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
