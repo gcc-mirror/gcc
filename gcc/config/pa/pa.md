@@ -4129,19 +4129,6 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
-(define_insn "rotlsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotate:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "const_int_operand" "n")))]
-  ""
-  "*
-{
-  operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
-  return \"shd %1,%1,%2,%0\";
-}"
-  [(set_attr "type" "shift")
-   (set_attr "length" "4")])
-
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 5 "plus_xor_ior_operator"
