@@ -1,3 +1,14 @@
+2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Implement exceptions specifiers for implicit member functions.
+	* cp-tree.h (merge_exceptions_specifiers): Declare new function.
+	* method.c (synthesize_exception_spec): New function.
+	(locate_dtor, locate_ctor, locate_copy): New functions.
+	(implicitly_declare_fn): Generate the exception spec too.
+	* search.c (check_final_overrider): Check artificial functions
+	too.
+	* typeck2.c (merge_exception_specifiers): New function.	
+
 2001-01-03  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_default_init): New fn.

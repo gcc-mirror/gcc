@@ -1296,3 +1296,39 @@ add_exception_specifier (list, spec, complain)
     incomplete_type_error (NULL_TREE, core);
   return list;
 }
+
+/* Combine the two exceptions specifier lists LIST and ADD, and return
+   their union. */
+
+tree
+merge_exception_specifiers (list, add)
+     tree list, add;
+{
+  if (!list || !add)
+    return NULL_TREE;
+  else if (!TREE_VALUE (list))
+    return add;
+  else if (!TREE_VALUE (add))
+    return list;
+  else
+    {
+      tree orig_list = list;
+      
+      for (; add; add = TREE_CHAIN (add))
+        {
+          tree spec = TREE_VALUE (add);
+          tree probe;
+          
+          for (probe = orig_list; probe; probe = TREE_CHAIN (probe))
+            if (same_type_p (TREE_VALUE (probe), spec))
+              break;
+          if (!probe)
+            {
+              spec = build_tree_list (NULL_TREE, spec);
+              TREE_CHAIN (spec) = list;
+              list = spec;
+            }
+        }
+    }
+  return list;
+}

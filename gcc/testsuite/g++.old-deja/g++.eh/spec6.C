@@ -126,10 +126,7 @@ struct C : A, A1
 {
   virtual void foo() throw(int);    // ERROR - looser throw - A::foo
   virtual void bar() throw(int);    // ERROR - looser throw - A1::bar
-   // The xfail is because we don't build exception specifiers for implicit
-   // members. So we don't check them either.
-   // C::~C() throw(int), is the correct specification of the destructor.
-}; // ERROR - looser throw - A::~A() - XFAIL
+}; // ERROR - looser throw - A::~A()
 
 struct D : A, A1
 {
