@@ -1906,9 +1906,8 @@ pushdecl (x)
 	  if (TREE_PUBLIC (name)
 	      && ! TREE_PUBLIC (x) && ! DECL_EXTERNAL (x))
 	    {
-	      /* Okay to declare an ANSI built-in as inline static.  */
-	      if (t != 0 && DECL_BUILT_IN (t)
-		  && DECL_INLINE (x))
+	      /* Okay to redeclare an ANSI built-in as static.  */
+	      if (t != 0 && DECL_BUILT_IN (t))
 		;
 	      /* Okay to declare a non-ANSI built-in as anything.  */
 	      else if (t != 0 && DECL_BUILT_IN_NONANSI (t))
