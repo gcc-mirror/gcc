@@ -1,5 +1,10 @@
 Mon Aug 17 11:46:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* From Graham
+	* tree.c (build_index_type): Copy TYPE_SIZE_UNIT from sizetype
+	to itype.
+	* c-decl.c (finish_enum): Copy TYPE_SIZ_UNIT from enumtype to tem.
+
 	* rs6000.c (secondary_reload_class): For TARGET_ELF, indicate that
 	a BASE_REGS register is needed as an intermediate when copying
 	a symbolic value into any register class other than BASE_REGS.
