@@ -38,6 +38,9 @@
 #if defined (__H8300__) || defined (__H8300H__)
 #include <va-h8300.h>
 #else
+#if defined (__PPC__) && defined (_CALL_SYSV)
+#include <va-ppc.h>
+#else
 
 /* Define __gnuc_va_list.  */
 
@@ -90,6 +93,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif /* big-endian */
 #endif /* _STDARG_H */
 
+#endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */
 #endif /* not alpha */
 #endif /* not i960 */
