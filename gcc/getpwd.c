@@ -92,7 +92,11 @@ getpwd ()
   static char *pwd = 0;
 
   if (!pwd)
-    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1, 0);
+    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1
+#ifdef VMS
+		  , 0
+#endif
+		  );
   return pwd;
 }
 
