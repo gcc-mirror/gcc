@@ -1,5 +1,14 @@
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cppfiles.c (_cpp_fake_include): New function.
+        * cpphash.h (_cpp_fake_include): New.
+        * cpplib.c (do_line): Call _cpp_fake_include when entering
+        header files in preprocessed input.
+        * cppmain.c (cb_pragma_implementation): Remove handling.
+	(setup_callbacks): Don't register pragmas.
+
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* extend.texi: Udate for CPP.
 
 2001-01-13  Andreas Jaeger  <aj@suse.de>

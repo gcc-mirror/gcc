@@ -1,5 +1,6 @@
 /* CPP main program, using CPP Library.
-   Copyright (C) 1995, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -58,7 +59,6 @@ static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
 static void cb_ident	  PARAMS ((cpp_reader *, const cpp_string *));
 static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma PARAMS ((cpp_reader *));
-static void do_pragma_implementation PARAMS ((cpp_reader *));
 
 const char *progname;		/* Needs to be global.  */
 static cpp_reader *pfile;	/* An opaque handle.  */
@@ -177,10 +177,6 @@ setup_callbacks ()
       cb->undef  = cb_undef;
       cb->poison = cb_def_pragma;
     }
-
-  /* Register one #pragma which needs special handling.  */
-  cpp_register_pragma(pfile, 0, "implementation", do_pragma_implementation);
-  cpp_register_pragma(pfile, "GCC", "implementation", do_pragma_implementation);
 }
 
 /* Writes out the preprocessed file.  Alternates between two tokens,
@@ -417,47 +413,6 @@ cb_def_pragma (pfile)
   fputs ("#pragma ", print.outf);
   cpp_output_line (pfile, print.outf);
   print.lineno++;
-}
-
-static void
-do_pragma_implementation (pfile)
-     cpp_reader *pfile;
-{
-  /* Be quiet about `#pragma implementation' for a file only if it hasn't
-     been included yet.  */
-  cpp_token token;
-
-  cpp_start_lookahead (pfile);
-  cpp_get_token (pfile, &token);
-  cpp_stop_lookahead (pfile, 0);
-
-  /* If it's not a string, pass it through and let the front end complain.  */
-  if (token.type == CPP_STRING)
-    {
-     /* Make a NUL-terminated copy of the string.  */
-      char *filename = alloca (token.val.str.len + 1);
-      memcpy (filename, token.val.str.text, token.val.str.len);
-      filename[token.val.str.len] = '\0';
-      if (cpp_included (pfile, filename))
-	cpp_warning (pfile,
-	     "#pragma GCC implementation for \"%s\" appears after file is included",
-		     filename);
-    }
-  else if (token.type != CPP_EOF)
-    {
-      cpp_error (pfile, "malformed #pragma GCC implementation");
-      return;
-    }
-
-  /* Output?  This is nasty, but we don't have [GCC] implementation in
-     the buffer.  */
-  if (cb->def_pragma)
-    {
-      maybe_print_line (cpp_get_line (pfile)->output_line);
-      fputs ("#pragma GCC implementation ", print.outf);
-      cpp_output_line (pfile, print.outf);
-      print.lineno++;
-    }
 }
 
 /* Dump out the hash table.  */

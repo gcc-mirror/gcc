@@ -1,6 +1,6 @@
 /* Part of CPP library.  (include file handling)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -117,6 +117,7 @@ destroy_include_file_node (v)
      splay_tree_value v;
 {
   struct include_file *f = (struct include_file *)v;
+
   if (f)
     {
       purge_cache (f);
@@ -147,6 +148,26 @@ _cpp_never_reread (file)
      struct include_file *file;
 {
   file->cmacro = NEVER_REREAD;
+}
+
+/* Put a file name in the splay tree, for the sake of cpp_included ().
+   Assume that FNAME has already had its path simplified.  */
+void
+_cpp_fake_include (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  splay_tree_node nd;
+
+  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
+  if (! nd)
+    {
+      struct include_file *file = xcnew (struct include_file);
+      file->name = xstrdup (fname);
+      splay_tree_insert (pfile->all_include_files,
+			 (splay_tree_key) file->name,
+			 (splay_tree_value) file);
+    }
 }
 
 /* Given a file name, look it up in the cache; if there is no entry,
