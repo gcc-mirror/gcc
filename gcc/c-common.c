@@ -39,12 +39,13 @@ extern struct obstack permanent_obstack;
 
 enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_UNUSED, A_FORMAT, A_WEAK, A_ALIAS};
+	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS};
 
 static void declare_hidden_char_array	PROTO((char *, char *));
 static void add_attribute		PROTO((enum attrs, char *,
 					       int, int, int));
 static void init_attributes		PROTO((void));
+static void record_international_format	PROTO((tree, tree, int));
 
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
@@ -275,6 +276,7 @@ init_attributes ()
   add_attribute (A_SECTION, "section", 1, 1, 1);
   add_attribute (A_ALIGNED, "aligned", 0, 1, 0);
   add_attribute (A_FORMAT, "format", 3, 3, 1);
+  add_attribute (A_FORMAT_ARG, "format_arg", 1, 1, 1);
   add_attribute (A_WEAK, "weak", 0, 0, 1);
   add_attribute (A_ALIAS, "alias", 1, 1, 1);
 }
@@ -580,9 +582,15 @@ decl_attributes (node, attributes, prefix_attributes)
 			 || !strcmp (IDENTIFIER_POINTER (format_type),
 				     "__scanf__")))
 	      is_scan = 1;
+	    else if (TREE_CODE (format_type) == IDENTIFIER_NODE)
+	      {
+		error ("`%s' is an unrecognized format function type",
+		       IDENTIFIER_POINTER (format_type));
+		continue;
+	      }
 	    else
 	      {
-		error ("unrecognized format specifier for `%s'");
+		error ("unrecognized format specifier");
 		continue;
 	      }
 
@@ -650,6 +658,70 @@ decl_attributes (node, attributes, prefix_attributes)
 	    record_function_format (DECL_NAME (decl),
 				    DECL_ASSEMBLER_NAME (decl),
 				    is_scan, format_num, first_arg_num);
+	    break;
+	  }
+
+	case A_FORMAT_ARG:
+	  {
+	    tree format_num_expr = TREE_VALUE (args);
+	    int format_num, arg_num;
+	    tree argument;
+	
+	    if (TREE_CODE (decl) != FUNCTION_DECL)
+	      {
+		error_with_decl (decl,
+			 "argument format specified for non-function `%s'");
+		continue;
+	      }
+	
+	    /* Strip any conversions from the first arg number and verify it
+	       is a constant.  */
+	    while (TREE_CODE (format_num_expr) == NOP_EXPR
+		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
+		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+	    if (TREE_CODE (format_num_expr) != INTEGER_CST)
+	      {
+		error ("format string has non-constant operand number");
+		continue;
+	      }
+
+	    format_num = TREE_INT_CST_LOW (format_num_expr);
+
+	    /* If a parameter list is specified, verify that the format_num
+	       argument is actually a string, in case the format attribute
+	       is in error.  */
+	    argument = TYPE_ARG_TYPES (type);
+	    if (argument)
+	      {
+		for (arg_num = 1; ; ++arg_num)
+		  {
+		    if (argument == 0 || arg_num == format_num)
+		      break;
+		    argument = TREE_CHAIN (argument);
+		  }
+		if (! argument
+		    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+		      != char_type_node))
+		  {
+		    error ("format string arg not a string type");
+		    continue;
+		  }
+	      }
+
+	    if (TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != POINTER_TYPE
+		|| (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (TREE_TYPE (decl))))
+		    != char_type_node))
+	      {
+		error ("function does not return string type");
+		continue;
+	      }
+
+	    record_international_format (DECL_NAME (decl),
+					 DECL_ASSEMBLER_NAME (decl),
+					 format_num);
 	    break;
 	  }
 
@@ -749,7 +821,8 @@ static format_char_info scan_char_table[] = {
   { NULL }
 };
 
-typedef struct function_format_info {
+typedef struct function_format_info
+{
   struct function_format_info *next;  /* next structure on the list */
   tree name;			/* identifier such as "printf" */
   tree assembler_name;		/* optional mangled identifier (for C++) */
@@ -760,14 +833,27 @@ typedef struct function_format_info {
 
 static function_format_info *function_format_list = NULL;
 
-static void check_format_info PROTO((function_format_info *, tree));
+typedef struct international_format_info
+{
+  struct international_format_info *next;  /* next structure on the list */
+  tree name;			/* identifier such as "gettext" */
+  tree assembler_name;		/* optional mangled identifier (for C++) */
+  int format_num;		/* number of format argument */
+} international_format_info;
+
+static international_format_info *international_format_list = NULL;
+
+static void check_format_info		PROTO((function_format_info *, tree));
 
 /* Initialize the table of functions to perform format checking on.
    The ANSI functions are always checked (whether <stdio.h> is
    included or not), since it is common to call printf without
    including <stdio.h>.  There shouldn't be a problem with this,
    since ANSI reserves these function names whether you include the
-   header file or not.  In any case, the checking is harmless.  */
+   header file or not.  In any case, the checking is harmless. 
+
+   Also initialize the name of function that modify the format string for
+   internationalization purposes.  */
 
 void
 init_function_format_info ()
@@ -781,6 +867,10 @@ init_function_format_info ()
   record_function_format (get_identifier ("vprintf"), NULL_TREE, 0, 1, 0);
   record_function_format (get_identifier ("vfprintf"), NULL_TREE, 0, 2, 0);
   record_function_format (get_identifier ("vsprintf"), NULL_TREE, 0, 2, 0);
+
+  record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
+  record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
+  record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
 }
 
 /* Record information for argument format checking.  FUNCTION_IDENT is
@@ -789,7 +879,7 @@ init_function_format_info ()
    false indicates printf-style format checking.  FORMAT_NUM is the number
    of the argument which is the format control string (starting from 1).
    FIRST_ARG_NUM is the number of the first actual argument to check
-   against teh format string, or zero if no checking is not be done
+   against the format string, or zero if no checking is not be done
    (e.g. for varargs such as vfprintf).  */
 
 void
@@ -823,6 +913,43 @@ record_function_format (name, assembler_name, is_scan,
   info->is_scan = is_scan;
   info->format_num = format_num;
   info->first_arg_num = first_arg_num;
+}
+
+/* Record information for the names of function that modify the format
+   argument to format functions.  FUNCTION_IDENT is the identifier node for
+   the name of the function (its decl need not exist yet) and FORMAT_NUM is
+   the number of the argument which is the format control string (starting
+   from 1).  */
+
+void
+record_international_format (name, assembler_name, format_num)
+      tree name;
+      tree assembler_name;
+      int format_num;
+{
+  international_format_info *info;
+
+  /* Re-use existing structure if it's there.  */
+
+  for (info = international_format_list; info; info = info->next)
+    {
+      if (info->name == name && info->assembler_name == assembler_name)
+	break;
+    }
+
+  if (! info)
+    {
+      info
+	= (international_format_info *)
+	  xmalloc (sizeof (international_format_info));
+      info->next = international_format_list;
+      international_format_list = info;
+
+      info->name = name;
+      info->assembler_name = assembler_name;
+    }
+
+  info->format_num = format_num;
 }
 
 static char	tfaff[] = "too few arguments for format";
@@ -895,9 +1022,43 @@ check_format_info (info, params)
   params = TREE_CHAIN (params);
   if (format_tree == 0)
     return;
+
   /* We can only check the format if it's a string constant.  */
   while (TREE_CODE (format_tree) == NOP_EXPR)
     format_tree = TREE_OPERAND (format_tree, 0); /* strip coercion */
+
+  if (TREE_CODE (format_tree) == CALL_EXPR
+      && TREE_CODE (TREE_OPERAND (format_tree, 0)) == ADDR_EXPR
+      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (format_tree, 0), 0))
+	  == FUNCTION_DECL))
+    {
+      tree function = TREE_OPERAND (TREE_OPERAND (format_tree, 0), 0);
+
+      /* See if this is a call to a known internationalization function
+	 that modifies the format arg.  */
+      international_format_info *info;
+
+      for (info = international_format_list; info; info = info->next)
+	if (info->assembler_name
+	    ? (info->assembler_name == DECL_ASSEMBLER_NAME (function))
+	    : (info->name == DECL_NAME (function)))
+	  {
+	    tree inner_args;
+	    int i;
+
+	    for (inner_args = TREE_OPERAND (format_tree, 1), i = 1;
+		 inner_args != 0;
+		 inner_args = TREE_CHAIN (inner_args), i++)
+	      if (i == info->format_num)
+		{
+		  format_tree = TREE_VALUE (inner_args);
+
+		  while (TREE_CODE (format_tree) == NOP_EXPR)
+		    format_tree = TREE_OPERAND (format_tree, 0);
+		}
+	  }
+    }
+
   if (integer_zerop (format_tree))
     {
       warning ("null format string");
