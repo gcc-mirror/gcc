@@ -3,23 +3,23 @@
 
    the C library, however.  The master source lives in /gd/gnu/lib.
 
-NOTE: The canonical source of this file is maintained with the GNU C Library.
-Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option) any
-later version.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -164,7 +164,7 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
   register struct _obstack_chunk *chunk; /* points to new chunk */
 
   if (alignment == 0)
-    alignment = DEFAULT_ALIGNMENT;
+    alignment = (int) DEFAULT_ALIGNMENT;
   if (size == 0)
     /* Default size is what GNU malloc can fit in a 4096-byte block.  */
     {
@@ -223,7 +223,7 @@ _obstack_begin_1 (h, size, alignment, chunkfun, freefun, arg)
   register struct _obstack_chunk *chunk; /* points to new chunk */
 
   if (alignment == 0)
-    alignment = DEFAULT_ALIGNMENT;
+    alignment = (int) DEFAULT_ALIGNMENT;
   if (size == 0)
     /* Default size is what GNU malloc can fit in a 4096-byte block.  */
     {
@@ -280,9 +280,9 @@ _obstack_newchunk (h, length)
   register struct _obstack_chunk *old_chunk = h->chunk;
   register struct _obstack_chunk *new_chunk;
   register long	new_size;
-  register int obj_size = h->next_free - h->object_base;
-  register int i;
-  int already;
+  register long obj_size = h->next_free - h->object_base;
+  register long i;
+  long already;
 
   /* Compute size for new chunk.  */
   new_size = (obj_size + length) + (obj_size >> 3) + 100;
