@@ -328,8 +328,8 @@ extract_scalar_init (decl, init)
 
       to = XEXP (r, 0);
 
-      if (! (to == value ||
-	     (GET_CODE (to) == SUBREG && XEXP (to, 0) == value)))
+      if (! (to == value
+	     || (GET_CODE (to) == SUBREG && XEXP (to, 0) == value)))
 	return 0;
 
       r = XEXP (r, 1);

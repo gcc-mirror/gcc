@@ -1,3 +1,7 @@
+Mon May  5 14:46:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_new_op): Handle null arg2 for ?:.
+
 Thu May  1 18:26:37 1997  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_exception_blocks): Ensure that we flow through

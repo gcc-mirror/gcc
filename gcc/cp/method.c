@@ -1632,8 +1632,8 @@ hack_identifier (value, name)
 		  if (TREE_CODE (value) == VAR_DECL)
 		    error ("static member `%s' is %s",
 			   IDENTIFIER_POINTER (name),
-			   TREE_PRIVATE (value) ? "private" :
-			   "from a private base class");
+			   TREE_PRIVATE (value) ? "private"
+						: "from a private base class");
 		  else
 		    error ("enum `%s' is from private base class",
 			   IDENTIFIER_POINTER (name));

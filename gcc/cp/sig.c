@@ -400,8 +400,8 @@ match_method_types (sig_mtype, class_mtype)
   /* Compare the first argument `this.'  */
   {
     /* Get the type of what the `optr' is pointing to.  */
-    tree sig_this =
-      TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_VALUE (sig_arg_types))));
+    tree sig_this
+      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_VALUE (sig_arg_types))));
     tree class_this = TREE_VALUE (class_arg_types);
 
     if (TREE_CODE (class_this) == RECORD_TYPE)	/* Is `this' a sig ptr?  */
@@ -790,9 +790,9 @@ build_signature_pointer_constructor (lhs, rhs)
 
   if (! ((TREE_CODE (rhstype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (rhstype)) == RECORD_TYPE)
-	 || (TYPE_LANG_SPECIFIC (rhstype) &&
-	     (IS_SIGNATURE_POINTER (rhstype)
-	      || IS_SIGNATURE_REFERENCE (rhstype)))))
+	 || (TYPE_LANG_SPECIFIC (rhstype)
+	     && (IS_SIGNATURE_POINTER (rhstype)
+		 || IS_SIGNATURE_REFERENCE (rhstype)))))
     {
       error ("invalid assignment to signature pointer or reference");
       return error_mark_node;
@@ -814,8 +814,8 @@ build_signature_pointer_constructor (lhs, rhs)
       saveable_obstack = &permanent_obstack;
     }
 
-  if (TYPE_LANG_SPECIFIC (rhstype) &&
-      (IS_SIGNATURE_POINTER (rhstype) || IS_SIGNATURE_REFERENCE (rhstype)))
+  if (TYPE_LANG_SPECIFIC (rhstype)
+      && (IS_SIGNATURE_POINTER (rhstype) || IS_SIGNATURE_REFERENCE (rhstype)))
     {
       if (SIGNATURE_TYPE (rhstype) == sig_ty)
 	{
@@ -968,10 +968,10 @@ build_signature_method_call (function, parms)
     /* Cast the signature method to have `this' of a normal pointer type.  */
     tree old_this = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn))));
 
-    TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn)))) =
-      build_type_variant (build_pointer_type (basetype),
-			  TYPE_READONLY (old_this),
-			  TYPE_VOLATILE (old_this));
+    TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn))))
+      = build_type_variant (build_pointer_type (basetype),
+			    TYPE_READONLY (old_this),
+			    TYPE_VOLATILE (old_this));
 
     direct_call = build_function_call (pfn, new_parms);
 

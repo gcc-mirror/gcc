@@ -441,8 +441,8 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
 	goto fail;
-      if (TREE_READONLY (TREE_TYPE (exprtype)) &&
-	  ! TYPE_READONLY (TREE_TYPE (type)))
+      if (TREE_READONLY (TREE_TYPE (exprtype))
+	  && ! TYPE_READONLY (TREE_TYPE (type)))
 	goto fail;
       if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
 	break;
@@ -477,8 +477,8 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
 	goto fail;
-      if (TREE_READONLY (TREE_TYPE (exprtype)) &&
-	  ! TYPE_READONLY (TREE_TYPE (type)))
+      if (TREE_READONLY (TREE_TYPE (exprtype))
+	  && ! TYPE_READONLY (TREE_TYPE (type)))
 	goto fail;
     }
 
@@ -833,8 +833,8 @@ expand_class_desc (tdecl, type)
   {
     tree arrtype = build_array_type (base_info_type_node, NULL_TREE);
     elts = build (CONSTRUCTOR, arrtype, NULL_TREE, elts);
-    TREE_HAS_CONSTRUCTOR (elts) = TREE_CONSTANT (elts) =
-      TREE_STATIC (elts) = 1;
+    TREE_HAS_CONSTRUCTOR (elts) = TREE_CONSTANT (elts)
+      = TREE_STATIC (elts) = 1;
     complete_array_type (arrtype, elts, 1);
   }
 

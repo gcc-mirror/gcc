@@ -707,8 +707,8 @@ convert_to_aggr (type, expr, msgp, protect)
   {
     int saw_private = 0;
     int saw_protected = 0;
-    struct candidate *candidates =
-      (struct candidate *) alloca ((decl_list_length (fndecl)+1) * sizeof (struct candidate));
+    struct candidate *candidates
+      = (struct candidate *) alloca ((decl_list_length (fndecl)+1) * sizeof (struct candidate));
     struct candidate *cp = candidates;
 
     while (fndecl)

@@ -1820,8 +1820,8 @@ maybe_push_to_top_level (pseudo)
      int pseudo;
 {
   extern int current_lang_stacksize;
-  struct saved_scope *s =
-    (struct saved_scope *) xmalloc (sizeof (struct saved_scope));
+  struct saved_scope *s
+    = (struct saved_scope *) xmalloc (sizeof (struct saved_scope));
   struct binding_level *b = inner_binding_level;
   tree old_bindings = NULL_TREE;
 
@@ -4707,10 +4707,10 @@ init_decl_processing ()
   /* Define `char', which is like either `signed char' or `unsigned char'
      but not the same as either.  */
 
-  char_type_node =
-    (flag_signed_char
-     ? make_signed_type (CHAR_TYPE_SIZE)
-     : make_unsigned_type (CHAR_TYPE_SIZE));
+  char_type_node
+    = (flag_signed_char
+       ? make_signed_type (CHAR_TYPE_SIZE)
+       : make_unsigned_type (CHAR_TYPE_SIZE));
   record_builtin_type (RID_CHAR, "char", char_type_node);
 
   long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
@@ -4843,8 +4843,8 @@ init_decl_processing ()
   TREE_TYPE (void_zero_node) = void_type_node;
 
   string_type_node = build_pointer_type (char_type_node);
-  const_string_type_node =
-    build_pointer_type (build_type_variant (char_type_node, 1, 0));
+  const_string_type_node
+    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
 #endif
@@ -4873,8 +4873,8 @@ init_decl_processing ()
     = build_function_type (integer_type_node, NULL_TREE);
 
   ptr_type_node = build_pointer_type (void_type_node);
-  const_ptr_type_node =
-    build_pointer_type (build_type_variant (void_type_node, 1, 0));
+  const_ptr_type_node
+    = build_pointer_type (build_type_variant (void_type_node, 1, 0));
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, ptr_type_node);
 #endif
@@ -4964,9 +4964,9 @@ init_decl_processing ()
   builtin_function ("__builtin_constant_p", int_ftype_int,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
-  builtin_return_address_fndecl =
-  builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
-		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
+  builtin_return_address_fndecl
+    = builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
+			BUILT_IN_RETURN_ADDRESS, NULL_PTR);
 
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
 		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
@@ -5278,12 +5278,15 @@ init_decl_processing ()
       __t_desc_type_node = make_lang_type (RECORD_TYPE);
       __i_desc_type_node = make_lang_type (RECORD_TYPE);
       __m_desc_type_node = make_lang_type (RECORD_TYPE);
-      __t_desc_array_type =
-	build_array_type (build_pointer_type (__t_desc_type_node), NULL_TREE);
-      __i_desc_array_type =
-	build_array_type (build_pointer_type (__i_desc_type_node), NULL_TREE);
-      __m_desc_array_type =
-	build_array_type (build_pointer_type (__m_desc_type_node), NULL_TREE);
+      __t_desc_array_type
+	= build_array_type (build_pointer_type (__t_desc_type_node),
+			    NULL_TREE);
+      __i_desc_array_type
+	= build_array_type (build_pointer_type (__i_desc_type_node),
+			    NULL_TREE);
+      __m_desc_array_type
+	= build_array_type (build_pointer_type (__m_desc_type_node),
+			    NULL_TREE);
 
       fields[0] = build_lang_field_decl (FIELD_DECL, get_identifier ("name"),
 					 string_type_node);
@@ -6816,11 +6819,11 @@ expand_static_init (decl, init)
 	      pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
 
 	      push_lang_context (lang_name_c);
-	      atexit_fndecl = 
-		builtin_function ("atexit",
-				  build_function_type (void_type_node,
-						       pfvlist),
-				  NOT_BUILT_IN, NULL_PTR);
+	      atexit_fndecl
+		= builtin_function ("atexit",
+				    build_function_type (void_type_node,
+							 pfvlist),
+				    NOT_BUILT_IN, NULL_PTR);
 	      assemble_external (atexit_fndecl);
 	      Atexit = default_conversion (atexit_fndecl);
 	      pop_lang_context ();
@@ -7845,8 +7848,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 	  else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	    pedwarn ("ANSI C++ forbids typedef which does not specify a type");
-	  else if (declspecs == NULL_TREE &&
-		   (innermost_code != CALL_EXPR || pedantic))
+	  else if (declspecs == NULL_TREE
+		   && (innermost_code != CALL_EXPR || pedantic))
 	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type or storage class",
 			dname);
 	  type = integer_type_node;
@@ -8342,11 +8345,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		  }
 
-		itype =
-		  fold (build_binary_op (MINUS_EXPR,
-					 convert (index_type, size),
-					 convert (index_type,
-						  integer_one_node), 1));
+		itype
+		  = fold (build_binary_op (MINUS_EXPR,
+					   convert (index_type, size),
+					   convert (index_type,
+						    integer_one_node), 1));
 		if (! TREE_CONSTANT (itype))
 		  itype = variable_size (itype);
 		else if (TREE_OVERFLOW (itype))
@@ -8437,9 +8440,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
-	    funcdecl_p =
-	      inner_decl && (TREE_CODE (inner_decl) == IDENTIFIER_NODE
-			     || TREE_CODE (inner_decl) == BIT_NOT_EXPR);
+	    funcdecl_p
+	      = inner_decl && (TREE_CODE (inner_decl) == IDENTIFIER_NODE
+			       || TREE_CODE (inner_decl) == BIT_NOT_EXPR);
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -8503,8 +8506,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			error ("return value type specifier for constructor ignored");
 		    }
 		    type = build_pointer_type (ctype);
-		    if (decl_context == FIELD &&
-			IS_SIGNATURE (current_class_type))
+		    if (decl_context == FIELD
+			&& IS_SIGNATURE (current_class_type))
 		      {
 			error ("constructor not allowed in signature");
 			return void_type_node;
@@ -8819,12 +8822,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		else if (uses_template_parms (ctype))
 		  {
                     if (TREE_CODE (type) == FUNCTION_TYPE)
-		      type = 
-			build_cplus_method_type (build_type_variant (ctype,
-								     constp,
-								     volatilep),
-						 TREE_TYPE (type),
-						 TYPE_ARG_TYPES (type));
+		      type
+			= build_cplus_method_type (build_type_variant (ctype,
+								       constp,
+								       volatilep),
+						   TREE_TYPE (type),
+						   TYPE_ARG_TYPES (type));
   		  }
 		else
 		  {
@@ -9982,10 +9985,10 @@ grok_op_properties (decl, virtualp, friendp)
      
       /* Take care of function decl if we had syntax errors.  */
       if (argtypes == NULL_TREE)
-	TREE_TYPE (decl) =
-	  build_function_type (ptr_type_node,
-			       hash_tree_chain (integer_type_node,
-						void_list_node));
+	TREE_TYPE (decl)
+	  = build_function_type (ptr_type_node,
+				 hash_tree_chain (integer_type_node,
+						  void_list_node));
       else
 	TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
     }
@@ -9996,10 +9999,10 @@ grok_op_properties (decl, virtualp, friendp)
 	revert_static_member_fn (&decl, NULL, NULL);
      
       if (argtypes == NULL_TREE)
-	TREE_TYPE (decl) =
-	  build_function_type (void_type_node,
-			       hash_tree_chain (ptr_type_node,
-						void_list_node));
+	TREE_TYPE (decl)
+	  = build_function_type (void_type_node,
+				 hash_tree_chain (ptr_type_node,
+						  void_list_node));
       else
 	{
 	  TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
@@ -11673,16 +11676,15 @@ finish_function (lineno, call_poplevel, nested)
 	  /* At the end, call delete if that's what's requested.  */
 	  if (TYPE_GETS_REG_DELETE (current_class_type))
 	    /* This NOP_EXPR means we are in a static call context.  */
-	    exprstmt =
-	      build_method_call
-		(build_indirect_ref
-		 (build1 (NOP_EXPR, build_pointer_type (current_class_type),
-			  error_mark_node),
-		  NULL_PTR),
-		 ansi_opname[(int) DELETE_EXPR],
-		 tree_cons (NULL_TREE, current_class_ptr,
-			    build_tree_list (NULL_TREE, virtual_size)),
-		 NULL_TREE, LOOKUP_NORMAL);
+	    exprstmt
+	      = build_method_call (build_indirect_ref (build1 (NOP_EXPR,
+							       build_pointer_type (current_class_type),
+							       error_mark_node),
+						       NULL_PTR),
+				   ansi_opname[(int) DELETE_EXPR],
+				   tree_cons (NULL_TREE, current_class_ptr,
+					      build_tree_list (NULL_TREE, virtual_size)),
+				   NULL_TREE, LOOKUP_NORMAL);
 	  else if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	    exprstmt = build_x_delete (ptr_type_node, current_class_ptr, 0,
 				       virtual_size);

@@ -1,5 +1,5 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    hacked by Brendan Kehoe (brendan@cygnus.com).
 
@@ -1896,10 +1896,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
       /* The MAIN_VARIANT of the type that `instance_ptr' winds up being.  */
       tree inst_ptr_basetype;
 
-      static_call_context =
-	(TREE_CODE (instance) == INDIRECT_REF
-	 && TREE_CODE (TREE_OPERAND (instance, 0)) == NOP_EXPR
-	 && TREE_OPERAND (TREE_OPERAND (instance, 0), 0) == error_mark_node);
+      static_call_context
+	= (TREE_CODE (instance) == INDIRECT_REF
+	   && TREE_CODE (TREE_OPERAND (instance, 0)) == NOP_EXPR
+	   && TREE_OPERAND (TREE_OPERAND (instance, 0), 0) == error_mark_node);
 
       if (TREE_CODE (instance) == OFFSET_REF)
 	instance = resolve_offset_ref (instance);
@@ -1997,8 +1997,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (basetype_path == NULL_TREE
 	  && IS_SIGNATURE (basetype))
 	basetype_path = TYPE_BINFO (basetype);
-      else if (basetype_path == NULL_TREE ||
-	BINFO_TYPE (basetype_path) != TYPE_MAIN_VARIANT (inst_ptr_basetype))
+      else if (basetype_path == NULL_TREE
+	       || (BINFO_TYPE (basetype_path)
+		   != TYPE_MAIN_VARIANT (inst_ptr_basetype)))
 	basetype_path = TYPE_BINFO (inst_ptr_basetype);
 
       result = build_field_call (basetype_path, instance_ptr, name, parms);
@@ -4607,7 +4608,8 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
   if (code == COND_EXPR)
     {
-      if (TREE_CODE (TREE_TYPE (arg2)) == VOID_TYPE
+      if (arg2 == NULL_TREE
+	  || TREE_CODE (TREE_TYPE (arg2)) == VOID_TYPE
 	  || TREE_CODE (TREE_TYPE (arg3)) == VOID_TYPE
 	  || (! IS_OVERLOAD_TYPE (TREE_TYPE (arg2))
 	      && ! IS_OVERLOAD_TYPE (TREE_TYPE (arg3))))
@@ -5046,8 +5048,8 @@ build_over_call (fn, convs, args, flags)
 		    < TYPE_VOLATILE (TREE_TYPE (argtype)));
 	  int dc = (TYPE_READONLY (TREE_TYPE (parmtype))
 		    < TYPE_READONLY (TREE_TYPE (argtype)));
-	  char *p = (dv && dc ? "const and volatile" :
-		     dc ? "const" : dv ? "volatile" : "");
+	  char *p = (dv && dc ? "const and volatile"
+		              : dc ? "const" : dv ? "volatile" : "");
 
 	  cp_pedwarn ("passing `%T' as `this' argument of `%#D' discards %s",
 		      TREE_TYPE (argtype), fn, p);
@@ -5310,8 +5312,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       TREE_TYPE (instance_ptr) = build_pointer_type (basetype);
     }
 
-  pretty_name =
-    (name == ctor_identifier ? constructor_name_full (basetype) : name);
+  pretty_name
+    = (name == ctor_identifier ? constructor_name_full (basetype) : name);
 
   fns = lookup_fnfields (basetype_path, name, 1);
 

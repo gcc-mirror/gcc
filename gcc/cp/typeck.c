@@ -4397,8 +4397,8 @@ build_unary_op (code, xarg, noconvert)
 	if (staticp (arg))
 	  TREE_CONSTANT (addr) = 1;
 
-	if (TREE_CODE (argtype) == POINTER_TYPE &&
-	    TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
+	if (TREE_CODE (argtype) == POINTER_TYPE
+	    && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
 	  {
 	    build_ptrmemfunc_type (argtype);
 	    addr = build_ptrmemfunc (argtype, addr, 0);
@@ -5575,8 +5575,8 @@ build_modify_expr (lhs, modifycode, rhs)
 
   /* Handle assignment to signature pointers/refs.  */
 
-  if (TYPE_LANG_SPECIFIC (lhstype) &&
-      (IS_SIGNATURE_POINTER (lhstype) || IS_SIGNATURE_REFERENCE (lhstype)))
+  if (TYPE_LANG_SPECIFIC (lhstype)
+      && (IS_SIGNATURE_POINTER (lhstype) || IS_SIGNATURE_REFERENCE (lhstype)))
     {
       return build_signature_pointer_constructor (lhs, rhs);
     }

@@ -202,10 +202,10 @@ add_friends (type, name, friend_type)
 	}
       list = TREE_CHAIN (list);
     }
-  DECL_FRIENDLIST (typedecl) =
-    tree_cons (name,
-	       build_tree_list (friend_type, NULL_TREE),
-	       DECL_FRIENDLIST (typedecl));
+  DECL_FRIENDLIST (typedecl)
+    = tree_cons (name,
+		 build_tree_list (friend_type, NULL_TREE),
+		 DECL_FRIENDLIST (typedecl));
   if (! strncmp (IDENTIFIER_POINTER (name),
 		 IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]),
 		 strlen (IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]))))
