@@ -1,4 +1,8 @@
-2005-Mar-02  Richard Guenther  <rguenth@gcc.gnu.org>
+2005-03-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin8.h (LIB_SPEC): Switch -lmx and -lSystem.
+
+2005-03-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* cgraph.h (struct cgraph_edge): Add prev_caller and
 	prev_callee fields.
