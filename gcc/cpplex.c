@@ -246,7 +246,7 @@ skip_escaped_newlines (buffer, next)
 	      break;
 	    }
 
-	  if (space)
+	  if (space && !buffer->pfile->state.lexing_comment)
 	    cpp_warning (buffer->pfile,
 			 "backslash and newline separated by space");
 

@@ -1,3 +1,8 @@
+2000-12-06  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
+	  
+        * cpplex.c (skip_escaped_newlines): Don't warn for spaces between
+        backslash and newline, when inside a comment.
+
 2000-12-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Use @table @samp instead of @itemize @minus for
