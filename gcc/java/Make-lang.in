@@ -156,6 +156,10 @@ java.all.cross: $(GCJ)-cross$(exeext)
 java.start.encap: $(GCJ)$(exeext)
 java.rest.encap:
 
+
+java.tags: force
+	cd $(srcdir)/java; etags *.y *.c *.h --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def
+
 java.info: $(srcdir)/java/gcj.info
 java.dvi: java/gcj.dvi
 java.generated-manpages: $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1 \

@@ -1,3 +1,7 @@
+2003-03-04  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (java.tags): New target.
+
 2003-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	* java/builtins.c (builtin_type): Handle DEF_FUNCTION_TYPE_VAR_3.
