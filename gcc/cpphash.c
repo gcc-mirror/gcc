@@ -1727,7 +1727,11 @@ dump_hash_helper (h, p)
   HASHNODE *hp = (HASHNODE *)h;
   cpp_reader *pfile = (cpp_reader *)p;
 
-  _cpp_dump_definition (pfile, hp->name, hp->length, hp->value.defn);
+  if (hp->type == T_MACRO)
+    {
+      _cpp_dump_definition (pfile, hp->name, hp->length, hp->value.defn);
+      CPP_PUTC (pfile, '\n');
+    }
   return 1;
 }
 
