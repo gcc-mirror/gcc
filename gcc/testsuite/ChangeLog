@@ -1,3 +1,8 @@
+2004-02-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14181
+	* g++.dg/parse/new2.C: New test.
+
 2004-02-18  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.c-torture/compile/libcall-1.c: New test.
