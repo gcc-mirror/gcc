@@ -1,3 +1,7 @@
+2004-08-31  Stan Shebs  <shebs@apple.com>
+
+	* toplev.c (process_options): Ensure debug_hooks is initialized.
+
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* target-def.h (TARGET_CXX): Add TARGET_CXX_EXPORT_CLASS_DATA.

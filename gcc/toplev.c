@@ -1806,8 +1806,9 @@ process_options (void)
     default_debug_hooks = &vmsdbg_debug_hooks;
 #endif
 
+  debug_hooks = &do_nothing_debug_hooks;
   if (write_symbols == NO_DEBUG)
-    debug_hooks = &do_nothing_debug_hooks;
+    ;
 #if defined(DBX_DEBUGGING_INFO)
   else if (write_symbols == DBX_DEBUG)
     debug_hooks = &dbx_debug_hooks;
