@@ -674,7 +674,7 @@ enum state
     BLOCK_TO_SPLIT
   };
 #define STATE(bb) (enum state)(size_t)(bb)->aux
-#define SET_STATE(bb, state) (bb)->aux = (void *)(state)
+#define SET_STATE(bb, state) (bb)->aux = (void *) (size_t) (state)
 
 /* Scan basic block BB for possible BB boundaries inside the block
    and create new basic blocks in the progress.  */
@@ -822,11 +822,8 @@ find_many_sub_basic_blocks (blocks)
   int min, max;
 
   for (i = 0; i < n_basic_blocks; i++)
-    {
-      SET_STATE (BASIC_BLOCK (i),
-		 TEST_BIT (blocks, i)
-		 ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
-    }
+    SET_STATE (BASIC_BLOCK (i),
+	       TEST_BIT (blocks, i) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
   for (i = 0; i < n_basic_blocks; i++)
     {
