@@ -1,5 +1,4 @@
-/* { dg-do compile { target i?86-*-linux* i?86-*-sco3.2v5* i?86-*-sysv* } } */
-/* { dg-options "-O2 -gdwarf -g2" } */
+/* { dg-do compile } */
 
 /* Distilled from GCC's stmt.c.  Caused abort in dwarf-1 code. */
 

@@ -1,0 +1,78 @@
+#   Copyright (C) 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# This is the list of debugging options we'll try.  Some of them won't
+# be supported, that's OK; they will be quickly eliminated.
+# It's probably not a good idea to add more optimisation options.
+
+if ![info exists DEBUG_TORTURE_OPTIONS] {
+    set DEBUG_TORTURE_OPTIONS ""
+    foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+ -gcoff} {
+	set comp_output [gcc_target_compile \
+		"$srcdir/$subdir/trivial.c" "trivial.S" assembly \
+		"additional_flags=$type"]
+	if { ! [string match "*: unknown or unsupported -g option*" \
+		$comp_output] } {
+	    foreach level {1 "" 3} {
+		lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}"]
+		foreach opt { -O -O3 } {
+		    lappend DEBUG_TORTURE_OPTIONS \
+			    [list "${type}${level}" "$opt" ]
+		}
+	    }
+	}
+    }
+}
+
+verbose -log "Using options $DEBUG_TORTURE_OPTIONS"
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+
+foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] {
+    global runtests
+
+    # If we're only testing specific files and this isn't one of 
+    # them, skip it.
+    if ![runtest_file_p $runtests $test] {
+	continue
+    }
+
+    set nshort [file tail [file dirname $test]]/[file tail $test]
+
+    foreach flags $DEBUG_TORTURE_OPTIONS {
+	set doit 1
+	if { [string match {*/debug-[126].c} "$nshort"] \
+		&& [string match "*1" [lindex "$flags" 0] ] } { 
+	    set doit 0
+	}
+	
+	if { $doit } {
+	    verbose -log "Testing $nshort, $flags" 1
+	    dg-test $test $flags ""
+	}
+    }
+}
+
+# All done.
+dg-finish

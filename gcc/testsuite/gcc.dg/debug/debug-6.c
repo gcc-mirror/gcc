@@ -1,6 +1,6 @@
 /* Verify that bb-reorder re-inserts nested scopes properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -dA" } */
+/* { dg-options "-dA" } */
 /* { dg-final { scan-assembler "xyzzy" } } */
 
 extern void abort (void);

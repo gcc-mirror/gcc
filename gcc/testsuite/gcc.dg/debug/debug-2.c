@@ -1,6 +1,6 @@
 /* Verify that the scheduler does not discard the lexical block.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -dA" } */
+/* { dg-options "-dA" } */
 /* { dg-final { scan-assembler "xyzzy" } } */
 
 long foo(long p)

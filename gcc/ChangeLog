@@ -1,3 +1,9 @@
+2002-01-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* dbxout.c (dbxout_init): Use assemble_name rather than just
+	stripping off the first character.
+	(dbxout_source_file): Likewise.
+
 2002-01-25  DJ Delorie  <dj@redhat.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): Compare
