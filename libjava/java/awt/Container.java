@@ -41,6 +41,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeListener;
@@ -1229,26 +1230,39 @@ public class Container extends Component
                           Component comp)
   {
     Rectangle bounds = comp.getBounds();
-    Rectangle clip = gfx.getClipBounds().intersection(bounds);
+    Rectangle oldClip = gfx.getClipBounds();
+    if (oldClip == null)
+      oldClip = bounds;
+    Rectangle clip = oldClip.intersection(bounds);
 
     if (clip.isEmpty()) return;
 
-    Graphics gfx2 = gfx.create();
+    boolean clipped = false;
+    boolean translated = false;
     try
       {
-	gfx2.setClip(clip.x, clip.y, clip.width, clip.height);
-	gfx2.translate(bounds.x, bounds.y);
-
-	visitor.visit(comp, gfx2);
+        gfx.setClip(clip.x, clip.y, clip.width, clip.height);
+        clipped = true;
+        gfx.translate(bounds.x, bounds.y);
+        translated = true;
+        visitor.visit(comp, gfx);
       }
     finally
       {
-	gfx2.dispose ();
+        if (translated)
+          gfx.translate (-bounds.x, -bounds.y);
+        if (clipped)
+          gfx.setClip (oldClip.x, oldClip.y, oldClip.width, oldClip.height);
       }
   }
 
   void dispatchEventImpl(AWTEvent e)
   {
+    // Give lightweight dispatcher a chance to handle it.
+    if (dispatcher != null 
+        && dispatcher.handleEvent (e))
+      return;
+
     if ((e.id <= ContainerEvent.CONTAINER_LAST
              && e.id >= ContainerEvent.CONTAINER_FIRST)
         && (containerListener != null
@@ -1319,6 +1333,17 @@ public class Container extends Component
             component[i].addNotify();
             if (component[i].isLightweight ())
 	      {
+
+                // If we're not lightweight, and we just got a lightweight
+                // child, we need a lightweight dispatcher to feed it events.
+                if (! this.isLightweight() 
+                    && dispatcher == null)
+                  {
+                    dispatcher = new LightweightDispatcher (this);
+                    dispatcher.enableEvents (component[i].eventMask);
+                  }	
+	  
+
 		enableEvents(component[i].eventMask);
 		if (peer != null && !isLightweight ())
 		  enableEvents (AWTEvent.PAINT_EVENT_MASK);
@@ -1495,22 +1520,25 @@ public class Container extends Component
 } // class Container
 
 /**
- * Undocumented helper class.
- * STUBBED
+ * There is a helper class implied from stack traces called
+ * LightweightDispatcher, but since it is not part of the public API,
+ * rather than mimic it exactly we write something which does "roughly
+ * the same thing".
  */
-class LightweightDispatcher implements Serializable, AWTEventListener
+
+class LightweightDispatcher implements Serializable
 {
   private static final long serialVersionUID = 5184291520170872969L;
   private Container nativeContainer;
   private Component focus;
-  private transient Component mouseEventTarget;
-  private transient Component targetLastEntered;
-  private transient boolean isMouseInNativeContainer;
   private Cursor nativeCursor;
   private long eventMask;
   
+  private transient Component mouseEventTarget;
+  
   LightweightDispatcher(Container c)
   {
+    nativeContainer = c;
   }
 
   void dispose()
@@ -1519,40 +1547,106 @@ class LightweightDispatcher implements Serializable, AWTEventListener
 
   void enableEvents(long l)
   {
+    eventMask |= l;
   }
 
-  boolean dispatchEvent(AWTEvent e)
-  {
-    return true;
-  }
-
-  boolean isMouseGrab(MouseEvent e)
-  {
-    return true;
-  }
-
-  boolean processMouseEvent(MouseEvent e)
-  {
-    return true;
-  }
-
-  void trackMouseEnterExit(Component c, MouseEvent e)
+  void mouseExit (MouseEvent me, int x, int y)
   {
   }
 
-  void startListeningForOtherDrags()
+  void acquireComponentForMouseEvent (MouseEvent me)
   {
+    int x = me.getX ();
+    int y = me.getY ();
+
+    Component candidate = mouseEventTarget;
+
+    boolean candidate_is_container_with_children = 
+	    ((candidate != null)
+	     && (candidate instanceof Container)
+	     && (((Container)candidate).getComponentCount () > 0));
+
+    boolean candidate_does_not_contain_point =
+	    ((candidate != null)
+	     && (! candidate.contains (x - candidate.getX (),
+                                 y - candidate.getY ())));
+
+    if (candidate == null
+        || candidate_is_container_with_children
+        || candidate_does_not_contain_point)
+  {
+        // Try to reacquire.
+        candidate = nativeContainer.findComponentAt (x, y);
   }
 
-  void stopListeningForOtherDrags()
+    if (mouseEventTarget != null
+        && mouseEventTarget != candidate)
   {
+        int nx = x - mouseEventTarget.getX ();
+        int ny = y - mouseEventTarget.getY ();
+        MouseEvent exited = new MouseEvent (mouseEventTarget, 
+                                            MouseEvent.MOUSE_EXITED,
+                                            me.getWhen (), 
+                                            me.getModifiers (), 
+                                            nx, ny,
+                                            me.getClickCount (),
+                                            me.isPopupTrigger (),
+                                            me.getButton ());
+        mouseEventTarget.dispatchEvent (exited); 
+        mouseEventTarget = null;
   }
 
-  public void eventDispatched(AWTEvent e)
+    if (candidate != null)
+	    {
+        // Possibly set new state.
+        if (candidate.isLightweight() 
+            && candidate != nativeContainer
+            && candidate != mouseEventTarget)
   {
+			
+            mouseEventTarget = candidate;
+			
+            int nx = x - mouseEventTarget.getX ();
+            int ny = y - mouseEventTarget.getY ();
+			
+            // If acquired, enter it.
+            MouseEvent entered = new MouseEvent (mouseEventTarget, 
+                                                 MouseEvent.MOUSE_ENTERED,
+                                                 me.getWhen (), 
+                                                 me.getModifiers (), 
+                                                 nx, ny,
+                                                 me.getClickCount (),
+                                                 me.isPopupTrigger (),
+                                                 me.getButton ());
+            mouseEventTarget.dispatchEvent (entered);
+          }
+	    }
   }
 
-  void retargetMouseEvent(Component c, int i, MouseEvent e)
+  boolean handleEvent (AWTEvent e)
   {
+    if ((eventMask & e.getID ()) == 0)
+	    return false;
+
+    if (e instanceof MouseEvent)
+  {
+        MouseEvent me = (MouseEvent) e;
+        acquireComponentForMouseEvent (me);
+
+        if (mouseEventTarget != null)
+          {
+            Component oldSource = (Component) me.getSource ();
+            me.setSource (mouseEventTarget);
+            mouseEventTarget.dispatchEvent (me);
+            me.setSource (oldSource);
+          }
+	    }
+    else if (e instanceof KeyEvent && focus != null)
+  {
+        focus.processKeyEvent ((KeyEvent) e);
+	    }
+      
+    return e.isConsumed();
   }
+
 } // class LightweightDispatcher
