@@ -211,8 +211,8 @@ namespace __gnu_test
   int
   try_mkfifo (const char* filename, mode_t mode)
   {
-#ifdef _NEWLIB_VERSION
-    /* Newlib does not have mkfifo.  */
+#if defined (_NEWLIB_VERSION) || defined (__MINGW32_VERSION)
+    /* Newlib and MinGW32 do not have mkfifo.  */
     exit(0);
 #else
     return mkfifo(filename, mode);
