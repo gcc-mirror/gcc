@@ -1,4 +1,8 @@
-2001-06-20  Kelley Cook  <kelley.cook@home.com>
+2001-07-20  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* regclass.c (N_REG_INTS): Use only 32 bits per element.
+
+2001-07-20  Kelley Cook  <kelley.cook@home.com>
 
 	* doc/install.texi (sparc-sun-solaris*): Add in 4.x assembler bug
 	information.   Move rest into ...
