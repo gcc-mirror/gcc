@@ -1699,13 +1699,11 @@ try_split (pat, trial, backwards)
 }
 
 /* Make and return an INSN rtx, initializing all its slots.
-   Store PATTERN in the pattern slots.
-   PAT_FORMALS is an idea that never really went anywhere.  */
+   Store PATTERN in the pattern slots.  */
 
 rtx
-make_insn_raw (pattern, pat_formals)
+make_insn_raw (pattern)
      rtx pattern;
-     rtvec pat_formals;
 {
   register rtx insn;
 
@@ -1723,13 +1721,12 @@ make_insn_raw (pattern, pat_formals)
 /* Like `make_insn' but make a JUMP_INSN instead of an insn.  */
 
 static rtx
-make_jump_insn_raw (pattern, pat_formals)
+make_jump_insn_raw (pattern)
      rtx pattern;
-     rtvec pat_formals;
 {
   register rtx insn;
 
-  insn = rtx_alloc(JUMP_INSN);
+  insn = rtx_alloc (JUMP_INSN);
   INSN_UID(insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -1914,7 +1911,7 @@ emit_insn_before (pattern, before)
     }
   else
     {
-      insn = make_insn_raw (pattern, NULL_RTVEC);
+      insn = make_insn_raw (pattern);
       add_insn_after (insn, PREV_INSN (before));
     }
 
@@ -2008,7 +2005,7 @@ emit_insn_after (pattern, after)
     }
   else
     {
-      insn = make_insn_raw (pattern, NULL_RTVEC);
+      insn = make_insn_raw (pattern);
       add_insn_after (insn, after);
     }
 
@@ -2134,7 +2131,7 @@ emit_insn (pattern)
     }
   else
     {
-      insn = make_insn_raw (pattern, NULL_RTVEC);
+      insn = make_insn_raw (pattern);
       add_insn (insn);
     }
 
@@ -2210,7 +2207,7 @@ emit_call_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_insn_raw (pattern, NULL_RTVEC);
+      register rtx insn = make_insn_raw (pattern);
       add_insn (insn);
       PUT_CODE (insn, CALL_INSN);
       return insn;
