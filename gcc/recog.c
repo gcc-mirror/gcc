@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 1991-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -505,6 +505,9 @@ validate_replace_rtx_1 (loc, from, to, object)
 	}
 
       break;
+      
+    default:
+      break;
     }
       
   fmt = GET_RTX_FORMAT (code);
@@ -627,6 +630,9 @@ find_single_use_1 (dest, loc)
     case MEM:
     case SUBREG:
       return find_single_use_1 (dest, &XEXP (x, 0));
+      
+    default:
+      break;
     }
 
   /* If it wasn't one of the common cases above, check each expression and
