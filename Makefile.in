@@ -230,6 +230,8 @@ GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
 AS_FOR_TARGET = ` \
   if [ -f $$r/gas/as-new ] ; then \
     echo $$r/gas/as-new ; \
+  elif [ -f $$r/gcc/xgcc ]; then \
+    $(CC_FOR_TARGET) -print-prog-name=as ; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
       echo $(AS); \
@@ -241,6 +243,8 @@ AS_FOR_TARGET = ` \
 LD_FOR_TARGET = ` \
   if [ -f $$r/ld/ld-new ] ; then \
     echo $$r/ld/ld-new ; \
+  elif [ -f $$r/gcc/xgcc ]; then \
+    $(CC_FOR_TARGET) -print-prog-name=ld ; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
       echo $(LD); \
@@ -300,6 +304,8 @@ RANLIB_FOR_TARGET = ` \
 NM_FOR_TARGET = ` \
   if [ -f $$r/binutils/nm-new ] ; then \
     echo $$r/binutils/nm-new ; \
+  elif [ -f $$r/gcc/xgcc ]; then \
+    $(CC_FOR_TARGET) -print-prog-name=nm ; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
       echo $(NM); \
