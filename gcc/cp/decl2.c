@@ -1801,7 +1801,7 @@ output_vtable_inherit (vars)
 }
 
 /* If necessary, write out the vtables for the dynamic class CTYPE.
-   Returns non-zero if any vtables were emitted.  */
+   Returns nonzero if any vtables were emitted.  */
 
 static int
 maybe_emit_vtables (tree ctype)
