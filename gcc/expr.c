@@ -6877,12 +6877,12 @@ expand_expr (exp, target, tmode, modifier)
 	  /* If the mode of TEMP does not match that of the expression, it
 	     must be a promoted value.  We pass store_expr a SUBREG of the
 	     wanted mode but mark it so that we know that it was already
-	     extended.  Note that `unsignedp' was modified above in
-	     this case.  */
+	     extended.  */
 
 	  if (GET_CODE (temp) == REG && GET_MODE (temp) != mode)
 	    {
 	      temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
+	      promote_mode (type, mode, &unsignedp, 0);
 	      SUBREG_PROMOTED_VAR_P (temp) = 1;
 	      SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
 	    }
