@@ -1,3 +1,87 @@
+2004-06-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.def (TRANSFORM_EXPR, ALLOCATE_EXPR, USE_EXPR): Deleted.
+	(GNAT_NOP_EXPR, GNAT_LOOP_ID, EXPR_STMT, NULL_STMT): Likewise.
+	(BLOCK_STMT, IF_STMT, GOTO_STMT, LABEL_STMT, RETURN_STMT): Likewise.
+	(ASM_STMT, BREAK_STMT, REGION_STMT,HANDLER_STMT): Likewise.
+	(STMT_STMT, USE_STMT): New statement codes.
+	(LOOP_STMT, EXIT_STMT): Make slight semantic changes.
+	* ada-tree.h: Reflect above changes.
+ 	(struct tree_loop_id): Deleted.
+	(union lang_tree_node, struct lang_decl, struct lang_type):
+	Now just contains a tree node; update macros using TYPE_LANG_SPECIFIC
+	and DECL_LANGUAGE_SPECIFIC to reflect these changes.
+	(DECL_INIT_BY_ASSIGN_P, TRE_LOOP_NODE_ID, TREE_SLOC): Deleted.
+	(IS_ADA_STMT): New macro.
+	* decl.c (annotate_decl_with_node): New function.
+	(gnat_to_gnu_entity): Use it and Sloc_to_locus instead of set_lineno.
+	(gnat_to_gnu_entity, case object): Remove call to expand CONVERT_EXPR.
+	Call add_stmt_with_node to do needed assignments.
+	Add call to update setjmp buffer directly, not via EXPR_STMT.
+	(maybe_variable): Argment GNAT_NODE deleted.
+	* gigi.h (maybe_variable): Likewise.
+	(make_transform, add_stmt_with_node, set_block_for_group): New.
+	(gnat_gimplify_expr, gnat_expand_body, Sloc_to_locus): Likewise.
+	(set_block_jmpbuf_decl, get_block_jmpbuf_decl): Likewise.
+	(discard_file_names, gnu_block_stack, gnat_to_code): Deleted.
+	(set_lineno, set_lineno_from_sloc): Likewise.
+	(record_code_position, insert_code_for): Likewise.
+	(gnat_poplevel): Now returns void.
+	(end_subprog_body): Now takes argument.
+	* misc.c (cgraph.h, tree-inline.h): New includes.
+	(gnat_tree_size, LANG_HOOKS_TREE_SIZE): Deleted.
+	(gnat_post_options, LANG_HOOKS_POST_OPTIONS): New.
+	(LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Likewise.
+	(LANG_HOOKS_RTL_EXPAND_STMT, LANG_HOOKS_GIMPLIFY_EXPR): Likewise.
+	(gnat_parse_file): Don't set immediate_size_expand.
+	Call cgraph functions.
+	(gnat_expand_expr): Remove most cases.
+	(record_code_position, insert_code_for): Remove from here.
+	* trans.c (toplev.h, tree-gimple.h): Now included.
+	(discard_file_names): Deleted.
+	(gnu_block_stack, gnu_block_stmt_node, gnu_block_stmt_free_list): Del.
+	(first_nondeleted_insn, make_expr_stmt_from_rtl): Likewise.
+	(struct stmt_group, current_stmt_group, stmt_group_free_list): New.
+	(gnu_stack_free_list, record_cost_position, insert_code_for): Likewise.
+	(add_cleanup, push_stack, gnat_gimplify_stmt, add_cleanup): Likewise.
+	(gnat_gimplify_type_sizes, gnat_gimplify_one_sizepos): Likewise.
+	(gnat_expand_body_1, gnat_gimplify_expr, annotate_with_node): Likewise.
+	(set_block_for_group, add_stmt_list): Likewise.
+	(start_stmt_group): Renamed from start_block_stmt.
+	(end_stmt_group): Likewise, from end_block_stmt.
+	(build_stmt_group): Likewise, from build_block_stmt, also add arg.
+	(gigi): Don't set discard_file_names or call set_lineno.
+	Disallow front end ZCX; call gnat_to_gnu, not gnat_to_code.
+	(tree_transform): Deleted, now renamed to be gnat_to_gnu.
+	Numerous changes throughout to reflect new names and complete
+	function-at-a-time implementation.
+	(gnat_expand_stmt): Delete or comment out all cases.
+	(process_inlined_subprograms): Use add_stmt.
+	(process_decls): Use gnat_to_gnu, not gnat_to_code, and don't
+	call set_lineno; also remove unneeded block handling.
+	(process_type): Remove unneeded block handling.
+	(build_unit_elab): Remove calls to deleted functions.
+	* utils.c (cgraph.h, tree-inline.h, tree-gimple.h): Now include.
+	(tree-dump.h): Likewise.
+	(struct ada_binding_level): Add field jmpbuf_decl.
+	(gnat_define_builtin, gnat_install_builtins): New.
+	(gnat_gimplify_function, gnat_finalize): Likewise.
+	(gnat_poplevel): No longer return BLOCK, set it instead.
+	Remove code dealing with nested functions.
+	(gnat_init_decl_processing): Also set size_type_node.
+	Call gnat_install_builtins.
+	(create_var_decl): Don't set DECL_INIT_BY_ASSIGN.
+	(create_subprog_decl): Change handling of inline_flag; set TREE_STATIC.
+	Remove special-case for "main".
+	(end_subprog_body): Add arg and rework for tree-ssa.
+	(convert): Don't use GNAT_NOP_EXPR or look for TRANSFORM_EXPR.
+	Add case for BOOLEAN_TYPE.
+	* utils2.c (rtl.h): Now include.
+	(build_call_raise): Test Debug_Flag_NN directly.
+	(build_call_alloc_dealloc): Don't use local stack allocation for now.
+	(gnat_mark_addressable, case GNAT_NOP_EXPR): Deleted.
+	(gnat_mark_addressable, case VAR_DECL): Handle both early & late cases.
+
 2004-06-07  Robert Dewar  <dewar@gnat.com>
 
 	* a-direct.ads, einfo.ads: Minor comment updates

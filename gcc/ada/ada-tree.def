@@ -24,21 +24,6 @@
  *                                                                          *
  ****************************************************************************/
 
-/* A GNAT tree node to transform to a GCC tree.  This is only used when the
-   node would generate code, rather then just a tree, and we are in the global
-   context.
-
-   The only field used is TREE_COMPLEXITY, which contains the GNAT node
-   number.  */
-
-DEFTREECODE (TRANSFORM_EXPR, "transform_expr", 'e', 0)
-
-/* Dynamically allocate on the stack a number of bytes of memory given
-   by operand 0 at the alignment given by operand 1 and return the
-   address of the resulting memory.  */
-
-DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", '2', 2)
-
 /* A type that is an unconstrained array itself.  This node is never passed
    to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE
    is the type of a record containing the template and data.  */
@@ -54,70 +39,50 @@ DEFTREECODE (UNCONSTRAINED_ARRAY_REF, "unconstrained_array_ref", 'r', 1)
 
 /* An expression that returns an RTL suitable for its type.  Operand 0
    is an expression to be evaluated for side effects only.  */
-
 DEFTREECODE (NULL_EXPR, "null_expr", 'e', 1)
-
-/* An expression that emits a USE for its single operand.  */
-
-DEFTREECODE (USE_EXPR, "use_expr", 'e', 1)
 
 /* Same as ADDR_EXPR, except that if the operand represents a bit field,
    return the address of the byte containing the bit.  This is used
    for the 'Address attribute and never shows up in the tree.  */
 DEFTREECODE (ATTR_ADDR_EXPR, "attr_addr_expr", 'r', 1)
 
-/* An expression that is treated as a conversion while generating code, but is
-   used to prevent infinite recursion when conversions of biased types are
-   involved.  */
-
-DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
-
-/* This is used as a place to store the ID of a loop.
-
-   ??? This should be redone at some point.  */
-
-DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 0)
-
 /* Here are the tree codes for the statement types known to Ada.  These
-   must be at the end of this file to allow IS_STMT to work.
+   must be at the end of this file to allow IS_ADA_STMT to work.  */
 
-   We start with an expression statement, whose only operand is an
-   expression, EXPR_STMT_EXPR, Execution of the statement means evaluation of
-   the expression (such as a MODIFY_EXPR) and discarding its result.  */
-DEFTREECODE (EXPR_STMT, "expr_stmt", 's', 1)
-
-/* This is a null statement.  The intent is for it not to survive very far.  */
-DEFTREECODE (NULL_STMT, "null_stmt", 's', 0)
-
-/* This defines the variable in DECL_STMT_VAR and performs any initialization
-   in DECL_INITIAL.  */
+/* This defines the variable in DECL_STMT_VAR.  */
 DEFTREECODE (DECL_STMT, "decl_stmt", 's', 1)
 
-/* This represents a list of statements.  BLOCK_STMT_LIST is a list
-   statement tree, chained via TREE_CHAIN.  BLOCK_STMT_BLOCK, if nonzero,
-   is the BLOCK node for these statements.  */
-DEFTREECODE (BLOCK_STMT, "block_stmt", 's', 2)
+/* This is how record_code_position and insert_code_for work.  The former
+   makes this tree node, whose operand is a statement.  The latter inserts
+   the actual statements into this node.  Gimplification consists of
+   just returning the inner statement.  */
+DEFTREECODE (STMT_STMT, "stmt_stmt", 's', 1)
 
-/* This is an IF statement.  IF_STMT_COND is the condition being tested,
-   IF_STMT_TRUE is the statement to be executed if the condition is
-   true; IF_STMT_ELSEIF, if non-null, is a list of more IF_STMT nodes (where
-   we only look at IF_STMT_COND and IF_STMT_TRUE) that correspond to
-   any "else if" parts; and IF_STMT_ELSE is the statement to be executed if
-   all conditions are.  */
-DEFTREECODE (IF_STMT, "if_stmt", 's', 4)
+/* A loop.  LOOP_STMT_TOP_COND and LOOP_STMT_BOT_COND are the tests to exit a
+   loop at the top and bottom, respectively.  LOOP_STMT_UPDATE is the statement
+   to update the loop iterator at the continue point.  LOOP_STMT_BODY are the
+   statements in the body of the loop.  LOOP_STMT_LABEL is used during
+   gimplification to point to the LABEL_DECL of the end label of the loop.  */
+DEFTREECODE (LOOP_STMT, "loop_stmt", 's', 5)
 
-/* A goto just points to the label: GOTO_STMT_LABEL.  */
-DEFTREECODE (GOTO_STMT, "goto_stmt", 's', 1)
+/* Conditionally exit a loop.  EXIT_STMT_COND is the condition, which, if
+   true, will cause the loop to be exited.  If no condition is specified,
+   the loop is unconditionally exited.  EXIT_STMT_LOOP is the LOOP_STMT
+   corresponding to the loop to exit.  */
+DEFTREECODE (EXIT_STMT, "exit_stmt", 's', 2)
 
-/* A label: LABEL_STMT_LABEL is the label.  */
-DEFTREECODE (LABEL_STMT, "label_stmt", 's', 1)
+/* A exception region.  REGION_STMT_BODY is the statement to be executed
+   inside the region.  REGION_STMT_HANDLE is a statement that represents
+   the exception handlers (usually a BLOCK_STMT of HANDLE_STMTs).
+   REGION_STMT_BLOCK is the BLOCK node for the declarative region, if any.  */
+DEFTREECODE (REGION_STMT, "region_stmt", 's', 3)
 
-/* A "return".  RETURN_STMT_EXPR is the value to return if non-null.  */
-DEFTREECODE (RETURN_STMT, "return_stmt", 's', 1)
+/* An exception handler.  HANDLER_STMT_ARG is the value to pass to 
+   expand_start_catch, HANDLER_STMT_LIST is the list of statements for the
+   handler itself, and HANDLER_STMT_BLOCK is the BLOCK node for this
+   binding. */
+DEFTREECODE (HANDLER_STMT, "handler_stmt", 's', 3)
 
-/* An "asm" statement.  The operands are ASM_STMT_TEMPLATE, ASM_STMT_OUTPUT,
-   ASM_STMT_ORIG_OUT, ASM_STMT_INPUT, and ASM_STMT_CLOBBER.  */
-DEFTREECODE (ASM_STMT, "asm_stmt", 's', 5)
+/* A statement that emits a USE for its single operand.  */
+DEFTREECODE (USE_STMT, "use_expr", 's', 1)
 
-/* An analog to the C "break" statement.  */
-DEFTREECODE (BREAK_STMT, "break_stmt", 's', 0)

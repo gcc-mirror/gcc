@@ -38,6 +38,10 @@
 #include "convert.h"
 #include "target.h"
 #include "function.h"
+#include "cgraph.h"
+#include "tree-inline.h"
+#include "tree-gimple.h"
+#include "tree-dump.h"
 
 #include "ada.h"
 #include "types.h"
@@ -101,14 +105,8 @@ static GTY(()) tree signed_and_unsigned_types[2 * MAX_BITS_PER_WORD + 1][2];
 /* Likewise for float types, but record these by mode.  */
 static GTY(()) tree float_types[NUM_MACHINE_MODES];
 
-/* For each binding contour we allocate a binding_level structure which records
-   the entities defined or declared in that contour. Contours include:
-
-	the global one
-	one for each subprogram definition
-	one for each compound statement (declare block)
-
-   Binding contours are used to create GCC tree BLOCK nodes.  */
+/* For each binding contour we allocate a binding_level structure to indicate
+   the binding depth.  */
 
 struct ada_binding_level GTY((chain_next ("%h.chain")))
 {
@@ -116,6 +114,9 @@ struct ada_binding_level GTY((chain_next ("%h.chain")))
   struct ada_binding_level *chain;
   /* The BLOCK node for this level.  */
   tree block;
+  /* If nonzero, the setjmp buffer that needs to be updated for any
+     variable-sized definition within this context.  */
+  tree jmpbuf_decl;
 };
 
 /* The binding level currently in effect.  */
@@ -132,10 +133,14 @@ struct language_function GTY(())
   int unused;
 };
 
+static void gnat_define_builtin (const char *, tree, int, const char *, bool);
+static void gnat_install_builtins (void);
 static tree merge_sizes (tree, tree, tree, int, int);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static int value_zerop (tree);
+static void gnat_gimplify_function (tree);
+static void gnat_finalize (tree);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
@@ -254,35 +259,36 @@ gnat_pushlevel ()
   /* Add this level to the front of the chain (stack) of levels that are
      active.  */
   newlevel->chain = current_binding_level;
+  newlevel->jmpbuf_decl = NULL_TREE;
   current_binding_level = newlevel;
 }
 
-/* Exit a binding level.  Return the BLOCK node, if any.  */
+/* Set the jmpbuf_decl for the current binding level to DECL.  */
+
+void
+set_block_jmpbuf_decl (tree decl)
+{
+  current_binding_level->jmpbuf_decl = decl;
+}
+
+/* Get the jmpbuf_decl, if any, for the current binding level.  */
 
 tree
+get_block_jmpbuf_decl ()
+{
+  return current_binding_level->jmpbuf_decl;
+}
+
+/* Exit a binding level. Set any BLOCK into the current code group.  */
+
+void
 gnat_poplevel ()
 {
   struct ada_binding_level *level = current_binding_level;
   tree block = level->block;
-  tree decl;
 
   BLOCK_VARS (block) = nreverse (BLOCK_VARS (block));
   BLOCK_SUBBLOCKS (block) = nreverse (BLOCK_SUBBLOCKS (block));
-
-  /* Output any nested inline functions within this block which must be
-     compiled because their address is needed. */
-  for (decl =  BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
-    if (TREE_CODE (decl) == FUNCTION_DECL
-	&& ! TREE_ASM_WRITTEN (decl) && TREE_ADDRESSABLE (decl)
-	&& DECL_INITIAL (decl) != 0)
-      {
-	push_function_context ();
-	/* ??? This is temporary.  */
-	ggc_push_context ();
-	output_inline_function (decl);
-	ggc_pop_context ();
-	pop_function_context ();
-      }
 
   /* If this is a function-level BLOCK don't do anything.  Otherwise, if there
      are no variables free the block and merge its subblocks into those of its
@@ -296,20 +302,19 @@ gnat_poplevel ()
 		   BLOCK_SUBBLOCKS (level->chain->block));
       TREE_CHAIN (block) = free_block_chain;
       free_block_chain = block;
-      block = NULL_TREE;
     }
   else
     {
       TREE_CHAIN (block) = BLOCK_SUBBLOCKS (level->chain->block);
       BLOCK_SUBBLOCKS (level->chain->block) = block;
       TREE_USED (block) = 1;
+      set_block_for_group (block);
     }
 
   /* Free this binding structure.  */
   current_binding_level = level->chain;
   level->chain = free_binding_level;
   free_binding_level = level;
-  return block;
 }
 
 /* Insert BLOCK at the end of the list of subblocks of the
@@ -400,7 +405,8 @@ gnat_init_decl_processing (void)
      Pmode differ, C will use the width of ptr_mode as sizetype.  But we get
      far better code using the width of Pmode.  Make this here since we need
      this before we can expand the GNAT types.  */
-  set_sizetype (gnat_type_for_size (GET_MODE_BITSIZE (Pmode), 0));
+  size_type_node = gnat_type_for_size (GET_MODE_BITSIZE (Pmode), 0);
+  set_sizetype (size_type_node);
   build_common_tree_nodes_2 (0);
 
   pushdecl (build_decl (TYPE_DECL, get_identifier (SIZE_TYPE), sizetype));
@@ -414,7 +420,95 @@ gnat_init_decl_processing (void)
 
   ptr_void_type_node = build_pointer_type (void_type_node);
 
+  gnat_install_builtins ();
 }
+
+/* Define a builtin function.  This is temporary and is just being done
+   to initialize implicit_built_in_decls for the middle-end.  We'll want
+   to do full builtin processing soon.  */
+
+static void
+gnat_define_builtin (const char *name, tree type,
+		     int function_code, const char *library_name, bool const_p)
+{
+  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
+
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  if (library_name)
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
+  make_decl_rtl (decl, NULL);
+  pushdecl (decl);
+  DECL_BUILT_IN_CLASS (decl) = BUILT_IN_NORMAL;
+  DECL_FUNCTION_CODE (decl) = function_code;
+  TREE_READONLY (decl) = const_p;
+
+  implicit_built_in_decls[function_code] = decl;
+}
+
+/* Install the builtin functions the middle-end needs.  */
+
+static void
+gnat_install_builtins ()
+{
+  tree ftype;
+  tree tmp;
+
+  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, long_integer_type_node, tmp);
+  ftype = build_function_type (long_integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
+		       "__builtin_expect", true);
+
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  ftype = build_function_type (ptr_void_type_node, tmp);
+  gnat_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
+		       "memcpy", false);
+
+  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ, "clz", true);
+
+  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL, "clzl", true);
+
+  tmp = tree_cons (NULL_TREE, long_long_integer_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL, "clzll",
+		       true);
+
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  ftype = build_function_type (void_type_node, tmp);
+  gnat_define_builtin ("__builtin_init_trampoline", ftype,
+		       BUILT_IN_INIT_TRAMPOLINE, "init_trampoline", false);
+
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
+  ftype = build_function_type (ptr_void_type_node, tmp);
+  gnat_define_builtin ("__builtin_adjust_trampoline", ftype,
+		       BUILT_IN_ADJUST_TRAMPOLINE, "adjust_trampoline", true);
+
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  ftype = build_function_type (ptr_void_type_node, tmp);
+  gnat_define_builtin ("__builtin_stack_alloc", ftype, BUILT_IN_STACK_ALLOC,
+		       "stack_alloc", false);
+
+  /* The stack_save and stack_restore builtins aren't used directly.  They
+     are inserted during gimplification to implement stack_alloc calls.  */
+  ftype = build_function_type (ptr_void_type_node, void_list_node);
+  gnat_define_builtin ("__builtin_stack_save", ftype, BUILT_IN_STACK_SAVE,
+		       "stack_save", false);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
+  ftype = build_function_type (void_type_node, tmp);
+  gnat_define_builtin ("__builtin_stack_restore", ftype,
+		       BUILT_IN_STACK_RESTORE, "stack_restore", false);
+}
+
 
 /* Create the predefined scalar types such as `integer_type_node' needed
    in the gcc back-end and initialize the global binding level.  */
@@ -1229,13 +1323,11 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
 		  ? CONST_DECL : VAR_DECL, var_name, type);
 
   /* If this is external, throw away any initializations unless this is a
-     CONST_DECL (meaning we have a constant); they will be done elsewhere.  If
-     we are defining a global here, leave a constant initialization and save
-     any variable elaborations for the elaboration routine.  Otherwise, if
-     the initializing expression is not the same as TYPE, generate the
-     initialization with an assignment statement, since it knows how
-     to do the required adjustents.  If we are just annotating types,
-     throw away the initialization if it isn't a constant.  */
+     CONST_DECL (meaning we have a constant); they will be done elsewhere.
+     If we are defining a global here, leave a constant initialization and
+     save any variable elaborations for the elaboration routine.  If we are
+     just annotating types, throw away the initialization if it isn't a
+     constant.  */
 
   if ((extern_flag && TREE_CODE (var_decl) != CONST_DECL)
       || (type_annotate_only && var_init != 0 && ! TREE_CONSTANT (var_init)))
@@ -1246,12 +1338,6 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
       add_pending_elaborations (var_decl, var_init);
       var_init = 0;
     }
-
-  else if (var_init != 0
-	   && ((TYPE_MAIN_VARIANT (TREE_TYPE (var_init))
-		!= TYPE_MAIN_VARIANT (type))
-	       || (static_flag && ! init_const)))
-    DECL_INIT_BY_ASSIGN_P (var_decl) = 1;
 
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
@@ -1703,12 +1789,15 @@ create_subprog_decl (tree subprog_name,
 
   DECL_EXTERNAL (subprog_decl)  = extern_flag;
   TREE_PUBLIC (subprog_decl)    = public_flag;
-  DECL_INLINE (subprog_decl)    = inline_flag;
+  TREE_STATIC (subprog_decl)	= 1;
   TREE_READONLY (subprog_decl)  = TYPE_READONLY (subprog_type);
   TREE_THIS_VOLATILE (subprog_decl) = TYPE_VOLATILE (subprog_type);
   TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (subprog_type);
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
   DECL_RESULT (subprog_decl)    = build_decl (RESULT_DECL, 0, return_type);
+
+  if (inline_flag)
+    DECL_DECLARED_INLINE_P (subprog_decl) = 1;
 
   if (asm_name != 0)
     SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
@@ -1763,95 +1852,93 @@ begin_subprog_body (tree subprog_decl)
 
   init_function_start (subprog_decl);
   expand_function_start (subprog_decl, 0);
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_ASSEMBLER_NAME (subprog_decl) != 0
-      && MAIN_NAME_P (DECL_ASSEMBLER_NAME (subprog_decl))
-      && DECL_CONTEXT (subprog_decl) == NULL_TREE)
-    expand_main_function ();
 }
 
 /* Finish the definition of the current subprogram and compile it all the way
-   to assembler language output.  */
+   to assembler language output.  BODY is the tree corresponding to
+   the subprogram.  */
 
 void
-end_subprog_body (void)
+end_subprog_body (tree body)
 {
-  tree decl;
-  tree cico_list;
+  tree fndecl = current_function_decl;
 
   /* Mark the BLOCK for this level as being for this function and pop the
      level.  Since the vars in it are the parameters, clear them.  */
   BLOCK_VARS (current_binding_level->block) = 0;
-  BLOCK_SUPERCONTEXT (current_binding_level->block) = current_function_decl;
-  DECL_INITIAL (current_function_decl) = current_binding_level->block;
+  BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
+  DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
 
+  /* Deal with inline.  If declared inline or we should default to inline,
+     set the flag in the decl.  */
+  DECL_INLINE (fndecl)
+    = DECL_DECLARED_INLINE_P (fndecl) || flag_inline_trees == 2;
+
+  /* Initialize the RTL code for the function.  */
+  allocate_struct_function (fndecl);
+
+  /* We handle pending sizes via the elaboration of types, so we don't
+     need to save them.  */
+  get_pending_sizes ();
+
   /* Mark the RESULT_DECL as being in this subprogram. */
-  DECL_CONTEXT (DECL_RESULT (current_function_decl)) = current_function_decl;
+  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  expand_function_end ();
+  DECL_SAVED_TREE (fndecl) = body;
 
-  /* If this is a nested function, push a new GC context.  That will keep
-     local variables on the stack from being collected while we're doing
-     the compilation of this function.  */
-  if (function_nesting_depth > 1)
-    ggc_push_context ();
+  current_function_decl = DECL_CONTEXT (fndecl);
 
-  /* If we're only annotating types, don't actually compile this
-     function.  */
-  if (!type_annotate_only)
+  /* If we're only annotating types, don't actually compile this function.  */
+  if (type_annotate_only)
+    return;
+
+  /* We do different things for nested and non-nested functions.
+     ??? This should be in cgraph.  */
+  if (!DECL_CONTEXT (fndecl))
     {
-      rest_of_compilation (current_function_decl);
-      if (! DECL_DEFER_OUTPUT (current_function_decl))
-	{
-	  free_after_compilation (cfun);
-	  DECL_STRUCT_FUNCTION (current_function_decl) = 0;
-	}
-      cfun = 0;
+      gnat_gimplify_function (fndecl);
+      lower_nested_functions (fndecl);
+      gnat_finalize (fndecl);
     }
-
-  if (function_nesting_depth > 1)
-    ggc_pop_context ();
-
-  /* Throw away any VAR_DECLs we made for OUT parameters; they must
-     not be seen when we call this function and will be in
-     unallocated memory anyway.  */
-  for (cico_list = TYPE_CI_CO_LIST (TREE_TYPE (current_function_decl));
-       cico_list != 0; cico_list = TREE_CHAIN (cico_list))
-    TREE_VALUE (cico_list) = 0;
-
-  if (DECL_STRUCT_FUNCTION (current_function_decl) == 0)
-    {
-      /* Throw away DECL_RTL in any PARM_DECLs unless this function
-	 was saved for inline, in which case the DECL_RTLs are in
-	 preserved memory.  */
-      for (decl = DECL_ARGUMENTS (current_function_decl);
-	   decl != 0; decl = TREE_CHAIN (decl))
-	{
-	  SET_DECL_RTL (decl, 0);
-	  DECL_INCOMING_RTL (decl) = 0;
-	}
-
-      /* Similarly, discard DECL_RTL of the return value.  */
-      SET_DECL_RTL (DECL_RESULT (current_function_decl), 0);
-
-      /* But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition unless toplev.c decided not
-	 to inline it.  */
-      if (DECL_INITIAL (current_function_decl) != 0)
-	DECL_INITIAL (current_function_decl) = error_mark_node;
-
-      DECL_ARGUMENTS (current_function_decl) = 0;
-    }
-
-  /* If we are not at the bottom of the function nesting stack, pop up to
-     the containing function.  Otherwise show we aren't in any function.  */
-  if (--function_nesting_depth != 0)
-    pop_function_context ();
   else
-    current_function_decl = 0;
+    /* Register this function with cgraph just far enough to get it
+       added to our parent's nested function list.  */
+    (void) cgraph_node (fndecl);
+}
+
+/* Convert FNDECL's code to GIMPLE and handle any nested functions.  */
+
+static void
+gnat_gimplify_function (tree fndecl)
+{
+  struct cgraph_node *cgn;
+
+  dump_function (TDI_original, fndecl);
+  gimplify_function_tree (fndecl);
+  dump_function (TDI_generic, fndecl);
+
+  /* Convert all nested functions to GIMPLE now.  We do things in this order
+     so that items like VLA sizes are expanded properly in the context of the
+     correct function.  */
+  cgn = cgraph_node (fndecl);
+  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+    gnat_gimplify_function (cgn->decl);
+}
+
+/* Give FNDECL and all its nested functions to cgraph for compilation.  */
+
+static void
+gnat_finalize (tree fndecl)
+{
+  struct cgraph_node *cgn;
+
+  /* Finalize all nested functions now.  */
+  cgn = cgraph_node (fndecl);
+  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+    gnat_finalize (cgn->decl);
+
+  cgraph_finalize_function (fndecl, false);
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -2824,7 +2911,7 @@ convert (tree type, tree expr)
   /* If the input is a biased type, adjust first.  */
   if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
     return convert (type, fold (build (PLUS_EXPR, TREE_TYPE (etype),
-				       fold (build1 (GNAT_NOP_EXPR,
+				       fold (build1 (NOP_EXPR,
 						     TREE_TYPE (etype), expr)),
 				       TYPE_MIN_VALUE (etype))));
 
@@ -2864,7 +2951,6 @@ convert (tree type, tree expr)
     case ERROR_MARK:
       return expr;
 
-    case TRANSFORM_EXPR:
     case NULL_EXPR:
       /* Just set its type here.  For TRANSFORM_EXPR, we will do the actual
 	 conversion in gnat_expand_expr.  NULL_EXPR does not represent
@@ -2958,6 +3044,9 @@ convert (tree type, tree expr)
     {
     case VOID_TYPE:
       return build1 (CONVERT_EXPR, type, expr);
+
+    case BOOLEAN_TYPE:
+      return fold (build1 (NOP_EXPR, type, gnat_truthvalue_conversion (expr)));
 
     case INTEGER_TYPE:
       if (TYPE_HAS_ACTUAL_BOUNDS_P (type)
@@ -3106,7 +3195,7 @@ remove_conversions (tree exp, int true_address)
       break;
 
     case VIEW_CONVERT_EXPR:  case NON_LVALUE_EXPR:
-    case NOP_EXPR:  case CONVERT_EXPR:  case GNAT_NOP_EXPR:
+    case NOP_EXPR:  case CONVERT_EXPR:
       return remove_conversions (TREE_OPERAND (exp, 0), true_address);
 
     default:
@@ -3209,7 +3298,7 @@ unchecked_convert (tree type, tree expr, int notrunc_p)
 
 	  TYPE_BIASED_REPRESENTATION_P (ntype) = 0;
 	  TYPE_MAIN_VARIANT (ntype) = ntype;
-	  expr = build1 (GNAT_NOP_EXPR, ntype, expr);
+	  expr = build1 (NOP_EXPR, ntype, expr);
 	}
 
       if (TREE_CODE (type) == INTEGER_TYPE
@@ -3222,7 +3311,7 @@ unchecked_convert (tree type, tree expr, int notrunc_p)
 
       expr = convert (rtype, expr);
       if (type != rtype)
-	expr = build1 (GNAT_NOP_EXPR, type, expr);
+	expr = build1 (NOP_EXPR, type, expr);
     }
 
   /* If we are converting TO an integral type whose precision is not the
