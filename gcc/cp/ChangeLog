@@ -1,3 +1,8 @@
+2001-12-12  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (setup_vtbl_ptr): Always build a CTOR_INITIALIZER
+	if we're in a template.
+
 2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* semantics.c (simplify_aggr_init_exprs_r): Add DIRECT_BIND flag in

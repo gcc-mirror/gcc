@@ -1167,9 +1167,12 @@ finish_mem_initializers (init_list)
   setup_vtbl_ptr (member_init_list, base_init_list);
 }
 
-/* Cache the value of this class's main virtual function table pointer
-   in a register variable.  This will save one indirection if a
-   more than one virtual function call is made this function.  */
+/* Do the initialization work necessary at the beginning of a constructor
+   or destructor.  This means processing member initializers and setting
+   vtable pointers.
+
+   ??? The call to keep_next_level at the end applies to all functions, but
+   should probably go somewhere else.  */
 
 void
 setup_vtbl_ptr (member_init_list, base_init_list)
@@ -1182,27 +1185,22 @@ setup_vtbl_ptr (member_init_list, base_init_list)
   if (vtbls_set_up_p)
     return;
 
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
+  if (processing_template_decl)
+    add_stmt (build_min_nt (CTOR_INITIALIZER,
+			    member_init_list, base_init_list));
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      if (processing_template_decl)
-	add_stmt (build_min_nt
-		  (CTOR_INITIALIZER,
-		   member_init_list, base_init_list));
-      else
-	{
-	  tree ctor_stmt;
+      tree ctor_stmt;
 
-	  /* Mark the beginning of the constructor.  */
-	  ctor_stmt = build_stmt (CTOR_STMT);
-	  CTOR_BEGIN_P (ctor_stmt) = 1;
-	  add_stmt (ctor_stmt);
+      /* Mark the beginning of the constructor.  */
+      ctor_stmt = build_stmt (CTOR_STMT);
+      CTOR_BEGIN_P (ctor_stmt) = 1;
+      add_stmt (ctor_stmt);
 	  
-	  /* And actually initialize the base-classes and members.  */
-	  emit_base_init (member_init_list, base_init_list);
-	}
+      /* And actually initialize the base-classes and members.  */
+      emit_base_init (member_init_list, base_init_list);
     }
-  else if (DECL_DESTRUCTOR_P (current_function_decl)
-	   && !processing_template_decl)
+  else if (DECL_DESTRUCTOR_P (current_function_decl))
     {
       tree if_stmt;
       tree compound_stmt;
