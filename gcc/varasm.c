@@ -3594,6 +3594,9 @@ force_const_mem (mode, x)
       pool_offset += align - 1;
       pool_offset &= ~ (align - 1);
 
+      if (GET_CODE (x) == LABEL_REF)
+	LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
+
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
       pool = (struct pool_constant *) ggc_alloc (sizeof (struct pool_constant));

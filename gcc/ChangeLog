@@ -1,3 +1,15 @@
+Sat Apr 28 10:32:26 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (propagate_block_delete_insn): Handle deletion of ADDR_VEC
+	and ADDR_DIFF_VEC insns when the proceeding CODE_LABEL was put
+	into the constant pool.
+	* jump.c (jump_optimize_1): Remove barrier successors after all
+	the LABEL_NUSES counds have been computed.
+	(delete_barrier_successors): When deleting a tablejump insn, also
+	delete the jump table it uses.
+	* varasm.c (force_const_mem): Set LABEL_PRESERVE_P when forcing a
+	label into memory.
+
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
 	* invoke.texi: Use XX-bit instead of XXbit or XX bit where
