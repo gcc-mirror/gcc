@@ -1,3 +1,21 @@
+2004-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/i386-cpuid.h (bit_CMOV): Define.
+	(i386_cpuid): No need to test if cpuid is available on AMD64.
+	Fix assembly, so that it works onboth i386 and AMD64.
+	* gcc.dg/i386-sse-6.c: Include stdio.h, stdlib.h and string.h.
+	(vecInLong): Fix s[] member type to unsigned int.
+	(vecInWord): Remove type.
+	(mmx_tests, sse_tests, dump64_16, dump64_32, dump64_64): Remove.
+	(a64, b64, c64, d64, e64): Remove.
+	(main): Pass if CPU has no MMX, SSE, SSE2 or CMOV support.
+	Remove unused variable.  Remove initialization of removed variables.
+	Don't call mmx_tests nor sse_tests.
+	(reference_mmx, reference_sse): Remove.
+	(check): Add return stmt.
+	* gcc.dg/i386-sse-7.c: New test.
+	* gcc.dg/i386-mmx-4.c: New test.
+
 2004-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20020720-1.x: XFAIL on SPARC with -fPIC.
