@@ -1,4 +1,11 @@
-2003-07-02  Danny Smith  <dannysmith@users.source.forge.net>
+2003-07-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* pex-win32.c (pexecute): Mark parameters this_pname and
+	temp_base as unused. Remove unused variables retries,
+	sleep_interval. Initialize org_stdin, org_stdout.
+	(pwait): Mark parameter flags as unused.
+
+2003-07-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* pex-win32.c (fix_argv): Ensure that the executable pathname
 	uses Win32 backslashes.
