@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1744,9 +1744,9 @@ output_ascii (file, p, n)
 
    We name the section in the same manner as xlc.  The name begins with an
    underscore followed by the filename (after stripping any leading directory
-   names) with the period replaced by the string SECTION_DESC.  If FILENAME
-   does not contain a period, SECTION_DESC is appended at the end of the
-   name.  */
+   names) with the last period replaced by the string SECTION_DESC.  If
+   FILENAME does not contain a period, SECTION_DESC is appended to the end of
+   the name.  */
 
 void
 rs6000_gen_section_name (buf, filename, section_desc)
@@ -1754,17 +1754,20 @@ rs6000_gen_section_name (buf, filename, section_desc)
      char *filename;
      char *section_desc;
 {
-  char *q, *after_last_slash;
+  char *q, *after_last_slash, *last_period;
   char *p;
   int len;
-  int used_desc = 0;
 
   after_last_slash = filename;
   for (q = filename; *q; q++)
-    if (*q == '/')
-      after_last_slash = q + 1;
+    {
+      if (*q == '/')
+	after_last_slash = q + 1;
+      else if (*q == '.')
+	last_period = q;
+    }
 
-  len = strlen (filename) + strlen (section_desc) + 2;
+  len = strlen (after_last_slash) + strlen (section_desc) + 2;
   *buf = (char *) permalloc (len);
 
   p = *buf;
@@ -1772,18 +1775,17 @@ rs6000_gen_section_name (buf, filename, section_desc)
 
   for (q = after_last_slash; *q; q++)
     {
-      if (*q == '.')
+      if (q == last_period)
         {
 	  strcpy (p, section_desc);
 	  p += strlen (section_desc);
-	  used_desc = 1;
         }
 
       else if (isalnum (*q))
         *p++ = *q;
     }
 
-  if (! used_desc)
+  if (last_period == 0)
     strcpy (p, section_desc);
   else
     *p = '\0';
