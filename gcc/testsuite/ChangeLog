@@ -1,3 +1,12 @@
+2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20010114-1.c: New test.
+	* gcc.c-torture/compile/20010114-1.x: Xfail.
+	* gcc.c-torture/compile/20010114-2.c: New test.
+	* gcc.c-torture/execute/20010114-1.c: New test.
+	* gcc.dg/trunc-1.c: New test.
+	* gcc.dg/uninit-B.c: New test.
+
 2001-01-13  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/bf64-1.x: Expect to fail on M*Core
