@@ -91,13 +91,6 @@ rebuild_jump_labels (f)
   for (insn = forced_labels; insn; insn = XEXP (insn, 1))
     if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
       LABEL_NUSES (XEXP (insn, 0))++;
-
-  /* Keep track of labels used for marking handlers for exception
-     regions; they cannot usually be deleted.  */
-
-  for (insn = exception_handler_labels; insn; insn = XEXP (insn, 1))
-    if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
-      LABEL_NUSES (XEXP (insn, 0))++;
 }
 
 /* Some old code expects exactly one BARRIER as the NEXT_INSN of a

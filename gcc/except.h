@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
@@ -83,8 +83,9 @@ extern void expand_eh_region_end_throw		PARAMS ((tree));
    destroying an object twice.  */
 extern void expand_eh_region_end_fixup		PARAMS ((tree));
 
-/* A list of labels used for exception handlers.  */
-extern rtx exception_handler_labels;
+/* Invokes CALLBACK for every exception handler label.  Only used by old
+   loop hackery; should not be used by new code.  */
+extern void for_each_eh_label			PARAMS ((void (*) (rtx)));
 
 /* Determine if the given INSN can throw an exception.  */
 extern bool can_throw_internal			PARAMS ((rtx));

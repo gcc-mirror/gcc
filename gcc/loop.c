@@ -235,6 +235,7 @@ FILE *loop_dump_stream;
 
 /* Forward declarations.  */
 
+static void invalidate_loops_containing_label PARAMS ((rtx));
 static void find_and_verify_loops PARAMS ((rtx, struct loops *));
 static void mark_loop_jump PARAMS ((rtx, struct loop *));
 static void prescan_loop PARAMS ((struct loop *));
@@ -2609,6 +2610,17 @@ prescan_loop (loop)
     }
 }
 
+/* Invalidate all loops containing LABEL.  */
+
+static void
+invalidate_loops_containing_label (label)
+     rtx label;
+{
+  struct loop *loop;
+  for (loop = uid_loop[INSN_UID (label)]; loop; loop = loop->outer)
+    loop->invalid = 1;
+}
+
 /* Scan the function looking for loops.  Record the start and end of each loop.
    Also mark as invalid loops any loops that contain a setjmp or are branched
    to from outside the loop.  */
@@ -2695,23 +2707,12 @@ find_and_verify_loops (f, loops)
 
   /* Any loop containing a label used in an initializer must be invalidated,
      because it can be jumped into from anywhere.  */
-
   for (label = forced_labels; label; label = XEXP (label, 1))
-    {
-      for (loop = uid_loop[INSN_UID (XEXP (label, 0))];
-	   loop; loop = loop->outer)
-	loop->invalid = 1;
-    }
+    invalidate_loops_containing_label (XEXP (label, 0));
 
   /* Any loop containing a label used for an exception handler must be
      invalidated, because it can be jumped into from anywhere.  */
-
-  for (label = exception_handler_labels; label; label = XEXP (label, 1))
-    {
-      for (loop = uid_loop[INSN_UID (XEXP (label, 0))];
-	   loop; loop = loop->outer)
-	loop->invalid = 1;
-    }
+  for_each_eh_label (invalidate_loops_containing_label);
 
   /* Now scan all insn's in the function.  If any JUMP_INSN branches into a
      loop that it is not contained within, that loop is marked invalid.
@@ -2735,11 +2736,7 @@ find_and_verify_loops (f, loops)
 	  {
 	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
 	    if (note)
-	      {
-		for (loop = uid_loop[INSN_UID (XEXP (note, 0))];
-		     loop; loop = loop->outer)
-		  loop->invalid = 1;
-	      }
+	      invalidate_loops_containing_label (XEXP (note, 0));
 	  }
 
 	if (GET_CODE (insn) != JUMP_INSN)

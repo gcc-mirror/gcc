@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -316,6 +316,7 @@ extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx));
 extern basic_block create_basic_block	PARAMS ((int, rtx, rtx));
 extern int flow_delete_block		PARAMS ((basic_block));
+extern int flow_delete_block_noexpunge	PARAMS ((basic_block));
 extern void clear_bb_flags		PARAMS ((void));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
@@ -637,6 +638,7 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void expunge_block		PARAMS ((basic_block));
+extern void expunge_block_nocompact	PARAMS ((basic_block));
 extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern int delete_noop_moves		PARAMS ((rtx));
