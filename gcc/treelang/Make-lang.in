@@ -118,8 +118,8 @@ $(srcdir)/treelang/lex.c: $(srcdir)/treelang/lex.l
 	$(LEX) $(LEXFLAGS) -o$(srcdir)/treelang/lex.c $(srcdir)/treelang/lex.l
 
 $(srcdir)/treelang/parse.c $(srcdir)/treelang/parse.h: $(srcdir)/treelang/parse.y
-	$(BISON) $(BISONFLAGS) -v $(srcdir)/treelang/parse.y\
-	--output=$(srcdir)/treelang/parse.c --defines
+	$(BISON) $(BISONFLAGS) -v --defines \
+	--output=$(srcdir)/treelang/parse.c $(srcdir)/treelang/parse.y
 # -v
 
 gt-treelang-tree1.h gtype-treelang.h : s-gtype; @true
