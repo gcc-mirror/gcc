@@ -1299,7 +1299,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       if (i == GET_MODE_BITSIZE (mode) / (unsigned) BITS_PER_WORD)
 	{
-	  if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+	  if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+	      || ! rtx_equal_p (target, xtarget))
 	    {
 	      rtx temp = emit_move_insn (target, xtarget);
 
