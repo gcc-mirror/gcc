@@ -1,3 +1,7 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/contrib.texi, doc/invoke.texi, doc/tm.texi: Fix typos.
+
 2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/17855
