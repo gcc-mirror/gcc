@@ -26,7 +26,6 @@ details.  */
 
 extern "C"
 {
-#include <private/gc_priv.h>
 #include <private/gc_pmark.h>
 #include <gc_gcj.h>
 
@@ -43,19 +42,6 @@ extern "C"
 // We must check for plausibility ourselves.
 #define MAYBE_MARK(Obj, Top, Limit, Source, Exit)  \
 	Top=GC_MARK_AND_PUSH((GC_PTR)Obj, Top, Limit, (GC_PTR *)Source)
-
-
-
-// Nonzero if this module has been initialized.
-static int initialized = 0;
-
-#if 0
-// `kind' index used when allocating Java objects.
-static int obj_kind_x;
-
-// Freelist used for Java objects.
-static ptr_t *obj_free_list;
-#endif /* 0 */
 
 // `kind' index used when allocating Java arrays.
 static int array_kind_x;
@@ -470,19 +456,9 @@ void
 _Jv_InitGC (void)
 {
   int proc;
-  DCL_LOCK_STATE;
 
-  DISABLE_SIGNALS ();
-  LOCK ();
-
-  if (initialized)
-    {
-      UNLOCK ();
-      ENABLE_SIGNALS ();
-      return;
-    }
-  initialized = 1;
-  UNLOCK ();
+  // Ignore pointers that do not point to the start of an object.
+  GC_all_interior_pointers = 0;
 
   // Configure the collector to use the bitmap marking descriptors that we
   // stash in the class vtable.
@@ -492,7 +468,6 @@ _Jv_InitGC (void)
   // instead of returning 0.  This is cheaper than checking on allocation.
   GC_oom_fn = handle_out_of_memory;
 
-  LOCK ();
   GC_java_finalization = 1;
 
   // We use a different mark procedure for object arrays. This code 
@@ -514,9 +489,6 @@ _Jv_InitGC (void)
   GC_obj_kinds[array_kind_x].ok_init = TRUE;
 
   _Jv_MutexInit (&disable_gc_mutex);
-
-  UNLOCK ();
-  ENABLE_SIGNALS ();
 }
 
 #ifdef JV_HASH_SYNCHRONIZATION
@@ -578,63 +550,3 @@ _Jv_GCCanReclaimSoftReference (jobject)
   // For now, always reclaim soft references.  FIXME.
   return true;
 }
-
-#if 0
-void
-_Jv_InitGC (void)
-{
-  int proc;
-  DCL_LOCK_STATE;
-
-  DISABLE_SIGNALS ();
-  LOCK ();
-
-  if (initialized)
-   {
-     UNLOCK ();
-     ENABLE_SIGNALS ();
-     return;
-   }
-  initialized = 1;
-
-  GC_java_finalization = 1;
-
-  // Set up state for marking and allocation of Java objects.
-  obj_free_list = (ptr_t *) GC_generic_malloc_inner ((MAXOBJSZ + 1)
-						     * sizeof (ptr_t),
-						     PTRFREE);
-  memset (obj_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
-
-  proc = GC_n_mark_procs++;
-  GC_mark_procs[proc] = (GC_mark_proc) _Jv_MarkObj;
-
-  obj_kind_x = GC_n_kinds++;
-  GC_obj_kinds[obj_kind_x].ok_freelist = obj_free_list;
-  GC_obj_kinds[obj_kind_x].ok_reclaim_list = 0;
-  GC_obj_kinds[obj_kind_x].ok_descriptor = GC_MAKE_PROC (proc, 0);
-  GC_obj_kinds[obj_kind_x].ok_relocate_descr = FALSE;
-  GC_obj_kinds[obj_kind_x].ok_init = TRUE;
-
-  // Set up state for marking and allocation of arrays of Java
-  // objects.
-  array_free_list = (ptr_t *) GC_generic_malloc_inner ((MAXOBJSZ + 1)
-						       * sizeof (ptr_t),
-						       PTRFREE);
-  memset (array_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
-
-  proc = GC_n_mark_procs++;
-  GC_mark_procs[proc] = (GC_mark_proc) _Jv_MarkArray;
-
-  array_kind_x = GC_n_kinds++;
-  GC_obj_kinds[array_kind_x].ok_freelist = array_free_list;
-  GC_obj_kinds[array_kind_x].ok_reclaim_list = 0;
-  GC_obj_kinds[array_kind_x].ok_descriptor = GC_MAKE_PROC (proc, 0);
-  GC_obj_kinds[array_kind_x].ok_relocate_descr = FALSE;
-  GC_obj_kinds[array_kind_x].ok_init = TRUE;
-
-  _Jv_MutexInit (&disable_gc_mutex);
-
-  UNLOCK ();
-  ENABLE_SIGNALS ();
-}
-#endif /* 0 */

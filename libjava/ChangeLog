@@ -1,3 +1,10 @@
+2002-02-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* boehm.cc (initialized, obj_kind_x, obj_free_list): Removed unused
+	declarations.
+	(_Jv_InitGC): Don't bother locking, as this is always called from a 
+	single-thread. Turn off GC_all_interior_pointers. Remove dead code.
+
 2002-02-11  Adam Megacz <adam@xwt.org>
 
 	* include/win32.h: Added _Jv_platform_gettimeofday.
