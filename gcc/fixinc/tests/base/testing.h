@@ -59,6 +59,7 @@ extern void
 	*memccpy(),
 	memcpy();
 extern int
+	strcmp(),
 	strncmp();
 extern unsigned int
 	strlen(),
