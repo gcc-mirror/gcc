@@ -1,3 +1,8 @@
+2001-09-14  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* doc/install.texi (Specific, alphaev5-cray-unicosmk*): Fix
+	example.
+
 2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* scan-decls.c (scan_decls): Fix typo.
