@@ -409,6 +409,8 @@ gfc_show_expr (gfc_expr * p)
       break;
 
     case EXPR_VARIABLE:
+      if (p->symtree->n.sym->ns && p->symtree->n.sym->ns->proc_name)
+	gfc_status ("%s:", p->symtree->n.sym->ns->proc_name->name);
       gfc_status ("%s", p->symtree->n.sym->name);
       gfc_show_ref (p->ref);
       break;
