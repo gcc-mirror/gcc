@@ -41,6 +41,7 @@
 #include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <ext/bitmap_allocator.h>
+#include <ext/pool_allocator.h>
 #include <cxxabi.h>
 #include <testsuite_performance.h>
 
@@ -49,6 +50,7 @@ using __gnu_cxx::__mt_alloc;
 using __gnu_cxx::new_allocator;
 using __gnu_cxx::malloc_allocator;
 using __gnu_cxx::bitmap_allocator;
+using __gnu_cxx::__pool_alloc;
 
 // The number of iterations to be performed.
 int iterations = 10000;
@@ -125,7 +127,8 @@ int main(void)
 #ifdef TEST_T5
   test_container(map<int, int, less<const int>, bitmap_allocator<int> >());
 #endif
-
-
+#ifdef TEST_T6
+  test_container(map<int, int, less<const int>, __pool_alloc<int> >());
+#endif
   return 0;
 }
