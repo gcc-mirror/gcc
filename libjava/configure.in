@@ -224,12 +224,14 @@ case "$TARGET_ECOS" in
    no) case "$host" in
       *mingw*)
             PLATFORM=Win32
+	    PLATFORMNET=Win32
             PLATFORMOBJS=win32.lo
 	    PLATFORMH=win32.h
         CHECK_FOR_BROKEN_MINGW_LD
       ;;
       *)
             PLATFORM=Posix
+	    PLATFORMNET=Posix
             PLATFORMOBJS=posix.lo
 	    PLATFORMH=posix.h
       ;;
@@ -237,6 +239,7 @@ case "$TARGET_ECOS" in
       ;;
    *)
       PLATFORM=Ecos
+      PLATFORMNET=NoNet
       AC_DEFINE(ECOS)
       PLATFORMOBJS=posix.lo
       PLATFORMH=posix.h
@@ -268,6 +271,14 @@ dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
 AC_LINK_FILES(java/lang/${PLATFORM}Process.java, java/lang/ConcreteProcess.java)
 AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.cc)
+
+dnl Likewise for natInetAddress.cc, natNetworkInterface.cc, natPlainSocketImpl.cc
+dnl and natPlainDatagramSocketImpl.cc
+test -d java/net || mkdir java/net
+AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/lang/natInetAddress.cc)
+AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/lang/natNetworkInterface.cc)
+AC_LINK_FILES(java/net/natPlainSocketImpl${PLATFORMNET}.cc, java/lang/natPlainSocketImpl.cc)
+AC_LINK_FILES(java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, java/lang/natPlainDatagramSocketImpl.cc)
 
 case "${host}" in
     *mingw*)
@@ -554,6 +565,7 @@ if test "x${with_newlib}" = "xyes"; then
       GCJ="${target_alias}-gcj"
    fi
    NATIVE=no
+   PLATFORMNET=NoNet
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep opendir)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r getcwd)

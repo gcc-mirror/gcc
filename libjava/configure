@@ -2976,6 +2976,7 @@ case "$TARGET_ECOS" in
    no) case "$host" in
       *mingw*)
             PLATFORM=Win32
+	    PLATFORMNET=Win32
             PLATFORMOBJS=win32.lo
 	    PLATFORMH=win32.h
         
@@ -3005,6 +3006,7 @@ fi
       ;;
       *)
             PLATFORM=Posix
+	    PLATFORMNET=Posix
             PLATFORMOBJS=posix.lo
 	    PLATFORMH=posix.h
       ;;
@@ -3012,6 +3014,7 @@ fi
       ;;
    *)
       PLATFORM=Ecos
+      PLATFORMNET=NoNet
       cat >> confdefs.h <<\EOF
 #define ECOS 1
 EOF
@@ -3203,6 +3206,12 @@ test -d gnu || mkdir gnu
 
 
 test -d java/lang || mkdir java/lang
+
+
+
+test -d java/net || mkdir java/net
+
+
 
 
 
@@ -4395,6 +4404,7 @@ EOF
       GCJ="${target_alias}-gcj"
    fi
    NATIVE=no
+   PLATFORMNET=NoNet
 else
    for ac_func in strerror ioctl select fstat open fsync sleep opendir
 do
@@ -9125,8 +9135,8 @@ fi; done
 EOF
 
 cat >> $CONFIG_STATUS <<EOF
-ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/io/natFileDescriptor${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER"
-ac_dests="include/platform.h java/io/natFile.cc java/io/natFileDescriptor.cc java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc include/java-gc.h include/java-threads.h sysdep/locks.h include/java-signal.h"
+ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/io/natFileDescriptor${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc java/net/natInetAddress${PLATFORMNET}.cc java/net/natNetworkInterface${PLATFORMNET}.cc java/net/natPlainSocketImpl${PLATFORMNET}.cc java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER"
+ac_dests="include/platform.h java/io/natFile.cc java/io/natFileDescriptor.cc java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc java/lang/natInetAddress.cc java/lang/natNetworkInterface.cc java/lang/natPlainSocketImpl.cc java/lang/natPlainDatagramSocketImpl.cc include/java-gc.h include/java-threads.h sysdep/locks.h include/java-signal.h"
 EOF
 
 cat >> $CONFIG_STATUS <<\EOF
