@@ -2954,6 +2954,8 @@ init_decl_processing ()
   start_identifier_warnings ();
 
   init_format_info_table ();
+
+  init_iterators ();
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -4473,11 +4475,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (specbits & 1 << (int) RID_ITERATOR)
 	  ITERATOR_P (decl) = 1;
-      {
-	error ("iterator `%s' has derived type", name);
-	type = error_mark_node;
-      }
-
       }
 
     /* Record `register' declaration for warnings on &
