@@ -3,6 +3,9 @@
 # Similar restrictions exist for most simulators.
 
 if { [istarget "mmix-knuth-mmixware"]
+     || [istarget "arm*-*-elf"]
+     || [istarget "strongarm*-*-elf"]
+     || [istarget "xscale*-*-elf"]
      || [istarget "cris-*-elf"] } {
 	set torture_execute_xfail [istarget]
 }
