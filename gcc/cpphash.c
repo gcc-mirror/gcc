@@ -346,6 +346,8 @@ collect_expansion (pfile, arglist)
 	  else if (last_token == PASTE)
 	    /* ## ## - the second ## is ordinary.  */
 	    goto norm;
+	  else if (last_token == START)
+	    cpp_error (pfile, "`##' at start of macro definition");
 	  
 	  /* Discard the token and any hspace before it.  */
 	  while (is_hspace (pfile->token_buffer[here-1]))
