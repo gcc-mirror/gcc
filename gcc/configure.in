@@ -1911,9 +1911,9 @@ changequote([,])dnl
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
- 		if test x$enable_threads = xyes; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
-		fi
+#		fi
 		;;
 	mips-wrs-vxworks)
 		tm_file="mips/elf.h libgloss.h"
@@ -1932,9 +1932,9 @@ changequote([,])dnl
 		tmake_file=mips/t-cross64
 		# See comment in mips/iris[56].h files.
 		use_collect2=yes
- 		if test x$enable_threads = xyes; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
-		fi
+#		fi
 		;;
         mips-sni-sysv4)
 		if test x$gas = xyes
@@ -1975,9 +1975,9 @@ changequote([,])dnl
 		tmake_file=mips/t-mips-gas
 		# See comment in mips/iris5.h file.
 		use_collect2=yes
- 		if test x$enable_threads = xyes; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
-		fi
+#		fi
 		;;
 	mips-sgi-irix4loser*)		# Mostly like a MIPS.
 		tm_file="mips/iris4loser.h mips/iris3.h ${tm_file} mips/iris4.h"
@@ -1996,9 +1996,9 @@ changequote([,])dnl
 		then
 			use_collect2=yes
 		fi
- 		if test x$enable_threads = xyes; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
-		fi
+#		fi
 		;;
 	mips-sgi-irix4*)		# Mostly like a MIPS.
 		tm_file="mips/iris3.h ${tm_file} mips/iris4.h"
@@ -2017,9 +2017,9 @@ changequote([,])dnl
 		then
 			use_collect2=yes
 		fi
- 		if test x$enable_threads = xyes; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
-		fi
+#		fi
 		;;
 	mips-sgi-*)			# Mostly like a MIPS.
 		tm_file="mips/iris3.h ${tm_file}"
