@@ -258,7 +258,7 @@ static struct decomposition decompose PARAMS ((rtx));
 static int immune_p		PARAMS ((rtx, rtx, struct decomposition));
 static int alternative_allows_memconst PARAMS ((const char *, int));
 static rtx find_reloads_toplev	PARAMS ((rtx, int, enum reload_type, int,
-					 int, rtx));
+					 int, rtx, int *));
 static rtx make_memloc		PARAMS ((rtx, int));
 static int find_reloads_address	PARAMS ((enum machine_mode, rtx *, rtx, rtx *,
 				       int, enum reload_type, int, rtx));
@@ -2592,7 +2592,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 				   ind_levels,
 				   set != 0
 				   && &SET_DEST (set) == recog_data.operand_loc[i],
-				   insn);
+				   insn,
+				   &address_reloaded[i]);
 
 	  /* If we made a MEM to load (a part of) the stackslot of a pseudo
 	     that didn't get a hard register, emit a USE with a REG_EQUAL
@@ -2616,7 +2617,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   a unary operator by reloading the operand.  */
 	substed_operand[i] = recog_data.operand[i]
 	  = find_reloads_toplev (recog_data.operand[i], i, address_type[i],
-				 ind_levels, 0, insn);
+				 ind_levels, 0, insn,
+				 &address_reloaded[i]);
       else if (code == REG)
 	{
 	  /* This is equivalent to calling find_reloads_toplev.
@@ -2644,7 +2646,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	       of a constant equivalence was checked above.  */
 	    substed_operand[i] = recog_data.operand[i]
 	      = find_reloads_toplev (recog_data.operand[i], i, address_type[i],
-				     ind_levels, 0, insn);
+				     ind_levels, 0, insn,
+				     &address_reloaded[i]);
 	}
       /* If the operand is still a register (we didn't replace it with an
 	 equivalent), get the preferred class to reload it into.  */
@@ -3540,7 +3543,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	substed_operand[i] = recog_data.operand[i]
 	  = find_reloads_toplev (force_const_mem (operand_mode[i],
 						  recog_data.operand[i]),
-				 i, address_type[i], ind_levels, 0, insn);
+				 i, address_type[i], ind_levels, 0, insn,
+				 NULL);
 	if (alternative_allows_memconst (recog_data.constraints[i],
 					 goal_alternative_number))
 	  goal_alternative_win[i] = 1;
@@ -4169,16 +4173,21 @@ alternative_allows_memconst (constraint, altnum)
 
    INSN, if nonzero, is the insn in which we do the reload.  It is used
    to determine if we may generate output reloads, and where to put USEs
-   for pseudos that we have to replace with stack slots.  */
+   for pseudos that we have to replace with stack slots.
+
+   ADDRESS_RELOADED.  If nonzero, is a pointer to where we put the
+   result of find_reloads_address.  */
 
 static rtx
-find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
+find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn,
+		     address_reloaded)
      rtx x;
      int opnum;
      enum reload_type type;
      int ind_levels;
      int is_set_dest;
      rtx insn;
+     int *address_reloaded;
 {
   register RTX_CODE code = GET_CODE (x);
 
@@ -4211,8 +4220,10 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 	      if (replace_reloads && recog_data.operand[opnum] != x)
 		emit_insn_before (gen_rtx_USE (VOIDmode, x), insn);
 	      x = mem;
-	      find_reloads_address (GET_MODE (x), &x, XEXP (x, 0), &XEXP (x, 0),
-				    opnum, type, ind_levels, insn);
+	      i = find_reloads_address (GET_MODE (x), &x, XEXP (x, 0), &XEXP (x, 0),
+					opnum, type, ind_levels, insn);
+	      if (address_reloaded)
+		*address_reloaded = i;
 	    }
 	}
       return x;
@@ -4220,8 +4231,12 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
   if (code == MEM)
     {
       rtx tem = x;
-      find_reloads_address (GET_MODE (x), &tem, XEXP (x, 0), &XEXP (x, 0),
-			    opnum, type, ind_levels, insn);
+
+      i = find_reloads_address (GET_MODE (x), &tem, XEXP (x, 0), &XEXP (x, 0),
+				opnum, type, ind_levels, insn);
+      if (address_reloaded)
+	*address_reloaded = i;
+
       return tem;
     }
 
@@ -4326,7 +4341,8 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
       if (fmt[i] == 'e')
 	{
 	  rtx new_part = find_reloads_toplev (XEXP (x, i), opnum, type,
-					      ind_levels, is_set_dest, insn);
+					      ind_levels, is_set_dest, insn,
+					      address_reloaded);
 	  /* If we have replaced a reg with it's equivalent memory loc -
 	     that can still be handled here e.g. if it's in a paradoxical
 	     subreg - we must make the change in a copy, rather than using
