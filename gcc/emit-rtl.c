@@ -1699,6 +1699,11 @@ set_mem_attributes (ref, t, objectp)
   if ((objectp || DECL_P (t)) && ! AGGREGATE_TYPE_P (type))
     MEM_SCALAR_P (ref) = 1;
 
+  /* We can set the alignment from the type if we are makign an object or
+     if this is an INDIRECT_REF.  */
+  if (objectp || TREE_CODE (t) == INDIRECT_REF)
+    align = TYPE_ALIGN (type);
+
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
     size = GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1));
@@ -1733,11 +1738,7 @@ set_mem_attributes (ref, t, objectp)
 	  align =  DECL_ALIGN (t);
 	}
 
-      /* If this is an INDIRECT_REF, we know its alignment.  */
-      else if (TREE_CODE (t) == INDIRECT_REF)
-	align = TYPE_ALIGN (type);
-
-      /* Likewise for constants.  */
+      /* If this is a constant, we know the alignment.  */
       else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
 	{
 	  align = TYPE_ALIGN (type);
@@ -1961,6 +1962,7 @@ replace_equiv_address (memref, addr)
 {
   /* change_address_1 copies the memory attribute structure without change
      and that's exactly what we want here.  */
+  update_temp_slot_address (XEXP (memref, 0), addr);
   return change_address_1 (memref, VOIDmode, addr, 1);
 }
 
