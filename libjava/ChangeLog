@@ -1,3 +1,10 @@
+2002-11-17  Jesse Rosenstock <jmr@ugcs.caltech.edu>
+ 
+	* java/nio/charset/Charset.java
+	(<clinit>): New method.
+	(encode): Synchronize use of cached encoder object.
+	(decode): Synchronize use of cached encoder object.
+
 2002-11-18  Michael Koch <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java,
