@@ -1,6 +1,7 @@
 Subdirectories:
 
 abi	 Tests for ABI compatibility -- mangling, object layout, etc.
+compat   Tests for binary compatibility (consistency, not ABI conformance)
 cpp	 Tests for the preprocessor.
 eh	 Tests for exception handling.
 expr     Tests for expressions.

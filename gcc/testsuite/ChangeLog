@@ -1,3 +1,69 @@
+2002-10-17  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/README: Describe new compat directory.
+	* g++.dg/dg.exp: Skip tests in compat directory.
+	* README.compat: New file.
+	* lib/compat.exp: New expect script.
+	* g++.dg/compat: New test directory.
+	* g++.dg/compat/compat.exp: New expect script.
+	* g++.dg/compat/abi: New test directory.
+	* g++.dg/compat/abi/bitfield1_x.C, g++.dg/compat/abi/bitfield1_main.C,
+	g++.dg/compat/abi/bitfield1_y.C, g++.dg/compat/abi/bitfield1.h,
+	g++.dg/compat/abi/bitfield2_x.C, g++.dg/compat/abi/bitfield2_main.C,
+	g++.dg/compat/abi/bitfield2_y.C, g++.dg/compat/abi/bitfield2.h,
+	g++.dg/compat/abi/vbase8-10_x.C, g++.dg/compat/abi/vbase8-10_main.C,
+	g++.dg/compat/abi/vbase8-10_y.C, g++.dg/compat/abi/vbase8-10.h,
+	g++.dg/compat/abi/vbase8-21_x.C, g++.dg/compat/abi/vbase8-21_main.C,
+	g++.dg/compat/abi/vbase8-21_y.C, g++.dg/compat/abi/vbase8-21.h,
+	g++.dg/compat/abi/vbase8-22_x.C, g++.dg/compat/abi/vbase8-22_main.C,
+	g++.dg/compat/abi/vbase8-22_y.C, g++.dg/compat/abi/vbase8-22.h,
+	g++.dg/compat/abi/vbase8-4_x.C, g++.dg/compat/abi/vbase8-4_main.C,
+	g++.dg/compat/abi/vbase8-4_y.C, g++.dg/compat/abi/vbase8-4.h: New files.
+	* g++.dg/compat/break: New test directory.
+	* g++.dg/compat/break/empty6_x.C, g++.dg/compat/break/empty6_main.C,
+	g++.dg/compat/break/empty6_y.C, g++.dg/compat/break/empty6.h,
+	g++.dg/compat/break/vbase10_x.C, g++.dg/compat/break/vbase10_main.C,
+	g++.dg/compat/break/vbase10_y.C, g++.dg/compat/break/vbase10.h,
+	g++.dg/compat/break/vbase11_x.C, g++.dg/compat/break/vbase11_main.C,
+	g++.dg/compat/break/vbase11_y.C, g++.dg/compat/break/vbase11.h,
+	g++.dg/compat/break/bitfield7_x.C, g++.dg/compat/break/bitfield7_main.C,
+	g++.dg/compat/break/bitfield7_y.C, g++.dg/compat/break/bitfield7.h,
+	g++.dg/compat/break/bitfield5_x.C, g++.dg/compat/break/bitfield5_main.C,
+	g++.dg/compat/break/bitfield5_y.C, g++.dg/compat/break/bitfield5.h,
+	g++.dg/compat/break/README: New files.
+	* g++.dg/compat/eh: New test directory.
+	* g++.dg/compat/eh/ctor1_x.C, g++.dg/compat/eh/ctor1_main.C,
+	g++.dg/compat/eh/ctor1_y.C, g++.dg/compat/eh/ctor1.h,
+	g++.dg/compat/eh/ctor2_x.C, g++.dg/compat/eh/ctor2_main.C,
+	g++.dg/compat/eh/ctor2_y.C, g++.dg/compat/eh/ctor2.h,
+	g++.dg/compat/eh/dtor1_x.C, g++.dg/compat/eh/dtor1_main.C,
+	g++.dg/compat/eh/dtor1_y.C, g++.dg/compat/eh/dtor1.h,
+	g++.dg/compat/eh/filter1_x.C, g++.dg/compat/eh/filter1_main.C,
+	g++.dg/compat/eh/filter1_y.C, g++.dg/compat/eh/filter1.h,
+	g++.dg/compat/eh/filter2_x.C, g++.dg/compat/eh/filter2_main.C,
+	g++.dg/compat/eh/filter2_y.C,
+	g++.dg/compat/eh/new1_x.C, g++.dg/compat/eh/new1_main.C,
+	g++.dg/compat/eh/new1_y.C,
+	g++.dg/compat/eh/nrv1_x.C, g++.dg/compat/eh/nrv1_main.C,
+	g++.dg/compat/eh/nrv1_y.C, g++.dg/compat/eh/nrv1.h,
+	g++.dg/compat/eh/spec3_x.C, g++.dg/compat/eh/spec3_main.C,
+	g++.dg/compat/eh/spec3_y.C, g++.dg/compat/eh/spec3.h,
+	g++.dg/compat/eh/template1_x.C, g++.dg/compat/eh/template1_main.C,
+	g++.dg/compat/eh/template1_y.C, g++.dg/compat/eh/template1.h,
+	g++.dg/compat/eh/unexpected1_x.C, g++.dg/compat/eh/unexpected1_main.C,
+	g++.dg/compat/eh/unexpected1_y.C: New files.
+	* g++.dg/compat/init: New test directory.
+	* g++.dg/compat/init/array5_x.C, g++.dg/compat/init/array5_main.C,
+	g++.dg/compat/init/array5_y.C,
+	g++.dg/compat/init/byval1_x.C, g++.dg/compat/init/byval1_main.C,
+	g++.dg/compat/init/byval1_y.C, g++.dg/compat/init/byval1.h,
+	g++.dg/compat/init/dtor1_x.C, g++.dg/compat/init/dtor1_main.C,
+	g++.dg/compat/init/dtor1_y.C, g++.dg/compat/init/dtor1.h,
+	g++.dg/compat/init/elide1_x.C, g++.dg/compat/init/elide1_main.C,
+	g++.dg/compat/init/elide1_y.C, g++.dg/compat/init/elide1.h,
+	g++.dg/compat/init/init-ref2_x.C, g++.dg/compat/init/init-ref2_main.C,
+	g++.dg/compat/init/init-ref2_y.C: New files.
+
 2002-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7584

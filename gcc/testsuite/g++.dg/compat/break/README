@@ -1,0 +1,11 @@
+Tests in this directory are for functionality that has changed in GCC
+from one release to another or that is not ABI-compliant and may change
+in a future release.
+
+Each test header for changed behavior should indicate the version in
+which the behavior changed, in order to help users of these tests to
+determine whether a test failure is expected or not.
+
+Every test in this directory that covers behavior that is not
+ABI-compliant should also be covered by a test for -Wabi to ensure that
+there is a warning for the construct.

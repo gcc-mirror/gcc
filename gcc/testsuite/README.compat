@@ -1,0 +1,72 @@
+Compatibility test suites that use lib/compat.exp test interoperability
+of two compilers that follow the same ABI, or of multiple sets of
+compiler options that are not intended to affect binary compatibility.
+They do not test conformance to a formal ABI; they check that things are
+done consistently, not that they are done correctly.  They are meant to
+complement ABI test suites, not to replace them.
+
+Each test in these suites splits up functionality into two source files
+that can be compiled with two different versions of GCC and with two
+sets of compiler options.
+
+  Override the default pairs of compiler options (from compat.exp) by
+  defining the environment variable COMPAT_OPTIONS as:
+  COMPAT_OPTIONS="[list [list {tst1} {alt1}]...[list {tstn} {altn}]]"
+  where tsti and alti are lists of options, with "tsti" used by the
+  compiler under test and "alti" used by the alternate compiler. The
+  characters "[", "{", "}", and "]" are really in the string, as in
+  "[list [list {-g} {-O3}] [list {-O3} {-g}]]".
+
+  To use an alternate compiler, define the environment variable for the
+  language you're testing; e.g., for C++ define ALT_CXX_UNDER_TEST to be
+  the full pathname of an installed compiler.  That will be written to
+  the site.exp file used by DejaGNU.  The default is to build each test
+  with the compiler under test using the first of each pair of compiler
+  options from COMPAT_OPTIONS.  When ALT_CXX_UNDER_TEST is "same", each
+  test is built using the compiler under test but with combinations of
+  the options from COMPAT_OPTIONS.
+
+A test that fails when the pieces are compiled with different compilers
+but passes when the pieces are compiled with the same compiler
+demonstrates incompatibility of the generated code or runtime support.
+A test that fails for the alternate compiler but passes for the compiler
+under test probably tests for a fix that is not present in the alternate
+compiler.
+
+There's a lot more that can be done with these tests.
+
+  Increase the robustness of the existing tests:
+
+   -  recognize target triples in dg-options strings in test files
+
+   -  continue to split up tests that rely on language runtime support
+      and add them to this set of tests
+
+   -  make sure they work for testing with a simulator
+
+   -  multilibs support?
+
+  Build test pieces into more combinations that will be likely to find
+  unusual errors:
+
+   -  link using the alternate compiler; this requires support for
+      LD_LIBRARY_PATH for the alternate compiler in the support for each
+      language
+
+   -  build pieces of the test into shared libraries; this requires
+      support for LD_LIBRARY_PATH for the alternate compiler, and
+      knowledge about how to build a shared library for each target
+
+   -  build pieces of the test into static libraries; this requires
+      knowledge about how to build a static library for each target
+
+  Continue to add tests to g++.dg/compat, based on existing tests for
+  language runtime support and for test cases in PRs that didn't used to
+  fit into the test suite.
+
+  Set up similar tests in libstdc++-v3/testsuite.
+
+  Set up similar tests for additional languages and libraries.
+
+Janis Johnson, <janis187@us.ibm.com>
+October 2002

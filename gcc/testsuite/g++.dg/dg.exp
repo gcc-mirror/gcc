@@ -32,6 +32,7 @@ dg-init
 # that are handled specially.
 set tests [lsort [find $srcdir/$subdir *.C]]
 set tests [prune $tests $srcdir/$subdir/bprob/*]
+set tests [prune $tests $srcdir/$subdir/compat/*]
 set tests [prune $tests $srcdir/$subdir/debug/*]
 set tests [prune $tests $srcdir/$subdir/gcov/*]
 set tests [prune $tests $srcdir/$subdir/special/*]
