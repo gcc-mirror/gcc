@@ -1,3 +1,12 @@
+2002-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("movti"): Add Q->Q alternative.
+	("*movdi_64", "*movdi_31", "*movsi", "movhi", "movqi_64",
+	"movqi", "*movdf_64", "*movdf_31", "*movsf"): Likewise.
+	
+	("*movti_ss", "*movdi_ss", "*movsi_ss", "*movdf_ss", 
+	"*movsf_ss"): Remove.
+
 2002-09-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa32-regs.h (CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P):
