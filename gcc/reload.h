@@ -50,8 +50,6 @@ extern int memory_move_secondary_cost PROTO ((enum machine_mode, enum reg_class,
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))
 
-extern enum reg_class reload_address_base_reg_class;
-extern enum reg_class reload_address_index_reg_class;
 extern rtx reload_in[MAX_RELOADS];
 extern rtx reload_out[MAX_RELOADS];
 extern rtx reload_in_reg[MAX_RELOADS];
@@ -205,6 +203,9 @@ struct insn_chain
 
   /* Nonzero if find_reloads said the insn requires reloading.  */
   unsigned int need_reload:1;
+  /* Nonzero if find_reloads needs to be run during reload_as_needed to
+     perform modifications on any operands.  */
+  unsigned int need_operand_change:1;
   /* Nonzero if eliminate_regs_in_insn said it requires eliminations.  */
   unsigned int need_elim:1;
   /* Nonzero if this insn was inserted by perform_caller_saves.  */
