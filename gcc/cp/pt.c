@@ -11272,17 +11272,30 @@ out:
 }
 
 /* Run through the list of templates that we wish we could
-   instantiate, and instantiate any we can.  */
+   instantiate, and instantiate any we can.  RETRIES is the
+   number of times we retry pending template instantiation.  */
 
-int
-instantiate_pending_templates (void)
+void
+instantiate_pending_templates (int retries)
 {
   tree *t;
   tree last = NULL_TREE;
-  int instantiated_something = 0;
   int reconsider;
   location_t saved_loc = input_location;
-  
+
+  /* Instantiating templates may trigger vtable generation.  This in turn
+     may require further template instantiations.  We place a limit here
+     to avoid infinite loop.  */
+  if (pending_templates && retries >= max_tinst_depth)
+    {
+      cp_error_at ("template instantiation depth exceeds maximum of %d"
+		   " (use -ftemplate-depth-NN to increase the maximum)"
+		   " instantiating `%+D', possibly from virtual table"
+		   " generation",
+		   max_tinst_depth, TREE_VALUE (pending_templates));
+      return;
+    }
+
   do 
     {
       reconsider = 0;
@@ -11309,10 +11322,7 @@ instantiate_pending_templates (void)
 			instantiate_decl (fn, /*defer_ok=*/0,
 					  /*undefined_ok=*/0);
 		  if (COMPLETE_TYPE_P (instantiation))
-		    {
-		      instantiated_something = 1;
-		      reconsider = 1;
-		    }
+		    reconsider = 1;
 		}
 
 	      if (COMPLETE_TYPE_P (instantiation))
@@ -11334,10 +11344,7 @@ instantiate_pending_templates (void)
 						    /*defer_ok=*/0,
 						    /*undefined_ok=*/0);
 		  if (DECL_TEMPLATE_INSTANTIATED (instantiation))
-		    {
-		      instantiated_something = 1;
-		      reconsider = 1;
-		    }
+		    reconsider = 1;
 		}
 
 	      if (DECL_TEMPLATE_SPECIALIZATION (instantiation)
@@ -11359,7 +11366,6 @@ instantiate_pending_templates (void)
   while (reconsider);
 
   input_location = saved_loc;
-  return instantiated_something;
 }
 
 /* Substitute ARGVEC into T, which is a list of initializers for

@@ -1,3 +1,8 @@
+2004-08-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6749
+	* g++.dg/template/vtable2.C: New test.
+
 2004-08-14  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/torture/builtin-attr-1.c: Fix scalbln prototype.

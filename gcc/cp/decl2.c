@@ -2721,6 +2721,7 @@ finish_file (void)
   size_t i;
   location_t locus;
   unsigned ssdf_count = 0;
+  int retries = 0;
 
   locus = input_location;
   at_eof = 1;
@@ -2772,7 +2773,7 @@ finish_file (void)
 
       /* If there are templates that we've put off instantiating, do
 	 them now.  */
-      instantiate_pending_templates ();
+      instantiate_pending_templates (retries);
       ggc_collect ();
 
       /* Write out virtual tables as required.  Note that writing out
@@ -2780,7 +2781,7 @@ finish_file (void)
  	 instantiation of members of that class.  If we write out
  	 vtables then we remove the class from our list so we don't
  	 have to look at it again.  */
- 
+
       while (keyed_classes != NULL_TREE
  	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
  	{
@@ -2806,14 +2807,14 @@ finish_file (void)
  	      next = TREE_CHAIN (t);
  	    }
  	}
-       
+
       /* Write out needed type info variables.  We have to be careful
  	 looping through unemitted decls, because emit_tinfo_decl may
  	 cause other variables to be needed.  We stick new elements
  	 (and old elements that we may need to reconsider) at the end
  	 of the array, then shift them back to the beginning once we're
  	 done.  */
-  
+
       n_old = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls);
       for (i = 0; i < n_old; ++i)
   	{
@@ -2994,6 +2995,8 @@ finish_file (void)
 	reconsider = true;
       if (cgraph_varpool_assemble_pending_decls ())
 	reconsider = true;
+
+      retries++;
     } 
   while (reconsider);
 
