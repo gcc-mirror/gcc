@@ -1,5 +1,11 @@
 2000-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* java/util/AbstractList.java (remove): Comment out modCount increment
+	to work around compiler bug.
+	(add): Ditto.
+
+2000-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* java/util/AbstractList.java: Throw messages with 
 	IndexOutOfBoundsExceptions.
 	 (listIterator()): Call listIterator(0).
