@@ -1,3 +1,8 @@
+2005-02-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19755
+	* decl.c (reshape_init): Issue warnings about missing braces.
+
 2005-02-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.def, except.c, ptree.c: Update copyright.
