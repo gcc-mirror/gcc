@@ -1,3 +1,7 @@
+2004-05-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/991216-3.c: Delete, duplicate of 991216-2.c.
+
 2004-05-18  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/13930
@@ -54,7 +58,7 @@
 
 	* gfortran.fortran-torture/compile/noncontinuation_1.f90: Rename
 	this ...
-	* gfortran.fortran-torture/compile/noncontinuation_1.f: ... to 
+	* gfortran.fortran-torture/compile/noncontinuation_1.f: ... to
 	this.
 
 2004-05-14  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -63,7 +67,7 @@
 
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* gfortran.fortran-torture/compile/noncontinuation_1.f90: New 
+	* gfortran.fortran-torture/compile/noncontinuation_1.f90: New
 	test.
 
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
@@ -254,7 +258,7 @@
 	* gcc.dg/unused-6.c: New test.
 
 2004-04-24  Laurent GUERBY  <laurent@guerby.net>
-            Ulrich Weigand  <uweigand@de.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* ada/acats/run_all.sh: Define $target variable.
 
