@@ -1925,6 +1925,45 @@ find_barrier (from)
   return found_barrier;
 }
 
+/* If the instruction INSN is implemented by a special function, and we can
+   positively find the register that is used to call the sfunc, and this
+   register is not used anywhere else in this instruction - except as the
+   destination of a set, return this register; else, return 0.  */
+static rtx
+sfunc_uses_reg (insn)
+     rtx insn;
+{
+  int i;
+  rtx pattern, part, reg_part, reg;
+
+  if (GET_CODE (insn) != INSN)
+    return 0;
+  pattern = PATTERN (insn);
+  if (GET_CODE (pattern) != PARALLEL || get_attr_type (insn) != TYPE_SFUNC)
+    return 0;
+
+  for (reg_part = 0, i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
+    {
+      part = XVECEXP (pattern, 0, i);
+      if (GET_CODE (part) == USE)
+	reg_part = part;
+    }
+  if (! reg_part)
+    return 0;
+  reg = XEXP (reg_part, 0);
+  for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
+    {
+      part = XVECEXP (pattern, 0, i);
+      if (part == reg_part)
+	continue;
+      if (reg_mentioned_p (reg, ((GET_CODE (part) == SET
+				  && GET_CODE (SET_DEST (part)) == REG)
+				 ? SET_SRC (part) : part)))
+	return 0;
+    }
+  return reg;
+}
+
 /* See if the only way in which INSN uses REG is by calling it, or by
    setting it while calling it.  Set *SET to a SET rtx if the register
    is set by INSN.  */
@@ -1935,10 +1974,20 @@ noncall_uses_reg (reg, insn, set)
      rtx insn;
      rtx *set;
 {
-  rtx pattern;
+  rtx pattern, reg2;
 
   *set = NULL_RTX;
 
+  reg2 = sfunc_uses_reg (insn);
+  if (reg2 && REGNO (reg2) == REGNO (reg))
+    {
+      pattern = single_set (insn);
+      if (pattern
+	  && GET_CODE (SET_DEST (pattern)) == REG
+	  && REGNO (reg) == REGNO (SET_DEST (pattern)))
+	*set = pattern;
+      return 0;
+    }
   if (GET_CODE (insn) != CALL_INSN)
     {
       /* We don't use rtx_equal_p because we don't care if the mode is
@@ -1948,8 +1997,19 @@ noncall_uses_reg (reg, insn, set)
 	  && GET_CODE (SET_DEST (pattern)) == REG
 	  && REGNO (reg) == REGNO (SET_DEST (pattern)))
 	{
+	  rtx par, part;
+	  int i;
+
 	  *set = pattern;
-	  return 0;
+	  par = PATTERN (insn);
+	  if (GET_CODE (par) == PARALLEL)
+	    for (i = XVECLEN (par, 0) - 1; i >= 0; i--)
+	      {
+		part = XVECEXP (par, 0, i);
+		if (GET_CODE (part) != SET && reg_mentioned_p (reg, part))
+		  return 1;
+	      }
+	  return reg_mentioned_p (reg, SET_SRC (pattern));
 	}
 
       return 1;
@@ -2032,21 +2092,28 @@ machine_dependent_reorg (first)
 	  rtx pattern, reg, link, set, scan, dies, label;
 	  int rescan = 0, foundinsn = 0;
 
-	  if (GET_CODE (insn) != CALL_INSN)
-	    continue;
+	  if (GET_CODE (insn) == CALL_INSN)
+	    {
+	      pattern = PATTERN (insn);
 
-	  pattern = PATTERN (insn);
+	      if (GET_CODE (pattern) == PARALLEL)
+		pattern = XVECEXP (pattern, 0, 0);
+	      if (GET_CODE (pattern) == SET)
+		pattern = SET_SRC (pattern);
 
-	  if (GET_CODE (pattern) == PARALLEL)
-	    pattern = XVECEXP (pattern, 0, 0);
-	  if (GET_CODE (pattern) == SET)
-	    pattern = SET_SRC (pattern);
+	      if (GET_CODE (pattern) != CALL
+		  || GET_CODE (XEXP (pattern, 0)) != MEM)
+		continue;
 
-	  if (GET_CODE (pattern) != CALL
-	      || GET_CODE (XEXP (pattern, 0)) != MEM)
-	    continue;
+	      reg = XEXP (XEXP (pattern, 0), 0);
+	    }
+	  else
+	    {
+	      reg = sfunc_uses_reg (insn);
+	      if (! reg)
+		continue;
+	    }
 
-	  reg = XEXP (XEXP (pattern, 0), 0);
 	  if (GET_CODE (reg) != REG)
 	    continue;
 
@@ -2148,7 +2215,8 @@ machine_dependent_reorg (first)
 	      if (scan == insn)
 		foundinsn = 1;
 
-	      if (scan != insn && GET_CODE (scan) == CALL_INSN)
+	      if (scan != insn
+		  && (GET_CODE (scan) == CALL_INSN || sfunc_uses_reg (scan)))
 		{
 		  /* There is a function call to this register other
                      than the one we are checking.  If we optimize
@@ -2205,10 +2273,14 @@ machine_dependent_reorg (first)
 	      scan = link;
 	      do
 		{
+		  rtx reg2;
+
 		  scan = NEXT_INSN (scan);
 		  if (scan != insn
-		      && GET_CODE (scan) == CALL_INSN
-		      && reg_mentioned_p (reg, scan))
+		      && ((GET_CODE (scan) == CALL_INSN
+			   && reg_mentioned_p (reg, scan))
+			  || ((reg2 = sfunc_uses_reg (scan))
+			      && REGNO (reg2) == REGNO (reg))))
 		    REG_NOTES (scan) = gen_rtx (EXPR_LIST, REG_LABEL,
 						label, REG_NOTES (scan));
 		}
@@ -2319,7 +2391,8 @@ final_prescan_insn (insn, opvec, noperands)
 	    pattern = XVECEXP (pattern, 0, 0);
 	  if (GET_CODE (pattern) == CALL
 	      || (GET_CODE (pattern) == SET
-		  && GET_CODE (SET_SRC (pattern)) == CALL))
+		  && (GET_CODE (SET_SRC (pattern)) == CALL
+		      || get_attr_type (insn) == TYPE_SFUNC)))
 	    fprintf (asm_out_file, "\t.uses L%d\n",
 		     CODE_LABEL_NUMBER (XEXP (note, 0)));
 	  else if (GET_CODE (pattern) == SET)
