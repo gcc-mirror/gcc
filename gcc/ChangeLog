@@ -1,3 +1,8 @@
+Thu Mar 11 13:55:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* machmode.h (smallest_mode_for_size): Prototype.
+	* stor-layout.c (smallest_mode_for_size): Remove static.
+
 Thu Mar 11 21:25:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Don't do biv increment -> DEST_REG giv
