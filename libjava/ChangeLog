@@ -1,5 +1,17 @@
 2004-01-06  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URLConnection.java
+	(contentHandler): Removed.
+	(locale): Removed.
+	(getHeaderFields): Return an empty map instead of null.
+	(getContent): Connect if needed, renamed "cType" to "type" and
+	"contentHandler" to "ch" and made it a local variable.
+	(getPermission): Don't use package in class name.
+	(setDefaultRequestProperty): Fixed typo in documentation.
+	(initializeDateFormats): Made locale a local variable.
+
+2004-01-06  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Package.java
 	(getPackage): Get the current class loader directly.
 	* java/lang/SecurityManager.java
