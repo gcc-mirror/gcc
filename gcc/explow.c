@@ -1111,38 +1111,39 @@ allocate_dynamic_stack_space (size, target, known_align)
 
   mark_reg_pointer (target, known_align / BITS_PER_UNIT);
 
-#ifndef STACK_GROWS_DOWNWARD
-  emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
-
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
-     stack pointer.  */
+     stack pointer, such as acquiring the space by calling malloc().  */
 #ifdef HAVE_allocate_stack
   if (HAVE_allocate_stack)
     {
-      enum machine_mode mode
-	= insn_operand_mode[(int) CODE_FOR_allocate_stack][0];
-
-      size = convert_modes (mode, ptr_mode, size, 1);
+      enum machine_mode mode;
 
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][0])
+		(target, Pmode)))
+	target = copy_to_mode_reg (Pmode, target);
+      mode = insn_operand_mode[(int) CODE_FOR_allocate_stack][1];
+      size = convert_modes (mode, ptr_mode, size, 1);
+      if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][1]
+	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][1])
 		(size, mode)))
 	size = copy_to_mode_reg (mode, size);
 
-      emit_insn (gen_allocate_stack (size));
+      emit_insn (gen_allocate_stack (target, size));
     }
   else
 #endif
     {
+#ifndef STACK_GROWS_DOWNWARD
+      emit_move_insn (target, virtual_stack_dynamic_rtx);
+#endif
       size = convert_modes (Pmode, ptr_mode, size, 1);
       anti_adjust_stack (size);
-    }
-
 #ifdef STACK_GROWS_DOWNWARD
   emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
+    }
 
   if (MUST_ALIGN)
     {
