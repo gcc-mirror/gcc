@@ -4768,15 +4768,6 @@ number of existing systems lacks support for these functions in the runtime so
 they needs this macro to be redefined to 0.
 @end defmac
 
-@defmac LIBGCC_NEEDS_DOUBLE
-Define this macro if @code{float} arguments cannot be passed to library
-routines (so they must be converted to @code{double}).  This macro
-affects both how library calls are generated and how the library
-routines in @file{libgcc.a} accept their arguments.  It is useful on
-machines where floating and fixed point arguments are passed
-differently, such as the i860.
-@end defmac
-
 @defmac NEXT_OBJC_RUNTIME
 Define this macro to generate code for Objective-C message sending using
 the calling convention of the NeXT system.  This calling convention
