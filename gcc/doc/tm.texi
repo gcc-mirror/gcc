@@ -9446,13 +9446,14 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{exp}, bool @var{ignore})
+@deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, tree @var{arglist}, bool @var{ignore})
 
-Expand a call to a machine specific built-in function that was set up by
-@samp{TARGET_INIT_BUILTINS}.  @var{exp} is the expression for the
-function call; the result is another tree containing a simplified
-expression for the call's result.  If @var{ignore} is true the
-value will be ignored.
+Fold a call to a machine specific built-in function that was set up by
+@samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
+built-in function.  @var{arglist} is the list of arguments passed to
+the built-in function.  The result is another tree containing a
+simplified expression for the call's result.  If @var{ignore} is true
+the value will be ignored.
 @end deftypefn
 
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})

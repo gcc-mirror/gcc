@@ -344,7 +344,7 @@ struct gcc_target
 			  enum machine_mode mode, int ignore);
 
   /* Fold a target-specific builtin.  */
-  tree (* fold_builtin) (tree exp, bool ignore);
+  tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
 
   /* For a vendor-specific fundamental TYPE, return a pointer to
      a statically-allocated string containing the C++ mangling for

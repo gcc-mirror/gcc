@@ -6499,14 +6499,13 @@ alpha_fold_builtin_ctpop (unsigned HOST_WIDE_INT opint[], long op_const)
 /* Fold one of our builtin functions.  */
 
 static tree
-alpha_fold_builtin (tree exp, bool ignore ATTRIBUTE_UNUSED)
+alpha_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
 {
-  tree fndecl = get_callee_fndecl (exp);
   tree op[MAX_ARGS], t;
   unsigned HOST_WIDE_INT opint[MAX_ARGS];
   long op_const = 0, arity = 0;
 
-  for (t = TREE_OPERAND (exp, 1); t ; t = TREE_CHAIN (t), ++arity)
+  for (t = arglist; t ; t = TREE_CHAIN (t), ++arity)
     {
       tree arg = TREE_VALUE (t);
       if (arg == error_mark_node)
