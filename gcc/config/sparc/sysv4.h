@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 #undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX)		\
 {						\
-  if (flag_pic && symbolic_operand (RTX))	\
+  if (flag_pic && symbolic_operand ((RTX), (MODE))) \
     data_section ();				\
   else						\
     const_section ();				\

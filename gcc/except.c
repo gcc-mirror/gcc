@@ -409,6 +409,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "obstack.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */

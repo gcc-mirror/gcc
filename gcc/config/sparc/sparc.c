@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* 1 if the caller has placed an "unimp" insn immediately after the call.
    This is used in v8 code when calling a function that returns a structure.
@@ -122,10 +123,15 @@ static void sparc_output_addr_diff_vec PROTO((rtx));
 static void sparc_output_deferred_case_vectors PROTO((void));
 static void sparc_add_gc_roots    PROTO ((void));
 static void mark_ultrasparc_pipeline_state PROTO ((void *));
-
-#ifdef DWARF2_DEBUGGING_INFO
-extern char *dwarf2out_cfi_label ();
-#endif
+static int check_return_regs PROTO ((rtx));
+static void epilogue_renumber PROTO ((rtx *));
+static int ultra_cmove_results_ready_p PROTO ((rtx));
+static int ultra_fpmode_conflict_exists PROTO ((enum machine_mode));
+static rtx *ultra_find_type PROTO ((int, rtx *, int));
+static void ultra_build_types_avail PROTO ((rtx *, int));
+static void ultra_flush_pipeline PROTO ((void));
+static void ultra_rescan_pipeline_state PROTO ((rtx *, int));
+static int set_extends PROTO ((rtx, rtx));
 
 /* Option handling.  */
 
@@ -586,7 +592,7 @@ data_segment_operand (op, mode)
       /* Assume canonical format of symbol + constant.
 	 Fall through.  */
     case CONST :
-      return data_segment_operand (XEXP (op, 0));
+      return data_segment_operand (XEXP (op, 0), VOIDmode);
     default :
       return 0;
     }
@@ -610,7 +616,7 @@ text_segment_operand (op, mode)
       /* Assume canonical format of symbol + constant.
 	 Fall through.  */
     case CONST :
-      return text_segment_operand (XEXP (op, 0));
+      return text_segment_operand (XEXP (op, 0), VOIDmode);
     default :
       return 0;
     }
@@ -3615,6 +3621,8 @@ static void function_arg_record_value_3
 	PROTO((int, struct function_arg_record_value_parms *));
 static void function_arg_record_value_2
 	PROTO((tree, int, struct function_arg_record_value_parms *));
+static void function_arg_record_value_1
+        PROTO((tree, int, struct function_arg_record_value_parms *));
 static rtx function_arg_record_value
 	PROTO((tree, enum machine_mode, int, int, int));
 
@@ -5821,12 +5829,12 @@ void
 sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 			 doubleword_op, base_offset)
      FILE *file;
-     char *base_reg;
+     const char *base_reg;
      unsigned int offset;
      unsigned long gmask;
      unsigned long fmask;
-     char *word_op;
-     char *doubleword_op;
+     const char *word_op;
+     const char *doubleword_op;
      unsigned long base_offset;
 {
   int regno;
@@ -6631,6 +6639,9 @@ enum ultra_code { NONE=0, /* no insn at all				*/
 		  FPA,    /* FPU pipeline 2, all other operations	*/
 		  SINGLE, /* single issue instructions			*/
 		  NUM_ULTRA_CODES };
+
+static enum ultra_code ultra_code_from_mask PROTO ((int));
+static void ultra_schedule_insn PROTO ((rtx *, rtx *, int, enum ultra_code));
 
 static const char *ultra_code_names[NUM_ULTRA_CODES] = {
   "NONE", "IEU0", "IEU1", "IEUN", "LSU", "CTI",
@@ -7569,7 +7580,7 @@ char *
 sparc_v8plus_shift (operands, insn, opcode)
      rtx *operands;
      rtx insn;
-     char *opcode;
+     const char *opcode;
 {
   static char asm_code[60];
 

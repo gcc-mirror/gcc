@@ -1,3 +1,36 @@
+Thu Oct 21 12:49:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c: Include tm_p.h later, so everything we need is defined.
+	* expr.c: Likewise.
+	* function.c: Likewise.
+
+	* except.c: Include tm_p.h.
+
+	* sparc.c: Likewise.
+	(dwarf2out_cfi_label): Don't prototype.
+	(check_return_regs, epilogue_renumber,
+	ultra_cmove_results_ready_p, ultra_fpmode_conflict_exists,
+	ultra_find_type, ultra_build_types_avail, ultra_flush_pipeline,
+	ultra_rescan_pipeline_state, set_extends, ultra_code_from_mask,
+	ultra_schedule_insn): Add static prototype.
+	(data_segment_operand, text_segment_operand): Call itself with the
+	proper number of arguments.
+	(sparc_flat_save_restore, sparc_v8plus_shift): Constify a char*.
+
+	* sparc.h: Move all declarations to sparc-protos.h.
+	(SELECT_RTX_SECTION):  Pass a missing MODE argument to
+	symbolic_operand.
+
+	* sparc/sysv4.h (SELECT_RTX_SECTION): Likewise.
+
+	* config/svr4.h (text_section, ctors_section, dtors_section): Add
+	Prototypes.
+	(ASM_OUTPUT_SECTION_NAME, UNIQUE_SECTION,
+	ASM_FINISH_DECLARE_OBJECT, ASM_OUTPUT_LIMITED_STRING,
+	ASM_OUTPUT_ASCII): Constify a char*.
+	
+	* sparc-protos.h: New file for sparc prototypes.
+	
 Thu Oct 21 12:23:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* function.c (record_insns, contains): Always declare and define.

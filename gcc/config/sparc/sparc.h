@@ -382,8 +382,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    code into the rtl.  Also, if we are profiling, we cannot eliminate
    the frame pointer (because the return address will get smashed).  */
 
-void sparc_override_options ();
-
 #define OVERRIDE_OPTIONS \
   do {									\
     if (profile_flag || profile_block_flag || profile_arc_flag)		\
@@ -868,7 +866,7 @@ if (TARGET_ARCH64				\
 #define SELECT_RTX_SECTION(MODE, X)		\
 {						\
   if (GET_MODE_BITSIZE (MODE) <= MAX_TEXT_ALIGN \
-      && ! (flag_pic && (symbolic_operand (X) || SUNOS4_SHARED_LIBRARIES)))  \
+      && ! (flag_pic && (symbolic_operand ((X), (MODE)) || SUNOS4_SHARED_LIBRARIES)))  \
     text_section ();				\
   else						\
     data_section ();				\
@@ -1643,7 +1641,6 @@ extern char leaf_reg_remap[];
 
 /* On SPARC the value is found in the first "output" register.  */
 
-extern struct rtx_def *function_value ();
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   function_value ((VALTYPE), TYPE_MODE (VALTYPE), 1)
 
@@ -1702,7 +1699,6 @@ struct sparc_args {
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-extern void init_cumulative_args ();
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
 init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (INDIRECT));
 
@@ -1710,7 +1706,6 @@ init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (INDIRECT));
    of mode MODE and data type TYPE.
    TYPE is null for libcalls where that information may not be available.  */
 
-extern void function_arg_advance ();
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
 function_arg_advance (& (CUM), (MODE), (TYPE), (NAMED))
 
@@ -1727,7 +1722,6 @@ function_arg_advance (& (CUM), (MODE), (TYPE), (NAMED))
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-extern struct rtx_def *function_arg ();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
 function_arg (& (CUM), (MODE), (TYPE), (NAMED), 0)
 
@@ -1741,7 +1735,6 @@ function_arg (& (CUM), (MODE), (TYPE), (NAMED), 1)
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 
-extern int function_arg_partial_nregs ();
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
 function_arg_partial_nregs (& (CUM), (MODE), (TYPE), (NAMED))
 
@@ -1751,7 +1744,6 @@ function_arg_partial_nregs (& (CUM), (MODE), (TYPE), (NAMED))
    The pointer is passed in whatever way is appropriate for passing a pointer
    to that type.  */
 
-extern int function_arg_pass_by_reference ();
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
 function_arg_pass_by_reference (& (CUM), (MODE), (TYPE), (NAMED))
 
@@ -1780,13 +1772,6 @@ function_arg_padding ((MODE), (TYPE))
 
 extern struct rtx_def *sparc_compare_op0, *sparc_compare_op1;
 
-/* Define the function that build the compare insn for scc and bcc.  */
-
-extern struct rtx_def *gen_compare_reg ();
-
-/* This function handles all v9 scc insns */
-
-extern int gen_v9_scc ();
 
 /* Generate the special assembly code needed to tell the assembler whatever
    it might need to know about the return value of a function.
@@ -2032,8 +2017,6 @@ LFLGRET"ID":\n\
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-void sparc_initialize_trampoline ();
-void sparc64_initialize_trampoline ();
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
     if (TARGET_ARCH64)						\
       sparc64_initialize_trampoline (TRAMP, FNADDR, CXT);	\
@@ -2042,15 +2025,12 @@ void sparc64_initialize_trampoline ();
 
 /* Generate necessary RTL for __builtin_saveregs().  */
 
-extern struct rtx_def *sparc_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() sparc_builtin_saveregs ()
 
-extern void sparc_va_start ();
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   sparc_va_start (stdarg, valist, nextarg)
 
-extern struct rtx_def *sparc_va_arg ();
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   sparc_va_arg (valist, type)
@@ -2385,7 +2365,6 @@ extern struct rtx_def *sparc_va_arg ();
    opportunities to optimize the output.  */
 
 /* On SPARC, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
-extern struct rtx_def *legitimize_pic_address ();
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { rtx sparc_x = (X);						\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
@@ -2745,10 +2724,6 @@ do {                                                                    \
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
   sparc_adjust_cost(INSN, LINK, DEP, COST)
 
-extern void ultrasparc_sched_reorder ();
-extern void ultrasparc_sched_init ();
-extern int ultrasparc_variable_issue ();
-
 #define MD_SCHED_INIT(DUMP, SCHED_VERBOSE)				\
   if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
     ultrasparc_sched_init (DUMP, SCHED_VERBOSE)
@@ -2971,8 +2946,6 @@ do {									\
 
 /* This is how we hook in and defer the case-vector until the end of
    the function.  */
-extern void sparc_defer_case_vector ();
-
 #define ASM_OUTPUT_ADDR_VEC(LAB,VEC) \
   sparc_defer_case_vector ((LAB),(VEC), 0)
 
@@ -3276,101 +3249,6 @@ do {									\
 #define JMP_BUF_SIZE 12
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE (flag_pic)
-
-/* Declare functions defined in sparc.c and used in templates.  */
-
-extern void sparc_emit_set_const32 ();
-extern void sparc_emit_set_const64 ();
-extern void sparc_emit_set_symbolic_const64 ();
-extern int sparc_splitdi_legitimate ();
-extern int sparc_absnegfloat_split_legitimate ();
-
-extern char *output_cbranch ();
-extern const char *output_return ();
-extern char *output_v9branch ();
-
-extern void emit_v9_brxx_insn ();
-extern void finalize_pic ();
-extern void order_regs_for_local_alloc ();
-extern void output_double_int ();
-extern void output_function_epilogue ();
-extern void output_function_prologue ();
-extern void print_operand ();
-extern void sparc_flat_output_function_epilogue ();
-extern void sparc_flat_output_function_prologue ();
-
-extern int addrs_ok_for_ldd_peep ();
-extern int arith10_double_operand ();
-extern int arith10_operand ();
-extern int arith11_double_operand ();
-extern int arith11_operand ();
-extern int arith_double_operand ();
-extern int arith_double_4096_operand ();
-extern int arith_double_add_operand ();
-extern int arith_operand ();
-extern int arith_4096_operand ();
-extern int arith_add_operand ();
-extern int call_operand_address ();
-extern int input_operand ();
-extern int zero_operand ();
-extern int const64_operand ();
-extern int const64_high_operand ();
-extern int cc_arithop ();
-extern int cc_arithopn ();
-extern int check_pic ();
-extern int compute_frame_size ();
-extern int data_segment_operand ();
-extern int eligible_for_epilogue_delay ();
-extern int eligible_for_return_delay ();
-extern int emit_move_sequence ();
-extern int extend_op ();
-extern int fcc_reg_operand ();
-extern int fp_zero_operand ();
-extern int icc_or_fcc_reg_operand ();
-extern int label_ref_operand ();
-extern int mem_min_alignment ();
-extern int noov_compare_op ();
-extern int pic_address_needs_scratch ();
-extern int reg_or_0_operand ();
-extern int reg_or_nonsymb_mem_operand ();
-extern int reg_unused_after ();
-extern int register_ok_for_ldd ();
-extern int registers_ok_for_ldd_peep ();
-extern int restore_operand ();
-extern int short_branch ();
-extern int small_int ();
-extern int small_int_or_double ();
-extern int sp64_medium_pic_operand ();
-extern int sparc_flat_eligible_for_epilogue_delay ();
-extern int sparc_flat_epilogue_delay_slots ();
-extern int sparc_issue_rate ();
-extern int splittable_immediate_memory_operand ();
-extern int splittable_symbolic_memory_operand ();
-extern int sparc_adjust_cost ();
-extern int symbolic_memory_operand ();
-extern int symbolic_operand ();
-extern int text_segment_operand ();
-extern int uns_small_int ();
-extern int v9_regcmp_op ();
-extern int v9_regcmp_p ();
-
-extern unsigned long sparc_flat_compute_frame_size ();
-extern unsigned long sparc_type_code ();
-
-extern void sparc_function_profiler ();
-extern void sparc_function_block_profiler ();
-extern void sparc_block_profiler ();
-extern void sparc_function_block_profiler_exit ();
-
-extern char *sparc_v8plus_shift ();
-
-#ifdef __STDC__
-/* Function used for V8+ code generation.  Returns 1 if the high
-   32 bits of REG are 0 before INSN.  */   
-extern int sparc_check_64 (struct rtx_def *, struct rtx_def *);
-extern int sparc_return_peephole_ok (struct rtx_def *, struct rtx_def *);
-extern int compute_frame_size (int, int);
-#endif
 
 /* Defined in flags.h, but insn-emit.c does not include flags.h.  */
 
