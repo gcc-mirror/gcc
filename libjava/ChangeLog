@@ -3,6 +3,9 @@
 	* java/util/TreeSet.java (clone): Made subclass safe, use 
 	super.clone(), not new.
 	* java/util/TreeMap.java (clone): Likewise.
+	
+	* java/util/TreeMap.java (nil): Made non-final.
+	(clone): Create new nil node for copy.
 
 2001-02-14  Andrew Haley  <aph@redhat.com>
 

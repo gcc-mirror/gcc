@@ -56,7 +56,7 @@ import java.io.IOException;
  *
  * @author           Jon Zeppieri
  * @author	     Bryce McKinlay
- * @modified         $Id: TreeMap.java,v 1.2 2001/02/14 05:32:31 bryce Exp $
+ * @modified         $Id: TreeMap.java,v 1.3 2001/02/16 01:49:40 bryce Exp $
  */
 public class TreeMap extends AbstractMap
   implements SortedMap, Cloneable, Serializable
@@ -67,7 +67,7 @@ public class TreeMap extends AbstractMap
   /** Sentinal node, used to avoid null checks for corner cases and make the
       delete rebalance code simpler. Note that this must not be static, due 
       to thread-safety concerns. */
-  transient final Node nil = new Node(null, null);
+  transient Node nil = new Node(null, null);
 
   /** The root node of this TreeMap */
   transient Node root = nil;
@@ -186,6 +186,8 @@ public class TreeMap extends AbstractMap
     catch (CloneNotSupportedException x)
       {
       }
+    // Each instance must have a unique sentinal.
+    copy.nil = new Node(null, null);
     copy.fabricateTree(size);
 
     Node node = firstNode();
