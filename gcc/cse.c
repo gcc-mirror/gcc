@@ -5350,6 +5350,27 @@ fold_rtx (x, insn)
 		  && XEXP (XEXP (y, 1), 0) == XEXP (const_arg1, 0))
 		return XEXP (y, 0);
 	    }
+
+	  /* If second operand is a register equivalent to a negative
+	     CONST_INT, see if we can find a register equivalent to the
+	     positive constant.  Make a MINUS if so.  Don't do this for
+	     a negative constant since we might then alternate between
+	     chosing positive and negative constants.  Having the positive
+	     constant previously-used is the more common case.  */
+	  if (const_arg1 && GET_CODE (const_arg1) == CONST_INT
+	      && INTVAL (const_arg1) < 0 && GET_CODE (folded_arg1) == REG)
+	    {
+	      rtx new_const = GEN_INT (- INTVAL (const_arg1));
+	      struct table_elt *p
+		= lookup (new_const, safe_hash (new_const, mode) % NBUCKETS,
+			  mode);
+
+	      if (p)
+		for (p = p->first_same_value; p; p = p->next_same_value)
+		  if (GET_CODE (p->exp) == REG)
+		    return cse_gen_binary (MINUS, mode, folded_arg0,
+					   canon_reg (p->exp, NULL_RTX));
+	    }
 	  goto from_plus;
 
 	case MINUS:
