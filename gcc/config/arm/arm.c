@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "recog.h"
+#include "ggc.h"
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -72,6 +73,7 @@ static void emit_multi_reg_push PROTO ((int));
 static void emit_sfm PROTO ((int, int));
 static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
 static int const_ok_for_op RTX_CODE_PROTO ((HOST_WIDE_INT, Rcode));
+static void arm_add_gc_roots PROTO ((void));
 
 /* True if we are currently building a constant table. */
 int making_const_table;
@@ -585,7 +587,20 @@ arm_override_options ()
     max_insns_skipped = 6;
   else if (arm_is_strong)
     max_insns_skipped = 3;
+
+  /* Register global variables with the garbage collector.  */
+  arm_add_gc_roots ();
 }
+
+static void
+arm_add_gc_roots ()
+{
+  ggc_add_rtx_root (&arm_compare_op0, 1);
+  ggc_add_rtx_root (&arm_compare_op1, 1);
+  ggc_add_rtx_root (&arm_target_insn, 1); /* Not sure this is really a root */
+  /* XXX: What about the minipool tables?  */
+}
+
 
 /* Return 1 if it is possible to return using a single instruction */
 
@@ -6725,6 +6740,10 @@ aof_pic_entry (x)
 
   if (aof_pic_label == NULL_RTX)
     {
+      /* We mark this here and not in arm_add_gc_roots() to avoid
+	 polluting even more code with ifdefs, and because it never
+	 contains anything useful until we assign to it here.  */
+      ggc_add_rtx_root (&aof_pic_label, 1);
       /* This needs to persist throughout the compilation.  */
       end_temporary_allocation ();
       aof_pic_label = gen_rtx_SYMBOL_REF (Pmode, "x$adcons");
