@@ -2242,8 +2242,7 @@ int
 pod_type_p (t)
      tree t;
 {
-  while (TREE_CODE (t) == ARRAY_TYPE)
-    t = TREE_TYPE (t);
+  t = strip_array_types (t);
 
   if (INTEGRAL_TYPE_P (t))
     return 1;  /* integral, character or enumeral type */
@@ -2310,8 +2309,7 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
 
       pri = TREE_INT_CST_LOW (initp_expr);
 	
-      while (TREE_CODE (type) == ARRAY_TYPE)
-	type = TREE_TYPE (type);
+      type = strip_array_types (type);
 
       if (decl == NULL_TREE
 	  || TREE_CODE (decl) != VAR_DECL

@@ -3537,12 +3537,7 @@ check_field_decls (t, access_decls, empty_p,
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
-	    {
-	      if (DECL_NAME (x))
-		cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
-	      else
-		cp_warning_at ("non-static reference in class without a constructor", x);
-	    }
+            cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
 	}
 
       type = strip_array_types (type);
@@ -3574,12 +3569,7 @@ check_field_decls (t, access_decls, empty_p,
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
-	    {
-	      if (DECL_NAME (x))
-		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
-	      else
-		cp_warning_at ("non-static const member in class without a constructor", x);
-	    }
+            cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (IS_AGGR_TYPE (type))
@@ -6533,8 +6523,8 @@ note_name_declared_in_class (name, decl)
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
       cp_error ("declaration of `%#D'", decl);
-      cp_error_at ("changes meaning of `%s' from `%+#D'", 
-		   IDENTIFIER_POINTER (DECL_NAME (OVL_CURRENT (decl))),
+      cp_error_at ("changes meaning of `%D' from `%+#D'", 
+		   DECL_NAME (OVL_CURRENT (decl)),
 		   (tree) n->value);
     }
 }
