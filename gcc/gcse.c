@@ -4079,7 +4079,7 @@ find_avail_set (regno, insn)
 /* Subroutine of cprop_insn that tries to propagate constants into
    JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
    it is the instruction that immediately preceeds JUMP, and must be a
-   single SET of a CC_MODE register.  FROM is what we will try to replace,
+   single SET of a register.  FROM is what we will try to replace,
    SRC is the constant we will try to substitute for it.  Returns nonzero
    if a change was made. */
 
@@ -4127,7 +4127,7 @@ cprop_jump (bb, setcc, jump, from, src)
 
 #ifdef HAVE_cc0
   /* Delete the cc0 setter.  */
-  if (setcc != NULL && SET_DEST (PATTERN (setcc)) == cc0_rtx)
+  if (setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
     delete_insn (setcc);
 #endif
 
@@ -4137,7 +4137,7 @@ cprop_jump (bb, setcc, jump, from, src)
   if (gcse_file != NULL)
     {
       fprintf (gcse_file,
-	       "CONST-PROP: Replacing reg %d in insn %d with constant ",
+	       "CONST-PROP: Replacing reg %d in jump_insn %d with constant ",
 	       REGNO (from), INSN_UID (jump));
       print_rtl (gcse_file, src);
       fprintf (gcse_file, "\n");
@@ -4205,20 +4205,19 @@ cprop_insn (bb, insn, alter_jumps)
       /* Constant propagation.  */
       if (CONSTANT_P (src))
 	{
-	  /* Check for MODE_CC setting instructions followed by
+	  rtx sset;
+
+	  /* Check for reg or cc0 setting instructions followed by
 	     conditional branch instructions first.  */
 	  if (alter_jumps
-	      && single_set (insn)
+	      && (sset = single_set (insn)) != NULL
 	      && any_condjump_p (NEXT_INSN (insn))
               && onlyjump_p (NEXT_INSN (insn)))
 	    {
-	      rtx dest = SET_DEST (PATTERN (insn));
-	      if ((GET_MODE_CLASS (GET_MODE (dest)) == MODE_CC
-#ifdef HAVE_cc0
-		   || dest == cc0_rtx
-#endif
-		  ) && cprop_jump (bb, insn, NEXT_INSN (insn),
-				   reg_used->reg_rtx, src))
+	      rtx dest = SET_DEST (sset);
+	      if ((REG_P (dest) || CC0_P (dest))
+		  && cprop_jump (bb, insn, NEXT_INSN (insn),
+				 reg_used->reg_rtx, src))
 		{
 		  changed = 1;
 		  break;
@@ -4430,7 +4429,7 @@ bypass_block (bb, setcc, jump)
 {
   rtx insn, note;
   edge e, enext;
-  int i,change;
+  int i, change;
 
   insn = (setcc != NULL) ? setcc : jump;
 
@@ -4449,7 +4448,7 @@ bypass_block (bb, setcc, jump)
 	{
 	  struct reg_use *reg_used = &reg_use_table[i];
           unsigned int regno = REGNO (reg_used->reg_rtx);
-	  basic_block dest;
+	  basic_block dest, old_dest;
           struct expr *set;
           rtx src, new;
 
@@ -4480,27 +4479,26 @@ bypass_block (bb, setcc, jump)
 
 	  /* Once basic block indices are stable, we should be able
 	     to use redirect_edge_and_branch_force instead.  */
-	  if ((dest != NULL) && (dest != e->dest)
+	  old_dest = e->dest;
+	  if (dest != NULL && dest != old_dest
 	      && redirect_edge_and_branch (e, dest))
 	    {
-	      /* Copy the MODE_CC setter to the redirected edge.
+	      /* Copy the register setter to the redirected edge.
 		 Don't copy CC0 setters, as CC0 is dead after jump.  */
 	      if (setcc)
 		{
 		  rtx pat = PATTERN (setcc);
-		  if (GET_MODE_CLASS (GET_MODE (SET_DEST (pat))) == MODE_CC)
+		  if (!CC0_P (SET_DEST (pat)))
 		    insert_insn_on_edge (copy_insn (pat), e);
 		}
 
 	      if (gcse_file != NULL)
 		{
-		  fprintf (gcse_file, "JUMP-BYPASS: Replacing reg %d in ",
-			   regno);
-		  fprintf (gcse_file, "insn %d with constant ",
-			   INSN_UID (jump));
+		  fprintf (gcse_file, "JUMP-BYPASS: Proved reg %d in jump_insn %d equals constant ",
+			   regno, INSN_UID (jump));
 		  print_rtl (gcse_file, SET_SRC (set->expr));
 		  fprintf (gcse_file, "\nBypass edge from %d->%d to %d\n",
-			   e->src->index, e->dest->index, dest->index);
+			   e->src->index, old_dest->index, dest->index);
 		}
 	      change = 1;
 	      break;
@@ -4541,19 +4539,14 @@ bypass_conditional_jumps ()
 	       insn = NEXT_INSN (insn))
 	    if (GET_CODE (insn) == INSN)
 	      {
-		rtx set = single_set (insn);
 		if (setcc)
 		  break;
-		if (!set)
+		if (GET_CODE (PATTERN (setcc)) != SET)
 		  break;
 
-		dest = SET_DEST (set);
-		if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_CC)
+		dest = SET_DEST (PATTERN (setcc));
+		if (REG_P (dest) || CC0_P (dest))
 		  setcc = insn;
-#ifdef HAVE_cc0
-		else if (dest == cc0_rtx)
-		  setcc = insn;
-#endif
 		else
 		  break;
 	      }
@@ -4568,7 +4561,7 @@ bypass_conditional_jumps ()
 	}
     }
 
-  /* If we bypassed any MODE_CC setting insns, we inserted a
+  /* If we bypassed any register setting insns, we inserted a
      copy on the redirected edge.  These need to be commited.  */
   if (changed)
     commit_edge_insertions();

@@ -1,3 +1,12 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (CC0_P): New.
+	* gcse.c (cprop_jump): Use it with single_set.  Tweak dump text.
+	(cprop_insn): Allow any mode register; use CC0_P.  CSE out single_set.
+	(bypass_block): Save old dest block for dump text.
+	(bypass_conditional_jumps): Allow any mode register; use CC0_P.
+	Allow only true SET insns, not single_set.
+
 2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (diagnostic_finish): Rename to output_flush.
@@ -3338,7 +3347,6 @@ config/alpha:
 	(CPP_SPEC): Remove ieee defines.
 	* freebsd.h, netbsd.h: Remove ieee defines and cpp_cpu.
 
->>>>>>> 1.14095
 2002-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_save_reg): Make regno unsigned.
