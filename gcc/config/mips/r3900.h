@@ -30,14 +30,7 @@ Boston, MA 02111-1307, USA.  */
 /* We use the MIPS EABI by default.  */
 #define MIPS_ABI_DEFAULT ABI_EABI
 
-#define SUBTARGET_CPP_SPEC "\
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips_eabi}}} \
-%{!msingle-float:-D__mips_soft_float} \
-%{mhard-float:%e-mhard-float not supported} \
-%{msingle-float:%{msoft-float: \
-  %e-msingle-float and -msoft-float can not both be specified}}"
-
-/* by default (if not mips-something-else) produce code for the r3900 */
+/* By default (if not mips-something-else) produce code for the r3900 */
 #define SUBTARGET_CC1_SPEC "\
 %{mhard-float:%e-mhard-float not supported} \
 %{msingle-float:%{msoft-float: \
