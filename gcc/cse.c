@@ -5550,8 +5550,8 @@ cse_insn (insn, libcall_insn)
 		  && (GET_CODE (sets[i].orig_src) == REG
 		      || GET_CODE (sets[i].orig_src) == SUBREG
 		      || GET_CODE (sets[i].orig_src) == MEM))
-		replace_rtx (REG_NOTES (libcall_insn), sets[i].orig_src,
-			     copy_rtx (new));
+		simplify_replace_rtx (REG_NOTES (libcall_insn),
+				      sets[i].orig_src, copy_rtx (new));
 
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
@@ -7632,33 +7632,49 @@ dead_libcall_p (insn, counts)
      rtx insn;
      int *counts;
 {
-  rtx note;
+  rtx note, set, new;
+
   /* See if there's a REG_EQUAL note on this insn and try to
      replace the source with the REG_EQUAL expression.
 
      We assume that insns with REG_RETVALs can only be reg->reg
      copies at this point.  */
   note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-  if (note)
+  if (!note)
+    return false;
+
+  set = single_set (insn);
+  if (!set)
+    return false;
+
+  new = simplify_rtx (XEXP (note, 0));
+  if (!new)
+    new = XEXP (note, 0);
+
+  /* While changing insn, we must update the counts accordingly.  */
+  count_reg_usage (insn, counts, NULL_RTX, -1);
+
+  if (validate_change (insn, &SET_SRC (set), new, 0))
     {
-      rtx set = single_set (insn);
-      rtx new = simplify_rtx (XEXP (note, 0));
+      count_reg_usage (insn, counts, NULL_RTX, 1);
+      remove_note (insn, find_reg_note (insn, REG_RETVAL, NULL_RTX));
+      remove_note (insn, note);
+      return true;
+    }
 
-      if (!new)
-	new = XEXP (note, 0);
-
-      /* While changing insn, we must update the counts accordingly.  */
-      count_reg_usage (insn, counts, NULL_RTX, -1);
-
-      if (set && validate_change (insn, &SET_SRC (set), new, 0))
+  if (CONSTANT_P (new))
+    {
+      new = force_const_mem (GET_MODE (SET_DEST (set)), new);
+      if (new && validate_change (insn, &SET_SRC (set), new, 0))
 	{
-          count_reg_usage (insn, counts, NULL_RTX, 1);
+	  count_reg_usage (insn, counts, NULL_RTX, 1);
 	  remove_note (insn, find_reg_note (insn, REG_RETVAL, NULL_RTX));
 	  remove_note (insn, note);
 	  return true;
 	}
-       count_reg_usage (insn, counts, NULL_RTX, 1);
     }
+      
+  count_reg_usage (insn, counts, NULL_RTX, 1);
   return false;
 }
 

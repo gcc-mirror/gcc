@@ -1,3 +1,15 @@
+2003-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* cse.c (cse_insn): Simplify REG_EQUAL note on libcalls when
+	making a substitution.
+	(dead_libcall_p): If directly replacing a libcall with a
+	constant value produces an invalid instruction, also try forcing
+	the constant into the constant pool.
+	* expr.c (emit_move_insn): Add a REG_EQUAL note when it is not
+	obvious that the source is a constant.
+	(compress_float_constant): Use set_unique_reg_note to place
+	REG_EQUAL notes on instructions.
+
 2003-05-30  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (extern_list): Add GTY marker.
