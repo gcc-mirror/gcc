@@ -1,3 +1,8 @@
+Fri Apr 10 00:36:31 1998  H.J. Lu  (hjl@gnu.org)
+
+	* i386.md (movqi+1): Handle invalid QI register.
+	(movsf_push-1): Likewise.
+
 Thu Apr  9 16:53:59 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.c: call_address_operand(): Only accept symbolic
