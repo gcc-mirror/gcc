@@ -532,6 +532,7 @@ char *lang_options[] =
   "-traditional",
   "-fnotraditional",
   "-fno-traditional",
+  "-fallow-single-precision",
   "-fsigned-char",
   "-funsigned-char",
   "-fno-signed-char",
