@@ -1,3 +1,10 @@
+2003-01-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (update_vtable_entry_for_fn): Add index parameter.
+	Generate vcall thunk for covariant overriding from a virtual
+	primary base.
+	(dfs_modify_vtables): Adjust.
+
 2003-01-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9403
