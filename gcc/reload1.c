@@ -7624,13 +7624,13 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
 
   /* If the pseudo-reg we are reloading is no longer referenced
      anywhere between the store into it and here,
-     and no jumps or labels intervene, then the value can get
-     here through the reload reg alone.
+     and we're within the same basic block, then the value can only
+     pass through the reload reg and end up here.
      Otherwise, give up--return.  */
   for (i1 = NEXT_INSN (output_reload_insn);
        i1 != insn; i1 = NEXT_INSN (i1))
     {
-      if (LABEL_P (i1) || JUMP_P (i1))
+      if (NOTE_INSN_BASIC_BLOCK_P (i1))
 	return;
       if ((NONJUMP_INSN_P (i1) || CALL_P (i1))
 	  && reg_mentioned_p (reg, PATTERN (i1)))
