@@ -504,6 +504,8 @@ verify_ssa (void)
   size_t i;
   basic_block bb;
   basic_block *definition_block = xcalloc (num_ssa_names, sizeof (basic_block));
+  ssa_op_iter iter;
+  tree op;
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
@@ -528,43 +530,26 @@ verify_ssa (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt;
-	  stmt_ann_t ann;
-	  unsigned int j;
-	  v_may_def_optype v_may_defs;
-	  v_must_def_optype v_must_defs;
-	  def_optype defs;
 
 	  stmt = bsi_stmt (bsi);
-	  ann = stmt_ann (stmt);
 	  get_stmt_operands (stmt);
 
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  if (ann->makes_aliased_stores && NUM_V_MAY_DEFS (v_may_defs) == 0)
+	  if (stmt_ann (stmt)->makes_aliased_stores 
+	      && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0)
 	    {
 	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
 	      debug_generic_stmt (stmt);
 	      goto err;
 	    }
 	    
-	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_DEFS)
 	    {
-	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
 	      if (verify_def (bb, definition_block, op, stmt, true))
 		goto err;
 	    }
           
-	  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	    {
-	      tree op = V_MUST_DEF_OP (v_must_defs, j);
-	      if (verify_def (bb, definition_block, op, stmt, true))
-		goto err;
-	    }
-
-	  defs = DEF_OPS (ann);
-	  for (j = 0; j < NUM_DEFS (defs); j++)
-	    {
-	      tree op = DEF_OP (defs, j);
 	      if (verify_def (bb, definition_block, op, stmt, false))
 		goto err;
 	    }
@@ -600,34 +585,16 @@ verify_ssa (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
-	  stmt_ann_t ann = stmt_ann (stmt);
-	  unsigned int j;
-	  vuse_optype vuses;
-	  v_may_def_optype v_may_defs;
-	  use_optype uses;
 
-	  vuses = VUSE_OPS (ann); 
-	  for (j = 0; j < NUM_VUSES (vuses); j++)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_USES)
 	    {
-	      tree op = VUSE_OP (vuses, j);
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
 			      op, stmt, false, true))
 		goto err;
 	    }
 
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
-	      tree op = V_MAY_DEF_OP (v_may_defs, j);
-	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-			      op, stmt, false, true))
-		goto err;
-	    }
-
-	  uses = USE_OPS (ann);
-	  for (j = 0; j < NUM_USES (uses); j++)
-	    {
-	      tree op = USE_OP (uses, j);
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
 			      op, stmt, false, false))
 		goto err;
@@ -941,14 +908,13 @@ propagate_into_addr (tree stmt, tree var, tree *x, tree repl)
 static void
 replace_immediate_uses (tree var, tree repl)
 {
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
   int i, j, n;
   dataflow_t df;
   tree stmt;
   stmt_ann_t ann;
   bool mark_new_vars;
+  ssa_op_iter iter;
+  use_operand_p use_p;
 
   df = get_immediate_uses (SSA_NAME_DEF_STMT (var));
   n = num_immediate_uses (df);
@@ -982,25 +948,18 @@ replace_immediate_uses (tree var, tree repl)
 	      propagate_into_addr (stmt, var, &TREE_OPERAND (stmt, 1), repl);
 	    }
 
-	  uses = USE_OPS (ann);
-	  for (j = 0; j < (int) NUM_USES (uses); j++)
-	    if (USE_OP (uses, j) == var)
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	    if (USE_FROM_PTR (use_p) == var)
 	      {
-		propagate_value (USE_OP_PTR (uses, j), repl);
+		propagate_value (use_p, repl);
 		mark_new_vars = POINTER_TYPE_P (TREE_TYPE (repl));
 	      }
 	}
       else
 	{
-	  vuses = VUSE_OPS (ann);
-	  for (j = 0; j < (int) NUM_VUSES (vuses); j++)
-	    if (VUSE_OP (vuses, j) == var)
-	      propagate_value (VUSE_OP_PTR (vuses, j), repl);
-
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  for (j = 0; j < (int) NUM_V_MAY_DEFS (v_may_defs); j++)
-	    if (V_MAY_DEF_OP (v_may_defs, j) == var)
-	      propagate_value (V_MAY_DEF_OP_PTR (v_may_defs, j), repl);
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VIRTUAL_USES)
+	    if (USE_FROM_PTR (use_p) == var)
+	      propagate_value (use_p, repl);
 	}
 
       /* If REPL is a pointer, it may have different memory tags associated

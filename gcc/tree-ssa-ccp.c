@@ -644,11 +644,11 @@ cp_lattice_meet (value val1, value val2)
 static void
 visit_stmt (tree stmt)
 {
-  size_t i;
   stmt_ann_t ann;
-  def_optype defs;
   v_may_def_optype v_may_defs;
   v_must_def_optype v_must_defs;
+  tree def;
+  ssa_op_iter iter;
 
   /* If the statement has already been deemed to be VARYING, don't simulate
      it again.  */
@@ -684,12 +684,11 @@ visit_stmt (tree stmt)
 
   /* Definitions made by statements other than assignments to SSA_NAMEs
      represent unknown modifications to their outputs.  Mark them VARYING.  */
-  else if (NUM_DEFS (defs = DEF_OPS (ann)) != 0)
+  else if (NUM_DEFS (DEF_OPS (ann)) != 0)
     {
       DONT_SIMULATE_AGAIN (stmt) = 1;
-      for (i = 0; i < NUM_DEFS (defs); i++)
+      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
 	{
-	  tree def = DEF_OP (defs, i);
 	  def_to_varying (def);
 	}
     }
@@ -712,9 +711,8 @@ visit_stmt (tree stmt)
     }
 
   /* Mark all V_MAY_DEF operands VARYING.  */
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    def_to_varying (V_MAY_DEF_RESULT (v_may_defs, i));
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMAYDEF)
+    def_to_varying (def);
     
 }
 
@@ -1187,6 +1185,8 @@ initialize (void)
   edge e;
   basic_block bb;
   sbitmap virtual_var;
+  tree def;
+  ssa_op_iter iter;
 
   /* Worklists of SSA edges.  */
   VARRAY_TREE_INIT (ssa_edges, 20, "ssa_edges");
@@ -1211,11 +1211,6 @@ initialize (void)
     {
       block_stmt_iterator i;
       tree stmt;
-      stmt_ann_t ann;
-      def_optype defs;
-      v_may_def_optype v_may_defs;
-      v_must_def_optype v_must_defs;
-      size_t x;
       int vary;
 
       /* Get the default value for each definition.  */
@@ -1224,33 +1219,22 @@ initialize (void)
 	  vary = 0;
 	  stmt = bsi_stmt (i);
 	  get_stmt_operands (stmt);
-	  ann = stmt_ann (stmt);
-	  defs = DEF_OPS (ann);
-	  for (x = 0; x < NUM_DEFS (defs); x++)
+
+	  /* Get the default value for each DEF and V_MUST_DEF.  */
+	  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, 
+				     (SSA_OP_DEF | SSA_OP_VMUSTDEF))
 	    {
-	      tree def = DEF_OP (defs, x);
 	      if (get_value (def)->lattice_val == VARYING)
 		vary = 1;
-	    }
-	  
-	  /* Get the default value for each V_MUST_DEF.  */
-	  v_must_defs = V_MUST_DEF_OPS (ann);
-	  for (x = 0; x < NUM_V_MUST_DEFS (v_must_defs); x++)
-	    {
-	      tree v_must_def = V_MUST_DEF_OP (v_must_defs, x);
-	      if (get_value (v_must_def)->lattice_val == VARYING)
-	        vary = 1;
 	    }
 	  
 	  DONT_SIMULATE_AGAIN (stmt) = vary;
 
 	  /* Mark all V_MAY_DEF operands VARYING.  */
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  for (x = 0; x < NUM_V_MAY_DEFS (v_may_defs); x++)
+	  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMAYDEF)
 	    {
-	      tree res = V_MAY_DEF_RESULT (v_may_defs, x);
-	      get_value (res)->lattice_val = VARYING;
-	      SET_BIT (virtual_var, SSA_NAME_VERSION (res));
+	      get_value (def)->lattice_val = VARYING;
+	      SET_BIT (virtual_var, SSA_NAME_VERSION (def));
 	    }
 	}
 
@@ -1494,18 +1478,16 @@ static bool
 replace_uses_in (tree stmt, bool *replaced_addresses_p)
 {
   bool replaced = false;
-  use_optype uses;
-  size_t i;
+  use_operand_p use;
+  ssa_op_iter iter;
 
   if (replaced_addresses_p)
     *replaced_addresses_p = false;
 
   get_stmt_operands (stmt);
 
-  uses = STMT_USE_OPS (stmt);
-  for (i = 0; i < NUM_USES (uses); i++)
+  FOR_EACH_SSA_USE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      use_operand_p use = USE_OP_PTR (uses, i);
       value *val = get_value (USE_FROM_PTR (use));
 
       if (val->lattice_val == CONSTANT)
@@ -1575,11 +1557,11 @@ replace_vuse_in (tree stmt, bool *replaced_addresses_p)
 static latticevalue
 likely_value (tree stmt)
 {
-  use_optype uses;
   vuse_optype vuses;
-  size_t i;
   int found_constant = 0;
   stmt_ann_t ann;
+  tree use;
+  ssa_op_iter iter;
 
   /* If the statement makes aliased loads or has volatile operands, it
      won't fold to a constant value.  */
@@ -1594,10 +1576,8 @@ likely_value (tree stmt)
 
   get_stmt_operands (stmt);
 
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      tree use = USE_OP (uses, i);
       value *val = get_value (use);
 
       if (val->lattice_val == UNDEFINED)
@@ -1627,7 +1607,7 @@ likely_value (tree stmt)
 	found_constant = 1;
     }
 
-  return ((found_constant || (!uses && !vuses)) ? CONSTANT : VARYING);
+  return ((found_constant || (!USE_OPS (ann) && !vuses)) ? CONSTANT : VARYING);
 }
 
 /* A subroutine of fold_stmt_r.  Attempts to fold *(A+O) to A[X].
@@ -2266,6 +2246,8 @@ set_rhs (tree *stmt_p, tree expr)
   tree stmt = *stmt_p, op;
   enum tree_code code = TREE_CODE (expr);
   stmt_ann_t ann;
+  tree var;
+  ssa_op_iter iter;
 
   /* Verify the constant folded result is valid gimple.  */
   if (TREE_CODE_CLASS (code) == '2')
@@ -2321,33 +2303,10 @@ set_rhs (tree *stmt_p, tree expr)
 
       if (TREE_SIDE_EFFECTS (expr))
 	{
-	  def_optype defs;
-	  v_may_def_optype v_may_defs;
-	  v_must_def_optype v_must_defs;
-	  size_t i;
-
 	  /* Fix all the SSA_NAMEs created by *STMT_P to point to its new
 	     replacement.  */
-	  defs = DEF_OPS (ann);
-	  for (i = 0; i < NUM_DEFS (defs); i++)
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_DEFS)
 	    {
-	      tree var = DEF_OP (defs, i);
-	      if (TREE_CODE (var) == SSA_NAME)
-		SSA_NAME_DEF_STMT (var) = *stmt_p;
-	    }
-
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-	    {
-	      tree var = V_MAY_DEF_RESULT (v_may_defs, i);
-	      if (TREE_CODE (var) == SSA_NAME)
-		SSA_NAME_DEF_STMT (var) = *stmt_p;
-	    }
-	    
-	  v_must_defs = V_MUST_DEF_OPS (ann);
-	  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-	    {
-	      tree var = V_MUST_DEF_OP (v_must_defs, i);
 	      if (TREE_CODE (var) == SSA_NAME)
 		SSA_NAME_DEF_STMT (var) = *stmt_p;
 	    }

@@ -673,4 +673,176 @@ get_tree_ann (tree t)
   return (ann) ? ann : create_tree_ann (t);
 }
 
+/*  -----------------------------------------------------------------------  */
+
+/* The following set of routines are used to iterator over various type of
+   SSA operands.  */
+
+/* Return true if PTR is finished iterating.  */
+static inline bool
+op_iter_done (ssa_op_iter *ptr)
+{
+  return ptr->done;
+}
+
+/* Get the next iterator use value for PTR.  */
+static inline use_operand_p
+op_iter_next_use (ssa_op_iter *ptr)
+{
+  if (ptr->use_i < ptr->num_use)
+    {
+      return USE_OP_PTR (ptr->ops->use_ops, (ptr->use_i)++);
+    }
+  if (ptr->vuse_i < ptr->num_vuse)
+    {
+      return VUSE_OP_PTR (ptr->ops->vuse_ops, (ptr->vuse_i)++);
+    }
+  if (ptr->v_mayu_i < ptr->num_v_mayu)
+    {
+      return V_MAY_DEF_OP_PTR (ptr->ops->v_may_def_ops,
+				       (ptr->v_mayu_i)++);
+    }
+  ptr->done = true;
+  return NULL_USE_OPERAND_P;
+}
+
+/* Get the next iterator def value for PTR.  */
+static inline def_operand_p
+op_iter_next_def (ssa_op_iter *ptr)
+{
+  if (ptr->def_i < ptr->num_def)
+    {
+      return DEF_OP_PTR (ptr->ops->def_ops, (ptr->def_i)++);
+    }
+  if (ptr->v_must_i < ptr->num_v_must)
+    {
+      return V_MUST_DEF_OP_PTR (ptr->ops->v_must_def_ops, 
+					(ptr->v_must_i)++);
+    }
+  if (ptr->v_mayd_i < ptr->num_v_mayd)
+    {
+      return V_MAY_DEF_RESULT_PTR (ptr->ops->v_may_def_ops,
+					   (ptr->v_mayd_i)++);
+    }
+  ptr->done = true;
+  return NULL_DEF_OPERAND_P;
+}
+
+/* Get the next iterator tree value for PTR.  */
+static inline tree
+op_iter_next_tree (ssa_op_iter *ptr)
+{
+  if (ptr->use_i < ptr->num_use)
+    {
+      return USE_OP (ptr->ops->use_ops, (ptr->use_i)++);
+    }
+  if (ptr->vuse_i < ptr->num_vuse)
+    {
+      return VUSE_OP (ptr->ops->vuse_ops, (ptr->vuse_i)++);
+    }
+  if (ptr->v_mayu_i < ptr->num_v_mayu)
+    {
+      return V_MAY_DEF_OP (ptr->ops->v_may_def_ops, (ptr->v_mayu_i)++);
+    }
+  if (ptr->def_i < ptr->num_def)
+    {
+      return DEF_OP (ptr->ops->def_ops, (ptr->def_i)++);
+    }
+  if (ptr->v_must_i < ptr->num_v_must)
+    {
+      return V_MUST_DEF_OP (ptr->ops->v_must_def_ops, 
+					(ptr->v_must_i)++);
+    }
+  if (ptr->v_mayd_i < ptr->num_v_mayd)
+    {
+      return V_MAY_DEF_RESULT (ptr->ops->v_may_def_ops,
+					   (ptr->v_mayd_i)++);
+    }
+  ptr->done = true;
+  return NULL;
+}
+
+/* Initialize the iterator PTR to the virtual defs in STMT.  */
+static inline void
+op_iter_init (ssa_op_iter *ptr, tree stmt, int flags)
+{
+  stmt_operands_p ops;
+  stmt_ann_t ann = get_stmt_ann (stmt);
+
+  ops = &(ann->operands);
+  ptr->done = false;
+  ptr->ops = ops;
+  ptr->num_def = (flags & SSA_OP_DEF) ? NUM_DEFS (ops->def_ops) : 0;
+  ptr->num_use = (flags & SSA_OP_USE) ? NUM_USES (ops->use_ops) : 0;
+  ptr->num_vuse = (flags & SSA_OP_VUSE) ? NUM_VUSES (ops->vuse_ops) : 0;
+  ptr->num_v_mayu = (flags & SSA_OP_VMAYUSE)
+		     ?  NUM_V_MAY_DEFS (ops->v_may_def_ops) : 0;
+  ptr->num_v_mayd = (flags & SSA_OP_VMAYDEF) 
+		     ?  NUM_V_MAY_DEFS (ops->v_may_def_ops) : 0;
+  ptr->num_v_must = (flags & SSA_OP_VMUSTDEF) 
+		     ? NUM_V_MUST_DEFS (ops->v_must_def_ops) : 0;
+  ptr->def_i = 0;
+  ptr->use_i = 0;
+  ptr->vuse_i = 0;
+  ptr->v_mayu_i = 0;
+  ptr->v_mayd_i = 0;
+  ptr->v_must_i = 0;
+}
+
+/* Initialize iterator PTR to the use operands in STMT based on FLAGS. Return
+   the first use.  */
+static inline use_operand_p
+op_iter_init_use (ssa_op_iter *ptr, tree stmt, int flags)
+{
+  op_iter_init (ptr, stmt, flags);
+  return op_iter_next_use (ptr);
+}
+
+/* Initialize iterator PTR to the def operands in STMT based on FLAGS. Return
+   the first def.  */
+static inline def_operand_p
+op_iter_init_def (ssa_op_iter *ptr, tree stmt, int flags)
+{
+  op_iter_init (ptr, stmt, flags);
+  return op_iter_next_def (ptr);
+}
+
+/* Initialize iterator PTR to the operands in STMT based on FLAGS. Return
+   the first operand as a tree.  */
+static inline tree
+op_iter_init_tree (ssa_op_iter *ptr, tree stmt, int flags)
+{
+  op_iter_init (ptr, stmt, flags);
+  return op_iter_next_tree (ptr);
+}
+
+/* Get the next iterator maydef value for PTR, returning the maydef values in
+   USE and DEF.  */
+static inline void
+op_iter_next_maydef (use_operand_p *use, def_operand_p *def, ssa_op_iter *ptr)
+{
+  if (ptr->v_mayu_i < ptr->num_v_mayu)
+    {
+      *def = V_MAY_DEF_RESULT_PTR (ptr->ops->v_may_def_ops, ptr->v_mayu_i);
+      *use = V_MAY_DEF_OP_PTR (ptr->ops->v_may_def_ops, (ptr->v_mayu_i)++);
+      return;
+    }
+  else
+    {
+      *def = NULL_DEF_OPERAND_P;
+      *use = NULL_USE_OPERAND_P;
+    }
+  ptr->done = true;
+  return;
+}
+
+/* Initialize iterator PTR to the operands in STMT.  Return the first operands
+   in USE and DEF.  */
+static inline void
+op_iter_init_maydef (ssa_op_iter *ptr, tree stmt, use_operand_p *use, 
+		     def_operand_p *def)
+{
+  op_iter_init (ptr, stmt, SSA_OP_VMAYUSE);
+  op_iter_next_maydef (use, def, ptr);
+}
 #endif /* _TREE_FLOW_INLINE_H  */

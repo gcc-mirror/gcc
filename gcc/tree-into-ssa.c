@@ -342,71 +342,50 @@ mark_def_sites (struct dom_walk_data *walk_data,
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
   sbitmap kills = gd->kills;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  vuse_optype vuses;
-  def_optype defs;
-  use_optype uses;
-  size_t i, uid;
-  tree stmt;
-  stmt_ann_t ann;
+  size_t uid;
+  tree stmt, def;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
 
   /* Mark all the blocks that have definitions for each variable in the
      VARS_TO_RENAME bitmap.  */
   stmt = bsi_stmt (bsi);
   get_stmt_operands (stmt);
-  ann = stmt_ann (stmt);
 
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    {
-      use_operand_p use_p = USE_OP_PTR (uses, i);
 
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE | SSA_OP_VUSE)
+    {
       if (prepare_use_operand_for_rename (use_p, &uid)
 	  && !TEST_BIT (kills, uid))
 	set_livein_block (USE_FROM_PTR (use_p), bb);
     }
 	  
-  /* Similarly for virtual uses.  */
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    {
-      use_operand_p use_p = VUSE_OP_PTR (vuses, i);
-
-      if (prepare_use_operand_for_rename (use_p, &uid)
-	  && !TEST_BIT (kills, uid))
-	set_livein_block (USE_FROM_PTR (use_p), bb);
-    }
-
   /* Note that virtual definitions are irrelevant for computing KILLS
      because a V_MAY_DEF does not constitute a killing definition of the
      variable.  However, the operand of a virtual definitions is a use
      of the variable, so it may cause the variable to be considered
      live-on-entry.  */
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+
+  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
     {
-      use_operand_p use_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
       if (prepare_use_operand_for_rename (use_p, &uid))
 	{
 	  /* If we do not already have an SSA_NAME for our destination,
 	     then set the destination to the source.  */
-	  if (TREE_CODE (V_MAY_DEF_RESULT (v_may_defs, i)) != SSA_NAME)
-	    SET_V_MAY_DEF_RESULT (v_may_defs, i, USE_FROM_PTR (use_p));
+	  if (TREE_CODE (DEF_FROM_PTR (def_p)) != SSA_NAME)
+	    SET_DEF (def_p, USE_FROM_PTR (use_p));
 	    
           set_livein_block (USE_FROM_PTR (use_p), bb);
-	  set_def_block (V_MAY_DEF_RESULT (v_may_defs, i), bb, false, false);
+	  set_def_block (DEF_FROM_PTR (def_p), bb, false, false);
 	}
     }
 
   /* Now process the virtual must-defs made by this statement.  */
-  v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF | SSA_OP_VMUSTDEF)
     {
-      tree def = V_MUST_DEF_OP (v_must_defs, i);
-
       if (prepare_def_operand_for_rename (def, &uid))
 	{
 	  set_def_block (def, bb, false, false);
@@ -414,19 +393,6 @@ mark_def_sites (struct dom_walk_data *walk_data,
 	}
     }
 
-  /* Now process the definition made by this statement.  Mark the
-     variables in KILLS.  */
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
-    {
-      tree def = DEF_OP (defs, i);
-
-      if (prepare_def_operand_for_rename (def, &uid))
-	{
-	  set_def_block (def, bb, false, false);
-	  SET_BIT (kills, uid);
-	}
-    }
 }
 
 /* Ditto, but works over ssa names.  */
@@ -438,27 +404,19 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
   sbitmap kills = gd->kills;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  vuse_optype vuses;
-  def_optype defs;
-  use_optype uses;
-  size_t i, uid, def_uid;
+  size_t uid, def_uid;
   tree stmt, use, def;
-  stmt_ann_t ann;
+  ssa_op_iter iter;
 
   /* Mark all the blocks that have definitions for each variable in the
      names_to_rename bitmap.  */
   stmt = bsi_stmt (bsi);
   get_stmt_operands (stmt);
-  ann = stmt_ann (stmt);
 
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_ALL_USES)
     {
-      use = USE_OP (uses, i);
       uid = SSA_NAME_VERSION (use);
 
       if (TEST_BIT (gd->names_to_rename, uid)
@@ -466,61 +424,10 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
 	set_livein_block (use, bb);
     }
 	  
-  /* Similarly for virtual uses.  */
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    {
-      use = VUSE_OP (vuses, i);
-      uid = SSA_NAME_VERSION (use);
-
-      if (TEST_BIT (gd->names_to_rename, uid)
-	  && !TEST_BIT (kills, uid))
-	set_livein_block (use, bb);
-    }
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      use = V_MAY_DEF_OP (v_may_defs, i);
-      uid = SSA_NAME_VERSION (use);
-
-      if (TEST_BIT (gd->names_to_rename, uid)
-	  && !TEST_BIT (kills, uid))
-	set_livein_block (use, bb);
-    }
-
   /* Now process the definition made by this statement.  Mark the
      variables in KILLS.  */
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
-      def = DEF_OP (defs, i);
-      def_uid = SSA_NAME_VERSION (def);
-
-      if (TEST_BIT (gd->names_to_rename, def_uid))
-	{
-	  set_def_block (def, bb, false, true);
-	  SET_BIT (kills, def_uid);
-	}
-    }
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      def = V_MAY_DEF_RESULT (v_may_defs, i);
-      def_uid = SSA_NAME_VERSION (def);
-
-      if (TEST_BIT (gd->names_to_rename, def_uid))
-	{
-	  set_def_block (def, bb, false, true);
-	  SET_BIT (kills, def_uid);
-	}
-    }
-
-  v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      def = V_MUST_DEF_OP (v_must_defs, i);
       def_uid = SSA_NAME_VERSION (def);
 
       if (TEST_BIT (gd->names_to_rename, def_uid))
@@ -1138,14 +1045,11 @@ rewrite_stmt (struct dom_walk_data *walk_data,
 	      basic_block bb ATTRIBUTE_UNUSED,
 	      block_stmt_iterator si)
 {
-  size_t i;
   stmt_ann_t ann;
   tree stmt;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  def_optype defs;
-  use_optype uses;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
   struct rewrite_block_data *bd;
 
   bd = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
@@ -1167,25 +1071,13 @@ rewrite_stmt (struct dom_walk_data *walk_data,
     abort ();
 #endif
 
-  defs = DEF_OPS (ann);
-  uses = USE_OPS (ann);
-  vuses = VUSE_OPS (ann);
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  v_must_defs = V_MUST_DEF_OPS (ann);
-
   /* Step 1.  Rewrite USES and VUSES in the statement.  */
-  for (i = 0; i < NUM_USES (uses); i++)
-    rewrite_operand (USE_OP_PTR (uses, i));
-
-  /* Rewrite virtual uses in the statement.  */
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    rewrite_operand (VUSE_OP_PTR (vuses, i));
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
+    rewrite_operand (use_p);
 
   /* Step 2.  Register the statement's DEF and VDEF operands.  */
-  for (i = 0; i < NUM_DEFS (defs); i++)
+  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
     {
-      def_operand_p def_p = DEF_OP_PTR (defs, i);
-
       if (TREE_CODE (DEF_FROM_PTR (def_p)) != SSA_NAME)
 	SET_DEF (def_p, make_ssa_name (DEF_FROM_PTR (def_p), stmt));
 
@@ -1193,36 +1085,6 @@ rewrite_stmt (struct dom_walk_data *walk_data,
 	 doesn't need to be renamed.  */
       register_new_def (DEF_FROM_PTR (def_p), &bd->block_defs);
     }
-
-  /* Register new virtual definitions made by the statement.  */
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      rewrite_operand (V_MAY_DEF_OP_PTR (v_may_defs, i));
-
-      if (TREE_CODE (V_MAY_DEF_RESULT (v_may_defs, i)) != SSA_NAME)
-	SET_V_MAY_DEF_RESULT (v_may_defs, i,
-			      make_ssa_name (V_MAY_DEF_RESULT (v_may_defs, i), 
-					     stmt));
-
-      /* FIXME: We shouldn't be registering new defs if the variable
-	 doesn't need to be renamed.  */
-      register_new_def (V_MAY_DEF_RESULT (v_may_defs, i), &bd->block_defs);
-    }
-        
-  /* Register new virtual mustdefs made by the statement.  */
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      def_operand_p v_must_def_p = V_MUST_DEF_OP_PTR (v_must_defs, i);
-
-      if (TREE_CODE (DEF_FROM_PTR (v_must_def_p)) != SSA_NAME)
-	SET_DEF (v_must_def_p, 
-		 make_ssa_name (DEF_FROM_PTR (v_must_def_p), stmt));
-
-      /* FIXME: We shouldn't be registering new mustdefs if the variable
-	 doesn't need to be renamed.  */
-      register_new_def (DEF_FROM_PTR (v_must_def_p), &bd->block_defs);
-    }
-    
 }
 
 /* Ditto, for rewriting ssa names.  */
@@ -1232,16 +1094,11 @@ ssa_rewrite_stmt (struct dom_walk_data *walk_data,
 		  basic_block bb ATTRIBUTE_UNUSED,
 		  block_stmt_iterator si)
 {
-  size_t i;
   stmt_ann_t ann;
   tree stmt, var;
+  ssa_op_iter iter;
   use_operand_p use_p;
   def_operand_p def_p;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  def_optype defs;
-  use_optype uses;
   struct rewrite_block_data *bd;
   sbitmap names_to_rename = walk_data->global_data;
 
@@ -1264,64 +1121,16 @@ ssa_rewrite_stmt (struct dom_walk_data *walk_data,
     abort ();
 #endif
 
-  defs = DEF_OPS (ann);
-  uses = USE_OPS (ann);
-  vuses = VUSE_OPS (ann);
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  v_must_defs = V_MUST_DEF_OPS (ann);
-
   /* Step 1.  Rewrite USES and VUSES in the statement.  */
-  for (i = 0; i < NUM_USES (uses); i++)
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
-      use_p = USE_OP_PTR (uses, i);
-      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
-	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
-    }
-
-  /* Rewrite virtual uses in the statement.  */
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    {
-      use_p = VUSE_OP_PTR (vuses, i);
-      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
-	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
-    }
-
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      use_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
       if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
 	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
     }
 
   /* Step 2.  Register the statement's DEF and VDEF operands.  */
-  for (i = 0; i < NUM_DEFS (defs); i++)
+  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
     {
-      def_p = DEF_OP_PTR (defs, i);
-      var = DEF_FROM_PTR (def_p);
-
-      if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))
-	continue;
-
-      SET_DEF (def_p, duplicate_ssa_name (var, stmt));
-      ssa_register_new_def (var, DEF_FROM_PTR (def_p), &bd->block_defs);
-    }
-
-  /* Register new virtual definitions made by the statement.  */
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      def_p = V_MAY_DEF_RESULT_PTR (v_may_defs, i);
-      var = DEF_FROM_PTR (def_p);
-
-      if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))
-	continue;
-
-      SET_DEF (def_p, duplicate_ssa_name (var, stmt));
-      ssa_register_new_def (var, DEF_FROM_PTR (def_p), &bd->block_defs);
-    }
-
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      def_p = V_MUST_DEF_OP_PTR (v_must_defs, i);
       var = DEF_FROM_PTR (def_p);
 
       if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))

@@ -1,3 +1,60 @@
+2004-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-operands.h (struct ssa_operand_iterator_d): New.  SSA operand
+	iterator controlling structure.
+	(SSA_OP_USE, SSA_OP_DEF, SSA_OP_VUSE, SSA_OP_VMAYUSE, SSA_OP_VMAYDEF,
+	SSA_OP_VMUSTDEF, SSA_OP_VIRTUAL_USES, SSA_OP_VIRTUAL_DEFS,
+	SSA_OP_ALL_USES, SSA_OP_ALL_DEFS, SSA_OP_ALL_OPERANDS): New.  Operand
+	iterator flags.
+	(FOR_EACH_SSA_TREE_OPERAND): New.  Iterate over operands as trees.
+	(FOR_EACH_SSA_USE_OPERAND): New.  Iterate over operands as uses.
+	(FOR_EACH_SSA_DEF_OPERAND): New.  Iterate over operands as defs.
+	(FOR_EACH_SSA_MAYDEF_OPERAND): New.  Iterate over V_MAY_DEFs.
+	* tree-ssa-operands.c (NULL_DEF_OPERAND_P, NULL_USE_OPERAND_P): New. 
+	Empty operand pointers.
+	* tree-flow-inline.h (op_iter_done): New.  Return true if finished.
+	(op_iter_next_use): New.  Return next use_operand_p.
+	(op_iter_next_def): New.  Return next def_operand_p.
+	(op_iter_next_tree): New.  Return next operands as a tree.
+	(op_iter_init): New.  Initialize an iterator structure.
+	(op_iter_init_use): New.  Initialize structure and get the first use.
+	(op_iter_init_def): New.  Initialize structure and get the first def.
+	(op_iter_init_tree): New.  Initialize structure and get the first tree.
+	(op_iter_next_maydef): New.  Return next V_MAY_DEF operands.
+	(op_iter_init_maydef): New.  Initialize structure and get the first 
+	V_MAY_DEF operands.
+	* tree-cfg.c (tree_duplicate_bb): Use new operand iterator.
+	* tree-dfa.c (compute_immediate_uses_for_stmt, 
+	redirect_immediate_uses): Use new operand iterator.
+	(v_may_defs_disappeared_p, v_must_defs_disappeared_p): Delete.
+	(mark_new_vars_to_rename): Use new operand iterator.  Count virtual
+	operands instead of using *_disappeared_p routines.
+	* tree-into-ssa.c (mark_def_sites, ssa_mark_def_sites, rewrite_stmt,
+	ssa_rewrite_stmt): Use new operand iterator.
+	* tree-outof-ssa.c (check_replaceable, find_replaceable_in_bb,
+	rewrite_trees): Use new operand iterator.
+	* tree-pretty-print.c (dump_vops): Use new operand iterator.
+	* tree-sra.c (mark_all_v_defs): Use new operand iterator.
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape, 
+	dump_points_to_info): Use new operand iterator.
+	* tree-ssa-ccp.c (cp_lattice_meet, visit_stmt, initialize, 
+	replace_uses_in, replace_vuse_in, likely_value, set_rhs): Use new 
+	operand iterator.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary, 
+	propagate_necessity): Use new operand iterator.
+	* tree-ssa-dom.c (cprop_into_stmt, optimize_stmt): Use operand iterator.
+	(register_definitions_for_stmt): Use new operand iterator.  Take stmt as
+	a parameter instead of a stmt_ann_t.
+	* tree-ssa-live.c (create_ssa_var_map, calculate_live_on_entry,
+	build_tree_conflict_graph): Use new operand iterator.
+	* tree-ssa-loop-im.c (determine_max_movement, single_reachable_address,
+	rewrite_mem_refs): Use new operand iterator.
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt, 
+	check_loop_closed_ssa_use): Use new operand iterator.
+	* tree-ssa.c (verify_ssa, replace_immediate_uses): Use operand iterator.
+	* tree-ssanames.c (release_defs): Use new operand iterator.
+	* tree-vectorizer.c (vect_create_data_ref): Use new operand iterator.
+
 2004-08-25  Adam Nemet  <anemet@lnxw.com>
 
 	* tlink.c (initial_cwd): New variable.

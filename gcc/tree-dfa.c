@@ -270,11 +270,8 @@ compute_immediate_uses_for_phi (tree phi, bool (*calc_for)(tree))
 static void
 compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
 {
-  size_t i;
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  stmt_ann_t ann;
+  tree use;
+  ssa_op_iter iter;
 
 #ifdef ENABLE_CHECKING
   /* PHI nodes are handled elsewhere.  */
@@ -283,13 +280,10 @@ compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
 #endif
 
   /* Look at USE_OPS or VUSE_OPS according to FLAGS.  */
-  ann = stmt_ann (stmt);
   if (flags & TDFA_USE_OPS)
     {
-      uses = USE_OPS (ann);
-      for (i = 0; i < NUM_USES (uses); i++)
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
-	  tree use = USE_OP (uses, i);
 	  tree imm_stmt = SSA_NAME_DEF_STMT (use);
 	  if (!IS_EMPTY_STMT (imm_stmt) && (!calc_for || calc_for (use)))
 	    add_immediate_use (imm_stmt, stmt);
@@ -298,21 +292,10 @@ compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
 
   if (flags & TDFA_USE_VOPS)
     {
-      vuses = VUSE_OPS (ann);
-      for (i = 0; i < NUM_VUSES (vuses); i++)
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_VIRTUAL_USES)
 	{
-	  tree vuse = VUSE_OP (vuses, i);
-	  tree imm_rdef_stmt = SSA_NAME_DEF_STMT (vuse);
-	  if (!IS_EMPTY_STMT (imm_rdef_stmt) && (!calc_for || calc_for (vuse)))
-	    add_immediate_use (imm_rdef_stmt, stmt);
-	}
-
-      v_may_defs = V_MAY_DEF_OPS (ann);
-      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-	{
-	  tree vuse = V_MAY_DEF_OP (v_may_defs, i);
-	  tree imm_rdef_stmt = SSA_NAME_DEF_STMT (vuse);
-	  if (!IS_EMPTY_STMT (imm_rdef_stmt) && (!calc_for || calc_for (vuse)))
+	  tree imm_rdef_stmt = SSA_NAME_DEF_STMT (use);
+	  if (!IS_EMPTY_STMT (imm_rdef_stmt) && (!calc_for || calc_for (use)))
 	    add_immediate_use (imm_rdef_stmt, stmt);
 	}
     }
@@ -380,21 +363,11 @@ redirect_immediate_use (tree use, tree old, tree new)
 void
 redirect_immediate_uses (tree old, tree new)
 {
-  stmt_ann_t ann = get_stmt_ann (old);
-  use_optype uses = USE_OPS (ann);
-  vuse_optype vuses = VUSE_OPS (ann);
-  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
-  unsigned int i;
+  ssa_op_iter iter;
+  tree val;
 
-  /* Look at USE_OPS or VUSE_OPS according to FLAGS.  */
-  for (i = 0; i < NUM_USES (uses); i++)
-    redirect_immediate_use (USE_OP (uses, i), old, new);
-
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    redirect_immediate_use (VUSE_OP (vuses, i), old, new);
-
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    redirect_immediate_use (V_MAY_DEF_OP (v_may_defs, i), old, new);
+  FOR_EACH_SSA_TREE_OPERAND (val, old, iter, SSA_OP_ALL_USES)
+    redirect_immediate_use (val, old, new);
 }
 
 
@@ -956,48 +929,6 @@ add_referenced_tmp_var (tree var)
   add_referenced_var (var, NULL);
 }
 
-/* Return true if V_MAY_DEFS_AFTER contains fewer entries than
-   V_MAY_DEFS_BEFORE. Note that this assumes that both varrays
-   are V_MAY_DEF operands for the same statement.  */
-
-static inline bool
-v_may_defs_disappeared_p (v_may_def_optype v_may_defs_before,
-                          v_may_def_optype v_may_defs_after)
-{
-  /* If there was nothing before, nothing could've disappeared.  */
-  if (v_may_defs_before == NULL)
-    return false;
-
-  /* All/some of them gone.  */
-  if (v_may_defs_after == NULL
-      || NUM_V_MAY_DEFS (v_may_defs_before) >
-         NUM_V_MAY_DEFS (v_may_defs_after))
-    return true;
-
-  return false;
-}
-
-/* Return true if V_MUST_DEFS_AFTER contains fewer entries than
-   V_MUST_DEFS_BEFORE. Note that this assumes that both varrays
-   are V_MUST_DEF operands for the same statement.  */
-
-static inline bool
-v_must_defs_disappeared_p (v_must_def_optype v_must_defs_before,
-                           v_must_def_optype v_must_defs_after)
-{
-  /* If there was nothing before, nothing could've disappeared.  */
-  if (v_must_defs_before == NULL)
-    return false;
-
-  /* All/some of them gone.  */
-  if (v_must_defs_after == NULL
-      || NUM_V_MUST_DEFS (v_must_defs_before) >
-         NUM_V_MUST_DEFS (v_must_defs_after))
-    return true;
-
-  return false;
-}
-
 
 /* Add all the non-SSA variables found in STMT's operands to the bitmap
    VARS_TO_RENAME.  */
@@ -1005,17 +936,12 @@ v_must_defs_disappeared_p (v_must_def_optype v_must_defs_before,
 void
 mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
 {
-  def_optype defs;
-  use_optype uses;
-  v_may_def_optype v_may_defs;
-  vuse_optype vuses;
-  v_must_def_optype v_must_defs;
-  size_t i;
+  ssa_op_iter iter;
+  tree val;
   bitmap vars_in_vops_to_rename;
   bool found_exposed_symbol = false;
-  v_may_def_optype v_may_defs_before, v_may_defs_after;
-  v_must_def_optype v_must_defs_before, v_must_defs_after;
-  stmt_ann_t ann;
+  int v_may_defs_before, v_may_defs_after;
+  int v_must_defs_before, v_must_defs_after;
 
   vars_in_vops_to_rename = BITMAP_XMALLOC ();
 
@@ -1028,32 +954,15 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
      We flag them in a separate bitmap because we don't really want to
      rename them if there are not any newly exposed symbols in the
      statement operands.  */
-  ann = stmt_ann (stmt);
-  v_may_defs_before = v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      tree var = V_MAY_DEF_RESULT (v_may_defs, i);
-      if (!DECL_P (var))
-	var = SSA_NAME_VAR (var);
-      bitmap_set_bit (vars_in_vops_to_rename, var_ann (var)->uid);
-    }
+  v_may_defs_before = NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt));
+  v_must_defs_before = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
 
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, 
+			     SSA_OP_VMAYDEF | SSA_OP_VUSE | SSA_OP_VMUSTDEF)
     {
-      tree var = VUSE_OP (vuses, i);
-      if (!DECL_P (var))
-	var = SSA_NAME_VAR (var);
-      bitmap_set_bit (vars_in_vops_to_rename, var_ann (var)->uid);
-    }
-
-  v_must_defs_before = v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      tree var = V_MUST_DEF_OP (v_must_defs, i);
-      if (!DECL_P (var))
-	var = SSA_NAME_VAR (var);
-      bitmap_set_bit (vars_in_vops_to_rename, var_ann (var)->uid);
+      if (!DECL_P (val))
+	val = SSA_NAME_VAR (val);
+      bitmap_set_bit (vars_in_vops_to_rename, var_ann (val)->uid);
     }
 
   /* Now force an operand re-scan on the statement and mark any newly
@@ -1061,58 +970,17 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
   modify_stmt (stmt);
   get_stmt_operands (stmt);
 
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
-    {
-      tree var = DEF_OP (defs, i);
-      if (DECL_P (var))
-	{
-	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-    }
+  v_may_defs_after = NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt));
+  v_must_defs_after = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
 
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    {
-      tree var = USE_OP (uses, i);
-      if (DECL_P (var))
-	{
-	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-    }
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, 
+			     SSA_OP_VMAYDEF | SSA_OP_VUSE | SSA_OP_VMUSTDEF)
 
-  v_may_defs_after = v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      tree var = V_MAY_DEF_RESULT (v_may_defs, i);
-      if (DECL_P (var))
+      if (DECL_P (val))
 	{
 	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-    }
-
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    {
-      tree var = VUSE_OP (vuses, i);
-      if (DECL_P (var))
-	{
-	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-    }
-
-  v_must_defs_after = v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      tree var = V_MUST_DEF_OP (v_must_defs, i);
-      if (DECL_P (var))
-	{
-	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
+	  bitmap_set_bit (vars_to_rename, var_ann (val)->uid);
 	}
     }
 
@@ -1122,8 +990,8 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
      vanishing VDEFs because in those cases, the names that were formerly
      generated by this statement are not going to be available anymore.  */
   if (found_exposed_symbol
-      || v_may_defs_disappeared_p (v_may_defs_before, v_may_defs_after)
-      || v_must_defs_disappeared_p (v_must_defs_before, v_must_defs_after))
+      || v_may_defs_before > v_may_defs_after
+      || v_must_defs_before > v_must_defs_after)
     bitmap_a_or_b (vars_to_rename, vars_to_rename, vars_in_vops_to_rename);
 
   BITMAP_XFREE (vars_in_vops_to_rename);
