@@ -204,6 +204,7 @@ cgraph_remove_edge (struct cgraph_node *caller, struct cgraph_node *callee)
 void
 cgraph_remove_node (struct cgraph_node *node)
 {
+  void **slot;
   while (node->callers)
     cgraph_remove_edge (node->callers->caller, node);
   while (node->callees)
@@ -225,6 +226,11 @@ cgraph_remove_node (struct cgraph_node *node)
   if (node->next)
     node->next->previous = node->previous;
   DECL_SAVED_TREE (node->decl) = NULL;
+  slot = 
+    htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (node->decl),
+			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
+						     (node->decl)), 1);
+  htab_clear_slot (cgraph_hash, slot);
   /* Do not free the structure itself so the walk over chain can continue.  */
 }
 
