@@ -1,3 +1,12 @@
+2000-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Shorten primitive array allocation path:
+	* decl.c (init_decl_processing): Use _Jv_NewPrimArray not _Jv_NewArray
+	to create new primitive arrays.
+	* expr.c (build_newarray): If generating native code, call 
+	soft_newarray_node with a reference to the primitive TYPE identifier
+	instead of type_value.
+	
 2000-12-17  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PRs gcj/312 and gcj/253:

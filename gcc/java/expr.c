@@ -784,24 +784,35 @@ build_java_check_indexed_type (array_node, indexed_type)
     return indexed_type;
 }
 
-/* newarray triggers a call to _Jv_NewArray. This function should be called
-   with an integer code (the type of array to create) and get from the stack
-   the size of the dimmension.  */
+/* newarray triggers a call to _Jv_NewPrimArray. This function should be 
+   called with an integer code (the type of array to create), and the length
+   of the array to create.  */
 
 tree
 build_newarray (atype_value, length)
      int atype_value;
      tree length;
 {
+  tree type_arg;
+
+  tree prim_type = decode_newarray_type (atype_value);
   tree type
-    = build_java_array_type (decode_newarray_type (atype_value),
+    = build_java_array_type (prim_type,
 			     host_integerp (length, 0) == INTEGER_CST
 			     ? tree_low_cst (length, 0) : -1);
+
+  /* If compiling to native, pass a reference to the primitive type class 
+     and save the runtime some work. However, the bytecode generator
+     expects to find the type_code int here. */
+  if (flag_emit_class_files)
+    type_arg = build_int_2 (atype_value, 0);
+  else
+    type_arg = build_class_ref (prim_type);
 
   return build (CALL_EXPR, promote_type (type),
 		build_address_of (soft_newarray_node),
 		tree_cons (NULL_TREE, 
-			   build_int_2 (atype_value, 0),
+			   type_arg,
 			   build_tree_list (NULL_TREE, length)),
 		NULL_TREE);
 }
