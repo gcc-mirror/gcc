@@ -1,3 +1,43 @@
+2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (maybe_read_dollar_number): Use safe-ctype macros
+	and/or fold extra calls into fewer ones.
+	* collect2.c (dump_file): Likewise.
+	* cppexp.c (parse_number): Likewise.
+	* cpplex.c (_cpp_lex_direct): Likewise.
+	* final.c (output_asm_insn, asm_fprintf): Likewise.
+	* fix-header.c (inf_scan_ident, main): Likewise.
+	* fixinc/fixfixes.c (char_macro_use_fix, char_macro_def_fix):
+	Likewise.
+	* fold-const.c (real_hex_to_f): Likewise.
+	* gen-protos.c (parse_fn_proto): Likewise.
+	* genattrtab.c (check_attr_test, check_attr_value): Likewise.
+	* genrecog.c (change_state, write_action): Likewise.
+	* gensupport.c (shift_output_template): Likewise.
+	* local-alloc.c (requires_inout): Likewise.
+	* mips-tfile.c (IS_ASM_IDENT): Likewise.
+	* protoize.c (is_id_char, main): Likewise.
+	* real.c (asctoeg): Likewise.
+	* recog.c (asm_operand_ok): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* scan.c (scan_identget_token): Likewise.
+	* sched-vis.c (print_value): Likewise.
+	* stringpool.c (ggc_alloc_string): Likewise.
+	* toplev.c (read_integral_parameter, decode_g_option): Likewise.
+	* tradcif.y (parse_number, yylex, parse_escape): Likewise.
+	* tradcpp.c (rescan): Likewise.
+	* tree.c (clean_symbol_name): Likewise.
+	* varasm.c (decode_reg_name): Likewise.
+
+	* alpha.h (ASM_OUTPUT_ASCII): Likewise.
+	* darwin.c (name_needs_quotes, func_name_maybe_scoped): Likewise.
+	* dsp16xx.h (ASM_OUTPUT_ASCII): Likewise.
+	* m88k.c (output_ascii): Likewise.
+	* m88k.h (OVERRIDE_OPTIONS): Likewise.
+	* mcore.h (REG_CLASS_FROM_LETTER): Likewise.
+	* ns32k/encore.h (ASM_OUTPUT_ASCII): Likewise.
+	* sh.h (REG_CLASS_FROM_LETTER): Likewise.
+
 2001-10-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* langhooks.c (lang_hook_default_do_nothing,

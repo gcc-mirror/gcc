@@ -287,9 +287,7 @@ jni_print_char (stream, ch)
     fputs ("_3", stream);
   else if (ch == '/')
     fputs ("_", stream);
-  else if ((ch >= '0' && ch <= '9')
-	   || (ch >= 'a' && ch <= 'z')
-	   || (ch >= 'A' && ch <= 'Z'))
+  else if (ISXDIGIT (ch))
     fputc (ch, stream);
   else
     {
@@ -975,8 +973,7 @@ decode_signature_piece (stream, signature, limit, need_space)
 
     array_loop:
       for (signature++; (signature < limit
-			 && *signature >= '0'
-			 && *signature <= '9'); signature++)
+			 && ISDIGIT (*signature)); signature++)
 	;
       switch (*signature)
 	{

@@ -1628,8 +1628,7 @@ ffeintrin_init_0 ()
 	}
       if ((c[colon + 1] != '-')
 	  && (c[colon + 1] != '*')
-	  && ((c[colon + 1] < '0')
-	      || (c[colon + 1] > '9')))
+	  && (! ISDIGIT (c[colon + 1])))
 	{
 	  fprintf (stderr, "%s: bad COL-spec\n",
 		   ffeintrin_imps_[i].name);
@@ -1683,9 +1682,9 @@ ffeintrin_init_0 ()
 	    }
 	  if (c[3] == '[')
 	    {
-	      if (((c[4] < '0') || (c[4] > '9'))
+	      if ((! ISDIGIT (c[4]))
 		  || ((c[5] != ']')
-		      && (++c, (c[4] < '0') || (c[4] > '9')
+		      && (++c, ! ISDIGIT (c[4])
 			  || (c[5] != ']'))))
 		{
 		  fprintf (stderr, "%s: bad arg-len\n",
@@ -1696,9 +1695,9 @@ ffeintrin_init_0 ()
 	    }
 	  if (c[3] == '(')
 	    {
-	      if (((c[4] < '0') || (c[4] > '9'))
+	      if ((! ISDIGIT (c[4]))
 		  || ((c[5] != ')')
-		      && (++c, (c[4] < '0') || (c[4] > '9')
+		      && (++c, ! ISDIGIT (c[4])
 			  || (c[5] != ')'))))
 		{
 		  fprintf (stderr, "%s: bad arg-rank\n",

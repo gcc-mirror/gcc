@@ -63,13 +63,13 @@ scan_ident (fp, s, c)
      int c;
 {
   s->ptr = s->base;
-  if (ISALPHA(c) || c == '_')
+  if (ISIDST(c))
     {
       for (;;)
 	{
 	  SSTRING_PUT(s, c);
 	  c = getc (fp);
-	  if (c == EOF || !(ISALNUM(c) || c == '_'))
+	  if (c == EOF || ! ISIDNUM(c))
 	    break;
 	}
     }
@@ -222,7 +222,7 @@ get_token (fp, s)
       c = INT_TOKEN;
       goto done;
     }
-  if (ISALPHA (c) || c == '_')
+  if (ISIDST (c))
     {
       c = scan_ident (fp, s, c);
       ungetc (c, fp);

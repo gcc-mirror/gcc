@@ -1092,7 +1092,7 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
   int argnum;
   int overflow_flag;
   const char *fcp = *format;
-  if (*fcp < '0' || *fcp > '9')
+  if (! ISDIGIT (*fcp))
     {
       if (dollar_needed)
 	{
@@ -1104,7 +1104,7 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
     }
   argnum = 0;
   overflow_flag = 0;
-  while (*fcp >= '0' && *fcp <= '9')
+  while (ISDIGIT (*fcp))
     {
       int nargnum;
       nargnum = 10 * argnum + (*fcp - '0');

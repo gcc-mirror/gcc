@@ -53,7 +53,7 @@ name_needs_quotes (name)
 {
   int c;
   while ((c = *name++) != '\0')
-    if (!isalnum (c) && c != '_')
+    if (! ISIDNUM (c))
       return 1;
   return 0;
 }
@@ -587,7 +587,7 @@ func_name_maybe_scoped (fname)
 	  while (*fname != 0)
 	    {
 	      if (fname[0] == '_' && fname[1] == '_'
-		  && (fname[2] == 'F' || (fname[2] >= '0' && fname[2] <= '9')))
+		  && (fname[2] == 'F' || ISDIGIT (fname[2])))
 		return 0;
 	      ++fname;
 	    }

@@ -5190,7 +5190,7 @@ asctoeg (ss, y, oprec)
   trail = 0;
 
  nxtcom:
-  if (*s >= '0' && *s <= '9')
+  if (ISDIGIT (*s))
     k = *s - '0';
   else if (*s >= 'a' && *s <= 'f')
     k = 10 + *s - 'a';
@@ -5205,7 +5205,7 @@ asctoeg (ss, y, oprec)
       if ((trail == 0) && (decflg != 0))
 	{
 	  sp = s;
-	  while ((*sp >= '0' && *sp <= '9')
+	  while (ISDIGIT (*sp)
 		 || (base == 16 && ((*sp >= 'a' && *sp <= 'f')
 				    || (*sp >= 'A' && *sp <= 'F'))))
 	    ++sp;
@@ -5345,7 +5345,7 @@ read_expnt:
     }
   if (*s == '+')
     ++s;
-  while ((*s >= '0') && (*s <= '9'))
+  while (ISDIGIT (*s))
     {
       exp *= 10;
       exp += *s++ - '0';

@@ -1699,8 +1699,7 @@ const_section ()                                                   \
 		 The Vax assembler fails to stop reading the escape	      \
 		 after three digits, so this is the only way we		      \
 		 can get it to parse the data properly.  		      \
-	      if (i < thissize - 1					      \
-		  && p[i + 1] >= '0' && p[i + 1] <= '9')		      \
+	      if (i < thissize - 1 && ISDIGIT (p[i + 1]))		      \
 		fprintf (asm_out_file, "\'\n\tint \'");		              \
 		*/ \
 	  }								      \

@@ -292,7 +292,7 @@ extern int flag_pic;				/* -fpic */
       {									     \
 	const char *p = m88k_short_data;				     \
 	while (*p)							     \
-	  if (*p >= '0' && *p <= '9')					     \
+	  if (ISDIGIT (*p))						     \
 	    p++;							     \
 	  else								     \
 	    {								     \

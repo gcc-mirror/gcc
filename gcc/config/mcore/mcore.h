@@ -547,7 +547,7 @@ extern int regno_reg_class[];
 extern enum reg_class reg_class_from_letter[];
 
 #define REG_CLASS_FROM_LETTER(C) \
-   ( (C) >= 'a' && (C) <= 'z' ? reg_class_from_letter[(C) - 'a'] : NO_REGS )
+   ( ISLOWER (C) ? reg_class_from_letter[(C) - 'a'] : NO_REGS )
 
 /* The letters I, J, K, L, M, N, O, and P in a register constraint string
    can be used to stand for particular ranges of immediate operands.

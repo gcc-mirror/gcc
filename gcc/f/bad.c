@@ -473,7 +473,7 @@ ffebad_finish ()
       if (c == '%')
 	{
 	  c = ffebad_message_[++i];
-	  if (ISALPHA (c) && ISUPPER (c))
+	  if (ISUPPER (c))
 	    {
 	      index = c - 'A';
 

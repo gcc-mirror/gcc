@@ -129,7 +129,7 @@ parse_number (pfile, tok)
     {
       c = *p;
 
-      if (c >= '0' && c <= '9')
+      if (ISDIGIT (c))
 	digit = c - '0';
       /* We believe that in all live character sets, a-f are
 	 consecutive, and so are A-F.  */

@@ -1725,17 +1725,17 @@ change_state (oldpos, newpos, afterward, indent)
 
   /* Hunt for the last [A-Z] in both strings.  */
   for (old_has_insn = odepth - 1; old_has_insn >= 0; --old_has_insn)
-    if (oldpos[old_has_insn] >= 'A' && oldpos[old_has_insn] <= 'Z')
+    if (ISUPPER (oldpos[old_has_insn]))
       break;
   for (new_has_insn = ndepth - 1; new_has_insn >= 0; --new_has_insn)
-    if (newpos[new_has_insn] >= 'A' && newpos[new_has_insn] <= 'Z')
+    if (ISUPPER (newpos[new_has_insn]))
       break;
 
   /* Go down to desired level.  */
   while (depth < ndepth)
     {
       /* It's a different insn from the first one.  */
-      if (newpos[depth] >= 'A' && newpos[depth] <= 'Z')
+      if (ISUPPER (newpos[depth]))
 	{
 	  /* We can only fail if we're moving down the tree.  */
 	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
@@ -1755,7 +1755,7 @@ change_state (oldpos, newpos, afterward, indent)
 	    }
 	  printf ("%sx%d = PATTERN (tem);\n", indent, depth + 1);
 	}
-      else if (newpos[depth] >= 'a' && newpos[depth] <= 'z')
+      else if (ISLOWER (newpos[depth]))
 	printf ("%sx%d = XVECEXP (x%d, 0, %d);\n",
 		indent, depth + 1, depth, newpos[depth] - 'a');
       else
@@ -2129,7 +2129,7 @@ write_action (p, test, depth, uncond, success, subroutine_type)
 	    int match_len = 0, i;
 
 	    for (i = strlen (p->position) - 1; i >= 0; --i)
-	      if (p->position[i] >= 'A' && p->position[i] <= 'Z')
+	      if (ISUPPER (p->position[i]))
 		{
 		  match_len = p->position[i] - 'A';
 		  break;

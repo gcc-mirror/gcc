@@ -4489,15 +4489,14 @@ clean_symbol_name (p)
      char *p;
 {
   for (; *p; p++)
-    if (! (ISDIGIT(*p)
+    if (! (ISALNUM (*p)
 #ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
 	    || *p == '$'
 #endif
 #ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
 	    || *p == '.'
 #endif
-	    || ISUPPER (*p)
-	    || ISLOWER (*p)))
+	   ))
       *p = '_';
 }
   

@@ -1590,7 +1590,7 @@ read_integral_parameter (p, pname, defval)
 
   while (*endp)
     {
-      if (*endp >= '0' && *endp <= '9')
+      if (ISDIGIT (*endp))
 	endp++;
       else
 	break;
@@ -4267,7 +4267,7 @@ decode_g_option (arg)
 	  enum debug_info_type type = da->debug_type;
 	  const char *p = arg + da_len;
 
-	  if (*p && (*p < '0' || *p > '9'))
+	  if (*p && ! ISDIGIT (*p))
 	    continue;
 
 	  /* A debug flag without a level defaults to level 2.

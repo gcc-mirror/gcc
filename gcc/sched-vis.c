@@ -578,7 +578,7 @@ print_value (buf, x, verbose)
       if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	{
 	  int c = reg_names[REGNO (x)][0];
-	  if (c >= '0' && c <= '9')
+	  if (ISDIGIT (c))
 	    cur = safe_concat (buf, cur, "%");
 
 	  cur = safe_concat (buf, cur, reg_names[REGNO (x)]);

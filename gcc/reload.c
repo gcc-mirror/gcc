@@ -2549,7 +2549,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	      commutative = i;
 	    }
-	  else if (c >= '0' && c <= '9')
+	  else if (ISDIGIT (c))
 	    {
 	      c = strtoul (p - 1, &p, 10);
 

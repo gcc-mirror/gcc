@@ -1183,7 +1183,7 @@ _cpp_lex_direct (pfile)
 	    buffer->cur = pos - 1;
 	}
       /* All known character sets have 0...9 contiguous.  */
-      else if (c >= '0' && c <= '9')
+      else if (ISDIGIT (c))
 	{
 	  result->type = CPP_NUMBER;
 	  parse_number (pfile, &result->val.str, c, 1);

@@ -1451,7 +1451,7 @@ ffetarget_integerhex (ffetargetIntegerDefault *val, ffelexToken integer)
 	c = c - 'A' + 10;
       else if ((c >= 'a') && (c <= 'f'))
 	c = c - 'a' + 10;
-      else if ((c >= '0') && (c <= '9'))
+      else if (ISDIGIT (c))
 	c -= '0';
       else
 	{
