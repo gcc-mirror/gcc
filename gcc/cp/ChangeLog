@@ -1,5 +1,9 @@
 2001-01-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* parse.y (template_datadef): Check for error_mark_node.
+
+2001-01-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.def (DEFAULT_ARG): Make `x' class.
 
 2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>

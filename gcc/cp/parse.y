@@ -696,8 +696,13 @@ template_datadef:
 	| typed_declspecs initdecls ';'
                 { note_list_got_semicolon ($1.t); }
 	| structsp ';'
-                { maybe_process_partial_specialization ($1.t);
-		  note_got_semicolon ($1.t); }
+                {
+		  if ($1.t != error_mark_node)
+                    {
+		      maybe_process_partial_specialization ($1.t);
+		      note_got_semicolon ($1.t);
+	            }
+                }
 	;
 
 datadef:
