@@ -9,4 +9,6 @@ ALLOCA=alloca.o
 #   ld: relocation entry found for non-relocatable symbol in combine.o
 # and the produced "cc1" fails with SIGSEGV
 # Another possible fix would be to split combine.c.
-XCFLAGS=`if [ x$@ = xcombine.o ]; then echo -Wa,-j; fi`
+# Since ss-961013, the same happens for expr.c compiled by gcc, but not by cc;
+# and for cp/decl.c; aren't those files too big ?
+XCFLAGS=`case $@ in combine.o|expr.o|decl.o) echo -Wa,-j;;esac`
