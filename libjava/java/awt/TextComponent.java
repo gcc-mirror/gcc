@@ -97,6 +97,7 @@ protected transient TextListener textListener;
 TextComponent(String text)
 {
   this.text = text;
+  this.editable = true;
 }
 
 /*************************************************************************/
