@@ -19,6 +19,17 @@
 
 2002-06-13  Jeffrey Law  <law@redhat.com>
 
+	* emit-rtl.c (static_regno_reg_rtx): Define.
+	(init_emit_once): Initialize static_regno_reg_rtx.
+	(init_emit): Copy static_regno_reg_rtx into regno_reg_rtx instead
+	of building new hard reg objects once per function.
+	(gen_rtx_REG): Try to share hard regs.
+	* regclass.c (init_fake_stack_mems): New function broken out from
+	init_regs.
+	* rtl.h (init_fake_stack_mems): Declare.
+	* toplev.c (lang_independent_init): Call init_regs before
+	init_emit_once.  Call init_fake_stack_mems after init_emit_once.
+
 	* i386.md (extenddfxf2, extenddftf2): Fix typo/thinko.
 
 	* alias.c (argument_registers): Remove.

@@ -601,11 +601,16 @@ init_regs ()
   init_reg_sets_1 ();
 
   init_reg_modes ();
+}
 
+/* Initialize some fake stack-frame MEM references for use in
+   memory_move_secondary_cost.  */
+
+void
+init_fake_stack_mems ()
+{
 #ifdef HAVE_SECONDARY_RELOADS
   {
-    /* Make some fake stack-frame MEM references for use in
-       memory_move_secondary_cost.  */
     int i;
 
     for (i = 0; i < MAX_MACHINE_MODE; i++)

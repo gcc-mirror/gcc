@@ -92,6 +92,12 @@ static int no_line_numbers;
 
 rtx global_rtl[GR_MAX];
 
+/* Commonly used RTL for hard registers.  These objects are not necessarily
+   unique, so we allocate them separately from global_rtl.  They are
+   initialized once per compilation unit, then copied into regno_reg_rtx
+   at the beginning of each function.  */
+static GTY(()) rtx static_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
+
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
    record a copy of const[012]_rtx.  */
@@ -526,6 +532,15 @@ gen_rtx_REG (mode, regno)
       if (regno == STACK_POINTER_REGNUM)
 	return stack_pointer_rtx;
     }
+
+  /* If the per-function register table has been set up, try to re-use
+     an existing entry in that table to avoid useless generation of RTL.  */
+  if (cfun
+      && cfun->emit
+      && regno_reg_rtx
+      && regno < FIRST_PSEUDO_REGISTER
+      && reg_raw_mode[regno] == mode)
+    return regno_reg_rtx[regno];
 
   return gen_raw_REG (mode, regno);
 }
@@ -5067,7 +5082,6 @@ void
 init_emit ()
 {
   struct function *f = cfun;
-  int i;
 
   f->emit = (struct emit_status *) ggc_alloc (sizeof (struct emit_status));
   first_insn = NULL;
@@ -5098,12 +5112,12 @@ init_emit ()
 				  * sizeof (tree));
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    regno_reg_rtx[i] = gen_raw_REG (reg_raw_mode[i], i);
+  memcpy (regno_reg_rtx,
+	  static_regno_reg_rtx,
+	  FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
   init_virtual_regs (f->emit);
-
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
@@ -5237,6 +5251,11 @@ init_emit_once (line_numbers)
   virtual_outgoing_args_rtx =
     gen_raw_REG (Pmode, VIRTUAL_OUTGOING_ARGS_REGNUM);
   virtual_cfa_rtx = gen_raw_REG (Pmode, VIRTUAL_CFA_REGNUM);
+
+  /* Initialize RTL for commonly used hard registers.  These are
+     copied into regno_reg_rtx as we begin to compile each function.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    static_regno_reg_rtx[i] = gen_raw_REG (reg_raw_mode[i], i);
 
 #ifdef INIT_EXPANDERS
   /* This is to initialize {init|mark|free}_machine_status before the first

@@ -2026,6 +2026,7 @@ extern int reg_classes_intersect_p	PARAMS ((enum reg_class, enum reg_class));
 extern int reg_class_subset_p		PARAMS ((enum reg_class, enum reg_class));
 extern void globalize_reg		PARAMS ((int));
 extern void init_regs			PARAMS ((void));
+extern void init_fake_stack_mems	PARAMS ((void));
 extern void init_reg_sets		PARAMS ((void));
 extern void regset_release_memory	PARAMS ((void));
 extern void regclass_init		PARAMS ((void));
