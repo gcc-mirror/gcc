@@ -5822,8 +5822,10 @@ output_init_element (value, type, field, pending)
       && !tree_int_cst_equal (field, constructor_unfilled_index))
     {
       if (! duplicate)
+	/* The copy_node is needed in case field is actually
+	   constructor_index, which is modified in place.  */
 	constructor_pending_elts
-	  = tree_cons (field,
+	  = tree_cons (copy_node (field),
 		       digest_init (type, value, 0, 0),
 		       constructor_pending_elts);
     }
