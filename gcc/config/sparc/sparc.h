@@ -1003,6 +1003,11 @@ if (TARGET_ARCH64				\
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
   {								\
+    if (flag_pic)						\
+      {								\
+	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+      }								\
     if (TARGET_ARCH32)						\
       {								\
 	fixed_regs[5] = 1;					\
