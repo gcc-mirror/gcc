@@ -15,7 +15,7 @@ endif
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
-toolexeclib_LIBRARIES = libgcj.a
+toolexeclib_LTLIBRARIES = libgcj.la
 data_DATA = libgcj.zip
 
 ## For now, only on native systems.
@@ -53,6 +53,8 @@ GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
 
+GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled $(JC1FLAGS) -c
+
 JAVAC = $(GCJ) -C
 
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
@@ -78,19 +80,20 @@ INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) $(EH_COMMON
 ##
 
 ## Objects from C++ sources in subdirs.
-nat_files = $(nat_source_files:.cc=.o)
+nat_files = $(nat_source_files:.cc=.lo)
 ## Objects from C sources in subdirs.
-c_files = $(c_source_files:.c=.o)
+c_files = $(c_source_files:.c=.lo)
 ## Objects from Java sources in subdirs.
-javao_files = $(java_source_files:.java=.o)
+javao_files = $(java_source_files:.java=.lo)
 
-libgcj_a_SOURCES = prims.cc jni.cc exception.cc
-EXTRA_libgcj_a_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc
+EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files)
-libgcj_a_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
+libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
-libgcj_a_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS)
+libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) -release $(VERSION)
 
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
@@ -121,31 +124,31 @@ CLEANFILES = libgcj.zip $(class_files)
 
 SUFFIXES = .class .java .h
 
-.class.o:
-	CLASSPATH=$(here) $(CC) -fassume-compiled $(JC1FLAGS) -c -o $@ $<
+.class.lo:
+	$(GCJCOMPILE) -o $@ $<
 
-.java.o:
-	CLASSPATH=$(here) $(GCJ) -fassume-compiled $(JC1FLAGS) -c -o $@ $<
+.java.lo:
+	$(GCJCOMPILE) -o $@ $<
 
 ## This is GNU make specific.  For the .o files in subdirs, use a
 ## special rule.  The standard automake rule can't be overridden (this
 ## is a bug in automake), and it also won't put the .o files into
 ## subdirs.  FIXME.
-$(nat_files): %.o: %.cc
-	$(CXXCOMPILE) -c -o $@ $<
+$(nat_files): %.lo: %.cc
+	$(LTCXXCOMPILE) -c -o $@ $<
 
-$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_a_OBJECTS): \
+$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS): \
 		include/config.h include/java-signal.h $(nat_headers)
 
 ## FIXME: GNU make.
-$(c_files): %.o: %.c
-	$(COMPILE) -c -o $@ $<
+$(c_files): %.lo: %.c
+	$(LTCOMPILE) -c -o $@ $<
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: GNU make.
-$(javao_files): %.o: %.java
-	CLASSPATH=$(here) $(GCJ) -fassume-compiled $(JC1FLAGS) -c -o $@ $<
+$(javao_files): %.lo: %.java
+	$(GCJCOMPILE) -o $@ $<
 
 ## ################################################################
 
@@ -210,8 +213,8 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 NM = nm
 
 ## Try to make sure our library doesn't stomp the namespace.
-maintainer-check: libgcj.a
-	$(NM) libgcj.a | grep ' T ' \
+maintainer-check: libgcj.la
+	$(NM) .libs/libgcj.a | grep ' T ' \
 ## Anything with `4java' is assumed to be from .java source.
 	  | grep -v '4java' \
 ## Anything with Jv is ok.
@@ -248,11 +251,12 @@ CONVERT_DIR = gnu/gcj/convert
 
 jv_convert_SOURCES =
 EXTRA_jv_convert_SOURCES = $(convert_source_files)
-jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert
-jv_convert_LINK = $(GCJ) $(JC1FLAGS) $(LDFLAGS) -o jv-convert
-jv_convert_LDADD = $(convert_source_files:.java=.o) -L. $(GCLIBS) $(THREADLIBS)
-jv_convert_DEPENDENCIES = $(convert_source_files:.java=.o) \
-	$(GCDEPS) $(THREADDEPS) libgcj.a
+jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -rpath $(toolexeclibdir)
+jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) -o jv-convert
+jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
+	$(GCLIBS) $(THREADLIBS)
+jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
+	$(GCDEPS) $(THREADDEPS) libgcj.la
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
