@@ -4,6 +4,10 @@
 	Object.clone().
 	* java/util/Collections.java (ReverseComparator): New static class.
 	(reverseOrder): Return static instance of ReverseComparator.
+	
+	* gnu/awt/j2d/DirectRasterGraphics.java (clone): Hoist to public.
+	* gnu/awt/j2d/IntegerGraphicsState.java (setClip): Call 
+	Rectangle.clone(), not Object.clone().
 
 2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
 

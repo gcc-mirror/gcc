@@ -79,4 +79,6 @@ public interface DirectRasterGraphics extends Cloneable
    * Detach previously mapped pixel data from a raster object.
    */
   public void unmapRaster(MappedRaster mappedRaster);
+  
+  public Object clone();
 }
