@@ -1190,6 +1190,7 @@ duplicate_decls (newdecl, olddecl)
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	   && DECL_BUILT_IN (olddecl))
     {
+      /* A function declaration for a built-in function.  */
       if (!TREE_PUBLIC (newdecl))
 	{
 	  /* If you declare a built-in function name as static, the
@@ -1204,20 +1205,23 @@ duplicate_decls (newdecl, olddecl)
 	warning_with_decl (newdecl, "conflicting types for built-in function `%s'");
     }
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	   && DECL_BUILT_IN_NONANSI (olddecl))
+	   && DECL_SOURCE_LINE (olddecl) == 0)
     {
+      /* A function declaration for a predeclared function
+	 that isn't actually built in.  */
       if (!TREE_PUBLIC (newdecl))
 	{
-	  /* If you declare a built-in function name as static, the
-	     built-in definition is overridden,
-	     but optionally warn this was a bad choice of name.  */
-	  if (warn_shadow)
-	    warning_with_decl (newdecl, "shadowing library function `%s'");
-	  /* Discard the old built-in function.  */
+	  /* If you declare a it as static, the
+	     default definition is overridden.  */
 	  return 0;
 	}
       else if (!types_match)
-	warning_with_decl (newdecl, "conflicting types for library function `%s'");
+	{
+	  /* If the types don't match, use whatever the program declares,
+	     not the predeclared type.  Preserve volatility indication.  */
+	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
+	  return 0;
+	}
     }
   else if (!types_match
 	   /* Permit char *foo (int, ...); followed by char *foo ();
