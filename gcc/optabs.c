@@ -3083,6 +3083,12 @@ expand_float (to, from, unsignedp)
 	      rtx temp1;
 	      rtx neglabel = gen_label_rtx ();
 
+	      /* Don't use TARGET if it isn't a register or is a
+		 hard register.  */
+	      if (GET_CODE (target) != REG
+		  || REGNO (target) < FIRST_PSEUDO_REGISTER)
+		target = gen_reg_rtx (fmode);
+
 	      imode = GET_MODE (from);
 	      do_pending_stack_adjust ();
 
@@ -3101,11 +3107,10 @@ expand_float (to, from, unsignedp)
 
 	      emit_label (neglabel);
 	      temp = expand_binop (imode, and_optab, from, const1_rtx,
-				    0, 1, 0);
+				   0, 1, 0);
 	      temp1 = expand_binop (imode, lshr_optab, from, const1_rtx,
-				   from, 1, 0);
-	      temp = expand_binop (imode, ior_optab, temp, temp1,
-				   temp, 1, 0);
+				    0, 1, 0);
+	      temp = expand_binop (imode, ior_optab, temp, temp1, temp, 1, 0);
 	      expand_float (target, temp, 0);
 
 	      /* Multiply by 2 to undo the shift above.  */
