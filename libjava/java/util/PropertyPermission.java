@@ -1,5 +1,5 @@
-/* java.util.PropertyPermission
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* PropertyPermission.java -- permission to get and set System properties
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package java.util;
+
 import java.security.Permission;
 import java.security.BasicPermission;
 import java.security.PermissionCollection;
@@ -49,135 +50,107 @@ import java.io.IOException;
  * This class represents the permission to access and modify a property.<br>
  *
  * The name is the name of the property, e.g. xxx.  You can also
- * use an asterisk "*" as described in BasicPermission <br>
+ * use an asterisk "*" as described in BasicPermission.<br>
  *
- * The action string is a comma-separated list if keywords.  There are
+ * The action string is a comma-separated list of keywords.  There are
  * two possible actions:
  * <dl>
- * <dt>read</dt> 
+ * <dt>read</dt>
  * <dd>Allows to read the property via <code>System.getProperty</code>.</dd>
- * <dt>write</dt> 
+ * <dt>write</dt>
  * <dd>Allows to write the property via <code>System.setProperty</code>.</dd>
  * </dl>
- * 
+ *
  * The action string is case insensitive (it is converted to lower case).
  *
  * @see Permission
  * @see BasicPermission
- * @author Jochen Hoenicke 
+ * @see SecurityManager
+ * @author Jochen Hoenicke
+ * @since 1.2
+ * @status updated to 1.4
  */
 public final class PropertyPermission extends BasicPermission
 {
   /**
-   * @serialField action String
-   *   The action string.
+   * PropertyPermission uses a more efficient representation than the
+   * serialized form; this documents the difference.
+   *
+   * @serialField action String the action string
    */
   private static final ObjectStreamField[] serialPersistentFields =
   {
     new ObjectStreamField("action", String.class)
   };
 
+  /**
+   * Compatible with JDK 1.2+.
+   */
   private static final long serialVersionUID = 885438825399942851L;
 
+  /** Permission to read. */
   private static final int READ = 1;
+  /** Permission to write. */
   private static final int WRITE = 2;
-  private transient int actions;
 
+  /** The set of actions permitted. */
+  // Package visible for use by PropertyPermissionCollection.
+  transient int actions;
+
+  /**
+   * The String forms of the actions permitted.
+   */
   private static final String actionStrings[] =
   {
     "", "read", "write", "read,write"
   };
 
   /**
-   * Constructs a PropertyPermission witha he specified property.  Possible
-   * actions are read and write.
-   * @param name the name of the property.
-   * @param actions the action string.
-   * @exception IllegalArgumentException if name string contains an
-   * illegal wildcard or actions string contains an illegal action
+   * Constructs a PropertyPermission with the specified property.  Possible
+   * actions are read and write, comma-separated and case-insensitive.
+   *
+   * @param name the name of the property
+   * @param actions the action string
+   * @throws NullPointerException if name is null
+   * @throws IllegalArgumentException if name string contains an
+   *         illegal wildcard or actions string contains an illegal action
+   *         (this includes a null actions string)
    */
   public PropertyPermission(String name, String actions)
   {
     super(name);
+    if (actions == null)
+      throw new IllegalArgumentException();
     setActions(actions.toLowerCase());
   }
 
   /**
    * Parse the action string and convert actions from external to internal
    * form.  This will set the internal actions field.
-   * @param actions the action string.
-   * @exception IllegalArgumentException if actions string contains an
-   * illegal action */
-  private void setActions(String actions)
-  {
-    this.actions = 0;
-    StringTokenizer actionTokenizer = new StringTokenizer(actions, ",");
-    while (actionTokenizer.hasMoreElements())
-      {
-	String anAction = actionTokenizer.nextToken();
-	if ("read".equals(anAction))
-	  this.actions |= READ;
-	else if ("write".equals(anAction))
-	  this.actions |= WRITE;
-	else
-	  throw new IllegalArgumentException("illegal action " + anAction);
-      }
-  }
-
-  /**
-   * Check if this permission implies p.  This returns true iff all of
-   * the following conditions are true:
-   * <ul>
-   * <li> p is a PropertyPermission </li>
-   * <li> this.getName() implies p.getName(),  
-   *  e.g. <code>java.*</code> implies <code>java.home</code> </li>
-   * <li> this.getActions is a subset of p.getActions </li>
-   * </ul>
-   */
-  public boolean implies(Permission p)
-  {
-    if (!(p instanceof PropertyPermission))
-      return false;
-
-    // We have to check the actions.
-    PropertyPermission pp = (PropertyPermission) p;
-    if ((pp.actions & ~actions) != 0)
-      return false;
-
-    // BasicPermission checks for name.
-    if (!super.implies(p))
-      return false;
-
-    return true;
-  }
-
-  /**
-   * Returns the action string.  Note that this may differ from the string
-   * given at the constructor:  The actions are converted to lowercase and
-   * may be reordered.
-   */
-  public String getActions()
-  {
-    return actionStrings[actions];
-  }
-
-  /**
-   * Check to see whether this object is the same as another
-   * PropertyPermission object.
    *
-   * @param obj The other object
+   * @param str the action string
+   * @throws IllegalArgumentException if actions string contains an
+   *         illegal action
    */
-  public boolean equals (Object obj)
+  private void setActions(String str)
   {
-    if (! (obj instanceof PropertyPermission))
-      return false;
-    PropertyPermission p = (PropertyPermission) obj;
-    return actions == p.actions && super.equals (p);
+    if ("read".equals(str))
+      actions = READ;
+    else if ("write".equals(str))
+      actions = WRITE;
+    else if ("read,write".equals(str) || "write,read".equals(str))
+      actions = READ | WRITE;
+    else
+      throw new IllegalArgumentException("illegal action " + str);
   }
 
   /**
    * Reads an object from the stream. This converts the external to the
    * internal representation.
+   *
+   * @param s the stream to read from
+   * @throws IOException if the stream fails
+   * @throws ClassNotFoundException if reserialization fails
    */
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
@@ -189,6 +162,9 @@ public final class PropertyPermission extends BasicPermission
   /**
    * Writes an object to the stream. This converts the internal to the
    * external representation.
+   *
+   * @param s the stram to write to
+   * @throws IOException if the stream fails
    */
   private void writeObject(ObjectOutputStream s) throws IOException
   {
@@ -198,65 +174,74 @@ public final class PropertyPermission extends BasicPermission
   }
 
   /**
+   * Check if this permission implies p.  This returns true iff all of
+   * the following conditions are true:
+   * <ul>
+   * <li> p is a PropertyPermission </li>
+   * <li> this.getName() implies p.getName(),
+   *  e.g. <code>java.*</code> implies <code>java.home</code> </li>
+   * <li> this.getActions is a subset of p.getActions </li>
+   * </ul>
+   *
+   * @param p the permission to check
+   * @return true if this permission implies p
+   */
+  public boolean implies(Permission p)
+  {
+    // BasicPermission checks for name and type.
+    if (super.implies(p))
+      {
+        // We have to check the actions.
+        PropertyPermission pp = (PropertyPermission) p;
+        return (pp.actions & ~actions) == 0;
+      }
+    return false;
+  }
+
+  /**
+   * Check to see whether this object is the same as another
+   * PropertyPermission object; this is true if it has the same name and
+   * actions.
+   *
+   * @param obj the other object
+   * @return true if the two are equivalent
+   */
+  public boolean equals(Object obj)
+  {
+    return super.equals(obj) && actions == ((PropertyPermission) obj).actions;
+  }
+
+  /**
+   * Returns the hash code for this permission.  It is equivalent to
+   * <code>getName().hashCode()</code>.
+   *
+   * @return the hash code
+   */
+  public int hashCode()
+  {
+    return super.hashCode();
+  }
+
+  /**
+   * Returns the action string.  Note that this may differ from the string
+   * given at the constructor:  The actions are converted to lowercase and
+   * may be reordered.
+   *
+   * @return one of "read", "write", or "read,write"
+   */
+  public String getActions()
+  {
+    return actionStrings[actions];
+  }
+
+  /**
    * Returns a permission collection suitable to take
    * PropertyPermission objects.
-   * @return a new empty PermissionCollection.  
+   *
+   * @return a new empty PermissionCollection
    */
   public PermissionCollection newPermissionCollection()
   {
-    return new PermissionCollection()
-    {
-      Hashtable permissions = new Hashtable();
-      int allActions = 0;
-
-      public void add(Permission permission)
-      {
-	if (isReadOnly())
-	  throw new IllegalStateException("readonly");
-
-	// also check that permission is of correct type.
-	PropertyPermission pp = (PropertyPermission) permission;
-	String name = pp.getName();
-	if (name.equals("*"))
-	  allActions |= pp.actions;
-	permissions.put(name, pp);
-      }
-
-      public boolean implies(Permission permission)
-      {
-	if (!(permission instanceof PropertyPermission))
-	  return false;
-
-	PropertyPermission toImply = (PropertyPermission) permission;
-	if ((toImply.actions & ~allActions) == 0)
-	  return true;
-
-	String name = toImply.getName();
-	if (name.equals("*"))
-	  return false;
-
-	int prefixLength = name.length();
-	if (name.endsWith("*"))
-	  prefixLength -= 2;
-
-	while (true)
-	  {
-	    PropertyPermission forName =
-	      (PropertyPermission) permissions.get(name);
-	    if (forName != null && (toImply.actions & ~forName.actions) == 0)
-	      return true;
-
-	    prefixLength = name.lastIndexOf('.', prefixLength);
-	    if (prefixLength < 0)
-	      return false;
-	    name = name.substring(0, prefixLength + 1) + '*';
-	  }
-      }
-
-      public Enumeration elements()
-      {
-	return permissions.elements();
-      }
-    };
+    return new PropertyPermissionCollection();
   }
 }

@@ -296,14 +296,14 @@ public interface Map
      */
     public Object setValue(Object value);
 
+
     /**
-     * Returns the hash code of the entry.  This is defined as the exclusive-or
-     * of the hashcodes of the key and value (using 0 for null). In other
-     * words, this must be:
-     * <pre>
-     *  (getKey() == null ? 0 : getKey().hashCode()) ^
-     *  (getValue() == null ? 0 : getValue().hashCode())
-     * </pre>
+     * Returns the hash code of the entry.  This is defined as the
+     * exclusive-or of the hashcodes of the key and value (using 0 for
+     * <code>null</code>). In other words, this must be:
+     * 
+<p><pre>(getKey() == null ? 0 : getKey().hashCode())
+^ (getValue() == null ? 0 : getValue().hashCode())</pre>
      *
      * @return the hash code
      */
@@ -313,16 +313,16 @@ public interface Map
      * Compares the specified object with this entry. Returns true only if
      * the object is a mapping of identical key and value. In other words,
      * this must be:
-     * <pre>
-     * (o instanceof Map.Entry)
-     * && (getKey() == null ? ((HashMap) o).getKey() == null
-     *                      : getKey().equals(((HashMap) o).getKey()))
-     * && (getValue() == null ? ((HashMap) o).getValue() == null
-     *                        : getValue().equals(((HashMap) o).getValue()))
-     * </pre>
+     * 
+<p><pre>(o instanceof Map.Entry)
+&& (getKey() == null ? ((HashMap) o).getKey() == null
+                     : getKey().equals(((HashMap) o).getKey()))
+&& (getValue() == null ? ((HashMap) o).getValue() == null
+                       : getValue().equals(((HashMap) o).getValue()))</pre>
      *
      * @param o the object to compare
-     * @return true if it is equal
+     *
+     * @return <code>true</code> if it is equal
      */
     public boolean equals(Object o);
   }

@@ -1,5 +1,5 @@
-/* java.util.ListResourceBundle
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* ListResourceBundle -- a resource bundle build around a list
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,73 +39,102 @@ exception statement from your version. */
 package java.util;
 
 /**
- * A <code>ListResouceBundle</code> provides an easy way, to create
- * your own resource bundle.  It is an abstract class that you can
- * subclass.  You should then overwrite the getContents method, that
- * provides a key/value list.
- * <br>
- * The key/value list is a two dimensional list of Object.  The first
- * dimension ranges over the resources. The second dimension ranges
- * from zero (key) to one (value).  The keys must be of type String.
- * <br>
- * XXX Example!
+ * A <code>ListResouceBundle</code> provides an easy way, to create your own
+ * resource bundle. It is an abstract class that you can subclass. You should
+ * then overwrite the getContents method, that provides a key/value list.
  *
+ * <p>The key/value list is a two dimensional list of Object.  The first
+ * dimension ranges over the resources. The second dimension ranges from
+ * zero (key) to one (value). The keys must be of type String, and they are
+ * case-sensitive. For example:
+ *
+<br><pre>public class MyResources
+  extends ListResourceBundle
+{
+  public Object[][] getContents()
+  {
+    return contents;
+  }
+
+  static final Object[][] contents =
+  {
+    // LOCALIZED STRINGS
+    {"s1", "The disk \"{1}\" contains {0}."},  // MessageFormat pattern
+    {"s2", "1"},                       // location of {0} in pattern
+    {"s3", "My Disk"},                 // sample disk name
+    {"s4", "no files"},                // first ChoiceFormat choice
+    {"s5", "one file"},                // second ChoiceFormat choice
+    {"s6", "{0,number} files"}         // third ChoiceFormat choice
+    {"s7", "3 Mar 96"},                // sample date
+    {"s8", new Dimension(1,5)}         // real object, not just string
+    // END OF LOCALIZED MATERIAL
+  };
+}</pre>
+ *
+ * @author Jochen Hoenicke
+ * @author Eric Blake <ebb9@email.byu.edu>
  * @see Locale
  * @see PropertyResourceBundle
- * @author Jochen Hoenicke */
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public abstract class ListResourceBundle extends ResourceBundle
 {
   /**
-   * The constructor.  It does nothing special.
+   * The constructor. It does nothing special.
    */
   public ListResourceBundle()
   {
   }
 
   /**
-   * Gets the key/value list.  You must override this method.
-   * @return a two dimensional list of Objects.  The first dimension
-   * ranges over the objects, and the second dimension ranges from
-   * zero (key) to one (value).  
-   */
-  protected abstract Object[][] getContents();
-
-  /**
-   * Override this method to provide the resource for a keys.  This gets
-   * called by <code>getObject</code>.
-   * @param key The key of the resource.
-   * @return The resource for the key or null if it doesn't exists.
+   * Gets a resource for a given key. This is called by <code>getObject</code>.
+   *
+   * @param key the key of the resource
+   * @return the resource for the key, or null if it doesn't exist
    */
   public final Object handleGetObject(String key)
   {
     Object[][] contents = getContents();
-    for (int i = 0; i < contents.length; i++)
-      {
-	if (key.equals(contents[i][0]))
-	  return contents[i][1];
-      }
+    int i = contents.length;
+    while (--i >= 0)
+      if (key.equals(contents[i][0]))
+        return contents[i][1];
     return null;
   }
 
   /**
    * This method should return all keys for which a resource exists.
-   * @return An enumeration of the keys.
+   *
+   * @return an enumeration of the keys
    */
   public Enumeration getKeys()
   {
+    // We make a new Set that holds all the keys, then return an enumeration
+    // for that. This prevents modifications from ruining the enumeration,
+    // as well as ignoring duplicates.
     final Object[][] contents = getContents();
-    
-    return new Enumeration()
-    {
-      int i = 0;
-      public boolean hasMoreElements()
+    Set s = new HashSet();
+    int i = contents.length;
+    while (--i >= 0)
+      s.add(contents[i][0]);
+    ResourceBundle bundle = parent;
+    // Eliminate tail recursion.
+    while (bundle != null)
       {
-	return i < contents.length;
+        Enumeration e = bundle.getKeys();
+        while (e.hasMoreElements())
+          s.add(e.nextElement());
+        bundle = bundle.parent;
       }
-      public Object nextElement()
-      {
-	return contents[i++][0];
-      }
-    };
+    return Collections.enumeration(s);
   }
-}
+
+  /**
+   * Gets the key/value list. You must override this method, and should not
+   * provide duplicate keys or null entries.
+   *
+   * @return a two dimensional list of String key / Object resouce pairs
+   */
+  protected abstract Object[][] getContents();
+} // class ListResourceBundle

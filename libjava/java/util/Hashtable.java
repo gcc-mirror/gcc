@@ -1,6 +1,6 @@
 /* Hashtable.java -- a class providing a basic hashtable data structure,
    mapping Object --> Object
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -102,6 +102,9 @@ import java.io.ObjectOutputStream;
 public class Hashtable extends Dictionary
   implements Map, Cloneable, Serializable
 {
+  // WARNING: Hashtable is a CORE class in the bootstrap cycle. See the
+  // comments in vm/reference/java/lang/Runtime for implications of this fact.
+
   /** Default number of buckets. This is the value the JDK 1.3 uses. Some
    * early documentation specified this value as 101. That is incorrect.
    */
@@ -176,7 +179,7 @@ public class Hashtable extends Dictionary
    * pair. A Hashtable Entry is identical to a HashMap Entry, except that
    * `null' is not allowed for keys and values.
    */
-  private static final class HashEntry extends BasicMapEntry
+  private static final class HashEntry extends AbstractMap.BasicMapEntry
   {
     /** The next entry in the linked list. */
     HashEntry next;
@@ -340,9 +343,9 @@ public class Hashtable extends Dictionary
    *
    * @param value the value to search for in this Hashtable
    * @return true if at least one key maps to the value
-   * @throws NullPointerException if <code>value</code> is null
    * @see #contains(Object)
    * @see #containsKey(Object)
+   * @throws NullPointerException if <code>value</code> is null
    * @since 1.2
    */
   public boolean containsValue(Object value)
@@ -361,7 +364,7 @@ public class Hashtable extends Dictionary
     // Must throw on null argument even if the table is empty
     if (value == null)
       throw new NullPointerException();
-
+ 
     return false;
   }
 
@@ -511,9 +514,9 @@ public class Hashtable extends Dictionary
       {
         Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
-        if (e instanceof BasicMapEntry)
+        if (e instanceof AbstractMap.BasicMapEntry)
           {
-            BasicMapEntry entry = (BasicMapEntry) e;
+            AbstractMap.BasicMapEntry entry = (AbstractMap.BasicMapEntry) e;
             put(entry.key, entry.value);
           }
         else
@@ -763,9 +766,9 @@ public class Hashtable extends Dictionary
   /**
    * Returns true if this Hashtable equals the supplied Object <code>o</code>.
    * As specified by Map, this is:
-   * <pre>
+   * <code>
    * (o instanceof Map) && entrySet().equals(((Map) o).entrySet());
-   * </pre>
+   * </code>
    *
    * @param o the object to compare to
    * @return true if o is an equal map
@@ -812,7 +815,10 @@ public class Hashtable extends Dictionary
    */
   private int hash(Object key)
   {
-    return Math.abs(key.hashCode() % buckets.length);
+    // Note: Inline Math.abs here, for less method overhead, and to avoid
+    // a bootstrap dependency, since Math relies on native methods.
+    int hash = key.hashCode() % buckets.length;
+    return hash < 0 ? -hash : hash;
   }
 
   /**
@@ -823,7 +829,8 @@ public class Hashtable extends Dictionary
    * @return the matching entry, if found, or null
    * @see #entrySet()
    */
-  private HashEntry getEntry(Object o)
+  // Package visible, for use in nested classes.
+  HashEntry getEntry(Object o)
   {
     if (! (o instanceof Map.Entry))
       return null;
@@ -869,7 +876,7 @@ public class Hashtable extends Dictionary
   /**
    * Increases the size of the Hashtable and rehashes all keys to new array
    * indices; this is called when the addition of a new value would cause
-   * size() > threshold. Note that the existing Entry objects are reused in
+   * size() &gt; threshold. Note that the existing Entry objects are reused in
    * the new hash table.
    * <p>
    *
@@ -1139,4 +1146,4 @@ public class Hashtable extends Dictionary
       return type == VALUES ? e.value : e.key;
     }
   } // class Enumerator
-}
+} // class Hashtable

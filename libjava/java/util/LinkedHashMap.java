@@ -71,7 +71,7 @@ package java.util;
  * <p>
  *
  * Under ideal circumstances (no collisions), LinkedHashMap offers O(1) 
- * performance on most operations (<pre>containsValue()</pre> is,
+ * performance on most operations (<code>containsValue()</code> is,
  * of course, O(n)).  In the worst case (all keys map to the same 
  * hash code -- very unlikely), most operations are O(n).
  * <p>
@@ -87,7 +87,7 @@ package java.util;
  * {@link ConcurrentModificationException} rather than exhibit
  * non-deterministic behavior.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Object#hashCode()
  * @see Collection
  * @see Map
@@ -256,8 +256,9 @@ public class LinkedHashMap extends HashMap
    * @param initialCapacity the initial capacity (>=0)
    * @param loadFactor the load factor (>0, not NaN)
    * @param accessOrder true for access-order, false for insertion-order
-   * @throws IllegalArgumentException if (initialCapacity < 0) ||
-   *                                     ! (loadFactor > 0.0)
+   *
+   * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
+   *                                     ! (loadFactor &gt; 0.0)
    */
   public LinkedHashMap(int initialCapacity, float loadFactor,
                        boolean accessOrder)
@@ -277,11 +278,12 @@ public class LinkedHashMap extends HashMap
   }
 
   /**
-   * Returns true if this HashMap contains a value <pre>o</pre>, such that
-   * <pre>o.equals(value)</pre>.
+   * Returns <code>true</code> if this HashMap contains a value
+   * <code>o</code>, such that <code>o.equals(value)</code>.
    *
    * @param value the value to search for in this HashMap
-   * @return true if at least one key maps to the value
+   *
+   * @return <code>true</code> if at least one key maps to the value
    */
   public boolean containsValue(Object value)
   {
@@ -297,7 +299,7 @@ public class LinkedHashMap extends HashMap
 
   /**
    * Return the value in this Map associated with the supplied key,
-   * or <pre>null</pre> if the key maps to nothing.  If this is an
+   * or <code>null</code> if the key maps to nothing.  If this is an
    * access-ordered Map and the key is found, this performs structural
    * modification, moving the key to the newest end of the list. NOTE:
    * Since the value could also be null, you must use containsKey to
@@ -350,14 +352,14 @@ public class LinkedHashMap extends HashMap
    * <p>
    *
    * For example, to keep the Map limited to 100 entries, override as follows:
-   * <pre>
-   * private static final int MAX_ENTRIES = 100;
-   *
-   * protected boolean removeEldestEntry(Map.Entry eldest)
-   * {
-   *   return size() > MAX_ENTRIES;
-   * }
-   * </pre><p>
+   * 
+<pre>private static final int MAX_ENTRIES = 100;
+
+protected boolean removeEldestEntry(Map.Entry eldest)
+{
+  return size() &gt; MAX_ENTRIES;
+}
+</pre><p>
    *
    * Typically, this method does not modify the map, but just uses the
    * return value as an indication to <code>put</code> whether to proceed.
@@ -376,6 +378,7 @@ public class LinkedHashMap extends HashMap
    *        returns true. For an access-order map, this is the least
    *        recently accessed; for an insertion-order map, this is the
    *        earliest element inserted.
+   *
    * @return true if <code>eldest</code> should be removed
    */
   protected boolean removeEldestEntry(Map.Entry eldest)
@@ -467,8 +470,10 @@ public class LinkedHashMap extends HashMap
       
       /**
        * Removes from the backing HashMap the last element which was fetched
-       * with the <pre>next()</pre> method.
+       * with the <code>next()</code> method.
+       *
        * @throws ConcurrentModificationException if the HashMap was modified
+       *
        * @throws IllegalStateException if called when there is no last element
        */
       public void remove()

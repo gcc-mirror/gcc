@@ -1,3 +1,37 @@
+2002-06-18  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Updated class declaration list.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added
+	PropertyPermissionCollection.java.
+	* java/lang/Thread.java (group, name): Now package-private.
+	* java/lang/ThreadGroup.java: Re-merge with Classpath.
+	* java/util/AbstractList.java: Likewise.
+	* java/util/AbstractMap.java: Likewise.
+	* java/util/Calendar.java: Likewise.
+	* java/util/Collections.java: Likewise.
+	* java/util/HashMap.java: Likewise.
+	* java/util/Hashtable.java: Likewise.
+	* java/util/LinkedHashMap.java: Likewise.
+	* java/util/LinkedList.java: Likewise.
+	* java/util/List.java: Likewise.
+	* java/util/ListResourceBundle.java: Likewise.
+	* java/util/Map.java: Likewise.
+	* java/util/Observable.java: Likewise.
+	* java/util/Properties.java: Likewise.
+	* java/util/PropertyPermission.java: Likewise.
+	* java/util/PropertyPermissionCollection.java: Likewise.
+	* java/util/PropertyResourceBundle.java: Likewise.
+	* java/util/Random.java: Likewise.
+	* java/util/SimpleTimeZone.java: Likewise.
+	* java/util/StringTokenizer.java: Likewise.
+	* java/util/TimerTask.java: Likewise.
+	* java/util/TreeMap.java: Likewise.
+	* java/util/WeakHashMap.java: Likewise.
+	* java/util/jar/Attributes.java: Likewise.
+	* java/util/jar/JarException.java: Likewise.
+	* java/util/jar/Manifest.java: Likewise.
+
 2002-06-17  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class declaration list.

@@ -52,7 +52,8 @@ import java.text.DateFormatSymbols;
  *
  * @see Calendar
  * @see GregorianCalender 
- * @author Jochen Hoenicke */
+ * @author Jochen Hoenicke
+ */
 public class SimpleTimeZone extends TimeZone
 {
   /**
@@ -436,9 +437,9 @@ public class SimpleTimeZone extends TimeZone
    * In the standard JDK the results given by this method may result in
    * inaccurate results at the end of February or the beginning of March.
    * To avoid this, you should use Calendar instead:
-   * <pre>
-   * offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-   * </pre>
+   * <code>offset = cal.get(Calendar.ZONE_OFFSET)
+   * + cal.get(Calendar.DST_OFFSET);</code>
+   *
    * You could also use in
    *
    * This version doesn't suffer this inaccuracy.

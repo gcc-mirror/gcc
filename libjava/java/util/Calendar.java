@@ -73,13 +73,12 @@ import java.io.*;
  * and for the first line all fields are set, that line is used to
  * compute the day. <br>
  *
- * <pre>
- * month + day_of_month
- * month + week_of_month + day_of_week
- * month + day_of_week_of_month + day_of_week
- * day_of_year
- * day_of_week + week_of_year
- * </pre>
+ * 
+<pre>month + day_of_month
+month + week_of_month + day_of_week
+month + day_of_week_of_month + day_of_week
+day_of_year
+day_of_week + week_of_year</pre>
  * 
  * The hour_of_day-field takes precedence over the ampm and
  * hour_of_ampm fields. <br>

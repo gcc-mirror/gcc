@@ -1,4 +1,4 @@
-/* java.util.WeakHashMap -- a hashtable that keeps only weak references
+/* WeakHashMap -- a hashtable that keeps only weak references
    to its keys, allowing the virtual machine to reclaim them
    Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
@@ -43,41 +43,41 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.ReferenceQueue;
 
 /**
- * A weak hash map has only weak references to the key.  This means
- * that it allows the key to be garbage collected if they are not used
- * otherwise.  If this happens, the weak hash map will eventually
- * remove the whole entry from this map. <br>
+ * A weak hash map has only weak references to the key. This means that it
+ * allows the key to be garbage collected if it is not used otherwise. If
+ * this happens, the entry will eventually disappear from the map,
+ * asynchronously.
  *
- * A weak hash map makes most sense, if the keys doesn't override the
- * <code>equals</code>-method: If there is no other reference to the
+ * <p>A weak hash map makes most sense when the keys doesn't override the
+ * <code>equals</code> method: If there is no other reference to the
  * key nobody can ever look up the key in this table and so the entry
- * can be removed.  This table also works, if the <code>equals</code>
- * method is overloaded, e.g. with Strings as keys, but you should be
- * prepared that some entries disappear spontaneously. <br>
+ * can be removed.  This table also works when the <code>equals</code>
+ * method is overloaded, such as String keys, but you should be prepared
+ * to deal with some entries disappearing spontaneously.
  *
- * You should also be prepared that this hash map behaves very
- * strange: The size of this map may spontaneously shrink (even if you
- * use a synchronized map and synchronize it); it behaves as if
- * another thread removes entries from this table without
- * synchronizations.  The entry set returned by <code>entrySet</code>
+ * <p>Other strange behaviors to be aware of: The size of this map may
+ * spontaneously shrink (even if you use a synchronized map and synchronize
+ * it); it behaves as if another thread removes entries from this table
+ * without synchronization.  The entry set returned by <code>entrySet</code>
  * has similar phenomenons: The size may spontaneously shrink, or an
- * entry, that was in the set before, suddenly disappears. <br>
+ * entry, that was in the set before, suddenly disappears.
  *
- * A weak hash map is not meant for caches; use a normal map, with
- * soft references as values instead, or try {@link LinkedHashMap}.  <br>
+ * <p>A weak hash map is not meant for caches; use a normal map, with
+ * soft references as values instead, or try {@link LinkedHashMap}.
  *
- * The weak hash map supports null values and null keys.  The null key
- * is never deleted from the map (except explictly of course).
- * The performance of the methods are similar to that of a hash map. <br>
+ * <p>The weak hash map supports null values and null keys.  The null key
+ * is never deleted from the map (except explictly of course). The
+ * performance of the methods are similar to that of a hash map.
  *
- * The value objects are strongly referenced by this table.  So if a
+ * <p>The value objects are strongly referenced by this table.  So if a
  * value object maintains a strong reference to the key (either direct
  * or indirect) the key will never be removed from this map.  According
  * to Sun, this problem may be fixed in a future release.  It is not
  * possible to do it with the jdk 1.2 reference model, though.
  *
  * @author Jochen Hoenicke
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
+ *
  * @see HashMap
  * @see WeakReference
  * @see LinkedHashMap
@@ -86,6 +86,9 @@ import java.lang.ref.ReferenceQueue;
  */
 public class WeakHashMap extends AbstractMap implements Map
 {
+  // WARNING: WeakHashMap is a CORE class in the bootstrap cycle. See the
+  // comments in vm/reference/java/lang/Runtime for implications of this fact.
+
   /**
    * The default capacity for an instance of HashMap.
    * Sun's documentation mildly suggests that this (11) is the correct
@@ -148,7 +151,7 @@ public class WeakHashMap extends AbstractMap implements Map
   /**
    * The rounded product of the capacity (i.e. number of buckets) and
    * the load factor. When the number of elements exceeds the
-   * threshold, the HashMap calls <pre>rehash()</pre>.
+   * threshold, the HashMap calls <code>rehash()</code>.
    */
   private int threshold;
 
@@ -364,11 +367,11 @@ public class WeakHashMap extends AbstractMap implements Map
 
     /**
      * The slot of this entry. This should be
-     * <pre>
-     *  Math.abs(key.hashCode() % buckets.length)
-     * </pre>
+     * <code>Math.abs(key.hashCode() % buckets.length)</code>.
+     *
      * But since the key may be silently removed we have to remember
      * the slot number.
+     *
      * If this bucket was removed the slot is -1.  This marker will
      * prevent the bucket from being removed twice.
      */
@@ -503,9 +506,10 @@ public class WeakHashMap extends AbstractMap implements Map
   private final WeakEntrySet theEntrySet;
 
   /**
-   * The hash buckets.  These are linked lists.
+   * The hash buckets.  These are linked lists. Package visible for use in
+   * nested classes.
    */
-  private WeakBucket[] buckets;
+  WeakBucket[] buckets;
 
   /**
    * Creates a new weak hash map with default load factor and default
@@ -676,10 +680,12 @@ public class WeakHashMap extends AbstractMap implements Map
 
   /**
    * Removes a bucket from this hash map, if it wasn't removed before
-   * (e.g. one time through rehashing and one time through reference queue)
+   * (e.g. one time through rehashing and one time through reference queue).
+   * Package visible for use in nested classes.
+   *
    * @param bucket the bucket to remove.
    */
-  private void internalRemove(WeakBucket bucket)
+  void internalRemove(WeakBucket bucket)
   {
     int slot = bucket.slot;
     if (slot == -1)
@@ -870,4 +876,4 @@ public class WeakHashMap extends AbstractMap implements Map
     cleanQueue();
     return super.values();
   }
-}
+} // class WeakHashMap

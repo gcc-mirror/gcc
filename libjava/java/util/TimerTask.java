@@ -44,11 +44,11 @@ package java.util;
  * it should have been scheduled and cancel itself when no longer needed.
  * <p>
  * Example:
- * <code>
+ * <pre>
  *  Timer timer = new Timer();
  *  TimerTask task = new TimerTask() {
  *      public void run() {
- *      if (this.scheduledExecutionTime() < System.currentTimeMillis() + 500)
+ *      if (this.scheduledExecutionTime() &lt; System.currentTimeMillis() + 500)
  *          // Do something
  *      else
  *          // Complain: We are more then half a second late!
@@ -56,7 +56,7 @@ package java.util;
  *          this.cancel(); // This was our last execution
  *  };
  *  timer.scheduleAtFixedRate(task, 1000, 1000); // schedule every second
- * </code>
+ * </pre>
  * <p>
  * Note that a TimerTask object is a one shot object and can only given once
  * to a Timer. (The Timer will use the TimerTask object for bookkeeping,

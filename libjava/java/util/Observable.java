@@ -1,5 +1,5 @@
-/* java.util.Observable
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+/* Observable.java -- an object to be observed
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,55 +38,53 @@ exception statement from your version. */
 
 package java.util;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
+ * This class represents an object which is observable.  Other objects may
+ * register their intent to be notified when this object changes; and when
+ * this object does change, it will trigger the <code>update</code> method
+ * of each observer.
+ *
+ * Note that the <code>notifyObservers()</code> method of this class is
+ * unrelated to the <code>notify()</code> of Object.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 2, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Observer
+ * @status updated to 1.4
  */
 public class Observable
 {
-  /** tracks whether this object has changed */
+  /** Tracks whether this object has changed. */
   private boolean changed;
 
-  /* list of the Observers registered as interested in this Observable */
-  private Vector observers;
-
-  /* TBD: This might be better implemented as an Observer[]
-   * but that would mean writing more code rather than making use of
-   * the existing Vector class (this also implies a larger text code
-   * space in resulting executables).  The tradeoff is one of speed
-   * (manipulating the Observer[] directly) vs. size/reuse.  In the future,
-   * we may decide to make the tradeoff and reimplement with an Observer[].
-   */
+  /* List of the Observers registered as interested in this Observable. */
+  private LinkedHashSet observers;
 
   /**
    * Constructs an Observable with zero Observers.
    */
   public Observable()
   {
-    changed = false;
-    observers = new Vector();
+    observers = new LinkedHashSet();
   }
 
   /**
    * Adds an Observer. If the observer was already added this method does
    * nothing.
    *
-   * @param observer Observer to add.
+   * @param observer Observer to add
+   * @throws NullPointerException if observer is null
    */
   public synchronized void addObserver(Observer observer)
   {
-    if (!observers.contains(observer))
-      observers.addElement(observer);
+    observers.add(observer);
   }
 
   /**
-   * Reset this Observable's state to unchanged.
+   * Reset this Observable's state to unchanged. This is called automatically
+   * by <code>notifyObservers</code> once all observers have been notified.
+   *
+   * @see #notifyObservers()
    */
   protected synchronized void clearChanged()
   {
@@ -94,7 +92,9 @@ public class Observable
   }
 
   /**
-   * @return Number of Observers for this Observable.
+   * Returns the number of observers for this object.
+   *
+   * @return number of Observers for this
    */
   public synchronized int countObservers()
   {
@@ -104,11 +104,11 @@ public class Observable
   /**
    * Deletes an Observer of this Observable.
    *
-   * @param victim Observer to delete.
+   * @param victim Observer to delete
    */
   public synchronized void deleteObserver(Observer victim)
   {
-    observers.removeElement(victim);
+    observers.remove(victim);
   }
 
   /**
@@ -116,11 +116,14 @@ public class Observable
    */
   public synchronized void deleteObservers()
   {
-    observers.removeAllElements();
+    observers.clear();
   }
 
   /**
-   * @return Whether or not this Observable has changed.
+   * True if <code>setChanged</code> has been called more recently than
+   * <code>clearChanged</code>.
+   *
+   * @return whether or not this Observable has changed
    */
   public synchronized boolean hasChanged()
   {
@@ -129,7 +132,10 @@ public class Observable
 
   /**
    * If the Observable has actually changed then tell all Observers about it,
-   * then resets state to unchanged.
+   * then reset state to unchanged.
+   *
+   * @see #notifyObservers(Object)
+   * @see Observer#update(Observable, Object)
    */
   public void notifyObservers()
   {
@@ -138,21 +144,29 @@ public class Observable
 
   /**
    * If the Observable has actually changed then tell all Observers about it,
-   * then resets state to unchanged. 
-   * Note that though the order of notification is unspecified in subclasses,
-   * in Observable it is in the order of registration.
+   * then reset state to unchanged. Note that though the order of
+   * notification is unspecified in subclasses, in Observable it is in the
+   * order of registration.
    *
-   * @param obj Arguement to Observer's update method.
+   * @param obj argument to Observer's update method
+   * @see Observer#update(Observable, Object)
    */
   public void notifyObservers(Object obj)
   {
-    if (!hasChanged())
+    if (! hasChanged())
       return;
-    Vector ob1 = (Vector) observers.clone();
-
-    for (int i = 0; i < ob1.size(); i++)
-      ((Observer) ob1.elementAt(i)).update(this, obj);
-
+    // Create clone inside monitor, as that is relatively fast and still
+    // important to keep threadsafe, but update observers outside of the
+    // lock since update() can call arbitrary code.
+    Set s;
+    synchronized (this)
+      {
+        s = (Set) observers.clone();
+      }
+    int i = s.size();
+    Iterator iter = s.iterator();
+    while (--i >= 0)
+      ((Observer) iter.next()).update(this, obj);
     clearChanged();
   }
 

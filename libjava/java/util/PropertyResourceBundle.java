@@ -1,5 +1,5 @@
-/* java.util.PropertyResourceBundle
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* PropertyResourceBundle -- a resource bundle built from a Property file
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,13 @@ exception statement from your version. */
 
 package java.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import gnu.java.util.DoubleEnumeration;
 
 /**
  * This class is a concrete <code>ResourceBundle</code> that gets it
- * resources from a property file.  This implies that the resources are
+ * resources from a property file. This implies that the resources are
  * strings. For more information about resource bundles see the class
  * <code>ResourceBundle</code>.
  *
@@ -52,75 +54,68 @@ import gnu.java.util.DoubleEnumeration;
  * file.
  *
  * If there is also a class for this resource and the same locale, the
- * class does win.
- *
- * The properties file should have the name of the resource bundle,
- * appended with the locale (e.g. <code>_de</code) and the extension
- * <code>.properties</code>.  The file should have the same format
+ * class will be chosen. The properties file should have the name of the
+ * resource bundle, appended with the locale (e.g. <code>_de</code) and the
+ * extension <code>.properties</code>. The file should have the same format
  * as for <code>Properties.load()</code>
  *
- * XXX- move this to properties.
- * The file should have the following
- * format: An empty line or a line starting with <code>#</code> is
- * ignored.  An backslash (<code>\</code>) at the end of the line
- * makes the line continueing on the next line.  Otherwise, each line
- * describes a key/value pair.  The chars up to the first whitespace,
- * = or : are the key.  The key is followed by one or more
- * whitespaces, <code>=</code> or <code>:</code>.  The rest of the
- * line is the resource belonging to the key.  You can give unicode
- * characters with the <code>\\uxxxx</code> notation, where
- * <code>xxxx</code> is the hex encoding of the 16 bit unicode char
- * number.
- *
  * An example of a properties file for the german language is given
- * here.  This extends the example given in ListResourceBundle.
+ * here. This extends the example given in ListResourceBundle.
  * Create a file MyResource_de.properties with the following contents
- * and put it in the CLASSPATH.  (The char <code>\u00e4<char> is the 
+ * and put it in the CLASSPATH. (The char <code>\u00e4<char> is the
  * german &auml;)
- * 
- * <pre>
- * s1=3
- * s2=MeineDisk
- * s3=3. M\u00e4rz 96
- * s4=Die Diskette ''{1}'' enth\u00e4lt {0} in {2}.
- * s5=0
- * s6=keine Dateien
- * s7=1
- * s8=eine Datei
- * s9=2
- * s10={0,number} Dateien
- * s11=Die Formatierung warf eine Exception: {0}
- * s12=FEHLER
- * s13=Ergebnis
- * s14=Dialog
- * s15=Auswahlkriterium
- * s16=1,3
- * </pre>
  *
+ *
+<pre>
+s1=3
+s2=MeineDisk
+s3=3. M\u00e4rz 96
+s4=Die Diskette ''{1}'' enth\u00e4lt {0} in {2}.
+s5=0
+s6=keine Dateien
+s7=1
+s8=eine Datei
+s9=2
+s10={0,number} Dateien
+s11=Die Formatierung warf eine Exception: {0}
+s12=FEHLER
+s13=Ergebnis
+s14=Dialog
+s15=Auswahlkriterium
+s16=1,3
+</pre>
+ *
+ * @author Jochen Hoenicke
  * @see ResourceBundle
  * @see ListResourceBundle
  * @see Properties#load()
- * @author Jochen Hoenicke */
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class PropertyResourceBundle extends ResourceBundle
 {
-  Properties properties;
+  /** The properties file this bundle is based on. */
+  private Properties properties;
 
   /**
    * Creates a new property resource bundle.
-   * @param stream An input stream, where the resources are read from.
+   *
+   * @param stream an input stream, where the resources are read from
+   * @throws NullPointerException if stream is null
+   * @throws IOException if reading the stream fails
    */
-  public PropertyResourceBundle(java.io.InputStream stream)
-    throws java.io.IOException
+  public PropertyResourceBundle(InputStream stream) throws IOException
   {
     properties = new Properties();
     properties.load(stream);
   }
 
   /**
-   * Called by <code>getObject</code> when a resource is needed.  This
+   * Called by <code>getObject</code> when a resource is needed. This
    * returns the resource given by the key.
-   * @param key The key of the resource.
-   * @return The resource for the key or null if it doesn't exists.
+   *
+   * @param key the key of the resource
+   * @return the resource for the key, or null if it doesn't exist
    */
   public Object handleGetObject(String key)
   {
@@ -129,16 +124,30 @@ public class PropertyResourceBundle extends ResourceBundle
 
   /**
    * This method should return all keys for which a resource exists.
-   * @return An enumeration of the keys.
+   *
+   * @return an enumeration of the keys
    */
   public Enumeration getKeys()
   {
-    // We must also return the keys of our parent.
-    if (parent != null)
+    if (parent == null)
+      return properties.propertyNames();
+    // We make a new Set that holds all the keys, then return an enumeration
+    // for that. This prevents modifications from ruining the enumeration,
+    // as well as ignoring duplicates.
+    Set s = new HashSet();
+    Enumeration e = properties.propertyNames();
+    while (e.hasMoreElements())
+      s.add(e.nextElement());
+    ResourceBundle bundle = parent;
+    // Eliminate tail recursion.
+    do
       {
-	return new DoubleEnumeration(properties.propertyNames(),
-				     parent.getKeys());
+        e = bundle.getKeys();
+        while (e.hasMoreElements())
+          s.add(e.nextElement());
+        bundle = bundle.parent;
       }
-    return properties.propertyNames();
+    while (bundle != null);
+    return Collections.enumeration(s);
   }
-}
+} // class PropertyResourceBundle
