@@ -1,5 +1,5 @@
 /* PipeImpl.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -79,7 +79,8 @@ class PipeImpl extends Pipe
       return read (srcs, 0, srcs.length);
     }
 
-    public synchronized final long read (ByteBuffer[] srcs, int offset, int len)
+    public final synchronized long read (ByteBuffer[] srcs, int offset,
+					 int len)
       throws IOException
     {
       if (offset < 0
@@ -138,7 +139,7 @@ class PipeImpl extends Pipe
       return write (srcs, 0, srcs.length);
     }
 
-    public synchronized final long write (ByteBuffer[] srcs, int offset, int len)
+    public final synchronized long write (ByteBuffer[] srcs, int offset, int len)
       throws IOException
     {
       if (offset < 0

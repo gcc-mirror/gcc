@@ -43,13 +43,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.xml.transform.TransformerException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import gnu.xml.xpath.Expr;
-import gnu.xml.xpath.NodeTypeTest;
 import gnu.xml.xpath.Pattern;
 import gnu.xml.xpath.Selector;
-import gnu.xml.xpath.Test;
 import gnu.xml.xpath.UnionExpr;
 
 /**

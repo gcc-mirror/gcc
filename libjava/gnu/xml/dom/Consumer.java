@@ -38,16 +38,11 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
-import java.io.IOException;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Attributes2;
 

@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;

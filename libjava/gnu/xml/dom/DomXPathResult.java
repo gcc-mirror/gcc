@@ -39,10 +39,8 @@ package gnu.xml.dom;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.xpath.XPathException;
-import org.w3c.dom.xpath.XPathNSResolver;
 import org.w3c.dom.xpath.XPathResult;
 
 /**

@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.text.ParseException;
 import java.util.Date;
 
 /**

@@ -1,5 +1,5 @@
 /* DERWriter.java -- write Java types in DER format.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,6 @@ import java.math.BigInteger;
 
 import java.text.SimpleDateFormat;
 
-import java.util.BitSet;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;

@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.transform;
 
 import javax.xml.transform.TransformerException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import gnu.xml.xpath.Expr;
 

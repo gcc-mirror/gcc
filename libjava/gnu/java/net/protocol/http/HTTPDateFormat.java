@@ -38,9 +38,15 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.PrintStream;
-import java.text.*;
-import java.util.*;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.FieldPosition;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 /**
  * HTTP date formatter and parser.

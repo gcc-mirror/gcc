@@ -42,10 +42,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import gnu.java.security.OID;
-import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
-import gnu.java.security.x509.Util;
 
 public class PolicyConstraint extends Extension.Value
 {

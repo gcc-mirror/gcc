@@ -37,15 +37,9 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.text.DecimalFormat;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
-import gnu.xml.xpath.Expr;
 
 /**
  * A template node representing an XSLT <code>apply-imports</code> instruction.

@@ -40,7 +40,6 @@ package gnu.xml.dom;
 import java.io.IOException;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.DOMImplementation;
 
 import org.xml.sax.EntityResolver;

@@ -37,22 +37,16 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import gnu.xml.xpath.Constant;
 import gnu.xml.xpath.Expr;

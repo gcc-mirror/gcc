@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.transform;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathFunction;
