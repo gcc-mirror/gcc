@@ -1,5 +1,10 @@
 2004-06-30  Richard Henderson  <rth@redhat.com>
 
+	* tree-gimple.c (right_assocify_expr): Kill
+	(rationalize_compound_expr): Kill.
+	* tree-gimple.h: Likewise.
+	* tree-inline.c (expand_call_inline): Don't call it.
+
 	* function.h (struct function): Remove x_last_parm_insn,
 	inl_last_parm_insn.
 	(last_parm_insn): Remove.
