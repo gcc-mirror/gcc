@@ -1,3 +1,9 @@
+2002-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Move AC_CANONICAL_SYSTEM and AC_ARG_PROGRAM back
+	before AC_PROG_CC.
+	* configure: Rebuilt.
+
 2002-11-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-decl.c: (start_struct): Commonize flag setting.

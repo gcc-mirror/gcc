@@ -176,6 +176,12 @@ changequote([, ])dnl
   fi
 fi
 
+# Determine the host, build, and target systems
+AC_CANONICAL_SYSTEM
+
+# Set program_transform_name
+AC_ARG_PROGRAM
+
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_CC_C_O
@@ -468,12 +474,6 @@ AC_ARG_ENABLE(shared,
   esac
 ], [enable_shared=yes])
 AC_SUBST(enable_shared)
-
-# Determine the host, build, and target systems
-AC_CANONICAL_SYSTEM
-
-# Set program_transform_name
-AC_ARG_PROGRAM
 
 # Stage specific cflags for build.
 stage1_cflags=
