@@ -1305,6 +1305,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       pp_separate_with (pp, ',');
       pp_expression (pp, TREE_OPERAND (e, 1));
       pp_c_right_paren (pp);
+      break;
 
     case ABS_EXPR:
       pp_c_identifier (pp, "__builtin_abs");
