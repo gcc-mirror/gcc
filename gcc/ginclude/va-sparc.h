@@ -54,5 +54,11 @@ __extension__							\
    ((__builtin_classify_type (__va_temp) >= 12)			\
     ? ((pvar) += __va_rounded_size (TYPE *),			\
        **(TYPE **) ((pvar) - __va_rounded_size (TYPE *)))	\
+    : __va_rounded_size (TYPE) == 8				\
+    ? ({ union {double d; int i[2];} u;				\
+	 u.i[0] = ((int *) (pvar))[0];				\
+	 u.i[1] = ((int *) (pvar))[1];				\
+	 (pvar) += 8;						\
+	 u.d; })							\
     : ((pvar) += __va_rounded_size (TYPE),			\
        *((TYPE *) ((pvar) - __va_rounded_size (TYPE)))));})
