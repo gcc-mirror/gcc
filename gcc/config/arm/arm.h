@@ -2044,7 +2044,11 @@ do {									\
      when running in 32 bit mode.  */					\
   ((!TARGET_APCS_32) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
 
-/* Prototypes for arm.c  */
+/* The remainder of this file is only needed for building the compiler 
+   itself, not for the collateral.  */
+#ifdef HAVE_CONFIG_H
+
+/* Prototypes for functions in arm.c  */
 
 #ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
 #define STDIO_PROTO(ARGS) PROTO (ARGS)
@@ -2174,5 +2178,6 @@ void   aof_add_import PROTO ((char *));
 void   aof_delete_import PROTO ((char *));
 void   aof_dump_imports STDIO_PROTO ((FILE *));
 #endif
+#endif /* HAVE_CONFIG_H */
 
 #endif /* __ARM_H__ */

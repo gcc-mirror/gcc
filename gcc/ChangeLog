@@ -1,3 +1,8 @@
+Tue Apr 13 05:04:59 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (function prototypes for arm.c): Ifdef these out if
+	HAVE_CONFIG_H is not defined.
+
 Tue Apr 13 02:11:11 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c: Remove space register specification in memory addresses,
