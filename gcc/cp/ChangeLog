@@ -1,3 +1,9 @@
+2003-12-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/13070
+	* decl.c (duplicate_decls): When setting the type of an anticipated
+	declaration, merge the existing type attributes.
+
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/13268, c++/13339
