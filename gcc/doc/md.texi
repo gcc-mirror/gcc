@@ -5246,12 +5246,12 @@ branch is true, we might represent this as follows:
 @cindex RISC
 @cindex VLIW
 
-To achieve better productivity most modern processors
+To achieve better performance, most modern processors
 (super-pipelined, superscalar @acronym{RISC}, and @acronym{VLIW}
 processors) have many @dfn{functional units} on which several
 instructions can be executed simultaneously.  An instruction starts
 execution if its issue conditions are satisfied.  If not, the
-instruction is interlocked until its conditions are satisfied.  Such
+instruction is stalled until its conditions are satisfied.  Such
 @dfn{interlock (pipeline) delay} causes interruption of the fetching
 of successor instructions (or demands nop instructions, e.g. for some
 MIPS processors).
@@ -5274,25 +5274,25 @@ of delay into account is complex especially for modern @acronym{RISC}
 processors.
 
 The task of exploiting more processor parallelism is solved by an
-instruction scheduler.  For better solution of this problem, the
+instruction scheduler.  For a better solution to this problem, the
 instruction scheduler has to have an adequate description of the
-processor parallelism (or @dfn{pipeline description}).  Currently GCC
-has two ways to describe processor parallelism.  The first one is old
-and originated from instruction scheduler written by Michael Tiemann
-and described in the first subsequent section.  The second one was
-created later.  It is based on description of functional unit
-reservations by processor instructions with the aid of @dfn{regular
-expressions}.  This is so called @dfn{automaton based description}.
+processor parallelism (or @dfn{pipeline description}).  Currently GCC 
+provides two alternative ways to describe processor parallelism,
+both described below.  The first method is outlined in the next section;
+it was once the only method provided by GCC, and thus is used in a number
+of exiting ports.  The second, and preferred method, specifies functional
+unit reservations for groups of instructions with the aid of @dfn{regular
+expressions}.  This is called the @dfn{automaton based description}.	
 
-Gcc instruction scheduler uses a @dfn{pipeline hazard recognizer} to
+The GCC instruction scheduler uses a @dfn{pipeline hazard recognizer} to
 figure out the possibility of the instruction issue by the processor
-on given simulated processor cycle.  The pipeline hazard recognizer is
-a code generated from the processor pipeline description.  The
+on a given simulated processor cycle.  The pipeline hazard recognizer is
+automatically generated from the processor pipeline description.  The
 pipeline hazard recognizer generated from the automaton based
-description is more sophisticated and based on deterministic finite
+description is more sophisticated and based on a deterministic finite
 state automaton (@acronym{DFA}) and therefore faster than one
-generated from the old description.  Also its speed is not depended on
-processor complexity.  The instruction issue is possible if there is
+generated from the old description.  Furthermore, its speed is not dependent
+on processor complexity.  The instruction issue is possible if there is
 a transition from one automaton state to another one.
 
 You can use any model to describe processor pipeline characteristics
@@ -5450,7 +5450,7 @@ in the machine description file is not important.
 The following optional construction describes names of automata
 generated and used for the pipeline hazards recognition.  Sometimes
 the generated finite state automaton used by the pipeline hazard
-recognizer is large.  If we use more one automaton and bind functional
+recognizer is large.  If we use more than one automaton and bind functional
 units to the automata, the summary size of the automata usually is
 less than the size of the single automaton.  If there is no one such
 construction, only one finite state automaton is generated.
@@ -5477,7 +5477,7 @@ reservations should be described by the following construction.
 separated by commas.  Don't use name @samp{nothing}, it is reserved
 for other goals.
 
-@var{automaton-name} is a string giving the name of automaton with
+@var{automaton-name} is a string giving the name of the automaton with
 which the unit is bound.  The automaton should be described in
 construction @code{define_automaton}.  You should give
 @dfn{automaton-name}, if there is a defined automaton.
@@ -5500,14 +5500,14 @@ templates).
 @var{unit-names} is a string giving names of the functional units
 separated by commas.
 
-@var{automaton-name} is a string giving name of the automaton with
+@var{automaton-name} is a string giving the name of the automaton with
 which the unit is bound.
 
 @findex define_insn_reservation
 @cindex instruction latency time
 @cindex regular expressions
 @cindex data bypass
-The following construction is major one to describe pipeline
+The following construction is the major one to describe pipeline
 characteristics of an instruction.
 
 @smallexample
@@ -5519,18 +5519,18 @@ characteristics of an instruction.
 instruction.  There is an important difference between the old
 description and the automaton based pipeline description.  The latency
 time is used for all dependencies when we use the old description.  In
-the automaton based pipeline description, given latency time is used
-only for true dependencies.  The cost of anti-dependencies is always
+the automaton based pipeline description, the given latency time is only
+used for true dependencies.  The cost of anti-dependencies is always
 zero and the cost of output dependencies is the difference between
 latency times of the producing and consuming insns (if the difference
-is negative, the cost is considered to be zero).  You always can
-change the default costs for any description by using target hook
+is negative, the cost is considered to be zero).  You can always
+change the default costs for any description by using the target hook
 @code{TARGET_SCHED_ADJUST_COST} (@pxref{Scheduling}).
 
-@var{insn-names} is a string giving internal name of the insn.  The
+@var{insn-names} is a string giving the internal name of the insn.  The
 internal names are used in constructions @code{define_bypass} and in
 the automaton description file generated for debugging.  The internal
-name has nothing common with the names in @code{define_insn}.  It is a
+name has nothing in common with the names in @code{define_insn}.  It is a
 good practice to use insn classes described in the processor manual.
 
 @var{condition} defines what RTL insns are described by this
@@ -5545,7 +5545,7 @@ contain @code{symbol_ref}).  It is also not checked during the
 pipeline hazard recognizer work because it would slow down the
 recognizer considerably.
 
-@var{regexp} is a string describing reservation of the cpu functional
+@var{regexp} is a string describing the reservation of the cpu's functional
 units by the instruction.  The reservations are described by a regular
 expression according to the following syntax:
 
@@ -5631,11 +5631,11 @@ given in string @var{out_insn_names} will be ready for the
 instructions given in string @var{in_insn_names}.  The instructions in
 the string are separated by commas.
 
-@var{guard} is an optional string giving name of a C function which
+@var{guard} is an optional string giving the name of a C function which
 defines an additional guard for the bypass.  The function will get the
 two insns as parameters.  If the function returns zero the bypass will
 be ignored for this case.  The additional guard is necessary to
-recognize complicated bypasses, e.g. when consumer is only an address
+recognize complicated bypasses, e.g. when the consumer is only an address
 of insn @samp{store} (not a stored value).
 
 @findex exclusion_set
@@ -5680,7 +5680,7 @@ it is symmetric).  For example, it is useful for description that
 @acronym{VLIW} @samp{slot0} can not be reserved after @samp{slot1} or
 @samp{slot2} reservation.
 
-All functional units mentioned in a set should belong the same
+All functional units mentioned in a set should belong to the same
 automaton.
 
 @findex automata_option
@@ -5734,7 +5734,7 @@ the following functional units.
 
 @smallexample
 (define_cpu_unit "i0_pipeline, i1_pipeline, f_pipeline")
-(define_cpu_unit "port_0, port1")
+(define_cpu_unit "port0, port1")
 @end smallexample
 
 All simple integer insns can be executed in any integer pipeline and
@@ -5746,26 +5746,26 @@ pipeline and their results are ready correspondingly in 8 and 4
 cycles.  The integer division is not pipelined, i.e. the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
-results are ready in 3 cycles.  There is also additional one cycle
-delay in the usage by integer insns of result produced by floating
-point insns.  To describe all of this we could specify
+results are ready in 3 cycles.  Where the result of a floating point
+insn is used by an integer insn, an additional delay of one cycle is
+incurred.  To describe all of this we could specify
 
 @smallexample
 (define_cpu_unit "div")
 
 (define_insn_reservation "simple" 2 (eq_attr "cpu" "int")
-                         "(i0_pipeline | i1_pipeline), (port_0 | port1)")
+                         "(i0_pipeline | i1_pipeline), (port0 | port1)")
 
 (define_insn_reservation "mult" 4 (eq_attr "cpu" "mult")
-                         "i1_pipeline, nothing*2, (port_0 | port1)")
+                         "i1_pipeline, nothing*2, (port0 | port1)")
 
 (define_insn_reservation "div" 8 (eq_attr "cpu" "div")
-                         "i1_pipeline, div*7, div + (port_0 | port1)")
+                         "i1_pipeline, div*7, div + (port0 | port1)")
 
 (define_insn_reservation "float" 3 (eq_attr "cpu" "float")
-                         "f_pipeline, nothing, (port_0 | port1))
+                         "f_pipeline, nothing, (port0 | port1))
 
-(define_bypass 4 "float" "simple,mut,div")
+(define_bypass 4 "float" "simple,mult,div")
 @end smallexample
 
 To simplify the description we could describe the following reservation
@@ -5821,17 +5821,18 @@ The interface to the pipeline hazard recognizer is more complex than
 one to the automaton based pipeline recognizer.
 
 @item
-An unnatural description when you write an unit and a condition which
+An unnatural description when you write a unit and a condition which
 selects instructions using the unit.  Writing all unit reservations
 for an instruction (an instruction class) is more natural.
 
 @item
-The recognition of the interlock delays has slow implementation.  GCC
+The recognition of the interlock delays has a slow implementation.  The GCC
 scheduler supports structures which describe the unit reservations.
-The more processor has functional units, the slower pipeline hazard
-recognizer.  Such implementation would become slower when we enable to
+The more functional units a processor has, the slower its pipeline hazard
+recognizer will be.  Such an implementation would become even slower when we
+allowed to
 reserve functional units not only at the instruction execution start.
-The automaton based pipeline hazard recognizer speed is not depended
+In an automaton based pipeline hazard recognizer, speed is not dependent
 on processor complexity.
 @end itemize
 

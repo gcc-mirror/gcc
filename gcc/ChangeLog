@@ -1,3 +1,9 @@
+Tue Aug 27 18:30:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
+			  Aldy Hernandez <aldyh at redhat dot com>
+
+	* doc/tm.texi: Applied numerous fixes to the automaton based
+	scheduler descrition.
+
 Tue Aug 27 19:51:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Handle variable sized objects.
