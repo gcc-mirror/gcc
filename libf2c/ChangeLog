@@ -1,3 +1,9 @@
+1999-01-15  Dave Love  <fx@gnu.org>
+
+	* libU77/datetime_.c (G77_date_and_time_0): Return milliseconds as
+	such, not as microseconds.
+	(scopy): Declare.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this
@@ -6,10 +12,10 @@
 
 Mon Nov 23 16:52:22 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	*  configure.in: Use AC_PREREQ(2.12.1).
-	*  libF77/configure.in: Likewise.
-	*  libI77/configure.in: Likewise.
-	*  libU77/configure.in: Likewise.
+	* configure.in: Use AC_PREREQ(2.12.1).
+	* libF77/configure.in: Likewise.
+	* libI77/configure.in: Likewise.
+	* libU77/configure.in: Likewise.
 
 1998-10-24  Dave Love  <d.love@dl.ac.uk>
 
