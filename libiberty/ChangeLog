@@ -1,3 +1,13 @@
+2000-11-04  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* hashtab.c (htab_expand): Change to return int.  Use calloc or
+ 	xcalloc depending on htab->return_allocation_failure.  Return zero
+ 	if calloc fails.
+	(htab_create): Update comment to cover memory allocation.
+	(htab_try_create): New.
+	(htab_find_slot_with_hash): Return NULL if htab_expand fails.
+  	Update comment to cover this.
+
 2000-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* hashtab.c: Change void * to PTR where necessary.
