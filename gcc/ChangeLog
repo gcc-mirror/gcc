@@ -1,3 +1,12 @@
+2001-03-16  Philip Blundell  <philb@gnu.org>
+
+	* config.gcc: Remove obsolete targets "arm*-*-linuxoldld" and
+	"armv2-*-linux".
+	* config/arm/linux-elf.h: Remove historical relics related to
+	above configurations.
+	* config/arm/linux-oldld.h: Delete.
+	* config/arm/linux-elf26.h: Delete.
+
 2001-03-17  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (lookup_filename): Emit .file if the assembler
