@@ -1,3 +1,8 @@
+2003-02-04  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.c (__paritysi2, __paritydi2): Replace last two reduction
+	rounds with a "bit table" lookup.
+
 2003-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): Do not use the mode specified in the insn
