@@ -1,3 +1,7 @@
+2001-01-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lex.c (java_read_char): Check for EOF from getc first.
+
 2001-01-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Don't lay the superclass out if it's

@@ -447,10 +447,10 @@ java_read_char (lex)
       int c, c1, c2;
       c = getc (lex->finput);
 
-      if (c < 128)
-	return (unicode_t)c;
       if (c == EOF)
 	return UEOF;
+      if (c < 128)
+	return (unicode_t)c;
       else
 	{
 	  if ((c & 0xe0) == 0xc0)
