@@ -1,6 +1,7 @@
 2003-02-16 Arend Bayer <arend.bayer@web.de>
            Richard Henderson  <rth@redhat.com>
 
+	PR c/8068
         * fold-const.c (extract_muldiv_1): Rename from extract_muldiv;
         rearrange mult arguments for less recursion.
         (extract_muldiv): New.  Prevent runaway recursion.
