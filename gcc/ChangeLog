@@ -1,3 +1,22 @@
+2000-08-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (cpp_init): Set global flag when called.
+	(cpp_reader_init): Bomb out if cpp_init hasn't been called.
+
+Sun Aug 20 01:41:35 MSD 2000 Dennis Chernoivanov <cdi@sparc.spb.su>
+
+        * cpplex.c (cpp_scan_buffer): Move `output_line_command' just
+        before `process_directive' so that newlines won't be missed
+        for directives.
+        (cpp_printf): Increment `print->lineno' when newline is emitted.
+
+        * cppmain.c (cb_ident): Likewise.
+        (cb_define): Likewise.
+        (cb_undef): Likewise.
+        (cb_include): Likewise.
+        (cb_def_pragma): Likewise.
+        (dump_macros_helper): Likewise.
+
 2000-08-20  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (emit_insn_group_barriers): Stop if ar.lc

@@ -142,6 +142,7 @@ cb_ident (pfile, str, len)
      unsigned int len;
 {
   cpp_printf (pfile, &parse_out, "#ident \"%.*s\"\n", (int) len, str);
+  parse_out.lineno++;
 }
 
 static void
@@ -156,6 +157,7 @@ cb_define (pfile, hash)
 	  || CPP_OPTION (pfile, dump_macros) == dump_definitions)
 	cpp_dump_definition (pfile, parse_out.outf, hash);
       putc ('\n', parse_out.outf);
+      parse_out.lineno++;
     }
 }
 
@@ -165,7 +167,10 @@ cb_undef (pfile, hash)
      cpp_hashnode *hash;
 {
   if (pfile->done_initializing)
-    cpp_printf (pfile, &parse_out, "#undef %s\n", hash->name);
+    {
+      cpp_printf (pfile, &parse_out, "#undef %s\n", hash->name);
+      parse_out.lineno++;
+    }
 }
 
 static void
@@ -183,6 +188,7 @@ cb_include (pfile, dir, str, len, ab)
     l = '"', r = '"';
 
   cpp_printf (pfile, &parse_out, "#%s %c%.*s%c\n", dir, l, (int) len, str, r);
+  parse_out.lineno++;
 }
 
 static void
@@ -233,6 +239,7 @@ cb_def_pragma (pfile)
   cpp_output_list (pfile, parse_out.outf, &pfile->token_list,
 		   pfile->first_directive_token + 2);
   putc ('\n', parse_out.outf);
+  parse_out.lineno++;
 }
 
 static void
@@ -278,6 +285,7 @@ dump_macros_helper (pfile, hp)
       cpp_printf (pfile, &parse_out, "#define %s", hp->name);
       cpp_dump_definition (pfile, parse_out.outf, hp);
       putc ('\n', parse_out.outf);
+      parse_out.lineno++;
     }
 
   return 1;
