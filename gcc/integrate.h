@@ -122,6 +122,13 @@ extern void try_constants PROTO((rtx, struct inline_remap *));
 
 extern void mark_stores PROTO((rtx, rtx));
 
+/* Return the label indicated.  */
+extern rtx get_label_from_map PROTO((struct inline_remap *, int));
+
+/* Set the label indicated.  */
+#define set_label_in_map(map, i, x) \
+  ((map)->label_map[i] = (x))
+
 /* Unfortunately, we need a global copy of const_equiv map for communication
    with a function called from note_stores.  Be *very* careful that this
    is used properly in the presence of recursion.  */
