@@ -1,3 +1,7 @@
+2003-07-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Note that FastJar is not part of GCC.
+
 2003-07-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR java/9532
