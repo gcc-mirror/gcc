@@ -1,3 +1,9 @@
+2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17749
+	* tree-tailcall.c (find_tail_calls): Check that parameter is
+	a gimple_reg.
+
 2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ia64/ia64.c: Fix a comment typo.
