@@ -1,5 +1,15 @@
 Fri Nov 14 07:24:20 1997  Richard Henderson  <rth@cygnus.com>
 
+	* expr.c (expand_builtin_setjmp): Set
+	current_function_has_nonlocal_label.
+	* stupid.c (stupid_life_analysis): If has_nonlocal_label, kill
+	call-saved registers across calls.
+
+	* alpha.md (exception_receiver): Remove.
+	(nonlocal_goto_receiver_osf): New
+	(nonlocal_goto_receiver_vms): Renamed from nonlocal_goto_receiver.
+	(nonlocal_goto_receiver): New, select _osf or _vms.
+
 	* alpha.c (output_prolog [*]): Prefix entry labels with '$' to
 	keep them from being propogated to the object file.
 	(alpha_write_linkage): Likewise.
