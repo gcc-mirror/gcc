@@ -157,6 +157,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_BUILD_CONSTANTS 128
 #define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
 
+/* This means that the processor has byte and half word loads and stores.  */
+
+#define MASK_BYTE_OPS 256
+#define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -174,6 +179,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT},	\
     {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT}, \
     {"build-constants", MASK_BUILD_CONSTANTS},  \
+    {"byte", MASK_BYTE_OPS},			\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -1466,7 +1472,7 @@ extern void final_prescan_insn ();
    will either zero-extend or sign-extend.  The value of this macro should
    be the code that says which one of the two operations is implicitly
    done, NIL if none.  */
-#define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
+#define LOAD_EXTEND_OP(MODE) ((MODE) == SImode ? SIGN_EXTEND : ZERO_EXTEND)
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
