@@ -1,3 +1,8 @@
+2000-09-09  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* configure.in: Recognize m6811-elf and m6812-elf.
+	* configure: Regenerate.
+
 2000-09-09  Geoff Keating  <geoffk@cygnus.com>
 
 	* recog.c (validate_replace_rtx_1): Correct MODE parameter in call
