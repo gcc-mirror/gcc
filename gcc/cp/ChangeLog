@@ -1,3 +1,8 @@
+2004-08-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* typeck2.c (process_init_constructor): Guard the missing field warning
+	with warn_missing_field_initializers rather than extra_warnings.
+
 2004-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* class.c (instantiate_type) <ENTRY_VALUE_EXPR>: Do not handle.

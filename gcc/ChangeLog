@@ -1,3 +1,15 @@
+2004-08-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR c/13282
+	* c.opt (Wmissing-field-initializers): New option.
+	* c-opts.c (c_common_post_options): Make -Wextra turn it on by default.
+	* c-typeck.c (pop_init_level): Guard the missing field warning with
+	warn_missing_field_initializers rather than extra_warnings.
+	* doc/invoke.texi (-Wmissing-field-initializers): Document, moving
+	some of the explanation from...
+	(-Wextra): ...here.  Say that the missing field warning can be
+	seperately controlled by -Wmissing-field-initializers.
+
 2004-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (expand_expr_real_1) <ENTRY_VALUE_EXPR>: Remove.
