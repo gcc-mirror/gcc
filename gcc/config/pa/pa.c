@@ -3236,9 +3236,9 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fputs ("?=", file);  break;
+	  fputs ("=", file);  break;
 	case NE:
-	  fputs ("!?=", file);  break;
+	  fputs ("!=", file);  break;
 	case GT:
 	  fputs ("!<=", file);  break;
 	case GE:
