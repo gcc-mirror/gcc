@@ -1,0 +1,141 @@
+Thu Jun 24 12:34:43 1993  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* configure.in (TARGETLIB):  Fix libio.a -> libstdio++.a.
+
+Fri May 28 16:05:20 1993  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* stdio.h:  Don't define NULL as (void*)0, if __cplusplus,
+	unless g++.
+
+Mon Apr 26 12:47:43 1993  Ian Lance Taylor  (ian@cygnus.com)
+
+	* tmpnam.C: Don't include unnecessary header files.
+
+Fri Oct 16 17:27:39 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* fseek.C, stdio.h:  fseek() returns int, not long.
+	* stdio.h:  Define size_t with typedef, not macro.
+	* stdio.h:  Use renamed __std_filebuf_0 etc instead of
+	old names  _cin_sbuf (etc).  (See ../strstrbufs.C.)
+	* stdio.h, fprintf.C, printf.C:  Implement non-macro versions
+	of stdin/stdout/stderr, for use by debuggers.
+
+Mon Aug 17 15:26:23 1992  Mike Stump  (mrs@rtl.cygnus.com)
+
+	* setbuf.C (setbuf), setvbuf.C (setvbuf): Fix typo.  fp should be
+	stream.
+
+Mon Aug 10 19:22:50 1992  Per Bothner  (bothner@cygnus.com)
+
+	* setbuf.C, setvbuf.C:  Stylistic change:  Use
+	FILE_to_streambuf macro instead of __validfp + cast.
+	* setbuf.C (setbuf):  Turn off linebuffering.
+
+Mon Aug 10 11:40:22 1992  Ian Lance Taylor  (ian@dumbest.cygnus.com)
+
+	* Makefile.in: always create installation directories.
+
+Mon Jul 20 14:56:39 1992  Mike Stump  (mrs@cygnus.com)
+
+	* fread.c (fread), fwrite.C (fwrite), tmpnam.C (tempnam):
+	Cast a void * to a char *, since it is not a standard
+	conversion.
+
+Fri Jun 26 12:06:47 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* stdio.h:  Declare Posix stuff even without _POSIX_SOURCE
+	unless __STRICT_ANSI__ is defined.
+	* fflush.C:  Use streambuf::sync() rather than overflow(EOF),
+	since that seems likely to be more consistent with Posix
+	(though only your language lawyer can tell for sure).
+
+Wed Jun 17 17:02:30 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* Makefile.in:  Fix *clean rules.
+	* stdio.h:  Protect prototypes for the sake of K&R compilers.
+
+Thu Jun  4 12:01:05 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* stdio.h: Fix typo: tmpname -> tmpnam.
+
+	* remove.C, rename.C:  Remove redundant prototypes
+	for link() and unlink().
+
+Wed Jun  3 17:00:15 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* fgetpos.C, fsetpos.C, gets.C, perror.C, puts.C, remove.C,
+	rename.C, tmpfile.C, tmpnam.C:  New files, adding the
+	remaining pieces of ANSI functionality.
+	* stdio.h:  Add new functions and macros.
+	* Makefile.in:  Add new file.
+	* fputs.C (fputs):  Fix return value according to ANSI.
+	* ftell.C (ftell):  Make sure errno is set on an error
+	(if not set by lower-level routines), as required by ANSI.
+
+Sun May 31 14:05:07 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* Makefile.in:  Use  CFLAGS, not MINUS_G.
+
+Thu May 28 13:52:27 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* stdio.h:  #include <stdarg.h> if _G_config.h tells us we need to.
+	* vfscanf.C, vscanf.C, vsscanf.C:  Use _G_va_list
+	instead of va_list, to be consistent.
+
+Thu May 14 12:43:35 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* Makefile.in:  Define IO_DIR (needed by depend rules).
+
+Wed May  6 15:40:46 1992  Per Bothner  (bothner@rtl.cygnus.com)
+
+	* Makefile.in:  Delete $(TARGETLIB) before runing ar.
+	* fseek.C:  fseek() should return 0 on success, not
+	the new position.
+
+Mon Apr 20 14:33:09 1992  Per Bothner  (bothner@cygnus.com)
+
+	* popen.C:  New file, defines popen() and pclose() using procbufs.
+	* Makefile.in, stdio.h:  Add popen.
+
+Fri Apr 17 09:13:04 1992  Per Bothner  (bothner at PersSony)
+
+	* configure.in: No longer needed.
+	* stdio.C:  Removed __underflow and __overflow; now in libio.a.
+	* fflush.C:  Add FILE*->streambuf* cast, for new __overflow.
+	* stdio.h: Use __underflow and __overflow in libio.a.
+
+Wed Feb 26 11:56:04 1992  Per Bothner  (bothner at cygnus.com)
+
+	* freopen.C, sscanf.C, vfscanf.C, vsprintf.C: Removed
+	redundant 'extern "C"' (or just plain 'extern')	before
+	function definitions.
+	* stdio.h:  Try to clean up some system-specific
+	stuff by getting parameters from _G_config.h.
+	*  vprintf.C, vsprintf.C: Use _G_va_list, not _STDIO_VA
+
+Tue Feb  4 13:26:12 1992  Per Bothner  (bothner at cygnus.com)
+
+	* Makefile.in:  Rename library to libstdio++.a,
+	and add 'install' rule.
+	* fread.C:  Fix to return correct count.
+	* fwrite.C:  Pull out stuff from BSD; just use streambuf::sputn.
+	* stdio.C, fflush.c:  Use new streambuf::flush_all() method.
+	* stdio.h, hvfprintf.C, vprintf.C, vsprintf.C:
+	Define _STDIO_VA and use it instead of va_list.
+	(Using va_list causes namespace problems.)
+
+Thu Jan 16 17:04:26 1992  Per Bothner  (bothner at cygnus.com)
+
+	* *printf.C:  Change __vsbprintf(sb ...) to sb->vform(...).
+	* *scanf.C:  Change __vsbscanf(sb ...) to sb->vscan(...).
+	* emulate.C:  Removed unused function __stdio_check_offset.
+
+Fri Jan  3 16:12:18 1992  Per Bothner  (bothner at cygnus.com)
+
+	* Makefile.in:  Make fit better with rest of libg++ Makefiles.
+
+Thu Jan  2 22:31:04 1992  John Gilmore  (gnu at cygnus.com)
+
+	* Makefile.in, configure.in:  Create.
+	* Makefile:  Remove.
+	* ChangeLog:  Create.
