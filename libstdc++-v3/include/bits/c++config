@@ -62,26 +62,17 @@
 // Enable concept checking code from the boost libraries.
 //#define _GLIBCPP_CONCEPT_CHECKS 1
 
-// From SGI's stl_config.h; generic settings and user hooks (_NOTHREADS).
-#ifdef _REENTRANT
-# define __STL_THREADS
-#endif
-
-#if defined(_PTHREADS) && !defined(_NOTHREADS)
-# define __STL_PTHREADS
-#endif
-
-#if defined(_UITHREADS) && !defined(_PTHREADS) && !defined(_NOTHREADS)
-# define __STL_UITHREADS
-#endif
-
-#if defined(__STL_WIN32THREADS) || defined(__STL_SGI_THREADS) \
-    || defined(__STL_PTHREADS)  || defined(__STL_UITHREADS)
-# define __STL_THREADS
-# define __STL_VOLATILE volatile
-#else
-# define __STL_VOLATILE
-#endif
+// Map gthr.h abstraction to that required for STL.  Do not key off of
+// __GTHREADS at this point since we haven't seen the correct symbol
+// yet, instead setup so that include/bits/stl_threads.h will know to
+// include gthr.h instead of any other type of thread support.  Note:
+// that gthr.h may well map to gthr-single.h which is a correct way to
+// express no threads support in gcc.  As a user, do not define
+// _NOTHREADS without consideration of the consequences (e.g. it is an
+// internal ABI change).
+#define __STL_GTHREADS
+#define __STL_THREADS
+#define __STL_VOLATILE volatile
 
 // This is also a user hook, but via -f[no-]exceptions, not direct #defines.
 #ifdef __EXCEPTIONS

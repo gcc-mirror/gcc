@@ -40,7 +40,7 @@
 #include <bits/std_ostream.h>
 #include <bits/basic_file.h>
 #include <bits/std_locale.h>	// For codecvt
-#include <bits/c++threads.h>	// For __mutext_type
+#include <bits/gthr.h>
 
 namespace std 
 {

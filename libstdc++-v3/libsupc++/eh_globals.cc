@@ -29,8 +29,10 @@
 
 
 #include <exception>
+#include <cstdlib>
 #include "unwind-cxx.h"
-#include "gthr.h"
+#include "bits/c++config.h"
+#include "bits/gthr.h"
 
 using namespace __cxxabiv1;
 
@@ -47,7 +49,7 @@ get_globals_dtor (void *ptr)
 {
   __gthread_key_dtor (globals_key, ptr);
   if (ptr)
-    free (ptr);
+    std::free (ptr);
 }
 
 static void
@@ -90,24 +92,20 @@ __cxa_get_globals ()
     return &globals_static;
 
   if (use_thread_key < 0)
-    get_globals_init_once ();
+    {
+      get_globals_init_once ();
+
+      // Make sure use_thread_key got initialized.
+      if (use_thread_key == 0)
+	return &globals_static;
+    }
 
   g = (__cxa_eh_globals *) __gthread_getspecific (globals_key);
   if (! g)
     {
-      static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-
-      // Make sure use_thread_key got initialized.  Some systems have
-      // dummy thread routines in their libc that return a success.
-      if (__gthread_once (&once, eh_threads_initialize) != 0
-	  || use_thread_key < 0)
-	{
-	  use_thread_key = 0;
-	  return &globals_static;
-	}
-      
-      if ((g = malloc (sizeof (__cxa_eh_globals))) == 0
-	  || __gthread_setspecific (eh_context_key, (void *) g) != 0)
+      if ((g = (__cxa_eh_globals *)
+	   std::malloc (sizeof (__cxa_eh_globals))) == 0
+	  || __gthread_setspecific (globals_key, (void *) g) != 0)
         std::terminate ();
       g->caughtExceptions = 0;
       g->uncaughtExceptions = 0;
