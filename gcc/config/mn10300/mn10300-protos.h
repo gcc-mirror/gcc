@@ -52,7 +52,6 @@ extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
 extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int);
-extern struct rtx_def *mn10300_va_arg (tree, tree);
 #endif /* TREE_CODE */
 
 extern void expand_prologue (void);

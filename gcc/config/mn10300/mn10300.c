@@ -71,7 +71,7 @@ static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
 static bool mn10300_return_in_memory (tree, tree);
 static rtx mn10300_builtin_saveregs (void);
-
+static tree mn10300_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -98,6 +98,8 @@ static rtx mn10300_builtin_saveregs (void);
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR mn10300_gimplify_va_arg_expr
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -1457,40 +1459,13 @@ mn10300_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
-rtx
-mn10300_va_arg (tree valist, tree type)
+static tree
+mn10300_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  HOST_WIDE_INT align, rsize;
-  tree t, ptr, pptr;
-
-  /* Compute the rounded size of the type.  */
-  align = PARM_BOUNDARY / BITS_PER_UNIT;
-  rsize = (((int_size_in_bytes (type) + align - 1) / align) * align);
-
-  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist, 
-	     build_int_2 ((rsize > 8 ? 4 : rsize), 0));
-  TREE_SIDE_EFFECTS (t) = 1;
-
-  ptr = build_pointer_type (type);
-
-  /* "Large" types are passed by reference.  */
-  if (rsize > 8)
-    {
-      pptr = build_pointer_type (ptr);
-      t = build1 (NOP_EXPR, pptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-
-      t = build1 (INDIRECT_REF, ptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-    }
+  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
   else
-    {
-      t = build1 (NOP_EXPR, ptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-    }
-
-  /* Calculate!  */
-  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned
