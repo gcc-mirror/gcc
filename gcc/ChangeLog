@@ -3,7 +3,7 @@ Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
 	* cse.c (simplify_relational_operation): Set h0u just like h0s.
 	Similarly for h1u and h1s.
 
-	* jump.c (jmp_uses_reg_or_mem): Deleted unused function.
+	* flow.c (jmp_uses_reg_or_mem): Deleted unused function.
 	(find_basic_blocks): Use computed_jump_p to determine if a
 	particular JUMP_INSN is a computed jump.
 	* reg-stack.c (find_blocks): Use computed_jump_p to determine
