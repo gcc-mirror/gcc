@@ -960,23 +960,52 @@ extern union tree_node *current_function_decl;
   eligible_for_epilogue_delay (trial, slots_filled)
 
 /* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
+   of a trampoline, leaving space for the variable parts.\
 
-#define TRAMPOLINE_TEMPLATE(FILE) {}
+   The trampoline sets the static chain pointer to STATIC_CHAIN_REGNUM
+   and then branches to the specified routine.
 
-/* Length in units of the trampoline for entering a nested function.  */
+   This code template is copied from text segment to stack location
+   and then patched with INITIALIZE_TRAMPOLINE to contain
+   valid values, and then entered as a subroutine. 
 
-#define TRAMPOLINE_SIZE 0
+   It is best to keep this as small as possible to avoid having to 
+   flush multiple lines in the cache.  */
+
+#define TRAMPOLINE_TEMPLATE(FILE) \
+{						\
+  fprintf (FILE, "\tldw 12(0,%%r22),%%r21\n");	\
+  fprintf (FILE, "\tbe 0(4,%%r21)\n");		\
+  fprintf (FILE, "\tldw 16(0,%%r22),%%r29\n");	\
+  fprintf (FILE, "\t.long 0,0\n");		\
+}
+
+/* Length in units of the trampoline for entering a nested function.
+   If this grows to > 32 bytes, then you must update the flushcache
+   pattern in pa.md.  */
+
+#define TRAMPOLINE_SIZE (5 * 4)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.
 
-   This takes 16 insns: 2 shifts & 2 ands (to split up addresses), 4 sethi
-   (to load in opcodes), 4 iors (to merge address and opcodes), and 4 writes
-   (to store insns).  This is a bit excessive.  Perhaps a different
-   mechanism would be better here.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) {}
+   Move the function address to the trampoline template at offset 12.
+   Move the static chain value to trampoline template at offset 16.  */
+
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+{								\
+  rtx addr, mem;						\
+								\
+  addr = memory_address (Pmode, plus_constant ((TRAMP), 12));	\
+  emit_move_insn (gen_rtx (MEM, Pmode, addr), (FNADDR));	\
+  addr = memory_address (Pmode, plus_constant ((TRAMP), 16));	\
+  emit_move_insn (gen_rtx (MEM, Pmode, addr), (CXT));		\
+  /* fdc and fic only use registers for the address to flush,	\
+     they do not accept integer displacements.  */ 		\
+  addr = force_reg (SImode, (TRAMP));				\
+  emit_insn (gen_cacheflush (gen_rtx (MEM, Pmode, addr)));	\
+}
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
    reference the 4 integer arg registers and 4 fp arg registers.
