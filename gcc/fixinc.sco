@@ -369,6 +369,39 @@ extern "C"\
   fi
 fi
 
+# This fix has the regex modified from the from fixinc.wrap
+# Avoid the definition of the bool type in the following files when using
+# g++, since it's now an official type in the C++ language.
+for file in term.h tinfo.h
+do
+  if [ -r $INPUT/$file ]; then
+    echo Checking $INPUT/$file
+    w='[	 ]'
+    if grep "typedef$w.*char$w.*bool$w*;" $INPUT/$file >/dev/null
+    then
+      echo Fixed $file
+      rm -f $LIB/$file
+      cat << __EOF__ >$LIB/$file
+#ifndef _CURSES_H_WRAPPER
+#ifdef __cplusplus
+# define bool __curses_bool_t
+#endif
+#include_next <$file>
+#ifdef __cplusplus
+# undef bool
+#endif
+#define _CURSES_H_WRAPPER
+#endif /* _CURSES_H_WRAPPER */
+__EOF__
+      # Define _CURSES_H_WRAPPER at the end of the wrapper, not the start,
+      # so that if #include_next gets another instance of the wrapper,
+      # this will follow the #include_next chain until we arrive at
+      # the real system include file.
+      chmod a+r $LIB/$file
+    fi
+  fi
+done
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`

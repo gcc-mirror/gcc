@@ -1,3 +1,13 @@
+Mon Nov  9 22:43:57 1998  Jean-Pierre Radley <jpr@jpr.com>
+
+        * fixinc.sco: Paramaterize #include_next values.
+        * fixinc/fixinc.sco: Likewise.
+
+Mon Nov  9 22:43:57 1998  Robert Lipe   <robertl@dgii.com>
+
+        * fixinc.sco: Borrow code to wrap 'bool' typedefs from tinfo.h
+        and term.h from fixinc.wrap.
+
 Thu Nov  5 07:57:45 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (expand_fixup_region_end): Make sure outer context labels
