@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -96,9 +96,11 @@ namespace std
       // complex (const complex<_Tp>&);
       template<typename _Up>
         complex(const complex<_Up>&);
-        
-      _Tp real() const;
-      _Tp imag() const;
+
+      _Tp& real(); 
+      const _Tp& real() const;
+      _Tp& imag();
+      const _Tp& imag() const;
 
       complex<_Tp>& operator=(const _Tp&);
       complex<_Tp>& operator+=(const _Tp&);
@@ -121,15 +123,24 @@ namespace std
         complex<_Tp>& operator/=(const complex<_Up>&);
 
     private:
-      _Tp _M_real, _M_imag;
+      _Tp _M_real;
+      _Tp _M_imag;
     };
 
   template<typename _Tp>
-    inline _Tp
+    inline _Tp&
+    complex<_Tp>::real() { return _M_real; }
+
+  template<typename _Tp>
+    inline const _Tp&
     complex<_Tp>::real() const { return _M_real; }
 
   template<typename _Tp>
-    inline _Tp
+    inline _Tp&
+    complex<_Tp>::imag() { return _M_imag; }
+
+  template<typename _Tp>
+    inline const _Tp&
     complex<_Tp>::imag() const { return _M_imag; }
 
   template<typename _Tp>
@@ -253,62 +264,110 @@ namespace std
   template<typename _Tp>
     inline complex<_Tp>
     operator+(const complex<_Tp>& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) += __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r += __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator+(const complex<_Tp>& __x, const _Tp& __y)
-    { return complex<_Tp> (__x) += __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r.real() += __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator+(const _Tp& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__y) += __x; }
+    {
+      complex<_Tp> __r = __y;
+      __r.real() += __x;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator-(const complex<_Tp>& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) -= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r -= __y;
+      return __r;
+    }
     
   template<typename _Tp>
     inline complex<_Tp>
     operator-(const complex<_Tp>& __x, const _Tp& __y)
-    { return complex<_Tp> (__x) -= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r.real() -= __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator-(const _Tp& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) -= __y; }
+    {
+      complex<_Tp> __r(__x, -__y.imag());
+      __r.real() -= __y.real();
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator*(const complex<_Tp>& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) *= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r *= __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator*(const complex<_Tp>& __x, const _Tp& __y)
-    { return complex<_Tp> (__x) *= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r *= __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator*(const _Tp& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__y) *= __x; }
+    {
+      complex<_Tp> __r = __y;
+      __r *= __x;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator/(const complex<_Tp>& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) /= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r /= __y;
+      return __r;
+    }
     
   template<typename _Tp>
     inline complex<_Tp>
     operator/(const complex<_Tp>& __x, const _Tp& __y)
-    { return complex<_Tp> (__x) /= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r /= __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
     operator/(const _Tp& __x, const complex<_Tp>& __y)
-    { return complex<_Tp> (__x) /= __y; }
+    {
+      complex<_Tp> __r = __x;
+      __r /= __y;
+      return __r;
+    }
 
   template<typename _Tp>
     inline complex<_Tp>
@@ -369,7 +428,7 @@ namespace std
 		__is.setstate(ios_base::failbit);
 	    }
 	  else if (__ch == ')') 
-	    __x = complex<_Tp>(__re_x, _Tp(0));
+	    __x = __re_x;
 	  else
 	    __is.setstate(ios_base::failbit);
 	}
@@ -377,7 +436,7 @@ namespace std
 	{
 	  __is.putback(__ch);
 	  __is >> __re_x;
-	  __x = complex<_Tp>(__re_x, _Tp(0));
+	  __x = __re_x;
 	}
       return __is;
     }
@@ -396,12 +455,22 @@ namespace std
 
   // Values
   template<typename _Tp>
-    inline _Tp
+    inline _Tp&
+    real(complex<_Tp>& __z)
+    { return __z.real(); }
+    
+  template<typename _Tp>
+    inline const _Tp&
     real(const complex<_Tp>& __z)
     { return __z.real(); }
     
   template<typename _Tp>
-    inline _Tp
+    inline _Tp&
+    imag(complex<_Tp>& __z)
+    { return __z.imag(); }
+    
+  template<typename _Tp>
+    inline const _Tp&
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
 
@@ -605,8 +674,10 @@ namespace std
     explicit complex(const complex<double>&);
     explicit complex(const complex<long double>&);
 
-    float real() const;
-    float imag() const;
+    float& real();
+    const float& real() const;
+    float& imag();
+    const float& imag() const;
 
     complex<float>& operator=(float);
     complex<float>& operator+=(float);
@@ -638,11 +709,19 @@ namespace std
     friend class complex<long double>;
   };
 
-  inline float
+  inline float&
+  complex<float>::real()
+  { return __real__ _M_value; }
+
+  inline const float&
   complex<float>::real() const
   { return __real__ _M_value; }
 
-  inline float
+  inline float&
+  complex<float>::imag()
+  { return __imag__ _M_value; }
+
+  inline const float&
   complex<float>::imag() const
   { return __imag__ _M_value; }
 
@@ -751,9 +830,11 @@ namespace std
 #endif
     complex(const complex<float>&);
     explicit complex(const complex<long double>&);
-        
-    double real() const;
-    double imag() const;
+
+    double& real();
+    const double& real() const;
+    double& imag();
+    const double& imag() const;
         
     complex<double>& operator=(double);
     complex<double>& operator+=(double);
@@ -784,11 +865,19 @@ namespace std
     friend class complex<long double>;
   };
 
-  inline double
+  inline double&
+  complex<double>::real()
+  { return __real__ _M_value; }
+
+  inline const double&
   complex<double>::real() const
   { return __real__ _M_value; }
 
-  inline double
+  inline double&
+  complex<double>::imag()
+  { return __imag__ _M_value; }
+
+  inline const double&
   complex<double>::imag() const
   { return __imag__ _M_value; }
 
@@ -898,8 +987,10 @@ namespace std
     complex(const complex<float>&);
     complex(const complex<double>&);
 
-    long double real() const;
-    long double imag() const;
+    long double& real();
+    const long double& real() const;
+    long double& imag();
+    const long double& imag() const;
 
     complex<long double>& operator= (long double);
     complex<long double>& operator+= (long double);
@@ -937,11 +1028,19 @@ namespace std
     __imag__ _M_value = __i;
   }
 
-  inline long double
+  inline long double&
+  complex<long double>::real()
+  { return __real__ _M_value; }
+
+  inline const long double&
   complex<long double>::real() const
   { return __real__ _M_value; }
 
-  inline long double
+  inline long double&
+  complex<long double>::imag()
+  { return __imag__ _M_value; }
+
+  inline const long double&
   complex<long double>::imag() const
   { return __imag__ _M_value; }
 
