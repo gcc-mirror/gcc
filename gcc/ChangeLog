@@ -1,3 +1,12 @@
+2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR middle-end/18667
+	* params.c (set_param_value): Add range check.
+	* params.def: Add min and max values. Reformat long strings.
+	* params.h (struct param_info): Add min and max fields.
+	(enum compiler_param): Adjust DEFPARAM.
+	* toplev.c (lang_independent_params): Likewise.
+
 2004-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12817

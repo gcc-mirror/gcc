@@ -48,6 +48,13 @@ typedef struct param_info
   const char *const option;
   /* The associated value.  */
   int value;
+
+  /* Minimum acceptable value.  */
+  int min_value;
+  
+  /* Maxiumum acceptable value, if greater than minimum  */
+  int max_value;
+  
   /* A short description of the option.  */
   const char *const help;
 } param_info;
@@ -70,7 +77,7 @@ extern void set_param_value (const char *name, int value);
 
 typedef enum compiler_param
 {
-#define DEFPARAM(enumerator, option, msgid, default) \
+#define DEFPARAM(enumerator, option, msgid, default, min, max) \
   enumerator,
 #include "params.def"
 #undef DEFPARAM

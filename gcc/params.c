@@ -68,7 +68,17 @@ set_param_value (const char *name, int value)
   for (i = 0; i < num_compiler_params; ++i)
     if (strcmp (compiler_params[i].option, name) == 0)
       {
-	compiler_params[i].value = value;
+	if (value < compiler_params[i].min_value)
+	  error ("minimum value of parameter %qs is %u",
+		 compiler_params[i].option,
+		 compiler_params[i].min_value);
+	else if (compiler_params[i].max_value > compiler_params[i].min_value
+		 && value > compiler_params[i].max_value)
+	  error ("maximum value of parameter %qs is %u",
+		 compiler_params[i].option,
+		 compiler_params[i].max_value);
+	else
+	  compiler_params[i].value = value;
 	return;
       }
 
