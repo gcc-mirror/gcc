@@ -1,5 +1,7 @@
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (OBJS): Sort alphabetically.
+
 	* print-rtl.c (print_rtx): If RTX code is bad, just say so.
 	Also minor cleanups.
 
