@@ -6699,7 +6699,7 @@ thread_prologue_and_epilogue_insns (f)
 		continue;
 
 	      jump = bb->end;
-	      if (GET_CODE (jump) != JUMP_INSN)
+	      if ((GET_CODE (jump) != JUMP_INSN) || JUMP_LABEL (jump) != label)
 		continue;
 
 	      /* If we have an unconditional jump, we can replace that
