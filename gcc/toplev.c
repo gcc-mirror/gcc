@@ -2132,6 +2132,8 @@ check_global_declarations (vec, len)
 	  && ! TREE_USED (DECL_NAME (decl))
 	  && ! DECL_EXTERNAL (decl)
 	  && ! TREE_PUBLIC (decl)
+	  /* A volatile variable might be used in some non-obvious way.  */
+	  && ! TREE_THIS_VOLATILE (decl)
 	  /* Global register variables must be declared to reserve them.  */
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
