@@ -69,10 +69,12 @@ static HARD_REG_SET hard_regs_need_restore;
 
 int n_regs_saved;
 
-static void set_reg_live ();
-static void clear_reg_live ();
-static void restore_referenced_regs ();
-static int insert_save_restore ();
+static enum machine_mode choose_hard_reg_mode PROTO((int, int));
+static void set_reg_live		PROTO((rtx, rtx));
+static void clear_reg_live		PROTO((rtx));
+static void restore_referenced_regs	PROTO((rtx, rtx, enum machine_mode));
+static int insert_save_restore		PROTO((rtx, int, int,
+					       enum machine_mode, int));
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
    enough to save nregs.  If we can't find one, return VOIDmode.  */
@@ -80,6 +82,7 @@ static int insert_save_restore ();
 static enum machine_mode
 choose_hard_reg_mode (regno, nregs)
      int regno;
+     int nregs;
 {
   enum machine_mode found_mode = VOIDmode, mode;
 
