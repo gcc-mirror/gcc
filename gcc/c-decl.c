@@ -594,7 +594,7 @@ c_decode_option (argc, argv)
     flag_no_builtin = 0;
   else if (!strcmp (p, "-fno-builtin"))
     flag_no_builtin = 1;
-  else if (dump_switch_p (p))
+  else if (p[0] == '-' && p[1] == 'f' && dump_switch_p (p + 2))
     ;
   else if (!strcmp (p, "-ansi"))
     goto iso_1990;
