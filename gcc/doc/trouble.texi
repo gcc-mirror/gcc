@@ -313,6 +313,13 @@ application. Applications are not required to use the
 merging semantics will continue to function correctly.
 
 @item
+An application can interpose its own definition of functions for
+functions invoked by @file{libstdc++.a} with ``runtime-linking''
+enabled on AIX.  To accomplish this the application must be linked
+with ``runtime-linking'' option and the functions explicitly must be
+exported by the application (@option{-Wl,-brtl,-bE:exportfile}).
+
+@item
 AIX on the RS/6000 provides support (NLS) for environments outside of
 the United States.  Compilers and assemblers use NLS to support
 locale-specific representations of various objects including
