@@ -1,5 +1,7 @@
 2001-07-11  Ben Elliston  <bje@redhat.com>
 
+	* Revert this change -- there is a subtle bug.
+
 	PR c++/80
 	* decl.c (finish_enum): New "attributes" argument; pass it to
 	cplus_decl_attributes.  Use a narrower type if the enum is packed.
