@@ -2,6 +2,8 @@
 
 	* nmake.ads, nmake.adb, sinfo.h, treeprs.ads: Regenerated.
 
+	* comperr.adb: Fix logic in previous change.
+
 2003-11-13  Vincent Celier  <celier@gnat.com>
 
 	* 5bml-tgt.adb (Build_Dynamic_Library): Use
