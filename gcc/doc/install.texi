@@ -1731,7 +1731,7 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#sparc-*-linux*,,sparc-*-linux*}
 @item
-@uref{#sparc64-*-*,,sparc64-*-*}
+@uref{#sparc64-*-solaris2*,,sparc64-*-solaris2*}
 @item
 @uref{#sparcv9-*-solaris2*,,sparcv9-*-solaris2*}
 @item
@@ -3023,18 +3023,7 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 @html
 <hr />
 @end html
-@heading @anchor{sparc64-*-*}sparc64-*-*
-
-GCC version 2.95 is not able to compile code correctly for
-@code{sparc64} targets.  Users of the Linux kernel, at least,
-can use the @code{sparc32} program to start up a new shell
-invocation with an environment that causes @command{configure} to
-recognize (via @samp{uname -a}) the system as @samp{sparc-*-*} instead.
-
-@html
-<hr />
-@end html
-@heading @anchor{sparcv9-*-solaris2*}sparcv9-*-solaris2*
+@heading @anchor{sparc64-*-solaris2*}sparc64-*-solaris2*
 
 The following compiler flags must be specified in the configure
 step in order to bootstrap this target with the Sun compiler:
@@ -3044,7 +3033,14 @@ step in order to bootstrap this target with the Sun compiler:
 @end example
 
 @option{-xildoff} turns off the incremental linker, and @option{-xarch=v9}
-specifies the v9 architecture to the Sun linker and assembler.
+specifies the SPARC-V9 architecture to the Sun linker and assembler.
+
+@html
+<hr />
+@end html
+@heading @anchor{sparcv9-*-solaris2*}sparcv9-*-solaris2*
+
+This is a synonym for sparc64-*-solaris2*.
 
 @html
 <hr />
