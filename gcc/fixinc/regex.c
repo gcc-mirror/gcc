@@ -25,8 +25,6 @@
   #pragma alloca
 #endif
 
-/* $Id: regex.c,v 1.3 1999/01/11 13:34:23 law Exp $ */
-
 #define _GNU_SOURCE
 
 /* We need this for `regex.h', and perhaps for the Emacs include files.  */

@@ -7,8 +7,10 @@ then
 	exit 1
 fi
 
-echo constructing fixinc.sh for $machine
-fixincludes="../fixinc.sh"
+target=../fixinc.sh
+
+echo constructing ${target} for $machine
+fixincludes="${target}"
 
 case $machine in
 	*-*-gnu*)
@@ -103,21 +105,47 @@ case $machine in
 		;;
 esac
 
+#  IF there is no include fixing,
+#  THEN create a no-op fixer and exit
+#
 if test -z "$fixincludes"
 then
-    cat > ../fixinc.sh  <<-	_EOF_
+    cat > ${target}  <<-	_EOF_
 	#! /bin/sh
 	exit 0
 	_EOF_
     exit 0
 fi
 
-if test -f "$fixincludes"
+#  IF the fixer is supplied in our source directory,
+#  THEN copy that into place
+#
+if test -f ${srcdir}/"${fixincludes}"
 then
-    echo copying $fixincludes to ../fixinc.sh
-    cp $fixincludes ../fixinc.sh
+    echo copying ${srcdir}/$fixincludes to ${target}
+    cp ${srcdir}/$fixincludes ${target}
     exit 0
 fi
 
-echo $MAKE install
-$MAKE install || cp inclhack.sh ..
+#  OK.  We gotta make the thing.
+#
+echo $MAKE SHELL=\"$SHELL\" install
+
+#  make and install either the binary or the default script
+#
+$MAKE SHELL="$SHELL" install && exit 0
+
+#  Where is our inclhack script?  That is the backup
+#  in case we are unable to make a working binary.
+#
+if test -f ./inclhack.sh
+then
+    INCLHACK=./inclhack.sh
+else
+    INCLHACK=${srcdir}/inclhack.sh
+fi
+
+echo Could not install binary fixincludes.
+echo Installing shell script instead.
+
+cp ${INCLHACK} ${target}

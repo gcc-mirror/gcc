@@ -1,7 +1,6 @@
 [= autogen template -*- Mode: ksh -*-
 sh
 #
-#  $Id: inclhack.tpl,v 1.2 1998/12/16 21:19:11 law Exp $
 #
 =]
 #!/bin/sh
@@ -116,10 +115,7 @@ for INPUT in ${INPUTLIST} ; do
 
 cd ${ORIGDIR}
 
-cd ${INPUT} || {
-  echo 'fixincludes:  input dir `'$INPUT"' is an invalid directory"
-  exit 1
-}
+cd ${INPUT} || continue
 
 #
 # # # # # # # # # # # # # # # # # # # # #
@@ -342,18 +338,20 @@ while [ $# != 0 ]; do
     #
     cd ${INPUT}
     cd $1
-    if [ -r $2 ] && [ ! -r $3 ]; then
-      cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2" >&2
-      chmod +w $3 2>/dev/null
-      chmod a+r $3 2>/dev/null
-      echo Copied $2
-      for include in `egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' $3 |
+    if [ -f $2 ] ; then
+      if [ -r $2 ] && [ ! -r $3 ]; then
+        cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2" >&2
+        chmod +w $3 2>/dev/null
+        chmod a+r $3 2>/dev/null
+        echo Copied $2
+        for include in `egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' $3 |
              sed -e 's/^[ 	]*#[ 	]*include[ 	]*"\([^"]*\)".*$/\1/'`
-      do
-	dir=`echo $2 | sed -e s'|/[^/]*$||'`
-	dir2=`echo $3 | sed -e s'|/[^/]*$||'`
-	newreq="$newreq $1 $dir/$include $dir2/$include"
-      done
+        do
+	  dir=`echo $2 | sed -e s'|/[^/]*$||'`
+	  dir2=`echo $3 | sed -e s'|/[^/]*$||'`
+	  newreq="$newreq $1 $dir/$include $dir2/$include"
+        done
+      fi
     fi
     shift; shift; shift
   done
@@ -382,7 +380,7 @@ done
 
 cd $ORIGDIR
 rm -f include/assert.h
-cp ${EGCS_SRCDIR}/assert.h include/assert.h
+cp ${srcdir}/assert.h include/assert.h || exit 1
 chmod a+r include/assert.h
 [=
 

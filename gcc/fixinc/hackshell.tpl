@@ -1,6 +1,5 @@
 [= autogen template include =]
 [=
-# $Id: hackshell.tpl,v 1.2 1998/12/16 21:19:08 law Exp $
 #
 #  This file contanes the shell template replacement for the
 #  fixincl program.  It is the repetitive guts of the fixincludes logic.

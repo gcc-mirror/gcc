@@ -1,4 +1,4 @@
-/* -*- Mode: C -*-  $Id: inclhack.def,v 1.2 1998/12/16 21:19:09 law Exp $  */
+/* -*- Mode: C -*-  */
 
 autogen definitions inclhack;
 
@@ -2003,6 +2003,19 @@ fix = {
     select   = ULTRIX;
     sed      = "1i\\\n/* This file intentionally left blank. */\n";
     sed      = "1,$d";
+};
+
+
+/*
+ * Ultrix V4.[35] puts the declaration of uname before the definition
+ * of struct utsname, so the prototype (added by fixproto) causes havoc.
+ */
+fix = {
+    hackname = ultrix_fix_fixproto;
+    files    = sys/utsname.h;
+    select   = ULTRIX;
+    sed      = "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n"
+               "struct utsname;\n";
 };
 
 
