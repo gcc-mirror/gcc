@@ -1,3 +1,8 @@
+2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
+
+	* integrate.c (copy_decl_for_inlining): Copy TREE_READONLY and
+	TREE_THIS_VOLATILE.
+
 2000-05-01  Richard Henderson  <rth@cygnus.com>
 
 	* ifcvt.c (noce_emit_cmove): Conditionally compile call to
