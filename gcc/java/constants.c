@@ -46,12 +46,14 @@ set_constant_entry (CPool *cpool, int index, int tag, jword value)
   if (cpool->data == NULL)
     {
       cpool->capacity = 100;
-      cpool->tags = ggc_alloc (sizeof(uint8) * cpool->capacity);
-      cpool->data = ggc_alloc (sizeof(union cpool_entry) * cpool->capacity);
+      cpool->tags = ggc_alloc_cleared (sizeof(uint8) * cpool->capacity);
+      cpool->data = ggc_alloc_cleared (sizeof(union cpool_entry)
+				       * cpool->capacity);
       cpool->count = 1;
     }
   if (index >= cpool->capacity)
     {
+      int old_cap = cpool->capacity;
       cpool->capacity *= 2;
       if (index >= cpool->capacity)
 	cpool->capacity = index + 10;
@@ -59,6 +61,11 @@ set_constant_entry (CPool *cpool, int index, int tag, jword value)
 				 sizeof(uint8) * cpool->capacity);
       cpool->data = ggc_realloc (cpool->data,
 				 sizeof(union cpool_entry) * cpool->capacity);
+
+      /* Make sure GC never sees uninitialized tag values.  */
+      memset (cpool->tags + old_cap, 0, cpool->capacity - old_cap);
+      memset (cpool->data + old_cap, 0,
+	      (cpool->capacity - old_cap) * sizeof (union cpool_entry));
     }
   if (index >= cpool->count)
     cpool->count = index + 1;
