@@ -1,3 +1,38 @@
+2002-10-01  Matt Thomas  <matt@3am-software.com>
+            Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (vax-*-netbsdelf*): Enable configuration.
+	* config/elfos.h (PCC_BITFIELD_TYPE_MATTERS): Define only 
+	if not already defined.
+	* config/vax/elf.h: New file.
+	* config/vax/netbsd-elf.h: New file.
+	* config/vax/vax.c: Include "debug.h".
+	(vax_output_function_prologue): Add dwarf2 support.  Use
+	MAIN_NAME_P when checking for VMS_TARGET stack adjust.
+	* config/vax/vax.h (CONST_OK_FOR_LETTER_P): Add cases for
+	'J' [0..63], 'K' [-128..127], 'L' [-32768..32767],
+	'M' [0..255], 'N' [0..65535], and, 'O' [-63..-1].
+	(VAX_ISTREAM_SYNC): Remove.
+	(INITIALIZE_TRAMPOLINE): Use gen_sync_istream.
+	(JUMP_TABLES_IN_TEXT_SECTION): Define.
+	(ASM_OUTPUT_REG_POP): Use reg_names for the stack pointer.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Use ASM_GENERATE_INTERNAL_LABEL
+	and assemble_name.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	(PRINT_OPERAND_PUNCT_VALID_P): Accept '|'.
+	(PRINT_OPERAND): Output REGISTER_PREFIX for '|'.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	* config/vax/vax.md (VUNSPEC_BLOCKAGE)
+	(VUNSPEC_SYNC_ISTREAM): Define.
+	(blockage): Use VUNSPEC_BLOCKAGE.
+	(sync_istream): New insn.
+
+2002-10-01  Richard Henderson  <rth@redhat.com>
+
+	* config/vax/vax.md (call_pop, *call_pop, call_value_pop)
+	(*call_value_pop, call, call_value): Add dwarf2 EH support.
+	(*call): New insn.
+
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c/8083
