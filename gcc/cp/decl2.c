@@ -64,7 +64,6 @@ typedef struct priority_info_s {
 } *priority_info;
 
 static void mark_vtable_entries (tree);
-static void grok_function_init (tree, tree);
 static bool maybe_emit_vtables (tree);
 static tree build_anon_union_vars (tree);
 static bool acceptable_java_type (tree);
@@ -897,8 +896,11 @@ grokfield (const cp_declarator *declarator,
     {
       if (TREE_CODE (value) == FUNCTION_DECL)
 	{
-	  grok_function_init (value, init);
-	  init = NULL_TREE;
+	  /* Initializers for functions are rejected early in the parser.
+	     If we get here, it must be a pure specifier for a method.  */
+	  gcc_assert (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE);
+	  gcc_assert (error_operand_p (init) || integer_zerop (init));
+	  DECL_PURE_VIRTUAL_P (value) = 1;
 	}
       else if (pedantic && TREE_CODE (value) != VAR_DECL)
 	/* Already complained in grokdeclarator.  */
@@ -1045,55 +1047,6 @@ grokbitfield (const cp_declarator *declarator,
   return value;
 }
 
-/* When a function is declared with an initializer,
-   do the right thing.  Currently, there are two possibilities:
-
-   class B
-   {
-    public:
-     // initialization possibility #1.
-     virtual void f () = 0;
-     int g ();
-   };
-   
-   class D1 : B
-   {
-    public:
-     int d1;
-     // error, no f ();
-   };
-   
-   class D2 : B
-   {
-    public:
-     int d2;
-     void f ();
-   };
-   
-   class D3 : B
-   {
-    public:
-     int d3;
-     // initialization possibility #2
-     void f () = B::f;
-   };
-
-*/
-
-static void
-grok_function_init (tree decl, tree init)
-{
-  /* An initializer for a function tells how this function should
-     be inherited.  */
-  tree type = TREE_TYPE (decl);
-
-  if (TREE_CODE (type) == FUNCTION_TYPE)
-    error ("initializer specified for non-member function %qD", decl);
-  else if (integer_zerop (init))
-    DECL_PURE_VIRTUAL_P (decl) = 1;
-  else
-    error ("invalid initializer for virtual method %qD", decl);
-}
 
 void
 cplus_decl_attributes (tree *decl, tree attributes, int flags)

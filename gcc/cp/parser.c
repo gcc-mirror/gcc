@@ -13332,13 +13332,18 @@ cp_parser_pure_specifier (cp_parser* parser)
   if (!cp_parser_require (parser, CPP_EQ, "`='"))
     return error_mark_node;
   /* Look for the `0' token.  */
-  token = cp_parser_require (parser, CPP_NUMBER, "`0'");
-  /* Unfortunately, this will accept `0L' and `0x00' as well.  We need
-     to get information from the lexer about how the number was
-     spelled in order to fix this problem.  */
-  if (!token || !integer_zerop (token->value))
-    return error_mark_node;
+  token = cp_lexer_consume_token (parser->lexer);
+  if (token->type != CPP_NUMBER || !integer_zerop (token->value))
+    {
+      cp_parser_error (parser,
+		       "invalid pure specifier (only `= 0' is allowed)");
+      cp_parser_skip_to_end_of_statement (parser);
+      return error_mark_node;
+    }
 
+  /* FIXME: Unfortunately, this will accept `0L' and `0x00' as well.
+     We need to get information from the lexer about how the number
+     was spelled in order to fix this problem.  */
   return integer_zero_node;
 }
 
