@@ -123,6 +123,33 @@ lhd_set_yydebug (value)
     fprintf (stderr, "warning: no yacc/bison-generated output to debug!\n");
 }
 
+/* Set the DECL_ASSEMBLER_NAME for DECL.  */
+void
+lhd_set_decl_assembler_name (decl)
+     tree decl;
+{
+  /* The language-independent code should never use the
+     DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
+     VAR_DECLs for variables with static storage duration need a real
+     DECL_ASSEMBLER_NAME.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == VAR_DECL 
+	  && (TREE_STATIC (decl) 
+	      || DECL_EXTERNAL (decl) 
+	      || TREE_PUBLIC (decl))))
+    /* By default, assume the name to use in assembly code is the
+       same as that used in the source language.  (That's correct
+       for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
+       value as DECL_NAME in build_decl, so this choice provides
+       backwards compatibility with existing front-ends.  */
+    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+  else
+    /* Nobody should ever be asking for the DECL_ASSEMBLER_NAME of
+       these DECLs -- unless they're in language-dependent code, in
+       which case set_decl_assembler_name hook should handle things.  */
+    abort ();
+}
+
 /* Provide a default routine to clear the binding stack.  This is used
    by languages that don't need to do anything special.  */
 void

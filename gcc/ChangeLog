@@ -1,3 +1,18 @@
+2002-04-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* langhooks-def.h (lhd_set_decl_assembler_name,
+	LANG_HOOKS_SET_DECL_ASSEMBLER_NAME): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_set_decl_assembler_name): New, from tree.c
+	* langhooks.h (struct lang_hooks): New hook.
+	* tree.c (set_decl_assembler_name): Move to langhooks.c.
+	(lang_set_decl_assembler_name): Remove.
+	(init_obstacks): Don't set hook.
+	(decl_assembler_name): New function.
+	* tree.h (DECL_ASSEMBLER_NAME): Turn into a function call.
+	(decl_assembler_name): New.
+	(lang_set_decl_assembler_name): Remove.
+
 2002-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_SPARC_UA_PCREL_HIDDEN): Test whether %r_disp32()
