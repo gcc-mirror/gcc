@@ -745,7 +745,36 @@ fi
 
 AC_PATH_XTRA
 
-AM_CONDITIONAL(NO_X, test "$no_x" = yes)
+dnl Determine which AWT peer libraries to build
+AC_ARG_ENABLE(java-awt,
+[  --enable-java-awt       list of AWT peer implementations to be built])
+
+peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
+use_xlib_awt=""
+use_gtk_awt=""
+
+for peer in $peerlibs ; do
+  case $peer in
+    xlib)
+      if [test "$no_x" = yes]; then
+        echo "*** xlib peers requested but no X library available" 1>&2
+        exit 1
+      else
+        use_xlib_awt="yes"
+      fi
+      ;;
+    gtk)
+      # Nothing, yet...
+      ;;
+    *)
+      echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
+      exit 1
+  esac
+done
+
+AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
+AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
+
 
 here=`pwd`
 AC_SUBST(here)
