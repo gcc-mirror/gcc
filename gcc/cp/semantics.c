@@ -642,6 +642,11 @@ finish_goto_stmt (destination)
   if (TREE_CODE (destination) == IDENTIFIER_NODE)
     destination = lookup_label (destination);
 
+  /* We warn about unused labels with -Wunused.  That means we have to
+     mark the used labels as used.  */
+  if (TREE_CODE (destination) == LABEL_DECL)
+    TREE_USED (destination) = 1;
+    
   if (building_stmt_tree ())
     add_tree (build_min_nt (GOTO_STMT, destination));
   else
@@ -650,7 +655,6 @@ finish_goto_stmt (destination)
 
       if (TREE_CODE (destination) == LABEL_DECL)
 	{
-	  TREE_USED (destination) = 1;
 	  label_rtx (destination);
 	  expand_goto (destination); 
 	}
