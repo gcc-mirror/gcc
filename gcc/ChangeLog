@@ -1,8 +1,12 @@
-Thu Jun 10 14:47:59 1999  BruceKorb <ddsinc09@ix.netcom.com>
+Thu Jun 10 20:37:57 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
-	*fixinc/inclhack.def(no_double_slash): fixed quoting rules
-	*fixinc/inclhack.sh: regen
-	*fixinc/fixincl.x: regen
+	* reg-stack.c (stack_reg_life_analysis): Find all the RETURN insns.
+
+Thu Jun 10 14:47:59 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/inclhack.def(no_double_slash): fixed quoting rules
+	* fixinc/inclhack.sh: regen
+	* fixinc/fixincl.x: regen
 
 Thu Jun 10 01:22:59 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -50,11 +54,11 @@ Wed Jun  9 22:42:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 Wed Jun  9 06:50 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
-	*fixinc/inclhack.def(sun_auth_proto): bypass the patch if
+	* fixinc/inclhack.def(sun_auth_proto): bypass the patch if
 	the typed arguments are not part of a comment
 	(ioctl_fix_ctrl): Added a purpose comment
-	*fixinc/fixincl.x: regenerate
-	*fixinc/inclhack.sh: regenerate
+	* fixinc/fixincl.x: regenerate
+	* fixinc/inclhack.sh: regenerate
 
 Wed Jun  9 04:14:48 1999  Jeffrey A Law  (law@cygnus.com)
 
