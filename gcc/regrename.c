@@ -1780,7 +1780,7 @@ copyprop_hardreg_forward ()
 {
   struct value_data *all_vd;
   bool need_refresh;
-  basic_block bb, bbp;
+  basic_block bb, bbp = 0;
 
   need_refresh = false;
 

@@ -1308,7 +1308,7 @@ init_line_info (line_info, total, maxlineno)
   char *ptr = bb_data;
   long count;
   long line_num;
-  struct line_info *line_ptr; /* line info ptr. */
+  struct line_info *line_ptr = 0; /* line info ptr. */
    
   memset (&function, 0, sizeof (function));
   if (output_function_summary)
