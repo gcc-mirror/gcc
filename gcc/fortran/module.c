@@ -2570,6 +2570,7 @@ mio_interface_rest (gfc_interface ** ip)
 	    break;
 
 	  p = gfc_get_interface ();
+	  p->where = gfc_current_locus;
 	  mio_symbol_ref (&p->sym);
 
 	  if (tail == NULL)

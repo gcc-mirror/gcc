@@ -1,3 +1,8 @@
+2004-10-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* module.c (mio_interface_rest): Set where member of interface
+	while loading.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/17901
