@@ -1,5 +1,16 @@
 2001-10-25  Pascal Obry <obry@gnat.com>
 
+	* osint.adb (Read_Default_Search_Dirs): correctly detect relative 
+        pathnames in UNIX and DOS style with drive letter.
+	(Is_Relative): new routine.
+	
+	* osint.adb: Minor reformatting
+	
+	* osint.adb (Is_Relative): implementation using 
+        GNAT.OS_Lib.Is_Absolute_Path. Better fix for 8121-009.
+
+2001-10-25  Pascal Obry <obry@gnat.com>
+
 	* g-dirope.adb (Basename): correctly compute offset between the 
         original Path and the translated one.
 	
