@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 1998 Geoffrey Keating
-   
-   PowerPC Foreign Function Interface 
+
+   PowerPC Foreign Function Interface
 
    Darwin ABI support (c) 2001 John Hornkvist
    AIX ABI support (c) 2002 Free Software Foundation, Inc.
@@ -34,12 +34,12 @@ extern void ffi_closure_ASM(void);
 
 enum {
   /* The assembly depends on these exact flags.  */
-  FLAG_RETURNS_NOTHING  = 1 << (31-30), /* These go in cr7 */
+  FLAG_RETURNS_NOTHING  = 1 << (31-30), /* These go in cr7  */
   FLAG_RETURNS_FP       = 1 << (31-29),
   FLAG_RETURNS_64BITS   = 1 << (31-28),
 
   FLAG_ARG_NEEDS_COPY   = 1 << (31- 7),
-  FLAG_FP_ARGUMENTS     = 1 << (31- 6), /* cr1.eq; specified by ABI */
+  FLAG_FP_ARGUMENTS     = 1 << (31- 6), /* cr1.eq; specified by ABI  */
   FLAG_4_GPR_ARGUMENTS  = 1 << (31- 5),
   FLAG_RETVAL_REFERENCE = 1 << (31- 4)
 };
@@ -58,7 +58,7 @@ enum { ASM_NEEDS_REGISTERS = 4 };
 
    |   Return address from ffi_call_DARWIN      |	higher addresses
    |--------------------------------------------|
-   |   Previous backchain pointer	4	| 	stack pointer here
+   |   Previous backchain pointer	4	|	stack pointer here
    |--------------------------------------------|<+ <<<	on entry to
    |   Saved r28-r31			4*4	| |	ffi_call_DARWIN
    |--------------------------------------------| |
@@ -69,7 +69,7 @@ enum { ASM_NEEDS_REGISTERS = 4 };
    |   Reserved                       2*4       | |	grows	|
    |--------------------------------------------| |	down	V
    |   Space for callee's LR		4	| |
-   |--------------------------------------------| |	lower addresses	
+   |--------------------------------------------| |	lower addresses
    |   Saved CR                         4       | |
    |--------------------------------------------| |     stack pointer here
    |   Current backchain pointer	4	|-/	during
@@ -93,7 +93,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
 
 
   /* 'next_arg' grows up as we put parameters in it.  */
-  unsigned *next_arg = stack + 6; // 6 reserved posistions. 
+  unsigned *next_arg = stack + 6; /* 6 reserved posistions.  */
 
   int i = ecif->cif->nargs;
   double double_tmp;
@@ -108,9 +108,10 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
   FFI_ASSERT(((unsigned)(char *)stacktop & 0xF) == 0);
   FFI_ASSERT((bytes & 0xF) == 0);
 
-  /* Deal with return values that are actually pass-by-reference.  */
-  // Rule:
-  // Return values are referenced by r3, so r4 is the first parameter.
+  /* Deal with return values that are actually pass-by-reference.
+     Rule:
+     Return values are referenced by r3, so r4 is the first parameter.  */
+
   if (flags & FLAG_RETVAL_REFERENCE)
     *next_arg++ = (unsigned)(char *)ecif->rvalue;
 
@@ -127,28 +128,28 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
 	case FFI_TYPE_FLOAT:
 	  double_tmp = *(float *)*p_argv;
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
-            *(double *)next_arg = double_tmp;
+	    *(double *)next_arg = double_tmp;
 	  else
-            *fpr_base++ = double_tmp;
-          next_arg++;
+	    *fpr_base++ = double_tmp;
+	  next_arg++;
 	  fparg_count++;
 	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
 	  break;
 	case FFI_TYPE_DOUBLE:
 	  double_tmp = *(double *)*p_argv;
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
-            *(double *)next_arg = double_tmp;
+	    *(double *)next_arg = double_tmp;
 	  else
-            *fpr_base++ = double_tmp;
-          next_arg += 2;
+	    *fpr_base++ = double_tmp;
+	  next_arg += 2;
 	  fparg_count++;
 	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
 	  break;
 
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
-          *(long long *)next_arg = *(long long *)*p_argv;
-          next_arg+=2;
+	  *(long long *)next_arg = *(long long *)*p_argv;
+	  next_arg+=2;
 	  break;
 	case FFI_TYPE_UINT8:
 	  gprvalue = *(unsigned char *)*p_argv;
@@ -187,7 +188,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
 	  break;
 
 	case FFI_TYPE_INT:
-   	case FFI_TYPE_UINT32:
+	case FFI_TYPE_UINT32:
 	case FFI_TYPE_SINT32:
 	case FFI_TYPE_POINTER:
 	  gprvalue = *(unsigned *)*p_argv;
@@ -206,7 +207,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
   //FFI_ASSERT(flags & FLAG_4_GPR_ARGUMENTS || intarg_count <= 4);
 }
 
-/* Perform machine dependent cif processing */
+/* Perform machine dependent cif processing.  */
 ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 {
   /* All this is for the DARWIN ABI.  */
@@ -220,7 +221,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   /* All the machine-independent calculation of cif->bytes will be wrong.
      Redo the calculation for DARWIN.  */
 
-  /* Space for the frame pointer, callee's LR, CR, etc, and for 
+  /* Space for the frame pointer, callee's LR, CR, etc, and for
      the asm's temp regs.  */
 
   bytes = (6 + ASM_NEEDS_REGISTERS) * sizeof(long);
@@ -343,22 +344,22 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 /*@-declundef@*/
 /*@-exportheader@*/
-extern void ffi_call_AIX(/*@out@*/ extended_cif *, 
-			 unsigned, unsigned, 
-			 /*@out@*/ unsigned *, 
+extern void ffi_call_AIX(/*@out@*/ extended_cif *,
+			 unsigned, unsigned,
+			 /*@out@*/ unsigned *,
 			 void (*fn)(),
 			 void (*fn2)());
-extern void ffi_call_DARWIN(/*@out@*/ extended_cif *, 
-			    unsigned, unsigned, 
-			    /*@out@*/ unsigned *, 
+extern void ffi_call_DARWIN(/*@out@*/ extended_cif *,
+			    unsigned, unsigned,
+			    /*@out@*/ unsigned *,
 			    void (*fn)(),
 			    void (*fn2)());
 /*@=declundef@*/
 /*@=exportheader@*/
 
-void ffi_call(/*@dependent@*/ ffi_cif *cif, 
-	      void (*fn)(), 
-	      /*@out@*/ void *rvalue, 
+void ffi_call(/*@dependent@*/ ffi_cif *cif,
+	      void (*fn)(),
+	      /*@out@*/ void *rvalue,
 	      /*@dependent@*/ void **avalue)
 {
   extended_cif ecif;
@@ -366,10 +367,10 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   ecif.cif = cif;
   ecif.avalue = avalue;
 
-  /* If the return value is a struct and we don't have a return	*/
-  /* value address then we need to make one		        */
+  /* If the return value is a struct and we don't have a return
+     value address then we need to make one.  */
 
-  if ((rvalue == NULL) && 
+  if ((rvalue == NULL) &&
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
       /*@-sysunrecog@*/
@@ -379,17 +380,17 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   else
     ecif.rvalue = rvalue;
 
-  switch (cif->abi) 
+  switch (cif->abi)
     {
     case FFI_AIX:
       /*@-usedef@*/
-      ffi_call_AIX(&ecif, -cif->bytes, 
+      ffi_call_AIX(&ecif, -cif->bytes,
 		   cif->flags, ecif.rvalue, fn, ffi_prep_args);
       /*@=usedef@*/
       break;
     case FFI_DARWIN:
       /*@-usedef@*/
-      ffi_call_DARWIN(&ecif, -cif->bytes, 
+      ffi_call_DARWIN(&ecif, -cif->bytes,
 		      cif->flags, ecif.rvalue, fn, ffi_prep_args);
       /*@=usedef@*/
       break;
@@ -402,8 +403,8 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 static void flush_icache(char *);
 static void flush_range(char *, int);
 
-/* The layout of a function descriptor.  A C function pointer really    */
-/* points to one of these.                                              */
+/* The layout of a function descriptor.  A C function pointer really
+   points to one of these.  */
 
 typedef struct aix_fd_struct {
     void *code_pointer;
@@ -411,70 +412,70 @@ typedef struct aix_fd_struct {
 } aix_fd;
 
 /* here I'd like to add the stack frame layout we use in darwin_closure.S
- * and aix_clsoure.S
- *
- * SP previous -> +---------------------------------------+ <--- child frame
-                  | back chain to caller 4                | 
-                  +---------------------------------------+ 4
-                  | saved CR 4                            | 
-                  +---------------------------------------+ 8 
-                  | saved LR 4                            | 
-                  +---------------------------------------+ 12
-                  | reserved for compilers 4              | 
-                  +---------------------------------------+ 16
-                  | reserved for binders 4                | 
-                  +---------------------------------------+ 20
-                  | saved TOC pointer 4                   | 
-                  +---------------------------------------+ 24
-                  | always reserved 8*4=32 (previous GPRs)| 
-                  | according to the linkage convention   |
-                  | from AIX                              |
-                  +---------------------------------------+ 56
-                  | our FPR area 13*8=104                 |
-                  | f1                                    |
-                  | .                                     |
-                  | f13                                   | 
-                  +---------------------------------------+ 160
-                  | result area 8                         |
-                  +---------------------------------------+ 168
-                  | alignement to the next multiple of 16 |
+   and aix_clsoure.S
+
+   SP previous -> +---------------------------------------+ <--- child frame
+		  | back chain to caller 4                |
+		  +---------------------------------------+ 4
+		  | saved CR 4                            |
+		  +---------------------------------------+ 8
+		  | saved LR 4                            |
+		  +---------------------------------------+ 12
+		  | reserved for compilers 4              |
+		  +---------------------------------------+ 16
+		  | reserved for binders 4                |
+		  +---------------------------------------+ 20
+		  | saved TOC pointer 4                   |
+		  +---------------------------------------+ 24
+		  | always reserved 8*4=32 (previous GPRs)|
+		  | according to the linkage convention   |
+		  | from AIX                              |
+		  +---------------------------------------+ 56
+		  | our FPR area 13*8=104                 |
+		  | f1                                    |
+		  | .                                     |
+		  | f13                                   |
+		  +---------------------------------------+ 160
+		  | result area 8                         |
+		  +---------------------------------------+ 168
+		  | alignement to the next multiple of 16 |
 SP current -->    +---------------------------------------+ 176 <- parent frame
-                  | back chain to caller 4                | 
-                  +---------------------------------------+ 180
-                  | saved CR 4                            | 
-                  +---------------------------------------+ 184
-                  | saved LR 4                            | 
-                  +---------------------------------------+ 188
-                  | reserved for compilers 4              | 
-                  +---------------------------------------+ 192
-                  | reserved for binders 4                | 
-                  +---------------------------------------+ 196
-                  | saved TOC pointer 4                   | 
-                  +---------------------------------------+ 200
-                  | always reserved 8*4=32  we store our  |
-                  | GPRs here                             |
-                  | r3                                    |
-                  | .                                     |
-                  | r10                                   |
-                  +---------------------------------------+ 232
-                  | overflow part                         | 
-                  +---------------------------------------+ xxx
-                  | ????                                  | 
-                  +---------------------------------------+ xxx
+		  | back chain to caller 4                |
+		  +---------------------------------------+ 180
+		  | saved CR 4                            |
+		  +---------------------------------------+ 184
+		  | saved LR 4                            |
+		  +---------------------------------------+ 188
+		  | reserved for compilers 4              |
+		  +---------------------------------------+ 192
+		  | reserved for binders 4                |
+		  +---------------------------------------+ 196
+		  | saved TOC pointer 4                   |
+		  +---------------------------------------+ 200
+		  | always reserved 8*4=32  we store our  |
+		  | GPRs here                             |
+		  | r3                                    |
+		  | .                                     |
+		  | r10                                   |
+		  +---------------------------------------+ 232
+		  | overflow part                         |
+		  +---------------------------------------+ xxx
+		  | ????                                  |
+		  +---------------------------------------+ xxx
 
 */
 ffi_status
-ffi_prep_closure (ffi_closure* closure,    
-                  ffi_cif* cif,
-                  void (*fun)(ffi_cif*, void*, void**, void*),
-                  void *user_data)
+ffi_prep_closure (ffi_closure* closure,
+		  ffi_cif* cif,
+		  void (*fun)(ffi_cif*, void*, void**, void*),
+		  void *user_data)
 {
   unsigned int *tramp;
   struct ffi_aix_trampoline_struct *tramp_aix;
   aix_fd *fd;
 
   switch (cif->abi)
-    {  
+    {
     case FFI_DARWIN:
 
       FFI_ASSERT (cif->abi == FFI_DARWIN);
@@ -527,12 +528,12 @@ flush_icache(char *addr)
 {
 #ifndef _AIX
   __asm__ volatile (
-                "dcbf 0,%0;"
-                "sync;"
-                "icbi 0,%0;"
-                "sync;"
-                "isync;"
-                : : "r"(addr) : "memory");
+		"dcbf 0,%0;"
+		"sync;"
+		"icbi 0,%0;"
+		"sync;"
+		"isync;"
+		: : "r"(addr) : "memory");
 #endif
 }
 
@@ -556,12 +557,11 @@ int ffi_closure_helper_DARWIN (ffi_closure*, void*,
 			       unsigned long*, ffi_dblfl*);
 
 /* Basically the trampoline invokes ffi_closure_ASM, and on
- * entry, r11 holds the address of the closure.
- * After storing the registers that could possibly contain
- * parameters to be passed into the stack frame and setting
- * up space for a return value, ffi_closure_ASM invokes the
- * following helper function to do most of the work
- */
+   entry, r11 holds the address of the closure.
+   After storing the registers that could possibly contain
+   parameters to be passed into the stack frame and setting
+   up space for a return value, ffi_closure_ASM invokes the
+   following helper function to do most of the work.  */
 
 int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 			       unsigned long * pgr, ffi_dblfl * pfr)
@@ -574,8 +574,8 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
   void **          avalue;
   ffi_type **      arg_types;
   long             i, avn;
-  long             nf;   /* number of floating registers already used */
-  long             ng;   /* number of general registers already used */
+  long             nf;   /* number of floating registers already used.  */
+  long             ng;   /* number of general registers already used.  */
   ffi_cif *        cif;
   double           temp;
   unsigned         size_al;
@@ -652,10 +652,8 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	  break;
 
 	case FFI_TYPE_FLOAT:
-	  /* a float value consumes a GPR
-	   *
-	   * here are 13 64bit floating point registers.
-	   */
+	  /* A float value consumes a GPR.
+	     There are 13 64bit floating point registers.  */
 	  if (nf < NUM_FPR_ARG_REGISTERS)
 	    {
 	      temp = pfr->d;
@@ -673,10 +671,8 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	  break;
 
 	case FFI_TYPE_DOUBLE:
-	  /* a double value consumes two GPRs
-	   *
-	   * There are 13 64bit floating point registers.
-	   */
+	  /* A double value consumes two GPRs.
+	     There are 13 64bit floating point registers.  */
 	  if (nf < NUM_FPR_ARG_REGISTERS)
 	    {
 	      avalue[i] = pfr;
@@ -691,9 +687,9 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	  pgr += 2;
 	  break;
 
-        default:
-          FFI_ASSERT(0);
-        }
+	default:
+	  FFI_ASSERT(0);
+	}
       i++;
     }
 
