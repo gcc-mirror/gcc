@@ -1,3 +1,7 @@
+2004-12-08  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* typeck.c: Remove DOS line endings.
+
 2004-12-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/18100
