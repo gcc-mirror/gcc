@@ -1,3 +1,7 @@
+2001-08-25 Dan Nicolaescu  <dann@ics.uci.edu>
+  
+        * ssa-ccp.c (ssa_const_prop): Free ssa_edges.
+
 2001-08-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (mask_operand): Rewrite without

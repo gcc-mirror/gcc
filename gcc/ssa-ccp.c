@@ -1081,6 +1081,9 @@ ssa_const_prop (void)
   sbitmap_free (executable_blocks);
   executable_blocks = NULL;
 
+  sbitmap_free (ssa_edges);
+  ssa_edges = NULL;
+  
   free_edge_list (edges);
   edges = NULL;
 
