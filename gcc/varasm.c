@@ -3973,9 +3973,6 @@ declare_weak (decl)
     handle_pragma_weak (ps_name,
 			IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 			NULL_PTR);
-
-#else
-  error ("weak declarations are not supported in this configuration");
 #endif
 }
 
