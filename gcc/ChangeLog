@@ -1,3 +1,9 @@
+Thu May 27 02:52:55 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* varasm.c (STRIP_NAME_ENCODING): Remove default definition.
+	* output.h (STRIP_NAME_ENCODING): Strip '*' like the old varasm
+	version did.
+
 Thu May 27 02:40:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Don't do biv->giv conversion on constants.
