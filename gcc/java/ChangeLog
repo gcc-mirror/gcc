@@ -1,3 +1,32 @@
+Sat Apr 24 16:50:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class_method): Generate <clinit>'s rtl for
+ 	interfaces.
+	* decl.c (complete_start_java_method): Don't call _Jv_InitClass
+ 	for interfaces' <clinit>.
+	* expr.c (lookup_field): Search for fields in interfaces.
+	(expand_invoke): Fixed indentation.
+	(expand_java_field_op): Likewise. Use IS_CLINIT.
+	* parse.h (JPRIMITIVE_TYPE_OR_VOID_P): Macro removed.
+	(IS_CLINIT): New macro.
+	* parse.y (type_declaration:): Call maybe_generate_clinit after an
+ 	interface was parsed.
+	(maybe_generate_clinit): Don't generate if the current class is an
+ 	interface with only fields of primitive types.
+	(reset_method_name): Use IS_CLINIT.
+	(java_complete_expand_method): Expand <clinit> when it exists for
+ 	interfaces. Use IS_CLINIT.
+	(resolve_expression_name): Use DECL_CONTEXT instead of
+ 	current_class to build static field references.
+	(java_complete_lhs): Use IS__CLINIT. Don't use SAVE_EXPR on
+ 	ARRAY_REF when doing xreferencing.
+	(check_final_assignment): Fixed typo in leading comment. Use
+ 	IS_CLINIT.
+	(patch_array_ref): Don't fully expand array references when
+ 	xreferencing.
+	(patch_return): Use IS_CLINIT.
+	(patch_throw_statement): Likewise.
+
 1999-04-22  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (JAVA_SRCS): Added check-init.c.

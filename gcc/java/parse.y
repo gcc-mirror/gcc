@@ -632,6 +632,10 @@ type_declaration:
 		  $$ = $1;
 		}
 |	interface_declaration
+		{
+		  maybe_generate_clinit ();
+		  $$ = $1;
+		}
 |	SC_TK
 		{ $$ = NULL; }
 |	error
@@ -3231,8 +3235,17 @@ static void
 maybe_generate_clinit ()
 {
   tree mdecl, c;
+  int is_interface = CLASS_INTERFACE (ctxp->current_parsed_class);
+  int has_non_primitive_fields = 0;
 
   if (!ctxp->static_initialized || java_error_count)
+    return;
+
+  if (is_interface)
+    for (c = TYPE_FIELDS (TREE_TYPE (ctxp->current_parsed_class));
+	 c; c = TREE_CHAIN (c))
+      has_non_primitive_fields |= !JPRIMITIVE_TYPE_P (TREE_TYPE (c));
+  if (!has_non_primitive_fields && is_interface)
     return;
 
   mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
@@ -4404,8 +4417,7 @@ static int
 reset_method_name (method)
      tree method;
 {
-  if (DECL_NAME (method) != clinit_identifier_node
-      && DECL_NAME (method) != finit_identifier_node)
+  if (!IS_CLINIT (method) && DECL_NAME (method) != finit_identifier_node)
     {
       /* NAME is just the plain name when Object is being defined */
       if (DECL_CONTEXT (method) != object_type_node)
@@ -5662,51 +5674,55 @@ java_complete_expand_methods ()
   
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     {
+      int is_interface;
       tree class_type = CLASS_TO_HANDLE_TYPE (TREE_TYPE (current));
       tree decl;
 
       current_class = TREE_TYPE (current);
+      is_interface = CLASS_INTERFACE (TYPE_NAME (current_class));
 
       /* Initialize a new constant pool */
       init_outgoing_cpool ();
 
       /* We want <clinit> (if any) to be processed first. */
       decl = tree_last (TYPE_METHODS (class_type));
-      if (decl && DECL_NAME (decl) == clinit_identifier_node)
+      if (IS_CLINIT (decl))
 	{
 	  tree list = nreverse (TYPE_METHODS (class_type));
 	  list = TREE_CHAIN (list);
 	  TREE_CHAIN (decl) = NULL_TREE;
 	  TYPE_METHODS (class_type) = chainon (decl, nreverse (list));
 	}
+      
+      for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
+	{
+	  /* Process only <clinit> method bodies in interfaces. */
+	  if (is_interface && decl != TYPE_METHODS (class_type))
+	    break;
 
-      /* Don't process function bodies in interfaces */
-      if (!CLASS_INTERFACE (TYPE_NAME (current_class)))
-	for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
-	  {
-	    current_function_decl = decl;
-	    /* Don't generate debug info on line zero when expanding a
-	       generated constructor. */
-	    if (DECL_CONSTRUCTOR_P (decl) && !DECL_FUNCTION_BODY (decl))
-	      {
-		/* If we found errors, it's too dangerous to try to generate
-		   and expand a constructor */
-		if (!java_error_count)
-		  {
-		    restore_line_number_status (1);
-		    java_complete_expand_method (decl);
-		    restore_line_number_status (0);
+	  current_function_decl = decl;
+	  /* Don't generate debug info on line zero when expanding a
+	     generated constructor. */
+	  if (DECL_CONSTRUCTOR_P (decl) && !DECL_FUNCTION_BODY (decl))
+	    {
+	      /* If we found errors, it's too dangerous to try to
+		 generate and expand a constructor */
+	      if (!java_error_count)
+		{
+		  restore_line_number_status (1);
+		  java_complete_expand_method (decl);
+		  restore_line_number_status (0);
 		  }
-	      }
-	    else if (METHOD_ABSTRACT (decl) || METHOD_NATIVE (decl))
-	      continue;
-	    else 
-	      java_complete_expand_method (decl);
-	  }
+	    }
+	  else if (METHOD_ABSTRACT (decl) || METHOD_NATIVE (decl))
+	    continue;
+	  else 
+	    java_complete_expand_method (decl);
+	}
 
       /* Now verify constructor circularity (stop after the first one
          we find) */
-      if (!CLASS_INTERFACE (TYPE_NAME (current_class)))
+      if (!is_interface)
 	for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
 	  if (DECL_CONSTRUCTOR_P (decl) && 
 	      verify_constructor_circularity (decl, decl))
@@ -5761,7 +5777,7 @@ java_complete_expand_method (mdecl)
       if (block_body != NULL_TREE)
 	{
 	  /* Prevent the use of `this' inside <clinit> */
-	  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+	  if (IS_CLINIT (current_function_decl))
 	    ctxp->explicit_constructor_p = 1;
 
 	  block_body = java_complete_tree (block_body);
@@ -6097,9 +6113,9 @@ resolve_expression_name (id, orig)
 
 	      /* Otherwise build what it takes to access the field */
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
-				      current_class, name);
+				      DECL_CONTEXT (decl), name);
 	      if (fs && !flag_emit_class_files && !flag_emit_xref)
-		decl = build_class_init (current_class, decl);
+		decl = build_class_init (DECL_CONTEXT (decl), decl);
 	      /* We may be asked to save the real field access node */
 	      if (orig)
 		*orig = decl;
@@ -8074,7 +8090,7 @@ java_complete_lhs (node)
          assignment in <clinit>, we may want to carray further
          optimizations. (VAR_DECL means it's a static field. See
          add_field. */
-      if (DECL_NAME (current_function_decl) == clinit_identifier_node
+      if (IS_CLINIT (current_function_decl) 
 	  && MODIFY_EXPR_FROM_INITIALIZATION_P (node)
 	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL)
 	node = patch_initialized_static_field (node);
@@ -8159,14 +8175,14 @@ java_complete_lhs (node)
       TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
-      if (!flag_emit_class_files)
+      if (!flag_emit_class_files && !flag_emit_xref)
 	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
       /* The same applies to wfl_op2 */
       wfl_op2 = TREE_OPERAND (node, 1);
       TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
       if (TREE_OPERAND (node, 1) == error_mark_node)
 	return error_mark_node;
-      if (!flag_emit_class_files)
+      if (!flag_emit_class_files && !flag_emit_xref)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node);
 
@@ -8507,14 +8523,15 @@ print_int_node (node)
   return buffer;
 }
 
-/* Return 1 if you an assignment of a FINAL is attempted */
+/* Return 1 if an assignment to a FINAL is attempted in a non suitable
+   context.  */
 
 static int
 check_final_assignment (lvalue, wfl)
      tree lvalue, wfl;
 {
-  if (JDECL_P (lvalue) && FIELD_FINAL (lvalue) &&
-      DECL_NAME (current_function_decl) != clinit_identifier_node)
+  if (JDECL_P (lvalue) 
+      && FIELD_FINAL (lvalue) && !IS_CLINIT (current_function_decl))
     {
       parse_error_context 
         (wfl, "Can't assign a value to the final variable `%s'",
@@ -10070,7 +10087,7 @@ patch_array_ref (node)
 
   array_type = TYPE_ARRAY_ELEMENT (array_type);
 
-  if (flag_emit_class_files)
+  if (flag_emit_class_files || flag_emit_xref)
     {
       TREE_OPERAND (node, 0) = array;
       TREE_OPERAND (node, 1) = index;
@@ -10396,7 +10413,7 @@ patch_return (node)
     error_found = 1;
 
   /* It's invalid to use a return statement in a static block */
-  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+  if (IS_CLINIT (current_function_decl))
     error_found = 1;
 
   /* It's invalid to have a no return value within a function that
@@ -10406,7 +10423,7 @@ patch_return (node)
 
   if (error_found)
     {
-      if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+      if (IS_CLINIT (current_function_decl))
 	parse_error_context (wfl_operator,
 			     "`return' inside static initializer.");
 
@@ -11134,7 +11151,7 @@ patch_throw_statement (node, wfl_op1)
       else if (!EXCEPTIONS_P (currently_caught_type_list) 
 	       && !tryblock_throws_ok)
 	{
-	  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+	  if (IS_CLINIT (current_function_decl))
 	    parse_error_context (wfl_operator, "Checked exception `%s' can't "
 				 "be thrown in initializer",
 				 lang_printable_name (type, 0));

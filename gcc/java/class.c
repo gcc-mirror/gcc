@@ -1623,11 +1623,14 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
   obstack_1grow (&temporary_obstack, '\0');
   asm_name = obstack_finish (&temporary_obstack);
   DECL_ASSEMBLER_NAME (method_decl) = get_identifier (asm_name);
+  /* We don't generate a RTL for the method if it's abstract, or if
+     it's an interface method that isn't clinit. */
   if (! METHOD_ABSTRACT (method_decl) 
-      && ! CLASS_INTERFACE (TYPE_NAME (this_class)))
+      || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
+	  && (IS_CLINIT (method_decl))))
     make_function_rtl (method_decl);
   obstack_free (&temporary_obstack, asm_name);
-  
+
   if (method_name == init_identifier_node)
     {
       char *p = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class)));

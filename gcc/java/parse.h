@@ -177,9 +177,6 @@ extern tree stabilize_reference PROTO ((tree));
 				  && (JNUMERIC_TYPE_P ((TYPE))		  \
 				  || TREE_CODE ((TYPE)) == BOOLEAN_TYPE))
 
-#define JPRIMITIVE_TYPE_OR_VOID_P(TYPE) \
-  (JPRIMITIVE_TYPE_P (TYPE) || ((TYPE) == void_type_node))
-
 #define JBSC_TYPE_P(TYPE) ((TYPE) && (((TYPE) == byte_type_node)	\
 				      || ((TYPE) == short_type_node)	\
 				      || ((TYPE) == char_type_node)))
@@ -582,6 +579,10 @@ typedef struct _jdeplist {
   TREE_CHAIN (node) = ctxp->import_list;		\
   ctxp->import_list = node;				\
 }
+
+/* Safe check that DECL is <clinit> */
+#define IS_CLINIT(DECL)				\
+  (DECL != NULL_TREE && DECL_NAME (DECL) == clinit_identifier_node)
 
 /* Macro to access the osb (opening square bracket) count */
 #define CURRENT_OSB(C) (C)->osb_number [(C)->osb_depth]
