@@ -2306,7 +2306,7 @@ extern void init_dummy_function_start	PROTO ((void));
 extern void expand_dummy_function_end	PROTO ((void));
 extern void init_function_for_compilation	PROTO ((void));
 extern void init_function_start		PROTO ((tree, char *, int));
-extern void assign_parms		PROTO ((tree, int));
+extern void assign_parms		PROTO ((tree));
 extern void put_var_into_stack		PROTO ((tree));
 extern void uninitialized_vars_warning	PROTO ((tree));
 extern void setjmp_args_warning		PROTO ((void));

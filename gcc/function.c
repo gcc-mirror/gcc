@@ -3878,19 +3878,11 @@ aggregate_value_p (exp)
 
 /* Assign RTL expressions to the function's parameters.
    This may involve copying them into registers and using
-   those registers as the RTL for them.
-
-   If SECOND_TIME is non-zero it means that this function is being
-   called a second time.  This is done by integrate.c when a function's
-   compilation is deferred.  We need to come back here in case the
-   FUNCTION_ARG macro computes items needed for the rest of the compilation
-   (such as changing which registers are fixed or caller-saved).  But suppress
-   writing any insns or setting DECL_RTL of anything in this case.  */
+   those registers as the RTL for them.  */
 
 void
-assign_parms (fndecl, second_time)
+assign_parms (fndecl)
      tree fndecl;
-     int second_time;
 {
   register tree parm;
   register rtx entry_parm = 0;
@@ -3944,8 +3936,7 @@ assign_parms (fndecl, second_time)
 
   if ((ARG_POINTER_REGNUM == STACK_POINTER_REGNUM
        || ! (fixed_regs[ARG_POINTER_REGNUM]
-	     || ARG_POINTER_REGNUM == FRAME_POINTER_REGNUM))
-      && ! second_time)
+	     || ARG_POINTER_REGNUM == FRAME_POINTER_REGNUM)))
     internal_arg_pointer = copy_to_reg (virtual_incoming_args_rtx);
   else
     internal_arg_pointer = virtual_incoming_args_rtx;
@@ -4093,8 +4084,7 @@ assign_parms (fndecl, second_time)
       if (last_named && !varargs_setup)
 	{
 	  SETUP_INCOMING_VARARGS (args_so_far, promoted_mode, passed_type,
-				  current_function_pretend_args_size,
-				  second_time);
+				  current_function_pretend_args_size, 0);
 	  varargs_setup = 1;
 	}
 #endif
@@ -4129,25 +4119,24 @@ assign_parms (fndecl, second_time)
 #endif
 			   fndecl, &stack_args_size, &stack_offset, &arg_size);
 
-      if (! second_time)
-	{
-	  rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
+      {
+	rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
 
-	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx_MEM (promoted_mode, internal_arg_pointer);
-	  else
-	    stack_parm = gen_rtx_MEM (promoted_mode,
-				      gen_rtx_PLUS (Pmode,
-						    internal_arg_pointer,
-						    offset_rtx));
+	if (offset_rtx == const0_rtx)
+	  stack_parm = gen_rtx_MEM (promoted_mode, internal_arg_pointer);
+	else
+	  stack_parm = gen_rtx_MEM (promoted_mode,
+				    gen_rtx_PLUS (Pmode,
+						  internal_arg_pointer,
+						  offset_rtx));
 
-	  /* If this is a memory ref that contains aggregate components,
-	     mark it as such for cse and loop optimize.  Likewise if it
-	     is readonly.  */
-	  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
-	  RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
-	  MEM_ALIAS_SET (stack_parm) = get_alias_set (parm);
-	}
+	/* If this is a memory ref that contains aggregate components,
+	   mark it as such for cse and loop optimize.  Likewise if it
+	   is readonly.  */
+	MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
+	RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
+	MEM_ALIAS_SET (stack_parm) = get_alias_set (parm);
+      }
 
       /* If this parameter was passed both in registers and in the stack,
 	 use the copy on the stack.  */
@@ -4175,20 +4164,18 @@ assign_parms (fndecl, second_time)
 		   / (PARM_BOUNDARY / BITS_PER_UNIT)
 		   * (PARM_BOUNDARY / BITS_PER_UNIT));
 
-	      if (! second_time)
-		{
-		  /* Handle calls that pass values in multiple non-contiguous
-		     locations.  The Irix 6 ABI has examples of this.  */
-		  if (GET_CODE (entry_parm) == PARALLEL)
-		    emit_group_store (validize_mem (stack_parm), entry_parm,
-				      int_size_in_bytes (TREE_TYPE (parm)),
-				      (TYPE_ALIGN (TREE_TYPE (parm))
-				       / BITS_PER_UNIT));
-		  else
-		    move_block_from_reg (REGNO (entry_parm),
-					 validize_mem (stack_parm), nregs,
-					 int_size_in_bytes (TREE_TYPE (parm)));
-		}
+	      /* Handle calls that pass values in multiple non-contiguous
+		 locations.  The Irix 6 ABI has examples of this.  */
+	      if (GET_CODE (entry_parm) == PARALLEL)
+		emit_group_store (validize_mem (stack_parm), entry_parm,
+				  int_size_in_bytes (TREE_TYPE (parm)),
+				  (TYPE_ALIGN (TREE_TYPE (parm))
+				   / BITS_PER_UNIT));
+	      else
+		move_block_from_reg (REGNO (entry_parm),
+				     validize_mem (stack_parm), nregs,
+				     int_size_in_bytes (TREE_TYPE (parm)));
+
 	      entry_parm = stack_parm;
 	    }
 	}
@@ -4200,8 +4187,7 @@ assign_parms (fndecl, second_time)
 	entry_parm = stack_parm;
 
       /* Record permanently how this parm was passed.  */
-      if (! second_time)
-	DECL_INCOMING_RTL (parm) = entry_parm;
+      DECL_INCOMING_RTL (parm) = entry_parm;
 
       /* If there is actually space on the stack for this parm,
 	 count it in stack_args_size; otherwise set stack_parm to 0
@@ -4236,10 +4222,6 @@ assign_parms (fndecl, second_time)
 
       FUNCTION_ARG_ADVANCE (args_so_far, promoted_mode,
 			    passed_type, named_arg);
-
-      /* If this is our second time through, we are done with this parm.  */
-      if (second_time)
-	continue;
 
       /* If we can't trust the parm stack slot to be aligned enough
 	 for its ultimate type, don't use that slot after entry.
@@ -5880,7 +5862,7 @@ expand_function_start (subr, parms_have_cleanups)
   /* Initialize rtx for parameters and local variables.
      In some cases this requires emitting insns.  */
 
-  assign_parms (subr, 0);
+  assign_parms (subr);
 
   /* Copy the static chain now if it wasn't a register.  The delay is to
      avoid conflicts with the parameter passing registers.  */

@@ -3087,7 +3087,7 @@ hack_method_prototype (nst_methods, tmp_decl)
   init_function_start (tmp_decl, "objc-act", 0);
 
   /* Typically called from expand_function_start for function definitions.  */
-  assign_parms (tmp_decl, 0);
+  assign_parms (tmp_decl);
 
   /* install return type */
   TREE_TYPE (TREE_TYPE (tmp_decl)) = groktypename (TREE_TYPE (nst_methods));
