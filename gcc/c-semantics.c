@@ -838,7 +838,8 @@ expand_stmt (t)
 	case GOTO_STMT:
 	  /* Emit information for branch prediction.  */
 	  if (!GOTO_FAKE_P (t)
-	      && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
+	      && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL
+	      && flag_guess_branch_prob)
 	    {
 	      rtx note = emit_note (NULL, NOTE_INSN_PREDICTION);
 

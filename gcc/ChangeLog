@@ -1,3 +1,44 @@
+Sat Feb 22 03:24:06 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (builtin_description): Add __builtin_ia32_paddq and
+	__builtin_ia32_psubq. Fix __builtin_ia32_paddq128
+	 and __builtin_ia32_psubq128.
+	* i386.h (IX86_BUILTIN_PADDQ, IX86_BUILTIN_PSUBQ): New.
+	* i386.md (addv*, mmx_ior*, mmx_xoe*, mmx_and*): Add missing '%'.
+	(mmx_adddi3, mmx_subdi3): New.
+	* mmintrin.h (_mm_add_si64, _mm_sub_si64): New.
+	* xmmintrin.h (_mm_movepi64_pi64): New.
+	(_mm_add_epi64, _mm_sub_epi64): fix.
+	(_mm_mul_pu16): Rename to...
+	(_mm_mul_su32): ... this one.
+
+	* i386.c (def_builtin):  Special case 64bit builtins.
+	(MASK_SSE164, MASK_SSE264): New constants.
+	(builtin_description): Add 64bit builtins.
+	(ix86_init_mmx_sse_builtins): Likewise.
+	* i386.h (enum ix86_builtins): Likewise.
+	* i386.md (cvtss2siq, cvttss2siq, cvtsd2siq, cvttsd2siq, cvtsi2sdq,
+	sse2_movq2dq_rex64, sse2_movsq2q_rex64): New.
+	(sse2_movq2dq, sse2_movsq2q): Disable for 64bit.
+	* mmintrin.h (_mm_cvtsi64x_si64, _mm_set_pi64x, _mm_cvtsi64_si64x): New.
+	* xmmintrin.h (_mm_cvtss_si64x, _mm_cvttss_si64x, _mm_cvtsi64x_ss,
+	_mm_set_epi64x, _mm_set1_epi64x, _mm_cvtsd_si64x, _mm_cvttsd_si64x,
+	_mm_cvtsi64x_sd, _mm_cvtsi64x_si128, _mm_cvtsi128_si64x): New.
+
+	* builtins.c (expand_builtin_expect):  Do not predict
+	flag_guess_branch_prob is not set.
+	* c-semantics.c (expand_stmt): Likewise.
+	* predict.c (predict_insn): Likewise.
+	* stmt.c (expand_continue_loop): Likewise.
+	* toplev.c (rest_of_compilation): Do not call
+	note_prediction_to_br_prob and note_prediction_to_br_prob
+	when not optimizing.
+
+	* basic-block.h (tidy_fallthru_edges): Kill.
+	* cfgrtl.c (tidy_fallthru_edges): Kill.
+	* cfgbuild.c (find_basic_blocks): Do not call tidy_fallthru_edges.
+	* cfgcleanup.c (delete_unreachable_blocks): Likewise.
+
 2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR other/3782

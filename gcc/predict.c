@@ -183,6 +183,8 @@ predict_insn (insn, predictor, probability)
 {
   if (!any_condjump_p (insn))
     abort ();
+  if (!flag_guess_branch_prob)
+    return;
 
   REG_NOTES (insn)
     = gen_rtx_EXPR_LIST (REG_BR_PRED,

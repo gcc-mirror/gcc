@@ -2575,9 +2575,12 @@ rest_of_compilation (decl)
   delete_unreachable_blocks ();
 
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
-  timevar_push (TV_BRANCH_PROB);
-  note_prediction_to_br_prob ();
-  timevar_pop (TV_BRANCH_PROB);
+  if (flag_guess_branch_prob)
+    {
+      timevar_push (TV_BRANCH_PROB);
+      note_prediction_to_br_prob ();
+      timevar_pop (TV_BRANCH_PROB);
+    }
 
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
@@ -2658,21 +2661,26 @@ rest_of_compilation (decl)
   timevar_push (TV_JUMP);
   /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
      before jump optimization switches branch directions.  */
-  expected_value_to_br_prob ();
+  if (flag_guess_branch_prob)
+    expected_value_to_br_prob ();
 
   reg_scan (insns, max_reg_num (), 0);
   rebuild_jump_labels (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  delete_trivially_dead_insns (insns, max_reg_num ());
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   /* CFG is no longer maintained up-to-date.  */
-  free_bb_for_insn ();
-  copy_loop_headers (insns);
+  if (optimize && !optimize_size)
+    {
+      free_bb_for_insn ();
+      copy_loop_headers (insns);
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+    }
   purge_line_number_notes (insns);
-  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
   timevar_pop (TV_JUMP);
   close_dump_file (DFI_jump, print_rtl, insns);
@@ -2988,7 +2996,7 @@ rest_of_compilation (decl)
       close_dump_file (DFI_bp, print_rtl_with_bb, insns);
       timevar_pop (TV_BRANCH_PROB);
     }
-  if (optimize >= 0)
+  if (optimize > 0)
     {
       open_dump_file (DFI_ce1, decl);
       if (flag_if_conversion)
