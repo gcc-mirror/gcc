@@ -85,6 +85,8 @@ public class Socket
 
   SocketChannel ch; // this field must have been set if created by SocketChannel
 
+  private boolean closed = false;
+
   // Constructors
 
   /**
@@ -308,6 +310,9 @@ public class Socket
    */
   public void bind (SocketAddress bindpoint) throws IOException
   {
+    if (closed)
+      throw new SocketException ("Socket is closed");
+    
     if ( !(bindpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ();
 
@@ -330,6 +335,9 @@ public class Socket
   public void connect (SocketAddress endpoint)
     throws IOException
   {
+    if (closed)
+      throw new SocketException ("Socket is closed");
+    
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ("Address type not supported");
 
@@ -357,6 +365,9 @@ public class Socket
   public void connect (SocketAddress endpoint, int timeout)
     throws IOException
   {
+    if (closed)
+      throw new SocketException ("Socket is closed");
+    
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ("Address type not supported");
 
@@ -853,6 +864,11 @@ public class Socket
   {
     if (impl != null)
       impl.close();
+
+    if (ch != null)
+      ch.close();
+    
+    closed = true;
   }
 
   /**
@@ -1035,8 +1051,7 @@ public class Socket
    */
   public boolean isClosed ()
   {
-    // FIXME: implement this.
-    return false;
+    return closed;
   }
 
   /**
