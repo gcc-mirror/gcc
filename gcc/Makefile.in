@@ -1461,7 +1461,7 @@ jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h \
    toplev.h
 stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
-   flags.h toplev.h
+   $(BASIC_BLOCK_H) insn-config.h reload.h flags.h toplev.h
 
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h
@@ -1487,7 +1487,7 @@ local-alloc.o : local-alloc.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    insn-attr.h toplev.h
 bitmap.o : bitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H) \
    $(REGS_H)
-global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
+global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h reload.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h output.h toplev.h
 varray.o : varray.c $(CONFIG_H) system.h varray.h $(RTL_H) $(TREE_H) bitmap.h
 

@@ -32,9 +32,9 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "expr.h"
 #include "regs.h"
+#include "basic-block.h"
 #include "reload.h"
 #include "recog.h"
-#include "basic-block.h"
 #include "output.h"
 #include "real.h"
 #include "toplev.h"
@@ -279,6 +279,13 @@ enum insn_code reload_out_optab[NUM_MACHINE_MODES];
    insn.  */
 
 struct obstack reload_obstack;
+
+/* Points to the beginning of the reload_obstack.  All insn_chain structures
+   are allocated first.  */
+char *reload_startobj;
+
+/* The point after all insn_chain structures.  Used to quickly deallocate
+   memory used while processing one insn.  */
 char *reload_firstobj;
 
 #define obstack_chunk_alloc xmalloc
@@ -286,6 +293,10 @@ char *reload_firstobj;
 
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
+
+/* List of insn_chain instructions, one for every insn that reload needs to
+   examine.  */
+struct insn_chain *reload_insn_chain;
 
 /* This structure is used to record information about register eliminations.
    Each array entry describes one possible way of eliminating a register
@@ -461,7 +472,7 @@ init_reload ()
 
   /* Initialize obstack for our rtl allocation.  */
   gcc_obstack_init (&reload_obstack);
-  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+  reload_startobj = (char *) obstack_alloc (&reload_obstack, 0);
 
   /* Decide which register class should be used when reloading
      addresses.  If we are using SMALL_REGISTER_CLASSES, and any
@@ -520,6 +531,32 @@ init_reload ()
 	}
     indexok:;
     }
+}
+
+/* List of insn chains that are currently unused.  */
+static struct insn_chain *unused_insn_chains = 0;
+
+/* Allocate an empty insn_chain structure.  */
+struct insn_chain *
+new_insn_chain ()
+{
+  struct insn_chain *c;
+
+  if (unused_insn_chains == 0)
+    {
+      c = obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
+      c->live_before = OBSTACK_ALLOC_REG_SET (&reload_obstack);
+      c->live_after = OBSTACK_ALLOC_REG_SET (&reload_obstack);
+    }
+  else
+    {
+      c = unused_insn_chains;
+      unused_insn_chains = c->next;
+    }
+  c->is_caller_save_insn = 0;
+  c->need_reload = 0;
+  c->need_elim = 0;
+  return c;
 }
 
 /* Global variables used by reload and its subroutines.  */
@@ -604,6 +641,8 @@ reload (first, global, dumpfile)
   init_recog ();
 
   failure = 0;
+
+  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
 
   /* Enable find_equiv_reg to distinguish insns made by reload.  */
   reload_first_uid = get_max_uid ();
@@ -1217,7 +1256,9 @@ reload (first, global, dumpfile)
       if (size > STACK_CHECK_MAX_FRAME_SIZE)
 	warning ("frame size too large for reliable stack checking");
     }
-	
+
+  obstack_free (&reload_obstack, reload_startobj);
+
   /* Indicate that we no longer have known memory locations or constants.  */
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;

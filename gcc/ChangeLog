@@ -1,3 +1,47 @@
+Tue Oct  6 01:36:00 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* Makefile.in (stupid.o): Update dependencies.
+	(global.o): Likewise.
+
+	* global.c: Include reload.h
+	(reg_becomes_live): New function.
+	(reg_dies): New function.
+	(build_insn_chain): New function.
+	(global_alloc): Call build_insn_chain before calling reload.
+
+	* reload.h (struct needs): New structure definition.
+	(struct insn_chain): Likewise.
+	(reload_insn_chain): Declare variable.
+	(new_insn_chain): Declare function.
+
+
+	* reload1.c (reload_startobj): New variable.
+	(reload_insn_chain): New variable.
+	(unused_insn_chains): New variable.
+	(new_insn_chain): New function.
+	(init_reload): Initialize reload_startobj, not reload_firstobj.
+	(reload): Initialize reload_firstobj.
+	Before returning, free everything on the reload_obstack.
+
+	* stupid.c: Include insn-config.h, reload.h and basic-block.h.
+	(reg_where_dead_chain, reg_where_born_exact, reg_where_born_clobber,
+	current_chain): New variables.
+	(reg_where_born): Delete variable.
+	(REG_WHERE_BORN): New macro.
+	(find_clobbered_regs): New function.
+	(stupid_life_analysis): Don't allocate/free reg_where_born.
+	Allocate and free reg_where_born_exact, reg_where_born_clobber,
+	reg_where_dead_chain.
+	Use REG_WHERE_BORN instead of reg_where_born.
+	While processing the insns, build the reload_insn_chain with
+	information about register lifetimes.
+	(stupid_reg_compare): Use REG_WHERE_BORN instead of reg_where_born.
+	(stupid_mark_refs): Replace arg INSN with arg CHAIN.  All callers
+	changed.
+	Compute and information about birth and death of pseudo registers in
+	reg_where_dead_chain, reg_where_born_exact and reg_where_born_clobber.
+	Delete code to set elements of reg_where_born.	
+
 Mon Oct  5 22:34:30 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* tree.def (GOTO_EXPR): Modified documentation.
