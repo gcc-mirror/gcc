@@ -307,10 +307,9 @@ convert_to_pointer_force (type, expr)
 					    TREE_TYPE (intype), 0, &path);
 	  if (distance == -2)
 	    {
-	    ambig:
-	      cp_error ("type `%T' is ambiguous baseclass of `%s'",
+	      cp_error ("type `%T' is ambiguous base of `%T'",
 			TREE_TYPE (type),
-			TYPE_NAME_STRING (TREE_TYPE (intype)));
+			TREE_TYPE (intype));
 	      return error_mark_node;
 	    }
 	  if (distance == -1)
@@ -318,7 +317,12 @@ convert_to_pointer_force (type, expr)
 	      distance = get_base_distance (TREE_TYPE (intype),
 					    TREE_TYPE (type), 0, &path);
 	      if (distance == -2)
-		goto ambig;
+	        {
+	          cp_error ("type `%T' is ambiguous base of `%T'",
+			    TREE_TYPE (intype),
+			    TREE_TYPE (type));
+	          return error_mark_node;
+	        }
 	      if (distance < 0)
 		/* Doesn't need any special help from us.  */
 		return build1 (NOP_EXPR, type, expr);
