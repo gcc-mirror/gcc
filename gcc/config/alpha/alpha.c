@@ -965,6 +965,64 @@ alpha_emit_set_const_1 (target, mode, c, n)
   return 0;
 }
 
+#if HOST_BITS_PER_WIDE_INT == 64
+/* Having failed to find a 3 insn sequence in alpha_emit_set_const,
+   fall back to a straight forward decomposition.  We do this to avoid
+   exponential run times encountered when looking for longer sequences
+   with alpha_emit_set_const.  */
+
+rtx
+alpha_emit_set_long_const (target, c)
+     rtx target;
+     HOST_WIDE_INT c;
+{
+  /* Use a pseudo if highly optimizing and still generating RTL.  */
+  rtx subtarget
+    = (flag_expensive_optimizations && rtx_equal_function_value_matters
+       ? 0 : target);
+  HOST_WIDE_INT d1, d2, d3, d4;
+  rtx r;
+
+  /* Decompose the entire word */
+  d1 = ((c & 0xffff) ^ 0x8000) - 0x8000;
+  c -= d1;
+  d2 = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  c = (c - d2) >> 32;
+  d3 = ((c & 0xffff) ^ 0x8000) - 0x8000;
+  c -= d3;
+  d4 = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
+
+  if (c - d4 != 0)
+    abort();
+
+  /* Construct the high word */
+  if (d3 == 0)
+    r = copy_to_suggested_reg (GEN_INT (d4), subtarget, DImode);
+  else if (d4 == 0)
+    r = copy_to_suggested_reg (GEN_INT (d3), subtarget, DImode);
+  else
+    r = expand_binop (DImode, add_optab, GEN_INT (d3), GEN_INT (d4),
+		      subtarget, 0, OPTAB_WIDEN);
+
+  /* Shift it into place */
+  r = expand_binop (DImode, ashl_optab, r, GEN_INT (32), 
+		    subtarget, 0, OPTAB_WIDEN);
+
+  /* Add in the low word */
+  if (d2 != 0)
+    r = expand_binop (DImode, add_optab, r, GEN_INT (d2),
+		      subtarget, 0, OPTAB_WIDEN);
+  if (d1 != 0)
+    r = expand_binop (DImode, add_optab, r, GEN_INT (d1),
+		      subtarget, 0, OPTAB_WIDEN);
+
+  if (subtarget == 0)
+    r = copy_to_suggested_reg(r, target, DImode);
+
+  return r;
+}
+#endif /* HOST_BITS_PER_WIDE_INT == 64 */
+
 /* Rewrite a comparison against zero CMP of the form
    (CODE (cc0) (const_int 0)) so it can be written validly in
    a conditional move (if_then_else CMP ...).
