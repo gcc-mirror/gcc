@@ -1,3 +1,13 @@
+2002-05-20  David S. Miller  <davem@redhat.com>
+
+	* cselib.c (max_value_regs): New.
+	(cselib_lookup, cselib_invalidate_regno): Initialize it when
+	adding new entries to the REG_VALUES table and we are dealing with
+	a hard register.
+	(clear_table): Initialize it.
+	(cselib_invalidate_regno): Use it to determine which hard
+	registers to scan when mode is not VOIDmode.
+
 2002-05-20  Duraid Madina   <duraid@fl.net.au>   
 
 	* tradcpp.c (fixup_newlines): Use old-style function header.
