@@ -227,7 +227,6 @@ extern tree start_struct (enum tree_code, tree);
 extern void store_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern tree c_begin_compound_stmt (void);
-extern void c_expand_deferred_function (tree);
 extern void c_expand_decl_stmt (tree);
 extern void c_static_assembler_name (tree);
 extern tree make_pointer_declarator (tree, tree);

@@ -6080,26 +6080,6 @@ finish_function (void)
   current_function_decl = NULL;
 }
 
-/* Generate the RTL for a deferred function FNDECL.  */
-
-void
-c_expand_deferred_function (tree fndecl)
-{
-  /* DECL_INLINE or DECL_RESULT might got cleared after the inline
-     function was deferred, e.g. in duplicate_decls.  */
-  if (DECL_INLINE (fndecl) && DECL_RESULT (fndecl))
-    {
-      if (flag_inline_trees)
-	{
-	  timevar_push (TV_INTEGRATION);
-	  optimize_inline_calls (fndecl);
-	  timevar_pop (TV_INTEGRATION);
-	}
-      c_expand_body (fndecl);
-      current_function_decl = NULL;
-    }
-}
-
 /* Generate the RTL for the body of FNDECL.  If NESTED_P is nonzero,
    then we are already in the process of generating RTL for another
    function.  */

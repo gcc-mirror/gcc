@@ -1,5 +1,10 @@
 2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-decl.c (c_expand_deferred_function): Remove.
+	* c-tree.h: Remove the corresponding prototype.
+
+2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* postreload.c (reload_cse_move2add): Generate just a PLUS
 	instead of an entire SET.
 
