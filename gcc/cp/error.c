@@ -457,7 +457,7 @@ dump_type (t, flags)
     }
     case TYPENAME_TYPE:
       OB_PUTS ("typename ");
-      dump_type (TYPE_CONTEXT (t), flags);
+      dump_type (TYPE_CONTEXT (t), flags & ~TS_AGGR_TAGS);
       OB_PUTS ("::");
       dump_decl (TYPENAME_TYPE_FULLNAME (t), flags);
       break;

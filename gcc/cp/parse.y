@@ -77,10 +77,6 @@ static tree current_declspecs;
    a declspec list have been updated.  */
 static tree prefix_attributes;
 
-/* When defining an aggregate, this is the kind of the most recent one
-   being defined.  (For example, this might be class_type_node.)  */
-static tree current_aggr;
-
 /* When defining an enumeration, this is the type of the enumeration.  */
 static tree current_enum_type;
 
@@ -213,7 +209,6 @@ cp_parse_init ()
 {
   ggc_add_tree_root (&current_declspecs, 1);
   ggc_add_tree_root (&prefix_attributes, 1);
-  ggc_add_tree_root (&current_aggr, 1);
   ggc_add_tree_root (&current_enum_type, 1);
 }
 %}
@@ -2242,17 +2237,26 @@ structsp:
 		    cp_pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head '{'
-                { $1.t = begin_class_definition ($1.t); }
+                { $1.t = begin_class_definition ($1.t); 
+                  current_aggr = NULL_TREE; }
           opt.component_decl_list '}' maybe_attribute
 		{ 
 		  int semi;
+		  tree t;
 
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 
-		  $<ttype>$ = finish_class_definition ($1.t, $6, semi,
-						       $1.new_type_flag); 
+		  t = finish_class_definition ($1.t, $6, semi,
+					       $1.new_type_flag); 
+		  $<ttype>$ = t;
+
+		  /* restore current_aggr */
+		  current_aggr = TREE_CODE (t) != RECORD_TYPE
+				 ? union_type_node
+				 : CLASSTYPE_DECLARED_CLASS (t)
+				 ? class_type_node : record_type_node;
 		}
 	  pending_defargs
                 {
@@ -2514,10 +2518,12 @@ component_decl_list:
 	  component_decl
 		{ 
 		  finish_member_declaration ($1);
+		  current_aggr = NULL_TREE;
 		}
 	| component_decl_list component_decl
 		{ 
 		  finish_member_declaration ($2);
+		  current_aggr = NULL_TREE;
 		}
 	;
 
