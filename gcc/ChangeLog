@@ -1,3 +1,8 @@
+2004-04-22  Per Bothner  <per@bothner.com>
+
+	* cppinit.c (cpp_read_main_file):  Return NULL rather than false.
+	Fixes PR preprocessor/15067.
+
 2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* function.c (thread_prologue_and_epilogue): Move
