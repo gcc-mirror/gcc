@@ -1,5 +1,15 @@
 2001-08-30  Per Bothner  <per@bothner.com>
 
+	* jcf-io.c (open_class):  Set filename field.
+
+	* jcf-parse,c (parse_class_file):  Set current_function_decl
+	for better error message when Code attribute is missing.
+
+	* lang.c (put_decl_node, lang_print_error):  Re-arrange for
+	better diagnostics, especially for constructors.
+	
+2001-08-30  Per Bothner  <per@bothner.com>
+
 	* jcf-write.c (generate_classfile):  Don't write ConstantValue
 	attribute if field is not final, for compatibility with jdk.
 

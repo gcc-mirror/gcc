@@ -522,32 +522,36 @@ put_decl_node (node)
   if (TREE_CODE_CLASS (TREE_CODE (node)) == 'd'
       && DECL_NAME (node) != NULL_TREE)
     {
-      /* We want to print the type the DECL belongs to. We don't do
-	 that when we handle constructors. */
-      if (TREE_CODE (node) == FUNCTION_DECL
-	  && ! DECL_CONSTRUCTOR_P (node)
-	  && ! DECL_ARTIFICIAL (node) && DECL_CONTEXT (node))
+      if (TREE_CODE (node) == FUNCTION_DECL)
 	{
-	  put_decl_node (TYPE_NAME (DECL_CONTEXT (node)));
-	  put_decl_string (".", 1);
-	}
-      if (! DECL_CONSTRUCTOR_P (node))
-	put_decl_node (DECL_NAME (node));
-      if (TREE_CODE (node) == FUNCTION_DECL && TREE_TYPE (node) != NULL_TREE)
-	{
-	  int i = 0;
-	  tree args = TYPE_ARG_TYPES (TREE_TYPE (node));
-	  if (TREE_CODE (TREE_TYPE (node)) == METHOD_TYPE)
-	    args = TREE_CHAIN (args);
-	  put_decl_string ("(", 1);
-	  for ( ; args != end_params_node;  args = TREE_CHAIN (args), i++)
+	  /* We want to print the type the DECL belongs to. We don't do
+	     that when we handle constructors. */
+	  if (! DECL_CONSTRUCTOR_P (node)
+	      && ! DECL_ARTIFICIAL (node) && DECL_CONTEXT (node))
 	    {
-	      if (i > 0)
-		put_decl_string (",", 1);
-	      put_decl_node (TREE_VALUE (args));
+	      put_decl_node (TYPE_NAME (DECL_CONTEXT (node)));
+	      put_decl_string (".", 1);
 	    }
-	  put_decl_string (")", 1);
+	  if (! DECL_CONSTRUCTOR_P (node))
+	    put_decl_node (DECL_NAME (node));
+	  if (TREE_TYPE (node) != NULL_TREE)
+	    {
+	      int i = 0;
+	      tree args = TYPE_ARG_TYPES (TREE_TYPE (node));
+	      if (TREE_CODE (TREE_TYPE (node)) == METHOD_TYPE)
+		args = TREE_CHAIN (args);
+	      put_decl_string ("(", 1);
+	      for ( ; args != end_params_node;  args = TREE_CHAIN (args), i++)
+		{
+		  if (i > 0)
+		    put_decl_string (",", 1);
+		  put_decl_node (TREE_VALUE (args));
+		}
+	      put_decl_string (")", 1);
+	    }
 	}
+      else
+	put_decl_node (DECL_NAME (node));
     }
   else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't'
       && TYPE_NAME (node) != NULL_TREE)
@@ -648,7 +652,10 @@ lang_print_error (context, file)
       else
 	{
 	  const char *name = lang_printable_name (current_function_decl, 2);
-	  fprintf (stderr, "In method `%s':\n", name);
+	  fprintf (stderr, "In %s `%s':\n",
+		   (DECL_CONSTRUCTOR_P (current_function_decl) ? "constructor" 
+		    : "method"),
+		   name);
 	}
 
       last_error_function = current_function_decl;

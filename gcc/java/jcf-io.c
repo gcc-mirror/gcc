@@ -242,6 +242,7 @@ DEFUN(open_class, (filename, jcf, stream, dep_name),
       jcf->read_ptr = NULL;
       jcf->read_end = NULL;
       jcf->read_state = stream;
+      jcf->filename = filename;
       jcf->filbuf = jcf_filbuf_from_stdio;
     }
   else
@@ -556,7 +557,9 @@ DEFUN(jcf_print_utf8_replace, (stream, str, length, in_char, out_char),
 
 /* Check that all the cross-references in the constant pool are
    valid.  Returns 0 on success.
-   Otherwise, returns the index of the (first) invalid entry. */
+   Otherwise, returns the index of the (first) invalid entry.
+   Only checks internal consistency, but does not check that
+   any classes, fields, or methods are valid.*/
 
 int
 DEFUN(verify_constant_pool, (jcf),
