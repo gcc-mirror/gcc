@@ -1,3 +1,8 @@
+2002-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (sparc_va_arg): Adjust va_list by
+	UNITS_PER_WORD for zero sized aggregates.
+
 2002-04-03  David S. Miller  <davem@redhat.com>
 
 	* gcc.c (LINK_GCC_C_SEQUENCE_SPEC): No need for a new
