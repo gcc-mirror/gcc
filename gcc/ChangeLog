@@ -1,3 +1,25 @@
+2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (ASM_DECLARE_FUNCTION_NAME): Fix typo in
+	writing .interrupt command.
+	* config/m68hc11/m68hc11.md ("call"): Look at the symbol to see
+	if it's a far or near function.
+	("call_value"): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_attribute_table): Add far and
+	near attributes.
+	(m68hc11_handle_fntype_attribute): Accept attributes on methods.
+	(m68hc11_override_options): Ignore -mlong-calls for 68HC11.
+	(m68hc11_initial_elimination_offset): Set current_function_far
+	according to attributes.
+	(expand_prologue): Likewise.
+	(trap_handler_symbol): New global to keep track of trap handlers.
+	(m68hc11_encode_section_info): Mark symbol as far if needed; set
+	trap symbol.
+	(m68hc11_is_far_symbol): New function.
+	(m68hc11_is_trap_symbol): New function.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_is_far_symbol): Declare.
+	(m68hc11_is_trap_symbol): Declare.
+
 Fri Mar 21 23:12:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_compute_frame_layout): Recompute fast prologues

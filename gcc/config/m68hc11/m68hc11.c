@@ -276,6 +276,7 @@ m68hc11_override_options ()
       m68hc11_tmp_regs_class = D_REGS;
       if (m68hc11_soft_reg_count == 0 && !TARGET_M6812)
 	m68hc11_soft_reg_count = "4";
+      target_flags &= ~MASK_LONG_CALLS;
     }
 
   /* Configure for a 68hc12 processor.  */
@@ -1232,8 +1233,15 @@ const struct attribute_spec m68hc11_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt", 0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
   { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* Keep track of the symbol which has a `trap' attribute and which uses
+   the `swi' calling convention.  Since there is only one trap, we only
+   record one such symbol.  If there are several, a warning is reported.  */
+static rtx trap_handler_symbol = 0;
 
 /* Handle an attribute requiring a FUNCTION_TYPE, FIELD_DECL or TYPE_DECL;
    arguments as in struct attribute_spec.handler.  */
@@ -1246,6 +1254,7 @@ m68hc11_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
      bool *no_add_attrs;
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
@@ -1268,16 +1277,56 @@ m68hc11_encode_section_info (decl, first)
 {
   tree func_attr;
   int trap_handler;
+  int is_far = 0;
   rtx rtl;
-
+  
   if (TREE_CODE (decl) != FUNCTION_DECL)
     return;
 
   rtl = DECL_RTL (decl);
 
   func_attr = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+
+
+  if (lookup_attribute ("far", func_attr) != NULL_TREE)
+    is_far = 1;
+  else if (lookup_attribute ("near", func_attr) == NULL_TREE)
+    is_far = TARGET_LONG_CALLS != 0;
+
   trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
-  SYMBOL_REF_FLAG (XEXP (rtl, 0)) = trap_handler;
+  if (trap_handler && is_far)
+    {
+      warning ("`trap' and `far' attributes are not compatible, ignoring `far'");
+      trap_handler = 0;
+    }
+  if (trap_handler)
+    {
+      if (trap_handler_symbol != 0)
+        warning ("`trap' attribute is already used");
+      else
+        trap_handler_symbol = XEXP (rtl, 0);
+    }
+  SYMBOL_REF_FLAG (XEXP (rtl, 0)) = is_far;
+}
+
+int
+m68hc11_is_far_symbol (sym)
+     rtx sym;
+{
+  if (GET_CODE (sym) == MEM)
+    sym = XEXP (sym, 0);
+
+  return SYMBOL_REF_FLAG (sym);
+}
+
+int
+m68hc11_is_trap_symbol (sym)
+     rtx sym;
+{
+  if (GET_CODE (sym) == MEM)
+    sym = XEXP (sym, 0);
+
+  return trap_handler_symbol != 0 && rtx_equal_p (trap_handler_symbol, sym);
 }
 
 
@@ -1317,6 +1366,14 @@ m68hc11_initial_elimination_offset (from, to)
   /* For a trap handler, we must take into account the registers which
      are pushed on the stack during the trap (except the PC).  */
   func_attr = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
+
+  if (lookup_attribute ("far", func_attr) != 0)
+    current_function_far = 1;
+  else if (lookup_attribute ("near", func_attr) != 0)
+    current_function_far = 0;
+  else
+    current_function_far = TARGET_LONG_CALLS != 0;
+
   trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
   if (trap_handler && from == ARG_POINTER_REGNUM)
     size = 7;
@@ -1611,6 +1668,12 @@ expand_prologue ()
   current_function_interrupt = lookup_attribute ("interrupt",
 						 func_attr) != NULL_TREE;
   current_function_trap = lookup_attribute ("trap", func_attr) != NULL_TREE;
+  if (lookup_attribute ("far", func_attr) != NULL_TREE)
+    current_function_far = 1;
+  else if (lookup_attribute ("near", func_attr) != NULL_TREE)
+    current_function_far = 0;
+  else
+    current_function_far = TARGET_LONG_CALLS != 0;
 
   /* Get the scratch register to build the frame and push registers.
      If the first argument is a 32-bit quantity, the D+X registers

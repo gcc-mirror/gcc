@@ -141,6 +141,9 @@ extern int m68hc11_function_arg_padding PARAMS((enum machine_mode, tree));
 
 extern void m68hc11_function_epilogue PARAMS((FILE*,int));
 
+extern int m68hc11_is_far_symbol PARAMS((rtx));
+extern int m68hc11_is_trap_symbol PARAMS((rtx));
+
 #endif /* TREE_CODE */
 
 extern HOST_WIDE_INT m68hc11_min_offset;
