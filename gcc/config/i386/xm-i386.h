@@ -38,6 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* If compiled with GNU C, use the built-in alloca */
 #ifdef __GNUC__
+#undef alloca
 #define alloca __builtin_alloca
 #endif
 
