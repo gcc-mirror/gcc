@@ -13,7 +13,7 @@ struct X
   X (int const &, int const &);
 };
 
-void foo (int const &);       // WARNING - in passing
+void foo (int const &);
 void wibble (int const &);
 void wibble (int const &, int const &);
 void punk (int const & = 3.5f);        // WARNING - in passing

@@ -104,7 +104,7 @@ static tree conditional_conversion (tree, tree);
 static char *name_as_c_string (tree, tree, bool *);
 static tree call_builtin_trap (void);
 static tree prep_operand (tree);
-static void add_candidates (tree, tree, tree, tree,
+static void add_candidates (tree, tree, tree, bool, tree, tree,
 			    int, struct z_candidate **);
 static tree merge_conversion_sequences (tree, tree);
 
@@ -2754,15 +2754,30 @@ resolve_args (tree args)
   return args;
 }
 
-/* Return an expression for a call to FN (a namespace-scope function,
-   or a static member function) with the ARGS.  */
-      
-tree
-build_new_function_call (tree fn, tree args)
+/* Perform overload resolution on FN, which is called with the ARGS.
+
+   Return the candidate function selected by overload resolution, or
+   NULL if the event that overload resolution failed.  In the case
+   that overload resolution fails, *CANDIDATES will be the set of
+   candidates considered, and ANY_VIABLE_P will be set to true or
+   false to indicate whether or not any of the candidates were
+   viable.  
+
+   The ARGS should already have gone through RESOLVE_ARGS before this
+   function is called.  */
+
+static struct z_candidate *
+perform_overload_resolution (tree fn, 
+			     tree args, 
+			     struct z_candidate **candidates,
+			     bool *any_viable_p)
 {
-  struct z_candidate *candidates = 0, *cand;
+  struct z_candidate *cand;
   tree explicit_targs = NULL_TREE;
   int template_only = 0;
+
+  *candidates = NULL;
+  *any_viable_p = true;
 
   /* Check FN and ARGS.  */
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL 
@@ -2780,63 +2795,146 @@ build_new_function_call (tree fn, tree args)
       template_only = 1;
     }
 
-  if (really_overloaded_fn (fn) 
-      || TREE_CODE (fn) == TEMPLATE_DECL)
+  /* Add the various candidate functions.  */
+  add_candidates (fn, args, explicit_targs, template_only,
+		  /*conversion_path=*/NULL_TREE,
+		  /*access_path=*/NULL_TREE,
+		  LOOKUP_NORMAL,
+		  candidates);
+
+  if (! any_viable (*candidates))
     {
-      tree t1;
-
-      args = resolve_args (args);
-
-      if (args == error_mark_node)
-	return error_mark_node;
-
-      for (t1 = fn; t1; t1 = OVL_NEXT (t1))
-	{
-	  tree t = OVL_CURRENT (t1);
-
-	  my_friendly_assert (!DECL_FUNCTION_MEMBER_P (t), 20020913);
-
-	  if (TREE_CODE (t) == TEMPLATE_DECL)
-	    add_template_candidate
-	      (&candidates, t, NULL_TREE, explicit_targs, args, 
-	       NULL_TREE, /*access_path=*/NULL_TREE, 
-	       /*conversion_path=*/NULL_TREE,
-	       LOOKUP_NORMAL, DEDUCE_CALL);  
-	  else if (! template_only)
-	    add_function_candidate
-	      (&candidates, t, NULL_TREE, args, 
-	       /*access_path=*/NULL_TREE,
-	       /*conversion_path=*/NULL_TREE, LOOKUP_NORMAL);
-	}
-
-      if (! any_viable (candidates))
-	{
-	  if (candidates && ! candidates->next)
-	    return build_function_call (candidates->fn, args);
-	  error ("no matching function for call to `%D(%A)'",
-		    DECL_NAME (OVL_CURRENT (fn)), args);
-	  if (candidates)
-	    print_z_candidates (candidates);
-	  return error_mark_node;
-	}
-      candidates = splice_viable (candidates);
-      cand = tourney (candidates);
-
-      if (cand == 0)
-	{
-	  error ("call of overloaded `%D(%A)' is ambiguous",
-		    DECL_NAME (OVL_FUNCTION (fn)), args);
-	  print_z_candidates (candidates);
-	  return error_mark_node;
-	}
-
-      return build_over_call (cand, LOOKUP_NORMAL);
+      *any_viable_p = false;
+      return NULL;
     }
 
-  /* This is not really overloaded.  */
-  fn = OVL_CURRENT (fn);
+  *candidates = splice_viable (*candidates);
+  cand = tourney (*candidates);
 
-  return build_function_call (fn, args);
+  return cand;
+}
+
+/* Return an expression for a call to FN (a namespace-scope function,
+   or a static member function) with the ARGS.  */
+      
+tree
+build_new_function_call (tree fn, tree args)
+{
+  struct z_candidate *candidates, *cand;
+  bool any_viable_p;
+
+  args = resolve_args (args);
+  if (args == error_mark_node)
+    return error_mark_node;
+
+  cand = perform_overload_resolution (fn, args, &candidates, &any_viable_p);
+
+  if (!cand)
+    {
+      if (!any_viable_p && candidates && ! candidates->next)
+	return build_function_call (candidates->fn, args);
+      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+	fn = TREE_OPERAND (fn, 0);
+      if (!any_viable_p)
+	error ("no matching function for call to `%D(%A)'",
+	       DECL_NAME (OVL_CURRENT (fn)), args);
+      else
+	error ("call of overloaded `%D(%A)' is ambiguous",
+	       DECL_NAME (OVL_FUNCTION (fn)), args);
+      if (candidates)
+	print_z_candidates (candidates);
+      return error_mark_node;
+    }
+
+  return build_over_call (cand, LOOKUP_NORMAL);
+}
+
+/* Build a call to a global operator new.  FNNAME is the name of the
+   operator (either "operator new" or "operator new[]") and ARGS are
+   the arguments provided.  *SIZE points to the total number of bytes
+   required by the allocation, and is updated if that is changed here.
+   *COOKIE_SIZE is non-NULL if a cookie should be used.  If this
+   function determins that no cookie should be used, after all,
+   *COOKIE_SIZE is set to NULL_TREE. */
+
+tree
+build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
+{
+  tree fns;
+  struct z_candidate *candidates;
+  struct z_candidate *cand;
+  bool any_viable_p;
+
+  args = tree_cons (NULL_TREE, *size, args);
+  args = resolve_args (args);
+  if (args == error_mark_node)
+    return args;
+
+  fns = lookup_function_nonclass (fnname, args);
+
+  /* Figure out what function is being called.  */
+  cand = perform_overload_resolution (fns, args, &candidates, &any_viable_p);
+  
+  /* If no suitable function could be found, issue an error message
+     and give up.  */
+  if (!cand)
+    {
+      if (!any_viable_p)
+	error ("no matching function for call to `%D(%A)'",
+	       DECL_NAME (OVL_CURRENT (fns)), args);
+      else
+	error ("call of overlopaded `%D(%A)' is ambiguous",
+	       DECL_NAME (OVL_FUNCTION (fns)), args);
+      if (candidates)
+	print_z_candidates (candidates);
+      return error_mark_node;
+    }
+
+   /* If a cookie is required, add some extra space.  Whether
+      or not a cookie is required cannot be determined until
+      after we know which function was called.  */
+   if (*cookie_size)
+     {
+       bool use_cookie = true;
+       if (!abi_version_at_least (2))
+	 {
+	   tree placement = TREE_CHAIN (args);
+	   /* In G++ 3.2, the check was implemented incorrectly; it
+	      looked at the placement expression, rather than the
+	      type of the function.  */
+	   if (placement && !TREE_CHAIN (placement)
+	       && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
+			       ptr_type_node))
+	     use_cookie = false;
+	 }
+       else
+	 {
+	   tree arg_types;
+
+	   arg_types = TYPE_ARG_TYPES (TREE_TYPE (cand->fn));
+	   /* Skip the size_t parameter.  */
+	   arg_types = TREE_CHAIN (arg_types);
+	   /* Check the remaining parameters (if any).  */
+	   if (arg_types 
+	       && TREE_CHAIN (arg_types) == void_list_node
+	       && same_type_p (TREE_VALUE (arg_types),
+			       ptr_type_node))
+	     use_cookie = false;
+	 }
+       /* If we need a cookie, adjust the number of bytes allocated.  */
+       if (use_cookie)
+	 {
+	   /* Update the total size.  */
+	   *size = size_binop (PLUS_EXPR, *size, *cookie_size);
+	   /* Update the argument list to reflect the adjusted size.  */
+	   TREE_VALUE (args) = *size;
+	 }
+       else
+	 *cookie_size = NULL_TREE;
+     }
+
+   /* Build the CALL_EXPR.  */
+   return build_over_call (cand, LOOKUP_NORMAL);
 }
 
 static tree
@@ -3396,11 +3494,14 @@ prep_operand (tree operand)
 /* Add each of the viable functions in FNS (a FUNCTION_DECL or
    OVERLOAD) to the CANDIDATES, returning an updated list of
    CANDIDATES.  The ARGS are the arguments provided to the call,
-   without any implicit object parameter.  CONVERSION_PATH,
+   without any implicit object parameter.  The EXPLICIT_TARGS are
+   explicit template arguments provided.  TEMPLATE_ONLY is true if
+   only template fucntions should be considered.  CONVERSION_PATH,
    ACCESS_PATH, and FLAGS are as for add_function_candidate.  */
 
 static void
-add_candidates (tree fns, tree args,
+add_candidates (tree fns, tree args, 
+		tree explicit_targs, bool template_only,
 		tree conversion_path, tree access_path,
 		int flags,
 		struct z_candidate **candidates)
@@ -3419,7 +3520,7 @@ add_candidates (tree fns, tree args,
 
       fn = OVL_CURRENT (fns);
       /* Figure out which set of arguments to use.  */
-      if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
 	{
 	  /* If this function is a non-static member, prepend the implicit
 	     object parameter.  */
@@ -3437,14 +3538,14 @@ add_candidates (tree fns, tree args,
 	add_template_candidate (candidates, 
 				fn, 
 				ctype,
-				NULL_TREE,
+				explicit_targs,
 				fn_args,
 				NULL_TREE,
 				access_path,
 				conversion_path,
 				flags,
 				DEDUCE_CALL);
-      else
+      else if (!template_only)
 	add_function_candidate (candidates,
 				fn,
 				ctype,
@@ -3527,7 +3628,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
   /* Add namespace-scope operators to the list of functions to
      consider.  */
   add_candidates (lookup_function_nonclass (fnname, arglist),
-		  arglist, NULL_TREE, NULL_TREE,
+		  arglist, NULL_TREE, false, NULL_TREE, NULL_TREE,
 		  flags, &candidates);
   /* Add class-member operators to the candidate set.  */
   if (CLASS_TYPE_P (TREE_TYPE (arg1)))
@@ -3539,6 +3640,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 	return fns;
       if (fns)
 	add_candidates (BASELINK_FUNCTIONS (fns), arglist, 
+			NULL_TREE, false,
 			BASELINK_BINFO (fns),
 			TYPE_BINFO (TREE_TYPE (arg1)),
 			flags, &candidates);

@@ -2655,9 +2655,8 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 }
 
 tree
-build_function_call_real (function, params, require_complete, flags)
+build_function_call (function, params)
      tree function, params;
-     int require_complete, flags;
 {
   register tree fntype, fndecl;
   register tree value_type;
@@ -2731,20 +2730,10 @@ build_function_call_real (function, params, require_complete, flags)
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
 
-  if (flags & LOOKUP_COMPLAIN)
-    coerced_params = convert_arguments (TYPE_ARG_TYPES (fntype),
-					params, fndecl, LOOKUP_NORMAL);
-  else
-    coerced_params = convert_arguments (TYPE_ARG_TYPES (fntype),
-					params, fndecl, 0);
-
+  coerced_params = convert_arguments (TYPE_ARG_TYPES (fntype),
+				      params, fndecl, LOOKUP_NORMAL);
   if (coerced_params == error_mark_node)
-    {
-      if (flags & LOOKUP_SPECULATIVELY)
-	return NULL_TREE;
-      else
-	return error_mark_node;
-    }
+    return error_mark_node;
 
   /* Check for errors in format strings.  */
 
@@ -2770,22 +2759,12 @@ build_function_call_real (function, params, require_complete, flags)
   result = fold (build_call (function, coerced_params));
   value_type = TREE_TYPE (result);
 
-  if (require_complete)
-    {
-      if (TREE_CODE (value_type) == VOID_TYPE)
-	return result;
-      result = require_complete_type (result);
-    }
+  if (TREE_CODE (value_type) == VOID_TYPE)
+    return result;
+  result = require_complete_type (result);
   if (IS_AGGR_TYPE (value_type))
     result = build_cplus_new (value_type, result);
   return convert_from_reference (result);
-}
-
-tree
-build_function_call (function, params)
-     tree function, params;
-{
-  return build_function_call_real (function, params, 1, LOOKUP_NORMAL);
 }
 
 /* Convert the actual parameter expressions in the list VALUES

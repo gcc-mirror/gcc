@@ -17,7 +17,7 @@ public:
    operator colombia();
 };
 
-void peace(const colombia&); // WARNING - // WARNING -
+void peace(const colombia&);
 
 void foo(nicaragua& b) {
   peace(b); // WARNING - // WARNING -
