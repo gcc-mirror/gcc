@@ -20,53 +20,54 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*** Public Interface (procedures) ***/
 
-/* used by compile_file */
-
-void init_objc (), finish_objc ();
-
 /* used by yyparse */
 
-tree start_class ();
-tree continue_class ();
-void finish_class ();
-void start_method_def ();
-void continue_method_def ();
-void finish_method_def ();
-void add_objc_decls ();
+void objc_finish				PROTO((void));
+tree start_class				PROTO((enum tree_code, tree, tree, tree));
+tree continue_class				PROTO((tree));
+void finish_class				PROTO((tree));
+void start_method_def				PROTO((tree));
+void continue_method_def			PROTO((void));
+void finish_method_def				PROTO((void));
+tree start_protocol				PROTO((enum tree_code, tree, tree));
+void finish_protocol				PROTO((tree));
+void add_objc_decls				PROTO((void));
 
-tree is_ivar ();
-int  is_public ();
-tree add_instance_variable ();
-tree add_class_method ();
-tree add_instance_method ();
-tree get_super_receiver ();
-tree get_class_ivars ();
-tree get_class_reference ();
-tree get_static_reference ();
+tree is_ivar					PROTO((tree, tree));
+int is_private					PROTO((tree));
+int is_public					PROTO((tree, tree));
+tree add_instance_variable			PROTO((tree, int, tree, tree, tree));
+tree add_class_method				PROTO((tree, tree));
+tree add_instance_method			PROTO((tree, tree));
+tree get_super_receiver				PROTO((void));
+tree get_class_ivars				PROTO((tree));
+tree get_class_reference			PROTO((tree));
+tree get_static_reference			PROTO((tree, tree));
+tree get_object_reference			PROTO((tree));
+tree build_message_expr				PROTO((tree));
+tree build_selector_expr			PROTO((tree));
+tree build_ivar_reference			PROTO((tree));
+tree build_keyword_decl				PROTO((tree, tree, tree));
+tree build_method_decl				PROTO((enum tree_code, tree, tree, tree));
+tree build_protocol_expr			PROTO((tree));
+tree build_objc_string_object			PROTO((tree));
 
-tree build_message_expr ();
-tree build_selector_expr ();
-tree build_ivar_reference ();
-tree build_keyword_decl ();
-tree build_method_decl ();
+extern tree objc_ivar_chain;
+extern tree objc_method_context;
 
-/* Nonzero enables objc features.  */
+void objc_declare_alias				PROTO((tree, tree));
+void objc_declare_class				PROTO((tree));
 
-extern int doing_objc_thang;
+extern int objc_receiver_context;
 
 /* the following routines are used to implement statically typed objects */
 
-tree lookup_interface ();
-int  objc_comptypes ();
-void objc_check_decl ();
+int objc_comptypes				PROTO((tree, tree, int));
+void objc_check_decl				PROTO((tree));
 
 /* NeXT extensions */
 
-tree build_encode_expr ();
-
-/* used by rest_of_compilation.  */
-
-void genPrototype ();
+tree build_encode_expr				PROTO((tree));
 
 /* Objective-C structures */
 
@@ -81,21 +82,34 @@ void genPrototype ();
 #define METHOD_DEFINITION(DECL) ((DECL)->decl.initial)
 #define METHOD_ENCODING(DECL) ((DECL)->decl.context)
 
-/* INTERFACE_TYPE, IMPLEMENTATION_TYPE, CATEGORY_TYPE */
+/* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
+   CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
+   PROTOCOL_INTERFACE_TYPE */
 #define CLASS_NAME(CLASS) ((CLASS)->type.name)
-#define CLASS_SUPER_NAME(CLASS) ((CLASS)->type.binfo)
-#define CLASS_IVARS(CLASS) ((CLASS)->type.maxval)
-#define CLASS_RAW_IVARS(CLASS) ((CLASS)->type.noncopied_parts)
-#define CLASS_NST_METHODS(CLASS) ((CLASS)->type.next_variant)
-#define CLASS_CLS_METHODS(CLASS) ((CLASS)->type.main_variant)
-#define CLASS_STATIC_TEMPLATE(CLASS) ((CLASS)->type.context)
-#define CLASS_CATEGORY_LIST(CLASS) ((CLASS)->type.minval)
+#define CLASS_SUPER_NAME(CLASS) ((CLASS)->type.context)
+#define CLASS_IVARS(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 0)
+#define CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
+#define CLASS_NST_METHODS(CLASS) ((CLASS)->type.minval)
+#define CLASS_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
+#define CLASS_STATIC_TEMPLATE(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 2)
+#define CLASS_CATEGORY_LIST(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 3)
+#define CLASS_PROTOCOL_LIST(CLASS) ((CLASS)->type.noncopied_parts)
+#define PROTOCOL_NAME(CLASS) ((CLASS)->type.name)
+#define PROTOCOL_LIST(CLASS) ((CLASS)->type.binfo)
+#define PROTOCOL_NST_METHODS(CLASS) ((CLASS)->type.minval)
+#define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
+#define PROTOCOL_FORWARD_DECL(CLASS) ((CLASS)->type.context)
+#define TYPE_PROTOCOL_LIST(TYPE) ((TYPE)->type.noncopied_parts)
 
-/* Define the Objective-C language-specific tree codes.  */
+/* Define the Objective-C or Objective-C++ language-specific tree codes.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum objc_tree_code {
+#ifdef OBJCPLUS
+  dummy_tree_code = LAST_CPLUS_TREE_CODE,
+#else
   dummy_tree_code = LAST_AND_UNUSED_TREE_CODE,
+#endif
 #include "objc-tree.def"
   LAST_OBJC_TREE_CODE
 };
