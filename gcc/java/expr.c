@@ -406,8 +406,8 @@ can_widen_reference_to (source_type, target_type)
 		    (TREE_TYPE (TREE_VEC_ELT (basetype_vec, i)),
 		     target_type))
 		  return 1;
-		if (n == 0)
-		  return 0;
+	      if (n == 0)
+		return 0;
 	    }
 
 	  for ( ; source_depth > target_depth;  source_depth--) 
