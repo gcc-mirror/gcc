@@ -258,18 +258,6 @@ extern tree stabilize_reference PROTO ((tree));
 #define LOOP_EXPR_BODY_BODY_EXPR(NODE, R)			\
   LABELED_BLOCK_BODY (LOOP_EXPR_BODY_LABELED_BODY(NODE, R))
 
-/* Does a loop have a label ? */
-#define LOOP_HAS_LABEL_P(LOOP)					\
-  (ctxp->current_labeled_block					\
-   && LABELED_BLOCK_BODY (ctxp->current_labeled_block) == (LOOP))
-
-/* Same operation than the one performed above, but considering the
-   previous labeled block */
-#define LOOP_HAS_LABEL_SKIP_P(LOOP)					     \
-  (ctxp->current_labeled_block						     \
-   && TREE_CHAIN (ctxp->current_labeled_block)				     \
-   && LABELED_BLOCK_BODY (TREE_CHAIN (ctxp->current_labeled_block)) == (LOOP))
-
 #define PUSH_LABELED_BLOCK(B)				\
   {							\
     TREE_CHAIN (B) = ctxp->current_labeled_block;	\

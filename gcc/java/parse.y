@@ -237,7 +237,6 @@ static tree patch_new_array_init PROTO ((tree, tree));
 static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
-static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
 static tree strip_out_static_field_access_decl PROTO ((tree));
 static jdeplist *reverse_jdep_list PROTO ((struct parser_ctxt *));
@@ -1220,13 +1219,7 @@ statement:
 |	if_then_else_statement
 |	while_statement
 |	for_statement
-		{ 
-		  /* If the for loop is unlabeled, we must return the
-		     block it was defined it. It our last chance to
-		     get a hold on it. */
-		  if (!LOOP_HAS_LABEL_P ($$))
-		    $$ = exit_block ();
-		}
+		{ $$ = exit_block (); }
 ;
 
 statement_nsi:
@@ -3264,17 +3257,9 @@ static void
 maybe_generate_clinit ()
 {
   tree mdecl, c;
-  int is_interface = CLASS_INTERFACE (ctxp->current_parsed_class);
   int has_non_primitive_fields = 0;
 
   if (!ctxp->static_initialized || java_error_count)
-    return;
-
-  if (is_interface)
-    for (c = TYPE_FIELDS (TREE_TYPE (ctxp->current_parsed_class));
-	 c; c = TREE_CHAIN (c))
-      has_non_primitive_fields |= !JPRIMITIVE_TYPE_P (TREE_TYPE (c));
-  if (!has_non_primitive_fields && is_interface)
     return;
 
   mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
@@ -5728,18 +5713,41 @@ java_complete_expand_methods ()
       decl = tree_last (TYPE_METHODS (class_type));
       if (IS_CLINIT (decl))
 	{
-	  tree list = nreverse (TYPE_METHODS (class_type));
-	  list = TREE_CHAIN (list);
-	  TREE_CHAIN (decl) = NULL_TREE;
-	  TYPE_METHODS (class_type) = chainon (decl, nreverse (list));
+	  tree fbody = DECL_FUNCTION_BODY (decl);
+	  tree list;
+	  if (fbody != NULL_TREE)
+	    {
+	      /* First check if we can ignore empty <clinit> */
+	      tree block_body = BLOCK_EXPR_BODY (fbody);
+
+	      current_this = NULL_TREE;
+	      current_function_decl = decl;
+	      if (block_body != NULL_TREE)
+		{
+		  /* Prevent the use of `this' inside <clinit> */
+		  ctxp->explicit_constructor_p = 1;
+
+		  block_body = java_complete_tree (block_body);
+		  ctxp->explicit_constructor_p = 0;
+		  BLOCK_EXPR_BODY (fbody) = block_body;
+		  if (block_body != NULL_TREE
+		      && TREE_CODE (block_body) == BLOCK
+		      && BLOCK_EXPR_BODY (block_body) == empty_stmt_node)
+		    decl = NULL_TREE;
+		}
+	    }
+	  list = nreverse (TREE_CHAIN (nreverse (TYPE_METHODS (class_type))));
+	  if (decl != NULL_TREE)
+	    {
+	      TREE_CHAIN (decl) = list;
+	      TYPE_METHODS (class_type) = decl;
+	    }
+	    else
+	      TYPE_METHODS (class_type) = list;
 	}
       
       for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
 	{
-	  /* Process only <clinit> method bodies in interfaces. */
-	  if (is_interface && decl != TYPE_METHODS (class_type))
-	    break;
-
 	  current_function_decl = decl;
 	  /* Don't generate debug info on line zero when expanding a
 	     generated constructor. */
@@ -5816,10 +5824,6 @@ java_complete_expand_method (mdecl)
 
       if (block_body != NULL_TREE)
 	{
-	  /* Prevent the use of `this' inside <clinit> */
-	  if (IS_CLINIT (current_function_decl))
-	    ctxp->explicit_constructor_p = 1;
-
 	  block_body = java_complete_tree (block_body);
 	  check_for_initialization (block_body);
 	  ctxp->explicit_constructor_p = 0;
@@ -7755,6 +7759,13 @@ java_complete_lhs (node)
 	      tree cur = java_complete_tree (TREE_OPERAND (*ptr, 0));
 	      tree *next = &TREE_OPERAND (*ptr, 1);
 	      TREE_OPERAND (*ptr, 0) = cur;
+	      if (cur == empty_stmt_node)
+		{
+		  /* Optimization;  makes it easier to detect empty bodies.
+		     Most useful for <clinit> with all-constant initializer. */
+		  *ptr = *next;
+		  continue;
+		}
 	      if (TREE_CODE (cur) == ERROR_MARK)
 		error_seen++;
 	      else if (! CAN_COMPLETE_NORMALLY (cur))
@@ -8022,6 +8033,11 @@ java_complete_lhs (node)
 	  EXPR_WFL_NODE (node) = body;
 	  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (body);
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
+	  if (body == empty_stmt_node)
+	    {
+	      /* Optimization;  makes it easier to detect empty bodies. */
+	      return body;
+	    }
 	  if (body == error_mark_node)
 	    {
 	      /* Its important for the evaluation of assignment that
@@ -8091,8 +8107,22 @@ java_complete_lhs (node)
     case MODIFY_EXPR:
       /* Save potential wfls */
       wfl_op1 = TREE_OPERAND (node, 0);
+      TREE_OPERAND (node, 0) = nn = java_complete_lhs (wfl_op1);
+      if (MODIFY_EXPR_FROM_INITIALIZATION_P (node)
+	  && TREE_CODE (nn) == VAR_DECL && TREE_STATIC (nn)
+	  && DECL_INITIAL (nn) != NULL_TREE)
+	{
+	  tree value = fold_constant_for_init (nn, nn);
+	  if (value != NULL_TREE)
+	    {
+	      tree type = TREE_TYPE (value);
+	      if (JPRIMITIVE_TYPE_P (type) || type == string_ptr_type_node)
+		return empty_stmt_node;
+	    }
+	  DECL_INITIAL (nn) = NULL_TREE;
+	}
       wfl_op2 = TREE_OPERAND (node, 1);
-      TREE_OPERAND (node, 0) = java_complete_lhs (wfl_op1);
+
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
 
@@ -8138,17 +8168,6 @@ java_complete_lhs (node)
 	TREE_OPERAND (node, 1) = nn;
       node = patch_assignment (node, wfl_op1, wfl_op2);
       CAN_COMPLETE_NORMALLY (node) = 1;
-
-      /* Before returning the node, in the context of a static field
-         assignment in <clinit>, we may want to carray further
-         optimizations. (VAR_DECL means it's a static field. See
-         add_field. */
-      if (IS_CLINIT (current_function_decl) 
-	  && MODIFY_EXPR_FROM_INITIALIZATION_P (node)
-	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL
-	  && !flag_emit_xref)
-	node = patch_initialized_static_field (node);
-
       return node;
 
     case MULT_EXPR:
@@ -8797,35 +8816,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
   TREE_OPERAND (node, 0) = lvalue;
   TREE_OPERAND (node, 1) = new_rhs;
   TREE_TYPE (node) = lhs_type;
-  return node;
-}
-
-/* Optimize static (final) field initialized upon declaration.
-     - If the field is static final and is assigned to a primitive
-       constant type, then set its DECL_INITIAL to the value.
-     - More to come.  */
-
-static tree
-patch_initialized_static_field (node)
-     tree node;
-{
-  tree field = TREE_OPERAND (node, 0);
-  tree value = TREE_OPERAND (node, 1);
-
-  if (DECL_INITIAL (field) != NULL_TREE)
-    {
-      tree type = TREE_TYPE (value);
-      if (FIELD_FINAL (field) && TREE_CONSTANT (value)
-	  && (JPRIMITIVE_TYPE_P (type)
-	      || (flag_emit_class_files
-		  && TREE_CODE (type) == POINTER_TYPE
-		  && TREE_TYPE (type) == string_type_node)))
-	{
-	  DECL_INITIAL (field) = value;
-	  return empty_stmt_node;
-	}
-      DECL_INITIAL (field) = NULL_TREE;
-    }
   return node;
 }
 
@@ -9733,7 +9723,7 @@ patch_string_cst (node)
       location = alloc_name_constant (CONSTANT_String, node);
       node = build_ref_from_constant_pool (location);
     }
-  TREE_TYPE (node) = promote_type (string_type_node);
+  TREE_TYPE (node) = string_ptr_type_node;
   TREE_CONSTANT (node) = 1;
   return node;
 }
@@ -10632,15 +10622,6 @@ finish_labeled_statement (lbe, statement)
 {
   /* In anyways, tie the loop to its statement */
   LABELED_BLOCK_BODY (lbe) = statement;
-
-  /* Ok, if statement is a for loop, we have to attach the labeled
-     statement to the block the for loop belongs to and return the
-     block instead */
-  if (TREE_CODE (statement) == LOOP_EXPR && IS_FOR_LOOP_P (statement))
-    {
-      java_method_add_stmt (current_function_decl, lbe);
-      lbe = exit_block ();
-    }
   pop_labeled_block ();
   POP_LABELED_BLOCK ();
   return lbe;
@@ -10752,14 +10733,33 @@ static tree
 patch_loop_statement (loop)
      tree loop;
 {
-  if (! LOOP_HAS_LABEL_P (loop))
-    {
-      tree loop_label = build_labeled_block (0, NULL_TREE);
-      LABELED_BLOCK_BODY (loop_label) = loop;
-      PUSH_LABELED_BLOCK (loop_label);
-      loop = loop_label;
-    }
+  tree loop_label;
+  tree block = ctxp->current_labeled_block;
   TREE_TYPE (loop) = void_type_node;
+  if (block != NULL_TREE)
+    {
+      tree block_body = LABELED_BLOCK_BODY (block);
+      if (IS_FOR_LOOP_P (loop))
+	{
+	  if (TREE_CODE (block_body) == BLOCK)
+	    {
+	      block_body = BLOCK_EXPR_BODY (block_body);
+	      if (block_body == loop
+		  || (TREE_CODE (block_body) == COMPOUND_EXPR
+		      && TREE_OPERAND (block_body, 1) == loop))
+		return loop;
+	    }
+	}
+      else
+	{
+	  if (block_body == loop)
+	    return loop;
+	}
+    }
+  loop_label = build_labeled_block (0, NULL_TREE);
+  LABELED_BLOCK_BODY (loop_label) = loop;
+  PUSH_LABELED_BLOCK (loop_label);
+  loop = loop_label;
   return loop;
 }
 
@@ -11431,7 +11431,7 @@ fold_constant_for_init (node, context)
 
   if (code == INTEGER_CST || code == REAL_CST || code == STRING_CST)
     return node;
-  if (TREE_TYPE (node) != NULL_TREE)
+  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL)
     return NULL_TREE;
 
   switch (code)
@@ -11503,7 +11503,7 @@ fold_constant_for_init (node, context)
       val = DECL_INITIAL (node);
       /* Guard against infinite recursion. */
       DECL_INITIAL (node) = NULL_TREE;
-      val = fold_constant_for_init (val, DECL_CONTEXT (node));
+      val = fold_constant_for_init (val, node);
       DECL_INITIAL (node) = val;
       return val;
 
@@ -11519,7 +11519,7 @@ fold_constant_for_init (node, context)
 	  else if (! QUALIFIED_P (name))
 	    {
 	      decl = lookup_field_wrapper (DECL_CONTEXT (context), name);
-	      if (! FIELD_STATIC (decl))
+	      if (decl == NULL_TREE || ! FIELD_STATIC (decl))
 		return NULL_TREE;
 	      return fold_constant_for_init (decl, decl);
 	    }

@@ -198,6 +198,7 @@ extern tree object_type_node;
 extern tree unqualified_object_id_node;
 extern tree object_ptr_type_node;
 extern tree string_type_node;
+extern tree string_ptr_type_node;
 extern tree throwable_type_node;
 extern tree runtime_exception_type_node;
 extern tree error_exception_type_node;
