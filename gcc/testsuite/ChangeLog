@@ -1,3 +1,8 @@
+2002-06-02  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/loop-3c.x: Remove, the test should pass
+	now.
+
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/wtr-int-type-1.c, gcc.dg/wtr-suffix-1.c,
@@ -19,7 +24,7 @@
 
 2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* gcc.dg/cpp/c++98-pedantic.c, gcc.dg/cpp/c89-pedantic.c, 
+	* gcc.dg/cpp/c++98-pedantic.c, gcc.dg/cpp/c89-pedantic.c,
 	gcc.dg/cpp/c94-pedantic.c, gcc.dg/cpp/gnuc89-pedantic.c,
 	gcc.dg/cpp/if-1.c: Update for modified diagnostics.
 
