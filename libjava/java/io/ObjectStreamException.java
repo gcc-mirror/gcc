@@ -19,12 +19,12 @@ package java.io;
 
 public abstract class ObjectStreamException extends IOException
 {
-  public ObjectStreamException()
+  protected ObjectStreamException()
   {
     super();
   }
 
-  public ObjectStreamException(String msg)
+  protected ObjectStreamException(String msg)
   {
     super(msg);
   }
