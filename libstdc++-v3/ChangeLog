@@ -1,3 +1,8 @@
+2001-03-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * include/ext/stl_hashtable.h: Change type of __n to size_t  
+        * include/backward/bvector.h: Include <ext/stl_bvector.h> 
+
 2001-03-09  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/istream.tcc ( basic_istream<_CharT, _Traits>&
