@@ -2072,7 +2072,7 @@ fix = {
     select   = '__cplusplus < 54321L';
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
-    test_text = '#if\tdefined(__cplusplus) && (__cplusplus < 54321L)';
+    test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
 };
 
 
