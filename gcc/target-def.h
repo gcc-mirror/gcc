@@ -274,7 +274,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_SCHED_IS_COSTLY_DEPENDENCE}
 
 /* In except.c */
-#define TARGET_EH_RETURN_FILTER_MODE  default_eh_return_filter_mode;
+#define TARGET_EH_RETURN_FILTER_MODE  default_eh_return_filter_mode
 
 /* In tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes

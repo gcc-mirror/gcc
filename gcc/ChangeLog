@@ -1,3 +1,8 @@
+2004-08-16  Andrew Pinski  <apinski@apple.com>
+
+	* target-def.h (TARGET_EH_RETURN_FILTER_MODE): Remove
+	extraneous semicolon.
+
 2004-08-16  Devang Patel  <dpatel@apple.com>
 
 	* c-common.c (handle_used_attribute): Set DECL_PRESERVE_P.
