@@ -1670,13 +1670,6 @@ extern int current_function_anonymous_args;
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Force sizeof(bool) == 1 to maintain binary compatibility; otherwise, the
-   change in SLOW_BYTE_ACCESS would have changed it to 4.  */
-
-/* This used to use INT_TYPE_SIZE / CHAR_TYPE_SIZE, but these are
-   not guaranteed to be defined when BOOL_TYPE_SIZE is used.  */
-#define BOOL_TYPE_SIZE (flag_new_abi ? BITS_PER_WORD : BITS_PER_UNIT)
-
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 
