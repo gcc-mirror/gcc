@@ -1,3 +1,18 @@
+2000-06-28  Philipp Thomas  <pthomas@suse.de>
+
+	* c-decl.c : Mark strings for translation.
+	(parmlist_tags_warning): Use distinct messages instead
+	of conditional expressions.
+	* diagnostic.c (v_message_with_decl): Mark string for translation.
+	* gcc.c: Mark messages for translation.
+	(display_help): Combine messages into one string where necessary.
+	* mips-tfile: Add intl.h. Mark messages for translation.
+	* rtl.c (fatal_with_file_and_line): Modify function for NLS. Mark
+	messages for translation.
+	* timevar.c: Mark messages for translation.
+	* tlink.c: Likewise.
+	* toplev.c: Likewise.
+
 Wed Jun 28 15:39:26 2000  Donn Terry (donnte@microsoft.com)
 
 	* i386-interix.h (STRIP_NAME_ENCODING): Declare _new_name properly.
