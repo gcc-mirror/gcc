@@ -35,18 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.math;
 
 import gnu.java.math.MPN;
-import java.util.Random;
+
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
-
-/**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date December 20, 1999.
- */
+import java.util.Random;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -56,17 +53,18 @@ import java.io.IOException;
  * Based primarily on IntNum.java BitOps.java by Per Bothner <per@bothner.com>
  * (found in Kawa 1.6.62).
  *
- * Status:  Believed complete and correct.
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @date December 20, 1999.
+ * @status believed complete and correct.
  */
-
 public class BigInteger extends Number implements Comparable
 {
   /** All integers are stored in 2's-complement form.
    * If words == null, the ival is the value of this BigInteger.
    * Otherwise, the first ival elements of words make the value
    * of this BigInteger, stored in little-endian order, 2's-complement form. */
-  transient private int ival;
-  transient private int[] words;
+  private transient int ival;
+  private transient int[] words;
 
   // Serialization fields.
   private int bitCount = -1;
@@ -338,7 +336,7 @@ public class BigInteger extends Number implements Comparable
       }
   }
 
-  private final boolean isNegative()
+  private boolean isNegative()
   {
     return (words == null ? ival : words[ival - 1]) < 0;
   }
@@ -389,12 +387,12 @@ public class BigInteger extends Number implements Comparable
     return compareTo(this, val) > 0 ? this : val;
   }
 
-  private final boolean isZero()
+  private boolean isZero()
   {
     return words == null && ival == 0;
   }
 
-  private final boolean isOne()
+  private boolean isOne()
   {
     return words == null && ival == 1;
   }
@@ -440,7 +438,7 @@ public class BigInteger extends Number implements Comparable
   }
 
   /** Add two ints, yielding a BigInteger. */
-  private static final BigInteger add(int x, int y)
+  private static BigInteger add(int x, int y)
   {
     return valueOf((long) x + (long) y);
   }
@@ -480,13 +478,13 @@ public class BigInteger extends Number implements Comparable
   }
 
   /** Destructively add an int to this. */
-  private final void setAdd(int y)
+  private void setAdd(int y)
   {
     setAdd(this, y);
   }
 
   /** Destructively set the value of this to a long. */
-  private final void set(long y)
+  private void set(long y)
   {
     int i = (int) y;
     if ((long) i == y)
@@ -505,14 +503,14 @@ public class BigInteger extends Number implements Comparable
 
   /** Destructively set the value of this to the given words.
   * The words array is reused, not copied. */
-  private final void set(int[] words, int length)
+  private void set(int[] words, int length)
   {
     this.ival = length;
     this.words = words;
   }
 
   /** Destructively set the value of this to that of y. */
-  private final void set(BigInteger y)
+  private void set(BigInteger y)
   {
     if (y.words == null)
       set(y.ival);
@@ -572,7 +570,7 @@ public class BigInteger extends Number implements Comparable
     return add(this, val, -1);
   }
 
-  private static final BigInteger times(BigInteger x, int y)
+  private static BigInteger times(BigInteger x, int y)
   {
     if (y == 0)
       return ZERO;
@@ -604,7 +602,7 @@ public class BigInteger extends Number implements Comparable
     return result.canonicalize();
   }
 
-  private static final BigInteger times(BigInteger x, BigInteger y)
+  private static BigInteger times(BigInteger x, BigInteger y)
   {
     if (y.words == null)
       return times(x, y.ival);
@@ -1016,7 +1014,7 @@ public class BigInteger extends Number implements Comparable
     return BigInteger.make(rwords, rlen);
   }
 
-  private static final int[] euclidInv(int a, int b, int prevDiv)
+  private static int[] euclidInv(int a, int b, int prevDiv)
   {
     if (b == 0)
       throw new ArithmeticException("not invertible");
@@ -1033,8 +1031,8 @@ public class BigInteger extends Number implements Comparable
     return xy;
   }
 
-  private static final void euclidInv(BigInteger a, BigInteger b,
-                                      BigInteger prevDiv, BigInteger[] xy)
+  private static void euclidInv(BigInteger a, BigInteger b,
+                                BigInteger prevDiv, BigInteger[] xy)
   {
     if (b.isZero())
       throw new ArithmeticException("not invertible");
@@ -1184,7 +1182,7 @@ public class BigInteger extends Number implements Comparable
   }
 
   /** Calculate Greatest Common Divisor for non-negative ints. */
-  private static final int gcd(int a, int b)
+  private static int gcd(int a, int b)
   {
     // Euclid's algorithm, copied from libg++.
     int tmp;
@@ -1786,7 +1784,7 @@ public class BigInteger extends Number implements Comparable
   }
 
   /** Destructively negate this. */
-  private final void setNegative()
+  private void setNegative()
   {
     setNegative(this);
   }

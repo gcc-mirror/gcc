@@ -1,5 +1,11 @@
 2004-10-16  Michael Koch  <konqueror@gmx.de>
 
+	* java/math/BigDecimal.java, java/math/BigInteger.java:
+	Reorganized import statements, removed redundant and
+	reorganized modifiers.
+
+2004-10-16  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/beans/ExplicitBeanInfo.java:
 	Explicitely import java.awt.Image.
 	(getIcon): Fixed off-by-one error.
