@@ -1,3 +1,41 @@
+2005-01-31  Paolo Carlini  <pcarlini@suse.de>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/bits/cpp_type_traits.h: Add types to the structs thus
+	making type_traits.h redundant; exploit new __truth_type and
+	__traitor helpers.
+	* include/bits/type_traits.h: Remove.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Regenerate.
+	* include/backward/tempbuf.h: Include cpp_type_traits.h instead.
+	* include/bits/basic_string.h (replace(iterator, iterator,
+	_InputIterator, _InputIterator), _S_construct(_InIterator,
+	_InIterator, const _Alloc&)): Use __is_integer instead.
+	* include/bits/stl_bvector.h (vector(_InputIterator,
+	_InputIterator, const allocator_type&), assign(_InputIterator,
+	_InputIterator), insert(iterator, _InputIterator, _InputIterator)):
+	Likewise.
+	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
+	_ForwardIterator)): Use __is_scalar.
+	* include/bits/stl_deque.h (deque(_InputIterator, _InputIterator,
+	const allocator_type&), assign(_InputIterator, _InputIterator),
+	insert(iterator, _InputIterator, _InputIterator)): Use __is_integer.
+	* include/bits/stl_list.h (assign(_InputIterator, _InputIterator),
+	insert(iterator, _InputIterator, _InputIterator)): Likewise.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer(_ForwardIterator,
+	_ForwardIterator)): Use __is_scalar.
+	* include/bits/stl_uninitialized.h (uninitialized_copy(_InputIterator,
+	_InputIterator, _ForwardIterator), uninitialized_fill(_ForwardIterator,
+	_ForwardIterator, const _Tp&), uninitialized_fill_n(_ForwardIterator,
+	_Size, const _Tp&)): Likewise.
+	* include/bits/stl_vector.h (vector(_InputIterator, _InputIterator,
+	const allocator_type&), assign(_InputIterator, _InputIterator),
+	insert(iterator, _InputIterator, _InputIterator)): Use __is_integer.
+	* include/debug/debug.h (__valid_range(const _InputIterator&,
+	const _InputIterator&)): Use __is_integer.
+	* include/ext/slist (assign(_InputIterator, _InputIterator)): Likewise.
+	* include/std/std_string.h: Include cpp_type_traits.h instead.
+
 2005-01-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19642

@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -673,7 +673,7 @@ template<typename _Alloc>
 	     const allocator_type& __a = allocator_type())
       : _Bvector_base<_Alloc>(__a)
       {
-	typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	_M_initialize_dispatch(__first, __last, _Integral());
       }
 
@@ -724,7 +724,7 @@ template<typename _Alloc>
       void
       assign(_InputIterator __first, _InputIterator __last)
       {
-	typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	_M_assign_dispatch(__first, __last, _Integral());
       }
 
@@ -863,7 +863,7 @@ template<typename _Alloc>
       insert(iterator __position,
 	     _InputIterator __first, _InputIterator __last)
       {
-	typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	_M_insert_dispatch(__position, __first, __last, _Integral());
       }
 

@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,7 +45,7 @@
 #include <bits/stringfwd.h>
 #include <bits/char_traits.h>
 #include <memory> 	// For allocator.
-#include <bits/type_traits.h>
+#include <bits/cpp_type_traits.h>
 #include <iosfwd> 	// For operators >>, <<, and getline decls.
 #include <bits/stl_iterator.h>
 #include <bits/stl_function.h>  // For less

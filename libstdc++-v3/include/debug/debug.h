@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -273,7 +273,7 @@ _GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last, _Pred),		\
 
 #include <stddef.h>                       // for ptrdiff_t
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
-#include <bits/type_traits.h>             // for _Is_integer
+#include <bits/cpp_type_traits.h>         // for __is_integer
 
 namespace __gnu_debug
 {
@@ -373,7 +373,7 @@ namespace __gnu_debug
     inline bool
     __valid_range(const _InputIterator& __first, const _InputIterator& __last)
     {
-      typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
+      typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __gnu_debug::__valid_range_aux(__first, __last, _Integral());
     }
 
