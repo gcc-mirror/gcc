@@ -1,3 +1,7 @@
+2000-12-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.dist: Renamed from Makefile.orig.
+
 2000-12-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.am (gctest_LDADD): Added EXTRA_TEST_LIBS.
