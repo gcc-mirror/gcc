@@ -1,3 +1,11 @@
+2002-05-03  Richard Henderson  <rth@redhat.com>
+
+	PR opt/6534
+	* ifcvt.c (noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_inc, noce_try_store_flag_mask, noce_try_cmove,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs): Insert new
+	code before JUMP, not EARLIEST.
+
 2002-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-format.c (check_format_info_main): Don't check for presence of
@@ -147,10 +155,10 @@ Thu May  2 19:50:04 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-02  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-8.c: New.
+	* gcc.dg/altivec-8.c: New.
 
-        * config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
-        PRE_INC and PRE_DEC for altivec modes.
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
+	PRE_INC and PRE_DEC for altivec modes.
 
 2002-05-01  Bruce Korb  <bkorb@gnu.org>
 
