@@ -1,3 +1,8 @@
+2002-02-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/net/natPlainDatagramSocketImpl.cc (bind): Call setsockopt to
+	enable SO_BROADCAST.
+
 2002-02-18  Jason Merrill  <jason@redhat.com>
 
 	* name-finder.cc (toHex): Use word mode, not long long.
