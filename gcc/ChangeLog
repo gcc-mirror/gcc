@@ -1,3 +1,12 @@
+2002-05-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (INSTALL_CPP, UNINSTALL_CPP): Remove.
+	(install): Refer to install-cpp directly.
+	(uninstall-cpp): Folded into uninstall rule.
+	* configure.in: Delete all code relating to --disable-cpp.
+	* configure: Regenerate.
+	* config/t-install-cpp: Delete.
+
 2002-05-31  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_AS_TLS): Add alpha tests.
@@ -76,7 +85,7 @@
 
 2002-05-31  Igor Shevlyakov <igor@microunity.com>
 
-	* expr.c (compare_from_rtx): Generate comparison between op0 and op1 
+	* expr.c (compare_from_rtx): Generate comparison between op0 and op1
 	rather than cc0 and 0 in a case when HAVE_cc0 is not defined.
 
 2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
@@ -88,7 +97,7 @@
 
 2002-05-31  Nathanael Nerode  <neroden@twcny.rr.com>
 
-	* gcc/Makefile.in: Replace HOST_PREFIX, HOST_PREFIX_1 with 
+	* gcc/Makefile.in: Replace HOST_PREFIX, HOST_PREFIX_1 with
 	BUILD_PREFIX, BUILD_PREFIX_1, to correct nomenclature.
 	* gcc/mklibgcc.in: Likewise.
 	* gcc/config/arc/t-arc: Likewise.
@@ -120,7 +129,7 @@
 
 	* varasm.c (mark_constant_pool): Walk epilogue delay list
 	checking the insn, not the chain for potential constants.
-	
+
 Fri May 31 12:38:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/elf.h (ASM_SPEC): Use subtarget_endian_asm_spec.
@@ -199,8 +208,8 @@ Fri May 31 13:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-31  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expr.c (expand_expr): Output partially zeroed out vectors with
-        output_constant_def.
+	* expr.c (expand_expr): Output partially zeroed out vectors with
+	output_constant_def.
 
 2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
@@ -288,14 +297,14 @@ Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-30  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_expand_unop_builtin): Return
-        const0_rtx instead of NULL_RTX when in error.
-        (altivec_expand_abs_builtin): Same.
-        (rs6000_expand_binop_builtin): Same.
-        (altivec_expand_predicate_builtin): Same.
-        (altivec_expand_stv_builtin): Same.
-        (rs6000_expand_ternop_builtin): Same.
-        (altivec_expand_builtin): Same.
+	* config/rs6000/rs6000.c (rs6000_expand_unop_builtin): Return
+	const0_rtx instead of NULL_RTX when in error.
+	(altivec_expand_abs_builtin): Same.
+	(rs6000_expand_binop_builtin): Same.
+	(altivec_expand_predicate_builtin): Same.
+	(altivec_expand_stv_builtin): Same.
+	(rs6000_expand_ternop_builtin): Same.
+	(altivec_expand_builtin): Same.
 
 2002-05-29  David S. Miller  <davem@redhat.com>
 
@@ -352,19 +361,19 @@ Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-29  Aldy Hernandez  <aldyh@redhat.com>
 
-        * rs6000.c: (altivec_expand_builtin): Only expand altivec builtins
-        when TARGET_ALTIVEC.  Move handling of generic unary, binary, and
-        ternary operations from here...
-        (rs6000_expand_builtin): ...to here.
-        New argument expandedp.
-        Change all instances of altivec_expand_binop_builtin to
-        rs6000_expand_binop_builtin.
-        (altivec_expand_unop_builtin): Rename to
-        rs6000_expand_unop_builtin.
-        (altivec_expand_binop_builtin): Rename to
-        rs6000_expand_binop_builtin.
-        (altivec_expand_ternop_builtin): Rename to
-        rs6000_expand_ternop_builtin.
+	* rs6000.c: (altivec_expand_builtin): Only expand altivec builtins
+	when TARGET_ALTIVEC.  Move handling of generic unary, binary, and
+	ternary operations from here...
+	(rs6000_expand_builtin): ...to here.
+	New argument expandedp.
+	Change all instances of altivec_expand_binop_builtin to
+	rs6000_expand_binop_builtin.
+	(altivec_expand_unop_builtin): Rename to
+	rs6000_expand_unop_builtin.
+	(altivec_expand_binop_builtin): Rename to
+	rs6000_expand_binop_builtin.
+	(altivec_expand_ternop_builtin): Rename to
+	rs6000_expand_ternop_builtin.
 
 2002-05-29  Richard Henderson  <rth@redhat.com>
 
@@ -490,7 +499,7 @@ Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/fr30/fr30.md: Remove previous restriction on splits.
 	Enforce conformance through gen_lowpart and cont_int_operand.
-        * config/fr30/fr30.h (BSS_SECTION_ASM_OP): Use ".section .bss"
+	* config/fr30/fr30.h (BSS_SECTION_ASM_OP): Use ".section .bss"
 	as the assembler does not support ".bss".
 
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
@@ -542,8 +551,8 @@ Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-29  Chris Lattner  <sabre@nondot.org>
 
-        * ssa.c (rename_insn_1): Rename uses of undefined registers to
-        prevent confusion if/when the register is defined.
+	* ssa.c (rename_insn_1): Rename uses of undefined registers to
+	prevent confusion if/when the register is defined.
 
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -626,18 +635,18 @@ Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.c: Include real.h for REAL_VALUE_TYPE.
 
 Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
-                          Jason R. Thorpe <thorpej@wasabisystems.com>
+			  Jason R. Thorpe <thorpej@wasabisystems.com>
 
 	config/sh reorganization to factor out endianness and coff:
 
 	* config/sh/little.h: New file.
-        * config/sh/sh.h (TARGET_ENDIAN_DEFAULT): If not already
-        defined, define to 0 to select big-endian.
+	* config/sh/sh.h (TARGET_ENDIAN_DEFAULT): If not already
+	defined, define to 0 to select big-endian.
 	(SUBTARGET_ASM_ENDIAN_SPEC): Define according to TARGET_ENDIAN_DEFAULT.
-        (TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
-        * config/sh/sh64.h (TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
-        * config/sh/t-be: New file.
-        * config/sh/t-le: New file.
+	(TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
+	* config/sh/sh64.h (TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
+	* config/sh/t-be: New file.
+	* config/sh/t-le: New file.
 
 	* sh.h (SDB_DEBUGGING_INFO, #include "dbxcoff.h"): Moved to sh/coff.h.
 	(SDB_DELIM, MAX_OFILE_ALIGNMENT, IDENT_ASM_OP): Likewise.
