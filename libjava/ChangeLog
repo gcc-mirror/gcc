@@ -1,3 +1,12 @@
+2004-09-25  Shashank Bapat  <shashankbapat@yahoo.com>
+            Mark Wielaard  <mark@klomp.org>
+
+	* gnu/regexp/RE.java (initialize): Add RETokenLookAhead support.
+	* gnu/regexp/RETokenLookAhead.java: New file.
+
+	* Makefile.am (ordinary_java_source_files): Add RETokenLookAhead.java.
+	* Makefile.in: Regenerated.
+
 2004-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectStreamField.java:

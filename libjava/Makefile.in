@@ -802,9 +802,9 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/regexp/REToken.java gnu/regexp/RETokenAny.java \
 	gnu/regexp/RETokenBackRef.java gnu/regexp/RETokenChar.java \
 	gnu/regexp/RETokenEnd.java gnu/regexp/RETokenEndSub.java \
-	gnu/regexp/RETokenOneOf.java gnu/regexp/RETokenPOSIX.java \
-	gnu/regexp/RETokenRange.java gnu/regexp/RETokenRepeated.java \
-	gnu/regexp/RETokenStart.java \
+	gnu/regexp/RETokenLookAhead.java gnu/regexp/RETokenOneOf.java \
+	gnu/regexp/RETokenPOSIX.java gnu/regexp/RETokenRange.java \
+	gnu/regexp/RETokenRepeated.java gnu/regexp/RETokenStart.java \
 	gnu/regexp/RETokenWordBoundary.java \
 	gnu/regexp/UncheckedRE.java gnu/java/security/Engine.java \
 	gnu/java/security/OID.java \
@@ -3699,12 +3699,12 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/regexp/RESyntax.lo gnu/regexp/REToken.lo \
 	gnu/regexp/RETokenAny.lo gnu/regexp/RETokenBackRef.lo \
 	gnu/regexp/RETokenChar.lo gnu/regexp/RETokenEnd.lo \
-	gnu/regexp/RETokenEndSub.lo gnu/regexp/RETokenOneOf.lo \
-	gnu/regexp/RETokenPOSIX.lo gnu/regexp/RETokenRange.lo \
-	gnu/regexp/RETokenRepeated.lo gnu/regexp/RETokenStart.lo \
-	gnu/regexp/RETokenWordBoundary.lo gnu/regexp/UncheckedRE.lo \
-	gnu/java/security/Engine.lo gnu/java/security/OID.lo \
-	gnu/java/security/der/BitString.lo \
+	gnu/regexp/RETokenEndSub.lo gnu/regexp/RETokenLookAhead.lo \
+	gnu/regexp/RETokenOneOf.lo gnu/regexp/RETokenPOSIX.lo \
+	gnu/regexp/RETokenRange.lo gnu/regexp/RETokenRepeated.lo \
+	gnu/regexp/RETokenStart.lo gnu/regexp/RETokenWordBoundary.lo \
+	gnu/regexp/UncheckedRE.lo gnu/java/security/Engine.lo \
+	gnu/java/security/OID.lo gnu/java/security/der/BitString.lo \
 	gnu/java/security/der/DER.lo \
 	gnu/java/security/der/DEREncodingException.lo \
 	gnu/java/security/der/DERReader.lo \
@@ -6497,6 +6497,7 @@ gnu/regexp/RETokenBackRef.java \
 gnu/regexp/RETokenChar.java \
 gnu/regexp/RETokenEnd.java \
 gnu/regexp/RETokenEndSub.java \
+gnu/regexp/RETokenLookAhead.java \
 gnu/regexp/RETokenOneOf.java \
 gnu/regexp/RETokenPOSIX.java \
 gnu/regexp/RETokenRange.java \
@@ -9309,6 +9310,8 @@ gnu/regexp/RETokenChar.lo: gnu/regexp/$(am__dirstamp) \
 gnu/regexp/RETokenEnd.lo: gnu/regexp/$(am__dirstamp) \
 	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
 gnu/regexp/RETokenEndSub.lo: gnu/regexp/$(am__dirstamp) \
+	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
+gnu/regexp/RETokenLookAhead.lo: gnu/regexp/$(am__dirstamp) \
 	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
 gnu/regexp/RETokenOneOf.lo: gnu/regexp/$(am__dirstamp) \
 	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
@@ -15000,6 +15003,8 @@ mostlyclean-compile:
 	-rm -f gnu/regexp/RETokenEnd.lo
 	-rm -f gnu/regexp/RETokenEndSub.$(OBJEXT)
 	-rm -f gnu/regexp/RETokenEndSub.lo
+	-rm -f gnu/regexp/RETokenLookAhead.$(OBJEXT)
+	-rm -f gnu/regexp/RETokenLookAhead.lo
 	-rm -f gnu/regexp/RETokenOneOf.$(OBJEXT)
 	-rm -f gnu/regexp/RETokenOneOf.lo
 	-rm -f gnu/regexp/RETokenPOSIX.$(OBJEXT)
@@ -19465,6 +19470,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenChar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenEnd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenEndSub.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenLookAhead.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenOneOf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenPOSIX.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/RETokenRange.Plo@am__quote@
