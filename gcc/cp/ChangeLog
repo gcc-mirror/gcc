@@ -1,5 +1,9 @@
 1999-08-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (back_end_hook): New variable.
+	* decl2.c (back_end_hook): Define it.
+	(finish_file): If it's non-NULL, call it.
+
 	* decl.c (add_decl_to_level): New function.
 	(push_local_binding): Use it.
 	(find_binding): Fix typo in comment.

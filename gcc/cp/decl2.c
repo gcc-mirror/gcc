@@ -476,6 +476,11 @@ int flag_vtable_gc;
 
 int flag_permissive;
 
+/* If this variable is defined to a non-NULL value, it will be called
+   after the file has been completely parsed.  */
+
+void (*back_end_hook) PROTO((tree));
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -3674,6 +3679,11 @@ finish_file ()
      file.   */
   if (flag_dump_translation_unit)
     dump_node_to_file (global_namespace, flag_dump_translation_unit);
+
+  /* If there's some tool that wants to examine the entire translation
+     unit, let it do so now.  */
+  if (back_end_hook)
+    (*back_end_hook) (global_namespace);
 
   this_time = get_run_time ();
   parse_time -= this_time - start_time;
