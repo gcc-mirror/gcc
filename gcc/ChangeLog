@@ -1,5 +1,16 @@
 2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* i370-protos.h: New file.
+
+	* i370.c: Include tm_p.h.  Fix compile time warnings.
+	
+	* i370.h: Move prototypes to i370-protos.h.  Fix compile time
+	warnings.
+	
+	* i370.md: Likewise.
+
+2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* real.c (enan, einan, eiisnan, eiisneg, make_nan): Wrap in NANS.
 	(target_isinf, target_isnan, eisnan): Mark parameter with
 	ATTRIBUTE_UNUSED.

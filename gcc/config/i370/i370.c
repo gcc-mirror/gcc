@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 93, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 95, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
    Hacked for Linux-ELF/390 by Linas Vepstas (linas@linas.org) 
@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 extern FILE *asm_out_file;
 
@@ -92,7 +93,8 @@ static label_node_t *free_anchor = 0;
 /* Assembler source file descriptor.  */
 static FILE *assembler_source = 0;
 
-label_node_t * mvs_get_label ();
+static label_node_t * mvs_get_label PARAMS ((int));
+static void i370_label_scan PARAMS ((void));
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -121,14 +123,16 @@ alias_node_t;
 static alias_node_t *alias_anchor = 0;
 
 /* Alias number */
-static alias_number = 0;
+#ifdef LONGEXTERNAL
+static int alias_number = 0;
+#endif
 
 /* Define the length of the internal MVS function table.  */
 #define MVS_FUNCTION_TABLE_LENGTH 32
 
 /* C/370 internal function table.  These functions use non-standard linkage
    and must handled in a special manner.  */
-static char *mvs_function_table[MVS_FUNCTION_TABLE_LENGTH] =
+static const char *const mvs_function_table[MVS_FUNCTION_TABLE_LENGTH] =
 {
 #if defined(HOST_EBCDIC) /* Changed for EBCDIC collating sequence */
    "ceil",     "edc_acos", "edc_asin", "edc_atan", "edc_ata2", "edc_cos",
@@ -151,7 +155,7 @@ static char *mvs_function_table[MVS_FUNCTION_TABLE_LENGTH] =
 /* ===================================================== */
 
 /* ASCII to EBCDIC conversion table.  */
-static unsigned char ascebc[256] =
+static const unsigned char ascebc[256] =
 {
  /*00  NL    SH    SX    EX    ET    NQ    AK    BL */
      0x00, 0x01, 0x02, 0x03, 0x37, 0x2D, 0x2E, 0x2F,
@@ -204,7 +208,7 @@ static unsigned char ascebc[256] =
 };
 
 /* EBCDIC to ASCII conversion table.  */
-unsigned char ebcasc[256] =
+static const unsigned char ebcasc[256] =
 {
  /*00  NU    SH    SX    EX    PF    HT    LC    DL */
      0x00, 0x01, 0x02, 0x03, 0x00, 0x09, 0x00, 0x7F,
@@ -277,7 +281,7 @@ unsigned char ebcasc[256] =
 
 char
 mvs_map_char (c)
-     char c;
+     int c;
 {
 #if defined(TARGET_EBCDIC) && !defined(HOST_EBCDIC)
   fprintf (stderr, "mvs_map_char: TE & !HE: c = %02x\n", c);
@@ -389,7 +393,7 @@ i370_short_branch (insn)
 }
 
 void 
-i370_label_scan (void) 
+i370_label_scan () 
 {
    rtx insn;
    label_node_t *lp;
@@ -429,7 +433,6 @@ i370_label_scan (void)
        if (JUMP_INSN == code)
          {
            rtx label = JUMP_LABEL (insn);
-           int labelno;
 
            /* If there is no label for this jump, then this
               had better be a ADDR_VEC or an ADDR_DIFF_VEC
@@ -442,7 +445,6 @@ i370_label_scan (void)
                  {
                     for (j=0; j < XVECLEN (body, 0); j++)
                       {
-                         int labelno;
                          rtx lref = XVECEXP (body, 0, j);
                          if (LABEL_REF != GET_CODE (lref)) abort ();
                          label = XEXP (lref,0);
@@ -476,7 +478,6 @@ i370_label_scan (void)
                     debug_rtx (insn);
                     for (j=0; j < XVECLEN (body, 0); j++)
                       {
-                         int labelno;
                       }
                     /* finished with the vector go do next insn */
                     continue;
@@ -551,8 +552,8 @@ i370_label_scan (void)
   code, this shouldn't be a problem ...
  */
 
-int
-check_label_emit (void)
+void
+check_label_emit ()
 {
   if (mvs_need_base_reload)
     {
@@ -699,7 +700,7 @@ mvs_get_label_page(int id)
    label element chain.  */
 
 void
-mvs_free_label_list (void)
+mvs_free_label_list ()
 {
 
   if (label_anchor)
@@ -806,7 +807,7 @@ mvs_check_page (file, code, lit)
 
 int
 mvs_function_check (name)
-     char *name;
+     const char *name;
 {
   int lower, middle, upper;
   int i;
@@ -830,11 +831,11 @@ mvs_function_check (name)
 
 /* Add the alias to the current alias list.  */
 
-int
+void
 mvs_add_alias (realname, aliasname, emitted)
-     char *realname;
-     char *aliasname;
-     int   emitted;
+     const char *realname;
+     const char *aliasname;
+     int emitted;
 {
   alias_node_t *ap;
 
@@ -850,7 +851,7 @@ mvs_add_alias (realname, aliasname, emitted)
 
 int
 mvs_need_alias (realname)
-      char *realname;
+      const char *realname;
 {
    if (mvs_function_check (realname))
      return 0;
@@ -866,7 +867,7 @@ mvs_need_alias (realname)
 
 int
 mvs_get_alias (realname, aliasname)
-     char *realname;
+     const char *realname;
      char *aliasname;
 {
 #ifdef LONGEXTERNAL
@@ -902,7 +903,7 @@ mvs_get_alias (realname, aliasname)
 
 int
 mvs_check_alias (realname, aliasname)
-     char *realname;
+     const char *realname;
      char *aliasname;
 {
 #ifdef LONGEXTERNAL
@@ -942,18 +943,13 @@ mvs_check_alias (realname, aliasname)
    The result is 1 if the pragma was handled.  */
 
 int
-handle_pragma (finput, node)
-     FILE *finput;
-     tree node;
+handle_pragma (p_getc, p_ungetc, pname)
+     int (* p_getc) PARAMS ((void));
+     void (* p_ungetc) PARAMS ((int));
+     const char *pname;
 {
   int retval = 0;
   register int c;
-  register char *pname;
-
-  if (TREE_CODE (node) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (node);
 
   if (strcmp (pname, "map") == 0)
     {
@@ -962,20 +958,20 @@ handle_pragma (finput, node)
       char *s;
 
       do {
-	c = getc (finput);
+	c = p_getc ();
       } while (c == ' ' || c == '\t');
 
       if (c == '(')
         {
 	  s = realname;
 	  do {
-	    c = getc (finput);
+	    c = p_getc ();
 	  } while (c == ' ' || c == '\t');
 	  if (c == '\n')
 	    goto PRAGMA_WARNING;
 	  do {
 	    *s++ = c;
-	    c = getc (finput);
+	    c = p_getc ();
 	  } while (ISALNUM(c) || c == '_');
 	  if (c == '\n')
 	    goto PRAGMA_WARNING;
@@ -983,28 +979,28 @@ handle_pragma (finput, node)
 
 	  if (c == ' ' || c == '\t')
 	    do {
-	      c = getc (finput);
+	      c = p_getc ();
 	    } while (c == ' ' || c == '\t');
 	  
 	  if (c == ',')
 	    {
 	      do {
-	        c = getc (finput);
+	        c = p_getc ();
 	      } while (c == ' ' || c == '\t');
 	      if (c == '"')
 	        {
 	          s = aliasname;
-	          c = getc(finput);
+	          c = p_getc ();
 	          do {
 	            if (c == '\\')
 	              {
 	                int d = 0;
 	                do {
-	                  c = getc(finput);
+	                  c = p_getc ();
 	                  if (c >= '0' && c <= '7')
-	                      d = (d << 3) | c - '0';
+	                      d = (d << 3) | (c - '0');
 	                } while (c >= '0' && c <= '7');
-	                ungetc (c, finput);
+	                p_ungetc (c);
 	                c = d;
 	                if (d < 1 || d > 255)
 			  warning ("Escape value out of range");
@@ -1013,7 +1009,7 @@ handle_pragma (finput, node)
 #endif
 	              }
 	            *s++ = c;
-	            c = getc (finput);
+	            c = p_getc ();
 	            if (ISSPACE(c) || c == ')')
 	              goto PRAGMA_WARNING;
 	          } while (c != '"');
@@ -1024,7 +1020,7 @@ handle_pragma (finput, node)
 		      aliasname[MAX_MVS_LABEL_SIZE] = '\0';
 		    }
 		  do {
-		    c = getc (finput);
+		    c = p_getc ();
 		  } while (c == ' ' || c == '\t');
 		  if (c == ')')
 		    {
@@ -1066,7 +1062,7 @@ handle_pragma (finput, node)
 
 int
 mvs_function_check (name)
-     char *name;
+     const char *name ATTRIBUTE_UNUSED;
 {
    return 0;
 }
@@ -1165,6 +1161,7 @@ r_or_s_operand (op, mode)
    The unsigned_jump_follows_p() routine  returns a 1 if the next jump 
    is unsigned.  INSN is the current instruction.  */
 
+int
 unsigned_jump_follows_p (insn)
      register rtx insn;
 {
@@ -1213,7 +1210,6 @@ i370_function_prolog (f, l)
   static int function_first = 0;
   static int function_year, function_month, function_day;
   static int function_hour, function_minute, function_second;
-  int i;
 #if defined(LE370)
   if (!function_first)
     {
@@ -1260,7 +1256,7 @@ i370_function_prolog (f, l)
   fprintf (f, "FTIM%03d\tDS\t0F\n", function_label_index);
   fprintf (f, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",
   		 function_year, function_month, function_day,
-    		 function_hour, function_minute, function_second);
+    		 function_hour, function_minute);
   fprintf (f, "\tDC\tCL2'01',CL4'0100'\n");
   fprintf (f, "FENT%03d\tDS\t0H\n", function_label_index);
   fprintf (f, "\tSTM\t14,12,12(13)\n");
@@ -1396,8 +1392,7 @@ i370_function_prolog (f, frame_size)
 {
   static int function_label_index = 1;
   static int function_first = 0;
-  int i;
-  int stackframe_size, soffset, aligned_size;
+  int stackframe_size, aligned_size;
 
   fprintf (f, "# Function prologue\n");
   /* define the stack, put it into its own data segment
