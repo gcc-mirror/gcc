@@ -14,7 +14,8 @@
 
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
-        * Makefile.in (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
+        * Makefile.tpl (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
+        * Makefile.in: Regenerate.
 
 2003-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
