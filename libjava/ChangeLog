@@ -1,3 +1,15 @@
+2004-04-09  Ranjit Mathew  <rmathew@hotmail.com>
+	
+	* java/lang/VMThrowable.java (getStackTrace): Pass trace as-is to
+	modified lookup().
+	* gnu/gcj/runtime/NameFinder.java (lookup): Change to take in a
+	StackTraceElement directly.
+	(newElement): New native helper method to create StackTraceElement
+	bypassing Java access control.
+	(createStackTraceElement): Use newElement() instead of directly
+	calling StackTraceElement's constructor.
+	* gnu/gcj/runtime/natNameFinder.cc (newElement): New method.
+
 2004-04-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/SecurityManager.java
