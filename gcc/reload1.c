@@ -364,7 +364,7 @@ init_reload ()
 
   /* See if reg+reg is a valid (and offsettable) address.  */
 
-  for (i = 0; i < FIRST_PSEUDO_REGSTER; i++)
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       tem = gen_rtx (PLUS, Pmode,
 		     gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM),
