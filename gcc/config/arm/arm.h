@@ -2345,7 +2345,7 @@ extern int making_const_table;
 #endif
 
 /* Only perform branch elimination (by making instructions conditional) if
-   we're optimising.  Otherwise it's of no use anyway.  */
+   we're optimizing.  Otherwise it's of no use anyway.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)	\
   if (TARGET_ARM && optimize)				\
     arm_final_prescan_insn (INSN);			\

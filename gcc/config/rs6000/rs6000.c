@@ -1534,7 +1534,7 @@ easy_fp_constant (op, mode)
     abort ();
 }
 
-/* Return non zero if all elements of a vector have the same value.  */
+/* Return nonzero if all elements of a vector have the same value.  */
 
 static int
 easy_vector_same (op, mode)

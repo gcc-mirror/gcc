@@ -1002,7 +1002,7 @@ large_insn_p (op, mode)
   return get_attr_length (op) != 2;
 }
 
-/* Return non-zero if TYPE must be passed or returned in memory.
+/* Return nonzero if TYPE must be passed or returned in memory.
    The m32r treats both directions the same so we handle both directions
    in this function.  */
 

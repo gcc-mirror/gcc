@@ -1,3 +1,14 @@
+2003-06-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha.md: Follow spelling conventions.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/arm/crtn.asm: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+
 2003-06-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Call

@@ -5642,7 +5642,7 @@ arm_reload_in_hi (rtx *operands)
 							 0))));
 }
 
-/* Handle storing a half-word to memory during reload by synthesising as two
+/* Handle storing a half-word to memory during reload by synthesizing as two
    byte stores.  Take care not to clobber the input values until after we
    have moved them somewhere safe.  This code assumes that if the DImode
    scratch in operands[2] overlaps either the input value or output address
@@ -7740,7 +7740,7 @@ arm_compute_save_reg_mask (void)
      it.  If we are pushing other registers onto the stack however, we
      can save an instruction in the epilogue by pushing the link register
      now and then popping it back into the PC.  This incurs extra memory
-     accesses though, so we only do it when optimising for size, and only
+     accesses though, so we only do it when optimizing for size, and only
      if we know that we will not need a fancy return sequence.  */
   if (regs_ever_live [LR_REGNUM]
 	  || (save_reg_mask

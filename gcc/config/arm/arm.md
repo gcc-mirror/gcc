@@ -509,7 +509,7 @@
   "
 )
 
-; If there is a scratch available, this will be faster than synthesising the
+; If there is a scratch available, this will be faster than synthesizing the
 ; addition.
 (define_peephole2
   [(match_scratch:SI 3 "r")
