@@ -1,3 +1,9 @@
+Thu Jul 18 13:44:51 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (barrier_align, push): Shut up compiler warnings.
+	(initial_elimination_offset,sh_media_init_builtins): Likewise.
+	(reg_no_subreg_operand): Delete.
+
 2002-07-17  Bo Thorsen  <bo@suse.de>
 
 	* config/i386/linux64.h (LINK_SPEC): Remove bogus -Y option.

@@ -3288,7 +3288,7 @@ barrier_align (barrier_or_label)
       /* If this is a very small table, we want to keep the alignment after
 	 the table to the minimum for proper code alignment.  */
       return ((TARGET_SMALLCODE
-	       || (XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
+	       || ((unsigned) XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
 		   <= (unsigned)1 << (CACHE_LOG - 2)))
 	      ? 1 << TARGET_SHMEDIA : CACHE_LOG);
     }
@@ -4309,7 +4309,7 @@ push (rn)
 	   && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
-	return;
+	return NULL_RTX;
       x = gen_push_4 (gen_rtx_REG (DFmode, rn));
     }
   else if (TARGET_SH3E && FP_REGISTER_P (rn))
@@ -5529,6 +5529,7 @@ initial_elimination_offset (from, to)
 
   if (from == RETURN_ADDRESS_POINTER_REGNUM
       && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
+    {
       if (TARGET_SH5)
 	{
 	  int i, n = total_saved_regs_space;
@@ -5581,7 +5582,8 @@ initial_elimination_offset (from, to)
 	  abort ();
 	}
       else
-    return total_auto_space;
+	return total_auto_space;
+    }
 
   abort ();
 }
@@ -5825,20 +5827,6 @@ general_movdst_operand (op, mode)
     return 0;
 
   return general_operand (op, mode);
-}
-
-/* Accept a register, but not a subreg of any kind.  This allows us to
-   avoid pathological cases in reload wrt data movement common in 
-   int->fp conversion.  */
-
-int
-reg_no_subreg_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == SUBREG)
-    return 0;
-  return register_operand (op, mode);
 }
 
 /* Returns 1 if OP is a normal arithmetic register.  */
@@ -7451,7 +7439,7 @@ sh_media_init_builtins ()
   const struct builtin_description *d;
 
   memset (shared, 0, sizeof shared);
-  for (d = bdesc; d - bdesc < sizeof bdesc / sizeof bdesc[0]; d++)
+  for (d = bdesc; d - bdesc < (int) (sizeof bdesc / sizeof bdesc[0]); d++)
     {
       tree type, arg_type;
       int signature = d->signature;
