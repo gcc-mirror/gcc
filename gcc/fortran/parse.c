@@ -36,7 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 gfc_st_label *gfc_statement_label;
 
 static locus label_locus;
-static jmp_buf eof;
+static jmp_buf eof_buf;
 
 gfc_state_data *gfc_state_stack;
 
@@ -1252,7 +1252,7 @@ unexpected_eof (void)
   gfc_current_ns->code = (p && p->previous) ? p->head : NULL;
   gfc_done_2 ();
 
-  longjmp (eof, 1);
+  longjmp (eof_buf, 1);
 }
 
 
@@ -2536,7 +2536,7 @@ gfc_parse_file (void)
 
   gfc_statement_label = NULL;
 
-  if (setjmp (eof))
+  if (setjmp (eof_buf))
     return FAILURE;	/* Come here on unexpected EOF */
 
   seen_program = 0;
