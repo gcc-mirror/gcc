@@ -1102,10 +1102,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_character (buffer, '>');
       break;
 
-    case ENTRY_VALUE_EXPR:
-      NIY;
-      break;
-
     case COMPLEX_EXPR:
       pp_string (buffer, "COMPLEX_EXPR <");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);

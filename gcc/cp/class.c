@@ -6125,9 +6125,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       
       return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
     }
-    case ENTRY_VALUE_EXPR:
-      abort ();
-      return error_mark_node;
 
     case ERROR_MARK:
       return error_mark_node;

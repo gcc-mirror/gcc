@@ -1,3 +1,10 @@
+2004-08-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (expand_expr_real_1) <ENTRY_VALUE_EXPR>: Remove.
+	* tree-inline.c (estimate_num_insns_1) <ENTRY_VALUE_EXPR>: Remove.
+	* tree-pretty-print.c (dump_generic_node) <ENTRY_VALUE_EXPR>: Remove.
+	* tree.def (ENTRY_VALUE_EXPR): Remove.
+
 2004-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_clrmem): Move gen_cld down to
