@@ -64,16 +64,6 @@ static int *uid_suid;
 
 static int last_call_suid;
 
-/* Record the suid of the last JUMP_INSN
-   so we can tell whether a pseudo reg crosses any jumps.  */
-
-static int last_jump_suid;
-
-/* Record the suid of the last CODE_LABEL
-   so we can tell whether a pseudo reg crosses any labels.  */
-
-static int last_label_suid;
-
 /* Element N is suid of insn where life span of pseudo reg N ends.
    Element is  0 if register N has not been seen yet on backward scan.  */
 
@@ -82,10 +72,6 @@ static int *reg_where_dead;
 /* Element N is suid of insn where life span of pseudo reg N begins.  */
 
 static int *reg_where_born;
-
-/* Element N is 1 if pseudo reg N lives across labels or jumps.  */
-
-static char *reg_crosses_blocks;
 
 /* Numbers of pseudo-regs to be allocated, highest priority first.  */
 
@@ -105,9 +91,10 @@ static HARD_REG_SET *after_insn_hard_regs;
 #define MARK_LIVE_AFTER(INSN,REGNO)  \
   SET_HARD_REG_BIT (after_insn_hard_regs[INSN_SUID (INSN)], (REGNO))
 
-static void stupid_mark_refs ();
-static int stupid_reg_compare ();
-static int stupid_find_reg ();
+static int stupid_reg_compare	PROTO((int *, int *));
+static int stupid_find_reg	PROTO((int, enum reg_class, enum machine_mode,
+				       int, int));
+static void stupid_mark_refs	PROTO((rtx, rtx));
 
 /* Stupid life analysis is for the case where only variables declared
    `register' go in registers.  For this case, we mark all
@@ -125,7 +112,7 @@ stupid_life_analysis (f, nregs, file)
 {
   register int i;
   register rtx last, insn;
-  int max_uid;
+  int max_uid, max_suid;
 
   bzero (regs_ever_live, sizeof regs_ever_live);
 
@@ -148,15 +135,14 @@ stupid_life_analysis (f, nregs, file)
   last = 0;			/* In case of empty function body */
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	  || GET_CODE (insn) == JUMP_INSN)
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	last = insn;
+
       INSN_SUID (insn) = ++i;
     }
 
   last_call_suid = i + 1;
-  last_jump_suid = i + 1;
-  last_label_suid = i + 1;
+  max_suid = i + 1;
 
   max_regno = nregs;
 
@@ -168,9 +154,6 @@ stupid_life_analysis (f, nregs, file)
   reg_where_born = (int *) alloca (nregs * sizeof (int));
   bzero (reg_where_born, nregs * sizeof (int));
 
-  reg_crosses_blocks = (char *) alloca (nregs);
-  bzero (reg_crosses_blocks, nregs);
-
   reg_order = (int *) alloca (nregs * sizeof (int));
   bzero (reg_order, nregs * sizeof (int));
 
@@ -178,11 +161,13 @@ stupid_life_analysis (f, nregs, file)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_renumber[i] = i;
 
-  for (i = FIRST_VIRTUAL_REGISTER; i <= LAST_VIRTUAL_REGISTER; i++)
+  for (i = FIRST_VIRTUAL_REGISTER; i < max_regno; i++)
     reg_renumber[i] = -1;
 
-  after_insn_hard_regs = (HARD_REG_SET *) alloca (max_uid * sizeof (HARD_REG_SET));
-  bzero (after_insn_hard_regs, max_uid * sizeof (HARD_REG_SET));
+  after_insn_hard_regs
+    = (HARD_REG_SET *) alloca (max_suid * sizeof (HARD_REG_SET));
+
+  bzero (after_insn_hard_regs, max_suid * sizeof (HARD_REG_SET));
 
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */
@@ -190,9 +175,7 @@ stupid_life_analysis (f, nregs, file)
   allocate_for_life_analysis ();
 
   for (i = 0; i < max_regno; i++)
-    {
-      reg_n_deaths[i] = 1;
-    }
+    reg_n_deaths[i] = 1;
 
   bzero (regs_live, nregs);
 
@@ -209,8 +192,7 @@ stupid_life_analysis (f, nregs, file)
     {
       register HARD_REG_SET *p = after_insn_hard_regs + INSN_SUID (insn);
 
-      /* Copy the info in regs_live
-	 into the element of after_insn_hard_regs
+      /* Copy the info in regs_live into the element of after_insn_hard_regs
 	 for the current position in the rtl code.  */
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -228,27 +210,18 @@ stupid_life_analysis (f, nregs, file)
 	  last_call_suid = INSN_SUID (insn);
 	  IOR_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
 			    call_used_reg_set);
+
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (call_used_regs[i])
 	      regs_live[i] = 0;
 	}
 
-      if (GET_CODE (insn) == JUMP_INSN)
-	last_jump_suid = INSN_SUID (insn);
-
-      if (GET_CODE (insn) == CODE_LABEL)
-	last_label_suid = INSN_SUID (insn);
-
       /* Update which hard regs are currently live
 	 and also the birth and death suids of pseudo regs
 	 based on the pattern of this insn.  */
 
-      if (GET_CODE (insn) == INSN
-	  || GET_CODE (insn) == CALL_INSN
-	  || GET_CODE (insn) == JUMP_INSN)
-	{
-	  stupid_mark_refs (PATTERN (insn), insn);
-	}
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	stupid_mark_refs (PATTERN (insn), insn);
     }
 
   /* Now decide the order in which to allocate the pseudo registers.  */
@@ -265,7 +238,6 @@ stupid_life_analysis (f, nregs, file)
   for (i = LAST_VIRTUAL_REGISTER + 1; i < max_regno; i++)
     {
       register int r = reg_order[i];
-      enum reg_class class;
 
       /* Some regnos disappear from the rtl.  Ignore them to avoid crash.  */
       if (regno_reg_rtx[r] == 0)
@@ -273,27 +245,19 @@ stupid_life_analysis (f, nregs, file)
 
       /* Now find the best hard-register class for this pseudo register */
       if (N_REG_CLASSES > 1)
-	{
-	  class = reg_preferred_class (r);
-
-	  reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r], class,
-					     PSEUDO_REGNO_MODE (r),
-					     reg_where_born[r],
-					     reg_where_dead[r],
-					     reg_crosses_blocks[r]);
-	}
-      else
-	reg_renumber[r] = -1;
-
-      /* If no reg available in that class,
-	 try any reg.  */
-      if (reg_renumber[r] == -1)
-	reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r],
-					   GENERAL_REGS,
+	reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r], 
+					   reg_preferred_class (r),
 					   PSEUDO_REGNO_MODE (r),
 					   reg_where_born[r],
-					   reg_where_dead[r],
-					   reg_crosses_blocks[r]);
+					   reg_where_dead[r]);
+
+      /* If no reg available in that class, try alternate class.  */
+      if (reg_renumber[r] == -1 && reg_alternate_class (r) != NO_REGS)
+	reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r],
+					   reg_alternate_class (r),
+					   PSEUDO_REGNO_MODE (r),
+					   reg_where_born[r],
+					   reg_where_dead[r]);
     }
 
   if (file)
@@ -313,10 +277,12 @@ stupid_reg_compare (r1p, r2p)
   int tem;
 
   tem = len2 - len1;
-  if (tem != 0) return tem;
+  if (tem != 0)
+    return tem;
 
   tem = reg_n_refs[r1] - reg_n_refs[r2];
-  if (tem != 0) return tem;
+  if (tem != 0)
+    return tem;
 
   /* If regs are equally good, sort by regno,
      so that the results of qsort leave nothing to chance.  */
@@ -332,18 +298,14 @@ stupid_reg_compare (r1p, r2p)
    Return -1 if such a block cannot be found.
 
    If CALL_PRESERVED is nonzero, insist on registers preserved
-   over subroutine calls, and return -1 if cannot find such.
-   If CROSSES_BLOCKS is nonzero, reject registers for which
-   PRESERVE_DEATH_INFO_REGNO_P is true.  */
+   over subroutine calls, and return -1 if cannot find such.  */
 
 static int
-stupid_find_reg (call_preserved, class, mode,
-		 born_insn, dead_insn, crosses_blocks)
+stupid_find_reg (call_preserved, class, mode, born_insn, dead_insn)
      int call_preserved;
      enum reg_class class;
      enum machine_mode mode;
      int born_insn, dead_insn;
-     int crosses_blocks;
 {
   register int i, ins;
 #ifdef HARD_REG_SET
@@ -380,13 +342,6 @@ stupid_find_reg (call_preserved, class, mode,
       int regno = i;
 #endif
 
-      /* If we need reasonable death info on this hard reg,
-	 don't use it for anything whose life spans a label or a jump.  */
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-      if (PRESERVE_DEATH_INFO_REGNO_P (regno)
-	  && crosses_blocks)
-	continue;
-#endif
       /* If a register has screwy overlap problems,
 	 don't use it at all if not optimizing.
 	 Actually this is only for the 387 stack register,
@@ -414,10 +369,11 @@ stupid_find_reg (call_preserved, class, mode,
 	      return regno;
 	    }
 #ifndef REG_ALLOC_ORDER
-	  i += j;			/* Skip starting points we know will lose */
+	  i += j;		/* Skip starting points we know will lose */
 #endif
 	}
     }
+
   return -1;
 }
 
@@ -445,13 +401,16 @@ stupid_mark_refs (x, insn)
 	    {
 	      register int j
 		= HARD_REGNO_NREGS (regno, GET_MODE (SET_DEST (x)));
+
 	      while (--j >= 0)
 		{
 		  regs_ever_live[regno+j] = 1;
 		  regs_live[regno+j] = 0;
+
 		  /* The following line is for unused outputs;
 		     they do get stored even though never used again.  */
 		  MARK_LIVE_AFTER (insn, regno);
+
 		  /* When a hard reg is clobbered, mark it in use
 		     just before this insn, so it is live all through.  */
 		  if (code == CLOBBER && INSN_SUID (insn) > 0)
@@ -470,6 +429,7 @@ stupid_mark_refs (x, insn)
 	      int where_born = INSN_SUID (insn) - (code == CLOBBER);
 
 	      reg_where_born[regno] = where_born;
+
 	      /* The reg must live at least one insn even
 		 in it is never again used--because it has to go
 		 in SOME hard reg.  Mark it as dying after the current
@@ -486,11 +446,9 @@ stupid_mark_refs (x, insn)
 
 	      if (last_call_suid < reg_where_dead[regno])
 		reg_n_calls_crossed[regno] += 1;
-	      if (last_jump_suid < reg_where_dead[regno]
-		  || last_label_suid < reg_where_dead[regno])
-		reg_crosses_blocks[regno] = 1;
 	    }
 	}
+
       /* Record references from the value being set,
 	 or from addresses in the place being set if that's not a reg.
 	 If setting a SUBREG, we treat the entire reg as *used*.  */
