@@ -2720,14 +2720,3 @@
   else
     return \"fmpysub,sgl %1,%2,%0,%5,%3\";
 }")
-
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:

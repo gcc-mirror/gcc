@@ -3316,13 +3316,3 @@
    (set (reg:CC 0) (compare (match_dup 0) (const_int 0)))]
   ""
   "subxcc %r1,0,%0")
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:

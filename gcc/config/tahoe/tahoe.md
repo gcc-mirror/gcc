@@ -2143,14 +2143,3 @@
 ;    = gen_rtx (CONST_INT, VOIDmode, exact_log2 (INTVAL (operands[1])));
 ;  return \"bbs %1,%0,%l2\";
 ;}")
-
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:

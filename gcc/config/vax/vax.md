@@ -2048,13 +2048,3 @@
 			 INTVAL (operands[3]) & ~((1 << INTVAL (operands[2])) - 1));
   return \"rotl %2,%1,%0\;bicl2 %N3,%0\";
 }")
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:
