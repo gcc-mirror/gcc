@@ -9529,47 +9529,48 @@ mips_output_conditional_branch (insn,
 		.set macro
 		.set reorder
 	     l:
+	 */
 
-	   Because we have to jump four bytes *past* the following
-	   instruction if this branch was annulled, we can't just use
-	   a label, as in the picture above; there's no way to put the
-	   label after the next instruction, as the assembler does not
-	   accept `.L+4' as the target of a branch.  (We can't just
-	   wait until the next instruction is output; it might be a
-	   macro and take up more than four bytes.  Once again, we see
-	   why we want to eliminate macros.)
-	   
-	   If the branch is annulled, we jump four more bytes that we
-	   would otherwise; that way we skip the annulled instruction
-	   in the delay slot.  */
+	rtx orig_target;
+	rtx target = gen_label_rtx ();
 
-	const char *target 
-	  = ((mips_branch_likely || length == 16) ? ".+16" : ".+12");
-	char *c;
-
-	strcpy (buffer, "%(%<");
-	c = strchr (buffer, '\0');
-	/* Generate the reversed comparision.  This takes four 
-	   bytes.  */
+	output_asm_insn ("%(%<", NULL);
+	orig_target = operands[1];
+	operands[1] = target;
+	/* Generate the reversed comparision.  This takes four bytes.  */
 	if (float_p)
-	  sprintf (c, "%%*b%s\t%%Z2%s",
+	  sprintf (buffer, "%%*b%s\t%%Z2%s",
 		   inverted_p ? comp : inverted_comp,
 		   target);
 	else
-	  sprintf (c, "%%*b%s%s\t%s%s,%s",
+	  sprintf (buffer, "%%*b%s%s\t%s%s,%s",
 		   inverted_p ? comp : inverted_comp,
 		   need_z_p ? "z" : "",
 		   op1,
 		   op2,
 		   target);
-	strcat (c, "\n\tnop\n\tj\t%1");
+	output_asm_insn (buffer, operands);
+	operands[1] = orig_target;
+
+	output_asm_insn ("nop\n\tj\t%1", operands);
+
 	if (length == 16)
 	  /* The delay slot was unfilled.  Since we're inside
 	     .noreorder, the assembler will not fill in the NOP for
 	     us, so we must do it ourselves.  */
-	  strcat (buffer, "\n\tnop");
-	strcat (buffer, "%>%)");
-	return buffer;
+	  output_asm_insn ("nop", 0);
+	else
+	  {
+	    /* Output delay slot instruction.  */
+	    rtx insn = final_sequence;
+	    final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file,
+			     optimize, 0, 1);
+	    INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
+	  }
+	output_asm_insn ("%>%)", 0);
+	ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				   CODE_LABEL_NUMBER (target));
+	return "";
       }
 
     /* We do not currently use this code.  It handles jumps to

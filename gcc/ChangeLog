@@ -1,3 +1,8 @@
+2001-11-09  Jason Eckhardt  <jle@rice.edu>
+
+	* config/mips/mips.c (mips_output_conditional_branch): Do not hard
+	code the branch target as ".+16/.+12", but rather use labels.
+
 2001-11-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi2html: Use $MAKEINFO --no-split.
