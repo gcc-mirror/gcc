@@ -1,3 +1,11 @@
+2001-02-16  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_USE_VTT_PARM): Remove.
+	* decl2.c (maybe_retrofit_in_chrg): Don't create it.
+	* optimize.c (maybe_clone_body): Don't substitute it.
+	* call.c (build_new_method_call): Check in_chrg instead.
+	* init.c (expand_virtual_init): Likewise.
+
 2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* decl.c (check_tag_decl): Make sure a typedef for an anonymous

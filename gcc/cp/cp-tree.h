@@ -1983,13 +1983,6 @@ struct lang_decl
 #define DECL_VTT_PARM(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->u2.vtt_parm)
 
-/* If there's a DECL_VTT_PARM, this is a magic variable that indicates
-   whether or not the VTT parm should be used.  In a subobject
-   constructor, `true' is substituted for this value; in a complete
-   object constructor, `false' is substituted instead.  */
-#define DECL_USE_VTT_PARM(NODE) \
-  (TREE_CHAIN (DECL_VTT_PARM (NODE)))
-
 /* Non-zero if NODE is a FUNCTION_DECL for which a VTT parameter is
    required.  */
 #define DECL_NEEDS_VTT_PARM_P(NODE)			\

@@ -4426,9 +4426,10 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	     or destructor, then we fetch the VTT directly.
 	     Otherwise, we look it up using the VTT we were given.  */
 	  vtt = IDENTIFIER_GLOBAL_VALUE (get_vtt_name (current_class_type));
-	  vtt = build_unary_op (ADDR_EXPR, vtt, /*noconvert=*/1);
-	  vtt = build (COND_EXPR, TREE_TYPE (vtt), 
-		       DECL_USE_VTT_PARM (current_function_decl),
+	  vtt = decay_conversion (vtt);
+	  vtt = build (COND_EXPR, TREE_TYPE (vtt),
+		       build (EQ_EXPR, boolean_type_node,
+			      current_in_charge_parm, integer_zero_node),
 		       DECL_VTT_PARM (current_function_decl),
 		       vtt);
 	  if (TREE_VIA_VIRTUAL (basebinfo))
@@ -4436,7 +4437,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  my_friendly_assert (BINFO_SUBVTT_INDEX (basebinfo), 20010110);
 	  sub_vtt = build (PLUS_EXPR, TREE_TYPE (vtt), vtt,
 			   BINFO_SUBVTT_INDEX (basebinfo));
-	  sub_vtt = build_indirect_ref (sub_vtt, NULL);
 
 	  args = tree_cons (NULL_TREE, sub_vtt, args);
 	}

@@ -980,9 +980,6 @@ maybe_retrofit_in_chrg (fn)
       DECL_VTT_PARM (fn) = build_artificial_parm (vtt_parm_identifier, 
 						  vtt_parm_type);
       DECL_CONTEXT (DECL_VTT_PARM (fn)) = fn;
-      DECL_USE_VTT_PARM (fn) = build_artificial_parm (NULL_TREE,
-						      boolean_type_node);
-      DECL_CONTEXT (DECL_USE_VTT_PARM (fn)) = fn;
     }
 }
 
