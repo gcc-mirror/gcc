@@ -1,3 +1,7 @@
+2004-11-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (dg-xfail-if): Ignore if skipping the test.
+
 2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR target/16457
