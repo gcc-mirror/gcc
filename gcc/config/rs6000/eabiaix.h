@@ -28,7 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
-%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_AIX}} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
+%{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
+%{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: -D_CALL_AIX}}}} \
 %{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
 %{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
 %{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
@@ -49,5 +51,20 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC}"
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC}"
+
+/* Define this macro as a C expression for the initializer of an
+   array of string to tell the driver program which options are
+   defaults for this target and thus do not need to be handled
+   specially when using `MULTILIB_OPTIONS'.
+
+   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
+   the target makefile fragment or if none of the options listed in
+   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
+
+#undef	MULTILIB_DEFAULTS
+#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-aix" }
