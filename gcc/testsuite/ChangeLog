@@ -1,3 +1,7 @@
+2004-11-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (dg-target-list): Remove.
+
 2004-11-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/ia64-postinc.c: New test.
