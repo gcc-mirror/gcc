@@ -383,23 +383,6 @@ while (0)
    a field, not crossing a boundary for it.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Define this macro as an expression for the overall size of a structure
-   (given by STRUCT as a tree node) when the size computed from the fields is
-   SIZE and the alignment is ALIGN.
-
-   The default is to round SIZE up to a multiple of ALIGN.  */
-/* ??? Might need this for 80-bit double-extended floats.  */
-/* #define ROUND_TYPE_SIZE(STRUCT, SIZE, ALIGN) */
-
-/* Define this macro as an expression for the alignment of a structure (given
-   by STRUCT as a tree node) if the alignment computed in the usual way is
-   COMPUTED and the alignment explicitly specified was SPECIFIED.
-
-   The default is to use SPECIFIED if it is larger; otherwise, use the smaller
-   of COMPUTED and `BIGGEST_ALIGNMENT' */
-/* ??? Might need this for 80-bit double-extended floats.  */
-/* #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED) */
-
 /* An integer expression for the size in bits of the largest integer machine
    mode that should actually be used.  */
 
@@ -465,8 +448,11 @@ while (0)
 
 /* A C expression for the size in bits of the type `long double' on the target
    machine.  If you don't define this, the default is two words.  */
-/* ??? We have an 80 bit extended double format.  */
-#define LONG_DOUBLE_TYPE_SIZE 64
+#define LONG_DOUBLE_TYPE_SIZE 128
+
+/* Tell real.c that this is the 80-bit Intel extended float format
+   packaged in a 128-bit entity.  */
+#define INTEL_EXTENDED_IEEE_FORMAT
 
 /* An expression whose value is 1 or 0, according to whether the type `char'
    should be signed or unsigned by default.  The user can always override this
@@ -812,7 +798,6 @@ while (0)
 /* A C expression for the number of consecutive hard registers, starting at
    register number REGNO, required to hold a value of mode MODE.  */
 
-/* ??? x86 80-bit FP values only require 1 register.  */
 /* ??? We say that CCmode values require two registers.  This allows us to
    easily store the normal and inverted values.  We use CCImode to indicate
    a single predicate register.  */
@@ -821,19 +806,20 @@ while (0)
   ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
    : PR_REGNO_P (REGNO) && (MODE) == CCmode ? 2				\
    : PR_REGNO_P (REGNO) && (MODE) == CCImode ? 1			\
-   : FR_REGNO_P (REGNO) && (MODE) == XFmode ? 1				\
+   : FR_REGNO_P (REGNO) && (MODE) == TFmode ? 1				\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* A C expression that is nonzero if it is permissible to store a value of mode
    MODE in hard register number REGNO (or in several registers starting with
    that one).  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (FR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) != MODE_CC		\
+#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
+  (FR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) != MODE_CC && (MODE) != TImode \
    : PR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
-   : GR_REGNO_P (REGNO) ? (MODE) != XFmode && (MODE) != CCImode		\
+   : GR_REGNO_P (REGNO) ? (MODE) != CCImode && (MODE) != TFmode		\
    : AR_REGNO_P (REGNO) ? (MODE) == DImode				\
-   : 1)
+   : BR_REGNO_P (REGNO) ? (MODE) == DImode				\
+   : 0)
 
 /* A C expression that is nonzero if it is desirable to choose register
    allocation so as to avoid move instructions between a value of mode MODE1
@@ -846,11 +832,11 @@ while (0)
    INTEGRAL_MODE_P or FLOAT_MODE_P and the other is not.  Otherwise, it is
    true.  */
 /* Don't tie integer and FP modes, as that causes us to get integer registers
-   allocated for FP instructions.  XFmode only supported in FP registers at
-   the moment, so we can't tie it with any other modes.  */
+   allocated for FP instructions.  TFmode only supported in FP registers so
+   we can't tie it with any other modes.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
   ((GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)) \
-   && (((MODE1) == XFmode) == ((MODE2) == XFmode)))
+   && (((MODE1) == TFmode) == ((MODE2) == TFmode)))
 
 /* Define this macro if the compiler should avoid copies to/from CCmode
    registers.  You should only define this macro if support fo copying to/from
@@ -1044,10 +1030,16 @@ enum reg_class
    registers of CLASS1 can only be copied to registers of class CLASS2 by
    storing a register of CLASS1 into memory and loading that memory location
    into a register of CLASS2.  */
-/* ??? We may need this for XFmode moves between FR and GR regs.  Using
-   getf.sig/getf.exp almost works, but the result in the GR regs is not
-   properly formatted and has two extra bits.  */
-/* #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, M) */
+
+#if 0
+/* ??? May need this, but since we've disallowed TFmode in GR_REGS,
+   I'm not quite sure how it could be invoked.  The normal problems
+   with unions should be solved with the addressof fiddling done by
+   movtf and friends.  */
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
+  ((MODE) == TFmode && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)	\
+			|| ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
+#endif
 
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
@@ -1055,7 +1047,7 @@ enum reg_class
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((MODE) == CCmode && (CLASS) == PR_REGS ? 2			\
-   : ((CLASS) == FR_REGS && (MODE) == XFmode) ? 1		\
+   : ((CLASS) == FR_REGS && (MODE) == TFmode) ? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If defined, gives a class of registers that cannot be used as the
@@ -1786,11 +1778,7 @@ do {									\
    on the machine mode of the memory reference it is used for or if the address
    is valid for some modes but not others.  */
 
-/* ??? Strictly speaking this isn't true, because we can use any increment with
-   any mode.  Unfortunately, the RTL implies that the increment depends on the
-   mode, so we need this for now.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)			\
   if (GET_CODE (ADDR) == POST_DEC || GET_CODE (ADDR) == POST_INC)	\
     goto LABEL;
 
@@ -1996,11 +1984,8 @@ do {									\
 /* Output of Data.  */
 
 /* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a floating-point constant of `XFmode', `DFmode', `SFmode',
+   to assemble a floating-point constant of `TFmode', `DFmode', `SFmode',
    respectively, whose value is VALUE.  */
-
-/* ??? This has not been tested.  Long doubles are really 10 bytes not 12
-   bytes on ia64.  */
 
 /* ??? Must reverse the word order for big-endian code?  */
 
@@ -2008,8 +1993,8 @@ do {									\
 do {									\
   long t[3];								\
   REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, t);				\
-  fprintf (FILE, "\tdata8 0x%08lx, 0x%08lx, 0x%08lx\n",			\
-	   t[0] & 0xffffffff, t[1] & 0xffffffff, t[2] & 0xffffffff);	\
+  fprintf (FILE, "\tdata4 0x%08lx, 0x%08lx, 0x%08lx, 0x%08lx\n",	\
+	   t[0] & 0xffffffff, t[1] & 0xffffffff, t[2] & 0xffffffff, 0);	\
 } while (0)
 
 /* ??? Must reverse the word order for big-endian code?  */
@@ -2667,13 +2652,16 @@ do {									\
 				  CONSTANT_P_RTX}},			\
 { "shladd_operand", {CONST_INT}},					\
 { "fetchadd_operand", {CONST_INT}},					\
-{ "reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE, CONSTANT_P_RTX}},	\
+{ "reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE}},			\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "call_multiple_values_operation", {PARALLEL}},			\
 { "predicate_operator", {NE, EQ}},					\
 { "ar_lc_reg_operand", {REG}},						\
-{ "ar_ccv_reg_operand", {REG}},
+{ "ar_ccv_reg_operand", {REG}},						\
+{ "general_tfmode_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
+{ "destination_tfmode_operand", {SUBREG, REG, MEM}},			\
+{ "tfreg_or_fp01_operand", {REG, CONST_DOUBLE}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */

@@ -59,9 +59,14 @@ extern int ia64_direct_return PARAMS((void));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ar_lc_reg_operand PARAMS((rtx, enum machine_mode));
 extern int ar_ccv_reg_operand PARAMS((rtx, enum machine_mode));
+extern int general_tfmode_operand PARAMS((rtx, enum machine_mode));
+extern int destination_tfmode_operand PARAMS((rtx, enum machine_mode));
+extern int tfreg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 
 extern int ia64_move_ok PARAMS((rtx, rtx));
 extern rtx ia64_gp_save_reg PARAMS((int));
+extern rtx ia64_split_timode PARAMS((rtx[], rtx, rtx));
+extern rtx spill_tfmode_operand PARAMS((rtx, int));
 
 extern void ia64_expand_load_address PARAMS((rtx, rtx));
 extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
@@ -112,6 +117,3 @@ extern void ia64_output_end_prologue PARAMS((FILE *));
 extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
 extern int ia64_dbx_register_number PARAMS((int));
-
-/* ??? Flag defined in toplev.c, for ia64.md -fssa hack.  */
-extern int flag_ssa;

@@ -1,3 +1,45 @@
+#ifdef L__divtf3
+// Compute a 80-bit IEEE double-extended quotient.
+//
+// From the Intel IA-64 Optimization Guide, choose the minimum latency
+// alternative.
+//
+// farg0 holds the dividend.  farg1 holds the divisor.
+
+	.text
+	.align 16
+	.global __divtf3
+	.proc __divtf3
+__divtf3:
+	frcpa f10, p6 = farg0, farg1
+	;;
+(p6)	fnma.s1 f11 = farg1, f10, f1
+	;;
+(p6)	fma.s1 f12 = f11, f10, f10
+(p6)	fma.s1 f11 = f11, f11, f0
+	;;
+(p6)	fma.s1 f11 = f11, f12, f12
+	;;
+(p6)	fnma.s1 f12 = farg1, f11, f1
+(p6)	fma.s1 f10 = farg0, f10, f0
+	;;
+(p6)	fma.s1 f11 = f12, f11, f11
+(p6)	fnma.s1 f12 = farg1, f10, farg0
+	;;
+(p6)	fma.s1 f10 = f12, f11, f10
+(p6)	fnma.s1 f12 = farg1, f11, f1
+	;;
+(p6)	fnma.s1 f8 = farg1, f10, farg0
+(p6)	fma.s1 f9 = f12, f11, f11
+	;;
+(p6)	fma f10 = f8, f9, f10
+	;;
+	mov fret0 = f10
+	br.ret.sptk rp
+	;;
+	.endp __divtf3
+#endif
+
 #ifdef L__divdf3
 // Compute a 64-bit IEEE double quotient.
 //

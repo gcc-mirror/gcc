@@ -207,11 +207,15 @@ extern REAL_VALUE_TYPE real_value_truncate	PARAMS ((enum machine_mode,
   ereal_from_uint (&d, lo, hi, mode)
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
+#if defined(INTEL_EXTENDED_IEEE_FORMAT) && MAX_LONG_DOUBLE_TYPE_SIZE == 128
+#define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etarldouble ((IN), (OUT)))
+#else
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) 		\
    (LONG_DOUBLE_TYPE_SIZE == 64 ? etardouble ((IN), (OUT))	\
     : LONG_DOUBLE_TYPE_SIZE == 96 ? etarldouble ((IN), (OUT))	\
     : LONG_DOUBLE_TYPE_SIZE == 128 ? etartdouble ((IN), (OUT))  \
     : abort())
+#endif
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) (etardouble ((IN), (OUT)))
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long. */
