@@ -1262,7 +1262,13 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   insn = NEXT_INSN (copy_start);
   while (insn != safety_label)
     {
-      if (insn != start_label)
+      /* ??? We can't delete a NOTE_INSN_DELETED_LABEL unless we fix the
+	 DECL_RTL field of the associated LABEL_DECL to point to (one of)
+	 the new copies of the label.  Otherwise, we hit an abort in
+	 dwarfout.c/dwarf2out.c.  */
+      if (insn != start_label
+	  && ! (GET_CODE (insn) == NOTE
+		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
 	insn = delete_insn (insn);
       else
 	insn = NEXT_INSN (insn);
