@@ -243,6 +243,63 @@ expunge_block (basic_block b)
      clear out BB pointer of dead statements consistently.  */
 }
 
+/* Connect E to E->src.  */
+
+static inline void
+connect_src (edge e)
+{
+  VEC_safe_push (edge, e->src->succs, e);
+}
+
+/* Connect E to E->dest.  */
+
+static inline void
+connect_dest (edge e)
+{
+  basic_block dest = e->dest;
+  VEC_safe_push (edge, dest->preds, e);
+  e->dest_idx = EDGE_COUNT (dest->preds) - 1;
+}
+
+/* Disconnect edge E from E->src.  */
+
+static inline void
+disconnect_src (edge e)
+{
+  basic_block src = e->src;
+  edge_iterator ei;
+  edge tmp;
+
+  for (ei = ei_start (src->succs); (tmp = ei_safe_edge (ei)); )
+    {
+      if (tmp == e)
+	{
+	  VEC_unordered_remove (edge, src->succs, ei.index);
+	  return;
+	}
+      else
+	ei_next (&ei);
+    }
+
+  gcc_unreachable ();
+}
+
+/* Disconnect edge E from E->dest.  */
+
+static inline void
+disconnect_dest (edge e)
+{
+  basic_block dest = e->dest;
+  unsigned int dest_idx = e->dest_idx;
+
+  VEC_unordered_remove (edge, dest->preds, dest_idx);
+
+  /* If we removed an edge in the middle of the edge vector, we need
+     to update dest_idx of the edge that moved into the "hole".  */
+  if (dest_idx < EDGE_COUNT (dest->preds))
+    EDGE_PRED (dest, dest_idx)->dest_idx = dest_idx;
+}
+
 /* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
    created edge.  Use this only if you are sure that this edge can't
    possibly already exist.  */
@@ -254,13 +311,12 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   e = ggc_alloc_cleared (sizeof (*e));
   n_edges++;
 
-  VEC_safe_push (edge, src->succs, e);
-  VEC_safe_push (edge, dst->preds, e);
-
   e->src = src;
   e->dest = dst;
   e->flags = flags;
-  e->dest_idx = EDGE_COUNT (dst->preds) - 1;
+
+  connect_src (e);
+  connect_dest (e);
 
   execute_on_growing_pred (e);
 
@@ -334,38 +390,10 @@ make_single_succ_edge (basic_block src, basic_block dest, int flags)
 void
 remove_edge (edge e)
 {
-  edge tmp;
-  basic_block src, dest;
-  unsigned int dest_idx;
-  bool found = false;
-  edge_iterator ei;
-
   execute_on_shrinking_pred (e);
 
-  src = e->src;
-  dest = e->dest;
-  dest_idx = e->dest_idx;
-
-  for (ei = ei_start (src->succs); (tmp = ei_safe_edge (ei)); )
-    {
-      if (tmp == e)
-	{
-	  VEC_unordered_remove (edge, src->succs, ei.index);
-	  found = true;
-	  break;
-	}
-      else
-	ei_next (&ei);
-    }
-
-  gcc_assert (found);
-
-  VEC_unordered_remove (edge, dest->preds, dest_idx);
-
-  /* If we removed an edge in the middle of the edge vector, we need
-     to update dest_idx of the edge that moved into the "hole".  */
-  if (dest_idx < EDGE_COUNT (dest->preds))
-    EDGE_PRED (dest, dest_idx)->dest_idx = dest_idx;
+  disconnect_src (e);
+  disconnect_dest (e);
 
   free_edge (e);
 }
@@ -375,22 +403,15 @@ remove_edge (edge e)
 void
 redirect_edge_succ (edge e, basic_block new_succ)
 {
-  basic_block dest = e->dest;
-  unsigned int dest_idx = e->dest_idx;
-
   execute_on_shrinking_pred (e);
 
-  VEC_unordered_remove (edge, dest->preds, dest_idx);
+  disconnect_dest (e);
 
-  /* If we removed an edge in the middle of the edge vector, we need
-     to update dest_idx of the edge that moved into the "hole".  */
-  if (dest_idx < EDGE_COUNT (dest->preds))
-    EDGE_PRED (dest, dest_idx)->dest_idx = dest_idx;
+  e->dest = new_succ;
 
   /* Reconnect the edge to the new successor block.  */
-  VEC_safe_push (edge, new_succ->preds, e);
-  e->dest = new_succ;
-  e->dest_idx = EDGE_COUNT (new_succ->preds) - 1;
+  connect_dest (e);
+
   execute_on_growing_pred (e);
 }
 
@@ -423,28 +444,12 @@ redirect_edge_succ_nodup (edge e, basic_block new_succ)
 void
 redirect_edge_pred (edge e, basic_block new_pred)
 {
-  edge tmp;
-  edge_iterator ei;
-  bool found = false;
+  disconnect_src (e);
 
-  /* Disconnect the edge from the old predecessor block.  */
-  for (ei = ei_start (e->src->succs); (tmp = ei_safe_edge (ei)); )
-    {
-      if (tmp == e)
-	{
-	  VEC_unordered_remove (edge, e->src->succs, ei.index);
-	  found = true;
-	  break;
-	}
-      else
-	ei_next (&ei);
-    }
-
-  gcc_assert (found);
+  e->src = new_pred;
 
   /* Reconnect the edge to the new predecessor block.  */
-  VEC_safe_push (edge, new_pred->succs, e);
-  e->src = new_pred;
+  connect_src (e);
 }
 
 /* Clear all basic block flags, with the exception of partitioning.  */

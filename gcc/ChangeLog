@@ -1,3 +1,10 @@
+2005-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfg.c (connect_src, connect_dest, disconnect_src,
+	disconnct_dest): New.
+	(unchecked_make_edge, remove_edge, redirect_edge_succ,
+	redirect_edge_pred): Use the new functions.
+
 2005-03-02  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/20276
