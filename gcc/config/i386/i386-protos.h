@@ -142,7 +142,8 @@ extern int x86_64_zero_extended_value PARAMS ((rtx));
 
 extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
-extern void ix86_split_fp_branch PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
+extern void ix86_split_fp_branch PARAMS ((enum rtx_code code, rtx,
+					  rtx, rtx, rtx, rtx));
 extern int ix86_hard_regno_mode_ok PARAMS ((int, enum machine_mode));
 extern int ix86_register_move_cost PARAMS ((enum machine_mode, enum reg_class,
 					    enum reg_class));
@@ -155,6 +156,7 @@ extern int ix86_memory_move_cost PARAMS ((enum machine_mode, enum reg_class,
 					  int));
 extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
 extern void emit_i387_cw_initialization PARAMS ((rtx, rtx));
+extern bool ix86_fp_jump_nontrivial_p PARAMS ((enum rtx_code));
 
 
 #ifdef TREE_CODE

@@ -6060,6 +6060,18 @@ ix86_expand_compare (code, second_test, bypass_test)
   return ret;
 }
 
+/* Return true if the CODE will result in nontrivial jump sequence.  */
+bool
+ix86_fp_jump_nontrivial_p (code)
+    enum rtx_code code;
+{
+  enum rtx_code bypass_code, first_code, second_code;
+  if (!TARGET_CMOVE)
+    return true;
+  ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
+  return bypass_code != NIL || second_code != NIL;
+}
+
 void
 ix86_expand_branch (code, label)
      enum rtx_code code;
@@ -6084,34 +6096,48 @@ ix86_expand_branch (code, label)
     case DFmode:
     case XFmode:
     case TFmode:
-      /* Don't expand the comparison early, so that we get better code
-	 when jump or whoever decides to reverse the comparison.  */
       {
 	rtvec vec;
 	int use_fcomi;
+	enum rtx_code bypass_code, first_code, second_code;
 
 	code = ix86_prepare_fp_compare_args (code, &ix86_compare_op0,
 					     &ix86_compare_op1);
+	
+	ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
-	tmp = gen_rtx_fmt_ee (code, VOIDmode,
-			      ix86_compare_op0, ix86_compare_op1);
-	tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-				    gen_rtx_LABEL_REF (VOIDmode, label),
-				    pc_rtx);
-	tmp = gen_rtx_SET (VOIDmode, pc_rtx, tmp);
+	/* Check whether we will use the natural sequence with one jump.  If
+	   so, we can expand jump early.  Otherwise delay expansion by
+	   creating compound insn to not confuse optimizers.  */
+	if (bypass_code == NIL && second_code == NIL
+	    && TARGET_CMOVE)
+	  {
+	    ix86_split_fp_branch (code, ix86_compare_op0, ix86_compare_op1,
+				  gen_rtx_LABEL_REF (VOIDmode, label),
+				  pc_rtx, NULL_RTX);
+	  }
+	else
+	  {
+	    tmp = gen_rtx_fmt_ee (code, VOIDmode,
+				  ix86_compare_op0, ix86_compare_op1);
+	    tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+					gen_rtx_LABEL_REF (VOIDmode, label),
+					pc_rtx);
+	    tmp = gen_rtx_SET (VOIDmode, pc_rtx, tmp);
 
-	use_fcomi = ix86_use_fcomi_compare (code);
-	vec = rtvec_alloc (3 + !use_fcomi);
-	RTVEC_ELT (vec, 0) = tmp;
-	RTVEC_ELT (vec, 1)
-	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 18));
-	RTVEC_ELT (vec, 2)
-	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 17));
-	if (! use_fcomi)
-	  RTVEC_ELT (vec, 3)
-	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (HImode));
+	    use_fcomi = ix86_use_fcomi_compare (code);
+	    vec = rtvec_alloc (3 + !use_fcomi);
+	    RTVEC_ELT (vec, 0) = tmp;
+	    RTVEC_ELT (vec, 1)
+	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 18));
+	    RTVEC_ELT (vec, 2)
+	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 17));
+	    if (! use_fcomi)
+	      RTVEC_ELT (vec, 3)
+		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (HImode));
 
-        emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+	    emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+	  }
 	return;
       }
 
@@ -6235,12 +6261,13 @@ ix86_expand_branch (code, label)
 
 /* Split branch based on floating point condition.  */
 void
-ix86_split_fp_branch (condition, op1, op2, target1, target2, tmp)
-     rtx condition, op1, op2, target1, target2, tmp;
+ix86_split_fp_branch (code, op1, op2, target1, target2, tmp)
+     enum rtx_code code;
+     rtx op1, op2, target1, target2, tmp;
 {
   rtx second, bypass;
   rtx label = NULL_RTX;
-  enum rtx_code code = GET_CODE (condition);
+  rtx condition;
 
   if (target2 != pc_rtx)
     {

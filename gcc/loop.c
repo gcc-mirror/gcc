@@ -705,6 +705,18 @@ scan_loop (loop, flags)
 		}
 	    }
 
+	  /* For parallels, add any possible uses to the depencies, as we can't move
+	     the insn without resolving them first.  */
+	  if (GET_CODE (PATTERN (p)) == PARALLEL)
+	    {
+	      for (i = 0; i < XVECLEN (PATTERN (p), 0); i++)
+		{
+		  rtx x = XVECEXP (PATTERN (p), 0, i);
+		  if (GET_CODE (x) == USE)
+		    dependencies = gen_rtx_EXPR_LIST (VOIDmode, XEXP (x, 0), dependencies);
+		}
+	    }
+
 	  /* Don't try to optimize a register that was made
 	     by loop-optimization for an inner loop.
 	     We don't know its life-span, so we can't compute the benefit.  */
