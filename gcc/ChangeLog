@@ -1,3 +1,14 @@
+2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi (--exec-prefix, --bindir, --libdir,
+	--with-slibdir, --infodir, --mandir, --with-cpp-install-dir):
+	Document.
+	(--enable-cpp): Change to document --disable-cpp instead; update
+	to reflect current default.
+	(--without-fast-fixincludes): Remove documentation.
+	(Final install): Document installation directories in more
+	detail.  Document use of make dvi.
+
 Tue Jun 12 19:01:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_replace_rtx_1): Fix previous patch.
