@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -206,9 +206,9 @@ static char *spec_machine = DEFAULT_TARGET_MACHINE;
    When -b is used, the value comes from the `specs' file.  */
 
 #ifdef CROSS_COMPILE
-static int cross_compile = 1;
+static char *cross_compile = "1";
 #else
-static int cross_compile = 0;
+static char *cross_compile = "0";
 #endif
 
 /* The number of errors that have occurred; the link phase will not be
@@ -231,6 +231,7 @@ extern char *version_string;
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 
+static void init_spec		PROTO((int));
 static void set_spec		PROTO((char *, char *));
 static struct compiler *lookup_compiler PROTO((char *, int, char *));
 static char *build_search_list	PROTO((struct path_prefix *, char *, int));
@@ -513,10 +514,6 @@ static char *multilib_defaults;
 #endif
 
 static char *multilib_defaults_raw[] = MULTILIB_DEFAULTS;
-
-#ifdef EXTRA_SPECS
-static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
-#endif
 
 struct user_specs {
   struct user_specs *next;
@@ -1179,14 +1176,89 @@ skip_whitespace (p)
 
 struct spec_list
 {
-  char *name;                 /* Name of the spec.  */
-  char *spec;                 /* The spec itself.  */
-  struct spec_list *next;     /* Next spec in linked list.  */
+				/* The following 2 fields must be first */
+				/* to allow EXTRA_SPECS to be initialized */
+  char *name;			/* name of the spec.  */
+  char *ptr;			/* available ptr if no static pointer */
+
+				/* The following fields are not initialized */
+				/* by EXTRA_SPECS */
+  char **ptr_spec;		/* pointer to the spec itself.  */
+  struct spec_list *next;	/* Next spec in linked list.  */
+  int name_len;			/* length of the name */
+  int alloc_p;			/* whether string was allocated */
 };
 
-/* List of specs that have been defined so far.  */
+#define INIT_STATIC_SPEC(NAME,PTR) \
+{ NAME, NULL_PTR, PTR, (struct spec_list *)0, sizeof (NAME)-1, 0 }
 
-static struct spec_list *specs = (struct spec_list *) 0;
+/* List of statically defined specs */
+static struct spec_list static_specs[] = {
+  INIT_STATIC_SPEC ("asm",			&asm_spec),
+  INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
+  INIT_STATIC_SPEC ("cpp",			&cpp_spec),
+  INIT_STATIC_SPEC ("cc1",			&cc1_spec),
+  INIT_STATIC_SPEC ("cc1plus",			&cc1plus_spec),
+  INIT_STATIC_SPEC ("endfile",			&endfile_spec),
+  INIT_STATIC_SPEC ("link",			&link_spec),
+  INIT_STATIC_SPEC ("lib",			&lib_spec),
+  INIT_STATIC_SPEC ("libgcc",			&libgcc_spec),
+  INIT_STATIC_SPEC ("startfile",		&startfile_spec),
+  INIT_STATIC_SPEC ("switches_need_spaces",	&switches_need_spaces),
+  INIT_STATIC_SPEC ("signed_char",		&signed_char_spec),
+  INIT_STATIC_SPEC ("predefines",		&cpp_predefines),
+  INIT_STATIC_SPEC ("cross_compile",		&cross_compile),
+  INIT_STATIC_SPEC ("version",			&compiler_version),
+  INIT_STATIC_SPEC ("multilib",			&multilib_select),
+  INIT_STATIC_SPEC ("multilib_defaults",	&multilib_defaults),
+  INIT_STATIC_SPEC ("multilib_extra",		&multilib_extra),
+  INIT_STATIC_SPEC ("multilib_matches",		&multilib_matches),
+};
+
+#ifdef EXTRA_SPECS		/* additional specs needed */
+static struct spec_list extra_specs[] = { EXTRA_SPECS };
+#endif
+
+/* List of dynamically allocates specs that have been defined so far.  */
+
+static struct spec_list *specs = (struct spec_list *)0;
+
+
+/* Initialize the specs lookup routines.  */
+
+static void
+init_spec (use_extra_p)
+     int use_extra_p;
+{
+  struct spec_list *next = (struct spec_list *)0;
+  struct spec_list *sl   = (struct spec_list *)0;
+  int i;
+
+  if (specs)
+    return;			/* already initialized */
+
+#ifdef EXTRA_SPECS
+  if (use_extra_p)
+    for (i = (sizeof (extra_specs) / sizeof (extra_specs[0])) - 1; i >= 0; i--)
+      {
+	sl = &extra_specs[i];
+	sl->next = next;
+	sl->name_len = strlen (sl->name);
+	sl->ptr_spec = &sl->ptr;
+	next = sl;
+      }
+#endif
+
+  for (i = (sizeof (static_specs) / sizeof (static_specs[0])) - 1; i >= 0; i--)
+    {
+      sl = &static_specs[i];
+      sl->next = next;
+      next = sl;
+    }
+
+  specs = sl;
+}
+
 
 /* Change the value of spec NAME to SPEC.  If SPEC is empty, then the spec is
    removed; If the spec starts with a + then SPEC is added to the end of the
@@ -1199,10 +1271,14 @@ set_spec (name, spec)
 {
   struct spec_list *sl;
   char *old_spec;
+  int name_len = strlen (name);
+  int i;
+
+  /* See if the
 
   /* See if the spec already exists */
   for (sl = specs; sl; sl = sl->next)
-    if (strcmp (sl->name, name) == 0)
+    if (name_len == sl->name_len && !strcmp (sl->name, name))
       break;
 
   if (!sl)
@@ -1210,73 +1286,24 @@ set_spec (name, spec)
       /* Not found - make it */
       sl = (struct spec_list *) xmalloc (sizeof (struct spec_list));
       sl->name = save_string (name, strlen (name));
-      sl->spec = save_string ("", 0);
+      sl->name_len = name_len;
+      sl->ptr_spec = &sl->ptr;
+      sl->alloc_p = 0;
+      *(sl->ptr_spec) = "";
       sl->next = specs;
       specs = sl;
     }
 
-  old_spec = sl->spec;
-  if (name && spec[0] == '+' && isspace (spec[1]))
-    sl->spec = concat (old_spec, spec + 1, NULL_PTR);
-  else
-    sl->spec = save_string (spec, strlen (spec));
-
-  if (! strcmp (name, "asm"))
-    asm_spec = sl->spec;
-  else if (! strcmp (name, "asm_final"))
-    asm_final_spec = sl->spec;
-  else if (! strcmp (name, "cc1"))
-    cc1_spec = sl->spec;
-  else if (! strcmp (name, "cc1plus"))
-    cc1plus_spec = sl->spec;
-  else if (! strcmp (name, "cpp"))
-    cpp_spec = sl->spec;
-  else if (! strcmp (name, "endfile"))
-    endfile_spec = sl->spec;
-  else if (! strcmp (name, "lib"))
-    lib_spec = sl->spec;
-  else if (! strcmp (name, "libgcc"))
-    libgcc_spec = sl->spec;
-  else if (! strcmp (name, "link"))
-    link_spec = sl->spec;
-  else if (! strcmp (name, "predefines"))
-    cpp_predefines = sl->spec;
-  else if (! strcmp (name, "signed_char"))
-    signed_char_spec = sl->spec;
-  else if (! strcmp (name, "startfile"))
-    startfile_spec = sl->spec;
-  else if (! strcmp (name, "switches_need_spaces"))
-    switches_need_spaces = sl->spec;
-  else if (! strcmp (name, "cross_compile"))
-    cross_compile = atoi (sl->spec);
-  else if (! strcmp (name, "multilib"))
-    multilib_select = sl->spec;
-  else if (! strcmp (name, "multilib_matches"))
-    multilib_matches = sl->spec;
-  else if (! strcmp (name, "multilib_extra"))
-    multilib_extra = sl->spec;
-  else if (! strcmp (name, "multilib_defaults"))
-    multilib_defaults = sl->spec;
-  else if (! strcmp (name, "version"))
-    compiler_version = sl->spec;
-#ifdef EXTRA_SPECS
-  else
-    {
-      int i;
-      for (i = 0; i < sizeof (extra_specs) / sizeof (extra_specs[0]); i++)
-	{
-	  if (! strcmp (name, extra_specs[i].name))
-	    {
-	      extra_specs[i].spec = sl->spec;
-	      break;
-	    }
-	}
-    }
-#endif
+  old_spec = *(sl->ptr_spec);
+  *(sl->ptr_spec) = ((spec[0] == '+' && isspace (spec[1]))
+		     ? concat (old_spec, spec + 1, NULL_PTR)
+		     : save_string (spec, strlen (spec)));
 
   /* Free the old spec */
-  if (old_spec)
+  if (old_spec && sl->alloc_p)
     free (old_spec);
+
+  sl->alloc_p = 1;
 }
 
 /* Accumulate a command (program name and args), and run it.  */
@@ -2241,7 +2268,7 @@ process_command (argc, argv)
     }
 
   temp = getenv ("LIBRARY_PATH");
-  if (temp && ! cross_compile)
+  if (temp && *cross_compile != '0')
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
@@ -2273,7 +2300,7 @@ process_command (argc, argv)
 
   /* Use LPATH like LIBRARY_PATH (for the CMU build program).  */
   temp = getenv ("LPATH");
-  if (temp && ! cross_compile)
+  if (temp && *cross_compile != '0')
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
@@ -2319,34 +2346,10 @@ process_command (argc, argv)
     {
       if (! strcmp (argv[i], "-dumpspecs"))
 	{
-	  printf ("*asm:\n%s\n\n", asm_spec);
-	  printf ("*asm_final:\n%s\n\n", asm_final_spec);
-	  printf ("*cpp:\n%s\n\n", cpp_spec);
-	  printf ("*cc1:\n%s\n\n", cc1_spec);
-	  printf ("*cc1plus:\n%s\n\n", cc1plus_spec);
-	  printf ("*endfile:\n%s\n\n", endfile_spec);
-	  printf ("*link:\n%s\n\n", link_spec);
-	  printf ("*lib:\n%s\n\n", lib_spec);
-	  printf ("*libgcc:\n%s\n\n", libgcc_spec);
-	  printf ("*startfile:\n%s\n\n", startfile_spec);
-	  printf ("*switches_need_spaces:\n%s\n\n", switches_need_spaces);
-	  printf ("*signed_char:\n%s\n\n", signed_char_spec);
-	  printf ("*predefines:\n%s\n\n", cpp_predefines);
-	  printf ("*cross_compile:\n%d\n\n", cross_compile);
-	  printf ("*version:\n%s\n\n", compiler_version);
-	  printf ("*multilib:\n%s\n\n", multilib_select);
-	  printf ("*multilib_defaults:\n%s\n\n", multilib_defaults);
-	  printf ("*multilib_extra:\n%s\n\n", multilib_extra);
-	  printf ("*multilib_matches:\n%s\n\n", multilib_matches);
-
-#ifdef EXTRA_SPECS
-	  {
-	    int j;
-	    for (j = 0; j < sizeof (extra_specs) / sizeof (extra_specs[0]); j++)
-	      printf ("*%s:\n%s\n\n", extra_specs[j].name,
-		      (extra_specs[j].spec) ? extra_specs[j].spec : "");
-	  }
-#endif
+	  struct spec_list *sl;
+	  init_spec (TRUE);
+	  for (sl = specs; sl; sl = sl->next)
+	    printf ("*%s:\n%s\n\n", sl->name, *(sl->ptr_spec));
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-dumpversion"))
@@ -3613,9 +3616,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      /* See if it's in the list */
 	      for (len = p - name, sl = specs; sl; sl = sl->next)
-		if (strncmp (sl->name, name, len) == 0 && !sl->name[len])
+		if (sl->name_len == len && !strncmp (sl->name, name, len))
 		  {
-		    name = sl->spec;
+		    name = *(sl->ptr_spec);
 		    break;
 		  }
 
@@ -4242,16 +4245,12 @@ main (argc, argv)
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
-    read_specs (specs_file);
-
-#ifdef EXTRA_SPECS
-  else
     {
-      int k;
-      for (k = 0; k < sizeof (extra_specs) / sizeof (extra_specs[0]); k++)
-	set_spec (extra_specs[k].name, extra_specs[k].spec);
+      init_spec (TRUE);
+      read_specs (specs_file);
     }
-#endif
+  else
+    init_spec (FALSE);
 
   /* Process any user specified specs in the order given on the command
      line.  */
@@ -4265,7 +4264,7 @@ main (argc, argv)
   /* The fact that these are done here, after reading the specs file,
      means that it cannot be found in these directories.
      But that's okay.  It should never be there anyway.  */
-  if (!cross_compile)
+  if (*cross_compile != '0')
     {
 #ifdef MD_EXEC_PREFIX
       add_prefix (&exec_prefixes, md_exec_prefix, 0, 0, NULL_PTR);
@@ -4854,10 +4853,10 @@ validate_all_switches ()
 	}
     }
 
-  /* look through the linked list of extra specs read from the specs file */
+  /* look through the linked list of specs read from the specs file */
   for (spec = specs; spec ; spec = spec->next)
     {
-      p = spec->spec;
+      p = *(spec->ptr_spec);
       while (c = *p++)
 	if (c == '%' && *p == '{')
 	  /* We have a switch spec.  */
@@ -4869,83 +4868,6 @@ validate_all_switches ()
     if (c == '%' && *p == '{')
       /* We have a switch spec.  */
       validate_switches (p + 1);
-
-  /* Now notice switches mentioned in the machine-specific specs.  */
-
-  p = asm_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = asm_final_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = cpp_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = signed_char_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = cc1_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = cc1plus_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = link_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = lib_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = libgcc_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-  p = startfile_spec;
-  while (c = *p++)
-    if (c == '%' && *p == '{')
-      /* We have a switch spec.  */
-      validate_switches (p + 1);
-
-#ifdef EXTRA_SPECS
-  {
-    int i;
-    for (i = 0; i < sizeof (extra_specs) / sizeof (extra_specs[0]); i++)
-      {
-	p = extra_specs[i].spec;
-	while (c = *p++)
-	  if (c == '%' && *p == '{')
-	    /* We have a switch spec.  */
-	    validate_switches (p + 1);
-      }
-  }
-#endif
-
 }
 
 /* Look at the switch-name that comes after START
