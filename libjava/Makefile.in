@@ -1431,9 +1431,15 @@ javax/accessibility/AccessibleTable.java \
 javax/accessibility/AccessibleTableModelChange.java \
 javax/accessibility/AccessibleText.java \
 javax/accessibility/AccessibleValue.java \
+javax/imageio/IIOException.java \
 javax/imageio/ImageReader.java \
 javax/imageio/ImageTranscoder.java \
 javax/imageio/ImageWriter.java \
+javax/imageio/event/IIOReadProgressListener.java \
+javax/imageio/event/IIOReadUpdateListener.java \
+javax/imageio/event/IIOReadWarningListener.java \
+javax/imageio/event/IIOWriteProgressListener.java \
+javax/imageio/event/IIOWriteWarningListener.java \
 javax/imageio/spi/IIOServiceProvider.java \
 javax/imageio/spi/ImageInputStreamSpi.java \
 javax/imageio/spi/ImageOutputStreamSpi.java \
@@ -4307,8 +4313,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/accessibility/AccessibleTableModelChange.P \
 .deps/javax/accessibility/AccessibleText.P \
 .deps/javax/accessibility/AccessibleValue.P \
-.deps/javax/imageio/ImageReader.P .deps/javax/imageio/ImageTranscoder.P \
-.deps/javax/imageio/ImageWriter.P \
+.deps/javax/imageio/IIOException.P .deps/javax/imageio/ImageReader.P \
+.deps/javax/imageio/ImageTranscoder.P .deps/javax/imageio/ImageWriter.P \
+.deps/javax/imageio/event/IIOReadProgressListener.P \
+.deps/javax/imageio/event/IIOReadUpdateListener.P \
+.deps/javax/imageio/event/IIOReadWarningListener.P \
+.deps/javax/imageio/event/IIOWriteProgressListener.P \
+.deps/javax/imageio/event/IIOWriteWarningListener.P \
 .deps/javax/imageio/spi/IIOServiceProvider.P \
 .deps/javax/imageio/spi/ImageInputStreamSpi.P \
 .deps/javax/imageio/spi/ImageOutputStreamSpi.P \
