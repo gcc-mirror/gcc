@@ -1,3 +1,8 @@
+2001-08-23  Lars Brinkhoff  <lars@nocrew.org>
+
+	* genconstants.c, genpreds.c, libfuncs.h, optabs.h, rtl-error.h:
+	replace "GNU CC" with "GCC".
+
 2001-08-23  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_register_move_cost): Add mode arguemnt.
