@@ -1,5 +1,10 @@
 2001-04-28  Stan Shebs  <shebs@apple.com>
 
+	* objc/objc-act.c (handle_class_ref): Rewrite to flush target
+	specific code and use new macro ASM_DECLARE_UNRESOLVED_REFERENCE.
+	* config/darwin.h (ASM_DECLARE_UNRESOLVED_REFERENCE): Define.
+	* tm.texi (ASM_DECLARE_UNRESOLVED_REFERENCE): Document.
+
 	* config/darwin.h (STANDARD_EXEC_PREFIX): Don't define.
 	(NEXT_OBJC_RUNTIME): Define.
 	

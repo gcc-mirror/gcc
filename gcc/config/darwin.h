@@ -648,15 +648,15 @@ void alias_section (name, alias)			\
     }									\
   while (0)
 
-#define DECLARE_UNRESOLVED_REFERENCE(NAME)				\
-    do { extern FILE* asm_out_file; 					\
-	 if (asm_out_file) {						\
+#define ASM_DECLARE_UNRESOLVED_REFERENCE(FILE,NAME)			\
+    do { 								\
+	 if (FILE) {							\
 	   if (flag_pic)						\
-	     fprintf (asm_out_file, "\t.lazy_reference ");		\
+	     fprintf (FILE, "\t.lazy_reference ");			\
 	   else								\
-	     fprintf (asm_out_file, "\t.reference ");			\
-	   assemble_name (asm_out_file, NAME);				\
-	   fprintf (asm_out_file, "\n");				\
+	     fprintf (FILE, "\t.reference ");				\
+	   assemble_name (FILE, NAME);					\
+	   fprintf (FILE, "\n");					\
 	 }                                                              \
        } while (0)
 

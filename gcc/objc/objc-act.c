@@ -8355,46 +8355,43 @@ handle_class_ref (chain)
      tree chain;
 {
   const char *name = IDENTIFIER_POINTER (TREE_VALUE (chain));
-  if (! flag_next_runtime)
+  char *string = (char *) alloca (strlen (name) + 30);
+  tree decl;
+  tree exp;
+
+  sprintf (string, "%sobjc_class_name_%s",
+	   (flag_next_runtime ? "." : "__"), name);
+
+#ifdef ASM_DECLARE_UNRESOLVED_REFERENCE
+  if (flag_next_runtime)
     {
-      tree decl;
-      char *string = (char *) alloca (strlen (name) + 30);
-      tree exp;
-
-      sprintf (string, "%sobjc_class_name_%s",
-	       (flag_next_runtime ? "." : "__"), name);
-
-      /* Make a decl for this name, so we can use its address in a tree.  */
-      decl = build_decl (VAR_DECL, get_identifier (string), char_type_node);
-      DECL_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-
-      pushdecl (decl);
-      rest_of_decl_compilation (decl, 0, 0, 0);
-
-      /* Make following constant read-only (why not)?  */
-      readonly_data_section ();
-
-      exp = build1 (ADDR_EXPR, string_type_node, decl);
-
-      /* Align the section properly.  */
-      assemble_constant_align (exp);
-
-      /* Inform the assembler about this new external thing.  */
-      assemble_external (decl);
-
-      /* Output a constant to reference this address.  */
-      output_constant (exp, int_size_in_bytes (string_type_node));
+      ASM_DECLARE_UNRESOLVED_REFERENCE (asm_out_file, string);
+      return;
     }
-  else
-    {
-      /* This overreliance on our assembler (i.e. lack of portability)
-	 should be dealt with at some point.  The GNU strategy (above)
-	 won't work either, but it is a start.  */
-      char *string = (char *) alloca (strlen (name) + 30);
-      sprintf (string, ".reference .objc_class_name_%s", name);
-      assemble_asm (my_build_string (strlen (string) + 1, string));
-    }
+#endif
+
+  /* Make a decl for this name, so we can use its address in a tree.  */
+  decl = build_decl (VAR_DECL, get_identifier (string), char_type_node);
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+
+  pushdecl (decl);
+  rest_of_decl_compilation (decl, 0, 0, 0);
+
+  /* Make following constant read-only, but only for GNU runtime.  */
+  if (!flag_next_runtime)
+    readonly_data_section ();
+
+  exp = build1 (ADDR_EXPR, string_type_node, decl);
+
+  /* Align the section properly.  */
+  assemble_constant_align (exp);
+
+  /* Inform the assembler about this new external thing.  */
+  assemble_external (decl);
+
+  /* Output a constant to reference this address.  */
+  output_constant (exp, int_size_in_bytes (string_type_node));
 }
 
 static void

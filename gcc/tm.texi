@@ -6270,6 +6270,13 @@ in a category); and @var{sel_name} is the name of the selector.
 
 On systems where the assembler can handle quoted names, you can use this
 macro to provide more human-readable names.
+
+@findex ASM_DECLARE_UNRESOLVED_REFERENCE
+@item ASM_DECLARE_UNRESOLVED_REFERENCE (@var{stream}, @var{name})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} commands to declare that the label @var{name} is an
+unresolved Objective-C class reference.  This is only needed for targets
+whose linkers have special support for NeXT-style runtimes.
 @end table
 
 @node Initialization
