@@ -1,3 +1,10 @@
+2005-04-01  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (java_init_decl_processing): Fix types of
+	_Jv_MonitorEnter, _Jv_MonitorExit, _Jv_AllocObject,
+	_Jv_AllocObjectNoFinalizer, _Jv_Throw, _Jv_NewPrimArray,
+	_Jv_JNI_PopSystemFrame, _Jv_divI, _Jv_remI, _Jv_divJ, _Jv_remJ.
+
 2005-03-24  Anthony Green  <green@redhat.com>
 
 	* gcj.texi (Invoking gcj-dbtool): Document new LIBDIR option to
