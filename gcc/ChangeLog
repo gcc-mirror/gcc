@@ -1,3 +1,12 @@
+2004-08-12  Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (struct gimplify_init_ctor_preeval_data): New.
+	(gimplify_init_ctor_preeval_1): New.
+	(gimplify_init_ctor_preeval): New.
+	(gimplify_init_ctor_eval): New.
+	(gimplify_init_constructor): Use them.  Always gimplify the LHS
+	object first.
+
 2004-08-12  Ziemowit Laski  <zlaski@apple.com>
 
 	(This patch is part of merge of objc-improvements-branch
