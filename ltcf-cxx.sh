@@ -816,7 +816,7 @@ private:
 EOF
 
 
-if eval $ac_compile 2>&5; then
+if (eval $ac_compile) 2>&5; then
   # Parse the compiler output and extract the necessary
   # objects, libraries and library flags.
 

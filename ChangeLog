@@ -1,3 +1,7 @@
+2001-01-26  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* ltcf-cxx.sh: Use parentheses around eval $ac_compile.
+
 2001-01-26  Tom Tromey  <tromey@redhat.com>
 
 	* configure.in: Allow libgcj to be built on Sparc Solaris.
