@@ -1,5 +1,29 @@
 1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* haifa-sched.c (reg_last_uses, reg_last_sets, reg_last_clobbers,
+	pending_read_insns, pending_write_insns, pending_read_mems,
+	pending_write_mems, pending_list_length, last_pending_memory_flush,
+	last_function_call, sched_before_next_call): Move static variables
+	into a structure.
+	(bb_ prefixed versions): Replace with single array bb_deps.
+	(struct deps): New structure.
+	(add_insn_mem_dependence, flush_pending_lists, sched_analyze_1,
+	sched_analyze_2, sched_analyze_insn, sched_analyze): Accept new
+	argument of type "struct deps *"; use that instead of global
+	variables.  All callers changed.
+	(init_rgn_data_dependencies): Delete function.
+	(init_rtx_vector): Delete function.
+	(init_deps): New function.
+
+	(free_pending_lists): Simplify, we always use the bb_deps array even
+	if only one basic block.
+	(compute_block_backward_dependences): Likewise.
+	(schedule_region): Likewise.
+
+	(propagate_deps): New function, broken out of
+	compute_block_backward_dependences.
+	(compute_block_backward_dependences): Use it.
+
 	* alpha.md: Delete useless patterns that tried to work around
 	register elimination problems.
 
