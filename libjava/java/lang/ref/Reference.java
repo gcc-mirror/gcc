@@ -1,5 +1,5 @@
 /* java.lang.ref.Reference
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -83,13 +83,23 @@ public abstract class Reference
 
   /**
    * This is like REFERENT but is not scanned by the GC.  We keep a
-   * copy around so that we can see when clear() has been called.
+   * copy around so that we can clean up our internal data structure
+   * even after clear() is called.
    * GCJ LOCAL:
-   * This field doesn't exist in Classpath; we use it to detect
-   * clearing.
+   * This field doesn't exist in Classpath.
    * END GCJ LOCAL
    */
   gnu.gcj.RawData copy;
+
+  /**
+   * Set to true if {@link #clear()} is called.
+   * GCJ LOCAL:
+   * This field doesn't exist in Classpath.  It is used internally in
+   * natReference.cc, which enqueues the reference unless it is true
+   * (has been cleared).
+   * END GCJ LOCAL
+   */
+  boolean cleared = false;
 
   /**
    * The queue this reference is registered on. This is null, if this
@@ -166,8 +176,7 @@ public abstract class Reference
    */
   public void clear()
   {
-    referent = null;
-    copy = null;
+    cleared = true;
   }
 
   /**
