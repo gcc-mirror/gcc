@@ -5374,11 +5374,6 @@ pop_init_level (implicit)
 	      TYPE_DOMAIN (constructor_type) = build_index_type (maxindex);
 	      TREE_TYPE (maxindex) = TYPE_DOMAIN (constructor_type);
 
-	      /* We shouldn't have an incomplete array type within
-		 some other type.  */
-	      if (constructor_stack->next)
-		abort ();
-
 	      if (pedantic
 		  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)),
 				      integer_zero_node))
