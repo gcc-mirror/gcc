@@ -2710,21 +2710,6 @@ fi
 # Get the version number from the toplevel
 version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
 
-# For the current directory and all of the language subdirectories,
-# do the rest of the script ...
-
-subdirs=
-for lang in ${srcdir}/*/config-lang.in ..
-do
-	case $lang in
-	..) ;;
-	# The odd quoting in the next line works around
-	# an apparent bug in bash 1.12 on linux.
-	${srcdir}/[[*]]/config-lang.in) ;;
-	*) subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([[^/]]*\)/config-lang.in$,\1,'`" ;;
-	esac
-done
-
 # Are we using gcc as the native compiler?
 case $host in
 *linux*)	# All Linux's use gcc as the native compiler.
@@ -2734,135 +2719,29 @@ case $host in
 	;;
 esac
 
-# Make empty files to contain the specs and options for each language.
-# Then add #include lines to for a compiler that has specs and/or options.
-
-lang_specs_files=
-lang_options_files=
-rm -f specs.h options.h
-touch specs.h options.h
-for subdir in . $subdirs
-do
-	if [[ -f $srcdir/$subdir/lang-specs.h ]]; then
-		echo "#include \"$subdir/lang-specs.h\"" >>specs.h
-		lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
-	fi
-	if [[ -f $srcdir/$subdir/lang-options.h ]]; then
-		echo "#include \"$subdir/lang-options.h\"" >>options.h
-		lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
-	fi
-done
-
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`
 cd $srcdir
 topdir=`pwd`
 cd $holddir
 
-# These (without "all_") are set in each config-lang.in.
-# `language' must be a single word so is spelled singularly.
-all_languages=
-all_boot_languages=
-all_compilers=
-all_stagestuff=
-all_diff_excludes=
-# List of language makefile fragments.
-all_lang_makefiles=
-all_headers=
-all_lib2funcs=
-
-host_overrides="Make-host"
-target_overrides="Make-target"
-cross_overrides="/dev/null"
-build_overrides="/dev/null"
-language_fragments="Make-lang"
-language_hooks="Make-hooks"
-
-rm -f Make-host Make-target Make-hooks
-touch Make-host
-touch Make-target
-touch Make-hooks
-
 # Conditionalize the makefile for this host machine.
+host_overrides=/dev/null
 dep_host_xmake_file=
-for f in .. ${host_xmake_file}
-do
-	if [[ -f ${srcdir}/config/$f ]]
-	then
-		cat ${srcdir}/config/$f >> Make-host
-		dep_host_xmake_file="${dep_host_xmake_file} \$(srcdir)/config/$f"
-	fi
-done
+if [[ x"$host_xmake_file" != x -a -f ${srcdir}/config/$host_xmake_file ]]
+then
+	host_overrides=$srcdir/config/$host_xmake_file
+	dep_host_xmake_file="\$(srcdir)/config/$host_xmake_file"
+fi
 
 # Conditionalize the makefile for this target machine.
+target_overrides=/dev/null
 dep_tmake_file=
-for f in .. ${tmake_file}
-do
-	if [[ -f ${srcdir}/config/$f ]]
-	then
-		cat ${srcdir}/config/$f >> Make-target
-		dep_tmake_file="${dep_tmake_file} \$(srcdir)/config/$f"
-	fi
-done
-
-# Add the language fragments.
-# Languages are added via two mechanisms.  Some information must be
-# recorded in makefile variables, these are defined in config-lang.in.
-# We accumulate them and plug them into the main Makefile.
-# The other mechanism is a set of hooks for each of the main targets
-# like `clean', `install', etc.
-
-for s in .. $subdirs
-do
-	if [[ $s != ".." ]]
-	then
-		language=
-		boot_language=
-		compilers=
-		stagestuff=
-		diff_excludes=
-		headers=
-		lib2funcs=
-		. ${srcdir}/$s/config-lang.in
-		if [[ "x$language" = x ]]
-		then
-			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
-			exit 1
-		fi
-		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in ${srcdir}/$s/Makefile.in"
-		all_languages="$all_languages $language"
-		if [[ "x$boot_language" = xyes ]]
-		then
-			all_boot_languages="$all_boot_languages $language"
-		fi
-		all_compilers="$all_compilers $compilers"
-		all_stagestuff="$all_stagestuff $stagestuff"
-		all_diff_excludes="$all_diff_excludes $diff_excludes"
-		all_headers="$all_headers $headers"
-		all_lib2funcs="$all_lib2funcs $lib2funcs"
-	fi
-done
-
-# Since we can't use `::' targets, we link each language in
-# with a set of hooks, reached indirectly via lang.${target}.
-
-target_list="all.build all.cross start.encap rest.encap \
-	info dvi \
-	install-normal install-common install-info install-man \
-	uninstall distdir \
-	mostlyclean clean distclean extraclean maintainer-clean \
-	stage1 stage2 stage3 stage4"
-for t in $target_list
-do
-	x=
-	for l in .. $all_languages
-	do
-		if [[ $l != ".." ]]; then
-			x="$x $l.$t"
-		fi
-	done
-	echo "lang.$t: $x" >> Make-hooks
-done
+if [[ x"$tmake_file" != x -a -f ${srcdir}/config/$tmake_file ]]
+then
+	target_overrides=$srcdir/config/$tmake_file
+	dep_tmake_file="\$(srcdir)/config/$tmake_file"
+fi
 
 # If the host doesn't support symlinks, modify CC in
 # FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
@@ -2899,6 +2778,7 @@ done
 # if this is a cross-compiler.
 # Also use all.cross instead of all.internal
 # and add cross-make to Makefile.
+cross_overrides="/dev/null"
 if [[ x$host != x$target ]]
 then
 	cross_defines="CROSS=-DCROSS_COMPILE"
@@ -2908,6 +2788,7 @@ fi
 # When building gcc with a cross-compiler, we need to fix a few things.
 # This must come after cross-make as we want all.build to override
 # all.cross.
+build_overrides="/dev/null"
 if [[ x$build != x$host ]]
 then
 	build_overrides="${topdir}/build-make"
@@ -2965,6 +2846,114 @@ if [[ -f ../ld/Makefile ]]; then
 		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
 	fi
 fi
+
+# Figure out what language subdirectories are present.
+subdirs=
+for lang in ${srcdir}/*/config-lang.in ..
+do
+	case $lang in
+	..) ;;
+	# The odd quoting in the next line works around
+	# an apparent bug in bash 1.12 on linux.
+	${srcdir}/[[*]]/config-lang.in) ;;
+	*) subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([[^/]]*\)/config-lang.in$,\1,'`" ;;
+	esac
+done
+
+# Make empty files to contain the specs and options for each language.
+# Then add #include lines to for a compiler that has specs and/or options.
+
+lang_specs_files=
+lang_options_files=
+rm -f specs.h options.h
+touch specs.h options.h
+for subdir in . $subdirs
+do
+	if [[ -f $srcdir/$subdir/lang-specs.h ]]; then
+		echo "#include \"$subdir/lang-specs.h\"" >>specs.h
+		lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
+	fi
+	if [[ -f $srcdir/$subdir/lang-options.h ]]; then
+		echo "#include \"$subdir/lang-options.h\"" >>options.h
+		lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
+	fi
+done
+
+# These (without "all_") are set in each config-lang.in.
+# `language' must be a single word so is spelled singularly.
+all_languages=
+all_boot_languages=
+all_compilers=
+all_stagestuff=
+all_diff_excludes=
+# List of language makefile fragments.
+all_lang_makefiles=
+all_headers=
+all_lib2funcs=
+
+# Add the language fragments.
+# Languages are added via two mechanisms.  Some information must be
+# recorded in makefile variables, these are defined in config-lang.in.
+# We accumulate them and plug them into the main Makefile.
+# The other mechanism is a set of hooks for each of the main targets
+# like `clean', `install', etc.
+
+language_fragments="Make-lang"
+language_hooks="Make-hooks"
+
+for s in .. $subdirs
+do
+	if [[ $s != ".." ]]
+	then
+		language=
+		boot_language=
+		compilers=
+		stagestuff=
+		diff_excludes=
+		headers=
+		lib2funcs=
+		. ${srcdir}/$s/config-lang.in
+		if [[ "x$language" = x ]]
+		then
+			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
+			exit 1
+		fi
+		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in ${srcdir}/$s/Makefile.in"
+		all_languages="$all_languages $language"
+		if [[ "x$boot_language" = xyes ]]
+		then
+			all_boot_languages="$all_boot_languages $language"
+		fi
+		all_compilers="$all_compilers $compilers"
+		all_stagestuff="$all_stagestuff $stagestuff"
+		all_diff_excludes="$all_diff_excludes $diff_excludes"
+		all_headers="$all_headers $headers"
+		all_lib2funcs="$all_lib2funcs $lib2funcs"
+	fi
+done
+
+# Since we can't use `::' targets, we link each language in
+# with a set of hooks, reached indirectly via lang.${target}.
+
+rm -f Make-hooks
+touch Make-hooks
+target_list="all.build all.cross start.encap rest.encap \
+	info dvi \
+	install-normal install-common install-info install-man \
+	uninstall distdir \
+	mostlyclean clean distclean extraclean maintainer-clean \
+	stage1 stage2 stage3 stage4"
+for t in $target_list
+do
+	x=
+	for l in .. $all_languages
+	do
+		if [[ $l != ".." ]]; then
+			x="$x $l.$t"
+		fi
+	done
+	echo "lang.$t: $x" >> Make-hooks
+done
 
 # Process the language fragments
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs"
