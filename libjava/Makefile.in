@@ -550,6 +550,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/runtime/BootClassLoader.java \
 	gnu/gcj/runtime/FileDeleter.java \
 	gnu/gcj/runtime/FinalizerThread.java \
+	gnu/gcj/runtime/HelperClassLoader.java \
 	gnu/gcj/runtime/JNIWeakRef.java \
 	gnu/gcj/runtime/NameFinder.java \
 	gnu/gcj/runtime/PersistentByteMap.java \
@@ -3554,6 +3555,7 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/runtime/BootClassLoader.lo \
 	gnu/gcj/runtime/FileDeleter.lo \
 	gnu/gcj/runtime/FinalizerThread.lo \
+	gnu/gcj/runtime/HelperClassLoader.lo \
 	gnu/gcj/runtime/JNIWeakRef.lo gnu/gcj/runtime/NameFinder.lo \
 	gnu/gcj/runtime/PersistentByteMap.lo \
 	gnu/gcj/runtime/SharedLibHelper.lo \
@@ -4568,6 +4570,7 @@ AM_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
+	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
 	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
@@ -6752,6 +6755,7 @@ gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
+gnu/gcj/runtime/HelperClassLoader.java \
 gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \
@@ -9044,6 +9048,8 @@ gnu/gcj/runtime/BootClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 gnu/gcj/runtime/FileDeleter.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/FinalizerThread.lo: gnu/gcj/runtime/$(am__dirstamp) \
+	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/runtime/HelperClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/JNIWeakRef.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
@@ -14849,6 +14855,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/FileDeleter.lo
 	-rm -f gnu/gcj/runtime/FinalizerThread.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/FinalizerThread.lo
+	-rm -f gnu/gcj/runtime/HelperClassLoader.$(OBJEXT)
+	-rm -f gnu/gcj/runtime/HelperClassLoader.lo
 	-rm -f gnu/gcj/runtime/JNIWeakRef.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/JNIWeakRef.lo
 	-rm -f gnu/gcj/runtime/NameFinder.$(OBJEXT)
@@ -19822,6 +19830,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/BootClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FileDeleter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FinalizerThread.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/HelperClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/JNIWeakRef.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/NameFinder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/PersistentByteMap.Plo@am__quote@

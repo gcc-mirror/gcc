@@ -186,6 +186,7 @@ AM_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
+	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
 	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
@@ -2992,6 +2993,7 @@ gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
+gnu/gcj/runtime/HelperClassLoader.java \
 gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \

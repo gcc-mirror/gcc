@@ -1,3 +1,19 @@
+2005-03-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	gnu.gcj.runtime.endorsed.dirs.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added
+	HelperClassLoader.java.
+	(AM_CXXFLAGS): Define GCJ_ENDORSED_DIRS.
+	* gnu/gcj/runtime/VMClassLoader.java (VMClassLoader): Extends
+	HelperClassLoader.
+	(init): Use addDirectoriesFromProperty.
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Extends
+	HelperClassLoader.  Use addDirectoriesFromProperty.  Handle
+	gnu.gcj.runtime.endorsed.dirs.
+	* gnu/gcj/runtime/HelperClassLoader.java: New file.
+
 2005-03-26  Chris Burdess  <dog@gnu.org>
 
 	* gnu/xml/dom/DomNode.java (notifyNode): grow listener array as
