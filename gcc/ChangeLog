@@ -1,3 +1,8 @@
+2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/extend.texi, doc/invoke.texi, doc/passes.texi: Fix
+	typos.  Follow spelling conventions.
+
 2004-09-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* toplev.c (warn_deprecated_use): Correct logic for saying "type"
