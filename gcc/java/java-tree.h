@@ -524,7 +524,7 @@ extern void init_outgoing_cpool PROTO (());
 extern void make_class_data PROTO ((tree));
 extern void register_class PROTO (());
 extern int alloc_name_constant PROTO ((int, tree));
-extern void emit_register_class PROTO (());
+extern void emit_register_classes PROTO (());
 extern void lang_init_source PROTO ((int));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */

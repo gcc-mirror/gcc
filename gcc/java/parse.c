@@ -7545,8 +7545,6 @@ java_expand_classes ()
       java_check_final ();            /* Check unitialized final  */
       java_parse_abort_on_error ();
     }
-  if (! flag_emit_class_files)
-    emit_register_class ();
 }
 
 /* Wrap non WFL PRIMARY around a WFL and set EXPR_WFL_QUALIFICATION to

@@ -777,12 +777,10 @@ yyparse ()
 	{
 	case JCF_ZIP:
 	  parse_zip_file_entries ();
-	  emit_register_class ();
 	  break;
 	case JCF_CLASS:
 	  jcf_parse (current_jcf);
 	  parse_class_file ();
-	  emit_register_class ();
 	  break;
 	case JCF_SOURCE:
 	  parse_source_file (0);	/* Parse and generate */
@@ -790,6 +788,8 @@ yyparse ()
 	}
     }
   java_expand_classes ();
+  if (! flag_emit_class_files)
+    emit_register_classes ();
   return 0;
 }
 
