@@ -10199,7 +10199,8 @@ do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
   if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
       && (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST
 	  || (GET_MODE_BITSIZE (mode)
-	      > GET_MODE_BITSIZE (TREE_TYPE (TREE_OPERAND (exp, 1))))))
+	      > GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp,
+								      1)))))))
     {
       /* op0 might have been replaced by promoted constant, in which
 	 case the type of second argument should be used.  */
