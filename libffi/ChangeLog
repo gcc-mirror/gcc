@@ -1,0 +1,76 @@
+1999-08-09  Anthony Green  <green@cygnus.com>
+
+	* include/ffi.h.in: Try to work around messy header problem
+	with PACKAGE and VERSION.
+
+	* configure: Rebuilt.
+	* configure.in: Change version to 2.00-beta.
+
+        * fficonfig.h.in: Rebuilt.
+	* acconfig.h (FFI_NO_STRUCTS, FFI_NO_RAW_API): Define.
+
+	* src/x86/ffi.c (ffi_raw_call): Rename.
+
+1999-08-02  Kresten Krab Thorup  <krab@dominiq.is.s.u-tokyo.ac.jp>
+
+	* src/x86/ffi.c (ffi_closure_SYSV): New function.
+	(ffi_prep_incoming_args_SYSV): Ditto.
+	(ffi_prep_closure): Ditto.
+	(ffi_closure_raw_SYSV): Ditto.
+	(ffi_prep_raw_closure): More ditto.
+	(ffi_call_raw): Final ditto.
+
+	* include/ffi.h.in: Add definitions for closure and raw API.
+
+	* src/x86/ffi.c (ffi_prep_cif_machdep): Added case for
+	FFI_TYPE_UINT64.  
+
+	* Makefile.am (libffi_la_common_SOURCES): Added raw_api.c
+
+	* src/raw_api.c: New file.
+
+	* include/ffi.h.in (ffi_raw): New type.
+	(UINT_ARG, SINT_ARG): New defines.
+	(ffi_closure, ffi_raw_closure): New types.
+	(ffi_prep_closure, ffi_prep_raw_closure): New declarations.
+	
+	* configure.in: Add check for endianness and sizeof void*.
+
+	* src/x86/sysv.S (ffi_call_SYSV): Call fixup routine via argument,
+	instead of directly.
+
+	* configure: Rebuilt.
+
+Thu Jul  8 14:28:42 1999  Anthony Green  <green@cygnus.com>
+
+	* configure.in: Add x86 and powerpc BeOS configurations.
+	From Makoto Kato <m_kato@ga2.so-net.ne.jp>.
+
+1999-05-09  Anthony Green  <green@cygnus.com>
+
+	* configure.in: Add warning about this being beta code.
+	Remove src/Makefile.am from the picture.
+	* configure: Rebuilt.
+
+	* Makefile.am: Move logic from src/Makefile.am.  Add changes
+	to support libffi as a target library.
+	* Makefile.in: Rebuilt.
+
+	* aclocal.m4, config.guess, config.sub, ltconfig, ltmain.sh:
+	Upgraded to new autoconf, automake, libtool.
+
+	* README: Tweaks.
+
+	* LICENSE: Update copyright date.
+
+	* src/Makefile.am, src/Makefile.in: Removed.
+
+1998-11-29  Anthony Green  <green@cygnus.com>
+
+	* include/ChangeLog: Removed.
+	* src/ChangeLog: Removed.
+	* src/mips/ChangeLog: Removed.
+	* src/sparc/ChangeLog: Remboved.
+	* src/x86/ChangeLog: Removed.
+
+	* ChangeLog.v1: Created.
