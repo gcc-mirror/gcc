@@ -50,7 +50,6 @@ static FILE *repo_file;
 static char *old_args, *old_dir, *old_main;
 
 extern int flag_use_repository;
-extern int errorcount, sorrycount;
 extern struct obstack temporary_obstack;
 extern struct obstack permanent_obstack;
 

@@ -1,3 +1,9 @@
+1999-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* lex.c (errorcount, sorrycount): Don't declare.
+	* repo.c (errorcount, sorrycount): Likewise.
+	* typeck2.c (errorcount, sorrycount): Likewise.
+
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* call.c (convert_default_arg, build_over_call): Change all uses of
