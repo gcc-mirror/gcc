@@ -1,3 +1,8 @@
+2002-04-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add John David Anglin and Loren
+	J. Rittle (the latter also to Testers).  Update David O'Brien's entry.
+
 2002-04-07  David S. Miller  <davem@redhat.com>
 
 	* config.gcc (sparc64-*-linux*): Add t-crtfm to tmake_file.
