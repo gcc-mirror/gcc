@@ -1,3 +1,7 @@
+2003-10-22  Waldek Hebisch <hebisch@math.uni.wroc.pl>
+
+	* config/i386/i386.c (classify_argument): Handle SET_TYPE.
+
 2003-10-22  Chris Demetriou  <cgd@broadcom.com>
 
 	* configure.in: In --enable-generated-files-in-srcdir option
@@ -186,7 +190,7 @@
 
 	* tree.c (build1): Fix off-by-one error.
 
-2003-09-28  Robert Millan  <robertmh@gnu.org>
+2003-10-21  Robert Millan  <robertmh@gnu.org>
 
 	* config/i386/kfreebsdgnu.h: New. i386-*-kfreebsd-gnu definitions.
 	* config/kfreebsdgnu.h: New. *-*-kfreebsd-gnu definitions.
