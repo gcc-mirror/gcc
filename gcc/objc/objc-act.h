@@ -55,6 +55,7 @@ tree build_objc_string_object			PARAMS ((tree));
 
 extern tree objc_ivar_chain;
 extern tree objc_method_context;
+extern tree objc_ellipsis_node;
 
 void objc_declare_alias				PARAMS ((tree, tree));
 void objc_declare_class				PARAMS ((tree));

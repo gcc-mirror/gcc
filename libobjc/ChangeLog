@@ -1,3 +1,11 @@
+2000-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Object.m (strlen): Provide prototype on all 64bit platforms,
+	not only alpha.
+	* sarray.c (memcpy): Likewise.
+	* encoding.c (objc_layout_finish_structure): Don't use
+	ROUND_TYPE_ALIGN on sparc.
+
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* objc/Protocol.h, objc/objc-list.h: Change #endif labels to

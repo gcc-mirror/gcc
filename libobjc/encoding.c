@@ -878,7 +878,7 @@ void objc_layout_finish_structure (struct objc_struct_layout *layout,
          in the record type.  Round it up to a multiple of the record's
          alignment. */
 
-#ifdef ROUND_TYPE_ALIGN
+#if defined(ROUND_TYPE_ALIGN) && !defined(__sparc__)
       layout->record_align = ROUND_TYPE_ALIGN (layout->original_type,
                                                1,
                                                layout->record_align);
