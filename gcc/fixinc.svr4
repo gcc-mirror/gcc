@@ -162,8 +162,10 @@ while [ $# != 0 ]; do
 # The change of u_char, etc, to u_int
 # applies to bit fields.
 	sed -e '
-	  s%^\([ 	]*#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
-	  s%^\([ 	]*#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
+	  s%^\([ 	]*#[ 	]*else\)[ 	]*/[^*].*%\1%
+	  s%^\([ 	]*#[ 	]*else\)[ 	]*[^/ 	].*%\1%
+	  s%^\([ 	]*#[ 	]*endif\)[ 	]*/[^*].*%\1%
+	  s%^\([ 	]*#[ 	]*endif\)[ 	]*[^/ 	].*%\1%
   	  s/#lint(on)/defined(lint)/g
   	  s/#lint(off)/!defined(lint)/g
   	  s/#machine(\([^)]*\))/defined(__\1__)/g
