@@ -1,3 +1,8 @@
+2001-12-28  Geoff Keating  <geoffk@redhat.com>
+
+	* varasm.c (record_constant_1): Correct parameter to recursive
+	call in default case.
+
 2001-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (ASM_PREFERRED_EH_DATA_FORMAT,

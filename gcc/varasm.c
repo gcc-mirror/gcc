@@ -3068,7 +3068,7 @@ record_constant_1 (exp)
 	tree new = (*lang_hooks.expand_constant) (exp);
 
 	if (new != exp)
-          record_constant_1 (exp);
+          record_constant_1 (new);
 	return;
       }
     }
