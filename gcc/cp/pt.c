@@ -4031,6 +4031,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
   tree template = NULL_TREE, parmlist;
   tree t;
 
+  timevar_push (TV_NAME_LOOKUP);
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
       if (IDENTIFIER_VALUE (d1) 
@@ -4086,7 +4087,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
     {
       if (complain & tf_error)
         error ("`%T' is not a template", d1);
-      return error_mark_node;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
   if (TREE_CODE (template) != TEMPLATE_DECL
@@ -4102,7 +4103,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
           if (in_decl)
 	    cp_error_at ("for template declaration `%D'", in_decl);
 	}
-      return error_mark_node;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (template))
@@ -4137,10 +4138,10 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
       arglist2 = coerce_template_parms (parmlist, arglist, template,
                                         complain, /*require_all_args=*/1);
       if (arglist2 == error_mark_node)
-	return error_mark_node;
+        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
       parm = bind_template_template_parm (TREE_TYPE (template), arglist2);
-      return parm;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, parm);
     }
   else 
     {
@@ -4227,7 +4228,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
-	return error_mark_node;
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
       /* In the scope of a template class, explicit references to the
 	 template class refer to the type of the template, not any
@@ -4264,7 +4265,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	    }
 	}
       if (found)
-        return found;
+        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
 
       for (tp = &DECL_TEMPLATE_INSTANTIATIONS (template);
 	   *tp;
@@ -4280,7 +4281,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	      = DECL_TEMPLATE_INSTANTIATIONS (template);
 	    DECL_TEMPLATE_INSTANTIATIONS (template) = found;
 
-	    return TREE_VALUE (found);
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_VALUE (found));
 	  }
 
       /* This type is a "partial instantiation" if any of the template
@@ -4296,7 +4297,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	  found = xref_tag_from_type (TREE_TYPE (template),
 				      DECL_NAME (template),
 				      /*globalize=*/1);
-	  return found;
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
 	}
       
       context = tsubst (DECL_CONTEXT (template), arglist,
@@ -4452,8 +4453,9 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	   code that generates debugging information will crash.  */
 	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;
 
-      return t;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
     }
+  timevar_pop (TV_NAME_LOOKUP);
 }
 
 struct pair_fn_data 

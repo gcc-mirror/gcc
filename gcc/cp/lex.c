@@ -746,6 +746,7 @@ do_identifier (token, args)
 {
   register tree id;
 
+  timevar_push (TV_NAME_LOOKUP);
   id = lookup_name (token, 0);
 
   /* Do Koenig lookup if appropriate (inside templates we build lookup
@@ -765,21 +766,22 @@ do_identifier (token, args)
 	 being used as a declarator.  So we call it again to get the error
 	 message.  */
       id = lookup_name (token, 0);
-      return error_mark_node;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
   if (!id || (TREE_CODE (id) == FUNCTION_DECL
 	      && DECL_ANTICIPATED (id)))
     {
       if (current_template_parms)
-	return build_min_nt (LOOKUP_EXPR, token);
+        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
+                                build_min_nt (LOOKUP_EXPR, token));
       else if (IDENTIFIER_TYPENAME_P (token))
 	/* A templated conversion operator might exist.  */
-	return token;
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, token);
       else
 	{
 	  unqualified_name_lookup_error (token);
-	  return error_mark_node;
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	}
     }
 
@@ -815,7 +817,7 @@ do_identifier (token, args)
 	  || TREE_CODE (id) == USING_DECL))
     id = build_min_nt (LOOKUP_EXPR, token);
 
-  return id;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
 }
 
 tree
@@ -823,6 +825,7 @@ do_scoped_id (token, id)
      tree token;
      tree id;
 {
+  timevar_push (TV_NAME_LOOKUP);
   if (!id || (TREE_CODE (id) == FUNCTION_DECL
 	      && DECL_ANTICIPATED (id)))
     {
@@ -830,7 +833,7 @@ do_scoped_id (token, id)
 	{
 	  id = build_min_nt (LOOKUP_EXPR, token);
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
-	  return id;
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
 	}
       if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
         error ("`::%D' undeclared (first use here)", token);
@@ -861,11 +864,11 @@ do_scoped_id (token, id)
 	{
 	  id = build_min_nt (LOOKUP_EXPR, token);
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
-	  return id;
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
 	}
       /* else just use the decl */
     }
-  return convert_from_reference (id);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, convert_from_reference (id));
 }
 
 tree
