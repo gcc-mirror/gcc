@@ -1,3 +1,8 @@
+2002-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/Primes.java: Removed.
+	* libjava.lang/Primes.out: Removed.
+
 2002-10-23  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/6388:
