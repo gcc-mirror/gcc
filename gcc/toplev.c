@@ -3462,6 +3462,23 @@ rest_of_compilation (decl)
 #endif
 
 #ifdef STACK_REGS
+#if defined (HAVE_ATTR_length)
+  /* If flow2 creates new instructions which need splitting
+     and scheduling after reload is not done, they might not be
+     splitten until final which doesn't allow splitting
+     if HAVE_ATTR_length.  */
+#ifdef INSN_SCHEDULING
+  if (optimize && !flag_schedule_insns_after_reload)
+#else
+  if (optimize)
+#endif
+    {
+      timevar_push (TV_SHORTEN_BRANCH);
+      split_all_insns (1);
+      timevar_pop (TV_SHORTEN_BRANCH);
+    }
+#endif
+
   timevar_push (TV_REG_STACK);
   open_dump_file (DFI_stack, decl);
 

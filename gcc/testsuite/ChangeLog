@@ -1,3 +1,7 @@
+2003-10-09  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* gcc.dg/20031009-1.c: New test.
+
 2003-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/ext/attrib8.C: Only run it on x86 targets.

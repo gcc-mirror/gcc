@@ -1,3 +1,13 @@
+2003-10-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/12510
+	Backport from mainline:
+
+	2003-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* toplev.c (rest_of_compilation): Call split_all_insns before
+	regstack if optimizing but not scheduling after reload.
+
 2003-10-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Removed _ap fix.
