@@ -1458,7 +1458,10 @@ changequote([,])dnl
 			tmake_file=i386/t-crtstuff
 			extra_parts="crtbegin.o crtend.o"
 		fi
-		truncate_target=yes
+		# The default EAFS filesystem supports long file names.
+		# Truncating the target makes $host != $target which
+		# makes gcc think it is doing a cross-compile.
+		# truncate_target=yes
 		;;
 changequote(,)dnl
 	i[34567]86-*-sco*)	 	# 80386 running SCO system
