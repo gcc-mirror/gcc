@@ -170,7 +170,6 @@
       builtin_define ("__powerpc__");       \
       builtin_define ("__powerpc64__");     \
       builtin_define ("__PIC__");           \
-      builtin_define ("__ELF__");           \
       builtin_assert ("cpu=powerpc64");     \
       builtin_assert ("machine=powerpc64"); \
     }                                       \

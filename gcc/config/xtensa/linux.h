@@ -23,7 +23,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   do {								\
     builtin_define_std ("linux");				\
     builtin_define_std ("unix");				\
-    builtin_define ("__ELF__");					\
     builtin_define ("__gnu_linux__");				\
     builtin_assert ("system=posix");				\
   } while (0)

@@ -120,7 +120,6 @@ void FN ()							\
 #define TARGET_OS_CPP_BUILTINS()				\
     do {							\
 	builtin_define ("__gnu_linux__");			\
-	builtin_define ("__ELF__");				\
 	builtin_define ("__PIC__");				\
 	builtin_define ("__pic__");				\
 	builtin_define_std ("unix");				\

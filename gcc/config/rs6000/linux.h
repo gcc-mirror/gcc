@@ -29,7 +29,6 @@
   do                                      \
     {                                     \
       builtin_define_std ("PPC");         \
-      builtin_define ("__ELF__");         \
       builtin_define_std ("powerpc");     \
       builtin_assert ("cpu=powerpc");     \
       builtin_assert ("machine=powerpc"); \

@@ -9,7 +9,6 @@
     {						\
 	builtin_define_std ("MACH");		\
 	builtin_define_std ("unix");		\
-	builtin_define ("__ELF__");		\
 	builtin_define ("__GNU__");		\
 	builtin_define ("__gnu_hurd__");	\
 	builtin_assert ("system=gnu");		\

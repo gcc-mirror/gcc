@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
 	builtin_define ("__rtems__");		\
-	builtin_define ("__ELF__");		\
 	builtin_define ("__USE_INIT_FINI__");	\
 	builtin_assert ("system=rtems");	\
 	if (!TARGET_80387)			\

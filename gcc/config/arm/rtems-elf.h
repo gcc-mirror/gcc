@@ -27,6 +27,5 @@
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define ("__rtems__");		\
-	builtin_define ("__ELF__");		\
 	builtin_assert ("system=rtems");	\
     } while (0)

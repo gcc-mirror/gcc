@@ -106,7 +106,6 @@ Boston, MA 02111-1307, USA.  */
       builtin_define ("__gnu_linux__");		\
       builtin_define ("__linux__");		\
       builtin_define ("__unix__");		\
-      builtin_define ("__ELF__");		\
       if (flag_pic)				\
 	{					\
 	  builtin_define ("__PIC__");		\

@@ -655,6 +655,13 @@ preprocessing.
 Similarly to @code{TARGET_CPU_CPP_BUILTINS} but this macro is optional
 and is used for the target operating system instead.
 
+@findex TARGET_OBJFMT_CPP_BUILTINS
+@item TARGET_OBJFMT_CPP_BUILTINS()
+Similarly to @code{TARGET_CPU_CPP_BUILTINS} but this macro is optional
+and is used for the target object format.  @file{elfos.h} uses this
+macro to define @code{__ELF__}, so you probably do not need to define
+it yourself.
+
 @findex extern int target_flags
 @item extern int target_flags;
 This declaration should be present.

@@ -56,7 +56,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__ELF__");		\
 	builtin_define ("__gnu_linux__");	\
 	builtin_define_std ("linux");		\
 	builtin_define_std ("unix");		\

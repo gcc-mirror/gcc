@@ -1071,7 +1071,7 @@ extern int fixuplabelno;
 /* FreeBSD support.  */
 
 #define CPP_OS_FREEBSD_SPEC	"\
-  -D__ELF__ -D__PPC__ -D__ppc__ -D__PowerPC__ -D__powerpc__ \
+  -D__PPC__ -D__ppc__ -D__PowerPC__ -D__powerpc__ \
   -Acpu=powerpc -Amachine=powerpc"
 
 #define	STARTFILE_FREEBSD_SPEC	FBSD_STARTFILE_SPEC
@@ -1190,7 +1190,7 @@ ncrtn.o%s"
   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}}"
 
 #define CPP_OS_NETBSD_SPEC "\
--D__powerpc__ -D__NetBSD__ -D__ELF__ -D__KPRINTF_ATTRIBUTE__"
+-D__powerpc__ -D__NetBSD__ -D__KPRINTF_ATTRIBUTE__"
 
 /* WindISS support.  */
 

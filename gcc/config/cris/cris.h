@@ -254,14 +254,6 @@ extern const char *cris_elinux_stacksize_str;
     }						\
   while (0)
 
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-      builtin_define ("__ELF__");		\
-    }						\
-  while (0)
-
-
 /* This needs to be at least 32 bits.  */
 extern int target_flags;
 

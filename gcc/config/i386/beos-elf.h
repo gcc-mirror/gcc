@@ -58,7 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
-	builtin_define ("__ELF__");					\
 	builtin_define ("__BEOS__");					\
 	builtin_define ("__INTEL__");					\
 	builtin_define ("_X86_");					\

@@ -72,6 +72,4 @@ Boston, MA 02111-1307, USA.  */
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%d\n", (int)(SIZE)))
 
-#define TARGET_OBJFMT_CPP_BUILTINS()
-
 #define DWARF2_UNWIND_INFO 0

@@ -1945,6 +1945,9 @@ incremented on every @samp{#include} directive and decremented at the
 end of every included file.  It starts out at 0, it's value within the
 base file specified on the command line.
 
+@item __ELF__
+This macro is defined if the target uses the ELF object format.
+
 @item __VERSION__
 This macro expands to a string constant which describes the version of
 the compiler in use.  You should not rely on its contents having any

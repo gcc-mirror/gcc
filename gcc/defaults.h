@@ -47,10 +47,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #  define TARGET_ESC 033
 #endif
 
-#ifndef TARGET_OS_CPP_BUILTINS
-# define TARGET_OS_CPP_BUILTINS()
-#endif
-
 /* Store in OUTPUT a string (made with alloca) containing an
    assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */
