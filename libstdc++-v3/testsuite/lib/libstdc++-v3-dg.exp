@@ -119,7 +119,8 @@ proc libstdc++-v3-init { args } {
         }
     }
 
-    if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
+    if { [target_info needs_status_wrapper]!=""} {
+      file delete ${objdir}/testglue.o;
       set gluefile ${objdir}/testglue.o;
       set result [build_wrapper $gluefile];
       if { $result != "" } {
