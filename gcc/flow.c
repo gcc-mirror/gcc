@@ -575,11 +575,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	if (GET_CODE (insn) == CALL_INSN)
 	  {
 	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
-	      /* Don't try marking labels that
-		 were deleted as unreferenced.  */
-	      if (GET_CODE (XEXP (x, 0)) == CODE_LABEL)
-		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-				insn, 0);
+	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+			      insn, 0);
 
 	    /* ??? This could be made smarter:
 	       in some cases it's possible to tell that certain
