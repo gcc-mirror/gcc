@@ -28,7 +28,6 @@
 #define _CPP_NUMERIC 1
 
 #include <bits/stl_config.h>
-#include <bits/stl_relops.h>
 #include <bits/std_cstddef.h>
 #include <bits/std_iterator.h>
 #include <bits/stl_function.h>

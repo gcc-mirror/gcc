@@ -1,3 +1,10 @@
+2001-01-25  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/std_iterator.h:  Do not include stl_relops.h.
+	* include/bits/std_numeric.h:  Ditto.
+	* include/bits/stl_algobase.h:  Ditto.
+	* include/bits/stl_relops.h:  Add comment warning about problems.
+
 2001-01-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/27_io/*.cc: Remove explicit reference to 'testsuite/'

@@ -28,7 +28,6 @@
 #define _CPP_ITERATOR 1
 
 #include <bits/stl_config.h>
-#include <bits/stl_relops.h>
 #include <bits/std_cstddef.h>
 #include <bits/std_iosfwd.h>
 #include <bits/stl_iterator_base.h>
