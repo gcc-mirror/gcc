@@ -1004,6 +1004,7 @@ emit_swap_insn (insn, regstack, reg)
       while (tmp != limit)
 	{
 	  if (GET_CODE (tmp) == CODE_LABEL
+	      || GET_CODE (tmp) == CALL_INSN
 	      || NOTE_INSN_BASIC_BLOCK_P (tmp)
 	      || (GET_CODE (tmp) == INSN
 		  && stack_regs_mentioned (tmp)))

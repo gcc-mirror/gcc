@@ -1,3 +1,7 @@
+Mon Apr 23 14:32:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (emit_swap_insn): Do not get pass CALL_INSNs.
+
 2001-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (loop_delete_insns): Add prototype.
