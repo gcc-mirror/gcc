@@ -65,10 +65,6 @@ Boston, MA 02111-1307, USA.  */
 #include "params.h"
 #include "dwarf2asm.h"
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#define ACCUMULATE_OUTGOING_ARGS 0
-#endif
-
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
 #endif

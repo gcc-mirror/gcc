@@ -1,3 +1,9 @@
+
+	* defaults.h (ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): Move from ...
+	* calls.c: ... here.
+	* combine.c, expr.c, final.c, function.c toplev.c: Don't provide
+	defaults for them here.
+
 2001-06-09  Peter Jakubek <pjak@snafu.de>
 
 	* config/m68k/m68k.md (ashrdi_const): Fix right shift by 16.

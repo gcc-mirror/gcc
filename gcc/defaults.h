@@ -326,5 +326,18 @@ do {								\
 #define TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER true
 #endif
 
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
+/* Supply a default definition for PUSH_ARGS.  */
+#ifndef PUSH_ARGS
+#ifdef PUSH_ROUNDING
+#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
+#else
+#define PUSH_ARGS	0
+#endif
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 
