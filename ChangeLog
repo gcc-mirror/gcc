@@ -1,3 +1,8 @@
+2000-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* ltcf-c.sh: On Solaris, use `gcc -shared' to build a shared library
+	if we've got GCC.
+
 2000-11-11  Philip Blundell  <philb@gnu.org>
 
 	* MAINTAINERS: Add self to Write After Approval list.
