@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU C.
 
@@ -170,6 +170,17 @@ convert_to_integer (type, expr)
 	}
       else if (outprec >= inprec)
 	return build1 (NOP_EXPR, type, expr);
+
+      /* If TYPE is an enumeral type or a type with a precision less
+	 than the number of bits in its mode, do the conversion to the
+	 type corresponding to its mode, then do a nop conversion
+	 to TYPE.  */
+      else if (TREE_CODE (type) == ENUMERAL_TYPE
+	       || outprec != GET_MODE_BITSIZE (TYPE_MODE (type)))
+	return build1 (NOP_EXPR, type,
+		       convert (type_for_mode (TYPE_MODE (type),
+					       TREE_UNSIGNED (type)),
+				expr));
 
       /* Here detect when we can distribute the truncation down past some
 	 arithmetic.  For example, if adding two longs and converting to an
