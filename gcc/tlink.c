@@ -38,6 +38,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern int prepends_underscore;
 
 static int tlink_verbose;
+
+static char initial_cwd[MAXPATHLEN + 1];
 
 /* Hash table boilerplate for working with htab_t.  We have hash tables
    for symbol names, file names, and demangled symbols.  */
@@ -272,6 +274,8 @@ tlink_init (void)
       if (debug)
 	tlink_verbose = 3;
     }
+
+  getcwd (initial_cwd, sizeof (initial_cwd));
 }
 
 static int
@@ -432,9 +436,7 @@ maybe_tweak (char *line, file *f)
 }
 
 /* Update the repo files for each of the object files we have adjusted and
-   recompile.
-
-   XXX Should this use collect_execute instead of system?  */
+   recompile.  */
 
 static int
 recompile_files (void)
@@ -446,7 +448,10 @@ recompile_files (void)
 
   while ((f = file_pop ()) != NULL)
     {
-      char *line, *command;
+      char *line;
+      const char *p, *q;
+      char **argv;
+      struct obstack arg_stack;
       FILE *stream = fopen (f->key, "r");
       const char *const outname = frob_extension (f->key, ".rnw");
       FILE *output = fopen (outname, "w");
@@ -465,31 +470,68 @@ recompile_files (void)
       fclose (output);
       rename (outname, f->key);
 
-      obstack_grow (&temporary_obstack, "cd ", 3);
-      obstack_grow (&temporary_obstack, f->dir, strlen (f->dir));
-      obstack_grow (&temporary_obstack, "; ", 2);
-      obstack_grow (&temporary_obstack, c_file_name, strlen (c_file_name));
-      obstack_1grow (&temporary_obstack, ' ');
       if (!f->args)
 	{
 	  error ("repository file `%s' does not contain command-line "
 		 "arguments", f->key);
 	  return 0;
 	}
-      obstack_grow (&temporary_obstack, f->args, strlen (f->args));
-      obstack_1grow (&temporary_obstack, ' ');
-      command = obstack_copy0 (&temporary_obstack, f->main, strlen (f->main));
+
+      /* Build a null-terminated argv array suitable for
+	 tlink_execute().  Manipulate arguments on the arg_stack while
+	 building argv on the temporary_obstack.  */
+
+      obstack_init (&arg_stack);
+      obstack_ptr_grow (&temporary_obstack, c_file_name);
+
+      for (p = f->args; *p != '\0'; p = q + 1)
+	{
+	  /* Arguments are delimited by single-quotes.  Find the
+	     opening quote.  */
+	  p = strchr (p, '\'');
+	  if (!p)
+	    goto done;
+
+	  /* Find the closing quote.  */
+	  q = strchr (p + 1, '\'');
+	  if (!q)
+	    goto done;
+
+	  obstack_grow (&arg_stack, p + 1, q - (p + 1));
+
+	  /* Replace '\'' with '.  This is how set_collect_gcc_options
+	     encodes a single-quote.  */
+	  while (q[1] == '\\' && q[2] == '\'' && q[3] == '\'')
+	    {
+	      const char *r;
+
+	      r = strchr (q + 4, '\'');
+	      if (!r)
+		goto done;
+
+	      obstack_grow (&arg_stack, q + 3, r - (q + 3));
+	      q = r;
+	    }
+
+	  obstack_1grow (&arg_stack, '\0');
+	  obstack_ptr_grow (&temporary_obstack, obstack_finish (&arg_stack));
+	}
+    done:
+      obstack_ptr_grow (&temporary_obstack, f->main);
+      obstack_ptr_grow (&temporary_obstack, NULL);
+      argv = obstack_finish (&temporary_obstack);
 
       if (tlink_verbose)
 	fprintf (stderr, _("collect: recompiling %s\n"), f->main);
-      if (tlink_verbose >= 3)
-	fprintf (stderr, "%s\n", command);
 
-      if (system (command) != 0)
+      if (chdir (f->dir) != 0
+	  || tlink_execute (c_file_name, argv, NULL) != 0
+	  || chdir (initial_cwd) != 0)
 	return 0;
 
       read_repo_file (f);
 
+      obstack_free (&arg_stack, NULL);
       obstack_free (&temporary_obstack, temporary_firstobj);
     }
   return 1;
