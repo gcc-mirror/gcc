@@ -247,23 +247,22 @@ bad_record (ptr, offset)
 static unsigned char *read_R_record (unwind_record *, unsigned char, unsigned char *);
 static unsigned char *read_X_record (unwind_record *, unsigned char, unsigned char *);
 static unsigned char *read_B_record (unwind_record *, unsigned char, unsigned char *);
-static unsigned char *read_P_record (unwind_record *, unsigned char, unsigned char *);
+static unsigned char *read_P_record (unwind_record *, unsigned char, unsigned char *, unwind_record *);
 
 
 /* This routine will determine what type of record the memory pointer
    is refering to, and fill in the appropriate fields for that record type. 
-   PROLOGUE_FLAG is TRUE if we are currently processing a PROLOGUE
-   body. 
+   HEADER is a pointer to the last region header unwind record.
    DATA is a pointer to an unwind record which will be filled in.
    PTR is a pointer to the current location in the unwind table where we
    will read the next record from.  
    The return value is the start of the next record.  */
 
 extern unsigned char *
-get_unwind_record (prologue_flag, data, ptr)
-    int prologue_flag;
-    unwind_record *data;
-    unsigned char *ptr;
+get_unwind_record (header, data, ptr)
+     unwind_record *header;
+     unwind_record *data;
+     unsigned char *ptr;
 {
   unsigned char val = *ptr++;
 
@@ -275,8 +274,8 @@ get_unwind_record (prologue_flag, data, ptr)
   if (val == UNW_X1 || val == UNW_X2 || val == UNW_X3 || val == UNW_X4)
     return read_X_record (data, val, ptr);
 
-  if (prologue_flag)
-    return read_P_record (data, val, ptr);
+  if (header->type != body)
+    return read_P_record (data, val, ptr, header);
   else
     return read_B_record (data, val, ptr);
 }
@@ -534,10 +533,11 @@ static unsigned char P8_additional_fields [] = {
 
 
 static unsigned char *
-read_P_record (data, val, ptr)
+read_P_record (data, val, ptr, header)
      unwind_record *data;
      unsigned char val;
      unsigned char *ptr;
+     unwind_record *header;
 {
   if ((val & 0xe0) == 0x80)
     {
@@ -575,13 +575,12 @@ read_P_record (data, val, ptr)
 
   if (val == UNW_P4)
     {
-      /* P4 format.  Currently unimplemented.  */
-      int len = 0;  /* TODO.. get prologue rlen. */
-      int size = (len * 2 + 7) / 8;
+      /* P4 format.  */
+      int size = (header->record.r.rlen * 2 + 7) / 8;
 
       data->type = spill_mask;
       data->record.p.imask = (unsigned char *) malloc (size);
-      /* memcpy (data->record.p.imask, ptr, size);  */
+      memcpy (data->record.p.imask, ptr, size);
       return ptr+size;
     }
 
@@ -617,7 +616,7 @@ read_P_record (data, val, ptr)
         {
 	  case P7_T_SIZE:
 	    data->record.p.t = read_uleb128 (&ptr);
-	    data->record.p.size = read_uleb128 (&ptr);
+	    data->record.p.size = read_uleb128 (&ptr) << 4;
 	    break;
 	  case P7_T:
 	    data->record.p.t = read_uleb128 (&ptr);
@@ -733,11 +732,14 @@ execute_one_ia64_descriptor (addr, frame, len)
      long *len;
 {
   unwind_record r;
+  /* The last region_header.  Needed to distinguish between prologue and body
+     descriptors.  Also needed for length of P4 format.  */
+  static unwind_record region_header;
   ia64_reg_loc *loc_ptr = NULL;
   int grmask = 0, frmask = 0;
 
   *len = -1;
-  addr = get_unwind_record (1, &r, addr);
+  addr = get_unwind_record (&region_header, &r, addr);
 
   /* process it in 2 phases, the first phase will either do the work,
      or set up a pointer to the records we care about 
@@ -748,6 +750,7 @@ execute_one_ia64_descriptor (addr, frame, len)
       case prologue:
       case body:
 	*len = r.record.r.rlen;
+	memcpy (&region_header, &r, sizeof (unwind_record));
 	break;
       case prologue_gr:
         {
@@ -780,6 +783,7 @@ execute_one_ia64_descriptor (addr, frame, len)
 	      frame->pr.loc_type  = IA64_UNW_LOC_TYPE_GR;
 	      frame->pr.l.regno = reg++;
 	    }
+	  memcpy (&region_header, &r, sizeof (unwind_record));
 	  break;
 	}
       case mem_stack_f:
@@ -1312,7 +1316,7 @@ __build_ia64_frame_state (pc, frame, bsp, pc_base_ptr)
   start_pc = pc_base + entry->start_offset;
   unw_info_ptr = ((struct unwind_info_ptr *)(pc_base + entry->unwind_offset));
   addr = unw_info_ptr->unwind_descriptors;
-  end = addr + unw_info_ptr->length * 8;
+  end = addr + IA64_UNW_HDR_LENGTH (unw_info_ptr->header) * 8;
   pc_offset = (pc - start_pc) / 16 * 3;
 
   init_ia64_unwind_frame (frame);
@@ -1345,7 +1349,8 @@ __get_personality (ptr)
      unwind_info_ptr *ptr;
 {
   void **p;
-  p = (void **) (ptr->unwind_descriptors + ptr->length * 8);
+  p = (void **) (ptr->unwind_descriptors
+		 + IA64_UNW_HDR_LENGTH (ptr->header) * 8);
   return *p;
 }
 
@@ -1354,11 +1359,13 @@ __get_except_table (ptr)
      unwind_info_ptr *ptr;
 {
   void **p, *table;
-  p = (void **) (ptr->unwind_descriptors + ptr->length * 8);
+  p = (void **) (ptr->unwind_descriptors
+		 + IA64_UNW_HDR_LENGTH (ptr->header) * 8);
   /* If there is no personality, there is no handler data.  */
   if (*p == 0)
     return 0;
-  table = (void *) (ptr->unwind_descriptors + ptr->length * 8 + 8);
+  table = (void *) (ptr->unwind_descriptors
+		    + IA64_UNW_HDR_LENGTH (ptr->header) * 8 + 8);
   return table;
 }
 
@@ -1595,12 +1602,23 @@ print_all_records (f, mem, size)
 {
   unsigned char *end = mem + size;
   unwind_record r;
+  static unwind_record region_header;
 
   fprintf (f, "UNWIND IMAGE:\n");
   while (mem < end) 
     {
-      mem = get_unwind_record (1, &r, mem);
+      mem = get_unwind_record (&region_header, &r, mem);
       print_record (f, &r);
+      switch (r.type)
+	{
+	case prologue:
+	case body:
+	case prologue_gr:
+	  memcpy (region_header, r, sizeof (unwind_record));
+	  break;
+	default:
+	  break;
+	}
     }
   fprintf (f, "--end unwind image--\n\n");
 }

@@ -113,7 +113,6 @@ __do_global_ctors_aux:
 
 .section .init,"ax","progbits"
 	{ .mlx
-	  // __do_frame_setup_aux is in crtbegin.asm
 	  movl r2 = @gprel(__do_frame_setup_aux#)
 	  ;;
 	}
@@ -123,12 +122,42 @@ __do_global_ctors_aux:
 	  ;;
 	  mov b6 = r2
 	}
-	{ .mib
-	  // __do_frame_setup_aux needs the address of __EH_FRAME_END__,
-	  // so we pass it in r16.  This is rather evil, but we have no
-	  // output registers.
-          addl r16 = @ltoff(__EH_FRAME_END__#), gp
+	{ .bbb
 	  br.call.sptk.many b0 = b6
 	  ;;
         }
 
+.text
+	.align 16
+	.proc	__do_frame_setup_aux#
+__do_frame_setup_aux:
+	/*
+		if (__register_frame_info_aux)
+		  __register_frame_info_aux(__EH_FRAME_END__)
+	*/
+	alloc loc0 = ar.pfs, 0, 3, 1, 0
+	addl r14 = @ltoff(@fptr(__register_frame_info_aux#)), gp
+	mov loc1 = b0
+	;;
+	ld8 r15 = [r14]
+	addl r16 = @ltoff(__EH_FRAME_END__#), gp
+	mov loc2 = gp
+	;;
+	cmp.eq p6, p7 = 0, r15
+	(p6) br.cond.dptk 1f
+	ld8 r8 = [r15], 8
+	ld8 out0 = [r16]
+	;;
+	ld8 gp = [r15]
+	mov b6 = r8
+	;;
+	br.call.sptk.many b0 = b6
+	;;
+1:
+	mov gp = loc2
+	mov ar.pfs = loc0
+	mov b0 = loc1
+	br.ret.sptk.many b0
+	.endp	__do_frame_setup_aux#
+
+.weak __register_frame_info_aux#

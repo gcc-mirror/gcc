@@ -296,38 +296,3 @@ __do_frame_setup:
 #endif
 .weak __deregister_frame_info#
 .weak __register_frame_info#
-
-	.text
-	.align 16
-	.global	__do_frame_setup_aux#
-	.proc	__do_frame_setup_aux#
-__do_frame_setup_aux:
-	/*
-		if (__register_frame_info_aux)
-		  __register_frame_info_aux(__EH_FRAME_END__)
-	*/
-        alloc loc0 = ar.pfs, 0, 3, 1, 0
-        addl r14 = @ltoff(@fptr(__register_frame_info_aux#)), gp
-        mov loc1 = b0
-        ;;
-	// r16 contains the address of a pointer to __EH_FRAME_END__.
-        ld8 out0 = [r16]
-        ld8 r15 = [r14]
-	mov loc2 = gp
-        ;;
-        cmp.eq p6, p7 = 0, r15
-        (p6) br.cond.dptk 1f
-        ld8 r8 = [r15], 8
-        ;;
-        ld8 gp = [r15]
-        mov b6 = r8
-        ;;
-        br.call.sptk.many b0 = b6
-	;;
-1:
-	mov gp = loc2
-        mov ar.pfs = loc0
-        mov b0 = loc1
-        br.ret.sptk.many b0
-	.endp	__do_frame_setup#
-.weak __register_frame_info_aux#

@@ -3117,8 +3117,7 @@ process_set (asm_out_file, pat)
 	      if (!spill_offset_emitted)
 	        {
 		  fprintf (asm_out_file, "\t.spill %d\n",
-/*			   (frame_size + 16 - spill_offset ) / 4); */
-			   (-(spill_offset - 8) + 16) / 4);
+			   (-(spill_offset - 8) + 16));
 		  spill_offset_emitted = 1;
 		}
 	    }
@@ -3138,10 +3137,10 @@ process_set (asm_out_file, pat)
 		  /* register 9 is ar.unat.  */
 		  if (tmp_saved == 9)
 		    fprintf (asm_out_file, "\t.savesp ar.unat, %d\n",
-			     (sp_offset - 8) / 4);
+			     (sp_offset - 8));
 		  else if (tmp_saved == 5)
 		    fprintf (asm_out_file, "\t.savesp pr, %d\n",
-			     (sp_offset - 8) / 4);
+			     (sp_offset - 8));
 		  else if (tmp_saved >= BR_REG (1) && tmp_saved <= BR_REG (5))
 		    {
 		      /* BR regs are saved this way too.  */

@@ -256,12 +256,13 @@ typedef struct ia64_frame_state
 
 typedef struct unwind_info_ptr 
 {
-  unsigned short version;
-  unsigned short flags;
-  unsigned int length;
+  unsigned long header; /* version, flags, & length */
   unsigned char unwind_descriptors[1];
 } unwind_info_ptr;
 
+#define IA64_UNW_HDR_LENGTH(x)	((x) & 0x00000000ffffffffUL)
+#define IA64_UNW_HDR_FLAGS(x)	(((x) >> 32) & 0xffffUL)
+#define IA64_UNW_HDR_VERSION(x)	(((x) >> 48) & 0xffffUL)
 
 extern unwind_info_ptr *__build_ia64_frame_state (unsigned char *, 
 						  ia64_frame_state *, void *,
