@@ -1,3 +1,7 @@
+Thu Nov 20 16:11:50 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_set_const_1): Handle narrow hosts better.
+
 Thu Nov 20 16:11:50 1997  Klaus Kaempf  <kkaempf@progis.de>
 
 	* alpha/vms.h (ASM_OUTPUT_ADDR_VEC_ELT): Add an L for the local label
