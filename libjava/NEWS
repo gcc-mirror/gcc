@@ -1,3 +1,7 @@
+New in libgcj X.XX:
+
+* libgcj now includes a bytecode interpreter.
+
 New in libgcj 2.95:
 
 * First public release

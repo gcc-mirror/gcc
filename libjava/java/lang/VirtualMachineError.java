@@ -20,6 +20,11 @@ package java.lang;
  * Status:  Believed complete and correct.
  */
 
+/* FIXME: We should consider adding some special error message when this
+ * exception is thrown, or maybe if it being caught at top-level.  Such
+ * a message would direct the user to send a bug report to
+ * gcj-bugs@cygnus.com, or something like that. --KKT */
+
 public abstract class VirtualMachineError extends Error
 {
   public VirtualMachineError ()

@@ -53,7 +53,18 @@ struct _Jv_Field
 
   jfieldID getNextInstanceField () { return this + 1; }
 
-  jboolean isRef () { return ! isResolved () || ! type->isPrimitive (); }
+  jboolean isRef () 
+    { 
+      if (!isResolved ()) 
+	{
+	  char first = ((_Jv_Utf8Const*)type)->data[0]; 
+	  return first == '[' || first == 'L';
+	}
+      else
+	{
+	  return ! type->isPrimitive ();
+	}
+    }
 
   // FIXME - may need to mask off internal flags.
   int getModifiers() { return flags; }

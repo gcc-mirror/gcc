@@ -106,6 +106,9 @@
 #undef HAVE_GETHOSTBYNAME_R
 #undef HAVE_GETHOSTBYADDR_R
 
+/* Define if you want a bytecode interpreter.  */
+#undef INTERPRETER
+
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
 

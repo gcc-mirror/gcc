@@ -27,7 +27,7 @@ data_DATA = libgcj.zip
 
 ## For now, only on native systems.
 if NATIVE
-bin_PROGRAMS = jv-convert
+bin_PROGRAMS = jv-convert gij
 endif
 
 ## ################################################################
@@ -77,8 +77,10 @@ endif
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
+LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
+
 INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
-	$(EH_COMMON_INCLUDE) $(ZINCS)
+	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 DIVIDESPEC = @DIVIDESPEC@
 
@@ -97,13 +99,17 @@ c_files = $(c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc
+## Extract the libffi object file names.
+libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
+
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
+	resolve.cc defineclass.cc interpret.cc
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS)
+	$(THREADOBJS) $(libffi_files)
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -230,6 +236,16 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 	    -friend 'java::lang::Class;' \
 	    $(basename $<)
 
+java/lang/VMClassLoader.h: java/lang/VMClassLoader.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	    -friend 'java::lang::ClassLoader;' \
+	    $(basename $<)
+
+gnu/gcj/runtime/MethodInvocation.h: gnu/gcj/runtime/MethodInvocation.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	    -friend 'class _Jv_InterpMethod;' \
+	    $(basename $<)
+
 
 ## ################################################################
 
@@ -297,6 +313,26 @@ jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+
+gij_SOURCES =
+EXTRA_gij_SOURCES = gij.cc
+## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
+## need this because we are explicitly using libtool to link using the
+## `.la' file.
+gij_LDFLAGS = -rpath $(toolexeclibdir)
+gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+	-o gij
+## We explicitly link in the libraries we need.  This way we don't
+## need -nodefaultlibs, so we can still rely on gcj picking up the
+## system libraries we need (via the specs file).
+## We need the -L so that gcj can find libgcj with `-lgcj'.
+## FIXME: should be _libs on some systems.
+gij_LDADD = gij.lo libgcj.la \
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+gij_DEPENDENCIES = gij.lo \
 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
@@ -444,6 +480,13 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ## convert_source_files.  If the .java file has a hand-maintained
 ## header, please list it in special_java_source_files.
 ordinary_java_source_files =  $(convert_source_files) \
+gnu/gcj/runtime/MethodInvocation.java \
+gnu/gcj/util/path/SearchPath.java \
+gnu/gcj/util/path/PathEntry.java \
+gnu/gcj/util/path/DirectoryPathEntry.java \
+gnu/gcj/util/path/ZipPathEntry.java \
+gnu/gcj/util/path/URLPathEntry.java \
+gnu/gcj/util/path/CacheEntry.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -522,6 +565,7 @@ java/lang/ClassCastException.java \
 java/lang/ClassCircularityError.java \
 java/lang/ClassFormatError.java	\
 java/lang/ClassLoader.java \
+java/lang/VMClassLoader.java \
 java/lang/ClassNotFoundException.java \
 java/lang/CloneNotSupportedException.java \
 java/lang/Cloneable.java \
@@ -719,6 +763,7 @@ java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
+java/lang/natClassLoader.cc \
 java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
 java/lang/natFirstThread.cc \

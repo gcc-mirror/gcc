@@ -378,8 +378,10 @@ java::lang::reflect::Method::getType ()
 	  while (*ptr != ';' && ptr[1] != '\0');
 	  break;
 	}
+
+      // FIXME: 2'nd argument should be "current loader"
       while (--num_arrays >= 0)
-	type = _Jv_FindArrayClass (type);
+	type = _Jv_FindArrayClass (type, 0);
       *argPtr++ = type;
     }
   parameter_types = args;

@@ -21,24 +21,29 @@ details.  */
 extern "C" void _Jv_InitClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
 
+// These are the possible values for the `state' field of the class
+// structure.  Note that ordering is important here; in particular
+// `resolved' must come between `nothing' and the other states.
+// Whenever the state changes, one should notify all waiters of this
+// class.
+#define JV_STATE_NOTING        0 // set by compiler
+
+#define JV_STATE_PRELOADING    1 // can do _Jv_FindClass
+#define JV_STATE_LOADING       3 // has super installed
+#define JV_STATE_LOADED        5 // is complete
+    
+#define JV_STATE_COMPILED      6 // this was a compiled class
+
+#define JV_STATE_PREPARED      7 // layout & static init done
+#define JV_STATE_LINKED        9 // strings interned
+
+#define JV_STATE_IN_PROGRESS  10 // <clinit> running
+#define JV_STATE_DONE         12 // 
+
+#define JV_STATE_ERROR        14 // must be last
+
 struct _Jv_Field;
 struct _Jv_VTable;
-
-#define CONSTANT_Class 7
-#define CONSTANT_Fieldref 9
-#define CONSTANT_Methodref 10
-#define CONSTANT_InterfaceMethodref 11
-#define CONSTANT_String 8
-#define CONSTANT_Integer 3
-#define CONSTANT_Float 4
-#define CONSTANT_Long 5
-#define CONSTANT_Double 6
-#define CONSTANT_NameAndType 12
-#define CONSTANT_Utf8 1
-#define CONSTANT_Unicode 2
-#define CONSTANT_ResolvedFlag 16
-#define CONSTANT_ResolvedString    (CONSTANT_String+CONSTANT_ResolvedFlag)
-#define CONSTANT_ResolvedClass     (CONSTANT_Class+CONSTANT_ResolvedFlag)
 
 struct _Jv_Constants
 {
@@ -134,9 +139,11 @@ public:
       return size_in_bytes;
     }
 
+  // finalization
+  void finalize ();
+
 private:
   void checkMemberAccess (jint flags);
-  void resolveConstants (void);
 
   // Various functions to handle class initialization.
   java::lang::Throwable *hackTrampoline (jint, java::lang::Throwable *);
@@ -147,12 +154,6 @@ private:
   friend _Jv_Method *_Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 					 _Jv_Utf8Const *signature);
   friend void _Jv_InitClass (jclass klass);
-  friend void _Jv_RegisterClasses (jclass *classes);
-  friend jclass _Jv_FindClassInCache (_Jv_Utf8Const *name,
-				      java::lang::ClassLoader *loader);
-  friend jclass _Jv_FindArrayClass (jclass element);
-  friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
-			      java::lang::ClassLoader *loader);
 
   friend jfieldID JvGetFirstInstanceField (jclass);
   friend jint JvNumInstanceFields (jclass);
@@ -164,6 +165,41 @@ private:
   friend jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
 
   friend class _Jv_PrimClass;
+
+  // Friends classes and functions to implement the ClassLoader
+  friend class java::lang::ClassLoader;
+
+  friend void _Jv_WaitForState (jclass, int);
+  friend void _Jv_RegisterClasses (jclass *classes);
+  friend void _Jv_RegisterInitiatingLoader (jclass,java::lang::ClassLoader*);
+  friend void _Jv_UnregisterClass (jclass);
+  friend jclass _Jv_FindClass (_Jv_Utf8Const *name,
+			       java::lang::ClassLoader *loader);
+  friend jclass _Jv_FindClassInCache (_Jv_Utf8Const *name,
+				      java::lang::ClassLoader *loader);
+  friend jclass _Jv_FindArrayClass (jclass element,
+				    java::lang::ClassLoader *loader);
+  friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
+			      java::lang::ClassLoader *loader);
+
+  friend void _Jv_InternClassStrings (jclass);
+
+#ifdef INTERPRETER
+  friend jboolean _Jv_IsInterpretedClass (jclass);
+  friend void _Jv_InitField (jobject, jclass, _Jv_Field*);
+  friend _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
+					       _Jv_Utf8Const*);
+  friend int _Jv_DetermineVTableIndex (jclass, _Jv_Utf8Const *, 
+				       _Jv_Utf8Const*);
+  friend void _Jv_InitField (jobject, jclass, int);
+  friend void* _Jv_ResolvePoolEntry (jclass, int);
+  friend void _Jv_PrepareClass (jclass);
+
+  friend class _Jv_ClassReader;	
+  friend class _Jv_InterpClass;
+  friend class _Jv_InterpMethod;
+  friend class _Jv_InterpMethodInvocation;
+#endif
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;

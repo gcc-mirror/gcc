@@ -1,3 +1,132 @@
+1999-08-09  Anthony Green  <green@cygnus.com>
+
+	* gij.cc: New file.
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h: Add INTERPRETER.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libffi_files): Identify the libffi object files for
+	inclusion in libgcj.
+	(LIBFFIINCS): Define.
+
+	* interpret.cc (gnu::gcj::runtime::MethodInvocation::continue1):
+	Dummy definition for configurations without an interpreter.
+	
+	* java/net/natPlainSocketImpl.cc (getOption): Disamiguate call to
+	java::lang::Boolean constructor.
+
+	* include/java-interp.h: Always include java-cpool.h.
+
+	* java/lang/natClassLoader.cc (getVMClassLoader0): Always return 0
+	when INTERPRETER not defined.
+
+	* java/lang/Class.h (finalize): Define.
+
+	* gnu/gcj/util/path/DirectoryPathEntry.java (getURL): Catch
+	IOException from File.getCanonicalPath.
+	(getStream): Likewise.
+
+	* NEWS: More news.
+	* THANKS: More thanks.
+
+1999-08-09  Kresten Krab Thorup  <krab@gnu.org>
+
+	* resolve.cc (get_ffi_type_from_signature): Generate uint16 for
+	jchar type.
+	(_Jv_PrepareClass): Allow non-abstract classes to
+	have abstract subclasses.
+	(_Jv_ResolvePoolEntry): Revert subclass check for protected
+	fields and methods.
+	* interpret.cc (continue1/perform_invoke): Don't sign extend
+	uint16 return val. 
+	(continue1/lshl,lshr): Push long, not int.
+	(continue1/ulshr): Use UINT64, not long long.
+ 	* defineclass.cc (handleFieldsEnd): Handle case when all fields
+	are static.
+	* java/lang/natClass.cc (forName): Add call to _Jv_InitClass.
+ 	* java/lang/FirstThread.java (run): Add top-level exception
+	handler. 
+	(run0): Renamed from run.
+
+1999-08-08  Kresten Krab Thorup  <krab@gnu.org>
+ 
+ 	* configure.in (--with-interpreter): Added.
+ 	* include/config.h.in (INTERPRETER): Added.
+ 
+ 	* java/lang/ClassLoader.java: File replaced.
+ 	* java/lang/VMClassLoader.java: New file.
+ 	* java/lang/natClassLoader.cc: New file.
+ 	* gnu/gcj/runtime/MethodInvocation.java: New file.
+ 	* gnu/gcj/util/path/SearchPath.java: New file.
+ 	* gnu/gcj/util/path/PathEntry.java: New file.
+ 	* gnu/gcj/util/path/DirectoryPathEntry.java: New file.
+ 	* gnu/gcj/util/path/ZipPathEntry.java: New file.
+ 	* gnu/gcj/util/path/URLPathEntry.java: New file.
+ 	* gnu/gcj/util/path/CacheEntry.java: New file. 
+ 	* include/java-interp.h: New file.
+ 	* include/java-cpool.h: New file.
+ 	* include/java-insns.h: New file.
+ 	* defineclass.cc: New file.
+ 	* interpret.cc: New file.
+ 	* resolve.cc: New file.
+ 
+ 	* java/lang/natClass.cc (loaded_classes, _Jv_RegisterClass,
+ 	_Jv_RegisterClasses, _Jv_FindClassInCache, _Jv_FindClass,
+ 	_Jv_NewClass, _Jv_FindArrayClass): Moved to natClassLoader.cc.
+ 	(finalize): New.
+ 	(STATE_NOTHING, STATE_RESOLVED, STATE_IN_PROGRESS, STATE_DONE,
+ 	STATE_ERROR): Moved to java/lang/Class.h and renamed with JV_
+ 	prefix. 
+ 	(initializeClass): Use new JV_ prefixed names.  Also, call
+ 	ClassLoader::resolveClass instead of _Jv_ResolveClass.
+ 		
+ 	* java/lang/Class.h (JV_STATE_PRELOADING, JV_STATE_LOADING,
+ 	JV_STATE_LOADED, JV_STATE_COMPILED, JV_STATE_PREPARED,
+ 	JV_STATE_LINKED): New.
+ 	(_Jv_WaitForState, _Jv_RegisterInitiatingLoader,
+ 	_Jv_UnregisterClass, _Jv_InternClassStrings): New friends.
+ 	(_Jv_IsInterpretedClass, _Jv_InitField, _Jv_LookupDeclaredMethod,
+ 	_Jv_DetermineVTableIndex, _Jv_ResolvePoolEntry, _Jv_PrepareClass,
+ 	_Jv_ClassReader, _Jv_InterpClass, _Jv_InterpMethod,
+ 	_Jv_InterpMethodInvocation): New friends for interpreter.
+ 	(finalize): New.
+ 	(CONSTANT_Class, CONSTANT_String, etc.): Moved to
+ 	include/java-cpool.h and renamed with JV_ prefix.
+ 	
+ 	* include/jvm.h (_Jv_makeUtf8Const, _Jv_makeUtf8TypeConst): New
+ 	decls.
+ 	(_Jv_UnregisterClass): New decl.
+ 
+ 	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Added
+ 	class loader argument. 
+ 	(_Jv_FindClass): Use class loader.
+ 	
+ 	* prims.cc (_Jv_makeUtf8Const): New function.
+ 	(_Jv_NewObjectArray): Change use of _Jv_FindArrayClass.
+ 	(_Jv_NewPrimArray): Ditto.
+ 	(_Jv_FindClassFromSignature): Ditto.
+ 	* java/lang/reflect/natArray.cc (newInstance): Ditto.
+ 	* java/lang/reflect/natMethod.cc (getType): Ditto.
+ 
+ 	* include/java-field.h (_Jv_Field::isRef): Make robust for
+ 	non-resolved contexts. 
+ 
+ 	* boehm.cc (_Jv_MarkObj): Mark interpreter-related fields. 
+ 	Also, don't mark class->next field.
+ 
+ 	* java/lang/VirtualMachineError.java: Added FIXME note.
+ 
+ 	* configure.in (INTERPSPEC): New spec.
+ 	* libgcj.spec.in: Added INTERPSPEC.
+ 	* Makefile.am: Added gcjh friends for java/lang/VMClassLoader and
+ 	gnu/gcj/runtime/MethodInvocation.
+ 	(libgcj_la_SOURCES): Added resolve.cc defineclass.cc interpret.cc.
+ 	(ordinary_java_source_files): Added above mentioned java classes.
+ 
+ 	* configure: Rebuilt.
+ 	* Makefile.in: Rebuilt.
+
 1999-08-06  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.

@@ -16,6 +16,7 @@ details.  */
 #include <java/lang/Class.h>
 #include <jvm.h>
 #include <java-field.h>
+#include <java-interp.h>
 
 // We need to include gc_priv.h.  However, it tries to include
 // config.h if it hasn't already been included.  So we force the
@@ -97,8 +98,14 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
     {
       jclass c = (jclass) addr;
 
+#if 0
+      // The next field should probably not be marked, since this is
+      // only used in the class hash table.  Marking this field
+      // basically prohibits class unloading. --Kresten
       w = (word) c->next;
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c2label);
+#endif
+
       w = (word) c->name;
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c3label);
       w = (word) c->superclass;
@@ -109,11 +116,22 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c5label);
 	}
 
+#ifdef INTERPRETER
+      if (_Jv_IsInterpretedClass (c))
+	{
+	  w = (word) c->constants.tags;
+	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c5alabel);
+	  w = (word) c->constants.data;
+	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c5blabel);
+	}
+#endif
+
       // If the class is an array, then the methods field holds a
       // pointer to the element class.  If the class is primitive,
       // then the methods field holds a pointer to the array class.
       w = (word) c->methods;
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c6label);
+
 
       if (! c->isArray() && ! c->isPrimitive())
 	{
@@ -127,7 +145,19 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 	      w = (word) c->methods[i].signature;
 	      MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c,
 			     cm2label);
+
 	      // FIXME: `ncode' entry?
+
+#ifdef INTERPRETER
+	      // The interpreter installs a heap-allocated
+	      // trampoline here, so we'll mark it. 
+	      if (_Jv_IsInterpretedClass (c))
+		  {
+		      w = (word) c->methods[i].ncode;
+		      MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c,
+				  cm3label);
+		  }
+#endif
 	    }
 	}
 
@@ -136,12 +166,34 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c8label);
       for (int i = 0; i < c->field_count; ++i)
 	{
+	  _Jv_Field* field = &c->fields[i];
+
 #ifndef COMPACT_FIELDS
-	  w = (word) c->fields[i].name;
+	  w = (word) field->name;
 	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c8alabel);
 #endif
-	  w = (word) c->fields[i].type;
+	  w = (word) field->type;
 	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c8blabel);
+
+	  // For the interpreter, we also need to mark the memory
+	  // containing static members
+	  if (field->flags & 0x0008)
+	    {
+	      w = (word) field->u.addr;
+	      MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c8clabel);
+
+	      // also, if the static member is a reference,
+	      // mark also the value pointed to.  We check for isResolved
+	      // since marking can happen before memory is allocated for
+	      // static members.
+	      if (JvFieldIsRef (field) && field->isResolved()) 
+		{
+		  jobject val = *(jobject*) field->u.addr;
+		  w = (word) val;
+		  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit,
+			      c, c8elabel);
+		}
+	    }
 	}
 
       w = (word) c->vtable;
@@ -155,6 +207,28 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 	}
       w = (word) c->loader;
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, cBlabel);
+
+#ifdef INTERPRETER
+      if (_Jv_IsInterpretedClass (c))
+	{
+	  _Jv_InterpClass* ic = (_Jv_InterpClass*)c;
+
+	  w = (word) ic->interpreted_methods;
+	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, ic, cElabel);
+
+	  for (int i = 0; i < c->method_count; i++)
+	    {
+	      w = (word) ic->interpreted_methods[i];
+	      MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, ic, \
+			  cFlabel);
+	    }
+
+	  w = (word) ic->field_initializers;
+	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, ic, cGlabel);
+	  
+	}
+#endif
+
     }
   else
     {

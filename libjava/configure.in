@@ -42,6 +42,17 @@ AC_ARG_ENABLE(libgcj-debug,
      AC_DEFINE(DEBUG)
   fi)
 
+dnl See if the user has the enterpreter included.
+AC_ARG_ENABLE(interpreter,
+[  --enable-interpreter            Enable interpreter],
+  if test "$enable_interpreter" = yes; then
+     AC_DEFINE(INTERPRETER)
+  fi)
+
+dnl This becomes -lffi if the interpreter is enables
+INTERPSPEC=
+AC_SUBST(INTERPSPEC)
+
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
 dnl FIXME: this should not be a local option but a global target
@@ -446,6 +457,10 @@ else
      LIBS=$gcj_oldLIBS
    ])
    SYSTEMSPEC="$SYSTEMSPEC $gcj_cv_lib_sockets"
+
+   if test "$enable_interpreter" = yes; then
+      INTERPSPEC=
+   fi
 
    if test "$with_system_zlib" = yes; then
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=-lzgcj)

@@ -40,6 +40,8 @@ extern int _Jv_strLengthUtf8(char* str, int len);
 
 typedef struct _Jv_Utf8Const Utf8Const;
 _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
+_Jv_Utf8Const *_Jv_makeUtf8TypeConst (char* s, int len);
+_Jv_Utf8Const *_Jv_makeUtf8Const (jstring string);
 extern jboolean _Jv_equalUtf8Consts (_Jv_Utf8Const *, _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
 
@@ -91,6 +93,8 @@ extern "C" void *_Jv_LookupInterfaceMethod (jclass klass, Utf8Const *name,
 extern "C" void _Jv_CheckArrayStore (jobject array, jobject obj);
 extern "C" void _Jv_RegisterClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
+extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
+
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
 extern jclass _Jv_FindClassFromSignature (char *,
