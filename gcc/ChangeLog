@@ -1,3 +1,8 @@
+2004-01-11  Steven Bosscher  <stevenb@suse.de>
+
+	* toplev.c (rest_of_handle_inline): Also consider functions
+	for deferral if the language is GNU F77.
+
 2004-01-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (diagnose_arglist_conflict): Add missing space to
