@@ -212,7 +212,7 @@ in the following sections.
 @emph{M680x0 Options}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
 -m68060  -mcpu32 -m5200  -m68881  -mbitfield  -mc68000  -mc68020  
--mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  
+-mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel
 -malign-int
 
 @emph{VAX Options}
@@ -3256,6 +3256,13 @@ faster on processors with 32-bit busses at the expense of more memory.
 @strong{Warning:} if you use the @samp{-malign-int} switch, GNU CC will
 align structures containing the above types  differently than
 most published application binary interface specifications for the m68k.
+
+@item -mpcrel
+Use the pc-relative addressing mode of the 68000 directly, instead of
+using a global offset table.  At present, this option implies -fpic,
+allowing at most a 16-bit offset for pc-relative addressing.  -fPIC is
+not presently supported with -mpcrel, though this could be supported for
+68020 and higher processors.
 
 @end table
 
