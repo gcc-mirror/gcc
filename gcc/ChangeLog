@@ -1,3 +1,8 @@
+2004-08-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree-vn.c (val_expr_pair_expr_eq): Compare vuses, to match the
+	hash function.
+
 2004-08-10  Roger Sayle  <roger@eyesopen.com>
 
 	* config/mips/mips.md: New reciprocal square root patterns that

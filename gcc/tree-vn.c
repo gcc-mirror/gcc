@@ -151,11 +151,20 @@ val_expr_pair_expr_eq (const void *p1, const void *p2)
 {
   const val_expr_pair_t ve1 = (val_expr_pair_t) p1;
   const val_expr_pair_t ve2 = (val_expr_pair_t) p2;
+  size_t i;
 
-  if (expressions_equal_p (ve1->e, ve2->e))
-    return true;
+  if (! expressions_equal_p (ve1->e, ve2->e))
+    return false;
+
+  if (NUM_VUSES (ve1->vuses) != NUM_VUSES (ve2->vuses))
+    return false;
   
-  return false;
+  for (i = 0; i < NUM_VUSES (ve1->vuses); i++)
+    if (! expressions_equal_p (VUSE_OP (ve1->vuses, i),
+			       VUSE_OP (ve2->vuses, i)))
+      return false;
+  
+  return true;
 }
 
 
