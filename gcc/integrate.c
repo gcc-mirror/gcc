@@ -93,9 +93,7 @@ function_cannot_inline_p (fndecl)
      message about that if `inline' is specified.  This code
      it put in to catch the volunteers.  */
   if ((last && TREE_VALUE (last) != void_type_node)
-      || (DECL_ARGUMENTS (fndecl) && DECL_NAME (DECL_ARGUMENTS (fndecl))
-	  && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (DECL_ARGUMENTS (fndecl))),
-		       "__builtin_va_alist")))
+      || current_function_varargs)
     return "varargs function cannot be inline";
 
   if (current_function_calls_alloca)
