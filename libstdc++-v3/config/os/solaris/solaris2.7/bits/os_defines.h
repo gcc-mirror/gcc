@@ -33,8 +33,6 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
-#define _GLIBCPP_AVOID_FSEEK 1
-
 // These are typedefs which libio assumes are already in place (because
 // they really are, under Linux).
 #define __off_t     off_t

@@ -231,48 +231,6 @@ namespace std
 	return __ret;
       }
 
-      // These three functions are used to clarify internal buffer
-      // maintenance. After an overflow, or after a seekoff call that
-      // started at beg or end, or possibly when the stream becomes
-      // unbuffered, and a myrid other obscure corner cases, the
-      // internal buffer does not truly reflect the contents of the
-      // external buffer. At this point, for whatever reason, it is in
-      // an indeterminate state.
-      void
-      _M_set_indeterminate(void)
-      {
-	if (_M_mode & ios_base::in)
-	  this->setg(_M_buf, _M_buf, _M_buf);
-	if (_M_mode & ios_base::out)
-	  this->setp(_M_buf, _M_buf);
-      }
-
-      void
-      _M_set_determinate(off_type __off)
-      {
-	bool __testin = _M_mode & ios_base::in;
-	bool __testout = _M_mode & ios_base::out;
-	if (__testin)
-	  this->setg(_M_buf, _M_buf, _M_buf + __off);
-	if (__testout)
-	  this->setp(_M_buf, _M_buf + __off);
-      }
-
-      bool
-      _M_is_indeterminate(void)
-      { 
-	bool __ret = false;
-	// Don't return true if unbuffered.
-	if (_M_buf)
-	  {
-	    if (_M_mode & ios_base::in)
-	      __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
-	    if (_M_mode & ios_base::out)
-	      __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
-	  }
-	return __ret;
-      }
-
   public:
       virtual 
       ~basic_streambuf() 
