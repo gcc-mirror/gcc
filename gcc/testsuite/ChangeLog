@@ -1,3 +1,7 @@
+2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/compile/20030415-1.c : New test.
+
 2003-04-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c-torture/execute/scope-2.c: Move to ...
