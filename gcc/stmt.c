@@ -3396,7 +3396,9 @@ expand_decl (decl)
 	{
 	  DECL_RTL (decl) = gen_reg_rtx (reg_mode);
 	  if (TREE_CODE (type) == POINTER_TYPE)
-	    mark_reg_pointer (DECL_RTL (decl));
+	    mark_reg_pointer (DECL_RTL (decl),
+			      (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
+			       / BITS_PER_UNIT));
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
 	}
     }
