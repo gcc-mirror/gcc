@@ -1,5 +1,5 @@
 # Makefile for GNU F77 compiler runtime.
-#   Copyright (C) 1995-1998, 2001, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1995-1998, 2001, 2002, 2003 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -149,7 +149,7 @@ i77 f77 u77: g2c.h
 $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	$(LIBTOOL) --mode=link $(CC) -o $@ \
 	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
-	  -rpath $(libdir)$(MULTISUBDIR) \
+	  -rpath $(glibcpp_toolexeclibdir) \
 	  -objectlist s-libe77 \
 	  -objectlist s-libf77 \
 	  -objectlist s-libi77 \
