@@ -275,7 +275,7 @@ static void dwarf2out_stack_adjust	PROTO((rtx));
 
 #ifndef ASM_OUTPUT_DWARF_DATA1
 #define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, VALUE)
+  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA1
@@ -363,24 +363,24 @@ static void dwarf2out_stack_adjust	PROTO((rtx));
 
 #ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, (unsigned) VALUE)
+  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, (unsigned) VALUE)
+  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA
 #define ASM_OUTPUT_DWARF_DATA(FILE,VALUE) \
   fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_OFFSET_ASM_OP, \
-	   (unsigned long) VALUE)
+	   (unsigned long) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_DATA
 #define ASM_OUTPUT_DWARF_ADDR_DATA(FILE,VALUE) \
   fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_WORD_ASM_OP, \
-	   (unsigned long) VALUE)
+	   (unsigned long) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA8
@@ -388,13 +388,13 @@ static void dwarf2out_stack_adjust	PROTO((rtx));
   do {									\
     if (WORDS_BIG_ENDIAN)						\
       {									\
-	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
-	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
+	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, (HIGH_VALUE));\
+	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, (LOW_VALUE));\
       }									\
     else								\
       {									\
-	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
-	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
+	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, (LOW_VALUE)); \
+	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, (HIGH_VALUE)); \
       }									\
   } while (0)
 #endif
