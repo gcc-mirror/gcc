@@ -23,6 +23,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "mips/iris3.h"
 
+/* Profiling is supported via libprof1.a not -lc_p as in Irix 3.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}"
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{!p:%{!pg:%{!static:%{!g*:-lc_s}}}}%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc crtn.o%s"
+
 /* Assembler is said to have trouble with .ascii with escape chars.
    The quickest way to avoid the problem is not to use .ascii.  */
 #undef ASM_OUTPUT_ASCII
