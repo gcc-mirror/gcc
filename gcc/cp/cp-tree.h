@@ -3470,6 +3470,7 @@ extern tree create_implicit_typedef             PROTO((tree, tree));
 extern tree maybe_push_decl                     PROTO((tree));
 extern void emit_local_var                      PROTO((tree));
 extern tree build_target_expr                   PROTO((tree, tree));
+extern void make_rtl_for_local_static           PROTO((tree));
 
 /* in decl2.c */
 extern void init_decl2				PROTO((void));

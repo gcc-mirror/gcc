@@ -7378,23 +7378,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
     {
       DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
 
-      if (! toplev
-	  && TREE_STATIC (decl)
-	  && ! TREE_SIDE_EFFECTS (decl)
-	  && ! TREE_PUBLIC (decl)
-	  && ! DECL_EXTERNAL (decl)
-	  && ! TYPE_NEEDS_DESTRUCTOR (type)
-	  && DECL_MODE (decl) != BLKmode)
-	{
-	  /* If this variable is really a constant, then fill its DECL_RTL
-	     slot with something which won't take up storage.
-	     If something later should take its address, we can always give
-	     it legitimate RTL at that time.  */
-	  DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
-	  store_expr (DECL_INITIAL (decl), DECL_RTL (decl), 0);
-	  TREE_ASM_WRITTEN (decl) = 1;
-	}
-      else if (toplev && ! TREE_PUBLIC (decl))
+      if (toplev && ! TREE_PUBLIC (decl))
 	{
 	  /* If this is a static const, change its apparent linkage
 	     if it belongs to a #pragma interface.  */
@@ -7430,6 +7414,47 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
   else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
 	   || (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)))
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+}
+
+/* Create RTL for the local static variable DECL.  */
+
+void
+make_rtl_for_local_static (decl)
+     tree decl;
+{
+  tree type = TREE_TYPE (decl);
+  const char *asmspec = NULL;
+
+  if (TREE_READONLY (decl)
+      && DECL_INITIAL (decl) != NULL_TREE
+      && DECL_INITIAL (decl) != error_mark_node
+      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
+      && ! TREE_SIDE_EFFECTS (decl)
+      && ! TREE_PUBLIC (decl)
+      && ! DECL_EXTERNAL (decl)
+      && ! TYPE_NEEDS_DESTRUCTOR (type)
+      && DECL_MODE (decl) != BLKmode)
+    {
+      /* As an optimization, we try to put register-sized static
+	 constants in a register, rather than writing them out.  If we
+	 take the address of the constant later, we'll make RTL for it
+	 at that point.  */
+      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
+      store_expr (DECL_INITIAL (decl), DECL_RTL (decl), 0);
+      TREE_ASM_WRITTEN (decl) = 1;
+      return;
+    }
+
+  if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+    {
+      /* The only way this situaton can occur is if the
+	 user specified a name for this DECL using the
+	 `attribute' syntax.  */
+      asmspec = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
+    }
+
+  rest_of_decl_compilation (decl, asmspec, /*top_level=*/0, /*at_end=*/0);
 }
 
 /* The old ARM scoping rules injected variables declared in the
