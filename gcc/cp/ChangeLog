@@ -1,3 +1,18 @@
+2004-11-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Friend class name lookup 1/n, PR c++/18471
+	* decl.c (lookup_and_check_tag): New function.
+	(xref_tag, start_enum): Use it.
+	(check_elaborated_type_specifier): Move TEMPLATE_TYPE_PARM check
+	before !DECL_IMPLICIT_TYPEDEF_P.  Also display previously declared
+	location.
+	* name-lookup.c (lookup_name_current_level): Rename to ...
+	(lookup_name_innermost_nonclass_level): ... this.
+	(lookup_type_scope): New function.
+	* name-lookup.h (lookup_name_current_level): Rename to ...
+	(lookup_name_innermost_nonclass_level): ... this.
+	(lookup_type_scope): Add declaration.
+
 2004-11-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17344
