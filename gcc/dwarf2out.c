@@ -1546,8 +1546,8 @@ output_cfi (cfi, fde)
       switch (cfi->dw_cfi_opc)
 	{
 	case DW_CFA_set_loc:
-	  dw2_asm_output_offset (DWARF2_ADDR_SIZE, 
-				   cfi->dw_cfi_oprnd1.dw_cfi_addr, NULL);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, 
+			       cfi->dw_cfi_oprnd1.dw_cfi_addr, NULL);
 	  break;
 	case DW_CFA_advance_loc1:
 	  dw2_asm_output_delta (1, cfi->dw_cfi_oprnd1.dw_cfi_addr,
@@ -1679,8 +1679,8 @@ output_call_frame_info (for_eh)
          trailing null) so the pointer is 4-byte aligned.  The Solaris ld
          can't handle unaligned relocs.  */
       dw2_asm_output_nstring ("eh", -1, "CIE Augmentation");
-      dw2_asm_output_offset (DWARF2_ADDR_SIZE, "__EXCEPTION_TABLE__",
-			     "pointer to exception region info");
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, "__EXCEPTION_TABLE__",
+			   "pointer to exception region info");
     }
   else
     {
@@ -1743,8 +1743,8 @@ output_call_frame_info (for_eh)
 			       stripattributes (FRAME_SECTION),
 			       "FDE CIE offset");
 
-      dw2_asm_output_offset (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
-			     "FDE initial location");
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
+			   "FDE initial location");
 
       dw2_asm_output_delta (DWARF2_ADDR_SIZE, fde->dw_fde_end,
 			    fde->dw_fde_begin, "FDE address range");
@@ -5724,7 +5724,7 @@ output_die (die)
 	  break;
 
 	case dw_val_class_lbl_id:
-	  dw2_asm_output_offset (DWARF2_ADDR_SIZE, AT_lbl (a), "%s", name);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, AT_lbl (a), "%s", name);
 	  break;
 
 	case dw_val_class_lbl_offset:
@@ -5938,7 +5938,7 @@ output_aranges ()
 	dw2_asm_output_data (2, 0, NULL);
     }
 
-  dw2_asm_output_offset (DWARF2_ADDR_SIZE, text_section_label, "Address");
+  dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_section_label, "Address");
   dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
 			text_section_label, "Length");
 
@@ -5952,7 +5952,7 @@ output_aranges ()
 
       if (die->die_tag == DW_TAG_subprogram)
 	{
-	  dw2_asm_output_offset (DWARF2_ADDR_SIZE, get_AT_low_pc (die),
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, get_AT_low_pc (die),
 				 "Address");
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, get_AT_hi_pc (die),
 				get_AT_low_pc (die), "Length");
@@ -6440,7 +6440,7 @@ output_line_info ()
 	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_offset (DWARF2_ADDR_SIZE, line_label, NULL);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
 	}
       strcpy (prev_line_label, line_label);
 
@@ -6451,7 +6451,7 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       line_file_table.table[current_file]);
+				       file_table.table[current_file]);
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
@@ -6498,7 +6498,7 @@ output_line_info ()
       dw2_asm_output_data (1, 0, "DW_LNE_set_address");
       dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
       dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-      dw2_asm_output_offset (DWARF2_ADDR_SIZE, text_end_label, NULL);
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_end_label, NULL);
     }
 
   dw2_asm_output_data (1, 0, "DW_LNE_end_sequence");
@@ -6534,7 +6534,7 @@ output_line_info ()
 	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_offset (DWARF2_ADDR_SIZE, line_label, NULL);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
 	}
       else
 	{
@@ -6550,7 +6550,7 @@ output_line_info ()
 	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, line_label, NULL);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
 	    }
 	}
       strcpy (prev_line_label, line_label);
@@ -6562,7 +6562,7 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       line_file_table.table[current_file]);
+				       file_table.table[current_file]);
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
@@ -6611,7 +6611,7 @@ output_line_info ()
 	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, line_label, NULL);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
 	    }
 
 	  /* Output the marker for the end of this sequence.  */
