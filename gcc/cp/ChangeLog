@@ -1,3 +1,8 @@
+Sun May 10 22:53:56 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (DECL_NAMESPACE_SCOPE): New macro.
+	(DECL_CLASS_SCOPE): Likewise.
+
 Sun May 10 22:48:22 1998  H.J. Lu  (hjl@gnu.org)
 
 	* class.c (finish_struct_1): Use OVL_CURRENT on TREE_VEC_ELT.
