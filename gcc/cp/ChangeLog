@@ -1,3 +1,37 @@
+1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (qualify_lookup): New fn.
+	(lookup_name_real): Use it.
+
+1998-07-16  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (add_using_namespace): When directly using a namespace
+	that was indirect before, promote it.
+
+	* cp-tree.h (LOOKUP_PREFER_TYPES, LOOKUP_PREFER_NAMESPACES,
+	LOOKUP_PREFER_BOTH, LOOKUP_NAMESPACES_ONLY, LOOKUP_TYPES_ONLY,
+	LOOKUP_QUALIFIERS_ONLY, LOOKUP_TEMPLATES_EXPECTED): New macros.
+	* decl.c (select_decl): Replace two flag parameters by one.
+	(unqualified_namespace_lookup): Likewise, pass flag.
+	(lookup_flags): New function.
+	(lookup_name_real): Compute flags, pass them.
+	(lookup_namespace_name): Call with zero-flag.
+	* decl2.c (ambiguous_decl): Add flag parameter, complain only
+	according to flags.
+	(lookup_using_namespace, qualified_lookup_using_namespace):
+	Add flag parameter, pass them through.
+	* lex.c (do_scoped_id): Call with zero-flag.
+
+1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (convert_for_assignment): Use comptypes.
+
+1998-07-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* semantics.c (finish_object_call_expr): Move test for the
+	function called being a TYPE_DECL to ...
+	* call.c (build_new_method_call): Here.
+
 1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (arg_assoc_class): Also look at template arguments, if any.
