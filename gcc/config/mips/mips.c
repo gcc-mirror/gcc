@@ -7115,13 +7115,22 @@ mips_expand_prologue ()
 
       for (i = 0; i < num; i++)
 	{
-	  rtx pattern = RTVEC_ELT (adjust, i);
+	  rtx insn, pattern;
+
+	  pattern = RTVEC_ELT (adjust, i);
 	  if (GET_CODE (pattern) != SET
 	      || GET_CODE (SET_SRC (pattern)) != ASHIFT)
 	    abort_with_insn (pattern, "Insn is not a shift");
-
 	  PUT_CODE (SET_SRC (pattern), ASHIFTRT);
-	  emit_insn (pattern);
+
+	  insn = emit_insn (pattern);
+
+	  /* Global life information isn't valid at this point, so we
+	     can't check whether these shifts are actually used.  Mark
+	     them MAYBE_DEAD so that flow2 will remove them, and not
+	     complain about dead code in the prologue.  */
+	  REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
+					       REG_NOTES (insn));
 	}
     }
 
