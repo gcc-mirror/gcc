@@ -4056,6 +4056,10 @@ namespace std
       virtual iter_type
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, string_type& __digits) const;
+
+      iter_type
+      _M_extract(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
+		 ios_base::iostate& __err, string_type& __digits) const;     
     };
 
   template<typename _CharT, typename _InIter>
@@ -4189,6 +4193,10 @@ namespace std
       virtual iter_type
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     const string_type& __digits) const;
+
+      iter_type
+      _M_insert(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+		const string_type& __digits) const;
     };
 
   template<typename _CharT, typename _OutIter>

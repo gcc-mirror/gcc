@@ -1,5 +1,16 @@
 2004-02-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.h (money_get<>::_M_extract):
+	New, helper for do_get.
+	(money_put<>::_M_insert): Likewise, for do_put.
+	* include/bits/locale_facets.tcc (money_get<>::_M_extract,
+	money_put<>::_M_insert): Define.
+	(money_get<>::do_get(long double&), money_get<>::do_get(
+	string_type&), money_put::do_put(long double),
+	money_put::do_put(const string_type&)): Use the helpers.
+
+2004-02-18  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/io/basic_file_stdio.cc (__gnu_internal::xwritev):
 	Rewrite, avoiding recursion.
 	(__gnu_internal::xwrite): Minor tweaks.

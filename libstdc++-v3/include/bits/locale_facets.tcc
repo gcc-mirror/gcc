@@ -1130,31 +1130,11 @@ namespace std
       return __s;
     }
 
-
   template<typename _CharT, typename _InIter>
     _InIter
     money_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
-	   ios_base::iostate& __err, long double& __units) const
-    {
-      string_type __str;
-      __beg = this->do_get(__beg, __end, __intl, __io, __err, __str);
-
-      const int __cs_size = __str.size() + 1;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      const locale __loc = __io.getloc();
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      const _CharT* __wcs = __str.c_str();
-      __ctype.narrow(__wcs, __wcs + __cs_size, char(), __cs);
-      std::__convert_to_v(__cs, __units, __err, _S_get_c_locale());
-      return __beg;
-    }
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    money_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
-	   ios_base::iostate& __err, string_type& __units) const
+    _M_extract(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
+	       ios_base::iostate& __err, string_type& __units) const
     {
       // These contortions are quite unfortunate.
       typedef moneypunct<_CharT, true>		__money_true;
@@ -1358,53 +1338,41 @@ namespace std
       return __beg;
     }
 
-  template<typename _CharT, typename _OutIter>
-    _OutIter
-    money_put<_CharT, _OutIter>::
-    do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-	   long double __units) const
+  template<typename _CharT, typename _InIter>
+    _InIter
+    money_get<_CharT, _InIter>::
+    do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
+	   ios_base::iostate& __err, long double& __units) const
     {
+      string_type __str;
+      __beg = _M_extract(__beg, __end, __intl, __io, __err, __str);
+
+      const int __cs_size = __str.size() + 1;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-#ifdef _GLIBCXX_USE_C99
-      // First try a buffer perhaps big enough.
-      int __cs_size = 64;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
-					_S_get_c_locale());
-      // If the buffer was not large enough, try again with the correct size.
-      if (__len >= __cs_size)
-	{
-	  __cs_size = __len + 1;
-	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
-					_S_get_c_locale());
-	}
-#else
-      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
-      const int __cs_size = numeric_limits<long double>::max_exponent10 + 3;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(__cs, 0, "%.0Lf", __units,
-					_S_get_c_locale());
-#endif
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							   * __cs_size));
-      __ctype.widen(__cs, __cs + __len, __ws);
-      const string_type __digits(__ws, __len);
-      return this->do_put(__s, __intl, __io, __fill, __digits);
+      const _CharT* __wcs = __str.c_str();
+      __ctype.narrow(__wcs, __wcs + __cs_size, char(), __cs);
+      std::__convert_to_v(__cs, __units, __err, _S_get_c_locale());
+      return __beg;
     }
+
+  template<typename _CharT, typename _InIter>
+    _InIter
+    money_get<_CharT, _InIter>::
+    do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
+	   ios_base::iostate& __err, string_type& __units) const
+    { return _M_extract(__beg, __end, __intl, __io, __err, __units); }
 
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
-    do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-	   const string_type& __digits) const
+    _M_insert(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	      const string_type& __digits) const
     {
       typedef typename string_type::size_type	size_type;
       typedef money_base::part			part;
-
+      
       const locale __loc = __io.getloc();
       const size_type __width = static_cast<size_type>(__io.width());
 
@@ -1556,9 +1524,53 @@ namespace std
 	  __s = std::__write(__s, __res.data(), __len);
 	}
       __io.width(0);
-      return __s;
+      return __s;    
     }
 
+  template<typename _CharT, typename _OutIter>
+    _OutIter
+    money_put<_CharT, _OutIter>::
+    do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	   long double __units) const
+    {
+      const locale __loc = __io.getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+#ifdef _GLIBCXX_USE_C99
+      // First try a buffer perhaps big enough.
+      int __cs_size = 64;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 328. Bad sprintf format modifier in money_put<>::do_put()
+      int __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
+					_S_get_c_locale());
+      // If the buffer was not large enough, try again with the correct size.
+      if (__len >= __cs_size)
+	{
+	  __cs_size = __len + 1;
+	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+	  __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
+					_S_get_c_locale());
+	}
+#else
+      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
+      const int __cs_size = numeric_limits<long double>::max_exponent10 + 3;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      int __len = std::__convert_from_v(__cs, 0, "%.0Lf", __units,
+					_S_get_c_locale());
+#endif
+      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							   * __cs_size));
+      __ctype.widen(__cs, __cs + __len, __ws);
+      const string_type __digits(__ws, __len);
+      return _M_insert(__s, __intl, __io, __fill, __digits);
+    }
+
+  template<typename _CharT, typename _OutIter>
+    _OutIter
+    money_put<_CharT, _OutIter>::
+    do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	   const string_type& __digits) const
+    { return _M_insert(__s, __intl, __io, __fill, __digits); }
 
   // NB: Not especially useful. Without an ios_base object or some
   // kind of locale reference, we are left clawing at the air where
