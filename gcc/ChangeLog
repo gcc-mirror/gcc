@@ -1,3 +1,14 @@
+2005-03-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/20632
+	* genautomata.c (first_cycle_unit_presence): Check all alternative
+	states for unit presence.
+
+	* doc/md.texi: Remove remark about impossibility to query unit
+	presence in non nondeterministic automaton state.
+	
+	* config/ia64/ia64.c (get_template): Change order of unit querying.
+
 2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c (cprop_into_successor_phis): Remove an
