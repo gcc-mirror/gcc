@@ -127,13 +127,13 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo cpu_time.lo cshift0.lo date_and_time.lo \
-	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getcwd.lo \
-	getXid.lo ishftc.lo mvbits.lo pack_generic.lo size.lo \
-	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
-	random.lo reshape_generic.lo reshape_packed.lo \
+	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo exit.lo \
+	getcwd.lo getXid.lo ishftc.lo mvbits.lo pack_generic.lo \
+	size.lo spread_generic.lo string_intrinsics.lo system.lo \
+	rand.lo random.lo reshape_generic.lo reshape_packed.lo \
 	selected_int_kind.lo selected_real_kind.lo system_clock.lo \
-	transpose_generic.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo normalize.lo
+	transpose_generic.lo umask.lo unlink.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -216,7 +216,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FC = @FC@
 FCFLAGS = @FCFLAGS@
-GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -333,6 +332,7 @@ intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
+intrinsics/exit.c \
 intrinsics/getcwd.c \
 intrinsics/getXid.c \
 intrinsics/ishftc.c \
@@ -350,6 +350,8 @@ intrinsics/selected_int_kind.f90 \
 intrinsics/selected_real_kind.f90 \
 intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
+intrinsics/umask.c \
+intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
 runtime/in_unpack_generic.c \
@@ -1219,6 +1221,9 @@ eoshift2.lo: intrinsics/eoshift2.c
 etime.lo: intrinsics/etime.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o etime.lo `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c
 
+exit.lo: intrinsics/exit.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exit.lo `test -f 'intrinsics/exit.c' || echo '$(srcdir)/'`intrinsics/exit.c
+
 getcwd.lo: intrinsics/getcwd.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getcwd.lo `test -f 'intrinsics/getcwd.c' || echo '$(srcdir)/'`intrinsics/getcwd.c
 
@@ -1263,6 +1268,12 @@ system_clock.lo: intrinsics/system_clock.c
 
 transpose_generic.lo: intrinsics/transpose_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
+
+umask.lo: intrinsics/umask.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o umask.lo `test -f 'intrinsics/umask.c' || echo '$(srcdir)/'`intrinsics/umask.c
+
+unlink.lo: intrinsics/unlink.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unlink.lo `test -f 'intrinsics/unlink.c' || echo '$(srcdir)/'`intrinsics/unlink.c
 
 unpack_generic.lo: intrinsics/unpack_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c
