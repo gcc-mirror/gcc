@@ -178,7 +178,8 @@ rules you should explicitly specify the dependency output file with
 @env{DEPENDENCIES_OUTPUT} (@pxref{Environment Variables}).  Debug output
 will still be sent to the regular output stream as normal.
 
-Passing @option{-M} to the driver implies @option{-E}.
+Passing @option{-M} to the driver implies @option{-E}, and suppresses
+warnings with an implicit @option{-w}.
 
 @item -MM
 @opindex MM
