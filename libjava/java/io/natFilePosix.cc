@@ -104,9 +104,16 @@ java::io::File::attr (jint query)
 jstring
 java::io::File::getCanonicalPath (void)
 {
-  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
+  // We use `+2' here because we might need to use `.' for our special
+  // case.
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 2);
   char buf2[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+
+  // Special case: treat "" the same as ".".
+  if (total == 0)
+    buf[total++] = '.';
+
   buf[total] = '\0';
 
 #ifdef HAVE_REALPATH
