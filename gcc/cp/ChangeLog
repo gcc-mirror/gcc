@@ -1,3 +1,15 @@
+2000-01-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp/class.c (build_vtable): Rename to build_primary_vtable.
+	(prepare_fresh_vtable): Rename to build_secondary_vtable.
+	(make_new_vtable): New function.
+	(modify_vtable_entry): Handle generation of new vtables correctly.
+	(modify_one_vtable): Remove unused parameter.
+	(dfs_fixup_vtable_deltas): Likewise.
+	(override_one_vtable): Use build_secondary_vtable.
+	(finish_struct_1): Use build_primary_vtable and
+	build_secondary_vtable.
+	
 2000-01-28  Ulrich Drepper  <drepper@redhat.com>
 
 	* cp/decl.c: Adjust variable names, comments, help strings.
