@@ -2561,7 +2561,7 @@ $(BUILD_PREFIX_1)ggc-none.o: ggc-none.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYST
 	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/ggc-none.c > $(BUILD_PREFIX)ggc-none.c
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)ggc-none.c $(OUTPUT_OPTION)
 
-min-insn-modes.o: insn-modes.c $(BCONFIG_H) $(SYSTEM_H) $(MACHMODE_H)
+min-insn-modes.o: min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H) $(MACHMODE_H)
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	    min-insn-modes.c $(OUTPUT_OPTION)
 
