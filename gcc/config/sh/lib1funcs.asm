@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL(X)	.L_##X
 
 #if 1 /* ??? The export list mechanism is broken, everything that is not
-	 hidden is exported.  */
+	 hidden is exported.  See PR target/20617.  */
 #undef FUNC
 #define FUNC(X)		.type X,@function; .hidden X
 #undef ALIAS
