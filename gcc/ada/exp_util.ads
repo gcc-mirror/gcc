@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -360,7 +360,7 @@ package Exp_Util is
       Unc_Typ : Entity_Id)
       return    Node_Id;
    --  Returns a subtype indication corresponding to the actual type of an
-   --  expresion E. Unc_Typ is an unconstrained array or record, or
+   --  expression E. Unc_Typ is an unconstrained array or record, or
    --  a classwide type.
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.57 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -816,7 +816,7 @@ package body System.Task_Primitives.Operations is
       --  recommend a minimum size of 32 kB.  (The original was 4 kB)
       --  Systems that use many tasks (say > 30) and require much
       --  memory may run out of virtual address space, since OS/2
-      --  has a per-proces limit of 512 MB, of which max. 300 MB is
+      --  has a per-process limit of 512 MB, of which max. 300 MB is
       --  usable in practise.
 
       if Stack_Size = Unspecified_Size then

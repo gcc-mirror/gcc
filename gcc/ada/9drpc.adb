@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $                              --
+--                            $Revision: 1.1 $                              --
 --                                                                          --
 --     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
 --                                                                          --
@@ -1009,7 +1009,7 @@ package body System.RPC is
                Partition_ID'Image (Partition));
             Garbage_Collector.Allocate (Anonymous);
 
-            --  We substracted the size of the header from the size of the
+            --  We subtracted the size of the header from the size of the
             --  global message in order to provide immediatly Params size
 
             Anonymous.Element.Start

@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---                            $Revision: 1.7 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -108,7 +108,7 @@ package body System.Machine_State_Operations is
    function To_Uns32_Ptr is new Unchecked_Conversion (Addr_Int, Uns32_Ptr);
 
    --------------------------------
-   -- ABI-Dependant Declarations --
+   -- ABI-Dependent Declarations --
    --------------------------------
 
    o32 : constant Natural := Boolean'Pos (System.Word_Size = 32);

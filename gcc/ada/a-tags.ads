@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.23 $                             --
+--                            $Revision: 1.1 $                             --
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -61,7 +61,7 @@ private
    ----------------------------------------------------------------
 
    --  GNAT's Dispatch Table format is customizable in order to match the
-   --  format used in another langauge. GNAT supports programs that use
+   --  format used in another language. GNAT supports programs that use
    --  two different dispatch table format at the same time: the native
    --  format that supports Ada 95 tagged types and which is described in
    --  Ada.Tags and a foreign format for types that are imported from some

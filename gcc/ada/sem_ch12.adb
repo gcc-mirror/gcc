@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.14 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -5016,7 +5016,7 @@ package body Sem_Ch12 is
 
    begin
       --  If the instance and the generic body appear within the same
-      --  unit, and the instance preceeds the generic, the freeze node for
+      --  unit, and the instance precedes the generic, the freeze node for
       --  the instance must appear after that of the generic. If the generic
       --  is nested within another instance I2, then current instance must
       --  be frozen after I2. In both cases, the freeze nodes are those of
@@ -5297,7 +5297,7 @@ package body Sem_Ch12 is
 
          --  The inherited context is attached to the enclosing compilation
          --  unit. This is either the main unit, or the declaration for the
-         --  main unit (in case the instantation appears within the package
+         --  main unit (in case the instantiation appears within the package
          --  declaration and the main unit is its body).
 
          Current_Unit := Parent (Inst);
@@ -8103,7 +8103,7 @@ package body Sem_Ch12 is
             --  package itself. If the instance is a subprogram, all entities
             --  in the corresponding package are renamings. If this entity is
             --  a formal package, make its own formals private as well. The
-            --  actual in this case is itself the renaming of an instantation.
+            --  actual in this case is itself the renaming of an instantiation.
             --  If the entity is not a package renaming, it is the entity
             --  created to validate formal package actuals: ignore.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --           Copyright (C) 1998-2001, Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -616,7 +616,7 @@ package body GNAT.Spitbol.Patterns is
       --  occurs in constructing a pattern, and it means that the pattern
       --  matching circuitry does not have to keep track of the structure
       --  of a pattern with respect to concatenation, since the appropriate
-      --  succesor is always at hand.
+      --  successor is always at hand.
 
       --  Concatenation itself generates no additional possibilities for
       --  backtracking, but the constituent patterns of the concatenated
@@ -1315,7 +1315,7 @@ package body GNAT.Spitbol.Patterns is
       Start   : out Natural;
       Stop    : out Natural);
    --  Identical in all respects to XMatch, except that trace information is
-   --  output on Standard_Ouput during execution of the match. This is the
+   --  output on Standard_Output during execution of the match. This is the
    --  version that is called if the original Match call has Debug => True.
 
    ---------

@@ -1,3 +1,31 @@
+2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* 5ataprop.adb, 5atpopsp.adb, 5ftaprop.adb, 5gmastop.adb,
+	5gtaprop.adb, 5htaprop.adb, 5itaprop.adb, 5lintman.adb,
+	5omastop.adb, 5oosinte.adb, 5otaprop.adb, 5staprop.adb,
+	5vinterr.adb, 5vtaprop.adb, 5vtpopde.adb, 5wintman.adb,
+	5wtaprop.adb, 5zinterr.adb, 5ztaprop.adb, 6vcstrea.adb,
+	7sintman.adb, 7staprop.adb, 9drpc.adb, ChangeLog, Makefile.in,
+	a-except.adb, a-tags.ads, a-tasatt.adb, a-teioed.adb,
+	a-textio.ads, a-witeio.ads, a-wtedit.adb, ali.ads, comperr.adb,
+	cstand.adb, einfo.ads, errout.adb, exp_ch11.adb, exp_ch2.adb,
+	exp_ch3.adb, exp_ch4.adb, exp_ch5.adb, exp_ch6.adb, exp_ch9.adb,
+	exp_util.adb, exp_util.ads, fname-uf.adb, g-cgi.ads, g-exctra.ads,
+	g-expect.ads, g-regist.adb, g-spipat.adb, gnatchop.adb,
+	gnatlink.adb, gnatls.adb, gnatmain.adb, gnatmem.adb, init.c,
+	make.adb, make.ads, mdlltool.adb, nlists.ads, osint.ads,
+	par-ch3.adb, par-ch4.adb, par-ch5.adb, par-ch6.adb, par.adb,
+	repinfo.adb, s-fatflt.ads, s-fatlfl.ads, s-fatllf.ads,
+	s-fatsfl.ads, s-finimp.adb, s-finimp.ads, s-interr.adb,
+	s-secsta.ads, s-shasto.ads, s-stalib.adb, s-stalib.ads,
+	s-tarest.ads, s-tasdeb.adb, s-tassta.adb, s-tassta.ads,
+	s-vaflop.ads, scans.ads, scn.adb, sem.ads, sem_aggr.adb,
+	sem_attr.adb, sem_case.ads, sem_ch10.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch3.adb, sem_ch3.ads, sem_ch5.adb, sem_ch7.adb,
+	sem_ch8.adb, sem_ch8.ads, sem_type.adb, sem_util.ads, sinfo.ads,
+	sprint.adb, tbuild.ads, types.ads, utils.c, xeinfo.adb: Fix
+	spelling errors.
+
 2001-12-14  Vincent Celier <celier@gnat.com>
 
 	* osint.adb(Create_Debug_File): When an object file is specified, 

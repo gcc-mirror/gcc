@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.69 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -73,7 +73,7 @@ package Tbuild is
       Defining_Identifier : Node_Id;
       Label_Construct     : Node_Id)
       return                Node_Id;
-   --  Used to contruct an implicit label declaration node, including setting
+   --  Used to construct an implicit label declaration node, including setting
    --  the proper Label_Construct field (since Label_Construct is a semantic
    --  field, the normal call to Make_Implicit_Label_Declaration does not
    --  set this field).

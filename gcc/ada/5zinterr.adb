@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.7 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1494,7 +1494,7 @@ package body System.Interrupts is
             --  (Abort_Task_Interrupt) from the Interrupt_Manager for unbinding
             --  a procedure handler or an entry. Or it could be a wake up
             --  from status change (Unblocked -> Blocked). If that is not
-            --  the case, we should excecute the attached procedure or entry.
+            --  the case, we should execute the attached procedure or entry.
 
             POP.Unlock (Self_ID);
 

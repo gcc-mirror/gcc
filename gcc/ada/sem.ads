@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.101 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -126,7 +126,7 @@
 --  it up without causing too much distortion to our basic model.
 --
 --  A switch (sede below) is set to indicate that we are in the initial
---  occurence of a default expression. The analyzer is then called on this
+--  occurrence of a default expression. The analyzer is then called on this
 --  expression with the switch set true. Analysis and resolution proceed
 --  almost as usual, except that Freeze_Expression will not freeze
 --  non-static expressions if this switch is set, and the call to Expand at

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.13 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 1991-2001, Florida State University             --
 --                                                                          --
@@ -91,7 +91,7 @@ package body Specific is
 
    function New_Fake_ATCB return Task_ID;
    --  Allocate and Initialize a new ATCB. This code can safely be called from
-   --  a foreign thread, as it doesn't access implicitely or explicitely
+   --  a foreign thread, as it doesn't access implicitly or explicitly
    --  "self" before having initialized the new ATCB.
 
    -------------------

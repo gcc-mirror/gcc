@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.33 $                             --
+--                            $Revision: 1.1 $                             --
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -155,7 +155,7 @@ package Sem_Ch8 is
    --  of the scope suppress flags.
 
    function Present_System_Aux (N : Node_Id := Empty) return Boolean;
-   --  Return True if the auxiliary system file has been sucessfully loaded.
+   --  Return True if the auxiliary system file has been successfully loaded.
    --  Otherwise attempt to load it, using the name supplied by a previous
    --  Extend_System pragma, and report on the success of the load.
    --  If N is present, it is a selected component whose prefix is System,

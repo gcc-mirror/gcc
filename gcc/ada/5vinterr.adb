@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.4 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1991-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -908,7 +908,7 @@ package body System.Interrupts is
 
       --  Abort_Task_Interrupt is one of the Interrupt unmasked
       --  in all tasks. We mask the Interrupt in this particular task
-      --  so that "sigwait" is possible to catch an explicitely sent
+      --  so that "sigwait" is possible to catch an explicitly sent
       --  Abort_Task_Interrupt from the Server_Tasks.
 
       --  This sigwaiting is needed so that we make sure a Server_Task is

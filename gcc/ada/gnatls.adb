@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
 --                                                                          --
@@ -145,7 +145,7 @@ procedure Gnatls is
    --  Give the Sdep entry corresponding to the unit U in ali record A.
 
    function Index (Char : Character; Str : String) return Natural;
-   --  Returns the first occurence of Char in Str.
+   --  Returns the first occurrence of Char in Str.
    --  Returns 0 if Char is not in Str.
 
    procedure Output_Object (O : File_Name_Type);
@@ -244,7 +244,7 @@ procedure Gnatls is
       Error_Msg_Name_1 := Units.Table (U).Uname;
       Error_Msg_Name_2 := ALIs.Table (A).Afile;
       Write_Eol;
-      Error_Msg ("wrong ALI format, can't find dependancy line for & in %");
+      Error_Msg ("wrong ALI format, can't find dependency line for & in %");
       Exit_Program (E_Fatal);
 
       --  Not needed since we exit the program but avoids compiler warning
@@ -1103,7 +1103,7 @@ begin
                Output_Unit (U);
 
                --  Output source now, unless if it will be done as part of
-               --  outputing dependancies.
+               --  outputing dependencies.
 
                if not (Dependable and then Print_Source) then
                   Output_Source (Corresponding_Sdep_Entry (Id, U));

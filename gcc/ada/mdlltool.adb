@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -81,9 +81,9 @@ package body MDLL.Tools is
 
    procedure Delete_File (Filename : in String) is
       File   : constant String := Filename & ASCII.Nul;
-      Sucess : Boolean;
+      Success : Boolean;
    begin
-      OS_Lib.Delete_File (File'Address, Sucess);
+      OS_Lib.Delete_File (File'Address, Success);
    end Delete_File;
 
    -------------

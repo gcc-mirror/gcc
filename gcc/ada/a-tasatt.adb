@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --             Copyright (C) 1991-2000 Florida State University             --
 --                                                                          --
@@ -123,7 +123,7 @@
 --  finalization for that type of attribute. On task termination, the
 --  runtime system uses the pointer to call the appropriate deallocator.
 
---  While this gets around the limitation that instantations be at
+--  While this gets around the limitation that instantiations be at
 --  the library level, it relies on an implementation feature that
 --  may not always be safe, i.e. that it is safe to call the
 --  Deallocate procedure for an instantiation of Ada.Task_Attributes

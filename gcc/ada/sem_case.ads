@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --         Copyright (C) 1996-2001 Free Software Foundation, Inc.           --
 --                                                                          --
@@ -48,7 +48,7 @@ package Sem_Case is
 
    procedure No_OP (C : Node_Id);
    --  The no-operation routine. Does absolutely nothing. Can be used
-   --  in the following generic for the parameter Proces_Empty_Choice.
+   --  in the following generic for the parameter Process_Empty_Choice.
 
    generic
       with function Get_Alternatives (N : Node_Id) return List_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.31 $                             --
+--                            $Revision: 1.1 $                             --
 --                                                                          --
 --          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -139,7 +139,7 @@ pragma Elaborate_Body (Finalization_Implementation);
    --  Initialize the field My_Address to the Object'Address
 
    procedure Adjust (Object : in out Record_Controller);
-   --  Adjust the components and their finalization pointers by substracting
+   --  Adjust the components and their finalization pointers by subtracting
    --  by the offset of the target and the source addresses of the assignment
 
    --  Inherit Finalize from Limited_Record_Controller

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -502,7 +502,7 @@ package body Exp_Ch6 is
       --  This is used when the actual involves a reference to an element
       --  of a packed array, where we can appropriately use a simpler
       --  approach than the full call by copy code. We just copy the value
-      --  in and out of an apropriate temporary.
+      --  in and out of an appropriate temporary.
 
       procedure Check_Fortran_Logical;
       --  A value of type Logical that is passed through a formal parameter
@@ -1477,7 +1477,7 @@ package body Exp_Ch6 is
             Insert_Action (Prev, Make_Raise_Constraint_Error (Loc, Cond));
          end if;
 
-         --  Perform apropriate validity checks on parameters
+         --  Perform appropriate validity checks on parameters
 
          if Validity_Checks_On then
 

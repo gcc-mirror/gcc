@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.4 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -59,7 +59,7 @@ package body Errout is
    --  type, and is used by Add_Class to insert 'Class at the proper point
 
    Continuation : Boolean;
-   --  Indicates if current message is a continuation. Intialized from the
+   --  Indicates if current message is a continuation. Initialized from the
    --  Msg_Cont parameter in Error_Msg_Internal and then set True if a \
    --  insertion character is encountered.
 

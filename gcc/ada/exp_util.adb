@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.8 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2421,7 +2421,7 @@ package body Exp_Util is
          begin
             --  A class-wide equivalent type is not needed when Java_VM
             --  because the JVM back end handles the class-wide object
-            --  intialization itself (and doesn't need or want the
+            --  initialization itself (and doesn't need or want the
             --  additional intermediate type to handle the assignment).
 
             if Expander_Active and then not Java_VM then

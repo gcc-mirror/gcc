@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.91 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -499,7 +499,7 @@ package body Ch4 is
 
          --   (..., identifier => expression , ...)
 
-         --      If there is at least one occurence of identifier => (but
+         --      If there is at least one occurrence of identifier => (but
          --      none of the other cases apply), then we have a call.
 
          --  Test for Id => case
@@ -624,7 +624,7 @@ package body Ch4 is
          end if;
 
          --  Comma present (and scanned out), test for identifier => case
-         --  Test for identifer => case
+         --  Test for identifier => case
 
          if Token = Tok_Identifier then
             Save_Scan_State (Scan_State); -- at Id

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -251,7 +251,7 @@ package body CStand is
    --  The tree for the package Standard is prefixed to all compilations.
    --  Several entities required by semantic analysis are denoted by global
    --  variables that are initialized to point to the corresponding
-   --  occurences in STANDARD. The visible entities of STANDARD are
+   --  occurrences in STANDARD. The visible entities of STANDARD are
    --  created here. The private entities defined in STANDARD are created
    --  by Initialize_Standard in the semantics module.
 

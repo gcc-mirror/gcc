@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.14 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --             Copyright (C) 1991-2001, Florida State University            --
 --                                                                          --
@@ -111,7 +111,7 @@ package body System.Interrupt_Management is
 
    begin
       --  With the __builtin_longjmp, the signal mask is not restored, so we
-      --  need to restore it explicitely.
+      --  need to restore it explicitly.
 
       Result := pthread_sigmask (SIG_UNBLOCK, Signal_Mask'Access, null);
       pragma Assert (Result = 0);
@@ -176,7 +176,7 @@ begin
       --  The right fix should be made in sigsetjmp so that we save
       --  the Signal_Set and restore it after a longjmp.
 
-      --  Since SA_NODEFER is obsolete, instead we reset explicitely
+      --  Since SA_NODEFER is obsolete, instead we reset explicitly
       --  the mask in the exception handler.
 
       Result := sigemptyset (Signal_Mask'Access);

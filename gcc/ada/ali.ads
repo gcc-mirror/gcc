@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -605,7 +605,7 @@ package ALI is
 
       Etype : Character;
       --  Set to the identification character for the entity. See section
-      --  "Cross-Reference Entity Indentifiers in lib-xref.ads for details.
+      --  "Cross-Reference Entity Identifiers in lib-xref.ads for details.
 
       Col : Pos;
       --  Column number of definition
@@ -635,7 +635,7 @@ package ALI is
       --  This field is set to blank if no typeref is present, or if the
       --  typeref refers to an entity in standard. Otherwise it contains
       --  the identification character for the typeref entity. See section
-      --  "Cross-Reference Entity Indentifiers in lib-xref.ads for details.
+      --  "Cross-Reference Entity Identifiers in lib-xref.ads for details.
 
       Tref_Col : Nat;
       --  This field is set to zero if no typeref is present, or if the

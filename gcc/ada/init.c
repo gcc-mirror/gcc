@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 I N I T                                  *
  *                                                                          *
- *                            $Revision: 1.6 $
+ *                            $Revision: 1.7 $
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -1335,7 +1335,7 @@ __gnat_error_handler (sigargs, mechargs)
   long curr_invo_handle;
   long *mstate;
 
-  /* Resignaled condtions aren't effected by by pragma Import_Exception */
+  /* Resignaled conditions aren't effected by by pragma Import_Exception */
 
   switch (sigargs[1])
   {

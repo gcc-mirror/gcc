@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --              Copyright (C) 2000 Ada Core Technologies, Inc.              --
 --                                                                          --
@@ -38,7 +38,7 @@
 --
 --  This output includes the basic information associated with the exception
 --  (name, message) as well as a backtrace of the call chain at the point
---  where the exception occured. This backtrace is only output if the call
+--  where the exception occurred. This backtrace is only output if the call
 --  chain information is available, depending if the binder switch dedicated
 --  to that purpose has been used or not.
 --

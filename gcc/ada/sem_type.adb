@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -361,7 +361,7 @@ package body Sem_Type is
 
          else
             --  Overloaded prefix in indexed or selected component,
-            --  or call whose name is an expresion or another call.
+            --  or call whose name is an expression or another call.
 
             Add_Entry (Etype (N), Etype (N));
          end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.5 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -386,7 +386,7 @@ package Sinfo is
 
    --  In the following node definitions, all fields, both syntactic and
    --  semantic, are documented. The one exception is in the case of entities
-   --  (defining indentifiers, character literals and operator symbols),
+   --  (defining identifiers, character literals and operator symbols),
    --  where the usage of the fields depends on the entity kind. Entity
    --  fields are fully documented in the separate package Einfo.
 
@@ -3456,7 +3456,7 @@ package Sinfo is
       -- 5.1  Statement Identifier --
       -------------------------------
 
-      --  STATEMENT_INDENTIFIER ::= DIRECT_NAME
+      --  STATEMENT_IDENTIFIER ::= DIRECT_NAME
 
       --  The IDENTIFIER of a STATEMENT_IDENTIFIER shall be an identifier
       --  (not an OPERATOR_SYMBOL)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -64,7 +64,7 @@ package Scans is
 
       Tok_Operator_Symbol, -- op symbol    Name, Literal, Lit_Or_Name, Desig
 
-      Tok_Identifier,      -- identifer    Name, Lit_Or_Name, Desig
+      Tok_Identifier,      -- identifier    Name, Lit_Or_Name, Desig
 
       Tok_Double_Asterisk, -- **
 
