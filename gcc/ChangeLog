@@ -1,5 +1,8 @@
 Mon Mar 15 07:32:54 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* optabs.c (expand_abs): If machine has MAX, ABS (x) is MAX (x, -x).
+	Don't generate shifts and subtract if have conditional arithmetic.
+
 	* jump.c (jump_optimize): Setup to handle conditional call.
 
 Sun Mar 14 07:28:32 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
