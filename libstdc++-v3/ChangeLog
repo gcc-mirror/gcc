@@ -1,3 +1,8 @@
+2000-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Define
+	__EXTENSIONS__.
+
 Sat Nov 11 20:25:49 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/bits/basic_file.h (__basic_file): Don't use __c_wfile_type
