@@ -501,8 +501,7 @@ build_vtbl_ref (instance, idx)
     basetype = TREE_TYPE (basetype);
 
   if (instance == current_class_ref)
-    vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
-			       NULL_PTR);
+    vtbl = build_vfield_ref (instance, basetype);
   else
     {
       if (optimize)
@@ -542,8 +541,7 @@ build_vtbl_ref (instance, idx)
 	      || TREE_CODE (instance) == VAR_DECL))
 	vtbl = TYPE_BINFO_VTABLE (basetype);
       else
-	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
-				   NULL_PTR);
+	vtbl = build_vfield_ref (instance, basetype);
     }
 
   assemble_external (vtbl);
@@ -3782,7 +3780,7 @@ finish_struct_1 (t, warn_anon)
       /* We build this decl with ptr_type_node, and
 	 change the type when we know what it should be.  */
       vfield = build_lang_field_decl (FIELD_DECL, get_vfield_name (t),
-				      ptr_type_node);
+				      vtbl_ptr_type_node);
       /* If you change any of the below, take a look at all the
 	 other VFIELD_BASEs and VTABLE_BASEs in the code, and change
 	 them too.  */
@@ -4090,38 +4088,15 @@ finish_struct_1 (t, warn_anon)
   /* Now lay out the virtual function table.  */
   if (has_virtual)
     {
-      tree atype, itype;
+      /* Use size_int so values are memoized in common cases.  */
+      tree itype = build_index_type (size_int (has_virtual));
+      tree atype = build_array_type (vtable_entry_type, itype);
 
-      if (TREE_TYPE (vfield) == ptr_type_node)
-	{
-	  /* We must create a pointer to this table because
-	     the one inherited from base class does not exist.
-	     We will fill in the type when we know what it
-	     should really be.  Use `size_int' so values are memoized
-	     in common cases.  */
-	  itype = build_index_type (size_int (has_virtual));
-	  atype = build_array_type (vtable_entry_type, itype);
-	  layout_type (atype);
-	  TREE_TYPE (vfield) = build_pointer_type (atype);
-	}
-      else
-	{
-	  atype = TREE_TYPE (TREE_TYPE (vfield));
-
-	  if (has_virtual != TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (atype))))
-	    {
-	      /* We must extend (or create) the boundaries on this array,
-		 because we picked up virtual functions from multiple
-		 base classes.  */
-	      itype = build_index_type (size_int (has_virtual));
-	      atype = build_array_type (vtable_entry_type, itype);
-	      layout_type (atype);
-	      vfield = copy_node (vfield);
-	      TREE_TYPE (vfield) = build_pointer_type (atype);
-	    }
-	}
+      layout_type (atype);
 
       CLASSTYPE_VFIELD (t) = vfield;
+
+      /* We may have to grow the vtable.  */
       if (TREE_TYPE (TYPE_BINFO_VTABLE (t)) != atype)
 	{
 	  TREE_TYPE (TYPE_BINFO_VTABLE (t)) = atype;

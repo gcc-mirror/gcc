@@ -329,6 +329,7 @@ tree sigtable_entry_type;
 
 /* Array type `vtable_entry_type[]' */
 tree vtbl_type_node;
+tree vtbl_ptr_type_node;
 
 /* namespace std */
 tree std_node;
@@ -6148,6 +6149,9 @@ init_decl_processing ()
   layout_type (vtbl_type_node);
   vtbl_type_node = cp_build_type_variant (vtbl_type_node, 1, 0);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
+  vtbl_ptr_type_node = build_pointer_type (vtable_entry_type);
+  layout_type (vtbl_ptr_type_node);
+  record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
 
   /* Simplify life by making a "sigtable_entry_type".  Give its
      fields names so that the debugger can use them.  */
