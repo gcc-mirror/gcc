@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* The OSF/rose half-pic model assumes that the non-library code does
    not need to have full PIC (position independent code), but rather,
    that pointers to external references are put into the data section
-   and derefenced as normal pointers.  References to static data does
+   and dereferenced as normal pointers.  References to static data does
    not need to be PIC-ized.
 
    Another optimization is to have the compiler know what symbols are

@@ -193,7 +193,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	    stLocal	  -- local variable
 	    stLabel	  -- label
 	    stProc	  -- External Procedure
-	    stBlock	  -- beginnning of block
+	    stBlock	  -- beginning of block
 	    stEnd	  -- end (of anything)
 	    stMember	  -- member (of anything)
 	    stTypedef	  -- type definition
@@ -262,7 +262,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
        Procedures Tables            384           1          52
        Local Symbols                436          16         192
        Optimization Symbols           0           0           0
-       Auxilary Symbols             628          39         156
+       Auxiliary Symbols            628          39         156
        Local Strings                784          80          80
        External Strings             864         144         144
        File Tables                 1008           2         144
@@ -723,7 +723,7 @@ extern int errno;			/* MIPS errno.h doesn't declare this */
   (isalnum (ch) || (ch) == '_' || (ch) == '.' || (ch) == '$')
 
 
-/* Redefination of of storage classes as an enumeration for better
+/* Redefinition of of storage classes as an enumeration for better
    debugging.  */
 
 typedef enum sc {
@@ -763,7 +763,7 @@ typedef enum st {
   st_Local	= stLocal,	/* local variable */
   st_Label	= stLabel,	/* label */
   st_Proc	= stProc,	/*     "      "	 Procedure */
-  st_Block	= stBlock,	/* beginnning of block */
+  st_Block	= stBlock,	/* beginning of block */
   st_End	= stEnd,	/* end (of anything) */
   st_Member	= stMember,	/* member (of anything	- struct/union/enum */
   st_Typedef	= stTypedef,	/* type definition */
@@ -775,7 +775,7 @@ typedef enum st {
   st_Str	= stStr,	/* string */
   st_Number	= stNumber,	/* pure number (ie. 4 NOR 2+2) */
   st_Expr	= stExpr,	/* 2+2 vs. 4 */
-  st_Type	= stType,	/* post-coersion SER */
+  st_Type	= stType,	/* post-coercion SER */
   st_Max	= stMax		/* max type+1 */
 } st_t;
 
@@ -1744,7 +1744,7 @@ extern char *sys_siglist[NSIG + 1];
    do...... */
 
 typedef struct _pseudo_ops {
-  const char *name;			/* pseduo-op in ascii */
+  const char *name;			/* pseudo-op in ascii */
   int len;				/* length of name to compare */
   void (*func) __proto((const char *));	/* function to handle line */
 } pseudo_ops_t;
@@ -2120,7 +2120,7 @@ add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
 
 STATIC symint_t
 add_aux_sym_symint (aux_word)
-     symint_t aux_word;		/* auxilary information word */
+     symint_t aux_word;		/* auxiliary information word */
 {
   register AUXU *aux_ptr;
   register efdr_t *file_ptr = cur_file_ptr;
@@ -3147,7 +3147,7 @@ parse_def (name_start)
 
 	      /* If this is a function, ignore it, so that we don't get
 		 two entries (one from the .ent, and one for the .def
-		 that preceedes it).  Save the type information so that
+		 that precedes it).  Save the type information so that
 		 the end block can properly add it after the begin block
 		 index.  For MIPS knows what reason, we must strip off
 		 the function type at this point.  */
@@ -3185,7 +3185,7 @@ parse_def (name_start)
 
 	      /* If the value is not an integer value, it must be the
 		 name of a static or global item.  Look up the name in
-		 the orignal symbol table to pick up the storage
+		 the original symbol table to pick up the storage
 		 class, symbol type, etc.  */
 	      else
 		{
@@ -3369,7 +3369,7 @@ parse_def (name_start)
       /* Members of structures and unions that aren't bitfields, need
 	 to adjust the value from a byte offset to a bit offset.
 	 Members of enumerations do not have the value adjusted, and
-	 can be distinquished by index == indexNil.  For enumerations,
+	 can be distinguished by index == indexNil.  For enumerations,
 	 update the maximum enumeration value.  */
 
     case st_Member:

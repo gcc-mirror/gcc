@@ -119,7 +119,7 @@ static rtx loop_continue;
    is set during the loop being scanned.
    During code motion, a negative value indicates a reg that has been
    made a candidate; in particular -2 means that it is an candidate that
-   we know is equal to a constant and -1 means that it is an condidate
+   we know is equal to a constant and -1 means that it is an candidate
    not known equal to a constant.
    After code motion, regs moved have 0 (which is accurate now)
    while the failed candidates have the original number of times set.
@@ -3843,7 +3843,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 like it can be used to eliminate a biv, but the resulting insn
 	 isn't valid.  This can happen, for example, on the 88k, where a 
 	 JUMP_INSN can compare a register only with zero.  Attempts to
-	 replace it with a comapare with a constant will fail.
+	 replace it with a compare with a constant will fail.
 
 	 Note that in cases where this call fails, we may have replaced some
 	 of the occurrences of the biv with a giv, but no harm was done in
@@ -4098,7 +4098,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val,
 
       /* Set initial value to the reg itself.  */
       bl->initial_value = dest_reg;
-      /* We haven't seen the intializing insn yet */
+      /* We haven't seen the initializing insn yet */
       bl->init_insn = 0;
       bl->init_set = 0;
       bl->initial_test = 0;
@@ -4808,7 +4808,7 @@ general_induction_var (x, src_reg, add_val, mult_val)
    We will canonicalize it to be of the form
    	(plus (mult (BIV) (invar_1))
 	      (invar_2))
-   with possibile degeneracies.
+   with possible degeneracies.
 
    The invariant expressions must each be of a form that can be used as a
    machine operand.  We surround then with a USE rtx (a hack, but localized
