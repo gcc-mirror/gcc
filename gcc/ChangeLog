@@ -1,3 +1,7 @@
+2004-07-13  Per Bothner  <per@bothner.com>
+
+	* collect2.c (main):  Handle --no-demangle and --demangle flags.
+
 2004-07-13  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* Makefile.in (OBJS-common): Add tree-data-ref.o.
