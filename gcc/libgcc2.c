@@ -2952,7 +2952,7 @@ cacheflush (char *beg, int size, int flag)
    code to run constructors.  In that case, we need to handle EH here, too.  */
 
 #ifdef EH_FRAME_SECTION
-#include "frame.h"
+#include "unwind-dw2-fde.h"
 extern unsigned char __EH_FRAME_BEGIN__[];
 #endif
 
