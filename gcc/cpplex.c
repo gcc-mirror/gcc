@@ -1292,16 +1292,29 @@ find_position (start, limit, linep)
    at the end of reload1.c is about 60%.  (reload1.c is 329k.)
 
    If your file has more than one kind of end-of-line marker, you
-   will get messed-up line numbering.  */
+   will get messed-up line numbering.
+   
+   So that the cases of the switch statement do not have to concern
+   themselves with the complications of reading beyond the end of the
+   buffer, the buffer is guaranteed to have at least 3 characters in
+   it (or however many are left in the file, if less) on entry to the
+   switch.  This is enough to handle trigraphs and the "\\\n\r" and
+   "\\\r\n" cases.
+   
+   The end of the buffer is marked by a '\\', which, being a special
+   character, guarantees we will exit the fast-scan loops and perform
+   a refill. */
 
 /* Table of characters that can't be handled in the inner loop.
    Keep these contiguous to optimize the performance of the code generated
    for the switch that uses them.  */
 #define SPECCASE_EMPTY     0
-#define SPECCASE_NUL       1
-#define SPECCASE_CR        2
-#define SPECCASE_BACKSLASH 3
-#define SPECCASE_QUESTION  4
+#define SPECCASE_CR        1
+#define SPECCASE_BACKSLASH 2
+#define SPECCASE_QUESTION  3
+
+/* Maps trigraph characters to their replacements */
+static unsigned int trigraph_map   [1 << CHAR_BIT] = {0};
 
 long
 _cpp_read_and_prescan (pfile, fp, desc, len)
@@ -1316,186 +1329,143 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   U_CHAR *speccase = pfile->input_speccase;
   unsigned long line;
   unsigned int deferred_newlines;
-  int count;
   size_t offset;
+  int count = 0;
 
   offset = 0;
+  deferred_newlines = 0;
   op = buf;
   line_base = buf;
   line = 1;
-  ibase = pfile->input_buffer + 2;
-  deferred_newlines = 0;
+  ibase = pfile->input_buffer + 3;
+  ip = ibase;
+  ip[-1] = '\0';  /* Guarantee no match with \n for SPECCASE_CR */
 
   for (;;)
     {
-    read_next:
+      U_CHAR *near_buff_end;
 
-      count = read (desc, pfile->input_buffer + 2, pfile->input_buffer_len);
+      /* Copy previous char plus unprocessed (at most 2) chars
+	 to beginning of buffer, refill it with another
+	 read(), and continue processing */
+      memcpy(ip - count - 1, ip - 1, 3);
+      ip -= count;
+
+      count = read (desc, ibase, pfile->input_buffer_len);
       if (count < 0)
 	goto error;
-      else if (count == 0)
-	break;
-
-      offset += count;
-      ip = ibase;
-      ibase = pfile->input_buffer + 2;
-      ibase[count] = ibase[count+1] = '\0';
-
-      if (offset > len)
+      
+      ibase[count] = '\\';  /* Marks end of buffer */
+      if (count)
 	{
-	  size_t delta_op;
-	  size_t delta_line_base;
-	  len *= 2;
+	  near_buff_end = pfile->input_buffer + count;
+	  offset += count;
 	  if (offset > len)
-	    /* len overflowed.
-	       This could happen if the file is larger than half the
-	       maximum address space of the machine. */
-	    goto too_big;
+	    {
+	      size_t delta_op;
+	      size_t delta_line_base;
+	      len *= 2;
+	      if (offset > len)
+		/* len overflowed.
+		   This could happen if the file is larger than half the
+		   maximum address space of the machine. */
+		goto too_big;
 
-	  delta_op = op - buf;
-	  delta_line_base = line_base - buf;
-	  buf = (U_CHAR *) xrealloc (buf, len);
-	  op = buf + delta_op;
-	  line_base = buf + delta_line_base;
+	      delta_op = op - buf;
+	      delta_line_base = line_base - buf;
+	      buf = (U_CHAR *) xrealloc (buf, len);
+	      op = buf + delta_op;
+	      line_base = buf + delta_line_base;
+	    }
+	}
+      else
+	{
+	  if (ip == ibase)
+	    break;
+	  /* Allow normal processing of the (at most 2) remaining
+	     characters.  The end-of-buffer marker is still present
+	     and prevents false matches within the switch. */
+	  near_buff_end = ibase - 1;
 	}
 
       for (;;)
 	{
-	  unsigned int span = 0;
+	  unsigned int span;
 
-	  /* Deal with \-newline in the middle of a token. */
+	  /* Deal with \-newline, potentially in the middle of a token. */
 	  if (deferred_newlines)
 	    {
-	      while (speccase[ip[span]] == SPECCASE_EMPTY
-		     && ip[span] != '\n'
-		     && ip[span] != '\t'
-		     && ip[span] != ' ')
-		span++;
-	      memcpy (op, ip, span);
-	      op += span;
-	      ip += span;
-	      /* If ip[0] is SPECCASE_EMPTY, we have hit white space.
-		 Dump out the remaining deferred \-newlines.  */
-	      if (speccase[ip[0]] == SPECCASE_EMPTY)
-		while (deferred_newlines)
-		  deferred_newlines--, *op++ = '\r';
-	      span = 0;
+	      if (op != buf && op[-1] != ' ' && op[-1] != '\n' && op[-1] != '\t' && op[-1] != '\r')
+		{
+		  /* Previous was not white space.  Skip to white
+		     space, if we can, before outputting the \r's */
+		  span = 0;
+		  while (ip[span] != ' '
+			 && ip[span] != '\t'
+			 && ip[span] != '\n'
+			 && speccase[ip[span]] == SPECCASE_EMPTY)
+		    span++;
+		  memcpy (op, ip, span);
+		  op += span;
+		  ip += span;
+		  if (speccase[ip[0]] != SPECCASE_EMPTY)
+		    goto do_speccase;
+		}
+	      while (deferred_newlines)
+		deferred_newlines--, *op++ = '\r';
 	    }
 
 	  /* Copy as much as we can without special treatment. */
+	  span = 0;
 	  while (speccase[ip[span]] == SPECCASE_EMPTY) span++;
 	  memcpy (op, ip, span);
 	  op += span;
 	  ip += span;
 
+	do_speccase:
+	  if (ip > near_buff_end) /* Do we have enough chars? */
+	    break;
 	  switch (speccase[*ip++])
 	    {
-	    case SPECCASE_NUL:  /* \0 */
-	      ibase[-1] = op[-1];
-	      goto read_next;
-
 	    case SPECCASE_CR:  /* \r */
-	      if (ip[-2] == '\n')
-		continue;
-	      else if (*ip == '\n')
-		ip++;
-	      else if (*ip == '\0')
+	      if (ip[-2] != '\n')
 		{
-		  *--ibase = '\r';
-		  goto read_next;
+		  if (*ip == '\n')
+		    ip++;
+		  *op++ = '\n';
 		}
-	      *op++ = '\n';
 	      break;
 
 	    case SPECCASE_BACKSLASH:  /* \ */
-	    backslash:
-	    {
-	      /* If we're at the end of the intermediate buffer,
-		 we have to shift the backslash down to the start
-		 and come back next pass. */
-	      if (*ip == '\0')
+	      if (*ip == '\n')
 		{
-		  *--ibase = '\\';
-		  goto read_next;
-		}
-	      else if (*ip == '\n')
-		{
+		  deferred_newlines++;
 		  ip++;
 		  if (*ip == '\r') ip++;
-		  if (*ip == '\n' || *ip == '\t' || *ip == ' ')
-		    *op++ = '\r';
-		  else if (op[-1] == '\t' || op[-1] == ' '
-			   || op[-1] == '\r' || op[-1] == '\n')
-		    *op++ = '\r';
-		  else
-		    deferred_newlines++;
 		}
 	      else if (*ip == '\r')
 		{
+		  deferred_newlines++;
 		  ip++;
 		  if (*ip == '\n') ip++;
-		  else if (*ip == '\0')
-		    {
-		      *--ibase = '\r';
-		      *--ibase = '\\';
-		      goto read_next;
-		    }
-		  else if (*ip == '\r' || *ip == '\t' || *ip == ' ')
-		    *op++ = '\r';
-		  else
-		    deferred_newlines++;
 		}
 	      else
 		*op++ = '\\';
-	    }
-	    break;
+	      break;
 
 	    case SPECCASE_QUESTION: /* ? */
 	      {
 		unsigned int d, t;
-		/* If we're at the end of the intermediate buffer,
-		   we have to shift the ?'s down to the start and
-		   come back next pass. */
-		d = ip[0];
-		if (d == '\0')
-		  {
-		    *--ibase = '?';
-		    goto read_next;
-		  }
-		if (d != '?')
-		  {
-		    *op++ = '?';
-		    break;
-		  }
-		d = ip[1];
-		if (d == '\0')
-		  {
-		    *--ibase = '?';
-		    *--ibase = '?';
-		    goto read_next;
-		  }
 
-		/* Trigraph map:
-		 *	from	to	from	to	from	to
-		 *	?? =	#	?? )	]	?? !	|
-		 *	?? (	[	?? '	^	?? >	}
-		 *	?? /	\	?? <	{	?? -	~
-		 */
-		if (d == '=') t = '#';
-		else if (d == ')') t = ']';
-		else if (d == '!') t = '|';
-		else if (d == '(') t = '[';
-		else if (d == '\'') t = '^';
-		else if (d == '>') t = '}';
-		else if (d == '/') t = '\\';
-		else if (d == '<') t = '{';
-		else if (d == '-') t = '~';
-		else
-		  {
-		    *op++ = '?';
-		    break;
-		  }
-		ip += 2;
+		*op++ = '?'; /* Normal non-trigraph case */
+		if (ip[0] != '?')
+		  break;
+		    
+		d = ip[1];
+		t = trigraph_map[d];
+		if (t == 0)
+		  break;
+
 		if (CPP_OPTIONS (pfile)->warn_trigraphs)
 		  {
 		    unsigned long col;
@@ -1503,53 +1473,36 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 		    col = op - line_base + 1;
 		    if (CPP_OPTIONS (pfile)->trigraphs)
 		      cpp_warning_with_line (pfile, line, col,
-			     "trigraph ??%c converted to %c", d, t);
+					     "trigraph ??%c converted to %c", d, t);
 		    else
 		      cpp_warning_with_line (pfile, line, col,
-			     "trigraph ??%c ignored", d);
+					     "trigraph ??%c ignored", d);
 		  }
+
+		ip += 2;
 		if (CPP_OPTIONS (pfile)->trigraphs)
 		  {
+		    op[-1] = t;	    /* Overwrite '?' */
 		    if (t == '\\')
-		      goto backslash;
-		    else
-		      *op++ = t;
+		      {
+			op--;
+			*--ip = '\\';
+			goto do_speccase; /* May need buffer refill */
+		      }
 		  }
 		else
 		  {
 		    *op++ = '?';
-		    *op++ = '?';
 		    *op++ = d;
 		  }
 	      }
+	      break;
 	    }
 	}
     }
 
   if (offset == 0)
     return 0;
-
-  /* Deal with pushed-back chars at true EOF.
-     This may be any of:  ?? ? \ \r \n \\r \\n.
-     \r must become \n, \\r or \\n must become \r.
-     We know we have space already. */
-  if (ibase == pfile->input_buffer)
-    {
-      if (*ibase == '?')
-	{
-	  *op++ = '?';
-	  *op++ = '?';
-	}
-      else
-	*op++ = '\r';
-    }
-  else if (ibase == pfile->input_buffer + 1)
-    {
-      if (*ibase == '\r')
-	*op++ = '\n';
-      else
-	*op++ = *ibase;
-    }
 
   if (op[-1] != '\n')
     {
@@ -1582,10 +1535,10 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   return -1;
 }
 
-/* Initialize the `input_buffer' and `input_speccase' tables.
-   These are only used by read_and_prescan, but they're large and
-   somewhat expensive to set up, so we want them allocated once for
-   the duration of the cpp run.  */
+/* Initialize the `input_buffer' 'trigraph_map' and `input_speccase'
+   tables.  These are only used by read_and_prescan, but they're large
+   and somewhat expensive to set up, so we want them allocated once
+   for the duration of the cpp run.  */
 
 void
 _cpp_init_input_buffer (pfile)
@@ -1599,22 +1552,31 @@ _cpp_init_input_buffer (pfile)
 
   tmp = (U_CHAR *) xmalloc (1 << CHAR_BIT);
   memset (tmp, SPECCASE_EMPTY, 1 << CHAR_BIT);
-  tmp['\0'] = SPECCASE_NUL;
   tmp['\r'] = SPECCASE_CR;
   tmp['\\'] = SPECCASE_BACKSLASH;
   if (CPP_OPTIONS (pfile)->trigraphs || CPP_OPTIONS (pfile)->warn_trigraphs)
     tmp['?'] = SPECCASE_QUESTION;
-
   pfile->input_speccase = tmp;
+
+  /* Trigraph mappings */
+  trigraph_map['='] = '#';
+  trigraph_map[')'] = ']';
+  trigraph_map['!'] = '|';
+  trigraph_map['('] = '[';
+  trigraph_map['\''] = '^';
+  trigraph_map['>'] = '}';
+  trigraph_map['/'] = '\\';
+  trigraph_map['<'] = '{';
+  trigraph_map['-'] = '~';
 
   /* Determine the appropriate size for the input buffer.  Normal C
      source files are smaller than eight K.  */
-  /* 8Kbytes of buffer proper, 2 to detect running off the end without
-     address arithmetic all the time, and 2 for pushback in the case
-     there's a potential trigraph or end-of-line digraph at the end of
-     a block. */
+  /* 8Kbytes of buffer proper, 1 to detect running off the end without
+     address arithmetic all the time, and 3 for pushback during buffer
+     refill, in case there's a potential trigraph or end-of-line
+     digraph at the end of a block. */
 
-  tmp = (U_CHAR *) xmalloc (8192 + 2 + 2);
+  tmp = (U_CHAR *) xmalloc (8192 + 1 + 3);
   pfile->input_buffer = tmp;
   pfile->input_buffer_len = 8192;
 }
