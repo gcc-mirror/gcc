@@ -1,3 +1,8 @@
+2003-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.jason/typeid1.C: Add dg-error marker.
+	* g++.old-deja/g++.mike/net36.C: Tweak error messages.
+
 2003-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-25.c: New testcase.

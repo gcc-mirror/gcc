@@ -1667,6 +1667,8 @@ static bool cp_parser_check_declarator_template_parameters
   (cp_parser *, tree);
 static bool cp_parser_check_template_parameters
   (cp_parser *, unsigned);
+static tree cp_parser_simple_cast_expression
+  (cp_parser *);
 static tree cp_parser_binary_expression
   (cp_parser *, const cp_parser_token_tree_map, cp_parser_expression_fn);
 static tree cp_parser_global_scope_opt
@@ -3846,8 +3848,15 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		  BASELINK_ACCESS_BINFO (postfix_expression),
 		  /*preserve_reference=*/false));
 	  else if (done)
-	    return build_offset_ref (qualifying_class,
-				     postfix_expression);
+	    {
+	      /* The expression is a qualified name whose address is not
+		 being taken.  */
+	      postfix_expression = build_offset_ref (qualifying_class,
+						     postfix_expression);
+	      if (TREE_CODE (postfix_expression) == OFFSET_REF)
+		postfix_expression = resolve_offset_ref (postfix_expression);
+	      return postfix_expression;
+	    }
 	}
     }
 
@@ -4379,7 +4388,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	    /* Save away the PEDANTIC flag.  */
 	    cp_parser_extension_opt (parser, &saved_pedantic);
 	    /* Parse the cast-expression.  */
-	    expr = cp_parser_cast_expression (parser, /*address_p=*/false);
+	    expr = cp_parser_simple_cast_expression (parser);
 	    /* Restore the PEDANTIC flag.  */
 	    pedantic = saved_pedantic;
 
@@ -4394,8 +4403,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	    /* Consume the `__real__' or `__imag__' token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the cast-expression.  */
-	    expression = cp_parser_cast_expression (parser,
-						    /*address_p=*/false);
+	    expression = cp_parser_simple_cast_expression (parser);
 	    /* Create the complete representation.  */
 	    return build_x_unary_op ((keyword == RID_REALPART
 				      ? REALPART_EXPR : IMAGPART_EXPR),
@@ -4817,7 +4825,7 @@ cp_parser_delete_expression (cp_parser* parser)
     array_p = false;
 
   /* Parse the cast-expression.  */
-  expression = cp_parser_cast_expression (parser, /*address_p=*/false);
+  expression = cp_parser_simple_cast_expression (parser);
 
   return delete_sanity (expression, NULL_TREE, array_p, global_scope_p);
 }
@@ -4897,7 +4905,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
          ctor of T, but looks like a cast to function returning T
          without a dependent expression.  */
       if (!cp_parser_error_occurred (parser))
-	expr = cp_parser_cast_expression (parser, /*address_p=*/false);
+	expr = cp_parser_simple_cast_expression (parser);
 
       if (cp_parser_parse_definitely (parser))
 	{
@@ -4943,42 +4951,14 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
 static tree
 cp_parser_pm_expression (cp_parser* parser)
 {
-  tree cast_expr;
-  tree pm_expr;
+  static const cp_parser_token_tree_map map = {
+    { CPP_DEREF_STAR, MEMBER_REF },
+    { CPP_DOT_STAR, DOTSTAR_EXPR },
+    { CPP_EOF, ERROR_MARK }
+  };
 
-  /* Parse the cast-expresion.  */
-  cast_expr = cp_parser_cast_expression (parser, /*address_p=*/false);
-  pm_expr = cast_expr;
-  /* Now look for pointer-to-member operators.  */
-  while (true)
-    {
-      cp_token *token;
-      enum cpp_ttype token_type;
-
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      token_type = token->type;
-      /* If it's not `.*' or `->*' there's no pointer-to-member
-	 operation.  */
-      if (token_type != CPP_DOT_STAR 
-	  && token_type != CPP_DEREF_STAR)
-	break;
-
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-
-      /* Parse another cast-expression.  */
-      cast_expr = cp_parser_cast_expression (parser, /*address_p=*/false);
-
-      /* Build the representation of the pointer-to-member 
-	 operation.  */
-      if (token_type == CPP_DEREF_STAR)
-	pm_expr = build_x_binary_op (MEMBER_REF, pm_expr, cast_expr);
-      else
-	pm_expr = build_m_component_ref (pm_expr, cast_expr);
-    }
-
-  return pm_expr;
+  return cp_parser_binary_expression (parser, map, 
+				      cp_parser_simple_cast_expression);
 }
 
 /* Parse a multiplicative-expression.
@@ -14023,6 +14003,14 @@ cp_parser_single_declaration (cp_parser* parser,
     decl = cp_parser_function_definition (parser, friend_p);
 
   return decl;
+}
+
+/* Parse a cast-expression that is not the operand of a unary "&".  */
+
+static tree
+cp_parser_simple_cast_expression (cp_parser *parser)
+{
+  return cp_parser_cast_expression (parser, /*address_p=*/false);
 }
 
 /* Parse a functional cast to TYPE.  Returns an expression

@@ -109,24 +109,26 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
 	 functions.  */
       if (TYPE_PTRMEMFUNC_P (intype))
 	{
-	  tree fntype = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (intype));
-	  tree decl = maybe_dummy_object (TYPE_METHOD_BASETYPE (fntype), 0);
-	  expr = build (OFFSET_REF, fntype, decl, expr);
+	  if (pedantic || warn_pmf2ptr)
+	    pedwarn ("converting from `%T' to `%T'", intype, type);
+	  if (TREE_CODE (expr) == PTRMEM_CST)
+	    expr = build_address (PTRMEM_CST_MEMBER (expr));
+	  else
+	    {
+	      tree decl = maybe_dummy_object (TYPE_PTRMEM_CLASS_TYPE (intype), 
+					      0);
+	      decl = build_address (decl);
+	      expr = get_member_function_from_ptrfunc (&decl, expr);
+	    }
 	}
-
-      if (TREE_CODE (expr) == OFFSET_REF
-	  && TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
-	expr = resolve_offset_ref (expr);
-      if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
-	expr = build_addr_func (expr);
-      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+      else if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
 	{
-	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == METHOD_TYPE)
-	    if (pedantic || warn_pmf2ptr)
-	      pedwarn ("converting from `%T' to `%T'", TREE_TYPE (expr),
-			  type);
-	  return build1 (NOP_EXPR, type, expr);
+	  if (pedantic || warn_pmf2ptr)
+	    pedwarn ("converting from `%T' to `%T'", intype, type);
+	  expr = build_addr_func (expr);
 	}
+      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+	return build_nop (type, expr);
       intype = TREE_TYPE (expr);
     }
 
@@ -233,6 +235,19 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
     return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
   else if (TYPE_PTRMEMFUNC_P (intype))
     {
+      if (!warn_pmf2ptr)
+	{
+	  if (TREE_CODE (expr) == PTRMEM_CST)
+	    return cp_convert_to_pointer (type,
+					  PTRMEM_CST_MEMBER (expr),
+					  force);
+	  else if (TREE_CODE (expr) == OFFSET_REF)
+	    {
+	      tree object = TREE_OPERAND (expr, 0);
+	      return get_member_function_from_ptrfunc (&object,
+						       TREE_OPERAND (expr, 1));
+	    }
+	}
       error ("cannot convert `%E' from type `%T' to type `%T'",
 		expr, intype, type);
       return error_mark_node;
@@ -663,9 +678,6 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       code = TREE_CODE (type);
     }
 
-  if (TREE_CODE (e) == OFFSET_REF)
-    e = resolve_offset_ref (e);
-
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (e);
@@ -879,10 +891,6 @@ convert_to_void (tree expr, const char *implicit)
         break;
       }
 
-    case OFFSET_REF:
-      expr = resolve_offset_ref (expr);
-      break;
-
     default:;
     }
   {
@@ -1023,8 +1031,6 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       && !(desires & WANT_NULL))
     warning ("converting NULL to non-pointer type");
     
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
   basetype = TREE_TYPE (expr);
 

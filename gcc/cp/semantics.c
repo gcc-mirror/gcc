@@ -1476,13 +1476,6 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
 tree 
 finish_increment_expr (tree expr, enum tree_code code)
 {
-  /* If we get an OFFSET_REF, turn it into what it really means (e.g.,
-     a COMPONENT_REF).  This way if we've got, say, a reference to a
-     static member that's being operated on, we don't end up trying to
-     find a member operator for the class it's in.  */
-
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
   return build_x_unary_op (code, expr);  
 }
 
@@ -2082,9 +2075,6 @@ finish_typeof (tree expr)
 
       return type;
     }
-
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
 
   type = TREE_TYPE (expr);
 

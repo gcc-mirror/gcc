@@ -473,12 +473,6 @@ build_dynamic_cast_1 (tree type, tree expr)
       goto fail;
     }
 
-  if (TREE_CODE (expr) == OFFSET_REF)
-    {
-      expr = resolve_offset_ref (expr);
-      exprtype = TREE_TYPE (expr);
-    }
-
   if (tc == POINTER_TYPE)
     expr = convert_from_reference (expr);
   else if (TREE_CODE (exprtype) != REFERENCE_TYPE)

@@ -993,12 +993,6 @@ build_x_arrow (tree datum)
   if (processing_template_decl)
     return build_min_nt (ARROW_EXPR, rval);
 
-  if (TREE_CODE (rval) == OFFSET_REF)
-    {
-      rval = resolve_offset_ref (datum);
-      type = TREE_TYPE (rval);
-    }
-
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       rval = convert_from_reference (rval);
@@ -1048,72 +1042,32 @@ build_x_arrow (tree datum)
   return error_mark_node;
 }
 
-/* Make an expression to refer to the COMPONENT field of
-   structure or union value DATUM.  COMPONENT is an arbitrary
-   expression.  DATUM has not already been checked out to be of
-   aggregate type.
-
-   For C++, COMPONENT may be a TREE_LIST.  This happens when we must
-   return an object of member type to a method of the current class,
-   but there is not yet enough typing information to know which one.
-   As a special case, if there is only one method by that name,
-   it is returned.  Otherwise we return an expression which other
-   routines will have to know how to deal with later.  */
+/* Return an expression for "DATUM .* COMPONENT".  DATUM has not
+   already been checked out to be of aggregate type.  */
 
 tree
 build_m_component_ref (tree datum, tree component)
 {
-  tree type;
+  tree ptrmem_type;
   tree objtype;
-  tree field_type;
-  int type_quals;
+  tree type;
   tree binfo;
-
-  if (processing_template_decl)
-    return build_min_nt (DOTSTAR_EXPR, datum, component);
 
   datum = decay_conversion (datum);
 
   if (datum == error_mark_node || component == error_mark_node)
     return error_mark_node;
 
-  objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
-
-  if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
-    {
-      type = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (component)));
-      field_type = type;
-    }
-  else if (TYPE_PTRMEM_P (TREE_TYPE (component)))
-    {
-      type = TREE_TYPE (TREE_TYPE (component));
-      field_type = TREE_TYPE (type);
-      
-      /* Compute the type of the field, as described in [expr.ref].  */
-      type_quals = TYPE_UNQUALIFIED;
-      if (TREE_CODE (field_type) == REFERENCE_TYPE)
-	/* The standard says that the type of the result should be the
-       	   type referred to by the reference.  But for now, at least,
-       	   we do the conversion from reference type later.  */
-	;
-      else
-	{
-	  type_quals = (cp_type_quals (field_type)  
-			| cp_type_quals (TREE_TYPE (datum)));
-
-	  /* There's no such thing as a mutable pointer-to-member, so
-	     things are not as complex as they are for references to
-	     non-static data members.  */
-	  field_type = cp_build_qualified_type (field_type, type_quals);
-	}
-    }
-  else
+  ptrmem_type = TREE_TYPE (component);
+  if (!TYPE_PTRMEM_P (ptrmem_type) 
+      && !TYPE_PTRMEMFUNC_P (ptrmem_type))
     {
       error ("`%E' cannot be used as a member pointer, since it is of type `%T'", 
-		component, TREE_TYPE (component));
+	     component, ptrmem_type);
       return error_mark_node;
     }
-
+    
+  objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
   if (! IS_AGGR_TYPE (objtype))
     {
       error ("cannot apply member pointer `%E' to `%E', which is of non-aggregate type `%T'",
@@ -1121,21 +1075,35 @@ build_m_component_ref (tree datum, tree component)
       return error_mark_node;
     }
 
-  binfo = lookup_base (objtype, TYPE_METHOD_BASETYPE (type),
+  type = TYPE_PTRMEM_POINTED_TO_TYPE (ptrmem_type);
+  binfo = lookup_base (objtype, TYPE_PTRMEM_CLASS_TYPE (ptrmem_type),
 		       ba_check, NULL);
   if (!binfo)
     {
       error ("member type `%T::' incompatible with object type `%T'",
-		TYPE_METHOD_BASETYPE (type), objtype);
+	     type, objtype);
       return error_mark_node;
     }
   else if (binfo == error_mark_node)
     return error_mark_node;
 
-  component = build (OFFSET_REF, field_type, datum, component);
-  if (TREE_CODE (type) == OFFSET_TYPE)
-    component = resolve_offset_ref (component);
-  return component;
+  if (TYPE_PTRMEM_P (ptrmem_type))
+    {
+      /* Compute the type of the field, as described in [expr.ref].
+	 There's no such thing as a mutable pointer-to-member, so
+	 things are not as complex as they are for references to
+	 non-static data members.  */
+      type = cp_build_qualified_type (type,
+				      (cp_type_quals (type)  
+				       | cp_type_quals (TREE_TYPE (datum))));
+
+      datum = build_base_path (PLUS_EXPR, build_address (datum), binfo, 1);
+      component = cp_convert (ptrdiff_type_node, component);
+      datum = build (PLUS_EXPR, build_pointer_type (type), datum, component);
+      return build_indirect_ref (datum, 0);
+    }
+  else
+    return build (OFFSET_REF, type, datum, component);
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
