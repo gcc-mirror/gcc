@@ -139,7 +139,7 @@ extern int target_flags;
 /* Information about the various small memory areas.  */
 struct small_memory_info {
   char *name;
-  char *value;
+  const char *value;
   long max;
   long physical_max;
 };
