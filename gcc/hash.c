@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL: whole file jason */
 /* hash.c -- hash table routines
    Copyright (C) 1993, 94 Free Software Foundation, Inc.
    Written by Steve Chamberlain <sac@cygnus.com>

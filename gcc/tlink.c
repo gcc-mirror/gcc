@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL: whole file jason */
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
