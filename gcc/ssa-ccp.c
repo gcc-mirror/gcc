@@ -1192,4 +1192,6 @@ ssa_fast_dce (df)
 	  VARRAY_RTX (ssa_definition, reg) = NULL;
 	}
     }
+
+  sbitmap_free (worklist);
 }
