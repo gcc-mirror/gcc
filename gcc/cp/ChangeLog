@@ -1,3 +1,8 @@
+1998-06-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (build_cplus_array_type_1): Also check index_type for
+	template parms.
+
 1998-05-31  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst): Always copy BINFO_BASETYPES.
