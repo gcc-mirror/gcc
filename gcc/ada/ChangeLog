@@ -491,6 +491,10 @@
 	within records; allow them to have freeze nodes if their base types
 	aren't frozen yet.
 
+	* exp_util.adb (Remove_Side_Effects): Properly test for
+	Expansion_Delayed and handle case when it's inside an
+	N_Qualified_Expression.
+
 	* sem_ch3.adb (Derived_Type_Declaration): New predicate
 	Comes_From_Generic, to recognize accurately that the parent type in a
 	derived type declaration can be traced back to a formal type, because
@@ -521,8 +525,6 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 	    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	PR ada/19900
-
 	* exp_pakd.adb (Create_Packed_Array_Type): Do not set
 	Must_Be_Byte_Aligned for cases where we do not need to use a
 	System.Pack_nn unit.
@@ -541,8 +543,6 @@
 	(Is_Possibly_Unaligned_Object): Major rewrite to get a much more
 	accurate estimate. Yields True in far fewer cases than before,
 	improving the quality of code that depends on this test.
-	(Remove_Side_Effects): Properly test for Expansion_Delayed and handle
-	case when it's inside an N_Qualified_Expression.
 
 	* exp_util.adb (Kill_Dead_Code): For a package declaration, iterate
 	over both visible and private declarations to remove them from tree,
