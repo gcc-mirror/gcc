@@ -1,3 +1,9 @@
+2003-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/10336
+	* jump.c (never_reached_warning): Really stop looking if we reach 
+	the beginning of the function.
+
 Tue Apr 29 21:07:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (count_reg_usage): Revert my previous patch.
