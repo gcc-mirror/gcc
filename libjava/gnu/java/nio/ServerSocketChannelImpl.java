@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import gnu.java.net.PlainSocketImpl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -47,9 +48,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-class ServerSocketChannelImpl extends ServerSocketChannel
+public final class ServerSocketChannelImpl extends ServerSocketChannel
 {
   ServerSocket serverSocket;
+  PlainSocketImpl impl;
   boolean blocking = true;
   boolean connected = false;
 
@@ -57,7 +59,20 @@ class ServerSocketChannelImpl extends ServerSocketChannel
     throws IOException
   {
     super (provider);
-    serverSocket = new ServerSocket ();
+    impl = new PlainSocketImpl();
+    initServerSocket();
+  }
+
+  /*
+   * This method is only need to call a package private constructor
+   * of java.net.ServerSocket. It only initializes the member variables
+   * "serverSocket".
+   */
+  private native void initServerSocket() throws IOException;
+
+  public int getNativeFD()
+  {
+    return impl.getNativeFD();
   }
  
   public void finalizer()

@@ -253,17 +253,17 @@ public class SelectorImpl extends AbstractSelector
     if (ch instanceof SocketChannelImpl)
       {
         SocketChannelImpl sc = (SocketChannelImpl) ch;
-        result = new SocketChannelSelectionKey (ch, this); // FIXME: last argument
+        result = new SocketChannelSelectionKey (ch, this);
       }
     else if (ch instanceof DatagramChannelImpl)
       {
         DatagramChannelImpl dc = (DatagramChannelImpl) ch;
-        result = new DatagramChannelSelectionKey (ch, this); // FIXME: last argument
+        result = new DatagramChannelSelectionKey (ch, this);
       }
     else if (ch instanceof ServerSocketChannelImpl)
       {
         ServerSocketChannelImpl ssc = (ServerSocketChannelImpl) ch;
-        result = new SocketChannelSelectionKey (ch, this); // FIXME: last argument
+        result = new ServerSocketChannelSelectionKey (ch, this);
       }
     else
       {

@@ -1,5 +1,23 @@
 2003-10-09  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/SelectorImpl.java (register):
+	Use ServerSocketChannelSelectionKey for server socket channels,
+	removed unneeded comments.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(ServerSocketChannelImpl): Made class public final.
+	(impl): New member variable.
+	(ServerSocketChannelImpl): Initialize member variables correctly.
+	(initServerSocket): New method.
+	(getNativeFD): Likewise.
+	* gnu/java/nio/ServerSocketChannelSelectionKey.java,
+	gnu/java/nio/natServerSocketChannelImpl.cc: New files.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/nio/ServerSocketChannelSelectionKey.java.
+	(nat_source_files): Added gnu/java/nio/natServerSocketChannelImpl.cc.
+	* Makefile.in: Regenrated.
+
+2003-10-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/spi/AbstractSelectableChannel.java
 	(registered): Made private.
 	(blocking): Likewise.

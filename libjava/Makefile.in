@@ -1912,6 +1912,7 @@ gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \
 gnu/java/nio/SelectorProviderImpl.java \
 gnu/java/nio/ServerSocketChannelImpl.java \
+gnu/java/nio/ServerSocketChannelSelectionKey.java \
 gnu/java/nio/SocketChannelImpl.java \
 gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/charset/ISO_8859_1.java \
@@ -2376,6 +2377,7 @@ gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
+gnu/java/nio/natServerSocketChannelImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
@@ -2553,12 +2555,13 @@ gnu/java/net/natPlainDatagramSocketImpl.lo \
 gnu/java/net/natPlainSocketImpl.lo \
 gnu/java/net/protocol/core/natCoreInputStream.lo \
 gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
-java/io/natFile.lo java/io/natFileDescriptor.lo \
-java/io/natObjectInputStream.lo java/io/natVMObjectStreamClass.lo \
-java/lang/natCharacter.lo java/lang/natClass.lo \
-java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
-java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
-java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/java/nio/natServerSocketChannelImpl.lo java/io/natFile.lo \
+java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
+java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
+java/lang/natClass.lo java/lang/natClassLoader.lo \
+java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
+java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
+java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -3037,6 +3040,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/SelectorImpl.P \
 .deps/gnu/java/nio/SelectorProviderImpl.P \
 .deps/gnu/java/nio/ServerSocketChannelImpl.P \
+.deps/gnu/java/nio/ServerSocketChannelSelectionKey.P \
 .deps/gnu/java/nio/SocketChannelImpl.P \
 .deps/gnu/java/nio/SocketChannelSelectionKey.P \
 .deps/gnu/java/nio/charset/ISO_8859_1.P \
@@ -3049,6 +3053,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
 .deps/gnu/java/nio/charset/UTF_8.P .deps/gnu/java/nio/natFileLockImpl.P \
 .deps/gnu/java/nio/natSelectorImpl.P \
+.deps/gnu/java/nio/natServerSocketChannelImpl.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \
