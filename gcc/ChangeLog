@@ -1,5 +1,21 @@
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
+	* rtl.def (COND_EXEC): New.
+	* rtl.h (COND_EXEC_TEST, COND_EXEC_CODE): New.
+	* tm.texi (MAX_CONDITIONAL_EXECUTE): Document.
+
+	* genconfig.c (have_cond_arith_flag): Remove.
+	(have_cond_exec_flag): New.
+	(walk_insn_part): Detect COND_EXEC, not arithmetic in IF_THEN_ELSE.
+	(main): Print HAVE_conditional_execution.
+
+	* haifa-sched.c (haifa_classify_insn): Recognize COND_EXEC.
+	(sched_analyze_insn, print_pattern): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* rtlanal.c (reg_referenced_p): Likewise.
+	(note_stores, dead_or_set_regno_p): Likewise.
+	(reg_overlap_mentioned_p): Rewrite to use a switch.
+
 	* ggc.h (struct rtx_def): Forward declare.
 
 	* print-rtl.c (debug_rtx_range): New.

@@ -6190,6 +6190,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	     If GOAL is a memory ref and its address is not constant,
 	     and this insn P changes a register used in GOAL, return 0.  */
 
+	  if (GET_CODE (pat) == COND_EXEC)
+	    pat = COND_EXEC_CODE (pat);
 	  if (GET_CODE (pat) == SET || GET_CODE (pat) == CLOBBER)
 	    {
 	      register rtx dest = SET_DEST (pat);
@@ -6232,6 +6234,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
 		{
 		  register rtx v1 = XVECEXP (pat, 0, i);
+		  if (GET_CODE (v1) == COND_EXEC)
+		    v1 = COND_EXEC_CODE (v1);
 		  if (GET_CODE (v1) == SET || GET_CODE (v1) == CLOBBER)
 		    {
 		      register rtx dest = SET_DEST (v1);

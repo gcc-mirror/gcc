@@ -7942,4 +7942,12 @@ Note that this functionality is part of POSIX.
 Defining @code{TARGET_HAS_F_SETLKW} will enable the test coverage code
 to use file locking when exiting a program, which avoids race conditions
 if the program has forked.
+
+@findex MAX_CONDITIONAL_EXECUTE
+@item MAX_CONDITIONAL_EXECUTE
+
+A C expression for the maximum number of instructions to execute via
+conditional execution instructions instead of a branch.  A value of
+@code{BRANCH_COST}+1 is the default if the machine does not use cc0, and
+1 if it does use cc0.
 @end table
