@@ -1,3 +1,8 @@
+2002-04-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* libjava.lang/PR6204.java, libjava.lang/PR6204.out: New test case.
+	* libjava.lang/PR6085.java, libjava.lang/PR6085.out: Likewise.
+
 2002-04-07  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/xfails: Add CASE_INSENSITIVE_ORDER, result was
