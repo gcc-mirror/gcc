@@ -983,7 +983,12 @@ _Jv_CheckCast (jclass c, jobject obj)
 {
   if (__builtin_expect 
        (obj != NULL && ! _Jv_IsAssignableFrom(c, JV_CLASS (obj)), false))
-    JvThrow (new java::lang::ClassCastException);
+    JvThrow (new java::lang::ClassCastException
+            ((new java::lang::StringBuffer
+             (obj->getClass()->getName()))->append
+             (JvNewStringUTF(" cannot be cast to "))->append
+             (c->getName())->toString()));
+
   return obj;
 }
 
