@@ -1,3 +1,8 @@
+2005-03-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/15332
+	* gfortran.dg/pr15332.f: New test.
+
 2005-03-24  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.dg/20020919-1.c:  Fix for x86 Darwin.
