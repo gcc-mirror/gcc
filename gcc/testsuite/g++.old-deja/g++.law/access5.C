@@ -13,12 +13,12 @@ public:
 protected:
   class nested_protected { int x; };
 private:
-  class nested_private { int x; };
+  class nested_private { int x; }; // ERROR - private
 };
 
 class derived : public enclose {
   nested_public obj1;     // ok
   nested_protected obj2;  // ok
-  nested_private obj3;    // error// ERROR - .* , XFAIL *-*-*
+  nested_private obj3;    // error// ERROR - in this context
 };
 
