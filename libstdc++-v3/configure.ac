@@ -165,7 +165,7 @@ else
   # If Canadian cross, then don't pick up tools from the build directory.
   # Used only in GLIBCXX_EXPORT_INCLUDES.
   if test -n "$with_cross_host" &&
-     test x"$build" != x"$with_cross_host" &&
+     test x"$build_alias" != x"$with_cross_host" &&
      test x"$build" != x"$target";
   then
     CANADIAN=yes
