@@ -1,3 +1,28 @@
+Wed Oct  7 01:08:43 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* caller-save.c (restore_referenced_regs): Lose mode argument.
+	(insert_save): Lose mode argument.
+	(insert_restore): Lose mode argument.
+	(insert_one_insn): Lose mode argument.
+	(save_call_clobbered_regs): Lose mode argument.
+	(setup_save_areas): Take no argument and return void.  All callers
+	changed.
+	Don't verify validity of memory addresses.
+	* reload.h (setup_save_ares): Adjust prototype.
+	(save_call_clobbered_regs): Likewise.
+	* reload1.c (delete_caller_save_insns): New function.
+	(caller_save_spill_class): Delete variable.
+	(caller_save_group_size): Delete variable.
+	(reload): Call setup_save_areas and save_call_clobbered_regs
+	in the main loop, before calling calculate_needs_all_insns.
+	Don't call save_call_clobbered_regs after the loop.
+	Call delete_caller_save_insns at the end of an iteration if
+	something changed.
+	Delete code to manage caller_save_spill_class.
+	Emit the final note before setting reload_first_uid.
+	Simplify test that determines whether reload_as_needed gets run.
+	(calculate_needs): Delete code to manage caller_save_spill_class.
+
 Tue Oct  6 15:42:27 1998  Richard Henderson  <rth@cygnus.com>
 
 	* collect2.c (main): Initialize ld_file_name.
