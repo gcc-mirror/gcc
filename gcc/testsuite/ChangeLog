@@ -1,3 +1,8 @@
+2000-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/string-opt-7.c: New test.
+	* gcc.c-torture/execute/string-opt-8.c: Likewise.
+
 2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Invoke 'tests_flags --compiler'
