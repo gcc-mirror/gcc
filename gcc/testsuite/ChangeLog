@@ -17,6 +17,20 @@
 
 	* gcc.dg/const-elim-1.c: Tighten scan-assembler-not regexp.
 
+2003-05-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp: Tweak handling of additional source files.
+	* g++.dg/special/conpr-2.C: Use dg-gpp-additional-sources.
+	* g++.dg/special/conpr-2a.C: Rename to ...
+	* g++.dg/special/conpr-2a.cc: ... this.
+	* g++.dg/special/conpr-3.C: Use dg-gpp-additional-sources.
+	* g++.dg/special/conpr-3a.C: Rename to ...
+	* g++.dg/special/conpr-3a.cc: This.
+	* g++.dg/special/conpr-3b.C: Rename to ...
+	* g++.dg/special/conpr-3b.cc: This.
+	* g++.dg/special/conpr-4.C: New test.
+	* g++.dg/special/ecos.exp: Rewrite to use ordinary dg driver.
+
 2003-05-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* debug/debug.exp: Skip debug-[12].c at -O3 on non-Dwarf targets.
