@@ -1080,6 +1080,18 @@ compute_inverse (order)
 {
   unsigned size, inv, e;
 
+  /* There can be only one object per "page" in a bucket for sizes
+     larger than half a machine page; it will always have offset zero.  */
+  if (OBJECT_SIZE (order) > G.pagesize/2)
+    {
+      if (OBJECTS_PER_PAGE (order) != 1)
+	abort ();
+
+      DIV_MULT (order) = 1;
+      DIV_SHIFT (order) = 0;
+      return;
+    }
+
   size = OBJECT_SIZE (order);
   e = 0;
   while (size % 2 == 0)
