@@ -1,3 +1,8 @@
+2005-01-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/19355
+	* g++.dg/expr/pr19355-1.C: New test case.
+
 2005-01-10  Laurent GUERBY <laurent@guerby.net>
 
 	* ada/acats/tests/c4/c456001.a: New from ACATS 2.5L
