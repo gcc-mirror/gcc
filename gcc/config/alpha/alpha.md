@@ -275,14 +275,45 @@
 ;; seem to be a way around it.  Only recognize them while reloading.
 
 (define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+	(plus:DI (plus:DI (match_operand:DI 1 "register_operand" "r")
+			  (match_operand:DI 2 "register_operand" "r"))
+		 (match_operand:DI 3 "add_operand" "rIOKL")))]
+  "reload_in_progress"
+  "#"
+  [(set_attr "type" "iaddlog")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (plus:DI (match_operand:DI 1 "register_operand" "")
+			  (match_operand:DI 2 "register_operand" ""))
+		 (match_operand:DI 3 "add_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 3)))]
+  "")
+					   
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 				   (match_operand:SI 2 "const48_operand" "I"))
 			  (match_operand:SI 3 "register_operand" "r"))
-		 (match_operand:SI 4 "const_int_operand" "rI")))]
+		 (match_operand:SI 4 "add_operand" "rIOKL")))]
   "reload_in_progress"
-  "s%2addl %r1,%3,%0\;addl %0,%4,%0"
+  "#"
   [(set_attr "type" "iaddlog")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "")
+				   (match_operand:SI 2 "const48_operand" ""))
+			  (match_operand:SI 3 "register_operand" ""))
+		 (match_operand:SI 4 "add_operand" "rIOKL")))]
+  "reload_completed"
+  [(set (match_dup 0)
+	(plus:SI (mult:SI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 4)))]
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&r")
@@ -291,20 +322,48 @@
 		   (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 			    (match_operand:SI 2 "const48_operand" "I"))
 		   (match_operand:SI 3 "register_operand" "r"))
-		  (match_operand:SI 4 "const_int_operand" "rI"))))]
+		  (match_operand:SI 4 "add_operand" "rIOKL"))))]
   "reload_in_progress"
-  "s%2addl %r1,%3,%0\;addl %0,%4,%0"
+  "#"
   [(set_attr "type" "iaddlog")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI
+	 (plus:SI (plus:SI
+		   (mult:SI (match_operand:SI 1 "reg_or_0_operand" "")
+			    (match_operand:SI 2 "const48_operand" ""))
+		   (match_operand:SI 3 "register_operand" ""))
+		  (match_operand:SI 4 "add_operand" ""))))]
+  "reload_completed"
+  [(set (match_dup 5)
+	(plus:SI (mult:SI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (sign_extend:DI (plus:SI (match_dup 5) (match_dup 4))))]
+  "
+{ operands[5] = gen_lowpart (SImode, operands[0]);
+}")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 				   (match_operand:DI 2 "const48_operand" "I"))
 			  (match_operand:DI 3 "register_operand" "r"))
-		 (match_operand:DI 4 "const_int_operand" "rI")))]
+		 (match_operand:DI 4 "add_operand" "rIOKL")))]
   "reload_in_progress"
   "s%2addq %r1,%3,%0\;addq %0,%4,%0"
   [(set_attr "type" "iaddlog")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "=")
+	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "")
+				   (match_operand:DI 2 "const48_operand" ""))
+			  (match_operand:DI 3 "register_operand" ""))
+		 (match_operand:DI 4 "add_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0)
+	(plus:DI (mult:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
+  "")
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
