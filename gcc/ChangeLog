@@ -1,5 +1,7 @@
 Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* genemit.c (main): Generate #include "reload.h".
+
 	* expr.c (expand_expr, case INDIRECT_EXPR): A dereference of
 	a REFERENCE_TYPE is always considered in a structure.
 
