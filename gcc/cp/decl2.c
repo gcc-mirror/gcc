@@ -2607,12 +2607,11 @@ import_export_template (type)
       CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 0;
     }
 }
-    
-int
-finish_prevtable_vardecl (prev, vars)
-     tree prev, vars;
+
+void
+import_export_class (ctype)
+     tree ctype;
 {
-  tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
 
 #ifndef MULTIPLE_SYMBOL_SPACES
@@ -2636,7 +2635,14 @@ finish_prevtable_vardecl (prev, vars)
 	}
     }
 #endif
-
+}
+    
+int
+finish_prevtable_vardecl (prev, vars)
+     tree prev, vars;
+{
+  tree ctype = DECL_CONTEXT (vars);
+  import_export_class (ctype);
   import_export_vtable (vars, ctype, 1);
   return 1;
 }
