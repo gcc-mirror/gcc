@@ -32,6 +32,7 @@ struct obstack *rtl_obstack = &obstack;
 
 extern void free ();
 extern int atoi ();
+extern rtx read_rtx ();
 
 char *xmalloc ();
 static void fatal ();
@@ -164,7 +165,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
   int have_delay = 0;
   int have_annul_true = 0;
