@@ -64,7 +64,7 @@ definitions and other extensions.  */
 #include "xref.h"
 #include "function.h"
 #include "except.h"
-#include "expr.h"
+#include "defaults.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -5593,12 +5593,10 @@ expand_start_java_method (fndecl)
     {
       tree next = TREE_CHAIN (tem);
       tree type = TREE_TYPE (tem);
-#ifdef PROMOTE_PROTOTYPES
       if (PROMOTE_PROTOTYPES
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
 	  && INTEGRAL_TYPE_P (type))
 	type = integer_type_node;
-#endif
       DECL_ARG_TYPE (tem) = type;
       layout_decl (tem, 0);
       pushdecl (tem);

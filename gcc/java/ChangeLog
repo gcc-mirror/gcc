@@ -1,3 +1,8 @@
+1999-08-02  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c: Include defaults.h instead of expr.h.
+	* parse.y: Likewise.
+
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* java/decl.c (start_java_method): Change all uses of
