@@ -1633,8 +1633,18 @@ class LightweightDispatcher implements Serializable
         MouseEvent me = (MouseEvent) e;
         acquireComponentForMouseEvent (me);
 
-        if (mouseEventTarget != null)
+        // Avoid dispatching an ENTERED event twice
+        if (mouseEventTarget != null
+            && e.getID() != MouseEvent.MOUSE_ENTERED)
           {
+            // Calculate point translation for the event target.
+            // We use absolute location on screen rather than relative
+            // location because the event target might be a nested child.
+            Point parentLocation = nativeContainer.getLocationOnScreen();
+            Point childLocation = mouseEventTarget.getLocationOnScreen();
+            me.translatePoint(parentLocation.x - childLocation.x,
+                              parentLocation.y - childLocation.y);
+
             Component oldSource = (Component) me.getSource ();
             me.setSource (mouseEventTarget);
             mouseEventTarget.dispatchEvent (me);
