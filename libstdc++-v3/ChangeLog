@@ -1,3 +1,10 @@
+2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/7157, PR libstdc++/7158, PR libstdc++/7161
+	* include/std/std_queue.h:  Include deque.tcc, vector.tcc.
+	* include/std/std_stack.h:  Include deque.tcc.
+	* testsuite/23_containers/adaptors.cc:  New file.
+
 2002-06-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_alloc.h:  Deprecate all 'reallocate' memfns.
