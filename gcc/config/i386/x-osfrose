@@ -6,9 +6,9 @@
 
 BUILD		=
 CC		= $(OLDCC)
-CLIB		= -lbsd -lld
-X_CFLAGS	= $(DEB_OPT) $(MSTATS) $(SHLIB)
-X_CFLAGS_NODEBUG = $(NO_DEBUG) $(MSTATS) $(OPT) $(PROFILE) $(SHLIB) $(XCFLAGS)
+CLIB		= -lld
+X_CFLAGS	= $(DEB_OPT) $(MSTATS) $(SHLIB) $(X_DEFINES)
+X_CFLAGS_NODEBUG = $(NO_DEBUG) $(MSTATS) $(OPT) $(PROFILE) $(SHLIB) $(X_DEFINES) $(XCFLAGS)
 CPP_ABORT	= # -Dabort=fancy_abort
 CPPFLAGS	= $(CPP_ABORT) $(SYSTEM_INCLUDES)
 DEB_OPT		= $(OPT) $(DEBUG) $(PROFILE)
@@ -23,6 +23,7 @@ OPT		= -O
 PROFILE		=
 SHLIB		= -pic-none
 SYSTEM_INCLUDES	= # -I${BUILD}/usr/include
+X_DEFINES	= -Dvfork=fork
 
 libdir		= /usr/ccs
 mandir		= /usr/ccs/gcc/$(target)/$(version)
