@@ -50,10 +50,10 @@
 
 (define_insn "mips_cond_move_tf_ps"
   [(set (match_operand:V2SF 0 "register_operand" "=f,f")
-	(if_then_else:V2SF
-	 (eq:CCV2 (match_operand:CCV2 3 "register_operand" "z,z") (const_int 0))
-	 (match_operand:V2SF 1 "register_operand" "f,0")
-	 (match_operand:V2SF 2 "register_operand" "0,f")))]
+	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f,0")
+		      (match_operand:V2SF 2 "register_operand" "0,f")
+		      (match_operand:CCV2 3 "register_operand" "z,z")]
+		     UNSPEC_MOVE_TF_PS))]
   "TARGET_PAIRED_SINGLE_FLOAT"
   "@
     movt.ps\t%0,%1,%y3

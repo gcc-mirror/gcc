@@ -10688,7 +10688,8 @@ mips_expand_ps_cond_move_builtin (enum mips_cmp_choice cmp_choice,
   enum machine_mode mode0;
   enum machine_mode mode1;
   rtx temp_target;
-  rtx if_then_else;
+  rtx src1;
+  rtx src2;
   enum rtx_code test_code;
   int compare_value;
 
@@ -10745,28 +10746,20 @@ mips_expand_ps_cond_move_builtin (enum mips_cmp_choice cmp_choice,
   switch (cmp_choice)
     {
     case MIPS_CMP_MOVT:
-      if_then_else 
-	= gen_rtx_IF_THEN_ELSE (tmode,
-				gen_rtx_fmt_ee (test_code, CCV2mode, 
-						temp_target,
-					        GEN_INT (compare_value)),
-				op3, target);
+      src1 = op3;
+      src2 = target;
       break;
 
     case MIPS_CMP_MOVF:
-      if_then_else 
-	= gen_rtx_IF_THEN_ELSE (tmode,
-				gen_rtx_fmt_ee (test_code, CCV2mode, 
-						temp_target,
-					        GEN_INT (compare_value)), 
-				target, op3);
+      src1 = target;
+      src2 = op3;
       break;
 
     default:
       return 0;
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, target, if_then_else)); 
+  emit_insn (gen_mips_cond_move_tf_ps (target, src1, src2, temp_target));
 
   return target;
 }
