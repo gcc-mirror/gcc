@@ -1,5 +1,10 @@
 2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/i386/k6.md (k6_alux): Use the 'mode' attribute instead of
+	match_operand.
+
+2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* config/sparc/sparc.c (function_arg_record_value_1): New fourth
 	parameter packed_p.  Search for a DECL_PACKED field only if
 	packed_p is false.  Pass packed_p recursively.
