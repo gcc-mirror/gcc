@@ -6679,7 +6679,10 @@ resolve_package (pkg, next)
 	if ((type_name = resolve_no_layout (acc, NULL_TREE)))
 	  {
 	    type_name = acc;
-	    *next = TREE_CHAIN (current);
+	    /* resolve_package should be used in a loop, hence we
+	       point at this one to naturally process the next one at
+	       the next iteration. */
+	    *next = current;
 	    break;
 	  }
       }
@@ -8893,7 +8896,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    {
 	      tree list;
 	      *where_found = decl = resolve_no_layout (name, qual_wfl);
-	      /* We wan't to be absolutely that the class is laid
+	      /* We want to be absolutely sure that the class is laid
                  out. We're going to search something inside it. */
 	      *type_found = type = TREE_TYPE (decl);
 	      layout_class (type);
