@@ -1,3 +1,7 @@
+2003-10-06  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
+
+	* g++.dg/opt/cfg2.C: New test.
+
 2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/float1.C: New test.

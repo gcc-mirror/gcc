@@ -6844,7 +6844,15 @@ cse_set_around_loop (x, insn, loop_start)
 			      abort ();
 			  }
 			else
-			  emit_insn_after (move, p);
+			  {
+			    if (control_flow_insn_p (p))
+			      /* p can cause a control flow transfer so it
+				 is the last insn of a basic block.  We can't
+				 therefore use emit_insn_after.  */
+			      emit_insn_before (move, next_nonnote_insn (p));
+			    else
+			      emit_insn_after (move, p);
+			  }
 		      }
 		    break;
 		  }

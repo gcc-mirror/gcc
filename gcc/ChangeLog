@@ -1,5 +1,11 @@
 2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/12215
+	* cse.c (cse_set_around_loop): Emit the move at the beginning
+	of the next basic block for trapping sets.
+
+2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR optimization/11637
 	* combine.c (adjust_for_new_dest): New function to adjust the
 	notes and LOG_LINKS when the dest of an insn has changed.
