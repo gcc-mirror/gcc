@@ -404,7 +404,8 @@ extern int target_flags;
    if 68881 use is disabled.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (((REGNO) < 16)                                       \
+  (((REGNO) < 16					\
+   && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE ((MODE)) / 4 > 8))	\
    || ((REGNO) < 24				        \
        && TARGET_68881                                  \
        && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
@@ -1967,6 +1968,7 @@ extern char *output_move_double ();
 extern char *output_move_const_single ();
 extern char *output_move_const_double ();
 extern char *output_btst ();
+extern char *output_scc_di ();
 
 /*
 Local variables:
