@@ -1,4 +1,4 @@
-/* { dg-do run { target rs6000-*-* ppc-*-* } } */
+/* { dg-do run { target rs6000-*-* powerpc-*-*} } */
 /* { dg-options "-O2 -fpic" } */
 
 void foo1(int a, char *b, int c)
