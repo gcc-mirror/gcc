@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.2f from Makefile.am
+# Makefile.in generated automatically by automake 1.2e from Makefile.am
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -11,7 +11,7 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -58,16 +58,21 @@ CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 DATADIRNAME = @DATADIRNAME@
+EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GT_NO = @GT_NO@
 GT_YES = @GT_YES@
 INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -121,9 +126,11 @@ BUILT_SOURCES = doc.c funs.h
 cmd_sources = $(srcdir)/session.c $(srcdir)/echo-area.c $(srcdir)/infodoc.c \
   $(srcdir)/m-x.c $(srcdir)/indices.c $(srcdir)/nodemenu.c \
   $(srcdir)/footnotes.c $(srcdir)/variables.c
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  ginfo$(EXEEXT)
+noinst_PROGRAMS =  makedoc$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 CPPFLAGS = @CPPFLAGS@
@@ -143,13 +150,20 @@ makedoc_LDFLAGS =
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  README Makefile.am Makefile.in
+DIST_COMMON =  README Makefile.am Makefile.in NEWS
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
+DEP_FILES =  .deps/dir.P .deps/display.P .deps/doc.P .deps/dribble.P \
+.deps/echo-area.P .deps/filesys.P .deps/footnotes.P .deps/gc.P \
+.deps/indices.P .deps/info-utils.P .deps/info.P .deps/infodoc.P \
+.deps/infomap.P .deps/m-x.P .deps/makedoc.P .deps/man.P \
+.deps/nodemenu.P .deps/nodes.P .deps/search.P .deps/session.P \
+.deps/signals.P .deps/terminal.P .deps/tilde.P .deps/variables.P \
+.deps/window.P
 SOURCES = $(ginfo_SOURCES) $(makedoc_SOURCES)
 OBJECTS = $(ginfo_OBJECTS) $(makedoc_OBJECTS)
 
@@ -157,10 +171,10 @@ default: all
 
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps info/Makefile
+$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu info/Makefile
 
-Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -185,7 +199,7 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	done
 
 uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
+	$(NORMAL_UNINSTALL)
 	list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
 	done
@@ -198,9 +212,6 @@ clean-noinstPROGRAMS:
 distclean-noinstPROGRAMS:
 
 maintainer-clean-noinstPROGRAMS:
-
-.c.o:
-	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -218,12 +229,12 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-ginfo: $(ginfo_OBJECTS) $(ginfo_DEPENDENCIES)
-	@rm -f ginfo
+ginfo$(EXEEXT): $(ginfo_OBJECTS) $(ginfo_DEPENDENCIES)
+	@rm -f ginfo$(EXEEXT)
 	$(LINK) $(ginfo_LDFLAGS) $(ginfo_OBJECTS) $(ginfo_LDADD) $(LIBS)
 
-makedoc: $(makedoc_OBJECTS) $(makedoc_DEPENDENCIES)
-	@rm -f makedoc
+makedoc$(EXEEXT): $(makedoc_OBJECTS) $(makedoc_DEPENDENCIES)
+	@rm -f makedoc$(EXEEXT)
 	$(LINK) $(makedoc_LDFLAGS) $(makedoc_OBJECTS) $(makedoc_LDADD) $(LIBS)
 
 tags: TAGS
@@ -256,108 +267,37 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = info
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu info/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
-dir.o: dir.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h tilde.h
-display.o: display.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-doc.o: doc.c doc.h info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h footnotes.h gc.h \
-	funs.h
-dribble.o: dribble.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-echo-area.o: echo-area.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-filesys.o: filesys.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h tilde.h
-footnotes.o: footnotes.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-gc.o: gc.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h
-indices.o: indices.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h indices.h
-info-utils.o: info-utils.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h man.h
-info.o: info.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h \
-	indices.h ../lib/getopt.h man.h
-infodoc.o: infodoc.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-infomap.o: infomap.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h funs.h
-m-x.o: m-x.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h
-makedoc.o: makedoc.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-man.o: man.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h \
-	signals.h tilde.h man.h
-nodemenu.o: nodemenu.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-nodes.o: nodes.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h man.h
-search.o: search.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
-session.o: session.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h man.h
-signals.o: signals.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h signals.h
-terminal.o: terminal.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h termdep.h
-tilde.o: tilde.c info.h ../lib/system.h ../config.h filesys.h display.h \
-	info-utils.h nodes.h window.h infomap.h search.h terminal.h \
-	session.h dribble.h echo-area.h doc.h footnotes.h gc.h
-variables.o: variables.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h variables.h
-window.o: window.c info.h ../lib/system.h ../config.h filesys.h \
-	display.h info-utils.h nodes.h window.h infomap.h search.h \
-	terminal.h session.h dribble.h echo-area.h doc.h footnotes.h \
-	gc.h
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+
+maintainer-clean-depend:
+	-rm -rf .deps
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	DEPENDENCIES_OUTPUT='.deps/$(*F).P'; \
+	export DEPENDENCIES_OUTPUT; \
+	: > .deps/$(*F).P; \
+	$(COMPILE) -c $<
 info:
 dvi:
 check: all
@@ -397,21 +337,22 @@ maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
-		mostlyclean-compile mostlyclean-tags \
+		mostlyclean-compile mostlyclean-tags mostlyclean-depend \
 		mostlyclean-generic
 
 clean:  clean-binPROGRAMS clean-noinstPROGRAMS clean-compile clean-tags \
-		clean-generic mostlyclean
+		clean-depend clean-generic mostlyclean
 
 distclean:  distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-compile distclean-tags distclean-generic \
-		clean
+		distclean-compile distclean-tags distclean-depend \
+		distclean-generic clean
 	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -421,9 +362,10 @@ install-binPROGRAMS mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
 clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info dvi installcheck \
-install-exec install-data install uninstall all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info dvi \
+installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.2f from Makefile.am
+# Makefile.in generated automatically by automake 1.2e from Makefile.am
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -11,7 +11,7 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -59,16 +59,21 @@ CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 DATADIRNAME = @DATADIRNAME@
+EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GT_NO = @GT_NO@
 GT_YES = @GT_YES@
 INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
+MAINT = @MAINT@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
@@ -93,13 +98,13 @@ EXTRA_DIST = macro.texi userdoc.texi epsf.tex texinfo.tex
 
 # We try to discover this via configure just to give a better help message.
 TEXMF = @TEXMF@
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 TEXI2DVI = texi2dvi
-TEXINFO_TEX = $(srcdir)/texinfo.tex
+TEXINFO_TEX = $(top_srcdir)/../texinfo.tex
 INFO_DEPS = info-stnd.info info.info texinfo
-DVIS = info-stnd.dvi info.dvi texinfo.dvi
+DVIS = info-stnd.dvi info.dvi texinfo.txi.dvi
 TEXINFOS = info-stnd.texi info.texi texinfo.txi
 DIST_COMMON =  README $(info_TEXINFOS) Makefile.am Makefile.in \
 texinfo.tex
@@ -112,11 +117,11 @@ GZIP = --best
 default: all
 
 .SUFFIXES:
-.SUFFIXES: .dvi .info .ps .texi .texinfo .txi
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/Makefile
+.SUFFIXES: .dvi .info .ps .texi .texinfo
+$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu doc/Makefile
 
-Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -130,13 +135,13 @@ info.dvi: info.texi $(info_TEXINFOS)
 
 
 texinfo: texinfo.txi
-texinfo.dvi: texinfo.txi
+texinfo.txi.dvi: texinfo.txi
 
 
 DVIPS = dvips
 
 .texi.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	TEXINPUTS=$(top_srcdir)/..:$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
 
 .texi:
@@ -155,22 +160,8 @@ DVIPS = dvips
 	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texinfo.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	TEXINPUTS=$(top_srcdir)/..:$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
-
-.txi.info:
-	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	cd $(srcdir) \
-	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
-
-.txi.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
-	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
-
-.txi:
-	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	cd $(srcdir) \
-	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 .dvi.ps:
 	$(DVIPS) $< -o $@
 
@@ -183,7 +174,7 @@ uninstall-info:
 	  test -z "$ii" \
 	    || install-info --info-dir=$(infodir) --remove $$file; \
 	done
-	@$(NORMAL_UNINSTALL)
+	$(NORMAL_UNINSTALL)
 	for file in $(INFO_DEPS); do \
 	  (cd $(infodir) && rm -f $$file $$file-[0-9] $$file-[0-9][0-9]); \
 	done
@@ -196,11 +187,12 @@ mostlyclean-aminfo:
 	  info-stnd.op info-stnd.tr info-stnd.cv info-stnd.cn info.aux \
 	  info.cp info.cps info.dvi info.fn info.fns info.ky info.kys \
 	  info.ps info.log info.pg info.toc info.tp info.tps info.vr \
-	  info.vrs info.op info.tr info.cv info.cn texinfo.aux \
-	  texinfo.cp texinfo.cps texinfo.dvi texinfo.fn texinfo.fns \
-	  texinfo.ky texinfo.kys texinfo.ps texinfo.log texinfo.pg \
-	  texinfo.toc texinfo.tp texinfo.tps texinfo.vr texinfo.vrs \
-	  texinfo.op texinfo.tr texinfo.cv texinfo.cn
+	  info.vrs info.op info.tr info.cv info.cn texinfo.txi.aux \
+	  texinfo.txi.cp texinfo.txi.cps texinfo.txi.dvi texinfo.txi.fn \
+	  texinfo.txi.fns texinfo.txi.ky texinfo.txi.kys texinfo.txi.ps \
+	  texinfo.txi.log texinfo.txi.pg texinfo.txi.toc texinfo.txi.tp \
+	  texinfo.txi.tps texinfo.txi.vr texinfo.txi.vrs texinfo.txi.op \
+	  texinfo.txi.tr texinfo.txi.cv texinfo.txi.cn
 
 clean-aminfo:
 
@@ -222,6 +214,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = doc
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu doc/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
