@@ -1,5 +1,5 @@
 /* X500Principal.java -- X.500 principal.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,20 +38,15 @@ exception statement from your version. */
 
 package javax.security.auth.x500;
 
-import java.io.ByteArrayInputStream;
+import gnu.java.security.x509.X500DistinguishedName;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.NotActiveException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.security.Principal;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-
-import gnu.java.security.x509.X500DistinguishedName;
 
 public final class X500Principal implements Principal, Serializable
 {
