@@ -308,15 +308,33 @@ global_alloc (file)
 
   /* Track which registers have already been used.  Start with registers
      explicitly in the rtl, then registers allocated by local register
-     allocation.
-     
-     We consider registers that do not have to be saved over calls as if
-     they were already used since there is no cost in using them.  */
+     allocation.  */
 
   CLEAR_HARD_REG_SET (regs_used_so_far);
+#ifdef LEAF_REGISTERS
+  /* If we are doing the leaf function optimization, and this is a leaf
+     function, it means that the registers that take work to save are those
+     that need a register window.  So prefer the ones that can be used in
+     a leaf function.  */
+  {
+    char *cheap_regs;
+    static char leaf_regs[] = LEAF_REGISTERS;
+
+    if (only_leaf_regs_used () && leaf_function_p ())
+      cheap_regs = leaf_regs;
+    else
+      cheap_regs = call_used_regs;
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (regs_ever_live[i] || cheap_regs[i])
+	SET_HARD_REG_BIT (regs_used_so_far, i);
+  }
+#else
+  /* We consider registers that do not have to be saved over calls as if
+     they were already used since there is no cost in using them.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (regs_ever_live[i] || call_used_regs[i])
       SET_HARD_REG_BIT (regs_used_so_far, i);
+#endif
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_renumber[i] >= 0)
