@@ -175,7 +175,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 
 #if defined (DWARF2_UNWIND_INFO) && !defined (EH_FRAME_SECTION)
 # if defined (EH_FRAME_SECTION_ASM_OP)
-#  define EH_FRAME_SECTION() eh_frame_section();
+#  define EH_FRAME_SECTION() eh_frame_section ()
 # else
    /* If we aren't using crtstuff to run ctors, don't use it for EH.  */
 #  if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
