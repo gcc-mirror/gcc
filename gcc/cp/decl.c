@@ -7663,7 +7663,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  tree t;
 
 	  /* Replace the anonymous name with the real name everywhere.  */
-	  lookup_tag_reverse (type, unqualified_id);
 	  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	    if (TYPE_NAME (t) == oldname)
 	      TYPE_NAME (t) = decl;

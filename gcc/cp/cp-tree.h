@@ -3709,7 +3709,6 @@ extern void push_switch				(tree);
 extern void pop_switch				(void);
 extern void pushtag				(tree, tree, int);
 extern tree make_anon_name			(void);
-extern void clear_anon_tags			(void);
 extern int decls_match				(tree, tree);
 extern tree duplicate_decls			(tree, tree);
 extern tree pushdecl_top_level			(tree);
