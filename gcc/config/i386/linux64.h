@@ -60,11 +60,9 @@ Boston, MA 02111-1307, USA.  */
       %{!m32:%{!dynamic-linker:-dynamic-linker /lib64/ld-linux-x86-64.so.2}}} \
     %{static:-static}}"
 
-#ifdef NATIVE_CROSS
 #define STARTFILE_PREFIX_SPEC "\
   %{m32: /usr/local/lib/ /lib/ /usr/lib/} \
   %{!m32: /usr/local/lib64/ /lib64/ /usr/lib64/}"
-#endif
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC \
