@@ -563,6 +563,18 @@ struct rusage;
         -e '/^[ ]*typedef[ 	][ 	]*unsigned char[ 	][ 	]*bool[ 	]*;/a\
 #endif
 ' \
+        -e '/^typedef[ 	][ 	]*int[ 	][ 	]*bool[ 	]*;/i\
+#ifndef __cplusplus
+' \
+        -e '/^typedef[ 	][ 	]*int[ 	][ 	]*bool[ 	]*;/a\
+#endif
+' \
+        -e '/^[ ]*typedef[ 	][ 	]*unsigned int[ 	][ 	]*bool[ 	]*;/i\
+#ifndef __cplusplus
+' \
+        -e '/^[ ]*typedef[ 	][ 	]*unsigned int[ 	][ 	]*bool[ 	]*;/a\
+#endif
+' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}

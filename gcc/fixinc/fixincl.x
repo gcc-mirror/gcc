@@ -336,6 +336,14 @@ const char* apzAvoid_BoolPatch[] = { "sed",
 #ifndef __cplusplus\n",
     "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n\
 #endif\n",
+    "-e", "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
