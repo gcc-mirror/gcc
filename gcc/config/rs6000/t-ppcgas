@@ -45,7 +45,7 @@ MULTILIB_MATCHES	= mlittle=mlittle-endian \
 			  mcall-sysv-eabi=meabi \
 			  mcall-sysv-noeabi=mno-eabi
 
-MULTILIB_EXCEPTIONS	=
+MULTILIB_EXCEPTIONS	= *mrelocatable*/*mcall-sysv-noeabi*
 
 LIBGCC = stmp-multilib stmp-crt
 INSTALL_LIBGCC = install-multilib install-crt
