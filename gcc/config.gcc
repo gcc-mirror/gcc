@@ -970,6 +970,25 @@ i[34567]86-*-lynxos*)
 	gnu_ld=yes
 	gas=yes
 	;;
+i[3456x]86-*-netware*)
+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h svr4.h tm-dwarf2.h i386/netware.h"
+ 	tmake_file=i386/t-netware
+	extra_objs=netware.o
+	case /${with_ld} in
+	*/nwld)
+		extra_objs="$extra_objs nwld.o"
+		tm_file="${tm_file} i386/nwld.h"
+	 	tmake_file="${tmake_file} i386/t-nwld"
+		extra_parts="crt0.o libgcc.def libc.def libcpre.def posixpre.def"
+		;;
+	esac
+	case x${enable_threads} in
+	x | xyes | xposix) thread_file='posix';;
+	xnks) thread_file='nks';;
+	xno) ;;
+	*) echo 'Unknown thread configuration for NetWare' >&2; exit 1;;
+	esac
+	;;
 i[34567]86-*-nto-qnx*)
 	tm_file="${tm_file} i386/att.h dbxelf.h tm-dwarf2.h elfos.h svr4.h i386/unix.h i386/nto.h"
 	tmake_file=i386/t-nto

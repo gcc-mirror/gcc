@@ -1812,7 +1812,7 @@ tSCC zException_StructureSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zException_StructureBypass0[] =
-       "matherr.*(struct exception|__MATH_EXCEPTION)";
+       "matherr.*(struct exception|__MATH_EXCEPTION|[ \\t]*__FP_EXCEPTION[ \\t]*\\*[ \\t]*)";
 
 #define    EXCEPTION_STRUCTURE_TEST_CT  2
 static tTestDesc aException_StructureTests[] = {
@@ -3503,7 +3503,7 @@ tSCC zMath_ExceptionSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zMath_ExceptionBypass0[] =
-       "We have a problem when using C\\+\\+";
+       "We have a problem when using C\\+\\+|for C\\+\\+, _[a-z0-9A-Z_]+_exception; for C, exception";
 
 #define    MATH_EXCEPTION_TEST_CT  2
 static tTestDesc aMath_ExceptionTests[] = {

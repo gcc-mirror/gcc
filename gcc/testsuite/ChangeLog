@@ -1,5 +1,29 @@
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
+	* g++.dg/abi/bitfield5.C: Use -mno-ms-bitfields.
+	* g++.old-deja/g++.jason/thunk2.C: xfail for NetWare.
+	* g++.old-deja/g++.law/profile1.C: xfail for NetWare.
+	* g++.old-deja/g++.other/store-expr1.C: xfail for NetWare.
+	* gcc.c-torture/compile/20001109-1.c: xfail for NetWare.
+	* gcc.c-torture/compile/20001109-2.c: xfail for NetWare.
+	* gcc.c-torture/execute/multi-ix.c: Use __builtin_bzero rather than
+	the non-portable bzero.
+	* gcc.dg/20010912-1.c: xfail for NetWare.
+	* gcc.dg/20020426-2.c: xfail for NetWare.
+	* gcc.dg/20021014-1.c: xfail for NetWare.
+	* gcc.dg/20021018-1.c: xfail for NetWare.
+	* gcc.dg/20030213-1.c: xfail for NetWare.
+	* gcc.dg/20030225-1.c: xfail for NetWare.
+	* gcc.dg/20030708-1.c: xfail for NetWare.
+	* gcc.dg/builtins-config.h: Also exclude NetWare.
+	* gcc.dg/format/format.h: Define restrict only if not already defined.
+	* gcc.dg/nest.c: xfail for NetWare.
+	* gcc.dg/special/gcsec-1.c: Don't pass -static for NetWare.
+	* lib/target-supports.exp (check_visibility_available): Exclude
+	NetWare.
+
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
 	* gcc.dg/pack-test-2.c: Adjust to permit and check #pragma pack(push).
 	* gcc.dg/c99-flex-array-4.c: Add -fpack-struct=8 to provide a
 	deterministic starting point for the alignment of structure fields.

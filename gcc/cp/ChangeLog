@@ -1,3 +1,8 @@
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
+	* g++spec.c (MATH_LIBRARY_PROFILE): Default to MATH_LIBRARY rather
+	than "-lm".
+
 2004-09-02  Paul Brook  <paul@codesourcery.com>
 
 	* decl2.c (determine_visibility): Only check data visibility

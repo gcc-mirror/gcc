@@ -31,7 +31,7 @@ typedef ullong u_quad_t;
 __extension__ typedef __INTMAX_TYPE__ intmax_t;
 __extension__ typedef __UINTMAX_TYPE__ uintmax_t;
 
-#if __STDC_VERSION__ < 199901L
+#if __STDC_VERSION__ < 199901L && !defined(restrict)
 #define restrict /* "restrict" not in old C standard.  */
 #endif
 

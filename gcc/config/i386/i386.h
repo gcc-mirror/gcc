@@ -1243,6 +1243,8 @@ do {									\
 /* This is overridden by <cygwin.h>.  */
 #define MS_AGGREGATE_RETURN 0
 
+/* This is overridden by <netware.h>.  */
+#define KEEP_AGGREGATE_RETURN_POINTER 0
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

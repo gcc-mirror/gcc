@@ -1,5 +1,6 @@
 // { dg-do compile } 
 // { dg-options "-Wabi -fabi-version=1" }
+// { dg-options "-Wabi -fabi-version=1 -mno-ms-bitfields" { target i?86-*-* x86_64-*-* } }
 
 struct A { 
   virtual void f(); 

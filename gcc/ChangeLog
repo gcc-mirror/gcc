@@ -6,6 +6,24 @@
 
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
+	* config.gcc: Resurrect NetWare as a target. Handle special case of
+	Novell linker to be used (specified through --with-ld=) and threading
+	model of either Posix (default) or NKS.
+	* config/i386/i386.c (ix86_return_pops_args): Conditionalize popping
+	of incoming hidden argument on KEEP_AGGREGATE_RETURN_POINTER.
+	* config/i386/i386.h (KEEP_AGGREGATE_RETURN_POINTER): New.
+	* config/i386/netware.c, config/i386/netware.h: New.
+	* config/i386/nwld.c, config/i386/nwld.h: New.
+	* config/i386/netware-crt0.c: New.
+	* config/i386/netware-libgcc.c: New.
+	* config/i386/netware-libgcc.def: New.
+	* config/i386/netware-libgcc.exp: New.
+	* config/i386/t-netware, config/i386/t-nwld: New.
+	* gthr-nks.h: New.
+	* doc/install.texi: Document NKS threading model.
+
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
 	PR c/7054
 	* defaults.h (TARGET_DEFAULT_PACK_STRUCT): Provide default.
 	* tree.h (initial_max_fld_align): Declare

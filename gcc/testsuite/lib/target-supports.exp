@@ -73,6 +73,12 @@ proc check_visibility_available { } {
     global target_triplet
     global target_cpu
 
+    # On NetWare, support makes no sense.
+    
+    if { [string match "*-*-netware*" $target_triplet] } {
+        return 0
+    }
+
     # ELF supports it if the system has recent GNU ld and gas.
     # As a start we return 1 for all ELF systems; we'll let people
     # add exceptions as necessary.
@@ -157,7 +163,9 @@ proc check_gc_sections_available { } {
 
     if {![info exists gc_sections_available_saved]} {
 	# Check if the ld used by gcc supports --gc-sections.
-	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set gcc_spec [${tool}_target_compile "-dumpspecs" "" "none" ""]
+	regsub ".*\n\*linker:\[ \t\]*\n(\[^ \t\n\]*).*" "$gcc_spec" {\1} linker
+	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=$linker" "" "none" ""] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]
 	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 	    set gc_sections_available_saved 1

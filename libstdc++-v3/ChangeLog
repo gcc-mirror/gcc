@@ -1,3 +1,8 @@
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
+	* crossconfig.m4: Add NetWare as a target.
+	* configure: Regenerate.
+
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/typeinfo: Honor __GXX_MERGED_TYPEINFO_NAMES if already

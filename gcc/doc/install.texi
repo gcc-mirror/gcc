@@ -937,6 +937,8 @@ Sun Solaris 2 thread support.
 VxWorks thread support.
 @item win32
 Microsoft Win32 API thread support.
+@item nks
+Novell Kernel Services thread support.
 @end table
 
 @item --with-cpu=@var{cpu}
