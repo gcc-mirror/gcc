@@ -8080,6 +8080,18 @@ The default definition of this macro is 64 plus 8 times the number of
 arguments that the function accepts.  Some people think a larger
 threshold should be used on RISC machines.
 
+@findex STDC_0_IN_SYSTEM_HEADERS
+@item STDC_0_IN_SYSTEM_HEADERS
+In normal operation, the preprocessor expands @code{__STDC__} to the
+constant 1, to signify that GCC conforms to ISO Standard C@.  On some
+hosts, like Solaris, the system compiler uses a different convention,
+where @code{__STDC__} is normally 0, but is 1 if the user specifies
+strict conformance to the C Standard.
+
+Defining @code{STDC_0_IN_SYSTEM_HEADERS} makes GNU CPP follows the host
+convention when processing system header files, but when processing user
+files @code{__STDC__} will always expand to 1.
+
 @findex SCCS_DIRECTIVE
 @item SCCS_DIRECTIVE
 Define this if the preprocessor should ignore @code{#sccs} directives
