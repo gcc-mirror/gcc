@@ -8567,6 +8567,16 @@ rtl_for_decl_location (decl)
 #endif
     }
 
+  /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time
+     constant, and will have been substituted directly into all 
+     expressions that use it.  C does not have such a concept, but
+     C++ and other languages do.  */
+  else if (DECL_INITIAL (decl))
+    {
+      rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
+			 EXPAND_INITIALIZER);
+    }
+
   return rtl;
 }
 
