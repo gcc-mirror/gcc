@@ -4965,7 +4965,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     {
       rtx dest = gen_reg_rtx (DImode);
       emit_insn (gen_extendsidi2 (dest, operands[0]));
-      emit_insn (gen_adddi3 (dest, gen_rtx_REG (DImode, 29), dest));	
+      emit_insn (gen_adddi3 (dest, pic_offset_table_rtx, dest));	
       operands[0] = dest;
     }
 })
