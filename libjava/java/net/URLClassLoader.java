@@ -238,7 +238,7 @@ public class URLClassLoader extends SecureClassLoader
     CodeSource getCodeSource()
     {
       Certificate[] certs = getCertificates();
-      if (certs != null)
+      if (certs == null)
 	return loader.noCertCodeSource;
       else
 	return new CodeSource(loader.baseURL, certs);
@@ -271,34 +271,18 @@ public class URLClassLoader extends SecureClassLoader
     abstract InputStream getInputStream() throws IOException;
   }
 
-  static URL getCanonicalFileURL(URL url)
-  {
-    if ("file".equals(url.getProtocol()))
-      {
-	try
-	  {
-	    File f = new File(url.getFile()).getCanonicalFile();
-	    url = new URL("file", "", f.toString());
-	  }
-	catch (IOException ignore)
-	  {
-	  }
-      }
-    return url;
-  }
-
   /**
    * A <code>JarURLLoader</code> is a type of <code>URLLoader</code>
    * only loading from jar url.
    */
   final static class JarURLLoader extends URLLoader
   {
-    final JarFile jarfile; // The canonical jar file for this url
+    final JarFile jarfile; // The jar file for this url
     final URL baseJarURL;  // Base jar: url for all resources loaded from jar
 
     public JarURLLoader(URLClassLoader classloader, URL baseURL)
     {
-      super(classloader, getCanonicalFileURL(baseURL));
+      super(classloader, baseURL);
 
       // cache url prefix for all resources in this jar url
       String external = baseURL.toExternalForm();
@@ -481,11 +465,11 @@ public class URLClassLoader extends SecureClassLoader
    */
   final static class FileURLLoader extends URLLoader
   {
-    File dir;   //the canonical file for this file url
+    File dir;   //the file for this file url
 
     FileURLLoader(URLClassLoader classloader, URL url)
     {
-      super(classloader, getCanonicalFileURL(url));
+      super(classloader, url);
       dir = new File(baseURL.getFile());
     }
 
@@ -493,13 +477,6 @@ public class URLClassLoader extends SecureClassLoader
     Resource getResource(String name)
     {
       File file = new File(dir, name);
-      try
-	{
-	  file = file.getCanonicalFile();
-	}
-      catch (IOException ignore)
-	{
-	}
       if (file.exists() && !file.isDirectory())
 	return new FileResource(this, name, file);
       return null;
