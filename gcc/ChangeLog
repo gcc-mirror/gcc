@@ -1,3 +1,8 @@
+Fri Jul  2 01:36:36 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* fixinc.svr4: Fix <arpa/inet.h> by deleting protos for htons and
+	ntohs.
+
 Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
 			  Jeff Law <law@cygnus.com>
 
