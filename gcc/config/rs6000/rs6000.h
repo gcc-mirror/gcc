@@ -1131,6 +1131,26 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 		  force_reg (SImode, (CXT)));			\
 }
 
+/* Definitions for __builtin_return_address and __builtin_frame_address.  */
+/* __builtin_return_address (0) should give $lr, enable this. */
+/* This should be uncommented, so that the link register is used, but
+   currently this would result in unmatched insns and spilling fixed
+   registers so we'll leave it for another day.  When these problems are taken
+   care of one additional fetch will be necessary in RETURN_ADDR_RTX.  (mrs) */
+/* #define RETURN_ADDR_IN_PREVIOUS_FRAME */
+
+/* The current return address is in $lr (65).  The return address of anything
+   farther back is accessed normally at [[%fp]+8].  */
+#define RETURN_ADDR_RTX(count, frame)	\
+  ((count == -1)			\
+   ? gen_rtx (REG, Pmode, 65)		\
+   : copy_to_reg (gen_rtx (MEM, Pmode,	\
+			   memory_address (Pmode, \
+					   plus_constant (copy_to_reg (gen_rtx (MEM, Pmode, \
+										memory_address (Pmode, frame))), \
+							  8)))))
+
+
 /* Definitions for register eliminations.
 
    We have two registers that can be eliminated on the RS/6000.  First, the
