@@ -1,3 +1,7 @@
+2000-05-30  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/tests/*:  Added expected result files for fixinc's make check
+
 2000-05-30  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.md (*setne_internal): Use match_operator
