@@ -57,7 +57,7 @@ int main()
       }
       stop_counters(time, resource);
 
-      sprintf(comment,"Iterations: %8u  Size: %8u",iterations,n);
+      sprintf(comment,"Iters: %8u  Size: %4u", iterations, n);
       report_performance(__FILE__, comment, time, resource);
   }
   return 0;

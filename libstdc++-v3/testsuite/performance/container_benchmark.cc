@@ -144,7 +144,7 @@ void run_tests(int size, const test* tests, const char** names,
 
   // test the containers:
   ostringstream oss;
-  oss << "size = " << size;
+  oss << "size = " << size << " :";
   report_header(__FILE__, oss.str());
   for (int i = 0; i < ntests; ++i)
     {
@@ -163,8 +163,8 @@ int main()
 			 &vector_iterator_test, &deque_test,
 			 &list_test, &set_test, &multiset_test };
   const int ntests = sizeof(tests) / sizeof(test);
-  const char* names[ntests] = { "array", "vector (ptr)",
-				"vector (iter)", "deque",
+  const char* names[ntests] = { "array", "vector (pointer)",
+				"vector (iterator)", "deque",
 				"list", "set", "multiset" };
 
   const int sizes[] = {100, 1000, 10000, 100000};
