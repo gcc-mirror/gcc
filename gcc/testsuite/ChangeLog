@@ -1,3 +1,8 @@
+2003-03-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/20010327-1.c: Back out last change.  Add
+	comment explaining purpose of testcase.
+
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* gcc.c-torture/execute/960312-1.x: New file, must pass -mshort
