@@ -3854,6 +3854,10 @@ build_c_cast (type, expr)
   else if (TREE_CODE (type) == UNION_TYPE)
     {
       tree field;
+      if (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+	  || TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE)
+	value = default_conversion (value);
+
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (field)),
 		       TYPE_MAIN_VARIANT (TREE_TYPE (value))))
