@@ -2559,9 +2559,10 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
      If CODE is an unsigned comparison, then we can never do this optimization,
      because it gives an incorrect result if the subtraction wraps around zero.
      ANSI C defines unsigned operations such that they never overflow, and
-     thus such cases can not be ignored.  */
+     thus such cases can not be ignored; but we cannot do it even for
+     signed comparisons for languages such as Java, so test flag_wrapv.  */
 
-  if (INTEGRAL_MODE_P (mode) && trueop1 != const0_rtx
+  if (!flag_wrapv && INTEGRAL_MODE_P (mode) && trueop1 != const0_rtx
       && ! ((GET_CODE (op0) == REG || GET_CODE (trueop0) == CONST_INT)
 	    && (GET_CODE (op1) == REG || GET_CODE (trueop1) == CONST_INT))
       && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
