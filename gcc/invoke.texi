@@ -107,7 +107,7 @@ in the following sections.
 -fno-for-scope  -fhandle-signatures  -fmemoize-lookups  
 -fname-mangling-version-@var{n}  -fno-default-inline  
 -fno-gnu-keywords -fnonnull-objects -fguiding-decls
--foperator-names  -fstrict-prototype  -fthis-is-variable
+-foperator-names  -fno-optional-diags -fstrict-prototype  -fthis-is-variable
 -ftemplate-depth-@var{n}  -nostdinc++  -traditional  +e@var{n}
 @end smallexample
 
@@ -1112,6 +1112,11 @@ Recognize the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
 synonyms for the symbols they refer to.  @samp{-ansi} implies
 @samp{-foperator-names}.
+
+@item -fno-optional-diags
+Disable diagnostics that the standard says a compiler does not need to
+issue.  Currently, this means the diagnostic for a name having multiple 
+meanings within a class.
 
 @item -frepo
 Enable automatic template instantiation.  This option also implies
