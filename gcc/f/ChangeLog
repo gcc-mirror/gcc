@@ -1,3 +1,7 @@
+2000-08-07  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77spec.c (lang_specific_driver): Clearer g77 version message.
+
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in (f771): Depend on $(BACKEND), not stamp-objlist.
