@@ -16,6 +16,9 @@ details.  */
 
 #include <gcj/libgcj-config.h>
 
+// We include <stdio.h> for compatibility with Sun's <jni.h>.
+#include <stdio.h>
+
 #include <stdarg.h>
 #define _Jv_va_list va_list
 
