@@ -38,6 +38,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define AS3(a,b,c,d) "a b,c,d"
 #endif  
 
+/* Define macro used to output shift-double opcodes when the shift
+   count is in %cl.  Some assemblers require %cl as an argument;
+   some don't.  This macro controls what to do: by default, don't
+   print %cl.  */
+#define AS3_SHIFT_DOUBLE(a,b,c,d) AS2 (a,c,d)
+
 /* Output the size-letter for an opcode.
    CODE is the letter used in an operand spec (L, B, W, S or Q).
    CH is the corresponding lower case letter
