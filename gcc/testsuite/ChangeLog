@@ -1,3 +1,8 @@
+2004-12-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR 18981
+	* g++.dg/template/typename9.C: New test.
+
 2004-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18738
