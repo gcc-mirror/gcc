@@ -1,5 +1,11 @@
 2002-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/Makefile.am (std_headers_rename): New variable.
+	(install-data-local): Use it.
+	* include/Makefile.in: Regenerate.
+	
+2002-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/locale_facets.tcc (money_put::do_put(string):
 	Correct output iterator value.
 	* testsuite/22_locale/money_put_members_char.cc (test03): Add.
