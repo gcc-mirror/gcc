@@ -298,7 +298,7 @@ int flag_force_addr = 0;
 /* Nonzero for -fdefer-pop: don't pop args after each function call;
    instead save them up to pop many calls' args with one insns.  */
 
-int flag_defer_pop = 1;
+int flag_defer_pop = 0;
 
 /* Nonzero for -ffloat-store: don't allocate floats and doubles
    in extended-precision registers.  */
@@ -2877,6 +2877,7 @@ main (argc, argv, envp)
 
   if (optimize >= 1)
     {
+      flag_defer_pop = 1;
       flag_thread_jumps = 1;
 #ifdef DELAY_SLOTS
       flag_delayed_branch = 1;
