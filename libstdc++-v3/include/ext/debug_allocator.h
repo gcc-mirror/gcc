@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@
 #ifndef _DEBUG_ALLOCATOR_H
 #define _DEBUG_ALLOCATOR_H 1
 
-#include <memory>
+#include <cstdlib>
 
 namespace __gnu_cxx
 {
@@ -74,28 +74,42 @@ namespace __gnu_cxx
       typedef typename _Alloc::value_type       value_type;
 
     private:
-      // Size of space used to store size.  Note that this must be
-      // large enough to preserve alignment.
-      const size_t 		_M_extra;
+      // _M_extra is the number of objects that correspond to the
+      // extra space where debug information is stored.
+      size_type 		_M_extra;
       
       _Alloc			_M_allocator;
 
     public:
-      debug_allocator() : _M_extra(8) { }
+      debug_allocator()
+      {
+	const size_t __obj_size = sizeof(value_type);
+	_M_extra = (sizeof(size_type) + __obj_size - 1) / __obj_size; 
+      }
+      
+      pointer
+      allocate(size_type __n)
+      {
+        pointer __res = _M_allocator.allocate(__n + _M_extra);      
+	size_type* __ps = reinterpret_cast<size_type*>(__res);
+	*__ps = __n;
+        return __res + _M_extra;
+      }
 
       pointer
-      allocate(size_type __n, std::allocator<void>::const_pointer = 0)
+      allocate(size_type __n, const void* __hint)
       {
-        pointer __result = _M_allocator.allocate(__n + _M_extra);
-        *__result = __n;
-        return __result + _M_extra;
+        pointer __res = _M_allocator.allocate(__n + _M_extra, __hint);
+	size_type* __ps = reinterpret_cast<size_type*>(__res);
+	*__ps = __n;
+        return __res + _M_extra;
       }
 
       void
       deallocate(pointer __p, size_type __n)
       {
         pointer __real_p = __p - _M_extra;
-        if (*__real_p != __n)
+        if (*reinterpret_cast<size_type*>(__real_p) != __n)
           abort();
         _M_allocator.deallocate(__real_p, __n + _M_extra);
       }
