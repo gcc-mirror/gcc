@@ -1,3 +1,13 @@
+2003-02-27  Devang Patel  <dpatel@apple.com>
+
+        * decl.c (finish_enum): Merge two 'for' loops. Copy value node if required.
+	Postpone enum setting for template decls.
+	(build_enumerator): Delay copying value node until finish_enum (). Remove
+	#if 0'ed code.
+	* pt.c (tsubst_enum): Set TREE_TYPE and copy value node.
+	(tsubst_copy): Add check for enum type.
+
+	
 2003-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9829

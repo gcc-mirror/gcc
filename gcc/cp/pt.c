@@ -7165,6 +7165,10 @@ tsubst_copy (t, args, complain, in_decl)
 	  = tsubst_aggr_type (TREE_TYPE (t), args, complain, in_decl, 
 			      /*entering_scope=*/0);
 
+	/* Not yet available.  */
+	if (!enum_type || enum_type == (TREE_TYPE (t)))
+	  return t;
+
 	for (v = TYPE_VALUES (enum_type); 
 	     v != NULL_TREE; 
 	     v = TREE_CHAIN (v))
@@ -10506,7 +10510,12 @@ tsubst_enum (tag, newtag, args)
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
       tree value;
-      
+
+      /* Copy node and set type */
+      if (DECL_INITIAL (TREE_VALUE (e)))
+	DECL_INITIAL (TREE_VALUE (e)) = copy_node (DECL_INITIAL (TREE_VALUE (e)));
+      TREE_TYPE (TREE_VALUE (e)) = tag;
+	  
       /* Note that in a template enum, the TREE_VALUE is the
 	 CONST_DECL, not the corresponding INTEGER_CST.  */
       value = tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
