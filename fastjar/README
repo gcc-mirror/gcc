@@ -1,3 +1,6 @@
+This directory contains the FastJar package, which is not part of GCC but
+shipped with GCC as convenience.
+
 =======
 FastJar 0.90
 
