@@ -1,3 +1,7 @@
+2001-01-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/overload14.C: New test.
+
 2001-01-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010122-1.c: New test, exercise

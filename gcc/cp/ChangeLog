@@ -1,3 +1,15 @@
+2001-01-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_conv): Typo in comment.
+	(add_builtin_candidate): Add more explanation.
+	Remove extra test for ENUMERAL_TYPE in {PRE,POST}INCREMENT_EXPR.
+	Allow ENUMERAL_TYPEs for relops and eqops. Add both candidates
+	when we have enumeral types.
+	(add_builtin_candidates): Add more explanation. Add ENUMERAL_TYPE
+	candidates for relops and eqops.
+	(joust): Simplify control flow. Allow a non-template user
+	function to hide a builtin.
+
 2001-01-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (unification_kind_t): Add DEDUCE_ORDER.
