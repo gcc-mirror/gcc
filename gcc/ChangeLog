@@ -1,3 +1,17 @@
+2003-07-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* combine.c (distribute_notes): Cancel REG_VALUE_PROFILE notes.
+	* gcov-io.h (GCOV_FIRST_VALUE_COUNTER, GCOV_LAST_VALUE_COUNTER,
+	GCOV_N_VALUE_COUNTERS): New.
+	* profile.c (compute_value_histograms): New static function.
+	(branch_prob): Read back the value histograms.
+	* rtl.c (reg_note_name): Add name for REG_VALUE_PROFILE note.
+	* rtl.h (enum reg_note): Add REG_VALUE_PROFILE note.
+	* value-prof.c: Add comment on reading the profile.
+	* value-prof.h (COUNTER_FOR_HIST_TYPE, HIST_TYPE_FOR_COUNTER): New.
+	* doc/invoke.texi (-fprofile-values): Document behavior with
+	-fbranch-probabilities.
+
 2003-07-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* longlong.h (PowerPC umul_ppmm): Do not test __vxworks__.

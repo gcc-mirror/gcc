@@ -4355,6 +4355,10 @@ exactly determine which path is taken more often.
 If combined with @option{-fprofile-arcs}, it adds code so that some
 data about values of expressions in the program is gathered.
 
+With @option{-fbranch-probabilities}, it reads back the data gathered
+from profiling values of expressions and adds @samp{REG_VALUE_PROFILE}
+notes to instructions for their later usage in optimizations.
+
 @item -fnew-ra
 @opindex fnew-ra
 Use a graph coloring register allocator.  Currently this option is meant

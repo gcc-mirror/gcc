@@ -30,6 +30,10 @@ enum hist_type
 			   difference between two evaluations of a value.  */
 };
 
+#define COUNTER_FOR_HIST_TYPE(TYPE) ((int) (TYPE) + GCOV_FIRST_VALUE_COUNTER)
+#define HIST_TYPE_FOR_COUNTER(COUNTER) \
+  ((enum hist_type) ((COUNTER) - GCOV_FIRST_VALUE_COUNTER))
+
 /* The value to measure.  */
 struct histogram_value
 {
