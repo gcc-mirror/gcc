@@ -190,6 +190,9 @@ int mips_isa;
 char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3} */
 
+/* Generating calls to position independent functions?  */
+enum attr_abicalls mips_abicalls;
+
 /* Array to RTX class classification.  At present, we care about
    whether the operator is an add-type operator, or a divide/modulus,
    and if divide/modulus, whether it is unsigned.  This is for the
@@ -2900,6 +2903,11 @@ override_options ()
   if (TARGET_HALF_PIC)
     HALF_PIC_INIT ();
 
+  if (TARGET_ABICALLS)
+    mips_abicalls = ABICALLS_YES;
+  else
+    mips_abicalls = ABICALLS_NO;
+
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, a0 instead of $4).
      We do this by switching the names in mips_reg_names, which the
@@ -2970,6 +2978,7 @@ override_options ()
   mips_print_operand_punct['>'] = TRUE;
   mips_print_operand_punct['{'] = TRUE;
   mips_print_operand_punct['}'] = TRUE;
+  mips_print_operand_punct['^'] = TRUE;
 
   mips_char_to_class['d'] = GR_REGS;
   mips_char_to_class['f'] = ((TARGET_HARD_FLOAT) ? FP_REGS : NO_REGS);
@@ -3120,7 +3129,8 @@ mips_debugger_offset (addr, offset)
    '#'	Print nop if in a .set noreorder section.
    '?'	Print 'l' if we are to use a branch likely instead of normal branch.
    '@'	Print the name of the assembler temporary register (at or $1).
-   '.'	Print the name of the register with a hard-wired zero (zero or $0).  */
+   '.'	Print the name of the register with a hard-wired zero (zero or $0).
+   '^'	Print the name of the pic call-through register (t9 or $25).  */
 
 void
 print_operand (file, op, letter)
@@ -3145,6 +3155,10 @@ print_operand (file, op, letter)
 
 	case '@':
 	  fputs (reg_names [GP_REG_FIRST + 1], file);
+	  break;
+
+	case '^':
+	  fputs (reg_names [PIC_FUNCTION_ADDR_REGNUM], file);
 	  break;
 
 	case '.':
@@ -3663,11 +3677,12 @@ mips_asm_file_start (stream)
   if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
     fprintf (stream, "\t.set\tnobopt\n");
 
-  /* Generate the pseudo ops that the Pyramid based System V.4 wants.  */
+  /* Generate the pseudo ops that System V.4 wants.  */
 #ifndef ABICALLS_ASM_OP
 #define ABICALLS_ASM_OP ".abicalls"
 #endif
   if (TARGET_ABICALLS)
+    /* ??? but do not want this (or want pic0) if -non-shared? */
     fprintf (stream, "\t%s\n", ABICALLS_ASM_OP);
 
   if (TARGET_GP_OPT)
@@ -3888,12 +3903,8 @@ epilogue_reg_mentioned_p (insn)
  	|  4 words to save     	|	|  4 words to save	|
 	|  arguments passed	|	|  arguments passed	|
 	|  in registers, even	|	|  in registers, even	|
-    SP->|  if not passed.       |   FP->|  if not passed.	|
+    SP->|  if not passed.       |  VFP->|  if not passed.	|
 	+-----------------------+       +-----------------------+
-					|			|
-					|  GP save for V.4 abi	|
-					|			|
-					+-----------------------+
 					|		        |
                                         |  fp register save     |
 					|			|
@@ -3909,6 +3920,10 @@ epilogue_reg_mentioned_p (insn)
 					|			|
                                         |  alloca allocations   |
         				|			|
+					+-----------------------+
+					|			|
+					|  GP save for V.4 abi	|
+					|			|
 					+-----------------------+
 					|			|
                                         |  arguments on stack   |
@@ -3993,6 +4008,15 @@ compute_frame_size (size)
 
   if (total_size == extra_size)
     total_size = extra_size = 0;
+  else if (TARGET_ABICALLS)
+    {
+      /* Add the context-pointer to the saved registers.  */
+      gp_reg_size += UNITS_PER_WORD;
+      mask |= 1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST);
+      total_size -= gp_reg_rounded;
+      gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
+      total_size += gp_reg_rounded;
+    }
 
   /* Save other computed information.  */
   current_frame_info.total_size  = total_size;
@@ -4009,7 +4033,8 @@ compute_frame_size (size)
 
   if (mask)
     {
-      unsigned long offset = args_size + var_size + gp_reg_size - UNITS_PER_WORD;
+      unsigned long offset = args_size + extra_size + var_size
+			     + gp_reg_size - UNITS_PER_WORD;
       current_frame_info.gp_sp_offset = offset;
       current_frame_info.gp_save_offset = offset - total_size;
     }
@@ -4022,7 +4047,8 @@ compute_frame_size (size)
 
   if (fmask)
     {
-      unsigned long offset = args_size + var_size + gp_reg_rounded + fp_reg_size - 2*UNITS_PER_WORD;
+      unsigned long offset = args_size + extra_size + var_size
+			     + gp_reg_rounded + fp_reg_size - 2*UNITS_PER_WORD;
       current_frame_info.fp_sp_offset = offset;
       current_frame_info.fp_save_offset = offset - total_size + UNITS_PER_WORD;
     }
@@ -4141,16 +4167,21 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 		  if (store_p)
 		    emit_move_insn (mem_rtx, reg_rtx);
-		  else
+		  else if (!TARGET_ABICALLS
+			   || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		    emit_move_insn (reg_rtx, mem_rtx);
 		}
 	      else
-		fprintf (file, "\t%s\t%s,%ld(%s)\n",
-			 (store_p) ? "sw" : "lw",
-			 reg_names[regno],
-			 gp_offset - base_offset,
-			 reg_names[REGNO(base_reg_rtx)]);
+		{
+		  if (store_p || !TARGET_ABICALLS
+		      || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
+		    fprintf (file, "\t%s\t%s,%ld(%s)\n",
+			     (store_p) ? "sw" : "lw",
+			     reg_names[regno],
+			     gp_offset - base_offset,
+			     reg_names[REGNO(base_reg_rtx)]);
 
+		}
 	      gp_offset -= UNITS_PER_WORD;
 	    }
 	}
@@ -4274,16 +4305,7 @@ function_prologue (file, size)
   assemble_name (file, current_function_name);
   fputs (":\n", file);
 
-  if (TARGET_ABICALLS)
-    fprintf (file,
-	     "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
-	     reg_names[ GP_REG_FIRST + 25 ]);
-
-  tsize = current_frame_info.total_size;
-  if (tsize > 0 && TARGET_ABICALLS)
-    fprintf (file, "\t.cprestore %d\n", tsize + STARTING_FRAME_OFFSET);
-
-  fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args = %d, extra= %d\n",
+  fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
 	   reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
 	   tsize,
 	   reg_names[31 + GP_REG_FIRST],
@@ -4298,6 +4320,19 @@ function_prologue (file, size)
 	   current_frame_info.gp_save_offset,
 	   current_frame_info.fmask,
 	   current_frame_info.fp_save_offset);
+
+  if (TARGET_ABICALLS)
+    {
+      char *sp_str = reg_names[STACK_POINTER_REGNUM];
+
+      fprintf (file, "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
+	       reg_names[PIC_FUNCTION_ADDR_REGNUM]);
+      if (tsize > 0)
+	{
+	  fprintf (file, "\tsubu\t%s,%s,%d\n", sp_str, sp_str, tsize);
+	  fprintf (file, "\t.cprestore %d\n", current_frame_info.args_size);
+	}
+    }
 }
 
 
@@ -4405,6 +4440,8 @@ mips_expand_prologue ()
 	}
     }
 
+  tsize = compute_frame_size (get_frame_size ());
+
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($4 - $7) on the stack.  */
   if ((TYPE_ARG_TYPES (fntype) != 0
@@ -4413,30 +4450,40 @@ mips_expand_prologue ()
 	  && ((arg_name[0] == '_' && strcmp (arg_name, "__builtin_va_alist") == 0)
 	      || (arg_name[0] == 'v' && strcmp (arg_name, "va_alist") == 0))))
     {
+      int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
+      rtx ptr = stack_pointer_rtx;
+
+      /* If we are doing svr4-abi, sp has already been decremented by tsize. */
+      if (TARGET_ABICALLS)
+	offset += tsize;
+
       for (; regno <= GP_ARG_LAST; regno++)
 	{
-	  rtx ptr = stack_pointer_rtx;
-	  if (regno != GP_ARG_FIRST)
-	    ptr = gen_rtx (PLUS, Pmode, ptr,
-			   GEN_INT ((regno - GP_ARG_FIRST) * UNITS_PER_WORD));
-
-	  emit_move_insn (gen_rtx (MEM, Pmode, ptr), gen_rtx (REG, Pmode, regno));
+	  if (offset != 0)
+	    ptr = gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  emit_move_insn (gen_rtx (MEM, Pmode, ptr),
+			  gen_rtx (REG, Pmode, regno));
+	  offset += UNITS_PER_WORD;
 	}
     }
 
-  tsize = compute_frame_size (get_frame_size ());
   if (tsize > 0)
     {
       rtx tsize_rtx = GEN_INT (tsize);
 
-      if (tsize > 32767)
+      /* If we are doing svr4-abi, sp move is done by function_prologue.  */
+      if (!TARGET_ABICALLS)
 	{
-	  tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
-	  emit_move_insn (tmp_rtx, tsize_rtx);
-	  tsize_rtx = tmp_rtx;
-	}
+	  if (tsize > 32767)
+	    {
+	      tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
+	      emit_move_insn (tmp_rtx, tsize_rtx);
+	      tsize_rtx = tmp_rtx;
+	    }
 
-      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tsize_rtx));
+	  emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				 tsize_rtx));
+	}
 
       save_restore_insns (TRUE, tmp_rtx, tsize, (FILE *)0);
 
