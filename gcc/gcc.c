@@ -1110,6 +1110,7 @@ read_specs (filename)
      char *filename;
 {
   int desc;
+  int readlen;
   struct stat statbuf;
   char *buffer;
   register char *p;
@@ -1126,8 +1127,10 @@ read_specs (filename)
 
   /* Read contents of file into BUFFER.  */
   buffer = xmalloc ((unsigned) statbuf.st_size + 1);
-  read (desc, buffer, (unsigned) statbuf.st_size);
-  buffer[statbuf.st_size] = 0;
+  readlen = read (desc, buffer, (unsigned) statbuf.st_size);
+  if (readlen < 0)
+    pfatal_with_name (filename);
+  buffer[readlen] = 0;
   close (desc);
 
   /* Scan BUFFER for specs, putting them in the vector.  */
