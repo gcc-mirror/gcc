@@ -32,6 +32,6 @@ compilers="cc1obj\$(exeext)"
 
 stagestuff=""
 
-diff_excludes="objc-parse.c objc-parse.y "
+diff_excludes="-x objc-parse.c -x objc-parse.y "
 
 echo "Using \`$srcdir/objc/thr-${thread_file}.c' as Objective-C Runtime thread file."
