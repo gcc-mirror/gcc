@@ -5467,6 +5467,7 @@ pa_hpux_init_libfuncs (void)
   set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
   set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
   set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
+  set_optab_libfunc (unord_optab, TFmode, "_U_Qfunord");
 
   set_conv_libfunc (sext_optab,   TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
   set_conv_libfunc (sext_optab,   TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
