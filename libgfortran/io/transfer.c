@@ -827,11 +827,12 @@ transfer_complex (void *p, int kind)
 static void
 us_read (void)
 {
-  gfc_offset *p;
+  char *p;
   int n;
+  gfc_offset i;
 
   n = sizeof (gfc_offset);
-  p = (gfc_offset *) salloc_r (current_unit->s, &n);
+  p = salloc_r (current_unit->s, &n);
 
   if (p == NULL || n != sizeof (gfc_offset))
     {
@@ -839,7 +840,8 @@ us_read (void)
       return;
     }
 
-  current_unit->bytes_left = *p;
+  memcpy (&i, p, sizeof (gfc_offset));
+  current_unit->bytes_left = i;
 }
 
 
@@ -849,11 +851,11 @@ us_read (void)
 static void
 us_write (void)
 {
-  gfc_offset *p;
+  char *p;
   int length;
 
   length = sizeof (gfc_offset);
-  p = (gfc_offset *) salloc_w (current_unit->s, &length);
+  p = salloc_w (current_unit->s, &length);
 
   if (p == NULL)
     {
@@ -861,7 +863,7 @@ us_write (void)
       return;
     }
 
-  *p = 0;			/* Bogus value for now.  */
+  memset (p, '\0', sizeof (gfc_offset));	/* Bogus value for now.  */
   if (sfree (current_unit->s) == FAILURE)
     generate_error (ERROR_OS, NULL);
 
@@ -1285,7 +1287,7 @@ next_record_w (int done)
       if (p == NULL)
 	goto io_error;
 
-      *((gfc_offset *) p) = m;
+      memcpy (p, &m, sizeof (gfc_offset));
       if (sfree (current_unit->s) == FAILURE)
 	goto io_error;
 
@@ -1296,7 +1298,7 @@ next_record_w (int done)
       if (p == NULL)
 	generate_error (ERROR_OS, NULL);
 
-      *((gfc_offset *) p) = m;
+      memcpy (p, &m, sizeof (gfc_offset));
       if (sfree (current_unit->s) == FAILURE)
 	goto io_error;
 
