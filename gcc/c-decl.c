@@ -3957,7 +3957,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      error ("`long long long' is too long for GCC");
 		    else
 		      {
-			if (pedantic)
+			if (pedantic && ! in_system_header)
 			  pedwarn ("ANSI C does not support `long long'");
 			longlong = 1;
 		      }
