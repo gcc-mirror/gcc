@@ -1,3 +1,9 @@
+2003-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/11712
+	* pa-hpux.h, pa-hpux10.h, pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define
+	__STDC_EXT__ when using C++ dialect.
+
 2003-08-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (calc_live_regs): If the return address pointer is live,
