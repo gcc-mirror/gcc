@@ -1,3 +1,8 @@
+Fri Oct 23 13:55:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* m32r/m32r.c (gen_split_move_double): Call alter_subreg.  Delete
+	subreg support.
+
 Fri Oct 23 16:19:24 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.h (EXTRA_SPECS): Add missing initializers.
