@@ -1,3 +1,9 @@
+2003-11-27  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/util/GregorianCalendar.java (getLinearTime): Avoid counting
+	the leap day of the leap year twice.
+	(computeFields): First week of month is 1 not 0.
+
 2003-11-27  Mark Wielaard  <mark@klomp.org>
 
 	* javax/swing/plaf/basic/BasicDefaults.java (BasicDefaults): Put
