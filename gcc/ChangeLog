@@ -1,3 +1,11 @@
+2004-01-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/c-tree.texi, doc/compat.texi, doc/cpp.texi,
+	doc/cppopts.texi, doc/extend.texi, doc/install.texi,
+	doc/interface.texi, doc/invoke.texi, doc/libgcc.texi, doc/md.texi,
+	doc/objc.texi, doc/rtl.texi, doc/tm.texi, doc/trouble.texi: Use
+	@smallexample instead of @example.
+
 2004-01-17  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (build_objc_method_call): Use target

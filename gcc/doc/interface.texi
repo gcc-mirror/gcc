@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -76,10 +76,10 @@ just take the address of the variable.  If a variable's address is ever
 taken, even if just to compute it and ignore it, then the variable cannot
 go in a register:
 
-@example
+@smallexample
 @{
   int careful;
   &careful;
   @dots{}
 @}
-@end example
+@end smallexample
