@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
    the magical crtbegin.o file (see crtstuff.c) which provides part 
 	of the support for getting C++ file-scope static object constructed 
-	before entering `main'. */
+	before entering `main'.  */
    
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC \

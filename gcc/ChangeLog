@@ -1,5 +1,49 @@
 2001-10-31  Kazu Hirata  <kazu@hxi.com>
 
+	* config/i386/att.h: Fix comment formatting.
+	* config/i386/beos-elf.h: Likewise.
+	* config/i386/bsd.h: Likewise.
+	* config/i386/bsd386.h: Likewise.
+	* config/i386/crtdll.h: Likewise.
+	* config/i386/cygwin.asm: Likewise.
+	* config/i386/cygwin.h: Likewise.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/freebsd-aout.h: Likewise.
+	* config/i386/freebsd.h: Likewise.
+	* config/i386/gas.h: Likewise.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/i386-protos.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/i386elf.h: Likewise.
+	* config/i386/interix.c: Likewise.
+	* config/i386/isc.h: Likewise.
+	* config/i386/isccoff.h: Likewise.
+	* config/i386/iscdbx.h: Likewise.
+	* config/i386/linux.h: Likewise.
+	* config/i386/lynx.h: Likewise.
+	* config/i386/mingw32.h: Likewise.
+	* config/i386/netbsd-elf.h: Likewise.
+	* config/i386/next.h: Likewise.
+	* config/i386/osf1elf.h: Likewise.
+	* config/i386/osfrose.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/i386/seq-gas.h: Likewise.
+	* config/i386/seq-sysv3.h: Likewise.
+	* config/i386/sequent.h: Likewise.
+	* config/i386/sol2.h: Likewise.
+	* config/i386/sun386.h: Likewise.
+	* config/i386/uwin.asm: Likewise.
+	* config/i386/uwin.h: Likewise.
+	* config/i386/vxi386.h: Likewise.
+	* config/i386/win32.h: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/i386/xm-cygwin.h: Likewise.
+	* config/i386/xm-mingw32.h: Likewise.
+
+2001-10-31  Kazu Hirata  <kazu@hxi.com>
+
 	* builtins.def: Fix comment typos.
 	* config/alpha.c: Likewise.
 	* config/arm/arm.c: Likewise.

@@ -1,6 +1,6 @@
 /* OSF/1 1.3 now is compitable with SVR4, so include sysv4.h, and
    put difference here.
-   Copyright (C) 2000 Free Software Foundation, Inc. */
+   Copyright (C) 2000 Free Software Foundation, Inc.  */
 
 #include <stdio.h>
 
@@ -145,7 +145,7 @@
    The details of how the address should be passed to `mcount' are determined
    by your operating system environment, not by GNU CC.  To figure them out,
    compile a small program for profiling using the system's installed C
-   compiler and look at the assembler code that results. */
+   compiler and look at the assembler code that results.  */
 
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\

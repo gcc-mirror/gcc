@@ -176,7 +176,7 @@ Boston, MA 02111-1307, USA.  */
 /* Define this macro if the system header files support C++ as well
    as C.  This macro inhibits the usual method of using system header
    files in C++, which is to pretend that the file's contents are
-   enclosed in `extern "C" {...}'. */
+   enclosed in `extern "C" {...}'.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* Turn off long double being 96 bits.  */
@@ -201,7 +201,7 @@ Boston, MA 02111-1307, USA.  */
    The details of how the address should be passed to `mcount' are determined
    by your operating system environment, not by GNU CC.  To figure them out,
    compile a small program for profiling using the system's installed C
-   compiler and look at the assembler code that results. */
+   compiler and look at the assembler code that results.  */
 
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
@@ -305,7 +305,7 @@ while (0)
   fprintf (FILE, "%s%s%d:\n", (TARGET_UNDERSCORES) ? "" : ".",		\
 	   PREFIX, NUM)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 /* target_flags is not accessible by the preprocessor */
 #undef USER_LABEL_PREFIX
@@ -319,7 +319,7 @@ while (0)
 
 /* This is how to output an element of a case-vector that is relative.
    This is only used for PIC code.  See comments by the `casesi' insn in
-   i386.md for an explanation of the expression this outputs. */
+   i386.md for an explanation of the expression this outputs.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
@@ -446,7 +446,7 @@ while (0)
 
    You can also check the information stored in the `symbol_ref' in
    the definition of `GO_IF_LEGITIMATE_ADDRESS' or
-   `PRINT_OPERAND_ADDRESS'. */
+   `PRINT_OPERAND_ADDRESS'.  */
 
 #undef	ENCODE_SECTION_INFO
 #define ENCODE_SECTION_INFO(DECL)					\
@@ -624,7 +624,7 @@ do {									 \
        }								 \
    } while (0)
 
-/* This is how to declare a function name. */
+/* This is how to declare a function name.  */
 
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)			\
@@ -704,7 +704,7 @@ while (0)
    to do the search */
 #define LINK_LIBGCC_SPECIAL
 
-/* Generate calls to memcpy, etc., not bcopy, etc. */
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and

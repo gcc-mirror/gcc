@@ -611,7 +611,7 @@ struct export_list
 {
   struct export_list *next;
   const char *name;
-  int is_data;		/* used to type tag exported symbols. */
+  int is_data;		/* used to type tag exported symbols.  */
 };
 
 static struct export_list *export_head;

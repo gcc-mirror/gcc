@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Mostly it's like AT&T Unix System V with dbx-in-coff. */
+/* Mostly it's like AT&T Unix System V with dbx-in-coff.  */
 
 #include "i386/svr3dbx.h"
 
@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #include "i386/isc.h"
 
-/* Overridden defines for ifile usage. */
+/* Overridden defines for ifile usage.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \

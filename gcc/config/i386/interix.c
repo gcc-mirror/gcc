@@ -68,7 +68,7 @@ gen_stdcall_suffix (decl)
 #if 0	
 /* Turn this back on when the linker is updated to handle grouped
    .data$ sections correctly. See corresponding note in i386/interix.h. 
-   MK. */
+   MK.  */
 
 /* Cover function for UNIQUE_SECTION.  */
 

@@ -4,7 +4,7 @@
    (But set TARGET_DEFAULT to (MASK_80307 | MASK_FLOAT_RETURNS)
    if you do that, if you don't have a real 80387.)  */
 
-/* Mostly it's like AT&T Unix System V. */
+/* Mostly it's like AT&T Unix System V.  */
 
 #include "i386/sysv3.h"
 

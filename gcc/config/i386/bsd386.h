@@ -1,7 +1,7 @@
 /* Configuration for an i386 running BSDI's BSD/OS (formerly known as BSD/386)
    as the target machine.  */
 
-/* We exist mostly to add -Dbsdi and such to the predefines. */
+/* We exist mostly to add -Dbsdi and such to the predefines.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Dbsdi -D____386BSD____ -D__386BSD__\
