@@ -1,5 +1,15 @@
 2004-05-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Backport from gcc-3_4-branch
+	2004-03-30  Mark Mitchell  <mark@codesourcery.com>
+	            Jakub Jelinek  <jakub@redhat.com>
+	PR c++/14763
+	* pt.c (tsubst_default_argument): Clear current_function_decl.
+	* decl2.c (mark_used): Don't segfault if cfun != NULL but
+	current_function_decl == NULL.
+
+2004-05-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Backport from gcc-3_4-branch:
 	2004-03-30  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/14724
