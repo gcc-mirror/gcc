@@ -1716,6 +1716,8 @@ cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
 	  cppalloc.o cpperror.o cppexp.o version.o $(LIBS)
 
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h
+
 cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
