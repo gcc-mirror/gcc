@@ -1,3 +1,12 @@
+2000-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (vtype_decl_p): Use TYPE_POLYMORPHIC_P.
+	
+	* rtti.c (get_tinfo_decl): Set comdat linkage on new-abi
+	tinfo object.
+	(emit_tinfo_decl): Only emit polymorphic tinfo's when emitting
+	vtable.
+
 2000-03-20 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* call.c (check_dtor_name,build_new_method_call): Likewise.
