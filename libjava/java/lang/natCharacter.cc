@@ -152,12 +152,27 @@ java::lang::Character::isLowerCase (jchar ch)
   if (table_search (lower_case_table, asize (lower_case_table), ch) != -1)
     return true;
 
-  // FIXME: use a binary search.
-  for (unsigned int i = 0; i < asize (lower_anomalous_table); ++i)
+  int low, high, i, old;
+
+  low = 0;
+  high = asize (lower_anomalous_table);
+  i = high / 2;
+
+  while (true)
     {
-      if (lower_anomalous_table[i] == ch)
+      if (ch < lower_anomalous_table[i])
+	high = i;
+      else if (ch > lower_anomalous_table[i])
+	low = i;
+      else
 	return true;
+
+      old = i;
+      i = (high + low) / 2;
+      if (i == old)
+	break;
     }
+
   return false;
 }
 

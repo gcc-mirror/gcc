@@ -1,5 +1,7 @@
 1999-05-07  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natCharacter.cc (isLowerCase): Use a binary search.
+
 	* libtool-version: New file.
 	* Makefile.in: Rebuilt.
 	* Makefile.am (libgcj_la_LDFLAGS): Use -version-info, not
