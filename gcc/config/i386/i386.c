@@ -3136,10 +3136,10 @@ ix86_va_start (tree valist, rtx nextarg)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
   words = current_function_args_info.words;
@@ -3202,10 +3202,10 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_fold_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   size = int_size_in_bytes (type);
   if (size == -1)

@@ -473,20 +473,11 @@ set_is_used (tree t)
       if (SSA_VAR_P (t))
 	break;
 
-      switch (TREE_CODE (t))
-	{
-	case ARRAY_REF:
-	case COMPONENT_REF:
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	case BIT_FIELD_REF:
-	case INDIRECT_REF:
+      if (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR)
+	t = TREE_OPERAND (t, 0);
+      else
+	while (handled_component_p (t))
 	  t = TREE_OPERAND (t, 0);
-	  break;
-
-	default:
-	  return;
-	}
     }
 
   if (TREE_CODE (t) == SSA_NAME)

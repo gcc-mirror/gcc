@@ -1233,7 +1233,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	  type = cp_build_qualified_type (type, quals);
 	}
       
-      return build_min (COMPONENT_REF, type, object, decl);
+      return build_min (COMPONENT_REF, type, object, decl, NULL_TREE);
     }
   else
     {

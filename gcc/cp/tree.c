@@ -1026,11 +1026,13 @@ bind_template_template_parm (tree t, tree newargs)
 /* Called from count_trees via walk_tree.  */
 
 static tree
-count_trees_r (tree* tp ATTRIBUTE_UNUSED , 
-               int* walk_subtrees ATTRIBUTE_UNUSED , 
-               void* data)
+count_trees_r (tree *tp, int *walk_subtrees, void *data)
 {
-  ++ *((int*) data);
+  ++*((int *) data);
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
   return NULL_TREE;
 }
 
@@ -1107,9 +1109,8 @@ find_tree (tree t, tree x)
 /* Passed to walk_tree.  Checks for the use of types with no linkage.  */
 
 static tree
-no_linkage_helper (tree* tp, 
-                   int* walk_subtrees ATTRIBUTE_UNUSED , 
-                   void* data ATTRIBUTE_UNUSED )
+no_linkage_helper (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+		   void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
 
@@ -1118,6 +1119,7 @@ no_linkage_helper (tree* tp,
       && (decl_function_context (TYPE_MAIN_DECL (t))
 	  || TYPE_ANONYMOUS_P (t)))
     return t;
+
   return NULL_TREE;
 }
 

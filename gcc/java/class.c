@@ -1023,7 +1023,7 @@ build_class_ref (tree type)
 
 	      prim_class = lookup_class (get_identifier (prim_class_name));
 	      return build (COMPONENT_REF, NULL_TREE,
-			    prim_class, TYPE_identifier_node);
+			    prim_class, TYPE_identifier_node, NULL_TREE);
 	    }
 	  decl_name = TYPE_NAME (type);
 	  if (TREE_CODE (decl_name) == TYPE_DECL)
@@ -1088,7 +1088,8 @@ build_static_field_ref (tree fdecl)
 		       (fdecl, &TYPE_ATABLE_METHODS (output_class)), 0);
       tree field_address
 	= build (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
-		 TYPE_ATABLE_DECL (output_class), table_index);
+		 TYPE_ATABLE_DECL (output_class), table_index,
+		 NULL_TREE, NULL_TREE);
       return fold (build1 (INDIRECT_REF, TREE_TYPE (fdecl), 
 			   field_address));
     }
@@ -1101,7 +1102,8 @@ build_static_field_ref (tree fdecl)
       int field_index = 0;
       ref = build1 (INDIRECT_REF, class_type_node, ref);
       ref = build (COMPONENT_REF, field_ptr_type_node, ref,
-		   lookup_field (&class_type_node, fields_ident));
+		   lookup_field (&class_type_node, fields_ident),
+		   NULL_TREE);
 
       for (fld = TYPE_FIELDS (fclass); ; fld = TREE_CHAIN (fld))
 	{
@@ -1118,9 +1120,11 @@ build_static_field_ref (tree fdecl)
 			 ref, build_int_2 (field_index, 0)));
       ref = build1 (INDIRECT_REF, field_type_node, ref);
       ref = build (COMPONENT_REF, field_info_union_node,
-		   ref, lookup_field (&field_type_node, info_ident));
+		   ref, lookup_field (&field_type_node, info_ident),
+		   NULL_TREE);
       ref = build (COMPONENT_REF, ptr_type_node,
-		   ref, TREE_CHAIN (TYPE_FIELDS (field_info_union_node)));
+		   ref, TREE_CHAIN (TYPE_FIELDS (field_info_union_node)),
+		   NULL_TREE);
       return fold (build1 (INDIRECT_REF, TREE_TYPE(fdecl), ref));
     }
 }

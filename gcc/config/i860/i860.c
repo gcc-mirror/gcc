@@ -1877,10 +1877,10 @@ i860_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_fpr = TREE_CHAIN (f_gpr);
 #endif
 
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
-  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem, NULL_TREE);
 
   /* Initialize the `mem_ptr' field to the address of the first anonymous
      stack argument.  */
@@ -1943,10 +1943,10 @@ i860_va_arg (tree valist, tree type)
   f_fpr = TREE_CHAIN (f_gpr);
 #endif
 
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem, NULL_TREE);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   size = int_size_in_bytes (type);
 

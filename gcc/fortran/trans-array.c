@@ -189,7 +189,7 @@ gfc_conv_descriptor_data (tree desc)
 	  && TREE_CODE (TREE_TYPE (field)) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == ARRAY_TYPE);
 
-  return build (COMPONENT_REF, TREE_TYPE (field), desc, field);
+  return build (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
 }
 
 tree
@@ -204,7 +204,7 @@ gfc_conv_descriptor_offset (tree desc)
   field = gfc_advance_chain (TYPE_FIELDS (type), OFFSET_FIELD);
   assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
-  return build (COMPONENT_REF, TREE_TYPE (field), desc, field);
+  return build (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
 }
 
 tree
@@ -219,7 +219,7 @@ gfc_conv_descriptor_dtype (tree desc)
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
-  return build (COMPONENT_REF, TREE_TYPE (field), desc, field);
+  return build (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
 }
 
 static tree
@@ -237,7 +237,7 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
 	  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == RECORD_TYPE);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (field), desc, field);
+  tmp = build (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
   tmp = gfc_build_array_ref (tmp, dim);
   return tmp;
 }
@@ -253,7 +253,7 @@ gfc_conv_descriptor_stride (tree desc, tree dim)
   field = gfc_advance_chain (field, STRIDE_SUBFIELD);
   assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field);
+  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
 }
 
@@ -268,7 +268,7 @@ gfc_conv_descriptor_lbound (tree desc, tree dim)
   field = gfc_advance_chain (field, LBOUND_SUBFIELD);
   assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field);
+  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
 }
 
@@ -283,7 +283,7 @@ gfc_conv_descriptor_ubound (tree desc, tree dim)
   field = gfc_advance_chain (field, UBOUND_SUBFIELD);
   assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field);
+  tmp = build (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
 }
 

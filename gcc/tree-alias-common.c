@@ -207,12 +207,15 @@ get_alias_var (tree expr)
   switch (TREE_CODE (expr))
     {
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       {
-	/* Find the first non-array ref, and return it's alias
-	   variable */
+	/* Find the first non-array ref, and return its alias variable.  */
 	tree p;
-	for (p = expr; TREE_CODE (p) == ARRAY_REF;
-	     p = TREE_OPERAND (p, 0));
+
+	for (p = expr;
+	     TREE_CODE (p) == ARRAY_REF || TREE_CODE (p) == ARRAY_RANGE_REF;
+	     p = TREE_OPERAND (p, 0))
+	  ;
 	return get_alias_var (p);
       }
       break;

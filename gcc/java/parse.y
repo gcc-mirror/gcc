@@ -9254,7 +9254,7 @@ static tree
 make_qualified_name (tree left, tree right, int location)
 {
 #ifdef USE_COMPONENT_REF
-  tree node = build (COMPONENT_REF, NULL_TREE, left, right);
+  tree node = build (COMPONENT_REF, NULL_TREE, left, right, NULL_TREE);
   EXPR_WFL_LINECOL (node) = location;
   return node;
 #else
@@ -14353,7 +14353,7 @@ build_null_of_type (tree type)
 static tree
 build_array_ref (int location, tree array, tree index)
 {
-  tree node = build (ARRAY_REF, NULL_TREE, array, index);
+  tree node = build (ARRAY_REF, NULL_TREE, array, index, NULL_TREE, NULL_TREE);
   EXPR_WFL_LINECOL (node) = location;
   return node;
 }

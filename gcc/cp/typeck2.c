@@ -320,9 +320,11 @@ split_nonconstant_init_1 (tree dest, tree init)
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
 	      if (array_type_p)
-	        sub = build (ARRAY_REF, inner_type, dest, field_index);
+	        sub = build (ARRAY_REF, inner_type, dest, field_index,
+			     NULL_TREE, NULL_TREE);
 	      else
-	        sub = build (COMPONENT_REF, inner_type, dest, field_index);
+	        sub = build (COMPONENT_REF, inner_type, dest, field_index,
+			     NULL_TREE);
 
 	      split_nonconstant_init_1 (sub, value);
 	    }
@@ -331,9 +333,11 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      *pelt = TREE_CHAIN (elt);
 
 	      if (array_type_p)
-	        sub = build (ARRAY_REF, inner_type, dest, field_index);
+	        sub = build (ARRAY_REF, inner_type, dest, field_index,
+			     NULL_TREE, NULL_TREE);
 	      else
-	        sub = build (COMPONENT_REF, inner_type, dest, field_index);
+	        sub = build (COMPONENT_REF, inner_type, dest, field_index,
+			     NULL_TREE);
 
 	      code = build (MODIFY_EXPR, inner_type, sub, value);
 	      code = build_stmt (EXPR_STMT, code);

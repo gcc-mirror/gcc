@@ -93,11 +93,6 @@ tree
 get_pending_sizes (void)
 {
   tree chain = pending_sizes;
-  tree t;
-
-  /* Put each SAVE_EXPR into the current function.  */
-  for (t = chain; t; t = TREE_CHAIN (t))
-    SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = current_function_decl;
 
   pending_sizes = 0;
   return chain;

@@ -1682,6 +1682,7 @@ tree_could_trap_p (tree expr)
   switch (code)
     {
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:

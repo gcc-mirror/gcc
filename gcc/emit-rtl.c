@@ -1460,8 +1460,8 @@ component_ref_for_mem_expr (tree ref)
   if (inner == TREE_OPERAND (ref, 0))
     return ref;
   else
-    return build (COMPONENT_REF, TREE_TYPE (ref), inner,
-		  TREE_OPERAND (ref, 1));
+    return build (COMPONENT_REF, TREE_TYPE (ref), inner, TREE_OPERAND (ref, 1),
+		  NULL_TREE);
 }
 
 /* Returns 1 if both MEM_EXPR can be considered equal
@@ -1625,28 +1625,22 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  do
 	    {
 	      tree index = TREE_OPERAND (t2, 1);
-	      tree array = TREE_OPERAND (t2, 0);
-	      tree domain = TYPE_DOMAIN (TREE_TYPE (array));
-	      tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
-	      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
+	      tree low_bound = array_ref_low_bound (t2);
+	      tree unit_size = array_ref_element_size (t2);
 
 	      /* We assume all arrays have sizes that are a multiple of a byte.
 		 First subtract the lower bound, if any, in the type of the
-		 index, then convert to sizetype and multiply by the size of the
-		 array element.  */
-	      if (low_bound != 0 && ! integer_zerop (low_bound))
+		 index, then convert to sizetype and multiply by the size of
+		 the array element.  */
+	      if (! integer_zerop (low_bound))
 		index = fold (build (MINUS_EXPR, TREE_TYPE (index),
 				     index, low_bound));
 
-	      /* If the index has a self-referential type, instantiate it;
-		 likewise for the component size.  */
-	      index = SUBSTITUTE_PLACEHOLDER_IN_EXPR (index, t2);
-	      unit_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (unit_size, array);
-	      off_tree
-		= fold (build (PLUS_EXPR, sizetype,
-			       fold (build (MULT_EXPR, sizetype,
-					    index, unit_size)),
-			       off_tree));
+	      off_tree = size_binop (PLUS_EXPR,
+				     size_binop (MULT_EXPR, convert (sizetype,
+								     index),
+						 unit_size),
+				     off_tree);
 	      t2 = TREE_OPERAND (t2, 0);
 	    }
 	  while (TREE_CODE (t2) == ARRAY_REF);
@@ -2042,6 +2036,7 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
       if (TREE_CODE (expr) == COMPONENT_REF)
 	{
 	  tree field = TREE_OPERAND (expr, 1);
+	  tree offset = component_ref_field_offset (expr);
 
 	  if (! DECL_SIZE_UNIT (field))
 	    {
@@ -2056,17 +2051,18 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 	      && INTVAL (memoffset) >= 0)
 	    break;
 
-	  if (! host_integerp (DECL_FIELD_OFFSET (field), 1))
+	  if (! host_integerp (offset, 1))
 	    {
 	      expr = NULL_TREE;
 	      break;
 	    }
 
 	  expr = TREE_OPERAND (expr, 0);
-	  memoffset = (GEN_INT (INTVAL (memoffset)
-		       + tree_low_cst (DECL_FIELD_OFFSET (field), 1)
-		       + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-		          / BITS_PER_UNIT)));
+	  memoffset
+	    = (GEN_INT (INTVAL (memoffset)
+			+ tree_low_cst (offset, 1)
+			+ (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+			   / BITS_PER_UNIT)));
 	}
       /* Similarly for the decl.  */
       else if (DECL_P (expr)

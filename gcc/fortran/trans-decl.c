@@ -1645,6 +1645,14 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
 
   DECL_DEFER_OUTPUT (decl) = 1;
 
+  /* Since we don't use a DECL_STMT or equivalent, we have to deal
+     with getting these gimplified.  But we can't gimplify it yet since
+     we're still generating statements.
+
+     ??? This should be cleaned up and handled like other front ends.  */
+  gfc_add_expr_to_block (&body, save_expr (DECL_SIZE (decl)));
+  gfc_add_expr_to_block (&body, save_expr (DECL_SIZE_UNIT (decl)));
+
   /* Generate code to allocate the automatic variable.  It will be freed
      automatically.  */
   tmp = gfc_build_addr_expr (NULL, decl);
@@ -1949,6 +1957,24 @@ gfc_finalize (tree decl)
   cgraph_finalize_function (decl, false);
 }
 
+/* Convert FNDECL's code to GIMPLE and handle any nested functions.  */
+
+static void
+gfc_gimplify_function (tree fndecl)
+{
+  struct cgraph_node *cgn;
+
+  gimplify_function_tree (fndecl);
+  dump_function (TDI_generic, fndecl);
+
+  /* Convert all nested functions to GIMPLE now.  We do things in this order
+     so that items like VLA sizes are expanded properly in the context of the
+     correct function.  */
+  cgn = cgraph_node (fndecl);
+  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+    gfc_gimplify_function (cgn->decl);
+}
+
 /* Generate code for a function.  */
 
 void
@@ -2120,25 +2146,16 @@ gfc_generate_function_code (gfc_namespace * ns)
   current_function_decl = old_context;
 
   if (decl_function_context (fndecl))
-    {
-      /* Register this function with cgraph just far enough to get it
-	 added to our parent's nested function list.  */
-      (void) cgraph_node (fndecl);
-
-      /* Lowering nested functions requires gimple input.  */
-      gimplify_function_tree (fndecl);
-    }
+    /* Register this function with cgraph just far enough to get it
+       added to our parent's nested function list.  */
+    (void) cgraph_node (fndecl);
   else
     {
-      if (cgraph_node (fndecl)->nested)
-	{
-	  gimplify_function_tree (fndecl);
-          lower_nested_functions (fndecl);
-	}
+      gfc_gimplify_function (fndecl);
+      lower_nested_functions (fndecl);
       gfc_finalize (fndecl);
     }
 }
-
 
 void
 gfc_generate_constructors (void)

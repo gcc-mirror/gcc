@@ -1975,7 +1975,7 @@ generate_static_references (void)
       sprintf (buf, "_OBJC_STATIC_INSTANCES_%d", num_class);
       ident = get_identifier (buf);
 
-      expr_decl = build_nt (ARRAY_REF, ident, NULL_TREE);
+      expr_decl = build_nt (ARRAY_REF, ident, NULL_TREE, NULL_TREE, NULL_TREE);
       decl_spec = tree_cons (NULL_TREE, build_pointer_type (void_type_node),
 			     build_tree_list (NULL_TREE,
 					      ridpointers[(int) RID_STATIC]));
@@ -2014,7 +2014,7 @@ generate_static_references (void)
 
   decls = tree_cons (NULL_TREE, build_int_2 (0, 0), decls);
   ident = get_identifier ("_OBJC_STATIC_INSTANCES");
-  expr_decl = build_nt (ARRAY_REF, ident, NULL_TREE);
+  expr_decl = build_nt (ARRAY_REF, ident, NULL_TREE, NULL_TREE, NULL_TREE);
   decl_spec = tree_cons (NULL_TREE, build_pointer_type (void_type_node),
 			 build_tree_list (NULL_TREE,
 					  ridpointers[(int) RID_STATIC]));
@@ -2044,7 +2044,8 @@ generate_strings (void)
       sc_spec
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
-      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
+      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE,
+			    NULL_TREE, NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
@@ -2059,7 +2060,8 @@ generate_strings (void)
       sc_spec
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
-      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
+      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE,
+			    NULL_TREE, NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
@@ -2074,7 +2076,8 @@ generate_strings (void)
       sc_spec
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
-      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
+      expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE,
+			    NULL_TREE, NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
@@ -3521,7 +3524,7 @@ build_method_prototype_list_template (tree list_type, int size)
 
   decl_specs = build_tree_list (NULL_TREE, list_type);
   field_decl = build_nt (ARRAY_REF, get_identifier ("method_list"),
-			 build_int_2 (size, 0));
+			 build_int_2 (size, 0), NULL_TREE, NULL_TREE);
   field_decl = grokfield (field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -4405,7 +4408,7 @@ build_ivar_list_template (tree list_type, int size)
 
   decl_specs = build_tree_list (NULL_TREE, list_type);
   field_decl = build_nt (ARRAY_REF, get_identifier ("ivar_list"),
-			 build_int_2 (size, 0));
+			 build_int_2 (size, 0), NULL_TREE, NULL_TREE);
 
   field_decl = grokfield (field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
@@ -4453,7 +4456,7 @@ build_method_list_template (tree list_type, int size)
 
   decl_specs = build_tree_list (NULL_TREE, list_type);
   field_decl = build_nt (ARRAY_REF, get_identifier ("method_list"),
-			 build_int_2 (size, 0));
+			 build_int_2 (size, 0), NULL_TREE, NULL_TREE);
 
   field_decl = grokfield (field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
@@ -4860,18 +4863,18 @@ generate_protocol_list (tree i_or_p)
     expr_decl = build_nt (ARRAY_REF,
 			  synth_id_with_class_suffix ("_OBJC_PROTOCOL_REFS",
 						      i_or_p),
-			  build_int_2 (size + 2, 0));
+			  build_int_2 (size + 2, 0), NULL_TREE, NULL_TREE);
   else if (TREE_CODE (i_or_p) == CLASS_INTERFACE_TYPE)
     expr_decl = build_nt (ARRAY_REF,
 			  synth_id_with_class_suffix ("_OBJC_CLASS_PROTOCOLS",
 						      i_or_p),
-			  build_int_2 (size + 2, 0));
+			  build_int_2 (size + 2, 0), NULL_TREE, NULL_TREE);
   else if (TREE_CODE (i_or_p) == CATEGORY_INTERFACE_TYPE)
     expr_decl
       = build_nt (ARRAY_REF,
 		  synth_id_with_class_suffix ("_OBJC_CATEGORY_PROTOCOLS",
 					      i_or_p),
-		  build_int_2 (size + 2, 0));
+		  build_int_2 (size + 2, 0), NULL_TREE, NULL_TREE);
   else
     abort ();
 

@@ -7201,7 +7201,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return build_nt (ARRAY_REF, e1, e2);
+	return build_nt (ARRAY_REF, e1, e2, NULL_TREE, NULL_TREE);
       }
 
     case CALL_EXPR:
@@ -7563,7 +7563,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				  in_decl);
 	else
 	  name = tsubst_copy (name, args, complain, in_decl);
-	return build_nt (COMPONENT_REF, object, name);
+	return build_nt (COMPONENT_REF, object, name, NULL_TREE);
       }
 
     case PLUS_EXPR:
@@ -8143,7 +8143,7 @@ tsubst_copy_and_build (tree t,
 	
 	if (object)
 	  return build (COMPONENT_REF, TREE_TYPE (template), 
-			object, template);
+			object, template, NULL_TREE);
 	else
 	  return template;
       }
@@ -8255,7 +8255,8 @@ tsubst_copy_and_build (tree t,
       if (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl)
 	  == NULL_TREE)
 	/* new-type-id */
-	return build_nt (ARRAY_REF, NULL_TREE, RECUR (TREE_OPERAND (t, 1)));
+	return build_nt (ARRAY_REF, NULL_TREE, RECUR (TREE_OPERAND (t, 1)),
+			 NULL_TREE, NULL_TREE);
 
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);

@@ -6544,7 +6544,7 @@ expand_function_start (tree subr, int parms_have_cleanups)
       expand_var (TREE_OPERAND (cfun->nonlocal_goto_save_area, 0));
 
       t_save = build (ARRAY_REF, ptr_type_node, cfun->nonlocal_goto_save_area,
-		      integer_zero_node);
+		      integer_zero_node, NULL_TREE, NULL_TREE);
       r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
       emit_move_insn (r_save, virtual_stack_vars_rtx);

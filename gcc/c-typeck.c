@@ -1222,10 +1222,10 @@ default_function_array_conversion (tree exp)
 
       if (TREE_CODE (exp) == VAR_DECL)
 	{
-	  /* ??? This is not really quite correct
-	     in that the type of the operand of ADDR_EXPR
-	     is not the target type of the type of the ADDR_EXPR itself.
-	     Question is, can this lossage be avoided?  */
+	  /* We are making an ADDR_EXPR of ptrtype.  This is a valid
+	     ADDR_EXPR because it's the best way of representing what
+	     happens in C when we take the address of an array and place
+	     it in a pointer to the element type.  */
 	  adr = build1 (ADDR_EXPR, ptrtype, exp);
 	  if (!c_mark_addressable (exp))
 	    return error_mark_node;
@@ -1483,7 +1483,8 @@ build_component_ref (tree datum, tree component)
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
 
-	  ref = build (COMPONENT_REF, TREE_TYPE (subdatum), datum, subdatum);
+	  ref = build (COMPONENT_REF, TREE_TYPE (subdatum), datum, subdatum,
+		       NULL_TREE);
 	  if (TREE_READONLY (datum) || TREE_READONLY (subdatum))
 	    TREE_READONLY (ref) = 1;
 	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (subdatum))
@@ -1636,7 +1637,7 @@ build_array_ref (tree array, tree index)
 	}
 
       type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (array)));
-      rval = build (ARRAY_REF, type, array, index);
+      rval = build (ARRAY_REF, type, array, index, NULL_TREE, NULL_TREE);
       /* Array ref is const/volatile if the array elements are
          or if the array is.  */
       TREE_READONLY (rval)
@@ -2561,6 +2562,9 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  }
 	else
 	  addr = build1 (code, argtype, arg);
+
+	if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
+	  TREE_INVARIANT (addr) = TREE_CONSTANT (addr) = 1;
 
 	return addr;
       }

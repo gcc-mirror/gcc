@@ -897,30 +897,18 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
   code = TREE_CODE (expr);
   class = TREE_CODE_CLASS (code);
 
-  /* Expressions that make no memory references.  */
-  if (class == 'c'
-      || class == 't'
-      || code == BLOCK
-      || code == FUNCTION_DECL
-      || code == EXC_PTR_EXPR
-      || code == FILTER_EXPR
-      || code == LABEL_DECL)
-    return;
-
   /* We could have the address of a component, array member, etc which
      has interesting variable references.  */
   if (code == ADDR_EXPR)
     {
-      enum tree_code subcode = TREE_CODE (TREE_OPERAND (expr, 0));
-
       /* Taking the address of a variable does not represent a
 	 reference to it, but the fact that STMT takes its address will be
 	 of interest to some passes (e.g. alias resolution).  */
       add_stmt_operand (expr_p, stmt, 0, NULL);
 
-      /* If the address is invariant, there may be no interesting variable
-	 references inside.  */
-      if (is_gimple_min_invariant (expr))
+      /* If the address is constant (invariant is not sufficient), there will
+	 be no interesting variable references inside.  */
+      if (TREE_CONSTANT (expr))
 	return;
 
       /* There should be no VUSEs created, since the referenced objects are
@@ -930,11 +918,21 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       flags |= opf_no_vops;
 
       /* Avoid recursion.  */
-      code = subcode;
-      class = TREE_CODE_CLASS (code);
       expr_p = &TREE_OPERAND (expr, 0);
       expr = *expr_p;
+      code =  TREE_CODE (expr);
+      class = TREE_CODE_CLASS (code);
     }
+
+  /* Expressions that make no memory references.  */
+  if (class == 'c'
+      || class == 't'
+      || code == BLOCK
+      || code == FUNCTION_DECL
+      || code == EXC_PTR_EXPR
+      || code == FILTER_EXPR
+      || code == LABEL_DECL)
+    return;
 
   /* If we found a variable, add it to DEFS or USES depending on the
      operand flags.  */
@@ -1043,7 +1041,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
   /* Treat array references as references to the virtual variable
      representing the array.  The virtual variable for an ARRAY_REF
      is the VAR_DECL for the array.  */
-  if (code == ARRAY_REF)
+  if (code == ARRAY_REF || code == ARRAY_RANGE_REF)
     {
       /* Add the virtual variable for the ARRAY_REF to VDEFS or VUSES
 	 according to the value of IS_DEF.  Recurse if the LHS of the
@@ -1054,6 +1052,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
 
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none, prev_vops);
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none, prev_vops);
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none, prev_vops);
       return;
     }
 
@@ -1078,6 +1078,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       else
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
 
+      if (code == COMPONENT_REF)
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none, prev_vops);
       return;
     }
 

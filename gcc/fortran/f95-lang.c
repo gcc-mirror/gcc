@@ -122,7 +122,6 @@ static void gfc_expand_function (tree);
 #undef LANG_HOOKS_UNSIGNED_TYPE
 #undef LANG_HOOKS_SIGNED_TYPE
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
-#undef LANG_HOOKS_GIMPLE_BEFORE_INLINING
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 
 /* Define lang hooks.  */
@@ -141,7 +140,6 @@ static void gfc_expand_function (tree);
 #define LANG_HOOKS_UNSIGNED_TYPE           gfc_unsigned_type
 #define LANG_HOOKS_SIGNED_TYPE             gfc_signed_type
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gfc_signed_or_unsigned_type
-#define LANG_HOOKS_GIMPLE_BEFORE_INLINING false
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gfc_expand_function
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

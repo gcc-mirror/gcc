@@ -3166,6 +3166,21 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 
 extern int handled_component_p (tree);
 
+/* Return a tree of sizetype representing the size, in bytes, of the element
+   of EXP, an ARRAY_REF.  */
+
+extern tree array_ref_element_size (tree);
+
+/* Return a tree representing the lower bound of the array mentioned in
+   EXP, an ARRAY_REF.  */
+
+extern tree array_ref_low_bound (tree);
+
+/* Return a tree representing the offset, in bytes, of the field referenced
+   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
+
+extern tree component_ref_field_offset (tree);
+
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */
 

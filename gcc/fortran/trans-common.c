@@ -425,7 +425,7 @@ create_common (gfc_symbol *sym)
   for (h = current_common; h; h = next_s)
     {
       h->sym->backend_decl = build (COMPONENT_REF, TREE_TYPE (h->field),
-                                    decl, h->field);
+                                    decl, h->field, NULL_TREE);
 
       next_s = h->next;
       gfc_free (h);

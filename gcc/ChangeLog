@@ -1,3 +1,153 @@
+2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (adjust_offset_for_component_ref): Use
+	component_ref_field_offset.
+	* c-decl.c (build_array_declarator): Add news args for ARRAY_REF.
+	* c-gimplify.c (gimplify_expr_stmt): Use alloc_stmt_list.
+	(gimplify_decl_stmt): Call gimplify_type_sizes for type.
+	For decl, call gimplify_one_sizepos and use statement list.
+	(gimplify_compound_literal_expr): New arg PRE_P.
+	Add statement to PRE_P list and return DECL.
+	(c_gimplify_expr, case COMPOUND_LITERAL_EXPR): Add arg to
+	gimplify_compound_literal_expr.
+	* c-tree.h (getdecls): Deleted.
+	* c-typeck.c (build_component_ref): Add operand for COMPONENT_REF.
+	(build_array_ref): Add two operands for ARRAY_REF.
+	(build_unary_op): Set TREE_INVARIANT and TREE_CONSTANT for
+	COMPOUND_LITERAL_EXPR.
+	* coverage.c (tree_coverage_counter_ref): Add new operands
+	for ARRAY_REF.
+	* emit-rtl.c (component_ref_for_mem_expr): Add new operand
+	for COMPONENT_REF.
+	(set_mem_attributes_minus_bitpos): Use array_ref_low_bound
+	and array_ref_element_size.
+	(widen_memory_access):Use component_ref_field_offset.
+	* explow.c (update_nonlocal_goto_save_area): Add two operands
+	for ARRAY_REF.
+	* expr.c (array_ref_element_size, array_ref_low_bound): New functions.
+	(component_ref_field_offset): Likewise.
+	(get_inner_reference): Use them.
+	(expand_expr_real_1, case ARRAY_REF): Use array_ref_low_bound.
+	* fold-const.c (fold, case EQ_EXPR): Properly handle DECL_SIZE.
+	(fold_read_from_constant_string): Use array_ref_low_bound.
+	Verify that result is a character type.
+	(build_fold_indirect_ref): Add two operands for ARRAY_REF.
+	* function.c (expand_function_start): Likewise.
+	* gimple-low.c (expand_var_p): Delete duplicated line.
+	* gimplify.c: Add static decls for local functions.
+	(cgraph.h): Now included.
+	(create_tmp_var): Remove check for ARRAY_TYPE.
+	(copy_if_shared_r): Look at bounds and sizes of types.
+	(build_and_jump): Return alloc_stmt_list instead of build_empty_stmt.
+	(gimplify_exit_expr, shortcut_cond_expr): Likewise.
+	(gimplify_save_expr, gimple_push_cleanup): Likewise.
+	(gimplify_init_constructor): Likewise.
+	WANT_VALUE now bool.
+	If empty list with no result wanted, return GS_UNHANDLED.
+	Add additional operands for ARRAY_REF and COMPONENT_REF.
+	(canonicalize_component_ref): Convert to &array[L].
+	(gimplify_array_ref_to_plus): Use array_ref_element_size and
+	array_ref_lower_bound.
+	(build_addr_expr_with_type, build_addr_expr): New functions.
+	(gimplify_compound_lval): WANT_LVALUE now bool.
+	Major rework to allow handle_component_p and initialize and
+	gimplify new operands for ARRAY_REF, ARRAY_RANGE_REF, and
+	COMPONENT_REF.
+	(gimplify_array_ref): Deleted.
+	(gimplify_self_mod_expr): WANT_VALUE now bool.
+	(gimplify_modify_expr): Gimplify to_p and from_p later.
+	Factor out code into gimplify_modify_expr_rhs and call twice.
+	Move variable-size code earlier and handle PLACEHOLDER_EXPR.
+	(gimplify_modify_expr_rhs, gimplify_variable_sized_compare): New fns.
+	(gimplify_addr_expr, case VIEW_CONVERT_EXPR): New case.
+	(gimplify_expr, case ARRAY_REF): Delete special case.
+	Instead handle like COMPONENT_REF; also do ARRAY_RANGE_REF,
+	IMAGPART, and REALPART the same way.
+	(gimplify_expr, case VIEW_CONVERT_EXPR): New case.
+	(gimplify_expr): Call gimplify_variable_sized_compare if applicable.
+	Call alloc_stmt_list instead of build_empty_stmt.
+	Deal with _REF that's volatile.
+	(gimplify_type_sizes, gimplify_one_sizepos): New functions.
+	(unshare_body, unvisit_body): New functions.
+	(gimplify_body): Call them.
+	* stmt.c (expand_stack_alloc): Don't expand TYPE_MAX_VALUE.
+	* stor-layout.c (get_pending_sizes): Don't change SAVE_EXPR_CONTEXT.
+	* tree-alias-common.c (get_alias_var): Also skip ARRAY_RANGE_REF.
+	* tree-cfg.c (tree_node_can_be_shared): Treat ARRAY_RANGE_REF
+	like ARRAY_REF.
+	(verify_expr, case ADDR_EXPR): Use handled_component_p.
+	* tree-dfa.c (get_virtual_var): Likewise.
+	* tree-dump.c (dequeue_and_dump, case COMPONENT_REF, ARRAY_REF):
+	New cases to dump new operands; likewise for ARRAY_RANGE_REF.
+	* tree-eh.c (tree_could_trap, case ARRAY_RANGE_REF): Like ARRAY_REF.
+	* tree-gimple.c (is_gimple_addr_expr_arg): Add ARRAY_RANGE_REF
+	and INDIRECT_REF.
+	(get_base_address): Use handled_component_p.
+	* tree-gimple.h (gimplify_type_sizes, gimplify_one_sizepos): New.
+	* tree-inline.c (walk_tree): Walk more things for types and decls.
+	* tree-mudflap.c (mf_build_check_statement_for): Add new operands
+	for ARRAY_REF and COMPONENT_REF.
+	(mx_xform_derefs_1): Clean up usage of decl sizes.
+	* tree-nested.c (build_addr): Use handled_component_p.
+	(walk_stmts, case CATCH_EXPR): Add missing "break".
+	(get_static_chain, get_frame_field): Add new operand for COMPONENT_REF.
+	(finalize_nesting_tree_1): Likewise.
+	(convert_nonlocal_reference, case ARRAY_RANGE_REF): Like ARRAY_REF
+	and process additional operands.
+	(convert_local_reference): Likewise.
+	* tree-outof-ssa.c (discover_nonconstant_array_refs_r): Treat
+	ARRAY_RANGE_REF similarly to ARRAY_REF.
+	* tree-pretty-print.c (dump_generic_node, case QUAL_UNION_TYPE): Handle
+	like RECORD_TYPE.
+	(dump_generic_node, case COMPONENT_REF): Print offset operand.
+	(dump_generic_node, case ARRAY_RANGE_REF): Treat like ARRAY_REF
+	and print lower bound and element size for both.
+	(op_prio, case ARRAY_RANGE_REF): Like ARRAY_REF.
+	* tree-sra.c (csc_build_component_ref): Add new operand.
+	(scalarize_call_expr): Use get_base_address.
+	* tree-ssa-ccp.c (widen_bitfield): Clean up size handling.
+	(maybe_fold_offset_to_array_ref): Rework to handle input having an
+	ARRAY_REF, refine handling of lower bound, and add new operands
+	for ARRAY_REF.
+	(maybe_fold_to_component_ref): Add new operand for COMPONENT_REF.
+	(maybe_fold_stmt_indirect): Only fold *&B to B if types match.
+	(maybe_fold_stmt_addition): Only handle constant lower bound.
+	* tree-ssa-operands.c (get_expr_operands): Minor rearrangements.
+	Treat ARRAY_REF and ARRAY_RANGE_REF the same; look at extra operands.
+	Look at new offset operand of COMPONENT_REF.
+	* tree-ssa.c (set_is_used): Use handled_component_p.
+	* tree.c (substitute_in_expr, case COMPONENT_REF): Add new operand.
+	(stabilize_reference, case COMPONENT_REF): Likewise.
+	(stabilize_reference, case ARRAY_RANGE_REF, ARRAY_REF): Similarly.
+	(recompute_tree_invariant_for_addr_expr): Completely rework to
+	be more precise.  Also set TREE_SIDE_EFFECTS.
+	(build1_stat, case ARRAY_EXPR): Don't handle TREE_SIDE_EFFECTS here.
+	(build2_stat, build3_stat, build4_stat): For references,
+	propagate TREE_THIS_VOLATILE.
+	(get_unwidened): Add new operand for COMPONENT_REF.
+	(get_narrower): Likewise; use host_integerp for DECL_SIZE.
+	* tree.def (COMPONENT_REF): Add new operand.
+	(ARRAY_REF, ARRAY_RANGE_REF): Add two new operands.
+	* tree.h (array_ref_element_size, array_ref_low_bound): New decls.
+	(component_ref_field_offset): Likewise.
+	* config/alpha/alpha.c (alpha_va_start): Add new op for COMPONENT_REF.
+	(alpha_gimplify_va_arg): Likewise.
+	* config/i386/i386.c (ix86_va_start, ix86_gimplify_va_arg): Likewise.
+	* config/i860/i860.c (i860_va_start, i860_va_arg): Likewise.
+	* config/iq2000/iq2000.c (iq2000_va_arg): Likewise.
+	* config/mips/mips.c (mips_va_start, mips_va_arg): Likewise.
+	* config/rs6000/rs6000.c (rs6000_va_start, rs6000_gimplify_va_arg):
+	Likewise.
+	* config/s390/s390.c (s390_va_start, s390_gimplify_va_arg): Likewise.
+	* config/sh/sh.c (sh_va_start, sh_va_arg): Likewise.
+	* config/stormy16/stormy16.c (xstormy1_expand_builin_va_start):
+	Likewise.
+	(xstormy16_expand_builtin_va_arg): Likewise.
+	* config/xtensa/xtensa.c (xtensa_va_start, xtensa_va_arg): Likewise.
+	* objc/objc-act.c (generate_static_references): Likewise.
+	(generate_strings, build_method_prototype_list_template): Likewise.
+	(generate_protocol_list): Likewise.
+
 2004-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/14782

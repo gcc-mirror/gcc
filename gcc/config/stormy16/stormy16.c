@@ -1285,8 +1285,9 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
   
-  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base);
-  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count);
+  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
+  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
+		 NULL_TREE);
 
   t = make_tree (TREE_TYPE (base), virtual_incoming_args_rtx);
   t = build (PLUS_EXPR, TREE_TYPE (base), t, 
@@ -1320,8 +1321,9 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type)
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
   
-  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base);
-  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count);
+  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
+  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
+		 NULL_TREE);
 
   must_stack = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);

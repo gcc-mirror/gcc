@@ -2015,11 +2015,12 @@ adjust_offset_for_component_ref (tree x, rtx offset)
   ioffset = INTVAL (offset);
   do
     {
+      tree offset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
 
-      if (! host_integerp (DECL_FIELD_OFFSET (field), 1))
+      if (! host_integerp (offset, 1))
 	return NULL_RTX;
-      ioffset += (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
+      ioffset += (tree_low_cst (offset, 1)
 		  + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 		     / BITS_PER_UNIT));
 

@@ -3391,12 +3391,6 @@ expand_stack_alloc (tree alloc, tree t_size)
 
   type = TREE_TYPE (var);
 
-  /* In function-at-a-time mode, variable_size doesn't expand this,
-     so do it now.  */
-  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
-    expand_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-		 const0_rtx, VOIDmode, 0);
-
   /* Compute the variable's size, in bytes.  */
   size = expand_expr (t_size, NULL_RTX, VOIDmode, 0);
   free_temp_slots ();

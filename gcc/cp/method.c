@@ -591,7 +591,7 @@ do_build_copy_constructor (tree fndecl)
 	  expr_type = TREE_TYPE (field);
 	  if (TREE_CODE (expr_type) != REFERENCE_TYPE)
 	    expr_type = cp_build_qualified_type (expr_type, cvquals);
-	  init = build (COMPONENT_REF, expr_type, init, field);
+	  init = build (COMPONENT_REF, expr_type, init, field, NULL_TREE);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  member_init_list
@@ -687,10 +687,11 @@ do_build_assign_ref (tree fndecl)
 	  else
 	    continue;
 
-	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field);
+	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field,
+			NULL_TREE);
 	  init = build (COMPONENT_REF,
 	                cp_build_qualified_type (TREE_TYPE (field), cvquals),
-	                init, field);
+	                init, field, NULL_TREE);
 
 	  if (DECL_NAME (field))
 	    finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));

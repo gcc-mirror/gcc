@@ -2508,7 +2508,7 @@ tree
 build_array_declarator (tree expr, tree quals, int static_p, int vla_unspec_p)
 {
   tree decl;
-  decl = build_nt (ARRAY_REF, NULL_TREE, expr);
+  decl = build_nt (ARRAY_REF, NULL_TREE, expr, NULL_TREE, NULL_TREE);
   TREE_TYPE (decl) = quals;
   TREE_STATIC (decl) = (static_p ? 1 : 0);
   if (pedantic && !flag_isoc99)
