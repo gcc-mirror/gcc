@@ -269,10 +269,10 @@ public abstract class URLStreamHandler
       return false;
     int p1 = url1.getPort ();
     if (p1 == -1)
-      p1 = url1.handler.getDefaultPort ();
+      p1 = url1.ph.getDefaultPort ();
     int p2 = url2.getPort ();
     if (p2 == -1)
-      p2 = url2.handler.getDefaultPort ();
+      p2 = url2.ph.getDefaultPort ();
     if (p1 != p2)
       return false;
     String s1, s2;

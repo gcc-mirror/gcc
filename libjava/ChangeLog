@@ -1,5 +1,13 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java:
+	Renamed "handler" to "ph" in the whole file to match classpaths
+	version.
+	* java/net/URLStreamHandler.java:
+	(equals): Renamed "handler" to "ph".
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/event/AncestorEvent.java,
 	javax/swing/event/HyperlinkEvent.java,
 	javax/swing/event/InternalFrameEvent.java,
