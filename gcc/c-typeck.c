@@ -3918,8 +3918,14 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
     {
       /* An explicit constant 0 can convert to a pointer,
-	 but not a 0 that results from casting or folding.  */
-      if (! (TREE_CODE (rhs) == INTEGER_CST && integer_zerop (rhs)))
+	 or one that results from arithmetic, even including
+	 a cast to integer type.  */
+      if (! (TREE_CODE (rhs) == INTEGER_CST && integer_zerop (rhs))
+	  &&
+	  ! (TREE_CODE (rhs) == NOP_EXPR
+	     && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
+	     && TREE_CODE (TREE_OPERAND (rhs, 0)) == INTEGER_CST
+	     && integer_zerop (TREE_OPERAND (rhs, 0))))
 	{
 	  warn_for_assignment ("%s makes pointer from integer without a cast",
 			       get_spelling (errtype), funname, parmnum);
@@ -4792,7 +4798,14 @@ start_init (decl, asmspec_tree, top_level)
   if (decl != 0)
     {
       require_constant_value = TREE_STATIC (decl);
-      require_constant_elements = TREE_STATIC (decl) || pedantic;
+      require_constant_elements
+	= ((TREE_STATIC (decl) || pedantic)
+	   /* For a scalar, you can always use any value to initialize,
+	      even within braces.  */
+	   && (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE));
       locus = IDENTIFIER_POINTER (DECL_NAME (decl));
       constructor_incremental |= TREE_STATIC (decl);
     }
