@@ -1,3 +1,11 @@
+2003-01-31 Adrian Bunk <bunk@fs.tum.de>
+
+	Fix for java/4269:
+
+	* jv-scan.c: Use HAVE_LANGINFO_CODESET instead of HAVE_NL_LANGINFO
+	to fix bootstrap on sparc-unknown-netbsdelf1.5.
+	* jcf-parse.c: Likewise.
+
 2003-01-31  Mark Wielaard  <mark@klomp.org>
 
 	* gjavah.c (throwable_p): Allocate 1 more byte for string.
