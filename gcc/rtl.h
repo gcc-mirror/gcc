@@ -151,12 +151,14 @@ typedef struct rtx_def
 #endif
 #endif
 
+#ifndef VPROTO
 #ifdef __STDC__
 #define VPROTO(ARGS)		ARGS
 #define VA_START(va_list,var)	va_start(va_list,var)
 #else
 #define VPROTO(ARGS)		(va_alist) va_dcl
 #define VA_START(va_list,var)	va_start(va_list)
+#endif
 #endif
 
 #define NULL_RTX (rtx) 0
