@@ -4059,22 +4059,31 @@ expand_function_start (tree subr)
     {
       /* Compute the return values into a pseudo reg, which we will copy
 	 into the true return register after the cleanups are done.  */
-
-      /* In order to figure out what mode to use for the pseudo, we
-	 figure out what the mode of the eventual return register will
-	 actually be, and use that.  */
-      rtx hard_reg
-	= hard_function_value (TREE_TYPE (DECL_RESULT (subr)),
-			       subr, 1);
-
-      /* Structures that are returned in registers are not aggregate_value_p,
-	 so we may see a PARALLEL or a REG.  */
-      if (REG_P (hard_reg))
-	SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (GET_MODE (hard_reg)));
+      tree return_type = TREE_TYPE (DECL_RESULT (subr));
+      if (TYPE_MODE (return_type) != BLKmode
+	  && targetm.calls.return_in_msb (return_type))
+	/* expand_function_end will insert the appropriate padding in
+	   this case.  Use the return value's natural (unpadded) mode
+	   within the function proper.  */
+	SET_DECL_RTL (DECL_RESULT (subr),
+		      gen_reg_rtx (TYPE_MODE (return_type)));
       else
 	{
-	  gcc_assert (GET_CODE (hard_reg) == PARALLEL);
-	  SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
+	  /* In order to figure out what mode to use for the pseudo, we
+	     figure out what the mode of the eventual return register will
+	     actually be, and use that.  */
+	  rtx hard_reg = hard_function_value (return_type, subr, 1);
+
+	  /* Structures that are returned in registers are not
+	     aggregate_value_p, so we may see a PARALLEL or a REG.  */
+	  if (REG_P (hard_reg))
+	    SET_DECL_RTL (DECL_RESULT (subr),
+			  gen_reg_rtx (GET_MODE (hard_reg)));
+	  else
+	    {
+	      gcc_assert (GET_CODE (hard_reg) == PARALLEL);
+	      SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
+	    }
 	}
 
       /* Set DECL_REGISTER flag so that expand_function_end will copy the
@@ -4368,10 +4377,22 @@ expand_function_end (void)
 	  if (GET_MODE (real_decl_rtl) == BLKmode)
 	    PUT_MODE (real_decl_rtl, GET_MODE (decl_rtl));
 
+	  /* If a non-BLKmode return value should be padded at the least
+	     significant end of the register, shift it left by the appropriate
+	     amount.  BLKmode results are handled using the group load/store
+	     machinery.  */
+	  if (TYPE_MODE (TREE_TYPE (decl_result)) != BLKmode
+	      && targetm.calls.return_in_msb (TREE_TYPE (decl_result)))
+	    {
+	      emit_move_insn (gen_rtx_REG (GET_MODE (decl_rtl),
+					   REGNO (real_decl_rtl)),
+			      decl_rtl);
+	      shift_return_value (GET_MODE (decl_rtl), true, real_decl_rtl);
+	    }
 	  /* If a named return value dumped decl_return to memory, then
 	     we may need to re-do the PROMOTE_MODE signed/unsigned
 	     extension.  */
-	  if (GET_MODE (real_decl_rtl) != GET_MODE (decl_rtl))
+	  else if (GET_MODE (real_decl_rtl) != GET_MODE (decl_rtl))
 	    {
 	      int unsignedp = TYPE_UNSIGNED (TREE_TYPE (decl_result));
 

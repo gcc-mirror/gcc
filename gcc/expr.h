@@ -551,6 +551,8 @@ extern rtx hard_function_value (tree, tree, int);
 
 extern rtx prepare_call_address (rtx, rtx, rtx *, int, int);
 
+extern bool shift_return_value (enum machine_mode, bool, rtx);
+
 extern rtx expand_call (tree, rtx, int);
 
 extern void fixup_tail_calls (void);

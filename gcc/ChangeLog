@@ -1,3 +1,23 @@
+2004-11-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* optabs.h (force_expand_binop): Declare.
+	* optabs.c (force_expand_binop): Export.
+	* stmt.c (shift_return_value): Delete.
+	(expand_return): Don't call it.
+	* expr.h (shift_return_value): Declare.
+	* calls.c (shift_returned_value): Delete in favor of...
+	(shift_return_value): ...this new function.  Leave the caller to check
+	for non-BLKmode values passed in the msb of a register.  Take said mode
+	and a shift direction as argument.  Operate on the hard function value,
+	not a pseudo.
+	(expand_call): Adjust accordingly.
+	* function.c (expand_function_start): If a non-BLKmode return value
+	is padded at the last significant end of the return register, use the
+	return value's natural mode for the DECL_RESULT, not the mode of the
+	padded register.
+	(expand_function_end): Shift the same sort of return values left by
+	the appropriate amount.
+
 2004-11-24  Matt Austern  <austern@apple.com>
 
 	* recog.c (recog_memoized_1): Remove.

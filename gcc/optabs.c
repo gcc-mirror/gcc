@@ -427,7 +427,7 @@ simplify_expand_binop (enum machine_mode mode, optab binoptab,
 /* Like simplify_expand_binop, but always put the result in TARGET.
    Return true if the expansion succeeded.  */
 
-static bool
+bool
 force_expand_binop (enum machine_mode mode, optab binoptab,
 		    rtx op0, rtx op1, rtx target, int unsignedp,
 		    enum optab_methods methods)
