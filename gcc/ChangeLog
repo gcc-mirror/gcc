@@ -34,6 +34,182 @@
 	callers.
 	(do_tlink): Check lderrout as well as ldout.
 
+2005-03-31  Caroline Tice  <ctice@apple.com>
+
+	* Makefile.in (varasm.o): Add basic-block.h to list of requirements.
+	(bb-reorder.o): Add errors.h to list of requirements.
+	(STAGEFEEDBACK_FLAGS_TO_PASS): Add -freorder-blocks-and-partition to
+	profiledbootstrap flags.
+	* bb-reorder.c (errors.h): Add new include.
+	(struct bbro_basic_block_data_def): Add new field, in_trace.
+	(add_unlikely_executed_notes):  Remove function.
+	(mark_bb_for_unlikely_executed_section): Remove function.
+	(insert_section_boundary_note): New function.
+	(verify_hot_cold_block_grouping): New function.
+	(push_to_next_round_p): Remove variables and tests that push all
+	cold blocks to last round.
+	(find_traces): Remove code that added extra round of trace finding
+	when doing partitioning.
+	(find_traces_1_round) :  Remove variable last_round;  add code to 
+	update new struct field, in_trace; correct trace_length where it was 
+	incorrect before (after call to copy_bb); change code that pushed all 
+	cold blocks to last round. Instead verify that all blocks going into 
+	a trace belong in the same partition.
+	(connect_traces): Modify to connect the traces in two passes, if the
+	function contains both hot and cold blocks.  The first pass connects 
+	all the traces for blocks in the partition that the first block in 
+	the function belongs to; the second pass connnects all the traces 
+	containing blocks that belong in the other partition.
+	(find_rarely_executed_basic_blocks_and_crossing_edges):  Remove
+	code that automatically put the first block in a function into the
+	hot partition if the function had any hot blocks.
+	(fix_crossing_unconditional_branches): Check number of succ edges 
+	before attempting to get one.
+	(fix_edges_for_rarely_executed_code):  Update comment describing
+	function.
+	(reorder_basic_blocks):  Add code to initialize new field (in_trace);
+	remove call to add_unlikely_executed_notes; add call to 
+	verify_hot_cold_block_grouping.
+	(duplicate_computed_gotos): Don't change computed goto if it's a 
+	crossing edge.
+	(partition_hot_cold_basic_blocks):  Update function comment.
+	* cfgcleanup.c (try_simplify_condjump): Remove redundacy from 
+	condition.
+	(try_forward_edges): Likewise.
+	(merge_blocks_move_predecessor_nojumps): Likewise.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(merge_blocks_move): Likewise.
+	(try_crossjump_bb): Likewise.
+	* cfglayout.c (update_unlikely_executed_notes): Remove function.
+	(fixup_reorder_chain): Remove code for adding UNLIKELY_EXECUTED_CODE
+	notes to cold bb's; remove call to update_unlikely_executed_notes.
+	(duplicate_insn_chain):  change NOTE_INSN_UNLIKELY_EXECUTED_CODE to
+	NOTE_INSN_SWITCH_TEXT_SECTIONS.
+	* cfglayout.h (scan_ahead_for_unlikely_executed_note): Remove
+	function declaration.
+	* cfgrtl.c (can_delete_note_p): Remove UNLIKELY_EXECUTED_CODE note
+	from consideration.
+	(rtl_can_merge_blocks): Remove redundancy from condition.
+	(try_redirect_by_replacing_jump): Likewise.
+	(force_nonfallthru_and_redirect): Remove code for adding
+	UNLIKELY_EXECUTED_CODE notes to cold bb's.
+	(commit_one_edge_insertion): Likewise.
+	(cfg_layout_can_merge_blocks_p): Remove redundancy from condition.
+	* dbxout.c (FORCE_TEXT): Replace function_section with 
+	current_function_section.
+	(struct dbx_debug_h): Add do_nothing function for new debug_hooks
+	function, switch_text_section.
+	(struct xcoff_debug): Likewise.
+	(dbxout_function_end): Add code to put out label diffs for both
+	hot and cold sections.
+	* debug.c (struct do_nothing_debug_hooks): Add do_nothing function
+	for new debug_hooks funciton, switch_text_section..
+	* debug.h (struct gcc_debug_hooks):  Add new function to debug_hooks,
+	switch_text_section.
+	* dwarf2out.c (struct dw_fde_struct):  Add five new fields: 
+	dw_fde_hot_section_label, dw_fde_hot_section_end_label, 
+	dw_fde_unlikely_section_label, dw_fde_unlikely_section_end_label and 
+	dw_fde_switched_sections.
+	(output_call_frame_info):  Add test to see if function switches text
+	sections in the middle; if so, use appropriate extra hot and cold 
+	section labels to compute size deltas for the hot and cold sections.
+	(dwarf2out_begin_prologue): Add code to initialize new fields in 
+	dw_fde_struct.
+	(dwarf2out_switch_text_section): New function (invoked through 
+	debug_hook); updates new fields in dw_fde_struct appropriately and
+	increments separate_line_info_table_in_use.
+	(dwarf2_debug_hooks): Initialize switch_text_section function to be
+	dwarf2out_switch_text_section.
+	(struct var_loc_node): Add new field, section_label.
+	(output_aranges): Add code to check whether in hot or cold section and
+	use the appropriate label in calculating deltas.
+	(output_ranges): Likewise.
+	(output_line_info): Add code to check which section we're in and
+	use appropriate hot/cold label.
+	(add_location_or_constant_value_attribute): Likewise.
+	(gen_subprogam_die): Modify arange attributes to use correct labels.
+	(dwarf2out_begin_block): Change call to function_section into call to
+	current_function_section.
+	(dwarf2out_end_block): Likewise.
+	(dwarf2out_source_line): Likewise.
+	(dwarf2out_var_location): Add code to check whether in hot or cold 
+	section and use the appropriate label.
+	* except.c (output_function_exception_table): Change call to 
+	function_section into call to current_function_section.
+	* final.c (profile_function): Likewise.
+	(scan_ahead_for_unlikely_executed_note): Remove function.
+	(final_scan_insn):  Remove calls to 
+	scan_ahead_for_unlikely_executed_note, and related code for switching 
+	to cold section, except for the single time 
+	NOTE_INSN_SWITCH_TEXT_SECTIONS may be encountered;  add calls to 
+	debug_hooks->switch_text_sections; replace appropriate calls to 
+	function_section with calls to current_function_section.
+	* ifcvt.c (find_if_case_1): Remove redundancy from condition, add 
+	test_bb to condition.
+	(find_if_case_2): Likewise.
+	* insn-notes.def: Change NOTE_INSN_UNLIKELY_EXECUTED_CODE to
+	NOTE_INSN_SWITCH_TEXT_SECTIONS.  Update comment appropriately.
+	* opts.c (decode_options): Change warning about hot/cold partitioning
+	with exceptionss to inform (so as not to cause bootstrap failures);
+	remove warning about partitioning with DWARF debug info.
+	* output.h (current_function_section): Add new function decl.
+	(insert_section_boundary_note): Likewise.
+	(enum in_section): Move this declaration here from varasm.c.
+	(unlikely_section_label): Likewise.
+	(unlikely_text_section_name): Likewise.
+	(last_text_section_name): New global variable.
+	(last_text_section): Likewise.
+	(hot_section_label): Likewise.
+	(hot_section_end_label): Likewise.
+	(cold_section_end_label): Likewise.
+	* passes.c (rest_of_handle_final): Free unlikely_text_section_name.
+	* print-rtl.c (print_rtx): Change NOTE_INSN_UNLIKELY_EXECUTED_CODE
+	to NOTE_INSN_SWITCH_TEXT_SECTIONS.
+	* reg-stack.c (emit_swap_insn): Remove UNLIKELY_EXECUTED_CODE note 
+	insn from consideration.
+	* sdbout.c (sdb_debug_hooks): Add do_nothing for new function, 
+	switch_text_section.
+	* varasm.c (basic-block.h): Add new include.
+	(unlikely_section_label_printed): Remove global variable.
+	(unlikely_section_label): Make global variable not be static any more.
+	(unlikely_text_section_name): Likewise.
+	(hot_section_end_label): New global variable (not static)
+	(first_function_block_is_cold): Likewise.
+	(hot_section_label): Likewise.
+	(cold_section_end_label): Likewise..
+	(last_text_section): New global variable, not static.
+	(last_text_section_name): New global variable, not static.
+	(initialize_cold_section_name): New function.
+	(enum in_section): Move declaration to output.h.
+	(text_section): Update last_text_section.
+	(unlikely_text_section): Replace code to determine cold section name 
+	with call to initialize_cold_section_name; Add code to update 
+	last_text_section; remove code for printing out label.
+	(named_section_real): Add code to update last_text_section and 
+	last_text_section_name as appropriate.
+	(function_section): Change test for 'unlikely' to depend on
+	first_function_block_is_cold (moved old test to 
+        current_function_section).
+	(current_function_section): New function.
+	(assemble_start_function): Move code that frees 
+	unlikely_text_section_name; initialize hot_section_end_label; 
+	print hot and cold section labels at the start of the function; 
+	set first_function_block_is_cold, if appropriate; initialize l
+	ast_text_section; add call to insert_section_boundary_note.
+	(assemble_end_function):  Add code to write out hot and cold section
+	end labels.
+	*vmsdbgout.c (vmsdbg_debug_hooks): Add do_nothing for new function,
+	switch_text_section.
+	* config/darwin.c (machopic_select_section): Replace incorrect 
+	function in base_funs; update reloc for cold sections if necessary.
+	* config/darwin.h (SECTION_FUNCTION):  Add code to update 
+	last_text_section if appropriate.
+	(text_unlikely_section): Remove.
+	* config/sparc/sparc.c (sparc_output_deferred_case_vectors): Likewise.
+	* config/stormy16/stormy16.c (stormy_16_output_addr_vec): Likewise.
+	* config/xtensa/xtensa.c (override_options): Turn off hot/cold
+	partitioning for this architecture.
+
 2005-03-31  Olivier Hainque  <hainque@adacore.com>
 
         * dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
