@@ -4131,17 +4131,21 @@ initializer_constant_valid_p (value, endtype)
       if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
       /* Allow conversions between real types.  */
       if (TREE_CODE (TREE_TYPE (value)) == REAL_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == REAL_TYPE)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
       /* Allow length-preserving conversions between integer types.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
-	  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (value)),
-				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
-      /* Allow conversions between integer types only if explicit value.  */
+
+      /* Allow conversions between other integer types only if
+	 explicit value.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE)
 	{
@@ -4151,13 +4155,23 @@ initializer_constant_valid_p (value, endtype)
 	    return null_pointer_node;
 	  return 0;
 	}
+
       /* Allow (int) &foo provided int is as wide as a pointer.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE
-	  && ! tree_int_cst_lt (TYPE_SIZE (TREE_TYPE (value)),
-				TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
 					     endtype);
+
+      /* Likewise conversions from int to pointers.  */
+      if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
+
       /* Allow conversions to union types if the value inside is okay.  */
       if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
