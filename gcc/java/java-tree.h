@@ -1740,9 +1740,10 @@ enum
   JV_STATE_LINKED = 9,		/* Strings interned.  */
 
   JV_STATE_IN_PROGRESS = 10,	/* <Clinit> running.  */
-  JV_STATE_DONE = 12,
+  JV_STATE_ERROR = 12,
 
-  JV_STATE_ERROR = 14		/* must be last.  */
+  JV_STATE_DONE = 14		/* Must be last.  */
+
 };
 
 #undef DEBUG_JAVA_BINDING_LEVELS
