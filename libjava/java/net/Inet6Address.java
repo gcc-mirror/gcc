@@ -1,5 +1,5 @@
 /* Inet6Address.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.net;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author Michael Koch
@@ -91,7 +92,7 @@ public final class Inet6Address extends InetAddress
     byte[] anylocal = { 0, 0, 0, 0, 0, 0, 0, 0,
 	                0, 0, 0, 0, 0, 0, 0, 0 };
     
-    return ipaddress == anylocal;
+    return Arrays.equals(ipaddress, anylocal);
   }
 	  
   /**
@@ -104,7 +105,7 @@ public final class Inet6Address extends InetAddress
     byte[] loopback = { 0, 0, 0, 0, 0, 0, 0, 0,
 	                0, 0, 0, 0, 0, 0, 0, 1 };
     
-    return ipaddress == loopback;
+    return Arrays.equals(ipaddress, loopback);
   }
 
   /**
