@@ -3,6 +3,8 @@ Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 	* pa.md (call, call_value): Use "word_mode" instead of "SImode" as
 	needed.
 
+        * README: Update.
+
 Wed Jul 28 11:28:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* builtins.c (expand_builtin): Typo in call to expand_builtin_ffs.
