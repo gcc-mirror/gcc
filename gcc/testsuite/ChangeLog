@@ -1,3 +1,8 @@
+2004-11-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long):
+	Fix for powerpc64-*-*.
+
 2004-11-30  Loren James Rittle  <ljrittle@acm.org>
 
         * g++.old-deja/g++.eh/badalloc1.C (arena_size): Bump up to 262144
