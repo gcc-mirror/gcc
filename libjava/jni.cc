@@ -1543,19 +1543,131 @@ _Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
     _Jv_FromReflectedConstructor (reinterpret_cast<Constructor *> (method));
 }
 
+
+
+// Hash table of native methods.
+static JNINativeMethod *nathash;
+// Number of slots used.
+static int nathash_count = 0;
+// Number of slots available.  Must be power of 2.
+static int nathash_size = 0;
+
+#define DELETED_ENTRY ((char *) (~0))
+
+// Compute a hash value for a native method descriptor.
+static int
+hash (const JNINativeMethod *method)
+{
+  char *ptr;
+  int hash = 0;
+
+  ptr = method->name;
+  while (*ptr)
+    hash = (31 * hash) + *ptr++;
+
+  ptr = method->signature;
+  while (*ptr)
+    hash = (31 * hash) + *ptr++;
+
+  return hash;
+}
+
+// Find the slot where a native method goes.
+static JNINativeMethod *
+nathash_find_slot (const JNINativeMethod *method)
+{
+  jint h = hash (method);
+  int step = (h ^ (h >> 16)) | 1;
+  int w = h & (nathash_size - 1);
+  int del = -1;
+
+  for (;;)
+    {
+      JNINativeMethod *slotp = &nathash[w];
+      if (slotp->name == NULL)
+	{
+	  if (del >= 0)
+	    return &nathash[del];
+	  else
+	    return slotp;
+	}
+      else if (slotp->name == DELETED_ENTRY)
+	del = w;
+      else if (! strcmp (slotp->name, method->name)
+	       && ! strcmp (slotp->signature, method->signature))
+	return slotp;
+      w = (w + step) & (nathash_size - 1);
+    }
+}
+
+// Find a method.  Return NULL if it isn't in the hash table.
+static void *
+nathash_find (JNINativeMethod *method)
+{
+  if (nathash == NULL)
+    return NULL;
+  JNINativeMethod *slot = nathash_find_slot (method);
+  if (slot->name == NULL || slot->name == DELETED_ENTRY)
+    return NULL;
+  return slot->fnPtr;
+}
+
+static void
+natrehash ()
+{
+  if (nathash == NULL)
+    {
+      nathash_size = 1024;
+      nathash =
+	(JNINativeMethod *) _Jv_AllocBytes (nathash_size
+					    * sizeof (JNINativeMethod));
+      memset (nathash, 0, nathash_size * sizeof (JNINativeMethod));
+    }
+  else
+    {
+      int savesize = nathash_size;
+      JNINativeMethod *savehash = nathash;
+      nathash_size *= 2;
+      nathash =
+	(JNINativeMethod *) _Jv_AllocBytes (nathash_size
+					    * sizeof (JNINativeMethod));
+      memset (nathash, 0, nathash_size * sizeof (JNINativeMethod));
+
+      for (int i = 0; i < savesize; ++i)
+	{
+	  if (savehash[i].name != NULL && savehash[i].name != DELETED_ENTRY)
+	    {
+	      JNINativeMethod *slot = nathash_find_slot (&savehash[i]);
+	      *slot = savehash[i];
+	    }
+	}
+    }
+}
+
+static void
+nathash_add (const JNINativeMethod *method)
+{
+  if (3 * nathash_count >= 2 * nathash_size)
+    natrehash ();
+  JNINativeMethod *slot = nathash_find_slot (method);
+  // If the slot has a real entry in it, then there is no work to do.
+  if (slot->name != NULL && slot->name != DELETED_ENTRY)
+    return;
+  // FIXME
+  slot->name = strdup (method->name);
+  slot->signature = strdup (method->signature);
+  slot->fnPtr = method->fnPtr;
+}
+
 static jint
-_Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
+_Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 			 const JNINativeMethod *methods,
 			 jint nMethods)
 {
-#ifdef INTERPRETER
-  // For now, this only matters for interpreted methods.  FIXME.
-  if (! _Jv_IsInterpretedClass (k))
-    {
-      // FIXME: throw exception.
-      return JNI_ERR;
-    }
-  _Jv_InterpClass *klass = reinterpret_cast<_Jv_InterpClass *> (k);
+  // Synchronize while we do the work.  This must match
+  // synchronization in some other functions that manipulate or use
+  // the nathash table.
+  JvSynchronize sync (global_ref_table);
 
   // Look at each descriptor given us, and find the corresponding
   // method in the class.
@@ -1563,11 +1675,10 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
     {
       bool found = false;
 
-      _Jv_MethodBase **imeths = _Jv_GetFirstMethod (klass);
+      _Jv_Method *imeths = JvGetFirstMethod (klass);
       for (int i = 0; i < JvNumMethods (klass); ++i)
 	{
-	  _Jv_MethodBase *meth = imeths[i];
-	  _Jv_Method *self = meth->get_method ();
+	  _Jv_Method *self = &imeths[i];
 
 	  if (! strcmp (self->name->data, methods[j].name)
 	      && ! strcmp (self->signature->data, methods[j].signature))
@@ -1577,9 +1688,9 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
 		break;
 
 	      // Found a match that is native.
-	      _Jv_JNIMethod *jmeth = reinterpret_cast<_Jv_JNIMethod *> (meth);
-	      jmeth->set_function (methods[i].fnPtr);
 	      found = true;
+	      nathash_add (&methods[j]);
+
 	      break;
 	    }
 	}
@@ -1600,14 +1711,12 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
     }
 
   return JNI_OK;
-#else /* INTERPRETER */
-  return JNI_ERR;
-#endif /* INTERPRETER */
 }
 
 static jint
 _Jv_JNI_UnregisterNatives (JNIEnv *, jclass)
 {
+  // FIXME -- we could implement this.
   return JNI_ERR;
 }
 
@@ -1751,6 +1860,22 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
   int long_start;
   void *function;
 
+  // Synchronize on something convenient.  Right now we use the hash.
+  JvSynchronize sync (global_ref_table);
+
+  // First see if we have an override in the hash table.
+  strncpy (buf, name->data, name->length);
+  buf[name->length] = '\0';
+  strncpy (buf + name->length + 1, signature->data, signature->length);
+  buf[name->length + signature->length + 1] = '\0';
+  JNINativeMethod meth;
+  meth.name = buf;
+  meth.signature = buf + name->length + 1;
+  function = nathash_find (&meth);
+  if (function != NULL)
+    return function;
+
+  // If there was no override, then look in the symbol table.
   mangled_name (klass, name, signature, buf, &long_start);
   char c = buf[long_start];
   buf[long_start] = '\0';
@@ -1787,10 +1912,16 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   // We cache the value that we find, of course, but if we don't find
   // a value we don't cache that fact -- we might subsequently load a
   // library which finds the function in question.
-  if (_this->function == NULL)
-    _this->function = _Jv_LookupJNIMethod (_this->defining_class,
-					   _this->self->name,
-					   _this->self->signature);
+  {
+    // Synchronize on a convenient object to ensure sanity in case two
+    // threads reach this point for the same function at the same
+    // time.
+    JvSynchronize sync (global_ref_table);
+    if (_this->function == NULL)
+      _this->function = _Jv_LookupJNIMethod (_this->defining_class,
+					     _this->self->name,
+					     _this->self->signature);
+  }
 
   JvAssert (_this->args_raw_size % sizeof (ffi_raw) == 0);
   ffi_raw real_args[2 + _this->args_raw_size / sizeof (ffi_raw)];

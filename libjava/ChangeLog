@@ -1,3 +1,17 @@
+2001-08-20  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (nathash, nathash_count, nathash_size): New globals.
+	(DELETED_ENTRY): New define.
+	(hash): New function.
+	(nathash_find_slot): Likewise.
+	(natrehash): Likewise.
+	(nathash_add): Likewise.
+	(_Jv_JNI_RegisterNatives): No longer interpreter-specific.  Use
+	nathash_add.
+	(nathash_find): New function.
+	(_Jv_LookupJNIMethod): Use it.  Synchronize body.
+	(call): Synchronize around assignment.
+
 2001-08-17  Jeff Sturm  <jsturm@one-point.com>
 
 	* gnu/gcj/convert/UnicodeToBytes.java (write): Write work buffer
