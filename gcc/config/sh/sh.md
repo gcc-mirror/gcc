@@ -19,6 +19,14 @@
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
+;; ??? The MAC.W and MAC.L instructions are not supported.  There is no
+;; way to generate them.
+
+;; ??? The BSR instruction is not supported.  It might be possible to
+;; generate it by keeping track of function sizes (and hence relative
+;; addresses), and then using it only if the target is earlier in the same
+;; file, and is within range.  Better would be assembler/linker relaxing,
+;; but that is much harder.
 
 ;; Special constraints for SH machine description:
 ;;
@@ -30,8 +38,6 @@
 ;; Special formats used for outputting SH instructions:
 ;;
 ;;   %.  --  print a .s if insn needs delay slot
-;;   %*  --  print a local label
-;;   %^  --  increment the local label number
 ;;   %#  --  output a nop if there is nothing to put in the delay slot
 ;;   %R  --  print the lsw arg of a double, 
 ;;   %S  --  print the msw arg of a double
@@ -58,8 +64,6 @@
 (define_attr "cpu" "sh0,sh1,sh2,sh3"
   (const (symbol_ref "sh_cpu")))
 
-(define_attr "interrupt_function" "no,yes"
-  (const (symbol_ref "pragma_interrupt")))
 ;;
 ;; cbranch	conditional branch instructions
 ;; jump		unconditional jumps
@@ -67,8 +71,8 @@
 ;; load		from memory
 ;; store	to memory
 ;; move		register to register
-;; smpy		single precision integer multiply
-;; dmpy		double precision integer multiply
+;; smpy		word precision integer multiply
+;; dmpy		longword or doublelongword precision integer multiply
 ;; return	rts
 ;; pload	load of pr reg (can't be put into delay slot of rts)
 ;; pcload	pc relative load of constant value
@@ -120,40 +124,42 @@
 ;; (define_function_unit {name} {num-units} {n-users} {test}
 ;;                       {ready-delay} {issue-delay} [{conflict-list}])
 				      
-(define_function_unit "memory" 1 0 (eq_attr "type" "load,pcload") 2 2)
-(define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 7 7)
-(define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 9 9)
+(define_function_unit "memory" 1 0 (eq_attr "type" "load,pcload,pload") 2 2)
+(define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 2 2)
+(define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 3 3)
 
-(define_attr "needs_delay_slot" "yes,no"
-  (cond [(eq_attr "type" "jump")   (const_string "yes")
-	 (eq_attr "type" "return") (const_string "yes")]
-	(const_string "no")))
+; Definitions for filling branch delay slots.
 
-(define_delay 
+(define_attr "needs_delay_slot" "yes,no" (const_string "no"))
+
+(define_attr "hit_stack" "yes,no" (const_string "no"))
+
+(define_attr "interrupt_function" "no,yes"
+  (const (symbol_ref "pragma_interrupt")))
+
+(define_attr "in_delay_slot" "yes,no" 
+  (cond [(eq_attr "type" "cbranch") (const_string "no")
+	 (eq_attr "type" "pcload") (const_string "no")
+	 (eq_attr "needs_delay_slot" "yes") (const_string "no")
+	 (eq_attr "length" "2") (const_string "yes")
+	 ] (const_string "no")))
+
+(define_delay
   (eq_attr "needs_delay_slot" "yes")
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
 
 (define_delay 
   (eq_attr "type" "return")
   [(and (eq_attr "in_delay_slot" "yes") 
-	(ior (eq_attr "interrupt_function" "no")
-	    (eq_attr "hit_stack" "no"))) (nil) (nil)])
-
-(define_attr "hit_stack" "yes,no" (const_string "no"))
+	(and (ior (eq_attr "interrupt_function" "no")
+		  (eq_attr "hit_stack" "no"))
+	     (ior (eq_attr "interrupt_function" "yes")
+		  (eq_attr "type" "!pload")))) (nil) (nil)])
 
 (define_delay 
   (and (eq_attr "type" "cbranch") 
        (eq_attr "cpu" "sh2,sh3"))
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
-
-(define_attr "in_delay_slot" "yes,no" 
-  (cond [(eq_attr "type" "cbranch") (const_string "no")
-	 (eq_attr "type" "jump") (const_string "no")
-	 (eq_attr "type" "pload") (const_string "no")
-	 (eq_attr "type" "pcload") (const_string "no")
-	 (eq_attr "type" "return") (const_string "no")
-	 (eq_attr "length" "2") (const_string "yes")
-	 ] (const_string "no")))
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
@@ -164,14 +170,26 @@
 	(eq:SI (reg:SI 18)
 	       (const_int 1)))]
   ""
-  "movt	%0 !movt1")
+  "movt	%0")
+
+;; ??? This combiner pattern does not work, because combine does not combine
+;; instructions that set a hard register when SMALL_REGISTER_CLASSES is
+;; defined.  Perhaps use a pseudo-reg for the T bit?
+
+(define_insn ""
+  [(set (reg:SI 18)
+	(eq:SI (and:SI (match_operand:SI 0 "arith_reg_operand" "z,r")
+		       (match_operand:SI 1 "arith_operand" "L,r"))
+	       (const_int 0)))]
+  ""
+  "tst	%1,%0")
 
 (define_insn "cmpeqsi_t"
   [(set (reg:SI 18) (eq:SI (match_operand:SI 0 "arith_reg_operand" "r,z,r")
 			   (match_operand:SI 1 "arith_operand" "N,rI,r")))]
   ""
   "@
-	tst	%0,%0 ! t0
+	tst	%0,%0
 	cmp/eq	%1,%0
 	cmp/eq	%1,%0")
 
@@ -238,21 +256,13 @@
   [(set_attr "length" "6")])
 
 
-(define_insn "addsi3_real"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0")
-		 (match_operand:SI 2 "arith_operand" "rI")))]
-  ""
-  "add	%2,%0"
-  [(set_attr "type" "arith")])
-
-(define_expand "addsi3"
+(define_insn "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "")
-
+  "add	%2,%0"
+  [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
 ;; Subtraction instructions
@@ -375,9 +385,9 @@
 (define_expand "mulhisi3"
   [(set (reg:SI 21)
 	(mult:SI (sign_extend:SI
-		  (match_operand:HI 1 "mac_operand" "r"))
+		  (match_operand:HI 1 "arith_reg_operand" "r"))
 		 (sign_extend:SI
-		  (match_operand:HI 2 "mac_operand" "r"))))
+		  (match_operand:HI 2 "arith_reg_operand" "r"))))
    (set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(reg:SI 21))]
   ""
@@ -437,7 +447,7 @@
 		 (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH2"
   "mul.l	%1,%0"
-  [(set_attr "type" "smpy")])
+  [(set_attr "type" "dmpy")])
 
 (define_expand "mulsi3"
   [(set (reg:SI 21)
@@ -445,9 +455,17 @@
 		  (match_operand:SI 2 "arith_reg_operand" "r")))
    (set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(reg:SI 21))]
-  "TARGET_SH2"
-  "")
-
+  ""
+  "
+{
+  if (!TARGET_SH2)
+    {
+      FAIL;
+      /* ??? Does this give worse or better code?  */
+      emit_insn (gen_mulsi3_call (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+}")
 
 (define_insn ""
   [(set (reg:DI 20)
@@ -488,22 +506,6 @@
 ;; Logical operations
 ;; -------------------------------------------------------------------------
 
-(define_insn "and_ffff"
- [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-       (and:SI (match_operand:SI 1 "arith_reg_operand" "r")
-	       (const_int 65535)))]
- ""
- "extu.w	%1,%0"
- [(set_attr "type" "arith")])
-
-(define_insn "and_ff"
- [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-       (and:SI (match_operand:SI 1 "arith_reg_operand" "r")
-	       (const_int 255)))]
- ""
- "extu.b	%1,%0"
- [(set_attr "type" "arith")])
-   
 (define_insn ""
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,z")
 	(and:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
@@ -512,12 +514,23 @@
   "and	%2,%0"
   [(set_attr "type" "arith")])
 
+;; If the constant is 255, then emit a extu.b instruction instead of an
+;; and, since that will give better code.
+
 (define_expand "andsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(and:SI (match_operand:SI 1 "arith_reg_operand" "")
 		(match_operand:SI 2 "logical_operand" "")))]
   ""
-  "")
+  "
+{
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 255)
+    {
+      emit_insn (gen_zero_extendqisi2 (operands[0],
+				       gen_lowpart (QImode, operands[1])));
+      DONE;
+    }
+}")
 
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,z")
@@ -539,7 +552,7 @@
 ;; Shifts and rotates
 ;; -------------------------------------------------------------------------
 
-(define_insn "rotlsi3_k"
+(define_insn "rotlsi3_1"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (const_int 1)))
@@ -547,30 +560,62 @@
   ""
   "rotl	%0")
 
-(define_expand "rotlsi3"
-  [(parallel[(set (match_operand:SI 0 "arith_reg_operand" "")
-		  (rotate:SI (match_operand:SI 1 "arith_reg_operand" "")
-			     (match_operand:SI 2 "immediate_operand" "")))
-	     (clobber (reg:SI 18))])]
-  ""
-  "{ if (GET_CODE(operands[2]) != CONST_INT || INTVAL(operands[2]) != 1) FAIL;}")
-
-(define_insn "rotrsi3_k"
+(define_insn "rotlsi3_31"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(rotatert:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (const_int 1)))
+	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (const_int 31)))
    (clobber (reg:SI 18))]
   ""
   "rotr	%0")
 
-(define_expand "rotrsi3"
-  [(parallel[(set (match_operand:SI 0 "arith_reg_operand" "")
-		   (rotatert:SI (match_operand:SI 1 "arith_reg_operand" "")
-				(match_operand:SI 2 "immediate_operand" "")))
-	      (clobber (reg:SI 18))])]
+(define_insn ""
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "r")
+		   (const_int 16)))]
   ""
-  "{ if (GET_CODE(operands[2]) != CONST_INT || INTVAL(operands[2]) != 1) FAIL;}")
+  "swap.w	%1,%0")
 
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "")
+		   (match_operand:SI 2 "immediate_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+
+  if (INTVAL (operands[2]) == 1)
+    {
+      emit_insn (gen_rotlsi3_1 (operands[0], operands[1]));
+      DONE;
+    }
+  else if (INTVAL (operands[2]) == 31)
+    {
+      emit_insn (gen_rotlsi3_31 (operands[0], operands[1]));
+      DONE;
+    }
+  else if (INTVAL (operands[2]) != 16)
+    FAIL;
+}")
+
+(define_insn ""
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(rotate:HI (match_operand:HI 1 "arith_reg_operand" "r")
+		   (const_int 8)))]
+  ""
+  "swap.b	%1,%0")
+
+(define_expand "rotlhi3"
+  [(set (match_operand:HI 0 "arith_reg_operand" "")
+	(rotate:HI (match_operand:HI 1 "arith_reg_operand" "")
+		   (match_operand:HI 2 "immediate_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 8)
+    FAIL;
+}")
 
 ;;
 ;; shift left
@@ -579,27 +624,26 @@
 (define_insn "ashlsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0")
-		   (match_operand:SI 2 "immediate_operand" "M,K")))
-   (clobber (reg:SI 18))]
+		   (match_operand:SI 2 "immediate_operand" "M,K")))]
   "CONST_OK_FOR_K (INTVAL (operands[2]))"
   "@
-	shll	%0
+	add	%0,%0
 	shll%O2	%0")
 
-; seperate pattern for shifts by any N.  Look at pnum_clobbers
-; to see if this is being recognised inside combine.  If so, dont
-; match, since combine will try and merge shifts, which will break
-; scheduling
+; ??? seperate pattern for shifts by any N.  Turn this on to recognize shift
+; insns which aren't supported in the hardware.  This will allow the combiner
+; to notice more patterns, but the down side is that the asm outputter will
+; have to emit several instructions for each shift which isn't possible in
+; the hardware, this makes scheduling perform badly.
 
 (define_insn "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "immediate_operand" "n")))
    (clobber (reg:SI 18))]
-  "fake_shift()"
+  "0"
   "*return output_shift(\"shll\", operands[0], operands[2], ASHIFT);"
   [(set_attr "length" "12")
-   (set_attr "in_delay_slot" "no")
    (set_attr "type" "arith")])
 
 (define_expand "ashlsi3"
@@ -622,21 +666,6 @@
   "INTVAL(operands[2]) == 1"
   "shar	%0"
   [(set_attr "type" "arith")])
-
-
-; an arithmetic shift right by 16 is better as a logical shift and a 
-; sign extend
-
-;(define_split 
-;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-;	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-;		     (const_int 16)))
-;   (clobber (reg:SI 18))]
-;  ""
-;  [(set (match_dup 3) (match_dup 0))
-;    (set (match_dup 3) (lshiftrt:SI (match_dup 3) (const_int 16)))
-;    (set (match_dup 0) (sign_extend:SI (subreg:HI (match_dup 3) 0)))]
-;  "operands[3] = gen_reg_rtx (SImode);")
 
 (define_insn "ashrsi2_16"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -679,7 +708,6 @@
   ""
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
-   (set_attr "in_delay_slot" "no")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "ashrsi3"
@@ -704,17 +732,16 @@
 	shlr	%0
 	shlr%O2	%0")
 
-; seperate pattern for shifts by any N. 
+; ??? seperate pattern for shifts by any N.  See ashlsi3_n.
 
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "n")))
    (clobber (reg:SI 18))]
-  "fake_shift()"
+  "0"
   "* return output_shift (\"shlr\", operands[0], operands[2], LSHIFTRT);"
   [(set_attr "length" "12")
-   (set_attr "in_delay_slot" "no")
    (set_attr "type" "arith")])
 
 (define_expand "lshrsi3"
@@ -788,7 +815,11 @@
 
 (define_insn "negc"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(neg:SI (plus:SI (reg:SI 18) (match_operand:SI 1 "arith_reg_operand" "r"))))]
+	(neg:SI (plus:SI (reg:SI 18)
+			 (match_operand:SI 1 "arith_reg_operand" "r"))))
+   (set (reg:SI 18)
+	(ne:SI (plus:SI (reg:SI 18) (match_dup 1))
+	       (const_int 0)))]
   ""
   "negc	%1,%0"
   [(set_attr "type" "arith")])
@@ -863,38 +894,35 @@
 	(sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r")))
    (clobber (reg:SI 18))]
   ""
-  "mov	%1,%S0\;mov	%1,%R0\;shll	%S0\;subc	%S0,%S0 ! a sidi2"
+  "mov	%1,%S0\;mov	%1,%R0\;shll	%S0\;subc	%S0,%S0"
   [(set_attr "length" "8")]) 
 
 (define_insn "extendhisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r,z,r")
-	(sign_extend:SI (match_operand:HI 1 "general_movsrc_operand" "r,u,m")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
+	(sign_extend:SI (match_operand:HI 1 "general_movsrc_operand" "r,m")))]
   ""
   "@
 	exts.w	%1,%0
-   	mov.w	%1,%0
    	mov.w	%1,%0"
-  [(set_attr "type" "arith,load,load")])
+  [(set_attr "type" "arith,load")])
 
 (define_insn "extendqisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r,z,r")
-	(sign_extend:SI (match_operand:QI 1 "general_movsrc_operand" "r,U,m")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
+	(sign_extend:SI (match_operand:QI 1 "general_movsrc_operand" "r,m")))]
   ""
   "@
 	exts.b	%1,%0
-	mov.b	%1,%0 !p9
-	mov.b	%1,%0 !p8"
-  [(set_attr "type" "arith,load,load")])
+	mov.b	%1,%0"
+  [(set_attr "type" "arith,load")])
 
 (define_insn "extendqihi2"
-  [(set (match_operand:HI 0 "arith_reg_operand" "=r,z,r")
-	(sign_extend:HI (match_operand:QI 1 "general_movsrc_operand" "r,U,m")))]
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
+	(sign_extend:HI (match_operand:QI 1 "general_movsrc_operand" "r,m")))]
   ""
   "@
 	exts.b	%1,%0
-	mov.b	%1,%0  !p7
-	mov.b	%1,%0 ! p6"
-  [(set_attr "type" "arith,load,load")])
+	mov.b	%1,%0"
+  [(set_attr "type" "arith,load")])
 
 
 ;; -------------------------------------------------------------------------
@@ -909,18 +937,19 @@
   ""
   "@
 	mov.l	%0,@-r15
-	sts.l	%0,@-r15 ! push"
+	sts.l	%0,@-r15"
   [(set_attr "type" "store")
    (set_attr "hit_stack" "yes")])
 
 (define_insn "pop"
-  [(set (match_operand:SI 0 "register_operand" "=r,lx")
+  [(set (match_operand:SI 0 "register_operand" "=r,l,x")
 	(mem:SI (post_inc:SI (reg:SI 15))))]
   ""
   "@
 	mov.l	@r15+,%0
+	lds.l	@r15+,%0
 	lds.l	@r15+,%0"
-  [(set_attr "type" "load,pload")
+  [(set_attr "type" "load,pload,load")
    (set_attr "hit_stack" "yes")])
 
 (define_insn ""
@@ -968,9 +997,10 @@
 	sts.l	%1,%0
 	lds	%1,%0
 	lds.l	%1,%0
-	tst	%1,%1\;bt	T%*\;bra	F%*\;sett\;T%*:clrt\;F%*:%^
-	fake %1,%0"
-  [(set_attr "type" "pcload,move,load,move,store,store,move,load,move,move,move")])
+	tst	%1,%1\;rotcl	%1\;xor	#1,%1\;rotcr	%1
+	fake	%1,%0"
+  [(set_attr "type" "pcload,move,load,move,store,store,move,load,move,move,move")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,8,*")])
 			  
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -1001,8 +1031,8 @@
   "if (prepare_move_operands(operands, QImode)) DONE; ")
 
 (define_insn "movhi_i"
-  [(set (match_operand:HI 0 "general_movdst_operand" "=r,r,r,r,<m,r,r,l")
-	(match_operand:HI 1 "general_movsrc_operand" "Q,rI,>m,t,r,i,l,r"))]
+  [(set (match_operand:HI 0 "general_movdst_operand" "=r,r,r,r,<m,r,l,r")
+	(match_operand:HI 1 "general_movsrc_operand" "Q,rI,>m,t,r,l,r,i"))]
   ""
   "@
 	mov.w	%1,%0
@@ -1010,9 +1040,9 @@
 	mov.w	%1,%0
 	movt	%0
 	mov.w	%1,%0
-	fake %1,%0
 	sts	%1,%0
-	lds	%1,%0"
+	lds	%1,%0
+	fake	%1,%0"
   [(set_attr "type" "pcload,move,load,move,store,move,move,move")])
 
 (define_expand "movhi"
@@ -1153,13 +1183,16 @@
    "mov.l	%1,%0"
   [(set_attr "type" "store")])
 		
+;; ??? Why do we have unsupported auto-inc in the dest, and auto-dec in the
+;; source? And why is the supported auto-dec dest and auto-inc source missing?
+
 (define_insn "movsf_i"
   [(set (match_operand:SF 0 "general_movdst_operand" "=>,r,r,r,r,m,l,r")
 	(match_operand:SF 1 "general_movsrc_operand"  "r,<,r,I,m,r,r,l"))]
   ""
   "@
-        mov.l	%1,@%N0\;add	#4,%N0 !bad
-        add	#-4,%1\;mov.l	@%N1,%0 !bad
+        mov.l	%1,@%N0\;add	#4,%N0
+        add	#-4,%1\;mov.l	@%N1,%0
 	mov	%1,%0
 	mov	%1,%0
 	mov.l	%1,%0
@@ -1343,33 +1376,13 @@
    (set_attr "needs_delay_slot" "yes")])
 
 
-(define_insn "bsr"
-  [(call (mem:SI (match_operand 0 "bsr_operand" "i"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:SI 17))]
-  "TARGET_BSR"
-  "bsr	%O0%#"
-  [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")])
-
 (define_insn "calli"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 17))]
   ""
   "jsr	@%0%#"
-  [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")])
-
-(define_insn "bsr_value"
-  [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand 1 "bsr_operand" "i"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:SI 17))]
-  "TARGET_BSR"
-  "bsr	%O1%#"
-  [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")])
+  [(set_attr "needs_delay_slot" "yes")])
 
 (define_insn "call_valuei"
   [(set (match_operand 0 "" "=rf")
@@ -1378,8 +1391,7 @@
    (clobber (reg:SI 17))]
   ""
   "jsr	@%1%#"
-  [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")])
+  [(set_attr "needs_delay_slot" "yes")])
 
 (define_expand "call"
   [(parallel[(call (match_operand 0 "arith_reg_operand" "o")
@@ -1401,46 +1413,38 @@
 	(match_operand:SI 0 "arith_reg_operand" "r"))]
   ""
   "jmp	@%0%#"
-  [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")])
-
+  [(set_attr "needs_delay_slot" "yes")])
 
 ;; ------------------------------------------------------------------------
 ;; Misc insns
 ;; ------------------------------------------------------------------------
 
-;(define_insn "dect"
-;  [(parallel[
-;	     (set (match_dup 0)
-;		  (plus:SI (match_dup 0)
-;			   (const_int -1)))
-;
-;	     (set (reg:SI 18)
-;		  (eq:SI (match_operand:SI 0 "register_operand" "=r")
-;			 (const_int 0)))])]
-;  "TARGET_SH2"
-;  "dt	%0")
+;; ??? This combiner pattern does not work, because combine does not combine
+;; instructions that set a hard register when SMALL_REGISTER_CLASSES is
+;; defined.  Perhaps use a pseudo-reg for the T bit?
+
+(define_insn "dect"
+  [(parallel[
+	     (set (match_operand:SI 0 "register_operand" "=r")
+		  (plus:SI (match_dup 0)
+			   (const_int -1)))
+	     (set (reg:SI 18)
+		  (eq:SI (plus:SI (match_dup 0) (const_int -1))
+			 (const_int 0)))])]
+  "TARGET_SH2"
+  "dt	%0")
 
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "or	r0,r0")
-
-; experimental use of auto inc and dec made these...
-; can be deleted
-
-(define_insn "fake"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(mem:QI (pre_dec:SI (match_operand:SI 1 "register_operand" "r"))))]
-  ""
-  "add	#-1,%1\;mov.b	@%1,%0 !bad"
-  [(set_attr "length" "4")])
+  "nop")
 
 ;; Load address of a label. This is only generated by the casesi expand.
+;; This must use unspec, because this only works immediately before a casesi.
 
 (define_insn "mova"
   [(set (reg:SI 0) 
-	(label_ref (match_operand 0 "" "")))]
+	(unspec [(label_ref (match_operand 0 "" ""))] 1))]
   ""
   "mova	%O0,r0"
   [(set_attr "in_delay_slot" "no")])
@@ -1452,6 +1456,8 @@
 ;; operand 2 is the maximum bound - minimum bound + 1
 ;; operand 3 is CODE_LABEL for the table;
 ;; operand 4 is the CODE_LABEL to go to if index out of range.
+
+;; ??? There should be a barrier after the jump at the end.
 
 (define_expand "casesi"
   [(set (match_dup 5) (match_operand:SI 0 "arith_reg_operand" ""))
@@ -1466,9 +1472,8 @@
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
    (set (match_dup 6) (match_dup 5))
-   (parallel[(set (match_dup 6) (ashift:SI (match_dup 6) (match_dup 7)))
-		(clobber (reg:SI 18))])
-   (set (reg:SI 0) (label_ref (match_operand 3 "" "")))
+   (set (match_dup 6) (ashift:SI (match_dup 6) (match_dup 7)))
+   (set (reg:SI 0) (unspec [(label_ref (match_operand 3 "" ""))] 1))
    (parallel[(set (reg:SI 0) (plus:SI (reg:SI 0)
 				      (mem:HI (plus:SI (reg:SI 0)
 						       (match_dup 6)))))
@@ -1497,16 +1502,14 @@
 		return \"mov.l	@(r0,%0),%0\;add	%0,r0\";
 	else
 	   	return \"mov.w	@(r0,%0),%0\;add	%0,r0\";"
-  [(set_attr "needs_delay_slot" "no")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
-
+  [(set_attr "length" "4")])
 
 (define_insn "return"
   [(return)]
   "reload_completed"
   "%@	%#"
-  [(set_attr "type" "return")])
+  [(set_attr "type" "return")
+   (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "prologue"
   [(const_int 0)]
@@ -1533,7 +1536,7 @@
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(eq:SI (reg:SI 18) (const_int 1)))]
   ""
-  "movt	%0 ! ")
+  "movt	%0")
 
 (define_expand "seq"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -1595,116 +1598,6 @@
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))]
   ""
   "operands[1] = prepare_scc_operands (EQ);")
-
-;; -------------------------------------------------------------------------
-;; Peepholes
-;; -------------------------------------------------------------------------
-
-
-(define_peephole 
-  [(set (match_operand:QI 0 "arith_reg_operand" "")
-	(mem:QI (match_operand:SI 1 "arith_reg_operand" "")))
-   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 1)))]
-  "REGNO (operands[1]) != REGNO (operands[0])"
-  "mov.b	@%1+,%0")
-
-(define_peephole 
-  [(set (match_operand:HI 0 "arith_reg_operand" "")
-	(mem:HI (match_operand:SI 1 "arith_reg_operand" "")))
-   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 2)))]
-  "REGNO (operands[1]) != REGNO (operands[0])"
-  "mov.w	@%1+,%0")
-
-(define_peephole 
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(mem:SI (match_operand:SI 1 "arith_reg_operand" "")))
-   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 4)))]
-  "REGNO (operands[1]) != REGNO (operands[0])"
-  "mov.l	@%1+,%0")
-
-(define_peephole
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(match_operand:QI 1 "memory_operand" "g"))
-   (set (match_operand:SI 2 "register_operand" "=r")
-	(sign_extend:SI (match_dup 0)))]
-  "REGNO (operands[0]) == REGNO (operands[2])"
-  "mov.b	%1,%0 !p 5")
-
-(define_peephole 
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(match_operand:QI 1 "general_movsrc_operand" "g"))
-   (set (match_operand:SI 2 "register_operand" "=r")
-	(sign_extend:SI (match_dup 0)))]
-  "REGNO (operands[0]) != REGNO (operands[2]) 
-   && 0 && dead_or_set_p (insn, operands[0])"
-  "mov.b	%1,%2 ! p4")
-
-  
-;; -------------------------------------------------------------------------
-;; Peepholes
-;; -------------------------------------------------------------------------
-
-(define_peephole 
-  [(set (reg:SI 0) (label_ref (match_operand 0 "" "")))
-   (set (match_operand:SI 1 "register_operand" "=r")
-	(reg:SI 0))
-   (set (reg:SI 0) (label_ref (match_dup 0)))
-   (set (match_operand:SI 2 "register_operand" "=r")
-	(reg:SI 0))]
-   ""
-   "mova	%O0,r0\;mov	r0,%1\;mov	r0,%2")
-
-;; -------------------------------------------------------------------------
-;; Combine patterns
-;; -------------------------------------------------------------------------
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_operand:HI 1 "register_operand" "%0")
-		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
-  "add	%2,%0 ! why")
-
-(define_insn "addc_2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=&r")
-	(plus:SI (reg:SI 18)
-		 (match_operand:SI 1 "arith_reg_operand" "r")))
-   (clobber (reg:SI 18))]
-  ""
-  "mov	#0,%0\;addc	%1,%0 ! addc1"
-  [(set_attr "length" "4")])
-
-(define_insn "combine_1"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(sign_extend:SI (mem:QI (match_operand:SI 1 "arith_reg_operand" "r"))))]
-  ""
-  "mov.b	@%1,%0 ! why"
-  [(set_attr "type" "load")])
-  
-(define_insn "combine_2"
-  [(set (reg:SI 18)
-	(eq:SI (and:SI (match_operand:SI 0 "arith_reg_operand" "z,r")
-		    (match_operand:SI 1 "arith_operand" "L,r"))
-	    (const_int 0)))]
-  ""
-  "tst	%1,%0 !t2c")
-
-(define_split
-  [(set (pc) 
-	(if_then_else
-	 (match_operator 2 "equality_operator" [(match_operand:SI 0 "arith_reg_operand" "r")
-						(const_int 0)])
-	 (label_ref (match_operand 1 "" ""))
-	 (pc)))
-   (clobber (reg:SI 18))]
-  ""
-  [(set (reg:SI 18) (eq:SI (and:SI (match_dup 0) (match_dup 0))
-			(const_int 0)))
-   (set (pc)
-	(if_then_else (match_op_dup 2 [(reg:SI 18) (const_int 1)])
-		      (label_ref (match_dup 1))
-		      (pc)))]
-  "")
 
 ;; -------------------------------------------------------------------------
 ;; Instructions to cope with inline literal tables
@@ -1775,60 +1668,9 @@
   "* return output_jump_label_table ();"
   [(set_attr "in_delay_slot" "no")])
 
-
-;(define_split 
-;  [(set (subreg:SI (match_operand:QI 0 "register_operand" "=r") 0)
-;	(plus:SI (subreg:SI (match_operand:QI 1 "general_operand" "g") 0)
-;		 (subreg:SI (match_operand:QI 2 "general_operand" "g") 0)))]
-;  ""
-;  [(set (match_dup 3) (plus:SI (match_dup 1) (match_dup 2)))
-;   (set (match_dup 1) (subreg:SI (match_dup 3) 0))]
-;  "operands[3] = gen_reg_rtx(SImode);")
-
-
-; byte arithmetic involving constants which need to be sign extended can be 
-; fixed up...
-
-
-(define_split 
-  [(set (subreg:SI (match_operand:QI 0 "register_operand" "=r") 0)
-	(plus:SI (subreg:SI (match_operand:QI 1 "register_operand" "0") 0)
-		 (subreg:SI (match_operand 2 "immediate_operand" "n") 0)))]
-  ""
-  [(set (match_dup 4) (plus:SI (match_dup 2) (match_dup 3)))
-   (set (match_dup 0) (and:SI (match_dup 0) (const_int 255)))]
-  "{ int i = INTVAL(operands[2]) & 0xff;
-   if (i > 127) i = i - 256;
-   operands[3] = GEN_INT(i); 
-   operands[4] = gen_reg_rtx(SImode);} ")
-
-
-;; these instructions don't really exist - they are needed
-;; before machine_dependent_reorg
-
-(define_insn "movsi_k"
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (match_operand:SI 1 "immediate_operand" ""))]
-  ""
-  "! this is a fake")
-
-
-(define_insn "movhi_k"
- [(set (match_operand:HI 0 "register_operand" "=r")
-       (match_operand:HI 1 "immediate_operand" ""))]
-  ""
-  "! this is a fake")
-
-(define_insn "movdi_k"
- [(set (match_operand:DI 0 "register_operand" "=r")
-       (match_operand:DI 1 "immediate_operand" ""))]
-  ""
-  "! this is a fake")
-
 ;; -------------------------------------------------------------------------
 ;; Misc
 ;; -------------------------------------------------------------------------
-
 
 ;; String/block move insn.  
 
@@ -1877,18 +1719,21 @@
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
-(define_insn "mac"
-  [(set (reg:SI 21)
-	(mult:SI (sign_extend:SI (mem:HI (post_inc:SI 
-					  (match_operand:SI 0 "arith_reg_operand" "r"))))
-		 (sign_extend:SI (mem:HI (post_inc:SI
-					  (match_operand:SI 1 "arith_reg_operand" "r"))))))]
-  ""
-  "mac.w	@%0+,@%1+")
+;; -------------------------------------------------------------------------
+;; Peepholes
+;; -------------------------------------------------------------------------
 
+;; This matches cases where a stack pointer increment at the start of the
+;; epilogue combines with a stack slot read loading the return value.
 
-			
+(define_peephole 
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(mem:SI (match_operand:SI 1 "arith_reg_operand" "")))
+   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 4)))]
+  "REGNO (operands[1]) != REGNO (operands[0])"
+  "mov.l	@%1+,%0")
 
+;; See the comment on the dt combiner pattern above.
 
 (define_peephole 
   [(set (match_operand:SI 0 "register_operand" "=r")
