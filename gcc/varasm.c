@@ -1534,9 +1534,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   /* Some object file formats have a maximum alignment which they support.
      In particular, a.out format supports a maximum alignment of 4.  */
-#ifndef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
-#endif
   if (align > MAX_OFILE_ALIGNMENT)
     {
       warning ("%Jalignment of '%D' is greater than maximum object "

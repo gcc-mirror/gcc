@@ -1,3 +1,8 @@
+2004-08-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* varasm.c (MAX_OFILE_ALIGNMENT): Move ...
+	* defaults.h (MAX_OFILE_ALIGNMENT): ... here.
+
 2004-08-18  Ziemowit Laski  <zlaski@apple.com>
 
 	* gcc.c (default_compilers): Add info about ".mm", ".M" and ".mii"

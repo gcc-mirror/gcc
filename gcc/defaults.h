@@ -807,4 +807,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define REVERSIBLE_CC_MODE(MODE) 0
 #endif
 
+/* Biggest alignment supported by the object file format of this machine.  */
+#ifndef MAX_OFILE_ALIGNMENT
+#define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
