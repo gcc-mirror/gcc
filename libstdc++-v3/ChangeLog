@@ -18,7 +18,6 @@
 	
 	* include/bits/localefwd.h (_Count_ones): Change _S_count to _M_count.
 	Same for _M_halfcount.
-	(std): make locale::_Impl protected. CHANGE BACK
 
 2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
