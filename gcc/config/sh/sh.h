@@ -656,12 +656,13 @@ extern enum reg_class reg_class_from_letter[];
 
 /* 1 if N is a possible register number for a function value. */
 #define FUNCTION_VALUE_REGNO_P(REGNO) \
-  ((REGNO) == FIRST_RET_REG || (REGNO) == FIRST_FP_RET_REG)
+  ((REGNO) == FIRST_RET_REG || (TARGET_SH3E && (REGNO) == FIRST_FP_RET_REG))
 
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(REGNO) \
-  (((REGNO) >= FIRST_PARM_REG && (REGNO) < (FIRST_PARM_REG + 4)) \
-   || ((REGNO >= FIRST_FP_PARM_REG && (REGNO) < (FIRST_FP_PARM_REG + 8))))
+  (((REGNO) >= FIRST_PARM_REG && (REGNO) < (FIRST_PARM_REG + 4))	\
+   || (TARGET_SH3E							\
+       && (REGNO) >= FIRST_FP_PARM_REG && (REGNO) < (FIRST_FP_PARM_REG + 8)))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -730,8 +731,9 @@ struct sh_args {
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)		\
-  && ((TYPE)==0 || ! TREE_ADDRESSABLE((tree)(TYPE)))		\
-  && ((TYPE)==0 || (MODE) != BLKmode))
+   && ((TYPE) == 0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))	\
+   /* ??? This is questionable.  Should perhaps be deleted.  */	\
+   && (! TARGET_SH3E || (TYPE) == 0 || (MODE) != BLKmode))
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
