@@ -33,9 +33,17 @@ struct resources
   HARD_REG_SET regs;	/* Which registers are set or needed.  */
 };
 
+/* The kinds of rtl mark_*_resources will consider */
+enum mark_resource_type
+{
+  MARK_SRC_DEST = 0,
+  MARK_SRC_DEST_CALL = 1,
+  MARK_DEST = 2
+};
+
 extern void mark_target_live_regs 	PARAMS ((rtx, rtx, struct resources *));
 extern void mark_set_resources		PARAMS ((rtx, struct resources *, int,
-					       int));
+					       enum mark_resource_type));
 extern void mark_referenced_resources	PARAMS ((rtx, struct resources *, int));
 extern void clear_hashed_info_for_insn	PARAMS ((rtx));
 extern void incr_ticks_for_insn		PARAMS ((rtx));

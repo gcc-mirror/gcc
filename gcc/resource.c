@@ -444,7 +444,8 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 		 underlying insn.  Any registers set by the underlying insn
 		 are live since the insn is being done somewhere else.  */
 	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
-		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0, 1);
+		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0,
+				    MARK_SRC_DEST_CALL);
 
 	      /* All other USE insns are to be ignored.  */
 	      continue;
@@ -518,17 +519,18 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
 
 		      target_set = set;
-		      mark_set_resources (insn, &target_set, 0, 1);
+		      mark_set_resources (insn, &target_set, 0,
+					  MARK_SRC_DEST_CALL);
 
 		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
 			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
 			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
 
-		      mark_set_resources (insn, &set, 0, 1);
+		      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 		    }
 		  else
 		    {
-		      mark_set_resources (insn, &set, 0, 1);
+		      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 		      target_set = set;
 		    }
 
@@ -566,7 +568,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 	}
 
       mark_referenced_resources (insn, &needed, 1);
-      mark_set_resources (insn, &set, 0, 1);
+      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 
       COPY_HARD_REG_SET (scratch, set.regs);
       AND_COMPL_HARD_REG_SET (scratch, needed.regs);
@@ -578,8 +580,8 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 
 /* Given X, a part of an insn, and a pointer to a `struct resource',
    RES, indicate which resources are modified by the insn. If
-   INCLUDE_DELAYED_EFFECTS is nonzero, also mark resources potentially
-   set by the called routine.
+   MARK_TYPE is MARK_SRC_DEST_CALL, also mark resources potentially
+   set by the called routine.  If MARK_TYPE is MARK_DEST, only mark SET_DESTs
 
    If IN_DEST is nonzero, it means we are inside a SET.  Otherwise,
    objects are being referenced instead of set.
@@ -591,11 +593,11 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
    our computation and thus may be placed in a delay slot.   */
 
 void
-mark_set_resources (x, res, in_dest, include_delayed_effects)
+mark_set_resources (x, res, in_dest, mark_type)
      register rtx x;
      register struct resources *res;
      int in_dest;
-     int include_delayed_effects;
+     enum mark_resource_type mark_type;
 {
   enum rtx_code code;
   int i, j;
@@ -631,7 +633,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	 that aren't saved across calls, global registers and anything
 	 explicitly CLOBBERed immediately after the CALL_INSN.  */
 
-      if (include_delayed_effects)
+      if (mark_type == MARK_SRC_DEST_CALL)
 	{
 	  rtx next = NEXT_INSN (x);
 	  rtx prev = PREV_INSN (x);
@@ -650,7 +652,8 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  for (link = CALL_INSN_FUNCTION_USAGE (x);
 	       link; link = XEXP (link, 1))
 	    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1, 0);
+	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
+				  MARK_SRC_DEST);
 
 	  /* Check for a NOTE_INSN_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
@@ -668,7 +671,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	   and doesn't actually do anything, so we ignore it.  */
 
 #ifdef INSN_SETS_ARE_DELAYED
-      if (! include_delayed_effects
+      if (mark_type != MARK_SRC_DEST_CALL
 	  && INSN_SETS_ARE_DELAYED (x))
 	return;
 #endif
@@ -684,36 +687,40 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	 effects of the calling routine.  */
 
       mark_set_resources (SET_DEST (x), res,
-			  (include_delayed_effects
+			  (mark_type == MARK_SRC_DEST_CALL
 			   || GET_CODE (SET_SRC (x)) != CALL),
-			  0);
+			  mark_type);
 
-      mark_set_resources (SET_SRC (x), res, 0, 0);
+      if (mark_type != MARK_DEST)
+	mark_set_resources (SET_SRC (x), res, 0, MARK_SRC_DEST);
       return;
 
     case CLOBBER:
-      mark_set_resources (XEXP (x, 0), res, 1, 0);
+      mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
       
     case SEQUENCE:
       for (i = 0; i < XVECLEN (x, 0); i++)
 	if (! (INSN_ANNULLED_BRANCH_P (XVECEXP (x, 0, 0))
 	       && INSN_FROM_TARGET_P (XVECEXP (x, 0, i))))
-	  mark_set_resources (XVECEXP (x, 0, i), res, 0,
-			      include_delayed_effects);
+	  mark_set_resources (XVECEXP (x, 0, i), res, 0, mark_type);
       return;
 
     case POST_INC:
     case PRE_INC:
     case POST_DEC:
     case PRE_DEC:
-      mark_set_resources (XEXP (x, 0), res, 1, 0);
+      mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
 
+    case SIGN_EXTRACT:
     case ZERO_EXTRACT:
-      mark_set_resources (XEXP (x, 0), res, in_dest, 0);
-      mark_set_resources (XEXP (x, 1), res, 0, 0);
-      mark_set_resources (XEXP (x, 2), res, 0, 0);
+      if (! (mark_type == MARK_DEST && in_dest))
+	{
+	  mark_set_resources (XEXP (x, 0), res, in_dest, MARK_SRC_DEST);
+	  mark_set_resources (XEXP (x, 1), res, 0, MARK_SRC_DEST);
+	  mark_set_resources (XEXP (x, 2), res, 0, MARK_SRC_DEST);
+	}
       return;
 
     case MEM:
@@ -724,15 +731,14 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  res->volatil |= MEM_VOLATILE_P (x);
 	}
 
-      mark_set_resources (XEXP (x, 0), res, 0, 0);
+      mark_set_resources (XEXP (x, 0), res, 0, MARK_SRC_DEST);
       return;
 
     case SUBREG:
       if (in_dest)
 	{
 	  if (GET_CODE (SUBREG_REG (x)) != REG)
-	    mark_set_resources (SUBREG_REG (x), res,
-				in_dest, include_delayed_effects);
+	    mark_set_resources (SUBREG_REG (x), res, in_dest, mark_type);
 	  else
 	    {
 	      unsigned int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
@@ -750,6 +756,13 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
         for (r = 0; r < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); r++)
 	  SET_HARD_REG_BIT (res->regs, REGNO (x) + r);
       return;
+
+    case STRICT_LOW_PART:
+      if (! (mark_type == MARK_DEST && in_dest))
+	{
+	  mark_set_resources (XEXP (x, 0), res, 0, MARK_SRC_DEST);
+	  return;
+	}
 
     case UNSPEC_VOLATILE:
     case ASM_INPUT:
@@ -770,7 +783,8 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	 traditional asms unlike their normal usage.  */
       
       for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
-	mark_set_resources (ASM_OPERANDS_INPUT (x, i), res, in_dest, 0);
+	mark_set_resources (ASM_OPERANDS_INPUT (x, i), res, in_dest,
+			    MARK_SRC_DEST);
       return;
 
     default:
@@ -783,13 +797,12 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
     switch (*format_ptr++)
       {
       case 'e':
-	mark_set_resources (XEXP (x, i), res, in_dest, include_delayed_effects);
+	mark_set_resources (XEXP (x, i), res, in_dest, mark_type);
 	break;
 
       case 'E':
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  mark_set_resources (XVECEXP (x, i, j), res, in_dest,
-			      include_delayed_effects);
+	  mark_set_resources (XVECEXP (x, i, j), res, in_dest, mark_type);
 	break;
       }
 }
@@ -1098,7 +1111,7 @@ mark_target_live_regs (insns, target, res)
 	  AND_COMPL_HARD_REG_SET (scratch, set.regs);
 	  IOR_HARD_REG_SET (new_resources.regs, scratch);
 
-	  mark_set_resources (insn, &set, 0, 1);
+	  mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 	}
 
       IOR_HARD_REG_SET (res->regs, new_resources.regs);
@@ -1178,7 +1191,8 @@ init_resource_info (epilogue_insn)
   start_of_epilogue_needs = end_of_function_needs;
 
   while ((epilogue_insn = next_nonnote_insn (epilogue_insn)))
-    mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 1);
+    mark_set_resources (epilogue_insn, &end_of_function_needs, 0,
+			MARK_SRC_DEST_CALL);
 
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = (struct target_info **)
@@ -1277,7 +1291,8 @@ find_free_register (current_insn, last_insn, class_str, mode, reg_set)
     while (current_insn != last_insn)
       {
 	/* Exclude anything set in this insn.  */
-	mark_set_resources (PATTERN (current_insn), &used, 0, 1);
+	mark_set_resources (PATTERN (current_insn), &used, 0,
+			    MARK_SRC_DEST_CALL);
 	current_insn = next_nonnote_insn (current_insn);
       }
 

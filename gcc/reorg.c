@@ -1246,7 +1246,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
     {
       rtx trial = XEXP (temp, 0);
 
-      mark_set_resources (trial, &cc_set, 0, 1);
+      mark_set_resources (trial, &cc_set, 0, MARK_SRC_DEST_CALL);
       if (insn_references_resource_p (XVECEXP (seq , 0, 0), &cc_set, 0))
         return delay_list;
     }
@@ -1498,7 +1498,7 @@ try_merge_delay_insns (insn, thread)
 	  next_to_match = XVECEXP (PATTERN (insn), 0, slot_number);
 	}
 
-      mark_set_resources (trial, &set, 0, 1);
+      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (trial, &needed, 1);
     }
 
@@ -1513,7 +1513,7 @@ try_merge_delay_insns (insn, thread)
       rtx filled_insn = XVECEXP (pat, 0, 0);
 
       /* Account for resources set/needed by the filled insn.  */
-      mark_set_resources (filled_insn, &set, 0, 1);
+      mark_set_resources (filled_insn, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (filled_insn, &needed, 1);
 
       for (i = 1; i < XVECLEN (pat, 0); i++)
@@ -1552,7 +1552,7 @@ try_merge_delay_insns (insn, thread)
 	    {
 	      /* Keep track of the set/referenced resources for the delay
 		 slots of any trial insns we encounter.  */
-              mark_set_resources (dtrial, &set, 0, 1);
+              mark_set_resources (dtrial, &set, 0, MARK_SRC_DEST_CALL);
               mark_referenced_resources (dtrial, &needed, 1);
 	    }
 	}
@@ -1687,7 +1687,7 @@ redundant_insn (insn, target, delay_list)
 
   CLEAR_RESOURCE (&needed);
   CLEAR_RESOURCE (&set);
-  mark_set_resources (insn, &set, 0, 1);
+  mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
   mark_referenced_resources (insn, &needed, 1);
 
   /* If TARGET is a SEQUENCE, get the main insn.  */
@@ -2124,7 +2124,7 @@ fill_simple_delay_slots (non_jumps_p)
 	{
 	  CLEAR_RESOURCE (&needed);
 	  CLEAR_RESOURCE (&set);
-	  mark_set_resources (insn, &set, 0, 0);
+	  mark_set_resources (insn, &set, 0, MARK_SRC_DEST);
 	  mark_referenced_resources (insn, &needed, 0);
 
 	  for (trial = prev_nonnote_insn (insn); ! stop_search_p (trial, 1);
@@ -2170,7 +2170,7 @@ fill_simple_delay_slots (non_jumps_p)
 		    }
 		}
 
-	      mark_set_resources (trial, &set, 0, 1);
+	      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
 	      mark_referenced_resources (trial, &needed, 1);
 	    }
 	}
@@ -2218,13 +2218,13 @@ fill_simple_delay_slots (non_jumps_p)
 
 	  if (GET_CODE (insn) == CALL_INSN)
 	    {
-	      mark_set_resources (insn, &set, 0, 1);
+	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 	      mark_referenced_resources (insn, &needed, 1);
 	      maybe_never = 1;
 	    }
 	  else 
 	    {
-	      mark_set_resources (insn, &set, 0, 1);
+	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 	      mark_referenced_resources (insn, &needed, 1);
 	      if (GET_CODE (insn) == JUMP_INSN)
 		target = JUMP_LABEL (insn);
@@ -2303,7 +2303,7 @@ fill_simple_delay_slots (non_jumps_p)
 		  continue;
 		}
 
-	      mark_set_resources (trial, &set, 0, 1);
+	      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
 	      mark_referenced_resources (trial, &needed, 1);
 
 	      /* Ensure we don't put insns between the setting of cc and the
@@ -2467,7 +2467,7 @@ fill_simple_delay_slots (non_jumps_p)
 	    }
 	}
 
-      mark_set_resources (trial, &set, 0, 1);
+      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (trial, &needed, 1);
     }
 
@@ -2719,7 +2719,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
       /* This insn can't go into a delay slot.  */
       lose = 1;
-      mark_set_resources (trial, &set, 0, 1);
+      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (trial, &needed, 1);
 
       /* Ensure we don't put insns between the setting of cc and the comparison
