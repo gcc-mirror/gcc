@@ -1,3 +1,7 @@
+2001-02-02  Phil Edwards  <pme@sources.redhat.com>
+
+	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
+
 2001-01-31  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Add support for Java demangling under the v3 ABI:
@@ -19,10 +23,6 @@
 	(main): Remove explicit handling of `java' option. Instead, pass style
 	parameter in cplus_demangle flags as gdb does.
 	* testsuite/demangle.expected: Add some Java test cases.
-
-2001-01-29  Phil Edwards  <pme@sources.redhat.com>
-
-	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
 
 2000-12-29  DJ Delorie  <dj@redhat.com>
 
