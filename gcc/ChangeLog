@@ -1,3 +1,24 @@
+2004-09-11  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-cfg.c (set_bb_for_stmt): Use PHI_BB.
+	* tree-dfa.c (compute_immediate_uses, add_immediate_use,
+	redirect_immediate_use): Use PHI_DF.
+	* tree-flow-inline.h (stmt_ann): Abort on phi nodes.
+	(bb_for_stmt): Use PHI_BB.
+	(get_immediate_uses): Use PHI_DF.
+	* tree-ssa-dse.c (max_stmt_uid): New variable.
+	(get_stmt_uid): New function.
+	(dse_optimize_stmt, dse_record_phis, tree_ssa_dse): Do not use phi
+	node annotations.
+	* tree-ssa-loop-im.c (LIM_DATA): Do not use phi statement annotations.
+	(max_uid): Renamed to max_stmt_uid.
+	(get_stmt_uid): New function.
+	(maybe_queue_var, single_reachable_address, determine_lsm): Do not use
+	phi node annotations.
+	* tree-ssa.c (replace_immediate_uses): Do not use phi node annotations.
+	* tree.h (PHI_BB, PHI_DF): New accessor functions.
+	(struct tree_phi_node): Add bb and df fields.
+
 2004-09-11  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17416

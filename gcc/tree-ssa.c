@@ -916,7 +916,6 @@ replace_immediate_uses (tree var, tree repl)
   int i, j, n;
   dataflow_t df;
   tree stmt;
-  stmt_ann_t ann;
   bool mark_new_vars;
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -927,7 +926,6 @@ replace_immediate_uses (tree var, tree repl)
   for (i = 0; i < n; i++)
     {
       stmt = immediate_use (df, i);
-      ann = stmt_ann (stmt);
 
       if (TREE_CODE (stmt) == PHI_NODE)
 	{
