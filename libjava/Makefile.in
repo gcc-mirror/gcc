@@ -4252,6 +4252,7 @@ lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_versi
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
+lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
 org/w3c/dom/CharacterData.java \
@@ -7083,7 +7084,7 @@ jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo:  \
 	jni/classpath/$(am__dirstamp) \
 	jni/classpath/$(DEPDIR)/$(am__dirstamp)
 lib-gnu-java-awt-peer-gtk.la: $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES) 
-	$(GCJLINK) $(am_lib_gnu_java_awt_peer_gtk_la_rpath) $(lib_gnu_java_awt_peer_gtk_la_LDFLAGS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_LIBADD) $(LIBS)
+	$(lib_gnu_java_awt_peer_gtk_la_LINK) $(am_lib_gnu_java_awt_peer_gtk_la_rpath) $(lib_gnu_java_awt_peer_gtk_la_LDFLAGS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_LIBADD) $(LIBS)
 org/w3c/dom/$(am__dirstamp):
 	@$(mkdir_p) org/w3c/dom
 	@: > org/w3c/dom/$(am__dirstamp)
