@@ -1,3 +1,8 @@
+2000-03-15  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* cpphash.c (collect_formal_parameters): Do not complain about
+	parameter names that just start with `__VA_ARGS__'.
+
 Wed Mar 15 13:26:58 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movhi_1): Promote movw imm, reg to movl imm, reg and
