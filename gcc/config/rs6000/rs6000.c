@@ -3414,7 +3414,7 @@ first_reg_to_save ()
 
   /* Find lowest numbered live register.  */
   for (first_reg = 13; first_reg <= 31; first_reg++)
-    if (regs_ever_live[first_reg])
+    if (regs_ever_live[first_reg] && ! call_used_regs[first_reg])
       break;
 
   if (profile_flag)
