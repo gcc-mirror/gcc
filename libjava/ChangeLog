@@ -1,3 +1,22 @@
+2003-09-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(ch): Removed.
+	(receive): Use getChannel() instead of ch.
+	(send): Likewise.
+	(getChannel): Return null.
+	* java/net/ServerSocket.java
+	(ch): Removed.
+	(setChannel): Removed.
+	(implAccept): Use getChannel() instead of ch.
+	(close): Likewise.
+	(getChannel): Return null.
+	* java/net/Socket.java
+	(ch): Removed.
+	(connect): Use getChannel() instead of ch.
+	(setChannel): Removed.
+	(getChannel): Return null.
+
 2003-09-18  Mark Wielaard  <mark@klomp.org>
 
 	Reported by Guilhem Lavaux and Julian Dolby
