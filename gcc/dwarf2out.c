@@ -6911,7 +6911,7 @@ output_line_info ()
   ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, 0);
 
-  ASM_OUTPUT_DWARF_DELTA (asm_out_file, l1, l2);
+  ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Source Line Info.",
 	     ASM_COMMENT_START);
@@ -6923,7 +6923,7 @@ output_line_info ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DELTA (asm_out_file, p1, p2);
+  ASM_OUTPUT_DWARF_DELTA (asm_out_file, p2, p1);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Prolog Length", ASM_COMMENT_START);
 

@@ -1,3 +1,7 @@
+Sun May  6 10:54:20 2001  Jim Wilson  <wilson@redhat.com>
+
+	* dwarf2out.c (output_line_info): Fix typo.
+
 2001-05-05  Richard Henderson  <rth@redhat.com>
 
 	* integrate.c (copy_insn_list): Substitute NOTE_EXPECTED_VALUE.
