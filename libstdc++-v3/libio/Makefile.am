@@ -23,6 +23,9 @@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
+# Root level of the include sources.
+glibcpp_includedir = $(top_srcdir)/include
+
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
 
@@ -38,9 +41,9 @@ CONFIG_INCLUDES = \
 	-I$(top_srcdir)/@ctype_include_dir@
 
 INCLUDES = \
-	-nostdinc++ -I$(top_srcdir) \
-	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)	
+	-nostdinc++ \
+	-I$(top_builddir) -I$(glibcpp_includedir) \
+	$(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 noinst_LTLIBRARIES = libio.la
 

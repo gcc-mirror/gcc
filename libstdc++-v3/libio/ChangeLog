@@ -1,3 +1,7 @@
+2000-10-05  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am (INCLUDES): Add glibcpp_includedir.
+
 2000-10-04  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* _G_config.h : Re-guard the __mbstate_t declaration.

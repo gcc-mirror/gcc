@@ -19,7 +19,7 @@ if [ ! -d "$SRC_DIR" ]; then
   exit 1
 fi
 
-BASE_H="$SRC_DIR/bits/c++config"
+BASE_H="$SRC_DIR/include/bits/c++config"
 IN_H="$BUILD_DIR/config.h"
 OUT_H="$BUILD_DIR/bits/c++config.h"
 

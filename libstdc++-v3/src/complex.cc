@@ -31,7 +31,7 @@
 #include <bits/std_complex.h>
 
 // This is a ISO C 9X header.
-#include <math/mathconf.h>
+#include <mathconf.h>
 #undef complex
 
 #ifndef FLT

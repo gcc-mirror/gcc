@@ -1,3 +1,29 @@
+2000-10-05  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* include: New directory.
+	* include/backward: New directory.
+	* include/bits: New directory.
+	* include/ext: New directory.
+	* include/std: New directory.
+	* include/*/*: Populate.
+
+	* backwards: Move to include/backwards, delete.
+	* bits: Move to include/bits, delete.
+	* ext: Move to include/ext, delete.
+	* std: Move to include/std, delete.
+	
+	* src/complex.cc: Adjust include of mathconf.
+
+	* mkc++config (BASE_H): Add include.
+
+	* src/Makefile.am: Support for topleve sources include directory.
+	(INCLUDES): Add LIBMATH_INCLUDE.
+	* src/Makefile.in: Regenerate.
+	* math/Makefile.am (INCLUDES): Append /include.
+	* math/Makefile.in: Regenerate.
+	* libio/Makefile.am (INCLUDES): Add glibcpp_includedir.
+	* libio/Makefile.in: Regenerate.
+	
 2000-10-04  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* libio/_G_config.h : Re-guard the __mbstate_t declaration.

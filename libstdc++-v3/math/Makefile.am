@@ -51,7 +51,7 @@ libmath_la_SOURCES = \
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
 TOPLEVEL_INCLUDES = -I$(includedir)
-INCLUDES = -I..  $(TOPLEVEL_INCLUDES)
+INCLUDES = -I../include  $(TOPLEVEL_INCLUDES)
 
 
 
