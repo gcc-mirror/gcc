@@ -646,6 +646,15 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case CTOR_STMT:
+      dump_stmt (di, t);
+      if (CTOR_BEGIN_P (t))
+	dump_string (di, "begn");
+      else
+	dump_string (di, "end");
+      dump_next_stmt (di, t);
+      break;
+
     case DECL_STMT:
       dump_stmt (di, t);
       dump_child ("decl", DECL_STMT_DECL (t));
