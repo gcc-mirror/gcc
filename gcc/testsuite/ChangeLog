@@ -1,3 +1,7 @@
+2004-07-19  Daniel Jacobowitz  <dan@debian.org>
+
+	* gcc.dg/format/cmn-err-1.c: New test.
+
 2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* g++.dg/warn/Wparentheses-1.C, g++.dg/warn/Wparentheses-2.C,

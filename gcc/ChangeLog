@@ -1,3 +1,36 @@
+2004-07-19  Daniel Jacobowitz  <dan@debian.org>
+
+	* Makefile.in (c-format.o): Depend on c-format.h.
+	* c-format.h: New file.
+	(struct format_char_info): Add CHAIN member.
+	* c-format.c: Move some types and constants to c-format.h.
+	(format_type_error): Set to -1.
+	(struct function_format_info): Use an int for format_type.
+	(decode_format_type): Return an int.  Return format_type_error
+	on error.
+	(print_char_table, asm_fprintf_char_table, gcc_diag_char_table)
+	(gcc_diag_char_table, gcc_cdiag_char_table, gcc_cxxdiag_char_table)
+	(scan_char_table, time_char_table, monetary_char_table): Initialize
+	CHAIN to NULL.
+	(n_format_types): New variable.
+	(check_format_info_main): Handle CHAIN in format_char_info.
+	(handle_format_attribute): Handle TARGET_FORMAT_TYPES and
+	TARGET_N_FORMAT_TYPES.
+	* config.gcc (i[34567]86-*-solaris2*, sparc64-*-solaris2*)
+	(sparc-*-solaris2*): Include config/t-sol2 and config/sol2-c.c.
+	* config/sol2-c.c: New file.
+	* config/t-sol2: New file.
+	* config/sol2.h (TARGET_N_FORMAT_TYPES, TARGET_FORMAT_TYPES): Define.
+	* config/sparc/elf.h, config/sparc/sp64-elf.h: Undefine
+	TARGET_N_FORMAT_TYPES and TARGET_FORMAT_TYPES.
+
+	* doc/extend.texi (Target Format Checks): New section.
+	(Function Attributes): Mention it.
+	* doc/invoke.texi: Mention target format checks.
+	* doc/sourcebuild.texi: Mention target format checks.
+	* dc/tm.texi (Misc): Document TARGET_N_FORMAT_TYPES and
+	TARGET_FORMAT_TYPES.
+
 2004-07-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_return_address_offset): Prototype

@@ -9278,3 +9278,14 @@ for a virtual function @var{fndecl} when constructing thunks,
 functions, if a target supports aliases (ie. defines
 @code{ASM_OUTPUT_DEF}), @code{false} otherwise,
 @end deftypefn
+
+@defmac TARGET_FORMAT_TYPES
+If defined, this macro is the name of a global variable containing
+target-specific format checking information for the @option{-Wformat}
+option.  The default is to have no target-specific format checks.
+@end defmac
+
+@defmac TARGET_N_FORMAT_TYPES
+If defined, this macro is the number of entries in
+@code{TARGET_FORMAT_TYPES}.
+@end defmac
