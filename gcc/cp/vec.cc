@@ -47,8 +47,22 @@ __cxa_vec_new (size_t element_count,
                void (*constructor) (void *),
                void (*destructor) (void *))
 {
+  return __cxa_vec_new2 (element_count, element_size, padding_size,
+                         constructor, destructor,
+                         &operator new[], &operator delete []);
+}
+
+extern "C" void *
+__cxa_vec_new2 (size_t element_count,
+                size_t element_size,
+                size_t padding_size,
+                void (*constructor) (void *),
+                void (*destructor) (void *),
+                void *(*alloc) (size_t),
+                void (*dealloc) (void *))
+{
   size_t size = element_count * element_size + padding_size;
-  char *base = static_cast <char *> (operator new[] (size));
+  char *base = static_cast <char *> (alloc (size));
   
   if (padding_size)
     {
@@ -62,8 +76,39 @@ __cxa_vec_new (size_t element_count,
     }
   catch (...)
     {
-      // operator delete [] cannot throw, so no need to protect it
-      operator delete[] (base - padding_size);
+      __uncatch_exception ();
+      dealloc (base - padding_size);
+      throw;
+    }
+  return base;
+}
+
+extern "C" void *
+__cxa_vec_new3 (size_t element_count,
+                size_t element_size,
+                size_t padding_size,
+                void (*constructor) (void *),
+                void (*destructor) (void *),
+                void *(*alloc) (size_t),
+                void (*dealloc) (void *, size_t))
+{
+  size_t size = element_count * element_size + padding_size;
+  char *base = static_cast <char *> (alloc (size));
+  
+  if (padding_size)
+    {
+      base += padding_size;
+      reinterpret_cast <size_t *> (base)[-1] = element_count;
+    }
+  try
+    {
+      __cxa_vec_ctor (base, element_count, element_size,
+                      constructor, destructor);
+    }
+  catch (...)
+    {
+      __uncatch_exception ();
+      dealloc (base - padding_size, size);
       throw;
     }
   return base;
@@ -150,7 +195,7 @@ __cxa_vec_dtor (void *array_address,
         {
           if (unwinding)
             // [except.ctor]/3 If a destructor called during stack unwinding
-            // exists with an exception, terminate is called.
+            // exits with an exception, terminate is called.
             std::terminate ();
           __uncatch_exception ();
           __cxa_vec_dtor (array_address, ix, element_size, destructor);
@@ -166,6 +211,18 @@ __cxa_vec_delete (void *array_address,
                   size_t padding_size,
                   void (*destructor) (void *))
 {
+  __cxa_vec_delete2 (array_address, element_size, padding_size,
+                     destructor,
+                     &operator delete []);
+}
+
+extern "C" void
+__cxa_vec_delete2 (void *array_address,
+                  size_t element_size,
+                  size_t padding_size,
+                  void (*destructor) (void *),
+                  void (*dealloc) (void *))
+{
   char *base = static_cast <char *> (array_address);
   
   if (padding_size)
@@ -179,12 +236,42 @@ __cxa_vec_delete (void *array_address,
         }
       catch (...)
         {
-          // operator delete [] cannot throw, so no need to protect it
-          operator delete[] (base);
+          __uncatch_exception ();
+          dealloc (base);
           throw;
         }
     }
-  operator delete[] (base);
+  dealloc (base);
+}
+
+extern "C" void
+__cxa_vec_delete3 (void *array_address,
+                  size_t element_size,
+                  size_t padding_size,
+                  void (*destructor) (void *),
+                  void (*dealloc) (void *, size_t))
+{
+  char *base = static_cast <char *> (array_address);
+  size_t size = 0;
+  
+  if (padding_size)
+    {
+      size_t element_count = reinterpret_cast <size_t *> (base)[-1];
+      base -= padding_size;
+      size = element_count * element_size + padding_size;
+      try
+        {
+          __cxa_vec_dtor (array_address, element_count, element_size,
+                          destructor);
+        }
+      catch (...)
+        {
+          __uncatch_exception ();
+          dealloc (base, size);
+          throw;
+        }
+    }
+  dealloc (base, size);
 }
 
 } // namespace __cxxabiv1

@@ -1,5 +1,14 @@
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* inc/cxxabi.h (__cxa_vec_new2, __cxa_vec_new3): Declare.
+	(__cxa_vec_delete2, __cxa_vec_delete3): Declare.
+	* vec.cc (__cxa_vec_new2, __cxa_vec_new3): Implement.
+	(__cxa_vec_delete2, __cxa_vec_delete3): Implement.
+	(__cxa_vec_new): Use __cxa_vec_new2.
+	(__cxa_vec_delete): Use __cxa_vec_delete2.
+
+2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* vec.cc (__cxa_vec_new): Set "C" linkage.
 	(__cxa_vec_ctor): Likewise.
 	(__cxa_vec_cctor): Likewise.
