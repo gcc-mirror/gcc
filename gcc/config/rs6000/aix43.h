@@ -186,18 +186,15 @@ do {									\
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso %(link_syscalls) } %{shared:-bM:SRE %{!e:-bnoentry}}\
-   %{!maix64:%{!shared:%{g*: %(link_libg) }}} %{maix64:-b64}"
+   %{!maix64:%{!shared:%{g*: %(link_libg) }}} %{maix64:-b64}\
+   %{mpe:-binitfini:poe_remote_main}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:\
-   %{mpe:%{pg:/usr/lpp/ppe.poe/lib/gcrt0.o}\
-         %{!pg:%{p:/usr/lpp/ppe.poe/lib/mcrt0.o}\
-               %{!p:/usr/lpp/ppe.poe/lib/crt0.o}}}\
-   %{!mpe:\
-     %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
-     %{!maix64:\
-       %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
-       %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
+   %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
+   %{!maix64:\
+     %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
+     %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
 
 /* AIX 4.3 typedefs ptrdiff_t as "long" while earlier releases used "int".  */
 
