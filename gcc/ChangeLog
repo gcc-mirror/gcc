@@ -1,3 +1,9 @@
+2002-11-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR optimization/2903
+	* arm.md (anddi_notzesidi_di): Operand 2 is inverted not operand 1.
+	(anddi_notsesidi_di): Likewise.
+
 2002-11-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (print_operand): Use
