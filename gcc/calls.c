@@ -1748,7 +1748,7 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
   rtx before_call;
   int i;
   rtx old_stack_level = 0;
-  int reg_parm_stack_space;
+  int reg_parm_stack_space = 0;
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
