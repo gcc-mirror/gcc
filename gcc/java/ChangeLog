@@ -1,3 +1,8 @@
+2003-03-04  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (builtin_type): Handle DEF_FUNCTION_TYPE_VAR_3.
+	(initialize_builtins): Handle DEF_FUNCTION_TYPE_VAR_3.
+
 2003-02-28  Tom Tromey  <tromey@redhat.com>
 
 	PR java/9695:

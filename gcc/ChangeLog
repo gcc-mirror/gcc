@@ -1,3 +1,26 @@
+2003-03-04  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/9367
+	* builtin-types.def (DEF_FUNCTION_TYPE_VAR_3): New macro.
+	(BT_FN_INT_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_STRING_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_CONST_STRING_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_STRING_SIZE_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_STRING_CONST_STRING_VAR,
+	BT_FN_INT_CONST_STRING_CONST_STRING_VAR,
+	BT_FN_INT_STRING_SIZE_CONST_STRING_VAR): New built-in types.
+	* builtin-attrs.def (ATTR_NONNULL_1, ATTR_NONNULL_2,
+	ATTR_NONNULL_3): Also include the nothrow attribute.
+	(sprintf, scanf, sscanf, vprintf, vsprintf, snprintf,
+	vsnprintf, vscanf, vsscanf): Don't define attributes here.
+	* builtins.def (putchar, puts): Make full C89 built-ins.
+	(snprintf, sprintf, scanf, sscanf, vprintf, vscanf,
+	vsscanf, vsnprintf, vsprintf): New built-ins.
+	* c-common.c (c_common_nodes_and_builtins): Handle new macro
+	DEF_FUNCTION_TYPE_VAR_3.
+
+	* doc/extend.texi: Document these new built-in functions.
+
 Tue Mar  4 11:25:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (rtx_for_function_call): Take the address as an argument

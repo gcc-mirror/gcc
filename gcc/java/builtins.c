@@ -44,6 +44,7 @@ enum builtin_type
 #define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
 #define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
 #define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_VAR_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "builtin-types.def"
 #undef DEF_PRIMITIVE_TYPE
@@ -55,6 +56,7 @@ enum builtin_type
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_POINTER_TYPE
   BT_LAST
 };
@@ -302,11 +304,13 @@ initialize_builtins ()
 #define DEF_FUNCTION_TYPE_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4)	\
   builtin_types[(int) ENUM]						\
     = define_builtin_type (RETURN, ARG1, ARG2, ARG3, ARG4);
-#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)				      \
+#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)			\
   builtin_types[(int) ENUM] = NULL_TREE;
-#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1)			 \
+#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1)		\
    builtin_types[(int) ENUM] = NULL_TREE;
 #define DEF_FUNCTION_TYPE_VAR_2(ENUM, RETURN, ARG1, ARG2)	\
+   builtin_types[(int) ENUM] = NULL_TREE;
+#define DEF_FUNCTION_TYPE_VAR_3(ENUM, RETURN, ARG1, ARG2, ARG3)	\
    builtin_types[(int) ENUM] = NULL_TREE;
 #define DEF_POINTER_TYPE(ENUM, TYPE)			\
   builtin_types[(int) ENUM] = NULL_TREE;

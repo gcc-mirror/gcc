@@ -1,3 +1,8 @@
+2003-03-04  Roger Sayle  <roger@eyesopen.com>
+
+	* g++.old-deja/g++.other/builtins10.C: New test for PR 9367.
+	* gcc.dg/format/attr-5.c: Handle new conflicting types warning.
+
 2003-03-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9878

@@ -112,9 +112,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C99 or above.  */
 #undef DEF_C99_BUILTIN					
-#define DEF_C99_BUILTIN(ENUM, NAME, TYPE)		\
+#define DEF_C99_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, !flag_isoc99, ATTR_NOTHROW_LIST)
+   	       true, true, !flag_isoc99, ATTRS)
 
 /* Like DEF_LIB_BUILTIN, except that the function is expanded in the
    front-end.  */
@@ -171,37 +171,48 @@ DEF_LIB_ALWAYS_BUILTIN(BUILT_IN_FABSL,
 
 DEF_C99_BUILTIN(BUILT_IN_LLABS,
 		"__builtin_llabs",
-		BT_FN_LONGLONG_LONGLONG)
+		BT_FN_LONGLONG_LONGLONG,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_IMAXABS,
 		"__builtin_imaxabs",
-		BT_FN_INTMAX_INTMAX)
+		BT_FN_INTMAX_INTMAX,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CONJ,
 		"__builtin_conj",
-		BT_FN_COMPLEX_DOUBLE_COMPLEX_DOUBLE)
+		BT_FN_COMPLEX_DOUBLE_COMPLEX_DOUBLE,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CONJF,
 		"__builtin_conjf",
-		BT_FN_COMPLEX_FLOAT_COMPLEX_FLOAT)
+		BT_FN_COMPLEX_FLOAT_COMPLEX_FLOAT,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CONJL,
 		"__builtin_conjl",
-		BT_FN_COMPLEX_LONG_DOUBLE_COMPLEX_LONG_DOUBLE)
+		BT_FN_COMPLEX_LONG_DOUBLE_COMPLEX_LONG_DOUBLE,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CREAL,
 		"__builtin_creal",
-		BT_FN_DOUBLE_COMPLEX_DOUBLE)
+		BT_FN_DOUBLE_COMPLEX_DOUBLE,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CREALF,
 		"__builtin_crealf",
-		BT_FN_FLOAT_COMPLEX_FLOAT)
+		BT_FN_FLOAT_COMPLEX_FLOAT,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CREALL,
 		"__builtin_creall",
-		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE)
+		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CIMAG,
 		"__builtin_cimag",
-		BT_FN_DOUBLE_COMPLEX_DOUBLE)
+		BT_FN_DOUBLE_COMPLEX_DOUBLE,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CIMAGF,
 		"__builtin_cimagf",
-		BT_FN_FLOAT_COMPLEX_FLOAT)
+		BT_FN_FLOAT_COMPLEX_FLOAT,
+		ATTR_NOTHROW_LIST)
 DEF_C99_BUILTIN(BUILT_IN_CIMAGL,
 		"__builtin_cimagl",
-		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE)
+		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE,
+		ATTR_NOTHROW_LIST)
 
 DEF_UNUSED_BUILTIN(BUILT_IN_DIV)
 DEF_UNUSED_BUILTIN(BUILT_IN_LDIV)
@@ -514,27 +525,69 @@ DEF_GCC_BUILTIN(BUILT_IN_PREFETCH,
 		BT_FN_VOID_CONST_PTR_VAR,
 		ATTR_NULL)
 
-/* Stdio builtins.  */
-DEF_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR,
-		    "__builtin_putchar",
-		     BT_FN_INT_INT,
-		     ATTR_NOTHROW_LIST)
-DEF_FALLBACK_BUILTIN(BUILT_IN_PUTS,
-		     "__builtin_puts",
-		     BT_FN_INT_CONST_STRING,
-		     ATTR_NOTHROW_LIST)
+/* stdio.h builtins (without FILE *).  */
+
 DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF,
 			  "__builtin_printf",
 			  BT_FN_INT_CONST_STRING_VAR,
 			  ATTR_FORMAT_PRINTF_1_2)
-DEF_FALLBACK_BUILTIN(BUILT_IN_FPUTC,
-		     "__builtin_fputc",
-		     BT_FN_INT_INT_PTR,
-		     ATTR_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_PUTCHAR,
+		"__builtin_putchar",
+		BT_FN_INT_INT,
+		ATTR_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_PUTS,
+		"__builtin_puts",
+		BT_FN_INT_CONST_STRING,
+		ATTR_NOTHROW_LIST)
+DEF_C99_BUILTIN(BUILT_IN_SNPRINTF,
+		"__builtin_snprintf",
+		BT_FN_INT_STRING_SIZE_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_3_4)
+DEF_LIB_BUILTIN(BUILT_IN_SPRINTF,
+		"__builtin_sprintf",
+		BT_FN_INT_STRING_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_2_3)
+DEF_LIB_BUILTIN(BUILT_IN_SCANF,
+		"__builtin_scanf",
+		BT_FN_INT_CONST_STRING_VAR,
+		ATTR_FORMAT_SCANF_1_2)
+DEF_LIB_BUILTIN(BUILT_IN_SSCANF,
+		"__builtin_sscanf",
+		BT_FN_INT_CONST_STRING_CONST_STRING_VAR,
+		ATTR_FORMAT_SCANF_2_3)
+DEF_LIB_BUILTIN(BUILT_IN_VPRINTF,
+		"__builtin_vprintf",
+		BT_FN_INT_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_1_0)
+DEF_C99_BUILTIN(BUILT_IN_VSCANF,
+		"__builtin_vscanf",
+		BT_FN_INT_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_SCANF_1_0)
+DEF_C99_BUILTIN(BUILT_IN_VSSCANF,
+		"__builtin_vsscanf",
+		BT_FN_INT_CONST_STRING_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_SCANF_2_0)
+DEF_C99_BUILTIN(BUILT_IN_VSNPRINTF,
+		"__builtin_vsnprintf",
+		BT_FN_INT_STRING_SIZE_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_3_0)
+DEF_LIB_BUILTIN(BUILT_IN_VSPRINTF,
+		"__builtin_vsprintf",
+		BT_FN_INT_STRING_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_2_0)
+
+
+/* stdio.h builtins (with FILE *).  */
+
 /* Declare the __builtin_ style with arguments and the regular style
    without them.  We rely on stdio.h to supply the arguments for the
    regular style declaration since we had to use void* instead of
    FILE* in the __builtin_ prototype supplied here.  */
+
+DEF_FALLBACK_BUILTIN(BUILT_IN_FPUTC,
+		     "__builtin_fputc",
+		     BT_FN_INT_INT_PTR,
+		     ATTR_NOTHROW_LIST)
 DEF_BUILTIN (BUILT_IN_FPUTS,
 	     "__builtin_fputs",
 	     BUILT_IN_NORMAL,
@@ -550,7 +603,7 @@ DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF,
 			 BT_FN_INT_PTR_CONST_STRING_VAR,
 			 ATTR_FORMAT_PRINTF_2_3)
 
-/* Stdio unlocked builtins.  */
+/* stdio unlocked builtins (without FILE *).  */
 
 DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR_UNLOCKED,
 			 "__builtin_putchar_unlocked",
@@ -562,13 +615,17 @@ DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF_UNLOCKED,
 			      "__builtin_printf_unlocked",
 			      BT_FN_INT_CONST_STRING_VAR,
 			      ATTR_FORMAT_PRINTF_1_2)
-DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FPUTC_UNLOCKED,
-			 "__builtin_fputc_unlocked",
-			 BT_FN_INT_INT_PTR)
+
+/* stdio unlocked builtins (with FILE *).  */
+
 /* Declare the __builtin_ style with arguments and the regular style
    without them.  We rely on stdio.h to supply the arguments for the
    regular style declaration since we had to use void* instead of
    FILE* in the __builtin_ prototype supplied here.  */
+
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FPUTC_UNLOCKED,
+			 "__builtin_fputc_unlocked",
+			 BT_FN_INT_INT_PTR)
 DEF_BUILTIN (BUILT_IN_FPUTS_UNLOCKED,
 	     "__builtin_fputs_unlocked",
 	     BUILT_IN_NORMAL,
