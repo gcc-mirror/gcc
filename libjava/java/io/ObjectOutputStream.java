@@ -224,46 +224,7 @@ public class ObjectOutputStream extends OutputStream
 	      }
 
 	    if (obj instanceof ObjectStreamClass)
-	      {
-		ObjectStreamClass osc = (ObjectStreamClass)obj;
-		realOutput.writeByte (TC_CLASSDESC);
-		realOutput.writeUTF (osc.getName ());
-		realOutput.writeLong (osc.getSerialVersionUID ());
-		assignNewHandle (obj);
-
-		int flags = osc.getFlags ();
-
-		if (protocolVersion == PROTOCOL_VERSION_2
-		    && osc.isExternalizable ())
-		  flags |= SC_BLOCK_DATA;
-
-		realOutput.writeByte (flags);
-
-		ObjectStreamField[] fields = osc.fields;
-		realOutput.writeShort (fields.length);
-
-		ObjectStreamField field;
-		for (int i=0; i < fields.length; i++)
-		  {
-		    field = fields[i];
-		    realOutput.writeByte (field.getTypeCode ());
-		    realOutput.writeUTF (field.getName ());
-
-		    if (! field.isPrimitive ())
-		      writeObject (field.getTypeString ());
-		  }
-
-		boolean oldmode = setBlockDataMode (true);
-		annotateClass (osc.forClass ());
-		setBlockDataMode (oldmode);
-		realOutput.writeByte (TC_ENDBLOCKDATA);
-
-		if (osc.isSerializable ())
-		  writeObject (osc.getSuper ());
-		else
-		  writeObject (null);
-		break;
-	      }
+	      writeClassDescriptor ((ObjectStreamClass) obj);
 
 	    if ((replacementEnabled || obj instanceof Serializable)
 		&& ! replaceDone)
@@ -406,6 +367,46 @@ public class ObjectOutputStream extends OutputStream
       }
   }
 
+  protected void writeClassDescriptor (ObjectStreamClass osc) throws IOException
+  {
+    realOutput.writeByte (TC_CLASSDESC);
+    realOutput.writeUTF (osc.getName ());
+    realOutput.writeLong (osc.getSerialVersionUID ());
+    assignNewHandle (osc);
+
+    int flags = osc.getFlags ();
+
+    if (protocolVersion == PROTOCOL_VERSION_2
+	&& osc.isExternalizable ())
+      flags |= SC_BLOCK_DATA;
+
+    realOutput.writeByte (flags);
+
+    ObjectStreamField[] fields = osc.fields;
+    realOutput.writeShort (fields.length);
+
+    ObjectStreamField field;
+    for (int i=0; i < fields.length; i++)
+      {
+	field = fields[i];
+	realOutput.writeByte (field.getTypeCode ());
+	realOutput.writeUTF (field.getName ());
+
+	if (! field.isPrimitive ())
+	  writeObject (field.getTypeString ());
+      }
+
+    boolean oldmode = setBlockDataMode (true);
+    annotateClass (osc.forClass ());
+    setBlockDataMode (oldmode);
+    realOutput.writeByte (TC_ENDBLOCKDATA);
+
+    if (osc.isSerializable ())
+      writeObject (osc.getSuper ());
+    else
+      writeObject (null);
+  }
+  
   /**
      Writes the current objects non-transient, non-static fields from
      the current class to the underlying output stream.

@@ -219,44 +219,7 @@ public class ObjectInputStream extends InputStream
 
 	  case TC_CLASSDESC:
 	    {
-	      dumpElement ("CLASSDESC NAME=");
-	      String name = this.realInputStream.readUTF ();
-	      dumpElement (name + "; UID=");
-	      long uid = this.realInputStream.readLong ();
-	      dumpElement (Long.toHexString(uid) + "; FLAGS=");
-	      byte flags = this.realInputStream.readByte ();
-	      dumpElement (Integer.toHexString(flags) + "; FIELD COUNT=");
-	      short field_count = this.realInputStream.readShort ();
-	      dumpElementln (Short.toString(field_count));
-	      ObjectStreamField[] fields = new ObjectStreamField[field_count];
-	      ObjectStreamClass osc = new ObjectStreamClass (name, uid,
-							     flags, fields);
-	      assignNewHandle (osc);
-	      
-	      for (int i=0; i < field_count; i++)
-		{
-		  dumpElement ("  TYPE CODE=");
-		  char type_code = (char)this.realInputStream.readByte ();
-		  dumpElement (type_code + "; FIELD NAME=");
-		  String field_name = this.realInputStream.readUTF ();
-		  dumpElementln (field_name);
-		  String class_name;
-		  
-		  if (type_code == 'L' || type_code == '[')
-		    class_name = (String)readObject ();
-		  else
-		    class_name = String.valueOf (type_code);
-		  
-		  // There're many cases you can't get java.lang.Class from
-		  // typename if your context class loader can't load it,
-		  // then use typename to construct the field
-		  fields[i] =
-		    new ObjectStreamField (field_name, class_name);
-		}
-	      
-	      boolean oldmode = setBlockDataMode (true);
-	      osc.setClass (resolveClass (osc));
-	      setBlockDataMode (oldmode);
+	      ObjectStreamClass osc = readClassDescriptor ();
 	      
 	      if (!is_consumed)
 		{
@@ -449,6 +412,51 @@ public class ObjectInputStream extends InputStream
       }
     
     return ret_val;
+  }
+
+  protected ObjectStreamClass readClassDescriptor ()
+    throws ClassNotFoundException, IOException
+  {
+    dumpElement ("CLASSDESC NAME=");
+    String name = this.realInputStream.readUTF ();
+    dumpElement (name + "; UID=");
+    long uid = this.realInputStream.readLong ();
+    dumpElement (Long.toHexString(uid) + "; FLAGS=");
+    byte flags = this.realInputStream.readByte ();
+    dumpElement (Integer.toHexString(flags) + "; FIELD COUNT=");
+    short field_count = this.realInputStream.readShort ();
+    dumpElementln (Short.toString(field_count));
+    ObjectStreamField[] fields = new ObjectStreamField[field_count];
+    ObjectStreamClass osc = new ObjectStreamClass (name, uid,
+                                                   flags, fields);
+    assignNewHandle (osc);
+	      
+    for (int i=0; i < field_count; i++)
+      {
+	dumpElement ("  TYPE CODE=");
+	char type_code = (char)this.realInputStream.readByte ();
+	dumpElement (type_code + "; FIELD NAME=");
+	String field_name = this.realInputStream.readUTF ();
+	dumpElementln (field_name);
+	String class_name;
+		  
+	if (type_code == 'L' || type_code == '[')
+	  class_name = (String)readObject ();
+	else
+	  class_name = String.valueOf (type_code);
+		  
+	// There're many cases you can't get java.lang.Class from
+	// typename if your context class loader can't load it,
+	// then use typename to construct the field
+	fields[i] =
+	  new ObjectStreamField (field_name, class_name);
+      }
+	      
+    boolean oldmode = setBlockDataMode (true);
+    osc.setClass (resolveClass (osc));
+    setBlockDataMode (oldmode);
+	      
+    return osc;
   }
 
   /**
