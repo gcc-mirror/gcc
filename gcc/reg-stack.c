@@ -406,7 +406,7 @@ pop_stack (regstack, regno)
    dump file, if used.
 
    Construct a CFG and run life analysis.  Then convert each insn one
-   by one.  Run a last jump_optimize pass, if optimizing, to eliminate
+   by one.  Run a last cleanup_cfg pass, if optimizing, to eliminate
    code duplication created when the converter inserts pop insns on
    the edges.  */
 
