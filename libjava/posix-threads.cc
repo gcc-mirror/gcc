@@ -214,8 +214,8 @@ _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
       pthread_cond_signal (&target->wait_cond);
       pthread_mutex_unlock (&target->wait_mutex);
 
-      // Two successive notify() calls should not be delivered to the same 
-      // thread, so we remove the target thread from the cv wait list now.
+      // Two concurrent notify() calls must not be delivered to the same 
+      // thread, so remove the target thread from the cv wait list now.
       if (prev == NULL)
 	cv->first = target->next;
       else

@@ -288,7 +288,7 @@ public class Thread implements Runnable
   private Runnable runnable;
   private int priority;
   private boolean daemon_flag;
-  private boolean interrupt_flag;
+  boolean interrupt_flag;
   private boolean alive_flag;
   private boolean startable_flag;
 
