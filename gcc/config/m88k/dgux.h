@@ -29,9 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE \
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
-#ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.3 $"
-#endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
 /* The DG/UX 4.30 assembler doesn't accept the symbol `fcr63'.  */
@@ -188,7 +185,7 @@ Boston, MA 02111-1307, USA.  */
     if (write_symbols != NO_DEBUG && !TARGET_NOLEGEND)			\
       {									\
 	fprintf (FILE, ";legend_info -fix-bb -h\"gcc-%s\" -s\"%s\"",	\
-		 VERSION_STRING, main_input_filename);			\
+		 version_string, main_input_filename);			\
 	fputs (flag_traditional ? " -lc" : " -lansi-c", FILE);		\
 	if (TARGET_STANDARD)						\
 	  fputs (" -keep-std", FILE);					\

@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Identify the compiler.  */
 #undef  VERSION_INFO1
-#define VERSION_INFO1 "Omron Luna/88k, "
+#define VERSION_INFO1 "Omron Luna/88k"
 
 /* Macros to be automatically defined.  */
 #undef	CPP_PREDEFINES
