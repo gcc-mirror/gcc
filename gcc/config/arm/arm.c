@@ -117,7 +117,6 @@ static void thumb_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (tree, tree);
 static void arm_set_default_type_attributes (tree);
 static int arm_adjust_cost (rtx, rtx, rtx, int);
-static int arm_use_dfa_pipeline_interface (void);
 static int count_insns_for_constant (HOST_WIDE_INT, int);
 static int arm_get_strip_length (int);
 static bool arm_function_ok_for_sibcall (tree, tree);
@@ -213,7 +212,7 @@ static bool arm_cookie_has_size (void);
 #define TARGET_SCHED_ADJUST_COST arm_adjust_cost
 
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE arm_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 
 #undef TARGET_ENCODE_SECTION_INFO
 #ifdef ARM_PE
@@ -4127,12 +4126,6 @@ static int
 arm_address_cost (rtx x)
 {
   return TARGET_ARM ? arm_arm_address_cost (x) : arm_thumb_address_cost (x);
-}
-
-static int
-arm_use_dfa_pipeline_interface (void)
-{
-  return true;
 }
 
 static int

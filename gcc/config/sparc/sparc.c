@@ -161,7 +161,6 @@ static void sparc_elf_asm_named_section (const char *, unsigned int);
 static int sparc_adjust_cost (rtx, rtx, rtx, int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
-static int sparc_use_dfa_pipeline_interface (void);
 static int sparc_use_sched_lookahead (void);
 
 static void emit_soft_tfmode_libcall (const char *, int, rtx *);
@@ -242,7 +241,7 @@ enum processor_type sparc_cpu;
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT sparc_sched_init
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE sparc_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD sparc_use_sched_lookahead
 
@@ -7448,18 +7447,6 @@ sparc_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 {
 }
   
-static int
-sparc_use_dfa_pipeline_interface (void)
-{
-  if ((1 << sparc_cpu) &
-      ((1 << PROCESSOR_ULTRASPARC) | (1 << PROCESSOR_CYPRESS) |
-       (1 << PROCESSOR_SUPERSPARC) | (1 << PROCESSOR_HYPERSPARC) |
-       (1 << PROCESSOR_SPARCLITE86X) | (1 << PROCESSOR_TSC701) |
-       (1 << PROCESSOR_ULTRASPARC3)))
-    return 1;
-  return 0;
-}
-
 static int
 sparc_use_sched_lookahead (void)
 {

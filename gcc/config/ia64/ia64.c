@@ -164,7 +164,6 @@ struct ia64_frame_info
 /* Current frame information calculated by ia64_compute_frame_size.  */
 static struct ia64_frame_info current_frame_info;
 
-static int ia64_use_dfa_pipeline_interface (void);
 static int ia64_first_cycle_multipass_dfa_lookahead (void);
 static void ia64_dependencies_evaluation_hook (rtx, rtx);
 static void ia64_init_dfa_pre_cycle_insn (void);
@@ -342,7 +341,7 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK ia64_dependencies_evaluation_hook
 
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE ia64_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD ia64_first_cycle_multipass_dfa_lookahead
@@ -7369,15 +7368,6 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 }
 
 
-
-/* If the following function returns TRUE, we will use the the DFA
-   insn scheduler.  */
-
-static int
-ia64_use_dfa_pipeline_interface (void)
-{
-  return 1;
-}
 
 /* If the following function returns TRUE, we will use the the DFA
    insn scheduler.  */
