@@ -2639,7 +2639,7 @@ find_comparison_args (code, parg1, parg2)
 
   /* If ARG2 is const0_rtx, see what ARG1 is equivalent to.  */
 
-  while (arg2 == const0_rtx)
+  while (arg2 == CONST0_RTX (GET_MODE (arg1)))
     {
       /* Set non-zero when we find something of interest.  */
       rtx x = 0;
@@ -5366,8 +5366,12 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   op1_elt = lookup (op1, op1_hash_code, mode);
 
   /* If we aren't setting two things equal all we can do is save this
-     comparison.  */
-  if (code != EQ)
+     comparison.   Similarly if this is floating-point.  In the latter
+     case, OP1 might be zero and both -0.0 and 0.0 are equal to it.
+     If we record the equality, we might inadvertently delete code
+     whose intent was to change -0 to +0.  */
+
+  if (code != EQ || GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     {
       /* If we reversed a floating-point comparison, if OP0 is not a
 	 register, or if OP1 is neither a register or constant, we can't
