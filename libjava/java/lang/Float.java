@@ -18,7 +18,7 @@ package java.lang;
  * Status:  Believed complete and correct.
  */
 
-public final class Float extends Number
+public final class Float extends Number implements Comparable
 {
   public static final float MAX_VALUE = 3.4028235e+38f;
   public static final float MIN_VALUE = 1.4e-45f;
@@ -147,5 +147,25 @@ public final class Float extends Number
 
   public static native float intBitsToFloat (int bits);
 
-}
+  public int compareTo (Float d)
+  {
+    float v = d.value;
+    if (isNaN (value))
+      return isNaN (v) ? 1 : 0;
+    else if (isNaN (v))
+      return -1;
+    else if (value == 0.0 && v == -0.0)
+      return 1;
+    else if (value == -0.0 && v == 0.0)
+      return -1;
+    else if (value == v)
+      return 0;
 
+    return value > v ? 1 : -1;
+  }
+
+  public int compareTo (Object o)
+  {
+    return compareTo ((Float) o);
+  }
+}

@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,17 +36,20 @@ package java.util;
  * arrays, and a method to provide a List "view" of an array to facilitate
  * using arrays with Collection-based APIs.
  */
-public class Arrays {
-
+public class Arrays
+{
   /**
    * This class is non-instantiable.
    */
-  private Arrays() {
+  private Arrays()
+  {
   }
 
-  private static Comparator defaultComparator = new Comparator() {
-    public int compare(Object o1, Object o2) {
-      return ((Comparable)o1).compareTo(o2);
+  private static Comparator defaultComparator = new Comparator()
+  {
+    public int compare(Object o1, Object o2)
+    {
+      return ((Comparable) o1).compareTo(o2);
     }
   };
 
@@ -64,21 +67,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(byte[] a, byte key) {
+  public static int binarySearch(byte[]a, byte key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final byte d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final byte d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -96,21 +107,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(char[] a, char key) {
+  public static int binarySearch(char[]a, char key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final char d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final char d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -128,21 +147,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(double[] a, double key) {
+  public static int binarySearch(double[]a, double key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final double d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final double d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -160,21 +187,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(float[] a, float key) {
+  public static int binarySearch(float[]a, float key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final float d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final float d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -192,21 +227,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(int[] a, int key) {
+  public static int binarySearch(int[]a, int key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final int d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final int d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -224,21 +267,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(long[] a, long key) {
+  public static int binarySearch(long[]a, long key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final long d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final long d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -256,21 +307,29 @@ public class Arrays {
    *   found, where n is the index of the first value higher than key or
    *   a.length if there is no such value.
    */
-  public static int binarySearch(short[] a, short key) {
+  public static int binarySearch(short[]a, short key)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final short d = a[mid];
-      if (d == key) {
-        return mid;
-      } else if (d > key) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final short d = a[mid];
+	if (d == key)
+	  {
+	    return mid;
+	  }
+	else if (d > key)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }
       }
-    }
     return -mid - 1;
   }
 
@@ -279,21 +338,29 @@ public class Arrays {
    * @exception NullPointerException if the specified comparator is null.
    * @exception ClassCastException if the objects are not comparable by c.
    */
-  private static int objectSearch(Object[] a, Object key, final Comparator c) {
+  private static int objectSearch(Object[]a, Object key, final Comparator c)
+  {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
-    while (low <= hi) {
-      mid = (low + hi) >> 1;
-      final int d = c.compare(key, a[mid]);
-      if (d == 0) {
-        return mid;
-      } else if (d < 0) {
-        hi = mid - 1;
-      } else {
-        low = ++mid; // This gets the insertion point right on the last loop
+    while (low <= hi)
+      {
+	mid = (low + hi) >> 1;
+	final int d = c.compare(key, a[mid]);
+	if (d == 0)
+	  {
+	    return mid;
+	  }
+	else if (d < 0)
+	  {
+	    hi = mid - 1;
+	  }
+	else
+	  {
+	    // This gets the insertion point right on the last loop
+	    low = ++mid;
+	  }	    
       }
-    }
     return -mid - 1;
   }
 
@@ -316,7 +383,8 @@ public class Arrays {
    *   elements of a
    * @exception NullPointerException if a null element has compareTo called
    */
-  public static int binarySearch(Object[] a, Object key) {
+  public static int binarySearch(Object[]a, Object key)
+  {
     return objectSearch(a, key, defaultComparator);
   }
 
@@ -339,7 +407,8 @@ public class Arrays {
    * @exception ClassCastException if key could not be compared with one of the
    *   elements of a
    */
-  public static int binarySearch(Object[] a, Object key, Comparator c) {
+  public static int binarySearch(Object[]a, Object key, Comparator c)
+  {
     return objectSearch(a, key, c);
   }
 
@@ -351,28 +420,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(byte[] a1, byte[] a2) {
-
+  public static boolean equals(byte[]a1, byte[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -385,28 +461,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(char[] a1, char[] a2) {
-
+  public static boolean equals(char[]a1, char[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -419,28 +502,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(double[] a1, double[] a2) {
-
+  public static boolean equals(double[]a1, double[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -453,28 +543,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(float[] a1, float[] a2) {
-
+  public static boolean equals(float[]a1, float[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -487,28 +584,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(long[] a1, long[] a2) {
-
+  public static boolean equals(long[]a1, long[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -521,28 +625,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(short[] a1, short[] a2) {
-
+  public static boolean equals(short[]a1, short[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -555,28 +666,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(boolean[] a1, boolean[] a2) {
-
+  public static boolean equals(boolean[]a1, boolean[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -589,28 +707,35 @@ public class Arrays {
    * @returns true if a1 and a2 are both null, or if a2 is of the same length
    *   as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(int[] a1, int[] a2) {
-
+  public static boolean equals(int[]a1, int[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (a1[i] != a2[i]) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (a1[i] != a2[i])
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -624,28 +749,35 @@ public class Arrays {
    *   as a2, and for each 0 <= i < a.length, a1[i] == null ? a2[i] == null :
    *   a1[i].equals(a2[i]).
    */
-  public static boolean equals(Object[] a1, Object[] a2) {
-
+  public static boolean equals(Object[]a1, Object[]a2)
+  {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2) {
-      return true;
-    }
-    try {
-
-      // If they're the same length, test each element
-      if (a1.length == a2.length) {
-        for (int i = 0; i < a1.length; i++) {
-          if (!(a1[i] == null ? a2[i] == null : a1[i].equals(a2[i]))) {
-            return false;
-          }
-        }
-        return true;
+    if (a1 == a2)
+      {
+	return true;
       }
+      
+    try
+      {
+	// If they're the same length, test each element
+	if (a1.length == a2.length)
+	  {
+	    for (int i = 0; i < a1.length; i++)
+	      {
+		if (!(a1[i] == null ? a2[i] == null : a1[i].equals(a2[i])))
+		  {
+		    return false;
+		  }
+	      }
+	    return true;
+	  }
 
-    // If a1 == null or a2 == null but not both then we will get a NullPointer
-    } catch (NullPointerException e) {
-    }
+	// If a1 == null or a2 == null but not both then we will get a NullPointer
+      }
+    catch (NullPointerException e)
+      {
+      }
 
     return false;
   }
@@ -656,7 +788,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(boolean[] a, boolean val) {
+  public static void fill(boolean[]a, boolean val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -671,11 +804,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(boolean[] a, int fromIndex, int toIndex,
-                          boolean val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(boolean[]a, int fromIndex, int toIndex, boolean val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -684,7 +818,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(byte[] a, byte val) {
+  public static void fill(byte[]a, byte val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -699,10 +834,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(byte[] a, int fromIndex, int toIndex, byte val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(byte[]a, int fromIndex, int toIndex, byte val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -711,7 +848,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(char[] a, char val) {
+  public static void fill(char[]a, char val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -726,10 +864,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(char[] a, int fromIndex, int toIndex, char val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(char[]a, int fromIndex, int toIndex, char val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -738,7 +878,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(double[] a, double val) {
+  public static void fill(double[]a, double val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -753,10 +894,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(double[] a, int fromIndex, int toIndex, double val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(double[]a, int fromIndex, int toIndex, double val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -765,7 +908,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(float[] a, float val) {
+  public static void fill(float[]a, float val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -780,10 +924,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(float[] a, int fromIndex, int toIndex, float val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(float[]a, int fromIndex, int toIndex, float val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -792,7 +938,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(int[] a, int val) {
+  public static void fill(int[]a, int val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -807,10 +954,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(int[] a, int fromIndex, int toIndex, int val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(int[]a, int fromIndex, int toIndex, int val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -819,7 +968,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(long[] a, long val) {
+  public static void fill(long[]a, long val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -834,10 +984,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(long[] a, int fromIndex, int toIndex, long val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(long[]a, int fromIndex, int toIndex, long val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -846,7 +998,8 @@ public class Arrays {
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(short[] a, short val) {
+  public static void fill(short[]a, short val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -861,10 +1014,12 @@ public class Arrays {
    * @param toIndex the index to fill to, exclusive
    * @param val the value to fill with
    */
-  public static void fill(short[] a, int fromIndex, int toIndex, short val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(short[]a, int fromIndex, int toIndex, short val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   /**
@@ -875,7 +1030,8 @@ public class Arrays {
    * @exception ClassCastException if val is not an instance of the element
    *   type of a.
    */
-  public static void fill(Object[] a, Object val) {
+  public static void fill(Object[]a, Object val)
+  {
     // This implementation is slightly inefficient timewise, but the extra
     // effort over inlining it is O(1) and small, and I refuse to repeat code
     // if it can be helped.
@@ -892,10 +1048,12 @@ public class Arrays {
    * @exception ClassCastException if val is not an instance of the element
    *   type of a.
    */
-  public static void fill(Object[] a, int fromIndex, int toIndex, Object val) {
-    for (int i = fromIndex; i < toIndex; i++) {
-      a[i] = val;
-    }
+  public static void fill(Object[]a, int fromIndex, int toIndex, Object val)
+  {
+    for (int i = fromIndex; i < toIndex; i++)
+      {
+	a[i] = val;
+      }
   }
 
   // Thanks to Paul Fisher <rao@gnu.org> for finding this quicksort algorithm
@@ -911,79 +1069,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(byte[] a) {
+  public static void sort(byte[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static short cmp(byte i, byte j) {
-    return (short)(i-j);
+  public static void sort(byte[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, byte[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  private static short cmp(byte i, byte j)
+  {
+    return (short) (i - j);
   }
-  
-  private static void swap(int i, int j, byte[] a) {
+
+  private static int med3(int a, int b, int c, byte[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
+      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  }
+
+  private static void swap(int i, int j, byte[]a)
+  {
     byte c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(byte[] a, int start, int n) {
+  private static void qsort(byte[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     short r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, byte[] a) {
+  private static void vecswap(int i, int j, int n, byte[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -998,79 +1187,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(char[] a) {
+  public static void sort(char[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static int cmp(char i, char j) {
-    return i-j;
+  public static void sort(char[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, char[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  private static int cmp(char i, char j)
+  {
+    return i - j;
   }
-  
-  private static void swap(int i, int j, char[] a) {
+
+  private static int med3(int a, int b, int c, char[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
+      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  }
+
+  private static void swap(int i, int j, char[]a)
+  {
     char c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(char[] a, int start, int n) {
+  private static void qsort(char[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     int r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, char[] a) {
+  private static void vecswap(int i, int j, int n, char[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1086,79 +1306,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(double[] a) {
+  public static void sort(double[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static double cmp(double i, double j) {
-    return i-j;
+  public static void sort(double[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, double[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  private static double cmp(double i, double j)
+  {
+    return i - j;
   }
-  
-  private static void swap(int i, int j, double[] a) {
+
+  private static int med3(int a, int b, int c, double[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
+      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  }
+
+  private static void swap(int i, int j, double[]a)
+  {
     double c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(double[] a, int start, int n) {
+  private static void qsort(double[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     double r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, double[] a) {
+  private static void vecswap(int i, int j, int n, double[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1174,79 +1425,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(float[] a) {
+  public static void sort(float[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static float cmp(float i, float j) {
-    return i-j;
+  public static void sort(float[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, float[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
+  private static float cmp(float i, float j)
+  {
+    return i - j;
+  }
+
+  private static int med3(int a, int b, int c, float[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
       (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
   }
 
-  private static void swap(int i, int j, float[] a) {
+  private static void swap(int i, int j, float[]a)
+  {
     float c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(float[] a, int start, int n) {
+  private static void qsort(float[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     float r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, float[] a) {
+  private static void vecswap(int i, int j, int n, float[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1261,79 +1543,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(int[] a) {
+  public static void sort(int[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static long cmp(int i, int j) {
-    return (long)i-(long)j;
+  public static void sort(int[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, int[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  private static long cmp(int i, int j)
+  {
+    return (long) i - (long) j;
   }
-  
-  private static void swap(int i, int j, int[] a) {
+
+  private static int med3(int a, int b, int c, int[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
+      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  }
+
+  private static void swap(int i, int j, int[]a)
+  {
     int c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(int[] a, int start, int n) {
+  private static void qsort(int[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     long r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, int[] a) {
+  private static void vecswap(int i, int j, int n, int[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1348,8 +1661,14 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(long[] a) {
+  public static void sort(long[]a)
+  {
     qsort(a, 0, a.length);
+  }
+
+  public static void sort(long[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
   // The "cmp" method has been removed from here and replaced with direct
@@ -1357,71 +1676,95 @@ public class Arrays {
   // between two numbers is bigger than a long will hold.
   // One particular change as a result is the use of r1 and r2 in qsort
 
-  private static int med3(int a, int b, int c, long[] d) {
-    return d[a] < d[b] ? 
+  private static int med3(int a, int b, int c, long[]d)
+  {
+    return d[a] < d[b] ?
       (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-    : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
+      : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
-  
-  private static void swap(int i, int j, long[] a) {
+
+  private static void swap(int i, int j, long[]a)
+  {
     long c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(long[] a, int start, int n) {
+  private static void qsort(long[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && a[j-1] > a[j]; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     long r1, r2;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r1 = a[pb]) <= (r2 = a[pv])) {
-        if (r1 == r2) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r1 = a[pb]) <= (r2 = a[pv]))
+	  {
+	    if (r1 == r2)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r1 = a[pc]) >= (r2 = a[pv]))
+	  {
+	    if (r1 == r2)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r1 = a[pc]) >= (r2 = a[pv])) {
-        if (r1 == r2) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, long[] a) {
+  private static void vecswap(int i, int j, int n, long[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1436,79 +1779,110 @@ public class Arrays {
    *
    * @param a the array to sort
    */
-  public static void sort(short[] a) {
+  public static void sort(short[]a)
+  {
     qsort(a, 0, a.length);
   }
 
-  private static int cmp(short i, short j) {
-    return i-j;
+  public static void sort(short[] a, int fromIndex, int toIndex)
+  {
+    qsort(a, fromIndex, toIndex);
   }
 
-  private static int med3(int a, int b, int c, short[] d) {
-    return cmp(d[a], d[b]) < 0 ? 
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-    : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  private static int cmp(short i, short j)
+  {
+    return i - j;
   }
-  
-  private static void swap(int i, int j, short[] a) {
+
+  private static int med3(int a, int b, int c, short[]d)
+  {
+    return cmp(d[a], d[b]) < 0 ?
+      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
+      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+  }
+
+  private static void swap(int i, int j, short[]a)
+  {
     short c = a[i];
     a[i] = a[j];
     a[j] = c;
   }
 
-  private static void qsort(short[] a, int start, int n) {
+  private static void qsort(short[]a, int start, int n)
+  {
     // use an insertion sort on small arrays
-    if (n < 7) {
-      for (int i = start + 1; i < start + n; i++)
-        for (int j = i; j > 0 && cmp(a[j-1], a[j]) > 0; j--)
-          swap(j, j-1, a);
-      return;
-    }
-
-    int pm = n/2;       // small arrays, middle element
-    if (n > 7) {
-      int pl = start;
-      int pn = start + n-1;
-
-      if (n > 40) {     // big arrays, pseudomedian of 9
-        int s = n/8;
-        pl = med3(pl, pl+s, pl+2*s, a);
-        pm = med3(pm-s, pm, pm+s, a);
-        pn = med3(pn-2*s, pn-s, pn, a);
+    if (n < 7)
+      {
+	for (int i = start + 1; i < start + n; i++)
+	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	    swap(j, j - 1, a);
+	return;
       }
-      pm = med3(pl, pm, pn, a); // mid-size, med of 3
-    }
+
+    int pm = n / 2;		// small arrays, middle element
+    if (n > 7)
+      {
+	int pl = start;
+	int pn = start + n - 1;
+
+	if (n > 40)
+	  {			// big arrays, pseudomedian of 9
+	    int s = n / 8;
+	    pl = med3(pl, pl + s, pl + 2 * s, a);
+	    pm = med3(pm - s, pm, pm + s, a);
+	    pn = med3(pn - 2 * s, pn - s, pn, a);
+	  }
+	pm = med3(pl, pm, pn, a);	// mid-size, med of 3
+      }
 
     int pa, pb, pc, pd, pv;
     int r;
 
-    pv = start; swap(pv, pm, a);
+    pv = start;
+    swap(pv, pm, a);
     pa = pb = start;
-    pc = pd = start + n-1;
-    
-    for (;;) {
-      while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0) {
-        if (r == 0) { swap(pa, pb, a); pa++; }
-        pb++;
+    pc = pd = start + n - 1;
+
+    for (;;)
+      {
+	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pa, pb, a);
+		pa++;
+	      }
+	    pb++;
+	  }
+	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	  {
+	    if (r == 0)
+	      {
+		swap(pc, pd, a);
+		pd--;
+	      }
+	    pc--;
+	  }
+	if (pb > pc)
+	  break;
+	swap(pb, pc, a);
+	pb++;
+	pc--;
       }
-      while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0) {
-        if (r == 0) { swap(pc, pd, a); pd--; }
-        pc--;
-      }
-      if (pb > pc) break;
-      swap(pb, pc, a);
-      pb++;
-      pc--;
-    }
     int pn = start + n;
     int s;
-    s = Math.min(pa-start, pb-pa); vecswap(start, pb-s, s, a);
-    s = Math.min(pd-pc, pn-pd-1); vecswap(pb, pn-s, s, a);
-    if ((s = pb-pa) > 1) qsort(a, start, s);
-    if ((s = pd-pc) > 1) qsort(a, pn-s, s);
+    s = Math.min(pa - start, pb - pa);
+    vecswap(start, pb - s, s, a);
+    s = Math.min(pd - pc, pn - pd - 1);
+    vecswap(pb, pn - s, s, a);
+    if ((s = pb - pa) > 1)
+      qsort(a, start, s);
+    if ((s = pd - pc) > 1)
+      qsort(a, pn - s, s);
   }
 
-  private static void vecswap(int i, int j, int n, short[] a) {
+  private static void vecswap(int i, int j, int n, short[]a)
+  {
     for (; n > 0; i++, j++, n--)
       swap(i, j, a);
   }
@@ -1520,45 +1894,45 @@ public class Arrays {
    * than I can, and if I try it will make it more confusing for the
    * JIT.  
    */
-  private static void mergeSort(Object[] a, int from, int to, Comparator c)
+  private static void mergeSort(Object[]a, int from, int to, Comparator c)
   {
     // First presort the array in chunks of length 6 with insertion sort. 
     // mergesort would give too much overhead for this length.
     for (int chunk = from; chunk < to; chunk += 6)
       {
-	int end = Math.min(chunk+6, to);
+	int end = Math.min(chunk + 6, to);
 	for (int i = chunk + 1; i < end; i++)
 	  {
-	    if (c.compare(a[i-1], a[i]) > 0)
+	    if (c.compare(a[i - 1], a[i]) > 0)
 	      {
 		// not already sorted
-		int j=i;
+		int j = i;
 		Object elem = a[j];
-		do 
+		do
 		  {
-		    a[j] = a[j-1];
+		    a[j] = a[j - 1];
 		    j--;
-		  } 
-		while (j>chunk && c.compare(a[j-1], elem) > 0);
+		  }
+		while (j > chunk && c.compare(a[j - 1], elem) > 0);
 		a[j] = elem;
 	      }
 	  }
       }
-    
+
     int len = to - from;
     // If length is smaller or equal 6 we are done.
     if (len <= 6)
       return;
 
-    Object[] src = a;
-    Object[] dest = new Object[len];
-    Object[] t = null; // t is used for swapping src and dest
+    Object[]src = a;
+    Object[]dest = new Object[len];
+    Object[]t = null;		// t is used for swapping src and dest
 
     // The difference of the fromIndex of the src and dest array.
     int srcDestDiff = -from;
 
     // The merges are done in this loop
-    for (int size = 6; size < len; size <<= 1) 
+    for (int size = 6; size < len; size <<= 1)
       {
 	for (int start = from; start < to; start += size << 1)
 	  {
@@ -1566,48 +1940,55 @@ public class Arrays {
 	    // end the start of the next sublist (or end of array).
 	    int mid = start + size;
 	    int end = Math.min(to, mid + size);
-	    
+
 	    // The second list is empty or the elements are already in
 	    // order - no need to merge
-	    if (mid >= end || c.compare(src[mid - 1], src[mid]) <= 0) {
-	      System.arraycopy(src, start, 
-			       dest, start + srcDestDiff, end - start);
-	      
-	      // The two halves just need swapping - no need to merge
-	    } else if (c.compare(src[start], src[end - 1]) > 0) {
-	      System.arraycopy(src, start, 
-			       dest, end - size + srcDestDiff, size);
-	      System.arraycopy(src, mid, 
-			       dest, start + srcDestDiff, end - mid);
-	      
-	    } else {
-	      // Declare a lot of variables to save repeating
-	      // calculations.  Hopefully a decent JIT will put these
-	      // in registers and make this fast
-	      int p1 = start;
-	      int p2 = mid;
-	      int i = start + srcDestDiff;
-	      
-	      // The main merge loop; terminates as soon as either
-	      // half is ended
-	      while (p1 < mid && p2 < end)
-		{
-		  dest[i++] = 
-		    src[c.compare(src[p1], src[p2]) <= 0 ? p1++ : p2++];
-		}
-	      
-	      // Finish up by copying the remainder of whichever half
-	      // wasn't finished.
-	      if (p1 < mid)
-		System.arraycopy(src, p1, dest, i, mid - p1);
-	      else
-		System.arraycopy(src, p2, dest, i, end - p2);
-	    } 
+	    if (mid >= end || c.compare(src[mid - 1], src[mid]) <= 0)
+	      {
+		System.arraycopy(src, start,
+				 dest, start + srcDestDiff, end - start);
+
+		// The two halves just need swapping - no need to merge
+	      }
+	    else if (c.compare(src[start], src[end - 1]) > 0)
+	      {
+		System.arraycopy(src, start,
+				 dest, end - size + srcDestDiff, size);
+		System.arraycopy(src, mid,
+				 dest, start + srcDestDiff, end - mid);
+
+	      }
+	    else
+	      {
+		// Declare a lot of variables to save repeating
+		// calculations.  Hopefully a decent JIT will put these
+		// in registers and make this fast
+		int p1 = start;
+		int p2 = mid;
+		int i = start + srcDestDiff;
+
+		// The main merge loop; terminates as soon as either
+		// half is ended
+		while (p1 < mid && p2 < end)
+		  {
+		    dest[i++] =
+		      src[c.compare(src[p1], src[p2]) <= 0 ? p1++ : p2++];
+		  }
+
+		// Finish up by copying the remainder of whichever half
+		// wasn't finished.
+		if (p1 < mid)
+		  System.arraycopy(src, p1, dest, i, mid - p1);
+		else
+		  System.arraycopy(src, p2, dest, i, end - p2);
+	      }
 	  }
 	// swap src and dest ready for the next merge
-	t = src; src = dest; dest = t; 
+	t = src;
+	src = dest;
+	dest = t;
 	from += srcDestDiff;
-	to   += srcDestDiff;
+	to += srcDestDiff;
 	srcDestDiff = -srcDestDiff;
       }
 
@@ -1635,7 +2016,8 @@ public class Arrays {
    * @exception NullPointerException if an element is null (since
    *   null.compareTo cannot work)
    */
-  public static void sort(Object[] a) {
+  public static void sort(Object[]a)
+  {
     mergeSort(a, 0, a.length, defaultComparator);
   }
 
@@ -1652,7 +2034,8 @@ public class Arrays {
    * @exception ClassCastException if any two elements are not mutually
    *   comparable by the Comparator provided
    */
-  public static void sort(Object[] a, Comparator c) {
+  public static void sort(Object[]a, Comparator c)
+  {
     mergeSort(a, 0, a.length, c);
   }
 
@@ -1673,11 +2056,11 @@ public class Arrays {
    *   are not in range.
    * @exception IllegalArgumentException if fromIndex > toIndex
    */
-  public static void sort(Object[] a, int fromIndex, 
-			  int toIndex) {
+  public static void sort(Object[]a, int fromIndex, int toIndex)
+  {
     if (fromIndex > toIndex)
-      throw new IllegalArgumentException("fromIndex "+fromIndex
-					 +" > toIndex "+toIndex);
+      throw new IllegalArgumentException("fromIndex " + fromIndex
+					 + " > toIndex " + toIndex);
     mergeSort(a, fromIndex, toIndex, defaultComparator);
   }
 
@@ -1699,11 +2082,11 @@ public class Arrays {
    *   are not in range.
    * @exception IllegalArgumentException if fromIndex > toIndex
    */
-  public static void sort(Object[] a, int fromIndex, 
-			  int toIndex, Comparator c) {
+  public static void sort(Object[]a, int fromIndex, int toIndex, Comparator c)
+  {
     if (fromIndex > toIndex)
-      throw new IllegalArgumentException("fromIndex "+fromIndex
-					 +" > toIndex "+toIndex);
+      throw new IllegalArgumentException("fromIndex " + fromIndex
+					 + " > toIndex " + toIndex);
     mergeSort(a, fromIndex, toIndex, c);
   }
 
@@ -1715,13 +2098,14 @@ public class Arrays {
    * @param a the array to return a view of
    * @returns a fixed-size list, changes to which "write through" to the array
    */
-  public static List asList(final Object[] a) {
+  public static List asList(final Object[]a)
+  {
+    if (a == null)
+      {
+	throw new NullPointerException();
+      }
 
-    if (a == null) {
-      throw new NullPointerException();
-    }
-
-    return new ListImpl( a );
+    return new ListImpl(a);
   }
 
 
@@ -1731,21 +2115,25 @@ public class Arrays {
    * Note: When Sun fully specify serialized forms, this class will have to
    * be renamed.
    */
-  private static class ListImpl extends AbstractList {
-
-    ListImpl(Object[] a) {
+  private static class ListImpl extends AbstractList
+  {
+    ListImpl(Object[]a)
+    {
       this.a = a;
     }
 
-    public Object get(int index) {
+    public Object get(int index)
+    {
       return a[index];
     }
 
-    public int size() {
+    public int size()
+    {
       return a.length;
     }
 
-    public Object set(int index, Object element) {
+    public Object set(int index, Object element)
+    {
       Object old = a[index];
       a[index] = element;
       return old;
@@ -1753,5 +2141,4 @@ public class Arrays {
 
     private Object[] a;
   }
-    
 }
