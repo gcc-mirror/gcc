@@ -1,3 +1,8 @@
+2001-05-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* toplev.c (note_outlining_of_inline_function): Add ATTRIBUTE_UNUSED
+	to argument declaration.
+
 2001-05-18  Jason Merrill  <jason_merrill@redhat.com>
 
 	* README.DWARF: Move into dwarfout.c.

@@ -2674,7 +2674,7 @@ note_deferral_of_defined_inline_function (decl)
 
 void
 note_outlining_of_inline_function (fndecl)
-     tree fndecl;
+     tree fndecl ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF2_DEBUGGING_INFO
   /* The DWARF 2 backend tries to reduce debugging bloat by not emitting
