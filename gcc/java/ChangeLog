@@ -1,3 +1,11 @@
+2001-06-01  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (type_literals:): Use `build_incomplete_class_ref' with
+	builtin type.
+	(patch_incomplete_class_ref): Build the class ref, build the class
+	init if necessary, complete the tree.
+	Fixes PR java/2605
+
 2001-05-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (lookup_field_wrapper): Test `name' code.
