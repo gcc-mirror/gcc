@@ -1701,8 +1701,12 @@ reload (first, global, dumpfile)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
       rtx addr = 0;
+      int in_struct = 0;
       if (reg_equiv_mem[i])
-	addr = XEXP (reg_equiv_mem[i], 0);
+	{
+	  addr = XEXP (reg_equiv_mem[i], 0);
+	  in_struct = MEM_IN_STRUCT_P (reg_equiv_mem[i]);
+	}
       if (reg_equiv_address[i])
 	addr = reg_equiv_address[i];
       if (addr)
@@ -1712,6 +1716,7 @@ reload (first, global, dumpfile)
 	      rtx reg = regno_reg_rtx[i];
 	      XEXP (reg, 0) = addr;
 	      REG_USERVAR_P (reg) = 0;
+	      MEM_IN_STRUCT_P (reg) = in_struct;
 	      PUT_CODE (reg, MEM);
 	    }
 	  else if (reg_equiv_mem[i])
