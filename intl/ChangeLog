@@ -1,3 +1,7 @@
+2004-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* plural.c: Regenerated.
+
 2004-04-07  Joe Buck <jbuck@welsh-buck.org>
 
 	* plural.y: don't assume that the inline keyword can be used.

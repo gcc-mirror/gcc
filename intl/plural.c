@@ -75,6 +75,11 @@ typedef union {
 #line 55 "plural.y"
 
 /* Prototypes for local functions.  */
+
+#ifndef __GNUC__
+#define inline /* nothing: don't inline if the compiler is not GCC */
+#endif
+
 static struct expression *new_exp PARAMS ((int nargs, enum operator op,
 					   struct expression * const *args));
 static inline struct expression *new_exp_0 PARAMS ((enum operator op));
@@ -236,8 +241,8 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   174,   182,   186,   190,   194,   198,   202,   206,   210,
-     214,   218,   223
+       0,   179,   187,   191,   195,   199,   203,   207,   211,   215,
+     219,   223,   228
 };
 #endif
 
@@ -320,7 +325,7 @@ static const short yycheck[] =
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -633,7 +638,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/usr/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1027,7 +1032,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 175 "plural.y"
+#line 180 "plural.y"
 {
 	    if (yyvsp[0].exp == NULL)
 	      YYABORT;
@@ -1035,75 +1040,75 @@ case 1:
 	  }
     break;
 case 2:
-#line 183 "plural.y"
+#line 188 "plural.y"
 {
 	    yyval.exp = new_exp_3 (qmop, yyvsp[-4].exp, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 3:
-#line 187 "plural.y"
+#line 192 "plural.y"
 {
 	    yyval.exp = new_exp_2 (lor, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 4:
-#line 191 "plural.y"
+#line 196 "plural.y"
 {
 	    yyval.exp = new_exp_2 (land, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 5:
-#line 195 "plural.y"
+#line 200 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 6:
-#line 199 "plural.y"
+#line 204 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 7:
-#line 203 "plural.y"
+#line 208 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 8:
-#line 207 "plural.y"
+#line 212 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 9:
-#line 211 "plural.y"
+#line 216 "plural.y"
 {
 	    yyval.exp = new_exp_1 (lnot, yyvsp[0].exp);
 	  }
     break;
 case 10:
-#line 215 "plural.y"
+#line 220 "plural.y"
 {
 	    yyval.exp = new_exp_0 (var);
 	  }
     break;
 case 11:
-#line 219 "plural.y"
+#line 224 "plural.y"
 {
 	    if ((yyval.exp = new_exp_0 (num)) != NULL)
 	      yyval.exp->val.num = yyvsp[0].num;
 	  }
     break;
 case 12:
-#line 224 "plural.y"
+#line 229 "plural.y"
 {
 	    yyval.exp = yyvsp[-1].exp;
 	  }
     break;
 }
 
-#line 705 "/usr/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1334,7 +1339,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 229 "plural.y"
+#line 234 "plural.y"
 
 
 void
