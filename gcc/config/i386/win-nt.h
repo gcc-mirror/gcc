@@ -65,11 +65,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
          0 \
   )
 
-#undef FUNCTION_PROLOGUE
-#define FUNCTION_PROLOGUE(FILE,SIZE) \
-  winnt_function_prologue (FILE, SIZE)
-
-
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
@@ -132,8 +127,49 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
-#define HAVE_probe 1
-#define gen_probe() gen_rtx(ASM_INPUT, VOIDmode, "call __stkchk\n")
+/* Define this macro if references to a symbol must be treated
+   differently depending on something about the variable or
+   function named by the symbol (such as what section it is in).
+
+   On i386, if using PIC, mark a SYMBOL_REF for a non-global symbol
+   so that we may access it directly in the GOT.  */
+
+   On i386 running Windows NT, modify the assembler name with a suffix 
+   consisting of an atsign (@) followed by string of digits that represents
+   the number of bytes of arguments passed to the function, if it has the 
+   attribute STDCALL. */
+
+#ifdef ENCODE_SECTION_INFO
+#undef ENCODE_SECTION_INFO
+#define ENCODE_SECTION_INFO(DECL) 					\
+do									\
+  {									\
+    if (flag_pic)							\
+      {									\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
+	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
+	     || ! TREE_PUBLIC (DECL));					\
+      }									\
+    if (TREE_CODE (DECL) == FUNCTION_DECL) 				\
+      if (chain_member_value (get_identifier ("stdcall"), 		\
+                             DECL_MACHINE_ATTRIBUTES (DECL))) 		\
+        XEXP (DECL_RTL (DECL), 0) = 					\
+          gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
+  }									\
+while (0)
+#endif
+
+/* Value is 1 if the declaration has either of the attributes: CDECL or
+   STDCALL and 0 otherwise */
+
+#define VALID_MACHINE_DECL_ATTRIBUTE(decl,attr,name) \
+  ((TREE_CODE(decl) == FUNCTION_DECL) \
+   || (TREE_CODE(decl) == FIELD_DECL) \
+   || (TREE_CODE(decl) == TYPE_DECL)) \
+  && ((get_identifier("stdcall") == name) \
+   || (get_identifier("cdecl") == name))
 
 #include "winnt/winnt.h"
 
