@@ -1,3 +1,9 @@
+Thu Jul 29 09:21:42 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* builtins.c (expand_builtin_setjmp): Use force_operand to
+	make sure that the buffer address is in a suitable form to be
+	passed to force_reg.
+
 Wed Jul 28 12:50:48 1999  Geoff Keating  <geoffk@cygnus.com>
 
         * config/mips/mips.c: system.h handles MIN and MAX, don't undefine
