@@ -1,3 +1,7 @@
+2001-02-26  Will Cohen  <wcohen@redhat.com>
+
+	* gcc.c-torture/execute/ieee/20010226-1.c: New test.
+
 2001-02-26  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.pt/overload15.C: New test to stress overloaded
