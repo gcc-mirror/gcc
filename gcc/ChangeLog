@@ -1,5 +1,9 @@
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Remove extraneous USE in expanders.
+
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Provide prototypes for
 	h8300_legitimate_constant_p and h8300_legitimate_address_p.
 	* config/h8300/h8300.c (h8300_legitimate_constant_p): New.
