@@ -1035,7 +1035,7 @@ namespace std
 	   ios_base::iostate& __err, long double& __units) const
     { 
       string_type __str;
-      this->do_get(__beg, __end, __intl, __io, __err, __str); 
+      __beg = this->do_get(__beg, __end, __intl, __io, __err, __str); 
 
       const int __n = numeric_limits<long double>::digits10;
       char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __n));
@@ -1222,7 +1222,7 @@ namespace std
       while (__units[0] == __ctype.widen('0'))
 	__units.erase(__units.begin());
 
-      if (__sign == __neg_sign)
+      if (__sign.size() && __sign == __neg_sign)
 	__units.insert(__units.begin(), __ctype.widen('-'));
 
       // Test for grouping fidelity.
