@@ -10,8 +10,8 @@
 
 
 #if defined( SCO_STRING_CHECK )
-#ifndef __GNUC__
 extern "C++" {
+#ifndef __GNUC__
 inline void *memchr(void *__1, int __2, size_t __3)
 	{ return (void *)memchr((const void *)__1, __2, __3); }
 inline char *strstr(char *__1, const char *__2)

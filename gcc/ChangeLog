@@ -1,3 +1,9 @@
+2003-10-25  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixinc/tests/base/ansi/string.h:
+	This fixes a result from a broken sed or a hand-edited output file.
+	The '__GNUC__' wrappers were misplaced.
+
 2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/12712
