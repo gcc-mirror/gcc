@@ -2820,21 +2820,22 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
 	 We could check for more complex cases than those tested below,
 	 but it doesn't seem worth it.  It might also be a good idea to try
-	 to swap the two insns.  That might do better.  */
+	 to swap the two insns.  That might do better.
+
+	 We can't do this if the next insn modifies our source, because that
+	 would make the replacement into the insn invalid.  This also
+	 prevents updating the contents of a PRE_INC.  */
 
       if (GET_CODE (trial) == INSN && GET_CODE (pat) == SET
 	  && GET_CODE (SET_SRC (pat)) == REG
 	  && GET_CODE (SET_DEST (pat)) == REG)
 	{
 	  rtx next = next_nonnote_insn (trial);
-	  int our_dest = REGNO (SET_DEST (pat));
 
 	  if (next && GET_CODE (next) == INSN
-	      && GET_CODE (PATTERN (next)) == SET
-	      && GET_CODE (SET_DEST (PATTERN (next))) == REG
-	      && REGNO (SET_DEST (PATTERN (next))) != our_dest
-	      && refers_to_regno_p (our_dest, our_dest + 1,
-				    SET_SRC (PATTERN (next)), 0))
+	      && GET_CODE (PATTERN (next)) != USE
+	      && ! reg_set_p (SET_DEST (pat), next)
+	      && reg_referenced_p (SET_DEST (pat), PATTERN (next)))
 	    validate_replace_rtx (SET_DEST (pat), SET_SRC (pat), next);
 	}
     }
