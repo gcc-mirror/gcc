@@ -1,3 +1,9 @@
+2001-05-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.c-torture/compile/20010518-2.c: New file.
+	* gcc.c-torture/execute/20010518-1.c: New file.
+	* gcc.c-torture/execute/20010518-2.c: New file.
+
 2001-05-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-arraydecl-1.c, gcc.dg/c99-arraydecl-1.c: New tests.
