@@ -1,3 +1,8 @@
+2004-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* name-lookup.c (qualified_lookup_using_namespace): Consider
+	strong using directives even if we've already found a binding.
+
 2004-01-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cxx_expand_expr): Change prototype.
