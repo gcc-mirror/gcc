@@ -1,3 +1,8 @@
+2003-07-24  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c (create):
+	Don't pack label in an event box.
+
 2003-07-24  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/7482:
