@@ -1037,13 +1037,13 @@ private:
   {
     int npc = compute_jump (offset);
     if (npc < PC)
-      current_state->check_no_uninitialized_objects (current_method->max_stack);
+      current_state->check_no_uninitialized_objects (current_method->max_locals);
     push_jump_merge (npc, current_state);
   }
 
   void push_exception_jump (type t, int pc)
   {
-    current_state->check_no_uninitialized_objects (current_method->max_stack,
+    current_state->check_no_uninitialized_objects (current_method->max_locals,
 						  true);
     state s (current_state, current_method->max_stack,
 	     current_method->max_locals);
@@ -1114,7 +1114,7 @@ private:
 	// in the enclosing context.
 	current_state->subroutine = get_subroutine (subr->pc);
 	if (subr->pc < PC)
-	  current_state->check_no_uninitialized_objects (current_method->max_stack);
+	  current_state->check_no_uninitialized_objects (current_method->max_locals);
 	push_jump_merge (subr->pc, current_state, true);
       }
 
@@ -1139,7 +1139,7 @@ private:
     int npc = compute_jump (offset);
 
     if (npc < PC)
-      current_state->check_no_uninitialized_objects (current_method->max_stack);
+      current_state->check_no_uninitialized_objects (current_method->max_locals);
     check_nonrecursive_call (current_state->subroutine, npc);
 
     // Temporarily modify the current state so that it looks like we are
@@ -1344,7 +1344,6 @@ private:
 	  case op_lneg:
 	  case op_fneg:
 	  case op_dneg:
-	  case op_iinc:
 	  case op_i2l:
 	  case op_i2f:
 	  case op_i2d:
@@ -1371,6 +1370,7 @@ private:
 	  case op_areturn:
 	  case op_return:
 	  case op_athrow:
+	  case op_arraylength:
 	    break;
 
 	  case op_bipush:
@@ -1385,12 +1385,12 @@ private:
 	  case op_fstore:
 	  case op_dstore:
 	  case op_astore:
-	  case op_arraylength:
 	  case op_ret:
 	  case op_newarray:
 	    get_byte ();
 	    break;
 
+	  case op_iinc:
 	  case op_sipush:
 	  case op_ldc_w:
 	  case op_ldc2_w:

@@ -1,5 +1,14 @@
 2001-11-19  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_iinc]:
+	Uses two operand bytes, not one.
+	[op_arraylength]: Has no operands in bytecode.
+	(_Jv_BytecodeVerifier::push_jump): Fixed call to
+	check_no_uninitialized_objects.
+	(_Jv_BytecodeVerifier::push_exception_jump): Likewise.
+	(_Jv_BytecodeVerifier::handle_ret_insn): Likewise.
+	(_Jv_BytecodeVerifier::handle_jsr_insn): Likewise.
+
 	* verify.cc (_Jv_BytecodeVerifier::require_array_type): Special
 	case for boolean arrays.
 
