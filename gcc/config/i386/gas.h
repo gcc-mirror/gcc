@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V with gnu tools
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -92,13 +92,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
      fprintf ((FILE), "\t.align 2,0x90\n");  /* Use log of 4 as arg.  */
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-  do {	fprintf (FILE, "\t.file\t");			\
-	output_quoted_string (FILE, dump_base_name);	\
-	fprintf (FILE, "\n");				\
-  } while (0)
-
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a
    variable of type `char *' which points to the opcode name in its
