@@ -1,3 +1,12 @@
+2004-09-15  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_CHECK_HEADERS): Check for sys/mman.h.
+	* unix.c: Include stdio.h.
+	(HAVE_SYS_MMAN_H): Check.
+	(PROT_READ, PROT_WRITE): Provide default definitions.
+
 2004-09-15  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrincics/getcwd.c: New file.
