@@ -2702,17 +2702,8 @@ this is followed by a line number and file name as in @samp{#line}.
 @node Other Directives, Output, Line Control, Top
 @section Miscellaneous Preprocessing Directives
 
-@cindex null directive
-This section describes three additional preprocessing directives.  They
-are not very useful, but are mentioned for completeness.
-
-The @dfn{null directive} consists of a @samp{#} followed by a newline,
-with only whitespace (including comments) in between.  A null directive
-is understood as a preprocessing directive but has no effect on the
-preprocessor output.  The primary significance of the existence of the
-null directive is that an input line consisting of just a @samp{#} will
-produce no output, rather than a line of output containing just a
-@samp{#}.  Supposedly some old C programs contain such lines.
+This section describes some additional, rarely used, preprocessing
+directives.
 
 @findex #pragma
 @findex #pragma GCC
@@ -2730,14 +2721,6 @@ recognized without the @samp{GCC} prefix, however that use is
 deprecated.  Pragmas that are already deprecated are not recognized with
 a @samp{GCC} prefix.
 
-@findex #ident
-The @samp{#ident} directive is supported for compatibility with certain
-other systems.  It is followed by a line of text.  On some systems, the
-text is copied into a special place in the object file; on most systems,
-the text is ignored and this directive has no effect.  Typically
-@samp{#ident} is only used in header files supplied with those systems
-where it is meaningful.
-
 @findex #pragma GCC dependency
 The @samp{#pragma GCC dependency} allows you to check the relative dates
 of the current file and another file. If the other file is more recent
@@ -2751,6 +2734,50 @@ warning message.
 #pragma GCC dependency "parse.y"
 #pragma GCC dependency "/usr/include/time.h" rerun /path/to/fixincludes
 @end smallexample
+
+@findex _Pragma
+The C99 standard also introduces the @samp{_Pragma} operator.  The
+syntax is @code{_Pragma (string-literal)}, where @samp{string-literal}
+can be either a normal or wide-character string literal.  It is
+destringized, by replacing all @samp{\\} with a single @samp{\} and all
+@samp{\"} with a @samp{"}.  The result is then processed as if it had
+appeared as the right hand side of a @samp{#pragma} directive.  For
+example,
+
+@smallexample
+_Pragma ("GCC dependency \"parse.y\"")
+@end smallexample
+
+@noindent has the same effect as @samp{#pragma GCC dependency
+"parse.y"}.  The same effect could be achieved using macros, for example
+
+@smallexample
+#define DO_PRAGMA(x) _Pragma (#x)
+DO_PRAGMA (GCC dependency "parse.y")
+@end smallexample
+
+The standard is unclear on where a @samp{_Pragma} operator can appear.
+The preprocessor accepts it even within a preprocessing conditional
+directive like @samp{#if}.  To be safe, you are probably best keeping it
+out of directives other than @samp{#define}, and putting it on a line of
+its own.
+
+@findex #ident
+The @samp{#ident} directive is supported for compatibility with certain
+other systems.  It is followed by a line of text.  On some systems, the
+text is copied into a special place in the object file; on most systems,
+the text is ignored and this directive has no effect.  Typically
+@samp{#ident} is only used in header files supplied with those systems
+where it is meaningful.
+
+@cindex null directive
+The @dfn{null directive} consists of a @samp{#} followed by a newline,
+with only whitespace (including comments) in between.  A null directive
+is understood as a preprocessing directive but has no effect on the
+preprocessor output.  The primary significance of the existence of the
+null directive is that an input line consisting of just a @samp{#} will
+produce no output, rather than a line of output containing just a
+@samp{#}.  Supposedly some old C programs contain such lines.
 
 @node Output, Implementation, Other Directives, Top
 @section C Preprocessor Output
