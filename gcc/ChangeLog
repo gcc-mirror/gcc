@@ -1,3 +1,9 @@
+2002-03-26  Phil Edwards  <pme@gcc.gnu.org>
+
+	* gcc.c (cpp_options):  Preserve relative ordering of -pedantic
+	and warning switches.
+	(cc1_options):  Likewise.
+
 2002-03-26  Hans Boehm <Hans_Boehm@hp.com>
 	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR):
 	Restore more of the signal context.  Set no_reg_stack_frame.
