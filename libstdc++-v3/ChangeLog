@@ -1,3 +1,9 @@
+2004-08-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/time_put/put/char/3.cc (test03): Don't check
+	timezone.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc (test03): Same.
+
 2004-08-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/20_util/allocator/insert.cc: For std::map
