@@ -2174,6 +2174,23 @@ AC_DEFUN(GLIBCXX_CHECK_POLL, [
   fi
 ])
 
+dnl
+dnl Check whether writev is available in <sys/uio.h>.
+dnl
+
+AC_DEFUN(GLIBCXX_CHECK_WRITEV, [
+  AC_CACHE_VAL(glibcxx_cv_WRITEV, [
+    AC_TRY_COMPILE([#include <sys/uio.h>],
+                [struct iovec iov[2]; writev(0, iov, 0); ],
+                [glibcxx_cv_WRITEV=yes],
+                [glibcxx_cv_WRITEV=no])
+  ])
+  if test x$glibcxx_cv_WRITEV = xyes; then
+    AC_DEFINE(HAVE_WRITEV)
+  fi
+])
+
+
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #

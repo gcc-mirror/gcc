@@ -97,6 +97,10 @@ namespace std
       xsputn(const char* __s, streamsize __n);
 
       streamsize 
+      xsputn_2(const char* __s1, streamsize __n1,
+	       const char* __s2, streamsize __n2);
+
+      streamsize 
       xsgetn(char* __s, streamsize __n);
 
       streampos

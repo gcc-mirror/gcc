@@ -365,7 +365,7 @@ namespace std
 	// NB: _M_file.sync() will be called within.
 	if (this->pbase() < this->pptr())
 	  {
-	    int_type __tmp = this->overflow();
+	    const int_type __tmp = this->overflow();
 	    if (traits_type::eq_int_type(__tmp, traits_type::eof()))
 	      __ret = -1;
 	    else
@@ -407,8 +407,7 @@ namespace std
 
       // [documentation is inherited]
       virtual streamsize
-      xsputn(const char_type* __s, streamsize __n)
-      { return __streambuf_type::xsputn(__s, __n); }
+      xsputn(const char_type* __s, streamsize __n);
 
       /**
        *  @if maint

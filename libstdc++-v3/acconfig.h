@@ -144,6 +144,9 @@
 // Define if S_IFREG is available in <sys/stat.h>.
 #undef HAVE_S_IFREG
 
+// Define if writev is available in <sys/uio.h>.
+#undef HAVE_WRITEV
+
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
