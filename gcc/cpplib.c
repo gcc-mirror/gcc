@@ -1714,6 +1714,39 @@ handle_assertion (pfile, str, type)
   run_directive (pfile, type, BUF_CL_OPTION, str, count);
 }
 
+/* The number of errors for a given reader.  */
+unsigned int
+cpp_errors (pfile)
+     cpp_reader *pfile;
+{
+  return pfile->errors;
+}
+
+/* The options structure.  */
+cpp_options *
+cpp_get_options (pfile)
+     cpp_reader *pfile;
+{
+  return &pfile->opts;
+}
+
+/* The callbacks structure.  */
+cpp_callbacks *
+cpp_get_callbacks (pfile)
+     cpp_reader *pfile;
+{
+  return &pfile->cb;
+}
+
+/* Copy the given callbacks structure to our own.  */
+void
+cpp_set_callbacks (pfile, cb)
+     cpp_reader *pfile;
+     cpp_callbacks *cb;
+{
+  pfile->cb = *cb;
+}
+
 /* Push a new buffer on the buffer stack.  Returns the new buffer; it
    doesn't fail.  It does not generate a file change call back; that
    is the responsibility of the caller.  */

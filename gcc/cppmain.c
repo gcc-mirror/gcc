@@ -87,7 +87,7 @@ main (argc, argv)
      line, it will have set pfile->help_only to indicate this.  Exit
      successfully.  [The library does not exit itself, because
      e.g. cc1 needs to print its own --help message at this point.]  */
-  if (pfile->help_only)
+  if (CPP_OPTION (pfile, help_only))
     return (SUCCESS_EXIT_CODE);
 
   /* Open the output now.  We must do so even if no_output is on,

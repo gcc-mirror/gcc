@@ -42,6 +42,7 @@ typedef struct cpp_pool cpp_pool;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_lexer_pos cpp_lexer_pos;
 typedef struct cpp_lookahead cpp_lookahead;
+typedef struct cpp_callbacks cpp_callbacks;
 
 struct directive;		/* These are deliberately incomplete.  */
 struct answer;
@@ -419,6 +420,11 @@ struct cpp_options
 
   /* Treat C++ alternate operator names special.  */
   unsigned char operator_names;
+
+  /* True if --help, --version or --target-help appeared in the
+     options.  Stand-alone CPP should then bail out after option
+     parsing; drivers might want to continue printing help.  */
+  unsigned char help_only;
 };
 
 struct lexer_state
@@ -483,6 +489,19 @@ struct cpp_file_change
   enum cpp_fc_reason reason;	/* Reason for change.  */
   unsigned char sysp;		/* Nonzero if system header.  */
   unsigned char externc;	/* Nonzero if wrapper needed.  */
+};
+
+/* Call backs.  */
+struct cpp_callbacks
+{
+    void (*file_change) PARAMS ((cpp_reader *, const cpp_file_change *));
+    void (*include) PARAMS ((cpp_reader *, const unsigned char *,
+			     const cpp_token *));
+    void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
+    void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
+    void (*poison) PARAMS ((cpp_reader *));
+    void (*ident) PARAMS ((cpp_reader *, const cpp_string *));
+    void (*def_pragma) PARAMS ((cpp_reader *));
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -581,16 +600,7 @@ struct cpp_reader
   struct pragma_entry *pragmas;
 
   /* Call backs.  */
-  struct {
-    void (*file_change) PARAMS ((cpp_reader *, const cpp_file_change *));
-    void (*include) PARAMS ((cpp_reader *, const unsigned char *,
-			     const cpp_token *));
-    void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
-    void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
-    void (*poison) PARAMS ((cpp_reader *));
-    void (*ident) PARAMS ((cpp_reader *, const cpp_string *));
-    void (*def_pragma) PARAMS ((cpp_reader *));
-  } cb;
+  struct cpp_callbacks cb;
 
   /* User visible options.  */
   struct cpp_options opts;
@@ -608,15 +618,11 @@ struct cpp_reader
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
-
-  /* True if --help appeared in the options.  Caller should then bail
-     out after option parsing and printing its own help.  See cppmain.c.  */
-  unsigned char help_only;
 };
 
 #define CPP_FATAL_LIMIT 1000
 /* True if we have seen a "fatal" error. */
-#define CPP_FATAL_ERRORS(READER) ((READER)->errors >= CPP_FATAL_LIMIT)
+#define CPP_FATAL_ERRORS(PFILE) (cpp_errors (PFILE) >= CPP_FATAL_LIMIT)
 
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
@@ -699,6 +705,15 @@ struct cpp_hashnode
 /* Call this first to get a handle to pass to other functions.  */
 extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 
+/* Call these to get pointers to the options and callback structures
+   for a given reader.  These pointers are good until you call
+   cpp_finish on that reader.  You can either edit the callbacks
+   through the pointer returned from cpp_get_callbacks, or set them
+   with cpp_set_callbacks.  */
+extern cpp_options *cpp_get_options PARAMS ((cpp_reader *));
+extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
+extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
+
 /* Now call cpp_handle_option[s] to handle 1[or more] switches.  The
    return value is the number of arguments used.  If
    cpp_handle_options returns without using all arguments, it couldn't
@@ -709,6 +724,9 @@ extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_post_options PARAMS ((cpp_reader *));
+
+/* Error count.  */
+extern unsigned int cpp_errors PARAMS ((cpp_reader *));
 
 extern unsigned int cpp_token_len PARAMS ((const cpp_token *));
 extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *,

@@ -1,3 +1,16 @@
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (cpp_handle_option): help_only is now part of the
+        cpp_options structure.
+        * cpplib.c (cpp_errors, cpp_get_options, cpp_get_callbacks,
+        cpp_set_callbacks): New functions.
+        * cpplib.h (cpp_callbacks): Break out as a named structure.
+        (cpp_options): Move help_only here from cpp_reader.
+        (CPP_FATAL_ERRORS): Update to use cpp_errors.
+        (cpp_errors, cpp_get_options, cpp_get_callbacks,
+        cpp_set_callbacks): New prototypes.
+        * cppmain.c (main): Update for help_only.
+
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (info, maintainer-clean, install-info, uninstall):
