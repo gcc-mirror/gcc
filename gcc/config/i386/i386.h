@@ -393,6 +393,8 @@ extern int ix86_arch;
     N_("Attempt to keep stack aligned to this power of 2") },	\
   { "branch-cost=",	&ix86_branch_cost_string,		\
     N_("Branches are this expensive (1-5, arbitrary units)") },	\
+  { "cmodel=", &ix86_cmodel_string,				\
+    N_("Use given x86-64 code model") },			\
   SUBTARGET_OPTIONS						\
 }
 
@@ -1138,7 +1140,7 @@ enum reg_class
   ((n) < 8 || REX_INT_REGNO_P (n))
 
 #define GENERAL_REG_P(X) \
-  (REG_P (X) && GENERAL_REGNO_P (X))
+  (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 
 #define ANY_QI_REG_P(X) (TARGET_64BIT ? GENERAL_REG_P(X) : QI_REG_P (X))
 
@@ -1246,6 +1248,23 @@ enum reg_class
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'G' ? standard_80387_constant_p (VALUE) \
    : ((C) == 'H' ? standard_sse_constant_p (VALUE) : 0))
+
+/* A C expression that defines the optional machine-dependent
+   constraint letters that can be used to segregate specific types of
+   operands, usually memory references, for the target machine.  Any
+   letter that is not elsewhere defined and not matched by
+   `REG_CLASS_FROM_LETTER' may be used.  Normally this macro will not
+   be defined.
+
+   If it is required for a particular target machine, it should
+   return 1 if VALUE corresponds to the operand type represented by
+   the constraint letter C.  If C is not defined as an extra
+   constraint, the value returned should be 0 regardless of VALUE.  */
+
+#define EXTRA_CONSTRAINT(VALUE, C)				\
+  ((C) == 'e' ? x86_64_sign_extended_value (VALUE)		\
+   : (C) == 'Z' ? x86_64_zero_extended_value (VALUE)		\
+   : 0)
 
 /* Place additional restrictions on the register class to use when it
    is necessary to be able to hold a value of mode MODE in a reload
@@ -3050,6 +3069,31 @@ do { long l;						\
 
 #define SPECIAL_MODE_PREDICATES \
   "ext_register_operand",
+
+/* CM_32 is used by 32bit ABI
+   CM_SMALL is small model assuming that all code and data fits in the first
+   31bits of address space.
+   CM_KERNEL is model assuming that all code and data fits in the negative
+   31bits of address space.
+   CM_MEDIUM is model assuming that code fits in the first 31bits of address
+   space.  Size of data is unlimited.
+   CM_LARGE is model making no assumptions about size of particular sections.
+  
+   CM_SMALL_PIC is model for PIC libraries assuming that code+data+got/plt
+   tables first in 31bits of address space.
+ */
+enum cmodel {
+  CM_32,
+  CM_SMALL,
+  CM_KERNEL,
+  CM_MEDIUM,
+  CM_LARGE,
+  CM_SMALL_PIC
+};
+
+/* Valud of -mcmodel specified by user.  */
+extern const char *ix86_cmodel_string;
+extern enum cmodel ix86_cmodel;
 
 /* Variables in i386.c */
 extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
