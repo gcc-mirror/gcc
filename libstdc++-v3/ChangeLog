@@ -1,3 +1,9 @@
+2002-01-18  Loren Rittle <ljrittle@acm.org>
+
+	* testsuite/18_support/numeric_limits.cc (test_extrema<long double>):
+	Add specialization for FreeBSD systems only to avoid losing test
+	only due to extra precision unmentioned in system headers.
+
 2002-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/os/irix/irix6.5/bits/ctype_noninline.h: Fix typo
