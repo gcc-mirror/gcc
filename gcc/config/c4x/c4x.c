@@ -2200,26 +2200,25 @@ c4x_process_after_reload (first)
 	  if (insn_code_number == CODE_FOR_rptb_end)
 	    c4x_rptb_insert(insn);
 
-	  /* We split all insns here if they have a # for the output
-	     template.  */
-
-	  if (1)
+	  /* When the optimization level less than 2 we need to split
+	     the insn here.  Otherwise the calls to force_const_mem
+	     will not work.  */
+	  if (optimize < 2)
 	    {
-	      const char *template;
+	      rtx old = insn;
 
-	      template = get_insn_template (insn_code_number, insn);
-	      if (template && template[0] == '#' && template[1] == '\0')
+	      /* Don't split the insn if it has been deleted.  */
+	      if (! INSN_DELETED_P (old))
+	        insn = try_split (PATTERN(old), old, 1);
+
+	      /* When not optimizing, the old insn will be still left around
+		 with only the 'deleted' bit set.  Transform it into a note
+		 to avoid confusion of subsequent processing.  */
+	      if (INSN_DELETED_P (old))
 		{
-		  rtx new = try_split (PATTERN(insn), insn, 0);
-		  
-		  /* If we didn't split the insn, go away.  */
-		  if (new == insn && PATTERN (new) == PATTERN(insn))
-		    fatal_insn ("Couldn't split pattern", insn);
-
-		  PUT_CODE (insn, NOTE);
-		  NOTE_SOURCE_FILE (insn) = 0;
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  insn = new;
+		  PUT_CODE (old, NOTE);
+		  NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (old) = 0;
 		}
 	    }
 	}
