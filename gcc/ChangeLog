@@ -1,3 +1,14 @@
+2002-04-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (PROTO_OBJS): Add cppdefault.o.
+	(protoize.o): Take $(PREPROCESSOR_DEFINES) off command line.
+	(unprotoize.o): Ditto.  Build from protoize.c.  Define
+	UNPROTOIZE on command line.
+	* protoize.c: Include cppdefault.h.  Delete include_defaults.
+	(in_system_include_dir): Use cpp_include_defaults (defined in
+	cppdefault.o).
+	* unprotoize.c: Delete file.
+
 2002-04-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_ld): Add array variants.

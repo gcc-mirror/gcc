@@ -2021,7 +2021,7 @@ $(srcdir)/tradcif.c: $(srcdir)/tradcif.y
 
 proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
-PROTO_OBJS = intl.o version.o
+PROTO_OBJS = intl.o version.o cppdefault.o
 
 protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
@@ -2034,16 +2034,16 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
+	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
-unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
+unprotoize.o: protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) $(SYSTEM_H) Makefile version.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
-	  $(srcdir)/unprotoize.c $(OUTPUT_OPTION))
+	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  $(DRIVER_DEFINES) \
+	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
