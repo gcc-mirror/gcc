@@ -91,8 +91,8 @@ extern void for_each_eh_label			PARAMS ((void (*) (rtx)));
 extern bool can_throw_internal			PARAMS ((rtx));
 extern bool can_throw_external			PARAMS ((rtx));
 
-/* Return nonzero if nothing in this function can throw.  */
-extern bool nothrow_function_p			PARAMS ((void));
+/* Set current_function_nothrow and cfun->all_throwers_are_sibcalls.  */
+extern void set_nothrow_function_flags		PARAMS ((void));
 
 /* After initial rtl generation, call back to finish generating
    exception support code.  */

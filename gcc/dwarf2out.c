@@ -203,6 +203,7 @@ typedef struct dw_fde_struct
   const char *dw_fde_end;
   dw_cfi_ref dw_fde_cfi;
   unsigned funcdef_number;
+  unsigned all_throwers_are_sibcalls : 1;
   unsigned nothrow : 1;
   unsigned uses_eh_lsda : 1;
 }
@@ -1952,8 +1953,9 @@ output_call_frame_info (for_eh)
       fde = &fde_table[i];
 
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
-      if (!flag_asynchronous_unwind_tables && for_eh && fde->nothrow
-	  && !  fde->uses_eh_lsda)
+      if (!flag_asynchronous_unwind_tables && for_eh
+	  && (fde->nothrow || fde->all_throwers_are_sibcalls)
+	  && !fde->uses_eh_lsda)
 	continue;
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, FDE_LABEL, for_eh + i * 2);
@@ -2115,6 +2117,7 @@ dwarf2out_begin_prologue (line, file)
   fde->funcdef_number = current_function_funcdef_no;
   fde->nothrow = current_function_nothrow;
   fde->uses_eh_lsda = cfun->uses_eh_lsda;
+  fde->all_throwers_are_sibcalls = cfun->all_throwers_are_sibcalls;
 
   args_size = old_args_size = 0;
 

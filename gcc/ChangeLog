@@ -1,3 +1,19 @@
+2002-08-24  Stuart Hastings  <stuart@apple.com>
+
+	* function.h (struct function): Add flag
+	all_throwers_are_sibcalls.
+	* except.c (set_nothrow_function_flags): Replaces
+	nothrow_function_p. Set new flag.
+	* except.h (set_nothrow_function_flags): Replaces
+	nothrow_function_p.
+	* dwarf2out.c (struct dw_fde_struct): Add flag
+	all_throwers_are_sibcalls.
+	(output_call_frame_info): Test it.
+	(dwarf2out_begin_prologue) Propagate it from cfun to
+	dw_fde_struct.
+	* toplev.c (rest_of_compilation): Update calls to
+	nothrow_function_p.
+
 2002-08-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* ggc-page.c (compute_inverse): Short circuit calculation for
