@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998 Free Software Foundation.
+   Copyright (C) 1987, 92, 94, 95, 97, 98, 1999 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -108,6 +108,8 @@ static long right_shift PARAMS ((cpp_reader *, long, int, unsigned long));
 #ifndef HOST_BITS_PER_WIDE_INT
 #define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
 #endif
+
+#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 
 struct operation {
     short op;
@@ -435,12 +437,52 @@ cpp_lex (pfile, skip_evaluation)
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
-      if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
-	cpp_warning (pfile, "`%.*s' is not defined",
-		     (int) (tok_end - tok_start), tok_start);
       op.op = INT;
       op.unsignedp = 0;
       op.value = 0;
+      if (strcmp (tok_start, "defined"))
+	{
+	  if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
+	    cpp_warning (pfile, "`%.*s' is not defined",
+			 (int) (tok_end - tok_start), tok_start);
+	}
+      else
+	{
+	  int paren = 0, len;
+	  cpp_buffer *ip = CPP_BUFFER (pfile);
+	  U_CHAR *tok;
+
+	  SKIP_WHITE_SPACE (ip->cur);
+	  if (*ip->cur == '(')
+	    {
+	      paren++;
+	      ip->cur++;			/* Skip over the paren */
+	      SKIP_WHITE_SPACE (ip->cur);
+	    }
+
+	  if (!is_idstart[*ip->cur])
+	    goto oops;
+	  if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
+	    goto oops;
+	  tok = ip->cur;
+	  while (is_idchar[*ip->cur])
+	    ++ip->cur;
+	  len = ip->cur - tok;
+	  SKIP_WHITE_SPACE (ip->cur);
+	  if (paren)
+	    {
+	      if (*ip->cur != ')')
+		goto oops;
+	      ++ip->cur;
+	    }
+	  if (cpp_lookup (pfile, tok, len, -1))
+	    op.value = 1;
+
+	}
+      return op;
+
+    oops:
+      cpp_error (pfile, "`defined' without an identifier");
       return op;
 
     case CPP_OTHER:

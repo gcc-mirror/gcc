@@ -131,8 +131,8 @@ delete_macro (hp)
 }
 
 /* Install a name in the main hash table, even if it is already there.
-     name stops with first non alphanumeric, except leading '#'.
-   caller must check against redefinition if that is desired.
+   Name stops with first non alphanumeric, except leading '#'.
+   Caller must check against redefinition if that is desired.
    delete_macro () removes things installed by install () in fifo order.
    this is important because of the `defined' special symbol used
    in #if, and also if pushdef/popdef directives are ever implemented.
@@ -144,12 +144,11 @@ delete_macro (hp)
    Otherwise, compute the hash code.  */
 
 HASHNODE *
-install (name, len, type, ivalue, value, hash)
+install (name, len, type, value, hash)
      U_CHAR *name;
      int len;
      enum node_type type;
-     int ivalue;
-     char *value;
+     const char *value;
      int hash;
 {
   register HASHNODE *hp;
@@ -177,10 +176,7 @@ install (name, len, type, ivalue, value, hash)
     hp->next->prev = hp;
   hp->type = type;
   hp->length = len;
-  if (hp->type == T_CONST)
-    hp->value.ival = ivalue;
-  else
-    hp->value.cpval = value;
+  hp->value.cpval = value;
   hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
   bcopy (name, hp->name, len);
   hp->name[len] = 0;

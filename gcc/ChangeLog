@@ -1,3 +1,28 @@
+1999-02-08 23:25 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
+
+	* cpplib.c (special_symbol): Rewrite.  Don't copy things
+	  multiple times.  Handle __STDC__ specially.  T_CONST
+	  indicates a constant /string/.  Don't handle T_*_TYPE and
+	  T_SPEC_DEFINED.  Use cpp_buf_line_and_col instead of
+	  adjust_position.  Determine the file buffer only if needed.
+	  (initialize_builtins): Handle __SIZE_TYPE__,
+	  __PTRDIFF_TYPE__, __WCHAR_TYPE__, __USER_LABEL_PREFIX__, and
+	  __REGISTER_PREFIX__ with T_CONST special hashtab entries.
+	  Don't provide __OBJC__; the driver does that.	 Provide
+	  __STDC_VERSION__, using T_CONST.  Use T_STDC for
+	  __STDC__.  Give install the length of all symbols defined.
+	  (eval_if_expression): Drop code to insert and remove the
+	  "defined" special symbol.
+
+	* cpplib.h: Remove SELF_DIR_DUMMY (no longer used).  Remove
+	  T_*_TYPE and T_SPEC_DEFINED from enum node_type; add T_STDC.
+
+	* cpphash.c (install): Drop the `ivalue' parameter.  Constify
+	  the `value' parameter.  All callers changed.
+	* cpphash.h (install): Change prototype to match.
+	  (union hashval): Remove `ival' member.
+	* cppexp.c (cpp_lex): Handle `defined' here.
+
 Mon Feb  8 17:29:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (EXTRA_CONSTRAINT): Fix comment.

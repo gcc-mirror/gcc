@@ -16,12 +16,12 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* different kinds of things that can appear in the value field
-   of a hash node.  Actually, this may be useless now. */
-union hashval {
-  int ival;
-  char *cpval;
-  DEFINITION *defn;
-  struct hashnode *aschain; /* for #assert */
+   of a hash node. */
+union hashval
+{
+  const char *cpval;		/* some predefined macros */
+  DEFINITION *defn;		/* #define */
+  struct hashnode *aschain;	/* #assert */
 };
 
 struct hashnode {
@@ -49,6 +49,7 @@ typedef struct hashnode HASHNODE;
 #define HASHSTEP(old, c) ((old << 2) + c)
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 
-extern HASHNODE *install PARAMS ((U_CHAR *,int,enum node_type, int,char *,int));
+extern HASHNODE *install PARAMS ((U_CHAR *, int, enum node_type,
+				  const char *, int));
 extern int hashf PARAMS ((const U_CHAR *, int, int));
 extern void delete_macro PARAMS ((HASHNODE *));
