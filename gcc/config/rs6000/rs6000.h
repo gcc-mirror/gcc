@@ -140,6 +140,10 @@ Boston, MA 02111-1307, USA.  */
 
    Do not define this macro if it does not need to do anything.  */
 
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
 #define EXTRA_SPECS					\
   { "cpp_cpu",		CPP_CPU_SPEC },			\
   { "cpp_default",	CPP_DEFAULT_SPEC },		\
@@ -147,7 +151,36 @@ Boston, MA 02111-1307, USA.  */
   { "cpp_sysv_default",	CPP_SYSV_DEFAULT_SPEC },	\
   { "cpp_endian",	CPP_ENDIAN_SPEC },		\
   { "asm_cpu",		ASM_CPU_SPEC },			\
-  { "asm_default",	ASM_DEFAULT_SPEC }
+  { "asm_default",	ASM_DEFAULT_SPEC },		\
+  { "link_syscalls",	LINK_SYSCALLS_SPEC },		\
+  { "link_libg",	LINK_LIBG_SPEC },		\
+  { "link_path",	LINK_PATH_SPEC },		\
+  { "link_start",	LINK_START_SPEC },		\
+  SUBTARGET_EXTRA_SPECS
+
+/* Default paths to give linker under V.4 */
+#ifndef LINK_PATH_SPEC
+#define LINK_PATH_SPEC ""
+#endif
+
+/* Default location of syscalls.exp under AIX */
+#ifndef CROSS_COMPILE
+#define LINK_SYSCALLS_SPEC "-bI:/lib/syscalls.exp"
+#else
+#define LINK_SYSCALLS_SPEC ""
+#endif
+
+/* Default location of libg.exp under AIX */
+#ifndef CROSS_COMPILE
+#define LINK_LIBG_SPEC "-bexport:/usr/lib/libg.exp"
+#else
+#define LINK_LIBG_SPEC ""
+#endif
+
+/* Default starting address if specified */
+#ifndef LINK_START_SPEC
+#define LINK_START_SPEC ""
+#endif
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
@@ -163,15 +196,9 @@ Boston, MA 02111-1307, USA.  */
    that to actually build a shared library you will also need to specify an
    export list with the -Wl,-bE option.  */
 
-#ifndef CROSS_COMPILE
 #define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
-   %{static:-bnso} \
-   %{shared:-bM:SRE}"
-#else
-#define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
-   %{static:-bnso -bI:/lib/syscalls.exp} \
-   %{!shared:%{g*:-bexport:/usr/lib/libg.exp}} %{shared:-bM:SRE}"
-#endif
+   %{static:-bnso %(link_syscalls) } \
+   %{!shared:%{g*: %(link_libg) }} %{shared:-bM:SRE}"
 
 /* Profiled library versions are used by linking with special directories.  */
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
@@ -1206,12 +1233,23 @@ extern int rs6000_sysv_varargs_p;
 
 /* Minimum and maximum floating point registers used to hold arguments.  */
 #define FP_ARG_MIN_REG 33
-#define FP_ARG_MAX_REG 45
+#define	FP_ARG_AIX_MAX_REG 45
+#define	FP_ARG_V4_MAX_REG  40
+#define FP_ARG_MAX_REG FP_ARG_AIX_MAX_REG
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
 
 /* Return registers */
 #define GP_ARG_RETURN GP_ARG_MIN_REG
 #define FP_ARG_RETURN FP_ARG_MIN_REG
+
+/* Flags for the call/call_value rtl operations set up by function_arg */
+enum rs6000_call_cookie
+{
+  CALL_V4_SET_FP_ARGS	= -1,		/* V4, FP args passed */
+  CALL_NORMAL		= 0,		/* no special processing */
+  CALL_V4_CLEAR_FP_ARGS	= 1,		/* V4, no FP args passed */
+  CALL_NT_DLLIMPORT	= 2		/* NT, this is a DLL import call */
+};
 
 /* Define cutoff for using external functions to save floating point */
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
@@ -1246,12 +1284,13 @@ extern int rs6000_sysv_varargs_p;
 
 typedef struct rs6000_args
 {
-  int words;			/* # words uses for passing GP registers */
-  int fregno;			/* next available FP register */
-  int nargs_prototype;		/* # args left in the current prototype */
-  int orig_nargs;		/* Original value of nargs_prototype */
-  int varargs_offset;		/* offset of the varargs save area */
-  int prototype;		/* Whether a prototype was defined */
+  int words;				/* # words uses for passing GP registers */
+  int fregno;				/* next available FP register */
+  int nargs_prototype;			/* # args left in the current prototype */
+  int orig_nargs;			/* Original value of nargs_prototype */
+  int varargs_offset;			/* offset of the varargs save area */
+  int prototype;			/* Whether a prototype was defined */
+  enum rs6000_call_cookie call_cookie;	/* Do special things for this call */
 } CUMULATIVE_ARGS;
 
 /* Define intermediate macro to compute the size (in registers) of an argument
@@ -1422,6 +1461,35 @@ typedef struct rs6000_args
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)		\
   rs6000_initialize_trampoline (ADDR, FNADDR, CXT)
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
+  (rs6000_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for TYPE.
+   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
+
+#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
+  (rs6000_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is zero if the attributes on
+   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+   two if they are nearly compatible (which causes a warning to be
+   generated).  */
+
+#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
+  (rs6000_comp_type_attributes (TYPE1, TYPE2))
+
+/* If defined, a C statement that assigns default attributes to newly
+   defined TYPE.  */
+
+#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
+  (rs6000_set_default_type_attributes (TYPE))
+
 
 /* Definitions for __builtin_return_address and __builtin_frame_address.
    __builtin_return_address (0) should give link register (65), enable
@@ -1618,6 +1686,9 @@ typedef struct rs6000_args
        && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
        && LEGITIMATE_CONSTANT_POOL_BASE_P (XEXP (XEXP (X, 0), 0))))
 
+#define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
+  (DEFAULT_ABI == ABI_V4 && small_data_operand (X, MODE))
+
 #define LEGITIMATE_ADDRESS_INTEGER_P(X,OFFSET)				\
  (GET_CODE (X) == CONST_INT						\
   && (unsigned) (INTVAL (X) + (OFFSET) + 0x8000) < 0x10000)
@@ -1657,6 +1728,8 @@ typedef struct rs6000_args
     goto ADDR;						\
   if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC) \
       && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (X, 0)))	\
+    goto ADDR;						\
+  if (LEGITIMATE_SMALL_DATA_P (MODE, X))		\
     goto ADDR;						\
   if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (X))		\
     goto ADDR;						\
@@ -2434,7 +2507,7 @@ toc_section ()						\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, NAME)
+  fputs (NAME, FILE)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
@@ -2729,6 +2802,7 @@ extern int lwa_operand ();
 extern int call_operand ();
 extern int current_file_function_operand ();
 extern int input_operand ();
+extern int small_data_operand ();
 extern void init_cumulative_args ();
 extern void function_arg_advance ();
 extern int function_arg_boundary ();
@@ -2766,3 +2840,8 @@ extern int rs6000_adjust_cost ();
 extern void rs6000_trampoline_template ();
 extern int rs6000_trampoline_size ();
 extern void rs6000_initialize_trampoline ();
+extern int rs6000_comp_type_attributes ();
+extern int rs6000_valid_decl_attribute_p ();
+extern int rs6000_valid_type_attribute_p ();
+extern void rs6000_set_default_type_attributes ();
+extern struct rtx_def *rs6000_dll_import_ref ();

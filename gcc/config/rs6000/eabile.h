@@ -41,4 +41,4 @@ Boston, MA 02111-1307, USA.  */
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-sysv" }
+#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-sysv", "mno-sdata" }

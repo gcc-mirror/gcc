@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -D__simulator__ -Asystem(embedded) -Asystem(simulator) -Acpu(powerpc) -Amachine(powerpc)"
 
+/* Clue the simulator in to use netbsd */
+#undef LINK_START_SPEC
+#define LINK_START_SPEC "%{!mmvme: %{!Ttext*: -Ttext 0x10000000}}"
+
 /* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
 #undef  STARTFILE_SPEC
 #define	STARTFILE_SPEC "crti.o%s \
