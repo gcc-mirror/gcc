@@ -1,3 +1,7 @@
+2002-04-09  Loren J. Rittle <ljrittle@acm.org>
+
+	* configure.in: Add *-*-freebsd* configurations.
+
 2002-04-08  Tom Tromey  <tromey@redhat.com>
 
 	* configure.in: Add FLAGS_FOR_TARGET to GCJ_FOR_TARGET.

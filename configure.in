@@ -617,6 +617,9 @@ case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
+  *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    ;;
   *-*-netbsd*)
     # Skip some stuff on all NetBSD configurations.
     skipdirs="$skipdirs target-newlib target-libiberty target-libgloss"
@@ -652,6 +655,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
+    ;;
+  alpha*-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
@@ -796,6 +802,9 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
+    ;;
+  i[34567]86-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
