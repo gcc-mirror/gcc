@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC 1.1
-   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@defmacro.cs.utah.edu)
 
 This file is part of GNU CC.
@@ -39,6 +39,9 @@ Boston, MA 02111-1307, USA.  */
        %{threads:-lcma -lc_r}}}\
      %{p: -L/lib/libp/ -lc}\
      %{pg: -L/lib/libp/ -lc}}"
+
+#undef THREAD_MODEL_SPEC
+#define THREAD_MODEL_SPEC "%{!threads:single}%{threads:dce}"
 
 /* Under hpux10, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
