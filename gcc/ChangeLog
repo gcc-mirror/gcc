@@ -1,3 +1,9 @@
+2003-10-22  Andreas Schwab  <schwab@suse.de>
+
+	PR target/12676
+	* config/m68k/m68k.c (output_addsi3): Fix range check to work on
+	LP64 platforms.
+
 2003-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dwarf2out_abstract_function): Use DW_AT to check presence of DW_AT_inline.

@@ -2464,7 +2464,7 @@ output_addsi3 (rtx *operands)
       /* These insns can result from reloads to access
 	 stack slots over 64k from the frame pointer.  */
       if (GET_CODE (operands[2]) == CONST_INT
-	  && INTVAL (operands[2]) + 0x8000 >= (unsigned) 0x10000)
+	  && (INTVAL (operands[2]) < -32768 || INTVAL (operands[2]) > 32767))
         return "move%.l %2,%0\n\tadd%.l %1,%0";
 #ifdef SGS
       if (GET_CODE (operands[2]) == REG)
