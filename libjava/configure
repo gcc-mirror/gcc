@@ -4085,7 +4085,7 @@ for peer in $peerlibs ; do
       else
         use_xlib_awt="yes"
 	if test -z "$TOOLKIT"; then
-	   TOOLKIT=gnu.gnu.awt.xlib.XToolkit
+	   TOOLKIT=gnu.awt.xlib.XToolkit
 	fi
       fi
       ;;

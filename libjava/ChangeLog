@@ -1,5 +1,8 @@
 2003-02-02  Tom Tromey  <tromey@redhat.com>
 
+	* configure: Rebuilt.
+	* configure.in (TOOLKIT) [xlib]: Set correctly.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (lib_gnu_awt_xlib_la_LDFLAGS): Link against
 	libstdc++.
