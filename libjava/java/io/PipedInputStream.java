@@ -194,7 +194,7 @@ public class PipedInputStream extends InputStream
 	else
 	  copylen = Math.min (len, buffer.length - in);
 
-	// Copy bytes until the pipe is filled, wrapping if neccessary.
+	// Copy bytes until the pipe is filled, wrapping if necessary.
 	System.arraycopy(buf, bufpos, buffer, in, copylen);
 	len -= copylen;
 	bufpos += copylen;

@@ -288,7 +288,7 @@ public abstract class X509Certificate extends Certificate implements X509Extensi
 
      @return the DER encoded tbsCertificate
 
-     @throws CertificateEncodingException if encoding error occured
+     @throws CertificateEncodingException if encoding error occurred
   */
   public abstract byte[] getTBSCertificate() throws CertificateEncodingException;
 

@@ -20,7 +20,7 @@ public class Thread_Wait implements Runnable
     }
     catch (Exception x)
     {
-      System.out.println("exception occured: " + x);
+      System.out.println("exception occurred: " + x);
     }
 
     synchronized (this)
@@ -41,7 +41,7 @@ public class Thread_Wait implements Runnable
       }
       catch (Exception x)
       {
-        System.out.println("exception occured: " + x);
+        System.out.println("exception occurred: " + x);
       }
     }    
     System.out.println ("thread notified okay");

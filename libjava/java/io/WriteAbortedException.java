@@ -1,4 +1,4 @@
-/* WriteAbortedException.java -- An exception occured while writing a 
+/* WriteAbortedException.java -- An exception occurred while writing a 
    serialization stream
    Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 

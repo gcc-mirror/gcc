@@ -40,7 +40,7 @@ Yup, you need the magic libgcj automake ;-)
 
 <ftp://ftp.freesoftware.com/.0/sourceware/java/automake-gcj-1.4.tar.gz>
 
-Install that (dont worry, it should still work for other projects), add your
+Install that (don't worry, it should still work for other projects), add your
 files to the Makefile.am, then just type "automake" and it will regenerate the
 Makefile.in. Easy!
 

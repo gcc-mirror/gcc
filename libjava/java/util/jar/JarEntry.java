@@ -46,7 +46,7 @@ import java.util.zip.ZipEntry;
 
 public class JarEntry extends ZipEntry
 {
-  // (Packge local) fields
+  // (Package local) fields
 
   Attributes attr;
   Certificate certs[];

@@ -55,7 +55,7 @@ public class SecureRandom extends Random
      It is not seeded and should be seeded using setSeed or else
      on the first call to getnextBytes it will force a seed.
 
-     It is maintained for backwards compatability and programs
+     It is maintained for backwards compatibility and programs
      should use getInstance.
    */
   public SecureRandom()
@@ -115,7 +115,7 @@ public class SecureRandom extends Random
      It is seeded with the passed function and is useful if the user
      has access to hardware random device (like a radiation detector).
 
-     It is maintained for backwards compatability and programs
+     It is maintained for backwards compatibility and programs
      should use getInstance.
 
      @param seed Seed bytes for class

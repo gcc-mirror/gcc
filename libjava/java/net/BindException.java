@@ -1,4 +1,4 @@
-/* BindException.java -- An exception occured while binding to a socket
+/* BindException.java -- An exception occurred while binding to a socket
    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -33,7 +33,7 @@ package java.net;
  */
 
 /**
-  * This exception indicates that an error occured while attempting to bind
+  * This exception indicates that an error occurred while attempting to bind
   * socket to a particular port.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)

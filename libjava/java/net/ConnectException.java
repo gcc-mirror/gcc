@@ -1,4 +1,4 @@
-/* ConnectException.java -- An exception occured while connecting to a host
+/* ConnectException.java -- An exception occurred while connecting to a host
    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -34,7 +34,7 @@ package java.net;
  */
 
 /**
-  * This exception indicates that an error occured while attempting to
+  * This exception indicates that an error occurred while attempting to
   * connect to a remote host.  Often this indicates that the remote host
   * refused the connection (ie, is not listening on the target socket).
   *

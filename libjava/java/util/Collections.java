@@ -538,7 +538,7 @@ public class Collections
 
   /** Cache a single Random object for use by shuffle(List). This improves
     * performance as well as ensuring that sequential calls to shuffle() will
-    * not result in the same shuffle order occuring: the resolution of 
+    * not result in the same shuffle order occurring: the resolution of 
     * System.currentTimeMillis() is not sufficient to guarantee a unique seed.
     */
   private static Random defaultRandom = null;

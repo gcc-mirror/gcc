@@ -181,7 +181,7 @@ public class PipedReader extends Reader
 	  else
 	    copylen = Math.min (len, buffer.length - in);
 
-	  // Copy chars until the pipe is filled, wrapping if neccessary.
+	  // Copy chars until the pipe is filled, wrapping if necessary.
 	  System.arraycopy(buf, bufpos, buffer, in, copylen);
 	  len -= copylen;
 	  bufpos += copylen;

@@ -1,4 +1,4 @@
-/* UnknownServiceException.java -- A service error occured
+/* UnknownServiceException.java -- A service error occurred
    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

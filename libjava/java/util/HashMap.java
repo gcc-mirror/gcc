@@ -505,7 +505,7 @@ public class HashMap extends AbstractMap
       public boolean remove(Object o)
       {
         // Test against the size of the HashMap to determine if anything
-        // really got removed. This is neccessary because the return value of
+        // really got removed. This is necessary because the return value of
         // HashMap.remove() is ambiguous in the null case.
         int oldsize = size;
         HashMap.this.remove(o);

@@ -1,4 +1,4 @@
-/* ProtocolException.java -- A low level protocol error occured
+/* ProtocolException.java -- A low level protocol error occurred
    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -34,7 +34,7 @@ package java.net;
 
 /**
   * This exception indicates that some sort of low level protocol
-  * exception occured.  Look in the descriptive message (if any) for
+  * exception occurred.  Look in the descriptive message (if any) for
   * details on what went wrong
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)

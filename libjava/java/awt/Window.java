@@ -143,7 +143,7 @@ public class Window extends Container
     
     super.show ();
 
-    // FIXME: Is this call neccessary or do we assume the peer takes care of 
+    // FIXME: Is this call necessary or do we assume the peer takes care of 
     // it?
     // this.toFront();
   }

@@ -93,7 +93,7 @@ public class JarOutputStream extends ZipOutputStream
    * This implementation just calls <code>super.putNextEntre()</code>.
    *
    * @param entry The information for the next entry
-   * @exception IOException when some unexpected I/O exception occured
+   * @exception IOException when some unexpected I/O exception occurred
    */
   public void putNextEntry(ZipEntry entry) throws IOException
   {

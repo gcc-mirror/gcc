@@ -746,7 +746,7 @@ heavy_lock_obj_finalization_proc (void *obj, void *cd)
       // heavy lock.  Unlink it and, if necessary, register a finalizer
       // to destroy sync_info.
       unlink_heavy(addr, he);
-      hl -> address = 0; 	// Dont destroy it again.
+      hl -> address = 0; 	// Don't destroy it again.
       release_set(&(he -> address), he_address);
 #     if defined (_Jv_HaveCondDestroy) || defined (_Jv_HaveMutexDestroy)
         // Make sure lock is not held and then destroy condvar and mutex.

@@ -1,4 +1,4 @@
-/* DSAKey.java -- Interface for Digital Signature Algorith key
+/* DSAKey.java -- Interface for Digital Signature Algorithm key
    Copyright (C) 1998 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
