@@ -1336,6 +1336,7 @@ gnu/java/rmi/server/RMIDefaultSocketFactory.java \
 gnu/java/rmi/server/RMIHashes.java \
 gnu/java/rmi/server/RMIObjectInputStream.java \
 gnu/java/rmi/server/RMIObjectOutputStream.java \
+gnu/java/rmi/server/RMIVoidValue.java \
 gnu/java/rmi/server/UnicastConnection.java \
 gnu/java/rmi/server/UnicastConnectionManager.java \
 gnu/java/rmi/server/UnicastRef.java \
@@ -3147,6 +3148,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/server/RMIHashes.P \
 .deps/gnu/java/rmi/server/RMIObjectInputStream.P \
 .deps/gnu/java/rmi/server/RMIObjectOutputStream.P \
+.deps/gnu/java/rmi/server/RMIVoidValue.P \
 .deps/gnu/java/rmi/server/UnicastConnection.P \
 .deps/gnu/java/rmi/server/UnicastConnectionManager.P \
 .deps/gnu/java/rmi/server/UnicastRef.P \

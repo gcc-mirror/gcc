@@ -1621,6 +1621,7 @@ gnu/java/rmi/server/RMIDefaultSocketFactory.java \
 gnu/java/rmi/server/RMIHashes.java \
 gnu/java/rmi/server/RMIObjectInputStream.java \
 gnu/java/rmi/server/RMIObjectOutputStream.java \
+gnu/java/rmi/server/RMIVoidValue.java \
 gnu/java/rmi/server/UnicastConnection.java \
 gnu/java/rmi/server/UnicastConnectionManager.java \
 gnu/java/rmi/server/UnicastRef.java \
