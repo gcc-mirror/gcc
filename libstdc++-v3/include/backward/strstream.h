@@ -152,6 +152,11 @@ private:
 
 __STL_END_NAMESPACE
 
+using std::strstreambuf;
+using std::istrstream;
+using std::ostrstream;
+using std::strstream;
+
 #endif /* __SGI_STL_STRSTREAM */
 
 // Local Variables:
