@@ -1,5 +1,10 @@
 2002-02-11  Adam Megacz <adam@xwt.org>
 
+	* java/io/natFileWin32.cc: Created a placeholder class with lots
+	of FIXMEs.
+
+2002-02-11  Adam Megacz <adam@xwt.org>
+
 	* exception.cc (_Jv_Throw, PERSONALITY_FUNCTION): Changed
 	std::abort() to simply abort(). Also added "fake" std::abort() so
 	we can #include unwind-pe.h without having to link against
