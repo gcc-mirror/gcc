@@ -1,3 +1,16 @@
+2005-02-20  Paolo Carlini  <pcarlini@suse.de>
+	    Jon Grimm  <jgrimm2@us.ibm.com>
+	
+	PR libstdc++/19955
+	* include/bits/locale_facets.h (ctype<char>::_M_narrow_init()):
+	Fix the logic setting _M_narrow_ok: first check whether the
+	transformation is trivial with a dflt == 0, then deal with the
+	special case of zero.
+	* testsuite/22_locale/ctype/narrow/char/19955.cc: New.
+
+	* include/bits/locale_facets.h (ctype<char>::_M_widen_init()):
+	Tweak consistently to use memcmp; minor formatting fixes.
+
 2005-02-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/thread/pthread1.cc: Do not invoke pthread_setconcurrency
