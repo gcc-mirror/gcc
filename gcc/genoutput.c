@@ -104,6 +104,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 static int n_occurrences PARAMS ((int, char *));
+static void strip_whitespace PARAMS ((char *));
 
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate
@@ -439,9 +440,12 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].strict_low = this_strict_low;
       d->operand[opno].predicate = XSTR (part, 1);
       d->operand[opno].constraint = XSTR (part, 2);
-      if (XSTR (part, 2) != 0 && *XSTR (part, 2) != 0)
-	d->operand[opno].n_alternatives
-	  = n_occurrences (',', XSTR (part, 2)) + 1;
+      if (XSTR (part, 2) != NULL && *XSTR (part, 2) != 0)
+	{
+	  strip_whitespace (XSTR (part, 2));
+	  d->operand[opno].n_alternatives
+	    = n_occurrences (',', XSTR (part, 2)) + 1;
+	}
       d->operand[opno].address_p = this_address_p;
       d->operand[opno].eliminable = 1;
       return;
@@ -464,9 +468,12 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].strict_low = 0;
       d->operand[opno].predicate = "scratch_operand";
       d->operand[opno].constraint = XSTR (part, 1);
-      if (XSTR (part, 1) != 0 && *XSTR (part, 1) != 0)
-	d->operand[opno].n_alternatives
-	  = n_occurrences (',', XSTR (part, 1)) + 1;
+      if (XSTR (part, 1) != NULL && *XSTR (part, 1) != 0)
+	{
+	  strip_whitespace (XSTR (part, 1));
+	  d->operand[opno].n_alternatives
+	    = n_occurrences (',', XSTR (part, 1)) + 1;
+	}
       d->operand[opno].address_p = 0;
       d->operand[opno].eliminable = 0;
       return;
@@ -968,4 +975,19 @@ n_occurrences (c, s)
   while (*s)
     n += (*s++ == c);
   return n;
+}
+
+/* Remove whitespace in `s' by moving up characters until the end.  */
+static void
+strip_whitespace (s)
+     char *s;
+{
+  char *p = s;
+  int ch;
+
+  while ((ch = *s++) != '\0')
+    if (! ISSPACE (ch))
+      *p++ = ch;
+
+  *p = '\0';
 }

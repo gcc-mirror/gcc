@@ -665,6 +665,12 @@ which describes one kind of operand that is permitted.  Here are
 the letters that are allowed:
 
 @table @asis
+@item whitespace
+Whitespace characters are ignored and can be inserted at any position
+except the first.  This enables each alternative for different operands to
+be visually aligned in the machine description even if they have different
+number of constraints and modifiers.
+
 @cindex @samp{m} in constraint
 @cindex memory references in constraints
 @item @samp{m}

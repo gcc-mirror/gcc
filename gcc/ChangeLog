@@ -1,3 +1,12 @@
+Wed Feb 16 15:04:49 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+			  Michael Meissner  <meissner@cygnus.com>
+
+	* md.texi (Simple Constraints): Add item about whitespace.
+	* genoutput.c (strip_whitespace): New.
+	(scan_operands) [MATCH_OPERAND, MATCH_SCRATCH]: Call
+	strip_whitespace for constraints.
+	Test pointer using NULL, not 0.
+
 2000-02-16  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cpplib.c (do_line): Pedwarn for #line > 32767.
