@@ -1,5 +1,8 @@
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/rs6000/altivec.h (vec_lvewx, vec_lvehx, vec_lvwbx): Remove
+	the const qualifier for the second argument in the C++ functions.
+
 	* config/rs6000/altivec.h (vec_stvewx, vec_stvehx, vec_stvebx): Use
 	specific pointer types.
 
