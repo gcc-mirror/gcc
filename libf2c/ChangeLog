@@ -1,3 +1,9 @@
+1998-06-29  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/wsfe.c (s_wsfe): Fix setting of f__curunit lost in
+	previous change.
+	* libI77/rsfe.c (s_rsfe): Likewise.
+
 1998-06-23  Dave Love  <d.love@dl.ac.uk>
 
 	* libI77/backspace.c, libI77/dfe.c, libI77/due.c, libI77/iio.c,

@@ -60,6 +60,7 @@ integer s_rsfe(cilist *a) /* start */
 	f__cursor=f__recpos=0;
 	f__scale=0;
 	f__fmtbuf=a->cifmt;
+	f__curunit= &f__units[a->ciunit];
 	f__cf=f__curunit->ufd;
 	if(pars_f(f__fmtbuf)<0) err(a->cierr,100,"startio");
 	f__getn= x_getc;
