@@ -1,5 +1,8 @@
 2004-09-12  Andrew Pinski  <apinski@apple.com>
 
+	* darwin.h (ASM_OUTPUT_COMMON): Make sure we do not have a
+	size of 0.
+
 	* tree-chrec.c (initialize_scalar_evolutions_analyzer): Remove.
 
 2004-09-12  Richard Henderson  <rth@redhat.com>
