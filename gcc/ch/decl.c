@@ -1690,7 +1690,7 @@ layout_chill_variants (utype)
      tree utype;
 {
   tree first = TYPE_FIELDS (utype);
-  int nlabels = 0, label_index = 0;
+  int nlabels, label_index = 0;
   struct tree_pair *label_value_array;
   tree decl;
   extern int errorcount;
@@ -1746,13 +1746,27 @@ layout_chill_variants (utype)
 		    error_with_decl (TYPE_FIELDS (t),
 				     "inconsistent modes between labels and tag field");
 		}
-	      nlabels++;
 	    }
 	}
       if (tagfields != NULL_TREE)
 	error ("too few tag labels");
       if (taglist != NULL_TREE)
 	error ("too many tag labels");
+    }
+
+  /* Compute the number of labels to be checked for duplicates.  */
+  nlabels = 0;
+  for (decl = first; decl; decl = TREE_CHAIN (decl))
+    {
+      tree t = TREE_TYPE (decl);
+       /* Only one tag (first case_label_list) supported, for now. */
+      tree labellist = TYPE_TAG_VALUES (t);
+      if (labellist)
+	labellist = TREE_VALUE (labellist);
+      
+      for (; labellist != NULL_TREE; labellist = TREE_CHAIN (labellist))
+	if (TREE_CODE (TREE_VALUE (labellist)) == INTEGER_CST)
+	  nlabels++;
     }
 
   /* Check for duplicate label values.  */
