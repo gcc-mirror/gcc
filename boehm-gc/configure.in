@@ -134,7 +134,7 @@ AC_SUBST(CXXINCLUDES)
 
 machdep=
 case "$host" in
- alpha-*-*)
+ alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
  mips-*-*)
