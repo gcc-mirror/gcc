@@ -1,3 +1,7 @@
+1998-10-12  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in: Reorder Makefile, g2c.h in AC_OUTPUT.
+
 Tue Oct  6 21:16:58 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Revert last patch.

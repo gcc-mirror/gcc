@@ -174,7 +174,9 @@ AC_SUBST(gcc_version_trigger)
 AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
 AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
-AC_OUTPUT(g2c.h:g2c.hin Makefile,
+# Do Makefile first since g2c.h depends on it and shouldn't get an
+# earlier timestamp.
+AC_OUTPUT(Makefile g2c.h:g2c.hin,
  [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
   if test -n "${with_target_subdir}"; then
