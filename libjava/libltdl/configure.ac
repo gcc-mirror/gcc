@@ -23,6 +23,7 @@
 AC_PREREQ(2.59)
 AC_INIT([libltdl], [1.2], [bug-libtool@gnu.org])
 AC_CONFIG_SRCDIR([ltdl.c])
+AC_CONFIG_FILES([config.h:config-h.in])
 
 
 ## ------------------------------- ##
@@ -47,8 +48,7 @@ fi
 ## ------------------------ ##
 ## Automake Initialisation. ##
 ## ------------------------ ##
-AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME, AC_PACKAGE_VERSION, -)
-AM_CONFIG_HEADER([config.h:config-h.in])
+AM_INIT_AUTOMAKE([1.9.1])
 AM_MAINTAINER_MODE
 
 
