@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
       unsigned x = 1234;
       unsigned y = calc_mp(x);
 
-      if (y != 680)
+      if ((sizeof (y) == 4 && y != 680)
+	  || (sizeof (y) == 2 && y != 134))
 	abort ();
       exit (0);
 }
