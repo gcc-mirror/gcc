@@ -103,6 +103,14 @@ objc_sizeof_type(const char* type)
     return sizeof(unsigned long);
     break;
 
+  case _C_FLT:
+    return sizeof(float);
+    break;
+
+  case _C_DBL:
+    return sizeof(double);
+    break;
+
   case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
@@ -122,10 +130,10 @@ objc_sizeof_type(const char* type)
       int acc_size = 0;
       int align;
       while (*type != _C_STRUCT_E && *type++ != '='); /* skip "<name>=" */
-      while (*type != _C_STRUCT_E);
+      while (*type != _C_STRUCT_E)
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
-	  acc_size += ROUND (acc_size, align);
+	  acc_size = ROUND (acc_size, align);
 	  acc_size += objc_sizeof_type (type);   /* add component size */
 	  type = objc_skip_typespec (type);	         /* skip component */
 	}
@@ -200,6 +208,14 @@ objc_alignof_type(const char* type)
 
   case _C_ULNG:
     return __alignof__(unsigned long);
+    break;
+
+  case _C_FLT:
+    return __alignof__(float);
+    break;
+
+  case _C_DBL:
+    return __alignof__(double);
     break;
 
   case _C_ATOM:
