@@ -12,7 +12,7 @@
 /* Must add TOOLROOT to the environment, or else the assembler will not
    work.  */
 #define INIT_ENVIRONMENT	\
-  putenv ("TOOLROOT=/usr/cross64")
+  "TOOLROOT=/usr/cross64"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
