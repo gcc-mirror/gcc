@@ -2844,7 +2844,7 @@ purge_addressof_1 (loc, insn, force)
 	{
 	  sub2 = gen_rtx (MEM, GET_MODE (x), copy_rtx (XEXP (sub, 0)));
 	  MEM_IN_STRUCT_P (sub2) = MEM_IN_STRUCT_P (sub);
-	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGNG_P (sub);
+	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGING_P (sub);
 	  sub = sub2;
 	}
 
