@@ -1,3 +1,9 @@
+2001-04-27  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* include/jni.h (struct JNINativeInterface): Fixed types in
+	Get/Set*ArrayRegion declarations.
+	(class _Jv_JNIEnv): Likewise.
+
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Obtain THREADS with `gcc -v'.
