@@ -604,6 +604,7 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *, int));
 extern void cpp_start_lookahead		PARAMS ((cpp_reader *));
 extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
+extern int  cpp_sys_objmacro_p		PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));

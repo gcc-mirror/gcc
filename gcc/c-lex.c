@@ -1225,7 +1225,8 @@ lex_number (str, len)
 	  case 'f': case 'F':
 	    if (fflag)
 	      ERROR ("more than one 'f' suffix on floating constant");
-	    else if (warn_traditional && !in_system_header)
+	    else if (warn_traditional && !in_system_header
+		     && ! cpp_sys_objmacro_p (parse_in))
 	      warning ("traditional C rejects the 'f' suffix");
 
 	    fflag = 1;
@@ -1234,7 +1235,8 @@ lex_number (str, len)
 	  case 'l': case 'L':
 	    if (lflag)
 	      ERROR ("more than one 'l' suffix on floating constant");
-	    else if (warn_traditional && !in_system_header)
+	    else if (warn_traditional && !in_system_header
+		     && ! cpp_sys_objmacro_p (parse_in))
 	      warning ("traditional C rejects the 'l' suffix");
 
 	    lflag = 1;
@@ -1309,7 +1311,8 @@ lex_number (str, len)
 	    case 'u': case 'U':
 	      if (spec_unsigned)
 		error ("two 'u' suffixes on integer constant");
-	      else if (warn_traditional && !in_system_header)
+	      else if (warn_traditional && !in_system_header
+		       && ! cpp_sys_objmacro_p (parse_in))
 		warning ("traditional C rejects the 'u' suffix");
 
 	      spec_unsigned = 1;
