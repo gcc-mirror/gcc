@@ -8455,9 +8455,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (check < 0)
     return decl;
 
-  if (check && funcdef_flag)
-    DECL_INITIAL (decl) = error_mark_node;
-
   if (flags == NO_SPECIAL && ctype && constructor_name (cname) == declarator)
     {
       tree tmp;
