@@ -141,7 +141,7 @@ static rtx
 get_condition (rtx insn)
 {
   rtx pat = PATTERN (insn);
-  rtx cond;
+  rtx src;
 
   if (pat == 0)
     return 0;
@@ -152,11 +152,12 @@ get_condition (rtx insn)
   if (!any_condjump_p (insn) || !onlyjump_p (insn))
     return 0;
 
-  cond = XEXP (SET_SRC (pc_set (insn)), 0);
-  if (XEXP (cond, 2) == pc_rtx)
-    return cond;
-  else if (XEXP (cond, 1) == pc_rtx)
+  src = SET_SRC (pc_set (insn));
+  if (XEXP (src, 2) == pc_rtx)
+    return XEXP (src, 0);
+  else if (XEXP (src, 1) == pc_rtx)
     {
+      rtx cond = XEXP (src, 0);
       enum rtx_code revcode = reversed_comparison_code (cond, insn);
 
       if (revcode == UNKNOWN)

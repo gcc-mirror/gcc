@@ -1,3 +1,7 @@
+2004-08-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* sched-deps.c (get_condition): Fix breakage in previous patch.
+
 2004-08-30  Paul Brook  <paul@codesourcery.com>
 
 	* doc/install.texi: Fix broken mpfr link.
