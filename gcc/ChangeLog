@@ -1,3 +1,9 @@
+2004-12-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/18751
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Return
+	false for anything larger than 32 bits in 32-bit code.
+
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (btsq, btrq, btcq): Fix modes.
