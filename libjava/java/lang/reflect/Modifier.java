@@ -280,8 +280,8 @@ public class Modifier
   /**
    * Get a string representation of all the modifiers represented by the
    * given int. The keywords are printed in this order:
-   * <code>&lt;public|private|protected&gt; abstract static final transient
-   * volatile native synchronized interface strictfp</code>.
+   * <code>&lt;public|protected|private&gt; abstract static final transient
+   * volatile synchronized native strictfp interface</code>.
    *
    * @param mod the modifier.
    * @return the String representing the modifiers.
@@ -301,10 +301,10 @@ public class Modifier
   {
     if (isPublic(mod))
       r.append("public ");
-    if (isPrivate(mod))
-      r.append("private ");
     if (isProtected(mod))
       r.append("protected ");
+    if (isPrivate(mod))
+      r.append("private ");
     if (isAbstract(mod))
       r.append("abstract ");
     if (isStatic(mod))
@@ -315,14 +315,14 @@ public class Modifier
       r.append("transient ");
     if (isVolatile(mod))
       r.append("volatile ");
-    if (isNative(mod))
-      r.append("native ");
     if (isSynchronized(mod))
       r.append("synchronized ");
-    if (isInterface(mod))
-      r.append("interface ");
+    if (isNative(mod))
+      r.append("native ");
     if (isStrict(mod))
       r.append("strictfp ");
+    if (isInterface(mod))
+      r.append("interface ");
     
     // Trim trailing space.
     if ((mod & ALL_FLAGS) != 0)
