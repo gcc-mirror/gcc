@@ -814,6 +814,7 @@ while (0)
    : PR_REGNO_P (REGNO) && (MODE) == BImode ? 2				\
    : PR_REGNO_P (REGNO) && (MODE) == CCImode ? 1			\
    : FR_REGNO_P (REGNO) && (MODE) == XFmode ? 1				\
+   : FR_REGNO_P (REGNO) && (MODE) == XCmode ? 2				\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* A C expression that is nonzero if it is permissible to store a value of mode
@@ -828,7 +829,8 @@ while (0)
      (MODE) != TFmode 						\
    : PR_REGNO_P (REGNO) ?					\
      (MODE) == BImode || GET_MODE_CLASS (MODE) == MODE_CC	\
-   : GR_REGNO_P (REGNO) ? (MODE) != CCImode && (MODE) != XFmode	\
+   : GR_REGNO_P (REGNO) ?					\
+     (MODE) != CCImode && (MODE) != XFmode && (MODE) != XCmode	\
    : AR_REGNO_P (REGNO) ? (MODE) == DImode			\
    : BR_REGNO_P (REGNO) ? (MODE) == DImode			\
    : 0)
@@ -845,7 +847,8 @@ while (0)
    we can't tie it with any other modes.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)	\
-   && (((MODE1) == XFmode) == ((MODE2) == XFmode))	\
+   && ((((MODE1) == XFmode) || ((MODE1) == XCmode))	\
+       == (((MODE2) == XFmode) || ((MODE2) == XCmode)))	\
    && (((MODE1) == BImode) == ((MODE2) == BImode)))
 
 /* Specify the modes required to caller save a given hard regno.
@@ -1057,8 +1060,9 @@ enum reg_class
    with unions should be solved with the addressof fiddling done by
    movxf and friends.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  ((MODE) == XFmode && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)	\
-			|| ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
+  (((MODE) == XFmode || (MODE) == XCmode)				\
+   && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)			\
+       || ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
 #endif
 
 /* A C expression for the maximum number of consecutive registers of
@@ -1068,6 +1072,7 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((MODE) == BImode && (CLASS) == PR_REGS ? 2			\
    : ((CLASS) == FR_REGS && (MODE) == XFmode) ? 1		\
+   : ((CLASS) == FR_REGS && (MODE) == XCmode) ? 2		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* In FP regs, we can't change FP values to integer values and vice
