@@ -29,7 +29,6 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops } \
 	{ -O3 -g } \
-	{ -O3 -fssa } \
 	{ -Os }]
 }
 
