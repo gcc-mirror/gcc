@@ -2949,9 +2949,13 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
      int fnofs, cxtofs, jmpofs;
 {
   rtx temp, temp1, addr;
-  /* ??? Something is wrong with VMS codegen in that we get aborts when
-     using ptr_mode.  Hack around it for now.  */
+  /* VMS really uses DImode pointers in memory at this point.  */
   enum machine_mode mode = TARGET_OPEN_VMS ? Pmode : ptr_mode;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  fnaddr = convert_memory_address (mode, fnaddr);
+  cxt = convert_memory_address (mode, cxt);
+#endif
 
   /* Store function address and CXT.  */
   addr = memory_address (mode, plus_constant (tramp, fnofs));

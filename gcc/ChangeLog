@@ -2,6 +2,9 @@ Fri Apr 23 14:57:33 1999  Donn Terry  <donn@interix.com>
 
 	* alpha32.h (INITIALIZE_TRAMPOLINE): Get offsets right.
 
+	* alpha.c (alpha_initialize_trampoline): Add covert_memory_address
+	calls as needed.
+
 Fri Apr 23 14:36:47 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_prologue): Don't negate frame size
