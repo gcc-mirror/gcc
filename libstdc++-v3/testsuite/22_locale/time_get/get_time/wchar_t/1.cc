@@ -94,7 +94,7 @@ void test01()
   errorstate = good;
   tim_get.get_time(is_it04, end, iss, errorstate, &time04);
   VERIFY( time01.tm_hour == time_bday.tm_hour );
-  VERIFY( *is_it04 == 'a');
+  VERIFY( *is_it04 == L'a' );
   VERIFY( errorstate == ios_base::failbit );
 
   // inspection of named locales, de_DE
