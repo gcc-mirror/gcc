@@ -1,3 +1,8 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (CONDITIONAL_REGISTER_USAGE): Disable use of LR in Thumb
+	code.
+
 2003-10-31  Andreas Jaeger  <aj@suse.de>, 
             Zack Weinberg  <zack@codesourcery.com>            
 
