@@ -200,7 +200,9 @@ DEFTREECODE (FILE_TYPE, "file_type", "t", 0)
 DEFTREECODE (ARRAY_TYPE, "array_type", "t", 0)
 
 /* Types of sets for Pascal.  Special fields are the same as
-   in an array type.  The target type is always a boolean type.  */
+   in an array type.  The target type is always a boolean type.
+   Used for both bitstrings and powersets in Chill;
+   TYPE_STRING_FLAG indicates a bitstring. */
 DEFTREECODE (SET_TYPE, "set_type", "t", 0)
 
 /* Struct in C, or record in Pascal.  */
