@@ -7,8 +7,8 @@
 	in the comment.
 	(function_arg_advance) [TARGET_ARCH64]: Don't special-case complex
 	modes.
-	(sparc_va_arg) [TARGET_ARCH64]: Handle any types whose is greater
-	than 16 bytes by reference.
+	(sparc_va_arg) [TARGET_ARCH64]: Handle any types whose size is
+	greater than 16 bytes by reference.
 
 2003-10-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
