@@ -1,3 +1,9 @@
+2001-06-04  Phil Edwards  <pme@sources.redhat.com>
+
+	* config.guess:  Import CVS version 1.194.  All gcc-local changes
+	appear to also be in the master copy.
+	* config.sub:  Import CVS version 1.211.
+
 Mon Jun  4 16:32:53 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* ltcf-c.sh (archive_cmds, archive_expsym_cmds) [solaris,
