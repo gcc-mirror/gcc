@@ -1,3 +1,14 @@
+2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gthr-solaris.h (__gthread_recursive_mutex_t): New type.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION): Define to
+	__gthread_recursive_mutex_init_function.
+	(__gthread_key_create): Properly cast -1.
+	(__gthread_recursive_mutex_init_function): New function.
+	(__gthread_recursive_mutex_lock): Rewrite.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config/c4x/t-rtems: New.
