@@ -1,3 +1,8 @@
+2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
+ 
+       * libmath/mathconf.h (FINITE_P, INFINITE_P): Remove macro
+       definitions. 
+
 2001-02-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp(dg-test): Lift, temporarily, out of
