@@ -3572,9 +3572,8 @@
 {
   rtx sfun, tramp;
 
+  tramp = force_reg (Pmode, operands[0]);
   sfun = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, \"__init_trampoline\"));
-  tramp = gen_rtx_REG (SImode, R0_REG);
-  emit_move_insn (tramp, operands[0]);
   emit_move_insn (gen_rtx_REG (SImode, R2_REG), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, R3_REG), operands[2]);
 
