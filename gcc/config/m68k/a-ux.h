@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running A/UX
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -114,10 +114,10 @@ crt2.o%s "
    For A/UX generate the result in d0, a0, or fp0 as appropriate. */
 
 #undef FUNCTION_VALUE
-#define FUNCTION_VALUE(VALTYPE, FUNC)                                   \
-  (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881                     \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)                             \
-   : (TREE_CODE (VALTYPE) == POINTER_TYPE                               \
+#define FUNCTION_VALUE(VALTYPE, FUNC)                                  \
+  (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881                    \
+   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)                            \
+   : (POINTER_TYPE_P (VALTYPE)		                               \
       ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)                           \
       : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
                     
