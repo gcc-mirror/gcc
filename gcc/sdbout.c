@@ -335,7 +335,8 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   debug_nothing_tree,		         /* outlining_inline_function */
   sdbout_label,			         /* label */
   debug_nothing_int,		         /* handle_pch */
-  debug_nothing_rtx		         /* var_location */
+  debug_nothing_rtx,		         /* var_location */
+  0                                      /* start_end_main_source_file */
 };
 
 /* Return a unique string to name an anonymous type.  */
