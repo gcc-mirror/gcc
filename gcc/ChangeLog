@@ -1,3 +1,7 @@
+2001-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* defaults.h (ASM_OUTPUT_WEAK_ALIAS): Check for ASM_WEAKEN_LABEL.
+
 2001-07-18  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in (assembler eh_frame optimization): Handle big
