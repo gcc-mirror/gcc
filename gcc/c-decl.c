@@ -696,12 +696,18 @@ c_decode_option (p)
 /* Hooks for print_node.  */
 
 void
-print_lang_decl ()
+print_lang_decl (file, node, indent)
+     FILE *file;
+     tree node;
+     int indent;
 {
 }
 
 void
-print_lang_type ()
+print_lang_type (file, node, indent)
+     FILE *file;
+     tree node;
+     int indent;
 {
 }
 
