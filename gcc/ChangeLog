@@ -1,5 +1,9 @@
 2001-08-16  Zack Weinberg  <zackw@panix.com>
 
+	* doc/tm.texi: Remove extra @table command.
+ 
+2001-08-16  Zack Weinberg  <zackw@panix.com>
+
 	* final.c (shorten_branches): Clear the end of the label_align
 	array only if we made it larger.  Break up messy expressions
 	for clarity.

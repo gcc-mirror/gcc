@@ -7151,7 +7151,6 @@ to set the variable @var{align_jumps} in the target's
 @code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 
-@table @code
 @findex LABEL_ALIGN_AFTER_BARRIER
 @item LABEL_ALIGN_AFTER_BARRIER (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which follows
