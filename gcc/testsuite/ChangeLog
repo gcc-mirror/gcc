@@ -1,3 +1,10 @@
+2002-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/6247
+	* g++.dg/opt/cleanup1.C: New test.
+
+	* g++.dg/opt/const1.C: New test.
+
 2002-04-10  Lars Brinkhoff  <lars@nocrew.org>
  
 	* gcc.c-torture/execute/20020406-1.c: Declare malloc.
