@@ -69,6 +69,8 @@ Boston, MA 02111-1307, USA.  */
 %{mips3:-U__mips -D__mips=3 -D__mips64} \
 %{!mips1:%{!mips2:-U__mips -D__mips=4 -D__mips64}} \
 %{mgp32:-U__mips64} %{mgp64:-D__mips64} \
+%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
+%{m4650:%{!msoft-float:-D__mips_single_float}} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
 %{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 
