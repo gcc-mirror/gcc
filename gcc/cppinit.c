@@ -376,7 +376,8 @@ merge_include_chains (pfile)
       qtail->next = brack;
 
       /* If brack == qtail, remove brack as it's simpler.  */
-      if (INO_T_EQ (qtail->ino, brack->ino) && qtail->dev == brack->dev)
+      if (brack && INO_T_EQ (qtail->ino, brack->ino)
+	  && qtail->dev == brack->dev)
 	brack = remove_dup_dir (pfile, qtail);
     }
   else

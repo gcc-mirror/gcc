@@ -1,3 +1,8 @@
+2002-02-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppinit.c (merge_include_chains): Check for brack being
+	NULL before attempting to merge it with qtail.
+
 2002-02-16  Andrew Cagney  <ac131313@redhat.com>
 
 	* config/rs6000/netbsd.h (PREFERRED_DEBUGGING_TYPE): Set to
