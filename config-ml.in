@@ -627,7 +627,18 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
     if [ -f ${ml_newsrcdir}/configure ]; then
       ml_recprog=${ml_newsrcdir}/configure
     fi
-    if eval ${ml_config_shell} ${ml_recprog} \
+
+    # find compiler flag corresponding to ${ml_dir}
+    for i in `${CC-gcc} --print-multi-lib 2>/dev/null`; do 
+      dir=`echo $i | sed -e 's/;.*$//'`
+      if [ "${dir}" = "${ml_dir}" ]; then
+        flags=`echo $i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`
+        break
+      fi
+    done
+    ml_config_env='CC="${CC} $flags"'
+
+    if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
 	${ml_arguments} ${ml_srcdiroption} ; then
       true
