@@ -2402,21 +2402,14 @@ TAGS: force
 	mv tmp-tags/* .;						\
 	rmdir tmp-tags
 
-# Create the distribution tar file.
-#dist: gcc-$(version).tar.gz
-dist: gcc.xtar.gz
-
-gcc.xtar.gz: gcc.xtar
+# Create the distribution tar.gz file.
+dist: tmp-gcc.xtar
 	gzip --best < gcc.xtar > tmp-gcc.xtar.gz
-	mv tmp-gcc.xtar.gz gcc.xtar.gz
+	mv tmp-gcc.xtar.gz gcc-$(version).tar.gz
 
-#gcc-$(version).tar.gz: gcc-$(version).tar
-#	gzip < gcc-$(version).tar > gcc-$(version).tar.gz
-
-#gcc-$(version).tar:
-gcc.xtar: distdir
+tmp-gcc.xtar: distdir
 # Make the distribution.
-	tar -chf gcc.xtar gcc-$(version)
+	tar -chf tmp-gcc.xtar gcc-$(version)
 
 distdir-cvs: force
 	if [ -d $(srcdir)/CVS ]; then cvs -r update; fi
@@ -2487,7 +2480,7 @@ diff:
 	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
 	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
 	  $(LANG_DIFF_EXCLUDES) \
-	  gcc-$(oldversion) gcc-$(version) > diffs
+	  gcc-$(oldversion) gcc-$(version) > gcc-$(oldversion)-$(version).diff
 
 bootstrap: force
 # Only build the C compiler for stage1, because that is the only one that
