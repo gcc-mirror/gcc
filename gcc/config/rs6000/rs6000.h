@@ -626,9 +626,6 @@ extern int rs6000_altivec_abi;
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 : ALIGN)
 
-/* Handle #pragma pack.  */
-#define HANDLE_PRAGMA_PACK 1
-
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
