@@ -377,6 +377,11 @@ the argument @option{-lgcc} to tell the linker to do the search.
 This macro is similar to @code{LINK_LIBGCC_SPECIAL}, except that it does
 not affect @option{-L} options.
 
+@findex LINK_GCC_C_SEQUENCE_SPEC
+@item LINK_GCC_C_SEQUENCE_SPEC
+The sequence in which libgcc and libc are specified to the linker.
+By default this is @code{%G %L %G}.
+
 @findex LINK_COMMAND_SPEC
 @item LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
@@ -384,7 +389,8 @@ linker.  When you do this, you will need to update your port each time a
 change is made to the link command line within @file{gcc.c}.  Therefore,
 define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
-the effect you need.
+the effect you need.  Overriding this macro may be avoidable by overriding
+@code{LINK_GCC_C_SEQUENCE_SPEC} instead.
 
 @findex LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
 @item LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
