@@ -1,3 +1,19 @@
+Thu Sep  3 09:47:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (GCC_HEADER_STRING): New macro to detect if it is
+ 	safe to include both string.h and strings.h together.
+  	(GCC_NEED_DECLARATION): Test STRING_WITH_STRINGS when deciding
+ 	which headers to search for function declarations.  Continue to
+ 	prefer string.h over strings.h when both are not acceptable.
+
+	* acconfig.h (STRING_WITH_STRINGS): Add stub.
+
+	* configure.in: Call GCC_HEADER_STRING.
+
+	* system.h: Test STRING_WITH_STRINGS when deciding which headers
+ 	to include.  Continue to prefer string.h over strings.h when both
+ 	are not acceptable.
+
 Wed Sep  2 23:56:29 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (output_double_int): If V9 and MEDLOW, do

@@ -1,3 +1,6 @@
+/* Define if you can safely include both <string.h> and <strings.h>.  */
+#undef STRING_WITH_STRINGS
+
 /* Define if printf supports "%p".  */
 #undef HAVE_PRINTF_PTR
 
