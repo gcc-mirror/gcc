@@ -1,3 +1,9 @@
+2004-07-11  Mark Wielaard  <mark@klomp.org>
+
+	Reported by Roman Kennke <roman@ontographics.com> (bug #9331)
+	* java/net/URLStreamHandler.java (parseURL): When url file part
+	doesn't contain a '/' just ignore context.
+
 2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* include/s390-signal.c (SIGNAL_HANDLER): Use SIGINFO-style prototype.
