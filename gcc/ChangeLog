@@ -1,3 +1,10 @@
+Tue Oct 19 14:01:34 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (main): Do not generate an error message if an
+	unrecognised command line switch is recognisable by another
+	language.  If extra_warnings are enabled, then generate a
+	warning message instead.
+
 Tue Oct 19 11:41:12 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* c-pragma.h (PRAGMA_INSERT_ATTRIBUTES): Delete macro.

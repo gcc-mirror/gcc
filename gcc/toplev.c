@@ -5414,7 +5414,40 @@ main (argc, argv)
 	      ? lang_processed : indep_processed);
       else
 	{
-	  warning ("ignoring option `%s'", argv[i]);
+	  const char * option = NULL;
+	  const char * lang = NULL;
+	  unsigned int j;
+	  
+	  /* It is possible that the command line switch is not valid for the
+	     current language, but it is valid for another language.  In order
+	     to be compatible with previous versions of the compiler (which
+	     did not issue an error message in this case) we check for this
+	     possibilty here.  If we do find a match, then if extra_warnings
+	     is set we generate a warning message, otherwise we will just
+	     ignore the option.  */
+	  for (j = 0; j < NUM_ELEM (documented_lang_options); j++)
+	    {
+	      option = documented_lang_options[j].option;
+	      
+	      if (option == NULL)
+		lang = documented_lang_options[j].description;
+	      else if (! strncmp (argv[i], option, strlen (option)))
+		break;
+	    }
+
+	  if (option)
+	    {
+	      if (extra_warnings)
+		{
+		  warning ("Ignoring command line option '%s'", argv[i]);
+		  if (lang)
+		    warning ("\
+(It is valid for %s but not the selected langauge)", lang);
+		}
+	    }
+	  else
+	    error ("Unrecognised option `%s'", argv[i]);
+	  
 	  i++;
 	}
     }
