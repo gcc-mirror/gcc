@@ -4085,6 +4085,7 @@ extern tree get_vbase				PARAMS ((tree, tree));
 extern tree get_dynamic_cast_base_type          PARAMS ((tree, tree));
 extern void type_access_control			PARAMS ((tree, tree));
 extern int accessible_p                         PARAMS ((tree, tree));
+extern tree lookup_field_1                      (tree, tree, bool);
 extern tree lookup_field			PARAMS ((tree, tree, int, int));
 extern tree lookup_nested_field			PARAMS ((tree, int));
 extern int lookup_fnfields_1                    PARAMS ((tree, tree));

@@ -80,7 +80,6 @@ struct vbase_info
   tree inits;
 };
 
-static tree lookup_field_1 PARAMS ((tree, tree, bool));
 static int is_subobject_of_p PARAMS ((tree, tree, tree));
 static int is_subobject_of_p_1 PARAMS ((tree, tree, tree));
 static tree dfs_check_overlap PARAMS ((tree, void *));
@@ -453,7 +452,7 @@ get_dynamic_cast_base_type (subtype, target)
    figure out whether it can access this field.  (Since it is only one
    level, this is reasonable.)  */
 
-static tree
+tree
 lookup_field_1 (tree type, tree name, bool want_type)
 {
   register tree field;
