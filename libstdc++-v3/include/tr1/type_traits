@@ -330,13 +330,19 @@ namespace tr1
     };
   
   template<typename _Tp>
-    struct add_const;
+    struct add_const
+    { typedef _Tp const     type; };
    
   template<typename _Tp>
-    struct add_volatile;
+    struct add_volatile
+    { typedef _Tp volatile     type; };
   
   template<typename _Tp>
-    struct add_cv;
+    struct add_cv
+    {
+      typedef typename
+      add_const<typename add_volatile<_Tp>::type>::type     type;
+    };
 
   /// @brief  reference modifications [4.7.2].
   template<typename _Tp>

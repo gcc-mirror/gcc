@@ -1,5 +1,16 @@
 2004-12-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits: Implement add_const, add_volatile,
+	and add_cv.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	add_const.cc: New.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	add_cv.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	add_volatile.cc: Likewise.
+
+2004-12-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_function.
 	(struct __sfinae_types, struct __is_function_helper): New.
 	* testsuite/tr1/4_metaprogramming/composite_type_traits/
