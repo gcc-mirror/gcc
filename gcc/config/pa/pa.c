@@ -4455,6 +4455,7 @@ pa_reorg (insns)
 	      tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
 	      tmp = emit_jump_insn_after (tmp, location);
 	      JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
+	      LABEL_NUSES (JUMP_LABEL (tmp))++;
 
 	      /* Emit a BARRIER after the jump.  */
 	      location = NEXT_INSN (location);
