@@ -1091,9 +1091,8 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack.  */
 
-#if 0
+#define	PUSH_ARGS 1
 #define PUSH_ROUNDING(BYTES) (BYTES)
-#endif
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
 /* The following structure is used by calls.c, function.c, c4x.c.  */
