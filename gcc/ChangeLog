@@ -1,3 +1,8 @@
+2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/10955
+	* unroll.c (unroll_loop): Fix off-by-one bug.
+
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (function_arg): Remove typo.
