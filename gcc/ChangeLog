@@ -1,3 +1,7 @@
+2000-12-17 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.h: Add ASM_OUTPUT_DEF definition for bounded pointer code.
+
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-lex.c: Move main_input_filename handling to FC_ENTER. Clean up.

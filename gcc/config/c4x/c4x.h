@@ -2264,6 +2264,14 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),    \
   sprintf ((OUTPUT), "%s$%d", (NAME), (LABELNO)))
 
+/* A C statement to output to the stdio stream STREAM assembler code which
+   defines (equates) the symbol NAME to have the value VALUE.  */
+
+#define ASM_OUTPUT_DEF(STREAM, NAME, VALUE) 	\
+do {						\
+  assemble_name (STREAM, NAME);			\
+  fprintf (STREAM, "\t.set\t%s\n", VALUE);	\
+} while (0)
 
 /* Output of Dispatch Tables.  */
 
