@@ -875,6 +875,21 @@ predefined_filename_p (tree node)
   return 0;
 }
 
+/* Generate a function that does all static initialization for this 
+   translation unit.  */
+
+static void
+java_emit_static_constructor (void)
+{
+  tree body = NULL;
+
+  emit_register_classes (&body);
+  write_resource_constructor (&body);
+
+  if (body)
+    cgraph_build_static_cdtor ('I', body);
+}
+
 void
 java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
@@ -1013,7 +1028,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       resource_filename = IDENTIFIER_POINTER (TREE_VALUE (current_file_list));
       compile_resource_file (resource_name, resource_filename);
 
-      return;
+      goto finish;
     }
 
   current_jcf = main_jcf;
@@ -1120,22 +1135,22 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   input_filename = main_input_filename;
 
   java_expand_classes ();
-  if (!java_report_errors () && !flag_syntax_only)
-    {
-      /* Expand all classes compiled from source.  */
-      java_finish_classes ();
+  if (java_report_errors () || flag_syntax_only)
+    return;
+    
+  /* Expand all classes compiled from source.  */
+  java_finish_classes ();
 
-      /* Emit the .jcf section.  */
-      emit_register_classes ();
+ finish:
+  /* Arrange for any necessary initialization to happen.  */
+  java_emit_static_constructor ();
 
-      /* Only finalize the compilation unit after we've told cgraph which
-	 functions have their addresses stored.  */
-      cgraph_finalize_compilation_unit ();
-      cgraph_optimize ();
-    }
-
-  write_resource_constructor ();
+  /* Only finalize the compilation unit after we've told cgraph which
+     functions have their addresses stored.  */
+  cgraph_finalize_compilation_unit ();
+  cgraph_optimize ();
 }
+
 
 /* Return the name of the class corresponding to the name of the file
    in this zip entry.  The result is newly allocated using ALLOC.  */

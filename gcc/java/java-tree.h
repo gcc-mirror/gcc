@@ -1245,7 +1245,7 @@ extern tree get_method_index (tree decl);
 extern void make_class_data (tree);
 extern void register_class (void);
 extern int alloc_name_constant (int, tree);
-extern void emit_register_classes (void);
+extern void emit_register_classes (tree *);
 extern tree emit_symbol_table (tree, tree, tree, tree, tree);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
@@ -1341,8 +1341,7 @@ extern void java_inlining_map_static_initializers (tree, void *);
 
 extern void compile_resource_data (const char *name, const char *buffer, int);
 extern void compile_resource_file (const char *, const char *);
-extern void write_resource_constructor (void);
-extern void init_resource_processing (void);
+extern void write_resource_constructor (tree *);
 extern tree build_java_empty_stmt (void);
 extern tree add_stmt_to_compound (tree, tree, tree);
 extern tree java_add_stmt (tree);

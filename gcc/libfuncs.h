@@ -45,7 +45,6 @@ enum libfunc_index
   LTI_profile_function_exit,
 
   LTI_gcov_flush,
-  LTI_gcov_init,
 
   LTI_MAX
 };
@@ -78,6 +77,5 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define profile_function_exit_libfunc	(libfunc_table[LTI_profile_function_exit])
 
 #define gcov_flush_libfunc	(libfunc_table[LTI_gcov_flush])
-#define gcov_init_libfunc	(libfunc_table[LTI_gcov_init])
 
 #endif /* GCC_LIBFUNCS_H */

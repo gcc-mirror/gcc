@@ -5550,7 +5550,6 @@ init_optabs (void)
     = init_one_libfunc ("__cyg_profile_func_exit");
 
   gcov_flush_libfunc = init_one_libfunc ("__gcov_flush");
-  gcov_init_libfunc = init_one_libfunc ("__gcov_init");
 
   if (HAVE_conditional_trap)
     trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);

@@ -1,3 +1,12 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* cgraph.h (cgraph_build_static_cdtor): Declare.
+	* cgraphunit.c (cgraph_build_static_cdtor): New.
+	* c-objc-common.c (build_cdtor): Use it.
+	* coverage.c (create_coverage): Likewise.
+	* libfuncs.h (LTI_gcov_init, gcov_init_libfunc): Remove.
+	* optabs.c (init_optabs): Don't set gcov_init_libfunc.
+
 2004-06-30  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (expand_shift): Consider expanding LSHIFT_EXPR by a

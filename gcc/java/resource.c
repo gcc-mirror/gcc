@@ -41,6 +41,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "stdio.h"
 #include "target.h"
 #include "expr.h"
+#include "tree-iterator.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -49,9 +50,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* A list of all the resources files.  */
 static GTY(()) tree resources = NULL;
-
-/* Function used to register resources.  */
-static GTY(()) rtx registerResource_libfunc;
 
 /* Count of all the resources compiled in this invocation.  */
 static int Jr_count = 0;
@@ -101,65 +99,27 @@ compile_resource_data (const char *name, const char *buffer, int length)
 }
 
 void
-write_resource_constructor (void)
+write_resource_constructor (tree *list_p)
 {
-  tree init_name, init_type, init_decl;
-  tree iter;
-  location_t saved_loc = input_location;
-  char *resource_ctor_name;
+  tree iter, t, register_resource_fn;
 
-  /* Only do work if required.  */
-  if (resources == NULL_TREE)
+  if (resources == NULL)
     return;
 
-  resource_ctor_name = concat (IDENTIFIER_POINTER (get_file_function_name ('I')),
-			       "_resource", NULL);
-  init_name = get_identifier (resource_ctor_name);
-  free (resource_ctor_name);
-  init_type = build_function_type (void_type_node, end_params_node);
-
-  init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
-  DECL_SOURCE_LINE (init_decl) = 0;
-  SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
-  TREE_STATIC (init_decl) = 1;
-  current_function_decl = init_decl;
-  DECL_RESULT (init_decl) = build_decl (RESULT_DECL, 
-					NULL_TREE, void_type_node);
-
-  /* It can be a static function as long as collect2 does not have
-     to scan the object file to find its ctor/dtor routine.  */
-  TREE_PUBLIC (init_decl) = ! targetm.have_ctors_dtors;
-
-  /* Suppress spurious warnings.  */
-  TREE_USED (init_decl) = 1;
-
-  pushlevel (0);
-  make_decl_rtl (init_decl, NULL);
-  init_function_start (init_decl);
-  expand_function_start (init_decl, 0);
+  t = build_function_type_list (void_type_node, ptr_type_node, NULL);
+  t = build_decl (FUNCTION_DECL, get_identifier ("_Jv_RegisterResource"), t);
+  TREE_PUBLIC (t) = 1;
+  DECL_EXTERNAL (t) = 1;
+  register_resource_fn = t;
 
   /* Write out entries in the same order in which they were defined.  */
-  for (iter = nreverse (resources); iter != NULL_TREE;
-       iter = TREE_CHAIN (iter))
+  for (iter = nreverse (resources); iter ; iter = TREE_CHAIN (iter))
     {
-      emit_library_call (registerResource_libfunc, 0, VOIDmode, 1,
-			 expand_expr (build_address_of (TREE_VALUE (iter)),
-				      0, Pmode, 0),
-			 Pmode);
+      t = build_fold_addr_expr (TREE_VALUE (iter));
+      t = tree_cons (NULL, t, NULL);
+      t = build_function_call_expr (register_resource_fn, t);
+      append_to_statement_list (t, list_p);
     }
-
-  input_location = DECL_SOURCE_LOCATION (init_decl);
-  expand_function_end ();
-  poplevel (1, 0, 1);
-
-  /* rest_of_compilation forces generation even if -finline-functions.  */
-  rest_of_compilation ();
-
-  current_function_decl = NULL_TREE;
-  if (targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (init_decl), 0),
-				 DEFAULT_INIT_PRIORITY);
-  input_location = saved_loc;
 }
 
 /* Generate a byte array representing the contents of FILENAME.  The
@@ -191,14 +151,6 @@ compile_resource_file (const char *name, const char *filename)
   close (fd);
 
   compile_resource_data (name, buffer, stat_buf.st_size);
-  write_resource_constructor ();
-}
-
-void
-init_resource_processing (void)
-{
-  registerResource_libfunc =
-    gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterResource");
 }
 
 #include "gt-java-resource.h"

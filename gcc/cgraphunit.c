@@ -168,6 +168,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "rtl.h"
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
@@ -1784,4 +1785,67 @@ cgraph_optimize (void)
 	internal_error ("Nodes with no released memory found.");
     }
 #endif
+}
+
+/* Generate and emit a static constructor or destructor.  WHICH must be
+   one of 'I' or 'D'.  BODY should be a STATEMENT_LIST containing 
+   GENERIC statements.  */
+
+void
+cgraph_build_static_cdtor (char which, tree body)
+{
+  static int counter = 0;
+  char which_buf[16];
+  tree decl, name;
+
+  sprintf (which_buf, "%c_%d", which, counter++);
+  name = get_file_function_name_long (which_buf);
+
+  decl = build_decl (FUNCTION_DECL, name,
+		     build_function_type (void_type_node, void_list_node));
+  current_function_decl = decl;
+
+  DECL_RESULT (decl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  allocate_struct_function (decl);
+
+  TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
+  DECL_SAVED_TREE (decl) = body;
+  TREE_PUBLIC (decl) = ! targetm.have_ctors_dtors;
+  DECL_UNINLINABLE (decl) = 1;
+
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  TREE_USED (DECL_INITIAL (decl)) = 1;
+
+  DECL_SOURCE_LOCATION (decl) = input_location;
+  cfun->function_end_locus = input_location;
+
+  if (which == 'I')
+    DECL_STATIC_CONSTRUCTOR (decl) = 1;
+  else if (which == 'D')
+    DECL_STATIC_DESTRUCTOR (decl) = 1;
+  else
+    abort ();
+
+  gimplify_function_tree (decl);
+
+  /* ??? We will get called LATE in the compilation process.  */
+  if (cgraph_global_info_ready)
+    tree_rest_of_compilation (decl, false);
+  else
+    cgraph_finalize_function (decl, 0);
+  
+  if (targetm.have_ctors_dtors)
+    {
+      void (*fn) (rtx, int);
+
+      if (which == 'I')
+	fn = targetm.asm_out.constructor;
+      else
+	fn = targetm.asm_out.destructor;
+      fn (XEXP (DECL_RTL (decl), 0), DEFAULT_INIT_PRIORITY);
+    }
 }
