@@ -1,3 +1,8 @@
+2001-11-02  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/bits/stl_threads.h (_Atomic_swap): Only enable path
+	when platform supports __GTHREAD_MUTEX_INIT.
+
 2001-11-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acconfig.h:  Update comments.
