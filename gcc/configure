@@ -4632,6 +4632,7 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 
+
 # Echo that links are built
 if [ x$host = x$target ]
 then
@@ -4864,6 +4865,7 @@ s%@will_use_collect2@%$will_use_collect2%g
 s%@maybe_use_collect2@%$maybe_use_collect2%g
 s%@cc_set_by_configure@%$cc_set_by_configure%g
 s%@stage_prefix_set_by_configure@%$stage_prefix_set_by_configure%g
+s%@install@%$install%g
 /@target_overrides@/r $target_overrides
 s%@target_overrides@%%g
 /@host_overrides@/r $host_overrides

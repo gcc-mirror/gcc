@@ -3108,6 +3108,7 @@ AC_SUBST(will_use_collect2)
 AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
+AC_SUBST(install)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
