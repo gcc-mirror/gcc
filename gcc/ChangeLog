@@ -1,3 +1,8 @@
+2003-11-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (___mulsi3): Don't save/restore
+	an unused register.
+
 2003-11-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR bootstrap/12752
