@@ -3340,7 +3340,7 @@ lang_get_alias_set (t)
     }
   /* It's not yet safe to use alias sets for classes in C++ because
      the TYPE_FIELDs list for a class doesn't mention base classes.  */
-  else if (c_language == clk_cplusplus && AGGREGATE_TYPE_P (t));
+  else if (c_language == clk_cplusplus && AGGREGATE_TYPE_P (t))
     return 0;
 
   return -1;
