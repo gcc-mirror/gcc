@@ -54,6 +54,9 @@ Boston, MA 02111-1307, USA.  */
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
   || !strcmp (STR, "rpath"))
 
+#undef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC "%{static: -mno-abicalls}"
+
 /* ??? _MIPS_SIM and _MIPS_SZPTR should eventually depend on options when
    options for them exist.  */
 
@@ -80,14 +83,21 @@ Boston, MA 02111-1307, USA.  */
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
-%{!shared:%{!non_shared:%{!call_shared: -call_shared -no_unresolved}}} \
+%{static: -non_shared} \
+%{!static: \
+  %{!shared:%{!non_shared:%{!call_shared: -call_shared -no_unresolved}}}} \
 %{rpath} \
 -_SYSTYPE_SVR4"
 
 /* We now support shared libraries.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "%{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}"
+#define STARTFILE_SPEC "\
+%{!static: \
+  %{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}} \
+%{static: \
+  %{pg:gcrt1.o%s} \
+  %{!pg:%{p:/usr/lib/nonshared/mcrt1.o%s libprof1.a%s} \
+  %{!p:/usr/lib/nonshared/crt1.o%s}}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{p:-lprof1} %{pg:-lprof1} -lc}"
