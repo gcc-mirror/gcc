@@ -1,5 +1,8 @@
-#undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "-D__ELF__"
+/* Target OS preprocessor built-ins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__ELF__");		\
+    } while (0)
 
 /* Undefine some macros defined in h8300 that conflict with elfos.h .  */
 #undef SDB_DEBUGGING_INFO

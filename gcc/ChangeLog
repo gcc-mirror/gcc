@@ -1,3 +1,13 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config/h8300:
+	* elf.h: Use TARGET_OS_CPP_BUILTINS rather than
+	SUBTARGET_SPEC.
+	* rtems.h: Similarly.
+	* h8300.h (CPP_PREDEFINES, CPP_SPEC, SUBTARGET_CPP_SPEC,
+	EXTRA_SPECS, SUBTARGET_EXTRA_SPECS): Remove.
+	(TARGET_CPU_CPP_BUILTINS): Use.
+
 2002-06-02  Richard Henderson  <rth@redhat.com>
 
 	* alias.c: Include target.h.
