@@ -3464,6 +3464,13 @@ figure them out, compile a small program for profiling using the
 system's installed C compiler and look at the assembler code that
 results.
 
+@findex NO_PROFILE_COUNTERS
+@item NO_PROFILE_COUNTERS
+Define this macro if the @code{mcount} subroutine on your system does
+not need a counter variable allocated for each function.  This is true
+for almost all modern implementations.  If you define this macro, you
+must not use the @var{labelno} argument to @code{FUNCTION_PROFILER}.
+
 @findex PROFILE_BEFORE_PROLOGUE
 @item PROFILE_BEFORE_PROLOGUE
 Define this macro if the code for function profiling should come before

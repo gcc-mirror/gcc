@@ -135,6 +135,9 @@ Boston, MA 02111-1307, USA.  */
  : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n)+3 \
  : (-1))
 
+#undef  NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS
+
 /* Tell final.c that we don't need a label passed to mcount.  */
 
 #undef FUNCTION_PROFILER

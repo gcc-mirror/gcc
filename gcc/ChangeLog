@@ -1,3 +1,14 @@
+2001-03-20  David O'Brien  <obrien@FreeBSD.org>
+
+	from 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+	* final.c (profile_function): Do not emit profile counters in
+	the data section, if NO_PROFILE_COUNTERS is defined.
+	* tm.texi: Document NO_PROFILE_COUNTERS.  Update doc for
+	FUNCTION_PROFILER.
+
+	from 2000-10-02  David O'Brien  <obrien@dragon.nuxi.com>
+	* config/i386/freebsd.h (NO_PROFILE_COUNTERS): Define.
+
 2001-03-19  Bernd Schmidt  <bernds@redhat.com>
 
 	* version.c: Bump.

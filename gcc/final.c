@@ -1701,7 +1701,9 @@ static void
 profile_function (file)
      FILE *file;
 {
+#ifndef NO_PROFILE_COUNTERS
   int align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);
+#endif
 #if defined(ASM_OUTPUT_REG_PUSH)
 #if defined(STRUCT_VALUE_INCOMING_REGNUM) || defined(STRUCT_VALUE_REGNUM)
   int sval = current_function_returns_struct;
@@ -1711,10 +1713,12 @@ profile_function (file)
 #endif
 #endif /* ASM_OUTPUT_REG_PUSH */
 
+#ifndef NO_PROFILE_COUNTERS
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
   ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
   assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, 1);
+#endif
 
   function_section (current_function_decl);
 
