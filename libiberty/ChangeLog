@@ -1,3 +1,12 @@
+2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR target/10338
+	PR bootstrap/10198
+	PR bootstrap/10140
+	* getopt.c (exchange, _getopt_initialize): Use mempcpy not
+	__mempcpy.
+	* regex.c (regerror): Likewise.
+
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* argv.c: Use ANSI_PROTOTYPES instead of __STDC__.

@@ -1,3 +1,10 @@
+2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR target/10338
+	PR bootstrap/10198
+	PR bootstrap/10140
+	* fixinc/gnu-regex.c (regerror): Use mempcpy not __mempcpy.
+
 2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* i386.md (abssf2_if+1): Make condition agree with abssf2_1 .
