@@ -1407,7 +1407,7 @@ output_epilog (file, size)
 	      HOST_WIDE_INT high
 		= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
 	      HOST_WIDE_INT tmp2 = frame_size - (high << 16) - low;
-	      int extra = 0xe;
+	      int extra = 0;
 	      int in_reg = 31;
 
 	      if (tmp2)
@@ -1431,7 +1431,7 @@ output_epilog (file, size)
 
 	      fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
 
-	      fprintf (file, "\taddq $25,$28,$28\n");
+	      fprintf (file, "\tsubq $25,$28,$28\n");
 
 	      reg_offset_from = 28;
 	    }
