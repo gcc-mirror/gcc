@@ -4530,12 +4530,13 @@ output_constructor (exp, size)
 		     and put them into bytes from the most significant end.  */
 		  shift = end_offset - next_offset - this_time;
 		  /* Don't try to take a bunch of bits that cross
-		     the word boundary in the INTEGER_CST.  */
+		     the word boundary in the INTEGER_CST. We can
+		     only select bits from the LOW or HIGH part
+		     not from both.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT
 		      && shift + this_time > HOST_BITS_PER_WIDE_INT)
 		    {
-		      this_time -= (HOST_BITS_PER_WIDE_INT - shift);
-		      shift = HOST_BITS_PER_WIDE_INT;
+		      this_time = (HOST_BITS_PER_WIDE_INT - shift);
 		    }
 
 		  /* Now get the bits from the appropriate constant word.  */
@@ -4550,8 +4551,10 @@ output_constructor (exp, size)
 		    }
 		  else
 		    abort ();
+		  /* Get the result. This works only when:
+		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 		  byte |= (((value >> shift)
-			    & (((HOST_WIDE_INT) 1 << this_time) - 1))
+			    & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
 			   << (BITS_PER_UNIT - this_time - next_bit));
 		}
 	      else
@@ -4563,12 +4566,13 @@ output_constructor (exp, size)
 		  shift = (next_offset
 			   - TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)));
 		  /* Don't try to take a bunch of bits that cross
-		     the word boundary in the INTEGER_CST.  */
+		     the word boundary in the INTEGER_CST. We can
+		     only select bits from the LOW or HIGH part
+		     not from both.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT
 		      && shift + this_time > HOST_BITS_PER_WIDE_INT)
 		    {
-		      this_time -= (HOST_BITS_PER_WIDE_INT - shift);
-		      shift = HOST_BITS_PER_WIDE_INT;
+		      this_time = (HOST_BITS_PER_WIDE_INT - shift);
 		    }
 
 		  /* Now get the bits from the appropriate constant word.  */
@@ -4581,8 +4585,10 @@ output_constructor (exp, size)
 		    }
 		  else
 		    abort ();
+		  /* Get the result. This works only when:
+		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 		  byte |= (((value >> shift)
-			    & (((HOST_WIDE_INT) 1 << this_time) - 1))
+			    & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
 			   << next_bit);
 		}
 	      next_offset += this_time;
