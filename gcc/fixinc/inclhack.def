@@ -1031,6 +1031,23 @@ fix = {
 
 
 /*
+ *  Between 8/24/1998 and 2/17/2001, FreeBSD system headers presume
+ *  neither the existence of GCC 3 nor its exact feature set yet break
+ *  (by design?) when __GNUC__ is set beyond 2.
+ */
+fix = {
+    hackname  = freebsd_gcc3_breakage;
+    mach      = *-*-freebsd*;
+    files     = sys/cdefs.h;
+    select    = '^#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7$';
+    bypass    = '__GNUC__[ \t]*([>=]=[ \t]*[3-9]|>[ \t]*2)';
+    c_fix     = format;
+    c_fix_arg = '%0 || __GNUC__ >= 3';
+    test_text = '#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7';
+};
+
+
+/*
  *  Fix HP & Sony's use of "../machine/xxx.h"
  *  to refer to:  <machine/xxx.h>
  */
@@ -1904,29 +1921,11 @@ fix = {
 
 
 /*
- *  "!__STDC__" is "!defined( __STRICT_ANSI__ )"
- */
-fix = {
-    hackname = sco_strict_ansi;
-    mach     = "i?86-*-sco3.2*";
-    select   = "^[ \t]*#[ \t]*if.*!__STDC__";
-
-    c_fix     = format;
-    c_fix_arg = "%1defined(__STRICT_ANSI__)%2";
-    c_fix_arg = "^([ \t]*#[ \t]*if[ \t].*!)__STDC__(.*)";
-
-    test_text = "#if !__STDC__ /* not standard C */\nint foo;\n#endif";
-};
-
-/*
  *  "!__STDC__" or "__STDC__==0" or "__STDC__!=1" or "__STDC__-0==0"
  *  is "!defined( __STRICT_ANSI__ )"
  */
 fix = {
     hackname = strict_ansi_not;
-    mach="*-*-sysv4*";
-    mach="i[34567]86-*-sysv5*";
-    mach="i[34567]86-*-udk*";
     select   = "^([ \t]*#[ \t]*if.*)"
                "(!__STDC__"
                "|__STDC__[ \t]*==[ \t]*0"
@@ -1937,8 +1936,10 @@ fix = {
     c_fix     = format;
     c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
 
-    test_text = "#if !__STDC__ || __STDC__ == 0 || __STDC__ != 1"
-               "|| __STDC__ - 0 == 0"
+    test_text = "#if !__STDC__ \n"
+                "#if __STDC__ == 0\n"
+                "#if __STDC__ != 1\n"
+                "#if __STDC__ - 0 == 0"
                "/* not std C */\nint foo;\n#endif";
 };
 
@@ -1954,7 +1955,6 @@ fix = {
     files="signal.h";
     files="stdlib.h";
     files="time.h";
-    mach="i[34567]86-*-sysv5*";
     select   = "^([ \t]*[|&][|&][ \t(]*)"
                "(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
                ")(.*)";
@@ -1972,9 +1972,6 @@ fix = {
  */
 fix = {
     hackname = strict_ansi_only;
-    mach="*-*-sysv4*";
-    mach="i[34567]86-*-sysv5*";
-    mach="i[34567]86-*-udk";
     select   = "^([ \t]*#[ \t]*if.*)"
                "(__STDC__[ \t]*!=[ \t]*0"
                "|__STDC__[ \t]*==[ \t]*1"
@@ -2118,21 +2115,6 @@ fix = {
           "s@_Va_LIST@_VA_LIST@";
     test_text = "extern void mumble( va_list);";
 };
-
-
-/*
- *  Check for strict ansi compliance
- */
-#ifdef STRICT_ANSI
-fix = {
-    hackname = strict_ansi;
-    select   = "__STDC__[ \t]*[=!]=[ \t]*[01]";
-    sed      = "s/__STDC__[ \t]*==[ \t]*0/!defined (__STRICT_ANSI__)/g";
-    sed      = "s/__STDC__[ \t]*!=[ \t]*0/defined (__STRICT_ANSI__)/g";
-    sed      = "s/__STDC__[ \t]*==[ \t]*1/defined (__STRICT_ANSI__)/g";
-    sed      = "s/__STDC__[ \t]*!=[ \t]*1/!defined (__STRICT_ANSI__)/g";
-};
-#endif
 
 
 /*
