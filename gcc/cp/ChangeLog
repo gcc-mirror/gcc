@@ -1,3 +1,7 @@
+2002-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl2.c (finish_file): Correct spelling.
+
 2002-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_special_member_call): Do not try to lookup VTTs by
