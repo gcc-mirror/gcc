@@ -370,7 +370,14 @@ rest_of_decl_compilation (tree decl,
 	  && !DECL_EXTERNAL (decl))
 	{
 	  if (flag_unit_at_a_time && !cgraph_global_info_ready
-	      && TREE_CODE (decl) != FUNCTION_DECL && top_level)
+	      && TREE_CODE (decl) != FUNCTION_DECL && top_level
+	      /* If we defer processing of decls that have had their
+		 DECL_RTL set above (say, in make_decl_rtl),
+		 check_global_declarations() will clear it before
+		 assemble_variable has a chance to act on it.  This
+		 would remove all traces of the register name in a
+		 global register variable, for example.  */
+	      && !DECL_RTL_SET_P (decl))
 	    cgraph_varpool_finalize_decl (decl);
 	  else
 	    assemble_variable (decl, top_level, at_end, 0);

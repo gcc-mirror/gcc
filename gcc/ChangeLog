@@ -1,3 +1,8 @@
+2004-07-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* passes.c (rest_of_decl_compilation): Don't defer call of
+	assemble_variable if its DECL_RTL is already set.
+
 2004-07-12  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* cfgloop.h (struct loop): Add nb_iterations field.
