@@ -129,7 +129,7 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm \
+	tahoe | i[3456]86 | i860 | m68k | m68000 | m88k | ns32k | arm \
 		| arme[lb] | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
@@ -144,7 +144,7 @@ case $basic_machine in
 		exit 1
 		;;
 	# Recognize the basic CPU types with company name.
-	vax-* | tahoe-* | i[345]86-* | i860-* | m68k-* | m68000-* | m88k-* \
+	vax-* | tahoe-* | i[3456]86-* | i860-* | m68k-* | m68000-* | m88k-* \
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* | power-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
@@ -308,19 +308,19 @@ case $basic_machine in
 		os=-mvs
 		;;
 # I'm not sure what "Sysv32" means.  Should this be sysv3.2?
-	i[345]86v32)
+	i[3456]86v32)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv32
 		;;
-	i[345]86v4*)
+	i[3456]86v4*)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv4
 		;;
-	i[345]86v)
+	i[3456]86v)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv
 		;;
-	i[345]86sol2)
+	i[3456]86sol2)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-solaris2
 		;;
@@ -419,13 +419,17 @@ case $basic_machine in
         pc532 | pc532-*)
 		basic_machine=ns32k-pc532
 		;;
-	pentium | p5 | p6)
-		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
+	pentium | p5)
 		basic_machine=i586-intel
 		;;
-	pentium-* | p5-* | p6-*)
-		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
+	pentiumpro | p6)
+		basic_machine=i686-intel
+		;;
+	pentium-* | p5-*)
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
+		;;
+	pentiumpro-* | p6-*)
+		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	k5)
 		# We don't have specific support for AMD's K5 yet, so just call it a Pentium
@@ -633,7 +637,7 @@ case $os in
 	# Each alternative MUST END IN A *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
-	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[345]* \
+	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[3456]* \
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aof* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
