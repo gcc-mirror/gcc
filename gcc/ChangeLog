@@ -1,6 +1,14 @@
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/9888
+	* config/i386/i386.md (jcc_1): Fix range.
+	(jcc_2): Likewise.
+	(jump): LIkewise.
+	(doloop_end_internal): Likewise.
+
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9888
 	Backport patch from mainline:
 
 	Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
