@@ -1695,10 +1695,10 @@ static tree current_type_lookups;
 /* Perform deferred access control for types used in the type of a
    declaration.  */
 
-void
+static void
 deferred_type_access_control ()
 {
-  tree lookup = current_type_lookups;
+  tree lookup = type_lookups;
 
   if (lookup == error_mark_node)
     return;
@@ -1707,46 +1707,56 @@ deferred_type_access_control ()
     enforce_access (TREE_PURPOSE (lookup), TREE_VALUE (lookup));
 }
 
-/* Perform deferred access control for types used in the type of a
-   declaration.  Called for the first declarator in a declaration.  */
+void
+decl_type_access_control (decl)
+     tree decl;
+{
+  tree save_fn;
+
+  if (type_lookups == error_mark_node)
+    return;
+
+  save_fn = current_function_decl;
+
+  if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+    current_function_decl = decl;
+
+  deferred_type_access_control ();
+
+  current_function_decl = save_fn;
+  
+  /* Now strip away the checks for the current declarator; they were
+     added to type_lookups after typed_declspecs saved the copy that
+     ended up in current_type_lookups.  */
+  type_lookups = current_type_lookups;
+}
 
 void
-initial_deferred_type_access_control (lookups)
+save_type_access_control (lookups)
      tree lookups;
 {
-  tree lookup = type_lookups;
-
-  /* First perform the checks for the current declarator; they will have
-     been added to type_lookups since typed_declspecs saved the copy that
-     we have been passed.  */
-  if (lookup != error_mark_node)
-    for (; lookup != lookups; lookup = TREE_CHAIN (lookup))
-      enforce_access (TREE_PURPOSE (lookup), TREE_VALUE (lookup));
-
   current_type_lookups = lookups;
-  type_lookups = error_mark_node;
-  deferred_type_access_control ();
-}    
+}
 
 /* Begin a function definition declared with DECL_SPECS and
    DECLARATOR.  Returns non-zero if the function-declaration is
    legal.  */
 
 int
-begin_function_definition (decl_specs, lookups, declarator)
+begin_function_definition (decl_specs, declarator)
      tree decl_specs;
-     tree lookups;
      tree declarator;
 {
   tree specs;
   tree attrs;
 
-  initial_deferred_type_access_control (lookups);
-  
   split_specs_attrs (decl_specs, &specs, &attrs);
   if (!start_function (specs, declarator, attrs, SF_DEFAULT))
     return 0;
-  
+
+  deferred_type_access_control ();
+  type_lookups = error_mark_node;
+
   reinit_parse_for_function ();
   /* The things we're about to see are not directly qualified by any
      template headers we've seen thus far.  */

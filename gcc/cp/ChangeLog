@@ -1,3 +1,24 @@
+2000-02-18  Jason Merrill  <jason@casey.cygnus.com>
+
+	* semantics.c (deferred_type_access_control): Walk the entire
+	type_lookups list.
+	(save_type_access_control): Rename from 
+	initial_deferred_type_access_control.  Just remember the value.
+	(decl_type_access_control): New fn.
+	(begin_function_definition): Use deferred_type_access_control, after
+	we've started the function.  Set type_lookups to error_mark_node.
+	* parse.y (frob_specs, fn.def1): Adjust.
+	(parse_decl0, parse_field, parse_field0, parse_bitfield): New fns.
+	(parse_end_decl, parse_bitfield0, parse_method): New fns.
+	(fn.def2, initdcl, initdcl0_innards, nomods_initdcl0): Use them.
+	(after_type_component_declarator0): Likewise.
+	(after_type_component_declarator): Likewise.
+	(notype_component_declarator): Likewise.
+	* cp-tree.h: Adjust.
+
+	* decl.c (redeclaration_error_message): Allow redeclaration of 
+	namespace-scope decls.
+
 2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* typeck2.c (my_friendly_abort): Use GCCBUGURL.
