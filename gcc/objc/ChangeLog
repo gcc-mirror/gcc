@@ -1,3 +1,9 @@
+2004-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/18406
+	* obj-act.c (encode_type): 96bits doubles are encoded the
+	same way as 64bit and 128bit doubles are.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* objc-act.c: Use %q, %< and %> for quoting in diagnostics.
