@@ -1061,17 +1061,10 @@ namespace std
       const ios_base::fmtflags __fmt = ~(ios_base::showpos | ios_base::basefield
 					 | ios_base::uppercase | ios_base::internal);
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
-      try 
-	{
-	  __s = _M_insert_int(__s, __io, __fill, 
-			      reinterpret_cast<unsigned long>(__v));
-	  __io.flags(__flags);
-	}
-      catch (...) 
-	{
-	  __io.flags(__flags);
-	  __throw_exception_again;
-	}
+      
+      __s = _M_insert_int(__s, __io, __fill, 
+			  reinterpret_cast<unsigned long>(__v));
+      __io.flags(__flags);
       return __s;
     }
 
