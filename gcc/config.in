@@ -98,6 +98,9 @@
 /* Define if you don't have vprintf but do have _doprnt.  */
 #undef HAVE_DOPRNT
 
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
+#undef HAVE_SYS_WAIT_H
+
 /* Define if you have <vfork.h>.  */
 #undef HAVE_VFORK_H
 
@@ -218,14 +221,8 @@
 /* Define if you have the <sys/times.h> header file.  */
 #undef HAVE_SYS_TIMES_H
 
-/* Define if you have the <sys/wait.h> header file.  */
-#undef HAVE_SYS_WAIT_H
-
 /* Define if you have the <time.h> header file.  */
 #undef HAVE_TIME_H
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <wait.h> header file.  */
-#undef HAVE_WAIT_H

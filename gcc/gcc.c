@@ -51,19 +51,6 @@ extern void set_std_prefix PROTO((char *, int));
 #define PEXECUTE_SEARCH  4
 #define PEXECUTE_VERBOSE 8
 
-#ifndef WIFSIGNALED
-#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
-#endif
-#ifndef WTERMSIG
-#define WTERMSIG(S) ((S) & 0x7f)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(S) (((S) & 0xff) == 0)
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
-#endif
-
 #ifdef VMS
 #define exit __posix_exit
 #endif

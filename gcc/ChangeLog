@@ -1,3 +1,14 @@
+Thu Nov 19 12:58:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Don't do AC_CHECK_HEADERS(wait.h sys/wait.h).
+	Instead call AC_HEADER_SYS_WAIT.
+
+	* collect2.c: Don't provide defaults for sys/wait.h macros.
+	* gcc.c: Likewise.
+	* protoize.c: Likewise.  Also, don't include sys/wait.h.
+
+	* system.h: Include sys/wait.h and provide macro defaults.
+
 1998-11-19  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* Makefile.in (mandir): Set to @mandir@.
