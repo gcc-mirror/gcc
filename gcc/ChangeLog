@@ -1,3 +1,10 @@
+1999-12-28  Manfred Hollstein  <mhollstein@cygnus.com>
+
+	* m68k/t-mot3300-gald (CROSS_LIBGCC1): Define to libgcc1-asm.a.
+	(LIB1ASMSRC, LIB1ASMFUNCS, LIB2FUNCS_EXTRA): Define.
+	(fpgnulib.c, xfgnulib.c): Add rules.
+	* m68k/t-mot3300-gas: Likewise.
+
 1999-12-27  Ian Lance Taylor  <ian@zembu.com>
 
 	* configure.in: Avoid [[ by using test and changequote.  Add
