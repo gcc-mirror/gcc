@@ -55,7 +55,6 @@
 
 with Gnatvsn; use Gnatvsn;
 
-
 with Ada.Text_IO;             use Ada.Text_IO;
 with Ada.Float_Text_IO;
 with Ada.Integer_Text_IO;
@@ -233,8 +232,8 @@ procedure Gnatmem is
    begin
       New_Line;
       Put ("GNATMEM ");
-      Put (Gnat_Version_String);
-      Put_Line (" Copyright 1997-2004 Free Software Foundation, Inc.");
+      Put_Line (Gnat_Version_String);
+      Put_Line ("Copyright 1997-2004 Free Software Foundation, Inc.");
       New_Line;
 
       Put_Line ("Usage: gnatmem switches [depth] exename");

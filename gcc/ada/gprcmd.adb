@@ -53,7 +53,6 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Regpat;               use GNAT.Regpat;
 
-
 procedure Gprcmd is
 
    --  ??? comments are thin throughout this unit
@@ -398,9 +397,9 @@ begin
          --  go to standard output.
 
          Put (Standard_Error, "GPRCMD ");
-         Put (Standard_Error, Gnatvsn.Gnat_Version_String);
+         Put_Line (Standard_Error, Gnatvsn.Gnat_Version_String);
          Put_Line (Standard_Error,
-                   " Copyright 2002-2004, Free Software Fundation, Inc.");
+                   "Copyright 2002-2004, Free Software Fundation, Inc.");
          Usage;
 
       elsif Cmd = "pwd" then

@@ -170,9 +170,9 @@ procedure Gnatname is
          Version_Output := True;
          Output.Write_Eol;
          Output.Write_Str ("GNATNAME ");
-         Output.Write_Str (Gnatvsn.Gnat_Version_String);
+         Output.Write_Line (Gnatvsn.Gnat_Version_String);
          Output.Write_Line
-           (" Copyright 2001-2004 Free Software Foundation, Inc.");
+           ("Copyright 2001-2004 Free Software Foundation, Inc.");
       end if;
    end Output_Version;
 
