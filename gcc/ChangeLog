@@ -1,3 +1,9 @@
+2002-07-31  Graham Stott  <grahams@btinternet.com>
+
+	* config/rs6000/rs6000.c (spe_init_builtins,
+	altivec_init_builtins, rs6000_common_init_builtins):
+	Replace ANSI with K&R function def. 
+
 2002-07-31  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (validate_condition_mode): Test flag_finite_math_only
