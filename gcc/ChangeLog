@@ -1,3 +1,24 @@
+2000-05-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow any stack
+	offsets if not REG_OK_STRICT.
+
+	* config/rs6000/rs6000.h (REG_OK_STRICT_FLAG): New macro.
+	(INT_REG_OK_FOR_INDEX_P): Likewise.
+	(INT_REG_OK_FOR_BASE_P): Likewise.
+	(REG_OK_FOR_INDEX_P): Use INT_REG_OK_FOR_INDEX_P.
+	(REG_OK_FOR_BASE_P): Use INT_REG_OK_FOR_BASE_P.
+	(LEGITIMATE_OFFSET_ADDRESS_P): Use INT_REG_OK_FOR_INDEX_P and
+        INT_REG_OK_FOR_BASE_P instead of REG_OK_FOR_INDEX_P and
+	REG_OK_FOR_BASE_P. Take an additional parameter.
+	(LEGITIMATE_INDEXED_ADDRESS_P): Likeewise.
+	(LEGITIMATE_INDIRECT_ADDRESS_P): Likewise.
+	(LEGITIMATE_LO_SUM_ADDRESS_P): Likewise.
+	(GO_IF_LEGITIMATE_ADDRESS): Move code into new function
+	rs6000_legitimate_address() and use it.
+	* config/rs6000/rs6000.c: Update all callers.
+	(rs6000_legitimate_address): New function.
+
 2001-05-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Merge
