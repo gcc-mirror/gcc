@@ -1,3 +1,10 @@
+2003-01-24  Richard Henderson  <rth@redhat.com>
+
+        PR optimization/4382
+        * tree-inline.c (find_builtin_longjmp_call_1): New.
+        (find_builtin_longjmp_call): New.
+        (inlinable_function_p): Use it.
+
 2003-01-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in (HAVE_AS_TLS): Add s390-*-* and s390x-*-* cases.
