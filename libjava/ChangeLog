@@ -1,3 +1,28 @@
+2002-08-01  Mark Wielaard  <mark@klomp.org>
+
+	Revert patch that breaks libgcj shared library on powerpc:
+	* gnu/java/security/provider/Gnu.java: Reverse referencing all
+	implementation classes by using Class.getName(). Uses Strings again.
+	* gnu/java/security/der/DEREncodingException.java,
+	gnu/java/security/provider/DERReader.java,
+	gnu/java/security/provider/DERWriter.java,
+	gnu/java/security/provider/DSAKeyPairGenerator.java,
+	gnu/java/security/provider/DSAParameterGenerator.java,
+	gnu/java/security/provider/DSAParameters.java,
+	gnu/java/security/provider/DSASignature.java,
+	gnu/java/security/provider/GnuDSAPrivateKey.java,
+	gnu/java/security/provider/GnuDSAPublicKey.java,
+	gnu/java/security/provider/MD5.java,
+	gnu/java/security/util/Prime.java: Removed.
+	* Makefile.am (ordinary_java_source_files): Remove above files.
+	* Makefile.in: Regenerate.
+	* gnu/java/security/provider/DefaultPolicy.java
+	(getPermissions): Revert to maintaining static class variable of
+	Permissions.
+	* gnu/java/security/provider/SHA.java 
+	(engineUpdate): Revert algorithm change.
+	(engineDigest): Revert algorithm change.
+
 2002-08-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.host: Add SH support.

@@ -47,13 +47,16 @@ import java.security.*;
   */
 public class DefaultPolicy extends Policy
 {
-  static Permission allPermission = new AllPermission();
+  static Permissions allPermissions = new Permissions();
+  
+  static
+  {
+    allPermissions.add(new AllPermission());
+  }
 
   public PermissionCollection getPermissions(CodeSource codesource)
   {
-    Permissions perms = new Permissions();
-    perms.add(allPermission);
-    return perms;
+    return allPermissions;
   }
   
   public void refresh()
