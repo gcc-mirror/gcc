@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h>
 
 #else
+#ifndef L_trampoline
 #include <stddef.h>
 #ifndef malloc
 extern void *malloc (size_t);
@@ -53,10 +54,11 @@ extern void free (void *);
 extern int atexit(void (*)(void));
 #endif
 #endif
+#endif
 
 #include "machmode.h"
 #include "defaults.h" 
-#if !defined(L_trampoline) && !defined(inhibit_libc)
+#ifndef L_trampoline
 #include <stddef.h>
 #endif
 
