@@ -1,3 +1,11 @@
+2005-03-04  Andrew Haley  <aph@redhat.com>
+
+	PR java/18362
+	* class.c (set_method_index): Don't set method_index if it is
+	NULL_TREE.
+	(layout_class_method): Don't complain about "non-static method foo
+	overrides static method" in the case of indirect dispatch.
+
 2005-02-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/16923
