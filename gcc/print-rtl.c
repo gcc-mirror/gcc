@@ -164,15 +164,21 @@ print_rtx (in_rtx)
 	    if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_BEG
 		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END)
 	      {
-		fprintf (outfile, " %d", NOTE_EH_HANDLER (in_rtx));
+		if (flag_dump_unnumbered)
+		  fprintf (outfile, " #");
+		else
+		  fprintf (outfile, " %d", NOTE_EH_HANDLER (in_rtx));
 		sawclose = 1;
 	      }
 	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
 		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END)
 	      {
 		fprintf (outfile, " ");
-		fprintf (outfile, HOST_PTR_PRINTF, 
-			 (char *) NOTE_BLOCK (in_rtx));
+		if (flag_dump_unnumbered)
+		  fprintf (outfile, "#");
+		else
+		  fprintf (outfile, HOST_PTR_PRINTF, 
+			   (char *) NOTE_BLOCK (in_rtx));
 		sawclose = 1;
 	      }
 	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_START

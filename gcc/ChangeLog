@@ -1,3 +1,8 @@
+2000-02-20  Geoff Keating  <geoffk@cygnus.com>
+
+	* print-rtl.c (print_rtx): Don't print addresses when
+	flag_dump_unnumbered.
+
 2000-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (sparc_output_scratch_registers): Mark parameter with
