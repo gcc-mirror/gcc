@@ -1958,10 +1958,6 @@ extern tree make_tree_vec		PARAMS ((int));
 
 extern tree get_identifier		PARAMS ((const char *));
 
-/* NODE is an identifier known to the preprocessor.  Make it known to
-   the front ends as well.  */
-extern void make_identifier		PARAMS ((tree node));
-
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return
    NULL_TREE.  */
