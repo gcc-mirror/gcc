@@ -1,3 +1,28 @@
+2003-04-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (struct ls_expr): Added pattern_regs field.
+	(ldst_entry): Initialize it.
+	(extract_mentioned_regs, extract_mentioned_regs_helper): New.
+	(store_ops_ok): Use regs precomputed by them.
+	(find_loads, store_killed_in_insn, load_kills_store): Change return
+	type to bool.
+	(store_killed_before, store_killed_after): Take position of register
+	set in account.
+	(reg_set_info): Store position of the setter.
+	(gcse_main): Enable store motion.
+	(mems_conflict_for_gcse_p): Enable load motion of non-symbol mems.
+	(pre_insert_copy_insn, update_ld_motion_stores, insert_store): Prevent rtl
+	sharing.
+	(simple_mem): Enable store motion of non-symbol mems.
+	(regvec): Type changed.
+	(LAST_AVAIL_CHECK_FAILURE): New.
+	(compute_store_table_current_insn): New.
+	(build_store_vectors): Computation of availability and anticipatability
+	moved ...
+	(compute_store_table, find_moveable_store): ... here.
+	(delete_store): Remove senseless comment.
+	(store_motion): Reorganize.
+
 2003-04-01  Kevin Buettner  <kevinb@redhat.com>
 
 	* config/mips/mips.c (override_options): Provide mappings for
