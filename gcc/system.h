@@ -547,4 +547,16 @@ extern void abort PARAMS ((void));
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
+/* Enumerated bitfields are safe to use unless we've been explictly told
+ * otherwise or if they are signed. */
+ 
+#define USE_ENUM_BITFIELDS __GNUC__ || (!ONLY_INT_FIELDS && ENUM_BTIFIELDS_ARE_UNSIGNED)
+
+#if USE_ENUM_BITFIELDS
+#define ENUM_BITFIELD(TYPE) enum TYPE
+#else
+#define ENUM_BITFIELD(TYPE) unsigned int
+#endif
+
+
 #endif /* __GCC_SYSTEM_H__ */

@@ -126,12 +126,7 @@ struct tree_common
 {
   union tree_node *chain;
   union tree_node *type;
-#ifdef ONLY_INT_FIELDS
-  unsigned int code : 8;
-#else
-  enum tree_code code : 8;
-#endif
-
+  ENUM_BITFIELD(tree_code) code : 8;
   unsigned side_effects_flag : 1;
   unsigned constant_flag : 1;
   unsigned permanent_flag : 1;
@@ -906,11 +901,7 @@ struct tree_type
   unsigned int uid;
 
   unsigned int precision : 9;
-#ifdef ONLY_INT_FIELDS
-  unsigned int mode : 7;
-#else
-  enum machine_mode mode : 7;
-#endif
+  ENUM_BITFIELD(machine_mode) mode : 7;
 
   unsigned string_flag : 1;
   unsigned no_force_blk_flag : 1;
@@ -1394,11 +1385,7 @@ struct tree_decl
   unsigned malloc_flag : 1;
   unsigned no_limit_stack : 1;
   unsigned pure_flag : 1;
-#ifdef ONLY_INT_FIELDS
-  unsigned int built_in_class : 2;
-#else
-  enum built_in_class built_in_class : 2;
-#endif
+  ENUM_BITFIELD(built_in_class) built_in_class : 2;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

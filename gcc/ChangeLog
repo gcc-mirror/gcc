@@ -1,3 +1,21 @@
+2000-04-18  Robert Lipe  <robertlipe@usa.net>
+
+	* configure.in (ENUM_BITFIELDS_ARE_UNSIGNED): Added.  Check that
+	bitfields of the host compiler are not signed quantities.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* system.h (USE_ENUM_BITFIELDS): Added.
+	(ENUM_BITFIELDS): Added.
+	* rtl.h (rtx_def): Members `code', `mode', now ENUM_BITFIELD.
+	(SHORT_ENUM_BUG): Deleted.
+	* tree.h (tree_common): Members `code', `mode', `built_in_class', 
+	now ENUM_BITFIELD.
+	* config/i386/xm-sco.h (ONLY_INT_FIELDS): Deleted.
+	(CODE_FIELD_BUG): Likewise.
+	* config/m68k/x-apollo68 (CC): Deleted SHORT_ENUM_BUG.
+	(OLD_CC): Likewise.
+	* config/m68k/x-ccur (X_CFLAGS): Likewise.
+
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ggc-common.c: Add missing blanks.
