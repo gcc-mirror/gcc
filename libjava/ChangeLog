@@ -1,3 +1,7 @@
+2002-01-08  Tom Tromey  <tromey@redhat.com>
+
+	* resolve.cc (_Jv_PrepareClass): Enable verifier.
+
 2002-01-07  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* java/lang/reflect/natMethod.cc: Don't include alloca.h.
