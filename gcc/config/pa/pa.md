@@ -350,15 +350,55 @@
 ;; treat it just like the 7100LC pipeline.
 ;; Similarly for the multi-issue fake units.
 
-;; PA8000 scheduling
-;;
-;; HP recommends against latency scheduling on the PA8000.
-;;
-;; For now we do not actually define any scheduling parameters for the PA8000.
-;;
-;; -msched=8000 is mostly so that we can retune the code sequences to improve
-;; performance on the PA8000 class machines.
 ;; 
+;; Scheduling for the PA8000 is somewhat different than scheduling for a
+;; traditional architecture.
+;;
+;; The PA8000 has a large (56) entry reorder buffer that is split between
+;; memory and non-memory operations.
+;;
+;; The PA800 can issue two memory and two non-memory operations per cycle to
+;; the function units.  Similarly, the PA8000 can retire two memory and two
+;; non-memory operations per cycle.
+;;
+;; Given the large reorder buffer, the processor can hide most latencies.
+;; According to HP, they've got the best results by scheduling for retirement
+;; bandwidth with limited latency scheduling for floating point operations.
+;; Latency for integer operations and memory references is ignored.
+;;
+;; We claim floating point operations have a 2 cycle latency and are
+;; fully pipelined, except for div and sqrt which are not pipelined.
+;;
+;; It is not necessary to define the shifter and integer alu units.
+;;
+;; These first two define_unit_unit descriptions model retirement from
+;; the reorder buffer.
+(define_function_unit "pa8000lsu" 2 1
+  (and
+    (eq_attr "type" "load,fpload,store,fpstore")
+    (eq_attr "cpu" "8000")) 1 1)
+
+(define_function_unit "pa8000alu" 2 1
+  (and
+    (eq_attr "type" "!load,fpload,store,fpstore")
+    (eq_attr "cpu" "8000")) 1 1)
+
+;; Claim floating point ops have a 2 cycle latency, excluding div and
+;; sqrt, which are not pipelined and issue to different units.
+(define_function_unit "pa8000fmac" 2 0
+  (and
+    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
+    (eq_attr "cpu" "8000")) 2 1)
+
+(define_function_unit "pa8000fdiv" 2 1
+  (and
+    (eq_attr "type" "fpdivsgl,fpsqrtsgl")
+    (eq_attr "cpu" "8000")) 17 17)
+
+(define_function_unit "pa8000fdiv" 2 1
+  (and
+    (eq_attr "type" "fpdivdbl,fpsqrtdbl")
+    (eq_attr "cpu" "8000")) 31 31)
 
 
 ;; Compare instructions.
