@@ -82,6 +82,11 @@ static int *reg_order;
 
 static char *regs_live;
 
+/* Indexed by reg number, nonzero if reg was used in a SUBREG that changes
+   its size.  */
+
+static char *regs_change_size;
+
 /* Indexed by insn's suid, the set of hard regs live after that insn.  */
 
 static HARD_REG_SET *after_insn_hard_regs;
@@ -93,7 +98,7 @@ static HARD_REG_SET *after_insn_hard_regs;
 
 static int stupid_reg_compare	PROTO((int *, int *));
 static int stupid_find_reg	PROTO((int, enum reg_class, enum machine_mode,
-				       int, int));
+				       int, int, int));
 static void stupid_mark_refs	PROTO((rtx, rtx));
 
 /* Stupid life analysis is for the case where only variables declared
@@ -156,6 +161,9 @@ stupid_life_analysis (f, nregs, file)
 
   reg_order = (int *) alloca (nregs * sizeof (int));
   bzero ((char *) reg_order, nregs * sizeof (int));
+
+  regs_change_size = (char *) alloca (nregs * sizeof (char));
+  bzero ((char *) regs_change_size, nregs * sizeof (char));
 
   reg_renumber = (short *) oballoc (nregs * sizeof (short));
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -254,7 +262,8 @@ stupid_life_analysis (f, nregs, file)
 					   reg_preferred_class (r),
 					   PSEUDO_REGNO_MODE (r),
 					   reg_where_born[r],
-					   reg_where_dead[r]);
+					   reg_where_dead[r],
+					   regs_change_size[r]);
 
       /* If no reg available in that class, try alternate class.  */
       if (reg_renumber[r] == -1 && reg_alternate_class (r) != NO_REGS)
@@ -262,7 +271,8 @@ stupid_life_analysis (f, nregs, file)
 					   reg_alternate_class (r),
 					   PSEUDO_REGNO_MODE (r),
 					   reg_where_born[r],
-					   reg_where_dead[r]);
+					   reg_where_dead[r],
+					   regs_change_size[r]);
     }
 
   if (file)
@@ -303,14 +313,19 @@ stupid_reg_compare (r1p, r2p)
    Return -1 if such a block cannot be found.
 
    If CALL_PRESERVED is nonzero, insist on registers preserved
-   over subroutine calls, and return -1 if cannot find such.  */
+   over subroutine calls, and return -1 if cannot find such.
+
+   If CHANGES_SIZE is nonzero, it means this register was used as the
+   operand of a SUBREG that changes its size.  */
 
 static int
-stupid_find_reg (call_preserved, class, mode, born_insn, dead_insn)
+stupid_find_reg (call_preserved, class, mode,
+		 born_insn, dead_insn, changes_size)
      int call_preserved;
      enum reg_class class;
      enum machine_mode mode;
      int born_insn, dead_insn;
+     int changes_size;
 {
   register int i, ins;
 #ifdef HARD_REG_SET
@@ -338,6 +353,12 @@ stupid_find_reg (call_preserved, class, mode, born_insn, dead_insn)
     IOR_HARD_REG_SET (used, after_insn_hard_regs[ins]);
 
   IOR_COMPL_HARD_REG_SET (used, reg_class_contents[(int) class]);
+
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+  if (changes_size)
+    IOR_HARD_REG_SET (used,
+		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
+#endif
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -471,9 +492,16 @@ stupid_mark_refs (x, insn)
       return;
     }
 
+  else if (code == SUBREG
+	   && GET_CODE (SUBREG_REG (x)) == REG
+	   && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
+	   && (GET_MODE_SIZE (GET_MODE (x))
+	       != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+    regs_change_size[REGNO (SUBREG_REG (x))] = 1;
+
   /* Register value being used, not set.  */
 
-  if (code == REG)
+  else if (code == REG)
     {
       regno = REGNO (x);
       if (regno < FIRST_PSEUDO_REGISTER)
