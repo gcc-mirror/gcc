@@ -4614,6 +4614,7 @@ mark_used (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && DECL_ARTIFICIAL (decl) 
+      && !DECL_THUNK_P (decl)
       && ! DECL_INITIAL (decl)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
