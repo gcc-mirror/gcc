@@ -2655,7 +2655,7 @@ TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi
 TEXI_CPPINT_FILES = cppinternals.texi
 
 # The *.1, *.7, *.info, and *.dvi files are being generated from implicit 
-# patterns.   To use them, put each of the specific target with with their 
+# patterns.  To use them, put each of the specific targets with its
 # specific dependencies but no build commands.
 
 doc/cpp.info: $(TEXI_CPP_FILES)
@@ -2720,7 +2720,7 @@ doc/%.7: %.pod
 cpp.pod: cpp.texi cppenv.texi cppopts.texi
 
 # These next rules exist because the output name is not the same as
-# the input name, so our implict %.pod rule will not work.
+# the input name, so our implicit %.pod rule will not work.
 
 gcc.pod: invoke.texi cppenv.texi cppopts.texi
 	$(STAMP) $@

@@ -1,3 +1,7 @@
+2004-02-14  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Makefile.in: Fix comment typos.
+
 2004-02-14  Olivier Hainque  <hainque@act-europe.fr>
 
 	* loop.c (check_dbra_loop): Use gen_int_mode instead of GEN_INT
