@@ -1,3 +1,7 @@
+2001-01-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/cpp/if-2.c: Adjust for signed wchar_t.
+
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/unify8.C: New test.
@@ -31,6 +35,7 @@
 	* gcc.c-torture/compile/20010117-1.c: New test.
 	* gcc.c-torture/compile/20010117-2.c: New test.
 
+>>>>>>> 1.1023
 2001-01-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/execute/20010116.[fx]: New test,
