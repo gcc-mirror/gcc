@@ -1,3 +1,7 @@
+2003-02-02  Andreas Schwab  <schwab@suse.de>
+
+	* varasm.c (asm_output_aligned_bss): Declare as possibly unused.
+
 2003-02-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (sibcall_epilogue): Set the "conds" to "clob".

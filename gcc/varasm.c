@@ -169,8 +169,8 @@ static void asm_output_bss		PARAMS ((FILE *, tree, const char *, int, int));
 #endif
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_ALIGNED_BSS
-static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
-						 int, int));
+static void asm_output_aligned_bss
+  PARAMS ((FILE *, tree, const char *, int, int)) ATTRIBUTE_UNUSED;
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static hashval_t const_str_htab_hash	PARAMS ((const void *x));
