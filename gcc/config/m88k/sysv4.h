@@ -1,8 +1,10 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 88100 in an 88open ABI environment.
    Copyright (C) 1990, 1991 Free Software Foundation, Inc.
-   Written by Ron Guilmette (rfg@ncd.com).
+
+   Written by Ron Guilmette (rfg@netcom.com).
    Contributed to FSF by Network Computing Devices.
+
    Other contributions by Vince Guarna (vguarna@urbana.mcd.mot.com),
    Ray Essick (essick@i88.isc.com), Wilson Tien (wtien@urbana.mcd.mot.com),
    and Tom Wood (Tom_Wood@NeXT.com)
