@@ -226,6 +226,8 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 # Symbol versioning for shared libraries.
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
 @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
@@ -286,7 +288,7 @@ libstdc___la_LIBADD = \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 
-libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
+libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} \
@@ -622,7 +624,6 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  rm tmp.top tmp.bottom; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	fi
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true
