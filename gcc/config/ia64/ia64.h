@@ -978,8 +978,8 @@ enum reg_class
 /* A macro whose definition is the name of the class to which a valid index
    register must belong.  An index register is one used in an address where its
    value is either multiplied by a scale factor or added to another register
-   (as well as added to a displacement).  */
-#define INDEX_REG_CLASS NO_REGS
+   (as well as added to a displacement).  This is needed for POST_MODIFY.  */
+#define INDEX_REG_CLASS GENERAL_REGS
 
 /* A C expression which defines the machine-dependent operand constraint
    letters for register classes.  If CHAR is such a letter, the value should be
@@ -1004,8 +1004,9 @@ enum reg_class
 
 /* A C expression which is nonzero if register number NUM is suitable for use
    as an index register in operand addresses.  It may be either a suitable hard
-   register or a pseudo register that has been allocated such a hard reg.  */
-#define REGNO_OK_FOR_INDEX_P(NUM) 0
+   register or a pseudo register that has been allocated such a hard reg.
+   This is needed for POST_MODIFY.  */
+#define REGNO_OK_FOR_INDEX_P(NUM) REGNO_OK_FOR_BASE_P (NUM)
 
 /* A C expression that places additional restrictions on the register class to
    use when it is necessary to copy value X into a register in class CLASS.
@@ -1743,7 +1744,7 @@ do {									\
 #define LEGITIMATE_ADDRESS_DISP(R, X)					\
   (GET_CODE (X) == PLUS							\
    && rtx_equal_p (R, XEXP (X, 0))					\
-   && (GET_CODE (XEXP (X, 1)) == REG					\
+   && (LEGITIMATE_ADDRESS_REG (XEXP (X, 1))				\
        || (GET_CODE (XEXP (X, 1)) == CONST_INT				\
 	   && INTVAL (XEXP (X, 1)) >= -256				\
 	   && INTVAL (XEXP (X, 1)) < 256)))
@@ -1774,9 +1775,9 @@ do {									\
 #endif
 
 /* A C expression that is nonzero if X (assumed to be a `reg' RTX) is valid for
-   use as an index register.  */
+   use as an index register.  This is needed for POST_MODIFY.  */
 
-#define REG_OK_FOR_INDEX_P(X) 0
+#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
 /* A C compound statement that attempts to replace X with a valid memory
    address for an operand of mode MODE.
