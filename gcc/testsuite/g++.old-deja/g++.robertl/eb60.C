@@ -3,8 +3,8 @@
 
 class t {
 public:
-       t(const string& s) : s_(s) {}
-       string s_;
+       t(const std::string& s) : s_(s) {}
+       std::string s_;
        static t* t_;
 };
 

@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90, 91, 92, 1994, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 1994, 1997, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ load_lib g++.exp
 
 # When a testcase doesn't have any special options, use these.
 if ![info exists DEFAULT_CXXFLAGS] {
-    set DEFAULT_CXXFLAGS "-ansi -pedantic-errors"
+    set DEFAULT_CXXFLAGS "-ansi -pedantic-errors -Wno-long-long"
 
 }
 

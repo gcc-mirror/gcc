@@ -3,13 +3,13 @@
 
 // Check we can throw a bad_alloc exception when malloc dies
 
-static __SIZE_TYPE__ arena[100000]; // so things can initialize
+static __SIZE_TYPE__ arena[32767]; // so things can initialize
 static int fail;
 static unsigned pos;
 
 extern "C" void *malloc (__SIZE_TYPE__ size)
 {
-  unsigned *p = &arena[pos];
+  __SIZE_TYPE__ *p = &arena[pos];
 
   if (fail)
     return 0;

@@ -28,7 +28,7 @@ struct line_error{
   line_error(int i):line(i){}
 };
 
-#define CHECK(cond)  if(!(cond))throw std::line_error(__LINE__);
+#define CHECK(cond)  if(!(cond))throw line_error(__LINE__);
 
 struct A{
   A(int){

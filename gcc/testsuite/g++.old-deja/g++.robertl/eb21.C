@@ -8,7 +8,7 @@ struct connection_t {
   connection_t() {}
 };
 
-vector<connection_t> connections;
+std::vector<connection_t> connections;
 
 /*----------------------------------------*/
 

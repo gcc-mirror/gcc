@@ -2,7 +2,7 @@
 #include <iterator.h>
 #include <string>
 
-ostream_iterator<string> oo(cout);
+ostream_iterator<std::string> oo(cout);
 
 int main()
 {

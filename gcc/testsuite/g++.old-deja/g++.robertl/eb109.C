@@ -20,9 +20,9 @@ class Graph
 {  // ERROR - candidates
   public:
     // public type interface
-    typedef map<int, EdgeType > Successor;
-    typedef pair<VertexType, Successor> vertex;
-    typedef vector<vertex> GraphType;
+    typedef std::map<int, EdgeType > Successor;
+    typedef std::pair<VertexType, Successor> vertex;
+    typedef std::vector<vertex> GraphType;
     typedef typename GraphType::iterator iterator;
     typedef typename GraphType::const_iterator const_iterator;
 
@@ -62,7 +62,7 @@ ostream& operator<<(ostream& os, Graph<VertexType,EdgeType>& G)
 int main()
 {
     // no edge weighting, therefore type Empty:
-    Graph<string, Empty> V(true);        // ERROR - no bool constructor
+    Graph<std::string, Empty> V(true);        // ERROR - no bool constructor
     // ReadGraph(V, "gra1.dat");
 
     // display of vertices with successors

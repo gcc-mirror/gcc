@@ -34,7 +34,7 @@ void b() {
 
 void c() {
   goto bar; // ERROR - jump from here
-  vector<int> x; // ERROR - jump crosses initialization
+  std::vector<int> x; // ERROR - jump crosses initialization
  bar: // ERROR - jump to here
   ;
 }

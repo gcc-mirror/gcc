@@ -2,6 +2,7 @@
 //test for bools with inclusive ors
 
 #include <assert.h>
+
 void bar ( bool  x ) {};
 void bars ( short  x ) {};
 
@@ -51,7 +52,6 @@ int orus(){
   return blob;  //expect 65539, will be 3 if done in us type
 }
 
-
 int main() {
   int tmp;
 #if 0
@@ -66,8 +66,11 @@ int main() {
   assert (tmp ==27);
   tmp = ors();
   assert (tmp ==27);
-  tmp = orus();
-  assert (tmp == 65539);
+  if (sizeof (int) > 2 && sizeof (int) > sizeof (unsigned short))
+    {
+      tmp = orus();
+      assert (tmp == 65539);
+    }
 
   return 0;
 }

@@ -10,7 +10,7 @@ extern "C" void exit(int);
 
 struct Foo {
   ~Foo() {
-    std::exit(0);
+    exit(0);
   }
 };
 
@@ -19,7 +19,7 @@ struct Bar : virtual Foo {
 
 int main() {
   delete [] new Bar[1];
-  std::abort();
+  abort();
 }
 
 

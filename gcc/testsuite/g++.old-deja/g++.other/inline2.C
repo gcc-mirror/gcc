@@ -7,5 +7,5 @@
 int main()
 {
   double foo = 4.5;
-  if (abs (0.5-abs (foo-0.5)) < 1e-10) foo+=1;
+  if (std::abs (0.5-std::abs (foo-0.5)) < 1e-10) foo+=1;
 }

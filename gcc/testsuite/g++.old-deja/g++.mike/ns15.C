@@ -17,7 +17,7 @@ int cmp_d(const R* a, const R* b) {
 }
 
 namespace CXX {
-  template<class T, int i1, int i2>
+  template<class T, long i1, long i2>
     inline void qsort (T b[i1][i2], int (*cmp)(const T*, const T*)) {
     ::qsort ((void*)b, i1*i2, sizeof(T), (int (*)(const void *, const void *))cmp);
   }

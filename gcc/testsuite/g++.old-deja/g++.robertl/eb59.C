@@ -7,6 +7,8 @@
 #include <functional>
 #endif
 
+using namespace std;
+
 template<class R> int p( int val, R& r )
 {
    return val + r;

@@ -6,7 +6,7 @@
 // Message-ID: <92Sep3.220137edt.30@jarvis.csri.toronto.edu>
 
 #include <complex>
-typedef complex<double> Complex;
+typedef std::complex<double> Complex;
 #include <stdio.h>
 
 class Vector {

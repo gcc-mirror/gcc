@@ -30,9 +30,13 @@
 
 // Special g++ Options:
 
+#include <limits.h>
+
 int main ();
 
+#if INT_MAX > 32767
 short s = (short) &main;	// WARNING - small integer
+#endif
 char c = (char) &main;		// WARNING - small integer
 
 int main () { return 0; }

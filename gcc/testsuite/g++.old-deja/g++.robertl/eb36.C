@@ -1,4 +1,5 @@
 #include <vector>
+using namespace std;
 
 template <typename T=float> class foo {
 public:

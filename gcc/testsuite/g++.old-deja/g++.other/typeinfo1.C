@@ -7,7 +7,7 @@ struct S {
 };
 
 void f(S s);
-void f(type_info);
+void f(std::type_info);
 
 void g()
 {

@@ -16,7 +16,7 @@ get_stat() {
   unsigned long bit = 1;
   unsigned long sigignore = 0;
   int i = 0;
-  switch((unsigned long) (*p)->sigaction[i].sa_handler)
+  switch((__SIZE_TYPE__) (*p)->sigaction[i].sa_handler)
     {
     case 1:
       sigignore |= bit;

@@ -4,16 +4,16 @@ int c, d;
 class Foo 
 {
 public:
-   Foo() { printf("Foo() 0x%08lx\n", (unsigned long)this); ++c; }
-   Foo(Foo const &) { printf("Foo(Foo const &) 0x%08lx\n", (unsigned long)this); }
-   ~Foo() { printf("~Foo() 0x%08lx\n", (unsigned long)this); ++d; }
+   Foo() { printf("Foo() 0x%08lx\n", (__SIZE_TYPE__)this); ++c; }
+   Foo(Foo const &) { printf("Foo(Foo const &) 0x%08lx\n", (__SIZE_TYPE__)this); }
+   ~Foo() { printf("~Foo() 0x%08lx\n", (__SIZE_TYPE__)this); ++d; }
 };
 
 // Bar creates constructs a temporary Foo() as a default
 class Bar 
 {
 public:
-   Bar(Foo const & = Foo()) { printf("Bar(Foo const &) 0x%08lx\n", (unsigned long)this); }
+   Bar(Foo const & = Foo()) { printf("Bar(Foo const &) 0x%08lx\n", (__SIZE_TYPE__)this); }
 };
 
 void fakeRef(Bar *)

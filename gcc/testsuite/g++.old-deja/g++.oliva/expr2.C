@@ -2,11 +2,6 @@
 
 // by Alexandre Oliva <aoliva@cygnus.com>
 
-// execution test - XFAIL *-*-*
-
-extern "C" void abort (void);
-extern "C" void exit (int);
-
 int i, j;
 
 const int &f(const int& I, const int& J) {
@@ -15,7 +10,5 @@ const int &f(const int& I, const int& J) {
 }
 
 int main () {
-  if (&f(i, j) != &j)
-    abort ();
-  exit (0);
+  return (&f(i, j) != &j);
 }

@@ -20,7 +20,7 @@ private:
       _eb91_u_int8_t c[2];
     } val;
     val.i = x;
-    swap(val.c[0], val.c[1]);
+    std::swap(val.c[0], val.c[1]);
     return val.i;
   };
 
@@ -31,7 +31,7 @@ private:
       _eb91_int8_t c[2];
     } val;
     val.i = x;
-    swap(val.c[0], val.c[1]);
+    std::swap(val.c[0], val.c[1]);
     return val.i;
   };
 public:

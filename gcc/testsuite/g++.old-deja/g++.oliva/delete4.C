@@ -10,7 +10,7 @@ extern "C" void exit(int);
 
 struct Foo {
   ~Foo() {
-    std::exit(0);
+    exit(0);
   }
 };
 
@@ -23,7 +23,7 @@ struct Baz {
 
 int main() {
   Baz();
-  std::abort();
+  abort();
 }
 
 

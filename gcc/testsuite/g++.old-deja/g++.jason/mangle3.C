@@ -3,17 +3,17 @@
 
 int main()
 {
-  char ArrA[10][10][20][30],
-       ArrB[10][10][20][30];
+  char ArrA[1][1][2][3],
+       ArrB[1][1][2][3];
 
-  void HitMe(char [10][10][20][30], char [10][10][20][30]);
+  void HitMe(char [1][1][2][3], char [1][1][2][3]);
 
   HitMe(ArrA, ArrB);
 
   return 0;
 }
 
-void HitMe(char A[10][10][20][30], char B[10][10][20][30])
+void HitMe(char A[1][1][2][3], char B[1][1][2][3])
 {
   return;
 }
