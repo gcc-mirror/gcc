@@ -1,3 +1,7 @@
+2001-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* config-ml.in: Handle GCJ and GCJFLAGS.
+
 2001-03-10  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* MAINTAINERS: Added Stan Shebs as new maintainer for Objective-C.
