@@ -1,3 +1,8 @@
+2005-01-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/iris6.h (ENDFILE_SPEC): Don't link in irix-csr.o if
+	either -ffast-math or -funsafe-math-optimizations is in use.
+
 2005-01-26  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/19293
