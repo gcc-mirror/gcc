@@ -4336,8 +4336,15 @@ init_emit_once (line_numbers)
 	  rtx tem = rtx_alloc (CONST_DOUBLE);
 	  union real_extract u;
 
-	  memset ((char *) &u, 0, sizeof u);  /* Zero any holes in a structure.  */
+	  /* Zero any holes in a structure.  */
+	  memset ((char *) &u, 0, sizeof u);
 	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
+
+	  /* Avoid trailing garbage in the rtx.  */
+	  if (sizeof (u) < sizeof (HOST_WIDE_INT))
+	    CONST_DOUBLE_LOW (tem) = 0;
+	  if (sizeof (u) < 2 * sizeof (HOST_WIDE_INT))
+	    CONST_DOUBLE_HIGH (tem) = 0;
 
 	  memcpy (&CONST_DOUBLE_LOW (tem), &u, sizeof u);
 	  CONST_DOUBLE_MEM (tem) = cc0_rtx;

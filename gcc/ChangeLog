@@ -1,3 +1,8 @@
+2001-05-21  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (init_emit_once): Zero unused memory in a
+	CONST_DOUBLE.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (type_num_arguments): Declare it.
