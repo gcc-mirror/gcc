@@ -20,55 +20,49 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DECSTATION
 #define OSF_OS
 
+#include "halfpic.h"
+
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD"
 
-#define ASM_SPEC	"%{mmips-as:					\
-				%{pipe:%e:-pipe not supported}		\
-				%{EL} %{!EL:-EL}			\
-				%{EB: %e-EB not supported}		\
-				%{!mrnames: -nocpp}			\
-				%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}	\
-				%{g} %{g0} %{g1} %{g2} %{g3}		\
-				%{K} %{Q}}				\
-		 	 %{v*: -v}					\
-			 %{G*}"
+#define ASM_SPEC	"\
+%{mmips-as: \
+	%{pipe:%e:-pipe not supported} \
+	%{EL} %{!EL:-EL} \
+	%{EB: %e-EB not supported} \
+	%{!mrnames: -nocpp} \
+	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
+	%{g} %{g0} %{g1} %{g2} %{g3} \
+	%{K} %{Q}} \
+	%{v*: -v} \
+	%{G*}"
 
-#define ASM_FINAL_SPEC "%{mmips-as: %{!mno-mips-tfile:			\
-				\n mips-tfile %{v*: -v} %{d*}		\
-					%{K: -I %b.o~} 			\
-					%{!K: %{save-temps: -I %b.o~}}	\
-					%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
-					%{.s:%i} %{!.s:%g.s}}}"
+#define ASM_FINAL_SPEC "\
+%{mmips-as: %{!mno-mips-tfile: \
+	\n mips-tfile %{v*: -v} %{d*} \
+			%{K: -I %b.o~} \
+			%{!K: %{save-temps: -I %b.o~}} \
+			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
+			%{.s:%i} %{!.s:%g.s}}}"
 
-#define CPP_SPEC	"%{.S:	-D__LANGUAGE_ASSEMBLY__			\
-				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
-			 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.cxx:-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.m:	-D__LANGUAGE_OBJECTIVE_C__		\
-				-D_LANGUAGE_OBJECTIVE_C			\
-				%{!ansi:-DLANGUAGE_OBJECTIVE_C}}	\
-			 %{!.S:	-D__LANGUAGE_C__			\
-				-D_LANGUAGE_C				\
-				%{!ansi:-DLANGUAGE_C}}"
+#define CPP_SPEC "\
+%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-#define LINK_SPEC	"%{G*}						\
-			 %{mmips-as:					\
-				%{EL} %{!EL: -EL}			\
-				%{EB: %e-EB not supported}		\
-				%{bestGnum}}				\
-			 %{!mmips-as:					\
-			 	%{v*: -v}				\
-				%{pic-none: -noshrlib} %{noshrlib}	\
-				%{!pic-none: -warn_nopic}		\
-				%{nostdlib} %{glue}}"
+#define LINK_SPEC "\
+%{G*} \
+%{mmips-as: \
+	%{EL} %{!EL: -EL} \
+	%{EB: %e-EB not supported} \
+	%{bestGnum}} \
+%{!mmips-as: \
+ 	%{v*: -v} \
+	%{pic-none: -noshrlib} %{noshrlib} \
+	%{!pic-none: -warn_nopic} \
+	%{nostdlib} %{glue}}"
 
 /* For now, force static libraries instead of shared, but do so that
    does not use -noshrlib, since the old linker does not provide it.  */
@@ -88,8 +82,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Specify size_t, ptrdiff_t, and wchar_t types.  */
 #define SIZE_TYPE	"long unsigned int"
-#define PTRDIFF_TYPE	"long int"
-#define WCHAR_TYPE	"long unsigned int"
+#define PTRDIFF_TYPE	"int"
+#define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 #if 0
@@ -111,15 +105,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */
 #define HAVE_ATEXIT
-
-/* If defined, a C string constant for the assembler operation to
-   identify the following data as initialization code.  If not
-   defined, GNU CC will assume such a section does not exist.
-
-   OSF/rose doesn't presently have an init section, but this macro
-   also controls whether or not __main is called from main, collect
-   will however build an initialization section directly.  */
-
-#define INIT_SECTION_ASM_OP ".init"
 
 #include "mips.h"
