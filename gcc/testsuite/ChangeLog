@@ -1,3 +1,7 @@
+2004-12-16  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/stabs-1.m: New test.
+
 2004-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/visibility-c.c: Change compile to
