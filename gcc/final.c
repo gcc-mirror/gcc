@@ -1686,7 +1686,15 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      }
 
 	    for (i = 1; i < XVECLEN (body, 0); i++)
-	      final_scan_insn (XVECEXP (body, 0, i), file, 0, prescan, 1);
+	      {
+		rtx insn = XVECEXP (body, 0, i);
+		rtx next = NEXT_INSN (insn);
+		/* We loop in case any instruction in a delay slot gets
+		   split.  */
+		do
+		  insn = final_scan_insn (insn, file, 0, prescan, 1);
+		while (insn != next);
+	      }
 #ifdef DBR_OUTPUT_SEQEND
 	    DBR_OUTPUT_SEQEND (file);
 #endif
