@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 3.4.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-07-01 11:41-0700\n"
-"PO-Revision-Date: 2004-10-04 10:20+0100\n"
+"PO-Revision-Date: 2004-10-19 10:20+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -264,7 +264,7 @@ msgstr "Wert eines array-Typs anstelle des geforderten Skalars verwendet"
 #. about this since it is so bad.
 #: c-common.c:2645
 msgid "the address of `%D', will always evaluate as `true'"
-msgstr "die Adresse von »%D« wird immer zu »true« auswerten"
+msgstr "die Adresse von »%D« wird immer zu »wahr« auswerten"
 
 #: c-common.c:2739 f/com.c:14874
 msgid "suggest parentheses around assignment used as truth value"
@@ -309,7 +309,7 @@ msgstr "zu viele Argumente für Funktion »%s«"
 #: c-common.c:3670
 #, c-format
 msgid "non-floating-point argument to function `%s'"
-msgstr "nicht-Gleitkomma-Argument für Funktion »%s«"
+msgstr "Nicht-Gleitkomma-Argument für Funktion »%s«"
 
 #: c-common.c:3897
 msgid "pointers are not permitted as case values"
@@ -441,7 +441,7 @@ msgstr "%JAttribut »%E« kann nur auf Funktionen angewandt werden"
 
 #: c-common.c:4973 c-common.c:5019
 msgid "%Jcan't set '%E' attribute after definition"
-msgstr "%Jkann Attribut »%E« nicht nach der Definition setzen"
+msgstr "%JAttribut »%E« kann nicht nach der Definition gesetzt werden"
 
 #: c-common.c:5095
 #, c-format
@@ -522,7 +522,7 @@ msgstr "%s vor \"%s\""
 #: c-common.c:5895
 #, c-format
 msgid "%s before '%s' token"
-msgstr "%s vor »%s«"
+msgstr "%s vor »%s«-Zeichen"
 
 #. Use `%s' to print the string in case there are any escape
 #. characters in the message.
@@ -1160,7 +1160,7 @@ msgstr "ISO-C verbietet qualifiziertes void als Funktions-Rückgabetypen"
 
 #: c-decl.c:4031
 msgid "type qualifiers ignored on function return type"
-msgstr "Typkennzeichner ignoriert an Funktions-Rückgabewert"
+msgstr "Typkennzeichner an Funktions-Rückgabewert ignoriert"
 
 #: c-decl.c:4060 c-decl.c:4146 c-decl.c:4270 c-decl.c:4356
 msgid "ISO C forbids qualified function types"
@@ -1332,7 +1332,7 @@ msgstr "%Jflexibles Feld-Element nicht am Ende von struct"
 
 #: c-decl.c:5025
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "%Jlexibler Feld-Element in ansonsten leerem struct"
+msgstr "%Jflexibles Feld-Element in ansonsten leerem struct"
 
 #: c-decl.c:5032
 msgid "%Jinvalid use of structure with flexible array member"
@@ -2903,7 +2903,7 @@ msgstr "ungültiger L-Wert in unärem »&«"
 #: c-typeck.c:2534
 #, c-format
 msgid "attempt to take address of bit-field structure member `%s'"
-msgstr "Versuch, die Adresse des Bitfeld-Element »%s« einer Struktur zu verwenden"
+msgstr "Versuch, die Adresse des Bitfeld-Elementes »%s« einer Struktur zu verwenden"
 
 #: c-typeck.c:2668
 msgid "use of conditional expressions as lvalues is deprecated"
@@ -2915,7 +2915,7 @@ msgstr "Verwendung zusammengesetzter Ausdrücke als L-Werte ist veraltet"
 
 #: c-typeck.c:2674
 msgid "use of cast expressions as lvalues is deprecated"
-msgstr "die Verwendung von cast-Ausdrücken als L-Werte ist veraltet"
+msgstr "Verwendung von cast-Ausdrücken als L-Werte ist veraltet"
 
 #: c-typeck.c:2689
 #, c-format
@@ -3011,7 +3011,7 @@ msgstr "Typkonvertierung in union-Typ von nicht in union vorhandenem Typen"
 
 #: c-typeck.c:3105
 msgid "cast adds new qualifiers to function type"
-msgstr "Typkonvertierung fügt neue Typqualifizierer zu Funktionstypen hinzu"
+msgstr "Typkonvertierung fügt neue Typqualifizierer zu Funktionstyp hinzu"
 
 #. There are qualifiers present in IN_OTYPE that are not
 #. present in IN_TYPE.
@@ -3717,7 +3717,7 @@ msgstr "interner Fehler"
 
 #: collect2.c:894
 msgid "no arguments"
-msgstr "Keiner Argumente"
+msgstr "Keine Argumente"
 
 #: collect2.c:1226 collect2.c:1374 collect2.c:1409
 #, c-format
@@ -4154,7 +4154,7 @@ msgstr "ungültige Ziffer »%c« in Oktal-Konstante"
 
 #: cppexp.c:218
 msgid "use of C99 hexadecimal floating constant"
-msgstr "Verwendung von C99 hexadezimaler Gleitkommakonstante"
+msgstr "Verwendung von hexadezimaler C99-Gleitkommakonstante"
 
 #: cppexp.c:227
 msgid "exponent has no digits"
@@ -4206,7 +4206,7 @@ msgstr "Operator »defined« erfordert einen Bezeichner"
 #: cppexp.c:485
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
-msgstr "(»%s« ist ein alternatives Token for »%s« in C++)"
+msgstr "(»%s« ist ein alternatives Token für »%s« in C++)"
 
 #: cppexp.c:495
 msgid "this use of \"defined\" may not be portable"
@@ -4342,7 +4342,7 @@ msgstr "Präprozessorarithmetik hat maximale Präzision von %lu Bits; Ziel erfor
 
 #: cppinit.c:398
 msgid "CPP arithmetic must be at least as precise as a target int"
-msgstr "CPP-Arithmetik muss mindestens so genau sein wie das Ziel int"
+msgstr "CPP-Arithmetik muss mindestens so genau wie das Ziel int sein"
 
 #: cppinit.c:401
 msgid "target char is less than 8 bits wide"
@@ -4419,7 +4419,7 @@ msgstr "#%s ist eine Erweiterung des GCC"
 
 #: cpplib.c:316
 msgid "suggest not using #elif in traditional C"
-msgstr "empfehle, in traditionellem C nicht #elif zu verwenden"
+msgstr "es wird empfohlen, in traditionellem C nicht #elif zu verwenden"
 
 #: cpplib.c:319
 #, c-format
@@ -4429,7 +4429,7 @@ msgstr "traditionelles C ignoriert #%s mit eingerücktem #"
 #: cpplib.c:323
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
-msgstr "empfehle, #%s vor traditionellem C mit # zu verbergen"
+msgstr "es wird empfohlen, #%s vor traditionellem C mit # zu verbergen"
 
 #: cpplib.c:345
 msgid "embedding a directive within macro arguments is not portable"
@@ -4773,11 +4773,11 @@ msgstr "DW_LOC_OP %s nicht implementiert\n"
 
 #: emit-rtl.c:1155
 msgid "can't access real part of complex value in hard register"
-msgstr "kann nicht auf realen Teil des komplexen Wertes im festen Register zugreifen"
+msgstr "kann nicht auf Realteil des komplexen Wertes im festen Register zugreifen"
 
 #: emit-rtl.c:1182
 msgid "can't access imaginary part of complex value in hard register"
-msgstr "kann nicht auf imaginären Teil des komplexen Wertes im festen Register zugreifen"
+msgstr "kann nicht auf Imaginärteil des komplexen Wertes im festen Register zugreifen"
 
 #: emit-rtl.c:2327
 msgid "Invalid rtl sharing found in the insn"
@@ -5478,7 +5478,7 @@ msgstr "Sprache %s nicht erkannt"
 
 #: gcc.c:6580
 msgid "internal gcc abort"
-msgstr "interner Abruch des gcc"
+msgstr "interner Abbruch des gcc"
 
 #: gcov.c:384
 msgid "Internal gcov abort.\n"
@@ -5715,7 +5715,7 @@ msgstr "Keine Zweige\n"
 #: gcov.c:1412
 #, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr "%s von %d Aufrufe ausgeführt\n"
+msgstr "%s von %d Aufruf(en) ausgeführt\n"
 
 #: gcov.c:1416
 msgid "No calls\n"
@@ -6000,7 +6000,7 @@ msgstr "ungültiger Wert für --param: »%s«"
 
 #: opts.c:1639
 msgid "target system does not support debug output"
-msgstr "Zielsystem unterstützt nicht Testausgaben"
+msgstr "Zielsystem unterstützt keine Testausgaben"
 
 #: opts.c:1646
 #, c-format
@@ -7313,11 +7313,11 @@ msgstr "Die Höchstzahl der insns einer geschälten Schleife, die nur einmal rol
 
 #: params.def:186
 msgid "The maximum number of insns of an unswitched loop"
-msgstr ""
+msgstr "Die Höchstzahl der insns einer ungeschalteten Schleife"
 
 #: params.def:191
 msgid "The maximum number of unswitchings in a single loop"
-msgstr ""
+msgstr "Die Höchstzahl der Abschaltungen in einer einzelnen Schleife"
 
 #: params.def:196
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
