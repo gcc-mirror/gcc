@@ -551,6 +551,14 @@ m68hc11_small_indexed_indirect_p (operand, mode)
 {
   rtx base, offset;
 
+  if (GET_CODE (operand) == REG && reload_in_progress
+      && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+      && reg_equiv_memory_loc[REGNO (operand)])
+    {
+      operand = reg_equiv_memory_loc[REGNO (operand)];
+      operand = eliminate_regs (operand, 0, NULL_RTX);
+    }
+
   if (GET_CODE (operand) != MEM)
     return 0;
 
@@ -561,8 +569,7 @@ m68hc11_small_indexed_indirect_p (operand, mode)
   if (PUSH_POP_ADDRESS_P (operand))
     return 1;
 
-  if (!register_indirect_p (operand, mode,
-                            (reload_completed | reload_in_progress)))
+  if (!register_indirect_p (operand, mode, reload_completed))
     return 0;
 
   if (TARGET_M6812 && GET_CODE (operand) == PLUS
@@ -570,6 +577,12 @@ m68hc11_small_indexed_indirect_p (operand, mode)
     {
       base = XEXP (operand, 0);
       offset = XEXP (operand, 1);
+
+      /* The offset can be a symbol address and this is too big
+         for the operand constraint.  */
+      if (GET_CODE (base) != CONST_INT && GET_CODE (offset) != CONST_INT)
+        return 0;
+
       if (GET_CODE (base) == CONST_INT)
 	offset = base;
 
@@ -853,7 +866,7 @@ tst_operand (operand, mode)
      rtx operand;
      enum machine_mode mode;
 {
-  if (GET_CODE (operand) == MEM)
+  if (GET_CODE (operand) == MEM && reload_completed == 0)
     {
       rtx addr = XEXP (operand, 0);
       if (m68hc11_auto_inc_p (addr))
@@ -1010,6 +1023,7 @@ symbolic_memory_operand (op, mode)
       return 1;
 
     case CONST:
+      op = XEXP (op, 0);
       return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);

@@ -1275,10 +1275,14 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
    a mode offset to access the lowest part of the data.
    (For example, for an SImode, the last valid offset is 252.) */
 #define VALID_CONSTANT_OFFSET_P(X,MODE)		\
-((GET_CODE (X) == CONST_INT) &&			\
- ((INTVAL (X) >= VALID_MIN_OFFSET)		\
-    && ((INTVAL (X) <= VALID_MAX_OFFSET		\
-		- (HOST_WIDE_INT) (GET_MODE_SIZE (MODE) + 1)))))
+(((GET_CODE (X) == CONST_INT) &&			\
+  ((INTVAL (X) >= VALID_MIN_OFFSET)		\
+     && ((INTVAL (X) <= VALID_MAX_OFFSET		\
+		- (HOST_WIDE_INT) (GET_MODE_SIZE (MODE) + 1))))) \
+|| (TARGET_M6812 \
+    && ((GET_CODE (X) == SYMBOL_REF) \
+        || GET_CODE (X) == LABEL_REF \
+        || GET_CODE (X) == CONST)))
 
 /* This is included to allow stack push/pop operations. Special hacks in the
    md and m6811.c files exist to support this.  */
