@@ -101,11 +101,10 @@
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 ;; millicode call delay slot description.  Note it disallows delay slot
-;; when TARGET_PORTABLE_RUNTIME or TARGET_MILLICODE_LONG_CALLS is true.
+;; when TARGET_PORTABLE_RUNTIME.
 (define_delay (eq_attr "type" "milli")
   [(and (eq_attr "in_call_delay" "true")
-	(and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	     (eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS") (const_int 0))))
+	(eq (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0)))
    (nil) (nil)])
 
 ;; Unconditional branch, return and other similar instructions.
