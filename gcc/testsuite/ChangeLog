@@ -1,3 +1,11 @@
+2004-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14724
+	* g++.dg/init/goto1.C: New test.
+
+	PR c++/14763
+	* g++.dg/template/defarg4.C: New test.
+
 2004-03-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/14669

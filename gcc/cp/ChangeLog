@@ -1,3 +1,12 @@
+2004-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14724
+	* decl.c (start_decl_1): Do not decide whether or not to create a
+	new cleanup level until after the type has been completed.
+
+	PR c++/14763
+	* pt.c (tsubst_default_argument): Clear current_function_decl.
+
 2004-03-28  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/14639
