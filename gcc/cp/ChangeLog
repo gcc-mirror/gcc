@@ -1,3 +1,33 @@
+2003-10-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Breack out decl.c (3/n)
+	* name-lookup.c: Include flags.h
+	(lookup_name_current_level): Make static.
+	(add_decl_to_level): Likewise.
+	(push_local_binding): Likewise.
+	(push_overloaded_decl): Likewise.
+	(lookup_using_namespace): Likewise.
+	(qualified_lookup_using_namespace): Likewise.
+	(lookup_type_current_level): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(namespace_ancestor): Likewise.
+	(push_using_directive): Likewise.
+	* decl.c (pushdecl): Move to name-lookup.c.
+	(pushdecl_top_level_1): Likewise.
+	(pushdecl_top_level): Likewise.
+	(pushdecl_top_level_and_finish): Likewise.
+	(maybe_push_decl): Likewise.
+	(push_using_decl): Likewise.
+	(push_overloaded_decl): Likewise.
+	(make_anon_name): Likewise.
+	(anon_cnt): Likewise.
+	(clear_anon_tags): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(check_for_out_of_scope_variable): Likewise.
+	* Make-lang.in (cp/name-lookup.o): Depend on flags.h.
+	* decl.c (warn_extern_redeclared_static): Export.
+	* cp-tree.h (warn_extern_redeclared_static): Declare.
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Replace uses of $(target_alias) with

@@ -3662,7 +3662,6 @@ extern void fixup_anonymous_aggr                (tree);
 extern int check_static_variable_definition     (tree, tree);
 extern tree compute_array_index_type		(tree, tree);
 extern tree check_default_argument              (tree, tree);
-extern tree push_overloaded_decl		(tree, int);
 extern int vtable_decl_p                        (tree, void *);
 extern int vtype_decl_p                         (tree, void *);
 extern int sigtable_decl_p                      (tree, void *);
@@ -3685,6 +3684,7 @@ extern tmpl_spec_kind current_tmpl_spec_kind    (int);
 extern tree cp_fname_init			(const char *);
 extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
 extern tree cxx_builtin_type_decls              (void);
+extern void warn_extern_redeclared_static (tree, tree);
 
 extern bool have_extern_spec;
 extern GTY(()) tree last_function_parms;
