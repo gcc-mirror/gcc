@@ -1,5 +1,10 @@
 Fri May 18 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* genrecog.c (enum decision_type): Add DT_elt_zero-wide_safe.
+	(add_to_sequence): Make that decision type.
+	(maybe_both_true_2, nodes_identical_1, factor_tests): Use it.
+	(write_switch, write_cond, debug_decision_2): Likewise.
+
 	* dbxout.c (dbxout_type): Use host_integerp and fix typo in testing
 	for INTEGER_TYPE.
 	(dbxout_symbol, case TYPE_DECL): Don't generate tag for records of

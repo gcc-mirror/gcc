@@ -84,12 +84,13 @@ struct decision_test
   struct decision_test *next;
 
   /* These types are roughly in the order in which we'd like to test them.  */
-  enum decision_type {
-    DT_mode, DT_code, DT_veclen,
-    DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide,
-    DT_veclen_ge, DT_dup, DT_pred, DT_c_test, 
-    DT_accept_op, DT_accept_insn
-  } type;
+  enum decision_type
+    {
+      DT_mode, DT_code, DT_veclen,
+      DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide, DT_elt_zero_wide_safe,
+      DT_veclen_ge, DT_dup, DT_pred, DT_c_test, 
+      DT_accept_op, DT_accept_insn
+    } type;
 
   union
   {
@@ -956,10 +957,16 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	}
       else if (fmt[i] == 'w')
 	{
+	  /* If this value actually fits in an int, we can use a switch
+	     statement here, so indicate that.  */
+	  enum decision_type type
+	    = ((int) XWINT (pattern, i) == XWINT (pattern, i))
+	      ? DT_elt_zero_wide_safe : DT_elt_zero_wide;
+
 	  if (i != 0)
 	    abort ();
 
-	  test = new_decision_test (DT_elt_zero_wide, &place);
+	  test = new_decision_test (type, &place);
 	  test->u.intval = XWINT (pattern, i);
 	}
       else if (fmt[i] == 'E')
@@ -1055,6 +1062,7 @@ maybe_both_true_2 (d1, d2)
 	case DT_elt_zero_int:
 	case DT_elt_one_int:
 	case DT_elt_zero_wide:
+	case DT_elt_zero_wide_safe:
 	  return d1->u.intval == d2->u.intval;
 
 	default:
@@ -1278,6 +1286,7 @@ nodes_identical_1 (d1, d2)
     case DT_elt_zero_int:
     case DT_elt_one_int:
     case DT_elt_zero_wide:
+    case DT_elt_zero_wide_safe:
       return d1->u.intval == d2->u.intval;
 
     case DT_accept_op:
@@ -1488,7 +1497,7 @@ factor_tests (head)
 	  && type != DT_veclen
 	  && type != DT_elt_zero_int
 	  && type != DT_elt_one_int
-	  && type != DT_elt_zero_wide)
+	  && type != DT_elt_zero_wide_safe)
 	continue;
 
       /* If we'd been performing more than one test, create a new node
@@ -1858,12 +1867,8 @@ write_switch (start, depth)
 	   || type == DT_veclen
 	   || type == DT_elt_zero_int
 	   || type == DT_elt_one_int
-	   || type == DT_elt_zero_wide)
+	   || type == DT_elt_zero_wide_safe)
     {
-      /* The argument is casted to int.  In case HOST_WIDE_INT is more exact,
-         we can't safely construct switch statement over it.  */
-      if (type == DT_elt_zero_wide && HOST_BITS_PER_WIDE_INT > sizeof (int) * CHAR_BIT)
-	  return p;
       printf ("  switch (");
       switch (type)
 	{
@@ -1879,7 +1884,7 @@ write_switch (start, depth)
 	case DT_elt_one_int:
 	  printf ("XINT (x%d, 1)", depth);
 	  break;
-	case DT_elt_zero_wide:
+	case DT_elt_zero_wide_safe:
 	  /* Convert result of XWINT to int for portability since some C
 	     compilers won't do it and some will.  */
 	  printf ("(int) XWINT (x%d, 0)", depth);
@@ -1914,6 +1919,7 @@ write_switch (start, depth)
 	    case DT_elt_zero_int:
 	    case DT_elt_one_int:
 	    case DT_elt_zero_wide:
+	    case DT_elt_zero_wide_safe:
 	      printf (HOST_WIDE_INT_PRINT_DEC, p->tests->u.intval);
 	      break;
 	    default:
@@ -1970,6 +1976,7 @@ write_cond (p, depth, subroutine_type)
       break;
 
     case DT_elt_zero_wide:
+    case DT_elt_zero_wide_safe:
       printf ("XWINT (x%d, 0) == ", depth);
       printf (HOST_WIDE_INT_PRINT_DEC, p->u.intval);
       break;
@@ -2740,6 +2747,10 @@ debug_decision_2 (test)
       break;
     case DT_elt_zero_wide:
       fprintf (stderr, "elt0_w=");
+      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
+      break;
+    case DT_elt_zero_wide_safe:
+      fprintf (stderr, "elt0_ws=");
       fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
       break;
     case DT_veclen_ge:
