@@ -938,7 +938,12 @@ fix = {
 
 
 /*
- * Fix these files to use the same types that we think they should.
+ * Fix these files to use the types we think they should for
+ * ptrdiff_t, size_t, and wchar_t.
+ *
+ * This defines the types in terms of macros predefined by our 'cpp'.
+ * This is supposedly necessary for glibc's handling of these types.
+ * It's probably not necessary for anyone else, but it doesn't hurt.
  */
 fix = {
     hackname  = gnu_types;

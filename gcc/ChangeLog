@@ -1,3 +1,7 @@
+2003-07-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (gnu_types): Improve comment.
+
 2003-07-12  Andreas Jaeger  <aj@suse.de>
 
 	* fp-test.c (main): Use ISO C90 prototype.
