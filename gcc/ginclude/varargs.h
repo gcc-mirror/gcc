@@ -155,13 +155,13 @@ typedef __gnuc_va_list va_list;
 /* Michael Eriksson <mer@sics.se> at Thu Sep 30 11:00:57 1993:
    Sequent defines _VA_LIST_ in <machine/machtypes.h> to be the type to
    use for va_list (``typedef _VA_LIST_ va_list'') */
-#if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__) || defined (__sequent__)
+#if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__) || defined (__sequent__) || defined (__FreeBSD__)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
 /* The macro _VA_LIST_T_H is used in the Bull dpx2  */
 #ifndef _VA_LIST_T_H
 #define _VA_LIST_T_H
-#if !(defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__) || defined (__sequent__))
+#if !(defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__) || defined (__sequent__) || defined (__FreeBSD__))
 #define _VA_LIST_
 #endif
 #define _VA_LIST
