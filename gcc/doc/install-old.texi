@@ -1,20 +1,30 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
-@c For copying conditions, see the file gcc.texi.
+@c For copying conditions, see the file install.texi.
 
-@node Installation
-@chapter Installing GNU CC
-@cindex installing GNU CC
+@ifnothtml
+@comment node-name,     next,          previous, up
+@node    Old, GNU Free Documentation License, Specific, Top
+@end ifnothtml
+@html
+<h1 align="center">Old installation documentation</h1>
+@end html
+@ifnothtml
+@chapter Old installation documentation
+@end ifnothtml
 
 Note most of this information is out of date and superseded by the
-new GCC install manual @file{gcc/doc/install.texi}.  It is
-provided for historical reference only.
+previous chapters of this manual.  It is provided for historical
+reference only, because of a lack of volunteers to merge it into the
+main manual.
 
+@ifnothtml
 @menu
 * Configurations::    Configurations Supported by GNU CC.
 * Cross-Compiler::   Building and installing a cross-compiler.
 * VMS Install::   See below for installation on VMS.
 @end menu
+@end ifnothtml
 
 Here is the procedure for installing GNU CC on a GNU or Unix system.
 See @ref{VMS Install}, for VMS systems.
@@ -83,8 +93,13 @@ section before proceeding any further with the installation of GNU CC@.
 
 @end enumerate
 
-@node Configurations
+@ifnothtml
+@node Configurations, Cross-Compiler, , Old
 @section Configurations Supported by GNU CC
+@end ifnothtml
+@html
+<h2>@anchor{Configurations}Configurations Supported by GNU CC</h2>
+@end html
 @cindex configurations supported by GNU CC
 
 Here are the possible CPU types:
@@ -192,8 +207,13 @@ things you must know:
 See @ref{VMS Install}, for details on how to install GNU CC on VMS@.
 @end table
 
-@node Cross-Compiler
+@ifnothtml
+@node Cross-Compiler, VMS Install, Configurations, Old
 @section Building and Installing a Cross-Compiler
+@end ifnothtml
+@html
+<h2>@anchor{Cross-Compiler}Building and Installing a Cross-Compiler</h2>
+@end html
 @cindex cross-compiler, installation
 
 GNU CC can function as a cross-compiler for many machines, but not all.
@@ -223,6 +243,7 @@ If you want to link on other than the target machine, you need a
 cross-linker as well.  You also need header files and libraries suitable
 for the target machine that you can install on the host machine.
 
+@ifnothtml
 @menu
 * Steps of Cross::      Using a cross-compiler involves several steps
                           that may be carried out on different machines.
@@ -232,9 +253,15 @@ for the target machine that you can install on the host machine.
                           for a cross-compiler.
 * Build Cross::         Actually compiling the cross-compiler.
 @end menu
+@end ifnothtml
 
-@node Steps of Cross
+@ifnothtml
+@node Steps of Cross, Configure Cross, , Cross-Compiler
 @subsection Steps of Cross-Compilation
+@end ifnothtml
+@html
+<h2>Steps of Cross-Compilation</h2>
+@end html
 
 To compile and run a program using a cross-compiler involves several
 steps:
@@ -262,8 +289,13 @@ since then you can do it all with a single invocation of GNU CC@.  This
 requires a suitable cross-assembler and cross-linker.  For some targets,
 the GNU assembler and linker are available.
 
-@node Configure Cross
+@ifnothtml
+@node Configure Cross, Tools and Libraries, Steps of Cross, Cross-Compiler
 @subsection Configuring a Cross-Compiler
+@end ifnothtml
+@html
+<h2>Configuring a Cross-Compiler</h2>
+@end html
 
 To build GNU CC as a cross-compiler, you start out by running
 @file{configure}.  Use the @option{--target=@var{target}} to specify the
@@ -277,8 +309,13 @@ produces code for an HP 68030 system running BSD on a system that
 ./configure --target=m68k-hp-bsd4.3
 @end smallexample
 
-@node Tools and Libraries
+@ifnothtml
+@node Tools and Libraries, Cross Headers, Configure Cross, Cross-Compiler
 @subsection Tools and Libraries for a Cross-Compiler
+@end ifnothtml
+@html
+<h2>Tools and Libraries for a Cross-Compiler</h2>
+@end html
 
 If you have a cross-assembler and cross-linker available, you should
 install them now.  Put them in the directory
@@ -353,8 +390,13 @@ mget *crt*.o
 quit
 @end example
 
-@node Cross Headers
+@ifnothtml
+@node Cross Headers, Build Cross, Tools and Libraries, Cross-Compiler
 @subsection Cross-Compilers and Header Files
+@end ifnothtml
+@html
+<h2>Cross-Compilers and Header Files</h2>
+@end html
 
 If you are cross-compiling a standalone program or a program for an
 embedded system, then you may not need any header files except the few
@@ -405,8 +447,13 @@ quit
 tar xf tarfile
 @end example
 
-@node Build Cross
+@ifnothtml
+@node Build Cross, , Cross Headers, Cross-Compiler
 @subsection Actually Building the Cross-Compiler
+@end ifnothtml
+@html
+<h2>Actually Building the Cross-Compiler</h2>
+@end html
 
 Now you can proceed just as for compiling a single-machine compiler
 through the step of building stage 1.
@@ -433,8 +480,13 @@ must specify a 68030 as the host when you configure it.
 
 To install the cross-compiler, use @samp{make install}, as usual.
 
-@node VMS Install
+@ifnothtml
+@node VMS Install, , Cross-Compiler, Old
 @section Installing GNU CC on VMS
+@end ifnothtml
+@html
+<h2>@anchor{VMS Install}Installing GNU CC on VMS</h2>
+@end html
 @cindex VMS installation
 @cindex installing GNU CC on VMS
 

@@ -239,13 +239,12 @@ bugs.  It corresponds to GCC version 3.1.
 * G++ and GCC::     You can compile C or C++ programs.
 * Standards::       Language standards supported by GCC.
 * Invoking GCC::    Command options supported by @samp{gcc}.
-* Installation::    How to configure, compile and install GCC (out of date).
 * C Implementation:: How GCC implements the ISO C specification.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
 * Gcov::	    gcov: a GCC test coverage program.
-* Trouble::         If you have trouble installing GCC.
+* Trouble::         If you have trouble using GCC.
 * Bugs::            How, why and where to report bugs.
 * Service::         How to find suppliers of support for GCC.
 * Contributing::    How to contribute to testing and developing GCC.
@@ -286,8 +285,6 @@ bugs.  It corresponds to GCC version 3.1.
 @include standards.texi
 
 @include invoke.texi
-
-@include install-old.texi
 
 @include extend.texi
 
