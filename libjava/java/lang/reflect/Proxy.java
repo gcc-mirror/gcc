@@ -722,8 +722,8 @@ public class Proxy implements Serializable
   private static final class ProxyData
   {
     /**
-     * The package this class is in.  Possibly null, meaning the unnamed
-     * package.
+     * The package this class is in *including the trailing dot* or "" for
+     * the unnamed (aka default) package.
      */
     String pack;
 
@@ -769,18 +769,17 @@ public class Proxy implements Serializable
     }
 
     /**
-     * Return the name of a package given the name of a class.
-     * Returns null if no package.  We use this in preference to
+     * Return the name of a package (including the trailing dot)
+     * given the name of a class.
+     * Returns "" if no package.  We use this in preference to
      * using Class.getPackage() to avoid problems with ClassLoaders
      * that don't set the package.
      */
-    static String getPackage(Class k)
+    private static String getPackage(Class k)
     {
       String name = k.getName();
       int idx = name.lastIndexOf('.');
-      if (idx >= 0)
-	return name.substring(0, idx);
-      return null;
+      return name.substring(0, idx + 1);
     }
 
     /**
@@ -961,8 +960,7 @@ public class Proxy implements Serializable
       // access_flags
       putU2(Modifier.SUPER | Modifier.FINAL | Modifier.PUBLIC);
       // this_class
-      qualName = ((data.pack == null ? "" : data.pack + '.')
-                  + "$Proxy" + data.id);
+      qualName = (data.pack + "$Proxy" + data.id);
       putU2(classInfo(TypeSignature.getEncodingOfClass(qualName, false)));
       // super_class
       putU2(classInfo("java/lang/reflect/Proxy"));
@@ -1325,34 +1323,26 @@ public class Proxy implements Serializable
 
       try
         {
-          // XXX Do we require more native support here?
-
           Class vmClassLoader = Class.forName("java.lang.VMClassLoader");
           Class[] types = {ClassLoader.class, String.class,
                            byte[].class, int.class, int.class,
                            ProtectionDomain.class };
           Method m = vmClassLoader.getDeclaredMethod("defineClass", types);
-
-          // Bypass the security check of setAccessible(true), since this
-          // is trusted code. But note the comment above about the security
-          // risk of doing this outside a synchronized block.
+          // We can bypass the security check of setAccessible(true), since
+	  // we're in the same package.
           m.flag = true;
+
           Object[] args = {loader, qualName, bytecode, new Integer(0),
                            new Integer(bytecode.length),
                            Object.class.getProtectionDomain() };
           Class clazz = (Class) m.invoke(null, args);
-          m.flag = false;
 
           // Finally, initialize the m field of the proxy class, before
           // returning it.
-
-          // No security risk here, since clazz has not been exposed yet,
-          // so user code cannot grab the same reflection object.
           Field f = clazz.getDeclaredField("m");
           f.flag = true;
           // we can share the array, because it is not publicized
           f.set(null, methods);
-          f.flag = false;
 
           return clazz;
         }
