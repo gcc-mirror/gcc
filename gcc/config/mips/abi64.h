@@ -52,14 +52,14 @@ Boston, MA 02111-1307, USA.  */
     {									\
       int regno;							\
       for (regno = FP_REG_FIRST + 20; regno < FP_REG_FIRST + 24; regno++) \
-	call_used_regs[regno] = 1;					\
+	call_really_used_regs[regno] = call_used_regs[regno] = 1;	\
     }									\
   /* odd registers from fp21 to fp31 are now caller saved.  */		\
   if (mips_abi == ABI_N32 || mips_abi == ABI_MEABI)  			\
     {									\
       int regno;							\
       for (regno = FP_REG_FIRST + 21; regno <= FP_REG_FIRST + 31; regno+=2) \
-	call_used_regs[regno] = 1;					\
+	call_really_used_regs[regno] = call_used_regs[regno] = 1;	\
     }									\
 }
 
