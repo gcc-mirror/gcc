@@ -94,8 +94,7 @@ g++.o: $(CONFIG_H) intl.h multilib.h config.status system.h \
   -c g++.c
 
 # Create the compiler driver for g++.
-GXX_OBJS = g++.o g++spec.o choose-temp.o intl.o pexecute.o prefix.o version.o \
-    mkstemp.o
+GXX_OBJS = g++.o g++spec.o intl.o prefix.o version.o 
 g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
@@ -112,9 +111,9 @@ cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 	  -DVERSION=\"$(version)\" cxxmain.c
 
 # Apparently OpenVM needs the -o to be at the beginning of the link line.
-$(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o $(LIBDEPS)
+$(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
-	  cxxmain.o underscore.o getopt.o getopt1.o $(LIBS)
+	  cxxmain.o underscore.o $(LIBS)
 
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/except.c $(srcdir)/cp/input.c $(srcdir)/cp/pt.c \
