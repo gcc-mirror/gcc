@@ -1,5 +1,17 @@
 2002-01-20  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.h: Fix comment formatting.
+	* config/ia64/aix.h: Likewise.
+	* config/ia64/ia64-protos.h: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ia64/ia64intrin.h: Likewise.
+	* config/ia64/linux.h: Likewise.
+	* config/ia64/unwind-aix.c: Likewise.
+	* config/ia64/unwind-ia64.c: Likewise.
+
+2002-01-20  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c: Revise comments about shift code.
 
 2002-01-20  Kazu Hirata  <kazu@hxi.com>

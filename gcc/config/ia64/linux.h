@@ -5,7 +5,7 @@
 
 #define TARGET_VERSION fprintf (stderr, " (IA-64) Linux");
 
-/* This is for -profile to use -lc_p instead of -lc. */
+/* This is for -profile to use -lc_p instead of -lc.  */
 #undef CC1_SPEC
 #define CC1_SPEC "%{profile:-p} %{G*}"
 
