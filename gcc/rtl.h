@@ -1161,14 +1161,12 @@ extern void optimize_save_area_alloca	PARAMS ((rtx));
 extern rtx gen_rtx			PARAMS ((enum rtx_code,
 						 enum machine_mode, ...));
 extern rtvec gen_rtvec			PARAMS ((int, ...));
-
-/* In other files */
-extern rtx rtx_alloc			PARAMS ((RTX_CODE));
-extern rtvec rtvec_alloc		PARAMS ((int));
 extern rtx copy_insn_1			PARAMS ((rtx));
 extern rtx copy_insn			PARAMS ((rtx));
 
 /* In rtl.c */
+extern rtx rtx_alloc			PARAMS ((RTX_CODE));
+extern rtvec rtvec_alloc		PARAMS ((int));
 extern rtx copy_rtx			PARAMS ((rtx));
 
 /* In emit-rtl.c */
