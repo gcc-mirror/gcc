@@ -1,3 +1,8 @@
+2001-08-29  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/alpha/crtbegin.asm: The normal calling convention for alpha is
+	to re-initialize gp using 'ldgp gp,0(ra)' after a jsr instruction.
+
 2001-06-19  Bernd Schmidt  <bernds@redhat.com>
 
 	* regmove.c (optimize_reg_copy_3): Do nothing if previous insn
