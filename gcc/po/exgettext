@@ -167,4 +167,7 @@ $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
-	  --language=c -o po/$package.pot
+	  --language=c -o po/$package.pot.tmp
+# Remove local paths from .pot file.
+sed "s:$srcdir/::g;s:$pwd/::g;" <po/$package.pot.tmp >po/$package.pot
+rm po/$package.pot.tmp
