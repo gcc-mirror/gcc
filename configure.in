@@ -1272,7 +1272,7 @@ fi
 
 # Some systems (e.g., one of the i386-aix systems the gas testers are
 # using) don't handle "\$" correctly, so don't use it here.
-tooldir='$(exec_prefix)'/${target_alias}
+tooldir='${exec_prefix}'/${target_alias}
 build_tooldir=${tooldir}
 
 # Generate a default definition for YACC.  This is used if the makefile can't
