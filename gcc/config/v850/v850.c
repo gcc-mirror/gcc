@@ -3399,13 +3399,6 @@ v850_select_section (tree exp,
 	  break;
         }
     }
-  else if (TREE_CODE (exp) == STRING_CST)
-    {
-      if (! flag_writable_strings)
-	readonly_data_section ();
-      else
-	data_section ();
-    }
   else
     readonly_data_section ();
 }

@@ -1455,10 +1455,6 @@ common_handle_option (size_t scode, const char *arg,
       flag_wrapv = value;
       break;
 
-    case OPT_fwritable_strings:
-      flag_writable_strings = value;
-      break;
-
     case OPT_fzero_initialized_in_bss:
       flag_zero_initialized_in_bss = value;
       break;

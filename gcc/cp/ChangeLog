@@ -1,3 +1,9 @@
+2004-02-23  Zack Weinberg  <zack@codesourcery.com>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+
+	* decl.c (cxx_init_decl_processing): Don't check
+	flag_writable_strings.
+
 2004-02-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/14156

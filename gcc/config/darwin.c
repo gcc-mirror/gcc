@@ -1215,8 +1215,7 @@ machopic_select_section (tree exp, int reloc,
 
   if (TREE_CODE (exp) == STRING_CST
       && ((size_t) TREE_STRING_LENGTH (exp)
-	  == strlen (TREE_STRING_POINTER (exp)) + 1)
-      && ! flag_writable_strings)
+	  == strlen (TREE_STRING_POINTER (exp)) + 1))
     cstring_section ();
   else if ((TREE_CODE (exp) == INTEGER_CST || TREE_CODE (exp) == REAL_CST)
 	   && flag_merge_constants)

@@ -7283,8 +7283,7 @@ mips_select_section (tree decl, int reloc,
 		     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)
-      && TREE_CODE (decl) == STRING_CST
-      && !flag_writable_strings)
+      && TREE_CODE (decl) == STRING_CST)
     /* For embedded position independent code, put constant strings in the
        text section, because the data section is limited to 64K in size.
        For mips16 code, put strings in the text section so that a PC
@@ -7366,7 +7365,6 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
   if (TARGET_MIPS16)
     {
       if (first && TREE_CODE (decl) == STRING_CST
-          && ! flag_writable_strings
           /* If this string is from a function, and the function will
              go in a gnu linkonce section, then we can't directly
              access the string.  This gets an assembler error
@@ -7393,8 +7391,7 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
         SYMBOL_REF_FLAG (symbol) = 1;
       else if (TREE_CODE (decl) == FUNCTION_DECL)
         SYMBOL_REF_FLAG (symbol) = 0;
-      else if (TREE_CODE (decl) == STRING_CST
-               && ! flag_writable_strings)
+      else if (TREE_CODE (decl) == STRING_CST)
         SYMBOL_REF_FLAG (symbol) = 0;
       else
         SYMBOL_REF_FLAG (symbol) = 1;

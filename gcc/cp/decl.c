@@ -3104,11 +3104,6 @@ cxx_init_decl_processing (void)
 
   /* Show we use EH for cleanups.  */
   using_eh_for_cleanups ();
-
-  /* Maintain consistency.  Perhaps we should just complain if they
-     say -fwritable-strings?  */
-  if (flag_writable_strings)
-    flag_const_strings = 0;
 }
 
 /* Generate an initializer for a function naming variable from

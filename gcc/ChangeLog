@@ -1,3 +1,37 @@
+2004-02-23  Zack Weinberg  <zack@codesourcery.com>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+
+	Remove -fwritable-strings.
+	* c-common.c (fix_string_type): Don't check
+	flag_writable_strings.
+	(fix_string_type): Likewise.
+	* c-opts.c (set_std_c89): Don't initialize
+	flag_writable_strings.
+	(set_std_c99): Likewise.
+	* common.opt (fwritable-strings): Remove.
+	* flags.h: Remove the external declaration of
+	flag_writable_strings.
+	* opts.c (common_handle_option) <OPT_fwritable_strings>:
+	Remove.
+	* toplev.c (flag_writable_strings): Remove.
+	(f_options): Remove an entry for writable-strings.
+	* varasm.c (const_hash_1) <STRING_CST>: Don't check
+	flag_writable_strings.
+	(compare_constant) <STRING_CST>: Likewise.
+	(build_constant_desc): Likewise.
+	* config/darwin.c (machopic_select_section): Likewise.
+	* config/arm/arm.c (AOF_ASSEMBLER): Likewise.
+	* config/arm/pe.c (arm_pe_encode_section_info): Likewise.
+	* config/iq2000/iq2000.c (iq2000_select_section): Likewise.
+	* config/mips/mips.c (mips_select_section): Likewise.
+	(mips_encode_section_info): Likewise.
+	* config/pa/pa.c (pa_select_section): Likewise.
+	* config/pa/pa.h (TEXT_SPACE_P): Likewise.
+	* config/v850/v850.c (v850_select_section): Likewise.
+	* doc/invoke.texi (-fwritable-strings): Remove.
+	(-fno-const-strings): Don't mention -fwritable-strings.
+	* doc/trouble.texi: Don't mention -fwritable-strings.
+
 2003-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Update for switch of boehm-gc to autoconf 2.57.

@@ -738,10 +738,6 @@ fwrapv
 Common
 Assume signed arithmetic overflow wraps around
 
-fwritable-strings
-Common
-Store strings in writable data section
-
 fzero-initialized-in-bss
 Common
 Put zero initialized data in the bss section
