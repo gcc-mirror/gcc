@@ -906,6 +906,23 @@ emit_pop_insn (insn, regstack, reg, where)
   rtx pop_insn, pop_rtx;
   int hard_regno;
 
+  /* For complex types take care to pop both halves.  These may survive in
+     CLOBBER and USE expressions.  */
+  if (COMPLEX_MODE_P (GET_MODE (reg)))
+    {
+      rtx reg1 = FP_MODE_REG (REGNO (reg), DFmode);
+      rtx reg2 = FP_MODE_REG (REGNO (reg) + 1, DFmode);
+
+      pop_insn = NULL_RTX;
+      if (get_hard_regnum (regstack, reg1) >= 0)
+         pop_insn = emit_pop_insn (insn, regstack, reg1, where);
+      if (get_hard_regnum (regstack, reg2) >= 0)
+         pop_insn = emit_pop_insn (insn, regstack, reg2, where);
+      if (!pop_insn)
+	abort ();
+      return pop_insn;
+    }
+
   hard_regno = get_hard_regnum (regstack, reg);
 
   if (hard_regno < FIRST_STACK_REG)
@@ -1129,9 +1146,12 @@ move_for_stack_reg (insn, regstack, pat)
 	     stack is not full, and then write the value to memory via
 	     a pop.  */
 	  rtx push_rtx, push_insn;
-	  rtx top_stack_reg = FP_MODE_REG (FIRST_STACK_REG, XFmode);
+	  rtx top_stack_reg = FP_MODE_REG (FIRST_STACK_REG, GET_MODE (src));
 
-	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
+	  if (GET_MODE (src) == TFmode)
+	    push_rtx = gen_movtf (top_stack_reg, top_stack_reg);
+	  else
+	    push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
 	  push_insn = emit_insn_before (push_rtx, insn);
 	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, top_stack_reg,
 						REG_NOTES (insn));
@@ -1443,6 +1463,15 @@ subst_stack_regs_pat (insn, regstack, pat)
 		  {
 		    pat = gen_rtx_SET (VOIDmode,
 				       FP_MODE_REG (REGNO (*dest), SFmode),
+				       nan);
+		    PATTERN (insn) = pat;
+		    move_for_stack_reg (insn, regstack, pat);
+		  }
+		if (! note && COMPLEX_MODE_P (GET_MODE (*dest))
+		    && get_hard_regnum (regstack, FP_MODE_REG (REGNO (*dest), DFmode)) == -1)
+		  {
+		    pat = gen_rtx_SET (VOIDmode,
+				       FP_MODE_REG (REGNO (*dest) + 1, SFmode),
 				       nan);
 		    PATTERN (insn) = pat;
 		    move_for_stack_reg (insn, regstack, pat);

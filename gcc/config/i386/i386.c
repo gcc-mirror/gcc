@@ -6664,8 +6664,9 @@ ix86_expand_fp_movcc (operands)
       /* Similary try to manage result to be first operand of conditional
 	 move. We also don't support the NE comparison on SSE, so try to
 	 avoid it.  */
-      if (rtx_equal_p (operands[0], operands[3])
-	  || GET_CODE (operands[1]) == NE)
+      if ((rtx_equal_p (operands[0], operands[3])
+	   && (!TARGET_IEEE_FP || GET_CODE (operands[1]) != EQ))
+	  || (GET_CODE (operands[1]) == NE && TARGET_IEEE_FP))
 	{
 	  rtx tmp = operands[2];
 	  operands[2] = operands[3];
