@@ -119,6 +119,13 @@ static int combine_successes;
 /* Totals over entire compilation.  */
 
 static int total_attempts, total_merges, total_extras, total_successes;
+
+/* Define a defulat value for REVERSIBLE_CC_MODE.
+   We can never assume that a condition code mode is safe to reverse unless
+   the md tells us so.  */
+#ifndef REVERSIBLE_CC_MODE
+#define REVERSIBLE_CC_MODE(MODE) 0
+#endif
 
 /* Vector mapping INSN_UIDs to cuids.
    The cuids are like uids but increase monotonically always.
@@ -2989,6 +2996,14 @@ subst (x, from, to, in_dest, unique_copy)
 	  rtx cop1 = const0_rtx;
 	  enum rtx_code cond_code = simplify_comparison (NE, &cond, &cop1);
 
+	  /* Simplify the alternative arms; this may collapse the true and 
+	     false arms to store-flag values.  */
+	  true = subst (true, pc_rtx, pc_rtx, 0, 0);
+	  false = subst (false, pc_rtx, pc_rtx, 0, 0);
+
+	  /* Restarting if we generate a store-flag expression will cause
+	     us to loop.  Just drop through in this case.  */
+
 	  /* If the result values are STORE_FLAG_VALUE and zero, we can
 	     just make the comparison operation.  */
 	  if (true == const_true_rtx && false == const0_rtx)
@@ -3010,12 +3025,15 @@ subst (x, from, to, in_dest, unique_copy)
 			   gen_binary (reverse_condition (cond_code), 
 				       mode, cond, cop1));
 	  else
-	    x = gen_rtx (IF_THEN_ELSE, mode,
-			 gen_binary (cond_code, VOIDmode, cond, cop1),
-			 subst (true, pc_rtx, pc_rtx, 0, 0),
-			 subst (false, pc_rtx, pc_rtx, 0, 0));
+	    {
+	      x = gen_rtx (IF_THEN_ELSE, mode,
+			   gen_binary (cond_code, VOIDmode, cond, cop1),
+			   true, false);
+	      goto restart;
+	    }
 
-	  goto restart;
+	  code = GET_CODE (x);
+	  op0_mode = VOIDmode;
 	}
     }
 
@@ -3815,6 +3833,21 @@ subst (x, from, to, in_dest, unique_copy)
       break;
 	  
     case IF_THEN_ELSE:
+      /* Simplify storing of the truth value. */
+      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && XEXP (x, 1) == const_true_rtx
+	  && XEXP (x, 2) == const0_rtx)
+	return gen_binary (GET_CODE (XEXP (x, 0)), mode, XEXP (XEXP (x, 0), 0),
+			   XEXP (XEXP (x, 0), 1));
+      
+      /* Also when the truth value has to be reversed. */
+      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && reversible_comparison_p (XEXP (x, 0))
+	  && XEXP (x, 1) == const0_rtx
+	  && XEXP (x, 2) == const_true_rtx)
+	return gen_binary (reverse_condition (GET_CODE (XEXP (x, 0))),
+			   mode, XEXP (XEXP (x, 0), 0), XEXP (XEXP (x, 0), 1));
+
       /* Sometimes we can simplify the arm of an IF_THEN_ELSE if a register
 	 used in it is being compared against certain values.  Get the
 	 true and false comparisons and see if that says anything about the
@@ -3874,13 +3907,24 @@ subst (x, from, to, in_dest, unique_copy)
       
       /* If we have (if_then_else FOO (pc) (label_ref BAR)) and FOO can be
 	 reversed, do so to avoid needing two sets of patterns for
-	 subtract-and-branch insns.  Similarly if we have a constant in that
-	 position or if the third operand is the same as the first operand
-	 of the comparison.  */
+	 subtract-and-branch insns.  Similarly if we have a constant in the
+	 true arm, the false arm is the same as the first operand of the
+	 comparison, or the false arm is more complicated than the true
+	 arm.  */
 
       if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
 	  && reversible_comparison_p (XEXP (x, 0))
-	  && (XEXP (x, 1) == pc_rtx || GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (XEXP (x, 1) == pc_rtx 
+	      || (CONSTANT_P (XEXP (x, 1))
+		  && GET_CODE (XEXP (x, 2)) != CONST_INT
+		  && XEXP (x, 2) != pc_rtx)
+	      || XEXP (x, 1) == const0_rtx
+	      || (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == 'o'
+		  && GET_RTX_CLASS (GET_CODE (XEXP (x, 2))) != 'o')
+	      || (GET_CODE (XEXP (x, 1)) == SUBREG
+		  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 1)))) == 'o'
+		  && GET_RTX_CLASS (GET_CODE (XEXP (x, 2))) != 'o')
+	      || reg_mentioned_p (XEXP (x, 1), XEXP (x, 2))
 	      || rtx_equal_p (XEXP (x, 2), XEXP (XEXP (x, 0), 0))))
 	{
 	  SUBST (XEXP (x, 0),
@@ -3954,7 +3998,10 @@ subst (x, from, to, in_dest, unique_copy)
 	 ZERO_EXTEND or SIGN_EXTEND as long as Z is already extended (so
 	 we don't destroy it).  We can do this kind of thing in some
 	 cases when STORE_FLAG_VALUE is neither of the above, but it isn't
-	 worth checking for.  */
+	 worth checking for.
+
+	 Similarly, (if_then_else COND Z 0) can be replaced by 
+	 (mult COND (mult Z STORE_FLAG_VALUE)).  */
 
       if (mode != VOIDmode && ! side_effects_p (x))
 	{
@@ -3967,12 +4014,24 @@ subst (x, from, to, in_dest, unique_copy)
 	  enum machine_mode m = mode;
 	  rtx z = 0, c1, c2;
 
+	  if (f == const0_rtx)
+	    return gen_binary (MULT, mode, gen_binary (cond_op, mode, cond_op0,
+						       cond_op1),
+			       gen_binary (MULT, mode, t, const_true_rtx));
+
 	  if ((GET_CODE (t) == PLUS || GET_CODE (t) == MINUS
 	       || GET_CODE (t) == IOR || GET_CODE (t) == XOR
 	       || GET_CODE (t) == ASHIFT
 	       || GET_CODE (t) == LSHIFTRT || GET_CODE (t) == ASHIFTRT)
 	      && rtx_equal_p (XEXP (t, 0), f))
 	    c1 = XEXP (t, 1), op = GET_CODE (t), z = f;
+
+	  /* If an identity-zero op is commutative, check whether there
+	     would be a match if we swapped the operands. */
+	  else if ((GET_CODE (t) == PLUS || GET_CODE (t) == IOR
+		    || GET_CODE (t) == XOR)
+		   && rtx_equal_p (XEXP (t, 1), f))
+	    c1 = XEXP (t, 0), op = GET_CODE (t), z = f;
 	  else if (GET_CODE (t) == SIGN_EXTEND
 		   && (GET_CODE (XEXP (t, 0)) == PLUS
 		       || GET_CODE (XEXP (t, 0)) == MINUS
@@ -3986,9 +4045,26 @@ subst (x, from, to, in_dest, unique_copy)
 		   && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 0)), f)
 		   && (num_sign_bit_copies (f, GET_MODE (f))
 		       > (GET_MODE_BITSIZE (mode)
-			  - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0), 0))))))
+			  - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0),
+							      0))))))
 	    {
 	      c1 = XEXP (XEXP (t, 0), 1); z = f; op = GET_CODE (XEXP (t, 0));
+	      extend_op = SIGN_EXTEND;
+	      m = GET_MODE (XEXP (t, 0));
+	    }
+	  else if (GET_CODE (t) == SIGN_EXTEND
+		   && (GET_CODE (XEXP (t, 0)) == PLUS
+		       || GET_CODE (XEXP (t, 0)) == IOR
+		       || GET_CODE (XEXP (t, 0)) == XOR)
+		   && GET_CODE (XEXP (XEXP (t, 0), 1)) == SUBREG
+		   && subreg_lowpart_p (XEXP (XEXP (t, 0), 1))
+		   && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 1)), f)
+		   && (num_sign_bit_copies (f, GET_MODE (f))
+		       > (GET_MODE_BITSIZE (mode)
+			  - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0),
+							      1))))))
+	    {
+	      c1 = XEXP (XEXP (t, 0), 0); z = f; op = GET_CODE (XEXP (t, 0));
 	      extend_op = SIGN_EXTEND;
 	      m = GET_MODE (XEXP (t, 0));
 	    }
@@ -4012,58 +4088,21 @@ subst (x, from, to, in_dest, unique_copy)
 	      extend_op = ZERO_EXTEND;
 	      m = GET_MODE (XEXP (t, 0));
 	    }
-
-	  else if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-		   && reversible_comparison_p (XEXP (x, 0))
-		   && (GET_CODE (f) == PLUS || GET_CODE (f) == MINUS
-		       || GET_CODE (f) == IOR || GET_CODE (f) == XOR
-		       || GET_CODE (f) == ASHIFT
-		       || GET_CODE (f) == LSHIFTRT || GET_CODE (f) == ASHIFTRT)
-		   && rtx_equal_p (XEXP (f, 0), t))
-	    {
-	      c1 = XEXP (f, 1), op = GET_CODE (f), z = t;
-	      cond_op = reverse_condition (cond_op);
-	    }
-	  else if (GET_CODE (f) == SIGN_EXTEND
-		   && (GET_CODE (XEXP (f, 0)) == PLUS
-		       || GET_CODE (XEXP (f, 0)) == MINUS
-		       || GET_CODE (XEXP (f, 0)) == IOR
-		       || GET_CODE (XEXP (f, 0)) == XOR
-		       || GET_CODE (XEXP (f, 0)) == ASHIFT
-		       || GET_CODE (XEXP (f, 0)) == LSHIFTRT
-		       || GET_CODE (XEXP (f, 0)) == ASHIFTRT)
-		   && GET_CODE (XEXP (XEXP (f, 0), 0)) == SUBREG
-		   && subreg_lowpart_p (XEXP (XEXP (f, 0), 0))
-		   && rtx_equal_p (SUBREG_REG (XEXP (XEXP (f, 0), 0)), f)
-		   && (num_sign_bit_copies (t, GET_MODE (t))
-		       > (GET_MODE_BITSIZE (mode)
-			  - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (f, 0), 0))))))
-	    {
-	      c1 = XEXP (XEXP (f, 0), 1); z = t; op = GET_CODE (XEXP (f, 0));
-	      extend_op = SIGN_EXTEND;
-	      m = GET_MODE (XEXP (f, 0));
-	      cond_op = reverse_condition (cond_op);
-	    }
-	  else if (GET_CODE (f) == ZERO_EXTEND
-		   && (GET_CODE (XEXP (f, 0)) == PLUS
-		       || GET_CODE (XEXP (f, 0)) == MINUS
-		       || GET_CODE (XEXP (f, 0)) == IOR
-		       || GET_CODE (XEXP (f, 0)) == XOR
-		       || GET_CODE (XEXP (f, 0)) == ASHIFT
-		       || GET_CODE (XEXP (f, 0)) == LSHIFTRT
-		       || GET_CODE (XEXP (f, 0)) == ASHIFTRT)
-		   && GET_CODE (XEXP (XEXP (f, 0), 0)) == SUBREG
+	  else if (GET_CODE (t) == ZERO_EXTEND
+		   && (GET_CODE (XEXP (t, 0)) == PLUS
+		       || GET_CODE (XEXP (t, 0)) == IOR
+		       || GET_CODE (XEXP (t, 0)) == XOR)
+		   && GET_CODE (XEXP (XEXP (t, 0), 1)) == SUBREG
 		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-		   && subreg_lowpart_p (XEXP (XEXP (f, 0), 0))
-		   && rtx_equal_p (SUBREG_REG (XEXP (XEXP (f, 0), 0)), t)
-		   && ((nonzero_bits (t, GET_MODE (t))
-			& ~ GET_MODE_MASK (GET_MODE (XEXP (XEXP (f, 0), 0))))
+		   && subreg_lowpart_p (XEXP (XEXP (t, 0), 1))
+		   && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 1)), f)
+		   && ((nonzero_bits (f, GET_MODE (f))
+			& ~ GET_MODE_MASK (GET_MODE (XEXP (XEXP (t, 0), 1))))
 		       == 0))
 	    {
-	      c1 = XEXP (XEXP (f, 0), 1); z = t; op = GET_CODE (XEXP (f, 0));
+	      c1 = XEXP (XEXP (t, 0), 0); z = f; op = GET_CODE (XEXP (t, 0));
 	      extend_op = ZERO_EXTEND;
-	      m = GET_MODE (XEXP (f, 0));
-	      cond_op = reverse_condition (cond_op);
+	      m = GET_MODE (XEXP (t, 0));
 	    }
 
 	  if (z)
@@ -4073,8 +4112,7 @@ subst (x, from, to, in_dest, unique_copy)
 
 
 	      temp = gen_binary (MULT, m, temp,
-				 gen_binary (MULT, m, c1,
-					     GEN_INT (STORE_FLAG_VALUE)));
+				 gen_binary (MULT, m, c1, const_true_rtx));
 
 	      temp = subst (temp, pc_rtx, pc_rtx, 0, 0);
 
@@ -6110,6 +6148,68 @@ if_then_else_cond (x, ptrue, pfalse)
 	  *pfalse = gen_binary (code, mode, false0, false1);
 	  return cond0 ? cond0 : cond1;
 	}
+
+#if STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1
+
+      /* See if we have PLUS, IOR, XOR, MINUS or UMAX, where one of the
+	 operands is zero when the other is non-zero, and vice-versa.  */
+
+      if ((code == PLUS || code == IOR || code == XOR || code == MINUS
+	   || code == UMAX)
+	  && GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == MULT)
+	{
+	  rtx op0 = XEXP (XEXP (x, 0), 1);
+	  rtx op1 = XEXP (XEXP (x, 1), 1);
+
+	  cond0 = XEXP (XEXP (x, 0), 0);
+	  cond1 = XEXP (XEXP (x, 1), 0);
+
+	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
+	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
+	      && reversible_comparison_p (cond1)
+	      && ((GET_CODE (cond0) == reverse_condition (GET_CODE (cond1))
+		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
+		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
+		  || ((swap_condition (GET_CODE (cond0))
+		       == reverse_condition (GET_CODE (cond1)))
+		      && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 1))
+		      && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 0))))
+	      && ! side_effects_p (x))
+	    {
+	      *ptrue = gen_binary (MULT, mode, op0, const_true_rtx);
+	      *pfalse = gen_binary (MULT, mode, 
+				    (code == MINUS 
+				     ? gen_unary (NEG, mode, op1) : op1),
+				    const_true_rtx);
+	      return cond0;
+	    }
+	}
+
+      /* Similarly for MULT, AND and UMIN, execpt that for these the result
+	 is always zero.  */
+      if ((code == MULT || code == AND || code == UMIN)
+	  && GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == MULT)
+	{
+	  cond0 = XEXP (XEXP (x, 0), 0);
+	  cond1 = XEXP (XEXP (x, 1), 0);
+
+	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
+	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
+	      && reversible_comparison_p (cond1)
+	      && ((GET_CODE (cond0) == reverse_condition (GET_CODE (cond1))
+		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
+		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
+		  || ((swap_condition (GET_CODE (cond0))
+		       == reverse_condition (GET_CODE (cond1)))
+		      && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 1))
+		      && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 0))))
+	      && ! side_effects_p (x))
+	    {
+	      *ptrue = *pfalse = const0_rtx;
+	      return cond0;
+	    }
+	}
+#endif
     }
 
   else if (code == IF_THEN_ELSE)
@@ -8383,6 +8483,16 @@ gen_binary (code, mode, op0, op1)
   if (GET_RTX_CLASS (code) == '<') 
     {
       enum machine_mode op_mode = GET_MODE (op0);
+
+      /* Strip the COMPARE from (REL_OP (compare X Y) 0) to get 
+	 just (REL_OP X Y). */
+      if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
+	{
+	  op1 = XEXP (op0, 1);
+	  op0 = XEXP (op0, 0);
+	  op_mode = GET_MODE (op0);
+	}
+
       if (op_mode == VOIDmode)
 	op_mode = GET_MODE (op1);
       result = simplify_relational_operation (code, op_mode, op0, op1);
@@ -9404,6 +9514,13 @@ reversible_comparison_p (x)
       return 1;
 
     case MODE_CC:
+      /* If the mode of the condition codes tells us that this is safe,
+	 we need look no further.  */
+      if (REVERSIBLE_CC_MODE (GET_MODE (XEXP (x, 0))))
+	return 1;
+
+      /* Otherwise try and find where the condition codes were last set and
+	 use that.  */
       x = get_last_value (XEXP (x, 0));
       return (x && GET_CODE (x) == COMPARE
 	      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))));
