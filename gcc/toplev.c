@@ -3967,8 +3967,6 @@ rest_of_compilation (decl)
   if (failure)
     goto exit_rest_of_compilation;
 
-  reload_completed = 1;
-
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
     reload_cse_regs (insns);

@@ -1116,6 +1116,11 @@ reload (first, global, dumpfile)
 	}
     }
 
+  /* We must set reload_completed now since the cleanup_subreg_operands call
+     below will re-recognize each insn and reload may have generated insns
+     which are only valid during and after reload.  */
+  reload_completed = 1;
+
   /* Make a pass over all the insns and delete all USEs which we inserted
      only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
      notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.

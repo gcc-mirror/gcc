@@ -1,3 +1,9 @@
+Wed Dec 23 00:10:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (rest_of_compilation): Do not set reload_completed.
+	* reload1.c (reload): Set reload_completed before calling
+	cleanup_subreg_operands.
+
 Tue Dec 22 23:58:31 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (emit_reload_insns): Check `set' not null before use.
