@@ -1,3 +1,14 @@
+2004-06-29  J"orn Rennecke <joern.rennecke@superh.com>
+
+	Fix gcc.dg/builtin-apply2.c failures:
+	* sh.h (TARGET_VARARGS_PRETEND_ARGS): Define.
+	* sh.c (extra_push): Delete.
+	(sh_expand_prologue): Don't do extra stack adjustment for
+	current_function_pretend_args_size if it comes from varargs setup.
+	Use TARGET_VARARGS_PRETEND_ARGS.  Don't set extra_push.
+	(sh_expand_epilogue): Don't use extra_push.
+	(sh_setup_incoming_varargs): Set pretend_arg_size when necessary.
+
 2004-06-29  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (expand_smod_pow2): Provide alternate implementations
