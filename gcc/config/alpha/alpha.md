@@ -1722,25 +1722,9 @@
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm == ALPHA_FPTM_N"
+  "TARGET_FP"
   "cpysn %R1,%R1,%0"
   [(set_attr "type" "fadd")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=&f")
-	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "sub%,%)%& $f31,%R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP"
-  "sub%,%)%& $f31,%R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1748,22 +1732,6 @@
   "TARGET_FP"
   "cpysn %R1,%R1,%0"
   [(set_attr "type" "fadd")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=&f")
-	(neg:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "sub%-%)%& $f31,%R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(neg:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP"
-  "sub%-%)%& $f31,%R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
