@@ -1,3 +1,10 @@
+Sun Dec 21 16:53:12 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* configure.in (host_makefile_frag, target_makefile_frag):
+	Handle multiple config files.
+	(alpha-*-linux*): Treat alpha-*-linux* as alpha-*-linux* and
+	alpha-*-*.
+
 Thu Dec 11 23:30:51 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* config.guess: Add BeOS support.
