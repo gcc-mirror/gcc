@@ -1567,8 +1567,7 @@ hack_identifier (value, name, yychar)
       my_friendly_assert (TREE_CODE (value) == VAR_DECL
 			  || TREE_CODE (value) == PARM_DECL
 			  || TREE_CODE (value) == RESULT_DECL, 252);
-      if (DECL_REFERENCE_SLOT (value))
-	return DECL_REFERENCE_SLOT (value);
+      return convert_from_reference (value);
     }
   return value;
 }

@@ -129,11 +129,6 @@ convert_harshness (type, parmtype, parm)
   n_convert_harshness++;
 #endif
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  if (TYPE_PTRMEMFUNC_P (parmtype))
-    parmtype = TYPE_PTRMEMFUNC_FN_TYPE (parmtype);
-
   if (TREE_CODE (parmtype) == REFERENCE_TYPE)
     {
       if (parm)
@@ -145,6 +140,11 @@ convert_harshness (type, parmtype, parm)
     lvalue = lvalue_p (parm);
   else
     lvalue = 0;
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+  if (TYPE_PTRMEMFUNC_P (parmtype))
+    parmtype = TYPE_PTRMEMFUNC_FN_TYPE (parmtype);
 
   codel = TREE_CODE (type);
   coder = TREE_CODE (parmtype);
@@ -2634,6 +2634,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
       return result;
     }
 #endif
+
+  if (parms == error_mark_node
+      || (parms && TREE_CHAIN (parms) == error_mark_node))
+    return error_mark_node;
 
   if (need_vtbl == needed)
     {

@@ -1614,14 +1614,20 @@ build_exception_variant (ctype, type, raises)
 
    Assuming T is a node build bottom-up, make it all exist on
    permanent obstack, if it is not permanent already.  */
-static tree
-make_deep_copy (t)
+
+tree
+mapcar (t, func)
      tree t;
+     tree (*func)();
 {
   enum tree_code code;
+  tree tmp;
 
-  if (t == NULL_TREE || TREE_PERMANENT (t))
+  if (t == NULL_TREE)
     return t;
+
+  if (tmp = func (t), tmp != NULL_TREE)
+    return tmp;
 
   switch (code = TREE_CODE (t))
     {
@@ -1637,10 +1643,10 @@ make_deep_copy (t)
       {
 	tree chain = TREE_CHAIN (t);
 	t = copy_node (t);
-	TREE_CHAIN (t) = make_deep_copy (chain);
-	TREE_TYPE (t) = make_deep_copy (TREE_TYPE (t));
-	DECL_INITIAL (t) = make_deep_copy (DECL_INITIAL (t));
-	DECL_SIZE (t) = make_deep_copy (DECL_SIZE (t));
+	TREE_CHAIN (t) = mapcar (chain, func);
+	TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+	DECL_INITIAL (t) = mapcar (DECL_INITIAL (t), func);
+	DECL_SIZE (t) = mapcar (DECL_SIZE (t), func);
 	return t;
       }
 
@@ -1648,9 +1654,9 @@ make_deep_copy (t)
       {
 	tree chain = TREE_CHAIN (t);
 	t = copy_node (t);
-	TREE_PURPOSE (t) = make_deep_copy (TREE_PURPOSE (t));
-	TREE_VALUE (t) = make_deep_copy (TREE_VALUE (t));
-	TREE_CHAIN (t) = make_deep_copy (chain);
+	TREE_PURPOSE (t) = mapcar (TREE_PURPOSE (t), func);
+	TREE_VALUE (t) = mapcar (TREE_VALUE (t), func);
+	TREE_CHAIN (t) = mapcar (chain, func);
 	return t;
       }
 
@@ -1660,7 +1666,7 @@ make_deep_copy (t)
 
 	t = copy_node (t);
 	while (len--)
-	  TREE_VEC_ELT (t, len) = make_deep_copy (TREE_VEC_ELT (t, len));
+	  TREE_VEC_ELT (t, len) = mapcar (TREE_VEC_ELT (t, len), func);
 	return t;
       }
 
@@ -1673,14 +1679,14 @@ make_deep_copy (t)
     case TARGET_EXPR:
     case NEW_EXPR:
       t = copy_node (t);
-      TREE_OPERAND (t, 0) = make_deep_copy (TREE_OPERAND (t, 0));
-      TREE_OPERAND (t, 1) = make_deep_copy (TREE_OPERAND (t, 1));
-      TREE_OPERAND (t, 2) = make_deep_copy (TREE_OPERAND (t, 2));
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
       return t;
 
     case SAVE_EXPR:
       t = copy_node (t);
-      TREE_OPERAND (t, 0) = make_deep_copy (TREE_OPERAND (t, 0));
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;
 
     case MODIFY_EXPR:
@@ -1718,8 +1724,8 @@ make_deep_copy (t)
     case POSTINCREMENT_EXPR:
     case CALL_EXPR:
       t = copy_node (t);
-      TREE_OPERAND (t, 0) = make_deep_copy (TREE_OPERAND (t, 0));
-      TREE_OPERAND (t, 1) = make_deep_copy (TREE_OPERAND (t, 1));
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
       return t;
 
     case CONVERT_EXPR:
@@ -1731,36 +1737,36 @@ make_deep_copy (t)
     case NOP_EXPR:
     case COMPONENT_REF:
       t = copy_node (t);
-      TREE_OPERAND (t, 0) = make_deep_copy (TREE_OPERAND (t, 0));
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;
 
     case POINTER_TYPE:
-      return build_pointer_type (make_deep_copy (TREE_TYPE (t)));
+      return build_pointer_type (mapcar (TREE_TYPE (t), func));
     case REFERENCE_TYPE:
-      return build_reference_type (make_deep_copy (TREE_TYPE (t)));
+      return build_reference_type (mapcar (TREE_TYPE (t), func));
     case FUNCTION_TYPE:
-      return build_function_type (make_deep_copy (TREE_TYPE (t)),
-				  make_deep_copy (TYPE_ARG_TYPES (t)));
+      return build_function_type (mapcar (TREE_TYPE (t), func),
+				  mapcar (TYPE_ARG_TYPES (t), func));
     case ARRAY_TYPE:
-      return build_array_type (make_deep_copy (TREE_TYPE (t)),
-			       make_deep_copy (TYPE_DOMAIN (t)));
+      return build_array_type (mapcar (TREE_TYPE (t), func),
+			       mapcar (TYPE_DOMAIN (t), func));
     case INTEGER_TYPE:
-      return build_index_type (make_deep_copy (TYPE_MAX_VALUE (t)));
+      return build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
 
     case OFFSET_TYPE:
-      return build_offset_type (make_deep_copy (TYPE_OFFSET_BASETYPE (t)),
-				make_deep_copy (TREE_TYPE (t)));
+      return build_offset_type (mapcar (TYPE_OFFSET_BASETYPE (t), func),
+				mapcar (TREE_TYPE (t), func));
     case METHOD_TYPE:
       return build_method_type
-	(make_deep_copy (TYPE_METHOD_BASETYPE (t)),
+	(mapcar (TYPE_METHOD_BASETYPE (t), func),
 	 build_function_type
-	 (make_deep_copy (TREE_TYPE (t)),
-	  make_deep_copy (TREE_CHAIN (TYPE_ARG_TYPES (t)))));
+	 (mapcar (TREE_TYPE (t), func),
+	  mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func)));
 
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
-	  (make_deep_copy (TYPE_PTRMEMFUNC_FN_TYPE (t)));
+	  (mapcar (TYPE_PTRMEMFUNC_FN_TYPE (t), func));
       /* else fall through */
       
       /*  This list is incomplete, but should suffice for now.
@@ -1773,6 +1779,15 @@ make_deep_copy (t)
     }
   my_friendly_abort (107);
   /* NOTREACHED */
+  return NULL_TREE;
+}
+
+static tree
+perm_manip (t)
+     tree t;
+{
+  if (TREE_PERMANENT (t))
+    return t;
   return NULL_TREE;
 }
 
@@ -1793,7 +1808,7 @@ copy_to_permanent (t)
   current_obstack = saveable_obstack;
   resume = suspend_momentary ();
 
-  t = make_deep_copy (t);
+  t = mapcar (t, perm_manip);
 
   resume_momentary (resume);
   current_obstack = ambient_obstack;
@@ -1865,4 +1880,25 @@ array_type_nelts_total (type)
       type = TREE_TYPE (type);
     }
   return sz;
+}
+
+static
+tree
+bot_manip (t)
+     tree t;
+{
+  if (TREE_CODE (t) != TREE_LIST && ! TREE_SIDE_EFFECTS (t))
+    return t;
+  else if (TREE_CODE (t) == TARGET_EXPR)
+    return build_cplus_new (TREE_TYPE (t),
+			    break_out_target_exprs (TREE_OPERAND (t, 1)), 0);
+  return NULL_TREE;
+}
+  
+/* Actually, we'll just clean out the target exprs for the moment.  */
+tree
+break_out_target_exprs (t)
+     tree t;
+{
+  return mapcar (t, bot_manip);
 }
