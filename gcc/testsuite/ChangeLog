@@ -1,3 +1,8 @@
+2005-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19878
+	* g++.dg/init/const2.C: New test.
+
 2005-02-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR tree-optimization/20100

@@ -1,3 +1,9 @@
+2005-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19878
+	* decl.c (grokvardecl): Set DECL_INTERFACE_KNOWN for declarations
+	with internal linkage.
+
 2005-02-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* decl.c (grokvardecl): Don't exempt anonymous types from having
