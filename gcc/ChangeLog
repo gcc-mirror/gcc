@@ -1,3 +1,9 @@
+Mon Jul 27 18:28:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads): If no_input_reloads, abort if 
+	reloads were made for addresses.
+	* m68k.md (sxx): Operand 0 cannot be memory.
+
 Fri Jul 17 07:31:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.c (output_move_simode_const): Use subl to move 0 into addr reg.
