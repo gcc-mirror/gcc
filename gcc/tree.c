@@ -269,6 +269,8 @@ int (*lang_get_alias_set) PROTO((tree));
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
+static void append_random_chars PROTO((char *));
+
 extern char *mode_name[];
 
 void gcc_obstack_init ();
@@ -4804,44 +4806,104 @@ dump_tree_statistics ()
 #define FILE_FUNCTION_PREFIX_LEN 9
 
 #ifndef NO_DOLLAR_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_$D$%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL_$%s$%s"
 #else /* NO_DOLLAR_IN_LABEL */
 #ifndef NO_DOT_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_.D.%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL_.%s.%s"
 #else /* NO_DOT_IN_LABEL */
-#define FILE_FUNCTION_FORMAT "_GLOBAL__D_%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 #endif	/* NO_DOT_IN_LABEL */
 #endif	/* NO_DOLLAR_IN_LABEL */
 
 extern char * first_global_object_name;
 extern char * weak_global_object_name;
 
-/* If KIND=='I', return a suitable global initializer (constructor) name.
-   If KIND=='D', return a suitable global clean-up (destructor) name.  */
+/* Appends 6 random characters to TEMPLATE to (hopefully) avoid name
+   clashes in cases where we can't reliably choose a unique name.
+
+   Derived from mkstemp.c in libiberty.  */
+
+static void
+append_random_chars (template)
+     char *template;
+{
+  static const char letters[]
+    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  static unsigned HOST_WIDE_INT value;
+  unsigned HOST_WIDE_INT v;
+
+#ifdef HAVE_GETTIMEOFDAY
+  struct timeval tv;
+#endif
+
+  template += strlen (template);
+
+#ifdef HAVE_GETTIMEOFDAY
+  /* Get some more or less random data.  */
+  gettimeofday (&tv, NULL);
+  value += ((unsigned HOST_WIDE_INT) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid ();
+#else
+  value += getpid ();
+#endif
+
+  v = value;
+
+  /* Fill in the random bits.  */
+  template[0] = letters[v % 62];
+  v /= 62;
+  template[1] = letters[v % 62];
+  v /= 62;
+  template[2] = letters[v % 62];
+  v /= 62;
+  template[3] = letters[v % 62];
+  v /= 62;
+  template[4] = letters[v % 62];
+  v /= 62;
+  template[5] = letters[v % 62];
+
+  template[6] = '\0';
+}
+
+/* Generate a name for a function unique to this translation unit.
+   TYPE is some string to identify the purpose of this function to the
+   linker or collect2.  */
 
 tree
-get_file_function_name (kind)
-     int kind;
+get_file_function_name_long (type)
+     char *type;
 {
   char *buf;
   register char *p;
 
   if (first_global_object_name)
     p = first_global_object_name;
-  else if (weak_global_object_name)
-    p = weak_global_object_name;
-  else if (main_input_filename)
-    p = main_input_filename;
   else
-    p = input_filename;
+    {
+      /* We don't have anything that we know to be unique to this translation
+	 unit, so use what we do have and throw in some randomness.  */
 
-  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p));
+      char *name = weak_global_object_name;
+      char *file = main_input_filename;
+
+      if (! name)
+	name = "";
+      if (! file)
+	file = input_filename;
+
+      p = (char *) alloca (7 + strlen (name) + strlen (file));
+
+      sprintf (p, "%s%s", name, file);
+      append_random_chars (p);
+    }
+
+  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p)
+			 + strlen (type));
 
   /* Set up the name of the file-level functions we may need.  */
   /* Use a global object (which is already required to be unique over
      the program) rather than the file name (which imposes extra
      constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
-  sprintf (buf, FILE_FUNCTION_FORMAT, p);
+  sprintf (buf, FILE_FUNCTION_FORMAT, type, p);
 
   /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
@@ -4864,10 +4926,23 @@ get_file_function_name (kind)
 	  *p = '_';
     }
 
-  buf[FILE_FUNCTION_PREFIX_LEN] = kind;
-
   return get_identifier (buf);
 }
+
+/* If KIND=='I', return a suitable global initializer (constructor) name.
+   If KIND=='D', return a suitable global clean-up (destructor) name.  */
+
+tree
+get_file_function_name (kind)
+     int kind;
+{
+  char p[2];
+  p[0] = kind;
+  p[1] = 0;
+
+  return get_file_function_name_long (p);
+}
+
 
 /* Expand (the constant part of) a SET_TYPE CONSTRUCTOR node.
    The result is placed in BUFFER (which has length BIT_SIZE),
