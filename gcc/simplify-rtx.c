@@ -2367,10 +2367,17 @@ simplify_subreg (outermode, op, innermode, byte)
 	  int subsize = GET_MODE_UNIT_SIZE (outermode);
 	  int i, elts = GET_MODE_NUNITS (outermode);
 	  rtvec v = rtvec_alloc (elts);
+	  rtx elt;
 
 	  for (i = 0; i < elts; i++, byte += subsize)
 	    {
-	      RTVEC_ELT (v, i) = simplify_subreg (submode, op, innermode, byte);
+	      /* This might fail, e.g. if taking a subreg from a SYMBOL_REF.  */
+	      /* ??? It would be nice if we could actually make such subregs
+		 on targets that allow such relocations.  */
+	      elt = simplify_subreg (submode, op, innermode, byte);
+	      if (! elt)
+		return NULL_RTX;
+	      RTVEC_ELT (v, i) = elt;
 	    }
 	  return gen_rtx_CONST_VECTOR (outermode, v);
 	}
