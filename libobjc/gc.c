@@ -324,12 +324,13 @@ __objc_generate_gc_type_description (Class class)
   if (current + 1 == type_size)
     class_structure_type = objc_realloc (class_structure_type, ++type_size);
   strcat (class_structure_type + current, "}");
-//  printf ("type description for '%s' is %s\n", class->name, class_structure_type);
+#ifdef DEBUG
+  printf ("type description for '%s' is %s\n", class->name, class_structure_type);
+#endif
   
   __objc_gc_type_description_from_type (mask, class_structure_type);
   objc_free (class_structure_type);
 
-#define DEBUG 1
 #ifdef DEBUG
   printf ("  mask for '%s', type '%s' (bits %d, mask size %d) is:",
 	  class_structure_type, class->name, bits_no, size);
