@@ -1,3 +1,8 @@
+2002-04-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtsavres.o
+	Add rules to make null object file.
+
 2002-04-04  Jim Blandy  <jimb@redhat.com>
 
 	* cppmacro.c (cpp_macro_definition): Do not emit spaces after
