@@ -855,7 +855,7 @@ c_decode_option (argc, argv)
   else if (!strcmp (p, "-Wmain"))
     warn_main = 1;
   else if (!strcmp (p, "-Wno-main"))
-    warn_main = 0;
+    warn_main = -1;
   else if (!strcmp (p, "-Wsign-compare"))
     warn_sign_compare = 1;
   else if (!strcmp (p, "-Wno-sign-compare"))
@@ -3791,7 +3791,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* The corresponding pop_obstacks is in finish_decl.  */
   push_obstacks_nochange ();
 
-  if (warn_main && TREE_CODE (decl) != FUNCTION_DECL 
+  if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL 
       && !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "main"))
     warning_with_decl (decl, "`%s' is usually a function");
 
@@ -6527,7 +6527,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
     TREE_PUBLIC (decl1) = 0;
 
   /* Warn for unlikely, improbable, or stupid declarations of `main'. */
-  if (warn_main
+  if (warn_main > 0
       && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))) == 0)
     {
       tree args;
@@ -7244,12 +7244,8 @@ finish_function (nested)
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
 	  != integer_type_node)
 	{
-	  /* You would expect the sense of this test to be the other way
-	     around, but if warn_main is set, we will already have warned,
-	     so this would be a duplicate.  This is the warning you get
-	     in some environments even if you *don't* ask for it, because
-	     these are environments where it may be more of a problem than
-	     usual.  */
+	  /* If warn_main is 1 (-Wmain) or 2 (-Wall), we have already warned.
+	     If warn_main is -1 (-Wno-main) we don't want to be warned. */
 	  if (! warn_main)
 	    pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
 	}
