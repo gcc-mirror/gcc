@@ -1,3 +1,8 @@
+Wed Apr  7 14:52:18 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/mips/elf.h (MAKE_DECL_ONE_ONLY): Define.
+        (UNIQUE_SECTION_P): Define.
+
 1999-04-07 11:50 -0800  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/inclhack.tpl & fixincl.tpl:
