@@ -1,3 +1,7 @@
+1998-08-25  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (CLASS_TYPE_P): Revise definition.
+
 1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Don't complain about different
