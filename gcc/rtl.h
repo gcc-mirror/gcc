@@ -1056,6 +1056,7 @@ extern rtx next_cc0_user		PARAMS ((rtx));
 extern rtx prev_cc0_setter		PARAMS ((rtx));
 extern rtx next_nondeleted_insn		PARAMS ((rtx));
 extern enum rtx_code reverse_condition	PARAMS ((enum rtx_code));
+extern enum rtx_code reverse_condition_maybe_unordered PARAMS ((enum rtx_code));
 extern enum rtx_code swap_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code unsigned_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code signed_condition	PARAMS ((enum rtx_code));

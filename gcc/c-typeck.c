@@ -2233,7 +2233,6 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
-    case UNNE_EXPR:
       build_type = integer_type_node;
       if (code0 != REAL_TYPE || code1 != REAL_TYPE)
 	{

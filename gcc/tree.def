@@ -651,7 +651,6 @@ DEFTREECODE (UNLE_EXPR, "unle_expr", '<', 2)
 DEFTREECODE (UNGT_EXPR, "ungt_expr", '<', 2)
 DEFTREECODE (UNGE_EXPR, "unge_expr", '<', 2)
 DEFTREECODE (UNEQ_EXPR, "uneq_expr", '<', 2)
-DEFTREECODE (UNNE_EXPR, "unne_expr", '<', 2)
 
 /* Operations for Pascal sets.  Not used now.  */
 DEFTREECODE (IN_EXPR, "in_expr", '2', 2)

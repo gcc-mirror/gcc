@@ -1923,6 +1923,24 @@
     }
   operands[1] = gen_compare_reg (UNLE, sparc_compare_op0, sparc_compare_op1);
 }")
+
+(define_expand "bltgt"
+  [(set (pc)
+	(if_then_else (ltgt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LTGT);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (LTGT, sparc_compare_op0, sparc_compare_op1);
+}")
 
 ;; Now match both normal and inverted jump.
 

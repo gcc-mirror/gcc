@@ -1,3 +1,22 @@
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
+	* tree.def (UNNE_EXPR): Remove.
+	* c-typeck.c (build_binary_op): Don't handle it.
+	* expr.c (expand_expr, do_jump, do_store_flag): Likewise.
+
+	* rtl.def (UNNE): Remove.
+	(LTGT): Add.
+	* jump.c (reverse_condition): Update accordingly.
+	(swap_condition): Likewise.
+	(comparison_dominates_p): Handle unordered comparisons.
+	(reverse_condition_maybe_unordered): New.
+	* rtl.h (reverse_condition_maybe_unordered): Declare.
+
+	* sparc.c (select_cc_mode): Update for UNNE/LTGT.
+	(output_cbranch): Use reverse_condition_maybe_unordered and LTGT.
+	* sparc.h (REVERSIBLE_CC_MODE): Always true.  Update docs.
+	* sparc.md (bltgt): New.
+
 2000-01-25  Nick Clifton  <nickc@redhat.com>
 
 	* emit-rtl.c (emit_insn): Only check machine class insns for

@@ -2669,15 +2669,15 @@ do {                                                                    \
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
-   CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand is a
-   PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
+   CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand
+   is a PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
    processing is needed.  */
 #define SELECT_CC_MODE(OP,X,Y)  select_cc_mode ((OP), (X), (Y))
 
-/* Return non-zero if SELECT_CC_MODE will never return MODE for a
-   floating point inequality comparison.  */
-
-#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode && (MODE) != CCFPmode)
+/* Return non-zero if MODE implies a floating point inequality can be
+   reversed.  For Sparc this is always true because we have a full
+   compliment of ordered and unordered comparisons.  */
+#define REVERSIBLE_CC_MODE(MODE) 1
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)

@@ -2097,7 +2097,7 @@ select_cc_mode (op, x, y)
 	case UNGT:
 	case UNGE:
 	case UNEQ:
-	case UNNE:
+	case LTGT:
 	  return CCFPmode;
 
 	case LT:
@@ -4655,54 +4655,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
       /* Reversal of FP compares takes care -- an ordered compare
 	 becomes an unordered compare and vice versa.  */
       if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  switch (code)
-	    {
-	    case EQ:
-	      code = NE;
-	      break;
-	    case NE:
-	      code = EQ;
-	      break;
-	    case GE:
-	      code = UNLT;
-	      break;
-	    case GT:
-	      code = UNLE;
-	      break;
-	    case LE:
-	      code = UNGT;
-	      break;
-	    case LT:
-	      code = UNGE;
-	      break;
-	    case UNORDERED:
-	      code = ORDERED;
-	      break;
-	    case ORDERED:
-	      code = UNORDERED;
-	      break;
-	    case UNGT:
-	      code = LE;
-	      break;
-	    case UNLT:
-	      code = GE;
-	      break;
-	    case UNEQ:
-	      /* ??? We don't have a "less or greater" rtx code.  */
-	      code = UNKNOWN;
-	      break;
-	    case UNGE:
-	      code = LT;
-	      break;
-	    case UNLE:
-	      code = GT;
-	      break;
-
-	    default:
-	      abort ();
-	    }
-	}
+	code = reverse_condition_maybe_unordered (code);
       else
 	code = reverse_condition (code);
     }
@@ -4750,7 +4703,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
       case UNLE:
 	branch = "fbule";
 	break;
-      case UNKNOWN:
+      case LTGT:
 	branch = "fblg";
 	break;
 
