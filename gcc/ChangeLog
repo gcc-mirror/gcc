@@ -1,5 +1,8 @@
 2003-04-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* doc/extend.texi (Empty Structures): Correct description of G++'s
+	handling of these structures.
+
 	* c-decl.c (grokdeclarator): Reject extern redeclarations of
 	static variables.
 
