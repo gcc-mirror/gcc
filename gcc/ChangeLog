@@ -1,6 +1,11 @@
+2003-01-06  Svein E. Seldal <Svein.Seldal@solidas.com>
+
+	* config/c4x/c4x.h: Updated specs for new gas format.  Fixed bug
+	in C33_FLAG.  Added proper C33 support in ASM_FILE_START macro.
+
 2003-01-06 Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
-        * c4x.h: Remove hwint.h include and HOST_WIDE_INT_PRINT_HEX
+        * config/c4x/c4x.h: Remove hwint.h include and HOST_WIDE_INT_PRINT_HEX
 	redefinition.
 
 2003-01-05  Kazu Hirata  <kazu@cs.umass.edu>

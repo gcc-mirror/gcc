@@ -91,23 +91,21 @@
 
 #define ASM_SPEC "\
 %{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:%{!mcpu=40:%{!mcpu=44:\
-%{!m30:%{!m40:-m40}}}}}}}} \
-%{mcpu=30:-m30} \
-%{mcpu=31:-m31} \
-%{mcpu=32:-m32} \
-%{mcpu=33:-m33} \
-%{mcpu=40:-m40} \
-%{mcpu=44:-m44} \
-%{m30:-m30} \
-%{m31:-m31} \
-%{m32:-m32} \
-%{m33:-m33} \
-%{m40:-m40} \
-%{m44:-m44} \
-%{mmemparm:-p} %{mregparm:-r} \
-%{!mmemparm:%{!mregparm:-r}} \
-%{mbig:-b} %{msmall:-s} \
-%{!msmall:%{!mbig:-b}}"
+%{!m30:%{!m31:%{!m32:%{!m33:%{!m40:%{!m44:-m40}}}}}}}}}}}} \
+%{mcpu=30} \
+%{mcpu=31} \
+%{mcpu=32} \
+%{mcpu=33} \
+%{mcpu=40} \
+%{mcpu=44} \
+%{m30} \
+%{m31} \
+%{m32} \
+%{m33} \
+%{m40} \
+%{m44} \
+%{mmemparm} %{mregparm} %{!mmemparm:%{!mregparm:-mregparm}} \
+%{mbig} %{msmall} %{!msmall:%{!mbig:-mbig}}"
 
 /* Define linker options.  */
 
@@ -151,7 +149,7 @@
 #define C30_FLAG            0x0100000 /* Emit C30 code.  */
 #define C31_FLAG            0x0200000 /* Emit C31 code.  */
 #define C32_FLAG            0x0400000 /* Emit C32 code.  */
-#define C33_FLAG            0x0400000 /* Emit C33 code.  */
+#define C33_FLAG            0x0800000 /* Emit C33 code.  */
 #define C40_FLAG            0x1000000 /* Emit C40 code.  */
 #define C44_FLAG            0x2000000 /* Emit C44 code.  */
 
@@ -1659,6 +1657,7 @@ fini_section ()							\
     if (TARGET_C30) dspversion = 30;				\
     if (TARGET_C31) dspversion = 31;				\
     if (TARGET_C32) dspversion = 32;				\
+    if (TARGET_C33) dspversion = 33;                            \
     if (TARGET_C40) dspversion = 40;				\
     if (TARGET_C44) dspversion = 44;				\
     fprintf (FILE, "\t.version\t%d\n", dspversion);		\
