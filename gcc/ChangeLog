@@ -1,3 +1,8 @@
+Wed Feb 10 15:16:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (cmov compound patterns): Delete.  Jump can now
+	create the correct constructs in the first place.
+
 Wed Feb 10 11:03:22 1999  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alphaev6*): Fix typo in target_cpu_default2.

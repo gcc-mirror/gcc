@@ -2373,69 +2373,6 @@
    cmovlbc %r2,%3,%0"
   [(set_attr "type" "icmov")])
 
-;; This form is added since combine thinks that an IF_THEN_ELSE with both
-;; arms constant is a single insn, so it won't try to form it if combine
-;; knows they are really two insns.  This occurs in divides by powers
-;; of two.
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else:DI
-	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "rJ")
-			  (const_int 0)])
-	 (plus:DI (match_dup 0)
-		  (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
-	 (match_dup 0)))
-   (clobber (match_scratch:DI 4 "=&r"))]
-  ""
-  "addq %0,%1,%4\;cmov%C2 %r3,%4,%0"
-  [(set_attr "type" "icmov")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(if_then_else:DI
-	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "")
-			  (const_int 0)])
-	 (plus:DI (match_dup 0)
-		  (match_operand:DI 1 "reg_or_8bit_operand" ""))
-	 (match_dup 0)))
-   (clobber (match_operand:DI 4 "register_operand" ""))]
-  ""
-  [(set (match_dup 4) (plus:DI (match_dup 0) (match_dup 1)))
-   (set (match_dup 0) (if_then_else:DI (match_op_dup 2
-						     [(match_dup 3)
-						      (const_int 0)])
-				       (match_dup 4) (match_dup 0)))]
-  "")
-
-(define_split
-  [(parallel
-    [(set (match_operand:DI 0 "register_operand" "")
-	  (if_then_else:DI
-	   (match_operator 1 "comparison_operator"
-			   [(zero_extract:DI (match_operand:DI 2 "register_operand" "")
-					     (const_int 1)
-					     (match_operand:DI 3 "const_int_operand" ""))
-			    (const_int 0)])
-	   (match_operand:DI 4 "reg_or_8bit_operand" "")
-	   (match_operand:DI 5 "reg_or_8bit_operand" "")))
-     (clobber (match_operand:DI 6 "register_operand" ""))])]
-  "INTVAL (operands[3]) != 0"
-  [(set (match_dup 6)
-	(lshiftrt:DI (match_dup 2) (match_dup 3)))
-   (set (match_dup 0)
-	(if_then_else:DI (match_op_dup 1
-				       [(zero_extract:DI (match_dup 6)
-							 (const_int 1)
-							 (const_int 0))
-					(const_int 0)])
-			 (match_dup 4)
-			 (match_dup 5)))]
-  "")
-
 ;; For ABS, we have two choices, depending on whether the input and output
 ;; registers are the same or not.
 (define_expand "absdi2"
