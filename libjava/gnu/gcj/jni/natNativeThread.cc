@@ -22,3 +22,9 @@ gnu::gcj::jni::NativeThread::finish ()
 {
   finish_ ();
 }
+
+void
+gnu::gcj::jni::NativeThread::init ()
+{
+  alive_flag = true;		// alive_flag is private in java.lang.Thread
+}
