@@ -1,3 +1,8 @@
+2000-04-26  Andreas Jaeger  <aj@suse.de>
+
+        * extend.texi (Function Attributes): Fix description of pure
+        attribute.
+
 2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
 
 	* integrate.c (output_inline_function): Do clear DECL_DEFER_OUTPUT

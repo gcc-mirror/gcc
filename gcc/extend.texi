@@ -1382,7 +1382,7 @@ volatile voidfn fatal;
 @cindex @code{pure} function attribute
 @item pure
 Many functions have no effects except the return value and their
-return value and depends only on the parameters and/or global variables.
+return value depends only on the parameters and/or global variables.
 Such a function can be subject
 to common subexpression elimination and loop optimization just as an
 arithmetic operator would be.  These functions should be declared
