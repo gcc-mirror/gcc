@@ -1,3 +1,9 @@
+2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8442
+	* g++.dg/template/type2.C: New test.
+	* g++.dg/template/ttp3.C: Change expected error message.
+
 2002-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20021118-3.c: New test.

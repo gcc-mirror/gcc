@@ -5241,6 +5241,7 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
      int *new_type_p;
 {
   tree decl = NULL_TREE;
+  tree type;
   tree current = current_scope ();
   bool xrefd_p = false;
   
@@ -5289,12 +5290,28 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
       xrefd_p = true;
     }
 
-  if (!TYPE_BINFO (TREE_TYPE (decl)))
+  type = TREE_TYPE (decl);
+
+  if (!TYPE_BINFO (type))
     {
       error ("`%T' is not a class or union type", decl);
       return error_mark_node;
     }
-  
+
+  /* When `A' is a template class, using `class A' without template
+     argument is invalid unless
+     - we are inside the scope of the template class `A' or one of its
+       specialization.
+     - we are declaring the template class `A' itself.  */
+  if (TREE_CODE (type) == RECORD_TYPE
+      && CLASSTYPE_IS_TEMPLATE (type)
+      && processing_template_decl <= template_class_depth (current)
+      && ! is_base_of_enclosing_class (type, current_class_type))
+    {
+      error ("template argument is required for `%T'", type);
+      return error_mark_node;
+    }
+
   if (defn_p)
     {
       /* For a definition, we want to enter the containing scope

@@ -14,7 +14,7 @@ class OUTER {
   template <class T>
   class List { };
   
-  vector<class List> data; // { dg-error "type/value mismatch|expected a type|ISO C" "" }
+  vector<class List> data; // { dg-error "argument is required|ISO C" "" }
 };
 
 template <class T>
