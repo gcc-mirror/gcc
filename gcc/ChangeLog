@@ -1,5 +1,8 @@
 2002-03-19  Jason Merrill  <jason@redhat.com>
 
+	* varasm.c (globalize_decl): Get the name from the RTL, not
+	DECL_ASSEMBLER_NAME.
+
 	* Makefile.in (LIBGCC2_DEBUG_CFLAGS): Set to -g.
 
 2002-03-19  Dale Johannesen  <dalej@apple.com>
