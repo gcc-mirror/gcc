@@ -1,3 +1,8 @@
+2001-04-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* semantics.c (simplify_aggr_init_exprs_r): Don't restore
+	flag_access_control from uninitialized storage.
+
 2001-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (TYPE_PTRMEM_CLASS_TYPE): Improve documentation.
