@@ -2448,7 +2448,7 @@ gnu_special (work, mangled, declp)
 	  break;
 	default:
 	  n = consume_count (mangled);
-	  if (n < 0 || n > strlen (*mangled))
+	  if (n < 0 || n > (long) strlen (*mangled))
 	    {
 	      success = 0;
 	      break;
@@ -2615,7 +2615,7 @@ arm_special (mangled, declp)
 	{
 	  n = consume_count (mangled);
           if (n == -1
-	      || n > strlen (*mangled))
+	      || n > (long) strlen (*mangled))
 	    return 0;
 	  string_prependn (declp, *mangled, n);
 	  (*mangled) += n;
@@ -3381,7 +3381,7 @@ demangle_fund_type (work, mangled, result)
 	  int i;
 	  (*mangled)++;
 	  for (i = 0;
-	       i < sizeof (buf) - 1 && **mangled && **mangled != '_';
+	       i < (long) sizeof (buf) - 1 && **mangled && **mangled != '_';
 	       (*mangled)++, i++)
 	    buf[i] = **mangled;
 	  if (**mangled != '_')
@@ -3450,7 +3450,7 @@ demangle_fund_type (work, mangled, result)
 
 static int
 do_hpacc_template_const_value (work, mangled, result)
-     struct work_stuff *work;
+     struct work_stuff *work ATTRIBUTE_UNUSED;
      const char **mangled;
      string *result;
 {
@@ -4451,7 +4451,7 @@ main (argc, argv)
 {
   char *result;
   int c;
-  char *valid_symbols;
+  const char *valid_symbols;
 
   program_name = argv[0];
 
