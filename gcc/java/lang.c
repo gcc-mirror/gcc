@@ -150,6 +150,9 @@ int flag_force_classes_archive_check;
    be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
 int flag_optimize_sci = 1;
 
+/* When non zero, print extra version information.  */
+static int version_flag = 0;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -235,6 +238,13 @@ java_decode_option (argc, argv)
      char **argv;
 {
   char *p = argv[0];
+
+  if (strcmp (p, "-version") == 0)
+    {
+      version_flag = 1;
+      /* We return 0 so that the caller can process this.  */
+      return 0;
+    }
 
 #define CLARG "-fassume-compiled="
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
@@ -655,7 +665,7 @@ java_init ()
 #endif
 
   jcf_path_init ();
-  jcf_path_seal ();
+  jcf_path_seal (version_flag);
 
   decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error;
