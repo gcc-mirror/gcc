@@ -1,6 +1,17 @@
 2004-12-29  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-optimization/18179
+	PR tree-optimization/18179
+	* tree-vectorizer.h (struct _stmt_vec_info): Add new fields:
+	initial_offset, step, misalignment and base_aligned_p and macros
+	to access them.
+	* tree-vectorizer.c (vect_analyze_offset_expr): New function.
+	(new_stmt_vec_info): Initialize the new fields of stmt_vec_info.
+
+	(vect_create_data_ref_ptr): Fix printings.
+
+2004-12-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/18179
 	* tree-vectorizer.c (vect_get_symbl_and_dr): Reorganize. Add memtag 
 	retrieval.
 	(vect_analyze_data_refs): Remove memtag retrieval.
