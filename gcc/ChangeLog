@@ -90,7 +90,6 @@ Sat Oct 20 12:01:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	call run_directive directly.
 	(_cpp_do__Pragma): Simplify.
 
->>>>>>> 1.11604
 2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pe.c (arm_pe_unique_section): Const-ify.
