@@ -29,37 +29,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "gansidecl.h"
 
-#if defined (WITH_THREAD_posix) || defined (WITH_THREAD_pthreads)
-#define THREAD_NAME "-lpthread"
-#elif defined (WITH_THREAD_qt)
-#define THREAD_NAME "-lgcjcoop"
-#endif
-
-#if defined (WITH_GC_boehm)
-#define GC_NAME "-lgcjgc"
-#endif
+/* Name of spec file.  */
+#define SPEC_FILE "libgcj.spec"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC	(1<<1)
-/* This bit is set if they did `-lm' or `-lmath'.  */
-#define MATHLIB		(1<<2)
-/* This bit is set if they did `-lc'.  */
-#define WITHLIBC	(1<<3)
-/* This bit is set if they did `-lgcjgc'.  */
-#define GCLIB		(1<<4)
-/* This bit is set if they did `-lpthread' (or added some other thread
-   library).  */
-#define THREADLIB	(1<<5)
 /* True if this arg is a parameter to the previous option-taking arg. */
-#define PARAM_ARG	(1<<6)
+#define PARAM_ARG	(1<<2)
 /* True if this arg is a .java input file name. */
-#define JAVA_FILE_ARG	(1<<7)
+#define JAVA_FILE_ARG	(1<<3)
 /* True if this arg is a .class input file name. */
-#define CLASS_FILE_ARG	(1<<8)
-
-#ifndef MATH_LIBRARY
-#define MATH_LIBRARY "-lm"
-#endif
+#define CLASS_FILE_ARG	(1<<4)
 
 extern int do_spec		PROTO((char *));
 extern char *input_filename;
@@ -83,6 +63,29 @@ char jvgenmain_spec[] =
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%U.s}} |\n\
               %{!S:as %a %Y -o %d%w%u%O %{!pipe:%U.s} %A\n }";
+
+/* Return full path name of spec file if it is in DIR, or NULL if
+   not.  */
+static char *
+find_spec_file (dir)
+     char *dir;
+{
+  char *spec;
+  int x;
+  struct stat sb;
+
+  spec = (char *) xmalloc (strlen (dir) + sizeof (SPEC_FILE)
+			   + sizeof ("-specs=") + 4);
+  strcpy (spec, "-specs=");
+  x = strlen (spec);
+  strcat (spec, dir);
+  strcat (spec, "/");
+  strcat (spec, SPEC_FILE);
+  if (! stat (spec + x, &sb))
+    return spec;
+  free (spec);
+  return NULL;
+}
 
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
@@ -168,16 +171,6 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      LANGSPEC, MATHLIB, WITHLIBC, or GCLIB.  */
   int *args;
 
-  /* By default, we throw on the math library.  */
-  int need_math = 1;
-
-  /* By default, we throw in the thread library (if one is required).
-   */
-  int need_thread = 1;
-
-  /* By default, we throw in the gc library (if one is required).  */
-  int need_gc = 1;
-
   /* The total number of arguments with the new stuff.  */
   int argc;
 
@@ -192,6 +185,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
   /* Non-zero if linking is supposed to happen.  */
   int will_link = 1;
+
+  /* The argument we use to specify the spec file.  */
+  char *spec_file = NULL;
 
   argc = *in_argc;
   argv = *in_argv;
@@ -222,39 +218,11 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	    {
 	      library = 0;
 	    }
-	  else if (strcmp (argv[i], "-lm") == 0
-		   || strcmp (argv[i], "-lmath") == 0
-#ifdef ALT_LIBM
-		   || strcmp (argv[i], ALT_LIBM) == 0
-#endif
-		  )
-	    {
-	      args[i] |= MATHLIB;
-	      need_math = 0;
-	    }
 	  else if (strncmp (argv[i], "-fmain=", 7) == 0)
 	    {
 	      main_class_name = argv[i] + 7;
 	      added--;
 	    }
-	  else if (strcmp (argv[i], "-lgcj") == 0)
-	    saw_libgcj = 1;
-	  else if (strcmp (argv[i], "-lc") == 0)
-	    args[i] |= WITHLIBC;
-#ifdef GC_NAME
-	  else if (strcmp (argv[i], GC_NAME) == 0)
-	    {
-	      args[i] |= GCLIB;
-	      need_gc = 0;
-	    }
-#endif
-#ifdef THREAD_NAME
-	  else if (strcmp (argv[i], THREAD_NAME) == 0)
-	    {
-	      args[i] |= THREADLIB;
-	      need_thread = 0;
-	    }
-#endif
 	  else if (strcmp (argv[i], "-v") == 0)
 	    {
 	      saw_verbose_flag = 1;
@@ -362,8 +330,6 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     (*fn) ("argument to `%s' missing\n", quote);
 
   num_args = argc + added;
-  if (will_link)
-    num_args += need_math + need_thread + need_gc;
   if (saw_C)
     {
       num_args += 3;
@@ -408,6 +374,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     }
   if (saw_g + saw_O == 0)
     num_args++;
+  if (will_link)
+    num_args++;
   arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *));
 
   for (i = 0, j = 0; i < argc; i++, j++)
@@ -438,41 +406,15 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  continue;
 	}
 
+      if (will_link && spec_file == NULL && strncmp (argv[i], "-L", 2) == 0)
+	spec_file = find_spec_file (argv[i] + 2);
+
       if (strncmp (argv[i], "-fmain=", 7) == 0)
 	{
 	  if (! will_link)
 	    (*fn) ("cannot specify `main' class when not linking");
 	  --j;
 	  continue;
-	}
-
-      /* Make sure -lgcj is before the math library, since libgcj
-	 itself uses those math routines.  */
-      if (!saw_math && (args[i] & MATHLIB) && library)
-	{
-	  --j;
-	  saw_math = argv[i];
-	}
-
-      /* Likewise -lgcj must come before -lc.  */
-      if (!saw_libc && (args[i] & WITHLIBC) && library)
-	{
-	  --j;
-	  saw_libc = argv[i];
-	}
-
-      /* And -lgcj must come before -lgcjgc.  */
-      if (!saw_gc && (args[i] & GCLIB) && library)
-	{
-	  --j;
-	  saw_gc = argv[i];
-	}
-
-      /* And -lgcj must come before thread library.  */
-      if (!saw_threadlib && (args[i] & THREADLIB) && library)
-	{
-	  --j;
-	  saw_threadlib = argv[i];
 	}
 
       if ((args[i] & CLASS_FILE_ARG) && saw_C)
@@ -509,45 +451,11 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   if (saw_g + saw_O == 0)
     arglist[j++] = "-g1";
 
-  /* Add `-lgcj' if we haven't already done so.  */
-  if (library && ! saw_libgcj)
-    {
-      arglist[j++] = "-lgcj";
-      added_libraries++;
-    }
-
-  if (saw_math)
-    arglist[j++] = saw_math;
-  else if (library)
-    {
-      arglist[j++] = MATH_LIBRARY;
-      added_libraries++;
-    }
-
-  if (saw_gc)
-    arglist[j++] = saw_gc;
-#ifdef GC_NAME
-  else if (library)
-    {
-      arglist[j++] = GC_NAME;
-      added_libraries++;
-    }
-#endif
-
-  /* Thread library must come after GC library as well as after
-     -lgcj.  */
-  if (saw_threadlib)
-    arglist[j++] = saw_threadlib;
-#ifdef THREAD_NAME
-  else if (library)
-    {
-      arglist[j++] = THREAD_NAME;
-      added_libraries++;
-    }
-#endif
-
-  if (saw_libc)
-    arglist[j++] = saw_libc;
+  /* Read the specs file corresponding to libgcj, but only if linking.
+     If we didn't find the spec file on the -L path, then we hope it
+     is somewhere in the standard install areas.  */
+  if (will_link)
+    arglist[j++] = spec_file == NULL ? "-specs=libgcj.spec" : spec_file;
 
   if (saw_C)
     {

@@ -81,8 +81,7 @@ jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist
 	cd java; $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
 
 jvspec.o: $(srcdir)/java/jvspec.c
-	$(CC) -c -DWITH_THREAD_$(GCC_THREAD_FILE) -DWITH_GC_$(JAVAGC) \
-		$(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c
 
 # Create the compiler driver for $(GCJ).
