@@ -129,10 +129,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 
 
@@ -2140,10 +2136,6 @@ inline SubString String::_substr(int first, int l)
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "../../../../../../mips/include/Gct/Object/GctObject.h" 1
 // -*- C++ -*-
@@ -2165,10 +2157,6 @@ inline SubString String::_substr(int first, int l)
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "/sandbox/wbaker/wbaker0/source/mips/include/tostrstream.h" 1
 // -*- C++ -*-
@@ -2190,10 +2178,6 @@ inline SubString String::_substr(int first, int l)
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/strstream.h" 1
 //    This is part of the iostream library, providing input/output for C++.
@@ -2333,10 +2317,6 @@ public:
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "/sandbox/wbaker/wbaker0/source/mips/include/tostrstream.h" 1
 // -*- C++ -*-
@@ -2365,10 +2345,6 @@ public:
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/bool.h" 1
 
@@ -2408,10 +2384,6 @@ public:
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 extern "C" {
 //# 1 "/sandbox/wbaker/wbaker0/source/mips/include/stuff.h" 1
@@ -2423,10 +2395,6 @@ extern "C" {
  */
 
 /*
- * $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
- * $Revision: 1.2 $
- * $Author: law $
- * $Date: 1997/09/11 15:52:09 $
  */
 
 //# 1 "/sandbox/wbaker/wbaker0/source/mips/include/ansi.h" 1
@@ -2452,10 +2420,6 @@ extern "C" {
  */
 
 /*
- * $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
- * $Author: law $
- * $Revision: 1.2 $
- * $Date: 1997/09/11 15:52:09 $
  *
  * Modifications
  * Wendell C Baker
@@ -2639,10 +2603,6 @@ extern ostream& operator<<(ostream&, bool);
 // Wendell Baker, Berkeley CAD Group, 1991 (wbaker@ic.Berkeley.EDU)
 //
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //
 // unit enum
@@ -2972,10 +2932,6 @@ extern ostream& operator<<(ostream&, GttObject&);
 //#pragma interface
 
 
-// $Source: /egcs/carton/cvsfiles/egcs/gcc/testsuite/g++.old-deja/g++.mike/p784.C,v $
-// $Author: law $
-// $Revision: 1.2 $
-// $Date: 1997/09/11 15:52:09 $
 
 //# 1 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/bool.h" 1
 
