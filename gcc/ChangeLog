@@ -1,3 +1,12 @@
+2001-07-21  H.J. Lu  (hjl@gnu.org)
+
+	* config/mips/mips.c (mips_cpu): Moved into ...
+	(override_options): Here.
+
+	* config/mips/mips.h (mips_cpu_attr): Replace mips_cpu with
+	mips_tune.
+	(mips_cpu): Removed.
+
 2001-07-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("andqi3"): Accept d as second operand.

@@ -71,7 +71,7 @@ enum processor_type {
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
-#define mips_cpu_attr ((enum attr_cpu)mips_cpu)
+#define mips_cpu_attr ((enum attr_cpu)mips_tune)
 
 /* Which ABI to use.  These are constants because abi64.h must check their
    value at preprocessing time.
@@ -135,7 +135,6 @@ extern struct rtx_def *branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
-extern enum processor_type mips_cpu;	/* historical codegen/sched */
 extern enum mips_abicalls_type mips_abicalls;/* for svr4 abi pic calls */
 extern int mips_isa;			/* architectural level */
 extern int mips16;			/* whether generating mips16 code */
