@@ -1,3 +1,10 @@
+2002-12-20  John David Anglin  <dave.anglin@nrc.gc.ca>
+
+	* pa-linux.h (TARGET_HAS_STUBS_AND_ELF_SECTIONS): Delete define.
+	* pa32-linux.h (FUNCTION_OK_FOR_SIBCALL): Delete define.
+	* pa.c (pa_function_ok_for_sibcall): Allow non indirect sibcalls on
+	TARGET_ELF32.  Add comment on sibcall issues for TARGET_64BIT.
+
 2002-12-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add prototypes for

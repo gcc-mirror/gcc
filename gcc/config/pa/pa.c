@@ -6878,14 +6878,26 @@ pa_function_ok_for_sibcall (decl, exp)
      tree decl;
      tree exp ATTRIBUTE_UNUSED;
 {
-#ifdef TARGET_HAS_STUBS_AND_ELF_SECTIONS
-  /* Sibcalls, stubs, and elf sections don't play well.  */
-  return false;
-#endif
+  /* Sibcalls are ok for TARGET_ELF32 as along as the linker is used in
+     single subspace mode and the call is not indirect.  As far as I know,
+     there is no operating system support for the multiple subspace mode.
+     It might be possible to support indirect calls if we didn't use
+     $$dyncall (see the indirect sequence generated in output_call).  */
+  if (TARGET_ELF32)
+    return (decl != NULL_TREE);
+
+  /* Sibcalls are not ok because the arg pointer register is not a fixed
+     register.  This prevents the sibcall optimization from occuring.  In
+     addition, there are problems with stub placement using GNU ld.  This
+     is because a normal sibcall branch uses a 17-bit relocation while
+     a regular call branch uses a 22-bit relocation.  As a result, more
+     care needs to be taken in the placement of long-branch stubs.  */
+  if (TARGET_64BIT)
+    return false;
+
   return (decl
-	  && ! TARGET_PORTABLE_RUNTIME
-	  && ! TARGET_64BIT
-	  && ! TREE_PUBLIC (decl));
+	  && !TARGET_PORTABLE_RUNTIME
+	  && !TREE_PUBLIC (decl));
 }
 
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
