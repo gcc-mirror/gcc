@@ -2364,26 +2364,21 @@ Some machines never actually require alignment; they allow reference to any
 data type even at an odd addresses.  For these machines, @code{__alignof__}
 reports the @emph{recommended} alignment of a type.
 
-When the operand of @code{__alignof__} is an lvalue rather than a type, the
-value is the largest alignment that the lvalue is known to have.  It may
-have this alignment as a result of its data type, or because it is part of
-a structure and inherits alignment from that structure.  For example, after
-this declaration:
+If the operand of @code{__alignof__} is an lvalue rather than a type,
+its value is the required alignment for its type, taking into account
+any minimum alignment specified with GCC's @code{__attribute__}
+extension (@pxref{Variable Attributes}).  For example, after this
+declaration:
 
 @example
 struct foo @{ int x; char y; @} foo1;
 @end example
 
 @noindent
-the value of @code{__alignof__ (foo1.y)} is probably 2 or 4, the same as
-@code{__alignof__ (int)}, even though the data type of @code{foo1.y}
-does not itself demand any alignment.
+the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
+alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
 
 It is an error to ask for the alignment of an incomplete type.
-
-A related feature which lets you specify the alignment of an object is
-@code{__attribute__ ((aligned (@var{alignment})))}; see the following
-section.
 
 @node Variable Attributes
 @section Specifying Attributes of Variables

@@ -1,3 +1,8 @@
+2002-01-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR c/3504
+	* doc/extend.texi: Correct documentation of __alignof__.
+
 2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
 	PR java/4972
