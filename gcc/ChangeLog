@@ -1,5 +1,9 @@
 Sat Dec 22 08:59:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* calls.c (flags_from_decl_or_type): Move ECF_SP_DEPRESSED here.
+	(expand_call): Delete from here.
+	Do pending stack adjustments if ECF_SP_DEPRESSED.
+
 	* dwarf2out.c (save_rtx): Deleted.
 	(mem_loc_descriptor): Do equivalent operation.
 	(add_const_value_attribute, case CONST): Likewise.

@@ -789,17 +789,19 @@ setjmp_call_p (fndecl)
   return special_function_p (fndecl, 0) & ECF_RETURNS_TWICE;
 }
 
-/* Detect flags (function attributes) from the function type node.  */
+/* Detect flags (function attributes) from the function decl or type node.  */
 
 static int
 flags_from_decl_or_type (exp)
      tree exp;
 {
   int flags = 0;
-
+  tree type = exp;
   /* ??? We can't set IS_MALLOC for function types?  */
   if (DECL_P (exp))
     {
+      type = TREE_TYPE (exp);
+
       /* The function exp may have the `malloc' attribute.  */
       if (DECL_P (exp) && DECL_IS_MALLOC (exp))
 	flags |= ECF_MALLOC;
@@ -817,6 +819,14 @@ flags_from_decl_or_type (exp)
 
   if (TREE_THIS_VOLATILE (exp))
     flags |= ECF_NORETURN;
+
+  /* Mark if the function returns with the stack pointer depressed.   We
+     cannot consider it pure or constant in that case.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE && TYPE_RETURNS_STACK_DEPRESSED (type))
+    {
+      flags |= ECF_SP_DEPRESSED;
+      flags &= ~(ECF_PURE | ECF_CONST);
+    }
 
   return flags;
 }
@@ -2206,14 +2216,6 @@ expand_call (exp, target, ignore)
   else
     flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
 
-  /* Mark if the function returns with the stack pointer depressed.  */
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (p))) == FUNCTION_TYPE
-      && TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (TREE_TYPE (p))))
-    {
-      flags |= ECF_SP_DEPRESSED;
-      flags &= ~(ECF_PURE | ECF_CONST);
-    }
-
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
   reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
@@ -2658,9 +2660,11 @@ expand_call (exp, target, ignore)
       /* Don't let pending stack adjusts add up to too much.
 	 Also, do all pending adjustments now if there is any chance
 	 this might be a call to alloca or if we are expanding a sibling
-	 call sequence.  */
+	 call sequence or if we are calling a function that is to return
+	 with stack pointer depressed.  */
       if (pending_stack_adjust >= 32
-	  || (pending_stack_adjust > 0 && (flags & ECF_MAY_BE_ALLOCA))
+	  || (pending_stack_adjust > 0
+	      && (flags & (ECF_MAY_BE_ALLOCA | ECF_SP_DEPRESSED)))
 	  || pass == 0)
 	do_pending_stack_adjust ();
 
@@ -3170,9 +3174,7 @@ expand_call (exp, target, ignore)
 
       if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode
 	  || ignore)
-	{
-	  target = const0_rtx;
-	}
+	target = const0_rtx;
       else if (structure_value_addr)
 	{
 	  if (target == 0 || GET_CODE (target) != MEM)
