@@ -1,3 +1,18 @@
+2004-06-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* parser.c: Change all assignments of c_lex_string_translate
+	to true and false to 1 and 0.
+	(cp_lexer_read_token): Convert type of the translated string.
+	(cp_parser_skip_to_closing_parentheses): Preserve original
+	value of c_lex_string_translate, and set it to -1 while
+	running.
+	(cp_parser_cache_group): Likewise.
+	(cp_parser_cache_group_1): Renamed.
+	(cp_parser_asm_operand_list): Remove redundant setting of
+	c_lex_string_translate.
+	(cp_parser_primary_expression) [CPP_STRING, CPP_WSTRING]:
+	Handle chained strings.
+
 2004-06-12  Andrew Pinski  <apinski@apple.com>
 
 	PR c++/14639
