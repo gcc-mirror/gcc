@@ -176,6 +176,8 @@ $(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/libobjc_entry.c -o $@
 
+$(OBJC_O): $(GCC_PASSES) cc1obj
+
 # Build the Objective C runtime library.
 libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready \
  $(USE_COLLECT2) $(EXTRA_PARTS) $(OBJC_O)

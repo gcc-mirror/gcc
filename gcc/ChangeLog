@@ -1,3 +1,11 @@
+Mon Aug 25 23:27:10 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* objc/Make-lang.in ($(OBJC_O)): Also depend on cc1obj.
+
+Mon Aug 25 23:27:10 1997  Jim Meyering <meyering@eng.ascend.com>
+
+	* objc/Make-lang.in ($(OBJC_O)): Also depend on $(GCC_PASSES).
+
 Mon Aug 25 13:12:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (find_pre_sched_live): Remove #if 0 code.
