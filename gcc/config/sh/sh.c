@@ -9845,9 +9845,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* Release all memory allocated by flow.  */
       free_basic_block_vars ();
-
-      /* Release all memory held by regsets now.  */
-      regset_release_memory ();
     }
 
   reload_completed = 0;
