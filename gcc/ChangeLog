@@ -1,3 +1,8 @@
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (flow_delete_block): Rename from delete_block.  Export.
+	* basic-block.h (flow_delete_block): Declare.
+
 2000-04-26  David S. Miller  <davem@redhat.com>
 
 	* optabs.c (emit_libcall_block): Verify insns with INSN_P before
