@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,17 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #define USER_LABEL_PREFIX ""
 
 #define ASM_COMMENT_START "|"
-
-/* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number.
-   Motorola format uses different register names than defined in m68k.h.  */
-
-#undef REGISTER_NAMES
-
-#define REGISTER_NAMES \
-{"%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7", \
- "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%a6", "%sp", \
- "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7", "argptr" }
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

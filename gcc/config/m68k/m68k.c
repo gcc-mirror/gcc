@@ -499,25 +499,25 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	fprintf (stream, MOTOROLA ?
 			   "\tpea (%s)\n\tmove.l %s,%s\n" :
 			   "\tpea %s@\n\tmovel %s,%s\n",
-		 reg_names[FRAME_POINTER_REGNUM],
-		 reg_names[STACK_POINTER_REGNUM],
-		 reg_names[FRAME_POINTER_REGNUM]);
+		 M68K_REGNAME(FRAME_POINTER_REGNUM),
+		 M68K_REGNAME(STACK_POINTER_REGNUM),
+		 M68K_REGNAME(FRAME_POINTER_REGNUM));
       else if (fsize_with_regs < 0x8000)
 	asm_fprintf (stream, "\tlink" ASM_DOTW " %s,%I%wd\n",
-		     reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
+		     M68K_REGNAME(FRAME_POINTER_REGNUM), -fsize_with_regs);
       else if (TARGET_68020)
 	asm_fprintf (stream, "\tlink" ASM_DOTL " %s,%I%wd\n",
-		     reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
+		     M68K_REGNAME(FRAME_POINTER_REGNUM), -fsize_with_regs);
       else
 	/* Adding negative number is faster on the 68040.  */
 	asm_fprintf (stream, "\tlink" ASM_DOTW " %s,%I0\n"
 			     "\tadd" ASM_DOT "l %I%wd,%Rsp\n",
-		     reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
+		     M68K_REGNAME(FRAME_POINTER_REGNUM), -fsize_with_regs);
 
       if (dwarf2out_do_frame ())
 	{
 	  char *l;
-          l = (char *) dwarf2out_cfi_label ();   
+          l = (char *) dwarf2out_cfi_label ();
 	  cfa_offset += 4;
 	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_offset);
 	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
@@ -585,17 +585,17 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	}
     }
 
-  /* If the stack limit is not a symbol, check it here.  
+  /* If the stack limit is not a symbol, check it here.
      This has the disadvantage that it may be too late...  */
   if (current_function_limit_stack)
     {
       if (REG_P (stack_limit_rtx))
 	asm_fprintf (stream, "\tcmp" ASM_DOT "l %s,%Rsp\n\ttrapcs\n",
-		     reg_names[REGNO (stack_limit_rtx)]);
+		     M68K_REGNAME(REGNO (stack_limit_rtx)));
       else if (GET_CODE (stack_limit_rtx) != SYMBOL_REF)
 	warning ("stack limit expression is not supported");
     }
-  
+
   if (current_frame.reg_no <= 2)
     {
       /* Store each separately in the same order moveml uses.
@@ -611,22 +611,22 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	    asm_fprintf (stream, MOTOROLA ?
 				   "\t%Omove.l %s,-(%Rsp)\n" :
 				   "\tmovel %s,%Rsp@-\n",
-			 reg_names[15 - i]);
+			 M68K_REGNAME(15 - i));
 	    if (dwarf2out_do_frame ())
 	      {
 		char *l = (char *) dwarf2out_cfi_label ();
 
 		cfa_offset += 4;
- 		if (! frame_pointer_needed)
- 		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
- 		dwarf2out_reg_save (l, 15 - i, -cfa_offset);
+		if (! frame_pointer_needed)
+		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+		dwarf2out_reg_save (l, 15 - i, -cfa_offset);
 	      }
 	  }
     }
   else if (current_frame.reg_rev_mask)
     {
       if (TARGET_COLDFIRE)
-	/* The ColdFire does not support the predecrement form of the 
+	/* The ColdFire does not support the predecrement form of the
 	   MOVEM instruction, so we must adjust the stack pointer and
 	   then use the plain address register indirect mode.
 	   The required register save space was combined earlier with
@@ -661,22 +661,22 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
       if (TARGET_ID_SHARED_LIBRARY)
 	{
 	  asm_fprintf (stream, "\tmovel %s@(%s), %s\n",
-		       reg_names[PIC_OFFSET_TABLE_REGNUM],
+		       M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM),
 		       m68k_library_id_string,
-		       reg_names[PIC_OFFSET_TABLE_REGNUM]);
+		       M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM));
 	}
       else
 	{
 	  if (MOTOROLA)
 	    asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
-	    		 reg_names[PIC_OFFSET_TABLE_REGNUM]);
+			 M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM));
 	  else
 	    {
 	      asm_fprintf (stream, "\tmovel %I%U_GLOBAL_OFFSET_TABLE_, %s\n",
-			   reg_names[PIC_OFFSET_TABLE_REGNUM]);
+			   M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM));
 	      asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
-			   reg_names[PIC_OFFSET_TABLE_REGNUM],
-			   reg_names[PIC_OFFSET_TABLE_REGNUM]);
+			   M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM),
+			   M68K_REGNAME(PIC_OFFSET_TABLE_REGNUM));
 	    }
 	}
     }
@@ -779,31 +779,31 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 		if (MOTOROLA)
 		  asm_fprintf (stream, "\t%Omove.l -%wd(%s,%Ra1.l),%s\n",
 			       offset,
-			       reg_names[FRAME_POINTER_REGNUM],
-			       reg_names[i]);
+			       M68K_REGNAME(FRAME_POINTER_REGNUM),
+			       M68K_REGNAME(i));
 		else
 		  asm_fprintf (stream, "\tmovel %s@(-%wd,%Ra1:l),%s\n",
-			       reg_names[FRAME_POINTER_REGNUM],
+			       M68K_REGNAME(FRAME_POINTER_REGNUM),
 			       offset,
-			       reg_names[i]);
+			       M68K_REGNAME(i));
 	      }
             else if (restore_from_sp)
 	      asm_fprintf (stream, MOTOROLA ?
 				     "\t%Omove.l (%Rsp)+,%s\n" :
 				     "\tmovel %Rsp@+,%s\n",
-			   reg_names[i]);
+			   M68K_REGNAME(i));
             else
 	      {
 	        if (MOTOROLA)
 		  asm_fprintf (stream, "\t%Omove.l -%wd(%s),%s\n",
 			       offset,
-			       reg_names[FRAME_POINTER_REGNUM],
-			       reg_names[i]);
+			       M68K_REGNAME(FRAME_POINTER_REGNUM),
+			       M68K_REGNAME(i));
 		else
 		  asm_fprintf (stream, "\tmovel %s@(-%wd),%s\n",
-			       reg_names[FRAME_POINTER_REGNUM],
+			       M68K_REGNAME(FRAME_POINTER_REGNUM),
 			       offset,
-			       reg_names[i]);
+			       M68K_REGNAME(i));
 	      }
             offset -= 4;
           }
@@ -816,7 +816,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
           if (big)
             {
               asm_fprintf (stream, "\tadd" ASM_DOT "l %s,%Ra1\n",
-	      		   reg_names[FRAME_POINTER_REGNUM]);
+			   M68K_REGNAME(FRAME_POINTER_REGNUM));
               asm_fprintf (stream, MOTOROLA ?
 				     "\tmovm.l (%Ra1),%I0x%x\n" :
 				     "\tmoveml %Ra1@,%I0x%x\n",
@@ -832,11 +832,11 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	      if (MOTOROLA)
 		asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
 			     current_frame.offset + fsize,
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.reg_mask);
 	      else
 		asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.offset + fsize,
 			     current_frame.reg_mask);
 	    }
@@ -848,11 +848,11 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	      if (MOTOROLA)
 		asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%I0x%x\n",
 			     current_frame.offset + fsize,
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.reg_mask);
 	      else
 		asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%I0x%x\n",
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.offset + fsize,
 			     current_frame.reg_mask);
 	    }
@@ -868,11 +868,11 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	      if (MOTOROLA)
 		asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
 			     current_frame.offset + fsize,
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.reg_mask);
 	      else
 		asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
-			     reg_names[FRAME_POINTER_REGNUM],
+			     M68K_REGNAME(FRAME_POINTER_REGNUM),
 			     current_frame.offset + fsize,
 			     current_frame.reg_mask);
 	    }
@@ -885,11 +885,11 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	  if (MOTOROLA)
 	    asm_fprintf (stream, "\tfmovm -%wd(%s,%Ra1.l),%I0x%x\n",
 		         current_frame.foffset + fsize,
-		         reg_names[FRAME_POINTER_REGNUM],
+		         M68K_REGNAME(FRAME_POINTER_REGNUM),
 		         current_frame.fpu_rev_mask);
 	  else
 	    asm_fprintf (stream, "\tfmovem %s@(-%wd,%Ra1:l),%I0x%x\n",
-			 reg_names[FRAME_POINTER_REGNUM],
+			 M68K_REGNAME(FRAME_POINTER_REGNUM),
 			 current_frame.foffset + fsize,
 			 current_frame.fpu_rev_mask);
 	}
@@ -907,18 +907,17 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	  if (MOTOROLA)
 	    asm_fprintf (stream, "\tfmovm -%wd(%s),%I0x%x\n",
 			 current_frame.foffset + fsize,
-			 reg_names[FRAME_POINTER_REGNUM],
+			 M68K_REGNAME(FRAME_POINTER_REGNUM),
 			 current_frame.fpu_rev_mask);
 	  else
 	    asm_fprintf (stream, "\tfmovem %s@(-%wd),%I0x%x\n",
-			 reg_names[FRAME_POINTER_REGNUM],
+			 M68K_REGNAME(FRAME_POINTER_REGNUM),
 			 current_frame.foffset + fsize,
 			 current_frame.fpu_rev_mask);
 	}
     }
   if (frame_pointer_needed)
-    fprintf (stream, "\tunlk %s\n",
-	     reg_names[FRAME_POINTER_REGNUM]);
+    fprintf (stream, "\tunlk %s\n", M68K_REGNAME(FRAME_POINTER_REGNUM));
   else if (fsize_with_regs)
     {
       if (fsize_with_regs <= 8)
@@ -2707,7 +2706,7 @@ print_operand (FILE *file, rtx op, int letter)
     {
       /* This is only for direct addresses with TARGET_PCREL */
       if (GET_CODE (op) != MEM || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
-          || !TARGET_PCREL) 
+          || !TARGET_PCREL)
 	abort ();
       output_addr_const (file, XEXP (op, 0));
     }
@@ -2716,9 +2715,9 @@ print_operand (FILE *file, rtx op, int letter)
       if (letter == 'R')
 	/* Print out the second register name of a register pair.
 	   I.e., R (6) => 7.  */
-	fputs (reg_names[REGNO (op) + 1], file);
+	fputs (M68K_REGNAME(REGNO (op) + 1), file);
       else
-	fputs (reg_names[REGNO (op)], file);
+	fputs (M68K_REGNAME(REGNO (op)), file);
     }
   else if (GET_CODE (op) == MEM)
     {
@@ -2816,15 +2815,15 @@ print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
       case REG:
-	fprintf (file, MOTOROLA ? "(%s)" : "%s@", reg_names[REGNO (addr)]);
+	fprintf (file, MOTOROLA ? "(%s)" : "%s@", M68K_REGNAME(REGNO (addr)));
 	break;
       case PRE_DEC:
 	fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
-	         reg_names[REGNO (XEXP (addr, 0))]);
+	         M68K_REGNAME(REGNO (XEXP (addr, 0))));
 	break;
       case POST_INC:
 	fprintf (file, MOTOROLA ? "(%s)+" : "%s@+",
-		 reg_names[REGNO (XEXP (addr, 0))]);
+		 M68K_REGNAME(REGNO (XEXP (addr, 0))));
 	break;
       case PLUS:
 	reg1 = reg2 = ireg = breg = offset = 0;
@@ -2933,14 +2932,14 @@ print_operand_address (FILE *file, rtx addr)
 	      {
 		ASM_OUTPUT_CASE_FETCH (file,
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (XEXP (ireg, 0))]);
+			     M68K_REGNAME(REGNO (XEXP (ireg, 0))));
 		fprintf (file, "w");
 	      }
 	    else
 	      {
 		ASM_OUTPUT_CASE_FETCH (file,
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			     reg_names[REGNO (ireg)]);
+			     M68K_REGNAME(REGNO (ireg)));
 		fprintf (file, "l");
 	      }
 	    if (scale != 1)
@@ -2953,7 +2952,7 @@ print_operand_address (FILE *file, rtx addr)
 	  {
 	    ASM_OUTPUT_CASE_FETCH (file,
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (breg)]);
+			 M68K_REGNAME(REGNO (breg)));
 	    fprintf (file, "l)");
 	    break;
 	  }
@@ -2980,13 +2979,13 @@ print_operand_address (FILE *file, rtx addr)
 			  fprintf (file, ".w");
 		      }
 		  }
-		fprintf (file, "(%s", reg_names[REGNO (breg)]);
+		fprintf (file, "(%s", M68K_REGNAME(REGNO (breg)));
 		if (ireg != 0)
 		  putc (',', file);
 	      }
 	    else /* !MOTOROLA */
 	      {
-		fprintf (file, "%s@(", reg_names[REGNO (breg)]);
+		fprintf (file, "%s@(", M68K_REGNAME(REGNO (breg)));
 		if (addr != 0)
 		  {
 		    output_addr_const (file, addr);
@@ -3011,21 +3010,21 @@ print_operand_address (FILE *file, rtx addr)
 	      }
 	    if (ireg != 0 && GET_CODE (ireg) == SIGN_EXTEND)
 	      fprintf (file, MOTOROLA ? "%s.w" : "%s:w",
-		       reg_names[REGNO (XEXP (ireg, 0))]);
+		       M68K_REGNAME(REGNO (XEXP (ireg, 0))));
 	    else if (ireg != 0)
 	      fprintf (file, MOTOROLA ? "%s.l" : "%s:l",
-		       reg_names[REGNO (ireg)]);
+		       M68K_REGNAME(REGNO (ireg)));
 	    if (scale != 1)
 	      fprintf (file, MOTOROLA ? "*%d" : ":%d", scale);
 	    putc (')', file);
 	    break;
 	  }
 	else if (reg1 != 0 && GET_CODE (addr) == LABEL_REF
-		 && ! (flag_pic && reg1 == pic_offset_table_rtx))	
+		 && ! (flag_pic && reg1 == pic_offset_table_rtx))
 	  {
 	    ASM_OUTPUT_CASE_FETCH (file,
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-			 reg_names[REGNO (reg1)]);
+			 M68K_REGNAME(REGNO (reg1)));
 	    fprintf (file, "l)");
 	    break;
 	  }

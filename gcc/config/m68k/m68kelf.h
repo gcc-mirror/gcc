@@ -78,18 +78,6 @@ Boston, MA 02111-1307, USA.  */
       return "jmp %%pc@(2,%0:w)";			\
   } while (0)
 
-/* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number.
-   Motorola format uses different register names than defined 
-   in m68k.h.  */
-
-#undef REGISTER_NAMES
-
-#define REGISTER_NAMES \
-{"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	     \
- "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%a6",   "%sp",	     \
- "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7", "argptr" }
-
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */
 
