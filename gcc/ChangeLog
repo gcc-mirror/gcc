@@ -1,3 +1,10 @@
+2005-02-28  John David Anglin  <dave.anglin#nrc-cnrc.gc.ca>
+
+	PR target/19819
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Allow allow hard registers during
+	and after reload in REG+REG indexed addresses without REG_POINTER
+	set in the base and not set in the index.
+
 2005-02-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19874
