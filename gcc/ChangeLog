@@ -1,3 +1,12 @@
+2001-01-23  Chris Demetriou  <cgd@broadcom.com>
+
+	* libgcc-std.ver (GCC_3.0): Add __terminate_func_set to list
+	of EH symbols.
+	* libgcc2.c (__terminate_func): Make variable static.
+	(__terminate_set_func): New function to set __terminate_func.
+	* libgcc2.h (__terminate_func_ptr): New typedef.
+	(__terminate_set_func): New function.
+
 2001-01-23  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (init_propagate_block_info): Don't consider unchanging

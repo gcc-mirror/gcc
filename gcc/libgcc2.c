@@ -3143,13 +3143,22 @@ __default_terminate (void)
   abort ();
 }
 
-void (*__terminate_func)(void) __attribute__ ((__noreturn__)) =
+static __terminate_func_ptr __terminate_func =
   __default_terminate;
 
 void __attribute__((__noreturn__))
 __terminate (void)
 {
   (*__terminate_func)();
+}
+
+__terminate_func_ptr
+__terminate_set_func (__terminate_func_ptr newfunc)
+{
+  __terminate_func_ptr oldfunc = __terminate_func;
+
+  __terminate_func = newfunc;
+  return (oldfunc);
 }
 
 void *
