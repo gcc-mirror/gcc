@@ -11,6 +11,6 @@ void h(X* p) {
     X::E2 e2;
     int x2 = X::a2;
 
-    X::E1 e1;
+    X::E1 e1;	     // ERROR - within this context
     int x1 = X::a1;  // ERROR - within this context
     }

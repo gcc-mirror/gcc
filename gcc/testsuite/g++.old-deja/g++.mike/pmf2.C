@@ -8,8 +8,8 @@ public:
 };
 
 class B_table : private A_table {
-  typedef void (B_table::* B_ti_fn) (int &item);
 public:
+  typedef void (B_table::* B_ti_fn) (int &item);
   B_table() { j = 0x4321;}
   virtual void call_fn_fn1(int &item, void *pfn1);
   void func1(int &item) { printf("func1(%d)\n",item);}
