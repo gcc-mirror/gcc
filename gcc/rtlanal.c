@@ -2388,9 +2388,7 @@ may_trap_p (rtx x)
 	  || (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	      && flag_trapping_math))
 	return 1;
-      /* This was const0_rtx, but by not using that,
-	 we can link this file into other programs.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
+      if (XEXP (x, 1) == const0_rtx)
 	return 1;
       break;
 
