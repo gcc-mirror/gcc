@@ -1,3 +1,14 @@
+2000-01-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (current_loop_info): Renamed from loop_info_data
+	and changed to a pointer.
+	(loop_optimize): Allocate loop_info structure for each loop
+	and initialise to zero.
+	(scan_loop): Set current_loop_info.
+
+	* unroll.c (loop_iterations): Don't abort if REG_USERVAR_P set
+	on iteration_var.
+
 2000-01-19  Richard Henderson  <rth@cygnus.com>
 
 	* stupid.c: Die die die.
