@@ -4210,7 +4210,7 @@ simplify_set (x)
       && (cc_use = find_single_use (dest, subst_insn, &other_insn)) != 0
       && (undobuf.other_insn == 0 || other_insn == undobuf.other_insn)
       && GET_RTX_CLASS (GET_CODE (*cc_use)) == '<'
-      && XEXP (*cc_use, 0) == dest)
+      && rtx_equal_p (XEXP (*cc_use, 0), dest))
     {
       enum rtx_code old_code = GET_CODE (*cc_use);
       enum rtx_code new_code;
@@ -5071,14 +5071,20 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (inner);
 	}
       else if (GET_CODE (inner) == REG)
-	/* We can't call gen_lowpart_for_combine here since we always want
-	   a SUBREG and it would sometimes return a new hard register.  */
-	new = gen_rtx (SUBREG, tmode, inner,
-		       (WORDS_BIG_ENDIAN
-			&& GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
-			? ((GET_MODE_SIZE (inner_mode) - GET_MODE_SIZE (tmode))
-			   / UNITS_PER_WORD)
-			: 0));
+	{
+	  /* We can't call gen_lowpart_for_combine here since we always want
+	     a SUBREG and it would sometimes return a new hard register.  */
+	  if (tmode != inner_mode)
+	    new = gen_rtx (SUBREG, tmode, inner,
+			   (WORDS_BIG_ENDIAN
+			    && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
+			    ? ((GET_MODE_SIZE (inner_mode)
+				- GET_MODE_SIZE (tmode))
+			       / UNITS_PER_WORD)
+			    : 0));
+	  else
+	    new = inner;
+	}
       else
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
