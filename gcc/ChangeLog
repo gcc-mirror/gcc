@@ -1,3 +1,8 @@
+2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* toplev.h (NO_FRONT_END_DIAG, ATTRIBUTE_GCC_FE_DIAG): Define.
+	(warning, error, pedwarn, sorry): Use ATTRIBUTE_GCC_FE_DIAG.
+
 2004-07-06  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (legitimize_pic_address): Make static.

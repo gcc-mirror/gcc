@@ -3424,7 +3424,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   else if (declspecs->redefined_builtin_type)
     {
       if (!in_system_header)
-	pedwarn ("redeclaration of C++ built-in type",
+	pedwarn ("redeclaration of C++ built-in type %qT",
 		 declspecs->redefined_builtin_type);
       return NULL_TREE;
     }
