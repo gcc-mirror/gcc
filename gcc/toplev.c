@@ -4343,11 +4343,6 @@ rest_of_compilation (decl)
       TIMEVAR
 	(dbr_sched_time,
 	 {
-           /* ??? Keep the CFG up to date after cross-jumping.  */
-	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 0);
-	   count_or_remove_death_notes (NULL, 1);
-	   life_analysis (insns, max_reg_num (), rtl_dump_file, 0);
-
            dbr_schedule (insns, rtl_dump_file);
 	 });
 
