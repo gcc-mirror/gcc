@@ -1971,7 +1971,9 @@ do {									\
    that encode section info.  */
 
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
-  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == SDATA_NAME_FLAG_CHAR)
+  (VAR) = ((SYMBOL_NAME)                        \
+	   + (*(SYMBOL_NAME) == '*' || *(SYMBOL_NAME) == SDATA_NAME_FLAG_CHAR))
+
 
 
 /* Position Independent Code.  */
