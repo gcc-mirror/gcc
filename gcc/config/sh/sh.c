@@ -3686,7 +3686,8 @@ barrier_align (barrier_or_label)
 	      || (x = (NEXT_INSN (NEXT_INSN (PREV_INSN (prev)))),	    
 		  (INSN_P (x) 
 		   && (INSN_CODE (x) == CODE_FOR_block_branch_redirect
-		       || INSN_CODE (x) == CODE_FOR_indirect_jump_scratch))))
+		       || INSN_CODE (x) == CODE_FOR_indirect_jump_scratch
+		       || INSN_CODE (x) == CODE_FOR_stuff_delay_slot))))
 	    {
 	      rtx pat = PATTERN (prev);
 	      if (GET_CODE (pat) == PARALLEL)
