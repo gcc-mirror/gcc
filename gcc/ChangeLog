@@ -1,3 +1,8 @@
+Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
+
+	* fixincludes: Remove specification of parameters when renaming
+	functions in Alpha DEC Unix include files.
+
 Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (grokdeclarator): Don't warn about return type if in
