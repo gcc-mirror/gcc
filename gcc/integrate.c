@@ -305,7 +305,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
      the original argument vector,
      and the original DECL_INITIAL.  */
 
-  return gen_inline_header_rtx (NULL, NULL, min_labelno, max_labelno,
+  return gen_inline_header_rtx (NULL_RTX, NULL_RTX, min_labelno, max_labelno,
 				max_parm_reg, max_reg,
 				current_function_args_size,
 				current_function_pops_args,
@@ -1155,7 +1155,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  arg_vals[i] = XEXP (stack_slot, 0);
 	}
       else if (GET_CODE (loc) != MEM)
-	arg_vals[i] = expand_expr (arg, 0, mode, EXPAND_SUM);
+	arg_vals[i] = expand_expr (arg, NULL_RTX, mode, EXPAND_SUM);
       else
 	arg_vals[i] = 0;
 
@@ -1320,7 +1320,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  /* Compute the address in the area we reserved and store the
 	     value there.  */
 	  temp = copy_rtx_and_substitute (loc, map);
-	  subst_constants (&temp, 0, map);
+	  subst_constants (&temp, NULL_RTX, map);
 	  apply_change_group ();
 	  if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
 	    temp = change_address (temp, VOIDmode, XEXP (temp, 0));
@@ -1373,7 +1373,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       else
 	{
 	  temp = copy_rtx_and_substitute (loc, map);
-	  subst_constants (&temp, 0, map);
+	  subst_constants (&temp, NULL_RTX, map);
 	  apply_change_group ();
 	  emit_move_insn (temp, structure_value_addr);
 	}
@@ -1660,7 +1660,7 @@ integrate_parm_decls (args, map, arg_vector)
 	 debugging information contains the actual register, instead of the
 	 virtual register.   Do this by not passing an insn to
 	 subst_constants.  */
-      subst_constants (&new_decl_rtl, 0, map);
+      subst_constants (&new_decl_rtl, NULL_RTX, map);
       apply_change_group ();
       DECL_RTL (decl) = new_decl_rtl;
     }
@@ -1703,7 +1703,7 @@ integrate_decl_tree (let, level, map, functionbody)
 	     debugging information contains the actual register, instead of the
 	     virtual register.   Do this by not passing an insn to
 	     subst_constants.  */
-	  subst_constants (&DECL_RTL (d), 0, map);
+	  subst_constants (&DECL_RTL (d), NULL_RTX, map);
 	  apply_change_group ();
 	}
       else if (DECL_RTL (t))
@@ -1799,7 +1799,7 @@ copy_rtx_and_substitute (orig, map)
 	      rounded = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 	      loc = plus_constant (loc, rounded);
 #endif
-	      map->reg_map[regno] = temp = force_operand (loc, 0);
+	      map->reg_map[regno] = temp = force_operand (loc, NULL_RTX);
 	      map->const_equiv_map[REGNO (temp)] = loc;
 	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
@@ -1818,7 +1818,7 @@ copy_rtx_and_substitute (orig, map)
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
 	      loc = XEXP (loc, 0);
-	      map->reg_map[regno] = temp = force_operand (loc, 0);
+	      map->reg_map[regno] = temp = force_operand (loc, NULL_RTX);
 	      map->const_equiv_map[REGNO (temp)] = loc;
 	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
@@ -2071,6 +2071,10 @@ copy_rtx_and_substitute (orig, map)
 	    }
 	  break;
 
+	case 'w':
+	  XWINT (copy, i) = XWINT (orig, i);
+	  break;
+
 	case 'i':
 	  XINT (copy, i) = XINT (orig, i);
 	  break;
@@ -2222,7 +2226,7 @@ subst_constants (loc, insn, map)
 	   see what is inside, try to form the new SUBREG and see if that is
 	   valid.  We handle two cases: extracting a full word in an 
 	   integral mode and extracting the low part.  */
-	subst_constants (&inner, 0, map);
+	subst_constants (&inner, NULL_RTX, map);
 
 	if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
 	    && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
@@ -2333,6 +2337,7 @@ subst_constants (loc, insn, map)
 	case 'u':
 	case 'i':
 	case 's':
+	case 'w':
 	  break;
 
 	case 'E':
