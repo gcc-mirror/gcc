@@ -78,9 +78,19 @@ public class GregorianCalendar extends Calendar
   static final long serialVersionUID = -8125100834729963327L;
 
   /**
-   * The name of the resource bundle.
+   * The name of the resource bundle. Used only by getBundle()
    */
   private static final String bundleName = "gnu.java.locale.Calendar";
+
+  /**
+   * get resource bundle:
+   * The resources should be loaded via this method only. Iff an application
+   * uses this method, the resourcebundle is required. --Fridi. 
+   */
+  private static ResourceBundle getBundle(Locale locale) 
+  {
+    return ResourceBundle.getBundle(bundleName, locale);
+  }
 
   /**
    * Constructs a new GregorianCalender representing the current
@@ -120,7 +130,7 @@ public class GregorianCalendar extends Calendar
   public GregorianCalendar(TimeZone zone, Locale locale)
   {
     super(zone, locale);
-    ResourceBundle rb = ResourceBundle.getBundle(bundleName, locale);
+    ResourceBundle rb = getBundle(locale);
     gregorianCutover = ((Date) rb.getObject("gregorianCutOver")).getTime();
     setTimeInMillis(System.currentTimeMillis());
   }
