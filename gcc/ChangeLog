@@ -1,5 +1,7 @@
 Mon Jun 28 04:07:27 1999  David Edelsohn  <edelsohn@gnu.org>
 
+	* rs6000.c (print_operand, case 'L'): Use plus_constant_for_output.
+
 	* expmed.c (expand_divmod): Ensure unsigned value fits in reg_note.
 
 Fri Jun 25 06:06:37 1999  Richard Henderson  <rth@cygnus.com>
