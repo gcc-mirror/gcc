@@ -1,3 +1,8 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (gnat_stabilize_reference): Don't handle RTL_EXPR.
+	* utils.c (max_size): Likewise.
+
 2004-06-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c: Remove calls to add_decl_expr, pushdecl, rest_of_compilation,

@@ -2025,9 +2025,7 @@ max_size (tree exp, int max_p)
 				      code == NEGATE_EXPR ? ! max_p : max_p)));
 
 	case 2:
-	  if (code == RTL_EXPR)
-	    gigi_abort (407);
-	  else if (code == COMPOUND_EXPR)
+	  if (code == COMPOUND_EXPR)
 	    return max_size (TREE_OPERAND (exp, 1), max_p);
 
 	  {

@@ -2610,7 +2610,6 @@ lvalue_p (tree ref)
 	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE);
 
     case BIND_EXPR:
-    case RTL_EXPR:
       return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
 
     default:
@@ -6809,10 +6808,7 @@ c_begin_compound_stmt (bool do_scope)
 {
   tree stmt = push_stmt_list ();
   if (do_scope)
-    {
-      push_scope ();
-      clear_last_expr ();
-    }
+    push_scope ();
   return stmt;
 }
 

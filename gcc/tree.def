@@ -499,9 +499,7 @@ DEFTREECODE (CALL_EXPR, "call_expr", 'e', 3)
 /* Specify a value to compute along with its corresponding cleanup.
    Operand 0 argument is an expression whose value needs a cleanup.
    Operand 1 is the cleanup expression for the object.
-   Operand 2 is an RTL_EXPR which will eventually represent that value.
-     The RTL_EXPR is used in this expression, which is how the expression
-     manages to act on the proper value.
+   Operand 2 is unused.
    The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR, if
    it exists, otherwise it is the responsibility of the caller to manually
    call expand_start_target_temps/expand_end_target_temps, as needed.
@@ -731,26 +729,12 @@ DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", '1', 1)
 DEFTREECODE (SAVE_EXPR, "save_expr", 'e', 3)
 
 /* For a UNSAVE_EXPR, operand 0 is the value to unsave.  By unsave, we
-   mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs,
-   CALL_EXPRs and RTL_EXPRs, that are protected
-   from being evaluated more than once should be reset so that a new
-   expand_expr call of this expr will cause those to be re-evaluated.
-   This is useful when we want to reuse a tree in different places,
-   but where we must re-expand.  */
+   mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs, CALL_EXPRs,
+   that are protected from being evaluated more than once should be
+   reset so that a new expand_expr call of this expr will cause those
+   to be re-evaluated.  This is useful when we want to reuse a tree in
+   different places, but where we must re-expand.  */
 DEFTREECODE (UNSAVE_EXPR, "unsave_expr", 'e', 1)
-
-/* Represents something whose RTL has already been expanded as a
-   sequence which should be emitted when this expression is expanded.
-   The first operand is the RTL to emit.  It is the first of a chain
-   of insns.  The second is the RTL expression for the result.  The
-   third operand is the "alternate RTL expression" for the result, if
-   any; if the second argument is the DECL_RTL for a VAR_DECL, but
-   with an invalid memory address replaced by a valid one, then the
-   third operand will be the original DECL_RTL.  Any temporaries
-   created during the building of the RTL_EXPR can be reused once the
-   RTL_EXPR has been expanded, with the exception of the
-   RTL_EXPR_RTL.  */
-DEFTREECODE (RTL_EXPR, "rtl_expr", 'e', 3)
 
 /* & in C.  Value is the address at which the operand's value resides.
    Operand may have any mode.  Result mode is Pmode.  */

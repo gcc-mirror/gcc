@@ -2278,7 +2278,6 @@ extern void reposition_prologue_and_epilogue_notes (rtx);
 extern void thread_prologue_and_epilogue_insns (rtx);
 extern int prologue_epilogue_contains (rtx);
 extern int sibcall_epilogue_contains (rtx);
-extern void preserve_rtl_expr_result (rtx);
 extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
 extern void purge_addressof (rtx);

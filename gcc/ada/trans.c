@@ -5501,12 +5501,6 @@ gnat_stabilize_reference (tree ref, int force)
 						force));
       break;
 
-    case RTL_EXPR:
-      result = build1 (INDIRECT_REF, type,
-		       save_expr (build1 (ADDR_EXPR,
-					  build_reference_type (type), ref)));
-      break;
-
       /* If arg isn't a kind of lvalue we recognize, make no change.
 	 Caller should recognize the error for an invalid lvalue.  */
     default:

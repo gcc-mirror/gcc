@@ -1043,11 +1043,6 @@ struct tree_vec GTY(())
    recalculated.)  */
 #define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (SAVE_EXPR_CHECK (NODE))
 
-/* In a RTL_EXPR node.  */
-#define RTL_EXPR_SEQUENCE(NODE) TREE_RTL_OPERAND_CHECK (NODE, RTL_EXPR, 0)
-#define RTL_EXPR_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, RTL_EXPR, 1)
-#define RTL_EXPR_ALT_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, RTL_EXPR, 2)
-
 /* In a WITH_CLEANUP_EXPR node.  */
 #define WITH_CLEANUP_EXPR_RTL(NODE) \
   TREE_RTL_OPERAND_CHECK (NODE, WITH_CLEANUP_EXPR, 2)
@@ -3337,13 +3332,10 @@ extern bool commutative_tree_code (enum tree_code);
 /* In stmt.c */
 
 extern void expand_fixups (rtx);
-extern tree expand_start_stmt_expr (int);
-extern tree expand_end_stmt_expr (tree);
 extern void expand_expr_stmt (tree);
 extern void expand_expr_stmt_value (tree, int, int);
 extern int warn_if_unused_value (tree, location_t);
 extern void expand_decl_init (tree);
-extern void clear_last_expr (void);
 extern void expand_label (tree);
 extern void expand_goto (tree);
 extern void expand_asm (tree, int);
@@ -3514,7 +3506,6 @@ extern void push_temp_slots (void);
 extern void preserve_temp_slots (rtx);
 extern void preserve_rtl_expr_temps (tree);
 extern int aggregate_value_p (tree, tree);
-extern void free_temps_for_rtl_expr (tree);
 extern void push_function_context (void);
 extern void pop_function_context (void);
 extern void push_function_context_to (tree);
@@ -3541,7 +3532,6 @@ extern rtx expand_builtin_return_addr (enum built_in_function, int, rtx);
 extern void check_max_integer_computation_mode (tree);
 
 /* In emit-rtl.c */
-extern void start_sequence_for_rtl_expr (tree);
 extern rtx emit_line_note (location_t);
 
 /* In calls.c */

@@ -1,3 +1,53 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (RTL_EXPR): Remove.
+	* c-typeck.c (lvalue_p): Don't handle it.
+	* expr.c (safe_from_p): Likewise.
+	(expand_expr_real_1): Likewise.
+	* fold-const.c (non_lvalue, operand_equal_p, fold): Likewise.	
+	(fold_checksum_tree, tree_expr_nonnegative_p): Likewise.
+	* gengtype.c (adjust_field_tree_exp): Likewise.
+	* stmt.c (warn_if_unused_value): Likewise.
+	* tree-gimple.c (recalculate_side_effects): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree.c (make_node_stat, first_rtl_op, unsave_expr_1): Likewise.
+	(unsafe_for_reeval, stabilize_reference, build1_stat): Likewise.
+	* tree.h (RTL_EXPR_SEQUENCE, RTL_EXPR_RTL, RTL_EXPR_ALT_RTL): Remove.
+
+	* stmt.c (struct stmt_status): Remove x_last_expr_type,
+	x_last_expr_value, x_last_expr_alt_rtl, x_expr_stmts_for_value.
+	(last_expr_type, last_expr_value, last_expr_alt_rtl): Remove.
+	(expand_expr_stmt): Merge with expand_expr_stmt_value.  Remove
+	all the bits that tracked last_expr.
+	(expand_end_bindings): Don't track last_expr.
+	(expand_start_stmt_expr, expand_end_stmt_expr): Remove.
+	(clear_last_expr): Remove.
+	(expand_asm): Don't call it.
+	(expand_asm_operands, expand_end_cond): Likewise.
+	(expand_naked_return, expand_null_return_1): Likewise.
+	* c-typeck.c (c_begin_compound_stmt): Likewise.
+	* cfgexpand.c (expand_block): Use expand_expr_stmt.
+	* expr.c (expand_expr_real_1): Likewise.
+	* tree.h: Update prototypes.
+
+	* function.h (struct sequence_stack): Remove sequence_rtl_expr.
+	(struct emit_status): Remove sequence_rtl_expr.
+	(struct function): Remove x_rtl_expr_chain.
+	(seq_rtl_expr, rtl_expr_chain): Remove.
+	* function.c (struct temp_slot): Remove rtl_expr.
+	(assign_stack_temp_for_type): Don't set it.
+	(free_temp_slots, pop_temp_slots): Don't check it.
+	(free_after_compilation): Don't clear x_rtl_expr_chain.
+	(fixup_var_refs): Don't search it.
+	(preserve_rtl_expr_result, free_temps_for_rtl_expr): Remove.
+	* emit-rtl.c (start_sequence): Don't use sequence_rtl_expr
+	or seq_rtl_expr.
+	(push_topmost_sequence): Likewise.
+	(end_sequence, init_emit): Likewise.
+	(start_sequence_for_rtl_expr): Remove.
+	* expmed.c (make_tree): Build a VAR_DECL instead of an RTL_EXPR.
+	* rtl.h (preserve_rtl_expr_result): Remove.
+
 2004-07-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ifcvt.c, modulo-sched.c, tree-alias-common.c, tree-sra.c,

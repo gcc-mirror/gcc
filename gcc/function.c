@@ -186,8 +186,6 @@ struct temp_slot GTY(())
      It can be reused if objects of the type of the new slot will always
      conflict with objects of the type of the old slot.  */
   tree type;
-  /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
-  tree rtl_expr;
   /* Nonzero if this temporary is currently in use.  */
   char in_use;
   /* Nonzero if this temporary has its address taken.  */
@@ -440,7 +438,6 @@ free_after_compilation (struct function *f)
   f->x_naked_return_label = NULL;
   f->x_save_expr_regs = NULL;
   f->x_stack_slot_list = NULL;
-  f->x_rtl_expr_chain = NULL;
   f->x_tail_recursion_reentry = NULL;
   f->x_arg_pointer_save_area = NULL;
   f->x_parm_birth_insn = NULL;
@@ -768,7 +765,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 						    rounded_size));
 	      p->align = best_p->align;
 	      p->address = 0;
-	      p->rtl_expr = 0;
 	      p->type = best_p->type;
 	      insert_slot_to_list (p, &avail_temp_slots);
 
@@ -834,7 +830,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
   p = selected;
   p->in_use = 1;
   p->addr_taken = 0;
-  p->rtl_expr = seq_rtl_expr;
   p->type = type;
 
   if (keep == 2)
@@ -1230,39 +1225,8 @@ preserve_temp_slots (rtx x)
     }
 }
 
-/* X is the result of an RTL_EXPR.  If it is a temporary slot associated
-   with that RTL_EXPR, promote it into a temporary slot at the present
-   level so it will not be freed when we free slots made in the
-   RTL_EXPR.  */
-
-void
-preserve_rtl_expr_result (rtx x)
-{
-  struct temp_slot *p;
-
-  /* If X is not in memory or is at a constant address, it cannot be in
-     a temporary slot.  */
-  if (x == 0 || !MEM_P (x) || CONSTANT_P (XEXP (x, 0)))
-    return;
-
-  /* If we can find a match, move it to our level unless it is already at
-     an upper level.  */
-  p = find_temp_slot_from_address (XEXP (x, 0));
-  if (p != 0)
-    {
-      move_slot_to_level (p, MIN (p->level, temp_slot_level));
-      p->rtl_expr = 0;
-    }
-
-  return;
-}
-
-/* Free all temporaries used so far.  This is normally called at the end
-   of generating code for a statement.  Don't free any temporaries
-   currently in use for an RTL_EXPR that hasn't yet been emitted.
-   We could eventually do better than this since it can be reused while
-   generating the same RTL_EXPR, but this is complex and probably not
-   worthwhile.  */
+/* Free all temporaries used so far.  This is normally called at the
+   end of generating code for a statement.  */
 
 void
 free_temp_slots (void)
@@ -1273,35 +1237,8 @@ free_temp_slots (void)
     {
       next = p->next;
 
-      if (!p->keep && p->rtl_expr == 0)
+      if (!p->keep)
 	make_slot_available (p);
-    }
-
-  combine_temp_slots ();
-}
-
-/* Free all temporary slots used in T, an RTL_EXPR node.  */
-
-void
-free_temps_for_rtl_expr (tree t)
-{
-  struct temp_slot *p, *next;
-
-  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
-    {
-      next = p->next;
-
-      if (p->rtl_expr == t)
-	{
-	  /* If this slot is below the current TEMP_SLOT_LEVEL, then it
-	     needs to be preserved.  This can happen if a temporary in
-	     the RTL_EXPR was addressed; preserve_temp_slots will move
-	     the temporary into a higher level.  */
-	  if (temp_slot_level <= p->level)
-	    make_slot_available (p);
-	  else
-	    p->rtl_expr = NULL_TREE;
-	}
     }
 
   combine_temp_slots ();
@@ -1326,9 +1263,7 @@ pop_temp_slots (void)
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
     {
       next = p->next;
-
-      if (p->rtl_expr == 0)
-	make_slot_available (p);
+      make_slot_available (p);
     }
 
   combine_temp_slots ();
@@ -1587,10 +1522,8 @@ static void
 fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
 		rtx may_share, htab_t ht)
 {
-  tree pending;
   rtx first_insn = get_insns ();
   struct sequence_stack *stack = seq_stack;
-  tree rtl_exps = rtl_expr_chain;
   int save_volatile_ok = volatile_ok;
 
   /* If there's a hash table, it must record all uses of VAR.  */
@@ -1619,19 +1552,6 @@ fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
       stack->first = get_insns ();
       stack->last = get_last_insn ();
       end_sequence ();
-    }
-
-  /* Scan all waiting RTL_EXPRs too.  */
-  for (pending = rtl_exps; pending; pending = TREE_CHAIN (pending))
-    {
-      rtx seq = RTL_EXPR_SEQUENCE (TREE_VALUE (pending));
-      if (seq != const0_rtx && seq != 0)
-	{
-	  push_to_sequence (seq);
-	  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0,
-				may_share);
-	  end_sequence ();
-	}
     }
 
   volatile_ok = save_volatile_ok;

@@ -1,3 +1,9 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* class.c (fixed_type_or_null): Don't handle RTL_EXPR.
+	* method.c (synthesize_method): Don't clear_last_expr.
+	* name-lookup.c (maybe_push_cleanup_level): Likewise.
+
 2004-07-01  Nick Clifton  <nickc@redhat.com>
 
 	* decl2.c (import_export_class): Invoke the

@@ -334,7 +334,6 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	case INIT_EXPR:
 	case MODIFY_EXPR:
 	case VA_ARG_EXPR:
-	case RTL_EXPR:
 	case PREDECREMENT_EXPR:
 	case PREINCREMENT_EXPR:
 	case POSTDECREMENT_EXPR:
@@ -1455,7 +1454,6 @@ first_rtl_op (enum tree_code code)
     case SAVE_EXPR:
       return 2;
     case GOTO_SUBROUTINE_EXPR:
-    case RTL_EXPR:
       return 0;
     case WITH_CLEANUP_EXPR:
       return 2;
@@ -1530,12 +1528,6 @@ unsave_expr_1 (tree expr)
       TREE_OPERAND (expr, 3) = NULL_TREE;
       break;
 
-    case RTL_EXPR:
-      /* I don't yet know how to emit a sequence multiple times.  */
-      if (RTL_EXPR_SEQUENCE (expr) != 0)
-	abort ();
-      break;
-
     default:
       break;
     }
@@ -1552,10 +1544,7 @@ unsave_expr_1 (tree expr)
    SAVE_EXPRs basically *only* appear replicated in an expression tree,
    occasionally across the whole of a function.  It is therefore only
    safe to unsave a SAVE_EXPR if you know that all occurrences appear
-   below the UNSAVE_EXPR.
-
-   RTL_EXPRs consume their rtl during evaluation.  It is therefore
-   never possible to unsave them.  */
+   below the UNSAVE_EXPR.  */
 
 int
 unsafe_for_reeval (tree expr)
@@ -1575,7 +1564,6 @@ unsafe_for_reeval (tree expr)
   switch (code)
     {
     case SAVE_EXPR:
-    case RTL_EXPR:
       return 2;
 
       /* A label can only be emitted once.  */
@@ -2194,13 +2182,6 @@ stabilize_reference (tree ref)
 	 volatiles.  */
       return stabilize_reference_1 (ref);
 
-    case RTL_EXPR:
-      result = build1 (INDIRECT_REF, TREE_TYPE (ref),
-		       save_expr (build1 (ADDR_EXPR,
-					  build_pointer_type (TREE_TYPE (ref)),
-					  ref)));
-      break;
-
       /* If arg isn't a kind of lvalue we recognize, make no change.
 	 Caller should recognize the error for an invalid lvalue.  */
     default:
@@ -2459,7 +2440,6 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
     case INIT_EXPR:
     case MODIFY_EXPR:
     case VA_ARG_EXPR:
-    case RTL_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:

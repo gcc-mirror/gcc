@@ -1533,9 +1533,7 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
      could get the wrong value for an argument.
 
      To avoid this problem we go ahead and emit code to copy the addresses of
-     DST and SRC and SIZE into new pseudos.  We can then place those new
-     pseudos into an RTL_EXPR and use them later, even after a call to
-     emit_queue.
+     DST and SRC and SIZE into new pseudos.
 
      Note this is not strictly needed for library calls since they do not call
      emit_queue before loading their arguments.  However, we may need to have
@@ -2665,9 +2663,7 @@ clear_storage_via_libcall (rtx object, rtx size)
      not careful we could get the wrong value for an argument.
 
      To avoid this problem we go ahead and emit code to copy OBJECT
-     and SIZE into new pseudos.  We can then place those new pseudos
-     into an RTL_EXPR and use them later, even after a call to
-     emit_queue.
+     and SIZE into new pseudos.
 
      Note this is not strictly needed for library calls since they
      do not call emit_queue before loading their arguments.  However,
@@ -6138,16 +6134,6 @@ safe_from_p (rtx x, tree exp, int top_p)
 	    return 0;
 	  break;
 
-	case RTL_EXPR:
-	  /* If a sequence exists, we would have to scan every instruction
-	     in the sequence to see if it was safe.  This is probably not
-	     worthwhile.  */
-	  if (RTL_EXPR_SEQUENCE (exp))
-	    return 0;
-
-	  exp_rtl = RTL_EXPR_RTL (exp);
-	  break;
-
 	case WITH_CLEANUP_EXPR:
 	  exp_rtl = WITH_CLEANUP_EXPR_RTL (exp);
 	  break;
@@ -6962,7 +6948,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case LABELED_BLOCK_EXPR:
       if (LABELED_BLOCK_BODY (exp))
-	expand_expr_stmt_value (LABELED_BLOCK_BODY (exp), 0, 1);
+	expand_expr_stmt (LABELED_BLOCK_BODY (exp));
       /* Should perhaps use expand_label, but this is simpler and safer.  */
       do_pending_stack_adjust ();
       emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
@@ -6979,32 +6965,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree block = BIND_EXPR_BLOCK (exp);
 	int mark_ends;
 
-	if (TREE_CODE (BIND_EXPR_BODY (exp)) != RTL_EXPR)
-	  {
-	    /* If we're in functions-as-trees mode, this BIND_EXPR represents
-	       the block, so we need to emit NOTE_INSN_BLOCK_* notes.  */
-	    mark_ends = (block != NULL_TREE);
-	    expand_start_bindings_and_block (mark_ends ? 0 : 2, block);
-	  }
-	else
-	  {
-	    /* If we're not in functions-as-trees mode, we've already emitted
-	       those notes into our RTL_EXPR, so we just want to splice our BLOCK
-	       into the enclosing one.  */
-	    mark_ends = 0;
-
-	    /* Need to open a binding contour here because
-	       if there are any cleanups they must be contained here.  */
-	    expand_start_bindings_and_block (2, NULL_TREE);
-
-	    /* Mark the corresponding BLOCK for output in its proper place.  */
-	    if (block)
-	      {
-		if (TREE_USED (block))
-		  abort ();
-		lang_hooks.decls.insert_block (block);
-	      }
-	  }
+	/* If we're in functions-as-trees mode, this BIND_EXPR represents
+	   the block, so we need to emit NOTE_INSN_BLOCK_* notes.  */
+	mark_ends = (block != NULL_TREE);
+	expand_start_bindings_and_block (mark_ends ? 0 : 2, block);
 
 	/* If VARS have not yet been expanded, expand them now.  */
 	expand_vars (BIND_EXPR_VARS (exp));
@@ -7020,20 +6984,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	return temp;
       }
-
-    case RTL_EXPR:
-      if (RTL_EXPR_SEQUENCE (exp))
-	{
-	  if (RTL_EXPR_SEQUENCE (exp) == const0_rtx)
-	    abort ();
-	  emit_insn (RTL_EXPR_SEQUENCE (exp));
-	  RTL_EXPR_SEQUENCE (exp) = const0_rtx;
-	}
-      preserve_rtl_expr_result (RTL_EXPR_RTL (exp));
-      free_temps_for_rtl_expr (exp);
-      if (alt_rtl)
-	*alt_rtl = RTL_EXPR_ALT_RTL (exp);
-      return RTL_EXPR_RTL (exp);
 
     case CONSTRUCTOR:
       /* If we don't need the result, just ensure we evaluate any
@@ -7913,7 +7863,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
                    && (GET_MODE_CLASS (mode) == MODE_INT)
                    ? addv_optab : add_optab;
 
-      /* If we are adding a constant, an RTL_EXPR that is sp, fp, or ap, and
+      /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
 	 then to the other thing.  This case can occur during strength
 	 reduction and doing it this way will produce better code if the
@@ -7926,10 +7876,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 1)) == INTEGER_CST
-	  && TREE_CODE (TREE_OPERAND (exp, 1)) == RTL_EXPR
-	  && (RTL_EXPR_RTL (TREE_OPERAND (exp, 1)) == frame_pointer_rtx
-	      || RTL_EXPR_RTL (TREE_OPERAND (exp, 1)) == stack_pointer_rtx
-	      || RTL_EXPR_RTL (TREE_OPERAND (exp, 1)) == arg_pointer_rtx))
+	  && TREE_CODE (TREE_OPERAND (exp, 1)) == VAR_DECL
+	  && (DECL_RTL (TREE_OPERAND (exp, 1)) == frame_pointer_rtx
+	      || DECL_RTL (TREE_OPERAND (exp, 1)) == stack_pointer_rtx
+	      || DECL_RTL (TREE_OPERAND (exp, 1)) == arg_pointer_rtx))
 	{
 	  tree t = TREE_OPERAND (exp, 1);
 

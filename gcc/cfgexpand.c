@@ -59,7 +59,7 @@ expand_block (basic_block bb, FILE * dump_file)
     {
       last = get_last_insn ();
 
-      expand_expr_stmt_value (stmt, 0, 0);
+      expand_expr_stmt (stmt);
 
       /* Java emits line number notes in the top of labels. 
          ??? Make this go away once line number notes are obsoleted.  */
@@ -179,7 +179,7 @@ expand_block (basic_block bb, FILE * dump_file)
 	case CALL_EXPR:
 	case MODIFY_EXPR:
 	case RETURN_EXPR:
-          expand_expr_stmt_value (stmt, 0, 0);
+          expand_expr_stmt (stmt);
 	  for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
 	    {
 	      if (GET_CODE (last) == CALL_INSN && SIBLING_CALL_P (last))
@@ -242,7 +242,7 @@ expand_block (basic_block bb, FILE * dump_file)
 	  break;
 
 	default:
-          expand_expr_stmt_value (stmt, 0, 0);
+          expand_expr_stmt (stmt);
 	  break;
 	}
     }

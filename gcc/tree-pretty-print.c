@@ -1109,10 +1109,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_character (buffer, '>');
       break;
 
-    case RTL_EXPR:
-      NIY;
-      break;
-
     case ENTRY_VALUE_EXPR:
       NIY;
       break;
