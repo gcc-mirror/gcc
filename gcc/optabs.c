@@ -2745,12 +2745,17 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  emit_library_call (memcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
-			     size, Pmode);
+			     convert_to_mode (TYPE_MODE (sizetype), size,
+					      TREE_UNSIGNED (sizetype)),
+			     TYPE_MODE (sizetype));
 #else
 	  emit_library_call (bcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
-			     size, Pmode);
+			     convert_to_mode (TYPE_MODE (integer_type_node),
+					      size,
+					      TREE_UNSIGNED (integer_type_node)),
+			     TYPE_MODE (integer_type_node));
 #endif
 	  emit_cmp_insn (hard_libcall_value (TYPE_MODE (integer_type_node)),
 			 const0_rtx, comparison, NULL_RTX,
