@@ -104,6 +104,7 @@ static alias_set_entry get_alias_set_entry PARAMS ((HOST_WIDE_INT));
 static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
 						      int (*) (rtx, int)));
 static int aliases_everything_p         PARAMS ((rtx));
+static int nonoverlapping_memrefs_p	PARAMS ((rtx, rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
 
@@ -1761,6 +1762,81 @@ aliases_everything_p (mem)
   return 0;
 }
 
+/* Return nonzero if we can deterimine the decls corresponding to memrefs
+   X and Y and they do not overlap.  */
+
+static int
+nonoverlapping_memrefs_p (x, y)
+     rtx x, y;
+{
+  rtx rtlx, rtly;
+  rtx basex, basey;
+  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
+
+  /* Unless both have decls, we can't tell anything.  */
+  if (MEM_DECL (x) == 0 || MEM_DECL (y) == 0)
+    return 0;
+
+  rtlx = DECL_RTL (MEM_DECL (x));
+  rtly = DECL_RTL (MEM_DECL (y));
+
+  /* If either RTL is a REG, they can't overlap unless they are the same
+     because we never reuse that part of the stack frame used for locals for
+     spilled pseudos.  */
+  if ((REG_P (rtlx) || REG_P (rtly)) && ! rtx_equal_p (rtlx, rtly))
+    return 1;
+
+  /* Get the base and offsets of both decls.  If either is a register, we
+     know both are and are the same, so use that as the base.  The only
+     we can avoid overlap is if we can deduce that they are nonoverlapping
+     pieces of that decl, which is very rare.  */
+  basex = REG_P (rtlx) ? rtlx : XEXP (rtlx, 0);
+  if (GET_CODE (basex) == PLUS && GET_CODE (XEXP (basex, 1)) == CONST_INT)
+    offsetx = INTVAL (XEXP (basex, 1)), basex = XEXP (basex, 0);
+
+  basey = REG_P (rtly) ? rtly : XEXP (rtly, 0);
+  if (GET_CODE (basey) == PLUS && GET_CODE (XEXP (basey, 1)) == CONST_INT)
+    offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
+
+  /* If the bases are both constant and they are different, we know these
+     do not overlap.  If they are both registers, we can only deduce
+     something if they are the same register.  */
+  if (CONSTANT_P (basex) && CONSTANT_P (basey) && ! rtx_equal_p (basex, basey))
+    return 1;
+  else if (! rtx_equal_p (basex, basey))
+    return 0;
+
+  sizex = (REG_P (rtlx) ? GET_MODE_SIZE (GET_MODE (rtlx))
+	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
+	   : -1);
+  sizey = (REG_P (rtly) ? GET_MODE_SIZE (GET_MODE (rtly))
+	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
+	   -1);
+
+  /* If we have an offset or size for either memref, it can update the values
+     computed above.  */
+  if (MEM_OFFSET (x))
+    offsetx += INTVAL (MEM_OFFSET (x));
+  if (MEM_OFFSET (y))
+    offsety += INTVAL (MEM_OFFSET (y));
+
+  if (MEM_SIZE (x))
+    sizex = INTVAL (MEM_SIZE (x));
+  if (MEM_SIZE (y))
+    sizey = INTVAL (MEM_SIZE (y));
+
+  /* Put the values of the memref with the lower offset in X's values.  */
+  if (offsetx > offsety)
+    {
+      tem = offsetx, offsetx = offsety, offsety = tem;
+      tem = sizex, sizex = sizey, sizey = tem;
+    }
+
+  /* If we don't know the size of the lower-offset value, we can't tell
+     if they conflict.  Otherwise, we do the test.  */
+  return sizex >= 0 && offsety > offsetx + sizex;
+}
+
 /* True dependence: X is read after store in MEM takes place.  */
 
 int
@@ -1790,6 +1866,9 @@ true_dependence (mem, mem_mode, x, varies)
      This won't handle all cases optimally, but the possible performance
      loss should be negligible.  */
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
+    return 0;
+
+  if (nonoverlapping_memrefs_p (mem, x))
     return 0;
 
   if (mem_mode == VOIDmode)
@@ -1861,6 +1940,9 @@ canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
+  if (nonoverlapping_memrefs_p (x, mem))
+    return 0;
+
   x_addr = get_addr (XEXP (x, 0));
 
   if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
@@ -1915,6 +1997,9 @@ write_dependence_p (mem, x, writep)
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
   if (! writep && RTX_UNCHANGING_P (mem))
+    return 0;
+
+  if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
   x_addr = get_addr (XEXP (x, 0));
