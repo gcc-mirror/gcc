@@ -1,3 +1,9 @@
+2000-05-29  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Set no_new_pseudos after flow1;
+	instead track register_life_up_to_date.  Toggle no_new_pseudos
+	around if_convert.  
+
 2000-05-28  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (output_cbranch): Escape '%' characters

@@ -2614,6 +2614,7 @@ rest_of_compilation (decl)
   int tem;
   int failure = 0;
   int rebuild_label_notes_after_reload;
+  int register_life_up_to_date;
 
   timevar_push (TV_REST_OF_COMPILATION);
 
@@ -3155,6 +3156,9 @@ rest_of_compilation (decl)
   mark_constant_function ();
   timevar_pop (TV_FLOW);
 
+  register_life_up_to_date = 1;
+  no_new_pseudos = 1;
+
   if (warn_uninitialized || extra_warnings)
     {
       uninitialized_vars_warning (DECL_INITIAL (decl));
@@ -3218,7 +3222,9 @@ rest_of_compilation (decl)
       timevar_push (TV_IFCVT);
       open_dump_file (DFI_ce, decl);
 
+      no_new_pseudos = 0;
       if_convert (1);
+      no_new_pseudos = 1;
 
       close_dump_file (DFI_ce, print_rtl_with_bb, insns);
       timevar_pop (TV_IFCVT);
@@ -3240,6 +3246,11 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
+  /* Any of the several passes since flow1 will have munged register
+     lifetime data a bit.  */
+  if (optimize > 0)
+    register_life_up_to_date = 0;
+
 #ifdef OPTIMIZE_MODE_SWITCHING
   if (optimize)
     {
@@ -3250,7 +3261,7 @@ rest_of_compilation (decl)
 	  /* We did work, and so had to regenerate global life information.
 	     Take advantage of this and don't re-recompute register life
 	     information below.  */
-	  no_new_pseudos = 1;
+	  register_life_up_to_date = 1;
 	}
 
       timevar_pop (TV_GCSE);
@@ -3277,9 +3288,9 @@ rest_of_compilation (decl)
       if (ggc_p)
 	ggc_collect ();
 
-      /* Register lifetime information is up to date.  From now on
-	 we can not generate any new pseudos.  */
-      no_new_pseudos = 1;
+      /* Register lifetime information was updated as part of verifying
+	 the schedule.  */
+      register_life_up_to_date = 1;
     }
 #endif
 
@@ -3296,14 +3307,8 @@ rest_of_compilation (decl)
      RUN_JUMP_AFTER_RELOAD records whether or not we need to rerun the
      jump optimizer after register allocation and reloading are finished.  */
 
-  if (! no_new_pseudos)
-    {
-      recompute_reg_usage (insns, ! optimize_size);
-
-      /* Register lifetime information is up to date.  From now on
-	 we can not generate any new pseudos.  */
-      no_new_pseudos = 1;
-    }
+  if (! register_life_up_to_date)
+    recompute_reg_usage (insns, ! optimize_size);
   regclass (insns, max_reg_num (), rtl_dump_file);
   rebuild_label_notes_after_reload = local_alloc ();
 
