@@ -1,3 +1,9 @@
+2003-06-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10845
+	* pt.c (try_class_unification): Correct handling of member class
+	templates.
+
 2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* semantics.c (genrtl_finish_function): Adjust
