@@ -33,7 +33,8 @@
 
 #include "config.h"
 #include "system.h"
-#include "ansidecl.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "flags.h"
 #include "toplev.h"
 
@@ -41,17 +42,11 @@
 #include "tree.h"
 #include "diagnostic.h"
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "treelang.h"
 #include "treetree.h"
 
 extern int yyparse (void);
+
 /* Linked list of symbols - all must be unique in treelang.  */
 
 static GTY(()) struct prod_token_parm_item *symbol_table = NULL;

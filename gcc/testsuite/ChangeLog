@@ -4,7 +4,7 @@
 	* gcc.dg/darwin-ld-3.c: New test.
 	* gcc.dg/darwin-ld-4.c: New test.
 	* gcc.dg/darwin-ld-5.c: New test.
-	
+
 2002-12-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021212-1.c: New test.
@@ -51,6 +51,14 @@
 
 	* gcc.c-torture/compile/20021204-1.c: New test.
 
+2002-12-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/inherit/covariant2.C: New test.
+	* g++.dg/inherit/covariant3.C: New test.
+	* g++.dg/inherit/covariant4.C: New test.
+	* g++.dg/inherit/covariant1.C: Remove XFAIL.
+	* g++.old-deja/g++.robertl/eb17.C: Likewise.
+
 2002-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8688
@@ -82,7 +90,7 @@
 
 	PR c++/8727
 	* g++.dg/inherit/typeinfo1.C: New test.
-	
+
 	PR c++/8663
 	* g++.dg/inherit/typedef1.C: New test.
 
@@ -118,6 +126,11 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20021127.[cx]: New test.
 
+Tue Nov 26 22:09:53 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-cmov[123].c: New tests for conditional move code
+	quality.
+
 2002-11-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/init/brace2.C: New test.
@@ -126,6 +139,10 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/empty10.C: Don't run on non-x86 targets.
+
+2002-11-25  Andreas Bauer  <baueran@in.tum.de>
+
+	* gcc.dg/sibcall-6: New test for indirect sibcalls.
 
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
@@ -231,7 +248,7 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR c/8439
 	* gcc.dg/20021110.c: New test.
-	
+
 2002-11-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vthunk3.C: Run only on x86.
@@ -253,6 +270,11 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/8389
 	* g++.dg/template/access6.C: New test.
+
+Fri Nov  8 13:13:53 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-ssefp-1.c: New test.
+	* gcc.dg/i386-ssefp-1.c: New test.
 
 Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 
@@ -398,6 +420,10 @@ Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/expr/cond1.C: New test.
+
+2002-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/sibcall-5.c: Correct { dg-do run } line.
 
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
@@ -657,6 +683,10 @@ Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 Fri Oct 11 10:56:49 2002  Richard Shann  <richard.shann@superh.com>
 
 	* gcc.c-torture/compile/simd-5.c: New test.
+
+2002-10-10  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/shiftopt-1.c: New test case.
 
 2002-10-10  Jim Wilson  <wilson@redhat.com>
 
@@ -1076,6 +1106,11 @@ Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* g++.dg/other/cxa-atexit1.C: New test.
 
 	* gcc.dg/typeof-2.c: New test.
+
+2002-09-03  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-2.c: New testcase.
+	* gcc.dg/builtins-3.c: New testcase.
 
 2002-09-03  Neil Booth  <neil@daikokuya.co.uk>
 

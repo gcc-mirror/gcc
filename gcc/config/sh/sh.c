@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "insn-config.h"
 #include "rtl.h"
 #include "tree.h"
@@ -200,6 +202,7 @@ static void sh_insert_attributes PARAMS ((tree, tree *));
 static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int sh_use_dfa_interface PARAMS ((void));
 static int sh_issue_rate PARAMS ((void));
+static bool sh_function_ok_for_sibcall PARAMS ((tree, tree));
 
 static bool sh_cannot_modify_jumps_p PARAMS ((void));
 static bool sh_ms_bitfield_layout_p PARAMS ((tree));
@@ -259,6 +262,9 @@ static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
 #define TARGET_INIT_BUILTINS sh_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN sh_expand_builtin
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL sh_function_ok_for_sibcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1013,12 +1019,12 @@ output_far_jump (insn, op)
   if (far && flag_pic && TARGET_SH2)
     {
       braf_base_lab = gen_label_rtx ();
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+      (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (braf_base_lab));
     }
   if (far)
     output_asm_insn (".align	2", 0);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (this.lab));
+  (*targetm.asm_out.internal_label) (asm_out_file, "L", CODE_LABEL_NUMBER (this.lab));
   this.op = op;
   if (far && flag_pic)
     {
@@ -1077,7 +1083,7 @@ output_branch (logic, insn, operands)
     
 	  output_asm_insn ("bra\t%l0", &op0);
 	  fprintf (asm_out_file, "\tnop\n");
-	  ASM_OUTPUT_INTERNAL_LABEL(asm_out_file, "LF", label);
+	  (*targetm.asm_out.internal_label)(asm_out_file, "LF", label);
     
 	  return "";
 	}
@@ -4166,7 +4172,7 @@ final_prescan_insn (insn, opvec, noperands)
 	    asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
 			 CODE_LABEL_NUMBER (XEXP (note, 0)));
 	  else if (GET_CODE (pattern) == SET)
-	    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+	    (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				       CODE_LABEL_NUMBER (XEXP (note, 0)));
 	  else
 	    abort ();
@@ -4189,7 +4195,7 @@ output_jump_label_table ()
 	{
 	  pool_node *p = &pool_vector[i];
 
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+	  (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (p->label));
 	  output_asm_insn (".long	%O0", &p->value);
 	}
@@ -4444,7 +4450,12 @@ calc_live_regs (count_ptr, live_regs_mask)
 	      && flag_pic
 	      && current_function_args_info.call_cookie
 	      && reg == PIC_OFFSET_TABLE_REGNUM)
-	     || (regs_ever_live[reg] && ! call_used_regs[reg])))
+	     || (regs_ever_live[reg] && ! call_used_regs[reg])
+	     || (current_function_calls_eh_return
+		 && (reg == EH_RETURN_DATA_REGNO (0)
+		     || reg == EH_RETURN_DATA_REGNO (1)
+		     || reg == EH_RETURN_DATA_REGNO (2)
+		     || reg == EH_RETURN_DATA_REGNO (3)))))
 	{
 	  live_regs_mask[reg / 32] |= 1 << (reg % 32);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
@@ -4629,6 +4640,9 @@ sh_expand_prologue ()
 	 higher addresses, that are known to be aligned.  Then, we
 	 proceed to saving 32-bit registers that don't need 8-byte
 	 alignment.  */
+      /* Note that if you change this code in a way that affects where
+	 the return register is saved, you have to update not only
+	 sh_expand_epilogue, but also sh_set_return_address.  */
       for (align = 1; align >= 0; align--)
 	for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
 	  if (live_regs_mask[i/32] & (1 << (i % 32)))
@@ -5040,6 +5054,10 @@ sh_expand_epilogue ()
 		       + current_function_args_info.stack_regs * 8,
 		       stack_pointer_rtx, 7, emit_insn);
 
+  if (current_function_calls_eh_return)
+    emit_insn (GEN_ADD3 (stack_pointer_rtx, stack_pointer_rtx,
+			 EH_RETURN_STACKADJ_RTX));
+
   /* Switch back to the normal stack if necessary.  */
   if (sp_switch)
     emit_insn (gen_sp_switch_2 ());
@@ -5068,6 +5086,105 @@ sh_need_epilogue ()
       sh_need_epilogue_known = (epilogue == NULL ? -1 : 1);
     }
   return sh_need_epilogue_known > 0;
+}
+
+/* Emit code to change the current function's return address to RA.
+   TEMP is available as a scratch register, if needed.  */
+
+void
+sh_set_return_address (ra, tmp)
+     rtx ra, tmp;
+{
+  HOST_WIDE_INT live_regs_mask[(FIRST_PSEUDO_REGISTER + 31) / 32];
+  int d;
+  int d_rounding = 0;
+  int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
+  int pr_offset;
+
+  calc_live_regs (&d, live_regs_mask);
+
+  /* If pr_reg isn't life, we can set it (or the register given in
+     sh_media_register_for_return) directly.  */
+  if ((live_regs_mask[pr_reg / 32] & (1 << (pr_reg % 32))) == 0)
+    {
+      rtx rr;
+
+      if (TARGET_SHMEDIA)
+	{
+	  int rr_regno = sh_media_register_for_return ();
+
+	  if (rr_regno < 0)
+	    rr_regno = pr_reg;
+
+	  rr = gen_rtx_REG (DImode, rr_regno);
+	}
+      else
+	rr = gen_rtx_REG (SImode, pr_reg);
+
+      emit_insn (GEN_MOV (rr, ra));
+      /* Tell flow the register for return isn't dead.  */
+      emit_insn (gen_rtx_USE (VOIDmode, rr));
+      return;
+    }
+
+  if (TARGET_SH5)
+    {
+      int i;
+      int offset;
+      int align;
+      
+      if (d % (STACK_BOUNDARY / BITS_PER_UNIT))
+	d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
+		      - d % (STACK_BOUNDARY / BITS_PER_UNIT));
+
+      offset = 0;
+
+      /* We loop twice: first, we save 8-byte aligned registers in the
+	 higher addresses, that are known to be aligned.  Then, we
+	 proceed to saving 32-bit registers that don't need 8-byte
+	 alignment.  */
+      for (align = 0; align <= 1; align++)
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  if (live_regs_mask[i/32] & (1 << (i % 32)))
+	    {
+	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
+
+	      if (mode == SFmode && (i % 2) == 0
+		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
+		  && (live_regs_mask[(i ^ 1) / 32] & (1 << ((i ^ 1) % 32))))
+		{
+		  mode = DFmode;
+		  i++;
+		}
+
+	      /* If we're doing the aligned pass and this is not aligned,
+		 or we're doing the unaligned pass and this is aligned,
+		 skip it.  */
+	      if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT)
+		   == 0) != align)
+		continue;
+
+	      if (i == pr_reg)
+		goto found;
+
+	      offset += GET_MODE_SIZE (mode);
+	    }
+
+      /* We can't find pr register.  */
+      abort ();
+
+    found:
+      pr_offset = (rounded_frame_size (d) - d_rounding + offset
+		   + SHMEDIA_REGS_STACK_ADJUST ());
+    }
+  else
+    pr_offset = rounded_frame_size (d) - d_rounding;
+
+  emit_insn (GEN_MOV (tmp, GEN_INT (pr_offset)));
+  emit_insn (GEN_ADD3 (tmp, tmp, frame_pointer_rtx));
+
+  tmp = gen_rtx_MEM (Pmode, tmp);
+  emit_insn (GEN_MOV (tmp, ra));
 }
 
 /* Clear variables at function end.  */
@@ -7405,6 +7522,19 @@ sh_initialize_trampoline (tramp, fnaddr, cxt)
     }
 }
 
+/* FIXME: This is overly conservative.  A SHcompact function that
+   receives arguments ``by reference'' will have them stored in its
+   own stack frame, so it must not pass pointers or references to
+   these arguments to other functions by means of sibling calls.  */
+static bool
+sh_function_ok_for_sibcall (decl, exp)
+     tree decl;
+     tree exp ATTRIBUTE_UNUSED;
+{
+  return (decl 
+	  && (! TARGET_SHCOMPACT
+	      || current_function_args_info.stack_regs == 0));
+}
 
 /* Machine specific built-in functions.  */
 

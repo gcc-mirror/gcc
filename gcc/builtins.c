@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "machmode.h"
 #include "real.h"
 #include "rtl.h"
@@ -150,7 +152,6 @@ static tree fold_builtin_constant_p	PARAMS ((tree));
 static tree fold_builtin_classify_type	PARAMS ((tree));
 static tree fold_builtin_inf		PARAMS ((tree, int));
 static tree fold_builtin_nan		PARAMS ((tree, tree, int));
-static tree build_function_call_expr	PARAMS ((tree, tree));
 static int validate_arglist		PARAMS ((tree, ...));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
@@ -1484,6 +1485,7 @@ expand_builtin_mathfn (exp, target, subtarget)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode argmode;
+  bool errno_set = true;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
@@ -1534,6 +1536,26 @@ expand_builtin_mathfn (exp, target, subtarget)
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
       builtin_optab = log_optab; break;
+    case BUILT_IN_FLOOR:
+    case BUILT_IN_FLOORF:
+    case BUILT_IN_FLOORL:
+      errno_set = false ; builtin_optab = floor_optab; break;
+    case BUILT_IN_CEIL:
+    case BUILT_IN_CEILF:
+    case BUILT_IN_CEILL:
+      errno_set = false ; builtin_optab = ceil_optab; break;
+    case BUILT_IN_TRUNC:
+    case BUILT_IN_TRUNCF:
+    case BUILT_IN_TRUNCL:
+      errno_set = false ; builtin_optab = trunc_optab; break;
+    case BUILT_IN_ROUND:
+    case BUILT_IN_ROUNDF:
+    case BUILT_IN_ROUNDL:
+      errno_set = false ; builtin_optab = round_optab; break;
+    case BUILT_IN_NEARBYINT:
+    case BUILT_IN_NEARBYINTF:
+    case BUILT_IN_NEARBYINTL:
+      errno_set = false ; builtin_optab = nearbyint_optab; break;
     default:
       abort ();
     }
@@ -1554,7 +1576,7 @@ expand_builtin_mathfn (exp, target, subtarget)
 
   /* If errno must be maintained, we must set it to EDOM for NaN results.  */
 
-  if (flag_errno_math && HONOR_NANS (argmode))
+  if (flag_errno_math && errno_set && HONOR_NANS (argmode))
     {
       rtx lab1;
 
@@ -3744,6 +3766,21 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_FPUTC_UNLOCKED:
       case BUILT_IN_FPUTS_UNLOCKED:
       case BUILT_IN_FWRITE_UNLOCKED:
+      case BUILT_IN_FLOOR:
+      case BUILT_IN_FLOORF:
+      case BUILT_IN_FLOORL:
+      case BUILT_IN_CEIL:
+      case BUILT_IN_CEILF:
+      case BUILT_IN_CEILL:
+      case BUILT_IN_TRUNC:
+      case BUILT_IN_TRUNCF:
+      case BUILT_IN_TRUNCL:
+      case BUILT_IN_ROUND:
+      case BUILT_IN_ROUNDF:
+      case BUILT_IN_ROUNDL:
+      case BUILT_IN_NEARBYINT:
+      case BUILT_IN_NEARBYINTF:
+      case BUILT_IN_NEARBYINTL:
 	return expand_call (exp, target, ignore);
 
       default:
@@ -3794,6 +3831,21 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
+    case BUILT_IN_FLOOR:
+    case BUILT_IN_FLOORF:
+    case BUILT_IN_FLOORL:
+    case BUILT_IN_CEIL:
+    case BUILT_IN_CEILF:
+    case BUILT_IN_CEILL:
+    case BUILT_IN_TRUNC:
+    case BUILT_IN_TRUNCF:
+    case BUILT_IN_TRUNCL:
+    case BUILT_IN_ROUND:
+    case BUILT_IN_ROUNDF:
+    case BUILT_IN_ROUNDL:
+    case BUILT_IN_NEARBYINT:
+    case BUILT_IN_NEARBYINTF:
+    case BUILT_IN_NEARBYINTL:
       target = expand_builtin_mathfn (exp, target, subtarget);
       if (target)
 	return target;
@@ -4080,6 +4132,37 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   return expand_call (exp, target, ignore);
 }
 
+/* Determine whether a tree node represents a call to a built-in
+   math function.  If the tree T is a call to a built-in function
+   taking a single real argument, then the return value is the
+   DECL_FUNCTION_CODE of the call, e.g. BUILT_IN_SQRT.  Otherwise
+   the return value is END_BUILTINS.  */
+   
+enum built_in_function
+builtin_mathfn_code (t)
+     tree t;
+{
+  tree fndecl, arglist;
+
+  if (TREE_CODE (t) != CALL_EXPR
+      || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR)
+    return END_BUILTINS;
+
+  fndecl = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+  if (TREE_CODE (fndecl) != FUNCTION_DECL
+      || ! DECL_BUILT_IN (fndecl)
+      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return END_BUILTINS;
+
+  arglist = TREE_OPERAND (t, 1);
+  if (! arglist
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE
+      || TREE_CHAIN (arglist))
+    return END_BUILTINS;
+
+  return DECL_FUNCTION_CODE (fndecl);
+}
+
 /* Fold a call to __builtin_constant_p, if we know it will evaluate to a
    constant.  ARGLIST is the argument list of the call.  */
 
@@ -4208,6 +4291,103 @@ fold_builtin (exp)
 	}
       break;
 
+    case BUILT_IN_SQRT:
+    case BUILT_IN_SQRTF:
+    case BUILT_IN_SQRTL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  enum built_in_function fcode;
+	  tree arg = TREE_VALUE (arglist);
+
+	  /* Optimize sqrt of constant value.  */
+	  if (TREE_CODE (arg) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (arg))
+	    {
+	      enum machine_mode mode;
+	      REAL_VALUE_TYPE r, x;
+
+	      x = TREE_REAL_CST (arg);
+	      mode = TYPE_MODE (TREE_TYPE (arg));
+	      if (!HONOR_SNANS (mode) || !real_isnan (&x))
+	      {
+		real_sqrt (&r, mode, &x);
+		return build_real (TREE_TYPE (arg), r);
+	      }
+	    }
+
+	  /* Optimize sqrt(exp(x)) = exp(x/2.0).  */
+	  fcode = builtin_mathfn_code (arg);
+	  if (flag_unsafe_math_optimizations
+	      && (fcode == BUILT_IN_EXP
+		  || fcode == BUILT_IN_EXPF
+		  || fcode == BUILT_IN_EXPL))
+	    {
+	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	      arg = build (RDIV_EXPR, TREE_TYPE (arg),
+			   TREE_VALUE (TREE_OPERAND (arg, 1)),
+			   build_real (TREE_TYPE (arg), dconst2));
+	      arglist = build_tree_list (NULL_TREE, arg);
+	      return build_function_call_expr (expfn, arglist);
+	    }
+	}
+      break;
+
+    case BUILT_IN_EXP:
+    case BUILT_IN_EXPF:
+    case BUILT_IN_EXPL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  enum built_in_function fcode;
+	  tree arg = TREE_VALUE (arglist);
+
+	  /* Optimize exp(0.0) = 1.0.  */
+	  if (real_zerop (arg))
+	    return build_real (TREE_TYPE (arg), dconst1);
+
+	  /* Optimize exp(log(x)) = x.  */
+	  fcode = builtin_mathfn_code (arg);
+	  if (flag_unsafe_math_optimizations
+	      && (fcode == BUILT_IN_LOG
+		  || fcode == BUILT_IN_LOGF
+		  || fcode == BUILT_IN_LOGL))
+	    return TREE_VALUE (TREE_OPERAND (arg, 1));
+	}
+      break;
+
+    case BUILT_IN_LOG:
+    case BUILT_IN_LOGF:
+    case BUILT_IN_LOGL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  enum built_in_function fcode;
+	  tree arg = TREE_VALUE (arglist);
+
+	  /* Optimize log(1.0) = 0.0.  */
+	  if (real_onep (arg))
+	    return build_real (TREE_TYPE (arg), dconst0);
+
+	  /* Optimize log(exp(x)) = x.  */
+	  fcode = builtin_mathfn_code (arg);
+	  if (flag_unsafe_math_optimizations
+	      && (fcode == BUILT_IN_EXP
+		  || fcode == BUILT_IN_EXPF
+		  || fcode == BUILT_IN_EXPL))
+	    return TREE_VALUE (TREE_OPERAND (arg, 1));
+
+	  /* Optimize log(sqrt(x)) = log(x)/2.0.  */
+	  if (flag_unsafe_math_optimizations
+	      && (fcode == BUILT_IN_SQRT
+		  || fcode == BUILT_IN_SQRTF
+		  || fcode == BUILT_IN_SQRTL))
+	    {
+	      tree logfn = build_function_call_expr (fndecl,
+						     TREE_OPERAND (arg, 1));
+	      return fold (build (RDIV_EXPR, TREE_TYPE (arg), logfn,
+				  build_real (TREE_TYPE (arg), dconst2)));
+	    }
+	}
+      break;
+
     case BUILT_IN_INF:
     case BUILT_IN_INFF:
     case BUILT_IN_INFL:
@@ -4235,7 +4415,9 @@ fold_builtin (exp)
   return 0;
 }
 
-static tree
+/* Conveniently construct a function call expression.  */
+
+tree
 build_function_call_expr (fn, arglist)
      tree fn, arglist;
 {

@@ -20,6 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -2618,7 +2620,7 @@ mcore_output_jump_label_table ()
 	{
 	  pool_node * p = pool_vector + i;
 
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (p->label));
+	  (*targetm.asm_out.internal_label) (asm_out_file, "L", CODE_LABEL_NUMBER (p->label));
 	  
 	  output_asm_insn (".long	%0", &p->value);
 	}

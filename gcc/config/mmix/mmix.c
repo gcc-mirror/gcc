@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1575,17 +1577,6 @@ mmix_asm_output_labelref (stream, name)
   asm_fprintf (stream, "%s%U%s",
 	       is_extern && TARGET_TOPLEVEL_SYMBOLS ? ":" : "",
 	       name);
-}
-
-/* ASM_OUTPUT_INTERNAL_LABEL.  */
-
-void
-mmix_asm_output_internal_label (stream, name, num)
-     FILE * stream;
-     const char * name;
-     int num;
-{
-  fprintf (stream, "%s:%d\tIS @\n", name, num);
 }
 
 /* ASM_OUTPUT_DEF.  */

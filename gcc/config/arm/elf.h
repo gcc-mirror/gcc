@@ -128,26 +128,6 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 #endif
-
-/* Output an internal label definition.  */
-#undef  ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
-  do								\
-    {								\
-      char * s = (char *) alloca (40 + strlen (PREFIX));	\
-      extern int arm_target_label, arm_ccfsm_state;		\
-      extern rtx arm_target_insn;				\
-								\
-      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)	\
-	  && !strcmp (PREFIX, "L"))				\
-	{							\
-	  arm_ccfsm_state = 0;					\
-	  arm_target_insn = NULL;				\
-	}							\
-      ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));		\
-      ASM_OUTPUT_LABEL (STREAM, s);		                \
-    }								\
-  while (0)
 
 #undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  arm_elf_asm_named_section

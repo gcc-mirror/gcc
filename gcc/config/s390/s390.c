@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -5566,7 +5568,7 @@ s390_function_profiler (file, labelno)
       output_asm_insn ("bras\t%2,%l6", op);
       output_asm_insn (".long\t%4", op);
       output_asm_insn (".long\t%3", op);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[6]));
       output_asm_insn ("l\t%0,0(%2)", op);
       output_asm_insn ("l\t%2,4(%2)", op);
       output_asm_insn ("basr\t%0,%0", op);
@@ -5579,10 +5581,10 @@ s390_function_profiler (file, labelno)
 
       output_asm_insn ("st\t%0,%1", op);
       output_asm_insn ("bras\t%2,%l6", op);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[5]));
       output_asm_insn (".long\t%4-%l5", op);
       output_asm_insn (".long\t%3-%l5", op);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[6]));
       output_asm_insn ("lr\t%0,%2", op);
       output_asm_insn ("a\t%0,0(%2)", op);
       output_asm_insn ("a\t%2,4(%2)", op);
@@ -5728,16 +5730,19 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       if (op[5])
 	{
 	  output_asm_insn (".align\t4", op);
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[5]));
 	}
       if (op[6])
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[6]));
 	  output_asm_insn (".long\t%2", op);
 	}
       if (op[7])
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[7]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[7]));
 	  output_asm_insn (".long\t%3", op);
 	}
     }
@@ -5750,7 +5755,8 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[5]));
 	}
 
       /* Add DELTA to this pointer.  */
@@ -5793,7 +5799,8 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	     Re-setup the base pointer (with a different base).  */
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[5]));
 	}
 
       /* Jump to target.  */
@@ -5806,7 +5813,7 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 
       /* Output literal pool.  */
       output_asm_insn (".align\t4", op);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[8]));
+      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[8]));
       if (!flag_pic)
 	output_asm_insn (".long\t%0", op);
       else
@@ -5814,12 +5821,14 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 
       if (op[6])
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[6]));
 	  output_asm_insn (".long\t%2", op);
 	}
       if (op[7])
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[7]));
+	  (*targetm.asm_out.internal_label) (file, "L",
+					     CODE_LABEL_NUMBER (op[7]));
 	  output_asm_insn (".long\t%3", op);
 	}
     }

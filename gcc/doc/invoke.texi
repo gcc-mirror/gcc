@@ -305,12 +305,12 @@ in the following sections.
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap @gol
--trigraphs  -undef  -U@var{macro}  -Wp,@var{option}}
+-trigraphs  -undef  -U@var{macro}  -Wp,@var{option} -Xpreprocessor @var{option}}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
 @gccoptlist{
--Wa,@var{option}}
+-Wa,@var{option} -Xassembler @var{option}}
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
@@ -4310,6 +4310,7 @@ Some of these options make sense only together with @option{-E} because
 they cause the preprocessor output to be unsuitable for actual
 compilation.
 
+@table @gcctabopt
 @opindex Wp
 You can use @option{-Wp,@var{option}} to bypass the compiler driver
 and pass @var{option} directly through to the preprocessor.  If
@@ -4320,6 +4321,16 @@ by the compiler driver before being passed to the preprocessor, and
 interface is undocumented and subject to change, so whenever possible
 you should avoid using @option{-Wp} and let the driver handle the
 options instead.
+
+@item -Xpreprocessor @var{option}
+@opindex preprocessor
+Pass @var{option} as an option to the preprocessor.  You can use this to
+supply system-specific preprocessor options which GCC does not know how to
+recognize.
+
+If you want to pass an option that takes an argument, you must use
+@option{-Xpreprocessor} twice, once for the option and once for the argument.
+@end table
 
 @include cppopts.texi
 
@@ -4334,6 +4345,16 @@ You can pass options to the assembler.
 @opindex Wa
 Pass @var{option} as an option to the assembler.  If @var{option}
 contains commas, it is split into multiple options at the commas.
+
+@item -Xassembler @var{option}
+@opindex Xassembler
+Pass @var{option} as an option to the assembler.  You can use this to
+supply system-specific assembler options which GCC does not know how to
+recognize.
+
+If you want to pass an option that takes an argument, you must use
+@option{-Xassembler} twice, once for the option and once for the argument.
+
 @end table
 
 @node Link Options
@@ -4846,12 +4867,21 @@ for each @samp{%g.s} and another for each @samp{%U.s}.  Previously, @samp{%U} wa
 simply substituted with a file name chosen for the previous @samp{%u},
 without regard to any appended suffix.
 
-@item %j@var{SUFFIX}
+@item %j@var{suffix}
 Substitutes the name of the @code{HOST_BIT_BUCKET}, if any, and if it is
 writable, and if save-temps is off; otherwise, substitute the name
 of a temporary file, just like @samp{%u}.  This temporary file is not
 meant for communication between processes, but rather as a junk
 disposal mechanism.
+
+@item %|@var{suffix}
+@itemx %m@var{suffix}
+Like @samp{%g}, except if @option{-pipe} is in effect.  In that case
+@samp{%|} substitutes a single dash and @samp{%m} substitutes nothing at
+all.  These are the two most common ways to instruct a program that it
+should read from standard input or write to standard output.  If you
+need something more elaborate you can use an @samp{%@{pipe:@code{X}@}}
+construct: see for example @file{f/lang-specs.h}.
 
 @item %.@var{SUFFIX}
 Substitutes @var{.SUFFIX} for the suffixes of a matched switch's args
@@ -4902,9 +4932,6 @@ the full name found.
 @item %e@var{str}
 Print @var{str} as an error message.  @var{str} is terminated by a newline.
 Use this when inconsistent options are detected.
-
-@item %|
-Output @samp{-} if the input for the current command is coming from a pipe.
 
 @item %(@var{name})
 Substitute the contents of spec string @var{name} at this point.
@@ -5002,6 +5029,12 @@ Substitute the variable part of a matched option.  See below.
 Note that each comma in the substituted string is replaced by
 a single space.
 
+@item %<@code{S}
+Remove all occurrences of @code{-S} from the command line.  Note---this
+command is position dependent.  @samp{%} commands in the spec string
+before this one will see @code{-S}, @samp{%} commands in the spec string
+after this one will not.
+
 @item %:@var{function}(@var{args})
 Call the named function @var{function}, passing it @var{args}.
 @var{args} is first processed as a nested spec string, then split
@@ -5056,51 +5089,40 @@ GCC considers @option{-o foo} as being
 one switch whose names starts with @samp{o}.  %@{o*@} would substitute this
 text, including the space.  Thus two arguments would be generated.
 
-@item %@{^@code{S}*@}
-Like %@{@code{S}*@}, but don't put a blank between a switch and its
-argument.  Thus %@{^o*@} would only generate one argument, not two.
-
 @item %@{@code{S}*&@code{T}*@}
 Like %@{@code{S}*@}, but preserve order of @code{S} and @code{T} options
 (the order of @code{S} and @code{T} in the spec is not significant).
 There can be any number of ampersand-separated variables; for each the
 wild card is optional.  Useful for CPP as @samp{%@{D*&U*&A*@}}.
 
-@item %@{<@code{S}@}
-Remove all occurrences of @code{-S} from the command line.  Note---this
-command is position dependent.  @samp{%} commands in the spec string
-before this option will see @code{-S}, @samp{%} commands in the spec
-string after this option will not.
+@item %@{@code{S}:@code{X}@}
+Substitutes @code{X}, if the @samp{-S} switch was given to GCC@.
+
+@item %@{!@code{S}:@code{X}@}
+Substitutes @code{X}, if the @samp{-S} switch was @emph{not} given to GCC@.
 
 @item %@{@code{S}*:@code{X}@}
 Substitutes @code{X} if one or more switches whose names start with
-@code{-S} are specified to GCC@.  Note that the tail part of the
-@code{-S} option (i.e.@: the part matched by the @samp{*}) will be substituted
-for each occurrence of @samp{%*} within @code{X}.
-
-@item %@{@code{S}:@code{X}@}
-Substitutes @code{X}, but only if the @samp{-S} switch was given to GCC@.
-
-@item %@{!@code{S}:@code{X}@}
-Substitutes @code{X}, but only if the @samp{-S} switch was @emph{not} given to GCC@.
-
-@item %@{|@code{S}:@code{X}@}
-Like %@{@code{S}:@code{X}@}, but if no @code{S} switch, substitute @samp{-}.
-
-@item %@{|!@code{S}:@code{X}@}
-Like %@{!@code{S}:@code{X}@}, but if there is an @code{S} switch, substitute @samp{-}.
+@code{-S} are specified to GCC@.  Normally @code{X} is substituted only
+once, no matter how many such switches appeared.  However, if @code{%*}
+appears somewhere in @code{X}, then @code{X} will be substituted once
+for each matching switch, with the @code{%*} replaced by the part of
+that switch that matched the @code{*}.
 
 @item %@{.@code{S}:@code{X}@}
-Substitutes @code{X}, but only if processing a file with suffix @code{S}.
+Substitutes @code{X}, if processing a file with suffix @code{S}.
 
 @item %@{!.@code{S}:@code{X}@}
-Substitutes @code{X}, but only if @emph{not} processing a file with suffix @code{S}.
+Substitutes @code{X}, if @emph{not} processing a file with suffix @code{S}.
 
 @item %@{@code{S}|@code{P}:@code{X}@}
-Substitutes @code{X} if either @code{-S} or @code{-P} was given to GCC@.  This may be
-combined with @samp{!} and @samp{.} sequences as well, although they
-have a stronger binding than the @samp{|}.  For example a spec string
-like this:
+Substitutes @code{X} if either @code{-S} or @code{-P} was given to GCC@.
+This may be combined with @samp{!}, @samp{.}, and @code{*} sequences as well,
+although they have a stronger binding than the @samp{|}.  If @code{%*}
+appears in @code{X}, all of the alternatives must be starred, and only
+the first matching alternative is substituted.
+
+For example, a spec string like this:
 
 @smallexample
 %@{.c:-foo@} %@{!.c:-bar@} %@{.c|d:-baz@} %@{!.c|d:-boggle@}
@@ -5116,23 +5138,33 @@ jim.d         -bar -boggle
 -d jim.d      -bar -baz -boggle
 @end smallexample
 
+@item %@{S:X; T:Y; :D@}
+
+If @code{S} was given to GCC, substitues @code{X}; else if @code{T} was
+given to GCC, substitues @code{Y}; else substitutes @code{D}.  There can
+be as many clauses as you need.  This may be combined with @code{.}, 
+@code{!}, @code{|}, and @code{*} as needed.
+
+
 @end table
 
-The conditional text @code{X} in a %@{@code{S}:@code{X}@} or
-%@{!@code{S}:@code{X}@} construct may contain other nested @samp{%} constructs
-or spaces, or even newlines.  They are processed as usual, as described
-above.
+The conditional text @code{X} in a %@{@code{S}:@code{X}@} or similar
+construct may contain other nested @samp{%} constructs or spaces, or
+even newlines.  They are processed as usual, as described above.
+Trailing white space in @code{X} is ignored.  White space may also
+appear anywhere on the left side of the colon in these constructs,
+except between @code{.} or @code{*} and the corresponding word.
 
-The @option{-O}, @option{-f}, @option{-m}, and @option{-W}
-switches are handled specifically in these
-constructs.  If another value of @option{-O} or the negated form of a @option{-f}, @option{-m}, or
-@option{-W} switch is found later in the command line, the earlier switch
-value is ignored, except with @{@code{S}*@} where @code{S} is just one
-letter, which passes all matching options.
+The @option{-O}, @option{-f}, @option{-m}, and @option{-W} switches are
+handled specifically in these constructs.  If another value of
+@option{-O} or the negated form of a @option{-f}, @option{-m}, or
+@option{-W} switch is found later in the command line, the earlier
+switch value is ignored, except with @{@code{S}*@} where @code{S} is
+just one letter, which passes all matching options.
 
-The character @samp{|} at the beginning of the predicate text is used to indicate
-that a command should be piped to the following command, but only if @option{-pipe}
-is specified.
+The character @samp{|} at the beginning of the predicate text is used to
+indicate that a command should be piped to the following command, but
+only if @option{-pipe} is specified.
 
 It is built into GCC which switches take arguments and which do not.
 (You might think it would be useful to generalize this to allow each
@@ -7856,7 +7888,7 @@ for the ABI and the set of available instructions.  The choices for
 @samp{pentium}, @samp{pentium-mmx}, @samp{pentiumpro}, @samp{pentium2},
 @samp{pentium3}, @samp{pentium4}, @samp{k6}, @samp{k6-2}, @samp{k6-3},
 @samp{athlon}, @samp{athlon-tbird}, @samp{athlon-4}, @samp{athlon-xp},
-@samp{athlon-mp}, @samp{winchip-c6}, @samp{winchip2} and @samp{c3}.
+@samp{athlon-mp}, @samp{winchip-c6}, @samp{winchip2}, @samp{k8} and @samp{c3}.
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that

@@ -4206,7 +4206,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_THUMB && flag_pic"
   "*
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (operands[1]));
   return \"add\\t%0, %|pc\";
   "
@@ -4219,7 +4219,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_ARM && flag_pic"
   "*
-    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			       CODE_LABEL_NUMBER (operands[1]));
     return \"add%?\\t%0, %|pc, %0\";
   "

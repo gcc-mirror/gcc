@@ -1517,12 +1517,6 @@ typedef struct
   arm_va_arg (valist, type)
 
 
-/* Tail calling.  */
-
-/* A C expression that evaluates to true if it is ok to perform a sibling
-   call to DECL.  */
-#define FUNCTION_OK_FOR_SIBCALL(DECL) arm_function_ok_for_sibcall ((DECL))
-
 /* Perform any actions needed for a function that is receiving a variable
    number of arguments.  CUM is as above.  MODE and TYPE are the mode and type
    of the current parameter.  PRETEND_SIZE is a variable that should be set to
@@ -2486,25 +2480,6 @@ extern int making_const_table;
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF (TARGET_THUMB ? "\t.code\t16\n" : "")
 
-/* Output an internal label definition.  */
-#ifndef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)		\
-  do								\
-    {								\
-      char * s = (char *) alloca (40 + strlen (PREFIX));	\
-								\
-      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)	\
-	  && !strcmp (PREFIX, "L"))				\
-	{							\
-	  arm_ccfsm_state = 0;					\
-	  arm_target_insn = NULL;				\
-	}							\
-      ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));		\
-      ASM_OUTPUT_LABEL (STREAM, s);		                \
-    }								\
-  while (0)
-#endif
-
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)		\
   if (TARGET_ARM)					\
@@ -2529,7 +2504,7 @@ extern int making_const_table;
     {								\
       if (TARGET_THUMB)						\
         ASM_OUTPUT_ALIGN (FILE, 2);				\
-      ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);		\
+      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
     }								\
   while (0)
 

@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #define SWBEG_ASM_OP		"\t.swbeg "
 #define SET_ASM_OP		"\t.set "
 
-#define ASM_PN_FORMAT		"%s_%d"		/* Format for private names */
+#define ASM_PN_FORMAT		"%s_%lu"	/* Format for private names */
 
 /* Here are four prefixes that are used by asm_fprintf to
    facilitate customization for alternate assembler syntaxes.
@@ -360,7 +360,7 @@ do {								\
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\
   do {									\
     ASM_OUTPUT_BEFORE_CASE_LABEL((FILE),(PREFIX),(NUM),(TABLE));	\
-    ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));			\
+    (*targetm.asm_out.internal_label)((FILE),(PREFIX),(NUM));			\
   } while (0)
 
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
@@ -390,13 +390,3 @@ extern int switch_table_difference_label_flag;
    keep switch tables in the text section.  */
    
 #define JUMP_TABLES_IN_TEXT_SECTION 1
-
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#undef ASM_FORMAT_PRIVATE_NAME
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), ASM_PN_FORMAT, (NAME), (LABELNO)))
-

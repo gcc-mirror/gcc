@@ -48,7 +48,7 @@ namespace std
 	 extern_type*& __to_next) const
   {
     result __ret = error;
-    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __len = std::min(__from_end - __from, __to_end - __to);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif
@@ -83,7 +83,7 @@ namespace std
 	intern_type*& __to_next) const
   {
     result __ret = error;
-    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __len = std::min(__from_end - __from, __to_end - __to);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif

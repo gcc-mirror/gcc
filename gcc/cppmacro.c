@@ -25,6 +25,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -1306,8 +1308,9 @@ _cpp_save_parameter (pfile, macro, node)
      cpp_macro *macro;
      cpp_hashnode *node;
 {
+  unsigned int len;
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
-  if (node->arg_index)
+  if (node->flags & NODE_MACRO_ARG)
     {
       cpp_error (pfile, DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
@@ -1319,7 +1322,17 @@ _cpp_save_parameter (pfile, macro, node)
     _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_hashnode *));
 
   ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[macro->paramc++] = node;
-  node->arg_index = macro->paramc;
+  node->flags |= NODE_MACRO_ARG;
+  len = macro->paramc * sizeof (union _cpp_hashnode_value);
+  if (len > pfile->macro_buffer_len)
+    {
+      pfile->macro_buffer = (uchar *) xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer_len = len;
+    }
+  ((union _cpp_hashnode_value *) pfile->macro_buffer)[macro->paramc - 1]
+    = node->value;
+  
+  node->value.arg_index  = macro->paramc;
   return false;
 }
 
@@ -1430,10 +1443,11 @@ lex_expansion_token (pfile, macro)
   token = _cpp_lex_direct (pfile);
 
   /* Is this a parameter?  */
-  if (token->type == CPP_NAME && token->val.node->arg_index)
+  if (token->type == CPP_NAME
+      && (token->val.node->flags & NODE_MACRO_ARG) != 0)
     {
       token->type = CPP_MACRO_ARG;
-      token->val.arg_no = token->val.node->arg_index;
+      token->val.arg_no = token->val.node->value.arg_index;
     }
   else if (CPP_WTRADITIONAL (pfile) && macro->paramc > 0
 	   && (token->type == CPP_STRING || token->type == CPP_CHAR))
@@ -1583,7 +1597,11 @@ _cpp_create_definition (pfile, node)
 
   /* Clear the fast argument lookup indices.  */
   for (i = macro->paramc; i-- > 0; )
-    macro->params[i]->arg_index = 0;
+    {
+      struct cpp_hashnode *node = macro->params[i];
+      node->flags &= ~ NODE_MACRO_ARG;
+      node->value = ((union _cpp_hashnode_value *) pfile->macro_buffer)[i];
+    }
 
   if (!ok)
     return ok;

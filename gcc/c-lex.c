@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #include "real.h"
 #include "rtl.h"
@@ -233,7 +235,7 @@ cb_ident (pfile, line, str)
   if (! flag_no_ident)
     {
       /* Convert escapes in the string.  */
-      tree value = lex_string (str->text, str->len, 0);
+      tree value ATTRIBUTE_UNUSED = lex_string (str->text, str->len, 0);
       ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
     }
 #endif

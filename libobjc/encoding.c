@@ -27,7 +27,11 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
+/* FIXME: This file has no business including tm.h.  */
+
 #include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "objc-api.h"
 #include "encoding.h"
 #include <stdlib.h>

@@ -53,7 +53,6 @@ typedef void *__gthread_mutex_t;
 /* generic per task variables */
 extern int rtems_gxx_once (__gthread_once_t *once, void (*func) (void));
 extern int rtems_gxx_key_create (__gthread_key_t *key, void (*dtor) (void *));
-extern int rtems_gxx_key_dtor (__gthread_key_t key, void *ptr);
 extern int rtems_gxx_key_delete (__gthread_key_t key);
 extern void *rtems_gxx_getspecific (__gthread_key_t key);
 extern int rtems_gxx_setspecific (__gthread_key_t key, const void *ptr);
@@ -83,12 +82,6 @@ static inline int
 __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 {
   return rtems_gxx_key_create( key, dtor );
-}
-
-static inline int
-__gthread_key_dtor (__gthread_key_t key, void *ptr)
-{
-   return rtems_gxx_key_dtor(key, ptr);
 }
 
 static inline int

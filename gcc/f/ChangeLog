@@ -1,7 +1,27 @@
+2002-12-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* target.h: Don't define HOST_WIDE_INT.
+
+2002-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in, ansify.c, intdoc.c, proj.h: Replace hconfig.h with
+	bconfig.h.
+	* fini.c, proj.h: Replace USE_HCONFIG with USE_BCONFIG
+
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* proj.h, ansify.c, g77spec.c, intdoc.c:
+	Include coretypes.h and tm.h.
+	* Make-lang.in: Update dependencies.
+
 2002-11-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* invoke.texi: Explain the purpose of -fmove-all-movables,
 	-freduce-all-givs and -frerun-loop-opts better.
+
+2002-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Correct BUILD/HOST confusion.
 
 2002-11-19  Toon Moene  <toon@moene.indiv.nluug.nl>
 
@@ -31,7 +51,7 @@
 
 2002-10-15  Richard Henderson  <rth@redhat.com>
 
-	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use 
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use
 	real_to_decimal directly, and with the new arguments.
 
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>

@@ -823,7 +823,7 @@ namespace std
         _M_range_initialize(_ForwardIterator __first,
 			    _ForwardIterator __last, forward_iterator_tag)
         {
-	  size_type __n = distance(__first, __last);
+	  size_type __n = std::distance(__first, __last);
 	  _M_start = _M_allocate(__n);
 	  _M_end_of_storage = _M_start + __n;
 	  _M_finish = uninitialized_copy(__first, __last, _M_start);

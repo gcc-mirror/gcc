@@ -8,4 +8,8 @@ MULTILIB_DIRNAMES=
 MULTILIB_MATCHES = 
 MULTILIB_EXCEPTIONS=
 
-EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crtbeginS.o crtendS.o
+EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+
+# Override t-slibgcc-elf-ver to export some libgcc symbols with
+# the symbol versions that glibc used.
+SHLIB_MAPFILES =  $(srcdir)/libgcc-std.ver $(srcdir)/config/sh/libgcc-glibc.ver

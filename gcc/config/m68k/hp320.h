@@ -171,9 +171,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_SKIP
 #undef ASM_OUTPUT_COMMON
 #undef ASM_OUTPUT_LOCAL
-#undef ASM_FORMAT_PRIVATE_NAME
 #undef FUNCTION_PROFILER
-#undef ASM_OUTPUT_INTERNAL_LABEL
 #undef GLOBAL_ASM_OP
 #undef IMMEDIATE_PREFIX
 #undef REGISTER_PREFIX
@@ -249,20 +247,7 @@ Boston, MA 02111-1307, USA.  */
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u,2\n", (ROUNDED)))
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
-  sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
-    fprintf(FILE, "\tset %s%d,.+2\n", PREFIX, NUM);	\
-  else							\
-    fprintf (FILE, "%s%d:\n", PREFIX, NUM);		\
-} while(0)
+#define ASM_PN_FORMAT "%s___%lu"
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%d\n", VALUE)

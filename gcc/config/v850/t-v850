@@ -87,6 +87,6 @@ INSTALL_LIBGCC    = install-multilib
 
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 
-v850-c.o: $(srcdir)/config/v850/v850-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_P_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-
+v850-c.o: $(srcdir)/config/v850/v850-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(CPPLIB_H) $(TREE_H) c-pragma.h toplev.h $(GGC_H) $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/v850/v850-c.c 

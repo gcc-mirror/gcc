@@ -85,8 +85,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   insn_data[24].template to be "clrd %0", and
   insn_data[24].n_operands to be 1.  */
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "errors.h"
 #include "gensupport.h"
@@ -219,6 +221,8 @@ output_prologue ()
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
+  printf ("#include \"coretypes.h\"\n");
+  printf ("#include \"tm.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"rtl.h\"\n");
@@ -235,6 +239,7 @@ output_prologue ()
   printf ("#include \"recog.h\"\n\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");
+  printf ("#include \"target.h\"\n");
 }
 
 

@@ -28,4 +28,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    if it is redundant.  */
 #define DRIVER_SELF_SPECS \
 	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}", \
-	"%{mabi=32:%{<mgp32}}"
+	"%{mabi=32:%<mgp32}"

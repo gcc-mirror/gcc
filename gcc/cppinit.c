@@ -21,6 +21,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 #include "prefix.h"
@@ -87,7 +89,7 @@ struct cpp_pending
 #endif
 
 static void path_include		PARAMS ((cpp_reader *,
-						 char *, int));
+						 const char *, int));
 static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void mark_named_operators	PARAMS ((cpp_reader *));
@@ -150,19 +152,21 @@ END
 #undef END
 #undef TRIGRAPH_MAP
 
-/* Given a colon-separated list of file names PATH,
+/* Read ENV_VAR for a colon-separated list of file names; and
    add all the names to the search path for include files.  */
 static void
-path_include (pfile, list, path)
+path_include (pfile, env_var, path)
      cpp_reader *pfile;
-     char *list;
+     const char *env_var;
      int path;
 {
   char *p, *q, *name;
 
-  p = list;
+  GET_ENVIRONMENT (q, env_var);
+  if (!q)
+    return;
 
-  do
+  for (p = q; *q; p = q + 1)
     {
       /* Find the end of this name.  */
       q = p;
@@ -183,13 +187,7 @@ path_include (pfile, list, path)
 	}
 
       append_include_chain (pfile, name, path, path == SYSTEM);
-
-      /* Advance past this name.  */
-      if (*q == 0)
-	break;
-      p = q + 1;
     }
-  while (1);
 }
 
 /* Append DIR to include path PATH.  DIR must be allocated on the
@@ -710,7 +708,8 @@ mark_named_operators (pfile)
     {
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->flags |= NODE_OPERATOR;
-      hp->value.operator = b->value;
+      hp->is_directive = 0;
+      hp->directive_index = b->value;
     }
 }
 
@@ -755,37 +754,8 @@ static void
 init_standard_includes (pfile)
      cpp_reader *pfile;
 {
-  char *path;
   const struct default_include *p;
   const char *specd_prefix = CPP_OPTION (pfile, include_prefix);
-
-  /* Several environment variables may add to the include search path.
-     CPATH specifies an additional list of directories to be searched
-     as if specified with -I, while C_INCLUDE_PATH, CPLUS_INCLUDE_PATH,
-     etc. specify an additional list of directories to be searched as
-     if specified with -isystem, for the language indicated.  */
-
-  GET_ENVIRONMENT (path, "CPATH");
-  if (path != 0 && *path != 0)
-    path_include (pfile, path, BRACKET);
-
-  switch ((CPP_OPTION (pfile, objc) << 1) + CPP_OPTION (pfile, cplusplus))
-    {
-    case 0:
-      GET_ENVIRONMENT (path, "C_INCLUDE_PATH");
-      break;
-    case 1:
-      GET_ENVIRONMENT (path, "CPLUS_INCLUDE_PATH");
-      break;
-    case 2:
-      GET_ENVIRONMENT (path, "OBJC_INCLUDE_PATH");
-      break;
-    case 3:
-      GET_ENVIRONMENT (path, "OBJCPLUS_INCLUDE_PATH");
-      break;
-    }
-  if (path != 0 && *path != 0)
-    path_include (pfile, path, SYSTEM);
 
   /* Search "translated" versions of GNU directories.
      These have /usr/local/lib/gcc... replaced by specd_prefix.  */
@@ -950,6 +920,11 @@ cpp_read_main_file (pfile, fname, table)
      const char *fname;
      hash_table *table;
 {
+  static const char *const lang_env_vars[] =
+    { "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH",
+      "OBJC_INCLUDE_PATH", "OBJCPLUS_INCLUDE_PATH" };
+  size_t lang;
+
   sanity_checks (pfile);
 
   post_options (pfile);
@@ -958,6 +933,15 @@ cpp_read_main_file (pfile, fname, table)
      finished processing the command line options, so initializing the
      hashtable is deferred until now.  */
   _cpp_init_hashtable (pfile, table);
+
+  /* Several environment variables may add to the include search path.
+     CPATH specifies an additional list of directories to be searched
+     as if specified with -I, while C_INCLUDE_PATH, CPLUS_INCLUDE_PATH,
+     etc. specify an additional list of directories to be searched as
+     if specified with -isystem, for the language indicated.  */
+  path_include (pfile, "CPATH", BRACKET);
+  lang = (CPP_OPTION (pfile, objc) << 1) + CPP_OPTION (pfile, cplusplus);
+  path_include (pfile, lang_env_vars[lang], SYSTEM);
 
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))

@@ -24,12 +24,14 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_F_PROJ_H
 #define GCC_F_PROJ_H
 
-#ifdef USE_HCONFIG
-#include "hconfig.h"
+#ifdef USE_BCONFIG
+#include "bconfig.h"
 #else
 #include "config.h"
 #endif
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #if (GCC_VERSION < 2000)
  #error "You have to use gcc 2.x to build g77."

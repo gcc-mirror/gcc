@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 /* Some output-actions in dsp1600.md need these.  */
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -58,7 +60,7 @@ const char *save_chip_name;
 
 rtx dsp16xx_compare_op0;
 rtx dsp16xx_compare_op1;
-rtx (*dsp16xx_compare_gen) PARAMS (());
+bool dsp16xx_compare_gen;
 
 static const char *fp;
 static const char *sp;

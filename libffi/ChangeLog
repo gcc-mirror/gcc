@@ -13,6 +13,10 @@
 	  Added test cases to test stdcall invocation using
 	  these functions.
 
+2002-12-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/sysv.S: Add DWARF2 unwind info.
+
 2002-11-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/s390/sysv.S (.eh_frame section): Make section read-only.
@@ -20,6 +24,13 @@
 2002-11-26  Jim Wilson  <wilson@redhat.com>
 
 	* src/types.c (FFI_TYPE_POINTER): Has size 8 on IA64.
+
+2002-11-23  H.J. Lu <hjl@gnu.org>
+
+	* acinclude.m4: Add dummy AM_PROG_LIBTOOL.
+	Include ../config/accross.m4.
+	* aclocal.m4; Rebuild.
+	* configure: Likewise.
 
 2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -63,7 +74,7 @@
 	(FFI_NATIVE_RAW_API): Likewise.
 	* src/prep_cif.c (ffi_prep_cif): Do not compute stack space for s390.
 	* src/types.c (FFI_TYPE_POINTER): Use 8-byte pointers on s390x.
-	* src/s390/ffi.c: Major rework of existing code.  Add support for 
+	* src/s390/ffi.c: Major rework of existing code.  Add support for
 	s390x targets.  Add closure support.
 	* src/s390/sysv.S: Likewise.
 
@@ -231,7 +242,7 @@
 
 	* configure.in: Enable i*86-*-netbsdelf*.
 	* configure: Rebuilt.
-	
+
 2002-03-29  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR other/2620
@@ -247,7 +258,7 @@
 
 	* Makefile.am: libfficonvenience -> libffi_convenience.
 	* Makefile.in: Rebuilt.
-	
+
 	* Makefile.am: Define ffitest_OBJECTS.
 	* Makefile.in: Rebuilt.
 
@@ -264,12 +275,12 @@
 	(ffi_closure_helper_DARWIN): New function.
 	* src/powerpc/aix_closure.S: New file.
 	* src/powerpc/darwin_closure.S: New file.
-	
+
 2002-02-24  Jeff Sturm  <jsturm@one-point.com>
 
 	* include/ffi.h.in: Add typedef for ffi_arg.
 	* src/ffitest.c (main): Declare rint with ffi_arg.
- 
+
 2002-02-21  Andreas Tobler  <toa@pop.agri.ch>
 
 	* src/powerpc/ffi_darwin.c (ffi_prep_args): Skip appropriate
@@ -336,7 +347,7 @@
 
 	* configure.in: Recognize sparc*-sun-* host.
 	* configure: Regenerate.
-	
+
 2001-06-06  Andrew Haley  <aph@redhat.com>
 
 	* src/alpha/osf.S (__FRAME_BEGIN__): Conditionalize for ELF.
@@ -487,8 +498,8 @@
 
 2000-05-11  Scott Bambrough  <scottb@netwinder.org>
 
-	* libffi/src/arm/sysv.S (ffi_call_SYSV): Doubles are not saved to 
-	memory correctly.  Use conditional instructions, not branches where 
+	* libffi/src/arm/sysv.S (ffi_call_SYSV): Doubles are not saved to
+	memory correctly.  Use conditional instructions, not branches where
 	possible.
 
 2000-05-04  Tom Tromey  <tromey@cygnus.com>
@@ -647,7 +658,7 @@
 	* include/ffi.h.in: Add definitions for closure and raw API.
 
 	* src/x86/ffi.c (ffi_prep_cif_machdep): Added case for
-	FFI_TYPE_UINT64.  
+	FFI_TYPE_UINT64.
 
 	* Makefile.am (libffi_la_common_SOURCES): Added raw_api.c
 
@@ -657,7 +668,7 @@
 	(UINT_ARG, SINT_ARG): New defines.
 	(ffi_closure, ffi_raw_closure): New types.
 	(ffi_prep_closure, ffi_prep_raw_closure): New declarations.
-	
+
 	* configure.in: Add check for endianness and sizeof void*.
 
 	* src/x86/sysv.S (ffi_call_SYSV): Call fixup routine via argument,

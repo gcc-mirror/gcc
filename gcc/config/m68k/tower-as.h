@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "-D__TOWER_ASM__ %{m68881:-D__HAVE_68881__}"
 
 /* We don't want local labels to start with period.
-   See ASM_OUTPUT_INTERNAL_LABEL.  */
+   See (*targetm.asm_out.internal_label).  */
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX ""
 
@@ -210,14 +210,7 @@ Boston, MA 02111-1307, USA.  */
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%d\n", ((SIZE) == 0) ? (ROUNDED) : (SIZE)))
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#undef ASM_FORMAT_PRIVATE_NAME
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 11),	\
-  sprintf ((OUTPUT), "%s%%%%%d", (NAME), (LABELNO)))
+#define ASM_PN_FORMAT "%s%%%%%lu"
  
 /* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
@@ -228,10 +221,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
   sprintf ((LABEL), "%s%%%ld", (PREFIX), (long)(NUM))
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf ((FILE), "%s%%%d:\n", (PREFIX), (NUM))
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\

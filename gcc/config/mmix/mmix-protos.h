@@ -42,8 +42,6 @@ extern void mmix_asm_output_ascii PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_label PARAMS ((FILE *, const char *));
 extern void mmix_asm_weaken_label PARAMS ((FILE *, const char *));
 extern void mmix_asm_output_labelref PARAMS ((FILE *, const char *));
-extern void mmix_asm_output_internal_label
-  PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_def PARAMS ((FILE *, const char *, const char *));
 extern int mmix_print_operand_punct_valid_p PARAMS ((int));
 extern void mmix_asm_output_reg_push PARAMS ((FILE *, int));

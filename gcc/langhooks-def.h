@@ -76,7 +76,7 @@ int lhd_tree_inlining_tree_chain_matters_p	PARAMS ((tree));
 int lhd_tree_inlining_auto_var_in_fn_p		PARAMS ((tree, tree));
 tree lhd_tree_inlining_copy_res_decl_for_inlining PARAMS ((tree, tree,
 							   tree, void *,
-							   int *, void *));
+							   int *, tree));
 int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
 int lhd_tree_inlining_start_inlining		PARAMS ((tree));
 void lhd_tree_inlining_end_inlining		PARAMS ((tree));

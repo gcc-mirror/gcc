@@ -57,6 +57,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifndef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL default_globalize_label
 #endif
+#ifndef TARGET_ASM_INTERNAL_LABEL
+#define TARGET_ASM_INTERNAL_LABEL default_internal_label
+#endif
 
 #ifndef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY default_assemble_visibility
@@ -164,6 +167,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_UNALIGNED_INT_OP,		\
 			TARGET_ASM_INTEGER,			\
 			TARGET_ASM_GLOBALIZE_LABEL,		\
+			TARGET_ASM_INTERNAL_LABEL,		\
 			TARGET_ASM_ASSEMBLE_VISIBILITY,		\
 			TARGET_ASM_FUNCTION_PROLOGUE,		\
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
@@ -239,9 +243,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_BINDS_LOCAL_P default_binds_local_p
 #endif
 
+#ifndef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE default_valid_pointer_mode
+#endif
+
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
 #define TARGET_CANNOT_FORCE_CONST_MEM hook_bool_rtx_false
+#define TARGET_FUNCTION_OK_FOR_SIBCALL hook_bool_tree_tree_false
 #define TARGET_COMP_TYPE_ATTRIBUTES hook_int_tree_tree_1
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES hook_void_tree
 #define TARGET_INSERT_ATTRIBUTES hook_void_tree_treeptr
@@ -274,10 +283,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_SECTION_TYPE_FLAGS,			\
   TARGET_CANNOT_MODIFY_JUMPS_P,			\
   TARGET_CANNOT_FORCE_CONST_MEM,		\
+  TARGET_FUNCTION_OK_FOR_SIBCALL,		\
   TARGET_IN_SMALL_DATA_P,			\
   TARGET_BINDS_LOCAL_P,				\
   TARGET_ENCODE_SECTION_INFO,			\
   TARGET_STRIP_NAME_ENCODING,			\
+  TARGET_VALID_POINTER_MODE,                    \
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\

@@ -24,6 +24,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "hooks.h"
 
 /* Generic hook that does absolutely zappo.  */
@@ -111,6 +113,14 @@ hook_void_tree_treeptr (a, b)
 bool
 hook_bool_tree_false (a)
      tree a ATTRIBUTE_UNUSED;
+{
+  return false;
+}
+
+bool
+hook_bool_tree_tree_false (a, b)
+     tree a ATTRIBUTE_UNUSED;
+     tree b ATTRIBUTE_UNUSED;
 {
   return false;
 }

@@ -1,12 +1,6 @@
 // PR c++/5607
 
-// Currently we don't support covariant returns that would actually require
-// a pointer adjustment.  We were failing to recognize this as such a case,
-// so were silently generating bad code.  When we do support covariant
-// returns properly, the expected error should go away, and the testcase
-// should pass execution.
-
-// { NOT YET dg-do run }
+// { dg-do run }
 
 class A {
 public:
@@ -19,7 +13,7 @@ public:
   virtual B* getThis() { return this; }
 };
 
-class AB : public A, public B {	// { dg-error "covariant" }
+class AB : public A, public B {
 public:
   virtual AB* getThis() { return this; }
 };

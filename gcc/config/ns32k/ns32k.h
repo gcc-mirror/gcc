@@ -810,12 +810,6 @@ __transfer_from_trampoline ()		\
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* #define HAVE_POST_INCREMENT 0 */
-/* #define HAVE_POST_DECREMENT 0 */
-
-/* #define HAVE_PRE_DECREMENT 0 */
-/* #define HAVE_PRE_INCREMENT 0 */
-
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.
@@ -1315,12 +1309,6 @@ __transfer_from_trampoline ()		\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
 
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -1370,14 +1358,6 @@ __transfer_from_trampoline ()		\
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (ROUNDED)))
-
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;

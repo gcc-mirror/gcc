@@ -103,7 +103,7 @@ do {								\
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
   do {									\
     ASM_OUTPUT_BEFORE_CASE_LABEL (FILE, PREFIX, NUM, JUMPTABLE)		\
-    ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
+    (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);			\
   } while (0)
 
 /* The standard SVR4 assembler seems to require that certain builtin

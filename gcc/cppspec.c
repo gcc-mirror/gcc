@@ -20,6 +20,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "gcc.h"
 
 /* The `cpp' executable installed in $(bindir) and $(cpp_install_dir)

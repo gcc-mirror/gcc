@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 /* stdio.h must precede rtl.h for FFS.  */
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #include "rtl.h"
 #include "tm_p.h"
@@ -266,11 +268,11 @@ static struct qty_table_elem *qty_table;
 
 static rtx prev_insn_cc0;
 static enum machine_mode prev_insn_cc0_mode;
-#endif
 
 /* Previous actual insn.  0 if at first insn of basic block.  */
 
 static rtx prev_insn;
+#endif
 
 /* Insn being scanned.  */
 
@@ -591,55 +593,7 @@ struct cse_basic_block_data
     } path[PATHLENGTH];
 };
 
-/* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
-   virtual regs here because the simplify_*_operation routines are called
-   by integrate.c, which is called before virtual register instantiation.
-
-   ?!? FIXED_BASE_PLUS_P and NONZERO_BASE_PLUS_P need to move into
-   a header file so that their definitions can be shared with the
-   simplification routines in simplify-rtx.c.  Until then, do not
-   change these macros without also changing the copy in simplify-rtx.c.  */
-
-#define FIXED_BASE_PLUS_P(X)					\
-  ((X) == frame_pointer_rtx || (X) == hard_frame_pointer_rtx	\
-   || ((X) == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])\
-   || (X) == virtual_stack_vars_rtx				\
-   || (X) == virtual_incoming_args_rtx				\
-   || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
-       && (XEXP (X, 0) == frame_pointer_rtx			\
-	   || XEXP (X, 0) == hard_frame_pointer_rtx		\
-	   || ((X) == arg_pointer_rtx				\
-	       && fixed_regs[ARG_POINTER_REGNUM])		\
-	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
-	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
-   || GET_CODE (X) == ADDRESSOF)
-
-/* Similar, but also allows reference to the stack pointer.
-
-   This used to include FIXED_BASE_PLUS_P, however, we can't assume that
-   arg_pointer_rtx by itself is nonzero, because on at least one machine,
-   the i960, the arg pointer is zero when it is unused.  */
-
-#define NONZERO_BASE_PLUS_P(X)					\
-  ((X) == frame_pointer_rtx || (X) == hard_frame_pointer_rtx	\
-   || (X) == virtual_stack_vars_rtx				\
-   || (X) == virtual_incoming_args_rtx				\
-   || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
-       && (XEXP (X, 0) == frame_pointer_rtx			\
-	   || XEXP (X, 0) == hard_frame_pointer_rtx		\
-	   || ((X) == arg_pointer_rtx				\
-	       && fixed_regs[ARG_POINTER_REGNUM])		\
-	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
-	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
-   || (X) == stack_pointer_rtx					\
-   || (X) == virtual_stack_dynamic_rtx				\
-   || (X) == virtual_outgoing_args_rtx				\
-   || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
-       && (XEXP (X, 0) == stack_pointer_rtx			\
-	   || XEXP (X, 0) == virtual_stack_dynamic_rtx		\
-	   || XEXP (X, 0) == virtual_outgoing_args_rtx))	\
-   || GET_CODE (X) == ADDRESSOF)
-
+static bool fixed_base_plus_p	PARAMS ((rtx x));
 static int notreg_cost		PARAMS ((rtx, enum rtx_code));
 static int approx_reg_cost_1	PARAMS ((rtx *, void *));
 static int approx_reg_cost	PARAMS ((rtx));
@@ -702,6 +656,39 @@ static bool insn_live_p		PARAMS ((rtx, int *));
 static bool set_live_p		PARAMS ((rtx, rtx, int *));
 static bool dead_libcall_p	PARAMS ((rtx, int *));
 
+/* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
+   virtual regs here because the simplify_*_operation routines are called
+   by integrate.c, which is called before virtual register instantiation.  */
+
+static bool
+fixed_base_plus_p (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case REG:
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx)
+	return true;
+      if (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])
+	return true;
+      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
+	return true;
+      return false;
+
+    case PLUS:
+      if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	return false;
+      return fixed_base_plus_p (XEXP (x, 0));
+
+    case ADDRESSOF:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
 void
@@ -1032,9 +1019,8 @@ new_basic_block ()
 	}
     }
 
-  prev_insn = 0;
-
 #ifdef HAVE_cc0
+  prev_insn = 0;
   prev_insn_cc0 = 0;
 #endif
 }
@@ -1611,7 +1597,7 @@ insert (x, classp, hash, mode)
 		   || (GET_CODE (x) == REG
 		       && RTX_UNCHANGING_P (x)
 		       && REGNO (x) >= FIRST_PSEUDO_REGISTER)
-		   || FIXED_BASE_PLUS_P (x));
+		   || fixed_base_plus_p (x));
 
   if (table[hash])
     table[hash]->prev_same_hash = elt;
@@ -2378,10 +2364,9 @@ canon_hash (x, mode)
 	  do_not_record = 1;
 	  return 0;
 	}
-      if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
-	{
-	  hash_arg_in_memory = 1;
-	}
+      if (! RTX_UNCHANGING_P (x) || fixed_base_plus_p (XEXP (x, 0)))
+	hash_arg_in_memory = 1;
+
       /* Now that we have already found this special case,
 	 might as well speed it up as much as possible.  */
       hash += (unsigned) MEM;
@@ -2399,7 +2384,7 @@ canon_hash (x, mode)
 	  hash += (unsigned) USE;
 	  x = XEXP (x, 0);
 
-	  if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
+	  if (! RTX_UNCHANGING_P (x) || fixed_base_plus_p (XEXP (x, 0)))
 	    hash_arg_in_memory = 1;
 
 	  /* Now that we have already found this special case,
@@ -3276,9 +3261,10 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 	      break;
 	    }
 
-	  /* If this is fp + constant, the equivalent is a better operand since
-	     it may let us predict the value of the comparison.  */
-	  else if (NONZERO_BASE_PLUS_P (p->exp))
+	  /* If this non-trapping address, e.g. fp + constant, the
+	     equivalent is a better operand since it may let us predict
+	     the value of the comparison.  */
+	  else if (!rtx_addr_can_trap_p (p->exp))
 	    {
 	      arg1 = p->exp;
 	      continue;
@@ -3979,17 +3965,10 @@ fold_rtx (x, insn)
 	     comparison.  */
 	  if (const_arg0 == 0 || const_arg1 == 0)
 	    {
-	      /* Is FOLDED_ARG0 frame-pointer plus a constant?  Or
-		 non-explicit constant?  These aren't zero, but we
-		 don't know their sign.  */
+	      /* Some addresses are known to be nonzero.  We don't know
+		 their sign, but equality comparisons are known.  */
 	      if (const_arg1 == const0_rtx
-		  && (NONZERO_BASE_PLUS_P (folded_arg0)
-#if 0  /* Sad to say, on sysvr4, #pragma weak can make a symbol address
-	  come out as 0.  */
-		      || GET_CODE (folded_arg0) == SYMBOL_REF
-#endif
-		      || GET_CODE (folded_arg0) == LABEL_REF
-		      || GET_CODE (folded_arg0) == CONST))
+		  && nonzero_address_p (folded_arg0))
 		{
 		  if (code == EQ)
 		    return false_rtx;
@@ -6189,7 +6168,7 @@ cse_insn (insn, libcall_insn)
 
 	elt->in_memory = (GET_CODE (sets[i].inner_dest) == MEM
 			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
-			      || FIXED_BASE_PLUS_P (XEXP (sets[i].inner_dest,
+			      || fixed_base_plus_p (XEXP (sets[i].inner_dest,
 							  0))));
 
 	/* If we have (set (subreg:m1 (reg:m2 foo) 0) (bar:m1)), M1 is no
@@ -6400,9 +6379,8 @@ cse_insn (insn, libcall_insn)
 
   prev_insn_cc0 = this_insn_cc0;
   prev_insn_cc0_mode = this_insn_cc0_mode;
-#endif
-
   prev_insn = insn;
+#endif
 }
 
 /* Remove from the hash table all expressions that reference memory.  */
@@ -7306,8 +7284,8 @@ cse_basic_block (from, to, next_branch, around_loop)
 		 Then follow this branch.  */
 #ifdef HAVE_cc0
 	      prev_insn_cc0 = 0;
-#endif
 	      prev_insn = insn;
+#endif
 	      insn = JUMP_LABEL (insn);
 	      continue;
 	    }

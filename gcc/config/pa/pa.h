@@ -926,7 +926,7 @@ extern enum cmp_type hppa_branch_type;
 #endif
 
 #define FUNCTION_PROFILER(FILE, LABEL) \
-  ASM_OUTPUT_INTERNAL_LABEL (FILE, FUNC_BEGIN_PROLOG_LABEL, LABEL)
+  (*targetm.asm_out.internal_label) (FILE, FUNC_BEGIN_PROLOG_LABEL, LABEL)
 
 #define PROFILE_HOOK(label_no) hppa_profile_hook (label_no)
 void hppa_profile_hook PARAMS ((int label_no));
@@ -1729,12 +1729,6 @@ do { 									\
     fputs (xname, FILE);		\
   } while (0)
 
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  {fprintf (FILE, "%c$%s%04d\n", (PREFIX)[0], (PREFIX) + 1, NUM);}
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -1802,13 +1796,7 @@ do { 									\
   assemble_name ((FILE), (NAME));				\
   fprintf ((FILE), "\n\t.block %d\n", (SIZE));}
   
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
-  sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
+#define ASM_PN_FORMAT "%s___%lu"
 
 /* All HP assemblers use "!" to separate logical lines.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '!')
@@ -1888,35 +1876,6 @@ do { 									\
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 50
-
-/* Only direct calls to static functions are allowed to be sibling (tail)
-   call optimized.
-
-   This restriction is necessary because some linker generated stubs will
-   store return pointers into rp' in some cases which might clobber a
-   live value already in rp'.
-
-   In a sibcall the current function and the target function share stack
-   space.  Thus if the path to the current function and the path to the
-   target function save a value in rp', they save the value into the
-   same stack slot, which has undesirable consequences.
-
-   Because of the deferred binding nature of shared libraries any function
-   with external scope could be in a different load module and thus require
-   rp' to be saved when calling that function.  So sibcall optimizations
-   can only be safe for static function.
-
-   Note that GCC never needs return value relocations, so we don't have to
-   worry about static calls with return value relocations (which require
-   saving rp').
-
-   It is safe to perform a sibcall optimization when the target function
-   will never return.  */
-#define FUNCTION_OK_FOR_SIBCALL(DECL) \
-  (DECL \
-   && ! TARGET_PORTABLE_RUNTIME \
-   && ! TARGET_64BIT \
-   && ! TREE_PUBLIC (DECL))
 
 #define PREDICATE_CODES							\
   {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\

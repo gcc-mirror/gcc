@@ -2,6 +2,18 @@
 
 	* fastjar.texi (jar @direntry, grepjar @direntry): Add (fastjar).
 
+2002-11-23  H.J. Lu <hjl@gnu.org>
+
+	* acinclude.m4: Include ../config/accross.m4.
+	(gcc_AC_COMPILE_CHECK_SIZEOF): Removed.
+	(gcc_AC_EXAMINE_OBJECT): Removed.
+	(gcc_AC_C_COMPILE_ENDIAN): Removed.
+	* aclocal.m4; Rebuild.
+
+	* configure.in: Replace AC_C_BIGENDIAN with AC_C_BIGENDIAN_CROSS.
+	Replace AC_CHECK_SIZEOF with AC_COMPILE_CHECK_SIZEOF.
+	* configure: Likewise.
+
 2002-11-21  Ranjit Mathew <rmathew@hotmail.com>
 
 	* jartool.c (extract_jar): Use "open" with O_BINARY instead of
@@ -30,6 +42,11 @@
 2002-10-20  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c: Use mode 0666 when opening new file.
+
+2002-09-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* jargrep.c (chk_wrd): Remove unused variable(s).
+	* jartool.c (main, create_central_header, list_jar): Likewise.
 
 2002-10-15  Ranjit Mathew  <rmathew@hotmail.com>
 
@@ -153,7 +170,7 @@
 	* aclocal.m4: Regenerated.
 	* stamp-h.in: Regenerated.
 	* jargrep.c: Eliminate some signed/unsigned and default
-	uninitialized warnings. Use HAVE_STDLIB_H instead of 
+	uninitialized warnings. Use HAVE_STDLIB_H instead of
 	STDC_HEADERS macro.
 	* jartool.c: Likewise.
 	* compress.c: Likewise.
@@ -195,7 +212,7 @@
 
 2001-05-15  Per Bothner  <per@bothner.com>
 
-        * Makefile.am (bin_PROGRAMS):  Renamed from "fastjar" to "jar".
+	* Makefile.am (bin_PROGRAMS):  Renamed from "fastjar" to "jar".
 
 2001-05-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -213,7 +230,7 @@
 	* jartool.c (MAXPATHLEN): Provide if not defined.
 
 2000-12-15  Tom Tromey  <tromey@redhat.com>
-            Kelley Cook <kelleycook@home.com>
+	    Kelley Cook <kelleycook@home.com>
 
 	* jargrep.c: Include getopt.h if it exists.
 	(optind): Declare.

@@ -2976,12 +2976,6 @@ typedef struct mips_args {
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* #define HAVE_POST_INCREMENT 0 */
-/* #define HAVE_POST_DECREMENT 0 */
-
-/* #define HAVE_PRE_DECREMENT 0 */
-/* #define HAVE_PRE_INCREMENT 0 */
-
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
@@ -4361,14 +4355,6 @@ do {							\
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)
 
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM,PREFIX,NUM)			\
-  fprintf (STREAM, "%s%s%d:\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -4399,7 +4385,9 @@ do {									\
     fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
 	     Pmode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
-  else if (mips_abi == ABI_32 || mips_abi == ABI_O64)			\
+  else if (mips_abi == ABI_32 || mips_abi == ABI_O64			\
+	   || mips_abi == ABI_N32					\
+	   || (TARGET_GAS && mips_abi == ABI_64))			\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     Pmode == DImode ? ".gpdword" : ".gpword",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
@@ -4420,7 +4408,7 @@ do {									\
 do {									\
   if (TARGET_EMBEDDED_PIC || TARGET_MIPS16)				\
     function_section (current_function_decl);				\
-  ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
+  (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);			\
 } while (0)
 
 /* This is how to output an assembler line
@@ -4500,14 +4488,6 @@ sdata_section ()							\
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION  mips_select_section
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)			\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),			\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)				\
 do									\
   {									\

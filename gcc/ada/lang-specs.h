@@ -31,12 +31,13 @@
   {".ads", "@ada", 0},
   {".adb", "@ada", 0},
   {"@ada",
-   "gnat1 %{^I*} %{k8:-gnatk8} %{w:-gnatws} %1 %{!Q:-quiet} %{nostdinc*}\
+   "\
+ %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+ %{!gnatc:%{!gnatz:%{!gnats:%{!S:%{!c:\
+    %eone of -c, -S, -gnatc, -gnatz, or -gnats is required for Ada}}}}}\
+ gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %1 %{!Q:-quiet} %{nostdinc*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{m*} %{a} %{f*} %{d*}\
     %{!S:%{o*:%w%*-gnatO}} \
- %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-    %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-    %{!S:%{!gnatc:%{!gnatz:%{!gnats:as %a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}\
-				    %{!c:%e-c or -S required for Ada}\
-				    %{!pipe:%g.s} %A\n}}}} ", 0},
+    %i %{S:%W{o*}%{!o*:-o %b.s}} \
+    %{!gnatc:%{!gnatz:%{!gnats:%(invoke_as)}}}", 0},

@@ -439,7 +439,7 @@ namespace std
 	  else
 	    {
 	      __ret = _M_file.seekoff(__off, ios_base::cur, __mode);
-	      __ret += max(_M_out_cur, _M_in_cur) - _M_filepos;
+	      __ret += std::max(_M_out_cur, _M_in_cur) - _M_filepos;
 	    }
 	}
       _M_last_overflowed = false;	

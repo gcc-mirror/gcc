@@ -9799,7 +9799,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_N32)
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
@@ -9827,9 +9827,16 @@ move\\t%0,%z4\\n\\
   "Pmode == DImode && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
-  "%*j\\t%0"
+  "*
+{
+  /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
+  if (TARGET_GAS && mips_abi == ABI_64)
+    output_asm_insn (\".cpadd\\t%0\", operands);
+  return \"%*j\\t%0\";
+}"
   [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
+   (set_attr "mode"	"none")
+   (set_attr "length"	"8")])
 
 ;; Implement a switch statement when generating embedded PIC code.
 ;; Switches are implemented by `tablejump' when not using -membedded-pic.

@@ -1628,8 +1628,8 @@ namespace std
 	  // Find smallest matching string.
 	  size_t __minlen = 10;
 	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
-	    __minlen = min(__minlen, 
-			   __traits_type::length(__names[__matches[__i2]]));
+	    __minlen = std::min(__minlen, 
+				__traits_type::length(__names[__matches[__i2]]));
 	  
 	  if (__pos < __minlen && __beg != __end)
 	    {

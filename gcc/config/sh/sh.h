@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
   fputs (" (Hitachi SH)", stderr);
 
 /* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
-   include it here, because hconfig.h is also included by gencodes.c .  */
+   include it here, because bconfig.h is also included by gencodes.c .  */
 /* ??? No longer true.  */
 extern int code_for_indirect_jump_scratch;
 
@@ -1705,13 +1705,6 @@ struct sh_args {
     (CUM).outgoing = 0;						\
   } while (0)
  
-/* FIXME: This is overly conservative.  A SHcompact function that
-   receives arguments ``by reference'' will have them stored in its
-   own stack frame, so it must not pass pointers or references to
-   these arguments to other functions by means of sibling calls.  */
-#define FUNCTION_OK_FOR_SIBCALL(DECL) \
-  (! TARGET_SHCOMPACT || current_function_args_info.stack_regs == 0)
-
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be
@@ -2135,8 +2128,6 @@ while (0)
 
 /* Addressing modes, and classification of registers for them.  */
 #define HAVE_POST_INCREMENT  TARGET_SH1
-/*#define HAVE_PRE_INCREMENT   1*/
-/*#define HAVE_POST_DECREMENT  1*/
 #define HAVE_PRE_DECREMENT   TARGET_SH1
 
 #define USE_LOAD_POST_INCREMENT(mode)    ((mode == SImode || mode == DImode) \
@@ -2941,6 +2932,8 @@ while (0)
    to match gdb.  */
 /* svr4.h undefines this macro, yet we really want to use the same numbers
    for coff as for elf, so we go via another macro: SH_DBX_REGISTER_NUMBER.  */
+/* expand_builtin_init_dwarf_reg_sizes uses this to test if a
+   register exists, so we should return -1 for invalid register numbers.  */
 #define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
 
 #define SH_DBX_REGISTER_NUMBER(REGNO) \
@@ -2967,13 +2960,13 @@ while (0)
    ? (TARGET_SH5 ? 240 : 21) \
    : (REGNO) == FPUL_REG \
    ? (TARGET_SH5 ? 244 : 23) \
-   : (abort(), -1))
+   : -1)
 
 /* This is how to output a reference to a user-level label named NAME.  */
 #define ASM_OUTPUT_LABELREF(FILE, NAME)			\
   do							\
     {							\
-      char * lname;					\
+      const char * lname;				\
 							\
       STRIP_DATALABEL_ENCODING (lname, (NAME));		\
       if (lname[0] == '*')				\
@@ -3008,11 +3001,6 @@ while (0)
 #define GLOBAL_ASM_OP "\t.global\t"
 
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
-
-/* Construct a private name.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)	\
-  ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),	\
-   sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
 /* Output a relative address table.  */
 
@@ -3314,6 +3302,11 @@ extern int rtx_equal_function_value_matters;
 
 #define DWARF_FRAME_RETURN_COLUMN \
   (TARGET_SH5 ? DWARF_FRAME_REGNUM (PR_MEDIA_REG) : DWARF_FRAME_REGNUM (PR_REG))
+
+#define EH_RETURN_DATA_REGNO(N)	\
+  ((N) < 4 ? (N) + (TARGET_SH5 ? 2 : 4) : INVALID_REGNUM)
+
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM)
 
 #if (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__
 /* SH constant pool breaks the devices in crtstuff.c to control section

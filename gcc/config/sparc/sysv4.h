@@ -93,7 +93,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
 do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
-     ASM_OUTPUT_INTERNAL_LABEL ((FILE), PREFIX, NUM);			\
+     (*targetm.asm_out.internal_label) ((FILE), PREFIX, NUM);		\
    } while (0)
 
 /* This is how to equate one symbol to another symbol.  The syntax used is

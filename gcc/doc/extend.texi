@@ -4570,6 +4570,21 @@ v4si f (v4si a, v4si b, v4si c)
 @findex strrchr
 @findex strspn
 @findex strstr
+@findex floor
+@findex floorf
+@findex floorl
+@findex ceil
+@findex ceilf
+@findex ceill
+@findex round
+@findex roundf
+@findex roundl
+@findex trunc
+@findex truncf
+@findex truncl
+@findex nearbyint
+@findex nearbyintf
+@findex nearbyintl
 
 GCC provides a large number of built-in functions other than the ones
 mentioned above.  Some of these are for internal use in the processing
@@ -4605,28 +4620,29 @@ built-in functions.  All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
 mode.
 
-The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl},
-@code{creal}, @code{crealf}, @code{creall}, @code{cimag}, @code{cimagf},
-@code{cimagl}, @code{llabs} and @code{imaxabs} are handled as built-in
-functions except in strict ISO C90 mode.  There are also built-in
-versions of the ISO C99 functions @code{cosf}, @code{cosl},
-@code{expf}, @code{expl}, @code{fabsf}, @code{fabsl},
-@code{logf}, @code{logl}, @code{sinf}, @code{sinl}, @code{sqrtf}, and
-@code{sqrtl}, that are recognized in any mode since ISO C90 reserves
-these names for the purpose to which ISO C99 puts them.  All these
-functions have corresponding versions prefixed with @code{__builtin_}.
+The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl}, @code{creal},
+@code{crealf}, @code{creall}, @code{cimag}, @code{cimagf}, @code{cimagl},
+@code{llabs}, @code{imaxabs}, @code{round}, @code{trunc}, @code{nearbyint},
+@code{roundf}, @code{truncf}, @code{nearbyintf}, @code{roundl}, @code{truncl} and
+@code{nearbyintl} are handled as built-in functions except in strict ISO C90 mode.
+There are also built-in versions of the ISO C99 functions @code{cosf},
+@code{cosl}, @code{expf}, @code{expl}, @code{fabsf}, @code{fabsl}, @code{logf},
+@code{logl}, @code{sinf}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
+@code{ceilf}, @code{ceill}, @code{floorf} and @code{floorl} that are recognized
+in any mode since ISO C90 reserves these names for the purpose to which ISO C99
+puts them.  All these functions have corresponding versions prefixed with
+@code{__builtin_}.
 
 The ISO C90 functions @code{abs}, @code{cos}, @code{exp}, @code{fabs},
-@code{fprintf}, @code{fputs}, @code{labs}, @code{log},
-@code{memcmp}, @code{memcpy},
-@code{memset}, @code{printf}, @code{sin}, @code{sqrt}, @code{strcat},
-@code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
-@code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
-@code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr} are all
-recognized as built-in functions unless @option{-fno-builtin} is
-specified (or @option{-fno-builtin-@var{function}} is specified for an
-individual function).  All of these functions have corresponding
-versions prefixed with @code{__builtin_}.
+@code{fprintf}, @code{fputs}, @code{labs}, @code{log}, @code{floor},
+@code{ceil} @code{memcmp}, @code{memcpy}, @code{memset}, @code{printf},
+@code{sin}, @code{sqrt}, @code{strcat}, @code{strchr}, @code{strcmp},
+@code{strcpy}, @code{strcspn}, @code{strlen}, @code{strncat}, @code{strncmp},
+@code{strncpy}, @code{strpbrk}, @code{strrchr}, @code{strspn}, and
+@code{strstr} are all recognized as built-in functions unless
+@option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}} is
+specified for an individual function).  All of these functions have
+corresponding versions prefixed with @code{__builtin_}.
 
 GCC provides built-in versions of the ISO C99 floating point comparison
 macros that avoid raising exceptions for unordered operands.  They have

@@ -28,6 +28,8 @@
 
 #ifndef GCC_SYSTEM_H
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #endif
 
 /* Auxiliary structure used inside the varray structure, used for

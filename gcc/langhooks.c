@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 #include "tree.h"
 #include "c-tree.h"
@@ -354,13 +356,17 @@ lhd_tree_inlining_auto_var_in_fn_p (var, fn)
 
 tree
 lhd_tree_inlining_copy_res_decl_for_inlining (res, fn, caller,
-					      dm, ndp, texps)
+					      dm, ndp, return_slot_addr)
      tree res, fn, caller;
      void *dm ATTRIBUTE_UNUSED;
      int *ndp ATTRIBUTE_UNUSED;
-     void *texps ATTRIBUTE_UNUSED;
+     tree return_slot_addr ATTRIBUTE_UNUSED;
 {
-  return copy_decl_for_inlining (res, fn, caller);
+  if (return_slot_addr)
+    return build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (return_slot_addr)),
+		   return_slot_addr);
+  else
+    return copy_decl_for_inlining (res, fn, caller);
 }
 
 /* lang_hooks.tree_inlining.anon_aggr_type_p determines whether T is a

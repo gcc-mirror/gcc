@@ -1202,7 +1202,7 @@ do {							\
    compiled for different cpus.  */
 /* We work around a dwarfout.c deficiency by watching for labels from it and
    not adding the '_' prefix nor the cpu suffix.  There is a comment in
-   dwarfout.c that says it should be using ASM_OUTPUT_INTERNAL_LABEL.  */
+   dwarfout.c that says it should be using (*targetm.asm_out.internal_label).  */
 extern const char *arc_mangle_cpu;
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
 do {							\
@@ -1216,22 +1216,6 @@ do {							\
       fprintf (FILE, "%s", NAME);			\
     }							\
 } while (0)
-
-/* This is how to output a definition of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM) \
-do {						\
-  arc_ccfsm_at_label (PREFIX, NUM);		\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM);	\
-} while (0)
-
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO) \
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 /* Assembler pseudo-op to equate one value with another.  */
 /* ??? This is needed because dwarfout.c provides a default definition too

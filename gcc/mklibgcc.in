@@ -61,7 +61,7 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  LANGUAGES="$(LANGUAGES)"'
 
 # Dependencies for libgcc2.c
-libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
+libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
 
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
@@ -286,7 +286,7 @@ for ml in $MULTILIBS; do
       # .oS objects will have all non-local symbol definitions .hidden
       oS=`echo ${o} | sed s~${objext}'$~.oS~g'`
       echo "${oS}: stmp-dirs ${o}"
-      echo '	@$(NM_FOR_TARGET) '${SHLIB_NM_FLAGS} ${o}' | $(AWK) '\''NF == 3 { print "\t.hidden", $$3 }'\'' | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) '${flags}' -r -nostdinc -nostdlib -o $@ '${o}' -xassembler -'
+      echo '	$(NM_FOR_TARGET) '${SHLIB_NM_FLAGS} ${o}' | $(AWK) '\''NF == 3 { print "\t.hidden", $$3 }'\'' | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) '${flags}' -r -nostdinc -nostdlib -o $@ '${o}' -xassembler -'
       libgcc_a_objs="${libgcc_a_objs} ${oS}"
     done
   fi

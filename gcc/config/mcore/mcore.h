@@ -1173,16 +1173,6 @@ extern long mcore_current_compilation_timestamp;
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
   sprintf (STRING, "*.%s%ld", PREFIX, (long) NUM)
 
-/* Output an internal label definition.  */
-#undef  ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
-
-/* Construct a private name.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)  \
-  ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
-   sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
-
 /* Jump tables must be 32 bit aligned. */
 #undef  ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \

@@ -43,5 +43,5 @@ crtfastmath.o: $(srcdir)/config/ia64/crtfastmath.c $(GCC_PASSES)
 LIB2ADDEH = $(srcdir)/config/ia64/unwind-ia64.c $(srcdir)/unwind-sjlj.c
 
 ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
-    $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) c-pragma.h toplev.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+    coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) c-pragma.h toplev.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/ia64/ia64-c.c

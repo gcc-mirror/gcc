@@ -497,7 +497,7 @@ namespace std
     size_t __num_nodes = 
       __num_elements / __deque_buf_size(sizeof(_Tp)) + 1;
   
-    _M_map_size = max((size_t) _S_initial_map_size, __num_nodes + 2);
+    _M_map_size = std::max((size_t) _S_initial_map_size, __num_nodes + 2);
     _M_map = _M_allocate_map(_M_map_size);
   
     // For "small" maps (needing less than _M_map_size nodes), allocation
@@ -1355,7 +1355,7 @@ namespace std
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
                     forward_iterator_tag)
       {
-        size_type __len = distance(__first, __last);
+        size_type __len = std::distance(__first, __last);
         if (__len > size()) {
           _ForwardIterator __mid = __first;
           advance(__mid, size());

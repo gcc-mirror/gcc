@@ -1,6 +1,6 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4
+dnl aclocal.m4 generated automatically by aclocal 1.4-p5
 
-dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -10,117 +10,7 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
-
-dnl Host type sizes probe.
-dnl By Kaveh R. Ghazi.  One typo fixed since.
-dnl
-AC_DEFUN([gcc_AC_COMPILE_CHECK_SIZEOF],
-[changequote(<<, >>)dnl
-dnl The name to #define.
-define(<<AC_TYPE_NAME>>, translit(sizeof_$1, [a-z *], [A-Z_P]))dnl
-dnl The cache variable name.
-define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$1, [ *], [_p]))dnl
-changequote([, ])dnl
-AC_MSG_CHECKING(size of $1)
-AC_CACHE_VAL(AC_CV_NAME,
-[for ac_size in 4 8 1 2 16 $3 ; do # List sizes in rough order of prevalence.
-  AC_TRY_COMPILE([#include "confdefs.h"
-#include <sys/types.h>
-$2
-], [switch (0) case 0: case (sizeof ($1) == $ac_size):;], AC_CV_NAME=$ac_size)
-  if test x$AC_CV_NAME != x ; then break; fi
-done
-])
-if test x$AC_CV_NAME = x ; then
-  AC_MSG_ERROR([cannot determine a size for $1])
-fi
-AC_MSG_RESULT($AC_CV_NAME)
-AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
-undefine([AC_TYPE_NAME])dnl
-undefine([AC_CV_NAME])dnl
-])
-
-dnl Utility macro used by next two tests.
-dnl AC_EXAMINE_OBJECT(C source code,
-dnl	commands examining object file,
-dnl	[commands to run if compile failed]):
-dnl
-dnl Compile the source code to an object file; then convert it into a
-dnl printable representation.  All unprintable characters and
-dnl asterisks (*) are replaced by dots (.).  All white space is
-dnl deleted.  Newlines (ASCII 0x10) in the input are preserved in the
-dnl output, but runs of newlines are compressed to a single newline.
-dnl Finally, line breaks are forcibly inserted so that no line is
-dnl longer than 80 columns and the file ends with a newline.  The
-dnl result of all this processing is in the file conftest.dmp, which
-dnl may be examined by the commands in the second argument.
-dnl
-AC_DEFUN([gcc_AC_EXAMINE_OBJECT],
-[AC_LANG_SAVE
-AC_LANG_C
-dnl Next bit cribbed from AC_TRY_COMPILE.
-cat > conftest.$ac_ext <<EOF
-[#line __oline__ "configure"
-#include "confdefs.h"
-$1
-]EOF
-if AC_TRY_EVAL(ac_compile); then
-  od -c conftest.o |
-    sed ['s/^[0-7]*[ 	]*/ /
-	  s/\*/./g
-	  s/ \\n/*/g
-	  s/ [0-9][0-9][0-9]/./g
-	  s/  \\[^ ]/./g'] |
-    tr -d '
- ' | tr -s '*' '
-' | fold | sed '$a\
-' > conftest.dmp
-  $2
-ifelse($3, , , else
-  $3
-)dnl
-fi
-rm -rf conftest*
-AC_LANG_RESTORE])
-
-dnl Host endianness probe.
-dnl Differs from AC_C_BIGENDIAN in that it does not require
-dnl running a program on the host.
-dnl
-AC_DEFUN([fastjar_AC_COMPILE_C_BIGENDIAN],
-[AC_CACHE_CHECK(byte ordering, ac_cv_c_compile_endian,
-[ac_cv_c_compile_endian=unknown
-gcc_AC_EXAMINE_OBJECT([
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
-/* This structure must have no internal padding.  */
-  struct {
-    char prefix[sizeof "\nendian:" - 1];
-    short word;
-    char postfix[2];
- } tester = {
-    "\nendian:",
-#if SIZEOF_SHORT == 4
-    ('A' << (CHAR_BIT * 3)) | ('B' << (CHAR_BIT * 2)) |
-#endif
-    ('A' << CHAR_BIT) | 'B',
-    'X', '\n'
-};],
- [if   grep 'endian:AB' conftest.dmp >/dev/null 2>&1; then
-    ac_cv_c_compile_endian=big-endian
-  elif grep 'endian:BA' conftest.dmp >/dev/null 2>&1; then
-    ac_cv_c_compile_endian=little-endian
-  fi])
-])
-if test $ac_cv_c_compile_endian = unknown; then
-  AC_MSG_ERROR([*** unable to determine endianness])
-elif test $ac_cv_c_compile_endian = big-endian; then
-  AC_DEFINE(WORDS_BIG_ENDIAN, 1,
-  [Define if the host machine stores words of multi-word integers in
-   big-endian order.])
-fi
-])
+sinclude(../config/accross.m4)
 
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
@@ -153,7 +43,7 @@ fi
 dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
-AC_DEFUN(AM_INIT_AUTOMAKE,
+AC_DEFUN([AM_INIT_AUTOMAKE],
 [AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
@@ -181,7 +71,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])])
 # Check to make sure that the build environment is sane.
 #
 
-AC_DEFUN(AM_SANITY_CHECK,
+AC_DEFUN([AM_SANITY_CHECK],
 [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
@@ -222,7 +112,7 @@ AC_MSG_RESULT(yes)])
 
 dnl AM_MISSING_PROG(NAME, PROGRAM, DIRECTORY)
 dnl The program must properly implement --version.
-AC_DEFUN(AM_MISSING_PROG,
+AC_DEFUN([AM_MISSING_PROG],
 [AC_MSG_CHECKING(for working $2)
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
@@ -238,7 +128,7 @@ AC_SUBST($1)])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 
-AC_DEFUN(AM_CONFIG_HEADER,
+AC_DEFUN([AM_CONFIG_HEADER],
 [AC_PREREQ([2.12])
 AC_CONFIG_HEADER([$1])
 dnl When config.status generates a header, we must update the stamp-h file.
@@ -264,7 +154,7 @@ changequote([,]))])
 
 # serial 1
 
-AC_DEFUN(AM_MAINTAINER_MODE,
+AC_DEFUN([AM_MAINTAINER_MODE],
 [AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,
@@ -281,7 +171,7 @@ AC_DEFUN(AM_MAINTAINER_MODE,
 
 # Define a conditional.
 
-AC_DEFUN(AM_CONDITIONAL,
+AC_DEFUN([AM_CONDITIONAL],
 [AC_SUBST($1_TRUE)
 AC_SUBST($1_FALSE)
 if $2; then

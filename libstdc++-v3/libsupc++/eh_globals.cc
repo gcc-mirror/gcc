@@ -47,7 +47,6 @@ static int use_thread_key = -1;
 static void
 get_globals_dtor (void *ptr)
 {
-  __gthread_key_dtor (globals_key, ptr);
   if (ptr)
     std::free (ptr);
 }

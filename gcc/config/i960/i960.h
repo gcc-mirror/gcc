@@ -931,12 +931,6 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* #define HAVE_POST_INCREMENT 0 */
-/* #define HAVE_POST_DECREMENT 0 */
-
-/* #define HAVE_PRE_DECREMENT 0 */
-/* #define HAVE_PRE_INCREMENT 0 */
-
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.
@@ -1259,12 +1253,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define USER_LABEL_PREFIX "_"
 
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -1350,13 +1338,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define	LABEL_ALIGN_AFTER_BARRIER(LABEL) (TARGET_CODE_ALIGN ? 3 : 0)
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-	( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-	  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

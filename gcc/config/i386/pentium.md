@@ -194,7 +194,7 @@
 
 (define_insn_reservation "pent_pop" 1
   (and (eq_attr "cpu" "pentium")
-       (eq_attr "type" "pop"))
+       (eq_attr "type" "pop,leave"))
   "pentium-firstuv")
 
 ;; Call and branch instruction can execute in either pipe, but

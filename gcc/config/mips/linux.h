@@ -252,3 +252,9 @@ void FN ()							\
 /* The current Linux binutils uses MIPS_STABS_ELF and doesn't support
    COFF.  */
 #undef SDB_DEBUGGING_INFO
+
+#undef LIB_SPEC
+#define LIB_SPEC "\
+%{!static:-rpath-link %R/lib:%R/usr/lib} \
+%{!shared: %{pthread:-lthread} \
+  %{profile:-lc_p} %{!profile: -lc}}"

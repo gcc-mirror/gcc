@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"
@@ -118,6 +120,8 @@ int alpha_this_literal_sequence_number;
 int alpha_this_gpdisp_sequence_number;
 
 /* Declarations of static functions.  */
+static bool alpha_function_ok_for_sibcall
+  PARAMS ((tree, tree));
 static int tls_symbolic_operand_1
   PARAMS ((rtx, enum machine_mode, int, int));
 static enum tls_model tls_symbolic_operand_type
@@ -296,6 +300,9 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #define TARGET_INIT_BUILTINS alpha_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN alpha_expand_builtin
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL alpha_function_ok_for_sibcall
 
 #if TARGET_ABI_OSF
 #undef TARGET_ASM_OUTPUT_MI_THUNK
@@ -2272,6 +2279,19 @@ alpha_legitimize_address (x, scratch, mode)
 
     return plus_constant (x, low);
   }
+}
+
+/* We do not allow indirect calls to be optimized into sibling calls, nor
+   can we allow a call to a function in a different compilation unit to
+   be optimized into a sibcall.  */
+static bool
+alpha_function_ok_for_sibcall (decl, exp)
+     tree decl;
+     tree exp ATTRIBUTE_UNUSED;
+{
+  return (decl
+	  && (! TREE_PUBLIC (decl)
+	      || (TREE_ASM_WRITTEN (decl) && (*targetm.binds_local_p) (decl))));
 }
 
 /* For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
@@ -9673,7 +9693,7 @@ unicosmk_output_addr_vec (file, vec)
   int vlen = XVECLEN (body, 0);
   int idx;
 
-  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (lab));
+  (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (lab));
 
   for (idx = 0; idx < vlen; idx++)
     {

@@ -2129,28 +2129,6 @@ do {							\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".global\t"
 
-#undef ASM_FORMAT_PRIVATE_NAME
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
-/* A C expression to assign to OUTVAR (which is a variable of type
-   `char *') a newly allocated string made from the string NAME and
-   the number NUMBER, with some suitable punctuation added.  Use
-   `alloca' to get space for the string.
-
-   The string will be used as an argument to `ASM_OUTPUT_LABELREF' to
-   produce an assembler label for an internal static variable whose
-   name is NAME.  Therefore, the string must be such as to result in
-   valid assembler code.  The argument NUMBER is different each time
-   this macro is executed; it prevents conflicts between
-   similarly-named internal static variables in different scopes.
-
-   Ideally this string should not be a valid C identifier, to prevent
-   any conflict with the user's own symbols.  Most assemblers allow
-   periods or percent signs in assembler symbols; putting at least
-   one of these between the name and the number will suffice.  */
-
 #define REGISTER_NAMES	{					\
   "$00","$01","$02","$03","iph","ipl","sph","spl",		\
   "pch","pcl","wreg","status","dph","dpl","$0e","mulh",		\
@@ -2266,7 +2244,7 @@ do {							\
    The definition should be a C statement to output to the stdio
    stream STREAM an assembler pseudo-instruction to generate a
    reference to a label.  VALUE is the number of an internal label
-   whose definition is output using `ASM_OUTPUT_INTERNAL_LABEL'.  For
+   whose definition is output using `(*targetm.asm_out.internal_label)'.  For
    example,
 
    fprintf ((STREAM), "\t.word L%d\n", (VALUE))  */

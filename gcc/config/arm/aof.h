@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_LIBGCC_SPECIAL 1
 
 #define LINK_SPEC "%{aof} %{bin} %{aif} %{ihf} %{shl,*} %{reent*} %{split} \
-		   %{ov*,*} %{reloc*} -nodebug"
+		   %{ov*} %{reloc*} -nodebug"
 
 #define STARTFILE_SPEC "crtbegin.o%s"
 
@@ -266,10 +266,6 @@ do {					\
 
 #define ASM_GENERATE_INTERNAL_LABEL(STRING,PREFIX,NUM)	\
   sprintf ((STRING), "*|%s..%ld|", (PREFIX), (long)(NUM))
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)	\
- ((OUTVAR) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
 /* How initialization functions are handled */
 

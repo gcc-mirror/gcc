@@ -23,7 +23,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define malloc xmalloc
 #define realloc xrealloc
 
-#include "hconfig.h"
+#include "bconfig.h"
+#include "coretypes.h"
+#include "system.h"
 #include "system.h"
 #include "gengtype.h"
 #include "gengtype-yacc.h"

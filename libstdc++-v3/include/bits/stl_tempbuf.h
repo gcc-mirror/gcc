@@ -118,7 +118,7 @@ public:
             _Trivial;
 
     try {
-      _M_len = distance(__first, __last);
+      _M_len = std::distance(__first, __last);
       _M_allocate_buffer();
       if (_M_len > 0)
         _M_initialize_buffer(*__first, _Trivial());

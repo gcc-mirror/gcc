@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #include "machmode.h"
 #include "hard-reg-set.h"
@@ -1363,15 +1365,9 @@ record_conflicts (allocno_vec, len)
      int *allocno_vec;
      int len;
 {
-  int num;
-  int ialloc_prod;
-
   while (--len >= 0)
-    {
-      num = allocno_vec[len];
-      ialloc_prod = num * allocno_row_words;
-      IOR_HARD_REG_SET (allocno[num].hard_reg_conflicts, hard_regs_live);
-    }
+    IOR_HARD_REG_SET (allocno[allocno_vec[len]].hard_reg_conflicts,
+                      hard_regs_live);
 }
 
 /* If CONFLICTP (i, j) is true, make sure CONFLICTP (j, i) is also true.  */

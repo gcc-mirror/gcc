@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "expr.h"
@@ -9535,7 +9537,7 @@ tree
 build_ptrmemfunc_type (type)
      tree type;
 {
-  tree fields[4];
+  tree field, fields;
   tree t;
   tree unqualified_variant = NULL_TREE;
 
@@ -9561,10 +9563,14 @@ build_ptrmemfunc_type (type)
   /* ... and not really an aggregate.  */
   SET_IS_AGGR_TYPE (t, 0);
 
-  fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
-  fields[1] = build_decl (FIELD_DECL, delta_identifier,
-			  delta_type_node);
-  finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
+  field = build_decl (FIELD_DECL, pfn_identifier, type);
+  fields = field;
+  
+  field = build_decl (FIELD_DECL, delta_identifier, delta_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+  
+  finish_builtin_struct (t, "__ptrmemfunc_type", fields, ptr_type_node);
 
   /* Zap out the name so that the back-end will give us the debugging
      information for this anonymous RECORD_TYPE.  */

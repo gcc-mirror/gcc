@@ -18,6 +18,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -597,12 +599,12 @@ scan_out_logical_line (pfile, macro)
 		      goto new_context;
 		    }
 		}
-	      else if (macro && node->arg_index)
+	      else if (macro && (node->flags & NODE_MACRO_ARG) != 0)
 		{
 		  /* Found a parameter in the replacement text of a
 		     #define.  Remove its name from the output.  */
 		  pfile->out.cur = out_start;
-		  save_replacement_text (pfile, macro, node->arg_index);
+		  save_replacement_text (pfile, macro, node->value.arg_index);
 		  out = pfile->out.base;
 		}
 	      else if (lex_state == ls_hash)
@@ -714,7 +716,7 @@ scan_out_logical_line (pfile, macro)
 		  else if (is_idstart (*cur))
 		    /* Check whether we know this directive, but don't
 		       advance.  */
-		    do_it = lex_identifier (pfile, cur)->directive_index != 0;
+		    do_it = lex_identifier (pfile, cur)->is_directive;
 
 		  if (do_it || CPP_OPTION (pfile, lang) != CLK_ASM)
 		    {

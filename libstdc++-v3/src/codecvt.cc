@@ -64,7 +64,7 @@ namespace std
 	 extern_type* __to, extern_type* __to_end, 
 	 extern_type*& __to_next) const
   { 
-    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __len = std::min(__from_end - __from, __to_end - __to);
     memcpy(__to, __from, __len);
     __from_next = __from; 
     __to_next = __to;
@@ -87,7 +87,7 @@ namespace std
 	intern_type* __to, intern_type* __to_end, 
 	intern_type*& __to_next) const
   { 
-    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __len = std::min(__from_end - __from, __to_end - __to);
     memcpy(__to, __from, __len);
     __from_next = __from; 
     __to_next = __to;
@@ -108,7 +108,7 @@ namespace std
   codecvt<char, char, mbstate_t>::
   do_length (const state_type&, const extern_type* __from,
 	     const extern_type* __end, size_t __max) const
-  { return min(__max, static_cast<size_t>(__end - __from)); }
+  { return std::min(__max, static_cast<size_t>(__end - __from)); }
   
   int 
   codecvt<char, char, mbstate_t>::
@@ -154,7 +154,7 @@ namespace std
   codecvt<wchar_t, char, mbstate_t>::
   do_length(const state_type&, const extern_type* __from,
 	    const extern_type* __end, size_t __max) const
-  { return min(__max, static_cast<size_t>(__end - __from)); }
+  { return std::min(__max, static_cast<size_t>(__end - __from)); }
 
   int 
   codecvt<wchar_t, char, mbstate_t>::

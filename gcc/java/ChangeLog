@@ -15,9 +15,24 @@
 	* parse.y (do_resolve_class): Handle qualified name via
 	recursion.
 
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* boehm.c, buffer.c, builtins.c, check-init.c, class.c,
+	constants.c, decl.c, except.c, expr.c, gjavah.c, jcf-depend.c,
+	jcf-dump.c, jcf-io.c, jcf-parse.c, jcf-path.c, jcf-write.c,
+	jv-scan.c, jvgenmain.c, jvspec.c, lang.c, mangle.c, mangle_name.c,
+	parse-scan.y, parse.y, typeck.c, verify.c, xref.c, zextract.c:
+	Include coretypes.h and tm.h.
+	* Make-lang.in: Update dependencies.
+
 2002-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (java_init_decl_processing): Use `LL' on 64-bit constant.
+
+2002-11-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* jcf-reader.c: Don't expand JCF_readu4 inside the
+	expansion of JCF_SKIP.
 
 2002-11-25  Diego Novillo  <dnovillo@redhat.com>
 
@@ -240,6 +255,10 @@
 
 	* lex.c (java_read_unicode_collapsing_terminators): Handle case
 	where \r appears at EOF.  Fixes PR java/7950.
+
+2002-09-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* jvspec.c (lang_specific_driver): Remove unused variable.
 
 2002-09-16  Geoffrey Keating  <geoffk@apple.com>
 

@@ -31,7 +31,9 @@
   "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %(netbsd_cpp_spec)"
 
 #undef ASM_SPEC
-#define ASM_SPEC " %| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
+#define ASM_SPEC "%{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 
 /* Make gcc agree with <machine/ansi.h> */

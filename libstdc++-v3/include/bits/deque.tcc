@@ -282,7 +282,7 @@ namespace std
       _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
                           forward_iterator_tag)
       {
-        size_type __n = distance(__first, __last);
+        size_type __n = std::distance(__first, __last);
         _M_initialize_map(__n);
       
         _Map_pointer __cur_node;
@@ -442,7 +442,7 @@ namespace std
                           _ForwardIterator __first, _ForwardIterator __last,
                           forward_iterator_tag)
       {
-        size_type __n = distance(__first, __last);
+        size_type __n = std::distance(__first, __last);
         if (__pos._M_cur == _M_start._M_cur)
         {
           iterator __new_start = _M_reserve_elements_at_front(__n);
@@ -758,7 +758,7 @@ namespace std
       else
       {
         size_type __new_map_size = 
-          _M_map_size + max(_M_map_size, __nodes_to_add) + 2;
+          _M_map_size + std::max(_M_map_size, __nodes_to_add) + 2;
     
         _Map_pointer __new_map = _M_allocate_map(__new_map_size);
         __new_nstart = __new_map + (__new_map_size - __new_num_nodes) / 2

@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This file contains various simple utilities to analyze the CFG.  */
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"

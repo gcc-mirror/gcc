@@ -71,8 +71,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"

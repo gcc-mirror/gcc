@@ -37,34 +37,6 @@ AC_SUBST(target_alias)
 GLIBCPP_CONFIGURE(.)
 GLIBCPP_EXPORT_INSTALL_INFO
 
-# If the language specific compiler does not exist, but the "gcc" directory 
-# does, we do not build anything. Note, $r is set by the top-level Makefile.
-# Note that when we look for the compiler, we search both with and without
-# extension to handle cross and canadian cross builds. 
-compiler_name=f771
-rm -f skip-this-dir
-AC_MSG_CHECKING(if compiler $compiler_name has been built)
-AC_CACHE_VAL(g77_cv_compiler_exists,
-[g77_cv_compiler_exists=yes
-if test -n "$r"; then
-  if test -d "$r"/gcc; then
-    if test -f "$r"/gcc/$compiler_name \
-       || test -f "$r"/gcc/$compiler_name.exe; then
-      true
-    else
-      g77_cv_compiler_exists=no
-      echo "rm -f config.cache config.log multilib.out" > skip-this-dir
-    fi
-  fi
-fi
-])
-AC_MSG_RESULT($g77_cv_compiler_exists)
-if test x$g77_cv_compiler_exists = xno
-then
-  rm -f Makefile conftest* confdefs* core
-  exit 0
-fi
-
 dnl Checks for programs.
 
 AM_PROG_LIBTOOL

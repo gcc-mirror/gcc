@@ -49,13 +49,6 @@
 #ifndef GCC_SERVER_H
 #define GCC_SERVER_H
 
-#include <stdio.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include "fixlib.h"
-
 /*
  *  Dual pipe opening of a child process
  */

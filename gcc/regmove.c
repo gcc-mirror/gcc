@@ -27,6 +27,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h" /* stdio.h must precede rtl.h for FFS.  */
 #include "tm_p.h"
 #include "insn-config.h"

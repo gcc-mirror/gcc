@@ -3319,7 +3319,7 @@
   ""
 "*
 {
-  int op0 = REGNO (operands[0]);
+  unsigned int op0 = REGNO (operands[0]);
 
   if (GET_CODE (operands[3]) == REG)
     {

@@ -30,12 +30,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_F_TARGET_H
 #define GCC_F_TARGET_H
 
-#ifdef FFE_STANDALONE
-#define HOST_WIDE_INT long
-#else
 #ifndef TREE_CODE
 #include "tree.h"
-#endif
 #endif
 
 /* Simple definitions and enumerations. */

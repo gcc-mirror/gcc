@@ -36,6 +36,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
@@ -59,7 +61,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    or even change what is live at any point.
    So perhaps let combiner do it.  */
 
-static int init_label_info		PARAMS ((rtx));
+static void init_label_info		PARAMS ((rtx));
 static void mark_all_labels		PARAMS ((rtx));
 static int duplicate_loop_exit_test	PARAMS ((rtx));
 static void delete_computation		PARAMS ((rtx));
@@ -78,10 +80,8 @@ rebuild_jump_labels (f)
      rtx f;
 {
   rtx insn;
-  int max_uid = 0;
 
-  max_uid = init_label_info (f) + 1;
-
+  init_label_info (f);
   mark_all_labels (f);
 
   /* Keep track of labels used from static data; we don't track them
@@ -186,36 +186,29 @@ purge_line_number_notes (f)
 /* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
    notes whose labels don't occur in the insn any more.  Returns the
    largest INSN_UID found.  */
-static int
+static void
 init_label_info (f)
      rtx f;
 {
-  int largest_uid = 0;
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    {
-      if (GET_CODE (insn) == CODE_LABEL)
-	LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
-      else if (GET_CODE (insn) == JUMP_INSN)
-	JUMP_LABEL (insn) = 0;
-      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
-	{
-	  rtx note, next;
+    if (GET_CODE (insn) == CODE_LABEL)
+      LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
+    else if (GET_CODE (insn) == JUMP_INSN)
+      JUMP_LABEL (insn) = 0;
+    else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+      {
+	rtx note, next;
 
-	  for (note = REG_NOTES (insn); note; note = next)
-	    {
-	      next = XEXP (note, 1);
-	      if (REG_NOTE_KIND (note) == REG_LABEL
-		  && ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-		remove_note (insn, note);
-	    }
-	}
-      if (INSN_UID (insn) > largest_uid)
-	largest_uid = INSN_UID (insn);
-    }
-
-  return largest_uid;
+	for (note = REG_NOTES (insn); note; note = next)
+	  {
+	    next = XEXP (note, 1);
+	    if (REG_NOTE_KIND (note) == REG_LABEL
+		&& ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+	      remove_note (insn, note);
+	  }
+      }
 }
 
 /* Mark the label each jump jumps to.

@@ -265,7 +265,7 @@ namespace std
 	if (!_M_pback_init)
 	  {
 	    size_t __dist = _M_in_end - _M_in_cur;
-	    size_t __len = min(_S_pback_size, __dist);
+	    size_t __len = std::min(_S_pback_size, __dist);
 	    traits_type::copy(_M_pback, _M_in_cur, __len);
 	    _M_pback_cur_save = _M_in_cur;
 	    _M_pback_end_save = _M_in_end;

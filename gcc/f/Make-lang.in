@@ -65,7 +65,7 @@ F77 f77: f771$(exeext)
   f77.extraclean f77.maintainer-clean f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
-g77spec.o: $(srcdir)/f/g77spec.c $(SYSTEM_H) $(GCC_H) \
+g77spec.o: $(srcdir)/f/g77spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 	$(CONFIG_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
@@ -125,12 +125,12 @@ f/str-op.h f/str-op.j: f/fini$(build_exeext) f/str-op.fin
 f/str-ot.h f/str-ot.j: f/fini$(build_exeext) f/str-ot.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-ot.fin f/str-ot.j f/str-ot.h
 
-f/fini$(build_exeext): f/fini.o $(HOST_LIBDEPS)
-	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o f/fini$(build_exeext) \
-		f/fini.o $(HOST_LIBS)
+f/fini$(build_exeext): f/fini.o $(BUILD_LIBDEPS)
+	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o f/fini$(build_exeext) \
+		f/fini.o $(BUILD_LIBS)
 
 f/fini.o:
-	$(HOST_CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
 
 gt-f-lex.h gt-f-where.h gt-f-com.h gt-f-ste.h gtype-f.h : s-gtype; @true
@@ -209,17 +209,17 @@ $(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
 	$(MAKE) f/intdoc$(build_exeext)
 	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
 
-f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 hconfig.h $(SYSTEM_H) \
-	$(HOST_LIBDEPS)
-	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
-		  $(srcdir)/f/intdoc.c $(HOST_LIBS) -o f/intdoc$(build_exeext)
+f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 bconfig.h \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(BUILD_LIBDEPS)
+	  $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
+		  $(srcdir)/f/intdoc.c $(BUILD_LIBS) -o f/intdoc$(build_exeext)
 
 f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
 	f/ansify$(build_exeext) $(srcdir)/f/intdoc.in \
 		< $(srcdir)/f/intdoc.in > f/intdoc.h0
 
-f/ansify$(build_exeext): f/ansify.c hconfig.h $(SYSTEM_H)
-	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
+f/ansify$(build_exeext): f/ansify.c bconfig.h $(SYSTEM_H) coretypes.h $(TM_H)
+	  $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
 	  	$(srcdir)/f/ansify.c -o f/ansify$(build_exeext)
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
@@ -350,178 +350,187 @@ f/bad.o: f/bad.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bad.h f/bad.def f/where.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
  f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h toplev.h intl.h \
- diagnostic.h
+ diagnostic.h coretypes.h $(TM_H)
 f/bit.o: f/bit.c f/proj.h $(CONFIG_H) $(SYSTEM_H) glimits.h f/bit.h \
- f/malloc.h
+ f/malloc.h coretypes.h $(TM_H)
 f/bld.o: f/bld.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bld.h f/bld-op.def f/bit.h \
  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h f/top.h f/lex.h \
  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
- f/name.h f/intrin.h f/intrin.def real.h
+ f/name.h f/intrin.h f/intrin.def real.h coretypes.h $(TM_H)
 f/com.o: f/com.c f/proj.h $(CONFIG_H) $(SYSTEM_H) flags.h $(RTL_H) $(TREE_H) \
  output.h convert.h f/com.h f/com-rt.def f/bld.h f/bld-op.def f/bit.h \
  f/malloc.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h \
  f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
  f/name.h f/expr.h f/implic.h f/src.h f/st.h $(GGC_H) toplev.h diagnostic.h \
- $(LANGHOOKS_DEF) langhooks.h intl.h real.h debug.h gt-f-com.h gtype-f.h
+ $(LANGHOOKS_DEF) langhooks.h intl.h real.h debug.h gt-f-com.h gtype-f.h \
+ coretypes.h $(TM_H)
 f/data.o: f/data.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/data.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
  f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h \
- f/global.h f/name.h f/intrin.h f/intrin.def f/expr.h f/st.h
+ f/global.h f/name.h f/intrin.h f/intrin.def f/expr.h f/st.h coretypes.h $(TM_H)
 f/equiv.o: f/equiv.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/equiv.h f/bld.h \
  f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
- f/global.h f/name.h f/intrin.h f/intrin.def f/data.h
+ f/global.h f/name.h f/intrin.h f/intrin.def f/data.h coretypes.h $(TM_H)
 f/expr.o: f/expr.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/expr.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
  f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h \
  f/global.h f/name.h f/intrin.h f/intrin.def f/implic.h f/src.h f/st.h \
- f/stamp-str real.h
-f/fini.o: f/fini.c f/proj.h hconfig.h $(SYSTEM_H) f/malloc.h
+ f/stamp-str real.h coretypes.h $(TM_H)
+f/fini.o: f/fini.c f/proj.h bconfig.h $(SYSTEM_H) f/malloc.h coretypes.h $(TM_H)
 f/global.o: f/global.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/global.h f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/lex.h f/type.h f/name.h f/symbol.h \
  f/symbol.def f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def f/lab.h \
- f/storag.h f/intrin.h f/intrin.def f/equiv.h
+ f/storag.h f/intrin.h f/intrin.def f/equiv.h coretypes.h $(TM_H)
 f/implic.o: f/implic.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/implic.h f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/lex.h f/type.h f/symbol.h \
  f/symbol.def f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def f/lab.h \
- f/storag.h f/intrin.h f/intrin.def f/equiv.h f/global.h f/name.h f/src.h
+ f/storag.h f/intrin.h f/intrin.def f/equiv.h f/global.h f/name.h f/src.h \
+ coretypes.h $(TM_H)
 f/info.o: f/info.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def f/where.h \
- glimits.h f/top.h f/malloc.h f/lex.h f/type.h
+ glimits.h f/top.h f/malloc.h f/lex.h f/type.h coretypes.h $(TM_H)
 f/intrin.o: f/intrin.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/intrin.h \
  f/intrin.def f/bld.h f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def \
  $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h \
- f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/expr.h f/src.h
+ f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/expr.h f/src.h \
+ coretypes.h $(TM_H)
 f/lab.o: f/lab.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/lab.h f/com.h f/com-rt.def \
  $(TREE_H) f/bld.h f/bld-op.def f/bit.h f/malloc.h f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
  f/top.h f/lex.h f/type.h f/intrin.h f/intrin.def f/symbol.h f/symbol.def \
- f/equiv.h f/storag.h f/global.h f/name.h
+ f/equiv.h f/storag.h f/global.h f/name.h coretypes.h $(TM_H)
 f/lex.o: f/lex.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  glimits.h f/bad.h f/bad.def f/com.h f/com-rt.def $(TREE_H) f/bld.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
  f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/src.h flags.h \
- debug.h input.h toplev.h output.h $(GGC_H) gt-f-lex.h
-f/malloc.o: f/malloc.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/malloc.h
+ debug.h input.h toplev.h output.h $(GGC_H) gt-f-lex.h coretypes.h $(TM_H)
+f/malloc.o: f/malloc.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/malloc.h \
+ coretypes.h $(TM_H)
 f/name.o: f/name.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h f/name.h f/global.h f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h $(TREE_H) f/lex.h f/type.h f/symbol.h \
  f/symbol.def f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def f/lab.h \
- f/storag.h f/intrin.h f/intrin.def f/equiv.h f/src.h
+ f/storag.h f/intrin.h f/intrin.def f/equiv.h f/src.h coretypes.h $(TM_H)
 f/parse.o: f/parse.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h \
  f/where.h glimits.h f/com.h f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def \
  f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
- f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h version.h flags.h
+ f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h version.h flags.h \
+ coretypes.h $(TM_H)
 f/src.o: f/src.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/src.h f/bad.h f/bad.def \
- f/where.h glimits.h f/top.h f/malloc.h
+ f/where.h glimits.h f/top.h f/malloc.h coretypes.h $(TM_H)
 f/st.o: f/st.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/st.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/lex.h f/symbol.h f/symbol.def \
  f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h f/type.h f/lab.h \
  f/storag.h f/intrin.h f/intrin.def f/equiv.h f/global.h f/name.h f/sta.h \
  f/stamp-str f/stb.h f/expr.h f/stp.h f/stt.h f/stc.h f/std.h \
- f/stv.h f/stw.h f/ste.h f/sts.h f/stu.h
+ f/stv.h f/stw.h f/ste.h f/sts.h f/stu.h coretypes.h $(TM_H)
 f/sta.o: f/sta.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/sta.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/lex.h f/stamp-str f/symbol.h \
  f/symbol.def f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) \
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/type.h f/lab.h \
  f/storag.h f/intrin.h f/intrin.def f/equiv.h f/global.h f/name.h f/implic.h \
- f/stb.h f/expr.h f/stp.h f/stt.h f/stc.h f/std.h f/stv.h f/stw.h
+ f/stb.h f/expr.h f/stp.h f/stt.h f/stc.h f/std.h f/stv.h f/stw.h coretypes.h \
+ $(TM_H)
 f/stb.o: f/stb.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stb.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/expr.h f/bld.h f/bld-op.def f/bit.h \
  f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
  f/info-w.def f/target.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h \
  f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h \
- f/stt.h f/stamp-str f/src.h f/sta.h f/stc.h
+ f/stt.h f/stamp-str f/src.h f/sta.h f/stc.h coretypes.h $(TM_H)
 f/stc.o: f/stc.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stc.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h f/bld.h f/bld-op.def f/bit.h f/com.h \
  f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
  f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/expr.h f/stp.h \
- f/stt.h f/stamp-str f/data.h f/implic.h f/src.h f/sta.h f/std.h f/stv.h f/stw.h
+ f/stt.h f/stamp-str f/data.h f/implic.h f/src.h f/sta.h f/std.h f/stv.h \
+ f/stw.h coretypes.h $(TM_H)
 f/std.o: f/std.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/std.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
  f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h \
  f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h f/stt.h f/stamp-str \
- f/stv.h f/stw.h f/sta.h f/ste.h f/sts.h
+ f/stv.h f/stw.h f/sta.h f/ste.h f/sts.h coretypes.h $(TM_H)
 f/ste.o: f/ste.c f/proj.h $(CONFIG_H) $(SYSTEM_H) $(RTL_H) toplev.h f/ste.h \
  f/bld.h f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H)	\
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h \
  f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h \
  f/stt.h f/stamp-str f/sts.h f/stv.h f/stw.h f/expr.h f/sta.h $(GGC_H) \
- gt-f-ste.h
+ gt-f-ste.h coretypes.h $(TM_H)
 f/storag.o: f/storag.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/storag.h f/bld.h  \
  f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) \
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
- f/intrin.def f/data.h
+ f/intrin.def f/data.h coretypes.h $(TM_H)
 f/stp.o: f/stp.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stp.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
- f/intrin.def f/stt.h
+ f/intrin.def f/stt.h coretypes.h $(TM_H)
 f/str.o: f/str.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/src.h f/bad.h f/bad.def \
- f/where.h glimits.h f/top.h f/malloc.h f/stamp-str f/lex.h
+ f/where.h glimits.h f/top.h f/malloc.h f/stamp-str f/lex.h coretypes.h $(TM_H)
 f/sts.o: f/sts.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/sts.h f/malloc.h f/com.h \
  f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def f/bit.h f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h f/intrin.def \
  f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
- f/name.h
+ f/name.h coretypes.h $(TM_H)
 f/stt.o: f/stt.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stt.h f/top.h f/malloc.h \
  f/where.h glimits.h f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def \
  $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h \
  f/bad.h f/bad.def f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h \
  f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def \
- f/stp.h f/expr.h f/sta.h f/stamp-str
+ f/stp.h f/expr.h f/sta.h f/stamp-str coretypes.h $(TM_H)
 f/stu.o: f/stu.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bld.h f/bld-op.def f/bit.h \
  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h \
  f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def \
- f/implic.h f/stu.h f/sta.h f/stamp-str
+ f/implic.h f/stu.h f/sta.h f/stamp-str coretypes.h $(TM_H)
 f/stv.o: f/stv.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stv.h f/lab.h f/com.h \
  f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def f/bit.h f/malloc.h \
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h \
  f/intrin.def f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
- f/name.h
+ f/name.h coretypes.h $(TM_H)
 f/stw.o: f/stw.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/stw.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
- f/intrin.def f/stv.h f/sta.h f/stamp-str
+ f/intrin.def f/stv.h f/sta.h f/stamp-str coretypes.h $(TM_H)
 f/symbol.o: f/symbol.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/symbol.h \
  f/symbol.def f/bld.h f/bld-op.def f/bit.h f/malloc.h f/com.h \
  f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h f/top.h \
  f/lex.h f/type.h f/lab.h f/storag.h f/intrin.h f/intrin.def f/equiv.h \
- f/global.h f/name.h f/src.h f/st.h
+ f/global.h f/name.h f/src.h f/st.h coretypes.h $(TM_H)
 f/target.o: f/target.c f/proj.h $(CONFIG_H) $(SYSTEM_H) glimits.h f/target.h \
  $(TREE_H) f/bad.h f/bad.def f/where.h f/top.h f/malloc.h f/info.h real.h \
- f/info-b.def f/info-k.def f/info-w.def f/type.h f/lex.h diagnostic.h
+ f/info-b.def f/info-k.def f/info-w.def f/type.h f/lex.h diagnostic.h \
+ coretypes.h $(TM_H)
 f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  glimits.h f/bad.h f/bad.def f/bit.h f/bld.h f/bld-op.def f/com.h \
  f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
  f/info-w.def f/target.h f/lex.h f/type.h f/lab.h f/storag.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
  f/intrin.def f/data.h f/expr.h f/implic.h f/src.h f/st.h flags.h \
- toplev.h
-f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h
-f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h f/top.h \
- f/malloc.h f/lex.h $(GGC_H) gt-f-where.h
+ toplev.h coretypes.h $(TM_H)
+f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h \
+ coretypes.h $(TM_H)
+f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h \
+ f/top.h f/malloc.h f/lex.h $(GGC_H) gt-f-where.h coretypes.h $(TM_H)

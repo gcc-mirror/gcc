@@ -28,6 +28,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include <signal.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
@@ -2156,14 +2158,11 @@ compile_file ()
 
     wrapup_global_declarations (vec, len);
 
-    /* This must occur after the loop to output deferred functions.  Else
-       the profiler initializer would not be emitted if all the functions
-       in this compilation unit were deferred.
-
-       output_func_start_profiler can not cause any additional functions or
-       data to need to be output, so it need not be in the deferred function
-       loop above.  */
-    output_func_start_profiler ();
+    if (profile_arc_flag)
+      /* This must occur after the loop to output deferred functions.
+         Else the profiler initializer would not be emitted if all the
+         functions in this compilation unit were deferred.  */
+      create_profiler ();
 
     check_global_declarations (vec, len);
 
@@ -2189,8 +2188,6 @@ compile_file ()
   /* Output some stuff at end of file if nec.  */
 
   dw2_output_indirect_constants ();
-
-  end_final (aux_base_name);
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {

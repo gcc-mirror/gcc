@@ -20,8 +20,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "errors.h"
 #include "gensupport.h"
@@ -112,6 +114,11 @@ static const char * const optabs[] =
     abs_optab->handlers[(int) $A].insn_code = CODE_FOR_$(abs$F$a2$)",
   "absv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(absv$I$a2$)",
   "sqrt_optab->handlers[$A].insn_code = CODE_FOR_$(sqrt$a2$)",
+  "floor_optab->handlers[$A].insn_code = CODE_FOR_$(floor$a2$)",
+  "ceil_optab->handlers[$A].insn_code = CODE_FOR_$(ceil$a2$)",
+  "round_optab->handlers[$A].insn_code = CODE_FOR_$(round$a2$)",
+  "trunc_optab->handlers[$A].insn_code = CODE_FOR_$(trunc$a2$)",
+  "nearbyint_optab->handlers[$A].insn_code = CODE_FOR_$(nearbyint$a2$)",
   "sin_optab->handlers[$A].insn_code = CODE_FOR_$(sin$a2$)",
   "cos_optab->handlers[$A].insn_code = CODE_FOR_$(cos$a2$)",
   "exp_optab->handlers[$A].insn_code = CODE_FOR_$(exp$a2$)",
@@ -329,6 +336,8 @@ from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
+  printf ("#include \"coretypes.h\"\n");
+  printf ("#include \"tm.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"insn-config.h\"\n");

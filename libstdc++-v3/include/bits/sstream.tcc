@@ -91,7 +91,7 @@ namespace std
 	{
 	  if (!__testeof)
 	    {
-	      __size_type __len = max(_M_buf_size, _M_buf_size_opt);
+	      __size_type __len = std::max(_M_buf_size, _M_buf_size_opt);
 	      __len *= 2;
 
 	      if (__testwrite)

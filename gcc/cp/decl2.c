@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "expr.h"
@@ -1414,43 +1416,6 @@ finish_anon_union (anon_union_decl)
     }
 
   add_decl_stmt (anon_union_decl);
-}
-
-/* Finish processing a builtin type TYPE.  It's name is NAME,
-   its fields are in the array FIELDS.  LEN is the number of elements
-   in FIELDS minus one, or put another way, it is the maximum subscript
-   used in FIELDS.
-
-   It is given the same alignment as ALIGN_TYPE.  */
-
-void
-finish_builtin_type (type, name, fields, len, align_type)
-     tree type;
-     const char *name;
-     tree fields[];
-     int len;
-     tree align_type;
-{
-  register int i;
-
-  TYPE_FIELDS (type) = fields[0];
-  for (i = 0; i < len; i++)
-    {
-      layout_type (TREE_TYPE (fields[i]));
-      DECL_FIELD_CONTEXT (fields[i]) = type;
-      TREE_CHAIN (fields[i]) = fields[i+1];
-    }
-  DECL_FIELD_CONTEXT (fields[i]) = type;
-  TYPE_ALIGN (type) = TYPE_ALIGN (align_type);
-  TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (align_type);
-  layout_type (type);
-#if 0 /* not yet, should get fixed properly later */
-  TYPE_NAME (type) = make_type_decl (get_identifier (name), type);
-#else
-  TYPE_NAME (type) = build_decl (TYPE_DECL, get_identifier (name), type);
-#endif
-  TYPE_STUB_DECL (type) = TYPE_NAME (type);
-  layout_decl (TYPE_NAME (type), 0);
 }
 
 /* Auxiliary functions to make type signatures for

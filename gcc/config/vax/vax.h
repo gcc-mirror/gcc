@@ -557,10 +557,8 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Addressing modes, and classification of registers for them.  */
 
 #define HAVE_POST_INCREMENT 1
-/* #define HAVE_POST_DECREMENT 0 */
 
 #define HAVE_PRE_DECREMENT 1
-/* #define HAVE_PRE_INCREMENT 0 */
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -1060,12 +1058,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define USER_LABEL_PREFIX "_"
 
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -1146,6 +1138,14 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (ROUNDED)))
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.
+	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>	#conservative entry mask
+	addl2	$DELTA, 4(ap)	#adjust first argument
+	jmp	FUNCTION+2	#jump beyond FUNCTION's entry mask
+ */
+#define ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.

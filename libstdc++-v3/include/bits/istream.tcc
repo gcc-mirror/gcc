@@ -724,7 +724,7 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c;
 	      
-	      __n = min(__n, numeric_limits<streamsize>::max());
+	      __n = std::min(__n, numeric_limits<streamsize>::max());
 	      while (_M_gcount < __n  
 		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
 		{
@@ -815,7 +815,7 @@ namespace std
 	      streamsize __num = this->rdbuf()->in_avail();
 	      if (__num >= 0)
 		{
-		  __num = min(__num, __n);
+		  __num = std::min(__num, __n);
 		  if (__num)
 		    _M_gcount = this->rdbuf()->sgetn(__s, __num);
 		}

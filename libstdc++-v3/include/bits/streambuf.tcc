@@ -128,7 +128,7 @@ namespace std
 	  if (__buf_len > 0)
 	    {
 	      size_t __remaining = __n - __ret;
-	      size_t __len = min(__buf_len, __remaining);
+	      size_t __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(__s, _M_in_cur, __len);
 	      __ret += __len;
 	      __s += __len;
@@ -167,7 +167,7 @@ namespace std
 	  if (__buf_len > 0)
 	    {
 	      off_type __remaining = __n - __ret;
-	      off_type __len = min(__buf_len, __remaining);
+	      off_type __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(_M_out_cur, __s, __len);
 	      __ret += __len;
 	      __s += __len;

@@ -26,8 +26,10 @@
    most of the programs that generate code from the machine
    description can simply ignore the entire pattern.  */
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "errors.h"
 #include "hashtab.h"
@@ -73,7 +75,7 @@ write_header ()
 /* Generated automatically by the program `genconditions' from the target\n\
    machine description file.  */\n\
 \n\
-#include \"hconfig.h\"\n\
+#include \"bconfig.h\"\n\
 #include \"insn-constants.h\"\n");
 
   puts ("\
@@ -87,6 +89,8 @@ write_header ()
 
   puts ("\
 #include \"system.h\"\n\
+#include \"coretypes.h\"\n\
+#include \"tm.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"function.h\"\n");

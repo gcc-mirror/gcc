@@ -54,6 +54,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 /* This must only be used for the N32 and N64 ABIs.  O32 is correct.  */
 

@@ -88,6 +88,8 @@ a register with any other reload.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "insn-config.h"
@@ -670,13 +672,13 @@ static enum reg_class
 find_valid_class (m1, n, dest_regno)
      enum machine_mode m1 ATTRIBUTE_UNUSED;
      int n;
-     unsigned int dest_regno;
+     unsigned int dest_regno ATTRIBUTE_UNUSED;
 {
   int best_cost = -1;
   int class;
   int regno;
   enum reg_class best_class = NO_REGS;
-  enum reg_class dest_class = REGNO_REG_CLASS (dest_regno);
+  enum reg_class dest_class ATTRIBUTE_UNUSED = REGNO_REG_CLASS (dest_regno);
   unsigned int best_size = 0;
   int cost;
 
@@ -5642,7 +5644,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	     needless copies if SUBREG_REG is multi-word.  */
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
 	    {
-	      int regno = subreg_regno (x);
+	      int regno ATTRIBUTE_UNUSED = subreg_regno (x);
 
 	      if (! (context ? REGNO_OK_FOR_INDEX_P (regno)
 		     : REGNO_MODE_OK_FOR_BASE_P (regno, mode)))

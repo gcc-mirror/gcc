@@ -141,7 +141,7 @@ namespace std
 	    // current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();
 	    if (_M_out_cur > _M_out_beg)
-	      __len = max(__size_type(_M_out_end - _M_out_beg), __len);
+	      __len = std::max(__size_type(_M_out_end - _M_out_beg), __len);
 	    return __string_type(_M_out_beg, _M_out_beg + __len);
 	  }
 	else

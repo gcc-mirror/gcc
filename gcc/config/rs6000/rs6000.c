@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -165,6 +167,7 @@ struct builtin_description
   const enum rs6000_builtins code;
 };
 
+static bool rs6000_function_ok_for_sibcall PARAMS ((tree, tree));
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static void validate_condition_mode 
@@ -388,6 +391,9 @@ static const char alt_reg_names[][8] =
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 #endif
 
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Override command line options.  Mostly we process the processor
@@ -461,6 +467,9 @@ rs6000_override_options (default_cpu)
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"405", PROCESSOR_PPC405,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"405f", PROCESSOR_PPC405,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"505", PROCESSOR_MPCCORE,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
@@ -9510,33 +9519,34 @@ rs6000_return_addr (count, frame)
    vector parameters are required to have a prototype, so the argument
    type info must be available here.  (The tail recursion case can work
    with vector parameters, but there's no way to distinguish here.) */
-int
-function_ok_for_sibcall (fndecl)
-    tree fndecl;
+static bool
+rs6000_function_ok_for_sibcall (decl, exp)
+    tree decl;
+    tree exp ATTRIBUTE_UNUSED;
 {
   tree type;
-  if (fndecl)
+  if (decl)
     {
       if (TARGET_ALTIVEC_VRSAVE)
         {
-	  for (type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  for (type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 	       type; type = TREE_CHAIN (type))
 	    {
 	      if (TREE_CODE (TREE_VALUE (type)) == VECTOR_TYPE)
-		return 0;
+		return false;
 	    }
         }
       if (DEFAULT_ABI == ABI_DARWIN
-	  || (*targetm.binds_local_p) (fndecl))
+	  || (*targetm.binds_local_p) (decl))
 	{
-	  tree attr_list = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+	  tree attr_list = TYPE_ATTRIBUTES (TREE_TYPE (decl));
 
 	  if (!lookup_attribute ("longcall", attr_list)
 	      || lookup_attribute ("shortcall", attr_list))
-	    return 1;
+	    return true;
 	}
     }
-  return 0;
+  return false;
 }
 
 static int
@@ -11424,7 +11434,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	  /* Set up a TOC entry for the function.  */
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "Lthunk", labelno);
 	  toc_section ();
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "Lthunk", labelno);
+	  (*targetm.asm_out.internal_label) (file, "Lthunk", labelno);
 	  labelno++;
 
 	  if (TARGET_MINIMAL_TOC)
@@ -11747,7 +11757,7 @@ output_toc (file, x, labelno, mode)
     ASM_OUTPUT_ALIGN (file, 3);
   }
 
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
+  (*targetm.asm_out.internal_label) (file, "LC", labelno);
 
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow

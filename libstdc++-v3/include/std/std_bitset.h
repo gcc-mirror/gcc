@@ -1096,7 +1096,7 @@ namespace std
     bitset<_Nb>::_M_copy_from_string(const basic_string<_CharT,_Traits,_Alloc>& __s, size_t __pos, size_t __n)
     {
       reset();
-      const size_t __nbits = min(_Nb, min(__n, __s.size() - __pos));
+      const size_t __nbits = std::min(_Nb, std::min(__n, __s.size() - __pos));
       for (size_t __i = 0; __i < __nbits; ++__i)
 	{
 	  switch(__s[__pos + __nbits - __i - 1])

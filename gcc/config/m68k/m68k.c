@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "function.h"
@@ -64,6 +66,9 @@ static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int));
 #ifdef CTOR_LIST_BEGIN
 static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
+#endif
+#ifdef HPUX_ASM
+static void m68k_hp320_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #endif
 static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
@@ -124,6 +129,10 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_FUNCTION_PROLOGUE m68k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68k_output_function_epilogue
+#ifdef HPUX_ASM
+#undef TARGET_ASM_INTERNAL_LABEL
+#define  TARGET_ASM_INTERNAL_LABEL m68k_hp320_internal_label
+#endif
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
@@ -1377,13 +1386,13 @@ output_scc_di(op, operand1, operand2, dest)
   switch (op_code)
     {
       case EQ:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("seq %5", loperands);
         break;
 
       case NE:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sne %5", loperands);
         break;
@@ -1395,15 +1404,15 @@ output_scc_di(op, operand1, operand2, dest)
 #else
         output_asm_insn ("shi %5\n\tjra %l6", loperands);
 #endif
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sgt %5", loperands);
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[6]));
         break;
 
       case GTU:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("shi %5", loperands);
         break;
@@ -1415,15 +1424,15 @@ output_scc_di(op, operand1, operand2, dest)
 #else
         output_asm_insn ("scs %5\n\tjra %l6", loperands);
 #endif
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("slt %5", loperands);
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[6]));
         break;
 
       case LTU:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("scs %5", loperands);
         break;
@@ -1435,15 +1444,15 @@ output_scc_di(op, operand1, operand2, dest)
 #else
         output_asm_insn ("scc %5\n\tjra %l6", loperands);
 #endif
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sge %5", loperands);
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[6]));
         break;
 
       case GEU:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("scc %5", loperands);
         break;
@@ -1455,15 +1464,15 @@ output_scc_di(op, operand1, operand2, dest)
 #else
         output_asm_insn ("sls %5\n\tjra %l6", loperands);
 #endif
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sle %5", loperands);
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[6]));
         break;
 
       case LEU:
-        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+        (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				    CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sls %5", loperands);
         break;
@@ -1878,7 +1887,7 @@ output_move_himode (operands)
 		   CODE_LABEL_NUMBER (XEXP (labelref, 0)));
 #endif /* not SGS */
 #else /* SGS_SWITCH_TABLES or not MOTOROLA */
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LI",
+      (*targetm.asm_out.internal_label) (asm_out_file, "LI",
 				 CODE_LABEL_NUMBER (XEXP (labelref, 0)));
 #ifdef SGS_SWITCH_TABLES
       /* Set flag saying we need to define the symbol
@@ -3853,6 +3862,20 @@ m68k_svr3_asm_out_constructor (symbol, priority)
 
   init_section ();
   output_asm_insn (output_move_simode (xop), xop);
+}
+#endif
+
+#ifdef HPUX_ASM
+static void
+m68k_hp320_internal_label (stream, prefix, labelno)
+     FILE *stream;
+     const char *prefix;
+     unsigned long labelno;
+{
+  if (prefix[0] == 'L' && prefix[1] == 'I')
+    fprintf(stream, "\tset %s%ld,.+2\n", prefix, labelno);
+  else
+    fprintf (stream, "%s%ld:\n", prefix, labelno);
 }
 #endif
 

@@ -22,6 +22,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -1071,7 +1073,7 @@ _cpp_lex_direct (pfile)
       if (result->val.node->flags & NODE_OPERATOR)
 	{
 	  result->flags |= NAMED_OP;
-	  result->type = result->val.node->value.operator;
+	  result->type = result->val.node->directive_index;
 	}
       break;
 

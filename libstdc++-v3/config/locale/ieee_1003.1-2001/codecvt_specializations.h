@@ -449,7 +449,7 @@
     codecvt<_InternT, _ExternT, __enc_traits>::
     do_length(const state_type&, const extern_type* __from, 
 	      const extern_type* __end, size_t __max) const
-    { return min(__max, static_cast<size_t>(__end - __from)); }
+    { return std::min(__max, static_cast<size_t>(__end - __from)); }
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 74.  Garbled text for codecvt::do_max_length

@@ -629,7 +629,7 @@ namespace std
   
     /**  Returns the number of elements in the %list.  */
     size_type
-    size() const { return distance(begin(), end()); }
+    size() const { return std::distance(begin(), end()); }
   
     /**  Returns the size() of the largest possible %list.  */
     size_type

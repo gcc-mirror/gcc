@@ -57,7 +57,7 @@ C++ c++: cc1plus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
 
-g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) $(GCC_H) $(CONFIG_H)
+g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) $(CONFIG_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
@@ -219,60 +219,60 @@ c++.stage4: stage4-start
 #
 # .o: .h dependencies.
 CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
-	function.h varray.h $(SYSTEM_H) $(CONFIG_H) $(TARGET_H) \
+	function.h varray.h $(SYSTEM_H) coretypes.h $(CONFIG_H) $(TARGET_H) \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
 
-cp/spew.o: cp/spew.c $(CXX_TREE_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
+cp/spew.o: cp/spew.c $(CXX_TREE_H) $(TM_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
   toplev.h gt-cp-spew.h
-cp/lex.o: cp/lex.c $(CXX_TREE_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
+cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
   c-pragma.h toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h \
   cp/operators.def $(TM_P_H)
-cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h $(LANGHOOKS_DEF_H) \
-  c-common.h
-cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
+cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h langhooks.h \
+  $(LANGHOOKS_DEF_H) c-common.h
+cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(GGC_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
   debug.h gt-cp-decl.h gtype-cp.h
-cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
+cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(GGC_H) $(RTL_H) c-common.h gt-cp-decl2.h
-cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H) \
+cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h output.h $(TM_P_H) \
    diagnostic.h
-cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
+cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
    diagnostic.h
-cp/class.o: cp/class.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(TARGET_H)
-cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) \
+cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) $(TARGET_H)
+cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) $(EXPR_H) \
      $(GGC_H) diagnostic.h gt-cp-call.h
-cp/friend.o: cp/friend.c $(CXX_TREE_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
-cp/init.o: cp/init.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
+cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
+cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
   $(GGC_H) except.h
-cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H) \
+cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H) \
   $(TM_P_H) $(TARGET_H)
-cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h
-cp/search.o: cp/search.c $(CXX_TREE_H) stack.h flags.h toplev.h $(RTL_H)
-cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
+cp/cvt.o: cp/cvt.c $(CXX_TREE_H) $(TM_H) cp/decl.h flags.h toplev.h convert.h
+cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) stack.h flags.h toplev.h $(RTL_H)
+cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
   insn-config.h integrate.h tree-inline.h real.h gt-cp-tree.h $(TARGET_H)
-cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(SYSTEM_H)
-cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
-cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
+cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
+cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h
+cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) except.h toplev.h \
   cp/cfns.h $(EXPR_H) libfuncs.h tree-inline.h
-cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
+cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
   except.h $(TM_P_H)
-cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h $(srcdir)/cp/parse.h cp/lex.h \
+cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h $(srcdir)/cp/parse.h cp/lex.h \
   toplev.h $(GGC_H) $(RTL_H) except.h tree-inline.h gt-cp-pt.h
-cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h flags.h real.h \
+cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) toplev.h diagnostic.h flags.h real.h \
   $(LANGHOOKS_DEF_H)
-cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H) diagnostic.h \
+cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(GGC_H) diagnostic.h \
   gt-cp-repo.h
-cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
+cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) cp/lex.h except.h toplev.h \
   flags.h $(GGC_H) debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H) \
   tree-inline.h
-cp/dump.o: cp/dump.c $(CXX_TREE_H) tree-dump.h
-cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
+cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) tree-dump.h
+cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h
-cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h
+cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h
 
-cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
-	cp/decl.h $(SYSTEM_H) toplev.h $(GGC_H) gt-cp-parse.h
+cp/parse.o: cp/parse.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h except.h output.h \
+	cp/decl.h toplev.h $(GGC_H) gt-cp-parse.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
 		$(srcdir)/cp/parse.c $(OUTPUT_OPTION)
 #

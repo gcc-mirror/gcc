@@ -70,19 +70,6 @@ for windows/multi thread */
   && strcmp (STR, "Tbss"))
 
 
-#if 0	
-/* don't do this until we can sort out the default path issues. MK */
-#undef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX ""
-
-#undef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX ""
-
-#undef TOOLDIR_BASE_PREFIX
-#define TOOLDIR_BASE_PREFIX ""
-
-#endif /* 0 */
-
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
 #define HANDLE_SYSV_PRAGMA 1

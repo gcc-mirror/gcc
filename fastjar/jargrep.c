@@ -373,7 +373,6 @@ returns: TRUE if it is a word, FALSE of it is a substring.
 
 static int chk_wrd(regex_t *exp, const char *str) {
 	int wrd_fnd = FALSE;
-	int regflag;
 	int frnt_ok;
 	int bck_ok;
 	const char *str2;
@@ -381,7 +380,7 @@ static int chk_wrd(regex_t *exp, const char *str) {
 
 	str2 = str;
 	frnt_ok = bck_ok = FALSE;
-	while(!wrd_fnd && !(regflag = regexec(exp, str2, 1, &match, 0))) {
+	while(!wrd_fnd && !regexec(exp, str2, 1, &match, 0)) {
 		if(!match.rm_so && (str2 == str)) frnt_ok = TRUE;
 		else if(!isalnum((unsigned char)str2[match.rm_so - 1])
 			&& str2[match.rm_so - 1] != '_')

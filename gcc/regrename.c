@@ -22,6 +22,8 @@
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "insn-config.h"
@@ -1328,7 +1330,7 @@ mode_change_ok (orig_mode, new_mode, regno)
 static rtx
 maybe_mode_change (orig_mode, copy_mode, new_mode, regno, copy_regno)
      enum machine_mode orig_mode, copy_mode, new_mode;
-     unsigned int regno, copy_regno;
+     unsigned int regno, copy_regno ATTRIBUTE_UNUSED;
 {
   if (orig_mode == new_mode)
     return gen_rtx_raw_REG (new_mode, regno);

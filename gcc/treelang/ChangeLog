@@ -1,11 +1,27 @@
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* lex.l: Move "%{" below copyright notice; get rid of "/*"
+	embedded in comment.  Do not #undef IN_GCC; do not include
+	stdio.h, memory.h, or ansidecl.h; do not include config.h twice.
+	Do include coretypes.h and tm.h.
+	* parse.y: Do not #undef IN_GCC, provide bogus definitions of tree
+	and rtx typedefs, or include stdio.h, stdlib.h, string.h, or
+	ansidecl.h. Do include coretypes.h and tm.h.
+	* tree1.c: Do not include ansidecl.h, stdlib.h, unistd.h, ctype.h,
+	stdarg.h, string.h, or stdio.h.  Do include coretypes.h and tm.h.
+	* treetree.c: Do not include stdlib.h, unistd.h, safe-ctype.h,
+	errno.h. stdarg.h, limits.h, string.h, fcntl.h, getopt.h. stdio.h,
+	or ansidecl.h.  Do include coretypes.h and tm.h.
+	* Make-lang.in: Update dependencies.
+
 2002-09-09  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c (objc_is_id): New.
 
 2002-08-16  Tim Josling  <tej@melbpc.org.au>
 
-        Remove variables and functions now defined elsewhere.
-	
+	Remove variables and functions now defined elsewhere.
+
 	* treetree.c (maybe_objc_comptypes): Remove.
 	(warn_format, warn_format_y2k, warn_format_extra_args,
 	warn_format_nonliteral, warn_format_security,
@@ -33,7 +49,7 @@
 
 2002-07-11  Tim Josling  <tej@melbpc.org.au>
 
-	Remove front end hard coding from gengtype.c.  
+	Remove front end hard coding from gengtype.c.
 
 	* config-lang.in (gtfiles): Add files needed for this front
 	end.
@@ -41,7 +57,7 @@
 2002-07-09  Tim Josling  <tej@melbpc.org.au>
 
 	Support new attributes regime (Fix for PR c++/7099).
-	
+
 	* treetree.c (handle_format_attribute): Return NULL_TREE instead
 	of aborting.
 	(top level): Define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
@@ -60,7 +76,7 @@
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
-        Cleanup
+	Cleanup
 
 	* Make-lang.in (check-treelang). Add. Remove direct dependency of
 	'check' on 'treelang.check' as redundant.
@@ -131,7 +147,7 @@
 2002-05-11  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c: (cpp_define) Add.
-        (cpp_get_callbacks) Add.
+	(cpp_get_callbacks) Add.
 
 2002-05-07  Tim Josling  <tej@melbpc.org.au>
 
@@ -161,4 +177,4 @@
 
 2001-05-11  Tim Josling  <tej@melbpc.org.au>
 
-        Create the new language.
+	Create the new language.

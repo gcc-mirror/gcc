@@ -1,3 +1,8 @@
+2002-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Remove skip-this-dir support.
+	* configure: Regenerate.
+
 2002-11-19  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/8587

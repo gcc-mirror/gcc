@@ -20,6 +20,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
@@ -331,11 +333,9 @@ flow_loop_nodes_find (header, loop)
   basic_block *stack;
   int sp;
   int num_nodes = 1;
-  int findex, lindex;
 
   header->loop_father = loop;
   header->loop_depth = loop->depth;
-  findex = lindex = header->index;
 
   if (loop->latch->loop_father != loop)
     {

@@ -50,16 +50,23 @@
 
 	# This assumes we are using gas.
 ENTRY(ffi_call_SYSV)
-#if defined(__SH4__)
 	# Save registers
+.LFB1:
 	mov.l	r8,@-r15
+.LCFI0:
 	mov.l	r9,@-r15
+.LCFI1:
 	mov.l	r10,@-r15
+.LCFI2:
 	mov.l	r12,@-r15
+.LCFI3:
 	mov.l	r14,@-r15
+.LCFI4:
 	sts.l	pr,@-r15
+.LCFI5:
 	mov	r15,r14
-
+.LCFI6:
+#if defined(__SH4__)
 	mov	r6,r8
 	mov	r7,r9
 
@@ -319,15 +326,6 @@ L_epilogue:
 	rts
 	 mov.l  @r15+,r8
 #else
-	# Save registers
-	mov.l	r8,@-r15
-	mov.l	r9,@-r15
-	mov.l	r10,@-r15
-	mov.l	r12,@-r15
-	mov.l	r14,@-r15
-	sts.l	pr,@-r15
-	mov	r15,r14
-
 	mov	r6,r8
 	mov	r7,r9
 
@@ -491,14 +489,16 @@ L_epilogue:
 	rts
 	 mov.l  @r15+,r8
 #endif
-
+.LFE1:
 .ffi_call_SYSV_end:
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
 
 .globl	ffi_closure_helper_SYSV
 
 ENTRY(ffi_closure_SYSV)
+.LFB2:
 	mov.l	r14,@-r15
+.LCFI7:
 	sts.l	pr,@-r15
 
 	/* Stack layout:	
@@ -509,13 +509,15 @@ ENTRY(ffi_closure_SYSV)
 	    4 bytes (5th arg)
 	   <- new stack pointer
 	*/
+.LCFI8:
 #if defined(__SH4__)
 	add	#-56,r15
 #else
 	add	#-24,r15
 #endif
+.LCFI9:
 	mov	r15,r14
-
+.LCFIA:
 	mov	r14,r1
 	add	#24,r1
 	mov.l	r7,@-r1
@@ -669,6 +671,103 @@ L_case_v:
 	lds.l	@r15+,pr
 	rts
 	 mov.l	@r15+,r14
-
+.LFE2:
 .ffi_closure_SYSV_end:
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+
+	.section	".eh_frame","aw",@progbits
+__FRAME_BEGIN__:
+	.4byte	.LECIE1-.LSCIE1	/* Length of Common Information Entry */
+.LSCIE1:
+	.4byte	0x0	/* CIE Identifier Tag */
+	.byte	0x1	/* CIE Version */
+	.byte	0x0	/* CIE Augmentation */
+	.byte	0x1	/* uleb128 0x1; CIE Code Alignment Factor */
+	.byte	0x7c	/* sleb128 -4; CIE Data Alignment Factor */
+	.byte	0x11	/* CIE RA Column */
+	.byte	0xc	/* DW_CFA_def_cfa */
+	.byte	0xf	/* uleb128 0xf */
+	.byte	0x0	/* uleb128 0x0 */
+	.align	2
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1	/* FDE Length */
+.LASFDE1:
+	.4byte	.LASFDE1-__FRAME_BEGIN__	/* FDE CIE offset */
+	.4byte	.LFB1	/* FDE initial location */
+	.4byte	.LFE1-.LFB1	 /* FDE address range */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI0-.LFB1
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x4	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI1-.LCFI0
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x8	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI2-.LCFI1
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0xc	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI3-.LCFI2
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x10	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI4-.LCFI3
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x14	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI5-.LCFI4
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x18	/* uleb128 0x4 */
+	.byte	0x91	/* DW_CFA_offset, column 0x11 */
+	.byte	0x6	/* uleb128 0x6 */
+	.byte	0x8e	/* DW_CFA_offset, column 0xe */
+	.byte	0x5	/* uleb128 0x5 */
+	.byte	0x8c	/* DW_CFA_offset, column 0xc */
+	.byte	0x4	/* uleb128 0x4 */
+	.byte	0x8a	/* DW_CFA_offset, column 0xa */
+	.byte	0x3	/* uleb128 0x3 */
+	.byte	0x89	/* DW_CFA_offset, column 0x9 */
+	.byte	0x2	/* uleb128 0x2 */
+	.byte	0x88	/* DW_CFA_offset, column 0x8 */
+	.byte	0x1	/* uleb128 0x1 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI6-.LCFI5
+	.byte	0xd	/* DW_CFA_def_cfa_register */
+	.byte	0xe	/* uleb128 0xe */
+	.align	2
+.LEFDE1:
+
+.LSFDE3:
+	.4byte	.LEFDE3-.LASFDE3	/* FDE Length */
+.LASFDE3:
+	.4byte	.LASFDE3-__FRAME_BEGIN__	/* FDE CIE offset */
+	.4byte	.LFB2	/* FDE initial location */
+	.4byte	.LFE2-.LFB2	 /* FDE address range */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI7-.LFB2
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x4	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI8-.LCFI7
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x8	/* uleb128 0x8 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFI9-.LCFI8
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+#if defined(__SH4__)
+	.byte	8+56	/* uleb128 8+56 */
+#else
+	.byte	8+24	/* uleb128 8+24 */
+#endif
+	.byte	0x91	/* DW_CFA_offset, column 0x11 */
+        .byte	0x2
+        .byte	0x8e	/* DW_CFA_offset, column 0xe */
+        .byte	0x1
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFIA-.LCFI9
+	.byte	0xd	/* DW_CFA_def_cfa_register */
+	.byte	0xe	/* uleb128 0xe */
+	.align	2
+.LEFDE3:

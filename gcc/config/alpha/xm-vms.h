@@ -19,9 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define HOST_WIDE_INT long long
-#define HOST_BITS_PER_WIDE_INT 64
-
 /* A couple of conditionals for execution machine are controlled here.  */
 #ifndef VMS
 #define VMS

@@ -411,7 +411,7 @@ namespace std
     {
       _Tp __x = __z.real();
       _Tp __y = __z.imag();
-      const _Tp __s = max(abs(__x), abs(__y));
+      const _Tp __s = std::max(abs(__x), abs(__y));
       if (__s == _Tp())  // well ...
         return __s;
       __x /= __s; 

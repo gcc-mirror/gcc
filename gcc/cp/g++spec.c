@@ -20,6 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "gcc.h"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */

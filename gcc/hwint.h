@@ -15,152 +15,111 @@
 #define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
 #define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
 
+/* If HAVE_LONG_LONG and SIZEOF_LONG_LONG aren't defined, but
+   GCC_VERSION >= 3000, assume this is the second or later stage of a
+   bootstrap, we do have long long, and it's 64 bits.  (This is
+   required by C99; we do have some ports that violate that assumption
+   but they're all cross-compile-only.)  Just in case, force a
+   constraint violation if that assumption is incorrect.  */
+#if !defined HAVE_LONG_LONG
+# if GCC_VERSION >= 3000
+#  define HAVE_LONG_LONG 1
+#  define SIZEOF_LONG_LONG 8
+extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
+# endif
+#endif
+
 #ifdef HAVE_LONG_LONG
 # define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
-#else
+#endif
 #ifdef HAVE___INT64
-# define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF___INT64)
+# define HOST_BITS_PER___INT64 (CHAR_BIT * SIZEOF___INT64)
+#endif
+
+/* Set HOST_WIDE_INT.  This should be the widest efficient host
+   integer type.  It can be 32 or 64 bits, except that if we are
+   targeting a machine with 64-bit size_t then it has to be 64 bits.
+
+   With a sane ABI, 'long' is the largest efficient host integer type.
+   Thus, we use that unless we have to use 'long long' or '__int64'
+   because we're targeting a 64-bit machine from a 32-bit host.  */
+
+#if HOST_BITS_PER_LONG >= 64 || !defined NEED_64BIT_HOST_WIDE_INT
+#   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#   define HOST_WIDE_INT long
 #else
-/* If we're here and we're GCC, assume this is stage 2+ of a bootstrap
-   and 'long long' has the width of the *target*'s long long.  */
-# if GCC_VERSION > 3000
-#  define HOST_BITS_PER_LONGLONG LONG_LONG_TYPE_SIZE
-# endif /* gcc */
-#endif
-#endif /* no long long */
-
-/* Find the largest host integer type and set its size and type.  */
-
-/* Use long long on the host if the target has a wider long type than
-   the host.  */
-
-#if ! defined HOST_BITS_PER_WIDE_INT \
-    && defined HOST_BITS_PER_LONGLONG \
-    && (HOST_BITS_PER_LONGLONG > HOST_BITS_PER_LONG) \
-    && (defined (LONG_LONG_MAX) || defined (LONGLONG_MAX) \
-        || defined (LLONG_MAX) || defined (__GNUC__))
-
-# ifdef MAX_LONG_TYPE_SIZE
-#  if MAX_LONG_TYPE_SIZE > HOST_BITS_PER_LONG
+# if HOST_BITS_PER_LONGLONG >= 64
 #   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONGLONG
 #   define HOST_WIDE_INT long long
-#  endif
 # else
-#  if LONG_TYPE_SIZE > HOST_BITS_PER_LONG
-#   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONGLONG
-#   define HOST_WIDE_INT long long
+#  if HOST_BITS_PER___INT64 >= 64
+#   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER___INT64
+#   define HOST_WIDE_INT __int64
+#  else
+    #error "Unable to find a suitable type for HOST_WIDE_INT"
 #  endif
 # endif
-
 #endif
 
-#ifndef HOST_BITS_PER_WIDE_INT
+/* Various printf format strings for HOST_WIDE_INT.  */
 
-# if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#  define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#  define HOST_WIDE_INT long
-# else
-#  define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#  define HOST_WIDE_INT int
-# endif
-
-#endif /* ! HOST_BITS_PER_WIDE_INT */
-
-/* Provide defaults for the way to print a HOST_WIDE_INT
-   in various manners.  */
-
-#ifndef HOST_WIDE_INT_PRINT_DEC
-# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#  define HOST_WIDE_INT_PRINT_DEC "%d"
-#  define HOST_WIDE_INT_PRINT_DEC_C "%d"
-#  define HOST_WIDE_INT_PRINT_DEC_SPACE "% *d"
-# else
-#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#   define HOST_WIDE_INT_PRINT_DEC "%ld"
-#   define HOST_WIDE_INT_PRINT_DEC_C "%ldL"
-#   define HOST_WIDE_INT_PRINT_DEC_SPACE "% *ld"
-#  else
-#   define HOST_WIDE_INT_PRINT_DEC "%lld"
-#   define HOST_WIDE_INT_PRINT_DEC_C "%lldLL"
-#   define HOST_WIDE_INT_PRINT_DEC_SPACE "% *lld"
-#  endif
-# endif
-#endif /* ! HOST_WIDE_INT_PRINT_DEC */
-
-#ifndef HOST_WIDE_INT_PRINT_UNSIGNED
-# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#  define HOST_WIDE_INT_PRINT_UNSIGNED "%u"
-#  define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *u"
-# else
-#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#   define HOST_WIDE_INT_PRINT_UNSIGNED "%lu"
-#   define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *lu"
-#  else
-#   define HOST_WIDE_INT_PRINT_UNSIGNED "%llu"
-#   define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *llu"
-#  endif
-# endif
-#endif /* ! HOST_WIDE_INT_PRINT_UNSIGNED */
-
-#ifndef HOST_WIDE_INT_PRINT_HEX
-# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#  define HOST_WIDE_INT_PRINT_HEX "0x%x"
-# else
-#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#   define HOST_WIDE_INT_PRINT_HEX "0x%lx"
-#  else
-#   define HOST_WIDE_INT_PRINT_HEX "0x%llx"
-#  endif
-# endif
-#endif /* ! HOST_WIDE_INT_PRINT_HEX */
-
-#ifndef HOST_WIDE_INT_PRINT_DOUBLE_HEX
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+# define HOST_WIDE_INT_PRINT_DEC "%ld"
+# define HOST_WIDE_INT_PRINT_DEC_C "%ldL"
+# define HOST_WIDE_INT_PRINT_DEC_SPACE "% *ld"
+# define HOST_WIDE_INT_PRINT_UNSIGNED "%lu"
+# define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *lu"
+# define HOST_WIDE_INT_PRINT_HEX "0x%lx"
+  /* 'long' might be 32 or 64 bits, and the number of leading zeroes
+     must be tweaked accordingly.  */
 # if HOST_BITS_PER_WIDE_INT == 64
-#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#   define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%x%016x"
-#  else
-#   if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#    define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%016lx"
-#   else
-#    define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%016llx"
-#   endif
-#  endif
+#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%016lx"
 # else
-#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#   define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%x%08x"
+#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
+# endif
+#else
+# define HOST_WIDE_INT_PRINT_DEC "%lld"
+# define HOST_WIDE_INT_PRINT_DEC_C "%lldLL"
+# define HOST_WIDE_INT_PRINT_DEC_SPACE "% *lld"
+# define HOST_WIDE_INT_PRINT_UNSIGNED "%llu"
+# define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *llu"
+# define HOST_WIDE_INT_PRINT_HEX "0x%llx"
+  /* We can assume that 'long long' is at least 64 bits.  */
+# define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%016llx"
+#endif
+
+/* Set HOST_WIDEST_INT.  Unlike HOST_WIDE_INT, this must always be
+   at least 64 bits wide.  */
+
+#if HOST_BITS_PER_WIDE_INT >= 64
+# define HOST_WIDEST_INT		      HOST_WIDE_INT
+# define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_WIDE_INT
+# define HOST_WIDEST_INT_PRINT_DEC	      HOST_WIDE_INT_PRINT_DEC
+# define HOST_WIDEST_INT_PRINT_DEC_C	      HOST_WIDE_INT_PRINT_DEC_C
+# define HOST_WIDEST_INT_PRINT_DEC_SPACE      HOST_WIDE_INT_PRINT_DEC_SPACE
+# define HOST_WIDEST_INT_PRINT_UNSIGNED	      HOST_WIDE_INT_PRINT_UNSIGNED
+# define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE HOST_WIDE_INT_PRINT_UNSIGNED_SPACE
+# define HOST_WIDEST_INT_PRINT_HEX	      HOST_WIDE_INT_PRINT_HEX
+# define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     HOST_WIDE_INT_PRINT_DOUBLE_HEX
+#else
+# if HOST_BITS_PER_LONGLONG >= 64
+#  define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_LONGLONG
+#  define HOST_WIDEST_INT		      long long
+# else
+#  if HOST_BITS_PER___INT64 >= 64
+#   define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER___INT64
+#   define HOST_WIDEST_INT		      __int64
 #  else
-#   if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#    define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
-#   else
-#    define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%08llx"
-#   endif
+    #error "Unable to find a suitable type for HOST_WIDEST_INT"
 #  endif
 # endif
-#endif /* ! HOST_WIDE_INT_PRINT_DOUBLE_HEX */
-
-/* Find HOST_WIDEST_INT and set its bit size, type and print macros.
-   It will be the largest integer mode supported by the host which may
-   (or may not) be larger than HOST_WIDE_INT.  */
-
-#ifndef HOST_WIDEST_INT
-#if defined HOST_BITS_PER_LONGLONG \
-    && HOST_BITS_PER_LONGLONG > HOST_BITS_PER_LONG
-#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONGLONG
-#   define HOST_WIDEST_INT long long
-#   define HOST_WIDEST_INT_PRINT_DEC "%lld"
-#   define HOST_WIDEST_INT_PRINT_DEC_SPACE "% *lld"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%llu"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *llu"
-#   define HOST_WIDEST_INT_PRINT_HEX "0x%llx"
-#  else
-#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONG
-#   define HOST_WIDEST_INT long
-#   define HOST_WIDEST_INT_PRINT_DEC "%ld"
-#   define HOST_WIDEST_INT_PRINT_DEC_SPACE "% *ld"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%lu"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *lu"
-#   define HOST_WIDEST_INT_PRINT_HEX "0x%lx"
-# endif /* long long wider than long */
-#endif /* ! HOST_WIDEST_INT */
+# define HOST_WIDEST_INT_PRINT_DEC	      "%lld"
+# define HOST_WIDEST_INT_PRINT_DEC_C	      "%lldLL"
+# define HOST_WIDEST_INT_PRINT_DEC_SPACE      "% *lld"
+# define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%llu"
+# define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *llu"
+# define HOST_WIDEST_INT_PRINT_HEX	      "0x%llx"
+# define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     "0x%llx%016llx"
+#endif
 
 #endif /* ! GCC_HWINT_H */

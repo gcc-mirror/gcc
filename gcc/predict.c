@@ -30,6 +30,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -1077,7 +1079,7 @@ estimate_loops_at_level (first_loop)
 static void
 counts_to_freqs ()
 {
-  HOST_WIDEST_INT count_max = 1;
+  gcov_type count_max = 1;
   basic_block bb;
 
   FOR_EACH_BB (bb)

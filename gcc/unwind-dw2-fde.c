@@ -31,6 +31,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef _Unwind_Find_FDE
 #include "tconfig.h"
 #include "tsystem.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE

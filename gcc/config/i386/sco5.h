@@ -343,7 +343,7 @@ do {									\
 do {									\
   if (TARGET_ELF)							\
     ASM_OUTPUT_ALIGN ((FILE), 2);					\
-  ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));			\
+  (*targetm.asm_out.internal_label)((FILE),(PREFIX),(NUM));			\
 } while (0)
 
 #undef ASM_OUTPUT_IDENT
@@ -353,10 +353,6 @@ do {									\
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)				\
   if (TARGET_ELF) (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0))
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 
 /* The prefix to add to user-visible assembler symbols.  */
 

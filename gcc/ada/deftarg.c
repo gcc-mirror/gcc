@@ -34,6 +34,8 @@
 /* Include a default definition for TARGET_FLAGS for gnatpsta.  */
 
 #include "config.h"
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 int target_flags = TARGET_DEFAULT;

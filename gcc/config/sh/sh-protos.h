@@ -120,6 +120,7 @@ extern int sh_media_register_for_return PARAMS ((void));
 extern void sh_expand_prologue PARAMS ((void));
 extern void sh_expand_epilogue PARAMS ((void));
 extern int sh_need_epilogue PARAMS ((void));
+extern void sh_set_return_address PARAMS ((rtx, rtx));
 extern int initial_elimination_offset PARAMS ((int, int));
 extern int fldi_ok PARAMS ((void));
 extern int sh_pr_n_sets PARAMS ((void));

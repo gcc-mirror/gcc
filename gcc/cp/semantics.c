@@ -26,6 +26,8 @@
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "tree-inline.h"
@@ -2188,7 +2190,7 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   tree args;
   tree slot;
   tree type;
-  int copy_from_buffer_p;
+  enum style_t { ctor, arg, pcc } style;
 
   aggr_init_expr = *tp;
   /* We don't need to walk into types; there's nothing in a type that
@@ -2210,48 +2212,66 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   args = TREE_OPERAND (aggr_init_expr, 1);
   slot = TREE_OPERAND (aggr_init_expr, 2);
   type = TREE_TYPE (aggr_init_expr);
+
   if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr))
+    style = ctor;
+#ifdef PCC_STATIC_STRUCT_RETURN
+  else if (1)
+    style = pcc;
+#endif
+  else if (TREE_ADDRESSABLE (type))
+    style = arg;
+  else
+    /* We shouldn't build an AGGR_INIT_EXPR if we don't need any special
+       handling.  See build_cplus_new.  */
+    abort ();
+
+  if (style == ctor || style == arg)
     {
-      /* Replace the first argument with the address of the third
-	 argument to the AGGR_INIT_EXPR.  */
+      /* Pass the address of the slot.  If this is a constructor, we
+	 replace the first argument; otherwise, we tack on a new one.  */
+      if (style == ctor)
+	args = TREE_CHAIN (args);
+
       cxx_mark_addressable (slot);
       args = tree_cons (NULL_TREE, 
 			build1 (ADDR_EXPR, 
 				build_pointer_type (TREE_TYPE (slot)),
 				slot),
-			TREE_CHAIN (args));
+			args);
     }
+
   call_expr = build (CALL_EXPR, 
 		     TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
 		     fn, args, NULL_TREE);
   TREE_SIDE_EFFECTS (call_expr) = 1;
 
-  /* If we're using the non-reentrant PCC calling convention, then we
-     need to copy the returned value out of the static buffer into the
-     SLOT.  */
-  copy_from_buffer_p = 0;
-#ifdef PCC_STATIC_STRUCT_RETURN  
-  if (!AGGR_INIT_VIA_CTOR_P (aggr_init_expr) && aggregate_value_p (type))
+  if (style == arg)
     {
+      /* Tell the backend that we've added our return slot to the argument
+	 list.  */
+      CALL_EXPR_HAS_RETURN_SLOT_ADDR (call_expr) = 1;
+      /* And don't let anyone use the value of the call directly in a
+	 larger expression.  */
+      TREE_TYPE (call_expr) = void_type_node;
+    }
+  else if (style == pcc)
+    {
+      /* If we're using the non-reentrant PCC calling convention, then we
+	 need to copy the returned value out of the static buffer into the
+	 SLOT.  */
       int old_ac = flag_access_control;
 
       flag_access_control = 0;
       call_expr = build_aggr_init (slot, call_expr,
 				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
       flag_access_control = old_ac;
-      copy_from_buffer_p = 1;
     }
-#endif
 
-  /* If this AGGR_INIT_EXPR indicates the value returned by a
-     function, then we want to use the value of the initialized
-     location as the result.  */
-  if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr) || copy_from_buffer_p)
-    {
-      call_expr = build (COMPOUND_EXPR, type,
-			 call_expr, slot);
-      TREE_SIDE_EFFECTS (call_expr) = 1;
-    }
+  /* We want to use the value of the initialized location as the
+     result.  */
+  call_expr = build (COMPOUND_EXPR, type,
+		     call_expr, slot);
 
   /* Replace the AGGR_INIT_EXPR with the CALL_EXPR.  */
   TREE_CHAIN (call_expr) = TREE_CHAIN (aggr_init_expr);
@@ -2275,8 +2295,19 @@ emit_associated_thunks (fn)
   if (DECL_VIRTUAL_P (fn))
     {
       tree thunk;
+      
       for (thunk = DECL_THUNKS (fn); thunk; thunk = TREE_CHAIN (thunk))
-	use_thunk (thunk, /*emit_p=*/1);
+	{
+	  use_thunk (thunk, /*emit_p=*/1);
+	  if (DECL_RESULT_THUNK_P (thunk))
+	    {
+	      tree probe;
+
+	      for (probe = DECL_THUNKS (thunk);
+		   probe; probe = TREE_CHAIN (probe))
+		use_thunk (probe, /*emit_p=*/1);
+	    }
+	}
     }
 }
 

@@ -1780,7 +1780,7 @@ __result, __binary_pred, _IterType());
 						      __pred,
 						      __len - __len / 2);
       rotate(__begin, __middle, __end);
-      advance(__begin, distance(__middle, __end));
+      advance(__begin, std::distance(__middle, __end));
       return __begin;
     }
 
@@ -1824,7 +1824,7 @@ __result, __binary_pred, _IterType());
 							  __len - __len / 2,
 							  __buffer, __buffer_size);
 	rotate(__begin, __middle, __end);
-	advance(__begin, distance(__middle, __end));
+	advance(__begin, std::distance(__middle, __end));
 	return __begin;
       }
     }
@@ -2271,7 +2271,7 @@ __result, __binary_pred, _IterType());
 	__first += __two_step;
       }
 
-      __step_size = min(_Distance(__last - __first), __step_size);
+      __step_size = std::min(_Distance(__last - __first), __step_size);
       merge(__first, __first + __step_size, __first + __step_size, __last,
 	    __result);
     }
@@ -2292,7 +2292,7 @@ __result, __binary_pred, _IterType());
 			 __comp);
 	__first += __two_step;
       }
-      __step_size = min(_Distance(__last - __first), __step_size);
+      __step_size = std::min(_Distance(__last - __first), __step_size);
 
       merge(__first, __first + __step_size,
 	    __first + __step_size, __last,
@@ -2781,7 +2781,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle;
 
@@ -2825,7 +2825,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle;
 
@@ -2866,7 +2866,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle;
 
@@ -2910,7 +2910,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle;
 
@@ -2958,7 +2958,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle, __left, __right;
 
@@ -3013,7 +3013,7 @@ __result, __binary_pred, _IterType());
       __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
 
-      _DistanceType __len = distance(__first, __last);
+      _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIter __middle, __left, __right;
 
@@ -3223,17 +3223,17 @@ __result, __binary_pred, _IterType());
 	__len11 = __len1 / 2;
 	advance(__first_cut, __len11);
 	__second_cut = lower_bound(__middle, __last, *__first_cut);
-	__len22 = distance(__middle, __second_cut);
+	__len22 = std::distance(__middle, __second_cut);
       }
       else {
 	__len22 = __len2 / 2;
 	advance(__second_cut, __len22);
 	__first_cut = upper_bound(__first, __middle, *__second_cut);
-	__len11 = distance(__first, __first_cut);
+	__len11 = std::distance(__first, __first_cut);
       }
       rotate(__first_cut, __middle, __second_cut);
       _BidirectionalIter __new_middle = __first_cut;
-      advance(__new_middle, distance(__middle, __second_cut));
+      advance(__new_middle, std::distance(__middle, __second_cut));
       __merge_without_buffer(__first, __first_cut, __new_middle,
 			     __len11, __len22);
       __merge_without_buffer(__new_middle, __second_cut, __last,
@@ -3268,17 +3268,17 @@ __result, __binary_pred, _IterType());
 	__len11 = __len1 / 2;
 	advance(__first_cut, __len11);
 	__second_cut = lower_bound(__middle, __last, *__first_cut, __comp);
-	__len22 = distance(__middle, __second_cut);
+	__len22 = std::distance(__middle, __second_cut);
       }
       else {
 	__len22 = __len2 / 2;
 	advance(__second_cut, __len22);
 	__first_cut = upper_bound(__first, __middle, *__second_cut, __comp);
-	__len11 = distance(__first, __first_cut);
+	__len11 = std::distance(__first, __first_cut);
       }
       rotate(__first_cut, __middle, __second_cut);
       _BidirectionalIter __new_middle = __first_cut;
-      advance(__new_middle, distance(__middle, __second_cut));
+      advance(__new_middle, std::distance(__middle, __second_cut));
       __merge_without_buffer(__first, __first_cut, __new_middle,
 			     __len11, __len22, __comp);
       __merge_without_buffer(__new_middle, __second_cut, __last,
@@ -3313,7 +3313,7 @@ __result, __binary_pred, _IterType());
       }
       else {
 	rotate(__first, __middle, __last);
-	advance(__first, distance(__middle, __last));
+	advance(__first, std::distance(__middle, __last));
 	return __first;
       }
     }
@@ -3417,13 +3417,13 @@ __result, __binary_pred, _IterType());
 		  __len11 = __len1 / 2;
 		  advance(__first_cut, __len11);
 		  __second_cut = lower_bound(__middle, __last, *__first_cut);
-		  __len22 = distance(__middle, __second_cut);
+		  __len22 = std::distance(__middle, __second_cut);
 	    }
 	    else {
 		  __len22 = __len2 / 2;
 		  advance(__second_cut, __len22);
 		  __first_cut = upper_bound(__first, __middle, *__second_cut);
-		  __len11 = distance(__first, __first_cut);
+		  __len11 = std::distance(__first, __first_cut);
 	    }
 	    _BidirectionalIter __new_middle =
 		  __rotate_adaptive(__first_cut, __middle, __second_cut,
@@ -3469,13 +3469,13 @@ __result, __binary_pred, _IterType());
 		  __len11 = __len1 / 2;
 		  advance(__first_cut, __len11);
 		  __second_cut = lower_bound(__middle, __last, *__first_cut, __comp);
-		  __len22 = distance(__middle, __second_cut);
+		  __len22 = std::distance(__middle, __second_cut);
 	    }
 	    else {
 		  __len22 = __len2 / 2;
 		  advance(__second_cut, __len22);
 		  __first_cut = upper_bound(__first, __middle, *__second_cut, __comp);
-		  __len11 = distance(__first, __first_cut);
+		  __len11 = std::distance(__first, __first_cut);
 	    }
 	    _BidirectionalIter __new_middle =
 		  __rotate_adaptive(__first_cut, __middle, __second_cut,
@@ -3524,8 +3524,8 @@ __result, __binary_pred, _IterType());
       if (__first == __middle || __middle == __last)
 	return;
 
-      _DistanceType __len1 = distance(__first, __middle);
-      _DistanceType __len2 = distance(__middle, __last);
+      _DistanceType __len1 = std::distance(__first, __middle);
+      _DistanceType __len2 = std::distance(__middle, __last);
 
       _Temporary_buffer<_BidirectionalIter, _ValueType> __buf(__first, __last);
       if (__buf.begin() == 0)
@@ -3577,8 +3577,8 @@ __result, __binary_pred, _IterType());
       if (__first == __middle || __middle == __last)
 	return;
 
-      _DistanceType __len1 = distance(__first, __middle);
-      _DistanceType __len2 = distance(__middle, __last);
+      _DistanceType __len1 = std::distance(__first, __middle);
+      _DistanceType __len2 = std::distance(__middle, __last);
 
       _Temporary_buffer<_BidirectionalIter, _ValueType> __buf(__first, __last);
       if (__buf.begin() == 0)
@@ -4271,7 +4271,7 @@ __result, __binary_pred, _IterType());
 	return __last1;
       else {
 	_BidirectionalIter1 __result = __rresult.base();
-	advance(__result, -distance(__first2, __last2));
+	advance(__result, -std::distance(__first2, __last2));
 	return __result;
       }
     }
@@ -4301,7 +4301,7 @@ __result, __binary_pred, _IterType());
 	return __last1;
       else {
 	_BidirectionalIter1 __result = __rresult.base();
-	advance(__result, -distance(__first2, __last2));
+	advance(__result, -std::distance(__first2, __last2));
 	return __result;
       }
     }

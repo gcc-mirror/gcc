@@ -26,8 +26,10 @@ Boston, MA 02111-1307, USA.  */
    look at insn patterns, only (define_constants), and we want to
    minimize dependencies.  */
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "errors.h"
 #include "gensupport.h"

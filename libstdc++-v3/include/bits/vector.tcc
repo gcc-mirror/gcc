@@ -191,7 +191,7 @@ namespace std
     _M_assign_aux(_ForwardIter __first, _ForwardIter __last,
                   forward_iterator_tag)
     {
-      size_type __len = distance(__first, __last);
+      size_type __len = std::distance(__first, __last);
   
       if (__len > capacity())
       {
@@ -333,7 +333,7 @@ namespace std
         else
 	  {
 	    const size_type __old_size = size();
-	    const size_type __len = __old_size + max(__old_size, __n);
+	    const size_type __len = __old_size + std::max(__old_size, __n);
 	    iterator __new_start(_M_allocate(__len));
 	    iterator __new_finish(__new_start);
 	    try
@@ -381,7 +381,7 @@ namespace std
     {
       if (__first != __last)
       {
-        size_type __n = distance(__first, __last);
+        size_type __n = std::distance(__first, __last);
         if (size_type(_M_end_of_storage - _M_finish) >= __n)
         {
           const size_type __elems_after = end() - __position;
@@ -407,7 +407,7 @@ namespace std
         else
         {
           const size_type __old_size = size();
-          const size_type __len = __old_size + max(__old_size, __n);
+          const size_type __len = __old_size + std::max(__old_size, __n);
           iterator __new_start(_M_allocate(__len));
           iterator __new_finish(__new_start);
           try
