@@ -1,3 +1,23 @@
+2004-05-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* name-lookup.c (struct scope_binding): New.
+	(EMPTY_SCOPE_BINDING): New.
+	(lookup_using_namespace): Take a scope_binding instead of a
+	cxx_binding.
+	(qualified_lookup_using_namespace): Likewise.
+	(cxx_binding_clear): Delete.
+	(do_nonmember_using_decl): Use a scope_binding instead of a
+	cxx_binding.
+	(lookup_tag): Don't call select_decl.
+	(ambiguous_decl): Don't return anything (and change callers to match).
+	Take a scope_binding as the second parameter.
+	(lookup_namespace_name): Use a scope_binding instead of a
+	cxx_binding.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_qualified_name): Likewise.
+	(select_decl): Take a scope_binding instead of a cxx_binding.
+	Use macros rather than hand-coding tests for type-ness.
+
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* cp-gimplify.c: Rename from cp-simplify.c.
