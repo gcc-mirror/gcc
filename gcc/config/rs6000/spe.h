@@ -779,15 +779,19 @@ __ev_get_s16_internal (__ev64_opaque__ a, uint32_t pos)
 static inline __ev64_opaque__
 __ev_set_acc_u64 (uint64_t a)
 {
-  __ev_mra (a);
-  return (__ev64_opaque__) a;
+  __ev64_opaque__ ev32;
+  ev32 = __ev_create_u64 (a);
+  __ev_mra (ev32);
+  return ev32;
 }
 
 static inline __ev64_opaque__
 __ev_set_acc_s64 (int64_t a)
 {
-  __ev_mra (a);
-  return (__ev64_opaque__) a;
+  __ev64_opaque__ ev32;
+  ev32 = __ev_create_s64 (a);
+  __ev_mra (ev32);
+  return ev32;
 }
 
 static inline __ev64_opaque__
