@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* If using g-format floating point, alter math.h.  */
 
-#define	CPP_SPEC "%{mg:-DGFLOAT}"
+#define	CPP_SPEC "%{mg:%{!ansi:-DGFLOAT} -D__GFLOAT}"
 
 /* Choose proper libraries depending on float format.
    Note that there are no profiling libraries for g-format.
