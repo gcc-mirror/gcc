@@ -6451,7 +6451,7 @@ create_concat_name (gnat_entity, suffix)
 
   {
     Entity_Kind kind = Ekind (gnat_entity);
-    char *prefix = "_imp__";
+    const char *prefix = "_imp__";
     int plen = strlen (prefix);
 
     if ((kind == E_Variable || kind == E_Constant)

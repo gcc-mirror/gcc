@@ -1,3 +1,26 @@
+2003-10-22  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* sysdep.c: Include conio.h if __MINGW32__ and !OLD_MINGW.
+
+	* ctrl_c.c (__gnat_int_handler): Remove declaration.
+
+	* decl.c (creat_concat_name):  Const-ify prefix.
+
+	* adaint.c: Include ctype.h if __MINGW32__.
+	(__gnat_readlink): Mark arguments as possibly unused.
+	(__gnat_symlink): Likewise.
+	(__gnat_is_symbolic_link): Likewise.
+	(__gnat_portable_spawn): Likewise.  Cast last arg of spawnvp to match
+	declaration
+	(__gnat_file_time_name): Don't declare struct stat statbuf when 
+	not needed.
+	(__gnat_is_absolute_path): Add parenthesis around condition of
+	'if' statement to avoid warning.
+	(__gnat_plist_init): Specify void as parameter.
+	(plist_enter): Likewise.
+	(plist_leave): Likewise.
+	(remove_handle): Make static. Initialize prev.
+
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* Makefile.in: Disable build of gnatpa. PR ada/10110.
