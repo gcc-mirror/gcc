@@ -498,7 +498,7 @@ enum reg_class
      0x3,			/* AD_REGS */			\
      0xf,			/* Q_REGS */			\
     0x10,   0x20,		/* SIREG, DIREG */		\
- 0x1007f,			/* INDEX_REGS */		\
+ 0x07f,				/* INDEX_REGS */		\
  0x100ff,			/* GENERAL_REGS */		\
   0x0100, 0x0200,		/* FP_TOP_REG, FP_SECOND_REG */	\
   0xff00,			/* FLOAT_REGS */		\
