@@ -1,3 +1,8 @@
+2003-01-31  Daiki Ueno  <ueno@unixuser.org>
+
+	* jartool.c (extract_jar): Don't lseek to skip extra fields.
+	(consume): If the stream is seekable, do lseek.
+
 2003-01-28  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* jargrep.c: Include xregex.h from libiberty instead of
