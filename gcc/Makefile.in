@@ -1206,13 +1206,15 @@ c-common.o : c-common.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 
 # Language-independent files.
 
-gcc.o: gcc.c $(CONFIG_H) multilib.h config.status $(lang_specs_files)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+DRIVER_DEFINES = \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
-  -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\" \
+  -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
+gcc.o: gcc.c $(CONFIG_H) multilib.h config.status $(lang_specs_files)
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+  $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
 dumpvers: dumpvers.c
