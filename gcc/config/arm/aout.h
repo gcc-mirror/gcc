@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995 - 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995 - 2000 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
 This file is part of GNU CC.
@@ -45,9 +45,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  	".text"
-#define DATA_SECTION_ASM_OP  	".data"
-#define BSS_SECTION_ASM_OP   	".bss"
+#define TEXT_SECTION_ASM_OP  	"\t.text"
+#define DATA_SECTION_ASM_OP  	"\t.data"
+#define BSS_SECTION_ASM_OP   	"\t.bss"
 
 /* Note: If USER_LABEL_PREFIX or LOCAL_LABEL_PREFIX are changed,
    make sure that this change is reflected in the function
@@ -331,6 +331,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* This works for GAS and some other assemblers.  */
-#define SET_ASM_OP		".set"
+#define SET_ASM_OP		"\t.set\t"
 
 #include "arm.h"
