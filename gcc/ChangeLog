@@ -1,3 +1,9 @@
+2003-08-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (spe_init_builtins): Handle evsplati and
+	evsplatfi here.
+	(bdesc_1arg): Remove evsplati and evsplatfi.
+
 2003-08-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Take user_label_prefix
