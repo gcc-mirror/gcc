@@ -303,11 +303,11 @@ static int noop_move_p			PROTO((rtx));
 static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void record_volatile_insns	PROTO((rtx));
 static void mark_regs_live_at_end	PROTO((regset));
-static void life_analysis_1		PROTO((rtx, int));
+static void life_analysis_1		PROTO((rtx, int, int));
 static void init_regset_vector		PROTO ((regset *, int,
 						struct obstack *));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
-					       regset, int));
+					       regset, int, int));
 static int insn_dead_p			PROTO((rtx, regset, int, rtx));
 static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
 static void mark_set_regs		PROTO((regset, regset, rtx,
@@ -2059,10 +2059,11 @@ calculate_loop_depth (insns)
    in use.  */
 
 void
-life_analysis (f, nregs, file)
+life_analysis (f, nregs, file, remove_dead_code)
      rtx f;
      int nregs;
      FILE *file;
+     int remove_dead_code;
 {
 #ifdef ELIMINABLE_REGS
   register size_t i;
@@ -2086,7 +2087,7 @@ life_analysis (f, nregs, file)
 
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
-  life_analysis_1 (f, nregs);
+  life_analysis_1 (f, nregs, remove_dead_code);
   end_alias_analysis ();
 
   if (file)
@@ -2302,9 +2303,10 @@ mark_regs_live_at_end (set)
    regset_size and regset_bytes are also set here.  */
 
 static void
-life_analysis_1 (f, nregs)
+life_analysis_1 (f, nregs, remove_dead_code)
      rtx f;
      int nregs;
+     int remove_dead_code;
 {
   int first_pass;
   int changed;
@@ -2449,7 +2451,7 @@ life_analysis_1 (f, nregs)
 	      propagate_block (bb->global_live_at_start,
 			       bb->head, bb->end, 0,
 			       first_pass ? bb->local_set : (regset) 0,
-			       i);
+			       i, remove_dead_code);
 	    }
 
 	  /* Update the new_live_at_end's of the block's predecessors.  */
@@ -2492,7 +2494,7 @@ life_analysis_1 (f, nregs)
 	 contents of global_live_at_end for posterity.  Fortunately,
 	 new_live_at_end, due to the way we converged on a solution,
 	 contains a duplicate of global_live_at_end that we can kill.  */
-      propagate_block ((regset) bb->aux, bb->head, bb->end, 1, (regset) 0, i);
+      propagate_block ((regset) bb->aux, bb->head, bb->end, 1, (regset) 0, i, remove_dead_code);
 
 #ifdef USE_C_ALLOCA
       alloca (0);
@@ -2626,13 +2628,14 @@ free_regset_vector (vector, nelts)
    BNUM is the number of the basic block.  */
 
 static void
-propagate_block (old, first, last, final, significant, bnum)
+propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
      register regset old;
      rtx first;
      rtx last;
      int final;
      regset significant;
      int bnum;
+     int remove_dead_code;
 {
   register rtx insn;
   rtx prev;
@@ -2689,13 +2692,17 @@ propagate_block (old, first, last, final, significant, bnum)
 	{
 	  register int i;
 	  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-	  int insn_is_dead
-	    = (insn_dead_p (PATTERN (insn), old, 0, REG_NOTES (insn))
-	       /* Don't delete something that refers to volatile storage!  */
-	       && ! INSN_VOLATILE (insn));
-	  int libcall_is_dead 
-	    = (insn_is_dead && note != 0
-	       && libcall_dead_p (PATTERN (insn), old, note, insn));
+	  int insn_is_dead = 0;
+	  int libcall_is_dead = 0;
+
+	  if (remove_dead_code)
+	    {
+	      insn_is_dead = (insn_dead_p (PATTERN (insn), old, 0, REG_NOTES (insn))
+	                      /* Don't delete something that refers to volatile storage!  */
+	                      && ! INSN_VOLATILE (insn));
+	      libcall_is_dead = (insn_is_dead && note != 0
+	                         && libcall_dead_p (PATTERN (insn), old, note, insn));
+	    }
 
 	  /* If an instruction consists of just dead store(s) on final pass,
 	     "delete" it by turning it into a NOTE of type NOTE_INSN_DELETED.

@@ -1,3 +1,11 @@
+Sat Apr 10 22:51:53 1999  Jan Hubicka <hubicka@limax.paru.cas.cz>
+
+	* flow.c (life_analysis): New parameter remove_dead_code.
+	(life_analysis_1): Likewise.
+	(propagate_block): Likewise; use it.
+	* output.h: Update prototype.
+	* toplev.c: Update calls to life_analysis.
+
 Sat Apr 10 22:12:12 1999  Jan Hubicka <hubicka@freesoft.cz>
   
 	* recog.c (constrain_operands): Ignore unary operators when

@@ -3983,7 +3983,7 @@ rest_of_compilation (decl)
 	(flow_time,
 	 {
 	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
-	   life_analysis (insns, max_reg_num (), rtl_dump_file);
+	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
 
       if (warn_uninitialized)
@@ -4168,7 +4168,7 @@ rest_of_compilation (decl)
 	(flow2_time,
 	 {
 	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
-	   life_analysis (insns, max_reg_num (), rtl_dump_file);
+	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
     }
 
