@@ -1,3 +1,12 @@
+2003-02-28  Dale Johannesen <dalej@apple.com>
+
+        * loop.c (struct movable): Add insert_temp, shrink savemode.
+	(scan_loop): Accept invariants that require copying; mark as
+        insert_temp.
+	(combine_movables): Don't combine insert_temp movables.
+	(move_movables): Insert copies for insert_temp movables.
+	Don't record the info based on regno for insert_temp's.
+
 2003-02-28  Joel Sherrill <joel@OARcorp.com>
 
 	PR 9638/other
