@@ -806,6 +806,10 @@ ignores @code{catgets} and instead uses GCC's copy of the GNU
 @code{gettext} library.  The @option{--with-catgets} option causes the
 build procedure to use the host's @code{catgets} in this situation.
 
+@item --with-libiconv-prefix=@var{dir}
+Search for libiconv header files in @file{@var{dir}/include} and
+libiconv library files in @file{@var{dir}/lib}.
+
 @item --with-system-zlib
 Use installed zlib rather than that included with GCC@.  This option
 only applies if the Java front end is being built.
