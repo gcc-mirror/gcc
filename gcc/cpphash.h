@@ -267,7 +267,8 @@ extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern void _cpp_run_directive		PARAMS ((cpp_reader *,
 						 const struct directive *,
-						 const char *, size_t));
+						 const char *, size_t,
+						 const char *));
 extern unsigned int _cpp_get_line	PARAMS ((cpp_reader *,
 						 unsigned int *));
 extern const cpp_token *_cpp_get_token PARAMS ((cpp_reader *));
@@ -284,6 +285,8 @@ extern cpp_hashnode *_cpp_parse_assertion PARAMS ((cpp_reader *,
 						    struct answer **));
 extern struct answer **_cpp_find_answer	PARAMS ((cpp_hashnode *,
 						 const cpp_toklist *));
+extern void _cpp_define_builtin		PARAMS ((cpp_reader *, const char *));
+
 extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));

@@ -1410,7 +1410,20 @@ cpp_define (pfile, str)
       strcpy (&buf[count-4], " 1\n");
     }
 
-  _cpp_run_directive (pfile, &dtable[T_DEFINE], buf, count - 1);
+  _cpp_run_directive (pfile, &dtable[T_DEFINE], buf, count - 1, 0);
+}
+
+/* Slight variant of the above for use by initialize_builtins, which (a)
+   knows how to set up the buffer itself, (b) needs a different "filename"
+   tag.  */
+void
+_cpp_define_builtin (pfile, str)
+     cpp_reader *pfile;
+     const char *str;
+{
+  _cpp_run_directive (pfile, &dtable[T_DEFINE],
+		      str, strlen (str),
+		      _("<builtin>"));
 }
 
 /* Process MACRO as if it appeared as the body of an #undef.  */
@@ -1419,7 +1432,7 @@ cpp_undef (pfile, macro)
      cpp_reader *pfile;
      const char *macro;
 {
-  _cpp_run_directive (pfile, &dtable[T_UNDEF], macro, strlen (macro));
+  _cpp_run_directive (pfile, &dtable[T_UNDEF], macro, strlen (macro), 0);
 }
 
 /* Process the string STR as if it appeared as the body of a #assert. */
@@ -1428,7 +1441,7 @@ cpp_assert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  _cpp_run_directive (pfile, &dtable[T_ASSERT], str, strlen (str));
+  _cpp_run_directive (pfile, &dtable[T_ASSERT], str, strlen (str), 0);
 }
 
 /* Process STR as if it appeared as the body of an #unassert. */
@@ -1437,7 +1450,7 @@ cpp_unassert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  _cpp_run_directive (pfile, &dtable[T_UNASSERT], str, strlen (str));
+  _cpp_run_directive (pfile, &dtable[T_UNASSERT], str, strlen (str), 0);
 }  
 
 /* Determine whether the identifier ID, of length LEN, is a defined macro.  */

@@ -711,14 +711,11 @@ main (argc, argv)
      and option processing.  */
   initialize_builtins ();
 
-  /* Do defines specified with -D.  */
+  /* Do defines specified with -D and undefines specified with -U.  */
   for (i = 1; i < argc; i++)
     if (pend_defs[i])
       make_definition ((U_CHAR *)pend_defs[i]);
-
-  /* Do undefines specified with -U.  */
-  for (i = 1; i < argc; i++)
-    if (pend_undefs[i])
+    else if (pend_undefs[i])
       make_undef ((U_CHAR *)pend_undefs[i]);
 
   /* Unless -fnostdinc,
