@@ -45,8 +45,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include <errno.h>
 #include <fnmatch.h>
-#include <ctype.h>
-
+#include <safe-ctype.h>
 
 /* Comment out all this code if we are using the GNU C Library, and are not
    actually compiling the library itself.  This code is part of the GNU C
@@ -74,8 +73,7 @@ fnmatch (pattern, string, flags)
   register const char *p = pattern, *n = string;
   register unsigned char c;
 
-/* Note that this evalutes C many times.  */
-#define FOLD(c)	((flags & FNM_CASEFOLD) && isupper (c) ? tolower (c) : (c))
+#define FOLD(c)	((flags & FNM_CASEFOLD) ? TOLOWER (c) : (c))
 
   while ((c = *p++) != '\0')
     {

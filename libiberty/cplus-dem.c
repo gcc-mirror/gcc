@@ -34,7 +34,8 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 
-#include <ctype.h>
+#include "safe-ctype.h"
+
 #include <sys/types.h>
 #include <string.h>
 #include <stdio.h>
@@ -544,10 +545,10 @@ consume_count (type)
 {
   int count = 0;
 
-  if (! isdigit ((unsigned char)**type))
+  if (! ISDIGIT ((unsigned char)**type))
     return -1;
 
-  while (isdigit ((unsigned char)**type))
+  while (ISDIGIT ((unsigned char)**type))
     {
       count *= 10;
 
@@ -558,7 +559,7 @@ consume_count (type)
 	 ten.  */
       if ((count % 10) != 0)
 	{
-	  while (isdigit ((unsigned char) **type))
+	  while (ISDIGIT ((unsigned char) **type))
 	    (*type)++;
 	  return -1;
 	}
@@ -584,7 +585,7 @@ consume_count_with_underscores (mangled)
   if (**mangled == '_')
     {
       (*mangled)++;
-      if (!isdigit ((unsigned char)**mangled))
+      if (!ISDIGIT ((unsigned char)**mangled))
 	return -1;
 
       idx = consume_count (mangled);
@@ -716,8 +717,8 @@ cplus_demangle_opname (opname, result, options)
 	}
     }
   else if (opname[0] == '_' && opname[1] == '_'
-	   && islower((unsigned char)opname[2])
-	   && islower((unsigned char)opname[3]))
+	   && ISLOWER((unsigned char)opname[2])
+	   && ISLOWER((unsigned char)opname[3]))
     {
       if (opname[4] == '\0')
 	{
@@ -1003,8 +1004,8 @@ ada_demangle (mangled, option)
 	     sizeof (char));
   demangled = demangling_buffer;
   
-  if (isdigit ((unsigned char) mangled[len0 - 1])) {
-    for (i = len0 - 2; i >= 0 && isdigit ((unsigned char) mangled[i]); i -= 1)
+  if (ISDIGIT ((unsigned char) mangled[len0 - 1])) {
+    for (i = len0 - 2; i >= 0 && ISDIGIT ((unsigned char) mangled[i]); i -= 1)
       ;
     if (i > 1 && mangled[i] == '_' && mangled[i - 1] == '_')
       {
@@ -1018,7 +1019,7 @@ ada_demangle (mangled, option)
       }
   }
   
-  for (i = 0, j = 0; i < len0 && ! isalpha ((unsigned char)mangled[i]);
+  for (i = 0, j = 0; i < len0 && ! ISALPHA ((unsigned char)mangled[i]);
        i += 1, j += 1)
     demangled[j] = mangled[i];
   
@@ -1042,7 +1043,7 @@ ada_demangle (mangled, option)
   demangled[j] = '\000';
   
   for (i = 0; demangled[i] != '\0'; i += 1)
-    if (isupper ((unsigned char)demangled[i]) || demangled[i] == ' ')
+    if (ISUPPER ((unsigned char)demangled[i]) || demangled[i] == ' ')
       goto Suppress;
 
   if (! changed)
@@ -1532,7 +1533,7 @@ demangle_signature (work, mangled, declp)
             if (HP_DEMANGLING)
               {
                 (*mangled)++;
-                while (**mangled && isdigit ((unsigned char)**mangled))
+                while (**mangled && ISDIGIT ((unsigned char)**mangled))
                   (*mangled)++;
               }
             else
@@ -1865,7 +1866,7 @@ demangle_real_value (work, mangled, s)
       string_appendn (s, "-", 1);
       (*mangled)++;
     }
-  while (isdigit ((unsigned char)**mangled))
+  while (ISDIGIT ((unsigned char)**mangled))
     {
       string_appendn (s, *mangled, 1);
       (*mangled)++;
@@ -1874,7 +1875,7 @@ demangle_real_value (work, mangled, s)
     {
       string_appendn (s, ".", 1);
       (*mangled)++;
-      while (isdigit ((unsigned char)**mangled))
+      while (ISDIGIT ((unsigned char)**mangled))
 	{
 	  string_appendn (s, *mangled, 1);
 	  (*mangled)++;
@@ -1884,7 +1885,7 @@ demangle_real_value (work, mangled, s)
     {
       string_appendn (s, "e", 1);
       (*mangled)++;
-      while (isdigit ((unsigned char)**mangled))
+      while (ISDIGIT ((unsigned char)**mangled))
 	{
 	  string_appendn (s, *mangled, 1);
 	  (*mangled)++;
@@ -2735,20 +2736,20 @@ demangle_prefix (work, mangled, declp)
     }
   else if (work -> static_type)
     {
-      if (!isdigit ((unsigned char)scan[0]) && (scan[0] != 't'))
+      if (!ISDIGIT ((unsigned char)scan[0]) && (scan[0] != 't'))
 	{
 	  success = 0;
 	}
     }
   else if ((scan == *mangled)
-	   && (isdigit ((unsigned char)scan[2]) || (scan[2] == 'Q')
+	   && (ISDIGIT ((unsigned char)scan[2]) || (scan[2] == 'Q')
 	       || (scan[2] == 't') || (scan[2] == 'K') || (scan[2] == 'H')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
 	 to them. As an extension to ARM demangling we handle this case.  */
       if ((LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING)
-	  && isdigit ((unsigned char)scan[2]))
+	  && ISDIGIT ((unsigned char)scan[2]))
 	{
 	  *mangled = scan + 2;
 	  consume_count (mangled);
@@ -2785,7 +2786,7 @@ demangle_prefix (work, mangled, declp)
       /* EDG template? */
       demangle_arm_hp_template (work, mangled, strlen (*mangled), declp);
     }
-  else if ((scan == *mangled) && !isdigit ((unsigned char)scan[2])
+  else if ((scan == *mangled) && !ISDIGIT ((unsigned char)scan[2])
 	   && (scan[2] != 't'))
     {
       /* Mangled name starts with "__".  Skip over any leading '_' characters,
@@ -2907,7 +2908,7 @@ gnu_special (work, mangled, declp)
 					   1);
 	      break;
 	    default:
-	      if (isdigit((unsigned char)*mangled[0]))
+	      if (ISDIGIT((unsigned char)*mangled[0]))
 		{
 		  n = consume_count(mangled);
 		  /* We may be seeing a too-large size, or else a
@@ -3434,13 +3435,13 @@ get_count (type, count)
   const char *p;
   int n;
 
-  if (!isdigit ((unsigned char)**type))
+  if (!ISDIGIT ((unsigned char)**type))
     return (0);
   else
     {
       *count = **type - '0';
       (*type)++;
-      if (isdigit ((unsigned char)**type))
+      if (ISDIGIT ((unsigned char)**type))
 	{
 	  p = *type;
 	  n = *count;
@@ -3450,7 +3451,7 @@ get_count (type, count)
 	      n += *p - '0';
 	      p++;
 	    }
-	  while (isdigit ((unsigned char)*p));
+	  while (ISDIGIT ((unsigned char)*p));
 	  if (*p == '_')
 	    {
 	      *type = p + 1;
@@ -3580,7 +3581,7 @@ do_type (work, mangled, result)
 	    if (**mangled != 'Q')
 	      string_prepend (&decl, SCOPE_STRING (work));
 
-	    if (isdigit ((unsigned char)**mangled))
+	    if (ISDIGIT ((unsigned char)**mangled))
 	      {
 		n = consume_count (mangled);
 		if (n == -1
@@ -3900,7 +3901,7 @@ demangle_fund_type (work, mangled, result)
       break;
     case 'G':
       (*mangled)++;
-      if (!isdigit ((unsigned char)**mangled))
+      if (!ISDIGIT ((unsigned char)**mangled))
 	{
 	  success = 0;
 	  break;
@@ -4012,12 +4013,12 @@ do_hpacc_template_const_value (work, mangled, result)
     }
 
   /* We have to be looking at an integer now */
-  if (!(isdigit ((unsigned char)**mangled)))
+  if (!(ISDIGIT ((unsigned char)**mangled)))
     return 0;
 
   /* We only deal with integral values for template
      parameters -- so it's OK to look only for digits */
-  while (isdigit ((unsigned char)**mangled))
+  while (ISDIGIT ((unsigned char)**mangled))
     {
       char_str[0] = **mangled;
       string_append (result, char_str);
@@ -4096,10 +4097,10 @@ snarf_numeric_literal (args, arg)
   else if (**args == '+')
     (*args)++;
 
-  if (!isdigit ((unsigned char)**args))
+  if (!ISDIGIT ((unsigned char)**args))
     return 0;
 
-  while (isdigit ((unsigned char)**args))
+  while (ISDIGIT ((unsigned char)**args))
     {
       char_str[0] = **args;
       string_append (arg, char_str);
@@ -4663,8 +4664,8 @@ demangle_function_name (work, mangled, declp, scan)
 	}
     }
   else if (declp->b[0] == '_' && declp->b[1] == '_'
-	   && islower((unsigned char)declp->b[2])
-	   && islower((unsigned char)declp->b[3]))
+	   && ISLOWER((unsigned char)declp->b[2])
+	   && ISLOWER((unsigned char)declp->b[3]))
     {
       if (declp->b[4] == '\0')
 	{
@@ -5125,7 +5126,7 @@ main (argc, argv)
 	  int i = 0;
 	  c = getchar ();
 	  /* Try to read a label.  */
-	  while (c != EOF && (isalnum (c) || strchr (valid_symbols, c)))
+	  while (c != EOF && (ISALNUM (c) || strchr (valid_symbols, c)))
 	    {
 	      if (i >= MBUF_SIZE-1)
 		break;

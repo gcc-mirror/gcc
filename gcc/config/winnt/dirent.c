@@ -23,7 +23,7 @@
 
 #include <string.h>
 #include <limits.h>
-#include <ctype.h>
+#include <safe-ctype.h>
 #include <errno.h>
 #include <dirent.h>
 
@@ -332,8 +332,8 @@ IsHPFSFileSystem (directory)
     unsigned int	nDrive;
     char		szCurDir [MAX_PATH];
 
-    if (isalpha (directory[0]) && (directory[1] == ':'))
-	nDrive = toupper (directory[0]) - '@';
+    if (ISALPHA (directory[0]) && (directory[1] == ':'))
+	nDrive = TOUPPER (directory[0]) - '@';
 
     else
     {

@@ -376,7 +376,6 @@ static void output_line_command PARAMS ((FILE_BUF *, FILE_BUF *,
 
 static int eval_if_expression	PARAMS ((const U_CHAR *, int));
 
-static void initialize_char_syntax	PARAMS ((void));
 static void initialize_builtins	PARAMS ((void));
 static void run_directive	PARAMS ((const char *, size_t,
 					 enum node_type));
@@ -424,17 +423,8 @@ struct directive directive_table[] = {
   {  -1, 0, "", T_UNUSED},
 };
 
-/* table to tell if char can be part of a C identifier. */
-U_CHAR is_idchar[256];
-/* table to tell if char can be first char of a c identifier. */
-U_CHAR is_idstart[256];
-/* table to tell if c is horizontal space.  */
-U_CHAR is_hor_space[256];
-/* table to tell if c is horizontal or vertical space.  */
-U_CHAR is_space[256];
-
-#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
-#define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
+#define SKIP_WHITE_SPACE(p) do { while (is_nvspace(*p)) p++; } while (0)
+#define SKIP_ALL_WHITE_SPACE(p) do { while (is_space(*p)) p++; } while (0)
   
 int errors = 0;			/* Error counter for exit code */
 
@@ -521,9 +511,6 @@ main (argc, argv)
 
   in_fname = NULL;
   out_fname = NULL;
-
-  /* Initialize is_idchar to allow $.  */
-  initialize_char_syntax ();
 
   no_line_commands = 0;
   dump_macros = 0;
@@ -726,11 +713,7 @@ main (argc, argv)
   if (user_label_prefix == 0)
     user_label_prefix = USER_LABEL_PREFIX;
 
-  /* Initialize is_idchar.  */
-  initialize_char_syntax ();
-
-  /* Install __LINE__, etc.  Must follow initialize_char_syntax
-     and option processing.  */
+  /* Install __LINE__, etc.  Must follow option processing.  */
   initialize_builtins ();
 
   /* Do defines specified with -D and undefines specified with -U.  */
@@ -1052,14 +1035,14 @@ name_newline_fix (bp)
 
   /* What follows the backslash-newlines is not embarrassing.  */
 
-  if (count == 0 || !is_idchar[*p])
+  if (count == 0 || !is_idchar (*p))
     return;
 
   /* Copy all potentially embarrassing characters
      that follow the backslash-newline pairs
      down to where the pairs originally started.  */
 
-  while (is_idchar[*p])
+  while (is_idchar (*p))
     *bp++ = *p++;
 
   /* Now write the same number of pairs after the embarrassing chars.  */
@@ -1463,7 +1446,7 @@ do { ip = &instack[indepth];		\
 	    /* If expanding a macro arg, keep the newline -.  */
 	    *obp++ = '-';
 	  }
-	} else if (is_space[*ibp]) {
+	} else if (is_space (*ibp)) {
 	  /* Newline Space does not prevent expansion of preceding token
 	     so expand the preceding token and then come back.  */
 	  if (ident_length > 0)
@@ -1514,7 +1497,7 @@ do { ip = &instack[indepth];		\
 	ibp--;
 	/* If we have an identifier that ends here, process it now, so
 	   we get the right error for recursion.  */
-	if (ident_length && ! is_idchar[*instack[indepth - 1].bufp]) {
+	if (ident_length && ! is_idchar (*instack[indepth - 1].bufp)) {
 	  redo_char = 1;
 	  goto randomchar;
 	}
@@ -1642,7 +1625,7 @@ randomchar:
 		      *obp++ = '/';
 		    }
 		  }
-		  else if (is_space[*ibp]) {
+		  else if (is_space (*ibp)) {
 		    *obp++ = *ibp++;
 		    if (ibp[-1] == '\n') {
 		      if (ip->macro == 0) {
@@ -1837,7 +1820,7 @@ handle_directive (ip, op)
   bp = ip->bufp;
   /* Skip whitespace and \-newline.  */
   while (1) {
-    if (is_hor_space[*bp])
+    if (is_nvspace (*bp))
       bp++;
     else if (*bp == '/' && (newline_fix (bp + 1), bp[1]) == '*') {
       ip->bufp = bp;
@@ -1854,12 +1837,12 @@ handle_directive (ip, op)
 
   cp = bp;
   while (1) {
-    if (is_idchar[*cp])
+    if (is_idchar (*cp))
       cp++;
     else {
       if (*cp == '\\' && cp[1] == '\n')
 	name_newline_fix (cp);
-      if (is_idchar[*cp])
+      if (is_idchar (*cp))
 	cp++;
       else break;
     }
@@ -1996,11 +1979,11 @@ handle_directive (ip, op)
 	    if (*xp == '\n') {
 	      xp++;
 	      cp--;
-	      if (cp != buf && is_space[cp[-1]]) {
-		while (cp != buf && is_space[cp[-1]]) cp--;
+	      if (cp != buf && is_space (cp[-1])) {
+		while (cp != buf && is_space(cp[-1])) cp--;
 		cp++;
 		SKIP_WHITE_SPACE (xp);
-	      } else if (is_space[*xp]) {
+	      } else if (is_space (*xp)) {
 		*cp++ = *xp++;
 		SKIP_WHITE_SPACE (xp);
 	      }
@@ -2172,11 +2155,11 @@ special_symbol (hp, op)
       SKIP_WHITE_SPACE (ip->bufp);
     }
 
-    if (!is_idstart[*ip->bufp])
+    if (!is_idstart (*ip->bufp))
       goto oops;
     if (lookup (ip->bufp, -1, -1))
       buf = " 1 ";
-    while (is_idchar[*ip->bufp])
+    while (is_idchar (*ip->bufp))
       ++ip->bufp;
     SKIP_WHITE_SPACE (ip->bufp);
     if (paren) {
@@ -2235,7 +2218,7 @@ get_filename:
   SKIP_WHITE_SPACE (fbeg);
   /* Discard trailing whitespace so we can easily see
      if we have parsed all the significant chars we were given.  */
-  while (limit != fbeg && is_hor_space[limit[-1]]) limit--;
+  while (limit != fbeg && is_nvspace (limit[-1])) limit--;
 
   switch (*fbeg++) {
   case '\"':
@@ -2514,17 +2497,17 @@ do_define (buf, limit, op)
 
   bp = buf;
 
-  while (is_hor_space[*bp])
+  while (is_nvspace (*bp))
     bp++;
 
   symname = bp;			/* remember where it starts */
-  while (is_idchar[*bp] && bp < limit) {
+  while (is_idchar (*bp) && bp < limit) {
     bp++;
   }
   sym_length = bp - symname;
   if (sym_length == 0)
     error ("invalid macro name");
-  else if (!is_idstart[*symname]) {
+  else if (!is_idstart (*symname)) {
     U_CHAR *msg;			/* what pain... */
     msg = (U_CHAR *) alloca (sym_length + 1);
     memcpy (msg, symname, sym_length);
@@ -2556,11 +2539,11 @@ do_define (buf, limit, op)
       temp->argno = argno++;
       arg_ptrs = temp;
 
-      if (!is_idstart[*bp])
+      if (!is_idstart (*bp))
 	warning ("parameter name starts with a digit in #define");
 
       /* Find the end of the arg name.  */
-      while (is_idchar[*bp]) {
+      while (is_idchar (*bp)) {
 	bp++;
       }
       temp->length = bp - temp->name;
@@ -2581,7 +2564,7 @@ do_define (buf, limit, op)
     }
 
     ++bp;			/* skip paren */
-    while (is_hor_space[*bp])	/* and leading whitespace */
+    while (is_nvspace (*bp))	/* and leading whitespace */
       ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, argno, arg_ptrs);
@@ -2608,7 +2591,7 @@ do_define (buf, limit, op)
     }
   } else {
     /* simple expansion or empty definition; skip leading whitespace */
-    while (is_hor_space[*bp])
+    while (is_nvspace (*bp))
       ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, 0);
@@ -2689,17 +2672,17 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
   register const U_CHAR *end1 = beg1 + len1;
   register const U_CHAR *end2 = beg2 + len2;
   if (first) {
-    while (beg1 != end1 && is_space[*beg1]) beg1++;
-    while (beg2 != end2 && is_space[*beg2]) beg2++;
+    while (beg1 != end1 && is_space (*beg1)) beg1++;
+    while (beg2 != end2 && is_space (*beg2)) beg2++;
   }
   if (last) {
-    while (beg1 != end1 && is_space[end1[-1]]) end1--;
-    while (beg2 != end2 && is_space[end2[-1]]) end2--;
+    while (beg1 != end1 && is_space (end1[-1])) end1--;
+    while (beg2 != end2 && is_space (end2[-1])) end2--;
   }
   while (beg1 != end1 && beg2 != end2) {
-    if (is_space[*beg1] && is_space[*beg2]) {
-      while (beg1 != end1 && is_space[*beg1]) beg1++;
-      while (beg2 != end2 && is_space[*beg2]) beg2++;
+    if (is_space (*beg1) && is_space (*beg2)) {
+      while (beg1 != end1 && is_space (*beg1)) beg1++;
+      while (beg2 != end2 && is_space (*beg2)) beg2++;
     } else if (*beg1 == *beg2) {
       beg1++; beg2++;
     } else break;
@@ -2756,8 +2739,8 @@ collect_expansion (buf, end, nargs, arglist)
   /* Find end of leading whitespace.  */
   limit = end;
   p = buf;
-  while (p < limit && is_space[limit[-1]]) limit--;
-  while (p < limit && is_space[*p]) p++;
+  while (p < limit && is_space (limit[-1])) limit--;
+  while (p < limit && is_space (*p)) p++;
 
   /* Allocate space for the text in the macro definition.
      Leading and trailing whitespace chars need 2 bytes each.
@@ -2776,7 +2759,7 @@ collect_expansion (buf, end, nargs, arglist)
   p = buf;
 
   /* Convert leading whitespace to Newline-markers.  */
-  while (p < limit && is_space[*p]) {
+  while (p < limit && is_space (*p)) {
     *exp_p++ = '\n';
     *exp_p++ = *p++;
   }
@@ -2826,15 +2809,15 @@ collect_expansion (buf, end, nargs, arglist)
       break;
     }
 
-    if (is_idchar[c] && nargs > 0) {
+    if (is_idchar (c) && nargs > 0) {
       U_CHAR *id_beg = p - 1;
       int id_len;
 
       --exp_p;
-      while (p != limit && is_idchar[*p]) p++;
+      while (p != limit && is_idchar (*p)) p++;
       id_len = p - id_beg;
 
-      if (is_idstart[c]) {
+      if (is_idstart (c)) {
 	register struct arglist *arg;
 
 	for (arg = arglist; arg != NULL; arg = arg->next) {
@@ -2887,7 +2870,7 @@ collect_expansion (buf, end, nargs, arglist)
 
   if (limit < end) {
     /* Convert trailing whitespace to Newline-markers.  */
-    while (limit < end && is_space[*limit]) {
+    while (limit < end && is_space (*limit)) {
       *exp_p++ = '\n';
       *exp_p++ = *limit++;
     }
@@ -2941,7 +2924,7 @@ do_line (buf, limit, op)
     bp++;
 
 #if 0 /* #line 10"foo.c" is supposed to be allowed.  */
-  if (*bp && !is_space[*bp]) {
+  if (*bp && !is_space (*bp)) {
     error ("invalid format #line command");
     return;
   }
@@ -3030,7 +3013,7 @@ do_undef (buf, limit, op)
 
   SKIP_WHITE_SPACE (buf);
 
-  if (! strncmp ((const char *)buf, "defined", 7) && ! is_idchar[buf[7]])
+  if (! strncmp ((const char *)buf, "defined", 7) && ! is_idchar (buf[7]))
     warning ("undefining `defined'");
 
   while ((hp = lookup (buf, -1, -1)) != NULL) {
@@ -3121,11 +3104,11 @@ parse_assertion (buf, limit, answerp, type)
   unsigned int len;
 
   bp = symname;
-  if (bp < climit && is_idstart[*bp])
+  if (bp < climit && is_idstart (*bp))
     {
       do
 	bp++;
-      while (bp < climit && is_idchar[*bp]);
+      while (bp < climit && is_idchar (*bp));
     }
   len = bp - symname;
 
@@ -3177,9 +3160,9 @@ test_assertion (pbuf)
 
       /* Yuk.  We update pbuf to point after the assertion test.
 	 First, move past the identifier.  */
-      if (is_space[*buf])
+      if (is_space (*buf))
 	buf++;
-      while (is_idchar[*buf])
+      while (is_idchar (*buf))
 	buf++;
       /* If we have an answer, we need to move past the parentheses.  */
       if (answer)
@@ -3292,11 +3275,11 @@ canonicalize_text (buf, limit, climit)
 
   for (dest = result; buf < limit;)
     {
-      if (! is_space[*buf])
+      if (! is_space (*buf))
 	*dest++ = *buf++;
       else
 	{
-	  while (++buf < limit && is_space [*buf])
+	  while (++buf < limit && is_space (*buf))
 	    ;
 	  if (dest != result && buf != limit)
 	    *dest++ = ' ';
@@ -3411,10 +3394,10 @@ do_xifdef (buf, limit, type)
 
   /* Discard leading and trailing whitespace.  */
   SKIP_WHITE_SPACE (buf);
-  while (limit != buf && is_hor_space[limit[-1]]) limit--;
+  while (limit != buf && is_nvspace (limit[-1])) limit--;
 
   /* Find the end of the identifier at the beginning.  */
-  for (end = buf; is_idchar[*end]; end++);
+  for (end = buf; is_idchar (*end); end++);
 
   if (end == buf)
     skip = (type == T_IFDEF);
@@ -3521,7 +3504,7 @@ skip_if_group (ip, any)
 	 If not, this # is not special.  */
       bp = beg_of_line;
       while (1) {
-	if (is_hor_space[*bp])
+	if (is_nvspace (*bp))
 	  bp++;
 	else if (*bp == '\\' && bp[1] == '\n')
 	  bp += 2;
@@ -3545,7 +3528,7 @@ skip_if_group (ip, any)
 
       /* Skip whitespace and \-newline.  */
       while (1) {
-	if (is_hor_space[*bp])
+	if (is_nvspace (*bp))
 	  bp++;
 	else if (*bp == '\\' && bp[1] == '\n')
 	  bp += 2;
@@ -3565,12 +3548,12 @@ skip_if_group (ip, any)
 	 symbol-constituents so that we end up with a contiguous name.  */
 
       while (1) {
-	if (is_idchar[*bp])
+	if (is_idchar (*bp))
 	  bp++;
 	else {
 	  if (*bp == '\\' && bp[1] == '\n')
 	    name_newline_fix (bp);
-	  if (is_idchar[*bp])
+	  if (is_idchar (*bp))
 	    bp++;
 	  else break;
 	}
@@ -3579,7 +3562,7 @@ skip_if_group (ip, any)
       for (kt = directive_table; kt->length >= 0; kt++) {
 	IF_STACK_FRAME *temp;
 	if (strncmp ((const char *)cp, kt->name, kt->length) == 0
-	    && !is_idchar[cp[kt->length]]) {
+	    && !is_idchar (cp[kt->length])) {
 
 	  /* If we are asked to return on next directive,
 	     do so now.  */
@@ -3926,7 +3909,7 @@ macroexpand (hp, op)
     if (i == 1) {
       register const U_CHAR *bp = args[0].raw;
       register const U_CHAR *lim = bp + args[0].raw_length;
-      while (bp != lim && is_space[*bp]) bp++;
+      while (bp != lim && is_space (*bp)) bp++;
       if (bp == lim)
 	i = 0;
     }
@@ -3994,10 +3977,10 @@ macroexpand (hp, op)
 	  int c;
 	  i = 0;
 	  while (i < arglen
-		 && (c = arg->raw[i], is_space[c]))
+		 && (c = arg->raw[i], is_space (c)))
 	    i++;
 	  while (i < arglen
-		 && (c = arg->raw[arglen - 1], is_space[c]))
+		 && (c = arg->raw[arglen - 1], is_space (c)))
 	    arglen--;
 	  for (; i < arglen; i++) {
 	    c = arg->raw[i];
@@ -4012,13 +3995,13 @@ macroexpand (hp, op)
 	    /* Internal sequences of whitespace are replaced by one space
 	       except within an string or char token.  */
 	    if (! in_string
-		&& (c == '\n' ? arg->raw[i+1] == '\n' : is_space[c])) {
+		&& (c == '\n' ? arg->raw[i+1] == '\n' : is_space (c))) {
 	      while (1) {
 		/* Note that Newline Space does occur within whitespace
 		   sequences; consider it part of the sequence.  */
-		if (c == '\n' && is_space[arg->raw[i+1]])
+		if (c == '\n' && is_space (arg->raw[i+1]))
 		  i += 2;
-		else if (c != '\n' && is_space[c])
+		else if (c != '\n' && is_space (c))
 		  i++;
 		else break;
 		c = arg->raw[i];
@@ -4054,8 +4037,8 @@ macroexpand (hp, op)
 	  const U_CHAR *l1 = p1 + arg->raw_length;
 
 	  if (ap->raw_before) {
-	    while (p1 != l1 && is_space[*p1]) p1++;
-	    while (p1 != l1 && is_idchar[*p1])
+	    while (p1 != l1 && is_space (*p1)) p1++;
+	    while (p1 != l1 && is_idchar (*p1))
 	      xbuf[totlen++] = *p1++;
 	    /* Delete any no-reexpansion marker that follows
 	       an identifier at the beginning of the argument
@@ -4067,7 +4050,7 @@ macroexpand (hp, op)
 	    /* Arg is concatenated after: delete trailing whitespace,
 	       whitespace markers, and no-reexpansion markers.  */
 	    while (p1 != l1) {
-	      if (is_space[l1[-1]]) l1--;
+	      if (is_space (l1[-1])) l1--;
 	      else if (l1[-1] == '-') {
 		const U_CHAR *p2 = l1 - 1;
 		/* If a `-' is preceded by an odd number of newlines then it
@@ -4681,7 +4664,7 @@ install (name, len, type, hash)
 
   if (len < 0) {
     p = name;
-    while (is_idchar[*p])
+    while (is_idchar (*p))
       p++;
     len = p - name;
   }
@@ -4725,7 +4708,7 @@ lookup (name, len, hash)
   register HASHNODE *bucket;
 
   if (len < 0) {
-    for (bp = name; is_idchar[*bp]; bp++) ;
+    for (bp = name; is_idchar (*bp); bp++) ;
     len = bp - name;
   }
 
@@ -4895,44 +4878,6 @@ dump_arg_n (defn, argnum)
     putchar (*p);
     p++;
   }
-}
-
-/* Initialize syntactic classifications of characters.  */
-static void
-initialize_char_syntax ()
-{
-  register int i;
-
-  /*
-   * Set up is_idchar and is_idstart tables.  These should be
-   * faster than saying (is_alpha (c) || c == '_'), etc.
-   * Must do set up these things before calling any routines tthat
-   * refer to them.
-   */
-  for (i = 'a'; i <= 'z'; i++) {
-    is_idchar[i - 'a' + 'A'] = 1;
-    is_idchar[i] = 1;
-    is_idstart[i - 'a' + 'A'] = 1;
-    is_idstart[i] = 1;
-  }
-  for (i = '0'; i <= '9'; i++)
-    is_idchar[i] = 1;
-  is_idchar['_'] = 1;
-  is_idstart['_'] = 1;
-
-  /* horizontal space table */
-  is_hor_space[' '] = 1;
-  is_hor_space['\t'] = 1;
-  is_hor_space['\v'] = 1;
-  is_hor_space['\f'] = 1;
-  is_hor_space['\r'] = 1;
-
-  is_space[' '] = 1;
-  is_space['\t'] = 1;
-  is_space['\v'] = 1;
-  is_space['\f'] = 1;
-  is_space['\n'] = 1;
-  is_space['\r'] = 1;
 }
 
 /* Initialize the built-in macros.  */

@@ -20,7 +20,7 @@ BUGS
 
 #include "ansidecl.h"
 #include "libiberty.h"
-#include <ctype.h>
+#include "safe-ctype.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -50,7 +50,7 @@ basename (name)
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Skip over the disk name in MSDOS pathnames. */
-  if (isalpha (name[0]) && name[1] == ':') 
+  if (ISALPHA (name[0]) && name[1] == ':') 
     name += 2;
 #endif
 

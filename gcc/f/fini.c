@@ -381,15 +381,9 @@ main (int argc, char **argv)
       for (i = 0; i < newname->namelen; ++i)
 	{
 	  cc = buf[i];
-	  if (ISALPHA (cc))
-	    {
-	      newname->name_uc[i] = TOUPPER (cc);
-	      newname->name_lc[i] = TOLOWER (cc);
-	      newname->name_ic[i] = cc;
-	    }
-	  else
-	    newname->name_uc[i] = newname->name_lc[i] = newname->name_ic[i]
-	      = cc;
+	  newname->name_uc[i] = TOUPPER (cc);
+	  newname->name_lc[i] = TOLOWER (cc);
+	  newname->name_ic[i] = cc;
 	}
       newname->name_uc[i] = newname->name_lc[i] = newname->name_ic[i] = '\0';
 

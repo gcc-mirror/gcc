@@ -144,7 +144,7 @@ main (int argc, const char **argv)
       fprintf (stream, "  \"");
       for (p = &argv[i][2]; *p; ++p)
 	{
-	  if (! isascii (*p))
+	  if (! ISPRINT (*p))
 	    fprintf (stream, "\\%o", *p);
 	  else if (*p == '\\' || *p == '"')
 	    fprintf (stream, "\\%c", *p);

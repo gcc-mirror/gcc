@@ -1,3 +1,7 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* safe-ctype.h: New file.
+
 2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* getopt.h obstack.h: Standarize copyright statement.

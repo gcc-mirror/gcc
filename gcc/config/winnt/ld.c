@@ -86,7 +86,7 @@ locate_file (file_name, path_val)
 
   /* Handle absolute pathnames */
   if (file_name [0] == '/' || file_name [0] == DIR_SEPARATOR
-      || isalpha (file_name [0]) && file_name [1] == ':')
+      || ISALPHA (file_name [0]) && file_name [1] == ':')
     {
       strncpy (buf, file_name, sizeof buf);
       buf[sizeof buf - 1] = '\0';

@@ -1581,10 +1581,6 @@ ffeintrin_init_0 ()
       p3 = ffeintrin_names_[i].name_ic;
       for (; *p1 != '\0' && *p2 != '\0' && *p3 != '\0'; ++p1, ++p2, ++p3)
 	{
-	  if (! IN_CTYPE_DOMAIN (*p1)
-	      || ! IN_CTYPE_DOMAIN (*p2)
-	      || ! IN_CTYPE_DOMAIN (*p3))
-	    break;
 	  if ((ISDIGIT (*p1) || (*p1 == '_')) && (*p1 == *p2) && (*p1 == *p3))
 	    continue;
 	  if (! ISUPPER ((unsigned char)*p1) || ! ISLOWER ((unsigned char)*p2)

@@ -198,50 +198,10 @@ init_syntax_once ()
 /* GCC LOCAL: call it gnu-regex.h, not regex.h, to avoid name conflicts */
 #include "gnu-regex.h"
 
-/* isalpha etc. are used for the character classes.  */
-#include <ctype.h>
-
-/* Jim Meyering writes:
-
-   "... Some ctype macros are valid only for character codes that
-   isascii says are ASCII (SGI's IRIX-4.0.5 is one such system --when
-   using /bin/cc or gcc but without giving an ansi option).  So, all
-   ctype uses should be through macros like ISPRINT...  If
-   STDC_HEADERS is defined, then autoconf has verified that the ctype
-   macros don't need to be guarded with references to isascii. ...
-   Defining isascii to 1 should let any compiler worth its salt
-   eliminate the && through constant folding."
-   Solaris defines some of these symbols so we must undefine them first.  */
-
-#undef ISASCII
-#if defined STDC_HEADERS || (!defined isascii && !defined HAVE_ISASCII)
-# define ISASCII(c) 1
-#else
-# define ISASCII(c) isascii(c)
-#endif
-
-#ifdef isblank
-# define ISBLANK(c) (ISASCII (c) && isblank (c))
-#else
-# define ISBLANK(c) ((c) == ' ' || (c) == '\t')
-#endif
-#ifdef isgraph
-# define ISGRAPH(c) (ISASCII (c) && isgraph (c))
-#else
-# define ISGRAPH(c) (ISASCII (c) && isprint (c) && !isspace (c))
-#endif
-
-#undef ISPRINT
-#define ISPRINT(c) (ISASCII (c) && isprint (c))
-#define ISDIGIT(c) (ISASCII (c) && isdigit (c))
-#define ISALNUM(c) (ISASCII (c) && isalnum (c))
-#define ISALPHA(c) (ISASCII (c) && isalpha (c))
-#define ISCNTRL(c) (ISASCII (c) && iscntrl (c))
-#define ISLOWER(c) (ISASCII (c) && islower (c))
-#define ISPUNCT(c) (ISASCII (c) && ispunct (c))
-#define ISSPACE(c) (ISASCII (c) && isspace (c))
-#define ISUPPER(c) (ISASCII (c) && isupper (c))
-#define ISXDIGIT(c) (ISASCII (c) && isxdigit (c))
+/* ISALPHA etc. are used for the character classes.  */
+/* GCC LOCAL: use libiberty's safe-ctype.h, don't bother defining
+   wrapper macros ourselves.  */
+#include <safe-ctype.h>
 
 #ifndef NULL
 # define NULL (void *)0
@@ -5613,7 +5573,7 @@ regcomp (preg, pattern, cflags)
 
       /* Map uppercase characters to corresponding lowercase ones.  */
       for (i = 0; i < CHAR_SET_SIZE; i++)
-        preg->translate[i] = ISUPPER (i) ? tolower (i) : i;
+        preg->translate[i] = TOLOWER (i);
     }
   else
     preg->translate = NULL;

@@ -74,7 +74,7 @@ strtoul(nptr, endptr, base)
 	 */
 	do {
 		c = *s++;
-	} while (isspace(c));
+	} while (ISSPACE(c));
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
@@ -91,10 +91,10 @@ strtoul(nptr, endptr, base)
 	cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
 	cutlim = (unsigned long)ULONG_MAX % (unsigned long)base;
 	for (acc = 0, any = 0;; c = *s++) {
-		if (isdigit(c))
+		if (ISDIGIT(c))
 			c -= '0';
-		else if (isalpha(c))
-			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		else if (ISALPHA(c))
+			c -= ISUPPER(c) ? 'A' - 10 : 'a' - 10;
 		else
 			break;
 		if (c >= base)

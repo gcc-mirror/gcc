@@ -1840,7 +1840,7 @@ ffecom_build_f2c_string_ (int i, const char *s)
       tmp = &space[0];
 
     for (p = s, q = tmp; *p != '\0'; ++p, ++q)
-      *q = ffesrc_toupper (*p);
+      *q = TOUPPER (*p);
     *q = '\0';
 
     t = build_string (i, tmp);

@@ -402,13 +402,13 @@ yylex ()
   if (c >= '0' && c <= '9') {
     /* It's a number */
     for (namelen = 0;
-	 c = tokstart[namelen], is_idchar[c] || c == '.'; 
+	 c = tokstart[namelen], is_idchar (c) || c == '.'; 
 	 namelen++)
       ;
     return parse_number (namelen);
   }
   
-  if (!is_idstart[c]) {
+  if (!is_idstart (c)) {
     yyerror ("Invalid token in expression");
     return ERROR;
   }
@@ -416,7 +416,7 @@ yylex ()
   /* It is a name.  See how long it is.  */
   
   for (namelen = 0;
-       is_idchar[(int)(unsigned char)tokstart[namelen]];
+       is_idchar (tokstart[namelen]);
        namelen++)
     ;
   
