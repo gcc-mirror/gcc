@@ -1,5 +1,11 @@
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR c++/18962
+	* pt.c (check_explicit_specialization): Use the argument list from
+	the definition in a template function specialization definition.
+
+2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR c++/18757
 	* parser.c (cp_parser_template_id): Don't create a CPP_TEMPLATE_ID
 	if parsing failed.
