@@ -419,10 +419,7 @@ get_call_expr_in (tree t)
   return NULL_TREE;
 }
 
-/* Given a memory reference expression, return the base address.  Note that,
-   in contrast with get_base_var, this will not recurse inside INDIRECT_REF
-   expressions.  Therefore, given the reference PTR->FIELD, this function
-   will return *PTR.  Whereas get_base_var would've returned PTR.  */
+/* Given a memory reference expression T, return its base address.  */
 
 tree
 get_base_address (tree t)
