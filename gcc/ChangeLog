@@ -1,3 +1,8 @@
+2005-03-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c, c-decl.c, c-format.c, c-typeck.c: Use %D for
+	declarations in diagnostics and %E for identifiers, not %s.
+
 2005-03-18  Jan Hubicka  <jh@suse.cz>
 	    Dale Johannesen  <dalej@apple.com>
 

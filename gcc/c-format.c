@@ -199,7 +199,8 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
       if (info->format_type == format_type_error)
 	{
 	  gcc_assert (!validated_p);
-	  warning ("%qs is an unrecognized format function type", p);
+	  warning ("%qE is an unrecognized format function type",
+		   format_type_id);
 	  return false;
 	}
     }

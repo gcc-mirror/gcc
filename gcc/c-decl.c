@@ -2370,8 +2370,7 @@ lookup_label (tree name)
 
   if (current_function_decl == 0)
     {
-      error ("label %qs referenced outside of any function",
-	     IDENTIFIER_POINTER (name));
+      error ("label %qE referenced outside of any function", name);
       return 0;
     }
 
@@ -2413,7 +2412,7 @@ declare_label (tree name)
      at this scope */
   if (b && B_IN_CURRENT_SCOPE (b))
     {
-      error ("duplicate label declaration %qs", IDENTIFIER_POINTER (name));
+      error ("duplicate label declaration %qE", name);
       locate_old_decl (b->decl, error);
 
       /* Just use the previous declaration.  */
@@ -2471,8 +2470,7 @@ define_label (location_t location, tree name)
 
   if (warn_traditional && !in_system_header && lookup_name (name))
     warning ("%Htraditional C lacks a separate namespace for labels, "
-             "identifier %qs conflicts", &location,
-	     IDENTIFIER_POINTER (name));
+             "identifier %qE conflicts", &location, name);
 
   /* Mark label as having been defined.  */
   DECL_INITIAL (label) = error_mark_node;
@@ -2536,9 +2534,8 @@ void
 pending_xref_error (void)
 {
   if (pending_invalid_xref != 0)
-    error ("%H%qs defined as wrong kind of tag",
-           &pending_invalid_xref_location,
-           IDENTIFIER_POINTER (pending_invalid_xref));
+    error ("%H%qE defined as wrong kind of tag",
+           &pending_invalid_xref_location, pending_invalid_xref);
   pending_invalid_xref = 0;
 }
 
@@ -5008,18 +5005,16 @@ start_struct (enum tree_code code, tree name)
       if (TYPE_SIZE (ref))
         {
 	  if (code == UNION_TYPE)
-	    error ("redefinition of %<union %s%>", IDENTIFIER_POINTER (name));
+	    error ("redefinition of %<union %E%>", name);
           else
-	    error ("redefinition of %<struct %s%>", IDENTIFIER_POINTER (name));
+	    error ("redefinition of %<struct %E%>", name);
 	}
       else if (C_TYPE_BEING_DEFINED (ref))
 	{
 	  if (code == UNION_TYPE)
-	    error ("nested redefinition of %<union %s%>",
-		   IDENTIFIER_POINTER (name));
+	    error ("nested redefinition of %<union %E%>", name);
           else
-	    error ("nested redefinition of %<struct %s%>",
-		   IDENTIFIER_POINTER (name));
+	    error ("nested redefinition of %<struct %E%>", name);
 	}
     }
   else
@@ -5454,14 +5449,14 @@ start_enum (tree name)
     }
 
   if (C_TYPE_BEING_DEFINED (enumtype))
-    error ("nested redefinition of %<enum %s%>", IDENTIFIER_POINTER (name));
+    error ("nested redefinition of %<enum %E%>", name);
 
   C_TYPE_BEING_DEFINED (enumtype) = 1;
 
   if (TYPE_VALUES (enumtype) != 0)
     {
       /* This enum is a named one that has been declared already.  */
-      error ("redeclaration of %<enum %s%>", IDENTIFIER_POINTER (name));
+      error ("redeclaration of %<enum %E%>", name);
 
       /* Completely replace its old definition.
 	 The old enumerators remain defined, however.  */
@@ -6799,7 +6794,7 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
       gcc_unreachable ();
     }
   if (dupe && pedantic && !flag_isoc99)
-    pedwarn ("duplicate %qs", IDENTIFIER_POINTER (qual));
+    pedwarn ("duplicate %qE", qual);
   return specs;
 }
 
@@ -6950,7 +6945,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	    }
 
 	  if (dupe)
-	    error ("duplicate %qs", IDENTIFIER_POINTER (type));
+	    error ("duplicate %qE", type);
 
 	  return specs;
 	}
@@ -7079,8 +7074,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
     {
       tree t = lookup_name (type);
       if (!t || TREE_CODE (t) != TYPE_DECL)
-	error ("%qs fails to be a typedef or built in type",
-	       IDENTIFIER_POINTER (type));
+	error ("%qE fails to be a typedef or built in type", type);
       else if (TREE_TYPE (t) == error_mark_node)
 	;
       else
@@ -7112,8 +7106,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
   if (extra_warnings && specs->non_sc_seen_p)
-    warning ("%qs is not at beginning of declaration",
-	     IDENTIFIER_POINTER (scspec));
+    warning ("%qE is not at beginning of declaration", scspec);
   switch (i)
     {
     case RID_INLINE:
@@ -7162,7 +7155,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
   if (n != csc_none && n == specs->storage_class)
     dupe = true;
   if (dupe)
-    error ("duplicate %qs", IDENTIFIER_POINTER (scspec));
+    error ("duplicate %qE", scspec);
   if (n != csc_none)
     {
       if (specs->storage_class != csc_none && n != specs->storage_class)
@@ -7174,8 +7167,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 	  specs->storage_class = n;
 	  if (n != csc_extern && n != csc_static && specs->thread_p)
 	    {
-	      error ("%<__thread%> used with %qs",
-		     IDENTIFIER_POINTER (scspec));
+	      error ("%<__thread%> used with %qE", scspec);
 	      specs->thread_p = false;
 	    }
 	}
