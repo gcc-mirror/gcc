@@ -24,7 +24,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 #include "tree.h"
-#include "c-common.h"
+#include "c-common.h"		/* For flags.  */
+#include "c-pragma.h"		/* For parse_in.  */
 
 /* Encapsulates state used to convert a stream of tokens into a text
    file.  */
@@ -37,8 +38,6 @@ static struct
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
 } print;
-
-static void setup_callbacks PARAMS ((cpp_reader *));
 
 /* General output routines.  */
 static void scan_translation_unit PARAMS ((cpp_reader *));
@@ -64,44 +63,28 @@ static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
 
 /* Preprocess and output.  */
 void
-preprocess_file (pfile, in_fname, out_stream)
+preprocess_file (pfile)
      cpp_reader *pfile;
-     const char *in_fname;
-     FILE *out_stream;
 {
-  /* Initialize the print structure.  Setting print.line to -1 here is
-     a trick to guarantee that the first token of the file will cause
-     a linemarker to be output by maybe_print_line.  */
-  print.line = (unsigned int) -1;
-  print.printed = 0;
-  print.prev = 0;
-  print.map = 0;
-  print.outf = out_stream;
+  cpp_finish_options (pfile);
 
-  setup_callbacks (pfile);
-
-  if (cpp_read_main_file (pfile, in_fname, NULL))
+  /* A successful cpp_read_main_file guarantees that we can call
+     cpp_scan_nooutput or cpp_get_token next.  */
+  if (flag_no_output)
     {
-      cpp_finish_options (pfile);
-
-      /* A successful cpp_read_main_file guarantees that we can call
-	 cpp_scan_nooutput or cpp_get_token next.  */
-      if (flag_no_output)
-	{
-	  /* Scan -included buffers, then the main file.  */
-	  while (pfile->buffer->prev)
-	    cpp_scan_nooutput (pfile);
-	  cpp_scan_nooutput (pfile);
-	}
-      else if (cpp_get_options (pfile)->traditional)
-	scan_translation_unit_trad (pfile);
-      else
-	scan_translation_unit (pfile);
-
-      /* -dM command line option.  Should this be elsewhere?  */
-      if (flag_dump_macros == 'M')
-	cpp_forall_identifiers (pfile, dump_macro, NULL);
+      /* Scan -included buffers, then the main file.  */
+      while (pfile->buffer->prev)
+	cpp_scan_nooutput (pfile);
+      cpp_scan_nooutput (pfile);
     }
+  else if (cpp_get_options (pfile)->traditional)
+    scan_translation_unit_trad (pfile);
+  else
+    scan_translation_unit (pfile);
+
+  /* -dM command line option.  Should this be elsewhere?  */
+  if (flag_dump_macros == 'M')
+    cpp_forall_identifiers (pfile, dump_macro, NULL);
 
   /* Flush any pending output.  */
   if (print.printed)
@@ -109,19 +92,20 @@ preprocess_file (pfile, in_fname, out_stream)
 }
 
 /* Set up the callbacks as appropriate.  */
-static void
-setup_callbacks (pfile)
-     cpp_reader *pfile;
+void
+init_pp_output (out_stream)
+     FILE *out_stream;
 {
-  cpp_options *options = &pfile->opts;
-  cpp_callbacks *cb = cpp_get_callbacks (pfile);
+  cpp_callbacks *cb = cpp_get_callbacks (parse_in);
+
+  cb->register_builtins = cb_register_builtins;
 
   if (!flag_no_output)
     {
       cb->line_change = cb_line_change;
       /* Don't emit #pragma or #ident directives if we are processing
 	 assembly language; the assembler may choke on them.  */
-      if (options->lang != CLK_ASM)
+      if (cpp_get_options (parse_in)->lang != CLK_ASM)
 	{
 	  cb->ident      = cb_ident;
 	  cb->def_pragma = cb_def_pragma;
@@ -138,6 +122,15 @@ setup_callbacks (pfile)
       cb->define = cb_define;
       cb->undef  = cb_undef;
     }
+
+  /* Initialize the print structure.  Setting print.line to -1 here is
+     a trick to guarantee that the first token of the file will cause
+     a linemarker to be output by maybe_print_line.  */
+  print.line = (unsigned int) -1;
+  print.printed = 0;
+  print.prev = 0;
+  print.map = 0;
+  print.outf = out_stream;
 }
 
 /* Writes out the preprocessed file, handling spacing and paste

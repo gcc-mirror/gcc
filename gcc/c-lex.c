@@ -111,14 +111,9 @@ init_c_lex ()
       toplevel->time = body_time;
     }
   
-#ifdef MULTIBYTE_CHARS
-  /* Change to the native locale for multibyte conversions.  */
-  setlocale (LC_CTYPE, "");
-  GET_ENVIRONMENT (literal_codeset, "LANG");
-#endif
-
   cb = cpp_get_callbacks (parse_in);
 
+  cb->register_builtins = cb_register_builtins;
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->file_change = cb_file_change;

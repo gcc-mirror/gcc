@@ -1512,10 +1512,6 @@ c_common_init (filename)
   cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
   cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
 
-  /* Register preprocessor built-ins before calls to
-     cpp_main_file.  */
-  cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;
-
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
@@ -1527,22 +1523,30 @@ c_common_init (filename)
 	out_stream = fopen (out_fname, "w");
 
       if (out_stream == NULL)
-	fatal_io_error ("opening output file %s", out_fname);
-      else
-	/* Preprocess the input file to out_stream.  */
-	preprocess_file (parse_in, in_fname, out_stream);
+	{
+	  fatal_io_error ("opening output file %s", out_fname);
+	  return NULL;
+	}
 
-      /* Exit quickly in toplev.c.  */
-      return NULL;
+      init_pp_output (out_stream);
     }
+  else
+    {
+      init_c_lex ();
 
-  init_c_lex ();
-
-  /* Start it at 0.  */
-  lineno = 0;
+      /* Yuk.  WTF is this?  I do know ObjC relies on it somewhere.  */
+      lineno = 0;
+    }
 
   /* NOTE: we use in_fname here, not the one supplied.  */
   filename = cpp_read_main_file (parse_in, in_fname, ident_hash);
+
+  if (flag_preprocess_only)
+    {
+      if (filename)
+	preprocess_file (parse_in);
+      return NULL;
+    }
 
   /* Has to wait until now so that cpplib has its hash table.  */
   init_pragma ();
