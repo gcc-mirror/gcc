@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    Enhanced by, and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3909,6 +3909,14 @@ schedule_block (b, file)
       sched_n_insns += 1;
       NEXT_INSN (insn) = last;
       PREV_INSN (last) = insn;
+
+      /* Maintain a valid chain so emit_note_before works.
+	 This is necessary because PREV_INSN (insn) isn't valid and
+	 if it points to an insn already scheduled, a circularity
+	 will result.  */
+      NEXT_INSN (prev_head) = insn;
+      PREV_INSN (insn) = prev_head;
+
       last = insn;
 
       /* Check to see if we need to re-emit any notes here.  */
@@ -3946,6 +3954,14 @@ schedule_block (b, file)
 	      sched_n_insns += 1;
 	      NEXT_INSN (insn) = last;
 	      PREV_INSN (last) = insn;
+
+	      /* Maintain a valid chain so emit_note_before works.
+		 This is necessary because PREV_INSN (insn) isn't valid and
+		 if it points to an insn already scheduled, a circularity
+		 will result.  */
+	      NEXT_INSN (prev_head) = insn;
+	      PREV_INSN (insn) = prev_head;
+
 	      last = insn;
 
 	      last = reemit_notes (insn, last);
