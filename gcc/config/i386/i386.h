@@ -2743,6 +2743,7 @@ extern int shift_op ();
 extern int VOIDmode_compare_op ();
 extern char *output_387_binary_op ();
 extern char *output_fix_trunc ();
+extern void output_float_extend ();
 extern char *output_float_compare ();
 extern char *output_fp_cc0_set ();
 extern void save_386_machine_status ();

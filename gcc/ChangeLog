@@ -1,3 +1,10 @@
+Wed Apr 14 14:26:36 1999  John Wehle  (john@feith.com)
+
+        * i386.md (extendsfdf, extendsfxf, extenddfxf): Use
+        output_float_extend instead specifying '#' as the template.
+        * i386.c (output_float_extend): Define.
+        * i386.h (output_float_extend): Declare.
+
 Wed Apr 14 10:48:03 1999  Catherine Moore  <clm@cygnus.com>
  
         * config/mips/elf.h, config/mips/elf64.h

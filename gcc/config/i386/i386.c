@@ -4179,6 +4179,66 @@ output_fix_trunc (insn, operands)
   return AS1 (fldc%W2,%2);
 }
 
+/* Output code for INSN to extend a float.  OPERANDS are the insn
+   operands.  The output may be DFmode or XFmode and the input operand
+   may be SFmode or DFmode.  Operands 2 and 3 are scratch memory and
+   are only necessary if operands 0 or 1 are non-stack registers.  */
+
+void
+output_float_extend (insn, operands)
+     rtx insn;
+     rtx *operands;
+{
+  int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
+  rtx xops[2];
+
+  if (! STACK_TOP_P (operands[0]) && ! STACK_TOP_P (operands[1]))
+    abort ();
+
+  if (STACK_TOP_P (operands[0]) && STACK_TOP_P (operands[1]) && stack_top_dies)
+    return;
+
+  if (STACK_TOP_P (operands[0]) )
+    {
+      if (NON_STACK_REG_P (operands[1]))
+	{
+	  if (GET_MODE (operands[1]) == SFmode)
+	    output_asm_insn (AS2 (mov%L0,%1,%2), operands);
+	  else
+	    {
+	      xops[0] = operands[2];
+	      xops[1] = operands[1];
+	      output_asm_insn (output_move_double (xops), xops);
+	    }
+	}
+
+      xops[0] = NON_STACK_REG_P (operands[1]) ? operands[2] : operands[1];
+
+      output_asm_insn (AS1 (fld%z0,%y0), xops);
+    }
+  else
+    {
+      xops[0] = NON_STACK_REG_P (operands[0]) ? operands[3] : operands[0];
+
+      if (stack_top_dies
+	  || (GET_CODE (xops[0]) == MEM && GET_MODE (xops[0]) == XFmode))
+	{
+	  output_asm_insn (AS1 (fstp%z0,%y0), xops);
+	  if (! stack_top_dies)
+	    output_asm_insn (AS1 (fld%z0,%y0), xops);
+	}
+      else
+	output_asm_insn (AS1 (fst%z0,%y0), xops);
+
+      if (NON_STACK_REG_P (operands[0]))
+	{
+	  xops[0] = operands[0];
+	  xops[1] = operands[3];
+	  output_asm_insn (output_move_double (xops), xops);
+	}
+    }
+}
+
 /* Output code for INSN to compare OPERANDS.  The two operands might
    not have the same mode: one might be within a FLOAT or FLOAT_EXTEND
    expression.  If the compare is in mode CCFPEQmode, use an opcode that
