@@ -1,3 +1,10 @@
+2003-07-11  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/i386/freebsd.h (SET_ASM_OP): Remove.
+	(SUBTARGET_OVERRIDE_OPTIONS): Handle TARGET_64BIT case.
+	(ASM_COMMENT_START, ASM_APP_ON, ASM_APP_OFF, DBX_REGISTER_NUMBER
+	 MCOUNT_NAME, SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE_SIZE): Whitespace.
+
 2003-07-11  Richard Henderson  <rth@redhat.com>
 
 	* function.c (assign_parms): Don't recombine complex args if
