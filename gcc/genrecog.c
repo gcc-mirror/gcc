@@ -2349,7 +2349,7 @@ write_subroutine (head, type)
       printf ("%sint recog%s PARAMS ((rtx, rtx, int *));\n", s_or_e, extension);
       printf ("%sint\n\
 recog%s (x0, insn, pnum_clobbers)\n\
-     rtx x0;\n\
+     rtx x0 ATTRIBUTE_UNUSED;\n\
      rtx insn ATTRIBUTE_UNUSED;\n\
      int *pnum_clobbers ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
@@ -2357,7 +2357,7 @@ recog%s (x0, insn, pnum_clobbers)\n\
       printf ("%srtx split%s PARAMS ((rtx, rtx));\n", s_or_e, extension);
       printf ("%srtx\n\
 split%s (x0, insn)\n\
-     rtx x0;\n\
+     rtx x0 ATTRIBUTE_UNUSED;\n\
      rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     case PEEPHOLE2:
@@ -2365,7 +2365,7 @@ split%s (x0, insn)\n\
 	      s_or_e, extension);
       printf ("%srtx\n\
 peephole2%s (x0, insn, _pmatch_len)\n\
-     rtx x0;\n\
+     rtx x0 ATTRIBUTE_UNUSED;\n\
      rtx insn ATTRIBUTE_UNUSED;\n\
      int *_pmatch_len ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;

@@ -1,3 +1,17 @@
+2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (emit_call_1): Mark parameter with ATTRIBUTE_UNUSED.
+	* 1750a.c (print_operand): Fix format specifier warning.
+	* 1750a.h (ASM_FILE_START): Don't discard pointer qualifier.
+	* 1750a.md: Likewise.
+	* gcc.c (init_gcc_specs): Wrap with ENABLE_SHARED_LIBGCC.
+	* genemit.c (output_add_clobbers): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* genrecog.c (write_subroutine): Likewise.
+	* integrate.c (expand_inline_function): Delete unused variable.
+	* varasm.c (remove_from_pending_weak_list): Wrap with
+	ASM_WEAKEN_LABEL.
+
 2001-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_plus_minus): Negate constant iff its neg

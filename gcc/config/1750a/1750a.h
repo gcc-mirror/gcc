@@ -857,15 +857,16 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)   {					\
-   char *p, name[40];							\
-   if ((p = (char *)strrchr(main_input_filename,'/')) != NULL ? 1 :	\
-       (p = (char *)strrchr(main_input_filename,']')) != NULL)		\
+   char *p2, name[40];							\
+   const char *p;							\
+   if ((p = strrchr(main_input_filename,'/')) != NULL ? 1 :		\
+       (p = strrchr(main_input_filename,']')) != NULL)			\
 	p++;								\
    else									\
 	p = main_input_filename;					\
    strcpy(name,p);							\
-   if ((p = (char *)strchr(name,'.')))					\
-	*p = '\0';							\
+   if ((p2 = strchr(name,'.')))						\
+	*p2 = '\0';							\
    fprintf(FILE,"\tname %s\n",name); 					\
    fprintf(FILE,"\tnolist\n\tinclude \"ms1750.inc\"\n\tlist\n\n");	\
    fprintf(FILE,"\tglobal\t__main\n\n");  }

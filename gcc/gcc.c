@@ -313,9 +313,11 @@ static int execute			PARAMS ((void));
 static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
 static void set_input			PARAMS ((const char *));
+#ifdef ENABLE_SHARED_LIBGCC
 static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *,
 						 const char *));
+#endif
 
 /* The Specs Language
 
@@ -1376,6 +1378,7 @@ static struct spec_list *specs = (struct spec_list *) 0;
 /* Add appropriate libgcc specs to OBSTACK, taking into account
    various permutations of -shared-libgcc, -shared, and such.  */
 
+#ifdef ENABLE_SHARED_LIBGCC
 static void
 init_gcc_specs (obstack, shared_name, static_name)
      struct obstack *obstack;
@@ -1401,6 +1404,7 @@ init_gcc_specs (obstack, shared_name, static_name)
 	   static_name);
   obstack_grow (obstack, buffer, strlen (buffer));
 }
+#endif /* ENABLE_SHARED_LIBGCC */
 
 /* Initialize the specs lookup routines.  */
 
