@@ -1,3 +1,16 @@
+2002-05-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Remove the prototype for
+	o_operand.
+	Add prototypes for single_one_operand and single_zero_operand.
+	* config/h8300/h8300.c (o_operand): Remove.
+	(single_one_operand): New.
+	(single_zero_operand): Likewise.
+	(print_operand): For 'V' operand, and the operand with 0xff.
+	For 'V' and 'W' operands, do not and the bit position with 7.
+	* config/h8300/h8300.md (various anonymous patterns): Replace
+	use of exact_log2 with single_one_operand/single_zero_operand.
+
 2002-05-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.

@@ -569,15 +569,50 @@ general_operand_dst (op, mode)
   return general_operand (op, mode);
 }
 
-/* Return true if OP is a const valid for a bit clear instruction.  */
+/* Return true if OP is a constant that contains only one 1 in its
+   binary representation.  */
 
 int
-o_operand (operand, mode)
+single_one_operand (operand, mode)
      rtx operand;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (operand) == CONST_INT
-	  && CONST_OK_FOR_O (INTVAL (operand)));
+  if (GET_CODE (operand) == CONST_INT)
+    {
+      /* We really need to do this masking because 0x80 in QImode is
+	 represented as -128 for example.  */
+      unsigned HOST_WIDE_INT mask =
+	((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1;
+      unsigned HOST_WIDE_INT value = INTVAL (operand);
+
+      if (exact_log2 (value & mask) >= 0)
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Return true if OP is a constant that contains only one 0 in its
+   binary representation.  */
+
+int
+single_zero_operand (operand, mode)
+     rtx operand;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if (GET_CODE (operand) == CONST_INT)
+    {
+      /* We really need to do this masking because 0x80 in QImode is
+	 represented as -128 for example.  */
+      unsigned HOST_WIDE_INT mask =
+	((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1;
+      unsigned HOST_WIDE_INT value = INTVAL (operand);
+
+      if (exact_log2 (~value & mask) >= 0)
+	return 1;
+    }
+
+  return 0;
 }
 
 /* Return true if OP is a valid call operand.  */
@@ -1030,16 +1065,16 @@ print_operand (file, x, code)
 	goto def;
       break;
     case 'V':
-      bitint = exact_log2 (INTVAL (x));
+      bitint = exact_log2 (INTVAL (x) & 0xff);
       if (bitint == -1)
 	abort ();
-      fprintf (file, "#%d", bitint & 7);
+      fprintf (file, "#%d", bitint);
       break;
     case 'W':
       bitint = exact_log2 ((~INTVAL (x)) & 0xff);
       if (bitint == -1)
 	abort ();
-      fprintf (file, "#%d", bitint & 7);
+      fprintf (file, "#%d", bitint);
       break;
     case 'R':
     case 'X':
