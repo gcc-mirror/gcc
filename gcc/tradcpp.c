@@ -1187,32 +1187,11 @@ do { ip = &instack[indepth];		\
       if (ident_length)
 	goto specialchar;
 
-      /* # keyword: a # must be first nonblank char on the line */
+      /* # keyword: a # must be the first char on the line */
       if (beg_of_line == 0)
 	goto randomchar;
-      {
-	U_CHAR *bp;
-
-	/* Scan from start of line, skipping whitespace, comments
-	   and backslash-newlines, and see if we reach this #.
-	   If not, this # is not special.  */
-	bp = beg_of_line;
-	while (1) {
-	  if (is_hor_space[*bp])
-	    bp++;
-	  else if (*bp == '\\' && bp[1] == '\n')
-	    bp += 2;
-	  else if (*bp == '/' && (newline_fix (bp + 1), bp[1]) == '*') {
-	    bp += 2;
-	    while (!(*bp == '*' && (newline_fix (bp + 1), bp[1]) == '/'))
-	      bp++;
-	    bp += 1;
-	  }
-	  else break;
-	}
-	if (bp + 1 != ibp)
-	  goto randomchar;
-      }
+      if (beg_of_line + 1 != ibp)
+	goto randomchar;
 
       /* This # can start a directive.  */
 
