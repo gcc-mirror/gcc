@@ -810,6 +810,9 @@ globalize_reg (int i)
     return;
 
   fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
+#ifdef CALL_REALLY_USED_REGISTERS
+  call_really_used_regs[i] = 1;
+#endif
   n_non_fixed_regs--;
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
