@@ -1,3 +1,32 @@
+2000-03-26  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/mprec.h: Use SIZEOF_VOID_P.
+	* interpret.cc: Use SIZEOF_VOID_P.
+	* include/java-cpool.h (_Jv_storeLong): Use SIZEOF_VOID_P.
+	(_Jv_loadLong): Likewise.
+	(_Jv_storeDouble): Likewise.
+	* configure: Rebuilt.
+	* configure.in: Check size of void*.
+
+	* resolve.cc (ncode): Use FFI_PREP_RAW_CLOSURE and FFI_RAW_SIZE.
+
+2000-03-26  Hans Boehm  <boehm@acm.org>
+
+	* include/java-cpool.h (_Jv_storeLong, _Jv_loadLong,
+	_Jv_storeDouble, _Jv_loadDouble): Define differently on 64 bit
+	machine.
+	* java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN or
+	__IEEE_LITTLE_ENDIAN appropriately on IA64.
+	* java/lang/mprec.h: Don't define Pack_32 on 64 bit machine.
+	* javaprims.h (_Jv_word): Added `l' and `d' entries in 64 bit
+	case.
+	* resolve.cc (FFI_PREP_RAW_CLOSURE): New define.
+	(FFI_RAW_SIZE): Likewise.
+	(_Jv_InterpMethod::ncode): Use them.
+	* interpret.cc (PUSHL, PUSHD, POPL, POPD, LOADL, LOADD, STOREL,
+	STORED): Define differently on a 64 bit machine.
+	(continue1): Use ffi_java_raw_call when appropriate.
+ 
 2000-03-24  Warren Levy  <warrenl@cygnus.com>
 
 	* java/math/BigInteger.java(divide): Handle the special case when

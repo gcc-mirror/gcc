@@ -284,7 +284,9 @@ extern double rnd_prod(double, double), rnd_quot(double, double);
  */
 
 #ifndef Pack_32
+#if SIZEOF_VOID_P != 8
 #define Pack_32
+#endif
 #endif
 #endif
 

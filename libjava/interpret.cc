@@ -77,41 +77,60 @@ static inline void dupx (_Jv_word *sp, int n, int x)
 #define PUSHA(V)  (sp++)->o = (V)
 #define PUSHI(V)  (sp++)->i = (V)
 #define PUSHF(V)  (sp++)->f = (V)
-#define PUSHL(V)  do { _Jv_word2 w2; w2.l=(V); \
-                     (sp++)->ia[0] = w2.ia[0]; \
-                     (sp++)->ia[0] = w2.ia[1]; } while (0)
-#define PUSHD(V)  do { _Jv_word2 w2; w2.d=(V); \
-                     (sp++)->ia[0] = w2.ia[0]; \
-                     (sp++)->ia[0] = w2.ia[1]; } while (0)
+#if SIZEOF_VOID_P == 8
+# define PUSHL(V)   (sp->l = (V), sp += 2)
+# define PUSHD(V)   (sp->d = (V), sp += 2)
+#else
+# define PUSHL(V)  do { _Jv_word2 w2; w2.l=(V); \
+                        (sp++)->ia[0] = w2.ia[0]; \
+                        (sp++)->ia[0] = w2.ia[1]; } while (0)
+# define PUSHD(V)  do { _Jv_word2 w2; w2.d=(V); \
+                        (sp++)->ia[0] = w2.ia[0]; \
+                        (sp++)->ia[0] = w2.ia[1]; } while (0)
+#endif
 
 #define POPA()    ((--sp)->o)
 #define POPI()    ((jint) (--sp)->i) // cast since it may be promoted
 #define POPF()    ((jfloat) (--sp)->f)
-#define POPL()    ({ _Jv_word2 w2; \
+#if SIZEOF_VOID_P == 8
+# define POPL()	  (sp -= 2, (jlong) sp->l)
+# define POPD()	  (sp -= 2, (jdouble) sp->d)
+#else
+# define POPL()    ({ _Jv_word2 w2; \
                      w2.ia[1] = (--sp)->ia[0]; \
                      w2.ia[0] = (--sp)->ia[0]; w2.l; })
-#define POPD()    ({ _Jv_word2 w2; \
+# define POPD()    ({ _Jv_word2 w2; \
                      w2.ia[1] = (--sp)->ia[0]; \
                      w2.ia[0] = (--sp)->ia[0]; w2.d; })
+#endif
 
 #define LOADA(I)  (sp++)->o = locals[I].o
 #define LOADI(I)  (sp++)->i = locals[I].i
 #define LOADF(I)  (sp++)->f = locals[I].f
-#define LOADL(I)  do { jint __idx = (I); \
-    (sp++)->ia[0] = locals[__idx].ia[0]; \
-    (sp++)->ia[0] = locals[__idx+1].ia[0]; \
- } while (0)
-#define LOADD(I)  LOADL(I)
-
+#if SIZEOF_VOID_P == 8
+# define LOADL(I)  (sp->l = locals[I].l, sp += 2)
+# define LOADD(I)  (sp->d = locals[I].d, sp += 2)
+#else
+# define LOADL(I)  do { jint __idx = (I); \
+    			(sp++)->ia[0] = locals[__idx].ia[0]; \
+    			(sp++)->ia[0] = locals[__idx+1].ia[0]; \
+ 		   } while (0)
+# define LOADD(I)  LOADL(I)
+#endif
 
 #define STOREA(I) locals[I].o = (--sp)->o
 #define STOREI(I) locals[I].i = (--sp)->i
 #define STOREF(I) locals[I].f = (--sp)->f
-#define STOREL(I) do { jint __idx = (I); \
-    locals[__idx+1].ia[0] = (--sp)->ia[0]; \
-    locals[__idx].ia[0] = (--sp)->ia[0]; \
- } while (0)
-#define STORED(I) STOREL(I)
+#if SIZEOF_VOID_P == 8
+# define STOREL(I) (sp -= 2, locals[I].l = sp->l)
+# define STORED(I) (sp -= 2, locals[I].d = sp->d)
+#else
+# define STOREL(I) do { jint __idx = (I); \
+    		       locals[__idx+1].ia[0] = (--sp)->ia[0]; \
+    		       locals[__idx].ia[0] = (--sp)->ia[0]; \
+		   } while (0)
+# define STORED(I) STOREL(I)
+#endif
 
 #define PEEKI(I)  (locals+(I))->i
 #define PEEKA(I)  (locals+(I))->o
@@ -199,7 +218,7 @@ _Jv_InterpMethod::run (ffi_cif* cif,
   _Jv_word *locals = inv->local_base ();
 
   /* Go straight at it!  the ffi raw format matches the internal
-     stack representation exactly.  At leat, that's the idea.
+     stack representation exactly.  At least, that's the idea.
   */
   memcpy ((void*) locals, (void*) args, args_raw_size);
 
@@ -693,7 +712,13 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	jdouble rvalue;
 
+#if FFI_NATIVE_RAW_API
+	/* We assume that this is only implemented if it's correct	*/
+	/* to use it here.  On a 64 bit machine, it never is.		*/
 	ffi_raw_call (cif, fun, (void*)&rvalue, raw);
+#else
+	ffi_java_raw_call (cif, fun, (void*)&rvalue, raw);
+#endif
 
 	int rtype = cif->rtype->type;
 

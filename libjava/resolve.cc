@@ -1045,6 +1045,13 @@ init_cif (_Jv_Utf8Const* signature,
   return item_count;
 }
 
+#if FFI_NATIVE_RAW_API
+#   define FFI_PREP_RAW_CLOSURE ffi_prep_raw_closure
+#   define FFI_RAW_SIZE ffi_raw_size
+#else
+#   define FFI_PREP_RAW_CLOSURE ffi_prep_java_raw_closure
+#   define FFI_RAW_SIZE ffi_java_raw_size
+#endif
 
 /* we put this one here, and not in interpret.cc because it
  * calls the utility routines count_arguments 
@@ -1083,7 +1090,7 @@ _Jv_InterpMethod::ncode ()
 
   ffi_closure_fun fun;
 
-  args_raw_size = ffi_raw_size (&closure->cif);
+  args_raw_size = FFI_RAW_SIZE (&closure->cif);
 
   JvAssert ((self->accflags & Modifier::NATIVE) == 0);
 
@@ -1099,10 +1106,10 @@ _Jv_InterpMethod::ncode ()
       fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal;
     }
 
-  ffi_prep_raw_closure (&closure->closure,
-			&closure->cif, 
-			fun,
-			(void*) this);
+  FFI_PREP_RAW_CLOSURE (&closure->closure,
+		        &closure->cif, 
+		        fun,
+		        (void*)this);
 
   self->ncode = (void*)closure;
   return self->ncode;
@@ -1134,7 +1141,7 @@ _Jv_JNIMethod::ncode ()
 
   ffi_closure_fun fun;
 
-  args_raw_size = ffi_raw_size (&closure->cif);
+  args_raw_size = FFI_RAW_SIZE (&closure->cif);
 
   // Initialize the argument types and CIF that represent the actual
   // underlying JNI function.
@@ -1161,7 +1168,7 @@ _Jv_JNIMethod::ncode ()
   // interpreted code use JNI.
   fun = (ffi_closure_fun) &_Jv_JNIMethod::call;
 
-  ffi_prep_raw_closure (&closure->closure,
+  FFI_PREP_RAW_CLOSURE (&closure->closure,
 			&closure->cif, 
 			fun,
 			(void*) this);

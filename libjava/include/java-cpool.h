@@ -1,6 +1,6 @@
 // java-cpool.h - Constant pool parsing header.  -*- c++ -*-
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -80,37 +80,53 @@ _Jv_loadInt (_Jv_word *data)
 extern inline void
 _Jv_storeLong (_Jv_word *data, jlong l)
 {
+#if SIZEOF_VOID_P == 8
+  data[0].l = l;
+#else
   _Jv_word2 tmp;
   tmp.l = l;
   data[0].ia[0] = tmp.ia[0];
   data[1].ia[0] = tmp.ia[1];
+#endif
 }
 
 extern inline jlong
 _Jv_loadLong (_Jv_word *data)
 {
+#if SIZEOF_VOID_P == 8
+  return data -> l;
+#else
   _Jv_word2 tmp;
   tmp.ia[0] = data[0].ia[0];
   tmp.ia[1] = data[1].ia[0];
   return tmp.l;
+#endif
 }
 
 extern inline void
 _Jv_storeDouble (_Jv_word *data, jdouble d)
 {
+#if SIZEOF_VOID_P == 8
+  data[0].d = d;
+#else
   _Jv_word2 tmp;
   tmp.d = d;
   data[0].ia[0] = tmp.ia[0];
   data[1].ia[0] = tmp.ia[1];
+#endif
 }
 
 extern inline jdouble
 _Jv_loadDouble (_Jv_word *data)
 {
+#if SIZEOF_VOID_P == 8
+  return data -> d;
+#else
   _Jv_word2 tmp;
   tmp.ia[0] = data[0].ia[0];
   tmp.ia[1] = data[1].ia[0];
   return tmp.d;
+#endif
 }
 
 

@@ -13,8 +13,8 @@ details.  */
 
 #ifdef SJLJ_EXCEPTIONS
 
-#define HANDLE_SEGV
-#define HANDLE_FPE
+#define HANDLE_SEGV 1
+#define HANDLE_FPE 1
 
 #include <signal.h>
 
