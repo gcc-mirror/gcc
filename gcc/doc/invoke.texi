@@ -9193,14 +9193,8 @@ Use (do not use) assembler relocation operators when dealing with symbolic
 addresses.  The alternative, selected by @option{-mno-explicit-relocs},
 is to use assembler macros instead.
 
-@option{-mexplicit-relocs} is usually the default if GCC was configured
-to use an assembler that supports relocation operators.  However, the
-combination of @option{-mabicalls} and @option{-fno-unit-at-a-time}
-implies @option{-mno-explicit-relocs} unless explicitly overridden.
-This is because, when generating abicalls, the choice of relocation
-depends on whether a symbol is local or global.  In some rare cases,
-GCC will not be able to decide this until the whole compilation unit
-has been read.
+@option{-mexplicit-relocs} is the default if GCC was configured
+to use an assembler that supports relocation operators.
 
 @item -mcheck-zero-division
 @itemx -mno-check-zero-division
