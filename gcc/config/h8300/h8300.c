@@ -508,7 +508,7 @@ ok_for_bclr (value)
   return small_power_of_two ((~value) & 0xff);
 }
 
-/* Return true is OP is a valid source operand for an integer move
+/* Return true if OP is a valid source operand for an integer move
    instruction.  */
 
 int
