@@ -1901,9 +1901,10 @@ bootstrap3: force
 # Compare the object files in the current directory with those in the
 # stage2 directory.
 
+# ./ avoids bug in some versions of tail.
 compare: force
 	for file in *.o; do \
-	  tail +16c $$file > tmp-foo1; \
+	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
