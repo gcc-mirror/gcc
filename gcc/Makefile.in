@@ -664,7 +664,7 @@ $(srcdir)/configure: $(srcdir)/configure.in
 
 config.in: stamp-h.in
 stamp-h.in: configure.in acconfig.h
-        cd $(srcdir) && autoheader
+	cd $(srcdir) && autoheader
 	touch stamp-h.in
 config.h: stamp-h ; @true
 stamp-h: config.in config.status
