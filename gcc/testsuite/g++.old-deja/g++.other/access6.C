@@ -6,12 +6,12 @@ struct S {
 };
 
 class C {
-  static const int i = 3; // gets bogus error - private - XFAIL *-*-*
+  static const int i = 3; // gets bogus error - private
 public:
-  S<C::i>* f(); // gets bogus error - redeclared - XFAIL *-*-*
+  S<C::i>* f(); // gets bogus error - redeclared
 };
 
-S<C::i>* C::f() { // gets bogus error - private - XFAIL *-*-*
+S<C::i>* C::f() { // gets bogus error - private
   return 0;
 }
 

@@ -1,6 +1,6 @@
 // Special g++ Options:
-// execution test - XFAIL *-*-*
-// excess errors test - XFAIL *-*-*
+// execution test
+// excess errors test
 
 int i = 0;
 
