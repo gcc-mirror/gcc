@@ -858,7 +858,7 @@
    (set_attr "length" "2")])
 
 (define_insn "*snedi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(ne:DI (match_operand:DI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CCX 100))]
@@ -868,7 +868,7 @@
    (set_attr "length" "2")])
 
 (define_insn "*neg_snedi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(neg:DI (ne:DI (match_operand:DI 1 "register_operand" "r")
 		       (const_int 0))))
    (clobber (reg:CCX 100))]
@@ -888,7 +888,7 @@
    (set_attr "length" "3")])
 
 (define_insn "*snedi_zero_trunc_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
 	(ne:DI (match_operand:DI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CCX 100))]
@@ -928,7 +928,7 @@
    (set_attr "length" "2")])
 
 (define_insn "*seqdi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(eq:DI (match_operand:DI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CCX 100))]
@@ -938,7 +938,7 @@
    (set_attr "length" "2")])
 
 (define_insn "*neg_seqdi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(neg:DI (eq:DI (match_operand:DI 1 "register_operand" "r")
 		       (const_int 0))))
    (clobber (reg:CCX 100))]
@@ -958,7 +958,7 @@
    (set_attr "length" "3")])
 
 (define_insn "*seqdi_zero_trunc_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
 	(eq:DI (match_operand:DI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CCX 100))]
