@@ -3978,6 +3978,7 @@ expand_expr (exp, target, tmode, modifier)
       if (placeholder_list)
 	{
 	  tree object;
+	  tree old_list = placeholder_list;
 
 	  for (object = TREE_PURPOSE (placeholder_list);
 	       TREE_TYPE (object) != type
@@ -3989,7 +3990,16 @@ expand_expr (exp, target, tmode, modifier)
 	    ;
 
 	  if (object && TREE_TYPE (object) == type)
-	    return expand_expr (object, original_target, tmode, modifier);
+	    {
+	      /* Expand this object skipping the list entries before
+		 it was found in case it is also a PLACEHOLDER_EXPR.
+		 In that case, we want to translate it using subsequent
+		 entries.  */
+	      placeholder_list = TREE_CHAIN (placeholder_list);
+	      temp = expand_expr (object, original_target, tmode, modifier);
+	      placeholder_list = old_list;
+	      return temp;
+	    }
 	}
 
       /* We can't find the object or there was a missing WITH_RECORD_EXPR.  */
