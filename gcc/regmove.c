@@ -693,6 +693,9 @@ optimize_reg_copy_3 (insn, dest, src)
     }
   if (! (set = single_set (p))
       || GET_CODE (SET_SRC (set)) != MEM
+      /* If there's a REG_EQUIV note, this must be an insn that loads an
+	 argument.  Prefer keeping the note over doing this optimization.  */
+      || find_reg_note (p, REG_EQUIV, NULL_RTX)
       || SET_DEST (set) != src_reg)
     return;
 
@@ -736,6 +739,12 @@ optimize_reg_copy_3 (insn, dest, src)
       /* One or more changes were no good.  Back out everything.  */
       PUT_MODE (src_reg, old_mode);
       XEXP (src, 0) = src_reg;
+    }
+  else
+    {
+      rtx note = find_reg_note (p, REG_EQUAL, NULL_RTX);
+      if (note)
+	remove_note (p, note);
     }
 }
 
