@@ -64,11 +64,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define F_OK 0
 #endif
 
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
-
 #define GCC_INCLUDE_DIR "///not used with VMS///"	/* nonsense string for now */
 
 /* and define a local equivalent (sort of) for unlink */
