@@ -1369,13 +1369,17 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		  struct costs *pp = &this_op_costs[i];
 
 		  for (class = 0; class < N_REG_CLASSES; class++)
-		    pp->cost[class] = may_move_cost[class][(int) classes[i]];
+		    pp->cost[class]
+		      = (op_types[i] == OP_READ
+			 ? may_move_cost[class][(int) classes[i]]
+			 : move_cost[(int) classes[i]][class]);
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
 
-		  pp->mem_cost = (MEMORY_MOVE_COST (mode, classes[i], 1)
+		  pp->mem_cost = (MEMORY_MOVE_COST (mode, classes[i], 
+						    op_types[i] == OP_READ)
 				  - allows_mem);
 
 		  /* If we have assigned a class to this register in our
