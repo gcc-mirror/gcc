@@ -26,19 +26,16 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (i386 FreeBSD/ELF)");
 
 /* Override the default comment-starter of "/".  */
-#undef ASM_COMMENT_START
+#undef  ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
-#undef ASM_APP_ON
+#undef  ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 
-#undef ASM_APP_OFF
+#undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef SET_ASM_OP
-#define SET_ASM_OP	"\t.set\t"
-
-#undef DBX_REGISTER_NUMBER
+#undef  DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n) \
   (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
@@ -47,18 +44,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* Tell final.c that we don't need a label passed to mcount.  */
 
-#undef MCOUNT_NAME
+#undef  MCOUNT_NAME
 #define MCOUNT_NAME ".mcount"
 
 /* Make gcc agree with <machine/ansi.h>.  */
 
-#undef SIZE_TYPE
+#undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
  
-#undef PTRDIFF_TYPE
+#undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
   
-#undef WCHAR_TYPE_SIZE
+#undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
@@ -137,8 +134,10 @@ Boston, MA 02111-1307, USA.  */
    compiler get the contents of <float.h> and std::numeric_limits correct.  */
 #define SUBTARGET_OVERRIDE_OPTIONS			\
   do {							\
-    real_format_for_mode[XFmode - QFmode]		\
-      = &ieee_extended_intel_96_round_53_format;	\
-    real_format_for_mode[TFmode - QFmode]		\
-      = &ieee_extended_intel_96_round_53_format;	\
+    if (!TARGET_64BIT) {				\
+      real_format_for_mode[XFmode - QFmode]		\
+	= &ieee_extended_intel_96_round_53_format;	\
+      real_format_for_mode[TFmode - QFmode]		\
+	= &ieee_extended_intel_96_round_53_format;	\
+    }							\
   } while (0)
