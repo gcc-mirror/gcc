@@ -520,7 +520,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
   {"verbose-asm", &flag_verbose_asm, 1},
-  {"gnu-linker", &flag_gnu_linker, 1}
+  {"gnu-linker", &flag_gnu_linker, 1},
   {"bytecode", &output_bytecode, 1}
 };
 
