@@ -239,6 +239,7 @@ static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
 static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
+static tree strip_out_static_field_access_decl PROTO ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -5206,6 +5207,13 @@ check_pkg_class_access (class_name, cl)
 
   if (!CLASS_PUBLIC (TYPE_NAME (type)))
     {
+      /* Access to a private class within the same package is
+         allowed. */
+      tree l, r;
+      breakdown_qualified (&l, &r, class_name);
+      if (l == ctxp->package)
+	return 0;
+
       parse_error_context 
 	(cl, "Can't access %s `%s'. Only public classes and interfaces in "
 	 "other packages can be accessed",
@@ -6156,6 +6164,30 @@ resolve_field_access (qual_wfl, field_decl, field_type)
     *field_type = (QUAL_DECL_TYPE (decl) ? 
 		   QUAL_DECL_TYPE (decl) : TREE_TYPE (decl));
   return field_ref;
+}
+
+/* If NODE is an access to f static field, strip out the class
+   initialization part and return the field decl, otherwise, return
+   NODE. */
+
+static tree
+strip_out_static_field_access_decl (node)
+    tree node;
+{
+  if (TREE_CODE (node) == COMPOUND_EXPR)
+    {
+      tree op1 = TREE_OPERAND (node, 1);
+      if (TREE_CODE (op1) == COMPOUND_EXPR)
+	 {
+	   tree call = TREE_OPERAND (op1, 0);
+	   if (TREE_CODE (call) == CALL_EXPR
+	       && TREE_CODE (TREE_OPERAND (call, 0)) == ADDR_EXPR
+	       && TREE_OPERAND (TREE_OPERAND (call, 0), 0)
+	       == soft_initclass_node)
+	     return TREE_OPERAND (op1, 1);
+	 }
+    }
+  return node;
 }
 
 /* 6.5.5.2: Qualified Expression Names */
@@ -9493,7 +9525,7 @@ patch_unaryop (node, wfl_op)
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
-  tree prom_type, value;
+  tree prom_type, value, decl;
   int code = TREE_CODE (node);
   int error_found = 0;
 
@@ -9509,9 +9541,11 @@ patch_unaryop (node, wfl_op)
     case PREINCREMENT_EXPR:
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
-      if (!JDECL_P (op) && !((TREE_CODE (op) == INDIRECT_REF 
-			      || TREE_CODE (op) == COMPONENT_REF) 
-			     && JPRIMITIVE_TYPE_P (TREE_TYPE (op))))
+      decl = strip_out_static_field_access_decl (op);
+      if (!JDECL_P (decl) 
+	  && !((TREE_CODE (decl) == INDIRECT_REF 
+		|| TREE_CODE (decl) == COMPONENT_REF) 
+	       && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))))
 	{
 	  tree lvalue;
 	  /* Before screaming, check that we're not in fact trying to
