@@ -2194,6 +2194,7 @@ javax/security/auth/login/FailedLoginException.java \
 javax/security/auth/login/LoginContext.java \
 javax/security/auth/login/LoginException.java \
 javax/security/auth/login/NullConfiguration.java \
+javax/security/auth/spi/LoginModule.java \
 javax/security/auth/Policy.java \
 javax/security/auth/PrivateCredentialPermission.java \
 javax/security/auth/Refreshable.java \
@@ -2742,6 +2743,7 @@ gnu/java/nio/charset/UTF_8.java \
 gnu/java/security/Engine.java \
 gnu/java/security/OID.java \
 gnu/java/security/action/GetPropertyAction.java \
+gnu/java/security/action/GetSecurityPropertyAction.java \
 gnu/java/security/action/SetAccessibleAction.java \
 gnu/java/security/der/BitString.java \
 gnu/java/security/der/DER.java \
