@@ -1755,8 +1755,20 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 	  tem = XEXP (x, 0);
 	  if (GET_CODE (tem) == SUBREG)
-	    tem = fixup_memory_subreg (tem, insn, 1);
-	  tem = fixup_stack_1 (tem, insn);
+	    {
+	      if (GET_MODE_BITSIZE (GET_MODE (tem))
+		  > GET_MODE_BITSIZE (GET_MODE (var)))
+		{
+		  replacement = find_fixup_replacement (replacements, var);
+		  if (replacement->new == 0)
+		    replacement->new = gen_reg_rtx (GET_MODE (var));
+		  SUBREG_REG (tem) = replacement->new;
+		}
+
+	      tem = fixup_memory_subreg (tem, insn, 0);
+	    }
+	  else
+	    tem = fixup_stack_1 (tem, insn);
 
 	  /* Unless we want to load from memory, get TEM into the proper mode
 	     for an extract from memory.  This can only be done if the
@@ -1885,6 +1897,22 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  || GET_CODE (SET_SRC (x)) == ZERO_EXTRACT)
 	optimize_bit_field (x, insn, NULL_PTR);
 
+      /* For a paradoxical SUBREG inside a ZERO_EXTRACT, load the object
+	 into a register and then store it back out.  */
+      if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
+	  && GET_CODE (XEXP (SET_DEST (x), 0)) == SUBREG
+	  && SUBREG_REG (XEXP (SET_DEST (x), 0)) == var
+	  && (GET_MODE_SIZE (GET_MODE (XEXP (SET_DEST (x), 0)))
+	      > GET_MODE_SIZE (GET_MODE (var))))
+	{
+	  replacement = find_fixup_replacement (replacements, var);
+	  if (replacement->new == 0)
+	    replacement->new = gen_reg_rtx (GET_MODE (var));
+
+	  SUBREG_REG (XEXP (SET_DEST (x), 0)) = replacement->new;
+	  emit_insn_after (gen_move_insn (var, replacement->new), insn);
+	}
+
       /* If SET_DEST is now a paradoxical SUBREG, put the result of this
 	 insn into a pseudo and store the low part of the pseudo into VAR. */
       if (GET_CODE (SET_DEST (x)) == SUBREG
@@ -1940,7 +1968,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	       This was legitimate when the MEM was a REG.  */
 	    if (GET_CODE (tem) == SUBREG
 		&& SUBREG_REG (tem) == var)
-	      tem = fixup_memory_subreg (tem, insn, 1);
+	      tem = fixup_memory_subreg (tem, insn, 0);
 	    else
 	      tem = fixup_stack_1 (tem, insn);
 
@@ -2158,7 +2186,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
    If any insns must be emitted to compute NEWADDR, put them before INSN.
 
    UNCRITICAL nonzero means accept paradoxical subregs.
-   This is used for subregs found inside of ZERO_EXTRACTs and in REG_NOTES. */
+   This is used for subregs found inside REG_NOTES. */
 
 static rtx
 fixup_memory_subreg (x, insn, uncritical)
