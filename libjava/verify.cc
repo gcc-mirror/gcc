@@ -1525,6 +1525,19 @@ private:
       case long_type:
 	k = JvPrimClass (long);
 	break;
+
+      // These aren't used here but we call them out to avoid
+      // warnings.
+      case void_type:
+      case unsuitable_type:
+      case return_address_type:
+      case continuation_type:
+      case unused_by_subroutine_type:
+      case reference_type:
+      case null_type:
+      case unresolved_reference_type:
+      case uninitialized_reference_type:
+      case uninitialized_unresolved_reference_type:
       default:
 	verify_fail ("unknown type in construct_primitive_array_type");
       }
@@ -1828,6 +1841,30 @@ private:
 	    note_branch_target (compute_jump (get_int ()), last_was_jsr);
 	    break;
 
+	  // These are unused here, but we call them out explicitly
+	  // so that -Wswitch-enum doesn't complain.
+	  case op_putfield_1:
+	  case op_putfield_2:
+	  case op_putfield_4:
+	  case op_putfield_8:
+	  case op_putfield_a:
+	  case op_putstatic_1:
+	  case op_putstatic_2:
+	  case op_putstatic_4:
+	  case op_putstatic_8:
+	  case op_putstatic_a:
+	  case op_getfield_1:
+	  case op_getfield_2s:
+	  case op_getfield_2u:
+	  case op_getfield_4:
+	  case op_getfield_8:
+	  case op_getfield_a:
+	  case op_getstatic_1:
+	  case op_getstatic_2s:
+	  case op_getstatic_2u:
+	  case op_getstatic_4:
+	  case op_getstatic_8:
+	  case op_getstatic_a:
 	  default:
 	    verify_fail ("unrecognized instruction in branch_prepass",
 			 start_PC);
@@ -2974,6 +3011,30 @@ private:
 	    handle_jsr_insn (get_int ());
 	    break;
 
+	  // These are unused here, but we call them out explicitly
+	  // so that -Wswitch-enum doesn't complain.
+	  case op_putfield_1:
+	  case op_putfield_2:
+	  case op_putfield_4:
+	  case op_putfield_8:
+	  case op_putfield_a:
+	  case op_putstatic_1:
+	  case op_putstatic_2:
+	  case op_putstatic_4:
+	  case op_putstatic_8:
+	  case op_putstatic_a:
+	  case op_getfield_1:
+	  case op_getfield_2s:
+	  case op_getfield_2u:
+	  case op_getfield_4:
+	  case op_getfield_8:
+	  case op_getfield_a:
+	  case op_getstatic_1:
+	  case op_getstatic_2s:
+	  case op_getstatic_2u:
+	  case op_getstatic_4:
+	  case op_getstatic_8:
+	  case op_getstatic_a:
 	  default:
 	    // Unrecognized opcode.
 	    verify_fail ("unrecognized instruction in verify_instructions_0",

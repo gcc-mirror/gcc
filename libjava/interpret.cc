@@ -628,7 +628,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     INSN_LABEL(invokespecial),
     INSN_LABEL(invokestatic),
     INSN_LABEL(invokeinterface),
-    0, /* op_xxxunusedxxx1, */
+    0, /* Unused.  */
     INSN_LABEL(new),
     INSN_LABEL(newarray),
     INSN_LABEL(anewarray),

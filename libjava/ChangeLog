@@ -1,3 +1,15 @@
+2002-04-26  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (construct_primitive_array_type) [void_type]: New
+	case.
+	(branch_prepass): Added dummy entries for unused instruction
+	values.
+	(verify_instructions_0): Likewise.
+	* interpret.cc (continue1): Comment fix.
+	* include/java-insns.h (op_xxxunusedxxx1): Removed.
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Added -Wswitch-enum.
+
 2002-04-24  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/natCore.cc (create): Use __builtin_alloca, and compute
