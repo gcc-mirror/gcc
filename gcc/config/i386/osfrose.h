@@ -411,7 +411,7 @@ while (0)
 #undef	ASM_OUTPUT_ALIGN_CODE
 #define ASM_OUTPUT_ALIGN_CODE(STREAM)					\
   fprintf (STREAM, "\t.align\t%d\n",					\
-	   (TARGET_486 && TARGET_LARGE_ALIGN) ? 4 : 2)
+	   (!TARGET_LARGE_ALIGN && i386_align_jumps > 2) ? 2 : i386_align_jumps)
 
 /* A C expression to output text to align the location counter in the
    way that is desirable at the beginning of a loop.
@@ -422,7 +422,7 @@ while (0)
 
 #undef	ASM_OUTPUT_LOOP_ALIGN
 #define ASM_OUTPUT_LOOP_ALIGN(STREAM) \
-  fprintf (STREAM, "\t.align\t2\n")
+  fprintf (STREAM, "\t.align\t%d\n", i386_align_loops)
 
 /* A C statement to output to the stdio stream STREAM an assembler
    command to advance the location counter to a multiple of 2 to the

@@ -19,6 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include <setjmp.h>
+#include <ctype.h>
 #include "config.h"
 #include "rtl.h"
 #include "regs.h"
@@ -79,8 +80,21 @@ struct rtx_def *i386_compare_op1 = NULL_RTX;
 struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 
 /* Register allocation order */
-char *i386_reg_alloc_order = (char *)0;
+char *i386_reg_alloc_order;
 static char regs_allocated[FIRST_PSEUDO_REGISTER];
+
+/* # of registers to use to pass arguments. */
+char *i386_regparm_string;			/* # registers to use to pass args */
+int i386_regparm;				/* i386_regparm_string as a number */
+
+/* Alignment to use for loops and jumps */
+char *i386_align_loops_string;			/* power of two alignment for loops */
+char *i386_align_jumps_string;			/* power of two alignment for non-loop jumps */
+char *i386_align_funcs_string;			/* power of two alignment for functions */
+
+int i386_align_loops;				/* power of two alignment for loops */
+int i386_align_jumps;				/* power of two alignment for non-loop jumps */
+int i386_align_funcs;				/* power of two alignment for functions */
 
 
 /* Sometimes certain combinations of command options do not make
@@ -96,6 +110,8 @@ void
 override_options ()
 {
   int ch, i, regno;
+  char *p;
+  int def_align;
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -125,6 +141,49 @@ override_options ()
 	  regs_allocated[regno] = 1;
 	}
     }
+
+  /* Validate -mregparm= value */
+  if (i386_regparm_string)
+    {
+      i386_regparm = atoi (i386_regparm_string);
+      if (i386_regparm < 0 || i386_regparm > REGPARM_MAX)
+	fatal ("-mregparm=%d is not between 0 and %d", i386_regparm, REGPARM_MAX);
+    }
+
+  def_align = (TARGET_386) ? 2 : 4;
+
+  /* Validate -malign-loops= value, or provide default */
+  if (i386_align_loops_string)
+    {
+      i386_align_loops = atoi (i386_align_loops_string);
+      if (i386_align_loops < 0 || i386_align_loops > MAX_CODE_ALIGN)
+	fatal ("-malign-loops=%d is not between 0 and %d",
+	       i386_align_loops, MAX_CODE_ALIGN);
+    }
+  else
+    i386_align_loops = def_align;
+
+  /* Validate -malign-jumps= value, or provide default */
+  if (i386_align_jumps_string)
+    {
+      i386_align_jumps = atoi (i386_align_jumps_string);
+      if (i386_align_jumps < 0 || i386_align_jumps > MAX_CODE_ALIGN)
+	fatal ("-malign-jumps=%d is not between 0 and %d",
+	       i386_align_jumps, MAX_CODE_ALIGN);
+    }
+  else
+    i386_align_jumps = def_align;
+
+  /* Validate -malign-functions= value, or provide default */
+  if (i386_align_funcs_string)
+    {
+      i386_align_funcs = atoi (i386_align_funcs_string);
+      if (i386_align_funcs < 0 || i386_align_funcs > MAX_CODE_ALIGN)
+	fatal ("-malign-functions=%d is not between 0 and %d",
+	       i386_align_funcs, MAX_CODE_ALIGN);
+    }
+  else
+    i386_align_funcs = def_align;
 }
 
 /* A C statement (sans semicolon) to choose the order in which to
@@ -217,6 +276,306 @@ order_regs_for_local_alloc ()
 	    }
 	}
     }
+}
+
+
+/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
+   attribute for DECL.  The attributes in ATTRIBUTES have previously been
+   assigned to DECL.  */
+
+int
+i386_valid_decl_attribute_p (decl, attributes, identifier, args)
+     tree decl;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  return 0;
+}
+
+/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
+   attribute for TYPE.  The attributes in ATTRIBUTES have previously been
+   assigned to TYPE.  */
+
+int
+i386_valid_type_attribute_p (type, attributes, identifier, args)
+     tree type;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  if (TREE_CODE (type) != FUNCTION_TYPE
+      && TREE_CODE (type) != FIELD_DECL
+      && TREE_CODE (type) != TYPE_DECL)
+    return 0;
+
+  /* Stdcall attribute says callee is responsible for popping arguments
+     if they are not variable.  */
+  if (is_attribute_p ("stdcall", identifier))
+    return (args == NULL_TREE);
+
+  /* Cdecl attribute says the callee is a normal C declaration */
+  if (is_attribute_p ("cdecl", identifier))
+    return (args == NULL_TREE);
+
+  /* Regparm attribute specifies how many integer arguments are to be
+     passed in registers */
+  if (is_attribute_p ("regparm", identifier))
+    {
+      tree cst;
+
+      if (!args || TREE_CODE (args) != TREE_LIST
+	  || TREE_CHAIN (args) != NULL_TREE
+	  || TREE_VALUE (args) == NULL_TREE)
+	return 0;
+
+      cst = TREE_VALUE (args);
+      if (TREE_CODE (cst) != INTEGER_CST)
+	return 0;
+
+      if (TREE_INT_CST_HIGH (cst) != 0
+	  || TREE_INT_CST_LOW (cst) < 0
+	  || TREE_INT_CST_LOW (cst) > REGPARM_MAX)
+	return 0;
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+
+int
+i386_comp_type_attributes (type1, type2)
+     tree type1;
+     tree type2;
+{
+  return 1;
+}
+
+
+/* Value is the number of bytes of arguments automatically
+   popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
+   FUNTYPE is the data type of the function (as a tree),
+   or for a library call it is an identifier node for the subroutine name.
+   SIZE is the number of bytes of arguments passed on the stack.
+
+   On the 80386, the RTD insn may be used to pop them if the number
+     of args is fixed, but if the number is variable then the caller
+     must pop them all.  RTD can't be used for library calls now
+     because the library is compiled with the Unix compiler.
+   Use of RTD is a selectable option, since it is incompatible with
+   standard Unix calling sequences.  If the option is not selected,
+   the caller must always pop the args.
+
+   The attribute stdcall is equivalent to RTD on a per module basis.  */
+
+int
+i386_return_pops_args (fundecl, funtype, size)
+     tree fundecl;
+     tree funtype;
+     int size;
+{
+  int rtd = TARGET_RTD;
+
+  if (TREE_CODE (funtype) == IDENTIFIER_NODE)
+    return 0;
+
+  if (fundecl && TREE_CODE_CLASS (TREE_CODE (fundecl)) == 'd')
+    {
+      /* Cdecl functions override -mrtd, and never pop the stack */
+      if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype)))
+	return 0;
+
+      /* Stdcall functions will pop the stack if not variable args */
+      if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
+	rtd = 1;
+    }
+
+  if (rtd)
+    {
+      if (TYPE_ARG_TYPES (funtype) == NULL_TREE
+	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype))) == void_type_node))
+	return size;
+
+      if (aggregate_value_p (TREE_TYPE (funtype)))
+	return GET_MODE_SIZE (Pmode);
+    }
+
+  return 0;
+}
+
+
+/* Argument support functions.  */
+
+/* Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is 0.  */
+
+void
+init_cumulative_args (cum, fntype, libname)
+     CUMULATIVE_ARGS *cum;	/* argument info to initialize */
+     tree fntype;		/* tree ptr for function decl */
+     rtx libname;		/* SYMBOL_REF of library name or 0 */
+{
+  static CUMULATIVE_ARGS zero_cum;
+  tree param, next_param;
+
+  if (TARGET_DEBUG_ARG)
+    {
+      fprintf (stderr, "\ninit_cumulative_args (");
+      if (fntype)
+	{
+	  tree ret_type = TREE_TYPE (fntype);
+	  fprintf (stderr, "fntype code = %s, ret code = %s",
+		   tree_code_name[ (int)TREE_CODE (fntype) ],
+		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
+	}
+      else
+	fprintf (stderr, "no fntype");
+
+      if (libname)
+	fprintf (stderr, ", libname = %s", XSTR (libname, 0));
+    }
+
+  *cum = zero_cum;
+
+  /* Set up the number of registers to use for passing arguments.  */
+  cum->nregs = i386_regparm;
+  if (fntype)
+    {
+      tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (fntype));
+      if (attr)
+	cum->nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+    }
+
+  /* Determine if this function has variable arguments.  This is
+     indicated by the last argument being 'void_type_mode' if there
+     are no variable arguments.  If there are variable arguments, then
+     we won't pass anything in registers */
+
+  if (cum->nregs)
+    {
+      for (param = (fntype) ? TYPE_ARG_TYPES (fntype) : 0;
+	   param != (tree)0;
+	   param = next_param)
+	{
+	  next_param = TREE_CHAIN (param);
+	  if (next_param == (tree)0 && TREE_VALUE (param) != void_type_node)
+	    cum->nregs = 0;
+	}
+    }
+
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr, ", nregs=%d )\n", cum->nregs);
+
+  return;
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+void
+function_arg_advance (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;	/* current arg information */
+     enum machine_mode mode;	/* current arg mode */
+     tree type;			/* type of the argument or 0 if lib support */
+     int named;			/* whether or not the argument was named */
+{
+  int bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr,
+	     "function_adv( size=%d, words=%2d, nregs=%d, mode=%4s, named=%d )\n\n",
+	     words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
+
+  cum->words += words;
+  cum->nregs -= words;
+  cum->regno += words;
+
+  if (cum->nregs <= 0)
+    {
+      cum->nregs = 0;
+      cum->regno = 0;
+    }
+
+  return;
+}
+
+/* Define where to put the arguments to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+
+struct rtx_def *
+function_arg (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;	/* current arg information */
+     enum machine_mode mode;	/* current arg mode */
+     tree type;			/* type of the argument or 0 if lib support */
+     int named;			/* != 0 for normal args, == 0 for ... args */
+{
+  rtx ret   = NULL_RTX;
+  int bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  switch (mode)
+    {
+    default:			/* for now, pass fp/complex values on the stack */
+      break;
+
+    case BLKmode:
+    case DImode:
+    case SImode:
+    case HImode:
+    case QImode:
+      if (words <= cum->nregs)
+	ret = gen_rtx (REG, mode, cum->regno);
+      break;
+    }
+
+  if (TARGET_DEBUG_ARG)
+    {
+      fprintf (stderr,
+	       "function_arg( size=%d, words=%2d, nregs=%d, mode=%4s, named=%d",
+	       words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
+
+      if (ret)
+	fprintf (stderr, ", reg=%%e%s", reg_names[ REGNO(ret) ]);
+      else
+	fprintf (stderr, ", stack");
+
+      fprintf (stderr, " )\n");
+    }
+
+  return ret;
+}
+
+/* For an arg passed partly in registers and partly in memory,
+   this is the number of registers used.
+   For args passed entirely in registers or entirely in memory, zero.  */
+
+int
+function_arg_partial_nregs (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;	/* current arg information */
+     enum machine_mode mode;	/* current arg mode */
+     tree type;			/* type of the argument or 0 if lib support */
+     int named;			/* != 0 for normal args, == 0 for ... args */
+{
+  return 0;
 }
 
 
@@ -1913,6 +2272,7 @@ output_pic_addr_const (file, x, code)
    * -- print a star (in certain assembler syntax)
    w -- print the operand as if it's a "word" (HImode) even if it isn't.
    c -- don't print special prefixes before constant operands.
+   J -- print the appropriate jump operand.
 */
 
 void
@@ -2008,6 +2368,22 @@ print_operand (file, x, code)
 	case 'y':
 	case 'P':
 	  break;
+
+	case 'J':
+	  switch (GET_CODE (x))
+	    {
+	    case NE:  fputs ("jne", file); return;
+	    case EQ:  fputs ("je",  file); return;
+	    case GE:  fputs ("jge", file); return;
+	    case GT:  fputs ("jg",  file); return;
+	    case LE:  fputs ("jle", file); return;
+	    case LT:  fputs ("jl",  file); return;
+	    case GEU: fputs ("jae", file); return;
+	    case GTU: fputs ("ja",  file); return;
+	    case LEU: fputs ("jbe", file); return;
+	    case LTU: fputs ("jb",  file); return;
+	    }
+	  abort ();
 
 	default:
 	  {
