@@ -386,14 +386,15 @@ gen_insn (rtx insn, int lineno)
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (insn, 0));
-  for (i = 0; i < operands; i++)
-    if (i)
-      printf (", operand%d", i);
-    else
-      printf ("operand%d", i);
+  if (operands)
+    for (i = 0; i < operands; i++)
+      if (i)
+	printf (",\n\trtx operand%d ATTRIBUTE_UNUSED", i);
+      else
+	printf ("rtx operand%d ATTRIBUTE_UNUSED", i);
+  else
+    printf ("void");
   printf (")\n");
-  for (i = 0; i < operands; i++)
-    printf ("     rtx operand%d ATTRIBUTE_UNUSED;\n", i);
   printf ("{\n");
 
   /* Output code to construct and return the rtl for the instruction body */
@@ -439,14 +440,15 @@ gen_expand (rtx expand)
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (expand, 0));
-  for (i = 0; i < operands; i++)
-    if (i)
-      printf (", operand%d", i);
-    else
-      printf ("operand%d", i);
+  if (operands)
+    for (i = 0; i < operands; i++)
+      if (i)
+	printf (",\n\trtx operand%d", i);
+      else
+	printf ("rtx operand%d", i);
+  else
+    printf ("void");
   printf (")\n");
-  for (i = 0; i < operands; i++)
-    printf ("     rtx operand%d;\n", i);
   printf ("{\n");
 
   /* If we don't have any C code to write, only one insn is being written,
@@ -585,16 +587,13 @@ gen_split (rtx split)
     {
       printf ("extern rtx gen_%s_%d (rtx, rtx *);\n",
 	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (curr_insn, operands)\n",
+      printf ("rtx\ngen_%s_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands)\n",
 	      name, insn_code_number);
-      printf ("     rtx curr_insn ATTRIBUTE_UNUSED;\n");
-      printf ("     rtx *operands%s;\n", unused);
     }
   else
     {
       printf ("extern rtx gen_split_%d (rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_%s_%d (operands)\n", name, insn_code_number);
-      printf ("      rtx *operands%s;\n", unused);
+      printf ("rtx\ngen_%s_%d (rtx *operands)\n", name, insn_code_number);
     }
   printf ("{\n");
 
@@ -678,8 +677,7 @@ output_add_clobbers ()
   struct clobber_ent *ent;
   int i;
 
-  printf ("\n\nvoid\nadd_clobbers (pattern, insn_code_number)\n");
-  printf ("     rtx pattern ATTRIBUTE_UNUSED;\n     int insn_code_number;\n");
+  printf ("\n\nvoid\nadd_clobbers (rtx pattern ATTRIBUTE_UNUSED, int insn_code_number)\n");
   printf ("{\n");
   printf ("  switch (insn_code_number)\n");
   printf ("    {\n");
@@ -717,8 +715,7 @@ output_added_clobbers_hard_reg_p (void)
   struct clobber_ent *ent;
   int clobber_p, used;
 
-  printf ("\n\nint\nadded_clobbers_hard_reg_p (insn_code_number)\n");
-  printf ("     int insn_code_number;\n");
+  printf ("\n\nint\nadded_clobbers_hard_reg_p (int insn_code_number)\n");
   printf ("{\n");
   printf ("  switch (insn_code_number)\n");
   printf ("    {\n");

@@ -1960,8 +1960,7 @@ write_func_for_structure  (type_p orig_s, type_p s, type_p *param,
       oprintf (d.of, "gt_%s_", wtd->prefix);
       output_mangled_typename (d.of, orig_s);
     }
-  oprintf (d.of, " (x_p)\n");
-  oprintf (d.of, "      void *x_p;\n");
+  oprintf (d.of, " (void *x_p)\n");
   oprintf (d.of, "{\n");
   oprintf (d.of, "  %s %s * %sx = (%s %s *)x_p;\n",
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
@@ -2209,11 +2208,7 @@ write_local_func_for_structure (type_p orig_s, type_p s, type_p *param)
   oprintf (d.of, "void\n");
   oprintf (d.of, "gt_pch_p_");
   output_mangled_typename (d.of, orig_s);
-  oprintf (d.of, " (this_obj, x_p, op, cookie)\n");
-  oprintf (d.of, "      void *this_obj ATTRIBUTE_UNUSED;\n");
-  oprintf (d.of, "      void *x_p;\n");
-  oprintf (d.of, "      gt_pointer_operator op ATTRIBUTE_UNUSED;\n");
-  oprintf (d.of, "      void *cookie ATTRIBUTE_UNUSED;\n");
+  oprintf (d.of, " (void *this_obj ATTRIBUTE_UNUSED,\n\tvoid *x_p,\n\tgt_pointer_operator op ATTRIBUTE_UNUSED,\n\tvoid *cookie ATTRIBUTE_UNUSED)\n");
   oprintf (d.of, "{\n");
   oprintf (d.of, "  %s %s * const x ATTRIBUTE_UNUSED = (%s %s *)x_p;\n",
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,

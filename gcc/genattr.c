@@ -379,6 +379,7 @@ main (int argc, char **argv)
       printf ("   insns scheduling heuristics. */\n");
       printf ("extern int insn_alts (rtx);\n\n");
       printf ("#endif\n\n");
+      printf ("extern int internal_dfa_insn_code (rtx);\n\n");
       printf ("/* Maximal possible number of insns waiting results being\n");
       printf ("   produced by insns whose execution is not finished. */\n");
       printf ("extern int max_insn_queue_index;\n\n");

@@ -4765,21 +4765,6 @@ write_attr_get (struct attr_desc *attr)
      switch we will generate.  */
   common_av = find_most_used (attr);
 
-  /* Write out prototype of function.  */
-  if (!attr->is_numeric)
-    printf ("extern enum attr_%s ", attr->name);
-  else if (attr->unsigned_p)
-    printf ("extern unsigned int ");
-  else
-    printf ("extern int ");
-  /* If the attribute name starts with a star, the remainder is the name of
-     the subroutine to use, instead of `get_attr_...'.  */
-  if (attr->name[0] == '*')
-    printf ("%s (rtx);\n", &attr->name[1]);
-  else
-    printf ("get_attr_%s (%s);\n", attr->name,
-	    (attr->is_const ? "void" : "rtx"));
-
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
   if (!attr->is_numeric)
@@ -4792,12 +4777,12 @@ write_attr_get (struct attr_desc *attr)
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
   if (attr->name[0] == '*')
-    printf ("%s (insn)\n", &attr->name[1]);
+    printf ("%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
   else if (attr->is_const == 0)
-    printf ("get_attr_%s (insn)\n", attr->name);
+    printf ("get_attr_%s (rtx insn ATTRIBUTE_UNUSED)\n", attr->name);
   else
     {
-      printf ("get_attr_%s ()\n", attr->name);
+      printf ("get_attr_%s (void)\n", attr->name);
       printf ("{\n");
 
       for (av = attr->first_value; av; av = av->next)
@@ -4810,7 +4795,6 @@ write_attr_get (struct attr_desc *attr)
       return;
     }
 
-  printf ("     rtx insn ATTRIBUTE_UNUSED;\n");
   printf ("{\n");
 
   if (GET_CODE (common_av->value) == FFS)
@@ -5284,12 +5268,8 @@ write_eligible_delay (const char *kind)
   /* Write function prelude.  */
 
   printf ("int\n");
-  printf ("eligible_for_%s (delay_insn, slot, candidate_insn, flags)\n",
+  printf ("eligible_for_%s (rtx delay_insn ATTRIBUTE_UNUSED, int slot, rtx candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
 	  kind);
-  printf ("     rtx delay_insn ATTRIBUTE_UNUSED;\n");
-  printf ("     int slot;\n");
-  printf ("     rtx candidate_insn;\n");
-  printf ("     int flags ATTRIBUTE_UNUSED;\n");
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("\n");
@@ -5467,11 +5447,9 @@ write_complex_function (struct function_unit *unit,
   int using_case;
   int i;
 
-  printf ("static int %s_unit_%s (rtx, rtx);\n", unit->name, name);
   printf ("static int\n");
-  printf ("%s_unit_%s (executing_insn, candidate_insn)\n", unit->name, name);
-  printf ("     rtx executing_insn;\n");
-  printf ("     rtx candidate_insn;\n");
+  printf ("%s_unit_%s (rtx executing_insn, rtx candidate_insn)\n",
+	  unit->name, name);
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("  int casenum;\n\n");
@@ -5723,8 +5701,7 @@ write_const_num_delay_slots (void)
 
   if (attr)
     {
-      printf ("int\nconst_num_delay_slots (insn)\n");
-      printf ("     rtx insn;\n");
+      printf ("int\nconst_num_delay_slots (rtx insn)\n");
       printf ("{\n");
       printf ("  switch (recog_memoized (insn))\n");
       printf ("    {\n");

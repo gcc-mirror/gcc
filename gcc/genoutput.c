@@ -174,7 +174,6 @@ struct data
 static struct data *idata, **idata_end = &idata;
 
 static void output_prologue (void);
-static void output_predicate_decls (void);
 static void output_operand_data (void);
 static void output_insn_data (void);
 static void output_get_insn_name (void);
@@ -241,45 +240,6 @@ output_prologue (void)
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"target.h\"\n");
-}
-
-
-/* We need to define all predicates used.  Keep a list of those we
-   have defined so far.  There normally aren't very many predicates
-   used, so a linked list should be fast enough.  */
-struct predicate { const char *name; struct predicate *next; };
-
-static void
-output_predicate_decls (void)
-{
-  struct predicate *predicates = 0;
-  struct operand_data *d;
-  struct predicate *p, *next;
-
-  for (d = odata; d; d = d->next)
-    if (d->predicate && d->predicate[0])
-      {
-	for (p = predicates; p; p = p->next)
-	  if (strcmp (p->name, d->predicate) == 0)
-	    break;
-
-	if (p == 0)
-	  {
-	    printf ("extern int %s (rtx, enum machine_mode);\n",
-		    d->predicate);
-	    p = (struct predicate *) xmalloc (sizeof (struct predicate));
-	    p->name = d->predicate;
-	    p->next = predicates;
-	    predicates = p;
-	  }
-      }
-
-  printf ("\n\n");
-  for (p = predicates; p; p = next)
-    {
-      next = p->next;
-      free (p);
-    }
 }
 
 static void
@@ -415,8 +375,7 @@ static void
 output_get_insn_name (void)
 {
   printf ("const char *\n");
-  printf ("get_insn_name (code)\n");
-  printf ("     int code;\n");
+  printf ("get_insn_name (int code)\n");
   printf ("{\n");
   printf ("  if (code == NOOP_MOVE_INSN_CODE)\n");
   printf ("    return \"NOOP_MOVE\";\n");
@@ -678,12 +637,9 @@ process_template (struct data *d, const char *template)
       d->template = 0;
       d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 
-      printf ("\nstatic const char *output_%d (rtx *, rtx);\n",
-	      d->code_number);
       puts ("\nstatic const char *");
-      printf ("output_%d (operands, insn)\n", d->code_number);
-      puts ("     rtx *operands ATTRIBUTE_UNUSED;");
-      puts ("     rtx insn ATTRIBUTE_UNUSED;");
+      printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
+	      d->code_number);
       puts ("{");
 
       puts (template + 1);
@@ -1023,7 +979,6 @@ main (int argc, char **argv)
     }
 
   printf("\n\n");
-  output_predicate_decls ();
   output_operand_data ();
   output_insn_data ();
   output_get_insn_name ();
