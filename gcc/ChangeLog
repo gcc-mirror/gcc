@@ -1,3 +1,9 @@
+Thu May  6 20:34:00 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* resource.c (mark_referenced_resources): Make volatil
+	monotonically increasing.
+	(mark_set_resources): Likewise.
+
 Thu May  6 20:02:33 1999  Fred Fish  <fnf@be.com>
 
 	* rs6000/xm-beos.h (HAVE_VPRINTF): Don't redefine if already defined.
