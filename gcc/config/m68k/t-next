@@ -1,7 +1,3 @@
 # libgcc1.c is not needed, since the standard library has these functions.
 LIBGCC1=
 
-# Use collect2 to link, until system version 3.0.
-
-EXTRA_PROGRAMS = ld
-
