@@ -197,7 +197,9 @@ extern int atoi ();
 extern int puts ();
 extern int fputs ();
 extern int fputc ();
+#if !defined(_WIN32)
 extern int link ();
+#endif
 extern int unlink ();
 extern int access ();
 
