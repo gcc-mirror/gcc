@@ -714,7 +714,6 @@ cselib.h
 dbxout.c
 dbxout.h
 dbxstclass.h
-dce.c
 defaults.h
 dependence.c
 diagnostic.c
@@ -1007,6 +1006,7 @@ sibcall.c
 simplify-rtx.c
 ssa.c
 ssa.h
+ssa-dce.c
 stack.h
 stmt.c
 stor-layout.c
