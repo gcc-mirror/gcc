@@ -2916,9 +2916,9 @@
   "TARGET_FP"
   "
 {
-  alpha_compare_op0 = operands[0];
-  alpha_compare_op1 = operands[1];
-  alpha_compare_fp_p = 1;
+  alpha_compare.op0 = operands[0];
+  alpha_compare.op1 = operands[1];
+  alpha_compare.fp_p = 1;
   DONE;
 }")
 
@@ -2928,9 +2928,9 @@
   ""
   "
 {
-  alpha_compare_op0 = operands[0];
-  alpha_compare_op1 = operands[1];
-  alpha_compare_fp_p = 0;
+  alpha_compare.op0 = operands[0];
+  alpha_compare.op1 = operands[1];
+  alpha_compare.fp_p = 0;
   DONE;
 }")
 
@@ -3020,10 +3020,11 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_EQ (DImode, alpha_compare_op0, alpha_compare_op1);
+  operands[1] = gen_rtx_EQ (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sne"
@@ -3033,10 +3034,17 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_EQ (DImode, alpha_compare_op0, alpha_compare_op1);
+  if (alpha_compare.op1 == const0_rtx)
+    {
+      emit_insn (gen_sgtu (operands[0]));
+      DONE;
+    }
+
+  operands[1] = gen_rtx_EQ (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "slt"
@@ -3045,10 +3053,11 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LT (DImode, alpha_compare_op0, alpha_compare_op1);
+  operands[1] = gen_rtx_LT (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sle"
@@ -3057,10 +3066,11 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LE (DImode, alpha_compare_op0, alpha_compare_op1);
+  operands[1] = gen_rtx_LE (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sgt"
@@ -3069,11 +3079,12 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LT (DImode, force_reg (DImode, alpha_compare_op1),
-			    alpha_compare_op0);
+  operands[1] = gen_rtx_LT (DImode, force_reg (DImode, alpha_compare.op1),
+			    alpha_compare.op0);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sge"
@@ -3082,11 +3093,12 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LE (DImode, force_reg (DImode, alpha_compare_op1),
-			    alpha_compare_op0);
+  operands[1] = gen_rtx_LE (DImode, force_reg (DImode, alpha_compare.op1),
+			    alpha_compare.op0);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sltu"
@@ -3095,10 +3107,11 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LTU (DImode, alpha_compare_op0, alpha_compare_op1);
+  operands[1] = gen_rtx_LTU (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sleu"
@@ -3107,10 +3120,11 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LEU (DImode, alpha_compare_op0, alpha_compare_op1);
+  operands[1] = gen_rtx_LEU (DImode, alpha_compare.op0, alpha_compare.op1);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sgtu"
@@ -3119,11 +3133,12 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LTU (DImode, force_reg (DImode, alpha_compare_op1),
-			     alpha_compare_op0);
+  operands[1] = gen_rtx_LTU (DImode, force_reg (DImode, alpha_compare.op1),
+			     alpha_compare.op0);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 (define_expand "sgeu"
@@ -3132,11 +3147,12 @@
   ""
   "
 {
-  if (alpha_compare_fp_p)
+  if (alpha_compare.fp_p)
     FAIL;
 
-  operands[1] = gen_rtx_LEU (DImode, force_reg (DImode, alpha_compare_op1),
-			     alpha_compare_op0);
+  operands[1] = gen_rtx_LEU (DImode, force_reg (DImode, alpha_compare.op1),
+			     alpha_compare.op0);
+  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
 }")
 
 ;; These are the main define_expand's used to make conditional moves.
