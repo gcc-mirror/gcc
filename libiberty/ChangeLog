@@ -1,3 +1,10 @@
+2000-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* hashtab.c (hash_pointer): New function.
+	(eq_pointer): Likewise.
+	(htab_hash_pointer): New variable.
+	(htab_eq_pointer): Likewise.
+
 2000-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* sort.c (sort_pointers): Fix endianness bugs.

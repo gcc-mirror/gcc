@@ -56,6 +56,14 @@ Boston, MA 02111-1307, USA.  */
 #define DELETED_ENTRY  ((void *) 1)
 
 static unsigned long higher_prime_number PARAMS ((unsigned long));
+static hashval_t hash_pointer PARAMS ((const void *));
+static int eq_pointer PARAMS ((const void *, const void *));
+
+/* At some point, we could make these be NULL, and modify the
+   hash-table routines to handle NULL specially; that would avoid
+   function-call overhead for the common case of hashing pointers.  */
+htab_hash htab_hash_pointer = hash_pointer;
+htab_eq htab_eq_pointer = eq_pointer;
 
 /* The following function returns the nearest prime number which is
    greater than a given source number, N. */
@@ -86,6 +94,25 @@ higher_prime_number (n)
        }
 
   return n;
+}
+
+/* Returns a hash code for P.  */
+
+hashval_t
+hash_pointer (p)
+     const void *p;
+{
+  return (hashval_t) p;
+}
+
+/* Returns non-zero if P1 and P2 are equal.  */
+
+int
+eq_pointer (p1, p2)
+     const void *p1;
+     const void *p2;
+{
+  return p1 == p2;
 }
 
 /* This function creates table with length slightly longer than given

@@ -1,3 +1,8 @@
+2000-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* hashtab.h (hash_pointer): Declare.
+	(eq_pointer): Likewise.
+
 2000-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* sort.h: New file.
