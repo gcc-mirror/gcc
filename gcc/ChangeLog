@@ -1,3 +1,17 @@
+Wed Sep 22 10:18:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (AC_PREREQ): Bump to 2.13.
+	(AC_C_STRINGIZE): Call this instead of using a custom macro.
+
+	* gansidecl.h (HAVE_STRINGIZE): Define, if stage2 gcc && __STDC__.
+
+	* system.h (HAVE_STRINGIZE): Test this instead of HAVE_CPP_STRINGIFY.
+
+	* acconfig.h (HAVE_CPP_STRINGIFY): Delete.
+
+	* alpha/xm-vms.h (HAVE_CPP_STRINGIFY): Delete.
+	(HAVE_STRINGIZE): Define.
+
 Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 	* c-parse.in: save and restore warn_pointer_arith on __extension__

@@ -23,9 +23,6 @@
 /* Define as 1 if you have gettext and don't want to use GNU gettext.  */
 #undef HAVE_GETTEXT
 
-/* Define if your cpp understands the stringify operator.  */
-#undef HAVE_CPP_STRINGIFY
-
 /* Define if your compiler understands volatile.  */
 #undef HAVE_VOLATILE
 

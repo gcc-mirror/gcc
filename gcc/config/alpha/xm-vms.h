@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_STDDEF_H 1
 #define HAVE_TIME_H 1
 #define STDC_HEADERS 1
-#define HAVE_CPP_STRINGIFY 1
+#define HAVE_STRINGIZE 1
 
 #if __STDC__
 extern void *alloca (size_t);
