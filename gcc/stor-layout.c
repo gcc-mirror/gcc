@@ -51,10 +51,6 @@ int maximum_field_alignment;
    May be overridden by front-ends.  */
 int set_alignment = 0;
 
-#define GET_MODE_ALIGNMENT(MODE)   \
-  MIN (BIGGEST_ALIGNMENT, 	   \
-       MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
-
 static enum machine_mode smallest_mode_for_size  PROTO((unsigned int,
 							enum mode_class));
 static tree layout_record	PROTO((tree));
