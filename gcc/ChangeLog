@@ -1,3 +1,8 @@
+Wed Aug  4 23:39:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* real.c (GET_REAL): Don't violate ANSI/ISO aliasing rules.
+	(PUT_REAL): Likewise.
+
 Wed Aug  4 02:15:32 1999  Richard Henderson <rth@cygnus.com>
 
 	* jump.c (delete_insn): Delete the addr_vec when deleting a tablejump.

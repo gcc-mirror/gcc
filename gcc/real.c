@@ -269,34 +269,34 @@ do {						\
 /* Emulator uses target format internally
    but host stores it in host endian-ness.  */
 
-#define GET_REAL(r,e)						\
-do {								\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)	\
-       e53toe ((unsigned EMUSHORT *) (r), (e));			\
-     else							\
-       {							\
-	 unsigned EMUSHORT w[4];				\
-	 w[3] = ((EMUSHORT *) r)[0];				\
-	 w[2] = ((EMUSHORT *) r)[1];				\
-	 w[1] = ((EMUSHORT *) r)[2];				\
-	 w[0] = ((EMUSHORT *) r)[3];				\
-	 e53toe (w, (e));					\
-       }							\
+#define GET_REAL(r,e)							\
+do {									\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
+       e53toe ((unsigned EMUSHORT *) (r), (e));				\
+     else								\
+       {								\
+	 unsigned EMUSHORT w[4];					\
+         bcopy (((EMUSHORT *) r), &w[3], sizeof (EMUSHORT));		\
+         bcopy (((EMUSHORT *) r) + 1, &w[2], sizeof (EMUSHORT));	\
+	 bcopy (((EMUSHORT *) r) + 2, &w[1], sizeof (EMUSHORT));	\
+	 bcopy (((EMUSHORT *) r) + 3, &w[0], sizeof (EMUSHORT));	\
+	 e53toe (w, (e));						\
+       }								\
    } while (0)
 
-#define PUT_REAL(e,r)						\
-do {								\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)	\
-       etoe53 ((e), (unsigned EMUSHORT *) (r));			\
-     else							\
-       {							\
-	 unsigned EMUSHORT w[4];				\
-	 etoe53 ((e), w);					\
-	 *((EMUSHORT *) r) = w[3];				\
-	 *((EMUSHORT *) r + 1) = w[2];				\
-	 *((EMUSHORT *) r + 2) = w[1];				\
-	 *((EMUSHORT *) r + 3) = w[0];				\
-       }							\
+#define PUT_REAL(e,r)							\
+do {									\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
+       etoe53 ((e), (unsigned EMUSHORT *) (r));				\
+     else								\
+       {								\
+	 unsigned EMUSHORT w[4];					\
+	 etoe53 ((e), w);						\
+         bcopy (&w[3], ((EMUSHORT *) r), sizeof (EMUSHORT));		\
+         bcopy (&w[2], ((EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
+         bcopy (&w[1], ((EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
+         bcopy (&w[0], ((EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
+       }								\
    } while (0)
 
 #else /* not REAL_ARITHMETIC */
