@@ -1,3 +1,9 @@
+2000-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (BITS_PER_WORD, UNITS_PER_WORD, UNITS_PER_FPREG,
+	INT_TYPE_SIZE, LONG_TYPE_SIZE, POINTER_SIZE, POINTER_BOUNDARY,
+	PARM_BOUNDARY): Remove unnecessary casts.
+
 Wed Apr 19 12:02:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (precompute_arguments): Remove must_preallocate and
