@@ -3,6 +3,8 @@
 
         .file   "ppc_closure.S"
 
+#ifndef __powerpc64__
+
 ENTRY(ffi_closure_SYSV)
 .LFB1:
 	stwu %r1,-144(%r1)
@@ -227,3 +229,5 @@ __FRAME_BEGIN__:
 	.byte	0x1	 # uleb128 0x1
 	.align 2
 .LEFDE1:
+
+#endif

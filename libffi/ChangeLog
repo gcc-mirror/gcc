@@ -1,3 +1,42 @@
+2003-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/ffi.h.in (POWERPC64): Define if 64-bit.
+	(enum ffi_abi): Add FFI_LINUX64 on POWERPC.
+	Make it the default on POWERPC64.
+	(FFI_TRAMPOLINE_SIZE): Define to 24 on POWERPC64.
+	* configure.in: Change powerpc-*-linux* into powerpc*-*-linux*.
+	* configure: Rebuilt.
+	* src/powerpc/ffi.c (hidden): Define.
+	(ffi_prep_args_SYSV): Renamed from
+	ffi_prep_args.  Cast pointers to unsigned long to shut up warnings.
+	(NUM_GPR_ARG_REGISTERS64, NUM_FPR_ARG_REGISTERS64,
+	ASM_NEEDS_REGISTERS64): New.
+	(ffi_prep_args64): New function.
+	(ffi_prep_cif_machdep): Handle FFI_LINUX64 ABI.
+	(ffi_call): Likewise.
+	(ffi_prep_closure): Likewise.
+	(flush_icache): Surround by #ifndef POWERPC64.
+	(ffi_dblfl): New union type.
+	(ffi_closure_helper_SYSV): Use it to avoid aliasing problems.
+	(ffi_closure_helper_LINUX64): New function.
+	* src/powerpc/ppc_closure.S: Surround whole file by #ifndef
+	__powerpc64__.
+	* src/powerpc/sysv.S: Likewise.
+	(ffi_call_SYSV): Rename ffi_prep_args to ffi_prep_args_SYSV.
+	* src/powerpc/linux64.S: New file.
+	* src/powerpc/linux64_closure.S: New file.
+	* Makefile.am (EXTRA_DIST): Add src/powerpc/linux64.S and
+	src/powerpc/linux64_closure.S.
+	(TARGET_SRC_POWERPC): Likewise.
+
+	* src/ffitest.c (closure_test_fn, closure_test_fn1, closure_test_fn2,
+	closure_test_fn3): Fix result printing on big-endian 64-bit
+	machines.
+	(main): Print tst2_arg instead of uninitialized tst2_result.
+
+	* src/ffitest.c (main): Hide what closure pointer really points to
+	from the compiler.
+
 2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in (arm-*-netbsdelf*): Add configuration.

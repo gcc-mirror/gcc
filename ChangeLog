@@ -1,3 +1,8 @@
+2003-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (powerpc64*-*-linux*): Remove.
+	* configure: Rebuilt.
+
 2003-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* Makefile.tpl (GCC_STRAP_TARGETS):  New variable containing all the
