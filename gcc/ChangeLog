@@ -1,3 +1,16 @@
+Mon Feb 14 13:31:01 2000  Stan Cox  <scox@cygnus.com>
+                          Jason Eckhardt  <jle@cygnus.com>
+
+	* basic_block.h: Added prototype for reorder_basic_blocks.
+	* toplev.c: Changes to add -freorder-blocks and graph dump after
+	block reordering is done.
+	* flow.c (reorder_block_def): New structure for use during block
+	reordering.
+	(REORDER_BLOCK_*): New macros to access members of above structure.
+	(skip_insns_between_block, get_common_dest, chain_reorder_blocks,
+	make_reorder_chain, fixup_reorder_chain, reorder_basic_blocks): New
+	functions for block reordering.
+
 Mon Feb 14 11:24:44 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.texi (Passes): Fix typo.

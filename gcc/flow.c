@@ -134,6 +134,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "insn-flags.h"
+#include "expr.h"
 
 #include "obstack.h"
 
@@ -7006,3 +7007,716 @@ flow_loop_outside_edge_p (loop, e)
   return (e->src == ENTRY_BLOCK_PTR)
     || ! TEST_BIT (loop->nodes, e->src->index);
 }
+
+
+
+typedef struct reorder_block_def {
+  int flags;
+  int index;
+  basic_block add_jump;
+  edge succ;
+  rtx end;
+  int block_begin;
+  int block_end;
+} *reorder_block_def;
+
+#define REORDER_BLOCK_HEAD	0x1
+#define REORDER_BLOCK_VISITED	0x2
+#define REORDER_MOVED_BLOCK_END 0x3
+  
+#define REORDER_BLOCK_FLAGS(bb) \
+  ((reorder_block_def) (bb)->aux)->flags
+
+#define REORDER_BLOCK_INDEX(bb) \
+  ((reorder_block_def) (bb)->aux)->index
+
+#define REORDER_BLOCK_ADD_JUMP(bb) \
+  ((reorder_block_def) (bb)->aux)->add_jump
+
+#define REORDER_BLOCK_SUCC(bb) \
+  ((reorder_block_def) (bb)->aux)->succ
+
+#define REORDER_BLOCK_OLD_END(bb) \
+  ((reorder_block_def) (bb)->aux)->end
+
+#define REORDER_BLOCK_BEGIN(bb) \
+  ((reorder_block_def) (bb)->aux)->block_begin
+
+#define REORDER_BLOCK_END(bb) \
+  ((reorder_block_def) (bb)->aux)->block_end
+
+
+static int reorder_index;
+static basic_block reorder_last_visited;
+
+#define REORDER_SKIP_BEFORE 0x1
+#define REORDER_SKIP_AFTER 0x2
+#define REORDER_SKIP_BLOCK_END 0x3
+
+/* Skip over insns BEFORE or AFTER BB which are typically associated with
+   basic block BB.  */
+
+static rtx
+skip_insns_between_block (bb, skip_type)
+     basic_block bb;
+     int skip_type;
+{
+  rtx insn, last_insn;
+
+  if (skip_type == REORDER_SKIP_BEFORE)
+    {
+      if (bb == ENTRY_BLOCK_PTR)
+	return 0;
+      last_insn = bb->head;
+      for (insn = PREV_INSN (bb->head);
+	   insn && insn != BASIC_BLOCK (bb->index - 1)->end;
+	   last_insn = insn, insn = PREV_INSN (insn))
+	{
+	  if (NEXT_INSN (insn) != last_insn)
+	    break;
+	  if (GET_CODE (insn) == NOTE
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END)
+	    continue;
+	  
+	  break;
+	}
+    }
+  else if (skip_type == REORDER_SKIP_AFTER
+	   || skip_type == REORDER_SKIP_BLOCK_END)
+    {
+      last_insn = bb->end;
+
+      if (bb == EXIT_BLOCK_PTR)
+	return 0;
+
+      for (insn = NEXT_INSN (bb->end); 
+	   insn;
+	   last_insn = insn, insn = NEXT_INSN (insn))
+	{
+	  if (bb->index + 1 != n_basic_blocks
+	      && insn == BASIC_BLOCK (bb->index + 1)->head)
+	    break;
+
+	  if (GET_CODE (insn) == BARRIER
+	      || GET_CODE (insn) == JUMP_INSN
+	      || (GET_CODE (insn) == NOTE
+		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
+		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)))
+	    continue;
+	  if (GET_CODE (insn) == CODE_LABEL
+	      && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+	      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
+		  || GET_CODE (PATTERN
+			       (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
+	    {
+	      insn = NEXT_INSN (insn);
+	      continue;
+	    }
+	  break;
+	}
+    }
+  if (skip_type == REORDER_SKIP_BLOCK_END)
+    {
+      int found_block_end = 0;
+
+      for (; insn; last_insn = insn, insn = NEXT_INSN (insn))
+	{
+	  if (bb->index + 1 != n_basic_blocks
+	      && insn == BASIC_BLOCK (bb->index + 1)->head)
+	    break;
+
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	    {
+	      found_block_end = 1;
+	      continue;
+	    }
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
+	    continue;
+	  if (GET_CODE (insn) == NOTE
+	      && NOTE_LINE_NUMBER (insn) >= 0
+	      && NEXT_INSN (insn)
+	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_BLOCK_END)
+	    continue;
+	  break;
+	}
+      if (! found_block_end)
+	last_insn = 0;
+    }
+  return last_insn;
+}
+
+
+/* Return common destination for blocks BB0 and BB1.  */
+
+static basic_block
+get_common_dest (bb0, bb1)
+     basic_block bb0, bb1;
+{
+  edge e0, e1;
+
+  for (e0 = bb0->succ; e0; e0 = e0->succ_next)
+    {
+      for (e1 = bb1->succ; e1; e1 = e1->succ_next)
+	{
+	  if (e0->dest == e1->dest)
+	    {
+	      return e0->dest;
+	    }
+	}
+    }
+  return 0;
+}
+
+
+/* Move the destination block for edge E after chain end block CEB
+   Adding jumps and labels is deferred until fixup_reorder_chain.  */
+
+static basic_block
+chain_reorder_blocks (e, ceb)
+     edge e;
+     basic_block ceb;
+{
+  basic_block sb = e->src;
+  basic_block db = e->dest;
+  rtx cebe_insn, cebbe_insn, dbh_insn, dbe_insn;
+  edge ee, last_edge;
+
+  enum cond_types {NO_COND, PREDICT_THEN_WITH_ELSE, PREDICT_ELSE,
+		   PREDICT_THEN_NO_ELSE, PREDICT_NOT_THEN_NO_ELSE};
+  enum cond_types cond_type;
+  enum cond_block_types {NO_COND_BLOCK, THEN_BLOCK, ELSE_BLOCK,
+			 NO_ELSE_BLOCK};
+  enum cond_block_types cond_block_type;
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file,
+	     "Edge from basic block %d to basic block %d last visited %d\n",
+	     sb->index, db->index, ceb->index);
+
+  dbh_insn = skip_insns_between_block (db, REORDER_SKIP_BEFORE);
+  cebe_insn = skip_insns_between_block (ceb, REORDER_SKIP_AFTER);
+  cebbe_insn = skip_insns_between_block (ceb, REORDER_SKIP_BLOCK_END);
+
+  {
+    int block_begins = 0;
+    rtx insn;
+
+    for (insn = dbh_insn; insn && insn != db->end; insn = NEXT_INSN (insn))
+      {
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	  {
+	    block_begins += 1;
+	    break;
+	  }
+      }
+    REORDER_BLOCK_BEGIN (sb) = block_begins;
+  }
+
+  if (cebbe_insn)
+    {
+      int block_ends = 0;
+      rtx insn;
+
+      for (insn = cebe_insn; insn; insn = NEXT_INSN (insn))
+	{
+	  if (PREV_INSN (insn) == cebbe_insn)
+	    break;
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	    {
+	      block_ends += 1;
+	      continue;
+	    }
+	}
+      REORDER_BLOCK_END (ceb) = block_ends;
+    }
+
+  /* Blocks are in original order.  */
+  if (sb->index == ceb->index
+      && ceb->index + 1 == db->index && NEXT_INSN (cebe_insn))
+    return db;
+
+  /* Get the type of block and type of condition.  */
+  cond_type = NO_COND;
+  cond_block_type = NO_COND_BLOCK;
+  if (GET_CODE (sb->end) == JUMP_INSN && ! simplejump_p (sb->end)
+      && condjump_p (sb->end))
+    {
+      if (e->flags & EDGE_FALLTHRU)
+	cond_block_type = THEN_BLOCK;
+      else if (get_common_dest (sb->succ->dest, sb))
+	cond_block_type = NO_ELSE_BLOCK;
+      else 
+	cond_block_type = ELSE_BLOCK;
+
+      if (sb->succ->succ_next
+	  && get_common_dest (sb->succ->dest, sb))
+	{
+	  if (cond_block_type == THEN_BLOCK)
+	    {
+	      if (! (REORDER_BLOCK_FLAGS (sb->succ->succ_next->dest)
+		     & REORDER_BLOCK_VISITED))
+		cond_type = PREDICT_THEN_NO_ELSE;
+	      else
+		cond_type = PREDICT_NOT_THEN_NO_ELSE;
+	    }
+	  else if (cond_block_type == NO_ELSE_BLOCK)
+	    {
+	      if (! (REORDER_BLOCK_FLAGS (sb->succ->dest)
+		     & REORDER_BLOCK_VISITED))
+		cond_type = PREDICT_NOT_THEN_NO_ELSE;
+	      else
+		cond_type = PREDICT_THEN_NO_ELSE;
+	    }
+	}
+      else
+	{
+	  if (cond_block_type == THEN_BLOCK)
+	    {
+	      if (! (REORDER_BLOCK_FLAGS (sb->succ->succ_next->dest)
+		     & REORDER_BLOCK_VISITED))
+		cond_type = PREDICT_THEN_WITH_ELSE;
+	      else
+		cond_type = PREDICT_ELSE;
+	    }
+	  else if (cond_block_type == ELSE_BLOCK
+		   && sb->succ->dest != EXIT_BLOCK_PTR)
+	    {
+	      if (! (REORDER_BLOCK_FLAGS (sb->succ->dest)
+		     & REORDER_BLOCK_VISITED))
+		cond_type = PREDICT_ELSE;
+	      else
+		cond_type = PREDICT_THEN_WITH_ELSE;
+	    }
+	}
+    }
+  
+  if (rtl_dump_file)
+    {
+      static const char * cond_type_str [] = {"not cond jump", "predict then",
+					      "predict else",
+					      "predict then w/o else",
+					      "predict not then w/o else"};
+      static const char * cond_block_type_str [] = {"not then or else block",
+						    "then block",
+						    "else block",
+						    "then w/o else block"};
+
+      fprintf (rtl_dump_file, "     %s (looking at %s)\n",
+	       cond_type_str[(int)cond_type],
+	       cond_block_type_str[(int)cond_block_type]);
+    }
+
+  /* Reflect that then block will move and we'll jump to it.  */
+  if (cond_block_type != THEN_BLOCK
+      && (cond_type == PREDICT_ELSE
+	  || cond_type == PREDICT_NOT_THEN_NO_ELSE))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file,
+		 "    then jump from block %d to block %d\n",
+		 sb->index, sb->succ->dest->index);
+
+      /* Jump to reordered then block.  */
+      REORDER_BLOCK_ADD_JUMP (sb) = sb->succ->dest;
+    }
+  
+  /* Reflect that then block will jump back when we have no else.  */
+  if (cond_block_type != THEN_BLOCK
+      && cond_type == PREDICT_NOT_THEN_NO_ELSE)
+    {
+      for (ee = sb->succ->dest->succ;
+	   ee && ! (ee->flags & EDGE_FALLTHRU);
+	   ee = ee->succ_next)
+	continue;
+
+      if (ee && ! (GET_CODE (sb->succ->dest->end) == JUMP_INSN
+		   && ! simplejump_p (sb->succ->dest->end)))
+	{
+	  REORDER_BLOCK_ADD_JUMP (sb->succ->dest) = ee->dest;
+	}
+    }
+
+  /* Reflect that else block will jump back.  */
+  if (cond_block_type == ELSE_BLOCK
+      && (cond_type == PREDICT_THEN_WITH_ELSE || cond_type == PREDICT_ELSE))
+    {
+      last_edge=db->succ;
+
+      if (last_edge
+	  && last_edge->dest != EXIT_BLOCK_PTR
+	  && GET_CODE (last_edge->dest->head) == CODE_LABEL
+	  && ! (GET_CODE (db->end) == JUMP_INSN))
+	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file,
+		     "     else jump from block %d to block %d\n",
+		     db->index, last_edge->dest->index);
+
+	  REORDER_BLOCK_ADD_JUMP (db) = last_edge->dest;
+	}
+    }
+
+  /* This block's successor has already been reordered. This can happen
+     when we reorder a chain starting at a then or else.  */
+  for (last_edge = db->succ;
+       last_edge && ! (last_edge->flags & EDGE_FALLTHRU);
+       last_edge = last_edge->succ_next)
+    continue;
+
+  if (last_edge
+      && last_edge->dest != EXIT_BLOCK_PTR
+      && (REORDER_BLOCK_FLAGS (last_edge->dest)
+	  & REORDER_BLOCK_VISITED))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file,
+		 "     end of chain jump from block %d to block %d\n",
+		 db->index, last_edge->dest->index);
+
+      REORDER_BLOCK_ADD_JUMP (db) = last_edge->dest;
+    }
+
+  dbh_insn = skip_insns_between_block (db, REORDER_SKIP_BEFORE);
+  cebe_insn = skip_insns_between_block (ceb, REORDER_SKIP_AFTER);
+  dbe_insn = skip_insns_between_block (db, REORDER_SKIP_AFTER);
+
+  /* Leave behind any lexical block markers.  */
+  if (debug_info_level > DINFO_LEVEL_TERSE
+      && ceb->index + 1 < db->index)
+    {
+      rtx insn, last_insn = get_last_insn ();
+      insn = NEXT_INSN (ceb->end);
+      if (! insn)
+	insn = REORDER_BLOCK_OLD_END (ceb);
+
+      if (NEXT_INSN (cebe_insn) == 0)
+	  set_last_insn (cebe_insn);
+      for (; insn && insn != db->head/*dbh_insn*/;
+	   insn = NEXT_INSN (insn))
+	{
+	  if (GET_CODE (insn) == NOTE
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG))
+	    {
+	      cebe_insn = emit_note_after (NOTE_INSN_BLOCK_BEG, cebe_insn);
+	      delete_insn (insn);
+	    }
+	  if (GET_CODE (insn) == NOTE
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
+	    {
+	      cebe_insn = emit_note_after (NOTE_INSN_BLOCK_END, cebe_insn);
+	      delete_insn (insn);
+	    }      
+	}
+      set_last_insn (last_insn);
+    }
+
+  /* Rechain predicted block.  */
+  NEXT_INSN (cebe_insn) = dbh_insn;
+  PREV_INSN (dbh_insn) = cebe_insn;
+
+  REORDER_BLOCK_OLD_END (db) = NEXT_INSN (dbe_insn);
+  if (db->index != n_basic_blocks - 1)
+    NEXT_INSN (dbe_insn) = 0;
+
+  return db;
+}
+
+
+/* Reorder blocks starting at block B.  */
+
+static void
+make_reorder_chain (bb)
+     basic_block bb;
+{
+  edge e;
+  basic_block visited_edge = NULL;
+  rtx block_end;
+  int probability;
+
+  if (bb == EXIT_BLOCK_PTR)
+    return;
+
+  /* Find the most probable block.  */
+  e = bb->succ;
+  block_end = bb->end;
+  if (GET_CODE (block_end) == JUMP_INSN && condjump_p (block_end))
+    {
+      rtx note = find_reg_note (block_end, REG_BR_PROB, 0);
+
+      if (note) 
+	probability = XINT (XEXP (note, 0), 0);
+      else
+	probability = 0;
+
+      if (probability >= REG_BR_PROB_BASE / 2)
+	e = bb->succ->succ_next;
+    }
+
+  /* Add chosen successor to chain and recurse on it.  */
+  if (e && e->dest != EXIT_BLOCK_PTR
+      && e->dest != e->src
+      && (! (REORDER_BLOCK_FLAGS (e->dest) & REORDER_BLOCK_VISITED)
+	  || (REORDER_BLOCK_FLAGS (e->dest) == REORDER_BLOCK_HEAD)))
+    {
+      if (! (REORDER_BLOCK_FLAGS (bb) & REORDER_BLOCK_VISITED))
+	{
+	  REORDER_BLOCK_FLAGS (bb) |= REORDER_BLOCK_HEAD;
+	  REORDER_BLOCK_INDEX (bb) = reorder_index++;
+	  REORDER_BLOCK_FLAGS (bb) |= REORDER_BLOCK_VISITED;
+	}
+
+      if (REORDER_BLOCK_FLAGS (e->dest) & REORDER_BLOCK_VISITED)
+	REORDER_BLOCK_FLAGS (e->dest) &= ~REORDER_BLOCK_HEAD;
+	
+      REORDER_BLOCK_SUCC (bb) = e;
+
+      visited_edge = e->dest;
+
+      reorder_last_visited = chain_reorder_blocks (e, bb);
+
+      if (e->dest
+	  && ! (REORDER_BLOCK_FLAGS (e->dest)
+		& REORDER_BLOCK_VISITED))
+	make_reorder_chain (e->dest);
+    }
+  else
+    {
+      if (! (REORDER_BLOCK_FLAGS (bb) & REORDER_BLOCK_VISITED))
+	{
+	  REORDER_BLOCK_INDEX (bb) = reorder_index++;
+	  REORDER_BLOCK_FLAGS (bb) |= REORDER_BLOCK_VISITED;
+	}
+    }
+
+  /* Recurse on the successors.  */
+  for (e = bb->succ; e; e = e->succ_next)
+    {
+      if (e->dest && e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      if (e->dest
+	  && e->dest != e->src
+	  && e->dest != visited_edge
+	  && ! (REORDER_BLOCK_FLAGS (e->dest)
+		& REORDER_BLOCK_VISITED))
+	{
+	  reorder_last_visited
+	    = chain_reorder_blocks (e, reorder_last_visited);
+	  make_reorder_chain (e->dest);
+	}
+    }
+}
+
+
+/* Fixup jumps and labels after reordering basic blocks.  */ 
+
+static void
+fixup_reorder_chain ()
+{
+  int i, j;
+  rtx insn;
+
+  /* Set the new last insn.  */
+  for (i = 0;
+       i < n_basic_blocks - 1
+	 && REORDER_BLOCK_INDEX (BASIC_BLOCK (i)) != n_basic_blocks;
+       i++)
+    continue;
+
+  for (insn = BASIC_BLOCK (i)->head;
+       NEXT_INSN (insn) != 0;
+       insn = NEXT_INSN (insn))
+    continue;
+
+  set_last_insn (insn);
+
+  /* Add jumps and labels to fixup blocks.  */
+  for (i = 0; i < n_basic_blocks - 1; i++)
+    {
+      if (REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i)))
+	{
+	  rtx new_label = gen_label_rtx ();
+	  rtx label_insn, jump_insn, barrier_insn;
+
+	  label_insn = emit_label_before (new_label,
+			  REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i))->head);
+	  REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i))->head = label_insn;	 
+
+	  jump_insn = emit_jump_insn_after (gen_jump (label_insn),
+					    BASIC_BLOCK (i)->end);
+	  JUMP_LABEL (jump_insn) = label_insn;
+	  ++LABEL_NUSES (label_insn);
+	  barrier_insn = emit_barrier_after (jump_insn);
+	  if (GET_CODE (BASIC_BLOCK (i)->end) != JUMP_INSN)
+	    BASIC_BLOCK (i)->end = barrier_insn;
+	  /* Add block for jump.  Typically this is when a then is not
+	     predicted and we are jumping to the moved then block.  */
+	  else	
+	    {
+	      basic_block b;
+
+	      b = (basic_block) obstack_alloc (function_obstack, sizeof (*b));
+	      VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+	      BASIC_BLOCK (n_basic_blocks - 1) = b;
+	      b->index = n_basic_blocks - 1;
+	      b->head = emit_note_before (NOTE_INSN_BASIC_BLOCK, jump_insn);
+	      NOTE_BASIC_BLOCK (b->head) = b;
+	      b->end = barrier_insn;
+	      
+	      {
+		basic_block nb = BASIC_BLOCK (n_basic_blocks - 1);
+		nb->global_live_at_start
+		  = OBSTACK_ALLOC_REG_SET (function_obstack);
+		nb->global_live_at_end
+		  = OBSTACK_ALLOC_REG_SET (function_obstack);
+
+		COPY_REG_SET (nb->global_live_at_start,
+			      BASIC_BLOCK (i)->global_live_at_start);
+		COPY_REG_SET (nb->global_live_at_end,
+			      BASIC_BLOCK (i)->global_live_at_start);
+		if (BASIC_BLOCK (i)->local_set)
+		  {
+		    OBSTACK_ALLOC_REG_SET (function_obstack);
+		    COPY_REG_SET (nb->local_set, BASIC_BLOCK (i)->local_set);
+		  }
+		else
+		  BASIC_BLOCK (nb->index)->local_set = 0;
+
+		nb->aux = xcalloc (1, sizeof (struct reorder_block_def));
+		REORDER_BLOCK_INDEX (BASIC_BLOCK (n_basic_blocks - 1))
+		  = REORDER_BLOCK_INDEX (BASIC_BLOCK (i)) + 1;
+		/* Relink to new block.  */
+		nb->succ = BASIC_BLOCK (i)->succ;
+
+		make_edge (0, BASIC_BLOCK (i), nb, 0);
+		BASIC_BLOCK (i)->succ->succ_next
+		  = BASIC_BLOCK (i)->succ->succ_next->succ_next;
+		nb->succ->succ_next = 0;
+		/* Fix reorder block index to reflect new block.  */
+		for (j = 0; j < n_basic_blocks - 1; j++)
+		  {
+		    basic_block bbj = BASIC_BLOCK (j);
+		    basic_block bbi = BASIC_BLOCK (i);
+		    if (REORDER_BLOCK_INDEX (bbj)
+			>= REORDER_BLOCK_INDEX (bbi) + 1)
+		      REORDER_BLOCK_INDEX (bbj)++;
+		  }
+	      }
+	    }
+	}
+    }
+}
+
+
+/* Reorder basic blocks.  */
+
+void
+reorder_basic_blocks ()
+{
+  int i, j;
+  struct loops loops_info;
+  int num_loops;
+  rtx last_insn;
+
+  if (profile_arc_flag)
+    return;
+
+  if (n_basic_blocks <= 1)
+    return;
+
+  /* Exception edges are not currently handled.  */
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      edge e;
+
+      for (e = BASIC_BLOCK (i)->succ; e && ! (e->flags & EDGE_EH);
+	   e = e->succ_next)
+	continue;
+
+      if (e && (e->flags & EDGE_EH))
+	return;
+    }
+
+  reorder_index = 0;
+
+  /* Find natural loops using the CFG.  */
+  num_loops = flow_loops_find (&loops_info);
+
+  /* Dump loop information.  */
+  flow_loops_dump (&loops_info, rtl_dump_file, 0);
+
+  /* Estimate using heuristics if no profiling info is available.  */
+  if (! flag_branch_probabilities)
+    estimate_probability (&loops_info);
+
+  reorder_last_visited = BASIC_BLOCK (0);
+
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      BASIC_BLOCK (i)->aux = xcalloc (1, sizeof (struct reorder_block_def));
+    }
+      
+  last_insn
+    = NEXT_INSN (skip_insns_between_block (BASIC_BLOCK (n_basic_blocks - 1),
+					   REORDER_SKIP_AFTER));
+
+  make_reorder_chain (BASIC_BLOCK (0));
+
+  fixup_reorder_chain ();
+
+#ifdef ENABLE_CHECKING
+    {
+      rtx insn, last_insn;
+      last_insn = get_insns ();
+      for (insn = NEXT_INSN (get_insns ());
+	   insn && PREV_INSN (insn) == last_insn
+	     && NEXT_INSN (PREV_INSN (insn)) == insn;
+	   last_insn = insn,
+	     insn = NEXT_INSN (insn))
+	continue;
+
+      if (insn)
+	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "insn chaining error at %d\n",
+		     INSN_UID (last_insn));
+	  abort();
+	}
+    }
+#endif
+
+  /* Put basic_block_info in new order.  */
+  for (i = 0; i < n_basic_blocks - 1; i++)
+    {
+      for (j = i; i != REORDER_BLOCK_INDEX (BASIC_BLOCK (j)); j++)
+	continue;
+
+      if (REORDER_BLOCK_INDEX (BASIC_BLOCK (j)) == i
+	  && i != j)
+	{
+	  basic_block tempbb;
+	  int temprbi;
+	  int rbi = REORDER_BLOCK_INDEX (BASIC_BLOCK (j));
+
+	  temprbi = BASIC_BLOCK (rbi)->index;
+	  BASIC_BLOCK (rbi)->index = BASIC_BLOCK (j)->index;
+	  BASIC_BLOCK (j)->index = temprbi;
+	  tempbb = BASIC_BLOCK (rbi);
+	  BASIC_BLOCK (rbi) = BASIC_BLOCK (j);
+	  BASIC_BLOCK (j) = tempbb;
+	}
+    }
+      
+  NEXT_INSN (BASIC_BLOCK (n_basic_blocks - 1)->end) = last_insn;
+
+  for (i = 0; i < n_basic_blocks - 1; i++)
+    {
+      free (BASIC_BLOCK (i)->aux);
+    }
+
+  /* Free loop information.  */
+  flow_loops_free (&loops_info);
+}
+
