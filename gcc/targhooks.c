@@ -126,11 +126,3 @@ hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
 {
   return true;
 }
-
-/* Generic hook that takes a machine mode and returns true.  */
-
-bool
-hook_bool_machine_mode_true (enum machine_mode a ATTRIBUTE_UNUSED)
-{
-  return true;
-}

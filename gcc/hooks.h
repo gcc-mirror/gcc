@@ -35,16 +35,13 @@ extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_intp_false (rtx, int, int, int *);
 extern bool hook_bool_constcharptr_size_t_false (const char *, size_t);
 
-extern void hook_void_tree_int (tree, int);
 extern void hook_void_void (void);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);
-extern void hook_void_constcharptr (const char *);
 
 extern int hook_int_tree_tree_1 (tree, tree);
 extern int hook_int_rtx_0 (rtx);
-extern int hook_int_void_0 (void);
 extern int hook_int_size_t_constcharptr_int_0 (size_t, const char *, int);
 extern int hook_int_void_no_regs (void);
 
