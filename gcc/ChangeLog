@@ -1,3 +1,9 @@
+Mon Feb 12 18:13:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cselib.c: New file, from simplify-rtx.c.
+	* simplify-rtx.c: Remove cselib parts.
+	* Makefile.in: Add cselib.o.
+
 2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_float_const): Remove warning.
