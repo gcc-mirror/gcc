@@ -1,3 +1,10 @@
+2003-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (baseargs): Remove all supported forms of
+	--cache-file, --srcdir, --host, --build and --target options
+	from argument lists.
+	* configure: Rebuilt.
+
 2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
 
 	* MAINTAINERS: Add myself to write-after-approval list.
