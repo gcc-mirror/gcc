@@ -3426,47 +3426,47 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		      adjust_address (operands[1], SImode, 4));
       return;
     }
-    else if (mode == DImode && TARGET_POWERPC64
-               && GET_CODE (operands[0]) == REG
-               && GET_CODE (operands[1]) == MEM && optimize > 0
-               && SLOW_UNALIGNED_ACCESS (DImode,
-                                         MEM_ALIGN (operands[1]) > 32
-                                         ? 32
-                                         : MEM_ALIGN (operands[1]))
-               && !no_new_pseudos)
+  else if (mode == DImode && TARGET_POWERPC64
+	   && GET_CODE (operands[0]) == REG
+	   && GET_CODE (operands[1]) == MEM && optimize > 0
+	   && SLOW_UNALIGNED_ACCESS (DImode,
+				     MEM_ALIGN (operands[1]) > 32
+				     ? 32
+				     : MEM_ALIGN (operands[1]))
+	   && !no_new_pseudos)
+    {
+      rtx reg = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (SImode, reg,
+			      adjust_address (operands[1], SImode, 0)));
+      reg = simplify_gen_subreg (DImode, reg, SImode, 0);
+      emit_insn (gen_insvdi (operands[0], GEN_INT (32), const0_rtx, reg));
+      reg = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (SImode, reg,
+			      adjust_address (operands[1], SImode, 4)));
+      reg = simplify_gen_subreg (DImode, reg, SImode, 0);
+      emit_insn (gen_insvdi (operands[0], GEN_INT (32), GEN_INT (32), reg));
+      return;
+    }
+  else if (mode == DImode && TARGET_POWERPC64
+	   && GET_CODE (operands[1]) == REG
+	   && GET_CODE (operands[0]) == MEM && optimize > 0
+	   && SLOW_UNALIGNED_ACCESS (DImode,
+				     MEM_ALIGN (operands[0]) > 32
+				     ? 32
+				     : MEM_ALIGN (operands[0]))
+	   && !no_new_pseudos)
       {
-        rtx reg = gen_reg_rtx (SImode);
-	emit_insn (gen_rtx_SET (SImode, reg,
-				adjust_address (operands[1], SImode, 0)));
-        reg = simplify_gen_subreg (DImode, reg, SImode, 0);
-        emit_insn (gen_insvdi (operands[0], GEN_INT (32), const0_rtx, reg));
-        reg = gen_reg_rtx (SImode);
-	emit_insn (gen_rtx_SET (SImode, reg,
-				adjust_address (operands[1], SImode, 4)));
-        reg = simplify_gen_subreg (DImode, reg, SImode, 0);
-        emit_insn (gen_insvdi (operands[0], GEN_INT (32), GEN_INT (32), reg));
-        return;
-      }
-      else if (mode == DImode && TARGET_POWERPC64
-               && GET_CODE (operands[1]) == REG
-               && GET_CODE (operands[0]) == MEM && optimize > 0
-               && SLOW_UNALIGNED_ACCESS (DImode,
-                                         MEM_ALIGN (operands[0]) > 32
-                                         ? 32
-                                         : MEM_ALIGN (operands[0]))
-               && !no_new_pseudos)
-      {
-        rtx reg = gen_reg_rtx (DImode);
-        emit_move_insn (reg,
+	rtx reg = gen_reg_rtx (DImode);
+	emit_move_insn (reg,
 			gen_rtx_LSHIFTRT (DImode, operands[1], GEN_INT (32)));
-        emit_move_insn (adjust_address (operands[0], SImode, 0),
+	emit_move_insn (adjust_address (operands[0], SImode, 0),
 			simplify_gen_subreg (SImode, reg, DImode, 0));
-        emit_move_insn (reg, operands[1]);
-        emit_move_insn (adjust_address (operands[0], SImode, 4),
+	emit_move_insn (reg, operands[1]);
+	emit_move_insn (adjust_address (operands[0], SImode, 4),
 			simplify_gen_subreg (SImode, reg, DImode, 0));
-        return;
+	return;
       }
-  
+
   if (!no_new_pseudos)
     {
       if (GET_CODE (operands[1]) == MEM && optimize > 0
