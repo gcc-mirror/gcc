@@ -5378,13 +5378,13 @@ dwarfout_line (filename, line)
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
 
       if (use_gnu_debug_info_extensions)
 	this_file_entry_num = lookup_filename (filename);
       else
 	this_file_entry_num = (unsigned) -1;
 
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
       if (this_file_entry_num != prev_file_entry_num)
         {
           char line_entry_label[MAX_ARTIFICIAL_LABEL_BYTES];
