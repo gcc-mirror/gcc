@@ -765,7 +765,7 @@ print_global_hdr (ptr)
   printf("    %-*s %ld\n",     24, "symbolic header offset", (long)   ptr->f_symptr);
   printf("    %-*s %ld\n",     24, "symbolic header size",   (long)   ptr->f_nsyms);
   printf("    %-*s %ld\n",     24, "optional header",	     (long)   ptr->f_opthdr);
-  printf("    %-*s 0x%lx",     24, "flags",		     (ushort) flags);
+  printf("    %-*s 0x%x",     24, "flags",		     (ushort) flags);
 
   if ((flags & F_RELFLG) != 0)
     printf (", F_RELFLG");
@@ -820,58 +820,58 @@ print_sym_hdr (sym_ptr)
   printf("    %-*s %11s %11s %11s\n", width, "Info", "Offset", "Number", "Bytes");
   printf("    %-*s %11s %11s %11s\n", width, "====", "======", "======", "=====\n");
 
-  printf("    %-*s %11ld %11d %11d [%d]\n", width, "Line numbers",
+  printf("    %-*s %11ld %11ld %11ld [%d]\n", width, "Line numbers",
 	 (long)sym_ptr->cbLineOffset,
 	 (long)sym_ptr->cbLine,
 	 (long)sym_ptr->cbLine,
 	 (int)sym_ptr->ilineMax);
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Dense numbers",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Dense numbers",
 	 (long)sym_ptr->cbDnOffset,
 	 (long)sym_ptr->idnMax,
 	 (long)(sym_ptr->idnMax * sizeof (DNR)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Procedures Tables",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Procedures Tables",
 	 (long)sym_ptr->cbPdOffset,
 	 (long)sym_ptr->ipdMax,
 	 (long)(sym_ptr->ipdMax * sizeof (PDR)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Local Symbols",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Local Symbols",
 	 (long)sym_ptr->cbSymOffset,
 	 (long)sym_ptr->isymMax,
 	 (long)(sym_ptr->isymMax * sizeof (SYMR)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Optimization Symbols",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Optimization Symbols",
 	 (long)sym_ptr->cbOptOffset,
 	 (long)sym_ptr->ioptMax,
 	 (long)(sym_ptr->ioptMax * sizeof (OPTR)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Auxiliary Symbols",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Auxiliary Symbols",
 	 (long)sym_ptr->cbAuxOffset,
 	 (long)sym_ptr->iauxMax,
 	 (long)(sym_ptr->iauxMax * sizeof (AUXU)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Local Strings",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Local Strings",
 	 (long)sym_ptr->cbSsOffset,
 	 (long)sym_ptr->issMax,
 	 (long)sym_ptr->issMax);
 
-  printf("    %-*s %11ld %11d %11d\n", width, "External Strings",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "External Strings",
 	 (long)sym_ptr->cbSsExtOffset,
 	 (long)sym_ptr->issExtMax,
 	 (long)sym_ptr->issExtMax);
 
-  printf("    %-*s %11ld %11d %11d\n", width, "File Tables",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "File Tables",
 	 (long)sym_ptr->cbFdOffset,
 	 (long)sym_ptr->ifdMax,
 	 (long)(sym_ptr->ifdMax * sizeof (FDR)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Relative Files",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "Relative Files",
 	 (long)sym_ptr->cbRfdOffset,
 	 (long)sym_ptr->crfd,
 	 (long)(sym_ptr->crfd * sizeof (ulong)));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "External Symbols",
+  printf("    %-*s %11ld %11ld %11ld\n", width, "External Symbols",
 	 (long)sym_ptr->cbExtOffset,
 	 (long)sym_ptr->iextMax,
 	 (long)(sym_ptr->iextMax * sizeof (EXTR)));
@@ -957,7 +957,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd)
 		    aux_base[index].isym, type_to_string (aux_base, index+1));
 	  }
 	else			/* global symbol */
-	  printf ("      Local symbol: %d\n", index);
+	  printf ("      Local symbol: %ld\n", index);
 
 	if (want_scope)
 	  {
@@ -1009,7 +1009,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd)
 	      else
 		class = "???";
 
-	      printf (" %d [%s]", scope_ptr->open_sym, class);
+	      printf (" %ld [%s]", scope_ptr->open_sym, class);
 	    }
 	  printf ("\n");
 	}
@@ -1123,7 +1123,7 @@ print_file_desc (fdp, number)
 
   printf ("\nFile #%d, \"%s\"\n\n", number, str_base + fdp->rss);
 
-  printf ("    Name index  = %-10d Readin      = %s\n",
+  printf ("    Name index  = %-10ld Readin      = %s\n",
 	  (long) fdp->rss, (fdp->fReadin) ? "Yes" : "No");
 
   printf ("    Merge       = %-10s Endian      = %s\n",
@@ -1146,7 +1146,7 @@ print_file_desc (fdp, number)
 	 (ulong) fdp->cbSs,
 	 (ulong) (fdp->issBase + sym_hdr.cbSsOffset));
 
-  printf("    %-*s %11lu %11u %11u %11lu\n",
+  printf("    %-*s %11lu %11lu %11lu %11lu\n",
 	 width, "Local symbols",
 	 (ulong) fdp->isymBase,
 	 (ulong) fdp->csym,
