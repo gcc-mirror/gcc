@@ -3695,7 +3695,7 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !ISA_HAS_TRUNC_W"
   {
     if (set_nomacro)
-      return ".set\tmacro\n\ttrunc.w.d %0,%1,%2\n\t.set\tmacro";
+      return ".set\tmacro\n\ttrunc.w.d %0,%1,%2\n\t.set\tnomacro";
     return "trunc.w.d %0,%1,%2";
   }
   [(set_attr "type"	"fcvt")
@@ -3730,7 +3730,7 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT && !ISA_HAS_TRUNC_W"
   {
     if (set_nomacro)
-      return ".set\tmacro\n\ttrunc.w.s %0,%1,%2\n\t.set\tmacro";
+      return ".set\tmacro\n\ttrunc.w.s %0,%1,%2\n\t.set\tnomacro";
     return "trunc.w.s %0,%1,%2";
   }
   [(set_attr "type"	"fcvt")

@@ -1,3 +1,9 @@
+2003-08-05  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.md (fix_truncdfsi2_macro): Properly restore
+	".set nomacro" state.
+	(fix_truncsfsi2_macro): Likewise.
+
 2003-08-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree.h (DID_INLINE_FUNC): Remove macro.
