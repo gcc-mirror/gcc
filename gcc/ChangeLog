@@ -1,3 +1,76 @@
+2004-04-30  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+
+	2004-04-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (*-ibm-aix*): Add AIX 5.1 assembler and archiver
+	fix information.
+
+	2004-04-17  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/14715
+	* config/rs6000/rs6000.c (rs6000_stack_info): Make parm_size agree
+	with STARTING_FRAME_OFFSET.
+
+	2004-04-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Add MASK_MFCRF
+	to power4 and power5 entries.
+
+	2004-04-05  David Edelsohn
+
+	* config/rs6000/rs6000.c (VTABLE_NAME_P): Add _ZTI to special
+	symbol handling.
+
+	2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
+
+	PR 11591
+	* config/rs6000/rs6000.c (rs6000_legitimate_address):
+	Allow any offset to argument pointer in no-strict case.
+
+	2004-03-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_always_hint): New variable.
+	(rs6000_sched_groups): New variable.
+	(processor_target_table): Add power5.
+	(rs6000_override_options): Set rs6000_sched_insert_nops,
+	rs6000_sched_costly_dep and rs6000_sched_restricted_insns_priority
+	from rs6000_sched_groups.
+	(output_cbranch): Use rs6000_always_hint.
+	(rs6000_variable_issue): Use rs6000_sched_groups.
+	(rs6000_adjust_cost): Add CPU_POWER5.
+	(is_microcoded_insn): Use rs6000_sched_groups.
+	(is_dispatch_slot_restricted): Use rs6000_sched_groups.
+	Return 2 for POWER5 cracked instructions.
+	(is_cracked_insn): Use rs6000_sched_groups.
+	(is_branch_slot_insn): Use rs6000_sched_groups.
+	(rs6000_issue_rate): Add CPU_POWER5.
+	(rs6000_sched_finish): Use rs6000_sched_groups.
+	(rs6000_rtx_costs): Add PROCESSOR_POWER5.
+	* config/rs6000/rs6000.h (processor_type): Add PROCESSOR_POWER5.
+	(DEFAULT_SCHED_COSTLY_DEP): Delete.
+	(DEFAULT_RESTRICTED_INSNS_PRIORITY): Delete.
+	(DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME): Delete.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add power5.
+	* config/rs6000/power5.md: New file.
+	* doc/invoke.texi: Add power5 option.
+
+	2004-03-17  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): correct reg_size
+	for mixed mode.
+	(rs6000_emit_prologue): Ditto.
+	(rs6000_emit_epilogue): Ditto.
+	* config/rs6000/rs6000.h: Definition of DWARF_CIE_DATA_ALIGNMENT
+	macro for mixed mode.
+
+	2004-03-04  David Edelsohn  <edelsohn@gnu.org>
+		    GP <gp@qnx.com>
+
+	* config/rs6000/rs6000.c (output_function_profiler): Append @plt
+	when compiling PIC.
+
 2004-04-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/altivec/altivec.h [__cplusplus] (vec_subsubs): Rename

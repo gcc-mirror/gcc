@@ -2998,7 +2998,7 @@ The native AIX tools do interoperate with GCC@.
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
 fix for another AIX Assembler bug and a co-dependent AIX Archiver fix
-referenced as APAR IY53606 (AIX 5.2) or a APAR TBD (AIX 5.1)
+referenced as APAR IY53606 (AIX 5.2) or a APAR IY54774 (AIX 5.1)
 
 @samp{libstdc++} in GCC 3.4 increments the major version number of the
 shared object and GCC installation places the @file{libstdc++.a}
