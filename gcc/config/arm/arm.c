@@ -3709,7 +3709,7 @@ arm_reload_in_hi (operands)
 				   gen_rtx_MEM (QImode, 
 						plus_constant (base,
 							       offset + 1))));
-  if (BYTES_BIG_ENDIAN)
+  if (! BYTES_BIG_ENDIAN)
     emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
 			gen_rtx_IOR (SImode, 
 				     gen_rtx_ASHIFT
