@@ -1,3 +1,8 @@
+2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.c (mips_expand_prologue): Set regno of vararg
+	marker such that registers after it are saved.
+
 2002-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (arith_4096_operand): Fix error in last change.
