@@ -34,12 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.s:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
 
-#define LINK_SPEC "\
-%{G*} \
-%{!mgas: %{mips1} %{mips2} %{mips3} \
-	 %{EB} %{!EB:-EB} %{EL: %e-EL not supported} \
-	 %{bestGnum} %{shared} %{non_shared}}"
-		    
 #define LIB_SPEC "\
 %{ZBSD43: -L/usr/ucblib -lucb -lresolv -lsocket -lnsl} \
 -nocount %{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s values-Xt.o%s"
