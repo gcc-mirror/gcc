@@ -1,3 +1,7 @@
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (expand_expr): Revove bogus conditional.
+
 Wed Mar 14 19:29:50 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_move_insn_1): Guard PUSH_ROUNDING use by ifdef.

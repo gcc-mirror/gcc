@@ -8428,12 +8428,6 @@ expand_expr (exp, target, tmode, modifier)
 
 	temp = 0;
 
-	if (TREE_CODE (lhs) != VAR_DECL
-	    && TREE_CODE (lhs) != RESULT_DECL
-	    && TREE_CODE (lhs) != PARM_DECL
-	    && ! (TREE_CODE (lhs) == INDIRECT_REF
-		  && TYPE_READONLY (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
-
 	/* Check for |= or &= of a bitfield of size one into another bitfield
 	   of size 1.  In this case, (unless we need the result of the
 	   assignment) we can do this more efficiently with a
