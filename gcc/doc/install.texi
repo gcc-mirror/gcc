@@ -457,7 +457,7 @@ target system triple, such as @samp{sparc-sun-solaris2.7}, and
 @var{version} denotes the GCC version, such as 3.0.
 @item
 Check operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
-Sun Solaris).
+Sun Solaris 2).
 @end itemize
 Note that these rules do not check for the value of @env{PATH}.  You may
 want to use @option{--with-as} if no assembler is installed in the
@@ -1197,7 +1197,7 @@ HP-UX:
 OpenServer/Unixware};
 
 @item
-Solaris (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware};
+Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware};
 
 @item
 SGI---@uref{http://freeware.sgi.com/,,SGI Freeware};
@@ -1440,15 +1440,15 @@ These lists are updated as new information becomes available.
 @item
 @uref{#s390x-*-linux*}
 @item
-@uref{#*-*-solaris*,,*-*-solaris*}
+@uref{#*-*-solaris2*,,*-*-solaris2*}
 @item
-@uref{#sparc-sun-solaris*,,sparc-sun-solaris*}
+@uref{#sparc-sun-solaris2*,,sparc-sun-solaris2*}
 @item
 @uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
 @item
-@uref{#*-sun-solaris2.8,,*-sun-solaris2.8}
+@uref{#*-*-solaris2.8,,*-*-solaris2.8}
 @item
-@uref{#sparc-sun-sunos*,,sparc-sun-sunos*}
+@uref{#sparc-sun-sunos4*,,sparc-sun-sunos4*}
 @item
 @uref{#sparc-unknown-linux-gnulibc1,,sparc-unknown-linux-gnulibc1}
 @item
@@ -1469,7 +1469,7 @@ These lists are updated as new information becomes available.
 
 @itemize
 @item
-@uref{#elf_targets,,all ELF targets} (SVR4, Solaris, etc.)
+@uref{#elf_targets,,all ELF targets} (SVR4, Solaris 2, etc.)
 @end itemize
 @end ifhtml
 
@@ -3112,59 +3112,73 @@ zSeries system (64 Bit) running Linux for zSeries@.
 </p>
 <hr>
 @end html
-@heading @anchor{*-*-solaris*}*-*-solaris*
+@c Please use Solaris 2 to refer to all release of Solaris, starting
+@c with 2.0 until 2.6, 7, and 8.  Solaris 1 was a marketing name for
+@c SunOS 4 releases which we don't use to avoid confusion.  Solaris
+@c alone is too unspecific and must be avoided.
+@heading @anchor{*-*-solaris2*}*-*-solaris2*
 
-Sun does not ship a C compiler with Solaris.  To bootstrap and install
+Sun does not ship a C compiler with Solaris 2.  To bootstrap and install
 GCC you first have to install a pre-built compiler, see our
 @uref{binaries.html,,binaries page} for details.
 
-Solaris' @file{/bin/sh} will often fail to configure @file{libstdc++-v3}, @file{boehm-gc} or
+The Solaris 2 @command{/bin/sh} will often fail to configure
+@file{libstdc++-v3}, @file{boehm-gc} or
 @file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
-@file{/bin/ksh} in your environment and run @command{make bootstrap} again.
+@command{/bin/ksh} in your environment and run @command{make bootstrap} again.
 Another possibility that sometimes helps is to remove
-@file{*-*-solaris*/config.cache}.
+@file{*-*-solaris2*/config.cache}.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 packages are needed to use GCC fully, namely @code{SUNWarc},
 @code{SUNWbtool}, @code{SUNWesu}, @code{SUNWhea}, @code{SUNWlibm},
 @code{SUNWsprot}, and @code{SUNWtoo}.  If you did not install all
-optional packages when installing Solaris, you will need to verify that
+optional packages when installing Solaris 2, you will need to verify that
 the packages that GCC needs are installed.
 
 To check whether an optional package is installed, use
 the @command{pkginfo} command.  To add an optional package, use the
-@command{pkgadd} command.  For further details, see the Solaris
+@command{pkgadd} command.  For further details, see the Solaris 2
 documentation.
 
-On some versions of Solaris, trying to use the linker and other tools in
+Trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
-@file{/usr/ucb} from your @code{PATH}.
+@file{/usr/ucb} from your @env{PATH}.
 
 All releases of GNU binutils prior to 2.11.2 have known bugs on this
 platform.  We recommend the use of GNU binutils 2.11.2 or the vendor
 tools (Sun @command{as}, Sun @command{ld}).
 
-Unfortunately, C++ shared libraries, including @samp{libstdc++}, won't work
-properly if assembled with Sun @command{as}: the linker will complain about
-relocations in read-only sections, in the definition of virtual
-tables.  Also, Sun @command{as} fails to process long symbols resulting from
-mangling template-heavy C++ function names.
+Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
+newer: @command{g++} will complain that types are missing.  These headers assume
+that omitting the type means @code{int}; this assumption worked for C89 but
+is wrong for C++, and is now wrong for C99 also.
+
+@command{g++} accepts such (illegal) constructs with the option
+@option{-fpermissive}; it
+will assume that any missing type is @code{int} (as defined by C89).
+
+There are patches for Solaris 2.6 (105633-56 or newer for SPARC,
+106248-42 or newer for Intel), Solaris 7 (108376-21 or newer for SPARC,
+108377-20 for Intel), and Solaris 8 (108652-24 or newer for SPARC,
+108653-22 for Intel) that fix this bug.
 
 @html
 </p>
 <hr>
 @end html
-@heading @anchor{sparc-sun-solaris*}sparc-sun-solaris*
+@heading @anchor{sparc-sun-solaris2*}sparc-sun-solaris2*
 
-Sun @command{as} 4.X is broken in that it cannot cope with long symbol names.
+Sun @command{as} 4.x is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
 
 @samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041:
 error: can't compute value of an expression involving an external symbol.}
 
-This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
-been fixed in later (5.x) versions of the assembler.
+This is Sun bug 4237974.  This is fixed with patch 108908-02 for Solaris
+2.6 and has been fixed in later (5.x) versions of the assembler,
+starting with Solaris 7.
 
 @html
 </p>
@@ -3172,7 +3186,7 @@ been fixed in later (5.x) versions of the assembler.
 @end html
 @heading @anchor{sparc-sun-solaris2.7}sparc-sun-solaris2.7
 
-Sun patch 107058-01 (1999-01-13) for SPARC Solaris 7 triggers a bug in
+Sun patch 107058-01 (1999-01-13) for Solaris 7/SPARC triggers a bug in
 the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
 and later, including all EGCS releases.  Sun formerly recommended
 107058-01 for all Solaris 7 users, but around 1999-09-01 it started to
@@ -3184,7 +3198,7 @@ Here are some workarounds to this problem:
 Do not install Sun patch 107058-01 until after Sun releases a
 complete patch for bug 4210064.  This is the simplest course to take,
 unless you must also use Sun's C compiler.  Unfortunately 107058-01
-is preinstalled on some new Solaris-based hosts, so you may have to
+is preinstalled on some new Solaris 7-based hosts, so you may have to
 back it out.
 
 @item
@@ -3203,32 +3217,21 @@ run code generated by GCC; it doesn't suffice to install it only on
 the hosts that run GCC itself.  Second, Sun says that 106950-03 is
 only a partial fix for bug 4210064, but Sun doesn't know whether the
 partial fix is adequate for GCC@.  Revision -08 or later should fix
-the bug, but (as of 1999-10-06) it is still being tested.
+the bug.  The current (as of 2001-09-24) revision is -14, and is included in
+the Solaris 7 Recommended Patch Cluster. 
 @end itemize
 
 
 @html
 <p>
 <hr>
-<!-- ripped from the same FAQ that I answered -->
 @end html
-@heading @anchor{*-sun-solaris2.8}*-sun-solaris2.8
+@heading @anchor{*-*-solaris2.8}*-*-solaris2.8
 
-Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
-newer: @command{g++} will complain that types are missing.  These headers assume
-that omitting the type means @code{int}; this assumption worked for C89 but
-is wrong for C++, and is now wrong for C99 also.
-
-@command{g++} accepts such (illegal) constructs with the option @option{-fpermissive}; it
-will assume that any missing type is @code{int} (as defined by C89).
-
-For Solaris 8, this is fixed by revision 24 or later of patch 108652
-(for SPARCs) or 108653 (for Intels).
-
-Solaris 8's linker fails to link some @samp{libjava} programs if
+The Solaris 8 linker fails to link some @samp{libjava} programs if
 previously-installed GCC java libraries already exist in the configured
 prefix.  For this reason, @samp{libgcj} is disabled by default on Solaris 8.
-If you use GNU ld, or if you don't have a previously-installed @samp{libgcj} in
+If you use GNU @command{ld}, or if you don't have a previously-installed @samp{libgcj} in
 the same prefix, use @option{--enable-libgcj} to build and install the
 Java libraries.
 
@@ -3236,7 +3239,7 @@ Java libraries.
 <p>
 <hr>
 @end html
-@heading @anchor{sparc-sun-sunos*}sparc-sun-sunos*
+@heading @anchor{sparc-sun-sunos4*}sparc-sun-sunos4*
 
 A bug in the SunOS 4 linker will cause it to crash when linking
 @option{-fPIC} compiled objects (and will therefore not allow you to build
@@ -3431,7 +3434,7 @@ current GCC) is to be found in the GCC texinfo manual.
 </p>
 <hr>
 @end html
-@heading @anchor{elf_targets}all ELF targets (SVR4, Solaris, etc.)
+@heading @anchor{elf_targets}all ELF targets (SVR4, Solaris 2, etc.)
 
 C++ support is significantly better on ELF targets if you use the
 @uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of

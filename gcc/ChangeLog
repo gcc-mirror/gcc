@@ -1,3 +1,14 @@
+2001-09-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Markup fixes.
+	Use Solaris 2, SunOS 4 as appropriate.
+	(Specific, *-*-solaris2*): Explain this.
+	Unconditionally warn against /usr/ucb tools.
+	Remove Sun as warning, obsolete.
+	Move X11 header bug workaround here, update patches.
+	(Specific, sparc-sun-solaris2*): Detail Sun as fix status.
+	(Specific, sparc-sun-solaris2.7): Update patch 106950 status.
+
 2001-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* errors.h (warning, error, fatal, internal_error): Don't mark
