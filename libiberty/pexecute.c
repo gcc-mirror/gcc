@@ -51,7 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #endif /* VMS */
 
 #ifdef IN_GCC
-#include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
 #define PEXECUTE_FIRST   1
 #define PEXECUTE_LAST    2
