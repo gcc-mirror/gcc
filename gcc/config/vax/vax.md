@@ -83,17 +83,21 @@
 
 (define_insn "cmpdf"
   [(set (cc0)
-	(compare (match_operand:DF 0 "general_operand" "gF")
-		 (match_operand:DF 1 "general_operand" "gF")))]
+	(compare (match_operand:DF 0 "general_operand" "gF,gF")
+		 (match_operand:DF 1 "general_operand" "G,gF")))]
   ""
-  "cmp%# %0,%1")
+  "@
+   tst%# %0
+   cmp%# %0,%1")
 
 (define_insn "cmpsf"
   [(set (cc0)
-	(compare (match_operand:SF 0 "general_operand" "gF")
-		 (match_operand:SF 1 "general_operand" "gF")))]
+	(compare (match_operand:SF 0 "general_operand" "gF,gF")
+		 (match_operand:SF 1 "general_operand" "G,gF")))]
   ""
-  "cmpf %0,%1")
+  "@
+   tstf %0
+   cmpf %0,%1")
 
 (define_insn ""
   [(set (cc0)
@@ -173,6 +177,23 @@
    clrq %0
    movq %1,%0")
 
+;; The VAX move instructions have space-time tradeoffs.  On a microVAX
+;; register-register mov instructions take 3 bytes and 2 CPU cycles.  clrl
+;; takes 2 bytes and 3 cycles.  mov from constant to register takes 2 cycles
+;; if the constant is smaller than 4 bytes, 3 cycles for a longword
+;; constant.  movz, mneg, and mcom are as fast as mov, so movzwl is faster
+;; than movl for positive constants that fit in 16 bits but not 6 bits.  cvt
+;; instructions take 4 cycles.  inc takes 3 cycles.  The machine description
+;; is willing to trade 1 byte for 1 cycle (clrl instead of movl $0; cvtwl
+;; instead of movl).
+
+;; Cycle counts for other models may vary (on a VAX 750 they are similar,
+;; but on a VAX 9000 most move and add instructions with one constant
+;; operand take 1 cycle).
+
+;;  Loads of constants between 64 and 128 used to be done with
+;; "addl3 $63,#,dst" but this is slower than movzbl and takes as much space.
+
 (define_insn "movsi"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(match_operand:SI 1 "general_operand" "g"))]
@@ -187,7 +208,6 @@
       && GET_CODE (XEXP (link, 0)) != NOTE
       /* Make sure cross jumping didn't happen here.  */
       && no_labels_between_p (XEXP (link, 0), insn))
-    /* Fastest way to change a 0 to a 1.  */
     return \"incl %0\";
   if (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
     {
@@ -195,7 +215,6 @@
 	return \"pushab %a1\";
       return \"movab %a1,%0\";
     }
-  /* this is slower than a movl, except when pushing an operand */
   if (operands[1] == const0_rtx)
     return \"clrl %0\";
   if (GET_CODE (operands[1]) == CONST_INT
@@ -203,17 +222,7 @@
     {
       int i = INTVAL (operands[1]);
       if ((unsigned)(~i) < 64)
-	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, ~i);
-	  return \"mcoml %1,%0\";
-	}
-      if ((unsigned)i < 127)
-	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, 63);
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, i-63);
-	  return \"addl3 %2,%1,%0\";
-	}
-      /* trading speed for space */
+	return \"mcoml %N1,%0\";
       if ((unsigned)i < 0x100)
 	return \"movzbl %1,%0\";
       if (i >= -0x80 && i < 0)
@@ -242,30 +251,40 @@
       && GET_CODE (XEXP (link, 0)) != NOTE
       /* Make sure cross jumping didn't happen here.  */
       && no_labels_between_p (XEXP (link, 0), insn))
-    /* Fastest way to change a 0 to a 1.  */
     return \"incw %0\";
-  if (operands[1] == const0_rtx)
-    return \"clrw %0\";
-  if (GET_CODE (operands[1]) == CONST_INT
-      && (unsigned) INTVAL (operands[1]) >= 64)
+
+  if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
-      if ((unsigned)((~i) & 0xffff) < 64)
-	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, (~i) & 0xffff);
-	  return \"mcomw %1,%0\";
-	}
-      if ((unsigned)(i & 0xffff) < 127)
-	{
-	   operands[1] = gen_rtx (CONST_INT, VOIDmode, 63);
-	   operands[2] = gen_rtx (CONST_INT, VOIDmode, (i-63) & 0xffff);
-	   return \"addw3 %2,%1,%0\";
-	}
-      /* this is a lot slower, and only saves 1 measly byte! */
-      /* if ((unsigned)i < 0x100)
-	   return \"movzbw %1,%0\"; */
-      /* if (i >= -0x80 && i < 0)
-	   return \"cvtbw %1,%0\"; */
+      if (i == 0)
+	return \"clrw %0\";
+      else if ((unsigned int)i < 64)
+	return \"movw %1,%0\";
+      else if ((unsigned int)~i < 64)
+	return \"mcomw %H1,%0\";
+      else if ((unsigned int)i < 256)
+	return \"movzbw %1,%0\";
+    }
+  return \"movw %1,%0\";
+}")
+
+(define_insn "movstricthi"
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=g"))
+	(match_operand:HI 1 "general_operand" "g"))]
+  ""
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      int i = INTVAL (operands[1]);
+      if (i == 0)
+	return \"clrw %0\";
+      else if ((unsigned int)i < 64)
+	return \"movw %1,%0\";
+      else if ((unsigned int)~i < 64)
+	return \"mcomw %H1,%0\";
+      else if ((unsigned int)i < 256)
+	return \"movzbw %1,%0\";
     }
   return \"movw %1,%0\";
 }")
@@ -276,17 +295,40 @@
   ""
   "*
 {
-  if (operands[1] == const0_rtx)
-    return \"clrb %0\";
-  if (GET_CODE (operands[1]) == CONST_INT
-      && (unsigned) INTVAL (operands[1]) >= 64)
+  rtx link;
+  if (operands[1] == const1_rtx
+      && (link = find_reg_note (insn, REG_WAS_0, 0))
+      /* Make sure the insn that stored the 0 is still present.  */
+      && ! INSN_DELETED_P (XEXP (link, 0))
+      && GET_CODE (XEXP (link, 0)) != NOTE
+      /* Make sure cross jumping didn't happen here.  */
+      && no_labels_between_p (XEXP (link, 0), insn))
+    return \"incb %0\";
+
+  if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
-      if ((unsigned)((~i) & 0xff) < 64)
-	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, (~i) & 0xff);
-	  return \"mcomb %1,%0\";
-	}
+      if (i == 0)
+	return \"clrb %0\";
+      else if ((unsigned int)~i < 64)
+	return \"mcomb %B1,%0\";
+    }
+  return \"movb %1,%0\";
+}")
+
+(define_insn "movstrictqi"
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=g"))
+	(match_operand:QI 1 "general_operand" "g"))]
+  ""
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      int i = INTVAL (operands[1]);
+      if (i == 0)
+	return \"clrb %0\";
+      else if ((unsigned int)~i < 64)
+	return \"mcomb %B1,%0\";
     }
   return \"movb %1,%0\";
 }")
@@ -1285,13 +1327,26 @@
   ""
   "cmpzv %2,%1,%0,%3")
 
+;; When the field position and size are constant and the destination
+;; is a register, extv and extzv are much slower than a rotate followed
+;; by a bicl or sign extension.
+
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(sign_extract:SI (match_operand:SI 1 "nonmemory_operand" "r")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
-  "extv %3,%2,%1,%0")
+  "*
+{
+  if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[0]) != REG
+      || (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16))
+    return \"extv %3,%2,%1,%0\";
+  if (INTVAL (operands[2]) == 8)
+    return \"rotl %R3,%1,%0\;cvtbl %0,%0\";
+  return \"rotl %R3,%1,%0\;cvtwl %0,%0\";
+}")
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
@@ -1299,7 +1354,21 @@
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
-  "extzv %3,%2,%1,%0")
+  "*
+{
+  if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[0]) != REG)
+    return \"extzv %3,%2,%1,%0\";
+  if (INTVAL (operands[2]) == 8)
+    return \"rotl %R3,%1,%0\;movzbl %0,%0\";
+  if (INTVAL (operands[2]) == 16)
+    return \"rotl %R3,%1,%0\;movzwl %0,%0\";
+  if (INTVAL (operands[3]) & 31)
+    return \"rotl %R3,%1,%0\;bicl2 %M2,%0\";
+  if (rtx_equal_p (operands[0], operands[1]))
+    return \"bicl2 %M2,%0\";
+  return \"bicl3 %M2,%1,%0\";
+}")
 
 ;; Non-register cases.
 ;; nonimmediate_operand is used to make sure that mode-ambiguous cases
@@ -1331,7 +1400,19 @@
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
-  "extv %3,%2,%1,%0")
+  "*
+{
+  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[3]) != CONST_INT
+      || (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16)
+      || side_effects_p (operands[1])
+      || (GET_CODE (operands[1]) == MEM
+	  && mode_dependent_address_p (XEXP (operands[1], 0))))
+    return \"extv %3,%2,%1,%0\";
+  if (INTVAL (operands[2]) == 8)
+    return \"rotl %R3,%1,%0\;cvtbl %0,%0\";
+  return \"rotl %R3,%1,%0\;cvtwl %0,%0\";
+}")
 
 (define_insn "extzv"
   [(set (match_operand:SI 0 "general_operand" "=g")
@@ -1339,7 +1420,20 @@
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
-  "extzv %3,%2,%1,%0")
+  "*
+{
+  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[3]) != CONST_INT
+      || side_effects_p (operands[1])
+      || (GET_CODE (operands[1]) == MEM
+	  && mode_dependent_address_p (XEXP (operands[1], 0))))
+    return \"extzv %3,%2,%1,%0\";
+  if (INTVAL (operands[2]) == 8)
+    return \"rotl %R3,%1,%0\;movzbl %0,%0\";
+  if (INTVAL (operands[2]) == 16)
+    return \"rotl %R3,%1,%0\;movzwl %0,%0\";
+  return \"rotl %R3,%1,%0\;bicl2 %M2,%0\";
+}")
 
 (define_insn "insv"
   [(set (zero_extract:SI (match_operand:QI 0 "general_operand" "+g")
