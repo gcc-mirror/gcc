@@ -78,5 +78,5 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso %(link_syscalls) } %{!shared: %{g*: %(link_libg) }}\
-   %{shared:-bM:SRE}"
+   %{shared:-bM:SRE %{!e:-bnoentry}}"
 
