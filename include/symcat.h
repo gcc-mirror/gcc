@@ -46,4 +46,4 @@
    to "foo".  */
 #define XSTRING(s) STRINGX(s) 
 
-#endif
+#endif /* SYM_CAT_H */
