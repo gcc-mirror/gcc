@@ -7434,6 +7434,7 @@ make_rtl_for_local_static (decl)
       && ! TREE_PUBLIC (decl)
       && ! DECL_EXTERNAL (decl)
       && ! TYPE_NEEDS_DESTRUCTOR (type)
+      && ! TREE_ADDRESSABLE (decl)
       && DECL_MODE (decl) != BLKmode)
     {
       /* As an optimization, we try to put register-sized static
