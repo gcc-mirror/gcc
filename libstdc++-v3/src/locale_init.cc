@@ -33,6 +33,7 @@
 #include <cwctype>     // For towupper, etc.
 #include <locale>
 #include <bits/atomicity.h>
+#include <bits/concurrence.h>
 
 namespace __gnu_cxx
 {
@@ -96,21 +97,26 @@ namespace std
   locale::locale() throw()
   { 
     _S_initialize(); 
-    (_M_impl = _S_global)->_M_add_reference(); 
+    __glibcxx_mutex_define_initialized(lock);
+    __glibcxx_mutex_lock(lock);
+    _S_global->_M_add_reference();
+    _M_impl = _S_global;
+    __glibcxx_mutex_unlock(lock);
   }
 
   locale
   locale::global(const locale& __other)
   {
     _S_initialize();
-
-    // XXX MT
+    __glibcxx_mutex_define_initialized(lock);
+    __glibcxx_mutex_lock(lock);
     _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
     _S_global = __other._M_impl; 
     if (_S_global->_M_check_same_name() 
 	&& (std::strcmp(_S_global->_M_names[0], "*") != 0))
       setlocale(LC_ALL, __other.name().c_str());
+    __glibcxx_mutex_unlock(lock);
 
     // Reference count sanity check: one reference removed for the
     // subsition of __other locale, one added by return-by-value. Net
