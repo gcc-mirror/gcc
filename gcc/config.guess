@@ -341,6 +341,9 @@ EOF
 	| sed -e 's/CRAY.*\([A-Z]90\)/\1/' \
 	      -e y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
 	exit 0 ;;
+    CRAY*TS:*:*:*)
+	echo t90-cray-unicos${UNAME_RELEASE}
+	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
