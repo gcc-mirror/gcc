@@ -537,7 +537,7 @@
   ""
   "*
 {
-  const char * const pattern[4] = {
+  static const char * const pattern[4] = {
     \"addq %r1,%2,%0\",
     \"subq %r1,%n2,%0\",
     \"lda %0,%2(%r1)\",
