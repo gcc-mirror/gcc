@@ -222,11 +222,13 @@ tree intQI_type_node;
 tree intHI_type_node;
 tree intSI_type_node;
 tree intDI_type_node;
+tree intTI_type_node;
 
 tree unsigned_intQI_type_node;
 tree unsigned_intHI_type_node;
 tree unsigned_intSI_type_node;
 tree unsigned_intDI_type_node;
+tree unsigned_intTI_type_node;
 
 /* a VOID_TYPE node, and the same, packaged in a TREE_LIST.  */
 
@@ -5115,6 +5117,8 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
   intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
+  intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intTI_type_node));
   unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
   unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
@@ -5123,6 +5127,8 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
   unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
+  unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intTI_type_node));
 
   float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
