@@ -189,35 +189,76 @@ package body CStand is
    procedure Create_Operators is
       Op_Node : Entity_Id;
 
-      --  Following list has two entries for concatenation, to include
-      --  explicitly the operation on wide strings.
+      --  The following tables define the binary and unary operators and their
+      --  corresponding result type.
 
       Binary_Ops : constant array (S_Binary_Ops) of Name_Id :=
-        (Name_Op_Add,      Name_Op_And,   Name_Op_Concat,   Name_Op_Concat,
-         Name_Op_Divide,   Name_Op_Eq,    Name_Op_Expon,    Name_Op_Ge,
-         Name_Op_Gt,       Name_Op_Le,    Name_Op_Lt,       Name_Op_Mod,
-         Name_Op_Multiply, Name_Op_Ne,    Name_Op_Or,       Name_Op_Rem,
-         Name_Op_Subtract, Name_Op_Xor);
+
+         --  There is one entry here for each binary operator, except for the
+         --  case of concatenation, where there are two entries, one for a
+         --  String result, and one for a Wide_String result.
+
+        (Name_Op_Add,
+         Name_Op_And,
+         Name_Op_Concat,
+         Name_Op_Concat,
+         Name_Op_Divide,
+         Name_Op_Eq,
+         Name_Op_Expon,
+         Name_Op_Ge,
+         Name_Op_Gt,
+         Name_Op_Le,
+         Name_Op_Lt,
+         Name_Op_Mod,
+         Name_Op_Multiply,
+         Name_Op_Ne,
+         Name_Op_Or,
+         Name_Op_Rem,
+         Name_Op_Subtract,
+         Name_Op_Xor);
 
       Bin_Op_Types : constant array (S_Binary_Ops) of Entity_Id :=
-        (Universal_Integer, Standard_Boolean,
-         Standard_String,   Standard_Wide_String,
-         Universal_Integer, Standard_Boolean,
-         Universal_Integer, Standard_Boolean,
-         Standard_Boolean,  Standard_Boolean,
-         Standard_Boolean,  Universal_Integer,
-         Universal_Integer, Standard_Boolean,
-         Standard_Boolean,  Universal_Integer,
-         Universal_Integer, Standard_Boolean);
+
+         --  This table has the corresponding result types. The entries are
+         --  ordered so they correspond to the Binary_Ops array above.
+
+        (Universal_Integer,       -- Add
+         Standard_Boolean,        -- And
+         Standard_String,         -- Concat (String)
+         Standard_Wide_String,    -- Concat (Wide_String)
+         Universal_Integer,       -- Divide
+         Standard_Boolean,        -- Eq
+         Universal_Integer,       -- Expon
+         Standard_Boolean,        -- Ge
+         Standard_Boolean,        -- Gt
+         Standard_Boolean,        -- Le
+         Standard_Boolean,        -- Lt
+         Universal_Integer,       -- Mod
+         Universal_Integer,       -- Multiply
+         Standard_Boolean,        -- Ne
+         Standard_Boolean,        -- Or
+         Universal_Integer,       -- Rem
+         Universal_Integer,       -- Subtract
+         Standard_Boolean);       -- Xor
 
       Unary_Ops : constant array (S_Unary_Ops) of Name_Id :=
-        (Name_Op_Abs, Name_Op_Subtract, Name_Op_Not, Name_Op_Add);
+
+         --  There is one entry here for each unary operator
+
+        (Name_Op_Abs,
+         Name_Op_Subtract,
+         Name_Op_Not,
+         Name_Op_Add);
 
       Unary_Op_Types : constant array (S_Unary_Ops) of Entity_Id :=
-        (Universal_Integer, Universal_Integer,
-         Standard_Boolean,  Universal_Integer);
 
-      --  Corresponding to Abs, Minus, Not, and Plus.
+         --  This table has the corresponding result types. The entries are
+         --  ordered so they correspond to the Unary_Ops array above.
+
+        (Universal_Integer,     -- Abs
+         Universal_Integer,     -- Subtract
+         Standard_Boolean,      -- Not
+         Universal_Integer);    -- Add
 
    begin
       for J in S_Binary_Ops loop

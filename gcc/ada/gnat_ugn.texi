@@ -89,19 +89,19 @@
 @set EDITION GNAT
 
 @ifset unw
-@set PLATFORM Unix and Windows
+@set PLATFORM
 @set FILE gnat_ugn_unw
 @end ifset
 
 @ifset vms
-@set PLATFORM OpenVMS Alpha
+@set PLATFORM OpenVMS
 @set FILE gnat_ugn_vms
 @end ifset
 
-@settitle @value{EDITION} User's Guide for Native Platforms / @value{PLATFORM}
+@settitle @value{EDITION} User's Guide @value{PLATFORM}
 @dircategory GNU Ada tools
 @direntry
-* @value{EDITION} User's Guide (@value{FILE}) for Native Platforms / @value{PLATFORM}
+* @value{EDITION} User's Guide (@value{FILE}) @value{PLATFORM}
 @end direntry
 
 @include gcc-common.texi
@@ -127,7 +127,7 @@ A copy of the license is included in the section entitled
 @titlepage
 
 @title @value{EDITION} User's Guide
-@center @titlefont{for Native Platforms}
+@c @center @titlefont{for Native Platforms}
 @sp 1
 
 @flushright
@@ -138,7 +138,7 @@ A copy of the license is included in the section entitled
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle GCC version @value{version-GCC}
 
-@author Ada Core Technologies, Inc.
+@author AdaCore
 
 @page
 @vskip 0pt plus 1filll
@@ -152,14 +152,14 @@ A copy of the license is included in the section entitled
 @top @value{EDITION} User's Guide
 
 @noindent
-@value{EDITION} User's Guide for Native Platforms / @value{PLATFORM}
+@value{EDITION} User's Guide @value{PLATFORM}
 
 @noindent
 GNAT, The GNU Ada 95 Compiler@*
 GCC version @value{version-GCC}@*
 
 @noindent
-Ada Core Technologies, Inc.@*
+AdaCore@*
 
 @menu
 * About This Guide::
@@ -607,6 +607,9 @@ Compatibility and Porting Guide
 * Compatibility with DEC Ada 83::
 * Compatibility with Other Ada 95 Systems::
 * Representation Clauses::
+@ifset vms
+* Transitioning from Alpha to Integrity OpenVMS::
+@end ifset
 
 @ifset unw
 Microsoft Windows Topics
@@ -633,9 +636,10 @@ Microsoft Windows Topics
 
 @noindent
 @ifset vms
-This guide describes the use of of @value{EDITION},
+This guide describes the use of @value{EDITION},
 a full language compiler for the Ada
-95 programming language, implemented on HP OpenVMS Alpha platforms.
+95 programming language, implemented on HP's Alpha and
+Integrity (ia64) OpenVMS platforms.
 @end ifset
 @ifclear vms
 This guide describes the use of @value{EDITION},
@@ -4680,6 +4684,17 @@ of the renamed packages (like @code{Text_IO}) and use of package
 would generate many annoying positive warnings. The default is that
 such warnings are not generated.
 
+In addition to the above cases, warnings are also generated for
+GNAT features that have been provided in past versions but which
+have been superceded (typically by features in the new Ada standard).
+For example, @code{pragma Ravenscar} will be flagged since its
+function is replaced by @code{pragma Profile(Ravenscar)}.
+
+Note that this warning option functions differently from the
+restriction @code{No_Obsolescent_Features} in two respects.
+First, the restriction applies only to annex J features.
+Second, the restriction does flag uses of package @code{ASCII}.
+
 @item -gnatwJ
 @emph{Suppress warnings on obsolescent features (Annex J).}
 @cindex @option{-gnatwJ} (@code{gcc})
@@ -6654,7 +6669,7 @@ The content of the @file{ada_source_path} file which is part of the GNAT
 installation tree and is used to store standard libraries such as the
 GNAT Run Time Library (RTL) source files.
 @ifclear vms
-@ref{Installing the library}
+@ref{Installing a library}
 @end ifclear
 @end enumerate
 
@@ -7572,7 +7587,7 @@ installation tree and is used to store standard libraries such as the
 GNAT Run Time Library (RTL) unless the switch @option{-nostdlib} is
 specified.
 @ifclear vms
-@ref{Installing the library}
+@ref{Installing a library}
 @end ifclear
 @end enumerate
 
@@ -15470,9 +15485,8 @@ $ gnatmetric [@var{switches}] @var{filename} [@var{-cargs gcc_switches}]
 where
 @itemize @bullet
 @item
-@var{switches} is an optional sequence of switches specifying
-the set of metrics to compute and defining the destination for the
-output information
+@var{switches} specify the metrics to compute and define the destination for
+the output
 
 @item
 @var{filename} is the name (including the extension) of the source file to
@@ -15481,7 +15495,7 @@ command are allowed.  The file name may contain path information; in this case
 it does not have to follow the GNAT file naming rules
 
 @item
-@option{-cargs gcc_switches} is a list of switches that are valid switches for
+@option{-cargs gcc_switches} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatmetric} to generate the ASIS trees. Here you can provide
 @option{-I} switches to form the source search path,
@@ -15513,8 +15527,8 @@ The following subsections describe the various switches accepted by
 @cindex Output file control in @command{gnatmetric}
 
 @noindent
-@command{gnatmetric} has two output formats. It can generate the output in
-textual (human-readable) form, and also as XML. By default only textual
+@command{gnatmetric} has two output formats. It can generate a
+textual (human-readable) form, and also XML. By default only textual
 output is generated.
 
 When generating the output in textual form, @command{gnatmetric} creates
@@ -15534,7 +15548,7 @@ Some of the computed metrics are summed over the units passed to
 By default this information is sent to @file{stdout}, but a file
 can be specified with the @option{-og} switch.
 
-The following switches may be used to control the @command{gnatmetric} output:
+The following switches control the @command{gnatmetric} output:
 
 @table @option
 @cindex @option{^-x^/XML^} (@command{gnatmetric})
@@ -15551,11 +15565,12 @@ Put textual files with detailed metrics into @var{output_dir}
 
 @cindex @option{^-o^/SUFFIX_DETAILS^} (@command{gnatmetric})
 @item ^-o @var{file_suffix}^/SUFFIX_DETAILS=@var{file_suffix}^
-Use @var{file_suffix} to form the name of the file for the detailed metrics.
+Use @var{file_suffix}, instead of ^@file{.metrix}^@file{$METRIX}^
+in the name of the output file.
 
 @cindex @option{^-og^/GLOBAL_OUTPUT^} (@command{gnatmetric})
 @item ^-og @var{file_name}^/GLOBAL_OUTPUT=@var{file_name}^
-Put global metrics info into @var{file_name}
+Put global metrics into @var{file_name}
 
 @cindex @option{^-ox^/XML_OUTPUT^} (@command{gnatmetric})
 @item ^-ox @var{file_name}^/XML_OUTPUT=@var{file_name}^
@@ -15583,15 +15598,13 @@ compute metrics for:
 
 @itemize @bullet
 @item
-a library item or a subunit into a compilation unit;
+a library item or a subunit in a compilation unit;
 
 @item
 all kinds of bodies;
 
 @item
 declarations of tasks and protected types and objects, package and generic
-
-@item
 package declarations;
 
 @end itemize
@@ -15636,35 +15649,35 @@ format effectors (blank lines)
 @end itemize
 
 If @command{gnatmetric} is invoked on more than one source file, it sums the
-values of the line metrics for all the files being processed and then prints
-out the cumulative results.
+values of the line metrics for all the files being processed and then
+generates the cumulative results.
 
 By default, all the line metrics are computed and reported. You can use the
 following switches to select the specific line metrics to be computed and
 reported (if any of these parameters is set, only explicitly specified line
-metrics are computed)
+metrics are computed).
 
 @table @option
 @cindex @option{^-la^/LINES_ALL^} (@command{gnatmetric})
 @item ^-la^/LINES_ALL^
-Compute and print out the number of all lines
+The number of all lines
 
 @cindex @option{^-lcode^/CODE_LINES^} (@command{gnatmetric})
 @item ^-lcode^/CODE_LINES^
-Compute and print out the number of code lines
+The number of code lines
 
 @cindex @option{^-lcomm^/COMENT_LINES^} (@command{gnatmetric})
 @item ^-lcomm^/COMENT_LINES^
-Compute and print out the number of comment lines
+The number of comment lines
 
 @cindex @option{^-leol^/MIXED_CODE_COMMENTS^} (@command{gnatmetric})
 @item ^-leol^/MIXED_CODE_COMMENTS^
-Compute and print out the number of code lines containing
+The number of code lines containing
 end-of-line comments
 
 @cindex @option{^-lb^/BLANK_LINES^} (@command{gnatmetric})
 @item ^-lb^/BLANK_LINES^
- Compute and print out the number of blank lines
+The number of blank lines
 
 @end table
 
@@ -15673,14 +15686,15 @@ end-of-line comments
 @cindex Syntax metrics control in @command{gnatmetric}
 
 @noindent
-For any program unit, @command{gnatmetri}c computes the total number of
+For any program unit, @command{gnatmetric} computes the total number of
 declarations and the total number of statements.  The sum of all the statements
-and all the declarations is considered as @emph{LSLOC} (Logical Source
-Lines Of Code)
+and all the declarations is considered as @emph{LSLOC} (``Logical Source
+Lines Of Code'')
 and is reported as a separate metric.
 
-For any body and any task, protected, package and generic package declaration a
-maximal nesting level of nested program units is computed. According to
+For any body and any task, protected, package and generic package declaration
+the maximal static nesting level of nested program units is computed.
+According to
 @cite{Ada 95 Language Reference Manual}, 10.1(1), ``A program unit is either a
 package, a task unit, a protected unit, a
 protected entry, a generic unit, or an explicitly declared subprogram other
@@ -15724,21 +15738,20 @@ types are counted and reported separately:
 
 @itemize @bullet
 @item
-abstract types;
+Abstract types
 
 @item
-tagged types (abstract, non-abstract, private, non-private). Type
-extensions are @emph{not} counted as tagged types; the idea is to count
-possible roots for classes of extendable types;
+Root tagged types (abstract, non-abstract, private, non-private). Type
+extensions are @emph{not} counted
 
 @item
-private types (including private extensions);
+Private types (including private extensions)
 
 @item
-task types;
+Task types
 
 @item
-protected types.
+Protected types
 
 @end itemize
 
@@ -15761,39 +15774,35 @@ if any of these is set, only the explicitly specified metrics are computed.
 @table @option
 @cindex @option{^-ed^/DECLARATION_TOTAL^} (@command{gnatmetric})
 @item ^-ed^/DECLARATION_TOTAL^
-Compute and print out the total number of declarations
+The total number of declarations
 
 @cindex @option{^-es^/STATEMENT_TOTAL^} (@command{gnatmetric})
 @item ^-es^/STATEMENT_TOTAL^
-Compute and print out the total number of statements
+The total number of statements
 
 @cindex @option{^-eps^/^} (@command{gnatmetric})
 @item ^-eps^/INT_SUBPROGRAMS^
-Compute and print out the number of public subprograms in a
-compilation unit
+The number of public subprograms in a compilation unit
 
 @cindex @option{^-eas^/SUBPROGRAMS_ALL^} (@command{gnatmetric})
 @item ^-eas^/SUBPROGRAMS_ALL^
-Compute and print out the number of all the subprograms in a
-compilation unit
+The number of all the subprograms in a compilation unit
 
 @cindex @option{^-ept^/INT_TYPES^} (@command{gnatmetric})
 @item ^-ept^/INT_TYPES^
-Compute and print out the number of public types in a compilation
-unit
+The number of public types in a compilation unit
 
 @cindex @option{^-eat^/TYPES_ALL^} (@command{gnatmetric})
 @item ^-eat^/TYPES_ALL^
-Compute and print out the number of all the types in a compilation
-unit
+The number of all the types in a compilation unit
 
 @cindex @option{^-enu^/PROGRAM_NESTING_MAX^} (@command{gnatmetric})
 @item ^-enu^/PROGRAM_NESTING_MAX^
-Compute and print out the maximal program unit nesting level
+The maximal program unit nesting level
 
 @cindex @option{^-ec^/CONSTRUCT_NESTING_MAX^} (@command{gnatmetric})
 @item ^-ec^/CONSTRUCT_NESTING_MAX^
-Compute and print out the maximal construct nesting level
+The maximal construct nesting level
 
 @end table
 
@@ -15842,7 +15851,7 @@ cyclomatic complexity, which is the sum of these two values.
 
 @noindent
 When computing cyclomatic and essential complexity, @command{gnatmetric} skips
-the code in the exception handlers and in all the nested program units
+the code in the exception handlers and in all the nested program units.
 
 By default, all the complexity metrics are computed and reported.
 For more finely-grained control you can use
@@ -15878,8 +15887,8 @@ Additional @command{gnatmetric} switches are as follows:
 Take the argument source files from the specified file. This file should be an
 ordinary textual file containing file names separated by spaces or
 line breaks. You can use this switch more then once in the same call to
-@command{gnatmetric}. You also can combine this switch with explicit list of
-files.
+@command{gnatmetric}. You also can combine this switch with
+an explicit list of files.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatmetric})
@@ -16864,9 +16873,8 @@ where @code{gnatclean} was invoked.
 @cindex Library, building, installing, using
 
 @noindent
-This chapter describes how to build and use
-libraries with GNAT, and also shows how to recompile the GNAT run-time library.
-You should be familiar with the
+This chapter describes how to build and use libraries with GNAT, and also shows
+how to recompile the GNAT run-time library. You should be familiar with the
 Project Manager facility (see @ref{GNAT Project Manager}) before reading this
 chapter.
 
@@ -16889,50 +16897,50 @@ or, on platforms that support it, be dynamically linked, in which case
 its code is shared by all applications making use of this library.
 
 GNAT supports both types of libraries.
-In the static case, the compiled code can be provided in different ways.
-The simplest approach is to provide directly the
-set of objects resulting from compilation of the library source files.
-Alternatively, you can group the objects into an archive using whatever
-commands are provided by the operating system. For the latter case,
-the objects are grouped into a shared library.
+In the static case, the compiled code can be provided in different ways. The
+simplest approach is to provide directly the set of objects resulting from
+compilation of the library source files. Alternatively, you can group the
+objects into an archive using whatever commands are provided by the operating
+system. For the latter case, the objects are grouped into a shared library.
 
-In the GNAT environment, a library has two types of components:
+In the GNAT environment, a library has three types of components:
 @itemize @bullet
 @item
 Source files.
 @item
-Compiled code and @file{ALI} files.
+@file{ALI} files.
 See @ref{The Ada Library Information Files}.
+@item
+Object files, an archive or a shared library.
 @end itemize
 
 @noindent
-A GNAT library may either completely expose its source files to the
-compilation context of the user's application.
-Alternatively, it may expose
-a limited subset of its source files, called @emph{interface units},
-in which case the library is referred to as a @emph{stand-alone library}
-(see @ref{Stand-alone Ada Libraries}). In addition, GNAT fully supports
-foreign libraries, which are only available in the object format.
+A GNAT library may expose all its source files, which is useful for
+documentation purposes. Alternatively, it may expose only the units needed by
+an external user to make use of the library. That is to say, the specs
+expliciting the library services along with all the units needed to compile
+those specs, which can include generic bodies or any body implementing an
+inlined routine. In the case of @emph{stand-alone libraries} those exposed
+units are called @emph{interface units} (see @ref{Stand-alone Ada Libraries}).
 
-All compilation units comprising
-an application are elaborated, in an order partially defined by Ada language
-semantics.
-Where possible, GNAT provides facilities
-to ensure that compilation units of a library are automatically elaborated;
-however, there are cases where this must be responsibility of a user. This will
-be addressed in greater detail below.
+All compilation units comprising an application, including those in a library,
+need to be elaborated in an order partially defined by Ada's semantics. GNAT
+computes the elaboration order from the @file{ALI} files and this is why they
+constitute a mandatory part of GNAT libraries. Except in the case of
+@emph{stand-alone libraries}, where a specific library elaboration routine is
+produced independantly of the application(s) using the library.
 
 @node General Ada Libraries
 @section General Ada Libraries
 
 @menu
-* Building the library::
-* Installing the library::
-* Using the library::
+* Building a library::
+* Installing a library::
+* Using a library::
 @end menu
 
-@node Building the library
-@subsection Building the library
+@node Building a library
+@subsection Building a library
 
 @noindent
 The easiest way to build a library is to use the Project Manager,
@@ -16945,7 +16953,7 @@ control different aspects of library configuration, additional optional
 project-level attributes can be specified:
 @table @code
 @item Library_Kind
-This attribute controls whether the library is to be static or shared
+This attribute controls whether the library is to be static or dynamic
 
 @item Library_Version
 This attribute specifies what is the library version; this value is used
@@ -16966,15 +16974,29 @@ or are not up to date, assembly of the library archive, and installation of
 the library, i.e. copying associated source, object and @file{ALI} files
 to the specified location.
 
-It is not entirely trivial to correctly perform all the steps required to
+Here is a simple library project file:
+@smallexample @c ada
+project My_Lib is
+   for Source_Dirs use ("src1", "src2");
+   for Object_Dir use "obj";
+   for Library_Name use "mylib";
+   for Library_Dir use "lib";
+   for Library_Kind use "dynamic";
+end My_lib;
+@end smallexample
+and the compilation command to build and install the library:
+@smallexample @c ada
+  $ gnatmake -Pmy_lib
+@end smallexample
+
+It is not entirely trivial to perform manually all the steps required to
 produce a library. We recommend that you use the GNAT Project Manager
 for this task. In special cases where this is not desired, the necessary
 steps are discussed below.
 
 There are various possibilities for compiling the units that make up the
-library: for example with a Makefile (see @ref{Using the GNU make Utility})
-or with a conventional script.
-For simple libraries, it is also possible to create a
+library: for example with a Makefile (see @ref{Using the GNU make Utility}) or
+with a conventional script. For simple libraries, it is also possible to create
 dummy main program which depends upon all the packages that comprise the
 interface of the library. This dummy main program can then be given to
 @command{gnatmake}, which will ensure that all necessary objects are built.
@@ -17023,28 +17045,62 @@ $ chmod -w *.ali
 
 @noindent
 Please note that the library must have a name of the form @file{libxxx.a} or
-@file{libxxx.so} in order to be accessed by the directive @option{-lxxx}
-at link time.
+@file{libxxx.so} (or @file{libxxx.dll} on Windows) in order to be accessed by
+the directive @option{-lxxx} at link time.
 
-@node Installing the library
-@subsection Installing the library
+@node Installing a library
+@subsection Installing a library
 
 @noindent
-In the GNAT model, installing a library consists in copying into a specific
-location the files that make up this library. When the library is built using
-projects, it is automatically installed in the location specified in the
-project by means of the attribute @code{Library_Dir},
-otherwise the user must specify the destination.
-GNAT also supports installing the sources in a
-different directory from the other files (@file{ALI}, objects, archives)
-since the source path and the object path can be specified separately.
+When using project files, installing libraries is part of the library build
+process and thus, no further action is needed in order to make use of the
+libraries that are built as part of the general application build. A usable
+version of the library is installed in the directory specified by the
+@code{Library_Dir} attribute of the library project file.
 
-The system administrator can place general purpose libraries in the default
-compiler paths, by specifying the libraries' location in the configuration
-files @file{ada_source_path} and @file{ada_object_path}.
-These configuration files must be located in the GNAT
-installation tree at the same place as the gcc spec file. The location of
-the gcc spec file can be determined as follows:
+One may want to install a library in a context different from where the library
+is built. This is, for instance, the case of third party suppliers, who whish
+to distribute a library in binary form where the user is not expected to be
+able to recompile the library. The simplest option, in this case, is to provide
+project file slightly different from the one used to build the library which
+makes use of the @code{externally_built} attribute. For instance the project
+file used to build the library in the previous section can be changed into the
+following one when the library is installed:
+
+@smallexample @c ada
+project My_Lib is
+   for Source_Dirs use ("src1", "src2");
+   for Library_Name use "mylib";
+   for Library_Dir use "lib";
+   for Library_Kind use "dynamic";
+   for Externally_Built use "true";
+end My_lib;
+@end smallexample
+
+This project file assumes that the directories "src1", "src2" & "lib" exist in
+the directory containing the project file. The @code{externally_built}
+attribute makes it clear to the GNAT builder that it should not attempt to
+recompile any of the units from this library. It allows the library provider to
+restrict the source set to the minimum necessary for clients to make use of the
+library as described in the first section of this chapter. It is the
+responsability of the library provider to install the necessary sources, ALI
+files & libraries in the directories mentioned in the project file. For
+convenience to the user, it is recommended to install the user's library
+project file in a location that will be searched automatically by the GNAT
+builder. That is to say, any directory refernced in the @code{ADA_LIBRARY_PATH}
+environmenbt variable (see @ref{Importing Projects}), or in the default GNAT
+library location that can be queried with @code{gnatls -v} and is usually of
+the form $gnat_install_root/lib/gnat.
+
+When project files are not an option, it is also possible, but not recommended,
+to install the library so that the sources needed to use the library be on the
+Ada source path and the ALI files & libraries be on the Ada Object path (see
+@ref{Search Paths and the Run-Time Library (RTL)}. Alternatively, he system
+administrator can place general purpose libraries in the default compiler
+paths, by specifying the libraries' location in the configuration files
+@file{ada_source_path} and @file{ada_object_path}. These configuration files
+must be located in the GNAT installation tree at the same place as the gcc spec
+file. The location of the gcc spec file can be determined as follows:
 @smallexample
 $ gcc -v
 @end smallexample
@@ -17080,15 +17136,20 @@ library, by reordering the lines in the configuration files. In general, a
 library must be installed before the GNAT library if it redefines
 any part of it.
 
-@node Using the library
-@subsection Using the library
+@node Using a library
+@subsection Using a library
 
-@noindent
-Once again, the project facility greatly simplifies the addition of libraries
-to the compilation. If the project file for an application lists a library
-project in its @code{with} clause, the Project Manager will ensure that the
-library files are consistent, and that they are considered during the
-compilation and linking of the application.
+@noindent Once again, the project facility greatly simplifies the use of
+libraries. In this context, using a library is just a matter of adding a
+@code{with} clause in the user project. For instance, to make use of the
+library "My_Lib" used as an examples in earlier sections, is just a matter of
+writing something like:
+@smallexample @c ada
+with "my_lib";
+project My_Proj is
+  ...
+end My_Proj;
+@end smallexample
 
 Even if you have a third-party, non-Ada library, you can still use GNAT's
 Project Manager facility to provide a wrapper for it. The following project for
@@ -17288,7 +17349,7 @@ read-only.
 
 @noindent
 Using SALs is not different from using other libraries
-(see @ref{Using the library}).
+(see @ref{Using a library}).
 
 @node Creating a Stand-alone Library to be used in a non-Ada context
 @subsection Creating a Stand-alone Library to be used in a non-Ada context
@@ -18817,8 +18878,13 @@ $ RUN/DEBUG <PROGRAM_NAME>
 @cindex Debugging
 
 @noindent
-This chapter discusses how to debug Ada programs. An incorrect Ada program
-may be handled in three ways by the GNAT compiler:
+This chapter discusses how to debug Ada programs.
+@ifset vms
+It applies to the Alpha OpenVMS platform;
+the debugger for Integrity OpenVMS is scheduled for a subsequent release.
+@end ifset
+
+An incorrect Ada program may be handled in three ways by the GNAT compiler:
 
 @enumerate
 @item
@@ -26136,9 +26202,12 @@ applications developed in other Ada environments.
 @menu
 * Compatibility with Ada 83::
 * Implementation-dependent characteristics::
-* Compatibility with DEC Ada 83::
 * Compatibility with Other Ada 95 Systems::
 * Representation Clauses::
+* Compatibility with DEC Ada 83::
+@ifset vms
+* Transitioning from Alpha to Integrity OpenVMS::
+@end ifset
 @end menu
 
 @node Compatibility with Ada 83
@@ -26642,6 +26711,393 @@ attributes are recognized, although only a subset of them can sensibly
 be implemented.  The description of pragmas in this reference manual
 indicates whether or not they are applicable to non-VMS systems.
 
+
+@ifset vms
+@node Transitioning from Alpha to Integrity OpenVMS
+@section Transitioning from Alpha to Integrity OpenVMS
+
+@menu
+* Introduction to transitioning::
+* Migration of 32 bit code::
+* Taking advantage of 64 bit addressing::
+* Technical details::
+@end menu
+
+@node Introduction to transitioning
+@subsection Introduction to transitioning
+
+@noindent
+This guide is meant to assist users of GNAT Pro
+for Alpha OpenVMS who are planning to transition to the IA64 architecture.
+GNAT Pro for Open VMS Integrity has been designed to meet
+three main goals:
+
+@enumerate
+@item
+Providing a full conforming implementation of the Ada 95 language
+
+@item
+Allowing maximum backward compatibility, thus easing migration of existing
+Ada source code
+
+@item
+Supplying a path for exploiting the full IA64 address range
+@end enumerate
+
+@noindent
+Ada's strong typing semantics has made it
+impractical to have different 32-bit and 64-bit modes. As soon as
+one object could possibly be outside the 32-bit address space, this
+would make it necessary for the @code{System.Address} type to be 64 bits.
+In particular, this would cause inconsistencies if 32-bit code is
+called from 64-bit code that raises an exception.
+
+This issue has been resolved by always using 64-bit addressing
+at the system level, but allowing for automatic conversions between
+32-bit and 64-bit addresses where required. Thus users who
+do not currently require 64-bit addressing capabilities, can
+recompile their code with only minimal changes (and indeed
+if the code is written in portable Ada, with no assumptions about
+the size of the @code{Address} type, then no changes at all are necessary).
+At the same time,
+this approach provides a simple, gradual upgrade path to future
+use of larger memories than available for 32-bit systems.
+Also, newly written applications or libraries will by default
+be fully compatible with future systems exploiting 64-bit
+addressing capabilities present in IA64.
+
+@ref{Migration of 32 bit code}, will focus on porting applications
+that do not require more than 2 GB of
+addressable memory. This code will be referred to as
+@emph{32-bit code}.
+For applications intending to exploit the full ia64 address space,
+@ref{Taking advantage of 64 bit addressing},
+will consider further changes that may be required.
+Such code is called @emph{64-bit code} in the
+remainder of this guide.
+
+
+@node Migration of 32 bit code
+@subsection Migration of 32-bit code
+
+@menu
+* Address types::
+* Access types::
+* Unchecked conversions::
+* Predefined constants::
+* Single source compatibility::
+* Experience with source compatibility::
+@end menu
+
+@node Address types
+@subsubsection Address types
+
+@noindent
+To solve the problem of mixing 64-bit and 32-bit addressing,
+while maintaining maximum backward compatibility, the following
+approach has been taken:
+
+@itemize @bullet
+@item
+@code{System.Address} always has a size of 64 bits
+
+@item
+@code{System.Short_Address} is a 32-bit subtype of @code{System.Address}
+@end itemize
+
+
+@noindent
+Since @code{System.Short_Address} is a subtype of @code{System.Address},
+a @code{Short_Address}
+may be used where an @code{Address} is required, and vice versa, without
+needing explicit type conversions.
+By virtue of the Open VMS Integrity parameter passing conventions,
+even imported
+and exported subprograms that have 32-bit address parameters are
+compatible with those that have 64-bit address parameters.
+(See @ref{Making code 64 bit clean}, for details.)
+
+The areas that may need attention are those where record types have
+been defined that contain components of the type @code{System.Address}, and
+where objects of this type are passed to code expecting a record layout with
+32-bit addresses.
+
+Different compilers on different platforms cannot be
+expected to represent the same type in the same way,
+since alignment constraints
+and other system-dependent properties affect the compiler's decision.
+For that reason, Ada code
+generally uses representation clauses to specify the expected
+layout where required.
+
+If such a representation clause uses 32 bits for a component having
+the type @code{System.Address}, GNAT Pro for OpenVMS Integrity will detect
+that error and produce a specific diagnostic message.
+The developer should then determine whether the representation
+should be 64 bits or not and make either of two changes:
+change the size to 64 bits and leave the type as @code{System.Address}, or
+leave the size as 32 bits and change the type to @code{System.Short_Address}.
+Since @code{Short_Address} is a subtype of @code{Address}, no changes are
+required in any code setting or accessing the field; the compiler will
+automatically perform any needed conversions between address
+formats.
+
+@node Access types
+@subsubsection Access types
+
+@noindent
+By default, objects designated by access values are always
+allocated in the 32-bit
+address space. Thus legacy code will never contain
+any objects that are not addressable with 32-bit addresses, and
+the compiler will never raise exceptions as result of mixing
+32-bit and 64-bit addresses.
+
+However, the access values themselves are represented in 64 bits, for optimum
+performance and future compatibility with 64-bit code. As was
+the case with @code{System.Address}, the compiler will give an error message
+if an object or record component has a representation clause that
+requires the access value to fit in 32 bits. In such a situation,
+an explicit size clause for the access type, specifying 32 bits,
+will have the desired effect.
+
+General access types (declared with @code{access all}) can never be
+32 bits, as values of such types must be able to refer to any object
+of the  designated type,
+including objects residing outside the 32-bit address range.
+Existing Ada 83 code will not contain such type definitions,
+however, since general access types were introduced in Ada 95.
+
+@node Unchecked conversions
+@subsubsection Unchecked conversions
+
+@noindent
+In the case of an @code{Unchecked_Conversion} where the source type is a
+64-bit access type or the type @code{System.Address}, and the target
+type is a 32-bit type, the compiler will generate a warning.
+Even though the generated code will still perform the required
+conversions, it is highly recommended in these cases to use
+respectively a 32-bit access type or @code{System.Short_Address}
+as the source type.
+
+@node Predefined constants
+@subsubsection Predefined constants
+
+@noindent
+The following predefined constants have changed:
+
+@multitable {@code{System.Address_Size}} {2**32} {2**64}
+@item   @b{Constant}               @tab @b{Old} @tab @b{New}
+@item   @code{System.Word_Size}    @tab 32      @tab 64
+@item   @code{System.Memory_Size}  @tab 2**32   @tab 2**64
+@item   @code{System.Address_Size} @tab 32      @tab 64
+@end multitable
+
+@noindent
+If you need to refer to the specific
+memory size of a 32-bit implementation, instead of the
+actual memory size, use @code{System.Short_Memory_Size}
+rather than @code{System.Memory_Size}.
+Similarly, references to @code{System.Address_Size} may need
+to be replaced by @code{System.Short_Address'Size}.
+The program @command{gnatfind} may be useful for locating
+references to the above constants, so that you can verify that they
+are still correct.
+
+@node Single source compatibility
+@subsubsection Single source compatibility
+
+@noindent
+In order to allow the same source code to be compiled on
+both Alpha and IA64 platforms, GNAT Pro for Alpha/OpenVMS
+defines @code{System.Short_Address} and System.Short_Memory_Size
+as aliases of respectively @code{System.Address} and
+@code{System.Memory_Size}.
+(These aliases also leave the door open for a possible
+future ``upgrade'' of OpenVMS Alpha to a 64-bit address space.)
+
+@node Experience with source compatibility
+@subsubsection Experience with source compatibility
+
+@noindent
+The Security Server and STARLET provide an interesting ``test case''
+for source compatibility issues, since it is in such system code
+where assumptions about @code{Address} size might be expected to occur.
+Indeed, there were a small number of occasions in the Security Server
+file @file{jibdef.ads}
+where a representation clause for a record type specified
+32 bits for a component of type @code{Address}.
+All of these errors were detected by the compiler.
+The repair was obvious and immediate; to simply replace @code{Address} by
+@code{Short_Address}.
+
+In the case of STARLET, there were several record types that should
+have had representation clauses but did not.  In these record types
+there was an implicit assumption that an @code{Address} value occupied
+32 bits.
+These compiled without error, but their usage resulted in run-time error
+returns from STARLET system calls.
+To assist in the compile-time detection of such situations, we
+plan to include a switch to generate a warning message when a
+record component is of type @code{Address}.
+
+
+@c ****************************************
+@node Taking advantage of 64 bit addressing
+@subsection Taking advantage of 64-bit addressing
+
+@menu
+* Making code 64 bit clean::
+* Allocating memory from the 64 bit storage pool::
+* Restrictions on use of 64 bit objects::
+* Using 64 bit storage pools by default::
+* General access types::
+* STARLET and other predefined libraries::
+@end menu
+
+@node Making code 64 bit clean
+@subsubsection Making code 64-bit clean
+
+@noindent
+In order to prevent problems that may occur when (parts of) a
+system start using memory outside the 32-bit address range,
+we recommend some additional guidelines:
+
+@itemize @bullet
+@item
+For imported subprograms that take parameters of the
+type @code{System.Address}, ensure that these subprograms can
+indeed handle 64-bit addresses. If not, or when in doubt,
+change the subprogram declaration to specify
+@code{System.Short_Address} instead.
+
+@item
+Resolve all warnings related to size mismatches in
+unchecked conversions. Failing to do so causes
+erroneous execution if the source object is outside
+the 32-bit address space.
+
+@item
+(optional) Explicitly use the 32-bit storage pool
+for access types used in a 32-bit context, or use
+generic access types where possible
+(see @ref{Restrictions on use of 64 bit objects}).
+@end itemize
+
+@noindent
+If these rules are followed, the compiler will automatically insert
+any necessary checks to ensure that no addresses or access values
+passed to 32-bit code ever refer to objects outside the 32-bit
+address range.
+Any attempt to do this will raise @code{Constraint_Error}.
+
+@node Allocating memory from the 64 bit storage pool
+@subsubsection Allocating memory from the 64-bit storage pool
+
+@noindent
+For any access type @code{T} that potentially requires memory allocations
+beyond the 32-bit address space,
+use the following representation clause:
+
+@smallexample @c ada
+   for T'Storage_Pool use System.Pool_64;
+@end smallexample
+
+
+@node Restrictions on use of 64 bit objects
+@subsubsection Restrictions on use of 64-bit objects
+
+@noindent
+Taking the address of an object allocated from a 64-bit storage pool,
+and then passing this address to a subprogram expecting
+@code{System.Short_Address},
+or assigning it to a variable of type @code{Short_Address}, will cause
+@code{Constraint_Error} to be raised. In case the code is not 64-bit clean
+(see @ref{Making code 64 bit clean}), or checks are suppressed,
+no exception is raised and execution
+will become erroneous.
+
+@node Using 64 bit storage pools by default
+@subsubsection Using 64-bit storage pools by default
+
+@noindent
+In some cases it may be desirable to have the compiler allocate
+from 64-bit storage pools by default. This may be the case for
+libraries that are 64-bit clean, but may be used in both 32-bit
+and 64-bit contexts. For these cases the following configuration
+pragma may be specified:
+
+@smallexample @c ada
+  pragma Pool_64_Default;
+@end smallexample
+
+@noindent
+Any code compiled in the context of this pragma will by default
+use the @code{System.Pool_64} storage pool. This default may be overridden
+for a specific access type @code{T} by the representation clause:
+
+@smallexample @c ada
+   for T'Storage_Pool use System.Pool_32;
+@end smallexample
+
+@noindent
+Any object whose address may be passed to a subprogram with a
+@code{Short_Address} argument, or assigned to a variable of type
+@code{Short_Address}, needs to be allocated from this pool.
+
+@node General access types
+@subsubsection General access types
+
+@noindent
+Objects designated by access values from a
+general access type (declared with @code{access all}) are never allocated
+from a 64-bit storage pool. Code that uses general access types will
+accept objects allocated in either 32-bit or 64-bit address spaces,
+but never allocate objects outside the 32-bit address space.
+Using general access types ensures maximum compatibility with both
+32-bit and 64-bit code.
+
+
+@node STARLET and other predefined libraries
+@subsubsection STARLET and other predefined libraries
+
+@noindent
+All code that comes as part of GNAT is 64-bit clean, but the
+restrictions given in @ref{Restrictions on use of 64 bit objects},
+still apply. Look at the package
+specifications to see in which contexts objects allocated
+in 64-bit address space are acceptable.
+
+@node Technical details
+@subsection Technical details
+
+@noindent
+GNAT Pro for Open VMS Integrity takes advantage of the freedom given in the Ada
+standard with respect to the type of @code{System.Address}. Previous versions
+of GNAT Pro have defined this type as private and implemented it as
+a modular type.
+
+In order to allow defining @code{System.Short_Address} as a proper subtype,
+and to match the implicit sign extension in parameter passing,
+in GNAT Pro for Open VMS Integrity, @code{System.Address} is defined as a
+visible (i.e., non-private) integer type.
+Standard operations on the type, such as the binary operators ``+'', ``-'',
+etc., that take @code{Address} operands and return an @code{Address} result,
+have been hidden by declaring these
+@code{abstract}, an Ada 95 feature that helps avoid the potential ambiguities
+that would otherwise result from overloading.
+(Note that, although @code{Address} is a visible integer type,
+good programming practice dictates against exploiting the type's
+integer properties such as literals, since this will compromise
+code portability.)
+
+Defining @code{Address} as a visible integer type helps achieve
+maximum compatibility for existing Ada code,
+without sacrificing the capabilities of the IA64 architecture.
+@end ifset
+
+
+@c ************************************************
 @ifset unw
 @node Microsoft Windows Topics
 @appendix Microsoft Windows Topics

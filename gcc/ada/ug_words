@@ -30,6 +30,8 @@ gnatls          ^ GNAT LIST
 Gnatls          ^ GNAT LIST
 gnatmake        ^ GNAT MAKE
 Gnatmake        ^ GNAT MAKE
+gnatmetric      ^ GNAT METRIC
+Gnatmetric      ^ GNAT METRIC
 gnatname        ^ GNAT NAME
 Gnatname        ^ GNAT NAME
 gnatpp          ^ GNAT PRETTY

@@ -36,9 +36,10 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Strings;      use GNAT.Strings;
----------------
---  Gnatfind --
----------------
+
+--------------
+-- Gnatfind --
+--------------
 
 procedure Gnatfind is
    Output_Ref      : Boolean := False;
@@ -208,6 +209,7 @@ procedure Gnatfind is
                end if;
 
             --  Next arguments are the files to search
+
             else
                Add_Xref_File (S);
                Wide_Search := False;
