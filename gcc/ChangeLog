@@ -1,3 +1,7 @@
+2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("cmpint_di"): Fix incorrect instruction lengths.
+
 2003-11-19  Alan Modra  <amodra@bigpond.net.au>
 
 	Backport 2003-03-26  Alan Modra  <amodra@bigpond.net.au>
