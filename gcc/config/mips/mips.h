@@ -1086,6 +1086,7 @@ while (0)
 
 /* On Sun 4, this limit is 2048.  We use 1500 to be safe,
    since the length can run past this up to a continuation point.  */
+#undef DBX_CONTIN_LENGTH
 #define DBX_CONTIN_LENGTH 1500
 
 /* How to renumber registers for dbx and gdb. */
@@ -3789,6 +3790,7 @@ while (0)
    declaration when the code is processed, it generates a two
    instruction sequence.  */
 
+#undef ASM_FILE_START
 #define ASM_FILE_START(STREAM) mips_asm_file_start (STREAM)
 
 /* Output to assembler file text saying following lines
@@ -4100,6 +4102,7 @@ while (0)
 #define LABEL_AFTER_LOC(STREAM)
 #endif
 
+#undef ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
   mips_output_lineno (STREAM, LINE)
 
@@ -4140,6 +4143,7 @@ do {									\
    If this macro is not defined, then the variable name is defined
    in the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
 
+#undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
 do									\
  {									\
@@ -4200,6 +4204,7 @@ while (0)
   mips_output_external(STREAM,DECL,NAME)
 
 /* This says what to print at the end of the assembly file */
+#undef ASM_FILE_END
 #define ASM_FILE_END(STREAM) mips_asm_file_end(STREAM)
 
 
@@ -4210,6 +4215,7 @@ while (0)
 
    Also, switch files if we are optimizing the global pointer.  */
 
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)			\
 {									\
   extern FILE *asm_out_text_file;					\
@@ -4232,6 +4238,7 @@ while (0)
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
+#undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM,PREFIX,NUM)			\
   fprintf (STREAM, "%s%s%d:\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
@@ -4240,6 +4247,7 @@ while (0)
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
+#undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
   sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long)(NUM))
 
@@ -4355,6 +4363,7 @@ do {									\
    JUMP_TABLES_IN_TEXT_SECTION, because it is not conditional.
    Instead, we use ASM_OUTPUT_CASE_LABEL to switch back to the .text
    section if appropriate.  */
+#undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, INSN)			\
 do {									\
   if (TARGET_EMBEDDED_PIC || TARGET_MIPS16)				\
@@ -4372,10 +4381,12 @@ do {									\
 /* This is how to output an assembler line to advance the location
    counter by SIZE bytes.  */
 
+#undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)					\
   fprintf (STREAM, "\t.space\t%u\n", (SIZE))
 
 /* This is how to output a string.  */
+#undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
 do {									\
   register int i, c, len = (LEN), cur_pos = 17;				\
@@ -4451,6 +4462,7 @@ do {									\
 #define SCCS_DIRECTIVE
 
 /* Output #ident as a in the read-only data section.  */
+#undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, STRING)					\
 {									\
   const char *p = STRING;						\
@@ -4469,11 +4481,13 @@ do {									\
 #define DATA_SECTION_ASM_OP	"\t.data"	/* large data */
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
 #define RDATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
+#undef READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION	rdata_section
 #define SMALL_DATA_SECTION	sdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
 
+#undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_rdata
 
 /* Define the additional functions to select our additional sections.  */
@@ -4486,6 +4500,7 @@ do {									\
    if the constant is too large for sdata, and it's readonly, it
    will go into the .rdata section. */
 
+#undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
 sdata_section ()							\
@@ -4510,8 +4525,10 @@ rdata_section ()							\
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 
+#undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX)	mips_select_rtx_section (MODE, RTX)
 
+#undef SELECT_SECTION
 #define SELECT_SECTION(DECL, RELOC)	mips_select_section (DECL, RELOC)
 
 
