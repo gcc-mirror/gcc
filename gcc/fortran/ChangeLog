@@ -1,3 +1,16 @@
+2004-08-28  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* error.c (gfc_error_init_1): Remove blank line in front of
+	function body. Add missing blank.
+	(gfc_buffer_error, error_char, error_string): Remove blank line in
+	front of function body.
+	(show_locus): Add comma in comment.
+	(gfc_clear_warning, gfc_warning_check, gfc_clear_error,
+	gfc_push_error, gfc_pop_error): Remove blank line in front of
+	function body.
+	(gfc_get_errors): Typo fix in comment in front of function. Remove
+	blank line in front of function body.
+
 2004-08-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_default_*_kind): Remove prototypes, add extern
