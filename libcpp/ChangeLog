@@ -1,3 +1,7 @@
+2004-07-23  Matthias Klose  <doko@debian.org> 
+ 
+	init.c (init_library): Use PACKAGE for the text domain. 
+
 2004-07-16  Andris Pavenis  <pavenis@latnet.lv>
 
 	PR preprocessor/16366
