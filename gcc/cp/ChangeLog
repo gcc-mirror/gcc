@@ -1,5 +1,14 @@
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/3870
+	* cp-tree.h (struct saved_scope): Add last_parms field.
+	* decl.c (maybe_push_to_top_level): Save last_function_parms.
+	(pop_from_top_level): Restore it.
+
+	PR c++/4377
+	* mangle.c (write_expression): Strip NOP_EXPRs sooner.  Also strip
+	NON_LVALUE_EXPRs.
+
 	PR c++/4003
 	* pt.c (tsubst_friend_function): Use decl_namespace_context.
 

@@ -2501,6 +2501,7 @@ maybe_push_to_top_level (pseudo)
   s->bindings = b;
   s->need_pop_function_context = need_pop;
   s->function_decl = current_function_decl;
+  s->last_parms = last_function_parms;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
@@ -2542,6 +2543,7 @@ pop_from_top_level ()
   if (s->need_pop_function_context)
     pop_function_context_from (NULL_TREE);
   current_function_decl = s->function_decl;
+  last_function_parms = s->last_parms;
 
   free (s);
 }
