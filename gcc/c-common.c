@@ -387,9 +387,9 @@ unsigned_conversion_warning (result, operand)
     {
       if (!int_fits_type_p (operand, signed_type (TREE_TYPE (result))))
 	/* This detects cases like converting -129 or 256 to unsigned char.  */
-	pedwarn ("large integer implicitly truncated to unsigned type");
+	warning ("large integer implicitly truncated to unsigned type");
       else if (warn_conversion)
-	pedwarn ("negative integer implicitly converted to unsigned type");
+	warning ("negative integer implicitly converted to unsigned type");
     }
 }
 
