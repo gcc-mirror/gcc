@@ -28,7 +28,7 @@
 #define DEFAULT_SIGNED_CHAR 0
 
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC  "%{posix:-D_POSIX_SOURCE} %{fPIC|fPIE:-D__PIC__ -D__pic__} %{fpic|fpie:-D__PIC__ -D__pic__}"
+#define SUBTARGET_CPP_SPEC  "%{posix:-D_POSIX_SOURCE}"
 
 #undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

@@ -29,6 +29,11 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=linux");	\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
+	if (flag_pic)				\
+	  {					\
+		builtin_define ("__PIC__");	\
+		builtin_define ("__pic__");	\
+	  }					\
     }						\
   while (0)
 
@@ -100,7 +105,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \
-"%{fPIC|fPIE|fpic|fpie:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} \
+"%{posix:-D_POSIX_SOURCE} \
 %{pthread:-D_REENTRANT} %{mlong-double-128:-D__LONG_DOUBLE_128__}"
 
 #undef LIB_SPEC

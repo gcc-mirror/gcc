@@ -56,8 +56,11 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()				\
     do {							\
 	LINUX_TARGET_OS_CPP_BUILTINS();				\
-	builtin_define ("__PIC__");				\
-	builtin_define ("__pic__");				\
+	if (TARGET_ABICALLS)					\
+	  {							\
+	    builtin_define ("__PIC__");				\
+	    builtin_define ("__pic__");				\
+	  }							\
         builtin_assert ("machine=mips");			\
 	/* The GNU C++ standard library requires this.  */	\
 	if (c_dialect_cxx ())					\
@@ -96,10 +99,7 @@ Boston, MA 02111-1307, USA.  */
 } while (0)
 
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "\
-%{fno-PIC:-U__PIC__ -U__pic__} %{fno-pic:-U__PIC__ -U__pic__} \
-%{fPIC|fPIE|fpic|fpie:-D__PIC__ -D__pic__} \
-%{pthread:-D_REENTRANT}"
+#define SUBTARGET_CPP_SPEC "%{pthread:-D_REENTRANT}"
 
 /* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects
@@ -120,10 +120,7 @@ Boston, MA 02111-1307, USA.  */
         %{static:-static}}}"
 
 #undef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC "\
-%{mabi=64: -64} \
-%{!fno-PIC:%{!fno-pic:-KPIC}} \
-%{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
+#define SUBTARGET_ASM_SPEC "%{mabi=64: -64} %{!mno-abicalls:-KPIC}"
 
 /* The MIPS assembler has different syntax for .set. We set it to
    .dummy to trap any errors.  */
