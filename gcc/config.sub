@@ -117,6 +117,9 @@ case $os in
 		# Don't forget version if it is 3.2v4 or newer.
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
+	-udk*)
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
 	-sco*)
 		os=-sco3.2v2
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
@@ -732,7 +735,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -win32* | -mingw32* | -linux-gnu* | -uxpv* | -beos* )
+	      | -win32* | -mingw32* | -linux-gnu* | -uxpv* | -beos*  | -udk* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-linux*)

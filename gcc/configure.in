@@ -1351,6 +1351,17 @@ changequote([,])dnl
 		extra_parts="crtbegin.o crtend.o"
 		;;
 changequote(,)dnl
+	i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
+changequote([,])dnl
+		xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+		xm_defines="USG POSIX"
+		tm_file=i386/udk.h
+		tmake_file="i386/t-crtpic i386/t-udk"
+		xmake_file=x-svr4
+		extra_parts="crtbegin.o crtend.o"
+		fixincludes="fixinc.svr4"
+		;;
+changequote(,)dnl
 	i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 changequote([,])dnl
 		cpu_type=i386

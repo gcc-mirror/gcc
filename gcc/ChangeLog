@@ -1,3 +1,10 @@
+Wed Sep 30 22:27:53 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config.sub: Recognize i[34567]86-pc-udk as new target.
+	* configure.in: Likewise.
+	* config/i386/t-udk: New file.
+	* config/i386/udk.h: New file.
+
 Wed Sep 30 19:33:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reorg.c (check_annul_list_true_false): Remove unused variables.
