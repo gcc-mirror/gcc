@@ -221,7 +221,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 /* CTOR_LIST_BEGIN and CTOR_LIST_END are machine-dependent
    because they push on the stack.  */
 
-#ifdef STACK_GROWS_DOWNWARD
+#ifndef STACK_GROWS_DOWNWARD
 
 /* Constructor list on stack is in reverse order.  Go to the end of the
    list and go backwards to call constructors in the right order.  */
