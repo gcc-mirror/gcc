@@ -1541,7 +1541,9 @@ extern tree maybe_build_cleanup		PROTO((tree));
    look for nested component-refs or array-refs at constant positions
    and find the ultimate containing object, which is returned.  */
 
-extern tree get_inner_reference		PROTO((tree, int *, int *, tree *, enum machine_mode *, int *, int *));
+extern tree get_inner_reference		PROTO((tree, int *, int *, tree *,
+					       enum machine_mode *, int *,
+					       int *, int *));
 
 /* Return the FUNCTION_DECL which provides this _DECL with its context,
    or zero if none.  */
