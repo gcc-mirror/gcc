@@ -1,3 +1,8 @@
+2000-04-24  Hiroyuki Machida <machida@sm.sony.co.jp>
+
+	* combine.c (try_combine): Update reg_nonzero_bits of
+	newi2pat before newpat.
+
 Mon Apr 24 10:19:48 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (strength_reduce): Simplify test to INSN_P.
