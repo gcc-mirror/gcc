@@ -1586,6 +1586,10 @@ build_field_ref (self_value, self_class, name)
     }
   else
     {
+      int check = (flag_check_references
+		   && ! (DECL_P (self_value)
+			 && DECL_NAME (self_value) == this_identifier_node));
+
       tree base_handle_type = promote_type (base_class);
       if (base_handle_type != TREE_TYPE (self_value))
 	self_value = fold (build1 (NOP_EXPR, base_handle_type, self_value));
@@ -1593,7 +1597,7 @@ build_field_ref (self_value, self_class, name)
       self_value = unhand_expr (self_value);
 #endif
       self_value = build_java_indirect_ref (TREE_TYPE (TREE_TYPE (self_value)),
-					    self_value, flag_check_references);
+					    self_value, check);
       return fold (build (COMPONENT_REF, TREE_TYPE (field_decl),
 			  self_value, field_decl));
     }

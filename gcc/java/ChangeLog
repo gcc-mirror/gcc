@@ -1,3 +1,9 @@
+2002-03-22  Tom Tromey  <tromey@redhat.com>
+            Andrew Haley  <aph@cambridge.redhat.com>
+
+	* expr.c (build_field_ref): Don't build a check if the field is a
+	member of `this'.
+
 2002-03-21  Eric Blake  <ebb9@email.byu.edu>
 
 	Fix for PR java/6026:
