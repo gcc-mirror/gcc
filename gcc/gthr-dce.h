@@ -1,6 +1,6 @@
 
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,12 +37,21 @@ Boston, MA 02111-1307, USA.  */
 
 #include <pthread.h>
 
+#ifdef __cplusplus
+#define UNUSED(x) x
+#else
+#define UNUSED(x) x __attribute__((unused))
+#endif
+
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
 
 #define __GTHREAD_ONCE_INIT pthread_once_init
-/* Howto define __GTHREAD_MUTEX_INIT? */
+
+#define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
+
+#define __GTHREAD_MUTEX_INIT_DEFAULT pthread_once_init
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 
@@ -53,7 +62,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_getspecific
 #pragma weak pthread_setspecific
 #pragma weak pthread_create
-
+#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_trylock
 #pragma weak pthread_mutex_unlock
@@ -67,7 +76,6 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_cond_wait
 #pragma weak pthread_exit
 #pragma weak pthread_getunique_np
-#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
 #pragma weak pthread_yield
@@ -412,16 +420,17 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 }
 
 static inline int
-__gthread_key_dtor (__gthread_key_t key, void *ptr)
+__gthread_key_dtor (UNUSED (__gthread_key_t key), UNUSED (void *ptr))
 {
   /* Nothing needed. */
   return 0;
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (UNUSED (__gthread_key_t key))
 {
-  return pthread_key_delete (key);
+  /* Operation is not supported.  */
+  return -1;
 }
 
 static inline void *
@@ -438,6 +447,13 @@ static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
   return pthread_setspecific (key, (void *) ptr);
+}
+
+static inline void
+__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    pthread_mutex_init (mutex, pthread_mutexattr_default);
 }
 
 static inline int
@@ -468,5 +484,7 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 }
 
 #endif /* _LIBOBJC */
+
+#undef UNUSED
 
 #endif /* not __gthr_dce_h */

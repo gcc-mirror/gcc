@@ -1,3 +1,12 @@
+2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gthr-dce.h (UNUSED): Attribute unused macro.
+	(__GTHREAD_MUTEX_INIT_FUNCTION and __GTHREAD_MUTEX_INIT_DEFAULT): New
+	macros for mutex initialization.
+	(__gthread_key_dtor): Make arguments UNUSED.
+	(__gthread_key_delete): Unsupported.  Argument UNUSED.
+	(__gthread_mutex_init_function): New function for mutex initialization.
+
 2001-06-13  Phil Edwards  <pme@sources.redhat.com>
 
 	* doc/contrib.texi:  Link to libstdc++'s thanks.html for now.
