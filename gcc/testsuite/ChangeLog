@@ -1,3 +1,7 @@
+2004-05-22  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/cpp/Wmissingdirs.c: New.
+
 2004-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/15301
@@ -5205,10 +5209,6 @@
 
 	PR c++/9559
 	* g++.dg/init/static1.C: New test.
-
-2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
-
-	* Changelog: Remove ">>>>>>>" from previous change.
 
 2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 

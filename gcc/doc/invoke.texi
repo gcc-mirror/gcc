@@ -222,7 +222,8 @@ in the following sections.
 -Wno-invalid-offsetof  -Winvalid-pch @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces @gol
--Wmissing-format-attribute  -Wmissing-noreturn @gol
+-Wmissing-format-attribute  -Wmissing-include-dirs @gol
+-Wmissing-noreturn @gol
 -Wno-multichar  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
@@ -2223,6 +2224,10 @@ bracketed, but that for @samp{b} is fully bracketed.
 int a[2][2] = @{ 0, 1, 2, 3 @};
 int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 @end smallexample
+
+@item -Wmissing-include-dirs @r{(C, C++, and Objective-C only)}
+@opindex Wmissing-include-dirs
+Warn if a user-supplied include directory does not exist.
 
 @item -Wparentheses
 @opindex Wparentheses

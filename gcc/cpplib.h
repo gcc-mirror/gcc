@@ -264,6 +264,10 @@ struct cpp_options
   /* Nonzero means warn if slash-star appears in a comment.  */
   unsigned char warn_comments;
 
+  /* Nonzero means warn if a user-supplied include directory does not
+     exist.  */
+  unsigned char warn_missing_include_dirs;
+
   /* Nonzero means warn if there are any trigraphs.  */
   unsigned char warn_trigraphs;
 
@@ -439,6 +443,9 @@ struct cpp_dir
      directories in the search path.  */
   ino_t ino;
   dev_t dev;
+
+  /* Is this a user-supplied directory? */
+  bool user_supplied_p;
 };
 
 /* Name under which this program was invoked.  */

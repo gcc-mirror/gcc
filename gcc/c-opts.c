@@ -297,7 +297,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_I:
       if (strcmp (arg, "-"))
-	add_path (xstrdup (arg), BRACKET, 0);
+	add_path (xstrdup (arg), BRACKET, 0, true);
       else
 	{
 	  if (quote_chain_split)
@@ -539,6 +539,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wmissing_format_attribute:
       warn_missing_format_attribute = value;
+      break;
+
+    case OPT_Wmissing_include_dirs:
+      cpp_opts->warn_missing_include_dirs = value;
       break;
 
     case OPT_Wmissing_prototypes:
@@ -939,7 +943,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_idirafter:
-      add_path (xstrdup (arg), AFTER, 0);
+      add_path (xstrdup (arg), AFTER, 0, true);
       break;
 
     case OPT_imacros:
@@ -952,7 +956,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_iquote:
-      add_path (xstrdup (arg), QUOTE, 0);
+      add_path (xstrdup (arg), QUOTE, 0, true);
       break;
 
     case OPT_isysroot:
@@ -960,7 +964,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_isystem:
-      add_path (xstrdup (arg), SYSTEM, 0);
+      add_path (xstrdup (arg), SYSTEM, 0, true);
       break;
 
     case OPT_iwithprefix:
@@ -1390,7 +1394,7 @@ add_prefixed_path (const char *suffix, size_t chain)
   memcpy (path + prefix_len, suffix, suffix_len);
   path[prefix_len + suffix_len] = '\0';
 
-  add_path (path, chain, 0);
+  add_path (path, chain, 0, false);
 }
 
 /* Handle -D, -U, -A, -imacros, and the first -include.  */

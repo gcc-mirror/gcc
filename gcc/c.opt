@@ -289,6 +289,10 @@ Wmissing-format-attribute
 C ObjC C++ ObjC++
 Warn about functions which might be candidates for format attributes
 
+Wmissing-include-dirs
+C ObjC C++ ObjC++
+Warn about user-specified include directories that do not exist
+
 Wmissing-prototypes
 C ObjC
 Warn about global functions without prototypes
