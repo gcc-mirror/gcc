@@ -92,7 +92,7 @@ struct soffset {
   unsigned int ioffset : SIZET_BITS/4;
 #else /* OBJC_SPARSE2 */
 #ifdef __sparc__
-  unsigned int boffset : (SIZET_BITS - 2) - BUCKET_BITS;
+  unsigned long boffset : (SIZET_BITS - 2) - BUCKET_BITS;
   unsigned int eoffset : BUCKET_BITS;
   unsigned int unused  : 2;
 #else
