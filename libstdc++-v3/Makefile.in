@@ -71,8 +71,6 @@ CPP = @CPP@
 CPU_FLAGS = @CPU_FLAGS@
 CSHADOWFLAGS = @CSHADOWFLAGS@
 CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
-CSTDIO_CC = @CSTDIO_CC@
-CSTDIO_H = @CSTDIO_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 DEBUG_FLAGS = @DEBUG_FLAGS@
@@ -467,9 +465,11 @@ mostlyclean distclean maintainer-clean
 
 
 check:  $(top_builddir)/mkcheck
+	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 0 $(top_builddir) $(top_srcdir)
 
 check-install: $(top_builddir)/mkcheck
+	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 1 $(top_builddir) $(top_srcdir) $(prefix)
 
 # Multilib Makefile bits.

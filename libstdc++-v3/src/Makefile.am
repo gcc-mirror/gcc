@@ -46,7 +46,7 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 AC_CXXFLAGS = \
 	$(WERROR) @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
-	@SECTION_FLAGS@ @SECTION_LDFLAGS@ @DEBUG_FLAGS@ 
+	@SECTION_FLAGS@ @DEBUG_FLAGS@ 
 
 # Need to manually set this option because AC_CXXFLAGS has to be at
 # the end of the compile line so that -O2 can be overridden as the
@@ -87,7 +87,7 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # rules automake generates would be used.  We cannot allow CXX to be used
 # in libtool since this would add -lstdc++ to the link line which of
 # course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 headers = \

@@ -1,3 +1,21 @@
+2000-07-07  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	Clean up configure/build longstanding issues.
+	* src/Makefile.am (AC_CXXFLAGS): Don't set @SECTION_LDFLAGS@ here.
+	(CXXLINK): Add here, instead.
+
+	* Makefile.am (check-install): Make sure mkcheck has execute privs.
+	(check): Same here.
+	* configure.in (AC_OUTPUT_COMMANDS): Remove hacks here.
+
+	* configure.in (AC_OUTPUT_COMMANDS): Link c_io_libio.h and
+	c_io_libio.cc instead of copying.
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Do link here.
+
+	* configure.in (AC_OUTPUT_COMMANDS): Link $THREADS.h and
+	c++threads.h instead of copying.
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Do link here.
+
 2000-07-07   brent verner  <brent@rcfile.org> 
 
 	* testsuite/27_io/istream_unformatted.cc (test05): New test.

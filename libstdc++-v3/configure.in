@@ -174,19 +174,9 @@ CXX="${CXX}"
 
 
 blddir=`pwd`
-# Generate mkcheck having execute privs
-AC_OUTPUT_COMMANDS([chmod +x $blddir/mkcheck])
-
 # Generate bits/c++config.h
 # NB: This must be the first generated file as others include it. . .
 AC_OUTPUT_COMMANDS([$srcdir/mkc++config $blddir $srcdir])
 
 # Generate bits/std_limits.h and src/limitsMEMBERS.cc
 AC_OUTPUT_COMMANDS([$srcdir/mknumeric_limits $blddir $srcdir $xcompiling])
-
-# Generate bits/c++threads.h
-AC_OUTPUT_COMMANDS([cp $srcdir/config/$THREADH $blddir/bits/c++threads.h])
-
-# Generate bits/c++io.h and src/c++io.cc
-AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_H $blddir/bits/c++io.h])
-AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_CC $blddir/src/c++io.cc])
