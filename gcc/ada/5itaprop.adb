@@ -189,8 +189,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Handler (signo : Signal);
 
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
-
    function To_pthread_t is new Unchecked_Conversion
      (unsigned_long, System.OS_Interface.pthread_t);
 
@@ -838,9 +836,6 @@ package body System.Task_Primitives.Operations is
 
       Attributes : aliased pthread_attr_t;
       Result     : Interfaces.C.int;
-
-      function Thread_Body_Access is new
-        Unchecked_Conversion (System.Address, Thread_Body);
 
    begin
       if Stack_Size = Unspecified_Size then

@@ -659,14 +659,6 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested.
 
-   No_Stdlib : Boolean := False;
-   --  GNATMAKE, GNATBIND, GNATFIND, GNATXREF
-   --  Set to True if no default library search dirs added to search list.
-
-   No_Stdinc : Boolean := False;
-   --  GNAT, GNATBIND, GNATMAKE, GNATFIND, GNATXREF
-   --  Set to True if no default source search dirs added to search list.
-
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
    --  Set to True if compilation/binding of a program without main
@@ -676,6 +668,18 @@ package Opt is
    --  GNAT, GNATBIND
    --  This flag is set True if a No_Run_Time pragma is encountered. See
    --  spec of Rtsfind for a full description of handling of this pragma.
+
+   No_Stdinc : Boolean := False;
+   --  GNAT, GNATBIND, GNATMAKE, GNATFIND, GNATXREF
+   --  Set to True if no default source search dirs added to search list
+
+   No_Stdlib : Boolean := False;
+   --  GNATMAKE, GNATBIND, GNATFIND, GNATXREF
+   --  Set to True if no default library search dirs added to search list
+
+   No_Strict_Aliasing : Boolean := False;
+   --  GNAT
+   --  Set True if pragma No_Strict_Aliasing with no parameters encountered
 
    Normalize_Scalars : Boolean := False;
    --  GNAT, GNATBIND

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,9 +77,11 @@ package Erroutc is
    Manual_Quote_Mode : Boolean := False;
    --  Set True in manual quotation mode
 
-   Max_Msg_Length : constant := 80 + 2 * Hostparm.Max_Line_Length;
+   Max_Msg_Length : constant := 256 + 2 * Hostparm.Max_Line_Length;
    --  Maximum length of error message. The addition of Max_Line_Length
    --  ensures that two insertion tokens of maximum length can be accomodated.
+   --  The value of 256 is an arbitrary value that should be more than long
+   --  enough to accomodate any reasonable message.
 
    Msg_Buffer : String (1 .. Max_Msg_Length);
    --  Buffer used to prepare error messages

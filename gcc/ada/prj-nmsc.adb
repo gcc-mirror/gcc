@@ -222,7 +222,6 @@ package body Prj.Nmsc is
       end if;
    end Compute_Directory_Last;
 
-
    -------------------------------
    -- Prepare_Naming_Exceptions --
    -------------------------------
@@ -1084,7 +1083,6 @@ package body Prj.Nmsc is
                            Util.Value_Of
                              (Name_Locally_Removed_Files,
                               Data.Decl.Attributes);
-
 
             begin
                pragma Assert
@@ -3662,6 +3660,8 @@ package body Prj.Nmsc is
       Previous_Source : constant String_List_Id := Current_Source;
       Except_Name     : Name_Id        := No_Name;
 
+      Unit_Prj : Unit_Project;
+
    begin
       Get_Name_String (File_Name);
       Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
@@ -3814,19 +3814,36 @@ package body Prj.Nmsc is
             --  It is a new unit, create a new record
 
             else
-               Units.Increment_Last;
-               The_Unit := Units.Last;
-               Units_Htable.Set (Unit_Name, The_Unit);
-               The_Unit_Data.Name := Unit_Name;
-               The_Unit_Data.File_Names (Unit_Kind) :=
-                 (Name         => Canonical_File_Name,
-                  Display_Name => File_Name,
-                  Path         => Canonical_Path_Name,
-                  Display_Path => Path_Name,
-                  Project      => Project,
-                  Needs_Pragma => Needs_Pragma);
-               Units.Table (The_Unit) := The_Unit_Data;
-               Source_Recorded := True;
+               --  First, check if there is no other unit with this file name
+               --  in another project. If it is, report an error.
+
+               Unit_Prj := Files_Htable.Get (Canonical_File_Name);
+
+               if Unit_Prj /= No_Unit_Project then
+                  Error_Msg_Name_1 := File_Name;
+                  Error_Msg_Name_2 := Projects.Table (Unit_Prj.Project).Name;
+                  Error_Msg
+                    (Project,
+                     "{ is already a source of project {",
+                     Location);
+
+               else
+                  Units.Increment_Last;
+                  The_Unit := Units.Last;
+                  Units_Htable.Set (Unit_Name, The_Unit);
+                  Unit_Prj := (Unit => The_Unit, Project => Project);
+                  Files_Htable.Set (Canonical_File_Name, Unit_Prj);
+                  The_Unit_Data.Name := Unit_Name;
+                  The_Unit_Data.File_Names (Unit_Kind) :=
+                    (Name         => Canonical_File_Name,
+                     Display_Name => File_Name,
+                     Path         => Canonical_Path_Name,
+                     Display_Path => Path_Name,
+                     Project      => Project,
+                     Needs_Pragma => Needs_Pragma);
+                  Units.Table (The_Unit) := The_Unit_Data;
+                  Source_Recorded := True;
+               end if;
             end if;
          end;
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2003 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2004 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This unit provides the basic support for controlled (finalizable) types
+
 with Ada.Streams;
+with Unchecked_Conversion;
+
 package System.Finalization_Root is
 pragma Preelaborate (Finalization_Root);
 
    type Root_Controlled;
 
    type Finalizable_Ptr is access all Root_Controlled'Class;
+
+   function To_Finalizable_Ptr is
+     new Unchecked_Conversion (Address, Finalizable_Ptr);
+
+   function To_Addr is
+     new Unchecked_Conversion (Finalizable_Ptr, Address);
 
    type Empty_Root_Controlled is abstract tagged null record;
    --  Just for the sake of Controlled equality (see Ada.Finalization)

@@ -4027,9 +4027,35 @@ tree_transform (Node_Id gnat_node)
 	gnu_result = build1 (NULL_EXPR, gnu_result_type, gnu_result);
       break;
 
-    /* Nothing to do, since front end does all validation using the
-       values that Gigi back-annotates.  */
     case N_Validate_Unchecked_Conversion:
+      /* If the result is a pointer type, see if we are either converting
+         from a non-pointer or from a pointer to a type with a different
+ 	 alias set and warn if so.  If the result defined in the same unit as
+ 	 this unchecked convertion, we can allow this because we can know to
+ 	 make that type have alias set 0.  */
+      {
+ 	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
+ 	tree gnu_target_type = gnat_to_gnu_type (Target_Type (gnat_node));
+
+ 	if (POINTER_TYPE_P (gnu_target_type)
+ 	    && !In_Same_Source_Unit (Target_Type (gnat_node), gnat_node)
+            && get_alias_set (TREE_TYPE (gnu_target_type)) != 0
+            && !No_Strict_Aliasing (Underlying_Type (Target_Type (gnat_node)))
+ 	    && (!POINTER_TYPE_P (gnu_source_type)
+ 		|| (get_alias_set (TREE_TYPE (gnu_source_type))
+ 		    != get_alias_set (TREE_TYPE (gnu_target_type)))))
+ 	  {
+            post_error_ne
+              ("?possible aliasing problem for type&",
+               gnat_node, Target_Type (gnat_node));
+	    post_error
+              ("\\?use -fno-strict-aliasing switch for references",
+               gnat_node);
+	    post_error_ne
+              ("\\?or use `pragma No_Strict_Aliasing (&);`",
+               gnat_node, Target_Type (gnat_node));
+	  }
+      }
       break;
 
     case N_Raise_Statement:
@@ -5396,7 +5422,7 @@ build_unit_elab (Entity_Id gnat_unit, int body_p, tree gnu_elab_list)
 
   /* See if any non-NOTE insns were generated.  */
   for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (GET_RTX_CLASS (GET_CODE (insn)) == RTX_INSN)
       {
 	result = 0;
 	break;

@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Hostparm; use Hostparm;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -3853,15 +3852,31 @@ package body Sem_Ch13 is
          end if;
       end if;
 
-      --  Generate N_Validate_Unchecked_Conversion node for back end if
-      --  the back end needs to perform special validation checks. At the
-      --  current time, only the JVM version requires such checks.
+      --  In GNAT mode, if target is an access type, access type must be
+      --  declared in the same source unit as the unchecked conversion.
 
-      if Java_VM then
-         Vnode :=
-           Make_Validate_Unchecked_Conversion (Sloc (N));
-         Set_Source_Type (Vnode, Source);
-         Set_Target_Type (Vnode, Target);
+--      if GNAT_Mode and then Is_Access_Type (Target) then
+--         if not In_Same_Source_Unit (Target, N) then
+--            Error_Msg_NE
+--              ("unchecked conversion not in same unit as&", N, Target);
+--         end if;
+--      end if;
+
+      --  Generate N_Validate_Unchecked_Conversion node for back end in
+      --  case the back end needs to perform special validation checks.
+
+      --  Shouldn't this be in exp_ch13, since the check only gets done
+      --  if we have full expansion and the back end is called ???
+
+      Vnode :=
+        Make_Validate_Unchecked_Conversion (Sloc (N));
+      Set_Source_Type (Vnode, Source);
+      Set_Target_Type (Vnode, Target);
+
+      --  If the unchecked conversion node is in a list, just insert before
+      --  it. If not we have some strange case, not worth bothering about.
+
+      if Is_List_Member (N) then
          Insert_After (N, Vnode);
       end if;
    end Validate_Unchecked_Conversion;

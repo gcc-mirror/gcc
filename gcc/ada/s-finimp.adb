@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,9 +33,11 @@
 
 with Ada.Exceptions;
 with Ada.Tags;
-with Ada.Unchecked_Conversion;
+
 with System.Storage_Elements;
 with System.Soft_Links;
+
+with Unchecked_Conversion;
 
 package body System.Finalization_Implementation is
 
@@ -51,16 +53,10 @@ package body System.Finalization_Implementation is
    -- Local Subprograms --
    -----------------------
 
-   function To_Finalizable_Ptr is
-     new Ada.Unchecked_Conversion (Address, Finalizable_Ptr);
-
-   function To_Addr is
-     new Ada.Unchecked_Conversion (Finalizable_Ptr, Address);
-
    type RC_Ptr is access all Record_Controller;
 
    function To_RC_Ptr is
-     new Ada.Unchecked_Conversion (Address, RC_Ptr);
+     new Unchecked_Conversion (Address, RC_Ptr);
 
    procedure Raise_Exception_No_Defer
      (E       : in Exception_Id;
@@ -423,7 +419,7 @@ package body System.Finalization_Implementation is
       --  raised.
 
       function To_Ptr is new
-         Ada.Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
+         Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
 
       X : constant Exception_Id :=
             To_Ptr (System.Soft_Links.Get_Current_Excep.all).Id;
@@ -513,9 +509,10 @@ package body System.Finalization_Implementation is
                Parent : Parent_Type;
                Controller : Faked_Record_Controller;
             end record;
+
             type Obj_Ptr is access all Faked_Type_Of_Obj;
             function To_Obj_Ptr is
-              new Ada.Unchecked_Conversion (Address, Obj_Ptr);
+              new Unchecked_Conversion (Address, Obj_Ptr);
 
          begin
             return To_RC_Ptr (To_Obj_Ptr (Obj).Controller'Address);

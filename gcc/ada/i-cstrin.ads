@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -40,6 +40,15 @@ pragma Preelaborate (Strings);
 
    type char_array_access is access all char_array;
 
+   pragma Warnings (Off);
+   pragma No_Strict_Aliasing (char_array_access);
+   pragma Warnings (On);
+   --  Since this type is used for external interfacing, with the pointer
+   --  coming from who knows where, it seems a good idea to turn off any
+   --  strict aliasing assumptions for this type. We turn off warnings for
+   --  this pragma to deal with being compiled with an earlier GNAT version
+   --  that does not recognize this pragma.
+
    type chars_ptr is private;
 
    type chars_ptr_array is array (size_t range <>) of chars_ptr;
@@ -47,50 +56,52 @@ pragma Preelaborate (Strings);
    Null_Ptr : constant chars_ptr;
 
    function To_Chars_Ptr
-     (Item      : in char_array_access;
-      Nul_Check : in Boolean := False)
-      return      chars_ptr;
+     (Item      : char_array_access;
+      Nul_Check : Boolean := False) return chars_ptr;
 
-   function New_Char_Array (Chars : in char_array) return chars_ptr;
+   function New_Char_Array (Chars : char_array) return chars_ptr;
 
-   function New_String (Str : in String) return chars_ptr;
+   function New_String (Str : String) return chars_ptr;
 
    procedure Free (Item : in out chars_ptr);
 
    Dereference_Error : exception;
 
-   function Value (Item : in chars_ptr) return char_array;
+   function Value (Item : chars_ptr) return char_array;
 
    function Value
-     (Item   : in chars_ptr;
-      Length : in size_t)
-      return   char_array;
+     (Item   : chars_ptr;
+      Length : size_t) return char_array;
 
-   function Value (Item : in chars_ptr) return String;
+   function Value (Item : chars_ptr) return String;
 
    function Value
-     (Item   : in chars_ptr;
-      Length : in size_t)
-      return   String;
+     (Item   : chars_ptr;
+      Length : size_t) return String;
 
-   function Strlen (Item : in chars_ptr) return size_t;
+   function Strlen (Item : chars_ptr) return size_t;
 
    procedure Update
-     (Item   : in chars_ptr;
-      Offset : in size_t;
-      Chars  : in char_array;
+     (Item   : chars_ptr;
+      Offset : size_t;
+      Chars  : char_array;
       Check  : Boolean := True);
 
    procedure Update
-     (Item   : in chars_ptr;
-      Offset : in size_t;
-      Str    : in String;
-      Check  : in Boolean := True);
+     (Item   : chars_ptr;
+      Offset : size_t;
+      Str    : String;
+      Check  : Boolean := True);
 
    Update_Error : exception;
 
 private
    type chars_ptr is access all Character;
+
+   pragma No_Strict_Aliasing (chars_ptr);
+   --  Since this type is used for external interfacing, with the pointer
+   --  coming from who knows where, it seems a good idea to turn off any
+   --  strict aliasing assumptions for this type.
 
    Null_Ptr : constant chars_ptr := null;
 end Interfaces.C.Strings;

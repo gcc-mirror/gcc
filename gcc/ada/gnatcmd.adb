@@ -34,6 +34,7 @@ with Opt;
 with Osint;    use Osint;
 with Output;
 with Prj;      use Prj;
+with Prj.Com;
 with Prj.Env;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Pars;
@@ -836,7 +837,7 @@ begin
                      Default_Switches_Array :=
                        Prj.Util.Value_Of
                          (Name => Name_Default_Switches,
-                          In_Arrays => Packages.Table (Pkg).Decl.Arrays);
+                          In_Arrays => Element.Decl.Arrays);
                      The_Switches := Prj.Util.Value_Of
                        (Index => Name_Ada,
                         In_Array => Default_Switches_Array);
@@ -1322,6 +1323,47 @@ begin
                        new String'
                              (Dir_Name (Last_Switches.Table (File_Index).all));
                   end if;
+               end if;
+            end;
+         end if;
+
+         --  For gnat pretty, if no file has been put on the command line,
+         --  call gnatpp with all the sources of the main project.
+
+         if The_Command = Pretty then
+            declare
+               Add_Sources : Boolean := True;
+               Unit_Data   : Prj.Com.Unit_Data;
+            begin
+               --  Check if there is at least one argument that is not a switch
+
+               for Index in 1 .. Last_Switches.Last loop
+                  if Last_Switches.Table (Index)(1) = '-' then
+                     Add_Sources := False;
+                     exit;
+                  end if;
+               end loop;
+
+               --  If all arguments were switches, add the path names of
+               --  all the sources of the main project.
+
+               if Add_Sources then
+                  for Unit in 1 .. Prj.Com.Units.Last loop
+                     Unit_Data := Prj.Com.Units.Table (Unit);
+
+                     for Kind in Prj.Com.Spec_Or_Body loop
+
+                        --  Put only sources that belong to the main project
+
+                        if Unit_Data.File_Names (Kind).Project = Project then
+                           Last_Switches.Increment_Last;
+                           Last_Switches.Table (Last_Switches.Last) :=
+                             new String'
+                               (Get_Name_String
+                                  (Unit_Data.File_Names (Kind).Display_Path));
+                        end if;
+                     end loop;
+                  end loop;
                end if;
             end;
          end if;

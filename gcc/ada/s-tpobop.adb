@@ -80,6 +80,9 @@ with System.Tasking.Queuing;
 with System.Tasking.Rendezvous;
 --  used for Task_Do_Or_Queue
 
+with System.Tasking.Utilities;
+--  used for Exit_One_ATC_Level
+
 with System.Tasking.Debug;
 --  used for Trace
 
@@ -400,16 +403,16 @@ package body System.Tasking.Protected_Objects.Operations is
                   Update_For_Queue_To_PO (Entry_Call, With_Abort);
 
                else
-                  --  ?????
-                  --  Can we convert this recursion to a loop?
+                  --  Can we convert this recursion to a loop???
 
                   PO_Do_Or_Queue (Self_ID, New_Object, Entry_Call, With_Abort);
                end if;
             end if;
          end if;
 
-      elsif Entry_Call.Mode /= Conditional_Call or else
-        not With_Abort then
+      elsif Entry_Call.Mode /= Conditional_Call
+        or else not With_Abort
+      then
          Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
          Update_For_Queue_To_PO (Entry_Call, With_Abort);
 
@@ -729,17 +732,25 @@ package body System.Tasking.Protected_Objects.Operations is
       Initially_Abortable := Entry_Call.State = Now_Abortable;
       PO_Service_Entries (Self_ID, Object);
 
-      --  Try to prevent waiting later (in Cancel_Protected_Entry_Call)
+      --  Try to prevent waiting later (in Try_To_Cancel_Protected_Entry_Call)
       --  for completed or cancelled calls.  (This is a heuristic, only.)
 
       if Entry_Call.State >= Done then
 
          --  Once State >= Done it will not change any more.
 
-         Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level - 1;
-         pragma Debug
-           (Debug.Trace (Self_ID, "PEC: exited to ATC level: " &
-            ATC_Level'Image (Self_ID.ATC_Nesting_Level), 'A'));
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
+         STPO.Write_Lock (Self_ID);
+         Utilities.Exit_One_ATC_Level (Self_ID);
+         STPO.Unlock (Self_ID);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
          Block.Enqueued := False;
          Block.Cancelled := Entry_Call.State = Cancelled;
          Initialization.Undefer_Abort (Self_ID);
@@ -986,23 +997,27 @@ package body System.Tasking.Protected_Objects.Operations is
       PO_Do_Or_Queue (Self_Id, Object, Entry_Call, With_Abort => True);
       PO_Service_Entries (Self_Id, Object);
 
-      --  Try to avoid waiting for completed or cancelled calls.
-
-      if Entry_Call.State >= Done then
-         Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level - 1;
-         pragma Debug
-           (Debug.Trace (Self_Id, "TPEC: exited to ATC level: " &
-            ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
-         Entry_Call_Successful := Entry_Call.State = Done;
-         Initialization.Undefer_Abort (Self_Id);
-         Entry_Calls.Check_Exception (Self_Id, Entry_Call);
-         return;
-      end if;
-
       if Single_Lock then
          STPO.Lock_RTS;
       else
          STPO.Write_Lock (Self_Id);
+      end if;
+
+      --  Try to avoid waiting for completed or cancelled calls.
+
+      if Entry_Call.State >= Done then
+         Utilities.Exit_One_ATC_Level (Self_Id);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         else
+            STPO.Unlock (Self_Id);
+         end if;
+
+         Entry_Call_Successful := Entry_Call.State = Done;
+         Initialization.Undefer_Abort (Self_Id);
+         Entry_Calls.Check_Exception (Self_Id, Entry_Call);
+         return;
       end if;
 
       Entry_Calls.Wait_For_Completion_With_Timeout

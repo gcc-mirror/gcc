@@ -337,7 +337,7 @@ package body VMS_Conv is
             Unixcmd  => new S'("gnatpp"),
             Unixsws  => null,
             Switches => Pretty_Switches'Access,
-            Params   => new Parameter_Array'(1 => File),
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
 
          Shared =>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,11 @@ package Sem_Ch10 is
    --  Installs the entities from the context clause of the given compilation
    --  unit into the visibility chains. This is done before analyzing a unit.
    --  For a child unit, install context of parents as well.
+
+   procedure Install_Private_With_Clauses (P : Entity_Id);
+   --  Install the private with_clauses of a compilation unit, when compiling
+   --  its private part, compiling a private child unit, or compiling the
+   --  private declarations of a public child unit.
 
    procedure Remove_Context (N : Node_Id);
    --  Removes the entities from the context clause of the given compilation

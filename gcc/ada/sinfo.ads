@@ -6356,19 +6356,20 @@ package Sinfo is
       --  The front end also deals with specific cases that are not allowed
       --  e.g. involving unconstrained array types.
 
-      --  For the case of the standard gigi backend, this means that all
-      --  checks are done in the front-end.
+      --  However, some checks, e.g. the check for suspicious aliasing
+      --  when converting to a pointer type, can more conveniently be
+      --  performed in the back end where alias sets are known.
 
-      --  However, in the case of specialized back-ends, notably the JVM
-      --  backend for JGNAT, additional requirements and restrictions apply
+      --  In addition, for specialized back ends, notably the JVM-based
+      --  back end for JGNAT, additional requirements and restrictions apply
       --  to unchecked conversion, and these are most conveniently performed
       --  in the specialized back-end.
 
-      --  To accommodate this requirement, for such back ends, the following
-      --  special node is generated recording an unchecked conversion that
-      --  needs to be validated. The back end should post an appropriate
-      --  error message if the unchecked conversion is invalid or warrants
-      --  a special warning message.
+      --  To accommodate this requirement, the following special node is
+      --  generated recording an unchecked conversion that needs to be
+      --  validated. The back end should post an appropriate error message
+      --  error message if the unchecked conversion is invalid or a warning
+      --  message if a special warning is warranted.
 
       --  Source_Type and Target_Type point to the entities for the two
       --  types involved in the unchecked conversion instantiation that

@@ -940,6 +940,7 @@ begin
            Pragma_No_Return                    |
            Pragma_Obsolescent                  |
            Pragma_No_Run_Time                  |
+           Pragma_No_Strict_Aliasing           |
            Pragma_Normalize_Scalars            |
            Pragma_Optimize                     |
            Pragma_Optional_Overriding          |

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1992-2003, Free Software Fundation, Inc.        --
+--            Copyright (C) 1992-2004, Free Software Fundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,9 +73,8 @@ package body Specific is
    ----------
 
    function Self return Task_ID is
-
    begin
-      return To_Task_Id (pthread_getspecific (ATCB_Key));
+      return To_Task_ID (pthread_getspecific (ATCB_Key));
    end Self;
 
 end Specific;

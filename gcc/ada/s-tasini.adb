@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -951,8 +951,7 @@ package body System.Tasking.Initialization is
    end Get_Stack_Info;
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address) is
-      Me : Task_ID := To_Task_Id (Self_ID);
-
+      Me : Task_ID := To_Task_ID (Self_ID);
    begin
       if Me = Null_Task then
          Me := STPO.Self;

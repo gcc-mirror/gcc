@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,8 +51,14 @@ package body GNAT.Dynamic_Tables is
    --  in Max. Works correctly to do an initial allocation if the table
    --  is currently null.
 
+   pragma Warnings (Off);
+   --  These unchecked conversions are in fact safe, since they never
+   --  generate improperly aliased pointer values.
+
    function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
    function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+
+   pragma Warnings (On);
 
    --------------
    -- Allocate --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,10 @@ package body Sinput is
    --  Routines to support conversion between types Lines_Table_Ptr,
    --  Logical_Lines_Table_Ptr and System.Address.
 
+   pragma Warnings (Off);
+   --  These unchecked conversions are aliasing safe, since they are never
+   --  used to construct improperly aliased pointer values.
+
    function To_Address is
      new Unchecked_Conversion (Lines_Table_Ptr, Address);
 
@@ -67,6 +71,8 @@ package body Sinput is
 
    function To_Pointer is
      new Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
+
+   pragma Warnings (On);
 
    ---------------------------
    -- Add_Line_Tables_Entry --
@@ -760,8 +766,14 @@ package body Sinput is
                procedure Free_Ptr is new Unchecked_Deallocation
                  (Big_Source_Buffer, Source_Buffer_Ptr);
 
+               pragma Warnings (Off);
+               --  This unchecked conversion is aliasing safe, since it is not
+               --  used to create improperly aliased pointer values.
+
                function To_Source_Buffer_Ptr is new
                  Unchecked_Conversion (Address, Source_Buffer_Ptr);
+
+               pragma Warnings (On);
 
                Tmp1 : Source_Buffer_Ptr;
 
@@ -841,8 +853,14 @@ package body Sinput is
                   declare
                      pragma Suppress (All_Checks);
 
+                     pragma Warnings (Off);
+                     --  This unchecked conversion is aliasing safe since it
+                     --  not used to create improperly aliased pointer values.
+
                      function To_Source_Buffer_Ptr is new
                        Unchecked_Conversion (Address, Source_Buffer_Ptr);
+
+                     pragma Warnings (On);
 
                   begin
                      S.Source_Text :=
@@ -881,8 +899,14 @@ package body Sinput is
 
                   pragma Suppress (All_Checks);
 
+                  pragma Warnings (Off);
+                  --  This unchecked conversion is aliasing safe, since it is
+                  --  never used to create improperly aliased pointer values.
+
                   function To_Source_Buffer_Ptr is new
                     Unchecked_Conversion (Address, Source_Buffer_Ptr);
+
+                  pragma Warnings (On);
 
                begin
                   T := new B;

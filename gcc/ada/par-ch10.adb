@@ -748,16 +748,20 @@ package body Ch10 is
    --  CONTEXT_ITEM ::= WITH_CLAUSE | USE_CLAUSE | WITH_TYPE_CLAUSE
 
    --  WITH_CLAUSE ::=
-   --    with library_unit_NAME {,library_unit_NAME};
+   --  [LIMITED] [PRIVATE]  with library_unit_NAME {,library_unit_NAME};
+   --  Note: the two qualifiers are ADA0Y extensions.
 
    --  WITH_TYPE_CLAUSE ::=
    --    with type type_NAME is access; | with type type_NAME is tagged;
+   --  Note: this form is obsolete (old GNAT extension).
 
    --  Error recovery: Cannot raise Error_Resync
 
    function P_Context_Clause return List_Id is
       Item_List   : List_Id;
       Has_Limited : Boolean := False;
+      Has_Private : Boolean := False;
+      Scan_State  : Saved_Scan_State;
       With_Node   : Node_Id;
       First_Flag  : Boolean;
 
@@ -781,13 +785,20 @@ package body Ch10 is
 
          --  Processing for WITH clause
 
-         --  Ada0Y (AI-50217): First check for LIMITED WITH
+         --  Ada0Y (AI-50217): First check for LIMITED WITH, PRIVATE WITH,
+         --  or both.
 
          if Token = Tok_Limited then
             Has_Limited := True;
+            Has_Private := False;
             Scan; -- past LIMITED
 
             --  In the context, LIMITED can only appear in a with_clause
+
+            if Token = Tok_Private then
+               Has_Private := True;
+               Scan;  -- past PRIVATE
+            end if;
 
             if Token /= Tok_With then
                Error_Msg_SC ("unexpected LIMITED ignored");
@@ -797,9 +808,31 @@ package body Ch10 is
                Error_Msg_SP ("`LIMITED WITH` is an Ada0X extension");
                Error_Msg_SP
                  ("\unit must be compiled with -gnatX switch");
+
             end if;
+
+         elsif Token = Tok_Private then
+            Has_Limited := False;
+            Has_Private := True;
+            Save_Scan_State (Scan_State);
+            Scan;  -- past PRIVATE
+
+            if Token /= Tok_With then
+
+               --  Keyword is beginning of private child unit.
+
+               Restore_Scan_State (Scan_State); -- to PRIVATE
+               return Item_List;
+
+            elsif not Extensions_Allowed then
+               Error_Msg_SP ("`PRIVATE WITH` is an Ada0X extension");
+               Error_Msg_SP
+                 ("\unit must be compiled with -gnatX switch");
+            end if;
+
          else
             Has_Limited := False;
+            Has_Private := False;
          end if;
 
          if Token = Tok_With then
@@ -852,6 +885,7 @@ package body Ch10 is
                   Set_Name (With_Node, P_Qualified_Simple_Name);
                   Set_First_Name (With_Node, First_Flag);
                   Set_Limited_Present (With_Node, Has_Limited);
+                  Set_Private_Present (With_Node, Has_Private);
                   First_Flag := False;
                   exit when Token /= Tok_Comma;
                   Scan; -- past comma

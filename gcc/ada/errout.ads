@@ -288,7 +288,7 @@ package Errout is
    --  "/yyy qualifier", where yyy is the corresponding Vname? entry.
 
    Gname1 : aliased constant String := "fno-strict-aliasing";
-   Vname1 : aliased constant String := "OPTIMIZE=NO_ALIASING";
+   Vname1 : aliased constant String := "OPTIMIZE=NO_STRICT_ALIASING";
 
    Gname2 : aliased constant String := "gnatX";
    Vname2 : aliased constant String := "EXTENSIONS_ALLOWED";

@@ -48,6 +48,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -299,6 +300,7 @@ package body Sem_Ch7 is
 
       Install_Visible_Declarations (Spec_Id);
       Install_Private_Declarations (Spec_Id);
+      Install_Private_With_Clauses (Spec_Id);
       Install_Composite_Operations (Spec_Id);
 
       if Ekind (Spec_Id) = E_Generic_Package then
@@ -856,10 +858,15 @@ package body Sem_Ch7 is
                Public_Child := True;
                Par := Scope (Par);
                Install_Private_Declarations (Par);
+               Install_Private_With_Clauses (Par);
                Pack_Decl := Unit_Declaration_Node (Par);
                Set_Use (Private_Declarations (Specification (Pack_Decl)));
             end loop;
          end;
+      end if;
+
+      if Is_Compilation_Unit (Id) then
+         Install_Private_With_Clauses (Id);
       end if;
 
       --  Analyze private part if present. The flag In_Private_Part is
@@ -1593,7 +1600,8 @@ package body Sem_Ch7 is
             end if;
 
             Set_First_Entity (Priv, First_Entity (Full));
-            Set_Last_Entity (Priv, Last_Entity (Full));
+            Set_Last_Entity  (Priv, Last_Entity (Full));
+            Set_Has_Discriminants (Priv, Has_Discriminants (Full));
          end if;
       end Preserve_Full_Attributes;
 
