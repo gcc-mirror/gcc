@@ -1,4 +1,5 @@
 dnl See whether we need a declaration for a function.
+dnl GCC_NEED_DECLARATION(FUNCTION [, EXTRA-HEADER-FILES])
 AC_DEFUN(GCC_NEED_DECLARATION,
 [AC_MSG_CHECKING([whether $1 must be declared])
 AC_CACHE_VAL(gcc_cv_decl_needed_$1,
@@ -22,7 +23,8 @@ AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 #endif
 #ifndef HAVE_INDEX
 #define index strchr
-#endif],
+#endif
+$2],
 [char *(*pfn) = (char *(*)) $1],
 eval "gcc_cv_decl_needed_$1=no", eval "gcc_cv_decl_needed_$1=yes")])
 if eval "test \"`echo '$gcc_cv_decl_needed_'$1`\" = yes"; then
@@ -35,10 +37,11 @@ fi
 ])dnl
 
 dnl Check multiple functions to see whether each needs a declaration.
+dnl GCC_NEED_DECLARATIONS(FUNCTION... [, EXTRA-HEADER-FILES])
 AC_DEFUN(GCC_NEED_DECLARATIONS,
 [for ac_func in $1
 do
-GCC_NEED_DECLARATION($ac_func)
+GCC_NEED_DECLARATION($ac_func, $2)
 done
 ])
 

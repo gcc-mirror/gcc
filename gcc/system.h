@@ -235,6 +235,22 @@ extern int sys_nerr;
 extern char *sys_errlist[];
 #endif /* HAVE_STRERROR */
 
+#ifdef HAVE_GETRLIMIT
+# ifdef NEED_DECLARATION_GETRLIMIT
+#  ifndef getrlimit
+extern int getrlimit ();
+#  endif
+# endif
+#endif
+
+#ifdef HAVE_SETRLIMIT
+# ifdef NEED_DECLARATION_SETRLIMIT
+#  ifndef setrlimit
+extern int setrlimit ();
+#  endif
+# endif
+#endif
+
 /* HAVE_VOLATILE only refers to the stage1 compiler.  We also check
    __STDC__ and assume gcc sets it and has volatile in stage >=2. */
 #if !defined(HAVE_VOLATILE) && !defined(__STDC__) && !defined(volatile)

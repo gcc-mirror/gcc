@@ -1976,11 +1976,78 @@ else
 #ifndef HAVE_INDEX
 #define index strchr
 #endif
+
 int main() {
 char *(*pfn) = (char *(*)) $ac_func
 ; return 0; }
 EOF
-if { (eval echo configure:1984: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1985: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  eval "gcc_cv_decl_needed_$ac_func=no"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "gcc_cv_decl_needed_$ac_func=yes"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$gcc_cv_decl_needed_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  gcc_tr_decl=NEED_DECLARATION_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+done
+
+
+for ac_func in getrlimit setrlimit
+do
+echo $ac_n "checking whether $ac_func must be declared""... $ac_c" 1>&6
+echo "configure:2014: checking whether $ac_func must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2019 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+#include <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) $ac_func
+; return 0; }
+EOF
+if { (eval echo configure:2051: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   eval "gcc_cv_decl_needed_$ac_func=no"
 else
@@ -2007,12 +2074,12 @@ done
 
 
 echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
-echo "configure:2011: checking for sys_siglist declaration in signal.h or unistd.h" >&5
+echo "configure:2078: checking for sys_siglist declaration in signal.h or unistd.h" >&5
 if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2016 "configure"
+#line 2083 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -2024,7 +2091,7 @@ int main() {
 char *msg = *(sys_siglist + 1);
 ; return 0; }
 EOF
-if { (eval echo configure:2028: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2095: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_decl_sys_siglist=yes
 else
@@ -5147,7 +5214,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5151: checking assembler alignment features" >&5
+echo "configure:5218: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 if [ -x as$host_exeext ]; then

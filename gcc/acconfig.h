@@ -65,6 +65,12 @@
 /* Whether getwd must be declared even if <unistd.h> is included.  */
 #undef NEED_DECLARATION_GETWD
 
+/* Whether getrlimit must be declared even if <sys/resource.h> is included.  */
+#undef NEED_DECLARATION_GETRLIMIT
+
+/* Whether setrlimit must be declared even if <sys/resource.h> is included.  */
+#undef NEED_DECLARATION_SETRLIMIT
+
 /* Define if you want expensive run-time checks. */
 #undef ENABLE_CHECKING
 @TOP@

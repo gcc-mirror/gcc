@@ -199,6 +199,13 @@ GCC_FUNC_PRINTF_PTR
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof strerror getcwd getwd)
 
+GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
+#include <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+])
+
 AC_DECL_SYS_SIGLIST
 
 # File extensions
