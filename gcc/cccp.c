@@ -4384,11 +4384,12 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    /* NOTE: while int may not be as wide as a pointer on some machins,
-       this is correct nonethelesss works anyway.
-       Do not try risky measures here to get another type to use!  */
-    if ((int) cp & 3)
-      cp += 4 - ((int) cp & 3);
+    /* NOTE: This works correctly even if HOST_WIDE_INT
+       is narrower than a pointer.
+       Do not try risky measures here to get another type to use!
+       Do not include gstddef.h or stddef.h--either one will fail!  */
+    if ((HOST_WIDE_INT) cp & 3)
+      cp += 4 - ((HOST_WIDE_INT) cp & 3);
     
     /* Now get the string. */
     str = (STRINGDEF *) cp;
