@@ -630,9 +630,14 @@ merge_types (tree t1, tree t2)
 
     case OFFSET_TYPE:
       {
-	tree base = TYPE_OFFSET_BASETYPE (t1);
-	tree target = merge_types (TREE_TYPE (t1), TREE_TYPE (t2));
-	t1 = build_offset_type (base, target);
+	int quals;
+	tree pointee;
+	quals = cp_type_quals (t1);
+	pointee = merge_types (TYPE_PTRMEM_POINTED_TO_TYPE (t1),
+			       TYPE_PTRMEM_POINTED_TO_TYPE (t2));
+	t1 = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
+				pointee);
+	t1 = cp_build_qualified_type (t1, quals);
 	break;
       }
 
