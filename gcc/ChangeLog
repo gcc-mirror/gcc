@@ -1,3 +1,8 @@
+2002-06-28  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c: Remove unusued variables from last
+        patch.
+
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	Revert:
