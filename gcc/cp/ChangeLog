@@ -1,5 +1,15 @@
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Implement using decls inside template functions.
+	* decl2.c (validate_nonmember_using_decl): Don't special case
+	fake_std_node in the global namespace. Don't reject early when
+	processing a template.
+	(do_local_using_decl): Add to statement tree. Don't do further
+	processing when building a template.
+	* pt.c (tsubst_expr, DECL_STMT case): Deal with USING_DECLs.
+
+2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl2.c (do_nonmember_using_decl): Don't complain if we find
 	same function. Do complain about ambiguating extern "C"
 	declarations.

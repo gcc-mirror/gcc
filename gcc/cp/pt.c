@@ -7299,6 +7299,14 @@ tsubst_expr (t, args, complain, in_decl)
 	decl = DECL_STMT_DECL (t);
 	if (TREE_CODE (decl) == LABEL_DECL)
 	  finish_label_decl (DECL_NAME (decl));
+	else if (TREE_CODE (decl) == USING_DECL)
+	  {
+	    tree scope = DECL_INITIAL (decl);
+	    tree name = DECL_NAME (decl);
+	    
+	    scope = tsubst_expr (scope, args, complain, in_decl);
+	    do_local_using_decl (build_nt (SCOPE_REF, scope, name));
+	  }
 	else
 	  {
 	    init = DECL_INITIAL (decl);

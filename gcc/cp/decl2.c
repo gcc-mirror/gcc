@@ -5032,16 +5032,6 @@ validate_nonmember_using_decl (decl, scope, name)
   if (TREE_CODE (decl) == SCOPE_REF
       && TREE_OPERAND (decl, 0) == fake_std_node)
     {
-      if (namespace_bindings_p ()
-	  && current_namespace == global_namespace)
-	/* There's no need for a using declaration at all, here,
-	   since `std' is the same as `::'.  We can't just pass this
-	   on because we'll complain later about declaring something
-	   in the same scope as a using declaration with the same
-	   name.  We return NULL_TREE which indicates to the caller
-	   that there's no need to do any further processing.  */
-	return NULL_TREE;
-
       *scope = global_namespace;
       *name = TREE_OPERAND (decl, 1);
     }
@@ -5054,7 +5044,8 @@ validate_nonmember_using_decl (decl, scope, name)
 
 	 A using-declaration for a class member shall be a
 	 member-declaration.  */
-      if (TREE_CODE (*scope) != NAMESPACE_DECL)
+      if (!processing_template_decl
+          && TREE_CODE (*scope) != NAMESPACE_DECL)
 	{
 	  if (TYPE_P (*scope))
 	    cp_error ("`%T' is not a namespace", *scope);
@@ -5210,6 +5201,12 @@ do_local_using_decl (decl)
 
   decl = validate_nonmember_using_decl (decl, &scope, &name);
   if (decl == NULL_TREE)
+    return;
+
+  if (building_stmt_tree ()
+      && at_function_scope_p ())
+    add_decl_stmt (decl);
+  if (processing_template_decl)
     return;
 
   oldval = lookup_name_current_level (name);

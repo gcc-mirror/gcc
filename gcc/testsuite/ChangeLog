@@ -1,5 +1,9 @@
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/using1.C: New test.
+
+2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/using9.C: New test.
 
 2001-02-28  Ovidiu Predescu  <ovidiu@cup.hp.com>
