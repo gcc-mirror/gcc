@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "toplev.h"
-/* The declarations of cp_error and such here are incompatible with
-   those in cp-tree.h.  */
-#define NO_CP_ERROR_FNS
 #include "cp-tree.h"
 
 /* cp_printer is the type of a function which converts an argument into
