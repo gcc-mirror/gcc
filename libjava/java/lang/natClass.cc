@@ -758,9 +758,6 @@ java::lang::Class::initializeClass (void)
 	}
     }
 
-  if (state <= JV_STATE_LINKED)
-    _Jv_PrepareConstantTimeTables (this);
-
   // Step 2.
   java::lang::Thread *self = java::lang::Thread::currentThread();
   // FIXME: `self' can be null at startup.  Hence this nasty trick.
@@ -804,6 +801,14 @@ java::lang::Class::initializeClass (void)
 	  throw except;
 	}
     }
+
+  _Jv_PrepareConstantTimeTables (this);
+
+  if (vtable == NULL)
+    _Jv_MakeVTable(this);
+
+  if (otable != NULL && otable->state == 0)
+    _Jv_LinkOffsetTable(this);
 
   // Steps 8, 9, 10, 11.
   try

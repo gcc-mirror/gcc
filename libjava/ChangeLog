@@ -1,3 +1,13 @@
+2002-12-23  Jeff Sturm  <jsturm@one-point.com>
+
+	* exception.cc (PERSONALITY_FUNCTION): Clear least-significant-bit
+	of catch_type.
+	* java/lang/natClass.cc (initializeClass): Link vtable, otable,
+	idt tables after initializing superclass.
+	* java/lang/natClassLoader.cc (uaddr): New typedef.
+	(_Jv_PrepareCompiledClass): Resolve superclass, interfaces
+	if they are constant pool indicies.  Don't link vtable, otable yet.
+
 2002-12-21  Anthony Green  <green@redhat.com>
 
 	* Makefile.am: Move org.xml.sax and org.w3c.dom into their own
