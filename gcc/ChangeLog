@@ -1,3 +1,7 @@
+2003-07-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-pragma.h (HANDLE_PRAGMA_WEAK): Always define to SUPPORTS_WEAK.
+
 2003-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.c (MD_FROB_UPDATE_CONTEXT): Define.

@@ -23,5 +23,7 @@ extern int xmain (void) asm ("main");
 int xmain (void) { return main(); }
 
 /* In case built where the runtime calls __main.  */
+/* But make it weak because some targets already define this function.  */
+#pragma weak ymain
 extern int ymain (void) asm ("___main");
 int ymain (void) { return main(); }
