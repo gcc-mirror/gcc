@@ -1,3 +1,9 @@
+Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/execute/bycopy-1.m, bycopy-2.m: Added new tests from Nicola
+	Pero <nicola@brainstorm.co.uk>.
+	* objc/execute/fdecl.m: Declare foo as pointer to AClass.
+
 2001-02-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/spec39.C: New test.
