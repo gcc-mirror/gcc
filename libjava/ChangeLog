@@ -1,3 +1,10 @@
+2004-01-25  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (checkImage): Inform
+	image observer of image loading status.
+	(getImage (String)): Start image production.
+	(getImage (URL)): Likewise.
+
 2004-01-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Class.java: Imports reworked, reformated.

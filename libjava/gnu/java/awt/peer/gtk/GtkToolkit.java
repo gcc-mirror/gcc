@@ -115,7 +115,15 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public int checkImage (Image image, int width, int height, 
 			 ImageObserver observer) 
   {
-    return ((GtkImage) image).checkImage ();
+    int status = ((GtkImage) image).checkImage ();
+
+    if (observer != null)
+      observer.imageUpdate (image, status,
+                            -1, -1,
+                            image.getWidth (observer),
+                            image.getHeight (observer));
+
+    return status;
   }
 
   public Image createImage (String filename)
@@ -166,12 +174,18 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public Image getImage (String filename) 
   {
-    return new GtkImage (new GdkPixbufDecoder (filename), null);
+    GdkPixbufDecoder d = new GdkPixbufDecoder (filename);
+    GtkImage image = new GtkImage (d, null);
+    d.startProduction (image);
+    return image;
   }
 
   public Image getImage (URL url) 
   {
-    return new GtkImage (new GdkPixbufDecoder (url), null);
+    GdkPixbufDecoder d = new GdkPixbufDecoder (url);
+    GtkImage image = new GtkImage (d, null);
+    d.startProduction (image);
+    return image;
   }
 
   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
