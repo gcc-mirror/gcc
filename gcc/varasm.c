@@ -468,10 +468,17 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
 				     gen_rtx (SYMBOL_REF, Pmode, name));
-	  if (TREE_THIS_VOLATILE (decl)
-	    || (flag_volatile_global && TREE_CODE (decl) == VAR_DECL
-		&& TREE_PUBLIC (decl)))
+
+	  /* If this variable is to be treated as volatile, show its
+	     tree node has side effects.  If it has side effects, either
+	     because of this test or from TREE_THIS_VOLATILE also
+	     being set, show the MEM is volatile.  */
+	  if (flag_volatile_global && TREE_CODE (decl) == VAR_DECL
+	      && TREE_PUBLIC (decl))
+	    TREE_SIDE_EFFECTS (decl) = 1;
+	  if (TREE_SIDE_EFFECTS (decl))
 	    MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
+
 	  if (TREE_READONLY (decl))
 	    RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
 	  MEM_IN_STRUCT_P (DECL_RTL (decl))
