@@ -82,7 +82,7 @@ case $basic_machine in
 		basic_machine=$basic_machine-unknown
 		;;
 	# Recognize the basic CPU types with with company name.
-	vax-* | tahoe-* | i386-* | i860-* | m68k-* | m68000-* | m88k-* \
+	vax-* | tahoe-* | i[34]86-* | i860-* | m68k-* | m68000-* | m88k-* \
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
@@ -112,6 +112,10 @@ case $basic_machine in
 		;;
 	i386v4*)
 		basic_machine=i386-unknown
+		os=-sysv4
+		;;
+	i486v4*)
+		basic_machine=i486-unknown
 		os=-sysv4
 		;;
 	i386v)
@@ -245,8 +249,11 @@ case $basic_machine in
 	hp9k31[0-9] | hp9k2[0-9][0-9])
 		basic_machine=m68000-hp
 		;;
-	hp9k8[0-9][0-9] | hp9k7[0-9][0-9] | hp8[0-9][0-9] | hp7[0-9][0-9])
+	hp9k8[0-9][0-9] | hp8[0-9][0-9])
 		basic_machine=hp800-hp
+		;;
+	hp9k7[0-9][0-9] | hp7[0-9][0-9])
+		basic_machine=hp700-hp
 		;;
 	isi68 | isi)
 		basic_machine=m68k-isi
@@ -348,7 +355,7 @@ case $basic_machine in
 		os=-hpux
 		;;
 	ncr3000)
-		basic_machine=i386-ncr
+		basic_machine=i486-ncr
 		os=-sysv4
 		;;
 	news1000)
