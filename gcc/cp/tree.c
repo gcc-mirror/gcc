@@ -211,6 +211,12 @@ lvalue_p (ref)
       return (lvalue_p (TREE_OPERAND (ref, 0))
 	      && lvalue_p (TREE_OPERAND (ref, 1)));
 
+    case NOP_EXPR:
+      /* GNU extension:
+	 A cast is a valid lvalue if its operand is an lvalue. */
+      if (! pedantic)
+	return lvalue_p (TREE_OPERAND (ref, 0));
+
     default:
       break;
     }
@@ -2300,9 +2306,21 @@ build_srcloc (file, line)
      char *file;
      int line;
 {
-  tree t = make_node (SRCLOC);
+  tree t;
+
+  /* Make sure that we put these on the permanent obstack; up in
+     add_pending_template, we pass this return value into perm_tree_cons,
+     which also puts it on the permanent_obstack.  However, this wasn't
+     explicitly doing the same.  */
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = &permanent_obstack;
+
+  t = make_node (SRCLOC);
   SRCLOC_FILE (t) = file;
   SRCLOC_LINE (t) = line;
+
+  current_obstack = ambient_obstack;
+
   return t;
 }
 
