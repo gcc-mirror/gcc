@@ -66,6 +66,7 @@ gcc_build        [-c configure_options]
 		 [-u username]
 		 [-p protocol]
 		 [-t tarfile]
+                 [-x make_check_options]
 		 [bootstrap]
 		 [build]
 		 [checkout]
@@ -174,7 +175,7 @@ test_gcc() {
     changedir ${OBJDIR}
 
     echo "Running tests...  This will take a while."
-    ${MAKE} -k check
+    eval \${MAKE} -k ${MAKE_CHECK_OPTIONS} check
     ${DESTINATION}/contrib/test_summary
 }
 
@@ -231,8 +232,10 @@ TARFILE="${HOME}/dev/gcc.tgz"
 CONFIGURE_OPTIONS=
 # The `make' program.
 MAKE=${MAKE:-make}
-# Options to pass to make.
+# Options to pass to "make bootstrap".
 MAKE_BOOTSTRAP_OPTIONS=
+# Options to pass to "make check".
+MAKE_CHECK_OPTIONS=
 
 # Modes of operation
 BOOTSTRAP=0
@@ -248,14 +251,15 @@ UPDATE=0
 ########################################################################
 
 # Parse the options.
-while getopts "c:d:m:o:p:t:u:" ARG; do
+while getopts "c:d:m:o:p:t:u:x:" ARG; do
     case $ARG in
     c)    CONFIGURE_OPTIONS="${OPTARG}";;
     d)    DESTINATION="${OPTARG}";;
     m)    MAKE_BOOTSTRAP_OPTIONS="${OPTARG}";;
     o)    OBJDIR="${OPTARG}";;
     p)    CVS_PROTOCOL="${OPTARG}";;
-    t)    CVS_TARGFILE="${OPTARG}";;
+    t)    TARFILE="${OPTARG}";;
+    x)    MAKE_CHECK_OPTIONS="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
     \?)   usage;;
     esac

@@ -1,3 +1,7 @@
+2003-08-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Fix handling of -t option.  Add -x option.
+
 2003-08-04  Release Manager
 
 	* GCC 3.3.1 Released.
