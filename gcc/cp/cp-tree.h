@@ -3659,12 +3659,18 @@ extern void clone_function_decl                 PARAMS ((tree, int));
 extern void adjust_clone_args			PARAMS ((tree));
 
 /* decl.c */
-/* resume_binding_level */
+extern int global_bindings_p			PARAMS ((void));
+extern int kept_level_p				PARAMS ((void));
+extern tree getdecls				PARAMS ((void));
+extern void pushlevel				PARAMS ((int));
+extern tree poplevel				PARAMS ((int,int, int));
+extern void insert_block			PARAMS ((tree));
+extern void set_block				PARAMS ((tree));
+extern tree pushdecl				PARAMS ((tree));
 extern void cxx_init_decl_processing		PARAMS ((void));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));
-extern int kept_level_p				PARAMS ((void));
 extern int template_parm_scope_p		PARAMS ((void));
 extern void set_class_shadows			PARAMS ((tree));
 extern void maybe_push_cleanup_level		PARAMS ((tree));

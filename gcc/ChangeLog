@@ -1,3 +1,40 @@
+2002-03-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (fold-const.o, stor-layout.o, stmt.o,
+	sdbout.o, profile.o): Update.
+	* c-common.c (c_common_nodes_and_builtins): Use pushdecl
+	langhook.
+	* c-common.h (gettags): Move here from tree.h.
+	* c-tree.h (pushdecl, pushlevel, poplevel, set_block,
+	insert_block, getdecls, kept_level_p, global_bindings_p): New.
+	* dbxout.c (dbxout_init): Use getdecls langhook.
+	* expr.c (expand_expr): Use insert_block langhook.
+	* fold-const.c: Include langhooks.h.
+	(fold_range_test, fold_binary_op_with_conditional_arg,
+	fold): Use global_bindings_p langhook.
+	* integrate.c (expand_inline_function): Use insert_block langhook.
+	* langhooks-def.h (LANG_HOOKS_DECLS, LANG_HOOKS_PUSHLEVEL,
+	LANG_HOOKS_POPLEVEL, LANG_HOOKS_GLOBAL_BINDINGS_P,
+	LANG_HOOKS_INSERT_BLOCK, LANG_HOOKS_SET_BLOCK, LANG_HOOKS_PUSHDECL,
+	LANG_HOOKS_GETDECLS): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_clear_binding_stack): Use global_bindings_p
+	langhook.
+	* langhooks.h (struct lang_hooks_for_decls): New.
+	(struct lang_hooks): Update.
+	* profile.c: Include langhooks.h.
+	(output_func_start_profiler): Use new langhooks.
+	* sdbout.c: Include langhooks.h.
+	(sdbout_init, sdbout_finish): Use getdecls langhook.
+	* stmt.c: Include langhooks.h.
+	(expand_fixup, fixup_gotos): Use new langhooks.
+	* stor-layout.c: Include langhooks.h.
+	(variable_size): Use global_bindings_p langhook.
+	* toplev.c (compile_file): Use getdecls langhook.
+	* tree-inline.c (remap_block): Use insert_block langhook.
+	* tree.h (pushdecl, pushlevel, poplevel, set_block, gettags,
+	insert_block, getdecls, kept_level_p, global_bindings_p): Remove.
+
 2002-03-21  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_select_rtx_section): Put symbolic

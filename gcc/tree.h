@@ -2847,30 +2847,6 @@ extern tree invert_truthvalue	PARAMS ((tree));
 extern tree (*lang_type_promotes_to)	PARAMS ((tree));
 extern tree fold_builtin		PARAMS ((tree));
 
-/* The language front-end must define these functions.  */
-
-/* Functions for processing symbol declarations.  */
-/* Function to enter a new lexical scope.
-   Takes one argument: always zero when called from outside the front end.  */
-extern void pushlevel				PARAMS ((int));
-/* Function to exit a lexical scope.  It returns a BINDING for that scope.
-   Takes three arguments:
-     KEEP -- nonzero if there were declarations in this scope.
-     REVERSE -- reverse the order of decls before returning them.
-     FUNCTIONBODY -- nonzero if this level is the body of a function.  */
-extern tree poplevel				PARAMS ((int, int, int));
-/* Set the BLOCK node for the current scope level.  */
-extern void set_block				PARAMS ((tree));
-/* Function to add a decl to the current scope level.
-   Takes one argument, a decl to add.
-   Returns that decl, or, if the same symbol is already declared, may
-   return a different decl for that name.  */
-extern tree pushdecl				PARAMS ((tree));
-/* Function to return the chain of decls so far in the current scope level.  */
-extern tree getdecls				PARAMS ((void));
-/* Function to return the chain of structure tags in the current scope level.  */
-extern tree gettags				PARAMS ((void));
-
 extern tree build_range_type PARAMS ((tree, tree, tree));
 
 /* In alias.c */
@@ -3024,8 +3000,6 @@ extern int lang_attribute_common;
 extern int mark_addressable		PARAMS ((tree));
 extern void incomplete_type_error	PARAMS ((tree, tree));
 extern tree truthvalue_conversion	PARAMS ((tree));
-extern int global_bindings_p		PARAMS ((void));
-extern void insert_block		PARAMS ((tree));
 
 /* In integrate.c */
 extern void save_for_inline		PARAMS ((tree));

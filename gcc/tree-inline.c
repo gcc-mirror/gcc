@@ -257,7 +257,7 @@ remap_block (scope_stmt, decls, id)
 	/* We're building a clone; DECL_INITIAL is still
 	   error_mark_node, and current_binding_level is the parm
 	   binding level.  */
-	insert_block (new_block);
+	(*lang_hooks.decls.insert_block) (new_block);
       else
 	{
 	  /* Attach this new block after the DECL_INITIAL block for the

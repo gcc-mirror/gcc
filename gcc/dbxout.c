@@ -412,7 +412,7 @@ dbxout_init (input_file_name)
      const char *input_file_name;
 {
   char ltext_label_name[100];
-  tree syms = getdecls ();
+  tree syms = (*lang_hooks.decls.getdecls) ();
 
   asmfile = asm_out_file;
 

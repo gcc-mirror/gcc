@@ -166,6 +166,15 @@ extern void c_set_yydebug			PARAMS ((int));
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
 
 /* in c-decl.c */
+extern int global_bindings_p			PARAMS ((void));
+extern int kept_level_p				PARAMS ((void));
+extern tree getdecls				PARAMS ((void));
+extern void pushlevel				PARAMS ((int));
+extern tree poplevel				PARAMS ((int,int, int));
+extern void insert_block			PARAMS ((tree));
+extern void set_block				PARAMS ((tree));
+extern tree pushdecl				PARAMS ((tree));
+
 extern void c_init_decl_processing		PARAMS ((void));
 extern void c_dup_lang_specific_decl		PARAMS ((tree));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
@@ -191,7 +200,6 @@ extern tree implicitly_declare                  PARAMS ((tree));
 extern void implicit_decl_warning               PARAMS ((tree));
 extern int  in_parm_level_p                     PARAMS ((void));
 extern void keep_next_level                     PARAMS ((void));
-extern int  kept_level_p                        PARAMS ((void));
 extern tree lookup_name                         PARAMS ((tree));
 extern tree lookup_name_current_level		PARAMS ((tree));
 extern void parmlist_tags_warning               PARAMS ((void));

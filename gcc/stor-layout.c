@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "ggc.h"
 #include "target.h"
+#include "langhooks.h"
 
 /* Set to one when set_sizetype has been called.  */
 static int sizetype_set;
@@ -151,7 +152,8 @@ variable_size (size)
      just return SIZE unchanged.  Likewise for self-referential sizes and
      constant sizes.  */
   if (TREE_CONSTANT (size)
-      || global_bindings_p () < 0 || contains_placeholder_p (size))
+      || (*lang_hooks.decls.global_bindings_p) () < 0
+      || contains_placeholder_p (size))
     return size;
 
   size = save_expr (size);
@@ -167,7 +169,7 @@ variable_size (size)
   if (TREE_CODE (size) == SAVE_EXPR)
     SAVE_EXPR_PERSISTENT_P (size) = 1;
 
-  if (global_bindings_p ())
+  if ((*lang_hooks.decls.global_bindings_p) ())
     {
       if (TREE_CONSTANT (size))
 	error ("type size can't be explicitly evaluated");

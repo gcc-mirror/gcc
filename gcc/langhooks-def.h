@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GNU CC.
@@ -137,7 +137,26 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
 #define LANG_HOOKS_TREE_DUMP_INITIALIZER { \
   LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN, \
   LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN \
-} \
+}
+
+/* Declaration hooks.  */
+#define LANG_HOOKS_PUSHLEVEL	pushlevel
+#define LANG_HOOKS_POPLEVEL	poplevel
+#define LANG_HOOKS_GLOBAL_BINDINGS_P global_bindings_p
+#define LANG_HOOKS_INSERT_BLOCK	insert_block
+#define LANG_HOOKS_SET_BLOCK	set_block
+#define LANG_HOOKS_PUSHDECL	pushdecl
+#define LANG_HOOKS_GETDECLS	getdecls
+
+#define LANG_HOOKS_DECLS { \
+  LANG_HOOKS_PUSHLEVEL, \
+  LANG_HOOKS_POPLEVEL, \
+  LANG_HOOKS_GLOBAL_BINDINGS_P, \
+  LANG_HOOKS_INSERT_BLOCK, \
+  LANG_HOOKS_SET_BLOCK, \
+  LANG_HOOKS_PUSHDECL, \
+  LANG_HOOKS_GETDECLS \
+}
 
 /* The whole thing.  The structure is defined in langhooks.h.  */
 #define LANG_HOOKS_INITIALIZER { \
@@ -165,7 +184,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
   LANG_HOOKS_SET_YYDEBUG, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
-  LANG_HOOKS_TREE_DUMP_INITIALIZER \
+  LANG_HOOKS_TREE_DUMP_INITIALIZER, \
+  LANG_HOOKS_DECLS \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

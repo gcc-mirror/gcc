@@ -2098,7 +2098,7 @@ compile_file ()
   if (flag_syntax_only)
     return;
 
-  globals = getdecls ();
+  globals = (*lang_hooks.decls.getdecls) ();
 
   /* Really define vars that have had only a tentative definition.
      Really output inline functions that must actually be callable

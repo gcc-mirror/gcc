@@ -53,6 +53,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
+#include "langhooks.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -1054,7 +1055,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	TREE_USED (block) = 1;
 
 	if (!cfun->x_whole_function_mode_p)
-	  insert_block (block);
+	  (*lang_hooks.decls.insert_block) (block);
 	else
 	  {
 	    BLOCK_CHAIN (block)
@@ -1175,8 +1176,8 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	     logically be inserting the fixup code.  We do this for the
 	     sake of getting the debugging information right.  */
 
-	  pushlevel (0);
-	  set_block (f->context);
+	  (*lang_hooks.decls.pushlevel) (0);
+	  (*lang_hooks.decls.set_block) (f->context);
 
 	  /* Expand the cleanups for blocks this jump exits.  */
 	  if (f->cleanup_list_list)
@@ -1215,7 +1216,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	     destructed are still "in scope".  */
 
 	  cleanup_insns = get_insns ();
-	  poplevel (1, 0, 0);
+	  (*lang_hooks.decls.poplevel) (1, 0, 0);
 
 	  end_sequence ();
 	  emit_insns_after (cleanup_insns, f->before_jump);
@@ -1249,12 +1250,12 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	  if (TREE_CHAIN (lists) == thisblock->data.block.outer_cleanups)
 	    {
 	      start_sequence ();
-	      pushlevel (0);
-	      set_block (f->context);
+	      (*lang_hooks.decls.pushlevel) (0);
+	      (*lang_hooks.decls.set_block) (f->context);
 	      expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
 	      do_pending_stack_adjust ();
 	      cleanup_insns = get_insns ();
-	      poplevel (1, 0, 0);
+	      (*lang_hooks.decls.poplevel) (1, 0, 0);
 	      end_sequence ();
 	      if (cleanup_insns != 0)
 		f->before_jump

@@ -6526,7 +6526,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* Mark the corresponding BLOCK for output in its proper place.  */
 	if (TREE_OPERAND (exp, 2) != 0
 	    && ! TREE_USED (TREE_OPERAND (exp, 2)))
-	  insert_block (TREE_OPERAND (exp, 2));
+	  (*lang_hooks.decls.insert_block) (TREE_OPERAND (exp, 2));
 
 	/* If VARS have not yet been expanded, expand them now.  */
 	while (vars)

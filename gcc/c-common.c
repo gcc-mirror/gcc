@@ -2575,31 +2575,43 @@ c_common_nodes_and_builtins ()
   record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
 
   /* These are types that type_for_size and type_for_mode use.  */
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intQI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intHI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    intQI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    intHI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    intSI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("__int128_t"), intTI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__int128_t"),
+					    intTI_type_node));
 #endif
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intHI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    unsigned_intQI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    unsigned_intHI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    unsigned_intSI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    unsigned_intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("__uint128_t"), unsigned_intTI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__uint128_t"),
+					    unsigned_intTI_type_node));
 #endif
 
   /* Create the widest literal types.  */
   widest_integer_literal_type_node
     = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
-			widest_integer_literal_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    widest_integer_literal_type_node));
 
   widest_unsigned_literal_type_node
     = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
-			widest_unsigned_literal_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
+					    widest_unsigned_literal_type_node));
 
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
@@ -2615,14 +2627,18 @@ c_common_nodes_and_builtins ()
   record_builtin_type (RID_DOUBLE, NULL, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
-			complex_integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
-			complex_float_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
-			complex_double_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
-			complex_long_double_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("complex int"),
+					    complex_integer_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("complex float"),
+					    complex_float_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("complex double"),
+					    complex_double_type_node));
+  (*lang_hooks.decls.pushdecl)
+    (build_decl (TYPE_DECL, get_identifier ("complex long double"),
+		 complex_long_double_type_node));
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
@@ -2692,14 +2708,17 @@ c_common_nodes_and_builtins ()
     = TREE_TYPE (identifier_global_value (get_identifier (PTRDIFF_TYPE)));
   unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
-			va_list_type_node));
+  (*lang_hooks.decls.pushdecl)
+    (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
+		 va_list_type_node));
 
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_ptrdiff_t"),
-			ptrdiff_type_node));
+  (*lang_hooks.decls.pushdecl)
+    (build_decl (TYPE_DECL, get_identifier ("__builtin_ptrdiff_t"),
+		 ptrdiff_type_node));
 
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_size_t"),
-			sizetype));
+  (*lang_hooks.decls.pushdecl)
+    (build_decl (TYPE_DECL, get_identifier ("__builtin_size_t"),
+		 sizetype));
 
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {

@@ -1,3 +1,8 @@
+Thu Mar 21 18:55:41 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (pushdecl, pushlevel, poplevel, set_block,
+	insert_block, getdecls, global_bindings_p): New.
+
 Wed Mar 20 08:03:42 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (lang_printable_name): Rename.
