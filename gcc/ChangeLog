@@ -130,6 +130,8 @@ Tue Oct 13 11:37:45 1998  Nick Clifton  <nickc@cygnus.com>
 
 Tue Oct 13 11:24:51 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.md (addsi3, subsi3, negsi2): Only allow register operands.
+
 	* collect2.c (main): Pass -EL/-EB through to the compiler.
 
 1998-10-12 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
