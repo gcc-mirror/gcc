@@ -179,6 +179,11 @@
 	(libgcj Runtime Properties): Document
 	gnu.gcj.runtime.VMClassLoader.library_control.
 
+2003-08-20  Andrew Haley  <aph@redhat.com>
+
+        * except.c (prepare_eh_table_type): Use new encoding for exception
+        handlers when using -fno-assume-compiled.
+
 2003-08-13  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Invoking gij): Document -X and -?.
