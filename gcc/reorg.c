@@ -266,7 +266,7 @@ static rtx next_insn_no_annul	PROTO((rtx));
 static void mark_target_live_regs PROTO((rtx, struct resources *));
 static void fill_simple_delay_slots PROTO((rtx, int));
 static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
-					 int, int, int, int *));
+					 int, int, int, int *, rtx));
 static void fill_eager_delay_slots PROTO((rtx));
 static void relax_delay_slots	PROTO((rtx));
 static void make_return_insns	PROTO((rtx));
@@ -3322,7 +3322,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 				    NULL, 1, 1,
 				    own_thread_p (JUMP_LABEL (insn),
 						  JUMP_LABEL (insn), 0),
-				    0, slots_to_fill, &slots_filled);
+				    0, slots_to_fill, &slots_filled,
+				    delay_list);
 
       if (delay_list)
 	unfilled_slots_base[i]
@@ -3452,7 +3453,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 static rtx
 fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			thread_if_true, own_thread, own_opposite_thread,
-			slots_to_fill, pslots_filled)
+			slots_to_fill, pslots_filled, delay_list)
      rtx insn;
      rtx condition;
      rtx thread, opposite_thread;
@@ -3460,9 +3461,9 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
      int thread_if_true;
      int own_thread, own_opposite_thread;
      int slots_to_fill, *pslots_filled;
+     rtx delay_list;
 {
   rtx new_thread;
-  rtx delay_list = 0;
   struct resources opposite_needed, set, needed;
   rtx trial;
   int lose = 0;
@@ -3905,7 +3906,8 @@ fill_eager_delay_slots (first)
 	    = fill_slots_from_thread (insn, condition, insn_at_target,
 				      fallthrough_insn, prediction == 2, 1,
 				      own_target, own_fallthrough,
-				      slots_to_fill, &slots_filled);
+				      slots_to_fill, &slots_filled,
+				      delay_list);
 
 	  if (delay_list == 0 && own_fallthrough)
 	    {
@@ -3920,7 +3922,8 @@ fill_eager_delay_slots (first)
 		= fill_slots_from_thread (insn, condition, fallthrough_insn,
 					  insn_at_target, 0, 0,
 					  own_fallthrough, own_target,
-					  slots_to_fill, &slots_filled);
+					  slots_to_fill, &slots_filled,
+					  delay_list);
 	    }
 	}
       else
@@ -3930,14 +3933,16 @@ fill_eager_delay_slots (first)
 	      = fill_slots_from_thread (insn, condition, fallthrough_insn,
 					insn_at_target, 0, 0,
 					own_fallthrough, own_target,
-					slots_to_fill, &slots_filled);
+					slots_to_fill, &slots_filled,
+					delay_list);
 
 	  if (delay_list == 0)
 	    delay_list
 	      = fill_slots_from_thread (insn, condition, insn_at_target,
 					next_active_insn (insn), 0, 1,
 					own_target, own_fallthrough,
-					slots_to_fill, &slots_filled);
+					slots_to_fill, &slots_filled,
+					delay_list);
 	}
 
       if (delay_list)
