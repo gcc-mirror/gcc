@@ -1783,6 +1783,7 @@ build_invokeinterface (dtable, method)
 		  lookup_field (&dtable_type, class_ident));
 
   interface = DECL_CONTEXT (method);
+  layout_class_methods (interface);
   
   i = 1;
   for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)

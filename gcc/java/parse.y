@@ -7523,12 +7523,14 @@ maybe_yank_clinit (mdecl)
   
   if (!DECL_CLINIT_P (mdecl))
     return 0;
-  
-  /* If the body isn't empty, then we keep <clinit> */
+
+  /* If the body isn't empty, then we keep <clinit>. Note that if
+     we're emitting classfiles, this isn't enough not to rule it
+     out. */
   fbody = DECL_FUNCTION_BODY (mdecl);
   if ((bbody = BLOCK_EXPR_BODY (fbody)))
     bbody = BLOCK_EXPR_BODY (bbody);
-  if (bbody && bbody != empty_stmt_node)
+  if (bbody && ! flag_emit_class_files && bbody != empty_stmt_node)
     return 0;
   
   type = DECL_CONTEXT (mdecl);
@@ -7536,9 +7538,34 @@ maybe_yank_clinit (mdecl)
 
   for (current = (current ? TREE_CHAIN (current) : current); 
        current; current = TREE_CHAIN (current))
-    if (!(FIELD_STATIC (current) && FIELD_FINAL (current)
-	  && DECL_INITIAL (current) && TREE_CONSTANT (DECL_INITIAL (current))))
-      break;
+    {
+      tree f_init;
+
+      /* We're not interested in non static field */
+      if (!FIELD_STATIC (current))
+	continue;
+
+      /* Anything that isn't String or a basic type is ruled out -- or
+	 if we now how to deal with it (when doing things natively) we
+	 should generated an empty <clinit> so that SUID are computed
+	 correctly. */
+      if (! JSTRING_TYPE_P (TREE_TYPE (current))
+	  && ! JNUMERIC_TYPE_P (TREE_TYPE (current)))
+	break;
+	  
+      f_init = DECL_INITIAL (current);
+      /* If we're emitting native code, we want static final fields to
+	 have constant initializers. If we don't meet these
+	 conditions, we keep <clinit> */
+      if (!flag_emit_class_files
+	  && !(FIELD_FINAL (current) && f_init && TREE_CONSTANT (f_init)))
+	break;
+      /* If we're emitting bytecode, we want static fields to have
+	 constant initializers or no initializer. If we don't meet
+	 these conditions, we keep <clinit> */
+      if (flag_emit_class_files && f_init && !TREE_CONSTANT (f_init))
+	break;
+    }
 
   if (current)
     return 0;
@@ -7661,7 +7688,7 @@ build_outer_field_access (id, decl)
   tree ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
 
   /* If decl's class is the direct outer class of the current_class,
-     build the access as `this$<n>.<field>'. Not that we will break
+     build the access as `this$<n>.<field>'. Note that we will break
      the `private' barrier if we're not emitting bytecodes. */
   if (ctx == DECL_CONTEXT (decl) 
       && (!FIELD_PRIVATE (decl) || !flag_emit_class_files ))
@@ -7677,7 +7704,7 @@ build_outer_field_access (id, decl)
       int lc = EXPR_WFL_LINECOL (id);
 
       /* Now we chain the required number of calls to the access$0 to
-	 get a hold to the enclosing instance we need, and the we
+	 get a hold to the enclosing instance we need, and then we
 	 build the field access. */
       access = build_access_to_thisn (ctx, DECL_CONTEXT (decl), lc);
 
@@ -8269,14 +8296,21 @@ build_dot_class_method (class)
 }
 
 static tree
-build_dot_class_method_invocation (name)
-     tree name;
+build_dot_class_method_invocation (type)
+     tree type;
 {
-  tree s = make_node (STRING_CST);
-  TREE_STRING_LENGTH (s) = IDENTIFIER_LENGTH (name);
+  tree sig_id, s;
+
+  if (TYPE_ARRAY_P (type))
+    sig_id = build_java_signature (type);
+  else
+    sig_id = DECL_NAME (TYPE_NAME (type));
+
+  s = make_node (STRING_CST);
+  TREE_STRING_LENGTH (s) = IDENTIFIER_LENGTH (sig_id);
   TREE_STRING_POINTER (s) = obstack_alloc (expression_obstack,
 					   TREE_STRING_LENGTH (s)+1);
-  strcpy (TREE_STRING_POINTER (s), IDENTIFIER_POINTER (name));
+  strcpy (TREE_STRING_POINTER (s), IDENTIFIER_POINTER (sig_id));
   return build_method_invocation (build_wfl_node (get_identifier ("class$")),
 				  build_tree_list (NULL_TREE, s));
 }
@@ -8318,6 +8352,11 @@ fix_constructors (mdecl)
 	 CLASSNAME() constructor */
       start_artificial_method_body (mdecl);
       
+      /* Insert an assignment to the this$<n> hidden field, if
+         necessary */
+      if ((thisn_assign = build_thisn_assign ()))
+	java_method_add_stmt (mdecl, thisn_assign);
+
       /* We don't generate a super constructor invocation if we're
 	 compiling java.lang.Object. build_super_invocation takes care
 	 of that. */
@@ -8326,11 +8365,6 @@ fix_constructors (mdecl)
       /* Insert the instance initializer block right here, after the
          super invocation. */
       add_instance_initializer (mdecl);
-
-      /* Insert an assignment to the this$<n> hidden field, if
-         necessary */
-      if ((thisn_assign = build_thisn_assign ()))
-	java_method_add_stmt (mdecl, thisn_assign);
 
       end_artificial_method_body (mdecl);
     }
@@ -8363,13 +8397,13 @@ fix_constructors (mdecl)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
                                          build_super_invocation (mdecl));
       
-      /* Insert the instance initializer block right here, after the
-         super invocation. */
-      add_instance_initializer (mdecl);
-
       /* Generate the assignment to this$<n>, if necessary */
       if ((thisn_assign = build_thisn_assign ()))
         compound = add_stmt_to_compound (compound, NULL_TREE, thisn_assign);
+
+      /* Insert the instance initializer block right here, after the
+         super invocation. */
+      add_instance_initializer (mdecl);
 
       /* Fix the constructor main block if we're adding extra stmts */
       if (compound)
@@ -9170,6 +9204,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 					  current_class);
 			  return 1;
 			}
+                      if (outer_field_access_p (current_class, decl))
+                        decl = build_outer_field_access (qual_wfl, decl);
 		    }
 		  else
 		    {
@@ -13114,8 +13150,7 @@ patch_incomplete_class_ref (node)
      synthetic static method `class$'. */
   if (!TYPE_DOT_CLASS (current_class))
       build_dot_class_method (current_class);
-  ref_type = 
-    build_dot_class_method_invocation (DECL_NAME (TYPE_NAME (ref_type)));
+  ref_type = build_dot_class_method_invocation (ref_type);
   return java_complete_tree (ref_type);
 }
 

@@ -1,3 +1,11 @@
+2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com
+
+	* parse.y (build_dot_class_method_invocation): Changed parameter
+	name to `type.' Build signature from `type' and convert it to a
+	STRING_CST if it's an array.
+	(patch_incomplete_class_ref): `build_dot_class_method_invocation'
+	to use `ref_type' directly.
+
 Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* lang-options.h: Added a comma after the last element to avoid
@@ -16,6 +24,55 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	lang_specific_driver, and update code as necessary.
 
 	* class.c (build_dtable_decl): Initialize dummy.
+
+2000-08-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (maybe_yank_clinit): When generating bytecode: non empty
+	method bodies not to rule out discarding `<clinit>'; don't use
+	<clinit> to initialize static fields with constant initializers.
+
+2000-08-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* gjavah.c (print_method_info): Added `synth' parameter. Skip
+	synthetic methods.
+	(method_synthetic): New global.
+	(HANDLE_METHOD): Recognize synthetic method and tell
+	`print_method_info' about it.
+	(HANDLE_END_METHOD): Do not issue an additional `;\n' if we're
+	processing a synthetic method.
+	* jcf-reader.c (skip_attribute): New function.
+	( skip_attribute): Likewise.
+
+2000-08-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (build_outer_field_access): Fixed comments.
+	(fix_constructors): Emit the initialization of this$<n> before
+	calling $finit$.
+	(resolve_qualified_expression_name): Build an access to `decl' if
+	necessary.
+
+2000-07-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse-scan.y (curent_class): Non longer const.
+	(inner_qualifier, inner_qualifier_length): Deleted.
+	(current_class_length): New global.
+	(bracket_count): Fixed typo in leading comment.
+	(anonymous_count): New global.
+	(class_instance_creation_expression:): Handle anonymous classes.
+	(anonymous_class_creation:): New rule.
+	(push_class_context): Rewritten.
+	(pop_class_context): Likewise.
+	(INNER_QUALIFIER): Macro deleted.
+	(report_class_declaration): call `push_class_context' when
+	entering the function. `fprintf' format modified not to use
+	INNER_QUALIFIER.
+	(report_class_declaration): Assign `package_name' and
+	`current_class' to NULL separatly.
+
+2000-07-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (build_invokeinterface): Call layout_class_methods on
+	target interface.
 
 2000-07-27  Tom Tromey  <tromey@cygnus.com>
             Anthony Green  <green@cygnus.com>

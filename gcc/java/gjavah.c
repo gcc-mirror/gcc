@@ -116,7 +116,7 @@ static struct method_name *method_name_list;
 static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
 static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int));
-static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
+static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2, int));
 static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *,
 				  int));
 static void print_stub_or_jni PARAMS ((FILE*, JCF*, int, int, int,
@@ -182,26 +182,45 @@ static int method_pass;
 static int method_declared = 0;
 static int method_access = 0;
 static int method_printed = 0;
-#define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	      \
-  if (method_pass)							      \
-    {									      \
-      decompiled = 0; method_printed = 0;				      \
-      if (out)								      \
-        print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
-    }									      \
-  else                                                                       \
-    {                                                                        \
-      print_method_info (NULL, jcf, NAME, SIGNATURE, ACCESS_FLAGS);          \
-      if (! stubs && ! flag_jni)                                             \
-       add_class_decl (out, jcf, SIGNATURE);                                 \
-    }
+static int method_synthetic = 0;
+#define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	\
+  {									\
+    method_synthetic = 0;						\
+    if (ATTRIBUTE_COUNT)						\
+      method_synthetic = peek_attribute (jcf, ATTRIBUTE_COUNT,		\
+				  (const char *)"Synthetic", 9);	\
+    /* If a synthetic methods have been declared, its attribute aren't	\
+       worth reading (and triggering side-effects). We skip them an	\
+       set ATTRIBUTE_COUNT to zero so that they'll be skipped in	\
+       jcf_parse_one_method.  */					\
+    if (method_synthetic)						\
+      {									\
+	skip_attribute (jcf, ATTRIBUTE_COUNT);				\
+	ATTRIBUTE_COUNT = 0;						\
+      } 								\
+    if (method_pass && !method_synthetic)				\
+      {									\
+	decompiled = 0; method_printed = 0;				\
+	if (out)							\
+	  print_method_info (out, jcf, NAME, SIGNATURE,			\
+			     ACCESS_FLAGS, method_synthetic);		\
+      }									\
+    else if (!method_synthetic)						\
+      {									\
+	print_method_info (NULL, jcf, NAME, SIGNATURE,			\
+			   ACCESS_FLAGS, method_synthetic);		\
+	if (! stubs && ! flag_jni)					\
+	  add_class_decl (out, jcf, SIGNATURE);				\
+      }									\
+  }
 
-#define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
+#define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH)	\
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
 
 static int decompiled = 0;
-#define HANDLE_END_METHOD() \
-  if (out && method_printed) fputs (decompiled || stubs ? "\n" : ";\n", out);
+#define HANDLE_END_METHOD()				\
+  if (out && method_printed && !method_synthetic) 	\
+    fputs (decompiled || stubs ? "\n" : ";\n", out);
 
 #include "jcf-reader.c"
 
@@ -670,9 +689,9 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 
 
 static void
-DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
+DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags, synth),
       FILE *stream AND JCF* jcf
-      AND int name_index AND int sig_index AND JCF_u2 flags)
+      AND int name_index AND int sig_index AND JCF_u2 flags AND int synth)
 {
   const unsigned char *str;
   int length, is_init = 0;
@@ -684,10 +703,15 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
     fprintf (stream, "<not a UTF8 constant>");
   str = JPOOL_UTF_DATA (jcf, name_index);
   length = JPOOL_UTF_LENGTH (jcf, name_index);
-  if (str[0] == '<' || str[0] == '$')
+
+  /* Ignore synthetic methods. */
+  if (synth)
+    return;
+
+  if (str[0] == '<')
     {
-      /* Ignore internally generated methods like <clinit> and
-	 $finit$.  However, treat <init> as a constructor.  */
+      /* Ignore the internally generated method <clinit>. However,
+         treat <init> as a constructor.  */
       if (! utf8_cmp (str, length, "<init>"))
 	is_init = 1;
       else if (! METHOD_IS_FINAL (jcf->access_flags, flags)

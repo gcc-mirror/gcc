@@ -27,6 +27,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "zipfile.h"
 
 static int get_attribute PARAMS ((JCF *));
+static int peek_attribute PARAMS ((JCF *, int, const char *, int));
+static void skip_attribute PARAMS ((JCF *, int));
 static int jcf_parse_preamble PARAMS ((JCF *));
 static int jcf_parse_constant_pool PARAMS ((JCF *));
 static void jcf_parse_class PARAMS ((JCF *));
@@ -34,6 +36,64 @@ static int jcf_parse_fields PARAMS ((JCF *));
 static int jcf_parse_one_method PARAMS ((JCF *));
 static int jcf_parse_methods PARAMS ((JCF *));
 static int jcf_parse_final_attributes PARAMS ((JCF *));
+
+/* Go through all available attribute (ATTRIBUTE_NUMER) and try to
+   identify PEEKED_NAME.  Return 1 if PEEKED_NAME was found, 0
+   otherwise. JCF is restored to its initial position before
+   returning.  */
+
+static int
+peek_attribute (jcf, attribute_number, peeked_name, peeked_name_length)
+      JCF *jcf;
+      int attribute_number;
+      const char *peeked_name;
+      int peeked_name_length;
+{
+  int to_return = 0;
+  long absolute_offset = (long)JCF_TELL (jcf);
+  int i;
+
+  for (i = 0; !to_return && i < attribute_number; i++)
+    {
+      uint16 attribute_name = (JCF_FILL (jcf, 6), JCF_readu2 (jcf));
+      uint32 attribute_length = JCF_readu4 (jcf);
+      int name_length;
+      const unsigned char *name_data; 
+
+      JCF_FILL (jcf, (long) attribute_length);
+      if (attribute_name <= 0 || attribute_name >= JPOOL_SIZE(jcf)
+	  || JPOOL_TAG (jcf, attribute_name) != CONSTANT_Utf8)
+	continue;
+
+      name_length = JPOOL_UTF_LENGTH (jcf, attribute_name);
+      name_data = JPOOL_UTF_DATA (jcf, attribute_name);
+
+      if (name_length == peeked_name_length 
+	  && ! memcmp (name_data, peeked_name, peeked_name_length)) 
+	{
+	  to_return = 1; 
+	  break;
+	}
+      
+      JCF_SKIP (jcf, attribute_length);
+    }
+
+  JCF_SEEK (jcf, absolute_offset);
+  return to_return;
+}
+
+static void
+skip_attribute (jcf, number_of_attribute)
+     JCF *jcf;
+     int number_of_attribute;
+{
+  while (number_of_attribute--)
+    {
+      JCF_FILL (jcf, 6);
+      (void) JCF_readu2 (jcf);
+      JCF_SKIP (jcf, JCF_readu4 (jcf));
+    }
+}
 
 static int
 DEFUN(get_attribute, (jcf),
