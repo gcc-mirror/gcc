@@ -121,11 +121,13 @@ DEFTREECODE (BLOCK, "block", "b", 0)
 
 DEFTREECODE (VOID_TYPE, "void_type", "t", 0)	/* The void type in C */
 
-/* Integer types in all languages, including char in C.  */
-/* Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
+/* Integer types in all languages, including char in C.
+   Also used for sub-ranges of other discrete types.
+   Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
    and TYPE_PRECISION (number of bits used by this type).
    In the case of a subrange type in Pascal, the TREE_TYPE
-   of this will point at the supertype (another INTEGER_TYPE).
+   of this will point at the supertype (another INTEGER_TYPE,
+   or an ENUMERAL_TYPE, CHAR_TYPE, or BOOLEAN_TYPE).
    Otherwise, the TREE_TYPE is zero.  */
 DEFTREECODE (INTEGER_TYPE, "integer_type", "t", 0)
 
