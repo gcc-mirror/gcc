@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -4822,6 +4822,7 @@ lookup_arg_dependent (name, fns, args)
      tree args;
 {
   struct arg_lookup k;
+  tree fn = NULL_TREE;
 
   k.name = name;
   k.functions = fns;
@@ -4829,7 +4830,9 @@ lookup_arg_dependent (name, fns, args)
 
   /* Note that we've already looked at some namespaces during normal
      unqualified lookup, unless we found a decl in function scope.  */
-  if (fns && DECL_LOCAL_FUNCTION_P (OVL_CURRENT (fns)))
+  if (fns)
+    fn = OVL_CURRENT (fns);
+  if (fn && TREE_CODE (fn) == FUNCTION_DECL && DECL_LOCAL_FUNCTION_P (fn))
     k.namespaces = NULL_TREE;
   else
     unqualified_namespace_lookup (name, 0, &k.namespaces);
