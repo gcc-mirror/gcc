@@ -1,3 +1,7 @@
+Mon Jun 22 22:21:46 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c (handle_braces): Recognize | between options as an or.
+
 Mon Jun 22 23:13:47 1998  John Wehle  (john@feith.com)
 
 	* i386.md (exception_receiver): Define.

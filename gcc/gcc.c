@@ -363,6 +363,8 @@ or with constant text in a single argument.
  %{|!S:X} like %{!S:X}, but if there is an S switch, substitute `-'.
  %{.S:X} substitutes X, but only if processing a file with suffix S.
  %{!.S:X} substitutes X, but only if NOT processing a file with suffix S.
+ %{S|P:X} substitutes X if either -S or -P was given to CC.  This may be
+	  combined with ! and . as above binding stronger than the OR.
  %(Spec) processes a specification defined in a specs file as *Spec:
  %[Spec] as above, but put __ around -D arguments
 
@@ -376,8 +378,9 @@ constructs.  If another value of -O or the negated form of a -f, -m, or
 value is ignored, except with {S*} where S is just one letter; this
 passes all matching options.
 
-The character | is used to indicate that a command should be piped to
-the following command, but only if -pipe is specified.
+The character | at the beginning of the predicate text is used to indicate
+that a command should be piped to the following command, but only if -pipe
+is specified.
 
 Note that it is built into CC which switches take arguments and which
 do not.  You might think it would be useful to generalize this to
@@ -4056,11 +4059,10 @@ static char *
 handle_braces (p)
      register char *p;
 {
-  register char *q;
-  char *filter;
+  char *filter, *body = NULL, *endbody;
   int pipe_p = 0;
-  int negate = 0;
-  int suffix = 0;
+  int negate;
+  int suffix;
   int include_blanks = 1;
 
   if (*p == '^')
@@ -4072,6 +4074,9 @@ handle_braces (p)
        if the test fails, output a single minus sign rather than nothing.
        This is used in %{|!pipe:...}.  */
     pipe_p = 1, ++p;
+
+next_member:
+  negate = suffix = 0;
 
   if (*p == '!')
     /* A `!' after the open-brace negates the condition:
@@ -4089,24 +4094,36 @@ handle_braces (p)
     }
 
   filter = p;
-  while (*p != ':' && *p != '}') p++;
-  if (*p != '}')
+  while (*p != ':' && *p != '}' && *p != '|') p++;
+
+  if (*p == '|' && pipe_p)
+    abort ();
+
+  if (!body)
     {
-      register int count = 1;
-      q = p + 1;
-      while (count > 0)
-	{
-	  if (*q == '{')
-	    count++;
-	  else if (*q == '}')
-	    count--;
-	  else if (*q == 0)
-	    abort ();
-	  q++;
+      if (*p != '}')
+        {
+	  register int count = 1;
+	  register char *q = p;
+
+	  while (*q++ != ':') continue;
+	  body = q;
+	  
+	  while (count > 0)
+	    {
+	      if (*q == '{')
+	        count++;
+	      else if (*q == '}')
+	        count--;
+	      else if (*q == 0)
+	        abort ();
+	      q++;
+	    }
+	  endbody = q;
 	}
+      else
+	body = p, endbody = p+1;
     }
-  else
-    q = p + 1;
 
   if (suffix)
     {
@@ -4114,14 +4131,12 @@ handle_braces (p)
 		   && strlen (input_suffix) == p - filter
 		   && strncmp (input_suffix, filter, p - filter) == 0);
 
-      if (p[0] == '}')
+      if (body[0] == '}')
 	abort ();
 
       if (negate != found
-	  && do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL_PTR) < 0)
+	  && do_spec_1 (save_string (body, endbody-body-1), 0, NULL_PTR) < 0)
 	return 0;
-
-      return q;
     }
   else if (p[-1] == '*' && p[0] == '}')
     {
@@ -4144,11 +4159,11 @@ handle_braces (p)
       if (p[-1] == '*' && !negate)
 	{
 	  int substitution;
-	  char *r = p;
+	  char *r = body;
 
 	  /* First see whether we have %*.  */
 	  substitution = 0;
-	  while (r < q)
+	  while (r < endbody)
 	    {
 	      if (*r == '%' && r[1] == '*')
 		substitution = 1;
@@ -4162,7 +4177,7 @@ handle_braces (p)
 		 in the text that follows the colon.  */
 
 	      unsigned hard_match_len = p - filter - 1;
-	      char *string = save_string (p + 1, q - p - 2);
+	      char *string = save_string (body, endbody - body - 1);
 
 	      for (i = 0; i < n_switches; i++)
 		if (!strncmp (switches[i].part1, filter, hard_match_len)
@@ -4173,7 +4188,10 @@ handle_braces (p)
 		    give_switch (i, 1, 1);
 		  }
 
-	      return q;
+	      /* We didn't match.  Try again.  */
+	      if (*p++ == '|')
+		goto next_member;
+	      return endbody;
 	    }
 	}
 
@@ -4207,7 +4225,7 @@ handle_braces (p)
 	    }
 	}
 
-      /* If it is as desired (present for %{s...}, absent for %{-s...})
+      /* If it is as desired (present for %{s...}, absent for %{!s...})
 	 then substitute either the switch or the specified
 	 conditional text.  */
       if (present != negate)
@@ -4218,7 +4236,8 @@ handle_braces (p)
 	    }
 	  else
 	    {
-	      if (do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL_PTR) < 0)
+	      if (do_spec_1 (save_string (body, endbody - body - 1),
+			     0, NULL_PTR) < 0)
 		return 0;
 	    }
 	}
@@ -4227,10 +4246,15 @@ handle_braces (p)
 	  /* Here if a %{|...} conditional fails: output a minus sign,
 	     which means "standard output" or "standard input".  */
 	  do_spec_1 ("-", 0, NULL_PTR);
+	  return endbody;
 	}
     }
 
-  return q;
+  /* We didn't match; try again.  */
+  if (*p++ == '|')
+    goto next_member;
+
+  return endbody;
 }
 
 /* Return 0 iff switch number SWITCHNUM is obsoleted by a later switch
