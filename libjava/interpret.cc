@@ -774,17 +774,24 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 }
 #endif /* DIRECT_THREADED */
 
-// This function exists so that the stack-tracing code can find the
-// boundaries of the interpreter.
-void
-_Jv_StartOfInterpreter (void)
-{
-}
+// These exist so that the stack-tracing code can find the boundaries
+// of the interpreter.
+void *_Jv_StartOfInterpreter;
+void *_Jv_EndOfInterpreter;
+extern "C" void *_Unwind_FindEnclosingFunction (void *pc);
 
 void
 _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 {
   using namespace java::lang::reflect;
+
+  // Record the address of the start of this member function in
+  // _Jv_StartOfInterpreter.  Such a write to a global variable
+  // without acquiring a lock is correct iff reads and writes of words
+  // in memory are atomic, but Java requires that anyway.
+ foo:
+  if (_Jv_StartOfInterpreter == NULL)
+    _Jv_StartOfInterpreter = _Unwind_FindEnclosingFunction (&&foo);
 
   // FRAME_DESC registers this particular invocation as the top-most
   // interpreter frame.  This lets the stack tracing code (for
@@ -3217,13 +3224,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       // No handler, so re-throw.
       throw ex;
     }
-}
-
-// This function exists so that the stack-tracing code can find the
-// boundaries of the interpreter.
-void
-_Jv_EndOfInterpreter (void)
-{
 }
 
 static void
