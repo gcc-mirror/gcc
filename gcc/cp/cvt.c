@@ -925,7 +925,7 @@ convert_to_void (tree expr, const char *implicit)
 	      /* We might like to warn about (say) "(int) f()", as the
 		 cast has no effect, but the compiler itself will
 		 generate implicit conversions under some
-		 circmstances.  (For example a block copy will be
+		 circumstances.  (For example a block copy will be
 		 turned into a call to "__builtin_memcpy", with a
 		 conversion of the return value to an appropriate
 		 type.)  So, to avoid false positives, we strip
