@@ -1589,9 +1589,9 @@ collect_execute (prog, argv, redir)
 	{
 	  unlink (redir);
 	  if (freopen (redir, "a", stdout) == NULL)
-	    fatal_perror ("redirecting stdout");
+	    fatal_perror ("redirecting stdout: %s", redir);
 	  if (freopen (redir, "a", stderr) == NULL)
-	    fatal_perror ("redirecting stderr");
+	    fatal_perror ("redirecting stderr: %s", redir);
 	}
 
       execvp (argv[0], argv);
