@@ -1446,7 +1446,8 @@ gen_label_rtx ()
 
   label = (output_bytecode
 	   ? gen_rtx (CODE_LABEL, VOIDmode, NULL, bc_get_bytecode_label ())
-	   : gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0, label_num++, NULL_PTR));
+	   : gen_rtx (CODE_LABEL, VOIDmode, 0, NULL_RTX,
+		      NULL_RTX, label_num++, NULL_PTR));
 
   LABEL_NUSES (label) = 0;
   return label;
