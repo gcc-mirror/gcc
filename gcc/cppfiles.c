@@ -474,50 +474,6 @@ find_include_file (pfile, fname, search_start)
   return 0;
 }
 
-/* #line uses this to save artificial file names.  We have to stat the
-   file because an all_include_files entry is always either + or -,
-   there's no 'I don't know' value.  */
-const char *
-_cpp_fake_include (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
-{
-  splay_tree_node nd;
-  struct include_file *file;
-  char *name;
-
-  file = find_include_file (pfile, fname, CPP_OPTION (pfile, quote_include));
-  if (file)
-    {
-      if (file->fd > 0)
-	{
-	  close (file->fd);
-	  file->fd = -1;
-	}
-      return file->name;
-    }
-
-  name = xstrdup (fname);
-  _cpp_simplify_pathname (name);
-
-  /* We cannot just blindly insert a node, because there's still the
-     chance that the node already exists but isn't on the search path.  */
-  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
-  if (nd)
-    {
-      free (name);
-      return (const char *) nd->key;
-    }
-
-  file = xcnew (struct include_file);
-  file->name = name;
-  file->fd = -2;
-  splay_tree_insert (pfile->all_include_files, (splay_tree_key) name,
-		     (splay_tree_value) file);
-
-  return file->name;
-}
-
 /* Not everyone who wants to set system-header-ness on a buffer can
    see the details of struct include_file.  This is an exported interface
    because fix-header needs it.  */

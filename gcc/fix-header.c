@@ -649,26 +649,21 @@ read_scan_file (in_fname, argc, argv)
     {
       static const unsigned char getchar_call[] = "getchar();";
       int seen_filbuf = 0;
-      cpp_buffer *buf = CPP_BUFFER (scan_in);
-      if (cpp_push_buffer (scan_in, getchar_call,
-			   sizeof(getchar_call) - 1) == NULL)
-	return;
 
       /* Scan the macro expansion of "getchar();".  */
+      cpp_push_buffer (scan_in, getchar_call, sizeof(getchar_call) - 1);
       for (;;)
 	{
 	  cpp_token t;
 
 	  cpp_get_token (scan_in, &t);
 	  if (t.type == CPP_EOF)
-	    {
-	      cpp_pop_buffer (scan_in);
-	      if (CPP_BUFFER (scan_in) == buf)
-		break;
-	    }
+	    break;
 	  else if (cpp_ideq (&t, "_filbuf"))
 	    seen_filbuf++;
 	}
+      cpp_pop_buffer (scan_in);
+
       if (seen_filbuf)
 	{
 	  int need_filbuf = !SEEN (fn) && !REQUIRED (fn);
