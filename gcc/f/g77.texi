@@ -16,8 +16,8 @@
 
 @set last-up-date 1998-09-01
 @set version-g77 0.5.24
-@set email-general egcs@@cygnus.com
-@set email-bugs egcs-bugs@@cygnus.com
+@set email-general egcs@@egcs.cygnus.com
+@set email-bugs egcs-bugs@@egcs.cygnus.com
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
 
