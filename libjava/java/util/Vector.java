@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,7 +20,7 @@ import java.io.Serializable;
  * Status:  Believed complete and correct
  */
 
-class VectorEnumeration implements Enumeration
+final class VectorEnumeration implements Enumeration
 {
   private int enumIndex;
   private Vector enumVec;

@@ -1,3 +1,11 @@
+2000-04-11  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Vector.java (VectorEnumeration): Now `final'.
+	* java/util/Hashtable.java (HashtableEntry): Now `final'.
+	(HashtableEnumeration): Likewise.
+	* java/util/zip/ZipFile.java (ZipEnumeration): Now `final'.
+	* java/text/RuleBasedCollator.java (RBCElement): Now `final'.
+
 2000-04-10  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectStreamException.java: New file.
