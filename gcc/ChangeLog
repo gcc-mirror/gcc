@@ -1,3 +1,10 @@
+2000-03-29  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Minor formatting changes/
+	* config/arm/arm.h (SUBTARGET_EXTRA_ASM_SPEC): Define if not
+	already defined.
+	(ASM_SPEC): Define if not already defined.
+
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (cpp_read_file): Don't pass zero-length string to

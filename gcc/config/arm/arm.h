@@ -250,6 +250,22 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define SUBTARGET_CPP_SPEC      ""
 #endif
 
+#ifndef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC
+#endif
+
+#ifndef ASM_SPEC
+#define ASM_SPEC "\
+%{mbig-endian:-EB} \
+%{mcpu=*:-m%*} \
+%{march=*:-m%*} \
+%{mapcs-*:-mapcs-%*} \
+%{matpcs:-matpcs} \
+%{mapcs-float:-mfloat} \
+%{msoft-float:-mno-fpu} \
+%{mthumb-interwork:-mthumb-interwork} \
+" SUBTARGET_EXTRA_ASM_SPEC
+#endif
 
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
@@ -2100,7 +2116,7 @@ extern struct rtx_def * arm_compare_op1;
   do							\
     {							\
       if (TARGET_POKE_FUNCTION_NAME)			\
-        arm_poke_function_name (STREAM, NAME);		\
+        arm_poke_function_name (STREAM, (char *) NAME);	\
     }							\
   while (0)
 
@@ -2240,7 +2256,7 @@ extern struct rtx_def * arm_compare_op1;
   do										\
     {										\
       int mi_delta = (DELTA);							\
-      const char *mi_op = mi_delta < 0 ? "sub" : "add";				\
+      const char * mi_op = mi_delta < 0 ? "sub" : "add";			\
       int shift = 0;								\
       int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))	\
 		        ? 1 : 0);						\
