@@ -1,3 +1,10 @@
+2002-03-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Add --enable-install-libiberty option.
+	* Makefile.in (INSTALLED_HEADERS):  New variable.
+	(install_to_libdir):  Possibly also copy headers.
+	* configure:  Regenerated.
+
 2002-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* xmalloc.c (xmalloc_fail): Clarify error message further.
