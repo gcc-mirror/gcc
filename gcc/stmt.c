@@ -3609,7 +3609,7 @@ expand_decl (decl)
       DECL_RTL (decl) = gen_reg_rtx (reg_mode);
       mark_user_reg (DECL_RTL (decl));
 
-      if (TREE_CODE (type) == POINTER_TYPE)
+      if (POINTER_TYPE_P (type))
 	mark_reg_pointer (DECL_RTL (decl),
 			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
 			   / BITS_PER_UNIT));
@@ -3813,8 +3813,9 @@ expand_decl_init (decl)
   if (DECL_INITIAL (decl) == error_mark_node)
     {
       enum tree_code code = TREE_CODE (TREE_TYPE (decl));
+
       if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
-	  || code == POINTER_TYPE)
+	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
 	expand_assignment (decl, convert (TREE_TYPE (decl), integer_zero_node),
 			   0, 0);
       emit_queue ();
@@ -3896,8 +3897,7 @@ bc_expand_decl_init (decl)
       enum tree_code code = TREE_CODE (TREE_TYPE (decl));
 
       if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
-	  || code == POINTER_TYPE)
-
+	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
 	expand_assignment (TREE_TYPE (decl), decl, 0, 0);
     }
   else if (DECL_INITIAL (decl))
