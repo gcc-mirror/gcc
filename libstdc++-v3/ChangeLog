@@ -1,5 +1,9 @@
 2003-11-17  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc: Fix typo in comment.
+
+2003-11-17  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/num_put/put/char/8.cc: New test,
 	summarizing the discussion ensuing libstdc++/12988.
 	* testsuite/22_locale/num_put/put/wchar_t/8.cc: Ditto.

@@ -764,7 +764,7 @@ namespace std
     _M_group_int(const string& __grouping, _CharT __sep, ios_base& __io, 
 		 _CharT* __new, _CharT* __cs, int& __len) const
     {
-      // By itself __add_grouping cannot deal correctly with __ws when
+      // By itself __add_grouping cannot deal correctly with __cs when
       // ios::showbase is set and ios_base::oct || ios_base::hex.
       // Therefore we take care "by hand" of the initial 0, 0x or 0X.
       // However, remember that the latter do not occur if the number
