@@ -80,6 +80,7 @@ toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
 toolexeclib_LTLIBRARIES = libffi.la
+noinst_LTLIBRARIES = libfficonvenience.la
 
 noinst_PROGRAMS = ffitest
 
@@ -104,33 +105,43 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 		src/raw_api.c src/java_raw_api.c
 if MIPS_GCC
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 endif
 if MIPS_SGI
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
 endif
 if X86
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
 endif
 if X86_WIN32
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
 endif
 if SPARC
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
 endif
 if ALPHA
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
 endif
 if IA64
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
 endif
 if M68K
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 endif
 if POWERPC
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
 endif
 if ARM
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 endif
 
 AM_CFLAGS = -fexceptions

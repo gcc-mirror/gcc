@@ -131,9 +131,6 @@ javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 x_javao_files = $(x_java_source_files:.java=.lo)
 
-## Extract the libffi object file names.
-libffi_files = `find ../libffi/ \-name '*.lo'`
-
 libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc name-finder.cc \
 	$(nat_source_files)
@@ -143,11 +140,10 @@ libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
 libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(libffi_files)
+	$(THREADOBJS)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
-libgcj_la_LDFLAGS = -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
-	-rpath $(toolexeclibdir) $(THREADLIBS) $(LIBLTDL) \
+libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLIBS) $(LIBLTDL) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
@@ -157,7 +153,6 @@ EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
 libgcjx_la_DEPENDENCIES = libgcj.jar $(x_javao_files)
 libgcjx_la_LIBADD = $(x_javao_files)
 libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
         -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -267,13 +262,16 @@ $(javao_files) $(x_javao_files): %.lo: %.java
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@echo $(libgcj_la_OBJECTS) > libgcj.objectlist;
 	@echo $(libgcj_la_LIBADD) >> libgcj.objectlist;
-	$(libgcj_la_LINK) -objectlist libgcj.objectlist -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
+	../libstdc++-v3/libsupc++/libsupc++convenience.la \
+	../libffi/libfficonvenience.la \
+	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
 	@echo $(libgcjx_la_OBJECTS) > libgcjx.objectlist;
 	@echo $(libgcjx_la_LIBADD) >> libgcjx.objectlist;
-	$(libgcjx_la_LINK) -objectlist libgcjx.objectlist -rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
-
+	$(libgcjx_la_LINK) -objectlist libgcjx.objectlist \
+	-rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
 
 ## ################################################################
 

@@ -1,3 +1,14 @@
+2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/File.java (normalizePath): New private method. 
+	(File (String)): Use normalizePath().
+	(File (String, String)): Likewise.
+
+	* Makefile.am (libffi_files): Removed.
+	(libgcj.la): Link libffi as a convenience library instead of 
+	refering to its object files directly.
+	* Makefile.in: Rebuilt.
+
 2001-04-08  Per Bothner  <per@bothner.com>
 
 	* java/lang/natString.cc (_Jv_NewStringUtf8Const):  Register finalizer.

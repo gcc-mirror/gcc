@@ -76,11 +76,56 @@ public class File implements Serializable, Comparable
 
   public File (String p)
   {
-    if (p == null)
-      throw new NullPointerException ();
-    path = p;
+    path = normalizePath(p);
   }
 
+  // Remove duplicate and redundant separator characters.
+  private String normalizePath(String p)
+  {
+    int dupIndex = p.indexOf(dupSeparator);
+    int plen = p.length();
+    
+    // Special case: permit Windows UNC path prefix.
+    if (dupSeparator == "\\" && dupIndex == 0)
+      dupIndex = p.indexOf(dupSeparator, 1);
+
+    if (dupIndex == -1)
+      {
+        // Ignore trailing separator.
+        if (plen > 1 && p.charAt(plen - 1) == separatorChar)
+	  return p.substring(0, plen - 1);
+	else
+	  return p;
+      }
+    
+    StringBuffer newpath = new StringBuffer(plen);
+    int last = 0;
+    while (dupIndex != -1)
+      {
+        newpath.append(p.substring(last, dupIndex));
+	// Ignore the duplicate path characters.
+	while (p.charAt(dupIndex) == separatorChar)
+	  {
+	    dupIndex++;
+	    if (dupIndex == plen)
+	      return newpath.toString();
+	  }
+	newpath.append(separatorChar);
+	last = dupIndex;
+	dupIndex = p.indexOf(dupSeparator, last);
+      }
+    
+    // Again, ignore possible trailing separator.
+    int end;
+    if (plen > 1 && p.charAt(plen - 1) == separatorChar)
+      end = plen - 1;
+    else
+      end = plen;
+    newpath.append(p.substring(last, end));
+    
+    return newpath.toString();
+  }
+  
   public File (String dirPath, String name)
   {
     if (name == null)
@@ -88,13 +133,14 @@ public class File implements Serializable, Comparable
     if (dirPath != null && dirPath.length() > 0)
       {
 	// Try to be smart about the number of separator characters.
-	if (dirPath.charAt(dirPath.length() - 1) == separatorChar)
-	  path = dirPath + name;
+	if (dirPath.charAt(dirPath.length() - 1) == separatorChar
+	    || name.length() == 0)
+	  path = normalizePath(dirPath + name);
 	else
-	  path = dirPath + separatorChar + name;
+	  path = normalizePath(dirPath + separatorChar + name);
       }
     else
-      path = name;
+      path = normalizePath(name);
   }
 
   public File (File dir, String name)
@@ -439,6 +485,7 @@ public class File implements Serializable, Comparable
   static final String tmpdir = System.getProperty("java.io.tmpdir");
   static int maxPathLen;
   static boolean caseSensitive;
+  static String dupSeparator = separator + separator;
   
   static
   {
