@@ -125,7 +125,7 @@ public:
     }
     catch(...)
       { 
-	free(_M_buffer); 
+	std::free(_M_buffer); 
 	_M_buffer = 0; 
 	_M_len = 0;
 	__throw_exception_again; 
@@ -134,7 +134,7 @@ public:
  
   ~_Temporary_buffer() {  
     std::_Destroy(_M_buffer, _M_buffer + _M_len);
-    free(_M_buffer);
+    std::free(_M_buffer);
   }
 
 private:
