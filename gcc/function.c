@@ -68,6 +68,10 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
 
+#if !defined (PREFERRED_STACK_BOUNDARY) && defined (STACK_BOUNDARY)
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -542,6 +546,13 @@ assign_stack_local_1 (mode, size, align, function)
 #ifdef FRAME_GROWS_DOWNWARD
   function->x_frame_offset -= size;
 #endif
+
+  /* Ignore alignment we can't do with expected alignment of the boundary.  */
+  if (alignment * BITS_PER_UNIT > PREFERRED_STACK_BOUNDARY)
+    alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+
+  if (function->stack_alignment_needed < alignment * BITS_PER_UNIT)
+    function->stack_alignment_needed = alignment * BITS_PER_UNIT;
 
   /* Round frame offset to that alignment.
      We must be careful here, since FRAME_OFFSET might be negative and
@@ -5763,6 +5774,8 @@ prepare_function_start ()
   current_function->inlinable = 0;
   current_function->original_decl_initial = 0;
   current_function->original_arg_vector = 0;  
+
+  current_function->stack_alignment_needed = 0;
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;

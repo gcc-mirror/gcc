@@ -456,6 +456,8 @@ struct function
   int uses_pic_offset_table;
   /* tm.h can use this to store whatever it likes.  */
   struct machine_function *machine;
+  /* The largest alignment of slot allocated on the stack.  */
+  int stack_alignment_needed;
 
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function *language;
