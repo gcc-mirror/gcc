@@ -1,5 +1,5 @@
 struct resword {
-  char        *name;
+  const char  *name;
   short        token;
   enum rid     rid;
   enum toktype { RESERVED, DIRECTIVE, PREDEF } flags;

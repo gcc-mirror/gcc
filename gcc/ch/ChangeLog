@@ -1,3 +1,10 @@
+Wed Mar 31 10:44:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (hash.h): Generate using gperf language 'C', not
+        'KR-C', so gperf uses the `const' keyword on strings.
+	 
+        * gperf (resword): Const-ify a char*.
+
 Sun Mar 28 00:30:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (CHILL.dvi): New target.
