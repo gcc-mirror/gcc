@@ -176,6 +176,9 @@ extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned int);
 extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
 
+extern const int magic_milli[];
+extern int shadd_constant_p (int);
+
 /* Functions in varasm.c used by pa.c.  */
 extern void som_readonly_data_section (void);
 extern void som_one_only_readonly_data_section (void);

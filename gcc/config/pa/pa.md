@@ -561,7 +561,7 @@
    (eq_attr "cpu" "8000"))
  "inm_8000,fdivsqrt_8000*6,rnm_8000")
 
-
+(include "predicates.md")
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
