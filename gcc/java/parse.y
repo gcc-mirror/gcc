@@ -8467,7 +8467,8 @@ java_complete_lhs (node)
       for (cn = TREE_OPERAND (node, 1); cn; cn = TREE_CHAIN (cn))
 	{
 	  int location = EXPR_WFL_LINECOL (TREE_VALUE (cn));
-	  tree dim = java_complete_tree (TREE_VALUE (cn));
+	  tree dim = convert (int_type_node, 
+			      java_complete_tree (TREE_VALUE (cn)));
 	  if (dim == error_mark_node)
 	    {
 	      flag = 1;
