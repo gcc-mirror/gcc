@@ -667,9 +667,9 @@ etruncui (x)
 }
 
 
-/* This is the REAL_VALUE_ATOF function.  It converts a decimal string to
-   binary, rounding off as indicated by the machine_mode argument.  Then it
-   promotes the rounded value to REAL_VALUE_TYPE.  */
+/* This is the REAL_VALUE_ATOF function.  It converts a decimal or hexadecimal
+   string to binary, rounding off as indicated by the machine_mode argument.
+   Then it promotes the rounded value to REAL_VALUE_TYPE.  */
 
 REAL_VALUE_TYPE 
 ereal_atof (s, t)
@@ -5025,7 +5025,7 @@ asctoe (s, y)
 }
 
 /* Convert ASCII string SS to e type Y, with a specified rounding precision
-   of OPREC bits.  */
+   of OPREC bits.  BASE is 16 for C9X hexadecimal floating constants.  */
 
 static void 
 asctoeg (ss, y, oprec)
@@ -5039,9 +5039,11 @@ asctoeg (ss, y, oprec)
   EMULONG lexp;
   unsigned EMUSHORT nsign, *p;
   char *sp, *s, *lstr;
+  int base = 10;
 
   /* Copy the input string.  */
   lstr = (char *) alloca (strlen (ss) + 1);
+
   s = ss;
   while (*s == ' ')		/* skip leading spaces */
     ++s;
@@ -5049,6 +5051,13 @@ asctoeg (ss, y, oprec)
   while ((*sp++ = *s++) != '\0')
     ;
   s = lstr;
+
+
+  if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
+    {
+      base = 16;
+      s += 2;
+    }
 
   rndsav = rndprc;
   rndprc = NBITS;		/* Set to full precision */
@@ -5063,8 +5072,13 @@ asctoeg (ss, y, oprec)
   trail = 0;
 
  nxtcom:
-  k = *s - '0';
-  if ((k >= 0) && (k <= 9))
+  if (*s >= '0' && *s <= '9')
+    k = *s - '0';
+  else if (*s >= 'a')
+    k = 10 + *s - 'a';
+  else
+    k = 10 + *s - 'A';
+  if ((k >= 0) && (k < base))
     {
       /* Ignore leading zeros */
       if ((prec == 0) && (decflg == 0) && (k == 0))
@@ -5073,11 +5087,15 @@ asctoeg (ss, y, oprec)
       if ((trail == 0) && (decflg != 0))
 	{
 	  sp = s;
-	  while ((*sp >= '0') && (*sp <= '9'))
+	  while ((*sp >= '0' && *sp <= '9')
+		 || (base == 16 && ((*sp >= 'a' && *sp <= 'f')
+				    || (*sp >= 'A' && *sp <= 'F'))))
 	    ++sp;
 	  /* Check for syntax error */
 	  c = *sp & 0x7f;
-	  if ((c != 'e') && (c != 'E') && (c != '\0')
+	  if ((base != 10 || ((c != 'e') && (c != 'E')))
+	      && (base != 16 || ((c != 'p') && (c != 'P')))
+	      && (c != '\0')
 	      && (c != '\n') && (c != '\r') && (c != ' ')
 	      && (c != ','))
 	    goto error;
@@ -5096,13 +5114,27 @@ asctoeg (ss, y, oprec)
 
       if (yy[2] == 0)
 	{
-	  if (decflg)
-	    nexp += 1;		/* count digits after decimal point */
-	  eshup1 (yy);		/* multiply current number by 10 */
-	  emovz (yy, xt);
-	  eshup1 (xt);
-	  eshup1 (xt);
-	  eaddm (xt, yy);
+	  if (base == 16)
+	    {
+	      if (decflg)
+		nexp += 4;	/* count digits after decimal point */
+
+	      eshup1 (yy);	/* multiply current number by 16 */
+	      eshup1 (yy);
+	      eshup1 (yy);
+	      eshup1 (yy);
+	    }
+	  else
+	    {
+	      if (decflg)
+		nexp += 1;		/* count digits after decimal point */
+
+	      eshup1 (yy);		/* multiply current number by 10 */
+	      emovz (yy, xt);
+	      eshup1 (xt);
+	      eshup1 (xt);
+	      eaddm (xt, yy);
+	    }
 	  ecleaz (xt);
 	  xt[NI - 2] = (unsigned EMUSHORT) k;
 	  eaddm (xt, yy);
@@ -5113,7 +5145,12 @@ asctoeg (ss, y, oprec)
 	  lost |= k;
 	  /* Count lost digits before the decimal point.  */
 	  if (decflg == 0)
-	    nexp -= 1;
+	    {
+	      if (base == 10)
+		nexp -= 1;
+	      else
+		nexp -= 4;
+	    }
 	}
       prec += 1;
       goto donchr;
@@ -5125,6 +5162,8 @@ asctoeg (ss, y, oprec)
       break;
     case 'E':
     case 'e':
+    case 'P':
+    case 'p':
       goto expnt;
     case '.':			/* decimal point */
       if (decflg)
@@ -5191,24 +5230,19 @@ read_expnt:
     {
       exp *= 10;
       exp += *s++ - '0';
-      if (exp > -(MINDECEXP))
-	{
-	  if (esign < 0)
-	    goto zero;
-	  else
-	    goto infinite;
-	}
+     if (exp > 999999)
+	break;
     }
   if (esign < 0)
     exp = -exp;
-  if (exp > MAXDECEXP)
+ if ((exp > MAXDECEXP) && (base == 10))
     {
  infinite:
       ecleaz (yy);
       yy[E] = 0x7fff;		/* infinity */
       goto aexit;
     }
-  if (exp < MINDECEXP)
+  if ((exp < MINDECEXP) && (base == 10))
     {
  zero:
       ecleaz (yy);
@@ -5216,6 +5250,25 @@ read_expnt:
     }
 
  daldone:
+  if (base == 16)
+    {
+      /* Base 16 hexadecimal floating constant.  */
+      if ((k = enormlz (yy)) > NBITS)
+	{
+	  ecleaz (yy);
+	  goto aexit;
+	}
+      /* Adjust the exponent.  NEXP is the number of hex digits,
+         EXP is a power of 2.  */
+      lexp = (EXONE - 1 + NBITS) - k + yy[E] + exp - nexp;
+      if (lexp > 0x7fff)
+	goto infinite;
+      if (lexp < 0)
+	goto zero;
+      yy[E] = lexp;
+      goto expdon;
+    }
+
   nexp = exp - nexp;
   /* Pad trailing zeros to minimize power of 10, per IEEE spec.  */
   while ((nexp > 0) && (yy[2] == 0))
@@ -5237,6 +5290,7 @@ read_expnt:
     }
   lexp = (EXONE - 1 + NBITS) - k;
   emdnorm (yy, lost, 0, lexp, 64);
+  lost = 0;
 
   /* Convert to external format:
 
@@ -5292,6 +5346,7 @@ read_expnt:
       k = emulm (tt, yy);
       lexp -= EXONE - 1;
     }
+  lost = k;
 
  expdon:
 
@@ -5315,7 +5370,7 @@ read_expnt:
     lexp -= EXONE - 0201;
 #endif
   rndprc = oprec;
-  emdnorm (yy, k, 0, lexp, 64);
+  emdnorm (yy, lost, 0, lexp, 64);
 
  aexit:
 
