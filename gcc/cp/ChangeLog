@@ -1,3 +1,8 @@
+Thu Jul 31 01:07:41 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_make_one_only): Use mark_referenced.
+	* method.c (use_thunk): Likewsie.
+
 Wed Jul 30 19:12:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (build_vtable_entry_ref): Kill.
