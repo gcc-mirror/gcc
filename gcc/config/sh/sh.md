@@ -3867,14 +3867,7 @@
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   "
 {
-  if (GET_CODE (operands[1]) == LABEL_REF
-      && GET_CODE (XEXP (operands[1], 0)) == CODE_LABEL)
-    LABEL_NUSES (XEXP (operands[1], 0)) += 4;
-  else if (GOTOFF_P (operands[1])
-	   && GET_CODE (XVECEXP (XEXP (operands[1], 0), 0, 0)) == LABEL_REF
-	   && (GET_CODE (XEXP (XVECEXP (XEXP (operands[1], 0), 0, 0), 0))
-	       == CODE_LABEL))
-    LABEL_NUSES (XEXP (XVECEXP (XEXP (operands[1], 0), 0, 0), 0)) += 4;
+  sh_mark_label (operands[1], 4);
 }")
 
 (define_expand "movdi_const_32bit"
@@ -3896,14 +3889,7 @@
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   "
 {
-  if (GET_CODE (operands[1]) == LABEL_REF
-      && GET_CODE (XEXP (operands[1], 0)) == CODE_LABEL)
-    LABEL_NUSES (XEXP (operands[1], 0)) += 2;
-  else if (GOTOFF_P (operands[1])
-	   && GET_CODE (XVECEXP (XEXP (operands[1], 0), 0, 0)) == LABEL_REF
-	   && (GET_CODE (XEXP (XVECEXP (XEXP (operands[1], 0), 0, 0), 0))
-	       == CODE_LABEL))
-    LABEL_NUSES (XEXP (XVECEXP (XEXP (operands[1], 0), 0, 0), 0)) += 2;
+  sh_mark_label (operands[1], 2);
 }")
 
 (define_expand "movdi_const_16bit"

@@ -1,5 +1,12 @@
 2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/sh/sh-protos.h (sh_mark_label): Declare.
+	* config/sh/sh.c (sh_mark_label): New function, taken from
+	movdi_const, but fixing the case when the address has an addend.
+	* config/sh/sh.md (movdi_const, movdi_const_32bit): Use it.
+
+2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/sh/sh.c (pool_node): New field: part_of_sequence_p.
 	(add_constant): Set it.
 	(dump_table): Don't reorder a constant if part_of_sequence_p.
