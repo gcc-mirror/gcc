@@ -1,3 +1,7 @@
+2002-12-13  Jim Wilson  <wilson@redhat.com>
+
+	* doc/extend.texi (Complex Numbers): Update info on debug info.
+
 2002-12-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (addhi3_h8300): Remove the last
