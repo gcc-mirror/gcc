@@ -1,3 +1,7 @@
+2001-02-16  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (BLOCK_CHAIN): Use BLOCK_CHECK.
+
 2001-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* .gdbinit: Rename to gdbinit.in.
@@ -196,7 +200,7 @@ Tue Feb 13 23:19:27 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 Tue Feb 13 23:05:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
- 	* regclass.c (init_reg_sets_1): Silence warning.
+	* regclass.c (init_reg_sets_1): Silence warning.
 
 Tue Feb 13 22:03:07 CET 2001  Jan Hubicka  <jh@suse.cz>
 

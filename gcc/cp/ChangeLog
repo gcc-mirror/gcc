@@ -1,3 +1,8 @@
+2001-02-16  Jason Merrill  <jason@redhat.com>
+
+	* optimize.c (remap_block): If we're compiling a clone, pass the
+	new block to insert_block.
+
 2001-02-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_asm_stmt): Robustify.
@@ -29,8 +34,8 @@
 
 2001-02-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * cp/parse.y (component_constructor_declarator): allow optional
-        parenthesess around constructor class name.
+	* parse.y (component_constructor_declarator): allow optional
+	parentheses around constructor class name.
 
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
