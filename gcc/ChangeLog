@@ -1,3 +1,10 @@
+2004-07-06  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (struct noce_if_info): Add a Boolean b_unconditional field.
+	(noce_try_sign_mask): Tweak rtx_cost check if t is evaluated anyway.
+	(noce_process_if_block): Initialize if_info.b_unconditional if insn_b
+	is currently executed unconditionally, i.e. not in "else_bb".
+
 2004-07-06  Steven Bosscher  <stevenb@suse.de>
 
 	* config/alpha/alpha.c (alpha_use_dfa_pipeline_interface): Remove.
