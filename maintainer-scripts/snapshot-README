@@ -1,5 +1,5 @@
-gcc-ss-20020128 is now available on 
-  ftp://gcc.gnu.org/pub/gcc/snapshots/2002-01-28
+gcc-ss-@DATE@ is now available on 
+  ftp://gcc.gnu.org/pub/gcc/snapshots/@LONG_DATE@
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the current development mainline
@@ -7,30 +7,30 @@ which is going to become GCC 3.1.
 
 You'll find:
 
-  gcc-20020128.tar.gz                  The full gcc snapshot, including all
+  gcc-@DATE@.tar.gz                  The full gcc snapshot, including all
                                        languages runtime libraries.
 
-  gcc-core-20020128.tar.gz             Just the C front end and core compiler.
+  gcc-core-@DATE@.tar.gz             Just the C front end and core compiler.
 
-  gcc-tests-20020128.tar.gz            The GCC testsuite.
+  gcc-tests-@DATE@.tar.gz            The GCC testsuite.
 
-  gcc-ada-20020128.tar.gz              The Ada language and runtime.
+  gcc-ada-@DATE@.tar.gz              The Ada language and runtime.
 
-  gcc-g++-20020128.tar.gz              The g++ language and runtime.
+  gcc-g++-@DATE@.tar.gz              The g++ language and runtime.
 
-  gcc-g++-tests-20020128.tar.gz	       The testsuite for G++.
+  gcc-g++-tests-@DATE@.tar.gz	       The testsuite for G++.
 
-  gcc-g77-20020128.tar.gz              The g77 language and runtime.
+  gcc-g77-@DATE@.tar.gz              The g77 language and runtime.
    
-  gcc-g77-testsuite-20020128.tar.gz    The testsuite for G77.
+  gcc-g77-testsuite-@DATE@.tar.gz    The testsuite for G77.
 
-  gcc-objc-20020128.tar.gz             The Objective-C front end and runtime.
+  gcc-objc-@DATE@.tar.gz             The Objective-C front end and runtime.
 
-  gcc-java-20020128.tar.gz             The Java front end.
+  gcc-java-@DATE@.tar.gz             The Java front end.
 
-  gcc-chill-20020128.tar.gz            The Chill front end and runtime.
+  gcc-chill-@DATE@.tar.gz            The Chill front end and runtime.
 
-Diffs from 20020121 are available.
+Diffs from @LAST_DATE@ are available.
 
 Note at times you may find newer directories on the server with limited
 permissions.  These represent snapshots that have not yet been verified
