@@ -492,6 +492,10 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
 #  them before rtl.o is compiled.
 GEN= genemit genoutput genrecog genextract genflags gencodes genconfig genpeep
 
+CCCP=cccp
+# Uncomment this line if you want to use cppmain (w/cpplib) as cpp.
+#CCCP=cppmain
+
 # Files to be copied away after each stage in building.
 STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
@@ -504,7 +508,7 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  bc-arity.h bc-opcode.h bc-opname.h \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
  bi-arity bi-opcode bi-opname \
- $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp \
+ $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross $(CCCP) \
  cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2) \
  $(LANG_STAGESTUFF)
 
@@ -1542,10 +1546,10 @@ bytecode.realclean: bytecode.clean
 # Remake cpp and protoize.
 
 # Making the preprocessor
-cpp: cccp
+cpp: $(CCCP)
 	-rm -f cpp$(exeext)
-	ln cccp$(exeext) cpp$(exeext) > /dev/null 2>&1 \
-	 || cp cccp$(exeext) cpp$(exeext)
+	ln $(CCCP)$(exeext) cpp$(exeext) > /dev/null 2>&1 \
+	 || cp $(CCCP)$(exeext) cpp$(exeext)
 cccp: cccp.o cexp.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cccp cccp.o cexp.o version.o $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
@@ -1562,6 +1566,21 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
+
+cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
+  version.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain \
+	  cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
+	  version.o $(LIBS)
+
+cpplib.o: cpplib.c $(CONFIG_H) pcp.h version.c config.status
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
+	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
