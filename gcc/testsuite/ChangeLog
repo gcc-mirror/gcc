@@ -1,3 +1,7 @@
+2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20030305-1.c
+
 2003-02-25  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR target/9732

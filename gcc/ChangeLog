@@ -1,3 +1,8 @@
+2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/9799
+	* c-typeck.c (push_init_level): Add sanity check.
+
 2003-02-28  Bob Wilson  <bob.wilson@acm.org>
 
 	Backport following patch:
