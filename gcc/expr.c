@@ -2887,7 +2887,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
       if (args_addr == 0
 	  && GET_CODE (size) == CONST_INT
 	  && skip == 0
-	  && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size) - used, align)))
+	  && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size) - used, align))
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,
 	     and such small pushes do rounding that causes trouble.  */
