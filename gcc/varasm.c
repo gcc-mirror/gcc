@@ -3606,8 +3606,10 @@ initializer_constant_valid_p (tree value, tree endtype)
 						 endtype);
 	}
 
-      /* Allow conversions to union types if the value inside is okay.  */
-      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
+      /* Allow conversions to struct or union types if the value
+	 inside is okay.  */
+      if (TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE
+	  || TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
 					     endtype);
       break;
