@@ -1,3 +1,7 @@
+2002-06-11  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/gty.texi: Small updates.
+
 2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* objc/objc-act.c (warn_with_ivar): Adjust calls to
