@@ -5954,6 +5954,11 @@ hppa_encode_label (sym)
   strcpy (newstr + 1, str);
   *newstr = '@';
 
+  /* Prepending '@' increases the length of the string.  That's important
+     to note since we're going to allocate persistent storage for the
+     new string.  */
+  len++;
+
   XSTR (sym,0) = ggc_alloc_string (newstr, len);
 }
 
