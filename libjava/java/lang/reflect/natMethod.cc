@@ -485,7 +485,8 @@ _Jv_CallAnyMethodA (jobject obj,
       if (iface == NULL)
 	ncode = vtable->get_method (meth->index);
       else
-	ncode = _Jv_LookupInterfaceMethodIdx (vtable->clas, iface, meth->index);
+	ncode = _Jv_LookupInterfaceMethodIdx (vtable->clas, iface,
+					      meth->index);
     }
   else
     {
