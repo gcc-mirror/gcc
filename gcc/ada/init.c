@@ -93,7 +93,6 @@ extern void   Raise_From_Signal_Handler PARAMS ((struct Exception_Data *,
 extern void   Propagate_Signal_Exception
 	PARAMS ((struct Machine_State *, struct Exception_Data *, const char *));
 
-
 /* Copies of global values computed by the binder */
 int  __gl_main_priority            = -1;
 int  __gl_time_slice_val           = -1;
@@ -522,7 +521,6 @@ void
 __gnat_initialize ()
 {
 }
-
 
 /*************************************/
 /* __gnat_initialize (GNU/Linux version) */
@@ -1642,7 +1640,6 @@ __gnat_initialize ()
 #endif
 }
 
-
 /***************************************/
 /* __gnat_initialize (default version) */
 /***************************************/
@@ -1990,7 +1987,6 @@ __gnat_install_handler ()
 
 #endif
 
-
 /*********************/
 /* __gnat_init_float */
 /*********************/
@@ -2017,7 +2013,6 @@ __gnat_init_float ()
 #endif  /* Defined __i386__ */
 }
 #endif
-
 
 #ifndef HAVE_GNAT_INIT_FLOAT
 
