@@ -43,7 +43,7 @@ linemap_init (struct line_maps *set)
   set->max_column_hint = 0;
 }
 
-/* Check for and warn about line_maps entered but not exited. */
+/* Check for and warn about line_maps entered but not exited.  */
 
 void
 linemap_check_files_exited (struct line_maps *set)
@@ -242,7 +242,7 @@ linemap_lookup (struct line_maps *set, source_location line)
   mx = set->used;
   
   cached = &set->maps[mn];
-  /* We should get a segfault if no line_maps have been added yet. */
+  /* We should get a segfault if no line_maps have been added yet.  */
   if (line >= cached->start_location)
     {
       if (mn + 1 == mx || line < cached[1].start_location)
