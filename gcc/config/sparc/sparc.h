@@ -2598,8 +2598,8 @@ do {                                                                    \
       && GET_MODE (X) == SImode						\
       && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH			\
       && ! (flag_pic							\
-	    && (symbolic_operand (X, Pmode))				\
-		|| pic_address_needs_scratch (X)))			\
+	    && (symbolic_operand (X, Pmode)				\
+		|| pic_address_needs_scratch (X))))			\
     {									\
       X = gen_rtx_LO_SUM (GET_MODE (X),					\
 			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
