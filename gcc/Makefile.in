@@ -270,6 +270,8 @@ bindir = @bindir@
 libdir = @libdir@
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
+# Used to produce a relative $(tooldir) in gcc.o
+unlibsubdir = ../../..
 # Directory in which the compiler finds g++ includes.
 gxx_include_dir= @gxx_include_dir@
 # Directory to search for site-specific includes.
@@ -1338,11 +1340,11 @@ c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
 # Language-independent files.
 
 DRIVER_DEFINES = \
-  -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
+  -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
-  -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
+  -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\"
 gcc.o: gcc.c $(CONFIG_H) system.h gansidecl.h multilib.h Makefile \
 	$(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1856,14 +1858,17 @@ cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h gansidecl.h
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
+# We use $(libsubdir)/$(unlibsubdir) to match the
+# -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
 cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h \
            mbchar.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include/g++\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/in
+clude\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 cppmain$(exeext): cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
@@ -1913,7 +1918,7 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-          -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
@@ -1923,7 +1928,7 @@ unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) 
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-          -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
@@ -2051,6 +2056,19 @@ stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi
 	chmod a+r include/syslimits.h
+# If $(SYSTEM_HEADER_DIR) is $(tooldir)/sys-include, and
+# that directory exists, then make sure that $(libsubdir) exists.
+# This is because cpp is compiled to find $(tooldir)/include via
+# $(libsubdir)/$(unlibsubdir), which will only work if $(libsubdir)
+# exists.
+	if [ "$(SYSTEM_HEADER_DIR)" = "$(tooldir)/sys-include" ] \
+	   && [ -d $(tooldir)/sys-include ]; then \
+	  if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi; \
+	  if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib; fi; \
+	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
+	  if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version) ; fi; \
+	else true; fi
+
 	touch stmp-fixinc
 
 # Files related to the fixproto script.

@@ -1,3 +1,10 @@
+Fri Oct  2 02:01:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (unlibsubdir): Define.
+	(DRIVER_DEFINES): Use unlibsubdir.
+	(cccp.o, cpplib.o, protoize.o, unprotoize.o): Similarly.
+	(stmp-fixinc): Similarly.
+
 Thu Oct  1 19:58:30 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* regmove.c (regmove_optimize): Add variable old_max_uid.
