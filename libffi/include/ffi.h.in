@@ -189,10 +189,15 @@ typedef enum ffi_abi {
 #endif
 #endif
 
-  /* ---- Intel x86 ---------------- */
-#ifdef X86
+  /* ---- Intel x86 and AMD x86-64 - */
+#if defined(X86) || defined(X86_64)
   FFI_SYSV,
+  FFI_UNIX64,   /* Unix variants all use the same ABI for x86-64  */
+#ifdef X86
   FFI_DEFAULT_ABI = FFI_SYSV,
+#else
+  FFI_DEFAULT_ABI = FFI_UNIX64,
+#endif
 #endif
 
   /* ---- Intel x86 Win32 ---------- */

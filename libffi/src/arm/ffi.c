@@ -36,13 +36,10 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 /*@=exportheader@*/
 {
   register unsigned int i;
-  register int tmp;
-  register unsigned int avn;
   register void **p_argv;
   register char *argp;
   register ffi_type **p_arg;
 
-  tmp = 0;
   argp = stack;
 
   if ( ecif->cif->rtype->type == FFI_TYPE_STRUCT ) {
@@ -50,11 +47,10 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
     argp += 4;
   }
 
-  avn = ecif->cif->nargs;
   p_argv = ecif->avalue;
 
   for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types;
-       (i != 0) && (avn != 0);
+       (i != 0);
        i--, p_arg++)
     {
       size_t z;
@@ -64,9 +60,6 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
       }
 
-      if (avn != 0) 
-	{
-	  avn--;
 	  z = (*p_arg)->size;
 	  if (z < sizeof(int))
 	    {
@@ -107,7 +100,6 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	    }
 	  p_argv++;
 	  argp += z;
-	}
     }
   
   return;

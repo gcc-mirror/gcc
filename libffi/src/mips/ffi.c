@@ -51,7 +51,6 @@ static void ffi_prep_args(char *stack,
 			  int flags)
 {
   register int i;
-  register int avn;
   register void **p_argv;
   register char *argp;
   register ffi_type **p_arg;
@@ -81,12 +80,9 @@ static void ffi_prep_args(char *stack,
       FIX_ARGP;
     }
 
-  avn = ecif->cif->nargs;
   p_argv = ecif->avalue;
 
-  for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types;
-       i && avn;
-       i--, p_arg++)
+  for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types; i; i--, p_arg++)
     {
       size_t z;
 
@@ -102,9 +98,6 @@ static void ffi_prep_args(char *stack,
 #define OFFSET sizeof(int)
 #endif      
 
-      if (avn) 
-	{
-	  avn--;
 	  z = (*p_arg)->size;
 	  if (z < sizeof(SLOT_TYPE_UNSIGNED))
 	    {
@@ -180,7 +173,6 @@ static void ffi_prep_args(char *stack,
 	  p_argv++;
 	  argp += z;
 	  FIX_ARGP;
-	}
     }
   
   return;
