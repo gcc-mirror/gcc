@@ -80,7 +80,6 @@ JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
-ZINCS = -I$(top_srcdir)/../zlib
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) \
