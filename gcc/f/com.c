@@ -7414,6 +7414,7 @@ ffecom_sym_transform_ (ffesymbol s)
 			      build_int_2 (offset, 0));
 		t = convert (build_pointer_type (type),
 			     t);
+		TREE_CONSTANT (t) = staticp (et);
 
 		addr = TRUE;
 
@@ -7930,6 +7931,7 @@ ffecom_sym_transform_ (ffesymbol s)
 			      build_int_2 (offset, 0));
 		t = convert (build_pointer_type (type),
 			     t);
+		TREE_CONSTANT (t) = 1;
 
 		addr = TRUE;
 	      }
