@@ -9,6 +9,8 @@ Wed Sep 16 00:30:56 1998  Geoff Keating  <geoffk@ozemail.com.au>
 
 Tue Sep 15 22:59:52 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* rs6000.c (output_epilogue): Handle Chill.
+
 	* mn10200.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
 	* mn10300.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
 
