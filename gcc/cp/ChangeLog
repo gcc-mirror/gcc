@@ -1,3 +1,123 @@
+Sat Sep 27 16:22:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (do_friend): Disable injection for all template-derived
+ 	decls.
+	* decl2.c (lang_decode_option): Handle -fguiding-decls.
+	* parse.y (notype_template_declarator): New nonterminal.
+	(direct_notype_declarator): Use it.
+	(complex_direct_notype_declarator): Likewise.
+	(object_template_id): Accept any kind of identifier after TEMPLATE.
+	(notype_qualified_id): Don't add template declarators here.
+
+Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
+
+        * call.c (add_template_candidate): Add explicit_targs parameter.
+        (build_scoped_method_call): Use it.
+        (build_overload_call_real): Likewise.
+        (build_user_type_conversion_1): Likewise.
+        (build_new_function_call): Likewise.
+        (build_object_call): Likewise.
+        (build_new_op): Likewise.
+        (build_new_method_call): Likewise.
+        (build_new_function_call): Handle TEMPLATE_ID_EXPR.
+        (build_new_method_call): Likewise.
+
+        * class.c (finish_struct_methods): Add specialization pass to
+        determine which methods were specializing which other methods.
+        (instantiate_type): Handle TEMPLATE_ID_EXPR.
+
+        * cp-tree.def (TEMPLATE_ID_EXPR): New tree code.
+
+        * cp-tree.h (name_mangling_version): New variable.
+	(flag_guiding_decls): Likewise.
+        (build_template_decl_overload): New function.
+        (begin_specialization): Likewise.
+        (reset_specialization): Likewise.
+        (end_specialization): Likewise.
+        (determine_explicit_specialization): Likewise.
+        (check_explicit_specialization): Likewise.
+        (lookup_template_function): Likewise.
+        (fn_type_unification): Add explicit_targs parameter.
+        (type_unification): Likewise.
+
+        * decl.c (duplicate_decls): Add smarts for explicit
+        specializations.
+        (grokdeclarator): Handle TEMPLATE_ID_EXPR, and function
+        specializations.
+        (grokfndecl): Call check_explicit_specialization.
+
+        * decl2.c (lang_decode_option): Handle -fname-mangling-version.
+        (build_expr_from_tree): Handle TEMPLATE_ID_EXPR.
+        (check_classfn): Handle specializations.
+
+        * error.c (dump_function_name): Print specialization arguments.
+
+	* friend.c (do_friend): Don't call pushdecl for template 
+        instantiations. 
+
+        * init.c (build_member_call): Handle TEMPLATE_ID_EXPR.
+
+        * lang-options.h: Add -fname-mangling-version, -fguiding-decls, 
+	and -fno-guiding-decls.
+
+        * lex.c (identifier_type): Return PFUNCNAME for template function
+        names.
+
+        * method.c (build_decl_overload_real): New function.
+        (build_template_parm_names): New function.
+        (build_overload_identifier): Use it.
+        (build_underscore_int): New function.
+        (build_overload_int): Use it.  Add levels for template
+        parameters.
+        (build_overload_name): Likewise.  Also, handle TYPENAME_TYPEs.
+        (build_overload_nested_names): Handle template type parameters.
+        (build_template_decl_overload): New function.
+
+        * parse.y (YYSTYPE): New ntype member.
+        (nested_name_specifier): Use it.
+        (nested_name_specifier_1): Likewise.
+        (PFUNCNAME): New token.
+        (template_id, object_template_id): New non-terminals.
+        (template_parm_list): Note specializations.
+        (template_def): Likewise.
+        (structsp): Likewise.
+        (fn.def2): Handle member template specializations.
+        (component_decl_1): Likewise.
+        (direct_notype_declarator): Handle template-ids.
+        (component_decl_1): Likewise.
+        (direct_notype_declarator): Handle template-ids.
+        (primary): Handle TEMPLATE_ID_EXPR, and template-ids.
+
+        * pt.c (processing_specializations): New variable.
+        (template_header_count): Likewise.
+        (type_unification_real): New function.
+        (processing_explicit_specialization): Likewise.
+        (note_template_header): Likewise.
+        (is_member_template): Handle specializations.
+        (end_template_decl): Call reset_specialization.
+        (push_template_decl): Handle member template specializations.
+        (tsubst): Likewise.
+        (tsubst_copy): Handle TEMPLATE_ID_EXPR.
+        (instantiate_template): Handle specializations.
+        (instantiate_decl): Likewise.
+        (fn_type_unification): Handle explicit_targs.
+        (type_unification): Likewise.  Allow incomplete unification
+        without an error message, if allow_incomplete.
+        (get_bindings): Use new calling sequence for fn_type_unification.
+
+        * spew.c (yylex): Handle PFUNCNAME.
+
+        * tree.c (is_overloaded_fn): Handle TEMPLATE_ID_EXPR.
+        (really_overloaded_fn): Likewise.
+        (get_first_fn): Handle function templates.
+
+        * typeck.c (build_x_function_call): Use really_overloaded_fn.
+        Handle TEMPLATE_ID_EXPR.
+        (build_x_unary_op): Likewise.
+        (build_unary_op): Likewise.
+        (mark_addressable): Templates whose address is taken are marked  
+        as used. 
+
 1997-09-25  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* decl.c (init_decl_processing): Declare __builtin_constant_p as

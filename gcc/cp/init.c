@@ -1681,7 +1681,7 @@ build_member_call (type, name, parmlist)
      tree type, name, parmlist;
 {
   tree t;
-  tree method_name = name;
+  tree method_name;
   int dtor = 0;
   int dont_use_this = 0;
   tree basetype_path, decl;
@@ -1689,6 +1689,11 @@ build_member_call (type, name, parmlist)
   if (type == std_node)
     return build_x_function_call (do_scoped_id (name, 0), parmlist,
 				  current_class_ref);
+
+  if (TREE_CODE (name) != TEMPLATE_ID_EXPR)
+    method_name = name;
+  else
+    method_name = TREE_OPERAND (name, 0);
 
   if (TREE_CODE (method_name) == BIT_NOT_EXPR)
     {
@@ -1758,7 +1763,10 @@ build_member_call (type, name, parmlist)
       || method_name == constructor_name_full (type))
     return build_functional_cast (type, parmlist);
   if (t = lookup_fnfields (basetype_path, method_name, 0))
-    return build_method_call (decl, method_name, parmlist, basetype_path,
+    return build_method_call (decl, 
+			      TREE_CODE (name) == TEMPLATE_ID_EXPR
+			      ? name : method_name,
+			      parmlist, basetype_path,
 			      LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
   if (TREE_CODE (name) == IDENTIFIER_NODE
       && ((t = lookup_field (TYPE_BINFO (type), name, 1, 0))))

@@ -71,6 +71,10 @@ static char *thunk_printable_name PROTO((tree));
 static void do_build_assign_ref PROTO((tree));
 static void do_build_copy_constructor PROTO((tree));
 static tree largest_union_member PROTO((tree));
+static tree build_decl_overload_real PROTO((tree, tree, tree, tree,
+					    tree, int)); 
+static void build_template_parm_names PROTO((tree, tree));
+static void build_underscore_int PROTO((int));
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -383,9 +387,16 @@ build_overload_nested_name (decl)
   if (DECL_CONTEXT (decl))
     {
       tree context = DECL_CONTEXT (decl);
-      if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-	context = TYPE_NAME (context);
-      build_overload_nested_name (context);
+      /* For a template type parameter, we want to output an 'Xn'
+	 rather than 'T' or some such. */
+      if (TREE_CODE (context) == TEMPLATE_TYPE_PARM)
+	build_overload_name (context, 0, 0);
+      else
+	{
+	  if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+	    context = TYPE_NAME (context);
+	  build_overload_nested_name (context);
+	}
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -406,6 +417,16 @@ build_overload_nested_name (decl)
     build_overload_identifier (decl);
 }
 
+static void
+build_underscore_int (int i)
+{
+  if (i > 9)
+    OB_PUTC ('_');
+  icat (i);
+  if (i > 9)
+    OB_PUTS ('_');
+}
+
 /* Encoding for an INTEGER_CST value.  */
 
 static void
@@ -416,11 +437,8 @@ build_overload_int (value, in_template)
   if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
     {
       OB_PUTC ('Y');
-      if (TEMPLATE_CONST_IDX (value) > 9)
-	OB_PUTC ('_');
-      icat (TEMPLATE_CONST_IDX (value)); 
-      if (TEMPLATE_CONST_IDX (value) > 9)
-	OB_PUTC ('_');
+      build_underscore_int (TEMPLATE_CONST_IDX (value));
+      build_underscore_int (TEMPLATE_CONST_LEVEL (value));
       return;
     }
   else if (in_template
@@ -633,6 +651,41 @@ build_overload_value (type, value, in_template)
     }
 }
 
+
+/* Add encodings for the vector of template parameters in PARMLIST,
+   given the vector of arguments to be substituted in ARGLIST.  */
+
+void
+build_template_parm_names (parmlist, arglist)
+     tree parmlist;
+     tree arglist;
+{
+  int i, nparms;
+  
+  nparms = TREE_VEC_LENGTH (parmlist);
+  icat (nparms);
+  for (i = 0; i < nparms; i++)
+    {
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parmlist, i));
+      tree arg = TREE_VEC_ELT (arglist, i);
+      if (TREE_CODE (parm) == TYPE_DECL)
+	{
+	  /* This parameter is a type.  */
+	  OB_PUTC ('Z');
+	  build_overload_name (arg, 0, 0);
+	}
+      else
+	{
+	  parm = tsubst (parm, arglist,
+			 TREE_VEC_LENGTH (arglist), NULL_TREE);
+	  /* It's a PARM_DECL.  */
+	  build_overload_name (TREE_TYPE (parm), 0, 0);
+	  build_overload_value (parm, arg, uses_template_parms (arglist));
+	}
+    }
+ }
+
+
 static void
 build_overload_identifier (name)
      tree name;
@@ -643,36 +696,15 @@ build_overload_identifier (name)
       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name))))
     {
       tree template, parmlist, arglist, tname;
-      int i, nparms;
       template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));
       arglist = TREE_VALUE (template);
       template = TREE_PURPOSE (template);
       tname = DECL_NAME (template);
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
-      nparms = TREE_VEC_LENGTH (parmlist);
       OB_PUTC ('t');
       icat (IDENTIFIER_LENGTH (tname));
       OB_PUTID (tname);
-      icat (nparms);
-      for (i = 0; i < nparms; i++)
-	{
-	  tree parm = TREE_VALUE (TREE_VEC_ELT (parmlist, i));
-	  tree arg = TREE_VEC_ELT (arglist, i);
-	  if (TREE_CODE (parm) == TYPE_DECL)
-	    {
-	      /* This parameter is a type.  */
-	      OB_PUTC ('Z');
-	      build_overload_name (arg, 0, 0);
-	    }
-	  else
-	    {
-	      parm = tsubst (parm, arglist,
-			     TREE_VEC_LENGTH (arglist), NULL_TREE);
-	      /* It's a PARM_DECL.  */
-	      build_overload_name (TREE_TYPE (parm), 0, 0);
-	      build_overload_value (parm, arg, uses_template_parms (arglist));
-	    }
-	}
+      build_template_parm_names (parmlist, arglist);
     }
   else
     {
@@ -1012,22 +1044,18 @@ build_overload_name (parmtypes, begin, end)
 
 	case TEMPLATE_TYPE_PARM:
 	  OB_PUTC ('X');
-	  if (TEMPLATE_TYPE_IDX (parmtype) > 9)
-	    OB_PUTC ('_');
-	  icat (TEMPLATE_TYPE_IDX (parmtype)); 
-	  if (TEMPLATE_TYPE_IDX (parmtype) > 9)
-	    OB_PUTC ('_');
+	  build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
+	  build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
 	  break;
 	    
 	case TYPENAME_TYPE:
-	  /* We don't ever want this output, but it's inconvenient not to
-	     be able to build the string.  This should cause assembler
-	     errors we'll notice.  */
-	  {
-	    static int n;
-	    sprintf (digit_buffer, " *%d", n++);
-	    OB_PUTCP (digit_buffer);
-	  }
+	  /* When mangling the type of a function template whose
+	     declaration looks like:
+
+	     template <class T> void foo(typename T::U)
+	     
+	     we have to mangle these.  */
+	  build_qualified_name (parmtype);
 	  break;
 
 	default:
@@ -1075,19 +1103,14 @@ build_static_name (context, name)
   return get_identifier ((char *)obstack_base (&scratch_obstack));
 }
 
-/* Change the name of a function definition so that it may be
-   overloaded. NAME is the name of the function to overload,
-   PARMS is the parameter list (which determines what name the
-   final function obtains).
-
-   FOR_METHOD is 1 if this overload is being performed
-   for a method, rather than a function type.  It is 2 if
-   this overload is being performed for a constructor.  */
-
-tree
-build_decl_overload (dname, parms, for_method)
+tree 
+build_decl_overload_real (dname, parms, ret_type, tparms, targs,
+			  for_method) 
      tree dname;
      tree parms;
+     tree ret_type;
+     tree tparms;
+     tree targs;
      int for_method;
 {
   char *name = IDENTIFIER_POINTER (dname);
@@ -1121,6 +1144,8 @@ build_decl_overload (dname, parms, for_method)
       /* We can get away without doing this.  */
       OB_PUTC ('M');
 #endif
+      if (tparms != NULL_TREE)
+	OB_PUTC ('H');
       {
 	tree this_type = TREE_VALUE (parms);
 
@@ -1133,12 +1158,18 @@ build_decl_overload (dname, parms, for_method)
       }
     }
   else
-    OB_PUTC ('F');
+    OB_PUTC ((tparms != NULL_TREE) ? 'H' : 'F');
+
+  if (tparms)
+    {
+      build_template_parm_names (tparms, targs);
+      OB_PUTC ('_');
+    }
 
   if (parms == NULL_TREE)
-    OB_PUTC2 ('e', '\0');
+    OB_PUTC ('e');
   else if (parms == void_list_node)
-    OB_PUTC2 ('v', '\0');
+    OB_PUTC ('v');
   else
     {
       ALLOCATE_TYPEVEC (parms);
@@ -1151,14 +1182,23 @@ build_decl_overload (dname, parms, for_method)
 	  TREE_USED (TREE_VALUE (parms)) = 1;
 
 	  if (TREE_CHAIN (parms))
-	    build_overload_name (TREE_CHAIN (parms), 0, 1);
+	    build_overload_name (TREE_CHAIN (parms), 0, 0);
 	  else
-	    OB_PUTC2 ('e', '\0');
+	    OB_PUTC ('e');
 	}
       else
-	build_overload_name (parms, 0, 1);
+	build_overload_name (parms, 0, 0);
       DEALLOCATE_TYPEVEC (parms);
     }
+
+  if (ret_type != NULL_TREE)
+    {
+      /* Add the return type. */
+      OB_PUTC ('_');
+      build_overload_name (ret_type, 0, 0);
+    }
+
+  OB_FINISH ();
   {
     tree n = get_identifier (obstack_base (&scratch_obstack));
     if (IDENTIFIER_OPNAME_P (dname))
@@ -1166,6 +1206,43 @@ build_decl_overload (dname, parms, for_method)
     return n;
   }
 }
+
+/* Change the name of a function definition so that it may be
+   overloaded. NAME is the name of the function to overload,
+   PARMS is the parameter list (which determines what name the
+   final function obtains).
+
+   FOR_METHOD is 1 if this overload is being performed
+   for a method, rather than a function type.  It is 2 if
+   this overload is being performed for a constructor.  */
+
+tree
+build_decl_overload (dname, parms, for_method)
+     tree dname;
+     tree parms;
+     int for_method;
+{
+  return build_decl_overload_real (dname, parms, NULL_TREE, NULL_TREE,
+				   NULL_TREE, for_method); 
+}
+
+
+/* Like build_decl_overload, but for template functions. */
+
+tree
+build_template_decl_overload (dname, parms, ret_type, tparms, targs,
+			      for_method) 
+     tree dname;
+     tree parms;
+     tree ret_type;
+     tree tparms;
+     tree targs;
+     int for_method;
+{
+  return build_decl_overload_real (dname, parms, ret_type, tparms, targs,
+				   for_method); 
+}
+
 
 /* Build an overload name for the type expression TYPE.  */
 

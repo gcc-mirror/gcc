@@ -307,6 +307,14 @@ extern int flag_handle_signatures;
    inline by default.  */
 
 extern int flag_default_inline;
+
+/* The name-mangling scheme to use.  Versions of gcc before 2.8 use
+   version 0.  */
+extern int name_mangling_version;
+
+/* Nonzero means that guiding declarations are allowed.  */
+extern int flag_guiding_decls;
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -2295,6 +2303,7 @@ extern void  report_type_mismatch		PROTO((struct candidate *, tree, char *));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
+extern tree build_template_decl_overload        PROTO((tree, tree, tree, tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
@@ -2312,18 +2321,24 @@ extern tree tsubst_chain			PROTO((tree, tree));
 extern void begin_member_template_processing    PROTO((tree));
 extern void end_member_template_processing      PROTO((void));
 extern void begin_template_parm_list		PROTO((void));
+extern void begin_specialization                PROTO((void));
+extern void reset_specialization                PROTO((void));
+extern void end_specialization                  PROTO((void));
+extern tree determine_explicit_specialization   PROTO((tree, tree, tree *, int, int));
+extern int check_explicit_specialization       PROTO((tree, tree, int, int));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
 extern tree current_template_args		PROTO((void));
 extern void push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree));
+extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
-extern int fn_type_unification                  PROTO((tree, tree, tree, tree, int));
-extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int, int));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, int));
+extern int type_unification			PROTO((tree, tree *, tree, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern int more_specialized			PROTO((tree, tree));

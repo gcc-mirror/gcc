@@ -77,7 +77,7 @@ static tree build_this PROTO((tree));
 static struct z_candidate * splice_viable PROTO((struct z_candidate *));
 static int any_viable PROTO((struct z_candidate *));
 static struct z_candidate * add_template_candidate
-	PROTO((struct z_candidate *, tree, tree, tree, int));
+	PROTO((struct z_candidate *, tree, tree, tree, tree, int));
 static struct z_candidate * add_template_conv_candidate 
         PROTO((struct z_candidate *, tree, tree, tree, tree));
 static struct z_candidate * add_builtin_candidates
@@ -2847,7 +2847,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
 	  i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (function),
 				&TREE_VEC_ELT (targs, 0),
 				TYPE_ARG_TYPES (TREE_TYPE (function)),
-				parms, &template_cost, 0, 0);
+				parms, NULL_TREE, &template_cost, 0, 0);
 	  if (i == 0)
 	    {
 	      function = instantiate_template (function, targs);
@@ -4144,10 +4144,19 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
   return candidates;
 }
 
+/* If TMPL can be successfully instantiated as indicated by
+   EXPLICIT_TARGS and ARGLIST, adds the instantiation to CANDIDATES.
+
+   TMPL is the template.  EXPLICIT_TARGS are any explicit template arguments.
+   ARGLIST is the arguments provided at the call-site.  The RETURN_TYPE
+   is the desired type for conversion operators.  FLAGS are as for
+   add_function_candidate.  */
+
 static struct z_candidate *
-add_template_candidate (candidates, tmpl, arglist, return_type, flags)
+add_template_candidate (candidates, tmpl, explicit_targs, 
+			arglist, return_type, flags)
      struct z_candidate *candidates;
-     tree tmpl, arglist, return_type;
+     tree tmpl, explicit_targs, arglist, return_type;
      int flags;
 {
   int ntparms = DECL_NTPARMS (tmpl);
@@ -4156,7 +4165,8 @@ add_template_candidate (candidates, tmpl, arglist, return_type, flags)
   int i;
   tree fn;
 
-  i = fn_type_unification (tmpl, targs, arglist, return_type, 0);
+  i = fn_type_unification (tmpl, explicit_targs, targs, arglist,
+			   return_type, 0); 
 
   if (i != 0)
     return candidates;
@@ -4182,7 +4192,7 @@ add_template_conv_candidate (candidates, tmpl, obj, arglist, return_type)
   int i;
   tree fn;
 
-  i = fn_type_unification (tmpl, targs, arglist, return_type, 0);
+  i = fn_type_unification (tmpl, NULL_TREE, targs, arglist, return_type, 0);
 
   if (i != 0)
     return candidates;
@@ -4312,7 +4322,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 	  templates = decl_tree_cons (NULL_TREE, ctors, templates);
 	  candidates = 
 	    add_template_candidate (candidates, ctors,
-				    args, NULL_TREE, flags);
+				    NULL_TREE, args, NULL_TREE, flags);
 	} 
       else 
 	candidates = add_function_candidate (candidates, ctors,
@@ -4353,8 +4363,8 @@ build_user_type_conversion_1 (totype, expr, flags)
 	      {
 		templates = decl_tree_cons (NULL_TREE, fn, templates);
 		candidates = 
-		  add_template_candidate (candidates, fn, args,
-					  totype, flags);
+		  add_template_candidate (candidates, fn, NULL_TREE,
+					  args, totype, flags);
 	      } 
 	    else 
 	      candidates = add_function_candidate (candidates, fn,
@@ -4409,9 +4419,10 @@ build_user_type_conversion_1 (totype, expr, flags)
     p = &(TREE_OPERAND (*p, 0));
 
   /* Pedantically, normal function declarations are never considered
-     to refer to template instantiations, but we won't implement that
-     until we implement full template instantiation syntax.  */
-  if (templates && ! cand->template && ! DECL_INITIAL (cand->fn)
+     to refer to template instantiations, so we only do this with
+     -fguiding-decls.  */ 
+  if (flag_guiding_decls && templates && ! cand->template 
+      && !DECL_INITIAL (cand->fn) 
       && TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE)
     add_maybe_template (cand->fn, templates);
 
@@ -4471,8 +4482,15 @@ build_new_function_call (fn, args, obj)
      tree fn, args, obj;
 {
   struct z_candidate *candidates = 0, *cand;
- 
-  if (obj == NULL_TREE && TREE_CODE (fn) == TREE_LIST)
+  tree explicit_targs = NULL_TREE;
+
+  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+    {
+      explicit_targs = TREE_OPERAND (fn, 1);
+      fn = TREE_OPERAND (fn, 0);
+    }
+
+  if (obj == NULL_TREE && really_overloaded_fn (fn))
     {
       tree t;
       tree templates = NULL_TREE;
@@ -4488,9 +4506,10 @@ build_new_function_call (fn, args, obj)
 	    {
 	      templates = decl_tree_cons (NULL_TREE, t, templates);
 	      candidates = add_template_candidate
-		(candidates, t, args, NULL_TREE, LOOKUP_NORMAL);
+		(candidates, t, explicit_targs, args, NULL_TREE,
+		 LOOKUP_NORMAL);  
 	    }
-	  else
+	  else if (explicit_targs == NULL_TREE)
 	    candidates = add_function_candidate
 	      (candidates, t, args, LOOKUP_NORMAL);
 	}
@@ -4517,9 +4536,10 @@ build_new_function_call (fn, args, obj)
 	}
 
       /* Pedantically, normal function declarations are never considered
-	 to refer to template instantiations, but we won't implement that
-	 until we implement full template instantiation syntax.  */
-      if (templates && ! cand->template && ! DECL_INITIAL (cand->fn))
+	 to refer to template instantiations, so we only do this with
+	 -fguiding-decls.  */
+      if (flag_guiding_decls && templates && ! cand->template 
+	  && ! DECL_INITIAL (cand->fn))
 	add_maybe_template (cand->fn, templates);
 
       return build_over_call (cand->fn, cand->convs, args, LOOKUP_NORMAL);
@@ -4554,9 +4574,10 @@ build_object_call (obj, args)
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    {
 	      templates = decl_tree_cons (NULL_TREE, fn, templates);
-	      candidates = add_template_candidate (candidates, fn,
-						   mem_args, NULL_TREE, 
-						   LOOKUP_NORMAL);
+	      candidates 
+		= add_template_candidate (candidates, fn, NULL_TREE,
+					  mem_args, NULL_TREE, 
+					  LOOKUP_NORMAL);
 	    }
 	  else
 	    candidates = add_function_candidate
@@ -4804,8 +4825,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
       if (TREE_CODE (fns) == TEMPLATE_DECL)
 	{
 	  templates = decl_tree_cons (NULL_TREE, fns, templates);
-	  candidates = add_template_candidate
-	    (candidates, fns, arglist, TREE_TYPE (fnname), flags);
+	  candidates 
+	    = add_template_candidate (candidates, fns, NULL_TREE,
+				      arglist, TREE_TYPE (fnname),
+				      flags); 
 	}
       else
 	candidates = add_function_candidate (candidates, fns, arglist, flags);
@@ -4833,9 +4856,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	    {
 	      /* A member template. */
 	      templates = decl_tree_cons (NULL_TREE, fn, templates);
-	      candidates = add_template_candidate
-		(candidates, fn, this_arglist, 
-		 TREE_TYPE (fnname), LOOKUP_NORMAL);
+	      candidates 
+		= add_template_candidate (candidates, fn, NULL_TREE,
+					  this_arglist,  TREE_TYPE
+					  (fnname), LOOKUP_NORMAL); 
 	    }
 	  else
 	    candidates = add_function_candidate
@@ -4934,9 +4958,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	enforce_access (cand->basetype_path, cand->fn);
 
       /* Pedantically, normal function declarations are never considered
-	 to refer to template instantiations, but we won't implement that
-	 until we implement full template instantiation syntax.  */
-      if (templates && ! cand->template && ! DECL_INITIAL (cand->fn)
+	 to refer to template instantiations, so we only do this with
+	 -fguiding-decls.  */ 
+      if (flag_guiding_decls && templates && ! cand->template 
+	  && ! DECL_INITIAL (cand->fn)
 	  && TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE)
 	add_maybe_template (cand->fn, templates);
 
@@ -5435,10 +5460,17 @@ build_new_method_call (instance, name, args, basetype_path, flags)
      int flags;
 {
   struct z_candidate *candidates = 0, *cand;
+  tree explicit_targs = NULL_TREE;
   tree basetype, mem_args, fns, instance_ptr;
   tree pretty_name;
   tree user_args = args;
   tree templates = NULL_TREE;
+
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    {
+      explicit_targs = TREE_OPERAND (name, 1);
+      name = TREE_OPERAND (name, 0);
+    }
 
   /* If there is an extra argument for controlling virtual bases,
      remove it for error reporting.  */
@@ -5536,12 +5568,12 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	      /* A member template. */
 	      templates = decl_tree_cons (NULL_TREE, t, templates);
 	      candidates = 
-		add_template_candidate (candidates, t,
+		add_template_candidate (candidates, t, explicit_targs,
 					this_arglist,
 					TREE_TYPE (name), 
 					LOOKUP_NORMAL); 
 	    }
-	  else 
+	  else if (explicit_targs == NULL_TREE) 
 	    candidates = add_function_candidate (candidates, t,
 						 this_arglist, flags);
 
@@ -5589,9 +5621,10 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     flags |= LOOKUP_NONVIRTUAL;
 
   /* Pedantically, normal function declarations are never considered
-     to refer to template instantiations, but we won't implement that
-     until we implement full template instantiation syntax.  */
-  if (templates && ! cand->template && ! DECL_INITIAL (cand->fn))
+     to refer to template instantiations, so we only do this with
+     -fguiding-decls.  */ 
+  if (flag_guiding_decls && templates && ! cand->template 
+      && ! DECL_INITIAL (cand->fn))
     add_maybe_template (cand->fn, templates);
 
   return build_over_call

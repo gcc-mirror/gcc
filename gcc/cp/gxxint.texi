@@ -1669,11 +1669,22 @@ For example @code{Foo::\u0319::Bar} is encoded as
 
 @subsection Templates
 
-A template instantiation is encoded as the letter @samp{t},
+A class template instantiation is encoded as the letter @samp{t},
 followed by the encoding of the template name, followed
 the number of template parameters, followed by encoding of the template
 parameters.  If a template parameter is a type, it is written
 as a @samp{Z} followed by the encoding of the type.
+
+A function template specialization (either an instantiation or an
+explicit specialization) is encoded by an @samp{H} followed by the
+encoding of the template parameters, as described above, followed by 
+an @samp{_}, the encoding of the argument types template function (not the
+specialization), another @samp{_}, and the return type.  (Like the
+argument types, the return type is the return type of the function
+template, not the specialization.)  Template parameters in the argument
+and return types are encoded by an @samp{X} for type parameters, or a
+@samp{Y} for constant parameters, and an index indicating their position
+in the template parameter list declaration.
 
 @subsection Arrays
 
@@ -1719,6 +1730,9 @@ Encodes the C++ and Java @code{float} types.
 
 @item F
 Used to indicate a function type.
+
+@item H
+Used to indicate a template function.
 
 @item i
 Encodes the C++ and Java @code{int} types.
@@ -1774,6 +1788,12 @@ Encodes the C++ @code{wchar_t} type, and the Java @code{char} types.
 
 @item x
 Encodes the GNU C++ @code{long long} type, and the Java @code{long} type.
+
+@item X
+Encodes a template type parameter, when part of a function type.
+
+@item Y
+Encodes a template constant parameter, when part of a function type.
 
 @item Z
 Used for template type parameters. 

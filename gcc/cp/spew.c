@@ -316,6 +316,7 @@ yylex ()
 	      if (got_scope)
 		tmp_token.yylval.ttype = trrr;
 	      break;
+	    case PFUNCNAME:
 	    case IDENTIFIER:
 	      lastiddecl = trrr;
 	      break;
@@ -377,6 +378,10 @@ yylex ()
   if (spew_debug)
     debug_yychar (yychar);
 #endif
+
+  if (yychar == PFUNCNAME)
+    yylval.ttype = do_identifier (yylval.ttype, 1);
+
   return yychar;
 }
 

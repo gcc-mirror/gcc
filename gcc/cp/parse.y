@@ -110,6 +110,9 @@ empty_parms ()
 %token TYPENAME
 %token SELFNAME
 
+/* A template function.  */
+%token <ttype> PFUNCNAME
+
 /* Reserved words that specify storage class.
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token SCSPEC
@@ -162,7 +165,7 @@ empty_parms ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
+%left IDENTIFIER PFUNCNAME TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
 
 %left '{' ',' ';'
 
@@ -193,6 +196,7 @@ empty_parms ()
 %type <code> unop
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
+%type <ttype> PFUNCNAME
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
 %type <ttype> reserved_declspecs boolean.literal
@@ -224,6 +228,7 @@ empty_parms ()
 %type <ttype> fcast_or_absdcl regcast_or_absdcl
 %type <ttype> expr_or_declarator complex_notype_declarator
 %type <ttype> notype_unqualified_id unqualified_id qualified_id
+%type <ttype> template_id object_template_id notype_template_declarator
 %type <ttype> overqualified_id notype_qualified_id any_id
 %type <ttype> complex_direct_notype_declarator functional_cast
 %type <ttype> complex_parmlist parms_comma
@@ -431,7 +436,8 @@ template_header:
 	  template_parm_list '>'
 		{ $$ = end_template_parm_list ($4); }
 	| TEMPLATE '<' '>'
-		{ $$ = NULL_TREE; }
+                { begin_specialization(); 
+		  $$ = NULL_TREE; }
 	;
 
 template_parm_list:
@@ -483,10 +489,20 @@ template_parm:
 template_def:
 	  template_header
 	  extdef
-		{ end_template_decl (); }
+                { 
+                  if ($1) 
+                    end_template_decl (); 
+		  else
+		    end_specialization ();
+		}
 	| template_header
 	  error  %prec EMPTY
-		{ end_template_decl (); }
+		{ 
+                  if ($1) 
+                    end_template_decl ();
+		  else
+		    end_specialization (); 
+                }
 	;
 
 datadef:
@@ -701,8 +717,13 @@ fn.def2:
 		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
         | template_header fn.def2 
                 { 
-		  end_template_decl (); 
-		  if ($2 && DECL_TEMPLATE_INFO ($2))
+                  if ($1)
+                    end_template_decl (); 
+		  else
+		    end_specialization ();
+
+		  if ($2 && DECL_TEMPLATE_INFO ($2)
+		      && !DECL_TEMPLATE_SPECIALIZATION ($2))
 		    {
 		      $$ = DECL_TI_TEMPLATE ($2); 
 		      check_member_template ($$);
@@ -1263,11 +1284,34 @@ expr_no_commas:
 notype_unqualified_id:
 	  '~' see_typename identifier
 		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
+        | template_id
 	| operator_name
 	| IDENTIFIER
 	| PTYPENAME
 	| NSNAME  %prec EMPTY
 	;
+
+template_id:
+        PFUNCNAME '<' template_arg_list template_close_bracket 
+                { $$ = lookup_template_function ($1, $3); }
+        | PFUNCNAME '<' template_close_bracket
+                { $$ = lookup_template_function ($1, NULL_TREE); }
+        | operator_name '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function 
+		    (do_identifier ($1, 1), $3); }
+        | operator_name '<' template_close_bracket
+                { $$ = lookup_template_function 
+		    (do_identifier ($1, 1), NULL_TREE); }
+	;
+
+object_template_id:
+        TEMPLATE identifier '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function ($2, $4); }
+        | TEMPLATE PFUNCNAME '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function (DECL_NAME ($2), $4); }
+        | TEMPLATE operator_name '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function (DECL_NAME ($2), $4); }
+        ;
 
 unqualified_id:
 	  notype_unqualified_id
@@ -1285,9 +1329,17 @@ expr_or_declarator:
 		{ $$ = $2; }
 	;
 
+notype_template_declarator:
+	  IDENTIFIER '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function ($1, $3); }
+	| NSNAME '<' template_arg_list template_close_bracket
+                { $$ = lookup_template_function ($1, $3); }
+	;
+		
 direct_notype_declarator:
 	  complex_direct_notype_declarator
 	| notype_unqualified_id
+	| notype_template_declarator
 	| '(' expr_or_declarator ')'
 		{ $$ = finish_decl_parsing ($2); }
 	;
@@ -1297,7 +1349,7 @@ primary:
 		{
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
-		  else
+		  else if (TREE_CODE ($$) != TEMPLATE_ID_EXPR)
 		    $$ = do_identifier ($$, 1);
 		}		
 	| CONSTANT
@@ -1500,6 +1552,20 @@ primary:
 				       NULL_TREE, NULL_TREE);
 		  else
 		    $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
+        | object object_template_id %prec UNARY
+                { 
+		  $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); 
+		}
+        | object object_template_id '(' nonnull_exprlist ')'
+                {
+		  $$ = build_method_call ($1, $2, $4, 
+					  NULL_TREE, LOOKUP_NORMAL); 
+                }
+	| object object_template_id LEFT_RIGHT
+                {
+		  $$ = build_method_call ($1, $2, NULL_TREE,
+					  NULL_TREE, LOOKUP_NORMAL); 
+                }
 	| object unqualified_id  %prec UNARY
 		{ $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); }
 	| object overqualified_id  %prec UNARY
@@ -2191,7 +2257,9 @@ structsp:
 		{ $$.t = $2;
 		  $$.new_type_flag = 0; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
-	| class_head left_curly opt.component_decl_list '}' maybe_attribute
+	| class_head left_curly 
+                { reset_specialization(); }
+          opt.component_decl_list '}' maybe_attribute
 		{
 		  int semi;
 		  tree id;
@@ -2214,7 +2282,7 @@ structsp:
 		    ;
 		  else
 		    {
-		      $<ttype>$ = finish_struct ($1, $3, $5, semi);
+		      $<ttype>$ = finish_struct ($1, $4, $6, semi);
 		      if (semi) note_got_semicolon ($<ttype>$);
 		    }
 
@@ -2233,7 +2301,7 @@ structsp:
 		}
 	  pending_inlines
 		{ 
-		  $$.t = $<ttype>6;
+		  $$.t = $<ttype>7;
 		  $$.new_type_flag = 1; 
 		  if (current_class_type == NULL_TREE)
 		    clear_inline_text_obstack (); 
@@ -2721,8 +2789,13 @@ component_decl_1:
 		{ $$ = do_class_using_decl ($1); }
         | template_header component_decl_1 
                 { 
-		  end_template_decl (); 
-		  if ($2 && DECL_TEMPLATE_INFO ($2))
+                  if ($1)
+		    end_template_decl (); 
+                  else
+                    end_specialization ();
+
+		  if ($2 && DECL_TEMPLATE_INFO ($2)
+		      && !DECL_TEMPLATE_SPECIALIZATION ($2))
 		    {
 		      $$ = DECL_TI_TEMPLATE ($2); 
 		      check_member_template ($$);
@@ -3047,18 +3120,33 @@ complex_direct_notype_declarator:
 		      TREE_COMPLEXITY ($$) = current_class_depth;
 		    }
 		}
+        | nested_name_specifier notype_template_declarator
+                { got_scope = NULL_TREE;
+		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  if ($1 != current_class_type)
+		    {
+		      push_nested_class ($1, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		}
 	;
 
 qualified_id:
 	  nested_name_specifier unqualified_id
 		{ got_scope = NULL_TREE;
 		  $$ = build_parse_node (SCOPE_REF, $$, $2); }
+        | nested_name_specifier object_template_id
+                { got_scope = NULL_TREE;
+ 		  $$ = build_parse_node (SCOPE_REF, $1, $2); }
 	;
 
 notype_qualified_id:
 	  nested_name_specifier notype_unqualified_id
 		{ got_scope = NULL_TREE;
 		  $$ = build_parse_node (SCOPE_REF, $$, $2); }
+        | nested_name_specifier object_template_id
+                { got_scope = NULL_TREE;
+		  $$ = build_parse_node (SCOPE_REF, $1, $2); }
 	;
 
 overqualified_id:
