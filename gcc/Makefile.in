@@ -2431,7 +2431,8 @@ gccint.dvi: $(TEXI_GCCINT_FILES)
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gccint.texi
 
 gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $(docdir)/install.texi
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(TEXI2DVI) -I $$s/doc -I $$s/doc/include -o $@ $$s/doc/install.texi
 
 cppinternals.dvi: $(TEXI_CPPINT_FILES)
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
