@@ -1,5 +1,9 @@
 Fri Feb 26 01:47:46 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Sun Jan 17 03:20:47 1999  H.J. Lu  (hjl@gnu.org)
+	* reg-stack.c (subst_stack_regs_pat): Abort if the destination
+	of a FP conditional move is not on the FP register stack.
+
 	* Makefile.in (compare, gnucompare): We do not care about
 	comparison failures for objc/linking.o either.
 
