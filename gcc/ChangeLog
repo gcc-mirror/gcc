@@ -1,3 +1,7 @@
+Mon Apr 29 13:02:50 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (dbx64_register_map): Fix typo.
+
 Mon Apr 29 12:18:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (real_zero, real_one, real_almost_one, real_br_prob_base,
