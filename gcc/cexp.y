@@ -86,6 +86,10 @@ static jmp_buf parse_return_error;
 /* Nonzero means count most punctuation as part of a name.  */
 static int keyword_parsing = 0;
 
+/* Nonzero means do not evaluate this expression.
+   This is a count, since unevaluated expressions can nest.  */
+static int skip_evaluation;
+
 /* some external tables of character types */
 extern unsigned char is_idstart[], is_idchar[], is_hor_space[];
 
@@ -225,7 +229,8 @@ exp	:	exp '*' exp
 	|	exp '/' exp
 			{ if ($3.value == 0)
 			    {
-			      error ("division by zero in #if");
+			      if (!skip_evaluation)
+				error ("division by zero in #if");
 			      $3.value = 1;
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
@@ -240,7 +245,8 @@ exp	:	exp '*' exp
 	|	exp '%' exp
 			{ if ($3.value == 0)
 			    {
-			      error ("division by zero in #if");
+			      if (!skip_evaluation)
+				error ("division by zero in #if");
 			      $3.value = 1;
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
@@ -313,15 +319,26 @@ exp	:	exp '*' exp
 	|	exp '|' exp
 			{ $$.value = $1.value | $3.value;
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
-	|	exp AND exp
-			{ $$.value = ($1.value && $3.value);
+	|	exp AND
+			{ skip_evaluation += !$1.value; }
+		exp
+			{ skip_evaluation -= !$1.value;
+			  $$.value = ($1.value && $4.value);
 			  $$.unsignedp = 0; }
-	|	exp OR exp
-			{ $$.value = ($1.value || $3.value);
+	|	exp OR
+			{ skip_evaluation += !!$1.value; }
+		exp
+			{ skip_evaluation -= !!$1.value;
+			  $$.value = ($1.value || $4.value);
 			  $$.unsignedp = 0; }
-	|	exp '?' exp ':' exp
-			{ $$.value = $1.value ? $3.value : $5.value;
-			  $$.unsignedp = $3.unsignedp || $5.unsignedp; }
+	|	exp '?'
+			{ skip_evaluation += !$1.value; }
+	        exp ':'
+			{ skip_evaluation += !!$1.value - !$1.value; }
+		exp
+			{ skip_evaluation -= !!$1.value;
+			  $$.value = $1.value ? $4.value : $7.value;
+			  $$.unsignedp = $4.unsignedp || $7.unsignedp; }
 	|	INT
 			{ $$ = yylval.integer; }
 	|	CHAR
@@ -865,13 +882,14 @@ yyerror (s)
      char *s;
 {
   error (s);
+  skip_evaluation = 0;
   longjmp (parse_return_error, 1);
 }
 
 static void
 integer_overflow ()
 {
-  if (pedantic)
+  if (!skip_evaluation && pedantic)
     pedwarn ("integer overflow in preprocessor expression");
 }
 
