@@ -331,7 +331,7 @@ stack_include_file (pfile, inc)
   /* Generate the call back.  */
   filename = inc->name;
   if (*filename == '\0')
-    filename = _("<stdin>");
+    filename = "<stdin>";
   _cpp_do_file_change (pfile, LC_ENTER, filename, 1, sysp);
 
   return true;
