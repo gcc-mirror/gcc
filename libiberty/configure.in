@@ -299,7 +299,28 @@ if test -z "${setobjs}"; then
   # tests.  This will only work if the compiler works.
   AC_PROG_CC_WORKS
   AC_REPLACE_FUNCS($funcs)
-  AC_FUNC_ALLOCA
+
+  case "${host}" in
+  *-*-interix)
+    # On Interix, it wrongly concludes that the MSVC compiler supports alloca.
+    # (MSVC does on Win32, not on Interix.)
+    # This should be temporary.
+
+    ac_cv_header_alloca_h=no
+    ac_cv_func_alloca_works=no
+    ALLOCA=alloca.o
+    cat >> confdefs.h <<\EOF
+#define C_ALLOCA 1
+EOF
+    cat >> confdefs.h <<EOF
+#define STACK_DIRECTION -1
+EOF
+    ;;
+  *)
+    AC_FUNC_ALLOCA
+    ;;
+  esac
+
   AC_FUNC_VFORK
   if test $ac_cv_func_vfork_works = no; then
     LIBOBJS="$LIBOBJS vfork.o"
