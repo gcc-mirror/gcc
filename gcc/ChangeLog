@@ -1,3 +1,8 @@
+2000-02-09  Scott Bambrough  <scottb@netwinder.org>
+
+        * config/arm/arm.md (movsi): In PIC mode, make sure that a
+        constant source address is legitimate.
+
 2000-02-09  Philip Blundell  <pb@futuretv.com>
 
         * config/arm/arm.c (legitimize_pic_address): Handle LABEL_REF
