@@ -5718,6 +5718,8 @@ fold_builtin_cabs (tree fndecl, tree arglist, tree type)
 	{
 	  tree rpart, ipart, result, arglist;
 
+	  arg = save_expr (arg);
+
 	  rpart = fold (build1 (REALPART_EXPR, type, arg));
 	  ipart = fold (build1 (IMAGPART_EXPR, type, arg));
 
