@@ -14,58 +14,68 @@ Bernd Schmidt					bernds@redhat.com
 Jim Wilson					wilson@redhat.com
 
 
-			Various Maintainers
+			CPU Port Maintainers	(CPU alphabetical order)
 
-sh port			Joern Rennecke		amylaar@onetel.net.uk
-			Alexandre Oliva		aoliva@redhat.com
-v850 port		Nick Clifton		nickc@redhat.com
-v850 port		Michael Meissner	meissner@redhat.com
+a29k port		Jim Wilson		wilson@redhat.com
+alpha port		Richard Henderson	rth@redhat.com
+arc port		Richard Kenner		kenner@nyu.edu
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	rearnsha@arm.com
-m32r port		Nick Clifton		nickc@redhat.com
-			Michael Meissner	meissner@redhat.com
+avr port		Denis Chertykov		denisc@overta.ru
+avr port		Marek Michalkiewicz	marekm@linux.org.pl
+c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
+fr30 port		Nick Clifton		niclc@redhat.com
 h8 port			Jeff Law		law@redhat.com
 h8 port			Kazu Hirata		kazu@hxi.com
-mcore			Nick Clifton		nickc@redhat.com
-mn10200 port		Jeff Law		law@redhat.com
-mn10300 port		Jeff Law		law@redhat.com
-			Alexandre Oliva		aoliva@redhat.com
 hppa port		Jeff Law		law@redhat.com
-			Dave Anglin		dave.anglin@nrc.ca
+hppa port		Dave Anglin		dave.anglin@nrc.ca
+i860 port		Jason Eckhardt		jle@redhat.com
+i960 port		Jim Wilson		wilson@redhat.com
+ia64 port		Jim Wilson		wilson@redhat.com
+m32r port		Nick Clifton		nickc@redhat.com
+m32r port		Michael Meissner	meissner@redhat.com
 m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
+mn10200 port		Jeff Law		law@redhat.com
+mn10300 port		Jeff Law		law@redhat.com
+mn10300 port		Alexandre Oliva		aoliva@redhat.com
 rs6000 port		Geoff Keating		geoffk@redhat.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
-ia64 port		Jim Wilson		wilson@redhat.com
-i860 port		Jason Eckhardt		jle@redhat.com
-i960 port		Jim Wilson		wilson@redhat.com
-a29k port		Jim Wilson		wilson@redhat.com
-alpha port		Richard Henderson	rth@redhat.com
+sh port			Joern Rennecke		amylaar@onetel.net.uk
+sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
-xstormy16 port		Geoffrey Keating	geoffk@redhat.com
 x86 ports		Stan Cox		scox@redhat.com
-c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
-arc port		Richard Kenner		kenner@nyu.edu
-fr30 port		Nick Clifton		niclc@redhat.com
+xstormy16 port		Geoffrey Keating	geoffk@redhat.com
+v850 port		Nick Clifton		nickc@redhat.com
+v850 port		Michael Meissner	meissner@redhat.com
 vax port		Dave Anglin		dave.anglin@nrc.ca
+
+			OS Port Maintainers	(OS alphabetical order)
+
+darwin port		Stan Shebs		shebs@apple.com
+sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
+
+			Various Maintainers
+
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 chill			Dave Brolley		brolley@redhat.com
 chill			Per Bothner		per@bothner.com
-java			Per Bothner		per@bothner.com
-java			Alexandre Petit-Bianco	apbianco@redhat.com
-mercury			Fergus Henderson	fjh@cs.mu.oz.au
-objective-c		Stan Shebs		shebs@apple.com
-objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@redhat.com
 cpplib			Per Bothner		per@bothner.com
 cpplib			Zack Weinberg		zackw@stanford.edu
 cpplib			Neil Booth		neil@daikokuya.demon.co.uk
+java			Per Bothner		per@bothner.com
+java			Alexandre Petit-Bianco	apbianco@redhat.com
+mercury			Fergus Henderson	fjh@cs.mu.oz.au
+mcore			Nick Clifton		nickc@redhat.com
+objective-c		Stan Shebs		shebs@apple.com
+objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@redhat.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
@@ -82,8 +92,6 @@ c++ runtime libs	Phil Edwards		pedwards@jaj.com
 c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
-darwin			Stan Shebs		shebs@apple.com
-sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 fixincludes		Bruce Korb		bkorb@gnu.org
 gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
@@ -92,8 +100,6 @@ web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/ISO C99	Joseph Myers		jsm28@cam.ac.uk
 C front end/ISO C99	Richard Henderson	rth@redhat.com
 config.sub/config.guess	Ben Elliston		bje@redhat.com
-avr port		Denis Chertykov		denisc@overta.ru
-			Marek Michalkiewicz	marekm@linux.org.pl
 basic block reordering	Jason Eckhardt		jle@redhat.com
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
@@ -119,13 +125,13 @@ Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
 
 
-			Write After Approval
+			Write After Approval	(last name alphabetical order)
 Scott Bambrough					scottb@netwinder.org
 David Billinghurst				David.Billinghurst@riotinto.com
 Laurynas Biveinis				lauras@softhome.net
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
-Andrew cagney					cagney@redhat.com
+Andrew Cagney					cagney@redhat.com
 William Cohen					wcohen@redhat.com
 *Paul Eggert					eggert@twinsun.com
 Ben Elliston					bje@redhat.com
@@ -168,6 +174,7 @@ Diego Novillo					dnovillo@redhat.com
 David O'Brien					obrien@FreeBSD.org
 Jeffrey D. Oldham				oldham@codesourcery.com
 Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
+Nicola Pero					n.pero@mi.flashnet.it
 Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
@@ -185,9 +192,9 @@ Franz Sirl					franz.sirl-kernel@lauterbach.com
 Michael Sokolov					msokolov@ivan.Harhan.ORG
 Mike Stump					mrs@windriver.com
 Ian Taylor					ian@zembu.com
+Michael Tiemann					tiemann@redhat.com
 Philipp Thomas					pthomas@suse.de
 Kresten Krab Thorup				krab@gcc.gnu.org
-Nicola Pero					n.pero@mi.flashnet.it
 Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
 Mark Wielaard					mark@gcc.gnu.org
@@ -201,7 +208,6 @@ Michael Matz
 Tom Rix						trix@redhat.com
 Richard Stallman				rms@gnu.org
 Graham Stott					grahams@redhat.com
-Michael Tiemann					tiemann@redhat.com
 
 GNATS only accounts
 Peter Bienstman(?)
