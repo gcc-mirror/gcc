@@ -1,5 +1,29 @@
 1999-12-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (cp_tree_index): Add CPTI_DSO_HANDLE.
+	(dso_handle_node): New macro.
+	(flag_use_cxa_atexit): New variable.
+	(declare_global_var): New function.
+	(start_anon_func): Remove declaration.
+	(end_anon_func): Likewise.
+	* decl.c (get_atexit_node): New function, split out from
+	destroy_local_static.  Handle flag_use_cxa_atexit.
+	(get_dso_handle_node): Likewise.
+	(start_cleanup_fn): Renamed from start_anon_func.  Moved here from
+	except.c.  Handle flag_use_cxa_atexit.
+	(end_cleanup_fn): Renamed from end_anon_func.  Moved here from
+	except.c.
+	(declare_global_var): New variable.
+	(destroy_local_static): Handle flag_use_cxa_atexit.
+	* decl2.c (flag_use_cxa_atexit): New variable.
+	(lang_f_options): Likewise.
+	* except.c (start_anon_func): Remove.
+	(end_anon_func): Liekwise.
+	* lang-options.h: Add -fuse-cxa-atexit and -fno-use-cxa-atexit.
+	* rtti.c (get_tinfo_var): Use declare_global_var.
+
+1999-12-16  Mark Mitchell  <mark@codesourcery.com>
+
 	* class.c (check_field_decls): Don't return a value.
 	(avoid_overlap): Moved here from tree.c.
 	(build_base_fields): Likewise.

@@ -441,6 +441,11 @@ int flag_weak = 1;
 
 int flag_new_abi;
 
+/* Nonzero to use __cxa_atexit, rather than atexit, to register
+   destructors for local statics and global objects.  */
+
+int flag_use_cxa_atexit;
+
 /* Nonzero to not ignore namespace std. */
 
 int flag_honor_std;
@@ -535,6 +540,7 @@ lang_f_options[] =
   {"squangle", &flag_do_squangling, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"strict-prototype", &flag_strict_prototype, 1},
+  {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
   {"vtable-gc", &flag_vtable_gc, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"weak", &flag_weak, 1},

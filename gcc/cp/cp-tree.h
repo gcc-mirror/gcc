@@ -483,6 +483,7 @@ enum cp_tree_index
     CPTI_MINUS_ONE,
     CPTI_TERMINATE,
     CPTI_ATEXIT,
+    CPTI_DSO_HANDLE,
 
     CPTI_MAX
 };
@@ -574,8 +575,11 @@ extern tree cp_global_trees[CPTI_MAX];
 /* The declaration for `std::terminate'.  */
 #define terminate_node                  cp_global_trees[CPTI_TERMINATE]
 
-/* The declaration for `std::atexit'.  */
+/* A pointer to `std::atexit'.  */
 #define atexit_node                     cp_global_trees[CPTI_ATEXIT]
+
+/* A pointer to `__dso_handle'.  */
+#define dso_handle_node                 cp_global_trees[CPTI_DSO_HANDLE]
 
 /* The type of a destructor.  */
 #define cleanup_type                    cp_global_trees[CPTI_CLEANUP_TYPE]
@@ -3128,6 +3132,11 @@ extern int flag_weak;
 
 extern int flag_new_abi;
 
+/* Nonzero to use __cxa_atexit, rather than atexit, to register
+   destructors for local statics and global objects.  */
+
+extern int flag_use_cxa_atexit;
+
 /* Nonzero to not ignore namespace std. */
 
 extern int flag_honor_std;
@@ -3564,6 +3573,7 @@ extern tree build_target_expr_with_type         PROTO((tree, tree));
 extern void make_rtl_for_local_static           PROTO((tree));
 extern int local_variable_p                     PROTO((tree));
 extern int nonstatic_local_decl_p               PROTO((tree));
+extern tree declare_global_var                  PROTO((tree, tree));
 
 /* in decl2.c */
 extern void init_decl2				PROTO((void));
@@ -3659,8 +3669,6 @@ extern void expand_builtin_throw		PROTO((void));
 extern tree expand_start_eh_spec		PROTO((void));
 extern void expand_end_eh_spec		        PROTO((tree, tree));
 extern void expand_exception_blocks		PROTO((void));
-extern tree start_anon_func			PROTO((void));
-extern void end_anon_func			PROTO((void));
 extern tree build_throw				PROTO((tree));
 extern void mark_all_runtime_matches            PROTO((void));
 
