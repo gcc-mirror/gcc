@@ -1,5 +1,55 @@
 2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/13702 
+	(Port from g95)
+	* gfortran.h (gfc_linebuf): New typedef.
+	(linebuf): Remove.
+	(gfc_file): Revamped, use new gfc_linebuf.
+	(locus): Revamped, use new types.
+	(gfc_current_file): Remove.
+	(gfc_current_form, gfc_source_file): New global variables.
+	* match.c (gfc_match_space, gfc_match_strings): Use
+	gfc_current_form to find source form.
+	* module.c (gfc_dump_module): Use gfc_source_file when printing
+	module header.
+	* error.c (show_locus, show_loci) Use new data structures to print
+	locus.
+	* scanner.c (first_file, first_duplicated_file, gfc_current_file):
+	Remove.
+	(file_head, current_file, gfc_current_form, line_head, line_tail,
+	gfc_current_locus1, gfc_source_file): New global variables.
+	(gfc_scanner_init1): Set new global variables.
+	(gfc_scanner_done1): Free new data structures.
+	(gfc_current_locus): Return pointer to gfc_current_locus1.
+	(gfc_set_locus): Set gfc_current_locus1.
+	(gfc_at_eof): Set new variables.
+	(gfc_at_bol, gfc_at_eol, gfc_advance_line, gfc_next_char): Adapt
+	to new locus structure.
+	(gfc_check_include): Remove.
+	(skip_free_comments, skip_fixed_comments): Use gfc_current_locus1.
+	(gfc_skip_comments): Use gfc_current_form, find locus with
+	gfc_current_locus1.
+	(gfc_next_char): Use gfc_current_form.
+	(gfc_peek_char, gfc_gobble_whitespace): Use gfc_current_locus1.
+	(load_line): Use gfc_current_form. Recognize ^Z as EOF. Fix
+	comment formatting.
+	(get_file): New function.
+	(preprocessor_line, include_line): New functions.
+	(load_file): Move down, rewrite to match new data structures.
+	(gfc_new_file): Rewrite to match new data structures.
+	* parse.c (next_statement): Remove code which is now useless. Use
+	gfc_source_form and gfc_source_file where appropriate.
+	* trans-decl.c (gfc_get_label_decl): adapt to new data structures
+	when determining locus of frontend code.
+	* trans-io.c (set_error_locus): Same.
+	* trans.c (gfc_get_backend_locus, gfc_set_backend_locus): Likewise.
+	* lang-specs.h (@f77-cpp-input, @f95-cpp-input): Remove '-P' from
+	preprocessor flags.
+	(all): Add missing initializers.
+
+
+2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* Make-lang.in (trans-common.o): Remove redundant dependency.
 	(data.c): Replace object file name ...
 	(data.o): ... by the correct one.

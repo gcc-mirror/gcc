@@ -500,13 +500,13 @@ set_error_locus (stmtblock_t * block, locus * where)
   tree tmp;
   int line;
 
-  f = where->file;
+  f = where->lb->file;
   tmp = gfc_build_string_const (strlen (f->filename) + 1, f->filename);
 
   tmp = gfc_build_addr_expr (pchar_type_node, tmp);
   gfc_add_modify_expr (block, locus_file, tmp);
 
-  line = where->lp->start_line + where->line;
+  line = where->lb->linenum;
   gfc_add_modify_expr (block, locus_line, build_int_2 (line, 0));
 }
 

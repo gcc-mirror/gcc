@@ -414,8 +414,9 @@ gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 void
 gfc_get_backend_locus (locus * loc)
 {
-  loc->line = input_line - 1;
-  loc->file = gfc_current_backend_file;
+  loc->lb = gfc_getmem (sizeof (gfc_linebuf));    
+  loc->lb->linenum = input_line - 1;
+  loc->lb->file = gfc_current_backend_file;
 }
 
 
@@ -424,9 +425,9 @@ gfc_get_backend_locus (locus * loc)
 void
 gfc_set_backend_locus (locus * loc)
 {
-  input_line = loc->line + 1;
-  gfc_current_backend_file = loc->file;
-  input_filename = loc->file->filename;
+  input_line = loc->lb->linenum;
+  gfc_current_backend_file = loc->lb->file;
+  input_filename = loc->lb->file->filename;
 }
 
 
