@@ -2,6 +2,7 @@
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
+   Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
 
 This file is part of GCC.
 
@@ -102,10 +103,25 @@ static unsigned int file_info_table_in_use;
    table.  */
 #define FILE_TABLE_INCREMENT 64
 
-static char **func_table;
+/* A structure to hold basic information for the VMS end
+   routine.  */
+
+typedef struct vms_func_struct
+{
+  const char *vms_func_name;
+  unsigned funcdef_number;
+}
+vms_func_node;
+
+typedef struct vms_func_struct *vms_func_ref;
+
 static unsigned int func_table_allocated;
 static unsigned int func_table_in_use;
 #define FUNC_TABLE_INCREMENT 256
+
+/* A pointer to the base of a table that contains frame description
+   information for each routine.  */
+static vms_func_ref func_table;
 
 /* Local pointer to the name of the main input file.  Initialized in
    avmdbgout_init.  */
@@ -778,8 +794,9 @@ write_rtnbeg (int rtnnum, int dosizeonly)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   DST_ROUTINE_BEGIN rtnbeg;
   DST_PROLOG prolog;
+  vms_func_ref fde = &func_table[rtnnum];
 
-  rtnname = func_table[rtnnum];
+  rtnname = (char *)fde->vms_func_name;
   rtnnamelen = strlen (rtnname);
   rtnentryname = concat (rtnname, "..en", NULL);
 
@@ -850,7 +867,7 @@ write_rtnbeg (int rtnnum, int dosizeonly)
       totsize += write_debug_header (&prolog.dst_a_prolog_header, "prolog",
 				     dosizeonly);
 
-      ASM_GENERATE_INTERNAL_LABEL (label, FUNC_PROLOG_LABEL, rtnnum);
+      ASM_GENERATE_INTERNAL_LABEL (label, FUNC_PROLOG_LABEL, fde->funcdef_number);
       totsize += write_debug_addr (label, "prolog breakpoint addr",
 				   dosizeonly);
     }
@@ -868,6 +885,8 @@ write_rtnend (int rtnnum, int dosizeonly)
   char label1[MAX_ARTIFICIAL_LABEL_BYTES];
   char label2[MAX_ARTIFICIAL_LABEL_BYTES];
   int totsize;
+  vms_func_ref fde = &func_table[rtnnum];
+  int corrected_rtnnum = fde->funcdef_number;
 
   totsize = 0;
 
@@ -882,8 +901,8 @@ write_rtnend (int rtnnum, int dosizeonly)
   totsize += write_debug_data1 (rtnend.dst_b_rtnend_unused, "unused",
 				dosizeonly);
 
-  ASM_GENERATE_INTERNAL_LABEL (label1, FUNC_BEGIN_LABEL, rtnnum);
-  ASM_GENERATE_INTERNAL_LABEL (label2, FUNC_END_LABEL, rtnnum);
+  ASM_GENERATE_INTERNAL_LABEL (label1, FUNC_BEGIN_LABEL, corrected_rtnnum);
+  ASM_GENERATE_INTERNAL_LABEL (label2, FUNC_END_LABEL, corrected_rtnnum);
   totsize += write_debug_delta4 (label2, label1, "routine size", dosizeonly);
 
   return totsize;
@@ -1358,6 +1377,7 @@ static void
 vmsdbgout_begin_function (tree decl)
 {
   const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  vms_func_ref fde;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_function) (decl);
@@ -1365,12 +1385,16 @@ vmsdbgout_begin_function (tree decl)
   if (func_table_in_use == func_table_allocated)
     {
       func_table_allocated += FUNC_TABLE_INCREMENT;
-      func_table = xrealloc (func_table,
-			     func_table_allocated * sizeof (char *));
+      func_table
+        = (vms_func_ref) xrealloc (func_table,
+				   func_table_allocated * sizeof (vms_func_node));
     }
 
   /* Add the new entry to the end of the function name table.  */
-  func_table[func_table_in_use++] = xstrdup (name);
+  fde = &func_table[func_table_in_use++];
+  fde->vms_func_name = xstrdup (name);
+  fde->funcdef_number = current_function_funcdef_no;
+
 }
 
 static char fullname_buff [4096];
@@ -1581,7 +1605,7 @@ vmsdbgout_init (const char *main_input_filename)
   /* Skip the first entry - file numbers begin at 1 */
   file_info_table_in_use = 1;
 
-  func_table = xcalloc (FUNC_TABLE_INCREMENT, sizeof (char *));
+  func_table = (vms_func_ref) xcalloc (FUNC_TABLE_INCREMENT, sizeof (vms_func_node));
   func_table_allocated = FUNC_TABLE_INCREMENT;
   func_table_in_use = 1;
 
