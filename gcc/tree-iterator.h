@@ -117,4 +117,7 @@ void tsi_delink (tree_stmt_iterator *);
 tree tsi_split_statement_list_after (const tree_stmt_iterator *);
 tree tsi_split_statement_list_before (tree_stmt_iterator *);
 
+void append_to_statement_list (tree, tree *);
+void append_to_statement_list_force (tree, tree *);
+
 #endif /* GCC_TREE_ITERATOR_H  */

@@ -1,3 +1,8 @@
+2004-06-15  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/ext/stmtexpr1.C: XFAIL.
+	* gcc.dg/20030612-1.c: XFAIL.
+
 2004-06-15  Eric Christopher  <echristo@redhat.com>
 
 	* g++.dg/charset/asm5.c: New.

@@ -208,10 +208,10 @@ do {									\
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
 
-%type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
-%type <ttype> do_stmt_start pop_scope stmt label
+%type <ttype> compstmt compstmt_start compstmt_primary_start
+%type <ttype> do_stmt_start stmt label
 
-%type <ttype> c99_block_start c99_block_end
+%type <ttype> c99_block_start c99_block_lineno_labeled_stmt
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
 %type <ttype> parm_declarator
@@ -650,24 +650,12 @@ primary:
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| compstmt_primary_start compstmt_nostart ')'
-                 { tree saved_last_tree;
-
-		   if (pedantic)
-		     pedwarn ("ISO C forbids braced-groups within expressions");
-		  saved_last_tree = COMPOUND_BODY ($1);
-		  RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
-		  last_tree = saved_last_tree;
-		  TREE_CHAIN (last_tree) = NULL_TREE;
-		  if (!last_expr_type)
-		    last_expr_type = void_type_node;
-		  $$ = build1 (STMT_EXPR, last_expr_type, $1);
-		  TREE_SIDE_EFFECTS ($$) = 1;
-		  annotate_with_locus ($$, input_location);
+                { if (pedantic)
+		    pedwarn ("ISO C forbids braced-groups within expressions");
+		  $$ = c_finish_stmt_expr ($1);
 		}
 	| compstmt_primary_start error ')'
-		{
-		  last_tree = COMPOUND_BODY ($1);
-		  TREE_CHAIN (last_tree) = NULL_TREE;
+		{ c_finish_stmt_expr ($1);
 		  $$ = error_mark_node;
 		}
 	| primary '(' exprlist ')'   %prec '.'
@@ -2010,51 +1998,9 @@ lineno_stmt_decl_or_labels:
 errstmt:  error ';'
 	;
 
-push_scope:  /* empty */
-		{ push_scope ();
-		  clear_last_expr ();
-		  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-		}
-	;
-
-pop_scope:  /* empty */
-                {
-@@ifobjc
-		  if (c_dialect_objc ())
-		    objc_clear_super_receiver ();
-@@end_ifobjc
-		  $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-		}
-        ;
-
 /* Start and end blocks created for the new scopes of C99.  */
 c99_block_start: /* empty */
-		{ if (flag_isoc99)
-		    {
-		      $$ = c_begin_compound_stmt ();
-		      push_scope ();
-		      clear_last_expr ();
-		      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-		    }
-		  else
-		    $$ = NULL_TREE;
-		}
-	;
-
-/* Productions using c99_block_start and c99_block_end will need to do what's
-   in compstmt: RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); $$ = $2; where
-   $1 is the value of c99_block_start and $2 of c99_block_end.  */
-c99_block_end: /* empty */
-                { if (flag_isoc99)
-		    {
-		      tree scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-		      $$ = pop_scope ();
-		      SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt))
-			= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
-			= $$;
-		    }
-		  else
-		    $$ = NULL_TREE; }
+		{ $$ = c_begin_compound_stmt (flag_isoc99); }
 	;
 
 /* Read zero or more forward-declarations for labels
@@ -2092,16 +2038,11 @@ compstmt_or_error:
 	;
 
 compstmt_start: '{' { compstmt_count++;
-                      $$ = c_begin_compound_stmt (); }
+                      $$ = c_begin_compound_stmt (true); }
         ;
 
 compstmt_nostart: '}'
-		{ $$ = convert (void_type_node, integer_zero_node); }
-	| push_scope maybe_label_decls compstmt_contents_nonempty '}' pop_scope
-		{ $$ = pop_scope ();
-		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5))
-		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
-		    = $$; }
+	| maybe_label_decls compstmt_contents_nonempty '}'
 	;
 
 compstmt_contents_nonempty:
@@ -2113,30 +2054,24 @@ compstmt_primary_start:
 	'(' '{'
 		{ if (current_function_decl == 0)
 		    {
-		      error ("braced-group within expression allowed only inside a function");
+		      error ("braced-group within expression allowed "
+			     "only inside a function");
 		      YYERROR;
 		    }
-		  /* We must force a BLOCK for this level
-		     so that, if it is not expanded later,
-		     there is a way to turn off the entire subtree of blocks
-		     that are contained in it.  */
-		  keep_next_level ();
 		  compstmt_count++;
-		  $$ = add_stmt (build_stmt (COMPOUND_STMT, last_tree));
-		  last_expr_type = NULL_TREE;
+		  $$ = c_begin_stmt_expr ();
 		}
         ;
 
 compstmt: compstmt_start compstmt_nostart
-		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
-		  last_expr_type = NULL_TREE;
-                  $$ = $1; }
+		{ add_stmt (c_end_compound_stmt ($1, true));
+		  $$ = NULL_TREE; }
 	;
 
 /* Value is number of statements counted as of the closeparen.  */
 simple_if:
 	  if_prefix c99_block_lineno_labeled_stmt
-                { c_finish_then (); }
+                { c_finish_then ($2); }
 /* Make sure c_expand_end_cond is run once
    for each call to c_expand_start_cond.
    Otherwise a crash is likely.  */
@@ -2179,7 +2114,7 @@ do_stmt_start:
 		  DO_COND ($<ttype>$) = error_mark_node; }
 	  c99_block_lineno_labeled_stmt WHILE
 		{ $$ = $<ttype>2;
-		  RECHAIN_STMTS ($$, DO_BODY ($$));
+		  DO_BODY ($$) = $3;
 		  c_in_iteration_stmt--; }
 	;
 
@@ -2200,14 +2135,24 @@ lineno_labeled_stmt:
 
 /* Like lineno_labeled_stmt, but a block in C99.  */
 c99_block_lineno_labeled_stmt:
-	  c99_block_start lineno_labeled_stmt c99_block_end
-		{ if (flag_isoc99)
-		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); }
+	  c99_block_start lineno_labeled_stmt
+                { $$ = c_end_compound_stmt ($1, flag_isoc99); }
 	;
 
 lineno_stmt:
 	  save_location stmt
-		{ if ($2)
+		{ 
+		  /* Two cases cannot and do not have line numbers associated:
+		     If stmt is degenerate, such as "2;", then stmt is an 
+		     INTEGER_CST, which cannot hold line numbers.  But that's
+		     ok because the statement will either be changed to a
+		     MODIFY_EXPR during gimplification of the statement expr,
+		     or discarded.  If stmt was compound, but without new
+		     variables, we will have skipped the creation of a BIND
+		     and will have a bare STATEMENT_LIST.  But that's ok
+		     because (recursively) all of the component statments
+		     should already have line numbers assigned.  */
+		  if ($2 && EXPR_P ($2))
 		    {
 		      SET_EXPR_LOCUS ($2, NULL);
 		      annotate_with_locus ($2, $1);
@@ -2230,7 +2175,7 @@ select_or_iter_stmt:
 		{ c_expand_start_else ();
 		  $<itype>1 = stmt_count; }
 	  c99_block_lineno_labeled_stmt
-                { c_finish_else ();
+                { c_finish_else ($4);
 		  c_expand_end_cond ();
 		  if (extra_warnings && stmt_count == $<itype>1)
 		    warning ("empty body in an else-statement"); }
@@ -2261,41 +2206,34 @@ select_or_iter_stmt:
 		  $<ttype>$ = c_begin_while_stmt (); }
 	  '(' expr ')'
                 { c_in_iteration_stmt++;
-		  $4 = lang_hooks.truthvalue_conversion ($4);
-		  c_finish_while_stmt_cond
-		    (lang_hooks.truthvalue_conversion ($4), $<ttype>2);
-		  $<ttype>$ = add_stmt ($<ttype>2); }
+		  c_finish_while_stmt_cond ($4, $<ttype>2); }
 	  c99_block_lineno_labeled_stmt
                 { c_in_iteration_stmt--;
-		  RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
+		  c_finish_while_stmt ($7, $<ttype>2); }
 	| do_stmt_start
 	  '(' expr ')' ';'
                 { DO_COND ($1) = lang_hooks.truthvalue_conversion ($3); }
 	| do_stmt_start error
 		{ }
 	| FOR
-		{ $<ttype>$ = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE,
-					  NULL_TREE, NULL_TREE);
-		  add_stmt ($<ttype>$); }
+		{ $<ttype>$ = c_begin_for_stmt (); }
 	  '(' for_init_stmt
 		{ stmt_count++;
-		  RECHAIN_STMTS ($<ttype>2, FOR_INIT_STMT ($<ttype>2)); }
+		  c_finish_for_stmt_init ($<ttype>2); }
 	  xexpr ';'
-                { if ($6)
-		    FOR_COND ($<ttype>2)
-		      = lang_hooks.truthvalue_conversion ($6); }
+                { c_finish_for_stmt_cond ($6, $<ttype>2); }
 	  xexpr ')'
                 { c_in_iteration_stmt++;
-		  FOR_EXPR ($<ttype>2) = $9; }
+		  c_finish_for_stmt_incr ($9, $<ttype>2); }
 	  c99_block_lineno_labeled_stmt
-                { RECHAIN_STMTS ($<ttype>2, FOR_BODY ($<ttype>2));
-		  c_in_iteration_stmt--;}
+                { c_finish_for_stmt ($12, $<ttype>2);
+		  c_in_iteration_stmt--; }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
 		  $<ttype>$ = c_start_case ($3);
 		  c_in_case_stmt++; }
 	  c99_block_lineno_labeled_stmt
-                { c_finish_case ();
+                { c_finish_case ($6);
 		  c_in_case_stmt--; }
 	;
 
@@ -2319,28 +2257,27 @@ stmt:
 	| expr ';'
 		{ stmt_count++;
 		  $$ = c_expand_expr_stmt ($1); }
-	| c99_block_start select_or_iter_stmt c99_block_end
-		{ if (flag_isoc99)
-		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
+	| c99_block_start select_or_iter_stmt
+                { add_stmt (c_end_compound_stmt ($1, flag_isoc99));
 		  $$ = NULL_TREE; }
 	| BREAK ';'
 	        { stmt_count++;
-		if (!(c_in_iteration_stmt || c_in_case_stmt))
-		  {
-		    error ("break statement not within loop or switch");
-		    $$ = NULL_TREE;
-		  }
-		else
-		  $$ = add_stmt (build_break_stmt ()); }
+		  if (!(c_in_iteration_stmt || c_in_case_stmt))
+		    {
+		      error ("break statement not within loop or switch");
+		      $$ = NULL_TREE;
+		    }
+		  else
+		    $$ = add_stmt (build_break_stmt ()); }
 	| CONTINUE ';'
                 { stmt_count++;
-		if (!c_in_iteration_stmt)
-		  {
-		    error ("continue statement not within a loop");
-		    $$ = NULL_TREE;
-		  }
-		else
-		  $$ = add_stmt (build_continue_stmt ()); }
+		  if (!c_in_iteration_stmt)
+		    {
+		      error ("continue statement not within a loop");
+		      $$ = NULL_TREE;
+		    }
+		  else
+		    $$ = add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
                 { stmt_count++;
 		  $$ = c_expand_return (NULL_TREE); }

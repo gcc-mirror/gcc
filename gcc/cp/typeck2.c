@@ -293,13 +293,10 @@ cxx_incomplete_type_error (tree value, tree type)
 
 
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
-   expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
-   PCODE is a pointer to the tail of a chain of statements being emitted.
-   The return value is the new tail of that chain after new statements
-   are generated.  */
+   expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.  */
 
-static tree *
-split_nonconstant_init_1 (tree dest, tree init, tree *pcode)
+static void
+split_nonconstant_init_1 (tree dest, tree init)
 {
   tree *pelt, elt, type = TREE_TYPE (dest);
   tree sub, code, inner_type = NULL;
@@ -331,7 +328,7 @@ split_nonconstant_init_1 (tree dest, tree init, tree *pcode)
 	      else
 	        sub = build (COMPONENT_REF, inner_type, dest, field_index);
 
-	      pcode = split_nonconstant_init_1 (sub, value, pcode);
+	      split_nonconstant_init_1 (sub, value);
 	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
@@ -344,11 +341,10 @@ split_nonconstant_init_1 (tree dest, tree init, tree *pcode)
 
 	      code = build (MODIFY_EXPR, inner_type, sub, value);
 	      code = build_stmt (EXPR_STMT, code);
-
-	      *pcode = code;
-	      pcode = &TREE_CHAIN (code);
+	      add_stmt (code);
 	      continue;
 	    }
+
 	  pelt = &TREE_CHAIN (elt);
 	}
       break;
@@ -359,15 +355,13 @@ split_nonconstant_init_1 (tree dest, tree init, tree *pcode)
 	  CONSTRUCTOR_ELTS (init) = NULL;
 	  code = build (MODIFY_EXPR, type, dest, init);
 	  code = build_stmt (EXPR_STMT, code);
-	  pcode = &TREE_CHAIN (code);
+	  add_stmt (code);
 	}
       break;
 
     default:
       abort ();
     }
-
-  return pcode;
 }
 
 /* A subroutine of store_init_value.  Splits non-constant static 
@@ -382,10 +376,9 @@ split_nonconstant_init (tree dest, tree init)
 
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      code = build_stmt (COMPOUND_STMT, NULL_TREE);
-      split_nonconstant_init_1 (dest, init, &COMPOUND_BODY (code));
-      code = build1 (STMT_EXPR, void_type_node, code);
-      TREE_SIDE_EFFECTS (code) = 1;
+      code = push_stmt_list ();
+      split_nonconstant_init_1 (dest, init);
+      code = pop_stmt_list (code);
       DECL_INITIAL (dest) = init;
       TREE_READONLY (dest) = 0;
     }

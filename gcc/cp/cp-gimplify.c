@@ -39,7 +39,7 @@ static void cp_gimplify_init_expr (tree *, tree *, tree *);
 /* Genericize a C++ _STMT.  Called from c_gimplify_stmt.  */
 
 int
-cp_gimplify_stmt (tree *stmt_p, tree *next_p ATTRIBUTE_UNUSED)
+cp_gimplify_stmt (tree *stmt_p)
 {
   tree stmt = *stmt_p;
   switch (TREE_CODE (stmt))
@@ -76,12 +76,12 @@ genericize_try_block (tree *stmt_p)
   tree body = TRY_STMTS (*stmt_p);
   tree cleanup = TRY_HANDLERS (*stmt_p);
 
-  c_gimplify_stmt (&body);
+  gimplify_stmt (&body);
 
   if (CLEANUP_P (*stmt_p))
     /* A cleanup is an expression, so it doesn't need to be genericized.  */;
   else
-    c_gimplify_stmt (&cleanup);
+    gimplify_stmt (&cleanup);
 
   *stmt_p = build (TRY_CATCH_EXPR, void_type_node, body, cleanup);
 }
@@ -94,7 +94,7 @@ genericize_catch_block (tree *stmt_p)
   tree type = HANDLER_TYPE (*stmt_p);
   tree body = HANDLER_BODY (*stmt_p);
 
-  c_gimplify_stmt (&body);
+  gimplify_stmt (&body);
 
   /* FIXME should the caught type go in TREE_TYPE?  */
   *stmt_p = build (CATCH_EXPR, void_type_node, type, body);
@@ -111,7 +111,7 @@ genericize_eh_spec_block (tree *stmt_p)
   tree failure = build_call (call_unexpected_node,
 			     tree_cons (NULL_TREE, build_exc_ptr (),
 					NULL_TREE));
-  c_gimplify_stmt (&body);
+  gimplify_stmt (&body);
 
   *stmt_p = gimple_build_eh_filter (body, allowed, failure);
 }
@@ -182,16 +182,8 @@ cp_gimplify_init_expr (tree *expr_p, tree *pre_p, tree *post_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     from = TARGET_EXPR_INITIAL (from);
 
-  sub = from;
-
-  /* If we are initializing from a STMT_EXPR, extract the returned
-     expression.  */
-  if (TREE_CODE (from) == STMT_EXPR)
-    sub = EXPR_STMT_EXPR (stmt_expr_last_stmt (from));
-
   /* Look through any COMPOUND_EXPRs.  */
-  while (TREE_CODE (sub) == COMPOUND_EXPR)
-    sub = TREE_OPERAND (sub, 1);
+  sub = expr_last (from);
 
   /* If we are initializing from an AGGR_INIT_EXPR, drop the INIT_EXPR and
      replace the slot operand with our target.
@@ -205,8 +197,7 @@ cp_gimplify_init_expr (tree *expr_p, tree *pre_p, tree *post_p)
       *expr_p = from;
 
       /* The initialization is now a side-effect, so the container can
-         become void.  This is important for a STMT_EXPR, so we don't try
-         to voidify it later by creating a temporary.  */
+         become void.  */
       if (from != sub)
 	TREE_TYPE (from) = void_type_node;
     }
@@ -218,7 +209,7 @@ static void
 gimplify_must_not_throw_expr (tree *expr_p, tree *pre_p)
 {
   tree stmt = *expr_p;
-  tree temp = voidify_wrapper_expr (stmt);
+  tree temp = voidify_wrapper_expr (stmt, NULL);
   tree body = TREE_OPERAND (stmt, 0);
 
   gimplify_stmt (&body);

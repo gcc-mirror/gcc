@@ -8,7 +8,7 @@ void foo()
   long x = 3;
   (void)({
     A = B + x + ((1) - 1);
-    return;	/* { dg-warning "statement-expressions should end with a non-void expression" } */
+    return;	/* { dg-warning "statement-expressions should end with a non-void expression" "" { xfail *-*-* } } */
   });
 }
 

@@ -1,3 +1,111 @@
+2004-06-15  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (lang_gimplify_stmt): Remove next_p argument.
+	(if_elt, if_stack, if_stack_space, c_expand_start_cond, c_finish_then,
+	c_expand_end_cond, c_expand_start_else, c_finish_else, c_begin_if_stmt,
+	c_begin_while_stmt, c_finish_while_stmt_cond): Move to c-typeck.c.
+	(finish_fname_decls, fname_decl): Use statement_lists.
+	(c_expand_expr_stmt): Don't set last_expr_type.
+	(c_type_hash): Fix indentation.
+	(c_safe_from_p): Don't follow TREE_CHAIN.
+	(c_tree_chain_matters_p): Remove.
+	* c-common.def (SCOPE_STMT): Remove.
+	(CLEANUP_STMT): Redefine to contain its own body.
+	* c-common.h (struct stmt_tree_s): Remove x_last_stmt,
+	x_last_expr_type, x_last_expr_filename, x_scope_stmt_stack.
+	Add x_cur_stmt_list.
+	(last_tree, last_expr_type, last_expr_filename, RECHAIN_STMTS): Remove.
+	(cur_stmt_list): New.
+	(STATEMENT_LIST_STMT_EXPR): New.
+	(SCOPE_BEGIN_P, SCOPE_END_P, SCOPE_STMT_BLOCK, SCOPE_NULLIFIED_P,
+	SCOPE_NO_CLEANUPS_P, SCOPE_PARTIAL_P, NEW_FOR_SCOPE_P): Remove.
+	(CLEANUP_BODY): New.
+	(CLEANUP_DECL): Move to operand 2.
+	(c_common_stmt_codes): Remove SCOPE_STMT.
+	(COMPOUND_STMT_NO_SCOPE, COMPOUND_STMT_BODY_BLOCK): Remove.
+	* c-decl.c (c_scope_stmt_stack, current_scope_stmt_stack): Remove.
+	(c_push_function_context, c_pop_function_context): Don't save it.
+	(finish_decl): Set TREE_USED on the decl for a cleanup.
+	Use push_cleanup.
+	(store_parm_decls): Use statement lists.
+	(finish_function): Remove compstmt rule workaround.  Use statement
+	lists.  Call finish_fname_decls after finalizing the body.
+	(c_begin_compound_stmt): Move to c-typeck.c.
+	* c-dump.c (c_dump_tree): Remove SCOPE_STMT.
+	* c-gimplify.c (gimplify_cleanup_stmt, gimplify_cleanup_stmts): New.
+	(c_genericize): Invoke them.
+	(c_gimplify_stmt): Don't look through TREE_CHAIN.  Kill SCOPE_STMT.
+	(c_build_bind_expr): Export.
+	(gimplify_block, gimplify_cleanup): Remove.
+	(gimplify_condition): Use gimplify_stmt.
+	(gimplify_for_stmt): Remove FOR_INIT_STMT chaining hack.
+	(gimplify_if_stmt): Remove recursion hack.
+	(c_gimplify_expr): Remove STMT_EXPR handling.
+	(stmt_expr_last_stmt, gimplify_stmt_expr): Remove.
+	(is_last_stmt_of_scope): Remove.
+	* c-lang.c (LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P): Remove.
+	* c-mudflap.c (mflang_flush_calls): Use c_begin_compound_stmt,
+	c_end_compound_stmt.
+	* c-objc-common.c (build_cdtor): Likewise.
+	* c-parse.in (primary): Use c_finish_stmt_expr.
+	(push_scope, pop_scope): Remove.
+	(c99_block_start, compstmt_start): Use c_begin_compound_stmt.
+	(c99_block_end, compstmt): Use c_end_compound_stmt.
+	(c99_block_lineno_labeled_stmt): Likewise.
+	(compstmt_primary_start): Use c_begin_stmt_expr.
+	(simple_if, select_or_iter_stmt): Update calls to stmt builders.
+	(do_stmt_start): Fill in body directly.
+	(lineno_stmt): Avoid setting lineno on constants.
+	* c-pretty-print.c (pp_c_statement): Handle STATEMENT_LIST.
+	Remove SCOPE_STMT.
+	* c-semantics.c (begin_stmt_tree): Remove.
+	(push_stmt_list, re_push_stmt_list, pop_stmt_list): New.
+	(add_stmt): Use statement lists.
+	(add_scope_stmt, finish_stmt_tree): Remove.
+	(push_cleanup): New.
+	* c-tree.h: Move some decls from c-common.h.
+	* c-typeck.c (c_tree_expr_nonnegative_p): Simplify for statement lists.
+	(do_case, c_finish_case): Likewise.
+	(c_finish_then): Take body for then as argument.
+	(c_finish_else): Similarly.
+	(c_begin_for_stmt, c_finish_for_stmt_init, c_finish_for_stmt_cond,
+	c_finish_for_stmt_incr, c_finish_for_stmt): New.
+	(c_begin_stmt_expr, c_finish_stmt_expr): New.
+	(c_begin_compound_stmt): Do scope management.
+	(c_end_compound_stmt): New.
+	* fold-const.c (tree_expr_nonnegative_p): Fix BIND_EXPR.
+	* gimplify.c (voidify_wrapper_expr): Accept temporary argument.
+	Look through exception handling constructs.
+	(gimplify_bind_expr): Accept temporary argument.
+	(gimplify_target_expr): Special case BIND_EXPR bodies.
+	(gimplify_expr): Handle fallback == fb_none like a statement.
+	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P): Kill.
+	* langhooks.c (lhd_tree_inlining_tree_chain_matters_p): Remove.
+	* langhooks.h (tree_chain_matters_p): Remove.
+	* stub-objc.c (objc_clear_super_receiver): New.
+	* tree-gimple.h (voidify_wrapper_expr): Update decl.
+	(append_to_statement_list, append_to_statement_list_force): Move
+	to tree-iterator.h.
+	* tree-inline.c (expand_call_inline): Update call.
+	(clone_body): Use statement lists.
+	(walk_tree): Don't check tree_chain_matters_p.
+	(copy_tree_r): Likewise.
+	* tree-iterator.c (alloc_stmt_list): Clear lang bits.
+	(tsi_link_before, tsi_link_after): Set TREE_SIDE_EFFECTS properly.
+	* tree-iterator.h (append_to_statement_list,
+	append_to_statement_list_force): Moved from tree-gimple.h.
+	* tree-pretty-print.c (dump_generic_node): Clean up TARGET_EXPR dump.
+	* objc/objc-act.c (build_module_descriptor): Use c_begin_compound_stmt.
+	(objc_enter_block): Likewise.
+	(objc_exit_block): Use c_end_compound_stmt.
+	(objc_build_try_enter_fragment): Add #error and comment for
+	rewriting for OBJCPLUS.
+	(objc_build_extract_fragment, objc_build_try_epilogue,
+	objc_build_catch_stmt, objc_build_finally_prologue,
+	objc_build_finally_epilogue): Update for C statement builders.
+	* objc/objc-lang.c (LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P):
+	Remove.
+
 2004-06-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* df.c (df_reg_clobber_gen): Removed.

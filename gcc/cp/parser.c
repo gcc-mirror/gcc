@@ -1415,15 +1415,15 @@ static tree cp_parser_builtin_offsetof
 /* Statements [gram.stmt.stmt]  */
 
 static void cp_parser_statement
-  (cp_parser *, bool);
+  (cp_parser *, tree);
 static tree cp_parser_labeled_statement
-  (cp_parser *, bool);
+  (cp_parser *, tree);
 static tree cp_parser_expression_statement
-  (cp_parser *, bool);
+  (cp_parser *, tree);
 static tree cp_parser_compound_statement
-  (cp_parser *, bool);
+  (cp_parser *, tree, bool);
 static void cp_parser_statement_seq_opt
-  (cp_parser *, bool);
+  (cp_parser *, tree);
 static tree cp_parser_selection_statement
   (cp_parser *);
 static tree cp_parser_condition
@@ -2542,7 +2542,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Start the statement-expression.  */
 	    expr = begin_stmt_expr ();
 	    /* Parse the compound-statement.  */
-	    cp_parser_compound_statement (parser, true);
+	    cp_parser_compound_statement (parser, expr, false);
 	    /* Finish up.  */
 	    expr = finish_stmt_expr (expr, false);
 	  }
@@ -5615,7 +5615,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
      try-block  */
 
 static void
-cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
+cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 {
   tree statement;
   cp_token *token;
@@ -5638,7 +5638,7 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
 	case RID_CASE:
 	case RID_DEFAULT:
 	  statement = cp_parser_labeled_statement (parser,
-						   in_statement_expr_p);
+						   in_statement_expr);
 	  break;
 
 	case RID_IF:
@@ -5675,11 +5675,11 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
 	 labeled-statement.  */
       token = cp_lexer_peek_nth_token (parser->lexer, 2);
       if (token->type == CPP_COLON)
-	statement = cp_parser_labeled_statement (parser, in_statement_expr_p);
+	statement = cp_parser_labeled_statement (parser, in_statement_expr);
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, false);
+    statement = cp_parser_compound_statement (parser, NULL, false);
 
   /* Everything else must be a declaration-statement or an
      expression-statement.  Try for the declaration-statement
@@ -5697,7 +5697,7 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
 	    return;
 	}
       /* Look for an expression-statement instead.  */
-      statement = cp_parser_expression_statement (parser, in_statement_expr_p);
+      statement = cp_parser_expression_statement (parser, in_statement_expr);
     }
 
   /* Set the line number for the statement.  */
@@ -5724,7 +5724,7 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
    an ordinary label, returns a LABEL_STMT.  */
 
 static tree
-cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
+cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
 {
   cp_token *token;
   tree statement = error_mark_node;
@@ -5792,7 +5792,7 @@ cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
   /* Require the `:' token.  */
   cp_parser_require (parser, CPP_COLON, "`:'");
   /* Parse the labeled statement.  */
-  cp_parser_statement (parser, in_statement_expr_p);
+  cp_parser_statement (parser, in_statement_expr);
 
   /* Return the label, in the case of a `case' or `default' label.  */
   return statement;
@@ -5809,7 +5809,7 @@ cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
    expression statement.  */
 
 static tree
-cp_parser_expression_statement (cp_parser* parser, bool in_statement_expr_p)
+cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 {
   tree statement = NULL_TREE;
 
@@ -5821,12 +5821,12 @@ cp_parser_expression_statement (cp_parser* parser, bool in_statement_expr_p)
   /* Consume the final `;'.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  if (in_statement_expr_p
+  if (in_statement_expr
       && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
     {
       /* This is the final expression statement of a statement
 	 expression.  */
-      statement = finish_stmt_expr_expr (statement);
+      statement = finish_stmt_expr_expr (statement, in_statement_expr);
     }
   else if (statement)
     statement = finish_expr_stmt (statement);
@@ -5844,7 +5844,8 @@ cp_parser_expression_statement (cp_parser* parser, bool in_statement_expr_p)
    Returns a COMPOUND_STMT representing the statement.  */
 
 static tree
-cp_parser_compound_statement (cp_parser *parser, bool in_statement_expr_p)
+cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
+			      bool in_try)
 {
   tree compound_stmt;
 
@@ -5852,9 +5853,9 @@ cp_parser_compound_statement (cp_parser *parser, bool in_statement_expr_p)
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, "`{'"))
     return error_mark_node;
   /* Begin the compound-statement.  */
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+  compound_stmt = begin_compound_stmt (in_try ? BCS_TRY_BLOCK : 0);
   /* Parse an (optional) statement-seq.  */
-  cp_parser_statement_seq_opt (parser, in_statement_expr_p);
+  cp_parser_statement_seq_opt (parser, in_statement_expr);
   /* Finish the compound-statement.  */
   finish_compound_stmt (compound_stmt);
   /* Consume the `}'.  */
@@ -5870,7 +5871,7 @@ cp_parser_compound_statement (cp_parser *parser, bool in_statement_expr_p)
      statement-seq [opt] statement  */
 
 static void
-cp_parser_statement_seq_opt (cp_parser* parser, bool in_statement_expr_p)
+cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
 {
   /* Scan statements until there aren't any more.  */
   while (true)
@@ -5881,7 +5882,7 @@ cp_parser_statement_seq_opt (cp_parser* parser, bool in_statement_expr_p)
 	break;
 
       /* Parse the statement.  */
-      cp_parser_statement (parser, in_statement_expr_p);
+      cp_parser_statement (parser, in_statement_expr);
     }
 }
 
@@ -5935,35 +5936,30 @@ cp_parser_selection_statement (cp_parser* parser)
 
 	if (keyword == RID_IF)
 	  {
-	    tree then_stmt;
-
 	    /* Add the condition.  */
 	    finish_if_stmt_cond (condition, statement);
 
 	    /* Parse the then-clause.  */
-	    then_stmt = cp_parser_implicitly_scoped_statement (parser);
+	    cp_parser_implicitly_scoped_statement (parser);
 	    finish_then_clause (statement);
 
 	    /* If the next token is `else', parse the else-clause.  */
 	    if (cp_lexer_next_token_is_keyword (parser->lexer,
 						RID_ELSE))
 	      {
-		tree else_stmt;
-
 		/* Consume the `else' keyword.  */
 		cp_lexer_consume_token (parser->lexer);
+		begin_else_clause (statement);
 		/* Parse the else-clause.  */
-		else_stmt
-		  = cp_parser_implicitly_scoped_statement (parser);
+		cp_parser_implicitly_scoped_statement (parser);
 		finish_else_clause (statement);
 	      }
 
 	    /* Now we're all done with the if-statement.  */
-	    finish_if_stmt ();
+	    finish_if_stmt (statement);
 	  }
 	else
 	  {
-	    tree body;
 	    bool in_switch_statement_p;
 
 	    /* Add the condition.  */
@@ -5972,7 +5968,7 @@ cp_parser_selection_statement (cp_parser* parser)
 	    /* Parse the body of the switch-statement.  */
 	    in_switch_statement_p = parser->in_switch_statement_p;
 	    parser->in_switch_statement_p = true;
-	    body = cp_parser_implicitly_scoped_statement (parser);
+	    cp_parser_implicitly_scoped_statement (parser);
 	    parser->in_switch_statement_p = in_switch_statement_p;
 
 	    /* Now we're all done with the switch-statement.  */
@@ -6365,7 +6361,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
     {
       /* Create a compound-statement.  */
-      statement = begin_compound_stmt (/*has_no_scope=*/false);
+      statement = begin_compound_stmt (0);
       /* Parse the dependent-statement.  */
       cp_parser_statement (parser, false);
       /* Finish the dummy compound-statement.  */
@@ -6373,7 +6369,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
     }
   /* Otherwise, we simply parse the statement directly.  */
   else
-    statement = cp_parser_compound_statement (parser, false);
+    statement = cp_parser_compound_statement (parser, NULL, false);
 
   /* Return the statement.  */
   return statement;
@@ -6387,21 +6383,17 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
 static void
 cp_parser_already_scoped_statement (cp_parser* parser)
 {
-  /* If the token is not a `{', then we must take special action.  */
-  if (cp_lexer_next_token_is_not(parser->lexer, CPP_OPEN_BRACE))
-    {
-      tree statement;
-
-      /* Create a compound-statement.  */
-      statement = begin_compound_stmt (/*has_no_scope=*/true);
-      /* Parse the dependent-statement.  */
-      cp_parser_statement (parser, false);
-      /* Finish the dummy compound-statement.  */
-      finish_compound_stmt (statement);
-    }
-  /* Otherwise, we simply parse the statement directly.  */
-  else
+  /* If the token is a `{', then we must take special action.  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
     cp_parser_statement (parser, false);
+  else
+    {
+      /* Avoid calling cp_parser_compound_statement, so that we
+	 don't create a new scope.  Do everything else by hand.  */
+      cp_parser_require (parser, CPP_OPEN_BRACE, "`{'");
+      cp_parser_statement_seq_opt (parser, false);
+      cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
+    }
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -11618,7 +11610,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 static void
 cp_parser_function_body (cp_parser *parser)
 {
-  cp_parser_compound_statement (parser, false);
+  cp_parser_compound_statement (parser, NULL, false);
 }
 
 /* Parse a ctor-initializer-opt followed by a function-body.  Return
@@ -13265,7 +13257,7 @@ cp_parser_try_block (cp_parser* parser)
 
   cp_parser_require_keyword (parser, RID_TRY, "`try'");
   try_block = begin_try_block ();
-  cp_parser_compound_statement (parser, false);
+  cp_parser_compound_statement (parser, NULL, true);
   finish_try_block (try_block);
   cp_parser_handler_seq (parser);
   finish_handler_sequence (try_block);
@@ -13341,7 +13333,7 @@ cp_parser_handler (cp_parser* parser)
   declaration = cp_parser_exception_declaration (parser);
   finish_handler_parms (declaration, handler);
   cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
-  cp_parser_compound_statement (parser, false);
+  cp_parser_compound_statement (parser, NULL, false);
   finish_handler (handler);
 }
 

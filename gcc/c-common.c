@@ -690,7 +690,7 @@ int (*lang_statement_code_p) (enum tree_code);
 /* If non-NULL, the address of a language-specific function that does any
    language-specific gimplification for _STMT nodes and returns 1 iff
    handled.  */
-int (*lang_gimplify_stmt) (tree *, tree *);
+int (*lang_gimplify_stmt) (tree *);
 
 /* If non-NULL, the address of a language-specific function that takes
    any action required right before expand_function_end is called.  */
@@ -722,27 +722,6 @@ const struct fname_var_t fname_vars[] =
 };
 
 static int constant_fits_type_p (tree, tree);
-
-/* Keep a stack of if statements.  We record the number of compound
-   statements seen up to the if keyword, as well as the line number
-   and file of the if.  If a potentially ambiguous else is seen, that
-   fact is recorded; the warning is issued when we can be sure that
-   the enclosing if statement does not have an else branch.  */
-typedef struct
-{
-  int compstmt_count;
-  location_t locus;
-  int needs_warning;
-  tree if_stmt;
-} if_elt;
-
-static if_elt *if_stack;
-
-/* Amount of space in the if statement stack.  */
-static int if_stack_space = 0;
-
-/* Stack pointer.  */
-static int if_stack_pointer = 0;
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -876,131 +855,6 @@ const struct attribute_spec c_common_format_attribute_table[] =
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
-/* Record the start of an if-then, and record the start of it
-   for ambiguous else detection.
-
-   COND is the condition for the if-then statement.
-
-   IF_STMT is the statement node that has already been created for
-   this if-then statement.  It is created before parsing the
-   condition to keep line number information accurate.  */
-
-void
-c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
-{
-  /* Make sure there is enough space on the stack.  */
-  if (if_stack_space == 0)
-    {
-      if_stack_space = 10;
-      if_stack = xmalloc (10 * sizeof (if_elt));
-    }
-  else if (if_stack_space == if_stack_pointer)
-    {
-      if_stack_space += 10;
-      if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
-    }
-
-  IF_COND (if_stmt) = cond;
-  add_stmt (if_stmt);
-
-  /* Record this if statement.  */
-  if_stack[if_stack_pointer].compstmt_count = compstmt_count;
-  if_stack[if_stack_pointer].locus = input_location;
-  if_stack[if_stack_pointer].needs_warning = 0;
-  if_stack[if_stack_pointer].if_stmt = if_stmt;
-  if_stack_pointer++;
-}
-
-/* Called after the then-clause for an if-statement is processed.  */
-
-void
-c_finish_then (void)
-{
-  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
-  RECHAIN_STMTS (if_stmt, THEN_CLAUSE (if_stmt));
-}
-
-/* Record the end of an if-then.  Optionally warn if a nested
-   if statement had an ambiguous else clause.  */
-
-void
-c_expand_end_cond (void)
-{
-  if_stack_pointer--;
-  if (if_stack[if_stack_pointer].needs_warning)
-    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
-	     &if_stack[if_stack_pointer].locus);
-  last_expr_type = NULL_TREE;
-}
-
-/* Called between the then-clause and the else-clause
-   of an if-then-else.  */
-
-void
-c_expand_start_else (void)
-{
-  /* An ambiguous else warning must be generated for the enclosing if
-     statement, unless we see an else branch for that one, too.  */
-  if (warn_parentheses
-      && if_stack_pointer > 1
-      && (if_stack[if_stack_pointer - 1].compstmt_count
-	  == if_stack[if_stack_pointer - 2].compstmt_count))
-    if_stack[if_stack_pointer - 2].needs_warning = 1;
-
-  /* Even if a nested if statement had an else branch, it can't be
-     ambiguous if this one also has an else.  So don't warn in that
-     case.  Also don't warn for any if statements nested in this else.  */
-  if_stack[if_stack_pointer - 1].needs_warning = 0;
-  if_stack[if_stack_pointer - 1].compstmt_count--;
-}
-
-/* Called after the else-clause for an if-statement is processed.  */
-
-void
-c_finish_else (void)
-{
-  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
-  RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
-}
-
-/* Begin an if-statement.  Returns a newly created IF_STMT if
-   appropriate.
-
-   Unlike the C++ front-end, we do not call add_stmt here; it is
-   probably safe to do so, but I am not very familiar with this
-   code so I am being extra careful not to change its behavior
-   beyond what is strictly necessary for correctness.  */
-
-tree
-c_begin_if_stmt (void)
-{
-  tree r;
-  r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
-  return r;
-}
-
-/* Begin a while statement.  Returns a newly created WHILE_STMT if
-   appropriate.
-
-   Unlike the C++ front-end, we do not call add_stmt here; it is
-   probably safe to do so, but I am not very familiar with this
-   code so I am being extra careful not to change its behavior
-   beyond what is strictly necessary for correctness.  */
-
-tree
-c_begin_while_stmt (void)
-{
-  tree r;
-  r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
-  return r;
-}
-
-void
-c_finish_while_stmt_cond (tree cond, tree while_stmt)
-{
-  WHILE_COND (while_stmt) = cond;
-}
-
 /* Push current bindings for the function name VAR_DECLS.  */
 
 void
@@ -1026,43 +880,32 @@ start_fname_decls (void)
 					   saved_function_name_decls);
 }
 
-/* Finish up the current bindings, adding them into the
-   current function's statement tree. This is done by wrapping the
-   function's body in a COMPOUND_STMT containing these decls too. This
-   must be done _before_ finish_stmt_tree is called. If there is no
-   current function, we must be at file scope and no statements are
-   involved. Pop the previous bindings.  */
+/* Finish up the current bindings, adding them into the current function's
+   statement tree.  This must be done _before_ finish_stmt_tree is called.
+   If there is no current function, we must be at file scope and no statements
+   are involved. Pop the previous bindings.  */
 
 void
 finish_fname_decls (void)
 {
   unsigned ix;
-  tree body = NULL_TREE;
+  tree stmts = NULL_TREE;
   tree stack = saved_function_name_decls;
 
   for (; stack && TREE_VALUE (stack); stack = TREE_CHAIN (stack))
-    body = chainon (TREE_VALUE (stack), body);
+    append_to_statement_list (TREE_VALUE (stack), &stmts);
 
-  if (body)
+  if (stmts)
     {
-      /* They were called into existence, so add to statement tree.  Add
-	 the DECL_STMTs inside the outermost scope.  */
-      tree *p = &DECL_SAVED_TREE (current_function_decl);
-      /* Skip the dummy EXPR_STMT and any EH_SPEC_BLOCK.  */
-      while (TREE_CODE (*p) != COMPOUND_STMT)
-       {
-         if (TREE_CODE (*p) == EXPR_STMT)
-           p = &TREE_CHAIN (*p);
-         else
-           p = &TREE_OPERAND(*p, 0);
-       }
+      tree *bodyp = &DECL_SAVED_TREE (current_function_decl);
 
-      p = &COMPOUND_BODY (*p);
-      if (TREE_CODE (*p) == SCOPE_STMT)
-	p = &TREE_CHAIN (*p);
+      if (TREE_CODE (*bodyp) == COMPOUND_STMT)
+	bodyp = &COMPOUND_BODY (*bodyp);
+      if (TREE_CODE (*bodyp) == BIND_EXPR)
+	bodyp = &BIND_EXPR_BODY (*bodyp);
 
-      body = chainon (body, *p);
-      *p = body;
+      append_to_statement_list (*bodyp, &stmts);
+      *bodyp = stmts;
     }
 
   for (ix = 0; fname_vars[ix].decl; ix++)
@@ -1167,30 +1010,23 @@ fname_decl (unsigned int rid, tree id)
   decl = *fname_vars[ix].decl;
   if (!decl)
     {
-      tree saved_last_tree = last_tree;
       /* If a tree is built here, it would normally have the lineno of
 	 the current statement.  Later this tree will be moved to the
 	 beginning of the function and this line number will be wrong.
 	 To avoid this problem set the lineno to 0 here; that prevents
 	 it from appearing in the RTL.  */
-      int saved_lineno = input_line;
+      tree stmts;
+      location_t saved_locus = input_location;
       input_line = 0;
 
+      stmts = push_stmt_list ();
       decl = (*make_fname_decl) (id, fname_vars[ix].pretty);
-      if (last_tree != saved_last_tree)
-	{
-	  /* We created some statement tree for the decl. This belongs
-	     at the start of the function, so remove it now and reinsert
-	     it after the function is complete.  */
-	  tree stmts = TREE_CHAIN (saved_last_tree);
-
-	  TREE_CHAIN (saved_last_tree) = NULL_TREE;
-	  last_tree = saved_last_tree;
-	  saved_function_name_decls = tree_cons (decl, stmts,
-						 saved_function_name_decls);
-	}
+      stmts = pop_stmt_list (stmts);
+      if (!IS_EMPTY_STMT (stmts))
+	saved_function_name_decls
+	  = tree_cons (decl, stmts, saved_function_name_decls);
       *fname_vars[ix].decl = decl;
-      input_line = saved_lineno;
+      input_location = saved_locus;
     }
   if (!ix && !current_function_decl)
     pedwarn ("%J'%D' is not defined outside of function scope", decl, decl);
@@ -1790,7 +1626,11 @@ c_expand_expr_stmt (tree expr)
       && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
     error ("expression statement has incomplete type");
 
-  last_expr_type = TREE_TYPE (expr);
+  /* As tempting as it might be, we can't diagnose statement with no
+     effect yet.  We have to wait until after statement expressions
+     have been parsed, and that process modifies the trees we are
+     creating here.  */
+
   return add_stmt (build_stmt (EXPR_STMT, expr));
 }
 
@@ -2855,28 +2695,28 @@ c_type_hash (const void *p)
   tree t2;
   switch (TREE_CODE (t))
     {
-      /* For pointers, hash on pointee type plus some swizzling.  */
-      case POINTER_TYPE:
-  return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
-      /* Hash on number of elements and total size.  */
-      case ENUMERAL_TYPE:
-  shift = 3;
-  t2 = TYPE_VALUES (t);
-  break;
-      case RECORD_TYPE:
-  shift = 0;
-  t2 = TYPE_FIELDS (t);
-  break;
-      case QUAL_UNION_TYPE:
-  shift = 1;
-  t2 = TYPE_FIELDS (t);
-  break;
-      case UNION_TYPE:
-  shift = 2;
-  t2 = TYPE_FIELDS (t);
-  break;
-      default:
-  abort ();
+    /* For pointers, hash on pointee type plus some swizzling. */
+    case POINTER_TYPE:
+      return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
+    /* Hash on number of elements and total size.  */
+    case ENUMERAL_TYPE:
+      shift = 3;
+      t2 = TYPE_VALUES (t);
+      break;
+    case RECORD_TYPE:
+      shift = 0;
+      t2 = TYPE_FIELDS (t);
+      break;
+    case QUAL_UNION_TYPE:
+      shift = 1;
+      t2 = TYPE_FIELDS (t);
+      break;
+    case UNION_TYPE:
+      shift = 2;
+      t2 = TYPE_FIELDS (t);
+      break;
+    default:
+      abort ();
     }
   for (; t2; t2 = TREE_CHAIN (t2))
     i++;
@@ -4286,10 +4126,6 @@ c_safe_from_p (rtx target, tree exp)
 	  && !safe_from_p (target, DECL_INITIAL (decl), /*top_p=*/0))
 	return 0;
     }
-
-  /* For any statement, we must follow the statement-chain.  */
-  if (STATEMENT_CODE_P (TREE_CODE (exp)) && TREE_CHAIN (exp))
-    return safe_from_p (target, TREE_CHAIN (exp), /*top_p=*/0);
 
   /* Assume everything else is safe.  */
   return 1;
@@ -5725,18 +5561,6 @@ c_walk_subtrees (tree *tp, int *walk_subtrees_p ATTRIBUTE_UNUSED,
   return result;
 
 #undef WALK_SUBTREE
-}
-
-/* C implementation of lang_hooks.tree_inlining.tree_chain_matters_p.
-   Apart from TREE_LISTs, the only trees whose TREE_CHAIN we care about are
-   _STMT nodes.  */
-
-int
-c_tree_chain_matters_p (tree t)
-{
-  /* For statements, we also walk the chain so that we cover the
-     entire statement tree.  */
-  return STATEMENT_CODE_P (TREE_CODE (t));
 }
 
 /* Function to help qsort sort FIELD_DECLs by name order.  */

@@ -169,19 +169,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_next_stmt (di, t);
       break;
 
-    case SCOPE_STMT:
-      dump_stmt (di, t);
-      if (SCOPE_BEGIN_P (t))
-	dump_string (di, "begn");
-      else
-	dump_string (di, "end");
-      if (SCOPE_NULLIFIED_P (t))
-	dump_string (di, "null");
-      if (!SCOPE_NO_CLEANUPS_P (t))
-	dump_string (di, "clnp");
-      dump_next_stmt (di, t);
-      break;
-
     case STMT_EXPR:
       dump_child ("stmt", STMT_EXPR_STMT (t));
       break;

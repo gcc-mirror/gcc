@@ -6362,9 +6362,9 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
    the VAR_DECL being initialized with the EXPR.  (In that case, the
    type of DECL will be TYPE.)  If DECL is non-NULL, then CLEANUP must
    also be non-NULL, and with *CLEANUP initialized to NULL.  Upon
-   return, if *CLEANUP is no longer NULL, it will be a CLEANUP_STMT
-   that should be inserted after the returned expression is used to
-   initialize DECL.
+   return, if *CLEANUP is no longer NULL, it will be an expression
+   that should be pushed as a cleanup after the returned expression
+   is used to initialize DECL.
 
    Return the converted expression.  */
 
@@ -6485,26 +6485,25 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	    {
 	      add_decl_stmt (var);
 	      *cleanup = cxx_maybe_build_cleanup (var);
-	      if (*cleanup)
-		/* We must be careful to destroy the temporary only
-		   after its initialization has taken place.  If the
-		   initialization throws an exception, then the
-		   destructor should not be run.  We cannot simply
-		   transform INIT into something like:
+
+	      /* We must be careful to destroy the temporary only
+		 after its initialization has taken place.  If the
+		 initialization throws an exception, then the
+		 destructor should not be run.  We cannot simply
+		 transform INIT into something like:
 	     
 		     (INIT, ({ CLEANUP_STMT; }))
 
-		   because emit_local_var always treats the
-		   initializer as a full-expression.  Thus, the
-		   destructor would run too early; it would run at the
-		   end of initializing the reference variable, rather
-		   than at the end of the block enclosing the
-		   reference variable.
+		 because emit_local_var always treats the
+		 initializer as a full-expression.  Thus, the
+		 destructor would run too early; it would run at the
+		 end of initializing the reference variable, rather
+		 than at the end of the block enclosing the
+		 reference variable.
 
-		   The solution is to pass back a CLEANUP_STMT which
-		   the caller is responsible for attaching to the
-		   statement tree.  */
-		*cleanup = build_stmt (CLEANUP_STMT, var, *cleanup);
+		 The solution is to pass back a cleanup expression
+		 which the caller is responsible for attaching to
+		 the statement tree.  */
 	    }
 	  else
 	    {

@@ -82,7 +82,7 @@ mflang_flush_calls (tree enqueued_call_stmt_chain)
   mf_mark (current_function_decl);
 
   /* Generate the body, one statement at a time.  */
-  body = begin_compound_stmt (/*has_no_scope=*/false);
+  body = begin_compound_stmt (BCS_FN_BODY);
 
   while (enqueued_call_stmt_chain)
     {

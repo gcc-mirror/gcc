@@ -1433,8 +1433,8 @@ maybe_push_cleanup_level (tree type)
       && current_binding_level->more_cleanups_ok == 0)
     {
       begin_scope (sk_cleanup, NULL);
+      current_binding_level->statement_list = push_stmt_list ();
       clear_last_expr ();
-      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/1);
     }
 }
 

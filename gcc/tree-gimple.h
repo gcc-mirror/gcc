@@ -80,8 +80,6 @@ tree get_call_expr_in (tree t);
 
 void recalculate_side_effects (tree);
 
-void append_to_statement_list (tree, tree *);
-void append_to_statement_list_force (tree, tree *);
 void append_to_compound_expr (tree, tree *);
 
 /* FIXME we should deduce this from the predicate.  */
@@ -116,7 +114,7 @@ tree gimple_current_bind_expr (void);
 void gimple_push_bind_expr (tree);
 void gimple_pop_bind_expr (void);
 void unshare_all_trees (tree);
-tree voidify_wrapper_expr (tree);
+tree voidify_wrapper_expr (tree, tree);
 tree gimple_build_eh_filter (tree, tree, tree);
 tree build_and_jump (tree *);
 tree alloc_stmt_list (void);

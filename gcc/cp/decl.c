@@ -429,12 +429,15 @@ poplevel (int keep, int reverse, int functionbody)
   int tmp = functionbody;
   int real_functionbody;
   tree subblocks;
-  tree block = NULL_TREE;
+  tree block;
   tree decl;
   int leaving_for_scope;
   scope_kind kind;
 
   timevar_push (TV_NAME_LOOKUP);
+ restart:
+
+  block = NULL_TREE;
 
   my_friendly_assert (current_binding_level->kind != sk_class, 19990916);
 
@@ -657,6 +660,17 @@ poplevel (int keep, int reverse, int functionbody)
     }
 
   kind = current_binding_level->kind;
+  if (kind == sk_cleanup)
+    {
+      tree stmt;
+
+      /* If this is a temporary binding created for a cleanup, then we'll
+	 have pushed a statement list level.  Pop that, create a new
+	 BIND_EXPR for the block, and insert it into the stream.  */
+      stmt = pop_stmt_list (current_binding_level->statement_list);
+      stmt = c_build_bind_expr (block, stmt);
+      add_stmt (stmt);
+    }
 
   leave_scope ();
   if (functionbody)
@@ -680,21 +694,9 @@ poplevel (int keep, int reverse, int functionbody)
   if (block)
     TREE_USED (block) = 1;
 
-  /* Take care of compiler's internal binding structures.  */
+  /* All temporary bindings created for cleanups are popped silently.  */
   if (kind == sk_cleanup)
-    {
-      tree scope_stmts;
-
-      scope_stmts
-	= add_scope_stmt (/*begin_p=*/0, /*partial_p=*/1);
-      if (block)
-	{
-	  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmts)) = block;
-	  SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmts)) = block;
-	}
-
-      block = poplevel (keep, reverse, functionbody);
-    }
+    goto restart;
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, block);
 }
@@ -4938,7 +4940,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
      reference, insert it in the statement-tree now.  */
   if (cleanup)
-    add_stmt (cleanup);
+    push_cleanup (decl, cleanup, false);
 
  finish_end:
 
@@ -5174,7 +5176,7 @@ register_dtor_fn (tree decl)
   pop_deferring_access_checks ();
 
   /* Create the body of the anonymous function.  */
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+  compound_stmt = begin_compound_stmt (BCS_FN_BODY);
   finish_expr_stmt (fcall);
   finish_compound_stmt (compound_stmt);
   end_cleanup_fn ();
@@ -5252,7 +5254,7 @@ expand_static_init (tree decl, tree init)
       /* Begin the conditional initialization.  */
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (get_guard_cond (guard), if_stmt);
-      then_clause = begin_compound_stmt (/*has_no_scope=*/false);
+      then_clause = begin_compound_stmt (0);
 
       /* Do the initialization itself.  */
       assignment = init ? init : NULL_TREE;
@@ -5278,7 +5280,7 @@ expand_static_init (tree decl, tree init)
 
       finish_compound_stmt (then_clause);
       finish_then_clause (if_stmt);
-      finish_if_stmt ();
+      finish_if_stmt (if_stmt);
     }
   else
     static_aggregates = tree_cons (init, decl, static_aggregates);
@@ -10225,7 +10227,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
   cfun->x_dont_save_pending_sizes_p = 1;
 
   /* Start the statement-tree, start the tree now.  */
-  begin_stmt_tree (&DECL_SAVED_TREE (decl1));
+  DECL_SAVED_TREE (decl1) = push_stmt_list ();
 
   /* Let the user know we're compiling this function.  */
   announce_function (decl1);
@@ -10486,8 +10488,7 @@ save_function_data (tree decl)
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */
-  f->base.x_stmt_tree.x_last_stmt = NULL_TREE;
-  f->base.x_stmt_tree.x_last_expr_type = NULL_TREE;
+  f->base.x_stmt_tree.x_cur_stmt_list = NULL_TREE;
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
   f->x_local_names = NULL;
@@ -10542,7 +10543,7 @@ begin_destructor_body (void)
      initialize the vtables.)  */
   finish_if_stmt_cond (boolean_true_node, if_stmt);
 
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+  compound_stmt = begin_compound_stmt (0);
 
   /* Make all virtual function table pointers in non-virtual base
      classes point to CURRENT_CLASS_TYPE's virtual function
@@ -10551,7 +10552,7 @@ begin_destructor_body (void)
 
   finish_compound_stmt (compound_stmt);
   finish_then_clause (if_stmt);
-  finish_if_stmt ();
+  finish_if_stmt (if_stmt);
 
   /* And insert cleanups for our bases and members so that they
      will be properly destroyed if we throw.  */
@@ -10593,7 +10594,7 @@ finish_destructor_body (void)
 			   if_stmt);
       finish_expr_stmt (exprstmt);
       finish_then_clause (if_stmt);
-      finish_if_stmt ();
+      finish_if_stmt (if_stmt);
     }
 }
 
@@ -10616,7 +10617,7 @@ begin_function_body (void)
        operation of dwarfout.c.  */
     keep_next_level (true);
 
-  stmt = begin_compound_stmt (/*has_no_scope=*/false);
+  stmt = begin_compound_stmt (BCS_FN_BODY);
   COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
 
   if (processing_template_decl)
@@ -10716,10 +10717,10 @@ finish_function (int flags)
 			      current_eh_spec_block);
     }
 
-  finish_fname_decls ();
-
   /* If we're saving up tree structure, tie off the function now.  */
-  finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
+  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+
+  finish_fname_decls ();
 
   /* If this function can't throw any exceptions, remember that.  */
   if (!processing_template_decl
@@ -10773,9 +10774,10 @@ finish_function (int flags)
 	     the function so we know that their lifetime always ends with a
 	     return; see g++.dg/opt/nrv6.C.  We could be more flexible if
 	     we were to do this optimization in tree-ssa.  */
+	  && (outer = BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl)))
 	  /* Skip the artificial function body block.  */
-	  && (outer = BLOCK_SUBBLOCKS (BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl))),
-	      chain_member (r, BLOCK_VARS (outer))))
+	  && (outer = BLOCK_SUBBLOCKS (outer))
+	  && chain_member (r, BLOCK_VARS (outer)))
 	finalize_nrv (&DECL_SAVED_TREE (fndecl), r, DECL_RESULT (fndecl));
 
       current_function_return_value = NULL_TREE;
@@ -11094,10 +11096,6 @@ cxx_maybe_build_cleanup (tree decl)
 void
 finish_stmt (void)
 {
-  /* Always assume this statement was not an expression statement.  If
-     it actually was an expression statement, its our callers
-     responsibility to fix this up.  */
-  last_expr_type = NULL_TREE;
 }
 
 /* DECL was originally constructed as a non-static member function,
