@@ -1,5 +1,20 @@
 2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
 
+	* lang-options.h, decl2.c: Add -fno-enforce-eh-specs.
+	* cp-tree.h: Declare flag_enforce_eh_specs.
+	* decl.c (store_parm_decls, finish_function): Check it.
+
+	C library functions don't throw.
+	* Makefile.in (cfns.h): New target.
+	(except.o): Depend on it.
+	* Make-lang.in (cc1plus): Depend on cfns.gperf.
+	* cfns.gperf: New file.
+	* cfns.h: Generated.
+	* except.c: Include it.
+	(nothrow_libfn_p): New fn.
+	* decl.c (grokfndecl): Use it.
+	* cp-tree.h: Declare it.
+	
 	* decl.c (push_overloaded_decl_1, auto_function, 
 	define_function): Lose.
 	(build_library_fn_1): New static fn.
