@@ -10,3 +10,7 @@
 #define index strchr
 
 #define NO_SYS_SIGLIST
+
+#ifndef __GNUC__
+#define USE_C_ALLOCA
+#endif
