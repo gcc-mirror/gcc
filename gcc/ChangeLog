@@ -1,3 +1,21 @@
+2003-03-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9888
+	Backport patch from mainline:
+
+	2002-07-03  Eric Botcazou  <ebotcazou@multimania.com>
+	            Jeff Law  <law@redhat.com>
+
+	* i386.md (length_immediate attribute): Fix typo.
+	(length_address attribute): Likewise.
+	(modrm attribute): Set it to 0 for immediate call instructions.
+	(jcc_1 pattern): Set modrm attribute to 0.
+	(jcc_2 pattern ): Likewise.
+	(jump pattern): Likewise.
+	(doloop_end_internal pattern): Explicitly set length.
+	(leave pattern): Fix typo.
+	(leave_rex64 pattern): Likewise.
+
 2003-03-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/7796

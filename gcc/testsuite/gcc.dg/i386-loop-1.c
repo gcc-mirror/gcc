@@ -1,6 +1,6 @@
 /* PR optimization/9888 */
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-options "-mtune=k6 -O3" } */
+/* { dg-options "-mcpu=k6 -O3" } */
 
 /* Verify that GCC doesn't emit out of range 'loop' instructions.  */
 
