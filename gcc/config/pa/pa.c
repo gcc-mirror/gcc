@@ -66,7 +66,6 @@ static void remove_useless_addtr_insns PARAMS ((rtx, int));
 static rtx store_reg PARAMS ((int, int, int));
 static rtx load_reg PARAMS ((int, int, int));
 static rtx set_reg_plus_d PARAMS ((int, int, int));
-static void pa_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void pa_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Save the operands last given to a compare for use when we
@@ -2876,7 +2875,7 @@ compute_frame_size (size, fregs_live)
    to do a "save" insn.  The decision about whether or not
    to do this is made in regclass.c.  */
 
-static void
+void
 pa_output_function_prologue (file, size)
      FILE *file;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
