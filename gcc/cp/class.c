@@ -7689,7 +7689,11 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 	  tree derived_entry;
 
 	  derived_entry = VARRAY_TREE (vid->fns, i);
-	  if (same_signature_p (BV_FN (derived_entry), fn))
+	  if (same_signature_p (BV_FN (derived_entry), fn)
+	      /* We only use one vcall offset for virtual destructors,
+		 even though there are two virtual table entries.  */
+	      || (DECL_DESTRUCTOR_P (BV_FN (derived_entry))
+		  && DECL_DESTRUCTOR_P (fn)))
 	    {
 	      BV_VCALL_INDEX (derived_virtuals) 
 		= BV_VCALL_INDEX (derived_entry);
