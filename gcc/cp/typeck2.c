@@ -703,6 +703,9 @@ digest_init (type, init, tail)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
+  if (TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == type)
+    return init;
+
   raw_constructor = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
 
   if (raw_constructor
@@ -873,6 +876,7 @@ process_init_constructor (type, init, elts)
   /* List of the elements of the result constructor,
      in reverse order.  */
   register tree members = NULL;
+  register tree next1;
   tree result;
   int allconstant = 1;
   int allsimple = 1;
@@ -907,42 +911,59 @@ process_init_constructor (type, init, elts)
       else
 	len = -1;  /* Take as many as there are */
 
-      for (i = 0; (len < 0 || i < len) && tail != 0; i++)
+      for (i = 0; len < 0 || i < len; i++)
 	{
-	  register tree next1;
-
-	  if (TREE_PURPOSE (tail)
-	      && (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST
-		  || TREE_INT_CST_LOW (TREE_PURPOSE (tail)) != i))
-	    sorry ("non-trivial labeled initializers");
-
-	  if (TREE_VALUE (tail) != 0)
+	  if (tail)
 	    {
-	      tree tail1 = tail;
-	      next1 = digest_init (TREE_TYPE (type),
-				   TREE_VALUE (tail), &tail1);
-	      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type))
-		  && TYPE_MAIN_VARIANT (TREE_TYPE (type)) != TYPE_MAIN_VARIANT (TREE_TYPE (next1)))
+	      if (TREE_PURPOSE (tail)
+		  && (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST
+		      || TREE_INT_CST_LOW (TREE_PURPOSE (tail)) != i))
+		sorry ("non-trivial labeled initializers");
+
+	      if (TREE_VALUE (tail) != 0)
 		{
-		  /* The fact this needs to be done suggests this code needs
-		     to be totally rewritten.  */
-		  next1 = convert_for_initialization (NULL_TREE, TREE_TYPE (type), next1, LOOKUP_NORMAL, "initialization", NULL_TREE, 0);
+		  tree tail1 = tail;
+		  next1 = digest_init (TREE_TYPE (type),
+				       TREE_VALUE (tail), &tail1);
+		  my_friendly_assert (TYPE_MAIN_VARIANT (TREE_TYPE (type))
+				      == TYPE_MAIN_VARIANT (TREE_TYPE (next1)),
+				      981123);
+		  my_friendly_assert (tail1 == 0
+				      || TREE_CODE (tail1) == TREE_LIST, 319);
+		  if (tail == tail1 && len < 0)
+		    {
+		      error ("non-empty initializer for array of empty elements");
+		      /* Just ignore what we were supposed to use.  */
+		      tail1 = NULL_TREE;
+		    }
+		  tail = tail1;
 		}
-	      my_friendly_assert (tail1 == 0
-				  || TREE_CODE (tail1) == TREE_LIST, 319);
-	      if (tail == tail1 && len < 0)
+	      else
 		{
-		  error ("non-empty initializer for array of empty elements");
-		  /* Just ignore what we were supposed to use.  */
-		  tail1 = NULL_TREE;
+		  next1 = error_mark_node;
+		  tail = TREE_CHAIN (tail);
 		}
-	      tail = tail1;
+	    }
+	  else if (len < 0)
+	    /* We're done.  */
+	    break;
+	  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
+	    {
+	      /* If this type needs constructors run for
+		 default-initialization, we can't rely on the backend to do it
+		 for us, so build up TARGET_EXPRs.  If the type in question is
+		 a class, just build one up; if it's an array, recurse.  */
+
+	      if (IS_AGGR_TYPE (TREE_TYPE (type)))
+		next1 = build_functional_cast (TREE_TYPE (type), NULL_TREE);
+	      else
+		next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, NULL_TREE);
+	      next1 = digest_init (TREE_TYPE (type), next1, 0);
 	    }
 	  else
-	    {
-	      next1 = error_mark_node;
-	      tail = TREE_CHAIN (tail);
-	    }
+	    /* The default zero-initialization is fine for us; don't
+	       add anything to the CONSTRUCTOR.  */
+	    break;
 
 	  if (next1 == error_mark_node)
 	    erroneous = 1;
@@ -978,11 +999,9 @@ process_init_constructor (type, init, elts)
 	    }
 	}
 
-      for (field = TYPE_FIELDS (type); field && tail;
+      for (field = TYPE_FIELDS (type); field;
 	   field = TREE_CHAIN (field))
 	{
-	  register tree next1;
-
 	  if (! DECL_NAME (field) && DECL_C_BIT_FIELD (field))
 	    {
 	      members = expr_tree_cons (field, integer_zero_node, members);
@@ -992,25 +1011,67 @@ process_init_constructor (type, init, elts)
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
-	  if (TREE_PURPOSE (tail)
-	      && TREE_PURPOSE (tail) != field
-	      && TREE_PURPOSE (tail) != DECL_NAME (field))
-	    sorry ("non-trivial labeled initializers");
-
-	  if (TREE_VALUE (tail) != 0)
+	  if (tail)
 	    {
-	      tree tail1 = tail;
+	      if (TREE_PURPOSE (tail)
+		  && TREE_PURPOSE (tail) != field
+		  && TREE_PURPOSE (tail) != DECL_NAME (field))
+		sorry ("non-trivial labeled initializers");
 
-	      next1 = digest_init (TREE_TYPE (field),
-				   TREE_VALUE (tail), &tail1);
-	      my_friendly_assert (tail1 == 0
-				  || TREE_CODE (tail1) == TREE_LIST, 320);
-	      tail = tail1;
+	      if (TREE_VALUE (tail) != 0)
+		{
+		  tree tail1 = tail;
+
+		  next1 = digest_init (TREE_TYPE (field),
+				       TREE_VALUE (tail), &tail1);
+		  my_friendly_assert (tail1 == 0
+				      || TREE_CODE (tail1) == TREE_LIST, 320);
+		  tail = tail1;
+		}
+	      else
+		{
+		  next1 = error_mark_node;
+		  tail = TREE_CHAIN (tail);
+		}
+	    }
+	  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
+	    {
+	      /* If this type needs constructors run for
+		 default-initialization, we can't rely on the backend to do it
+		 for us, so build up TARGET_EXPRs.  If the type in question is
+		 a class, just build one up; if it's an array, recurse.  */
+
+	      if (IS_AGGR_TYPE (TREE_TYPE (field)))
+		next1 = build_functional_cast (TREE_TYPE (field),
+					       NULL_TREE);
+	      else
+		next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE,
+			       NULL_TREE);
+	      next1 = digest_init (TREE_TYPE (field), next1, 0);
+
+	      /* Warn when some struct elements are implicitly initialized.  */
+	      if (extra_warnings)
+		cp_warning ("missing initializer for member `%D'", field);
 	    }
 	  else
 	    {
-	      next1 = error_mark_node;
-	      tail = TREE_CHAIN (tail);
+	      if (TREE_READONLY (field))
+		cp_error ("uninitialized const member `%D'", field);
+	      else if (TYPE_LANG_SPECIFIC (TREE_TYPE (field))
+		       && CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
+		cp_error ("member `%D' with uninitialized const fields",
+			  field);
+	      else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
+		cp_error ("member `%D' is uninitialized reference", field);
+
+	      /* Warn when some struct elements are implicitly initialized
+		 to zero.  */
+	      if (extra_warnings)
+		cp_warning ("missing initializer for member `%D'", field);
+
+	      /* The default zero-initialization is fine for us; don't
+		 add anything to the CONSTRUCTOR.  */
+	      continue;
 	    }
 
 	  if (next1 == error_mark_node)
@@ -1021,44 +1082,10 @@ process_init_constructor (type, init, elts)
 	    allsimple = 0;
 	  members = expr_tree_cons (field, next1, members);
 	}
-      for (; field; field = TREE_CHAIN (field))
-	{
-	  if (TREE_CODE (field) != FIELD_DECL)
-	    continue;
-
-	  /* Does this field have a default initialization?  */
-	  if (DECL_INITIAL (field))
-	    {
-	      register tree next1 = DECL_INITIAL (field);
-	      if (TREE_CODE (next1) == ERROR_MARK)
-		erroneous = 1;
-	      else if (!TREE_CONSTANT (next1))
-		allconstant = 0;
-	      else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
-		allsimple = 0;
-	      members = expr_tree_cons (field, next1, members);
-	    }
-	  else if (TREE_READONLY (field))
-	    error ("uninitialized const member `%s'",
-		   IDENTIFIER_POINTER (DECL_NAME (field)));
-	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (field))
-		   && CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
-	    error ("member `%s' with uninitialized const fields",
-		   IDENTIFIER_POINTER (DECL_NAME (field)));
-	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
-	    error ("member `%s' is uninitialized reference",
-		   IDENTIFIER_POINTER (DECL_NAME (field)));
-	  /* Warn when some struct elements are implicitly initialized
-	      to zero.  */
-	  else if (extra_warnings)
-	    warning ("missing initializer for member `%s'",
-		     IDENTIFIER_POINTER (DECL_NAME (field)));
-	}
     }
   else if (TREE_CODE (type) == UNION_TYPE)
     {
       register tree field = TYPE_FIELDS (type);
-      register tree next1;
 
       /* Find the first named field.  ANSI decided in September 1990
 	 that only named fields count here.  */
@@ -1087,8 +1114,8 @@ process_init_constructor (type, init, elts)
 	      if (temp)
 		field = temp, win = 1;
 	      else
-		error ("no field `%s' in union being initialized",
-		       IDENTIFIER_POINTER (TREE_PURPOSE (tail)));
+		cp_error ("no field `%D' in union being initialized",
+			  TREE_PURPOSE (tail));
 	    }
 	  if (!win)
 	    TREE_VALUE (tail) = error_mark_node;
