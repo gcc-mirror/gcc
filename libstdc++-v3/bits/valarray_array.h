@@ -50,6 +50,14 @@ namespace std
   __valarray_get_memory(size_t __n)
   { return operator new(__n); }
   
+  template<typename _Tp>
+  inline _Tp*__restrict__
+  __valarray_get_storage(size_t __n)
+  {
+    return static_cast<_Tp*__restrict__>
+      (__valarray_get_memory(__n * sizeof(_Tp)));
+  }
+
   // Return memory to the system
   inline void
   __valarray_release_memory(void* __p)
@@ -352,7 +360,7 @@ namespace std
   template<typename _Tp>
   inline
   _Array<_Tp>::_Array (size_t __n)
-      : _M_data(__valarray_get_memory(__n * sizeof (_Tp)))
+    : _M_data(__valarray_get_storage<_Tp>(__n))
   { __valarray_default_construct(_M_data, _M_data + __n); }
 
   template<typename _Tp>
@@ -366,7 +374,7 @@ namespace std
   template<typename _Tp>
   inline
   _Array<_Tp>::_Array (const _Tp* __restrict__ __b, size_t __s) 
-      : _M_data(__valarray_get_memory(__s * sizeof (_Tp)))
+    : _M_data(__valarray_get_storage<_Tp>(__s))
   { __valarray_copy_construct(__b, __s, _M_data); }
 
   template<typename _Tp>
