@@ -1,3 +1,7 @@
+2002-09-06  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/_Pragma4.c: Fix typo.
+
 Fri Sep  6 16:39:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/formal_protocol-6.x: Removed.  This testcase is now
