@@ -1,3 +1,8 @@
+2001-06-05  Andreas Jaeger  <aj@suse.de>
+
+	* builtins.def: Fix definition of __builtin_cosf, it uses float as
+	parameter and return value.
+
 2001-06-04  Anthony Green  <green@redhat.com>
 
 	* config/sparc/elf.h (CPP_PREDEFINES): Don't assert cpu or
@@ -53,11 +58,11 @@
 	functions.
 	(c_expand_body): Expand them.
 	(lang_mark_tree): Mark lang_decl:pending_sizes.
-	* function.c (expand_pending_sizes): New function, broken out 
+	* function.c (expand_pending_sizes): New function, broken out
 	from ...
 	(expand_function_start): ... here.
 	* tree.h (expand_pending_sizes): Declare it.
-	
+
 2001-06-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi: Update FreeBSD information.  Generalize
@@ -105,7 +110,7 @@ Mon Jun  4 19:59:46 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* integreate.c (sub_constants): Likewise.
 
 Mon Jun  4 19:59:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
-	
+
 	* emit-rtl.c (constant_subword): Deprecate; remove most of code
 	and use simplify_gen_subreg.
 
@@ -306,7 +311,7 @@ Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* f/Make-lang.in: Ditto.
 	* java/Make-lang.in: Ditto.
 	* doc/.cvsignore: New.
-	
+
 2001-05-31  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* invoke.texi: use two spaces between command options, eliminate
@@ -542,7 +547,7 @@ Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	config/i960/i960-protos.h config/mcore/mcore.h
 	config/mips/mips-protos.h config/sh/sh-protos.h config/sh/sh.h
 	config/v850/v850-protos.h config/v850/v850.h: Likewise.
-	* fixinc/fixlib.h fixinc/server.h: Likewise.	
+	* fixinc/fixlib.h fixinc/server.h: Likewise.
 
 2001-05-25  Stacey Sheldon  <ssheldon@Catena.com>
 
@@ -631,7 +636,7 @@ Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* defaults.h (MD_INIT_BUILTINS): Provide default definition.
 	* tree.h (built_in_function): Adjust definition of DEF_BUILTIN.
 	* Makefile.in (c-common.o): Depend on builtin-types.def.
-	
+
 2001-05-25  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/t-darwin: Fix dependencies for darwin.o.
@@ -679,12 +684,12 @@ Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/i386/i386.md: Make sure cmpstr peepholes do not 
+	* config/i386/i386.md: Make sure cmpstr peepholes do not
 	affect liveness information.
 
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
-	* c-typeck.c (digest_init): Issue error messages about 
+	* c-typeck.c (digest_init): Issue error messages about
 	invalid constants, not warnings.
 
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
@@ -833,7 +838,7 @@ Thu May 24 15:56:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* builtins.c (expand_builtin_longjmp): A longjmp can be a call too.
 	* config/ia64/ia64.md (nonlocal_goto): Reverse label and frame pointer
 	parameters to __ia64_nonlocal_goto. Flag as NO_RETURN.
-	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing 
+	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing
 	"r2" to the assembly file. Only issue allocs with non-zero parameters.
 
 2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
@@ -1080,12 +1085,12 @@ Sun May 20 16:39:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.h (UNALIGNED_SHORT_ASM_OP): New.
 	(UNALIGNED_INT_ASM_OP, INT_ASM_OP): New.
-	
+
 	* config/i386/cygwin.h (INT_ASM_OP): Remove.
 	* config/i386/freebsd-aout.h, config/i386/i386-aout.h: Likewise.
 	* config/i386/i386-coff.h, config/i386/i386-interix.h: Likewise.
 	* config/i386/netbsd.h, config/i386/openbsd.h: Likewise.
-	
+
 	* config/i386/cygwin.h: Adjust uses of ASM_LONG for trailing \t.
 	* config/i386/djgpp.h, config/i386/i386.h: Likewise.
 	* config/i386/i386elf.h, config/i386/ptx4-i.h: Likewise.
@@ -1193,7 +1198,7 @@ Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 	(eh_set_lr_si): Likewise.
 	(eh_set_lr_di): Likewise.
 	Add splitter to perform EH return after reload.
-		
+
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Tidy previous change.
@@ -1225,9 +1230,9 @@ Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 	Document it.
 	* toplev.c (main): If the target does not allow profiling without
 	a frame pointer, issue an error message.
-	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): 
+	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER):
 	Define it to false.
-	
+
 Sat May 19 07:53:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* recog.c (general_operand): Modify last change to allow it if reload
@@ -1416,7 +1421,7 @@ Thu May 17 20:43:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	variable.
 	* varasm.c (assemble_external): Abort if we have not yet
 	opened the assembly output file.
-	
+
 Thu May 17 11:54:50 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* except.c (sjlj_emit_function_enter): Call assemble_external_libcall
@@ -1529,7 +1534,7 @@ Thu May 17 16:59:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	config/sparc/t-vxsparc64, config/v850/t-v850:
 	Don't set any of LIBGCC1, CROSS_LIBGCC1, or LIBGCC1_TEST.
 
-	* config/alpha/alpha.h, config/i386/i386.h, config/i860/i860.h: 
+	* config/alpha/alpha.h, config/i386/i386.h, config/i860/i860.h:
 	Don't set FLOAT_VALUE_TYPE, FLOAT_ARG_TYPE, INTIFY, or FLOATIFY.
 	* config/d30v/d30v.h: Don't mention LIBGCC_NEEDS_DOUBLE,
 	FLOAT_VALUE_TYPE, FLOAT_ARG_TYPE, FLOATIFY, INTIFY,
@@ -1572,7 +1577,7 @@ Thu May 17 16:59:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-16  Richard Henderson  <rth@redhat.com>
 
-	* dwarf2asm.c (eh_data_format_name): Add names for "pointer size" 
+	* dwarf2asm.c (eh_data_format_name): Add names for "pointer size"
 	variants of non-absolute encodings.
 
 	* config/i386/i386.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
