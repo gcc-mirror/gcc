@@ -67,7 +67,7 @@ public final class DatagramChannelImpl extends DatagramChannel
 
   public int getNativeFD()
   {
-    return socket.getImpl().getNativeFD();
+    return socket.getPlainDatagramSocketImpl().getNativeFD();
   }
     
   public DatagramSocket socket ()

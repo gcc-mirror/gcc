@@ -59,7 +59,7 @@ public final class NIODatagramSocket extends DatagramSocket
     this.channel = channel;
   }
 
-  public final PlainDatagramSocketImpl getImpl()
+  public final PlainDatagramSocketImpl getPlainDatagramSocketImpl()
   {
     return impl;
   }
