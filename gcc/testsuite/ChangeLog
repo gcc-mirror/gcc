@@ -1,3 +1,7 @@
+2002-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20021118-3.c: New test.
+
 2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021119-1.c: New test.
