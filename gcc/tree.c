@@ -5108,73 +5108,78 @@ get_set_constructor_bytes (tree init, unsigned char *buffer, int wd_size)
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
-/* Complain that the tree code of NODE does not match the expected CODE.
-   FILE, LINE, and FUNCTION are of the caller.  */
+/* Complain that the tree code of NODE does not match the expected 0
+   terminated list of trailing codes. FILE, LINE, and FUNCTION are of
+   the caller.  */
 
 void
-tree_check_failed (const tree node, enum tree_code code, const char *file,
-		   int line, const char *function)
+tree_check_failed (const tree node, const char *file,
+		   int line, const char *function, ...)
 {
+  va_list args;
+  char *buffer;
+  unsigned length = 0;
+  int code;
+
+  va_start (args, function);
+  while ((code = va_arg (args, int)))
+    length += 4 + strlen (tree_code_name[code]);
+  va_end (args);
+  va_start (args, function);
+  buffer = alloca (length);
+  length = 0;
+  while ((code = va_arg (args, int)))
+    {
+      if (length)
+	{
+	  strcpy (buffer + length, " or ");
+	  length += 4;
+	}
+      strcpy (buffer + length, tree_code_name[code]);
+      length += strlen (tree_code_name[code]);
+    }
+  va_end (args);
+  
   internal_error ("tree check: expected %s, have %s in %s, at %s:%d",
-		  tree_code_name[code], tree_code_name[TREE_CODE (node)],
+		  buffer, tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
 }
 
-/* Similar to above except that we allowed the code to be one of two
-   different codes.  */
+/* Complain that the tree code of NODE does match the expected 0
+   terminated list of trailing codes. FILE, LINE, and FUNCTION are of
+   the caller.  */
 
 void
-tree_check2_failed (const tree node, enum tree_code code1,
-		    enum tree_code code2, const char *file,
-		    int line, const char *function)
+tree_not_check_failed (const tree node, const char *file,
+		       int line, const char *function, ...)
 {
-  internal_error ("tree check: expected %s or %s, have %s in %s, at %s:%d",
-		  tree_code_name[code1], tree_code_name[code2],
-		  tree_code_name[TREE_CODE (node)],
+  va_list args;
+  char *buffer;
+  unsigned length = 0;
+  int code;
+
+  va_start (args, function);
+  while ((code = va_arg (args, int)))
+    length += 4 + strlen (tree_code_name[code]);
+  va_end (args);
+  va_start (args, function);
+  buffer = alloca (length);
+  length = 0;
+  while ((code = va_arg (args, int)))
+    {
+      if (length)
+	{
+	  strcpy (buffer + length, " or ");
+	  length += 4;
+	}
+      strcpy (buffer + length, tree_code_name[code]);
+      length += strlen (tree_code_name[code]);
+    }
+  va_end (args);
+  
+  internal_error ("tree check: expected none of %s, have %s in %s, at %s:%d",
+		  buffer, tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
-}
-
-/* Likewise for three different codes.  */
-
-void
-tree_check3_failed (const tree node, enum tree_code code1,
-		    enum tree_code code2, enum tree_code code3,
-		    const char *file, int line, const char *function)
-{
-  internal_error ("tree check: expected %s, %s or %s; have %s in %s, at %s:%d",
-		  tree_code_name[code1], tree_code_name[code2],
-		  tree_code_name[code3], tree_code_name[TREE_CODE (node)],
-		  function, trim_filename (file), line);
-}
-
-/* ... and for four different codes.  */
-
-void
-tree_check4_failed (const tree node, enum tree_code code1,
-		    enum tree_code code2, enum tree_code code3,
-		    enum tree_code code4, const char *file, int line,
-		    const char *function)
-{
-  internal_error
-    ("tree check: expected %s, %s, %s or %s; have %s in %s, at %s:%d",
-     tree_code_name[code1], tree_code_name[code2], tree_code_name[code3],
-     tree_code_name[code4], tree_code_name[TREE_CODE (node)], function,
-     trim_filename (file), line);
-}
-
-/* ... and for five different codes.  */
-
-void
-tree_check5_failed (const tree node, enum tree_code code1,
-		    enum tree_code code2, enum tree_code code3,
-		    enum tree_code code4, enum tree_code code5,
-		    const char *file, int line, const char *function)
-{
-  internal_error
-    ("tree check: expected %s, %s, %s, %s or %s; have %s in %s, at %s:%d",
-     tree_code_name[code1], tree_code_name[code2], tree_code_name[code3],
-     tree_code_name[code4], tree_code_name[code5],
-     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
 
 /* Similar to tree_check_failed, except that we check for a class of tree

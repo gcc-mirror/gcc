@@ -1,3 +1,20 @@
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (tree_check_failed): Make varadic.
+	(tree_not_check_failed): New prototype.
+	(tree_check2_failed, tree_check3_failed,
+	tree_check4_failed, tree_check5_failed): Remove.
+	(TREE_CHECK, TREE_CHECK2, TREE_CHECK3, TREE_CHECK4,
+	TREE_CHECK5): Adjust.
+	(TREE_NOT_CHECK, TREE_NOT_CHECK2, TREE_NOT_CHECK3, TREE_NOT_CHECK4, 
+	TREE_NOT_CHECK5): New.
+	(TREE_VEC_ELT_CHECK, PHI_NODE_ELT_CHECK, TREE_OPERAND_CHECK_CODE,
+	TREE_RTL_OPERAND_CHECK): Adjust.
+	* tree.c (tree_check_failed): Make varadic.
+	(tree_not_check_failed): New.
+	(tree_check2_failed, tree_check3_failed,
+	tree_check4_failed, tree_check5_failed): Remove.
+
 2004-06-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* combine.c (can_combine_p): Do not prevent building insns that use
