@@ -279,8 +279,10 @@ static GTY((length ("fde_table_allocated"))) dw_fde_ref fde_table;
 /* Number of elements currently allocated for fde_table.  */
 static unsigned fde_table_allocated;
 
+#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 /* Number of elements in fde_table currently in use.  */
 static unsigned fde_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    fde_table.  */
@@ -289,11 +291,13 @@ static unsigned fde_table_in_use;
 /* A list of call frame insns for the CIE.  */
 static GTY(()) dw_cfi_ref cie_cfi_head;
 
+#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 /* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
    attribute that accelerates the lookup of the FDE associated
    with the subprogram.  This variable holds the table index of the FDE
    associated with the current function (body) definition.  */
 static unsigned current_funcdef_fde;
+#endif
 
 struct indirect_string_node GTY(())
 {
@@ -324,10 +328,6 @@ static void reg_save			PARAMS ((const char *, unsigned,
 static void initial_return_save		PARAMS ((rtx));
 static long stack_adjust_offset		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref, int));
-static enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc 
-   PARAMS ((enum dwarf_call_frame_info cfi));
-static enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc 
-   PARAMS ((enum dwarf_call_frame_info cfi));
 static void output_call_frame_info	PARAMS ((int));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
 static void queue_reg_save		PARAMS ((const char *, rtx, long));
@@ -1699,6 +1699,8 @@ dwarf2out_frame_debug (insn)
 #endif
 
 /* Describe for the GTY machinery what parts of dw_cfi_oprnd1 are used.  */
+static enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc 
+   PARAMS ((enum dwarf_call_frame_info cfi));
 
 static enum dw_cfi_oprnd_type
 dw_cfi_oprnd1_desc (cfi)
@@ -1744,6 +1746,8 @@ dw_cfi_oprnd1_desc (cfi)
 }
 
 /* Describe for the GTY machinery what parts of dw_cfi_oprnd2 are used.  */
+static enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc 
+   PARAMS ((enum dwarf_call_frame_info cfi));
 
 static enum dw_cfi_oprnd_type
 dw_cfi_oprnd2_desc (cfi)
@@ -3436,16 +3440,20 @@ limbo_die_node;
    is not made available by the GCC front-end.  */
 #define	DWARF_LINE_DEFAULT_IS_STMT_START 1
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* This location is used by calc_die_sizes() to keep track
    the offset of each DIE within the .debug_info section.  */
 static unsigned long next_die_offset;
+#endif
 
 /* Record the root of the DIE's built for the current compilation unit.  */
 static GTY(()) dw_die_ref comp_unit_die;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* We need special handling in dwarf2out_start_source_file if it is
    first one.  */
 static int is_main_source;
+#endif
 
 /* A list of DIEs with a NULL parent waiting to be relocated.  */
 static GTY(()) limbo_die_node *limbo_die_list;
@@ -3463,8 +3471,10 @@ struct file_table
    table.  */
 #define FILE_TABLE_INCREMENT 64
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Filenames referenced by this compilation unit.  */
 static struct file_table file_table;
+#endif
 
 /* A pointer to the base of a table of references to DIE's that describe
    declarations.  The table is indexed by DECL_UID() which is a unique
@@ -3474,8 +3484,10 @@ static GTY((length ("decl_die_table_allocated"))) dw_die_ref *decl_die_table;
 /* Number of elements currently allocated for the decl_die_table.  */
 static unsigned decl_die_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in decl_die_table currently in use.  */
 static unsigned decl_die_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    decl_die_table.  */
@@ -3490,8 +3502,10 @@ static GTY((length ("abbrev_die_table_allocated")))
 /* Number of elements currently allocated for abbrev_die_table.  */
 static unsigned abbrev_die_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in type_die_table currently in use.  */
 static unsigned abbrev_die_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    abbrev_die_table.  */
@@ -3505,8 +3519,10 @@ static GTY((length ("line_info_table_allocated")))
 /* Number of elements currently allocated for line_info_table.  */
 static unsigned line_info_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in line_info_table currently in use.  */
 static unsigned line_info_table_in_use;
+#endif
 
 /* A pointer to the base of a table that contains line information
    for each source code line outside of .text in the compilation unit.  */
@@ -3516,8 +3532,10 @@ static GTY ((length ("separate_line_info_table_allocated")))
 /* Number of elements currently allocated for separate_line_info_table.  */
 static unsigned separate_line_info_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in separate_line_info_table currently in use.  */
 static unsigned separate_line_info_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    line_info_table.  */
@@ -3530,8 +3548,10 @@ static GTY ((length ("pubname_table_allocated"))) pubname_ref pubname_table;
 /* Number of elements currently allocated for pubname_table.  */
 static unsigned pubname_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in pubname_table currently in use.  */
 static unsigned pubname_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    pubname_table.  */
@@ -3543,8 +3563,10 @@ static GTY((length ("arange_table_allocated"))) dw_die_ref *arange_table;
 /* Number of elements currently allocated for arange_table.  */
 static unsigned arange_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in arange_table currently in use.  */
 static unsigned arange_table_in_use;
+#endif
 
 /* Size (in elements) of increments by which we may expand the
    arange_table.  */
@@ -3556,6 +3578,7 @@ static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
 /* Number of elements currently allocated for ranges_table.  */
 static unsigned ranges_table_allocated;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in ranges_table currently in use.  */
 static unsigned ranges_table_in_use;
 
@@ -3568,6 +3591,7 @@ static unsigned have_location_lists;
 
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
+#endif
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
 #endif

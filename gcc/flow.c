@@ -416,8 +416,8 @@ life_analysis (f, file, flags)
      FILE *file;
      int flags;
 {
-  int i;
 #ifdef ELIMINABLE_REGS
+  int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 
@@ -436,8 +436,11 @@ life_analysis (f, file, flags)
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
   if (flags & PROP_REG_INFO)
-    for (i=0; i < NUM_MACHINE_MODES; ++i)
-      INIT_REG_SET (&subregs_of_mode[i]);
+    {
+      int j;
+      for (j=0; j < NUM_MACHINE_MODES; ++j)
+	INIT_REG_SET (&subregs_of_mode[j]);
+    }
 #endif
 
   if (! optimize)

@@ -137,14 +137,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define STABS_GCC_MARKER "gcc2_compiled."
 #endif
 
-/* Last source file name mentioned in a NOTE insn.  */
-
-static const char *lastfile;
-
-/* Current working directory.  */
-
-static const char *cwd;
-
 enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
 
 /* Structure recording information about a C data type.
@@ -201,6 +193,14 @@ static GTY(()) int next_file_number;
    no use for DBX-format debugging info.  */
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+
+/* Last source file name mentioned in a NOTE insn.  */
+
+static const char *lastfile;
+
+/* Current working directory.  */
+
+static const char *cwd;
 
 /* Nonzero if we have actually used any of the GDB extensions
    to the debugging format.  The idea is that we use them for the

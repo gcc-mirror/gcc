@@ -404,7 +404,7 @@ gen_insn (insn, lineno)
       printf ("operand%d", i);
   printf (")\n");
   for (i = 0; i < operands; i++)
-    printf ("     rtx operand%d;\n", i);
+    printf ("     rtx operand%d ATTRIBUTE_UNUSED;\n", i);
   printf ("{\n");
 
   /* Output code to construct and return the rtl for the instruction body */
