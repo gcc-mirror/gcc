@@ -125,8 +125,9 @@ namespace _GLIBCXX_STD
 	  iterator __last1 = end();
 	  const_iterator __first2 = __x.begin();
 	  const_iterator __last2 = __x.end();
-	  while (__first1 != __last1 && __first2 != __last2)
-	    *__first1++ = *__first2++;
+	  for (; __first1 != __last1 && __first2 != __last2;
+	       ++__first1, ++__first2)
+	    *__first1 = *__first2;
 	  if (__first2 == __last2)
 	    erase(__first1, __last1);
 	  else
