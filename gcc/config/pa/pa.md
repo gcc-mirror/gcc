@@ -1681,6 +1681,62 @@
   ""
   "uaddcm %2,%1,%0")
 
+;; define_splits to optimize cases of adding a constant integer
+;; to a register when the constant does not fit in 14 bits.  */
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (clobber (match_operand:SI 4 "register_operand" ""))]
+  "! cint_ok_for_move (INTVAL (operands[2])) 
+   && VAL_14_BITS_P (INTVAL (operands[2]) / 2)"
+  [(set (match_dup 4) (plus:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:SI (match_dup 4) (match_dup 3)))]
+  "
+{
+  int val = INTVAL (operands[2]);
+  int low = (val < 0) ? -0x2000 : 0x1fff;
+  int rest = val - low;
+
+  operands[2] = GEN_INT (rest);
+  operands[3] = GEN_INT (low);
+}")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (clobber (match_operand:SI 4 "register_operand" ""))]
+  "! cint_ok_for_move (INTVAL (operands[2]))"
+  [(set (match_dup 4) (match_dup 2))
+   (set (match_dup 0) (plus:SI (mult:SI (match_dup 4) (match_dup 3))
+			       (match_dup 1)))]
+  "
+{
+  int intval = INTVAL (operands[2]);
+
+  /* Try diving the constant by 2, then 4, and finally 8 to see
+     if we can get a constant which can be loaded into a register
+     in a single instruction (cint_ok_for_move).  */
+  if (intval % 2 == 0 && cint_ok_for_move (intval / 2))
+    {
+      operands[2] = GEN_INT (INTVAL (operands[2]) / 2);
+      operands[3] = GEN_INT (2);
+    }
+  else if (intval % 4 == 0 && cint_ok_for_move (intval / 4))
+    {
+      operands[2] = GEN_INT (INTVAL (operands[2]) / 4);
+      operands[3] = GEN_INT (4);
+    }
+  else if (intval % 8 == 0 && cint_ok_for_move (intval / 8))
+    {
+      operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+      operands[3] = GEN_INT (8);
+    }
+  else 
+    FAIL;
+}")
+
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(plus:SI (match_operand:SI 1 "register_operand" "%r,r")
