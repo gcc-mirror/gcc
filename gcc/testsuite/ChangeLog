@@ -1,3 +1,8 @@
+2003-05-26  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* gcc.dg/wchar_t-1.c: XFAIL on darwin, no wchar.h available.
+	* gcc.dg/wint_t-1.c: Likewise.
+
 2003-05-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/access11.C: New test.
