@@ -47,6 +47,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define DBX_DEBUGGING_INFO
 
+/* Sequent Symmetry has size_t defined as int in /usr/include/sys/types.h */
+#define SIZE_TYPE "int"
+
 /* gcc order is ax, dx, cx, bx, si, di, bp, sp, st, st.
  * dbx order is ax, dx, cx, st(0), st(1), bx, si, di, st(2), st(3),
  * 		st(4), st(5), st(6), st(7), sp, bp  */
