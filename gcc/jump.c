@@ -3946,10 +3946,10 @@ mark_modified_reg (dest, x)
 /* F is the first insn in the chain of insns.  */
    
 void
-thread_jumps (f, max_reg, verbose)
+thread_jumps (f, max_reg, flag_before_loop)
      rtx f;
      int max_reg;
-     int verbose;
+     int flag_before_loop;
 {
   /* Basic algorithm is to find a conditional branch,
      the label it may branch to, and the branch after
@@ -4090,9 +4090,21 @@ thread_jumps (f, max_reg, verbose)
 		      else
 			new_label = get_label_after (b2);
 
-		      if (JUMP_LABEL (b1) != new_label
-			  && redirect_jump (b1, new_label))
-			changed = 1;
+		      if (JUMP_LABEL (b1) != new_label)
+			{
+			  rtx prev = PREV_INSN (new_label);
+
+			  if (flag_before_loop
+			      && NOTE_LINE_NUMBER (prev) == NOTE_INSN_LOOP_BEG)
+			    {
+			      /* Don't thread to the loop label.  If a loop
+				 label is reused, loop optimization will
+				 be disabled for that loop.  */
+			      new_label = gen_label_rtx ();
+			      emit_label_after (new_label, PREV_INSN (prev));
+			    }
+			  changed |= redirect_jump (b1, new_label);
+			}
 		      break;
 		    }
 		    
