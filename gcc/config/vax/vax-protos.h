@@ -34,8 +34,4 @@ extern int reg_was_0_p PARAMS ((rtx, rtx));
 extern int check_float_value PARAMS ((enum machine_mode, REAL_VALUE_TYPE *, int));
 #endif /* REAL_VALUE_TYPE */
 
-#ifdef TREE_CODE
-extern void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-#endif /* TREE_CODE */
-
 extern void const_section PARAMS ((void));
