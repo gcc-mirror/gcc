@@ -75,6 +75,7 @@ extern void fixup_addr_diff_vecs PARAMS ((rtx));
 extern int get_dest_uid PARAMS ((rtx, int));
 extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
 extern int symbol_ref_operand PARAMS ((rtx, enum machine_mode));
+extern int tls_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int system_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movsrc_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movdst_operand PARAMS ((rtx, enum machine_mode));

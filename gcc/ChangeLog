@@ -1,3 +1,28 @@
+2003-02-24  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (TARGET_HAVE_TLS): Conditionally define.
+	(prepare_move_operands): Handle TLS operands.
+	(tls_symbolic_operand): New.
+	(nonpic_symbol_mentioned_p): Handle TLS UNSPECs.
+	(legitimize_pic_address): Do nothing for the TLS symbol.
+	(sh_encode_section_info): Handle TLS case.
+	(sh_strip_name_encoding): Drop TLS encoding.
+	* config/sh/sh-protos.h (tls_symbolic_operand): Add prototype.
+	* config/sh/sh.h (SH_TLS_ENCODING): Define.
+	(TLS_SYMNAME_P, STRIP_TLS_ENCODING): Likewise.
+	(ASM_OUTPUT_LABELREF): Drop TLS encoding.
+	(OUTPUT_ADDR_CONST_EXTRA): Handle TLS UNSPECs.
+	* config/sh/sh.md: Define TLS UNSPEC constants.
+	(type): Add tls_load.
+	("tls_global_dynamic", "tls_local_dynamic"): New insns.
+	("sym2DTPOFF", "symDTPOFF2reg", "sym2GOTTPOFF"): New expanders.
+	("tls_initial_exec"): New insn.
+	("sym2TPOFF", "symTPOFF2reg"): New expanders.
+	("load_gbr"): New insn.
+
+	* configure.in (HAVE_AS_TLS): Add sh-*-* and sh[34]*-*-* cases.
+        * configure: Regenerate.
+
 2003-02-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (store_one_arg): Revert 1999-02-16 change.  Revert
