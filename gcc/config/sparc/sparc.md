@@ -1837,6 +1837,42 @@
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
+(define_expand "smulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
+			       (sign_extend:DI (match_operand:SI 2 "arith_operand" "")))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "
+{
+  if (CONSTANT_P (operands[2]))
+    {
+      emit_insn (gen_const_smulsi3_highpart (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+}")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+			       (sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "smul %1,%2,%%g0\;rd %%y,%0"
+  [(set_attr "length" "2")])
+
+(define_insn "const_smulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+			       (match_operand:SI 2 "register_operand" "r"))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "smul %1,%2,%%g0\;rd %%y,%0"
+  [(set_attr "length" "2")])
+
 (define_expand "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
@@ -1867,6 +1903,42 @@
 		 (match_operand:SI 2 "uns_small_int" "")))]
   "TARGET_V8 || TARGET_SPARCLITE"
   "umul %1,%2,%R0\;rd %%y,%0"
+  [(set_attr "length" "2")])
+
+(define_expand "umulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
+			       (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" "")))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "
+{
+  if (CONSTANT_P (operands[2]))
+    {
+      emit_insn (gen_const_umulsi3_highpart (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+}")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+			       (zero_extend:DI (match_operand:SI 2 "register_operand" "r")))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "umul %1,%2,%%g0\;rd %%y,%0"
+  [(set_attr "length" "2")])
+
+(define_insn "const_umulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+			       (match_operand:SI 2 "uns_small_int" ""))
+		      (const_int 32))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "umul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
 ;; The architecture specifies that there must be 3 instructions between
