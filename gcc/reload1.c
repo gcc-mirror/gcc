@@ -1818,10 +1818,6 @@ reload (first, global, dumpfile)
 
 	  while (max_needs[class] > 0 || max_nongroups[class] > 0)
 	    {
-#ifdef SMALL_REGISTER_CLASSES
-	      /* This should be right for all machines, but only the 386
-		 is known to need it, so this conditional plays safe.
-		 ??? For 2.5, try making this unconditional.  */
 	      /* If we spilled enough regs, but they weren't counted
 		 against the non-group need, see if we can count them now.
 		 If so, we can avoid some actual spilling.  */
@@ -1845,7 +1841,6 @@ reload (first, global, dumpfile)
 		    }
 	      if (max_needs[class] <= 0 && max_nongroups[class] <= 0)
 		break;
-#endif
 
 	      /* Consider the potential reload regs that aren't
 		 yet in use as reload regs, in order of preference.
