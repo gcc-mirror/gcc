@@ -452,7 +452,7 @@ tree_code_create_function_wrapup (location_t loc)
 
   /* Emit rtl for end of function.  */
 
-  expand_function_end (loc.file, loc.line, 0);
+  expand_function_end ();
 
   /* Pop the level.  */
 

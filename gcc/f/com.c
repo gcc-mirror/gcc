@@ -13604,7 +13604,7 @@ finish_function (int nested)
 
       /* Obey `register' declarations if `setjmp' is called in this fn.  */
       /* Generate rtl for function exit.  */
-      expand_function_end (input_filename, input_line, 0);
+      expand_function_end ();
 
       /* If this is a nested function, protect the local variables in the stack
 	 above us from being collected while we're compiling this function.  */

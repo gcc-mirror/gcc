@@ -6963,17 +6963,10 @@ use_return_register ()
 
 static GTY(()) rtx initial_trampoline;
 
-/* Generate RTL for the end of the current function.
-   FILENAME and LINE are the current position in the source file.
-
-   It is up to language-specific callers to do cleanups for parameters--
-   or else, supply 1 for END_BINDINGS and we will call expand_end_bindings.  */
+/* Generate RTL for the end of the current function. */
 
 void
-expand_function_end (filename, line, end_bindings)
-     const char *filename;
-     int line;
-     int end_bindings;
+expand_function_end ()
 {
   tree link;
   rtx clobber_after;
@@ -7099,7 +7092,7 @@ expand_function_end (filename, line, end_bindings)
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
-  emit_line_note_force (filename, line);
+  emit_line_note_force (input_filename, input_line);
 
   /* Before the return label (if any), clobber the return
      registers so that they are not propagated live to the rest of
@@ -7118,10 +7111,6 @@ expand_function_end (filename, line, end_bindings)
      structure returning.  */
   if (return_label)
     emit_label (return_label);
-
-  /* C++ uses this.  */
-  if (end_bindings)
-    expand_end_bindings (0, 0, 0);
 
   if (current_function_instrument_entry_exit)
     {

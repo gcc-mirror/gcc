@@ -1810,7 +1810,7 @@ end_java_method (void)
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, input_line, 0);
+  expand_function_end ();
 
   /* Run the optimizers and output assembler code for this function. */
   rest_of_compilation (fndecl);

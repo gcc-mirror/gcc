@@ -1,3 +1,12 @@
+2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (push_class): Use a location_t to save place.
+	(emit_register_classes): Set input_location. Adjust
+	expand_function_end call.
+	* resource.c (write_resource_constructor): Likewise.
+	* decl.c (end_java_method): Adjust expand_function_end call.
+	* parse.y (source_end_java_method): Likewise.
+
 2003-06-17  Robert Abeles  <rabeles@archaelogic.com>
 
 	* lang.c (java_handle_option): Likewise.

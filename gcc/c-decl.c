@@ -6375,7 +6375,7 @@ c_expand_body_1 (tree fndecl, int nested_p)
     (*lang_expand_function_end) ();
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, input_line, 0);
+  expand_function_end ();
 
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */

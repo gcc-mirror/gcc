@@ -1,3 +1,8 @@
+2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* semantics.c (genrtl_finish_function): Adjust
+	expand_function_end call.
+
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10939

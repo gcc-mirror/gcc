@@ -104,6 +104,7 @@ write_resource_constructor (void)
 {
   tree init_name, init_type, init_decl;
   tree iter;
+  location_t saved_loc = input_location;
 
   /* Only do work if required.  */
   if (resources == NULL_TREE)
@@ -139,7 +140,8 @@ write_resource_constructor (void)
 			 Pmode);
     }
 
-  expand_function_end (input_filename, 0, 0);
+  input_location = DECL_SOURCE_LOCATION (init_decl);
+  expand_function_end ();
   poplevel (1, 0, 1);
   { 
     /* Force generation, even with -O3 or deeper.  Gross hack.
@@ -152,6 +154,7 @@ write_resource_constructor (void)
   current_function_decl = NULL_TREE;
   (* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
 				   DEFAULT_INIT_PRIORITY);
+  input_location = saved_loc;
 }
 
 /* Generate a byte array representing the contents of FILENAME.  The
