@@ -14927,18 +14927,21 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
     {
-      if (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
-	return 1;
-      if (TARGET_SSE && VALID_SSE_REG_MODE (mode))
-	return 1;
-      return 0;
+      /* We implement the move patterns for all vector modes into and
+         out of SSE registers, even when no operation instructions
+         are available.  */
+      return (VALID_SSE_REG_MODE (mode)
+	      || VALID_SSE2_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
   if (MMX_REGNO_P (regno))
     {
-      if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
-	return 1;
-      if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
-	return 1;
+      /* We implement the move patterns for 3DNOW modes even in MMX mode,
+         so if the register is available at all, then we can move data of
+         the given mode into or out of it.  */
+      return (VALID_MMX_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
   /* We handle both integer and floats in the general purpose registers.
      In future we should be able to handle vector modes as well.  */

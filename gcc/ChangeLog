@@ -1,3 +1,22 @@
+2004-12-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Always accept all SSE,
+	MMX, 3DNOW modes in SSE registers; always accept all MMX, 3DNOW modes
+	in MMX registers.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Don't include
+	VALID_MMX_REG_MODE.
+	* config/i386/i386.md (movv4sf_internal, movv4si_internal, 
+	movv2di_internal, movv2si_internal, movv4hi_internal,
+	movv2sf_internal, movv2df_internal, movv8hi_internal,
+	movv16qi_internal, movti_internal): Add leading '*' to name.
+	(movv2di_internal, movv2df_internal, movv8hi_internal,
+	movv16qi_internal, movv2df, movv8hi, movv16qi, movv2di,
+	pushv2di, pushv8hi, pushv16qi): Enable for SSE1.
+	(movv2si_internal, movv4hi_internal): Add SSE alternatives.
+	(movv8qi_internal, movv2sf_internal): Likewise.
+	(movtf): Simplify conditional.
+	(movv2sf, pushv2sf): Enable for MMX.
+
 2004-12-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19068
