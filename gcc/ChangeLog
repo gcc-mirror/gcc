@@ -1,3 +1,13 @@
+2003-03-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (ASM_OUTPUT_XDATA_CHAR): Remove.
+	(ASM_OUTPUT_XDATA_SHORT): Remove.
+	(ASM_OUTPUT_XDATA_INT): Remove.
+	(ASM_OUTPUT_XDATA_DOUBLE_INT): Remove.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Handled 32 bit address diffs.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Handle 32 bit EH pointers.
+	(CASE_VECTOR_MODE): Handle 32 bit pointers in case statement.
+
 2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
 
 	PR c++/7050
