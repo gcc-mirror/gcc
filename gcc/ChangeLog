@@ -1,5 +1,19 @@
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.c (C specs [!USE_CPPLIB]): Invoke tradcpp if any of
+	-traditional, -ftraditional, or -traditional-cpp was given.
+	Do not pass -traditional to the preprocessor.              
+	(.S spec): Likewise.  Don't bother defining __ASSEMBLER__, the
+	preprocessor does it automatically.
+	* objc/lang-specs.h: Likewise.  Don't bother defining __OBJC__.
+
+	* ch/lang-specs.h: Always use tradcpp.  Do not pass
+	-traditional, -trigraphs, or -pedantic to the preprocessor.  
+	* f/lang-specs.h (.F spec): Likewise.  Don't bother defining
+	_LANGUAGE_FORTRAN.
+
+2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cppexp.c (LOGICAL): Delete macro.
 	(_cpp_parse_expr): Do not use UNARY for unary +.  Implement ||
 	and && directly.

@@ -35,15 +35,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	Sun f77, at least) so you test `__unix' rather than `unix'.
 	-D_LANGUAGE_FORTRAN is used by some compilers like SGI and
 	might as well be in there. */
-   {"cpp -lang-fortran %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"tradcpp -lang-fortran %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
 	%{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
-	%{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
-	%c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional\
+	%{!undef:%P} \
+	%c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} \
 	%{ffast-math:-D__FAST_MATH__}\
-	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
 	%i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
     "%{!M:%{!MM:%{!E:f771 %{!pipe:%g.i} %1 %(f771) \
@@ -86,7 +84,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 		      %{!pipe:%g.s} %A\n }}}}"}},
   {"@f77-version",
-   {"cpp -lang-fortran %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I \
+   {"tradcpp -lang-fortran %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I \
       %{C:%{!E:%eGNU C does not support -C without using -E}} \
       %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} \
       %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3} \

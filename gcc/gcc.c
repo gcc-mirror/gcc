@@ -660,7 +660,8 @@ static struct compiler default_compilers[] =
 		     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
                      %{!pipe:%g.s} %A\n }}}}"
 #else /* ! USE_CPPLIB */
-    "cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
+    "%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-c \
+	%{ansi:-std=c89} %{std*} %{nostdinc*}\
 	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
@@ -669,8 +670,6 @@ static struct compiler default_compilers[] =
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
 	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
@@ -689,7 +688,8 @@ static struct compiler default_compilers[] =
 #endif /* ! USE_CPPLIB */
   }},
   {"-",
-   {"%{E:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
+   {"%{E:%{traditional|ftraditional|traditional-cpp:trad}cpp \
+        -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
 	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
@@ -698,8 +698,6 @@ static struct compiler default_compilers[] =
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
 	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
@@ -708,7 +706,8 @@ static struct compiler default_compilers[] =
   {".h", {"@c-header"}},
   {"@c-header",
    {"%{!E:%eCompilation of header file requested} \
-    cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+     %{traditional|ftraditional|traditional-cpp:trad}cpp \
+	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
@@ -717,8 +716,6 @@ static struct compiler default_compilers[] =
 	%{ffast-math:-D__FAST_MATH__}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
 	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
@@ -741,15 +738,14 @@ static struct compiler default_compilers[] =
 			    %i %A\n }}}}"}},
   {".S", {"@assembler-with-cpp"}},
   {"@assembler-with-cpp",
-   {"cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-asm \
+	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
-        -$ %{!undef:%p %P} -D__ASSEMBLER__ \
+        -$ %{!undef:%p %P} \
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
 	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
