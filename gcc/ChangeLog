@@ -1,3 +1,7 @@
+2001-03-20  Tom Tromey  <tromey@redhat.com>
+
+	* libgcc-std.ver: Added __fixunssfsi and __fixunsdfsi.
+
 2001-03-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (set_decl_assembler_name): Set DECL_ASSEMBLER_NAME for
