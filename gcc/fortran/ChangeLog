@@ -1,3 +1,10 @@
+2004-11-02  Paul Brook  <paul@codesourcery.com>
+
+	* intrinsic.c (check_intrinsic_standard): Include error locus.
+	Remove VLA.
+	(gfc_intrinsic_func_interface, gfc_intrinsic_sub_interface): Pass
+	locus to check_intrinsic_standard.
+
 2004-10-31  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	PR fortran/17590

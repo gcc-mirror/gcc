@@ -2670,18 +2670,13 @@ gfc_init_expr_extensions (gfc_intrinsic_sym *isym)
    has chosen.  */
 
 static void
-check_intrinsic_standard (const char *name, int standard)
+check_intrinsic_standard (const char *name, int standard, locus * where)
 {
-  int name_len;
-  char msgstr[name_len + 53];
-
   if (!gfc_option.warn_nonstd_intrinsics)
     return;
 
-  name_len = strlen (name);
-  strncpy (msgstr, name, name_len + 1);
-  strncat (msgstr, " intrinsic is not included in the selected standard.", 53);
-  gfc_notify_std (standard, msgstr);
+  gfc_notify_std (standard, "Intrinsic '%s' at %L is not included"
+		  "in the selected standard", name, where);
 }
 
 
@@ -2794,7 +2789,7 @@ got_specific:
 	}
     }
 
-  check_intrinsic_standard (name, isym->standard);
+  check_intrinsic_standard (name, isym->standard, &expr->where);
 
   return MATCH_YES;
 }
@@ -2851,7 +2846,7 @@ gfc_intrinsic_sub_interface (gfc_code * c, int error_flag)
       return MATCH_ERROR;
     }
 
-  check_intrinsic_standard (name, isym->standard);
+  check_intrinsic_standard (name, isym->standard, &c->loc);
 
   return MATCH_YES;
 
