@@ -1,3 +1,10 @@
+2004-09-23  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/Collections.java
+	(binarySearch(List, Object, Comparator)): Explicitly
+	reverse direction in list iterator.
+	(rotate): Just return when list is empty.
+
 2004-09-23  Tom Tromey  <tromey@redhat.com>
 
 	PR java/17329:
