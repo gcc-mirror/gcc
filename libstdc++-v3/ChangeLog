@@ -1,3 +1,31 @@
+2003-04-23  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/basic_filebuf/3.cc: _S_pback_size now
+	belongs to basic_filebuf.
+	* testsuite/27_io/basic_fstream/3.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/3.cc: Likewise.
+	* testsuite/27_io/basic_ios/3.cc: Remove _S_pback_size
+	instantiation (now belongs to basic_filebuf).
+	* testsuite/27_io/basic_iostream/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc:
+	_S_pback_size now belongs to basic_filebuf.
+	* testsuite/27_io/basic_istringstream/3.cc: Remove _S_pback_size
+	instantiation (now belongs to basic_filebuf).
+	* testsuite/27_io/basic_ofstream/3.cc: _S_pback_size now
+	belongs to basic_filebuf.
+	* testsuite/27_io/basic_ostream/3.cc: Remove _S_pback_size
+	instantiation (now belongs to basic_filebuf).
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc:
+	_S_pback_size now belongs to basic_filebuf.
+	* testsuite/27_io/basic_ostringstream/3.cc: Remove _S_pback_size
+	instantiation (now belongs to basic_filebuf).
+	* testsuite/27_io/basic_streambuf/3.cc: _S_pback_size now belongs
+	to basic_filebuf.
+	* testsuite/27_io/basic_stringbuf/3.cc: Remove _S_pback_size
+	instantiation (now belongs to basic_filebuf).
+	* testsuite/27_io/basic_stringstream/3.cc: Likewise.
+
 2003-04-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Move GLIBCPP_CHECK_PCH before native/cross conditions.

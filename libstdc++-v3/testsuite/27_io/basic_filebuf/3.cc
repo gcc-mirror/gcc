@@ -130,8 +130,8 @@ void test07()
 #if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
-  std::basic_streambuf<gnu_char_type>::int_type
-  std::basic_streambuf<gnu_char_type>::_S_pback_size;
+  std::basic_filebuf<gnu_char_type>::int_type
+  std::basic_filebuf<gnu_char_type>::_S_pback_size;
 #endif
 
 int main() 
