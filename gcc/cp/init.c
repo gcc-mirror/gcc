@@ -2167,9 +2167,9 @@ build_java_class_ref (type)
      tree type;
 {
   tree name, class_decl;
-  static tree CL_prefix = NULL_TREE;
-  if (CL_prefix == NULL_TREE)
-    CL_prefix = get_identifier("_CL_");
+  static tree CL_suffix = NULL_TREE;
+  if (CL_suffix == NULL_TREE)
+    CL_suffix = get_identifier("class$");
   if (jclass_node == NULL_TREE)
     {
       jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier("jclass"));
@@ -2177,7 +2177,7 @@ build_java_class_ref (type)
 	fatal("call to Java constructor, while `jclass' undefined");
       jclass_node = TREE_TYPE (jclass_node);
     }
-  name = build_overload_with_type (CL_prefix, type);
+  name = build_static_name (type, CL_suffix);
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
     {
@@ -2193,7 +2193,7 @@ build_java_class_ref (type)
   return class_decl;
 }
 
-/* Returns teh size of the cookie to use when allocating an array
+/* Returns the size of the cookie to use when allocating an array
    whose elements have the indicated TYPE.  Assumes that it is already
    known that a cookie is needed.  */
 

@@ -1,3 +1,8 @@
+2000-10-05  Tom Tromey  <tromey@cygnus.com>
+
+	* init.c (build_java_class_ref): Use `build_static_name' with a
+	suffix, not a prefix, to build the class object's name.
+
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (access_kind): Fix comment typo.
