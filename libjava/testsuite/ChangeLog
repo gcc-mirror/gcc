@@ -1,3 +1,7 @@
+2000-02-12  Anthony Green  <green@cygnus.com>
+
+	* libjava.compile/inner_inherit.java: New file.
+
 2000-02-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* libjava.lang/inner_interface.out: New file.
