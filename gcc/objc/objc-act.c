@@ -47,6 +47,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "objc-actions.h"
 #include "input.h"
+
+/* The GNU run time requires the selectors in a vector
+   so it can store the operation numbers in them.  */
+#ifndef NEXT_OBJC_RUNTIME
+#define OBJC_SELECTORS_WITHOUT_LABELS
+#endif
 
 /* Define the special tree codes that we use.  */
 
