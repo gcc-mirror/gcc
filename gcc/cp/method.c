@@ -562,6 +562,7 @@ do_build_copy_constructor (fndecl)
 	{
 	  tree init;
 	  tree field = fields;
+	  tree expr_type;
 
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
@@ -584,9 +585,15 @@ do_build_copy_constructor (fndecl)
 	  else
 	    continue;
 
-	  init = build (COMPONENT_REF,
-	                cp_build_qualified_type (TREE_TYPE (field), cvquals),
-	                init, field);
+	  /* Compute the type of "init->field".  If the copy-constructor
+	     parameter is, for example, "const S&", and the type of
+	     the field is "T", then the type will usually be "const
+	     T".  (There are no cv-qualified variants of reference
+	     types.)  */
+	  expr_type = TREE_TYPE (field);
+	  if (TREE_CODE (expr_type) != REFERENCE_TYPE)
+	    expr_type = cp_build_qualified_type (expr_type, cvquals);
+	  init = build (COMPONENT_REF, expr_type, init, field);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  member_init_list

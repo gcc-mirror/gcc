@@ -1,3 +1,11 @@
+2002-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6486
+	* g++.dg/template/friend6.C: New test.
+
+	PR c++/6492
+	* g++.dg/init/copy1.C: New test.
+
 2002-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/warn/effc1.C: New test.
