@@ -261,8 +261,8 @@ Wed Aug 20 16:36:59 1997  Jim Wilson  <wilson@cygnus.com>
 
 Mon Aug 18 09:01:54 1997  Jeffrey A Law  (law@cygnus.com)
 
-	* Makefile.in (F77_SRCS): Re-alphabetize.
-	* Make-lang.in (F77_OBJS): Likewise.
+	* Makefile.in (F77_OBJS): Re-alphabetize.
+	* Make-lang.in (F77_SRCS): Likewise.
 
 Sun Aug 17 08:35:11 1997  Jeffrey A Law  (law@cygnus.com)
 
