@@ -1,3 +1,10 @@
+2003-06-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (seekoff): We can't seek beyond
+	_M_out_lim, therefore _M_move_out_cur boils down to simply
+	updating _M_out_cur.
+	(seekpos): Likewise, clean up.
+
 2003-06-18  Nathan C. Myers  <ncm-nospam@cantrip.org>
             Paolo Carlini  <pcarlini@unitus.it>
 

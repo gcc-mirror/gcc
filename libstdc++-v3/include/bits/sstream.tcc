@@ -157,7 +157,7 @@ namespace std
 	      && __newoffo + __off >= 0 
 	      && this->_M_out_lim - __beg >= __newoffo + __off)
 	    {
-	      _M_move_out_cur(__newoffo + __off - (this->_M_out_cur - __beg));
+	      this->_M_out_cur = __beg + __newoffo + __off;
 	      __ret = pos_type(__newoffo);
 	    }
 	}
@@ -174,34 +174,25 @@ namespace std
       if (_M_string.capacity())
 	{
 	  off_type __pos = __sp; // Use streamoff operator to do conversion.
-	  char_type* __beg = NULL;
-	  char_type* __end = NULL;
 	  const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
 	  const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
+	  char_type* __beg = __testin ? this->_M_in_beg : this->_M_out_beg;
 	  
 	  // NB: Ordered.
 	  bool __testposi = false;
 	  bool __testposo = false;
-	  if (__testin)
-	    {
-	      __beg = this->_M_in_beg;
-	      __end = this->_M_in_end;
-	      if (0 <= __pos && __pos <= __end - __beg)
-		__testposi = true;
-	    }
-	  if (__testout)
-	    {
-	      __beg = this->_M_out_beg;
-	      __end = this->_M_out_lim;
-	      if (0 <= __pos && __pos <= __end - __beg)
-		__testposo = true;
-	    }
+	  if (__testin && 0 <= __pos
+	      && __pos <=  this->_M_in_end - __beg)
+	    __testposi = true;
+	  if (__testout && 0 <= __pos
+	      && __pos <=  this->_M_out_lim - __beg)
+	    __testposo = true;
 	  if (__testposi || __testposo)
 	    {
 	      if (__testposi)
-		this->_M_in_cur = this->_M_in_beg + __pos;
+		this->_M_in_cur = __beg + __pos;
 	      if (__testposo)
-		_M_move_out_cur((__pos) - (this->_M_out_cur - __beg));
+	        this->_M_out_cur = __beg + __pos;
 	      __ret = pos_type(off_type(__pos));
 	    }
 	}
