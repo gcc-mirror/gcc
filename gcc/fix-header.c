@@ -239,7 +239,7 @@ tan\0tanh\0" },
   { "stdio.h", ANSI_SYMBOL,
       "clearerr\0fclose\0feof\0ferror\0fflush\0fgetc\0fgetpos\0\
 fgets\0fopen\0fprintf\0fputc\0fputs\0fread\0freopen\0fscanf\0fseek\0\
-fsetpos\0ftell\0fwrite\0getc\0getchar\0gets\00perror\0popen\0\
+fsetpos\0ftell\0fwrite\0getc\0getchar\0gets\0perror\0\
 printf\0putc\0putchar\0puts\0remove\0rename\0rewind\0scanf\0setbuf\0\
 setvbuf\0sprintf\0sscanf\0vprintf\0vsprintf\0vfprintf\0tmpfile\0\
 tmpnam\0ungetc\0" },
