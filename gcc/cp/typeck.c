@@ -5189,6 +5189,10 @@ build_c_cast (type, expr)
       value = convert_to_void (value, /*implicit=*/NULL);
       return value;
     }
+
+  if (!complete_type_or_else (type, NULL_TREE))
+    return error_mark_node;
+
   /* Convert functions and arrays to pointers and
      convert references to their expanded types,
      but don't convert any other types.  If, however, we are
