@@ -3395,6 +3395,15 @@ conditional_context ()
   return block_stack && block_stack->data.block.conditional_code;
 }
 
+/* Return an opaque pointer to the current nesting level, so frontend code
+   can check its own sanity.  */
+
+struct nesting *
+current_nesting_level ()
+{
+  return cfun ? block_stack : 0;
+}
+
 /* Emit a handler label for a nonlocal goto handler.
    Also emit code to store the handler label in SLOT before BEFORE_INSN.  */
 
