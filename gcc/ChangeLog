@@ -1,3 +1,7 @@
+2000-09-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c: Don't include tm.h directly.
+
 Fri Sep  8 14:34:56 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_replace_rtx_1): Fix confusion about equality
