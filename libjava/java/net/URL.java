@@ -392,13 +392,14 @@ public final class URL implements Serializable
     // right after the "://".  The second colon is for an optional port value
     // and implies that the host from the context is used if available.
     int colon;
+    int slash = spec.indexOf('/');
     if ((colon = spec.indexOf("://", 1)) > 0
+	&& ((colon < slash || slash < 0))
         && ! spec.regionMatches(colon, "://:", 0, 4))
       context = null;
 
-    int slash;
     if ((colon = spec.indexOf(':')) > 0
-        && (colon < (slash = spec.indexOf('/')) || slash < 0))
+        && (colon < slash || slash < 0))
       {
 	// Protocol specified in spec string.
 	protocol = spec.substring(0, colon).toLowerCase();
@@ -429,8 +430,6 @@ public final class URL implements Serializable
 	authority = context.authority;
       }
     else // Protocol NOT specified in spec. and no context available.
-
-
       throw new MalformedURLException("Absolute URL required with null context");
 
     protocol = protocol.trim();

@@ -1,5 +1,11 @@
 2005-01-11  Michael Koch  <konqueror@gmx.de>
 
+	PR libgcj/13972
+	* java/net/URL.java (URL): Handle specs like
+	"/redir?http://domain2.com/index.html" which start with a slash.
+
+2005-01-11  Michael Koch  <konqueror@gmx.de>
+
 	PR libgcj/14012, PR libgcj/14013, PR libgcj/15157, PR libgcj/15509
 	* gnu/java/net/BASE64.java,
 	gnu/java/net/EmptyX509TrustManager.java,
