@@ -55,7 +55,7 @@ typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef		float DFtype	__attribute__ ((mode (DF)));
-#if 0
+#if LONG_DOUBLE_TYPE_SIZE == 96
 typedef		float XFtype	__attribute__ ((mode (XF)));
 #endif
 #if LONG_DOUBLE_TYPE_SIZE == 128
@@ -803,6 +803,50 @@ __fixtfdi (a)
 }
 #endif
 
+#if defined(L_fixunsxfdi) && (LONG_DOUBLE_TYPE_SIZE == 96)
+#define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
+#define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
+
+DItype
+__fixunsxfdi (a)
+     XFtype a;
+{
+  XFtype b;
+  UDItype v;
+
+  if (a < 0)
+    return 0;
+
+  /* Compute high word of result, as a flonum.  */
+  b = (a / HIGH_WORD_COEFF);
+  /* Convert that to fixed (but not to DItype!),
+     and shift it into the high word.  */
+  v = (USItype) b;
+  v <<= WORD_SIZE;
+  /* Remove high part from the XFtype, leaving the low part as flonum.  */
+  a -= (XFtype)v;
+  /* Convert that to fixed (but not to DItype!) and add it in.
+     Sometimes A comes out negative.  This is significant, since
+     A has more bits than a long int does.  */
+  if (a < 0)
+    v -= (USItype) (- a);
+  else
+    v += (USItype) a;
+  return v;
+}
+#endif
+
+#if defined(L_fixxfdi) && (LONG_DOUBLE_TYPE_SIZE == 96)
+DItype
+__fixxfdi (a)
+     XFtype a;
+{
+  if (a < 0)
+    return - __fixunsxfdi (-a);
+  return __fixunsxfdi (a);
+}
+#endif
+
 #ifdef L_fixunsdfdi
 #define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
@@ -893,6 +937,30 @@ __fixsfdi (SFtype a)
 }
 #endif
 
+#if defined(L_floatdixf) && (LONG_DOUBLE_TYPE_SIZE == 96)
+#define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
+#define HIGH_HALFWORD_COEFF (((UDItype) 1) << (WORD_SIZE / 2))
+#define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
+
+XFtype
+__floatdixf (u)
+     DItype u;
+{
+  XFtype d;
+  SItype negate = 0;
+
+  if (u < 0)
+    u = -u, negate = 1;
+
+  d = (USItype) (u >> WORD_SIZE);
+  d *= HIGH_HALFWORD_COEFF;
+  d *= HIGH_HALFWORD_COEFF;
+  d += (USItype) (u & (HIGH_WORD_COEFF - 1));
+
+  return (negate ? -d : d);
+}
+#endif
+
 #if defined(L_floatditf) && (LONG_DOUBLE_TYPE_SIZE == 128)
 #define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
 #define HIGH_HALFWORD_COEFF (((UDItype) 1) << (WORD_SIZE / 2))
@@ -962,6 +1030,19 @@ __floatdisf (u)
   f += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
   return (negate ? -f : f);
+}
+#endif
+
+#if defined(L_fixunsxfsi) && LONG_DOUBLE_TYPE_SIZE == 96
+#include "glimits.h"
+
+USItype
+__fixunsxfsi (a)
+     XFtype a;
+{
+  if (a >= - (DFtype) LONG_MIN)
+    return (SItype) (a + LONG_MIN) - LONG_MIN;
+  return (SItype) a;
 }
 #endif
 
