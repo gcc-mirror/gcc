@@ -145,7 +145,11 @@ if { [ check_weak_available ] == 1 } {
 
 set ld_output [ remote_exec host "[ find_ld ]" "--help" ]
 
-if { [ string first "--gc-sections" $ld_output ] >= 0 } {
+# AIX gld supports garbage collection. But AIX gcc does not support 
+# -ffunction-sections or -fdata-sections.
+if { [ string first "--gc-sections" $ld_output ] >= 0 
+     && ! [istarget rs6000-*-aix*]
+     && ! [istarget powerpc*-*-aix*] } {
 
     dg-init
     if [isnative] {
