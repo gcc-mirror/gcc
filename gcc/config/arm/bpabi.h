@@ -26,6 +26,9 @@
 /* Assume that AAPCS ABIs should adhere to the full BPABI.  */ 
 #define TARGET_BPABI (TARGET_AAPCS_BASED)
 
+/* Section 4.1 of the AAPCS requires the use of VFP format.  */
+#define FPUTYPE_DEFAULT FPUTYPE_VFP
+
 /* The ARM BPABI functions return a boolean; they use no special
    calling convention.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) TARGET_BPABI
