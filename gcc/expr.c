@@ -4253,15 +4253,12 @@ store_expr (exp, target, want_value)
 
       else if (GET_MODE (temp) == BLKmode && TREE_CODE (exp) == STRING_CST)
 	{
-	  /* Handle copying a string constant into an array.
-	     The string constant may be shorter than the array.
-	     So copy just the string's actual length, and clear the rest.  */
-	  rtx size;
-	  rtx addr;
+	  /* Handle copying a string constant into an array.  The string
+	     constant may be shorter than the array.  So copy just the string's
+	     actual length, and clear the rest.  First get the size of the data
+	     type of the string, which is actually the size of the target.  */
+	  rtx size = expr_size (exp);
 
-	  /* Get the size of the data type of the string,
-	     which is actually the size of the target.  */
-	  size = expr_size (exp);
 	  if (GET_CODE (size) == CONST_INT
 	      && INTVAL (size) < TREE_STRING_LENGTH (exp))
 	    emit_block_move (target, temp, size);
@@ -4277,30 +4274,31 @@ store_expr (exp, target, want_value)
 	      rtx label = 0;
 
 	      /* Copy that much.  */
+	      copy_size_rtx = convert_to_mode (ptr_mode, copy_size_rtx, 0);
 	      emit_block_move (target, temp, copy_size_rtx);
 
 	      /* Figure out how much is left in TARGET that we have to clear.
 		 Do all calculations in ptr_mode.  */
-
-	      addr = XEXP (target, 0);
-	      addr = convert_modes (ptr_mode, Pmode, addr, 1);
-
 	      if (GET_CODE (copy_size_rtx) == CONST_INT)
 		{
-		  addr = plus_constant (addr, TREE_STRING_LENGTH (exp));
-		  size = plus_constant (size, -TREE_STRING_LENGTH (exp));
+		  size = plus_constant (size, -INTVAL (copy_size_rtx));
+		  target = adjust_address (target, BLKmode,
+					   INTVAL (copy_size_rtx));
 		}
 	      else
 		{
-		  addr = force_reg (ptr_mode, addr);
-		  addr = expand_binop (ptr_mode, add_optab, addr,
-				       copy_size_rtx, NULL_RTX, 0,
-				       OPTAB_LIB_WIDEN);
-
 		  size = expand_binop (ptr_mode, sub_optab, size,
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+		  if (GET_MODE (copy_size_rtx) != Pmode)
+		    copy_size_rtx = convert_memory_address (Pmode,
+							    copy_size_rtx);
+#endif
+
+		  target = offset_address (target, copy_size_rtx,
+					   highest_pow2_factor (copy_size));
 		  label = gen_label_rtx ();
 		  emit_cmp_and_jump_insns (size, const0_rtx, LT, NULL_RTX,
 					   GET_MODE (size), 0, label);
@@ -4308,27 +4306,17 @@ store_expr (exp, target, want_value)
 
 	      if (size != const0_rtx)
 		{
-		  rtx dest = gen_rtx_MEM (BLKmode, addr);
-
-		  MEM_COPY_ATTRIBUTES (dest, target);
-
-		  /* The residual likely does not have the same alignment
-		     as the original target.  While we could compute the
-		     alignment of the residual, it hardely seems worth
-		     the effort.  */
-		  set_mem_align (dest, BITS_PER_UNIT);
-
 		  /* Be sure we can write on ADDR.  */
 		  in_check_memory_usage = 1;
 		  if (current_function_check_memory_usage)
 		    emit_library_call (chkr_check_addr_libfunc,
 				       LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-				       addr, Pmode,
+				       XEXP (target, 0), Pmode,
 				       size, TYPE_MODE (sizetype),
  				       GEN_INT (MEMORY_USE_WO),
 				       TYPE_MODE (integer_type_node));
 		  in_check_memory_usage = 0;
-		  clear_storage (dest, size);
+		  clear_storage (target, size);
 		}
 
 	      if (label)
@@ -6277,10 +6265,12 @@ expand_expr (exp, target, tmode, modifier)
   /* If will do cse, generate all results into pseudo registers
      since 1) that allows cse to find more things
      and 2) otherwise cse could produce an insn the machine
-     cannot support.  */
+     cannot support.  And exception is a CONSTRUCTOR into a multi-word
+     MEM: that's much more likely to be most efficient into the MEM.  */
 
   if (! cse_not_expected && mode != BLKmode && target
-      && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER))
+      && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER)
+      && ! (code == CONSTRUCTOR && GET_MODE_SIZE (mode) > UNITS_PER_WORD))
     target = subtarget;
 
   switch (code)
@@ -6788,7 +6778,7 @@ expand_expr (exp, target, tmode, modifier)
 						   (TYPE_QUALS (type)
 						    | (TREE_READONLY (exp)
 						       * TYPE_QUAL_CONST))),
-			     TREE_ADDRESSABLE (exp), 1, 1);
+			     0, TREE_ADDRESSABLE (exp), 1);
 
 	  store_constructor (exp, target, 0,
 			     int_size_in_bytes (TREE_TYPE (exp)));
