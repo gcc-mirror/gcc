@@ -1,4 +1,4 @@
-1999-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* call.c (build_new_method_call): Also check destructors.
 
