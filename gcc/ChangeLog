@@ -1,3 +1,14 @@
+2002-05-29  Dale Johannesen  <dalej@apple.com>
+            Michael Matz  <matz@kde.org>
+            David Edelsohn  <edesohn@gnu.org>
+            Jeff Law <law@redhat.com>
+
+	* haifa-sched.c (schedule_block): Do not count USE and CLOBBER
+	insns against the issue rate.
+
+	* sched-deps.c (sched_create_groups_for_libcalls): New function.
+	(sched_analyze): Use it.
+
 2002-05-29  Chris Lattner  <sabre@nondot.org>
 
         * ssa.c (rename_insn_1): Rename uses of undefined registers to
@@ -3086,7 +3097,7 @@ doc:
 	(mips_expand_prologue, mips_expand_epilogue): Update callers.
 	(highpart_shift_operator): Attach ATTRIBUTE_UNUSED to mode argument.
 
-Thu May  9 11:50:09 2002  Jeffrey A Law  (law@cygnus.com)
+Thu May  9 11:50:09 2002  Jeffrey A Law  (law@redhat.com)
 
 	* athlon.md, k6.md, pentium.md, ppro.md): New files.
 	* i386.md: Move scheduling information into new files.
@@ -4276,7 +4287,7 @@ Tue Apr 30 19:15:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(scheduling descriptions): Kill uses of fop1.
 	(sse, mmx, fp patterns): Set type and mode properly.
 
-Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
+Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@redhat.com)
 
 	* pa.c (override_options): Default to PA8000 scheduling.
 	* doc/invoke.texi (HP-PA options): Mention newly added 7300

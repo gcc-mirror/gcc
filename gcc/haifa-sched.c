@@ -2179,7 +2179,10 @@ schedule_block (b, rgn_n_insns)
 	    can_issue_more =
 	      (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
 					       insn, can_issue_more);
-	  else
+	  /* A naked CLOBBER or USE generates no instruction, so do
+	     not count them against the issue rate.  */
+	  else if (GET_CODE (PATTERN (insn)) != USE
+		   && GET_CODE (PATTERN (insn)) != CLOBBER)
 	    can_issue_more--;
 
 	  schedule_insn (insn, &ready, clock_var);

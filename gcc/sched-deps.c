@@ -88,6 +88,7 @@ static void flush_pending_lists PARAMS ((struct deps *, rtx, int, int));
 static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_insn PARAMS ((struct deps *, rtx, rtx, rtx));
+static void sched_create_groups_for_libcalls PARAMS ((rtx, rtx));
 static rtx group_leader PARAMS ((rtx));
 
 static rtx get_condition PARAMS ((rtx));
@@ -1210,6 +1211,57 @@ sched_analyze_insn (deps, x, insn, loop_notes)
     }
 }
 
+/* Find any libcall sequences between HEAD and TAIL inclusive; set
+   SCHED_GROUP_P appropriately for such sequences.  */
+
+static void
+sched_create_groups_for_libcalls (head, tail)
+     rtx head, tail;
+{
+  rtx insn;
+  int tail_seen_p = 0;
+
+  for (insn = head;; insn = NEXT_INSN (insn))
+    {
+      rtx link, end_seq, set, r0, note;
+      if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == CLOBBER
+	  && (r0 = XEXP (PATTERN (insn), 0), GET_CODE (r0) == REG)
+	  && (link = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0
+	  && (end_seq = XEXP (link, 0)) != 0
+	  && INSN_P (end_seq)
+	  && (set = single_set (end_seq)) != 0
+	  && SET_DEST (set) == r0 && SET_SRC (set) == r0
+	  && (note = find_reg_note (end_seq, REG_EQUAL, NULL_RTX)) != 0)
+	{
+	  /* We found a libcall block between insn and end_seq.
+	     The inner insns should be scheduled in a block.  */
+	  rtx inner;
+	  /* Paranoia.  */
+	  if (insn == tail)
+	    tail_seen_p = 1;
+	  /* We don't want to set this flag on the initial clobber, because
+	     the semantic of SCHED_GROUP_P is to make insn be scheduled
+	     together with the previous insn.  */
+	  for (inner = NEXT_INSN (insn); inner; inner = NEXT_INSN (inner))
+	    {
+	      if (INSN_P (inner))
+		set_sched_group_p (inner);
+	      /* Paranoia.  */
+	      if (inner == tail)
+		tail_seen_p = 1;
+	      if (inner == end_seq)
+		break;
+	    }
+	  /* We should be able to skip the whole lib-call block.
+	     Remember that one NEXT_INSN is done in the loop-iteration.  */
+	  insn = end_seq;
+	}
+      if (insn == tail || tail_seen_p)
+	break;
+    }
+  return;
+}
+
 /* Analyze every insn between HEAD and TAIL inclusive, creating LOG_LINKS
    for every dependency.  */
 
@@ -1357,6 +1409,10 @@ sched_analyze (deps, head, tail)
 	{
 	  if (current_sched_info->use_cselib)
 	    cselib_finish ();
+
+	  if (! reload_completed)
+	    sched_create_groups_for_libcalls (head, tail);
+
 	  return;
 	}
     }
