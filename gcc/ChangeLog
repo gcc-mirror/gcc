@@ -1,3 +1,8 @@
+2002-11-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Testing): Document extra Java testing.
+	* doc/sourcebuild.texi (Test Suites): Document libgcj testing.
+
 2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa64-hpux.h (LINK_SPEC): Move "+Accept TypeMismatch" switch to the
