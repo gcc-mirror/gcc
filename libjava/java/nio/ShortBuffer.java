@@ -39,10 +39,10 @@ package java.nio;
 
 import gnu.java.nio.ShortBufferImpl;
 
-public abstract class ShortBuffer extends Buffer
+public abstract class ShortBuffer extends Buffer implements Comparable
 {
-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
   protected short [] backing_buffer;
+  protected int array_offset;
 
   public static ShortBuffer allocateDirect(int capacity)
   {
@@ -77,7 +77,13 @@ public abstract class ShortBuffer extends Buffer
     return wrap(array, 0, array.length);
   }
 
-  final public ShortBuffer get(short[] dst, int offset, int length)
+  ShortBuffer (int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+    array_offset = 0;
+  }
+  
+  public ShortBuffer get (short[] dst, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       {
@@ -87,12 +93,12 @@ public abstract class ShortBuffer extends Buffer
     return this;
   }
 
-  final public ShortBuffer get(short[] dst)
+  public ShortBuffer get (short[] dst)
   {
     return get(dst, 0, dst.length);
   }
 
-  final public ShortBuffer put(ShortBuffer src)
+  public ShortBuffer put (ShortBuffer src)
   {
     while (src.hasRemaining())
       put(src.get());
@@ -100,7 +106,7 @@ public abstract class ShortBuffer extends Buffer
     return this;
   }
 
-  final public ShortBuffer put(short[] src, int offset, int length)
+  public ShortBuffer put (short[] src, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       put(src[i]);
@@ -125,7 +131,7 @@ public abstract class ShortBuffer extends Buffer
 
   public final int arrayOffset()
   {
-    return 0;
+    return array_offset;
   }
 
   public int hashCode()
@@ -173,17 +179,7 @@ public abstract class ShortBuffer extends Buffer
     return 0;
   }
 
-  public final ByteOrder order()
-  {
-    return endian;
-  }
-
-  public final ShortBuffer order(ByteOrder bo)
-  {
-    endian = bo;
-    return this;
-  }
-
+  public abstract ByteOrder order ();
   public abstract short get();
   public abstract java.nio. ShortBuffer put(short b);
   public abstract short get(int index);
@@ -193,34 +189,4 @@ public abstract class ShortBuffer extends Buffer
   public abstract ShortBuffer slice();
   public abstract ShortBuffer duplicate();
   public abstract ShortBuffer asReadOnlyBuffer();
-  public abstract ShortBuffer asShortBuffer();
-  public abstract CharBuffer asCharBuffer();
-  public abstract IntBuffer asIntBuffer();
-  public abstract LongBuffer asLongBuffer();
-  public abstract FloatBuffer asFloatBuffer();
-  public abstract DoubleBuffer asDoubleBuffer();
-  public abstract char getChar();
-  public abstract ShortBuffer putChar(char value);
-  public abstract char getChar(int index);
-  public abstract ShortBuffer putChar(int index, char value);
-  public abstract short getShort();
-  public abstract ShortBuffer putShort(short value);
-  public abstract short getShort(int index);
-  public abstract ShortBuffer putShort(int index, short value);
-  public abstract int getInt();
-  public abstract ShortBuffer putInt(int value);
-  public abstract int getInt(int index);
-  public abstract ShortBuffer putInt(int index, int value);
-  public abstract long getLong();
-  public abstract ShortBuffer putLong(long value);
-  public abstract long getLong(int index);
-  public abstract ShortBuffer putLong(int index, long value);
-  public abstract float getFloat();
-  public abstract ShortBuffer putFloat(float value);
-  public abstract float getFloat(int index);
-  public abstract ShortBuffer putFloat(int index, float value);
-  public abstract double getDouble();
-  public abstract ShortBuffer putDouble(double value);
-  public abstract double getDouble(int index);
-  public abstract ShortBuffer putDouble(int index, double value);
 }

@@ -39,10 +39,10 @@ package java.nio;
 
 import gnu.java.nio.FloatBufferImpl;
 
-public abstract class FloatBuffer extends Buffer
+public abstract class FloatBuffer extends Buffer implements Comparable
 {
-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
   protected float [] backing_buffer;
+  protected int array_offset;
 
   public static FloatBuffer allocateDirect(int capacity)
   {
@@ -77,7 +77,13 @@ public abstract class FloatBuffer extends Buffer
     return wrap(array, 0, array.length);
   }
 
-  final public FloatBuffer get(float[] dst, int offset, int length)
+  FloatBuffer (int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+    array_offset = 0;                    
+  }
+  
+  public FloatBuffer get (float[] dst, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       {
@@ -87,12 +93,12 @@ public abstract class FloatBuffer extends Buffer
     return this;
   }
 
-  final public FloatBuffer get(float[] dst)
+  public FloatBuffer get (float[] dst)
   {
     return get(dst, 0, dst.length);
   }
 
-  final public FloatBuffer put(FloatBuffer src)
+  public FloatBuffer put (FloatBuffer src)
   {
     while (src.hasRemaining())
       put(src.get());
@@ -100,7 +106,7 @@ public abstract class FloatBuffer extends Buffer
     return this;
   }
 
-  final public FloatBuffer put(float[] src, int offset, int length)
+  public FloatBuffer put (float[] src, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       put(src[i]);
@@ -125,7 +131,7 @@ public abstract class FloatBuffer extends Buffer
 
   public final int arrayOffset()
   {
-    return 0;
+    return array_offset;
   }
 
   public int hashCode()
@@ -139,6 +145,7 @@ public abstract class FloatBuffer extends Buffer
       {
         return compareTo(obj) == 0;
       }
+
     return false;
   }
 
@@ -171,17 +178,7 @@ public abstract class FloatBuffer extends Buffer
     return 0;
   }
 
-  public final ByteOrder order()
-  {
-    return endian;
-  }
-
-  public final FloatBuffer order(ByteOrder bo)
-  {
-    endian = bo;
-    return this;
-  }
-
+  public abstract ByteOrder order ();
   public abstract float get();
   public abstract java.nio. FloatBuffer put(float b);
   public abstract float get(int index);
@@ -191,34 +188,4 @@ public abstract class FloatBuffer extends Buffer
   public abstract FloatBuffer slice();
   public abstract FloatBuffer duplicate();
   public abstract FloatBuffer asReadOnlyBuffer();
-  public abstract ShortBuffer asShortBuffer();
-  public abstract CharBuffer asCharBuffer();
-  public abstract IntBuffer asIntBuffer();
-  public abstract LongBuffer asLongBuffer();
-  public abstract FloatBuffer asFloatBuffer();
-  public abstract DoubleBuffer asDoubleBuffer();
-  public abstract char getChar();
-  public abstract FloatBuffer putChar(char value);
-  public abstract char getChar(int index);
-  public abstract FloatBuffer putChar(int index, char value);
-  public abstract short getShort();
-  public abstract FloatBuffer putShort(short value);
-  public abstract short getShort(int index);
-  public abstract FloatBuffer putShort(int index, short value);
-  public abstract int getInt();
-  public abstract FloatBuffer putInt(int value);
-  public abstract int getInt(int index);
-  public abstract FloatBuffer putInt(int index, int value);
-  public abstract long getLong();
-  public abstract FloatBuffer putLong(long value);
-  public abstract long getLong(int index);
-  public abstract FloatBuffer putLong(int index, long value);
-  public abstract float getFloat();
-  public abstract FloatBuffer putFloat(float value);
-  public abstract float getFloat(int index);
-  public abstract FloatBuffer putFloat(int index, float value);
-  public abstract double getDouble();
-  public abstract FloatBuffer putDouble(double value);
-  public abstract double getDouble(int index);
-  public abstract FloatBuffer putDouble(int index, double value);
 }
