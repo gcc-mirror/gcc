@@ -587,10 +587,24 @@ lookup_protocol_in_reflist (rproto_list, lproto)
   return 0;
 }
 
-/* Return 1 if LHS and RHS are compatible types for assignment
-   or various other operations.  Return 0 if they are incompatible,
-   and return -1 if we choose to not decide.  When the operation
-   is REFLEXIVE, check for compatibility in either direction.  */
+/* Return 1 if LHS and RHS are compatible types for assignment or
+   various other operations.  Return 0 if they are incompatible, and
+   return -1 if we choose to not decide (because the types are really
+   just C types, not ObjC specific ones).  When the operation is
+   REFLEXIVE (typically comparisons), check for compatibility in
+   either direction; when it's not (typically assignments), don't.
+
+   This function is called in two cases: when both lhs and rhs are
+   pointers to records (in which case we check protocols too), and
+   when both lhs and rhs are records (in which case we check class
+   inheritance only).
+
+   Warnings about classes/protocols not implementing a protocol are
+   emitted here (multiple of those warnings might be emitted for a
+   single line!); generic warnings about incompatible assignments and
+   lacks of casts in comparisons are/must be emitted by the caller if
+   we return 0.
+*/
 
 int
 objc_comptypes (lhs, rhs, reflexive)
@@ -600,6 +614,8 @@ objc_comptypes (lhs, rhs, reflexive)
 {
   /* New clause for protocols.  */
 
+  /* Here we manage the case of a POINTER_TYPE = POINTER_TYPE.  We only
+     manage the ObjC ones, and leave the rest to the C code.  */
   if (TREE_CODE (lhs) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (lhs)) == RECORD_TYPE
       && TREE_CODE (rhs) == POINTER_TYPE
@@ -614,29 +630,75 @@ objc_comptypes (lhs, rhs, reflexive)
 	  tree rproto, rproto_list;
 	  tree p;
 
+	  /* <Protocol> = <Protocol>  */
 	  if (rhs_is_proto)
 	    {
 	      rproto_list = TYPE_PROTOCOL_LIST (rhs);
-
-	      /* Make sure the protocol is supported by the object
-		 on the rhs.  */
-	      for (lproto = lproto_list; lproto; lproto = TREE_CHAIN (lproto))
+	      
+	      if (!reflexive)
 		{
-		  p = TREE_VALUE (lproto);
-		  rproto = lookup_protocol_in_reflist (rproto_list, p);
+		  /* An assignment between objects of type 'id
+		     <Protocol>'; make sure the protocol on the lhs is
+		     supported by the object on the rhs.  */
+		  for (lproto = lproto_list; lproto; 
+		       lproto = TREE_CHAIN (lproto))
+		    {
+		      p = TREE_VALUE (lproto);
+		      rproto = lookup_protocol_in_reflist (rproto_list, p);
 
-		  if (!rproto)
-		    warning ("object does not conform to the `%s' protocol",
-			     IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
+		      if (!rproto)
+			warning 
+			  ("object does not conform to the `%s' protocol",
+			   IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
+		    }
+		  return 1;
+		}
+	      else
+		{
+		  /* Obscure case - a comparison between two objects
+		     of type 'id <Protocol>'.  Check that either the
+		     protocol on the lhs is supported by the object on
+		     the rhs, or viceversa.  */
+		  
+		  /* Check if the protocol on the lhs is supported by the
+		     object on the rhs.  */
+		  for (lproto = lproto_list; lproto; 
+		       lproto = TREE_CHAIN (lproto))
+		    {
+		      p = TREE_VALUE (lproto);
+		      rproto = lookup_protocol_in_reflist (rproto_list, p);
+		      
+		      if (!rproto)
+			{
+			  /* Check failed - check if the protocol on the rhs
+			     is supported by the object on the lhs.  */
+			  for (rproto = rproto_list; rproto; 
+			       rproto = TREE_CHAIN (rproto))
+			    {
+			      p = TREE_VALUE (rproto);
+			      lproto = lookup_protocol_in_reflist (lproto_list,
+								   p);
+
+			      if (!lproto)
+				{
+				  /* This check failed too: incompatible  */
+				  return 0;
+				}
+			    }
+			  return 1;
+			}
+		    }
+		  return 1;
 		}
 	    }
+	  /* <Protocol> = <class> *  */
 	  else if (TYPED_OBJECT (TREE_TYPE (rhs)))
 	    {
 	      tree rname = TYPE_NAME (TREE_TYPE (rhs));
 	      tree rinter;
 
-	      /* Make sure the protocol is supported by the object
-		 on the rhs.  */
+	      /* Make sure the protocol is supported by the object on
+		 the rhs.  */
 	      for (lproto = lproto_list; lproto; lproto = TREE_CHAIN (lproto))
 		{
 		  p = TREE_VALUE (lproto);
@@ -651,7 +713,7 @@ objc_comptypes (lhs, rhs, reflexive)
 		      rproto = lookup_protocol_in_reflist (rproto_list, p);
 		      /* If the underlying ObjC class does not have
 			 the protocol we're looking for, check for "one-off"
-			 protocols (e.g., `NSObject<MyProt> foo;') attached
+			 protocols (e.g., `NSObject<MyProt> *foo;') attached
 			 to the rhs.  */
 		      if (!rproto)
 			{
@@ -665,7 +727,6 @@ objc_comptypes (lhs, rhs, reflexive)
 			{
 			  rproto_list = CLASS_PROTOCOL_LIST (cat);
 			  rproto = lookup_protocol_in_reflist (rproto_list, p);
-
 			  cat = CLASS_CATEGORY_LIST (cat);
 			}
 
@@ -674,31 +735,127 @@ objc_comptypes (lhs, rhs, reflexive)
 
 		  if (!rproto)
 		    warning ("class `%s' does not implement the `%s' protocol",
-	                     IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (rhs))),
-		             IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
+			     IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (rhs))),
+			     IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
 		}
+	      return 1;
 	    }
-
-	  /* May change...based on whether there was any mismatch */
-          return 1;
+	  /* <Protocol> = id */
+	  else if (TYPE_NAME (TREE_TYPE (rhs)) == objc_object_id)
+	    {
+	      return 1;
+	    }
+	  /* <Protocol> = Class */
+	  else if (TYPE_NAME (TREE_TYPE (rhs)) == objc_class_id)
+	    {
+	      return 0;
+	    }
+	  /* <Protocol> = ?? : let comptypes decide.  */
+          return -1;
         }
       else if (rhs_is_proto)
-	/* Lhs is not a protocol...warn if it is statically typed */
-	return (TYPED_OBJECT (TREE_TYPE (lhs)) != 0);
+	{
+	  /* <class> * = <Protocol> */
+	  if (TYPED_OBJECT (TREE_TYPE (lhs)))
+	    {
+	      if (reflexive)
+		{
+		  tree rname = TYPE_NAME (TREE_TYPE (lhs));
+		  tree rinter;
+		  tree rproto, rproto_list = TYPE_PROTOCOL_LIST (rhs);
+		  
+		  /* Make sure the protocol is supported by the object on
+		     the lhs.  */
+		  for (rproto = rproto_list; rproto; 
+		       rproto = TREE_CHAIN (rproto))
+		    {
+		      tree p = TREE_VALUE (rproto);
+		      tree lproto = 0;
+		      rinter = lookup_interface (rname);
 
+		      while (rinter && !lproto)
+			{
+			  tree cat;
+
+			  tree lproto_list = CLASS_PROTOCOL_LIST (rinter);
+			  lproto = lookup_protocol_in_reflist (lproto_list, p);
+			  /* If the underlying ObjC class does not
+			     have the protocol we're looking for,
+			     check for "one-off" protocols (e.g.,
+			     `NSObject<MyProt> *foo;') attached to the
+			     lhs.  */
+			  if (!lproto)
+			    {
+			      lproto_list = TYPE_PROTOCOL_LIST 
+				(TREE_TYPE (lhs));
+			      lproto = lookup_protocol_in_reflist 
+				(lproto_list, p);
+			    }
+
+			  /* Check for protocols adopted by categories.  */
+			  cat = CLASS_CATEGORY_LIST (rinter);
+			  while (cat && !lproto)
+			    {
+			      lproto_list = CLASS_PROTOCOL_LIST (cat);
+			      lproto = lookup_protocol_in_reflist (lproto_list,
+								   p);
+			      cat = CLASS_CATEGORY_LIST (cat);
+			    }
+			  
+			  rinter = lookup_interface (CLASS_SUPER_NAME 
+						     (rinter));
+			}
+		      
+		      if (!lproto)
+			warning ("class `%s' does not implement the `%s' protocol",
+				 IDENTIFIER_POINTER (TYPE_NAME 
+						     (TREE_TYPE (lhs))),
+				 IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
+		    }
+		  return 1;
+		}
+	      else
+		return 0;
+	    }
+	  /* id = <Protocol> */
+	  else if (TYPE_NAME (TREE_TYPE (lhs)) == objc_object_id)
+	    {
+	      return 1;
+	    }
+	  /* Class = <Protocol> */
+	  else if (TYPE_NAME (TREE_TYPE (lhs)) == objc_class_id)
+	    {
+	      return 0;
+	    }
+	  /* ??? = <Protocol> : let comptypes decide */
+	  else
+	    {
+	      return -1;
+	    }
+	}
       else
-	/* Defer to comptypes.  */
-	return -1;
+	{
+	  /* Attention: we shouldn't defer to comptypes here.  One bad
+	     side effect would be that we might loose the REFLEXIVE
+	     information.
+	  */
+	  lhs = TREE_TYPE (lhs);
+	  rhs = TREE_TYPE (rhs);
+	}
     }
 
-  else if (TREE_CODE (lhs) == RECORD_TYPE && TREE_CODE (rhs) == RECORD_TYPE)
-    ; /* Fall thru.  This is the case we have been handling all along */
-  else
-    /* Defer to comptypes.  */
-    return -1;
+  if (TREE_CODE (lhs) != RECORD_TYPE || TREE_CODE (rhs) != RECORD_TYPE)
+    {
+      /* Nothing to do with ObjC - let immediately comptypes take
+	 responsibility for checking.  */
+      return -1;
+    }
 
-  /* `id' = `<class> *', `<class> *' = `id' */
-
+  /* `id' = `<class> *' `<class> *' = `id': always allow it.
+     Please note that 
+     'Object *o = [[Object alloc] init]; falls
+     in the case <class> * = `id'.
+  */
   if ((TYPE_NAME (lhs) == objc_object_id && TYPED_OBJECT (rhs))
       || (TYPE_NAME (rhs) == objc_object_id && TYPED_OBJECT (lhs)))
     return 1;
@@ -739,7 +896,7 @@ objc_comptypes (lhs, rhs, reflexive)
       return 0;
     }
   else
-    /* Defer to comptypes.  */
+    /* Not an ObjC type - let comptypes do the check.  */
     return -1;
 }
 
