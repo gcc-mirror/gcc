@@ -145,6 +145,9 @@ function_cannot_inline_p (fndecl)
   if (current_function_calls_alloca)
     return N_("function using alloca cannot be inline");
 
+  if (current_function_calls_setjmp)
+    return N_("function using setjmp cannot be inline");
+
   if (current_function_contains_functions)
     return N_("function with nested functions cannot be inline");
 
