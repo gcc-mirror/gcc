@@ -230,9 +230,9 @@
   "(du1_power4,iu1_power4*6)\
   |(du2_power4,iu2_power4*6)\
   |(du3_power4,iu2_power4*6)\
-  |(du4_power4,iu2_power4*6)")
+  |(du4_power4,iu1_power4*6)")
 ;  |(du3_power4,nothing,iu2_power4*6)\
-;  |(du4_power4,nothing,iu2_power4*6)")
+;  |(du4_power4,nothing,iu1_power4*6)")
 
 (define_insn_reservation "power4-imul" 5
   (and (eq_attr "type" "imul")
