@@ -5247,7 +5247,7 @@ main (argc, argv)
 		      else
 			level = 2;
 
-		      if (da_len > 1 && !strncmp (str, "gdwarf", da_len))
+		      if (da_len > 1 && *p && !strncmp (str, "gdwarf", da_len))
 			{
 			  error ("use -gdwarf -g%d for DWARF v1, level %d",
 				 level, level);

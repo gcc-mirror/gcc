@@ -1,3 +1,7 @@
+Sun Jul 11 11:21:24 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (main): Don't complain about saying -gdwarf.
+
 Fri Jul  9 03:51:52 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Drop "gcc-" prefix from version #.
