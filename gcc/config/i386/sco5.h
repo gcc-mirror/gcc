@@ -737,6 +737,12 @@ dtors_section ()							\
 #define WCHAR_TYPE		"long int"
 #define WCHAR_TYPE_SIZE		BITS_PER_WORD
 
+/*
+ * New for multilib support. Set the default switches for multilib,
+ * which is -melf.
+ */
+#define MULTILIB_DEFAULTS { "melf" }
+
 
 /* Please note that these specs may look messy but they are required in
    order to emulate the SCO Development system as closely as possible.
@@ -759,20 +765,20 @@ dtors_section ()							\
    does.
 
    SCO also allows you to compile, link and generate either ELF or COFF
-   binaries. With gcc, as with the SCO compiler, the default is coff.
-   Specify -melf to gcc to produce elf binaries. -fpic will get the
+   binaries. With gcc, unlike the SCO compiler, the default is ELF.
+   Specify -mcoff to gcc to produce elf binaries. -fpic will get the
    assembler and linker to produce PIC code.
 */
 
 /* Set up assembler flags for PIC and ELF compilations */
 #undef ASM_SPEC
 #define ASM_SPEC \
- "-b %{melf:elf}%{!melf:coff \
-   %{static:%e-static only valid with -melf} \
-   %{shared:%e-shared only valid with -melf} \
-   %{symbolic:%e-symbolic only valid with -melf}} \
+ "-b %{!mcoff:elf}%{mcoff:coff \
+   %{static:%e-static not valid with -mcoff} \
+   %{shared:%e-shared not valid with -mcoff} \
+   %{symbolic:%e-symbolic not valid with -mcoff}} \
   %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-  %{melf:-E%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},ELF %{Qn:} %{!Qy:-Qn}}"
+  %{!mcoff:-E%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},ELF %{Qn:} %{!Qy:-Qn}}"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
@@ -790,13 +796,13 @@ dtors_section ()							\
        %{!Xc:%{Xk:values-Xk.o%s} \
         %{!Xk:%{Xt:values-Xt.o%s} \
          %{!Xt:values-Xa.o%s}}}}}} \
-  %{!melf:crtbegin.o%s} \
-  %{melf:%{static:crtbegin.o%s}%{!static:crtbeginS.o%s}}"
+  %{mcoff:crtbeginS.o%s} \
+  %{!mcoff:%{!static:crtbegin.o%s}%{static:crtbeginS.o%s}}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
- "%{melf:%{!static:crtendS.o%s}%{static:crtend.o%s}} \
-  %{!melf:crtend.o%s} \
+ "%{!mcoff:%{!static:crtend.o%s}%{static:crtendS.o%s}} \
+  %{mcoff:crtendS.o%s} \
   %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
 
 #undef CPP_PREDEFINES
@@ -807,8 +813,8 @@ dtors_section ()							\
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
-  %{fpic:%{!melf:%e-fpic is only valid with -melf}} \
-  %{fPIC:%{!melf:%e-fPIC is only valid with -melf}} \
+  %{fpic:%{mcoff:%e-fpic is not valid with -mcoff}} \
+  %{fPIC:%{mcoff:%e-fPIC is not valid with -mcoff}} \
   -D__i386 -D__unix -D_SCO_DS=1 -D_M_I386 -D_M_XENIX -D_M_UNIX \
   %{!Xods30:-D_STRICT_NAMES} \
   %{!ansi:%{!posix:%{!Xods30:-D_SCO_XPG_VERS=4}}} \
@@ -828,9 +834,9 @@ dtors_section ()							\
                       -DM_WORDSWAP}}}} \
   %{scointl:-DM_INTERNAT -D_M_INTERNAT} \
   %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE} \
-  %{melf:-D_SCO_ELF} \
-  %{!melf:-D_M_COFF -D_SCO_COFF} \
-  %{melf:%{fpic:-D__PIC__ -D__pic__} \
+  %{!mcoff:-D_SCO_ELF} \
+  %{mcoff:-D_M_COFF -D_SCO_COFF} \
+  %{!mcoff:%{fpic:-D__PIC__ -D__pic__} \
          %{fPIC:%{!fpic:-D__PIC__ -D__pic__}}} \
   %{Xa:-D_SCO_C_DIALECT=1} \
   %{!Xa:%{Xc:-D_SCO_C_DIALECT=3} \
@@ -841,19 +847,19 @@ dtors_section ()							\
 
 #undef LINK_SPEC
 #define LINK_SPEC \
- "-b %{melf:elf}%{!melf:coff \
-   %{static:%e-static only valid with -melf} \
-   %{shared:%e-shared only valid with -melf} \
-   %{symbolic:%e-symbolic only valid with -melf} \
-   %{fpic:%e-fpic only valid with -melf} \
-   %{fPIC:%e-fPIC only valid with -melf}} \
-  -R%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},%{melf:ELF}%{!melf:COFF} \
+ "-b %{!mcoff:elf}%{mcoff:coff \
+   %{static:%e-static not valid with -mcoff} \
+   %{shared:%e-shared not valid with -mcoff} \
+   %{symbolic:%e-symbolic not valid with -mcoff} \
+   %{fpic:%e-fpic not valid with -mcoff} \
+   %{fPIC:%e-fPIC not valid with -mcoff}} \
+  -R%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},%{mcoff:COFF}%{!mcoff:ELF} \
   %{Wl,*%*} %{YP,*} %{YL,*} %{YU,*} \
   %{!YP,*:%{p:-YP,/usr/ccs/libp:/lib/libp:/usr/lib/libp:/usr/ccs/lib:/lib:/usr/lib} \
    %{!p:-YP,/usr/ccs/lib:/lib:/usr/lib}} \
   %{h*} %{static:-dn -Bstatic} %{shared:-G -dy %{!z*:-z text}} \
   %{symbolic:-Bsymbolic -G -dy %{!z*:-z text}} %{z*} %{R*} %{Y*} \
-  %{G:-G} %{melf:%{Qn:} %{!Qy:-Qn}}"
+  %{G:-G} %{!mcoff:%{Qn:} %{!Qy:-Qn}}"
 
 /* The SCO COFF linker gets confused on the difference between "-ofoo"
    and "-o foo".   So we just always force a single space. */
@@ -867,15 +873,14 @@ dtors_section ()							\
 #define LIB_SPEC \
  "%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
 
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC \
- "%{!melf:-lgcc}%{melf:%{!shared:%{!symbolic:-lgcc-elf}}}"
-
-#define MASK_ELF     		010000000000	/* Mask for elf generation */
-#define TARGET_ELF              (target_flags & MASK_ELF)
+#define MASK_COFF     		010000000000	/* Mask for elf generation */
+#define TARGET_COFF             (target_flags & MASK_COFF)
+#define TARGET_ELF              (!(target_flags & MASK_COFF))
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES { "elf", MASK_ELF },
+#define SUBTARGET_SWITCHES 		\
+	{ "coff", MASK_COFF }, 		\
+	{ "elf", -MASK_COFF },
 
 #define NO_DOLLAR_IN_LABEL
 
