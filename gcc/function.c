@@ -2324,7 +2324,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && GET_MODE (var) == promoted_mode
 	    && x == single_set (insn))
 	  {
-	    rtx pat;
+	    rtx pat, last;
 
 	    replacement = find_fixup_replacement (replacements, SET_SRC (x));
 	    if (replacement->new)
@@ -2350,10 +2350,22 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
 	    if (GET_CODE (pat) == SEQUENCE)
 	      {
-		emit_insn_after (pat, insn);
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
+		last = emit_insn_before (pat, insn);
+
+		/* INSN might have REG_RETVAL or other important notes, so
+		   we need to store the pattern of the last insn in the
+		   sequence into INSN similarly to the normal case.  LAST
+		   should not have REG_NOTES, but we allow them if INSN has
+		   no REG_NOTES.  */
+		if (REG_NOTES (last) && REG_NOTES (insn))
+		  abort ();
+		if (REG_NOTES (last))
+		  REG_NOTES (insn) = REG_NOTES (last);
+		PATTERN (insn) = PATTERN (last);
+
+		PUT_CODE (last, NOTE);
+		NOTE_LINE_NUMBER (last) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (last) = 0;
 	      }
 	    else
 	      PATTERN (insn) = pat;
@@ -2370,7 +2382,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && GET_MODE (var) == promoted_mode
 	    && x == single_set (insn))
 	  {
-	    rtx pat;
+	    rtx pat, last;
 
 	    if (GET_CODE (SET_DEST (x)) == SUBREG)
 	      SET_DEST (x) = fixup_memory_subreg (SET_DEST (x), insn, 0);
@@ -2383,10 +2395,22 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
 	    if (GET_CODE (pat) == SEQUENCE)
 	      {
-		emit_insn_after (pat, insn);
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
+		last = emit_insn_before (pat, insn);
+
+		/* INSN might have REG_RETVAL or other important notes, so
+		   we need to store the pattern of the last insn in the
+		   sequence into INSN similarly to the normal case.  LAST
+		   should not have REG_NOTES, but we allow them if INSN has
+		   no REG_NOTES.  */
+		if (REG_NOTES (last) && REG_NOTES (insn))
+		  abort ();
+		if (REG_NOTES (last))
+		  REG_NOTES (insn) = REG_NOTES (last);
+		PATTERN (insn) = PATTERN (last);
+
+		PUT_CODE (last, NOTE);
+		NOTE_LINE_NUMBER (last) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (last) = 0;
 	      }
 	    else
 	      PATTERN (insn) = pat;
