@@ -63,6 +63,7 @@ int main()
     ct.widen(i % 128);
   stop_counters(time, resource);
   report_performance(__FILE__, "widen", time, resource);
+  clear_counters(time, resource);
 
   // widen array
   start_counters(time, resource);

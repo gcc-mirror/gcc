@@ -35,7 +35,6 @@ int main()
 
   time_counter time;
   resource_counter resource;
-  const long iters = 200000000;
   char bufin[] = "This was an attempt to bypass string construction just for test.";
   char bufout[sizeof(bufin)];
 
@@ -60,14 +59,15 @@ int main()
 
   // widen
   start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
+  for (long i = 0; i < 1000000000; ++i)
     ct.widen(i % 128);
   stop_counters(time, resource);
   report_performance(__FILE__, "widen", time, resource);
+  clear_counters(time, resource);
 
   // widen array
   start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
+  for (long i = 0; i < 100000000; ++i)
     ct.widen(bufin, bufin+sizeof(bufin), bufout);
   stop_counters(time, resource);
   report_performance(__FILE__, "widen_array", time, resource);
