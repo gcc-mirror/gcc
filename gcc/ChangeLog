@@ -1,3 +1,8 @@
+2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* integrate.c (function_attribute_inlinable_p): Simplify.
+	Check the table pointer is not NULL.
+
 2002-04-25  Steven Bosscher  <S.Bosscher@student.tudelft.nl>
 
 	* doc/c-tree.texi: Fix typo in introduction.
