@@ -124,7 +124,6 @@ extern int flag_exceptions;
 static struct { const char *string; int *variable; int on_value;}
 lang_f_options[] =
 {
-  {"assume-compiled", &flag_assume_compiled, 1},
   {"emit-class-file", &flag_emit_class_files, 1},
   {"emit-class-files", &flag_emit_class_files, 1},
   {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
@@ -151,6 +150,34 @@ lang_decode_option (argc, argv)
 {
   char *p = argv[0];
 
+#define CLARG "-fassume-compiled="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      add_assume_compiled (p + sizeof (CLARG) - 1, 0);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fno-assume-compiled="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      add_assume_compiled (p + sizeof (CLARG) - 1, 1);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fassume-compiled"
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      add_assume_compiled ("", 0);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fno-assume-compiled"
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      add_assume_compiled ("", 1);
+      return 1;
+    }
+#undef CLARG
 #define CLARG "-fclasspath="
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
@@ -159,7 +186,7 @@ lang_decode_option (argc, argv)
     }
 #undef CLARG
 #define CLARG "-fCLASSPATH="
-  else if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
       jcf_path_CLASSPATH_arg (p + sizeof (CLARG) - 1);
       return 1;

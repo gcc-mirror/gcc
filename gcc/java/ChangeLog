@@ -1,3 +1,22 @@
+1999-11-21  Anthony Green  <green@cygnus.com>
+
+	* constants.c (find_methodref_index): Unwrap method names before
+	inserting them in the constant pool.
+
+	* jcf-parse.c (jcf_parse): Display `interface' when appropriate.
+
+	* class.c (assume_compiled_node): New typedef.
+	(assume_compiled_tree): New static data.
+	(find_assume_compiled_node): New function.
+	(add_assume_compiled): New function.
+	(assume_compiled): New function.
+	* class.c (make_class_data): Use assume_compiled.
+	(is_compiled_class): Use assume_compiled.
+
+	* java-tree.h (add_assume_compiled): Declare.
+
+	* lang.c (lang_decode_option): Parse new options.
+
 Wed Nov 17 21:09:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Always convert TYPE_SIZE_UNIT to

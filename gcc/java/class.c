@@ -53,6 +53,147 @@ static rtx registerClass_libfunc;
 extern struct obstack permanent_obstack;
 extern struct obstack temporary_obstack;
 
+/* The compiler generates different code depending on whether or not
+   it can assume certain classes have been compiled down to native
+   code or not.  The compiler options -fassume-compiled= and
+   -fno-assume-compiled= are used to create a tree of
+   assume_compiled_node objects.  This tree is queried to determine if
+   a class is assume to be compiled or not.  Each node in the tree
+   represents either a package or a specific class.  */
+
+typedef struct assume_compiled_node_struct
+{
+  /* The class or package name.  */
+  const char *ident;
+
+  /* Non-zero if this represents an exclusion.  */
+  int excludep;
+
+  /* Pointers to other nodes in the tree.  */
+  struct assume_compiled_node_struct *parent;
+  struct assume_compiled_node_struct *sibling;
+  struct assume_compiled_node_struct *child;
+} assume_compiled_node;
+
+/* This is the root of the include/exclude tree.  */
+
+static assume_compiled_node *assume_compiled_tree;
+
+/* Return the node that most closely represents the class whose name
+   is IDENT.  Start the search from NODE.  Return NULL if an
+   appropriate node does not exist.  */
+
+assume_compiled_node *
+find_assume_compiled_node (node, ident)
+     assume_compiled_node *node;
+     const char *ident;
+{
+  while (node)
+    {
+      size_t node_ident_length = strlen (node->ident);
+
+      /* node_ident_length is zero at the root of the tree.  If the
+	 identifiers are the same length, then we have matching
+	 classes.  Otherwise check if we've matched an enclosing
+	 package name.  */
+
+      if (node_ident_length == 0
+	  || (strncmp (ident, node->ident, node_ident_length) == 0
+	      && (strlen (ident) == node_ident_length
+		  || ident[node_ident_length] == '.')))
+	{
+	  /* We've found a match, however, there might be a more
+             specific match.  */
+
+	  assume_compiled_node *found = find_assume_compiled_node (node->child,
+								   ident);
+	  if (found)
+	    return found;
+	  else
+	    return node;
+	}
+
+      /* No match yet.  Continue through the sibling list.  */
+      node = node->sibling;
+    }
+
+  /* No match at all in this tree.  */
+  return NULL;
+}
+
+/* Add a new IDENT to the include/exclude tree.  It's an exclusion
+   if EXCLUDEP is non-zero.  */
+
+void
+add_assume_compiled (ident, excludep)
+     const char *ident;
+     int excludep;
+{
+  assume_compiled_node *parent;
+  assume_compiled_node *node = 
+    (assume_compiled_node *) malloc (sizeof (assume_compiled_node));
+
+  node->ident = strdup (ident);
+  node->excludep = excludep;
+  node->child = NULL;
+
+  /* Create the root of the tree if it doesn't exist yet.  */
+
+  if (NULL == assume_compiled_tree)
+    {
+      assume_compiled_tree = 
+	(assume_compiled_node *) malloc (sizeof (assume_compiled_node));
+      assume_compiled_tree->ident = "";
+      assume_compiled_tree->excludep = 0;
+      assume_compiled_tree->sibling = NULL;
+      assume_compiled_tree->child = NULL;
+      assume_compiled_tree->parent = NULL;
+    }
+
+  /* Calling the function with the empty string means we're setting
+     excludep for the root of the hierarchy.  */
+
+  if (0 == ident[0])
+    {
+      assume_compiled_tree->excludep = excludep;
+      return;
+    }
+
+  /* Find the parent node for this new node.  PARENT will either be a
+     class or a package name.  Adjust PARENT accordingly.  */
+
+  parent = find_assume_compiled_node (assume_compiled_tree, ident);
+  if (ident[strlen (parent->ident)] != '.')
+    parent = parent->parent;
+
+  /* Insert NODE into the tree.  */
+
+  node->parent = parent;
+  node->sibling = parent->child;
+  parent->child = node;
+}
+
+/* Returns non-zero if IDENT is the name of a class that the compiler
+   should assume has been compiled to FIXME  */
+
+int
+assume_compiled (ident)
+     const char *ident;
+{
+  assume_compiled_node *i;
+  int result;
+  
+  if (NULL == assume_compiled_tree)
+    return 1;
+
+  i = find_assume_compiled_node (assume_compiled_tree,
+				 ident);
+
+  result = ! i->excludep;
+  
+  return (result);
+}
+
 /* Return an IDENTIFIER_NODE the same as (OLD_NAME, OLD_LENGTH).
    except that characters matching OLD_CHAR are substituted by NEW_CHAR.
    Also, PREFIX is prepended, and SUFFIX is appended. */
@@ -1091,7 +1232,7 @@ make_class_data (type)
   DECL_IGNORED_P (methods_decl) = 1;
   rest_of_decl_compilation (methods_decl, (char*) 0, 1, 0);
 
-  if (flag_assume_compiled
+  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
       && ! CLASS_ABSTRACT (type_decl) && ! CLASS_INTERFACE (type_decl))
     {
       tree dtable = get_dispatch_table (type, this_class_addr);
@@ -1107,7 +1248,7 @@ make_class_data (type)
   super = CLASSTYPE_SUPER (type);
   if (super == NULL_TREE)
     super = null_pointer_node;
-  else if (flag_assume_compiled)
+  else if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl))))
     super = build_class_ref (super);
   else
     {
@@ -1133,7 +1274,7 @@ make_class_data (type)
 	  tree child = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), i);
 	  tree iclass = BINFO_TYPE (child);
 	  tree index;
-	  if (flag_assume_compiled)
+	  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (iclass)))))
 	    index = build_class_ref (iclass);
 	  else
 	    {
@@ -1284,7 +1425,7 @@ is_compiled_class (class)
       return 2;
     }
 
-  if (flag_assume_compiled)
+  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class)))))
     {
       if (!CLASS_LOADED_P (class))
 	{

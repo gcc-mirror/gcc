@@ -479,6 +479,7 @@ struct lang_type
 #define JCF_u4 unsigned long
 #define JCF_u2 unsigned short
 
+extern void add_assume_compiled PROTO ((const char *, int));
 extern tree lookup_class PROTO ((tree));
 extern tree lookup_java_constructor PROTO ((tree, tree));
 extern tree lookup_java_method PROTO ((tree, tree, tree));
