@@ -28,69 +28,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "real.h"
 
-/* Calculate the format for CONST_DOUBLE.  This depends on the relative
-   widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
-
-   We need to go out to e0wwwww, since real.c assumes 16 bits per element
-   in REAL_VALUE_TYPE.
-
-   This is duplicated in rtl.c.
-
-   A number of places assume that there are always at least two 'w'
-   slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
-
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
-# define REAL_WIDTH	\
-     (11*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#else
-# if MAX_LONG_DOUBLE_TYPE_SIZE == 128
-#  define REAL_WIDTH	\
-     (19*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-# else
-#  if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-#   define REAL_WIDTH	\
-      (7*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#  endif
-# endif
-#endif
-
-#ifndef REAL_WIDTH
-# if HOST_BITS_PER_WIDE_INT*2 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#  define REAL_WIDTH	2
-# else
-#  if HOST_BITS_PER_WIDE_INT*3 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#   define REAL_WIDTH	3
-#  else
-#   if HOST_BITS_PER_WIDE_INT*4 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#    define REAL_WIDTH	4
-#   endif
-#  endif
-# endif
-#endif /* REAL_WIDTH */
-
-#if REAL_WIDTH == 1
-# define CONST_DOUBLE_FORMAT	"0ww"
-#else
-# if REAL_WIDTH == 2
-#  define CONST_DOUBLE_FORMAT	"0ww"
-# else
-#  if REAL_WIDTH == 3
-#   define CONST_DOUBLE_FORMAT	"0www"
-#  else
-#   if REAL_WIDTH == 4
-#    define CONST_DOUBLE_FORMAT	"0wwww"
-#   else
-#    if REAL_WIDTH == 5
-#     define CONST_DOUBLE_FORMAT	"0wwwww"
-#    else
-#     define CONST_DOUBLE_FORMAT /* nothing - will cause syntax error */
-#    endif
-#   endif
-#  endif
-# endif
-#endif
-
-
 struct rtx_definition 
 {
   const char *const enumname, *const name, *const format;
