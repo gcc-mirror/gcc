@@ -47,6 +47,13 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu)"
 
+#define ENDFILE_SPEC "crtend.o%s"
+
+#define STARTFILE_SPEC "%{!shared: \
+			 %{!symbolic: \
+			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
+			crtbegin.o%s"
+
 /* This is how to output assembly code to define a `float' constant.
    We always have to use a .long pseudo-op to do this because the native
    SVR4 ELF assembler is buggy and it generates incorrect values when we

@@ -231,13 +231,14 @@ extern const char *cris_elinux_stacksize_str;
    link them to crt0.o to be prepared.  Use scrt0.c if running the
    simulator, linear style, or s2crt0.c if fixed style.  */
 /* We need to remove any previous definition (elfos.h).  */
-#undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
  "%{sim2:s2crt0.o%s}\
   %{!sim2:%{sim:scrt0.o%s}\
    %{!sim:%{pg:gcrt0.o%s}\
     %{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
   crtbegin.o%s"
+
+#define ENDFILE_SPEC "crtend.o%s"
 
 #define EXTRA_SPECS				\
   {"cpp_subtarget", CRIS_CPP_SUBTARGET_SPEC},	\

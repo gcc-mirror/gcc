@@ -42,15 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #define MAX_OFILE_ALIGNMENT (32768 * 8)
 #endif
 
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s"
-
-#undef	STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
-			crtbegin.o%s"
-
 /* Use periods rather than dollar signs in special g++ assembler names.  */
 
 #define NO_DOLLAR_IN_LABEL

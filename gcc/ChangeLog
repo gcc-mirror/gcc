@@ -1,3 +1,10 @@
+2001-12-11  David O'Brien  <obrien@FreeBSD.org>
+
+	* elfos.h (ENDFILE_SPEC, STARTFILE_SPEC): Do not define.
+	* config/cris/cris.h (ENDFILE_SPEC): Define.
+	* config/i386/i386elf.h ((ENDFILE_SPEC, STARTFILE_SPEC): Define.
+	* config/pa/elf.h: Likewise.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* objc/objc-act.c (build_string_class_template): New.
