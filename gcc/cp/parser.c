@@ -1953,8 +1953,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 		  /* Go from a particular instantiation of the
 		     template (which will have an empty TYPE_FIELDs),
 		     to the main version.  */
-		  if (CLASSTYPE_USE_TEMPLATE (base_type))
-		    base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
+		  base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
 		  for (field = TYPE_FIELDS (base_type);
 		       field;
 		       field = TREE_CHAIN (field))
