@@ -7903,6 +7903,11 @@ frv_class_likely_spilled_p (enum reg_class class)
     default:
       break;
 
+    case GR8_REGS:
+    case GR9_REGS:
+    case GR89_REGS:
+    case FDPIC_FPTR_REGS:
+    case FDPIC_REGS:
     case ICC_REGS:
     case FCC_REGS:
     case CC_REGS:
