@@ -5204,8 +5204,6 @@ do_using_directive (namespace)
 {
   if (namespace == fake_std_node)
     return;
-  if (building_stmt_tree ())
-    add_stmt (build_stmt (USING_STMT, namespace));
   
   /* using namespace A::B::C; */
   if (TREE_CODE (namespace) == SCOPE_REF)
