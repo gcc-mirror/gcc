@@ -52,12 +52,27 @@ proc mauve_compute_uses {aName} {
   return [lsort [array names uses]]
 }
 
+# Find Mauve sources.  At end, env(MAUVEDIR) points to sources.
+# Returns 0 if sources not found, 1 otherwise.
+proc find_mauve_sources {} {
+  global env srcdir
+
+  if {[info exists env(MAUVEDIR)]} {
+    return 1
+  } elseif {[file isdirectory $srcdir/libjava.mauve/mauve]} {
+    set env(MAUVEDIR) $srcdir/libjava.mauve/mauve
+    return 1
+  }
+
+  return 0
+}
+
 # Run all the Mauve tests.  Return 1 on success, 0 on any failure.  If
 # the tests are skipped, that is treated like success.
 proc test_mauve {} {
   global srcdir objdir subdir env
 
-  if {! [info exists env(MAUVEDIR)]} then {
+  if {! [find_mauve_sources]} then {
     verbose "MAUVEDIR not set; not running Mauve tests"
     return 1
   }
@@ -220,7 +235,7 @@ proc test_mauve {} {
 proc test_mauve_sim {} {
   global srcdir subdir env
 
-  if {! [info exists env(MAUVEDIR)]} then {
+  if {! [find_mauve_sources]} then {
     verbose "MAUVEDIR not set; not running Mauve tests"
     return 1
   }
