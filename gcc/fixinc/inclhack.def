@@ -769,6 +769,22 @@ fix = {
     test_text = "typedef unsigned int\tbool \t; /* bool type */";
 };
 
+/*
+ *  For C++, avoid any typedef definition of wchar_t,
+ *  and use the built in type instead.
+ */
+
+fix = {
+    hackname = avoid_wchar_t_type;
+
+    select    = "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;";
+
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+    c_fix_arg = "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;.*";
+
+    test_text = "typedef unsigned short\twchar_t \t; /* wchar_t type */";
+};
 
 /*
  *  Fix #defines under Alpha OSF/1:
