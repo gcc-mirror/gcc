@@ -1,5 +1,5 @@
 /* RMIC.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004
+   Copyright (c) 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -978,7 +978,7 @@ public class RMIC
 	    System.out.println("rmic (" + System.getProperty("java.vm.name")
 	                       + ") " + System.getProperty("java.vm.version"));
 	    System.out.println();
-	    System.out.println("Copyright 2002 Free Software Foundation, Inc.");
+	    System.out.println("Copyright 2005 Free Software Foundation, Inc.");
 	    System.out.println("This is free software; see the source for copying conditions.  There is NO");
 	    System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 	    System.exit(0);
