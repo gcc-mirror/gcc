@@ -1,5 +1,14 @@
 2003-07-31  Tom Tromey  <tromey@redhat.com>
 
+	Fix for PR libgcj/11737:
+	* java/io/ObjectOutputStream.java (getMethod): Make method
+	accessible.
+	(getField): Likewise.
+	(writeObject): Use getMethod.
+	Import PrivilegedAction and AccessController.
+	(callWriteMethod): Don't check whether m is null.  Catch
+	NoSuchMethodException.
+
 	* java/awt/geom/Arc2D.java (getBounds2D): Implement.
 	(containsAngle): Likewise.
 	(getStartPoint): Rewrote.
