@@ -1,3 +1,19 @@
+2002-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (tls_model): Document.
+	* varasm.c (decl_tls_model): New.
+	* c-common.c (handle_tls_model_attribute): New.
+	(c_common_attribute_table): Add tls_model.
+	* config/alpha/alpha.c (alpha_encode_section_info): Use
+	decl_tls_model.
+	* flags.h (enum tls_model, flag_tls_default): Move...
+	* tree.h (enum tls_model, flag_tls_default): ...here.
+	(decl_tls_model): New prototype.
+	* config/ia64/ia64.c (ia64_encode_section_info): Likewise.
+	* config/i386/i386.c (ix86_encode_section_info): Likewise.
+	* config/i386/i386.md (tls_global_dynamic, tls_local_dynamic_base):
+	Allow !flag_pic.
+
 2002-09-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* LANGUAGES: Follow spelling conventions.

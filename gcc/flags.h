@@ -467,17 +467,6 @@ extern int flag_pedantic_errors;
 
 extern int flag_pic;
 
-/* Set to the default thread-local storage (tls) model to use.  */
-
-enum tls_model {
-  TLS_MODEL_GLOBAL_DYNAMIC = 1,
-  TLS_MODEL_LOCAL_DYNAMIC,
-  TLS_MODEL_INITIAL_EXEC,
-  TLS_MODEL_LOCAL_EXEC
-};
-
-extern enum tls_model flag_tls_default;
-
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
 
