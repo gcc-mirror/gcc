@@ -1,3 +1,8 @@
+1998-11-30  Ulrich Drepper  <drepper@cygnus.com>
+
+	* std/bastring.cc (operator>>): Correct cast in last patch.
+	(getline): Likewise.
+
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (HEADERS): Install bitset
