@@ -3231,7 +3231,7 @@ reload_as_needed (first, live_known)
       register rtx next = NEXT_INSN (insn);
 
       /* Notice when we move to a new basic block.  */
-      if (live_known && basic_block_needs && this_block + 1 < n_basic_blocks
+      if (live_known && this_block + 1 < n_basic_blocks
 	  && insn == basic_block_head[this_block+1])
 	++this_block;
 
