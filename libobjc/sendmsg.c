@@ -1,5 +1,6 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998,
+   2001 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -628,13 +629,11 @@ __objc_print_dtable_stats()
 
   objc_mutex_lock(__objc_runtime_mutex);
 
-  printf("memory usage: (%s)\n",
 #ifdef OBJC_SPARSE2
-	 "2-level sparse arrays"
+  printf("memory usage: (%s)\n", "2-level sparse arrays");
 #else
-	 "3-level sparse arrays"
+  printf("memory usage: (%s)\n", "3-level sparse arrays");
 #endif
-	 );
 
   printf("arrays: %d = %ld bytes\n", narrays, 
 	 (long)narrays*sizeof(struct sarray));
