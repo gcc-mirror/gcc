@@ -19,7 +19,7 @@ INTERFACE = 2
 
 gxx_include_dir=${includedir}/g++
 
-OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o
+OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o valarray.o
 SUBLIBS = $(STAMP)-string $(STAMP)-complx
 
 # C++ headers with no extension
@@ -28,7 +28,7 @@ HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 	 cwchar cwctype string stdexcept \
 	 algorithm deque functional hash_map hash_set iterator list map \
 	 memory numeric pthread_alloc queue rope set slist stack utility \
-	 vector fstream iomanip iostream strstream iosfwd bitset
+	 vector fstream iomanip iostream strstream iosfwd bitset valarray
 
 ARLIB   = libstdc++.a.$(VERSION)
 ARLINK  = libstdc++.a
@@ -130,6 +130,7 @@ cstdlibi.o: cstdlibi.cc
 cmathi.o: cmathi.cc
 stdexcepti.o: stdexcepti.cc
 stlinst.o: stlinst.cc
+valarray.o: valarray.cc
 
 # Later do wide strings, too.
 stmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \
@@ -269,7 +270,7 @@ install:
 	    fi ; \
 	    chmod a-x $(gxx_include_dir)/$$FILE ; \
 	  done ; \
-	  for FILE in *.h std/*.h std/*.cc; do \
+	  for FILE in *.h std/*.h std/*.cc std/*.tcc; do \
 	    rm -f $(gxx_include_dir)/$$FILE ; \
 	    $(INSTALL_DATA) $$FILE $(gxx_include_dir)/$$FILE ; \
 	    chmod a-x $(gxx_include_dir)/$$FILE ; \
