@@ -1,3 +1,7 @@
+2003-03-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* fix-header.c (read_scan_file): Don't reference simplify_path.
+
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_override_options): Don't enable
