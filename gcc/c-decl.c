@@ -1003,7 +1003,7 @@ poplevel (keep, reverse, functionbody)
 	if (DECL_ABSTRACT_ORIGIN (decl) != 0
 	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
-	else
+	else if (DECL_SAVED_INSNS (decl) != 0)
 	  {
 	    push_function_context ();
 	    output_inline_function (decl);
