@@ -1,3 +1,10 @@
+2004-01-12  Matthias Klose  <doko@debian.org>
+
+        Backport from mainline
+
+        2003-12-08 Stuart Hastings <stuart@apple.com>
+        * config/i386/i386.md: Typo in split of fp-valued if_then_else.
+
 2004-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11397
