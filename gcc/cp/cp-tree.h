@@ -2408,12 +2408,16 @@ struct lang_decl GTY(())
    When appearing in a SAVE_EXPR, it means that underneath
    is a call to a constructor.
 
-   When appearing in a CONSTRUCTOR, it means that it was
-   a GNU C constructor expression.
+   When appearing in a CONSTRUCTOR, the expression is a
+   compound literal.
 
    When appearing in a FIELD_DECL, it means that this field
    has been duly initialized in its constructor.  */
 #define TREE_HAS_CONSTRUCTOR(NODE) (TREE_LANG_FLAG_4 (NODE))
+
+/* True if NODE is a brace-enclosed initializer.  */
+#define BRACE_ENCLOSED_INITIALIZER_P(NODE) \
+  (TREE_CODE (NODE) == CONSTRUCTOR && !TREE_TYPE (NODE))
 
 #define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR	   \
 				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE \

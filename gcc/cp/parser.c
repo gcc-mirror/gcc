@@ -11541,10 +11541,6 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
       cp_lexer_consume_token (parser->lexer);
       /* Create a CONSTRUCTOR to represent the braced-initializer.  */
       initializer = make_node (CONSTRUCTOR);
-      /* Mark it with TREE_HAS_CONSTRUCTOR.  This should not be
-	 necessary, but check_initializer depends upon it, for
-	 now.  */
-      TREE_HAS_CONSTRUCTOR (initializer) = 1;
       /* If it's not a `}', then there is a non-trivial initializer.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
 	{
