@@ -1,4 +1,9 @@
-2004-03-27  Jakub Jelinek  <jakub@redhat.com>
+2004-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/14755
+	* gcc.c-torture/execute/20040331-1.c: New test.
+
+2004-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/14069
 	* gcc.dg/20040322-1.c: New test.

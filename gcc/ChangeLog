@@ -1,5 +1,11 @@
 2004-04-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/14755
+	* fold-const.c (fold) <EQ_EXPR>: Properly compute newconst in
+	"bitfld++ == const" to "++bitfld == const + incr" transformations.
+
+2004-04-01  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/14069
 	* c-decl.c (finish_struct): Change type of incorrect flexible array
 	field into error_mark_node.
