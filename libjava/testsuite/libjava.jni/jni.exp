@@ -137,9 +137,7 @@ proc gcj_jni_test_one {file} {
     return 0
   }
 
-  # We use -l$main because the .so is named the same as the main
-  # program.
-  set args [list "additional_flags=-fjni -L. -l$main"]
+  set args [list "additional_flags=-fjni"]
   if {! [gcj_link $main $main $file $args]} {
     # FIXME
     return 0
