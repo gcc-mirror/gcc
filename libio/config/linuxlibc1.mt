@@ -11,7 +11,7 @@ LIBIO_INCLUDE=
 # We have those in libc.a.
 IO_OBJECTS=iogetc.o ioputc.o iofeof.o ioferror.o \
 	filedoalloc.o fileops.o genops.o iofclose.o \
-	iovsprintf.o iovsscanf.o strops.o
+	iovsprintf.o iovsscanf.o strops.o iogetline.o
 STDIO_WRAP_OBJECTS=
 OSPRIM_OBJECTS=
 STDIO_OBJECTS=

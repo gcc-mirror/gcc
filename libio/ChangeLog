@@ -1,5 +1,21 @@
 Tue Feb 17 21:52:44 1998  H.J. Lu  (hjl@gnu.org)
 
+	* config/linux.mt (IO_OBJECTS): Add iogetline.o.
+	* config/linuxlibc1.mt: Ditto.
+
+	* iogetline.c (_IO_getline_info): Renamed from _IO_getline.
+	(_IO_getline): Just call _IO_getline_info.
+
+	* isgetline.cc (istream::getline, istream::get, _sb_readline):
+	Call _IO_getline_info instead of _IO_getline and get the EOF
+	information.
+	* sbgetline.cc (streambuf::sgetline): Ditto.
+
+	* libioP.h (_IO_getline_info): New declaration.
+
+	* iogetline.c (_IO_getline): Handle the case when there is no
+	buffer.
+
 	* filebuf.cc (filebuf::open): Call _IO_file_open if
 	_G_HAVE_IO_FILE_OPEN is 1.
 

@@ -417,6 +417,8 @@ extern int _IO_vsnprintf __P ((char *string, _IO_size_t maxlen,
 
 
 extern _IO_size_t _IO_getline __P ((_IO_FILE *,char *, _IO_size_t, int, int));
+extern _IO_size_t _IO_getline_info __P ((_IO_FILE *,char *, _IO_size_t,
+					 int, int, int *));
 extern _IO_ssize_t _IO_getdelim __P ((char **, _IO_size_t *, int, _IO_FILE *));
 extern double _IO_strtod __P ((const char *, char **));
 extern char *_IO_dtoa __P ((double __d, int __mode, int __ndigits,
