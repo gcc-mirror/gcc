@@ -508,6 +508,9 @@ print_node (file, prefix, node, indent)
       if (TYPE_PACKED (node))
 	fputs (" packed", file);
 
+      if (TYPE_RESTRICT (node))
+	fputs (" restrict", file);
+
       if (TYPE_LANG_FLAG_0 (node))
 	fputs (" type_0", file);
       if (TYPE_LANG_FLAG_1 (node))

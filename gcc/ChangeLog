@@ -1,3 +1,7 @@
+2002-09-11  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* print-tree.c (print_node): Print the restrict qualifier.
+
 2002-09-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi: Fix typos.
