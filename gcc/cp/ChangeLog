@@ -1,5 +1,7 @@
 1999-05-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (build_template_decl): Copy DECL_NONCONVERTING_P.
+
 	* decl2.c (start_static_storage_duration_function): Fix comment.
 	(finish_file): Create static storage duration functions lazily.
 
