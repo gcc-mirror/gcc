@@ -1,3 +1,7 @@
+2002-04-14  Mark Wielaard <mark@klomp.org>
+
+	* gnu/gcj/protocol/http/Connection.java (usingProxy): return false.
+
 2002-04-13  Adam King <aking@dreammechanics.com>
 
 	* java/lang/natDouble.cc (parseDouble): Allow a number to end with
