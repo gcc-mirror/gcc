@@ -37,6 +37,7 @@ main ()
 /* When optimizing, all the above cases should be transformed into
    something else.  So any remaining calls to the original function
    should abort.  */
+__attribute__ ((noinline))
 static int
 memcmp (const char *p1, const char *p2, size_t len)
 {

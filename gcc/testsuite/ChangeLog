@@ -1,3 +1,10 @@
+Tue Jan 21 18:01:35 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/990208-1.c:  Add noinline attributes as needed.
+	* gcc.c-torture/execute/eeprof-1.c:  Likewise.
+	* gcc.c-torture/execute/stdio-opt-*.c: Likewise.
+	* gcc.c-torture/execute/string-opt-*.c: Likewise.
+
 2003-01-20  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/20030117-1.c: New test case.  Exposes

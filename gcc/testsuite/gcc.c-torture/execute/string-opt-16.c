@@ -28,6 +28,7 @@ main (int argc)
 /* When optimizing, all the above cases should be transformed into
    something else.  So any remaining calls to the original function
    should abort.  */
+__attribute__ ((noinline))
 static int
 memcmp (const void *s1, const void *s2, size_t len)
 {
@@ -36,6 +37,7 @@ memcmp (const void *s1, const void *s2, size_t len)
 #else
 /* When not optimizing, the above tests may generate references to
    the function link_error, but should never actually call it.  */
+__attribute__ ((noinline))
 static void
 link_error ()
 {

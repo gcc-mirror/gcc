@@ -5,13 +5,16 @@ int entry_calls, exit_calls;
 void (*last_fn_entered)();
 void (*last_fn_exited)();
 
+__attribute__ ((noinline))
 int main () NOCHK;
 
+__attribute__ ((noinline))
 void foo ()
 {
   ASSERT (last_fn_entered == foo);
 }
 
+__attribute__ ((noinline))
 static void foo2 ()
 {
   ASSERT (entry_calls == 1 && exit_calls == 0);
@@ -22,6 +25,7 @@ static void foo2 ()
   ASSERT (last_fn_exited == foo);
 }
 
+__attribute__ ((noinline))
 void nfoo (void) NOCHK;
 void nfoo ()
 {
@@ -55,11 +59,13 @@ int main ()
 void __cyg_profile_func_enter (void (*fn)(), void (*parent)()) NOCHK;
 void __cyg_profile_func_exit (void (*fn)(), void (*parent)()) NOCHK;
 
+__attribute__ ((noinline))
 void __cyg_profile_func_enter (void (*fn)(), void (*parent)())
 {
   entry_calls++;
   last_fn_entered = fn;
 }
+__attribute__ ((noinline))
 void __cyg_profile_func_exit (void (*fn)(), void (*parent)())
 {
   exit_calls++;

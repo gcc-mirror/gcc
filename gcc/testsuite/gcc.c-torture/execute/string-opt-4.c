@@ -53,6 +53,7 @@ index (const char *s, int c)
 /* When optimizing, all the above cases should be transformed into
    something else.  So any remaining calls to the original function
    should abort.  */
+__attribute__ ((noinline))
 static char *
 strchr (const char *s, int c)
 {
