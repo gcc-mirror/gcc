@@ -316,7 +316,8 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 	tree imag = gfc_conv_mpfr_to_tree (expr->value.complex.i,
 					  expr->ts.kind);
 
-	return build_complex (NULL_TREE, real, imag);
+	return build_complex (gfc_typenode_for_spec (&expr->ts),
+			      real, imag);
       }
 
     case BT_CHARACTER:
