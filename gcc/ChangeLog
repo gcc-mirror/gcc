@@ -1,3 +1,18 @@
+2004-06-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	* emit-rtl.c (unshare_all_rtl_1): New name of unshare_all_rtl.
+	(unshare_all_rtl_again): Call unshare_all_rtl_1.
+	(unshare_all_rtl): New.
+	* function.c (instantiate_virtual_regs): Remove parameters.
+	* function.h (instantiate_virtual_regs): Add prototype.
+	* rtl.h (unshare_all_rtl): Add prototype.
+	* tree.h (instantiate_virtual_regs, unshare_all_rtl): Remove
+	prototype.
+	* passes.c: Remove assertions on the parameters to
+	rest_of_handle_* functions.  Remove the parameters to
+	the functions, replacing decl with current_function_decl
+	and insns with get_insns ().
+
 2004-06-17  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (constant_boolean_node): Handle boolean_type_node

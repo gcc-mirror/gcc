@@ -3415,8 +3415,6 @@ extern void preserve_temp_slots (rtx);
 extern void preserve_rtl_expr_temps (tree);
 extern int aggregate_value_p (tree, tree);
 extern void free_temps_for_rtl_expr (tree);
-extern void instantiate_virtual_regs (tree, rtx);
-extern void unshare_all_rtl (tree, rtx);
 extern void push_function_context (void);
 extern void pop_function_context (void);
 extern void push_function_context_to (tree);

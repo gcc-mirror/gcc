@@ -3596,30 +3596,30 @@ purge_hard_subreg_sets (rtx insn)
    references to hard register references.  */
 
 void
-instantiate_virtual_regs (tree fndecl, rtx insns)
+instantiate_virtual_regs (void)
 {
   rtx insn;
   unsigned int i;
 
   /* Compute the offsets to use for this function.  */
-  in_arg_offset = FIRST_PARM_OFFSET (fndecl);
+  in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
   var_offset = STARTING_FRAME_OFFSET;
-  dynamic_offset = STACK_DYNAMIC_OFFSET (fndecl);
+  dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
   out_arg_offset = STACK_POINTER_OFFSET;
-  cfa_offset = ARG_POINTER_CFA_OFFSET (fndecl);
+  cfa_offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
 
   /* Scan all variables and parameters of this function.  For each that is
      in memory, instantiate all virtual registers if the result is a valid
      address.  If not, we do it later.  That will handle most uses of virtual
      regs on many machines.  */
-  instantiate_decls (fndecl, 1);
+  instantiate_decls (current_function_decl, 1);
 
   /* Initialize recognition, indicating that volatile is OK.  */
   init_recog ();
 
   /* Scan through all the insns, instantiating every virtual register still
      present.  */
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	|| GET_CODE (insn) == CALL_INSN)
       {
@@ -3647,7 +3647,7 @@ instantiate_virtual_regs (tree fndecl, rtx insns)
 
   /* Now instantiate the remaining register equivalences for debugging info.
      These will not be valid addresses.  */
-  instantiate_decls (fndecl, 0);
+  instantiate_decls (current_function_decl, 0);
 
   /* Indicate that, from now on, assign_stack_local should use
      frame_pointer_rtx.  */

@@ -2148,8 +2148,8 @@ restore_emit_status (struct function *p ATTRIBUTE_UNUSED)
 /* Go through all the RTL insn bodies and copy any invalid shared
    structure.  This routine should only be called once.  */
 
-void
-unshare_all_rtl (tree fndecl, rtx insn)
+static void
+unshare_all_rtl_1 (tree fndecl, rtx insn)
 {
   tree decl;
 
@@ -2200,7 +2200,13 @@ unshare_all_rtl_again (rtx insn)
 
   reset_used_flags (stack_slot_list);
 
-  unshare_all_rtl (cfun->decl, insn);
+  unshare_all_rtl_1 (cfun->decl, insn);
+}
+
+void
+unshare_all_rtl (void)
+{
+  unshare_all_rtl_1 (current_function_decl, get_insns ());
 }
 
 /* Check that ORIG is not marked when it should not be and mark ORIG as in use,
