@@ -1,3 +1,8 @@
+Fri Sep 26 00:22:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (member_init): Also imply typename here.  Remove ancient
+	extension for initializing base members.
+
 Thu Sep 25 11:11:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Handle multi-level typenames and implicit typename in base list.

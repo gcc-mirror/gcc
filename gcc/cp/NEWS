@@ -16,38 +16,32 @@
 
      + Inlining of template functions works without any extra effort or
        modifications.
-
      + Instantiations of class templates and methods defined in the class
        body are deferred until they are actually needed (unless
        -fexternal-templates is specified).
-
      + Nested types in class templates work.
-
      + Static data member templates work.
-
      + Member function templates are now supported.
-
      + Partial specialization of class templates is now supported.
-
      + The new 'template <>' specialization syntax is now accepted and
        ignored.
-
      + Explicit instantiation of template constructors and destructors is
-       now supported. Use the following source code, as an example.
+       now supported.  For instance:
 
-       template A<int>::A(const A&);
+            template A<int>::A(const A&);
 
-  Possible problems (caused by complying with the ANSI/ISO draft):
-
-     + Types and class templates used in templates must be declared
-       first, or the compiler will assume they are not types, and fail.
-
-     + Similarly, nested types of template type parameters must be tagged
-       with the 'typename' keyword.  In many cases, the compiler will tell
-       you where you need to add 'typename'.
+  Things you may need to fix in your code:
 
      + Syntax errors in templates that are never instantiated will now be
        diagnosed.
+     + Types and class templates used in templates must be declared
+       first, or the compiler will assume they are not types, and fail.
+     + Similarly, nested types of template type parameters must be tagged
+       with the 'typename' keyword, except in base lists.  In many cases,
+       but not all, the compiler will tell you where you need to add
+       'typename'.  For more information, see
+
+            http://www.cygnus.com/misc/wp/dec96pub/template.html#temp.res
 
   Other features:
 
@@ -55,32 +49,40 @@
        checked for semantic validity) unless they are needed.  Default
        arguments in class bodies will not be parsed until the class
        definition is complete.
-
      + The -ftemplate-depth-NN flag can be used to increase the maximum
-       recursive template instantiation depth, defaulting to 17. If you need
-       to use this flag, the compiler will tell you.
+       recursive template instantiation depth, which defaults to 17. If you
+       need to use this flag, the compiler will tell you.
 
   Still not supported:
 
+     + Member class templates.
      + Template template parameters.
+     + Template friends.
+     + Explicit qualification of function templates.
 
 * Exception handling support has been significantly improved and is on by
   default.  This can result in significant runtime overhead.  You can turn
   it off with -fno-exceptions.
 
-* Synthesized methods are now emitted in any translation units that need
-  an out-of-line copy. They are no longer affected by #pragma interface
-  or #pragma implementation.
+* RTTI support has been rewritten to work properly and is now on by default.
+  This means code that uses virtual functions will have a modest space
+  overhead.  You can use the -fno-rtti flag to disable RTTI support.
 
 * On ELF systems, duplicate copies of symbols with 'initialized common'
   linkage (such as template instantiations, vtables, and extern inlines)
   will now be discarded by the GNU linker, so you don't need to use -frepo.
   This support requires GNU ld from binutils 2.8 or later.
 
-* __FUNCTION__ and __PRETTY_FUNCTION__ are now treated as variables by the
-  parser; previously they were treated as string constants.  So code like
-  `printf (__FUNCTION__ ": foo")' must be rewritten to 
-  `printf ("%s: foo", __FUNCTION__)'.  This is necessary for templates.
+* The overload resolution code has been rewritten to conform to the latest
+  C++ Working Paper.  Built-in operators are now considered as candidates
+  in operator overload resolution.  Function template overloading chooses
+  the more specialized template, and handles base classes in type deduction
+  and guiding declarations properly.  In this release the old code can
+  still be selected with -fno-ansi-overloading, although this is not
+  supported and will be removed in a future release.
+
+* Standard usage syntax for the std namespace is supported; std is treated
+  as an alias for global scope.  General namespaces are still not supported.
 
 * New flags:
 
@@ -103,24 +105,20 @@
 
      + The new flag, -fno-weak, disables the use of weak symbols.
 
+* Synthesized methods are now emitted in any translation units that need
+  an out-of-line copy. They are no longer affected by #pragma interface
+  or #pragma implementation.
+
+* __FUNCTION__ and __PRETTY_FUNCTION__ are now treated as variables by the
+  parser; previously they were treated as string constants.  So code like
+  `printf (__FUNCTION__ ": foo")' must be rewritten to 
+  `printf ("%s: foo", __FUNCTION__)'.  This is necessary for templates.
+
 * local static variables in extern inline functions will be shared between
   translation units.
 
-* Standard usage syntax for the std namespace is supported; std is treated
-  as an alias for global scope.  General namespaces are still not supported.
-
 * -fvtable-thunks is supported for all targets, and is the default for 
   Linux with glibc 2.x (also called libc 6.x).
-
-* RTTI support has been rewritten to work properly and is now on by default.
-  This means code that uses virtual functions will have a modest space
-  overhead.  You can use the -fno-rtti flag to disable RTTI support.
-
-* The internal interface between RTTI-using code and the RTTI support
-  library has changed, so code that uses dynamic_cast should be
-  recompiled. The RTTI support library has moved from libstdc++ to
-  libgcc, so you no longer need to link against libstdc++ for a program
-  that doesn't use the "hosted" library.
 
 * bool is now always the same size as another built-in type. Previously,
   a 64-bit RISC target using a 32-bit ABI would have 32-bit pointers and a
@@ -128,14 +126,6 @@
   2.7.2.
 
 * new (nothrow) is now supported.
-
-* The overload resolution code has been rewritten to conform to the latest
-  C++ Working Paper.  Built-in operators are now considered as candidates
-  in operator overload resolution.  Function template overloading chooses
-  the more specialized template, and handles base classes in type deduction
-  and guiding declarations properly.  In this release the old code can
-  still be selected with -fno-ansi-overloading, although this is not
-  supported and will be removed in a future release.
 
 * Synthesized destructors are no longer made virtual just because the class
   already has virtual functions, only if they override a virtual destructor
@@ -159,7 +149,7 @@
   function's argument list.
 
 * Definition of nested types outside of their containing class is now
-  supported. Use the following source code, as an example.
+  supported.  For instance:
 
        struct A {
               struct B;
