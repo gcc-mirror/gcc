@@ -1,3 +1,9 @@
+2003-12-01  Jeff Law  <law@redhat.com>
+
+	* flow.c (count_or_remove_death_notes_bb): New.  Extracted from
+	count_or_remove_death_notes.
+	(count_or_remove_death_notes): Use EXECUTE_IF_SET_IN_SBITMAP.
+
 2003-12-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* builtins.c (expand_builtin_longjmp): Added two memory clobbers.
