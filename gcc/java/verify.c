@@ -594,7 +594,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  goto push_int;
 	push_int:
 	  if (byte_ops[PC] == OPCODE_newarray
-	      || byte_ops[PC] == OPCODE_newarray)
+	      || byte_ops[PC] == OPCODE_anewarray)
 	    int_value = i;
 	  PUSH_TYPE (int_type_node);  break;
 	case OPCODE_lconst_0:	case OPCODE_lconst_1:
