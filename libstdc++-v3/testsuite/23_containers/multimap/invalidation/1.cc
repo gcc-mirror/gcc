@@ -54,5 +54,5 @@ template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<std::pair<int const, int
 int main()
 {
   test01();
-  return !test;
+  return 0;
 }

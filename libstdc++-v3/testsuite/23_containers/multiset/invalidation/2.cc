@@ -25,11 +25,10 @@
 using __gnu_debug::multiset;
 using std::advance;
 
-bool test = true;
-
 // Erase
 void test02()
 {
+  bool test __attribute__((unused)) = true;
   multiset<int> v;
   for (int i = 0; i < 20; ++i)
     v.insert(i);
@@ -72,5 +71,5 @@ template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<int> >;
 int main()
 {
   test02();
-  return !test;
+  return 0;
 }

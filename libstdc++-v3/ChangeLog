@@ -1,3 +1,26 @@
+2004-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/23_containers/multiset/insert/1.cc: Test result string.
+
+	* testsuite/23_containers/bitset/invalidation/1.cc: Main always
+	returns 0.	
+	* testsuite/23_containers/deque/invalidation/4.cc: Same.
+	* testsuite/23_containers/list/invalidation/1.cc: Same.
+	* testsuite/23_containers/list/invalidation/2.cc: Same.
+	* testsuite/23_containers/list/invalidation/3.cc: Same.
+	* testsuite/23_containers/list/invalidation/4.cc: Same.
+	* testsuite/23_containers/map/invalidation/2.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/1.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/2.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/1.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/2.cc: Same.
+	* testsuite/23_containers/set/invalidation/1.cc: Same.
+	* testsuite/23_containers/set/invalidation/2.cc: Same.
+	* testsuite/23_containers/vector/invalidation/1.cc: Same.
+	* testsuite/23_containers/vector/invalidation/2.cc: Same.
+	* testsuite/23_containers/vector/invalidation/3.cc: Same.
+	* testsuite/23_containers/vector/invalidation/4.cc: Same.
+
 2004-03-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* scripts/testsuite_flags.in: Add "-D_GLIBCXX_ASSERT" to
