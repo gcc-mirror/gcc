@@ -1738,7 +1738,7 @@ qty_sugg_compare_1 (const void *q1p, const void *q2p)
 
    Combining registers means marking them as having the same quantity
    and adjusting the offsets within the quantity if either of
-   them is a SUBREG).
+   them is a SUBREG.
 
    We don't actually combine a hard reg with a pseudo; instead
    we just record the hard reg as the suggestion for the pseudo's quantity.
@@ -1749,7 +1749,7 @@ qty_sugg_compare_1 (const void *q1p, const void *q2p)
    there is no REG_DEAD note on INSN.  This occurs during the processing
    of REG_NO_CONFLICT blocks.
 
-   MAY_SAVE_COPYCOPY is nonzero if this insn is simply copying USEDREG to
+   MAY_SAVE_COPY is nonzero if this insn is simply copying USEDREG to
    SETREG or if the input and output must share a register.
    In that case, we record a hard reg suggestion in QTY_PHYS_COPY_SUGG.
 
