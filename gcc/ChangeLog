@@ -1,3 +1,9 @@
+2004-02-07  Jan Hubicka  <jh@suse.cz>
+
+	* genrecog.c (find_operand): add extra argument stop.
+	(validate_pattern): Verify that mach_dup is duplicating operand
+	defined lexically earlier.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config.gcc: Don't mention MAX_LONG_TYPE_SIZE.
