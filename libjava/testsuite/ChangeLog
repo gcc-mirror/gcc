@@ -1,3 +1,8 @@
+2001-12-20  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/4766:
+	* libjava.compile/PR4766.java: New file.
+
 2001-12-20  Andrew Haley  <aph@redhat.com>
 
 	* libjava.lang/FileHandleGcTest.out:  New file.
