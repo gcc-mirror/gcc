@@ -1,3 +1,8 @@
+2000-08-07  Richard Henderson  <rth@cygnus.com>
+
+	* expmed.c (store_bit_field): Don't require MEM_IN_STRUCT_P.
+	* expr.c (emit_group_store): Don't set it.
+
 2000-08-07  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (Options for Debugging Your Program or GCC): Remove
