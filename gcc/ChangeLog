@@ -1,5 +1,8 @@
 2002-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/fp-bit.c (_unord_f2): Compile it in even if
+	US_SOFTWARE_GOFAST is enabled.
+
 	* config/gofast.h (GOFAST_RENAME_LIBCALLS): Set gt and ge as
 	NULL_RTX.  Set all HFmode operations as NULL_RTX.
 	* optabs.c (prepare_float_lib_cmp) <GT, GE, LT, LE>: If libfunc is
