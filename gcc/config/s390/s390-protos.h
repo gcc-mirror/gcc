@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
 extern void optimization_options PARAMS ((int, int));
 extern void override_options PARAMS ((void));
 extern int s390_arg_frame_offset PARAMS ((void));
-extern void s390_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-extern void s390_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 extern void s390_emit_prologue PARAMS ((void));
 extern void s390_emit_epilogue PARAMS ((void));
 extern void s390_function_profiler PARAMS ((FILE *, int));
@@ -72,6 +70,7 @@ extern void s390_trampoline_template PARAMS ((FILE *));
 extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
 extern rtx s390_simplify_dwarf_addr PARAMS ((rtx));
+extern void s390_machine_dependent_reorg PARAMS ((rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

@@ -94,10 +94,6 @@ extern int target_flags;
 #define TARGET_IBM_FLOAT           0
 #define TARGET_IEEE_FLOAT          1 
 
-/* The current function count for create unique internal labels.  */
-
-extern int s390_function_count;
-
 /* The amount of space used for outgoing arguments.  */
 
 extern int current_function_outgoing_args_size;
@@ -1348,5 +1344,12 @@ extern int s390_pool_overflow;
     }									    \
   goto WIN;								    \
 }
+
+/* In rare cases, correct code generation requires extra machine dependent
+   processing between the second jump optimization pass and delayed branch
+   scheduling.  On those machines, define this macro as a C statement to act on
+   the code starting at INSN.  */
+ 
+#define MACHINE_DEPENDENT_REORG(INSN) s390_machine_dependent_reorg (INSN)
 
 #endif 
