@@ -35,6 +35,8 @@ using namespace std;
 
 static list<string> foo;
 static pthread_mutex_t fooLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t fooCondOverflow = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t fooCondUnderflow = PTHREAD_COND_INITIALIZER;
 static unsigned max_size = 10;
 #if defined(__CYGWIN__)
 static int iters = 10000;
@@ -50,11 +52,12 @@ produce (void*)
       string str ("test string");
 
       pthread_mutex_lock (&fooLock);
-      if (foo.size () < max_size)
-	{
-	  foo.push_back (str);
-	  num++;
-	}
+      while (foo.size () >= max_size)
+	pthread_cond_wait (&fooCondOverflow, &fooLock);
+      foo.push_back (str);
+      num++;
+      if (foo.size () >= (max_size / 2))
+	pthread_cond_signal (&fooCondUnderflow);
       pthread_mutex_unlock (&fooLock);
     }
 
@@ -67,12 +70,15 @@ consume (void*)
   for (int num = 0; num < iters; )
     {
       pthread_mutex_lock (&fooLock);
+      while (foo.size () == 0)
+	pthread_cond_wait (&fooCondUnderflow, &fooLock);
       while (foo.size () > 0)
 	{
 	  string str = foo.back ();
 	  foo.pop_back ();
 	  num++;
 	}
+      pthread_cond_signal (&fooCondOverflow);
       pthread_mutex_unlock (&fooLock);
     }
 
