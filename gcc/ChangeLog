@@ -1,5 +1,8 @@
 Mon May  7 09:30:14 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (compile_file): Set up the output file before we call
+	the various initializers for the compiler.
+
 	* except.c (sjlj_mark_call_sites): Do not search for assignments to
 	non-argumment registers that are mentioned in CALL_INSN_FUNCTION_USAGE.
 

@@ -2149,6 +2149,27 @@ compile_file (name)
   init_timevar ();
   timevar_start (TV_TOTAL);
 
+  if (! name_specified && asm_file_name == 0)
+    asm_out_file = stdout;
+  else
+    {
+      if (asm_file_name == 0)
+        {
+          int len = strlen (dump_base_name);
+          char *dumpname = (char *) xmalloc (len + 6);
+          memcpy (dumpname, dump_base_name, len + 1);
+          strip_off_ending (dumpname, len);
+          strcat (dumpname, ".s");
+          asm_file_name = dumpname;
+        }
+      if (!strcmp (asm_file_name, "-"))
+        asm_out_file = stdout;
+      else
+        asm_out_file = fopen (asm_file_name, "w");
+      if (asm_out_file == 0)
+	fatal_io_error ("can't open %s for writing", asm_file_name);
+    }
+
   /* Initialize data in various passes.  */
 
   init_obstacks ();
@@ -2192,27 +2213,6 @@ compile_file (name)
   /* Open assembler code output file.  Do this even if -fsyntax-only is on,
      because then the driver will have provided the name of a temporary
      file or bit bucket for us.  */
-
-  if (! name_specified && asm_file_name == 0)
-    asm_out_file = stdout;
-  else
-    {
-      if (asm_file_name == 0)
-        {
-          int len = strlen (dump_base_name);
-          char *dumpname = (char *) xmalloc (len + 6);
-          memcpy (dumpname, dump_base_name, len + 1);
-          strip_off_ending (dumpname, len);
-          strcat (dumpname, ".s");
-          asm_file_name = dumpname;
-        }
-      if (!strcmp (asm_file_name, "-"))
-        asm_out_file = stdout;
-      else
-        asm_out_file = fopen (asm_file_name, "w");
-      if (asm_out_file == 0)
-	fatal_io_error ("can't open %s for writing", asm_file_name);
-    }
 
 #ifdef IO_BUFFER_SIZE
   setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
