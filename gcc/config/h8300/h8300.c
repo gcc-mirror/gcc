@@ -861,24 +861,9 @@ function_arg (cum, mode, type, named)
       else
 	size = GET_MODE_SIZE (mode);
 
-      if (size + cum->nbytes <= regpass * UNITS_PER_WORD)
-	{
-	  switch (cum->nbytes / UNITS_PER_WORD)
-	    {
-	    case 0:
-	      result = gen_rtx_REG (mode, 0);
-	      break;
-	    case 1:
-	      result = gen_rtx_REG (mode, 1);
-	      break;
-	    case 2:
-	      result = gen_rtx_REG (mode, 2);
-	      break;
-	    case 3:
-	      result = gen_rtx_REG (mode, 3);
-	      break;
-	    }
-	}
+      if (size + cum->nbytes <= regpass * UNITS_PER_WORD
+	  && cum->nbytes / UNITS_PER_WORD <= 3)
+	result = gen_rtx_REG (mode, cum->nbytes / UNITS_PER_WORD);
     }
 
   return result;
