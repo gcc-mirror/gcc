@@ -185,7 +185,7 @@ Incorrect output with 0-based array of characters
 Double complex zero ** double precision number -> NaN instead of zero
 @end table
 @item
-Richard Henderson (@email{rth@@redhat.com}) analysed and improved the handling
+Richard Henderson (@email{rth@@redhat.com}) analyzed and improved the handling
 of (no-)aliasing information for dummy arguments and improved the optimization
 of induction variables in unrolled loops.
 @end itemize

@@ -1045,7 +1045,7 @@ As such, GNU users rarely need consider just what kind of underlying
 hardware (or, in many cases, operating system) they are using at any
 particular time.
 They can use and write software designed for a general-purpose,
-widely portable, heterogenous environment---the GNU environment.
+widely portable, heterogeneous environment---the GNU environment.
 
 In line with this philosophy, GNU Fortran must evolve into a product
 that is widely ported and portable not only in the sense that it can
@@ -7512,7 +7512,7 @@ set up this kind of aliasing.
 
 (The FORTRAN 77 standard's prohibition of this sort of
 overlap, generally referred to therein as ``storage
-assocation'', appears in Sections 15.9.3.6.
+association'', appears in Sections 15.9.3.6.
 This prohibition allows implementations, such as @command{g77},
 to, for example, implement the passing of procedures and
 even values in @code{COMMON} via copy operations into local,
