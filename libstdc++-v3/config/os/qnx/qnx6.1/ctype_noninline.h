@@ -39,12 +39,12 @@
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 
-  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  : facet(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(NULL), _M_tolower(NULL), _M_table(__table ? __table : _Ctype)
   { }
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
-  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  : facet(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(NULL), _M_tolower(NULL), _M_table(__table ? __table : _Ctype)
   { }
 
