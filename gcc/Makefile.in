@@ -309,7 +309,7 @@ EXTRA_HEADERS =@extra_headers_list@
 
 # Set this to `ld' to enable use of collect2.
 USE_COLLECT2 = @will_use_collect2@
-MAYBE_USE_COLLECT = @maybe_use_collect2@
+MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
 
