@@ -1,3 +1,7 @@
+2001-01-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20010114-2.c: New test.
+
 2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20010114-1.c: New test.
