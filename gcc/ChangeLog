@@ -22,6 +22,10 @@ Wed Mar 10 23:11:19 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Wed Mar 10 20:28:29 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (compute_pre_local_properties): Delete.
+	(compute_pre_data): Use compute_local_properties instead of
+	compute_pre_local_properties.
+
 	* gcse.c: More comments, whitespace and similar fixes.
 	(dump_cuid_table, maybe_set_rd_gen, dump_cprop_data): Delete.
 	(dump_pre_data, compute_cprop_local_properties): Likewise.
