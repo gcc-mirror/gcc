@@ -2584,6 +2584,7 @@ do { long l;						\
   {"const1_operand", {CONST_INT}},					\
   {"const248_operand", {CONST_INT}},					\
   {"incdec_operand", {CONST_INT}},					\
+  {"mmx_reg_operand", {REG}},						\
   {"reg_no_sp_operand", {SUBREG, REG}},					\
   {"general_no_elim_operand", {CONST_INT, CONST_DOUBLE, CONST,		\
 			SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM}},	\
@@ -2592,6 +2593,7 @@ do { long l;						\
   {"non_q_regs_operand", {SUBREG, REG}},				\
   {"no_comparison_operator", {EQ, NE, LT, GE, LTU, GTU, LEU, GEU}},	\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU}},		\
+  {"sse_comparison_operator", {EQ, LT, LE, UNORDERED }},		\
   {"uno_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
 			       GTU, UNORDERED, ORDERED}},		\
   {"cmp_fp_expander_operand", {CONST_DOUBLE, SUBREG, REG, MEM}},	\

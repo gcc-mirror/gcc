@@ -1174,6 +1174,14 @@ reg_no_sp_operand (op, mode)
   return register_operand (op, mode);
 }
 
+int
+mmx_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return MMX_REG_P (op);
+}
+
 /* Return false if this is any eliminable register.  Otherwise
    general_operand.  */
 
@@ -1262,6 +1270,17 @@ no_comparison_operator (op, mode)
     default:
       return 0;
     }
+}
+
+/* Return 1 if OP is a comparison that can be used in the CMPSS/CMPPS
+   insns.  */
+int
+sse_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (op);
+  return code == EQ || code == LT || code == LE || code == UNORDERED;
 }
 
 /* Return 1 if OP is a comparison operator that can be issued by fcmov.  */

@@ -1,3 +1,39 @@
+2000-09-08  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* i386-protos.h (sse_comparison_operator, mmx_reg_operand): Declare
+	new functions.
+	* i386.c (sse_comparison_operator, mmx_reg_operand): New functions.
+	* i386.md (attr "type"): Add sse and mmx types.
+	(attr "memory"): Handle them without a crash.
+	(movsi_1, movdi_2): Allow MMX regs.
+	(movdi splits): Don't split moves involving MMX regs.
+	(setcc_4): Remove '*' from pattern name so we get a gen_setcc4.
+	(movv4sf_internal, movv4si_internal, movv8qi_internal,
+	movv4hi_internal, movv2si_internal, movv8qi, movv4hi, movv2si,
+	movv4sf, movv4si, pushv4sf, pushv4si, pushv8qi, pushv4hi, pushv2si,
+	sse_movaps, sse_movups, sse_movmskps, mmx_pmovmskb, mmx_maskmovq,
+	sse_movntv4sf, sse_movntdi, sse_movhlps, sse_movlhps, sse_movhps,
+	sse_movlps, sse_loadss, sse_movss, sse_storess, sse_shufps,
+	addv4sf3, vmaddv4sf3, subv4sf3, vmsubv4sf3, mulv4sf3, vmmulv4sf3,
+	divv4sf3, vmdivv4sf3, rcpv4sf2, vmrcpv4sf2, rsqrtv4sf2, vmrsqrtv4sf2,
+	sqrtv4sf2, vmsqrtv4sf2, sse_andti3, sse_nandti3, sse_iorti3,
+ 	sse_xorti3, maskcmpv4sf3, maskncmpv4sf3, vmmaskcmpv4sf3,
+ 	vmmaskncmpv4sf3, sse_comi, sse_ucomi, sse_unpckhps, sse_unpcklps,
+	smaxv4sf3, vmsmaxv4sf3, sminv4sf3, vmsminv4sf3, cvtpi2ps, cvtps2pi,
+	cvttps2pi, cvtsi2ss, cvtss2si, cvttss2si, addv8qi3, addv4hi3,
+	addv2si3, ssaddv8qi3, ssaddv4hi3, usaddv8qi3, usaddv4hi3, subv8qi3,
+	subv4hi3, subv2si3, sssubv8qi3, sssubv4hi3, ussubv8qi3, ussubv4hi3,
+	mulv4hi3, smulv4hi3_highpart, umulv4hi3_highpart, mmx_pmaddwd,
+	mmx_iordi3, mmx_xordi3, mmx_anddi3, mmx_nanddi3, mmx_uavgv8qi3,
+	mmx_uavgv4hi3, mmx_psadbw, mmx_pinsrw, mmx_pextrw, mmx_pshufw,
+	eqv8qi3, eqv4hi3, eqv2si3, gtv8qi3, gtv4hi3, gtv2si3, umaxv8qi3,
+	smaxv4hi3, uminv8qi3, sminv4hi3, ashrv4hi3, ashrv2si3, lshrv4hi3,
+	lshrv2si3, mmx_lshrdi3, ashlv4hi3, ashlv2si3, mmx_ashldi3,
+	mmx_packsswb, mmx_packssdw, mmx_packuswb, mmx_punpckhbw,
+	mmx_punpckhwd, mmx_punpckhdq, mmx_punpcklbw, mmx_punpcklwd,
+	mmx_punpckldq, emms, sfence, ldmxcsr, prefetch, stmxcsr, sse_clrti,
+	mmx_clrdi): New patterns.
+
 2000-09-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c: Don't include tm.h directly.
