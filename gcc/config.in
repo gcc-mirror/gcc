@@ -145,88 +145,112 @@
 /* Define if <time.h> defines clock_t. */
 #undef HAVE_CLOCK_T
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'abort', otherwise define to 0.
+   */
 #undef HAVE_DECL_ABORT
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'atof', otherwise define to 0. */
 #undef HAVE_DECL_ATOF
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'atol', otherwise define to 0. */
 #undef HAVE_DECL_ATOL
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'basename', otherwise define to
+   0. */
 #undef HAVE_DECL_BASENAME
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'calloc', otherwise define to 0.
+   */
 #undef HAVE_DECL_CALLOC
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'clock', otherwise define to 0.
+   */
 #undef HAVE_DECL_CLOCK
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'errno', otherwise define to 0.
+   */
 #undef HAVE_DECL_ERRNO
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'fprintf_unlocked', otherwise
+   define to 0. */
 #undef HAVE_DECL_FPRINTF_UNLOCKED
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'fputs_unlocked', otherwise
+   define to 0. */
 #undef HAVE_DECL_FPUTS_UNLOCKED
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'free', otherwise define to 0. */
 #undef HAVE_DECL_FREE
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'fwrite_unlocked', otherwise
+   define to 0. */
 #undef HAVE_DECL_FWRITE_UNLOCKED
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getcwd', otherwise define to 0.
+   */
 #undef HAVE_DECL_GETCWD
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getenv', otherwise define to 0.
+   */
 #undef HAVE_DECL_GETENV
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getopt', otherwise define to 0.
+   */
 #undef HAVE_DECL_GETOPT
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getrlimit', otherwise define to
+   0. */
 #undef HAVE_DECL_GETRLIMIT
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getrusage', otherwise define to
+   0. */
 #undef HAVE_DECL_GETRUSAGE
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'getwd', otherwise define to 0.
+   */
 #undef HAVE_DECL_GETWD
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'ldgetname', otherwise define to
+   0. */
 #undef HAVE_DECL_LDGETNAME
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'malloc', otherwise define to 0.
+   */
 #undef HAVE_DECL_MALLOC
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'putc_unlocked', otherwise define
+   to 0. */
 #undef HAVE_DECL_PUTC_UNLOCKED
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'realloc', otherwise define to 0.
+   */
 #undef HAVE_DECL_REALLOC
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'sbrk', otherwise define to 0. */
 #undef HAVE_DECL_SBRK
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'setrlimit', otherwise define to
+   0. */
 #undef HAVE_DECL_SETRLIMIT
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'snprintf', otherwise define to
+   0. */
 #undef HAVE_DECL_SNPRINTF
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'strsignal', otherwise define to
+   0. */
 #undef HAVE_DECL_STRSIGNAL
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'strstr', otherwise define to 0.
+   */
 #undef HAVE_DECL_STRSTR
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'times', otherwise define to 0.
+   */
 #undef HAVE_DECL_TIMES
 
-/* Define to 1 if we found this declaration otherwise define to 0. */
+/* Define to 1 if we found a declaration for 'vasprintf', otherwise define to
+   0. */
 #undef HAVE_DECL_VASPRINTF
 
 /* Define to 1 if you have the <direct.h> header file. */

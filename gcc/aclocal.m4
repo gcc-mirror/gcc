@@ -28,11 +28,13 @@ dnl Arrange to define HAVE_DECL_<FUNCTION> to 0 or 1 as appropriate.
 dnl gcc_AC_CHECK_DECLS(SYMBOLS,
 dnl 	[ACTION-IF-NEEDED [, ACTION-IF-NOT-NEEDED [, INCLUDES]]])
 AC_DEFUN([gcc_AC_CHECK_DECLS],
-[for ac_func in $1
+[AC_FOREACH([gcc_AC_Func], [$1],
+  [AH_TEMPLATE(AS_TR_CPP(HAVE_DECL_[]gcc_AC_Func),
+  [Define to 1 if we found a declaration for ']gcc_AC_Func[', otherwise
+   define to 0.])])dnl
+for ac_func in $1
 do
-changequote(, )dnl
-  ac_tr_decl=HAVE_DECL_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-changequote([, ])dnl
+  ac_tr_decl=AS_TR_CPP([HAVE_DECL_$ac_func])
 gcc_AC_CHECK_DECL($ac_func,
   [AC_DEFINE_UNQUOTED($ac_tr_decl, 1) $2],
   [AC_DEFINE_UNQUOTED($ac_tr_decl, 0) $3],
@@ -48,12 +50,6 @@ dnl during this test.
   $4
 )
 done
-dnl Automatically generate config.h entries via autoheader.
-if test x = y ; then
-  patsubst(translit([$1], [a-z], [A-Z]), [\w+],
-    [AC_DEFINE([HAVE_DECL_\&], 1,
-      [Define to 1 if we found this declaration otherwise define to 0.])])dnl
-fi
 ])
 
 dnl 'make compare' can be significantly faster, if cmp itself can
@@ -140,38 +136,6 @@ else
   fi
 fi
 AC_SUBST(LN_S)dnl
-])
-
-dnl See if hard links work and if not, try to substitute either symbolic links or simple copy.
-AC_DEFUN([gcc_AC_PROG_LN],
-[AC_MSG_CHECKING(whether ln works)
-AC_CACHE_VAL(gcc_cv_prog_LN,
-[rm -f conftestdata_t
-echo >conftestdata_f
-if ln conftestdata_f conftestdata_t 2>/dev/null
-then
-  gcc_cv_prog_LN="ln"
-else
-  if ln -s conftestdata_f conftestdata_t 2>/dev/null
-  then
-    gcc_cv_prog_LN="ln -s"
-  else
-    gcc_cv_prog_LN=cp
-  fi
-fi
-rm -f conftestdata_f conftestdata_t
-])dnl
-LN="$gcc_cv_prog_LN"
-if test "$gcc_cv_prog_LN" = "ln"; then
-  AC_MSG_RESULT(yes)
-else
-  if test "$gcc_cv_prog_LN" = "ln -s"; then
-    AC_MSG_RESULT([no, using ln -s])
-  else
-    AC_MSG_RESULT([no, and neither does ln -s, so using cp])
-  fi
-fi
-AC_SUBST(LN)dnl
 ])
 
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead

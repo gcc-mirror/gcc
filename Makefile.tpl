@@ -68,6 +68,8 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_DATA = @INSTALL_DATA@
+LN = @LN@
+LN_S = @LN_S@
 
 # -------------------------------------------------
 # Miscellaneous non-standard autoconf-set variables
@@ -493,6 +495,8 @@ BASE_FLAGS_TO_PASS = [+ FOR flags_to_pass +]\
 RECURSE_FLAGS = \
 	CXX_FOR_TARGET='$(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)' \
 	RAW_CXX_FOR_TARGET='$(RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)' \
+
+RECURSE_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS)
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
@@ -1258,7 +1262,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
 profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1271,7 +1275,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries and training compiler"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1291,8 +1295,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-		LANGUAGES="c c++" all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LANGUAGES="c c++" all
 @endif gcc-no-bootstrap
 
 .PHONY: check-gcc maybe-check-gcc
@@ -1440,12 +1443,14 @@ objext = .o
 # Real targets act phony if they depend on phony targets; this hack
 # prevents gratuitous rebuilding of stage 1.
 prebootstrap:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-bootstrap
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-bootstrap
 	$(STAMP) prebootstrap
 
 # Flags to pass to stage2 and later makes.
 BOOT_CFLAGS= -g -O2
 POSTSTAGE1_FLAGS_TO_PASS = \
+	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
+	STAGE_PREFIX=$$r/stage[+prev+]-gcc/ \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	ADAC="\$$(CC)"
 
@@ -1461,14 +1466,14 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 [+ FOR bootstrap-stage +]
 .PHONY: stage[+id+]-start stage[+id+]-end
 
-stage[+id+]-start:
+stage[+id+]-start::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage[+id+] > stage_last ; \
 	[ -d stage[+id+]-gcc ] || mkdir stage[+id+]-gcc; \
 	set stage[+id+]-gcc gcc ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
 	set stage[+prev+]-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
 
-stage[+id+]-end:
+stage[+id+]-end::
 	rm -f stage_last ; \
 	set gcc stage[+id+]-gcc ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
 	set prev-gcc stage[+prev+]-gcc ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
@@ -1477,18 +1482,19 @@ stage[+id+]-end:
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage[+id+]-bubble
-stage[+id+]-bubble: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
+stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
 	@if [ -f all-stage[+id+]-gcc ] ; then \
 	  echo Remaking stage [+id+] ; \
 	  rm -f all-stage[+id+]-gcc ; \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	    all-stage[+id+]-gcc [+ IF next +] && \
-	  if [ -f configure-stage[+next+]-gcc ] ; then \
-	    $(STAMP) configure-stage[+next+]-gcc ; \
-	  fi [+ ENDIF next +]; \
-	else \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage[+id+]-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage[+id+]-gcc
+
+[+ IF prev +]
+stage[+prev+]-bubble::
+	@if [ -f configure-stage[+id+]-gcc ] ; then \
+	  $(STAMP) configure-stage[+id+]-gcc ; \
 	fi
+[+ ENDIF prev +]
 
 configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	  ELSE +] prebootstrap [+ ENDIF prev +]
@@ -1529,8 +1535,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
-		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-		STAGE_PREFIX=$$r/stage[+prev+]-gcc/ [+ ENDIF prev +] \
+		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
 		[+extra_make_flags+] && $(STAMP) ../all-stage[+id+]-gcc
 
 [+ IF compare-target +]
@@ -1560,23 +1565,38 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 [+ IF bootstrap-target +]
 .PHONY: [+bootstrap-target+]
 [+bootstrap-target+]:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage[+id+]-bubble [+
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble [+
 	  IF compare-target +] [+compare-target+] [+
 	  ENDIF compare-target +] \
 	  stage[+id+]-start all stage[+id+]-end 
 [+ ENDIF bootstrap-target +]
 
-.PHONY: restage[+id+] distclean-stage[+id+]
+.PHONY: restage[+id+] touch-stage[+id+] distclean-stage[+id+]
 
-distclean-stage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+[+ IF prev +]distclean-stage[+prev+]:: distclean-stage[+id+] [+ ENDIF prev +]
+distclean-stage[+id+]::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage[+id+]-gcc all-stage[+id+]-gcc stage[+id+]-gcc [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
-restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
+# Rules to renew the timestamp on a stage and all the following ones
+[+ IF prev +]touch-stage[+prev+]:: touch-stage[+id+] [+ ENDIF prev +]
+touch-stage[+id+]::
+	@[ -f configure-stage[+id+]-gcc ] && \
+	  echo '$(STAMP) configure-stage[+id+]-gcc' && \
+	  $(STAMP) configure-stage[+id+]-gcc; \
+	[ -f all-stage[+id+]-gcc ] && \
+	  echo '$(STAMP) all-stage[+id+]-gcc' && \
+	  $(STAMP) all-stage[+id+]-gcc; \
+	:
+
+# After building a stage, touch the following ones
+[+ IF prev +]restage[+prev+]:: touch-stage[+id+] [+ ENDIF prev +]
+restage[+id+]::
 	rm -rf all-stage[+id+]-gcc [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) [+
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+
 	  IF compare-target +][+compare-target+] [+
 	  ELSE +] all-stage[+id+]-gcc [+ ENDIF compare-target +]
 
@@ -1586,6 +1606,33 @@ restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
 [+ ENDIF cleanstrap-target +]
 
 [+ ENDFOR bootstrap-stage +]
+
+stagefeedback-start::
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	cd stageprofile-gcc && \
+	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
+	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
+
+profiledbootstrap: all-bootstrap configure-gcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
+	echo "Bootstrapping the compiler"; \
+	$(MAKE) stageprofile-bubble distclean-stagefeedback stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building runtime libraries and training compiler"; \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
+	echo "Building feedback based compiler"; \
+	$(MAKE) stagefeedback-bubble stagefeedback-end
+
 @endif gcc-bootstrap
 
 # --------------------------------------
