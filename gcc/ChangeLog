@@ -1,3 +1,8 @@
+2004-09-14  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/17186
+	* function.c (expand_function_end): Revert last change.
+
 2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15498
