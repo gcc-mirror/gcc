@@ -1478,7 +1478,20 @@
 
 ;; Load or store with base-register modification.
 
-(define_insn "pre_ldwm"
+(define_expand "pre_load"
+  [(parallel [(set (match_operand:SI 0 "register_operand" "")
+	      (mem (plus (match_operand 1 "register_operand" "")
+			       (match_operand 2 "pre_cint_operand" ""))))
+	      (set (match_dup 1)
+		   (plus (match_dup 1) (match_dup 2)))])]
+  ""
+  "
+{
+  emit_insn (gen_pre_ldw (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "pre_ldw"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "pre_cint_operand" ""))))
@@ -1494,7 +1507,7 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
-(define_insn "pre_stwm"
+(define_insn ""
   [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "pre_cint_operand" "")))
 	(match_operand:SI 2 "reg_or_0_operand" "rM"))
@@ -1510,7 +1523,7 @@
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-(define_insn "post_ldwm"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
    (set (match_dup 1)
@@ -1526,7 +1539,20 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
-(define_insn "post_stwm"
+(define_expand "post_store"
+  [(parallel [(set (mem (match_operand 0 "register_operand" ""))
+		   (match_operand 1 "reg_or_0_operand" ""))
+	      (set (match_dup 0)
+		   (plus (match_dup 0)
+			 (match_operand 2 "post_cint_operand" "")))])]
+  ""
+  "
+{
+  emit_insn (gen_post_stw (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "post_stw"
   [(set (mem:SI (match_operand:SI 0 "register_operand" "+r"))
 	(match_operand:SI 1 "reg_or_0_operand" "rM"))
    (set (match_dup 0)

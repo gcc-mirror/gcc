@@ -2688,7 +2688,7 @@ hppa_expand_prologue()
 	emit_move_insn (tmpreg, frame_pointer_rtx);
 	emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 	if (VAL_14_BITS_P (actual_fsize))
-	  emit_insn (gen_post_stwm (stack_pointer_rtx, tmpreg, size_rtx));
+	  emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, size_rtx));
 	else
 	  {
 	    /* It is incorrect to store the saved frame pointer at *sp,
@@ -2697,7 +2697,8 @@ hppa_expand_prologue()
 	       So instead use stwm to store at *sp and post-increment the
 	       stack pointer as an atomic operation.  Then increment sp to
 	       finish allocating the new frame.  */
-	    emit_insn (gen_post_stwm (stack_pointer_rtx, tmpreg, GEN_INT (64)));
+	    emit_insn (gen_post_store (stack_pointer_rtx, tmpreg,
+		       GEN_INT (64)));
 	    set_reg_plus_d (STACK_POINTER_REGNUM,
 			    STACK_POINTER_REGNUM,
 			    actual_fsize - 64);
@@ -2820,9 +2821,9 @@ hppa_expand_prologue()
 	    if (merge_sp_adjust_with_store)
 	      {
 		merge_sp_adjust_with_store = 0;
-	        emit_insn (gen_post_stwm (stack_pointer_rtx,
-					  gen_rtx_REG (word_mode, i),
-					  GEN_INT (-offset)));
+	        emit_insn (gen_post_store (stack_pointer_rtx,
+					   gen_rtx_REG (word_mode, i),
+					   GEN_INT (-offset)));
 	      }
 	    else
 	      store_reg (i, offset, STACK_POINTER_REGNUM);
@@ -3032,13 +3033,13 @@ hppa_expand_epilogue ()
   else if (frame_pointer_needed)
     {
       set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
-      emit_insn (gen_pre_ldwm (frame_pointer_rtx, 
+      emit_insn (gen_pre_load (frame_pointer_rtx, 
 			       stack_pointer_rtx,
 			       GEN_INT (-64)));
     }
   /* If we were deferring a callee register restore, do it now.  */
   else if (! frame_pointer_needed  && merge_sp_adjust_with_load)
-    emit_insn (gen_pre_ldwm (gen_rtx_REG (word_mode, merge_sp_adjust_with_load),
+    emit_insn (gen_pre_load (gen_rtx_REG (word_mode, merge_sp_adjust_with_load),
 			     stack_pointer_rtx,
 			     GEN_INT (- actual_fsize)));
   else if (actual_fsize != 0)

@@ -1,3 +1,12 @@
+Tue Jul 27 23:20:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (post_store, pre_load): New expanders.
+	(post_stwm, pre_ldwm): Renamed to post_stw and pre_ldw respectively.
+	(post_ldwm, pre_stwm): Make these unnamed patterns since we never
+	need to directly generate RTL for them.
+	* pa.c (hppa_expand_prologue, hppa_expand_epilogue): Corresponding
+	changes.
+
 Tue Jul 27 16:05:52 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* aix43.h (ASM_CPU_SPEC, CPP_CPU_SPEC): Add rs64a and PPC630.
