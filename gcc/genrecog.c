@@ -1624,7 +1624,7 @@ change_state (oldpos, newpos, indent)
 }
 
 char *
-xstrdup (s1)
+xstrdup (input)
   const char *input;
 {
   register size_t len = strlen (input) + 1;

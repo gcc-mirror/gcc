@@ -397,7 +397,7 @@ fancy_abort ()
 }
 
 char *
-xstrdup (s1)
+xstrdup (input)
   const char *input;
 {
   register size_t len = strlen (input) + 1;
