@@ -43,14 +43,14 @@ typedef int _Atomic_word;
 #include <sys/atomic_op.h>
 
 static inline int
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __exchange_and_add (atomic_p __mem, int __val)
 {
   return fetch_and_add (__mem, __val);
 }
 
 static inline void
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __atomic_add (atomic_p __mem, int __val)
 {
   (void) fetch_and_add (__mem, __val);
