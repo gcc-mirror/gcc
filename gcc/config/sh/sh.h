@@ -164,10 +164,10 @@ extern int target_flags;
 /* Nonzero if we should generate code using type 3E insns.  */
 #define TARGET_SH3E (target_flags & SH3E_BIT)
 
-/* Nonzero if the cache line size is 32. */
+/* Nonzero if the cache line size is 32.  */
 #define TARGET_CACHE32 (target_flags & HARD_SH4_BIT)
 
-/* Nonzero if we schedule for a superscalar implementation. */
+/* Nonzero if we schedule for a superscalar implementation.  */
 #define TARGET_SUPERSCALAR (target_flags & HARD_SH4_BIT)
 
 /* Nonzero if the target has separate instruction and data caches.  */
@@ -430,7 +430,7 @@ do {									\
    && GET_CODE (PREV_INSN (A_LABEL)) == INSN				\
    && GET_CODE (PATTERN (PREV_INSN (A_LABEL))) == UNSPEC_VOLATILE	\
    && XINT (PATTERN (PREV_INSN (A_LABEL)), 1) == UNSPECV_ALIGN)		\
-   /* explicit alignment insn in constant tables. */			\
+   /* explicit alignment insn in constant tables.  */			\
   ? INTVAL (XVECEXP (PATTERN (PREV_INSN (A_LABEL)), 0, 0))		\
   : 0)
 
@@ -998,7 +998,7 @@ extern const enum reg_class reg_class_from_letter[];
   ((TYPE) != 0						\
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
        || TREE_ADDRESSABLE (TYPE)))
-/* Some subroutine macros specific to this machine. */
+/* Some subroutine macros specific to this machine.  */
 
 #define BASE_RETURN_VALUE_REG(MODE) \
   ((TARGET_SH3E && ((MODE) == SFmode))			\
@@ -1046,7 +1046,7 @@ extern const enum reg_class reg_class_from_letter[];
 #define LIBCALL_VALUE(MODE) \
   gen_rtx_REG ((MODE), BASE_RETURN_VALUE_REG (MODE));
 
-/* 1 if N is a possible register number for a function value. */
+/* 1 if N is a possible register number for a function value.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO) \
   ((REGNO) == FIRST_RET_REG || (TARGET_SH3E && (REGNO) == FIRST_FP_RET_REG))
 
@@ -1134,7 +1134,7 @@ struct sh_args {
 	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))))
 
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
-   This macro is only used in this file. */
+   This macro is only used in this file.  */
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (((TYPE) == 0 \
@@ -1642,7 +1642,7 @@ extern int current_function_anonymous_args;
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -1916,7 +1916,7 @@ while (0)
    specified as the number of bits.
 
    Try to use function `asm_output_aligned_bss' defined in file
-   `varasm.c' when defining this macro. */
+   `varasm.c' when defining this macro.  */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
@@ -2021,11 +2021,11 @@ extern char fp_reg_names[][5];
    assemble_name ((STREAM), (NAME)),		\
    fputc ('\n', (STREAM)))
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
 
-/* The prefix to add to an internally generated label. */
+/* The prefix to add to an internally generated label.  */
 
 #define LOCAL_LABEL_PREFIX ""
 
