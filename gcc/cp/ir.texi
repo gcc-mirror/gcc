@@ -807,7 +807,11 @@ than the @code{TYPE_SIZE} and @code{TYPE_ALIGN} given by the
 variable to give it a particular size and alignment.
 
 If this variable is initialized (but does not require a constructor),
-the @code{DECL_INITIAL} will be an expression for the initializer.
+the @code{DECL_INITIAL} will be an expression for the initializer.  The
+initializer should be evaluated, and a bitwise copy into the variable
+performed.  If the @code{DECL_INITIAL} is the @code{error_mark_node},
+there is an initializer, but it is given by an explicit statement later
+in the code; no bitwise copy is required.
 
 @item PARM_DECL
 Used to represent a parameter to a function.  Treat these nodes
