@@ -1317,17 +1317,23 @@ bi-reverse.o: bi-reverse.c $(srcdir)/bi-defs.h
 	   $(srcdir)/bi-reverse.c
 
 
-bc-arity.h:	$(srcdir)/bytecode.def bi-arity
+bc-arity.h: stamp-bc-arity ; @true
+stamp-bc-arity : $(srcdir)/bytecode.def bi-arity $(srcdir)/move-if-change
 	-rm -f bc-arity.h
-	./bi-arity < $(srcdir)/bytecode.def > bc-arity.h
+	./bi-arity < $(srcdir)/bytecode.def >tmp-bc-arity.h
+	$(srcdir)/move-if-change tmp-bc-arity.h bc-arity.h
 
-bc-opcode.h:	$(srcdir)/bytecode.def bi-opcode
+bc-opcode.h: stamp-bc-opcode ; @true
+stamp-bc-opcode : $(srcdir)/bytecode.def bi-opcode $(srcdir)/move-if-change
 	-rm -f bc-opcode.h
-	./bi-opcode < $(srcdir)/bytecode.def > bc-opcode.h
+	./bi-opcode < $(srcdir)/bytecode.def >tmp-bc-opcode.h
+	$(srcdir)/move-if-change tmp-bc-opcode.h bc-opcode.h
 
-bc-opname.h:	 $(srcdir)/bytecode.def bi-opname
+bc-opname.h: stamp-bc-opname ; @true
+stamp-bc-opname : $(srcdir)/bytecode.def bi-opname $(srcdir)/move-if-change
 	-rm -f bc-opname.h
-	./bi-opname < $(srcdir)/bytecode.def > bc-opname.h
+	./bi-opname < $(srcdir)/bytecode.def >tmp-bc-opname.h
+	$(srcdir)/move-if-change tmp-bc-opname.h bc-opname.h
 
 bytecode.mostlyclean:
 	-rm -f bc-arity.h bc-opcode.h bc-opname.h
