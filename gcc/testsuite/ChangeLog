@@ -1,3 +1,14 @@
+2004-12-14  Janis Johnson  <janis187@us.ibm.com
+
+	* gcc.dg/altivec-types-1.c: New test.
+	* gcc.dg/altivec-types-2.c: New test.
+	* gcc.dg/altivec-types-3.c: New test.
+	* gcc.dg/altivec-types-4.c: New test.
+	* g++.dg/ext/altivec-types-1.C: New test.
+	* g++.dg/ext/altivec-types-2.C: New test.
+	* g++.dg/ext/altivec-types-3.C: New test.
+	* g++.dg/ext/altivec-types-4.C: New test.
+
 2004-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/18951
