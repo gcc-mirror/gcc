@@ -3672,12 +3672,18 @@ type_hash_lookup (hashcode, type)
      tree type;
 {
   register struct type_hash *h;
+
+  /* The TYPE_ALIGN field of a type is set by layout_type(), so we
+     must call that routine before comparing TYPE_ALIGNs. */
+  layout_type (type);
+
   for (h = type_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
     if (h->hashcode == hashcode
 	&& TREE_CODE (h->type) == TREE_CODE (type)
 	&& TREE_TYPE (h->type) == TREE_TYPE (type)
         && attribute_list_equal (TYPE_ATTRIBUTES (h->type),
 				   TYPE_ATTRIBUTES (type))
+	&& TYPE_ALIGN (h->type) == TYPE_ALIGN (type)
 	&& (TYPE_MAX_VALUE (h->type) == TYPE_MAX_VALUE (type)
 	    || tree_int_cst_equal (TYPE_MAX_VALUE (h->type),
 				   TYPE_MAX_VALUE (type)))
