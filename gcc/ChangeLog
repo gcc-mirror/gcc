@@ -1,3 +1,11 @@
+2000-02-18  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/elf.h (ASM_OUTPUT_ALIGN): Do not generate
+	anything for an alignment of zero.
+
+	* config/arm/thumb.h (ASM_OUTPUT_ALIGN): Do not generate
+	anything for an alignment of zero.
+
 2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.texi (Bug Reporting): Refer to bugs.html.
