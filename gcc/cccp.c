@@ -2811,7 +2811,7 @@ do { ip = &instack[indepth];		\
 
 	if (lintcmd != NULL) {
 	  op->bufp = obp;
-	  check_expand (op, 13 + cmdlen);
+	  check_expand (op, cmdlen + arglen + 14);
 	  obp = op->bufp;
 	  /* I believe it is always safe to emit this newline: */
 	  obp[-1] = '\n';
@@ -2831,7 +2831,7 @@ do { ip = &instack[indepth];		\
 	     messes up the line count.  */
 	  op->bufp = obp;
 	  output_line_command (ip, op, 0, same_file);
-	  check_expand (op, ip->length - (ip->bufp - ip->buf));
+	  check_expand (op, limit - ibp + 2);
 	  obp = op->bufp;
 	  *(obp++) = '/';
 	}
@@ -3013,7 +3013,7 @@ do { ip = &instack[indepth];		\
       if (ip->lineno != op->lineno) {
 	op->bufp = obp;
 	output_line_command (ip, op, 1, same_file);
-	check_expand (op, ip->length - (ip->bufp - ip->buf));
+	check_expand (op, limit - ibp);
 	obp = op->bufp;
       }
       break;
@@ -6585,7 +6585,7 @@ do_ident (buf, limit)
   free (trybuf.buf);
 
   /* Output directive name.  */
-  check_expand (op, 8);
+  check_expand (op, 7);
   bcopy ("#ident ", (char *) op->bufp, 7);
   op->bufp += 7;
 
