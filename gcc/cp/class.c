@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002  Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5053,6 +5053,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	      padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
 				    TYPE_SIZE (integer_type));
 	    }
+#ifdef PCC_BITFIELD_TYPE_MATTERS
 	  /* An unnamed bitfield does not normally affect the
 	     alignment of the containing class on a target where
 	     PCC_BITFIELD_TYPE_MATTERS.  But, the C++ ABI does not
@@ -5064,6 +5065,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	      was_unnamed_p = true;
 	      DECL_NAME (field) = make_anon_name ();
 	    }
+#endif
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
