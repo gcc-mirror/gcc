@@ -414,7 +414,7 @@ flow_loop_pre_header_scan (loop)
        num++)
     ebb = ebb->pred->src;
 
-  loop->pre_header_edges = (edge *) xmalloc (num * sizeof (edge *));
+  loop->pre_header_edges = (edge *) xmalloc (num * sizeof (edge));
   loop->num_pre_header_edges = num;
 
   /* Store edges in order that they are followed.  The source of the first edge
