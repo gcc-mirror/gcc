@@ -113,7 +113,7 @@
 
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
-  (UNSPECV_ALIGN		1)
+  (UNSPECV_ALIGN	1)
   (UNSPECV_CONST2	2)
   (UNSPECV_CONST4	4)
   (UNSPECV_CONST8	6)
