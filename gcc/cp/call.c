@@ -4908,7 +4908,7 @@ build_new_method_call (tree instance, tree fns, tree args,
       call = build_over_call (cand, args, flags);
       /* In an expression of the form `a->f()' where `f' turns out to
 	 be a static member function, `a' is none-the-less evaluated.  */
-      if (instance && TREE_SIDE_EFFECTS (instance))
+      if (!is_dummy_object (instance_ptr) && TREE_SIDE_EFFECTS (instance))
 	call = build (COMPOUND_EXPR, TREE_TYPE (call), instance, call);
     }
 

@@ -1,3 +1,8 @@
+2002-12-16  Jason Merrill  <jason@redhat.com>
+
+	* c-semantics.c (add_scope_stmt): Abort if the end SCOPE_STMT
+	doesn't match the begin SCOPE_STMT in partialness.
+
 2002-12-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* genmultilib: Create temporary files in unique subdirectory.
