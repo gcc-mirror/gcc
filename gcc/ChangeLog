@@ -1,5 +1,8 @@
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* reload1.c (reload): Can't avoid select_reload_regs/finish_spills
+	if something changed.  Back out that part of yesterday's changes.
+
 	* loop.c (loop_max_reg): New static variable.
 	(loop_optimize): Initialize it.  Eliminate one unnecessary call to
 	max_reg_num.
