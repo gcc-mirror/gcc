@@ -1,3 +1,23 @@
+2005-Mar-02  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* cgraph.h (struct cgraph_edge): Add prev_caller and
+	prev_callee fields.
+	(cgraph_node_remove_callees): Export.
+	* cgraph.c (cgraph_create_edge): Initialize prev_caller
+	and prev_callee.
+	(cgraph_edge_remove_callee): New function.
+	(cgraph_edge_remove_caller): Likewise.
+	(cgraph_remove_edge): Use.
+	(cgraph_redirect_edge_callee): Likewise.
+	(cgraph_node_remove_callees): New function.
+	(cgraph_node_remove_callers): Likewise.
+	(cgraph_remove_node): Use.
+	* tree-optimize.c (tree_rest_of_compilation): Use
+	cgraph_node_remove_callees instead of manual loop.
+	* cgraphunit.c (cgraph_finalize_function): Likewise.
+	(cgraph_expand_function): Likewise.
+	(cgraph_remove_unreachable_nodes): Likewise.
+
 2005-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/20216
