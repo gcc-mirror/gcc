@@ -11,7 +11,7 @@ void
 bar (void)
 {
   char *t;
-  (foo ()).c[0]; /* { dg-bogus "non-lvalue" "array not decaying to lvalue" { xfail *-*-* } } */
+  (foo ()).c[0]; /* { dg-bogus "non-lvalue" "array not decaying to lvalue" } */
   t = (foo ()).c; /* { dg-bogus "non-lvalue" "array not decaying to lvalue" { xfail *-*-* } } */
   (foo ()).c + 1; /* { dg-bogus "non-lvalue" "array not decaying to lvalue" { xfail *-*-* } } */
 }

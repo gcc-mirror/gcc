@@ -1315,20 +1315,14 @@ build_array_ref (array, index)
 	    return error_mark_node;
 	}
 
-      if (pedantic && !lvalue_p (array))
-	{
-	  if (DECL_REGISTER (array))
-	    pedwarn ("ISO C forbids subscripting `register' array");
-	  else
-	    pedwarn ("ISO C89 forbids subscripting non-lvalue array");
-	}
-
       if (pedantic)
 	{
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
+	    pedwarn ("ISO C forbids subscripting `register' array");
+	  else if (! flag_isoc99 && ! lvalue_p (foo))
 	    pedwarn ("ISO C89 forbids subscripting non-lvalue array");
 	}
 
