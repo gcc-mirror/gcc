@@ -68,7 +68,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
 #endif
-#if (LONG_DOUBLE_TYPE_SIZE == 96) || (LONG_DOUBLE_TYPE_SIZE == 128)
+#ifndef MAX_LONG_DOUBLE_TYPE_SIZE
+#define MAX_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
+#endif
+#if (MAX_LONG_DOUBLE_TYPE_SIZE == 96) || (MAX_LONG_DOUBLE_TYPE_SIZE == 128)
 #ifndef REAL_ARITHMETIC
 #define REAL_ARITHMETIC
 #endif
@@ -78,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Support 80-bit extended real XFmode if LONG_DOUBLE_TYPE_SIZE
    has been defined to be 96 in the tm.h machine file. */
-#if (LONG_DOUBLE_TYPE_SIZE == 96)
+#if (MAX_LONG_DOUBLE_TYPE_SIZE == 96)
 #define REAL_IS_NOT_DOUBLE
 #define REAL_ARITHMETIC
 typedef struct {
@@ -88,7 +91,7 @@ typedef struct {
 
 #else /* no XFmode support */
 
-#if (LONG_DOUBLE_TYPE_SIZE == 128)
+#if (MAX_LONG_DOUBLE_TYPE_SIZE == 128)
 
 #define REAL_IS_NOT_DOUBLE
 #define REAL_ARITHMETIC
@@ -199,7 +202,7 @@ extern REAL_VALUE_TYPE real_value_truncate	PARAMS ((enum machine_mode,
   ereal_from_uint (&d, lo, hi, mode)
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
-#if LONG_DOUBLE_TYPE_SIZE == 96
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etarldouble ((IN), (OUT)))
 #else
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etartdouble ((IN), (OUT)))

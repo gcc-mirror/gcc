@@ -37,6 +37,38 @@
 	* config/sparc/sparc.h (ASM_ARCH64_SPEC): Pass -no-undeclared-regs
 	to gas if it supports .register pseudo.
 
+	* real.h (MAX_LONG_DOUBLE_TYPE_SIZE): Define to
+	LONG_DOUBLE_TYPE_SIZE if not defined.
+	Use MAX_LONG_DOUBLE_TYPE_SIZE instead of
+	LONG_DOUBLE_TYPE_SIZE in preprocessor if clauses.
+	* real.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* print-rtl.c: Likewise.
+	* rtl.c: Likewise.
+	* config/sparc/sol2-sld-64.h (TARGET_DEFAULT): Set
+	MASK_LONG_DOUBLE_128.
+	* config/sparc/sol2.h (TARGET_DEFAULT): Likewise.
+	* config/sparc/sp64-elf.h (TARGET_DEFAULT): Likewise.
+	* config/sparc/linux64 (TARGET_DEFAULT): Likewise.
+	(SUBTARGET_SWITCHES): Define.
+	(CPP_ARCH32_SPEC): Define __LONG_DOUBLE_128__ if compiling
+	with -mlong-double-128.
+	(LONG_DOUBLE_TYPE_SIZE): Define depending on target_flags.
+	(MAX_LONG_DOUBLE_TYPE_SIZE): Define.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define depending on CPP macros.
+	(CC1_SPEC): Include -mlong-double-{64,128} as needed.
+	* config/sparc/linux.h (SUBTARGET_SWITCHES): Define.
+	(CPP_SUBTARGET_SPEC): Define __LONG_DOUBLE_128__ if compiling
+	with -mlong-double-128.
+	(LONG_DOUBLE_TYPE_SIZE): Define depending on target_flags.
+	(MAX_LONG_DOUBLE_TYPE_SIZE): Define.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define depending on CPP macros.
+	* config/sparc/sparc.h (MASK_LONG_DOUBLE_128,
+	TARGET_LONG_DOUBLE_128): Define.
+	* config/sparc/linux-aout.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/sparc.c (sparc_override_options): Disallow 64bit
+	long double on TARGET_ARCH64.
+
 2000-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (free_temps_for_rtl_expr): Don't free slots

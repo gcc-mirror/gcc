@@ -250,6 +250,13 @@ sparc_override_options ()
         target_flags &= ~MASK_PTR64;
     }
 
+  /* We force all 64bit archs to use 128 bit long double */
+  if (TARGET_64BIT && ! TARGET_LONG_DOUBLE_128)
+    {
+      error ("-mlong-double-64 not allowed with -m64");
+      target_flags |= MASK_LONG_DOUBLE_128;
+    }
+
   /* Code model selection.  */
   sparc_cmodel = SPARC_DEFAULT_CMODEL;
   

@@ -244,7 +244,7 @@ unknown arithmetic type
    A REAL_VALUE_TYPE is guaranteed to occupy contiguous locations
    in memory, with no holes.  */
 
-#if LONG_DOUBLE_TYPE_SIZE == 96
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
 /* Number of 16 bit words in external e type format */
 #define NE 6
 #define MAXDECEXP 4932
@@ -257,7 +257,7 @@ do {						\
   bcopy ((char *) e, (char *) r, 2*NE);		\
 } while (0)
 #else /* no XFmode */
-#if LONG_DOUBLE_TYPE_SIZE == 128
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128
 #define NE 10
 #define MAXDECEXP 4932
 #define MINDECEXP -4977
@@ -1479,7 +1479,7 @@ ereal_isneg (x)
 
 /*  e type constants used by high precision check routines */
 
-#if LONG_DOUBLE_TYPE_SIZE == 128
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128
 /* 0.0 */
 unsigned EMUSHORT ezero[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
@@ -3646,7 +3646,7 @@ toe64 (a, b)
   else
     {
       q = b + 4;			/* point to output exponent */
-#if LONG_DOUBLE_TYPE_SIZE == 96
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
       /* Clear the last two bytes of 12-byte Intel format */
       *(q+1) = 0;
 #endif
@@ -4550,7 +4550,7 @@ enormlz (x)
 #define NTEN 12
 #define MAXP 4096
 
-#if LONG_DOUBLE_TYPE_SIZE == 128
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128
 static unsigned EMUSHORT etens[NTEN + 1][NE] =
 {
   {0x6576, 0x4a92, 0x804a, 0x153f,
