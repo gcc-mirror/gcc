@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running System V.3
-   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -99,7 +99,7 @@ extern char *current_function_original_name;
 
 /* The routine used to output string literals.
 
-#define ASCII_DATA_ASM_OP	".byte"
+#define ASCII_DATA_ASM_OP	"\t.byte\t"
 
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
@@ -139,14 +139,14 @@ extern char *current_function_original_name;
 
 
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
 
 /* Add definitions to support the .tdesc section as specified in the svr4
    ABI for the i860.  */
 
-#define TDESC_SECTION_ASM_OP    ".section\t.tdesc"
+#define TDESC_SECTION_ASM_OP    "\t.section\t.tdesc"
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_tdesc
