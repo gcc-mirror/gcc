@@ -47,6 +47,14 @@ public abstract class AbstractMap implements Map
     entrySet().clear();
   }
 
+  /**
+   * Create a shallow copy of this Map, no keys or values are copied.
+   */
+  protected Object clone () throws CloneNotSupportedException
+  {
+    return super.clone ();
+  }
+
   public boolean containsKey(Object key)
   {
     Object k;

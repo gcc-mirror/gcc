@@ -1,5 +1,8 @@
 2001-09-04  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/AbstractMap.java: Re-merged with Classpath.
+	* java/util/IdentityHashMap.java: Re-merged with Classpath.
+
 	* java/text/SimpleDateFormat.java: Re-merged with Classpath.
 	* gnu/gcj/text/LocaleData.java, gnu/gcj/text/LocaleData_en.java,
 	gnu/gcj/text/LocaleData_en_US.java: Removed.
