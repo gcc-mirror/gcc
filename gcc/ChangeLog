@@ -1,3 +1,8 @@
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (default_section_type_flags): Check for VAR_DECL
+	before using DECL_THREAD_LOCAL.
+
 2002-05-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (LINK_SPEC): Add PE initializer.
