@@ -118,7 +118,10 @@ java_init_lex (finput, encoding)
     wfl_append = build_expr_wfl (get_identifier ("append"), NULL, 0, 0);
   if (!wfl_string_buffer)
     wfl_string_buffer = 
-      build_expr_wfl (get_identifier ("java.lang.StringBuffer"), NULL, 0, 0);
+      build_expr_wfl (get_identifier (flag_emit_class_files
+				      ? "java.lang.StringBuffer"
+				      : "gnu.gcj.runtime.StringBuffer"),
+		      NULL, 0, 0);
   if (!wfl_to_string)
     wfl_to_string = build_expr_wfl (get_identifier ("toString"), NULL, 0, 0);
 
