@@ -496,7 +496,7 @@ fi
 
 # Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
 # that is visible to any ANSI compiler using this include.  Simply
-# delete the lines the #define some string functions to internal forms.
+# delete the lines that #define some string functions to internal forms.
 
 file=string.h
 base=`basename $file`
@@ -524,6 +524,40 @@ if [ \! -z "$file_to_fix" ]; then
   fi
   rm -f /tmp/$base /tmp/$base.sed
 fi
+
+# Delete any #defines of `__i386' which may be present in <ieeefp.h>.  They
+# tend to conflict with the compiler's own definition of this symbol.  (We
+# will use the compiler's definition.)
+# Likewise __sparc, for Solaris, and __i860, and (this is a guess) __m88k.
+
+file=ieeefp.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  cp $file_to_fix /tmp/$base
+  chmod +w /tmp/$base
+  sed -e '/#define[ 	]*__i386 /d' -e '/#define[ 	]*__sparc /d' \
+      -e '/#define[ 	]*__i860 /d' -e '/#define[ 	]*__m88k /d' \
+     /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix 
+    rm -f ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file 
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base /tmp/$base.sed 
+fi 
 
 # Add a #define of _SIGACTION_ into <sys/signal.h>.
 # Also fix types of SIG_DFL, SIG_ERR, SIG_IGN, and SIG_HOLD.
