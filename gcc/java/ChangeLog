@@ -1,3 +1,8 @@
+2003-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jv-scan.c, parse.y: Remove VPARAMS, VA_OPEN, VA_FIXEDARG and
+	VA_CLOSE.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (java.install-common, java.uninstall,

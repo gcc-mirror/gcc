@@ -3107,28 +3107,26 @@ issue_warning_error_from_context (cl, msg, ap)
 /* Issue an error message at a current source line CL */
 
 void
-parse_error_context VPARAMS ((tree cl, const char *msg, ...))
+parse_error_context (tree cl, const char *msg, ...)
 {
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, tree, cl);
-  VA_FIXEDARG (ap, const char *, msg);
+  va_list ap;
+  va_start (ap, msg);
   issue_warning_error_from_context (cl, msg, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Issue a warning at a current source line CL */
 
 static void
-parse_warning_context VPARAMS ((tree cl, const char *msg, ...))
+parse_warning_context (tree cl, const char *msg, ...)
 {
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, tree, cl);
-  VA_FIXEDARG (ap, const char *, msg);
+  va_list ap;
+  va_start (ap, msg);
 
   force_error = do_warning = 1;
   issue_warning_error_from_context (cl, msg, ap);
   do_warning = force_error = 0;
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 static tree
