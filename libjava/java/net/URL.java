@@ -189,11 +189,18 @@ public final class URL implements Serializable
       return false;
 
     URL uObj = (URL) obj;
-    if (protocol != uObj.protocol || host != uObj.host || port != uObj.port ||
-	file != uObj.file || ref != uObj.ref)
-      return false;
-
-    return true;
+    
+    // This comparison is very conservative.  It assumes that any
+    // field can be null.
+    return (port == uObj.port
+	    && ((protocol == null && uObj.protocol == null)
+		|| (protocol != null && protocol.equals(uObj.protocol)))
+	    && ((host == null && uObj.host == null)
+		|| (host != null && host.equals(uObj.host)))
+	    && ((file == null && uObj.file == null)
+		|| (file != null && file.equals(uObj.file)))
+	    && ((ref == null && uObj.ref == null)
+		|| (ref != null && ref.equals(uObj.ref))));
   }
 
   public final Object getContent() throws IOException
@@ -258,11 +265,16 @@ public final class URL implements Serializable
 
   public boolean sameFile(URL other)
   {
-    if (other == null || protocol != other.protocol || host != other.host ||
-	port != other.port || file != other.file)
-      return false;
-
-    return true;
+    // This comparison is very conservative.  It assumes that any
+    // field can be null.
+    return (other != null 
+	    && port == other.port
+	    && ((protocol == null && other.protocol == null)
+		|| (protocol != null && protocol.equals(other.protocol)))
+	    && ((host == null && other.host == null)
+		|| (host != null && host.equals(other.host)))
+	    && ((file == null && other.file == null)
+		|| (file != null && file.equals(other.file))));
   }
 
   protected void set(String protocol, String host, int port, String file,
