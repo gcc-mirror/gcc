@@ -66,7 +66,7 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-03-17:
+   The following information was last updated on 1999-04-02:
 
 In `egcs' 1.2 (versus 1.1.2):
 =============================
@@ -98,6 +98,9 @@ In `egcs' 1.2 (versus 1.1.2):
   4. `g77' now warns about a reference to a function when the
      corresponding *subsequent* function program unit disagrees with
      the reference concerning the type of the function.
+
+   * The `-malign-double' option now reliably aligns *all*
+     double-precision variables and arrays on Intel x86 targets.
 
   5. Improve documentation and indexing, including information on Year
      2000 (Y2K) compliance.
