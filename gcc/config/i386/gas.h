@@ -123,11 +123,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 {									\
   if ((PTR)[0] == 'r'							\
       && (PTR)[1] == 'e'						\
-      && (PTR)[2] == 'p'						\
-      && (PTR)[3] == 'z')						\
+      && (PTR)[2] == 'p')						\
     {									\
-      fprintf (STREAM, "repe");						\
-      (PTR) += 4;							\
+      if ((PTR)[3] == 'z')						\
+	{								\
+	  fprintf (STREAM, "repe");					\
+	  (PTR) += 4;							\
+	}								\
+      else if ((PTR)[3] == 'n' && (PTR)[4] == 'z')			\
+	{								\
+	  fprintf (STREAM, "repne");					\
+	  (PTR) += 5;							\
+	}								\
     }									\
 }
 
