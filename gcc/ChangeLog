@@ -1,3 +1,7 @@
+2004-10-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c: Fix a comment typo.
+
 2004-10-31  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/17526

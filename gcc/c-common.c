@@ -5482,7 +5482,7 @@ resort_sorted_fields (void *obj,
 /* Subroutine of c_parse_error.
    Return the result of concatenating LHS and RHS. RHS is really
    a string literal, its first character is indicated by RHS_START and
-   RHS_SIZE is its lenght (including the terminating NUL character).
+   RHS_SIZE is its length (including the terminating NUL character).
 
    The caller is responsible for deleting the returned pointer.  */
 
