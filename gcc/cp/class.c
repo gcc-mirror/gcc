@@ -3594,10 +3594,9 @@ check_field_decls (t, access_decls, empty_p,
       if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
 	CLASSTYPE_HAS_MUTABLE (t) = 1;
 
-      if (! pod_type_p (type)
-	  /* For some reason, pointers to members are POD types themselves,
-	     but are not allowed in POD structs.  Silly.  */
-	  || TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+      if (! pod_type_p (type))
+        /* DR 148 now allows pointers to members (which are POD themselves),
+           to be allowed in POD structs.  */
 	CLASSTYPE_NON_POD_P (t) = 1;
 
       /* If any field is const, the structure type is pseudo-const.  */
