@@ -90,10 +90,11 @@ extern YYSTYPE yylval;		/*  the semantic value of the		*/
 int warn_traditional = 0;
 int flag_digraphs = 1;
 
-/* the declaration found for the last IDENTIFIER token read in.
-   yylex must look this up to detect typedefs, which get token type TYPENAME,
-   so it is left around in case the identifier is not a typedef but is
-   used in a context which makes it a reference to a variable.  */
+/* the declaration found for the last IDENTIFIER token read in.  yylex
+   must look this up to detect typedefs, which get token type
+   tTYPENAME, so it is left around in case the identifier is not a
+   typedef but is used in a context which makes it a reference to a
+   variable.  */
 tree lastiddecl;
 
 /* Array for holding counts of the numbers of tokens seen.  */
@@ -739,7 +740,7 @@ yyprint (file, yychar, yylval)
   switch (yychar)
     {
     case IDENTIFIER:
-    case TYPENAME:
+    case tTYPENAME:
     case TYPESPEC:
     case PTYPENAME:
     case PFUNCNAME:
@@ -977,7 +978,7 @@ check_for_missing_semicolon (type)
   if ((yychar > 255
        && yychar != SCSPEC
        && yychar != IDENTIFIER
-       && yychar != TYPENAME
+       && yychar != tTYPENAME
        && yychar != CV_QUALIFIER
        && yychar != SELFNAME)
       || yychar == 0  /* EOF */)

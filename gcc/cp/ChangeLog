@@ -1,3 +1,13 @@
+2002-10-21  Matthias Klose  <doko@debian.org>
+
+	* Backport, without whitespace change:
+	2002-06-19 Akim Demaille  <akim@epita.fr>
+	* parse.y (TYPENAME): Rename as tTYPENAME to avoid the clash with
+	decl.h's TYPENAME.
+	* spew.c, lex.c: Adjust.
+	* parse.y (explicit_instantiation): Add empty action to override
+	the default $$ = $1 where it introduces a type clash.
+
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8218

@@ -141,10 +141,11 @@ static enum cpp_ttype last_token;
 static tree last_token_id;
 
 /* From lex.c: */
-/* the declaration found for the last IDENTIFIER token read in.
-   yylex must look this up to detect typedefs, which get token type TYPENAME,
-   so it is left around in case the identifier is not a typedef but is
-   used in a context which makes it a reference to a variable.  */
+/* the declaration found for the last IDENTIFIER token read in.  yylex
+   must look this up to detect typedefs, which get token type
+   tTYPENAME, so it is left around in case the identifier is not a
+   typedef but is used in a context which makes it a reference to a
+   variable.  */
 extern tree lastiddecl;		/* let our brains leak out here too */
 extern int	yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE	yylval;		/*  the semantic value of the		*/
@@ -628,11 +629,11 @@ identifier_type (decl)
   if (t && t == decl)
     return SELFNAME;
 
-  return TYPENAME;
+  return tTYPENAME;
 }
 
 /* token[0] == AGGR (struct/union/enum)
-   Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
+   Thus, token[1] is either a tTYPENAME or a TYPENAME_DEFN.
    If token[2] == '{' or ':' then it's TYPENAME_DEFN.
    It's also a definition if it's a forward declaration (as in 'struct Foo;')
    which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.  */
@@ -644,7 +645,7 @@ do_aggr ()
   
   scan_tokens (2);
   yc1 = nth_token (1)->yychar;
-  if (yc1 != TYPENAME && yc1 != IDENTIFIER && yc1 != PTYPENAME)
+  if (yc1 != tTYPENAME && yc1 != IDENTIFIER && yc1 != PTYPENAME)
     return;
   yc2 = nth_token (2)->yychar;
   if (yc2 == ';')
@@ -659,7 +660,7 @@ do_aggr ()
 
   switch (yc1)
     {
-    case TYPENAME:
+    case tTYPENAME:
       nth_token (1)->yychar = TYPENAME_DEFN;
       break;
     case PTYPENAME:
@@ -757,7 +758,7 @@ yylex ()
       break;
     }
     case IDENTIFIER_DEFN:
-    case TYPENAME:
+    case tTYPENAME:
     case TYPENAME_DEFN:
     case PTYPENAME:
     case PTYPENAME_DEFN:
@@ -897,7 +898,7 @@ frob_id (yyc, peek, idp)
       yyc = identifier_type (trrr);
       switch(yyc)
         {
-          case TYPENAME:
+          case tTYPENAME:
           case SELFNAME:
           case NSNAME:
           case PTYPENAME:
@@ -1448,7 +1449,7 @@ debug_yychar (yy)
 {
   if (yy<256)
     fprintf (stderr, "->%d < %c >\n", lineno, yy);
-  else if (yy == IDENTIFIER || yy == TYPENAME)
+  else if (yy == IDENTIFIER || yy == tTYPENAME)
     {
       const char *id;
       if (TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
