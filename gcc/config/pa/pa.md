@@ -616,7 +616,7 @@
 			   [(match_operand:SI 1 "register_operand" "r")
 			    (match_operand:SI 2 "arith11_operand" "rI")]))]
   ""
-  "com%I2clr,%B3 %2,%1,%0\;ldi 1,%0"
+  "{com%I2clr|cmp%I2clr},%B3 %2,%1,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -629,7 +629,7 @@
 				   [(match_operand:SI 4 "register_operand" "r")
 				    (match_operand:SI 5 "arith11_operand" "rI")])))]
   ""
-  "com%I2clr,%S3 %2,%1,%%r0\;com%I5clr,%B6 %5,%4,%0\;ldi 1,%0"
+  "{com%I2clr|cmp%I2clr},%S3 %2,%1,%%r0\;{com%I5clr|cmp%I5clr},%B6 %5,%4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -641,7 +641,7 @@
 	       [(match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2 "arith11_operand" "rI")])))]
   ""
-  "com%I2clr,%B3 %2,%1,%0\;ldi -1,%0"
+  "{com%I2clr|cmp%I2clr},%B3 %2,%1,%0\;ldi -1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -657,7 +657,7 @@
 			 (match_operand:SI 3 "arith11_operand" "rI"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub%I3 %3,%2,%%r0\;addc %%r0,%1,%0"
+  "sub%I3 %3,%2,%%r0\;{addc|add,c} %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -669,7 +669,7 @@
 			 (match_operand:SI 3 "register_operand" "r"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub %2,%3,%%r0\;addc %%r0,%1,%0"
+  "sub %2,%3,%%r0\;{addc|add,c} %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -682,7 +682,7 @@
 			 (match_operand:SI 3 "int11_operand" "I"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "addi %k3,%2,%%r0\;addc %%r0,%1,%0"
+  "addi %k3,%2,%%r0\;{addc|add,c} %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -694,8 +694,8 @@
 		 (match_operand:SI 1 "register_operand" "0,?r")))]
   ""
   "@
-   com%I3clr,%B4 %3,%2,%%r0\;addi 1,%0,%0
-   com%I3clr,%B4 %3,%2,%%r0\;addi,tr 1,%1,%0\;copy %1,%0"
+   {com%I3clr|cmp%I3clr},%B4 %3,%2,%%r0\;addi 1,%0,%0
+   {com%I3clr|cmp%I3clr},%B4 %3,%2,%%r0\;addi,tr 1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "8,12")])
 
@@ -705,7 +705,7 @@
 		  (gtu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "arith11_operand" "rI"))))]
   ""
-  "sub%I3 %3,%2,%%r0\;subb %1,0,%0"
+  "sub%I3 %3,%2,%%r0\;{subb|sub,b} %1,%%r0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -716,7 +716,7 @@
 				    (match_operand:SI 3 "arith11_operand" "rI")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "sub%I3 %3,%2,%%r0\;subb %1,%4,%0"
+  "sub%I3 %3,%2,%%r0\;{subb|sub,b} %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -728,7 +728,7 @@
 		  (ltu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "register_operand" "r"))))]
   ""
-  "sub %2,%3,%%r0\;subb %1,0,%0"
+  "sub %2,%3,%%r0\;{subb|sub,b} %1,%%r0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -739,7 +739,7 @@
 				    (match_operand:SI 3 "register_operand" "r")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "sub %2,%3,%%r0\;subb %1,%4,%0"
+  "sub %2,%3,%%r0\;{subb|sub,b} %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -752,7 +752,7 @@
 		  (leu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "int11_operand" "I"))))]
   ""
-  "addi %k3,%2,%%r0\;subb %1,0,%0"
+  "addi %k3,%2,%%r0\;{subb|sub,b} %1,%%r0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -763,7 +763,7 @@
 				    (match_operand:SI 3 "int11_operand" "I")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "addi %k3,%2,%%r0\;subb %1,%4,%0"
+  "addi %k3,%2,%%r0\;{subb|sub,b} %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -775,8 +775,8 @@
 		      (match_operand:SI 3 "arith11_operand" "rI,rI")])))]
   ""
   "@
-   com%I3clr,%B4 %3,%2,%%r0\;addi -1,%0,%0
-   com%I3clr,%B4 %3,%2,%%r0\;addi,tr -1,%1,%0\;copy %1,%0"
+   {com%I3clr|cmp%I3clr},%B4 %3,%2,%%r0\;addi -1,%0,%0
+   {com%I3clr|cmp%I3clr},%B4 %3,%2,%%r0\;addi,tr -1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "8,12")])
 
@@ -789,9 +789,9 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,> %2,%0,%%r0\;copy %2,%0
-  comiclr,> %2,%0,%%r0\;ldi %2,%0
-  comclr,> %1,%r2,%0\;copy %1,%0"
+  {comclr|cmpclr},> %2,%0,%%r0\;copy %2,%0
+  {comiclr|cmpiclr},> %2,%0,%%r0\;ldi %2,%0
+  {comclr|cmpclr},> %1,%r2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
 
@@ -801,8 +801,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I")))]
   ""
   "@
-  comclr,>> %2,%0,%%r0\;copy %2,%0
-  comiclr,>> %2,%0,%%r0\;ldi %2,%0"
+  {comclr|cmpclr},>> %2,%0,%%r0\;copy %2,%0
+  {comiclr|cmpiclr},>> %2,%0,%%r0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
  (set_attr "length" "8,8")])
 
@@ -812,9 +812,9 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,< %2,%0,%%r0\;copy %2,%0
-  comiclr,< %2,%0,%%r0\;ldi %2,%0
-  comclr,< %1,%r2,%0\;copy %1,%0"
+  {comclr|cmpclr},< %2,%0,%%r0\;copy %2,%0
+  {comiclr|cmpiclr},< %2,%0,%%r0\;ldi %2,%0
+  {comclr|cmpclr},< %1,%r2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
 
@@ -824,8 +824,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I")))]
   ""
   "@
-  comclr,<< %2,%0,%%r0\;copy %2,%0
-  comiclr,<< %2,%0,%%r0\;ldi %2,%0"
+  {comclr|cmpclr},<< %2,%0,%%r0\;copy %2,%0
+  {comiclr|cmpiclr},<< %2,%0,%%r0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
  (set_attr "length" "8,8")])
 
@@ -874,11 +874,11 @@
 	 (const_int 0)))]
   ""
   "@
-   com%I4clr,%S5 %4,%3,%%r0\;ldi 0,%0
-   com%I4clr,%B5 %4,%3,%0\;copy %1,%0
-   com%I4clr,%B5 %4,%3,%0\;ldi %1,%0
-   com%I4clr,%B5 %4,%3,%0\;ldil L'%1,%0
-   com%I4clr,%B5 %4,%3,%0\;zdepi %Z1,%0"
+   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;ldi 0,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;copy %1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldi %1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldil L'%1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;{zdepi|depwi,z} %Z1,%0"
   [(set_attr "type" "multi,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8")])
 
@@ -892,14 +892,14 @@
 	 (match_operand:SI 2 "reg_or_cint_move_operand" "r,J,N,K,0,0,0,0")))]
   ""
   "@
-   com%I4clr,%S5 %4,%3,%%r0\;copy %2,%0
-   com%I4clr,%S5 %4,%3,%%r0\;ldi %2,%0
-   com%I4clr,%S5 %4,%3,%%r0\;ldil L'%2,%0
-   com%I4clr,%S5 %4,%3,%%r0\;zdepi %Z2,%0
-   com%I4clr,%B5 %4,%3,%%r0\;copy %1,%0
-   com%I4clr,%B5 %4,%3,%%r0\;ldi %1,%0
-   com%I4clr,%B5 %4,%3,%%r0\;ldil L'%1,%0
-   com%I4clr,%B5 %4,%3,%%r0\;zdepi %Z1,%0"
+   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;copy %2,%0
+   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;ldi %2,%0
+   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;ldil L'%2,%0
+   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;{zdepi|depwi,z} %Z2,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%%r0\;copy %1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%%r0\;ldi %1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%%r0\;ldil L'%1,%0
+   {com%I4clr|cmp%I4clr},%B5 %4,%3,%%r0\;{zdepi|depwi,z} %Z1,%0"
   [(set_attr "type" "multi,multi,multi,nullshift,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8,8,8,8")])
 
@@ -1407,7 +1407,7 @@
    copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
-   zdepi %Z1,%0
+   {zdepi|depwi,z} %Z1,%0
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
@@ -1430,7 +1430,7 @@
    copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
-   zdepi %Z1,%0
+   {zdepi|depwi,z} %Z1,%0
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1"
@@ -1450,9 +1450,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldwx %1(%2),%0\";
+    return \"{ldwx|ldw} %1(%2),%0\";
   else
-    return \"ldwx %2(%1),%0\";
+    return \"{ldwx|ldw} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1469,9 +1469,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldwx %2(%1),%0\";
+    return \"{ldwx|ldw} %2(%1),%0\";
   else
-    return \"ldwx %1(%2),%0\";
+    return \"{ldwx|ldw} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1501,8 +1501,8 @@
   "*
 {
   if (INTVAL (operands[2]) < 0)
-    return \"ldwm %2(%1),%0\";
-  return \"ldws,mb %2(%1),%0\";
+    return \"{ldwm|ldw,mb} %2(%1),%0\";
+  return \"{ldws|ldw},mb %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1517,8 +1517,8 @@
   "*
 {
   if (INTVAL (operands[1]) < 0)
-    return \"stwm %r2,%1(%0)\";
-  return \"stws,mb %r2,%1(%0)\";
+    return \"{stwm|stw,mb} %r2,%1(%0)\";
+  return \"{stws|stw},mb %r2,%1(%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -1533,8 +1533,8 @@
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"ldwm %2(%1),%0\";
-  return \"ldws,ma %2(%1),%0\";
+    return \"{ldwm|ldw,ma} %2(%1),%0\";
+  return \"{ldws|ldw},ma %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1562,8 +1562,8 @@
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"stwm %r1,%2(%0)\";
-  return \"stws,ma %r1,%2(%0)\";
+    return \"{stwm|stw,ma} %r1,%2(%0)\";
+  return \"{stws|stw},ma %r1,%2(%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -1584,8 +1584,8 @@
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
   xoperands[2] = label_rtx;
-  output_asm_insn (\"bl .+8,%0\", xoperands);
-  output_asm_insn (\"depi 0,31,2,%0\", xoperands);
+  output_asm_insn (\"{bl|b,l} .+8,%0\", xoperands);
+  output_asm_insn (\"{depi|depwi} 0,31,2,%0\", xoperands);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (label_rtx));
 
@@ -1676,7 +1676,7 @@
   "reload_completed"
   "@
    addil L'%G2,%1
-   ldil L'%G2,%0\;addl %0,%1,%0"
+   ldil L'%G2,%0\;{addl|add,l} %0,%1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,8")])
 
@@ -1791,7 +1791,7 @@
    copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
-   zdepi %Z1,%0
+   {zdepi|depwi,z} %Z1,%0
    ldh%M1 %1,%0
    sth%M0 %r1,%0
    mtsar %r1
@@ -1812,9 +1812,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldhx %1(%2),%0\";
+    return \"{ldhx|ldh} %1(%2),%0\";
   else
-    return \"ldhx %2(%1),%0\";
+    return \"{ldhx|ldh} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1831,9 +1831,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldhx %2(%1),%0\";
+    return \"{ldhx|ldh} %2(%1),%0\";
   else
-    return \"ldhx %1(%2),%0\";
+    return \"{ldhx|ldh} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1853,9 +1853,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldhx %1(%2),%0\";
+    return \"{ldhx|ldh} %1(%2),%0\";
   else
-    return \"ldhx %2(%1),%0\";
+    return \"{ldhx|ldh} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1874,9 +1874,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldhx %2(%1),%0\";
+    return \"{ldhx|ldh} %2(%1),%0\";
   else
-    return \"ldhx %1(%2),%0\";
+    return \"{ldhx|ldh} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1888,7 +1888,7 @@
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldhs,mb %2(%1),%0"
+  "{ldhs|ldh},mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -1902,7 +1902,7 @@
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldhs,mb %2(%1),%0"
+  "{ldhs|ldh},mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -1913,7 +1913,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "sths,mb %r2,%1(%0)"
+  "{sths|sth},mb %r2,%1(%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -1953,7 +1953,7 @@
    copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
-   zdepi %Z1,%0
+   {zdepi|depwi,z} %Z1,%0
    ldb%M1 %1,%0
    stb%M0 %r1,%0
    mtsar %r1
@@ -1974,9 +1974,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
   else
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1993,9 +1993,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
   else
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2015,9 +2015,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
   else
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2036,9 +2036,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
   else
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2057,9 +2057,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
   else
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2078,9 +2078,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(%1),%0\";
+    return \"{ldbx|ldb} %2(%1),%0\";
   else
-    return \"ldbx %1(%2),%0\";
+    return \"{ldbx|ldb} %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2091,7 +2091,7 @@
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(%1),%0"
+  "{ldbs|ldb},mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2103,7 +2103,7 @@
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(%1),%0"
+  "{ldbs|ldb},mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2114,7 +2114,7 @@
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(%1),%0"
+  "{ldbs|ldb},mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2125,7 +2125,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "stbs,mb %r2,%1(%0)"
+  "{stbs|stb},mb %r2,%1(%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -2332,9 +2332,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"flddx %1(%2),%0\";
+    return \"{flddx|fldd} %1(%2),%0\";
   else
-    return \"flddx %2(%1),%0\";
+    return \"{flddx|fldd} %2(%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2351,9 +2351,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"flddx %2(%1),%0\";
+    return \"{flddx|fldd} %2(%1),%0\";
   else
-    return \"flddx %1(%2),%0\";
+    return \"{flddx|fldd} %1(%2),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2370,9 +2370,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fstdx %0,%1(%2)\";
+    return \"{fstdx|fstd} %0,%1(%2)\";
   else
-    return \"fstdx %0,%2(%1)\";
+    return \"{fstdx|fstd} %0,%2(%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2389,9 +2389,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fstdx %0,%2(%1)\";
+    return \"{fstdx|fstd} %0,%2(%1)\";
   else
-    return \"fstdx %0,%1(%2)\";
+    return \"{fstdx|fstd} %0,%1(%2)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2635,9 +2635,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fldwx %1(%2),%0\";
+    return \"{fldwx|fldw} %1(%2),%0\";
   else
-    return \"fldwx %2(%1),%0\";
+    return \"{fldwx|fldw} %2(%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2654,9 +2654,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fldwx %2(%1),%0\";
+    return \"{fldwx|fldw} %2(%1),%0\";
   else
-    return \"fldwx %1(%2),%0\";
+    return \"{fldwx|fldw} %1(%2),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2673,9 +2673,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fstwx %0,%1(%2)\";
+    return \"{fstwx|fstw} %0,%1(%2)\";
   else
-    return \"fstwx %0,%2(%1)\";
+    return \"{fstwx|fstw} %0,%2(%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2692,9 +2692,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fstwx %0,%2(%1)\";
+    return \"{fstwx|fstw} %0,%2(%1)\";
   else
-    return \"fstwx %0,%1(%2)\";
+    return \"{fstwx|fstw} %0,%1(%2)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2719,7 +2719,7 @@
 	 (match_operand:HI 1 "move_operand" "r,RQ")))]
   "GET_CODE (operands[1]) != CONST_INT"
   "@
-   extru %1,31,16,%0
+   {extru|extrw,u} %1,31,16,%0
    ldh%M1 %1,%0"
   [(set_attr "type" "shift,load")
    (set_attr "length" "4,4")])
@@ -2737,7 +2737,7 @@
 	 (match_operand:QI 1 "move_operand" "r,RQ")))]
   "GET_CODE (operands[1]) != CONST_INT"
   "@
-   extru %1,31,8,%0
+   {extru|extrw,u} %1,31,8,%0
    ldb%M1 %1,%0"
   [(set_attr "type" "shift,load")
    (set_attr "length" "4,4")])
@@ -2755,7 +2755,7 @@
 	 (match_operand:QI 1 "move_operand" "r,RQ")))]
   "GET_CODE (operands[1]) != CONST_INT"
   "@
-   extru %1,31,8,%0
+   {extru|extrw,u} %1,31,8,%0
    ldb%M1 %1,%0"
   [(set_attr "type" "shift,load")
    (set_attr "length" "4,4")])
@@ -2766,7 +2766,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   ""
-  "extrs %1,31,16,%0"
+  "{extrs|extrw,s} %1,31,16,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -2774,7 +2774,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "extrs %1,31,8,%0"
+  "{extrs|extrw,s} %1,31,8,%0"
   [(set_attr "type" "shift") 
   (set_attr "length" "4")])
 
@@ -2782,7 +2782,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "extrs %1,31,8,%0"
+  "{extrs|extrw,s} %1,31,8,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -2793,7 +2793,7 @@
 	(float_extend:DF
 	 (match_operand:SF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvff,sgl,dbl %1,%0"
+  "{fcnvff|fcnv},sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2802,7 +2802,7 @@
 	(float_truncate:SF
 	 (match_operand:DF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvff,dbl,sgl %1,%0"
+  "{fcnvff|fcnv},dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2821,7 +2821,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
-  "fldw%F1 %1,%0\;fcnvxf,sgl,sgl %0,%0"
+  "fldw%F1 %1,%0\;{fcnvxf,sgl,sgl|fcnv,w,sgl} %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
 
@@ -2829,7 +2829,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvxf,sgl,sgl %1,%0"
+  "{fcnvxf,sgl,sgl|fcnv,w,sgl} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2840,7 +2840,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
-  "fldw%F1 %1,%0\;fcnvxf,sgl,dbl %0,%0"
+  "fldw%F1 %1,%0\;{fcnvxf,sgl,dbl|fcnv,w,dbl} %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
 
@@ -2848,7 +2848,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvxf,sgl,dbl %1,%0"
+  "{fcnvxf,sgl,dbl|fcnv,w,dbl} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2892,7 +2892,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
-  "fcnvxf,dbl,sgl %1,%0"
+  "{fcnvxf,dbl,sgl|fcnv,dw,sgl} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2900,7 +2900,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
-  "fcnvxf,dbl,dbl %1,%0"
+  "{fcnvxf,dbl,dbl|fcnv,dw,dbl} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2911,7 +2911,7 @@
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvfxt,sgl,sgl %1,%0"
+  "{fcnvfxt,sgl,sgl|fcnv,t,sgl,w} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2919,7 +2919,7 @@
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   "! TARGET_SOFT_FLOAT"
-  "fcnvfxt,dbl,sgl %1,%0"
+  "{fcnvfxt,dbl,sgl|fcnv,t,dbl,w} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2927,7 +2927,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
-  "fcnvfxt,sgl,dbl %1,%0"
+  "{fcnvfxt,sgl,dbl|fcnv,t,sgl,dw} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -2935,7 +2935,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
-  "fcnvfxt,dbl,dbl %1,%0"
+  "{fcnvfxt,dbl,dbl|fcnv,t,dbl,dw} %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -3022,12 +3022,12 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL (operands[2]) >= 0)
-	return \"addi %2,%R1,%R0\;addc %1,0,%0\";
+	return \"addi %2,%R1,%R0\;{addc|add,c} %1,%%r0,%0\";
       else
-	return \"addi %2,%R1,%R0\;subb %1,0,%0\";
+	return \"addi %2,%R1,%R0\;{subb|sub,b} %1,%%r0,%0\";
     }
   else
-    return \"add %R2,%R1,%R0\;addc %2,%1,%0\";
+    return \"add %R2,%R1,%R0\;{addc|add,c} %2,%1,%0\";
 }"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
@@ -3112,7 +3112,7 @@
 		 (match_operand:SI 2 "arith_operand" "r,J")))]
   ""
   "@
-   addl %1,%2,%0
+   {addl|add,l} %1,%2,%0
    ldo %2(%1),%0"
   [(set_attr "type" "binary,binary")
    (set_attr "pa_combine_type" "addmove")
@@ -3130,9 +3130,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"ldo %3(%2),%0\;addl %1,%0,%0\";
+    return \"ldo %3(%2),%0\;{addl|add,l} %1,%0,%0\";
   else
-    return \"addl %3,%2,%0\;addl %1,%0,%0\";
+    return \"{addl|add,l} %3,%2,%0\;{addl|add,l} %1,%0,%0\";
 }"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
@@ -3149,7 +3149,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "r")
 		  (match_operand:DI 2 "register_operand" "r")))]
   ""
-  "sub %R1,%R2,%R0\;subb %1,%2,%0"
+  "sub %R1,%R2,%R0\;{subb|sub,b} %1,%2,%0"
   [(set_attr "type" "binary")
   (set_attr "length" "8")])
 
@@ -3627,7 +3627,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   ""
-  "sub %%r0,%R1,%R0\;subb %%r0,%1,%0"
+  "sub %%r0,%R1,%R0\;{subb|sub,b} %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "8")])
 
@@ -4195,7 +4195,7 @@
 			  (match_operand:SI 3 "shadd_operand" ""))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sh%O3addl %2,%1,%0"
+  "{sh%O3addl %2,%1,%0|shladd,l %2,%O3,%1,%0} "
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
@@ -4216,8 +4216,8 @@
 		 (match_operand:SI 3 "const_int_operand" "r,J")))]
   "reload_in_progress"
   "@
-   sh%O4addl %2,%1,%0\;addl %3,%0,%0
-   sh%O4addl %2,%1,%0\;ldo %3(%0),%0"
+   {sh%O4addl %2,%1,%0|shladd,l %2,%O4,%1,%0}\;{addl|add,l} %3,%0,%0
+   {sh%O4addl %2,%1,%0|shladd,l %2,%O4,%1,%0}\;ldo %3(%0),%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -4287,7 +4287,7 @@
 	(ashift:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "zdep %1,%P2,%L2,%0"
+  "{zdep|depw,z} %1,%P2,%L2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4304,8 +4304,8 @@
 			     (match_operand:SI 2 "register_operand" "q,q"))))]
   ""
   "@
-   zvdep %1,32,%0
-   zvdepi %1,32,%0"
+   {zvdep %1,32,%0|depw,z %1,%%sar,32,%0}
+   {zvdepi %1,32,%0|depwi,z %1,%%sar,32,%0}"
   [(set_attr "type" "shift,shift")
    (set_attr "length" "4,4")])
 
@@ -4320,7 +4320,7 @@
   int x = INTVAL (operands[1]);
   operands[2] = GEN_INT (4 + exact_log2 ((x >> 4) + 1));
   operands[1] = GEN_INT ((x & 0xf) - 0x10);
-  return \"zvdepi %1,%2,%0\";
+  return \"{zvdepi %1,%2,%0|depwi,z %1,%%sar,%2,%0}\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4337,7 +4337,7 @@
 {
   int x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 (x + 1));
-  return \"vdepi -1,%2,%0\";
+  return \"{vdepi -1,%2,%0|depwi -1,%%sar,%2,%0}\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4354,7 +4354,7 @@
 {
   int x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 ((~x) + 1));
-  return \"vdepi 0,%2,%0\";
+  return \"{vdepi 0,%2,%0|depwi 0,%%sar,%2,%0}\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4380,7 +4380,7 @@
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "extrs %1,%P2,%L2,%0"
+  "{extrs|extrw,s} %1,%P2,%L2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4390,7 +4390,7 @@
 		     (minus:SI (const_int 31)
 			       (match_operand:SI 2 "register_operand" "q"))))]
   ""
-  "vextrs %1,32,%0"
+  "{vextrs %1,32,%0|extrw,s %1,%%sar,32,%0}"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4400,8 +4400,8 @@
 		     (match_operand:SI 2 "arith32_operand" "q,n")))]
   ""
   "@
-   vshd %%r0,%1,%0
-   extru %1,%P2,%L2,%0"
+   {vshd %%r0,%1,%0|shrpw %%r0,%1,%%sar,%0}
+   {extru|extrw,u} %1,%P2,%L2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4415,10 +4415,10 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       operands[2] = GEN_INT (INTVAL (operands[2]) & 31);
-      return \"shd %1,%1,%2,%0\";
+      return \"{shd|shrpw} %1,%1,%2,%0\";
     }
   else
-    return \"vshd %1,%1,%0\";
+    return \"{vshd %1,%1,%0|shrpw %1,%1,%%sar,%0}\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4448,7 +4448,7 @@
   "*
 {
   operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
-  return \"shd %1,%1,%2,%0\";
+  return \"{shd|shrpw} %1,%1,%2,%0\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4461,7 +4461,7 @@
 	   (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
 			(match_operand:SI 4 "const_int_operand" "n"))]))]
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
-  "shd %1,%2,%4,%0"
+  "{shd|shrpw} %1,%2,%4,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4473,7 +4473,7 @@
 	   (ashift:SI (match_operand:SI 1 "register_operand" "r")
 		      (match_operand:SI 3 "const_int_operand" "n"))]))]
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
-  "shd %1,%2,%4,%0"
+  "{shd|shrpw} %1,%2,%4,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -4488,7 +4488,7 @@
   int cnt = INTVAL (operands[2]) & 31;
   operands[3] = GEN_INT (exact_log2 (1 + (INTVAL (operands[3]) >> cnt)));
   operands[2] = GEN_INT (31 - cnt);
-  return \"zdep %1,%2,%3,%0\";
+  return \"{zdep|depw,z} %1,%2,%3,%0\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -4551,7 +4551,7 @@
   [(unspec_volatile [(const_int 0)] 0)
    (use (match_operand:SI 0 "const_int_operand" ""))]
   ""
-  "bl _mcount,%%r2\;ldo %0(%%r2),%%r25"
+  "{bl|b,l} _mcount,%%r2\;ldo %0(%%r2),%%r25"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -4609,7 +4609,8 @@
       xoperands[0] = operands[0];
       xoperands[1] = gen_label_rtx ();
 
-      output_asm_insn (\"bl .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\", xoperands);
+      output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
+		       xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
                                  CODE_LABEL_NUMBER (xoperands[1]));
       output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv %%r0(%%r1)\",
@@ -4800,7 +4801,7 @@
      No need to check target flags as the length uniquely identifies
      the remaining cases.  */
   if (get_attr_length (insn) == 8)
-    return \".CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+    return \".CALL\\tARGW0=GR\;{bl|b,l} $$dyncall,%%r31\;copy %%r31,%%r2\";
 
   /* Long millicode call, but we are not generating PIC or portable runtime
      code.  */
@@ -4814,7 +4815,7 @@
   /* If we're generating PIC code.  */
   xoperands[0] = operands[0];
   xoperands[1] = gen_label_rtx ();
-  output_asm_insn (\"bl .+8,%%r1\", xoperands);
+  output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
   output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (xoperands[1]));
@@ -4960,7 +4961,7 @@
      No need to check target flags as the length uniquely identifies
      the remaining cases.  */
   if (get_attr_length (insn) == 8)
-    return \".CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+    return \".CALL\\tARGW0=GR\;{bl|b,l} $$dyncall,%%r31\;copy %%r31,%%r2\";
 
   /* Long millicode call, but we are not generating PIC or portable runtime
      code.  */
@@ -4974,7 +4975,7 @@
   /* If we're generating PIC code.  */
   xoperands[0] = operands[1];
   xoperands[1] = gen_label_rtx ();
-  output_asm_insn (\"bl .+8,%%r1\", xoperands);
+  output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
   output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (xoperands[1]));
@@ -5129,7 +5130,7 @@
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
-  "extru %1,%3+%2-1,%2,%0"
+  "{extru|extrw,u} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -5139,7 +5140,7 @@
 			 (const_int 1)
 			 (match_operand:SI 3 "register_operand" "q")))]
   ""
-  "vextru %1,1,%0"
+  "{vextru %1,1,%0|extrw,u %1,%%sar,1,%0}"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -5149,7 +5150,7 @@
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
-  "extrs %1,%3+%2-1,%2,%0"
+  "{extrs|extrw,s} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -5159,7 +5160,7 @@
 			 (const_int 1)
 			 (match_operand:SI 3 "register_operand" "q")))]
   ""
-  "vextrs %1,1,%0"
+  "{vextrs %1,1,%0|extrw,s %1,%%sar,1,%0}"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -5170,8 +5171,8 @@
 	(match_operand:SI 3 "arith5_operand" "r,L"))]
   ""
   "@
-   dep %3,%2+%1-1,%1,%0
-   depi %3,%2+%1-1,%1,%0"
+   {dep|depw} %3,%2+%1-1,%1,%0
+   {depi|depwi} %3,%2+%1-1,%1,%0"
   [(set_attr "type" "shift,shift")
    (set_attr "length" "4,4")])
 
@@ -5186,7 +5187,7 @@
   "*
 {
   operands[3] = GEN_INT ((INTVAL (operands[3]) & 0xf) - 0x10);
-  return \"depi %3,%2+%1-1,%1,%0\";
+  return \"{depi|depwi} %3,%2+%1-1,%1,%0\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -5656,7 +5657,7 @@
 			   NULL);
 	}
       else
-	output_asm_insn (\"bl,n __outline_prologue_fp,%%r31\", NULL);
+	output_asm_insn (\"{bl|b,l},n __outline_prologue_fp,%%r31\", NULL);
     }
   else
     {
@@ -5669,7 +5670,7 @@
 	  output_asm_insn (\"ble,n R'__outline_prologue(%%sr0,%%r31)\", NULL);
 	}
       else
-	output_asm_insn (\"bl,n __outline_prologue,%%r31\", NULL);
+	output_asm_insn (\"{bl|b,l},n __outline_prologue,%%r31\", NULL);
     }
   return \"\";
 }"
@@ -5711,7 +5712,7 @@
 			   NULL);
 	}
       else
-	output_asm_insn (\"bl,n __outline_epilogue_fp,%%r31\", NULL);
+	output_asm_insn (\"{bl|b,l},n __outline_epilogue_fp,%%r31\", NULL);
     }
   else
     {
@@ -5726,7 +5727,7 @@
 	  output_asm_insn (\"ble,n R'__outline_epilogue(%%sr0,%%r31)\", NULL);
 	}
       else
-	output_asm_insn (\"bl,n __outline_epilogue,%%r31\", NULL);
+	output_asm_insn (\"{bl|b,l},n __outline_epilogue,%%r31\", NULL);
     }
   return \"\";
 }"
@@ -5777,24 +5778,28 @@
   /* Next, examine the low two bits in %r26, if they aren't 0x2, then
      we use %r26 unchanged.  */
   if (get_attr_length (insn) == 32)
-    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+24\", NULL);
+    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+24\", NULL);
   else if (get_attr_length (insn) == 40)
-    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+32\", NULL);
+    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+32\", NULL);
   else if (get_attr_length (insn) == 44)
-    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+36\", NULL);
+    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+36\", NULL);
   else
-    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+20\", NULL);
+    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+20\", NULL);
 
   /* Next, compare %r26 with 4096, if %r26 is less than or equal to
      4096, then we use %r26 unchanged.  */
   if (get_attr_length (insn) == 32)
-    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+16\", NULL);
+    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+16\",
+		     NULL);
   else if (get_attr_length (insn) == 40)
-    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+24\", NULL);
+    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+24\",
+		     NULL);
   else if (get_attr_length (insn) == 44)
-    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+28\", NULL);
+    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+28\",
+		     NULL);
   else
-    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+12\", NULL);
+    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+12\",
+		     NULL);
 
   /* Else call $$sh_func_adrs to extract the function's real add24.  */
   return output_millicode_call (insn,
