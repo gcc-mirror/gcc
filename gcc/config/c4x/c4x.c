@@ -202,6 +202,7 @@ static int c4x_address_cost (rtx);
 static void c4x_init_libfuncs (void);
 static void c4x_external_libcall (rtx);
 static rtx c4x_struct_value_rtx (tree, int);
+static tree c4x_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -254,6 +255,9 @@ static rtx c4x_struct_value_rtx (tree, int);
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX c4x_struct_value_rtx
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR c4x_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -722,16 +726,20 @@ c4x_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* C[34]x arguments grow in weird ways (downwards) that the standard
    varargs stuff can't handle..  */
-rtx
-c4x_va_arg (tree valist, tree type)
+
+static tree
+c4x_gimplify_va_arg_expr (tree valist, tree type,
+			  tree *pre_p ATTRIBUTE_UNUSED,
+			  tree *post_p ATTRIBUTE_UNUSED)
 {
   tree t;
 
   t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
 	     build_int_2 (int_size_in_bytes (type), 0));
-  TREE_SIDE_EFFECTS (t) = 1;
+  t = fold_convert (build_pointer_type (type), t);
+  t = build_fold_indirect_ref (t);
 
-  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+  return t;
 }
 
 
