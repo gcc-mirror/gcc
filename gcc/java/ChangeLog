@@ -1,3 +1,28 @@
+Sat Jul  3 22:26:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (force_evaluation_order): Save the COMPOUND_EXPR'ed
+ 	CALL_EXPR, to avoid order of evaluation changes.
+
+Fri Jul  2 17:44:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (qualify_ambiguous_name): Do not use
+ 	IDENTIFIER_LOCAL_VALUE when name is a STRING_CST.
+
+Thu Jul  1 23:31:16 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (check_init): Handle MAX_EXPR.
+	* expr.c (force_evaluation_order): Force method call arguments to
+ 	be evaluated in left-to-right order.
+	* parse.y (qualify_ambiguous_name): Loop again to qualify
+ 	NEW_ARRAY_EXPR properly.
+
+Wed Jun 30 17:27:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_invoke): Resolve unresolved invoked method
+ 	returned type.
+	(qualify_ambiguous_name): STRING_CST to qualify expression for
+ 	type name resolution.
+
 1999-06-24  Andrew Haley  <aph@cygnus.com>
 
 	* class.c (finish_class): Whenever a deferred method is
