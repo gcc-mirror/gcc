@@ -26,34 +26,58 @@
 // the GNU General Public License.
 
 #include <complex>
+#include <testsuite_performance.h>
 
 // based on libstdc++/5730, use --fast-math
 int main()
 {
-  typedef std::complex<double> complex_type;
+  using namespace std;
+  using namespace __gnu_cxx_test;
+
+  time_counter time;
+  resource_counter resource;
+  const int iterations = 2000;
+
+  typedef complex<double> complex_type;
   complex_type u[2048];
 
   for (int i = 0; i < 2048; ++i)
     u[i] = 1.0;
 
-  for (int i = 0; i < 2000; ++i) 
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i) 
     {
       complex_type * p = u;
       for (int j = 0; j < 2048; ++j) 
 	{
-#if 1
 	  double u2 = norm(*p);
-#else
-	  // Shouldn't be slower than the above.
-	  double ur = real(*p); 
-	  double ui = imag(*p);
-	  double u2 = ur * ur + ui * ui;
-#endif
 	  double t = u2 * 0.1;
 	  *p *= complex_type(cos(t), sin(t));
 	  ++p;
 	}
     }
+  stop_counters(time, resource);
+  report_performance(__FILE__, "norm", time, resource);
+  clear_counters(time, resource);
+
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i) 
+    {
+      complex_type * p = u;
+      for (int j = 0; j < 2048; ++j) 
+	{
+	  // Shouldn't be slower than the above.
+	  double ur = real(*p); 
+	  double ui = imag(*p);
+	  double u2 = ur * ur + ui * ui;
+	  double t = u2 * 0.1;
+	  *p *= complex_type(cos(t), sin(t));
+	  ++p;
+	}
+    }
+  stop_counters(time, resource);
+  report_performance(__FILE__, "", time, resource);
+
   return 0;
 }
 

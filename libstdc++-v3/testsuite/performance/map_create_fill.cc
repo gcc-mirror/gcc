@@ -20,30 +20,34 @@
 
 #include <map>
 #include <testsuite_hooks.h>
-
-static bool test = true;
+#include <testsuite_performance.h>
 
 static void create_and_fill(const unsigned int n)
 {
   typedef std::map<int, int>  Map;
   Map                         m;
+  bool test = true;
   
   for (unsigned int i = 0; i < n; ++i)
     m[i] = i;
-  VERIFY ( m.size() == n );
-}
-
-void test01()
-{
-  const unsigned n = 10000000;
-  
-  for (unsigned int i = 0; i < n; ++i)
-    create_and_fill( 0 );
+  VERIFY( m.size() == n );
 }
 
 // http://gcc.gnu.org/ml/libstdc++/2003-03/msg00000.html
 int main()
 {
-  test01();
+  using namespace std;
+  using namespace __gnu_cxx_test;
+
+  time_counter time;
+  resource_counter resource;
+  const int iterations = 100000000;
+  
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i)
+    create_and_fill( 0 );
+  stop_counters(time, resource);
+  report_performance(__FILE__, "", time, resource);
+
   return 0;
 }

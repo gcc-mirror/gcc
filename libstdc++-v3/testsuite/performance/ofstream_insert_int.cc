@@ -26,12 +26,24 @@
 // the GNU General Public License.
 
 #include <fstream>
+#include <testsuite_performance.h>
 
 // libstdc++/8761 poor fstream performance
 int main() 
 {
-  std::ofstream out("tmp_perf_int.txt");
-  for (int i = 0; i < 10000000; ++i)
+  using namespace std;
+  using namespace __gnu_cxx_test;
+
+  time_counter time;
+  resource_counter resource;
+  const int iterations = 10000000;
+
+  ofstream out("tmp_perf_int.txt");
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i)
     out << i << "\n";
+  stop_counters(time, resource);
+  report_performance(__FILE__, "", time, resource);
+
   return 0;
 };
