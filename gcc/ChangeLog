@@ -1,5 +1,14 @@
 Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* flow.c (mark_set_1, case PARALLEL): Now case; rework to allow
+	entry to be EXPR_LIST.
+	* rtlanal.c (reg_overlap_mentioned_p): Allow PARALLEL in SET to
+	be an EXPR_LIST (but not null, which other code doesn't allow).
+	(note_stores): Properly handle PARALLEL in SET.
+	Recursively call for top-level PARALLEL.
+	* sched-deps.c (sched_analyze_1): Handle EXPR_LIST in PARALLEL in SET.
+	* sched-rgn.c (check_live_1, update_live_1): Likewise.
+
 	* config.gcc (rs6000-ibm-aix*, rs6000-bull-bosx): Add rs6000/aix.h.
 
 2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
