@@ -1,5 +1,8 @@
 Tue Sep 15 22:59:52 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
+	* mn10300.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
+
 	* combine.c (make_extraction): If no mode is specified for
 	an operand of insv, extv, or extzv, default it to word_mode.
 	(simplify_comparison): Similarly.
