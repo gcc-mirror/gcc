@@ -1,5 +1,12 @@
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
+	PR rtl-opt/17186
+	* reg-stack.c (move_nan_for_stack_reg): New.
+	(subst_stack_regs_pat): Use it.
+	(move_for_stack_reg): Handle source register not live with a nan.
+
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_gimplify_va_arg): Fix type mismatch
 	errors across operations.
 
