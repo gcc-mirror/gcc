@@ -1,3 +1,7 @@
+2003-04-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (save_expr): Don't fold a COMPONENT_REF.
+
 2003-04-29  Olivier Hainque <hainque@act-europe.fr>
 
 	* calls.c (expand_call): When modes of target and valreg match,	force
