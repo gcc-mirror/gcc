@@ -26,28 +26,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
 #endif
 
-#ifndef CPP_SPEC
-#define CPP_SPEC "\
-%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.s:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
-#endif
-
 #ifndef LIB_SPEC
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 #endif
 
 #ifndef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
-#endif
-
-/* For compatibility with types.h.  */
-#ifndef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
 #endif
 
 #ifndef MACHINE_TYPE
