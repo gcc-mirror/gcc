@@ -1,3 +1,21 @@
+Wed Dec 24 22:38:34 1997  John Carr  <jfc@mit.edu>
+
+	* flags.h, toplev.c, calls.c, alias.c: Remove flag_alias_check;
+	optimization is now always enabled.
+
+	* calls.c (expand_call): Recognize C++ operator new as malloc-like
+	function.
+
+	* alias.c (memrefs_conflict_p): Eliminate tests now done by
+ 	base_alias_check.
+	(*_dependence): Call canon_rtx before base_alias_check.
+	(init_alias_once): New function to precompute set of registers which
+	can hold Pmode function arguments.
+
+	* rtl.h: Declare init_alias_once.
+
+	* toplev.c (compile_file): Call init_alias_once.
+
 Wed Dec 24 22:34:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* tree.c (restore_tree_status): Do not dereference a null pointer.
