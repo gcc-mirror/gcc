@@ -23,17 +23,29 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifndef GCC_LINE_MAP_H
 #define GCC_LINE_MAP_H
 
+/* Reason for adding a line change with add_line_map ().  LC_ENTER is
+   when including a new file, e.g. a #include directive in C.
+   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
+   name or line number changes for neither of the above reasons
+   (e.g. a #line directive in C).  */
+enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
+
 /* The logical line FROM_LINE maps to physical source file TO_FILE at
    line TO_LINE, and subsequently one-to-one until the next line_map
    structure in the set.  INCLUDED_FROM is an index into the set that
    gives the line mapping at whose end the current one was included.
-   File(s) at the bottom of the include stack have this set to -1.  */
+   File(s) at the bottom of the include stack have this set to -1.
+   REASON is the reason for creation of this line map, SYSP is one for
+   a system header, two for a C system header file that therefore
+   needs to be extern "C" protected in C++, and zero otherwise.  */
 struct line_map
 {
   const char *to_file;
   unsigned int to_line;
   unsigned int from_line;
   int included_from;
+  ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
+  unsigned char sysp;
 };
 
 /* A set of chronological line_map structures.  */
@@ -49,13 +61,6 @@ struct line_maps
   int last_listed;
 };
 
-/* Reason for adding a line change with add_line_map ().  LC_ENTER is
-   when including a new file, e.g. a #include directive in C.
-   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
-   name or line number changes for neither of the above reasons
-   (e.g. a #line directive in C).  */
-enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
-
 /* Initialize a line map set.  */
 extern void init_line_maps
   PARAMS ((struct line_maps *));
@@ -66,25 +71,27 @@ extern void free_line_maps
 
 /* Add a mapping of logical source line to physical source file and
    line number.  The text pointed to by TO_FILE must have a lifetime
-   at least as long as the final call to lookup_line ().
+   at least as long as the line maps.  If reason is LC_LEAVE, and
+   TO_FILE is NULL, then TO_FILE, TO_LINE and SYSP are given their
+   natural values considering the file we are returning to.
 
    FROM_LINE should be monotonic increasing across calls to this
    function.  A call to this function can relocate the previous set of
    maps, so any stored line_map pointers should not be used.  */
-extern struct line_map *add_line_map
-  PARAMS ((struct line_maps *, enum lc_reason,
+extern const struct line_map *add_line_map
+  PARAMS ((struct line_maps *, enum lc_reason, unsigned int sysp,
 	   unsigned int from_line, const char *to_file, unsigned int to_line));
 
 /* Given a logical line, returns the map from which the corresponding
    (source file, line) pair can be deduced.  */
-extern struct line_map *lookup_line
+extern const struct line_map *lookup_line
   PARAMS ((struct line_maps *, unsigned int));
 
 /* Print the file names and line numbers of the #include commands
    which led to the map MAP, if any, to stderr.  Nothing is output if
    the most recently listed stack is the same as the current one.  */
 extern void print_containing_files
-  PARAMS ((struct line_maps *, struct line_map *));
+  PARAMS ((struct line_maps *, const struct line_map *));
 
 /* Converts a map and logical line to source line.  */
 #define SOURCE_LINE(MAP, LINE) ((LINE) + (MAP)->to_line - (MAP)->from_line)

@@ -31,8 +31,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 struct printer
 {
   FILE *outf;			/* Stream to write to.  */
-  const char *syshdr_flags;	/* System header flags, if any.  */
-  struct line_map *map;		/* Logical to physical line mappings.  */
+  const struct line_map *map;	/* Logical to physical line mappings.  */
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
 };
@@ -47,9 +46,9 @@ static void scan_translation_unit PARAMS ((cpp_reader *));
 static void check_multiline_token PARAMS ((cpp_string *));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
-static void print_line PARAMS ((struct line_map *, unsigned int,
+static void print_line PARAMS ((const struct line_map *, unsigned int,
 				const char *));
-static void maybe_print_line PARAMS ((struct line_map *, unsigned int));
+static void maybe_print_line PARAMS ((const struct line_map *, unsigned int));
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
@@ -59,7 +58,7 @@ static void cb_include	PARAMS ((cpp_reader *, unsigned int,
 				 const unsigned char *, const cpp_token *));
 static void cb_ident	  PARAMS ((cpp_reader *, unsigned int,
 				   const cpp_string *));
-static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
 
 const char *progname;		/* Needs to be global.  */
@@ -285,7 +284,7 @@ check_multiline_token (str)
 
 static void
 maybe_print_line (map, line)
-     struct line_map *map;
+     const struct line_map *map;
      unsigned int line;
 {
   /* End the previous line of text.  */
@@ -308,9 +307,11 @@ maybe_print_line (map, line)
     print_line (map, line, "");
 }
 
+/* Output a line marker for logical line LINE.  Special flags are "1"
+   or "2" indicating entering or leaving a file.  */
 static void
 print_line (map, line, special_flags)
-     struct line_map *map;
+     const struct line_map *map;
      unsigned int line;
      const char *special_flags;
 {
@@ -321,9 +322,17 @@ print_line (map, line, special_flags)
 
   print.line = line;
   if (! options->no_line_commands)
-    fprintf (print.outf, "# %u \"%s\"%s%s\n",
-	     SOURCE_LINE (map, print.line), map->to_file,
-	     special_flags, print.syshdr_flags);
+    {
+      fprintf (print.outf, "# %u \"%s\"%s",
+	       SOURCE_LINE (map, print.line), map->to_file, special_flags);
+
+      if (map->sysp == 2)
+	fputs (" 3 4", print.outf);
+      else if (map->sysp == 1)
+	fputs (" 3", print.outf);
+
+      putc ('\n', print.outf);
+    }
 }
 
 /* Callbacks.  */
@@ -382,40 +391,32 @@ cb_include (pfile, line, dir, header)
 }
 
 /* The file name, line number or system header flags have changed, as
-   described in FC.  NB: the old print.map must be considered invalid.  */
+   described in MAP.  From this point on, the old print.map might be
+   pointing to freed memory, and so must not be dereferenced.  */
 
 static void
-cb_file_change (pfile, fc)
+cb_file_change (pfile, map)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const cpp_file_change *fc;
+     const struct line_map *map;
 {
-  bool first_time = print.map == NULL;
-
-  /* Bring current file to correct line.  We handle the first file
-     change callback specially, so that a first line of "# 1 "foo.c"
-     in file foo.i outputs just the foo.c line, and not a foo.i line.  */
-  if (fc->reason == LC_ENTER && !first_time)
-    maybe_print_line (fc->map - 1, fc->line - 1);
-
-  print.map = fc->map;
-  if (fc->externc)
-    print.syshdr_flags = " 3 4";
-  else if (fc->sysp)
-    print.syshdr_flags = " 3";
-  else
-    print.syshdr_flags = "";
-
-  if (!first_time)
+  /* Not first time?  */
+  if (print.map)
     {
       const char *flags = "";
 
-      if (fc->reason == LC_ENTER)
+      /* Bring current file to correct line when entering a new file.  */
+      if (map->reason == LC_ENTER)
+	maybe_print_line (map - 1, map->from_line - 1);
+
+      if (map->reason == LC_ENTER)
 	flags = " 1";
-      else if (fc->reason == LC_LEAVE)
+      else if (map->reason == LC_LEAVE)
 	flags = " 2";
 
-      print_line (print.map, fc->line, flags);
+      print_line (map, map->from_line, flags);
     }
+
+  print.map = map;
 }
 
 /* Copy a #pragma directive to the preprocessed output.  LINE is the

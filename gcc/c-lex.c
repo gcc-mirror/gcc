@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 static const char *cpp_filename;
 
 /* The current line map.  */
-static struct line_map *map;
+static const struct line_map *map;
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -91,7 +91,7 @@ static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
 static void cb_ident		PARAMS ((cpp_reader *, unsigned int,
 					 const cpp_string *));
-static void cb_file_change    PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change    PARAMS ((cpp_reader *, const struct line_map *));
 static void cb_def_pragma	PARAMS ((cpp_reader *, unsigned int));
 static void cb_define		PARAMS ((cpp_reader *, unsigned int,
 					 cpp_hashnode *));
@@ -244,28 +244,28 @@ cb_ident (pfile, line, str)
 }
 
 static void
-cb_file_change (pfile, fc)
+cb_file_change (pfile, new_map)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const cpp_file_change *fc;
+     const struct line_map *new_map;
 {
-  unsigned int from_line = SOURCE_LINE (fc->map - 1, fc->line - 1);
+  unsigned int to_line = SOURCE_LINE (new_map, new_map->to_line);
 
-  if (fc->reason == LC_ENTER)
+  if (new_map->reason == LC_ENTER)
     {
       /* Don't stack the main buffer on the input stack;
 	 we already did in compile_file.  */
-      if (MAIN_FILE_P (fc->map))
-	main_input_filename = fc->map->to_file;
+      if (map == NULL)
+	main_input_filename = new_map->to_file;
       else
 	{
-	  lineno = from_line;
-	  push_srcloc (fc->map->to_file, 1);
+	  lineno = SOURCE_LINE (new_map - 1, new_map->from_line - 1);
+	  push_srcloc (new_map->to_file, 1);
 	  input_file_stack->indent_level = indent_level;
-	  (*debug_hooks->start_source_file) (lineno, fc->map->to_file);
+	  (*debug_hooks->start_source_file) (lineno, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
-	  else if (fc->externc)
+	  else if (new_map->sysp == 2)
 	    {
 	      c_header_level = 1;
 	      ++pending_lang_change;
@@ -273,41 +273,36 @@ cb_file_change (pfile, fc)
 #endif
 	}
     }
-  else if (fc->reason == LC_LEAVE)
+  else if (new_map->reason == LC_LEAVE)
     {
-      /* Popping out of a file.  */
-      if (input_file_stack->next)
-	{
 #ifndef NO_IMPLICIT_EXTERN_C
-	  if (c_header_level && --c_header_level == 0)
-	    {
-	      if (fc->externc)
-		warning ("badly nested C headers from preprocessor");
-	      --pending_lang_change;
-	    }
+      if (c_header_level && --c_header_level == 0)
+	{
+	  if (new_map->sysp == 2)
+	    warning ("badly nested C headers from preprocessor");
+	  --pending_lang_change;
+	}
 #endif
 #if 0
-	  if (indent_level != input_file_stack->indent_level)
-	    {
-	      warning_with_file_and_line
-		(input_filename, lineno,
-		 "This file contains more '%c's than '%c's.",
-		 indent_level > input_file_stack->indent_level ? '{' : '}',
-		 indent_level > input_file_stack->indent_level ? '}' : '{');
-	    }
-#endif
-	  pop_srcloc ();
-	  (*debug_hooks->end_source_file) (from_line);
+      if (indent_level != input_file_stack->indent_level)
+	{
+	  warning_with_file_and_line
+	    (input_filename, lineno,
+	     "This file contains more '%c's than '%c's.",
+	     indent_level > input_file_stack->indent_level ? '{' : '}',
+	     indent_level > input_file_stack->indent_level ? '}' : '{');
 	}
-      else
-	error ("leaving more files than we entered");
+#endif
+      pop_srcloc ();
+      
+      (*debug_hooks->end_source_file) (to_line);
     }
 
-  update_header_times (fc->map->to_file);
-  map = fc->map;
-  in_system_header = fc->sysp != 0;
-  input_filename = map->to_file;
-  lineno = SOURCE_LINE (map, fc->line);
+  update_header_times (new_map->to_file);
+  in_system_header = new_map->sysp != 0;
+  input_filename = new_map->to_file;
+  lineno = to_line;
+  map = new_map;
 
   /* Hook for C++.  */
   extract_interface_info ();

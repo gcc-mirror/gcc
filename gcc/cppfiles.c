@@ -290,7 +290,7 @@ stack_include_file (pfile, inc)
 
   /* We'll try removing deps_sysp after the release of 3.0.  */
   deps_sysp = pfile->system_include_depth != 0;
-  sysp = MAX ((pfile->buffer ? pfile->buffer->sysp : 0),
+  sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
 	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
   /* For -M, add the file to the dependencies on its first inclusion.  */
@@ -329,7 +329,6 @@ stack_include_file (pfile, inc)
   fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name, 0);
   fp->inc = inc;
   fp->inc->refcnt++;
-  fp->sysp = sysp;
 
   /* Initialise controlling macro state.  */
   pfile->mi_valid = true;
@@ -337,7 +336,7 @@ stack_include_file (pfile, inc)
   pfile->include_depth++;
 
   /* Generate the call back.  */
-  _cpp_do_file_change (pfile, LC_ENTER, 1);
+  _cpp_do_file_change (pfile, LC_ENTER, fp->nominal_fname, 1, sysp);
 }
 
 /* Read the file referenced by INC into the file cache.
@@ -576,9 +575,8 @@ cpp_make_system_header (pfile, syshdr, externc)
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);
-  pfile->buffer->sysp = flags;
-  _cpp_do_file_change (pfile, LC_RENAME,
-		       SOURCE_LINE (pfile->map, pfile->line));
+  _cpp_do_file_change (pfile, LC_RENAME, pfile->map->to_file,
+		       SOURCE_LINE (pfile->map, pfile->line), flags);
 }
 
 /* Report on all files that might benefit from a multiple include guard.
@@ -678,7 +676,6 @@ _cpp_execute_include (pfile, header, type)
       if (header->type == CPP_HEADER_NAME)
 	pfile->system_include_depth++;
 
-      pfile->buffer->return_to_line = SOURCE_LINE (pfile->map, pfile->line);
       stack_include_file (pfile, inc);
 
       if (type == IT_IMPORT)
@@ -808,7 +805,7 @@ search_from (pfile, type)
 
       buffer->dir.len = dlen;
       buffer->dir.next = CPP_OPTION (pfile, quote_include);
-      buffer->dir.sysp = buffer->sysp;
+      buffer->dir.sysp = pfile->map->sysp;
     }
 
   return &buffer->dir;

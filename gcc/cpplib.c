@@ -713,7 +713,7 @@ do_line (pfile)
   cpp_buffer *buffer = pfile->buffer;
   enum lc_reason reason = LC_RENAME;
   unsigned long new_lineno;
-  unsigned int cap;
+  unsigned int cap, sysp = pfile->map->sysp;
   cpp_token token;
 
   /* C99 raised the minimum limit on #line numbers.  */
@@ -741,9 +741,10 @@ do_line (pfile)
       /* Only accept flags for the # 55 form.  */
       if (pfile->state.line_extension)
 	{
-	  int flag = 0, sysp = 0;
+	  int flag;
 
-	  flag = read_flag (pfile, flag);
+	  sysp = 0;
+	  flag = read_flag (pfile, 0);
 	  if (flag == 1)
 	    {
 	      reason = LC_ENTER;
@@ -763,7 +764,6 @@ do_line (pfile)
 	      if (flag == 4)
 		sysp = 2;
 	    }
-	  buffer->sysp = sysp;
 	}
       check_eol (pfile);
     }
@@ -775,34 +775,27 @@ do_line (pfile)
     }
 
   end_directive (pfile, 1);
-  _cpp_do_file_change (pfile, reason, new_lineno);
+  _cpp_do_file_change (pfile, reason, (const char *) buffer->nominal_fname,
+		       new_lineno, sysp);
 }
 
 /* Arrange the file_change callback.  pfile->line has changed to
-   FILE_LINE of the current buffer, for reason REASON.  */
+   FILE_LINE of TO_FILE, for reason REASON.  SYSP is 1 for a system
+   header, 2 for a sytem header that needs to be extern "C" protected,
+   and zero otherwise.  */
 void
-_cpp_do_file_change (pfile, reason, file_line)
+_cpp_do_file_change (pfile, reason, to_file, file_line, sysp)
      cpp_reader *pfile;
      enum lc_reason reason;
+     const char *to_file;
      unsigned int file_line;
+     unsigned int sysp;
 {
-  cpp_buffer *buffer = pfile->buffer;
-  
-  pfile->map = add_line_map (&pfile->line_maps, reason,
-			     pfile->line, buffer->nominal_fname, file_line);
+  pfile->map = add_line_map (&pfile->line_maps, reason, sysp,
+			     pfile->line, to_file, file_line);
 
   if (pfile->cb.file_change)
-    {
-      cpp_file_change fc;
-      
-      fc.map = pfile->map;
-      fc.line = pfile->line;
-      fc.reason = reason;
-      fc.sysp = buffer->sysp;
-      fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->sysp == 2;
-
-      (*pfile->cb.file_change) (pfile, &fc);
-    }
+    (*pfile->cb.file_change) (pfile, pfile->map);
 }
 
 /*
@@ -908,7 +901,8 @@ cpp_register_pragma (pfile, space, name, handler)
     }
 
  found:
-  new = xnew (struct pragma_entry);
+  new = (struct pragma_entry *)
+    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
   new->name = name;
   new->len = strlen (name);
   new->isnspace = 0;
@@ -936,7 +930,8 @@ cpp_register_pragma_space (pfile, space)
       p = p->next;
     }
 
-  new = xnew (struct pragma_entry);
+  new = (struct pragma_entry *)
+    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
   new->name = space;
   new->len = len;
   new->isnspace = 1;
@@ -1722,7 +1717,7 @@ cpp_get_callbacks (pfile)
 }
 
 /* The line map set.  */
-struct line_maps *
+const struct line_maps *
 cpp_get_line_maps (pfile)
      cpp_reader *pfile;
 {
@@ -1764,7 +1759,6 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
 
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + len;
-  new->sysp = 0;
 
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
@@ -1813,7 +1807,7 @@ _cpp_pop_buffer (pfile)
     {
       /* Callbacks are not generated for popping the main file.  */
       if (buffer->prev)
-	_cpp_do_file_change (pfile, LC_LEAVE, buffer->prev->return_to_line);
+	_cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
 
       _cpp_pop_file_buffer (pfile, buffer);
     }

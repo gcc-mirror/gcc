@@ -66,7 +66,7 @@ struct cpp_chunk
 typedef struct cpp_pool cpp_pool;
 struct cpp_pool
 {
-  struct cpp_chunk *cur, *locked;
+  struct cpp_chunk *cur, *locked, *first;
   unsigned char *pos;		/* Current position.  */
   unsigned int align;
   unsigned int locks;
@@ -190,11 +190,6 @@ struct cpp_buffer
   /* Token column position adjustment owing to tabs in whitespace.  */
   unsigned int col_adjust;
 
-  /* The line of the buffer that we return to after a #include.
-     Strictly this is redundant, since it can be calculated from the
-     line maps, but it is clearest to save it here.  */
-  unsigned int return_to_line;
-
   /* Contains PREV_WHITE and/or AVOID_LPASTE.  */
   unsigned char saved_flags;
 
@@ -212,9 +207,6 @@ struct cpp_buffer
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
   unsigned char from_stage3;
-
-  /* 1 = system header file, 2 = C system header file used for C++.  */
-  unsigned char sysp;
 
   /* Nonzero means that the directory to start searching for ""
      include files has been calculated and stored in "dir" below.  */
@@ -247,7 +239,7 @@ struct cpp_reader
 
   /* Source line tracking.  */
   struct line_maps line_maps;
-  struct line_map *map;
+  const struct line_map *map;
   unsigned int line;
 
   /* The position of the last lexed token and last lexed directive.  */
@@ -376,8 +368,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* Macros.  */
 
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
-#define CPP_IN_SYSTEM_HEADER(PFILE) \
-  (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->sysp)
+#define CPP_IN_SYSTEM_HEADER(PFILE) (pfile->map && pfile->map->sysp)
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
@@ -439,7 +430,8 @@ extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
-					 unsigned int));
+					 const char *,
+					 unsigned int, unsigned int));
 extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */

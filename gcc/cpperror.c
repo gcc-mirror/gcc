@@ -61,7 +61,7 @@ print_location (pfile, filename, pos)
 	line = 0;
       else
 	{
-	  struct line_map *map;
+	  const struct line_map *map;
 
 	  if (type == BUF_PRAGMA)
 	    buffer = buffer->prev;

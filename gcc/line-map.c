@@ -45,14 +45,15 @@ free_line_maps (set)
 {
   if (set->maps)
     {
-#ifdef ENABLE_CHECKING
       struct line_map *map;
 
+      /* Depending upon whether we are handling preprocessed input or
+	 not, this can be a user error or an ICE.  */
       for (map = CURRENT_LINE_MAP (set); ! MAIN_FILE_P (map);
 	   map = INCLUDED_FROM (set, map))
 	fprintf (stderr, "line-map.c: file \"%s\" entered but not left\n",
 		 map->to_file);
-#endif
+
       free (set->maps);
     }
 }
@@ -64,10 +65,11 @@ free_line_maps (set)
    FROM_LINE should be monotonic increasing across calls to this
    function.  */
 
-struct line_map *
-add_line_map (set, reason, from_line, to_file, to_line)
+const struct line_map *
+add_line_map (set, reason, sysp, from_line, to_file, to_line)
      struct line_maps *set;
      enum lc_reason reason;
+     unsigned int sysp;
      unsigned int from_line;
      const char *to_file;
      unsigned int to_line;
@@ -85,9 +87,6 @@ add_line_map (set, reason, from_line, to_file, to_line)
     }
 
   map = &set->maps[set->used];
-  map->from_line = from_line;
-  map->to_file = to_file;
-  map->to_line = to_line;
 
   /* If we don't keep our line maps consistent, we can easily
      segfault.  Don't rely on the client to do it for us.  */
@@ -95,16 +94,41 @@ add_line_map (set, reason, from_line, to_file, to_line)
     reason = LC_ENTER;
   else if (reason == LC_LEAVE)
     {
-      if (MAIN_FILE_P (map - 1)
-	  || strcmp (INCLUDED_FROM (set, map - 1)->to_file, to_file))
+      struct line_map *from;
+      bool error;
+
+      if (MAIN_FILE_P (map - 1))
 	{
-#ifdef ENABLE_CHECKING
-	  fprintf (stderr, "line-map.c: file \"%s\" left but not entered\n",
-		   to_file);
-#endif
+	  error = true;
 	  reason = LC_RENAME;
+	  from = map - 1;
+	}
+      else
+	{
+	  from = INCLUDED_FROM (set, map - 1);
+	  error = to_file && strcmp (from->to_file, to_file);
+	}
+
+      /* Depending upon whether we are handling preprocessed input or
+	 not, this can be a user error or an ICE.  */
+      if (error)
+	fprintf (stderr, "line-map.c: file \"%s\" left but not entered\n",
+		 to_file);
+
+      /* A TO_FILE of NULL is special - we use the natural values.  */
+      if (error || to_file == NULL)
+	{
+	  to_file = from->to_file;
+	  to_line = LAST_SOURCE_LINE (from) + 1;
+	  sysp = from->sysp;
 	}
     }
+
+  map->reason = reason;
+  map->sysp = sysp;
+  map->from_line = from_line;
+  map->to_file = to_file;
+  map->to_line = to_line;
 
   if (reason == LC_ENTER)
     map->included_from = set->used - 1;
@@ -122,7 +146,7 @@ add_line_map (set, reason, from_line, to_file, to_line)
    chronologically, the logical lines are monotonic increasing, and so
    the list is sorted and we can use a binary search.  */
 
-struct line_map *
+const struct line_map *
 lookup_line (set, line)
      struct line_maps *set;
      unsigned int line;
@@ -151,7 +175,7 @@ lookup_line (set, line)
 void
 print_containing_files (set, map)
      struct line_maps *set;
-     struct line_map *map;
+     const struct line_map *map;
 {
   if (MAIN_FILE_P (map) || set->last_listed == map->included_from)
     return;
