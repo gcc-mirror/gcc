@@ -1,3 +1,8 @@
+2003-01-16  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/SocketImpl.java (toString): Don't explicitly call
+	toString() on possible null address.
+
 2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/gcj/xlib/natGC.cc (fillPolygon): New method.
