@@ -316,6 +316,10 @@ extern int target_flags;
 #endif
 #endif
 
+#ifndef TARGET_XL_CALL
+#define TARGET_XL_CALL 0
+#endif
+
 /* Run-time compilation parameters selecting different hardware subsets.
 
    Macro to define tables used to set the flags.
@@ -436,6 +440,39 @@ struct rs6000_cpu_select
 };
 
 extern struct rs6000_cpu_select rs6000_select[];
+
+/* start-sanitize-haifa */
+#ifdef HAIFA
+
+/* Some machines may desire to change what optimizations are
+   performed for various optimization levels.   This macro, if
+   defined, is executed once just after the optimization level is
+   determined and before the remainder of the command options have
+   been parsed.  Values set in this macro are used as the default
+   values for the other command line options.
+
+   LEVEL is the optimization level specified; 2 if `-O2' is
+   specified, 1 if `-O' is specified, and 0 if neither is specified.
+
+   You should not use this macro to change options that are not
+   machine-specific.  These should uniformly selected by the same
+   optimization level on all supported machines.  Use this macro to
+   enable machbine-specific optimizations.
+
+   *Do not examine `write_symbols' in this macro!* The debugging
+   options are not supposed to alter the generated code.
+
+   AIX maps in page 0, so that we can safely do speculative loads */
+
+#define OPTIMIZATION_OPTIONS(LEVEL)					\
+do {									\
+  if (TARGET_AIX && (LEVEL) >= 2) {					\
+    flag_schedule_speculative_load = 1;					\
+  }									\
+} while (0)
+
+#endif	/* HAIFA */
+/* end-sanitize-haifa */
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
