@@ -217,10 +217,6 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
    the original name, and the parameter is the FUNCTION_DECL.  */
 DEFTREECODE (OVERLOAD, "overload", 'x', 0)
 
-/* A generic wrapper for something not tree that we want to include in
-   tree structure.  */
-DEFTREECODE (WRAPPER, "wrapper", 'x', 0)
-
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (MODOP_EXPR, "modop_expr", 'e', 3)
@@ -260,26 +256,6 @@ DEFTREECODE (HANDLER, "handler", 'e', 2)
 DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", 'e', 1)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
-
-/* The following codes are used to represent implicit conversion
-   sequences, in the sense of [over.best.ics].  The conversion
-   sequences are connected through their first operands, with the
-   first conversion to be performed at the end of the chain.
-
-   The innermost conversion (i.e, the one at the end of the chain) is
-   always an IDENTITY_CONV, corresponding to the identity conversion.  */
-
-DEFTREECODE (IDENTITY_CONV, "identity_conv", 'e', 1)
-DEFTREECODE (LVALUE_CONV, "lvalue_conv", 'e', 1)
-DEFTREECODE (QUAL_CONV, "qual_conv", 'e', 1)
-DEFTREECODE (STD_CONV, "std_conv", 'e', 1)
-DEFTREECODE (PTR_CONV, "ptr_conv", 'e', 1)
-DEFTREECODE (PMEM_CONV, "pmem_conv", 'e', 1)
-DEFTREECODE (BASE_CONV, "base_conv", 'e', 1)
-DEFTREECODE (REF_BIND, "ref_bind", 'e', 1)
-DEFTREECODE (USER_CONV, "user_conv", 'e', 2)
-DEFTREECODE (AMBIG_CONV, "ambig_conv", 'e', 1)
-DEFTREECODE (RVALUE_CONV, "rvalue_conv", 'e', 1)
 
 /*
 Local variables:
