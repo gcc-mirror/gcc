@@ -1022,7 +1022,8 @@ livethrough_conflicts_bb (basic_block bb)
   struct ra_bb_info *info = (struct ra_bb_info *) bb->aux;
   rtx insn;
   bitmap all_defs;
-  int first, use_id;
+  int first;
+  unsigned use_id;
   unsigned int deaths = 0;
   unsigned int contains_call = 0;
 
@@ -2193,7 +2194,7 @@ conflicts_between_webs (struct df *df)
       for (; cl; cl = cl->next)
         if (cl->conflicts)
 	  {
-	    int j;
+	    unsigned j;
 	    struct web *web1 = find_subweb_2 (supweb1, cl->size_word);
 	    bitmap_iterator bi;
 

@@ -1267,7 +1267,7 @@ get_asm_expr_operands (tree stmt)
   for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
     if (strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory") == 0)
       {
-	size_t i;
+	unsigned i;
 	bitmap_iterator bi;
 
 	/* Clobber all call-clobbered variables (or .GLOBAL_VAR if we
@@ -1599,7 +1599,7 @@ add_call_clobber_ops (tree stmt)
     add_stmt_operand (&global_var, stmt, opf_is_def);
   else
     {
-      size_t i;
+      unsigned i;
       bitmap_iterator bi;
 
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
@@ -1631,7 +1631,7 @@ add_call_read_ops (tree stmt)
     add_stmt_operand (&global_var, stmt, opf_none);
   else
     {
-      size_t i;
+      unsigned i;
       
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{

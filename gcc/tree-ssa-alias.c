@@ -379,7 +379,7 @@ init_alias_info (void)
   /* If aliases have been computed before, clear existing information.  */
   if (aliases_computed_p)
     {
-      size_t i;
+      unsigned i;
       bitmap_iterator bi;
 
       /* Clear the call-clobbered set.  We are going to re-discover
@@ -570,7 +570,7 @@ static void
 compute_points_to_and_addr_escape (struct alias_info *ai)
 {
   basic_block bb;
-  size_t i;
+  unsigned i;
   tree op;
   ssa_op_iter iter;
 
@@ -831,7 +831,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
     {
-      size_t j;
+      unsigned j;
       tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
       var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
@@ -1480,7 +1480,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 static void
 maybe_create_global_var (struct alias_info *ai)
 {
-  size_t i, n_clobbered;
+  unsigned i, n_clobbered;
   bitmap_iterator bi;
   
   /* No need to create it, if we have one already.  */

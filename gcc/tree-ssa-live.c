@@ -433,7 +433,7 @@ static tree_live_info_p
 new_tree_live_info (var_map map)
 {
   tree_live_info_p live;
-  int x;
+  unsigned x;
 
   live = (tree_live_info_p) xmalloc (sizeof (struct tree_live_info_d));
   live->map = map;
@@ -483,7 +483,7 @@ delete_tree_live_info (tree_live_info_p live)
 static void
 live_worklist (tree_live_info_p live, varray_type stack, int i)
 {
-  int b;
+  unsigned b;
   tree var;
   basic_block def_bb = NULL;
   edge e;
@@ -557,7 +557,7 @@ tree_live_info_p
 calculate_live_on_entry (var_map map)
 {
   tree_live_info_p live;
-  int i;
+  unsigned i;
   basic_block bb;
   bitmap saw_def;
   tree phi, var, stmt;
@@ -583,7 +583,7 @@ calculate_live_on_entry (var_map map)
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
-	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	  for (i = 0; i < (unsigned)PHI_NUM_ARGS (phi); i++)
 	    {
 	      var = PHI_ARG_DEF (phi, i);
 	      if (!phi_ssa_name_p (var))
@@ -648,7 +648,7 @@ calculate_live_on_entry (var_map map)
       int entry_block = e->dest->index;
       if (e->dest == EXIT_BLOCK_PTR)
         continue;
-      for (i = 0; i < num_var_partitions (map); i++)
+      for (i = 0; i < (unsigned)num_var_partitions (map); i++)
 	{
 	  basic_block tmp;
 	  tree d;
@@ -732,7 +732,7 @@ void
 calculate_live_on_exit (tree_live_info_p liveinfo)
 {
   unsigned b;
-  int i, x;
+  unsigned i, x;
   bitmap *on_exit;
   basic_block bb;
   edge e;
@@ -741,14 +741,14 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   var_map map = liveinfo->map;
 
   on_exit = (bitmap *)xmalloc (last_basic_block * sizeof (bitmap));
-  for (x = 0; x < last_basic_block; x++)
+  for (x = 0; x < (unsigned)last_basic_block; x++)
     on_exit[x] = BITMAP_XMALLOC ();
 
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB (bb)
     {
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	for (i = 0; i < (unsigned)PHI_NUM_ARGS (phi); i++)
 	  { 
 	    t = PHI_ARG_DEF (phi, i);
 	    e = PHI_ARG_EDGE (phi, i);
@@ -1168,7 +1168,7 @@ int compare_pairs (const void *p1, const void *p2)
 void
 sort_coalesce_list (coalesce_list_p cl)
 {
-  int x, num, count;
+  unsigned x, num, count;
   partition_pair_p chain, p;
   partition_pair_p  *list;
 
@@ -1296,7 +1296,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
   conflict_graph graph;
   var_map map;
   bitmap live;
-  int x, y, i;
+  unsigned x, y, i;
   basic_block bb;
   varray_type partition_link, tpa_to_clear, tpa_nodes;
   unsigned l;
@@ -1421,7 +1421,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
       EXECUTE_IF_SET_IN_BITMAP (live, 0, x, bi)
         {
 	  i = tpa_find_tree (tpa, x);
-	  if (i != TPA_NONE)
+	  if (i != (unsigned)TPA_NONE)
 	    {
 	      int start = VARRAY_INT (tpa_nodes, i);
 	      /* If start is 0, a new root reference list is being started.
@@ -1750,7 +1750,7 @@ void
 dump_live_info (FILE *f, tree_live_info_p live, int flag)
 {
   basic_block bb;
-  int i;
+  unsigned i;
   var_map map = live->map;
   bitmap_iterator bi;
 

@@ -1463,7 +1463,8 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   regset_head killed_head;
   regset killed = INITIALIZE_REG_SET (killed_head);
   rtx save_regs = NULL_RTX;
-  int regno, noccmode;
+  unsigned regno;
+  int noccmode;
   enum machine_mode mode;
   reg_set_iterator rsi;
 

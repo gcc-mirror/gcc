@@ -520,7 +520,7 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
     }
   else
     {
-      int i;
+      unsigned i;
       reg_set_iterator rsi;
 
       /* Find the set of changed registers.  */
@@ -570,7 +570,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
 {
   regset tmp;
   regset_head tmp_head;
-  int i;
+  unsigned i;
   int stabilized_prop_flags = prop_flags;
   basic_block bb;
 
@@ -1352,7 +1352,7 @@ initialize_uninitialized_subregs (void)
 {
   rtx insn;
   edge e;
-  int reg, did_something = 0;
+  unsigned reg, did_something = 0;
   find_regno_partial_param param;
   edge_iterator ei;
 
@@ -1517,7 +1517,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
   int insn_is_dead = 0;
   int libcall_is_dead = 0;
   rtx note;
-  int i;
+  unsigned i;
 
   if (! INSN_P (insn))
     return prev;
@@ -1963,7 +1963,7 @@ free_propagate_block_info (struct propagate_block_info *pbi)
   if (pbi->flags & PROP_REG_INFO)
     {
       int num = pbi->insn_num;
-      int i;
+      unsigned i;
       reg_set_iterator rsi;
 
       EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i, rsi)
@@ -2008,7 +2008,7 @@ propagate_block (basic_block bb, regset live, regset local_set,
 
   if (flags & PROP_REG_INFO)
     {
-      int i;
+      unsigned i;
       reg_set_iterator rsi;
 
       /* Process the regs live at the end of the block.
@@ -4135,7 +4135,7 @@ find_use_as_address (rtx x, rtx reg, HOST_WIDE_INT plusconst)
 void
 dump_regset (regset r, FILE *outf)
 {
-  int i;
+  unsigned i;
   reg_set_iterator rsi;
 
   if (r == NULL)
@@ -4324,7 +4324,7 @@ clear_log_links (sbitmap blocks)
 void
 reg_set_to_hard_reg_set (HARD_REG_SET *to, bitmap from)
 {
-  int i;
+  unsigned i;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)

@@ -846,7 +846,7 @@ void
 bitmap_print (FILE *file, bitmap head, const char *prefix, const char *suffix)
 {
   const char *comma = "";
-  int i;
+  unsigned i;
   bitmap_iterator bi;
 
   fputs (prefix, file);

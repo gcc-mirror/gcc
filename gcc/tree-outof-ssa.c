@@ -681,7 +681,7 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 static tree_live_info_p
 coalesce_ssa_name (var_map map, int flags)
 {
-  int num, x, i;
+  unsigned num, x, i;
   sbitmap live;
   tree var, phi;
   root_var_p rv;
@@ -718,7 +718,7 @@ coalesce_ssa_name (var_map map, int flags)
 	      int p = var_to_partition (map, res);
 	      if (p == NO_PARTITION)
 		continue;
-	      for (x = 0; x < PHI_NUM_ARGS (phi); x++)
+	      for (x = 0; x < (unsigned)PHI_NUM_ARGS (phi); x++)
 		{
 		  tree arg = PHI_ARG_DEF (phi, x);
 		  int p2;
@@ -1057,7 +1057,7 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
   basic_block bb;
   type_var_p tv;
   tree var;
-  int x, p, p2;
+  unsigned x, p, p2;
   coalesce_list_p cl;
   conflict_graph graph;
 
@@ -1077,26 +1077,27 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
   FOR_EACH_BB (bb)
     {
       tree phi, arg;
-      int p;
+      unsigned p;
+      
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  p = var_to_partition (map, PHI_RESULT (phi));
 
 	  /* Skip virtual PHI nodes.  */
-	  if (p == NO_PARTITION)
+	  if (p == (unsigned)NO_PARTITION)
 	    continue;
 
 	  make_live_on_entry (liveinfo, bb, p);
 
 	  /* Each argument is a potential copy operation. Add any arguments 
 	     which are not coalesced to the result to the coalesce list.  */
-	  for (x = 0; x < PHI_NUM_ARGS (phi); x++)
+	  for (x = 0; x < (unsigned)PHI_NUM_ARGS (phi); x++)
 	    {
 	      arg = PHI_ARG_DEF (phi, x);
 	      if (!phi_ssa_name_p (arg))
 	        continue;
 	      p2 = var_to_partition (map, arg);
-	      if (p2 == NO_PARTITION)
+	      if (p2 == (unsigned)NO_PARTITION)
 		continue;
 	      if (p != p2)
 	        add_coalesce (cl, p, p2, 1);
@@ -1278,7 +1279,7 @@ free_temp_expr_table (temp_expr_table_p t)
   tree *ret = NULL;
 
 #ifdef ENABLE_CHECKING
-  int x;
+  unsigned x;
   for (x = 0; x <= num_var_partitions (t->map); x++)
     gcc_assert (!t->partition_dep_list[x]);
 #endif
@@ -1695,7 +1696,7 @@ static tree *
 find_replaceable_exprs (var_map map)
 {
   basic_block bb;
-  int i;
+  unsigned i;
   temp_expr_table_p table;
   tree *ret;
 

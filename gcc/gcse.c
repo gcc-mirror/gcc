@@ -2271,7 +2271,7 @@ free_insn_expr_list_list (rtx *listp)
 static void
 clear_modify_mem_tables (void)
 {
-  int i;
+  unsigned i;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)

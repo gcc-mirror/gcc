@@ -3133,7 +3133,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       regset_head merge_set_head, tmp_head, test_live_head, test_set_head;
       regset merge_set, tmp, test_live, test_set;
       struct propagate_block_info *pbi;
-      int i, fail = 0;
+      unsigned i, fail = 0;
       bitmap_iterator bi;
 
       /* Check for no calls or trapping operations.  */

@@ -1018,7 +1018,7 @@ scan_function (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      size_t i;
+      unsigned i;
 
       fputs ("\nScan results:\n", dump_file);
       EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)
@@ -1967,7 +1967,7 @@ static void
 scalarize_parms (void)
 {
   tree list = NULL;
-  size_t i;
+  unsigned i;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (needs_copy_in, 0, i, bi)

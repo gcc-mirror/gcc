@@ -152,7 +152,7 @@ static void
 add_exit_phis_var (tree var, bitmap livein, bitmap exits)
 {
   bitmap def;
-  int index;
+  unsigned index;
   basic_block def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 

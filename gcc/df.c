@@ -2238,7 +2238,7 @@ static int
 df_refs_update (struct df *df, bitmap blocks)
 {
   basic_block bb;
-  int count = 0, bbno;
+  unsigned count = 0, bbno;
 
   df->n_regs = max_reg_num ();
   if (df->n_regs >= df->reg_size)

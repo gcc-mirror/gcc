@@ -311,7 +311,7 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct ref *use)
 static void
 build_inter_loop_deps (ddg_ptr g, struct df *df)
 {
-  int rd_num, u_num;
+  unsigned rd_num, u_num;
   struct bb_info *bb_info;
   bitmap_iterator bi;
 
