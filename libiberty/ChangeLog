@@ -1,3 +1,11 @@
+2003-06-03  Nick Clifton  <nickc@redhat.com>
+
+	* asprintf.c: Change comment to note that -1 is returned upon
+	error.
+	* vasprintf.c: Likewise.
+	(vasprintf): Return -1 upon error.
+	* functions.texi: Document changes to asprintf and vasprintf.
+
 2003-05-19  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* config.table: Accept i[345867]86 variant.

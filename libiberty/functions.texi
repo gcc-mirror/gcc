@@ -29,7 +29,7 @@ pass a pointer to a pointer.  This function will compute the size of
 the buffer needed, allocate memory with @code{malloc}, and store a
 pointer to the allocated memory in @code{*@var{resptr}}.  The value
 returned is the same as @code{sprintf} would return.  If memory could
-not be allocated, zero is returned and @code{NULL} is stored in
+not be allocated, minus one is returned and @code{NULL} is stored in
 @code{*@var{resptr}}.
 
 @end deftypefn
@@ -922,7 +922,7 @@ you pass a pointer to a pointer.  This function will compute the size
 of the buffer needed, allocate memory with @code{malloc}, and store a
 pointer to the allocated memory in @code{*@var{resptr}}.  The value
 returned is the same as @code{vsprintf} would return.  If memory could
-not be allocated, zero is returned and @code{NULL} is stored in
+not be allocated, minus one is returned and @code{NULL} is stored in
 @code{*@var{resptr}}.
 
 @end deftypefn
