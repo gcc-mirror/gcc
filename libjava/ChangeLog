@@ -1,3 +1,10 @@
+2004-09-12  Michael Koch  <konqueror@gmx.de>
+
+	* libltdl/configure.ac: Fixed AM_INIT_AUTOMAKE usage and replaces
+	AM_CONFIG_HEADER by AC_CONFIG_FILES.
+	* libltdl/Makefile.in, libltdl/aclocal.m4, libltdl/configure:
+	Regenerate.
+
 2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
 
 	PR libgcj/14751
