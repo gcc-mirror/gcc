@@ -214,6 +214,9 @@ int current_function_uses_pic_offset_table;
 /* The arg pointer hard register, or the pseudo into which it was copied.  */
 rtx current_function_internal_arg_pointer;
 
+/* Language-specific reason why the current function cannot be made inline.  */
+char *current_function_cannot_inline;
+
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 
@@ -507,6 +510,7 @@ push_function_context_to (context)
   p->uses_const_pool = current_function_uses_const_pool;
   p->uses_pic_offset_table = current_function_uses_pic_offset_table;
   p->internal_arg_pointer = current_function_internal_arg_pointer;
+  p->cannot_inline = current_function_cannot_inline;
   p->max_parm_reg = max_parm_reg;
   p->parm_reg_stack_loc = parm_reg_stack_loc;
   p->outgoing_args_size = current_function_outgoing_args_size;
@@ -588,6 +592,7 @@ pop_function_context_from (context)
   current_function_uses_const_pool = p->uses_const_pool;
   current_function_uses_pic_offset_table = p->uses_pic_offset_table;
   current_function_internal_arg_pointer = p->internal_arg_pointer;
+  current_function_cannot_inline = p->cannot_inline;
   max_parm_reg = p->max_parm_reg;
   parm_reg_stack_loc = p->parm_reg_stack_loc;
   current_function_outgoing_args_size = p->outgoing_args_size;
@@ -5319,6 +5324,7 @@ init_function_start (subr, filename, line)
   current_function_epilogue_delay_list = 0;
   current_function_uses_const_pool = 0;
   current_function_uses_pic_offset_table = 0;
+  current_function_cannot_inline = 0;
 
   /* We have not yet needed to make a label to jump to for tail-recursion.  */
   tail_recursion_label = 0;

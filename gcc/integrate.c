@@ -132,6 +132,9 @@ function_cannot_inline_p (fndecl)
   if (current_function_contains_functions)
     return "function with nested functions cannot be inline";
 
+  if (current_function_cannot_inline)
+    return current_function_cannot_inline;
+
   /* If its not even close, don't even look.  */
   if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
     return "function too large to be inline";

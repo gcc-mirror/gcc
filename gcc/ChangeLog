@@ -1,3 +1,12 @@
+Mon Jun  8 01:21:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* function.c: Define current_function_cannot_inline.
+	(push_function_context_to): Save it.
+	(pop_function_context_from): Restore it.
+	* function.h (struct function): Provide it a home.
+	* output.h: Declare it.
+	* integrate.c (function_cannot_inline_p): Check it.
+
 Mon Jun  8 10:43:15 1998  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (force_operand): Detect PIC address loads before 

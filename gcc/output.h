@@ -437,6 +437,9 @@ extern int current_function_uses_pic_offset_table;
 /* This is nonzero if the current function uses the constant pool.  */
 extern int current_function_uses_const_pool;
 
+/* Language-specific reason why the current function cannot be made inline.  */
+extern char *current_function_cannot_inline;
+
 /* The line number of the beginning of the current function.
    sdbout.c needs this so that it can output relative linenumbers.  */
 

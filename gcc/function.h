@@ -102,6 +102,7 @@ struct function
   rtx tail_recursion_label;
   rtx tail_recursion_reentry;
   rtx internal_arg_pointer;
+  char *cannot_inline;
   rtx arg_pointer_save_area;
   tree rtl_expr_chain;
   rtx last_parm_insn;
