@@ -8850,10 +8850,13 @@ load_mems (loop)
 	  /* If this is a jump outside of the loop but not right
 	     after the end of the loop, we would have to emit new fixup
 	     sequences for each such label.  */
-	  if (JUMP_LABEL (p) != end_label
-	      && (INSN_UID (JUMP_LABEL (p)) >= max_uid_for_loop
-		  || INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop->start)
-		  || INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop->end)))
+	  if (/* If we can't tell where control might go when this
+		 JUMP_INSN is executed, we must be conservative.  */
+	      !JUMP_LABEL (p)
+	      || (JUMP_LABEL (p) != end_label
+		  && (INSN_UID (JUMP_LABEL (p)) >= max_uid_for_loop
+		      || INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop->start)
+		      || INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop->end))))
 	    return;
 
 	  if (!any_condjump_p (p))
