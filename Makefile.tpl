@@ -1410,7 +1410,7 @@ multilib.out: maybe-all-gcc
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen
-$(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
+$(srcdir)/Makefile.in: @MAINT@ $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
 	cd $(srcdir) && $(AUTOGEN) Makefile.def
 
 # Rebuilding Makefile.
@@ -1422,7 +1422,7 @@ config.status: configure $(gcc_version_trigger)
 
 # Rebuilding configure.
 AUTOCONF = autoconf
-$(srcdir)/configure: $(srcdir)/configure.in $(srcdir)/config/acx.m4
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.in $(srcdir)/config/acx.m4
 	cd $(srcdir) && $(AUTOCONF)
 #
 

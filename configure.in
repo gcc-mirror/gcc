@@ -2127,4 +2127,23 @@ AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
 RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET}${extra_ranlibflags_for_target}
 NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
 
+AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
+AC_ARG_ENABLE(maintainer-mode,
+[  --enable-maintainer-mode enable make rules and dependencies not useful
+                          (and sometimes confusing) to the casual installer],
+      USE_MAINTAINER_MODE=$enableval,
+      USE_MAINTAINER_MODE=no)
+AC_MSG_RESULT($USE_MAINTAINER_MODE)
+AC_SUBST(MAINTAINER_MODE_TRUE)
+AC_SUBST(MAINTAINER_MODE_FALSE)
+if test "$USE_MAINTAINER_MODE" = yes; then
+  MAINTAINER_MODE_TRUE=
+  MAINTAINER_MODE_FALSE='#'
+else
+  MAINTAINER_MODE_TRUE='#'
+  MAINTAINER_MODE_FALSE=
+fi	
+MAINT=$MAINTAINER_MODE_TRUE
+AC_SUBST(MAINT)dnl
+
 AC_OUTPUT(Makefile)

@@ -1,3 +1,11 @@
+2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Introduce --enable-maintainer-mode.
+	* configure: Rebuilt.
+	* Makefile.tpl (Makefile.in, configure): Enable dependencies only
+	for maintainer mode.
+	* Makefile.in: Rebuilt.
+
 2003-02-18  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.tpl (check-c++): Allow parallelism.
