@@ -1,5 +1,5 @@
 /* Language lexer for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -38,7 +38,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "chartables.h"
 
-/* Function declaration  */
+/* Function declarations.  */
 static char *java_sprint_unicode PARAMS ((struct java_line *, int));
 static void java_unicode_2_utf8 PARAMS ((unicode_t));
 static void java_lex_error PARAMS ((const char *, int));
@@ -191,7 +191,7 @@ java_allocate_new_line ()
 	  free (ctxp->p_line);
 	}
       ctxp->p_line = ctxp->c_line;
-      ctxp->c_line = NULL;		/* Reallocated */
+      ctxp->c_line = NULL;		/* Reallocated.  */
     }
 
   if (!ctxp->c_line)
@@ -606,7 +606,7 @@ java_read_unicode_collapsing_terminators (lex, unicode_escape_p)
 static int
 java_get_unicode ()
 {
-  /* It's time to read a line when... */
+  /* It's time to read a line when...  */
   if (!ctxp->c_line || ctxp->c_line->current == ctxp->c_line->size)
     {
       int c;
@@ -649,7 +649,7 @@ java_get_unicode ()
 }
 
 /* Parse the end of a C style comment.
- * C is the first character following the '/' and '*'. */
+ * C is the first character following the '/' and '*'.  */
 static void
 java_parse_end_comment (c)
      int c;
@@ -669,7 +669,7 @@ java_parse_end_comment (c)
 	      return;
 	    case '/':
 	      return;
-	    case '*':	/* reparse only '*' */
+	    case '*':	/* Reparse only '*'.  */
 	      java_unget_unicode ();
 	    }
 	}
@@ -705,9 +705,9 @@ java_parse_doc_section (c)
     java_lex_error ("Comment not terminated at end of input", 0);
 
   if (seen_star && (c == '/'))
-    return 1;			/* Goto step1 in caller */
+    return 1;			/* Goto step1 in caller.  */
 
-  /* We're parsing @deprecated */
+  /* We're parsing `@deprecated'.  */
   if (valid_tag && (c == '@'))
     {
       char tag [11];
@@ -910,7 +910,7 @@ java_lex (java_lval)
   /* Translation of the Unicode escape in the raw stream of Unicode
      characters. Takes care of line terminator.  */
  step1:
-  /* Skip white spaces: SP, TAB and FF or ULT */ 
+  /* Skip white spaces: SP, TAB and FF or ULT.  */ 
   for (c = java_get_unicode ();
        c == '\n' || JAVA_WHITE_SPACE_P (c); c = java_get_unicode ())
     if (c == '\n')
@@ -921,15 +921,16 @@ java_lex (java_lval)
 
   ctxp->elc.col = (ctxp->elc.col < 0 ? 0 : ctxp->elc.col);
 
-  if (c == 0x1a)		/* CTRL-Z */
+  if (c == 0x1a)		/* CTRL-Z.  */
     {
       if ((c = java_get_unicode ()) == UEOF)
-	return 0;		/* Ok here */
+	return 0;		/* Ok here.  */
       else
-	java_unget_unicode ();	/* Caught later, at the end of the function */
+	java_unget_unicode ();	/* Caught later, at the end of the
+                                   function.  */
     }
-  /* Handle EOF here */
-  if (c == UEOF)	/* Should probably do something here... */
+  /* Handle EOF here.  */
+  if (c == UEOF)	/* Should probably do something here...  */
     return 0;
 
   /* Take care of eventual comments.  */
@@ -959,7 +960,7 @@ java_lex (java_lval)
 	  if ((c = java_get_unicode ()) == '*')
 	    {
 	      if ((c = java_get_unicode ()) == '/')
-		goto step1;	/* Empy documentation comment  */
+		goto step1;	/* Empty documentation comment.  */
 	      else if (java_parse_doc_section (c))
 		goto step1;
 	    }
@@ -980,24 +981,24 @@ java_lex (java_lval)
   if (ctxp->elc.col < 0)
     abort ();
 
-  /* Numeric literals */
+  /* Numeric literals.  */
   if (JAVA_ASCII_DIGIT (c) || (c == '.'))
     {
-      /* This section of code is borrowed from gcc/c-lex.c  */
+      /* This section of code is borrowed from gcc/c-lex.c.  */
 #define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2 + 2)
       int parts[TOTAL_PARTS];
       HOST_WIDE_INT high, low;
-      /* End borrowed section  */
+      /* End borrowed section.  */
       char literal_token [256];
       int  literal_index = 0, radix = 10, long_suffix = 0, overflow = 0, bytes;
-      int  found_hex_digits = 0;
+      int  found_hex_digits = 0, found_non_octal_digits = 0;
       int  i;
 #ifndef JC1_LITE
       int  number_beginning = ctxp->c_line->current;
       tree value;
 #endif
       
-      /* We might have a . separator instead of a FP like .[0-9]* */
+      /* We might have a . separator instead of a FP like .[0-9]*.  */
       if (c == '.')
 	{
 	  unicode_t peep = java_sneak_unicode ();
@@ -1024,13 +1025,13 @@ java_lex (java_lval)
 	    radix = 8;
 	  else if (c == '.')
 	    {
-	      /* Push the '.' back and prepare for a FP parsing... */
+	      /* Push the '.' back and prepare for a FP parsing...  */
 	      java_unget_unicode ();
 	      c = '0';
 	    }
 	  else
 	    {
-	      /* We have a zero literal: 0, 0{f,F}, 0{d,D} */
+	      /* We have a zero literal: 0, 0{l,L}, 0{f,F}, 0{d,D}.  */
 	      JAVA_LEX_LIT ("0", 10);
               switch (c)
 		{		
@@ -1052,21 +1053,23 @@ java_lex (java_lval)
 	}
       /* Parse the first part of the literal, until we find something
 	 which is not a number.  */
-      while ((radix == 10 && JAVA_ASCII_DIGIT (c)) ||
-	     (radix == 16 && JAVA_ASCII_HEXDIGIT (c)) ||
-	     (radix == 8  && JAVA_ASCII_OCTDIGIT (c)))
+      while ((radix == 16 && JAVA_ASCII_HEXDIGIT (c)) ||
+	     JAVA_ASCII_DIGIT (c))
 	{
 	  /* We store in a string (in case it turns out to be a FP) and in
 	     PARTS if we have to process a integer literal.  */
 	  int numeric = hex_value (c);
 	  int count;
 
-	  /* Remember when we find a valid hexadecimal digit */
+	  /* Remember when we find a valid hexadecimal digit.  */
 	  if (radix == 16)
 	    found_hex_digits = 1;
+          /* Remember when we find an invalid octal digit.  */
+          else if (radix == 8 && !JAVA_ASCII_OCTDIGIT (c))
+            found_non_octal_digits = 1;
 
 	  literal_token [literal_index++] = c;
-	  /* This section of code if borrowed from gcc/c-lex.c  */
+	  /* This section of code if borrowed from gcc/c-lex.c.  */
 	  for (count = 0; count < TOTAL_PARTS; count++)
 	    {
 	      parts[count] *= radix;
@@ -1092,7 +1095,7 @@ java_lex (java_lval)
 	  int seen_digit = (literal_index ? 1 : 0);
 	  int seen_exponent = 0;
 	  int fflag = 0;	/* 1 for {f,F}, 0 for {d,D}. FP literal are
-				   double unless specified. */
+				   double unless specified.  */
 
 	  /* It is ok if the radix is 8 because this just means we've
 	     seen a leading `0'.  However, radix==16 is invalid.  */
@@ -1118,9 +1121,10 @@ java_lex (java_lval)
 		{
 		  if (stage < 2)
 		    {
-		      /* {E,e} must have seen at list a digit */
+		      /* {E,e} must have seen at least a digit.  */
 		      if (!seen_digit)
-			java_lex_error ("Invalid FP literal", 0);
+			java_lex_error
+                          ("Invalid FP literal, mantissa must have digit", 0);
 		      seen_digit = 0;
 		      seen_exponent = 1;
 		      stage = 2;
@@ -1133,7 +1137,7 @@ java_lex (java_lval)
 	      if ( c == 'f' || c == 'F' || c == 'd' || c == 'D')
 		{
 		  fflag = ((c == 'd') || (c == 'D')) ? 0 : 1;
-		  stage = 4;	/* So we fall through */
+		  stage = 4;	/* So we fall through.  */
 		}
 
 	      if ((c=='-' || c =='+') && stage == 2)
@@ -1158,12 +1162,13 @@ java_lex (java_lval)
 #ifndef JC1_LITE
 		  struct jpa_args a;
 #endif
-		  if (stage != 4) /* Don't push back fF/dD */
+		  if (stage != 4) /* Don't push back fF/dD.  */
 		    java_unget_unicode ();
 		  
 		  /* An exponent (if any) must have seen a digit.  */
 		  if (seen_exponent && !seen_digit)
-		    java_lex_error ("Invalid FP literal", 0);
+		    java_lex_error
+                      ("Invalid FP literal, exponent must have digit", 0);
 
 		  literal_token [literal_index] = '\0';
 		  JAVA_LEX_LIT (literal_token, radix);
@@ -1182,29 +1187,24 @@ java_lex (java_lval)
 #endif
 		}
 	    }
-	} /* JAVA_ASCCI_FPCHAR (c) */
+	} /* JAVA_ASCII_FPCHAR (c) */
 
+      /* Here we get back to converting the integral literal.  */
       if (radix == 16 && ! found_hex_digits)
 	java_lex_error
 	  ("0x must be followed by at least one hexadecimal digit", 0);
-
-      /* Here we get back to converting the integral literal.  */
-      if (c == 'L' || c == 'l')
+      else if (radix == 8 && found_non_octal_digits)
+	java_lex_error ("Octal literal contains digit out of range", 0);
+      else if (c == 'L' || c == 'l')
 	long_suffix = 1;
-      else if (radix == 16 && JAVA_ASCII_LETTER (c))
-	java_lex_error ("Digit out of range in hexadecimal literal", 0);
-      else if (radix == 8  && JAVA_ASCII_DIGIT (c))
-	java_lex_error ("Digit out of range in octal literal", 0);
-      else if (radix == 16 && !literal_index)
-	java_lex_error ("No digit specified for hexadecimal literal", 0);
       else
 	java_unget_unicode ();
 
 #ifdef JAVA_LEX_DEBUG
-      literal_token [literal_index] = '\0'; /* So JAVA_LEX_LIT is safe. */
+      literal_token [literal_index] = '\0'; /* So JAVA_LEX_LIT is safe.  */
       JAVA_LEX_LIT (literal_token, radix);
 #endif
-      /* This section of code is borrowed from gcc/c-lex.c  */
+      /* This section of code is borrowed from gcc/c-lex.c.  */
       if (!overflow)
 	{
 	  bytes = GET_TYPE_PRECISION (long_type_node);
@@ -1225,13 +1225,13 @@ java_lex (java_lval)
 	}
       /* End borrowed section.  */
 
-      /* Range checking */
+      /* Range checking.  */
       if (long_suffix)
 	{
 	  /* 9223372036854775808L is valid if operand of a '-'. Otherwise
 	     9223372036854775807L is the biggest `long' literal that can be
-	     expressed using a 10 radix. For other radixes, everything that
-	     fits withing 64 bits is OK. */
+	     expressed using a 10 radix. For other radices, everything that
+	     fits withing 64 bits is OK.  */
 	  int hb = (high >> 31);
 	  if (overflow || (hb && low && radix == 10)
 	      || (hb && high & 0x7fffffff && radix == 10))
@@ -1241,9 +1241,9 @@ java_lex (java_lval)
 	{
 	  /* 2147483648 is valid if operand of a '-'. Otherwise,
 	     2147483647 is the biggest `int' literal that can be
-	     expressed using a 10 radix. For other radixes, everything
+	     expressed using a 10 radix. For other radices, everything
 	     that fits within 32 bits is OK.  As all literals are
-	     signed, we sign extend here. */
+	     signed, we sign extend here.  */
 	  int hb = (low >> 31) & 0x1;
 	  if (overflow || high || (hb && low & 0x7fffffff && radix == 10))
 	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `int' literal");
@@ -1260,7 +1260,7 @@ java_lex (java_lval)
       return INT_LIT_TK;
     }
 
-  /* Character literals */
+  /* Character literals.  */
   if (c == '\'')
     {
       int char_lit;
@@ -1281,14 +1281,14 @@ java_lex (java_lval)
 	java_lex_error ("Syntax error in character literal", 0);
 
       if (char_lit == JAVA_CHAR_ERROR)
-        char_lit = 0;		/* We silently convert it to zero */
+        char_lit = 0;		/* We silently convert it to zero.  */
 
       JAVA_LEX_CHAR_LIT (char_lit);
       SET_LVAL_NODE_TYPE (build_int_2 (char_lit, 0), char_type_node);
       return CHAR_LIT_TK;
     }
 
-  /* String literals */
+  /* String literals.  */
   if (c == '"')
     {
       int no_error;
@@ -1306,9 +1306,9 @@ java_lex (java_lval)
 	    }
 	  java_unicode_2_utf8 (c);
 	}
-      if (c == '\n' || c == UEOF) /* ULT */
+      if (c == '\n' || c == UEOF) /* ULT.  */
 	{
-	  lineno--;		/* Refer to the line the terminator was seen */
+	  lineno--;	/* Refer to the line where the terminator was seen.  */
 	  java_lex_error ("String not terminated at end of line", 0);
 	  lineno++;
 	}
@@ -1317,7 +1317,8 @@ java_lex (java_lval)
       string = obstack_finish (&temporary_obstack);
 #ifndef JC1_LITE
       if (!no_error || (c != '"'))
-	java_lval->node = error_mark_node; /* Requires futher testing FIXME */
+	java_lval->node = error_mark_node; /* FIXME: Requires futher
+                                              testing.  */
       else
 	java_lval->node = build_string (strlen (string), string);
 #endif
@@ -1325,7 +1326,7 @@ java_lex (java_lval)
       return STRING_LIT_TK;
     }
 
-  /* Separator */
+  /* Separator.  */
   switch (c)
     {
     case '(':
@@ -1364,7 +1365,7 @@ java_lex (java_lval)
       /*      return DOT_TK; */
     }
 
-  /* Operators */
+  /* Operators.  */
   switch (c)
     {
     case '=':
@@ -1544,7 +1545,7 @@ java_lex (java_lval)
       BUILD_OPERATOR (NOT_TK);
     }
   
-  /* Keyword, boolean literal or null literal */
+  /* Keyword, boolean literal or null literal.  */
   for (first_unicode = c, all_ascii = 1, ascii_index = 0; 
        JAVA_PART_CHAR_P (c); c = java_get_unicode ())
     {
@@ -1600,7 +1601,7 @@ java_lex (java_lval)
 	      SET_LVAL_NODE (char_type_node);
 	      return INTEGRAL_TK;
 
-	      /* Keyword based literals */
+	      /* Keyword based literals.  */
 	    case TRUE_TK:
 	    case FALSE_TK:
 	      SET_LVAL_NODE ((kw->token == TRUE_TK ? 
@@ -1611,7 +1612,7 @@ java_lex (java_lval)
 	      return NULL_TK;
 
 	      /* Some keyword we want to retain information on the location
-		 they where found */
+		 they where found.  */
 	    case CASE_TK:
 	    case DEFAULT_TK:
 	    case SUPER_TK:
@@ -1631,7 +1632,7 @@ java_lex (java_lval)
 	}
     }
   
-  /* We may have an ID here */
+  /* We may have an ID here.  */
   if (JAVA_START_CHAR_P (first_unicode))
     {
       JAVA_LEX_ID (string);
@@ -1639,7 +1640,7 @@ java_lex (java_lval)
       return ID_TK;
     }
 
-  /* Everything else is an invalid character in the input */
+  /* Everything else is an invalid character in the input.  */
   {
     char lex_error_buffer [128];
     sprintf (lex_error_buffer, "Invalid character `%s' in input", 
@@ -1693,7 +1694,7 @@ java_unicode_2_utf8 (unicode)
       obstack_1grow (&temporary_obstack,
 		     (unsigned char)(0x80 | (unicode & 0x3f)));
     }
-  else				/* Range 0x800-0xffff */
+  else				/* Range 0x800-0xffff.  */
     {
       obstack_1grow (&temporary_obstack,
 		     (unsigned char)(0xe0 | (unicode & 0xf000) >> 12));
@@ -1710,7 +1711,7 @@ build_wfl_node (node)
      tree node;
 {
   node = build_expr_wfl (node, ctxp->filename, ctxp->elc.line, ctxp->elc.col);
-  /* Prevent java_complete_lhs from short-circuiting node (if constant). */
+  /* Prevent java_complete_lhs from short-circuiting node (if constant).  */
   TREE_TYPE (node) = NULL_TREE;
   return node;
 }
@@ -1725,7 +1726,7 @@ java_lex_error (msg, forward)
   ctxp->elc.line = ctxp->c_line->lineno;
   ctxp->elc.col = ctxp->c_line->char_col-1+forward;
 
-  /* Might be caught in the middle of some error report */
+  /* Might be caught in the middle of some error report.  */
   ctxp->java_error_flag = 0;
   java_error (NULL);
   java_error (msg);
@@ -1762,11 +1763,11 @@ java_get_line_col (filename, line, col)
 #ifdef JC1_LITE
   return 0;
 #else
-  /* Dumb implementation. Doesn't try to cache or optimize things. */
-  /* First line of the file is line 1, first column is 1 */
+  /* Dumb implementation. Doesn't try to cache or optimize things.  */
+  /* First line of the file is line 1, first column is 1.  */
 
-  /* COL == -1 means, at the CR/LF in LINE */
-  /* COL == -2 means, at the first non space char in LINE */
+  /* COL == -1 means, at the CR/LF in LINE.  */
+  /* COL == -2 means, at the first non space char in LINE.  */
 
   FILE *fp;
   int c, ccol, cline = 1;
@@ -1790,7 +1791,7 @@ java_get_line_col (filename, line, col)
 	cline++;
     }
 
-  /* Gather the chars of the current line in a buffer */
+  /* Gather the chars of the current line in a buffer.  */
   for (;;)
     {
       c = getc (fp);
@@ -1815,11 +1816,11 @@ java_get_line_col (filename, line, col)
   else
     first_non_space = 0;
 
-  /* Place the '^' a the right position */
+  /* Place the '^' a the right position.  */
   base = obstack_base (&temporary_obstack);
   for (ccol = 1; ccol <= col+3; ccol++)
     {
-      /* Compute \t when reaching first_non_space */
+      /* Compute \t when reaching first_non_space.  */
       char c = (first_non_space ?
 		(base [ccol-1] == '\t' ? '\t' : ' ') : ' ');
       obstack_1grow (&temporary_obstack, c);
@@ -1984,8 +1985,7 @@ cxx_keyword_p (name, length)
       if (r == 0)
 	{
 	  int i;
-	  /* We've found a match if all the remaining characters are
-	     `$'.  */
+	  /* We've found a match if all the remaining characters are `$'.  */
 	  for (i = min_length; i < length && name[i] == '$'; ++i)
 	    ;
 	  if (i == length)
