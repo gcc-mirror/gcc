@@ -1,3 +1,24 @@
+2000-09-14  Brendan Kehoe  <brendan@zen.org>
+
+        * bits/string.tcc (_Rep::_S_max_size): Use typename for its size_type
+        return type.
+
+        * src/Makefile.an (headers): Also install backward/fstream.h.
+        * src/Makefile.in: Regenerate.	
+
+        * bits/char_traits.h (char_traits<_CharT>::get_state,
+        char_traits<char>::get_state, char_traits<wchar_t>::get_state): Pass
+        argument in by reference, not by value. Uglify to _S_get_state.
+	(char_traits<*>::__eos): Uglify to _S_eos.
+	* bits/std_ostream.h (ends(basic_ostream<_CharT, _Traits>& __os)):
+	Change __eos to _S_eos.
+	
+2000-09-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/static_members.cc: New file.
+	* testsuite/22_locale/ctor_copy_dtor.cc: New file.
+	* src/locale.cc: Minor formatting tweaks.
+
 2000-09-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/global_templates.cc (test01): Add negative

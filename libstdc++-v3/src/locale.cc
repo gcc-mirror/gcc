@@ -43,18 +43,18 @@
 namespace std {
 
   // Definitions for static const data members of locale.
-  const locale::category locale::none;
-  const locale::category locale::collate;
-  const locale::category locale::ctype;
-  const locale::category locale::monetary;
-  const locale::category locale::numeric;
-  const locale::category locale::time;
-  const locale::category locale::messages;
-  const locale::category locale::all;
+  const locale::category 	locale::none;
+  const locale::category 	locale::collate;
+  const locale::category 	locale::ctype;
+  const locale::category 	locale::monetary;
+  const locale::category 	locale::numeric;
+  const locale::category 	locale::time;
+  const locale::category 	locale::messages;
+  const locale::category 	locale::all;
 
-  locale::_Impl* locale::_S_global;  // init'd to 0 before static ctors run
-  locale::_Impl* locale::_S_classic; // init'd to 0 before static ctors run
-  const int locale::_S_num_categories;
+  locale::_Impl* 		locale::_S_global; 
+  locale::_Impl* 		locale::_S_classic;
+  const int 			locale::_S_num_categories;
 
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
@@ -563,18 +563,14 @@ namespace std {
 
   locale::_Impl::
   _Impl(size_t __numfacets, size_t __refs)
-  : _M_num_references(__refs - 1)
-  , _M_facets(0)
-  , _M_category_names(0)
-  , _M_has_name(false)
-  , _M_cached_name_ok(false)
-  , _M_cached_name(string ("*"))
+  : _M_num_references(__refs - 1), _M_facets(0), _M_category_names(0), 
+    _M_has_name(false), _M_cached_name_ok(false), _M_cached_name(string ("*"))
   { 
     typedef vector<facet*, allocator<facet*> > __vec_facet;
     typedef vector<string, allocator<string> > __vec_string;
 
     auto_ptr<__vec_facet> __pvf(new __vec_facet(__numfacets, (facet*)0));
-    auto_ptr<__vec_string> __pcn(new __vec_string(_S_num_categories,
+    auto_ptr<__vec_string> __pcn(new __vec_string(_S_num_categories, 
 						  string("*")));
     _M_facets = __pvf.release();
     _M_category_names = __pcn.release();
@@ -582,12 +578,10 @@ namespace std {
   
   locale::_Impl::
   _Impl(const _Impl& __other, size_t __refs)
-  : _M_num_references(__refs)
-  , _M_facets(0)
-  , _M_category_names(0)
-  , _M_has_name(__other._M_has_name)
-  , _M_cached_name_ok(__other._M_cached_name_ok)
-  , _M_cached_name(__other._M_cached_name)
+  : _M_num_references(__refs), _M_facets(0), _M_category_names(0), 
+    _M_has_name(__other._M_has_name), 
+    _M_cached_name_ok(__other._M_cached_name_ok), 
+    _M_cached_name(__other._M_cached_name)
   {
     typedef vector<facet*, allocator<facet*> > __vec_facet;
     typedef vector<string, allocator<string> > __vec_string;
@@ -600,9 +594,9 @@ namespace std {
     for (; __it != __pvf->end(); ++__it)
       (*__it)->_M_add_reference();
 
-    // these must be last since in the presence of an exception, the 
+    // These must be last since in the presence of an exception, the 
     // destructor for 'this' won't run until AFTER execution has passed  
-    // the closing brace of the constructor
+    // the closing brace of the constructor.
     _M_facets = __pvf.release();
     _M_category_names = __pcn.release();
   }
@@ -659,20 +653,18 @@ namespace std {
     if (__index >= _M_facets->size())
       _M_facets->resize(__index + 1, 0);  // might throw
     facet*& __fpr = (*_M_facets)[__index];
-    // order matters, here:
+    // Order matters, here:
     __fp->_M_add_reference();
     if (__fpr) 
       __fpr->_M_remove_reference();
     __fpr = __fp;
   }
  
-  locale::
-  locale(_Impl* __ip) throw()
+  locale::locale(_Impl* __ip) throw()
   : _M_impl(__ip)
   { __ip->_M_add_reference(); }
 
-  locale::
-  locale(const locale& __other, const locale& __one, category __cats)
+  locale::locale(const locale& __other, const locale& __one, category __cats)
   {
     __cats = _S_normalize_category(__cats);    // might throw
     _M_impl = new _Impl(*__other._M_impl, 1);  // might throw
@@ -691,8 +683,7 @@ namespace std {
   }
 
   const locale&
-  locale::
-  operator=(const locale& __other) throw()
+  locale::operator=(const locale& __other) throw()
   {
     __other._M_impl->_M_add_reference();
     _M_impl->_M_remove_reference();
@@ -701,8 +692,7 @@ namespace std {
   }
 
   locale
-  locale::
-  global(const locale& __other)
+  locale::global(const locale& __other)
   {
     // XXX MT
     _S_initialize();
@@ -716,26 +706,24 @@ namespace std {
   }
 
   string
-  locale::
-  name() const
+  locale::name() const
   {
     // XXX not done
     return "*";
   }
 
   locale const&
-  locale::
-  classic()
+  locale::classic()
   {
     static locale* __classic_locale;
     // XXX MT
     if (!_S_classic)
       {
 	try {
-	  _S_classic = _S_global = new _Impl(26u, 2u);
+	  // 26 Standard facets, 2 references.
 	  // One reference for _M_classic, one for _M_global
-	  // (constructor for (*the_classic_locale) adds a third)
-	    
+	  _S_classic = _S_global = new _Impl(26, 2);
+
 	  // collate category
 	  _S_classic->_M_facet_init(new std::collate<char>);
 	  
@@ -777,7 +765,7 @@ namespace std {
 	  _S_classic->_M_facet_init(new std::messages<wchar_t>);
 #endif	  
 
-	  // finesse static init order hassles
+	  // Finesse static init order hassles
 	  __classic_locale = new locale(_S_classic);
 	}
 	catch(...) {
@@ -796,8 +784,7 @@ namespace std {
   }
 
   int
-  locale::
-  _S_normalize_category(int __cats) 
+  locale::_S_normalize_category(int __cats) 
   {
     if ((__cats & all) && !(__cats & ~all))
       return __cats;
@@ -816,7 +803,7 @@ namespace std {
       case LC_ALL:      return all;
       }
     
-    // XXX should throw derived class here
+    // XXX Should throw derived class here
     throw runtime_error("bad locale category");
     /* NOTREACHED */
   }
@@ -863,39 +850,34 @@ namespace std {
 
   const size_t ctype<char>::table_size;
 
-  ctype<char>::
-  ~ctype()
+  ctype<char>::~ctype()
   { if (_M_del) delete[] this->table(); }
 
   char
-  ctype<char>::
-  do_widen(char __c) const
+  ctype<char>::do_widen(char __c) const
   { return __c; }
   
   const char* 
-  ctype<char>::
-  do_widen(const char* __low, const char* __high, char* __dest) const
+  ctype<char>::do_widen(const char* __low, const char* __high, 
+			char* __dest) const
   {
     memcpy(__dest, __low, __high - __low);
     return __high;
   }
   
   char
-  ctype<char>::
-  do_narrow(char __c, char /*__dfault*/) const
+  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
   { return __c; }
   
   const char* 
-  ctype<char>::
-  do_narrow(const char* __low, const char* __high, char /*__dfault*/,
-	    char* __dest) const
+  ctype<char>::do_narrow(const char* __low, const char* __high, 
+			 char /*__dfault*/, char* __dest) const
   {
     memcpy(__dest, __low, __high - __low);
     return __high;
   }
 
-  ctype_byname<char>::
-  ctype_byname(const char* /*__s*/, size_t __refs)
+  ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<char>(new mask[table_size], true, __refs)
   { }
 
@@ -907,9 +889,8 @@ namespace std {
   collate<char>::~collate() { }
   
   int 
-  collate<char>::
-  do_compare(const char* __lo1, const char* __hi1, 
-	     const char* __lo2, const char* __hi2) const
+  collate<char>::do_compare(const char* __lo1, const char* __hi1, 
+			    const char* __lo2, const char* __hi2) const
   {
     for (; __lo1 < __hi1 && __lo2 < __hi2; ++__lo1, ++__lo2) 
       if (*__lo1 != *__lo2) 
@@ -938,20 +919,18 @@ namespace std {
     return __val;
   }
   
-  collate_byname<char>::
-  collate_byname(const char* /*__s*/, size_t __refs)
+  collate_byname<char>::collate_byname(const char* /*__s*/, size_t __refs)
   : collate<char>(__refs) { }
 
-  numpunct_byname<char>::
-  numpunct_byname(const char* /*__s*/, size_t __refs)
+  numpunct_byname<char>::numpunct_byname(const char* /*__s*/, size_t __refs)
   : numpunct<char>(__refs) { }
 
-  moneypunct_byname<char, false>::
-  moneypunct_byname(const char* /*__s*/, size_t __refs)
+  moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
+						    size_t __refs)
   : moneypunct<char, false>(__refs) { }
   
-  moneypunct_byname<char, true>::
-  moneypunct_byname(const char* /*__s*/, size_t __refs)
+  moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
+						   size_t __refs)
   : moneypunct<char, true>(__refs) { }
   
   messages_byname<char>::

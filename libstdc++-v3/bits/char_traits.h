@@ -131,13 +131,13 @@ namespace std {
       { return __c1 == __c2; }
 
       static state_type 
-      get_state (pos_type __pos) { return __pos.state(); }
+      _S_get_state(const pos_type& __pos) { return __pos.state(); }
 
       static int_type 
       eof() { return static_cast<int_type>(-1); }
 
       static int_type 
-      __eos() { return char_type(); }
+      _S_eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)
@@ -205,13 +205,13 @@ namespace std {
       { return __c1 == __c2; }
 
       static state_type 
-      get_state(pos_type __pos) { return __pos.state(); }
+      _S_get_state(const pos_type& __pos) { return __pos.state(); }
 
       static int_type 
       eof() { return static_cast<int_type>(EOF); }
 
       static int_type 
-      __eos() { return char_type(); }
+      _S_eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)
@@ -276,13 +276,13 @@ namespace std {
       { return __c1 == __c2; }
 
       static state_type 
-      get_state(pos_type __pos) { return __pos.state(); }
+      _S_get_state(const pos_type& __pos) { return __pos.state(); }
 
       static int_type 
       eof() { return static_cast<int_type>(WEOF); }
 
       static int_type 
-      __eos() { return char_type(); }
+      _S_eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)
