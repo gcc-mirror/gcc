@@ -2478,7 +2478,7 @@ build1 (enum tree_code code, tree type, tree node)
 	      TREE_SIDE_EFFECTS (t) = 0;
 	      if (!DECL_P (node))
 		{
-		  int i = first_rtl_op (TREE_CODE (node));
+		  int i = first_rtl_op (TREE_CODE (node)) - 1;
 		  for (; i >= 0; --i)
 		    {
 		      if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, i)))
