@@ -1,3 +1,9 @@
+2004-02-06  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (build_super_template) the 'class' field of
+	'struct _objc_super' shall be named 'super_class' #ifdef OBJCPLUS.
+	(get_super_receiver): Likewise.
+
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (check_eliminable_occurrences): Optimize the reset
