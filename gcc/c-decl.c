@@ -305,9 +305,8 @@ c_print_identifier (FILE *file, tree node, int indent)
     {
       tree rid = ridpointers[C_RID_CODE (node)];
       indent_to (file, indent + 4);
-      fprintf (file, "rid ");
-      fprintf (file, HOST_PTR_PRINTF, (void *)rid);
-      fprintf (file, " \"%s\"", IDENTIFIER_POINTER (rid));
+      fprintf (file, "rid " HOST_PTR_PRINTF " \"%s\"",
+	       (void *) rid, IDENTIFIER_POINTER (rid));
     }
 }
 

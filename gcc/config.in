@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -284,6 +284,9 @@
 
 /* Define if the `_Bool' type is built-in. */
 #undef HAVE__BOOL
+
+/* The number of bytes in type void * */
+#undef SIZEOF_VOID_P
 
 /* The number of bytes in type short */
 #undef SIZEOF_SHORT

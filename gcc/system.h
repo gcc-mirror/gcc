@@ -446,10 +446,12 @@ extern void abort (void);
 #ifndef HOST_PTR_PRINTF
 # ifdef HAVE_PRINTF_PTR
 #  define HOST_PTR_PRINTF "%p"
+# elif SIZEOF_INT == SIZEOF_VOID_P
+#  define HOST_PTR_PRINTF "%x"
+# elif SIZEOF_LONG == SIZEOF_VOID_P
+#  define HOST_PTR_PRINTF "%lx"
 # else
-#  define HOST_PTR_PRINTF \
-    (sizeof (int) == sizeof (char *) ? "%x" \
-     : sizeof (long) == sizeof (char *) ? "%lx" : "%llx")
+#  define HOST_PTR_PRINTF "%llx"
 # endif
 #endif /* ! HOST_PTR_PRINTF */
 
