@@ -163,7 +163,8 @@ try_simplify_condjump (basic_block cbranch_block)
      unconditional branch.  */
   cbranch_dest_block = cbranch_jump_edge->dest;
 
-  if (!can_fallthru (jump_block, cbranch_dest_block))
+  if (cbranch_dest_block == EXIT_BLOCK_PTR
+      || !can_fallthru (jump_block, cbranch_dest_block))
     return false;
 
   /* Invert the conditional branch.  */
