@@ -1751,7 +1751,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	     If the previous insn set CC0, substitute constants on it as
 	     well.  */
-	  if (sets_cc0_p (copy) != 0)
+	  if (sets_cc0_p (PATTERN (copy)) != 0)
 	    cc0_insn = copy;
 	  else
 	    {
