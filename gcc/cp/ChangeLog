@@ -1,3 +1,8 @@
+2004-07-21  Eric Christopher  <echristo@redhat.com>
+
+	* decl.c (poplevel): Inline unused variable checking.
+	Change formatting.
+
 2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* typeck.c (build_binary_op): Do not use RDIV_EXPR for
@@ -114,7 +119,7 @@
 2004-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert patch for PR c++/16623.
-	
+
 2004-07-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* except.c: Remove two spurious carriage returns.
@@ -315,8 +320,8 @@
 	(copy_binfo): Declare.
 
 2004-07-15  Mark Mitchell  <mark@codesourcery.com>
-	
-	* name-lookup.c (set_inherited_value_binding_p): Add class_type 
+
+	* name-lookup.c (set_inherited_value_binding_p): Add class_type
 	parameter.
 	(get_class_binding): Adjust.
 	(push_class_level_binding): Don't use set_inherited_value_binding_p.
@@ -378,7 +383,7 @@
 	(dfs_push_type_decls): Remove.
 	(dfs_push_decls): Remove.
 	(push_class_decls): Remove.
-	
+
 2004-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16518
