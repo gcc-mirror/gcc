@@ -1154,6 +1154,8 @@ java_lex (java_lval)
 		{
 		  if (JAVA_ASCII_DIGIT (c))
 		    seen_digit = 1;
+                  if (stage == 2)
+                    stage = 3;
 		  literal_token [literal_index++ ] = c;
 		  c = java_get_unicode ();
 		}
