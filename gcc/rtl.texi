@@ -1628,20 +1628,20 @@ point comparisons are distinguished by the machine modes of the operands.
 @findex eq
 @cindex equal
 @item (eq:@var{m} @var{x} @var{y})
-1 if the values represented by @var{x} and @var{y} are equal,
-otherwise 0.
+@code{STORE_FLAG_VALUE} if the values represented by @var{x} and @var{y}
+are equal, otherwise 0.
 
 @findex ne
 @cindex not equal
 @item (ne:@var{m} @var{x} @var{y})
-1 if the values represented by @var{x} and @var{y} are not equal,
-otherwise 0.
+@code{STORE_FLAG_VALUE} if the values represented by @var{x} and @var{y}
+are not equal, otherwise 0.
 
 @findex gt
 @cindex greater than
 @item (gt:@var{m} @var{x} @var{y})
-1 if the @var{x} is greater than @var{y}.  If they are fixed-point,
-the comparison is done in a signed sense.
+@code{STORE_FLAG_VALUE} if the @var{x} is greater than @var{y}.  If they
+are fixed-point, the comparison is done in a signed sense.
 
 @findex gtu
 @cindex greater than

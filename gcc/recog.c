@@ -491,8 +491,42 @@ validate_replace_rtx_1 (loc, from, to, object)
 	  /* If there is a subreg involved, crop to the portion of the
 	     constant that we are interested in.  */
 	  if (GET_CODE (XEXP (x, 0)) == SUBREG)
-	    to = operand_subword (to, SUBREG_WORD (XEXP (x, 0)),
-				  0, GET_MODE (from));
+	    {
+	      if (GET_MODE_SIZE (GET_MODE (XEXP (x, 0))) <= UNITS_PER_WORD)
+		to = operand_subword (to, SUBREG_WORD (XEXP (x, 0)),
+				      0, GET_MODE (from));
+	      else if (GET_MODE_CLASS (GET_MODE (from)) == MODE_INT
+		       && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+			   <= HOST_BITS_PER_WIDE_INT))
+		{
+		  int i = SUBREG_WORD (XEXP (x, 0)) * BITS_PER_WORD;
+		  HOST_WIDE_INT valh;
+		  unsigned HOST_WIDE_INT vall;
+
+		  if (GET_CODE (to) == CONST_INT)
+		    {
+		      vall = INTVAL (to);
+		      valh = (HOST_WIDE_INT) vall < 0 ? ~0 : 0;
+		    }
+		  else
+		    {
+		      vall = CONST_DOUBLE_LOW (to);
+		      valh = CONST_DOUBLE_HIGH (to);
+		    }
+
+		  if (WORDS_BIG_ENDIAN)
+		    i = (GET_MODE_BITSIZE (GET_MODE (from))
+			 - GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - i);
+		  if (i > 0 && i < HOST_BITS_PER_WIDE_INT)
+		    vall = vall >> i | valh << (HOST_BITS_PER_WIDE_INT - i);
+		  else if (i >= HOST_BITS_PER_WIDE_INT)
+		    vall = valh >> (i - HOST_BITS_PER_WIDE_INT);
+		  to = GEN_INT (trunc_int_for_mode (vall,
+						    GET_MODE (XEXP (x, 0))));
+		}
+	      else
+		to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	    }
 
 	  /* If the above didn't fail, perform the extension from the
 	     mode of the operand (and not the mode of FROM).  */

@@ -1,3 +1,11 @@
+Mon Jan 22 16:53:06 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* recog.c (validate_replace_rtx_1): In ZERO_EXTEND / SIGN_EXTEND
+	case, don't use operand_subword to calculate a SUBREG that is
+	wider than a word.
+
+	* rtl.texi: Comparisons yield 0 or STORE_FLAG_VALUE.
+
 2001-01-22 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.c (c4x_valid_rptb_p, c4x_label_ref_used_p): New functions.
