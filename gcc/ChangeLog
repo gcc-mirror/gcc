@@ -1,3 +1,8 @@
+2000-10-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* bb-reorder.c (reorder_basic_blocks): Allocate an aux block for
+	the exit block.
+
 2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi: Merge in contents of README.TRAD and TESTS.FLUNK.
