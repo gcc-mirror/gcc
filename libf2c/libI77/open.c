@@ -205,7 +205,6 @@ integer f_open(olist *a)
 	 case 's':
 	 case 'S':
 		b->uscrtch=1;
-#ifdef NON_ANSI_STDIO
 #ifdef HAVE_TEMPNAM		/* Allow use of TMPDIR preferentially. */
 		s = tempnam (0, buf);
 		if (strlen (s) >= sizeof (buf))
@@ -221,17 +220,6 @@ integer f_open(olist *a)
 #endif
 #endif /* ! defined (HAVE_TEMPNAM) */
 		goto replace;
-#else
-		if (!(b->ufd = tmpfile()))
-			opnerr(a->oerr,errno,"open");
-		b->ufnm = 0;
-#ifndef NON_UNIX_STDIO
-		b->uinode = b->udev = -1;
-#endif
-		b->useek = 1;
-		return 0;
-#endif
-
 	case 'n':
 	case 'N':
 #ifdef NON_POSIX_STDIO
@@ -246,9 +234,7 @@ integer f_open(olist *a)
 		/* no break */
 	case 'r':	/* Fortran 90 replace option */
 	case 'R':
-#ifdef NON_ANSI_STDIO
  replace:
-#endif
 		if (tf = fopen(buf,f__w_mode[0]))
 			fclose(tf);
 	}
