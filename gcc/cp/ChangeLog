@@ -1,3 +1,8 @@
+2004-07-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2518
+	* call.c (build_operator_new_call): Look only at global scope.
+
 2004-07-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (enforce_access): Expect TREE_BINFO.

@@ -2812,7 +2812,10 @@ build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
   if (args == error_mark_node)
     return args;
 
+  /* A global operator new must be looked up only at global scope.  */
+  push_to_top_level();
   fns = lookup_function_nonclass (fnname, args);
+  pop_from_top_level();
 
   /* Figure out what function is being called.  */
   cand = perform_overload_resolution (fns, args, &candidates, &any_viable_p);
