@@ -1,3 +1,7 @@
+Mon Feb  9 23:15:14 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* rs6000/linux.h (CPP_PREDEFINES): Add -D__ELF__.
+
 Mon Feb  9 23:08:56 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (push): Prohibit symbolic constants if flag_pic.
