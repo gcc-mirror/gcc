@@ -942,7 +942,7 @@ subreg_realpart_p (x)
   if (GET_CODE (x) != SUBREG)
     abort ();
 
-  return SUBREG_WORD (x) == 0;
+  return SUBREG_WORD (x) * UNITS_PER_WORD < GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x)));
 }
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,

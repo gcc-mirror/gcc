@@ -1,3 +1,13 @@
+Tue Dec 15 11:55:30 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* integrate.c (copy_rtx_and_substitute): If a SUBREG is
+	replaced by a CONCAT whoes components do not have the same
+	mode as the original SUBREG, use a new SUBREG to restore the
+	mode. 
+
+	* emit-rtl.c (subreg_realpart_p): Cope with subregs containing
+	multiword complex values.
+
 1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cppalloc.c: Add xstrdup here.
