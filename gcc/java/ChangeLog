@@ -1,3 +1,9 @@
+Mon Mar 20 08:58:51 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
+	properly initialize `finished_label.' Don't emit gotos for empty
+	try statements.
+
 2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (emit_handlers): Clear catch_clauses_last.

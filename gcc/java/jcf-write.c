@@ -2317,8 +2317,9 @@ generate_bytecode_insns (exp, target, state)
 	tree finally = TREE_OPERAND (exp, 1);
 	tree return_link, exception_decl;
 
-	finished_label = finally_label = start_label = NULL;
+	finally_label = start_label = NULL;
 	return_link = exception_decl = NULL_TREE;
+	finished_label = gen_jcf_label (state);
 
 	/* If the finally clause happens to be empty, set a flag so we
            remember to just skip it. */
@@ -2333,7 +2334,6 @@ generate_bytecode_insns (exp, target, state)
 	    exception_type = build_pointer_type (throwable_type_node);
 	    exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
 
-	    finished_label = gen_jcf_label (state);
 	    finally_label = gen_jcf_label (state);
 	    start_label = get_jcf_label_here (state);
 	    finally_label->pc = PENDING_CLEANUP_PC;
@@ -2352,7 +2352,8 @@ generate_bytecode_insns (exp, target, state)
 	    emit_jsr (finally_label, state);
 	  }
 
-	if (CAN_COMPLETE_NORMALLY (try_block))
+	if (CAN_COMPLETE_NORMALLY (try_block)
+	    && BLOCK_EXPR_BODY (try_block) != empty_stmt_node)
 	  emit_goto (finished_label, state);
 
 	/* Handle exceptions. */
