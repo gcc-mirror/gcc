@@ -2,9 +2,9 @@
    that can be traversed by C++ initialization and finalization
    routines.
 
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
-   Heavily modified by Michael Meissner (meissner@osf.org),
+   Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
 
 This file is part of GNU CC.
@@ -41,12 +41,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int errno;
 #endif
 
-#if defined(bsd4_4) || defined(__NetBSD__)
+#ifndef HAVE_STRERROR
+#if defined(bsd4_4) 
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
 #endif
 extern int sys_nerr;
+#else
+char *strerror();
+#endif
 
 #define COLLECT
 
