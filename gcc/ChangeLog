@@ -1,3 +1,7 @@
+Fri Feb 25 18:49:39 2000  "K. Richard Pixley" <rich@microunity.com>
+
+	* rtl.texi: Fix typo.
+
 Fri Feb 25 20:02:35 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (calc_live_regs): Multiply value assigned to *COUNT_PTR by

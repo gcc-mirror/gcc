@@ -1558,7 +1558,7 @@ There are two ways that comparison operations may be used.  The
 comparison operators may be used to compare the condition codes
 @code{(cc0)} against zero, as in @code{(eq (cc0) (const_int 0))}.  Such
 a construct actually refers to the result of the preceding instruction
-in which the condition codes were set.  The instructing setting the
+in which the condition codes were set.  The instruction setting the
 condition code must be adjacent to the instruction using the condition
 code; only @code{note} insns may separate them.
 
