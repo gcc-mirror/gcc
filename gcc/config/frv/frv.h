@@ -2335,6 +2335,16 @@ __asm__("\n"								\
    will reload one or both registers only if neither labeling works.  */
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)		\
+do {							\
+  rtx new_x = frv_legitimize_address (X, OLDX, MODE);	\
+  if (new_x)						\
+    { 							\
+      (X) = new_x; 					\
+      goto WIN; 					\
+    } 							\
+} while (0)
+
 #define FIND_BASE_TERM frv_find_base_term
 
 /* A C statement or compound statement with a conditional `goto LABEL;'

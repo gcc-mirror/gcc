@@ -68,6 +68,7 @@ extern int frv_initial_elimination_offset	(int, int);
 #ifdef RTX_CODE
 extern int frv_legitimate_address_p		(enum machine_mode, rtx,
 						 int, int, int);
+extern rtx frv_legitimize_address		(rtx, rtx, enum machine_mode);
 extern rtx frv_find_base_term			(rtx);
 
 #ifdef TREE_CODE
@@ -100,6 +101,7 @@ extern const char *frv_asm_output_opcode
 extern void frv_final_prescan_insn	(rtx, rtx *, int);
 extern void frv_print_operand		(FILE *, rtx, int);
 extern void frv_print_operand_address	(FILE *, rtx);
+extern void frv_emit_move		(enum machine_mode, rtx, rtx);
 extern int frv_emit_movsi		(rtx, rtx);
 extern const char *output_move_single	(rtx *, rtx);
 extern const char *output_move_double	(rtx *, rtx);
