@@ -2332,6 +2332,7 @@ constrain_operands (strict)
   struct funny_match funny_match[MAX_RECOG_OPERANDS];
   int funny_match_index;
 
+  which_alternative = 0;
   if (recog_data.n_operands == 0 || recog_data.n_alternatives == 0)
     return 1;
 
@@ -2341,9 +2342,7 @@ constrain_operands (strict)
       matching_operands[c] = -1;
     }
 
-  which_alternative = 0;
-
-  while (which_alternative < recog_data.n_alternatives)
+  do
     {
       register int opno;
       int lose = 0;
@@ -2646,6 +2645,7 @@ constrain_operands (strict)
 
       which_alternative++;
     }
+  while (which_alternative < recog_data.n_alternatives);
 
   which_alternative = -1;
   /* If we are about to reject this, but we are not to test strictly,
