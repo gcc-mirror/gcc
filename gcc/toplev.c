@@ -4663,7 +4663,7 @@ parse_options_and_default_flags (argc, argv)
       flag_omit_frame_pointer = 1;
 #endif
       flag_guess_branch_prob = 1;
-      /* flag_cprop_registers = 1; */
+      flag_cprop_registers = 1;
     }
 
   if (optimize >= 2)
