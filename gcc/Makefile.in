@@ -658,7 +658,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 	$(SHELL) config.run
 	rm -f config.run
 
-configure: $(srcdir)/configure.in
+$(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
 
 all.internal: start.encap rest.encap
