@@ -4466,9 +4466,12 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
   tree t;
 
   /* Verify that valist is of the proper type.  */
-
   want_va_type = va_list_type_node;
   have_va_type = TREE_TYPE (valist);
+
+  if (have_va_type == error_mark_node)
+    return GS_ERROR;
+
   if (TREE_CODE (want_va_type) == ARRAY_TYPE)
     {
       /* If va_list is an array type, the argument may have decayed
