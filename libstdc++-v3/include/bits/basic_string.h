@@ -198,7 +198,7 @@ namespace std
 	{ return reinterpret_cast<_CharT*>(this + 1); }
 
 	_CharT&
-	operator[](size_t __s) throw()
+	operator[](size_type __s) throw()
 	{ return _M_refdata() [__s]; }
 
 	_CharT*
@@ -210,7 +210,7 @@ namespace std
 
 	// Create & Destroy
 	static _Rep*
-	_S_create(size_t, const _Alloc&);
+	_S_create(size_type, size_type, const _Alloc&);
 
 	void
 	_M_dispose(const _Alloc& __a)

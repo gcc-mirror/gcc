@@ -98,7 +98,7 @@ namespace std
 	    __buf[__i++] = *__beg; 
 	    ++__beg; 
 	  }
-	_Rep* __r = _Rep::_S_create(__i, __a);
+	_Rep* __r = _Rep::_S_create(__i, size_type(0), __a);
 	traits_type::copy(__r->_M_refdata(), __buf, __i);
 	__r->_M_length = __i;
 	try 
@@ -124,8 +124,8 @@ namespace std
 		    ++__beg;
 		  }
 		// Allocate more space.
-		const size_type __len = __p - __r->_M_refdata();
-		_Rep* __another = _Rep::_S_create(__len + 1, __a);
+		const size_type __len = __r->_M_capacity;
+		_Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
 		traits_type::copy(__another->_M_refdata(), 
 				  __r->_M_refdata(), __len);
 		__r->_M_destroy(__a);
@@ -157,9 +157,8 @@ namespace std
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
 								      __end));
-	
 	// Check for out_of_range and length_error exceptions.
-	_Rep* __r = _Rep::_S_create(__dnew, __a);
+	_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
 	try 
 	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
 	catch(...) 
@@ -182,7 +181,7 @@ namespace std
 	return _S_empty_rep()._M_refdata();
 
       // Check for out_of_range and length_error exceptions.
-      _Rep* __r = _Rep::_S_create(__n, __a);
+      _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
       if (__n) 
 	traits_type::assign(__r->_M_refdata(), __n, __c); 
 
@@ -391,12 +390,6 @@ namespace std
       _M_rep()->_M_set_leaked();
     }
 
-  // _M_mutate and, below, _M_clone, include, in the same form, an exponential
-  // growth policy, necessary to meet amortized linear time requirements of
-  // the library: see http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
-  // The policy is active for allocations requiring an amount of memory above
-  // system pagesize. This is consistent with the requirements of the standard:
-  // see, f.i., http://gcc.gnu.org/ml/libstdc++/2001-07/msg00130.html
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::
@@ -412,26 +405,12 @@ namespace std
 	{
 	  // Must reallocate.
 	  const allocator_type __a = get_allocator();
-	  // See below (_S_create) for the meaning and value of these
-	  // constants.
-	  const size_type __pagesize = 4096;
-	  const size_type __malloc_header_size = 4 * sizeof (void*);
-	  // The biggest string which fits in a memory page
-	  const size_type __page_capacity = (__pagesize - __malloc_header_size
-					     - sizeof(_Rep) - sizeof(_CharT)) 
-	    				     / sizeof(_CharT);
-	  _Rep* __r;
-	  if (__new_size > capacity() && __new_size > __page_capacity)
-	    // Growing exponentially.
-	    __r = _Rep::_S_create(__new_size > 2*capacity() ?
-				  __new_size : 2*capacity(), __a);
-	  else
-	    __r = _Rep::_S_create(__new_size, __a);
+	  _Rep* __r = _Rep::_S_create(__new_size, capacity(), __a);
 
 	  if (__pos)
 	    traits_type::copy(__r->_M_refdata(), _M_data(), __pos);
 	  if (__how_much)
-	    traits_type::copy(__r->_M_refdata() + __pos + __len2, 
+	    traits_type::copy(__r->_M_refdata() + __pos + __len2,
 			      __src, __how_much);
 
 	  _M_rep()->_M_dispose(__a);
@@ -494,7 +473,8 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::_Rep*
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
-    _S_create(size_t __capacity, const _Alloc& __alloc)
+    _S_create(size_type __capacity, size_type __old_capacity,
+	      const _Alloc& __alloc)
     {
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -502,15 +482,11 @@ namespace std
       if (__capacity > _S_max_size)
 	__throw_length_error(__N("basic_string::_S_create"));
 
-      // NB: Need an array of char_type[__capacity], plus a
-      // terminating null char_type() element, plus enough for the
-      // _Rep data structure. Whew. Seemingly so needy, yet so elemental.
-      size_t __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
-
       // The standard places no restriction on allocating more memory
       // than is strictly needed within this layer at the moment or as
-      // requested by an explicit application call to reserve().  Many
-      // malloc implementations perform quite poorly when an
+      // requested by an explicit application call to reserve().
+
+      // Many malloc implementations perform quite poorly when an
       // application attempts to allocate memory in a stepwise fashion
       // growing each allocation size by only 1 char.  Additionally,
       // it makes little sense to allocate less linear memory than the
@@ -529,24 +505,46 @@ namespace std
       // low-balling it (especially when this algorithm is used with
       // malloc implementations that allocate memory blocks rounded up
       // to a size which is a power of 2).
-      const size_t __pagesize = 4096; // must be 2^i * __subpagesize
-      const size_t __subpagesize = 128; // should be >> __malloc_header_size
-      const size_t __malloc_header_size = 4 * sizeof (void*);
-      if ((__size + __malloc_header_size) > __pagesize)
+      const size_type __pagesize = 4096; // must be 2^i * __subpagesize
+      const size_type __subpagesize = 128; // should be >> __malloc_header_size
+      const size_type __malloc_header_size = 4 * sizeof (void*);
+
+      // The below implements an exponential growth policy, necessary to
+      // meet amortized linear time requirements of the library: see
+      // http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
+      // It's active for allocations requiring an amount of memory above
+      // system pagesize. This is consistent with the requirements of the
+      // standard: http://gcc.gnu.org/ml/libstdc++/2001-07/msg00130.html
+
+      // The biggest string which fits in a memory page
+      const size_type __page_capacity = ((__pagesize - __malloc_header_size
+					  - sizeof(_Rep) - sizeof(_CharT))
+					 / sizeof(_CharT));
+      
+      if (__capacity > __old_capacity && __capacity < 2 * __old_capacity
+	  && __capacity > __page_capacity)
+	__capacity = 2 * __old_capacity;
+
+      // NB: Need an array of char_type[__capacity], plus a terminating
+      // null char_type() element, plus enough for the _Rep data structure.
+      // Whew. Seemingly so needy, yet so elemental.
+      size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+
+      if (__size + __malloc_header_size > __pagesize)
 	{
-	  const size_t __extra =
-	    (__pagesize - ((__size + __malloc_header_size) % __pagesize))
-	    % __pagesize;
+	  const size_type __extra = (__pagesize
+				     - (__size + __malloc_header_size)
+				     % __pagesize);
 	  __capacity += __extra / sizeof(_CharT);
-	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
+	  __size += __extra;
 	}
       else if (__size > __subpagesize)
 	{
-	  const size_t __extra =
-	    (__subpagesize - ((__size + __malloc_header_size) % __subpagesize))
-	    % __subpagesize;
+	  const size_type __extra = (__subpagesize
+				     - (__size + __malloc_header_size)
+				     % __subpagesize);
 	  __capacity += __extra / sizeof(_CharT);
-	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
+	  __size += __extra;
 	}
 
       // NB: Might throw, but no worries about a leak, mate: _Rep()
@@ -566,22 +564,8 @@ namespace std
     {
       // Requested capacity of the clone.
       const size_type __requested_cap = this->_M_length + __res;
-      // See above (_S_create) for the meaning and value of these constants.
-      const size_type __pagesize = 4096;
-      const size_type __malloc_header_size = 4 * sizeof (void*);
-      // The biggest string which fits in a memory page.
-      const size_type __page_capacity =
-        (__pagesize - __malloc_header_size - sizeof(_Rep_base) - sizeof(_CharT))
-        / sizeof(_CharT);
-      _Rep* __r;
-      if (__requested_cap > this->_M_capacity
-	  && __requested_cap > __page_capacity)
-        // Growing exponentially.
-        __r = _Rep::_S_create(__requested_cap > 2*this->_M_capacity ?
-                              __requested_cap : 2*this->_M_capacity, __alloc);
-      else
-        __r = _Rep::_S_create(__requested_cap, __alloc);
-
+      _Rep* __r = _Rep::_S_create(__requested_cap, this->_M_capacity,
+				  __alloc);
       if (this->_M_length)
 	traits_type::copy(__r->_M_refdata(), _M_refdata(),
 			  this->_M_length);
