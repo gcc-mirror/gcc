@@ -1,3 +1,8 @@
+2002-04-19  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/sparc/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Likewise.
+
 Sat Apr 20 02:17:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsi_1, movhi_1): Force reload to use more flexible
