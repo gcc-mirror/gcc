@@ -3221,7 +3221,12 @@ unary_complex_lvalue (code, arg)
   if (TREE_CODE (arg) == COMPOUND_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 1), 0);
-      pedantic_lvalue_warning (COMPOUND_EXPR);
+
+      /* If this returns a function type, it isn't really being used as
+	 an lvalue, so don't issue a warning about it.  */
+      if (TREE_CODE (TREE_TYPE (arg)) != FUNCTION_TYPE)
+	pedantic_lvalue_warning (COMPOUND_EXPR);
+
       return build (COMPOUND_EXPR, TREE_TYPE (real_result),
 		    TREE_OPERAND (arg, 0), real_result);
     }
@@ -3230,6 +3235,9 @@ unary_complex_lvalue (code, arg)
   if (TREE_CODE (arg) == COND_EXPR)
     {
       pedantic_lvalue_warning (COND_EXPR);
+      if (TREE_CODE (TREE_TYPE (arg)) != FUNCTION_TYPE)
+	pedantic_lvalue_warning (COMPOUND_EXPR);
+
       return (build_conditional_expr
 	      (TREE_OPERAND (arg, 0),
 	       build_unary_op (code, TREE_OPERAND (arg, 1), 0),
