@@ -1057,7 +1057,6 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_finline_limit_:
     case OPT_finline_limit_eq:
-      set_param_value ("max-inline-insns", value);
       set_param_value ("max-inline-insns-single", value / 2);
       set_param_value ("max-inline-insns-auto", value / 2);
       set_param_value ("max-inline-insns-rtl", value);

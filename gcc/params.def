@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 100.
+   The default value is 500.
    Only functions marked inline (or methods defined in the class
    definition for C++) are affected by this, unless you set the
    -finline-functions (included in -O3) compiler option.
@@ -59,30 +59,11 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
    that is applied to functions marked inlined (or defined in the
    class declaration in C++) given by the "max-inline-insns-single"
    parameter.
-   The default value is 100.  */
+   The default value is 150.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining",
 	  150)
-
-/* The repeated inlining limit.  After this number of instructions 
-   (in the internal gcc representation, not real machine instructions)
-   got inlined by repeated inlining, gcc starts to decrease the maximum
-   number of inlinable instructions in the tree inliner.
-   This is done by a linear function, see "max-inline-slope" parameter.
-   It is necessary in order to limit the compile-time resources, that 
-   could otherwise become very high.
-   It is recommended to set this value to twice the value of the single
-   function limit (set by the "max-inline-insns-single" parameter) or
-   higher.  The default value is 200.
-   Higher values mean that more inlining is done, resulting in
-   better performance of the code, at the expense of higher 
-   compile-time resource (time, memory) requirements and larger
-   binaries.  */
-DEFPARAM (PARAM_MAX_INLINE_INSNS,
-	  "max-inline-insns",
-	  "The maximum number of instructions by repeated inlining before gcc starts to throttle inlining",
-	  200)
 
 /* For languages that (still) use the RTL inliner, we can specify
    limits for the RTL inliner separately.
