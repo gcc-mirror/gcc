@@ -352,6 +352,10 @@ extern int last_basic_block;
 
 extern int n_edges;
 
+/* TRUE if we should re-run loop discovery after threading jumps, FALSE
+   otherwise.  */
+extern bool rediscover_loops_after_threading;
+
 /* Signalize the status of profile information in the CFG.  */
 extern enum profile_status
 {
