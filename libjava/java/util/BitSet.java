@@ -102,6 +102,9 @@ public class BitSet implements Cloneable, Serializable
    */
   public BitSet(int nbits)
   {
+    if (nbits < 0)
+      throw new NegativeArraySizeException();
+    
     int length = nbits >>> 6;
     if ((nbits & LONG_MASK) != 0)
       ++length;
@@ -195,7 +198,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public void clear(int pos)
   {
-    int offset = pos >>> 6;
+    int offset = pos >> 6;
     ensure(offset);
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
     // so we'll just let that be our exception.
@@ -289,7 +292,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public void flip(int index)
   {
-    int offset = index >>> 6;
+    int offset = index >> 6;
     ensure(offset);
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
     // so we'll just let that be our exception.
@@ -335,7 +338,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public boolean get(int pos)
   {
-    int offset = pos >>> 6;
+    int offset = pos >> 6;
     if (offset >= bits.length)
       return false;
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
@@ -498,7 +501,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public int nextClearBit(int from)
   {
-    int offset = from >>> 6;
+    int offset = from >> 6;
     long mask = 1L << from;
     while (offset < bits.length)
       {
@@ -535,7 +538,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public int nextSetBit(int from)
   {
-    int offset = from >>> 6;
+    int offset = from >> 6;
     long mask = 1L << from;
     while (offset < bits.length)
       {
@@ -583,7 +586,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public void set(int pos)
   {
-    int offset = pos >>> 6;
+    int offset = pos >> 6;
     ensure(offset);
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
     // so we'll just let that be our exception.

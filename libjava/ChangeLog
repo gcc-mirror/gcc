@@ -1,5 +1,16 @@
 2002-04-01  Mark Wielaard  <mark@klomp.org>
 
+        * java/util/BitSet.java (BitSet(int)): if nbits < 0 throw
+        NegativeArraySizeException
+        (clear(int)): Use sign extended shift.
+        (flip(int)): Likewise.
+        (get(int)): Likewise.
+        (nextClearBit(int)): Likewise.
+        (nextSetBit(int)): Likewise.
+        (set(int)): Likewise.
+
+2002-04-01  Mark Wielaard  <mark@klomp.org>
+
 	* java/lang/Integer.java (decode): Throw NullPointerException when
 	argument is null. A minus sign can precede other leading characters.
 
