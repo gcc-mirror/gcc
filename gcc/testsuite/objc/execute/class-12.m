@@ -2,6 +2,8 @@
 #include <objc/objc.h>
 #include <objc/objc-api.h>
 
+#include "next_mapping.h"
+
 /* Tests creating a root class and a subclass with a class methods */
 
 @interface RootClass
@@ -11,6 +13,9 @@
 @end
 
 @implementation RootClass
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 static int class_variable = 0;

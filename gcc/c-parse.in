@@ -20,17 +20,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* This file defines the grammar of C and that of Objective C.
-   ifobjc ... end ifobjc  conditionals contain code for Objective C only.
-   ifc ... end ifc  conditionals contain code for C only.
+   @@ifobjc ... @@end_ifobjc  conditionals contain code for Objective C only.
+   @@ifc ... @@end_ifc  conditionals contain code for C only.
    Sed commands in Makefile.in are used to convert this file into
    c-parse.y and into objc-parse.y.  */
 
 /* To whomever it may concern: I have heard that such a thing was once
    written by AT&T, but I have never seen it.  */
 
-ifc
+@@ifc
 %expect 10 /* shift/reduce conflicts, and no reduce/reduce conflicts.  */
-end ifc
+@@end_ifc
 
 %{
 #include "config.h"
@@ -50,9 +50,9 @@ end ifc
 #include "toplev.h"
 #include "ggc.h"
 
-ifobjc
+@@ifobjc
 #include "objc-act.h"
-end ifobjc
+@@end_ifobjc
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -175,6 +175,7 @@ do {									\
    Objective C, so that the token codes are the same in both.  */
 %token INTERFACE IMPLEMENTATION END SELECTOR DEFS ENCODE
 %token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
+%token AT_THROW AT_TRY AT_CATCH AT_FINALLY AT_SYNCHRONIZED
 %token OBJC_STRING
 
 %type <code> unop
@@ -233,7 +234,7 @@ do {									\
 
 %type <location> save_location
 
-ifobjc
+@@ifobjc
 /* the Objective-C nonterminals */
 
 %type <ttype> ivar_decl_list ivar_decls ivar_decl ivars ivar_declarator
@@ -245,7 +246,10 @@ ifobjc
 %type <ttype> non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
 
 %type <ttype> CLASSNAME OBJECTNAME OBJC_STRING
-end ifobjc
+
+%type <ttype> objc_try_stmt superclass
+%type <itype> objc_try_catch_stmt objc_finally_block
+@@end_ifobjc
 
 %{
 /* Number of statements (loosely speaking) and compound statements
@@ -306,7 +310,7 @@ static GTY(()) tree declspec_stack;
     flag_iso = (val >> 3) & 1;			\
   } while (0)
 
-ifobjc
+@@ifobjc
 /* Objective-C specific parser/lexer information */
 
 static enum tree_code objc_inherit_code;
@@ -318,11 +322,11 @@ static int objc_pq_context = 0, objc_public_flag = 0;
    exists.  */
 static int objc_need_raw_identifier;
 #define OBJC_NEED_RAW_IDENTIFIER(VAL)	objc_need_raw_identifier = VAL
-end ifobjc
+@@end_ifobjc
 
-ifc
+@@ifc
 #define OBJC_NEED_RAW_IDENTIFIER(VAL)	/* nothing */
-end ifc
+@@end_ifc
 
 static bool parsing_iso_function_signature;
 
@@ -371,9 +375,9 @@ extdef:
 extdef_1:
 	fndef
 	| datadef
-ifobjc
+@@ifobjc
 	| objcdef
-end ifobjc
+@@end_ifobjc
 	| ASM_KEYWORD '(' expr ')' ';'
 		{ STRIP_NOPS ($3);
 		  if ((TREE_CODE ($3) == ADDR_EXPR
@@ -452,10 +456,10 @@ fndef:
 identifier:
 	IDENTIFIER
 	| TYPENAME
-ifobjc
+@@ifobjc
 	| OBJECTNAME
 	| CLASSNAME
-end ifobjc
+@@end_ifobjc
 	;
 
 unop:     '&'
@@ -464,10 +468,10 @@ unop:     '&'
 		{ $$ = NEGATE_EXPR; }
 	| '+'
 		{ $$ = CONVERT_EXPR;
-ifc
+@@ifc
   if (warn_traditional && !in_system_header)
     warning ("traditional C rejects the unary plus operator");
-end ifc
+@@end_ifc
 		}
 	| PLUSPLUS
 		{ $$ = PREINCREMENT_EXPR; }
@@ -708,29 +712,29 @@ primary:
 		{ $$ = build_array_ref ($1, $3); }
 	| primary '.' identifier
 		{
-ifobjc
+@@ifobjc
 		    if (!is_public ($1, $3))
 		      $$ = error_mark_node;
 		    else
-end ifobjc
+@@end_ifobjc
 		      $$ = build_component_ref ($1, $3);
 		}
 	| primary POINTSAT identifier
 		{
                   tree expr = build_indirect_ref ($1, "->");
 
-ifobjc
+@@ifobjc
 		      if (!is_public (expr, $3))
 			$$ = error_mark_node;
 		      else
-end ifobjc
+@@end_ifobjc
 			$$ = build_component_ref (expr, $3);
 		}
 	| primary PLUSPLUS
 		{ $$ = build_unary_op (POSTINCREMENT_EXPR, $1, 0); }
 	| primary MINUSMINUS
 		{ $$ = build_unary_op (POSTDECREMENT_EXPR, $1, 0); }
-ifobjc
+@@ifobjc
 	| objcmessageexpr
 		{ $$ = build_message_expr ($1); }
 	| objcselectorexpr
@@ -741,7 +745,7 @@ ifobjc
 		{ $$ = build_encode_expr ($1); }
 	| OBJC_STRING
 		{ $$ = build_objc_string_object ($1); }
-end ifobjc
+@@end_ifobjc
 	;
 
 old_style_parm_decls:
@@ -1356,7 +1360,7 @@ typespec_nonreserved_nonattr:
 		{ /* For a typedef name, record the meaning, not the name.
 		     In case of `foo foo, bar;'.  */
 		  $$ = lookup_name ($1); }
-ifobjc
+@@ifobjc
 	| CLASSNAME protocolrefs
 		{ $$ = get_static_reference ($1, $2); }
 	| OBJECTNAME protocolrefs
@@ -1366,7 +1370,7 @@ ifobjc
    - nisse@lysator.liu.se */
         | non_empty_protocolrefs
                 { $$ = get_object_reference ($1); }
-end ifobjc
+@@end_ifobjc
 	| typeof '(' expr ')'
 		{ skip_evaluation--; $$ = TREE_TYPE ($3); }
 	| typeof '(' typename ')'
@@ -1632,9 +1636,9 @@ after_type_declarator:
 	| '*' maybe_type_quals_attrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
-ifobjc
+@@ifobjc
 	| OBJECTNAME
-end ifobjc
+@@end_ifobjc
 	;
 
 /* Kinds of declarator that can appear in a parameter list
@@ -1655,9 +1659,9 @@ parm_declarator_starttypename:
 	| parm_declarator_starttypename array_declarator  %prec '.'
 		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| TYPENAME
-ifobjc
+@@ifobjc
 	| OBJECTNAME
-end ifobjc
+@@end_ifobjc
 	;
 
 parm_declarator_nostarttypename:
@@ -1806,22 +1810,11 @@ component_decl_list2:	/* empty */
 	| component_decl_list2 ';'
 		{ if (pedantic)
 		    pedwarn ("extra semicolon in struct or union specified"); }
-ifobjc
+@@ifobjc
 	/* foo(sizeof(struct{ @defs(ClassName)})); */
 	| DEFS '(' CLASSNAME ')'
-		{
-		  tree interface = lookup_interface ($3);
-
-		  if (interface)
-		    $$ = nreverse (get_class_ivars (interface));
-		  else
-		    {
-		      error ("cannot find interface declaration for `%s'",
-			     IDENTIFIER_POINTER ($3));
-		      $$ = NULL_TREE;
-		    }
-		}
-end ifobjc
+		{ $$ = nreverse (get_class_ivars_from_name ($3)); }
+@@end_ifobjc
 	;
 
 component_decl:
@@ -2056,15 +2049,17 @@ pushlevel:  /* empty */
 		{ pushlevel (0);
 		  clear_last_expr ();
 		  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-ifobjc
-		  if (objc_method_context)
-		    add_objc_decls ();
-end ifobjc
 		}
 	;
 
 poplevel:  /* empty */
-                { $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); }
+                { 
+@@ifobjc
+		  if (c_dialect_objc ())
+		    objc_clear_super_receiver ();
+@@end_ifobjc
+		  $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); 
+		}
         ;
 
 /* Start and end blocks created for the new scopes of C99.  */
@@ -2075,10 +2070,6 @@ c99_block_start: /* empty */
 		      pushlevel (0);
 		      clear_last_expr ();
 		      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-ifobjc
-		      if (objc_method_context)
-			add_objc_decls ();
-end ifobjc
 		    }
 		  else
 		    $$ = NULL_TREE;
@@ -2404,6 +2395,59 @@ stmt:
 		  $$ = add_stmt (build_stmt (GOTO_STMT, $3)); }
 	| ';'
 		{ $$ = NULL_TREE; }
+@@ifobjc
+	| AT_THROW expr ';'
+		{ stmt_count++; 
+		  $$ = objc_build_throw_stmt ($2); 
+		}
+	| AT_THROW ';'
+		{ stmt_count++; 
+		  $$ = objc_build_throw_stmt (NULL_TREE); 
+		}
+	| objc_try_catch_stmt 
+		{ objc_build_finally_prologue (); }
+	  objc_finally_block
+		{ $$ = objc_build_try_catch_finally_stmt ($1, $3); }
+	| AT_SYNCHRONIZED '(' expr ')' 
+		{ objc_build_synchronized_prologue ($3); }
+	  compstmt
+		{ $$ = objc_build_synchronized_epilogue (); }
+	;
+
+objc_try_catch_stmt:
+	  objc_try_stmt
+		{ objc_build_try_epilogue (1); }
+	  objc_catch_list
+		{ objc_build_catch_epilogue (); $$ = 1; }
+	| objc_try_stmt
+		{ objc_build_try_epilogue (0); $$ = 0; }
+	;
+
+
+objc_try_stmt:
+	  AT_TRY 
+		{ objc_build_try_prologue (); }
+	  compstmt 
+	;
+	
+objc_catch_list:
+	  objc_catch_list objc_catch_block
+	| objc_catch_block
+	;
+
+objc_catch_block:
+	  AT_CATCH '(' parm ')' 
+		{ objc_build_catch_stmt ($3); }
+	  compstmt
+		{ stmt_count++; }
+	;
+
+objc_finally_block:
+	  AT_FINALLY compstmt
+	    { $$ = 1; }
+	| /* NULL */
+	    { $$ = 0; }
+@@end_ifobjc
 	;
 
 /* Any kind of label, including jump labels and case labels.
@@ -2648,7 +2692,7 @@ extension:
 		  flag_iso = 0; }
 	;
 
-ifobjc
+@@ifobjc
 /* Objective-C productions.  */
 
 objcdef:
@@ -2692,103 +2736,41 @@ aliasdecl:
 		}
 	;
 
+superclass:
+	  ':' identifier { $$ = $2; }
+	| /* NULL */ %prec HYPERUNARY    { $$ = NULL_TREE; }
+	;
+
+class_ivars:
+	  '{' ivar_decl_list '}'
+	| /* NULL */
+	;
+
 classdef:
-	  INTERFACE identifier protocolrefs '{'
+	  INTERFACE identifier superclass protocolrefs
 		{
 		  objc_interface_context = objc_ivar_context
-		    = start_class (CLASS_INTERFACE_TYPE, $2, NULL_TREE, $3);
+		    = start_class (CLASS_INTERFACE_TYPE, $2, $3, $4);
                   objc_public_flag = 0;
 		}
-	  ivar_decl_list '}'
+	  class_ivars
 		{
                   continue_class (objc_interface_context);
 		}
-	  methodprotolist
-	  END
+	  methodprotolist END
 		{
 		  finish_class (objc_interface_context);
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| INTERFACE identifier protocolrefs
-		{
-		  objc_interface_context
-		    = start_class (CLASS_INTERFACE_TYPE, $2, NULL_TREE, $3);
-                  continue_class (objc_interface_context);
-		}
-	  methodprotolist
-	  END
-		{
-		  finish_class (objc_interface_context);
-		  objc_interface_context = NULL_TREE;
-		}
-
-	| INTERFACE identifier ':' identifier protocolrefs '{'
-		{
-		  objc_interface_context = objc_ivar_context
-		    = start_class (CLASS_INTERFACE_TYPE, $2, $4, $5);
-                  objc_public_flag = 0;
-		}
-	  ivar_decl_list '}'
-		{
-                  continue_class (objc_interface_context);
-		}
-	  methodprotolist
-	  END
-		{
-		  finish_class (objc_interface_context);
-		  objc_interface_context = NULL_TREE;
-		}
-
-	| INTERFACE identifier ':' identifier protocolrefs
-		{
-		  objc_interface_context
-		    = start_class (CLASS_INTERFACE_TYPE, $2, $4, $5);
-                  continue_class (objc_interface_context);
-		}
-	  methodprotolist
-	  END
-		{
-		  finish_class (objc_interface_context);
-		  objc_interface_context = NULL_TREE;
-		}
-
-	| IMPLEMENTATION identifier '{'
+	| IMPLEMENTATION identifier superclass
 		{
 		  objc_implementation_context = objc_ivar_context
-		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, NULL_TREE, NULL_TREE);
+		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $3, NULL_TREE);
                   objc_public_flag = 0;
 		}
-	  ivar_decl_list '}'
+	  class_ivars
 		{
-                  objc_ivar_chain
-		    = continue_class (objc_implementation_context);
-		}
-
-	| IMPLEMENTATION identifier
-		{
-		  objc_implementation_context
-		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, NULL_TREE, NULL_TREE);
-                  objc_ivar_chain
-		    = continue_class (objc_implementation_context);
-		}
-
-	| IMPLEMENTATION identifier ':' identifier '{'
-		{
-		  objc_implementation_context = objc_ivar_context
-		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
-                  objc_public_flag = 0;
-		}
-	  ivar_decl_list '}'
-		{
-                  objc_ivar_chain
-		    = continue_class (objc_implementation_context);
-		}
-
-	| IMPLEMENTATION identifier ':' identifier
-		{
-		  objc_implementation_context
-		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
                   objc_ivar_chain
 		    = continue_class (objc_implementation_context);
 		}
@@ -2799,8 +2781,7 @@ classdef:
 		    = start_class (CATEGORY_INTERFACE_TYPE, $2, $4, $6);
                   continue_class (objc_interface_context);
 		}
-	  methodprotolist
-	  END
+	  methodprotolist END
 		{
 		  finish_class (objc_interface_context);
 		  objc_interface_context = NULL_TREE;
@@ -2947,10 +2928,7 @@ methoddef:
 	  methoddecl
 		{
 		  objc_pq_context = 0;
-		  if (objc_inherit_code == CLASS_METHOD_DECL)
-		    add_class_method (objc_implementation_context, $3);
-		  else
-		    add_instance_method (objc_implementation_context, $3);
+		  add_method (objc_implementation_context, $3, objc_inherit_code == CLASS_METHOD_DECL);
 		  start_method_def ($3);
 		}
 	  optarglist
@@ -2969,14 +2947,8 @@ methoddef:
 
 methodprotolist:
 	  /* empty  */
-	| {$<ttype>$ = NULL_TREE; } methodprotolist2
-	;
-
-methodprotolist2:		 /* eliminates a shift/reduce conflict */
-	   methodproto
-	|  datadef
-	| methodprotolist2 methodproto
-	| methodprotolist2 {$<ttype>$ = NULL_TREE; } datadef
+	| methodprotolist methodproto
+	| methodprotolist { $<ttype>$ = NULL_TREE; } datadef
 	;
 
 semi_or_error:
@@ -2994,10 +2966,7 @@ methodproto:
 		{
 		  /* Forget protocol qualifiers here.  */
 		  objc_pq_context = 0;
-		  if (objc_inherit_code == CLASS_METHOD_DECL)
-		    add_class_method (objc_interface_context, $3);
-		  else
-		    add_instance_method (objc_interface_context, $3);
+		  add_method (objc_interface_context, $3, objc_inherit_code == CLASS_METHOD_DECL);
 		}
 	  semi_or_error
 	;
@@ -3194,6 +3163,10 @@ receiver:
 		{
 		  $$ = get_class_reference ($1);
 		}
+	| TYPENAME
+		{
+		  $$ = get_class_reference ($1);
+		}
 	;
 
 objcmessageexpr:
@@ -3248,7 +3221,7 @@ objcencodeexpr:
 		}
 	;
 
-end ifobjc
+@@end_ifobjc
 %%
 
 /* yylex() is a thin wrapper around c_lex(), all it does is translate
@@ -3350,7 +3323,7 @@ static const struct resword reswords[] =
   { "void",		RID_VOID,	0 },
   { "volatile",		RID_VOLATILE,	0 },
   { "while",		RID_WHILE,	0 },
-ifobjc
+@@ifobjc
   { "id",		RID_ID,			D_OBJC },
 
   /* These objc keywords are recognized only immediately after
@@ -3367,7 +3340,11 @@ ifobjc
   { "protocol",		RID_AT_PROTOCOL,	D_OBJC },
   { "public",		RID_AT_PUBLIC,		D_OBJC },
   { "selector",		RID_AT_SELECTOR,	D_OBJC },
-
+  { "throw",		RID_AT_THROW,		D_OBJC },
+  { "try",		RID_AT_TRY,		D_OBJC },
+  { "catch",		RID_AT_CATCH,		D_OBJC },
+  { "finally",		RID_AT_FINALLY,		D_OBJC },
+  { "synchronized",	RID_AT_SYNCHRONIZED,	D_OBJC },
   /* These are recognized only in protocol-qualifier context
      (see above) */
   { "bycopy",		RID_BYCOPY,		D_OBJC },
@@ -3376,7 +3353,7 @@ ifobjc
   { "inout",		RID_INOUT,		D_OBJC },
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
-end ifobjc
+@@end_ifobjc
 };
 #define N_reswords (sizeof reswords / sizeof (struct resword))
 
@@ -3503,6 +3480,11 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_AT_PUBLIC */		PUBLIC,
   /* RID_AT_PROTOCOL */		PROTOCOL,
   /* RID_AT_SELECTOR */		SELECTOR,
+  /* RID_AT_THROW */		AT_THROW,
+  /* RID_AT_TRY */		AT_TRY,
+  /* RID_AT_CATCH */		AT_CATCH,
+  /* RID_AT_FINALLY */		AT_FINALLY,
+  /* RID_AT_SYNCHRONIZED */	AT_SYNCHRONIZED,
   /* RID_AT_INTERFACE */	INTERFACE,
   /* RID_AT_IMPLEMENTATION */	IMPLEMENTATION
 };
@@ -3567,16 +3549,16 @@ yylexname (void)
 {
   tree decl;
 
-ifobjc
+@@ifobjc
   int objc_force_identifier = objc_need_raw_identifier;
   OBJC_NEED_RAW_IDENTIFIER (0);
-end ifobjc
+@@end_ifobjc
 
   if (C_IS_RESERVED_WORD (yylval.ttype))
     {
       enum rid rid_code = C_RID_CODE (yylval.ttype);
 
-ifobjc
+@@ifobjc
       /* Turn non-typedefed refs to "id" into plain identifiers; this
 	 allows constructs like "void foo(id id);" to work.  */
       if (rid_code == RID_ID)
@@ -3588,7 +3570,7 @@ ifobjc
 
       if (!OBJC_IS_AT_KEYWORD (rid_code)
 	  && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
-end ifobjc
+@@end_ifobjc
       {
 	/* Return the canonical spelling for this keyword.  */
 	yylval.ttype = ridpointers[(int) rid_code];
@@ -3602,7 +3584,7 @@ end ifobjc
       if (TREE_CODE (decl) == TYPE_DECL)
 	return TYPENAME;
     }
-ifobjc
+@@ifobjc
   else
     {
       tree objc_interface_decl = is_class_name (yylval.ttype);
@@ -3616,7 +3598,7 @@ ifobjc
 	  return CLASSNAME;
 	}
     }
-end ifobjc
+@@end_ifobjc
 
   return IDENTIFIER;
 }

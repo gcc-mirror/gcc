@@ -19,6 +19,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_FUNCTION_H
+#define GCC_FUNCTION_H
+
 struct var_refs_queue GTY(())
 {
   rtx modified;
@@ -628,3 +631,5 @@ extern void init_virtual_regs (struct emit_status *);
 
 /* Called once, at initialization, to initialize function.c.  */
 extern void init_function_once (void);
+
+#endif  /* GCC_FUNCTION_H */

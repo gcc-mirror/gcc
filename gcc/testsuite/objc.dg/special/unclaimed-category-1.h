@@ -2,6 +2,11 @@
 #include <objc/objc.h>
 #include <objc/Object.h>
 
+#ifdef __NEXT_RUNTIME__
+#define objc_get_class(C)			objc_getClass(C)
+#define class_create_instance(C)		class_createInstance(C, 0)
+#endif
+
 /* Test loading unclaimed categories - categories of a class defined
    separately from the class itself.  */
 

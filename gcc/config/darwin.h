@@ -510,6 +510,7 @@ FUNCTION (void)								\
   in_objc_symbols, in_objc_module_info,			\
   in_objc_protocol, in_objc_string_object,		\
   in_objc_constant_string_object,			\
+  in_objc_image_info,					\
   in_objc_class_names, in_objc_meth_var_names,		\
   in_objc_meth_var_types, in_objc_cls_refs,		\
   in_machopic_nl_symbol_ptr,				\
@@ -599,6 +600,10 @@ SECTION_FUNCTION (objc_string_object_section,	\
 SECTION_FUNCTION (objc_constant_string_object_section,	\
 		  in_objc_constant_string_object,	\
 		  ".section __OBJC, __cstring_object", 1)	\
+/* Fix-and-Continue image marker.  */		\
+SECTION_FUNCTION (objc_image_info_section,	\
+                  in_objc_image_info,		\
+                  ".section __OBJC, __image_info", 1)	\
 SECTION_FUNCTION (objc_class_names_section,	\
 		in_objc_class_names,		\
 		".objc_class_names", 1)	\

@@ -1,3 +1,232 @@
+2003-09-24  Ziemowit Laski  <zlaski@apple.com>
+
+	MERGE OF objc-improvements-branch into MAINLINE:
+	* Makefile.in (C_OBJS): Add in stub-objc.o.
+	(c-parse.y): Change sed demarcations to begin with '@@'.
+	(stub-objc.o): New rule.
+	* c-common.c (flag_nil_receivers, flag_objc_exceptions, flag_zero_link,
+	flag_replace_objc_classes): New flags.
+	* c-common.h (RID_AT_THROW, RID_AT_TRY, RID_AT_CATCH, RID_AT_FINALLY,
+	RID_AT_SYNCHRONIZED): New keywords.
+	(flag_nil_receivers, flag_objc_exceptions, flag_zero_link,
+	flag_replace_objc_classes): New flags.
+	(lookup_interface, is_class_name, objc_is_object_ptr, objc_check_decl,
+	objc_comptypes, objc_message_selector, lookup_objc_ivar,
+	get_current_scope, objc_mark_locals_volatile): New prototypes,
+	some moved from c-tree.h.
+	* c-decl.c (get_current_scope, objc_mark_locals_volatile): New functions.
+	(finish_decl): Adjust where objc_check_decl() gets called.
+	* c-lang.c (lookup_interface, is_class_name, objc_is_id,  objc_check_decl,
+	objc_comptypes, objc_message_selector, lookup_objc_ivar): Remove stubs.
+	* c-opts.c (c_common_handle_option): Add handling for  flag_nil_receivers,
+	flag_objc_exceptions, flag_replace_objc_classes and flag_zero_link.
+	* c-parse.in: Replace 'ifc' and 'end ifc' sed markers with '@@ifc' and
+	'@@end_ifc', respectively.
+	(AT_THROW, AT_TRY, AT_CATCH, AT_FINALLY, AT_SYNCHRONIZED): New %tokens.
+	(objc_try_stmt, superclass, class_ivars, objc_try_catch-stmt,
+	objc_finally_block): New rules.
+	(component_decl_list2): Clean up semantic action for @defs construct.
+	(component_decl, c99_block_start): Remove call to add_objc_decls().
+	(poplevel): Add call to objc_clear_super_receiver().
+	(stmt): Add rules for @throw, @try..@catch..@finally and @synchronized
+	constructs.
+	(classdef, methodprotolist): Clean up/simplify.
+	(methodprotolist2): Eliminate.
+	(methodproto): Call add_method() instead of add_class_method() and
+	add_instance_method().
+	(receiver): Add TYPENAME production.
+	(reswords): Add "throw", "try", "catch", "finally" and "synchronized".
+	(rid_to_yy): Add AT_THROW, AT_TRY, AT_CATCH, AT_FINALLY and
+	AT_SYNCHRONIZED.
+	* c-tree.h (lookup_interface, is_class_name, objc_is_id, objc_check_decl,
+	objc_comptypes, objc_message_selector)
+	* c-typeck.c (comptypes): In ObjC mode, call objc_comptypes() for
+	struct and pointer types.
+	(build_c_cast): Do not discard ObjC protocol qualifiers.
+	(convert_for_assignment): Cache result of comp_target_types() instead
+	of calling it more than once.
+	* c.opt (fnext-runtime): Update description string.
+	(fnil-receivers, fobjc-exceptions, freplace-objc-classes, fzero-link):
+	New ObjC/ObjC++-specific flags.
+	* function.h (GCC_FUNCTION_H): Header guard.
+	* gengtype-lex.l: Teach lexer about new @@... sed demarcations.
+	* stub-objc.c: New file, to be used to satisfy references to ObjC
+	functions by the C and C++ front-ends.
+	* config/darwin.c (_OBJC_IMAGE_INFO): New global metadata.
+	* config/darwin.h (FUNCTION): Add in_objc_image_info.
+	(SECTION_FUNCTION): Add objc_image_info_section.
+	* doc/invoke.texi: Link to GCC web site for Objective-C information.
+	(-fconstant-string-class): Update documentation.
+	(-fno-nil-receivers, -fobjc-exceptions, -freplace-objc-classes,
+	-fzero-link): New documentation.
+	* objc/Make-lang.in (objc-parse.y): Change sed demarcations to begin
+	with '@@'.
+	* objc/lang-specs.h (@objective-c-header): Fix -E spec.
+	* objc/objc/objc-act.c: Replace TYPE_NAME with OBJC_TYPE_NAME
+	throughout; provide casts for return values from memory allocation
+	functions (xmalloc, alloca, ggc_alloc, etc.).
+	(OBJC_VOID_AT_END): New macro.
+	(rtl.h): Do not #include any more.
+	(STRING_OBJECT_GLOBAL_NAME): Replaced with STRING_OBJECT_GLOBAL_FORMAT.
+	(TAG_MSGSEND_STRET, TAG_MSGSENDSUPER_STRET, TAG_MSGSEND_NONNIL,
+	TAG_MSGSEND_NONNIL_STRET, TAG_EXCEPTIONEXTRACT, TAG_EXCEPTIONTRYENTER,
+	TAG_EXCEPTIONTRYEXIT, TAG_EXCEPTIONMATCH, TAG_EXCEPTIONTHROW,
+	TAG_SYNCENTER, TAG_SYNCEXIT): New NeXT runtime entry points.
+	(struct val_stack, catch_count_stack, exc_binding_stack,  val_stack_push,
+	val_stack_pop): New.
+	(objc_check_decl): Fix precondition for error message, along with
+	the message itself.
+	(lookup_and_install_protocols): Remove nonexistent protocols from
+	protocol list instead of returning error_mark_node.
+	(create_builtin_decl): Use DECL_ARTIFICIAL only for VAR_DECLs.
+	(setup_string_decl): Generalize to use STRING_OBJECT_GLOBAL_FORMAT.
+	(synth_module_prologue): General clean-up; construct NeXT-specific
+	runtime API prototypes if needed.
+	(build_string_class_template): Remove.
+	(check_string_class_template, string_layout_checked): New.
+	(build_objc_string_object): Generalize to work with
+	-fconstant-string-class.
+	(build_objc_symtab_template): Fix layout for the NeXT runtime.
+	(build_metadata_decl): New.
+	(forward_declare_categories): Call build_metadata_decl() instead of
+	create_builtin_decl() et al.
+	(build_module_descriptor): Use OBJC_VOID_AT_END instead of
+	void_list_node_1.
+	(build_selector_reference_decl, build_class_reference_decl,
+	build_objc_string_decl): Do not set TREE_READONLY.
+	(get_proto_encoding): Do not call hack_method_prototype().
+	(get_class_reference): Add failure mode for invalid class names;
+	support -fzero-link; defer if in an ObjC++ template declaration.
+	(objc_declare_alias, objc_declare_class): Fix up duplicate name
+	lookup; check for global scope if in ObjC++.
+	(is_class_name): Generalize to work with various tree nodes (TYPE_DECL,
+	RECORD_TYPE, IDENTIFIER_NODE, etc.)
+	(objc_is_id): Removed.
+	(objc_is_object_ptr): New function.
+	(get_class_ivars_from_name): New function, used for @defs construct.
+	(get_class_ivars): Add option to return raw ivars; create a
+	ClASS_OWN_IVARS list for each class as needed.
+	(objc_enter_block, objc_exit_block, objc_declare_variable,
+	objc_build_throw_stmt, val_stack_push, val_stack_pop,
+	objc_build_try_enter_fragment, objc_build_extract_expr,
+	objc_build_try_exit_fragment, objc_build_extract_fragment,
+	objc_build_try_prologue, objc_build_try_epilogue,
+	objc_build_catch_stmt, objc_build_catch_epilogue,
+	objc_build_finally_prologue, objc_build_finally_epilogue,
+	objc_build_try_catch_finally_stmt, objc_build_synchronized_prologue,
+	objc_build_synchronized_epilogue, build_objc_exception_stuff):
+	New functions.
+	(_JBLEN): _setjmp jmpbuf size (needs to be made a target hook in
+	the future).
+	(build_private_template): Fix up calls to get_class_ivars().
+	(offset_is_register, forwarding_offset): Remove.
+	(objc_method_parm_type, objc_encoded_type_size): New functions.
+	(encode_method_prototype): Simplify to no longer depend on
+	back-end information.
+	(build_tmp_function_decl_xxx, build_tmp_function_decl,
+	hack_method_prototype): Removed.
+	(generate_protocol_references): Remove calls to
+	build_tmp_function_decl().
+	(generate_protocols): Adjust calls to encode_method_prototype().
+	(build_class_template): Generate sel_id' and 'gc_object_type' fields
+	for the NeXT runtime.
+	(synth_forward_declarations): Call build_metadata_decl().
+	(check_ivars): Check that the number of ivars matches also.
+	(build_super_template): Modify super_type directly; disable debugging
+	output while generating decl.
+	(build_ivar_list_initializer): Skip list elements that are not
+	FIELD_DECLs.
+	(ivar_list_length): New function.
+	(generate_ivar_lists): Call ivar_list_length() instead of list_length()
+	and encode_method_prototype() instead of encode_method_def().
+	(build_shared_structure_initializer): Generate 'sel_id' field for
+	the NeXT runtime.
+	(generate_category): Do not set TREE_USED.
+	(build_keyword_selector): Ditto; transform into a function argument
+	chain.
+	(get_arg_type_list): If there are no user-specified arguments, use
+	'...'; use OBJC_VOID_AT_END.
+	(check_duplicates): Add a parameter indicating whether methods or
+	selectors are being checked.
+	(receiver_is_class_object): Add parameters indicating whether
+	receiver is 'self' or 'super'; robustify.
+	(build_message_expr): Defer call to finish_message_expr() if
+	inside an ObjC++ template.
+	(lookup_method_in_hash_lists): New function.
+	(finish_message_expr): Complete rewrite/fix.
+	(build_objc_method_call): Ditto; factor out commonalities between
+	the GNU and NeXT runtimes; acccommodate ..._stret and ...NonNil
+	messenger variants on the NeXT.
+	(lookup_instance_method_static, lookup_class_method_static):
+	Fold into a single lookup_method_static() function with an
+	additional parameter.
+	(add_class_method, add_instance_method): Fold into a single
+	add_method() function with an additional parameter.
+	(add_category): Make duplicate categories a hard error in ObjC++.
+	(add_instance_variable): Properly handle unnamed ivars, arrays of
+	zero or no size and bitfields.  In ObjC++, check for nontrivial
+	C++ class instances.
+	(is_public): Allow C functions to access non-@public ivars, with
+	a warning.
+	(start_class): Move common initializations to
+	synth_module_prologue(); check for global scope if in ObjC++.
+	(continue_class): Fix calls to finish_struct().
+	(objc_declare_protocols, start_protocol): Check for global scope
+	if in ObjC++.
+	(encode_pointer): Encode 'BOOL *' specially on the NeXT.
+	(encode_aggregate_within): Rewrite to properly distinguish
+	struct tags from typedefs in both ObjC and ObjC++.
+	(encode_bitfield, encode_complete_bitfield): Remove.
+	(encode_next_bitfield, encode_gnu_bitfield): New functions.
+	(encode_field_decl): Call encode_next_bitfield() or
+	encode_gnu_bitfield() as needed.
+	(synth_self_and_ucmd_args): New function.
+	(start_method_def): Use it.
+	(objc_types_are_equivalent): New function.
+	(comp_proto_with_proto): Use it instead of comptypes(), since
+	we need symmetry.
+	(really_start_method): Use lookup_method_static() instead of
+	lookup_class_method_static() and lookup_instance_method_static();
+	Emit 'extern "C"' if in ObjC++ mode.
+	(add_objc_decls): Removed.
+	(UOBJC_SUPER_scope): New variable.
+	(get_super_receiver): Move construction of 'super' from
+	add_objc_decls(); remove dependency on struct objc_class.
+	(encode_method_def): Removed; encode_method_prototype() is
+	used instead.
+	(objc_clear_super_receiver): New function.
+	(objc_expand_function_end): Do not do anything for ordinary
+	C functions.
+	(finish_method_def): Mark ObjC methods as un-inlinable.
+	(gen_declaration_1): Emit widths of bitfields.
+	(finish_objc): Call generate_objc_image_info() if needed;
+	use check_duplicates() when checking for selector duplicates.
+	(generate_objc_image_info): New function.
+	* objc/objc-act.h (add_instance_method, add_class_method,
+	get_class_ivars): Remove prototypes.
+	(objc_build_throw_stmt, objc_build_try_catch_finally_stmt,
+	objc_build_synchronized_prologue, objc_build_synchronized_epilogue,
+	objc_build_catch_stmt, objc_build_catch_epilogue,
+	objc_build_finally_prologue, objc_build_finally_epilogue,
+	add_method, get_class_ivars_from_name): New prototypes.
+	(CLASS_BINFO_ELTS, PROTOCOL_BINFO_ELTS): New.
+	(TYPE_PROTOCOL_LIST): Robustify to distinguish from
+	TRANSLATION_UNIT_DECLs.
+	(OBJC_TYPE_NAME): New.
+	(objc_tree_code): Ensure that either <c-tree.h> or <cp/cp-tree.h>
+	got included.
+	(IS_SUPER): Robustify.
+	(umsg_stret_decl, umsg_super_stret_decl, umsg_nonnil_decl,
+	umsg_nonnil_stret_decl, objc_storage_class, objc_exception_extract_decl,
+	objc_exception_try_enter_decl, objc_exception_try_exit_decl,
+	objc_exception_match_decl, objc_exception_throw_decl,
+	objc_sync_enter_decl, objc_sync_exit_decl, objc_exception_data_template,
+	objc_setjmp_decl, objc_stack_exception_data, objc_caught_exception,
+	objc_rethrow_exception, objc_eval_once, objc_exception_block_stack,
+	objc_catch_type): New ObjC/ObjC++ roots.
+	* objc/objc-tree.def (MESSAGE_SEND_EXPR, CLASS_REFERENCE_EXPR): New
+	ObjC/ObjC++ tree node codes.
+ 
 2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cpplib.c (do_pragma): Reintroduce cb_line_change call in the

@@ -41,7 +41,7 @@ int main()
      MyProtocol), but not from an 'id' or from a 'MyOtherClass *'
      (which implements MyProtocol).  */
   obj_p = obj;    /* Ok */
-  obj_p = obj_c;  /* { dg-warning "does not implement" } */ /*FIXME: Duplicated*/
+  obj_p = obj_c;  /* { dg-warning "does not implement" } */
   obj_p = obj_cp; /* Ok  */
   obj_p = obj_C;  /* { dg-warning "incompatible pointer type" } */
 

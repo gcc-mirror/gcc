@@ -3,6 +3,8 @@
 #include <objc/objc-api.h>
 #include <objc/Object.h>
 
+#include "next_mapping.h"
+
 /* This test demonstrate a failure in object_is_class which was fixed */
 
 /* Create a class whose instance variables mirror the struct used for

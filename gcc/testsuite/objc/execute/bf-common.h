@@ -1,5 +1,7 @@
+#ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
-
+#endif
+#include "next_mapping.h"
 
 void print_ivars (Class class)
 {
@@ -59,7 +61,7 @@ int main ()
       @defs (MyObject);
     };
   int size1, size2;
-  Class class = [MyObject class];
+  Class class = objc_get_class ("MyObject");
 
   printf ("type = %s\n", @encode (struct class_vars));
   print_ivars (class);

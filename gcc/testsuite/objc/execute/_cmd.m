@@ -2,6 +2,8 @@
 #include <objc/objc.h>
 #include <objc/objc-api.h>
 
+#include "next_mapping.h"
+
 /* Test the hidden argument _cmd to method calls */
 
 @interface TestClass 
@@ -16,6 +18,9 @@
 {
   return sel_get_name (_cmd);
 }
+#ifdef __NEXT_RUNTIME__
++ initialize { return self; }
+#endif
 @end
 
 

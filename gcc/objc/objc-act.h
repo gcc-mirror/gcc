@@ -38,16 +38,26 @@ void continue_method_def (void);
 void finish_method_def (void);
 tree start_protocol (enum tree_code, tree, tree);
 void finish_protocol (tree);
-void add_objc_decls (void);
+
+tree objc_build_throw_stmt (tree);
+tree objc_build_try_catch_finally_stmt (int, int);
+void objc_build_synchronized_prologue (tree);
+tree objc_build_synchronized_epilogue (void);
+tree objc_build_try_prologue (void);
+void objc_build_try_epilogue (int);
+void objc_build_catch_stmt (tree);
+void objc_build_catch_epilogue (void);
+tree objc_build_finally_prologue (void);
+tree objc_build_finally_epilogue (void);
 
 tree is_ivar (tree, tree);
 int is_private (tree);
 int is_public (tree, tree);
 tree add_instance_variable (tree, int, tree, tree, tree);
-tree add_class_method (tree, tree);
-tree add_instance_method (tree, tree);
+tree add_method (tree, tree, int);
 tree get_super_receiver (void);
-tree get_class_ivars (tree);
+void objc_clear_super_receiver (void);
+tree get_class_ivars_from_name (tree);
 tree get_class_reference (tree);
 tree get_static_reference (tree, tree);
 tree get_object_reference (tree);
@@ -74,6 +84,9 @@ void objc_check_decl (tree);
 tree build_encode_expr (tree);
 
 /* Objective-C structures */
+
+#define CLASS_BINFO_ELTS		6
+#define PROTOCOL_BINFO_ELTS		2
 
 /* KEYWORD_DECL */
 #define KEYWORD_KEY_NAME(DECL) ((DECL)->decl.name)
@@ -105,10 +118,12 @@ tree build_encode_expr (tree);
 #define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
 #define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
 #define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
-#define TYPE_PROTOCOL_LIST(TYPE)					\
-  ((!TYPE_CHECK (TYPE)->type.context					\
-    || TREE_CODE ((TYPE)->type.context) == TRANSLATION_UNIT_DECL)	\
-   ? NULL_TREE : (TYPE)->type.context)
+/* We need to distinguish TYPE_PROTOCOL_LISTs from TYPE_CONTEXTs, both of which
+   are stored in the same accessor slot.  */
+#define TYPE_PROTOCOL_LIST(TYPE)				\
+	((TYPE_CHECK (TYPE)->type.context			\
+	  && TREE_CODE ((TYPE)->type.context) == TREE_LIST)	\
+	 ? (TYPE)->type.context : NULL_TREE)
 #define SET_TYPE_PROTOCOL_LIST(TYPE, P) (TYPE_CHECK (TYPE)->type.context = (P))
 
 /* Set by `continue_class' and checked by `is_public'.  */
@@ -116,15 +131,20 @@ tree build_encode_expr (tree);
 #define TREE_STATIC_TEMPLATE(record_type) (TREE_PUBLIC (record_type))
 #define TYPED_OBJECT(type) \
        (TREE_CODE (type) == RECORD_TYPE && TREE_STATIC_TEMPLATE (type))
+#define OBJC_TYPE_NAME(type) TYPE_NAME(type)
 
 /* Define the Objective-C or Objective-C++ language-specific tree codes.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum objc_tree_code {
-#ifdef OBJCPLUS
+#if defined (GCC_CP_TREE_H)
   LAST_BASE_TREE_CODE = LAST_CPLUS_TREE_CODE,
-#else
+#else 
+#if defined (GCC_C_TREE_H)
   LAST_BASE_TREE_CODE = LAST_C_TREE_CODE,
+#else
+  #error You must include <c-tree.h> or <cp/cp-tree.h> before <objc/objc-act.h>
+#endif
 #endif
 #include "objc-tree.def"
   LAST_OBJC_TREE_CODE
@@ -182,6 +202,8 @@ enum objc_tree_index
     OCTI_SELF_DECL,
     OCTI_UMSG_DECL,
     OCTI_UMSG_SUPER_DECL,
+    OCTI_UMSG_STRET_DECL,
+    OCTI_UMSG_SUPER_STRET_DECL,
     OCTI_GET_CLASS_DECL,
     OCTI_GET_MCLASS_DECL,
     OCTI_SUPER_TYPE,
@@ -245,6 +267,24 @@ enum objc_tree_index
     OCTI_CNST_STR_GLOB_ID,
     OCTI_STRING_CLASS_DECL,
     OCTI_SUPER_DECL,
+    OCTI_UMSG_NONNIL_DECL,
+    OCTI_UMSG_NONNIL_STRET_DECL,
+    OCTI_STORAGE_CLS,
+    OCTI_EXCEPTION_EXTRACT_DECL,
+    OCTI_EXCEPTION_TRY_ENTER_DECL,
+    OCTI_EXCEPTION_TRY_EXIT_DECL,
+    OCTI_EXCEPTION_MATCH_DECL,
+    OCTI_EXCEPTION_THROW_DECL,
+    OCTI_SYNC_ENTER_DECL,
+    OCTI_SYNC_EXIT_DECL,
+    OCTI_SETJMP_DECL,
+    OCTI_EXCDATA_TEMPL,
+    OCTI_STACK_EXCEPTION_DATA_DECL,
+    OCTI_LOCAL_EXCEPTION_DECL,
+    OCTI_RETHROW_EXCEPTION_DECL,
+    OCTI_EVAL_ONCE_DECL,
+    OCTI_EXCEPTION_BLK_STACK,
+    OCTI_CATCH_TYPE,
 
     OCTI_MAX
 };
@@ -267,6 +307,8 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define self_decl		objc_global_trees[OCTI_SELF_DECL]
 #define umsg_decl		objc_global_trees[OCTI_UMSG_DECL]
 #define umsg_super_decl		objc_global_trees[OCTI_UMSG_SUPER_DECL]
+#define umsg_stret_decl		objc_global_trees[OCTI_UMSG_STRET_DECL]
+#define umsg_super_stret_decl	objc_global_trees[OCTI_UMSG_SUPER_STRET_DECL]
 #define objc_get_class_decl	objc_global_trees[OCTI_GET_CLASS_DECL]
 #define objc_get_meta_class_decl			\
 				objc_global_trees[OCTI_GET_MCLASS_DECL]
@@ -285,7 +327,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define IS_PROTOCOL_QUALIFIED_ID(TYPE) \
   (IS_ID (TYPE) && TYPE_PROTOCOL_LIST (TYPE))
 #define IS_SUPER(TYPE) \
-  (super_type && TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (super_type))
+  (TREE_CODE (TYPE) == POINTER_TYPE && TREE_TYPE (TYPE) == objc_super_template)
 
 #define class_chain		objc_global_trees[OCTI_CLS_CHAIN]
 #define alias_chain		objc_global_trees[OCTI_ALIAS_CHAIN]
@@ -338,6 +380,33 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_selector_template	objc_global_trees[OCTI_SEL_TEMPL]
 #define ucls_super_ref		objc_global_trees[OCTI_UCLS_SUPER_REF]
 #define uucls_super_ref		objc_global_trees[OCTI_UUCLS_SUPER_REF]
+
+#define umsg_nonnil_decl	objc_global_trees[OCTI_UMSG_NONNIL_DECL]
+#define umsg_nonnil_stret_decl	objc_global_trees[OCTI_UMSG_NONNIL_STRET_DECL]
+#define objc_storage_class	objc_global_trees[OCTI_STORAGE_CLS]
+#define objc_exception_extract_decl		\
+				objc_global_trees[OCTI_EXCEPTION_EXTRACT_DECL]
+#define objc_exception_try_enter_decl		\
+				objc_global_trees[OCTI_EXCEPTION_TRY_ENTER_DECL]
+#define objc_exception_try_exit_decl		\
+				objc_global_trees[OCTI_EXCEPTION_TRY_EXIT_DECL]
+#define objc_exception_match_decl		\
+				objc_global_trees[OCTI_EXCEPTION_MATCH_DECL]
+#define objc_exception_throw_decl		\
+				objc_global_trees[OCTI_EXCEPTION_THROW_DECL]
+#define objc_sync_enter_decl	objc_global_trees[OCTI_SYNC_ENTER_DECL]
+#define objc_sync_exit_decl	objc_global_trees[OCTI_SYNC_EXIT_DECL]
+#define objc_exception_data_template		\
+				objc_global_trees[OCTI_EXCDATA_TEMPL]
+#define objc_setjmp_decl	objc_global_trees[OCTI_SETJMP_DECL]
+#define objc_stack_exception_data		\
+				objc_global_trees[OCTI_STACK_EXCEPTION_DATA_DECL]
+#define objc_caught_exception	objc_global_trees[OCTI_LOCAL_EXCEPTION_DECL]	
+#define objc_rethrow_exception	objc_global_trees[OCTI_RETHROW_EXCEPTION_DECL]	
+#define objc_eval_once		objc_global_trees[OCTI_EVAL_ONCE_DECL]	
+#define objc_exception_block_stack		\
+				objc_global_trees[OCTI_EXCEPTION_BLK_STACK]
+#define objc_catch_type		objc_global_trees[OCTI_CATCH_TYPE]
 
 #define objc_method_template	objc_global_trees[OCTI_METH_TEMPL]
 #define objc_ivar_template	objc_global_trees[OCTI_IVAR_TEMPL]

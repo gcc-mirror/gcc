@@ -179,52 +179,6 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-/* Used by c-lex.c, but only for objc.  */
-
-tree
-lookup_interface (tree arg ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-tree
-is_class_name (tree arg ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-tree
-objc_is_id (tree arg ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-void
-objc_check_decl (tree decl ATTRIBUTE_UNUSED)
-{
-}
-
-int
-objc_comptypes (tree lhs ATTRIBUTE_UNUSED, tree rhs ATTRIBUTE_UNUSED,
-		int reflexive ATTRIBUTE_UNUSED)
-{
-  return -1;
-}
-
-tree
-objc_message_selector (void)
-{
-  return 0;
-}
-
-/* Used by c-typeck.c (build_external_ref), but only for objc.  */
-
-tree
-lookup_objc_ivar (tree id ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
 void
 finish_file (void)
 {
@@ -243,6 +197,5 @@ c_initialize_diagnostics (diagnostic_context *context)
   /* It is safe to free this object because it was previously malloc()'d.  */
   free (base);
 }
-
 
 #include "gtype-c.h"
