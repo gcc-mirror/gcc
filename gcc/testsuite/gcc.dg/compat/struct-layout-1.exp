@@ -1,0 +1,139 @@
+# Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file was written by Jakub Jelinek, <jakub@redhat.com>
+# Based on compat.exp writte by Janis Johnson, <janis187@us.ibm.com>
+
+
+# Test interoperability of two compilers that follow the same ABI.
+#
+# Break simple tests into two pieces and see that they work when linked
+# together.  If an alternate compiler is specified then the two main
+# pieces of each test are compiled with different compilers.  The
+# alternate compiler must be installed, and is specified by defining
+# ALT_CC_UNDER_TEST in the environment.
+#
+# struct-layout-1 are generated structure layout interoperability tests,
+# so a generator first needs to be compiled on host, run there and the
+# generated tests then compiled on build and executed on target.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+global GCC_UNDER_TEST
+
+# Load procedures from common libraries. 
+load_lib standard.exp
+load_lib gcc.exp
+
+#
+# compat-use-alt-compiler -- make the alternate compiler the default
+# 
+proc compat-use-alt-compiler { } {
+    global GCC_UNDER_TEST ALT_CC_UNDER_TEST
+    global same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+    if { $same_alt == 0 } then {
+	set GCC_UNDER_TEST $ALT_CC_UNDER_TEST
+    }
+}
+
+#
+# compat-use-tst-compiler -- make compiler under test the default
+#
+proc compat-use-tst-compiler { } {
+    global GCC_UNDER_TEST save_gcc_under_test
+    global same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+
+    if { $same_alt == 0 } then {
+	set GCC_UNDER_TEST $save_gcc_under_test
+    }
+}
+
+# Load the language-independent compabibility support procedures.
+# This must be done after the compat-use-*-compiler definitions.
+load_lib compat.exp
+
+gcc_init
+
+# Save variables for the C compiler under test, which each test will
+# change a couple of times.  This must be done after calling gcc-init.
+set save_gcc_under_test $GCC_UNDER_TEST
+
+# Define an identifier for use with this suite to avoid name conflicts
+# with other compat tests running at the same time.
+set sid "c_compat"
+
+# Find out whether there is an alternate compiler to test.  If the
+# variable is defined but is set to "same", that means we use the same
+# compiler twice, which is meaningful if the two parts of COMPAT_OPTIONS
+# are different.
+set use_alt 0
+set same_alt 0
+if [info exists ALT_CC_UNDER_TEST] then {
+    set use_alt 1
+    if [string match "same" $ALT_CC_UNDER_TEST] then {
+	set same_alt 1
+    }
+}
+
+set tstobjdir "$tmpdir/gcc.dg-struct-layout-1"
+set generator "$tmpdir/gcc.dg-struct-layout-1_generate"
+
+set generator_src "$srcdir/$subdir/struct-layout-1_generate.c"
+set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
+set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
+set generator_inc "-I$srcdir/$subdir -I$srcdir/../../include"
+set generator_inc "$generator_inc -I$rootme/../libiberty"
+set generator_lib "-L$rootme/../libiberty -liberty"
+set generator_cmd "-o $generator $generator_src $generator_inc $generator_lib"
+
+set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
+set status [lindex $status 0]
+if { $status == 0 } then {
+    file delete -force $tstobjdir
+    file mkdir $tstobjdir
+    set generator_args "-s $srcdir/$subdir -d $tstobjdir"
+    if [info exists env(RUN_ALL_COMPAT_TESTS) ] then {
+	set generator_args "$generator_args -n 15000"
+    }
+    set status [remote_exec host "$generator $generator_args"]
+    set status [lindex $status 0]
+    if { $status == 0 } then {
+	foreach src [lsort [find $tstobjdir *_main.c]] {
+	    # If we're only testing specific files and this isn't one
+	    # of them, skip it.
+	    if ![runtest_file_p $runtests $src] then {
+		continue
+	    }
+
+	    compat-execute $src $sid $use_alt
+	}
+    } else {
+	warning "Could not execute gcc.dg/compat/struct-layout-1 generator"
+    }
+} else {
+    warning "Could not compiler gcc.dg/compat/struct-layout-1 generator"
+}
+
+# Restore the original compiler under test.
+compat-use-tst-compiler
