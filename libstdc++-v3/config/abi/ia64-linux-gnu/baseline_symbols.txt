@@ -982,6 +982,7 @@ FUNC:_ZNSt11__timepunctIwED0Ev@@GLIBCPP_3.2
 FUNC:_ZNSt11__timepunctIwED1Ev@@GLIBCPP_3.2
 FUNC:_ZNSt11__timepunctIwED2Ev@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE10sys_ungetcEi@@GLIBCPP_3.2
+FUNC:_ZNSt12__basic_fileIcE12_M_open_modeESt13_Ios_OpenmodeRiS2_Pc@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE2fdEv@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE4syncEv@@GLIBCPP_3.2

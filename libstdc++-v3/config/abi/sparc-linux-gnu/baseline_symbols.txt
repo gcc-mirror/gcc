@@ -1005,6 +1005,7 @@ FUNC:_ZNSt11range_errorC2ERKSs@@GLIBCPP_3.2
 FUNC:_ZNSt11range_errorD0Ev@@GLIBCPP_3.2
 FUNC:_ZNSt11range_errorD1Ev@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE10sys_ungetcEi@@GLIBCPP_3.2
+FUNC:_ZNSt12__basic_fileIcE12_M_open_modeESt13_Ios_OpenmodeRiS2_Pc@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE16showmanyc_helperEv@@GLIBCPP_3.2.3
 FUNC:_ZNSt12__basic_fileIcE2fdEv@@GLIBCPP_3.2
 FUNC:_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@@GLIBCPP_3.2
