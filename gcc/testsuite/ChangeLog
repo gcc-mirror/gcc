@@ -1,3 +1,11 @@
+2003-11-08  Bernardo Innocenti  <bernie@develer.com>
+
+	Backport from 3.4-branch
+
+	2003-10-08  Giovanni Bajo  <giovannibajo@libero.it>
+
+	* g++.dg/parse/error7.C: New test.
+
 2003-11-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from 3.4-branch
