@@ -25,6 +25,10 @@
 
 #define CPP_SPEC "%{scointl:-DM_INTERNAT}"
 
+/* Use atexit for static destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
 #if 0 /* Not yet certain whether this is needed.  */
 /* If no 387, use the general regs to return floating values,
    since this system does not emulate the 80387.  */
