@@ -80,7 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      Solaris/UI threads with -D_SOLARIS_THREADS
 */
 
-/* Check first for thread specific defines. */
+/* Check first for thread specific defines.  */
 #if _PTHREADS
 #include "gthr-posix.h"
 #elif _DCE_THREADS
@@ -88,7 +88,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #elif _SOLARIS_THREADS
 #include "gthr-solaris.h"
 
-/* Include GTHREAD_FILE if one is defined. */
+/* Include GTHREAD_FILE if one is defined.  */
 #elif defined(HAVE_GTHR_DEFAULT)
 #if SUPPORTS_WEAK
 #ifndef GTHREAD_USE_WEAK
@@ -97,7 +97,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include "gthr-default.h"
 
-/* Fallback to single thread definitions. */
+/* Fallback to single thread definitions.  */
 #else
 #include "gthr-single.h"
 #endif

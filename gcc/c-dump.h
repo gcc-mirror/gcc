@@ -53,9 +53,9 @@ struct dump_info
 {
   /* The stream on which to dump the information.  */
   FILE *stream;
-  /* The original node. */
+  /* The original node.  */
   tree node;
-  /* User flags. */
+  /* User flags.  */
   int flags;
   /* The next unused node index.  */
   unsigned int index;

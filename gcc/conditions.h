@@ -105,7 +105,7 @@ extern CC_STATUS cc_status;
 #define CC_INVERTED 0100
 
 /* Nonzero if we must convert signed condition operators to unsigned.
-   This is only used by machine description files. */
+   This is only used by machine description files.  */
 #define CC_NOT_SIGNED 0200
 
 /* This is how to initialize the variable cc_status.

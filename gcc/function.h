@@ -189,7 +189,7 @@ struct function
   /* Name of this function.  */
   const char *name;
 
-  /* Points to the FUNCTION_DECL of this function. */
+  /* Points to the FUNCTION_DECL of this function.  */
   tree decl;
 
   /* Function containing this function, if any.  */
@@ -236,7 +236,7 @@ struct function
   const char *cannot_inline;
 
   /* Opaque pointer used by get_hard_reg_initial_val and
-     has_hard_reg_initial_val (see integrate.[hc]). */
+     has_hard_reg_initial_val (see integrate.[hc]).  */
   struct initial_value_struct *hard_reg_initial_vals;
 
   /* Number of function calls seen so far in current function.  */
@@ -329,7 +329,7 @@ struct function
   rtx x_last_parm_insn;
 
   /* 1 + last pseudo register number possibly used for loading a copy
-     of a parameter of this function. */
+     of a parameter of this function.  */
   unsigned int x_max_parm_reg;
 
   /* Vector indexed by REGNO, containing location on stack in which

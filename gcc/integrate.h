@@ -36,7 +36,7 @@ struct inline_remap
 {
   /* True if we are doing function integration, false otherwise.
      Used to control whether RTX_UNCHANGING bits are copied by
-     copy_rtx_and_substitute. */
+     copy_rtx_and_substitute.  */
   int integrating;
   /* Definition of function be inlined.  */
   union tree_node *fndecl;

@@ -184,7 +184,7 @@ struct iv_class
   unsigned reversed : 1;	/* 1 if we reversed the loop that this
 				   biv controls.  */
   unsigned all_reduced : 1;	/* 1 if all givs using this biv have
-                                   been reduced. */
+                                   been reduced.  */
 };
 
 
