@@ -1,3 +1,9 @@
+2004-02-18  Mark Mitchell <mark@codesourcery.com>
+
+	PR c++/11326
+	* config/ia64/ia64.c (ia64_struct_value_rtx): Cope with NULL
+	fntype.
+
 2004-02-18  Paul Brook  <paul@codesourcery.com>
 
 	PR debug/12934

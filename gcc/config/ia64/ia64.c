@@ -8933,7 +8933,7 @@ static rtx
 ia64_struct_value_rtx (tree fntype,
 		       int incoming ATTRIBUTE_UNUSED)
 {
-  if (ia64_struct_retval_addr_is_first_parm_p (fntype))
+  if (fntype && ia64_struct_retval_addr_is_first_parm_p (fntype))
     return NULL_RTX;
   return gen_rtx_REG (Pmode, GR_REG (8));
 }
