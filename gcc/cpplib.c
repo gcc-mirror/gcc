@@ -5656,6 +5656,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
       bsize *= 2;
       fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
     }
+    fp->cur = fp->buf;
     length = st_size;
   }
 
