@@ -1,3 +1,7 @@
+Fri Apr 14 18:07:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP): Revert last change.
+
 Fri Apr 14 10:54:22 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/lib1funcs.asm (__ia64_nonlocal_goto): Drop obsolete
@@ -46,15 +50,14 @@ Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 Thu Apr 13 15:55:08 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	* alias.c (nonlocal_reference_p): Take a care for
-	CALL_INSNS's fusage field.
+	* alias.c (nonlocal_reference_p): Take care of CALL_INSNS's fusage.
 	* calls.c (ECF_PURE): New flag.
 	(emit_call_1): Handle ECF_PURE calls.
 	(initialize_argument_information): Unset ECF_PURE flag too.
 	(precompute_arguments): Precompute for ECF_PURE too.
 	(expand_call): Handle ECF_PURE calls too.
-	(emit_library_call_value_1): Rename no_queue argument to
-	fn_type, accept value of 2 as pure function.
+	(emit_library_call_value_1): Rename no_queue argument to fn_type,
+	accept value of 2 as pure function.
 	(emit_library_call_value, emit_library_call): Rename no_queue argument
 	to fn_type.
 	* optabs.c (prepare_cmp_insn): Pass fn_type 2 to memcmp call.
@@ -116,7 +119,7 @@ Wed Apr 12 20:51:20 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Wed Apr 12 17:20:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	(expand_call): Do not reverse args in "equal from" field.
+	* calls.c (expand_call): Do not reverse args in "equal from" field.
 	(emit_library_call_value_1): Emit_libcall_block for const and pure
 	function.
 
