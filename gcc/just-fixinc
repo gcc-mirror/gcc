@@ -1,16 +1,20 @@
 #!/bin/sh
+# $Id$
 # This script exists for use after installing
-# the Solaris binaries from a distribution tape/CDROM.
+# the GCC binaries from a distribution tape/CD-ROM.
 # Use it *after* copying the directory of binaries
 # to the proper installed location.
-# It runs fixinc.svr4 to correct bugs in the Solaris header files.
+# It runs fixincludes (or fixinc.svr4, if appropriate) to correct bugs in
+# the system header files.
+# This script needs to be customized for each type of installation so that
+# others may run it after the installation-sans-fixincludes is completed.
 
 # The corrected header files go in the GCC installation directory
 # so that only GCC sees them.
 # This script does not modify the original header files in /usr/include.
 # It only modifies copies in the GCC installation directory.
 
-installed=/opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.5.0
+installed=/opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.6.0
 cd $installed/include
 
 rmdir tmpfoo > /dev/null 2>&1
