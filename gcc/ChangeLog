@@ -1,5 +1,12 @@
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
+	* ifcvt.c (noce_process_if_block): Correctly detect X modified
+	with INSN_B before COND_EARLIEST.  Don't check A and B for 
+	modification in condition range.  Reorder INSN_B for A==B properly.
+	(if_convert): Iterate until no matches for a block.
+
+2002-09-18  Richard Henderson  <rth@redhat.com>
+
 	* calls.c (store_one_arg): Rename default_align to parm_align;
 	always adjust parm_align for downward padding.
 
