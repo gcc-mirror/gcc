@@ -1,3 +1,19 @@
+2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17849
+	* tree-nested.c (walk_stmt_info): Add changed field.
+	(convert_nonlocal_reference): Set changed to when we
+	change a decl to unnested decl.
+	<case ADDR_EXPR>: Instead of checking if the immediate part
+	of the ADDR_EXPR changed, check the field changed.
+	Use recompute_tree_invarant_for_addr_expr instead of unsetting
+	TREE_INVARIANT.
+	(convert_local_reference):  Set changed to when we
+	change a decl to unnested decl.
+	<case ADDR_EXPR>: Instead of checking if the immediate part
+	of the ADDR_EXPR changed, check the field changed.
+	Also call recompute_tree_invarant_for_addr_expr on the ADDR_EXPR.
+
 2004-10-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* defaults.h (DWARF2_GENERATE_TEXT_SECTION_LABEL): Remove.

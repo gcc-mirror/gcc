@@ -518,6 +518,7 @@ struct walk_stmt_info
   tree_stmt_iterator tsi;
   struct nesting_info *info;
   bool val_only;
+  bool changed;
 };
 
 /* A subroutine of walk_function.  Iterate over all sub-statements of *TP.  */
@@ -732,6 +733,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	  tree target_context = decl_function_context (t);
 	  struct nesting_info *i;
 	  tree x;
+	  wi->changed = true;
 
 	  for (i = info->outer; i->context != target_context; i = i->outer)
 	    continue;
@@ -770,17 +772,17 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
     case ADDR_EXPR:
       {
 	bool save_val_only = wi->val_only;
-	tree save_sub = TREE_OPERAND (t, 0);
 
+	wi->changed = false;
 	wi->val_only = false;
 	walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
 	wi->val_only = true;
 
-	if (save_sub != TREE_OPERAND (t, 0))
+	if (wi->changed)
 	  {
 	    /* If we changed anything, then TREE_INVARIANT is be wrong,
 	       since we're no longer directly referencing a decl.  */
-	    TREE_INVARIANT (t) = 0;
+	    recompute_tree_invarant_for_addr_expr (t);
 
 	    /* If the callback converted the address argument in a context
 	       where we only accept variables (and min_invariant, presumably),
@@ -874,6 +876,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	  field = lookup_field_for_decl (info, t, NO_INSERT);
 	  if (!field)
 	    break;
+	  wi->changed = true;
 
 	  x = get_frame_field (info, info->context, field, &wi->tsi);
 	  if (wi->val_only)
@@ -885,17 +888,19 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
     case ADDR_EXPR:
       {
 	bool save_val_only = wi->val_only;
-	tree save_sub = TREE_OPERAND (t, 0);
 
+	wi->changed = false;
 	wi->val_only = false;
 	walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
 	wi->val_only = save_val_only;
 
 	/* If we converted anything ... */
-	if (TREE_OPERAND (t, 0) != save_sub)
+	if (wi->changed)
 	  {
 	    /* Then the frame decl is now addressable.  */
 	    TREE_ADDRESSABLE (info->frame_decl) = 1;
+	    
+	    recompute_tree_invarant_for_addr_expr (t);
 
 	    /* If we are in a context where we only accept values, then
 	       compute the address into a temporary.  */
