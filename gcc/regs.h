@@ -60,8 +60,6 @@ typedef struct reg_info_def
 
 extern varray_type reg_n_info;
 
-extern unsigned int reg_n_max;
-
 /* Indexed by n, gives number of times (REG n) is used or set.
    References within loops may be counted more times.  */
 

@@ -1983,8 +1983,9 @@ auto_inc_dec_reg_p (reg, mode)
 }
 #endif
 
-static short *renumber = (short *)0;
-static size_t regno_allocated = 0;
+static short *renumber;
+static size_t regno_allocated;
+static unsigned int reg_n_max;
 
 /* Allocate enough space to hold NUM_REGS registers for the tables used for
    reg_scan and flow_analysis that are indexed by the register number.  If
@@ -2003,7 +2004,6 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   size_t size_renumber;
   size_t min = (new_p) ? 0 : reg_n_max;
   struct reg_info_data *reg_data;
-  struct reg_info_data *reg_next;
 
   if (num_regs > regno_allocated)
     {
@@ -2056,34 +2056,34 @@ allocate_reg_info (num_regs, new_p, renumber_p)
     {
       /* Loop through each of the segments allocated for the actual
 	 reg_info pages, and set up the pointers, zero the pages, etc.  */
-      for (reg_data = reg_info_head; reg_data; reg_data = reg_next)
+      for (reg_data = reg_info_head; 
+	   reg_data && reg_data->max_index >= min;
+	   reg_data = reg_data->next)
 	{
 	  size_t min_index = reg_data->min_index;
 	  size_t max_index = reg_data->max_index;
+	  size_t max = MIN (max_index, num_regs);
+	  size_t local_min = min - min_index;
+	  size_t i;
 
-	  reg_next = reg_data->next;
-	  if (min <= max_index)
+	  if (reg_data->min_index > num_regs)
+	    continue;
+
+	  if (min < min_index)
+	    local_min = 0;
+	  if (!reg_data->used_p)	/* page just allocated with calloc */
+	    reg_data->used_p = 1;	/* no need to zero */
+	  else
+	    bzero ((char *) &reg_data->data[local_min],
+		   sizeof (reg_info) * (max - min_index - local_min + 1));
+
+	  for (i = min_index+local_min; i <= max; i++)
 	    {
-	      size_t max = max_index;
-	      size_t local_min = min - min_index;
-	      size_t i;
-
-	      if (min < min_index)
-		local_min = 0;
-	      if (!reg_data->used_p)	/* page just allocated with calloc */
-		reg_data->used_p = 1;	/* no need to zero */
-	      else
-		bzero ((char *) &reg_data->data[local_min],
-		       sizeof (reg_info) * (max - min_index - local_min + 1));
-
-	      for (i = min_index+local_min; i <= max; i++)
-		{
-		  VARRAY_REG (reg_n_info, i) = &reg_data->data[i-min_index];
-		  REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
-		  renumber[i] = -1;
-		  reg_pref_buffer[i].prefclass = (char) NO_REGS;
-		  reg_pref_buffer[i].altclass = (char) NO_REGS;
-		}
+	      VARRAY_REG (reg_n_info, i) = &reg_data->data[i-min_index];
+	      REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+	      renumber[i] = -1;
+	      reg_pref_buffer[i].prefclass = (char) NO_REGS;
+	      reg_pref_buffer[i].altclass = (char) NO_REGS;
 	    }
 	}
     }
