@@ -198,7 +198,7 @@ read_scan_file (scan_file)
       struct partial_proto *partial;
       struct fn_decl *fn;
       int ch;
-      char *ptr, *fname, *extern_C, *rtype, *args, *file_seen, *line_seen;
+      char *ptr, *fname, *kind, *rtype, *args, *file_seen, *line_seen;
       line.ptr = line.base;
       ch = read_upto (scan_file, &line, '\n');
       if (ch == EOF)
@@ -207,11 +207,11 @@ read_scan_file (scan_file)
       fname = line.base;
       for (ptr = fname; *ptr != ';'; ) ptr++;
       *ptr = 0;
-      extern_C = ptr + 1;
-      for (ptr = extern_C; *ptr != ';'; ) ptr++;
+      kind = ptr + 1;
+      for (ptr = kind; *ptr != ';'; ) ptr++;
       *ptr = 0;
 
-      if (*extern_C == 'X')
+      if (*kind == 'X')
 	{
 	  switch (special_file_handling)
 	    {
@@ -222,7 +222,7 @@ read_scan_file (scan_file)
 	  continue;
 	}
 
-      if (*extern_C == 'M')
+      if (*kind == 'M')
 	{
 	  /* The original include file defines fname as a macro. */
 	  fn = lookup_std_proto (fname);
@@ -273,7 +273,7 @@ read_scan_file (scan_file)
       for (ptr = line_seen; *ptr != ';'; ) ptr++;
       *ptr = 0;
 
-      if (extern_C[0] == 'f')
+      if (kind[0] == 'f')
 	missing_extern_C_count++;
 
       fn = lookup_std_proto (fname);
@@ -289,6 +289,9 @@ read_scan_file (scan_file)
       if (args[0] != '\0')
 	continue;
       
+      if (kind[0] == 'I')  /* don't edit inline function */
+	continue;
+
       /* If the partial prototype was included from some other file,
 	 we don't need to patch it up (in this run). */
       i = strlen (file_seen);
@@ -298,7 +301,7 @@ read_scan_file (scan_file)
 
       if (fn == NULL)
 	continue;
-      if (fn->fname[0] == '\0' || strcmp(fn->fname, "void") == 0)
+      if (fn->params[0] == '\0' || strcmp(fn->params, "void") == 0)
 	continue;
 
       /* We only have a partial function declaration,
@@ -329,15 +332,21 @@ read_scan_file (scan_file)
 	fprintf (stderr, "%s: OK, nothing needs to be done.\n", inc_filename);
       exit (0);
     }
-  if (required_unseen_count)
-    fprintf (stderr, "%s: %d missing function declarations.\n",
-	     inc_filename, required_unseen_count);
-  if (partial_count)
-    fprintf (stderr, "%s: %d non-prototype function declarations.\n",
-	     inc_filename, partial_count);
-  if (missing_extern_C_count)
-    fprintf (stderr, "%s: %d declarations not protected by extern \"C\".\n",
-	     inc_filename, missing_extern_C_count);
+  if (!verbose)
+    fprintf (stderr, "%s: fixing %s\n", progname, inc_filename);
+  else
+    {
+      if (required_unseen_count)
+	fprintf (stderr, "%s: %d missing function declarations.\n",
+		 inc_filename, required_unseen_count);
+      if (partial_count)
+	fprintf (stderr, "%s: %d non-prototype function declarations.\n",
+		 inc_filename, partial_count);
+      if (missing_extern_C_count)
+	fprintf (stderr,
+		 "%s: %d declarations not protected by extern \"C\".\n",
+		 inc_filename, missing_extern_C_count);
+    }
 }
 
 write_rbrac ()
@@ -652,7 +661,7 @@ main(argc, argv)
 			}
 		    }
 		  else
-		    putc (c, outf);
+		    fprintf (outf, " %c", c);
 		}
 	    }
 	  else
