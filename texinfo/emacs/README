@@ -1,0 +1,17 @@
+This directory contains Emacs Lisp sources related to Texinfo.
+
+M-x texinfo-format-buffer is no longer the standard way to make .info
+files, and may or may not work.  Use makeinfo instead.  See the
+`makeinfo advantages' in the manual for why.
+
+The files here may or may not be newer than the versions in the latest
+Emacs distribution -- there is only one master source, so it simply
+depends on what was released later.  Use whatever works better for you.
+
+They are not compiled or installed by default, because of the above, and
+also due to the wide variations in sites' Emacs installations.
+
+Even if you do install them, you may not want to compile them if your
+site is running multiple versions of Emacs, since .elc files are not
+portable between all Emacs releases.  If you do want to compile them,
+just run the ./elisp-comp shell script.

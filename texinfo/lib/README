@@ -1,0 +1,3 @@
+Common routines to the Texinfo package.
+Many are common to other GNU packages as well.
+(On the FSF machines, check /gd/gnu/lib for the latest.)

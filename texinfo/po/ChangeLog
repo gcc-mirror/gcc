@@ -1,0 +1,5 @@
+Thu Sep  4 15:01:33 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in.in (install-info): Add dummy target.
+
+

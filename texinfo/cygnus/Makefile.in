@@ -1,0 +1,69 @@
+# Makefile for Cygnus overrides to Texinfo distribution. -*- Indented-Text -*-
+# Copyright (C) 1993 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#### Start of system configuration section. ####
+
+srcdir = @srcdir@
+VPATH  = @srcdir@
+
+LN	= ln
+RM	= rm -f
+
+SHELL = /bin/sh
+
+# We do not use texi2dvi because (a) we need no index, and
+# (b) texi2dvi monkeys with TEXINPUTS 
+TEX = tex
+
+#### End of system configuration section. ####
+
+all: dvi
+
+sub-all:
+check:
+installcheck:
+info:
+install-info:
+
+TAGS:
+
+dvi: license.dvi lgpl.dvi
+
+install:
+
+uninstall:
+
+Makefile: Makefile.in ../config.status
+	cd ..; $(SHELL) ./config.status
+
+clean mostlyclean:
+	$(RM) license.?? license.??? liblic.?? liblic.??? lgpl.?? lgpl.???
+
+distclean realclean: clean
+	$(RM) Makefile config.status fsf-texi.tex
+
+license.dvi: texiplus.tex texinfo.tex $(srcdir)/../license.texi $(srcdir)/../gpl.texinfo fsf-texi.tex
+	TEXINPUTS=$(srcdir):.:$(srcdir)/.. $(TEX) $(srcdir)/../license.texi
+
+lgpl.dvi: texiplus.tex texinfo.tex $(srcdir)/../liblic.texi $(srcdir)/../lgpl.texinfo fsf-texi.tex
+	TEXINPUTS=$(srcdir):.:$(srcdir)/.. $(TEX) $(srcdir)/../liblic.texi
+	mv liblic.dvi lgpl.dvi
+
+fsf-texi.tex: $(srcdir)/../texinfo.tex
+	cp $(srcdir)/../texinfo.tex fsf-texi.tex
+
+force:
