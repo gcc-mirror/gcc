@@ -1,3 +1,7 @@
+2004-10-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/rs6000/rs6000.c: Fix a comment typo.
+
 2004-10-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Increment line
