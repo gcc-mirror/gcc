@@ -24,6 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux old abi)", stderr);
 
 #undef  ASM_SPEC
-#define ASM_SPEC "-moabi %{mbig-endian:-EB} %{mcpu=*:-m%*} %{march=*:-m%*} \
+#define ASM_SPEC "-moabi %{mbig-endian:-EB} %{mcpu=*:-mcpu=%*} %{march=*:-march=%*} \
  %{mapcs-*:-mapcs-%*} %{mthumb-interwork:-mthumb-interwork}"
 

@@ -1,3 +1,14 @@
+2002-05-20  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm-wince-pe.h (ASM_SPEC): Pass -mcpu and -march
+	switches straight on to the assembler, do not abbreviate them.
+	* config/arm/elf.h (ASM_SPEC): As above.
+	* config/arm/semi.h (ASM_SPEC): As above.
+	* config/arm/unknown-elf-oabi.h (ASM_SPEC): As above.
+	* config/arm/xscale-coff.h (SUBTARGET_ASM_SPEC): Pass
+	-mcpu=xscale on to the assembler by default.
+	* config/arm/xscale-elf.h (SUBTARGET_ASM_SPEC): As above.
+
 2002-05-20  Richard Henderson  <rth@redhat.com>
 
 	* cse.c (canon_hash): Reorder do_not_record test.  Always

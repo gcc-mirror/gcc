@@ -46,8 +46,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
 %{mbig-endian:-EB} \
-%{mcpu=*:-m%*} \
-%{march=*:-m%*} \
+%{mcpu=*:-mcpu=%*} \
+%{march=*:-march=%*} \
 %{mapcs-*:-mapcs-%*} \
 %{mapcs-float:-mfloat} \
 %{msoft-float:-mno-fpu} \
