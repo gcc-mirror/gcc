@@ -251,7 +251,7 @@ fix = {
     sed = "/#[ \t]*define[ \t]*[ \t]BSD43__IO/" 's/\'\([cgx]\)\'/\1/g';
 };
 
-
+#IFDEF no_more
 /*
  *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
  */
@@ -297,6 +297,49 @@ fix = {
     files    = drv/netif/if_med.h;
     select   = "Wind River";
     sed      = "s|//.*$||g";
+};
+#endif
+
+/*
+ *  Remove the double-slash comments
+ *  They *must* be removed so it will not create nested comments!!
+ *  However, they will *not* be removed if '++' is in any part of
+ *  the file name, or if the name ends with ".hh" or ".H".
+ *
+ *  There *used* to be a number of similar problems in various OSes:
+
+ *  Turning // comments into normal comments trashes this IRIX 4.0.1
+ *  header file, which embeds // comments inside multi-line
+ *  comments.  If this looks like the IRIX header file, we refix it by
+ *  just throwing away the // comments.
+
+ *  Same problem with a file from SunOS 4.1.3 : a header file containing
+ *  the string "//" embedded in "/ * * /"
+
+ *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
+
+ *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
+ */
+fix = {
+    hackname = no_double_slash;
+    test     = '-z "`echo ${file}|egrep \'++$|\.hh$|\.H$\'`"';
+    select = '//[^*]';
+    sed    = '/\/\/[^*]/' "s|//.*$||g";
+};
+
+
+/*
+ *  Multiline comment after typedef on IRIX 4.0.1.
+ */
+fix = {
+    hackname = irix_bogus_cxx_cmnt;
+    files  = "elf_abi.h";
+    files  = "elf.h";
+    /*
+     *  This really looks like it is replacing "/ * * /" with "//"
+     *  Shouldn't the replacement really be " ## "?
+     */
+    sed      = 's@"/\*"\*/@"//"@';
 };
 
 
@@ -529,21 +572,6 @@ fix = {
     hackname = ip_missing_semi;
     files    = netinet/ip.h;
     sed      = "/^struct/,/^};/s/}$/};/";
-};
-
-
-/*
- *  Multiline comment after typedef on IRIX 4.0.1.
- */
-fix = {
-    hackname = irix_bogus_cxx_cmnt;
-    files  = "elf_abi.h";
-    files  = "elf.h";
-    /*
-     *  This really looks like it is replacing "/ * * /" with "//"
-     *  Shouldn't the replacement really be " ## "?
-     */
-    sed      = 's@"/\*"\*/@"//"@';
 };
 
 
@@ -1036,20 +1064,6 @@ fix = {
     select = 'wait\(union wait';
 
     sed = "s@wait(union wait@wait(void@";
-};
-
-
-/*
- *  Remove the double-slash comments
- *  They *must* be removed so it will not create nested comments!!
- *  However, they will *not* be removed if '++' is in any part of
- *  the file name, or if the name ends with ".hh" or ".H".
- */
-fix = {
-    hackname = no_double_slash;
-    test     = '-z "`echo ${file}|egrep \'++|\.hh$|\.H$\'`"';
-    select = '//[^*]';
-    sed    = '/\/\/[^*]/' "s|//\\(.*\\)$|/* \\1 */|";
 };
 
 
@@ -1817,7 +1831,7 @@ fix = {
     select = "typedef[ \t]+[a-z_][ \ta-z_]*[ \t]"
              "(size|ptrdiff|wchar)_t";
 
-      sed  = "/^[ \t]*\*[ \t]*typedef unsigned int size_t;/N";
+      sed  = "/^[ \t]*\\*[ \t]*typedef unsigned int size_t;/N";
 
       sed  = "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n"
                "[ \t]*\\*\\/\\)/\\1\\\n"
