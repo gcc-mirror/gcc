@@ -1293,7 +1293,7 @@ make_method_value (mdecl)
 
   {
     /* Compute the `throws' information for the method.  */
-    tree table = integer_zero_node;
+    tree table = null_pointer_node;
     if (DECL_FUNCTION_THROWS (mdecl) != NULL_TREE)
       {
 	int length = 1 + list_length (DECL_FUNCTION_THROWS (mdecl));

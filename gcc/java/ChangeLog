@@ -1,3 +1,8 @@
+2001-12-11  Jeff Sturm  <jsturm@one-point.com>
+
+	* class.c (make_method_value): Use null_pointer_node to
+	represent empty exception table.
+
 2001-12-10  Tom Tromey  <tromey@redhat.com>
 
 	* check-init.c (check_init) [SWITCH_EXPR]: Use SWITCH_HAS_DEFAULT.
