@@ -254,9 +254,7 @@ rtx_alloc (code)
      one int, but we don't want to assume that and it isn't very portable
      anyway; this is.  */
 
-  length = (sizeof (struct rtx_def) - sizeof (rtunion) - 1) / sizeof (int);
-  for (; length >= 0; length--)
-    ((int *) rt)[length] = 0;
+  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));
 
   PUT_CODE (rt, code);
 
