@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler;
    Charles River Data Systems UNiverse/32.
-   Copyright (C) 1987, 1993, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
 
 This file is part of GNU CC.
@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
 #define SGS			/* Uses SGS assembler */
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
+#define SGS_NO_LI		/* Suppress jump table label usage */
 #define CRDS			/* Charles River Data Systems assembler */
 
 #include "m68k/m68k.h"
@@ -31,7 +32,8 @@ Boston, MA 02111-1307, USA.  */
    aligned such that we can correctly extract bitfields from them.
    Someone should check whether the usual compiler on the crds machine
    provides the equivalent behavior of STRUCTURE_SIZE_BOUNDARY.  */
-#error This does not define STRUCTURE_SIZE_BOUNDARY
+/* Set to 16 because all other m68k targets have it so */
+#define STRUCTURE_SIZE_BOUNDARY 16
 
 /* See m68k.h.  0 means 680[01]0 with no 68881.  */
 
@@ -75,8 +77,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* UNOS need stack probe :-( */
 
+#if 0
 #define HAVE_probe 1
 #define gen_probe()  gen_rtx(ASM_INPUT, VOIDmode, "tstb -2048(sp)\t;probe\n")
+#else
+#undef NEED_PROBE
+#define NEED_PROBE (-2048)
+#endif
 
 /* use memcpy, memset instead of bcopy, etc. */
 
@@ -145,6 +152,11 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_APP_OFF 
 #define ASM_APP_OFF ";#NO_APP\n"
+
+/* The prefix for immediate operands.  */
+
+#undef IMMEDIATE_PREFIX
+#define IMMEDIATE_PREFIX "$"
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
@@ -223,6 +235,7 @@ do {  int i;								\
 }
 
 
+#if 0
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.
@@ -300,6 +313,7 @@ do {  int i;								\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
   else { putc ('$', FILE); output_addr_const (FILE, X); }}
+#endif
 
 /* Note that this contains a kludge that knows that the only reason
    we have an address (plus (label_ref...) (reg...))
@@ -490,10 +504,6 @@ do {  int i;								\
 	  fprintf (FILE, "\tadd.l #%d,sp\n", - (fsize + 4));          \
 	}							      \
     }								      \
-  for (regno = 24; regno < 56; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      fprintf(FILE, "\tfpmoved %s, sp@-\n",			\
-	      reg_names[regno]);				\
   for (regno = 16; regno < 24; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
        mask |= 1 << (regno - 16);				\
@@ -535,11 +545,6 @@ do {  int i;								\
   int fsize = ((SIZE) + 3) & -4;				\
   int big = 0;							\
   nregs = 0;  fmask = 0; fpoffset = 0;				\
-  for (regno = 24 ; regno < 56 ; regno++)			\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      nregs++;							\
-  fpoffset = nregs*8;						\
-  nregs = 0;							\
   for (regno = 16; regno < 24; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       { nregs++; fmask |= 1 << (23 - regno); }			\
