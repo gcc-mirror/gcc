@@ -1,4 +1,4 @@
- /* Specific flags and argument handling of the front-end of the 
+/* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
@@ -42,6 +42,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define ZIP_FILE_ARG	(1<<5)
 /* True if this arg is @FILE - where FILE contains a list of filenames. */
 #define INDIRECT_FILE_ARG (1<<6)
+/* True if this arg is a resource file.  */
+#define RESOURCE_FILE_ARG (1<<7)
 
 static char *find_spec_file	PARAMS ((const char *));
 
@@ -59,6 +61,7 @@ const char jvgenmain_spec[] =
 		   %{v:-version} %{pg:-p} %{p}\
 		   %{<fbounds-check} %{<fno-bounds-check}\
 		   %{<fassume-compiled} %{<fno-assume-compiled}\
+                   %{<fcompile-resource*}\
 		   %{<femit-class-file} %{<femit-class-files} %{<fencoding*}\
 		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
 		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
@@ -164,7 +167,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int saw_libgcj ATTRIBUTE_UNUSED = 0;
 #endif
 
-  /* Saw -C or -o option, respectively. */
+  /* Saw -R, -C or -o options, respectively. */
+  int saw_R = 0;
   int saw_C = 0;
   int saw_o = 0;
 
@@ -256,6 +260,16 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      library = 0;
 	      will_link = 0;
 	    }
+	  else if (strcmp (argv[i], "-R") == 0)
+	    {
+	      saw_R = 1;
+	      quote = argv[i];
+	      want_spec_file = 0;
+	      if (library != 0)
+		added -= 2;
+	      library = 0;
+	      will_link = 0;
+	    }
 	  else if (argv[i][1] == 'D')
 	    saw_D = 1;
 	  else if (argv[i][1] == 'g')
@@ -324,6 +338,13 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      continue;
 	    }
 
+	  if (saw_R)
+	    {
+	      args[i] |= RESOURCE_FILE_ARG;
+	      last_input_index = i;
+	      added += 2;  /* for -xjava and -xnone */
+	    }
+
 	  if (argv[i][0] == '@')
 	    {
 	      args[i] |= INDIRECT_FILE_ARG;
@@ -362,6 +383,11 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     fatal ("can't specify `-D' without `--main'\n");
 
   num_args = argc + added;
+  if (saw_R)
+    {
+      if (! saw_o)
+	fatal ("-R requires -o");
+    }
   if (saw_C)
     {
       num_args += 3;
@@ -433,6 +459,23 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
       if ((args[i] & PARAM_ARG) || i == 0)
 	continue;
+
+      if ((args[i] & RESOURCE_FILE_ARG) != 0)
+	{
+	  arglist[j++] = "-xjava";
+	  arglist[j++] = argv[i];
+	  arglist[j] = "-xnone";
+	}
+
+      if (strcmp (argv[i], "-R") == 0)
+	{
+	  char *ptr = argv[i+i];
+	  arglist[j] = concat ("-fcompile-resource=",
+			       *argv[i+1] == '/' ? "" : "/",
+			       argv[i+1], NULL);
+	  i++;
+	  continue;
+	}
 
       if (strcmp (argv[i], "-classpath") == 0
 	  || strcmp (argv[i], "-CLASSPATH") == 0)

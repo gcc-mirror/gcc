@@ -167,7 +167,7 @@ in which case they will all be compiled.  If you specify a
 option, all the input files will be compiled together, producing a
 single output file, named @var{FILENAME}.
 This is allowed even when using @code{-S} or @code{-c},
-but not when using @code{-C}.
+but not when using @code{-C} or @code{-R}.
 (This is an extension beyond the what plain @code{gcc} allows.)
 (If more than one input file is specified, all must currently
 be @code{.java} files, though we hope to fix this.)
@@ -336,6 +336,11 @@ using the @code{java.lang.System.getProperty} method.
 @item -C
 This option is used to tell @code{gcj} to generate bytecode
 (@file{.class} files) rather than object code.
+
+@item -R @var{resource-name}
+This option is used to tell @code{gcj} to compile the contents of a
+given file to object code so it may be accessed at runtime with the core
+protocol handler as @var{core:/resource-name}.
 
 @item -d @var{directory}
 When used with @code{-C}, this causes all generated @file{.class} files

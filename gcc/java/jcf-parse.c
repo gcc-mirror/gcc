@@ -36,6 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "ggc.h"
 #include "debug.h"
+#include "assert.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -1083,6 +1084,22 @@ yyparse ()
 
   if (filename_count == 0)
     warning ("no input file specified");
+
+  if (resource_name)
+    {
+      char *resource_filename;
+      
+      /* Only one resource file may be compiled at a time.  */
+      assert (TREE_CHAIN (current_file_list) == NULL);
+
+      resource_filename = IDENTIFIER_POINTER (TREE_VALUE (current_file_list));
+      compile_resource_file (resource_name, resource_filename);
+      
+      java_expand_classes ();
+      if (!java_report_errors ())
+	emit_register_classes ();
+      return 0;
+    }
 
   current_jcf = main_jcf;
   current_file_list = nreverse (current_file_list);

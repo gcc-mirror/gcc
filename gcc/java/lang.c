@@ -99,6 +99,8 @@ int compiling_from_source;
 
 const char * const language_string = "GNU Java";
 
+char * resource_name;
+
 int flag_emit_class_files = 0;
 
 /* Nonzero if input file is a file with a list of filenames to compile. */
@@ -246,6 +248,13 @@ java_decode_option (argc, argv)
       return 0;
     }
 
+#define CLARG "-fcompile-resource="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      resource_name = p + sizeof (CLARG) - 1;
+      return 1;
+    }
+#undef CLARG
 #define CLARG "-fassume-compiled="
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
