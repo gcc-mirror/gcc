@@ -1,3 +1,8 @@
+2000-10-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* calls.c (combine_pending_stack_adjustment_and_call): Don't
+	adjust stack when unadjusted_alignment ends up as zero.
+
 2000-10-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* fixinc/genfixes: Remove EGCS reference.
