@@ -2386,6 +2386,7 @@ may_trap_p (rtx x)
     case GT:
     case LE:
     case LT:
+    case LTGT:
     case COMPARE:
       /* Some floating point comparisons may trap.  */
       if (!flag_trapping_math)

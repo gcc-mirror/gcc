@@ -1,3 +1,7 @@
+2004-06-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtlanal.c (may_trap_p): Mark LTGT as trapping.
+
 2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* tree-alias-common.h (struct tree_alias_ops): Change ip and
