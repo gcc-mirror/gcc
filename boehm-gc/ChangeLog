@@ -1,3 +1,9 @@
+2002-03-25  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/private/gcconfig.h: Change all likely references
+	to linker script synthesized symbols to use this idiom:
+	extern int etext[]; etext
+
 2002-03-25  Jeff Sturm  <jsturm@one-point.com>
 
 	* linux_threads.c (GC_get_nprocs): Close file descriptor.
