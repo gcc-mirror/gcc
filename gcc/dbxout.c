@@ -308,6 +308,7 @@ static void print_int_cst_octal		PARAMS ((tree));
 static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
 static void print_wide_int		PARAMS ((HOST_WIDE_INT));
 static void dbxout_type_name		PARAMS ((tree));
+static void dbxout_class_name_qualifiers PARAMS ((tree));
 static int dbxout_symbol_location	PARAMS ((tree, tree, const char *, rtx));
 static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
 static void dbxout_prepare_symbol	PARAMS ((tree));
@@ -1827,6 +1828,33 @@ dbxout_type_name (type)
   fprintf (asmfile, "%s", IDENTIFIER_POINTER (t));
   CHARS (IDENTIFIER_LENGTH (t));
 }
+
+/* Output leading leading struct or class names needed for qualifying
+   type whose scope is limited to a struct or class.  */
+
+static void
+dbxout_class_name_qualifiers (decl)
+     tree decl;
+{
+  tree context = decl_type_context (decl);
+
+  if (context != NULL_TREE 
+      && TREE_CODE(context) == RECORD_TYPE
+      && TYPE_NAME (context) != 0 
+      && (TREE_CODE (TYPE_NAME (context)) == IDENTIFIER_NODE
+          || (DECL_NAME (TYPE_NAME (context)) != 0)))
+    {
+      tree name = TYPE_NAME (context);
+
+      if (TREE_CODE (name) == TYPE_DECL)
+	{
+	  dbxout_class_name_qualifiers (name);
+	  name = DECL_NAME (name);
+	}
+      fprintf (asmfile, "%s::", IDENTIFIER_POINTER (name));
+      CHARS (IDENTIFIER_LENGTH (name) + 2);
+    }
+}
 
 /* Output a .stabs for the symbol defined by DECL,
    which must be a ..._DECL node in the normal namespace.
@@ -1968,9 +1996,17 @@ dbxout_symbol (decl, local)
 		dbxout_finish_symbol (NULL_TREE);
 	      }
 
+	    /* Output .stabs (or whatever) and leading double quote.  */
+	    fprintf (asmfile, "%s\"", ASM_STABS_OP);
+
+	    if (use_gnu_debug_info_extensions)
+	      {
+		/* Output leading class/struct qualifiers.  */
+		dbxout_class_name_qualifiers (decl);
+	      }
+
 	    /* Output typedef name.  */
-	    fprintf (asmfile, "%s\"%s:", ASM_STABS_OP,
-		     IDENTIFIER_POINTER (DECL_NAME (decl)));
+	    fprintf (asmfile, "%s:", IDENTIFIER_POINTER (DECL_NAME (decl)));
 
 	    /* Short cut way to output a tag also.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
