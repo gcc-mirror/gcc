@@ -1,3 +1,11 @@
+Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa-dce.c (note_inherently_necessary_set): New function.
+	(find_inherently_necessary): Use it.  Do not consider
+	NOTEs, CODE_LABELs or BARRIERS are necessary.  Improve
+	handling of asms and unspecs.
+	(delete_insn_bb): Only delete INSNs, CALL_INSNs or JUMP_INSNs.
+
 2001-06-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* target.h (struct gcc_target): Add comp_type_attributes and
