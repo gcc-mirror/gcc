@@ -541,7 +541,7 @@ Report bugs to <egcs-bugs@cygnus.org>.\n");
 	  break;
 	}
     }
-  else if (n_infiles && add_version_magic && verbose)
+  else if (add_version_magic && verbose)
     {
       append_arg ("-c");
       append_arg ("-xf77-version");
