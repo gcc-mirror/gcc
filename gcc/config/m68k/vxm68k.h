@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks m68k version.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -68,12 +68,15 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 
+/* These are the official values from WRS.  */
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE "char"
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE_SIZE 8
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "long int"
 #undef SIZE_TYPE
-#define SIZE_TYPE "long unsigned int"
+#define SIZE_TYPE "unsigned int"
 
 /* VxWorks does all the library stuff itself.  */
 
