@@ -48,8 +48,6 @@ enum processor_type pa_cpu;
 /* String to hold which cpu we are scheduling for.  */
 char *pa_cpu_string;
 
-rtx hppa_save_pic_table_rtx;
-
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
@@ -2348,6 +2346,27 @@ hppa_expand_prologue()
 	    fr_saved++;
 	  }
     }
+
+  /* When generating PIC code it is necessary to save/restore the
+     PIC register around each function call.  We used to do this
+     in the call patterns themselves, but that implementation
+     made incorrect assumptions about using global variables to hold
+     per-function rtl code generated in the backend.
+
+     So instead, we copy the PIC register into a reserved callee saved
+     register in the prologue.  Then after each call we reload the PIC
+     register from the callee saved register.  We also reload the PIC
+     register from the callee saved register in the epilogue ensure the
+     PIC register is valid at function exit.
+
+     This may (depending on the exact characteristics of the function)
+     even be more efficient. 
+
+     Avoid this if the callee saved register wasn't used (these are
+     leaf functions.  */
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM_SAVED])
+    emit_move_insn (gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM_SAVED),
+		    gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM));
 }
 
 
