@@ -752,7 +752,7 @@ calls_setjmp_r (tp, walk_subtrees, data)
   if (TREE_CODE (*tp) != FUNCTION_DECL)
     return NULL_TREE;
 
-  return setjmp_call_p (*tp);
+  return setjmp_call_p (*tp) ? *tp : NULL_TREE;
 }
 
 /* Returns non-zero if FN calls `setjmp' or some other function that
