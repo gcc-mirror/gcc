@@ -1,3 +1,11 @@
+2004-03-20  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getVScrollbarWidth):
+	Don't access ws when it is null.
+	(Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getHScrollbarHeight):
+	Likewise.
+
 2004-03-19  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/lang/ThreadGroup.java (list): Changed print to println.
