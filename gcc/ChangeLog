@@ -1,3 +1,10 @@
+2004-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/18776
+	* expr.c (write_complex_part): Use a subreg if the original object
+	is a hard reg that spans an even number of regs or a MEM.
+	(read_complex_part): Likewise.
+
 2004-12-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (install-common): Do not install the specs file

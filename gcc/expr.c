@@ -2598,14 +2598,32 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
      will work.  This special case is important, since store_bit_field
      wants to operate on integer modes, and there's rarely an OImode to
      correspond to TCmode.  */
-  if (ibitsize >= BITS_PER_WORD)
+  if (ibitsize >= BITS_PER_WORD
+      /* For hard regs we have exact predicates.  Assume we can split
+	 the original object if it spans an even number of hard regs.
+	 This special case is important for SCmode on 64-bit platforms
+	 where the natural size of floating-point regs is 32-bit.  */
+      || (GET_CODE (cplx) == REG
+	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
+	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
+      /* For MEMs we always try to make a "subreg", that is to adjust
+	 the MEM, because store_bit_field may generate overly
+	 convoluted RTL for sub-word fields.  */
+      || MEM_P (cplx))
     {
       rtx part = simplify_gen_subreg (imode, cplx, cmode,
 				      imag_p ? GET_MODE_SIZE (imode) : 0);
-      emit_move_insn (part, val);
+      if (part)
+        {
+	  emit_move_insn (part, val);
+	  return;
+	}
+      else
+	/* simplify_gen_subreg may fail for sub-word MEMs.  */
+	gcc_assert (MEM_P (cplx) && ibitsize < BITS_PER_WORD);
     }
-  else
-    store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, imode, val);
+
+  store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, imode, val);
 }
 
 /* Extract one of the components of the complex value CPLX.  Extract the
@@ -2640,12 +2658,26 @@ read_complex_part (rtx cplx, bool imag_p)
      will work.  This special case is important, since extract_bit_field
      wants to operate on integer modes, and there's rarely an OImode to
      correspond to TCmode.  */
-  if (ibitsize >= BITS_PER_WORD)
+  if (ibitsize >= BITS_PER_WORD
+      /* For hard regs we have exact predicates.  Assume we can split
+	 the original object if it spans an even number of hard regs.
+	 This special case is important for SCmode on 64-bit platforms
+	 where the natural size of floating-point regs is 32-bit.  */
+      || (GET_CODE (cplx) == REG
+	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
+	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
+      /* For MEMs we always try to make a "subreg", that is to adjust
+	 the MEM, because extract_bit_field may generate overly
+	 convoluted RTL for sub-word fields.  */
+      || MEM_P (cplx))
     {
       rtx ret = simplify_gen_subreg (imode, cplx, cmode,
 				     imag_p ? GET_MODE_SIZE (imode) : 0);
-      gcc_assert (ret != NULL);
-      return ret;
+      if (ret)
+        return ret;
+      else
+	/* simplify_gen_subreg may fail for sub-word MEMs.  */
+	gcc_assert (MEM_P (cplx) && ibitsize < BITS_PER_WORD);
     }
 
   return extract_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0,
