@@ -1,3 +1,7 @@
+2004-02-04  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        * cgraphunit.c (cgraph_postorder): Fix typo in comment.
+
 2004-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*la_64" + peepholes, "reload_indi"): Move
