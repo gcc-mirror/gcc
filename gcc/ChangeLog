@@ -1,3 +1,15 @@
+2005-02-17  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* builtins.c (expand_builtin_return_addr): Remove tem parameter.
+	tem becomes a local variable which is set to the value of the 
+	back end defined INITIAL_FRAME_ADDRESS macro.
+	(expand_builtin_frame_address): Omit the base parameter to 
+	expand_builtin_return_addr.
+	(expand_builtin_profile_func): Likewise.
+	* config/s390/s390.h (INITIAL_FRAME_ADDRESS_RTX): Define new macro.
+	(DYNAMIC_CHAIN_ADDRESS): Remove the case for the initial frame.
+	* doc/tm.texi: Documentation for INITIAL_FRAME_ADDRESS_RTX added.
+
 2005-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (s390_alloc_pool, s390_free_pool,

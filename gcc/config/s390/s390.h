@@ -612,20 +612,22 @@ extern int current_function_outgoing_args_size;
    the argument area.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
+/* Defining this macro makes __builtin_frame_address(0) and 
+   __builtin_return_address(0) work with -fomit-frame-pointer.  */
+#define INITIAL_FRAME_ADDRESS_RTX                                             \
+  (TARGET_PACKED_STACK ?                                                      \
+   plus_constant (arg_pointer_rtx, -UNITS_PER_WORD) :                         \
+   plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
+
 /* The return address of the current frame is retrieved
    from the initial value of register RETURN_REGNUM.
    For frames farther back, we use the stack slot where
    the corresponding RETURN_REGNUM register was saved.  */
+#define DYNAMIC_CHAIN_ADDRESS(FRAME)                                          \
+  (TARGET_PACKED_STACK ?                                                      \
+   plus_constant ((FRAME), STACK_POINTER_OFFSET - UNITS_PER_WORD) : (FRAME))
 
-#define DYNAMIC_CHAIN_ADDRESS(FRAME)                                            \
-  (TARGET_PACKED_STACK ?                                                        \
-    ((FRAME) != hard_frame_pointer_rtx ?                                        \
-     plus_constant ((FRAME), STACK_POINTER_OFFSET - UNITS_PER_WORD) :           \
-     plus_constant (arg_pointer_rtx, -UNITS_PER_WORD)) :                        \
-     ((FRAME) != hard_frame_pointer_rtx ? (FRAME) :				\
-      plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET)))
-
-#define RETURN_ADDR_RTX(COUNT, FRAME)						\
+#define RETURN_ADDR_RTX(COUNT, FRAME)					      \
   s390_return_addr_rtx ((COUNT), DYNAMIC_CHAIN_ADDRESS ((FRAME)))
 
 /* In 31-bit mode, we need to mask off the high bit of return addresses.  */

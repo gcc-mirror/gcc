@@ -453,10 +453,15 @@ builtin_save_expr (tree exp)
    address located within it (depending on FNDECL_CODE).  */
 
 static rtx
-expand_builtin_return_addr (enum built_in_function fndecl_code, int count,
-			    rtx tem)
+expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
 {
   int i;
+
+#ifdef INITIAL_FRAME_ADDRESS_RTX
+  rtx tem = INITIAL_FRAME_ADDRESS_RTX;
+#else
+  rtx tem = hard_frame_pointer_rtx;
+#endif
 
   /* Some machines need special handling before we can access
      arbitrary frames.  For example, on the sparc, we must first flush
@@ -4221,8 +4226,7 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
     {
       rtx tem
 	= expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl),
-				      tree_low_cst (TREE_VALUE (arglist), 1),
-				      hard_frame_pointer_rtx);
+				      tree_low_cst (TREE_VALUE (arglist), 1));
 
       /* Some ports cannot access arbitrary stack frames.  */
       if (tem == NULL)
@@ -4855,7 +4859,7 @@ expand_builtin_profile_func (bool exitp)
 
   emit_library_call (which, LCT_NORMAL, VOIDmode, 2, this, Pmode,
 		     expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
-						 0, hard_frame_pointer_rtx),
+						 0),
 		     Pmode);
 
   return const0_rtx;
