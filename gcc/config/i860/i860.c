@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Derived from sparc.c.
 
@@ -28,6 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "flags.h"
 #include "rtl.h"
 #include "tree.h"
@@ -41,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "function.h"
 #include "expr.h"
+#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -63,14 +66,6 @@ const char *i860_reg_prefix = I860_REG_PREFIX;
 /* Save information from a "cmpxx" operation until the branch is emitted.  */
 
 rtx i860_compare_op0, i860_compare_op1;
-
-/* Initialize the GCC target structure.  */
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE i860_output_function_prologue
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE i860_output_function_epilogue
-
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return non-zero if this pattern, can be evaluated safely, even if it
    was not asked for.  */
@@ -1717,7 +1712,7 @@ i860_output_function_prologue (asm_file, local_bytes)
       /* Adjust the stack pointer.  The ABI sez to do this using `adds',
 	 but the native C compiler on svr4 uses `addu'.  */
 
-      fprintf (asm_file, "\taddu -%d,%ssp,%ssp\n",
+      fprintf (asm_file, "\taddu -" HOST_WIDE_INT_PRINT_DEC ",%ssp,%ssp\n",
 	frame_upper_bytes, i860_reg_prefix, i860_reg_prefix);
 
       /* Save the old frame pointer.  */
@@ -1734,9 +1729,9 @@ i860_output_function_prologue (asm_file, local_bytes)
 
       /* Get the value of frame_lower_bytes into r31.  */
 
-      fprintf (asm_file, "\torh %d,%sr0,%sr31\n",
+      fprintf (asm_file, "\torh " HOST_WIDE_INT_PRINT_DEC ",%sr0,%sr31\n",
 	frame_lower_bytes >> 16, i860_reg_prefix, i860_reg_prefix);
-      fprintf (asm_file, "\tor %d,%sr31,%sr31\n",
+      fprintf (asm_file, "\tor " HOST_WIDE_INT_PRINT_DEC ",%sr31,%sr31\n",
 	frame_lower_bytes & 0xffff, i860_reg_prefix, i860_reg_prefix);
 
       /* Now re-adjust the stack pointer using the value in r31.
@@ -1774,12 +1769,12 @@ i860_output_function_prologue (asm_file, local_bytes)
       /* Adjust the stack pointer.  The ABI sez to do this using `adds',
 	 but the native C compiler on svr4 uses `addu'.  */
 
-      fprintf (asm_file, "\taddu -%d,%ssp,%ssp\n",
+      fprintf (asm_file, "\taddu -" HOST_WIDE_INT_PRINT_DEC ",%ssp,%ssp\n",
 	total_fsize, i860_reg_prefix, i860_reg_prefix);
 
       /* Save the old frame pointer.  */
 
-      fprintf (asm_file, "\tst.l %sfp,%d(%ssp)\n",
+      fprintf (asm_file, "\tst.l %sfp," HOST_WIDE_INT_PRINT_DEC "(%ssp)\n",
 	i860_reg_prefix, frame_lower_bytes, i860_reg_prefix);
 
       /* Setup the new frame pointer.  The ABI sez to do this after
@@ -1787,7 +1782,7 @@ i860_output_function_prologue (asm_file, local_bytes)
 	(and its saz to do this using adds), but that's not what the
 	 native C compiler on svr4 does.  */
 
-      fprintf (asm_file, "\taddu %d,%ssp,%sfp\n",
+      fprintf (asm_file, "\taddu " HOST_WIDE_INT_PRINT_DEC ",%ssp,%sfp\n",
 	frame_lower_bytes, i860_reg_prefix, i860_reg_prefix);
 
       /* Preserve registers.  The ABI sez to do this before setting
@@ -2060,7 +2055,7 @@ i860_output_function_epilogue (asm_file, local_bytes)
 
   /* Get the value we plan to use to restore the stack pointer into r31.  */
 
-  fprintf (asm_file, "\tadds %d,%sfp,%sr31\n",
+  fprintf (asm_file, "\tadds " HOST_WIDE_INT_PRINT_DEC ",%sfp,%sr31\n",
     frame_upper_bytes, i860_reg_prefix, i860_reg_prefix);
 
   /* Restore the return address and the old frame pointer.  */
@@ -2173,10 +2168,7 @@ i860_build_va_list ()
 }
 
 void
-i860_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
-     tree valist;
-     rtx nextarg;
+i860_va_start (tree valist, rtx nextarg)
 {
   tree saveregs, t;
 
@@ -2184,7 +2176,7 @@ i860_va_start (stdarg_p, valist, nextarg)
 			expand_builtin_saveregs ());
   saveregs = build1 (INDIRECT_REF, va_list_type_node, saveregs);
 
-  if (stdarg_p)
+  if (1 /* stdarg_p */)
     {
       tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
       tree ireg_used, freg_used, reg_base, mem_ptr;
@@ -2210,12 +2202,12 @@ i860_va_start (stdarg_p, valist, nextarg)
       mem_ptr = build (COMPONENT_REF, TREE_TYPE (field_mem_ptr),
 		       valist, field_mem_ptr);
 
-      t = build_int_2 (current_function_args_info.ints, 0);
+      t = build_int_2 (current_function_args_info.ints / UNITS_PER_WORD, 0);
       t = build (MODIFY_EXPR, TREE_TYPE (ireg_used), ireg_used, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
       
-      t = build_int_2 (ROUNDUP (current_function_args_info.floats, 8), 0);
+      t = build_int_2 (ROUNDUP ((current_function_args_info.floats / UNITS_PER_WORD), 8), 0);
       t = build (MODIFY_EXPR, TREE_TYPE (freg_used), freg_used, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2241,7 +2233,7 @@ i860_va_start (stdarg_p, valist, nextarg)
 
 #define NUM_PARM_FREGS	8
 #define NUM_PARM_IREGS	12
-#ifdef I860_SVR4_VARARGS
+#ifdef I860_SVR4_VA_LIST
 #define FREG_OFFSET 0
 #define IREG_OFFSET (NUM_PARM_FREGS * UNITS_PER_WORD)
 #else
@@ -2316,7 +2308,7 @@ i860_va_arg (valist, type)
 		       build_int_2 (incr, 0)));
       TREE_SIDE_EFFECTS (t) = 1;
 
-      t = fold (build (MULT_EXPR, TREE_TYPE (field), field,
+      t = fold (build (MULT_EXPR, TREE_TYPE (field), t /* field */,
 		       build_int_2 (UNITS_PER_WORD, 0)));
       TREE_SIDE_EFFECTS (t) = 1;
       
@@ -2359,3 +2351,62 @@ i860_va_arg (valist, type)
 
   return ret;
 }
+
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+i860_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (INTVAL (x) == 0)
+        *total = 0;
+      else if (INTVAL (x) < 0x2000 && INTVAL (x) >= -0x2000)
+        *total = 1;
+      return true;
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 4;
+      return true;
+    case CONST_DOUBLE:
+      *total = 6;
+      return true;
+    default:
+      return false;
+    }
+}
+
+static void
+i860_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
+{
+  fprintf (stream, ".%s%ld:\n", prefix, labelno);
+}
+
+static void
+i860_file_start (void)
+{
+  output_file_directive (asm_out_file, main_input_filename);
+  fprintf (asm_out_file, "\t.version\t\"01.01\"\n");
+}
+
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS i860_rtx_costs
+
+#undef  TARGET_ASM_INTERNAL_LABEL
+#define TARGET_ASM_INTERNAL_LABEL i860_internal_label
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE i860_output_function_prologue
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE i860_output_function_epilogue
+
+struct gcc_target targetm = TARGET_INITIALIZER;
+

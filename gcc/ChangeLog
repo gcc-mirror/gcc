@@ -1,5 +1,49 @@
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
+	* config/i860/i860-protos.h (i860_va_start): Remove 'stdarg_p'
+	argument.
+	(tdesc_section): Add prototype.
+	Update copyright dates.
+	* config/i860/i860.c: Include coretypes.h, tm.h, and toplev.h.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Move definition to end of file.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Likewise.
+	(targetm): Likewise.
+	(i860_output_function_prologue): Substitute HOST_WIDE_INT_PRINT_DEC
+	for '%d' where necessary.
+	(i860_va_start): Remove 'stdarg_p' argument.  Make conditional checks
+	on 'stdarg_p' unconditional.  Divide current_function_args_info.ints
+	by UNITS_PER_WORD when referencing (likewise for .floats).
+	(I860_SVR4_VARARGS): Rename...
+	(I860_SVR4_VA_LIST): ...to this.
+	Call build() with 't' rather than 'field'.
+	(i860_rtx_costs): New function.
+	(TARGET_RTX_COSTS): Define.
+	(i860_internal_label): New function.
+	(TARGET_ASM_INTERNAL_LABEL): Define.
+	(i860_file_start): New function.
+	Update copyright dates.
+	* config/i860/i860.h (CPP_PREDEFINES): Remove.
+	(TARGET_CPU_CPP_BUILTINS): Define.
+	(EXPAND_BUILTIN_VA_START): Remove 'stdarg' argument.
+	(CONST_COSTS): Remove (and move code to i860_rtx_costs).
+	(ASM_FILE_START): Remove.
+	(ASM_FILE_START_1): Remove.
+	(ASM_GLOBALIZE_LABEL): Remove.
+	(ASM_OUTPUT_INTERNAL_LABEL): Remove.
+	(ASM_OUTPUT_CASE_LABEL): Replace call of ASM_OUTPUT_INTERNAL_LABEL
+	with targetm.asm_out.internal_label.
+	Update copyright dates.
+	* config/i860/sysv4.h (USER_LABEL_PREFIX): Define.
+	(CPP_PREDEFINES): Remove.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	(GLOBAL_ASM_OP): Define.
+	(ASM_FILE_START): Remove.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Define.
+	(TARGET_ASM_FILE_START): Define.
+	Update copyright dates.
+
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
 	* config.gcc (i860-*-sysv4*): Add target.
 	* config/i860/i860-protos.h: New.
 	* config/i860/i860.c: New.
