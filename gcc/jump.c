@@ -1321,10 +1321,10 @@ duplicate_loop_exit_test (loop_start)
 }
 
 /* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, loop-end,
-   eh-beg, eh-end notes between START and END out before START.  Assume that
-   END is not such a note.  START may be such a note.  Returns the value
-   of the new starting insn, which may be different if the original start
-   was such a note.  */
+   notes between START and END out before START.  Assume that END is not
+   such a note.  START may be such a note.  Returns the value of the new
+   starting insn, which may be different if the original start was such a
+   note.  */
 
 rtx
 squeeze_notes (start, end)
@@ -1342,9 +1342,7 @@ squeeze_notes (start, end)
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP))
 	{
 	  if (insn == start)
 	    start = next;

@@ -1,3 +1,7 @@
+2001-02-10  Richard Henderson  <rth@redhat.com>
+
+	* jump.c (squeeze_notes): Revert 2000-05-12 change.
+
 2001-02-10  Anthony Green  <green@redhat.com>
 
 	* cpp.texi (Standard Predefined): Add documentation for
