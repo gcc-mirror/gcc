@@ -286,6 +286,7 @@ GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PART
 DIR = ../gcc
 
 # Guaranteed to not exist when not passing md through cpp.
+# This value is overridden directly by configure.
 MD_FILE = md-cpp-not-used
 
 # Flags to use when cross-building GCC.
@@ -1181,11 +1182,9 @@ stamp-output : md genoutput $(srcdir)/move-if-change
 # since that describes the host machine.
 
 # Pass the md file through cpp if the target requests it.
-$(MD_FILE): $(CPP_MD)
-	-if [ -f md.pre-cpp ]; then \
-	  rm -f md ; ./cpp $(CPP_MD_FLAGS) md.pre-cpp | sed 's/^# /; /g' > md ; \
-	else true ; \
-	fi
+$(MD_FILE): $(MD_DEPS)
+	rm -f $@
+	$(MD_CPP) $(MD_CPPFLAGS) md.pre-cpp | sed 's/^# /; /g' > $@
 
 genconfig : genconfig.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genconfig \
