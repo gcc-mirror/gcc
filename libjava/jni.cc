@@ -2587,7 +2587,7 @@ struct JNINativeInterface _Jv_JNIFunctions =
   _Jv_JNI_ReleaseStringChars,	       // ReleaseStringChars
   _Jv_JNI_NewStringUTF,		       // NewStringUTF
   _Jv_JNI_GetStringUTFLength,	       // GetStringUTFLength
-  _Jv_JNI_GetStringUTFChars,	       // GetStringUTFLength
+  _Jv_JNI_GetStringUTFChars,	       // GetStringUTFChars
   _Jv_JNI_ReleaseStringUTFChars,       // ReleaseStringUTFChars
   _Jv_JNI_GetArrayLength,	       // GetArrayLength
   _Jv_JNI_NewObjectArray,	       // NewObjectArray
