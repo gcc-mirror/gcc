@@ -119,7 +119,7 @@ provide these macros.  Note that this file does not have to include a
 header file that defines @code{off_t}, or the other types; you simply
 have to provide the macros.
 
-In addition, several V3 source files unconditionally define the macro
+In addition, several libstdc++-v3 source files unconditionally define the macro
 @code{_POSIX_SOURCE}.  On many systems, defining this macro causes large
 portions of the C library header files to be eliminated at preprocessing
 time.  Therefore, you may have to @code{#undef} this macro, or define
@@ -141,6 +141,9 @@ this:
 #endif
 @end example
 
+We recommend copying an existing @file{bits/os_defines.h} to use as a
+starting point.
+
 @c ---------------------------------------------------------------------
 @c Character types
 @c ---------------------------------------------------------------------
@@ -155,7 +158,7 @@ character classification, analagous to that provided by the C libraries
 certainly need some modification.
 
 The first file to write is @file{bits/ctype_base.h}.  This file provides
-some very basic information about character classification.  The V3
+some very basic information about character classification.  The libstdc++-v3
 library assumes that your C library implements @file{<ctype.h>} by using
 a table (indexed by character code) containing integers, where each of
 these integers is a bit-mask indicating whether the charcter is
@@ -367,7 +370,7 @@ make a file called @file{bits/atomicity.h}.
 
 If you are using the assembly-language approach, put this code in
 @file{config/cpu/<chip>/bits/atomicity.h}, where chip is the name of
-your chip.  In that case, edit the switch statement in
+your processor.  In that case, edit the switch statement in
 @file{configure.target} to set the @code{cpu_include_dir}.  In either
 case, set the switch statement that sets @code{ATOMICITYH} to be the
 directory containing @file{bits/atomicity.h}.
@@ -425,7 +428,7 @@ loaded.  Often, that requires linking in special object files when the
 C++ library is built as a shared library, or taking other
 system-specific actions.
 
-The V3 library is linked with the C version of libtool, even though it
+The libstdc++-v3 library is linked with the C version of libtool, even though it
 is a C++ library.  Therefore, the C version of libtool needs to ensure
 that the run-time library initializers are run.  The usual way to do
 this is to build the library using @code{gcc -shared}.
