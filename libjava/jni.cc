@@ -1,6 +1,6 @@
 // jni.cc - JNI implementation, including the jump table.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation
 
    This file is part of libgcj.
@@ -1880,7 +1880,8 @@ nathash_add (const JNINativeMethod *method)
     return;
   // FIXME
   slot->name = strdup (method->name);
-  slot->signature = strdup (method->signature);
+  // This was already strduped in _Jv_JNI_RegisterNatives.
+  slot->signature = method->signature;
   slot->fnPtr = method->fnPtr;
 }
 
@@ -1894,6 +1895,8 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
   // the nathash table.
   JvSynchronize sync (global_ref_table);
 
+  JNINativeMethod dottedMethod;
+
   // Look at each descriptor given us, and find the corresponding
   // method in the class.
   for (int j = 0; j < nMethods; ++j)
@@ -1905,15 +1908,28 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 	{
 	  _Jv_Method *self = &imeths[i];
 
-	  if (! strcmp (self->name->chars (), methods[j].name)
-	      && ! strcmp (self->signature->chars (), methods[j].signature))
+	  // Copy this JNINativeMethod and do a slash to dot
+	  // conversion on the signature.
+	  dottedMethod.name = methods[j].name;
+	  dottedMethod.signature = strdup (methods[j].signature);
+	  dottedMethod.fnPtr = methods[j].fnPtr;
+	  char *c = dottedMethod.signature;
+	  while (*c)
+	    {
+	      if (*c == '/')
+		*c = '.';
+	      c++;
+	    }
+
+	  if (! strcmp (self->name->chars (), dottedMethod.name)
+	      && ! strcmp (self->signature->chars (), dottedMethod.signature))
 	    {
 	      if (! (self->accflags & java::lang::reflect::Modifier::NATIVE))
 		break;
 
 	      // Found a match that is native.
 	      found = true;
-	      nathash_add (&methods[j]);
+	      nathash_add (&dottedMethod);
 
 	      break;
 	    }
