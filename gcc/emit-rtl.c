@@ -1254,6 +1254,7 @@ operand_subword (op, i, validate_address, mode)
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
        || flag_pretend_float)
+      && sizeof (float) * 8 == HOST_BITS_PER_WIDE_INT
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_SIZE (mode) == UNITS_PER_WORD
       && GET_CODE (op) == CONST_DOUBLE)
@@ -1264,6 +1265,22 @@ operand_subword (op, i, validate_address, mode)
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
       u.f = d;
+      return GEN_INT (u.i);
+    }
+  if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
+       || flag_pretend_float)
+      && sizeof (double) * 8 == HOST_BITS_PER_WIDE_INT
+      && GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+      && GET_CODE (op) == CONST_DOUBLE)
+    {
+      double d;
+      union {double d; HOST_WIDE_INT i; } u;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+
+      u.d = d;
       return GEN_INT (u.i);
     }
 #endif /* no REAL_ARITHMETIC */
