@@ -1,3 +1,15 @@
+2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	Add Irix 5.2, 6.3 support.
+	* config/os/irix/bits: Renamed to...
+	* config/os/irix/irix6.5/bits: this.
+	* config/os/irix/irix5.2/bits: New, copied from irix6.5/bits.
+	* config/os/irix/irix5.2/bits/ctype_base.h: Use _U, _L, _N,
+	_X, _S, _P, _C and _B instead of IRIX-6.5 _IS* macros.
+	* config/os/irix/irix5.2/bits/ctype_noninline.h
+	(ctype<char>::ctype): Initialize _M_table with __ctype.
+	* configure.target: Adjust.
+
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/basic_string.tcc (operator): Fix thinko.
