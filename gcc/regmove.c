@@ -917,6 +917,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
      int nregs;
      FILE *regmove_dump_file;
 {
+  int old_max_uid = get_max_uid ();
   rtx insn;
   struct match match;
   int pass;
@@ -926,8 +927,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
   regno_src_regno = (int *)alloca (sizeof *regno_src_regno * nregs);
   for (i = nregs; --i >= 0; ) regno_src_regno[i] = -1;
 
-  regmove_bb_head = (int *)alloca (sizeof (int) * (get_max_uid () + 1));
-  for (i = get_max_uid (); i >= 0; i--) regmove_bb_head[i] = -1;
+  regmove_bb_head = (int *)alloca (sizeof (int) * (old_max_uid + 1));
+  for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
   for (i = 0; i < n_basic_blocks; i++)
     regmove_bb_head[INSN_UID (basic_block_head[i])] = i;
 
@@ -1384,6 +1385,19 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	}
     }
 #endif /* REGISTER_CONSTRAINTS */
+
+  /* In fixup_match_1, some insns may have been inserted after basic block
+     ends.  Fix that here.  */
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      rtx end = basic_block_end[i];
+      rtx new = end;
+      rtx next = NEXT_INSN (new);
+      while (next != 0 && INSN_UID (next) >= old_max_uid
+	     && (i == n_basic_blocks - 1 || basic_block_head[i + 1] != next))
+	new = next, next = NEXT_INSN (new);
+      basic_block_end[i] = new;
+    }
 }
 
 /* Returns the INSN_CODE for INSN if its pattern has matching constraints for
