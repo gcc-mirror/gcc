@@ -44,72 +44,19 @@
     }                                           \
   while (0)
 
-extern int	target_flags;
-
-#define MASK_GPOPT         0x00000008   /* Optimize for global pointer.  */
-#define MASK_EMBEDDED_DATA 0x00008000   /* Reduce RAM usage, not fast code.  */
-#define MASK_UNINIT_CONST_IN_RODATA \
-                           0x00800000   /* Store uninitialized
-                                           consts in rodata.  */
-
 /* Macros used in the machine description to test the flags.  */
 
 #define TARGET_STATS		0
 
-/* For embedded systems, optimize for reduced RAM space instead of for
-   fastest code.  */
-#define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
-
-#define TARGET_DEBUG_MODE	(target_flags & 0)
-#define TARGET_DEBUG_A_MODE	(target_flags & 0)
-#define TARGET_DEBUG_B_MODE	(target_flags & 0)
-#define TARGET_DEBUG_C_MODE	(target_flags & 0)
-#define TARGET_DEBUG_D_MODE	(target_flags & 0)
-
-#define TARGET_SWITCHES							\
-{									\
-  {"no-crt0",          0,                                               \
-     N_("No default crt0.o") },					 	\
-  {"gpopt",		  MASK_GPOPT,					\
-     N_("Use GP relative sdata/sbss sections")},			\
-  {"no-gpopt",		 -MASK_GPOPT,					\
-     N_("Don't use GP relative sdata/sbss sections")},			\
-  {"embedded-data",	  MASK_EMBEDDED_DATA,				\
-     N_("Use ROM instead of RAM")},					\
-  {"no-embedded-data",	 -MASK_EMBEDDED_DATA,				\
-     N_("Don't use ROM instead of RAM")},				\
-  {"uninit-const-in-rodata", MASK_UNINIT_CONST_IN_RODATA,		\
-     N_("Put uninitialized constants in ROM (needs -membedded-data)")},	\
-  {"no-uninit-const-in-rodata", -MASK_UNINIT_CONST_IN_RODATA,		\
-     N_("Don't put uninitialized constants in ROM")},			\
-  {"",			  (TARGET_DEFAULT				\
-			   | TARGET_CPU_DEFAULT),			\
-     NULL},								\
-}
-
-/* Default target_flags if no switches are specified.  */
-
-#define TARGET_DEFAULT 0
-
-#ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT 0
-#endif
+#define TARGET_DEBUG_MODE	0
+#define TARGET_DEBUG_A_MODE	0
+#define TARGET_DEBUG_B_MODE	0
+#define TARGET_DEBUG_C_MODE	0
+#define TARGET_DEBUG_D_MODE	0
 
 #ifndef IQ2000_ISA_DEFAULT
 #define IQ2000_ISA_DEFAULT 1
 #endif
-
-#define TARGET_OPTIONS							\
-{									\
-  SUBTARGET_TARGET_OPTIONS						\
-  { "cpu=",	& iq2000_cpu_string,					\
-      N_("Specify CPU for scheduling purposes")},			\
-  { "arch=",    & iq2000_arch_string,                                   \
-      N_("Specify CPU for code generation purposes")},                  \
-}
-
-/* This is meant to be redefined in the host dependent files.  */
-#define SUBTARGET_TARGET_OPTIONS
 
 #define IQ2000_VERSION "[1.0]"
 
@@ -1166,12 +1113,6 @@ extern rtx branch_cmp[2];
 
 /* What type of branch to use.  */
 extern enum cmp_type branch_type;
-
-/* Strings to hold which cpu and instruction set architecture to use.  */
-extern const char * iq2000_cpu_string;	  /* For -mcpu=<xxx>.  */
-extern const char * iq2000_arch_string;   /* For -march=<xxx>.  */
-
-
 
 enum iq2000_builtins
 {

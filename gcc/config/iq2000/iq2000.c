@@ -125,11 +125,6 @@ rtx branch_cmp[2];
 /* What type of branch to use.  */
 enum cmp_type branch_type;
 
-/* Strings to hold which cpu and instruction set architecture to use.  */
-const char * iq2000_cpu_string;	  /* For -mcpu=<xxx>.  */
-const char * iq2000_arch_string;  /* For -march=<xxx>.  */
-
-
 /* Local variables.  */
 
 /* The next branch instruction is a branch likely, not branch normal.  */
@@ -152,15 +147,13 @@ static rtx iq2000_load_reg2;
 static rtx iq2000_load_reg3;
 static rtx iq2000_load_reg4;
 
-/* The target cpu for code generation.  */
-static enum processor_type iq2000_arch;
-
 /* Mode used for saving/restoring general purpose registers.  */
 static enum machine_mode gpr_mode;
 
 
 /* Initialize the GCC target structure.  */
 static struct machine_function* iq2000_init_machine_status (void);
+static bool iq2000_handle_option      (size_t, const char *, int);
 static void iq2000_select_rtx_section (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
 static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, enum machine_mode, int);
@@ -183,6 +176,8 @@ static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_EXPAND_BUILTIN 		iq2000_expand_builtin
 #undef  TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION	iq2000_select_rtx_section
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION		iq2000_handle_option
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS		iq2000_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -1606,26 +1601,31 @@ iq2000_init_machine_status (void)
   return f;
 }
 
-static enum processor_type
-iq2000_parse_cpu (const char * cpu_string)
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+iq2000_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 {
-  const char *p = cpu_string;
-  enum processor_type cpu;
-
-  cpu = PROCESSOR_DEFAULT;
-  switch (p[2])
+  switch (code)
     {
-    case '1':
-      if (!strcmp (p, "iq10"))
-	cpu = PROCESSOR_IQ10;
-      break;
-    case '2':
-      if (!strcmp (p, "iq2000"))
-	cpu = PROCESSOR_IQ2000;
-      break;
-    }
+    case OPT_mcpu_:
+      if (strcmp (arg, "iq10") == 0)
+	iq2000_tune = PROCESSOR_IQ10;
+      else if (strcmp (arg, "iq2000") == 0)
+	iq2000_tune = PROCESSOR_IQ2000;
+      else
+	return false;
+      return true;
 
-  return cpu;
+    case OPT_march_:
+      /* This option has no effect at the moment.  */
+      return (strcmp (arg, "default") == 0
+	      || strcmp (arg, "DEFAULT") == 0
+	      || strcmp (arg, "iq2000") == 0);
+
+    default:
+      return true;
+    }
 }
 
 /* Detect any conflicts in the switches.  */
@@ -1633,52 +1633,11 @@ iq2000_parse_cpu (const char * cpu_string)
 void
 override_options (void)
 {
-  enum processor_type iq2000_cpu;
-
   target_flags &= ~MASK_GPOPT;
 
   iq2000_isa = IQ2000_ISA_DEFAULT;
 
   /* Identify the processor type.  */
-
-  if (iq2000_cpu_string != 0)
-    {
-      iq2000_cpu = iq2000_parse_cpu (iq2000_cpu_string);
-      if (iq2000_cpu == PROCESSOR_DEFAULT)
-	{
-	  error ("bad value (%s) for -mcpu= switch", iq2000_arch_string);
-	  iq2000_cpu_string = "default";
-	}
-      iq2000_arch = iq2000_cpu;
-      iq2000_tune = iq2000_cpu;
-    }
-
-  if (iq2000_arch_string == 0
-      || ! strcmp (iq2000_arch_string, "default")
-      || ! strcmp (iq2000_arch_string, "DEFAULT"))
-    {
-      switch (iq2000_isa)
-	{
-	default:
-	  iq2000_arch_string = "iq2000";
-	  iq2000_arch = PROCESSOR_IQ2000;
-	  break;
-	}
-    }
-  else
-    {
-      iq2000_arch = iq2000_parse_cpu (iq2000_arch_string);
-      if (iq2000_arch == PROCESSOR_DEFAULT)
-	{
-	  error ("bad value (%s) for -march= switch", iq2000_arch_string);
-	  iq2000_arch_string = "default";
-	}
-      if (iq2000_arch == PROCESSOR_IQ10)
-	{
-	  error ("The compiler does not support -march=%s.", iq2000_arch_string);
-	  iq2000_arch_string = "default";
-	}
-    }
 
   iq2000_print_operand_punct['?'] = 1;
   iq2000_print_operand_punct['#'] = 1;
