@@ -57,6 +57,52 @@ Mon Apr 10 15:40:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Recomment.
 	* tree.def (LSHIFT_EXPR, RSHIFT_EXPR): Recomment.
 
+Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sbitmap.h: Whitespace changes and use upper-case macro args.
+	(struct simple_bitmap_def): All sizes now unsigned.
+	(EXECUTE_IF_SET_IN_SBITMAP): Internal vars now _X instead of X_.
+	* sbitmap.c (sbitmap_alloc): N_ELMS now unsigned; also local vars.
+	(sbitmap_vector_alloc): Parms and local vars now unsigned.
+	(sbitmap_zero): Cast bzero arg to PTR.
+	(sbitmap_vector_zero, sbitmap_vector_one): Parm and Local var unsigned.
+	(sbitmap_union_of_diffs): Change loop index to unsigned and rework
+	loop to make structure clearer.
+	(sbitmap_not, sbitmap_difference, sbitmap_a_and_b): Likewise.
+	(sbitmap_a_or_b, sbitmap_a_subset_b_p, sbitmap_a_or_b_and_c): Likewise.
+	(sbitmap_a_and_b_or_c): Likewise.
+	(sbitmap_intersection_of_succs): Minor cleanups.
+	(sbitmap_intersection_of_preds, sbitmap_union_of_succs): Likewise.
+	(sbitmap_union_of_preds): Likewise.
+	(sbitmap_first_set_bit, dump_sbitmap): Local variables now unsigned.
+	(debug_sbitmap): New function.
+	
+	* c-convert.c (convert): Handle REFERENCE_TYPE like POINTER_TYPE.
+	* c-typeck.c (convert_for_assignment): Likewise.
+
+	* expmed.c (init_expmed): Don't free objects we make.
+	* emit-rtl.c (gen_rtx_CONST_INT, init_emit_once): Minor cleanups.
+
+	* expr.c (get_inner_reference): Correct some WITH_RECORD_EXPR cases.
+	(expand_expr, case CONVERT_EXPR): Pass proper alignment to store_field.
+
+	* gcse.c (expr_hash_table_size): Now unsigned.
+	(compute_ae_gen): Local variable `i' now unsigned.
+	(compute_ae_kill, pre_insert_copies, pre_delete, pre_gcse): Likewise.
+	(compute_transout, hoist_code): Likewise.
+	(compute_local_properties): Likewise, also hash_table_size.
+	(alloc_expr_hash_table): N_INSNS now unsigned.
+	(delete_null_pointer_checks): Mark arg F as unused.
+
+	* regrename.c: Minor cleanups, including chang some variables
+	to unsigned int.
+
+2000-04-10  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (skip_block_comment): Use pointer arithmetic rather
+	than GETC ().
+	* cpphash.h: (CPP_BUMP_BUFFER_LINE_CUR, CPP_BUMP_LINE_CUR): New.
+
 2000-04-10  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* invoke.texi (-fno-gnu-keywords): Remove classof, headof,
@@ -24307,3 +24353,5 @@ Wed May 19 00:34:40 1999  Jeffrey A Law  (law@cygnus.com)
 	gcc-2.95 branch.
 
 See ChangeLog.1 for earlier changes.
+
+	
