@@ -1542,7 +1542,9 @@ dbxout_symbol (decl, local)
 	    current_sym_addr = 0;
 	    current_sym_nchars = 2;
 
-	    fprintf (asmfile, "%s \":T", ASM_STABS_OP);
+	    /* Some debuggers fail when given NULL names, so give this a
+	       harmless name of ` '.  */
+	    fprintf (asmfile, "%s \" :T", ASM_STABS_OP);
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (NULL_TREE);
 	  }
