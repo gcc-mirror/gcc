@@ -1,5 +1,13 @@
 2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c/17178
+	* gcc.dg/unused-4.c: Adjust to be correct.
+
+	PR c/17820
+	* gcc.dg/unused-7.c: New test.
+
+2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c++/17797
 	* g++.dg/overload/template2.C: New test.
 
