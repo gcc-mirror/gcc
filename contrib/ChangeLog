@@ -1,3 +1,7 @@
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* test_summary: Replace egcs with gcc.  Update e-mail address.
+
 1999-07-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
             Jerry Quinn <jquinn@nortelnetworks.com>
 
