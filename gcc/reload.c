@@ -2442,15 +2442,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      bcopy ((char *) constraints, (char *) constraints1,
 		     noperands * sizeof (char *));
 	      n_alternatives = n_occurrences (',', constraints[0]) + 1;
-	      for (i = 1; i < noperands; i++)
-		if (n_alternatives != n_occurrences (',', constraints[i]) + 1)
-		  {
-		    error_for_asm (insn, "operand constraints differ in number of alternatives");
-		    /* Avoid further trouble with this insn.  */
-		    PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-		    n_reloads = 0;
-		    return;
-		  }
 	    }
 	  break;
 	}
@@ -2510,15 +2501,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      /* The last operand should not be marked commutative.  */
 	      if (i == noperands - 1)
-		{
-		  if (this_insn_is_asm)
-		    warning_for_asm (this_insn,
-				     "`%%' constraint used with last operand");
-		  else
-		    abort ();
-		}
-	      else
-		commutative = i;
+		abort ();
+
+	      commutative = i;
 	    }
 	  else if (c >= '0' && c <= '9')
 	    {
@@ -2528,13 +2513,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	      /* An operand may not match itself.  */
 	      if (c == i)
-		{
-		  if (this_insn_is_asm)
-		    warning_for_asm (this_insn,
-				     "operand %d has constraint %d", i, c);
-		  else
-		    abort ();
-		}
+		abort ();
 
 	      /* If C can be commuted with C+1, and C might need to match I,
 		 then C+1 might also need to match I.  */
@@ -3372,14 +3351,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    early_data = decompose (recog_operand[i]);
 
 	    if (modified[i] == RELOAD_READ)
-	      {
-		if (this_insn_is_asm)
-		  warning_for_asm (this_insn,
-				   "`&' constraint used with input operand");
-		else
-		  abort ();
-		continue;
-	      }
+	      abort ();
 	    
 	    if (this_alternative[i] == NO_REGS)
 	      {

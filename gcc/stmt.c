@@ -425,6 +425,7 @@ struct label_chain
 static int using_eh_for_cleanups_p = 0;
 
 
+static int n_occurrences		PROTO((int, char *));
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static int expand_fixup			PROTO((tree, rtx, rtx));
 static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
@@ -1096,8 +1097,18 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	  f->stack_level = stack_level;
       }
 }
-
-
+
+/* Return the number of times character C occurs in string S.  */
+static int
+n_occurrences (c, s)
+     int c;
+     char *s;
+{
+  int n = 0;
+  while (*s)
+    n += (*s++ == c);
+  return n;
+}
 
 /* Generate RTL for an asm statement (explicit assembler code).
    BODY is a STRING_CST node containing the assembler code text,
@@ -1184,13 +1195,38 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   last_expr_type = 0;
 
+  /* Check that the number of alternatives is constant across all
+     operands.  */
+  if (outputs || inputs)
+    {
+      tree tmp = TREE_PURPOSE (outputs ? outputs : inputs);
+      int nalternatives = n_occurrences (',', TREE_STRING_POINTER (tmp));
+      tree next = inputs;
+
+      tmp = outputs;
+      while (tmp)
+	{
+	  char *constraint = TREE_STRING_POINTER (TREE_PURPOSE (tmp));
+	  if (n_occurrences (',', constraint) != nalternatives)
+	    {
+	      error ("operand constraints for `asm' differ in number of alternatives");
+	      return;
+	    }
+	  if (TREE_CHAIN (tmp))
+	    tmp = TREE_CHAIN (tmp);
+	  else
+	    tmp = next, next = 0;
+	}
+    }
+
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
+      char *constraint;
+      int c_len;
       int j;
-      int found_equal = 0;
-      int found_plus = 0;
+      int is_inout = 0;
       int allows_reg = 0;
 
       /* If there's an erroneous arg, emit no insn.  */
@@ -1202,27 +1238,43 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
-	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
+      c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
+      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+
+      if (c_len == 0
+	  || (constraint[0] != '=' && constraint[0] != '+'))
+	{
+	  error ("output operand constraint lacks `='");
+	  return;
+	}
+
+      is_inout = constraint[0] == '+';
+      /* Replace '+' with '='.  */
+      constraint[0] = '=';
+      /* Make sure we can specify the matching operand.  */
+      if (is_inout && i > 9)
+	{
+	  error ("output operand constraint %d contains `+'", i);
+	  return;
+	}
+
+      for (j = 1; j < c_len; j++)
+	switch (constraint[j])
 	  {
 	  case '+':
-	    /* Make sure we can specify the matching operand.  */
-	    if (i > 9)
+	  case '=':
+	    error ("operand constraint contains '+' or '=' at illegal position.");
+	    return;
+
+	  case '%':
+	    if (i + 1 == ninputs + noutputs)
 	      {
-		error ("output operand constraint %d contains `+'", i);
+		error ("`%%' constraint used with last operand");
 		return;
 	      }
-
-	    /* Replace '+' with '='.  */
-	    TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] = '=';
-	    found_plus = 1;
 	    break;
 
-	  case '=':
-	    found_equal = 1;
-	    break;
-
-	  case '?':  case '!':  case '*':  case '%':  case '&':
+	  case '?':  case '!':  case '*':  case '&':
 	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
 	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
 	  case 's':  case 'i':  case 'n':
@@ -1244,12 +1296,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 	  }
 
-      if (! found_equal && ! found_plus)
-	{
-	  error ("output operand constraint lacks `='");
-	  return;
-	}
-
       /* If an output operand is not a decl or indirect ref and our constraint
 	 allows a register, make a temporary to act as an intermediate.
 	 Make the asm insn write into that, then our caller will copy it to
@@ -1260,7 +1306,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
-	  || found_plus)
+	  || is_inout)
 	{
 	  if (! allows_reg)
 	    mark_addressable (TREE_VALUE (tail));
@@ -1278,7 +1324,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
 
-      if (found_plus)
+      if (is_inout)
 	{
 	  inout_mode[ninout] = TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)));
 	  inout_opnum[ninout++] = i;
@@ -1311,12 +1357,16 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     {
       int j;
       int allows_reg = 0;
+      char *constraint;
+      int c_len;
 
       /* If there's an erroneous arg, emit no insn,
 	 because the ASM_INPUT would get VOIDmode
 	 and that could cause a crash in reload.  */
       if (TREE_TYPE (TREE_VALUE (tail)) == error_mark_node)
 	return;
+
+      /* ??? Can this happen, and does the error message make any sense? */
       if (TREE_PURPOSE (tail) == NULL_TREE)
 	{
 	  error ("hard register `%s' listed as input operand to `asm'",
@@ -1324,17 +1374,27 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  return;
 	}
 
-      /* Make sure constraint has neither `=' nor `+'.  */
+      c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
+      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
-	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
+      /* Make sure constraint has neither `=', `+', nor '&'.  */
+
+      for (j = 0; j < c_len; j++)
+	switch (constraint[j])
 	  {
-	  case '+':   case '=':
-	    error ("input operand constraint contains `%c'",
-		   TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]);
+	  case '+':  case '=':  case '&':
+	    error ("input operand constraint contains `%c'", constraint[j]);
 	    return;
 
-	  case '?':  case '!':  case '*':  case '%':  case '&':
+	  case '%':
+	    if (i + 1 == ninputs - ninout)
+	      {
+		error ("`%%' constraint used with last operand");
+		return;
+	      }
+	    break;
+
+	  case '?':  case '!':  case '*':
 	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
 	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
 	  case 's':  case 'i':  case 'n':
@@ -1352,8 +1412,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	       operands to memory.  */
 	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  case '5':  case '6':  case '7':  case '8':  case '9':
-	    if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]
-		>= '0' + noutputs)
+	    if (constraint[j] >= '0' + noutputs)
 	      {
 		error
 		  ("matching constraint references invalid operand number");
@@ -1398,10 +1457,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  emit_move_insn (memloc, XVECEXP (body, 3, i));
 	  XVECEXP (body, 3, i) = memloc;
 	}
-	  
+
       XVECEXP (body, 4, i)      /* constraints */
 	= gen_rtx_ASM_INPUT (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-			     TREE_STRING_POINTER (TREE_PURPOSE (tail)));
+			     constraint);
       i++;
     }
 
