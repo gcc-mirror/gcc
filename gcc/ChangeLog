@@ -27,6 +27,19 @@
 
 2002-05-26  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
+	* config/avr/avr-protos.h (avr_out_sbxx_branch): Declare.
+	* config/avr/avr.c (jump_over_one_insn_p): Take length of the
+	branch insn into account, do not assume 1.
+	(avr_out_sbxx_branch): New function.  Optimize cases of skipping
+	over single word insn.  Handle upper half of I/O space too.
+	* config/avr/avr.md (*sbrx_branch): Use it.
+	(*sbrx_and_branchhi, *sbrx_and_branchsi): Likewise.
+	(*sbix_branch, *sbix_branch_bit7): Likewise.
+	(*sbix_branch_tmp, *sbix_branch_tmp_bit7): New.
+	Use RTL peepholes to optimize register operand sign tests.
+
+2002-05-26  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
 	* config/avr/avr.c (avr_asm_only_p): New variable.
 	(avr_override_options): Set it here if AVR1.
 	(asm_file_start): Test it here, report an error if set.
