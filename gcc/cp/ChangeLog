@@ -1,16 +1,209 @@
-Tue May  3 19:11:24 1994  Jason Merrill  (jason@deneb.cygnus.com)
+Thu May  5 09:35:35 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* typeck.c (build_modify_expr): Warn about assignment to `this'.
+
+Wed May  4 15:55:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* init.c (build_delete): Use the global operator delete when
+	requested.
+
+	* decl.c (lookup_name_real): If we find the type we're looking in a
+	base class while defining a class, set IDENTIFIER_CLASS_VALUE for
+	the type.
+
+	* class.c (finish_struct): Remove a couple of dependencies on
+	language linkage.
+
+	* decl.c (pushtag): Classes do nest in extern "C" blocks.
+	(pushdecl): Only set DECL_NESTED_TYPENAME on the canonical one for
+	the type.
+	(pushtag): Remove another dependency on the language linkage.
+
+	* lex.c (cons_up_default_function): Don't set DECL_CLASS_CONTEXT to
+	a const-qualified type.
+
+	* decl.c (push_overloaded_decl): Throw away built-in decls here.
+	(duplicate_decls): Instead of here.
+
+Wed May  4 15:27:40 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	* typeck.c (get_member_function_from_ptrfunc):  Do The Right
+	Thing (I hope) if we're using thunks.
+
+Wed May  4 13:52:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (specialization): aggr template_type_name ';'.
+	(named_class_head_sans_basetype): Use it.
+	(explicit_instantiation): Ditto.
+	(tmpl.2): Revert.
+
+	* cvt.c (build_type_conversion_1): Use convert_for_initialization,
+	rather than convert, to do conversions after the UDC.
+
+	* cp-tree.h (SHARED_MEMBER_P): This member is shared between all
+	instances of the class.
+
+	* search.c (lookup_field): If the entity found by two routes is the
+	same, it's not ambiguous.
+
+Wed May  4 12:10:00 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	* decl.c (lookup_name_real):  Check for a NULL TREE_VALUE,
+	to prevent the compiler from crashing ...
+
+Wed May  4 11:19:45 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): If we don't have an object, check
+	basetype_path to figure out where to look up the function.
+
+	* typeck.c (convert_for_initialization): Pass TYPE_BINFO (type) to
+	build_method_call in case exp is NULL_TREE.
+
+Tue May  3 16:02:53 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	Give a vtable entries a unique named type, for the sake of gdb.
+	* class.c (build_vtable_entry):  The addres of a thunk now has
+	type vtable_entry_type, not ptr_type_node.
+	* method.c (make_thunk):  Fix type of THUNK_DECL.
+	* class.c (add_virtual_function, override_one_vtable):  Use
+	vfunc_ptr_type_node, instead of ptr_type_node.
+	* cp-tree.h (vfunc_ptr_type_node):  New macro.
+	* decl.c (init_decl_processing):  Make vtable_entry_type
+	be a unique type of pointer to a unique function type.
+
+Tue May  3 09:20:44 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (do_explicit): Sets doing_explicit to 1.
+	(explicit_instantiation): Use do_explicit rather than TEMPLATE
+	directly, add "do_explicit error" rule.
+	(datadef): Set doing_explicit to 0 after an explicit instantiation.
+	(tmpl.2): Don't instantiate if we see a ';' unless we're doing an
+	explicit instantiation.
+	(named_class_head_sans_basetype): Remove aggr template_type_name
+	';' again.
+
+Mon May  2 23:17:21 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* search.c (lookup_nested_tag): Lose.
+
+	* decl2.c (grokfield): Set DECL_CONTEXT on TYPE_DECLs.
+	(lookup_name_nonclass): Lose.
+
+	* decl.c (poplevel_class): Add force parameter.
+	(lookup_name_real): Fix handling of explicit scoping which specifies
+	a class currently being defined.  Add 'nonclass' argument.
+	(lookup_name, lookup_name_nonclass): Shells for lookup_name_real.
+
+	* class.c (finish_struct): Don't unset IDENTIFIER_CLASS_VALUEs here.
+	(popclass): Force clearing of IDENTIFIER_CLASS_VALUEs if we're being
+	called from finish_struct.
+
+Mon May  2 19:06:21 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	* decl.c (init_decl_processing), cp-tree.h:  Removed memptr_type.
+	(It seeems redundant, given build_ptrmemfunc_type.)
+	* typeck.c (get_member_function_from_ptrfunc), gc.c (build_headof,
+	build_classof):  Use vtable_entry_type instead of memptr_type.
+	* method.c (emit_thunk):  Call poplevel with functionbody==0
+	to prevent DECL_INITIAL being set to a BLOCK.
+
+Mon May  2 15:02:11 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (named_class_head_sans_basetype): Add "aggr
+	template_type_name ';'" rule for forward declaration of
+	specializations.
+
+Mon May  2 15:02:11 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* class.c (instantiate_type): Deal with pmf's.
 
 	* Make-lang.in (cc1plus): Don't depend on OBJS or BC_OBJS, since
 	stamp-objlist does.
+
 	* Makefile.in (../cc1plus): Depend on OBJDEPS.
 	(OBJDEPS): Dependency version of OBJS.
+
+Mon May  2 12:51:31 1994  Kung Hsu  (kung@mexican.cygnus.com)
+
+	* search.c (dfs_debug_mark): unmark TYPE_DECL_SUPPRESS_DEBUG, not
+	DECL_IGNORED_P.
+
+Fri Apr 29 12:29:56 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* class.c (finish_struct): Clear out memory of local tags.  And
+	typedefs.
+
+	* decl2.c (grokclassfn): Don't set DECL_CONTEXT to a cv-qualified
+	type.
+	* search.c (get_matching_virtual): Be more helpful in error message.
+
+	* *: Use DECL_ARTIFICIAL (renamed from DECL_SYNTHESIZED).
+
+	* lex.c (default_assign_ref_body): Expect TYPE_NESTED_NAME to work.
+	(default_copy_constructor_body): Ditto.
+
+	* class.c (finish_struct): Don't gratuitously create multiple decls
+	for nested classes.
+
+Thu Apr 28 23:39:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	Avoid clobbering the arg types of other functions when reverting
+	static member functions.
+	* decl.c (revert_static_member_fn): Rearrange arguments, don't
+	require values for 'fn' and 'argtypes', add warning to comment
+	above.
+	(decls_match): Rearrange arguments in call to rsmf.
+	(grok_op_properties): Don't pass values for fn and argtypes.
+	* pt.c (instantiate_template): Don't pass values for fn and argtypes.
 
 Thu Apr 28 16:29:11 1994  Doug Evans  (dje@canuck.cygnus.com)
 
 	* Make-lang.in (cc1plus): Depend on stamp-objlist.
 	* Makefile.in (BC_OBJS): Delete.
-	(OBJS): Cat ../stamp-objlist to get everything, except ../c-common.o.
+	(OBJS): Cat ../stamp-objlist to get language independent files.
+	Include ../c-common.o.
 	(../cc1plus): Delete reference to BC_OBJS.
+
+Thu Apr 28 02:12:08 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* search.c (compute_access): No really, deal with static members
+	properly.  Would I lie to you?
+
+	Implement lexical hiding of function declarations.
+	* pt.c (tsubst): Use lookup_name to look for function decls to guide
+	instantiation.
+	* method.c (build_opfncall): Use lookup_name_nonclass to look for
+	non-member functions.
+	* init.c (do_friend): Use lookup_name_nonclass to look for
+	functions.
+	* error.c (ident_fndecl): Use lookup_name to look for functions.
+	* decl2.c (lookup_name_nonclass): New function, skips over
+	CLASS_VALUE.
+	* decl.c (struct binding_level): Lose overloads_shadowed field.
+	(poplevel): Don't deal with overloads_shadowed.
+	(push_overloaded_decl): Do lexical hiding for functions.
+	* class.c (instantiate_type): Don't check non-members if we have
+	members with the same name.
+	* call.c (build_method_call): Use lookup_name_nonclass instead of
+	IDENTIFIER_GLOBAL_VALUE to check for non-member functions.
+	(build_overload_call_real): Ditto.
+
+	* decl.c (duplicate_decls): Check for ambiguous overloads here.
+	(push_overloaded_decl): Instead of here.
+	
+	* decl.c (pushdecl): Back out Chip's last change.
+
+	* decl.c (grok_op_properties): operators cannot be static members.
+
+	* cp-tree.h (DECL_SYNTHESIZED): DECL_SOURCE_LINE == 0
+	(SET_DECL_SYNTHESIZED): DECL_SOURCE_LINE = 0
+	* lex.c (cons_up_default_function): Use SET_DECL_SYNTHESIZED.
+
+	* method.c (do_inline_function_hair): Don't put friends of local
+	classes into global scope, either.
+
+	* typeck2.c (build_functional_cast): Don't look for a function call
+	interpretation.
 
 Thu Apr 28 15:19:46 1994  Mike Stump  (mrs@cygnus.com)
 
@@ -170,6 +363,17 @@ Sun Apr 24 16:52:51 1994  Doug Evans  (dje@canuck.cygnus.com)
 	(*.o): Use complete pathname to headers in parent dir.
 	(doc, info, dvi): Delete.
 
+Sun Apr 24 16:52:51 1994  Doug Evans  (dje@canuck.cygnus.com)
+
+	* Make-lang.in (c++.install-common): Check for g++-cross.
+	* Makefile.in: Remove Cygnus cruft.
+	(config.status): Delete.
+	(RTL_H): Define.
+	(TREE_H): Use complete pathname, some native makes have minimal
+	VPATH support.
+	(*.o): Use complete pathname to headers in parent dir.
+	(doc, info, dvi): Delete.
+
 Sun Apr 24 00:47:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (pushdecl): Avoid redundant warning on redeclaring function
@@ -284,6 +488,11 @@ Fri Apr 22 12:48:10 1994  Kung Hsu  (kung@mexican.cygnus.com)
 	types not to be dumped in stabs, like types in #pragma interface.
 	* decl.c (init_decl_processing): use TYPE_DECL_SUPPRESS_DEBUG to
 	mark unknown type.
+
+Fri Apr 22 03:27:26 1994  Doug Evans  (dje@cygnus.com)
+
+	* Language directory reorganization.
+	See parent makefile.
 
 Fri Apr 22 03:27:26 1994  Doug Evans  (dje@cygnus.com)
 

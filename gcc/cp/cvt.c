@@ -1539,7 +1539,11 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
       && (TREE_READONLY (TREE_TYPE (TREE_TYPE (rval)))
 	  > TREE_READONLY (TREE_TYPE (xtype))))
     warning ("user-defined conversion casting away `const'");
-  return convert (xtype, rval);
+  rval = convert_for_initialization (NULL_TREE, xtype, rval, flags,
+				     "conversion", NULL_TREE, 0);
+  if (rval == error_mark_node)
+    return NULL_TREE;
+  return rval;
 }
 
 /* Convert an aggregate EXPR to type XTYPE.  If a conversion

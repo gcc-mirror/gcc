@@ -936,9 +936,8 @@ struct lang_decl_flags
   unsigned constructor_for_vbase_attr : 1;
   unsigned mutable_flag : 1;
   unsigned is_default_implementation : 1;
-  unsigned synthesized : 1;
   unsigned saved_inline : 1;
-  unsigned dummy : 9;
+  unsigned dummy : 10;
 
   tree access;
   tree context;
@@ -1000,6 +999,12 @@ struct lang_decl
    member function.  */
 #define DECL_STATIC_FUNCTION_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.static_function)
 
+/* Nonzero for a class member means that it is shared between all objects
+   of that class.  */
+#define SHARED_MEMBER_P(NODE) \
+  (TREE_CODE (NODE) == VAR_DECL || TREE_CODE (NODE) == TYPE_DECL \
+   || TREE_CODE (NODE) == CONST_DECL)
+				
 /* Nonzero for FUNCTION_DECL means that this decl is a member function
    (static or non-static).  */
 #define DECL_FUNCTION_MEMBER_P(NODE) \
@@ -1106,8 +1111,9 @@ struct lang_decl
 #define DECL_PUBLIC(NODE) (DECL_LANG_FLAG_7 (NODE))
 #endif
 
-/* This method was synthesized by cons_up_default_function.  */
-#define DECL_SYNTHESIZED(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.synthesized)
+/* This _DECL represents a compiler-generated entity.  */
+#define DECL_ARTIFICIAL(NODE) (DECL_SOURCE_LINE (NODE) == 0)
+#define SET_DECL_ARTIFICIAL(NODE) (DECL_SOURCE_LINE (NODE) = 0)
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
@@ -1327,7 +1333,6 @@ extern tree void_list_node;
 extern tree void_zero_node;
 extern tree default_function_type;
 extern tree vtable_entry_type;
-extern tree memptr_type;
 extern tree sigtable_entry_type;
 extern tree __t_desc_type_node, __i_desc_type_node, __m_desc_type_node;
 extern tree Type_info_type_node;
@@ -1346,6 +1351,11 @@ extern tree ptr_type_node, const_ptr_type_node;
 extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
 extern tree exception_type_node, unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
+
+/* Node for "pointer to (virtual) function".
+   This may be distinct from ptr_type_node so gdb can distinuish them. */
+#define vfunc_ptr_type_node \
+  (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
 
 /* Array type `(void *)[]' */
 extern tree vtbl_type_node;
@@ -1812,7 +1822,7 @@ extern void insert_block			PROTO((tree));
 extern void add_block_current_level		PROTO((tree));
 extern void set_block				PROTO((tree));
 extern void pushlevel_class			PROTO((void));
-extern tree poplevel_class			PROTO((void));
+extern tree poplevel_class			PROTO((int));
 /* skip print_other_binding_stack and print_binding_level */
 extern void print_binding_stack			PROTO((void));
 extern void push_to_top_level			PROTO((void));
@@ -1906,6 +1916,7 @@ extern tree reparse_absdcl_as_expr		PROTO((tree, tree));
 extern tree reparse_absdcl_as_casts		PROTO((tree, tree));
 extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
+extern tree lookup_name_nonclass		PROTO((tree));
 
 /* in edsel.c */
 

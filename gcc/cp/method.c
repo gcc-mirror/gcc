@@ -135,7 +135,8 @@ do_inline_function_hair (type, friend_list)
 	    }
 
 	  /* Allow this decl to be seen in global scope */
-	  IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (fndecl)) = fndecl;
+	  if (! current_function_decl)
+	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (fndecl)) = fndecl;
 	}
 
       friend_list = TREE_CHAIN (friend_list);
@@ -1242,7 +1243,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
   else
     fnname = ansi_opname[(int) code];
 
-  global_fn = IDENTIFIER_GLOBAL_VALUE (fnname);
+  global_fn = lookup_name_nonclass (fnname);
 
   /* This is the last point where we will accept failure.  This
      may be too eager if we wish an overloaded operator not to match,
@@ -1682,7 +1683,7 @@ make_thunk (function, delta)
   thunk = build_decl (THUNK_DECL, get_identifier (buffer),
 		      TREE_TYPE (func_decl));
   DECL_RESULT (thunk)
-    = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+    = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (vtable_entry_type));
   make_function_rtl (thunk);
   DECL_INITIAL (thunk) = function;
   THUNK_DELTA (thunk) = delta;
@@ -1824,7 +1825,7 @@ emit_thunk (thunk_fndecl)
     emit_insn (gen_rtx (USE, VOIDmode, need_use[--need_use_count]));
 
   expand_end_bindings (NULL, 1, 0);
-  poplevel (0, 0, 1);
+  poplevel (0, 0, 0);
 
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
 

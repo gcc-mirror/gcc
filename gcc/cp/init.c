@@ -2791,7 +2791,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
     {
       /* @@ Should be able to ingest later definitions of this function
 	 before use.  */
-      tree decl = IDENTIFIER_GLOBAL_VALUE (declarator);
+      tree decl = lookup_name_nonclass (declarator);
       if (decl == NULL_TREE)
 	{
 	  warning ("implicitly declaring `%s' as struct",
@@ -3676,6 +3676,26 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
     {
       tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0));
       tree basetypes = TYPE_BINFO (type);
+      tree passed_auto_delete;
+      tree do_delete = NULL_TREE;
+
+      if (use_global_delete)
+	{
+	  tree cond = fold (build (BIT_AND_EXPR, integer_type_node,
+				   auto_delete, integer_one_node));
+	  tree call = build_builtin_call
+	    (void_type_node, BID, build_tree_list (NULL_TREE, addr));
+
+	  cond = fold (build (COND_EXPR, void_type_node, cond,
+			      call, void_zero_node));
+	  if (cond != void_zero_node)
+	    do_delete = cond;
+
+	  passed_auto_delete = fold (build (BIT_AND_EXPR, integer_type_node,
+					    auto_delete, integer_two_node));
+	}
+      else
+	passed_auto_delete = auto_delete;
 
       if (flags & LOOKUP_PROTECT)
 	{
@@ -3723,8 +3743,10 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  if (function == error_mark_node)
 	    return error_mark_node;
 	  TREE_TYPE (function) = build_pointer_type (TREE_TYPE (dtor));
-	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, auto_delete);
+	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, passed_auto_delete);
 	  expr = build_function_call (function, parms);
+	  if (do_delete)
+	    expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 	  if (ptr && (flags & LOOKUP_DESTRUCTOR) == 0)
 	    {
 	      /* Handle the case where a virtual destructor is
@@ -3761,8 +3783,10 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	     but that's now obsolete.  */
 	  my_friendly_assert (DECL_INITIAL (dtor) != void_type_node, 221);
 
-	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, auto_delete);
+	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, passed_auto_delete);
 	  expr = build_function_call (dtor, parms);
+	  if (do_delete)
+	    expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
 	  if (ifexp != integer_one_node)
 	    expr = build (COND_EXPR, void_type_node,

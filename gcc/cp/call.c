@@ -2859,6 +2859,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (basetype != NULL_TREE)
 	;
       /* call to a constructor... */
+      else if (basetype_path)
+	basetype = BINFO_TYPE (basetype_path);
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
 	{
 	  basetype = IDENTIFIER_TYPE_VALUE (name);
@@ -3429,7 +3431,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
       if (pass == 0)
 	{
-	  tree igv = IDENTIFIER_GLOBAL_VALUE (name);
+	  tree igv = lookup_name_nonclass (name);
 
 	  /* No exact match could be found.  Now try to find match
 	     using default conversions.  */
@@ -3516,7 +3518,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  goto found_and_maybe_warn;
 	}
 
-      if ((flags & ~LOOKUP_GLOBAL) & (LOOKUP_COMPLAIN|LOOKUP_SPECULATIVELY))
+      if (flags & (LOOKUP_COMPLAIN|LOOKUP_SPECULATIVELY))
 	{
 	  if ((flags & (LOOKUP_SPECULATIVELY|LOOKUP_COMPLAIN))
 	      == LOOKUP_SPECULATIVELY)
@@ -3925,23 +3927,25 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 
   if (! flag_ansi_overloading)
     {
+      tree fn;
+
       /* This is a speed improvement that ends up not working properly in
 	 the situation of fns with and without default parameters.  I turned
 	 this off in the new method so it'll go through the argument matching
 	 code to properly diagnose a match/failure. (bpk)  */
       overload_name = build_decl_overload (fnname, parmtypes, 0);
+      fn = lookup_name_nonclass (overload_name);
 
       /* Now check to see whether or not we can win.
 	 Note that if we are called from `build_method_call',
 	 then we cannot have a mis-match, because we would have
 	 already found such a winning case.  */
 
-      if (IDENTIFIER_GLOBAL_VALUE (overload_name))
-	if (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (overload_name)) != TREE_LIST)
-	  return build_function_call (DECL_MAIN_VARIANT (IDENTIFIER_GLOBAL_VALUE (overload_name)), parms);
+      if (fn && TREE_CODE (fn) == FUNCTION_DECL)
+	return build_function_call (DECL_MAIN_VARIANT (fn), parms);
     }
 
-  functions = IDENTIFIER_GLOBAL_VALUE (fnname);
+  functions = lookup_name_nonclass (fnname);
 
   if (functions == NULL_TREE)
     {

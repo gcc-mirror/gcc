@@ -361,7 +361,7 @@ build_vtable_entry (delta, pfn)
       extern tree make_thunk ();
       if (idelta)
 	{
-	  pfn = build1 (ADDR_EXPR, ptr_type_node,
+	  pfn = build1 (ADDR_EXPR, vtable_entry_type,
 			make_thunk (pfn, idelta));
 	  TREE_READONLY (pfn) = 1;
 	  TREE_CONSTANT (pfn) = 1;
@@ -782,7 +782,7 @@ add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
 {
   /* FUNCTION_TYPEs and OFFSET_TYPEs no longer freely
      convert to void *.  Make such a conversion here.  */
-  tree vfn = build1 (ADDR_EXPR, ptr_type_node, fndecl);
+  tree vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
   TREE_CONSTANT (vfn) = 1;
 
 #ifndef DUMB_USER
@@ -2389,7 +2389,7 @@ override_one_vtable (binfo, old, t)
 	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
 	      CLASSTYPE_ABSTRACT_VIRTUALS (t) = error_mark_node;
 
-	    vfn = build1 (ADDR_EXPR, ptr_type_node, fndecl);
+	    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
 	    TREE_CONSTANT (vfn) = 1;
 	    
 	    /* We can use integer_zero_node, as we will will core dump
@@ -2668,7 +2668,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   if (write_virtuals == 3 && CLASSTYPE_INTERFACE_KNOWN (t)
-      && current_lang_name == lang_name_cplusplus && ! IS_SIGNATURE (t))
+      && ! IS_SIGNATURE (t))
     {
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! interface_only;
@@ -3653,7 +3653,14 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       last_x = tree_last (TYPE_FIELDS (t));
       while (x)
 	{
+#if 0 /* What's wrong with using the decl the type already has? */
 	  tree tag = build_lang_decl (TYPE_DECL, TREE_PURPOSE (x), TREE_VALUE (x));
+	  DECL_CONTEXT (tag) = t;
+#else
+	  tree tag = TYPE_NAME (TREE_VALUE (x));
+#endif
+	  DECL_CLASS_CONTEXT (tag) = t;
+
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)
 	    {
@@ -3662,8 +3669,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      DECL_IGNORED_P (tag) = 1;
 	    }
 #endif /* DWARF_DEBUGGING_INFO */
-	  DECL_CONTEXT (tag) = t;
-	  DECL_CLASS_CONTEXT (tag) = t;
+
+	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
 	  x = TREE_CHAIN (x);
 	  last_x = chainon (last_x, tag);
 	}
@@ -3691,16 +3698,12 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   else if (TYPE_NEEDS_CONSTRUCTING (t))
     build_class_init_list (t);
 
-  if (current_lang_name == lang_name_cplusplus)
-    {
-      if (! CLASSTYPE_DECLARED_EXCEPTION (t)
-	  && ! IS_SIGNATURE (t))
-	embrace_waiting_friends (t);
+  if (! CLASSTYPE_DECLARED_EXCEPTION (t) && ! IS_SIGNATURE (t))
+    embrace_waiting_friends (t);
 
-      /* Write out inline function definitions.  */
-      do_inline_function_hair (t, CLASSTYPE_INLINE_FRIENDS (t));
-      CLASSTYPE_INLINE_FRIENDS (t) = 0;
-    }
+  /* Write out inline function definitions.  */
+  do_inline_function_hair (t, CLASSTYPE_INLINE_FRIENDS (t));
+  CLASSTYPE_INLINE_FRIENDS (t) = 0;
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
@@ -4097,9 +4100,9 @@ pushclass (type, modify)
 }
  
 /* Get out of the current class scope. If we were in a class scope
-   previously, that is the one popped to.  The flag MODIFY tells
-   whether the current scope declarations needs to be modified
-   as a result of popping to the previous scope.  */
+   previously, that is the one popped to.  The flag MODIFY tells whether
+   the current scope declarations needs to be modified as a result of
+   popping to the previous scope.  0 is used for class definitions.  */
 void
 popclass (modify)
      int modify;
@@ -4116,7 +4119,7 @@ popclass (modify)
       /* This code can be seen as a cache miss.  When we've cached a
 	 class' scope's bindings and we can't use them, we need to reset
 	 them.  This is it!  */
-      for (t = previous_class_values; t; t = TREE_CHAIN(t))
+      for (t = previous_class_values; t; t = TREE_CHAIN (t))
 	IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
       while (tags)
 	{
@@ -4141,7 +4144,9 @@ popclass (modify)
 	undo_template_name_overload (current_class_name, 0);
     }
 
-  poplevel_class ();
+  /* Force clearing of IDENTIFIER_CLASS_VALUEs after a class definition,
+     since not all class decls make it there currently.  */
+  poplevel_class (! modify);
 
   /* Since poplevel_class does the popping of class decls nowadays,
      this really only frees the obstack used for these decls.
@@ -4540,10 +4545,11 @@ instantiate_type (lhstype, rhs, complain)
 		return save_elem;
 	      }
 	    name = DECL_NAME (TREE_VALUE (rhs));
+#if 0
 	    if (TREE_CODE (lhstype) == FUNCTION_TYPE && globals < 0)
 	      {
 		/* Try to instantiate from non-member functions.  */
-		rhs = IDENTIFIER_GLOBAL_VALUE (name);
+		rhs = lookup_name_nonclass (name);
 		if (rhs && TREE_CODE (rhs) == TREE_LIST)
 		  {
 		    /* This code seems to be missing a `return'.  */
@@ -4551,6 +4557,7 @@ instantiate_type (lhstype, rhs, complain)
 		    instantiate_type (lhstype, rhs, complain);
 		  }
 	      }
+#endif
 	  }
 	if (complain)
 	  error ("no static member functions named `%s'",
@@ -4655,7 +4662,9 @@ instantiate_type (lhstype, rhs, complain)
       return rhs;
       
     case ADDR_EXPR:
-      if (TREE_CODE (lhstype) != POINTER_TYPE)
+      if (TYPE_PTRMEMFUNC_P (lhstype))
+	lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
+      else if (TREE_CODE (lhstype) != POINTER_TYPE)
 	{
 	  if (complain)
 	    error ("type for resolving address of overloaded function must be pointer type");
@@ -4663,7 +4672,8 @@ instantiate_type (lhstype, rhs, complain)
 	}
       TREE_TYPE (rhs) = lhstype;
       lhstype = TREE_TYPE (lhstype);
-      TREE_OPERAND (rhs, 0) = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+      TREE_OPERAND (rhs, 0) = instantiate_type (lhstype, TREE_OPERAND (rhs, 0),
+						complain);
       if (TREE_OPERAND (rhs, 0) == error_mark_node)
 	return error_mark_node;
 

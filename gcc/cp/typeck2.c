@@ -1362,10 +1362,9 @@ build_m_component_ref (datum, component)
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.
 
-   Because we cannot tell whether this construct is really
-   a function call or a call to a constructor or a request for
-   a type conversion, we try all three, and report any ambiguities
-   we find.  */
+   Because we cannot tell whether this construct is really a call to a
+   constructor or a request for a type conversion, we try both, and
+   report any ambiguities we find.  */
 tree
 build_functional_cast (exp, parms)
      tree exp;
@@ -1375,8 +1374,6 @@ build_functional_cast (exp, parms)
      or a C cast in C++'s `functional' notation.  */
   tree type, name = NULL_TREE;
   tree expr_as_ctor = NULL_TREE;
-  tree expr_as_method = NULL_TREE;
-  tree expr_as_fncall = NULL_TREE;
   tree expr_as_conversion = NULL_TREE;
 
   if (exp == error_mark_node || parms == error_mark_node)
@@ -1423,50 +1420,16 @@ build_functional_cast (exp, parms)
 	name = DECL_NAME (name);
     }
 
-  /* Try evaluating as a call to a function.  */
-  if (IDENTIFIER_CLASS_VALUE (name)
-      && (TREE_CODE (IDENTIFIER_CLASS_VALUE (name)) == TREE_LIST
-	  || TREE_CODE (IDENTIFIER_CLASS_VALUE (name)) == FUNCTION_DECL))
-    {
-      expr_as_method = build_method_call (current_class_decl, name, parms,
-					  NULL_TREE, LOOKUP_SPECULATIVELY);
-      if (expr_as_method == error_mark_node)
-	expr_as_method = NULL_TREE;
-    }
-
-  if (IDENTIFIER_GLOBAL_VALUE (name)
-      && (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (name)) == TREE_LIST
-	  || TREE_CODE (IDENTIFIER_GLOBAL_VALUE (name)) == FUNCTION_DECL))
-    {
-      expr_as_fncall = build_overload_call (name, parms, 0,
-					    (struct candidate *)0);
-      if (expr_as_fncall == NULL_TREE)
-	expr_as_fncall = error_mark_node;
-    }
-
   if (! IS_AGGR_TYPE (type))
     {
       /* this must build a C cast */
       if (parms == NULL_TREE)
-	{
-	  if (expr_as_method || expr_as_fncall)
-	    goto return_function;
-
-	  return build1 (NOP_EXPR, type, integer_zero_node);
-	}
-      if (expr_as_method
-	  || (expr_as_fncall && expr_as_fncall != error_mark_node))
-	{
-	  cp_error ("ambiguity between cast to `%#T' and function call", type);
-	  return error_mark_node;
-	}
+	return build1 (NOP_EXPR, type, integer_zero_node);
       return build_c_cast (type, build_compound_expr (parms));
     }
 
   if (TYPE_SIZE (type) == NULL_TREE)
     {
-      if (expr_as_method || expr_as_fncall)
-	goto return_function;
       cp_error ("type `%T' is not yet defined", type);
       return error_mark_node;
     }
@@ -1475,7 +1438,7 @@ build_functional_cast (exp, parms)
     expr_as_conversion
       = build_type_conversion (CONVERT_EXPR, type, TREE_VALUE (parms), 0);
     
-  if (! TYPE_NEEDS_CONSTRUCTING (type) && parms != NULL_TREE)
+  if (! TYPE_HAS_CONSTRUCTOR (type) && parms != NULL_TREE)
     {
       char *msg = 0;
 
@@ -1488,70 +1451,12 @@ build_functional_cast (exp, parms)
 	}
       else msg = "type `%T' does not have a constructor";
 
-      if ((expr_as_method || expr_as_fncall) && expr_as_conversion)
-	msg = "ambiguity between conversion to `%T' and function call";
-      else if (expr_as_method || expr_as_fncall)
-	goto return_function;
-      else if (expr_as_conversion)
+      if (expr_as_conversion)
 	return expr_as_conversion;
 
       cp_error (msg, type);
       return error_mark_node;
     }
-
-#if 0
-  /* Constructors are not inherited...  --jason */
-  if (! TYPE_HAS_CONSTRUCTOR (type))
-    {
-      if (expr_as_method || expr_as_fncall)
-	goto return_function;
-      if (expr_as_conversion)
-	return expr_as_conversion;
-
-      /* Look through this type until we find the
-	 base type which has a constructor.  */
-      do
-	{
-	  tree binfos = TYPE_BINFO_BASETYPES (type);
-	  int i, index = 0;
-
-	  while (binfos && TREE_VEC_LENGTH (binfos) == 1
-		 && ! TYPE_HAS_CONSTRUCTOR (type))
-	    {
-	      type = BINFO_TYPE (TREE_VEC_ELT (binfos, 0));
-	      binfos = TYPE_BINFO_BASETYPES (type);
-	    }
-	  if (TYPE_HAS_CONSTRUCTOR (type))
-	    break;
-	  /* Hack for MI.  */
-	  i = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-	  if (i == 0) break;	    
-	  while (--i > 0)
-	    {
-	      if (TYPE_HAS_CONSTRUCTOR (BINFO_TYPE (TREE_VEC_ELT (binfos, i))))
-		{
-		  if (index == 0)
-		    index = i;
-		  else
-		    {
-		      error ("multiple base classes with constructor, ambiguous");
-		      type = 0;
-		      break;
-		    }
-		}
-	    }
-	  if (type == 0)
-	    break;
-	} while (! TYPE_HAS_CONSTRUCTOR (type));
-      if (type == 0)
-	return error_mark_node;
-    }
-  name = TYPE_NAME (type);
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 321);
-#endif
 
   {
     int flags = LOOKUP_SPECULATIVELY|LOOKUP_COMPLAIN;
@@ -1565,20 +1470,7 @@ build_functional_cast (exp, parms)
 
     if (expr_as_ctor && expr_as_ctor != error_mark_node)
       {
-#if 0
-	/* mrs Mar 12, 1992 I claim that if it is a constructor, it is
-	   impossible to be an expr_as_method, without being a
-	   constructor call. */
-	if (expr_as_method
-	    || (expr_as_fncall && expr_as_fncall != error_mark_node))
-#else
-	if (expr_as_fncall && expr_as_fncall != error_mark_node)
-#endif
-	  {
-	    cp_warning ("function hides constructor for class `%T'", type);
-	    return expr_as_fncall;
-	  }
-	else if (expr_as_conversion && expr_as_conversion != error_mark_node)
+	if (expr_as_conversion && expr_as_conversion != error_mark_node)
 	  {
 	    /* ANSI C++ June 5 1992 WP 12.3.2.6.1 */
 	    cp_error ("ambiguity between conversion to `%T' and constructor",
@@ -1632,23 +1524,8 @@ build_functional_cast (exp, parms)
       }
 
     if (expr_as_conversion)
-      {
-	if (expr_as_method || expr_as_fncall)
-	  {
-	    cp_error ("ambiguity between conversion to `%T' and function call",
-		      type);
-	    return error_mark_node;
-	  }
-	return expr_as_conversion;
-      }
-  return_function:
-    if (expr_as_method)
-      return build_method_call (current_class_decl, name, parms,
-				NULL_TREE, LOOKUP_NORMAL);
-    if (expr_as_fncall)
-      return expr_as_fncall == error_mark_node
-	? build_overload_call (name, parms, LOOKUP_COMPLAIN, (struct candidate *)0)
-	  : expr_as_fncall;
+      return expr_as_conversion;
+
     cp_error ("no suitable conversion to `%T' exists", type);
     return error_mark_node;
   }
