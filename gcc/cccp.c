@@ -1360,14 +1360,18 @@ main (argc, argv)
 	if (!strcmp (argv[i], "-include")) {
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-include' option");
-	  else
-	    simplify_filename (pend_includes[i] = argv[++i]);
+	  else {
+	    simplify_filename (pend_includes[i] = argv[i]);
+	    i++;
+	  }
 	}
 	if (!strcmp (argv[i], "-imacros")) {
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-imacros' option");
-	  else
-	    simplify_filename (pend_files[i] = argv[++i]);
+	  else {
+	    simplify_filename (pend_files[i] = argv[i]);
+	    i++;
+	  }
 	}
 	if (!strcmp (argv[i], "-iprefix")) {
 	  if (i + 1 == argc)
@@ -1700,15 +1704,15 @@ main (argc, argv)
       case 'I':			/* Add directory to path for includes.  */
 	{
 	  struct file_name_list *dirtmp;
+	  char *dir = argv[i][2] ? argv[i] + 2 : argv[++i];
 
-	  if (! ignore_srcdir && !strcmp (argv[i] + 2, "-")) {
+	  if (! ignore_srcdir && !strcmp (dir, "-")) {
 	    ignore_srcdir = 1;
 	    /* Don't use any preceding -I directories for #include <...>.  */
 	    first_bracket_include = 0;
 	  }
 	  else {
-	    dirtmp = new_include_prefix (last_include, NULL_PTR, "",
-					 argv[i][2] ? argv[i] + 2 : argv[++i]);
+	    dirtmp = new_include_prefix (last_include, NULL_PTR, "", dir);
 	    append_include_chain (dirtmp, dirtmp);
 	  }
 	}
