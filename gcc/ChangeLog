@@ -1,5 +1,9 @@
 2001-12-19  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* config/arm/xscale-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Pass
+	-mno-fpu onto gas unless -mhard-float is specified.
+	(MULTILIB_DEFAULTS): Include msoft-float.
+
 	* config/arm/t-xscale-coff (EXTRA_MULTILIB_PARTS): Remove definition.
 
 	* config/arm/coff.h (SUPPORTS_INIT_PRIORITY): Define (to false).
