@@ -972,7 +972,7 @@ void								\
 __transfer_from_trampoline ()					\
 {								\
   register char *a0 asm ("%a0");				\
-  asm (GLOBAL_ASM_OP, " ___trampoline");			\
+  asm (GLOBAL_ASM_OP " ___trampoline");				\
   asm ("___trampoline:");					\
   asm volatile ("move%.l %0,%@" : : "m" (a0[22]));		\
   asm volatile ("move%.l %1,%0" : "=a" (a0) : "m" (a0[18]));	\
