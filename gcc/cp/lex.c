@@ -2869,6 +2869,14 @@ do_identifier (token, parsing, args)
 	       || TREE_CODE (field) == CONST_DECL
 	       || TREE_CODE (field) == TEMPLATE_DECL)
 	id = field;
+      else if (TREE_CODE (field) == TYPE_DECL
+               && DECL_ARTIFICIAL  (field)
+               && IMPLICIT_TYPENAME_P (TREE_TYPE (field)))
+        /* When we did name-lookup before, we will have eschewed
+           implicit typenames in favor of global bindings.  Therefore,
+           if lookup_field returns an implicit typename, but ID is not
+           an implicit typename, then we should skip this one, too.  */
+        ;
       else if (TREE_CODE (field) != FIELD_DECL)
 	my_friendly_abort (61);
       else
