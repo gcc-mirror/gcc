@@ -1,3 +1,20 @@
+2002-03-30  Krister Walfridsson  <cato@df.lth.se>
+
+	* include/private/gcconfig.h: define DYNAMIC_LOADING for ELF
+        NetBSD/i386.
+
+2002-03-29  Hans Boehm  <Hans_Boehm@hp.com>
+
+	* linux_threads.c (return_free_lists): Clear fl[i] unconditionally.
+	(GC_local_gcj_malloc): Add assertion.
+	(start_mark_threads): Fix abort message.
+	* mark.c (GC_mark_from): Generalize assertion.
+	* reclaim.c (GC_clear_fl_links): New function.
+	(GC_start_reclaim): Must clear some freelist links.
+	* include/private/specific.h, specific.c: Add assertions.
+	Safer definition for INVALID_QTID, quick_thread_id.  Fix/add comments.
+	Rearrange tse fields.
+
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	* os_dep.c (GC_init_linux_data_start): Fix references to
