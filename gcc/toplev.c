@@ -958,6 +958,7 @@ documented_lang_options[] =
   { "-ansi", "Compile just for ANSI C" },
   { "-fallow-single-precision",
     "Do not promote floats to double if using -traditional" },
+  { "-std= ", "Determine language standard"},
 
   { "-fsigned-bitfields", "" },
   { "-funsigned-bitfields","Make bitfields by unsigned by default" },
@@ -972,7 +973,6 @@ documented_lang_options[] =
   { "-traditional", "Attempt to support traditional K&R style C"},
   { "-fnotraditional", "" },
   { "-fno-traditional", "" },
-  { "-flang-isoc9x", "Enable C9X features"},
 
   { "-fasm", "" },
   { "-fno-asm", "Do not recognise the 'asm' keyword" },
@@ -2517,9 +2517,9 @@ dump_rtl (suffix, decl, func, insns)
 /* Routine to empty a dump file.  */
 static void
 clean_dump_file (suffix)
-     char * suffix;
+     char *suffix;
 {
-  char * dumpname;
+  char *dumpname;
 
   dumpname = (char *) xmalloc (strlen (dump_base_name) + strlen (suffix) + 1);
 

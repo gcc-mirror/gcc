@@ -1,3 +1,40 @@
+Tue Dec  1 20:49:49 1998  Ulrich Drepper  <drepper@cygnus.com>
+			  Stephen L Moshier  <moshier@world.std.com>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* c-common.c (declare_function_name): Declare predefinied variable
+	`__func__'.
+
+	* c-decl.c (flag_isoc9x): Set to 1 by default.
+	(c_decode_option): Handle -std= option.  Remove -flang-isoc9x.
+	(grokdeclarator): Always emit warning about implicit int for ISO C 9x.
+
+	* c-parse.in: Allow constructors in ISO C 9x.
+	Rewrite designator list handling.
+	Allow [*] parameters.
+	Don't warn about comma at end of enum definition for ISO C 9x.
+
+	* cccp.c (c9x): New variable.
+	(rest_extension): New variable.
+	(print_help): Document new -std= option.
+	(main): Recognize -std= option.  Set c9x appropriately.
+	(create_definition): Recognize ISO C 9x vararg macros.
+
+	* gcc.c (default_compilers): Adjust specs for -std options.
+	(option_map): Add --std.
+	(display_help): Document -std.
+
+	* toplev.c (documented_lang_options): Add -std and remove
+	-flang-isoc9x.
+        
+	* c-lex.c (yylex): Recognize hex FP constants and call REAL_VALUE_ATOF
+	or REAL_VALUE_HTOF based on base of the constants.
+	* fold-const.c (real_hex_to_f): New function.  Replacement function
+	for hex FP conversion if REAL_ARITHMETIC is not defined.
+	* real.c (asctoeg): Add handling of hex FP constants.
+	* real.h: Define REAL_VALUE_HTOF if necessary using ereal_atof or
+	real_hex_to_f.
+
 Tue Dec  1 16:45:49 1998  Stan Cox  <scox@cygnus.com>
 
 	* mips.md (divmodsi4*, divmoddi4*, udivmodsi4*, udivmoddi4): Add

@@ -82,7 +82,7 @@ char *language_string = "GNU Obj-C";
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token TYPESPEC
 
-/* Reserved words that qualify type: "const" or "volatile".
+/* Reserved words that qualify type: "const", "volatile", or "restrict".
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token TYPE_QUAL
 
@@ -483,7 +483,7 @@ cast_expr:
 		  tree type = $2;
 		  finish_init ();
 
-		  if (pedantic)
+		  if (pedantic && ! flag_isoc9x)
 		    pedwarn ("ANSI C forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
@@ -1215,22 +1215,35 @@ initlist1:
 /* `initelt' is a single element of an initializer.
    It may use braces.  */
 initelt:
-	expr_no_commas
-		{ process_init_element ($1); }
-	| '{' 
+	  designator_list '=' initval
+	| designator initval
+	| identifier ':'
+		{ set_init_label ($1); }
+	  initval
+	| initval
+	;
+
+initval:
+	  '{'
 		{ push_init_level (0); }
 	  initlist_maybe_comma '}'
 		{ process_init_element (pop_init_level (0)); }
+	| expr_no_commas
+		{ process_init_element ($1); }
 	| error
+	;
+
+designator_list:
+	  designator
+	| designator_list designator
+	;
+
+designator:
+	  '.' identifier
+		{ set_init_label ($2); }
 	/* These are for labeled elements.  The syntax for an array element
 	   initializer conflicts with the syntax for an Objective-C message,
 	   so don't include these productions in the Objective-C grammar.  */
-	| identifier ':'
-		{ set_init_label ($1); }
-	  initelt
-	| '.' identifier '='
-		{ set_init_label ($2); }
-	  initelt
 	;
 
 nested_function:
@@ -1436,7 +1449,8 @@ maybecomma:
 maybecomma_warn:
 	  /* empty */
 	| ','
-		{ if (pedantic) pedwarn ("comma at end of enumerator list"); }
+		{ if (pedantic && ! flag_isoc9x)
+		    pedwarn ("comma at end of enumerator list"); }
 	;
 
 component_decl_list:

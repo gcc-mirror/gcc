@@ -470,7 +470,7 @@ int flag_traditional;
 
 /* Nonzero means use the ISO C9x dialect of C.  */
 
-int flag_isoc9x = 0;
+int flag_isoc9x = 1;
 
 /* Nonzero means that we have builtin functions, and main is an int */
 
@@ -652,8 +652,54 @@ c_decode_option (argc, argv)
       flag_traditional = 0;
       flag_writable_strings = 0;
     }
-  else if (!strcmp (p, "-flang-isoc9x"))
-    flag_isoc9x = 1;
+  else if (!strncmp (p, "-std=", 5))
+    {
+      /* Select the appropriate language standard.  We currently
+	 recognize:
+	 -std=iso9899:1990	same as -ansi
+	 -std=gnu		default
+	 -std=iso9899:199409	ISO C as modified in amend. 1
+	 -std=iso9899:199x	ISO C 9x
+	 -std=c89		same as -std=iso9899:1990
+	 -std=c9x		same as -std=iso9899:199x
+      */
+      const char *argstart = &p[5];
+
+      if (!strcmp (argstart, "iso9899:1990")
+	  || !strcmp (argstart, "c89"))
+	{
+	iso_1990:
+	  flag_traditional = 0;
+	  flag_writable_strings = 0;
+	  flag_no_asm = 1;
+	  flag_no_nonansi_builtin = 1;
+	  flag_isoc9x = 0;
+	}
+      else if (!strcmp (argstart, "iso9899:199409"))
+	{
+	  /* ??? The changes since ISO C 1990 are not supported.  */
+	  goto iso_1990;
+	}
+      else if (!strcmp (argstart, "iso9899:199x")
+	       || !strcmp (argstart, "c9x"))
+	{
+	  flag_traditional = 0;
+	  flag_writable_strings = 0;
+	  flag_no_asm = 1;
+	  flag_no_nonansi_builtin = 1;
+	  flag_isoc9x = 1;
+	}
+      else if (!strcmp (argstart, "gnu"))
+	{
+	  flag_traditional = 0;
+	  flag_writable_strings = 0;
+	  flag_no_asm = 0;
+	  flag_no_nonansi_builtin = 0;
+	  flag_isoc9x = 1;
+	}
+      else
+	error ("unknown C standard `%s'", argstart);
+    }
   else if (!strcmp (p, "-fdollars-in-identifiers"))
     dollars_in_ident = 1;
   else if (!strcmp (p, "-fno-dollars-in-identifiers"))
@@ -703,7 +749,7 @@ c_decode_option (argc, argv)
   else if (!strcmp (p, "-fident"))
     flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
-    flag_no_asm = 1, flag_no_nonansi_builtin = 1;
+    goto iso_1990;
   else if (!strcmp (p, "-Werror-implicit-function-declaration"))
     mesg_implicit_function_declaration = 2;
   else if (!strcmp (p, "-Wimplicit-function-declaration"))
@@ -4492,13 +4538,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  && ! (specbits & (1 << (int) RID_TYPEDEF) && initialized)
 	  && ! (in_system_header && ! allocation_temporary_p ()))
 	{
-	  /* C9x will probably require a diagnostic here.
-	     For now, issue a warning if -Wreturn-type and this is a function,
-	     or if -Wimplicit; prefer the former warning since it is more
-	     explicit.  */
+	  /* Issue a warning if this is an ISO C 9x program or if -Wreturn-type
+	     and this is a function, or if -Wimplicit; prefer the former
+	     warning since it is more explicit.  */
 	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
 	    warn_about_return_type = 1;
-	  else if (warn_implicit_int)
+	  else if (warn_implicit_int || flag_isoc9x)
 	    warning ("type defaults to `int' in declaration of `%s'", name);
 	}
 

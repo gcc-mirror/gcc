@@ -285,6 +285,10 @@ int traditional;
 
 int c89;
 
+/* Nonzero for the 199x C Standard.  */
+
+int c9x;
+
 /* Nonzero causes output not to be done,
    but directives such as #define that have side effects
    are still obeyed.  */
@@ -603,6 +607,11 @@ union hashval {
  */
 static char rest_extension[] = "...";
 #define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
+
+/* This is the implicit parameter name when using variable number of
+   parameters for macros using the ISO C 9x extension.  */
+static char va_args_name[] = "__VA_ARGS__";
+#define VA_ARGS_NAME_LENGTH	(sizeof (va_args_name) - 1)
 
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define directives (type T_MACRO),
@@ -1156,12 +1165,15 @@ print_help ()
   printf ("  -traditional              Follow K&R pre-processor behaviour\n");
   printf ("  -trigraphs                Support ANSI C trigraphs\n");
   printf ("  -lang-c                   Assume that the input sources are in C\n");
-  printf ("  -lang-c89                 Assume that the input sources are in C89\n");
+  printf ("  -lang-c89                 Assume that the input is C89; depricated\n");
   printf ("  -lang-c++                 Assume that the input sources are in C++\n");
   printf ("  -lang-objc                Assume that the input sources are in ObjectiveC\n");
   printf ("  -lang-objc++              Assume that the input sources are in ObjectiveC++\n");
   printf ("  -lang-asm                 Assume that the input sources are in assembler\n");
   printf ("  -lang-chill               Assume that the input sources are in Chill\n");
+  printf ("  -std=<std name>           Specify the conformance standard; one of:\n");
+  printf ("                            gnu, c89, c9x, iso9899:1990,\n");
+  printf ("                            iso9899:199409, iso9899:199x\n");
   printf ("  -+                        Allow parsing of C++ style features\n");
   printf ("  -w                        Inhibit warning messages\n");
   printf ("  -Wtrigraphs               Warn if trigraphs are encountered\n");
@@ -1460,23 +1472,34 @@ main (argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
-	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, objc = 0;
-	if (! strcmp (argv[i], "-lang-c89"))
-	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, objc = 0;
-	if (! strcmp (argv[i], "-lang-c++"))
-	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, objc = 0;
-	if (! strcmp (argv[i], "-lang-objc"))
-	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, objc = 1;
-	if (! strcmp (argv[i], "-lang-objc++"))
-	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, objc = 1;
- 	if (! strcmp (argv[i], "-lang-asm"))
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	else if (! strcmp (argv[i], "-lang-c89"))
+	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	else if (! strcmp (argv[i], "-lang-c++"))
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 0;
+	else if (! strcmp (argv[i], "-lang-objc"))
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 1;
+	else if (! strcmp (argv[i], "-lang-objc++"))
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 1;
+ 	else if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
- 	if (! strcmp (argv[i], "-lint"))
+ 	else if (! strcmp (argv[i], "-lint"))
  	  for_lint = 1;
 	break;
 
       case '+':
 	cplusplus = 1, cplusplus_comments = 1;
+	break;
+
+      case 's':
+	if (!strcmp (argv[i], "-std=iso9899:1990")
+	    || !strcmp (argv[i], "-std=iso9899:199409")
+	    || !strcmp (argv[i], "-std=c89"))
+	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+        else if (!strcmp (argv[i], "-std=iso9899:199x")
+		 || !strcmp (argv[i], "-std=c9x")
+		 || !strcmp (argv[i], "-std=gnu"))
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
 	break;
 
       case 'w':
@@ -5800,7 +5823,18 @@ create_definition (buf, limit, op)
 		 rest_extension);
 
       if (!is_idstart[*bp])
+	{
+	  if (c9x && limit - bp > (long) REST_EXTENSION_LENGTH
+	      && bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0)
+	    {
+	      /* This is the ISO C 9x way to write macros with variable
+		 number of arguments.  */
+	      rest_args = 1;
+	      temp->rest_args = 1;
+	    }
+	  else
 	pedwarn ("invalid character in macro parameter name");
+	}
       
       /* Find the end of the arg name.  */
       while (is_idchar[*bp]) {
@@ -5815,6 +5849,13 @@ create_definition (buf, limit, op)
 	  break;
 	}
       }
+      if (bp == temp->name && rest_args == 1)
+	{
+	  /* This is the ISO C 9x style.  */
+	  temp->name = va_args_name;
+	  temp->length = VA_ARGS_NAME_LENGTH;
+	}
+      else
       temp->length = bp - temp->name;
       if (rest_args == 1)
 	bp += REST_EXTENSION_LENGTH;
@@ -5828,7 +5869,9 @@ create_definition (buf, limit, op)
 	bp++;
 	SKIP_WHITE_SPACE (bp);
 	/* A comma at this point can only be followed by an identifier.  */
-	if (!is_idstart[*bp]) {
+	if (!is_idstart[*bp]
+	    && (c9x && limit - bp <= (long) REST_EXTENSION_LENGTH
+		||  bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) != 0)) {
 	  error ("badly punctuated parameter list in `#define'");
 	  goto nope;
 	}
@@ -5842,10 +5885,18 @@ create_definition (buf, limit, op)
 
 	for (otemp = temp->next; otemp != NULL; otemp = otemp->next)
 	  if (temp->length == otemp->length
-	      && bcmp (temp->name, otemp->name, temp->length) == 0) {
+	      && bcmp (temp->name, otemp->name, temp->length) == 0)
+	    {
 	      error ("duplicate argument name `%.*s' in `#define'",
 		     temp->length, temp->name);
 	      goto nope;
+	  }
+	if (rest_args == 0 && temp->length == VA_ARGS_NAME_LENGTH
+	    && bcmp (temp->name, va_args_name, VA_ARGS_NAME_LENGTH) == 0)
+	  {
+	    error ("\
+reserved name `%s' used as argument name in `#define'", va_args_name);
+	    goto nope;
 	  }
       }
     }

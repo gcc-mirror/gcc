@@ -1377,7 +1377,7 @@ mostly_true_jump (jump_insn, condition)
      always gives a correct answer.  */
   if (flag_branch_probabilities)
     {
-      rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);;
+      rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);
       if (note)
 	{
 	  int prob = XINT (note, 0);

@@ -164,7 +164,7 @@ c_expand_start_else ()
   expand_start_else ();
 }
 
-/* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+/* Make bindings for __FUNCTION__, __PRETTY_FUNCTION__, and __func__.  */
 
 void
 declare_function_name ()
@@ -188,6 +188,9 @@ declare_function_name ()
 
   declare_hidden_char_array ("__FUNCTION__", name);
   declare_hidden_char_array ("__PRETTY_FUNCTION__", printable_name);
+  /* The ISO C people "of course" couldn't use __FUNCTION__ in the
+     ISO C 9x standard; instead a new variable is invented.  */
+  declare_hidden_char_array ("__func__", name);
 }
 
 static void
