@@ -1,3 +1,10 @@
+2002-09-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (BASE_REG_CLASS): Always return LO_REGS for Thumb.
+	(MODE_BASE_REG_CLASS, case Thumb): Only return BASE_REGS if we know
+	that we have a SImode access, and only then if reload hasn't completed;
+	for all other cases, use LO_REGS.
+
 2002-09-29  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux64.h (STARTFILE_SPEC32, ENDFILE_SPEC32): Kill

@@ -1093,14 +1093,16 @@ enum reg_class
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
-#define BASE_REG_CLASS   (TARGET_THUMB ? BASE_REGS : GENERAL_REGS)
+#define BASE_REG_CLASS   (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
 
-/* For the Thumb the high registers cannot be used as base
-   registers when addressing quanitities in QI or HI mode.  */
+/* For the Thumb the high registers cannot be used as base registers
+   when addressing quanitities in QI or HI mode; if we don't know the
+   mode, then we must be conservative.  After reload we must also be
+   conservative, since we can't support SP+reg addressing, and we
+   can't fix up any bad substitutions.  */
 #define MODE_BASE_REG_CLASS(MODE)					\
-    (TARGET_ARM ? BASE_REGS :						\
-     (((MODE) == QImode || (MODE) == HImode || (MODE) == VOIDmode)	\
-     ? LO_REGS : BASE_REGS))
+    (TARGET_ARM ? GENERAL_REGS :					\
+     (((MODE) == SImode && !reload_completed) ? BASE_REGS : LO_REGS))
 
 /* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
