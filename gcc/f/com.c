@@ -14246,6 +14246,8 @@ ffe_init ()
      to try doing this.  */
   ffelex_hash_kludge (finput);
 
+  push_srcloc (input_filename, 0);
+
   /* FIXME: The ffelex_hash_kludge code needs to be cleaned up to
      set the new file name.  Maybe in ffe_post_options.  */
   return true;
