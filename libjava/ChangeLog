@@ -1,3 +1,16 @@
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/URLStreamHandler.java
+	(parseURL): Added comment in catch statement.
+	(canonicalizeFilename): Add documentation.
+	(sameURL): Completed documentation.
+	(equals): Likewise.
+	(hostsEqual): Likewise.
+	(getDefaulPort): Likewise.
+	(hashCode): Likewise.
+	(toExternalForm): Likewise.
+	(getHostName): Fix empty hostname check, completed documentation.
+
 2003-11-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natDouble.cc (parseDouble): Reverted patch of
