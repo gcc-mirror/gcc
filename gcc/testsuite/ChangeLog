@@ -1,3 +1,8 @@
+2003-07-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/20030505.c: Only run for SPE.
+	Remove definition of opaque type.
+
 2003-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/ptrmem6.C: New test.
