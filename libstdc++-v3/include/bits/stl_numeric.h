@@ -61,6 +61,8 @@
 #ifndef _STL_NUMERIC_H
 #define _STL_NUMERIC_H 1
 
+#include <debug/debug.h>
+
 namespace std
 {
 
@@ -70,6 +72,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
 	__init = __init + *__first;
@@ -83,6 +86,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
 	__init = __binary_op(__init, *__first);
@@ -97,6 +101,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       for ( ; __first1 != __last1; ++__first1, ++__first2)
 	__init = __init + (*__first1 * *__first2);
@@ -114,6 +119,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       for ( ; __first1 != __last1; ++__first1, ++__first2)
 	__init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
@@ -130,6 +136,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last) return __result;
       *__result = *__first;
@@ -151,6 +158,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last) return __result;
       *__result = *__first;
@@ -172,6 +180,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last) return __result;
       *__result = *__first;
@@ -194,6 +203,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last) return __result;
       *__result = *__first;

@@ -65,7 +65,7 @@
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 
-namespace std
+namespace __gnu_norm
 { 
   /**
    *  @if maint
@@ -96,7 +96,7 @@ namespace std
    *  All the functions are op overloads except for _M_set_node.
    *  @endif
   */
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
     struct _Deque_iterator
   {
     typedef _Deque_iterator<_Tp, _Tp&, _Tp*>             iterator;
@@ -205,7 +205,7 @@ namespace std
   // Note: we also provide overloads whose operands are of the same type in
   // order to avoid ambiguous overload resolution when std::rel_ops operators
   // are in scope (for additional details, see libstdc++/3628)
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator==(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -213,7 +213,7 @@ namespace std
     return __x._M_cur == __y._M_cur;
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator==(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -222,7 +222,7 @@ namespace std
     return __x._M_cur == __y._M_cur;
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator!=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -230,7 +230,7 @@ namespace std
     return !(__x == __y);
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator!=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -239,7 +239,7 @@ namespace std
     return !(__x == __y);
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator<(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -248,7 +248,7 @@ namespace std
       (__x._M_cur < __y._M_cur) : (__x._M_node < __y._M_node);
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator<(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -258,7 +258,7 @@ namespace std
       (__x._M_cur < __y._M_cur) : (__x._M_node < __y._M_node);
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator>(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -266,7 +266,7 @@ namespace std
     return __y < __x;
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator>(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -275,7 +275,7 @@ namespace std
     return __y < __x;
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator<=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -283,7 +283,7 @@ namespace std
     return !(__y < __x);
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator<=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -292,7 +292,7 @@ namespace std
     return !(__y < __x);
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline bool
   operator>=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
   	   const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
@@ -300,7 +300,7 @@ namespace std
     return !(__x < __y);
   }
   
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline bool
   operator>=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -313,7 +313,7 @@ namespace std
   // According to the resolution of DR179 not only the various comparison
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.
-  template <typename _Tp, typename _RefL, typename _PtrL,
+  template<typename _Tp, typename _RefL, typename _PtrL,
                           typename _RefR, typename _PtrR>
   inline typename _Deque_iterator<_Tp, _RefL, _PtrL>::difference_type
   operator-(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
@@ -325,7 +325,7 @@ namespace std
       (__y._M_last - __y._M_cur);
   }
   
-  template <typename _Tp, typename _Ref, typename _Ptr>
+  template<typename _Tp, typename _Ref, typename _Ptr>
   inline _Deque_iterator<_Tp, _Ref, _Ptr>
   operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
   {
@@ -345,7 +345,7 @@ namespace std
    *  instanceless allocators.
    *  @endif
   */
-  template <typename _Tp, typename _Alloc, bool __is_static>
+  template<typename _Tp, typename _Alloc, bool __is_static>
     class _Deque_alloc_base
   {
   public:
@@ -388,7 +388,7 @@ namespace std
   };
   
   /// @if maint Specialization for instanceless allocators.  @endif
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
     class _Deque_alloc_base<_Tp, _Alloc, true>
   {
   public:
@@ -439,7 +439,7 @@ namespace std
    *  here.
    *  @endif
   */
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
     class _Deque_base
     : public _Deque_alloc_base<_Tp,_Alloc,
                                 _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
@@ -470,7 +470,7 @@ namespace std
   };
   
   
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   _Deque_base<_Tp,_Alloc>::~_Deque_base()
   {
     if (this->_M_map)
@@ -490,7 +490,7 @@ namespace std
    *  The initial underlying memory layout is a bit complicated...
    *  @endif
   */
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   void
   _Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t __num_elements)
   {
@@ -525,7 +525,7 @@ namespace std
                        __num_elements % __deque_buf_size(sizeof(_Tp));
   }
   
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   void _Deque_base<_Tp,_Alloc>::_M_create_nodes(_Tp** __nstart, _Tp** __nfinish)
   {
     _Tp** __cur;
@@ -541,7 +541,7 @@ namespace std
       }
   }
   
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   void
   _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
   {
@@ -634,7 +634,7 @@ namespace std
    *  and we can use other standard algorithms as well.
    *  @endif
   */
-  template <typename _Tp, typename _Alloc = allocator<_Tp> >
+  template<typename _Tp, typename _Alloc = allocator<_Tp> >
     class deque : protected _Deque_base<_Tp, _Alloc>
   {
     // concept requirements
@@ -1227,13 +1227,13 @@ namespace std
      *  push_back on each value from the iterator.
      *  @endif
     */
-    template <typename _InputIterator>
+    template<typename _InputIterator>
       void
       _M_range_initialize(_InputIterator __first, _InputIterator __last,
                           input_iterator_tag);
   
     // called by the second initialize_dispatch above
-    template <typename _ForwardIterator>
+    template<typename _ForwardIterator>
       void
       _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
                           forward_iterator_tag);
@@ -1278,13 +1278,13 @@ namespace std
       }
   
     // called by the second assign_dispatch above
-    template <typename _InputIterator>
+    template<typename _InputIterator>
       void
       _M_assign_aux(_InputIterator __first, _InputIterator __last,
                     input_iterator_tag);
   
     // called by the second assign_dispatch above
-    template <typename _ForwardIterator>
+    template<typename _ForwardIterator>
       void
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
                     forward_iterator_tag)
@@ -1357,13 +1357,13 @@ namespace std
       }
   
     // called by the second insert_dispatch above
-    template <typename _InputIterator>
+    template<typename _InputIterator>
       void
       _M_range_insert_aux(iterator __pos, _InputIterator __first,
                           _InputIterator __last, input_iterator_tag);
   
     // called by the second insert_dispatch above
-    template <typename _ForwardIterator>
+    template<typename _ForwardIterator>
       void
       _M_range_insert_aux(iterator __pos, _ForwardIterator __first,
                           _ForwardIterator __last, forward_iterator_tag);
@@ -1383,7 +1383,7 @@ namespace std
     _M_insert_aux(iterator __pos, size_type __n, const value_type& __x);
   
     // called by range_insert_aux for forward iterators
-    template <typename _ForwardIterator>
+    template<typename _ForwardIterator>
       void
       _M_insert_aux(iterator __pos, 
                     _ForwardIterator __first, _ForwardIterator __last,
@@ -1464,7 +1464,7 @@ namespace std
    *  deques.  Deques are considered equivalent if their sizes are equal,
    *  and if corresponding elements compare equal.
   */
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator==(const deque<_Tp, _Alloc>& __x,
                          const deque<_Tp, _Alloc>& __y)
   {
@@ -1483,7 +1483,7 @@ namespace std
    *
    *  See std::lexicographical_compare() for how the determination is made.
   */
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator<(const deque<_Tp, _Alloc>& __x,
                         const deque<_Tp, _Alloc>& __y)
   {
@@ -1492,39 +1492,39 @@ namespace std
   }
   
   /// Based on operator==
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator!=(const deque<_Tp, _Alloc>& __x,
                          const deque<_Tp, _Alloc>& __y) {
     return !(__x == __y);
   }
   
   /// Based on operator<
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator>(const deque<_Tp, _Alloc>& __x,
                         const deque<_Tp, _Alloc>& __y) {
     return __y < __x;
   }
   
   /// Based on operator<
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator<=(const deque<_Tp, _Alloc>& __x,
                          const deque<_Tp, _Alloc>& __y) {
     return !(__y < __x);
   }
   
   /// Based on operator<
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline bool operator>=(const deque<_Tp, _Alloc>& __x,
                          const deque<_Tp, _Alloc>& __y) {
     return !(__x < __y);
   }
   
   /// See std::deque::swap().
-  template <typename _Tp, typename _Alloc>
+  template<typename _Tp, typename _Alloc>
   inline void swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y)
   {
     __x.swap(__y);
   }
-} // namespace std 
+} // namespace __gnu_norm
   
 #endif /* _DEQUE_H */

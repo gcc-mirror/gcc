@@ -75,5 +75,9 @@
 # include <bits/vector.tcc>
 #endif
 
+#ifdef _GLIBCXX_DEBUG
+# include <debug/vector>
+#endif
+
 #endif /* _GLIBCXX_VECTOR */
 

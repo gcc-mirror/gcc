@@ -251,6 +251,7 @@ sources = \
 	codecvt.cc \
 	complex_io.cc \
 	ctype.cc \
+	debug.cc \
 	demangle.cc \
 	functexcept.cc \
 	globals_locale.cc \
@@ -360,7 +361,7 @@ am__objects_1 = codecvt_members.lo collate_members.lo ctype_members.lo \
 	messages_members.lo monetary_members.lo numeric_members.lo \
 	time_members.lo
 am__objects_2 = basic_file.lo c++locale.lo
-am__objects_3 = codecvt.lo complex_io.lo ctype.lo demangle.lo \
+am__objects_3 = codecvt.lo complex_io.lo ctype.lo debug.lo demangle.lo \
 	functexcept.lo globals_locale.lo globals_io.lo ios.lo \
 	ios_failure.lo ios_init.lo ios_locale.lo limits.lo locale.lo \
 	locale_init.lo locale_facets.lo localename.lo stdexcept.lo \

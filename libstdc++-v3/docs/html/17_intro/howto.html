@@ -339,6 +339,18 @@
         violations of the requirements of the standard.  This is described
         in more detail <a href="../19_diagnostics/howto.html#3">here</a>.
     </dd>
+    <dt><code>_GLIBCXX_DEBUG</code></dt>
+    <dd>Undefined by default. Configurable. When defined, compiles
+    user code using the <a href="../debug.html#safe">libstdc++ debug
+    mode</a>.
+    </dd>
+    <dt><code>_GLIBCXX_DEBUG_PEDANTIC</code></dt>
+    <dd>Undefined by default. Configurable. When defined while
+    compiling with the <a href="../debug.html#safe">libstdc++ debug
+    mode</a>, makes the debug mode extremely picky by making the use
+    of libstdc++ extensions and libstdc++-specific behavior into
+    errors.
+    </dd>
     <!--
     <dt><code></code></dt>
     <dd>

@@ -62,6 +62,7 @@
 #define _GLIBCXX_ITERATOR 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <cstddef>
 #include <bits/stl_iterator_base_types.h>
@@ -73,7 +74,3 @@
 #include <bits/streambuf_iterator.h>
 
 #endif /* _GLIBCXX_ITERATOR */
-
-// Local Variables:
-// mode:C++
-// End:

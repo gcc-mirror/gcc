@@ -62,21 +62,17 @@
 #define _GLIBCXX_QUEUE 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
-#include <bits/stl_vector.h>
 #include <bits/stl_heap.h>
-#include <bits/stl_deque.h>
 #include <bits/stl_function.h>
+#include <deque>
+#include <vector>
 #include <bits/stl_queue.h>
-
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-#  include <bits/deque.tcc>
-#  include <bits/vector.tcc>
-#endif
 
 #endif /* _GLIBCXX_QUEUE */

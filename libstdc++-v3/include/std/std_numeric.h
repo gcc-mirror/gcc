@@ -62,6 +62,7 @@
 #define _GLIBCXX_NUMERIC 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <cstddef>
 #include <iterator>
@@ -69,7 +70,3 @@
 #include <bits/stl_numeric.h>
 
 #endif /* _GLIBCXX_NUMERIC */
-
-// Local Variables:
-// mode:C++
-// End:

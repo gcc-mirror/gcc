@@ -65,7 +65,7 @@
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_norm
 {
   /// @if maint Primary default version.  @endif
   /**
@@ -966,6 +966,6 @@ namespace std
     inline void
     swap(vector<_Tp,_Alloc>& __x, vector<_Tp,_Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _VECTOR_H */

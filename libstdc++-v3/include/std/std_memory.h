@@ -57,6 +57,7 @@
 #include <bits/stl_iterator_base_types.h> //for iterator_traits
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>
+#include <debug/debug.h>
 
 namespace std
 {
@@ -259,7 +260,11 @@ namespace std
        *  what happens when you dereference one of those...)
        */
       element_type&
-      operator*() const throw() { return *_M_ptr; }
+      operator*() const throw() 
+      {
+	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	return *_M_ptr; 
+      }
       
       /**
        *  @brief  Smart pointer dereferencing.
@@ -268,7 +273,11 @@ namespace std
        *  automatically cause to be dereferenced.
        */
       element_type*
-      operator->() const throw() { return _M_ptr; }
+      operator->() const throw() 
+      {
+	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	return _M_ptr; 
+      }
       
       /**
        *  @brief  Bypassing the smart pointer.

@@ -224,7 +224,6 @@ ext_headers = \
 	${ext_srcdir}/hash_fun.h \
 	${ext_srcdir}/hashtable.h
 
-
 # This is the common subset of files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
 c_base_builddir = .
@@ -290,6 +289,34 @@ c_compatibility_headers = \
 	${c_compatibility_srcdir}/wchar.h \
 	${c_compatibility_srcdir}/wctype.h
 
+# Debug mode headers
+debug_srcdir = ${glibcxx_srcdir}/include/debug
+debug_builddir = ./debug
+debug_headers = \
+	${debug_srcdir}/bitset \
+	${debug_srcdir}/debug.h \
+	${debug_srcdir}/deque \
+	${debug_srcdir}/formatter.h \
+	${debug_srcdir}/hash_map \
+	${debug_srcdir}/hash_map.h \
+	${debug_srcdir}/hash_multimap.h \
+	${debug_srcdir}/hash_multiset.h \
+	${debug_srcdir}/hash_set \
+	${debug_srcdir}/hash_set.h \
+	${debug_srcdir}/list \
+	${debug_srcdir}/map \
+	${debug_srcdir}/map.h \
+	${debug_srcdir}/multimap.h \
+	${debug_srcdir}/multiset.h \
+	${debug_srcdir}/safe_base.h \
+	${debug_srcdir}/safe_iterator.h \
+	${debug_srcdir}/safe_iterator.tcc \
+	${debug_srcdir}/safe_sequence.h \
+	${debug_srcdir}/set \
+	${debug_srcdir}/set.h \
+	${debug_srcdir}/string \
+	${debug_srcdir}/vector
+
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
@@ -350,7 +377,7 @@ endif
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-host
+	stamp-backward stamp-ext stamp-debug stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -428,6 +455,15 @@ stamp-ext: ${ext_headers}
 	  (cd ${ext_builddir} && $(LN_S) $? . || true) ;\
 	fi ;\
 	$(STAMP) stamp-ext
+
+stamp-debug: ${debug_headers}
+	@if [ ! -d "${debug_builddir}" ]; then \
+	  mkdir -p ${debug_builddir} ;\
+	fi ;\
+	if [ ! -f stamp-debug ]; then \
+	  (cd ${debug_builddir} && @LN_S@ $? . || true) ;\
+	fi ;\
+	$(STAMP) stamp-debug
 
 stamp-${host_alias}:
 	@if [ ! -d ${host_builddir} ]; then \
@@ -556,6 +592,9 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
+	for file in ${debug_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${host_builddir}
 	for file in ${host_headers} ${host_headers_extra} \
 	 ${thread_host_headers}; do \

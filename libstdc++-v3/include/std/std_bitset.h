@@ -50,21 +50,21 @@
 
 #pragma GCC system_header
 
-#include <cstddef>     // for size_t
-#include <cstring>     // for memset
-#include <limits>      // for numeric_limits
+#include <cstddef>     // For size_t
+#include <cstring>     // For memset
+#include <limits>      // For numeric_limits
 #include <string>
-#include <bits/functexcept.h>   // for invalid_argument, out_of_range,
+#include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
-#include <ostream>     // for ostream (operator<<)
-#include <istream>     // for istream (operator>>)
+#include <ostream>     // For ostream (operator<<)
+#include <istream>     // For istream (operator>>)
 
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
 #define _GLIBCXX_BITSET_WORDS(__n) \
  ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1)/_GLIBCXX_BITSET_BITS_PER_WORD)
 
-namespace std
+namespace __gnu_norm
 {
   /**
    *  @if maint
@@ -646,7 +646,7 @@ namespace std
 
       ~reference() { }
 
-      // for b[i] = __x;
+      // For b[i] = __x;
       reference&
       operator=(bool __x)
       {
@@ -657,7 +657,7 @@ namespace std
 	return *this;
       }
 
-      // for b[i] = b[__j];
+      // For b[i] = b[__j];
       reference&
       operator=(const reference& __j)
       {
@@ -668,16 +668,16 @@ namespace std
 	return *this;
       }
 
-      // flips the bit
+      // Flips the bit
       bool
       operator~() const
       { return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) == 0; }
 
-      // for __x = b[i];
+      // For __x = b[i];
       operator bool() const
       { return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) != 0; }
 
-      // for b[i].flip();
+      // For b[i].flip();
       reference&
       flip()
       {
@@ -1207,9 +1207,13 @@ namespace std
       return __os << __tmp;
     }
   //@}
-} // namespace std
+} // namespace __gnu_norm
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/bitset>
+#endif
 
 #endif /* _GLIBCXX_BITSET */

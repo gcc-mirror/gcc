@@ -74,4 +74,8 @@
 # include <bits/deque.tcc>
 #endif
 
+#ifdef _GLIBCXX_DEBUG
+# include <debug/deque>
+#endif
+
 #endif /* _GLIBCXX_DEQUE */

@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_norm
 {
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
@@ -653,6 +653,6 @@ namespace std
     inline void
     swap(map<_Key,_Tp,_Compare,_Alloc>& __x, map<_Key,_Tp,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _MAP_H */

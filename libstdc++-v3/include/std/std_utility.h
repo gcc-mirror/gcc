@@ -62,12 +62,9 @@
 #define _GLIBCXX_UTILITY 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
 #endif /* _GLIBCXX_UTILITY */
-
-// Local Variables:
-// mode:C++
-// End:

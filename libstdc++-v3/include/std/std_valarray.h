@@ -46,6 +46,7 @@
 #include <cstdlib>
 #include <numeric>
 #include <algorithm>
+#include <debug/debug.h>
 
 namespace std
 {
@@ -221,12 +222,18 @@ namespace std
   template<typename _Tp>
     inline const _Tp&
     valarray<_Tp>::operator[](size_t __i) const
-    { return _M_data[__i]; }
+    { 
+      __glibcxx_requires_subscript(__i);
+      return _M_data[__i]; 
+    }
 
   template<typename _Tp>
     inline _Tp&
     valarray<_Tp>::operator[](size_t __i)
-    { return _M_data[__i]; }
+    { 
+      __glibcxx_requires_subscript(__i);
+      return _M_data[__i]; 
+    }
 
 } // std::
 
@@ -260,7 +267,10 @@ namespace std
     inline
     valarray<_Tp>::valarray(const _Tp* __restrict__ __p, size_t __n)
       : _M_size(__n), _M_data(__valarray_get_storage<_Tp>(__n))
-    { std::__valarray_copy_construct(__p, __p + __n, _M_data); }
+    { 
+      _GLIBCXX_DEBUG_ASSERT(__p != 0 || __n == 0);
+      std::__valarray_copy_construct(__p, __p + __n, _M_data); 
+    }
 
   template<typename _Tp>
     inline
@@ -324,6 +334,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const valarray<_Tp>& __v)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __v._M_size);
       std::__valarray_copy(__v._M_data, _M_size, _M_data);
       return *this;
     }
@@ -340,6 +351,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const slice_array<_Tp>& __sa)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __sa._M_sz);
       std::__valarray_copy(__sa._M_array, __sa._M_sz,
 			   __sa._M_stride, _Array<_Tp>(_M_data));
       return *this;
@@ -349,6 +361,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const gslice_array<_Tp>& __ga)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __ga._M_index.size());
       std::__valarray_copy(__ga._M_array, _Array<size_t>(__ga._M_index),
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -358,6 +371,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const mask_array<_Tp>& __ma)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __ma._M_sz);
       std::__valarray_copy(__ma._M_array, __ma._M_mask,
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -367,6 +381,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const indirect_array<_Tp>& __ia)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __ia._M_sz);
       std::__valarray_copy(__ia._M_array, __ia._M_index,
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -376,6 +391,7 @@ namespace std
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const _Expr<_Dom, _Tp>& __e)
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __e.size());
       std::__valarray_copy(__e, _M_size, _Array<_Tp>(_M_data));
       return *this;
     }
@@ -460,6 +476,7 @@ namespace std
     inline _Tp
     valarray<_Tp>::sum() const
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
       return std::__valarray_sum(_M_data, _M_data + _M_size);
     }
 
@@ -540,6 +557,7 @@ namespace std
     inline _Tp
     valarray<_Tp>::min() const
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
       return *std::min_element (_M_data, _M_data+_M_size);
     }
 
@@ -547,6 +565,7 @@ namespace std
     inline _Tp
     valarray<_Tp>::max() const
     {
+      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
       return *std::max_element (_M_data, _M_data+_M_size);
     }
   
@@ -596,6 +615,7 @@ namespace std
     inline valarray<_Tp>&						\
     valarray<_Tp>::operator _Op##=(const valarray<_Tp> &__v)		\
     {									\
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __v._M_size);                    \
       _Array_augmented_##_Name(_Array<_Tp>(_M_data), _M_size, 		\
 			       _Array<_Tp>(__v._M_data));		\
       return *this;							\
@@ -643,6 +663,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, __shift_right)
                  typename __fun<_Name, _Tp>::result_type>               \
     operator _Op(const valarray<_Tp>& __v, const valarray<_Tp>& __w)	\
     {									\
+      _GLIBCXX_DEBUG_ASSERT(__v.size() == __w.size());                  \
       typedef _BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp> _Closure;     \
       typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
       return _Expr<_Closure, _Rt>(_Closure(__v, __w));                  \
@@ -690,7 +711,3 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 } // namespace std
 
 #endif /* _GLIBCXX_VALARRAY */
-
-// Local Variables:
-// mode:c++
-// End:

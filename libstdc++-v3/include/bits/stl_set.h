@@ -63,37 +63,36 @@
 
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_norm
 {
+  // Forward declarations of operators < and ==, needed for friend declaration.
+  template<class _Key, class _Compare = less<_Key>, 
+	   class _Alloc = allocator<_Key> >
+  class set;
 
-// Forward declarations of operators < and ==, needed for friend declaration.
+  template<class _Key, class _Compare, class _Alloc>
+    inline bool 
+    operator==(const set<_Key,_Compare,_Alloc>& __x, 
+	       const set<_Key,_Compare,_Alloc>& __y);
 
-template <class _Key, class _Compare = less<_Key>,
-          class _Alloc = allocator<_Key> >
-class set;
+  template<class _Key, class _Compare, class _Alloc>
+    inline bool 
+    operator<(const set<_Key,_Compare,_Alloc>& __x, 
+	      const set<_Key,_Compare,_Alloc>& __y);
 
-template <class _Key, class _Compare, class _Alloc>
-inline bool operator==(const set<_Key,_Compare,_Alloc>& __x, 
-                       const set<_Key,_Compare,_Alloc>& __y);
-
-template <class _Key, class _Compare, class _Alloc>
-inline bool operator<(const set<_Key,_Compare,_Alloc>& __x, 
-                      const set<_Key,_Compare,_Alloc>& __y);
-
-
-template <class _Key, class _Compare, class _Alloc>
-class set
-{
-  // concept requirements
-  __glibcxx_class_requires(_Key, _SGIAssignableConcept)
-  __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
-
-public:
-  // typedefs:
-  typedef _Key     key_type;
-  typedef _Key     value_type;
-  typedef _Compare key_compare;
-  typedef _Compare value_compare;
+  template<class _Key, class _Compare, class _Alloc>
+    class set
+    {
+      // concept requirements
+      __glibcxx_class_requires(_Key, _SGIAssignableConcept)
+      __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
+	
+	public:
+      // typedefs:
+      typedef _Key     key_type;
+      typedef _Key     value_type;
+      typedef _Compare key_compare;
+      typedef _Compare value_compare;
 private:
   typedef _Rb_tree<key_type, value_type, 
                   _Identity<value_type>, key_compare, _Alloc> _Rep_type;
@@ -118,12 +117,12 @@ public:
                const allocator_type& __a = allocator_type())
     : _M_t(__comp, __a) {}
 
-  template <class _InputIterator>
+  template<class _InputIterator>
   set(_InputIterator __first, _InputIterator __last)
     : _M_t(_Compare(), allocator_type())
     { _M_t.insert_unique(__first, __last); }
 
-  template <class _InputIterator>
+  template<class _InputIterator>
   set(_InputIterator __first, _InputIterator __last, const _Compare& __comp,
       const allocator_type& __a = allocator_type())
     : _M_t(__comp, __a) { _M_t.insert_unique(__first, __last); }
@@ -159,7 +158,7 @@ public:
     typedef typename _Rep_type::iterator _Rep_iterator;
     return _M_t.insert_unique((_Rep_iterator&)__position, __x);
   }
-  template <class _InputIterator>
+  template<class _InputIterator>
   void insert(_InputIterator __first, _InputIterator __last) {
     _M_t.insert_unique(__first, __last);
   }
@@ -205,54 +204,54 @@ public:
     return _M_t.equal_range(__x);
   }
 
-  template <class _K1, class _C1, class _A1>
+  template<class _K1, class _C1, class _A1>
   friend bool operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
-  template <class _K1, class _C1, class _A1>
+  template<class _K1, class _C1, class _A1>
   friend bool operator< (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
 };
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator==(const set<_Key,_Compare,_Alloc>& __x, 
                        const set<_Key,_Compare,_Alloc>& __y) {
   return __x._M_t == __y._M_t;
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator<(const set<_Key,_Compare,_Alloc>& __x, 
                       const set<_Key,_Compare,_Alloc>& __y) {
   return __x._M_t < __y._M_t;
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator!=(const set<_Key,_Compare,_Alloc>& __x, 
                        const set<_Key,_Compare,_Alloc>& __y) {
   return !(__x == __y);
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator>(const set<_Key,_Compare,_Alloc>& __x, 
                       const set<_Key,_Compare,_Alloc>& __y) {
   return __y < __x;
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator<=(const set<_Key,_Compare,_Alloc>& __x, 
                        const set<_Key,_Compare,_Alloc>& __y) {
   return !(__y < __x);
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline bool operator>=(const set<_Key,_Compare,_Alloc>& __x, 
                        const set<_Key,_Compare,_Alloc>& __y) {
   return !(__x < __y);
 }
 
-template <class _Key, class _Compare, class _Alloc>
+template<class _Key, class _Compare, class _Alloc>
 inline void swap(set<_Key,_Compare,_Alloc>& __x, 
                  set<_Key,_Compare,_Alloc>& __y) {
   __x.swap(__y);
 }
 
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _SET_H */

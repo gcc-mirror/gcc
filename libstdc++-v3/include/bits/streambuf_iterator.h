@@ -39,6 +39,7 @@
 #pragma GCC system_header
 
 #include <streambuf>
+#include <debug/debug.h>
 
 // NB: Should specialize copy, find algorithms for streambuf iterators.
 
@@ -82,11 +83,23 @@ namespace std
       // NB: The result of operator*() on an end of stream is undefined.
       char_type 
       operator*() const
-      { return traits_type::to_char_type(_M_get()); }
+      { 
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
+	// Dereferencing a past-the-end istreambuf_iterator is a
+	// libstdc++ extension
+	__glibcxx_requires_cond(!_M_at_eof(),
+				_M_message(__gnu_debug::__msg_deref_istreambuf)
+				._M_iterator(*this)); 
+#endif
+	return traits_type::to_char_type(_M_get()); 
+      }
 	
       istreambuf_iterator& 
       operator++()
       { 
+	__glibcxx_requires_cond(!_M_at_eof(),
+				_M_message(__gnu_debug::__msg_inc_istreambuf)
+				._M_iterator(*this)); 
 	const int_type __eof = traits_type::eof();
 	if (_M_sbuf && traits_type::eq_int_type(_M_sbuf->sbumpc(), __eof))
 	  _M_sbuf = 0;
@@ -98,6 +111,10 @@ namespace std
       istreambuf_iterator
       operator++(int)
       {
+	__glibcxx_requires_cond(!_M_at_eof(),
+				_M_message(__gnu_debug::__msg_inc_istreambuf)
+				._M_iterator(*this)); 
+
 	const int_type __eof = traits_type::eof();
 	istreambuf_iterator __old = *this;
 	if (_M_sbuf
@@ -116,8 +133,8 @@ namespace std
       equal(const istreambuf_iterator& __b) const
       {
 	const int_type __eof = traits_type::eof();
-	bool __thiseof = traits_type::eq_int_type(_M_get(), __eof);
-	bool __beof = traits_type::eq_int_type(__b._M_get(), __eof);
+	bool __thiseof = _M_at_eof();
+	bool __beof = __b._M_at_eof();
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 
@@ -136,6 +153,13 @@ namespace std
 		_M_sbuf = 0;
 	  }
 	return __ret;
+      }
+
+      bool 
+      _M_at_eof() const
+      {
+	const int_type __eof = traits_type::eof();
+	return traits_type::eq_int_type(_M_get(), __eof);
       }
     };
 

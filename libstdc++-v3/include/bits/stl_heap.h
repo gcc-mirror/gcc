@@ -60,8 +60,53 @@
 #ifndef _STL_HEAP_H
 #define _STL_HEAP_H 1
 
+#include <debug/debug.h>
+
 namespace std
 {
+  // is_heap, a predicate testing whether or not a range is
+  // a heap.  This function is an extension, not part of the C++
+  // standard.
+  template<typename _RandomAccessIterator, typename _Distance>
+    bool
+    __is_heap(_RandomAccessIterator __first, _Distance __n)
+    {
+      _Distance __parent = 0;
+      for (_Distance __child = 1; __child < __n; ++__child) {
+	if (__first[__parent] < __first[__child]) 
+	  return false;
+	if ((__child & 1) == 0)
+	  ++__parent;
+      }
+      return true;
+    }
+
+  template<typename _RandomAccessIterator, typename _Distance,
+           typename _StrictWeakOrdering>
+    bool
+    __is_heap(_RandomAccessIterator __first, _StrictWeakOrdering __comp,
+	      _Distance __n)
+    {
+      _Distance __parent = 0;
+      for (_Distance __child = 1; __child < __n; ++__child) {
+	if (__comp(__first[__parent], __first[__child]))
+	  return false;
+	if ((__child & 1) == 0)
+	  ++__parent;
+      }
+      return true;
+    }
+
+  template<typename _RandomAccessIterator>
+    bool
+    __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    { return std::__is_heap(__first, std::distance(__first, __last)); }
+
+  template<typename _RandomAccessIterator, typename _StrictWeakOrdering>
+    bool
+    __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	    _StrictWeakOrdering __comp)
+    { return std::__is_heap(__first, __comp, std::distance(__first, __last)); }
 
   // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
 
@@ -101,6 +146,8 @@ namespace std
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+      //      __glibcxx_requires_heap(__first, __last - 1);
 
       std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
 		       _ValueType(*(__last - 1)));
@@ -145,6 +192,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_heap_pred(__first, __last - 1, __comp);
 
       std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
 		       _ValueType(*(__last - 1)), __comp);
@@ -200,6 +249,8 @@ namespace std
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_heap(__first, __last);
 
       std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)));
     }
@@ -256,6 +307,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
       std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)), __comp);
@@ -282,6 +335,7 @@ namespace std
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__last - __first < 2) return;
       _DistanceType __len = __last - __first;
@@ -317,7 +371,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-
+      __glibcxx_requires_valid_range(__first, __last);
+      
       if (__last - __first < 2) return;
       _DistanceType __len = __last - __first;
       _DistanceType __parent = (__len - 2)/2;
@@ -347,6 +402,8 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      //      __glibcxx_requires_heap(__first, __last);
 
       while (__last - __first > 1)
 	std::pop_heap(__first, __last--);
@@ -370,6 +427,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       while (__last - __first > 1)
 	std::pop_heap(__first, __last--, __comp);

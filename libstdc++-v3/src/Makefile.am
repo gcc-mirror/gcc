@@ -94,6 +94,7 @@ sources = \
 	codecvt.cc \
 	complex_io.cc \
 	ctype.cc \
+	debug.cc \
 	demangle.cc \
 	functexcept.cc \
 	globals_locale.cc \
