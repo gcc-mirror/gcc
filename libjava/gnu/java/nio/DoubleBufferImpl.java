@@ -1,5 +1,5 @@
 /* DoubleBufferImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.nio.ByteBuffer;
@@ -48,93 +49,114 @@ import java.nio.ReadOnlyBufferException;
 public final class DoubleBufferImpl extends DoubleBuffer
 {
   private boolean readOnly;
-  
-  public DoubleBufferImpl(int cap, int off, int lim)
-  {
-    super (cap, lim, off, 0);
-    this.backing_buffer = new double[cap];
-    readOnly = false;
-  }
-  
-  public DoubleBufferImpl(double[] array, int offset, int length)
-  {
-    super (array.length, length, offset, 0);
-    this.backing_buffer = array;
-    readOnly = false;
-  }
 
-  public DoubleBufferImpl(DoubleBufferImpl copy)
+  DoubleBufferImpl (int capacity)
   {
-    super (copy.capacity (), copy.limit (), copy.position (), 0);
-    backing_buffer = copy.backing_buffer;
-    readOnly = copy.isReadOnly ();
+    this (new double [capacity], 0, capacity, capacity, 0, -1, false);
+  }
+  
+  DoubleBufferImpl (double[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  {
+    super (buffer, offset, capacity, limit, position, mark);
+    this.readOnly = readOnly;
   }
   
   public boolean isReadOnly ()
   {
     return readOnly;
   }
-
+  
   public DoubleBuffer slice ()
   {
-    return new DoubleBufferImpl (this);
+    return new DoubleBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
-
-  public DoubleBuffer duplicate()
+  
+  public DoubleBuffer duplicate ()
   {
-    return new DoubleBufferImpl(this);
+    return new DoubleBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
-
-  public DoubleBuffer asReadOnlyBuffer()
+  
+  public DoubleBuffer asReadOnlyBuffer ()
   {
-    DoubleBufferImpl result = new DoubleBufferImpl (this);
-    result.readOnly = true;
-    return result;
+    return new DoubleBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
-
-  public DoubleBuffer compact()
+  
+  public DoubleBuffer compact ()
   {
+    int copied = 0;
+    
+    while (remaining () > 0)
+      {
+	put (copied, get ());
+	copied++;
+      }
+
+    position (copied);
     return this;
   }
-
-  public boolean isDirect()
+  
+  public boolean isDirect ()
   {
     return false;
   }
 
-  final public double get()
+  /**
+   * Relative get method. Reads the next <code>double</code> from the buffer.
+   */
+  final public double get ()
   {
-    double e = backing_buffer[position()];
-    position(position()+1);
-    return e;
+    double result = backing_buffer [position ()];
+    position (position () + 1);
+    return result;
   }
-
-  final public DoubleBuffer put(double b)
+  
+  /**
+   * Relative put method. Writes <code>value</code> to the next position
+   * in the buffer.
+   * 
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public DoubleBuffer put (double value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[position()] = b;
-    position(position()+1);
+	  	    
+    backing_buffer [position ()] = value;
+    position (position () + 1);
     return this;
   }
-
-  final public double get(int index)
+  
+  /**
+   * Absolute get method. Reads the <code>double</code> at position
+   * <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
+  final public double get (int index)
   {
-    return backing_buffer[index];
+    return backing_buffer [index];
   }
-
-  final public DoubleBuffer put(int index, double b)
+  
+  /**
+   * Absolute put method. Writes <code>value</value> to position
+   * <code>index</code> in the buffer.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public DoubleBuffer put (int index, double value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[index] = b;
+    	    
+    backing_buffer [index] = value;
     return this;
   }
   
   final public ByteOrder order ()
   {
-    return ByteOrder.BIG_ENDIAN;
+    return ByteOrder.nativeOrder ();
   }
 }

@@ -2098,12 +2098,17 @@ gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/nio/ByteBufferImpl.java \
 gnu/java/nio/CharBufferImpl.java \
+gnu/java/nio/CharViewBufferImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DoubleBufferImpl.java \
+gnu/java/nio/DoubleViewBufferImpl.java \
 gnu/java/nio/FileChannelImpl.java \
 gnu/java/nio/FloatBufferImpl.java \
+gnu/java/nio/FloatViewBufferImpl.java \
 gnu/java/nio/IntBufferImpl.java \
+gnu/java/nio/IntViewBufferImpl.java \
 gnu/java/nio/LongBufferImpl.java \
+gnu/java/nio/LongViewBufferImpl.java \
 gnu/java/nio/MappedByteFileBuffer.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
@@ -2111,6 +2116,7 @@ gnu/java/nio/SelectorImpl.java \
 gnu/java/nio/SelectorProviderImpl.java \
 gnu/java/nio/ServerSocketChannelImpl.java \
 gnu/java/nio/ShortBufferImpl.java \
+gnu/java/nio/ShortViewBufferImpl.java \
 gnu/java/nio/SocketChannelImpl.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \
@@ -2555,8 +2561,6 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
-gnu/java/nio/natByteBufferImpl.cc \
-gnu/java/nio/natCharBufferImpl.cc \
 gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \

@@ -75,7 +75,7 @@ public class DirectByteBufferImpl extends ByteBuffer
   {
     RawData address = allocateImpl (capacity);
 
-    if (address == 0)
+    if (address == null)
       throw new InternalError ("Not enough memory to create direct buffer");
     
     return new DirectByteBufferImpl (address, 0, capacity, capacity, 0, -1, false);

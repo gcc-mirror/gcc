@@ -1,5 +1,5 @@
 /* CharBufferImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.nio.ByteBuffer;
@@ -49,18 +50,15 @@ public final class CharBufferImpl extends CharBuffer
 {
   private boolean readOnly;
 
-  public CharBufferImpl(int cap, int off, int lim)
+  CharBufferImpl (int capacity)
   {
-    super (cap, lim, off, 0);
-    this.backing_buffer = new char [cap];
-    readOnly = false;
+    this (new char [capacity], 0, capacity, capacity, 0, -1, false);
   }
   
-  public CharBufferImpl(char[] array, int offset, int length)
+  CharBufferImpl (char[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
-    super (array.length, length, offset, 0);
-    this.backing_buffer = array;
-    readOnly = false;
+    super (buffer, offset, capacity, limit, position, mark);
+    this.readOnly = readOnly;
   }
   
   public CharBufferImpl (CharBufferImpl copy)
@@ -70,37 +68,41 @@ public final class CharBufferImpl extends CharBuffer
     readOnly = copy.isReadOnly ();
   }
   
-  private static native char[] nio_cast (byte[] copy);
-
-  public boolean isReadOnly()
+  public boolean isReadOnly ()
   {
     return readOnly;
   }
   
-  public CharBuffer slice()
+  public CharBuffer slice ()
   {
-    return new CharBufferImpl (backing_buffer, arrayOffset () + position (),
-                               remaining ());
+    return new CharBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  public CharBuffer duplicate()
+  public CharBuffer duplicate ()
   {
-    return new CharBufferImpl(this);
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
   
-  public CharBuffer asReadOnlyBuffer()
+  public CharBuffer asReadOnlyBuffer ()
   {
-    CharBufferImpl result = new CharBufferImpl (this);
-    result.readOnly = true;
-    return result;
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
-  public CharBuffer compact()
+  public CharBuffer compact ()
   {
+    int copied = 0;
+    
+    while (remaining () > 0)
+      {
+	put (copied, get ());
+	copied++;
+      }
+
+    position (copied);
     return this;
   }
   
-  public boolean isDirect()
+  public boolean isDirect ()
   {
     return false;
   }
@@ -113,20 +115,17 @@ public final class CharBufferImpl extends CharBuffer
         || end > length ())
       throw new IndexOutOfBoundsException ();
 
-    // No support for direct buffers yet.
-    // assert array () != null;
-    return new CharBufferImpl (array (), position () + start,
-                               position () + end);
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), position () + end, position () + start, -1, isReadOnly ());
   }
   
   /**
-   * Relative get method. Reads the next character from the buffer.
+   * Relative get method. Reads the next <code>char</code> from the buffer.
    */
-  final public char get()
+  final public char get ()
   {
-    char e = backing_buffer[position()];
-    position(position()+1);
-    return e;
+    char result = backing_buffer [position ()];
+    position (position () + 1);
+    return result;
   }
   
   /**
@@ -135,29 +134,30 @@ public final class CharBufferImpl extends CharBuffer
    * 
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public CharBuffer put(char b)
+  final public CharBuffer put (char value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[position()] = b;
-    position(position()+1);
+	  	    
+    backing_buffer [position ()] = value;
+    position (position () + 1);
     return this;
   }
-
+  
   /**
-   * Absolute get method. Reads the character at position <code>index</code>.
+   * Absolute get method. Reads the <code>char</code> at position
+   * <code>index</code>.
    *
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
-  final public char get(int index)
+  final public char get (int index)
   {
     if (index < 0
         || index >= limit ())
       throw new IndexOutOfBoundsException ();
     
-    return backing_buffer[index];
+    return backing_buffer [index];
   }
   
   /**
@@ -168,7 +168,7 @@ public final class CharBufferImpl extends CharBuffer
    * than the buffer's limit.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public CharBuffer put(int index, char b)
+  final public CharBuffer put (int index, char value)
   {
     if (index < 0
         || index >= limit ())
@@ -176,14 +176,13 @@ public final class CharBufferImpl extends CharBuffer
     
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[index] = b;
+    	    
+    backing_buffer [index] = value;
     return this;
   }
-
-
-  public final ByteOrder order()
+  
+  final public ByteOrder order ()
   {
-    return ByteOrder.BIG_ENDIAN;
+    return ByteOrder.nativeOrder ();
   }
 }

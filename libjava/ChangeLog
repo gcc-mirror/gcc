@@ -1,5 +1,104 @@
 2003-05-12  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/ByteBufferImpl.java: Reformatted.
+	(nio_get_*): Removed.
+	(nio_put_*): Removed.
+	(as*Buffer): Implemented.
+	(compact): Implemented.
+	(get): Documentation added.
+	(put): Documentation added.
+	(get*): Newly implemented.
+	(put*): Newly implemented.
+	* gnu/java/nio/CharBufferImpl.java: Reformatted.
+	(CharBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* gnu/java/nio/DirectByteBufferImpl.java
+	(allocateDirect): objects can be null not 0.
+	* gnu/java/nio/DoubleBufferImpl.java: Reformatted.
+	(DoubleBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* gnu/java/nio/FloatBufferImpl.java: Reformatted.
+	(FloatBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* gnu/java/nio/IntBufferImpl.java: Reformatted.
+	(IntBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* gnu/java/nio/LongBufferImpl.java: Reformatted.
+	(LongBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* gnu/java/nio/ShortBufferImpl.java: Reformatted.
+	(ShortBufferImpl): Revised.
+	(slice): New implementation.
+	(duplicate): New implementation.
+	(compact): New implementation.
+	(asReadOnlyBuffer): New implementation.
+	(get): Documentation revised.
+	(order): Return native byte order.
+	* java/nio/CharBuffer.java: Reformatted, much documentation rewritten.
+	(CharBuffer): Revised.
+	(order): Removed.
+	* java/nio/DoubleBuffer.java: Reformatted, much documentation rewritten.
+	(DoubleBuffer): Revised.
+	(allocateDirect): Removed.
+	(order): Removed.
+	* java/nio/FloatBuffer.java: Reformatted, much documentation rewritten.
+	(FloatBuffer): Revised.
+	(allocateDirect): Removed.
+	(order): Removed.
+	* java/nio/IntBuffer.java: Reformatted, much documentation rewritten.
+	(IntBuffer): Revised.
+	(allocateDirect): Removed.
+	(order): Removed.
+	* java/nio/LongBuffer.java: Reformatted, much documentation rewritten.
+	(LongBuffer): Revised.
+	(allocateDirect): Removed.
+	(order): Removed.
+	* java/nio/ShortBuffer.java: Reformatted, much documentation rewritten.
+	(ShortBuffer): Revised.
+	(allocateDirect): Removed.
+	(order): Removed.
+	* gnu/java/nio/natByteBufferImpl.cc: Removed.
+	* gnu/java/nio/natCharBufferImpl.cc: Removed.
+	* Makefile.am
+	(ordinary_java_source_files): Added the following files:
+	gnu/java/nio/CharViewBufferImpl.java,
+	gnu/java/nio/DoubleViewBufferImpl.java,
+	gnu/java/nio/FloatViewBufferImpl.java,
+	gnu/java/nio/IntViewBufferImpl.java,
+	gnu/java/nio/LongViewBufferImpl.java,
+	gnu/java/nio/ShortViewBufferImpl.java
+	(nat_source_files): Removed the following files:
+	gnu/java/nio/natByteBufferImpl.cc,
+	gnu/java/nio/natCharBufferImpl.cc
+	* Makefile.in: Regenerated.
+
+2003-05-12  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/CharViewBufferImpl.java,
 	gnu/java/nio/DirectByteBufferImpl.java,
 	gnu/java/nio/DoubleViewBufferImpl.java,
