@@ -97,7 +97,7 @@ AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions \
 ## Detect bugs in the verifier implementation, and maybe other places.
 	-Wswitch-enum \
 	@LIBGCJ_CXXFLAGS@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE \
-	-DPREFIX="\"$(prefix)\""
+	-DPREFIX="\"$(prefix)\"" -DLIBDIR="\"$(libdir)\""
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else

@@ -422,6 +422,12 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // redefine `java.home' with `-D' if necessary.
   SET ("java.home", PREFIX);
   SET ("gnu.classpath.home", PREFIX);
+  // This is set to $(libdir) because we use this to find .security
+  // files at runtime.
+  char val2[sizeof ("file://") + sizeof (LIBDIR) + 1];
+  strcpy (val2, "file://");
+  strcat (val2, LIBDIR);
+  SET ("gnu.classpath.home.url", val2);
 
   SET ("file.encoding", default_file_encoding);
 
