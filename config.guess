@@ -695,6 +695,8 @@ EOF
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
 		(/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
 			&& UNAME_MACHINE=i586
+		(/bin/uname -X|egrep '^Machine.*PentII' >/dev/null) \
+			&& UNAME_MACHINE=i686
 		echo ${UNAME_MACHINE}-pc-sco$UNAME_REL
 	else
 		echo ${UNAME_MACHINE}-pc-sysv32

@@ -1,3 +1,7 @@
+Thu Jun 18 11:26:03 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config.guess: Detection of Pentium II for *-sco-3.2v5*.
+
 Sat May 23 23:44:13 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* Makefile.in (boostrap2-lean, bootstrap3-lean,
