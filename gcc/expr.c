@@ -3915,6 +3915,27 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	  && mode != TYPE_MODE (TREE_TYPE (exp)))
 	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
 
+      /* If the modes of TARGET and TEMP are both BLKmode, both
+	 must be in memory and BITPOS must be aligned on a byte
+	 boundary.  If so, we simply do a block copy.  */
+      if (GET_MODE (target) == BLKmode && GET_MODE (temp) == BLKmode)
+	{
+	  if (GET_CODE (target) != MEM || GET_CODE (temp) != MEM
+	      || bitpos % BITS_PER_UNIT != 0)
+	    abort ();
+
+	  temp = change_address (temp, VOIDmode,
+				 plus_constant (XEXP (temp, 0),
+						bitpos / BITS_PER_UNIT));
+
+	  emit_block_move (target, temp,
+			   GEN_INT ((bitsize + BITS_PER_UNIT - 1)
+				    / BITS_PER_UNIT),
+			   1);
+
+	  return value_mode == VOIDmode ? const0_rtx : target;
+	}
+
       /* Store the value in the bitfield.  */
       store_bit_field (target, bitsize, bitpos, mode, temp, align, total_size);
       if (value_mode != VOIDmode)
@@ -5350,7 +5371,27 @@ expand_expr (exp, target, tmode, modifier)
 	      ext_mode = mode_for_size (bitsize, MODE_INT, 1);
 
 	    if (ext_mode == BLKmode)
-	      abort ();
+	      {
+		/* In this case, BITPOS must start at a byte boundary and
+		   TARGET, if specified, must be a MEM.  */
+		if (GET_CODE (op0) != MEM
+		    || (target != 0 && GET_CODE (target) != MEM)
+		    || bitpos % BITS_PER_UNIT != 0)
+		  abort ();
+
+		op0 = change_address (op0, VOIDmode,
+				      plus_constant (XEXP (op0, 0),
+						     bitpos / BITS_PER_UNIT));
+		if (target == 0)
+		  target = assign_temp (type, 0, 1, 1);
+
+		emit_block_move (target, op0,
+				 GEN_INT ((bitsize + BITS_PER_UNIT - 1)
+					  / BITS_PER_UNIT),
+				 1);
+		
+		return target;
+	      }
 
 	    op0 = validize_mem (op0);
 
