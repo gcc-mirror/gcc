@@ -1,3 +1,9 @@
+2003-03-30  Richard Henderson  <rth@redhat.com>
+
+	PR opt/10011, opt/10252:
+        * toplev.c (rest_of_compilation): Run purge_builtin_constant_p
+        before post-gcse cse pass.
+
 2003-03-30  Roger Sayle  <roger@eyesopen.com>
 
 	* dojump.c (do_jump): Copy SUBREGs into a pseudo for comparison.

@@ -2929,6 +2929,10 @@ rest_of_compilation (decl)
       save_cfj = flag_cse_follow_jumps;
       flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
+      /* Instantiate any remaining CONSTANT_P_RTX nodes.  */
+      if (current_function_calls_constant_p)
+	purge_builtin_constant_p ();
+
       /* If -fexpensive-optimizations, re-run CSE to clean up things done
 	 by gcse.  */
       if (flag_expensive_optimizations)
@@ -2973,10 +2977,6 @@ rest_of_compilation (decl)
       verify_flow_info ();
 #endif
     }
-
-  /* Instantiate any remaining CONSTANT_P_RTX nodes.  */
-  if (optimize > 0 && flag_gcse && current_function_calls_constant_p)
-    purge_builtin_constant_p ();
 
   /* Move constant computations out of loops.  */
 
