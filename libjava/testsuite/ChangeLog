@@ -1,3 +1,9 @@
+2003-09-21  Ralph Loader  <suckfish@ihug.co.nz>
+
+	PR java/12350
+	* libjava.lang/PR12350.java: New file.
+	* libjava.lang/PR12350.out: New file.
+
 2003-09-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/9577

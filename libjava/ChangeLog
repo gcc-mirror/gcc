@@ -1,3 +1,8 @@
+2003-09-21  Ralph Loader  <suckfish@ihug.co.nz>
+
+	PR java/12350:
+	* java/lang/StringBuffer.java (substring): Fix handling of shared flag.
+
 2003-09-22  Michael Koch  <konqueror@gmx.de>
 
 	* jni.cc (_Jv_LookupJNIMethod): Remove workaround that should hide a
