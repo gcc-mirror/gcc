@@ -1,5 +1,9 @@
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/ip2k/crt0.S, config/ip2k/ip2k-protos.h,
+	config/ip2k/ip2k.c, config/ip2k/ip2k.md, config/ip2k/libgcc.S:
+	GNU CC -> GCC.
+
 	* config/svr3.h: Remove #if 0 code, misleading comments.  
 	GNU CC -> GCC.
 
