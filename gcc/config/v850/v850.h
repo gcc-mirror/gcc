@@ -573,6 +573,9 @@ enum reg_class
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 32
 
+/* Register containing return address from latest function call.  */
+#define LINK_POINTER_REGNUM 31
+     
 /* On some machines the offset between the frame pointer and starting
    offset of the automatic variables is not known until after register
    allocation has been done (for example, because the saved registers

@@ -1398,12 +1398,12 @@ compute_register_save_size (p_reg_saved)
   int size = 0;
   int i;
   int interrupt_handler = v850_interrupt_function_p (current_function_decl);
-  int call_p = regs_ever_live[31];
+  int call_p = regs_ever_live [LINK_POINTER_REGNUM];
   long reg_saved = 0;
 
   /* Count the return pointer if we need to save it.  */
   if (profile_flag && !call_p)
-    regs_ever_live[31] = call_p = 1;
+    regs_ever_live [LINK_POINTER_REGNUM] = call_p = 1;
  
   /* Count space for the register saves.  */
   if (interrupt_handler)
@@ -1436,15 +1436,63 @@ compute_register_save_size (p_reg_saved)
 	    break;
 	  }
     }
-
   else
-    for (i = 0; i <= 31; i++)
-      if (regs_ever_live[i] && ((! call_used_regs[i]) || i == 31))
-	{
-	  size += 4;
-	  reg_saved |= 1L << i;
-	}
+    {
+      /* Find the first register that needs to be saved.  */
+      for (i = 0; i <= 31; i++)
+	if (regs_ever_live[i] && ((! call_used_regs[i])
+				  || i == LINK_POINTER_REGNUM))
+	  break;
 
+      /* If it is possible that an out-of-line helper function might be
+	 used to generate the prologue for the current function, then we
+	 need to cover the possibility that such a helper function will
+	 be used, despite the fact that there might be gaps in the list of
+	 registers that need to be saved.  To detect this we note that the
+	 helper functions always push at least register r29 if the link
+	 register is not used, and at least registers r27 - r31 if the
+	 link register is used (and provided that the function is not an
+	 interrupt handler).  */
+	 
+      if (TARGET_PROLOG_FUNCTION
+	  && (i == 2 || i >= 20)
+	  && regs_ever_live[LINK_POINTER_REGNUM] ? (i < 28) : (i < 30))
+	{
+	  if (i == 2)
+	    {
+	      size += 4;
+	      reg_saved |= 1L << i;
+
+	      i = 20;
+	    }
+
+	  /* Helper functions save all registers between the starting
+	     register and the last register, regardless of whether they
+	     are actually used by the function or not.  */
+	  for (; i <= 29; i++)
+	    {
+	      size += 4;
+	      reg_saved |= 1L << i;
+	    }
+
+	  if (regs_ever_live [LINK_POINTER_REGNUM])
+	    {
+	      size += 4;
+	      reg_saved |= 1L << LINK_POINTER_REGNUM;
+	    }
+	}
+      else
+	{
+	  for (; i <= 31; i++)
+	    if (regs_ever_live[i] && ((! call_used_regs[i])
+				      || i == LINK_POINTER_REGNUM))
+	      {
+		size += 4;
+		reg_saved |= 1L << i;
+	      }
+	}
+    }
+  
   if (p_reg_saved)
     *p_reg_saved = reg_saved;
 
@@ -1486,8 +1534,10 @@ expand_prologue ()
   if (interrupt_handler)
     {
       emit_insn (gen_save_interrupt ());
+      
       actual_fsize -= INTERRUPT_FIXED_SAVE_SIZE;
-      if (((1L << 31) & reg_saved) != 0)
+      
+      if (((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
 	actual_fsize -= INTERRUPT_ALL_SAVE_SIZE;
     }
 
@@ -1495,7 +1545,9 @@ expand_prologue ()
   else if (current_function_anonymous_args)
     {
       if (TARGET_PROLOG_FUNCTION)
-	emit_insn (gen_save_r6_r9 ());
+	{
+	  emit_insn (gen_save_r6_r9 ());
+	}
       else
 	{
 	  offset = 0;
@@ -1521,9 +1573,9 @@ expand_prologue ()
 
   /* If the return pointer is saved, the helper functions also allocate
      16 bytes of stack for arguments to be saved in.  */
-  if (((1L << 31) & reg_saved) != 0)
+  if (((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
     {
-      save_regs[num_save++] = gen_rtx (REG, Pmode, 31);
+      save_regs[num_save++] = gen_rtx (REG, Pmode, LINK_POINTER_REGNUM);
       default_stack = 16;
     }
 
@@ -1563,14 +1615,14 @@ expand_prologue ()
 
 	  if (TARGET_V850)
 	    {
-	      XVECEXP (save_all, 0, num_save+1)
+	      XVECEXP (save_all, 0, num_save + 1)
 		= gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 10));
 	    }
 
 	  offset = - default_stack;
 	  for (i = 0; i < num_save; i++)
 	    {
-	      XVECEXP (save_all, 0, i+1)
+	      XVECEXP (save_all, 0, i + 1)
 		= gen_rtx (SET, VOIDmode,
 			   gen_rtx (MEM, Pmode,
 				    plus_constant (stack_pointer_rtx, offset)),
@@ -1584,7 +1636,7 @@ expand_prologue ()
 	      rtx insn = emit_insn (save_all);
 	      INSN_CODE (insn) = code;
 	      actual_fsize -= alloc_stack;
-
+	      
 	      if (TARGET_DEBUG)
 		fprintf (stderr, "\
 Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
@@ -1602,9 +1654,10 @@ Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
   if (!save_all)
     {
       /* Special case interrupt functions that save all registers for a call.  */
-      if (interrupt_handler && ((1L << 31) & reg_saved) != 0)
-	emit_insn (gen_save_all_interrupt ());
-
+      if (interrupt_handler && ((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
+	{
+	  emit_insn (gen_save_all_interrupt ());
+	}
       else
 	{
 	  /* If the stack is too big, allocate it in chunks so we can do the
@@ -1624,7 +1677,7 @@ Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
 				   GEN_INT (-init_stack_alloc)));
 	  
 	  /* Save the return pointer first.  */
-	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == 31)
+	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
 	    {
 	      emit_move_insn (gen_rtx (MEM, SImode,
 				       plus_constant (stack_pointer_rtx,
@@ -1688,7 +1741,7 @@ expand_epilogue ()
   if (interrupt_handler)
     {
       actual_fsize -= INTERRUPT_FIXED_SAVE_SIZE;
-      if (((1L << 31) & reg_saved) != 0)
+      if (((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
 	actual_fsize -= INTERRUPT_ALL_SAVE_SIZE;
     }
 
@@ -1707,9 +1760,9 @@ expand_epilogue ()
 
   /* If the return pointer is saved, the helper functions also allocate
      16 bytes of stack for arguments to be saved in.  */
-  if (((1L << 31) & reg_saved) != 0)
+  if (((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
     {
-      restore_regs[num_restore++] = gen_rtx (REG, Pmode, 31);
+      restore_regs[num_restore++] = gen_rtx (REG, Pmode, LINK_POINTER_REGNUM);
       default_stack = 16;
     }
 
@@ -1832,15 +1885,18 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 
       /* Special case interrupt functions that save all registers
 	 for a call.  */
-      if (interrupt_handler && ((1L << 31) & reg_saved) != 0)
-	emit_insn (gen_restore_all_interrupt ());
+      if (interrupt_handler && ((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
+	{
+	  emit_insn (gen_restore_all_interrupt ());
+	}
       else
 	{
 	  /* Restore registers from the beginning of the stack frame */
 	  offset = init_stack_free - 4;
 
 	  /* Restore the return pointer first.  */
-	  if (num_restore > 0 && REGNO (restore_regs[num_restore-1]) == 31)
+	  if (num_restore > 0
+	      && REGNO (restore_regs [num_restore - 1]) == LINK_POINTER_REGNUM)
 	    {
 	      emit_move_insn (restore_regs[--num_restore],
 			      gen_rtx (MEM, SImode,
@@ -2267,17 +2323,18 @@ construct_restore_jr (op)
     abort ();
 
   /* Discover the last register to pop.  */
-  if (mask & (1 << 31))
+  if (mask & (1 << LINK_POINTER_REGNUM))
     {
       if (stack_bytes != 16)
 	abort ();
       
-      last = 31;
+      last = LINK_POINTER_REGNUM;
     }
   else
     {
       if (stack_bytes != 0)
 	abort ();
+      
       if ((mask & (1 << 29)) == 0)
 	abort ();
       
@@ -2453,12 +2510,12 @@ construct_save_jarl (op)
     abort ();
 
   /* Discover the last register to push.  */
-  if (mask & (1 << 31))
+  if (mask & (1 << LINK_POINTER_REGNUM))
     {
       if (stack_bytes != -16)
 	abort ();
       
-      last = 31;
+      last = LINK_POINTER_REGNUM;
     }
   else
     {
