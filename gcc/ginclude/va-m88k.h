@@ -43,7 +43,7 @@ typedef struct
     (AP).__va_arg = (int) (__builtin_argsize() - 4 + 3) / 4 )
 #endif
 #define va_alist __va_1st_arg
-#define va_dcl register int va_alist;
+#define va_dcl register int va_alist;...
 
 #endif /* _STDARG_H */
 

@@ -28,7 +28,7 @@ typedef struct {
 
 /* varargs support */
 #define va_alist __builtin_va_alist
-#define va_dcl
+#define va_dcl	 int __builtin_va_alist;...
 #define va_start(pvar) ((pvar) = * (__gnuc_va_list *) __builtin_saveregs ())
 
 #else /* STDARG.H */
