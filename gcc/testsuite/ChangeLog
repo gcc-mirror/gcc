@@ -1,3 +1,10 @@
+2004-11-18  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/ppc-bitfield1.c: Skip if not LP64, don't specify -m64.
+	* gcc.dg/ppc-and-1.c: Ditto.
+	* gcc.dg/ppc-compare-1.c: Ditto.
+	* gcc.dg/ppc-mov-1.c: Ditto
+
 2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
             Mark Mitchell  <mark@codesourcery.com>
 
