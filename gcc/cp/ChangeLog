@@ -1,5 +1,8 @@
 1999-12-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (check_field_decls): Split out from ...
+	(finish_struct_1): ... here.  Use it.  Tidy.
+
 	* cp-tree.h (remap_save_expr): Add walk_subtrees parameter.
 	* optimize.c (copy_body_r): Pass it.
 	* tree.c (remap_save_expr): Clear walk_subtrees for an
