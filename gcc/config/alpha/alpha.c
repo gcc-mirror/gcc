@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1228,7 +1228,9 @@ output_prolog (file, size)
      to the .ent directive, the lex_level, is ignored by the assembler,
      so we might as well omit it.  */
      
-  fprintf (file, "\t.ent %s\n", alpha_function_name);
+  fprintf (file, "\t.ent ");
+  assemble_name (file, alpha_function_name);
+  fprintf (file, "\n");
   ASM_OUTPUT_LABEL (file, alpha_function_name);
   inside_function = TRUE;
 
@@ -1258,7 +1260,8 @@ output_prolog (file, size)
     fprintf (file, "\tldgp $29,0($27)\n");
 
   /* Put a label after the GP load so we can enter the function at it.  */
-  fprintf (file, "%s..ng:\n", alpha_function_name);
+  assemble_name (file, alpha_function_name);
+  fprintf (file, "..ng:\n");
 
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
@@ -1304,11 +1307,18 @@ output_prolog (file, size)
       add_long_const (file, blocks, 31, 5);
 
       fprintf (file, "\tlda $4,4096($30)\n");
-      fprintf (file, "%s..sc:\n", alpha_function_name);
+
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "..sc:\n");
+
       fprintf (file, "\tldq $6,-8192($4)\n");
       fprintf (file, "\tsubq $5,1,$5\n");
       fprintf (file, "\tlda $4,-8192($4)\n");
-      fprintf (file, "\tbne $5,%s..sc\n", alpha_function_name);
+
+      fprintf (file, "\tbne $5");
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "%s..sc\n");
+
       fprintf (file, "\tlda $30,-%d($4)\n", leftover);
 
       if (leftover > 4096)
@@ -1493,7 +1503,9 @@ output_epilog (file, size)
     }
 
   /* End the function.  */
-  fprintf (file, "\t.end %s\n", alpha_function_name);
+  fprintf (file, "\t.end ");
+  assemble_name (file, alpha_function_name);
+  fprintf (file, "\n");
   inside_function = FALSE;
 
   /* Show that we know this function if it is called again.  */
