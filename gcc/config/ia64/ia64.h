@@ -2374,7 +2374,7 @@ do {									\
   { "loc76", LOC_REG (76) }, 						\
   { "loc77", LOC_REG (77) }, 						\
   { "loc78", LOC_REG (78) }, 						\
-  { "loc79", LOC_REG (78) }, 						\
+  { "loc79", LOC_REG (79) }, 						\
 }
 
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
