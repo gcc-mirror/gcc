@@ -1,3 +1,8 @@
+2004-08-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* sched-deps.c (get_condition): Partially revert previous, by never
+	trying to extract the condition from a condjump.
+
 2004-08-30  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (UNSPEC_{RSQRT,RECIP}[12]_{S,D,PS}): Delete.
