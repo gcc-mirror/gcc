@@ -83,7 +83,11 @@ class hash_map;
 template <class _Key, class _Tp, class _HashFn, class _EqKey, class _Alloc>
 inline bool operator==(const hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc>&,
                        const hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc>&);
-
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Key, class _Tp, class _HashFcn, class _EqualKey,
           class _Alloc>
 class hash_map
@@ -235,6 +239,11 @@ inline bool
 operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
            const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm2);
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {

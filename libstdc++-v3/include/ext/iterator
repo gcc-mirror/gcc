@@ -93,6 +93,11 @@ namespace __gnu_cxx
       __n += __last - __first;
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _InputIterator, typename _Distance>
     inline void
     distance(_InputIterator __first, _InputIterator __last,

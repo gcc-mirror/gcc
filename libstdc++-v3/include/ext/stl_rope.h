@@ -1238,6 +1238,11 @@ struct _Rope_base
 };    
 
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _CharT, class _Alloc>
 class rope : public _Rope_base<_CharT,_Alloc> {
     public:
