@@ -110,8 +110,7 @@ Boston, MA 02111-1307, USA@*
 
 This manual documents the use of @command{gfortran}, 
 the GNU Fortran 95 compiler. You can find in this manual how to invoke
-@command{gfortran}, as well as its features and incompatibilities,
-and how to report bugs.
+@command{gfortran}, as well as its features and incompatibilities.
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still

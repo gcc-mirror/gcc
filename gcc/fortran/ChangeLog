@@ -1,3 +1,10 @@
+2004-06-05  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
+
+	PR fortran/15478
+	* gfortran.texi: The documentation doesn't contain infomration on
+	how to report bugs, and shouldn't, so remove the line which
+	says it does.
+
 2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* intrinsic.c (sort_actual): Keep track of type of missing 
