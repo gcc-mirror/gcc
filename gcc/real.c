@@ -882,8 +882,13 @@ ereal_from_int (d, i, j, mode)
       break;
 
     case 128:
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
       etoe113 (dg, df);
       e113toe (df, dg);
+#else
+      etoe64 (dg, df);
+      e64toe (df, dg);
+#endif
       break;
 
     default:
@@ -936,8 +941,13 @@ ereal_from_uint (d, i, j, mode)
       break;
 
     case 128:
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
       etoe113 (dg, df);
       e113toe (df, dg);
+#else
+      etoe64 (dg, df);
+      e64toe (df, dg);
+#endif
       break;
 
     default:
@@ -3666,22 +3676,11 @@ toe64 (a, b)
   else
     {
       q = b + 4;			/* point to output exponent */
-      /* The purpose of this conditional is to avoid scribbling beyond
-         the end of a long double, in case the type is only 80 bits wide.  */
-      if (LONG_DOUBLE_TYPE_SIZE == 96)
-	{
-	  /* Clear the last two bytes of 12-byte Intel format */
-	  *(q+1) = 0;
-	}
-#ifdef INTEL_EXTENDED_IEEE_FORMAT
-      if (LONG_DOUBLE_TYPE_SIZE == 128)
-	{
-	  /* Clear the last 6 bytes of 16-byte Intel format.  */
-	  q[1] = 0;
-	  q[2] = 0;
-	  q[3] = 0;
-	}
-#endif
+      /* Clear the last two bytes of 12-byte Intel format.  q is pointing
+	 into an array of size 6 (e.g. x[NE]), so the last two bytes are
+	 always there, and there are never more bytes, even when we are using
+	 INTEL_EXTENDED_IEEE_FORMAT.  */
+      *(q+1) = 0;
     }
 #endif
 
@@ -6917,8 +6916,13 @@ switch (GET_MODE_BITSIZE (mode))
 
   case 96:
     return 64;
+
   case 128:
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
     return 113;
+#else
+    return 64;
+#endif
 
   default:
     abort ();
