@@ -11,30 +11,31 @@
 	.global __divtf3
 	.proc __divtf3
 __divtf3:
-	frcpa f10, p6 = farg0, farg1
+	cmp.eq p7, p0 = r0, r0
+	frcpa.s0 f10, p6 = farg0, farg1
 	;;
+(p6)	cmp.ne p7, p0 = r0, r0
+	.pred.rel.mutex p6, p7
 (p6)	fnma.s1 f11 = farg1, f10, f1
+(p6)	fmpy.s1 f12 = farg0, f10
 	;;
-(p6)	fma.s1 f12 = f11, f10, f10
-(p6)	fma.s1 f11 = f11, f11, f0
+(p6)	fmpy.s1 f13 = f11, f11
+(p6)	fma.s1 f14 = f11, f11, f11
 	;;
-(p6)	fma.s1 f11 = f11, f12, f12
+(p6)	fma.s1 f11 = f13, f13, f11
+(p6)	fma.s1 f13 = f14, f10, f10
 	;;
-(p6)	fnma.s1 f12 = farg1, f11, f1
-(p6)	fma.s1 f10 = farg0, f10, f0
+(p6)	fma.s1 f10 = f13, f11, f10
+(p6)	fnma.s1 f12 = farg1, f12, farg0
 	;;
-(p6)	fma.s1 f11 = f12, f11, f11
-(p6)	fnma.s1 f12 = farg1, f10, farg0
+(p6)	fma.s1 f11 = f11, f10, f12
+(p6)	fnma.s1 f13 = farg1, f10, f1
 	;;
-(p6)	fma.s1 f10 = f12, f11, f10
-(p6)	fnma.s1 f12 = farg1, f11, f1
+(p6)	fma.s1 f10 = f12, f10, f10
+(p6)	fnma.s1 f12 = farg1, f11, farg0
 	;;
-(p6)	fnma.s1 f8 = farg1, f10, farg0
-(p6)	fma.s1 f9 = f12, f11, f11
-	;;
-(p6)	fma f10 = f8, f9, f10
-	;;
-	mov fret0 = f10
+(p6)	fma fret0 = f12, f10, f11
+(p7)	mov fret0 = f10
 	br.ret.sptk rp
 	;;
 	.endp __divtf3
@@ -53,17 +54,21 @@ __divtf3:
 	.global __divdf3
 	.proc __divdf3
 __divdf3:
-	frcpa f10, p6 = farg0, farg1
+	cmp.eq p7, p0 = r0, r0
+	frcpa.s0 f10, p6 = farg0, farg1
 	;;
-(p6)	fma.s1 f11 = farg0, f10, f0
+(p6)	cmp.ne p7, p0 = r0, r0
+	.pred.rel.mutex p6, p7
+(p6)	fmpy.s1 f11 = farg0, f10
 (p6)	fnma.s1 f12 = farg1, f10, f1
 	;;
 (p6)	fma.s1 f11 = f12, f11, f11
-(p6)	fma.s1 f13 = f12, f12, f0
-(p6)	fma.s1 f10 = f12, f10, f10
+(p6)	fmpy.s1 f13 = f12, f12
 	;;
+(p6)	fma.s1 f10 = f12, f10, f10
 (p6)	fma.s1 f11 = f13, f11, f11
-(p6)	fma.s1 f12 = f13, f13, f0
+	;;
+(p6)	fmpy.s1 f12 = f13, f13
 (p6)	fma.s1 f10 = f13, f10, f10
 	;;
 (p6)	fma.d.s1 f11 = f12, f11, f11
@@ -71,9 +76,8 @@ __divdf3:
 	;;
 (p6)	fnma.d.s1 f8 = farg1, f11, farg0
 	;;
-(p6)	fma.d f10 = f8, f10, f11
-	;;
-	mov fret0 = f10
+(p6)	fma.d fret0 = f8, f10, f11
+(p7)	mov fret0 = f10
 	br.ret.sptk rp
 	;;
 	.endp __divdf3
@@ -92,22 +96,20 @@ __divdf3:
 	.global __divsf3
 	.proc __divsf3
 __divsf3:
-	frcpa f10, p6 = farg0, farg1
+	frcpa.s0 f10, p6 = farg0, farg1
 	;;
-(p6)	fma.s1 f8 = farg0, f10, f0
+(p6)	fmpy.s1 f8 = farg0, f10
 (p6)	fnma.s1 f9 = farg1, f10, f1
 	;;
 (p6)	fma.s1 f8 = f9, f8, f8
-(p6)	fma.s1 f9 = f9, f9, f0
+(p6)	fmpy.s1 f9 = f9, f9
 	;;
 (p6)	fma.s1 f8 = f9, f8, f8
-(p6)	fma.s1 f9 = f9, f9, f0
+(p6)	fmpy.s1 f9 = f9, f9
 	;;
-(p6)	fma.d.s1 f8 = f9, f8, f8
+(p6)	fma.d.s1 f10 = f9, f8, f8
 	;;
-(p6)	fma.s f10 = f8, f1, f0
-	;;
-	mov fret0 = f10
+	fnorm.s.s0 fret0 = f10
 	br.ret.sptk rp
 	;;
 	.endp __divsf3
