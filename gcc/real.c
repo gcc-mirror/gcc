@@ -92,7 +92,19 @@ research.att.com: netlib/cephes/ldouble.shar.Z  */
 
    The case LONG_DOUBLE_TYPE_SIZE = 128 activates TFmode support
    and may deactivate XFmode since `long double' is used to refer
-   to both modes.    */
+   to both modes.
+
+   The macros FLOAT_WORDS_BIG_ENDIAN, HOST_FLOAT_WORDS_BIG_ENDIAN,
+   contributed by Richard Earnshaw <Richard.Earnshaw@cl.cam.ac.uk>,
+   separate the floating point unit's endian-ness from that of
+   the integer addressing.  This permits one to define a big-endian
+   FPU on a little-endian machine (e.g., ARM).  An extension to
+   BYTES_BIG_ENDIAN may be required for some machines in the future.
+   These optional macros may be defined in tm.h.  In real.h, they
+   default to WORDS_BIG_ENDIAN, etc., so there is no need to define
+   them for any normal host or target machine on which the floats
+   and the integers have the same endian-ness.   */
+
 
 /* The following converts gcc macros into the ones used by this file.  */
 
@@ -109,7 +121,7 @@ research.att.com: netlib/cephes/ldouble.shar.Z  */
 #define IBM 1
 #else /* it's also not an IBM */
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#if WORDS_BIG_ENDIAN
+#if FLOAT_WORDS_BIG_ENDIAN
 /* Motorola IEEE, high order words come first (Sun workstation): */
 #define MIEEE 1
 #else /* not big-endian */
@@ -139,7 +151,7 @@ unknown arithmetic type
 #define IBM 1
 #else /* it's also not an IBM */
 #if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#ifdef HOST_WORDS_BIG_ENDIAN
+#if HOST_FLOAT_WORDS_BIG_ENDIAN
 #define MIEEE 1
 #else /* not big-endian */
 #define IBMPC 1
@@ -252,7 +264,7 @@ unknown arithmetic type
 /* Emulator uses target format internally
    but host stores it in host endian-ness. */
 
-#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+#if HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN
 #define GET_REAL(r,e) e53toe ((r), (e))
 #define PUT_REAL(e,r) etoe53 ((e), (r))
 
@@ -326,8 +338,9 @@ void enan ();
 extern unsigned EMUSHORT ezero[], ehalf[], eone[], etwo[];
 extern unsigned EMUSHORT elog2[], esqrt2[];
 
-/* Pack output array with 32-bit numbers obtained from
-   array containing 16-bit numbers, swapping ends if required. */
+/* Copy 32-bit numbers obtained from array containing 16-bit numbers,
+   swapping ends if required, into output array of longs.  The
+   result is normally passed to fprintf by the ASM_OUTPUT_ macros.   */
 void 
 endian (e, x, mode)
      unsigned EMUSHORT e[];
@@ -336,7 +349,7 @@ endian (e, x, mode)
 {
   unsigned long th, t;
 
-#if WORDS_BIG_ENDIAN
+#if FLOAT_WORDS_BIG_ENDIAN
   switch (mode)
     {
 
@@ -517,7 +530,7 @@ etrunci (x)
 {
   unsigned EMUSHORT f[NE], g[NE];
   REAL_VALUE_TYPE r;
-  long l;
+  HOST_WIDE_INT l;
 
   GET_REAL (&x, g);
 #ifdef NANS
@@ -540,7 +553,7 @@ etruncui (x)
 {
   unsigned EMUSHORT f[NE], g[NE];
   REAL_VALUE_TYPE r;
-  unsigned long l;
+  unsigned HOST_WIDE_INT l;
 
   GET_REAL (&x, g);
 #ifdef NANS
@@ -616,12 +629,12 @@ ereal_negate (x)
 /* Round real toward zero to HOST_WIDE_INT
  * implements REAL_VALUE_FIX (x).
  */
-long
+HOST_WIDE_INT
 efixi (x)
      REAL_VALUE_TYPE x;
 {
   unsigned EMUSHORT f[NE], g[NE];
-  long l;
+  HOST_WIDE_INT l;
 
   GET_REAL (&x, f);
 #ifdef NANS
@@ -639,12 +652,12 @@ efixi (x)
  * implements  REAL_VALUE_UNSIGNED_FIX (x).
  * Negative input returns zero.
  */
-unsigned long
+unsigned HOST_WIDE_INT
 efixui (x)
      REAL_VALUE_TYPE x;
 {
   unsigned EMUSHORT f[NE], g[NE];
-  unsigned long l;
+  unsigned HOST_WIDE_INT l;
 
   GET_REAL (&x, f);
 #ifdef NANS
@@ -664,10 +677,10 @@ efixui (x)
 void 
 ereal_from_int (d, i, j)
      REAL_VALUE_TYPE *d;
-     long i, j;
+     HOST_WIDE_INT i, j;
 {
   unsigned EMUSHORT df[NE], dg[NE];
-  long low, high;
+  HOST_WIDE_INT low, high;
   int sign;
 
   sign = 0;
@@ -682,7 +695,7 @@ ereal_from_int (d, i, j)
       else
 	high += 1;
     }
-  eldexp (eone, HOST_BITS_PER_LONG, df);
+  eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
   ultoe (&high, dg);
   emul (dg, df, dg);
   ultoe (&low, df);
@@ -698,14 +711,14 @@ ereal_from_int (d, i, j)
 void 
 ereal_from_uint (d, i, j)
      REAL_VALUE_TYPE *d;
-     unsigned long i, j;
+     unsigned HOST_WIDE_INT i, j;
 {
   unsigned EMUSHORT df[NE], dg[NE];
-  unsigned long low, high;
+  unsigned HOST_WIDE_INT low, high;
 
   low = i;
   high = j;
-  eldexp (eone, HOST_BITS_PER_LONG, df);
+  eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
   ultoe (&high, dg);
   emul (dg, df, dg);
   ultoe (&low, df);
@@ -718,7 +731,7 @@ ereal_from_uint (d, i, j)
  */
 void 
 ereal_to_int (low, high, rr)
-     long *low, *high;
+     HOST_WIDE_INT *low, *high;
      REAL_VALUE_TYPE rr;
 {
   unsigned EMUSHORT d[NE], df[NE], dg[NE], dh[NE];
@@ -741,7 +754,7 @@ ereal_to_int (low, high, rr)
       eneg (d);
       s = 1;
     }
-  eldexp (eone, HOST_BITS_PER_LONG, df);
+  eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
   ediv (df, d, dg);		/* dg = d / 2^32 is the high word */
   euifrac (dg, high, dh);
   emul (df, dh, dg);		/* fractional part is the low word */
@@ -1035,8 +1048,8 @@ ereal_isneg (x)
  *	ediv (a, b, c)		c = b / a
  *	efloor (a, b)		truncate to integer, toward -infinity
  *	efrexp (a, exp, s)	extract exponent and significand
- *	eifrac (e, &l, frac)    e to long integer and e type fraction
- *	euifrac (e, &l, frac)   e to unsigned long integer and e type fraction
+ *	eifrac (e, &l, frac)    e to HOST_WIDE_INT and e type fraction
+ *	euifrac (e, &l, frac)   e to unsigned HOST_WIDE_INT and e type fraction
  *	einfin (e)		set e to infinity, leaving its sign alone
  *	eldexp (a, n, b)	multiply by 2**n
  *	emov (a, b)		b = a
@@ -1052,8 +1065,8 @@ ereal_isneg (x)
  *	etoe24 (e, &f)		convert e type to IEEE single precision
  *	etoe53 (e, &d)		convert e type to IEEE double precision
  *	etoe64 (e, &d)		convert e type to IEEE long double precision
- *	ltoe (&l, e)		long (32 bit) integer to e type
- *	ultoe (&l, e)		unsigned long (32 bit) integer to e type
+ *	ltoe (&l, e)		HOST_WIDE_INT to e type
+ *	ultoe (&l, e)		unsigned HOST_WIDE_INT to e type
  *      eisneg (e)              1 if sign bit of e != 0, else 0
  *      eisinf (e)              1 if e has maximum exponent (non-IEEE)
  *				or is infinite (IEEE)
@@ -3720,35 +3733,35 @@ eround (x, y)
 
 
 /*
-; convert long integer to e type
+; convert HOST_WIDE_INT to e type
 ;
-;	long l;
+;	HOST_WIDE_INT l;
 ;	unsigned EMUSHORT x[NE];
 ;	ltoe (&l, x);
 ; note &l is the memory address of l
 */
 void 
 ltoe (lp, y)
-     long *lp;			/* lp is the memory address of a long integer */
-     unsigned EMUSHORT *y;		/* y is the address of a short */
+     HOST_WIDE_INT *lp;
+     unsigned EMUSHORT *y;
 {
   unsigned EMUSHORT yi[NI];
-  unsigned long ll;
+  unsigned HOST_WIDE_INT ll;
   int k;
 
   ecleaz (yi);
   if (*lp < 0)
     {
       /* make it positive */
-      ll = (unsigned long) (-(*lp));
+      ll = (unsigned HOST_WIDE_INT) (-(*lp));
       yi[0] = 0xffff;		/* put correct sign in the e type number */
     }
   else
     {
-      ll = (unsigned long) (*lp);
+      ll = (unsigned HOST_WIDE_INT) (*lp);
     }
   /* move the long integer to yi significand area */
-#if HOST_BITS_PER_LONG == 64
+#if HOST_BITS_PER_WIDE_INT == 64
   yi[M] = (unsigned EMUSHORT) (ll >> 48);
   yi[M + 1] = (unsigned EMUSHORT) (ll >> 32);
   yi[M + 2] = (unsigned EMUSHORT) (ll >> 16);
@@ -3768,27 +3781,27 @@ ltoe (lp, y)
 }
 
 /*
-; convert unsigned long integer to e type
+; convert unsigned HOST_WIDE_INT to e type
 ;
-;	unsigned long l;
+;	unsigned HOST_WIDE_INT l;
 ;	unsigned EMUSHORT x[NE];
 ;	ltox (&l, x);
 ; note &l is the memory address of l
 */
 void 
 ultoe (lp, y)
-     unsigned long *lp;		/* lp is the memory address of a long integer */
-     unsigned EMUSHORT *y;		/* y is the address of a short */
+     unsigned HOST_WIDE_INT *lp;
+     unsigned EMUSHORT *y;
 {
   unsigned EMUSHORT yi[NI];
-  unsigned long ll;
+  unsigned HOST_WIDE_INT ll;
   int k;
 
   ecleaz (yi);
   ll = *lp;
 
   /* move the long integer to ayi significand area */
-#if HOST_BITS_PER_LONG == 64
+#if HOST_BITS_PER_WIDE_INT == 64
   yi[M] = (unsigned EMUSHORT) (ll >> 48);
   yi[M + 1] = (unsigned EMUSHORT) (ll >> 32);
   yi[M + 2] = (unsigned EMUSHORT) (ll >> 16);
@@ -3809,9 +3822,9 @@ ultoe (lp, y)
 
 
 /*
-;	Find long integer and fractional parts
+;	Find signed HOST_WIDE_INT integer and floating point fractional parts
 
-;	long i;
+;	HOST_WIDE_INT i;
 ;	unsigned EMUSHORT x[NE], frac[NE];
 ;	xifrac (x, &i, frac);
 
@@ -3821,12 +3834,12 @@ the positive fractional part of abs (x).
 void 
 eifrac (x, i, frac)
      unsigned EMUSHORT *x;
-     long *i;
+     HOST_WIDE_INT *i;
      unsigned EMUSHORT *frac;
 {
   unsigned EMUSHORT xi[NI];
   int j, k;
-  unsigned long ll;
+  unsigned HOST_WIDE_INT ll;
 
   emovi (x, xi);
   k = (int) xi[E] - (EXONE - 1);
@@ -3837,14 +3850,14 @@ eifrac (x, i, frac)
       emovo (xi, frac);
       return;
     }
-  if (k > (HOST_BITS_PER_LONG - 1))
+  if (k > (HOST_BITS_PER_WIDE_INT - 1))
     {
       /* long integer overflow: output large integer
 	 and correct fraction  */
       if (xi[0])
-	*i = ((unsigned long) 1) << (HOST_BITS_PER_LONG - 1);
+	*i = ((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1);
       else
-	*i = (((unsigned long) 1) << (HOST_BITS_PER_LONG - 1)) - 1;
+	*i = (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1)) - 1;
       eshift (xi, k);
       if (extra_warnings)
 	warning ("overflow on truncation to integer");
@@ -3871,7 +3884,7 @@ eifrac (x, i, frac)
       {
         /* shift not more than 16 bits */
           eshift (xi, k);
-        *i = (long) xi[M] & 0xffff;
+        *i = (HOST_WIDE_INT) xi[M] & 0xffff;
         if (xi[0])
 	  *i = -(*i);
       }
@@ -3887,17 +3900,17 @@ eifrac (x, i, frac)
 }
 
 
-/* Find unsigned long integer and fractional parts.
+/* Find unsigned HOST_WIDE_INT integer and floating point fractional parts.
    A negative e type input yields integer output = 0
    but correct fraction.  */
 
 void 
 euifrac (x, i, frac)
      unsigned EMUSHORT *x;
-     unsigned long *i;
+     unsigned HOST_WIDE_INT *i;
      unsigned EMUSHORT *frac;
 {
-  unsigned long ll;
+  unsigned HOST_WIDE_INT ll;
   unsigned EMUSHORT xi[NI];
   int j, k;
 
@@ -3910,7 +3923,7 @@ euifrac (x, i, frac)
       emovo (xi, frac);
       return;
     }
-  if (k > HOST_BITS_PER_LONG)
+  if (k > HOST_BITS_PER_WIDE_INT)
     {
       /* Long integer overflow: output large integer
 	 and correct fraction.
@@ -3941,7 +3954,7 @@ euifrac (x, i, frac)
     {
       /* shift not more than 16 bits */
       eshift (xi, k);
-      *i = (long) xi[M] & 0xffff;
+      *i = (HOST_WIDE_INT) xi[M] & 0xffff;
     }
 
   if (xi[0])  /* A negative value yields unsigned integer 0. */
@@ -5063,7 +5076,7 @@ efrexp (x, exp, s)
 
 
 /* unsigned EMUSHORT x[], y[];
- * long pwr2;
+ * int pwr2;
  *
  * eldexp (x, pwr2, y);
  *
@@ -5619,7 +5632,7 @@ ereal_from_float (f)
 
   /* Convert 32 bit integer to array of 16 bit pieces in target machine order.
    This is the inverse operation to what the function `endian' does.  */
-#if WORDS_BIG_ENDIAN
+#if FLOAT_WORDS_BIG_ENDIAN
   s[0] = (unsigned EMUSHORT) (f >> 16);
   s[1] = (unsigned EMUSHORT) f;
 #else
@@ -5638,7 +5651,7 @@ ereal_from_float (f)
    This is the inverse of the function `etardouble' invoked by
    REAL_VALUE_TO_TARGET_DOUBLE.
 
-   The DFmode is stored as an array of longs (i.e., HOST_WIDE_INTs)
+   The DFmode is stored as an array of long ints
    with 32 bits of the value per each long.  The first element
    of the input array holds the bits that would come first in the
    target computer's memory.  */
@@ -5653,7 +5666,7 @@ ereal_from_double (d)
 
   /* Convert array of 32 bit pieces to equivalent array of 16 bit pieces.
    This is the inverse of `endian'.   */
-#if WORDS_BIG_ENDIAN
+#if FLOAT_WORDS_BIG_ENDIAN
   s[0] = (unsigned EMUSHORT) (d[0] >> 16);
   s[1] = (unsigned EMUSHORT) d[0];
   s[2] = (unsigned EMUSHORT) (d[1] >> 16);
@@ -5672,7 +5685,9 @@ ereal_from_double (d)
 }
 
 
-/* Convert target computer unsigned 64-bit integer to e-type. */
+/* Convert target computer unsigned 64-bit integer to e-type.
+   The endian-ness of DImode follows the convention for integers,
+   so we use WORDS_BIG_ENDIAN here, not FLOAT_WORDS_BIG_ENDIAN.  */
 
 void
 uditoe (di, e)
