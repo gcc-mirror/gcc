@@ -84,16 +84,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* ??? It might be possible to eventually get svr4.h to do the right thing.  */
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE \
-  (POINTER_SIZE == 64 ? "long long int"				\
-   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long int"	\
-   : 0 /*abort*/)
+#define PTRDIFF_TYPE "long long int"
 
 #undef SIZE_TYPE
-#define SIZE_TYPE \
-  (POINTER_SIZE == 64 ? "long long unsigned int"		\
-   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long unsigned int" \
-   : 0 /*abort*/)
+#define SIZE_TYPE "long long unsigned int"
 
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #undef WCHAR_TYPE
