@@ -199,10 +199,13 @@ qualify_type (tree type, tree like)
 				 TYPE_QUALS (type) | TYPE_QUALS (like));
 }
 
-/* Return the common type of two types.
-   We assume that comptypes has already been done and returned 1;
-   if that isn't so, this may crash.  In particular, we assume that qualifiers
-   match.
+/* Return the composite type of two compatible types, or the common
+   type for two arithmetic types under the usual arithmetic
+   conversions.
+
+   Unless both types are arithmetic types, we assume that comptypes
+   has already been done and returned 1; if that isn't so, this may
+   crash.  In particular, we assume that qualifiers match.
 
    This is the type for the result of most arithmetic operations
    if the operands have the given two types.  */
