@@ -4638,6 +4638,8 @@ print_version (file, indent)
      FILE *file;
      const char *indent;
 {
+  fnotice (file, "GGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n",
+	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 #ifndef __VERSION__
 #define __VERSION__ "[?]"
 #endif
@@ -4892,6 +4894,9 @@ parse_options_and_default_flags (argc, argv)
 
   /* Register the language-independent parameters.  */
   add_params (lang_independent_params, LAST_PARAM);
+
+  /* This must be done after add_params but before argument processing.  */
+  init_ggc_heuristics();
 
   /* Perform language-specific options initialization.  */
   (*lang_hooks.init_options) ();
