@@ -150,13 +150,16 @@ set -e
 set +e
 
 test $do_html = yes && {
-    sed -e "s=@LEVEL@=${LEVELtext}=" \
-        -e "s=@DATE@=${DATEtext}=" \
-        ${srcdir}/docs/doxygen/mainpage.html > ${outdir}/html_${mode}/index.html
-    cp ${srcdir}/docs/doxygen/tables.html ${outdir}/html_${mode}/tables.html
-    echo ::
-    echo :: HTML pages begin with
-    echo :: ${outdir}/html_${mode}/index.html
+  sed -e "s=@LEVEL@=${LEVELtext}=" \
+      -e "s=@DATE@=${DATEtext}=" \
+      ${srcdir}/docs/doxygen/mainpage.html > ${outdir}/html_${mode}/index.html
+  cd ${outdir}/html_${mode}
+  sed -e 's=\(::[[:alnum:]_]*\)&lt; .* &gt;=\1=' annotated.html > annstrip.html
+  mv annstrip.html annotated.html
+  cp ${srcdir}/docs/doxygen/tables.html tables.html
+  echo ::
+  echo :: HTML pages begin with
+  echo :: ${outdir}/html_${mode}/index.html
 }
 
 # Mess with the man pages.  We don't need documentation of the internal
