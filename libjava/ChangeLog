@@ -1,3 +1,13 @@
+2000-11-24  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_NewObjectArray): Use palcement new to create
+	array.
+	(_Jv_NewPrimArray): Likewise.
+	Include <new>.
+	* gcj/array.h (__JArray): `length' field now const.  Added
+	constructor.
+	(class JArray): Added constructor.
+
 2000-11-23  Mark Wielaard  <mark@klomp.org>
 
 	* name-finder.cc (lookup): Check for a NULL _Jv_argv before attempting
