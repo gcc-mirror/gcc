@@ -1,3 +1,7 @@
+2001-01-10  Phil Edwards  <pme@sources.redhat.com>
+
+	* invoke.texi:  Fix typo.
+
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-lang.c (lang_hooks): Update.
