@@ -511,7 +511,19 @@ public class ThreadGroup
       {
         if (thread != null)
           System.out.print("Exception in thread \"" + thread.getName() + "\" ");
-	t.printStackTrace();
+	try
+	  {
+	    t.printStackTrace();
+	  }
+	catch (Throwable x)
+	  {
+	    // This means that something is badly screwed up with the runtime,
+	    // or perhaps someone is messing with the SecurityManager. In any
+	    // case, try to deal with it gracefully.
+	    System.out.println(t);
+	    System.err.println("*** Got " + x.toString() + 
+			       " while trying to print stack trace");
+	  }
 	had_uncaught_exception = true;
       }
   }

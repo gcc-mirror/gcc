@@ -850,7 +850,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 
   int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
     
-  java::lang::Runtime::getRuntime ()->exit (status);
+  java::lang::Runtime::getRuntime ()->_exit (status);
 }
 
 void
