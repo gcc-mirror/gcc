@@ -823,12 +823,6 @@ int zdepi_cint_p ();
 
 #define FIRST_PARM_OFFSET(FNDECL) -32
 
-/* Absolute value of offset from top-of-stack address to location to store the
-   function parameter if it can't go in a register.
-   Addresses for following parameters are computed relative to this one.  */
-#define FIRST_PARM_CALLER_OFFSET(FNDECL) -32
-
-
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
 #define REG_PARM_STACK_SPACE(DECL) 16

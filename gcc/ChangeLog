@@ -1,3 +1,7 @@
+Thu Jul 29 18:37:13 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (FIRST_PARM_CALLER_OFFSET): Delete.
+
 Thu Jul 29 19:01:58 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* arm.h (Hint): Delete macro.
