@@ -1,5 +1,10 @@
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use LCT_CONST
+	and don't pass operands[0] to emit_library_call_value.
+
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md (tsthi_1): Use cpd for 68HC12.
 	(zero_extendsi split): Simplify and use (zero_extendhi).
 	(*addhi3): Remove 'w' constraint since stack pointer is handled 

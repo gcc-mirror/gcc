@@ -748,13 +748,14 @@ m68hc11_emit_libcall (name, code, dmode, smode, noperands, operands)
   switch (noperands)
     {
     case 2:
-      ret = emit_library_call_value (libcall, NULL_RTX, 1, dmode, 1,
-                                     operands[1], smode);
+      ret = emit_library_call_value (libcall, NULL_RTX, LCT_CONST,
+                                     dmode, 1, operands[1], smode);
       equiv = gen_rtx (code, dmode, operands[1]);
       break;
 
     case 3:
-      ret = emit_library_call_value (libcall, operands[0], 1, dmode, 2,
+      ret = emit_library_call_value (libcall, NULL_RTX,
+                                     LCT_CONST, dmode, 2,
                                      operands[1], smode, operands[2],
                                      smode);
       equiv = gen_rtx (code, dmode, operands[1], operands[2]);
