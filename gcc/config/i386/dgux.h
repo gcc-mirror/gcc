@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.1 $"
+#define VERSION_INFO2   "$Revision: 1.2 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -189,7 +189,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 "%{!shared:%{!symbolic:-lc}}"
 
 #undef	LINK_SPEC
-#define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
+#define LINK_SPEC "%{z*} %{h*} %{v:-V} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy} \
 		   %{symbolic:-Bsymbolic -G -dy} \

@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{h*} %{V} %{v:%{!V:-V}} \
+  "%{h*} %{v:-V} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy -z text} \
