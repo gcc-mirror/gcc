@@ -1,3 +1,15 @@
+2004-03-15  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.md (type): Split load into load, fpload, fpidxload.
+	Split store into store, fpstore, fpidxstore.  Fix all uses.
+	* config/mips/5400.md (ir_vr54_load, ir_vr54_store, ir_vr54_fstore):
+	Likewise.
+	* config/mips/5500.md (ir_vr55_load, i5_vr55_store): Likewise.
+	* config/mips/7000.md (rm7_ld, rm7_st): Likewise.
+	* config/mips/9000.md (rm9k_load, rm9k_store): Likewise.
+	* config/mips/sr71k.md (ir_sr70_load, ir_sr70_store, ir_sr70_fload,
+	ir_sr70_fstore): Likewise.
+
 2004-03-15  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/14535
