@@ -1,3 +1,8 @@
+2005-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19406
+	* g++.dg/debug/using1.C: New test.
+
 2005-04-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/20524
