@@ -1311,7 +1311,7 @@ duplicate_decls (newdecl, olddecl)
 		  break;
 		}
 
-	      if (type == float_type_node
+	      if (TYPE_MAIN_VARIANT (type) == float_type_node
 		  || (TREE_CODE (type) == INTEGER_TYPE
 		      && (TYPE_PRECISION (type)
 			  < TYPE_PRECISION (integer_type_node))))
@@ -1361,8 +1361,8 @@ duplicate_decls (newdecl, olddecl)
 		  /* If -traditional, allow `unsigned int' instead of `int'
 		     in the prototype.  */
 		  && (! (flag_traditional
-			 && TREE_VALUE (parm) == integer_type_node
-			 && TREE_VALUE (type) == unsigned_type_node)))
+			 && TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == integer_type_node
+			 && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == unsigned_type_node)))
 		{
 		  errmsg = "prototype for `%s' follows and argument %d";
 		  break;
@@ -1786,7 +1786,8 @@ pushdecl (x)
 	  if (IDENTIFIER_IMPLICIT_DECL (name) != 0
 	      /* If this real decl matches the implicit, don't complain.  */
 	      && ! (TREE_CODE (x) == FUNCTION_DECL
-		    && TREE_TYPE (TREE_TYPE (x)) == integer_type_node))
+		    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (x)))
+			== integer_type_node)))
 	    pedwarn ("`%s' was previously implicitly declared to return `int'",
 		     IDENTIFIER_POINTER (name));
 
@@ -3523,7 +3524,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   /* Long double is a special combination.  */
 
-  if ((specbits & 1 << (int) RID_LONG) && type == double_type_node)
+  if ((specbits & 1 << (int) RID_LONG)
+      && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
       specbits &= ~ (1 << (int) RID_LONG);
       type = long_double_type_node;
@@ -3844,7 +3846,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 #ifndef TRADITIONAL_RETURN_FLOAT
 	  /* Traditionally, declaring return type float means double.  */
 
-	  if (flag_traditional && type == float_type_node)
+	  if (flag_traditional && TYPE_MAIN_VARIANT (type) == float_type_node)
 	    type = double_type_node;
 #endif /* TRADITIONAL_RETURN_FLOAT */
 
@@ -4007,6 +4009,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     if (decl_context == PARM)
       {
 	tree type_as_written = type;
+	tree main_type;
 
 	/* A parameter declared as an array of T is really a pointer to T.
 	   One declared as a function is really a pointer to a function.  */
@@ -4040,15 +4043,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	   When there is a prototype, this is overridden later.  */
 
 	DECL_ARG_TYPE (decl) = type;
-	if (type == float_type_node)
+	main_type = TYPE_MAIN_VARIANT (type);
+	if (main_type == float_type_node)
 	  DECL_ARG_TYPE (decl) = double_type_node;
 	/* Don't use TYPE_PREISION to decide whether to promote,
 	   because we should convert short if it's the same size as int,
 	   but we should not convert long if it's the same size as int.  */
-	else if (type == char_type_node || type == signed_char_type_node
-		 || type == unsigned_char_type_node
-		 || type == short_integer_type_node
-		 || type == short_unsigned_type_node)
+	else if (main_type == char_type_node
+		 || main_type == signed_char_type_node
+		 || main_type == unsigned_char_type_node
+		 || main_type == short_integer_type_node
+		 || main_type == short_unsigned_type_node)
 	  {
 	    if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
 		&& TREE_UNSIGNED (type))
@@ -5398,7 +5403,7 @@ store_parm_decls ()
 
 	  /* Traditionally, a parm declared float is actually a double.  */
 	  if (found && flag_traditional
-	      && TREE_TYPE (found) == float_type_node)
+	      && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == float_type_node)
 	    TREE_TYPE (found) = double_type_node;
 
 	  /* If no declaration found, default to int.  */
@@ -5522,8 +5527,8 @@ store_parm_decls ()
 		  /* If -traditional, allow `int' argument to match
 		     `unsigned' prototype.  */
 		  else if (! (flag_traditional
-			      && TREE_TYPE (parm) == integer_type_node
-			      && TREE_VALUE (type) == unsigned_type_node))
+			      && TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == integer_type_node
+			      && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == unsigned_type_node))
 		    error ("argument `%s' doesn't match prototype",
 			   IDENTIFIER_POINTER (DECL_NAME (parm)));
 		}
@@ -5678,7 +5683,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 
       /* Traditionally, a parm declared float is actually a double.  */
       if (found && flag_traditional
-	  && TREE_TYPE (found) == float_type_node)
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == float_type_node)
 	TREE_TYPE (found) = double_type_node;
 
       /* If no declaration found, default to int.  */
@@ -5793,7 +5798,8 @@ finish_function (nested)
 #ifdef DEFAULT_MAIN_RETURN
   if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main"))
     {
-      if (TREE_TYPE (TREE_TYPE (fndecl)) != integer_type_node)
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
+	  != integer_type_node)
 	warning_with_decl (fndecl, "return type of `%s' is not `int'");
       else
 	{
