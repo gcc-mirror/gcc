@@ -1414,6 +1414,7 @@ decl_conflicts_with_clobbers_p (decl, clobbered_regs)
      list are not allowed.  */
   if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
       && DECL_REGISTER (decl)
+      && REG_P (DECL_RTL (decl))
       && REGNO (DECL_RTL (decl)) < FIRST_PSEUDO_REGISTER)
     {
       rtx reg = DECL_RTL (decl);

@@ -1,3 +1,7 @@
+2002-10-14  Graham Stott  <graham.stott@btinternet.com>
+
+	* stmt.c (decl_conflicts_with_clobbers_p): Add REG_P check.
+
 2002-10-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* stmt.c: Fix typo in comment.
@@ -2932,7 +2936,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* cfgcleanup.c (try_crossjump_to_edge): Fix updating of liveness
 	information.
 
-2002-09-07  Graham Stott  <graham.stott@btinternet.con>
+2002-09-07  Graham Stott  <graham.stott@btinternet.com>
 
        * rtlanal.c (dead_or_set_regno_p): Fix typo.
 
