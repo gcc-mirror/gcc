@@ -12361,20 +12361,21 @@ grok_op_properties (decl, virtualp, friendp)
 	cp_warning ("`%D' should return by value", decl);
 
       /* 13.4.0.8 */
-      if (argtypes)
-	for (; argtypes != void_list_node ; argtypes = TREE_CHAIN (argtypes))
-	  if (TREE_PURPOSE (argtypes))
-	    {
-	      TREE_PURPOSE (argtypes) = NULL_TREE;
-	      if (name == ansi_opname[(int) POSTINCREMENT_EXPR]
-		  || name == ansi_opname[(int) POSTDECREMENT_EXPR])
-		{
-		  if (pedantic)
-		    cp_pedwarn ("`%D' cannot have default arguments", decl);
-		}
-	      else
-		cp_error ("`%D' cannot have default arguments", decl);
-	    }
+      for (; argtypes && argtypes != void_list_node;
+          argtypes = TREE_CHAIN (argtypes))
+        if (TREE_PURPOSE (argtypes))
+          {
+            TREE_PURPOSE (argtypes) = NULL_TREE;
+            if (name == ansi_opname[(int) POSTINCREMENT_EXPR] 
+                || name == ansi_opname[(int) POSTDECREMENT_EXPR])   
+              {
+                if (pedantic)
+                  cp_pedwarn ("`%D' cannot have default arguments", decl);
+              }
+            else
+              cp_error ("`%D' cannot have default arguments", decl);
+          }
+
     }
 }
 
