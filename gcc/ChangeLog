@@ -1,3 +1,12 @@
+Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* haifa-sched.c (find_rgns): Replace uses of alloca with xmalloc.
+	(split_edges): Likewise.
+	(schedule_block): Likewise.
+	(compute_block_backward_dependencies): Likewise.
+	(schedule_region): Likewise.
+	(schedule_insns): Likewise.
+	
 Wed Nov  3 15:40:23 1999  Catherine Moore  <clm@cygnus.com>
 
         * defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Provide default.
@@ -155,7 +164,8 @@ Mon Nov  1 15:41:01 1999  Mark P. Mitchell  <mark@codesourcery.com>
 	(combine_givs): Likewise.
 	(recombine_givs): Likewise.
 	* reorg.c (dbr_schedule): Likewise.
-
+	* unroll.c (unroll_loop): Likewise.
+	
 	* combine.c (combine_instructions): Use xmalloc instead of alloca.
 
 Mon Nov  1 13:22:30 1999  Richard Henderson  <rth@cygnus.com>
