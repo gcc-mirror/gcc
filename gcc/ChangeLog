@@ -40,6 +40,18 @@
 
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
+	* bb-reorder.c (find_traces_1_round): Don't connect easy to copy
+	successors with multiple predecessors.
+	(connect_traces): Try harder to copy traces of length 1.
+
+	* function.h (struct function): Add computed_goto_common_label,
+	computed_goto_common_reg.
+	* function.c (free_after_compilation): Zap them.
+	* stmt.c (expand_computed_goto): Use them to produce one 
+	indirect branch per function.
+
+2003-02-15  Richard Henderson  <rth@redhat.com>
+
 	* cfgcleanup.c: Include params.h.
 	(try_crossjump_bb): Use PARAM_MAX_CROSSJUMP_EDGES.  Fix test for
 	too many outgoing edges from a block.

@@ -539,10 +539,23 @@ expand_computed_goto (exp)
 #endif
 
   emit_queue ();
-  do_pending_stack_adjust ();
-  emit_indirect_jump (x);
 
-  current_function_has_computed_jump = 1;
+  if (! cfun->computed_goto_common_label)
+    {
+      cfun->computed_goto_common_reg = copy_to_mode_reg (Pmode, x);
+      cfun->computed_goto_common_label = gen_label_rtx ();
+      emit_label (cfun->computed_goto_common_label);
+  
+      do_pending_stack_adjust ();
+      emit_indirect_jump (cfun->computed_goto_common_reg);
+
+      current_function_has_computed_jump = 1;
+    }
+  else
+    {
+      emit_move_insn (cfun->computed_goto_common_reg, x);
+      emit_jump (cfun->computed_goto_common_label);
+    }
 }
 
 /* Handle goto statements and the labels that they can go to.  */
