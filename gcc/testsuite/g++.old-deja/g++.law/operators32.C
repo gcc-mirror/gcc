@@ -3,11 +3,11 @@
 #include <iostream>
 
 //
-// frees space allocated for N-D array
+// ffrees space allocated for N-D array
 //
 
 template <class T>
-void free(long rows, T** array)
+void ffree(long rows, T** array)
 {
 for( long i = 0; i < rows; i++ )
   delete [] array[i];                   // delete row
@@ -29,7 +29,7 @@ if( allocate1d(d1, array) != 0 )
     {
     if( allocate1d(d2, array[i]) == 0 )
       {
-      free(i,array);
+      ffree(i,array);
       return array;
       }
     }
@@ -50,6 +50,6 @@ foo() {std::cout << "foo created" << std::endl; }
 
 foo **f2;
 allocate2d(d1, d2, f2);// ERROR -  type.*// ERROR -    trying to.*
-free(d1, f2);// ERROR -  type.*// ERROR -    trying to.*
+ffree(d1, f2);// ERROR -  type.*// ERROR -    trying to.*
 
 }
