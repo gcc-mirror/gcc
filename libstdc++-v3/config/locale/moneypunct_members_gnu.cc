@@ -40,14 +40,14 @@ namespace std
   // Construct and return valid pattern consisting of some combination of:
   // space none symbol sign value
   money_base::pattern
-  money_base::_S_construct_pattern(char __preceeds, char __space, char __posn)
+  money_base::_S_construct_pattern(char __precedes, char __space, char __posn)
   { 
     pattern __ret;
 
     // This insanely complicated routine attempts to construct a valid
     // pattern for use with monyepunct. A couple of invariants:
 
-    // if (__preceeds) symbol -> value
+    // if (__precedes) symbol -> value
     // else value -> symbol
     
     // if (__space) space
@@ -65,7 +65,7 @@ namespace std
 	if (__space)
 	  {
 	    // Pattern starts with sign.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[1] = symbol;
 		__ret.field[2] = space;
@@ -82,7 +82,7 @@ namespace std
 	else
 	  {
 	    // Pattern starts with sign and ends with none.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[1] = symbol;
 		__ret.field[2] = value;
@@ -101,7 +101,7 @@ namespace std
 	if (__space)
 	  {
 	    // Pattern either ends with sign.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = symbol;
 		__ret.field[1] = space;
@@ -118,7 +118,7 @@ namespace std
 	else
 	  {
 	    // Pattern ends with sign then none.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = symbol;
 		__ret.field[1] = value;
@@ -137,7 +137,7 @@ namespace std
 	if (__space)
 	  {
 	    // Have space.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = sign;
 		__ret.field[1] = symbol;
@@ -155,7 +155,7 @@ namespace std
 	else
 	  {
 	    // Have none.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = sign;
 		__ret.field[1] = symbol;
@@ -175,7 +175,7 @@ namespace std
 	if (__space)
 	  {
 	    // Have space.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = symbol;
 		__ret.field[1] = sign;
@@ -193,7 +193,7 @@ namespace std
 	else
 	  {
 	    // Have none.
-	    if (__preceeds)
+	    if (__precedes)
 	      {
 		__ret.field[0] = symbol;
 		__ret.field[1] = sign;
@@ -243,16 +243,16 @@ namespace std
 	  // _Intl == true
 	  _M_curr_symbol = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
 	  _M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, __cloc));
-	  char __ppreceeds = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
+	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__ppreceeds, __pspace, __pposn);
-	  char __npreceeds = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
+	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  char __nprecedes = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__INT_N_SEP_BY_SPACE, __cloc));
 	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
 	  if (!__nposn)
 	    _M_negative_sign = "()";
-	  _M_neg_format = _S_construct_pattern(__npreceeds, __nspace, __nposn);
+	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 	}
     }
 
@@ -285,16 +285,16 @@ namespace std
 	  // _Intl == false
 	  _M_curr_symbol = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
 	  _M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
-	  char __ppreceeds = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
+	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__ppreceeds, __pspace, __pposn);
-	  char __npreceeds = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
+	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  char __nprecedes = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__N_SEP_BY_SPACE, __cloc));
 	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
 	  if (!__nposn)
 	    _M_negative_sign = "()";
-	  _M_neg_format = _S_construct_pattern(__npreceeds, __nspace, __nposn);
+	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 	}
     }
 
@@ -365,16 +365,16 @@ namespace std
 	    _M_curr_symbol = string_type();
 
 	  _M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, __cloc));
-	  char __ppreceeds = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
+	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__ppreceeds, __pspace, __pposn);
-	  char __npreceeds = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
+	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  char __nprecedes = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__INT_N_SEP_BY_SPACE, __cloc));
 	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
 	  if (!__nposn)
 	    _M_negative_sign = L"()";
-	  _M_neg_format = _S_construct_pattern(__npreceeds, __nspace, __nposn);
+	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 	}
     }
 
@@ -444,16 +444,16 @@ namespace std
 	    _M_curr_symbol = string_type();
 
 	  _M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
-	  char __ppreceeds = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
+	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__ppreceeds, __pspace, __pposn);
-	  char __npreceeds = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
+	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  char __nprecedes = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__N_SEP_BY_SPACE, __cloc));
 	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
 	  if (!__nposn)
 	    _M_negative_sign = L"()";
-	  _M_neg_format = _S_construct_pattern(__npreceeds, __nspace, __nposn);
+	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 	}
     }
 #endif

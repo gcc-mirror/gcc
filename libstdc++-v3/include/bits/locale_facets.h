@@ -1476,7 +1476,7 @@ namespace std
     // Construct and return valid pattern consisting of some combination of:
     // space none symbol sign value
     static pattern 
-    _S_construct_pattern(char __preceeds, char __space, char __posn);
+    _S_construct_pattern(char __precedes, char __space, char __posn);
   };
 
   template<typename _CharT, bool _Intl>
