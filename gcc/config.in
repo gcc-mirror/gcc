@@ -370,6 +370,9 @@
    a read-write section. */
 #undef HAVE_LD_RO_RW_SECTION_MIXING
 
+/* Define if your linker supports -Bstatic/-Bdynamic option. */
+#undef HAVE_LD_STATIC_DYNAMIC
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
