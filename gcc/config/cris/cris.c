@@ -82,33 +82,31 @@ static char cris_output_insn_is_bound = 0;
 static int cris_pic_sympart_only = 0;
 
 /* Fix for reg_overlap_mentioned_p.  */
-static int cris_reg_overlap_mentioned_p PARAMS ((rtx, rtx));
+static int cris_reg_overlap_mentioned_p (rtx, rtx);
 
-static void cris_print_base PARAMS ((rtx, FILE *));
+static void cris_print_base (rtx, FILE *);
 
-static void cris_print_index PARAMS ((rtx, FILE *));
+static void cris_print_index (rtx, FILE *);
 
-static struct machine_function * cris_init_machine_status PARAMS ((void));
+static struct machine_function * cris_init_machine_status (void);
 
-static int cris_initial_frame_pointer_offset PARAMS ((void));
+static int cris_initial_frame_pointer_offset (void);
 
-static int saved_regs_mentioned PARAMS ((rtx));
+static int saved_regs_mentioned (rtx);
 
-static void cris_target_asm_function_prologue
-  PARAMS ((FILE *, HOST_WIDE_INT));
+static void cris_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
 
-static void cris_target_asm_function_epilogue
-  PARAMS ((FILE *, HOST_WIDE_INT));
+static void cris_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 
-static void cris_operand_lossage PARAMS ((const char *, rtx));
+static void cris_operand_lossage (const char *, rtx);
 
 static void cris_asm_output_mi_thunk
-  PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+  (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 
-static void cris_file_start PARAMS ((void));
+static void cris_file_start (void);
 
-static bool cris_rtx_costs PARAMS ((rtx, int, int, int *));
-static int cris_address_cost PARAMS ((rtx));
+static bool cris_rtx_costs (rtx, int, int, int *);
+static int cris_address_cost (rtx);
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
@@ -184,9 +182,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    c) a [r] or [r+] in SImode, or sign-extend from HI or QI.  */
 
 int
-cris_bdap_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_bdap_operand (rtx op, enum machine_mode mode)
 {
   register enum rtx_code code = GET_CODE (op);
 
@@ -243,9 +239,7 @@ cris_bdap_operand (op, mode)
    d) a [r] or [r+] in SImode, or sign-extend from HI or QI.  */
 
 int
-cris_bdap_biap_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_bdap_biap_operand (rtx op, enum machine_mode mode)
 {
   register enum rtx_code code = GET_CODE (op);
   rtx reg;
@@ -290,9 +284,7 @@ cris_bdap_biap_operand (op, mode)
    AND or UMIN.  */
 
 int
-cris_orthogonal_operator (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_orthogonal_operator (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -308,9 +300,7 @@ cris_orthogonal_operator (x, mode)
    UMIN.  */
 
 int
-cris_commutative_orth_op (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_commutative_orth_op (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -325,9 +315,7 @@ cris_commutative_orth_op (x, mode)
 /* Check if MODE is same as mode for X, and X is PLUS or MINUS or UMIN.  */
 
 int
-cris_operand_extend_operator (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_operand_extend_operator (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -341,9 +329,7 @@ cris_operand_extend_operator (x, mode)
 /* Check if MODE is same as mode for X, and X is PLUS or MINUS.  */
 
 int
-cris_additive_operand_extend_operator (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_additive_operand_extend_operator (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -358,9 +344,7 @@ cris_additive_operand_extend_operator (x, mode)
    ZERO_EXTEND.  */
 
 int
-cris_extend_operator (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_extend_operator (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -374,9 +358,7 @@ cris_extend_operator (x, mode)
 /* Check to see if MODE is same as mode for X, and X is PLUS or BOUND.  */
 
 int
-cris_plus_or_bound_operator (x, mode)
-     rtx x;
-     enum machine_mode mode;
+cris_plus_or_bound_operator (rtx x, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -392,9 +374,7 @@ cris_plus_or_bound_operator (x, mode)
    "movsi" expander.  */
 
 int
-cris_general_operand_or_symbol (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_general_operand_or_symbol (rtx op, enum machine_mode mode)
 {
   return general_operand (op, mode)
     || (CONSTANT_P (op) && cris_symbol (op));
@@ -405,9 +385,7 @@ cris_general_operand_or_symbol (op, mode)
    "movsi" anonymous pattern for PIC symbols.  */
 
 int
-cris_general_operand_or_gotless_symbol (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_general_operand_or_gotless_symbol (rtx op, enum machine_mode mode)
 {
   return general_operand (op, mode)
     || (CONSTANT_P (op) && cris_gotless_symbol (op));
@@ -418,9 +396,7 @@ cris_general_operand_or_gotless_symbol (op, mode)
    "call" and "call_value" anonymous patterns.  */
 
 int
-cris_general_operand_or_plt_symbol (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_general_operand_or_plt_symbol (rtx op, enum machine_mode mode)
 {
   return general_operand (op, mode)
     || (GET_CODE (op) == CONST
@@ -435,9 +411,7 @@ cris_general_operand_or_plt_symbol (op, mode)
    UNSPEC 0).  */
 
 int
-cris_mem_call_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cris_mem_call_operand (rtx op, enum machine_mode mode)
 {
   rtx xmem;
 
@@ -455,7 +429,7 @@ cris_mem_call_operand (op, mode)
 /* The CONDITIONAL_REGISTER_USAGE worker.   */
 
 void
-cris_conditional_register_usage ()
+cris_conditional_register_usage (void)
 {
   /* FIXME: This isn't nice.  We should be able to use that register for
      something else if the PIC table isn't needed.  */
@@ -468,7 +442,7 @@ cris_conditional_register_usage ()
    since some generated files do not include function.h.  */
 
 int
-cris_cfun_uses_pic_table ()
+cris_cfun_uses_pic_table (void)
 {
   return current_function_uses_pic_offset_table;
 }
@@ -478,8 +452,7 @@ cris_cfun_uses_pic_table ()
    define_insn.  */
 
 const char *
-cris_op_str (x)
-     rtx x;
+cris_op_str (rtx x)
 {
   cris_output_insn_is_bound = 0;
   switch (GET_CODE (x))
@@ -547,9 +520,7 @@ cris_op_str (x)
    categorization of the error.  */
 
 static void
-cris_operand_lossage (msgid, op)
-     const char *msgid;
-     rtx op;
+cris_operand_lossage (const char *msgid, rtx op)
 {
   debug_rtx (op);
   output_operand_lossage ("%s", msgid);
@@ -558,9 +529,7 @@ cris_operand_lossage (msgid, op)
 /* Print an index part of an address to file.  */
 
 static void
-cris_print_index (index, file)
-     rtx index;
-     FILE * file;
+cris_print_index (rtx index, FILE *file)
 {
   rtx inner = XEXP (index, 0);
 
@@ -613,9 +582,7 @@ cris_print_index (index, file)
 /* Print a base rtx of an address to file.  */
 
 static void
-cris_print_base (base, file)
-     rtx base;
-     FILE *file;
+cris_print_base (rtx base, FILE *file)
 {
   if (REG_P (base))
     fprintf (file, "$%s", reg_names[REGNO (base)]);
@@ -629,8 +596,7 @@ cris_print_base (base, file)
 /* Usable as a guard in expressions.  */
 
 int
-cris_fatal (arg)
-     char *arg;
+cris_fatal (char *arg)
 {
   internal_error (arg);
 
@@ -641,9 +607,7 @@ cris_fatal (arg)
 /* Textual function prologue.  */
 
 static void
-cris_target_asm_function_prologue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
+cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
 {
   int regno;
 
@@ -926,8 +890,7 @@ cris_target_asm_function_prologue (file, size)
    can be put in the epilogue.  */
 
 static int
-saved_regs_mentioned (x)
-     rtx x;
+saved_regs_mentioned (rtx x)
 {
   int i;
   const char *fmt;
@@ -976,8 +939,7 @@ saved_regs_mentioned (x)
 /* Figure out if the insn may be put in the epilogue.  */
 
 int
-cris_eligible_for_epilogue_delay (insn)
-     rtx insn;
+cris_eligible_for_epilogue_delay (rtx insn)
 {
   /* First of all, it must be as slottable as for a delayed branch insn.  */
   if (get_attr_slottable (insn) != SLOTTABLE_YES)
@@ -1008,7 +970,7 @@ cris_eligible_for_epilogue_delay (insn)
    contains "ret", else 0.  */
 
 int
-cris_delay_slots_for_epilogue ()
+cris_delay_slots_for_epilogue (void)
 {
   /* Check if we use a return insn, which we only do for leaf functions.
      Else there is no slot to fill.  */
@@ -1036,9 +998,7 @@ cris_delay_slots_for_epilogue ()
    itself by storing the delay insn in save_last.  */
 
 static void
-cris_target_asm_function_epilogue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
+cris_target_asm_function_epilogue (FILE *file, HOST_WIDE_INT size)
 {
   int regno;
   int last_movem_reg = -1;
@@ -1299,10 +1259,7 @@ cris_target_asm_function_epilogue (file, size)
 /* The PRINT_OPERAND worker.  */
 
 void
-cris_print_operand (file, x, code)
-     FILE *file;
-     rtx x;
-     int code;
+cris_print_operand (FILE *file, rtx x, int code)
 {
   rtx operand = x;
 
@@ -1622,9 +1579,7 @@ cris_print_operand (file, x, code)
 /* The PRINT_OPERAND_ADDRESS worker.  */
 
 void
-cris_print_operand_address (file, x)
-     FILE *file;
-     rtx x;
+cris_print_operand_address (FILE *file, rtx x)
 {
   /* All these were inside MEM:s so output indirection characters.  */
   putc ('[', file);
@@ -1674,9 +1629,7 @@ cris_print_operand_address (file, x)
    initial-value machinery.  */
 
 rtx
-cris_return_addr_rtx (count, frameaddr)
-     int count;
-     rtx frameaddr ATTRIBUTE_UNUSED;
+cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
 {
   cfun->machine->needs_return_address_on_stack = 1;
 
@@ -1692,7 +1645,7 @@ cris_return_addr_rtx (count, frameaddr)
    handles FP -> SP elimination offset.  */
 
 static int
-cris_initial_frame_pointer_offset ()
+cris_initial_frame_pointer_offset (void)
 {
   int regno;
 
@@ -1737,9 +1690,7 @@ cris_initial_frame_pointer_offset ()
    and imaginary arg pointer.  */
 
 int
-cris_initial_elimination_offset (fromreg, toreg)
-     int fromreg;
-     int toreg;
+cris_initial_elimination_offset (int fromreg, int toreg)
 {
   int fp_sp_offset
     = cris_initial_frame_pointer_offset ();
@@ -1783,9 +1734,7 @@ cris_initial_elimination_offset (fromreg, toreg)
     check-cc-attribute methods.  */
 
 void
-cris_notice_update_cc (exp, insn)
-     rtx exp;
-     rtx insn;
+cris_notice_update_cc (rtx exp, rtx insn)
 {
   /* Check if user specified "-mcc-init" as a bug-workaround.  FIXME:
      TARGET_CCINIT does not work; we must set CC_REVERSED as below.
@@ -2072,7 +2021,7 @@ cris_notice_update_cc (exp, insn)
    many registers must be saved, so return 0 then.  */
 
 int
-cris_simple_epilogue ()
+cris_simple_epilogue (void)
 {
   int regno;
   int reglimit = STACK_POINTER_REGNUM;
@@ -2115,10 +2064,7 @@ cris_simple_epilogue ()
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-cris_rtx_costs (x, code, outer_code, total)
-     rtx x;
-     int code, outer_code;
-     int *total;
+cris_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   switch (code)
     {
@@ -2224,8 +2170,7 @@ cris_rtx_costs (x, code, outer_code, total)
 /* The ADDRESS_COST worker.  */
 
 static int
-cris_address_cost (x)
-     rtx x;
+cris_address_cost (rtx x)
 {
   /* The metric to use for the cost-macros is unclear.
      The metric used here is (the number of cycles needed) / 2,
@@ -2307,10 +2252,9 @@ cris_address_cost (x)
 	      whose mode we must consider.  */
 
 int
-cris_side_effect_mode_ok (code, ops, lreg, rreg, rval, multop, other_op)
-     enum rtx_code code;
-     rtx *ops;
-     int lreg, rreg, rval, multop, other_op;
+cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
+			  int lreg, int rreg, int rval,
+			  int multop, int other_op)
 {
   /* Find what value to multiply with, for rx =ry + rz * n.  */
   int mult = multop < 0 ? 1 : INTVAL (ops[multop]);
@@ -2424,8 +2368,7 @@ cris_side_effect_mode_ok (code, ops, lreg, rreg, rval, multop, other_op)
    anyway.  */
 
 static int
-cris_reg_overlap_mentioned_p (x, in)
-     rtx x, in;
+cris_reg_overlap_mentioned_p (rtx x, rtx in)
 {
   /* The function reg_overlap_mentioned now handles when X is
      strict_low_part, but not when IN is a STRICT_LOW_PART.  */
@@ -2439,9 +2382,7 @@ cris_reg_overlap_mentioned_p (x, in)
    We just dispatch to the functions for ELF and a.out.  */
 
 void
-cris_target_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags;
+cris_target_asm_named_section (const char *name, unsigned int flags)
 {
   if (! TARGET_ELF)
     default_no_named_section (name, flags);
@@ -2452,8 +2393,7 @@ cris_target_asm_named_section (name, flags)
 /* The LEGITIMATE_PIC_OPERAND_P worker.  */
 
 int
-cris_legitimate_pic_operand (x)
-     rtx x;
+cris_legitimate_pic_operand (rtx x)
 {
   /* The PIC representation of a symbol with a GOT entry will be (for
      example; relocations differ):
@@ -2469,8 +2409,7 @@ cris_legitimate_pic_operand (x)
    CONSTANT_P.  */
 
 int
-cris_symbol (x)
-     rtx x;
+cris_symbol (rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2508,8 +2447,7 @@ cris_symbol (x)
    see something that would need one.  */
 
 int
-cris_gotless_symbol (x)
-     rtx x;
+cris_gotless_symbol (rtx x)
 {
 #ifdef ENABLE_CHECKING
   if (!flag_pic)
@@ -2569,8 +2507,7 @@ cris_gotless_symbol (x)
    CONSTANT_P, and the symbol needs a GOT entry.  */
 
 int
-cris_got_symbol (x)
-     rtx x;
+cris_got_symbol (rtx x)
 {
 #ifdef ENABLE_CHECKING
   if (!flag_pic)
@@ -2616,7 +2553,7 @@ cris_got_symbol (x)
    As is the norm, this also parses -mfoo=bar type parameters.  */
 
 void
-cris_override_options ()
+cris_override_options (void)
 {
   if (cris_max_stackframe_str)
     {
@@ -2733,12 +2670,11 @@ cris_override_options ()
 /* The TARGET_ASM_OUTPUT_MI_THUNK worker.  */
 
 static void
-cris_asm_output_mi_thunk (stream, thunkdecl, delta, vcall_offset, funcdecl)
-     FILE *stream;
-     tree thunkdecl ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
-     tree funcdecl;
+cris_asm_output_mi_thunk (FILE *stream,
+			  tree thunkdecl ATTRIBUTE_UNUSED,
+			  HOST_WIDE_INT delta,
+			  HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+			  tree funcdecl)
 {
   if (delta > 0)
     fprintf (stream, "\tadd%s " HOST_WIDE_INT_PRINT_DEC ",$%s\n",
@@ -2774,7 +2710,7 @@ cris_asm_output_mi_thunk (stream, thunkdecl, delta, vcall_offset, funcdecl)
 
    We want a .file directive only if TARGET_ELF.  */
 static void
-cris_file_start ()
+cris_file_start (void)
 {
   /* These expressions can vary at run time, so we cannot put
      them into TARGET_INITIALIZER.  */
@@ -2791,9 +2727,7 @@ cris_file_start ()
    pass-by-reference, then perform an indirection.  */
 
 rtx
-cris_expand_builtin_va_arg (valist, type)
-     tree valist;
-     tree type;
+cris_expand_builtin_va_arg (tree valist, tree type)
 {
   tree addr_tree, t;
   rtx addr;
@@ -2870,7 +2804,7 @@ cris_expand_builtin_va_arg (valist, type)
    mark functions.  */
 
 void
-cris_init_expanders ()
+cris_init_expanders (void)
 {
   /* Nothing here at the moment.  */
 }
@@ -2878,7 +2812,7 @@ cris_init_expanders ()
 /* Zero initialization is OK for all current fields.  */
 
 static struct machine_function *
-cris_init_machine_status ()
+cris_init_machine_status (void)
 {
   return ggc_alloc_cleared (sizeof (struct machine_function));
 }
@@ -2887,8 +2821,7 @@ cris_init_machine_status ()
    Originally a copy of gen_split_move_double in m32r.c.  */
 
 rtx
-cris_split_movdx (operands)
-     rtx *operands;
+cris_split_movdx (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   rtx dest = operands[0];
@@ -3047,9 +2980,7 @@ cris_split_movdx (operands)
    one for CODE_LABEL?).  */
 
 void
-cris_output_addr_const (file, x)
-     FILE *file;
-     rtx x;
+cris_output_addr_const (FILE *file, rtx x)
 {
   int is_plt = 0;
 
@@ -3221,49 +3152,42 @@ restart:
    debugger.  They might collide with gcc functions or system functions,
    so only emit them when '#if 1' above.  */
 
-enum rtx_code Get_code PARAMS ((rtx));
+enum rtx_code Get_code (rtx);
 
 enum rtx_code
-Get_code (x)
-     rtx x;
+Get_code (rtx x)
 {
   return GET_CODE (x);
 }
 
-const char *Get_mode PARAMS ((rtx));
+const char *Get_mode (rtx);
 
 const char *
-Get_mode (x)
-     rtx x;
+Get_mode (rtx x)
 {
   return GET_MODE_NAME (GET_MODE (x));
 }
 
-rtx Xexp PARAMS ((rtx, int));
+rtx Xexp (rtx, int);
 
 rtx
-Xexp (x, n)
-     rtx x;
-     int n;
+Xexp (rtx x, int n)
 {
   return XEXP (x, n);
 }
 
-rtx Xvecexp PARAMS ((rtx, int, int));
+rtx Xvecexp (rtx, int, int);
 
 rtx
-Xvecexp (x, n, m)
-     rtx x;
-     int n;
+Xvecexp (rtx x, int n, int m)
 {
   return XVECEXP (x, n, m);
 }
 
-int Get_rtx_len PARAMS ((rtx));
+int Get_rtx_len (rtx);
 
 int
-Get_rtx_len (x)
-     rtx x;
+Get_rtx_len (rtx x)
 {
   return GET_RTX_LENGTH (GET_CODE (x));
 }
@@ -3271,20 +3195,18 @@ Get_rtx_len (x)
 /* Use upper-case to distinguish from local variables that are sometimes
    called next_insn and prev_insn.  */
 
-rtx Next_insn PARAMS ((rtx));
+rtx Next_insn (rtx);
 
 rtx
-Next_insn (insn)
-     rtx insn;
+Next_insn (rtx insn)
 {
   return NEXT_INSN (insn);
 }
 
-rtx Prev_insn PARAMS ((rtx));
+rtx Prev_insn (rtx);
 
 rtx
-Prev_insn (insn)
-     rtx insn;
+Prev_insn (rtx insn)
 {
   return PREV_INSN (insn);
 }
