@@ -1,3 +1,8 @@
+2001-06-02  Anthony Green  <green@redhat.com>
+
+	* libjava.lang/invokethrow.java: Fake a pass for systems which
+	don't support invocation.
+
 2001-05-30  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/invokethrow.out: New file.
