@@ -1,3 +1,8 @@
+2001-01-24  Will Cohen  <wcohen@redhat.com>
+
+	* config/mips/abi64.h (RETURN_IN_MEMORY): Always take into account
+	whether registers are 32 bits or 64 bits in size.
+
 2001-01-24  Ben Elliston  <bje@redhat.com>
 
 	* config/m32r/m32r.h (PREDICATE_CODES): Remove m32r_not_same_reg.

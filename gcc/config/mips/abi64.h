@@ -91,7 +91,7 @@ Boston, MA 02111-1307, USA.  */
   ((mips_abi == ABI_32 || mips_abi == ABI_O64)				\
    ? TYPE_MODE (TYPE) == BLKmode					\
    : (int_size_in_bytes (TYPE)						\
-      > (mips_abi == ABI_EABI ? 2 * UNITS_PER_WORD : 16)))
+      > (2 * UNITS_PER_WORD)))
 
 #ifdef ANSI_PROTOTYPES
 union tree_node;
