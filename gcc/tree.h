@@ -1226,6 +1226,10 @@ struct tree_type
    be instrumented with calls to support routines.  */
 #define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) ((NODE)->decl.no_instrument_function_entry_exit)
 
+/* Used in FUNCTION_DECLs to indicate that in this function,
+   check-memory-usage should be disabled.  */
+#define DECL_NO_CHECK_MEMORY_USAGE(NODE) ((NODE)->decl.no_check_memory_usage)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) (DECL_CHECK (NODE)->decl.lang_flag_1)
@@ -1282,6 +1286,7 @@ struct tree_decl
 
   unsigned non_addr_const_p : 1;
   unsigned no_instrument_function_entry_exit : 1;
+  unsigned no_check_memory_usage : 1;
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.

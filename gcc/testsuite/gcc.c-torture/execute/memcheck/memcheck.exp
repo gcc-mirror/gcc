@@ -1,0 +1,54 @@
+# Copyright (C) 1991, 92-93, 95, 97, 1998 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
+
+# Please email any bugs, comments, and/or additions to this file to:
+# bug-gcc@prep.ai.mit.edu
+
+# This file was written by Rob Savoye. (rob@cygnus.com)
+# Modified and maintained by Jeffrey Wheat (cassidy@cygnus.com)
+
+#
+# These tests come from Torbjorn Granlund (tege@cygnus.com)
+# C torture test suite.
+#
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib c-torture.exp
+
+#
+# main test loop
+#
+
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.c]]
+set idx [lsearch $tests */driver.c]
+if $idx>=0 {
+    set tests [lreplace $tests $idx $idx]
+} else {
+    error "list can't find driver.c in $srcdir/$subdir"
+}
+gcc_target_compile $srcdir/$subdir/driver.c driver.o object {additional_flags=-w additional_flags=-g}
+foreach src $tests {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+
+    c-torture-execute $src "-fcheck-memory-usage driver.o"
+}

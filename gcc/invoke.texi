@@ -5843,8 +5843,7 @@ the offsets of structure members won't agree with system libraries.
 @item -fcheck-memory-usage
 Generate extra code to check each memory access.  GNU CC will generate
 code that is suitable for a detector of bad memory accesses such as
-@file{Checker}.  If you specify this option, you can not use the
-@code{asm} or @code{__asm__} keywords.
+@file{Checker}.
 
 You must also specify this option when you compile functions you call that
 have side effects.  If you do not, you may get erroneous messages from
@@ -5858,6 +5857,24 @@ your code and make other functions look as if they were compiled with
 which are provided by the detector.  If you cannot find or build
 stubs for every function you call, you may have to specify
 @samp{-fcheck-memory-usage} without @samp{-fprefix-function-name}.
+
+If you specify this option, you can not use the @code{asm} or
+@code{__asm__} keywords in functions with memory checking enabled.  The
+compiler cannot understand what the @code{asm} statement will do, and
+therefore cannot generate the appropriate code, so it is rejected.
+However, the function attribute @code{no_check_memory_usage} will
+disable memory checking within a function, and @code{asm} statements can
+be put inside such functions.  Inline expansion of a non-checked
+function within a checked function is permitted; the inline function's
+memory accesses won't be checked, but the rest will.
+
+If you move your @code{asm} statements to non-checked inline functions,
+but they do access memory, you can add calls to the support code in your
+inline function, to indicate any reads, writes, or copies being done.
+These calls would be similar to those done in the stubs described above.
+
+@c FIXME: The support-routine interface is defined by the compiler and
+@c        should be documented!
 
 @item -fprefix-function-name
 Request GNU CC to add a prefix to the symbols generated for function names.

@@ -1518,6 +1518,19 @@ mangled name for the target must be used.
 
 Not all target machines support this attribute.
 
+@item no_check_memory_usage
+@cindex @code{no_check_memory_usage} function attribute
+If @samp{-fcheck-memory-usage} is given, calls to support routines will
+be generated before most memory accesses, to permit support code to
+record usage and detect uses of uninitialized or unallocated storage.
+Since the compiler cannot handle them properly, @code{asm} statements
+are not allowed.  Declaring a function with this attribute disables the
+memory checking code for that function, permitting the use of @code{asm}
+statements without requiring separate compilation with different
+options, and allowing you to write support routines of your own if you
+wish, without getting infinite recursion if they get compiled with this
+option.
+
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to

@@ -1,0 +1,16 @@
+/* Must define:
+   int expect_error;
+   void test ();
+   void setup () NOCHECK; */
+
+#include "driver.h"
+
+int expect_error = ;
+
+void test ()
+{
+}
+
+void setup () /* NOCHECK */
+{
+}

@@ -1,3 +1,8 @@
+Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* execute/memcheck: New directory of tests for
+	-fcheck-memory-usage.
+
 1998-10-06  Ken Raeburn  <raeburn@cygnus.com>
 
 	* special/981006-1.c: New test.  Make sure gcc doesn't lose track
