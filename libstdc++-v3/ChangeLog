@@ -1,5 +1,10 @@
 2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
 
+	* testsuite/27_io/basic_stringbuf/seekpos/char/3.cc: Tweak
+	line spacing.
+
+2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/std/std_fstream.h (_M_destroy_pback): Use _M_in_beg
 	instead of unnecessarily taking the address of _M_pback.
 	(xsgetn): Simplify slightly for a single char pback buffer.
