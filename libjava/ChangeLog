@@ -1,3 +1,17 @@
+2003-11-22  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/DatagramChannelImpl.java
+	(getNativeFD): Use getPlainDatagramSocketImpl().
+	* gnu/java/nio/NIODatagramSocket.java
+	(getPlainDatagramSocketImpl): Renamed from getImpl().
+	* gnu/java/nio/NIOSocket.java
+	(getPlainSocketImpl): Renamed from getImpl().
+	(setChannel): Use getPlainSocketImpl().
+	* gnu/java/nio/SocketChannelImpl.java
+	(SocketChannelImpl): Use getPlainSocketImpl().
+	(getPlainSocketImpl): Renamed from getImpl().
+	(getNativeFD): Use getPlainSocketImpl().
+
 2003-11-18  Graydon Hoare  <graydon@redhat.com>
 
 	* javax/swing/JLayeredPane.java: Implement.

@@ -59,14 +59,14 @@ public final class NIOSocket extends Socket
     this.channel = channel;
   }
 
-  public final PlainSocketImpl getImpl()
+  public final PlainSocketImpl getPlainSocketImpl()
   {
     return impl;
   }
 
   final void setChannel (SocketChannelImpl channel)
   {
-    this.impl = channel.getImpl();
+    this.impl = channel.getPlainSocketImpl();
     this.channel = channel;
   }
   

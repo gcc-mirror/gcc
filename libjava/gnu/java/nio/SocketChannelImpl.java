@@ -81,7 +81,7 @@ public final class SocketChannelImpl extends SocketChannel
     throws IOException
   {
     super (provider);
-    this.impl = socket.getImpl();
+    this.impl = socket.getPlainSocketImpl();
     this.socket = socket;
   }
 
@@ -99,14 +99,14 @@ public final class SocketChannelImpl extends SocketChannel
       }
   }
 
-  PlainSocketImpl getImpl()
+  PlainSocketImpl getPlainSocketImpl()
   {
     return impl;
   }
 
   int getNativeFD()
   {
-    return socket.getImpl().getNativeFD();
+    return socket.getPlainSocketImpl().getNativeFD();
   }
 
   protected void implCloseSelectableChannel () throws IOException
