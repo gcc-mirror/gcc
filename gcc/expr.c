@@ -1938,7 +1938,7 @@ emit_group_load (dst, orig_src, ssize, align)
   /* If we won't be loading directly from memory, protect the real source
      from strange tricks we might play.  */
   src = orig_src;
-  if (GET_CODE (src) != MEM)
+  if (GET_CODE (src) != MEM && ! CONSTANT_P (src))
     {
       if (GET_MODE (src) == VOIDmode)
 	src = gen_reg_rtx (GET_MODE (dst));
@@ -1987,6 +1987,10 @@ emit_group_load (dst, orig_src, ssize, align)
 	  else
 	    abort ();
 	}
+      else if ((CONSTANT_P (src)
+		&& (GET_MODE (src) == VOIDmode || GET_MODE (src) == mode))
+	       || (GET_CODE (src) == REG && GET_MODE (src) == mode))
+	tmps[i] = src;
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
 				     bytepos * BITS_PER_UNIT, 1, NULL_RTX,
