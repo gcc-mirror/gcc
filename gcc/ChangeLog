@@ -1,5 +1,7 @@
 Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.c (expand_prologue): Fix typo.
+
 	* mn10200.h (GO_IF_LEGITIMATE_ADDRESS): Do not allow indexed
 	addresses.
 	* mn10200.md (neghi2): Provide an alternative which works if
