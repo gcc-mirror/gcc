@@ -23,13 +23,24 @@ typedef void * __gnuc_va_list;
 
 #ifdef _STDARG_H
 
+#ifdef __GCC_NEW_VARARGS__
 #define va_start(AP, LASTARG)	(AP = (char *) __builtin_saveregs ())
+#else
+#define va_start(AP, LASTARG)					\
+  (__builtin_saveregs (), AP = ((char *) __builtin_next_arg ()))
+#endif
 
 #else
 
 #define va_alist  __builtin_va_alist
 #define va_dcl
+
+#ifdef __GCC_NEW_VARARGS__
 #define va_start(AP)		((AP) = (char *) __builtin_saveregs ())
+#else
+#define va_start(AP) 						\
+ (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
+#endif
 
 #endif
 
