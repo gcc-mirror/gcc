@@ -1,3 +1,7 @@
+Wed Apr  8 06:16:45 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
+
 Wed Apr  8 00:44:18 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
 
 	* c-lex.c (is_class_name): Delete declaration.
