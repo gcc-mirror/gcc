@@ -1,3 +1,8 @@
+1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/friend5.C: New test.  bogus friend
+	declaration causes ICE
+
 1998-10-11  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.ns/main1.C: New test.  main() should only be
