@@ -5960,6 +5960,7 @@ merge_assigned_reloads (insn)
 	      {
 		reload_when_needed[i] = RELOAD_OTHER;
 		reload_in[j] = 0;
+		reload_spill_index[j] = -1;
 		transfer_replacements (i, j);
 	      }
 

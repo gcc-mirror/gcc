@@ -1,3 +1,8 @@
+Thu May 14 02:17:17 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (merge_assigned_reloads):  When merging, reset
+	reload_spill_index for the eliminated reload.
+
 Wed May 13 17:51:13 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (schedule_insns): Fix merge goof.
