@@ -30,5 +30,9 @@ integer e_wsfe(Void)
 	f__init = 1;
 	n = en_fio();
 	f__fmtbuf=NULL;
+#ifdef ALWAYS_FLUSH
+	if (!n && fflush(f__cf))
+		err(f__elist->cierr, errno, "write end");
+#endif
 	return n;
 }

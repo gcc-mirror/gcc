@@ -1,3 +1,17 @@
+Sun Mar 12 20:12;30 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
+	Based on work done by David M. Gay (Bell Labs)
+
+	* libF77/configure.in: Define IEEE_COMPLEX_DIVIDE.
+	* libF77/[cz]_div.c: Arrange for compilation under
+	-DIEEE_COMPLEX_DIVIDE to make these routines
+	avoid calling sig_die when the denominator vanishes.
+	* libF77/s_rnge.c: Add casts for the case of
+	sizeof(ftnint) == sizeof(int) < sizeof(long).
+	* libI77/endfile.c: Set state to writing (b->uwrt = 1) when an
+	endfile statement requires copying the file
+	Also, supply a missing (long) cast in the sprintf call.
+	* libI77/sfe.c: Add #ifdef ALWAYS_FLUSH logic, for formatted I/O.
+
 Wed Feb 16 11:10:05 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (gcc_version): When setting, narrow search to

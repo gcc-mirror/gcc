@@ -17,8 +17,16 @@ void z_div(doublecomplex *c, doublecomplex *a, doublecomplex *b)
 		abi = - abi;
 	if( abr <= abi )
 		{
-		if(abi == 0)
+		if(abi == 0) {
+#ifdef IEEE_COMPLEX_DIVIDE
+			if (a->i != 0 || a->r != 0)
+				abi = 1.;
+			c->i = c->r = abi / abr;
+			return;
+#else
 			sig_die("complex division by zero", 1);
+#endif
+			}
 		ratio = b->r / b->i ;
 		den = b->i * (1 + ratio*ratio);
 		cr = (a->r*ratio + a->i) / den;
