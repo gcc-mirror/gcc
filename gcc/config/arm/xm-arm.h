@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_BITS_PER_SHORT 16
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
+#define HOST_BITS_PER_LONGLONG 64
 
 /* A code distinguishing the floating point format of the host
    machine.  There are three defined values: IEEE_FLOAT_FORMAT,
