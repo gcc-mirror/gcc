@@ -1,9 +1,5 @@
 CONFIG2_H	= $(srcdir)/config/mips/isa3264.h $(srcdir)/config/mips/elf.h $(srcdir)/config/mips/ecoff.h $(srcdir)/config/mips/mips.h
 
-# Suppress building libgcc1.a, since the MIPS compiler port is complete
-# and does not need anything from libgcc1.a.
-LIBGCC1 =
-
 # Don't let CTOR_LIST end up in sdata section.
 CRTSTUFF_T_CFLAGS = -G 0
 
@@ -16,9 +12,6 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
 
-# When building a cross compiler, put the mips16 support functions in
-# libgcc1.a.
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = mips/mips16.S
 LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16eqsf2 _m16nesf2 _m16gtsf2 _m16gesf2 _m16lesf2 _m16ltsf2 \

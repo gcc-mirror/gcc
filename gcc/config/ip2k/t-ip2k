@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = ip2k/libgcc.S
 
 LIB1ASMFUNCS = \
@@ -25,9 +24,6 @@ LIB1ASMFUNCS = \
 	_movstrhi_counthi \
 	abort \
 	_exit
-
-# libgcc...
-LIBGCC1_TEST =
 
 # libgcc2.h thinks that nobody would have SI mode when
 # MIN_UNITS_PER_WORD == 1, so lie to keep from major compiler errors.
