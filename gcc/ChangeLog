@@ -1,3 +1,8 @@
+2002-02-19  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.h (REGNO_REG_CLASS): Replace a literal
+	register number with an appropriate macro.
+
 2002-02-19  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* doc/rtl.texi (Constants): Close @code tag.
