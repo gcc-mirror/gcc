@@ -1,3 +1,9 @@
+2004-09-23  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17380:
+	* testsuite/libjava.jacks/jacks.xfail: Added 9.2-implicit-6 and
+	9.2-implicit-7.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Run aclocal with -I ../config
