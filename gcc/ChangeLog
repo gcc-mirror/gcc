@@ -1,3 +1,13 @@
+2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	PR other/3782
+	* toplev.c (process_options): If flag_detailed_statistics is set,
+	then set time_report as well.
+
+	PR c/8828
+	* jump.c (never_reached_warning): Don't fall through BARRRIER
+	insns.  Update comments to reflect what the function really does.
+
 2003-02-21  Richard Henderson  <rth@redhat.com>
 
 	2003-01-06  Richard Henderson  <rth@redhat.com>
