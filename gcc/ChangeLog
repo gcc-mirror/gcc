@@ -1,5 +1,8 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* fixinc/fixinc.interix: Remove dead code (most of it).
+	* fixinc/fixinc.dgux: Remove.
+
 	* ginclude/float.h, ginclude/iso646.h, ginclude/stdarg.h,
 	ginclude/stdbool.h, ginclude/stddef.h: GCC, not GNU CC.
 
