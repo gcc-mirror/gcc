@@ -1,3 +1,7 @@
+2004-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* trans.c (gnat_stabilize_reference_1): Remove case 'b'.
+
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
 	Merge from tree-ssa-20020619-branch.
@@ -292,7 +296,7 @@
 
 	* cstand.adb (Create_Standard): Initialize Stand.Boolean_Literals.
 
-	* exp_attr.adb, exp_ch5.adb, exp_ch9.adb, exp_disp.adb, 
+	* exp_attr.adb, exp_ch5.adb, exp_ch9.adb, exp_disp.adb,
 	exp_fixd.adb, sem_attr.adb, sem_dist.adb, sem_util.adb: Use
 	Stand.Boolean_Literals to produce references to entities
 	Standard_False and Standard_True from compile-time computed boolean
@@ -584,9 +588,9 @@
 
 2004-04-23  Laurent GUERBY <laurent@guerby.net>
 
-	* Makefile.in: Remove RANLIB_TEST, use -$(RANLIB) including after 
+	* Makefile.in: Remove RANLIB_TEST, use -$(RANLIB) including after
 	install.
-	
+
 2004-04-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in (GNATBIND_OBJS): Add s-addope.o.
@@ -643,8 +647,8 @@
 	* Make-lang.in: Add entry for s-addope.o to GNAT1 objects
 	* s-addope.ads, s-addope.adb: New files.
 
-	* s-carsi8.adb, s-carun8.adb, s-casi16.adb, s-casi32.adb, 
-	s-casi64.adb, s-caun16.adb, s-caun32.adb, s-caun64.adb, 
+	* s-carsi8.adb, s-carun8.adb, s-casi16.adb, s-casi32.adb,
+	s-casi64.adb, s-caun16.adb, s-caun32.adb, s-caun64.adb,
 	s-finimp.adb, s-geveop.adb, s-stoele.adb: Modifications to allow
 	System.Address to be non-private and signed.
 
@@ -655,7 +659,7 @@
 2004-04-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* trans.c (tree_transform, build_unit_elab): Don't call getdecls.
-        (tree_transform, case N_If_Statement): Remove non-determinism.
+	(tree_transform, case N_If_Statement): Remove non-determinism.
 
 	* utils.c (begin_subprog_body): Just set DECL_CONTEXT in PARM_DECL.
 
@@ -991,7 +995,7 @@
 
 	* sem_util.ads, sem_util.adb: (Has_Declarations): New subprogram
 
-	* sinfo.ads, sinfo.adb: 
+	* sinfo.ads, sinfo.adb:
 	New field Access_To_Subprogram_Definition in Access_Definition nodes
 
 	* sem_ch6.adb (Process_Formals): Move here the code that creates and
@@ -1147,7 +1151,7 @@
 
 	PR ada/14988 (partial)
 	* impunit.adb: Fix typo.
-	
+
 2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Remove obsolete rts-none, rts-cert, install-rts-none,
@@ -1226,7 +1230,7 @@
 	duplication between normal entities and those declared as renamings.
 	No functional change.
 
-	* s-fileio.ads (Form): Remove pragma Inline, as we cannot currently	
+	* s-fileio.ads (Form): Remove pragma Inline, as we cannot currently
 	inline functions returning an unconstrained result.
 
 2004-04-08  Eric Botcazou  <ebotcazou@act-europe.fr>
@@ -1839,9 +1843,9 @@
 
 2004-03-19  Laurent Guerby <laurent@guerby.net>
 
-	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of 
+	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of
 	aggregate, allows bootstrap from 3.3 on powerpc-darwin.
-	
+
 2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ada-tree.h (TYPE_LEFT_JUSTIFIED_MODULAR_P): Add checking.
@@ -2150,7 +2154,7 @@
 
 	* a-tags.adb, a-tags.ads, s-finimp.adb, s-finroo.ads,
 	i-cpoint.ads, i-cpoint.adb, i-cstrin.adb, i-cstrin.ads,
-	5iosinte.ads, 5sosinte.ads, 5staspri.ads, 5itaprop.adb, 
+	5iosinte.ads, 5sosinte.ads, 5staspri.ads, 5itaprop.adb,
 	5staprop.adb, 5wtaprop.adb, s-tataat.ads, s-tataat.adb: Move
 	unchecked conversion to spec to avoid warnings.
 
@@ -2668,7 +2672,7 @@
 
 	PR ada/6637, PR ada/5911
 	Merge with libada-branch:
-        * config-lang.in: Build libada only when ada is built.
+	* config-lang.in: Build libada only when ada is built.
 
 2004-02-09  Ed Schonberg  <schonberg@gnat.com>
 
@@ -2819,7 +2823,7 @@
 
 2004-02-04  Ed Schonberg  <schonberg@gnat.com>
 
-	* sem_prag.adb: 
+	* sem_prag.adb:
 	(Analyze_Pragma, case Warnings): In an inlined body, as in an instance
 	 body, an identifier may be wrapped in an unchecked conversion.
 
@@ -3020,7 +3024,7 @@
 
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (doc/gnat_ug_unx.dvi): Use $(abs_docdir). 
+	* Make-lang.in (doc/gnat_ug_unx.dvi): Use $(abs_docdir).
 	(doc/gnat_ug_vms.dvi, doc/gnat_ug_unx.dvi): Likewise.
 	(doc/gnat_ug_unx.dvi, doc/gnat-style.dvi): Likewise.
 
@@ -3039,7 +3043,7 @@
 	(Wakeup): Likewise.
 	(Exit_Task): Use Result.
 	(Check_No_Locks): Mark Self_ID unreferenced.
-	
+
 	* 5gtasinf.adb (New_Sproc): Make Attr constant.
 	(Bound_Thread_Attributes): Make Sproc constant.
 	(New_Bound_Thread_Attributes): Likewise.

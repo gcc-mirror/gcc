@@ -824,7 +824,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
   /* Expressions that make no memory references.  */
   if (class == 'c'
       || class == 't'
-      || class == 'b'
+      || code == BLOCK
       || code == FUNCTION_DECL
       || code == EXC_PTR_EXPR
       || code == FILTER_EXPR

@@ -239,21 +239,21 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_SUBBLOCKS:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'b')
+	  if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_SUBBLOCKS (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_SUPERCONTEXT:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'b')
+	  if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_SUPERCONTEXT (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_VARS:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'b')
+	  if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_VARS (head));
 	  else if (head && TREE_CODE (head) == BIND_EXPR)
 	    TB_SET_HEAD (TREE_OPERAND (head, 0));
@@ -361,7 +361,7 @@ browse_tree (tree begin)
 	case TB_ABSTRACT_ORIGIN:
 	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
 	    TB_SET_HEAD (DECL_ABSTRACT_ORIGIN (head));
-	  else if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'b')
+	  else if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_ABSTRACT_ORIGIN (head));
 	  else
 	    TB_WF;
@@ -584,7 +584,7 @@ browse_tree (tree begin)
 
 	case TB_CHAIN:
 	  /* Don't go further if it's the last node in this chain.  */
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'b')
+	  if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_CHAIN (head));
 	  else if (head && TREE_CHAIN (head))
 	    TB_SET_HEAD (TREE_CHAIN (head));

@@ -5431,7 +5431,6 @@ gnat_stabilize_reference_1 (tree e, int force)
     case 'x':
     case 't':
     case 'd':
-    case 'b':
     case '<':
     case 's':
     case 'e':

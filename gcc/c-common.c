@@ -1692,7 +1692,6 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     case 'r':
     case '<':
     case '2':
-    case 'b':
     case 'e':
     case 's':
     case 'x':

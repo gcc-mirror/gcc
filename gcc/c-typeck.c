@@ -640,7 +640,7 @@ same_translation_unit_p (tree t1, tree t2)
       {
       case 'd': t1 = DECL_CONTEXT (t1); break;
       case 't': t1 = TYPE_CONTEXT (t1); break;
-      case 'b': t1 = BLOCK_SUPERCONTEXT (t1); break;
+      case 'x': t1 = BLOCK_SUPERCONTEXT (t1); break;  /* assume block */
       default: abort ();
       }
 
@@ -649,7 +649,7 @@ same_translation_unit_p (tree t1, tree t2)
       {
       case 'd': t2 = DECL_CONTEXT (t2); break;
       case 't': t2 = TYPE_CONTEXT (t2); break;
-      case 'b': t2 = BLOCK_SUPERCONTEXT (t2); break;
+      case 'x': t2 = BLOCK_SUPERCONTEXT (t2); break;  /* assume block */
       default: abort ();
       }
 

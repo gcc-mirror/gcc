@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The third argument can be:
    'x' for an exceptional code (fits no category).
    't' for a type object code.
-   'b' for a lexical block.
    'c' for codes for constants.
    'd' for codes for declarations (also serving as variable refs).
    'r' for codes for references to storage.
@@ -86,7 +85,7 @@ DEFTREECODE (TREE_VEC, "tree_vec", 'x', 0)
    instance of an inline function). 
    TREE_ASM_WRITTEN is nonzero if the block was actually referenced
    in the generated assembly.  */
-DEFTREECODE (BLOCK, "block", 'b', 0)
+DEFTREECODE (BLOCK, "block", 'x', 0)
 
 /* Each data type is represented by a tree node whose code is one of
    the following:  */

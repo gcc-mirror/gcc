@@ -569,15 +569,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       print_node_brief (file, "chain", TREE_CHAIN (node), indent + 4);
       break;
 
-    case 'b':
-      print_node (file, "vars", BLOCK_VARS (node), indent + 4);
-      print_node (file, "supercontext", BLOCK_SUPERCONTEXT (node), indent + 4);
-      print_node (file, "subblocks", BLOCK_SUBBLOCKS (node), indent + 4);
-      print_node (file, "chain", BLOCK_CHAIN (node), indent + 4);
-      print_node (file, "abstract_origin",
-		  BLOCK_ABSTRACT_ORIGIN (node), indent + 4);
-      break;
-
     case 'e':
     case '<':
     case '1':
@@ -731,6 +722,16 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		indent_to (file, indent + 4);
 		print_node_brief (file, temp, TREE_VEC_ELT (node, i), 0);
 	      }
+	  break;
+
+	case BLOCK:
+	  print_node (file, "vars", BLOCK_VARS (node), indent + 4);
+	  print_node (file, "supercontext", BLOCK_SUPERCONTEXT (node),
+		      indent + 4);
+	  print_node (file, "subblocks", BLOCK_SUBBLOCKS (node), indent + 4);
+	  print_node (file, "chain", BLOCK_CHAIN (node), indent + 4);
+	  print_node (file, "abstract_origin",
+		      BLOCK_ABSTRACT_ORIGIN (node), indent + 4);
 	  break;
 
 	default:
