@@ -1,3 +1,19 @@
+Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (cfc_args): add "unordered" field.
+	(check_fold_consts): Set unordered field.
+	(simplify_relational_operation): Simplify the unordered
+	comparisons.
+
+	* reg-stack.c (swap_rtx_condition): Ensure that the transformation
+	is valid.
+
+	* emit-rtl.c (try_split): Fix code to mark labels.
+	* jump.c (mark_jump_label): Make global.
+	* rtl.h (mark_jump_label): Declare.
+
+	* predict.c (estimate_probability): Handle unordred comparisons.
+
 2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpp.texi: Update for -MP.  Clarify behaviour of -MT.
