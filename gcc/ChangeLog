@@ -1,3 +1,10 @@
+2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* stmt.c (HAVE_casesi): Define it not already defined.
+	(HAVE_tablejump): Likewise.
+	(expand_end_case_type): Resort to the binary tree method if
+	neither casesi or tablejump is available.
+
 2004-01-18  Daniel Jacobowitz  <drow@mvista.com>
 
 	* final.c (final_scan_insn): Make non-static again.

@@ -5342,6 +5342,14 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
   emit_jump (default_label);
 }
 
+#ifndef HAVE_casesi
+#define HAVE_casesi 0
+#endif
+
+#ifndef HAVE_tablejump
+#define HAVE_tablejump 0
+#endif
+
 /* Terminate a case (Pascal) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
@@ -5530,7 +5538,10 @@ expand_end_case_type (tree orig_index, tree orig_type)
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 	       || flag_pic
 #endif
-	       || TREE_CONSTANT (index_expr))
+	       || TREE_CONSTANT (index_expr)
+	       /* If neither casesi or tablejump is available, we can
+		  only go this way.  */
+	       || (!HAVE_casesi && !HAVE_tablejump))
 	{
 	  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 
