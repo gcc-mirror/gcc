@@ -2574,6 +2574,7 @@ can_reverse_comparison_p (comparison, insn)
 	 comparison and vice versa, even for floating point.  If no operands
 	 are NaNs, the reversal is valid.  If some operand is a NaN, EQ is
 	 always false and NE is always true, so the reversal is also valid.  */
+      || flag_fast_math
       || GET_CODE (comparison) == NE
       || GET_CODE (comparison) == EQ)
     return 1;
