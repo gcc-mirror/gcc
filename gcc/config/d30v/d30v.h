@@ -2384,11 +2384,6 @@ extern void d30v_init_expanders ();
           MUST_PASS_IN_STACK (MODE, TYPE)  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
 
-/* If defined, a C expression that indicates when it is more
-   desirable to keep an argument passed by invisible reference as a
-   reference, rather than copying it to a pseudo register.  */
-/* #define FUNCTION_ARG_KEEP_AS_REFERENCE(CUM, MODE, TYPE, NAMED) */
-
 /* If defined, a C expression that indicates when it is the called function's
    responsibility to make a copy of arguments passed by invisible reference.
    Normally, the caller makes a copy and passes the address of the copy to the
@@ -2398,11 +2393,6 @@ extern void d30v_init_expanders ();
    can be determined that the value won't be modified, it need not make a copy;
    otherwise a copy must be made.  */
 /* #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) */
-
-/* If defined, a C expression that indicates when it is more desirable to keep
-   an argument passed by invisible reference as a reference, rather than
-   copying it to a pseudo register.  */
-/* #define FUNCTION_ARG_KEEP_AS_REFERENCE(CUM, MODE, TYPE, NAMED) */
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
