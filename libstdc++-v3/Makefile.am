@@ -50,7 +50,7 @@ check-script-install: $(top_builddir)/mkcheck
 # 'check-abi' to test for changes against that file.
 baseline_file = @baseline_file@
 check-abi: $(top_builddir)/testsuite/abi_check
-	-(cd testsuite; \
+	-@(cd testsuite; \
 	  ${top_srcdir}/config/abi/extract_symvers \
 	     ../src/.libs/libstdc++.so \
 	     ./current_symbols.txt && \
