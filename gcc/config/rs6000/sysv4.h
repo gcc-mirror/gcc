@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -107,8 +107,8 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define RS6000_ABI_NAME "sysv"
 
 /* Strings provided by SUBTARGET_OPTIONS */
-extern char *rs6000_abi_name;
-extern char *rs6000_sdata_name;
+extern const char *rs6000_abi_name;
+extern const char *rs6000_sdata_name;
 
 #define SUBTARGET_OPTIONS						\
   { "call-",  &rs6000_abi_name},					\

@@ -461,8 +461,8 @@ extern enum processor_type rs6000_cpu;
 /* rs6000_select[0] is reserved for the default cpu defined via --with-cpu */
 struct rs6000_cpu_select
 {
-  char *string;
-  char *name;
+  const char *string;
+  const char *name;
   int set_tune_p;
   int set_arch_p;
 };
@@ -470,7 +470,7 @@ struct rs6000_cpu_select
 extern struct rs6000_cpu_select rs6000_select[];
 
 /* Debug support */
-extern char *rs6000_debug_name;		/* Name for -mdebug-xxxx option */
+extern const char *rs6000_debug_name;		/* Name for -mdebug-xxxx option */
 extern int rs6000_debug_stack;		/* debug stack applications */
 extern int rs6000_debug_arg;		/* debug argument handling */
 
@@ -764,6 +764,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 /* True if register is a condition register.  */
 #define CR_REGNO_P(N) ((N) >= 68 && (N) <= 75)
+
+/* True if register is condition register 0.  */
+#define CR0_REGNO_P(N) ((N) == 68)
+
+/* True if register is a condition register, but not cr0.  */
+#define CR_REGNO_NOT_CR0_P(N) ((N) >= 69 && (N) <= 75)
 
 /* True if register is an integer register.  */
 #define INT_REGNO_P(N) ((N) <= 31 || (N) == 67)
@@ -3208,6 +3214,7 @@ do {									\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
+  {"cc_reg_not_cr0_operand", {SUBREG, REG}},			\
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}}, 		\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
@@ -3272,6 +3279,7 @@ extern int u_short_cint_operand ();
 extern int non_short_cint_operand ();
 extern int gpc_reg_operand ();
 extern int cc_reg_operand ();
+extern int cc_reg_not_cr0_operand ();
 extern int reg_or_short_operand ();
 extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
