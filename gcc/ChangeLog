@@ -1,3 +1,10 @@
+2000-05-10  Nick Clifton  <nickc@redhat.com>
+
+	* flow.c (find_auto_inc): Do not bias REG_N_REFS by loop_depth
+	when optimising for size.
+	(mark_used_regs:) Ditto.
+	(try_pre_increment_1): Ditto.
+
 2000-05-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c (lex): Use %.*s to print non-NUL-terminated string.
