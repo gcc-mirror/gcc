@@ -1776,8 +1776,8 @@ to express conditional jumps.
 @item (cond [@var{test1} @var{value1} @var{test2} @var{value2} @dots{}] @var{default})
 Similar to @code{if_then_else}, but more general.  Each of @var{test1},
 @var{test2}, @dots{} is performed in turn.  The result of this expression is
-the @var{value} corresponding to the first non-zero test, or @var{default} if
-none of the tests are non-zero expressions.
+the @var{value} corresponding to the first nonzero test, or @var{default} if
+none of the tests are nonzero expressions.
 
 This is currently not valid for instruction patterns and is supported only
 for insn attributes.  @xref{Insn Attributes}.
@@ -2256,7 +2256,7 @@ any, must deal with such insns if you define any peephole optimizations.
 @findex cond_exec
 @item (cond_exec [@var{cond} @var{expr}])
 Represents a conditionally executed expression.  The @var{expr} is
-executed only if the @var{cond} is non-zero.  The @var{cond} expression
+executed only if the @var{cond} is nonzero.  The @var{cond} expression
 must not have side-effects, but the @var{expr} may very well have
 side-effects.
 

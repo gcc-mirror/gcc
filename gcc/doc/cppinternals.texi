@@ -203,7 +203,7 @@ error about an unterminated macro argument list.
 The C standard also specifies that a new line in the middle of the
 arguments to a macro is treated as whitespace.  This white space is
 important in case the macro argument is stringified.  The state variable
-@code{parsing_args} is non-zero when the preprocessor is collecting the
+@code{parsing_args} is nonzero when the preprocessor is collecting the
 arguments to a macro call.  It is set to 1 when looking for the opening
 parenthesis to a function-like macro, and 2 when collecting the actual
 arguments up to the closing parenthesis, since these two cases need to
