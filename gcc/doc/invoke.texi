@@ -1959,8 +1959,10 @@ while @code{-Wselector} only performs its checks in the final stage of
 compilation.  This also enforces the coding style convention
 that methods and selectors must be declared before being used.
 
-@c not documented because only avail via -Wp
-@c @item -print-objc-runtime-info
+@item -print-objc-runtime-info
+@opindex -print-objc-runtime-info
+Generate C header describing the largest structure that is passed by
+value, if any.
 
 @end table
 
