@@ -1,10 +1,14 @@
+2001-01-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g++.old-deja/g++.other/inline19.C: New test.
+
 2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/Wlarger-than.c: New test.
+	* gcc.dg/Wlarger-than.c: New test.
 
 2001-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/avoidpaste1.c: Fix typos.
+	* gcc.dg/cpp/avoidpaste1.c: Fix typos.
 
 2001-01-29  Jakub Jelinek  <jakub@redhat.com>
 
