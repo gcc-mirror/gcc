@@ -4334,7 +4334,8 @@ any_pending_cleanups (this_contour)
 {
   struct nesting *block;
 
-  if (block_stack == 0)
+  if (current_function == NULL || current_function->stmt == NULL
+      || block_stack == 0)
     return 0;
 
   if (this_contour && block_stack->data.block.cleanups != NULL)
