@@ -1,3 +1,14 @@
+2005-02-19  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/19698 
+	* function.h (struct function): New field `max_loop_depth'.
+	* cfgloop.c (establish_preds): Update maximum loop depth seen so far.
+	(flow_loops_find): Reset the max loop depth count before finding loops.
+	* flow.c (MAX_LIVENESS_ROUNDS): New constant.
+	(update_life_info_in_dirty_blocks): Remove 2002-05-28 workaround.
+	(calculate_global_regs_live): Make sure the loop will terminate
+	when the initial sets are not empty.
+
 2005-02-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* mklibgcc.in: If libgcc_eh.a would be empty, put a dummy
@@ -125,8 +136,8 @@
 2005-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20030
-	* fold-const.c (fold_indirect_ref_1): Use the correct index for zero access,
-	the lower bound of the array type if it exists.
+	* fold-const.c (fold_indirect_ref_1): Use the correct index for zero
+	access, the lower bound of the array type if it exists.
 
 2005-02-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -764,7 +775,7 @@
 	* libgcc2.c (__divsc3, __divdc3, __divxc3, __divtc3,
 	__mulsc3, __muldc3, __mulxc3, __multc3): New.
 	* libgcc2.h: Declare them.
- 	* libgcc-std.ver: Export them.
+	* libgcc-std.ver: Export them.
 	* mklibgcc.in (lib2funcs): Build them.
 
 2005-02-11  Steven Bosscher  <stevenb@suse.de>

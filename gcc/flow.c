@@ -165,6 +165,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #endif
 
+/* This is the maximum number of times we process any given block if the
+   latest loop depth count is smaller than this number.  Only used for the
+   failure strategy to avoid infinite loops in calculate_global_regs_live.  */
+#define MAX_LIVENESS_ROUNDS 20
+
 /* Nonzero if the second flow pass has completed.  */
 int flow2_completed;
 
@@ -729,21 +734,10 @@ update_life_info_in_dirty_blocks (enum update_life_extent extent, int prop_flags
   sbitmap_zero (update_life_blocks);
   FOR_EACH_BB (bb)
     {
-      if (extent == UPDATE_LIFE_LOCAL)
+      if (bb->flags & BB_DIRTY)
 	{
-	  if (bb->flags & BB_DIRTY)
-	    {
-	      SET_BIT (update_life_blocks, bb->index);
-	      n++;
-	    }
-	}
-      else
-	{
-	  /* ??? Bootstrap with -march=pentium4 fails to terminate
-	     with only a partial life update.  */
 	  SET_BIT (update_life_blocks, bb->index);
-	  if (bb->flags & BB_DIRTY)
-	    n++;
+	  n++;
 	}
     }
 
@@ -1010,6 +1004,9 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 {
   basic_block *queue, *qhead, *qtail, *qend, bb;
   regset tmp, new_live_at_end, invalidated_by_call;
+  regset registers_made_dead;
+  bool failure_strategy_required = false;
+  int *block_accesses;
 
   /* The registers that are modified within this in block.  */
   regset *local_sets;
@@ -1030,6 +1027,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
   tmp = ALLOC_REG_SET (&reg_obstack);
   new_live_at_end = ALLOC_REG_SET (&reg_obstack);
   invalidated_by_call = ALLOC_REG_SET (&reg_obstack);
+  registers_made_dead = ALLOC_REG_SET (&reg_obstack);
 
   /* Inconveniently, this is only readily available in hard reg set form.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
@@ -1070,6 +1068,8 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	}
     }
 
+  block_accesses = xcalloc (last_basic_block, sizeof (int));
+  
   /* We clean aux when we remove the initially-enqueued bbs, but we
      don't enqueue ENTRY and EXIT initially, so clean them upfront and
      unconditionally.  */
@@ -1095,7 +1095,41 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
      from GLOBAL_LIVE_AT_START.  In the former case, the register
      could go away only if it disappeared from GLOBAL_LIVE_AT_START
      for one of the successor blocks.  By induction, that cannot
-     occur.  */
+     occur.
+
+     ??? This reasoning doesn't work if we start from non-empty initial
+     GLOBAL_LIVE_AT_START sets.  And there are actually two problems:
+       1) Updating may not terminate (endless oscillation).
+       2) Even if it does (and it usually does), the resulting information
+	  may be inaccurate.  Consider for example the following case:
+
+	  a = ...;
+	  while (...) {...}  -- 'a' not mentioned at all
+	  ... = a;
+
+	  If the use of 'a' is deleted between two calculations of liveness
+	  information and the initial sets are not cleared, the information
+	  about a's liveness will get stuck inside the loop and the set will
+	  appear not to be dead.
+
+     We do not attempt to solve 2) -- the information is conservatively
+     correct (i.e. we never claim that something live is dead) and the
+     amount of optimization opportunities missed due to this problem is
+     not significant.
+
+     1) is more serious.  In order to fix it, we monitor the number of times
+     each block is processed.  Once one of the blocks has been processed more
+     times than the maximum number of rounds, we use the following strategy:
+     When a register disappears from one of the sets, we add it to a MAKE_DEAD
+     set, remove all registers in this set from all GLOBAL_LIVE_AT_* sets and
+     add the blocks with changed sets into the queue.  Thus we are guaranteed
+     to terminate (the worst case corresponds to all registers in MADE_DEAD,
+     in which case the original reasoning above is valid), but in general we
+     only fix up a few offending registers.
+
+     The maximum number of rounds for computing liveness is the largest of
+     MAX_LIVENESS_ROUNDS and the latest loop depth count for this function.  */
+
   while (qhead != qtail)
     {
       int rescan, changed;
@@ -1107,6 +1141,17 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       if (qhead == qend)
 	qhead = queue;
       bb->aux = NULL;
+
+      /* Should we start using the failure strategy?  */
+      if (bb != ENTRY_BLOCK_PTR)
+	{
+	  int max_liveness_rounds =
+	    MAX (MAX_LIVENESS_ROUNDS, cfun->max_loop_depth);
+
+	  block_accesses[bb->index]++;
+	  if (block_accesses[bb->index] > max_liveness_rounds)
+	    failure_strategy_required = true;
+	}
 
       /* Begin by propagating live_at_start from the successor blocks.  */
       CLEAR_REG_SET (new_live_at_end);
@@ -1263,6 +1308,62 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))
 	    continue;
 
+	  if (failure_strategy_required)
+	    {
+	      /* Get the list of registers that were removed from the
+	         bb->global_live_at_start set.  */
+	      bitmap_and_compl (tmp, bb->global_live_at_start,
+				new_live_at_end);
+	      if (!bitmap_empty_p (tmp))
+		{
+		  bool pbb_changed;
+		  basic_block pbb;
+                
+		  /* It should not happen that one of registers we have
+		     removed last time is disappears again before any other
+		     register does.  */
+		  pbb_changed = bitmap_ior_into (registers_made_dead, tmp);
+		  gcc_assert (pbb_changed);
+
+		  /* Now remove the registers from all sets.  */
+		  FOR_EACH_BB (pbb)
+		    {
+		      pbb_changed = false;
+
+		      pbb_changed
+			|= bitmap_and_compl_into (pbb->global_live_at_start,
+						  registers_made_dead);
+		      pbb_changed
+			|= bitmap_and_compl_into (pbb->global_live_at_end,
+						  registers_made_dead);
+		      if (!pbb_changed)
+			continue;
+
+		      /* Note the (possible) change.  */
+		      if (blocks_out)
+			SET_BIT (blocks_out, pbb->index);
+
+		      /* Makes sure to really rescan the block.  */
+		      if (local_sets[pbb->index - (INVALID_BLOCK + 1)])
+			{
+			  FREE_REG_SET (local_sets[pbb->index - (INVALID_BLOCK + 1)]);
+			  FREE_REG_SET (cond_local_sets[pbb->index - (INVALID_BLOCK + 1)]);
+			  local_sets[pbb->index - (INVALID_BLOCK + 1)] = 0;
+			}
+
+		      /* Add it to the queue.  */
+		      if (pbb->aux == NULL)
+			{
+			  *qtail++ = pbb;
+			  if (qtail == qend)
+			    qtail = queue;
+			  pbb->aux = pbb;
+			}
+		    }
+		  continue;
+		}
+	    } /* end of failure_strategy_required */
+
 	  COPY_REG_SET (bb->global_live_at_start, new_live_at_end);
 	}
 
@@ -1284,6 +1385,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
   FREE_REG_SET (tmp);
   FREE_REG_SET (new_live_at_end);
   FREE_REG_SET (invalidated_by_call);
+  FREE_REG_SET (registers_made_dead);
 
   if (blocks_out)
     {
@@ -1303,6 +1405,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	}
     }
 
+  free (block_accesses);
   free (queue);
   free (cond_local_sets);
   free (local_sets);
