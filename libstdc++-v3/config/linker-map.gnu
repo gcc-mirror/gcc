@@ -37,10 +37,6 @@ GLIBCPP_3.1 {
     };
 
     ## Names not in an 'extern' block are mangled names.
-    __cxa_*;
-    __gxx_personality_v0;
-    __dynamic_cast;
-
     ## operator new(unsigned)
     _Znwj;
 
@@ -54,16 +50,26 @@ GLIBCPP_3.1 {
     _ZdaPv;
 
     # vtable	
-    # XXX export them all?
-    _ZTVSt*;  
-    _ZTVN10__cxxabiv1*;
+    _ZTV*;  
+    _ZTT*;
 
     # typeinfo
-    # XXX export them all?
-    _ZTSSt*;
+    _ZTI*;
+    _ZTS*;
 
+    # function-scope static objects requires a guard variable.
+    _ZGV*;
 
-######## hmmmmm, the rediculous hacks section....
+    # virtual function thunks
+    _ZTh*;
+    _ZTv*;
+    _ZTc*;
+
+    # XXX
+    __cxa_*;
+    __gxx_personality_v0;
+    __dynamic_cast;
+
     ## std::_S_rb_tree_red
     _ZSt14_S_rb_tree_red;
 
@@ -75,12 +81,6 @@ GLIBCPP_3.1 {
 
     ## std::__stl_chunk_size
     _ZSt16__stl_chunk_size;
-
-    ## VTT for std::basic_istringstream<char, std::char_traits<char>, std::allocator<char> >
-    _ZTTSt19basic_istringstreamIcSt11char_traitsIcESaIcEE;
-
-    ## VTT for std::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> >
-    _ZTTSt19basic_ostringstreamIcSt11char_traitsIcESaIcEE;
 
     # this is a function, "void std::__convert_to_v(stuff)", and as such
     # doesn't work well in the demangled section above

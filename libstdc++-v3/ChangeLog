@@ -1,3 +1,8 @@
+2002-02-19  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* config/linker-map.gnu: Export global vtable, typeinfo, guard
+	variable, and thunk info as per CXXABI docs.
+
 2002-02-19  Loren Rittle <ljrittle@acm.org>
 
 	* include/Makefile.am: Use CONFIG_HEADER instead of ad hoc names.
