@@ -3164,6 +3164,22 @@ machine_dependent_reorg (first)
   mdep_reorg_phase = SH_SHORTEN_BRANCHES1;
   insn_addresses = 0;
   split_branches (first);
+
+  /* The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
+     also has an effect on the register that holds the addres of the sfunc.
+     Insert an extra dummy insn in fron of each sfunc that pretends to
+     use this register.  */
+  if (flag_delayed_branch)
+    {
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx reg = sfunc_uses_reg (insn);
+
+	  if (! reg)
+	    continue;
+	  emit_insn_before (gen_use_sfunc_addr (reg), insn);
+	}
+    }
   mdep_reorg_phase = SH_AFTER_MDEP_REORG;
 }
 
