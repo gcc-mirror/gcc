@@ -1,3 +1,7 @@
+Thu Feb  5 19:10:40 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo2.cc: Add tinfo for signed char.
+
 Thu Feb  5 14:38:23 1998  Mike Stump  <mrs@wrs.com>
 
 	* search.c (compute_access): Handle protected constructors in derived
