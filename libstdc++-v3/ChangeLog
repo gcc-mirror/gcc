@@ -1,3 +1,7 @@
+2005-02-28  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/tr1/memory: Add missing "inline" to __throw_bad_weak_ptr.
+
 2005-02-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19065
