@@ -3736,6 +3736,19 @@ zero_extended_scalar_load_operand (op, mode)
   return 1;
 }
 
+/*  Return 1 when OP is operand acceptable for standard SSE move.  */
+int
+vector_move_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (nonimmediate_operand (op, mode))
+    return 1;
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+  return (op == CONST0_RTX (GET_MODE (op)));
+}
+
 /* Return 1 if OP is a comparison that can be used in the CMPSS/CMPPS
    insns.  */
 int
@@ -8161,7 +8174,7 @@ ix86_expand_vector_move (mode, operands)
      to handle some of them more efficiently.  */
   if ((reload_in_progress | reload_completed) == 0
       && register_operand (operands[0], mode)
-      && CONSTANT_P (operands[1]))
+      && CONSTANT_P (operands[1]) && operands[1] != CONST0_RTX (mode))
     operands[1] = validize_mem (force_const_mem (mode, operands[1]));
 
   /* Make operand1 a register if it isn't already.  */
