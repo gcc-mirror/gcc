@@ -1,3 +1,9 @@
+2004-09-08  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/darwin-ld-20040828-1.c: New test.
+	* gcc.dg/darwin-ld-20040828-2.c: New test.
+	* gcc.dg/darwin-ld-20040828-3.c: New test.
+	
 2004-09-08  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/bitfield-2.m: Make 'id' definition a typedef.
