@@ -2345,12 +2345,12 @@ build_indirect_ref (ptr, errorstring)
   if (ptr == error_mark_node)
     return error_mark_node;
 
+  if (ptr == current_class_ptr)
+    return current_class_ref;
+
   pointer = (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE
 	     ? ptr : default_conversion (ptr));
   type = TREE_TYPE (pointer);
-
-  if (ptr == current_class_ptr)
-    return current_class_ref;
 
   if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
     {
