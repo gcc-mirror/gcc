@@ -1131,15 +1131,31 @@ build_address_of (value)
   return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (value)), value);
 }
 
+bool class_has_finalize_method (type)
+     tree type;
+{
+  tree super = CLASSTYPE_SUPER (type);
+
+  if (super == NULL_TREE)
+    return false;	/* Every class with a real finalizer inherits	*/
+   			/* from java.lang.Object.			*/
+  else
+    return HAS_FINALIZER_P (type) || class_has_finalize_method (super);
+}
+
 static void
 expand_java_NEW (type)
      tree type;
 {
+  tree alloc_node;
+
+  alloc_node = (class_has_finalize_method (type) ? alloc_object_node
+		  				 : alloc_no_finalizer_node);
   if (! CLASS_LOADED_P (type))
     load_class (type, 1);
   safe_layout_class (type);
   push_value (build (CALL_EXPR, promote_type (type),
-		     build_address_of (alloc_object_node),
+		     build_address_of (alloc_node),
 		     tree_cons (NULL_TREE, build_class_ref (type),
 				build_tree_list (NULL_TREE,
 						 size_in_bytes (type))),
@@ -1849,9 +1865,12 @@ build_invokevirtual (dtable, method)
     = build_pointer_type (nativecode_ptr_type_node);
   tree method_index = convert (sizetype, DECL_VINDEX (method));
 
-  /* Add one to skip "class" field of dtable, and one to skip unused
-     vtable entry (for C++ compatibility). */
-  method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    /* Add one to skip bogus descriptor for class and GC descriptor. */
+    method_index = size_binop (PLUS_EXPR, method_index, size_int (1));
+  else
+    /* Add 1 to skip "class" field of dtable, and 1 to skip GC descriptor.  */
+    method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
   method_index = size_binop (MULT_EXPR, method_index,
 			     TYPE_SIZE_UNIT (nativecode_ptr_ptr_type_node));
 

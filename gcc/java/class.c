@@ -694,6 +694,13 @@ add_method_1 (handle_class, access_flags, name, function_type)
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;
 
+  /* Notice that this is a finalizer and update the class type
+     accordingly. This is used to optimize instance allocation. */
+  if (name == finalize_identifier_node
+      && TREE_TYPE (function_type) == void_type_node
+      && TREE_VALUE (TYPE_ARG_TYPES (function_type)) == void_type_node)
+    HAS_FINALIZER_P (handle_class) = 1;
+
   if (access_flags & ACC_PUBLIC) METHOD_PUBLIC (fndecl) = 1;
   if (access_flags & ACC_PROTECTED) METHOD_PROTECTED (fndecl) = 1;
   if (access_flags & ACC_PRIVATE)
@@ -1374,6 +1381,7 @@ get_dispatch_table (type, this_class_addr)
   tree list = NULL_TREE;
   int nvirtuals = TREE_VEC_LENGTH (vtable);
   int arraysize;
+  tree gc_descr;
 
   for (i = nvirtuals;  --i >= 0; )
     {
@@ -1415,15 +1423,17 @@ get_dispatch_table (type, this_class_addr)
      using the Boehm GC we sometimes stash a GC type descriptor
      there. We set the PURPOSE to NULL_TREE not to interfere (reset)
      the emitted byte count during the output to the assembly file. */
-  for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
-    list = tree_cons (NULL_TREE, null_pointer_node, list);
-  list = tree_cons (NULL_TREE, get_boehm_type_descriptor (type), list);
-
-  for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
-    list = tree_cons (NULL_TREE, null_pointer_node, list);
+  /* With TARGET_VTABLE_USES_DESCRIPTORS, we only add one extra
+     fake "function descriptor".  It's first word is the is the class
+     pointer, and subsequent words (usually one) contain the GC descriptor.
+     In all other cases, we reserve two extra vtable slots. */
+  gc_descr =  get_boehm_type_descriptor (type);
+  list = tree_cons (NULL_TREE, gc_descr, list);
+  for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS-1; ++j)
+    list = tree_cons (NULL_TREE, gc_descr, list);
   list = tree_cons (integer_zero_node, this_class_addr, list);
 
-  arraysize = nvirtuals + 2;
+  arraysize = (TARGET_VTABLE_USES_DESCRIPTORS? nvirtuals + 1 : nvirtuals + 2);
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
   return build (CONSTRUCTOR,
