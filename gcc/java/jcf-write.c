@@ -2146,7 +2146,9 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       jopcode = OPCODE_irem;
       goto binop;
     case LSHIFT_EXPR:   jopcode = OPCODE_ishl;   goto binop;
-    case RSHIFT_EXPR:   jopcode = OPCODE_ishr;   goto binop;
+    case RSHIFT_EXPR:
+      jopcode = TYPE_UNSIGNED (type) ? OPCODE_iushr : OPCODE_ishr;
+      goto binop;
     case URSHIFT_EXPR:  jopcode = OPCODE_iushr;  goto binop;
     case TRUTH_AND_EXPR:
     case BIT_AND_EXPR:  jopcode = OPCODE_iand;   goto binop;
