@@ -2788,11 +2788,22 @@ fix = {
 
 
 /*
- *  set ifdef _KERNEL
+ *  Wrap some files on System V r4 and DYNIX/ptx systems with
+ *  #ifdef _KERNEL, presumably to prevent kernel headers from
+ *  leaking into userspace.  This may not be necessary at all,
+ *  but it was in the old scripts, so it seems safest to keep it for now.
  */
-#ifdef SVR4
 fix = {
-    hackname = svr4_kernel;
+    /* Can't name this with _kernel, or the test case will hit the bypass! */
+    hackname = svr4_krnl;
+    /* Since I'm rather unsure about the validity of this, limit it
+     * to the specific systems it was operating on before.  It should
+     * also be bypassed for i?86-*-sysv4.3uw2, by that rule, but I didn't
+     * see an easy way to do that.  Hopefully it will be harmless
+     * in any case. -- Nathanael */
+    mach     = '*-*-sysv4*';
+    mach     = 'i?86-sequent-ptx*';
+    mach     = 'i?86-sequent-sysv3*';
     files    = fs/rfs/rf_cache.h;
     files    = sys/erec.h;
     files    = sys/err.h;
@@ -2801,14 +2812,21 @@ fix = {
     files    = sys/map.h;
     files    = sys/cmn_err.h;
     files    = sys/kdebugger.h;
-    bypass   = '_KERNEL';
-    c_fix     = wrap;
 
+    /* This bypass will match _KERNEL, __KERNEL, __KERNEL__, etc.
+     * It will also match SVR4_KERNEL_CHECK, which means that the
+     * testsuite case will always be bypassed.  Which is fine with me. */
+    bypass   = '_KERNEL';
+
+    c_fix     = wrap;
     c_fix_arg = "#ifdef _KERNEL\n";
     c_fix_arg = "#endif /* _KERNEL */\n";
+
+    /* There's no reasonable test for this given that we don't know exactly
+     * what problem inspired it in the first place. */
     test_text = "";
 };
-#endif
+
 
 /*
  *  Delete any #defines of `__i386' which may be present in <ieeefp.h>.  They
