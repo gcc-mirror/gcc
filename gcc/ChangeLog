@@ -1,3 +1,8 @@
+Wed Oct  1 01:44:36 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
+
+	* m68k/x-mot3300 (XCFLAGS): Disable as's long/short jump
+	optimisation for f/expr.o and f/stb.o.
+
 Tue Sep 30 23:48:57 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (this_insn_cc0_mode): Initialize.
