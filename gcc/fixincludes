@@ -26,6 +26,16 @@ export TERM
 EXINIT=set
 export EXINIT
 
+# Define PWDCMD as a command to use to get the working dir
+# in the form that we want.
+PWDCMD=pwd
+case "`pwd`" in
+//*)
+	# On an Apollo, discard everything before `/usr'.
+	PWDCMD="(pwd) | sed -e 's,.*/usr/,/usr/,'"
+	;;
+esac
+
 # Directory in which to store the results.
 LIB=${1?"fixincludes: output directory not specified"}
 
@@ -35,7 +45,7 @@ if [ ! -d $LIB ]; then
 fi
 
 # Make LIB absolute.
-cd $LIB; LIB=`pwd`
+cd $LIB; LIB=`${PWDCMD}`
 
 # Fail if no arg to specify a directory for the output.
 if [ x$1 = x ]
@@ -123,7 +133,7 @@ if $LINKS; then
   for file in $files; do
     dest=`ls -ld $file | sed -n 's/.*-> //p'`
     if [ "$dest" ]; then    
-      cwd=`pwd`
+      cwd=`${PWDCMD}`
       # In case $dest is relative, get to $file's dir first.
       cd ${INPUT}
       cd `echo ./$file | sed -n 's&[^/]*$&&p'`
@@ -133,7 +143,7 @@ if $LINKS; then
       if [ $? = 0 ]; then
 	cd $dest
 	# X gets the dir that the link actually leads to.
-	x=`pwd`
+	x=`${PWDCMD}`
 	# If a link points to ., make a similar link to .
 	if [ $x = $INPUT ]; then
 	  echo $file '->' . ': Making link'
