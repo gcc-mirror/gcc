@@ -656,7 +656,7 @@ java_hash_compare_tree_node (k1, k2)
      hash_table_key k1;
      hash_table_key k2;
 {
-  return ((char*) k1 == (char*) k2);
+  return ((tree) k1 == (tree) k2);
 }
 
 tree
@@ -688,11 +688,8 @@ add_method_1 (handle_class, access_flags, name, function_type)
 		     init_test_hash_newfunc, java_hash_hash_tree_node,
 		     java_hash_compare_tree_node);
 
-  /* Initialize the static method invocation compound table */
-  if (STATIC_CLASS_INIT_OPT_P ())
-    hash_table_init (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl),
-		     init_test_hash_newfunc, java_hash_hash_tree_node,
-		     java_hash_compare_tree_node);
+  /* Initialize the static method invocation compound list */
+  DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl) = NULL_TREE;
 
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;

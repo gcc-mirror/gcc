@@ -1847,7 +1847,7 @@ lang_mark_tree (t)
 	  ggc_mark_tree (ld->inner_access);
 	  ggc_mark_tree_hash_table (&ld->init_test_table);
 	  ggc_mark_tree_hash_table (&ld->ict);
-	  ggc_mark_tree_hash_table (&ld->smic);
+	  ggc_mark_tree (ld->smic);
 	}
     }
   else if (TYPE_P (t))

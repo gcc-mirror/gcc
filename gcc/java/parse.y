@@ -335,8 +335,6 @@ static tree maybe_build_class_init_for_field PARAMS ((tree, tree));
 
 static bool attach_init_test_initialization_flags PARAMS ((struct hash_entry *,
 							  PTR));
-static bool adjust_init_test_initialization PARAMS ((struct hash_entry *,
-						     PTR));
 static bool emit_test_initialization PARAMS ((struct hash_entry *, PTR));
 
 /* Number of error found so far. */
@@ -8017,21 +8015,16 @@ java_complete_expand_method (mdecl)
 	     static variables and see whether they're definitively
 	     assigned, in which case the type is remembered as
 	     definitively initialized in MDECL. */
-	  /* FIXME this doesn't work state is too short.
 	  if (STATIC_CLASS_INIT_OPT_P ())
 	    {
-	      hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (mdecl),
-			     attach_initialized_static_class, (PTR)&state);
-
-	      / * Always register the context as properly initialized in
+	      /* Always register the context as properly initialized in
 		 MDECL. This used with caution helps removing extra
-		 initialization of self. * /
+		 initialization of self. */
 	      if (METHOD_STATIC (mdecl))
 		hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (mdecl),
 			     (hash_table_key) DECL_CONTEXT (mdecl),
 			     TRUE, NULL);
 	    }
-	  */
 	}
       ctxp->explicit_constructor_p = 0;
     }
@@ -8081,8 +8074,32 @@ java_expand_method_bodies (class)
 	 initialization based on which classes invoked static methods
 	 are definitely initializing. This should be flagged. */
       if (STATIC_CLASS_INIT_OPT_P ())
-	hash_traverse (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (decl),
-		       adjust_init_test_initialization, NULL);
+	{
+	  tree list = DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (decl);
+	  for (; list != NULL_TREE;  list = TREE_CHAIN (list))
+	    {
+	      /* Executed for each statement calling a static function.
+		 LIST is a TREE_LIST whose PURPOSE is the called function
+		 and VALUE is a compound whose second operand can be patched
+		 with static class initialization flag assignments.  */
+
+	      tree called_method = TREE_PURPOSE (list);
+	      tree compound = TREE_VALUE (list);
+	      tree assignment_compound_list
+		= build_tree_list (called_method, NULL);
+
+	      /* For each class definitely initialized in
+		 CALLED_METHOD, fill ASSIGNMENT_COMPOUND with
+		 assignment to the class initialization flag. */
+	      hash_traverse (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (called_method),
+			     emit_test_initialization,
+			     assignment_compound_list);
+
+	      if (TREE_VALUE (assignment_compound_list))
+		TREE_OPERAND (compound, 1)
+		  = TREE_VALUE (assignment_compound_list);
+	    }
+	}
 
       /* Prepare the function for RTL expansion */  
       start_complete_expand_method (decl);
@@ -10691,10 +10708,10 @@ patch_invoke (patch, method, args)
       tree type = TREE_TYPE (patch);
 
       patch = build (COMPOUND_EXPR, type, save, empty_stmt_node);
-      list = build_tree_list (method, patch);
+      list = tree_cons (method, patch,
+			DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl));
 
-      hash_lookup (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl),
-		   (const hash_table_key) list, TRUE, NULL);
+      DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl) = list;
 
       patch = build (COMPOUND_EXPR, type, patch, save);
     }
@@ -15974,32 +15991,6 @@ attach_init_test_initialization_flags (entry, ptr)
   return true;
 }
 
-/* This function is called for each statement calling a static
-   function.  ENTRY is a TREE_LIST whose PURPOSE is the called
-   function and VALUE is a compound whose second operand can be
-   patched with static class initialization flag assignments.  */
-
-static bool
-adjust_init_test_initialization (entry, info)
-     struct hash_entry *entry;
-     PTR info ATTRIBUTE_UNUSED;
-{
-  tree list = (tree)(entry->key);
-  tree called_method = TREE_PURPOSE (list);
-  tree compound = TREE_VALUE (list);
-  tree assignment_compound_list = build_tree_list (called_method, NULL);
-
-  /* For each class definitely initialized in CALLED_METHOD, fill
-     ASSIGNMENT_COMPOUND with assignment to the class initialization flag. */
-  hash_traverse (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (called_method),
-		 emit_test_initialization, assignment_compound_list);
-
-  if (TREE_VALUE (assignment_compound_list))
-    TREE_OPERAND (compound, 1) = TREE_VALUE (assignment_compound_list);
-
-  return true;
-}
-
 /* This function is called for each classes that is known definitely
    assigned when a given static method was called. This function
    augments a compound expression (INFO) storing all assignment to
@@ -16016,21 +16007,15 @@ emit_test_initialization (entry, info)
 
   struct init_test_hash_entry *ite = (struct init_test_hash_entry *)
     hash_lookup (&DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl),
-		 entry->key, FALSE, NULL);
+		 entry->key,
+		 current_function_decl != TREE_PURPOSE (l), NULL);
 
   /* If we haven't found a flag and we're dealing with self registered
      with current_function_decl, then don't do anything. Self is
      always added as definitely initialized but this information is
      valid only if used outside the current function. */
   if (! ite)
-    {
-      if (current_function_decl != TREE_PURPOSE (l))
-	ite = (struct init_test_hash_entry *)
-	  hash_lookup (&DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl),
-		       entry->key, TRUE, NULL);
-      else
-	return true;
-    }
+    return true;
 
   /* If we don't have a variable, create one and install it. */
   if (! ite->init_test_decl)
