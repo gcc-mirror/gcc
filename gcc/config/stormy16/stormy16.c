@@ -1,5 +1,5 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -57,6 +57,7 @@ static void xstormy16_init_builtins (void);
 static rtx xstormy16_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static bool xstormy16_rtx_costs (rtx, int, int, int *);
 static int xstormy16_address_cost (rtx);
+static bool xstormy16_return_in_memory (tree, tree);
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1233,16 +1234,6 @@ xstormy16_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
   return gen_rtx_REG (mode, cum + 2);
 }
 
-/* Do any needed setup for a variadic function.  CUM has not been updated
-   for the last named argument which has type TYPE and mode MODE.  */
-void
-xstormy16_setup_incoming_varargs (CUMULATIVE_ARGS cum ATTRIBUTE_UNUSED,
-				  int int_mode ATTRIBUTE_UNUSED,
-				  tree type ATTRIBUTE_UNUSED,
-				  int *pretend_size ATTRIBUTE_UNUSED)
-{
-}
-
 /* Build the va_list type.
 
    For this chip, va_list is a record containing a counter and a pointer.
@@ -1436,8 +1427,9 @@ xstormy16_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
    relevant.  (Actually, on most machines, scalar values are returned
    in the same place regardless of mode).
 
-   If `PROMOTE_FUNCTION_RETURN' is defined, you must apply the same promotion
-   rules specified in `PROMOTE_MODE' if VALTYPE is a scalar type.
+   If `TARGET_PROMOTE_FUNCTION_RETURN' is defined to return true, you
+   must apply the same promotion rules specified in `PROMOTE_MODE' if
+   VALTYPE is a scalar type.
 
    If the precise function being called is known, FUNC is a tree node
    (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This makes it
@@ -2194,7 +2186,12 @@ xstormy16_expand_builtin(tree exp, rtx target,
 
   return retval;
 }
-
+
+static bool
+xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return int_size_in_bytes (type) > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS;
+}
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -2213,5 +2210,17 @@ xstormy16_expand_builtin(tree exp, rtx target,
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST_TYPE
 #define TARGET_BUILD_BUILTIN_VA_LIST_TYPE xstormy16_build_builtin_va_list
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY xstormy16_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;

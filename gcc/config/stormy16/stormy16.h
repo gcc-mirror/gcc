@@ -1,5 +1,5 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -88,10 +88,6 @@ do {									\
       && GET_MODE_SIZE (MODE) < 2)					\
     (MODE) = HImode;							\
 } while (0)
-
-#define PROMOTE_FUNCTION_ARGS 1
-
-#define PROMOTE_FUNCTION_RETURN 1
 
 #define PARM_BOUNDARY 16
 
@@ -402,8 +398,6 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack */
 
-#define PROMOTE_PROTOTYPES 1
-
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
@@ -459,14 +453,6 @@ enum reg_class
 #define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
 
 
-/* How Large Values are Returned */
-
-#define RETURN_IN_MEMORY(TYPE) \
-  (int_size_in_bytes (TYPE) > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS)
-
-#define STRUCT_VALUE 0
-
-
 /* Function Entry and Exit */
 
 #define EPILOGUE_USES(REGNO) \
@@ -491,10 +477,6 @@ enum reg_class
 /* #define TARGET_CANNOT_INLINE_P(FN_DECL) xstormy16_cannot_inline_p (FN_DECL) */
 
 /* Implementing the Varargs Macros.  */
-
-#define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
-  if (! SECOND_TIME) \
-    xstormy16_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
 
 /* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list

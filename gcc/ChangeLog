@@ -1,3 +1,22 @@
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/stormy16/stormy16-protos.h: Remove the prototype for
+	xstormy16_setup_incoming_varargs.
+	* config/stormy16/stormy16.c
+	(xstormy16_setup_incoming_varargs): Remove.
+	(xstormy16_return_in_memory): New.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Likewise.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	* config/stormy16/stormy16.h (PROMOTE_FUNCTION_ARGS): Remove.
+	(PROMOTE_FUNCTION_RETURN): Likewise
+	(PROMOTE_PROTOTYPES): Likewise
+	(RETURN_IN_MEMORY): Likewise
+	(STRUCT_VALUE): Likewise
+	(SETUP_INCOMING_VARARGS): Likewise
+
 2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_offset_within_object_p): New function.
