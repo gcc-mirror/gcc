@@ -1,5 +1,5 @@
-/* CertificateFactory.java --- Certificate Factory Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* CertificateFactory.java -- Certificate Factory Class
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,9 +52,9 @@ import java.util.Collection;
    java.security.cert.X509Certificate class, and CRLs of the 
    java.security.cert.X509CRL class. 
    
-   @since JDK 1.2
-
    @author Mark Benvenuto
+   @since JDK 1.2
+   @status still missing full 1.4 support
 */
 public class CertificateFactory
 {
@@ -267,4 +267,9 @@ public class CertificateFactory
     return certFacSpi.engineGenerateCRLs( inStream );
   }
 
-}
+  public final CertPath generateCertPath(InputStream inStream)
+    throws CertificateException
+  {
+    throw new CertificateException("not implemented");
+  }
+} // class CertificateFactory

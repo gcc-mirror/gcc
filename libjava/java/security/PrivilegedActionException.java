@@ -1,6 +1,5 @@
-/* PrivilegedActionException.java -- An exception occurred in a 
-   privileged action.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* PrivilegedActionException.java -- wrap an exception in a privileged action
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,76 +37,73 @@ exception statement from your version. */
 
 package java.security;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
 /**
  * This exception is thrown when an exception is thrown during a
- * privileged action being performed with the 
- * <code>AccessController.doPrivileged()</code> method.  It wrappers the
+ * privileged action being performed with the
+ * <code>AccessController.doPrivileged()</code> method.  It wraps the
  * actual exception thrown in the privileged code.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see PrivilegedExceptionAction
+ * @see AccessController#doPrivileged(PrivilegedExceptionAction)
+ * @see AccessController#doPrivileged(PrivilegedExceptionAction, AccessControlContext)
+ * @status updated to 1.4
  */
 public class PrivilegedActionException extends Exception
 {
-
   /**
-   * This is the actual exception that occurred
+   * Compatible with JDK 1.1+.
    */
-  private Exception e;
+  private static final long serialVersionUID = 4724086851538908602L;
 
   /**
-   * This method initializes a new instance of <code>PrivilegedActionException</code>
-   * that wrappers the specified <code>Exception</code>.
+   * This is the actual exception that occurred.
    *
-   * @param e The <code>Exception</code> to wrapper
+   * @serial the wrapped exception
+   */
+  private Exception exception;
+
+  /**
+   * Create a new instance that wraps the specified <code>Exception</code>.
+   *
+   * @param e the <code>Exception</code> to wrap
    */
   public PrivilegedActionException(Exception e)
   {
-    this.e = e;
+    super(e);
+    exception = e;
   }
 
   /**
-   * This method returns the underlying <code>Exception</code> that caused
-   * this exception to be raised.
+   * Get the underlying <code>Exception</code> that caused this one. This
+   * is a legacy method, the preferred way is {@link #getCause()}.
    *
-   * @return The wrappered <code>Exception</code>.
+   * @return the cause
    */
   public Exception getException()
   {
-    return (e);
+    return exception;
   }
 
   /**
-   * This method prints the stack trace of the wrappered exception.
-   */
-  public void printStackTrace()
-  {
-    e.printStackTrace();
-  }
-
-  /**
-   * This method prints the stack trace of the wrappered exception to the
-   * specified <code>PrintStream</code>.
+   * Gets the cause of this exception.
    *
-   * @param ps The <code>PrintStream</code> to print the stack trace to.
+   * @return the cause
+   * @since 1.4
    */
-  public void printStackTrace(PrintStream ps)
+  public Throwable getCause()
   {
-    e.printStackTrace(ps);
+    return exception;
   }
 
   /**
-   * This method prints the stack trace of the wrappered exception to the
-   * specified <code>PrintWriter</code>.
+   * Convert this to a String.
    *
-   * @param pw The <code>PrintWriter</code> to print the stack trace to.
+   * @return the string representation
    */
-  public void printStackTrace(PrintWriter pw)
+  public String toString()
   {
-    e.printStackTrace(pw);
+    return super.toString();
   }
 }

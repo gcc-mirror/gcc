@@ -1,5 +1,5 @@
 /* AllPermission.java -- Permission to do anything
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,98 +37,160 @@ exception statement from your version. */
 
 package java.security;
 
+import java.util.Enumeration;
+import java.util.Collections;
+import gnu.java.util.EmptyEnumeration;
+
 /**
  * This class is a permission that implies all other permissions.  Granting
  * this permission effectively grants all others.  Extreme caution should
  * be exercised in granting this permission.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see AccessController
+ * @see Permissions
+ * @see SecurityManager
+ * @since 1.1
+ * @status updated to 1.4
  */
 public final class AllPermission extends Permission
 {
   /**
-   * This method initializes a new instance of <code>AllPermission</code>.  It
-   * performs no actions.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -2916474571451318075L;
+
+  /**
+   * Create a new AllPermission object.
    */
   public AllPermission()
   {
-    super("all");
+    super("*");
   }
 
   /**
-   * This method initializes a new instance of <code>AllPermission</code>.  The
-   * arguments passed to this method are used to set internal field for the
-   * permission name.  However, these are not used in 
-   * determining the actual permissions granted.  This class always will
-   * return <code>true</code> in its implies method.
+   * Create a new AllPermission object. The parameters are ignored, as all
+   * permission implies ALL PERMISSION.
    *
-   * @param name The name of this permission.
-   * @param actions The action list for this permission - ignored in this class.
+   * @param name ignored
+   * @param actions ignored
    */
   public AllPermission(String name, String actions)
   {
-    super(name);
+    super("*");
   }
 
   /**
    * This method always returns <code>true</code> to indicate that this
    * permission always implies that any other permission is also granted.
    *
-   * @param perm The <code>Permission</code> to test against - ignored in this class.
-   *
-   * @return Always returns <code>true</code>
+   * @param perm ignored
+   * @return true, the permission is implied
    */
   public boolean implies(Permission perm)
   {
-    return (true);
+    return true;
   }
 
   /**
-   * This method tests this class for equality against another <code>Object</code>.
-   * This will return <code>true</code> if and only if the specified 
-   * <code>Object</code> is an instance of <code>AllPermission</code>.
+   * Checks an object for equality. All AllPermissions are equal.
    *
-   * @param obj The <code>Object</code> to test for equality to this object
+   * @param obj the <code>Object</code> to test for equality
    */
   public boolean equals(Object obj)
   {
-    if (obj instanceof AllPermission)
-      return (true);
-
-    return (false);
+    return obj instanceof AllPermission;
   }
 
   /**
-   * This method returns a hash code for this object.
+   * This method returns a hash code for this object. This returns 1.
    *
-   * @return A hash value for this object.
+   * @return a hash value for this object
    */
   public int hashCode()
   {
-    return (System.identityHashCode(this));
+    return 1;
   }
 
   /**
    * This method returns the list of actions associated with this object.
    * This will always be the empty string ("") for this class.
    *
-   * @return The action list.
+   * @return the action list
    */
   public String getActions()
   {
-    return ("");
+    return "";
   }
 
   /**
-   * This method returns a new instance of <code>PermissionCollection</code>
-   * suitable for holding instance of <code>AllPermission</code>.
+   * Returns a PermissionCollection which can hold AllPermission.
    *
-   * @return A new <code>PermissionCollection</code>.
+   * @return a permission collection
    */
   public PermissionCollection newPermissionCollection()
   {
-    return (null);
+    return new AllPermissionCollection();
   }
-}
+} // class AllPermission
+
+/**
+ * Implements AllPermission.newPermissionCollection, and obeys serialization
+ * of JDK.
+ *
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
+final class AllPermissionCollection extends PermissionCollection
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -4023755556366636806L;
+
+  /**
+   * Whether an AllPermission has been added to the collection.
+   *
+   * @serial if all permission is in the collection yet
+   */
+  private boolean all_allowed;
+
+  /**
+   * Add an AllPermission.
+   *
+   * @param perm the permission to add
+   * @throws IllegalArgumentException if perm is not an AllPermission
+   * @throws SecurityException if the collection is read-only
+   */
+  public void add(Permission perm)
+  {
+    if (isReadOnly())
+      throw new SecurityException();
+    if (! (perm instanceof AllPermission))
+      throw new IllegalArgumentException();
+    all_allowed = true;
+  }
+
+  /**
+   * Returns true if this collection implies a permission.
+   *
+   * @param perm the permission to check
+   * @return true if this collection contains an AllPermission
+   */
+  public boolean implies(Permission perm)
+  {
+    return all_allowed;
+  }
+
+  /**
+   * Returns an enumeration of the elements in the collection.
+   *
+   * @return the elements in the collection
+   */
+  public Enumeration elements()
+  {
+    return all_allowed
+      ? Collections.enumeration(Collections.singleton(new AllPermission()))
+      : EmptyEnumeration.getInstance();
+  }
+} // class AllPermissionCollection

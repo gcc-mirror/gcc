@@ -1,5 +1,5 @@
-/* UnresolvedPermission.java -- Placeholder for unresolved permissions.
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+/* UnresolvedPermission.java -- Placeholder for unresolved permissions
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,162 +38,266 @@ exception statement from your version. */
 package java.security;
 
 import java.io.Serializable;
-// All uses of Certificate in this file refer to this class.
+// All uses of Certificate in this file refer to the one in the listed
+// package, not this one.
 import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 /**
  * This class is used to hold instances of all permissions that cannot
- * be resolved to available permission classes when the security 
+ * be resolved to available permission classes when the security
  * <code>Policy</code> object is instantiated.  This may happen when the
  * necessary security class has not yet been downloaded from the network.
- * <p>
- * Instances of this class are re-resolved when <code>AccessController</code>
- * check is done.  At that time, a scan is made of all existing
- * <code>UnresolvedPermission</code> objects and they are converted to
- * objects of the appropriate permission type if the class for that type
- * is then available.
  *
- * @version 0.0
+ * <p>Instances of this class are re-resolved when
+ * <code>AccessController</code> check is done.  At that time, a scan is
+ * made of all existing <code>UnresolvedPermission</code> objects and they
+ * are converted to objects of the appropriate permission type if the class
+ * for that type is then available.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @see Permission
+ * @see Permissions
+ * @see PermissionCollection
+ * @see Policy
+ * @since 1.1
+ * @status updated to 1.4
  */
-public final class UnresolvedPermission
-  extends Permission
-  implements Serializable
+public final class UnresolvedPermission extends Permission
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -4821973115467008846L;
 
   /**
-   * The list of actions associated with this permission object
+   * The list of actions associated with this permission object.
+   *
+   * @serial the permission actions
    */
-  private String actions;
+  private final String actions;
 
   /**
-   * The list of <code>Certificates</code> associated with this object
+   * The list of <code>Certificates</code> associated with this object.
    */
-  private Certificate[] certs;
+  private final transient Certificate[] certs;
 
   /**
    * The name of the class this object should be resolved to.
+   *
+   * @serial the fully-qualified classname of the resolved type
    */
-  private String type;
+  // Package visible for use by UnresolvedPermissionCollection.
+  final String type;
 
   /**
-   * This method initializes a new instance of <code>UnresolvedPermission</code>
-   * with all the information necessary to resolve it to an instance of the
-   * proper class at a future time.
+   * The name of the permission.
    *
-   * @param type The name of the desired class this permission should be resolved to
-   * @param name The name of this permission
-   * @param actions The action list for this permission
-   * @param certs The list of certificates this permission's class was signed with
+   * @serial the permission name
+   */
+  private final String name;
+
+  /**
+   * Create a new instance with all the information necessary to resolve it
+   * to an instance of the proper class at a future time.
+   *
+   * @param type the fully-qualified name of the class of this permission
+   * @param name the name of this permission
+   * @param actions the action list for this permission
+   * @param certs the list of certificates that sign this permission
    */
   public UnresolvedPermission(String type, String name, String actions,
-			      Certificate[] certs)
+                              Certificate[] certs)
   {
     super(name);
-
+    this.name = name;
     this.type = type;
     this.actions = actions;
     this.certs = certs;
   }
 
   /**
-   * This method returns the list of actions associated with this
-   * permission.
-   *
-   * @return The action list
-   */
-  public String getActions()
-  {
-    return (actions);
-  }
-
-  /**
    * This method returns <code>false</code> always to indicate that this
-   * permission does not imply the specified permission.  An 
+   * permission does not imply the specified permission.  An
    * <code>UnresolvedPermission</code> never grants any permissions.
    *
-   * @param perm The <code>Permission</code> object to test against - ignored by this class
-   *
-   * @return <code>false</code> to indicate this permission does not imply the specified permission.
+   * @param perm the <code>Permission</code> object to test
+   * @return false; until a permission is resolved, it implies nothing
    */
   public boolean implies(Permission perm)
   {
-    return (false);
+    return false;
   }
 
   /**
    * This method tests this permission for equality against the specified
-   * <code>Object</code>.  This will be true if and only if the following
-   * conditions are met:
-   * <p>
-   * <ul>
-   * <li>The specified <code>Object</code> is an instance of 
-   * <code>UnresolvedPermission</code>, or a subclass.
+   * <code>Object</code>. This will be true if and only if the following
+   * conditions are met:<ul>
+   * <li>The specified <code>Object</code> is an UnresolvedPermission</li>
    * <li>The specified permission has the same type (i.e., desired class name)
-   * as this permission.
-   * <li>The specified permission has the same name as this one.
-   * <li>The specified permissoin has the same action list as this one.
-   * <li>The specified permission has the same certificate list as this one.
+   *     as this permission.</li>
+   * <li>The specified permission has the same name as this one.</li>
+   * <li>The specified permissoin has the same action list as this one.</li>
+   * <li>The specified permission has the same certificate list as this
+   *     one.</li>
    * </ul>
    *
-   * @param obj The <code>Object</code> to test for equality
-   *
-   * @return <code>true</code> if the specified object is equal to this one, <code>false</code> otherwise.
+   * @param obj the <code>Object</code> to test for equality
+   * @return true if the specified object is equal to this one
    */
   public boolean equals(Object obj)
   {
-    if (!(obj instanceof UnresolvedPermission))
+    if (! (obj instanceof UnresolvedPermission))
       return (false);
-
     UnresolvedPermission up = (UnresolvedPermission) obj;
-
-    if (!getName().equals(up.getName()))
-      return (false);
-
-    if (!getActions().equals(up.getActions()))
-      return (false);
-
-    if (!type.equals(up.type))
-      return (false);
-
-    if (!certs.equals(up.certs))
-      return (false);
-
-    return (true);
+    return up.name.equals(name) && up.actions.equals(actions)
+      && up.type.equals(type) && Arrays.equals(up.certs, certs);
   }
 
   /**
-   * Returns a hash code value for this object.
+   * Returns a hash code value for this object. Following the lead of
+   * Permission, this returns the hashcode of the permission name.
    *
    * @return A hash value
    */
   public int hashCode()
   {
-    return (System.identityHashCode(this));
+    return name.hashCode();
+  }
+
+  /**
+   * This method returns the list of actions associated with this
+   * permission.
+   *
+   * @return the action list
+   */
+  public String getActions()
+  {
+    return actions;
   }
 
   /**
    * This method returns a <code>String</code> representation of this
    * class.  The format is: '(unresolved "ClassName "name" "actions")'
    *
-   * @return A <code>String</code> representation of this object
+   * @return  <code>String</code> representation of this object
    */
   public String toString()
   {
-    return "(unresolved " + type + " " + getName() + " " + getActions() + ")";
+    return "(unresolved " + type + ' ' + name + ' ' + actions + ')';
   }
 
   /**
    * This class returns a <code>PermissionCollection</code> object that can
-   * be used to store instances of <code>UnresolvedPermission</code>.  If
-   * <code>null</code> is returned, the caller is free to use any desired
-   * <code>PermissionCollection</code>.
+   * be used to store instances of <code>UnresolvedPermission</code>.
    *
-   * @return A new <code>PermissionCollection</code>.
+   * @return a new <code>PermissionCollection</code>
    */
   public PermissionCollection newPermissionCollection()
   {
-    return (null);
+    return new UnresolvedPermissionCollection();
   }
-}
+} // class UnresolvedPermission
+
+/**
+ * Implements the permission collection for unresolved permissions, and
+ * obeys serialization of JDK.
+ *
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
+class UnresolvedPermissionCollection extends PermissionCollection
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -7176153071733132400L;
+
+  /**
+   * Hashtable where we store permissions.
+   *
+   * @serial map of typename to a Vector of permissions (you'd think Sun
+   *         would document this better!)
+   */
+  private final Hashtable permissions = new Hashtable();
+
+  /**
+   * Add a permission.
+   *
+   * @param perm the permission to add
+   * @throws IllegalArgumentException if perm is not an UnresolvedPermission
+   * @throws SecurityException if the collection is read-only
+   */
+  public void add(Permission perm)
+  {
+    if (isReadOnly())
+      throw new SecurityException();
+    if (! (perm instanceof UnresolvedPermission))
+      throw new IllegalArgumentException();
+    UnresolvedPermission up = (UnresolvedPermission) perm;
+    Vector v = (Vector) permissions.get(up.type);
+    if (v == null)
+      {
+        v = new Vector();
+        permissions.put(up.type, v);
+      }
+    v.add(up);
+  }
+
+  /**
+   * Returns true if perm is implied by the collection.
+   *
+   * @param perm the permission to check
+   * @return false; unresolved permissions imply nothing
+   */
+  public boolean implies(Permission perm)
+  {
+    return false;
+  }
+
+  /**
+   * Return the elements.
+   *
+   * @return the elements
+   */
+  public Enumeration elements()
+  {
+    return new Enumeration()
+    {
+      Enumeration main_enum = permissions.elements();
+      Enumeration sub_enum;
+
+      public boolean hasMoreElements()
+      {
+        if (sub_enum == null)
+          {
+            if (main_enum == null)
+              return false;
+            if (! main_enum.hasMoreElements())
+              {
+                main_enum = null;
+                return false;
+              }
+            Vector v = (Vector) main_enum.nextElement();
+            sub_enum = v.elements();
+          }
+        if (! sub_enum.hasMoreElements())
+          {
+            sub_enum = null;
+            return hasMoreElements();
+          }
+        return true;
+      }
+
+      public Object nextElement()
+      {
+        if (! hasMoreElements())
+          throw new NoSuchElementException();
+        return sub_enum.nextElement();
+      }
+    };
+  }
+} // class UnresolvedPermissionCollection

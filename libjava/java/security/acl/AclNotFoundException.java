@@ -1,5 +1,5 @@
-/* AclNotFoundException.java -- What it says
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* AclNotFoundException.java -- thrown when an ACL is not found
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,17 +41,20 @@ package java.security.acl;
  * This exception is thrown when a requested access control list (ACL) is
  * not found.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class AclNotFoundException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 5684295034092681791L;
+
   /**
    * Initializes a new instance of this class with no descriptive message
    */
   public AclNotFoundException()
   {
-    super();
   }
 }

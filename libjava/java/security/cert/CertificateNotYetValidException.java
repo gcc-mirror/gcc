@@ -1,5 +1,5 @@
-/* CertificateNotYetValidException.java --- Certificate Not Yet Valid Exception
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* CertificateNotYetValidException.java -- Certificate Not Yet Valid Exception
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,31 +39,33 @@ exception statement from your version. */
 package java.security.cert;
 
 /**
-   Exception for a Certificate being not yet valid.
-   
-   @since JDK 1.2
-   
-   @author Mark Benvenuto
+ * Exception for a Certificate that is not yet valid.
+ *
+ * @author Mark Benvenuto
+ * @since 1.2
+ * @status updated to 1.4
 */
 public class CertificateNotYetValidException extends CertificateException
 {
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 4355919900041064702L;
 
   /**
-     Constructs an CertificateNotYetValidException without a message string.
-  */
+   * Constructs an exception without a message string.
+   */
   public CertificateNotYetValidException()
   {
-    super();
   }
 
   /**
-     Constructs an CertificateNotYetValidException with a message string.
-
-     @param msg A message to display with exception
-  */
+   * Constructs an exception with a message string.
+   *
+   * @param msg A message to display with exception
+   */
   public CertificateNotYetValidException(String msg)
   {
-    super( msg );
+    super(msg);
   }
-
 }

@@ -1,5 +1,5 @@
-/* Certificate.java -- Interface for modeling digital certificates
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* Certificate.java -- deprecated interface for modeling digital certificates
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,84 +42,90 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- * This interface models a digital certificate which verifies the 
+ * This interface models a digital certificate which verifies the
  * authenticity of a party.  This class simply allows certificate
  * information to be queried, it does not guarantee that the certificate
  * is valid.
- * <p>
- * This class is deprecated in favor of the new java.security.cert package.
- * It exists for backward compatibility only.
- * 
- * @deprecated
  *
- * @version 0.0
+ * <p>This class is deprecated in favor of the new java.security.cert package.
+ * It exists for backward compatibility only.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @deprecated use {@link java.security.cert} instead
+ * @status updated to 1.4
  */
 public interface Certificate
 {
-
   /**
    * This method returns the <code>Principal</code> that is guaranteeing
    * this certificate.
    *
-   * @return The <code>Principal</code> guaranteeing the certificate
+   * @return the <code>Principal</code> guaranteeing the certificate
+   * @deprecated this entire interface is deprecated
    */
-  public abstract Principal getGuarantor();
+  Principal getGuarantor();
 
   /**
    * This method returns the <code>Principal</code> being guaranteed by
    * this certificate.
    *
-   * @return The <code>Principal</code> guaranteed by this certificate.
+   * @return the <code>Principal</code> guaranteed by this certificate
+   * @deprecated this entire interface is deprecated
    */
-  public abstract Principal getPrincipal();
+  Principal getPrincipal();
 
   /**
    * This method returns the public key for the <code>Principal</code> that
    * is being guaranteed.
    *
-   * @return The <code>PublicKey</code> of the <code>Principal</code> being guaranteed
+   * @return the <code>PublicKey</code> of the Principal being guaranteed
+   * @deprecated this entire interface is deprecated
    */
-  public abstract PublicKey getPublicKey();
-
-  /**
-   * This method returns the encoding format of the certificate (e.g., "PGP",
-   * "X.509").  This format is used by the <code>encode</code. and
-   * <code>decode</code> methods.
-   *
-   * @return The encoding format being used
-   */
-  public abstract String getFormat();
+  PublicKey getPublicKey();
 
   /**
    * This method writes the certificate to an <code>OutputStream</code> in
    * a format that can be understood by the <code>decode</code> method.
    *
-   * @param out The <code>OutputStream</code> to write to.
-   *
-   * @exception KeyException If there is a problem with the internals of this certificate
-   * @exception IOException If an error occurs writing to the stream.
+   * @param out the <code>OutputStream</code> to write to
+   * @throws KeyException if there is a problem with the certificate
+   * @throws IOException if an error occurs writing to the stream
+   * @see #decode(InputStream)
+   * @see #getFormat()
+   * @deprecated this entire interface is deprecated
    */
-  public abstract void
-    encode(OutputStream out) throws KeyException, IOException;
+  void encode(OutputStream out) throws KeyException, IOException;
 
   /**
    * This method reads an encoded certificate from an <code>InputStream</code>.
    *
-   * @param in The <code>InputStream</code> to read from.
-   *
-   * @param KeyException If there is a problem with the certificate data
-   * @param IOException If an error occurs reading from the stream.
+   * @param in the <code>InputStream</code> to read from
+   * @throws KeyException if there is a problem with the certificate data
+   * @throws IOException if an error occurs reading from the stream
+   * @see #encode(OutputStream)
+   * @see #getFormat()
+   * @deprecated this entire interface is deprecated
    */
-  public abstract void
-    decode(InputStream in) throws KeyException, IOException;
+  void decode(InputStream in) throws KeyException, IOException;
+
+  /**
+   * This method returns the encoding format of the certificate (e.g., "PGP",
+   * "X.509").  This format is used by the <code>encode</code> and
+   * <code>decode</code> methods.
+   *
+   * @return the encoding format being used
+   * @deprecated this entire interface is deprecated
+   */
+  String getFormat();
 
   /**
    * This method returns a <code>String</code> representation of the contents
    * of this certificate.
    *
-   * @param detail <code>true</code> to provided detailed information about this certificate, <code>false</code> otherwise
+   * @param detail true to provided more detailed information
+   * @return the string representation
+   * @deprecated this entire interface is deprecated
    */
-  public abstract String toString(boolean detail);
-}
+  String toString(boolean detail);
+} // interface Certificate

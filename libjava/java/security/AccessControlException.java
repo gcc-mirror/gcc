@@ -1,5 +1,5 @@
 /* AccessControlException.java -- Permission is denied
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,38 +39,44 @@ package java.security;
 
 /**
  * This exception is thrown when the <code>AccessController</code> denies
- * an attempt to perform an operation.
+ * an attempt to perform an operation. This often keeps track of the
+ * permission that was not granted.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see AccessController
+ * @status updated to 1.4
  */
 public class AccessControlException extends SecurityException
 {
   /**
-   * The <code>Permission</code> associated with this exception
+   * Compatible with JDK 1.1+.
    */
-  private Permission perm;
+  private static final long serialVersionUID = 5138225684096988535L;
 
   /**
-   * This method initializes a new instance of <code>AccessControlException</code>
-   * with a descriptive error message.  There will be no <code>Permission</code>
-   * object associated with this exception.
+   * The <code>Permission</code> associated with this exception.
    *
-   * @param msg The descriptive error message
+   * @serial the permission
+   */
+  private final Permission perm;
+
+  /**
+   * Create a new instance with a descriptive error message, and a null
+   * <code>Permission</code> object.
+   *
+   * @param msg the descriptive error message
    */
   public AccessControlException(String msg)
   {
-    super(msg);
+    this(msg, null);
   }
 
   /**
-   * This method initializes a new instance of <code>AccessControlException</code>
-   * with a descriptive error message and an instance of <code>Permission</code>
-   * that is the permission that caused the exception to be thrown.
+   * Create a new instance with a descriptive error message and an associated
+   * <code>Permission</code> object.
    *
-   * @param msg The descriptive error message
-   * @param perm The <code>Permission</code> object that caused this exception.
+   * @param msg the descriptive error message
+   * @param perm the permission that caused this
    */
   public AccessControlException(String msg, Permission perm)
   {
@@ -82,10 +88,10 @@ public class AccessControlException extends SecurityException
    * This method returns the <code>Permission</code> object that caused
    * this exception to be thrown.
    *
-   * @return The requested <code>Permission</code> object, or <code>null</code> if none is available.
+   * @return the denied permission, or null
    */
   public Permission getPermission()
   {
-    return (perm);
+    return perm;
   }
 }

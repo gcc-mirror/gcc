@@ -1,5 +1,5 @@
 /* Principal.java -- A security entity
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,48 +35,51 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
 /**
-   * This interface models an entity (such as a user or a certificate authority)
-   * for the purposes of applying the Java security model.
-   *
-   * @version 0.0
-   *
-   * @author Aaron M. Renn (arenn@urbanophile.com)
+ * This interface models an entity (such as a user or a certificate authority)
+ * for the purposes of applying the Java security model.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see X509Certificate
+ * @since 1.1
+ * @status updated to 1.4
  */
 public interface Principal
 {
   /**
-   * This method returns a <code>String</code> that names this 
-   * <code>Principal</code>.
-   *
-   * @return The name of this <code>Principal</code>.
-   */
-  public abstract String getName();
-
-  /**
    * This method tests another <code>Principal</code> object for equality
    * with this one.
-   * 
-   * @param obj The <code>Object</code> (which is a <code>Principal</code>) to test for equality against.
    *
-   * @return <code>true</code> if the specified <code>Principal</code> is equal to this one, <code>false</code> otherwise.
+   * @param obj the Object to test for equality
+   * @return true if the specified <code>Principal</code> is equal
    */
-  public abstract boolean equals(Object obj);
-
-  /**
-   * This method returns a hash code value for this <code>Principal</code>.
-   *
-   * @return A hash value
-   */
-  public abstract int hashCode();
+  boolean equals(Object obj);
 
   /**
    * This method returns a <code>String</code> representation of this
    * <code>Principal</code>.
    *
-   * @return This <code>Principal</code> represented as a <code>String</code>.
+   * @return this <code>Principal</code> represented as a <code>String</code>
    */
-  public abstract String toString();
-}
+  String toString();
+
+  /**
+   * This method returns a hash code value for this <code>Principal</code>.
+   * Remember the contract of hashCode - two objects which compare as
+   * equals() must have the same hashCode().
+   *
+   * @return a hash value
+   */
+  int hashCode();
+
+  /**
+   * This method returns a <code>String</code> that names this
+   * <code>Principal</code>.
+   *
+   * @return the name of this <code>Principal</code>
+   */
+  String getName();
+} // interface Principal

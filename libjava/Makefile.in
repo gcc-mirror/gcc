@@ -1184,6 +1184,7 @@ gnu/java/text/LineBreakIterator.java \
 gnu/java/text/SentenceBreakIterator.java \
 gnu/java/text/WordBreakIterator.java \
 gnu/java/util/DoubleEnumeration.java \
+gnu/java/util/EmptyEnumeration.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -1320,6 +1321,10 @@ java/security/cert/CertificateFactory.java \
 java/security/cert/CertificateFactorySpi.java \
 java/security/cert/CertificateNotYetValidException.java \
 java/security/cert/CertificateParsingException.java \
+java/security/cert/CertPath.java \
+java/security/cert/CertPathBuilderException.java \
+java/security/cert/CertPathValidatorException.java \
+java/security/cert/CertStoreException.java \
 java/security/cert/X509CRL.java \
 java/security/cert/X509CRLEntry.java \
 java/security/cert/X509Certificate.java \
@@ -2018,7 +2023,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/text/LineBreakIterator.P \
 .deps/gnu/java/text/SentenceBreakIterator.P \
 .deps/gnu/java/text/WordBreakIterator.P \
-.deps/gnu/java/util/DoubleEnumeration.P .deps/interpret.P \
+.deps/gnu/java/util/DoubleEnumeration.P \
+.deps/gnu/java/util/EmptyEnumeration.P .deps/interpret.P \
 .deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
@@ -2454,6 +2460,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/acl/NotOwnerException.P \
 .deps/java/security/acl/Owner.P .deps/java/security/acl/Permission.P \
 .deps/java/security/cert/CRL.P .deps/java/security/cert/CRLException.P \
+.deps/java/security/cert/CertPath.P \
+.deps/java/security/cert/CertPathBuilderException.P \
+.deps/java/security/cert/CertPathValidatorException.P \
+.deps/java/security/cert/CertStoreException.P \
 .deps/java/security/cert/Certificate.P \
 .deps/java/security/cert/CertificateEncodingException.P \
 .deps/java/security/cert/CertificateException.P \

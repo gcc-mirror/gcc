@@ -1,5 +1,5 @@
 /* NotOwnerException.java -- Attempt to modify an unowned ACL
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,12 +42,15 @@ package java.security.acl;
  * the caller to be the owner of the access control list (ACL) when the caller
  * is in fact not the owner of the ACL.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
-public class NotOwnerException extends java.lang.Exception
+public class NotOwnerException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -5555597911163362399L;
 
   /**
    * Initializes a new instance of <code>NotOwnerException</code> that does
@@ -55,6 +58,5 @@ public class NotOwnerException extends java.lang.Exception
    */
   public NotOwnerException()
   {
-    super();
   }
 }

@@ -43,7 +43,7 @@ package java.security;
  * through the <code>checkPermission()</code> method.
  * Manipulates the access control context for code that needs to be executed
  * the protection domain of the calling class (by explicitly ignoring the
- * context of the calling code) in the <code>doPriviliged()</code> methods.
+ * context of the calling code) in the <code>doPrivileged()</code> methods.
  * And provides a <code>getContext()</code> method which gives the access
  * control context of the current thread that can be used for checking
  * permissions at a later time and/or in another thread.
@@ -131,7 +131,7 @@ public final class AccessController
    * @param action the <code>PrivilegedExceptionAction</code> whose
    * <code>run()</code> should be be called.
    * @returns the result of the <code>action.run()</code> method.
-   * @exception PriviligedActionException wrapped around any exception that
+   * @exception PrivilegedActionException wrapped around any exception that
    * is thrown in the <code>run()</code> method.
    */
   public static Object doPrivileged(PrivilegedExceptionAction action)
@@ -163,7 +163,7 @@ public final class AccessController
    * @param context the <code>AccessControlContext</code> whose protection
    * domains should be added to the protection domain of the calling class.
    * @returns the result of the <code>action.run()</code> method.
-   * @exception PriviligedActionException wrapped around any exception that
+   * @exception PrivilegedActionException wrapped around any exception that
    * is thrown in the <code>run()</code> method.
    */
   public static Object doPrivileged(PrivilegedExceptionAction action,

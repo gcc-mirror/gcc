@@ -1,5 +1,5 @@
-/* BasicPermission.java -- Implements a simple named permission.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+/* BasicPermission.java -- implements a simple named permission
+   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,90 +44,94 @@ import java.util.Enumeration;
 /**
  * This class implements a simple model for named permissions without an
  * associated action list.  That is, either the named permission is granted
- * or it is not.  
- * <p>
- * It also supports trailing wildcards to allow the
- * easy granting of permissions in a hierarchical fashion.  (For example,
- * the name "org.gnu.*" might grant all permissions under the "org.gnu"
- * permissions hierarchy).  The only valid wildcard character is a '*'
- * which matches anything.  It must be the rightmost element in the
- * permission name and must follow a '.' or else the Permission name must
- * consist of only a '*'.  Any other occurrence of a '*' is not valid.
- * <p>
- * This class ignores the action list.  Subclasses can choose to implement
+ * or it is not.
+ *
+ * <p>It also supports trailing wildcards to allow the easy granting of
+ * permissions in a hierarchical fashion.  (For example, the name "org.gnu.*"
+ * might grant all permissions under the "org.gnu" permissions hierarchy).
+ * The only valid wildcard character is a '*' which matches anything. It
+ * must be the rightmost element in the permission name and must follow a
+ * '.' or else the Permission name must consist of only a '*'. Any other
+ * occurrence of a '*' is not valid.
+ *
+ * <p>This class ignores the action list.  Subclasses can choose to implement
  * actions on top of this class if desired.
  *
- * @version 0.1
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Permission
+ * @see Permissions
+ * @see PermissionCollection
+ * @see RuntimePermission
+ * @see SecurityPermission
+ * @see PropertyPermission
+ * @see AWTPermission
+ * @see NetPermission
+ * @see SecurityManager
+ * @since 1.1
+ * @status updated to 1.4
  */
 public abstract class BasicPermission extends java.security.Permission
   implements Serializable
-  // FIXME extends with fully qualified classname as workaround for gcj 3.0.4
+  // FIXME extends with fully qualified classname is workaround for gcj 3.0.4.
 {
   /**
-   * This method initializes a new instance of <code>BasicPermission</code>
-   * with the specified name.  If the name contains an illegal wildcard
-   * character, an exception is thrown.
-   *
-   * @param name The name of this permission.
-   *
-   * @exception IllegalArgumentException If the name contains an invalid wildcard character
-   * @exception NullPointerException If the name is null
+   * Compatible with JDK 1.1+.
    */
-  public BasicPermission(String name) 
-    throws IllegalArgumentException, NullPointerException
+  private static final long serialVersionUID = 6279438298436773498L;
+
+  /**
+   * Create a new instance with the specified permission name. If the name
+   * is empty, or contains an illegal wildcard character, an exception is
+   * thrown.
+   *
+   * @param name the name of this permission
+   * @throws NullPointerException if name is null
+   * @throws IllegalArgumentException if name is invalid
+   */
+  public BasicPermission(String name)
   {
     super(name);
-
     if (name.indexOf("*") != -1)
       {
-	if (!name.endsWith(".*") && !name.equals("*"))
-	  throw new IllegalArgumentException("Bad wildcard: " + name);
-
-	if (name.indexOf("*") != name.lastIndexOf("*"))
-	  throw new IllegalArgumentException("Bad wildcard: " + name);
+        if ((! name.endsWith(".*") && ! name.equals("*"))
+            || name.indexOf("*") != name.lastIndexOf("*"))
+          throw new IllegalArgumentException("Bad wildcard: " + name);
       }
+    if ("".equals(name))
+      throw new IllegalArgumentException("Empty name");
   }
 
   /**
-   * This method initializes a new instance of <code>BasicPermission</code>
-   * with the specified name.  If the name contains an illegal wildcard
-   * character, an exception is thrown.  The action list passed to this
-   * form of the constructor is ignored.
+   * Create a new instance with the specified permission name. If the name
+   * is empty, or contains an illegal wildcard character, an exception is
+   * thrown. The actions parameter is ignored.
    *
-   * @param name The name of this permission.
-   * @param actions The list of actions for this permission - ignored in this class.
-   *
-   * @exception IllegalArgumentException If the name contains an invalid wildcard character
-   * @exception NullPointerException If the name is null
+   * @param name the name of this permission
+   * @param actions ignored
+   * @throws NullPointerException if name is null
+   * @throws IllegalArgumentException if name is invalid
    */
-  public BasicPermission(String name, String actions) 
-    throws IllegalArgumentException, NullPointerException
+  public BasicPermission(String name, String actions)
   {
-    // ignore actions
     this(name);
   }
 
   /**
-   * This method tests to see if the specified permission is implied by 
-   * this permission.  This will be true if the following conditions are met:
-   * <p>
-   * <ul>
-   * <li>The specified object is an instance of <code>BasicPermission</code>, 
-   * or a subclass.
-   * <li>The name of the specified permission is identical to this permission's
-   * name or the name of the specified permission satisfies a wildcard match 
-   * on this permission.
+   * This method tests to see if the specified permission is implied by this
+   * permission.  This will be true if the following conditions are met:<ul>
+   * <li>The specified object is an instance of the same class as this
+   * object.</li>
+   * <li>The name of the specified permission is implied by this permission's
+   * name based on wildcard matching. For example, "a.*" implies "a.b".</li>
    * </ul>
    *
-   * @param perm The <code>Permission</code> object to test against.
-   *
-   * @return <code>true</code> if the specified permission is implied by this one or <code>false</code> otherwise.
+   * @param perm the <code>Permission</code> object to test against
+   * @return true if the specified permission is implied
    */
   public boolean implies(Permission perm)
   {
-    if (!(perm instanceof BasicPermission))
+    if (! getClass().isInstance(perm))
       return false;
 
     String otherName = perm.getName();
@@ -137,36 +141,25 @@ public abstract class BasicPermission extends java.security.Permission
       return true;
 
     int last = name.length() - 1;
-    if (name.charAt(last) == '*'
-	&& otherName.startsWith(name.substring(0, last)))
-      return true;
-
-    return false;
+    return name.charAt(last) == '*'
+      && otherName.startsWith(name.substring(0, last));
   }
 
   /**
    * This method tests to see if this object is equal to the specified
    * <code>Object</code>.  This will be true if and only if the specified
-   * object meets the following conditions:
-   * <p>
-   * <ul>
-   * <li>It is an instance of <code>BasicPermission</code>, or a subclass.
-   * <li>It has the same name as this permission.
+   * object meets the following conditions:<ul>
+   * <li>It is an instance of the same class as this.</li>
+   * <li>It has the same name as this permission.</li>
    * </ul>
    *
-   * @param obj The <code>Object</code> to test for equality against this object
-   *
-   * @return <code>true</code> if the specified <code>Object</code> is equal to this object or <code>false</code> otherwise.
+   * @param obj the <code>Object</code> to test for equality
+   * @return true if obj is semantically equal to this
    */
   public boolean equals(Object obj)
   {
-    if (!(obj instanceof BasicPermission))
-      return (false);
-
-    if (!getName().equals(((BasicPermission) obj).getName()))
-      return (false);
-
-    return (true);
+    return getClass().isInstance(obj)
+      && getName().equals(((BasicPermission) obj).getName());
   }
 
   /**
@@ -174,87 +167,143 @@ public abstract class BasicPermission extends java.security.Permission
    * code returned is the value returned by calling the <code>hashCode</code>
    * method on the <code>String</code> that is the name of this permission.
    *
-   * @return A hash value for this object
+   * @return a hash value for this object
    */
   public int hashCode()
   {
-    return (getName().hashCode());
+    return getName().hashCode();
   }
 
   /**
-   * This method returns a list of the actions associated with this 
+   * This method returns a list of the actions associated with this
    * permission.  This method always returns the empty string ("") since
    * this class ignores actions.
    *
-   * @return The action list.
+   * @return the action list
    */
   public String getActions()
   {
-    return ("");
+    return "";
   }
 
   /**
    * This method returns an instance of <code>PermissionCollection</code>
-   * suitable for storing <code>BasicPermission</code> objects.  This returns
-   * be a sub class of <code>PermissionCollection</code>
-   * that allows for an efficient and consistent implementation of
-   * the <code>implies</code> method.  The collection doesn't handle subclasses
-   * of BasicPermission correctly; they must override this method. 
+   * suitable for storing <code>BasicPermission</code> objects.  The
+   * collection returned can only store objects of the same type as this.
+   * Subclasses which use actions must override this method; but a class with
+   * no actions will work fine with this.
    *
-   * @return A new empty <code>PermissionCollection</code> object.
+   * @return a new empty <code>PermissionCollection</code> object
    */
   public PermissionCollection newPermissionCollection()
   {
-    return new PermissionCollection()
-    {
-      Hashtable permissions = new Hashtable();
-      boolean allAllowed = false;
-
-      public void add(Permission permission)
-      {
-	if (isReadOnly())
-	  throw new IllegalStateException("readonly");
-
-	BasicPermission bp = (BasicPermission) permission;
-	String name = bp.getName();
-	if (name.equals("*"))
-	  allAllowed = true;
-	permissions.put(name, bp);
-      }
-
-      public boolean implies(Permission permission)
-      {
-	if (!(permission instanceof BasicPermission))
-	  return false;
-
-	if (allAllowed)
-	  return true;
-
-	BasicPermission toImply = (BasicPermission) permission;
-	String name = toImply.getName();
-	if (name.equals("*"))
-	  return false;
-
-	int prefixLength = name.length();
-	if (name.endsWith("*"))
-	  prefixLength -= 2;
-
-	while (true)
-	  {
-	    if (permissions.get(name) != null)
-	      return true;
-
-	    prefixLength = name.lastIndexOf('.', prefixLength);
-	    if (prefixLength < 0)
-	      return false;
-	    name = name.substring(0, prefixLength + 1) + '*';
-	  }
-      }
-
-      public Enumeration elements()
-      {
-	return permissions.elements();
-      }
-    };
+    return new BasicPermissionCollection(getClass());
   }
-}
+} // class BasicPermission
+
+/**
+ * Implements AllPermission.newPermissionCollection, and obeys serialization
+ * of JDK.
+ *
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
+final class BasicPermissionCollection extends PermissionCollection
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 739301742472979399L;
+
+  /**
+   * The permissions in the collection.
+   *
+   * @serial a hash mapping name to permissions, all of type permClass
+   */
+  private final Hashtable permissions = new Hashtable();
+
+  /**
+   * If "*" is in the collection.
+   *
+   * @serial true if a permission named "*" is in the collection
+   */
+  private boolean all_allowed;
+
+  /**
+   * The runtime class which all entries in the table must belong to.
+   *
+   * @serial the limiting subclass of this collection
+   */
+  private final Class permClass;
+
+  /**
+   * Construct a collection over the given runtime class.
+   *
+   * @param c the class
+   */
+  BasicPermissionCollection(Class c)
+  {
+    permClass = c;
+  }
+
+  /**
+   * Add a Permission. It must be of the same type as the permission which
+   * created this collection.
+   *
+   * @param perm the permission to add
+   * @throws IllegalArgumentException if perm is not the correct type
+   * @throws SecurityException if the collection is read-only
+   */
+  public void add(Permission perm)
+  {
+    if (isReadOnly())
+      throw new SecurityException("readonly");
+    if (! permClass.isInstance(perm))
+      throw new IllegalArgumentException("Expecting instance of " + permClass);
+    BasicPermission bp = (BasicPermission) perm;
+    String name = bp.getName();
+    if (name.equals("*"))
+      all_allowed = true;
+    permissions.put(name, bp);
+  }
+
+  /**
+   * Returns true if this collection implies the given permission.
+   *
+   * @param permission the permission to check
+   * @return true if it is implied by this
+   */
+  public boolean implies(Permission permission)
+  {
+    if (! permClass.isInstance(permission))
+      return false;
+    if (all_allowed)
+      return true;
+    BasicPermission toImply = (BasicPermission) permission;
+    String name = toImply.getName();
+    if (name.equals("*"))
+      return false;
+    int prefixLength = name.length();
+    if (name.endsWith("*"))
+      prefixLength -= 2;
+
+    while (true)
+      {
+        if (permissions.get(name) != null)
+          return true;
+        prefixLength = name.lastIndexOf('.', prefixLength);
+        if (prefixLength < 0)
+          return false;
+        name = name.substring(0, prefixLength + 1) + '*';
+      }
+  }
+
+  /**
+   * Enumerate over the collection.
+   *
+   * @return an enumeration of the collection contents
+   */
+  public Enumeration elements()
+  {
+    return permissions.elements();
+  }
+} // class BasicPermissionCollection

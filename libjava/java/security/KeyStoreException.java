@@ -1,5 +1,5 @@
 /* KeyStoreException.java -- Indicates a problem with the key store
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,26 +40,28 @@ package java.security;
 /**
  * Indicates a problem with the key store.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.2
+ * @status updated to 1.4
  */
 public class KeyStoreException extends GeneralSecurityException
 {
   /**
-   * This method initializes a new <code>KeyStoreException</code> with no
-   * detailed error message.
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = -1119353179322377262L;
+
+  /**
+   * Create a new instance detailed error message.
    */
   public KeyStoreException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new <code>KeyStoreException</code> with a
-   * detailed error message.
+   * Create a new instance with a detailed error message.
    *
-   * @param msg The descriptive error message.
+   * @param msg the descriptive error message
    */
   public KeyStoreException(String msg)
   {

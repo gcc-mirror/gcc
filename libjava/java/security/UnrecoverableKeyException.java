@@ -1,5 +1,5 @@
 /* UnrecoverableKeyException.java -- Cannot recover a key from the key store
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,26 +41,28 @@ package java.security;
  * This exception is thrown when a key cannot be recovered from the key
  * store.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.2
+ * @status updated to 1.4
  */
 public class UnrecoverableKeyException extends GeneralSecurityException
 {
   /**
-   * This method initializes a new instance of <code>UnrecoverableKeyException</code>
-   * with no descriptive error message.
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 7275063078190151277L;
+
+  /**
+   * Create an instance with no descriptive error message.
    */
   public UnrecoverableKeyException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>UnrecoverableKeyException</code>
-   * with a descriptive error message.
+   * Create an instance with a descriptive error message.
    *
-   * @param msg The descriptive error message.
+   * @param msg the descriptive error message
    */
   public UnrecoverableKeyException(String msg)
   {

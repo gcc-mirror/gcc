@@ -1,5 +1,5 @@
-/* PrivilegedAction.java -- Perform a privileged action
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+/* EmptyEnumeration.java -- a constant empty enumeration
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,30 +35,62 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.security;
+package gnu.java.util;
+
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 /**
- * This interface specifes a single <code>run</code> method that
- * executes a privileged operation.  This method is called by
- * <code>AccessController.doPrivileged()</code> after that method
- * activiates the required privileges.
+ * This is a helper class that produces an empty Enumerations. There is only
+ * one instance of this class that can be used whenever one needs a
+ * non-null but empty enumeration. Using this class prevents multiple
+ * small objects and inner classes. <code>getInstance()</code> returns
+ * the only instance of this class. It can be shared by multiple objects and
+ * threads.
  *
- * @author Aaron M. Renn (arenn@urbanophile.com)
- * @see AccessController
- * @see PrivilegedExceptionAction
- * @since 1.1
- * @status updated to 1.4
+ * @author Mark Wielaard (mark@klomp.org)
  */
-public interface PrivilegedAction
+public final class EmptyEnumeration implements Enumeration, Serializable
 {
+  /** The only instance of this class */
+  private static final EmptyEnumeration instance = new EmptyEnumeration();
+
   /**
-   * This method performs an operation that requires higher privileges to
-   * perform.  It is called when a section of code invokes
-   * <code>AccessController.doPrivileged()</code>.
-   *
-   * @return obj An implementation dependent return value
-   * @see AccessController#doPrivileged(PrivilegedAction)
-   * @see AccessController#doPrivileged(PrivilegedAction, AccessControlContext)
+   * Private constructor that creates a new empty Enumeration.
    */
-  Object run();
-} // interface PrivilegedAction
+  private EmptyEnumeration()
+  {
+  }
+
+  /**
+   * Returns the only instance of this class.
+   * It can be shared by multiple objects and threads.
+   *
+   * @return the common empty enumeration
+   */
+  public static EmptyEnumeration getInstance()
+  {
+    return instance;
+  }
+
+  /**
+   * Returns false, since there are no elements.
+   *
+   * @return false
+   */
+  public boolean hasMoreElements()
+  {
+    return false;
+  }
+
+  /**
+   * Always throws <code>NoSuchElementException</code>, since it is empty.
+   *
+   * @throws NoSuchElementException this is empty
+   */
+  public Object nextElement()
+  {
+    throw new NoSuchElementException();
+  }
+}

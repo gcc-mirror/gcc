@@ -170,7 +170,7 @@ public abstract class MessageDigest extends MessageDigestSpi
    */
   public void update(byte[]input, int offset, int len)
   {
-    engineUpdate(input, 0, input.length);
+    engineUpdate(input, offset, len);
   }
 
   /**

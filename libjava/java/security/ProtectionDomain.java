@@ -132,12 +132,14 @@ public class ProtectionDomain
   public String toString()
   {
     StringBuffer sb = new StringBuffer("");
-
-    sb.append(super.toString() + " (" + linesep);
-    sb.append(code_source.toString());
-    sb.append(perms.toString());
-    sb.append(")" + linesep);
-
+    sb.append("ProtectionDomain (" + linesep);
+    if (code_source == null)
+      sb.append("CodeSource:null" + linesep);
+    else
+      sb.append(code_source + linesep);
+    sb.append(perms);
+    sb.append(linesep + ")" + linesep);
+    
     return sb.toString();
   }
 }

@@ -1,5 +1,5 @@
 /* GeneralSecurityException.java -- Common superclass of security exceptions
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,31 +41,32 @@ package java.security;
  * This class is the common superclass of all security exceptions.  All
  * exceptions in java.security extend this class with the exception (no
  * pun intended) of <code>AccessControlException</code> and 
- * <code>CertificateException</code> which extend <code>SecurityException</code>
- * and <code>ProviderException</code> which extens <code>RuntimeException</code>.
- * and <code>InvalidParamterException</code> which extends
- * <code>IllegalArgumentException</code>.
+ * <code>CertificateException</code> (which extend
+ * <code>SecurityException</code>), <code>ProviderException</code>
+ * (<code>RuntimeException</code>), and <code>InvalidParamterException</code>
+ * (<code>IllegalArgumentException</code>).
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class GeneralSecurityException extends Exception
 {
   /**
-   * This method initializes a new instance of <code>GeneralSecurityException</code> 
-   * with no descriptive error message.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 894798122053539237L;
+
+  /**
+   * Create a new instance with no descriptive error message.
    */
   public GeneralSecurityException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>GeneralSecurityException</code>
-   * with a descriptive error message.
+   * Create a new instance with a descriptive error message.
    *
-   * @param msg The descriptive error message.
+   * @param msg the descriptive error message
    */
   public GeneralSecurityException(String msg)
   {

@@ -85,9 +85,23 @@ public abstract class Policy
   // FIXME: The class name of the Policy provider should really be sourced 
   // from the "java.security" configuration file. For now, just hard-code 
   // a stub implementation.
-  static private Policy currentPolicy 
-    = new gnu.java.security.provider.DefaultPolicy();
-
+  static private Policy currentPolicy = null;
+  static 
+  {
+    String pp = System.getProperty ("policy.provider");
+    if (pp != null)
+      try
+	{
+	  currentPolicy = (Policy)Class.forName(pp).newInstance();
+	} 
+      catch (Exception _) 
+	{
+	  currentPolicy = null;
+	}
+    if (currentPolicy == null)
+      currentPolicy = new gnu.java.security.provider.DefaultPolicy();
+  }
+  
   /**
      Constructs a new Policy class.
    */

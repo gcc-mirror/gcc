@@ -1,4 +1,5 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* InvalidParameterException.java -- an invalid parameter in the JCA/JCE engine
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,22 +38,31 @@ exception statement from your version. */
 package java.security;
 
 /**
+ * Thrown when an invalid parameter is passed to a method of the JCA/JCE
+ * engine classes.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date February 1, 2000.
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification.
- * Status:  Believed complete and correct.
- */
-
 public class InvalidParameterException extends IllegalArgumentException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -857968536935667808L;
+
+  /**
+   * Construct an exception with no message.
+   */
   public InvalidParameterException()
   {
-    super();
   }
 
+  /**
+   * Construct an exception with a message.
+   *
+   * @param msg the message
+   */
   public InvalidParameterException(String msg)
   {
     super(msg);
