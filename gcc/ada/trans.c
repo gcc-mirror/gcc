@@ -410,8 +410,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	       && (! DECL_RENAMING_GLOBAL_P (gnu_result)
 		   || global_bindings_p ())
 	       /* Make sure it's an lvalue like INDIRECT_REF.  */
-	       && (TREE_CODE_CLASS (TREE_CODE (renamed_obj)) == 'd'
-		   || TREE_CODE_CLASS (TREE_CODE (renamed_obj)) == 'r'))
+	       && (DECL_P (renamed_obj) || REFERENCE_CLASS_P (renamed_obj)))
 	gnu_result = renamed_obj;
       else
 	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,

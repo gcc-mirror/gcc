@@ -776,13 +776,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 
 	    /* Otherwise, make this into a constant pointer to the object we
-	       are to rename.
-
-	       Stabilize it since in this case the renaming evaluation may
-	       directly dereference the initial value we make here instead
-	       of the pointer we will assign it to.  We don't want variables
-	       in the expression to be evaluated every time the renaming is
-	       used, since their value may change in between.  */
+	       are to rename and attach the object to the pointer.  We need
+	       to stabilize too since the renaming evaluation may directly
+	       reference the renamed object instead of the pointer we will
+	       attach it to.  We don't want variables in the expression to
+	       be evaluated every time the renaming is used, since their
+	       value may change in between.  */
 	    else
 	      {
 		bool has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
