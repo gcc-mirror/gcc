@@ -403,16 +403,14 @@ check_newline ()
 	      if (c == '\n')
 		return c;
 #ifdef HANDLE_SYSV_PRAGMA
+	      ungetc (c, finput);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
-	      if (handle_sysv_pragma (finput, token))
-		{
-		  c = getc (finput);
-		  return c;
-		}
+	      return handle_sysv_pragma (finput, token);
 #else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
+	      ungetc (c, finput);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
@@ -423,8 +421,8 @@ check_newline ()
 		}
 #endif /* HANDLE_PRAGMA */
 #endif /* !HANDLE_SYSV_PRAGMA */
+	      goto skipline;
 	    }
-	  goto skipline;
 	}
 
       else if (c == 'd')
