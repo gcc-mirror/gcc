@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
+   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -31,7 +31,6 @@ and deleting the temporary files at the end.
 CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
-
 
 #include "config.h"
 #include "system.h"
@@ -636,7 +635,6 @@ static struct user_specs *user_specs_head, *user_specs_tail;
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
 #endif
 
-
 #ifdef HAVE_EXECUTABLE_SUFFIX
 /* This defines which switches stop a full compilation.  */
 #define DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR) \
@@ -1060,7 +1058,7 @@ struct spec_list
 };
 
 #define INIT_STATIC_SPEC(NAME,PTR) \
-{ NAME, NULL_PTR, PTR, (struct spec_list *)0, sizeof (NAME)-1, 0 }
+{ NAME, NULL_PTR, PTR, (struct spec_list *) 0, sizeof (NAME)-1, 0 }
 
 /* List of statically defined specs.  */
 static struct spec_list static_specs[] =
@@ -1103,21 +1101,20 @@ struct spec_list_1
 };
 
 static struct spec_list_1 extra_specs_1[] = { EXTRA_SPECS };
-static struct spec_list * extra_specs = (struct spec_list *)0;
+static struct spec_list * extra_specs = (struct spec_list *) 0;
 #endif
 
 /* List of dynamically allocates specs that have been defined so far.  */
 
-static struct spec_list *specs = (struct spec_list *)0;
-
+static struct spec_list *specs = (struct spec_list *) 0;
 
 /* Initialize the specs lookup routines.  */
 
 static void
 init_spec ()
 {
-  struct spec_list *next = (struct spec_list *)0;
-  struct spec_list *sl   = (struct spec_list *)0;
+  struct spec_list *next = (struct spec_list *) 0;
+  struct spec_list *sl   = (struct spec_list *) 0;
   int i;
 
   if (specs)
@@ -1129,7 +1126,7 @@ init_spec ()
 #ifdef EXTRA_SPECS
   extra_specs = (struct spec_list *)
     xcalloc (sizeof (struct spec_list), ARRAY_SIZE (extra_specs_1));
-  
+
   for (i = ARRAY_SIZE (extra_specs_1) - 1; i >= 0; i--)
     {
       sl = &extra_specs[i];
@@ -1151,7 +1148,6 @@ init_spec ()
 
   specs = sl;
 }
-
 
 /* Change the value of spec NAME to SPEC.  If SPEC is empty, then the spec is
    removed; If the spec starts with a + then SPEC is added to the end of the
@@ -1170,7 +1166,7 @@ set_spec (name, spec)
   /* If this is the first call, initialize the statically allocated specs.  */
   if (!specs)
     {
-      struct spec_list *next = (struct spec_list *)0;
+      struct spec_list *next = (struct spec_list *) 0;
       for (i = ARRAY_SIZE (static_specs) - 1; i >= 0; i--)
 	{
 	  sl = &static_specs[i];
@@ -1380,7 +1376,7 @@ store_arg (arg, delete_always, delete_failure)
 }
 
 /* Load specs from a file name named FILENAME, replacing occurances of
-   various different types of line-endings, \r\n, \n\r and just \r, with 
+   various different types of line-endings, \r\n, \n\r and just \r, with
    a single \n.  */
 
 static char*
@@ -1534,12 +1530,12 @@ read_specs (filename, main_p)
 	      while (*p1 == ' ' || *p1 == '\t')
 		p1++;
 
-	      if (! ISALPHA ((unsigned char)*p1))
+	      if (! ISALPHA ((unsigned char) *p1))
 		fatal ("specs %%rename syntax malformed after %ld characters",
 		       (long) (p1 - buffer));
 
 	      p2 = p1;
-	      while (*p2 && !ISSPACE ((unsigned char)*p2))
+	      while (*p2 && !ISSPACE ((unsigned char) *p2))
 		p2++;
 
 	      if (*p2 != ' ' && *p2 != '\t')
@@ -1551,13 +1547,13 @@ read_specs (filename, main_p)
 	      while (*p2 == ' ' || *p2 == '\t')
 		p2++;
 
-	      if (! ISALPHA ((unsigned char)*p2))
+	      if (! ISALPHA ((unsigned char) *p2))
 		fatal ("specs %%rename syntax malformed after %ld characters",
 		       (long) (p2 - buffer));
 
 	      /* Get new spec name */
 	      p3 = p2;
-	      while (*p3 && !ISSPACE ((unsigned char)*p3))
+	      while (*p3 && !ISSPACE ((unsigned char) *p3))
 		p3++;
 
 	      if (p3 != p-1)
@@ -1889,7 +1885,7 @@ build_search_list (paths, prefix, check_dir_p)
 	{
 	  if (!first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
-	    
+
 	  first_time = FALSE;
 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
 	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
@@ -1902,7 +1898,7 @@ build_search_list (paths, prefix, check_dir_p)
 	{
 	  if (! first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
-	    
+
 	  first_time = FALSE;
 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
 	  obstack_grow (&collect_obstack, just_machine_suffix,
@@ -2122,7 +2118,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
 	  std_loc_p = 1;
 	  free_split_directories (prog_dirs);
 	  free_split_directories (bin_dirs);
-	  prog_dirs = bin_dirs = (char **)0;
+	  prog_dirs = bin_dirs = (char **) 0;
 	  return NULL_PTR;
 	}
     }
@@ -2334,7 +2330,7 @@ find_a_file (pprefix, name, mode)
 }
 
 /* Ranking of prefixes in the sort list. -B prefixes are put before
-   all others. */
+   all others.  */
 
 enum path_prefix_priority
 {
@@ -2418,7 +2414,6 @@ unused_prefix_warnings (pprefix)
       pl = pl->next;
     }
 }
-
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -2485,7 +2480,7 @@ execute ()
       /* For help listings, put a blank line between sub-processes.  */
       if (print_help_list)
 	fputc ('\n', stderr);
-      
+
       /* Print each piped command as a separate line.  */
       for (i = 0; i < n_commands ; i++)
 	{
@@ -2575,7 +2570,7 @@ execute ()
 	    d.tv_sec = rus.ru_utime.tv_sec - prus.ru_utime.tv_sec;
 	    d.tv_usec = rus.ru_utime.tv_usec - prus.ru_utime.tv_usec;
 	    ut = (double)d.tv_sec + (double)d.tv_usec / 1.0e6;
-	    
+
 	    d.tv_sec = rus.ru_stime.tv_sec - prus.ru_stime.tv_sec;
 	    d.tv_usec = rus.ru_stime.tv_usec - prus.ru_stime.tv_usec;
 	    st = (double)d.tv_sec + (double)d.tv_usec / 1.0e6;
@@ -2687,7 +2682,6 @@ static int warn_std;
 
 /* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
 static int *warn_std_ptr = 0;
-
 
 #if defined(HAVE_OBJECT_SUFFIX) || defined(HAVE_EXECUTABLE_SUFFIX)
 
@@ -2704,7 +2698,7 @@ convert_filename (name, do_exe)
 
   if (name == NULL)
     return NULL;
-  
+
   len = strlen (name);
 
 #ifdef HAVE_OBJECT_SUFFIX
@@ -2798,13 +2792,13 @@ on to these processes the -W<letter> options must be used.\n\
      sub-processes.  */
 }
 
-static void 								
-add_preprocessor_option (option, len)					
+static void
+add_preprocessor_option (option, len)
      const char * option;
      int len;
-{									
+{
   n_preprocessor_options++;
-									
+
   if (! preprocessor_options)
     preprocessor_options
       = (char **) xmalloc (n_preprocessor_options * sizeof (char *));
@@ -2812,13 +2806,13 @@ add_preprocessor_option (option, len)
     preprocessor_options
       = (char **) xrealloc (preprocessor_options,
 			    n_preprocessor_options * sizeof (char *));
-  									
+
   preprocessor_options [n_preprocessor_options - 1] =
     save_string (option, len);
 }
-     
-static void 								
-add_assembler_option (option, len)					
+
+static void
+add_assembler_option (option, len)
      const char * option;
      int len;
 {
@@ -2834,9 +2828,9 @@ add_assembler_option (option, len)
 
   assembler_options [n_assembler_options - 1] = save_string (option, len);
 }
-     
-static void 								
-add_linker_option (option, len)					
+
+static void
+add_linker_option (option, len)
      const char * option;
      int    len;
 {
@@ -2878,7 +2872,7 @@ process_command (argc, argv)
 
   /* Figure compiler version from version string.  */
 
-  compiler_version = temp1 = xstrdup (version_string); 
+  compiler_version = temp1 = xstrdup (version_string);
 
   for (; *temp1; ++temp1)
     {
@@ -3067,7 +3061,7 @@ process_command (argc, argv)
 	  /* We will be passing a dummy file on to the sub-processes.  */
 	  n_infiles++;
 	  n_switches++;
-	  
+
 	  add_preprocessor_option ("--help", 6);
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
@@ -3102,7 +3096,7 @@ process_command (argc, argv)
 		add_assembler_option (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
-	  
+
 	  /* Record the part after the last comma.  */
 	  add_assembler_option (argv[i] + prev, j - prev);
 	}
@@ -3119,7 +3113,7 @@ process_command (argc, argv)
 		add_preprocessor_option (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
-	  
+
 	  /* Record the part after the last comma.  */
 	  add_preprocessor_option (argv[i] + prev, j - prev);
 	}
@@ -3155,7 +3149,7 @@ process_command (argc, argv)
 	  if (++i >= argc)
 	    fatal ("argument to `-specs' is missing");
 
-	  user->next = (struct user_specs *)0;
+	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i];
 	  if (user_specs_tail)
 	    user_specs_tail->next = user;
@@ -3170,7 +3164,7 @@ process_command (argc, argv)
 	  if (strlen (argv[i]) == 7)
 	    fatal ("argument to `-specs=' is missing");
 
-	  user->next = (struct user_specs *)0;
+	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i]+7;
 	  if (user_specs_tail)
 	    user_specs_tail->next = user;
@@ -3311,7 +3305,7 @@ process_command (argc, argv)
 	      if (! have_c)
 		{
 		  int skip;
-		  
+
 		  /* Forward scan, just in case -S or -c is specified
 		     after -o.  */
 		  int j = i + 1;
@@ -3384,7 +3378,7 @@ process_command (argc, argv)
   add_prefix (&startfile_prefixes, standard_exec_prefix_1, "BINUTILS",
 	      PREFIX_PRIORITY_LAST, 1, warn_std_ptr);
 
-  tooldir_prefix = concat (tooldir_base_prefix, spec_machine, 
+  tooldir_prefix = concat (tooldir_base_prefix, spec_machine,
 			   dir_separator_str, NULL_PTR);
 
   /* If tooldir is relative, base it on exec_prefixes.  A relative
@@ -3403,21 +3397,21 @@ process_command (argc, argv)
 		      spec_version, dir_separator_str, tooldir_prefix, NULL_PTR);
 
 	  add_prefix (&exec_prefixes,
-		      concat (gcc_exec_tooldir_prefix, "bin", 
+		      concat (gcc_exec_tooldir_prefix, "bin",
 			      dir_separator_str, NULL_PTR),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
-		      concat (gcc_exec_tooldir_prefix, "lib", 
+		      concat (gcc_exec_tooldir_prefix, "lib",
 			      dir_separator_str, NULL_PTR),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	}
 
       tooldir_prefix = concat (standard_exec_prefix, spec_machine,
-			       dir_separator_str, spec_version, 
+			       dir_separator_str, spec_version,
 			       dir_separator_str, tooldir_prefix, NULL_PTR);
     }
 
-  add_prefix (&exec_prefixes, 
+  add_prefix (&exec_prefixes,
               concat (tooldir_prefix, "bin", dir_separator_str, NULL_PTR),
 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
   add_prefix (&startfile_prefixes,
@@ -3426,7 +3420,6 @@ process_command (argc, argv)
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
-
 
   /* Then create the space for the vectors and scan again.  */
 
@@ -3470,14 +3463,14 @@ process_command (argc, argv)
 		 the various sub-processes.  */
 	      infiles[n_infiles].language = "c";
 	      infiles[n_infiles++].name   = "help-dummy";
-	      
+
 	      /* Preserve the --help switch so that it can be caught by the
 		 cc1 spec string.  */
 	      switches[n_switches].part1     = "--help";
 	      switches[n_switches].args      = 0;
 	      switches[n_switches].live_cond = SWITCH_OK;
 	      switches[n_switches].validated     = 0;
-	      
+
 	      n_switches++;
 	    }
 	}
@@ -3590,7 +3583,7 @@ process_command (argc, argv)
 	      char *tmp;
 	      part1[0] = c;
 	      part1[1] = '\0';
-	      
+
 	      switches[n_switches].part1 = part1;
 	      switches[n_switches].args
 		= (const char **) xmalloc (2 * sizeof (const char *));
@@ -3977,7 +3970,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
               /* If save_temps_flag is off, and the HOST_BIT_BUCKET is defined,
                  and it is not a directory, and it is writable, use it.
                  Otherwise, fall through and treat this like any other
-                 temporary file. */
+                 temporary file.  */
 
               if ((!save_temps_flag)
                   && (stat (HOST_BIT_BUCKET, &st) == 0) && (!S_ISDIR (st.st_mode))
@@ -4005,14 +3998,14 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		const char *suffix = p;
 		char *saved_suffix = NULL;
 
-		while (*p == '.' || ISALPHA ((unsigned char)*p))
+		while (*p == '.' || ISALPHA ((unsigned char) *p))
 		  p++;
 		suffix_length = p - suffix;
 		if (p[0] == '%' && p[1] == 'O')
 		  {
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
-		    if (*p == '.' || ISALPHA ((unsigned char)*p))
+		    if (*p == '.' || ISALPHA ((unsigned char) *p))
 		      abort ();
 		    if (suffix_length == 0)
 		      suffix = OBJECT_SUFFIX;
@@ -4307,7 +4300,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 		      if (*y != '_'
 			  || (*(y+1) != '_'
-			      && ! ISUPPER ((unsigned char)*(y+1))))
+			      && ! ISUPPER ((unsigned char) *(y+1))))
 		        {
 			  /* Stick __ at front of macro name.  */
 			  if (*y != '_')
@@ -4355,7 +4348,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 		      if (*y != '_'
 			  || (*(y+1) != '_'
-			      && ! ISUPPER ((unsigned char)*(y+1))))
+			      && ! ISUPPER ((unsigned char) *(y+1))))
 		        {
 			  /* Stick -D__ at front of macro name.  */
 			  *x++ = '-';
@@ -4687,7 +4680,7 @@ next_member:
 
 	  while (*q++ != ':') continue;
 	  body = q;
-	  
+
 	  while (count > 0)
 	    {
 	      if (*q == '{')
@@ -5027,11 +5020,11 @@ is_directory (path1, path2, linker)
   /* Exclude directories that the linker is known to search.  */
   if (linker
       && ((cp - path == 6
-	   && strcmp (path, concat (dir_separator_str, "lib", 
+	   && strcmp (path, concat (dir_separator_str, "lib",
 				    dir_separator_str, ".", NULL_PTR)) == 0)
 	  || (cp - path == 10
-	      && strcmp (path, concat (dir_separator_str, "usr", 
-				       dir_separator_str, "lib", 
+	      && strcmp (path, concat (dir_separator_str, "usr",
+				       dir_separator_str, "lib",
 				       dir_separator_str, ".", NULL_PTR)) == 0)))
     return 0;
 
@@ -5049,7 +5042,7 @@ set_input (filename)
 
   input_filename = filename;
   input_filename_length = strlen (input_filename);
-  
+
   input_basename = input_filename;
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
   /* Skip drive name so 'x:foo' is handled properly.  */
@@ -5164,7 +5157,7 @@ main (argc, argv)
 
     obstack_1grow (&multilib_obstack, 0);
     multilib_exclusions = obstack_finish (&multilib_obstack);
-    
+
     need_space = FALSE;
     for (i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
       {
@@ -5277,7 +5270,7 @@ main (argc, argv)
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, TRUE);
- 
+
   /* If not cross-compiling, look for startfiles in the standard places.  */
   if (*cross_compile == '0')
     {
@@ -5324,7 +5317,7 @@ main (argc, argv)
 			      machine_suffix,
 			      standard_startfile_prefix, NULL_PTR),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
-	}		       
+	}
 
       add_prefix (&startfile_prefixes, standard_startfile_prefix_1,
 		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
@@ -5427,7 +5420,7 @@ main (argc, argv)
 	{
 	  printf (_("\nFor bug reporting instructions, please see:\n"));
 	  printf ("%s.\n", GCCBUGURL);
-	  
+
 	  return (0);
 	}
 
@@ -5435,7 +5428,7 @@ main (argc, argv)
 	 called 'help-dummy' which needs to be compiled, and we pass this
 	 on the the various sub-processes, along with the --help switch.  */
     }
-  
+
   if (verbose_flag)
     {
       int n;
@@ -5542,7 +5535,7 @@ main (argc, argv)
     {
       int tmp = execution_count;
 
-      /* We'll use ld if we can't find collect2. */
+      /* We'll use ld if we can't find collect2.  */
       if (! strcmp (linker_name_spec, "collect2"))
 	{
 	  char *s = find_a_file (&exec_prefixes, "collect2", X_OK);
@@ -5584,7 +5577,7 @@ main (argc, argv)
       printf (("\nFor bug reporting instructions, please see:\n"));
       printf ("%s\n", GCCBUGURL);
     }
-  
+
   return (signal_count != 0 ? 2
 	  : error_count > 0 ? (pass_exit_codes ? greatest_status : 1)
 	  : 0);
@@ -5654,7 +5647,7 @@ lookup_compiler (name, length, language)
       if (cp->spec[0] != '@')
 	/* A non-alias entry: return it.  */
 	return cp;
-      
+
       /* An alias entry maps a suffix to a language.
 	 Search for the language; pass 0 for NAME and LENGTH
 	 to avoid infinite recursion if language not found.  */
@@ -5781,7 +5774,6 @@ notice VPARAMS ((const char *msgid, ...))
   vfprintf (stderr, _(msgid), ap);
   va_end (ap);
 }
-
 
 static void
 validate_all_switches ()
@@ -5938,7 +5930,7 @@ used_arg (p, len)
 	      {
 		mswitches[n_mswitches].str = matches[j].replace;
 		mswitches[n_mswitches].len = matches[j].rep_len;
-		mswitches[n_mswitches].replace = (char *)0;
+		mswitches[n_mswitches].replace = (char *) 0;
 		mswitches[n_mswitches].rep_len = 0;
 		n_mswitches++;
 		break;
@@ -6039,7 +6031,7 @@ set_multilib_dir ()
               not_arg = 1;
               ++this_arg;
             }
-  
+
 	  ok = used_arg (this_arg, p - this_arg);
 	  if (not_arg)
 	    ok = ! ok;
@@ -6136,7 +6128,7 @@ set_multilib_dir ()
 	}
 
       ++p;
-    }      
+    }
 }
 
 /* Print out the multiple library subdirectory selection
@@ -6185,14 +6177,14 @@ print_multilib_info ()
 
 	  while (*e != '\0')
 	    {
-	      int m = 1;	
+	      int m = 1;
 	      /* Ignore newlines.  */
 	      if (*e == '\n')
 	        {
 	          ++e;
 	          continue;
 	        }
-	      
+
 	      /* Check the arguments.  */
 	      while (*e != ';')
 	        {
@@ -6216,7 +6208,7 @@ print_multilib_info ()
 	                abort ();
 	              ++e;
 	            }
-		  
+
   		  q = p + 1;
 		  while (*q != ';')
 		    {
@@ -6225,7 +6217,7 @@ print_multilib_info ()
 
 		      if (*q == '\0')
 			abort ();
-	
+
 		      arg = q;
 
 		      while (*q != ' ' && *q != ';')
@@ -6252,7 +6244,7 @@ print_multilib_info ()
 	          if (*e == ' ')
 	            ++e;
 	        }
-	      
+
 	      if (m)
 	        {
 		  skip = 1;
@@ -6375,7 +6367,7 @@ print_multilib_info ()
 		    }
 		}
 	    }
-	  
+
 	  putchar ('\n');
 	}
 
