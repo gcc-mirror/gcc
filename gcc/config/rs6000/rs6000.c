@@ -16999,7 +16999,9 @@ const struct attribute_spec rs6000_attribute_table[] =
   given declaration.  */
 
 static tree
-rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
+rs6000_handle_altivec_attribute (tree *node,
+				 tree name ATTRIBUTE_UNUSED,
+				 tree args,
 				 int flags ATTRIBUTE_UNUSED,
 				 bool *no_add_attrs)
 {
@@ -17020,9 +17022,25 @@ rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
 
   mode = TYPE_MODE (type);
 
-  if (rs6000_warn_altivec_long
-      && (type == long_unsigned_type_node || type == long_integer_type_node))
-    warning ("use of 'long' in AltiVec types is deprecated; use 'int'");
+  /* Check for invalid AltiVec type qualifiers.  */
+  if (type == long_unsigned_type_node || type == long_integer_type_node)
+    {
+    if (TARGET_64BIT)
+      error ("use of %<long%> in AltiVec types is invalid for 64-bit code");
+    else if (rs6000_warn_altivec_long)
+      warning ("use of %<long%> in AltiVec types is deprecated; use %<int%>");
+    }
+  else if (type == long_long_unsigned_type_node
+           || type == long_long_integer_type_node)
+    error ("use of %<long long%> in AltiVec types is invalid");
+  else if (type == double_type_node)
+    error ("use of %<double%> in AltiVec types is invalid");
+  else if (type == long_double_type_node)
+    error ("use of %<long double%> in AltiVec types is invalid");
+  else if (type == boolean_type_node)
+    error ("use of boolean types in AltiVec types is invalid");
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    error ("use of %<complex%> in AltiVec types is invalid");
 
   switch (altivec_type)
     {
@@ -17071,9 +17089,7 @@ rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
 
   *no_add_attrs = true;  /* No need to hang on to the attribute.  */
 
-  if (!result)
-    warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
-  else
+  if (result)
     *node = reconstruct_complex_type (*node, result);
 
   return NULL_TREE;

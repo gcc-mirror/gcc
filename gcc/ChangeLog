@@ -1,3 +1,9 @@
+2004-12-14  Uttam Pawar  <uttamp@us.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+
+	* rs6000.c (rs6000_handle_altivec_attribute_tree): Report errors
+	for vector types with invalid component types.
+
 2004-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/18951
