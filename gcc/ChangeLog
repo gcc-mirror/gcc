@@ -1,5 +1,9 @@
 Fri Dec 19 17:31:11 1997  Ian Lance Taylor  <ian@cygnus.com>
 
+        * mips16.S: New file.
+
+	* libgcc2.c (varargs): Handle mips16.
+
 	* expr.c (do_tablejump): Let CASE_VECTOR_PC_RELATIVE be an
 	expression.
 	* stmt.c (expand_end_case): Likewise.
