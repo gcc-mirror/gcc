@@ -106,12 +106,22 @@ Boston, MA 02111-1307, USA.  */
   "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
 
 #undef CPP_SPEC
+#ifdef USE_GNULIBC_1
 #if TARGET_DEFAULT & MASK_68881
 #define CPP_SPEC \
   "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
 #else
 #define CPP_SPEC \
   "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
+#endif
+#else
+#if TARGET_DEFAULT & MASK_68881
+#define CPP_SPEC \
+  "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+#else
+#define CPP_SPEC \
+  "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+#endif
 #endif
 
 /* We override the ASM_SPEC from svr4.h because we must pass -m68040 down
@@ -138,19 +148,27 @@ Boston, MA 02111-1307, USA.  */
 /* If ELF is the default format, we should not use /lib/elf. */
 
 #undef	LINK_SPEC
+#ifdef USE_GNULIBC_1
 #ifndef LINUX_DEFAULT_ELF
-#define LINK_SPEC "-m m68kelf %{shared} %{symbolic:-shared -Bsymbolic} \
+#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
   %{!shared:%{!symbolic: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
       %{!dynamic-linker*:-dynamic-linker /lib/elf/ld-linux.so.1} \
       %{!rpath*:-rpath /lib/elf/}} %{static}}}"
 #else
-#define LINK_SPEC "-m m68kelf %{shared} %{symbolic:-shared -Bsymbolic} \
+#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
   %{!shared:%{!symbolic: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
       %{!dynamic-linker*:-dynamic-linker /lib/ld-linux.so.1}} \
+    %{static}}}"
+#endif
+#else
+#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
+  %{!shared:%{!symbolic: \
+    %{!static: \
+      %{rdynamic:-export-dynamic}} \
     %{static}}}"
 #endif
 
