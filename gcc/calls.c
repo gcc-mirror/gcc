@@ -3915,9 +3915,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    emit_move_insn (value, mem_value);
 	}
       else if (value != 0)
-	emit_move_insn (value, hard_libcall_value (outmode));
+	emit_move_insn (value, valreg);
       else
-	value = hard_libcall_value (outmode);
+	value = valreg;
     }
 
   if (ACCUMULATE_OUTGOING_ARGS)
