@@ -5796,6 +5796,18 @@ expand_expr (exp, target, tmode, modifier)
 				 invert_truthvalue (TREE_OPERAND (exp, 0)));
       return const0_rtx;
 
+    case LABELED_BLOCK_EXPR:
+      if (LABELED_BLOCK_BODY (exp))
+	expand_expr_stmt (LABELED_BLOCK_BODY (exp));
+      emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
+      return const0_rtx;
+
+    case EXIT_BLOCK_EXPR:
+      if (EXIT_BLOCK_RETURN (exp))
+	really_sorry ("returned value in block_exit_expr");
+      expand_goto (LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (exp)));
+      return const0_rtx;
+
     case LOOP_EXPR:
       push_temp_slots ();
       expand_start_loop (1);
