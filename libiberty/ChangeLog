@@ -1,3 +1,7 @@
+Thu May  4 17:14:41 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* sort.c (UCHAR_MAX): Provide fallback definition.
+
 2000-04-29  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* Makefile.in (maintainer-clean-subdir): Fix handling of empty
