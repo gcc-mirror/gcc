@@ -179,6 +179,7 @@ extern void		gen_conditional_move ();
 extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
+extern void		machine_dependent_reorg ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
@@ -4190,10 +4191,7 @@ do {									\
    to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(STREAM,LOG)					\
-{									\
-  int mask = (1 << (LOG)) - 1;						\
-  fprintf (STREAM, "\t.align\t%d\n", (LOG));				\
-}
+  fprintf (STREAM, "\t.align\t%d\n", (LOG));
 
 /* This is how to output an assembler line to to advance the location
    counter by SIZE bytes.  */
