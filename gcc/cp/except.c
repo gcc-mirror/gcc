@@ -796,13 +796,13 @@ expand_exception_blocks ()
 	expand_eh_region_start ();
 
       emit_insns (catch_clauses);
-      catch_clauses = NULL_RTX;
+      catch_clauses = catch_clauses_last = NULL_RTX;
 
       if (exceptions_via_longjmp == 0)
 	expand_eh_region_end (build_terminate_handler ());
 
       emit_insns (catch_clauses);
-      catch_clauses = NULL_RTX;
+      catch_clauses = catch_clauses_last = NULL_RTX;
       emit_label (funcend);
     }
 }

@@ -1,3 +1,7 @@
+2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* except.c (expand_exception_blocks): Clear catch_clauses_last.
+
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLEAR_DECL_C_BIT_FIELD): New macro.

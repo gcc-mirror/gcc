@@ -1865,10 +1865,9 @@ emit_cleanup_handler (entry)
   end_sequence ();
 
   /* And add it to the CATCH_CLAUSES.  */
-  push_to_sequence (catch_clauses);
+  push_to_full_sequence (catch_clauses, catch_clauses_last);
   emit_insns (handler_insns);
-  catch_clauses = get_insns ();
-  end_sequence ();
+  end_full_sequence (&catch_clauses, &catch_clauses_last);
 
   /* Now we've left the handler.  */
   pop_ehqueue ();
@@ -1990,10 +1989,9 @@ expand_end_all_catch ()
   pop_label_entry (&outer_context_label_stack);
 
   /* Add the new sequence of catches to the main one for this function.  */
-  push_to_sequence (catch_clauses);
+  push_to_full_sequence (catch_clauses, catch_clauses_last);
   emit_insns (new_catch_clause);
-  catch_clauses = get_insns ();
-  end_sequence ();
+  end_full_sequence (&catch_clauses, &catch_clauses_last);
   
   /* Here we fall through into the continuation code.  */
 }
