@@ -1,5 +1,10 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/mcore/mcore.c (mcore_encode_section_info): Don't set
+	SYMBOL_REF_FLAG.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* rtl.h (SYMBOL_FLAG_MACH_DEP_SHIFT): New.
 
 	* config/m32r/m32r.c (SYMBOL_FLAG_MODEL_SHIFT): New.
