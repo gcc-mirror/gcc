@@ -592,7 +592,7 @@ in the following sections.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -msize  -minit-stack=@var{n}  -mno-interrupts @gol
--mcall-prologues  -mno-tablejump  -mtiny-stack}
+-mcall-prologues  -mno-tablejump  -mtiny-stack  -mint8}
 
 @emph{MCore Options}
 @gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates @gol
@@ -10184,6 +10184,14 @@ Do not generate tablejump insns which sometimes increase code size.
 @item -mtiny-stack
 @opindex mtiny-stack
 Change only the low 8 bits of the stack pointer.
+
+@item -mint8
+@opindex mint8
+Assume int to be 8 bit integer. This affects the sizes of all types: A
+char will be 1 byte, an int will be 1 byte, an long will be 2 bytes
+and long long will be 4 bytes. Please note that this option does not
+comply to the C standards, but it will provide you with smaller code
+size.
 @end table
 
 @node MCore Options
