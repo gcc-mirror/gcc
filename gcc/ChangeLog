@@ -1,3 +1,23 @@
+2003-03-12  Danny Smith  <dannysmith@users.sourceforge.net>
+ 
+	* config/i386/winnt.c (DLL_IMPORT_PREFIX): New define.
+	Use throughout instead of DLL_IMPORT_EXPORT_PREFIX and "e."
+	(DLL_EXPORT_PREFIX): New define. Use throughout instead of
+	DLL_IMPORT_EXPORT_PREFIX and "i."
+	(i386_pe_dllexport_name_p): Here.
+	(i386_pe_dllimport_name_p): Here.
+        (i386_pe_mark_dllexport): Here. Remove DLL_IMPORT_PREFIX,
+	not 9 chars when getting identifier name.
+	(i386_pe_mark_dllimport): Here.
+	(i386_pe_encode_section_info): Here. Remove DLL_IMPORT_PREFIX,
+	not 9 chars when getting identifier name. Correct comment.
+	(i386_pe_strip_name_encoding): Here. Add comments for different
+	cases.
+	(gen_fastcall_suffix): Break down xmalloc() argument to
+	components.
+	(gen_stdcall_suffix): Likewise.
+	Update copyright year.
+
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/9888

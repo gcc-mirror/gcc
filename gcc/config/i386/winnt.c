@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -53,6 +53,15 @@ int i386_pe_dllexport_p PARAMS ((tree));
 int i386_pe_dllimport_p PARAMS ((tree));
 void i386_pe_mark_dllexport PARAMS ((tree));
 void i386_pe_mark_dllimport PARAMS ((tree));
+
+/* This is we how mark internal identifiers with dllimport or dllexport
+   attributes.  */
+#ifndef DLL_IMPORT_PREFIX
+#define DLL_IMPORT_PREFIX "#i."
+#endif
+#ifndef DLL_EXPORT_PREFIX
+#define DLL_EXPORT_PREFIX "#e."
+#endif
 
 /* Handle a "dllimport" or "dllexport" attribute;
    arguments as in struct attribute_spec.handler.  */
@@ -202,8 +211,8 @@ int
 i386_pe_dllexport_name_p (symbol)
      const char *symbol;
 {
-  return symbol[0] == DLL_IMPORT_EXPORT_PREFIX
-         && symbol[1] == 'e' && symbol[2] == '.';
+  return (strncmp (DLL_EXPORT_PREFIX, symbol,
+		   strlen (DLL_EXPORT_PREFIX)) == 0);
 }
 
 /* Return nonzero if SYMBOL is marked as being dllimport'd.  */
@@ -212,8 +221,8 @@ int
 i386_pe_dllimport_name_p (symbol)
      const char *symbol;
 {
-  return symbol[0] == DLL_IMPORT_EXPORT_PREFIX
-         && symbol[1] == 'i' && symbol[2] == '.';
+  return (strncmp (DLL_IMPORT_PREFIX, symbol,
+		   strlen (DLL_IMPORT_PREFIX)) == 0);
 }
 
 /* Mark a DECL as being dllexport'd.
@@ -237,12 +246,13 @@ i386_pe_mark_dllexport (decl)
   else
     abort ();
   if (i386_pe_dllimport_name_p (oldname))
-    oldname += 9;
+    /* Remove DLL_IMPORT_PREFIX.  */
+    oldname += strlen (DLL_IMPORT_PREFIX);
   else if (i386_pe_dllexport_name_p (oldname))
     return; /* already done */
 
-  newname = alloca (strlen (oldname) + 4);
-  sprintf (newname, "%ce.%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
+  newname = alloca (strlen (DLL_EXPORT_PREFIX) + strlen (oldname) + 1);
+  sprintf (newname, "%s%s", DLL_EXPORT_PREFIX, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
      address.  RTL processing can sometimes peek inside the symbol ref
@@ -316,8 +326,8 @@ i386_pe_mark_dllimport (decl)
       return;
     }
 
-  newname = alloca (strlen (oldname) + 4);
-  sprintf (newname, "%ci.%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
+  newname = alloca (strlen (DLL_IMPORT_PREFIX) + strlen (oldname) + 1);
+  sprintf (newname, "%s%s", DLL_IMPORT_PREFIX, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
      address.  RTL processing can sometimes peek inside the symbol ref
@@ -366,7 +376,8 @@ gen_fastcall_suffix (decl)
 	  }
       }
 
-  newsym = xmalloc (strlen (asmname) + 11);
+  /* Assume max of 8 base 10 digits in the suffix.  */ 
+  newsym = xmalloc (1 + strlen (asmname) + 1 + 8 + 1);
   sprintf (newsym, "%c%s@%d", FASTCALL_PREFIX, asmname, total/BITS_PER_UNIT);
   return IDENTIFIER_POINTER (get_identifier (newsym));
 }
@@ -404,7 +415,8 @@ gen_stdcall_suffix (decl)
 	  }
       }
 
-  newsym = xmalloc (strlen (asmname) + 10);
+  /* Assume max of 8 base 10 digits in the suffix.  */ 
+  newsym = xmalloc (strlen (asmname) + 1 + 8 + 1);
   sprintf (newsym, "%s@%d", asmname, total/BITS_PER_UNIT);
   return IDENTIFIER_POINTER (get_identifier (newsym));
 }
@@ -447,8 +459,8 @@ i386_pe_encode_section_info (decl, first)
     i386_pe_mark_dllimport (decl);
   /* It might be that DECL has already been marked as dllimport, but a
      subsequent definition nullified that.  The attribute is gone but
-     DECL_RTL still has (DLL_IMPORT_EXPORT_PREFIX)i._imp__foo.  We need
-     to remove that. Ditto for the DECL_NON_ADDR_CONST_P flag.  */
+     DECL_RTL still has (DLL_IMPORT_PREFIX) prefixed. We need to remove
+     that. Ditto for the DECL_NON_ADDR_CONST_P flag.  */
   else if ((TREE_CODE (decl) == FUNCTION_DECL
 	    || TREE_CODE (decl) == VAR_DECL)
 	   && DECL_RTL (decl) != NULL_RTX
@@ -458,7 +470,8 @@ i386_pe_encode_section_info (decl, first)
 	   && i386_pe_dllimport_name_p (XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0)))
     {
       const char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
-      tree idp = get_identifier (oldname + 9);
+      /* Remove DLL_IMPORT_PREFIX.  */
+      tree idp = get_identifier (oldname + strlen (DLL_IMPORT_PREFIX));
       rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
 
       XEXP (DECL_RTL (decl), 0) = newrtl;
@@ -477,8 +490,12 @@ const char *
 i386_pe_strip_name_encoding (str)
      const char *str;
 {
-  if (*str == DLL_IMPORT_EXPORT_PREFIX)
-    str += 3;
+  if (strncmp (str, DLL_IMPORT_PREFIX, strlen (DLL_IMPORT_PREFIX))
+      == 0)
+    str += strlen (DLL_IMPORT_PREFIX);
+  else if (strncmp (str, DLL_EXPORT_PREFIX, strlen (DLL_EXPORT_PREFIX))
+	   == 0)
+    str += strlen (DLL_EXPORT_PREFIX);
   if (*str == '*')
     str += 1;
   return str;
@@ -508,30 +525,34 @@ void i386_pe_output_labelref (stream, name)
      FILE *stream;
      const char *name;
 {
-  char prefix[4];
-
-  sprintf (prefix, "%ci.", DLL_IMPORT_EXPORT_PREFIX);
-  if (strncmp (name, prefix, strlen (prefix)) == 0)
-    {
-      if (name[3] == FASTCALL_PREFIX)
+  if (strncmp (name, DLL_IMPORT_PREFIX, strlen (DLL_IMPORT_PREFIX))
+      == 0)
+   /* A dll import */ 
+   {
+      if (name[strlen (DLL_IMPORT_PREFIX)] == FASTCALL_PREFIX)
+      /* A dllimport fastcall symbol.  */   
         {
           fprintf (stream, "__imp_%s",
                    i386_pe_strip_name_encoding (name));
         }
       else
+      /* A dllimport non-fastcall symbol.  */ 
         {
           fprintf (stream, "__imp__%s",
                    i386_pe_strip_name_encoding (name));
         }
     }
   else if ((name[0] == FASTCALL_PREFIX)
-           || ((name[0] == DLL_IMPORT_EXPORT_PREFIX)
-               && (name[3] == FASTCALL_PREFIX)))
+           || (strncmp (name, DLL_EXPORT_PREFIX, strlen (DLL_EXPORT_PREFIX)
+	       == 0 
+	       && name[strlen (DLL_EXPORT_PREFIX)] == FASTCALL_PREFIX)))
+    /* A fastcall symbol.  */
     {
       fprintf (stream, "%s",
                i386_pe_strip_name_encoding (name));
     }
   else
+    /* Everything else.  */
     {
       fprintf (stream, "%s%s", USER_LABEL_PREFIX,
                i386_pe_strip_name_encoding (name));
