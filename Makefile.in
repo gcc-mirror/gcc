@@ -771,7 +771,7 @@ ALL_TARGET_MODULES = \
 	all-target-libjava \
 	all-target-zlib \
 	all-target-boehm-gc \
-	all-target-qthreads
+	all-target-qthreads 
 
 # This is a list of the configure targets for all of the modules which
 # are compiled using the target tools.
@@ -790,7 +790,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-libjava \
 	configure-target-zlib \
 	configure-target-boehm-gc \
-	configure-target-qthreads
+	configure-target-qthreads 
 
 # This is a list of the check targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -801,12 +801,12 @@ CHECK_TARGET_MODULES = \
 	check-target-libobjc \
 	check-target-winsup \
 	check-target-libiberty \
+	check-target-gperf \
 	check-target-libffi \
 	check-target-libjava \
 	check-target-zlib \
 	check-target-boehm-gc \
-	check-target-qthreads \
-	check-target-gperf
+	check-target-qthreads 
 
 # This is a list of the install targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -819,11 +819,11 @@ INSTALL_TARGET_MODULES = \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
+	install-target-gperf \
 	install-target-libjava \
 	install-target-zlib \
 	install-target-boehm-gc \
-	install-target-qthreads \
-	install-target-gperf
+	install-target-qthreads 
 
 # This is a list of the targets for which we can do a clean-{target}.
 CLEAN_MODULES = \
@@ -903,7 +903,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-libjava \
 	clean-target-zlib \
 	clean-target-boehm-gc \
-	clean-target-qthreads
+	clean-target-qthreads 
 
 # All of the x11 modules that can be cleaned
 CLEAN_X11_MODULES = \
@@ -1659,7 +1659,6 @@ all-bfd: all-libiberty all-intl
 all-binutils: all-libiberty all-opcodes all-bfd all-flex all-bison all-byacc all-intl
 all-bison: all-texinfo
 configure-target-boehm-gc: $(ALL_GCC_C) configure-target-qthreads
-all-target-boehm-gc: configure-target-boehm-gc
 all-byacc:
 all-bzip2:
 all-db:
@@ -1667,7 +1666,6 @@ all-dejagnu: all-tcl all-expect all-tk
 all-diff: all-libiberty
 all-etc:
 configure-target-examples: $(ALL_GCC_C)
-all-target-examples: configure-target-examples
 all-expect: all-tcl all-tk
 all-fileutils: all-libiberty
 all-findutils:
@@ -1682,7 +1680,7 @@ all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison al
 all-gettext:
 all-gnuserv:
 configure-target-gperf: $(ALL_GCC_CXX)
-all-target-gperf: configure-target-gperf all-target-libiberty all-target-libstdc++-v3
+all-target-gperf: all-target-libiberty all-target-libstdc++-v3
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
 all-gui: all-gdb all-libproc
@@ -1694,36 +1692,32 @@ all-intl:
 all-itcl: all-tcl all-tk
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
 configure-target-libgloss: $(ALL_GCC)
-all-target-libgloss: configure-target-libgloss configure-target-newlib
+all-target-libgloss: configure-target-newlib
 all-libgui: all-tcl all-tk all-itcl
 all-libiberty:
 
 all-build-libiberty: configure-build-libiberty
 
 configure-target-libffi: $(ALL_GCC_C) 
-all-target-libffi: configure-target-libffi
 configure-target-libjava: $(ALL_GCC_C) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-libffi
-all-target-libjava: configure-target-libjava all-fastjar all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
+all-target-libjava: all-fastjar all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
 configure-target-libstdc++-v3: $(ALL_GCC_C)
-all-target-libstdc++-v3: configure-target-libstdc++-v3 all-target-libiberty
+all-target-libstdc++-v3: all-target-libiberty
 all-libtool:
 configure-target-libf2c: $(ALL_GCC_C)
-all-target-libf2c: configure-target-libf2c all-target-libiberty
+all-target-libf2c: all-target-libiberty
 configure-target-libobjc: $(ALL_GCC_C)
-all-target-libobjc: configure-target-libobjc all-target-libiberty
+all-target-libobjc: all-target-libiberty
 all-m4: all-libiberty all-texinfo
 all-make: all-libiberty
 all-mmalloc:
 configure-target-newlib: $(ALL_GCC)
-all-target-newlib: configure-target-newlib
 configure-target-libtermcap: $(ALL_GCC_C)
-all-target-libtermcap: configure-target-libtermcap
 all-opcodes: all-bfd all-libiberty
 all-patch: all-libiberty
 all-perl:
 all-prms: all-libiberty
 configure-target-qthreads: $(ALL_GCC_C)
-all-target-qthreads: configure-target-qthreads
 all-rcs:
 all-readline:
 all-recode: all-libiberty
@@ -1743,21 +1737,38 @@ all-time:
 all-tix: all-tcl all-tk
 all-wdiff:
 configure-target-winsup: $(ALL_GCC_C)
-all-target-winsup: all-target-libiberty all-target-libtermcap configure-target-winsup
+all-target-winsup: all-target-libiberty all-target-libtermcap
 all-uudecode: all-libiberty
 all-zip:
 all-zlib:
 configure-target-zlib: $(ALL_GCC_C)
-all-target-zlib: configure-target-zlib
 all-fastjar: all-zlib all-libiberty
 configure-target-fastjar: configure-target-zlib
 all-target-fastjar: configure-target-fastjar all-target-zlib all-target-libiberty
 configure-target-libiberty: $(ALL_GCC_C)
-all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
 install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
 install-sid: install-tcl install-tk
+
+# Dependencies of all-target-foo on configure-target-foo.
+all-target-libstdc++-v3: configure-target-libstdc++-v3
+all-target-newlib: configure-target-newlib
+all-target-libf2c: configure-target-libf2c
+all-target-libobjc: configure-target-libobjc
+all-target-libtermcap: configure-target-libtermcap
+all-target-winsup: configure-target-winsup
+all-target-libgloss: configure-target-libgloss
+all-target-libiberty: configure-target-libiberty
+all-target-gperf: configure-target-gperf
+all-target-examples: configure-target-examples
+all-target-libffi: configure-target-libffi
+all-target-libjava: configure-target-libjava
+all-target-zlib: configure-target-zlib
+all-target-boehm-gc: configure-target-boehm-gc
+all-target-qthreads: configure-target-qthreads
+
+
 ### other supporting targets
 
 MAKEDIRS= \
