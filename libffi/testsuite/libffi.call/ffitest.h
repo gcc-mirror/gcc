@@ -67,7 +67,7 @@ allocate_mmap (size_t size)
 	       MAP_PRIVATE, dev_zero_fd, 0);
 #endif
 
-  if (page == MAP_FAILED)
+  if (page == (void *) MAP_FAILED)
     {
       perror ("virtual memory exhausted");
       exit (1);
