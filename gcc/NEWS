@@ -1,5 +1,8 @@
 Noteworthy changes in GCC version 2.8.0:
 
+The -specs=file switch allows you to override default specs used in invoking
+programs like cc1, as, etc.
+
 The following new targets are supported:
 
     Solaris 2.5 running on UltraSPARC's.
