@@ -1955,10 +1955,8 @@ sched_init (dump_file)
   if (NEXT_INSN (insn) == 0
       || (GET_CODE (insn) != NOTE
 	  && GET_CODE (insn) != CODE_LABEL
-	  /* Don't emit a NOTE if it would end up between an unconditional
-	     jump and a BARRIER.  */
-	  && !(GET_CODE (insn) == JUMP_INSN
-	       && GET_CODE (NEXT_INSN (insn)) == BARRIER)))
+	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
+	  && GET_CODE (NEXT_INSN (insn)) != BARRIER))
     emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
 
   /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
