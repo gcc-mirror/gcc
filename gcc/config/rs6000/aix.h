@@ -482,6 +482,11 @@ toc_section ()						\
     xcoffout_declare_function (FILE, DECL, NAME);		\
 }
 
+/* Output a reference to SYM on FILE.  */
+
+#define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) \
+  rs6000_output_symbol_ref (FILE, SYM)
+
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
 
