@@ -432,6 +432,10 @@ extern int warn_conversion;
 
 extern int flag_traditional;
 
+/* Nonzero means to allow single precision math even if we're generally
+   being traditional. */
+extern int flag_allow_single_precision;
+
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
