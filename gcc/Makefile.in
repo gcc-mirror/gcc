@@ -3408,7 +3408,7 @@ ${QMTEST_DIR}/context: stamp-qmtest
 	echo "CompilerTable.cplusplus_kind=GCC" >> $@
 	echo "CompilerTable.cplusplus_path=${objdir}/g++" >> $@
 	echo "CompilerTable.cplusplus_options=-B${objdir}/" >> $@
-	echo "DejaGNUTest.target=$(target)" >> $@
+	echo "DejaGNUTest.target=${target_alias}" >> $@
 
 # Run the G++ testsuite using QMTest.
 qmtest-g++: ${QMTEST_DIR}/context
