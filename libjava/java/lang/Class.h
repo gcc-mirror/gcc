@@ -19,6 +19,7 @@ details.  */
 #include <java/net/URL.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/security/ProtectionDomain.h>
+#include <java/lang/Package.h>
 
 // We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -209,6 +210,8 @@ public:
     }
 
   jobject newInstance (void);
+  java::security::ProtectionDomain *getProtectionDomain (void);
+  java::lang::Package *getPackage (void);
   jstring toString (void);
   jboolean desiredAssertionStatus (void);
 
