@@ -558,7 +558,8 @@ call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	{
 	  tree callee, callee_sec, caller_sec;
 
-	  if (GET_CODE (op) != SYMBOL_REF || !SYMBOL_REF_LOCAL_P (op))
+	  if (GET_CODE (op) != SYMBOL_REF
+	      || !SYMBOL_REF_LOCAL_P (op) || SYMBOL_REF_EXTERNAL_P (op))
 	    return FALSE;
 
 	  /* Don't attempt a direct call if the callee is known to be in

@@ -1096,7 +1096,8 @@ typedef struct xtensa_args
    operand on the target machine when generating position independent
    code.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)					\
-  ((GET_CODE (X) != SYMBOL_REF || SYMBOL_REF_LOCAL_P (X))		\
+  ((GET_CODE (X) != SYMBOL_REF						\
+    || (SYMBOL_REF_LOCAL_P (X) && !SYMBOL_REF_EXTERNAL_P (X)))		\
    && GET_CODE (X) != LABEL_REF						\
    && GET_CODE (X) != CONST)
 
