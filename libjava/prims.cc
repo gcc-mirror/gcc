@@ -60,7 +60,7 @@ details.  */
 #include <java/lang/VirtualMachineError.h>
 #include <gnu/gcj/runtime/VMClassLoader.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
-#include <gnu/gcj/runtime/FirstThread.h>
+#include <gnu/java/lang/MainThread.h>
 
 #ifdef USE_LTDL
 #include <ltdl.h>
@@ -1049,12 +1049,12 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
 #endif
 
-      using namespace gnu::gcj::runtime;
+      using namespace gnu::java::lang;
       if (klass)
-	main_thread = new FirstThread (klass, arg_vec);
+	main_thread = new MainThread (klass, arg_vec);
       else
-	main_thread = new FirstThread (JvNewStringLatin1 (name),
-				       arg_vec, is_jar);
+	main_thread = new MainThread (JvNewStringLatin1 (name),
+				      arg_vec, is_jar);
     }
   catch (java::lang::Throwable *t)
     {
