@@ -128,7 +128,7 @@ do								\
     act.sa_handler = catch_segv;				\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = 0;						\
-    __sigaction (SIGSEGV, &act, NULL);				\
+    syscall (SYS_sigaction, SIGSEGV, &act, NULL);		\
   }								\
 while (0)  
 
