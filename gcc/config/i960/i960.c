@@ -2108,7 +2108,7 @@ i960_output_double (file, value)
   long value_long[2];
   REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
 
-  fprintf (stream, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",
+  fprintf (file, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",
 	   value_long[0], value, value_long[1]);
 #else
   if (REAL_VALUE_ISINF (value))
@@ -2130,7 +2130,7 @@ i960_output_float (file, value)
   long value_long;
   REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
 
-  fprintf (stream, "\t.word\t0x%08lx\t\t# %.12g (float)\n", value_long, value);
+  fprintf (file, "\t.word\t0x%08lx\t\t# %.12g (float)\n", value_long, value);
 #else
   if (REAL_VALUE_ISINF (value))
     fprintf (file, "\t.word	0x7f800000	# Infinity\n");
