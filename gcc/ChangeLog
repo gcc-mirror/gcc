@@ -1,3 +1,11 @@
+2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_simode_bld): Clear the
+	destination first if possible.
+	* config/h8300/h8300.md (extzv_1_r_h8300hs): Add an
+	alternative.
+	(extzv_1_r_inv_h8300hs): Likewise.
+
 2003-03-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* basic-block.h (EDGE_IRREDUCIBLE_LOOP, EDGE_ALL_FLAGS): New.
