@@ -6,6 +6,9 @@ Tue Apr 21 16:36:01 1998  John Carr  <jfc@mit.edu>
 
 Tue Apr 21 12:05:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mips.h (STACK_BOUNDARY): Allow specific targets to override.
+	(MIPS_STACK_ALIGN): Similarly.
+
 	* c-common.c (type_for_mode): Handle TI types.
 	* c-decl.c (intTI_type_node, unsigned_int_TI_type_node): Define.
 	(init_decl_processing): Handle TI types.

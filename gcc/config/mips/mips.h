@@ -2238,7 +2238,9 @@ extern struct mips_frame_info current_frame_info;
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 /* Align stack frames on 64 bits (Double Word ).  */
+#ifndef STACK_BOUNDARY
 #define STACK_BOUNDARY 64
+#endif
 
 /* Make sure 4 words are always allocated on the stack.  */
 
@@ -2476,8 +2478,9 @@ typedef struct mips_args {
   || (regno == (GP_REG_FIRST + 31) && regs_ever_live[GP_REG_FIRST + 31]))
 
 /* ALIGN FRAMES on double word boundaries */
-
-#define MIPS_STACK_ALIGN(LOC) (((LOC)+7) & ~7)
+#ifndef MIPS_STACK_ALIGN
+#define MIPS_STACK_ALIGN(LOC) (((LOC) + 7) & ~7)
+#endif
 
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
