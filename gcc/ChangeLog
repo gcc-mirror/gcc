@@ -1,3 +1,12 @@
+2002-07-26  Jason Merrill  <jason@redhat.com>
+
+	* c-dump.c: Resurrect.
+	* tree-dump.c: Move C-specific stuff to c-dump.c.
+	* c-common.h: Declare c_dump_tree.
+	* c-lang.c (LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN): Define.
+	* Makefile.in (C_AND_OBJC_OBJS): Add c-dump.o.
+	(c-dump.o): New rule.
+
 2002-07-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md: Enable patterns using rlwinm for

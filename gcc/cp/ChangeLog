@@ -1,3 +1,8 @@
+2002-07-26  Jason Merrill  <jason@redhat.com>
+
+	* dump.c (cp_dump_tree): Call c_dump_tree.
+	* Make-lang.in (CXX_C_OBJS): Add c-dump.o.
+
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* error.c (print_whitespace): Remove.
