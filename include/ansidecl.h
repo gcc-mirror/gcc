@@ -161,16 +161,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #endif	/* ANSI C.  */
 
-/* This is for GCC, which has historically used typed null pointer
-   constants.  It needs to be here so it is seen by headers included
-   by gcc's config.h.
-
-   FIXME: GCC probably doesn't need to use typed nulls anymore.
-   Clean it up, then remove this.  Ware variable-argument functions.  */
-#ifdef IN_GCC
-# define NULL_PTR ((PTR) 0)
-#endif
-
 /* Using MACRO(x,y) in cpp #if conditionals does not work with some
    older preprocessors.  Thus we can't define something like this:
 
