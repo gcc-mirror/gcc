@@ -1,4 +1,16 @@
-2004-09-14  Hans-Peter Nilsson  <hp@bitrange.com>
+2004-09-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/11722
+	* include/std/std_fstream.h (xsgetn): Declare only.
+	* include/bits/fstream.tcc (xsgetn): Define, optimize for the
+	always_noconv() case: when __n > __buflen, copy the available
+	buffer and issue a direct read.
+	* testsuite/performance/27_io/filebuf_sgetn_unbuf.cc: New.
+
+	* include/bits/fstream.tcc (xsputn): Minor tweak, reorder a
+	conditional.
+
+2004-09-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* testsuite/lib/libstdc++.exp: Use gcc wrapper.exp and call
 	libstdc++_maybe_build_wrapper instead of using local code.
