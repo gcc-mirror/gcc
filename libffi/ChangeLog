@@ -1,3 +1,13 @@
+2002-04-29  Gerhard Tonn  <GerhardTonn@swol.de>
+
+	* Makefile.am: Add Linux for S/390 support.
+	* Makefile.in: Regenerate.
+	* configure.in: Add Linux for S/390 support.
+	* configure: Regenerate.
+	* include/ffi.h.in: Add Linux for S/390 support.
+	* src/s390/ffi.c: New file from libffi CVS tree.
+	* src/s390/sysv.S: New file from libffi CVS tree.
+
 2002-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_AS_SPARC_UA_PCREL): Check for working
