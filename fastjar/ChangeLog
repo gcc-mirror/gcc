@@ -1,3 +1,17 @@
+2002-09-11  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (TEXINFO_TEX): New macro.
+	(info_TEXINFOS): Likewise.
+	(fastjar_TEXINFOS): Likewise.
+	(man_MANS): Likewise.
+	(EXTRA_DIST): Likewise.
+	(my_makei_flags): Likewise.
+	(fastjar.info): New rule.
+	(fastjar_TEXINFOS): Don't mention `$(srcdir)'.
+	(TEXINFO_TEX): Likewise.
+	(AUTOMAKE_OPTIONS): Added `cygnus'.
+
 2002-09-11  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am: Revert the previous patch.
