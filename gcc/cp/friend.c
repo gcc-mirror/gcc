@@ -394,7 +394,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	    {
 	      static int explained;
 	      cp_warning ("friend declaration `%#D'", decl);
-	      warning ("  will not be treated as a template instantiation");
+	      warning ("  declares a non-template function");
 	      if (! explained)
 		{
 		  warning ("  unless you compile with -fguiding-decls");
