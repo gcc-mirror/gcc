@@ -1,3 +1,16 @@
+2003-07-06  James E Wilson  <wilson@tuliptree.org>
+
+	PR optimization/9812
+	* rtl.h (mem_for_const_double): Delete prototype.
+	* varasm.c (mem_for_const_double): Delete function.
+	* config/m68k/hp320.h, config/m68k/linux.h, config/m68k/m68kelf.h,
+	config/m68k/m68kv4.h, config/m68k/netbsd-elf.h
+	(LEGITIMATE_PIC_OPERAND_P): Delete duplicate definitions.
+	* config/m68k/m68k.h (LEGITIMATE_CONSTANT_P): Disallow XFmode.
+	(LEGITIMATE_PIC_OPERAND_P): Delete CONST_DOUBLE tests.
+	* config/m68k/m68k.md (movxf): Add reload_in_progress guard.  Add
+	comment about confused support for XFmode constants.
+
 Mon Jul  7 02:03:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (fixup_reorder_chain): Call delete_dead_jumptables.

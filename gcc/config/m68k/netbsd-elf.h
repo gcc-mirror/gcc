@@ -385,20 +385,6 @@ while (0)
 #define BIGGEST_ALIGNMENT 64
 
 
-/* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is
-   an operand of a function call. */
-
-#undef LEGITIMATE_PIC_OPERAND_P
-#define LEGITIMATE_PIC_OPERAND_P(X)					\
-  ((! symbolic_operand (X, VOIDmode)					\
-    && ! (GET_CODE (X) == CONST_DOUBLE && mem_for_const_double (X)	\
-	  && GET_CODE (mem_for_const_double (X)) == MEM			\
-	  && symbolic_operand (XEXP (mem_for_const_double (X), 0),	\
-			       VOIDmode)))				\
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))		\
-   || PCREL_GENERAL_OPERAND_OK)
-
-
 /* For m68k SVR4, structures are returned using the reentrant
    technique. */
 

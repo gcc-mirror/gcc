@@ -2931,23 +2931,6 @@ record_constant_rtx (enum machine_mode mode, rtx x)
   return ptr;
 }
 
-/* Given a constant rtx X, return a MEM for the location in memory at which
-   this constant has been placed.  Return 0 if it not has been placed yet.  */
-
-rtx
-mem_for_const_double (rtx x)
-{
-  enum machine_mode mode = GET_MODE (x);
-  struct constant_descriptor_rtx *desc;
-
-  for (desc = const_rtx_hash_table[const_hash_rtx (mode, x)]; desc;
-       desc = desc->next)
-    if (compare_constant_rtx (mode, x, desc))
-      return desc->rtl;
-
-  return 0;
-}
-
 /* Given a constant rtx X, make (or find) a memory constant for its value
    and return a MEM rtx to refer to it in memory.  */
 
