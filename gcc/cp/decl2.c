@@ -4003,6 +4003,9 @@ set_decl_namespace (decl, scope)
   tree old;
   if (scope == std_node)
     scope = global_namespace;
+  /* Get rid of namespace aliases. */
+  scope = ORIGINAL_NAMESPACE (scope);
+  
   if (!is_namespace_ancestor (current_namespace, scope))
     cp_error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
@@ -4354,27 +4357,35 @@ do_namespace_alias (alias, namespace)
      tree alias, namespace;
 {
   tree binding;
-  tree ns;
-  if (TREE_CODE (namespace) == IDENTIFIER_NODE)
-    ns = lookup_name (namespace, 1);
-  else
-    ns = namespace;
-  if (TREE_CODE (ns) != NAMESPACE_DECL)
+  tree old;
+
+  if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
-      cp_error ("`%D' is not a namespace", namespace);
+      /* The parser did not find it, so it's not there. */
+      cp_error ("unknown namespace `%D'", namespace);
       return;
     }
+
+  namespace = ORIGINAL_NAMESPACE (namespace);
+
   binding = binding_for_name (alias, current_namespace);
-  if (BINDING_VALUE (binding) && BINDING_VALUE (binding) != namespace)
+  old = BINDING_VALUE (binding);
+  if (old)
     {
+      if (TREE_CODE (old) == NAMESPACE_DECL
+          && DECL_NAMESPACE_ALIAS (old) == namespace)
+        /* Ok: redeclaration. */
+        return;
       cp_error ("invalid namespace alias `%D'", alias);
-      cp_error_at ("`%D' previously declared here", alias);
+      cp_error_at ("`%D' previously declared here", old);
     }
   else
     {
-      /* XXX the alias is not exactly identical to the name space,
-	 it must not be used in a using directive or namespace alias */
-      BINDING_VALUE (binding) = ns;
+      /* Build the alias. */
+      alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
+      DECL_NAMESPACE_ALIAS (alias) = namespace;
+      DECL_CONTEXT (alias) = current_namespace;
+      BINDING_VALUE (binding) = alias;
     }
 }
 
@@ -4512,7 +4523,7 @@ do_using_directive (namespace)
       sorry ("using directives inside functions");
       return;
     }
-  /* using A::B::C; */
+  /* using namespace A::B::C; */
   if (TREE_CODE (namespace) == SCOPE_REF)
       namespace = TREE_OPERAND (namespace, 1);
   if (TREE_CODE (namespace) == IDENTIFIER_NODE)
@@ -4526,6 +4537,7 @@ do_using_directive (namespace)
       cp_error ("`%T' is not a namespace", namespace);
       return;
     }
+  namespace = ORIGINAL_NAMESPACE (namespace);
   /* direct usage */
   add_using_namespace (current_namespace, namespace, 0);
 }

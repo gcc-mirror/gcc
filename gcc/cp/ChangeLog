@@ -1,3 +1,25 @@
+1998-06-05  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* cp-tree.h (DECL_NAMESPACE_ALIAS, ORIGINAL_NAMESPACE): Declare.
+	* decl.c (lookup_name_real): Add namespaces_only parameter.
+	If set, return only NAMESPACE_DECLs.
+	(select_decl): Likewise.
+	(identifier_type_value): Give additional parameter.
+	(lookup_name_nonclass): Likewise.
+	(lookup_name): Likewise.
+	(find_binding): Skip namespace aliases.
+	(binding_for_name): Likewise.
+	(push_namespace): Check for namespace aliases.
+	(lookup_name_namespace_only): New function.
+	(begin_only_namespace_names, end_only_namespace_names): New functions.
+	* decl2.c (set_decl_namespace): Skip namespace aliases.
+	(do_using_directive): Likewise.
+	(do_namespace_alias): Produce namespace aliases, fix alias 
+	redeclaration.
+	* error.c (dump_decl): Support SCOPE_REF.
+	* parse.y (extdef): Wrap lookup with namespace_only for namespace
+	aliases and using declarations.
+
 1998-06-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (really_overloaded_fn): Only see through one TREE_LIST.

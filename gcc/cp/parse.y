@@ -401,18 +401,28 @@ extdef:
 		{ push_namespace (NULL_TREE); }
 	  extdefs_opt '}'
 		{ pop_namespace (); }
-	| NAMESPACE identifier '=' any_id ';'
-		{ do_namespace_alias ($2, $4); }
+	| NAMESPACE identifier '=' 
+                { begin_only_namespace_names (); }
+                any_id ';'
+		{
+		  end_only_namespace_names ();
+		  if (lastiddecl)
+		    $5 = lastiddecl;
+		  do_namespace_alias ($2, $5);
+		}
 	| using_decl ';'
 		{ do_toplevel_using_decl ($1); }
-	| USING NAMESPACE any_id ';'
+	| USING NAMESPACE
+		{ begin_only_namespace_names (); }
+		any_id ';'
 		{
+		  end_only_namespace_names ();
 		  /* If no declaration was found, the using-directive is
 		     invalid. Since that was not reported, we need the
 		     identifier for the error message. */
-		  if (TREE_CODE ($3) == IDENTIFIER_NODE && lastiddecl)
-		    $3 = lastiddecl;
-		  do_using_directive ($3);
+		  if (TREE_CODE ($4) == IDENTIFIER_NODE && lastiddecl)
+		    $4 = lastiddecl;
+		  do_using_directive ($4);
 		}
 	| extension extdef
 		{ pedantic = $<itype>1; }
