@@ -1,4 +1,4 @@
-public class pr6520
+public class PR6520
 {
    public static void check (double x, double y)
    {
