@@ -1,5 +1,9 @@
 2004-01-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13057
+	* class.c (build_clone): Copy type attributes from the original
+	function to the clone.
+	
 	PR c++/12815
 	* class.c (build_vtbl_ref_1): Do not unconditionally mark vtable
 	references as constant.
