@@ -1,3 +1,9 @@
+2003-08-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_CABS, BUILT_IN_CABSF, BUILT_IN_CABSL):
+	Mind fp rounding.
+	(BUILT_IN_FFSL): Use DEF_EXT_LIB_BUILTIN.
+
 2003-08-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config.gcc: Enable posix threads by default on darwin.
