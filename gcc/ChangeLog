@@ -1,3 +1,63 @@
+2003-06-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (REG_CLASS_FROM_LETTER): Change to:
+	(REG_CLASS_FROM_CONSTRAINT).
+	(CONST_OK_FOR_I): Rename to:
+	(CONST_OK_FOR_I08).  Changed all users.
+	(CONST_OK_FOR_J): Rename to:
+	(CONST_OK_FOR_I16).  Changed all users.
+	(CONST_OK_FOR_K): Rename to:
+	(CONST_OK_FOR_P27).  Changed all users.
+	(CONST_OK_FOR_L): Rename to:
+	(CONST_OK_FOR_K08).  Changed all users.
+	(CONST_OK_FOR_O): Rename to:
+	(CONST_OK_FOR_I06).  Changed all users.
+	(CONST_OK_FOR_P): Rename to:
+	(CONST_OK_FOR_I10).  Changed all users.
+	(CONSTRAINT_LEN, CONST_OK_FOR_I, CONST_OK_FOR_J16): Define.
+	(CONST_OK_FOR_J, CONST_OK_FOR_K, CONST_OK_FOR_P): Likewise.
+	(EXTRA_CONSTRAINT_A, EXTRA_CONSTRAINT_Bsc): Likewise.
+	(EXTRA_CONSTRAINT_B, PIC_OFFSET_P, PIC_DIRECT_ADDR_P): Likewise.
+	(EXTRA_CONSTRAINT_Cpg, EXTRA_CONSTRAINT_C): Likewise.
+	(EXTRA_MEMORY_CONSTRAINT,(EXTRA_CONSTRAINT_Sr0): Likewise.
+	(CONST_OK_FOR_LETTER_P): Replace with
+	(CONST_OK_FOR_CONSTRAINT_P).
+	(EXTRA_CONSTRAINT_S): Rename to:
+	(EXTRA_CONSTRAINT_C16).  Changed all users.
+	(MOVI_SHORI_BASE_OPERAND_P): Don't allow direct addresses.
+	(EXTRA_CONSTRAINT_T): Rename to:
+	(EXTRA_CONSTRAINT_Csy).  Changed all users.
+	(EXTRA_CONSTRAINT_Z): Remove.
+	(EXTRA_CONSTRAINT): Replace with:
+	(EXTRA_CONSTRAINT_STR).
+	(EXTRA_CONSTRAINT_U): Rename to:
+	 (EXTRA_CONSTRAINT_Z).  Changed all users.
+	* sh.c (and_operand): Use CONST_OK_FOR_J16.
+	* sh.md (cmpeqsi_t-1, cmpeqsi_t, adddi3_media): Use new constraints.
+	(addsi3_media, addsi3_compact, andsi3_compact, anddi3): Likewise.
+	(iorsi3, iordi3, xorsi3, xordi3, ashlsi3_std, ashlhi3_k): Likewise.
+	(lshrsi3_k, movsi_i, movsi_ie, movsi_i_lowpart, movsi_media): Likewise.
+	(movsi_media_nofpu, movqi_media, movhi_i, movhi_media): Likewise.
+	(*movdi_i, movdi_media, movdi_media_nofpu, shori_media): Likewise.
+	(movdf_media, movdf_media_nofpu, movv2sf_i, movv4sf_i): Likewise.
+	(movsf_media, movsf_media_nofpu, movsi_y, beq_media): Likewise.
+	(beq_media_i, bne_media, pt, ptb, movv8qi_i, movv2hi_i): Likewise.
+	(movv4hi_i, movv2si_i, negcmpeqv8qi, negcmpeqv2si): Likewise.
+	(negcmpeqv4hi, negcmpgtuv8qi, negcmpgtv2si, negcmpgtv4hi): Likewise.
+	(mcmv, mcnvs_lw, mcnvs_wb, mcnvs_wub, mextr_rl, mextr_lr): Likewise.
+	(mextr1, mextr2, mextr3, mextr4, mextr5, mextr6, mextr7): Likewise.
+	(mperm_w, mperm_w_little, mperm_w_big, msad_ubq_i): Likewise.
+	(mshards_q, mshfhi_b, mshflo_b, mshf4_b, mshf0_b, mshfhi_l): Likewise.
+	(mshflo_l, mshf4_l, mshf0_l, mshfhi_w, mshflo_w, mshf4_w): Likewise.
+	(mshf0_w, mshflo_w_x, mshfhi_l_di, mshfhi_l_di_rev): Likewise.
+	(mshflo_l_di_rev, mshflo_l_di_x, concat_v2sf): Likewise.
+	(mshflo_l_di_x_rev, subv2si3, subv4hi3, sssubv2si3): Likewise.
+	(sssubv4hi3): Likewise.
+	(movsf_i): Change I[08]/r to G/r.
+	(movsf_ie): Change f/{G,H}/c/X to f/{G,H}/c/Bsc.
+
+	* sh.c (sh_output_mi_thunk): Use CONST_OK_FOR_ADD.
+
 2003-06-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/i386.c (ix86_memory_move_cost): Fix typo.
