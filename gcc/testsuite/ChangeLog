@@ -1,3 +1,7 @@
+Thu May 18 16:03:29 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000518-1.c: New test.
+
 2000-05-18  David Billinghurst  <David.Billinghurst@riotinto.com.au>
 
 	* g77.f-torture/compile/200005018.f:  New test.
