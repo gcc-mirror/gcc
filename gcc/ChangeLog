@@ -1,3 +1,8 @@
+Fri Aug  6 23:08:44 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.texi: Document recommend means to provide software floating
+	point libraries in libgcc.a
+
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-lex.c (yylex): We can have a number with no digits.
