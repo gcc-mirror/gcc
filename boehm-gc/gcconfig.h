@@ -858,25 +858,32 @@
 # endif
 
 # ifdef MIPS
+# ifndef ECOS
 #   define MACH_TYPE "MIPS"
-#   ifndef IRIX5
-#     define DATASTART (ptr_t)0x10000000
+	/* LIBGCJ LOCAL: respect predefined DATASTART_IS_ETEXT.  */
+#   ifdef DATASTART_IS_ETEXT
+        extern int _etext;
+#     define DATASTART ((ptr_t)(&_etext))
+#   else
+#     ifndef IRIX5
+#       define DATASTART (ptr_t)0x10000000
 			      /* Could probably be slightly higher since */
 			      /* startup code allocates lots of stuff.   */
-#   else
-      extern int _fdata;
-#     define DATASTART ((ptr_t)(&_fdata))
-#     ifdef USE_MMAP
-#         define HEAP_START (ptr_t)0x30000000
 #     else
-#	  define HEAP_START DATASTART
-#     endif
+        extern int _fdata;
+#       define DATASTART ((ptr_t)(&_fdata))
+#       ifdef USE_MMAP
+#           define HEAP_START (ptr_t)0x30000000
+#       else
+#	    define HEAP_START DATASTART
+#       endif
 			      /* Lowest plausible heap address.		*/
 			      /* In the MMAP case, we map there.	*/
 			      /* In either case it is used to identify	*/
 			      /* heap sections so they're not 		*/
 			      /* considered as roots.			*/
-#   endif /* IRIX5 */
+#     endif /* IRIX5 */
+#   endif /* DATASTART_IS_ETEXT */
 #   define HEURISTIC2
 /* #   define STACKBOTTOM ((ptr_t)0x7fff8000)  sometimes also works.  */
 #   ifdef ULTRIX
@@ -902,6 +909,18 @@
 #	endif
 #	define DYNAMIC_LOADING
 #   endif
+#   endif /* ECOS */
+# ifdef ECOS
+    extern char __ram_data_start;
+    extern char __ram_data_end;
+#   define MACH_TYPE "MIPS"
+#   define DATASTART (ptr_t)(&__ram_data_start)
+#   define DATAEND (ptr_t)(&__ram_data_end)
+
+#   define HEURISTIC2
+#   define ALIGNMENT 4
+#   define ALIGN_DOUBLE
+#   endif /* ECOS */
 # endif
 
 # ifdef RS6000
@@ -1167,7 +1186,8 @@
 # if defined(PCR) || defined(SRC_M3) || \
 	defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
 	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
-	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
+	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS) || \
+ 	defined(QUICK_THREADS)
 #   define THREADS
 # endif
 
