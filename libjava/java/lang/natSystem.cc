@@ -333,22 +333,6 @@ java::lang::System::init_properties (void)
   
   SET ("file.encoding", default_file_encoding);
 
-#ifdef WIN32
-  SET ("file.separator", "\\");
-  SET ("path.separator", ";");
-  SET ("line.separator", "\r\n");
-  SET ("java.io.tmpdir", "C:\\temp");
-#else
-  // Unix.
-  SET ("file.separator", "/");
-  SET ("path.separator", ":");
-  SET ("line.separator", "\n");
-  char *tmpdir = ::getenv("TMPDIR");
-  if (! tmpdir)
-    tmpdir = "/tmp";
-  SET ("java.io.tmpdir", tmpdir);
-#endif
-
 #ifdef HAVE_UNAME
   struct utsname u;
   if (! uname (&u))
@@ -515,6 +499,10 @@ java::lang::System::init_properties (void)
       newprops->put(JvNewStringLatin1 ("java.class.path"),
 		      sb->toString ());
     }
+
+  // Allow platform specific settings and overrides.
+  _Jv_platform_initProperties (newprops);
+
   // Finally, set the field. This ensures that concurrent getProperty() 
   // calls will return initialized values without requiring them to be 
   // synchronized in the common case.

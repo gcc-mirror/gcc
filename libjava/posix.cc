@@ -12,12 +12,14 @@ details.  */
 
 #include "posix.h"
 
+#include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
 
 #include <jvm.h>
 #include <java/lang/Thread.h>
 #include <java/io/InterruptedIOException.h>
+#include <java/util/Properties.h>
 
 #if defined (ECOS)
 extern "C" unsigned long long _clock (void);
@@ -60,6 +62,23 @@ _Jv_platform_initialize (void)
 #else
   signal (SIGPIPE, SIG_IGN);
 #endif
+}
+
+// Set platform-specific System properties.
+void
+_Jv_platform_initProperties (java::util::Properties* newprops)
+{
+  // A convenience define.
+#define SET(Prop,Val) \
+  newprops->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
+
+  SET ("file.separator", "/");
+  SET ("path.separator", ":");
+  SET ("line.separator", "\n");
+  char *tmpdir = ::getenv("TMPDIR");
+  if (! tmpdir)
+    tmpdir = "/tmp";
+  SET ("java.io.tmpdir", tmpdir);
 }
 
 static inline void
