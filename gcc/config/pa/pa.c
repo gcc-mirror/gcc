@@ -642,7 +642,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       else if (GET_CODE (operand1) != CONST_INT
 	       || (! INT_14_BITS (operand1)
 		   && ! ((INTVAL (operand1) & 0x7ff) == 0)
-		   && !zdepi_cint_p (INTVAL (operand1))))
+		   && ! zdepi_cint_p (INTVAL (operand1))))
 	{
 	  rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (mode);
 	  emit_insn (gen_rtx (SET, VOIDmode, temp,
@@ -655,7 +655,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 }
 
 /* Does operand (which is a symbolic_operand) live in text space? If
-   so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.*/
+   so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.  */
 
 int
 read_only_operand (operand)
@@ -689,9 +689,9 @@ singlemove_string (operands)
 }
 
 
-/* Compute position (in OP[2]) and width (in OP[3])
-   useful for copying or or'ing IMM to a register using bit field
-   instructions.  Store the immediate value to insert in OP[1].  */
+/* Compute position (in OP[1]) and width (in OP[2])
+   useful for copying IMM to a register using the zdepi
+   instructions.  Store the immediate value to insert in OP[0].  */
 void
 compute_zdepi_operands (imm, op)
      unsigned imm;
@@ -1349,7 +1349,7 @@ output_ascii (file, p, size)
   fprintf (file, "\"\n");
 }
 
-/* You may have trouble believing this, but this is the HP825 stack
+/* You may have trouble believing this, but this is the HP-PA stack
    layout.  Wow.
 
    Offset		Contents
@@ -1419,9 +1419,9 @@ print_stw (file, r, disp, base)
      int r, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    fprintf (file, "\tstw %d,%d(0,%d)\n", r, disp, base);
+    fprintf (file, "\tstw %%r%d,%d(0,%%r%d)\n", r, disp, base);
   else
-    fprintf (file, "\taddil L'%d,%d\n\tstw %d,R'%d(0,1)\n", disp, base,
+    fprintf (file, "\taddil L'%d,%%r%d\n\tstw %%r%d,R'%d(0,%%r1)\n", disp, base,
 	     r, disp);
 }
 
@@ -1433,7 +1433,7 @@ print_ldw (file, r, disp, base)
   if (VAL_14_BITS_P (disp))
     fprintf (file, "\tldw %d(0,%d),%d\n", disp, base, r);
   else
-    fprintf (file, "\taddil L'%d,%d\n\tldw R'%d(0,1),%d\n", disp, base,
+    fprintf (file, "\taddil L'%d,%d\n\tldw R'%d(0,%%r1),%d\n", disp, base,
 	     disp, r);
 }
 
@@ -1518,42 +1518,38 @@ output_function_prologue (file, size)
      structure.  */
 
   if (regs_ever_live[2] || profile_flag)
-    fprintf (file, "\tstw 2,-20(0,30)\n");
+    fprintf (file, "\tstw %%r2,-20(0,%%r30)\n");
 
   /* Reserve space for local variables.  */
   if (actual_fsize)
     if (frame_pointer_needed)
       {
 	if (VAL_14_BITS_P (actual_fsize))
-	  fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstwm 1,%d(0,30)\n",
+	  fprintf (file, "\tcopy %%r4,%%r1\n\tcopy %%r30,%%r4\n\tstwm %%r1,%d(0,%%r30)\n",
 		   actual_fsize);
 	else
 	  {
-	    fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstw 1,0(0,4)\n");
-	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
+	    fprintf (file, "\tcopy %%r4,%%r1\n\tcopy %%r30,%%r4\n\tstw %%r1,0(0,%%r4)\n");
+	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r30\n",
 		     actual_fsize, actual_fsize);
 	  }
       }
     else
-      /* Used to be abort ();  */
       {
-	if (VAL_14_BITS_P (-actual_fsize) 
-	    && local_fsize == 0
-	    && ! frame_pointer_needed
-	    && ! flag_pic
-	    && ! profile_flag)
+	if (VAL_14_BITS_P (-actual_fsize)
+	    && local_fsize == 0 && ! flag_pic && ! profile_flag)
 	  merge_sp_adjust_with_store = 1;
 	else if (VAL_14_BITS_P (actual_fsize))
-	  fprintf (file, "\tldo %d(30),30\n", actual_fsize);
+	  fprintf (file, "\tldo %d(%%r30),%%r30\n", actual_fsize);
 	else
-	  fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
+	  fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r30\n",
 		   actual_fsize, actual_fsize);
       }
-  /* The hppa calling conventions say that that %r19, the pic offset 
+  /* The hppa calling conventions say that that %r19, the pic offset
      register, is saved at sp - 32 (in this function's frame) */
   if (flag_pic)
     {
-      fprintf (file, "\tstw %%r19,-32(%%r30)\n");
+      fprintf (file, "\tstw %%r19,-32(0,%%r30)\n");
     }
   /* Instead of taking one argument, the counter label, as most normal
      mcounts do, _mcount appears to behave differently on the HPPA. It
@@ -1591,9 +1587,7 @@ output_function_prologue (file, size)
 	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
 	  }
       fprintf (file,
-	       "\tcopy %%r2,%%r26\n\taddil L'LP$%04d-$global$,%%r27\n\
-\tldo R'LP$%04d-$global$(%%r1),%%r24\n\tbl _mcount,%%r2\n\
-\tldo %d(%%r2),%%r25\n",
+	       "\tcopy %%r2,%%r26\n\taddil L'LP$%04d-$global$,%%r27\n\tldo R'LP$%04d-$global$(%%r1),%%r24\n\tbl _mcount,%%r2\n\tldo %d(%%r2),%%r25\n",
 	       hp_profile_labelno, hp_profile_labelno, -pc_offset - 12 - 8);
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
@@ -1622,7 +1616,7 @@ output_function_prologue (file, size)
 	  {
 	    /* If merge_sp_adjust_with_store is nonzero, then we can 
 	       optimize the first GR save.  */
-	    if (merge_sp_adjust_with_store == 1)
+	    if (merge_sp_adjust_with_store)
 	      {
 		merge_sp_adjust_with_store = 0;
     		fprintf (file, "\tstwm %d,%d(0,%d)\n", i, -offset, 30);
@@ -1634,18 +1628,18 @@ output_function_prologue (file, size)
 	{
 	    /* If merge_sp_adjust_with_store is nonzero, then we can 
 	       optimize the first GR save.  */
-	  if (merge_sp_adjust_with_store == 1)
+	  if (merge_sp_adjust_with_store)
 	    {
 	      merge_sp_adjust_with_store = 0;
-    	      fprintf (file, "\tstwm %d,%d(0,%d)\n", 3, -offset, 30);
+    	      fprintf (file, "\tstwm %%r3,%d(0,%%r30)\n", -offset);
 	    }
 	  else
 	    print_stw (file, 3, offset, 30);  offset += 4;
 	}
       /* If we wanted to merge the SP adjustment with a GR save, but we never
 	 did any GR saves, then just output the adjustment here.  */
-      if (merge_sp_adjust_with_store == 1)
-	fprintf (file, "\tldo %d(30),30\n", actual_fsize);
+      if (merge_sp_adjust_with_store)
+	fprintf (file, "\tldo %d(%%r30),%%r30\n", actual_fsize);
     }
       
   /* Align pointer properly (doubleword boundary).  */
@@ -1657,17 +1651,17 @@ output_function_prologue (file, size)
       if (frame_pointer_needed)
 	{
 	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(4),1\n", offset);
+	    fprintf (file, "\tldo %d(%%r4),%%r1\n", offset);
 	  else
-	    fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n",
+	    fprintf (file, "\taddil L'%d,%%r4\n\tldo R'%d(%%r1),%%r1\n",
 		     offset, offset);
 	}
       else
 	{
 	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(30),1\n", offset);
+	    fprintf (file, "\tldo %d(%%r30),%%r1\n", offset);
 	  else
-	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n",
+	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r1\n",
 		     offset, offset);
 	}
       if (!TARGET_SNAKE)
@@ -1675,7 +1669,7 @@ output_function_prologue (file, size)
 	  for (i = 47; i >= 44; i--)
 	    {
 	      if (regs_ever_live[i])
-		fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
+		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
 	    }
 	}
       else
@@ -1683,7 +1677,7 @@ output_function_prologue (file, size)
 	  for (i = 90; i >= 72; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
 	      {
-		fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
+		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
 	      }
 	}
     }
@@ -1707,7 +1701,7 @@ output_function_epilogue (file, size)
   else if (actual_fsize
 	   && VAL_14_BITS_P (actual_fsize + 20)
 	   && (regs_ever_live [2] || profile_flag))
-    fprintf(file,"\tldw %d(30),2\n", - (actual_fsize + 20));
+    fprintf(file,"\tldw %d(0,%%r30),%%r2\n", - (actual_fsize + 20));
 
   if (frame_pointer_needed)
     {
@@ -1761,17 +1755,17 @@ output_function_epilogue (file, size)
       if (frame_pointer_needed)
 	{
 	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(4),1\n", offset);
+	    fprintf (file, "\tldo %d(%%r4),%%r1\n", offset);
 	  else
-	    fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n",
+	    fprintf (file, "\taddil L'%d,%%r4\n\tldo R'%d(%%r1),%%r1\n",
 		     offset, offset);
 	}
       else
 	{
 	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(30),1\n", offset);
+	    fprintf (file, "\tldo %d(%%r30),%%r1\n", offset);
 	  else
-	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n",
+	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r1\n",
 		     offset, offset);
 	}
       if (!TARGET_SNAKE)
@@ -1779,7 +1773,7 @@ output_function_epilogue (file, size)
 	  for (i = 47; i >= 44; i--)
 	    {
 	      if (regs_ever_live[i])
-		fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
+		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
 	    }
 	}
       else
@@ -1787,7 +1781,7 @@ output_function_epilogue (file, size)
 	  for (i = 90; i >= 72; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
 	      {
-		fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
+		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
 	      }
 	}
     }
@@ -1798,7 +1792,7 @@ output_function_epilogue (file, size)
     {
       /* RP has already been restored in this case.  */
       fprintf (file, "\tldo 64(%%r4),%%r30\n");
-      fprintf (file, "\tbv 0(%%r2)\n\tldwm -64(%%r30),4\n");
+      fprintf (file, "\tbv 0(%%r2)\n\tldwm -64(0,%%r30),%%r4\n");
     }
   else if (actual_fsize)
     {
@@ -1810,39 +1804,38 @@ output_function_epilogue (file, size)
 	    {
 	      /* Optimize load and sp adjustment.  */
 	      if (merge_sp_adjust_with_load)
-		fprintf (file, "\tbv 0(2)\n\tldwm %d(30),%d\n",
+		fprintf (file, "\tbv 0(%%r2)\n\tldwm %d(0,%%r30),%d\n",
 			 -actual_fsize, merge_sp_adjust_with_load);
 	      else
-		fprintf (file, "\tbv 0(2)\n\tldo %d(30),30\n", -actual_fsize);
+		fprintf (file, "\tbv 0(%%r2)\n\tldo %d(%%r30),%%r30\n", -actual_fsize);
 	    }
 	  /* Large frame.  Uncommon and not worth extra hair to avoid
 	     load/use delay for RP.  */
 	  else
 	    fprintf (file,
-		     "\taddil L'%d,30\n\tldw %d(1),2\n\tbv 0(2)\n\
-\tldo R'%d(1),30\n",
+		     "\taddil L'%d,%%r30\n\tldw %d(0,%%r1),%%r2\n\tbv 0(%%r2)\n\tldo R'%d(%%r1),%%r30\n",
 		     - actual_fsize,
 		     - (actual_fsize + 20 + ((-actual_fsize) & ~0x7ff)),
 		     - actual_fsize);
 	}
       /* Merge load with SP adjustment.  */
       else if (merge_sp_adjust_with_load)
-	fprintf (file, "\tbv 0(2)\n\tldwm %d(0,30),%d\n", 
+	fprintf (file, "\tbv 0(%%r2)\n\tldwm %d(0,%%r30),%d\n", 
 		 - actual_fsize, merge_sp_adjust_with_load);
       else if (VAL_14_BITS_P (actual_fsize))
-	fprintf (file, "\tbv 0(2)\n\tldo %d(30),30\n", - actual_fsize);
+	fprintf (file, "\tbv 0(%%r2)\n\tldo %d(%%r30),%%r30\n", - actual_fsize);
       else
-	fprintf (file, "\taddil L'%d,30\n\tbv 0(2)\n\tldo R'%d(1),30\n",
+	fprintf (file, "\taddil L'%d,%%r30\n\tbv 0(%%r2)\n\tldo R'%d(%%r1),%%r30\n",
 		 - actual_fsize, - actual_fsize);
     }
   else if (current_function_epilogue_delay_list)
     {
-      fprintf (file, "\tbv 0(2)\n");
+      fprintf (file, "\tbv 0(%%r2)\n");
       final_scan_insn (XEXP (current_function_epilogue_delay_list, 0), file,
 		       1, 0, 1);
     }
   else
-    fprintf (file, "\tbv,n 0(2)\n");
+    fprintf (file, "\tbv,n 0(%%r2)\n");
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");
 }
 
@@ -1961,31 +1954,6 @@ print_operand (file, x, code)
 	}
       else
 	break;
-    case 'O':
-      switch (GET_CODE (x))
-	{
-	case PLUS:
-	  fprintf (file, "add%s",
-		   GET_CODE (XEXP (x, 1)) == CONST_INT ? "i" : "");  break;
-	case MINUS:
-	  fprintf (file, "sub%s",
-		   GET_CODE (XEXP (x, 0)) == CONST_INT ? "i" : "");  break;
-	case AND:
-	  fprintf (file, "and%s",
-		   GET_CODE (XEXP (x, 1)) == NOT ? "cm" : "");  break;
-	case IOR:
-	  fprintf (file, "or");  break;
-	case XOR:
-	  fprintf (file, "xor");  break;
-	case ASHIFT:
-	  fprintf (file, "sh%dadd", INTVAL (XEXP (x, 1)));  break;
-	  /* Too lazy to handle bitfield conditions yet.  */
-	default:
-	  printf ("Can't grok '%c' operator:\n", code);
-	  debug_rtx (x);
-	  abort ();
-	}
-      return;
     case 'C':
     case 'X':
       switch (GET_CODE (x))
@@ -2579,18 +2547,19 @@ int
 fmpyaddoperands(operands)
      rtx *operands;
 {
+  enum machine_mode mode = GET_MODE (operands[0]);
 
   /* All modes must be the same.  */
-  if (! (GET_MODE (operands[0]) == GET_MODE (operands[1])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[2])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[3])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[4])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[5])))
+  if (! (mode == GET_MODE (operands[1])
+	 && mode == GET_MODE (operands[2])
+	 && mode == GET_MODE (operands[3])
+	 && mode == GET_MODE (operands[4])
+	 && mode == GET_MODE (operands[5])))
     return 0;
 
   /* Both DFmode and SFmode should work.  But using SFmode makes the
      assembler complain.  Just turn it off for now.  */
-  if (GET_MODE (operands[0]) != DFmode)
+  if (mode != DFmode)
     return 0;
 
   /* Only 2 real operands to the addition.  One of the input operands must
@@ -2620,18 +2589,19 @@ int
 fmpysuboperands(operands)
      rtx *operands;
 {
+  enum machine_mode mode = GET_MODE (operands[0]);
 
   /* All modes must be the same.  */
-  if (! (GET_MODE (operands[0]) == GET_MODE (operands[1])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[2])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[3])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[4])
-	 && GET_MODE (operands[0]) == GET_MODE (operands[5])))
+  if (! (mode == GET_MODE (operands[1])
+	 && mode == GET_MODE (operands[2])
+	 && mode == GET_MODE (operands[3])
+	 && mode == GET_MODE (operands[4])
+	 && mode == GET_MODE (operands[5])))
     return 0;
 
   /* Both DFmode and SFmode should work.  But using SFmode makes the
      assembler complain.  Just turn it off for now.  */
-  if (GET_MODE (operands[0]) != DFmode)
+  if (mode != DFmode)
     return 0;
 
   /* Only 2 real operands to the subtraction.  Subtraction is not a commutative
