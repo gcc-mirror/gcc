@@ -1736,7 +1736,8 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
 
   if (rvalue->rank != 0 && lvalue->rank != rvalue->rank)
     {
-      gfc_error ("Incompatible ranks in assignment at %L", &lvalue->where);
+      gfc_error ("Incompatible ranks %d and %d in assignment at %L",
+		 lvalue->rank, rvalue->rank, &lvalue->where);
       return FAILURE;
     }
 
@@ -1746,6 +1747,10 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
 		 &lvalue->where);
       return FAILURE;
     }
+
+  if (rvalue->expr_type == EXPR_NULL)
+    gfc_warning ("NULL appears on right-hand side in assignment at %L",
+		 &rvalue->where);
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0

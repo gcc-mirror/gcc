@@ -260,6 +260,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_repack_arrays = value;
       break;
 
+    case OPT_ffixed_line_length_72:
+      gfc_option.fixed_line_length = 72;
+      break;
+
     case OPT_ffixed_line_length_80:
       gfc_option.fixed_line_length = 80;
       break;
