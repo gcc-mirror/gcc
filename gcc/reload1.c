@@ -417,6 +417,7 @@ static void emit_output_reload_insns (struct insn_chain *, struct reload *,
 				      int);
 static void do_input_reload (struct insn_chain *, struct reload *, int);
 static void do_output_reload (struct insn_chain *, struct reload *, int);
+static bool inherit_piecemeal_p (int, int);
 static void emit_reload_insns (struct insn_chain *);
 static void delete_output_reload (rtx, int, int);
 static void delete_address_reloads (rtx, rtx);
@@ -6956,6 +6957,27 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
   emit_output_reload_insns (chain, rld + j, j);
 }
 
+/* Reload number R reloads from or to a group of hard registers starting at
+   register REGNO.  Return true if it can be treated for inheritance purposes
+   like a group of reloads, each one reloading a single hard register.
+   The caller has already checked that the spill register and REGNO use
+   the same number of registers to store the reload value.  */
+
+static bool
+inherit_piecemeal_p (int r, int regno)
+{
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  return (!REG_CANNOT_CHANGE_MODE_P (reload_spill_index[r],
+				     GET_MODE (rld[r].reg_rtx),
+				     reg_raw_mode[reload_spill_index[r]])
+	  && !REG_CANNOT_CHANGE_MODE_P (regno,
+					GET_MODE (rld[r].reg_rtx),
+					reg_raw_mode[regno]));
+#else
+  return true;
+#endif
+}
+
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
@@ -7137,10 +7159,15 @@ emit_reload_insns (struct insn_chain *chain)
 		  int nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
 			     : hard_regno_nregs[nregno]
 					       [GET_MODE (rld[r].reg_rtx)]);
+		  bool piecemeal;
 
 		  spill_reg_store[i] = new_spill_reg_store[i];
 		  spill_reg_stored_to[i] = out;
 		  reg_last_reload_reg[nregno] = rld[r].reg_rtx;
+
+		  piecemeal = (nregno < FIRST_PSEUDO_REGISTER
+			       && nr == nnr
+			       && inherit_piecemeal_p (r, nregno));
 
 		  /* If NREGNO is a hard register, it may occupy more than
 		     one register.  If it does, say what is in the
@@ -7151,7 +7178,7 @@ emit_reload_insns (struct insn_chain *chain)
 		  if (nregno < FIRST_PSEUDO_REGISTER)
 		    for (k = 1; k < nnr; k++)
 		      reg_last_reload_reg[nregno + k]
-			= (nr == nnr
+			= (piecemeal
 			   ? regno_reg_rtx[REGNO (rld[r].reg_rtx) + k]
 			   : 0);
 
@@ -7160,7 +7187,7 @@ emit_reload_insns (struct insn_chain *chain)
 		    {
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, i + k);
 		      reg_reloaded_contents[i + k]
-			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
+			= (nregno >= FIRST_PSEUDO_REGISTER || !piecemeal
 			   ? nregno
 			   : nregno + k);
 		      reg_reloaded_insn[i + k] = insn;
@@ -7185,6 +7212,7 @@ emit_reload_insns (struct insn_chain *chain)
 		  int nregno;
 		  int nnr;
 		  rtx in;
+		  bool piecemeal;
 
 		  if (GET_CODE (rld[r].in) == REG
 		      && REGNO (rld[r].in) >= FIRST_PSEUDO_REGISTER)
@@ -7201,10 +7229,14 @@ emit_reload_insns (struct insn_chain *chain)
 
 		  reg_last_reload_reg[nregno] = rld[r].reg_rtx;
 
+		  piecemeal = (nregno < FIRST_PSEUDO_REGISTER
+			       && nr == nnr
+			       && inherit_piecemeal_p (r, nregno));
+
 		  if (nregno < FIRST_PSEUDO_REGISTER)
 		    for (k = 1; k < nnr; k++)
 		      reg_last_reload_reg[nregno + k]
-			= (nr == nnr
+			= (piecemeal
 			   ? regno_reg_rtx[REGNO (rld[r].reg_rtx) + k]
 			   : 0);
 
@@ -7220,7 +7252,7 @@ emit_reload_insns (struct insn_chain *chain)
 		    {
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, i + k);
 		      reg_reloaded_contents[i + k]
-			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
+			= (nregno >= FIRST_PSEUDO_REGISTER || !piecemeal
 			   ? nregno
 			   : nregno + k);
 		      reg_reloaded_insn[i + k] = insn;
