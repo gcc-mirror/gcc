@@ -3686,15 +3686,19 @@ special_symbol (hp, op)
     sprintf (buf, "\"%s\"", version_string);
     break;
 
+#ifndef NO_BUILTIN_SIZE_TYPE
   case T_SIZE_TYPE:
     buf = (char *) alloca (3 + strlen (SIZE_TYPE));
     sprintf (buf, "%s", SIZE_TYPE);
     break;
+#endif
 
+#ifndef NO_BUILTIN_PTRDIFF_TYPE
   case T_PTRDIFF_TYPE:
     buf = (char *) alloca (3 + strlen (PTRDIFF_TYPE));
     sprintf (buf, "%s", PTRDIFF_TYPE);
     break;
+#endif
 
   case T_WCHAR_TYPE:
     buf = (char *) alloca (3 + strlen (WCHAR_TYPE));
@@ -8491,13 +8495,17 @@ initialize_builtins (inp, outp)
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
+#ifndef NO_BUILTIN_SIZE_TYPE
       sprintf (directive, " __SIZE_TYPE__ %s\n", SIZE_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+#endif
 
+#ifndef NO_BUILTIN_PTRDIFF_TYPE
       sprintf (directive, " __PTRDIFF_TYPE__ %s\n", PTRDIFF_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+#endif
 
       sprintf (directive, " __WCHAR_TYPE__ %s\n", WCHAR_TYPE);
       output_line_command (inp, outp, 0, same_file);
