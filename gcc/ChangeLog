@@ -19,6 +19,8 @@ Wed Jan  6 17:55:19 1999  Robert Lipe  <robertlipe@usa.net>
 
 Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* h8300.h (ASM_OUTPUT_LABELREF): Define.
+
 	* pa.h (DONT_RECORD_EQUIVALENCE): Kill.
 	* local-alloc.c (update_equiv_regs): Corresponding changes.
 	* tm.texi (DONT_RECORD_EQUIVALENCE): Kill.
