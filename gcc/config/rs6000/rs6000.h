@@ -1767,7 +1767,7 @@ typedef struct rs6000_args
 
 #define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
   ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
-   && !flag_pic && !TARGET_RELOCATABLE					\
+   && !flag_pic && !TARGET_TOC						\
    && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
    && small_data_operand (X, MODE))
 
@@ -1804,7 +1804,7 @@ typedef struct rs6000_args
 
 #define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)		\
   (TARGET_ELF						\
-   && !flag_pic && !TARGET_RELOCATABLE			\
+   && !flag_pic && !TARGET_TOC				\
    && (MODE) != DImode					\
    && (MODE) != TImode					\
    && (TARGET_HARD_FLOAT || (MODE) != DFmode)		\
