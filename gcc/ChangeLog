@@ -1,3 +1,8 @@
+2004-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/17313
+	* Makefile.in (specs.ready): Depend on cc1$(exeext).
+
 2004-09-06  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.md (movsf_hardfloat, movdf_hardfloat_64bit,

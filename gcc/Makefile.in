@@ -2795,7 +2795,8 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 # fixinc.sh depends on this, not on specs directly.
 # The idea is to make sure specs gets built, but not rerun fixinc.sh
 # after each stage just because specs' mtime has changed.
-specs.ready: specs
+# It also depends on cc1 since fixinc.sh uses it.
+specs.ready: specs cc1$(exeext)
 	-if [ -f specs.ready ] ; then \
 		true; \
 	else \
