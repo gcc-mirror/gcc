@@ -1,3 +1,16 @@
+2003-04-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/17_intro/howto.html:  Update some links.
+	* docs/html/18_support/howto.html:  Link doxygen numeric_limits notes.
+	* docs/html/27_io/howto.html:  Link doxygen stdio_filebuf notes.
+	* docs/html/ext/howto.html:  Link to demangler notes and API.
+	* docs/html/faq/index.html:  Remove trailing whitespace.
+	(1.4, 2.4, 3.8, 4.1):  Bring up to date.
+	(5.6):  Change to a bulleted list.
+
+	* docs/html/faq/index.txt, docs/html/documentation.html,
+	docs/html/17_intro/porting.html:  Regenerate.
+
 2003-04-23  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/3.cc: _S_pback_size now
