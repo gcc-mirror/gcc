@@ -63,6 +63,7 @@ const char jvgenmain_spec[] =
 		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
 		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
 		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
+		   %{<ffilelist-file}\
 		   %{f*} -fdollars-in-identifiers\
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
