@@ -52,7 +52,6 @@
 	(lang_expand_stmt): Likewise.
 	(set_current_function_name_declared): Likewise.
 	(anon_aggr_type_p): Likewise.
-	(build_case_label): Likewise.
 	
 	* c-semantics.c: New file.
 	(expand_cond): Moved from cp/semantics.c.
