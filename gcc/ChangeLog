@@ -1,3 +1,7 @@
+Wed Jul 17 00:22:39 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* m68hc11.c (m68hc11_reorg): Do not rebuild CFG.
+
 Wed Jul 17 00:20:48 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (prefetch): Fix for 64bit mode.
