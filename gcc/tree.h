@@ -966,7 +966,8 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* Nonzero in a _DECL if the name is used in its scope.
    Nonzero in an expr node means inhibit warning if value is unused.
    In IDENTIFIER_NODEs, this means that some extern decl for this name
-   was used.  */
+   was used.  
+   In a BLOCK, this means that the block contains variables that are used.  */
 #define TREE_USED(NODE) ((NODE)->common.used_flag)
 
 /* In a FUNCTION_DECL, nonzero means a call to the function cannot throw

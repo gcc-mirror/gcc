@@ -541,7 +541,7 @@ struct tree_opt_pass pass_remove_useless_vars =
   0					/* letter */
 };
 
-/* Mark BLOCK used if it has a used variable in it, then recurse over it's
+/* Mark BLOCK used if it has a used variable in it, then recurse over its
    subblocks.  */
 
 static void
@@ -569,42 +569,12 @@ mark_blocks_with_used_vars (tree block)
     mark_blocks_with_used_vars (subblock);
 }
 
-/* Mark BLOCK used if any of it's subblocks have the USED bit set, or it's
-   abstract origin is used.  */
-
-static bool
-mark_blocks_with_used_subblocks (tree block)
-{
-  tree subblock;
- 
-  /* The block may have no variables, but still be used, if it's abstract
-     origin is used.  This occurs when we inline functions with no parameters
-     that call functions with no parameters or local vars (such as
-     dwarf2/dwarf-die7.c).  You end up with a block that has an abstract
-     origin, no variables, and nothing in the subblocks is used.  However, the
-     block is really used, because it's abstract origin was used.  */
-
-  if (BLOCK_ABSTRACT_ORIGIN (block))
-    {
-      if (TREE_USED (BLOCK_ABSTRACT_ORIGIN (block)))
-	TREE_USED (block) = true;
-    }
-
-  for (subblock = BLOCK_SUBBLOCKS (block);
-       subblock;
-       subblock = BLOCK_CHAIN (subblock))
-    TREE_USED (block) |= mark_blocks_with_used_subblocks (subblock);
-  return TREE_USED (block);
-}
-
 /* Mark the used attribute on blocks correctly.  */
   
 static void
 mark_used_blocks (void)
-{
-  
+{  
   mark_blocks_with_used_vars (DECL_INITIAL (current_function_decl));
-  mark_blocks_with_used_subblocks (DECL_INITIAL (current_function_decl));
 }
 
 
