@@ -1,3 +1,10 @@
+2004-01-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR java/13824
+	* tree.c (unsafe_for_reeval): Handle EXIT_BLOCK_EXPR nodes specially
+	as their EXIT_BLOCK_LABELED_BLOCK operands can lead to unbounded
+	recursion.
+
 2004-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Remove the pni option from -mfpmath=.

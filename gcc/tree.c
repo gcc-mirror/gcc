@@ -1686,6 +1686,13 @@ unsafe_for_reeval (expr)
       unsafeness = 1;
       break;
 
+    case EXIT_BLOCK_EXPR:
+      /* EXIT_BLOCK_LABELED_BLOCK, a.k.a. TREE_OPERAND (expr, 0), holds
+	 a reference to an ancestor LABELED_BLOCK, so we need to avoid
+	 unbounded recursion in the 'e' traversal code below.  */
+      exp = EXIT_BLOCK_RETURN (expr);
+      return exp ? unsafe_for_reeval (exp) : 0;
+
     default:
       tmp = (*lang_hooks.unsafe_for_reeval) (expr);
       if (tmp >= 0)
