@@ -1,5 +1,32 @@
 2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390-protos.h (s390_arg_frame_offset): Remove.
+	(s390_return_address_offset): Remove.
+	(s390_can_eliminate): Add prototype.
+	(s390_initial_elimination_offset): Add prototype.
+	* config/s390/s390.h (CAN_ELIMINATE): Call s390_can_eliminate.
+	(INITIAL_ELIMINATION_OFFSET): Call s390_initial_elimination_offset.
+	* config/s390/s390.c (s390_arg_frame_offset): Remove.
+	(s390_return_address_offset): Remove.
+	(s390_can_eliminate, s390_initial_elimination_offset): New functions.
+	(struct machine_function): New member split_branches_pending_p.
+	(s390_mainpool_start): Allow nonexistant pool insn for empty pool.
+	(s390_mainpool_finish): Likewise.  Clear base_reg if pool empty.
+	(s390_optimize_prologue): Remove base_used argument.  Call
+	s390_update_frame_layout instead of s390_register_info.  Handle
+	prologue/epilogue insns that touch only RETURN_REGNUM.
+	(s390_reorg): Remove base_used.  Clear split_branches_pending_p.
+	(s390_register_info): Remove base_used and return_addr_used 
+	arguments, compute special register usage inline.  Return live
+	register data to caller.
+	(s390_frame_info): Remove arguments, do not call s390_register_info.
+	(s390_init_frame_layout): New function.
+	(s390_update_frame_layout): Likewise.
+	(s390_emit_prologue): Call s390_update_frame_layout; some code
+	move to there.  Do not emit pool placeholder insn if unnecessary.
+
+2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (legitimate_reload_constant_p): Remove
 	floating point constant workaround.
 	(s390_secondary_input_reload_class): Handle PLUS reloads
