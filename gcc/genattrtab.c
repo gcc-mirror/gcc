@@ -394,6 +394,8 @@ static int increment_current_value PROTO((struct dimension *, int));
 static rtx test_for_current_value PROTO((struct dimension *, int));
 static rtx simplify_with_current_value PROTO((rtx, struct dimension *, int));
 static rtx simplify_with_current_value_aux PROTO((rtx));
+static void clear_struct_flag PROTO((rtx));
+static int count_sub_rtxs    PROTO((rtx, int));
 static void remove_insn_ent  PROTO((struct attr_value *, struct insn_ent *));
 static void insert_insn_ent  PROTO((struct attr_value *, struct insn_ent *));
 static rtx insert_right_side	PROTO((enum rtx_code, rtx, rtx, int, int));
@@ -2981,16 +2983,6 @@ simplify_test_exp (exp, insn_code, insn_index)
   rtx newexp = exp;
   char *spacer = (char *) obstack_finish (rtl_obstack);
 
-  static rtx loser = 0;
-  static int count = 0;
-  static stopcount = 0;
-
-  if (exp == loser)
-    do_nothing ();
-  count++;
-  if (count == stopcount)
-    do_nothing ();
-
   /* Don't re-simplify something we already simplified.  */
   if (RTX_UNCHANGING_P (exp) || MEM_IN_STRUCT_P (exp))
     return exp;
@@ -3261,9 +3253,6 @@ simplify_test_exp (exp, insn_code, insn_index)
 
   return newexp;
 }
-
-do_nothing ()
-{}
 
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
@@ -3833,6 +3822,7 @@ simplify_with_current_value_aux (exp)
 
 /* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
 
+static void
 clear_struct_flag (x)
      rtx x;
 {
@@ -3886,6 +3876,7 @@ clear_struct_flag (x)
 /* Return the number of RTX objects making up the expression X.
    But if we count more more than MAX objects, stop counting.  */
 
+static int
 count_sub_rtxs (x, max)
      rtx x;
      int max;
