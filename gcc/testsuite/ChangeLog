@@ -1,3 +1,8 @@
+2001-07-31  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/c99-scope-2.c: Don't generally assume adding more
+	largest-type elements to a struct makes its size grow.
+
 2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/vthunk1.C: New test.
