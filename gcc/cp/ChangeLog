@@ -1,3 +1,9 @@
+2000-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (initialize_inlined_parameters): If the parameter is
+	addressable, we need to make a new VAR_DECL, even if the
+	initializer is constant.
+
 2000-04-28  Cosmin Truta  <cosmint@cs.ubbcluj.ro>
 
 	* decl.c (grok_op_properties): Add an extra check of argtypes.
