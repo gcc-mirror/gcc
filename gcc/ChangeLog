@@ -1,3 +1,9 @@
+Mon Sep 27 23:20:29 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (struct tree_decl): Use `bclass', not `class', in name of
+	field.
+	(DECL_BUILT_IN_CLASS): Adjust accordingly.
+
 Mon Sep 27 23:03:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-page.c (GGC_MIN_LAST_ALLOCATED): New.
@@ -26,6 +32,12 @@ Mon Sep 27 10:28:48 1999  Andreas Schwab  <schwab@suse.de>
 	to decide whether to save/restore pic register.
 	(legitimize_pic_address): Don't modify regs_ever_live any more.
 
+Sun Sep 26 10:55:36 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.h (struct function): Add x_dont_save_pending_sizes_p.
+	* stor-layout.c (variable_size): Don't add sizes to the pending
+	sizes list if x_dont_save_pending_sizes_p is set.
+	
 Sun Sep 26 16:36:52 1999  Robert Lipe  (robertlipe@usa.net)
 
 	* config/i386/dgux.h (SELECT_RTX_SECTION): Provide dummy argument

@@ -1253,7 +1253,7 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 /* For a builtin function, identify which part of the compiler defined it.  */
-#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.class)
+#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.bclass)
 
 /* In a VAR_DECL that's static,
    nonzero if the space is in the text section.  */
@@ -1385,7 +1385,7 @@ struct tree_decl
     struct
       {
 	unsigned int code:24;
-	unsigned int class:8;
+	unsigned int bclass:8;
       } f;
   } frame_size;
 
