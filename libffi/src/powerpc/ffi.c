@@ -573,10 +573,14 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	    /* 'long long' arguments are passed as two words, but
 	       either both words must fit in registers or both go
 	       on the stack.  If they go on the stack, they must
-	       be 8-byte-aligned.  */
+	       be 8-byte-aligned.  
+
+	       Also, only certain register pairs can be used for
+	       passing long long int -- specifically (r3,r4), (r5,r6),
+	       (r7,r8), (r9,r10).
+	    */
 	    if (intarg_count == NUM_GPR_ARG_REGISTERS-1
-		|| (intarg_count >= NUM_GPR_ARG_REGISTERS
-		    && intarg_count%2 != 0))
+		|| intarg_count%2 != 0)
 	      intarg_count++;
 	    intarg_count += 2;
 	    break;
