@@ -1442,7 +1442,7 @@ generate_bytecode_insns (exp, target, state)
      int target;
      struct jcf_partial *state;
 {
-  tree type;
+  tree type, arg;
   enum java_opcode jopcode;
   int op;
   HOST_WIDE_INT value;
@@ -1908,6 +1908,7 @@ generate_bytecode_insns (exp, target, state)
     case POSTINCREMENT_EXPR: value =  1; post_op = 1;  goto increment;
     increment:
 
+      arg = TREE_OPERAND (exp, 1);
       exp = TREE_OPERAND (exp, 0);
       type = TREE_TYPE (exp);
       size = TYPE_IS_WIDE (type) ? 2 : 1;
@@ -1960,19 +1961,10 @@ generate_bytecode_insns (exp, target, state)
       /* Stack, if ARRAY_REF:  ..., [result, ] array, index, oldvalue. */
       /* Stack, if COMPONENT_REF:  ..., [result, ] objectref, oldvalue. */
       /* Stack, otherwise:  ..., [result, ] oldvalue. */
-      if (size == 1 || TREE_CODE (type) == REAL_TYPE)
-	{
-	  push_int_const (value, state);
-	  if (TREE_CODE (type) == REAL_TYPE)
-	    {
-	      RESERVE (1);
-	      OP1 (TYPE_PRECISION (type) == 32 ? OPCODE_i2f : OPCODE_i2d);
-	    }
-	}
-      else
-	push_long_const (value, (HOST_WIDE_INT)(value >= 0 ? 0 : -1), state);
-      NOTE_PUSH (size);
-      emit_binop (OPCODE_iadd + adjust_typed_op (type, 3), type, state);
+      generate_bytecode_insns (arg, STACK_TARGET, state);
+      emit_binop ((value >= 0 ? OPCODE_iadd : OPCODE_isub)
+		  + adjust_typed_op (type, 3),
+		  type, state);
       if (target != IGNORE_TARGET && ! post_op)
 	emit_dup (size, offset, state);
       /* Stack, if ARRAY_REF:  ..., [result, ] array, index, newvalue. */
