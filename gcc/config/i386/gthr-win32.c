@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #ifndef __GTHREAD_HIDE_WIN32API
-# define __GTHREAD_HIDE_WIN32API
+# define __GTHREAD_HIDE_WIN32API 1
 #endif
 #include <gthr-win32.h>
 #include <windows.h>
