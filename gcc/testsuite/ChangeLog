@@ -1,3 +1,9 @@
+2004-01-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/12165
+	* gcc.dg/array-quals-1.c, gcc.dg/c90-idem-qual-3.c,
+	gcc.dg/c99-idem-qual-3.c: New tests.
+
 2004-01-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/winline-7.c: Don't cast void * to int.

@@ -1,3 +1,9 @@
+2004-01-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/12165
+	* c-decl.c (grokdeclarator): Take type qualifiers of typedefed
+	array type from the array element type.
+
 2004-01-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_dbx_register_number): New function.

@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3349,6 +3349,7 @@ grokdeclarator (tree declarator, tree declspecs,
   int array_parm_static = 0;
   tree returned_attrs = NULL_TREE;
   bool bitfield = width != NULL;
+  tree element_type;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = 1, decl_context = NORMAL;
@@ -3694,10 +3695,19 @@ grokdeclarator (tree declarator, tree declspecs,
      two ways a declaration can become qualified.  One is something
      like `const int i' where the `const' is explicit.  Another is
      something like `typedef const int CI; CI i' where the type of the
-     declaration contains the `const'.  */
-  constp = !! (specbits & 1 << (int) RID_CONST) + TYPE_READONLY (type);
-  restrictp = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (type);
-  volatilep = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (type);
+     declaration contains the `const'.  A third possibility is that
+     there is a type qualifier on the element type of a typedefed
+     array type, in which case we should extract that qualifier so
+     that c_apply_type_quals_to_decls receives the full list of
+     qualifiers to work with (C90 is not entirely clear about whether
+     duplicate qualifiers should be diagnosed in this case, but it
+     seems most appropriate to do so).  */
+  element_type = strip_array_types (type);
+  constp = !! (specbits & 1 << (int) RID_CONST) + TYPE_READONLY (element_type);
+  restrictp
+    = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (element_type);
+  volatilep
+    = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (element_type);
   inlinep = !! (specbits & (1 << (int) RID_INLINE));
   if (constp > 1 && ! flag_isoc99)
     pedwarn ("duplicate `const'");
