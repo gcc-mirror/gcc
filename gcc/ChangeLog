@@ -1,5 +1,10 @@
 2003-06-22  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (BIGGEST_ALIGNMENT): Use TARGET_REALLY_IWMMXT for selecting
+	64-bit alignment.
+
+2003-06-22  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (all call_value patterns): Remove register constraints on
 	value operand.
 
