@@ -1602,6 +1602,7 @@ expand_call (exp, target, ignore)
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
   char *name = 0;
+  rtx before_call;
 
   /* Register in which non-BLKmode value will be returned,
      or 0 if no value or if value is BLKmode.  */
@@ -1840,8 +1841,9 @@ expand_call (exp, target, ignore)
   if (is_integrable)
     {
       rtx temp;
+
 #ifdef ACCUMULATE_OUTGOING_ARGS
-      rtx before_call = get_last_insn ();
+      before_call = get_last_insn ();
 #endif
 
       temp = expand_inline_function (fndecl, actparms, target,
@@ -2383,6 +2385,10 @@ expand_call (exp, target, ignore)
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
 
+  /* Save a pointer to the last insn before the call, so that we can
+     later safely search backwards to find the CALL_INSN.  */
+  before_call = get_last_insn ();
+
   /* All arguments and registers used for the call must be set up by now!  */
 
   /* Generate the actual call instruction.  */
@@ -2463,7 +2469,18 @@ expand_call (exp, target, ignore)
 
   if (returns_twice)
     {
-      emit_note (name, NOTE_INSN_SETJMP);
+      /* The NOTE_INSN_SETJMP note must be emitted immediately after the
+	 CALL_INSN.  Some ports emit more than just a CALL_INSN above, so
+	 we must search for it here.  */
+      rtx last = get_last_insn ();
+      while (GET_CODE (last) != CALL_INSN)
+	{
+	  last = PREV_INSN (last);
+	  /* There was no CALL_INSN?  */
+	  if (last == before_call)
+	    abort ();
+	}
+      emit_note_after (NOTE_INSN_SETJMP, last);
       current_function_calls_setjmp = 1;
     }
 

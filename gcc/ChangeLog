@@ -1,3 +1,8 @@
+Thu Feb 10 12:56:47 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* calls.c (expand_call): When emitting a NOTE_INSN_SETJMP, search for
+	the CALL_INSN, and emit the note immediately after it.
+
 2000-02-10  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.md (epilogue): Include a (return) in the
