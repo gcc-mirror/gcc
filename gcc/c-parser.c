@@ -1827,6 +1827,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
       c_parser_error (parser, "expected %<{%>");
       ret.spec = error_mark_node;
       ret.kind = ctsk_tagref;
+      return ret;
     }
   ret = parser_xref_tag (code, ident);
   return ret;
@@ -1883,7 +1884,7 @@ c_parser_struct_declaration (c_parser *parser)
   specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, false, true, true);
   if (parser->error)
-    return error_mark_node;
+    return NULL_TREE;
   if (!specs->declspecs_seen_p)
     {
       c_parser_error (parser, "expected specifier-qualifier-list");

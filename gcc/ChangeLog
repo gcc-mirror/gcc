@@ -1,3 +1,11 @@
+2005-03-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/20402
+	* c-parser.c (c_parser_struct_or_union_specifier): Don't fall
+	through into call to parser_xref_tag after parse error.
+	(c_parser_struct_declaration): Consistently return NULL_TREE on
+	error.
+
 2005-03-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-flow-inline.h (ref_contains_array_ref): New function.

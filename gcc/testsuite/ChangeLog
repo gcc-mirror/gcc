@@ -1,3 +1,9 @@
+2005-03-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/20402
+	* gcc.dg/noncompile/920923-1.c: Detail expected diagnostics for
+	new parser.
+
 2005-03-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20361
