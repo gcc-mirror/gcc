@@ -1,3 +1,8 @@
+Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* execute/divconst-2.c: Rewrite to check for standards-compliant
+	result rather than specific constants.  Put test-values in array.
+
 Sun Mar  5 23:25:12 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* execute/20000224-1.c (main): Expected return-value is	1, not
