@@ -1,5 +1,10 @@
 2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/vaarg4.C: New test.
+	* gcc.c-torture/compile/20001123-1.c: New test.
+
+2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.other/crash24.C: Adjust and remove XFAIL.
 	* g++.other/crash37.C: New test.
 

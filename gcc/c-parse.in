@@ -514,8 +514,6 @@ unary_expr:
 		{ $$ = build_unary_op (REALPART_EXPR, $2, 0); }
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (IMAGPART_EXPR, $2, 0); }
-	| VA_ARG '(' expr_no_commas ',' typename ')'
-		{ $$ = build_va_arg ($3, groktypename ($5)); }
 	;
 
 sizeof:
@@ -688,6 +686,8 @@ primary:
 		}
 	| primary '(' exprlist ')'   %prec '.'
 		{ $$ = build_function_call ($1, $3); }
+	| VA_ARG '(' expr_no_commas ',' typename ')'
+		{ $$ = build_va_arg ($3, groktypename ($5)); }
 	| primary '[' expr ']'   %prec '.'
 		{ $$ = build_array_ref ($1, $3); }
 	| primary '.' identifier

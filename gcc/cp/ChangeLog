@@ -1,5 +1,10 @@
 2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* parse.y (unary_expr): Move VA_ARG from here ...
+	(primary): ... to here.
+
+2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* semantics.c (finish_id_expr): If type is error_mark, return
 	error_mark.
 
