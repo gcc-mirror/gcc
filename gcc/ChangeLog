@@ -1,5 +1,9 @@
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* unroll.c (copy_loop_body): Fix one instance of using host
+	arithmetic on the target; fixes loop-4 on a 32-bit -> 64-bit
+	cross-compile.
+
 	* tlink.c (scan_linker_output): Tweak for output of AIX ld.
 
 2000-07-17  Richard Henderson  <rth@cygnus.com>

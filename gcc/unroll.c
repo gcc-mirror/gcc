@@ -1940,8 +1940,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 #endif
 
 		  splittable_regs[regno]
-		    = GEN_INT (INTVAL (giv_inc)
-			       + INTVAL (splittable_regs[src_regno]));
+		    = simplify_gen_binary (PLUS, GET_MODE (giv_src_reg),
+					   giv_inc,
+					   splittable_regs[src_regno]);
 		  giv_inc = splittable_regs[regno];
 
 		  /* Now split the induction variable by changing the dest
