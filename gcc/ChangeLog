@@ -1,3 +1,10 @@
+2005-03-19  Andy Hutchinson  <HutchinsonAndy@netscape.net>
+
+	PR target/18251
+	* config/avr/avr.md (movmemhi): Rewrite as RTL loop.
+	(*movmemqi_insn): Delete.
+	(*movmemhi): Delete.
+
 2005-03-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/20225
