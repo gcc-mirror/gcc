@@ -1488,6 +1488,7 @@ try_combine (i3, i2, i1)
 	     we can change its mode.  */
 	  if (GET_MODE (SET_DEST (newpat)) != GET_MODE (i2dest)
 	      && GET_MODE (SET_DEST (newpat)) != VOIDmode
+	      && GET_CODE (i2dest) == REG
 	      && (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
 		  || (reg_n_sets[REGNO (i2dest)] == 1 && ! added_sets_2
 		      && ! REG_USERVAR_P (i2dest))))
