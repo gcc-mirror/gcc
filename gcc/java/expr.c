@@ -268,6 +268,12 @@ pop_type (type)
 	return type;
       else if (can_widen_reference_to (t, type))
 	return t;
+      /* This is a kludge, but matches what Sun's verifier does.
+	 It can be tricked, but is safe as long as type errors
+	 (i.e. interface method calls) are caught at run-time. */
+      else if (CLASS_INTERFACE (TYPE_NAME (TREE_TYPE (type)))
+	       && t == object_ptr_type_node)
+	return t;
     }
   error ("unexpected type on stack");
   return t;
