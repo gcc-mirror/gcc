@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.18 $
+--                            $Revision: 1.1 $
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,30 +56,12 @@ package Comperr is
    --  When comperr generates the "bug box". The first two lines contain
    --  information on the version number, type of abort, and source location.
 
-   --  Normally the remaining text is one of the following two forms
-   --  depending on the version number (p identifies public versions):
-
-   --    Please submit bug report by email to report@gnat.com.
-   --    Use a subject line meaningful to you and us to track the bug.
-   --    (include your customer number #nnn in the subject line).
+   --  Normally the remaining text is of the following form:
+   --    Please submit bug a report, see http://gcc.gnu.org/bugs.html.
    --    Include the entire contents of this bug box in the report.
    --    Include the exact gcc or gnatmake command that you entered.
    --    Also include sources listed below in gnatchop format
-   --    (concatenated together with no headers between files).
-   --    (use plain ASCII or MIME attachment,
-   --    or FTP to your customer directory).
-   --    See README.GNATPRO for full info on procedure for submitting bugs.
-
-   --  or (public version case)
-
-   --    Please submit bug report by email to report@gnat.com.
-   --    Use a subject line meaningful to you and us to track the bug.
-   --    (include your customer number #nnn in the subject line).
-   --    Include the entire contents of this bug box in the report.
-   --    Include the exact gcc or gnatmake command that you entered.
-   --    Also include sources listed below in gnatchop format
-   --    (concatenated together with no headers between files).
-   --    See gnatinfo.txt for full info on procedure for submitting bugs.
+   --    concatenated together with no headers between files.
 
    --  However, an alternative mechanism exists for easily substituting
    --  different text for this message. Compiler_Abort checks for the

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision: 1.3 $
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,8 +84,6 @@ package body Comperr is
          Repeat_Char (' ', 76, '|');
          Write_Eol;
       end End_Line;
-
-      Public_Version : constant Boolean := (Gnat_Version_String (5) = 'p');
 
    --  Start of processing for Compiler_Abort
 
@@ -253,20 +251,9 @@ package body Comperr is
 
             else
                Write_Str
-                 ("| Please submit bug report by email to report@gnat.com.");
+                 ("| Please submit bug a report, see" &
+                  " http://gcc.gnu.org/bugs.html.");
                End_Line;
-
-               if not Public_Version then
-                  Write_Str
-                    ("| Use a subject line meaningful to you" &
-                     " and us to track the bug.");
-                  End_Line;
-
-                  Write_Str
-                    ("| (include your customer number #nnn " &
-                     "in the subject line).");
-                  End_Line;
-               end if;
 
                Write_Str
                  ("| Include the entire contents of this bug " &
@@ -286,27 +273,6 @@ package body Comperr is
                  ("| (concatenated together with no headers between files).");
                End_Line;
 
-               if Public_Version then
-                  Write_Str
-                    ("| (use plain ASCII or MIME attachment).");
-                  End_Line;
-
-                  Write_Str
-                    ("| See gnatinfo.txt for full info on procedure " &
-                     "for submitting bugs.");
-                  End_Line;
-
-               else
-                  Write_Str
-                    ("| (use plain ASCII or MIME attachment, or FTP "
-                     & "to your customer directory).");
-                  End_Line;
-
-                  Write_Str
-                    ("| See README.GNATPRO for full info on procedure " &
-                     "for submitting bugs.");
-                  End_Line;
-               end if;
             end if;
          end;
 

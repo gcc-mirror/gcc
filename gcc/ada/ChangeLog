@@ -1,3 +1,13 @@
+2002-05-01   Geert Bosch <bosch@gnat.com>
+
+	* bindgen.adb (Public_Version_Warning): Remove.
+
+	* gnatvsn.ads : Change to match GCC 3.1 version.
+
+	* comperr.adb : Change bug box, remove ACT-specific circuitry.
+
+	* comperr.ads : Update comments to reflect changed bug message.
+
 2002-04-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gnat_rm.texi: Use @ifnottex instead of @ifinfo.

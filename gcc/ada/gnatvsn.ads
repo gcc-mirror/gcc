@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@
 
 package Gnatvsn is
 
-   Gnat_Version_String : constant String := "5.00w (20010924)";
+   Gnat_Version_String : constant String := "3.1 (20020501)";
    --  Version output when GNAT (compiler), or its related tools, including
    --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
    --  (with appropriate verbose option switch set).
