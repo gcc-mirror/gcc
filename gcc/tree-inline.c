@@ -1580,7 +1580,18 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   /* Find the lhs to which the result of this call is assigned.  */
   modify_dest = tsi_stmt (id->tsi);
   if (TREE_CODE (modify_dest) == MODIFY_EXPR)
-    modify_dest = TREE_OPERAND (modify_dest, 0);
+    {
+      modify_dest = TREE_OPERAND (modify_dest, 0);
+
+      /* The function which we are inlining might not return a value,
+	 in which case we should issue a warning that the function
+	 does not return a value.  In that case the optimizers will
+	 see that the variable to which the value is assigned was not
+	 initialized.  We do not want to issue a warning about that
+	 uninitialized variable.  */
+      if (DECL_P (modify_dest))
+	TREE_NO_WARNING (modify_dest) = 1;
+    }
   else
     modify_dest = NULL;
 

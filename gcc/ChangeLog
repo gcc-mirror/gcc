@@ -1,3 +1,9 @@
+2005-01-17  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/13127:
+	* tree-inline.c (expand_call_inline): Set TREE_NO_WARNING on
+	a variable set to the return value of the inlined function.
+
 2005-01-17  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* rtlanal.c (rtx_cost): Assign cost of 0 to a SUBREG
