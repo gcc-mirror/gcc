@@ -2,6 +2,7 @@
 /* { dg-options "-mcpu=G5" } */
 
 #include <signal.h>
+#include <stdlib.h>
 
 void
 sig_ill_handler (int sig)

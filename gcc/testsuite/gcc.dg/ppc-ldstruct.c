@@ -1,6 +1,8 @@
 /* { dg-do run { target powerpc*-*-eabi* powerpc*-*-elf* powerpc*-*-linux* } } */
 /* { dg-options "-O -mlong-double-128" } */
 
+#include <stdlib.h>
+
 /* SVR4 and EABI both specify that 'long double' is aligned to a 128-bit
    boundary in structures.  */
 

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <signal.h>
 #include <altivec.h>
+#include <stdlib.h>
 
 /* Testcase to check for ABI compliance of parameter passing
    for the PowerPC64 ABI.  */
