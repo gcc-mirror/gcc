@@ -37,7 +37,6 @@
 # - define the names for selecting the language in LANGUAGES.
 #
 # $(srcdir) must be set to the gcc/ source directory (not gcc/f/).
-
 # Extra flags to pass to recursive makes (and to sub-configure).
 # Use different quoting rules compared with FLAGS_TO_PASS so we can use
 # this to set environment variables as well
@@ -93,7 +92,6 @@ G77_INSTALL_NAME = `t='$(program_transform_name)'; echo g77 | sed $$t`
 # Actual names to use when installing a cross-compiler.
 F77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo f77 | sed $$t`
 G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
-
 # Define the names for selecting f77 in LANGUAGES.
 # Note that it would be nice to move the dependency on g77
 # into the F77 rule, but that needs a little bit of work
@@ -306,7 +304,6 @@ f/runtime/libU77/Makefile: \
 #            $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
 #	top=`pwd`; cd f/f2c; \
 #          $${top}/f/f2c/configure --srcdir=$${top}/f/f2c
-
 # Build hooks:
 
 # I'm not sure there's a way of getting f2c into here conditionally on
@@ -357,7 +354,6 @@ f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
 maybe-f2c:
 #For now, omit f2c stuff.  -- burley
 #	case "$(STAGESTUFF)" in *f2c*) $(MAKE) f2c;; esac
-
 # Install hooks:
 # f771 is installed elsewhere as part of $(COMPILERS).
 
@@ -484,7 +480,6 @@ f77.uninstall:
 	  rm -rf include/f2c.h ; \
 	  rm -rf $(libdir)/libf2c.a ; \
 	fi
-
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -517,7 +512,6 @@ f77.maintainer-clean f77.realclean: f77.distclean
 	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in maintainer-clean
 	-$(MAKE) f77.maintainer-clean
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
-
 # Stage hooks:
 # The main makefile has already created stage?/f.
 
@@ -554,7 +548,6 @@ f77.stage4:
 	-mv $(LIBF77STAGESTUFF) stage4/f/runtime/libF77
 	-mv $(LIBI77STAGESTUFF) stage4/f/runtime/libI77
 	-mv $(LIBU77STAGESTUFF) stage4/f/runtime/libU77
-
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the
