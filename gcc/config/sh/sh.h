@@ -1432,9 +1432,9 @@ dtors_section()							\
    assemble_name (STREAM, NAME),		\
    fputc ('\n',STREAM))
 
-/* Output a reference to a label.  */
-#define ASM_OUTPUT_LABELREF(STREAM,NAME) \
-  fprintf (STREAM, "_%s", NAME)
+/* The prefix to add to user-visible assembler symbols. */
+
+#define USER_LABEL_PREFIX "_"
 
 /* Make an internal label into a string.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
