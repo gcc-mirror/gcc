@@ -1,5 +1,56 @@
 2000-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (cp_tree_index): Add CPTI_DTOR_IDENTIFIER.
+	(complete_dtor_identifier): New macro.
+	(CLASSTYPE_FIRST_CONVERSION): Remove.
+	(CLASSTYPE_CONSTRUCTOR_SLOT): New macro.
+	(CLASSTYPE_DESTRUCTOR_SLOT): Likewise.
+	(CLASSTYPE_FIRST_CONVERSION_SLOT): Likewise.
+	(CLASSTYPE_CONSTRUCTORS): Likewise.
+	(CLASSTYPE_DESTRUCTORS): Likewise.
+	(lang_decl): Add cloned_function.
+	(DECL_COMPLETE_CONSTRUCTOR_P): New macro.
+	(DECL_BASE_CONSTRUCTOR_P): Likewise.
+	(DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P): Likewise.
+	(DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P): Likewise.
+	(DECL_CLONED_FUNCTION_P): Likewise.
+	(DECL_CLONED_FUNCTION): Likewise.
+	(clone_function_decl): Declare.
+	(maybe_clone_body): Likewise.
+	* call.c (build_user_type_conversion_1): Call complete object
+	constructors in the new ABI.
+	(build_new_method_call): Don't add in-charge parameters under the
+	new ABI.
+	* class.c (add_method): Use DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P,
+	DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P, CLASSTYPE_CONSTRUCTOR_SLOT, and
+	CLASSTYPE_DESTRUCTOR_SLOT.
+	(build_clone): New function.
+	(clone_function_decl): Likewise.
+	(clone_constructors_and_destructors): Likewise.
+	(check_bases_and_members): Use it.
+	* decl.c (iniitialize_predefined_identifiers): Initialize
+	complete_dtor_identifier.
+	(finish_function): Don't add extra code to a clone.
+	(lang_mark_tree): Mark cloned_function.
+	* decl2.c (mark_used): Don't bother trying to instantiate things
+	we synthesized.
+	* dump.c (dequeue_and_dump): Don't dump CP_DECL_CONTEXT twice.
+	* method.c (set_mangled_name_for_decl): Don't treat clones as
+	constructors.
+	(synthesize_method): Sythesize cloned functions, not the clones.
+	* optimize.c (inline_data): Update comment on ret_label.
+	(remap_block): Don't assume DECL_INITIAL exists.
+	(copy_body_r): Allow ret_label to be NULL.
+	(maybe_clone_body): Define.
+	* pt.c (tsubst_decl): Handle clones.
+	(instantiate_clone): New function.
+	(instantiate_template): Use it.
+	(set_mangled_name_for_template_decl): Don't treat clones as
+	constructors.
+	* search.c (lookup_fnfields_1): Use CLASSTYPE_CONSTRUCTOR_SLOT,
+	CLASSTYPE_DESTRUCTOR_SLOT, and CLASSTYPE_FIRST_CONVERSION_SLOT.
+	* semantics.c (expand_body): Clone function bodies as necessary.
+	
 	* optimize.c (remap_decl): Avoid sharing structure for arrays
 	whose size is only known at run-time.
 	* tree.c (copy_tree_r): Don't copy PARM_DECLs.

@@ -2717,6 +2717,16 @@ expand_body (fn)
   /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
   walk_tree (&DECL_SAVED_TREE (fn), simplify_aggr_init_exprs_r, NULL);
 
+  /* If this is a constructor or destructor body, we have to clone it
+     under the new ABI.  */
+  if (maybe_clone_body (fn))
+    {
+      /* We don't want to process FN again, so pretend we've written
+	 it out, even though we haven't.  */
+      TREE_ASM_WRITTEN (fn) = 1;
+      return;
+    }
+
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
   if (flag_syntax_only)

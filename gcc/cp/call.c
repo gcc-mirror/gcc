@@ -2277,7 +2277,12 @@ build_user_type_conversion_1 (totype, expr, flags)
   tree templates = NULL_TREE;
 
   if (IS_AGGR_TYPE (totype))
-    ctors = lookup_fnfields (TYPE_BINFO (totype), ctor_identifier, 0);
+    ctors = lookup_fnfields (TYPE_BINFO (totype),
+			     (flag_new_abi 
+			      ? complete_ctor_identifier
+			      : ctor_identifier),
+			     0);
+
   if (IS_AGGR_TYPE (fromtype)
       && (! IS_AGGR_TYPE (totype) || ! DERIVED_FROM_P (totype, fromtype)))
     convs = lookup_conversions (fromtype);
@@ -4253,22 +4258,26 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       || name == base_ctor_identifier)
     {
       pretty_name = constructor_name (basetype);
-      /* Add the in-charge parameter as an implicit first argument.  */
-      if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+
+      if (!flag_new_abi)
 	{
-	  tree in_charge;
+	  /* Add the in-charge parameter as an implicit first argument.  */
+	  if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	    {
+	      tree in_charge;
 
-	  if (name == complete_ctor_identifier)
-	    in_charge = integer_one_node;
-	  else
-	    in_charge = integer_zero_node;
+	      if (name == complete_ctor_identifier)
+		in_charge = integer_one_node;
+	      else
+		in_charge = integer_zero_node;
 
-	  args = tree_cons (NULL_TREE, in_charge, args);
+	      args = tree_cons (NULL_TREE, in_charge, args);
+	    }
+
+	  /* We want to call the normal constructor function under the
+	     old ABI.  */
+	  name = ctor_identifier;
 	}
-
-      /* We want to call the normal constructor function under the old
-	 ABI.  */
-      name = ctor_identifier;
     }
   else
     pretty_name = name;

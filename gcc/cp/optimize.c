@@ -50,7 +50,9 @@ typedef struct inline_data
      inlining the body of `h', the stack will contain, `h', followed
      by `g', followed by `f'.  */
   varray_type fns;
-  /* The label to jump to when a return statement is encountered.  */
+  /* The label to jump to when a return statement is encountered.  If
+     this value is NULL, then return statements will simply be
+     remapped as return statements, rather than as jumps.  */
   tree ret_label;
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
@@ -157,6 +159,7 @@ remap_block (scope_stmt, decls, id)
       tree old_block;
       tree new_block;
       tree old_var;
+      tree *first_block;
       tree fn;
 
       /* Make the new block.  */
@@ -175,9 +178,12 @@ remap_block (scope_stmt, decls, id)
 
 	  /* Remap the variable.  */
 	  new_var = remap_decl (old_var, id);
-	  if (!new_var)
-	    /* We didn't remap this variable, so we can't mess with
-	       its TREE_CHAIN.  */
+	  /* If we didn't remap this variable, so we can't mess with
+	     its TREE_CHAIN.  If we remapped this variable to
+	     something other than a declaration (say, if we mapped it
+	     to a constant), then we must similarly omit any mention
+	     of it here.  */
+	  if (!new_var || !DECL_P (new_var))
 	    ;
 	  else
 	    {
@@ -191,8 +197,12 @@ remap_block (scope_stmt, decls, id)
 	 function into which this block is being inlined.  In
 	 rest_of_compilation we will straighten out the BLOCK tree.  */
       fn = VARRAY_TREE (id->fns, 0);
-      BLOCK_CHAIN (new_block) = BLOCK_CHAIN (DECL_INITIAL (fn));
-      BLOCK_CHAIN (DECL_INITIAL (fn)) = new_block;
+      if (DECL_INITIAL (fn))
+	first_block = &BLOCK_CHAIN (DECL_INITIAL (fn));
+      else
+	first_block = &DECL_INITIAL (fn);
+      BLOCK_CHAIN (new_block) = *first_block;
+      *first_block = new_block;
       /* Remember the remapped block.  */
       splay_tree_insert (id->decl_map,
 			 (splay_tree_key) old_block,
@@ -261,7 +271,7 @@ copy_body_r (tp, walk_subtrees, data)
 
   /* If this is a RETURN_STMT, change it into an EXPR_STMT and a
      GOTO_STMT with the RET_LABEL as its target.  */
-  if (TREE_CODE (*tp) == RETURN_STMT)
+  if (TREE_CODE (*tp) == RETURN_STMT && id->ret_label)
     {
       tree return_stmt = *tp;
       tree goto_stmt;
@@ -774,3 +784,106 @@ calls_setjmp_p (fn)
 	  != NULL_TREE);
 }
 
+/* FN is a function that has a complete body.  Clone the body as
+   necessary.  Returns non-zero if there's no longer any need to
+   process the main body.  */
+
+int
+maybe_clone_body (fn)
+     tree fn;
+{
+  inline_data id;
+  tree clone;
+
+  /* We don't clone constructors and destructors under the old ABI.  */
+  if (!flag_new_abi)
+    return 0;
+
+  /* We only clone constructors and destructors.  */
+  if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
+      && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
+    return 0;
+
+  /* We don't yet handle destructors.  */
+  if (DECL_DESTRUCTOR_P (fn))
+    return 0;
+
+  /* We know that any clones immediately follow FN in the TYPE_METHODS
+     list.  */
+  for (clone = TREE_CHAIN (fn);
+       clone && DECL_CLONED_FUNCTION_P (clone);
+       clone = TREE_CHAIN (clone))
+    {
+      tree parm;
+      tree clone_parm;
+      int parmno;
+
+      /* Update CLONE's source position information to match FN's.  */
+      DECL_SOURCE_FILE (clone) = DECL_SOURCE_FILE (fn);
+      DECL_SOURCE_LINE (clone) = DECL_SOURCE_LINE (fn);
+
+      /* Start processing the function.  */
+      push_to_top_level ();
+      start_function (NULL_TREE, clone, NULL_TREE, SF_PRE_PARSED);
+      store_parm_decls ();
+
+      /* Just clone the body, as if we were making an inline call.
+	 But, remap the parameters in the callee to the parameters of
+	 caller.  If there's an in-charge parameter, map it to an
+	 appropriate constant.  */
+      memset (&id, 0, sizeof (id));
+      VARRAY_TREE_INIT (id.fns, 2, "fns");
+      VARRAY_PUSH_TREE (id.fns, clone);
+      VARRAY_PUSH_TREE (id.fns, fn);
+
+      /* Remap the parameters.  */
+      id.decl_map = splay_tree_new (splay_tree_compare_pointers,
+				    NULL, NULL);
+      for (parmno = 0,
+	     parm = DECL_ARGUMENTS (fn),
+	     clone_parm = DECL_ARGUMENTS (clone);
+	   parm;
+	   ++parmno,
+	     parm = TREE_CHAIN (parm))
+	{
+	  /* Map the in-charge parameter to an appropriate constant.  */
+	  if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
+	    {
+	      tree in_charge;
+
+	      if (DECL_COMPLETE_CONSTRUCTOR_P (clone))
+		in_charge = integer_one_node;
+	      else
+		in_charge = integer_zero_node;
+
+	      splay_tree_insert (id.decl_map,
+				 (splay_tree_key) parm,
+				 (splay_tree_key) in_charge);
+	    }
+	  /* Map other parameters to their equivalents in the cloned
+	     function.  */
+	  else
+	    {
+	      splay_tree_insert (id.decl_map,
+				 (splay_tree_key) parm,
+				 (splay_tree_value) clone_parm);
+	      clone_parm = TREE_CHAIN (clone_parm);
+	    }
+	}
+
+      /* Actually copy the body.  */
+      TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
+
+      /* Clean up.  */
+      splay_tree_delete (id.decl_map);
+      VARRAY_FREE (id.fns);
+
+      /* Now, expand this function into RTL, if appropriate.  */
+      current_function_name_declared = 1;
+      expand_body (finish_function (0));
+      pop_from_top_level ();
+    }
+  
+  /* We don't need to process the original function any further.  */
+  return 1;
+}

@@ -6063,6 +6063,7 @@ initialize_predefined_identifiers ()
     { "__base_ctor", &base_ctor_identifier },
     { "__comp_ctor", &complete_ctor_identifier },
     { DTOR_NAME, &dtor_identifier },
+    { "__comp_dtor", &complete_dtor_identifier },
     { "__base_dtor", &base_dtor_identifier },
     { "__deleting_dtor", &deleting_dtor_identifier },
     { VTABLE_DELTA2_NAME, &delta2_identifier },
@@ -13966,7 +13967,11 @@ finish_function (flags)
       store_parm_decls ();
     }
 
-  if (building_stmt_tree ())
+  /* For a cloned function, we've already got all the code we need;
+     there's no need to add any extra bits.  */
+  if (building_stmt_tree () && DECL_CLONED_FUNCTION_P (fndecl))
+    ;
+  else if (building_stmt_tree ())
     {
       if (DECL_CONSTRUCTOR_P (fndecl))
 	{
@@ -14763,6 +14768,7 @@ lang_mark_tree (t)
 	    {
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->saved_tree);
+	      ggc_mark_tree (ld->cloned_function);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL
