@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 144 fixup descriptions.
+ * This file contains 145 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2064,6 +2064,43 @@ static const char* apzHpux11_FabsfPatch[] = {
     "#ifndef __cplusplus\n\
 %0\n\
 #endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Hpux11_Size_T fix
+ */
+tSCC zHpux11_Size_TName[] =
+     "hpux11_size_t";
+
+/*
+ *  File name selection pattern
+ */
+#define zHpux11_Size_TList (char*)NULL
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzHpux11_Size_TMachs[] = {
+        "*-hp-hpux*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_Size_TSelect0[] =
+       "^#define __size_t size_t";
+
+#define    HPUX11_SIZE_T_TEST_CT  1
+static tTestDesc aHpux11_Size_TTests[] = {
+  { TT_EGREP,    zHpux11_Size_TSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Size_T
+ */
+static const char* apzHpux11_Size_TPatch[] = {
+    "format",
+    "_hpux_size_t",
+    "__size_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5614,9 +5651,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          151
+#define REGEX_COUNT          152
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            144
+#define FIX_COUNT            145
 
 /*
  *  Enumerate the fixes
@@ -5673,6 +5710,7 @@ typedef enum {
     HPUX10_CPP_POW_INLINE_FIXIDX,
     HPUX11_CPP_POW_INLINE_FIXIDX,
     HPUX11_FABSF_FIXIDX,
+    HPUX11_SIZE_T_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX11_VSNPRINTF_FIXIDX,
     HPUX8_BOGUS_INLINES_FIXIDX,
@@ -6023,6 +6061,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHpux11_FabsfMachs,
      HPUX11_FABSF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_FabsfTests,   apzHpux11_FabsfPatch, 0 },
+
+  {  zHpux11_Size_TName,    zHpux11_Size_TList,
+     apzHpux11_Size_TMachs,
+     HPUX11_SIZE_T_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux11_Size_TTests,   apzHpux11_Size_TPatch, 0 },
 
   {  zHpux11_Uint32_CName,    zHpux11_Uint32_CList,
      apzHpux11_Uint32_CMachs,
