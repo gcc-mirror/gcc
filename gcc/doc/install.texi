@@ -1275,6 +1275,8 @@ These lists are updated as new information becomes available.
 @item
 @uref{#alpha*-dec-osf*,,alpha*-dec-osf*}
 @item
+@uref{#alphaev5-cray-unicosmk*,,alphaev5-cray-unicosmk*}
+@item
 @uref{#arc-*-elf,,arc-*-elf}
 @item
 @uref{#arm-*-aout,,arm-*-aout}
@@ -1619,6 +1621,32 @@ different depending on whether or not @option{-g} is also specified.
 To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
 DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{alphaev5-cray-unicosmk*}alphaev5-cray-unicosmk*
+Cray T3E systems running Unicos/Mk.
+
+This port is incomplete and has many known bugs.  We hope to improve the
+support for this target soon.  Currently, only the C front end is supported,
+and it is not possible to build parallel applications.  Cray modules are not
+supported; in particular, Craylibs are assumed to be in
+@file{/opt/ctl/craylibs/craylibs}.
+
+You absolutely @strong{must} use GNU make on this platform.  Also, you
+need to tell GCC where to find the assembler and the linker.  The
+simplest way to do so is by providing @option{--with-as} and
+@option{--with-ld} to @file{configure}, e.g.@:
+
+@samp{configure --with-as=/opt/ctl/bin/cam --with-ld=/opt/ctl/bin/cam
+--enable-languages=c}
+
+The comparison test during @samp{make bootstrap} fails on Unicos/Mk
+because the assembler inserts timestamps into object files.  You should
+be able to work around this by doing @samp{make all} after getting this
+failure.
 
 @html
 </p>
