@@ -1,5 +1,5 @@
-/* java.beans.PropertyChangeListener
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+/* PropertyChangeListener.java -- listen for changes in a bound property
+   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,22 +41,21 @@ package java.beans;
 import java.util.EventListener;
 
 /**
- ** PropertyChangeListener allows a class to monitor
- ** properties of a Bean for changes.<P>
- **
- ** A propertyChange() event will only be fired
- ** <EM>after</EM> the property has changed.
- **
- ** @author John Keiser
- ** @since JDK1.1
- ** @version 1.1.0, 29 Jul 1998
- ** @see java.beans.PropertyChangeSupport
- **/
-
+ * PropertyChangeListener allows a class to monitor properties of a Bean for
+ * changes. A propertyChange() event will only be fired <em>after</em> the
+ * property has changed.
+ *
+ * @author John Keiser
+ * @see PropertyChangeSupport
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public interface PropertyChangeListener extends EventListener
 {
-  /** Fired after a Bean's property has changed.
-   ** @param e the change (containing the old and new values)
-   **/
-  public abstract void propertyChange(PropertyChangeEvent e);
-}
+  /**
+   * Fired after a Bean's property has changed.
+   *
+   * @param e the change (containing the old and new values)
+   */
+  void propertyChange(PropertyChangeEvent e);
+} // interface PropertyChangeListener

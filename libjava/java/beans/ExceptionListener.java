@@ -1,5 +1,5 @@
-/* VetoableChangeListener.java -- listen for a change which can be vetoed
-   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
+/* ExceptionListener.java -- listen for recoverable internal exceptions
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,36 +38,20 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.util.EventListener;
-
 /**
- * VetoableChangeListener allows a class to monitor proposed changes to
- * properties of a Bean and, if desired, prevent them from occurring. A
- * vetoableChange() event will be fired <em>after</em> the property change has
- * been requested, but before it is permanent. If any listener rejects the
- * change by throwing the PropertyChangeException, a new vetoableChange()
- * event will be fired to all listeners who received a vetoableChange() event
- * in the first place, informing them to revert back to the old value. Thus,
- * the listener that threw the exception the first time should be prepared
- * to rethrow it the second time. The value, of course, never actually changed.
+ * This interface allows a class to monitor internal exceptions, to try to
+ * recover from them.
  *
- * <p><strong>Note:</strong> This class may not be reliably used to determine
- * whether a property has actually changed.  Use the PropertyChangeListener
- * interface for that instead.
- *
- * @author John Keiser
- * @see java.beans.PropertyChangeListener
- * @see java.beans.VetoableChangeSupport
- * @since 1.1
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.4
  * @status updated to 1.4
  */
-public interface VetoableChangeListener extends EventListener
+public interface ExceptionListener
 {
   /**
-   * Fired before a Bean's property changes.
+   * Fired after an exception occurs.
    *
-   * @param e the change (containing the old and new values)
-   * @throws PropertyVetoException if the change is vetoed by the listener
+   * @param e the trapped exception
    */
-  void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException;
-} // interface VetoableChangeListener
+  void exceptionThrown(Exception e);
+} // interface ExceptionListener
