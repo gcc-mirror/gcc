@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GNU CC.
@@ -265,7 +265,7 @@
 ;; and match them for register allocation.
 
 ;; problem with too short jump distance! we need an assembler which can 
-;; make this legal for all jump distances!
+;; make this valid for all jump distances!
 ;; e.g. gas!
 
 ;; these must be changed to check for CC_IN_FCCR if float is to be 
@@ -1447,7 +1447,7 @@
                          [(const_int 7)
                           (const_int 14)])])
 
-;; the following is illegal - too complex!!! - just say 14 !!!
+;; the following is invalid - too complex!!! - just say 14 !!!
 ;  [(set (attr "length") (plus (and (match_dup 2)
 ;                                   (const_int 7))
 ;                              (and (match_dup 2)
