@@ -861,6 +861,20 @@ life_analysis (f, nregs)
 	    |= (REGSET_ELT_TYPE) 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
       }
 
+  /* Mark the frame pointer is needed at the end of the function.  If
+     we end up eliminating it, it will be removed from the live list
+     of each basic block by reload.  */
+
+  if (n_basic_blocks > 0)
+    {
+      basic_block_live_at_end[n_basic_blocks - 1]
+	[FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	  |= (REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS);
+      basic_block_new_live_at_end[n_basic_blocks - 1]
+	[FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	  |= (REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS);
+      }
+
   /* Mark all global registers as being live at the end of the function
      since they may be referenced by our caller.  */
 
