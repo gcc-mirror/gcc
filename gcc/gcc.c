@@ -81,6 +81,10 @@ extern int pwait PROTO ((int, int *, int));
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
+#ifdef VMS
+#define exit __posix_exit
+#endif
+
 /* Define O_RDONLY if the system hasn't defined it for us.  */
 #ifndef O_RDONLY
 #define O_RDONLY 0
@@ -775,7 +779,7 @@ struct option_map option_map[] =
    {"--comments", "-C", 0},
    {"--compile", "-c", 0},
    {"--debug", "-g", "oj"},
-   {"--define-macro", "-D", "a"},
+   {"--define-macro", "-D", "aj"},
    {"--dependencies", "-M", 0},
    {"--dump", "-d", "a"},
    {"--dumpbase", "-dumpbase", "a"},
@@ -787,7 +791,7 @@ struct option_map option_map[] =
    {"--imacros", "-imacros", "a"},
    {"--include", "-include", "a"},
    {"--include-barrier", "-I-", 0},
-   {"--include-directory", "-I", "a"},
+   {"--include-directory", "-I", "aj"},
    {"--include-directory-after", "-idirafter", "a"},
    {"--include-prefix", "-iprefix", "a"},
    {"--include-with-prefix", "-iwithprefix", "a"},
@@ -830,7 +834,7 @@ struct option_map option_map[] =
    {"--traditional", "-traditional", 0},
    {"--traditional-cpp", "-traditional-cpp", 0},
    {"--trigraphs", "-trigraphs", 0},
-   {"--undefine-macro", "-U", "a"},
+   {"--undefine-macro", "-U", "aj"},
    {"--use-version", "-V", "a"},
    {"--user-dependencies", "-MM", 0},
    {"--verbose", "-v", 0},
