@@ -329,12 +329,17 @@ estimate_probability (loops_info)
   for (i = 0; i < loops_info->num; i++)
     {
       int j;
+      int exits;
+      struct loop *loop = &loops_info->array[i];
 
-      for (j = loops_info->array[i].first->index;
-	   j <= loops_info->array[i].last->index;
+      flow_loop_scan (loops_info, loop, LOOP_EXIT_EDGES);
+      exits = loop->num_exits;
+
+      for (j = loop->first->index;
+	   j <= loop->last->index;
 	   ++j)
 	{
-	  if (TEST_BIT (loops_info->array[i].nodes, j))
+	  if (TEST_BIT (loop->nodes, j))
 	    {
 	      int header_found = 0;
 	      edge e;
@@ -342,8 +347,8 @@ estimate_probability (loops_info)
 	      /* Loop branch heuristics - predict as taken an edge back to
 	         a loop's head.  */
 	      for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
-		if (e->dest == loops_info->array[i].header
-		    && e->src == loops_info->array[i].latch)
+		if (e->dest == loop->header
+		    && e->src == loop->latch)
 		  {
 		    header_found = 1;
 		    predict_edge_def (e, PRED_LOOP_BRANCH, TAKEN);
@@ -354,8 +359,11 @@ estimate_probability (loops_info)
 	      if (!header_found)
 		for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
 		  if (e->dest->index <= 0
-		      || !TEST_BIT (loops_info->array[i].nodes, e->dest->index))
-		    predict_edge_def (e, PRED_LOOP_EXIT, NOT_TAKEN);
+		      || !TEST_BIT (loop->nodes, e->dest->index))
+		    predict_edge (e, PRED_LOOP_EXIT,
+				  (REG_BR_PROB_BASE
+				   - predictor_info [(int)PRED_LOOP_EXIT].hitrate)
+				  / exits);
 	    }
 	}
     }
@@ -435,74 +443,83 @@ estimate_probability (loops_info)
       /* Try "pointer heuristic."
 	 A comparison ptr == 0 is predicted as false.
 	 Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
-      switch (GET_CODE (cond))
-	{
-	case EQ:
-	  if (GET_CODE (XEXP (cond, 0)) == REG
-	      && REG_POINTER (XEXP (cond, 0))
-	      && (XEXP (cond, 1) == const0_rtx
-		  || (GET_CODE (XEXP (cond, 1)) == REG
-		      && REG_POINTER (XEXP (cond, 1)))))
-
+      if (GET_RTX_CLASS (GET_CODE (cond)) == '<'
+	  && ((REG_P (XEXP (cond, 0)) && REG_POINTER (XEXP (cond, 0)))
+	      || (REG_P (XEXP (cond, 1)) && REG_POINTER (XEXP (cond, 1)))))
+	switch (GET_CODE (cond))
+	  {
+	  case EQ:
 	    predict_insn_def (last_insn, PRED_POINTER, NOT_TAKEN);
-	  break;
-	case NE:
-	  if (GET_CODE (XEXP (cond, 0)) == REG
-	      && REG_POINTER (XEXP (cond, 0))
-	      && (XEXP (cond, 1) == const0_rtx
-		  || (GET_CODE (XEXP (cond, 1)) == REG
-		      && REG_POINTER (XEXP (cond, 1)))))
+	    break;
+	  case NE:
 	    predict_insn_def (last_insn, PRED_POINTER, TAKEN);
-	  break;
-
-	default:
-	  break;
-	}
-
+	    break;
+	  default:
+	    break;
+	  }
+      else
       /* Try "opcode heuristic."
 	 EQ tests are usually false and NE tests are usually true. Also,
 	 most quantities are positive, so we can make the appropriate guesses
 	 about signed comparisons against zero.  */
-      switch (GET_CODE (cond))
-	{
-	case CONST_INT:
-	  /* Unconditional branch.  */
-	  predict_insn_def (last_insn, PRED_UNCONDITIONAL,
-			    cond == const0_rtx ? NOT_TAKEN : TAKEN);
-	  break;
+	switch (GET_CODE (cond))
+	  {
+	  case CONST_INT:
+	    /* Unconditional branch.  */
+	    predict_insn_def (last_insn, PRED_UNCONDITIONAL,
+			      cond == const0_rtx ? NOT_TAKEN : TAKEN);
+	    break;
 
-	case EQ:
-	case UNEQ:
-	  predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
-	  break;
-	case NE:
-	case LTGT:
-	  predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
-	  break;
-	case ORDERED:
-	  predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
-	  break;
-	case UNORDERED:
-	  predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
-	  break;
-	case LE:
-	case LT:
-	  if (XEXP (cond, 1) == const0_rtx
-	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
-		  && INTVAL (XEXP (cond, 1)) == -1))
-	    predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
-	  break;
-	case GE:
-	case GT:
-	  if (XEXP (cond, 1) == const0_rtx
-	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
-		  && INTVAL (XEXP (cond, 1)) == -1))
-	    predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
-	  break;
+	  case EQ:
+	  case UNEQ:
+	    /* Floating point comparisons appears to behave in a very
+	       inpredictable way because of special role of = tests in
+	       FP code.  */
+	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
+	      ;
+	    /* Comparisons with 0 are often used for booleans and there is
+	       nothing usefull to predict about them.  */
+	    else if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 0) == const0_rtx)
+	      ;
+	    else
+	      predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, NOT_TAKEN);
+	    break;
+	  case NE:
+	  case LTGT:
+	    /* Floating point comparisons appears to behave in a very
+	       inpredictable way because of special role of = tests in
+	       FP code.  */
+	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
+	      ;
+	    /* Comparisons with 0 are often used for booleans and there is
+	       nothing usefull to predict about them.  */
+	    else if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 0) == const0_rtx)
+	      ;
+	    else
+	      predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, TAKEN);
+	    break;
+	  case ORDERED:
+	    predict_insn_def (last_insn, PRED_FPOPCODE, TAKEN);
+	    break;
+	  case UNORDERED:
+	    predict_insn_def (last_insn, PRED_FPOPCODE, NOT_TAKEN);
+	    break;
+	  case LE:
+	  case LT:
+	    if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
+		|| XEXP (cond, 1) == constm1_rtx)
+	      predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, NOT_TAKEN);
+	    break;
+	  case GE:
+	  case GT:
+	    if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
+		|| XEXP (cond, 1) == constm1_rtx)
+	      predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, TAKEN);
+	    break;
 
-	default:
-	  break;
-	}
+	  default:
+	    break;
+	  }
     }
 
   /* Attach the combined probability to each conditional jump.  */

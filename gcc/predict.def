@@ -89,7 +89,9 @@ DEF_PREDICTOR (PRED_LOOP_HEADER, "loop header", HITRATE (64), 0)
 DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (83), 0)
 
 /* NE is probable, EQ not etc...  */
-DEF_PREDICTOR (PRED_OPCODE, "opcode", HITRATE (55), 0)
+DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (78), 0)
+DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (70), 0)
+DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (70), 0)

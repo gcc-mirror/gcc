@@ -1,3 +1,47 @@
+Thu Dec 13 12:31:07 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_probability): Reorganize opcode heuristics.
+	* predict.def (PRED_OPCODE_POSITIVE, PRED_OPCODE_NONEQUAL,
+	PRED_FPOPCODE): New.
+
+	* i386.c (override_options): Recognize various CPU variants and set
+	SSE/MMX/3dNOW flags accordingly.
+	* i386.h (MASK_MMX_SET, MASK_SSE_SET, MASK_SSE2_SET, MASK_3DNOW_SET,
+	MASK_3DNOW_A_SET): New.
+	(MASK_ACCUMULATE_OUTGOING_ARGS_SET): New.
+	(MASK_NO_ACCUMULATE_OUTGOING_ARGS): Delete.
+	(MASK_*): Renumber.
+	(TARGET_FLAGS): Use new masks.
+	(CPP_CPU_SPECS): Recognize new CPU variants.
+	* invoke.texi (-mcpu): Update documentation.
+
+	* flags.h (flag_prefetch_loop_arrays): Declare.
+	* loop.h (LOOP_PREFETCH): Define new constant.
+	* loop.c (strength_reduce): Call emit_prefetch_instructions.
+	(MAX_PREFETCHES, PREFETCH_BLOCKS_BEFORE_LOOP_MAX,
+	PREFETCH_BLOCKS_BEFORE_LOOP_MIN, PREFETCH_BLOCKS_IN_LOOP_MIN): New
+	constants.
+	(check_store_data): New structure.
+	(check_store, emit_prefetch_instructions, rtx_equal_for_prefetch_p):
+	New functions.
+	* toplev.c: Include insn-flags.h.
+	(flag_prefetch_loop_arrays): New global variable.
+	(lang_independent_option): Add -fprefetch-loop-arrays.
+	(rest_of_compilation) Pass LOOP_PREFETCH when flag_prefetch_loop_arrays
+        is set.
+	* Makefile.in (toplev.c): Depend on insn-flags.h.
+	* invoke.texi (-fprefetch-loop-arrays): Document.
+
+	* predict.c (estimate_probability): Distribute the loop exit
+	probability according to number of exit edges.
+
+	* cfgcleanup.c (insns_match_p): Break out from ...;
+	(flow_find_cross_jump): ... here;
+	(outgoing_edges_match): Add parameter MODE; attempt to match everything
+	except for tablejumps.
+	(try_crossjump_to_edge): Accept complex edges.
+	(try_crossjump_bb): Likewise.
+
 2001-11-29  Corey Minyard <minyard@acm.org>
 
 	* recog.c (validate_replace_rtx_1): Use simplify_gen_binary

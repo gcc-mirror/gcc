@@ -46,6 +46,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "insn-attr.h"
 #include "insn-config.h"
+#include "insn-flags.h"
 #include "hard-reg-set.h"
 #include "recog.h"
 #include "output.h"
@@ -544,6 +545,10 @@ int flag_unroll_loops;
 
 int flag_unroll_all_loops;
 
+/* Nonzero enables prefetch optimizations for arrays in loops.  */
+
+int flag_prefetch_loop_arrays;
+
 /* Nonzero forces all invariant computations in loops to be moved
    outside the loop.  */
 
@@ -1001,6 +1006,8 @@ lang_independent_options f_options[] =
    N_("Perform loop unrolling when iteration count is known") },
   {"unroll-all-loops", &flag_unroll_all_loops, 1,
    N_("Perform loop unrolling for all loops") },
+  {"prefetch-loop-arrays", &flag_prefetch_loop_arrays, 1,
+   N_("Generate prefetch instructions, if available, for arrays in loops") },
   {"move-all-movables", &flag_move_all_movables, 1,
    N_("Force all loop invariant computations out of loops") },
   {"reduce-all-givs", &flag_reduce_all_givs, 1,
@@ -2863,7 +2870,8 @@ rest_of_compilation (decl)
 	}
       cleanup_barriers ();
       loop_optimize (insns, rtl_dump_file,
-		     (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT);
+		     (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT
+		     | (flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0));
 
       close_dump_file (DFI_loop, print_rtl, insns);
       timevar_pop (TV_LOOP);
@@ -4927,6 +4935,20 @@ process_options ()
       warning ("-ffunction-sections disabled; it makes profiling impossible");
       flag_function_sections = 0;
     }
+
+#ifndef HAVE_prefetch
+  if (flag_prefetch_loop_arrays)
+    {
+      warning ("-fprefetch-loop-arrays not supported for this target");
+      flag_prefetch_loop_arrays = 0;
+    }
+#else
+  if (flag_prefetch_loop_arrays && !HAVE_prefetch)
+    {
+      warning ("-fprefetch-loop-arrays not supported for this target (try -march switches)");
+      flag_prefetch_loop_arrays = 0;
+    }
+#endif
 
 #ifndef OBJECT_FORMAT_ELF
   if (flag_function_sections && write_symbols != NO_DEBUG)

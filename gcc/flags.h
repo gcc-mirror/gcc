@@ -269,6 +269,10 @@ extern int flag_unroll_all_loops;
 
 extern int flag_move_all_movables;
 
+/* Nonzero enables prefetch optimizations for arrays in loops.  */
+
+extern int flag_prefetch_loop_arrays;
+
 /* Nonzero forces all general induction variables in loops to be
    strength reduced.  */
 

@@ -64,9 +64,11 @@ enum bb_flags {
 
 static bool try_crossjump_to_edge	PARAMS ((int, edge, edge));
 static bool try_crossjump_bb		PARAMS ((int, basic_block));
-static bool outgoing_edges_match	PARAMS ((basic_block, basic_block));
+static bool outgoing_edges_match	PARAMS ((int,
+						 basic_block, basic_block));
 static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 						 rtx *, rtx *));
+static bool insns_match_p		PARAMS ((int, rtx, rtx));
 
 static bool delete_unreachable_blocks	PARAMS ((void));
 static bool label_is_jump_target_p	PARAMS ((rtx, rtx));
@@ -546,6 +548,108 @@ merge_blocks (e, b, c, mode)
   return false;
 }
 
+
+/* Return true if I1 and I2 are equivalent and thus can be crossjumped.  */
+
+static bool
+insns_match_p (mode, i1, i2)
+	int mode;
+	rtx i1, i2;
+{
+  rtx p1, p2;
+
+  /* Verify that I1 and I2 are equivalent.  */
+  if (GET_CODE (i1) != GET_CODE (i2))
+    return false;
+
+  p1 = PATTERN (i1);
+  p2 = PATTERN (i2);
+
+  if (GET_CODE (p1) != GET_CODE (p2))
+    return false;
+
+  /* If this is a CALL_INSN, compare register usage information.
+     If we don't check this on stack register machines, the two
+     CALL_INSNs might be merged leaving reg-stack.c with mismatching
+     numbers of stack registers in the same basic block.
+     If we don't check this on machines with delay slots, a delay slot may
+     be filled that clobbers a parameter expected by the subroutine.
+
+     ??? We take the simple route for now and assume that if they're
+     equal, they were constructed identically.  */
+
+  if (GET_CODE (i1) == CALL_INSN
+      && !rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
+		       CALL_INSN_FUNCTION_USAGE (i2)))
+    return false;
+
+#ifdef STACK_REGS
+  /* If cross_jump_death_matters is not 0, the insn's mode
+     indicates whether or not the insn contains any stack-like
+     regs.  */
+
+  if ((mode & CLEANUP_POST_REGSTACK) && stack_regs_mentioned (i1))
+    {
+      /* If register stack conversion has already been done, then
+         death notes must also be compared before it is certain that
+         the two instruction streams match.  */
+
+      rtx note;
+      HARD_REG_SET i1_regset, i2_regset;
+
+      CLEAR_HARD_REG_SET (i1_regset);
+      CLEAR_HARD_REG_SET (i2_regset);
+
+      for (note = REG_NOTES (i1); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_DEAD && STACK_REG_P (XEXP (note, 0)))
+	  SET_HARD_REG_BIT (i1_regset, REGNO (XEXP (note, 0)));
+
+      for (note = REG_NOTES (i2); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_DEAD && STACK_REG_P (XEXP (note, 0)))
+	  SET_HARD_REG_BIT (i2_regset, REGNO (XEXP (note, 0)));
+
+      GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, done);
+
+      return false;
+
+    done:
+      ;
+    }
+#endif
+
+  if (reload_completed
+      ? ! rtx_renumbered_equal_p (p1, p2) : ! rtx_equal_p (p1, p2))
+    {
+      /* The following code helps take care of G++ cleanups.  */
+      rtx equiv1 = find_reg_equal_equiv_note (i1);
+      rtx equiv2 = find_reg_equal_equiv_note (i2);
+
+      if (equiv1 && equiv2
+	  /* If the equivalences are not to a constant, they may
+	     reference pseudos that no longer exist, so we can't
+	     use them.  */
+	  && (! reload_completed
+	      || (CONSTANT_P (XEXP (equiv1, 0))
+		  && rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))))
+	{
+	  rtx s1 = single_set (i1);
+	  rtx s2 = single_set (i2);
+	  if (s1 != 0 && s2 != 0
+	      && rtx_renumbered_equal_p (SET_DEST (s1), SET_DEST (s2)))
+	    {
+	      validate_change (i1, &SET_SRC (s1), XEXP (equiv1, 0), 1);
+	      validate_change (i2, &SET_SRC (s2), XEXP (equiv2, 0), 1);
+	      if (! rtx_renumbered_equal_p (p1, p2))
+		cancel_changes (0);
+	      else if (apply_change_group ())
+		return true;
+	    }
+	}
+      return false;
+    }
+  return true;
+}
+
 /* Look through the insns at the end of BB1 and BB2 and find the longest
    sequence that are equivalent.  Store the first insns for that sequence
    in *F1 and *F2 and return the sequence length.
@@ -559,7 +663,7 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
      basic_block bb1, bb2;
      rtx *f1, *f2;
 {
-  rtx i1, i2, p1, p2, last1, last2, afterlast1, afterlast2;
+  rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
 
   /* Skip simple jumps at the end of the blocks.  Complex jumps still
@@ -586,100 +690,11 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
       if (i1 == bb1->head || i2 == bb2->head)
 	break;
 
-      /* Verify that I1 and I2 are equivalent.  */
-
-      if (GET_CODE (i1) != GET_CODE (i2))
+      if (!insns_match_p (mode, i1, i2))
 	break;
 
-      p1 = PATTERN (i1);
-      p2 = PATTERN (i2);
-
-      /* If this is a CALL_INSN, compare register usage information.
-	 If we don't check this on stack register machines, the two
-	 CALL_INSNs might be merged leaving reg-stack.c with mismatching
-	 numbers of stack registers in the same basic block.
-	 If we don't check this on machines with delay slots, a delay slot may
-	 be filled that clobbers a parameter expected by the subroutine.
-
-	 ??? We take the simple route for now and assume that if they're
-	 equal, they were constructed identically.  */
-
-      if (GET_CODE (i1) == CALL_INSN
-	  && ! rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
-			    CALL_INSN_FUNCTION_USAGE (i2)))
-	break;
-
-#ifdef STACK_REGS
-      /* If cross_jump_death_matters is not 0, the insn's mode
-	 indicates whether or not the insn contains any stack-like
-	 regs.  */
-
-      if ((mode & CLEANUP_POST_REGSTACK) && stack_regs_mentioned (i1))
-	{
-	  /* If register stack conversion has already been done, then
-	     death notes must also be compared before it is certain that
-	     the two instruction streams match.  */
-
-	  rtx note;
-	  HARD_REG_SET i1_regset, i2_regset;
-
-	  CLEAR_HARD_REG_SET (i1_regset);
-	  CLEAR_HARD_REG_SET (i2_regset);
-
-	  for (note = REG_NOTES (i1); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_DEAD
-		&& STACK_REG_P (XEXP (note, 0)))
-	      SET_HARD_REG_BIT (i1_regset, REGNO (XEXP (note, 0)));
-
-	  for (note = REG_NOTES (i2); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_DEAD
-		&& STACK_REG_P (XEXP (note, 0)))
-	      SET_HARD_REG_BIT (i2_regset, REGNO (XEXP (note, 0)));
-
-	  GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, done);
-
-	  break;
-
-	done:
-	  ;
-	}
-#endif
-
-      if (GET_CODE (p1) != GET_CODE (p2))
-	break;
-
-      if (! rtx_renumbered_equal_p (p1, p2))
-	{
-	  /* The following code helps take care of G++ cleanups.  */
-	  rtx equiv1 = find_reg_equal_equiv_note (i1);
-	  rtx equiv2 = find_reg_equal_equiv_note (i2);
-
-	  if (equiv1 && equiv2
-	      /* If the equivalences are not to a constant, they may
-		 reference pseudos that no longer exist, so we can't
-		 use them.  */
-	      && CONSTANT_P (XEXP (equiv1, 0))
-	      && rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))
-	    {
-	      rtx s1 = single_set (i1);
-	      rtx s2 = single_set (i2);
-	      if (s1 != 0 && s2 != 0
-		  && rtx_renumbered_equal_p (SET_DEST (s1), SET_DEST (s2)))
-		{
-		  validate_change (i1, &SET_SRC (s1), XEXP (equiv1, 0), 1);
-		  validate_change (i2, &SET_SRC (s2), XEXP (equiv2, 0), 1);
-		  if (! rtx_renumbered_equal_p (p1, p2))
-		    cancel_changes (0);
-		  else if (apply_change_group ())
-		    goto win;
-		}
-	    }
-	  break;
-	}
-
-    win:
       /* Don't begin a cross-jump with a USE or CLOBBER insn.  */
-      if (GET_CODE (p1) != USE && GET_CODE (p1) != CLOBBER)
+      if (active_insn_p (i1))
 	{
 	  /* If the merged insns have different REG_EQUAL notes, then
 	     remove them.  */
@@ -743,10 +758,15 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
    We may assume that there exists one edge with a common destination.  */
 
 static bool
-outgoing_edges_match (bb1, bb2)
+outgoing_edges_match (mode, bb1, bb2)
+     int mode;
      basic_block bb1;
      basic_block bb2;
 {
+  int nehedges1 = 0, nehedges2 = 0;
+  edge fallthru1 = 0, fallthru2 = 0;
+  edge e1, e2;
+
   /* If BB1 has only one successor, we must be looking at an unconditional
      jump.  Which, by the assumption above, means that we only need to check
      that BB2 has one successor.  */
@@ -862,10 +882,60 @@ outgoing_edges_match (bb1, bb2)
       return match;
     }
 
-  /* ??? We can handle computed jumps too.  This may be important for
-     inlined functions containing switch statements.  Also jumps w/o
-     fallthru edges can be handled by simply matching whole insn.  */
-  return false;
+  /* Generic case - we are seeing an computed jump, table jump or trapping
+     instruction.  */
+
+  /* First ensure that the instructions match.  There may be many outgoing
+     edges so this test is generally cheaper.
+     ??? Currently the tablejumps will never match, as they do have
+     different tables.  */
+  if (!insns_match_p (mode, bb1->end, bb2->end))
+    return false;
+
+  /* Search the outgoing edges, ensure that the counts do match, find possible
+     fallthru and exception handling edges since these needs more
+     validation.  */
+  for (e1 = bb1->succ, e2 = bb2->succ; e1 && e2;
+       e1 = e1->succ_next, e2 = e2->succ_next)
+    {
+      if (e1->flags & EDGE_EH)
+	nehedges1++;
+      if (e2->flags & EDGE_EH)
+	nehedges2++;
+      if (e1->flags & EDGE_FALLTHRU)
+	fallthru1 = e1;
+      if (e2->flags & EDGE_FALLTHRU)
+	fallthru2 = e2;
+    }
+  /* If number of edges of various types does not match, fail.  */
+  if (e1 || e2)
+    return false;
+  if (nehedges1 != nehedges2)
+    return false;
+  if ((fallthru1 != 0) != (fallthru2 != 0))
+    return false;
+
+  /* fallthru edges must be forwarded to the same destination.  */
+  if (fallthru1)
+    {
+      basic_block d1 = (forwarder_block_p (fallthru1->dest)
+	                ? fallthru1->dest->succ->dest: fallthru1->dest);
+      basic_block d2 = (forwarder_block_p (fallthru2->dest)
+	                ? fallthru2->dest->succ->dest: fallthru2->dest);
+      if (d1 != d2)
+	return false;
+    }
+  /* In case we do have EH edges, ensure we are in the same region.  */
+  if (nehedges1)
+    {
+      rtx n1 = find_reg_note (bb1->end, REG_EH_REGION, 0);
+      rtx n2 = find_reg_note (bb2->end, REG_EH_REGION, 0);
+      if (XEXP (n1, 0) != XEXP (n2, 0))
+	return false;
+    }
+  /* We don't need to match the rest of edges as above checks should be enought
+     to ensure that they are equivalent.  */
+  return true;
 }
 
 /* E1 and E2 are edges with the same destination block.  Search their
@@ -924,14 +994,8 @@ try_crossjump_to_edge (mode, e1, e2)
   if (!src1->pred || !src2->pred)
     return false;
 
-  /* Likewise with complex edges.
-     ??? We should be able to handle most complex edges later with some
-     care.  */
-  if (e1->flags & EDGE_COMPLEX)
-    return false;
-
   /* Look for the common insn sequence, part the first ...  */
-  if (!outgoing_edges_match (src1, src2))
+  if (!outgoing_edges_match (mode, src1, src2))
     return false;
 
   /* ... and part the second.  */
@@ -1066,11 +1130,6 @@ try_crossjump_bb (mode, bb)
     {
       nexte = e->pred_next;
 
-      /* Elide complex edges now, as neither try_crossjump_to_edge
-	 nor outgoing_edges_match can handle them.  */
-      if (e->flags & EDGE_COMPLEX)
-	continue;
-
       /* As noted above, first try with the fallthru predecessor.  */
       if (fallthru)
 	{
@@ -1111,11 +1170,6 @@ try_crossjump_bb (mode, bb)
 
 	  /* We've already checked the fallthru edge above.  */
 	  if (e2 == fallthru)
-	    continue;
-
-	  /* Again, neither try_crossjump_to_edge nor outgoing_edges_match
-	     can handle complex edges.  */
-	  if (e2->flags & EDGE_COMPLEX)
 	    continue;
 
 	  /* The "first successor" check above only prevents multiple
