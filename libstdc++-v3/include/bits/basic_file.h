@@ -128,7 +128,8 @@ namespace std {
       __basic_file(__c_lock* __lock = 0);
       
       void 
-      _M_open_mode(ios_base::openmode __mode, int& __p_mode, int& __rw_mode);
+      _M_open_mode(ios_base::openmode __mode, int& __p_mode, int& __rw_mode, 
+		   char* __c_mode);
       
       // Eqivalent to the normal fopen function.
       __basic_file* 
@@ -234,99 +235,6 @@ namespace std {
       virtual void 
       imbue(void* __v);
     };
-
-  // __basic_file<char> specializations
-  template<>
-    __basic_file<char>::__basic_file(__c_lock* __lock);
-
-  template<>
-    int 
-    __basic_file<char>::overflow(int __c);
-
-  template<>
-    int 
-    __basic_file<char>::underflow();
-
-  template<>
-    int 
-    __basic_file<char>::uflow();
-
-  template<>
-    int 
-    __basic_file<char>::pbackfail(int __c);
-
-  template<>
-    streamsize 
-    __basic_file<char>::xsputn(const char* __s, streamsize __n);
-
-  template<>
-    streamoff
-    __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
-				ios_base::openmode __mode);
-
-  template<>
-    streamoff
-    __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode __mode);
-
-  template<>
-    streambuf* 
-    __basic_file<char>::setbuf(char* __b, int __len);
-
-  template<>
-    int 
-    __basic_file<char>::sync();
-
-  template<>
-    int 
-    __basic_file<char>::doallocate();
-
-  // __basic_file<wchar_t> specializations
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    __basic_file<wchar_t>::__basic_file(__c_lock* __lock);
-
-  template<>
-    int 
-    __basic_file<wchar_t>::overflow(int __c);
-
-  template<>
-    int 
-    __basic_file<wchar_t>::underflow();
-
-  template<>
-    int 
-    __basic_file<wchar_t>::uflow();
-
-  template<>
-    int 
-    __basic_file<wchar_t>::pbackfail(int __c);
-
-  template<>
-    streamsize 
-    __basic_file<wchar_t>::xsputn(const wchar_t* __s, streamsize __n);
-
-  template<>
-    streamoff
-    __basic_file<wchar_t>::seekoff(streamoff __off, ios_base::seekdir __way, 
-				ios_base::openmode __mode);
-
-  template<>
-    streamoff
-    __basic_file<wchar_t>::seekpos(streamoff __pos, ios_base::openmode __mode);
-
-  template<>
-    streambuf* 
-    __basic_file<wchar_t>::setbuf(wchar_t* __b, int __len);
-
-  template<>
-    int 
-    __basic_file<wchar_t>::sync();
-
-  template<>
-    int 
-    __basic_file<wchar_t>::doallocate();
-#endif
-
 } // namespace std
 
 #endif	/* _CPP_BASIC_FILE */

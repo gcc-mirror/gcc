@@ -36,9 +36,97 @@
 
 namespace std {
 
-  // Need to instantiate base class here for type-info bits, etc
-  template struct __basic_file_base<char>;
-  template struct __basic_file_base<wchar_t>;
+  // __basic_file<char> specializations
+  template<>
+    __basic_file<char>::__basic_file(__c_lock* __lock);
+
+  template<>
+    int 
+    __basic_file<char>::overflow(int __c);
+
+  template<>
+    int 
+    __basic_file<char>::underflow();
+
+  template<>
+    int 
+    __basic_file<char>::uflow();
+
+  template<>
+    int 
+    __basic_file<char>::pbackfail(int __c);
+
+  template<>
+    streamsize 
+    __basic_file<char>::xsputn(const char* __s, streamsize __n);
+
+  template<>
+    streamoff
+    __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
+				ios_base::openmode __mode);
+
+  template<>
+    streamoff
+    __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode __mode);
+
+  template<>
+    streambuf* 
+    __basic_file<char>::setbuf(char* __b, int __len);
+
+  template<>
+    int 
+    __basic_file<char>::sync();
+
+  template<>
+    int 
+    __basic_file<char>::doallocate();
+
+  // __basic_file<wchar_t> specializations
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    __basic_file<wchar_t>::__basic_file(__c_lock* __lock);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::overflow(int __c);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::underflow();
+
+  template<>
+    int 
+    __basic_file<wchar_t>::uflow();
+
+  template<>
+    int 
+    __basic_file<wchar_t>::pbackfail(int __c);
+
+  template<>
+    streamsize 
+    __basic_file<wchar_t>::xsputn(const wchar_t* __s, streamsize __n);
+
+  template<>
+    streamoff
+    __basic_file<wchar_t>::seekoff(streamoff __off, ios_base::seekdir __way, 
+				ios_base::openmode __mode);
+
+  template<>
+    streamoff
+    __basic_file<wchar_t>::seekpos(streamoff __pos, ios_base::openmode __mode);
+
+  template<>
+    streambuf* 
+    __basic_file<wchar_t>::setbuf(wchar_t* __b, int __len);
+
+  template<>
+    int 
+    __basic_file<wchar_t>::sync();
+
+  template<>
+    int 
+    __basic_file<wchar_t>::doallocate();
+#endif
 
   // Generic definitions for __basic_file
   template<typename _CharT>
@@ -53,7 +141,8 @@ namespace std {
   template<typename _CharT>
     void 
     __basic_file<_CharT>::_M_open_mode(ios_base::openmode __mode, 
-				       int& __p_mode, int& __rw_mode)
+				       int& __p_mode, int& __rw_mode, 
+				       char* /*__c_mode*/)
     {  
 #ifdef O_BINARY
       bool __testb = __mode & ios_base::binary;
@@ -106,8 +195,9 @@ namespace std {
       __basic_file* __ret = NULL;
       int __p_mode = 0;
       int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
+      char __c_mode[4];
       
-      _M_open_mode(__mode, __p_mode, __rw_mode);
+      _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
 
       if (!_IO_file_is_open(this))
 	{
@@ -125,13 +215,14 @@ namespace std {
   template<typename _CharT>
     __basic_file<_CharT>* 
     __basic_file<_CharT>::open(const char* __name, ios_base::openmode __mode, 
-			       int __prot = 0664)
+			       int __prot)
     {
       __basic_file* __ret = NULL;
       int __p_mode = 0;
       int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
-      
-      _M_open_mode(__mode, __p_mode, __rw_mode);
+      char __c_mode[4];
+
+      _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
       if (!_IO_file_is_open(this))
 	{
 	  __c_file_type* __f;
@@ -260,8 +351,6 @@ namespace std {
   __basic_file<char>::doallocate() 
   { return _IO_file_doallocate(this); }
 
-  template class __basic_file<char>;
-
   // __basic_file<wchar_t> definitions
 #ifdef _GLIBCPP_USE_WCHAR_T
   __basic_file<wchar_t>::__basic_file(__c_lock* __lock)
@@ -339,10 +428,15 @@ namespace std {
   int 
   __basic_file<wchar_t>::doallocate() 
   { return _IO_wfile_doallocate(this); }
-
-  template class __basic_file<wchar_t>;
 #endif
 
+  // Need to instantiate base class here for type-info bits, etc
+  template struct __basic_file_base<char>;
+  template class __basic_file<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template struct __basic_file_base<wchar_t>;
+  template class __basic_file<wchar_t>;
+#endif
 }  // namespace std
 
 

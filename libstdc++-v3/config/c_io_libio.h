@@ -56,7 +56,6 @@ namespace std {
   typedef int          __c_lock;
 #endif
 
-
 // from basic_file.h
 #define _GLIBCPP_BASIC_FILE_INHERITANCE 1
   typedef _IO_FILE 	__c_file_type;
@@ -64,7 +63,7 @@ namespace std {
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   extern "C" _IO_codecvt __c_libio_codecvt;
-#endif /* defined (_GLIBCPP_USE_WCHAR_T) */
+#endif 
 
 // from ios_base.h
   struct __ios_flags

@@ -1326,11 +1326,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
          fi
       fi
       ;;
-
-    xwince)
-      CSTDIO_H=config/c_io_wince.h
-      CSTDIO_CC=config/c_io_wince.cc
-      AC_MSG_RESULT(wince)
+    xstdio)
+      CSTDIO_H=config/c_io_stdio.h
+      CSTDIO_CC=config/c_io_stdio.cc
+      AC_MSG_RESULT(stdio)
 
       need_libio=no
       ;;
