@@ -342,6 +342,19 @@ override_options ()
   if (!g_switch_set)
     g_switch_value = 8;
 
+  /* Align labels and loops for optimal branching.  */
+  /* ??? Kludge these by not doing anything if we don't optimize and also if
+     we are writing ECOFF symbols to work around a bug in DEC's assembler. */
+  if (optimize > 0 && write_symbols != SDB_DEBUG)
+    {
+      if (align_loops <= 0)
+	align_loops = 16;
+      if (align_jumps <= 0)
+	align_jumps = 16;
+    }
+  if (align_functions <= 0)
+    align_functions = 16;
+
   /* Acquire a unique set number for our register saves and restores.  */
   alpha_sr_alias_set = new_alias_set ();
 

@@ -1,5 +1,12 @@
 2001-06-10  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (override_options): Set align_loops,
+	align_jumps, and align_functions.
+	* config/alpha/alpha.h (FUNCTION_BOUNDARY): Set to 32 bits.
+	(LOOP_ALIGN, LABEL_ALIGN_AFTER_BARRIER): Remove.
+
+2001-06-10  Richard Henderson  <rth@redhat.com>
+
 	* doc/invoke.texi (Optimization Options): Document -fpeephole2.
 	(Code Generation Options): Document -fnon-call-exceptions.
 
