@@ -1,3 +1,7 @@
+2001-11-19  Jason Wilkins <fenix@io.com>
+
+	* Makefile.in: Use INSTALL_SCRIPT not INSTALL_PROGRAM.
+
 Mon Nov 19 15:13:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.def (VIEW_CONVERT_EXPR): New tree code.
