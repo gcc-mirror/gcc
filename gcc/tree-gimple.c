@@ -79,7 +79,9 @@ Boston, MA 02111-1307, USA.  */
        GOTO_EXPR
          op0 -> LABEL_DECL | '*' ID
      | RETURN_EXPR
-         op0 -> RESULT_DECL | NULL_TREE
+         op0 -> NULL_TREE
+	      | RESULT_DECL
+	      | MODIFY_EXPR -> RESULT_DECL, varname
      | THROW_EXPR?  do we need/want such a thing for opts, perhaps
          to generate an ERT_THROW region?  I think so.
 	 Hmm...this would only work at the GIMPLE level, where we know that

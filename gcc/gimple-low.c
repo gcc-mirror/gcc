@@ -47,9 +47,9 @@ struct lower_data
   /* Block the current statement belongs to.  */
   tree block;
 
-  /* Label that unifies the return statements.  */
-  tree the_return_label;
-  tree one_return_stmt;
+  /* A TREE_LIST of label and return statements to be moved to the end
+     of the function.  */
+  tree return_statements;
 };
 
 static void lower_stmt (tree_stmt_iterator *, struct lower_data *);
@@ -76,8 +76,7 @@ lower_function_body (void)
   BLOCK_CHAIN (data.block) = NULL_TREE;
   TREE_ASM_WRITTEN (data.block) = 1;
 
-  data.the_return_label = NULL_TREE;
-  data.one_return_stmt = NULL_TREE;
+  data.return_statements = NULL_TREE;
 
   *body_p = alloc_stmt_list ();
   i = tsi_start (*body_p);
@@ -86,13 +85,23 @@ lower_function_body (void)
 
   /* If we lowered any return statements, emit the representative at the
      end of the function.  */
-  if (data.one_return_stmt)
+  if (data.return_statements)
     {
-      tree t;
-      t = build (LABEL_EXPR, void_type_node, data.the_return_label);
+      tree t, x;
       i = tsi_last (*body_p);
-      tsi_link_after (&i, t, TSI_CONTINUE_LINKING);
-      tsi_link_after (&i, data.one_return_stmt, TSI_CONTINUE_LINKING);
+
+      for (t = data.return_statements; t ; t = TREE_CHAIN (t))
+	{
+	  x = build (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
+          tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+
+	  /* Remove the line number from the representative return statement.
+	     It now fills in for many such returns.  Failure to remove this
+	     will result in incorrect results for coverage analysis.  */
+	  x = TREE_VALUE (t);
+	  SET_EXPR_LOCUS (x, NULL);
+          tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+        }
     }
 
   if (data.block != DECL_INITIAL (current_function_decl))
@@ -392,16 +401,37 @@ lower_cond_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 static void
 lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 {
-  tree stmt, label = data->the_return_label;
+  tree stmt = tsi_stmt (*tsi);
+  tree value, t, label;
 
-  if (!label)
+  /* Extract the value being returned.  */
+  value = TREE_OPERAND (stmt, 0);
+  if (value && TREE_CODE (value) == MODIFY_EXPR)
+    value = TREE_OPERAND (value, 1);
+
+  /* Match this up with an existing return statement that's been created.  */
+  for (t = data->return_statements; t ; t = TREE_CHAIN (t))
     {
-      data->the_return_label = label = create_artificial_label ();
-      data->one_return_stmt = tsi_stmt (*tsi);
+      tree tvalue = TREE_OPERAND (TREE_VALUE (t), 0);
+      if (tvalue && TREE_CODE (tvalue) == MODIFY_EXPR)
+	tvalue = TREE_OPERAND (tvalue, 1);
+
+      if (value == tvalue)
+	{
+	  label = TREE_PURPOSE (t);
+	  goto found;
+	}
     }
 
-  stmt = build (GOTO_EXPR, void_type_node, label);
-  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
+  /* Not found.  Create a new label and record the return statement.  */
+  label = create_artificial_label ();
+  data->return_statements = tree_cons (label, stmt, data->return_statements);
+
+  /* Generate a goto statement and remove the return statement.  */
+ found:
+  t = build (GOTO_EXPR, void_type_node, label);
+  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
   tsi_delink (tsi);
 }
 
