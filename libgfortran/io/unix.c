@@ -1160,7 +1160,7 @@ input_stream (void)
 }
 
 
-/* output_stream()-- Return a stream pointer to the default input stream.
+/* output_stream()-- Return a stream pointer to the default output stream.
  * Called on initialization. */
 
 stream *
@@ -1169,6 +1169,15 @@ output_stream (void)
   return fd_to_stream (STDOUT_FILENO, PROT_WRITE);
 }
 
+
+/* error_stream()-- Return a stream pointer to the default error stream.
+ * Called on initialization. */
+
+stream *
+error_stream (void)
+{
+  return fd_to_stream (STDERR_FILENO, PROT_WRITE);
+}
 
 /* init_error_stream()-- Return a pointer to the error stream.  This
  * subroutine is called when the stream is needed, rather than at

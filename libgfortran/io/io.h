@@ -395,6 +395,9 @@ internal_proto(input_stream);
 extern stream *output_stream (void);
 internal_proto(output_stream);
 
+extern stream *error_stream (void);
+internal_proto(error_stream);
+
 extern int compare_file_filename (stream *, const char *, int);
 internal_proto(compare_file_filename);
 

@@ -323,9 +323,14 @@ new_unit (unit_flags * flags)
       internal_error ("new_unit(): Bad status");
     }
 
-  /* Make sure the file isn't already open someplace else.  */
+  /* Make sure the file isn't already open someplace else.
+     Do not error if opening file preconnected to stdin, stdout, stderr.  */
 
-  if (find_file () != NULL)
+  u = find_file ();
+  if (u != NULL
+      && (options.stdin_unit < 0 || u->unit_number != options.stdin_unit)
+      && (options.stdout_unit < 0 || u->unit_number != options.stdout_unit)
+      && (options.stderr_unit < 0 || u->unit_number != options.stderr_unit))
     {
       generate_error (ERROR_ALREADY_OPEN, NULL);
       goto cleanup;
