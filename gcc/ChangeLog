@@ -1,3 +1,8 @@
+Wed Sep  3 09:05:41 1997  Robert Lipe  (robert@dgii.com)
+
+	* xm-sco5.h (sys_siglist): Define.
+	(SYS_SIGLIST_DECLARED): Likewise.
+
 Tue Sep  2 23:33:33 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (convert_move): Handle truncation from TQFmode to QFmode.
