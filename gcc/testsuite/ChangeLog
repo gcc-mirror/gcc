@@ -1,3 +1,7 @@
+2002-09-26  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/compile/trunctfdf.c: New.
+
 2002-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lib/target-supports.exp (check_weak_available): Handle solaris2.
