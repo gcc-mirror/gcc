@@ -5819,9 +5819,9 @@ clobbered by function calls.  It may be allocated for temporaries or
 variables that do not live across a call.  Functions compiled this way
 will not save and restore the register @var{reg}.
 
-Use of this flag for a register that has a fixed pervasive role in the
-machine's execution model, such as the stack pointer or frame pointer,
-will produce disastrous results.
+It is an error to used this flag with the frame pointer or stack pointer.
+Use of this flag for other registers that have fixed pervasive roles in
+the machine's execution model will produce disastrous results.
 
 This flag does not have a negative form, because it specifies a
 three-way choice.
@@ -5832,9 +5832,9 @@ functions.  It may be allocated even for temporaries or variables that
 live across a call.  Functions compiled this way will save and restore
 the register @var{reg} if they use it.
 
-Use of this flag for a register that has a fixed pervasive role in the
-machine's execution model, such as the stack pointer or frame pointer,
-will produce disastrous results.
+It is an error to used this flag with the frame pointer or stack pointer.
+Use of this flag for other registers that have fixed pervasive roles in
+the machine's execution model will produce disastrous results.
 
 A different sort of disaster will result from the use of this flag for
 a register in which function values may be returned.

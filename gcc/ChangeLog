@@ -1,3 +1,9 @@
+Tue Oct 20 10:59:02 1998  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* regclass.c (fix_register): Add error message.
+	* invoke.texi (-fcall-used-REG,-fcall-saved-REG): Note the
+	  new error message.
+
 Tue Oct 20 10:12:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (warn_missing_noreturn): New global variable.
