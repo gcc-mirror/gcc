@@ -4631,10 +4631,10 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 				 mode, new));
     }
 
-  /* Unless this isin a COMPARE or we have a funny memory reference,
-     don't do anything with field extracts starting at the low-order
-     bit since they are simple AND operations.  */
-  if (pos == 0 && ! in_dest && ! in_compare && ! spans_byte)
+  /* Unless this is a COMPARE or we have a funny memory reference,
+     don't do anything with zero-extending field extracts starting at
+     the low-order bit since they are simple AND operations.  */
+  if (pos == 0 && ! in_dest && ! in_compare && ! spans_byte && unsignedp)
     return 0;
 
   /* Get the mode to use should INNER be a MEM, the mode for the position,
