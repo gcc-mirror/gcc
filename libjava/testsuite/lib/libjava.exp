@@ -336,6 +336,27 @@ proc libjava_arguments {{mode compile}} {
     return $args
 }
 
+# Link a bunch of objects into a program.  MAIN is the name of the
+# class holding `main'.  Return 0 on failure.
+proc gcj_link {program main files {options {}}} {
+    set arguments [libjava_arguments link]
+    if {[llength $options]} {
+	eval lappend arguments $options
+    }
+    lappend arguments "additional_flags=--main=$main"
+    set x [prune_warnings [libjava_tcompile $files $program executable \
+			     $arguments]]
+    if {$x != ""} {
+	verbose "link failure: $x" 2
+	fail "linking $program"
+	setup_xfail "*-*-*"
+	fail "running $program"
+	return 0
+    }
+
+    pass "linking $program"
+    return 1
+}
 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
