@@ -664,7 +664,7 @@ case x${enable_threads} in
 		target_thread_file=''
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32 | xdce)
+	xsolaris | xwin32 | xdce | xvxworks)
 		target_thread_file=$enable_threads
 		;;
 	*)
@@ -1985,10 +1985,11 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} dbxcoff.h a29k/udi.h"
 		tmake_file=a29k/t-a29kbare
 		;;
-	a29k-*-vxworks*)
+	a29k-wrs-vxworks*)
 		tm_file="${tm_file} dbxcoff.h a29k/udi.h a29k/vx29k.h"
 		tmake_file=a29k/t-vx29k
 		extra_parts="crtbegin.o crtend.o"
+		thread_file='vxworks'
 		;;
 	a29k-*-*)			# Default a29k environment.
 		use_collect2=yes
@@ -2792,16 +2793,19 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} i960/vx960.h"
 		tmake_file=i960/t-vxworks960
 		use_collect2=yes
+		thread_file='vxworks'
 		;;
 	i960-wrs-vxworks5* | i960-wrs-vxworks)
 		tm_file="${tm_file} dbxcoff.h i960/i960-coff.h i960/vx960-coff.h"
 		tmake_file=i960/t-vxworks960
 		use_collect2=yes
+		thread_file='vxworks'
 		;;
 	i960-wrs-vxworks*)
 		tm_file="${tm_file} i960/vx960.h"
 		tmake_file=i960/t-vxworks960
 		use_collect2=yes
+		thread_file='vxworks'
 		;;
 	i960-*-coff*)
 		tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
@@ -3112,6 +3116,7 @@ for machine in $build $host $target; do
 		tm_file=m68k/vxm68k.h
 		tmake_file=m68k/t-vxworks68
 		extra_headers=math-68881.h
+		thread_file='vxworks'
 		;;
 	m68k-*-aout*)
 		tmake_file=m68k/t-m68kbare
@@ -3872,12 +3877,13 @@ for machine in $build $host $target; do
 			thread_file='posix'
 		fi
 		;;
-        powerpc-*-vxworks*)
+        powerpc-wrs-vxworks*)
                 cpu_type=rs6000
                 xm_file=rs6000/xm-sysv4.h
                 tm_file=rs6000/vxppc.h
                 tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
+		thread_file='vxworks'
                 ;;
 	powerpcle-*-sysv* | powerpcle-*-elf*)
 		tm_file=rs6000/sysv4le.h
@@ -4009,6 +4015,7 @@ for machine in $build $host $target; do
 		tm_file=sparc/vxsparc.h
 		tmake_file=sparc/t-vxsparc
 		use_collect2=yes
+		thread_file='vxworks'
 		;;
 	sparc-*-aout*)
 		tmake_file=sparc/t-sparcbare

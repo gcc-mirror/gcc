@@ -1,3 +1,10 @@
+1998-04-03  Mike Stump  <mrs@wrs.com>
+
+	* gthr.h: Support systems that don't have weak, but have threads.
+	* configure.in (*wrs-vxworks*): Use VxWorks threads by default.
+	* gthr-vxworks.h: New file.
+	* objc/thr-vxworks.h: Dummy file from thr-single.c for now.
+
 Thu Apr  2 18:00:52 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.md (movqi+1): Change alternative 1 from *r/r to *r/*rn.
