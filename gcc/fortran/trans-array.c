@@ -98,7 +98,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
 
-/* The contents of this structure aren't actualy used, just the address.  */
+/* The contents of this structure aren't actually used, just the address.  */
 static gfc_ss gfc_ss_terminator_var;
 gfc_ss * const gfc_ss_terminator = &gfc_ss_terminator_var;
 
@@ -524,7 +524,7 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
       info->dim[dim] = dim;
     }
 
-  /* Initialise the descriptor.  */
+  /* Initialize the descriptor.  */
   type =
     gfc_get_array_type_bounds (eltype, info->dimen, loop->from, loop->to, 1);
   desc = gfc_create_var (type, "atmp");
@@ -591,7 +591,7 @@ gfc_put_offset_into_var (stmtblock_t * pblock, tree * poffset,
 			 tree * offsetvar)
 {
   /* We should have already created the offset variable.  We cannot
-     create it here because we may be in an inner scopde.  */
+     create it here because we may be in an inner scope.  */
   assert (*offsetvar != NULL_TREE);
   gfc_add_modify_expr (pblock, *offsetvar, *poffset);
   *poffset = *offsetvar;
@@ -801,7 +801,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_add_block_to_block (pblock, &se.pre);
 	  loopvar = se.expr;
 
-	  /* Initialize thie loop.  */
+	  /* Initialize the loop.  */
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_val (&se, c->iterator->start);
 	  gfc_add_block_to_block (pblock, &se.pre);
@@ -955,7 +955,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   else
     assert (INTEGER_CST_P (offset));
 #if 0
-  /* Disable bound checking for now cos it's probably broken.  */
+  /* Disable bound checking for now cause it's probably broken.  */
   if (flag_bounds_check)
     {
       abort ();
@@ -1102,7 +1102,7 @@ gfc_init_loopinfo (gfc_loopinfo * loop)
   gfc_init_block (&loop->pre);
   gfc_init_block (&loop->post);
 
-  /* Initialy scalarize in order.  */
+  /* Initially scalarize in order.  */
   for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
     loop->order[n] = n;
 
@@ -1134,7 +1134,7 @@ gfc_conv_array_data (tree descriptor)
         return descriptor;
       else
         {
-          /* Descritporless arrays.  */
+          /* Descriptorless arrays.  */
 	  return gfc_build_addr_expr (NULL, descriptor);
         }
     }
@@ -1227,7 +1227,7 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 
 static void
 gfc_conv_array_index_ref (gfc_se * se, tree pointer, tree * indices,
-			  tree offset, int dimen)
+                         tree offset, int dimen)
 {
   tree array;
   tree tmp;
@@ -1931,7 +1931,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
     gfc_todo_error ("Unable to determine rank of expression");
 
 
-  /* loop over all the SS in the chain.  */
+  /* Loop over all the SS in the chain.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
       switch (ss->type)
@@ -2061,7 +2061,7 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
       && lsym->ts.type != BT_DERIVED)
     return 0;
 
-  /* For Derived types we must check all the component types.  We can ignore
+  /* For derived types we must check all the component types.  We can ignore
      array references as these will have the same base type as the previous
      component ref.  */
   for (lref = lss->expr->ref; lref != lss->data.info.ref; lref = lref->next)
@@ -2148,7 +2148,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 		    depends[n] = 1;
 	         }
 
-	      /* Put all the dimensions with dependancies in the
+	      /* Put all the dimensions with dependencies in the
 		 innermost loops.  */
 	      dim = 0;
 	      for (n = 0; n < loop->dimen; n++)
@@ -2224,10 +2224,10 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 
 	  if (ss->type == GFC_SS_CONSTRUCTOR)
 	    {
-	      /* Try to figure out the size of the constructior.  */
-	      /* TODO: avoid this by making the prontend set the shape.  */
+	      /* Try to figure out the size of the constructor.  */
+	      /* TODO: avoid this by making the frontend set the shape.  */
 	      gfc_get_array_cons_size (&i, ss->expr->value.constructor);
-	      /* A negative value meens we failed. */
+	      /* A negative value means we failed. */
 	      if (mpz_sgn (i) > 0)
 		{
 		  mpz_sub_ui (i, i, 1);
@@ -3376,7 +3376,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   /* Associate the SS with the loop.  */
   gfc_add_ss_to_loop (&loop, ss);
 
-  /* Tell the scalarizer not to bother creating loop varliables, etc.  */
+  /* Tell the scalarizer not to bother creating loop variables, etc.  */
   if (!need_tmp)
     loop.array_parameter = 1;
   else
@@ -4048,7 +4048,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 
   isym = expr->value.function.isym;
 
-  /* Handle intrinsic functions seperately.  */
+  /* Handle intrinsic functions separately.  */
   if (isym)
     return gfc_walk_intrinsic_function (ss, expr, isym);
 
