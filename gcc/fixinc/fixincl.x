@@ -2267,7 +2267,7 @@ tSCC zLimits_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zLimits_IfndefsList[] =
-  "|limits.h|sys/limits.h|";
+  "|sys/limits.h|limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2715,7 +2715,7 @@ tSCC zNested_MotorolaName[] =
  *  File name selection pattern
  */
 tSCC zNested_MotorolaList[] =
-  "|limits.h|sys/limits.h|";
+  "|sys/limits.h|limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4529,7 +4529,7 @@ tSCC zUltrix_Math_IfdefName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Math_IfdefList[] =
-  "|float.h|math.h|sys/limits.h|";
+  "|sys/limits.h|float.h|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4539,7 +4539,7 @@ tSCC zUltrix_Math_IfdefList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zUltrix_Math_IfdefSelect0[] =
-       "^#if.*\\|\\|[ \t]+CC\\$[a-z]+";
+       "^(#if.*)\\|\\|[ \t]+CC\\$[a-z]+";
 
 #define    ULTRIX_MATH_IFDEF_TEST_CT  1
 tTestDesc aUltrix_Math_IfdefTests[] = {
@@ -4548,8 +4548,9 @@ tTestDesc aUltrix_Math_IfdefTests[] = {
 /*
  *  Fix Command Arguments for Ultrix_Math_Ifdef
  */
-const char* apzUltrix_Math_IfdefPatch[] = { "sed",
-    "-e", "/^#if/s/||[ \t][ \t]*CC$[a-z][a-z]*//",
+const char* apzUltrix_Math_IfdefPatch[] = {
+    "format",
+    "%1",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5101,25 +5102,32 @@ tSCC zX11_ClassList[] =
 #define apzX11_ClassMachs (const char**)NULL
 
 /*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zX11_ClassSelect0[] =
+       "^([ \t]*char \\*)class;(.*)";
+
+/*
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zX11_ClassBypass0[] =
        "__cplusplus";
 
-#define    X11_CLASS_TEST_CT  1
+#define    X11_CLASS_TEST_CT  2
 tTestDesc aX11_ClassTests[] = {
-  { TT_NEGREP,   zX11_ClassBypass0, (regex_t*)NULL }, };
+  { TT_NEGREP,   zX11_ClassBypass0, (regex_t*)NULL },
+  { TT_EGREP,    zX11_ClassSelect0, (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for X11_Class
  */
-const char* apzX11_ClassPatch[] = { "sed",
-    "-e", "/char \\*class;/i\\\n\
-#ifdef __cplusplus\\\n\
-\tchar *c_class;\\\n\
-#else\n",
-    "-e", "/char \\*class;/a\\\n\
-#endif\n",
+const char* apzX11_ClassPatch[] = {
+    "format",
+    "#ifdef __cplusplus\n\
+%1c_class;%2\n\
+#else\n\
+%1class;%2\n\
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5249,7 +5257,7 @@ const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          129
+#define REGEX_COUNT          130
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            130
 
@@ -5816,7 +5824,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zUltrix_Math_IfdefName,    zUltrix_Math_IfdefList,
      apzUltrix_Math_IfdefMachs,
-     ULTRIX_MATH_IFDEF_TEST_CT, FD_MACH_ONLY,
+     ULTRIX_MATH_IFDEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aUltrix_Math_IfdefTests,   apzUltrix_Math_IfdefPatch },
 
   {  zUltrix_Nested_IoctlName,    zUltrix_Nested_IoctlList,
@@ -5886,7 +5894,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zX11_ClassName,    zX11_ClassList,
      apzX11_ClassMachs,
-     X11_CLASS_TEST_CT, FD_MACH_ONLY,
+     X11_CLASS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aX11_ClassTests,   apzX11_ClassPatch },
 
   {  zX11_Class_UsageName,    zX11_Class_UsageList,
