@@ -1,5 +1,10 @@
 2003-10-11  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m68k/m68k-protos.h: Remove the prototype for
+	finalize_pic.
+
+2003-10-11  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/m68k/m68k.c: Fix comment typos.
 
 2003-10-11  Bernardo Innocenti  <bernie@develer.com>

@@ -54,9 +54,6 @@ extern int standard_68881_constant_p (rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void notice_update_cc (rtx, rtx);
-#if 0
-extern void finalize_pic (rtx, enum machine_mode));
-#endif
 extern int general_src_operand (rtx, enum machine_mode);
 extern int nonimmediate_src_operand (rtx, enum machine_mode);
 extern int memory_src_operand (rtx, enum machine_mode);
