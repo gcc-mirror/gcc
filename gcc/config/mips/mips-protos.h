@@ -67,6 +67,7 @@ extern void		mips_select_section PARAMS ((tree, int));
 extern int		arith32_operand PARAMS ((rtx, enum machine_mode));
 extern int		arith_operand PARAMS ((rtx, enum machine_mode));
 extern int		cmp_op PARAMS ((rtx, enum machine_mode));
+extern int		trap_cmp_op PARAMS ((rtx, enum machine_mode));
 extern int		const_float_1_operand PARAMS ((rtx, enum machine_mode));
 extern void		expand_block_move PARAMS ((rtx []));
 extern int		equality_op PARAMS ((rtx, enum machine_mode));
@@ -77,6 +78,7 @@ extern void		init_cumulative_args PARAMS ((CUMULATIVE_ARGS *c, tree, rtx));
 #endif /* TREE_CODE */
 extern void		gen_conditional_branch PARAMS ((rtx[], enum rtx_code));
 extern void		gen_conditional_move PARAMS ((rtx *));
+extern void		mips_gen_conditional_trap PARAMS ((rtx *));
 extern int		large_int PARAMS ((rtx, enum machine_mode));
 extern void		machine_dependent_reorg PARAMS ((rtx));
 extern int		mips_address_cost PARAMS ((rtx));

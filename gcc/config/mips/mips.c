@@ -188,8 +188,8 @@ int num_refs[3];
 /* registers to check for load delay */
 rtx mips_load_reg, mips_load_reg2, mips_load_reg3, mips_load_reg4;
 
-/* Cached operands, and operator to compare for use in set/branch on
-   condition codes.  */
+/* Cached operands, and operator to compare for use in set/branch/trap
+   on condition codes.  */
 rtx branch_cmp[2];
 
 /* what type of branch to use */
@@ -962,6 +962,34 @@ cmp_op (op, mode)
     return 0;
 
   return GET_RTX_CLASS (GET_CODE (op)) == '<';
+}
+
+/* Return nonzero if the code is a relational operation suitable for a
+   conditional trap instructuion (only EQ, NE, LT, LTU, GE, GEU).
+   We need this in the insn that expands `trap_if' in order to prevent
+   combine from erroneously altering the condition.  */
+
+int
+trap_cmp_op (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != GET_MODE (op))
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case EQ:
+    case NE:
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+      return 1;
+
+    default:
+      return 0;
+    }
 }
 
 /* Return nonzero if the operand is either the PC or a label_ref.  */
@@ -3138,6 +3166,46 @@ gen_conditional_move (operands)
 							 cmp_reg,
 							 CONST0_RTX (SImode)),
 						operands[2], operands[3])));
+}
+
+/* Emit the common code for conditional moves.  OPERANDS is the array
+   of operands passed to the conditional move defined_expand.  */
+
+void
+mips_gen_conditional_trap (operands)
+     rtx operands[];
+{
+  rtx op0, op1;
+  enum rtx_code cmp_code = GET_CODE (operands[0]);
+  enum machine_mode mode = GET_MODE (branch_cmp[0]);
+
+  /* MIPS conditional trap machine instructions don't have GT or LE
+     flavors, so we must invert the comparison and convert to LT and
+     GE, respectively.  */
+  switch (cmp_code)
+    {
+    case GT: cmp_code = LT; break;
+    case LE: cmp_code = GE; break;
+    case GTU: cmp_code = LTU; break;
+    case LEU: cmp_code = GEU; break;
+    default: break;
+    }
+  if (cmp_code == GET_CODE (operands[0]))
+    {
+      op0 = force_reg (mode, branch_cmp[0]);
+      op1 = branch_cmp[1];
+    }
+  else
+    {
+      op0 = force_reg (mode, branch_cmp[1]);
+      op1 = branch_cmp[0];
+    }
+  if (GET_CODE (op1) == CONST_INT && ! SMALL_INT (op1))
+    op1 = force_reg (mode, op1);
+
+  emit_insn (gen_rtx_TRAP_IF (VOIDmode,
+			      gen_rtx (cmp_code, GET_MODE (operands[0]), op0, op1),
+			      operands[1]));
 }
 
 /* Write a loop to move a constant number of bytes.

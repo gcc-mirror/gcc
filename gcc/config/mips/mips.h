@@ -607,6 +607,8 @@ extern void		sbss_section PARAMS ((void));
 #define ISA_HAS_FP4             (mips_isa == 4				\
 				)
 
+/* ISA has conditional trap instructions.  */
+#define ISA_HAS_COND_TRAP	(mips_isa >= 2)
 
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
@@ -3713,6 +3715,7 @@ while (0)
   {"equality_op",		{ EQ, NE }},				\
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
 				  LTU, LEU }},				\
+  {"trap_cmp_op",		{ EQ, NE, GE, GEU, LT, LTU }},		\
   {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
   {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG}},	\
   {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
