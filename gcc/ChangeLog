@@ -1,3 +1,7 @@
+1998-10-13 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* Makefile.in (USER_H): Add va-c4x.h to definition.
+
 Tue Oct 13 23:03:37 1998  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (purge_addressof_1): Fix typo in inequality: do
