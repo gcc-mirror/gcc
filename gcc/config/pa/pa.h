@@ -72,7 +72,7 @@ extern int target_flags;
    this option will fail miserably if the executable is dynamically linked
    or uses nested functions!
 
-   This is also used to trigger agressive unscaled index addressing.  */
+   This is also used to trigger aggressive unscaled index addressing.  */
 #define TARGET_NO_SPACE_REGS (target_flags & 4)
 
 /* Allow unconditional jumps in the delay slots of call instructions.  */
@@ -113,7 +113,7 @@ extern int target_flags;
 #define TARGET_FAST_INDIRECT_CALLS (target_flags & 1024)
 
 /* Generate code with big switch statements to avoid out of range branches
-   occuring within the switch table.  */
+   occurring within the switch table.  */
 #define TARGET_BIG_SWITCH (target_flags & 2048)
 
 /* Macro to define tables used to set the flags.
@@ -276,7 +276,7 @@ extern int target_flags;
    or "static    /usr/lib/X11R5/libX11.sl". 
 
    HPUX 10.20 also has lines like "static branch prediction ..."
-   so we filter that out explcitly.
+   so we filter that out explicitly.
 
    We also try to bound our search for libraries with marker
    lines.  What a pain.  */

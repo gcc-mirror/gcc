@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -584,7 +584,7 @@ extern void rs6000_select_rtx_section (), rs6000_select_section ();
    we can't check that since not every file that uses
    GO_IF_LEGITIMATE_ADDRESS_P includes real.h.
 
-   Unlike AIX, we don't key off of -mmininal-toc, but instead do not
+   Unlike AIX, we don't key off of -mminimal-toc, but instead do not
    allow floating point constants in the TOC if -mrelocatable.  */
 
 #undef	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
@@ -713,7 +713,7 @@ do {									\
     }									\
 } while (0)
 
-/* Describe how to emit unitialized external linkage items  */
+/* Describe how to emit uninitialized external linkage items  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\
@@ -1030,7 +1030,7 @@ do {									\
 
 #undef  LINK_SHLIB_SPEC
 #ifndef NO_SHARED_LIB_SUPPORT
-/* Shared libaries are default.  */
+/* Shared libraries are default.  */
 #define LINK_SHLIB_SPEC "\
 %{!static: %(link_path) %{!R*:%{L*:-R %*}}} \
 %{mshlib: } \

@@ -448,7 +448,7 @@ print_operand (file, x, code)
       break;
     case 'S':
       {
-        /* if it's a referance to a TDA variable, use sst/sld vs. st/ld */
+        /* if it's a reference to a TDA variable, use sst/sld vs. st/ld */
         if (GET_CODE (x) == MEM && ep_memory_operand (x, GET_MODE (x), FALSE))
           fputs ("s", file);
 
@@ -2157,8 +2157,8 @@ pattern_is_ok_for_prologue (op, mode)
 	return 0;
 
       /* If the register is being pushed somewhere other than the stack
-	 space just aquired by the first operand then abandon this quest.
-	 Note: the test is <= becuase both values are negative.	 */
+	 space just acquired by the first operand then abandon this quest.
+	 Note: the test is <= because both values are negative.	 */
       if (INTVAL (XEXP (plus, 1))
 	  <= INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)))
 	{

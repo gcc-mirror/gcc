@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 rtx tahoe_reg_conversion_loc;
 
 int
-extendable_operand (op, mode)
+extensible_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {

@@ -446,7 +446,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate,
-   adjusted by STARTING_FRAME_OFFSET to accomodate vms.h.
+   adjusted by STARTING_FRAME_OFFSET to accommodate vms.h.
    Refer to the array `regs_ever_live' to determine which registers
    to save; `regs_ever_live[I]' is nonzero if register number I
    is ever used in the function.  This macro is responsible for

@@ -401,7 +401,7 @@ places
 
 Eberhard Mattes did the EMX port.  His address is
 mattes@@azu.informatik.uni-stuttgart.de.
-Read the FAQ file included with the distribution before harrassing the author.
+Read the FAQ file included with the distribution before harassing the author.
 
 @cindex Apple support
 @cindex Macintosh support
@@ -1901,7 +1901,7 @@ still be true when 2.8.0 is released.
 As of version 2.7.0, g++ has exception support on most but not all
 platforms
 (no support on MIPS-based platforms yet), but
-it doesn't work right if optimizaton is enabled, which means the
+it doesn't work right if optimization is enabled, which means the
 exception
 implementation is still
 not really ready for production use.

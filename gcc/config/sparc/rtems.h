@@ -1,4 +1,4 @@
-/* Definitions for rtems targetting a SPARC using a.out.
+/* Definitions for rtems targeting a SPARC using a.out.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

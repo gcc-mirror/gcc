@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for PowerPC
    running Windows/NT.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -162,7 +162,7 @@ do {									\
   ASM_OUTPUT_SKIP (FILE, SIZE);						\
 } while (0)
 
-/* Describe how to emit unitialized external linkage items  */
+/* Describe how to emit uninitialized external linkage items  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\

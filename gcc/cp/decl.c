@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2317,7 +2317,7 @@ decls_match (newdecl, olddecl)
 	tree oldargs = DECL_TEMPLATE_PARMS (olddecl);
 	int i;
 
-	/* Run through all the levels of template parmaters, checking
+	/* Run through all the levels of template parameters, checking
 	   that they match.  */
 	while (newargs && oldargs) 
 	  {
@@ -6386,7 +6386,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
       /* If we have installed this as the canonical typedef for this
 	 type, and that type has not been defined yet, delay emitting
-	 the debug informaion for it, as we will emit it later.  */
+	 the debug information for it, as we will emit it later.  */
       if (TYPE_MAIN_DECL (TREE_TYPE (decl)) == decl
 	  && TYPE_SIZE (TREE_TYPE (decl)) == NULL_TREE)
 	TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
@@ -12077,7 +12077,7 @@ finish_function (lineno, call_poplevel, nested)
 	  poplevel (2, 0, 0);	/* XXX change to 1 */
 
 	  /* Back to the top of destructor.  */
-	  /* Dont execute destructor code if `this' is NULL.  */
+	  /* Don't execute destructor code if `this' is NULL.  */
 
 	  start_sequence ();
 

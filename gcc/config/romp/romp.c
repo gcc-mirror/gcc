@@ -1317,7 +1317,7 @@ struct symref_hashent {
 
 static struct symref_hashent *symref_hash_table[SYMHASHSIZE];
 
-/* Given a name (allocatable in temporary storage), return a SYMBOL_REF
+/* Given a name (allocable in temporary storage), return a SYMBOL_REF
    for the name.  The rtx is allocated from the current rtl_obstack, while
    the name string is allocated from the permanent obstack.  */
 rtx

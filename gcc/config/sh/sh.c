@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1919,7 +1919,7 @@ find_barrier (num_mova, mova, from)
      delay slot.  This gives 1018.  */
 
   /* The branch will always be shortened now that the reference address for
-     forward branches is the sucessor address, thus we need no longer make
+     forward branches is the successor address, thus we need no longer make
      adjustments to the [sh]i_limit for -O0.  */
 
   si_limit = 1018;
@@ -1937,7 +1937,7 @@ find_barrier (num_mova, mova, from)
       if (GET_CODE (from) == BARRIER)
 	{
 	  found_barrier = from;
-	  /* If we are at the end of the function, or in front of an alignemnt
+	  /* If we are at the end of the function, or in front of an alignment
 	     instruction, we need not insert an extra alignment.  We prefer
 	     this kind of barrier.  */
 	
@@ -2004,7 +2004,7 @@ find_barrier (num_mova, mova, from)
 	      /* We have just passed the barrier in front front of the
 		 ADDR_DIFF_VEC.  Since the ADDR_DIFF_VEC is accessed
 		 as data, just like our pool constants, this is a good
-		 opportunity to accomodate what we have gathered so far.
+		 opportunity to accommodate what we have gathered so far.
 		 If we waited any longer, we could end up at a barrier in
 		 front of code, which gives worse cache usage for separated
 		 instruction / data caches.  */
@@ -2286,7 +2286,7 @@ regs_used (x, is_dest)
 }
 
 /* Create an instruction that prevents redirection of a conditional branch
-   to the desitination of the JUMP with address ADDR.
+   to the destination of the JUMP with address ADDR.
    If the branch needs to be implemented as an indirect jump, try to find
    a scratch register for it.
    If NEED_BLOCK is 0, don't do anything unless we need a scratch register.
@@ -2327,7 +2327,7 @@ gen_block_redirect (jump, addr, need_block)
     {
       rtx scan;
       /* Don't look for the stack pointer as a scratch register,
-	 it would cause trouble if an interrupt occured.  */
+	 it would cause trouble if an interrupt occurred.  */
       unsigned try = 0x7fff, used;
       int jump_left = flag_expensive_optimizations + 1;
     
@@ -2385,7 +2385,7 @@ gen_block_redirect (jump, addr, need_block)
   /* If the immediate destination is still in range, check for possible
      threading with a jump beyond the delay slot insn.
      Don't check if we are called recursively; the jump has been or will be
-     checked in a different invokation then.  */
+     checked in a different invocation then.  */
 	
   else if (optimize && need_block >= 0)
     {
@@ -2406,7 +2406,7 @@ gen_block_redirect (jump, addr, need_block)
       rtx reg = gen_rtx (REG, SImode, exact_log2 (dead & -dead));
 
       /* It would be nice if we could convert the jump into an indirect
-	 jump / far branch right now, and thus exposing all consitituent
+	 jump / far branch right now, and thus exposing all constituent
 	 instructions to further optimization.  However, reorg uses
 	 simplejump_p to determine if there is an unconditional jump where
 	 it should try to schedule instructions from the target of the
@@ -2936,7 +2936,7 @@ machine_dependent_reorg (first)
     }
 
   /* The following processing passes need length information.
-     addr_diff_vec_adjust needs to know if insn_addreses is valid.  */
+     addr_diff_vec_adjust needs to know if insn_addresses is valid.  */
   insn_addresses = 0;
 
   /* If not optimizing for space, we want extra alignment for code after
@@ -3076,7 +3076,7 @@ machine_dependent_reorg (first)
 	  /* range of mova is 1020, add 4 because pc counts from address of
 	     second instruction after this one, subtract 2 in case pc is 2
 	     byte aligned.  Possible alignment needed for the ADDR_DIFF_VEC
-	     chancles out with alignment effects of the mova itself.  */
+	     cancels out with alignment effects of the mova itself.  */
 	  if (total > 1022)
 	    {
 	      /* Change the mova into a load, and restart scanning
@@ -3177,7 +3177,7 @@ machine_dependent_reorg (first)
   split_branches (first);
 
   /* The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
-     also has an effect on the register that holds the addres of the sfunc.
+     also has an effect on the register that holds the address of the sfunc.
      Insert an extra dummy insn in front of each sfunc that pretends to
      use this register.  */
   if (flag_delayed_branch)
@@ -3278,7 +3278,7 @@ split_branches (first)
 		   the label if th lABEL_BUSES count drops to zero.  There is
 		   always a jump_optimize pass that sets these values, but it
 		   proceeds to delete unreferenced code, and then if not
-		   optimizeing, to un-delete the deleted instructions, thus
+		   optimizing, to un-delete the deleted instructions, thus
 		   leaving labels with too low uses counts.  */
 		if (! optimize)
 		  {
@@ -3936,7 +3936,7 @@ handle_pragma (file, t)
    sp_switch -- specifies an alternate stack for an interrupt handler
    to run on.
 
-   trap_exit -- use a trapa to exit an interrupt function intead of
+   trap_exit -- use a trapa to exit an interrupt function instead of
    an rte instruction.  */
 
 int
@@ -4263,7 +4263,7 @@ branch_offset (branch)
       while (dest_uid >= uid_align_max || ! uid_align[dest_uid])
 	{
 	  /* Label might be outside the insn stream, or even in a separate
-	     insn stream, after a syntax errror.  */
+	     insn stream, after a syntax error.  */
 	  if (! NEXT_INSN (dest))
 	    return 0;
 	  dest = NEXT_INSN (dest), dest_uid = INSN_UID (dest);

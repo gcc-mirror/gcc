@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92- 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2141,7 +2141,7 @@ resolve_offset_ref (exp)
       member = cp_convert (ptrdiff_type_node,
 			   build_unary_op (ADDR_EXPR, member, 0));
       
-      /* Pointer to data mebers are offset by one, so that a null
+      /* Pointer to data members are offset by one, so that a null
 	 pointer with a real value of 0 is distinguishable from an
 	 offset of the first member of a structure.  */
       member = build_binary_op (MINUS_EXPR, member,

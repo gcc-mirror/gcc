@@ -2140,7 +2140,7 @@ rs6000_got_register (value)
 }
 
 
-/* Replace all occurances of register FROM with an new pseduo register in an insn X.
+/* Replace all occurrences of register FROM with an new pseudo register in an insn X.
    Store the pseudo register used in REG.
    This is only safe during FINALIZE_PIC, since the registers haven't been setup
    yet.  */
@@ -2215,7 +2215,7 @@ void
 rs6000_finalize_pic ()
 {
   /* Loop through all of the insns, replacing the special GOT_TOC_REGNUM
-     with an appropriate pseduo register.  If we find we need GOT/TOC,
+     with an appropriate pseudo register.  If we find we need GOT/TOC,
      add the appropriate init code.  */
   if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
@@ -2257,7 +2257,7 @@ rs6000_finalize_pic ()
 }
 
 
-/* Search for any occurrance of the GOT_TOC register marker that should
+/* Search for any occurrence of the GOT_TOC register marker that should
    have been eliminated, but may have crept back in.  */
 
 void

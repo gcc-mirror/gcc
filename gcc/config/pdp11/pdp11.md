@@ -48,7 +48,7 @@
 ;; The only thing that remains to be done then is output 
 ;; the floats in a way the assembler can handle it (and 
 ;; if you're really into it, use a PDP11 float emulation
-;; libary to do floating point constant folding - but 
+;; library to do floating point constant folding - but 
 ;; I guess you'll get reasonable results even when not
 ;; doing this)
 ;; the last thing to do is fix the UPDATE_CC macro to check

@@ -1207,7 +1207,7 @@ start_anon_func ()
   interface_unknown = 1;
 
   params = void_list_node;
-  /* tcf stands for throw clean funciton.  */
+  /* tcf stands for throw clean function.  */
   sprintf (name, "__tcf_%d", counter++);
   t = make_call_declarator (get_identifier (name), params, NULL_TREE,
 			    NULL_TREE);

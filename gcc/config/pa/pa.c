@@ -121,17 +121,17 @@ override_options ()
 
   if (flag_pic && (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS))
    {
-      warning ("PIC code generation is not compatable with fast indirect calls\n");
+      warning ("PIC code generation is not compatible with fast indirect calls\n");
    }
 
   if (flag_pic && profile_flag)
     {
-      warning ("PIC code generation is not compatable with profiling\n");
+      warning ("PIC code generation is not compatible with profiling\n");
     }
 
   if (TARGET_SPACE && (flag_pic || profile_flag))
     {
-      warning ("Out of line entry/exit sequences are not compatable\n");
+      warning ("Out of line entry/exit sequences are not compatible\n");
       warning ("with PIC or profiling\n");
     }
 
@@ -1880,7 +1880,7 @@ find_addr_reg (addr)
    OPERANDS[4] is the size as a CONST_INT
    OPERANDS[3] is a register for temporary storage.
    OPERANDS[5] is the alignment safe to use, as a CONST_INT. 
-   OPERNADS[6] is another temporary register.   */
+   OPERANDS[6] is another temporary register.   */
 
 char *
 output_block_move (operands, size_is_constant)
@@ -4319,7 +4319,7 @@ hppa_builtin_saveregs (arglist)
      individually as scalar stores.
 
      However, other insns may later load from the same addresses for
-     a struture load (passing a struct to a varargs routine).
+     a structure load (passing a struct to a varargs routine).
 
      The alias code assumes that such aliasing can never happen, so we
      have to keep memory referencing insns from moving up beyond the
@@ -6037,7 +6037,7 @@ pa_reorg (insns)
 	    continue;
 
 	  /* Now generate markers for the beginning and end of the
-	     branc table.  */
+	     branch table.  */
 	  emit_insn_before (gen_begin_brtab (), insn);
 	  emit_insn_after (gen_end_brtab (), insn);
 	}
@@ -6094,7 +6094,7 @@ pa_combine_instructions (insns)
 
   /* This can get expensive since the basic algorithm is on the
      order of O(n^2) (or worse).  Only do it for -O2 or higher
-     levels of optimizaton.  */
+     levels of optimization.  */
   if (optimize < 2)
     return;
 
