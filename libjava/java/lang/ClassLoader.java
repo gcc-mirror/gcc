@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.InputStream;
+import gnu.java.util.DoubleEnumeration;
+import gnu.java.util.EmptyEnumeration;
+
 import java.io.IOException;
-import java.lang.reflect.Constructor;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -49,8 +51,6 @@ import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import gnu.java.util.DoubleEnumeration;
-import gnu.java.util.EmptyEnumeration;
 
 /**
  * The ClassLoader is a way of customizing the way Java gets its classes

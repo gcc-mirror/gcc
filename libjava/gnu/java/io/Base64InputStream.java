@@ -39,9 +39,8 @@ exception statement from your version. */
 package gnu.java.io;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.EOFException;
+import java.io.InputStream;
 
 /**
  * A filter input stream that decodes data encoded in the Base-64

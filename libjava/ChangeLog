@@ -1,3 +1,36 @@
+2004-05-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLStreamHandler.java (toExternalForm): Removed
+	unused variables.
+	unused constructor.
+	* java/math/BigDecimal.java (divide): Removed unused variable.
+	* java/lang/Throwable.java: Cleaned up imports.
+	* java/lang/ClassLoader.java: Cleaned up imports.
+	* java/io/FilePermission.java (implies): Removed unused
+	variable.
+	* java/awt/TextComponent.java: Removed unused import.
+	* gnu/java/util/prefs/NodeReader.java: Cleaned up imports.
+	* gnu/java/util/DoubleEnumeration.java: Removed unused import.
+	* gnu/java/text/WordBreakIterator.java: Removed unused import.
+	* gnu/java/text/SentenceBreakIterator.java: Removed unused
+	import.
+	* gnu/java/text/LineBreakIterator.java: Removed unused import.
+	* gnu/java/text/CharacterBreakIterator.java: Removed
+	unused import.
+	* gnu/java/security/provider/DSAKeyPairGenerator.java:
+	Cleaned up imports.
+	* gnu/java/security/der/DERWriter.java: Cleaned up imports.
+	* gnu/java/nio/charset/UTF_16Decoder.java (put): Removed
+	unused method.
+	* gnu/java/nio/SocketChannelImpl.java: Cleaned up imports.
+	* gnu/java/nio/FileLockImpl.java: Cleaned up imports.
+	* gnu/java/io/Base64InputStream.java: Cleaned up imports.
+	* gnu/java/beans/info/ComponentBeanInfo.java: Cleaned up imports.
+	* gnu/classpath/ServiceFactory.java: Cleaned up imports.
+	(lookupProviders): Removed unused variable.
+	(loadNextServiceProvider): Likewise.
+	* gnu/java/beans/BeanInfoEmbryo.java: Cleaned up imports.
+
 2004-05-03  Michael Koch  <konqueror@gmx.de>
 
 	Fixes PR libgcj/14695:

@@ -38,13 +38,13 @@ exception statement from your version. */
 package gnu.java.util.prefs;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.Reader;
-
-import java.util.prefs.*;
+import java.util.prefs.InvalidPreferencesFormatException;
+import java.util.prefs.Preferences;
+import java.util.prefs.PreferencesFactory;
 
 /**
  * Reads and imports preferences nodes from files.

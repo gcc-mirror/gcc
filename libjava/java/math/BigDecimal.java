@@ -271,7 +271,6 @@ public class BigDecimal extends Number implements Comparable
       return newScale == 0 ? ZERO : new BigDecimal (ZERO.intVal, newScale);
     
     // Ensure that pow gets a non-negative value.
-    int valScale = val.scale;
     BigInteger valIntVal = val.intVal;
     int power = newScale - (scale - val.scale);
     if (power < 0)

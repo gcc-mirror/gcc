@@ -38,27 +38,22 @@ exception statement from your version. */
 
 package gnu.java.security.der;
 
+import gnu.java.security.OID;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.math.BigInteger;
-
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-
 import java.text.SimpleDateFormat;
-
-import java.util.BitSet;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
-
-import gnu.java.security.OID;
 
 /**
  * Methods that allow various Java types to be written as a DER

@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package gnu.java.beans.info;
 
-import gnu.java.beans.*;
-import java.beans.*;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 
 /** BeanInfo class for java.awt.Component.
  ** This provides a few properties, but that's
