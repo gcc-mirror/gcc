@@ -1,3 +1,8 @@
+2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/install.texi (--enable-shared): List package names
+	recognized by GCC.
+
 2001-06-13  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (arm_reload_in_hi): Handle the scratch operand overlapping
