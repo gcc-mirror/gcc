@@ -5665,6 +5665,15 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
       dump_current_packet (dump);
     }
 
+  if (reorder_type == 0)
+    {
+      if (sched_data.cur == 6)
+	rotate_two_bundles (sched_verbose ? dump : NULL);
+      else if (sched_data.cur >= 3)
+	rotate_one_bundle (sched_verbose ? dump : NULL);
+      sched_data.first_slot = sched_data.cur;
+    }
+
   /* First, move all USEs, CLOBBERs and other crud out of the way.  */
   highest = ready[n_ready - 1];
   for (insnp = ready; insnp < e_ready; insnp++)
@@ -5736,15 +5745,6 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 	  if (deleted != nr_need_stop)
 	    abort ();
 	}
-    }
-
-  if (reorder_type == 0)
-    {
-      if (sched_data.cur == 6)
-	rotate_two_bundles (sched_verbose ? dump : NULL);
-      else if (sched_data.cur >= 3)
-	rotate_one_bundle (sched_verbose ? dump : NULL);
-      sched_data.first_slot = sched_data.cur;
     }
 
   return itanium_reorder (sched_verbose ? dump : NULL,

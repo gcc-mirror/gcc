@@ -5,6 +5,7 @@
 	(gen_nop_type): New function.
 	(ia64_emit_nops): New function.
 	(ia64_reorg): Call it.
+	(ia64_sched_reorder): Move code that rotates bundles up a bit.
 
 	* reload1.c (eliminate_regs_in_insn): Restrict the special case
 	code not to try to optimize adds with anything but a REG destination.
