@@ -2598,6 +2598,8 @@
     regno = subreg_regno (operands[0]);
   else if (GET_CODE (operands[0]) == MEM)
     regno = -1;
+  else
+    abort ();
 
   if (regno == -1
       || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
@@ -2970,6 +2972,8 @@
     regno = subreg_regno (operands[0]);
   else if (GET_CODE (operands[0]) == MEM)
     regno = -1;
+  else
+    abort ();
 
   if (regno == -1
       || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))

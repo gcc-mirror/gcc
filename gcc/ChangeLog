@@ -1,3 +1,8 @@
+2001-11-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sh.md: Avoid uninitialized warnings.
+	* vax.c (vax_rtx_cost): Likewise.
+
 2001-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* rs6000.c (direct_return): Check if we are saving altivec
