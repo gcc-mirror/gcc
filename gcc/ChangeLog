@@ -1,3 +1,9 @@
+2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* varasm.c (output_constant_def): Don't ENCODE_SECTION_INFO
+	twice.  Update desc->rtl and ->label, in case ENCODE_SECTION_INFO
+	modifies them.
+
 2000-12-29  Bernd Schmidt  <bernds@redhat.com>
 
 	* ia64.c (ia64_expand_load_address): Accept additional scratch
