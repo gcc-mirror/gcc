@@ -1,3 +1,13 @@
+2004-04-30  Jason Merrill  <jason@redhat.com>
+
+	Refer to base members using COMPONENT_REFs where possible.
+	* class.c (build_simple_base_path): New fn.
+	(build_base_path): Use it for non-virtual base references.
+	(layout_class_type): Change base fields to their real type
+	after layout is done.
+	* cp-tree.h (IS_FAKE_BASE_TYPE): New macro.
+	* cp-lang.c (cxx_get_alias_set): Use it.
+
 2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c, cp-tree.h, decl.c, decl2.c, pt.c, rtti.c: Fix
