@@ -1,3 +1,8 @@
+Fri Oct 15 18:36:07 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md:  Define mode for remaining unspec operators.
+	* config/c4x/c4x.c (dst_operand):  Use nonimmediate_operand.
+	
 Thu Oct 14 22:14:23 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (movstricthi_1): Allow r/r.
