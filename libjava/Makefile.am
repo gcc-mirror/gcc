@@ -270,8 +270,10 @@ jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 ## system libraries we need (via the specs file).
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
 	$(GCLIBS) $(THREADLIBS) $(ZLIBS)
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
