@@ -1,3 +1,12 @@
+2000-02-25  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/net/URLConnection.java (initializeDateFormats): New
+	private method.
+	(getHeaderFieldDate): Call initializeDateFormats if required.
+	locale, dateFormat1, dateFormat2, dateFormat3: Don't initialize
+	these.
+	Fix for PR libgcj/38.
+
 2000-02-24  Warren Levy  <warrenl@cygnus.com>
 
 	* java/math/BigInteger.java(ival): Made private.
