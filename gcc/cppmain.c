@@ -68,7 +68,8 @@ main (argc, argv)
   print = cpp_printer_init (pfile, &parse_out);
   if (! print)
     return (FATAL_EXIT_CODE);
-  pfile->printer = print;
+  if (! CPP_OPTION (pfile, no_output))
+    pfile->printer = print;
 
   if (! cpp_start_read (pfile, print, CPP_OPTION (pfile, in_fname)))
     return (FATAL_EXIT_CODE);

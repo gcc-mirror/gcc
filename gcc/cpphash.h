@@ -72,7 +72,7 @@ struct answer
 #define COMMENTS	(1 << 3)
 
 /* Defines one #-directive, including how to handle it.  */
-typedef int (*directive_handler) PARAMS ((cpp_reader *));
+typedef void (*directive_handler) PARAMS ((cpp_reader *));
 struct directive
 {
   directive_handler handler;	/* Function to handle directive.  */
@@ -202,18 +202,24 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_WTRADITIONAL(PF) \
   (CPP_OPTION (PF, warn_traditional) && !CPP_IN_SYSTEM_HEADER (PF))
 
+/* Hash step.  The hash calculation is duplicated in cpp_lookup and
+   parse_name.  */
+#define HASHSTEP(r, str) ((r) * 67 + (*str - 113));
+
 /* Flags for _cpp_init_toklist.  */
 #define DUMMY_TOKEN     0
 #define NO_DUMMY_TOKEN	1
 
-/* In cpphash.c */
-extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
+/* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_dump_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
+
+/* In cpphash.c */
 extern void _cpp_init_macros		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_macros		PARAMS ((cpp_reader *));
-extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
+extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, const U_CHAR *,
+						    size_t, unsigned int));
 
 /* In cppfiles.c */
 extern void _cpp_simplify_pathname	PARAMS ((char *));
@@ -278,6 +284,7 @@ extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 /* Utility routines and macros.  */
 #define xnew(T)		(T *) xmalloc (sizeof(T))
 #define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
+#define xcnewvec(T, N)	(T *) xcalloc (N, sizeof(T))
 #define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
 
 /* These are inline functions instead of macros so we can get type

@@ -114,6 +114,7 @@ static int opt_comp			PARAMS ((const void *, const void *));
 static void sort_options		PARAMS ((void));
 #endif
 static int parse_option			PARAMS ((const char *));
+static int dump_macros_helper		PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -891,6 +892,18 @@ cpp_start_read (pfile, print, fname)
   return 1;
 }
 
+
+/* Dump out the hash table.  */
+static int
+dump_macros_helper (pfile, hp)
+     cpp_reader *pfile;
+     cpp_hashnode *hp;
+{
+  if (hp->type == T_MACRO)
+    _cpp_dump_definition (pfile, hp);
+  return 1;
+}
+
 /* This is called at the end of preprocessing.  It pops the
    last buffer and writes dependency output.  It should also
    clear macro definitions, such that you could call cpp_start_read
@@ -934,7 +947,7 @@ cpp_finish (pfile, print)
     }
 
   if (CPP_OPTION (pfile, dump_macros) == dump_only)
-    _cpp_dump_macro_hash (pfile);
+    cpp_forall_identifiers (pfile, dump_macros_helper);
 
   /* Flush any pending output.  */
   if (print)
