@@ -1,5 +1,20 @@
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/natFile.cc (_access): Don't stack-allocate buffer.
+	Size buffer based on real size of string.
+	(_stat): Likewise.
+	(attr): Likewise.
+	(getCanonicalPath): Likewise.
+	(performList): Likewise.
+	(performMkdir): Likewise.
+	(performSetReadOnly): Likewise.
+	(unixroot): Removed.
+	(performRenameTo): Likewise.
+	(performSetLastModified): Likewise.
+	(performCreate): Likewise.
+	(performDelete): Likewise.
+	(performListRoots): Always return new array.
+
 	* prims.cc (_Jv_CreateJavaVM): Call _Jv_platform_initialize.
 	* win32.cc (win32_exception_handler): Now static.
 	* include/win32.h (_Jv_platform_initialize): Declare.
