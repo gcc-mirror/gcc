@@ -2844,23 +2844,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	insn_code_number = recog_memoized (insn);
 	insn_extract (insn);
-	for (i = 0; i < insn_n_operands[insn_code_number]; i++)
-	  {
-	    if (GET_CODE (recog_operand[i]) == SUBREG)
-	      recog_operand[i] = alter_subreg (recog_operand[i]);
-	    else if (GET_CODE (recog_operand[i]) == PLUS
-		     || GET_CODE (recog_operand[i]) == MULT)
-	      recog_operand[i] = walk_alter_subreg (recog_operand[i]);
-	  }
-
-	for (i = 0; i < insn_n_dups[insn_code_number]; i++)
-	  {
-	    if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
-	      *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
-	    else if (GET_CODE (*recog_dup_loc[i]) == PLUS
-		     || GET_CODE (*recog_dup_loc[i]) == MULT)
-	      *recog_dup_loc[i] = walk_alter_subreg (*recog_dup_loc[i]);
-	  }
+	cleanup_subreg_operands (insn);
 
 #ifdef REGISTER_CONSTRAINTS
 	if (! constrain_operands (insn_code_number, 1))
@@ -3039,6 +3023,49 @@ output_source_line (file, insn)
     }
 }
 
+
+/* For each operand in INSN, simplify (subreg (reg)) so that it refers
+   directly to the desired hard register.  */
+void
+cleanup_subreg_operands (insn)
+     rtx insn;
+{
+  int insn_code_number, i;
+
+  /* Ignore things we can not handle.  */
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+      || GET_CODE (PATTERN (insn)) == USE
+      || GET_CODE (PATTERN (insn)) == ADDR_VEC
+      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+      || asm_noperands (PATTERN (insn)) >= 0)
+    return;
+
+  /* Try to recognize the instruction.
+     If successful, verify that the operands satisfy the
+     constraints for the instruction.  Crash if they don't,
+     since `reload' should have changed them so that they do.  */
+
+  insn_code_number = recog_memoized (insn);
+  insn_extract (insn);
+  for (i = 0; i < insn_n_operands[insn_code_number]; i++)
+    {
+      if (GET_CODE (recog_operand[i]) == SUBREG)
+        recog_operand[i] = alter_subreg (recog_operand[i]);
+      else if (GET_CODE (recog_operand[i]) == PLUS
+               || GET_CODE (recog_operand[i]) == MULT)
+       recog_operand[i] = walk_alter_subreg (recog_operand[i]);
+    }
+
+  for (i = 0; i < insn_n_dups[insn_code_number]; i++)
+    {
+      if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
+        *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
+      else if (GET_CODE (*recog_dup_loc[i]) == PLUS
+               || GET_CODE (*recog_dup_loc[i]) == MULT)
+        *recog_dup_loc[i] = walk_alter_subreg (*recog_dup_loc[i]);
+    }
+}
+
 /* If X is a SUBREG, replace it with a REG or a MEM,
    based on the thing it is a subreg of.  */
 
@@ -3072,6 +3099,9 @@ alter_subreg (x)
 #else
       REGNO (x) = REGNO (y) + SUBREG_WORD (x);
 #endif
+      /* This field has a different meaning for REGs and SUBREGs.  Make sure
+	 to clear it!  */
+      x->used = 0;
     }
   else if (GET_CODE (y) == MEM)
     {

@@ -1037,16 +1037,17 @@ reload (first, global, dumpfile)
     }
 
   /* Make a pass over all the insns and delete all USEs which we inserted
-     only to tag a REG_EQUAL note on them.  Also remove all REG_DEAD and
-     REG_UNUSED notes.  */
+     only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
+     notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
 	rtx *pnote;
 
-	if (GET_CODE (PATTERN (insn)) == USE
-	    && find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	if ((GET_CODE (PATTERN (insn)) == USE
+	     && find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	    || GET_CODE (PATTERN (insn)) == CLOBBER)
 	  {
 	    PUT_CODE (insn, NOTE);
 	    NOTE_SOURCE_FILE (insn) = 0;
@@ -1063,6 +1064,9 @@ reload (first, global, dumpfile)
 	    else
 	      pnote = &XEXP (*pnote, 1);
 	  }
+
+	/* And simplify (subreg (reg)) if it appears as an operand.  */
+	cleanup_subreg_operands (insn);
       }
 
   /* If we are doing stack checking, give a warning if this function's

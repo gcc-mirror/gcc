@@ -1358,23 +1358,6 @@ life_analysis_1 (f, nregs)
   if (reload_completed)
     bcopy (regs_ever_live, save_regs_ever_live, (sizeof (regs_ever_live)));
 
-  /* Also remove all CLOBBER insns after reload.  They can cause us to think
-     a value is dead when it really is not dead.  */
-  if (reload_completed)
-    {
-      rtx insn;
-
-      for (insn = f; insn; insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == INSN
-	      && GET_CODE (PATTERN (insn)) == CLOBBER)
-	    {
-              PUT_CODE (insn, NOTE);
-              NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-              NOTE_SOURCE_FILE (insn) = 0;
-	    }
-	}
-    }
   bzero (regs_ever_live, sizeof regs_ever_live);
 
   /* Allocate and zero out many data structures
