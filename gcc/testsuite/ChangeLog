@@ -1,3 +1,7 @@
+2003-08-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/cpp/separate-1.c: New test.
+
 2003-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11704
