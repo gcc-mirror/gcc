@@ -132,8 +132,19 @@ field really isn't ever used.
 @itemx default
 
 The type machinery needs to be told which field of a @code{union} is
-currently active.  This is done by giving each field a constant @code{tag}
-value, and then specifying a discriminator using @code{desc}.  For example,
+currently active.  This is done by giving each field a constant
+@code{tag} value, and then specifying a discriminator using @code{desc}.
+The value of the expression given by @code{desc} is compared against
+each @code{tag} value, each of which should be different.  If no
+@code{tag} is matched, the field marked with @code{default} is used if
+there is one, otherwise no field in the union will be marked.
+
+In the @code{desc} option, the ``current structure'' is the union that
+it discriminates.  Use @code{%1} to mean the structure containing it.
+(There are no escapes available to the @code{tag} option, since it's
+supposed to be a constant.)
+
+For example,
 @smallexample
 struct tree_binding GTY(())
 @{
@@ -141,19 +152,15 @@ struct tree_binding GTY(())
   union tree_binding_u @{
     tree GTY ((tag ("0"))) scope;
     struct cp_binding_level * GTY ((tag ("1"))) level;
-  @} GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) scope;
+  @} GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) xscope;
   tree value;
 @};
 @end smallexample
 
-In the @code{desc} option, the ``current structure'' is the union that
-it discriminates.  Use @code{%1} to mean the structure containing it.
-(There are no escapes available to the @code{tag} option, since it's
-supposed to be a constant.)
-
-Each @code{tag} should be different.  If no @code{tag} is matched,
-the field marked with @code{default} is used if there is one, otherwise
-no field in the union will be marked.
+In this example, the value of BINDING_HAS_LEVEL_P when applied to a
+@code{struct tree_binding *} is presumed to be 0 or 1.  If 1, the type
+mechanism will treat the field @code{level} as being present and if 0,
+will treat the field @code{scope} as being present.
 
 @findex param_is
 @findex use_param

@@ -1,3 +1,8 @@
+2003-11-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* doc/gty.texi (tag, desc): Say more about role of desc values in
+	selecting between tags.
+
 2003-11-03  Alexander Kabaev  <ak03@gte.com>
 
 	* real.c (encode_ieee_single): Ensure proper promotion.
