@@ -47,7 +47,7 @@ details.  */
 
 #include <gnu/gcj/runtime/MethodInvocation.h>
 
-/* this is the exception handler hack, for the interpreter */
+/* This should never happen. */
 void 
 gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *,
 						gnu::gcj::RawData *)
@@ -89,7 +89,7 @@ static void throw_arithmetic_exception ()
 #endif
 
 
-static inline void dupx (void **&sp, int n, int x)
+static inline void dupx (_Jv_word *&sp, int n, int x)
 {
   // first "slide" n+x elements n to the right
   int top = n-1;
@@ -110,36 +110,43 @@ static inline void dupx (void **&sp, int n, int x)
 
 
 #define PUSHA(V)  \
- ({ jobject __v=(V); *(jobject*)sp++ = __v; })
+ ({ jobject __v=(V); (sp++)->o = __v; })
 #define PUSHI(V)  \
- ({ jint __v=(V); *(jint*)sp++ = __v; })
+ ({ jint __v=(V); (sp++)->i = __v; })
 #define PUSHF(V)  \
- ({ jfloat __v=(V); *(jfloat*)sp++ = __v; })
+ ({ jfloat __v=(V); (sp++)->f = __v; })
 #define PUSHL(V)  \
- ({ jlong __v=(V); memcpy ((void*)sp, (void*)&__v, 8); sp+=2; })
+ ({ jlong __v=(V); _Jv_storeLong(sp,__v); sp+=2; })
 #define PUSHD(V)  \
- ({ jdouble __v=(V); memcpy ((void*)sp, (void*)&__v, 8); sp+=2; })
+ ({ jdouble __v=(V); _Jv_storeDouble(sp,__v); sp+=2; })
 
-#define POPA()    (*(jobject*)--sp)
-#define POPI()    (*(jint*)--sp)
-#define POPF()    (*(jfloat*)--sp)
-#define POPL()    ({ jlong __r; sp-=2; memcpy ((void*)&__r, sp, 8); __r; })
-#define POPD()    ({ jdouble __r; sp-=2; memcpy ((void*)&__r, sp, 8); __r; })
+#define POPA()    ((--sp)->o)
+#define POPI()    ((jint) (--sp)->i) // cast since it may be promoted
+#define POPF()    ((jfloat) (--sp)->f)
+#define POPL()    ({ sp-=2; _Jv_loadLong (sp); })
+#define POPD()    ({ sp-=2; _Jv_loadDouble (sp); })
 
-#define LOADA(I)  *sp++ = locals[I]
-#define LOADI(I)  *sp++ = locals[I]
-#define LOADF(I)  *sp++ = locals[I]
-#define LOADL(I)  ({ memcpy (sp, locals+(I), 8); sp+=2; })
-#define LOADD(I)  ({ memcpy (sp, locals+(I), 8); sp+=2; })
+#define LOADA(I)  (sp++)->o = locals[I].o
+#define LOADI(I)  (sp++)->i = locals[I].i
+#define LOADF(I)  (sp++)->f = locals[I].f
+#define LOADL(I)  ({ jint __idx = (I); \
+    (sp++)->ia[0] = locals[__idx].ia[0]; \
+    (sp++)->ia[0] = locals[__idx+1].ia[0]; \
+ })
+#define LOADD(I)  LOADL(I)
 
-#define STOREA(I) locals[I] = *--sp
-#define STOREI(I) locals[I] = *--sp
-#define STOREF(I) locals[I] = *--sp
-#define STOREL(I) ({ sp-=2; memcpy (locals+(I), sp, 8); })
-#define STORED(I) ({ sp-=2; memcpy (locals+(I), sp, 8); })
 
-#define PEEKI(I)  (*(jint*) (locals+(I)))
-#define PEEKA(I)  (*(jobject*) (locals+(I)))
+#define STOREA(I) locals[I].o = (--sp)->o
+#define STOREI(I) locals[I].i = (--sp)->i
+#define STOREF(I) locals[I].f = (--sp)->f
+#define STOREL(I) ({ jint __idx = (I); \
+    locals[__idx+1].ia[0] = (--sp)->ia[0]; \
+    locals[__idx].ia[0] = (--sp)->ia[0]; \
+ })
+#define STORED(I) STOREL(I)
+
+#define PEEKI(I)  (locals+(I))->i
+#define PEEKA(I)  (locals+(I))->o
 
 #define POKEI(I,V)  (*(jint*) (locals+(I)) = (V))
 
@@ -215,16 +222,16 @@ static jint get4(unsigned char* loc) {
 inline jobject
 _Jv_InterpMethod::run (ffi_cif* cif,
 		       void *retp,
-		       void**args,
+		       ffi_raw *args,
 		       _Jv_InterpMethodInvocation *inv)
 {
   inv->running  = this;
   inv->pc       = bytecode ();
   inv->sp       = inv->stack_base ();
-  void **locals = inv->local_base ();
+  _Jv_word *locals = inv->local_base ();
 
   /* Go straight at it!  the ffi raw format matches the internal
-     stack representation exactly!
+     stack representation exactly.  At leat, that's the idea.
   */
   memcpy ((void*) locals, (void*) args, args_raw_size);
 
@@ -237,7 +244,7 @@ _Jv_InterpMethod::run (ffi_cif* cif,
   if (ex == 0)			// no exception...
     {
       /* define sp locally, so the POP? macros will pick it up */
-      void **sp = (void**)inv->sp;
+      _Jv_word *sp = inv->sp;
       int rtype = cif->rtype->type;
 
       if (rtype == FFI_TYPE_POINTER)
@@ -320,9 +327,8 @@ bool _Jv_InterpMethod::find_exception (jobject ex,
 	  jclass handler;
 
 	  if (exc[i].handler_type != 0)
-	    handler = (jclass)
-	      _Jv_ResolvePoolEntry (defining_class, 
-				    exc[i].handler_type);
+	    handler = (_Jv_ResolvePoolEntry (defining_class, 
+					     exc[i].handler_type)).clazz;
 	  else
 	    handler = NULL;
 	  
@@ -330,7 +336,7 @@ bool _Jv_InterpMethod::find_exception (jobject ex,
 	    {
 	      inv->pc = bytecode () + exc[i].handler_pc;
 	      inv->sp = inv->stack_base (); // reset stack
-	      *(jobject*) (inv->sp ++) = ex;
+	      (inv->sp++)->o = ex; // push exception
 	      return true;
 	    }
 	}
@@ -340,7 +346,7 @@ bool _Jv_InterpMethod::find_exception (jobject ex,
 
 void _Jv_InterpMethod::run_normal (ffi_cif* cif,
 				   void* ret,
-				   void** args,
+				   ffi_raw * args,
 				   void* __this)
 {
   _Jv_InterpMethod* _this = (_Jv_InterpMethod*)__this;
@@ -350,7 +356,7 @@ void _Jv_InterpMethod::run_normal (ffi_cif* cif,
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
     alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (void*));
+	    + storage_size * sizeof (_Jv_word));
 
   jobject ex = _this->run (cif, ret, args, inv);
   if (ex != 0) _Jv_Throw (ex);
@@ -358,16 +364,16 @@ void _Jv_InterpMethod::run_normal (ffi_cif* cif,
 
 void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
 					 void* ret,
-					 void** args,
+					 ffi_raw * args,
 					 void* __this)
 {
   _Jv_InterpMethod* _this = (_Jv_InterpMethod*)__this;
-  jobject rcv = (jobject)args[0];
+  jobject rcv = (jobject)args[0].ptr;
 
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
     alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (void*));
+	    + storage_size * sizeof (_Jv_word));
 
   _Jv_MonitorEnter (rcv);
   jobject ex = _this->run (cif, ret, args, inv);
@@ -378,7 +384,7 @@ void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
 
 void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
 					void* ret,
-					void** args,
+					ffi_raw * args,
 					void* __this)
 {
   _Jv_InterpMethod* _this = (_Jv_InterpMethod*)__this;
@@ -387,7 +393,7 @@ void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
     alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (void*));
+	    + storage_size * sizeof (_Jv_word));
 
   _Jv_MonitorEnter (sync);
   jobject ex = _this->run (cif, ret, args, inv);
@@ -461,13 +467,13 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
    * gcc, why isn't there a -fpack-stack, allowing reuse of stack
    * locations?  */
   
-  void**         sp     = inv->sp;
+  _Jv_word      *sp     = inv->sp;
   unsigned char *pc     = inv->pc;
-  void**         locals = inv->local_base ();
+  _Jv_word      *locals = inv->local_base ();
   int            opcode;
 
   jclass defining_class = this->defining_class;
-  void **pool_data      = defining_class->constants.data;
+  _Jv_word *pool_data   = defining_class->constants.data;
   
   /* these two are used in the invokeXXX instructions */
   void (*fun)(...);
@@ -581,8 +587,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	 * JV_CONSTANT_ResolvedFlag in the tag directly.  For now, I
 	 * don't think it is worth it.  */
 
-	rmeth = (_Jv_ResolvedMethod*)
-	  _Jv_ResolvePoolEntry (defining_class, index);
+	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
 	NULLCHECK(sp[0]);
@@ -595,7 +600,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  }
 	else
 	  {
-	    jobject rcv = (jobject)sp[0];
+	    jobject rcv = sp[0].o;
 	    _Jv_VTable *table = *(_Jv_VTable**)rcv;
 	    fun = (void (*) (...))table->method[rmeth->vtable_index];
 	  }
@@ -606,12 +611,12 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	/* here goes the magic again... */
 	ffi_cif *cif = &rmeth->cif;
-	void **raw = sp;
+	ffi_raw *raw = (ffi_raw*) sp;
 
 	jdouble rvalue;
 
 	TIME_SUSPEND;
-	ffi_raw_call (cif, fun, (void*)&rvalue, (ffi_raw*) raw);
+	ffi_raw_call (cif, fun, (void*)&rvalue, raw);
 	TIME_RESUME;
 
 	int rtype = cif->rtype->type;
@@ -717,21 +722,21 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_ldc:
       {
 	int index = get1u (pc++);
-	PUSHA((jobject) pool_data[index]);
+	PUSHA(pool_data[index].o);
       }
       goto next_insn;
 
     case op_ldc_w:
       {
 	int index = get2u (pc); pc += 2;
-	PUSHA((jobject) pool_data[index]);
+	PUSHA(pool_data[index].o);
       }
       goto next_insn;
 
     case op_ldc2_w:
       {
 	int index = get2u (pc); pc += 2;
-	memcpy (sp, &pool_data[index], 8);
+	memcpy (sp, &pool_data[index], 2*sizeof (_Jv_word));
 	sp += 2;
       }
       goto next_insn;
@@ -1715,7 +1720,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	if ((field->flags & STATIC) == 0)
 	  throw_incompatible_class_change_error 
@@ -1761,7 +1766,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	if ((field->flags & STATIC) != 0)
 	  throw_incompatible_class_change_error 
@@ -1813,7 +1818,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	jclass type = field->type;
 
@@ -1862,7 +1867,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	jclass type = field->type;
 
@@ -1947,7 +1952,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_1:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI (*(jbyte*) (field->u.addr));
       }
       goto next_insn;
@@ -1955,7 +1960,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_2s:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jshort*) (field->u.addr));
       }
       goto next_insn;
@@ -1963,7 +1968,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_2u:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jchar*) (field->u.addr));
       }
       goto next_insn;
@@ -1971,7 +1976,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_4:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jint*) (field->u.addr));
       }
       goto next_insn;
@@ -1979,7 +1984,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_8:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHL(*(jlong*) (field->u.addr));
       }
       goto next_insn;
@@ -1987,7 +1992,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_getstatic_a:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHA(*(jobject*) (field->u.addr));
       }
       goto next_insn;
@@ -2046,7 +2051,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jbyte*) (field->u.addr) = value;
       }
       goto next_insn;
@@ -2055,7 +2060,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jchar*) (field->u.addr) = value;
       }
       goto next_insn;
@@ -2064,7 +2069,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jint*) (field->u.addr) = value;
       }
       goto next_insn;
@@ -2073,7 +2078,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jlong    value = POPL();
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jlong*) (field->u.addr) = value;
       }
       goto next_insn;
@@ -2082,7 +2087,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jobject value = POPA();
 	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = (_Jv_Field*) pool_data[fieldref_index];
+	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jobject*) (field->u.addr) = value;
       }
       goto next_insn;
@@ -2091,8 +2096,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	int index = get2u (pc); pc += 2;
 
-	rmeth = (_Jv_ResolvedMethod*)
-	  _Jv_ResolvePoolEntry (defining_class, index);
+	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
 	
@@ -2106,8 +2110,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	int index = get2u (pc); pc += 2;
 
-	rmeth = (_Jv_ResolvedMethod*)
-	  _Jv_ResolvePoolEntry (defining_class, index);
+	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
 	
@@ -2123,13 +2126,12 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	// invokeinterface has two unused bytes...
 	pc += 2;
 
-	rmeth = (_Jv_ResolvedMethod*)
-	    _Jv_ResolvePoolEntry (defining_class, index);
+	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
 	NULLCHECK(sp[0]);
 	
-	jobject rcv = (jobject)sp[0];
+	jobject rcv = sp[0].o;
 
 	fun = (void (*) (...))
 	  _Jv_LookupInterfaceMethod (rcv->getClass (),
@@ -2142,8 +2144,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_new:
       {
 	int index = get2u (pc); pc += 2;
-	jclass klass = (jclass) _Jv_ResolvePoolEntry (defining_class,
-						      index);
+	jclass klass = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
 	_Jv_InitClass (klass);
 	jobject res = _Jv_AllocObject (klass, klass->size_in_bytes);
 	PUSHA (res);
@@ -2162,7 +2163,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     case op_anewarray:
       {
 	int index = get2u (pc); pc += 2;
-	jclass klass = (jclass) _Jv_ResolvePoolEntry (defining_class, index);
+	jclass klass = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
 	int size  = POPI();
 	_Jv_InitClass (klass);
 	jobject result = _Jv_NewObjectArray (size, klass, 0);
@@ -2189,8 +2190,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jobject value = POPA();
 	jint index = get2u (pc); pc += 2;
-	jclass to = (jclass)_Jv_ResolvePoolEntry (defining_class,
-						  index);
+	jclass to = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
 
 	if (value != NULL && ! to->isInstance (value))
 	  {
@@ -2207,8 +2207,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jobject value = POPA();
 	jint index = get2u (pc); pc += 2;
-	jclass to = (jclass)_Jv_ResolvePoolEntry (defining_class,
-						  index);
+	jclass to = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
 	PUSHI (to->isInstance (value));
       }
       goto next_insn;
@@ -2315,8 +2314,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	int kind_index = get2u (pc); pc += 2;
 	int dim        = get1u (pc); pc += 1;
 
-	jclass type    = (jclass) _Jv_ResolvePoolEntry (defining_class,
-							kind_index);
+	jclass type    
+	  = (_Jv_ResolvePoolEntry (defining_class, kind_index)).clazz;
 	_Jv_InitClass (type);
 	jint *sizes    = (jint*) alloca (sizeof (jint)*dim);
 

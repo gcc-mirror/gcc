@@ -261,6 +261,27 @@ extern "C" void _Jv_Free (void*);
 typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));
 typedef unsigned int _Jv_uint __attribute__((__mode__(__SI__)));
 
+typedef union {
+  jobject o;
+  jint i;			// Also stores smaller integral types.
+  jfloat f;
+  jint ia[1];			// Half of _Jv_word2.
+  void* p;
+
+  // these are things we will store in the constant 
+  jclass                     clazz;
+  jstring                    string;
+  struct _Jv_Field          *field;
+  struct _Jv_Utf8Const      *utf8;
+  struct _Jv_ResolvedMethod *rmethod;
+} _Jv_word;
+
+typedef union {
+  jint ia[2];
+  jlong l;
+  jdouble d;
+} _Jv_word2;                              
+
 struct _Jv_Utf8Const
 {
   _Jv_ushort hash;

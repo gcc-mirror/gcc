@@ -75,7 +75,7 @@ static void throw_incompatible_class_change_error (jstring msg)
   JvThrow (new java::lang::IncompatibleClassChangeError (msg));
 }
 
-void*
+_Jv_word
 _Jv_ResolvePoolEntry (jclass klass, int index)
 {
   _Jv_Constants *pool = &klass->constants;
@@ -86,7 +86,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
   switch (pool->tags[index]) {
   case JV_CONSTANT_Class:
     {
-      _Jv_Utf8Const *name = (_Jv_Utf8Const *) pool->data[index];
+      _Jv_Utf8Const *name = pool->data[index].utf8;
 
       jclass found;
       if (name->data[0] == '[')
@@ -105,7 +105,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  || (_Jv_ClassNameSamePackage (found->name,
 					klass->name)))
 	{
-	  pool->data[index] = (void *) found;
+	  pool->data[index].clazz = found;
 	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
       else
@@ -118,8 +118,8 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
   case JV_CONSTANT_String:
     {
       jstring str;
-      str = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) pool->data[index]);
-      pool->data[index] = (void *) str;
+      str = _Jv_NewStringUtf8Const (pool->data[index].utf8);
+      pool->data[index].o = str;
       pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
     }
     break;
@@ -127,22 +127,21 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
   case JV_CONSTANT_Fieldref:
     {
       _Jv_ushort class_index, name_and_type_index;
-      _Jv_loadIndexes ((const void**) &pool->data[index],
+      _Jv_loadIndexes (&pool->data[index],
 		       class_index,
 		       name_and_type_index);
-      jclass owner = (jclass) _Jv_ResolvePoolEntry (klass, class_index);
+      jclass owner = (_Jv_ResolvePoolEntry (klass, class_index)).clazz;
 
       if (owner != klass)
 	_Jv_InitClass (owner);
 
       _Jv_ushort name_index, type_index;
-      _Jv_loadIndexes ((const void**) &pool->data[name_and_type_index],
+      _Jv_loadIndexes (&pool->data[name_and_type_index],
 		       name_index,
 		       type_index);
 
-      _Jv_Utf8Const *field_name = (_Jv_Utf8Const*) pool->data[name_index];
-      _Jv_Utf8Const *field_type_name =
-	(_Jv_Utf8Const*) pool->data[type_index];
+      _Jv_Utf8Const *field_name = pool->data[name_index].utf8;
+      _Jv_Utf8Const *field_type_name = pool->data[type_index].utf8;
 
       // FIXME: The implementation of this function
       // (_Jv_FindClassFromSignature) will generate an instance of
@@ -211,7 +210,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  throw_incompatible_class_change_error (msg);
 	}
 
-      pool->data[index] = (void*)the_field;
+      pool->data[index].field = the_field;
       pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
     }
     break;
@@ -220,22 +219,21 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
   case JV_CONSTANT_InterfaceMethodref:
     {
       _Jv_ushort class_index, name_and_type_index;
-      _Jv_loadIndexes ((const void**) &pool->data[index],
+      _Jv_loadIndexes (&pool->data[index],
 		       class_index,
 		       name_and_type_index);
-      jclass owner = (jclass) _Jv_ResolvePoolEntry (klass, class_index);
+      jclass owner = (_Jv_ResolvePoolEntry (klass, class_index)).clazz;
 
       if (owner != klass)
 	_Jv_InitClass (owner);
 
       _Jv_ushort name_index, type_index;
-      _Jv_loadIndexes ((const void**) &pool->data[name_and_type_index],
+      _Jv_loadIndexes (&pool->data[name_and_type_index],
 		       name_index,
 		       type_index);
 
-      _Jv_Utf8Const *method_name = (_Jv_Utf8Const*) pool->data[name_index];
-      _Jv_Utf8Const *method_signature =
-	(_Jv_Utf8Const*) pool->data[type_index];
+      _Jv_Utf8Const *method_name = pool->data[name_index].utf8;
+      _Jv_Utf8Const *method_signature = pool->data[type_index].utf8;
 
       int vtable_index = -1;
       _Jv_Method *the_method = 0;
@@ -304,7 +302,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  JvThrow(new java::lang::NoSuchFieldError (msg));
 	}
       
-      pool->data[index] = (void*)
+      pool->data[index].rmethod = 
 	_Jv_BuildResolvedMethod(the_method,
 				found_class,
 				((the_method->accflags & STATIC) != 0),
@@ -754,8 +752,8 @@ _Jv_InitField (jobject obj, jclass klass, int index)
       {
 	_Jv_MonitorEnter (clz);
 	jstring str;
-	str = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) pool->data[init]);
-	pool->data[init] = (void *) str;
+	str = _Jv_NewStringUtf8Const (pool->data[init].utf8);
+	pool->data[init].string = str;
 	pool->tags[init] = JV_CONSTANT_ResolvedString;
 	_Jv_MonitorExit (clz);
       }
@@ -765,12 +763,12 @@ _Jv_InitField (jobject obj, jclass klass, int index)
       if (! (field->type == &StringClass || field->type == &ObjectClass))
 	throw_class_format_error ("string initialiser to non-string field");
 
-      *(jstring*)addr = *(jstring*) (pool->data + init);
+      *(jstring*)addr = pool->data[init].string;
       break;
 
     case JV_CONSTANT_Integer:
       {
-	int value = *(jint*)(pool->data + init);
+	int value = pool->data[init].i;
 
 	if (field->type == JvPrimClass (boolean))
 	  *(jboolean*)addr = (jboolean)value;
@@ -796,21 +794,21 @@ _Jv_InitField (jobject obj, jclass klass, int index)
       if (field->type != JvPrimClass (long))
 	throw_class_format_error ("erroneous field initializer");
 
-      memcpy (addr, pool->data+init, 8);
+      *(jlong*)addr = _Jv_loadLong (&pool->data[init]);
       break;
 
     case JV_CONSTANT_Float:
       if (field->type != JvPrimClass (float))
 	throw_class_format_error ("erroneous field initializer");
 
-      memcpy (addr, pool->data+init, 4);
+      *(jfloat*)addr = pool->data[init].f;
       break;
 
     case JV_CONSTANT_Double:
       if (field->type != JvPrimClass (double))
 	throw_class_format_error ("erroneous field initializer");
 
-      memcpy (addr, pool->data+init, 8);
+      *(jdouble*)addr = _Jv_loadDouble (&pool->data[init]);
       break;
 
     default:

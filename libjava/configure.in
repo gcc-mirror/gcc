@@ -8,9 +8,10 @@ AC_CANONICAL_SYSTEM
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR      Configuring in a subdirectory])
+[  --with-target-subdir=SUBDIR
+                          configuring in a subdirectory])
 AC_ARG_WITH(cross-host,
-[  --with-cross-host=HOST           Configuring with a cross compiler])
+[  --with-cross-host=HOST  configuring with a cross compiler])
 
 LIBGCJ_CONFIGURE(.)
 
@@ -31,20 +32,20 @@ AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
 dnl See whether the user prefers size or speed for Character.
 dnl The default is size.
 AC_ARG_ENABLE(fast-character,
-[  --enable-fast-character          Prefer speed over size for Character],
+[  --enable-fast-character prefer speed over size for Character],
 # Nothing
 , AC_DEFINE(COMPACT_CHARACTER))
 
 dnl See if the user has requested runtime debugging.
 AC_ARG_ENABLE(libgcj-debug,
-[  --enable-libgcj-debug           Enable runtime debugging code],
+[  --enable-libgcj-debug   enable runtime debugging code],
   if test "$enable_libgcj_debug" = yes; then
      AC_DEFINE(DEBUG)
   fi)
 
 dnl See if the user has the enterpreter included.
 AC_ARG_ENABLE(interpreter,
-[  --enable-interpreter            Enable interpreter],
+[  --enable-interpreter    enable interpreter],
   if test "$enable_interpreter" = yes; then
      AC_DEFINE(INTERPRETER)
   fi)
@@ -59,7 +60,7 @@ dnl FIXME: this should not be a local option but a global target
 dnl system; at present there is no eCos target.
 TARGET_ECOS="no"
 AC_ARG_WITH(ecos,
-[  --with-ecos      Enable runtime eCos target support.],
+[  --with-ecos             enable runtime eCos target support],
 TARGET_ECOS="$with_ecos"
 )
 
@@ -101,7 +102,7 @@ SYSTEMSPEC=
 AC_SUBST(SYSTEMSPEC)
 
 AC_ARG_WITH(system-zlib,
-[  --with-system-zlib               Use installed libz])
+[  --with-system-zlib      use installed libz])
 ZLIBSPEC=
 AC_SUBST(ZLIBSPEC)
 
@@ -112,7 +113,7 @@ dnl Allow the GC to be disabled.  Can be useful when debugging.
 AC_MSG_CHECKING([for garbage collector to use])
 AC_ARG_ENABLE(java-gc,
 changequote(<<,>>)dnl
-<<  --enable-java-gc=TYPE    choose garbage collector [boehm]>>,
+<<  --enable-java-gc=TYPE   choose garbage collector [boehm]>>,
 changequote([,])
   GC=$enableval,
   GC=boehm)
@@ -159,7 +160,7 @@ dnl Note that this code is kept in sync with similar code in gcc/configure.in.
 dnl In particular both packages must make the same decision about which
 dnl thread package to use.
 AC_MSG_CHECKING([for threads package to use])
-AC_ARG_ENABLE(threads, [  --enable-threads=TYPE    choose threading package],
+AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
   THREADS=$enableval,
   dnl FIXME: figure out native threads to use here.
   THREADS=no)
