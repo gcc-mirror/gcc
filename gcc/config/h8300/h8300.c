@@ -1414,13 +1414,14 @@ print_operand (file, x, code)
 	  fprintf (file, "@");
 	  output_address (XEXP (x, 0));
 
-	  /* If this is an 'R' operand (reference into the 8-bit area),
-	     then specify a symbolic address as "foo:8".  */
- 	  if (code == 'R'
-	      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  /* If this is an 'R' operand (reference into the 8-bit
+	     area), then specify a symbolic address as "foo:8",
+	     otherwise if operand is still in eight bit section, use
+	     "foo:16".  */
+ 	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	      && SYMBOL_REF_FLAG (XEXP (x, 0)))
-	    fprintf (file, ":8");
-	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	    fprintf (file, (code == 'R' ? ":8" : ":16"));
+	  else if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	      && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
 	    fprintf (file, ":16");
 	  break;
