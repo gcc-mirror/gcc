@@ -240,7 +240,8 @@ static int consec_sets_invariant_p PARAMS ((const struct loop *,
 static int labels_in_range_p PARAMS ((rtx, int));
 static void count_one_set PARAMS ((rtx, rtx, varray_type, rtx *));
 
-static void count_loop_regs_set PARAMS ((rtx, rtx, varray_type, varray_type,
+static void count_loop_regs_set PARAMS ((const struct loop*,
+					 varray_type, varray_type,
 					 int *, int));
 static void note_addr_stored PARAMS ((rtx, rtx, void *));
 static void note_set_pseudo_multiple_uses PARAMS ((rtx, rtx, void *));
@@ -706,8 +707,8 @@ scan_loop (loop, flags)
   VARRAY_CHAR_INIT (may_not_optimize, nregs, "may_not_optimize");
   VARRAY_RTX_INIT (reg_single_usage, nregs, "reg_single_usage");
 
-  count_loop_regs_set (loop->top ? loop->top : loop->start, loop->end,
-		       may_not_optimize, reg_single_usage, &insn_count, nregs);
+  count_loop_regs_set (loop, may_not_optimize, reg_single_usage, 
+		       &insn_count, nregs);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -3479,8 +3480,8 @@ count_one_set (insn, x, may_not_move, last_set)
    In that case, it is the insn that last set reg n.  */
 
 static void
-count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
-     register rtx from, to;
+count_loop_regs_set (loop, may_not_move, single_usage, count_ptr, nregs)
+     const struct loop *loop;
      varray_type may_not_move;
      varray_type single_usage;
      int *count_ptr;
@@ -3490,7 +3491,8 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
   register rtx insn;
   register int count = 0;
 
-  for (insn = from; insn != to; insn = NEXT_INSN (insn))
+  for (insn = loop->top ? loop->top : loop->start; insn != loop->end;
+       insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
@@ -9311,8 +9313,7 @@ load_mems_and_recount_loop_regs_set (loop, insn_count)
       bzero ((char *) &may_not_optimize->data, nregs * sizeof (char));
       bzero ((char *) &reg_single_usage->data, nregs * sizeof (rtx));
 
-      count_loop_regs_set (loop->top ? loop->top : loop->start, loop->end,
-			   may_not_optimize, reg_single_usage,
+      count_loop_regs_set (loop, may_not_optimize, reg_single_usage,
 			   insn_count, nregs);
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
