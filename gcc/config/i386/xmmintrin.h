@@ -648,7 +648,7 @@ _mm_unpacklo_ps (__m128 __A, __m128 __B)
 /* Sets the upper two SPFP values with 64-bits of data loaded from P;
    the lower two values are passed through from A.  */
 static __inline __m128
-_mm_loadh_pi (__m128 __A, __m64 *__P)
+_mm_loadh_pi (__m128 __A, __m64 const *__P)
 {
   return (__m128) __builtin_ia32_loadhps ((__v4sf)__A, (__v2si *)__P);
 }
@@ -677,7 +677,7 @@ _mm_movelh_ps (__m128 __A, __m128 __B)
 /* Sets the lower two SPFP values with 64-bits of data loaded from P;
    the upper two values are passed through from A.  */
 static __inline __m128
-_mm_loadl_pi (__m128 __A, __m64 *__P)
+_mm_loadl_pi (__m128 __A, __m64 const *__P)
 {
   return (__m128) __builtin_ia32_loadlps ((__v4sf)__A, (__v2si *)__P);
 }
@@ -762,42 +762,42 @@ _MM_SET_FLUSH_ZERO_MODE (unsigned int __mode)
 
 /* Create a vector with element 0 as *P and the rest zero.  */
 static __inline __m128
-_mm_load_ss (float *__P)
+_mm_load_ss (float const *__P)
 {
   return (__m128) __builtin_ia32_loadss (__P);
 }
 
 /* Create a vector with all four elements equal to *P.  */
 static __inline __m128
-_mm_load1_ps (float *__P)
+_mm_load1_ps (float const *__P)
 {
   __v4sf __tmp = __builtin_ia32_loadss (__P);
   return (__m128) __builtin_ia32_shufps (__tmp, __tmp, _MM_SHUFFLE (0,0,0,0));
 }
 
 static __inline __m128
-_mm_load_ps1 (float *__P)
+_mm_load_ps1 (float const *__P)
 {
   return _mm_load1_ps (__P);
 }
 
 /* Load four SPFP values from P.  The address must be 16-byte aligned.  */
 static __inline __m128
-_mm_load_ps (float *__P)
+_mm_load_ps (float const *__P)
 {
   return (__m128) __builtin_ia32_loadaps (__P);
 }
 
 /* Load four SPFP values from P.  The address need not be 16-byte aligned.  */
 static __inline __m128
-_mm_loadu_ps (float *__P)
+_mm_loadu_ps (float const *__P)
 {
   return (__m128) __builtin_ia32_loadups (__P);
 }
 
 /* Load four SPFP values in reverse order.  The address must be aligned.  */
 static __inline __m128
-_mm_loadr_ps (float *__P)
+_mm_loadr_ps (float const *__P)
 {
   __v4sf __tmp = __builtin_ia32_loadaps (__P);
   return (__m128) __builtin_ia32_shufps (__tmp, __tmp, _MM_SHUFFLE (0,1,2,3));
@@ -1069,8 +1069,8 @@ _mm_pause (void)
 do {									\
   __v4sf __r0 = (row0), __r1 = (row1), __r2 = (row2), __r3 = (row3);	\
   __v4sf __t0 = __builtin_ia32_shufps (__r0, __r1, 0x44);		\
-  __v4sf __t1 = __builtin_ia32_shufps (__r0, __r1, 0xEE);		\
-  __v4sf __t2 = __builtin_ia32_shufps (__r2, __r3, 0x44);		\
+  __v4sf __t2 = __builtin_ia32_shufps (__r0, __r1, 0xEE);		\
+  __v4sf __t1 = __builtin_ia32_shufps (__r2, __r3, 0x44);		\
   __v4sf __t3 = __builtin_ia32_shufps (__r2, __r3, 0xEE);		\
   (row0) = __builtin_ia32_shufps (__t0, __t1, 0x88);			\
   (row1) = __builtin_ia32_shufps (__t0, __t1, 0xDD);			\
@@ -1095,42 +1095,42 @@ typedef int __v16qi __attribute__ ((mode (V16QI)));
 
 /* Create a vector with element 0 as *P and the rest zero.  */
 static __inline __m128d
-_mm_load_sd (double *__P)
+_mm_load_sd (double const *__P)
 {
   return (__m128d) __builtin_ia32_loadsd (__P);
 }
 
 /* Create a vector with all two elements equal to *P.  */
 static __inline __m128d
-_mm_load1_pd (double *__P)
+_mm_load1_pd (double const *__P)
 {
   __v2df __tmp = __builtin_ia32_loadsd (__P);
   return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,0));
 }
 
 static __inline __m128d
-_mm_load_pd1 (double *__P)
+_mm_load_pd1 (double const *__P)
 {
   return _mm_load1_pd (__P);
 }
 
 /* Load two DPFP values from P.  The addresd must be 16-byte aligned.  */
 static __inline __m128d
-_mm_load_pd (double *__P)
+_mm_load_pd (double const *__P)
 {
   return (__m128d) __builtin_ia32_loadapd (__P);
 }
 
 /* Load two DPFP values from P.  The addresd need not be 16-byte aligned.  */
 static __inline __m128d
-_mm_loadu_pd (double *__P)
+_mm_loadu_pd (double const *__P)
 {
   return (__m128d) __builtin_ia32_loadupd (__P);
 }
 
 /* Load two DPFP values in reverse order.  The addresd must be aligned.  */
 static __inline __m128d
-_mm_loadr_pd (double *__P)
+_mm_loadr_pd (double const *__P)
 {
   __v2df __tmp = __builtin_ia32_loadapd (__P);
   return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,1));
@@ -1932,7 +1932,7 @@ _mm_unpacklo_pd (__m128d __A, __m128d __B)
 }
 
 static __inline __m128d
-_mm_loadh_pd (__m128d __A, double *__B)
+_mm_loadh_pd (__m128d __A, double const *__B)
 {
   return (__m128d)__builtin_ia32_loadhpd ((__v2df)__A, (__v2si *)__B);
 }
@@ -1944,7 +1944,7 @@ _mm_storeh_pd (double *__A, __m128d __B)
 }
 
 static __inline __m128d
-_mm_loadl_pd (__m128d __A, double *__B)
+_mm_loadl_pd (__m128d __A, double const *__B)
 {
   return (__m128d)__builtin_ia32_loadlpd ((__v2df)__A, (__v2si *)__B);
 }
@@ -2436,7 +2436,7 @@ _mm_movpi64_epi64 (__m64 __A)
 }
 
 static __inline void
-_mm_clflush (void *__A)
+_mm_clflush (void const *__A)
 {
   return __builtin_ia32_clflush (__A);
 }
