@@ -1,3 +1,7 @@
+2005-03-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* tree.h (DECL_IGNORED_P, DECL_IN_SYSTEM_HEADER): Clarify comments.
+
 2005-03-22  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-opts.c (c_common_parse_file): Only start/end main source file
@@ -26,7 +30,7 @@
 
 	* cgraphunit.c (cgraph_estimate_size_after_inlining): Compute
 	call cost based on argument sizes.
-	(cgraph_mark_inline_edge): Avoid inline unit from shringking by
+	(cgraph_mark_inline_edge): Avoid inline unit from shrinking by
 	inlining.
 	* params.def: (max-inline-inssn-single): Set to 450.
 	(max-inline-insns-auto): Set to 90.
