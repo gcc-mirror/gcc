@@ -1,3 +1,10 @@
+2005-03-11  Richard Henderson  <rth@redhat.com>
+
+	PR target/20415
+	* config/i386/mmx.md (vec_dupv4hi): Fix predicate.
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate): Update
+	to match.
+
 2005-03-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (override_options): Only warn about -mint64
@@ -17,7 +24,7 @@
 
 2005-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
+	* doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
 
 2005-03-10  Bob Wilson  <bob.wilson@acm.org>
 
@@ -52,9 +59,9 @@
 
 2005-03-08  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-optimization/20122
-        * tree-vect-analyze.c (vect_object_analysis): Analyze initial
-        condition of access function instead of base.
+	PR tree-optimization/20122
+	* tree-vect-analyze.c (vect_object_analysis): Analyze initial
+	condition of access function instead of base.
 
 2005-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
