@@ -206,7 +206,7 @@ static void copy_loop_body PARAMS ((struct loop *, rtx, rtx,
 				    struct inline_remap *, rtx, int,
 				    enum unroll_types, rtx, rtx, rtx, rtx));
 static int find_splittable_regs PARAMS ((const struct loop *,
-					 enum unroll_types, rtx, int));
+					 enum unroll_types, int));
 static int find_splittable_givs PARAMS ((const struct loop *,
 					 struct iv_class *, enum unroll_types,
 					 rtx, int));
@@ -222,19 +222,16 @@ static rtx ujump_to_loop_cont PARAMS ((rtx, rtx));
 /* Try to unroll one loop and split induction variables in the loop.
 
    The loop is described by the arguments LOOP and INSN_COUNT.
-   END_INSERT_BEFORE indicates where insns should be added which need
-   to be executed when the loop falls through.  STRENGTH_REDUCTION_P
-   indicates whether information generated in the strength reduction
-   pass is available.
+   STRENGTH_REDUCTION_P indicates whether information generated in the
+   strength reduction pass is available.
 
    This function is intended to be called from within `strength_reduce'
    in loop.c.  */
 
 void
-unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
+unroll_loop (loop, insn_count, strength_reduce_p)
      struct loop *loop;
      int insn_count;
-     rtx end_insert_before;
      int strength_reduce_p;
 {
   struct loop_info *loop_info = LOOP_INFO (loop);
@@ -1045,7 +1042,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 
 	  sequence = gen_sequence ();
 	  end_sequence ();
-	  emit_insn_before (sequence, loop_start);
+	  loop_insn_hoist (loop, sequence);
 
 	  /* Only the last copy of the loop body here needs the exit
 	     test, so set copy_end to exclude the compare/branch here,
@@ -1163,8 +1160,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   if (splitting_not_safe)
     temp = 0;
   else
-    temp = find_splittable_regs (loop, unroll_type,
-				 end_insert_before, unroll_number);
+    temp = find_splittable_regs (loop, unroll_type, unroll_number);
 
   /* find_splittable_regs may have created some new registers, so must
      reallocate the reg_map with the new larger size, and must realloc
@@ -2431,10 +2427,9 @@ biv_total_increment (bl)
    times, since multiplies by small integers (1,2,3,4) are very cheap.  */
 
 static int
-find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
+find_splittable_regs (loop, unroll_type, unroll_number)
      const struct loop *loop;
      enum unroll_types unroll_type;
-     rtx end_insert_before;
      int unroll_number;
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
@@ -2444,8 +2439,6 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
   rtx biv_final_value;
   int biv_splittable;
   int result = 0;
-  rtx loop_start = loop->start;
-  rtx loop_end = loop->end;
 
   for (bl = ivs->list; bl; bl = bl->next)
     {
@@ -2469,7 +2462,7 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
       biv_final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
 	  && (loop->exit_count || unroll_type == UNROLL_NAIVE)
-	  && (REGNO_LAST_LUID (bl->regno) >= INSN_LUID (loop_end)
+	  && (REGNO_LAST_LUID (bl->regno) >= INSN_LUID (loop->end)
 	      || ! bl->init_insn
 	      || INSN_UID (bl->init_insn) >= max_uid_for_loop
 	      || (REGNO_FIRST_LUID (bl->regno)
@@ -2512,8 +2505,8 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
 		  rtx tem = gen_reg_rtx (bl->biv->mode);
 
 		  record_base_value (REGNO (tem), bl->biv->add_val, 0);
-		  emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
-				    loop_start);
+		  loop_insn_hoist (loop, 
+				   gen_move_insn (tem, bl->biv->src_reg));
 
 		  if (loop_dump_stream)
 		    fprintf (loop_dump_stream,
@@ -2558,9 +2551,8 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
 	     how the loop exits.  Otherwise emit the insn after the loop,
 	     since this is slightly more efficient.  */
 	  if (! loop->exit_count)
-	    emit_insn_before (gen_move_insn (bl->biv->src_reg,
-					     biv_final_value),
-			      end_insert_before);
+	    loop_insn_sink (loop, gen_move_insn (bl->biv->src_reg,
+						 biv_final_value));
 	  else
 	    {
 	      /* Create a new register to hold the value of the biv, and then
@@ -2571,11 +2563,9 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
 	      record_base_value (REGNO (tem), bl->biv->add_val, 0);
 
-	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
-				loop_start);
-	      emit_insn_before (gen_move_insn (bl->biv->src_reg,
-					       biv_final_value),
-				loop_start);
+	      loop_insn_hoist (loop, gen_move_insn (tem, bl->biv->src_reg));
+	      loop_insn_hoist (loop, gen_move_insn (bl->biv->src_reg,
+						    biv_final_value));
 
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream, "Biv %d mapped to %d for split.\n",
@@ -2717,9 +2707,8 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	     to its final value before loop start to ensure that this insn
 	     will always be executed, no matter how we exit.  */
 	  tem = gen_reg_rtx (v->mode);
-	  emit_insn_before (gen_move_insn (tem, v->dest_reg), loop_start);
-	  emit_insn_before (gen_move_insn (v->dest_reg, final_value),
-			    loop_start);
+	  loop_insn_hoist (loop, gen_move_insn (tem, v->dest_reg));
+	  loop_insn_hoist (loop, gen_move_insn (v->dest_reg, final_value));
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "Giv %d mapped to %d for split.\n",
@@ -2752,8 +2741,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
 
 	      record_base_value (REGNO (tem), bl->biv->add_val, 0);
-	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
-				loop->start);
+	      loop_insn_hoist (loop, gen_move_insn (tem, bl->biv->src_reg));
 	      biv_initial_value = tem;
 	    }
 	  biv_initial_value = extend_value_for_giv (v, biv_initial_value);
@@ -2795,8 +2783,8 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		{
 		  rtx tem = gen_reg_rtx (v->mode);
 		  record_base_value (REGNO (tem), v->add_val, 0);
-		  emit_iv_add_mult (bl->initial_value, v->mult_val,
-				    v->add_val, tem, loop->start);
+		  loop_iv_add_mult_hoist (loop, bl->initial_value, v->mult_val,
+					  v->add_val, tem);
 		  value = tem;
 		}
 
@@ -2923,17 +2911,15 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		     instruction on machines with complex addressing modes.
 		     If we can't recognize it, then delete it and emit insns
 		     to calculate the value from scratch.  */
-		  emit_insn_before (gen_rtx_SET (VOIDmode, tem,
-						 copy_rtx (v->new_reg)),
-				    loop->start);
+		  loop_insn_hoist (loop, gen_rtx_SET (VOIDmode, tem,
+						      copy_rtx (v->new_reg)));
 		  if (recog_memoized (PREV_INSN (loop->start)) < 0)
 		    {
 		      rtx sequence, ret;
 
 		      /* We can't use bl->initial_value to compute the initial
 			 value, because the loop may have been preconditioned.
-			 We must calculate it from NEW_REG.  Try using
-			 force_operand instead of emit_iv_add_mult.  */
+			 We must calculate it from NEW_REG.  */
 		      delete_insn (PREV_INSN (loop->start));
 
 		      start_sequence ();
@@ -2942,7 +2928,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 			emit_move_insn (tem, ret);
 		      sequence = gen_sequence ();
 		      end_sequence ();
-		      emit_insn_before (sequence, loop->start);
+		      loop_insn_hoist (loop, sequence);
 
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
@@ -3140,7 +3126,6 @@ final_biv_value (loop, bl)
      const struct loop *loop;
      struct iv_class *bl;
 {
-  rtx loop_end = loop->end;
   unsigned HOST_WIDE_INT n_iterations = LOOP_INFO (loop)->n_iterations;
   rtx increment, tem;
 
@@ -3182,11 +3167,8 @@ final_biv_value (loop, bl)
 
 	  tem = gen_reg_rtx (bl->biv->mode);
 	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
-	  /* Make sure loop_end is not the last insn.  */
-	  if (NEXT_INSN (loop_end) == 0)
-	    emit_note_after (NOTE_INSN_DELETED, loop_end);
-	  emit_iv_add_mult (increment, GEN_INT (n_iterations),
-			    bl->initial_value, tem, NEXT_INSN (loop_end));
+	  loop_iv_add_mult_sink (loop, increment, GEN_INT (n_iterations),
+				 bl->initial_value, tem);
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
@@ -3222,7 +3204,7 @@ final_giv_value (loop, v)
   struct iv_class *bl;
   rtx insn;
   rtx increment, tem;
-  rtx insert_before, seq;
+  rtx seq;
   rtx loop_end = loop->end;
   unsigned HOST_WIDE_INT n_iterations = LOOP_INFO (loop)->n_iterations;
 
@@ -3279,15 +3261,13 @@ final_giv_value (loop, v)
 	     We must search from the insn that sets the giv to the end
 	     of the loop to calculate this value.  */
 
-	  insert_before = NEXT_INSN (loop_end);
-
 	  /* Put the final biv value in tem.  */
 	  tem = gen_reg_rtx (v->mode);
 	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
-	  emit_iv_add_mult (extend_value_for_giv (v, increment),
-			    GEN_INT (n_iterations),
-			    extend_value_for_giv (v, bl->initial_value),
-			    tem, insert_before);
+	  loop_iv_add_mult_sink (loop, extend_value_for_giv (v, increment),
+				 GEN_INT (n_iterations),
+				 extend_value_for_giv (v, bl->initial_value),
+				 tem);
 
 	  /* Subtract off extra increments as we find them.  */
 	  for (insn = NEXT_INSN (v->insn); insn != loop_end;
@@ -3304,12 +3284,12 @@ final_giv_value (loop, v)
 					OPTAB_LIB_WIDEN);
 		    seq = gen_sequence ();
 		    end_sequence ();
-		    emit_insn_before (seq, insert_before);
+		    loop_insn_sink (loop, seq);
 		  }
 	    }
 
 	  /* Now calculate the giv's final value.  */
-	  emit_iv_add_mult (tem, v->mult_val, v->add_val, tem, insert_before);
+	  loop_iv_add_mult_sink (loop, tem, v->mult_val, v->add_val, tem);
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,

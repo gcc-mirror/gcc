@@ -1,5 +1,31 @@
 2001-01-07  Michael Hayes  <mhayes@redhat.com>
 
+	* hard-reg-set.h: Add multiple include guard.
+	* basic-block.h (struct loop): Add `sink' field.
+	* loop.h: Include sbitmap.h, hard-reg-set.h, and basic-block.h.
+	(emit_iv_add_mult): Delete.
+	(loop_iv_add_mult_hoist, loop_iv_add_mult_sink): Define.
+	(loop_iv_add_mult_emit_before, loop_insn_sink): Define.
+	(unroll_loop): Remove end_insert_before argument.
+	* loop.c (loop_givs_rescan): Remove end_insert_before argument.
+	(maybe_eliminate_biv_1): Likewise.
+	(emit_iv_add_mult): Delete.
+	(gen_add_mult, loop_regs_update): New.
+	(loop_insn_emit_after, loop_insn_emit_before): New.
+	(loop_insn_sink, loop_insn_sink_or_swim): New.
+	(emit_iv_add_mult): Delete.
+	(scan_loop): Set loop->sink.
+	(loop_givs_reduce): Use loop_insn_sink and its ilk.
+	(loop_givs_rescan, strength_reduce, check_dbra_loop): Likewise.
+	(maybe_eliminate_biv_1): Likewise.
+	(maybe_eliminate_biv_1): Add basic block argument.
+	* unroll.c (unroll_loop): Remove end_insert_before argument.
+	(find_splittable_regs): Likewise.
+	(find_splittable_regs): Use loop_insn_sink and its ilk.
+	(find_splittable_givs, final_biv_value, final_giv_value): Likewise.
+
+2001-01-07  Michael Hayes  <mhayes@redhat.com>
+
 	* loop.h (loop_insn_hoist): New prototype.
 	* loop.c (loop_insn_hoist, loop_insn_emit_before): New.
 	(move_movables, loop_givs_rescan): Use loop_insn_hoist.

@@ -19,6 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "bitmap.h"
+#include "sbitmap.h"
+#include "hard-reg-set.h"
+#include "basic-block.h"
 
 /* Flags passed to loop_optimize.  */
 #define LOOP_UNROLL 1
@@ -386,11 +389,15 @@ extern FILE *loop_dump_stream;
    unroll.c.  */
 int loop_invariant_p PARAMS ((const struct loop *, rtx));
 rtx get_condition_for_loop PARAMS ((const struct loop *, rtx));
-void emit_iv_add_mult PARAMS ((rtx, rtx, rtx, rtx, rtx));
+void loop_iv_add_mult_hoist PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
+void loop_iv_add_mult_sink PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
+void loop_iv_add_mult_emit_before PARAMS ((const struct loop *, rtx, 
+					   rtx, rtx, rtx,
+					   basic_block, rtx));
 rtx express_from PARAMS ((struct induction *, struct induction *));
 rtx extend_value_for_giv PARAMS ((struct induction *, rtx));
 
-void unroll_loop PARAMS ((struct loop *, int, rtx, int));
+void unroll_loop PARAMS ((struct loop *, int, int));
 rtx biv_total_increment PARAMS ((struct iv_class *));
 unsigned HOST_WIDE_INT loop_iterations PARAMS ((struct loop *));
 int precondition_loop_p PARAMS ((const struct loop *,
@@ -404,6 +411,7 @@ int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 int loop_insn_first_p PARAMS ((rtx, rtx));
 typedef rtx (*loop_insn_callback) PARAMS ((struct loop *, rtx, int, int));
 void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
+rtx loop_insn_sink PARAMS((const struct loop *, rtx));
 rtx loop_insn_hoist PARAMS((const struct loop *, rtx));
 
 /* Forward declarations for non-static functions declared in doloop.c.  */

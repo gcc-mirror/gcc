@@ -188,7 +188,7 @@ static int loop_giv_reduce_benefit PARAMS((struct loop *, struct iv_class *,
 static void loop_givs_dead_check PARAMS((struct loop *, struct iv_class *));
 static void loop_givs_reduce PARAMS((struct loop *, struct iv_class *));
 static void loop_givs_rescan PARAMS((struct loop *, struct iv_class *,
-				     rtx *, rtx));
+				     rtx *));
 static void loop_ivs_free PARAMS((struct loop *));
 static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((struct loop_regs *, rtx, rtx));
@@ -225,7 +225,8 @@ static int product_cheap_p PARAMS ((rtx, rtx));
 static int maybe_eliminate_biv PARAMS ((const struct loop *, struct iv_class *,
 					int, int, int));
 static int maybe_eliminate_biv_1 PARAMS ((const struct loop *, rtx, rtx,
-					  struct iv_class *, int, rtx));
+					  struct iv_class *, int,
+					  basic_block, rtx));
 static int last_use_this_basic_block PARAMS ((rtx, rtx));
 static void record_initial PARAMS ((rtx, rtx, void *));
 static void update_reg_last_use PARAMS ((rtx, rtx));
@@ -244,10 +245,15 @@ static void try_swap_copy_prop PARAMS ((const struct loop *, rtx,
 static int replace_label PARAMS ((rtx *, void *));
 static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
+static rtx gen_add_mult PARAMS ((rtx, rtx, rtx, rtx));
+static void loop_regs_update PARAMS ((const struct loop *, rtx));
 static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
+static rtx loop_insn_emit_after PARAMS((const struct loop *, basic_block, 
+					rtx, rtx));
 static rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block, 
 					 rtx, rtx));
+static rtx loop_insn_sink_or_swim PARAMS((const struct loop *, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 void debug_biv PARAMS ((const struct induction *));
@@ -567,6 +573,15 @@ scan_loop (loop, flags)
     ;
 
   loop->scan_start = p;
+
+  /* If loop end is the end of the current function, then emit a
+     NOTE_INSN_DELETED after loop_end and set loop->sink to the dummy
+     note insn.  This is the position we use when sinking insns out of
+     the loop.  */
+  if (NEXT_INSN (loop->end) != 0)
+    loop->sink = NEXT_INSN (loop->end);
+  else
+    loop->sink = emit_note_after (NOTE_INSN_DELETED, loop->end);
 
   /* Set up variables describing this loop.  */
   prescan_loop (loop);
@@ -3908,20 +3923,22 @@ loop_givs_reduce (loop, bl)
 		insert_before = v->insn;
 	      
 	      if (tv->mult_val == const1_rtx)
-		emit_iv_add_mult (tv->add_val, v->mult_val,
-				  v->new_reg, v->new_reg, insert_before);
+		loop_iv_add_mult_emit_before (loop, tv->add_val, v->mult_val,
+					      v->new_reg, v->new_reg, 
+					      0, insert_before);
 	      else /* tv->mult_val == const0_rtx */
 		/* A multiply is acceptable here
 		   since this is presumed to be seldom executed.  */
-		emit_iv_add_mult (tv->add_val, v->mult_val,
-				  v->add_val, v->new_reg, insert_before);
+		loop_iv_add_mult_emit_before (loop, tv->add_val, v->mult_val,
+					      v->add_val, v->new_reg, 
+					      0, insert_before);
 	    }
 	  
 	  /* Add code at loop start to initialize giv's reduced reg.  */
 	  
-	  emit_iv_add_mult (extend_value_for_giv (v, bl->initial_value),
-			    v->mult_val, v->add_val, v->new_reg,
-			    loop->start);
+	  loop_iv_add_mult_hoist (loop,
+				  extend_value_for_giv (v, bl->initial_value),
+				  v->mult_val, v->add_val, v->new_reg);
 	}
     }
 }
@@ -3959,11 +3976,10 @@ loop_givs_dead_check (loop, bl)
 
 
 static void
-loop_givs_rescan (loop, bl, reg_map, end_insert_before)
+loop_givs_rescan (loop, bl, reg_map)
      struct loop *loop;
      struct iv_class *bl;
      rtx *reg_map;
-     rtx end_insert_before;
 {
   struct induction *v;
 
@@ -4042,22 +4058,12 @@ loop_givs_rescan (loop, bl, reg_map, end_insert_before)
 	 not replaceable.  The correct final value is the same as the
 	 value that the giv starts the reversed loop with.  */
       if (bl->reversed && ! v->replaceable)
-	emit_iv_add_mult (extend_value_for_giv (v, bl->initial_value),
-			  v->mult_val, v->add_val, v->dest_reg,
-			  end_insert_before);
+	loop_iv_add_mult_sink (loop, 
+			       extend_value_for_giv (v, bl->initial_value),
+			       v->mult_val, v->add_val, v->dest_reg);
       else if (v->final_value)
-	{
-	  /* If the loop has multiple exits, emit the insn before the
-	     loop to ensure that it will always be executed no matter
-	     how the loop exits.  Otherwise, emit the insn after the loop,
-	     since this is slightly more efficient.  */
-	  if (loop->exit_count)
-	    loop_insn_hoist (loop, 
-			     gen_move_insn (v->dest_reg, v->final_value));
-	  else
-	    emit_insn_before (gen_move_insn (v->dest_reg, v->final_value),
-			      end_insert_before);
-	}
+	loop_insn_sink_or_swim (loop, 
+				gen_move_insn (v->dest_reg, v->final_value));
       
       if (loop_dump_stream)
 	{
@@ -4207,23 +4213,10 @@ strength_reduce (loop, insn_count, flags)
   /* Map of pseudo-register replacements.  */
   rtx *reg_map = NULL;
   int reg_map_size;
-  rtx end_insert_before;
   int unrolled_insn_copies = 0;
   rtx test_reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   addr_placeholder = gen_reg_rtx (Pmode);
-
-  /* Save insn immediately after the loop_end.  Insns inserted after loop_end
-     must be put before this insn, so that they will appear in the right
-     order (i.e. loop order).
-
-     If loop_end is the end of the current function, then emit a
-     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
-     dummy note insn.  */
-  if (NEXT_INSN (loop->end) != 0)
-    end_insert_before = NEXT_INSN (loop->end);
-  else
-    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop->end);
 
   ivs->n_regs = max_reg_before_loop;
   ivs->regs = (struct iv *) xcalloc (ivs->n_regs, sizeof (struct iv));
@@ -4237,7 +4230,7 @@ strength_reduce (loop, insn_count, flags)
       /* Can still unroll the loop anyways, but indicate that there is no
 	 strength reduction info available.  */
       if (flags & LOOP_UNROLL)
-	unroll_loop (loop, insn_count, end_insert_before, 0);
+	unroll_loop (loop, insn_count, 0);
 
       loop_ivs_free (loop);
       return;
@@ -4366,7 +4359,7 @@ strength_reduce (loop, insn_count, flags)
 	 For each giv register that can be reduced now: if replaceable,
 	 substitute reduced reg wherever the old giv occurs;
 	 else add new move insn "giv_reg = reduced_reg".  */
-      loop_givs_rescan (loop, bl, reg_map, end_insert_before);
+      loop_givs_rescan (loop, bl, reg_map);
 
       /* All the givs based on the biv bl have been reduced if they
 	 merit it.  */
@@ -4420,22 +4413,8 @@ strength_reduce (loop, insn_count, flags)
 	     value, so we don't need another one.  We can't calculate the
 	     proper final value for such a biv here anyways.  */
 	  if (bl->final_value && ! bl->reversed)
-	    {
-	      rtx insert_before;
-
-	      /* If the loop has multiple exits, emit the insn before the
-		 loop to ensure that it will always be executed no matter
-		 how the loop exits.  Otherwise, emit the insn after the
-		 loop, since this is slightly more efficient.  */
-	      if (loop->exit_count)
-		insert_before = loop->start;
-	      else
-		insert_before = end_insert_before;
-
-	      emit_insn_before (gen_move_insn (bl->biv->dest_reg, 
-					       bl->final_value),
-				end_insert_before);
-	    }
+	      loop_insn_sink_or_swim (loop, gen_move_insn
+				      (bl->biv->dest_reg, bl->final_value));
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "Reg %d: biv eliminated\n",
@@ -4489,7 +4468,7 @@ strength_reduce (loop, insn_count, flags)
   if ((flags & LOOP_UNROLL)
       || (loop_info->n_iterations > 0
 	  && unrolled_insn_copies <= insn_count))
-    unroll_loop (loop, insn_count, end_insert_before, 1);
+    unroll_loop (loop, insn_count, 1);
 
 #ifdef HAVE_doloop_end
   if (HAVE_doloop_end && (flags & LOOP_BCT) && flag_branch_on_count_reg)
@@ -6863,40 +6842,38 @@ restart:
   free (can_combine);
 }
 
-/* EMIT code before INSERT_BEFORE to set REG = B * M + A.  */
+/* Generate sequence for REG = B * M + A.  */
 
-void
-emit_iv_add_mult (b, m, a, reg, insert_before)
+static rtx
+gen_add_mult (b, m, a, reg)
      rtx b;          /* initial value of basic induction variable */
      rtx m;          /* multiplicative constant */
      rtx a;          /* additive constant */
      rtx reg;        /* destination register */
-     rtx insert_before;
 {
   rtx seq;
   rtx result;
 
-  /* Prevent unexpected sharing of these rtx.  */
-  a = copy_rtx (a);
-  b = copy_rtx (b);
-
-  /* Increase the lifetime of any invariants moved further in code.  */
-  update_reg_last_use (a, insert_before);
-  update_reg_last_use (b, insert_before);
-  update_reg_last_use (m, insert_before);
-
   start_sequence ();
+  /* Use unsigned arithmetic.  */
   result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 1);
   if (reg != result)
     emit_move_insn (reg, result);
   seq = gen_sequence ();
   end_sequence ();
 
-  emit_insn_before (seq, insert_before);
+  return seq;
+}
 
-  /* It is entirely possible that the expansion created lots of new
-     registers.  Iterate over the sequence we just created and
-     record them all.  */
+
+/* Update registers created in insn sequence SEQ.  */
+
+static void
+loop_regs_update (loop, seq)
+     const struct loop *loop ATTRIBUTE_UNUSED;
+     rtx seq;
+{
+  /* Update register info for alias analysis.  */
 
   if (GET_CODE (seq) == SEQUENCE)
     {
@@ -6916,8 +6893,99 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
     }
 }
 
-/* Similar to emit_iv_add_mult, but compute cost rather than emitting
-   insns.  */
+
+/* EMIT code before BEFORE_BB/BEFORE_INSN to set REG = B * M + A.  */
+
+void
+loop_iv_add_mult_emit_before (loop, b, m, a, reg, before_bb, before_insn)
+     const struct loop *loop;
+     rtx b;          /* initial value of basic induction variable */
+     rtx m;          /* multiplicative constant */
+     rtx a;          /* additive constant */
+     rtx reg;        /* destination register */
+     basic_block before_bb;
+     rtx before_insn;
+{
+  rtx seq;
+
+  if (! before_insn)
+    {
+      loop_iv_add_mult_hoist (loop, b, m, a, reg);
+      return;
+    }
+
+  /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
+  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+
+  /* Increase the lifetime of any invariants moved further in code.  */
+  update_reg_last_use (a, before_insn);
+  update_reg_last_use (b, before_insn);
+  update_reg_last_use (m, before_insn);
+
+  loop_insn_emit_before (loop, before_bb, before_insn, seq);
+
+  /* It is possible that the expansion created lots of new registers.
+     Iterate over the sequence we just created and record them all.  */
+  loop_regs_update (loop, seq);
+}
+
+
+/* Emit insns in loop pre-header to set REG = B * M + A.  */
+
+void
+loop_iv_add_mult_sink (loop, b, m, a, reg)
+     const struct loop *loop;
+     rtx b;          /* initial value of basic induction variable */
+     rtx m;          /* multiplicative constant */
+     rtx a;          /* additive constant */
+     rtx reg;        /* destination register */
+{
+  rtx seq;
+
+  /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
+  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+
+  /* Increase the lifetime of any invariants moved further in code.
+     ???? Is this really necessary?  */
+  update_reg_last_use (a, loop->sink);
+  update_reg_last_use (b, loop->sink);
+  update_reg_last_use (m, loop->sink);
+
+  loop_insn_sink (loop, seq);
+
+  /* It is possible that the expansion created lots of new registers.
+     Iterate over the sequence we just created and record them all.  */
+  loop_regs_update (loop, seq);
+}
+
+
+/* Emit insns after loop to set REG = B * M + A.  */
+
+void
+loop_iv_add_mult_hoist (loop, b, m, a, reg)
+     const struct loop *loop;
+     rtx b;          /* initial value of basic induction variable */
+     rtx m;          /* multiplicative constant */
+     rtx a;          /* additive constant */
+     rtx reg;        /* destination register */
+{
+  rtx seq;
+
+  /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
+  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+
+  loop_insn_hoist (loop, seq);
+
+  /* It is possible that the expansion created lots of new registers.
+     Iterate over the sequence we just created and record them all.  */
+  loop_regs_update (loop, seq);
+}
+
+
+
+/* Similar to gen_add_mult, but compute cost rather than generating
+   sequence.  */
+
 static int
 iv_add_mult_cost (b, m, a, reg)
      rtx b;          /* initial value of basic induction variable */
@@ -6929,7 +6997,7 @@ iv_add_mult_cost (b, m, a, reg)
   rtx last, result;
 
   start_sequence ();
-  result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 0);
+  result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 1);
   if (reg != result)
     emit_move_insn (reg, result);
   last = get_last_insn ();
@@ -7517,8 +7585,7 @@ check_dbra_loop (loop, insn_count)
 	      if ((REGNO_LAST_UID (bl->regno) != INSN_UID (first_compare))
 		  || ! bl->init_insn
 		  || REGNO_FIRST_UID (bl->regno) != INSN_UID (bl->init_insn))
-		emit_insn_after (gen_move_insn (reg, final_value),
-				 loop_end);
+		loop_insn_sink (loop, gen_move_insn (reg, final_value));
 
 	      /* Delete compare/branch at end of loop.  */
 	      delete_insn (PREV_INSN (loop_end));
@@ -7630,17 +7697,16 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
   rtx reg = bl->biv->dest_reg;
-  rtx loop_start = loop->start;
-  rtx loop_end = loop->end;
   rtx p;
 
   /* Scan all insns in the loop, stopping if we find one that uses the
      biv in a way that we cannot eliminate.  */
 
-  for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
+  for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
     {
       enum rtx_code code = GET_CODE (p);
-      rtx where = threshold >= insn_count ? loop_start : p;
+      basic_block where_bb = 0;
+      rtx where_insn = threshold >= insn_count ? 0 : p;
 
       /* If this is a libcall that sets a giv, skip ahead to its end.  */
       if (GET_RTX_CLASS (code) == 'i')
@@ -7666,7 +7732,7 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
       if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
 	  && reg_mentioned_p (reg, PATTERN (p))
 	  && ! maybe_eliminate_biv_1 (loop, PATTERN (p), p, bl,
-				      eliminate_p, where))
+				      eliminate_p, where_bb, where_insn))
 	{
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
@@ -7676,7 +7742,7 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 	}
     }
 
-  if (p == loop_end)
+  if (p == loop->end)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, "biv %d %s eliminated.\n",
@@ -7748,18 +7814,20 @@ biv_elimination_giv_has_0_offset (biv, giv, insn)
 
    If BIV does not appear in X, return 1.
 
-   If ELIMINATE_P is non-zero, actually do the elimination.  WHERE indicates
-   where extra insns should be added.  Depending on how many items have been
-   moved out of the loop, it will either be before INSN or at the start of
-   the loop.  */
+   If ELIMINATE_P is non-zero, actually do the elimination.
+   WHERE_INSN/WHERE_BB indicate where extra insns should be added.
+   Depending on how many items have been moved out of the loop, it
+   will either be before INSN (when WHERE_INSN is non-zero) or at the
+   start of the loop (when WHERE_INSN is zero).  */
 
 static int
-maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
+maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
      const struct loop *loop;
      rtx x, insn;
      struct iv_class *bl;
      int eliminate_p;
-     rtx where;
+     basic_block where_bb;
+     rtx where_insn;
 {
   enum rtx_code code = GET_CODE (x);
   rtx reg = bl->biv->dest_reg;
@@ -7870,7 +7938,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		tem = gen_reg_rtx (GET_MODE (v->new_reg));
 
 		emit_insn_before (gen_move_insn (tem, copy_rtx (v->add_val)),
-				  where);
+				  where_insn);
 
 		/* Substitute the new register for its invariant value in
 		   the compare expression.  */
@@ -7936,7 +8004,9 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		  {
 		    /* Otherwise, load it into a register.  */
 		    tem = gen_reg_rtx (mode);
-		    emit_iv_add_mult (arg, v->mult_val, v->add_val, tem, where);
+		    loop_iv_add_mult_emit_before (loop, arg,
+						  v->mult_val, v->add_val,
+						  tem, where_bb, where_insn);
 		    validate_change (insn, &XEXP (x, arg_operand), tem, 1);
 		  }
 		if (apply_change_group ())
@@ -7969,7 +8039,9 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 				 v->new_reg, 1);
 
 		/* Compute value to compare against.  */
-		emit_iv_add_mult (arg, v->mult_val, v->add_val, tem, where);
+		loop_iv_add_mult_emit_before (loop, arg, 
+					      v->mult_val, v->add_val,
+					      tem, where_bb, where_insn);
 		/* Use it in this insn.  */
 		validate_change (insn, &XEXP (x, arg_operand), tem, 1);
 		if (apply_change_group ())
@@ -8005,8 +8077,9 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 				     v->new_reg, 1);
 
 		    /* Compute value to compare against.  */
-		    emit_iv_add_mult (arg, v->mult_val, v->add_val,
-				      tem, where);
+		    loop_iv_add_mult_emit_before (loop, arg, 
+						  v->mult_val, v->add_val,
+						  tem, where_bb, where_insn);
 		    validate_change (insn, &XEXP (x, arg_operand), tem, 1);
 		    if (apply_change_group ())
 		      return 1;
@@ -8087,14 +8160,14 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	{
 	case 'e':
 	  if (! maybe_eliminate_biv_1 (loop, XEXP (x, i), insn, bl,
-				       eliminate_p, where))
+				       eliminate_p, where_bb, where_insn))
 	    return 0;
 	  break;
 
 	case 'E':
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (! maybe_eliminate_biv_1 (loop, XVECEXP (x, i, j), insn, bl,
-					 eliminate_p, where))
+					 eliminate_p, where_bb, where_insn))
 	      return 0;
 	  break;
 	}
@@ -8152,7 +8225,7 @@ record_initial (dest, set, data)
 /* If any of the registers in X are "old" and currently have a last use earlier
    than INSN, update them to have a last use of INSN.  Their actual last use
    will be the previous insn but it will not have a valid uid_luid so we can't
-   use it.  */
+   use it.  X must be a source expression only.  */
 
 static void
 update_reg_last_use (x, insn)
@@ -8162,11 +8235,15 @@ update_reg_last_use (x, insn)
   /* Check for the case where INSN does not have a valid luid.  In this case,
      there is no need to modify the regno_last_uid, as this can only happen
      when code is inserted after the loop_end to set a pseudo's final value,
-     and hence this insn will never be the last use of x.  */
+     and hence this insn will never be the last use of x. 
+     ???? This comment is not correct.  See for example loop_givs_reduce.  
+     This may insert an insn before another new insn.  */
   if (GET_CODE (x) == REG && REGNO (x) < max_reg_before_loop
       && INSN_UID (insn) < max_uid_for_loop
       && REGNO_LAST_LUID (REGNO (x)) < INSN_LUID (insn))
-    REGNO_LAST_UID (REGNO (x)) = INSN_UID (insn);
+    {
+      REGNO_LAST_UID (REGNO (x)) = INSN_UID (insn);
+    }
   else
     {
       register int i, j;
@@ -9360,6 +9437,20 @@ replace_label (x, data)
   return 0;
 }
 
+/* Emit insn for PATTERN after WHERE_INSN in basic block WHERE_BB
+   (ignored in the interim).  */
+
+static rtx
+loop_insn_emit_after (loop, where_bb, where_insn, pattern)
+     const struct loop *loop ATTRIBUTE_UNUSED;
+     basic_block where_bb ATTRIBUTE_UNUSED;
+     rtx where_insn;
+     rtx pattern;
+{
+  return emit_insn_after (pattern, where_insn);
+}
+
+
 /* If WHERE_INSN is non-zero emit insn for PATTERN before WHERE_INSN
    in basic block WHERE_BB (ignored in the interim) within the loop
    otherwise hoist PATTERN into the loop pre-header.  */
@@ -9385,6 +9476,34 @@ loop_insn_hoist (loop, pattern)
      rtx pattern;
 {
   return loop_insn_emit_before (loop, 0, loop->start, pattern);
+}
+
+
+/* Sink insn for PATTERN after the loop end.  */
+
+rtx
+loop_insn_sink (loop, pattern)
+     const struct loop *loop;
+     rtx pattern;
+{
+  return loop_insn_emit_before (loop, 0, loop->sink, pattern);
+}
+
+
+/* If the loop has multiple exits, emit insn for PATTERN before the
+   loop to ensure that it will always be executed no matter how the
+   loop exits.  Otherwise, emit the insn for PATTERN after the loop,
+   since this is slightly more efficient.  */
+
+static rtx
+loop_insn_sink_or_swim (loop, pattern)
+     const struct loop *loop;
+     rtx pattern;
+{
+  if (loop->exit_count)
+    return loop_insn_hoist (loop, pattern);
+  else
+    return loop_insn_sink (loop, pattern);
 }
 
 static void
