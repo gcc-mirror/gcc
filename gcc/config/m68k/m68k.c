@@ -216,10 +216,7 @@ output_function_prologue (stream, size)
   if (flag_pic && current_function_uses_pic_offset_table)
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Omove.l %0I__GLOBAL_OFFSET_TABLE_, %s\n",
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
-      asm_fprintf (stream, "\tlea.l (%Rpc,%s.l),%s\n",
-		   reg_names[PIC_OFFSET_TABLE_REGNUM],
+      asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #else
       asm_fprintf (stream, "\tmovel %0I__GLOBAL_OFFSET_TABLE_, %s\n",
@@ -1873,10 +1870,8 @@ print_operand_address (file, addr)
 	    if (addr != 0)
 	      {
 		output_addr_const (file, addr);
-	        if ((flag_pic == 1) && (breg == pic_offset_table_rtx))
-	          fprintf (file, ".w");
-	        if ((flag_pic == 2) && (breg == pic_offset_table_rtx))
-	          fprintf (file, ".l");
+	        if (flag_pic && (breg == pic_offset_table_rtx))
+	          fprintf (file, "@GOT");
 	      }
 	    fprintf (file, "(%s", reg_names[REGNO (breg)]);
 	    if (ireg != 0)
