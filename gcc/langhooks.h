@@ -141,6 +141,10 @@ struct lang_hooks_for_types
      invalid.  */
   void (*incomplete_type_error) (tree value, tree type);
 
+  /* Called from assign_temp to return the maximum size, if there is one,
+     for a type.  */
+  tree (*max_size) (tree);
+
   /* Nonzero if types that are identical are to be hashed so that only
      one copy is kept.  If a language requires unique types for each
      user-specified type, such as Ada, this should be set to TRUE.  */
@@ -389,10 +393,6 @@ struct lang_hooks
      in bytes.  A frontend can call lhd_expr_size to get the default
      semantics in cases that it doesn't want to handle specially.  */
   tree (*expr_size) (tree);
-
-  /* Called from assign_temp to return the maximum size, if there is one,
-     for a type.  */
-  tree (*type_max_size) PARAMS ((tree));
 
   /* Update lang specific fields after duplicating function body.  */
   void (*update_decl_after_saving) (tree, void *);
