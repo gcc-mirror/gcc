@@ -274,7 +274,7 @@ in the following sections.
 -fschedule-insns  -fschedule-insns2 @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -ftrapv @gol
--funroll-all-loops  -funroll-loops -fmessy-debugging @gol
+-funroll-all-loops  -funroll-loops  @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3415,17 +3415,6 @@ Not all of the optimizations performed by GCC have @option{-f} options
 to control them.
 
 @table @gcctabopt
-@item -fmessy-debugging
-@opindex fmessy-debugging
-Some optimizations can be stronger if compiler give up ability to generate
-at least approximately usefull debug information for optimized programs.
-These transformation are not done when @option{-g} switch is not specified,
-as politics is to get the code with @option{-g} and without equivalent,
-except for debugging section.
-
-This optimization enables such transformations.  It is still compatible with
-@option{-g}, but debugging resulting programs will be even higher challenge.
-
 @item -fstrength-reduce
 @opindex fstrength-reduce
 Perform the optimizations of loop strength reduction and
