@@ -7429,9 +7429,9 @@ would produce the wrong kind of output.  These include @samp{-g},
 the @var{compilation-options}, they are ignored.
 
 @item -C
-Rename files to end in @samp{.C} instead of @samp{.c}.
-This is convenient if you are converting a C program to C++.
-This option applies only to @code{protoize}.
+Rename files to end in @samp{.C}, or @samp{.cc} for DOS-based file
+systems, instead of @samp{.c}.  This is convenient if you are converting 
+a C program to C++.  This option applies only to @code{protoize}.
 
 @item -g
 Add explicit global declarations.  This means inserting explicit
