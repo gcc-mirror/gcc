@@ -1,3 +1,9 @@
+2004-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.def, Makefile.tpl, configure.in: Remove all mention
+	of libf2c.
+	* configure, Makefile.in: Regenerate.
+
 2004-05-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -29,15 +35,15 @@
 
 2004-05-04  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * MAINTAINERS (Various Maintainers): Add myself.
+	* MAINTAINERS (Various Maintainers): Add myself.
 
 2004-04-30  Brian Ford  <ford@vss.fsi.com>
 
-        * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2004-04-29  Uros Bizjak  <uros@kss-loka.si>
 
-        * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2004-04-28  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -79,11 +85,11 @@
 
 2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure.in: Invoke ACX_PROG_CMP_IGNORE_INITIAL.
-        * configure: Regenerate.
-        * config/acx.m4: Mutuate ACX_PROG_CMP_IGNORE_INITIAL from gcc.
-        * gcc/Makefile.tpl (compare): Use the result of the test.
-        * gcc/Makefile.in: Regenerate.
+	* configure.in: Invoke ACX_PROG_CMP_IGNORE_INITIAL.
+	* configure: Regenerate.
+	* config/acx.m4: Mutuate ACX_PROG_CMP_IGNORE_INITIAL from gcc.
+	* gcc/Makefile.tpl (compare): Use the result of the test.
+	* gcc/Makefile.in: Regenerate.
 
 2004-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -96,7 +102,7 @@
 2004-04-23  Laurent GUERBY <laurent@guerby.net>
 
 	* MAINTAINERS: Update my email address.
-	
+
 2004-04-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (mips*-*-irix5*): Enable ld.
@@ -115,7 +121,7 @@
 
 2004-04-12  Michael Chastain  <mec.gnu@mindspring.com>
 
-        * MAINTAINERS: Add myself to write-after-approval.
+	* MAINTAINERS: Add myself to write-after-approval.
 
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
@@ -139,17 +145,17 @@
 
 2004-04-06  David Edelsohn  <edelsohn@gnu.org>
 
-        * configure.in (powerpc-*-aix*): Remove target-libada from noconfigdirs.
-        (rs6000-*-aix*): Same.
-        * configure: Regenerate.
+	* configure.in (powerpc-*-aix*): Remove target-libada from noconfigdirs.
+	(rs6000-*-aix*): Same.
+	* configure: Regenerate.
 
 2004-04-05  Ranjit Mathew  <rmathew@hotmail.com>
-                                                                                
-        * MAINTAINERS: Add myself to write-after-approval.
+
+	* MAINTAINERS: Add myself to write-after-approval.
 
 2004-04-03  Bud Davis  <bdavis9659@comcast.net>
-                                                                                
-        * MAINTAINERS: Add myself to write-after-approval.
+
+	* MAINTAINERS: Add myself to write-after-approval.
 
 2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
@@ -209,10 +215,10 @@
 	* Makefile.in: Regenerate.
 
 2004-03-15  Paolo Bonzini  <bonzini@gnu.org>
-            Nathanael Nerode  <neroden@gcc.gnu.org>
+	    Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in (DEFAULT_YACC, DEFAULT_M4, DEFAULT_LEX):
-        Set with AC_CHECK_PROGS.
+	Set with AC_CHECK_PROGS.
 	* configure.in: Fix comment typo from last patch.
 	* configure: Regenerate.
 
@@ -224,14 +230,14 @@
 	* configure: Regenerate.
 
 2004-03-12  Eric Botcazou  <ebotcazou@gcc.gnu.org>
-            Paolo Bonzini  <bonzini@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/14522
 	* configure.in: Cope with shells that do not support unquoted ^
 	* configure: Regenerate.
 
 2004-03-11  Eric Botcazou  <ebotcazou@gcc.gnu.org>
-            Paolo Bonzini  <bonzini@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/14522
 	* configure.in: Cope with shells that do not support nesting
@@ -280,7 +286,7 @@
 2004-03-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* MAINTAINERS: Add myself to write-after-approval.
-	
+
 2004-02-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/7087
@@ -332,7 +338,7 @@
 2004-02-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* MAINTAINERS: Remove myself.
-	
+
 2004-02-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in (powerpc-*-aix*): Add target-libada to noconfigdirs.
@@ -348,7 +354,7 @@
 	    Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR ada/6637, PR ada/5911
-        Merge with libada-branch:
+	Merge with libada-branch:
 	* configure.in, Makefile.tpl, Makefile.def: Add target-libada,
 	with appropriate dependencies. Add --enable-libada configure switch.
 	* configure, Makefile.in: Regenerate.
@@ -356,7 +362,7 @@
 2004-02-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* MAINTAINERS: Add myself to write-after-approval.
-	
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't pass --with-stabs on IRIX 5 either.
@@ -387,7 +393,7 @@
 2004-01-20  Caroline Tice  <ctice@apple.com>
 
 	* MAINTAINERS: Add myself to write-after-approval.
-	
+
 2004-01-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* MAINTAINERS: Update my email address.
@@ -395,7 +401,7 @@
 2004-01-18  James A. Morrison  <ja2morri@uwaterloo.ca>
 
 	* MAINTAINERS: Add myself to write-after-approval.
-	
+
 2004-01-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* MAINTAINERS: Remove entries without email address.
@@ -465,7 +471,7 @@
 	* MAINTAINERS: Remove the mn10200 maintainer.
 
 2003-12-21  Bernardo Innocenti  <bernie@develer.com>
- 
+
  	* configure.in (*-*-uclinux): Exclude newlib, libgloss and rda.
  	* configure: Regenerated.
 
@@ -514,8 +520,8 @@
 
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
-        * Makefile.tpl (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
-        * Makefile.in: Regenerate.
+	* Makefile.tpl (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
+	* Makefile.in: Regenerate.
 
 2003-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -663,7 +669,7 @@
 2003-09-04  Robert Millan  <robertmh@gnu.org>
 
 	* configure.in: Match GNU/KFreeBSD with new kfreebsd*-gnu triplet.
-	
+
 2003-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Ensure arguments to sed are properly spaced.
@@ -702,7 +708,7 @@
 	* configure.in: When testing with_libs and with_headers, treat
 	'no' as unset.  Based on a patch by Dan Kegel <dank@kegel.com>.
 	* configure: Regenerate.
-	
+
 	* configure.in (TOPLEVEL_CONFIGURE_ARGUMENTS): Quote properly for
 	make, shell, etc.
 	(baseargs): Likewise.
@@ -721,8 +727,8 @@
 
 	* config-ml.in, symlink-tree: Add license.
 
-2003-08-03  Richard Stallman  <rms@gnu.org> 
-            Eben Moglen  <moglen@columbia.edu>
+2003-08-03  Richard Stallman  <rms@gnu.org>
+	    Eben Moglen  <moglen@columbia.edu>
 
 	* README.SCO: New file.
 

@@ -3,16 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: fortran/io.c:44 fortran/io.c:45 fortran/io.c:46 fortran/io.c:47
-#: fortran/io.c:48 fortran/io.c:49 fortran/io.c:50 fortran/io.c:51
-#: fortran/io.c:52 fortran/io.c:53 fortran/io.c:54 fortran/io.c:55
-#: fortran/io.c:56
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2004-05-14 21:54+0000\n"
+"POT-Creation-Date: 2004-05-17 12:50-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,17 +36,17 @@ msgstr ""
 msgid "`%s' attribute only applies to function types"
 msgstr ""
 
-#: attribs.c:435 c-common.c:4437 c-common.c:4456 c-common.c:4474
-#: c-common.c:4501 c-common.c:4520 c-common.c:4543 c-common.c:4566
-#: c-common.c:4592 c-common.c:4626 c-common.c:4670 c-common.c:4698
-#: c-common.c:4726 c-common.c:4745 c-common.c:5021 c-common.c:5043
-#: c-common.c:5078 c-common.c:5145 c-common.c:5191 c-common.c:5249
-#: c-common.c:5278 c-common.c:5518 c-common.c:5541 c-common.c:5580
-#: config/arm/arm.c:2538 config/arm/arm.c:2565 config/avr/avr.c:4547
+#: attribs.c:435 c-common.c:4384 c-common.c:4403 c-common.c:4421
+#: c-common.c:4448 c-common.c:4467 c-common.c:4490 c-common.c:4513
+#: c-common.c:4539 c-common.c:4573 c-common.c:4617 c-common.c:4645
+#: c-common.c:4673 c-common.c:4692 c-common.c:4968 c-common.c:4990
+#: c-common.c:5025 c-common.c:5092 c-common.c:5138 c-common.c:5196
+#: c-common.c:5225 c-common.c:5465 c-common.c:5488 c-common.c:5527
+#: config/arm/arm.c:2507 config/arm/arm.c:2534 config/avr/avr.c:4547
 #: config/h8300/h8300.c:4401 config/h8300/h8300.c:4424 config/i386/i386.c:1668
-#: config/i386/i386.c:15247 config/i386/winnt.c:86 config/ia64/ia64.c:1081
+#: config/i386/i386.c:15251 config/i386/winnt.c:86 config/ia64/ia64.c:1081
 #: config/ip2k/ip2k.c:3160 config/m68hc11/m68hc11.c:1289
-#: config/rs6000/rs6000.c:15177
+#: config/rs6000/rs6000.c:15185
 #, c-format
 msgid "`%s' attribute ignored"
 msgstr ""
@@ -87,21 +83,21 @@ msgstr ""
 msgid "missing argument in `__builtin_args_info'"
 msgstr ""
 
-#: builtins.c:4052 builtins.c:8926
+#: builtins.c:4052 builtins.c:8929
 msgid "`va_start' used in function with fixed args"
 msgstr ""
 
-#: builtins.c:4071 builtins.c:8942
+#: builtins.c:4071 builtins.c:8945
 msgid "second parameter of `va_start' not last named argument"
 msgstr ""
 
 #. Evidently an out of date version of <stdarg.h>; can't validate
 #. va_start's second argument, but can still work as intended.
-#: builtins.c:4076 builtins.c:8948
+#: builtins.c:4076 builtins.c:8951
 msgid "`__builtin_next_arg' called without an argument"
 msgstr ""
 
-#: builtins.c:4165 builtins.c:8913
+#: builtins.c:4165 builtins.c:8916
 msgid "too many arguments to function `va_start'"
 msgstr ""
 
@@ -261,7 +257,7 @@ msgstr ""
 msgid "the address of `%D', will always evaluate as `true'"
 msgstr ""
 
-#: c-common.c:2706 f/com.c:14881
+#: c-common.c:2706
 msgid "suggest parentheses around assignment used as truth value"
 msgstr ""
 
@@ -287,265 +283,265 @@ msgstr ""
 msgid "`__alignof' applied to a bit-field"
 msgstr ""
 
-#: c-common.c:3555
+#: c-common.c:3502
 #, c-format
 msgid "cannot disable built-in function `%s'"
 msgstr ""
 
-#: c-common.c:3716 c-typeck.c:1987
+#: c-common.c:3663 c-typeck.c:1987
 #, c-format
 msgid "too few arguments to function `%s'"
 msgstr ""
 
-#: c-common.c:3722 c-typeck.c:1848
+#: c-common.c:3669 c-typeck.c:1848
 #, c-format
 msgid "too many arguments to function `%s'"
 msgstr ""
 
-#: c-common.c:3741
+#: c-common.c:3688
 #, c-format
 msgid "non-floating-point argument to function `%s'"
 msgstr ""
 
-#: c-common.c:3961
+#: c-common.c:3908
 msgid "pointers are not permitted as case values"
 msgstr ""
 
-#: c-common.c:3965
+#: c-common.c:3912
 msgid "range expressions in switch statements are non-standard"
 msgstr ""
 
-#: c-common.c:3990
+#: c-common.c:3937
 msgid "empty range specified"
 msgstr ""
 
-#: c-common.c:4041
+#: c-common.c:3988
 msgid "duplicate (or overlapping) case value"
 msgstr ""
 
-#: c-common.c:4042
+#: c-common.c:3989
 msgid "%Jthis is the first entry overlapping that value"
 msgstr ""
 
-#: c-common.c:4046
+#: c-common.c:3993
 msgid "duplicate case value"
 msgstr ""
 
-#: c-common.c:4047
+#: c-common.c:3994
 msgid "%Jpreviously used here"
 msgstr ""
 
-#: c-common.c:4051
+#: c-common.c:3998
 msgid "multiple default labels in one switch"
 msgstr ""
 
-#: c-common.c:4052
+#: c-common.c:3999
 msgid "%Jthis is the first default label"
 msgstr ""
 
-#: c-common.c:4101
+#: c-common.c:4048
 msgid "%Jcase value `%s' not in enumerated type"
 msgstr ""
 
-#: c-common.c:4104
+#: c-common.c:4051
 msgid "%Jcase value `%s' not in enumerated type `%T'"
 msgstr ""
 
-#: c-common.c:4169
+#: c-common.c:4116
 msgid "%Hswitch missing default case"
 msgstr ""
 
 #. Warn if there are enumerators that don't correspond to
 #. case expressions.
-#: c-common.c:4203
+#: c-common.c:4150
 msgid "%Henumeration value `%E' not handled in switch"
 msgstr ""
 
-#: c-common.c:4230
+#: c-common.c:4177
 msgid "taking the address of a label is non-standard"
 msgstr ""
 
-#: c-common.c:4780
+#: c-common.c:4727
 #, c-format
 msgid "unknown machine mode `%s'"
 msgstr ""
 
-#: c-common.c:4786
+#: c-common.c:4733
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
 msgstr ""
 
-#: c-common.c:4788
+#: c-common.c:4735
 msgid "use __attribute__ ((vector_size)) instead"
 msgstr ""
 
-#: c-common.c:4793
+#: c-common.c:4740
 #, c-format
 msgid "no data type for mode `%s'"
 msgstr ""
 
-#: c-common.c:4798
+#: c-common.c:4745
 #, c-format
 msgid "invalid pointer mode `%s'"
 msgstr ""
 
-#: c-common.c:4805
+#: c-common.c:4752
 #, c-format
 msgid "unable to emulate '%s'"
 msgstr ""
 
-#: c-common.c:4849
+#: c-common.c:4796
 msgid "%Jsection attribute cannot be specified for local variables"
 msgstr ""
 
-#: c-common.c:4860
+#: c-common.c:4807
 msgid "%Jsection of '%D' conflicts with previous declaration"
 msgstr ""
 
-#: c-common.c:4869
+#: c-common.c:4816
 msgid "%Jsection attribute not allowed for '%D'"
 msgstr ""
 
-#: c-common.c:4875
+#: c-common.c:4822
 msgid "%Jsection attributes are not supported for this target"
 msgstr ""
 
-#: c-common.c:4913
+#: c-common.c:4860
 msgid "requested alignment is not a constant"
 msgstr ""
 
-#: c-common.c:4918
+#: c-common.c:4865
 msgid "requested alignment is not a power of 2"
 msgstr ""
 
-#: c-common.c:4923
+#: c-common.c:4870
 msgid "requested alignment is too large"
 msgstr ""
 
-#: c-common.c:4949
+#: c-common.c:4896
 msgid "%Jalignment may not be specified for '%D'"
 msgstr ""
 
-#: c-common.c:4987
+#: c-common.c:4934
 msgid "%J'%D' defined both normally and as an alias"
 msgstr ""
 
-#: c-common.c:5003
+#: c-common.c:4950
 msgid "alias arg not a string"
 msgstr ""
 
-#: c-common.c:5049
+#: c-common.c:4996
 msgid "visibility arg not a string"
 msgstr ""
 
-#: c-common.c:5062
+#: c-common.c:5009
 msgid ""
 "visibility arg must be one of \"default\", \"hidden\", \"protected\" or "
 "\"internal\""
 msgstr ""
 
-#: c-common.c:5088
+#: c-common.c:5035
 msgid "tls_model arg not a string"
 msgstr ""
 
-#: c-common.c:5097
+#: c-common.c:5044
 msgid ""
 "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-"
 "dynamic\" or \"global-dynamic\""
 msgstr ""
 
-#: c-common.c:5119 c-common.c:5165
+#: c-common.c:5066 c-common.c:5112
 msgid "%J'%E' attribute applies only to functions"
 msgstr ""
 
-#: c-common.c:5124 c-common.c:5170
+#: c-common.c:5071 c-common.c:5117
 msgid "%Jcan't set '%E' attribute after definition"
 msgstr ""
 
-#: c-common.c:5246
+#: c-common.c:5193
 #, c-format
 msgid "`%s' attribute ignored for `%s'"
 msgstr ""
 
-#: c-common.c:5307
+#: c-common.c:5254
 #, c-format
 msgid "invalid vector type for attribute `%s'"
 msgstr ""
 
-#: c-common.c:5331
+#: c-common.c:5278
 msgid "no vector mode with the size and type specified could be found"
 msgstr ""
 
-#: c-common.c:5359
+#: c-common.c:5306
 msgid "nonnull attribute without arguments on a non-prototype"
 msgstr ""
 
-#: c-common.c:5374
+#: c-common.c:5321
 #, c-format
 msgid "nonnull argument has invalid operand number (arg %lu)"
 msgstr ""
 
-#: c-common.c:5393
+#: c-common.c:5340
 #, c-format
 msgid ""
 "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
 msgstr ""
 
-#: c-common.c:5401
+#: c-common.c:5348
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
 msgstr ""
 
-#: c-common.c:5481
+#: c-common.c:5428
 #, c-format
 msgid "null argument where non-null required (arg %lu)"
 msgstr ""
 
-#: c-common.c:5552
+#: c-common.c:5499
 msgid "cleanup arg not an identifier"
 msgstr ""
 
-#: c-common.c:5559
+#: c-common.c:5506
 msgid "cleanup arg not a function"
 msgstr ""
 
-#: c-common.c:5946
+#: c-common.c:5893
 #, c-format
 msgid "%s at end of input"
 msgstr ""
 
-#: c-common.c:5952
+#: c-common.c:5899
 #, c-format
 msgid "%s before %s'%c'"
 msgstr ""
 
-#: c-common.c:5954
+#: c-common.c:5901
 #, c-format
 msgid "%s before %s'\\x%x'"
 msgstr ""
 
-#: c-common.c:5958
+#: c-common.c:5905
 #, c-format
 msgid "%s before string constant"
 msgstr ""
 
-#: c-common.c:5960
+#: c-common.c:5907
 #, c-format
 msgid "%s before numeric constant"
 msgstr ""
 
-#: c-common.c:5962
+#: c-common.c:5909
 #, c-format
 msgid "%s before \"%s\""
 msgstr ""
 
-#: c-common.c:5964
+#: c-common.c:5911
 #, c-format
 msgid "%s before '%s' token"
 msgstr ""
 
 #. Use `%s' to print the string in case there are any escape
 #. characters in the message.
-#: c-common.c:5966 c-typeck.c:2546 c-typeck.c:3808 c-typeck.c:3823
+#: c-common.c:5913 c-typeck.c:2546 c-typeck.c:3808 c-typeck.c:3823
 #: c-typeck.c:3838 final.c:2855 final.c:2857 gcc.c:4651 rtl-error.c:109
 #: toplev.c:1286 config/cris/cris.c:566 cp/parser.c:1852 cp/typeck.c:4098
 #: java/expr.c:361 java/verify.c:1456 java/verify.c:1457 java/verify.c:1472
@@ -553,12 +549,12 @@ msgstr ""
 msgid "%s"
 msgstr ""
 
-#: c-common.c:6023
+#: c-common.c:5970
 msgid ""
 "%Hignoring return value of `%D', declared with attribute warn_unused_result"
 msgstr ""
 
-#: c-common.c:6027
+#: c-common.c:5974
 msgid ""
 "%Hignoring return value of function declared with attribute "
 "warn_unused_result"
@@ -764,8 +760,8 @@ msgstr ""
 msgid "%Jdeclaration of '%D' shadows a previous local"
 msgstr ""
 
-#: c-decl.c:1721 cp/name-lookup.c:934 cp/name-lookup.c:957
-#: cp/name-lookup.c:965
+#: c-decl.c:1721 cp/name-lookup.c:940 cp/name-lookup.c:963
+#: cp/name-lookup.c:971
 msgid "%Jshadowed declaration is here"
 msgstr ""
 
@@ -909,7 +905,7 @@ msgstr ""
 msgid "%Jstorage size of '%D' isn't constant"
 msgstr ""
 
-#: c-decl.c:2945 fortran/f95-lang.c:664
+#: c-decl.c:2945 fortran/f95-lang.c:665
 msgid "cannot put object with volatile field into register"
 msgstr ""
 
@@ -2320,13 +2316,11 @@ msgid "too late for # directive to set debug directory"
 msgstr ""
 
 #. Like YYERROR but do call yyerror.
-#: c-parse.y:55 c-parse.c:5353 gengtype-yacc.c:1537 java/parse-scan.c:3063
-#: java/parse.c:6069 objc/objc-parse.y:55 objc/objc-parse.c:6633
+#: c-parse.y:55 objc/objc-parse.y:55
 msgid "syntax error"
 msgstr ""
 
-#: c-parse.c:2114 gengtype-yacc.c:546 java/parse-scan.c:1932 java/parse.c:2877
-#: objc/objc-parse.c:2730
+#: bison.simple:179
 msgid "syntax error: cannot back up"
 msgstr ""
 
@@ -2480,13 +2474,11 @@ msgstr ""
 msgid "`...' in old-style identifier list"
 msgstr ""
 
-#: c-parse.c:5349 gengtype-yacc.c:1533 java/parse-scan.c:3059
-#: java/parse.c:6065 objc/objc-parse.c:6629
+#: bison.simple:795
 msgid "syntax error; also virtual memory exhausted"
 msgstr ""
 
-#: c-parse.c:5467 gengtype-yacc.c:1651 java/parse-scan.c:3177
-#: java/parse.c:6183 objc/objc-parse.c:6747
+#: bison.simple:924
 msgid "parser stack overflow"
 msgstr ""
 
@@ -2967,22 +2959,22 @@ msgstr ""
 msgid "cannot take address of bit-field `%s'"
 msgstr ""
 
-#: c-typeck.c:2615 fortran/f95-lang.c:640 treelang/treetree.c:946
+#: c-typeck.c:2615 fortran/f95-lang.c:641 treelang/treetree.c:946
 #, c-format
 msgid "global register variable `%s' used in nested function"
 msgstr ""
 
-#: c-typeck.c:2619 fortran/f95-lang.c:644 treelang/treetree.c:950
+#: c-typeck.c:2619 fortran/f95-lang.c:645 treelang/treetree.c:950
 #, c-format
 msgid "register variable `%s' used in nested function"
 msgstr ""
 
-#: c-typeck.c:2626 fortran/f95-lang.c:651 treelang/treetree.c:957
+#: c-typeck.c:2626 fortran/f95-lang.c:652 treelang/treetree.c:957
 #, c-format
 msgid "address of global register variable `%s' requested"
 msgstr ""
 
-#: c-typeck.c:2631 fortran/f95-lang.c:669 treelang/treetree.c:962
+#: c-typeck.c:2631 fortran/f95-lang.c:670 treelang/treetree.c:962
 #, c-format
 msgid "address of register variable `%s' requested"
 msgstr ""
@@ -4061,11 +4053,11 @@ msgstr ""
 msgid "aggregate value used where an integer was expected"
 msgstr ""
 
-#: convert.c:739 f/com.c:1102
+#: convert.c:739
 msgid "pointer value used where a complex was expected"
 msgstr ""
 
-#: convert.c:743 f/com.c:1104
+#: convert.c:743
 msgid "aggregate value used where a complex was expected"
 msgstr ""
 
@@ -4190,7 +4182,7 @@ msgstr ""
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr ""
 
-#: cppcharset.c:984 f/lex.c:580
+#: cppcharset.c:984
 msgid "\\x used with no following hex digits"
 msgstr ""
 
@@ -4944,26 +4936,26 @@ msgid "returned value in block_exit_expr"
 msgstr ""
 
 #. We can't make a bitwise copy of this object, so fail.
-#: expr.c:9050
+#: expr.c:9049
 msgid "cannot take the address of an unaligned member"
 msgstr ""
 
-#: expr.c:9308
+#: expr.c:9307
 #, c-format
 msgid "case label value %d is less than minimum value for type"
 msgstr ""
 
-#: expr.c:9317
+#: expr.c:9316
 #, c-format
 msgid "case label value %d exceeds maximum value for type"
 msgstr ""
 
-#: expr.c:9326
+#: expr.c:9325
 #, c-format
 msgid "lower value %d in case label range less than minimum value for type"
 msgstr ""
 
-#: expr.c:9335
+#: expr.c:9334
 #, c-format
 msgid "upper value %d in case label range exceeds maximum value for type"
 msgstr ""
@@ -5013,17 +5005,17 @@ msgstr ""
 #. handle them.
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
-#: final.c:3299 vmsdbgout.c:486 config/i386/i386.c:6798
+#: final.c:3299 vmsdbgout.c:486 config/i386/i386.c:6802
 #: config/pdp11/pdp11.c:1690
 msgid "floating constant misused"
 msgstr ""
 
-#: final.c:3355 vmsdbgout.c:543 config/i386/i386.c:6876
+#: final.c:3355 vmsdbgout.c:543 config/i386/i386.c:6880
 #: config/pdp11/pdp11.c:1737
 msgid "invalid expression as operand"
 msgstr ""
 
-#: flow.c:1561
+#: flow.c:1563
 msgid "Attempt to delete prologue/epilogue insn:"
 msgstr ""
 
@@ -5396,8 +5388,8 @@ msgstr ""
 msgid "%s (GCC) %s\n"
 msgstr ""
 
-#: gcc.c:3426 gcov.c:424 f/g77spec.c:351 java/gjavah.c:2310
-#: java/jcf-dump.c:916 java/jv-scan.c:126
+#: gcc.c:3426 gcov.c:424 java/gjavah.c:2310 java/jcf-dump.c:916
+#: java/jv-scan.c:126
 msgid "(C)"
 msgstr ""
 
@@ -5874,25 +5866,21 @@ msgid "%s:source file is newer than graph file `%s'\n"
 msgstr ""
 
 #. Return if there's nothing to do, or it is too expensive.
-#: gcse.c:748
+#: gcse.c:708
 msgid "GCSE disabled"
 msgstr ""
 
-#: gcse.c:6134
-msgid "NULL pointer checks disabled"
-msgstr ""
-
 #. Return if there's nothing to do, or it is too expensive.
-#: gcse.c:8024
+#: gcse.c:6891
 msgid "jump bypassing disabled"
 msgstr ""
 
-#: gcse.c:8085
+#: gcse.c:6952
 #, c-format
 msgid "%s: %d basic blocks and %d edges/basic block"
 msgstr ""
 
-#: gcse.c:8098
+#: gcse.c:6965
 #, c-format
 msgid "%s: %d basic blocks and %d registers"
 msgstr ""
@@ -5948,7 +5936,7 @@ msgstr ""
 msgid "%s cannot be used in asm here"
 msgstr ""
 
-#: graph.c:403 passes.c:267 toplev.c:2499 f/com.c:14209 java/jcf-parse.c:883
+#: graph.c:403 passes.c:267 toplev.c:2499 java/jcf-parse.c:883
 #: java/jcf-parse.c:1029 java/lex.c:1828 objc/objc-act.c:501
 #, c-format
 msgid "can't open %s: %m"
@@ -6090,7 +6078,7 @@ msgstr ""
 msgid "%Hinvalid register name `%s' for register variable"
 msgstr ""
 
-#: passes.c:1813
+#: passes.c:1783
 msgid ""
 "branch target register load optimization is not intended to be run twice"
 msgstr ""
@@ -6433,25 +6421,25 @@ msgstr ""
 msgid "Didn't find a coloring.\n"
 msgstr ""
 
-#: reg-stack.c:673
+#: reg-stack.c:672
 #, c-format
 msgid "output constraint %d must specify a single register"
 msgstr ""
 
-#: reg-stack.c:683
+#: reg-stack.c:682
 #, c-format
 msgid "output constraint %d cannot be specified together with \"%s\" clobber"
 msgstr ""
 
-#: reg-stack.c:706
+#: reg-stack.c:705
 msgid "output regs must be grouped at top of stack"
 msgstr ""
 
-#: reg-stack.c:743
+#: reg-stack.c:742
 msgid "implicitly popped regs must be grouped at top of stack"
 msgstr ""
 
-#: reg-stack.c:762
+#: reg-stack.c:761
 #, c-format
 msgid "output operand %d must use `&' constraint"
 msgstr ""
@@ -6754,37 +6742,37 @@ msgstr ""
 msgid "%Jsize of '%D' is larger than %d bytes"
 msgstr ""
 
-#: stor-layout.c:921
+#: stor-layout.c:923
 msgid "%Jpacked attribute causes inefficient alignment for '%D'"
 msgstr ""
 
-#: stor-layout.c:924
+#: stor-layout.c:926
 msgid "%Jpacked attribute is unnecessary for '%D'"
 msgstr ""
 
-#: stor-layout.c:940
+#: stor-layout.c:942
 msgid "%Jpadding struct to align '%D'"
 msgstr ""
 
-#: stor-layout.c:1283
+#: stor-layout.c:1285
 msgid "padding struct size to alignment boundary"
-msgstr ""
-
-#: stor-layout.c:1313
-#, c-format
-msgid "packed attribute causes inefficient alignment for `%s'"
 msgstr ""
 
 #: stor-layout.c:1315
 #, c-format
+msgid "packed attribute causes inefficient alignment for `%s'"
+msgstr ""
+
+#: stor-layout.c:1317
+#, c-format
 msgid "packed attribute is unnecessary for `%s'"
 msgstr ""
 
-#: stor-layout.c:1320
+#: stor-layout.c:1322
 msgid "packed attribute causes inefficient alignment"
 msgstr ""
 
-#: stor-layout.c:1322
+#: stor-layout.c:1324
 msgid "packed attribute is unnecessary"
 msgstr ""
 
@@ -7917,19 +7905,19 @@ msgstr ""
 msgid "invalid %%r value"
 msgstr ""
 
-#: config/alpha/alpha.c:5456 config/rs6000/rs6000.c:9470
+#: config/alpha/alpha.c:5456 config/rs6000/rs6000.c:9478
 #: config/xtensa/xtensa.c:2022
 #, c-format
 msgid "invalid %%R value"
 msgstr ""
 
-#: config/alpha/alpha.c:5462 config/rs6000/rs6000.c:9389
+#: config/alpha/alpha.c:5462 config/rs6000/rs6000.c:9397
 #: config/xtensa/xtensa.c:1989
 #, c-format
 msgid "invalid %%N value"
 msgstr ""
 
-#: config/alpha/alpha.c:5470 config/rs6000/rs6000.c:9417
+#: config/alpha/alpha.c:5470 config/rs6000/rs6000.c:9425
 #, c-format
 msgid "invalid %%P value"
 msgstr ""
@@ -7944,12 +7932,12 @@ msgstr ""
 msgid "invalid %%L value"
 msgstr ""
 
-#: config/alpha/alpha.c:5525 config/rs6000/rs6000.c:9371
+#: config/alpha/alpha.c:5525 config/rs6000/rs6000.c:9379
 #, c-format
 msgid "invalid %%m value"
 msgstr ""
 
-#: config/alpha/alpha.c:5533 config/rs6000/rs6000.c:9379
+#: config/alpha/alpha.c:5533 config/rs6000/rs6000.c:9387
 #, c-format
 msgid "invalid %%M value"
 msgstr ""
@@ -7960,7 +7948,7 @@ msgid "invalid %%U value"
 msgstr ""
 
 #: config/alpha/alpha.c:5589 config/alpha/alpha.c:5603
-#: config/rs6000/rs6000.c:9478
+#: config/rs6000/rs6000.c:9486
 #, c-format
 msgid "invalid %%s value"
 msgstr ""
@@ -7970,8 +7958,8 @@ msgstr ""
 msgid "invalid %%C value"
 msgstr ""
 
-#: config/alpha/alpha.c:5663 config/rs6000/rs6000.c:9208
-#: config/rs6000/rs6000.c:9228
+#: config/alpha/alpha.c:5663 config/rs6000/rs6000.c:9216
+#: config/rs6000/rs6000.c:9236
 #, c-format
 msgid "invalid %%E value"
 msgstr ""
@@ -7980,7 +7968,7 @@ msgstr ""
 msgid "unknown relocation unspec"
 msgstr ""
 
-#: config/alpha/alpha.c:5697 config/rs6000/rs6000.c:9801
+#: config/alpha/alpha.c:5697 config/rs6000/rs6000.c:9809
 #, c-format
 msgid "invalid %%xn code"
 msgstr ""
@@ -8174,149 +8162,137 @@ msgstr ""
 msgid "invalid operand output code"
 msgstr ""
 
-#: config/arm/arm.c:626
+#: config/arm/arm.c:627
 #, c-format
 msgid "switch -mcpu=%s conflicts with -march= switch"
 msgstr ""
 
-#: config/arm/arm.c:636 config/rs6000/rs6000.c:847 config/sparc/sparc.c:436
+#: config/arm/arm.c:637 config/rs6000/rs6000.c:847 config/sparc/sparc.c:436
 #, c-format
 msgid "bad value (%s) for %s switch"
 msgstr ""
 
-#: config/arm/arm.c:753
-msgid "target CPU does not support APCS-32"
-msgstr ""
-
-#: config/arm/arm.c:758
-msgid "target CPU does not support APCS-26"
-msgstr ""
-
-#: config/arm/arm.c:764
+#: config/arm/arm.c:743
 msgid "target CPU does not support interworking"
 msgstr ""
 
-#: config/arm/arm.c:770
+#: config/arm/arm.c:749
 msgid "target CPU does not support THUMB instructions"
 msgstr ""
 
-#: config/arm/arm.c:784
+#: config/arm/arm.c:763
 msgid ""
 "enabling backtrace support is only meaningful when compiling for the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:787
+#: config/arm/arm.c:766
 msgid ""
 "enabling callee interworking support is only meaningful when compiling for "
 "the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:790
+#: config/arm/arm.c:769
 msgid ""
 "enabling caller interworking support is only meaningful when compiling for "
 "the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:796
-msgid "interworking forces APCS-32 to be used"
-msgstr ""
-
-#: config/arm/arm.c:802
+#: config/arm/arm.c:773
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
 msgstr ""
 
-#: config/arm/arm.c:810
+#: config/arm/arm.c:781
 msgid "-fpic and -mapcs-reent are incompatible"
 msgstr ""
 
-#: config/arm/arm.c:813
+#: config/arm/arm.c:784
 msgid "APCS reentrant code not supported.  Ignored"
 msgstr ""
 
-#: config/arm/arm.c:821
+#: config/arm/arm.c:792
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr ""
 
-#: config/arm/arm.c:829
+#: config/arm/arm.c:800
 msgid "passing floating point arguments in fp regs not yet supported"
 msgstr ""
 
-#: config/arm/arm.c:859
+#: config/arm/arm.c:830
 #, c-format
 msgid "invalid ABI option: -mabi=%s"
 msgstr ""
 
-#: config/arm/arm.c:865
+#: config/arm/arm.c:836
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
 msgstr ""
 
-#: config/arm/arm.c:868
+#: config/arm/arm.c:839
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
 msgstr ""
 
-#: config/arm/arm.c:878
+#: config/arm/arm.c:849
 #, c-format
 msgid "invalid floating point emulation option: -mfpe=%s"
 msgstr ""
 
-#: config/arm/arm.c:895
+#: config/arm/arm.c:866
 #, c-format
 msgid "invalid floating point option: -mfpu=%s"
 msgstr ""
 
-#: config/arm/arm.c:936
+#: config/arm/arm.c:907
 #, c-format
 msgid "invalid floating point abi: -mfloat-abi=%s"
 msgstr ""
 
-#: config/arm/arm.c:949
+#: config/arm/arm.c:920
 msgid "-mfloat-abi=softfp"
 msgstr ""
 
-#: config/arm/arm.c:976
+#: config/arm/arm.c:945
 #, c-format
 msgid "structure size boundary can only be set to %s"
 msgstr ""
 
-#: config/arm/arm.c:985
+#: config/arm/arm.c:954
 msgid "-mpic-register= is useless without -fpic"
 msgstr ""
 
-#: config/arm/arm.c:992
+#: config/arm/arm.c:961
 #, c-format
 msgid "unable to use '%s' for PIC register"
 msgstr ""
 
-#: config/arm/arm.c:2506 config/arm/arm.c:2524 config/avr/avr.c:4566
+#: config/arm/arm.c:2475 config/arm/arm.c:2493 config/avr/avr.c:4566
 #: config/c4x/c4x.c:4497 config/h8300/h8300.c:4377 config/i386/i386.c:1640
 #: config/i386/i386.c:1686 config/ip2k/ip2k.c:3178
 #: config/m68hc11/m68hc11.c:1325 config/m68k/m68k.c:341
 #: config/mcore/mcore.c:3394 config/ns32k/ns32k.c:1068
-#: config/rs6000/rs6000.c:15212 config/sh/sh.c:6893 config/sh/sh.c:6914
+#: config/rs6000/rs6000.c:15220 config/sh/sh.c:6893 config/sh/sh.c:6914
 #: config/sh/sh.c:6949 config/stormy16/stormy16.c:2048 config/v850/v850.c:2184
 #, c-format
 msgid "`%s' attribute only applies to functions"
 msgstr ""
 
-#: config/arm/arm.c:11634
+#: config/arm/arm.c:11569
 msgid "unable to compute real location of stacked parameter"
 msgstr ""
 
 #. @@@ better error message
-#: config/arm/arm.c:12266 config/arm/arm.c:12303
+#: config/arm/arm.c:12201 config/arm/arm.c:12238
 msgid "selector must be an immediate"
 msgstr ""
 
 #. @@@ better error message
-#: config/arm/arm.c:12346 config/i386/i386.c:14138 config/i386/i386.c:14172
+#: config/arm/arm.c:12281 config/i386/i386.c:14142 config/i386/i386.c:14176
 msgid "mask must be an immediate"
 msgstr ""
 
-#: config/arm/arm.c:13044
+#: config/arm/arm.c:12979
 msgid "no low registers available for popping high registers"
 msgstr ""
 
-#: config/arm/arm.c:13260
+#: config/arm/arm.c:13188
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr ""
 
@@ -8328,131 +8304,119 @@ msgstr ""
 msgid "%Jstatic variable '%D' is marked dllimport"
 msgstr ""
 
-#: config/arm/arm.h:322
+#: config/arm/arm.h:306
 msgid "Generate APCS conformant stack frames"
 msgstr ""
 
-#: config/arm/arm.h:325
+#: config/arm/arm.h:309
 msgid "Store function names in object code"
 msgstr ""
 
-#: config/arm/arm.h:329
-msgid "Use the 32-bit version of the APCS"
-msgstr ""
-
-#: config/arm/arm.h:331
-msgid "Use the 26-bit version of the APCS"
-msgstr ""
-
-#: config/arm/arm.h:335
+#: config/arm/arm.h:315
 msgid "Pass FP arguments in FP registers"
 msgstr ""
 
-#: config/arm/arm.h:338
+#: config/arm/arm.h:318
 msgid "Generate re-entrant, PIC code"
 msgstr ""
 
-#: config/arm/arm.h:341
-msgid "The MMU will trap on unaligned accesses"
-msgstr ""
-
-#: config/arm/arm.h:348
+#: config/arm/arm.h:321
 msgid "Use library calls to perform FP operations"
 msgstr ""
 
-#: config/arm/arm.h:350
+#: config/arm/arm.h:323
 msgid "Use hardware floating point instructions"
 msgstr ""
 
-#: config/arm/arm.h:352
+#: config/arm/arm.h:325
 msgid "Assume target CPU is configured as big endian"
 msgstr ""
 
-#: config/arm/arm.h:354
+#: config/arm/arm.h:327
 msgid "Assume target CPU is configured as little endian"
 msgstr ""
 
-#: config/arm/arm.h:356
+#: config/arm/arm.h:329
 msgid "Assume big endian bytes, little endian words"
 msgstr ""
 
-#: config/arm/arm.h:358
+#: config/arm/arm.h:331
 msgid "Support calls between Thumb and ARM instruction sets"
 msgstr ""
 
-#: config/arm/arm.h:361
+#: config/arm/arm.h:334
 msgid "Generate a call to abort if a noreturn function returns"
 msgstr ""
 
-#: config/arm/arm.h:364
+#: config/arm/arm.h:337
 msgid "Do not move instructions into a function's prologue"
 msgstr ""
 
-#: config/arm/arm.h:367
+#: config/arm/arm.h:340
 msgid "Do not load the PIC register in function prologues"
 msgstr ""
 
-#: config/arm/arm.h:370
+#: config/arm/arm.h:343
 msgid "Generate call insns as indirect calls, if necessary"
 msgstr ""
 
-#: config/arm/arm.h:373
+#: config/arm/arm.h:346
 msgid "Compile for the Thumb not the ARM"
 msgstr ""
 
-#: config/arm/arm.h:377
+#: config/arm/arm.h:350
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
 msgstr ""
 
-#: config/arm/arm.h:380
+#: config/arm/arm.h:353
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
 msgstr ""
 
-#: config/arm/arm.h:383
+#: config/arm/arm.h:356
 msgid "Thumb: Assume non-static functions may be called from ARM code"
 msgstr ""
 
-#: config/arm/arm.h:387
+#: config/arm/arm.h:360
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
 msgstr ""
 
-#: config/arm/arm.h:391
+#: config/arm/arm.h:364
 msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
 msgstr ""
 
-#: config/arm/arm.h:393
+#: config/arm/arm.h:366
 msgid "Cirrus: Do not break up invalid instruction combinations with NOPs"
 msgstr ""
 
-#: config/arm/arm.h:401
+#: config/arm/arm.h:374
 msgid "Specify the name of the target CPU"
 msgstr ""
 
-#: config/arm/arm.h:403
+#: config/arm/arm.h:376
 msgid "Specify the name of the target architecture"
 msgstr ""
 
-#: config/arm/arm.h:408
+#: config/arm/arm.h:381
 msgid "Specify the name of the target floating point hardware/format"
 msgstr ""
 
-#: config/arm/arm.h:410
+#: config/arm/arm.h:383
 msgid "Specify if floating point hardware should be used"
 msgstr ""
 
-#: config/arm/arm.h:412
+#: config/arm/arm.h:385
 msgid "Specify the minimum bit alignment of structures"
 msgstr ""
 
-#: config/arm/arm.h:414
+#: config/arm/arm.h:387
 msgid "Specify the register to be used for PIC addressing"
 msgstr ""
 
-#: config/arm/arm.h:415 config/mips/mips.h:791
+#: config/arm/arm.h:388 config/mips/mips.h:787
 msgid "Specify an ABI"
 msgstr ""
 
-#: config/arm/pe.h:65
+#: config/arm/pe.h:66
 msgid "Ignore dllimport attribute for functions"
 msgstr ""
 
@@ -9518,58 +9482,58 @@ msgstr ""
 msgid "argument to `%s' attribute larger than %d"
 msgstr ""
 
-#: config/i386/i386.c:2665
+#: config/i386/i386.c:2669
 msgid "SSE vector argument without SSE enabled changes the ABI"
 msgstr ""
 
-#: config/i386/i386.c:2681
+#: config/i386/i386.c:2685
 msgid "MMX vector argument without MMX enabled changes the ABI"
 msgstr ""
 
-#: config/i386/i386.c:2909
+#: config/i386/i386.c:2913
 msgid "SSE vector return without SSE enabled changes the ABI"
 msgstr ""
 
-#: config/i386/i386.c:6870
+#: config/i386/i386.c:6874
 msgid "invalid UNSPEC as operand"
 msgstr ""
 
-#: config/i386/i386.c:7128
+#: config/i386/i386.c:7132
 msgid "extended registers have no high halves"
 msgstr ""
 
-#: config/i386/i386.c:7143
+#: config/i386/i386.c:7147
 msgid "unsupported operand size for extended register"
 msgstr ""
 
-#: config/i386/i386.c:7458
+#: config/i386/i386.c:7462
 msgid ""
 "operand is neither a constant nor a condition code, invalid operand code 'c'"
 msgstr ""
 
-#: config/i386/i386.c:7504
+#: config/i386/i386.c:7508
 #, c-format
 msgid "invalid operand code `%c'"
 msgstr ""
 
-#: config/i386/i386.c:7547
+#: config/i386/i386.c:7551
 msgid "invalid constraints for operand"
 msgstr ""
 
-#: config/i386/i386.c:12068
+#: config/i386/i386.c:12072
 msgid "unknown insn mode"
 msgstr ""
 
-#: config/i386/i386.c:13940 config/i386/i386.c:13976
+#: config/i386/i386.c:13944 config/i386/i386.c:13980
 #, c-format
 msgid "selector must be an integer constant in the range 0..%i"
 msgstr ""
 
-#: config/i386/i386.c:14204
+#: config/i386/i386.c:14208
 msgid "shift must be an immediate"
 msgstr ""
 
-#: config/i386/i386.c:15256
+#: config/i386/i386.c:15260
 #, c-format
 msgid "`%s' incompatible attribute ignored"
 msgstr ""
@@ -10179,7 +10143,7 @@ msgstr ""
 msgid "invalid %%P operand"
 msgstr ""
 
-#: config/iq2000/iq2000.c:3584 config/rs6000/rs6000.c:9407
+#: config/iq2000/iq2000.c:3584 config/rs6000/rs6000.c:9415
 #, c-format
 msgid "invalid %%p value"
 msgstr ""
@@ -10201,27 +10165,27 @@ msgstr ""
 msgid "Don't use GP relative sdata/sbss sections"
 msgstr ""
 
-#: config/iq2000/iq2000.h:78 config/mips/mips.h:604
+#: config/iq2000/iq2000.h:78 config/mips/mips.h:602
 msgid "Use ROM instead of RAM"
 msgstr ""
 
-#: config/iq2000/iq2000.h:80 config/mips/mips.h:606
+#: config/iq2000/iq2000.h:80 config/mips/mips.h:604
 msgid "Don't use ROM instead of RAM"
 msgstr ""
 
-#: config/iq2000/iq2000.h:82 config/mips/mips.h:608
+#: config/iq2000/iq2000.h:82 config/mips/mips.h:606
 msgid "Put uninitialized constants in ROM (needs -membedded-data)"
 msgstr ""
 
-#: config/iq2000/iq2000.h:84 config/mips/mips.h:610
+#: config/iq2000/iq2000.h:84 config/mips/mips.h:608
 msgid "Don't put uninitialized constants in ROM"
 msgstr ""
 
-#: config/iq2000/iq2000.h:106 config/mips/mips.h:787 config/pa/pa.h:310
+#: config/iq2000/iq2000.h:106 config/mips/mips.h:783 config/pa/pa.h:310
 msgid "Specify CPU for scheduling purposes"
 msgstr ""
 
-#: config/iq2000/iq2000.h:108 config/mips/mips.h:789
+#: config/iq2000/iq2000.h:108 config/mips/mips.h:785
 msgid "Specify CPU for code generation purposes"
 msgstr ""
 
@@ -10277,7 +10241,7 @@ msgid "post-increment address is not a register"
 msgstr ""
 
 #: config/m32r/m32r.c:2565 config/m32r/m32r.c:2581
-#: config/rs6000/rs6000.c:15409
+#: config/rs6000/rs6000.c:15417
 msgid "bad address"
 msgstr ""
 
@@ -10310,11 +10274,11 @@ msgstr ""
 msgid "Small data area: none, sdata, use"
 msgstr ""
 
-#: config/m32r/m32r.h:316 config/mips/mips.h:795
+#: config/m32r/m32r.h:316 config/mips/mips.h:791
 msgid "Don't call any cache flush functions"
 msgstr ""
 
-#: config/m32r/m32r.h:318 config/mips/mips.h:797
+#: config/m32r/m32r.h:318 config/mips/mips.h:793
 msgid "Specify cache flush function"
 msgstr ""
 
@@ -10482,7 +10446,7 @@ msgstr ""
 msgid "-fPIC is not currently supported on the 68000 or 68010\n"
 msgstr ""
 
-#: config/m68k/m68k.c:596 config/rs6000/rs6000.c:11837
+#: config/m68k/m68k.c:596 config/rs6000/rs6000.c:11845
 msgid "stack limit expression is not supported"
 msgstr ""
 
@@ -10843,75 +10807,75 @@ msgstr ""
 #. each pair being { "NAME", VALUE }
 #. where VALUE is the bits to set or minus the bits to clear.
 #. An empty string NAME is used to identify the default VALUE.
-#: config/mips/mips.h:546
+#: config/mips/mips.h:544
 msgid "Use 64-bit int type"
 msgstr ""
 
-#: config/mips/mips.h:548
+#: config/mips/mips.h:546
 msgid "Use 64-bit long type"
 msgstr ""
 
-#: config/mips/mips.h:550
+#: config/mips/mips.h:548
 msgid "Use 32-bit long type"
 msgstr ""
 
-#: config/mips/mips.h:552
+#: config/mips/mips.h:550
 msgid "Optimize lui/addiu address loads"
 msgstr ""
 
-#: config/mips/mips.h:554
+#: config/mips/mips.h:552
 msgid "Don't optimize lui/addiu address loads"
 msgstr ""
 
-#: config/mips/mips.h:556
+#: config/mips/mips.h:554
 msgid "Use MIPS as"
 msgstr ""
 
-#: config/mips/mips.h:558
+#: config/mips/mips.h:556
 msgid "Use GNU as"
 msgstr ""
 
-#: config/mips/mips.h:560
+#: config/mips/mips.h:558
 msgid "Use symbolic register names"
 msgstr ""
 
-#: config/mips/mips.h:562
+#: config/mips/mips.h:560
 msgid "Don't use symbolic register names"
 msgstr ""
 
-#: config/mips/mips.h:564 config/mips/mips.h:566
+#: config/mips/mips.h:562 config/mips/mips.h:564
 msgid "Use GP relative sdata/sbss sections (now ignored)"
 msgstr ""
 
-#: config/mips/mips.h:568 config/mips/mips.h:570
+#: config/mips/mips.h:566 config/mips/mips.h:568
 msgid "Don't use GP relative sdata/sbss sections (now ignored)"
 msgstr ""
 
-#: config/mips/mips.h:572
+#: config/mips/mips.h:570
 msgid "Output compiler statistics (now ignored)"
 msgstr ""
 
-#: config/mips/mips.h:574
+#: config/mips/mips.h:572
 msgid "Don't output compiler statistics"
 msgstr ""
 
-#: config/mips/mips.h:576
+#: config/mips/mips.h:574
 msgid "Don't optimize block moves"
 msgstr ""
 
-#: config/mips/mips.h:578
+#: config/mips/mips.h:576
 msgid "Optimize block moves"
 msgstr ""
 
-#: config/mips/mips.h:580
+#: config/mips/mips.h:578
 msgid "Use mips-tfile asm postpass"
 msgstr ""
 
-#: config/mips/mips.h:582
+#: config/mips/mips.h:580
 msgid "Don't use mips-tfile asm postpass"
 msgstr ""
 
-#: config/mips/mips.h:584 config/pa/pa.h:266
+#: config/mips/mips.h:582 config/pa/pa.h:266
 msgid "Use software floating point"
 msgstr ""
 
@@ -10921,177 +10885,177 @@ msgstr ""
 #. where VALUE is the bits to set or minus the bits to clear and DOC
 #. is the documentation for --help (NULL if intentionally undocumented).
 #. An empty string NAME is used to identify the default VALUE.
-#: config/mips/mips.h:586 config/pdp11/pdp11.h:61 config/rs6000/rs6000.h:321
+#: config/mips/mips.h:584 config/pdp11/pdp11.h:61 config/rs6000/rs6000.h:321
 msgid "Use hardware floating point"
 msgstr ""
 
-#: config/mips/mips.h:588
+#: config/mips/mips.h:586
 msgid "Use 64-bit FP registers"
 msgstr ""
 
-#: config/mips/mips.h:590
+#: config/mips/mips.h:588
 msgid "Use 32-bit FP registers"
 msgstr ""
 
-#: config/mips/mips.h:592
+#: config/mips/mips.h:590
 msgid "Use 64-bit general registers"
 msgstr ""
 
-#: config/mips/mips.h:594
+#: config/mips/mips.h:592
 msgid "Use 32-bit general registers"
 msgstr ""
 
-#: config/mips/mips.h:596
+#: config/mips/mips.h:594
 msgid "Use Irix PIC"
 msgstr ""
 
-#: config/mips/mips.h:598
+#: config/mips/mips.h:596
 msgid "Don't use Irix PIC"
 msgstr ""
 
-#: config/mips/mips.h:600
+#: config/mips/mips.h:598
 msgid "Use indirect calls"
 msgstr ""
 
-#: config/mips/mips.h:602
+#: config/mips/mips.h:600
 msgid "Don't use indirect calls"
 msgstr ""
 
-#: config/mips/mips.h:612
+#: config/mips/mips.h:610
 msgid "Use big-endian byte order"
 msgstr ""
 
-#: config/mips/mips.h:614
+#: config/mips/mips.h:612
 msgid "Use little-endian byte order"
 msgstr ""
 
-#: config/mips/mips.h:616
+#: config/mips/mips.h:614
 msgid "Use single (32-bit) FP only"
 msgstr ""
 
-#: config/mips/mips.h:618
+#: config/mips/mips.h:616
 msgid "Don't use single (32-bit) FP only"
 msgstr ""
 
-#: config/mips/mips.h:620
+#: config/mips/mips.h:618
 msgid "Use multiply accumulate"
 msgstr ""
 
-#: config/mips/mips.h:622
+#: config/mips/mips.h:620
 msgid "Don't use multiply accumulate"
 msgstr ""
 
-#: config/mips/mips.h:624
+#: config/mips/mips.h:622
 msgid "Don't generate fused multiply/add instructions"
 msgstr ""
 
-#: config/mips/mips.h:626 config/rs6000/rs6000.h:337
+#: config/mips/mips.h:624 config/rs6000/rs6000.h:337
 msgid "Generate fused multiply/add instructions"
 msgstr ""
 
-#: config/mips/mips.h:628
+#: config/mips/mips.h:626
 msgid "Perform VR4130-specific alignment optimizations"
 msgstr ""
 
-#: config/mips/mips.h:630
+#: config/mips/mips.h:628
 msgid "Don't perform VR4130-specific alignment optimizations"
 msgstr ""
 
-#: config/mips/mips.h:632
+#: config/mips/mips.h:630
 msgid "Work around early 4300 hardware bug"
 msgstr ""
 
-#: config/mips/mips.h:634
+#: config/mips/mips.h:632
 msgid "Don't work around early 4300 hardware bug"
 msgstr ""
 
-#: config/mips/mips.h:636
+#: config/mips/mips.h:634
 msgid "Work around errata for early SB-1 revision 2 cores"
 msgstr ""
 
-#: config/mips/mips.h:638
+#: config/mips/mips.h:636
 msgid "Don't work around errata for early SB-1 revision 2 cores"
 msgstr ""
 
-#: config/mips/mips.h:640
+#: config/mips/mips.h:638
 msgid "Work around R4000 errata"
 msgstr ""
 
-#: config/mips/mips.h:642
+#: config/mips/mips.h:640
 msgid "Don't work around R4000 errata"
 msgstr ""
 
-#: config/mips/mips.h:644
+#: config/mips/mips.h:642
 msgid "Work around R4400 errata"
 msgstr ""
 
-#: config/mips/mips.h:646
+#: config/mips/mips.h:644
 msgid "Don't work around R4400 errata"
 msgstr ""
 
-#: config/mips/mips.h:648
+#: config/mips/mips.h:646
 msgid "Work around certain VR4120 errata"
 msgstr ""
 
-#: config/mips/mips.h:650
+#: config/mips/mips.h:648
 msgid "Don't work around certain VR4120 errata"
 msgstr ""
 
-#: config/mips/mips.h:652
+#: config/mips/mips.h:650
 msgid "Trap on integer divide by zero"
 msgstr ""
 
-#: config/mips/mips.h:654
+#: config/mips/mips.h:652
 msgid "Don't trap on integer divide by zero"
 msgstr ""
 
-#: config/mips/mips.h:656
+#: config/mips/mips.h:654
 msgid "Use Branch Likely instructions, overriding default for arch"
 msgstr ""
 
-#: config/mips/mips.h:658
+#: config/mips/mips.h:656
 msgid "Don't use Branch Likely instructions, overriding default for arch"
 msgstr ""
 
-#: config/mips/mips.h:660
+#: config/mips/mips.h:658
 msgid "Use NewABI-style %reloc() assembly operators"
 msgstr ""
 
-#: config/mips/mips.h:662
+#: config/mips/mips.h:660
 msgid "Use assembler macros instead of relocation operators"
 msgstr ""
 
-#: config/mips/mips.h:664
+#: config/mips/mips.h:662
 msgid "Generate mips16 code"
 msgstr ""
 
-#: config/mips/mips.h:666
+#: config/mips/mips.h:664
 msgid "Generate normal-mode code"
 msgstr ""
 
-#: config/mips/mips.h:668
+#: config/mips/mips.h:666
 msgid "Lift restrictions on GOT size"
 msgstr ""
 
-#: config/mips/mips.h:670
+#: config/mips/mips.h:668
 msgid "Do not lift restrictions on GOT size"
 msgstr ""
 
-#: config/mips/mips.h:672
+#: config/mips/mips.h:670
 msgid "FP exceptions are enabled"
 msgstr ""
 
-#: config/mips/mips.h:674
+#: config/mips/mips.h:672
 msgid "FP exceptions are not enabled"
 msgstr ""
 
-#: config/mips/mips.h:793
+#: config/mips/mips.h:789
 msgid "Specify a Standard MIPS ISA"
 msgstr ""
 
 #. Output assembler code to FILE to increment profiler label # LABELNO
 #. for profiling a function entry.
-#: config/mips/mips.h:2430
+#: config/mips/mips.h:2426
 msgid "mips16 function profiling"
 msgstr ""
 
@@ -11691,118 +11655,118 @@ msgid ""
 "disabled, use -maltivec to enable them."
 msgstr ""
 
-#: config/rs6000/rs6000.c:5752
+#: config/rs6000/rs6000.c:5760
 msgid "argument 1 must be a 5-bit signed literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5855 config/rs6000/rs6000.c:6490
+#: config/rs6000/rs6000.c:5863 config/rs6000/rs6000.c:6498
 msgid "argument 2 must be a 5-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5895
+#: config/rs6000/rs6000.c:5903
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5949
+#: config/rs6000/rs6000.c:5957
 msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6078
+#: config/rs6000/rs6000.c:6086
 msgid "argument 3 must be a 4-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6250
+#: config/rs6000/rs6000.c:6258
 #, c-format
 msgid "argument to `%s' must be a 2-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6363
+#: config/rs6000/rs6000.c:6371
 msgid "argument to dss must be a 2-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6377
+#: config/rs6000/rs6000.c:6385
 #, c-format
 msgid "invalid parameter combination for `%s' AltiVec intrinsic"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6610
+#: config/rs6000/rs6000.c:6618
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6683
+#: config/rs6000/rs6000.c:6691
 msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9237
+#: config/rs6000/rs6000.c:9245
 #, c-format
 msgid "invalid %%f value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9246
+#: config/rs6000/rs6000.c:9254
 #, c-format
 msgid "invalid %%F value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9255
+#: config/rs6000/rs6000.c:9263
 #, c-format
 msgid "invalid %%G value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9290
+#: config/rs6000/rs6000.c:9298
 #, c-format
 msgid "invalid %%j code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9300
+#: config/rs6000/rs6000.c:9308
 #, c-format
 msgid "invalid %%J code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9310
+#: config/rs6000/rs6000.c:9318
 #, c-format
 msgid "invalid %%k value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9330 config/xtensa/xtensa.c:2008
+#: config/rs6000/rs6000.c:9338 config/xtensa/xtensa.c:2008
 #, c-format
 msgid "invalid %%K value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9397
+#: config/rs6000/rs6000.c:9405
 #, c-format
 msgid "invalid %%O value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9444
+#: config/rs6000/rs6000.c:9452
 #, c-format
 msgid "invalid %%q value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9488
+#: config/rs6000/rs6000.c:9496
 #, c-format
 msgid "invalid %%S value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9530
+#: config/rs6000/rs6000.c:9538
 #, c-format
 msgid "invalid %%T value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9540
+#: config/rs6000/rs6000.c:9548
 #, c-format
 msgid "invalid %%u value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9549 config/xtensa/xtensa.c:1978
+#: config/rs6000/rs6000.c:9557 config/xtensa/xtensa.c:1978
 #, c-format
 msgid "invalid %%v value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14056
+#: config/rs6000/rs6000.c:14064
 msgid "no profiling of 64-bit code for this ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15128
+#: config/rs6000/rs6000.c:15136
 msgid "use of 'long' in AltiVec types is deprecated; use 'int'"
 msgstr ""
 
@@ -12878,12 +12842,12 @@ msgstr ""
 msgid "Use direct CALLn instructions for fast calls"
 msgstr ""
 
-#: ada/misc.c:242
+#: ada/misc.c:248
 #, c-format
 msgid "missing argument to \"-%s\""
 msgstr ""
 
-#: ada/misc.c:283
+#: ada/misc.c:289
 msgid "`-gnat' misspelled as `-gant'"
 msgstr ""
 
@@ -13109,7 +13073,7 @@ msgstr ""
 msgid "passing `%T' chooses `%T' over `%T'"
 msgstr ""
 
-#: cp/call.c:5937 cp/name-lookup.c:4154
+#: cp/call.c:5937 cp/name-lookup.c:4156
 msgid "  in call to `%D'"
 msgstr ""
 
@@ -13463,7 +13427,7 @@ msgstr ""
 #. A name N used in a class S shall refer to the same declaration
 #. in its context and when re-evaluated in the completed scope of
 #. S.
-#: cp/class.c:6435 cp/decl.c:1193 cp/name-lookup.c:502 cp/pt.c:2099
+#: cp/class.c:6435 cp/decl.c:1193 cp/name-lookup.c:508 cp/pt.c:2099
 msgid "declaration of `%#D'"
 msgstr ""
 
@@ -13629,7 +13593,7 @@ msgstr ""
 msgid "declaration of template `%#D'"
 msgstr ""
 
-#: cp/decl.c:1308 cp/name-lookup.c:503
+#: cp/decl.c:1308 cp/name-lookup.c:509
 msgid "conflicts with previous declaration `%#D'"
 msgstr ""
 
@@ -15373,7 +15337,7 @@ msgid ""
 "non-static reference member `%#D', can't use default assignment operator"
 msgstr ""
 
-#: cp/name-lookup.c:685
+#: cp/name-lookup.c:691
 msgid "redeclaration of `wchar_t' as `%T'"
 msgstr ""
 
@@ -15383,228 +15347,228 @@ msgstr ""
 #. [basic.start.main]
 #.
 #. This function shall not be overloaded.
-#: cp/name-lookup.c:717
+#: cp/name-lookup.c:723
 msgid "invalid redeclaration of `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:718
+#: cp/name-lookup.c:724
 msgid "as `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:806
+#: cp/name-lookup.c:812
 msgid "type mismatch with previous external decl of `%#D'"
 msgstr ""
 
-#: cp/name-lookup.c:807
+#: cp/name-lookup.c:813
 msgid "previous external decl of `%#D'"
 msgstr ""
 
-#: cp/name-lookup.c:889
+#: cp/name-lookup.c:895
 msgid "extern declaration of `%#D' doesn't match"
 msgstr ""
 
-#: cp/name-lookup.c:890
+#: cp/name-lookup.c:896
 msgid "global declaration `%#D'"
 msgstr ""
 
-#: cp/name-lookup.c:926 cp/name-lookup.c:933
+#: cp/name-lookup.c:932 cp/name-lookup.c:939
 msgid "declaration of '%#D' shadows a parameter"
 msgstr ""
 
 #. Location of previous decl is not useful in this case.
-#: cp/name-lookup.c:950
+#: cp/name-lookup.c:956
 msgid "declaration of '%D' shadows a member of 'this'"
 msgstr ""
 
-#: cp/name-lookup.c:956
+#: cp/name-lookup.c:962
 msgid "declaration of '%D' shadows a previous local"
 msgstr ""
 
-#: cp/name-lookup.c:963
+#: cp/name-lookup.c:969
 msgid "declaration of '%D' shadows a global declaration"
 msgstr ""
 
-#: cp/name-lookup.c:1132
+#: cp/name-lookup.c:1138
 msgid "name lookup of `%D' changed"
 msgstr ""
 
-#: cp/name-lookup.c:1134
+#: cp/name-lookup.c:1140
 msgid "  matches this `%D' under ISO standard rules"
 msgstr ""
 
-#: cp/name-lookup.c:1136
+#: cp/name-lookup.c:1142
 msgid "  matches this `%D' under old rules"
 msgstr ""
 
-#: cp/name-lookup.c:1150 cp/name-lookup.c:1157
+#: cp/name-lookup.c:1156 cp/name-lookup.c:1163
 msgid "name lookup of `%D' changed for new ISO `for' scoping"
 msgstr ""
 
-#: cp/name-lookup.c:1152
+#: cp/name-lookup.c:1158
 msgid "  cannot use obsolete binding at `%D' because it has a destructor"
 msgstr ""
 
-#: cp/name-lookup.c:1159
+#: cp/name-lookup.c:1165
 msgid "  using obsolete binding at `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:1212
+#: cp/name-lookup.c:1218
 #, c-format
 msgid "%s %s(%E) %p %d\n"
 msgstr ""
 
-#: cp/name-lookup.c:1215
+#: cp/name-lookup.c:1221
 #, c-format
 msgid "%s %s %p %d\n"
 msgstr ""
 
-#: cp/name-lookup.c:1334
+#: cp/name-lookup.c:1340
 msgid "XXX is_class_level != (current_scope == class_scope)\n"
 msgstr ""
 
-#: cp/name-lookup.c:1972
+#: cp/name-lookup.c:1978
 msgid "`%#D' hides constructor for `%#T'"
 msgstr ""
 
-#: cp/name-lookup.c:1987
+#: cp/name-lookup.c:1993
 msgid "`%#D' conflicts with previous using declaration `%#D'"
 msgstr ""
 
-#: cp/name-lookup.c:1999
+#: cp/name-lookup.c:2005
 msgid "previous non-function declaration `%#D'"
 msgstr ""
 
-#: cp/name-lookup.c:2000
+#: cp/name-lookup.c:2006
 msgid "conflicts with function declaration `%#D'"
 msgstr ""
 
 #. 7.3.3/5
 #. A using-declaration shall not name a template-id.
-#: cp/name-lookup.c:2077
+#: cp/name-lookup.c:2083
 msgid "a using-declaration cannot specify a template-id.  Try `using %D'"
 msgstr ""
 
-#: cp/name-lookup.c:2083
+#: cp/name-lookup.c:2089
 msgid "namespace `%D' not allowed in using-declaration"
 msgstr ""
 
 #. It's a nested name with template parameter dependent scope.
 #. This can only be using-declaration for class member.
-#: cp/name-lookup.c:2091 cp/name-lookup.c:2105 cp/name-lookup.c:3369
+#: cp/name-lookup.c:2097 cp/name-lookup.c:2111 cp/name-lookup.c:3375
 msgid "`%T' is not a namespace"
 msgstr ""
 
-#: cp/name-lookup.c:2129
+#: cp/name-lookup.c:2134
 msgid "`%D' not declared"
 msgstr ""
 
 #. If the OLD_FN was really declared, the
 #. declarations don't match.
-#: cp/name-lookup.c:2141 cp/name-lookup.c:2183 cp/name-lookup.c:2220
+#: cp/name-lookup.c:2146 cp/name-lookup.c:2188 cp/name-lookup.c:2225
 msgid "`%D' is already declared in this scope"
 msgstr ""
 
-#: cp/name-lookup.c:2226
+#: cp/name-lookup.c:2231
 msgid "using declaration `%D' introduced ambiguous type `%T'"
 msgstr ""
 
 #. Definition isn't the kind we were looking for.
-#: cp/name-lookup.c:2393 cp/name-lookup.c:2412
+#: cp/name-lookup.c:2399 cp/name-lookup.c:2418
 msgid "`%#D' redeclared as %C"
 msgstr ""
 
-#: cp/name-lookup.c:2785
+#: cp/name-lookup.c:2791
 msgid "`%D' has the same name as the class in which it is declared"
 msgstr ""
 
-#: cp/name-lookup.c:2872
+#: cp/name-lookup.c:2878
 msgid "using-declaration for non-member at class scope"
 msgstr ""
 
-#: cp/name-lookup.c:2879
+#: cp/name-lookup.c:2885
 msgid "using-declaration cannot name destructor"
 msgstr ""
 
-#: cp/name-lookup.c:2984
+#: cp/name-lookup.c:2990
 msgid "declaration of `%D' not in a namespace surrounding `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:3024
+#: cp/name-lookup.c:3030
 msgid "`%D' should have been declared inside `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:3088
+#: cp/name-lookup.c:3094
 msgid "namespace alias `%D' not allowed here, assuming `%D'"
 msgstr ""
 
 #. The parser did not find it, so it's not there.
-#: cp/name-lookup.c:3203
+#: cp/name-lookup.c:3209
 msgid "unknown namespace `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:3363
+#: cp/name-lookup.c:3369
 msgid "namespace `%T' undeclared"
 msgstr ""
 
-#: cp/name-lookup.c:3407
+#: cp/name-lookup.c:3413
 msgid "strong using only meaningful at namespace scope"
 msgstr ""
 
-#: cp/name-lookup.c:3414
+#: cp/name-lookup.c:3420
 msgid "`%D' attribute directive ignored"
 msgstr ""
 
-#: cp/name-lookup.c:3547
+#: cp/name-lookup.c:3554
 msgid "use of `%D' is ambiguous"
 msgstr ""
 
-#: cp/name-lookup.c:3548
+#: cp/name-lookup.c:3555
 msgid "  first declared as `%#D' here"
 msgstr ""
 
-#: cp/name-lookup.c:3551
+#: cp/name-lookup.c:3558
 msgid "  also declared as `%#D' here"
 msgstr ""
 
-#: cp/name-lookup.c:3566
+#: cp/name-lookup.c:3573
 msgid "`%D' denotes an ambiguous type"
 msgstr ""
 
-#: cp/name-lookup.c:3567
+#: cp/name-lookup.c:3574
 msgid "%J  first type here"
 msgstr ""
 
-#: cp/name-lookup.c:3568
+#: cp/name-lookup.c:3575
 msgid "%J  other type here"
 msgstr ""
 
 #. This happens for A::B where B is a template, and there are no
 #. template arguments.
-#: cp/name-lookup.c:3633 cp/typeck.c:1773
+#: cp/name-lookup.c:3639 cp/typeck.c:1773
 msgid "invalid use of `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:3674
+#: cp/name-lookup.c:3679
 msgid "`%D::%D' is not a template"
 msgstr ""
 
-#: cp/name-lookup.c:3691
+#: cp/name-lookup.c:3696
 msgid "`%D' undeclared in namespace `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:4152
+#: cp/name-lookup.c:4154
 msgid "`%D' is not a function,"
 msgstr ""
 
-#: cp/name-lookup.c:4153
+#: cp/name-lookup.c:4155
 msgid "  conflict with `%D'"
 msgstr ""
 
-#: cp/name-lookup.c:4894
+#: cp/name-lookup.c:4896
 msgid "XXX entering pop_everything ()\n"
 msgstr ""
 
-#: cp/name-lookup.c:4903
+#: cp/name-lookup.c:4905
 msgid "XXX leaving pop_everything ()\n"
 msgstr ""
 
@@ -17327,1308 +17291,27 @@ msgstr ""
 msgid "%s is deprecated, please see the documentation for details"
 msgstr ""
 
-#: f/bad.c:388
-msgid "note:"
+#: fortran/f95-lang.c:243
+msgid "Unexpected type in truthvalue_conversion"
 msgstr ""
 
-#: f/bad.c:392
-msgid "warning:"
-msgstr ""
-
-#: f/bad.c:396
-msgid "fatal:"
-msgstr ""
-
-#: f/bad.c:438
-msgid "(continued):"
-msgstr ""
-
-#: f/bad.c:488 f/bad.c:506
-msgid "[REPORT BUG!!] %"
-msgstr ""
-
-#: f/bad.c:495 f/bad.c:527
-msgid "[REPORT BUG!!]"
-msgstr ""
-
-#: f/com.c:3126
-#, no-c-format
-msgid "ASSIGN'ed label cannot fit into `%A' at %0 -- using wider sibling"
-msgstr ""
-
-#: f/com.c:11566
-msgid "no INTEGER type can hold a pointer on this configuration"
-msgstr ""
-
-#: f/com.c:11840
+#: fortran/f95-lang.c:291
 #, c-format
-msgid "configuration: REAL, INTEGER, and LOGICAL are %d bits wide,"
+msgid "can't open input file: %s"
 msgstr ""
 
-#: f/com.c:11842
-#, c-format
-msgid "and pointers are %d bits wide, but g77 doesn't yet work"
-msgstr ""
-
-#: f/com.c:11844
-msgid "properly unless they all are 32 bits wide"
-msgstr ""
-
-#: f/com.c:11845
-msgid "Please keep this in mind before you report bugs."
-msgstr ""
-
-#. I/O will probably crash.
-#: f/com.c:11853
-#, c-format
-msgid "configuration: char * holds %d bits, but ftnlen only %d"
-msgstr ""
-
-#. ASSIGN 10 TO I will crash.
-#: f/com.c:11862
-#, c-format
-msgid ""
-"configuration: char * holds %d bits, but INTEGER only %d --\n"
-" ASSIGN statement might fail"
-msgstr ""
-
-#: f/com.c:13684
-msgid "In statement function"
-msgstr ""
-
-#: f/com.c:13694
-#, c-format
-msgid "Outside of any program unit:\n"
-msgstr ""
-
-#: f/com.c:14741
-msgid "struct type value used where scalar is required"
-msgstr ""
-
-#: f/com.c:14745
-msgid "union type value used where scalar is required"
-msgstr ""
-
-#: f/com.c:14749
-msgid "array type value used where scalar is required"
-msgstr ""
-
-#: f/com.c:15290
-#, no-c-format
-msgid "%A from %B at %0%C"
-msgstr ""
-
-#: f/com.c:15600
-#, no-c-format
-msgid "At %0, INCLUDE file %A exists, but is not readable"
-msgstr ""
-
-#: f/com.c:15635
-#, no-c-format
-msgid "At %0, INCLUDE nesting too deep"
-msgstr ""
-
-#: f/expr.c:8706
-#, no-c-format
-msgid "Two arithmetic operators in a row at %0 and %1 -- use parentheses"
-msgstr ""
-
-#: f/expr.c:8756
-#, no-c-format
-msgid "Operator at %0 has lower precedence than that at %1 -- use parentheses"
-msgstr ""
-
-#: f/expr.c:9639
-#, no-c-format
-msgid ""
-"Use .EQV./.NEQV. instead of .EQ./.NE. at %0 for LOGICAL operands at %1 and %2"
-msgstr ""
-
-#: f/expr.c:10010
-#, no-c-format
-msgid "Unsupported operand for ** at %1 -- converting to default INTEGER"
-msgstr ""
-
-#: f/g77spec.c:231 fortran/gfortranspec.c:230
+#: fortran/gfortranspec.c:231
 #, c-format
 msgid "overflowed output arg list for `%s'"
 msgstr ""
 
-#: f/g77spec.c:353
-#, c-format
-msgid ""
-"GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n"
-"You may redistribute copies of GNU Fortran\n"
-"under the terms of the GNU General Public License.\n"
-"For more information about these matters, see the file named COPYING\n"
-"or type the command `info -f g77 Copying'.\n"
-msgstr ""
-
-#: f/g77spec.c:369
-msgid "--driver no longer supported"
-msgstr ""
-
-#: f/g77spec.c:382 fortran/gfortranspec.c:374
+#: fortran/gfortranspec.c:375
 #, c-format
 msgid "argument to `%s' missing"
 msgstr ""
 
-#: f/g77spec.c:386 fortran/gfortranspec.c:378
+#: fortran/gfortranspec.c:379
 msgid "no input files; unwilling to write output files"
-msgstr ""
-
-#: f/implic.c:203
-#, no-c-format
-msgid "Implicit declaration of `%A' at %0"
-msgstr ""
-
-#: f/lex.c:321
-#, no-c-format
-msgid "Non-ISO-C-standard escape sequence `\\%A' at %0"
-msgstr ""
-
-#: f/lex.c:340
-#, no-c-format
-msgid "Unknown escape sequence `\\%A' at %0"
-msgstr ""
-
-#: f/lex.c:349
-#, no-c-format
-msgid "Unterminated escape sequence `\\' at %0"
-msgstr ""
-
-#: f/lex.c:360
-#, no-c-format
-msgid "Unknown escape sequence `\\' followed by char code 0x%A at %0"
-msgstr ""
-
-#: f/lex.c:388
-#, no-c-format
-msgid "\\x used at %0 with no following hex digits"
-msgstr ""
-
-#: f/lex.c:402
-#, no-c-format
-msgid "Hex escape at %0 out of range"
-msgstr ""
-
-#: f/lex.c:436
-#, no-c-format
-msgid "Escape sequence at %0 out of range for character"
-msgstr ""
-
-#: f/lex.c:590
-msgid "hex escape out of range"
-msgstr ""
-
-#: f/lex.c:643
-#, c-format
-msgid "non-ANSI-standard escape sequence, `\\%c'"
-msgstr ""
-
-#: f/lex.c:656
-#, c-format
-msgid "non-ISO escape sequence `\\%c'"
-msgstr ""
-
-#: f/lex.c:660
-#, c-format
-msgid "unknown escape sequence `\\%c'"
-msgstr ""
-
-#: f/lex.c:662
-#, c-format
-msgid "unknown escape sequence: `\\' followed by char code 0x%x"
-msgstr ""
-
-#: f/lex.c:745
-msgid "badly formed directive -- no closing quote"
-msgstr ""
-
-#: f/lex.c:809
-msgid "#-lines for entering and leaving files don't match"
-msgstr ""
-
-#: f/lex.c:973
-msgid "bad directive -- missing close-quote"
-msgstr ""
-
-#: f/lex.c:1112
-msgid "invalid #ident"
-msgstr ""
-
-#: f/lex.c:1129
-msgid "undefined or invalid # directive"
-msgstr ""
-
-#: f/lex.c:1184
-msgid "invalid #line"
-msgstr ""
-
-#: f/lex.c:1240 f/lex.c:1284
-msgid "use `#line ...' instead of `# ...' in first line"
-msgstr ""
-
-#: f/lex.c:1294
-msgid "invalid #-line"
-msgstr ""
-
-#: f/lex.c:1387
-#, no-c-format
-msgid "Null character at %0 -- line ignored"
-msgstr ""
-
-#: f/stb.c:9177
-#, no-c-format
-msgid "INCLUDE at %0 not the only statement on the source line"
-msgstr ""
-
-#: f/ste.c:1397 f/ste.c:1744
-msgid "ASSIGNed FORMAT specifier is too small"
-msgstr ""
-
-#. ~~~Someday handle CHARACTER*1, CHARACTER*N
-#: f/ste.c:2621
-#, no-c-format
-msgid "SELECT CASE on CHARACTER type (at %0) not supported -- sorry"
-msgstr ""
-
-#: f/ste.c:2725
-msgid "SELECT (at %0) has duplicate cases -- check integer overflow of CASE(s)"
-msgstr ""
-
-#: f/ste.c:2957
-msgid "ASSIGN to variable that is too small"
-msgstr ""
-
-#: f/ste.c:2989
-msgid "ASSIGNed GOTO target variable is too small"
-msgstr ""
-
-#: f/stu.c:305
-#, no-c-format
-msgid "Local adjustable symbol `%A' at %0"
-msgstr ""
-
-#: f/target.c:2545
-msgid "data initializer on host with different endianness"
-msgstr ""
-
-#: f/top.c:244
-msgid "-fvxt-not-f90 no longer supported -- try -fvxt"
-msgstr ""
-
-#: f/top.c:248
-msgid "-ff90-not-vxt no longer supported -- try -fno-vxt -ff90"
-msgstr ""
-
-#: f/top.c:318
-msgid "-fdebug-kludge is disabled, use normal debugging flags"
-msgstr ""
-
-#: f/bad.def:39
-#, no-c-format
-msgid "Missing first operand for binary operator at %0"
-msgstr ""
-
-#: f/bad.def:42
-#, no-c-format
-msgid "Zero-length character constant at %0"
-msgstr ""
-
-#: f/bad.def:45
-#, no-c-format
-msgid "Invalid token at %0 in expression or subexpression at %1"
-msgstr ""
-
-#: f/bad.def:48
-#, no-c-format
-msgid "Missing operand for operator at %1 at end of expression at %0"
-msgstr ""
-
-#: f/bad.def:51
-#, no-c-format
-msgid "Label %A already defined at %1 when redefined at %0"
-msgstr ""
-
-#: f/bad.def:54
-#, no-c-format
-msgid "Unrecognized character at %0 [info -f g77 M LEX]"
-msgstr ""
-
-#: f/bad.def:57
-#, no-c-format
-msgid "Label definition %A at %0 on empty statement (as of %1)"
-msgstr ""
-
-#: f/bad.def:65
-#, no-c-format
-msgid "Invalid first character at %0 [info -f g77 M LEX]"
-msgstr ""
-
-#: f/bad.def:68
-#, no-c-format
-msgid "Line too long as of %0 [info -f g77 M LEX]"
-msgstr ""
-
-#: f/bad.def:71
-#, no-c-format
-msgid "Non-numeric character at %0 in label field [info -f g77 M LEX]"
-msgstr ""
-
-#: f/bad.def:74
-#, no-c-format
-msgid "Label number at %0 not in range 1-99999"
-msgstr ""
-
-#: f/bad.def:77
-#, no-c-format
-msgid "At %0, '!' and '/*' are not valid comment delimiters"
-msgstr ""
-
-#: f/bad.def:80
-#, no-c-format
-msgid ""
-"Continuation indicator at %0 must appear in column 6 [info -f g77 M LEX]"
-msgstr ""
-
-#: f/bad.def:83
-#, no-c-format
-msgid ""
-"Label at %0 invalid with continuation line indicator at %1 [info -f g77 M "
-"LEX]"
-msgstr ""
-
-#: f/bad.def:91
-#, no-c-format
-msgid "Character constant at %0 has no closing apostrophe at %1"
-msgstr ""
-
-#: f/bad.def:94
-#, no-c-format
-msgid ""
-"Hollerith constant at %0 specified %A more characters than are present as of "
-"%1"
-msgstr ""
-
-#: f/bad.def:97
-#, no-c-format
-msgid "Missing close parenthese at %0 needed to match open parenthese at %1"
-msgstr ""
-
-#: f/bad.def:100
-#, no-c-format
-msgid "Integer at %0 too large"
-msgstr ""
-
-#: f/bad.def:123
-#, no-c-format
-msgid ""
-"Period at %0 not followed by digits for floating-point number or by `NOT.', "
-"`TRUE.', or `FALSE.'"
-msgstr ""
-
-#: f/bad.def:126
-#, no-c-format
-msgid "Missing close-period between `.%A' at %0 and %1"
-msgstr ""
-
-#: f/bad.def:129
-#, no-c-format
-msgid ""
-"Invalid exponent at %0 for real constant at %1; nondigit `%A' in exponent "
-"field"
-msgstr ""
-
-#: f/bad.def:132
-#, no-c-format
-msgid "Missing value at %1 for real-number exponent at %0"
-msgstr ""
-
-#: f/bad.def:135
-#, no-c-format
-msgid "Expected binary operator between expressions at %0 and at %1"
-msgstr ""
-
-#: f/bad.def:253
-#, no-c-format
-msgid "Semicolon at %0 is an invalid token"
-msgstr ""
-
-#: f/bad.def:271
-#, no-c-format
-msgid "Extraneous comma in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:274
-#, no-c-format
-msgid "Missing comma in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:277
-#, no-c-format
-msgid "Spurious sign in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:280
-#, no-c-format
-msgid "Spurious number in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:283
-#, no-c-format
-msgid "Spurious text trailing number in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:291
-#, no-c-format
-msgid "Unrecognized FORMAT specifier at %0"
-msgstr ""
-
-#: f/bad.def:419
-#, no-c-format
-msgid "Missing close-parenthese(s) in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:422
-#, no-c-format
-msgid "Missing number following period in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:425
-#, no-c-format
-msgid "Missing number following `E' in FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:433
-#, no-c-format
-msgid "Spurious trailing comma preceding terminator at %0"
-msgstr ""
-
-#: f/bad.def:436
-#, no-c-format
-msgid ""
-"At %0, specify OPERATOR instead of ASSIGNMENT for INTERFACE statement not "
-"specifying the assignment operator (=)"
-msgstr ""
-
-#: f/bad.def:439
-#, no-c-format
-msgid ""
-"At %0, specify ASSIGNMENT instead of OPERATOR for INTERFACE statement "
-"specifying the assignment operator (=)"
-msgstr ""
-
-#: f/bad.def:452
-#, no-c-format
-msgid ""
-"Cannot specify =initialization-expr at %0 unless `::' appears before list of "
-"objects"
-msgstr ""
-
-#: f/bad.def:455
-#, no-c-format
-msgid "Reference to label at %1 inconsistent with its definition at %0"
-msgstr ""
-
-#: f/bad.def:458
-#, no-c-format
-msgid "Reference to label at %1 inconsistent with earlier reference at %0"
-msgstr ""
-
-#: f/bad.def:461
-#, no-c-format
-msgid "DO-statement reference to label at %1 follows its definition at %0"
-msgstr ""
-
-#: f/bad.def:464
-#, no-c-format
-msgid "Reference to label at %1 is outside block containing definition at %0"
-msgstr ""
-
-#: f/bad.def:467
-#, no-c-format
-msgid ""
-"DO-statement references to label at %0 and %2 separated by unterminated "
-"block starting at %1"
-msgstr ""
-
-#: f/bad.def:470
-#, no-c-format
-msgid ""
-"DO-statement reference to label at %0 and label definition at %2 separated "
-"by unterminated block starting at %1"
-msgstr ""
-
-#: f/bad.def:473
-#, no-c-format
-msgid "Label definition at %0 invalid on this kind of statement"
-msgstr ""
-
-#: f/bad.def:476
-#, no-c-format
-msgid "Statement at %0 invalid in this context"
-msgstr ""
-
-#: f/bad.def:479
-#, no-c-format
-msgid "Statement at %0 invalid in context established by statement at %1"
-msgstr ""
-
-#: f/bad.def:482
-#, no-c-format
-msgid "Statement at %0 must specify construct name specified at %1"
-msgstr ""
-
-#: f/bad.def:485
-#, no-c-format
-msgid "Construct name at %0 superfluous, no construct name specified at %1"
-msgstr ""
-
-#: f/bad.def:488
-#, no-c-format
-msgid "Construct name at %0 not the same as construct name at %1"
-msgstr ""
-
-#: f/bad.def:491
-#, no-c-format
-msgid ""
-"Construct name at %0 does not match construct name for any containing DO "
-"constructs"
-msgstr ""
-
-#: f/bad.def:494
-#, no-c-format
-msgid "Label definition missing at %0 for DO construct specifying label at %1"
-msgstr ""
-
-#: f/bad.def:497
-#, no-c-format
-msgid "Statement at %0 follows ELSE block for IF construct at %1"
-msgstr ""
-
-#: f/bad.def:500
-#, no-c-format
-msgid "No label definition for FORMAT statement at %0"
-msgstr ""
-
-#: f/bad.def:503
-#, no-c-format
-msgid "Second occurrence of ELSE WHERE at %0 within WHERE at %1"
-msgstr ""
-
-#: f/bad.def:506
-#, no-c-format
-msgid ""
-"END statement at %0 missing `%A' keyword required for internal or module "
-"procedure(s) bounded by %1"
-msgstr ""
-
-#: f/bad.def:509
-#, no-c-format
-msgid ""
-"MODULE PROCEDURE statement at %0 disallowed because INTERFACE at %1 "
-"specifies no generic name, operator, or assignment"
-msgstr ""
-
-#: f/bad.def:512
-#, no-c-format
-msgid "BLOCK DATA name at %0 superfluous, no name specified at %1"
-msgstr ""
-
-#: f/bad.def:515
-#, no-c-format
-msgid "Program name at %0 superfluous, no PROGRAM statement specified at %1"
-msgstr ""
-
-#: f/bad.def:518
-#, no-c-format
-msgid "Program unit name at %0 not the same as name at %1"
-msgstr ""
-
-#: f/bad.def:521
-#, no-c-format
-msgid "Type name at %0 not the same as name at %1"
-msgstr ""
-
-#: f/bad.def:524
-#, no-c-format
-msgid "End of source file before end of block started at %0"
-msgstr ""
-
-#: f/bad.def:527
-#, no-c-format
-msgid "Undefined label, first referenced at %0"
-msgstr ""
-
-#: f/bad.def:530
-#, no-c-format
-msgid ""
-"SAVE statement or attribute at %1 cannot be specified along with SAVE "
-"statement or attribute at %0"
-msgstr ""
-
-#: f/bad.def:533
-#, no-c-format
-msgid ""
-"PUBLIC or PRIVATE statement at %1 cannot be specified along with PUBLIC or "
-"PRIVATE statement at %0"
-msgstr ""
-
-#: f/bad.def:536
-#, no-c-format
-msgid "RETURN statement at %0 invalid within a main program unit"
-msgstr ""
-
-#: f/bad.def:539
-#, no-c-format
-msgid "Alternate return specifier at %0 invalid within a main program unit"
-msgstr ""
-
-#: f/bad.def:542
-#, no-c-format
-msgid "Alternate return specifier at %0 invalid within a function"
-msgstr ""
-
-#: f/bad.def:545
-#, no-c-format
-msgid ""
-"Access specifier or PRIVATE statement at %0 invalid for derived-type "
-"definition within other than the specification part of a module"
-msgstr ""
-
-#: f/bad.def:548
-#, no-c-format
-msgid ""
-"Access specifier at %0 must immediately follow derived-type statement at %1 "
-"with no intervening statements"
-msgstr ""
-
-#: f/bad.def:551
-#, no-c-format
-msgid ""
-"No components specified as of %0 for derived-type definition beginning at %1"
-msgstr ""
-
-#: f/bad.def:554
-#, no-c-format
-msgid ""
-"No components specified as of %0 for structure definition beginning at %1"
-msgstr ""
-
-#: f/bad.def:557
-#, no-c-format
-msgid "Missing structure name for outer structure definition at %0"
-msgstr ""
-
-#: f/bad.def:560
-#, no-c-format
-msgid ""
-"Field names at %0 for outer structure definition -- specify them in a "
-"subsequent RECORD statement instead"
-msgstr ""
-
-#: f/bad.def:563
-#, no-c-format
-msgid ""
-"Missing field name(s) for structure definition at %0 within structure "
-"definition at %1"
-msgstr ""
-
-#: f/bad.def:566
-#, no-c-format
-msgid "No components specified as of %0 for map beginning at %1"
-msgstr ""
-
-#: f/bad.def:569
-#, no-c-format
-msgid ""
-"Zero or one maps specified as of %0 for union beginning at %1 -- at least "
-"two are required"
-msgstr ""
-
-#: f/bad.def:572
-#, no-c-format
-msgid "Missing %A specifier in statement at %0"
-msgstr ""
-
-#: f/bad.def:575
-#, no-c-format
-msgid "Items in I/O list starting at %0 invalid for namelist-directed I/O"
-msgstr ""
-
-#: f/bad.def:578
-#, no-c-format
-msgid "Conflicting I/O control specifications at %0 and %1"
-msgstr ""
-
-#: f/bad.def:581
-#, no-c-format
-msgid "No UNIT= specifier in I/O control list at %0"
-msgstr ""
-
-#: f/bad.def:584
-#, no-c-format
-msgid ""
-"Specification at %0 requires ADVANCE=`NO' specification in same I/O control "
-"list"
-msgstr ""
-
-#: f/bad.def:587
-#, no-c-format
-msgid ""
-"Specification at %0 requires explicit FMT= specification in same I/O control "
-"list"
-msgstr ""
-
-#: f/bad.def:595
-#, no-c-format
-msgid "Second occurrence of CASE DEFAULT at %0 within SELECT CASE at %1"
-msgstr ""
-
-#: f/bad.def:598
-#, no-c-format
-msgid "Duplicate or overlapping case values/ranges at %0 and %1"
-msgstr ""
-
-#: f/bad.def:601
-#, no-c-format
-msgid ""
-"Type and/or kind-type parameter disagreement between CASE value or value "
-"within range at %0 and SELECT CASE at %1"
-msgstr ""
-
-#: f/bad.def:604
-#, no-c-format
-msgid ""
-"Range specification at %0 invalid for CASE statement within logical-type "
-"SELECT CASE statement"
-msgstr ""
-
-#: f/bad.def:617
-#, no-c-format
-msgid "Fortran 90 feature at %0 unsupported"
-msgstr ""
-
-#: f/bad.def:630
-#, no-c-format
-msgid ""
-"Invalid declaration of or reference to symbol `%A' at %0 [initially seen at %"
-"1]"
-msgstr ""
-
-#: f/bad.def:638
-#, no-c-format
-msgid "Null element at %0 for array reference at %1"
-msgstr ""
-
-#: f/bad.def:641
-#, no-c-format
-msgid "Too few elements (%A missing) as of %0 for array reference at %1"
-msgstr ""
-
-#: f/bad.def:644
-#, no-c-format
-msgid "Too many elements as of %0 for array reference at %1"
-msgstr ""
-
-#: f/bad.def:647
-#, no-c-format
-msgid "Missing colon as of %0 in substring reference for %1"
-msgstr ""
-
-#: f/bad.def:650
-#, no-c-format
-msgid "Invalid use at %0 of substring operator on %1"
-msgstr ""
-
-#: f/bad.def:653
-#, no-c-format
-msgid "Substring begin/end point at %0 out of defined range"
-msgstr ""
-
-#: f/bad.def:656
-#, no-c-format
-msgid "Array element value at %0 out of defined range"
-msgstr ""
-
-#: f/bad.def:659
-#, no-c-format
-msgid "Expression at %0 has incorrect data type or rank for its context"
-msgstr ""
-
-#: f/bad.def:662
-#, no-c-format
-msgid "Division by 0 (zero) at %0 (IEEE not yet supported)"
-msgstr ""
-
-#: f/bad.def:665
-#, no-c-format
-msgid "%A step count known to be 0 (zero) at %0"
-msgstr ""
-
-#: f/bad.def:668
-#, no-c-format
-msgid "%A end value plus step count known to overflow at %0"
-msgstr ""
-
-#: f/bad.def:671
-#, no-c-format
-msgid ""
-"%A begin, end, and step-count values known to result in implementation-"
-"dependent behavior due to overflow(s) in intermediate calculations at %0"
-msgstr ""
-
-#: f/bad.def:674
-#, no-c-format
-msgid ""
-"%A begin, end, and step-count values known to result in no iterations at %0"
-msgstr ""
-
-#: f/bad.def:677
-#, no-c-format
-msgid "Type disagreement between expressions at %0 and %1"
-msgstr ""
-
-#: f/bad.def:690
-#, no-c-format
-msgid "No specification for implied-DO iterator `%A' at %0"
-msgstr ""
-
-#: f/bad.def:693
-#, no-c-format
-msgid "Gratuitous parentheses surround implied-DO construct at %0"
-msgstr ""
-
-#: f/bad.def:696
-#, no-c-format
-msgid "Zero-size specification invalid at %0"
-msgstr ""
-
-#: f/bad.def:699
-#, no-c-format
-msgid "Zero-size array at %0"
-msgstr ""
-
-#: f/bad.def:702
-#, no-c-format
-msgid "Target machine does not support complex entity of kind specified at %0"
-msgstr ""
-
-#: f/bad.def:705
-#, no-c-format
-msgid "Target machine does not support DOUBLE COMPLEX, specified at %0"
-msgstr ""
-
-#: f/bad.def:708
-#, no-c-format
-msgid "Attempt to raise constant zero to a power at %0"
-msgstr ""
-
-#: f/bad.def:806
-#, no-c-format
-msgid "Reference to generic intrinsic `%A' at %0 could be to form %B or %C"
-msgstr ""
-
-#: f/bad.def:809
-#, no-c-format
-msgid "Ambiguous use of intrinsic `%A' at %0 [info -f g77 M CMPAMBIG]"
-msgstr ""
-
-#: f/bad.def:812
-#, no-c-format
-msgid "Intrinsic `%A' referenced %Bly at %0, %Cly at %1 [info -f g77 M EXPIMP]"
-msgstr ""
-
-#: f/bad.def:815
-#, no-c-format
-msgid "Same name `%A' used for %B at %0 and %C at %1 [info -f g77 M INTGLOB]"
-msgstr ""
-
-#: f/bad.def:818
-#, no-c-format
-msgid ""
-"Explicit type declaration for intrinsic `%A' disagrees with invocation at %0"
-msgstr ""
-
-#: f/bad.def:821
-#, no-c-format
-msgid "Unable to open INCLUDE file `%A' at %0"
-msgstr ""
-
-#: f/bad.def:839
-#, no-c-format
-msgid "Null argument at %0 for statement function reference at %1"
-msgstr ""
-
-#: f/bad.def:842
-#, no-c-format
-msgid "Null argument at %0 for procedure invocation at %1"
-msgstr ""
-
-#: f/bad.def:845
-#, no-c-format
-msgid ""
-"%A too few arguments (starting with dummy argument `%B') as of %0 for "
-"statement function reference at %1"
-msgstr ""
-
-#: f/bad.def:848
-#, no-c-format
-msgid "%A too many arguments as of %0 for statement function reference at %1"
-msgstr ""
-
-#: f/bad.def:851
-#, no-c-format
-msgid ""
-"Array supplied at %1 for dummy argument `%A' in statement function reference "
-"at %0"
-msgstr ""
-
-#: f/bad.def:854
-#, no-c-format
-msgid "Unsupported FORMAT specifier at %0"
-msgstr ""
-
-#: f/bad.def:857
-#, no-c-format
-msgid "Variable-expression FORMAT specifier at %0 -- unsupported"
-msgstr ""
-
-#: f/bad.def:880
-#, no-c-format
-msgid "Unsupported VXT statement at %0"
-msgstr ""
-
-#: f/bad.def:883
-#, no-c-format
-msgid "Attempt to specify second initial value for `%A' at %0"
-msgstr ""
-
-#: f/bad.def:886
-#, no-c-format
-msgid "Too few initial values in list of initializers for `%A' at %0"
-msgstr ""
-
-#: f/bad.def:889
-#, no-c-format
-msgid "Too many initial values in list of initializers starting at %0"
-msgstr ""
-
-#: f/bad.def:892
-#, no-c-format
-msgid ""
-"Array or substring specification for `%A' out of range in statement at %0"
-msgstr ""
-
-#: f/bad.def:895
-#, no-c-format
-msgid ""
-"Array subscript #%B out of range for initialization of `%A' in statement at %"
-"0"
-msgstr ""
-
-#: f/bad.def:898
-#, no-c-format
-msgid ""
-"Implied do-loop step count of 0 (zero) for iteration variable `%A' in "
-"statement at %0"
-msgstr ""
-
-#: f/bad.def:901
-#, no-c-format
-msgid ""
-"Implied do-loop iteration count of 0 (zero) for iteration variable `%A' in "
-"statement at %0"
-msgstr ""
-
-#: f/bad.def:904
-#, no-c-format
-msgid ""
-"Not an integer constant expression in implied do-loop in statement at %0"
-msgstr ""
-
-#: f/bad.def:907
-#, no-c-format
-msgid "Attempt to specify second initial value for element of `%A' at %0"
-msgstr ""
-
-#: f/bad.def:910
-#, no-c-format
-msgid "Attempt to EQUIVALENCE common areas `%A' and `%B' at %0"
-msgstr ""
-
-#: f/bad.def:913
-#, no-c-format
-msgid ""
-"Can't place `%A' as directed by EQUIVALENCE due to alignment restrictions"
-msgstr ""
-
-#: f/bad.def:916
-#, no-c-format
-msgid ""
-"Mismatched EQUIVALENCE requirements for placement of `%A' at both %C and %D "
-"bytes offset from `%B'"
-msgstr ""
-
-#: f/bad.def:919
-#, no-c-format
-msgid ""
-"Array or substring specification for `%A' out of range in EQUIVALENCE "
-"statement"
-msgstr ""
-
-#: f/bad.def:922
-#, no-c-format
-msgid "Substring of non-CHARACTER entity `%A' in EQUIVALENCE statement"
-msgstr ""
-
-#: f/bad.def:925
-#, no-c-format
-msgid "Array reference to scalar variable `%A' in EQUIVALENCE statement"
-msgstr ""
-
-#: f/bad.def:928
-#, no-c-format
-msgid "Array subscript #%B out of range for EQUIVALENCE of `%A'"
-msgstr ""
-
-#: f/bad.def:936
-#, no-c-format
-msgid ""
-"Attempt to extend COMMON area beyond its starting point via EQUIVALENCE of `%"
-"A'"
-msgstr ""
-
-#: f/bad.def:939
-#, no-c-format
-msgid "Too few elements in reference to array `%A' in EQUIVALENCE statement"
-msgstr ""
-
-#: f/bad.def:942
-#, no-c-format
-msgid "Too many elements in reference to array `%A' in EQUIVALENCE statement"
-msgstr ""
-
-#: f/bad.def:945
-#, no-c-format
-msgid ""
-"Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for "
-"example, `%A' and `%B'"
-msgstr ""
-
-#: f/bad.def:958
-#, no-c-format
-msgid "Return value `%A' for FUNCTION at %0 not referenced in subprogram"
-msgstr ""
-
-#: f/bad.def:976
-#, no-c-format
-msgid ""
-"Common block `%A' is SAVEd, explicitly or implicitly, at %0 but not SAVEd at "
-"%1"
-msgstr ""
-
-#: f/bad.def:979
-#, no-c-format
-msgid "Common block `%A' is %B %D in length at %0 but %C %E at %1"
-msgstr ""
-
-#: f/bad.def:987
-#, no-c-format
-msgid "Blank common initialized at %0"
-msgstr ""
-
-#: f/bad.def:990
-#, no-c-format
-msgid ""
-"Intrinsic `%A' is passed as actual argument at %0 but not explicitly "
-"declared INTRINSIC"
-msgstr ""
-
-#: f/bad.def:993
-#, no-c-format
-msgid ""
-"External procedure `%A' is passed as actual argument at %0 but not "
-"explicitly declared EXTERNAL"
-msgstr ""
-
-#: f/bad.def:996
-#, no-c-format
-msgid "Character `%A' (for example) is upper-case in symbol name at %0"
-msgstr ""
-
-#: f/bad.def:999
-#, no-c-format
-msgid "Character `%A' (for example) is lower-case in symbol name at %0"
-msgstr ""
-
-#: f/bad.def:1002
-#, no-c-format
-msgid ""
-"Character `%A' not followed at some point by lower-case character in symbol "
-"name at %0"
-msgstr ""
-
-#: f/bad.def:1005
-#, no-c-format
-msgid "Initial character `%A' is lower-case in symbol name at %0"
-msgstr ""
-
-#: f/bad.def:1013
-#, no-c-format
-msgid ""
-"NAMELIST not adequately supported by run-time library for source files with "
-"case preserved"
-msgstr ""
-
-#: f/bad.def:1016
-#, no-c-format
-msgid "Nested %% construct (%%VAL, %%REF, or %%DESCR) at %0"
-msgstr ""
-
-#: f/bad.def:1034
-#, no-c-format
-msgid "Statement at %0 invalid in BLOCK DATA program unit at %1"
-msgstr ""
-
-#: f/bad.def:1037
-#, no-c-format
-msgid "Truncating characters on right side of character constant at %0"
-msgstr ""
-
-#: f/bad.def:1040
-#, no-c-format
-msgid "Truncating characters on right side of hollerith constant at %0"
-msgstr ""
-
-#: f/bad.def:1043
-#, no-c-format
-msgid "Truncating non-zero data on left side of numeric constant at %0"
-msgstr ""
-
-#: f/bad.def:1046
-#, no-c-format
-msgid "Truncating non-zero data on left side of typeless constant at %0"
-msgstr ""
-
-#: f/bad.def:1049
-#, no-c-format
-msgid "Typeless constant at %0 too large"
-msgstr ""
-
-#: f/bad.def:1052
-#, no-c-format
-msgid "First-column ampersand continuation at %0"
-msgstr ""
-
-#: f/bad.def:1055 f/bad.def:1058
-#, no-c-format
-msgid ""
-"Global name `%A' defined at %0 already defined at %1 [info -f g77 M GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1061 f/bad.def:1064
-#, no-c-format
-msgid "Global name `%A' is %B at %0 but is %C at %1 [info -f g77 M GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1067 f/bad.def:1070
-#, no-c-format
-msgid "Global name `%A' at %0 has different type at %1 [info -f g77 M GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1073
-#, no-c-format
-msgid ""
-"Too %B arguments passed to `%A' at %0 versus definition at %1 [info -f g77 M "
-"GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1076
-#, no-c-format
-msgid ""
-"Too %B arguments for `%A' at %0 versus invocation at %1 [info -f g77 M "
-"GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1079 f/bad.def:1082
-#, no-c-format
-msgid ""
-"Argument #%B of `%A' is %C at %0 but is %D at %1 [info -f g77 M GLOBALS]"
-msgstr ""
-
-#: f/bad.def:1085
-#, no-c-format
-msgid "Array `%A' at %0 is too large to handle"
-msgstr ""
-
-#: f/bad.def:1088
-#, no-c-format
-msgid "Statement function `%A' defined at %0 is not used"
-msgstr ""
-
-#: f/bad.def:1091
-#, no-c-format
-msgid ""
-"Intrinsic `%A', invoked at %0, known to be non-Y2K-compliant [info -f g77 M "
-"Y2KBAD]"
-msgstr ""
-
-#: f/bad.def:1094
-#, no-c-format
-msgid "Internal compiler error -- cannot perform operation"
-msgstr ""
-
-#. Kind messages are used in diagnostic location reports of the
-#. form "<file>: In function `foo': <error message>".
-#: f/info-k.def:32
-msgid "In unknown kind"
-msgstr ""
-
-#: f/info-k.def:33
-msgid "In entity"
-msgstr ""
-
-#: f/info-k.def:34
-msgid "In function"
-msgstr ""
-
-#: f/info-k.def:35
-msgid "In subroutine"
-msgstr ""
-
-#: f/info-k.def:36
-msgid "In program"
-msgstr ""
-
-#: f/info-k.def:37
-msgid "In block-data unit"
-msgstr ""
-
-#: f/info-k.def:38
-msgid "In common block"
-msgstr ""
-
-#: f/info-k.def:39
-msgid "In construct"
-msgstr ""
-
-#: f/info-k.def:40
-msgid "In namelist"
-msgstr ""
-
-#: f/info-k.def:41
-msgid "In anything"
-msgstr ""
-
-#: fortran/f95-lang.c:242
-msgid "Unexpected type in truthvalue_conversion"
-msgstr ""
-
-#: fortran/f95-lang.c:290
-#, c-format
-msgid "can't open input file: %s"
 msgstr ""
 
 #: fortran/trans-array.c:2668
@@ -18679,12 +17362,12 @@ msgstr ""
 msgid "unused parameter `%s'"
 msgstr ""
 
-#: fortran/trans-decl.c:1859
+#: fortran/trans-decl.c:1861
 #, c-format
 msgid "unused variable `%s'"
 msgstr ""
 
-#: fortran/trans-decl.c:2005
+#: fortran/trans-decl.c:2007
 msgid "Function return value not set"
 msgstr ""
 
@@ -18740,7 +17423,7 @@ msgstr ""
 msgid "Array element size too big"
 msgstr ""
 
-#: fortran/trans.c:589
+#: fortran/trans.c:590
 msgid "gfc_trans_code(): Bad statement code"
 msgstr ""
 
@@ -18756,7 +17439,7 @@ msgid "internal error in check-init: tree code not implemented: %s"
 msgstr ""
 
 #: java/check-init.c:977
-msgid "%Jfinal field '%D' may not have been initialized"
+msgid "%Jfinal field `%D' may not have been initialized"
 msgstr ""
 
 #: java/class.c:636 java/class.c:660
@@ -19466,262 +18149,262 @@ msgstr ""
 msgid "internal error - invalid Utf8 name"
 msgstr ""
 
-#: java/parse-scan.y:880 java/parse.y:951
-#: java/parse.y:1292 java/parse.y:1353
-#: java/parse.y:1557 java/parse.y:1779
-#: java/parse.y:1788 java/parse.y:1799
-#: java/parse.y:1810 java/parse.y:1822
-#: java/parse.y:1837 java/parse.y:1854
-#: java/parse.y:1856 java/parse.y:1937
-#: java/parse.y:2108 java/parse.y:2170
-#: java/parse.y:2322 java/parse.y:2334
-#: java/parse.y:2341 java/parse.y:2348
-#: java/parse.y:2359 java/parse.y:2361
-#: java/parse.y:2399 java/parse.y:2401
-#: java/parse.y:2403 java/parse.y:2424
-#: java/parse.y:2426 java/parse.y:2428
-#: java/parse.y:2444 java/parse.y:2446
-#: java/parse.y:2467 java/parse.y:2469
-#: java/parse.y:2471 java/parse.y:2499
-#: java/parse.y:2501 java/parse.y:2503
-#: java/parse.y:2505 java/parse.y:2523
-#: java/parse.y:2525 java/parse.y:2536
-#: java/parse.y:2547 java/parse.y:2558
-#: java/parse.y:2569 java/parse.y:2580
-#: java/parse.y:2593 java/parse.y:2597
-#: java/parse.y:2599 java/parse.y:2612
+#: ../../gcc/java/parse-scan.y:880 ../../gcc/java/parse.y:951
+#: ../../gcc/java/parse.y:1292 ../../gcc/java/parse.y:1353
+#: ../../gcc/java/parse.y:1557 ../../gcc/java/parse.y:1779
+#: ../../gcc/java/parse.y:1788 ../../gcc/java/parse.y:1799
+#: ../../gcc/java/parse.y:1810 ../../gcc/java/parse.y:1822
+#: ../../gcc/java/parse.y:1837 ../../gcc/java/parse.y:1854
+#: ../../gcc/java/parse.y:1856 ../../gcc/java/parse.y:1937
+#: ../../gcc/java/parse.y:2108 ../../gcc/java/parse.y:2170
+#: ../../gcc/java/parse.y:2322 ../../gcc/java/parse.y:2334
+#: ../../gcc/java/parse.y:2341 ../../gcc/java/parse.y:2348
+#: ../../gcc/java/parse.y:2359 ../../gcc/java/parse.y:2361
+#: ../../gcc/java/parse.y:2399 ../../gcc/java/parse.y:2401
+#: ../../gcc/java/parse.y:2403 ../../gcc/java/parse.y:2424
+#: ../../gcc/java/parse.y:2426 ../../gcc/java/parse.y:2428
+#: ../../gcc/java/parse.y:2444 ../../gcc/java/parse.y:2446
+#: ../../gcc/java/parse.y:2467 ../../gcc/java/parse.y:2469
+#: ../../gcc/java/parse.y:2471 ../../gcc/java/parse.y:2499
+#: ../../gcc/java/parse.y:2501 ../../gcc/java/parse.y:2503
+#: ../../gcc/java/parse.y:2505 ../../gcc/java/parse.y:2523
+#: ../../gcc/java/parse.y:2525 ../../gcc/java/parse.y:2536
+#: ../../gcc/java/parse.y:2547 ../../gcc/java/parse.y:2558
+#: ../../gcc/java/parse.y:2569 ../../gcc/java/parse.y:2580
+#: ../../gcc/java/parse.y:2593 ../../gcc/java/parse.y:2597
+#: ../../gcc/java/parse.y:2599 ../../gcc/java/parse.y:2612
 msgid "Missing term"
 msgstr ""
 
-#: java/parse-scan.y:882 java/parse.y:723
-#: java/parse.y:761 java/parse.y:786
-#: java/parse.y:972 java/parse.y:1327
-#: java/parse.y:1533 java/parse.y:1535
-#: java/parse.y:1764 java/parse.y:1790
-#: java/parse.y:1801 java/parse.y:1812
-#: java/parse.y:1824 java/parse.y:1839
+#: ../../gcc/java/parse-scan.y:882 ../../gcc/java/parse.y:723
+#: ../../gcc/java/parse.y:761 ../../gcc/java/parse.y:786
+#: ../../gcc/java/parse.y:972 ../../gcc/java/parse.y:1327
+#: ../../gcc/java/parse.y:1533 ../../gcc/java/parse.y:1535
+#: ../../gcc/java/parse.y:1764 ../../gcc/java/parse.y:1790
+#: ../../gcc/java/parse.y:1801 ../../gcc/java/parse.y:1812
+#: ../../gcc/java/parse.y:1824 ../../gcc/java/parse.y:1839
 msgid "';' expected"
 msgstr ""
 
-#: java/parse.y:721 java/parse.y:759
+#: ../../gcc/java/parse.y:721 ../../gcc/java/parse.y:759
 msgid "Missing name"
 msgstr ""
 
-#: java/parse.y:784
+#: ../../gcc/java/parse.y:784
 msgid "'*' expected"
 msgstr ""
 
-#: java/parse.y:798
+#: ../../gcc/java/parse.y:798
 msgid "Class or interface declaration expected"
 msgstr ""
 
-#: java/parse.y:835 java/parse.y:837
+#: ../../gcc/java/parse.y:835 ../../gcc/java/parse.y:837
 msgid "Missing class name"
 msgstr ""
 
-#: java/parse.y:840 java/parse.y:844
-#: java/parse.y:852 java/parse.y:1012
-#: java/parse.y:1273 java/parse.y:1275
-#: java/parse.y:1599 java/parse.y:1850
-#: java/parse.y:1882 java/parse.y:1944
+#: ../../gcc/java/parse.y:840 ../../gcc/java/parse.y:844
+#: ../../gcc/java/parse.y:852 ../../gcc/java/parse.y:1012
+#: ../../gcc/java/parse.y:1273 ../../gcc/java/parse.y:1275
+#: ../../gcc/java/parse.y:1599 ../../gcc/java/parse.y:1850
+#: ../../gcc/java/parse.y:1882 ../../gcc/java/parse.y:1944
 msgid "'{' expected"
 msgstr ""
 
-#: java/parse.y:854
+#: ../../gcc/java/parse.y:854
 msgid "Missing super class name"
 msgstr ""
 
-#: java/parse.y:864 java/parse.y:880
+#: ../../gcc/java/parse.y:864 ../../gcc/java/parse.y:880
 msgid "Missing interface name"
 msgstr ""
 
-#: java/parse.y:966
+#: ../../gcc/java/parse.y:966
 msgid "Missing variable initializer"
 msgstr ""
 
-#: java/parse.y:983
+#: ../../gcc/java/parse.y:983
 msgid "Invalid declaration"
 msgstr ""
 
-#: java/parse.y:986 java/parse.y:1071
-#: java/parse.y:2145 java/parse.y:2167
-#: java/parse.y:2171 java/parse.y:2206
-#: java/parse.y:2283 java/parse.y:2293
+#: ../../gcc/java/parse.y:986 ../../gcc/java/parse.y:1071
+#: ../../gcc/java/parse.y:2145 ../../gcc/java/parse.y:2167
+#: ../../gcc/java/parse.y:2171 ../../gcc/java/parse.y:2206
+#: ../../gcc/java/parse.y:2283 ../../gcc/java/parse.y:2293
 msgid "']' expected"
 msgstr ""
 
-#: java/parse.y:990
+#: ../../gcc/java/parse.y:990
 msgid "Unbalanced ']'"
 msgstr ""
 
-#: java/parse.y:1026
+#: ../../gcc/java/parse.y:1026
 msgid "Invalid method declaration, method name required"
 msgstr ""
 
-#: java/parse.y:1031 java/parse.y:1036
-#: java/parse.y:1041 java/parse.y:2028
+#: ../../gcc/java/parse.y:1031 ../../gcc/java/parse.y:1036
+#: ../../gcc/java/parse.y:1041 ../../gcc/java/parse.y:2028
 msgid "Identifier expected"
 msgstr ""
 
-#: java/parse.y:1046
+#: ../../gcc/java/parse.y:1046
 msgid "Invalid method declaration, return type required"
 msgstr ""
 
-#: java/parse.y:1069 java/parse.y:1513
-#: java/parse.y:1520 java/parse.y:1529
-#: java/parse.y:1531 java/parse.y:1559
-#: java/parse.y:1667 java/parse.y:1973
-#: java/parse.y:2026
+#: ../../gcc/java/parse.y:1069 ../../gcc/java/parse.y:1513
+#: ../../gcc/java/parse.y:1520 ../../gcc/java/parse.y:1529
+#: ../../gcc/java/parse.y:1531 ../../gcc/java/parse.y:1559
+#: ../../gcc/java/parse.y:1667 ../../gcc/java/parse.y:1973
+#: ../../gcc/java/parse.y:2026
 msgid "')' expected"
 msgstr ""
 
-#: java/parse.y:1085
+#: ../../gcc/java/parse.y:1085
 msgid "Missing formal parameter term"
 msgstr ""
 
-#: java/parse.y:1100 java/parse.y:1105
+#: ../../gcc/java/parse.y:1100 ../../gcc/java/parse.y:1105
 msgid "Missing identifier"
 msgstr ""
 
-#: java/parse.y:1125 java/parse.y:1134
+#: ../../gcc/java/parse.y:1125 ../../gcc/java/parse.y:1134
 msgid "Missing class type term"
 msgstr ""
 
-#: java/parse.y:1290
+#: ../../gcc/java/parse.y:1290
 msgid "Invalid interface type"
 msgstr ""
 
-#: java/parse.y:1477 java/parse.y:1646
-#: java/parse.y:1648
+#: ../../gcc/java/parse.y:1477 ../../gcc/java/parse.y:1646
+#: ../../gcc/java/parse.y:1648
 msgid "':' expected"
 msgstr ""
 
-#: java/parse.y:1499 java/parse.y:1504
-#: java/parse.y:1509
+#: ../../gcc/java/parse.y:1499 ../../gcc/java/parse.y:1504
+#: ../../gcc/java/parse.y:1509
 msgid "Invalid expression statement"
 msgstr ""
 
-#: java/parse.y:1527 java/parse.y:1555
-#: java/parse.y:1595 java/parse.y:1663
-#: java/parse.y:1731 java/parse.y:1852
-#: java/parse.y:1930 java/parse.y:2020
-#: java/parse.y:2022 java/parse.y:2030
-#: java/parse.y:2266 java/parse.y:2268
+#: ../../gcc/java/parse.y:1527 ../../gcc/java/parse.y:1555
+#: ../../gcc/java/parse.y:1595 ../../gcc/java/parse.y:1663
+#: ../../gcc/java/parse.y:1731 ../../gcc/java/parse.y:1852
+#: ../../gcc/java/parse.y:1930 ../../gcc/java/parse.y:2020
+#: ../../gcc/java/parse.y:2022 ../../gcc/java/parse.y:2030
+#: ../../gcc/java/parse.y:2266 ../../gcc/java/parse.y:2268
 msgid "'(' expected"
 msgstr ""
 
-#: java/parse.y:1597
+#: ../../gcc/java/parse.y:1597
 msgid "Missing term or ')'"
 msgstr ""
 
-#: java/parse.y:1644
+#: ../../gcc/java/parse.y:1644
 msgid "Missing or invalid constant expression"
 msgstr ""
 
-#: java/parse.y:1665
+#: ../../gcc/java/parse.y:1665
 msgid "Missing term and ')' expected"
 msgstr ""
 
-#: java/parse.y:1704
+#: ../../gcc/java/parse.y:1704
 msgid "Invalid control expression"
 msgstr ""
 
-#: java/parse.y:1706 java/parse.y:1708
+#: ../../gcc/java/parse.y:1706 ../../gcc/java/parse.y:1708
 msgid "Invalid update expression"
 msgstr ""
 
-#: java/parse.y:1733
+#: ../../gcc/java/parse.y:1733
 msgid "Invalid init statement"
 msgstr ""
 
-#: java/parse.y:1933
+#: ../../gcc/java/parse.y:1933
 msgid "Missing term or ')' expected"
 msgstr ""
 
-#: java/parse.y:1975
+#: ../../gcc/java/parse.y:1975
 msgid "'class' or 'this' expected"
 msgstr ""
 
-#: java/parse.y:1977 java/parse.y:1979
+#: ../../gcc/java/parse.y:1977 ../../gcc/java/parse.y:1979
 msgid "'class' expected"
 msgstr ""
 
-#: java/parse.y:2024
+#: ../../gcc/java/parse.y:2024
 msgid "')' or term expected"
 msgstr ""
 
-#: java/parse.y:2143
+#: ../../gcc/java/parse.y:2143
 msgid "'[' expected"
 msgstr ""
 
-#: java/parse.y:2221
+#: ../../gcc/java/parse.y:2221
 msgid "Field expected"
 msgstr ""
 
-#: java/parse.y:2278 java/parse.y:2288
+#: ../../gcc/java/parse.y:2278 ../../gcc/java/parse.y:2288
 msgid "Missing term and ']' expected"
 msgstr ""
 
-#: java/parse.y:2392
+#: ../../gcc/java/parse.y:2392
 msgid "']' expected, invalid type expression"
 msgstr ""
 
-#: java/parse.y:2395
+#: ../../gcc/java/parse.y:2395
 msgid "Invalid type expression"
 msgstr ""
 
-#: java/parse.y:2507
+#: ../../gcc/java/parse.y:2507
 msgid "Invalid reference type"
 msgstr ""
 
-#: java/parse.y:2979
+#: ../../gcc/java/parse.y:2979
 msgid "Constructor invocation must be first thing in a constructor"
 msgstr ""
 
-#: java/parse.y:2981
+#: ../../gcc/java/parse.y:2981
 msgid "Only constructors can invoke constructors"
 msgstr ""
 
-#: java/parse.y:2989
+#: ../../gcc/java/parse.y:2989
 #, c-format
 msgid ": `%s' JDK1.1(TM) feature"
 msgstr ""
 
-#: java/parse.y:3048 java/parse.y:3050
+#: ../../gcc/java/parse.y:3048 ../../gcc/java/parse.y:3050
 #, c-format
 msgid ""
 "%s.\n"
 "%s"
 msgstr ""
 
-#: java/parse.y:6932
+#: ../../gcc/java/parse.y:6932
 #, c-format
 msgid "malformed .zip archive in CLASSPATH: %s"
 msgstr ""
 
-#: java/parse.y:7003
+#: ../../gcc/java/parse.y:7003
 #, c-format
 msgid ""
 "Can't find default package `%s'. Check the CLASSPATH environment variable "
 "and the access to the archives"
 msgstr ""
 
-#: java/parse.y:12155
+#: ../../gcc/java/parse.y:12155
 #, c-format
 msgid "missing static field `%s'"
 msgstr ""
 
-#: java/parse.y:12160
+#: ../../gcc/java/parse.y:12160
 #, c-format
 msgid "not a static field `%s'"
 msgstr ""
 
-#: java/parse.y:12203
+#: ../../gcc/java/parse.y:12203
 #, c-format
 msgid "No case for %s"
 msgstr ""
 
-#: java/parse.y:13135
+#: ../../gcc/java/parse.y:13135
 #, c-format
 msgid "unregistered operator %s"
 msgstr ""
@@ -19773,13 +18456,13 @@ msgstr ""
 msgid "protocol `%s' has circular dependency"
 msgstr ""
 
-#: objc/objc-act.c:1077 objc/objc-act.c:5965
+#: objc/objc-act.c:1077 objc/objc-act.c:5963
 #, c-format
 msgid "cannot find protocol declaration for `%s'"
 msgstr ""
 
-#: objc/objc-act.c:1393 objc/objc-act.c:2620 objc/objc-act.c:6498
-#: objc/objc-act.c:6807 objc/objc-act.c:6860 objc/objc-act.c:6885
+#: objc/objc-act.c:1393 objc/objc-act.c:2620 objc/objc-act.c:6496
+#: objc/objc-act.c:6805 objc/objc-act.c:6858 objc/objc-act.c:6883
 #, c-format
 msgid "cannot find interface declaration for `%s'"
 msgstr ""
@@ -19804,8 +18487,8 @@ msgstr ""
 msgid "`%s' is not an Objective-C class name or alias"
 msgstr ""
 
-#: objc/objc-act.c:2475 objc/objc-act.c:2493 objc/objc-act.c:6754
-#: objc/objc-act.c:7044 objc/objc-act.c:7073
+#: objc/objc-act.c:2475 objc/objc-act.c:2493 objc/objc-act.c:6752
+#: objc/objc-act.c:7042 objc/objc-act.c:7071
 msgid "Objective-C declarations may only appear in global scope"
 msgstr ""
 
@@ -19819,12 +18502,12 @@ msgstr ""
 msgid "class `%s' already exists"
 msgstr ""
 
-#: objc/objc-act.c:2507 objc/objc-act.c:6776
+#: objc/objc-act.c:2507 objc/objc-act.c:6774
 #, c-format
 msgid "`%s' redeclared as different kind of symbol"
 msgstr ""
 
-#: objc/objc-act.c:2509 objc/objc-act.c:6778
+#: objc/objc-act.c:2509 objc/objc-act.c:6776
 msgid "%Jprevious declaration of '%D'"
 msgstr ""
 
@@ -19839,8 +18522,8 @@ msgstr ""
 msgid "circular inheritance in interface declaration for `%s'"
 msgstr ""
 
-#: objc/objc-act.c:2755 objc/objc-act.c:2899 objc/objc-act.c:2999
-#: objc/objc-act.c:3175 objc/objc-act.c:3215
+#: objc/objc-act.c:2755 objc/objc-act.c:2898 objc/objc-act.c:2998
+#: objc/objc-act.c:3173 objc/objc-act.c:3213
 msgid "Use `-fobjc-exceptions' to enable Objective-C exception syntax"
 msgstr ""
 
@@ -19848,77 +18531,77 @@ msgstr ""
 msgid "`@throw;' (rethrow) used outside of a `@catch' block"
 msgstr ""
 
-#: objc/objc-act.c:3002
+#: objc/objc-act.c:3001
 msgid "`@catch' parameter is not a known Objective-C class type"
 msgstr ""
 
-#: objc/objc-act.c:3011
+#: objc/objc-act.c:3010
 msgid "Exception already handled by preceding `@catch(id)'"
 msgstr ""
 
-#: objc/objc-act.c:3016
+#: objc/objc-act.c:3015
 #, c-format
 msgid "Exception of type `%s *' already handled by `@catch (%s *)'"
 msgstr ""
 
-#: objc/objc-act.c:3181
+#: objc/objc-act.c:3179
 msgid "`@try' without `@catch' or `@finally'"
 msgstr ""
 
-#: objc/objc-act.c:3622
+#: objc/objc-act.c:3620
 msgid "%Jtype '%D' does not have a known size"
 msgstr ""
 
-#: objc/objc-act.c:4231
+#: objc/objc-act.c:4229
 msgid "%J%s `%s'"
 msgstr ""
 
-#: objc/objc-act.c:4256 objc/objc-act.c:4275
+#: objc/objc-act.c:4254 objc/objc-act.c:4273
 msgid "inconsistent instance variable specification"
 msgstr ""
 
-#: objc/objc-act.c:5286
+#: objc/objc-act.c:5284
 msgid "can not use an object as parameter to a method\n"
 msgstr ""
 
-#: objc/objc-act.c:5487
+#: objc/objc-act.c:5485
 #, c-format
 msgid "multiple %s named `%c%s' found"
 msgstr ""
 
-#: objc/objc-act.c:5704
+#: objc/objc-act.c:5702
 #, c-format
 msgid "no super class declared in @interface for `%s'"
 msgstr ""
 
-#: objc/objc-act.c:5792
+#: objc/objc-act.c:5790
 #, c-format
 msgid "invalid receiver type `%s'"
 msgstr ""
 
-#: objc/objc-act.c:5803
+#: objc/objc-act.c:5801
 #, c-format
 msgid "`%s' may not respond to `%c%s'"
 msgstr ""
 
-#: objc/objc-act.c:5808
+#: objc/objc-act.c:5806
 #, c-format
 msgid "`%c%s' not implemented by protocol(s)"
 msgstr ""
 
-#: objc/objc-act.c:5813
+#: objc/objc-act.c:5811
 msgid "(Messages without a matching method signature"
 msgstr ""
 
-#: objc/objc-act.c:5814
+#: objc/objc-act.c:5812
 msgid "will be assumed to return `id' and accept"
 msgstr ""
 
-#: objc/objc-act.c:5815
+#: objc/objc-act.c:5813
 msgid "`...' as arguments.)"
 msgstr ""
 
-#: objc/objc-act.c:6064
+#: objc/objc-act.c:6062
 #, c-format
 msgid "undeclared selector `%s'"
 msgstr ""
@@ -19932,136 +18615,136 @@ msgstr ""
 #. to an instance variable.  It's better to catch the cases
 #. where this is done unknowingly than to support the above
 #. paradigm.
-#: objc/objc-act.c:6106
+#: objc/objc-act.c:6104
 #, c-format
 msgid "instance variable `%s' accessed in class method"
 msgstr ""
 
-#: objc/objc-act.c:6312
+#: objc/objc-act.c:6310
 #, c-format
 msgid "duplicate declaration of method `%c%s'"
 msgstr ""
 
-#: objc/objc-act.c:6353
+#: objc/objc-act.c:6351
 #, c-format
 msgid "duplicate interface declaration for category `%s(%s)'"
 msgstr ""
 
-#: objc/objc-act.c:6383
+#: objc/objc-act.c:6381
 #, c-format
 msgid "illegal reference type specified for instance variable `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6399
+#: objc/objc-act.c:6397
 #, c-format
 msgid "instance variable `%s' has unknown size"
 msgstr ""
 
 #. vtable pointers are Real Bad(tm), since Obj-C cannot initialize them
-#: objc/objc-act.c:6413
+#: objc/objc-act.c:6411
 #, c-format
 msgid "type `%s' has virtual member functions"
 msgstr ""
 
-#: objc/objc-act.c:6414
+#: objc/objc-act.c:6412
 #, c-format
 msgid "illegal aggregate type `%s' specified for instance variable `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6422
+#: objc/objc-act.c:6420
 #, c-format
 msgid "type `%s' has a user-defined constructor"
 msgstr ""
 
-#: objc/objc-act.c:6424
+#: objc/objc-act.c:6422
 #, c-format
 msgid "type `%s' has a user-defined destructor"
 msgstr ""
 
-#: objc/objc-act.c:6425
+#: objc/objc-act.c:6423
 msgid ""
 "C++ constructors and destructors will not be invoked for Objective-C fields"
 msgstr ""
 
-#: objc/objc-act.c:6475
+#: objc/objc-act.c:6473
 #, c-format
 msgid "instance variable `%s' is declared private"
 msgstr ""
 
-#: objc/objc-act.c:6524
+#: objc/objc-act.c:6522
 #, c-format
 msgid "instance variable `%s' is %s; this will be a hard error in the future"
 msgstr ""
 
-#: objc/objc-act.c:6531
+#: objc/objc-act.c:6529
 #, c-format
 msgid "instance variable `%s' is declared %s"
 msgstr ""
 
-#: objc/objc-act.c:6541
+#: objc/objc-act.c:6539
 msgid "static access to object of type `id'"
 msgstr ""
 
-#: objc/objc-act.c:6563 objc/objc-act.c:6651
+#: objc/objc-act.c:6561 objc/objc-act.c:6649
 #, c-format
 msgid "incomplete implementation of class `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6567 objc/objc-act.c:6656
+#: objc/objc-act.c:6565 objc/objc-act.c:6654
 #, c-format
 msgid "incomplete implementation of category `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6572 objc/objc-act.c:6661
+#: objc/objc-act.c:6570 objc/objc-act.c:6659
 #, c-format
 msgid "method definition for `%c%s' not found"
 msgstr ""
 
-#: objc/objc-act.c:6702
+#: objc/objc-act.c:6700
 #, c-format
 msgid "%s `%s' does not fully implement the `%s' protocol"
 msgstr ""
 
-#: objc/objc-act.c:6760 objc/objc-act.c:8792
+#: objc/objc-act.c:6758 objc/objc-act.c:8790
 msgid "`@end' missing in implementation context"
 msgstr ""
 
-#: objc/objc-act.c:6790
+#: objc/objc-act.c:6788
 #, c-format
 msgid "reimplementation of class `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6821
+#: objc/objc-act.c:6819
 #, c-format
 msgid "conflicting super class name `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6823
+#: objc/objc-act.c:6821
 #, c-format
 msgid "previous declaration of `%s'"
 msgstr ""
 
-#: objc/objc-act.c:6837 objc/objc-act.c:6839
+#: objc/objc-act.c:6835 objc/objc-act.c:6837
 #, c-format
 msgid "duplicate interface declaration for class `%s'"
 msgstr ""
 
-#: objc/objc-act.c:7106
+#: objc/objc-act.c:7104
 #, c-format
 msgid "duplicate declaration for protocol `%s'"
 msgstr ""
 
 #. Add a readable method name to the warning.
-#: objc/objc-act.c:7597
+#: objc/objc-act.c:7595
 msgid "%J%s `%c%s'"
 msgstr ""
 
-#: objc/objc-act.c:7897
+#: objc/objc-act.c:7895
 #, c-format
 msgid "no super class declared in interface for `%s'"
 msgstr ""
 
-#: objc/objc-act.c:7945
+#: objc/objc-act.c:7943
 msgid "[super ...] must appear in a method context"
 msgstr ""
 
@@ -21698,91 +20381,16 @@ msgstr ""
 msgid "Suppress warnings"
 msgstr ""
 
-#: config/mips/mips.h:1041
-msgid "-pipe is not supported"
-msgstr ""
-
-#: config/mips/mips.h:1196 config/arc/arc.h:63
-msgid "may not use both -EB and -EL"
-msgstr ""
-
-#: config/rs6000/sysv4.h:1089
-msgid "`-p' not supported; use `-pg' and gprof(1)"
-msgstr ""
-
-#: config/mips/r3900.h:35
-msgid "-mhard-float not supported"
-msgstr ""
-
-#: config/mips/r3900.h:37
-msgid "-msingle-float and -msoft-float can not both be specified"
-msgstr ""
-
-#: gcc.c:766
-msgid "GCC does not support -C or -CC without -E"
-msgstr ""
-
-#: gcc.c:792 java/jvspec.c:80 ada/lang-specs.h:34
-msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr ""
-
-#: gcc.c:957
-msgid "-E required when input is from standard input"
-msgstr ""
-
-#: config/vax/netbsd-elf.h:42
-msgid "The -shared option is not currently supported for VAX ELF."
-msgstr ""
-
-#: config/vax/vax.h:50 config/vax/vax.h:51
-msgid "profiling not supported with -mg\n"
-msgstr ""
-
-#: config/sparc/linux64.h:207 config/sparc/linux64.h:218
-#: config/sparc/netbsd-elf.h:136 config/sparc/netbsd-elf.h:155
-#: config/sparc/sol2-bi.h:195 config/sparc/sol2-bi.h:205
-msgid "may not use both -m32 and -m64"
-msgstr ""
-
-#: config/sparc/sol2-bi.h:167 config/sparc/sol2-bi.h:172
-#: config/sparc/sol2-gld-bi.h:17 config/sparc/sol2-gld-bi.h:22
-msgid "does not support multilib"
-msgstr ""
-
 #: treelang/lang-specs.h:52
 msgid "-pg or -p and -fomit-frame-pointer are incompatible"
-msgstr ""
-
-#: ada/lang-specs.h:36
-msgid "one of -c, -S, -gnatc or -gnats is required for Ada"
-msgstr ""
-
-#: config/i386/mingw32.h:58 config/i386/cygwin.h:70
-msgid "shared and mdll are not compatible"
-msgstr ""
-
-#: config/mcore/mcore.h:65
-msgid "the m210 does not have little endian support"
-msgstr ""
-
-#: config/arm/arm.h:153
-msgid "-mapcs-26 and -mapcs-32 may not be used together"
-msgstr ""
-
-#: config/arm/arm.h:155
-msgid "-msoft-float and -mhard_float may not be used together"
-msgstr ""
-
-#: config/arm/arm.h:157
-msgid "-mbig-endian and -mlittle-endian may not be used together"
 msgstr ""
 
 #: config/rs6000/darwin.h:98
 msgid " conflicting code gen style switches are used"
 msgstr ""
 
-#: config/i386/cygwin.h:29
-msgid "mno-cygwin and mno-win32 are not compatible"
+#: config/rs6000/sysv4.h:1089
+msgid "`-p' not supported; use `-pg' and gprof(1)"
 msgstr ""
 
 #: config/i386/sco5.h:191
@@ -21795,6 +20403,29 @@ msgstr ""
 
 #: config/i386/sco5.h:266
 msgid "-G and -static are mutually exclusive"
+msgstr ""
+
+#: config/i386/cygwin.h:29
+msgid "mno-cygwin and mno-win32 are not compatible"
+msgstr ""
+
+#: config/i386/cygwin.h:70 config/i386/mingw32.h:58
+msgid "shared and mdll are not compatible"
+msgstr ""
+
+#: config/sparc/sol2-gld-bi.h:17 config/sparc/sol2-gld-bi.h:22
+#: config/sparc/sol2-bi.h:167 config/sparc/sol2-bi.h:172
+msgid "does not support multilib"
+msgstr ""
+
+#: config/sparc/linux64.h:207 config/sparc/linux64.h:218
+#: config/sparc/netbsd-elf.h:136 config/sparc/netbsd-elf.h:155
+#: config/sparc/sol2-bi.h:195 config/sparc/sol2-bi.h:205
+msgid "may not use both -m32 and -m64"
+msgstr ""
+
+#: config/vax/netbsd-elf.h:42
+msgid "The -shared option is not currently supported for VAX ELF."
 msgstr ""
 
 #: config/darwin.h:226
@@ -21833,6 +20464,18 @@ msgstr ""
 msgid "-private_bundle not allowed with -dynamiclib"
 msgstr ""
 
+#: config/vax/vax.h:50 config/vax/vax.h:51
+msgid "profiling not supported with -mg\n"
+msgstr ""
+
+#: java/jvspec.c:80 ada/lang-specs.h:34 gcc.c:792
+msgid "-pg and -fomit-frame-pointer are incompatible"
+msgstr ""
+
+#: config/arc/arc.h:63 config/mips/mips.h:1192
+msgid "may not use both -EB and -EL"
+msgstr ""
+
 #: java/lang-specs.h:34
 msgid "-fjni and -femit-class-files are incompatible"
 msgstr ""
@@ -21845,10 +20488,38 @@ msgstr ""
 msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr ""
 
-#: f/lang-specs.h:38
-msgid "GCC does not support -C without using -E"
+#: ada/lang-specs.h:36
+msgid "one of -c, -S, -gnatc or -gnats is required for Ada"
 msgstr ""
 
-#: f/lang-specs.h:39
-msgid "GCC does not support -CC without using -E"
+#: config/mips/mips.h:1037
+msgid "-pipe is not supported"
+msgstr ""
+
+#: config/mips/r3900.h:35
+msgid "-mhard-float not supported"
+msgstr ""
+
+#: config/mips/r3900.h:37
+msgid "-msingle-float and -msoft-float can not both be specified"
+msgstr ""
+
+#: config/mcore/mcore.h:65
+msgid "the m210 does not have little endian support"
+msgstr ""
+
+#: config/arm/arm.h:149
+msgid "-msoft-float and -mhard_float may not be used together"
+msgstr ""
+
+#: config/arm/arm.h:151
+msgid "-mbig-endian and -mlittle-endian may not be used together"
+msgstr ""
+
+#: gcc.c:766
+msgid "GCC does not support -C or -CC without -E"
+msgstr ""
+
+#: gcc.c:957
+msgid "-E required when input is from standard input"
 msgstr ""

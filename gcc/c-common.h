@@ -156,11 +156,6 @@ enum c_tree_index
 
     CTI_DEFAULT_FUNCTION_TYPE,
 
-    CTI_G77_INTEGER_TYPE,
-    CTI_G77_UINTEGER_TYPE,
-    CTI_G77_LONGINT_TYPE,
-    CTI_G77_ULONGINT_TYPE,
-
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
     CTI_PRETTY_FUNCTION_NAME_DECL,
@@ -204,12 +199,6 @@ struct c_common_identifier GTY(())
 #define const_string_type_node		c_global_trees[CTI_CONST_STRING_TYPE]
 
 #define default_function_type		c_global_trees[CTI_DEFAULT_FUNCTION_TYPE]
-
-/* g77 integer types, which must be kept in sync with f/com.h */
-#define g77_integer_type_node		c_global_trees[CTI_G77_INTEGER_TYPE]
-#define g77_uinteger_type_node		c_global_trees[CTI_G77_UINTEGER_TYPE]
-#define g77_longint_type_node		c_global_trees[CTI_G77_LONGINT_TYPE]
-#define g77_ulongint_type_node		c_global_trees[CTI_G77_ULONGINT_TYPE]
 
 #define function_name_decl_node		c_global_trees[CTI_FUNCTION_NAME_DECL]
 #define pretty_function_name_decl_node	c_global_trees[CTI_PRETTY_FUNCTION_NAME_DECL]

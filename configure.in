@@ -150,7 +150,6 @@ target_libraries="target-libiberty \
 		target-newlib \
 		target-libstdc++-v3 \
 		target-libmudflap \
-		target-libf2c \
 		target-libgfortran \
 		${libgcj} \
 		target-libobjc \
@@ -390,7 +389,7 @@ case "${target}" in
     ;;
   *-*-kaos*)
     # Remove unsupported stuff on all kaOS configurations.
-    skipdirs="target-libiberty ${libgcj} target-libstdc++-v3 target-libf2c target-librx"
+    skipdirs="target-libiberty ${libgcj} target-libstdc++-v3 target-librx"
     skipdirs="$skipdirs target-libobjc target-examples target-groff target-gperf"
     skipdirs="$skipdirs zlib fastjar target-libjava target-boehm-gc target-zlib"
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -413,12 +412,6 @@ case "${target}" in
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    case ${target} in
-	h8300*-*-* | h8500-*-*)
-	  noconfigdirs="$noconfigdirs target-libf2c"
-          ;;
-        *) ;;
-    esac
     ;;
   *-*-uclinux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-rda ${libgcj}"
@@ -519,10 +512,10 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   h8300*-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj} target-libf2c"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   h8500-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} target-libf2c"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
   hppa*64*-*-linux* | parisc*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for

@@ -1,3 +1,18 @@
+2004-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* f: Entire directory removed
+
+	* c-common.h (CTI_G77_INTEGER_TYPE, CTI_G77_UINTEGER_TYPE)
+	(CTI_G77_LONGINT_TYPE, CTI_G77_ULONGINT_TYPE)
+	(g77_integer_type_node, g77_uinteger_type_node)
+	(g77_longint_type_node, or g77_ulongint_type_node): Delete.
+	* c-common.c (c_common_nodes_and_builtins): Do not initialize
+	the above set of variables.
+
+	* config/i386/uwin.h: No need to define WIN32_UWIN_TARGET.
+	* doc/invoke.texi, doc/standards.texi: Remove cross-references
+	to g77 manual.
+
 2004-05-17  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/15438
@@ -99,7 +114,7 @@
 
 2004-05-15  Richard Earnshaw  <reanrsha@arm.com>
 
-	* arm/lib1funcs.asm (_lshrdi3, _ashrdi3, _ashldi3): Add ASM 
+	* arm/lib1funcs.asm (_lshrdi3, _ashrdi3, _ashldi3): Add ASM
 	implementations for ARM and Thumb.
 	* arm/t-arm-elf (LIB1ASMFUNCS): Use them.
 
@@ -136,7 +151,7 @@
 	* arm/crtn.asm: (FUNC_END): Simplify.
 	* arm/lib1funcs.asm: Remove APCS-26 return macros.
 	* arm/aof.h, arm/coff.h arm/elf.h arm/linux-elf.h arm/netbsd-elf.h
-	* arm/netbsd.h arm/pe.h arm/semi.h arm/semiaof.h arm/unknown-elf.h 
+	* arm/netbsd.h arm/pe.h arm/semi.h arm/semiaof.h arm/unknown-elf.h
 	* arm/vxworks.h arm/wince-pe.h: Tidy TARGET_DEFAULTS and
 	MULTILIB_DEFAULTS as required.
 	* arm/t-arm-elf arm/t-linux arm/t-pe arm/t-semi arm/t-wince-pe

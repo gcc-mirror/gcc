@@ -112,18 +112,21 @@ function spec_error_string (line) {
     while ((percent_index = index(line, "%e")) != 0) {
 	escape = substr(line, percent_index - 1, 1)
 	line = substr(line, percent_index + 2)
-	if (escape == "%") return
+	if (escape == "%") continue
 
 	bracket_index = index(line, "}")
+	quote_index = index(line, "\"")
 	if (bracket_index == 0) return
+	if (quote_index != 0 && bracket_index > quote_index) return
 
 	msgid = substr(line, 1, bracket_index - 1)
-	if (index(msgid, "%") != 0) return
+	line = substr(line, bracket_index + 1)
+
+	if (index(msgid, "%") != 0) continue
 
 	printf("#line %d \"%s\"\n", lineno, file) > emsg
 	printf("_(\"%s\")\n", msgid) > emsg
 
-	line = substr(line, bracket_index + 1)
     }
 }
 

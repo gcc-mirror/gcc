@@ -101,7 +101,6 @@ host_modules= { module= utils; no_check=true; };
 target_modules = { module= libstdc++-v3; raw_cxx=true; };
 target_modules = { module= libmudflap; };
 target_modules = { module= newlib; };
-target_modules = { module= libf2c; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libtermcap; no_check=true; stage=true;
