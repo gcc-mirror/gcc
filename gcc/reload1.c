@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -270,6 +270,9 @@ char *reload_firstobj;
 
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
+
+/* Allocation number table from global register allocation.  */
+extern int *reg_allocno;
 
 /* This structure is used to record information about register eliminations.
    Each array entry describes one possible way of eliminating a register
@@ -351,7 +354,7 @@ static int spill_hard_reg		PROTO((int, int, FILE *, int));
 static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
-static void order_regs_for_reload	PROTO((void));
+static void order_regs_for_reload	PROTO((int));
 static int compare_spill_regs		PROTO((short *, short *));
 static void reload_as_needed		PROTO((rtx, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
@@ -691,7 +694,7 @@ reload (first, global, dumpfile)
   /* Compute the order of preference for hard registers to spill.
      Store them by decreasing preference in potential_reload_regs.  */
 
-  order_regs_for_reload ();
+  order_regs_for_reload (global);
 
   /* So far, no hard regs have been spilled.  */
   n_spills = 0;
@@ -3494,7 +3497,7 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 	/* We will need to scan everything again.  */
 	something_changed = 1;
 	if (global)
-	    retry_global_alloc (i, forbidden_regs);
+	  retry_global_alloc (i, forbidden_regs);
 
 	alter_reg (i, regno);
 	if (dumpfile)
@@ -3603,7 +3606,8 @@ hard_reg_use_compare (p1, p2)
    Store them in order of decreasing preference in potential_reload_regs.  */
 
 static void
-order_regs_for_reload ()
+order_regs_for_reload (global)
+     int global;
 {
   register int i;
   register int o = 0;
@@ -3632,7 +3636,15 @@ order_regs_for_reload ()
 	{
 	  int lim = regno + HARD_REGNO_NREGS (regno, PSEUDO_REGNO_MODE (i));
 	  while (regno < lim)
-	    hard_reg_n_uses[regno++].uses += reg_n_refs[i];
+	    {
+	      /* If allocated by local-alloc, show more uses since
+		 we're not going to be able to reallocate it, but
+		 we might if allocated by global alloc.  */
+	      if (global && reg_allocno[i] < 0)
+		hard_reg_n_uses[regno].uses += (reg_n_refs[i] + 1) / 2;
+
+	      hard_reg_n_uses[regno++].uses += reg_n_refs[i];
+	    }
 	}
       large += reg_n_refs[i];
     }
