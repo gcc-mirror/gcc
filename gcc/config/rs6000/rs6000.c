@@ -2708,23 +2708,26 @@ mask64_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* Like mask64_operand, but allow up to three transitions.  This
-   predicate is used by insn patterns that generate two rldicl or
-   rldicr machine insns.  */
-
-int
-mask64_2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+static int
+mask64_1or2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED,
+		       bool allow_one)
 {
   if (GET_CODE (op) == CONST_INT)
     {
       HOST_WIDE_INT c, lsb;
-
+      bool one_ok;
+      
       c = INTVAL (op);
 
       /* Disallow all zeros.  */
       if (c == 0)
 	return 0;
 
+      /* We can use a single rlwinm insn if no upper bits of C are set
+         AND there are zero, one or two transitions in the _whole_ of
+         C.  */
+      one_ok = !(c & ~(HOST_WIDE_INT)0xffffffff);
+      
       /* We don't change the number of transitions by inverting,
 	 so make sure we start with the LS bit zero.  */
       if (c & 1)
@@ -2748,6 +2751,9 @@ mask64_2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       /* Erase second transition.  */
       c &= -lsb;
 
+      if (one_ok && !(allow_one || c))
+	return 0;
+
       /* Find the third transition (if any).  */
       lsb = c & -c;
 
@@ -2755,6 +2761,14 @@ mask64_2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       return c == -lsb;
     }
   return 0;
+}
+
+/* Like mask64_operand, but allow up to three transitions.  This
+   predicate is used by insn patterns that generate two rldicl or
+   rldicr machine insns.   */
+int mask64_2_operand (rtx op, enum machine_mode mode)
+{
+  return mask64_1or2_operand (op, mode, false);
 }
 
 /* Generates shifts and masks for a pair of rldicl or rldicr insns to
@@ -2846,9 +2860,9 @@ int
 and64_2_operand (rtx op, enum machine_mode mode)
 {
   if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
-    return gpc_reg_operand (op, mode) || mask64_2_operand (op, mode);
+    return gpc_reg_operand (op, mode) || mask64_1or2_operand (op, mode, true);
 
-  return logical_operand (op, mode) || mask64_2_operand (op, mode);
+  return logical_operand (op, mode) || mask64_1or2_operand (op, mode, true);
 }
 
 /* Return 1 if the operand is either a non-special register or a
