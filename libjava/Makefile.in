@@ -198,7 +198,8 @@ AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
 	-fdollars-in-identifiers \
 	-Wswitch-enum \
 	@LIBGCJ_CXXFLAGS@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE \
-	-DPREFIX="\"$(prefix)\"" -DLIBDIR="\"$(libdir)\""
+	-DPREFIX="\"$(prefix)\"" -DLIBDIR="\"$(libdir)\"" \
+	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\""
 
 @USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
 @USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@

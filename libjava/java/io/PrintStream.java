@@ -256,7 +256,7 @@ public class PrintStream extends FilterOutputStream
   {
     pw.print (str);
 
-    if (auto_flush)
+    if (str != null && auto_flush)
       if ((str.indexOf ('\r') != -1)
           || (str.indexOf ('\n') != -1))
         flush ();
