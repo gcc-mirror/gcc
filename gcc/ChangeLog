@@ -1,3 +1,8 @@
+2004-03-10  Joel Sherrill  <joel@oarcorp.com>
+
+	PR target/14480
+	* config.gcc (powerpc*-*-rtems*): Use rs6000/t-rtems.
+
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
  
         * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
