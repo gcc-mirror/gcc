@@ -89,86 +89,83 @@ static int ret_label = 0;
    intel compilers understand.  */
 
 int
-process_pragma (finput, t)
-     FILE *finput;
-     tree t;
+process_pragma (p_getc, p_ungetc, pname)
+     int (*  p_getc) PROTO ((void));
+     void (* p_ungetc) PROTO ((int));
+     char * pname;
 {
   int i;
   register int c;
-  register char *pname;
-
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (t);
-
-  if (strcmp (pname, "align") == 0)
-    {
-      char buf[20];
-      char *s = buf;
-      int align;
-
-      do {
-	c = getc (finput);
-      } while (c == ' ' || c == '\t');
-
-      if (c == '(')
-	c = getc (finput);
-      while (c >= '0' && c <= '9')
-	{
-	  if (s < buf + sizeof buf - 1)
-	    *s++ = c;
-	  c = getc (finput);
-	}
-      *s = '\0';
-
-      /* We had to read a non-numerical character to get out of the
-	 while loop---often a newline.  So, we have to put it back to
-	 make sure we continue to parse everything properly.  */
-      ungetc (c, finput);
-
-      align = atoi (buf);
-      switch (align)
-	{
-	case 0:
-	  /* Return to last alignment.  */
-	  align = i960_last_maxbitalignment / 8;
-	  /* Fall through.  */
-	case 16:
-	case 8:
-	case 4:
-	case 2:
-	case 1:
-	  i960_last_maxbitalignment = i960_maxbitalignment;
-	  i960_maxbitalignment = align * 8;
-	  break;
-
-	default:
-	  /* Silently ignore bad values.  */
-	  break;
-	}
-
-      /* NOTE: ic960 R3.0 pragma align definition:
-
-	 #pragma align [(size)] | (identifier=size[,...])
-	 #pragma noalign [(identifier)[,...]]
-
-	 (all parens are optional)
-
-	 - size is [1,2,4,8,16]
-	 - noalign means size==1
-	 - applies only to component elements of a struct (and union?)
-	 - identifier applies to structure tag (only)
-	 - missing identifier means next struct
-
-	 - alignment rules for bitfields need more investigation  */
-
-      return 1;
-    }
+  char buf[20];
+  char *s = buf;
+  int align;
 
   /* Should be pragma 'far' or equivalent for callx/balx here.  */
+  if (strcmp (pname, "align") != 0)
+    return 0;
+  
+  do
+    {
+      c = p_getc ();
+    }
+  while (c == ' ' || c == '\t');
 
-  return 0;
+  if (c == '(')
+    c = p_getc ();
+  
+  while (c >= '0' && c <= '9')
+    {
+      if (s < buf + sizeof buf - 1)
+	*s++ = c;
+      c = p_getc ();
+    }
+  
+  *s = '\0';
+
+  /* We had to read a non-numerical character to get out of the
+     while loop---often a newline.  So, we have to put it back to
+     make sure we continue to parse everything properly.  */
+  
+  p_ungetc (c);
+
+  align = atoi (buf);
+
+  switch (align)
+    {
+    case 0:
+      /* Return to last alignment.  */
+      align = i960_last_maxbitalignment / 8;
+      /* Fall through.  */
+    case 16:
+    case 8:
+    case 4:
+    case 2:
+    case 1:
+      i960_last_maxbitalignment = i960_maxbitalignment;
+      i960_maxbitalignment = align * 8;
+      break;
+      
+    default:
+      /* Silently ignore bad values.  */
+      break;
+    }
+  
+  /* NOTE: ic960 R3.0 pragma align definition:
+     
+     #pragma align [(size)] | (identifier=size[,...])
+     #pragma noalign [(identifier)[,...]]
+     
+     (all parens are optional)
+     
+     - size is [1,2,4,8,16]
+     - noalign means size==1
+     - applies only to component elements of a struct (and union?)
+     - identifier applies to structure tag (only)
+     - missing identifier means next struct
+     
+     - alignment rules for bitfields need more investigation  */
+  
+  return 1;
 }
 
 /* Initialize variables before compiling any files.  */

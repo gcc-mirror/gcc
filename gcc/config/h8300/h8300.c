@@ -856,17 +856,13 @@ eq_operator (x, mode)
    with this attribute may be safely used in an interrupt vector.  */
 
 int
-handle_pragma (file, t)
-     FILE *file;
-     tree t;
+handle_pragma (p_getc, p_ungetc, name)
+     int (*  p_getc) PROTO ((void));
+     void (* p_ungetc) PROTO ((int));
+     char * pname;
 {
   int retval = 0;
-  register char *pname;
 
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (t);
   if (strcmp (pname, "interrupt") == 0)
     interrupt_handler = retval = 1;
   else if (strcmp (pname, "saveall") == 0)

@@ -1,4 +1,17 @@
-Wed Sep 2 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
+Wed Sep  2 10:06:07 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/nextstep.h:    Update HANDLE_PRAGMA macro.
+	* config/h8300/h8300.h: Update HANDLE_PRAGMA macro.
+	* config/i960/i960.h:   Update HANDLE_PRAGMA macro.
+	
+	* config/nextstep.c (handle_pragma): Take three arguments, as per
+	the new HANDLE_PRAGMA macro specification.
+	* config/h8300/h8300.c (handle_pragma): Take three arguments, as
+	per the new HANDLE_PRAGMA macro specification.
+	* config/i960/i960.c (process_pragma): Take three arguments, as
+	per the new HANDLE_PRAGMA macro specification.
+
+Wed Sep  2 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* c-lex.c (check_newline):  Call HANDLE_PRAGMA before
 	HANDLE_SYSV_PRAGMA if both are defined.  Generate warning messages
