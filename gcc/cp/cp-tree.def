@@ -219,7 +219,7 @@ DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
    function.  */
 DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
 /* An CTOR_STMT marks the beginning (if CTOR_BEGIN_P holds) or end of
-   a contstructor (if CTOR_END_P) holds.  At the end of a constructor,
+   a constructor (if CTOR_END_P) holds.  At the end of a constructor,
    the cleanups associated with any SUBOBJECT_CLEANUPS need no longer
    be run.  */
 DEFTREECODE (CTOR_STMT, "ctor_stmt", 'e', 0)
