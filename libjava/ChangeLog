@@ -1,3 +1,59 @@
+2003-02-28  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (nat_source_files): Remove
+	java/io/natObjectOutputStream.cc.
+	* Makefile.in: Regenerated.
+	* mauve-libgcj: Don't exclude java.io.ObjectInputOutput tests.
+	* java/io/ObjectStreamField.java (typename): New field.
+	(ObjectStreamField(String, Class)): Initialize new field.
+	(ObjectStreamField(String, String)): New Constructor.
+	(getTypeCode): Use new field.
+	(getTypeString): Use new field.
+	* java/io/ObjectOutputStream.java (writeObject): Rethrow fatal
+	ObjectStreamExceptions. Remember and reset old BlockDataMode.
+	Handle reading of Proxy classes. Never drain(), just write
+	TC_ENDBLOCKDATA. Rethrow ObjectStreamExceptions.
+	(drain): Check writeDataAsBlocks before calling writeBlockDataHeader.
+	(flush): Call flush(), not just drain().
+	(writeBoolean): Always use blockDataOutput.
+	(writeByte): Likewise.
+	(writeShort): Likewise.
+	(writeChar): Likewise.
+	(writeInt): Likewise.
+	(writeLong): Likewise.
+	(writeFloat): Likewise.
+	(writeDouble): Likewise.
+	(writeBytes): Likewise.
+	(putfield (put(String,Object))): Throw IllegalArgumentException if
+	field cannot be found.
+	(putfield (write(ObjectOutput))): Remember old BlockDataMode.
+	(writeArraySizeAndElements): Write byte[] in one go.
+	(writeFields): Write TC_ENDBLOCKDATA when call_write_method, otherwise
+	set BlockDataMode to false.
+	(annotateProxyClass): New method.
+	(defaultProtocolVersion): Now defaults to PROTOCOL_VERSION_2
+	(getField): No longer native.
+	(getMethod): Likewise.
+	(setBlockDataMode): Always drain() on switch, return old mode.
+	(static): New static code block.
+	* java/io/natObjectOutputStream.cc: Removed.
+	* java/io/ObjectInputStream.java (getField): No longer native.
+	(getMethod): Likewise.
+	(readObject): Remember and reset old BlockDataMode. Track whether
+	object is consumed. Handle TC_ENDBLOCKDATA, TC_PROXYCLASSDESC and
+	TC_LONGSTRING.
+	(defaultReadObject): Set BlockDataMode to false during readFields.
+	(resolveClass): Create new SecurityManager if necessary.
+	Use Class.forName() if null ClassLoader found.
+	(read(byte[],int,int): Copy remaining bytes to data before calling
+	readNextBlock().
+	(readFields): Set and reset BlockDataMode on call_read_method.
+	Catch NoSuchFieldErrors.
+	(setBlockDataMode): Return old mode.
+	(static): New static code block.
+	* java/io/natObjectInputStream.cc (getField): Removed.
+	(getMethod): Likewise.
+
 2003-02-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/beans/Beans.java,
