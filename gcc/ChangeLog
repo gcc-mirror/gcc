@@ -1,3 +1,8 @@
+2002-05-16  Jason Merrill  <jason@redhat.com>
+
+	* config/mips/mips.c (mips_output_external): Don't do sdata
+	optimization for a variable with DECL_COMDAT set.
+
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h: Cleanups for tighter typechecking.
