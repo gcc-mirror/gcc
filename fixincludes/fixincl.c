@@ -851,41 +851,43 @@ fix_with_system (tFixDesc* p_fixd,
   char*  pz_cmd;
   char*  pz_scan;
   size_t argsize;
-  int i;
-  tSCC *z_applyfix_prog[2] = {
-    "/../fixincludes/applyfix" EXE_EXT,
-    "/../../fixincludes/applyfix" EXE_EXT };
 
   if (p_fixd->fd_flags & FD_SUBROUTINE)
-    for (i = 0; i < 2; i++)
-      { 
-	struct stat buf;
+    {
+      static const char z_applyfix_prog[] =
+	"/../fixincludes/applyfix" EXE_EXT;
 
-        argsize = 32
-                + strlen( pz_orig_dir )
-                + sizeof( z_applyfix_prog )
-                + strlen( pz_fix_file )
-                + strlen( pz_file_source )
-                + strlen( pz_temp_file );
+      struct stat buf;
+      argsize = 32
+              + strlen (pz_orig_dir)
+              + sizeof (z_applyfix_prog)
+              + strlen (pz_fix_file)
+              + strlen (pz_file_source)
+              + strlen (pz_temp_file);
 
-        pz_cmd = xmalloc (argsize);
+      /* Allocate something sure to be big enough for our purposes */
+      pz_cmd = xmalloc (argsize);
+      strcpy (pz_cmd, pz_orig_dir);
+      pz_scan = pz_cmd + strlen (pz_orig_dir);
 
-        strcpy( pz_cmd, pz_orig_dir );
-        pz_scan = pz_cmd + strlen( pz_orig_dir );
-        strcpy( pz_scan, z_applyfix_prog );
-        pz_scan += sizeof( z_applyfix_prog ) - 1;
+      strcpy (pz_scan, z_applyfix_prog);
 
-	if (stat (pz_scan, &buf) != -1)
-	  {
-            *(pz_scan++) = ' ';
-            /*
-             *  Now add the fix number and file names that may be needed
-             */
-            sprintf (pz_scan, "%ld \'%s\' \'%s\' \'%s\'", p_fixd - fixDescList,
-	             pz_fix_file, pz_file_source, pz_temp_file);
-	    break;
-	  }
-      }
+      /* IF we can't find the "applyfix" executable file at the first guess,
+	 try one level higher up  */
+      if (stat (pz_cmd, &buf) == -1)
+	{
+	  strcpy (pz_scan, "/..");
+	  strcpy (pz_scan+3, z_applyfix_prog);
+	}
+
+      pz_scan += strlen (pz_scan);
+
+      /*
+       *  Now add the fix number and file names that may be needed
+       */
+      sprintf (pz_scan, " %ld \'%s\' \'%s\' \'%s\'", p_fixd - fixDescList,
+	       pz_fix_file, pz_file_source, pz_temp_file);
+    }
   else /* NOT an "internal" fix: */
     {
       size_t parg_size;
