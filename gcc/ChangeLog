@@ -1,3 +1,7 @@
+Fri Sep  3 15:49:56 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtl.h (RTL_CHECKC2): Fix typo in last change.
+
 Fri Sep  3 15:13:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (propagate_block): Use XEXP not SET_DEST for a USE.

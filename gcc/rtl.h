@@ -294,7 +294,7 @@ extern void rtvec_check_failed_bounds PROTO((rtvec, int,
 #define RTL_CHECK1(RTX, N, C1)      ((RTX)->fld[N])
 #define RTL_CHECK2(RTX, N, C1, C2)  ((RTX)->fld[N])
 #define RTL_CHECKC1(RTX, N, C)	    ((RTX)->fld[N])
-#define RTL_CHECKC2(RTX, N, C1, C1) ((RTX)->fld[N])
+#define RTL_CHECKC2(RTX, N, C1, C2) ((RTX)->fld[N])
 #define RTVEC_ELT(RTVEC, I)	    ((RTVEC)->elem[I])
 
 #endif
