@@ -871,6 +871,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
       return NULL;
 
     case tcc_binary:
+    case tcc_comparison:
       {
 	tree oldop1 = TREE_OPERAND (expr, 0);
 	tree oldop2 = TREE_OPERAND (expr, 1);
@@ -1057,6 +1058,7 @@ valid_in_set (value_set_t set, tree expr)
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_binary:
+    case tcc_comparison:
       {
 	tree op1 = TREE_OPERAND (expr, 0);
 	tree op2 = TREE_OPERAND (expr, 1);
@@ -1076,6 +1078,10 @@ valid_in_set (value_set_t set, tree expr)
     case tcc_exceptional:
       gcc_assert (TREE_CODE (expr) == SSA_NAME);
       return true;
+
+    case tcc_declaration:
+      /* VAR_DECL and PARM_DECL are never anticipatable.  */
+      return false;
 
     default:
       /* No other cases should be encountered.  */
@@ -1284,6 +1290,7 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
       genop = VALUE_HANDLE_EXPR_SET (expr)->head->expr;
       gcc_assert (UNARY_CLASS_P (genop)
 		  || BINARY_CLASS_P (genop)
+		  || COMPARISON_CLASS_P (genop)
 		  || REFERENCE_CLASS_P (genop));
       genop = create_expression_by_pieces (block, genop, stmts);
     }
@@ -1315,6 +1322,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_binary:
+    case tcc_comparison:
       {
 	tree_stmt_iterator tsi;
 	tree forced_stmts;
@@ -1466,6 +1474,7 @@ insert_into_preds_of_block (basic_block block, value_set_node_t node,
       bprime = pred->src;
       eprime = avail[bprime->index];
       if (BINARY_CLASS_P (eprime)
+	  || COMPARISON_CLASS_P (eprime)
 	  || UNARY_CLASS_P (eprime))
 	{
 	  builtexpr = create_expression_by_pieces (bprime,
@@ -1579,6 +1588,7 @@ insert_aux (basic_block block)
 		   node = node->next)
 		{
 		  if (BINARY_CLASS_P (node->expr)
+		      || COMPARISON_CLASS_P (node->expr)
 		      || UNARY_CLASS_P (node->expr))
 		    {
 		      tree *avail;
@@ -1767,43 +1777,71 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, bitmap_set_t s1,
 /* Given a unary or binary expression EXPR, create and return a new
    expression with the same structure as EXPR but with its operands
    replaced with the value handles of each of the operands of EXPR.
-   Insert EXPR's operands into the EXP_GEN set for BLOCK.
 
    VUSES represent the virtual use operands associated with EXPR (if
-   any). They are used when computing the hash value for EXPR.  */
+   any). They are used when computing the hash value for EXPR.
+   Insert EXPR's operands into the EXP_GEN set for BLOCK. */
 
 static inline tree
-create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
+create_value_expr_from (tree expr, basic_block block,
+			vuse_optype vuses)
+
 {
   int i;
   enum tree_code code = TREE_CODE (expr);
   tree vexpr;
+  alloc_pool pool;
 
   gcc_assert (TREE_CODE_CLASS (code) == tcc_unary
 	      || TREE_CODE_CLASS (code) == tcc_binary
+	      || TREE_CODE_CLASS (code) == tcc_comparison
 	      || TREE_CODE_CLASS (code) == tcc_reference);
 
   if (TREE_CODE_CLASS (code) == tcc_unary)
-    vexpr = pool_alloc (unary_node_pool);
+    pool = unary_node_pool;
   else if (TREE_CODE_CLASS (code) == tcc_reference)
-    vexpr = pool_alloc (reference_node_pool);
+    pool = reference_node_pool;
   else
-    vexpr = pool_alloc (binary_node_pool);
+    pool = binary_node_pool;
 
+  vexpr = pool_alloc (pool);
   memcpy (vexpr, expr, tree_size (expr));
 
   for (i = 0; i < TREE_CODE_LENGTH (code); i++)
     {
-      tree op = TREE_OPERAND (expr, i);
-      if (op != NULL)
+      tree val, op;
+      
+      op = TREE_OPERAND (expr, i);
+      if (op == NULL_TREE)
+	continue;
+
+      /* If OP is a constant that has overflowed, do not value number
+	 this expression.  */
+      if (TREE_CODE_CLASS (TREE_CODE (op)) == tcc_constant
+	  && TREE_OVERFLOW (op))
 	{
-	  tree val = vn_lookup_or_add (op, vuses);
-	  if (!is_undefined_value (op))
-	    value_insert_into_set (EXP_GEN (block), op);
-	  if (TREE_CODE (val) == VALUE_HANDLE)
-	    TREE_TYPE (val) = TREE_TYPE (TREE_OPERAND (vexpr, i));
-	  TREE_OPERAND (vexpr, i) = val;
+	  pool_free (pool, vexpr);
+	  return NULL;
 	}
+
+      /* Recursively value-numberize reference ops */
+      if (TREE_CODE_CLASS (TREE_CODE (op)) == tcc_reference)
+	{
+	  tree tempop = create_value_expr_from (op, block, vuses);
+	  op = tempop ? tempop : op;
+	  val = vn_lookup_or_add (op, vuses);
+	}
+      else       
+	/* Create a value handle for OP and add it to VEXPR.  */
+	val = vn_lookup_or_add (op, NULL);
+
+      if (!is_undefined_value (op))
+	value_insert_into_set (EXP_GEN (block), op);
+
+      if (TREE_CODE (val) == VALUE_HANDLE)
+	TREE_TYPE (val) = TREE_TYPE (TREE_OPERAND (vexpr, i));
+
+      TREE_OPERAND (vexpr, i) = val;
     }
 
   return vexpr;
@@ -1902,8 +1940,29 @@ compute_avail (void)
 	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
 	      STRIP_USELESS_TYPE_CONVERSION (rhs);
-	      if (TREE_CODE (rhs) == SSA_NAME
-		  || is_gimple_min_invariant (rhs))
+	      if (UNARY_CLASS_P (rhs)
+		  || BINARY_CLASS_P (rhs)
+		  || COMPARISON_CLASS_P (rhs)
+		  || REFERENCE_CLASS_P (rhs))
+		{
+		  /* For binary, unary, and reference expressions,
+		     create a duplicate expression with the operands
+		     replaced with the value handles of the original
+		     RHS.  */
+		  tree newt = create_value_expr_from (rhs, block, vuses);
+		  if (newt)
+		    {
+		      add_to_sets (lhs, newt, vuses, TMP_GEN (block),
+				   AVAIL_OUT (block));
+		      value_insert_into_set (EXP_GEN (block), newt);
+		      continue;
+		    }
+		}
+	      else if (TREE_CODE (rhs) == SSA_NAME
+		       || is_gimple_min_invariant (rhs)
+		       || TREE_INVARIANT (rhs)
+		       || TREE_CODE (rhs) == ADDR_EXPR
+		       || DECL_P (rhs))
 		{
 		  /* Compute a value number for the RHS of the statement
 		     and add its value to the AVAIL_OUT set for the block.
@@ -1916,19 +1975,6 @@ compute_avail (void)
 		    value_insert_into_set (EXP_GEN (block), rhs);
 		  continue;
 		}	   
-	      else if (UNARY_CLASS_P (rhs) || BINARY_CLASS_P (rhs)
-		       || TREE_CODE (rhs) == INDIRECT_REF)
-		{
-		  /* For binary, unary, and reference expressions,
-		     create a duplicate expression with the operands
-		     replaced with the value handles of the original
-		     RHS.  */
-		  tree newt = create_value_expr_from (rhs, block, vuses);
-		  add_to_sets (lhs, newt, vuses, TMP_GEN (block),
-			       AVAIL_OUT (block));
-		  value_insert_into_set (EXP_GEN (block), newt);
-		  continue;
-		}
 	    }
 
 	  /* For any other statement that we don't recognize, simply
@@ -2286,10 +2332,10 @@ execute_pre (bool do_fre)
 
   if (dump_file && (dump_flags & TDF_STATS))
     {
-      fprintf (dump_file, "Insertions:%d\n", pre_stats.insertions);
-      fprintf (dump_file, "New PHIs:%d\n", pre_stats.phis);
-      fprintf (dump_file, "Eliminated:%d\n", pre_stats.eliminations);
-      fprintf (dump_file, "Constified:%d\n", pre_stats.constified);
+      fprintf (dump_file, "Insertions: %d\n", pre_stats.insertions);
+      fprintf (dump_file, "New PHIs: %d\n", pre_stats.phis);
+      fprintf (dump_file, "Eliminated: %d\n", pre_stats.eliminations);
+      fprintf (dump_file, "Constified: %d\n", pre_stats.constified);
     }
   
   bsi_commit_edge_inserts ();
@@ -2336,7 +2382,7 @@ struct tree_opt_pass pass_pre =
 /* Gate and execute functions for FRE.  */
 
 static void
-do_fre (void)
+execute_fre (void)
 {
   execute_pre (true);
 }
@@ -2351,7 +2397,7 @@ struct tree_opt_pass pass_fre =
 {
   "fre",				/* name */
   gate_fre,				/* gate */
-  do_fre,				/* execute */
+  execute_fre,				/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
