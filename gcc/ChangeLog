@@ -1,5 +1,7 @@
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* invoke.texi (-I): Add note avoiding use for system header files.
+
 	* final.c (output_operand_lossage): Use internal_error, not error.
 
 2001-02-18  Shane Nay  <shane@agendacomputing.com>
