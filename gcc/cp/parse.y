@@ -214,6 +214,8 @@ check_class_key (key, aggr)
      tree key;
      tree aggr;
 {
+  if (TREE_CODE (key) == TREE_LIST)
+    key = TREE_VALUE (key);
   if ((key == union_type_node) != (TREE_CODE (aggr) == UNION_TYPE))
     pedwarn ("`%s' tag used in naming `%#T'",
 	     key == union_type_node ? "union"
