@@ -25,6 +25,7 @@ typedef struct
 {
   int flags;            // Flags are defined in implementation.
   HANDLE handle;        // Actual handle to the thread
+  java::lang::Thread *thread_obj;
 } _Jv_Thread_t;
 
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
@@ -119,6 +120,9 @@ _Jv_ThreadYield (void)
 {
   Sleep (0);
 }
+
+void _Jv_ThreadRegister (_Jv_Thread_t *data);
+void _Jv_ThreadUnRegister ();
 
 void _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio);
 void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,

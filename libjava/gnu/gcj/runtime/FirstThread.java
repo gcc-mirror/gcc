@@ -19,58 +19,28 @@ import java.util.jar.*;
 
 // This is entirely internal to our implementation.
 
-final class FirstThread extends Thread
+final class FirstThread
 {
-  public native void run ();
-
-  public FirstThread (Class k, Object o)
+  public static String getMain (String name)
   {
-    super (null, null, "main");
-    klass = k;
-    klass_name = null;
-    args = o;
-  }
-
-  public FirstThread (String class_name, Object o)
-  {
-    super (null, null, "main");
-    klass = null;
-    klass_name = class_name;
-    args = o;
-  }
-
-  private static void die (String s)
-  {
-    System.err.println(s);
-    System.exit(1);
-  }
-
-  public static void main (String[] args)
-  {
+    String mainName = null;
     try {
 
-      JarFile j = new JarFile (args[0]);
+      JarFile j = new JarFile (name);
 
       Attributes a = j.getManifest().getMainAttributes();
 
-      jarMainClassName = a.getValue(Attributes.Name.MAIN_CLASS);
+      mainName = a.getValue(Attributes.Name.MAIN_CLASS);
 
-      if (jarMainClassName != null)
-      {
-	jarMainClassName = jarMainClassName.replace('/','.');
-	return;
-      }
     } catch (Exception e) {
       // empty
     }
 
-    System.err.println ("Failed to load Main-Class manifest attribute from\n"
-			+ args[0]);
+    if (mainName == null)
+      System.err.println ("Failed to load Main-Class manifest attribute from\n"
+			  + name);
+    return mainName;
   }
-
-  // If interpreter is invoked with -jar, the main class name is recorded
-  // here.
-  public static String jarMainClassName;
 
   // Private data.
   private Class klass;

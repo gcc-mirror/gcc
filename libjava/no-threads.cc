@@ -16,14 +16,20 @@ details.  */
 
 java::lang::Thread *_Jv_OnlyThread = NULL;
 
-void
-_Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *,
-		 _Jv_ThreadStartFunc *meth)
+_Jv_Thread_t *
+_Jv_ThreadInitData (java::lang::Thread * thread)
 {
   // Don't use JvAssert, since we want this to fail even when compiled
   // without assertions.
   if (_Jv_OnlyThread)
     JvFail ("only thread already running");
   _Jv_OnlyThread = thread;
-  (*meth) (thread);
+  return NULL;
+}
+
+void
+_Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *,
+		 _Jv_ThreadStartFunc *meth)
+{
+  JvFail ("Thread.start called but threads not available");
 }

@@ -40,12 +40,13 @@ details.  */
 #include <java/util/Hashtable.h>
 #include <java/lang/Integer.h>
 #include <java/lang/ThreadGroup.h>
-#include <gnu/gcj/jni/NativeThread.h>
+#include <java/lang/Thread.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
 
 #include <java-interp.h>
+#include <java-threads.h>
 
 // FIXME: remove these defines.
 #define ClassClass java::lang::Class::class$
@@ -53,7 +54,6 @@ details.  */
 #define ThrowableClass java::lang::Throwable::class$
 #define MethodClass java::lang::reflect::Method::class$
 #define ThreadGroupClass java::lang::ThreadGroup::class$
-#define NativeThreadClass gnu::gcj::jni::NativeThread::class$
 
 // This enum is used to select different template instantiations in
 // the invocation code.
@@ -1862,7 +1862,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
     {
       try
 	{
-	  (void) new gnu::gcj::jni::NativeThread (group, name);
+	  _Jv_AttachCurrentThread (name, group);
 	}
       catch (jthrowable t)
 	{
@@ -1916,28 +1916,11 @@ _Jv_JNI_DestroyJavaVM (JavaVM *vm)
   return JNI_ERR;
 }
 
-static jint
+jint
 _Jv_JNI_DetachCurrentThread (JavaVM *)
 {
-  java::lang::Thread *t = _Jv_ThreadCurrent ();
-  if (t == NULL)
-    return JNI_EDETACHED;
-
-  // FIXME: we only allow threads attached via AttachCurrentThread to
-  // be detached.  I have no idea how we could implement detaching
-  // other threads, given the requirement that we must release all the
-  // monitors.  That just seems evil.
-  JvAssert ((&NativeThreadClass)->isInstance (t));
-
-  // FIXME: release the monitors.  We'll take this to mean all
-  // monitors acquired via the JNI interface.  This means we have to
-  // keep track of them.
-
-  gnu::gcj::jni::NativeThread *nt
-    = reinterpret_cast<gnu::gcj::jni::NativeThread *> (t);
-  nt->finish ();
-
-  return 0;
+  jint code = _Jv_DetachCurrentThread ();
+  return code  ? JNI_EDETACHED : 0;
 }
 
 static jint

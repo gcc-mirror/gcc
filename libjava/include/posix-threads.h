@@ -194,6 +194,9 @@ _Jv_ThreadYield (void)
 #endif /* HAVE_SCHED_YIELD */
 }
 
+void _Jv_ThreadRegister (_Jv_Thread_t *data);
+void _Jv_ThreadUnRegister ();
+
 void _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio);
 
 void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,

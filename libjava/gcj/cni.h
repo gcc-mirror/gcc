@@ -118,4 +118,22 @@ JvFree (void *ptr)
 {
   return _Jv_Free (ptr);
 }
+
+extern inline jint
+JvCreateJavaVM (void* vm_args)
+{
+  return _Jv_CreateJavaVM (vm_args);
+}
+
+extern inline java::lang::Thread*
+JvAttachCurrentThread (jstring name, java::lang::ThreadGroup* group)
+{
+  return _Jv_AttachCurrentThread (name, group);
+}
+
+extern inline jint
+JvDetachCurrentThread (void)
+{
+  return _Jv_DetachCurrentThread ();
+}
 #endif /* __GCJ_CNI_H__ */

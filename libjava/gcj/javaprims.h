@@ -380,6 +380,11 @@ extern "C" jstring _Jv_NewStringLatin1(const char*, jsize)
 extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
 
+extern jint _Jv_CreateJavaVM (void* /*vm_args*/);
+extern "C" java::lang::Thread*
+_Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);
+extern "C" jint _Jv_DetachCurrentThread (void);
+
 extern "C" void _Jv_Throw (jthrowable) __attribute__ ((__noreturn__));
 extern "C" void* _Jv_Malloc (jsize) __attribute__((__malloc__));
 extern "C" void* _Jv_Realloc (void *, jsize);

@@ -1,6 +1,6 @@
 // natThread.cc - Native part of Thread class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -59,7 +59,7 @@ java::lang::Thread::initialize_native (void)
 {
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
   
-  // The native thread data is kept in a Object field, not a rawdata, so that
+  // The native thread data is kept in a Object field, not a RawData, so that
   // the GC allocator can be used and a finalizer run after the thread becomes
   // unreachable. Note that this relies on the GC's ability to finalize 
   // non-Java objects. FIXME?
@@ -322,6 +322,34 @@ java::lang::Thread::suspend (void)
     (JvNewStringLatin1 ("java::lang::Thread::suspend unimplemented"));
 }
 
+static int nextThreadNumber = 0;
+
+jstring
+java::lang::Thread::gen_name (void)
+{
+  jint i;
+  jclass sync = &java::lang::Thread::class$;
+  {
+    JvSynchronize dummy(sync); 
+    i = ++nextThreadNumber;
+  }
+
+  // Use an array large enough for "-2147483648"; i.e. 11 chars, + "Thread-".
+  jchar buffer[7+11];
+  jchar *bufend = (jchar *) ((char *) buffer + sizeof(buffer));
+  i = _Jv_FormatInt (bufend, i);
+  jchar *ptr = bufend - i;
+  // Prepend "Thread-".
+  *--ptr = '-';
+  *--ptr = 'd';
+  *--ptr = 'a';
+  *--ptr = 'e';
+  *--ptr = 'r';
+  *--ptr = 'h';
+  *--ptr = 'T';
+  return JvNewString (ptr, bufend - ptr);
+}
+
 void
 java::lang::Thread::yield (void)
 {
@@ -343,4 +371,34 @@ _Jv_SetCurrentJNIEnv (JNIEnv *env)
   java::lang::Thread *t = _Jv_ThreadCurrent ();
   JvAssert (t != NULL);
   ((natThread *) t->data)->jni_env = env;
+}
+
+java::lang::Thread*
+_Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
+{
+  java::lang::Thread *thread = _Jv_ThreadCurrent ();
+  if (thread != NULL)
+    return thread;
+  if (name == NULL)
+    name = java::lang::Thread::gen_name ();
+  thread = new java::lang::Thread (NULL, group, NULL, name);
+  thread->startable_flag = false;
+  thread->alive_flag = true;
+  natThread *nt = (natThread *) thread->data;
+  _Jv_ThreadRegister (nt->thread);
+  return thread;
+}
+
+jint
+_Jv_DetachCurrentThread (void)
+{
+  java::lang::Thread *t = _Jv_ThreadCurrent ();
+  if (t == NULL)
+    return -1;
+
+  _Jv_ThreadUnRegister ();
+  // Release the monitors.
+  t->finish_ ();
+
+  return 0;
 }

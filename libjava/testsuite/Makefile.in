@@ -73,6 +73,7 @@ CXXCPP = @CXXCPP@
 DIRLTDL = @DIRLTDL@
 DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
+EXCEPTIONSPEC = @EXCEPTIONSPEC@
 EXEEXT = @EXEEXT@
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 GCDEPS = @GCDEPS@
@@ -122,14 +123,10 @@ libgcj_basedir = @libgcj_basedir@
 AUTOMAKE_OPTIONS = foreign dejagnu
 
 # Setup the testing framework, if you have one
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
-            echo $(top_builddir)/../expect/expect ; \
-          else echo expect ; fi`
+EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then             echo $(top_builddir)/../expect/expect ;           else echo expect ; fi`
 
 
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
-	       echo $(top_srcdir)/../dejagnu/runtest ; \
-	    else echo runtest; fi`
+RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then 	       echo $(top_srcdir)/../dejagnu/runtest ; 	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = @AM_RUNTESTFLAGS@

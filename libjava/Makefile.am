@@ -303,12 +303,12 @@ gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.jar
 java/lang/Thread.h: java/lang/Thread.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
-		-prepend 'extern "Java" { namespace gnu { namespace gcj { namespace jni { class NativeThread; } } } };' \
 		-prepend '#define _JV_NOT_OWNER 1' \
 		-prepend '#define _JV_INTERRUPTED 2' \
 		-friend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
 		-friend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
-		-friend 'class gnu::gcj::jni::NativeThread;' \
+		-friend 'java::lang::Thread* _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);' \
+		-friend 'jint _Jv_DetachCurrentThread ();' \
 		$(basename $<)
 
 java/lang/String.h: java/lang/String.class libgcj.jar
@@ -1008,7 +1008,6 @@ gnu/gcj/RawData.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
-gnu/gcj/jni/NativeThread.java \
 gnu/gcj/math/MPN.java \
 gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
@@ -1308,8 +1307,6 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
-gnu/gcj/jni/natNativeThread.cc \
-gnu/gcj/runtime/natFirstThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
