@@ -1,3 +1,8 @@
+Fri Nov 21 09:51:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config.guess (alpha stuff): Merge with FSF to avoid incorrect
+	guesses.
+
 Thu Nov 13 11:38:37 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (i[3456]86-ncr-sysv4.3*): Tweak.
