@@ -1001,7 +1001,6 @@ branch_prob (void)
       else
 	{
 	  gcov_position_t offset;
-	  location_t *curr_location = NULL;
 
 	  FOR_EACH_BB (bb)
 	    {
@@ -1011,31 +1010,38 @@ branch_prob (void)
 
 	      if (bb == ENTRY_BLOCK_PTR->next_bb)
 		{
-		  curr_location = &DECL_SOURCE_LOCATION (current_function_decl);
-		  output_location (curr_location->file, curr_location->line,
+		  expanded_location curr_location = 
+		    expand_location (DECL_SOURCE_LOCATION
+				     (current_function_decl));
+		  output_location (curr_location.file, curr_location.line,
 				   &offset, bb);
 		}
 
 	      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 		{
 		  tree stmt = bsi_stmt (bsi);
-#ifdef USE_MAPPED_LOCATION
-		  curr_location = EXPR_LOCATION (stmt);
-#else
-		  curr_location = EXPR_LOCUS (stmt);
-#endif
-		  if (curr_location)
-		    output_location (curr_location->file, curr_location->line,
+		  if (EXPR_HAS_LOCATION (stmt))
+		    output_location (EXPR_FILENAME (stmt), 
+				     EXPR_LINENO (stmt),
 				     &offset, bb);
 		}
 
 	      /* Notice GOTO expressions we eliminated while constructing the
-	         CFG.  */
+		 CFG.  */
 	      if (bb->succ && !bb->succ->succ_next && bb->succ->goto_locus)
-	        {
-		  curr_location = bb->succ->goto_locus;
-	          output_location (curr_location->file, curr_location->line, &offset, bb);
-	        }
+		{
+		  /* ??? source_locus type is marked deprecated in input.h.  */
+		  source_locus curr_location = bb->succ->goto_locus;
+		  /* ??? The FILE/LINE API is inconsistent for these cases.  */
+#ifdef USE_MAPPED_LOCATION 
+		  output_location (LOCATION_FILE (curr_location),
+				   LOCATION_LINE (curr_location),
+				   &offset, bb);
+#else
+		  output_location (curr_location->file, curr_location->line,
+				   &offset, bb);
+#endif
+		}
 
 	      if (offset)
 		{
