@@ -106,6 +106,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef ASM_FINAL_SPEC
 #define ASM_FINAL_SPEC "%{pipe:-}"
 
+/* Under svr4, the normal location of the `ld' and `as' programs is the
+   /usr/ccs/bin directory.  */
+
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/usr/ccs/bin/"
+
 /* Under svr4, the normal location of the various *crt*.o files is the
    /usr/ccs/lib directory.  */
 
