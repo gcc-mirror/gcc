@@ -168,6 +168,11 @@ static HARD_REG_SET bad_spill_regs;
    elements that are actually valid; new ones are added at the end.  */
 static short spill_regs[FIRST_PSEUDO_REGISTER];
 
+/* Index of last register assigned as a spill register.  We allocate in
+   a round-robin fashion.  */
+
+static int last_spill_reg;
+
 /* Describes order of preference for putting regs into spill_regs.
    Contains the numbers of all the hard regs, in order most preferred first.
    This order is different for each function.
@@ -690,6 +695,9 @@ reload (first, global, dumpfile)
   n_spills = 0;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     spill_reg_order[i] = -1;
+
+  /* Initialize to -1, which means take the first spill register.  */
+  last_spill_reg = -1;
 
   /* On most machines, we can't use any register explicitly used in the
      rtl as a spill register.  But on some, we have to.  Those will have
@@ -4685,11 +4693,6 @@ rtx reload_override_in[MAX_RELOADS];
 /* For each reload, the index in spill_regs of the spill register used,
    or -1 if we did not need one of the spill registers for this reload.  */
 int reload_spill_index[MAX_RELOADS];
-
-/* Index of last register assigned as a spill register.  We allocate in
-   a round-robin fashio.  */
-
-static int last_spill_reg = 0;
 
 /* Find a spill register to use as a reload register for reload R.
    LAST_RELOAD is non-zero if this is the last reload for the insn being
