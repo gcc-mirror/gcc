@@ -1,3 +1,8 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* decl.c: Rename all identifiers named `class' to `cl'.
+	* cp-tree.h: Likewise.
+
 2004-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (TYPE_SET_PTRMEMFUNC_TYPE): Use GGC_CNEW.
