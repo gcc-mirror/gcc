@@ -40,7 +40,7 @@ main (void)
         }
     }
 
-  if (sum != 0xbecfcbf5)
+  if ((sum & 0xffffffff) != 0xbecfcbf5)
     abort ();
 #endif
 
