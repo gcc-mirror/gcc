@@ -1,3 +1,40 @@
+2004-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/testsuite_tr1.h: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_arithmetic/is_arithmetic.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_arithmetic/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_fundamental/is_fundamental.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_fundamental/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/helper_classes/
+	true_false_type.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/helper_classes/
+	true_false_type_typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/helper_classes/
+	typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_array/is_array.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_array/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_floating_point/is_floating_point.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_floating_point/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_integral/is_integral.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_integral/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_void/is_void.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_void/typedefs.cc: Likewise.
+
 2004-12-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/testsuite_io.h (class sync_buf): New, templatized
