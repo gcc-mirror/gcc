@@ -45,6 +45,7 @@ struct string_option
   int on_value;
 };
 
+static void java_init PARAMS ((void));
 static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
 static void java_dummy_print PARAMS ((const char *));
@@ -187,7 +188,9 @@ static int dependency_tracking = 0;
 #define DEPEND_FILE_ALREADY_SET 8
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {NULL /* post_options */};
+struct lang_hooks lang_hooks = {java_init,
+				NULL, /* java_finish */
+				NULL /* post_options */};
 
 /* Process an option that can accept a `no-' form.
    Return 1 if option found, 0 otherwise.  */
@@ -615,8 +618,8 @@ lang_print_error (file)
 
 }
 
-void
-lang_init ()
+static void
+java_init ()
 {
 #if 0
   extern int flag_minimal_debug;
@@ -680,11 +683,6 @@ lang_init_options ()
 {
   flag_new_exceptions = 1;
   flag_bounds_check = 1;
-}
-
-void
-lang_finish ()
-{
 }
 
 const char *

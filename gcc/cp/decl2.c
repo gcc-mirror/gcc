@@ -59,7 +59,6 @@ typedef struct priority_info_s {
   int destructions_p;
 } *priority_info;
 
-static void cxx_post_options PARAMS ((void));
 static void mark_vtable_entries PARAMS ((tree));
 static void grok_function_init PARAMS ((tree, tree));
 static int finish_vtable_vardecl PARAMS ((tree *, void *));
@@ -543,16 +542,6 @@ static const char * const unsupported_options[] = {
   "this-is-variable",
   "strict-prototype",
 };
-
-/* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {cxx_post_options};
-
-/* Post-switch processing.  */
-static void
-cxx_post_options ()
-{
-  cpp_post_options (parse_in);
-}
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
    bsearch.  */
