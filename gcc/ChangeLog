@@ -40,10 +40,6 @@ Sun Oct 11 16:49:15 EDT 1998  John Wehle  (john@feith.com)
 	* i386.c (ix86_epilogue): Optimize the restoring
 	of the stack pointer.
 
-Mon Oct 12 02:03:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* i386/t-cygwin32 (TARGET_LIBGCC2_CFLAGS): Define.
-
 Mon Oct 12 01:22:53 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
