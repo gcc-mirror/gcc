@@ -1997,49 +1997,6 @@ check_explicit_specialization (tree declarator,
   return decl;
 }
 
-/* TYPE is being declared.  Verify that the use of template headers
-   and such is reasonable.  Issue error messages if not.  */
-
-void
-maybe_check_template_type (tree type)
-{
-  if (template_header_count)
-    {
-      /* We are in the scope of some `template <...>' header.  */
-
-      int context_depth 
-	= template_class_depth_real (TYPE_CONTEXT (type),
-				     /*count_specializations=*/1);
-
-      if (template_header_count <= context_depth)
-	/* This is OK; the template headers are for the context.  We
-	   are actually too lenient here; like
-	   check_explicit_specialization we should consider the number
-	   of template types included in the actual declaration.  For
-	   example, 
-
-	     template <class T> struct S {
-	       template <class U> template <class V>
-	       struct I {};
-	     }; 
-
-	   is invalid, but:
-
-	     template <class T> struct S {
-	       template <class U> struct I;
-	     }; 
-
-	     template <class T> template <class U.
-	     struct S<T>::I {};
-
-	   is not.  */
-	; 
-      else if (template_header_count > context_depth + 1)
-	/* There are two many template parameter lists.  */
-	error ("too many template parameter lists in declaration of `%T'", type); 
-    }
-}
-
 /* Returns 1 iff PARMS1 and PARMS2 are identical sets of template
    parameters.  These are represented in the same format used for
    DECL_TEMPLATE_PARMS.  */

@@ -1,3 +1,12 @@
+2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14479
+	PR c++/19487
+	* pt.c (maybe_check_template_type): Remove.
+	* cp-tree.h (maybe_check_template_type): Remove prototype.
+	* name-lookup.c (maybe_process_template_type_declaration): Don't
+	use maybe_check_template_type.
+
 2005-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19755

@@ -3921,7 +3921,6 @@ extern int is_specialization_of                 (tree, tree);
 extern bool is_specialization_of_friend         (tree, tree);
 extern int comp_template_args                   (tree, tree);
 extern void maybe_process_partial_specialization (tree);
-extern void maybe_check_template_type           (tree);
 extern tree most_specialized_instantiation      (tree);
 extern void print_candidates                    (tree);
 extern int instantiate_pending_templates        (void);

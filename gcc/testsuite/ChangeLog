@@ -1,3 +1,9 @@
+2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14479
+	PR c++/19487
+	* g++.dg/template/enum5.C: New test.
+
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19666
