@@ -1,3 +1,7 @@
+2000-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/eh.C: New test.
+
 2000-05-12  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990208-1.c (main): Don't pass
