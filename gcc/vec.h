@@ -339,7 +339,7 @@ static inline TDEF *VEC_OP (TDEF,safe_push)				  \
      (VEC (TDEF) **vec_, TDEF obj_)					  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~0u);					  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
 									  \
   return VEC_OP (TDEF,quick_push) (*vec_, obj_);			  \
 }									  \
@@ -385,7 +385,7 @@ static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
      (VEC (TDEF) **vec_, size_t ix_, TDEF obj_)       			  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~0u);					  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
 									  \
   return VEC_OP (TDEF,quick_insert) (*vec_, ix_, obj_);			  \
 }									  \
@@ -495,7 +495,7 @@ static inline TDEF *VEC_OP (TDEF,safe_push)				  \
      (VEC (TDEF) **vec_, const TDEF *obj_)				  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~0u);					  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
 									  \
   return VEC_OP (TDEF,quick_push) (*vec_, obj_);			  \
 }									  \
@@ -539,7 +539,7 @@ static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
      (VEC (TDEF) **vec_, size_t ix_, const TDEF *obj_)			  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~0u);					  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
 									  \
   return VEC_OP (TDEF,quick_insert) (*vec_, ix_, obj_);			  \
 }									  \
