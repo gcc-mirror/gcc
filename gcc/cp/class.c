@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "splay-tree.h"
 #include "ggc.h"
+#include "lex.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -465,8 +466,9 @@ build_vtable_entry_ref (basetype, vtbl, idx)
   i = build_binary_op (MINUS_EXPR, i, i2);
   i = build_tree_list (build_string (1, "i"), i);
 
-  expand_asm_operands (build_string (sizeof(asm_stmt)-1, asm_stmt),
-		       NULL_TREE, chainon (s, i), NULL_TREE, 1, NULL, 0);
+  finish_asm_stmt (ridpointers[RID_VOLATILE],
+		   build_string (sizeof(asm_stmt)-1, asm_stmt),
+		   NULL_TREE, chainon (s, i), NULL_TREE);
 }
 
 /* Given an object INSTANCE, return an expression which yields the
@@ -3860,19 +3862,15 @@ finish_struct_1 (t)
 
   my_friendly_assert (TYPE_FIELDS (t) == fields, 981117);
 
-  /* Delete all zero-width bit-fields from the front of the fieldlist */
-  while (fields && DECL_C_BIT_FIELD (fields)
-	 && DECL_INITIAL (fields))
-    fields = TREE_CHAIN (fields);
-  /* Delete all such fields from the rest of the fields.  */
-  for (x = fields; x;)
-    {
-      if (TREE_CHAIN (x) && DECL_C_BIT_FIELD (TREE_CHAIN (x))
-	  && DECL_INITIAL (TREE_CHAIN (x)))
-	TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
+  /* Delete all zero-width bit-fields from the fieldlist */
+  {
+    tree *fieldsp = &fields;
+    while (*fieldsp && TREE_CODE (*fieldsp) == FIELD_DECL)
+      if (DECL_C_BIT_FIELD (*fieldsp) && DECL_INITIAL (*fieldsp))
+	*fieldsp = TREE_CHAIN (*fieldsp);
       else
-	x = TREE_CHAIN (x);
-    }
+	fieldsp = &TREE_CHAIN (*fieldsp);
+  }
   TYPE_FIELDS (t) = fields;
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
