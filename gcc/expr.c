@@ -1824,7 +1824,11 @@ emit_move_insn_1 (x, y)
 		     (gen_lowpart (submode, x), gen_lowpart (submode, y)));
 	}
 
-      group_insns (prev);
+      if (GET_CODE (x) != CONCAT)
+	/* If X is a CONCAT, we got insns like RD = RS, ID = IS,
+	   each with a separate pseudo as destination.
+	   It's not correct for flow to treat them as a unit.  */
+	group_insns (prev);
 
       return get_last_insn ();
     }
@@ -2310,7 +2314,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       tree dest_innermost;
 
       bc_expand_expr (from);
-      bc_emit_instruction (dup);
+      bc_emit_instruction (duplicate);
 
       dest_innermost = bc_expand_address (to);
 
@@ -5769,7 +5773,11 @@ expand_expr (exp, target, tmode, modifier)
 	emit_move_insn (gen_imagpart (mode, target), op1);
 
 	/* Complex construction should appear as a single unit.  */
-	group_insns (prev);
+	if (GET_CODE (target) != CONCAT)
+	  /* If TARGET is a CONCAT, we got insns like RD = RS, ID = IS,
+	     each with a separate pseudo as destination.
+	     It's not correct for flow to treat them as a unit.  */
+	  group_insns (prev);
 
 	return target;
       }
@@ -5809,7 +5817,11 @@ expand_expr (exp, target, tmode, modifier)
 	  emit_move_insn (imag_t, temp);
 
 	/* Conjugate should appear as a single unit */
-	group_insns (prev);
+	if (GET_CODE (target) != CONCAT)
+	  /* If TARGET is a CONCAT, we got insns like RD = RS, ID = - IS,
+	     each with a separate pseudo as destination.
+	     It's not correct for flow to treat them as a unit.  */
+	  group_insns (prev);
 
 	return target;
       }
@@ -6001,7 +6013,7 @@ bc_expand_expr (exp)
 	  SAVE_EXPR_RTL (exp) = bc_allocate_local (int_size_in_bytes (TREE_TYPE (exp)),
 						   TYPE_ALIGN (TREE_TYPE(exp)));
 	  bc_expand_expr (TREE_OPERAND (exp, 0));
-	  bc_emit_instruction (dup);
+	  bc_emit_instruction (duplicate);
 	  
 	  bc_load_localaddr (SAVE_EXPR_RTL (exp));
 	  bc_store_memory (TREE_TYPE (exp), TREE_OPERAND (exp, 0));
@@ -6317,7 +6329,7 @@ bc_expand_expr (exp)
   bc_expand_truth_conversion (TREE_TYPE (TREE_OPERAND (exp, 0)));
   lab = bc_get_bytecode_label ();
   
-  bc_emit_instruction (dup);
+  bc_emit_instruction (duplicate);
   bc_emit_bytecode (opcode);
   bc_emit_bytecode_labelref (lab);
   
@@ -9639,7 +9651,7 @@ bc_expand_constructor (constr)
       if (list_length (CONSTRUCTOR_ELTS (constr))
 	  != list_length (TYPE_FIELDS (TREE_TYPE (constr))))
 	{
-	  bc_emit_instruction (dup);
+	  bc_emit_instruction (duplicate);
 	  bc_emit_instruction (constSI, (HOST_WIDE_INT) int_size_in_bytes (TREE_TYPE (constr)));
 	  bc_emit_instruction (clearBLK);
 	}
@@ -9686,7 +9698,7 @@ bc_expand_constructor (constr)
 	
 	if (list_length (CONSTRUCTOR_ELTS (constr)) < maxelt - minelt + 1)
 	  {
-	    bc_emit_instruction (dup);
+	    bc_emit_instruction (duplicate);
 	    bc_emit_instruction (constSI, (HOST_WIDE_INT) int_size_in_bytes (TREE_TYPE (constr)));
 	    bc_emit_instruction (clearBLK);
 	  }
