@@ -1465,7 +1465,8 @@ thumb_unexpanded_epilogue ()
       if ((live_regs_mask & (1 << PROGRAM_COUNTER)) == 0)
 	thumb_exit (asm_out_file,
 		    (had_to_push_lr
-		     && is_called_in_ARM_mode (current_function_decl)) ? -1 : LINK_REGISTER);
+		     && is_called_in_ARM_mode (current_function_decl)) ?
+		    -1 : LINK_REGISTER);
     }
   else
     {
@@ -1971,7 +1972,8 @@ thumb_return_in_memory (type)
   return 1;
 }
 
-void thumb_override_options()
+void
+thumb_override_options ()
 {
   if (structure_size_string != NULL)
     {
@@ -1981,5 +1983,11 @@ void thumb_override_options()
 	arm_structure_size_boundary = size;
       else
 	warning ("Structure size boundary can only be set to 8 or 32");
+    }
+
+  if (flag_pic)
+    {
+      warning ("Position independent code not supported.  Ignored");
+      flag_pic = 0;
     }
 }
