@@ -2003,7 +2003,7 @@ slightly under 32kbytes of data.
 Use this option on the AVR to indicate that the specified
 function is an signal handler.  The compiler will generate function
 entry and exit sequences suitable for use in an signal handler when this
-attribute is present. Interrupts will be disabled inside function.
+attribute is present.  Interrupts will be disabled inside function.
 
 @item naked
 @cindex function without a prologue/epilogue code
@@ -2561,7 +2561,7 @@ section, consider using the facilities of the linker instead.
 @cindex @code{shared} variable attribute
 On Windows NT, in addition to putting variable definitions in a named
 section, the section can also be shared among all running copies of an
-executable or DLL. For example, this small program defines shared data
+executable or DLL.  For example, this small program defines shared data
 by putting it in a named section @code{shared} and marking the section
 shareable:
 
@@ -3602,8 +3602,8 @@ This extension is not supported by GNU C++.
 @cindex @code{__func__} identifier
 
 GCC predefines two magic identifiers to hold the name of the current
-function. The identifier @code{__FUNCTION__} holds the name of the function
-as it appears in the source. The identifier @code{__PRETTY_FUNCTION__}
+function.  The identifier @code{__FUNCTION__} holds the name of the function
+as it appears in the source.  The identifier @code{__PRETTY_FUNCTION__}
 holds the name of the function pretty printed in a language specific
 fashion.
 
@@ -3642,10 +3642,10 @@ __PRETTY_FUNCTION__ = int  a::sub (int)
 @end smallexample
 
 The compiler automagically replaces the identifiers with a string
-literal containing the appropriate name. Thus, they are neither
+literal containing the appropriate name.  Thus, they are neither
 preprocessor macros, like @code{__FILE__} and @code{__LINE__}, nor
-variables. This means that they catenate with other string literals, and
-that they can be used to initialize char arrays. For example
+variables.  This means that they catenate with other string literals, and
+that they can be used to initialize char arrays.  For example
 
 @smallexample
 char here[] = "Function " __FUNCTION__ " in " __FILE__;
@@ -3668,7 +3668,7 @@ static const char __func__[] = "function-name";
 @end smallexample
 
 appeared, where function-name is the name of the lexically-enclosing
-function. This name is the unadorned name of the function.
+function.  This name is the unadorned name of the function.
 @end display
 
 By this definition, @code{__func__} is a variable, not a string literal.
@@ -3991,24 +3991,24 @@ works correctly.
 @cindex volatile write
 @cindex volatile access
 
-Both the C and C++ standard have the concept of volatile objects. These
-are normally accessed by pointers and used for accessing hardware. The
+Both the C and C++ standard have the concept of volatile objects.  These
+are normally accessed by pointers and used for accessing hardware.  The
 standards encourage compilers to refrain from optimizations
 concerning accesses to volatile objects that it might perform on
-non-volatile objects. The C standard leaves it implementation defined
-as to what constitutes a volatile access. The C++ standard omits to
+non-volatile objects.  The C standard leaves it implementation defined
+as to what constitutes a volatile access.  The C++ standard omits to
 specify this, except to say that C++ should behave in a similar manner
-to C with respect to volatiles, where possible. The minimum either
+to C with respect to volatiles, where possible.  The minimum either
 standard specifies is that at a sequence point all previous accesses to
 volatile objects have stabilized and no subsequent accesses have
-occurred. Thus an implementation is free to reorder and combine
+occurred.  Thus an implementation is free to reorder and combine
 volatile accesses which occur between sequence points, but cannot do so
-for accesses across a sequence point. The use of volatiles does not
+for accesses across a sequence point.  The use of volatiles does not
 allow you to violate the restriction on updating objects multiple times
 within a sequence point.
 
 In most expressions, it is intuitively obvious what is a read and what is
-a write. For instance
+a write.  For instance
 
 @example
 volatile int *dst = @var{somevalue};
@@ -4018,12 +4018,12 @@ volatile int *src = @var{someothervalue};
 
 @noindent
 will cause a read of the volatile object pointed to by @var{src} and stores the
-value into the volatile object pointed to by @var{dst}. There is no
+value into the volatile object pointed to by @var{dst}.  There is no
 guarantee that these reads and writes are atomic, especially for objects
 larger than @code{int}.
 
 Less obvious expressions are where something which looks like an access
-is used in a void context. An example would be,
+is used in a void context.  An example would be,
 
 @example
 volatile int *src = @var{somevalue};
@@ -4032,15 +4032,15 @@ volatile int *src = @var{somevalue};
 
 With C, such expressions are rvalues, and as rvalues cause a read of
 the object, GCC interprets this as a read of the volatile being pointed
-to. The C++ standard specifies that such expressions do not undergo
+to.  The C++ standard specifies that such expressions do not undergo
 lvalue to rvalue conversion, and that the type of the dereferenced
-object may be incomplete. The C++ standard does not specify explicitly
+object may be incomplete.  The C++ standard does not specify explicitly
 that it is this lvalue to rvalue conversion which is responsible for
-causing an access. However, there is reason to believe that it is,
-because otherwise certain simple expressions become undefined. However,
+causing an access.  However, there is reason to believe that it is,
+because otherwise certain simple expressions become undefined.  However,
 because it would surprise most programmers, G++ treats dereferencing a
 pointer to volatile object of complete type in a void context as a read
-of the object. When the object has incomplete type, G++ issues a
+of the object.  When the object has incomplete type, G++ issues a
 warning.
 
 @example
@@ -4053,16 +4053,16 @@ volatile T *ptr2 = @var{somevalue};
 @end example
 
 In this example, a warning is issued for @code{*ptr1}, and @code{*ptr2}
-causes a read of the object pointed to. If you wish to force an error on
+causes a read of the object pointed to.  If you wish to force an error on
 the first case, you must force a conversion to rvalue with, for instance
 a static cast, @code{static_cast<S>(*ptr1)}.
 
 When using a reference to volatile, G++ does not treat equivalent
 expressions as accesses to volatiles, but instead issues a warning that
-no volatile is accessed. The rationale for this is that otherwise it
+no volatile is accessed.  The rationale for this is that otherwise it
 becomes difficult to determine where volatile access occur, and not
 possible to ignore the return value from functions returning volatile
-references. Again, if you wish to force a read, cast the reference to
+references.  Again, if you wish to force a read, cast the reference to
 an rvalue.
 
 @node Restricted Pointers
@@ -4073,7 +4073,7 @@ an rvalue.
 
 As with gcc, g++ understands the C99 feature of restricted pointers,
 specified with the @code{__restrict__}, or @code{__restrict} type
-qualifier. Because you cannot compile C++ by specifying the @option{-std=c99}
+qualifier.  Because you cannot compile C++ by specifying the @option{-std=c99}
 language flag, @code{restrict} is not a keyword in C++.
 
 In addition to allowing restricted pointers, you can specify restricted
@@ -4103,14 +4103,14 @@ void T::fn () __restrict__
 
 @noindent
 Within the body of @code{T::fn}, @var{this} will have the effective
-definition @code{T *__restrict__ const this}. Notice that the
+definition @code{T *__restrict__ const this}.  Notice that the
 interpretation of a @code{__restrict__} member function qualifier is
 different to that of @code{const} or @code{volatile} qualifier, in that it
-is applied to the pointer rather than the object. This is consistent with
+is applied to the pointer rather than the object.  This is consistent with
 other compilers which implement restricted pointers.
 
 As with all outermost parameter qualifiers, @code{__restrict__} is
-ignored in function definition matching. This means you only need to
+ignored in function definition matching.  This means you only need to
 specify @code{__restrict__} in a function definition, rather than
 in a function prototype as well.
 
@@ -4519,7 +4519,7 @@ fptr p = (fptr)(a.*fp);
 @end example
 
 For PMF constants (i.e. expressions of the form @samp{&Klasse::Member}),
-no object is needed to obtain the address of the function. They can be
+no object is needed to obtain the address of the function.  They can be
 converted to function pointers directly:
 
 @example
@@ -4609,10 +4609,10 @@ versa, but there may be bugs in this area.
 @section Deprecated Features
 
 In the past, the GNU C++ compiler was extended to experiment with new
-features, at a time when the C++ language was still evolving. Now that
+features, at a time when the C++ language was still evolving.  Now that
 the C++ standard is complete, some of those features are superseded by
-superior alternatives. Using the old features might cause a warning in
-some cases that the feature will be dropped in the future. In other
+superior alternatives.  Using the old features might cause a warning in
+some cases that the feature will be dropped in the future.  In other
 cases, the feature might be gone already.
 
 While the list below is not exhaustive, it documents some of the options
@@ -4622,16 +4622,16 @@ that are now deprecated:
 @item -fexternal-templates
 @itemx -falt-external-templates
 These are two of the many ways for g++ to implement template
-instantiation. @xref{Template Instantiation}. The C++ standard clearly
+instantiation.  @xref{Template Instantiation}.  The C++ standard clearly
 defines how template definitions have to be organized across
-implementation units. g++ has an implicit instantiation mechanism that
+implementation units.  g++ has an implicit instantiation mechanism that
 should work just fine for standard-conforming code.
 
 @item -fstrict-prototype
 @itemx -fno-strict-prototype
 Previously it was possible to use an empty prototype parameter list to
 indicate an unspecified number of parameters (like C), rather than no
-parameters, as C++ demands. This feature has been removed, except where
+parameters, as C++ demands.  This feature has been removed, except where
 it is required for backwards compatibility @xref{Backwards Compatibility}.
 @end table
 
@@ -4647,11 +4647,11 @@ and will be removed from g++ at some point.
 @cindex ARM [Annotated C++ Reference Manual]
 
 Now that there is a definitive ISO standard C++, g++ has a specification
-to adhere to. The C++ language evolved over time, and features that
+to adhere to.  The C++ language evolved over time, and features that
 used to be acceptable in previous drafts of the standard, such as the ARM
-[Annotated C++ Reference Manual], are no longer accepted. In order to allow
+[Annotated C++ Reference Manual], are no longer accepted.  In order to allow
 compilation of C++ written to such drafts, g++ contains some backwards
-compatibilities. @emph{All such backwards compatibility features are
+compatibilities.  @emph{All such backwards compatibility features are
 liable to disappear in future versions of g++.} They should be considered
 deprecated @xref{Deprecated Features}.
 
@@ -4659,13 +4659,13 @@ deprecated @xref{Deprecated Features}.
 @item For scope
 If a variable is declared at for scope, it used to remain in scope until
 the end of the scope which contained the for statement (rather than just
-within the for scope). g++ retains this, but issues a warning, if such a
+within the for scope).  g++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
 
 @item implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
-scope to set the language. On such systems, all header files are
-implicitly scoped inside a C language scope. Also, an empty prototype
+scope to set the language.  On such systems, all header files are
+implicitly scoped inside a C language scope.  Also, an empty prototype
 @code{()} will be treated as an unspecified number of arguments, rather
 than no arguments, as C++ demands.
 @end table

@@ -401,7 +401,7 @@ This predicate holds for a pointer to function type.
 
 @item TYPE_PTROB_P
 This predicate holds for a pointer to object type.  Note however that it
-does not hold for the generic pointer to object type @code{void *}. You
+does not hold for the generic pointer to object type @code{void *}.  You
 may use @code{TYPE_PTROBV_P} to test for a pointer to object type as
 well as @code{void *}.
 
@@ -544,7 +544,7 @@ the type of @code{m}.
 @item TYPENAME_TYPE
 Used to represent a construct of the form @code{typename T::A}.  The
 @code{TYPE_CONTEXT} is @code{T}; the @code{TYPE_NAME} is an
-@code{IDENTIFIER_NODE} for @code{A}. If the type is specified via a
+@code{IDENTIFIER_NODE} for @code{A}.  If the type is specified via a
 template-id, then @code{TYPENAME_TYPE_FULLNAME} yields a
 @code{TEMPLATE_ID_EXPR}.  The @code{TREE_TYPE} is non-@code{NULL} if the
 node is implicitly generated in support for the implicit typename
@@ -724,7 +724,7 @@ Almost all non-function members are available on the @code{TYPE_FIELDS}
 list.  Given one member, the next can be found by following the
 @code{TREE_CHAIN}.  You should not depend in any way on the order in
 which fields appear on this list.  All nodes on this list will be
-@samp{DECL} nodes. A @code{FIELD_DECL} is used to represent a non-static
+@samp{DECL} nodes.  A @code{FIELD_DECL} is used to represent a non-static
 data member, a @code{VAR_DECL} is used to represent a static data
 member, and a @code{TYPE_DECL} is used to represent a type.  Note that
 the @code{CONST_DECL} for an enumeration constant will appear on this
@@ -930,7 +930,7 @@ analogous to @code{TYPE_SIZE} and @code{TYPE_ALIGN}.  For a declaration,
 you should always use the @code{DECL_SIZE} and @code{DECL_ALIGN} rather
 than the @code{TYPE_SIZE} and @code{TYPE_ALIGN} given by the
 @code{TREE_TYPE}, since special attributes may have been applied to the
-variable to give it a particular size and alignment. You may use the
+variable to give it a particular size and alignment.  You may use the
 predicates @code{DECL_THIS_STATIC} or @code{DECL_THIS_EXTERN} to test
 whether the storage class specifiers @code{static} or @code{extern} were
 used to declare a variable.
@@ -1640,8 +1640,8 @@ And, if an exception is thrown while the expression is executing,
 @code{terminate} must be called.
 
 @item USING_STMT
-Used to represent a @code{using} directive. The namespace is given by
-@code{USING_STMT_NAMESPACE}, which will be a NAMESPACE_DECL. This node
+Used to represent a @code{using} directive.  The namespace is given by
+@code{USING_STMT_NAMESPACE}, which will be a NAMESPACE_DECL.  This node
 is needed inside template functions, to implement using directives
 during instantiation.
 

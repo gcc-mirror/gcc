@@ -424,7 +424,7 @@ Your program will be more portable this way, too.
 After the textual transformations are finished, the input file is
 converted into a sequence of @dfn{preprocessing tokens}.  These mostly
 correspond to the syntactic tokens used by the C compiler, but there are
-a few differences. White space separates tokens; it is not itself a
+a few differences.  White space separates tokens; it is not itself a
 token of any kind.  Tokens do not have to be separated by white space,
 but it is often necessary to avoid ambiguities.
 
@@ -575,7 +575,7 @@ have the same meaning.
 @end example
 
 @noindent
-(where @samp{^@@} is ASCII NUL). Within string or character constants,
+(where @samp{^@@} is ASCII NUL).  Within string or character constants,
 NULs are preserved.  In the latter two cases the preprocessor emits a
 warning message.
 
@@ -1634,7 +1634,7 @@ eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end example
 
-GNU CPP has a pair of extensions which deal with this problem. First,
+GNU CPP has a pair of extensions which deal with this problem.  First,
 you are allowed to leave the variable argument out entirely:
 
 @example
@@ -3092,8 +3092,8 @@ compilers.  They are documented in the GCC manual.
 @ftable @code
 @item #pragma GCC dependency
 @code{#pragma GCC dependency} allows you to check the relative dates of
-the current file and another file. If the other file is more recent than
-the current file, a warning is issued. This is useful if the current
+the current file and another file.  If the other file is more recent than
+the current file, a warning is issued.  This is useful if the current
 file is derived from the other file, and should be regenerated.  The
 other file is searched for using the normal include search path.
 Optional trailing text can be used to give more information in the
@@ -3502,7 +3502,7 @@ by available memory.
 
 @item Number of parameters in a macro definition and arguments in a macro call.
 
-We allow @code{USHRT_MAX}, which is no smaller than 65,535. The minimum
+We allow @code{USHRT_MAX}, which is no smaller than 65,535.  The minimum
 required by the standard is 127.
 
 @item Number of characters on a logical source line.
@@ -3559,7 +3559,7 @@ An assertion looks like this:
 @end example
 
 @noindent
-@var{predicate} must be a single identifier. @var{answer} can be any
+@var{predicate} must be a single identifier.  @var{answer} can be any
 sequence of tokens; all characters are significant except for leading
 and trailing whitespace, and differences in internal whitespace
 sequences are ignored.  (This is similar to the rules governing macro
@@ -3993,7 +3993,7 @@ $(objpfx)foo.o: foo.c
 @item -MQ @var{target}
 
 Same as @option{-MT}, but it quotes any characters which are special to
-Make. @option{@w{-MQ '$(objpfx)foo.o'}} gives
+Make.  @option{@w{-MQ '$(objpfx)foo.o'}} gives
 
 @example
 $$(objpfx)foo.o: foo.c
@@ -4233,13 +4233,13 @@ source line, since the first token on the line is no longer a @samp{#}.
 
 @item -gcc
 Define the macros @sc{__gnuc__}, @sc{__gnuc_minor__} and
-@sc{__gnuc_patchlevel__}. These are defined automatically when you use
+@sc{__gnuc_patchlevel__}.  These are defined automatically when you use
 @command{gcc -E}; you can turn them off in that case with
 @option{-no-gcc}.
 
 @item -traditional
 Try to imitate the behavior of old-fashioned C, as opposed to ISO
-C@. @xref{Traditional Mode}.
+C@.  @xref{Traditional Mode}.
 
 @item -trigraphs
 Process trigraph sequences.  @xref{Initial processing}.
