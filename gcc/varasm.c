@@ -3396,7 +3396,11 @@ output_constructor (exp, size)
 
       if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
-	field = TREE_PURPOSE (link);
+	{
+	  /* if available, use the type given by link */
+	  if (TREE_PURPOSE (link) != 0)
+	    field = TREE_PURPOSE (link);
+	}
 
       if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	index = TREE_PURPOSE (link);
