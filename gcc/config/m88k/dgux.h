@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.21 $"
+#define VERSION_INFO2   "$Revision: 1.22 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -110,7 +110,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	LIB_SPEC
 #define LIB_SPEC "%{!msvr3:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}}"
 #undef	LINK_SPEC
-#define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
+#define LINK_SPEC "%{z*} %{h*} %{v:-V} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy} \
 		   %{symbolic:-Bsymbolic -G -dy} \
@@ -136,7 +136,7 @@ Boston, MA 02111-1307, USA.  */
   { "startfile_crtbegin", STARTFILE_CRTBEGIN_SPEC }
    
 #define ASM_CPU_SPEC "\
-		  %{V} %{v:%{!V:-V}}\
+		  %{v:-V}\
 		  %{g:\
 		  %{mno-legend:-Wc,off}\
 		  %{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
