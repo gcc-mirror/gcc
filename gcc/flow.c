@@ -4854,7 +4854,8 @@ find_auto_inc (pbi, x, insn)
 	      /* Count an extra reference to the reg.  When a reg is
 		 incremented, spilling it is worse, so we want to make
 		 that less likely.  */
-	      REG_N_REFS (regno) += pbi->bb->loop_depth + 1;
+	      REG_N_REFS (regno) += (optimize_size ? 1
+				     : pbi->bb->loop_depth + 1);
 
 	      /* Count the increment as a setting of the register,
 		 even though it isn't a SET in rtl.  */
@@ -4935,7 +4936,8 @@ mark_used_reg (pbi, reg, cond, insn)
 	    REG_BASIC_BLOCK (regno) = REG_BLOCK_GLOBAL;
 
 	  /* Count (weighted) number of uses of each reg.  */
-	  REG_N_REFS (regno) += pbi->bb->loop_depth + 1;
+	  REG_N_REFS (regno) += (optimize_size ? 1
+				 : pbi->bb->loop_depth + 1);
 	}
     }
 
@@ -5353,7 +5355,8 @@ try_pre_increment_1 (pbi, insn)
 	 less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_N_REFS (regno) += pbi->bb->loop_depth + 1;
+	  REG_N_REFS (regno) += (optimize_size ? 1
+				 : pbi->bb->loop_depth + 1);
 	  REG_N_SETS (regno)++;
 	}
       return 1;
