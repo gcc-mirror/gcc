@@ -1019,6 +1019,9 @@ get_run_time ()
 
   if (quiet_flag)
     return 0;
+#ifdef __BEOS__
+  return 0;
+#else /* not BeOS */
 #if defined (_WIN32) && !defined (__CYGWIN32__)
   if (clock() < 0)
     return 0;
