@@ -1,3 +1,8 @@
+2001-12-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* regrename.c (copyprop_hardreg_forward): Do not keep register
+	value data live across abnormal call or eh egdes.
+
 Sat Dec 15 08:29:45 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (highest_pow2_factor, case INTEGER_CST): Return

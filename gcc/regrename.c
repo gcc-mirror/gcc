@@ -1626,6 +1626,7 @@ copyprop_hardreg_forward ()
       /* ??? Ought to use more intelligent queueing of blocks.  */
       if (bb->pred
 	  && ! bb->pred->pred_next 
+	  && ! (bb->pred->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
 	  && bb->pred->src->index != ENTRY_BLOCK
 	  && bb->pred->src->index < b)
 	all_vd[b] = all_vd[bb->pred->src->index];
