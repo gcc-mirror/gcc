@@ -1414,10 +1414,9 @@ a name having multiple meanings within a class.
 
 @item -fpermissive
 @opindex fpermissive
-Downgrade messages about nonconformant code from errors to warnings.  By
-default, G++ effectively sets @option{-pedantic-errors} without
-@option{-pedantic}; this option reverses that.  This behavior and this
-option are superseded by @option{-pedantic}, which works as it does for GNU C@.
+Downgrade some diagnostics about nonconformant code from errors to
+warnings.  Thus, using @option{-fpermissive} will allow some
+nonconforming code to compile.
 
 @item -frepo
 @opindex frepo
