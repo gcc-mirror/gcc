@@ -1,3 +1,12 @@
+2001-02-17  Mark Wielaard <mark@klomp.org>
+
+	* java/io/DataInputStream.java: update copyright notice
+	* java/io/PrintWriter.java: idem
+	* java/io/Reader.java: idem
+	* java/io/StreamTokenizer.java: idem
+	* java/io/StringReader.java: idem
+	* java/lang/reflect/ReflectPermission.java: idem
+
 2001-02-16  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeSet.java (clone): Made subclass safe, use 
