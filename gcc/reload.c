@@ -6032,27 +6032,30 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		  /* If we are looking for a constant,
 		     and something equivalent to that constant was copied
 		     into a reg, we can use that reg.  */
-		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV,
-							  NULL_RTX))
-		      && rtx_equal_p (XEXP (tem, 0), goal)
-		      && (valueno = true_regnum (valtry = SET_DEST (pat))) >= 0)
-		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV,
-							  NULL_RTX))
-		      && GET_CODE (SET_DEST (pat)) == REG
-		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
-		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
-		      && GET_CODE (goal) == CONST_INT
-		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 0, 0,
+		  || (goal_const && REG_NOTES (p) != 0
+		      && (tem = find_reg_note (p, REG_EQUIV, NULL_RTX))
+		      && ((rtx_equal_p (XEXP (tem, 0), goal)
+			   && (valueno
+			       = true_regnum (valtry = SET_DEST (pat))) >= 0)
+			  || (GET_CODE (SET_DEST (pat)) == REG
+			      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
+			      && (GET_MODE_CLASS (GET_MODE (XEXP (tem, 0)))
+				  == MODE_FLOAT)
+			      && GET_CODE (goal) == CONST_INT
+			      && 0 != (goaltry
+				       = operand_subword (XEXP (tem, 0), 0, 0,
 							  VOIDmode))
-		      && rtx_equal_p (goal, goaltry)
-		      && (valtry = operand_subword (SET_DEST (pat), 0, 0,
-						    VOIDmode))
-		      && (valueno = true_regnum (valtry)) >= 0)
+			      && rtx_equal_p (goal, goaltry)
+			      && (valtry
+				  = operand_subword (SET_DEST (pat), 0, 0,
+						     VOIDmode))
+			      && (valueno = true_regnum (valtry)) >= 0)))
 		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV,
 							  NULL_RTX))
 		      && GET_CODE (SET_DEST (pat)) == REG
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
-		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
+		      && (GET_MODE_CLASS (GET_MODE (XEXP (tem, 0)))
+			  == MODE_FLOAT)
 		      && GET_CODE (goal) == CONST_INT
 		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 1, 0,
 							  VOIDmode))
@@ -6081,7 +6084,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 
   /* Don't try to re-use something that is killed in this insn.  We want
      to be able to trust REG_UNUSED notes.  */
-  if (find_reg_note (where, REG_UNUSED, value))
+  if (REG_NOTES (where) != 0 && find_reg_note (where, REG_UNUSED, value))
     return 0;
 
   /* If we propose to get the value from the stack pointer or if GOAL is

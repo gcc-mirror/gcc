@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "hashtab.h"
 #include "rtl.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
 
 /* Use malloc to allocate obstack chunks.  */

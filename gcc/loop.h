@@ -19,7 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "varray.h"
-#include "basic-block.h"
+#include "bitmap.h"
+
 /* Flags passed to loop_optimize.  */
 #define LOOP_UNROLL 1
 #define LOOP_BCT 2

@@ -27,10 +27,10 @@
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "expr.h"
 #include "output.h"
-#include "hard-reg-set.h"
 #include "tm_p.h"
 
 

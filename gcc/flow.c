@@ -124,10 +124,10 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 #include "output.h"
 #include "function.h"
@@ -7483,6 +7483,7 @@ flow_loops_find (loops)
 
 
 /* Return non-zero if edge E enters header of LOOP from outside of LOOP.  */
+
 int
 flow_loop_outside_edge_p (loop, e)
      const struct loop *loop;
@@ -7496,6 +7497,7 @@ flow_loop_outside_edge_p (loop, e)
 
 
 /* Clear LOG_LINKS fields of insns in a chain.  */
+
 void
 clear_log_links (insns)
      rtx insns;
@@ -7505,3 +7507,25 @@ clear_log_links (insns)
     if (GET_RTX_CLASS (GET_CODE (i)) == 'i')
       LOG_LINKS (i) = 0;
 }
+
+/* Given a register bitmap, turn on the bits in a HARD_REG_SET that
+   correspond to the hard registers, if any, set in that map.  This
+   could be done far more efficiently by having all sorts of special-cases
+   with moving single words, but probably isn't worth the trouble.  */
+
+void
+reg_set_to_hard_reg_set (to, from)
+     HARD_REG_SET *to;
+     bitmap from;
+{
+  int i;
+
+  EXECUTE_IF_SET_IN_BITMAP
+    (from, 0, i,
+     {
+       if (i >= FIRST_PSEUDO_REGISTER)
+	 return;
+       SET_HARD_REG_BIT (*to, i);
+     });
+}
+

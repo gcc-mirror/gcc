@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "expr.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "intl.h"
 #include "ggc.h"
