@@ -1,3 +1,8 @@
+Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
+
+	* loop.c (oballoc): Remove declaration.
+	(replace_call_address): Add prototype.
+
 Sun Jun 21 01:08:17 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

@@ -227,8 +227,6 @@ extern struct obstack *rtl_obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-extern char *oballoc ();
 
 /* During the analysis of a loop, a chain of `struct movable's
    is made to record all the movable insns found.
@@ -290,7 +288,7 @@ static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, int, int));
 #if 0
-static void replace_call_address PROTO(());
+static void replace_call_address PROTO((rtx, rtx, rtx));
 #endif
 static rtx skip_consec_insns PROTO((rtx, int));
 static int libcall_benefit PROTO((rtx));
