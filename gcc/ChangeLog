@@ -1,3 +1,12 @@
+2003-05-29  Stan Shebs  <shebs@apple.com>
+
+	Remove OBJC_PROLOGUE everywhere.
+	* objc/objc-act.c (finish_objc): Remove use of OBJC_PROLOGUE.
+	* config/avr/avr.h: Remove no-op ref to OBJC_PROLOGUE.
+	* config/d30v/d30v.h: Similarly.
+	* config/ip2k/ip2k.h: Similarly.
+	* doc/tm.texi: Remove doc of OBJC_PROLOGUE.
+
 2003-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	* c-semantics.c (genrtl_do_stmt_1): New function split out from...

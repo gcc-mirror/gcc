@@ -2678,11 +2678,6 @@ extern const char *d30v_branch_cost_string;
    Defined in svr4.h.  */
 /* #define ASM_OUTPUT_IDENT(STREAM, STRING) */
 
-/* A C statement to output any assembler statements which are required to
-   precede any Objective-C object definitions or message sending.  The
-   statement is executed only when compiling an Objective-C program.  */
-/* #define OBJC_PROLOGUE */
-
 
 /* Output of Data.  */
 

@@ -1745,13 +1745,6 @@ progmem_section ()							      \
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section
 
-#define OBJC_PROLOGUE {}
-/* A C statement to output any assembler statements which are
-   required to precede any Objective-C object definitions or message
-   sending.  The statement is executed only when compiling an
-   Objective-C program.  */
-
-
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 /* `ASM_OUTPUT_ASCII (STREAM, PTR, LEN)'
    output_ascii (FILE, P, SIZE)
