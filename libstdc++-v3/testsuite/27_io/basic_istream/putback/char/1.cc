@@ -39,8 +39,9 @@ test01()
 
   std::stringbuf isbuf_03(str_02, std::ios_base::in);
   std::stringbuf isbuf_04(str_02, std::ios_base::in);
+  std::stringbuf isbuf_05(str_02, std::ios_base::in);
 
-  std::istream is_00(NULL);
+  std::istream is_00(&isbuf_05);
   std::istream is_03(&isbuf_03);
   std::istream is_04(&isbuf_04);
   std::ios_base::iostate state1, state2, statefail, stateeof;
@@ -54,7 +55,7 @@ test01()
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.putback('|');
-  VERIFY( is_04.gcount() == 0 );
+  VERIFY( is_04.gcount() == 0 );  // DR 60
   state2 = is_04.rdstate();
   VERIFY( state1 == state2 );
   VERIFY( is_04.peek() == '|' );
@@ -63,13 +64,17 @@ test01()
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.unget();
-  VERIFY( is_04.gcount() == 0 );
+  VERIFY( is_04.gcount() == 0 );  // DR 60
   state2 = is_04.rdstate();
   VERIFY( state1 == state2 );
   VERIFY( is_04.peek() == 'r' );
   
   // int sync()
+  is_00.ignore(10);
+  int count1 = is_00.gcount();
   int i = is_00.sync();
+  int count2 = is_00.gcount();
+  VERIFY (count1 == count2 );     // DR 60
 }
 
 int 

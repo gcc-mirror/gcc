@@ -476,10 +476,6 @@ namespace std
        *
        *  @note  Since no characters are extracted, the next call to
        *         @c gcount() will return 0, as required by DR 60.
-       *
-       *  @if maint
-       *  FIXME We don't comply with DR 60 here, _M_gcount is untouched.
-       *  @endif
       */
       __istream_type& 
       putback(char_type __c);
@@ -513,9 +509,6 @@ namespace std
        *  @note  This function does not count the number of characters
        *         extracted, if any, and therefore does not affect the next
        *         call to @c gcount().
-       *  @if maint
-       *  FIXME We don't comply with DR 60 here, _M_gcount is zeroed.
-       *  @endif
       */
       int 
       sync();
@@ -545,9 +538,6 @@ namespace std
        *  @note  This function does not count the number of characters
        *         extracted, if any, and therefore does not affect the next
        *         call to @c gcount().
-       *  @if maint
-       *  FIXME We don't comply with DR 60 here, _M_gcount is zeroed.
-       *  @endif
       */
       __istream_type& 
       seekg(pos_type);
@@ -564,9 +554,6 @@ namespace std
        *  @note  This function does not count the number of characters
        *         extracted, if any, and therefore does not affect the next
        *         call to @c gcount().
-       *  @if maint
-       *  FIXME We don't comply with DR 60 here, _M_gcount is zeroed.
-       *  @endif
       */
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
