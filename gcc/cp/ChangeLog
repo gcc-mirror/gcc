@@ -1,7 +1,7 @@
 1999-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (LABEL_STMT): New tree node.
-	(LABEL_STMT_LABEL): New macro.
+	* cp-tree.h (LABEL_STMT_LABEL): New macro.
 	(shadow_label): Remove.
 	(declare_local_label): New function.
 	(finish_label_decl): Likewise.
