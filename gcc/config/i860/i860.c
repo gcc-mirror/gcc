@@ -1,5 +1,6 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 91, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.1.
-   Copyright (C) 1994, 95-8, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998, 1998, 1999
+   Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
 This file is part of GNU CC.

@@ -1,5 +1,6 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 91, 92, 93, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.

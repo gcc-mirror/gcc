@@ -1,5 +1,6 @@
 ;; Machine description for GNU compiler, Tahoe version
-;; Copyright (C) 1989, 1994, 96-98, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1994, 1996, 1997, 1998, 1999
+;; Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 

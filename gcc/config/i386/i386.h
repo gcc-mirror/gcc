@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler for IA-32.
-   Copyright (C) 1988, 92, 94-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,5 +1,6 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 91, 93-95, 98, 99, 2000 Free Software Foundation, Inc.
+;;   Copyright (C) 1988, 1991, 1993, 1994, 1995, 1998, 1999, 2000
+;;   Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.

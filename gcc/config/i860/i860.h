@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 91, 93, 95-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 

@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995-8, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999
+   Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
