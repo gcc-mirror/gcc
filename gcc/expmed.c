@@ -2434,9 +2434,19 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
   optab moptab;
   rtx tem;
   int size = GET_MODE_BITSIZE (mode);
-  rtx op1;
+  rtx op1, wide_op1;
 
-  op1 = immed_double_const (cnst1,
+  /* We can't support modes wider than HOST_BITS_PER_INT.  */
+  if (size > HOST_BITS_PER_WIDE_INT)
+    abort ();
+
+  op1 = GEN_INT (cnst1);
+
+  if (GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_INT)
+    wide_op1 = op1;
+  else
+    wide_op1
+      = immed_double_const (cnst1,
 			    (unsignedp
 			     ? (HOST_WIDE_INT) 0
 			     : -(cnst1 >> (HOST_BITS_PER_WIDE_INT - 1))),
@@ -2450,7 +2460,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
 	 multiply.  Maybe change expand_binop to handle widening multiply?  */
       op0 = convert_to_mode (wider_mode, op0, unsignedp);
 
-      tem = expand_mult (wider_mode, op0, op1, NULL_RTX, unsignedp);
+      tem = expand_mult (wider_mode, op0, wide_op1, NULL_RTX, unsignedp);
       tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
 			  build_int_2 (size, 0), NULL_RTX, 1);
       return gen_lowpart (mode, tem);
@@ -2475,7 +2485,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
   if (target)
     /* We used the wrong signedness.  Adjust the result.  */
     return expand_mult_highpart_adjust (mode, target, op0,
-					GEN_INT (cnst1), target, unsignedp);
+					op1, target, unsignedp);
 
   /* Thirdly, we try to use a widening multiplication, or a wider mode
      multiplication.  */
@@ -2491,7 +2501,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
       moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
       if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
 	{
-	  tem = expand_binop (wider_mode, moptab, op0, op1,
+	  tem = expand_binop (wider_mode, moptab, op0, wide_op1,
 			      NULL_RTX, ! unsignedp, OPTAB_WIDEN);
 	  if (tem != 0)
 	    {
@@ -2500,8 +2510,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
 				  build_int_2 (size, 0), NULL_RTX, 1);
 	      tem = gen_lowpart (mode, tem);
 	      /* We used the wrong signedness.  Adjust the result.  */
-	      return expand_mult_highpart_adjust (mode, tem, op0,
-						  GEN_INT (cnst1),
+	      return expand_mult_highpart_adjust (mode, tem, op0, op1,
 						  target, unsignedp);
 	    }
 	}
@@ -2512,7 +2521,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
     }
 
   /* Pass NULL_RTX as target since TARGET has wrong mode.  */
-  tem = expand_binop (wider_mode, moptab, op0, op1,
+  tem = expand_binop (wider_mode, moptab, op0, wide_op1,
 		      NULL_RTX, unsignedp, OPTAB_WIDEN);
   if (tem == 0)
     return 0;
