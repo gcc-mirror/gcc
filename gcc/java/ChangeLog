@@ -1,3 +1,9 @@
+2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (java_handle_option): Special-casing of optional
+	joined arguments no longer needed.
+	* lang.opt: Update switches that take optional argument.
+
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.opt: Declare Java.

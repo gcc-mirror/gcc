@@ -274,17 +274,8 @@ java_handle_option (size_t scode, const char *arg, int value)
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      /* These can take an empty argument.  */
-      if (code == OPT_fassume_compiled_
-	  || code == OPT_fclasspath_
-	  || code == OPT_fCLASSPATH_
-	  || code == OPT_fbootclasspath_)
-	arg = "";
-      else
-	{
-	  error ("missing argument to \"-%s\"", option->opt_text);
-	  return 1;
-	}
+      error ("missing argument to \"-%s\"", option->opt_text);
+      return 1;
     }
 
   switch (code)

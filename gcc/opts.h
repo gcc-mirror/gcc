@@ -36,6 +36,8 @@ extern const unsigned int cl_options_count;
 #define CL_JOINED		(1 << 24) /* If takes joined argument.  */
 #define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
 #define CL_REJECT_NEGATIVE	(1 << 26) /* Reject no- form.  */
-#define CL_COMMON		(1 << 27) /* Language-independent.  */
+#define CL_MISSING_OK		(1 << 27) /* Missing argument OK (joined).  */
+#define CL_UINTEGER		(1 << 28) /* Argument is an integer >=0.  */
+#define CL_COMMON		(1 << 29) /* Language-independent.  */
 
 #endif

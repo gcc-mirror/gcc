@@ -65,7 +65,7 @@ Wredundant-modifiers
 Java
 
 fCLASSPATH=
-Java Joined RejectNegative
+Java JoinedOrMissing RejectNegative
 
 fassert
 Java
@@ -74,16 +74,16 @@ fassume-compiled
 Java
 
 fassume-compiled=
-Java Joined
+Java JoinedOrMissing
 
 fbootclasspath=
-Java Joined RejectNegative
+Java JoinedOrMissing RejectNegative
 
 fcheck-references
 Java
 
 fclasspath=
-Java Joined RejectNegative
+Java JoinedOrMissing RejectNegative
 
 fcompile-resource=
 Java Joined RejectNegative

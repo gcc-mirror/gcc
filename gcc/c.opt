@@ -32,7 +32,11 @@
 ; compiler recognize the switch, as declared by "Language" entries.
 ; If the switch takes an argument, then you should also specify
 ; "Joined" and/or "Separate" to indicate where the argument can
-; appear.
+; appear.  If a Joined argument can legitimately be omitted, specify
+; "JoinedOrMissing" instead of "Joined".  If the argument to a switch
+; is a non-negative integer, you can specify "UInteger" and the switch
+; decoder will convert the argument for you, or complain to the user
+; if the argument is invalid.
 
 ; Comments can appear on their own line anwhere in the file, preceded
 ; by a semicolon.  Whitespace is permitted before the semicolon.
@@ -311,7 +315,7 @@ d
 C ObjC C++ ObjC++ Joined
 
 fabi-version=
-C++ ObjC++ Joined
+C++ ObjC++ Joined UInteger
 
 faccess-control
 C++ ObjC++
@@ -479,10 +483,10 @@ fstrict-prototype
 C++ ObjC++
 
 ftabstop=
-C ObjC C++ ObjC++ Joined RejectNegative
+C ObjC C++ ObjC++ Joined RejectNegative UInteger
 
 ftemplate-depth-
-C++ ObjC++ Joined
+C++ ObjC++ Joined RejectNegative UInteger 
 
 fthis-is-variable
 C++ ObjC++
