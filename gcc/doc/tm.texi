@@ -2999,6 +2999,13 @@ If you want to support call frame exception handling, you must
 define either this macro or the @code{eh_return} instruction pattern.
 @end defmac
 
+@defmac RETURN_ADDR_OFFSET
+If defined, an integer-valued C expression for which rtl will be generated
+to add it to the exception handler address before it is searched in the
+exception handling tables, and to subtract it again from the address before
+using it to return to the exception handler.
+@end defmac
+
 @defmac ASM_PREFERRED_EH_DATA_FORMAT (@var{code}, @var{global})
 This macro chooses the encoding of pointers embedded in the exception
 handling sections.  If at all possible, this should be defined such
