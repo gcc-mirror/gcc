@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -5472,6 +5472,7 @@ copy_rtx_unchanging (orig)
 static void
 fatal (s, a1, a2)
      char *s;
+     char *a1, *a2;
 {
   fprintf (stderr, "genattrtab: ");
   fprintf (stderr, s, a1, a2);
