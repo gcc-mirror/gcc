@@ -1,3 +1,7 @@
+2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/abi/dcast1.C: New test.
+
 2003-01-28  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/9258
