@@ -1,0 +1,9 @@
+This README file is copied into the directory for GCC-only header files
+when fixincludes is run by the makefile for GCC.
+
+Many of the files in this directory were made from the standard system
+header files of this system by the shell script `fixincludes'.
+They are system-specific, and will not work on any other kind of system.
+They are also not part of GCC.  The reason for making the files here
+is to fix the places in the header files which use constructs
+that are incompatible with ANSI C.
