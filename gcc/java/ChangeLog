@@ -1,3 +1,8 @@
+Tue Feb  2 20:04:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jvspec.c (xmalloc): Fix the prototype to match the one obtained
+ 	from libiberty.h
+
 Tue Feb  2 10:39:47 1999  Per Bothner  <bothner@cygnus.com>
 
 	Optimize: `return (a ? b : c)' as: `if (a) return b; else return c;'.
