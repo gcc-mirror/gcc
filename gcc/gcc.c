@@ -1238,6 +1238,8 @@ set_spec (name, spec)
     multilib_extra = sl->spec;
   else if (! strcmp (name, "multilib_defaults"))
     multilib_defaults = sl->spec;
+  else if (! strcmp (name, "version"))
+    compiler_version = sl->spec;
 #ifdef EXTRA_SPECS
   else
     {
@@ -2258,6 +2260,7 @@ process_command (argc, argv)
 	  printf ("*signed_char:\n%s\n\n", signed_char_spec);
 	  printf ("*predefines:\n%s\n\n", cpp_predefines);
 	  printf ("*cross_compile:\n%d\n\n", cross_compile);
+	  printf ("*version:\n%s\n\n", compiler_version);
 	  printf ("*multilib:\n%s\n\n", multilib_select);
 	  printf ("*multilib_defaults:\n%s\n\n", multilib_defaults);
 	  printf ("*multilib_extra:\n%s\n\n", multilib_extra);
