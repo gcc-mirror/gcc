@@ -1,3 +1,7 @@
+2001-01-11  Bernd Schmidt  <bernds@redhat.com>
+
+	* gennews: Add gcc-2.95.3.
+
 2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* texi2pod.pl: Handle @gcctabopt and @env in tables.  Handle
