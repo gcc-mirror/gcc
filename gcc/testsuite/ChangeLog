@@ -1,5 +1,10 @@
 2003-08-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.misc-tests/linkage.exp: Treat all HP-UX platforms
+	identically.
+
+2003-08-22  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.old-deja/g++.ext/attrib5.C: XFAIL on hppa2*-hp-hpux11*.
 
 2003-08-22  Mark Mitchell  <mark@codesourcery.com>
