@@ -446,6 +446,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
      calls may traverse the arc back to this label.  */
 
   current_function_has_nonlocal_label = 1;
+  current_function_calls_setjmp = 1;
   nonlocal_goto_handler_labels
     = gen_rtx_EXPR_LIST (VOIDmode, lab1, nonlocal_goto_handler_labels);
 
@@ -546,6 +547,8 @@ expand_builtin_longjmp (buf_addr, value)
      longer copying around a value that we don't care about.  */
   if (value != const1_rtx)
     abort ();
+
+  current_function_calls_longjmp = 1;
 
 #ifdef HAVE_builtin_longjmp
   if (HAVE_builtin_longjmp)

@@ -1,3 +1,12 @@
+2000-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_setjmp): Set
+	current_function_calls_setjmp.
+	(expand_builtin_longjmp): Set current_function_calls_longjmp.
+
+	* config/sparc/sparc.md (builtin_setjmp_setup): New expand.
+	(do_builtin_setjmp_setup): New insn.
+
 Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (get_unwidened): Use host_integerp and tree_low_cst.
