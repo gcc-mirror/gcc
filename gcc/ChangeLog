@@ -1,3 +1,15 @@
+2003-04-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload1.c (reload_cse_noop_set_p): Return false if mode of
+	SET_DEST is not the same as that returned by...
+	* cselib.h (cselib_reg_set_mode): ... new function.
+	* cselib.c (cselib_reg_set_mode): Define it.
+	(REG_VALUES): Document semantics of first element as set mode.
+	(cselib_subst_to_values): Skip first element if ELT is NULL.
+	(cselib_lookup): Likewise.  Insert past the first element.
+	(cselib_invalidate_regno): NULLify first element.
+	(cselib_record_set): Set first element.
+
 2003-04-16  Olivier Hainque <hainque@act-europe.fr>
 
         * tree.c (skip_simple_arithmetics_at, saved_expr_p): New functions.

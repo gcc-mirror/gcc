@@ -8025,6 +8025,9 @@ static int
 reload_cse_noop_set_p (set)
      rtx set;
 {
+  if (cselib_reg_set_mode (SET_DEST (set)) != GET_MODE (SET_DEST (set)))
+    return 0;
+
   return rtx_equal_for_cselib_p (SET_DEST (set), SET_SRC (set));
 }
 
