@@ -1,3 +1,11 @@
+2004-08-22 Andrew Pinski  <apinski@apple.com>
+
+	Revert:
+	2004-08-22  Andrew Pinski  <apinski@apple.com>
+	PR c++/14029
+	* typeck.c (build_unary_op): Use &a.b if the foldded lowered
+	expression is not constant.
+
 2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* name-lookup.c (pushdecl): Rename build_type_copy call.

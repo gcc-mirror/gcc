@@ -4123,11 +4123,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    addr = fold (build2 (PLUS_EXPR, argtype, rval,
 				 cp_convert (argtype,
 					     byte_position (field))));
-
-	    /* If the folded PLUS_EXPR is not a constant address, wrap
-               it in an ADDR_EXPR.  */
-	    if (!TREE_CONSTANT (addr))
-	      addr = build_address (arg);
 	  }
 
 	if (TREE_CODE (argtype) == POINTER_TYPE
