@@ -1,3 +1,9 @@
+2004-09-08  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (find_phi_replacement_condition): Return true edge block.
+	(replace_phi_with_cond_modify_expr): Select conditional expr args based on
+	true edge basic block.
+	
 2004-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-operands.c (add_stmt_operand): Use V_MUST_DEF even for
