@@ -4640,6 +4640,21 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
       && (TARGET_AIX_STRUCT_RET
 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
     return true;
+
+  /* Return synthetic vectors in memory.  */
+  if (TREE_CODE (type) == VECTOR_TYPE
+      && int_size_in_bytes (type) > (TARGET_ALTIVEC ? 16 : 8))
+    {
+      static bool warned_for_return_big_vectors = false;
+      if (!warned_for_return_big_vectors)
+	{
+	  warning ("synthetic vectors returned by reference: "
+		   "non-standard ABI extension with no compatibility guarantee");
+	  warned_for_return_big_vectors = true;
+	}
+      return true;
+    }
+
   if (DEFAULT_ABI == ABI_V4 && TYPE_MODE (type) == TFmode)
     return true;
   return false;
@@ -4783,16 +4798,22 @@ function_arg_padding (enum machine_mode mode, tree type)
    of an argument with the specified mode and type.  If it is not defined,
    PARM_BOUNDARY is used for all arguments.
 
-   V.4 wants long longs to be double word aligned.  */
+   V.4 wants long longs to be double word aligned.
+   Doubleword align SPE vectors.
+   Quadword align Altivec vectors.
+   Quadword align large synthetic vector types.   */
 
 int
-function_arg_boundary (enum machine_mode mode, tree type ATTRIBUTE_UNUSED)
+function_arg_boundary (enum machine_mode mode, tree type)
 {
   if (DEFAULT_ABI == ABI_V4 && GET_MODE_SIZE (mode) == 8)
     return 64;
   else if (SPE_VECTOR_MODE (mode))
     return 64;
   else if (ALTIVEC_VECTOR_MODE (mode))
+    return 128;
+  else if (type && TREE_CODE (type) == VECTOR_TYPE
+	   && int_size_in_bytes (type) > 16)
     return 128;
   else
     return PARM_BOUNDARY;
@@ -5617,6 +5638,23 @@ rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 
       return 1;
     }
+
+  /* Pass synthetic vectors in memory.  */
+  if (type && TREE_CODE (type) == VECTOR_TYPE
+      && int_size_in_bytes (type) > (TARGET_ALTIVEC ? 16 : 8))
+    {
+      static bool warned_for_pass_big_vectors = false;
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference: synthetic vector\n");
+      if (!warned_for_pass_big_vectors)
+	{
+	  warning ("synthetic vector passed by reference: "
+		   "non-standard ABI extension with no compatibility guarantee");
+	  warned_for_pass_big_vectors = true;
+	}
+      return 1;
+    }
+
   return 0;
 }
 

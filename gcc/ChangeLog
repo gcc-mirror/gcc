@@ -1,3 +1,11 @@
+2004-11-21  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/17836
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): Return
+	synthetic vectors in memory.
+	(function_arg_boundary): Align large synthetic vectors.
+	(rs6000_pass_by_reference): Pass synthetic vectors in memory.
+
 2004-11-21  Jeff Law  <law@redhat.com>
 
 	* cfg.c (update_bb_profile_for_threading): Do not rescale the
