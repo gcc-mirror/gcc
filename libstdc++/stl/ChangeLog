@@ -1,3 +1,9 @@
+1998-04-07 18:32  Ulrich Drepper  <drepper@cygnus.com>
+
+	* stl_hashtable.h (__stl_prime_list): Mark last two numbers as
+	unsigned long since they are otherwise too large for long int on
+	32bit machines.
+
 Fri Feb 20 16:15:05 1998  H.J. Lu  (hjl@gnu.org)
 			  Jason Merrill  <jason@yorick.cygnus.com>
 
