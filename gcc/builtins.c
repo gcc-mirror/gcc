@@ -2940,6 +2940,16 @@ expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
 			      target, mode, EXPAND_NORMAL);
 	}
 
+      /* If length is 1 and we can expand memcpy call inline,
+	 it is ok to use memcpy as well.  */
+      if (integer_onep (len))
+        {
+	  rtx ret = expand_builtin_mempcpy (arglist, target, mode,
+					    /*endp=*/0);
+	  if (ret)
+	    return ret;
+        }
+
       /* Otherwise, call the normal function.  */
       return 0;
    }

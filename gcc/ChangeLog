@@ -1,3 +1,8 @@
+2004-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_memmove): Optimize memmove (x, y, 1)
+	into memcpy (x, y, 1) if memcpy can be expanded inline.
+
 2004-09-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/17468
