@@ -263,8 +263,9 @@ in the following sections.
 -mstructure-size-boundary=
 -mbsd -mxopen -mno-symrename
 -mabort-on-noreturn
--mno-sched-prolog
 -mnop-fun-dllimport -mno-nop-fun-dllimport
+-msingle-pic-base -mno-single-pic-base
+-mpic-register=
 
 @emph{Thumb Options}
 -mtpcs-frame -mno-tpcs-frame
@@ -4172,7 +4173,7 @@ system is required to provide these functions.  The default is
 @kindex -mapcs-float
 @kindex -mno-apcs-float
 Pass floating point arguments using the float point registers.  This is
-one of the variants of the APCS.  This option is reccommended if the
+one of the variants of the APCS.  This option is recommended if the
 target hardware has a floating point unit or if a lot of floating point
 arithmetic is going to be performed by the code.  The default is
 @samp{-mno-apcs-float}, since integer only code is slightly increased in
@@ -4199,8 +4200,8 @@ when @samp{-mthumb-interwork} is specified.
 @kindex -msched-prolog
 Prevent the reordering of instructions in the function prolog, or the
 merging of those instruction with the instructions in the function's
-body.  This means that all functions will start with a recognisable set
-of instructions (or in fact one of a chioce from a small set of
+body.  This means that all functions will start with a recognizable set
+of instructions (or in fact one of a choice from a small set of
 different function prologues), and this information can be used to
 locate the start if functions inside an executable piece of code.  The
 default is @samp{-msched-prolog}.
@@ -4254,11 +4255,11 @@ to trap these instructions.
 
 @item -mshort-load-words
 @kindex -mshort-load-words
-This is a synonym for the @samp{-mno-short-load-bytes}.
+This is a synonym for @samp{-mno-short-load-bytes}.
 
 @item -mno-short-load-words
 @kindex -mno-short-load-words
-This is a synonym for the @samp{-mshort-load-bytes}.
+This is a synonym for @samp{-mshort-load-bytes}.
 
 @item -mbsd
 @kindex -mbsd
@@ -4283,7 +4284,7 @@ compiler is built for cross-compilation.
 @kindex -mcpu=
 This specifies the name of the target ARM processor.  GCC uses this name
 to determine what kind of instructions it can use when generating
-assembly code.  Permissable names are: arm2, arm250, arm3, arm6, arm60,
+assembly code.  Permissible names are: arm2, arm250, arm3, arm6, arm60,
 arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
 arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
 arm7tdmi, arm8, strongarm, strongarm110, strongarm1100, arm8, arm810,
@@ -4305,7 +4306,7 @@ this option.
 This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can use when generating
 assembly code.  This option can be used in conjunction with or instead
-of the @samp{-mcpu=} option.  Permissable names are: armv2, armv2a,
+of the @samp{-mcpu=} option.  Permissible names are: armv2, armv2a,
 armv3, armv3m, armv4, armv4t, armv5.
 
 @item -mfpe=<number>
@@ -4313,16 +4314,16 @@ armv3, armv3m, armv4, armv4t, armv5.
 @kindex -mfpe=
 @kindex -mfp=
 This specifes the version of the floating point emulation available on
-the target.  Permissable values are 2 and 3.  @samp{-mfp=} is a synonym
+the target.  Permissible values are 2 and 3.  @samp{-mfp=} is a synonym
 for @samp{-mfpe=} to support older versions of GCC.
 
 @item -mstructure-size-boundary=<n>
 @kindex -mstructure-size-boundary
 The size of all structures and unions will be rounded up to a multiple
-of the number of bits set by this option.  Permissable values are 8 and
+of the number of bits set by this option.  Permissible values are 8 and
 32.  The default value varies for different toolchains.  For the COFF
 targeted toolchain the default value is 8.  Specifying the larger number
-can produced faster, more efficient code, but can also increase the size
+can produce faster, more efficient code, but can also increase the size
 of the program.  The two values are potentially incompatible.  Code
 compiled with one value cannot necessarily expect to work with code or
 libraries compiled with the other value, if they exchange information
@@ -4338,6 +4339,18 @@ It will be executed if the function tries to return.
 @item -mnop-fun-dllimport
 @kindex -mnop-fun-dllimport
 Disable the support for the @emph{dllimport} attribute.
+
+@item -msingle-pic-base
+@kindex -msingle-pic-base
+Treat the register used for PIC addressing as read-only, rather than
+loading it in the prologue for each function.  The run-time system is
+responsible for initialising this register with an appropriate value
+before execution begins.
+
+@item -mpic-register=<reg>
+@kindex -mpic-register=
+Specify the register to be used for PIC addressing.  The default is R10
+unless stack-checking is enabled, when R9 is used.
 
 @end table
 

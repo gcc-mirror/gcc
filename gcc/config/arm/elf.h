@@ -354,7 +354,8 @@ dtors_section ()							\
   while (0)
 
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
-#define NEED_PLT_GOT	flag_pic
+#define NEED_PLT_RELOC	flag_pic
+#define NEED_GOT_RELOC	flag_pic
 
 /* The ELF assembler handles GOT addressing differently to NetBSD.  */
 #define GOT_PCREL	0

@@ -319,6 +319,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 function tries to return. */
 #define ARM_FLAG_ABORT_NORETURN	(1 << 13)
 
+/* Nonzero if function prologues should not load the PIC register. */
+#define ARM_FLAG_SINGLE_PIC_BASE	(1 << 14)
+
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -341,6 +344,7 @@ function tries to return. */
 #define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
 #define TARGET_NO_SCHED_PRO		(target_flags & ARM_FLAG_NO_SCHED_PRO)
 #define TARGET_ABORT_NORETURN           (target_flags & ARM_FLAG_ABORT_NORETURN)
+#define TARGET_SINGLE_PIC_BASE		(target_flags & ARM_FLAG_SINGLE_PIC_BASE)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -374,7 +378,7 @@ function tries to return. */
      "Load shorts a byte at a time" },				\
   {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE, "" },	\
   {"short-load-words",	       -ARM_FLAG_SHORT_BYTE,		\
-     "Load words a byte at a time" },				\
+     "Load shorts a word at a time" },				\
   {"no-short-load-words",	ARM_FLAG_SHORT_BYTE, "" },	\
   {"soft-float",		ARM_FLAG_SOFT_FLOAT,		\
      "Use library calls to perform FP operations" },		\
@@ -395,6 +399,9 @@ function tries to return. */
   {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO,		\
      "Do not move instructions into a function's prologue" },	\
   {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO, "" },	\
+  {"single-pic-base",		ARM_FLAG_SINGLE_PIC_BASE,	\
+     "Do not load the PIC register in function prologues" },	\
+  {"no-single-pic-base",	-ARM_FLAG_SINGLE_PIC_BASE, "" },\
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT }		\
 }
@@ -410,7 +417,9 @@ function tries to return. */
   {"fp=",   & target_fp_name,					\
      "Specify the version of the floating point emulator" },	\
   { "structure-size-boundary=", & structure_size_string, 	\
-      "Specify the minumum bit alignment of structures" } 	\
+     "Specify the minumum bit alignment of structures" }, 	\
+  { "pic-register=", & arm_pic_register_string,			\
+     "Specify the register to be used for PIC addressing" }	\
 }
 
 struct arm_cpu_select
@@ -492,9 +501,12 @@ extern int arm_is_6_or_7;
 
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
-   Subtargets can override this if required.  */
-#ifndef NEED_PLT_GOT
-#define NEED_PLT_GOT	0
+   Subtargets can override these if required.  */
+#ifndef NEED_GOT_RELOC
+#define NEED_GOT_RELOC	0
+#endif
+#ifndef NEED_PLT_RELOC
+#define NEED_PLT_RELOC	0
 #endif
 
 /* Nonzero if we need to refer to the GOT with a PC-relative
@@ -1842,6 +1854,9 @@ enum reg_class
    using sb (r9) all the time.  */
 extern int arm_pic_register;
 
+/* Used when parsing command line option -mpic-register=.  */
+extern const char * arm_pic_register_string;
+
 /* The register number of the register used to address a table of static
    data addresses in memory.  */
 #define PIC_OFFSET_TABLE_REGNUM arm_pic_register
@@ -2102,7 +2117,7 @@ extern struct rtx_def * arm_compare_op1;
 									\
     /* Mark symbols as position independent.  We only do this in the	\
       .text segment, not in the .data segment. */			\
-    if (NEED_PLT_GOT && flag_pic && making_const_table &&		\
+    if (NEED_GOT_RELOC && flag_pic && making_const_table &&		\
     	(GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF))	\
      {									\
         if (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X))	\
@@ -2141,7 +2156,7 @@ extern struct rtx_def * arm_compare_op1;
         }									\
       fputs ("\tb\t", FILE);							\
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));		\
-      if (NEED_PLT_GOT)								\
+      if (NEED_PLT_RELOC)								\
         fputs ("(PLT)", FILE);							\
       fputc ('\n', FILE);							\
     }										\
