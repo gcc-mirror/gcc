@@ -1,3 +1,7 @@
+2000-09-18  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* optabs.c (emit_libcall_block): Set CONST_CALL_P for the call.
+
 2000-09-18  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Define _GNU_SOURCE only when using the GNU C
