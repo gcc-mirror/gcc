@@ -901,8 +901,7 @@ cpp_register_pragma (pfile, space, name, handler)
     }
 
  found:
-  new = (struct pragma_entry *)
-    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
+  new = xnew (struct pragma_entry);
   new->name = name;
   new->len = strlen (name);
   new->isnspace = 0;
@@ -930,8 +929,7 @@ cpp_register_pragma_space (pfile, space)
       p = p->next;
     }
 
-  new = (struct pragma_entry *)
-    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
+  new = xnew (struct pragma_entry);
   new->name = space;
   new->len = len;
   new->isnspace = 1;
