@@ -6041,7 +6041,7 @@ print_pattern (buf, x, verbose)
       }
       break;
     case ASM_INPUT:
-      sprintf (buf, "asm {%s}", XEXP (x, 0));
+      sprintf (buf, "asm {%s}", XSTR (x, 0));
       break;
     case ADDR_VEC:
       break;
