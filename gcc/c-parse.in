@@ -1853,7 +1853,8 @@ label:	  CASE expr_no_commas ':'
 		  if (value != error_mark_node)
 		    {
 		      tree duplicate;
-		      int success = pushcase (value, label, &duplicate);
+		      int success = pushcase (value, convert_and_check,
+					      label, &duplicate);
 		      if (success == 1)
 			error ("case label not within a switch statement");
 		      else if (success == 2)
@@ -1878,7 +1879,8 @@ label:	  CASE expr_no_commas ':'
 		  if (value1 != error_mark_node && value2 != error_mark_node)
 		    {
 		      tree duplicate;
-		      int success = pushcase_range (value1, value2, label,
+		      int success = pushcase_range (value1, value2,
+						    convert_and_check, label,
 						    &duplicate);
 		      if (success == 1)
 			error ("case label not within a switch statement");
@@ -1900,7 +1902,7 @@ label:	  CASE expr_no_commas ':'
 		  tree duplicate;
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-		  int success = pushcase (NULL_TREE, label, &duplicate);
+		  int success = pushcase (NULL_TREE, 0, label, &duplicate);
 		  stmt_count++;
 		  if (success == 1)
 		    error ("default label not within a switch statement");
