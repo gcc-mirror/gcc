@@ -1,3 +1,9 @@
+1999-09-01  Kresten Krab Thorup  <krab@gnu.org>
+
+	* Makefile.am (.java.lo): Add rule.
+
+	* Makefile.in: Rebuilt.
+
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
 	* posix-threads.cc (_Jv_CondWait): Call _Jv_PthreadCheckMonitor.
