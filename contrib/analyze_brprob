@@ -112,13 +112,11 @@ BEGIN {nnames = 0}
 
     if (int(pred) < 50.0)
       {
-        hit = count - hit;
+        hit = count"-"hit;
       }
     counts[name]=counts[name] "+" count
     hits[name]=hits[name] "+" hit
-    if (float (hit) < (float (count) / 2))
-      hit = "("count" - "hit")";
-    phits[name]=phits[name] "+" hit
+    phits[name]=phits[name] "+(("hit")<"count"/2)*("count"-("hit"))+(("hit")>="count"/2)*("hit")"
 
     #BC crashes on long strings.  Irritating.
     if (length(counts[name]) > 2000)
