@@ -1,3 +1,40 @@
+Mon Sep  6 14:30:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in (C_AND_OBJC_OBJS): Remove ggc-callbacks.o.
+	(c-parse.o, c-decl.o, c-lang.o, c-lex.o, c-common.o,
+	$(out_object_file)): Depend on ggc.h.
+	* c-common.c: Include "ggc.h".
+	(combine_strings): If doing GC, use ggc_alloc_string.
+	* c-decl.c: Include "ggc.h".
+	(ggc_p): Define with value 0.
+	(mark_binding_level): New function.
+	(init_decl_processing): Add GC roots.
+	(mark_c_function_context): New function.
+	(lang_mark_false_label_stack): New function.
+	(lang_mark_tree): New function.
+	(lang_cleanup_tree): New function.
+	* c-lang.c: Include "ggc.h".
+	(lang_init): Call c_parse_init.
+	* c-lex.c: Include "ggc.h".
+	(check_linenum): If doing GC, don't copy filenames to permanent
+	obstack.
+	* c-parse.in: Include "ggc.h".
+	(c_parse_init): New function.
+	* c-tree.h (c_parse_init, mark_c_function_context): Declare.
+	* objc/Make-lang.in (objc-parse.o): Depend on ggc.h.
+
+	* except.c (mark_eh_state): Mark more state.
+	* function.c (mark_function_state): Likewise.
+	* ggc-simple.c (ggc_alloc_rtvec): Bring in sync with non-gc version.
+	(ggc_alloc_string) [GGC_DUMP]: Fix typo.
+	* toplev.c (mark_file_stack): New function.
+	(compile_file): If doing GC, use ggc_alloc_string on input filename.
+	(main): Add root for input_file_stack.
+
+	* i386.c: Include "ggc.h".
+	(ix86_mark_machine_status): New function.
+	(override_options): Set mark_machine_status.
+
 Mon Sep  6 15:26:23 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.c (copy_node): Copy node contents also if doing GC.
