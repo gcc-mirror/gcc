@@ -179,6 +179,9 @@ objc/nil_method.o: $(srcdir)/objc/nil_method.c
 objc/linking.o: $(srcdir)/objc/linking.m
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/linking.m -o $@
+$(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
+	-c $(srcdir)/objc/libobjc_entry.c -o $@
 
 # Build the Objective C runtime library.
 libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready \
@@ -186,6 +189,27 @@ libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready \
 	-rm -f libobjc.a
 	$(AR) $(AR_FLAGS) libobjc.a $(OBJC_O)
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
+
+libobjc_s.a: libobjc.a
+	mv libobjc.a libobjc_s.a
+
+# Create a relocatable DLL
+libobjc.dll: libobjc_s.a $(srcdir)/objc/libobjc_entry.o
+	$(GCC_FOR_TARGET) -dll -Wl,--base-file -Wl,libobjc.base \
+		-o libobjc.dll libobjc_s.a \
+		$(srcdir)/objc/libobjc_entry.o -lkernel32
+	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
+		--base-file libobjc.base --output-exp libobjc.exp
+	$(GCC_FOR_TARGET) -dll -Wl,--base-file libobjc.base libobjc.exp \
+		-o libobjc.dll libobjc_s.a \
+		$(srcdir)/objc/libobjc_entry.o -lkernel32
+	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
+		--base-file libobjc.base --output-exp libobjc.exp
+	$(GCC_FOR_TARGET) libobjc.exp -dll \
+		-o libobjc.dll libobjc_s.a \
+		$(srcdir)/objc/libobjc_entry.o -lkernel32
+	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
+		--output-lib libobjc.a
 
 
 # Build hooks:
@@ -202,7 +226,6 @@ objc.dvi:
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).
 
-# Nothing to do here.
 objc.install-normal: installdirs
 	-if [ -f libobjc.a ] ; then \
 	  rm -f $(libsubdir)/libobjc.a; \
@@ -211,7 +234,17 @@ objc.install-normal: installdirs
 	    (cd $(libsubdir); $(RANLIB) libobjc.a); else true; fi; \
 	  chmod a-x $(libsubdir)/libobjc.a; \
 	else true; fi
-
+	-if [ -f libobjc_s.a ] ; then \
+	  rm -f $(libsubdir)/libobjc_s.a; \
+	  $(INSTALL_DATA) libobjc_s.a $(libsubdir)/libobjc_s.a; \
+	  if $(RANLIB_TEST) ; then \
+	    (cd $(libsubdir); $(RANLIB) libobjc_s.a); else true; fi; \
+	  chmod a-x $(libsubdir)/libobjc_s.a; \
+	else true; fi
+	-if [ -f libobjc.dll ] ; then \
+	  rm -f $(bindir)/libobjc.dll; \
+	  $(INSTALL_DATA) libobjc.dll $(bindir)/libobjc.dll; \
+	else true; fi
 
 objc.install-common:
 
@@ -227,7 +260,8 @@ objc.uninstall:
 objc.mostlyclean:
 	-rm -f tmp-objc-prs.y
 	-rm -f objc/*$(objext) objc/xforward objc/fflags
-	-rm -f libobjc.a
+	-rm -f libobjc.a libobjc_s.a libobjc.dll
+	-rm -f libobjc.base libobjc.exp
 objc.clean: objc.mostlyclean
 	-rm -rf objc-headers
 objc.distclean:
