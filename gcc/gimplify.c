@@ -1942,6 +1942,22 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 			want_lvalue ? fb_lvalue : fb_rvalue);
   ret = MIN (ret, tret);
 
+  /* The innermost expression P may have originally had TREE_SIDE_EFFECTS
+     set which would have caused all the outer expressions in EXPR_P leading
+     to P to also have had TREE_SIDE_EFFECTS set.
+ 
+     Gimplification of P may have cleared TREE_SIDE_EFFECTS on P, which should
+     be propagated to P's parents, innermost to outermost.  */
+  for (p = expr_p; handled_component_p (*p); p = &TREE_OPERAND (*p, 0))
+    VARRAY_PUSH_TREE (stack, *p);
+
+  for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
+    {
+      tree t = VARRAY_TOP_TREE (stack);
+      recalculate_side_effects (t);
+      VARRAY_POP (stack);
+    }
+
   /* If the outermost expression is a COMPONENT_REF, canonicalize its type.  */
   if (!want_lvalue && TREE_CODE (*expr_p) == COMPONENT_REF)
     {
