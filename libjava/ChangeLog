@@ -1,7 +1,7 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/RandomAccessFile.java:
-	More little merges with libgcj.
+	More little merges with classpath. No code changes.
 
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
