@@ -162,23 +162,6 @@ struct nesting GTY(())
 	     This may be the end of the if or the next else/elseif.  */
 	  rtx next_label;
 	} GTY ((tag ("COND_NESTING"))) cond;
-      /* For variable binding contours.  */
-      struct nesting_block
-	{
-	  /* Sequence number of this binding contour within the function,
-	     in order of entry.  */
-	  int block_start_count;
-	  /* The NOTE that starts this contour.
-	     Used by expand_goto to check whether the destination
-	     is within each contour or not.  */
-	  rtx first_insn;
-	  /* The saved target_temp_slot_level from our outer block.
-	     We may reset target_temp_slot_level to be the level of
-	     this block, if that is done, target_temp_slot_level
-	     reverts to the saved target_temp_slot_level at the very
-	     end of the block.  */
-	  int block_target_temp_slot_level;
-	} GTY ((tag ("BLOCK_NESTING"))) block;
       /* For switch (C) or case (Pascal) statements.  */
       struct nesting_case
 	{
@@ -236,9 +219,6 @@ struct stmt_status GTY(())
   /* Number of entries on nesting_stack now.  */
   int x_nesting_depth;
 
-  /* Number of binding contours started so far in this function.  */
-  int x_block_start_count;
-
   /* Location of last line-number note, whether we actually
      emitted it or not.  */
   location_t x_emit_locus;
@@ -248,7 +228,6 @@ struct stmt_status GTY(())
 #define case_stack (cfun->stmt->x_case_stack)
 #define nesting_stack (cfun->stmt->x_nesting_stack)
 #define nesting_depth (cfun->stmt->x_nesting_depth)
-#define current_block_start_count (cfun->stmt->x_block_start_count)
 #define emit_locus (cfun->stmt->x_emit_locus)
 
 static int n_occurrences (int, const char *);

@@ -307,19 +307,6 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 	      emit_insn_after (seq, map->insns_at_start);
 	      return temp;
 	    }
-	  else if (REG_FUNCTION_VALUE_P (orig))
-	    {
-	      if (rtx_equal_function_value_matters)
-		/* This is an ignored return value.  We must not
-		   leave it in with REG_FUNCTION_VALUE_P set, since
-		   that would confuse subsequent inlining of the
-		   current function into a later function.  */
-		return gen_rtx_REG (GET_MODE (orig), regno);
-	      else
-		/* Must be unrolling loops or replicating code if we
-		   reach here, so return the register unchanged.  */
-		return orig;
-	    }
 	  else
 	    return orig;
 

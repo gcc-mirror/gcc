@@ -206,7 +206,6 @@ static int contains (rtx, varray_type);
 #ifdef HAVE_return
 static void emit_return_into_block (basic_block, rtx);
 #endif
-static void purge_single_hard_subreg_set (rtx);
 #if defined(HAVE_epilogue) && defined(INCOMING_RETURN_ADDR_RTX)
 static rtx keep_stack_depressed (rtx);
 #endif
@@ -293,7 +292,6 @@ pop_function_context_from (tree context ATTRIBUTE_UNUSED)
   lang_hooks.function.leave_nested (p);
 
   /* Reset variables that have known state during rtx generation.  */
-  rtx_equal_function_value_matters = 1;
   virtuals_instantiated = 0;
   generating_concat_p = 1;
 }
@@ -1247,74 +1245,6 @@ static int cfa_offset;
 #define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
 #endif
 
-
-/* Convert a SET of a hard subreg to a set of the appropriate hard
-   register.  A subroutine of purge_hard_subreg_sets.  */
-
-static void
-purge_single_hard_subreg_set (rtx pattern)
-{
-  rtx reg = SET_DEST (pattern);
-  enum machine_mode mode = GET_MODE (SET_DEST (pattern));
-  int offset = 0;
-
-  if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg))
-      && REGNO (SUBREG_REG (reg)) < FIRST_PSEUDO_REGISTER)
-    {
-      offset = subreg_regno_offset (REGNO (SUBREG_REG (reg)),
-				    GET_MODE (SUBREG_REG (reg)),
-				    SUBREG_BYTE (reg),
-				    GET_MODE (reg));
-      reg = SUBREG_REG (reg);
-    }
-
-
-  if (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER)
-    {
-      reg = gen_rtx_REG (mode, REGNO (reg) + offset);
-      SET_DEST (pattern) = reg;
-    }
-}
-
-/* Eliminate all occurrences of SETs of hard subregs from INSNS.  The
-   only such SETs that we expect to see are those left in because
-   integrate can't handle sets of parts of a return value register.
-
-   We don't use alter_subreg because we only want to eliminate subregs
-   of hard registers.  */
-
-void
-purge_hard_subreg_sets (rtx insn)
-{
-  for (; insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	{
-	  rtx pattern = PATTERN (insn);
-	  switch (GET_CODE (pattern))
-	    {
-	    case SET:
-	      if (GET_CODE (SET_DEST (pattern)) == SUBREG)
-		purge_single_hard_subreg_set (pattern);
-	      break;
-	    case PARALLEL:
-	      {
-		int j;
-		for (j = XVECLEN (pattern, 0) - 1; j >= 0; j--)
-		  {
-		    rtx inner_pattern = XVECEXP (pattern, 0, j);
-		    if (GET_CODE (inner_pattern) == SET
-			&& GET_CODE (SET_DEST (inner_pattern)) == SUBREG)
-		      purge_single_hard_subreg_set (inner_pattern);
-		  }
-	      }
-	      break;
-	    default:
-	      break;
-	    }
-	}
-    }
-}
 
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
@@ -3903,10 +3833,6 @@ prepare_function_start (tree fndecl)
 
   /* We haven't done register allocation yet.  */
   reg_renumber = 0;
-
-  /* Indicate that we need to distinguish between the return value of the
-     present function and the return value of a function being called.  */
-  rtx_equal_function_value_matters = 1;
 
   /* Indicate that we have not instantiated virtual registers yet.  */
   virtuals_instantiated = 0;

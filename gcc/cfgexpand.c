@@ -449,7 +449,7 @@ tree_expand_cfg (void)
       && DECL_FILE_SCOPE_P (current_function_decl))
     expand_main_function ();
 
-  /* Write the flowgraph to a dot file.  */
+  /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
 
   init_block = construct_init_block ();

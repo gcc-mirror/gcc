@@ -1,3 +1,32 @@
+2004-07-27  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgexpand.c (tree_expand_cfg): Fix comment.
+
+	* calls.c (expand_call): Ignore rtx_equal_function_value_matters.
+	* function.c (purge_single_hard_subreg_set, purge_hard_subreg_sets):
+	Remove.
+	(prepare_function_start): Don't set rtx_equal_function_value_matters.
+	* integrate.c (copy_rtx_and_substitute): Don't test for it.
+	* passes.c (rest_of_compilation): Don't call purge_hard_subreg_sets.
+	Don't set rtx_equal_function_value_matters.  Don't register RTL hooks
+	here again.  Update leading comment.
+	* rtl.c (rtx_equal_function_value_matters): Remove.
+	(rtx_equal_p): Don't test for it.
+	* simplify-rtx.c (simplify_binary_operation, simplify_subreg):
+	Likewise.
+
+	* rtl.h (enum insn_note): Remove NOTE_INSN_LOOP_END_TOP_COND.
+	* rtl.c (note_insn_name): Likewise.
+	* emit-rtl.c (remove_unnecessary_notes): Don't handle it.
+	* final.c (final_scan_insn): Likewise.
+
+	* except.c (finish_eh_generation): Don't call cfg_cleanup from here.
+	* passes.c (rest_of_handle_eh): Do it here.
+
+	* stmt.c (struct nesting): Remove struct nesting block member.
+	(struct stmt_status): Remove x_block_start_count field.
+	(current_block_start_count): Remove.
+
 2004-07-27  Brian Booth  <bbooth@redhat.com>
 
 	* tree-optimize.c (register_one_dump_file): Update condition that uses
@@ -59,10 +88,10 @@
 
 2004-07-26  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/i386/i386.c (function_arg): Always treat 8-
-        and 16-byte wide vectors the same, even if MMX/SSE
-        are disabled.
-        (contains_128bit_aligned_vector_p): Add comment.
+	* config/i386/i386.c (function_arg): Always treat 8-
+	and 16-byte wide vectors the same, even if MMX/SSE
+	are disabled.
+	(contains_128bit_aligned_vector_p): Add comment.
 
 2004-07-26  J"orn Rennecke <joern.rennecke@superh.com>
 

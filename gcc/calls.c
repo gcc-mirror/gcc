@@ -2226,17 +2226,10 @@ expand_call (tree exp, rtx target, int ignore)
   /* Tail calls can make things harder to debug, and we've traditionally
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Don't try if
-     there's cleanups, as we know there's code to follow the call.
-
-     If rtx_equal_function_value_matters is false, that means we've
-     finished with regular parsing.  Which means that some of the
-     machinery we use to generate tail-calls is no longer in place.
-     This is most often true of sjlj-exceptions, which we couldn't
-     tail-call to anyway.  */
+     there's cleanups, as we know there's code to follow the call.  */
 
   if (currently_expanding_call++ != 0
       || !flag_optimize_sibling_calls
-      || !rtx_equal_function_value_matters
       || args_size.var
       || lookup_stmt_eh_region (exp) >= 0)
     try_tail_call = 0;

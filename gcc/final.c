@@ -1699,7 +1699,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_DELETED:
 	case NOTE_INSN_LOOP_BEG:
 	case NOTE_INSN_LOOP_END:
-	case NOTE_INSN_LOOP_END_TOP_COND:
 	case NOTE_INSN_LOOP_CONT:
 	case NOTE_INSN_LOOP_VTOP:
 	case NOTE_INSN_FUNCTION_END:

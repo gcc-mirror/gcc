@@ -1791,8 +1791,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		 uppermost bit is set, then this isn't a power of two due
 		 to implicit sign extension.  */
 	      && (width <= HOST_BITS_PER_WIDE_INT
-		  || val != HOST_BITS_PER_WIDE_INT - 1)
-	      && ! rtx_equal_function_value_matters)
+		  || val != HOST_BITS_PER_WIDE_INT - 1))
 	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
 
 	  /* x*2 is x+x and x*(-1) is -x */
@@ -3669,8 +3668,6 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      frame, or argument pointer, leave this as a SUBREG.  */
 
   if (REG_P (op)
-      && (! REG_FUNCTION_VALUE_P (op)
-	  || ! rtx_equal_function_value_matters)
       && REGNO (op) < FIRST_PSEUDO_REGISTER
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (REG_CANNOT_CHANGE_MODE_P (REGNO (op), innermode, outermode)
