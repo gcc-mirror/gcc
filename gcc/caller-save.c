@@ -165,8 +165,7 @@ init_caller_save ()
 
   for (offset = 1 << (HOST_BITS_PER_INT / 2); offset; offset >>= 1)
     {
-      address = gen_rtx (PLUS, Pmode, addr_reg,
-			 gen_rtx (CONST_INT, VOIDmode, offset));
+      address = gen_rtx (PLUS, Pmode, addr_reg, GEN_INT (offset));
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (regno_save_mode[i] != VOIDmode
@@ -275,7 +274,7 @@ setup_save_areas (pchanged)
     if (regno_save_mem[i] != 0)
       ok &= strict_memory_address_p (regno_save_mode[i],
 				     XEXP (eliminate_regs (regno_save_mem[i],
-							   0, 0),
+							   0, NULL_RTX),
 					   0));
 
   return ok;
@@ -297,7 +296,8 @@ save_call_clobbered_regs (insn_mode)
   for (b = 0; b < n_basic_blocks; b++)
     {
       regset regs_live = basic_block_live_at_start[b];
-      int offset, bit, i, j;
+      REGSET_ELT_TYPE bit;
+      int offset, i, j;
       int regno;
 
       /* Compute hard regs live at start of block -- this is the
@@ -318,7 +318,7 @@ save_call_clobbered_regs (insn_mode)
       for (offset = 0, i = 0; offset < regset_size; offset++)
 	{
 	  if (regs_live[offset] == 0)
-	    i += HOST_BITS_PER_INT;
+	    i += REGSET_ELT_BITS;
 	  else
 	    for (bit = 1; bit && i < max_regno; bit <<= 1, i++)
 	      if ((regs_live[offset] & bit)

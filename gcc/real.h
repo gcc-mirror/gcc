@@ -53,7 +53,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	REAL_IS_NOT_DOUBLE
 #ifndef REAL_VALUE_TYPE
 #define REAL_VALUE_TYPE \
-  struct real_value { long i[sizeof (double) / sizeof (long)]; }
+  struct real_value{ HOST_WIDE_INT i[sizeof (double)/sizeof (HOST_WIDE_INT)]; }
 #endif /* no REAL_VALUE_TYPE */
 #endif /* formats differ */
 #endif /* 0 */
@@ -196,7 +196,7 @@ extern REAL_VALUE_TYPE dconstm1;
 union real_extract 
 {
   REAL_VALUE_TYPE d;
-  int i[sizeof (REAL_VALUE_TYPE) / sizeof (int)];
+  HOST_WIDE_INT i[sizeof (REAL_VALUE_TYPE) / sizeof (HOST_WIDE_INT)];
 };
 
 /* For a CONST_DOUBLE:
@@ -206,8 +206,8 @@ union real_extract
    For a float, the number of ints varies,
     and CONST_DOUBLE_LOW is the one that should come first *in memory*.
     So use &CONST_DOUBLE_LOW(r) as the address of an array of ints.  */
-#define CONST_DOUBLE_LOW(r) XINT (r, 2)
-#define CONST_DOUBLE_HIGH(r) XINT (r, 3)
+#define CONST_DOUBLE_LOW(r) XWINT (r, 2)
+#define CONST_DOUBLE_HIGH(r) XWINT (r, 3)
 
 /* Link for chain of all CONST_DOUBLEs in use in current function.  */
 #define CONST_DOUBLE_CHAIN(r) XEXP (r, 1)
