@@ -1,5 +1,5 @@
 /* Basic error reporting routines.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,9 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_ERRORS_H__
 #define __GCC_ERRORS_H__
 
-extern void warning PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
-extern void error   PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
-extern void fatal   PVPROTO ((const char *format, ...))
+extern void warning PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void error   PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void fatal   PARAMS ((const char *format, ...))
     ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 extern int have_error;

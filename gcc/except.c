@@ -453,39 +453,39 @@ static rtx last_rethrow_symbol = NULL_RTX;
 
 /* Prototypes for local functions.  */
 
-static void push_eh_entry	PROTO((struct eh_stack *));
-static struct eh_entry * pop_eh_entry		PROTO((struct eh_stack *));
-static void enqueue_eh_entry	PROTO((struct eh_queue *, struct eh_entry *));
-static struct eh_entry * dequeue_eh_entry	PROTO((struct eh_queue *));
-static rtx call_get_eh_context	PROTO((void));
-static void start_dynamic_cleanup		PROTO((tree, tree));
-static void start_dynamic_handler		PROTO((void));
-static void expand_rethrow	PROTO((rtx));
-static void output_exception_table_entry	PROTO((FILE *, int));
-static int can_throw		PROTO((rtx));
-static rtx scan_region		PROTO((rtx, int, int *));
-static void eh_regs		PROTO((rtx *, rtx *, rtx *, int));
-static void set_insn_eh_region	PROTO((rtx *, int));
+static void push_eh_entry	PARAMS ((struct eh_stack *));
+static struct eh_entry * pop_eh_entry	PARAMS ((struct eh_stack *));
+static void enqueue_eh_entry	PARAMS ((struct eh_queue *, struct eh_entry *));
+static struct eh_entry * dequeue_eh_entry	PARAMS ((struct eh_queue *));
+static rtx call_get_eh_context	PARAMS ((void));
+static void start_dynamic_cleanup	PARAMS ((tree, tree));
+static void start_dynamic_handler	PARAMS ((void));
+static void expand_rethrow	PARAMS ((rtx));
+static void output_exception_table_entry	PARAMS ((FILE *, int));
+static int can_throw		PARAMS ((rtx));
+static rtx scan_region		PARAMS ((rtx, int, int *));
+static void eh_regs		PARAMS ((rtx *, rtx *, rtx *, int));
+static void set_insn_eh_region	PARAMS ((rtx *, int));
 #ifdef DONT_USE_BUILTIN_SETJMP
-static void jumpif_rtx		PROTO((rtx, rtx));
+static void jumpif_rtx		PARAMS ((rtx, rtx));
 #endif
-static void mark_eh_node        PROTO((struct eh_node *));
-static void mark_eh_stack       PROTO((struct eh_stack *));
-static void mark_eh_queue       PROTO((struct eh_queue *));
-static void mark_tree_label_node PROTO ((struct label_node *));
-static void mark_func_eh_entry	PROTO ((void *));
-static rtx create_rethrow_ref	PROTO ((int));
-static void push_entry		PROTO ((struct eh_stack *, struct eh_entry*));
-static void receive_exception_label PROTO ((rtx));
-static int new_eh_region_entry	PROTO ((int, rtx));
-static int find_func_region	PROTO ((int));
-static int find_func_region_from_symbol PROTO ((rtx));
-static void clear_function_eh_region PROTO ((void));
-static void process_nestinfo	PROTO ((int, eh_nesting_info *, int *));
+static void mark_eh_node        PARAMS ((struct eh_node *));
+static void mark_eh_stack       PARAMS ((struct eh_stack *));
+static void mark_eh_queue       PARAMS ((struct eh_queue *));
+static void mark_tree_label_node PARAMS ((struct label_node *));
+static void mark_func_eh_entry	PARAMS ((void *));
+static rtx create_rethrow_ref	PARAMS ((int));
+static void push_entry		PARAMS ((struct eh_stack *, struct eh_entry*));
+static void receive_exception_label PARAMS ((rtx));
+static int new_eh_region_entry	PARAMS ((int, rtx));
+static int find_func_region	PARAMS ((int));
+static int find_func_region_from_symbol PARAMS ((rtx));
+static void clear_function_eh_region PARAMS ((void));
+static void process_nestinfo	PARAMS ((int, eh_nesting_info *, int *));
 
-rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
-static void emit_cleanup_handler PROTO ((struct eh_entry *));
-static int eh_region_from_symbol PROTO((rtx));
+rtx expand_builtin_return_addr	PARAMS ((enum built_in_function, int, rtx));
+static void emit_cleanup_handler PARAMS ((struct eh_entry *));
+static int eh_region_from_symbol PARAMS ((rtx));
 
 
 /* Various support routines to manipulate the various data structures

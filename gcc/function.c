@@ -123,18 +123,18 @@ static int virtuals_instantiated;
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
-void (*init_machine_status) PROTO((struct function *));
-void (*save_machine_status) PROTO((struct function *));
-void (*restore_machine_status) PROTO((struct function *));
-void (*mark_machine_status) PROTO((struct function *));
-void (*free_machine_status) PROTO((struct function *));
+void (*init_machine_status) PARAMS ((struct function *));
+void (*save_machine_status) PARAMS ((struct function *));
+void (*restore_machine_status) PARAMS ((struct function *));
+void (*mark_machine_status) PARAMS ((struct function *));
+void (*free_machine_status) PARAMS ((struct function *));
 
 /* Likewise, but for language-specific data.  */
-void (*init_lang_status) PROTO((struct function *));
-void (*save_lang_status) PROTO((struct function *));
-void (*restore_lang_status) PROTO((struct function *));
-void (*mark_lang_status) PROTO((struct function *));
-void (*free_lang_status) PROTO((struct function *));
+void (*init_lang_status) PARAMS ((struct function *));
+void (*save_lang_status) PARAMS ((struct function *));
+void (*restore_lang_status) PARAMS ((struct function *));
+void (*mark_lang_status) PARAMS ((struct function *));
+void (*free_lang_status) PARAMS ((struct function *));
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
@@ -230,62 +230,62 @@ struct insns_for_mem_entry {
 
 /* Forward declarations.  */
 
-static rtx assign_stack_local_1 PROTO ((enum machine_mode, HOST_WIDE_INT,
-					    int, struct function *));
-static rtx assign_stack_temp_for_type PROTO ((enum machine_mode, HOST_WIDE_INT,
-					      int, tree));
-static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
-static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
-				       enum machine_mode, enum machine_mode,
-				       int, int, int, 
-				       struct hash_table *));
-static void fixup_var_refs	PROTO((rtx, enum machine_mode, int, 
-				       struct hash_table *));
+static rtx assign_stack_local_1 PARAMS ((enum machine_mode, HOST_WIDE_INT,
+					 int, struct function *));
+static rtx assign_stack_temp_for_type PARAMS ((enum machine_mode,
+					       HOST_WIDE_INT, int, tree));
+static struct temp_slot *find_temp_slot_from_address  PARAMS ((rtx));
+static void put_reg_into_stack	PARAMS ((struct function *, rtx, tree,
+					 enum machine_mode, enum machine_mode,
+					 int, int, int, struct hash_table *));
+static void fixup_var_refs	PARAMS ((rtx, enum machine_mode, int, 
+					 struct hash_table *));
 static struct fixup_replacement
-  *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
-static void fixup_var_refs_insns PROTO((rtx, enum machine_mode, int,
-					rtx, int, struct hash_table *));
-static void fixup_var_refs_1	PROTO((rtx, enum machine_mode, rtx *, rtx,
-				       struct fixup_replacement **));
-static rtx fixup_memory_subreg	PROTO((rtx, rtx, int));
-static rtx walk_fixup_memory_subreg  PROTO((rtx, rtx, int));
-static rtx fixup_stack_1	PROTO((rtx, rtx));
-static void optimize_bit_field	PROTO((rtx, rtx, rtx *));
-static void instantiate_decls	PROTO((tree, int));
-static void instantiate_decls_1	PROTO((tree, int));
-static void instantiate_decl	PROTO((rtx, int, int));
-static int instantiate_virtual_regs_1 PROTO((rtx *, rtx, int));
-static void delete_handlers	PROTO((void));
-static void pad_to_arg_alignment PROTO((struct args_size *, int, struct args_size *));
+  *find_fixup_replacement	PARAMS ((struct fixup_replacement **, rtx));
+static void fixup_var_refs_insns PARAMS ((rtx, enum machine_mode, int,
+					  rtx, int, struct hash_table *));
+static void fixup_var_refs_1	PARAMS ((rtx, enum machine_mode, rtx *, rtx,
+					 struct fixup_replacement **));
+static rtx fixup_memory_subreg	PARAMS ((rtx, rtx, int));
+static rtx walk_fixup_memory_subreg  PARAMS ((rtx, rtx, int));
+static rtx fixup_stack_1	PARAMS ((rtx, rtx));
+static void optimize_bit_field	PARAMS ((rtx, rtx, rtx *));
+static void instantiate_decls	PARAMS ((tree, int));
+static void instantiate_decls_1	PARAMS ((tree, int));
+static void instantiate_decl	PARAMS ((rtx, int, int));
+static int instantiate_virtual_regs_1 PARAMS ((rtx *, rtx, int));
+static void delete_handlers	PARAMS ((void));
+static void pad_to_arg_alignment PARAMS ((struct args_size *, int,
+					  struct args_size *));
 #ifndef ARGS_GROW_DOWNWARD
-static void pad_below		PROTO((struct args_size *, enum  machine_mode,
-				       tree));
+static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
+					 tree));
 #endif
 #ifdef ARGS_GROW_DOWNWARD
-static tree round_down		PROTO((tree, int));
+static tree round_down		PARAMS ((tree, int));
 #endif
-static rtx round_trampoline_addr PROTO((rtx));
-static tree blocks_nreverse	PROTO((tree));
-static int all_blocks		PROTO((tree, tree *));
+static rtx round_trampoline_addr PARAMS ((rtx));
+static tree blocks_nreverse	PARAMS ((tree));
+static int all_blocks		PARAMS ((tree, tree *));
 /* We always define `record_insns' even if its not used so that we
    can always export `prologue_epilogue_contains'.  */
-static int *record_insns	PROTO((rtx)) ATTRIBUTE_UNUSED;
-static int contains		PROTO((rtx, int *));
-static void put_addressof_into_stack PROTO((rtx, struct hash_table *));
-static boolean purge_addressof_1 PROTO((rtx *, rtx, int, int, 
-				       struct hash_table *));
-static int is_addressof		PROTO ((rtx *, void *));
-static struct hash_entry *insns_for_mem_newfunc PROTO((struct hash_entry *,
-						       struct hash_table *,
-						       hash_table_key));
-static unsigned long insns_for_mem_hash PROTO ((hash_table_key));
-static boolean insns_for_mem_comp PROTO ((hash_table_key, hash_table_key));
-static int insns_for_mem_walk   PROTO ((rtx *, void *));
-static void compute_insns_for_mem PROTO ((rtx, rtx, struct hash_table *));
-static void mark_temp_slot PROTO ((struct temp_slot *));
-static void mark_function_status PROTO ((struct function *));
-static void mark_function_chain PROTO ((void *));
-static void prepare_function_start PROTO ((void));
+static int *record_insns	PARAMS ((rtx)) ATTRIBUTE_UNUSED;
+static int contains		PARAMS ((rtx, int *));
+static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
+static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int, 
+					  struct hash_table *));
+static int is_addressof		PARAMS ((rtx *, void *));
+static struct hash_entry *insns_for_mem_newfunc PARAMS ((struct hash_entry *,
+							 struct hash_table *,
+							 hash_table_key));
+static unsigned long insns_for_mem_hash PARAMS ((hash_table_key));
+static boolean insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
+static int insns_for_mem_walk   PARAMS ((rtx *, void *));
+static void compute_insns_for_mem PARAMS ((rtx, rtx, struct hash_table *));
+static void mark_temp_slot PARAMS ((struct temp_slot *));
+static void mark_function_status PARAMS ((struct function *));
+static void mark_function_chain PARAMS ((void *));
+static void prepare_function_start PARAMS ((void));
 
 
 /* Pointer to chain of `struct function' for containing functions.  */

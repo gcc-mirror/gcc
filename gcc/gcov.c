@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990, 91-94, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 96-99, 2000 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
 
@@ -220,21 +220,21 @@ static char *object_directory = 0;
 static int output_branch_counts = 0;
 
 /* Forward declarations.  */
-static void process_args PROTO ((int, char **));
-static void open_files PROTO ((void));
-static void read_files PROTO ((void));
-static void scan_for_source_files PROTO ((void));
-static void output_data PROTO ((void));
-static void print_usage PROTO ((void)) ATTRIBUTE_NORETURN;
-static void init_arc PROTO ((struct adj_list *, int, int, struct bb_info *));
-static struct adj_list *reverse_arcs PROTO ((struct adj_list *));
-static void create_program_flow_graph PROTO ((struct bb_info_list *));
-static void solve_program_flow_graph PROTO ((struct bb_info_list *));
-static void calculate_branch_probs PROTO ((struct bb_info_list *, int,
-					   struct arcdata **, int));
-static void function_summary PROTO ((void));
+static void process_args PARAMS ((int, char **));
+static void open_files PARAMS ((void));
+static void read_files PARAMS ((void));
+static void scan_for_source_files PARAMS ((void));
+static void output_data PARAMS ((void));
+static void print_usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void init_arc PARAMS ((struct adj_list *, int, int, struct bb_info *));
+static struct adj_list *reverse_arcs PARAMS ((struct adj_list *));
+static void create_program_flow_graph PARAMS ((struct bb_info_list *));
+static void solve_program_flow_graph PARAMS ((struct bb_info_list *));
+static void calculate_branch_probs PARAMS ((struct bb_info_list *, int,
+					    struct arcdata **, int));
+static void function_summary PARAMS ((void));
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
@@ -260,9 +260,9 @@ main (argc, argv)
   return 0;
 }
 
-static void fnotice PVPROTO ((FILE *, const char *, ...)) ATTRIBUTE_PRINTF_2;
+static void fnotice PARAMS ((FILE *, const char *, ...)) ATTRIBUTE_PRINTF_2;
 static void
-fnotice VPROTO ((FILE *file, const char *msgid, ...))
+fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *file;
@@ -283,7 +283,7 @@ fnotice VPROTO ((FILE *file, const char *msgid, ...))
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
-extern void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
+extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 void
 fancy_abort ()

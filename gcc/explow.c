@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 91, 94-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,8 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
-static rtx break_out_memory_refs	PROTO((rtx));
-static void emit_stack_probe		PROTO((rtx));
+static rtx break_out_memory_refs	PARAMS ((rtx));
+static void emit_stack_probe		PARAMS ((rtx));
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -938,7 +938,7 @@ emit_stack_save (save_level, psave, after)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) PROTO ((rtx, rtx)) = gen_move_insn;
+  rtx (*fcn) PARAMS ((rtx, rtx)) = gen_move_insn;
   enum machine_mode mode = STACK_SAVEAREA_MODE (save_level);
 
   /* See if this machine has anything special to do for this kind of save.  */
@@ -1020,7 +1020,7 @@ emit_stack_restore (save_level, sa, after)
      rtx sa;
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) PROTO ((rtx, rtx)) = gen_move_insn;
+  rtx (*fcn) PARAMS ((rtx, rtx)) = gen_move_insn;
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)

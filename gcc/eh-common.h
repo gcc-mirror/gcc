@@ -1,5 +1,5 @@
 /* EH stuff
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -102,7 +102,8 @@ struct __eh_info; /* forward declaration */
     3 - exception table region is in (exception descriptor *)
 */
 
-typedef void * (*__eh_matcher)          PROTO ((struct __eh_info *, void *, struct exception_descriptor *));
+typedef void * (*__eh_matcher)	PARAMS ((struct __eh_info *, void *,
+					 struct exception_descriptor *));
 
 /* This value is to be checked as a 'match all' case in the runtime field. */
 

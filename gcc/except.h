@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -153,14 +153,14 @@ struct eh_status
    this point are considered to be part of the region until
    expand_eh_region_end () is invoked.  */
 
-extern void expand_eh_region_start		PROTO((void));
+extern void expand_eh_region_start		PARAMS ((void));
 
 /* Just like expand_eh_region_start, except if a cleanup action is
    entered on the cleanup chain, the TREE_PURPOSE of the element put
    on the chain is DECL.  DECL should be the associated VAR_DECL, if
    any, otherwise it should be NULL_TREE.  */
 
-extern void expand_eh_region_start_for_decl	PROTO((tree));
+extern void expand_eh_region_start_for_decl	PARAMS ((tree));
 
 /* Start an exception handling region for the given cleanup action.
    All instructions emitted after this point are considered to be part
@@ -174,7 +174,7 @@ extern void expand_eh_region_start_for_decl	PROTO((tree));
    generation, and optimizes it so as to not need the exception
    region.  */
 
-extern int expand_eh_region_start_tree		PROTO((tree, tree));
+extern int expand_eh_region_start_tree		PARAMS ((tree, tree));
 
 /* End an exception handling region.  The information about the region
    is found on the top of ehstack.
@@ -185,33 +185,34 @@ extern int expand_eh_region_start_tree		PROTO((tree, tree));
    HANDLER will be transformed to rtl when expand_leftover_cleanups ()
    is invoked.  */
 
-extern void expand_eh_region_end		PROTO((tree));
+extern void expand_eh_region_end		PARAMS ((tree));
 
 /* Push RLABEL or TLABEL onto LABELSTACK. Only one of RLABEL or TLABEL
    should be set; the other must be NULL.  */
 
-extern void push_label_entry			PROTO((struct label_node **labelstack, rtx rlabel, tree tlabel));
+extern void push_label_entry	PARAMS ((struct label_node **labelstack,
+					 rtx rlabel, tree tlabel));
 
 /* Pop the topmost entry from LABELSTACK and return its value as an
    rtx node. If LABELSTACK is empty, return NULL.  */
 
-extern rtx pop_label_entry			PROTO((struct label_node **labelstack));
+extern rtx pop_label_entry	PARAMS ((struct label_node **labelstack));
 
 /* Return the topmost entry of LABELSTACK as a tree node, or return
    NULL_TREE if LABELSTACK is empty.  */
 
-extern tree top_label_entry			PROTO((struct label_node **labelstack));
+extern tree top_label_entry	PARAMS ((struct label_node **labelstack));
 
 #endif
 
 /* Test: is exception handling turned on? */
 
-extern int doing_eh				       PROTO ((int));
+extern int doing_eh			        PARAMS ((int));
 
 /* Toplevel initialization for EH.  */
 
-void set_exception_lang_code                    PROTO((int));
-void set_exception_version_code                 PROTO((int));
+void set_exception_lang_code                    PARAMS ((int));
+void set_exception_version_code                 PARAMS ((int));
 
 /* A list of handlers asocciated with an exception region. HANDLER_LABEL
    is the the label that control should be transfered to if the data
@@ -238,45 +239,45 @@ typedef struct handler_info
    typeinfo entry. Regardless where it is positioned, a NULL_TREE entry
    is always output as the LAST handler in the exception table for a region. */
 
-void add_new_handler                       PROTO((int, struct handler_info *));
+void add_new_handler			PARAMS ((int, struct handler_info *));
 
 /* Remove a handler label. The handler label is being deleted, so all
    regions which reference this handler should have it removed from their
    list of possible handlers. Any region which has the final handler
    removed can be deleted. */
 
-void remove_handler                        PROTO((rtx));
+void remove_handler			PARAMS ((rtx));
 
 /* Create a new handler structure initialized with the handler label and
    typeinfo fields passed in. */
 
-struct handler_info *get_new_handler            PROTO((rtx, void *));
+struct handler_info *get_new_handler            PARAMS ((rtx, void *));
 
 /* Make a duplicate of an exception region by copying all the handlers
    for an exception region. Return the new handler index. */
 
-int duplicate_eh_handlers                       PROTO((int, int, rtx (*)(rtx)));
+int duplicate_eh_handlers		PARAMS ((int, int, rtx (*)(rtx)));
 
 /* map symbol refs for rethrow */
 
-rtx rethrow_symbol_map                          PROTO((rtx, rtx (*)(rtx)));
+rtx rethrow_symbol_map                          PARAMS ((rtx, rtx (*)(rtx)));
 
 /* Is the rethrow label for a region used? */
 
-int rethrow_used                                PROTO((int));
+int rethrow_used                                PARAMS ((int));
 
 /* Update the rethrow references to reflect rethrows which have been
    optimized away.  */
 
-void update_rethrow_references			PROTO((void));
+void update_rethrow_references			PARAMS ((void));
 
 /* Get a pointer to the first handler in an exception region's list. */
 
-struct handler_info *get_first_handler          PROTO((int));
+struct handler_info *get_first_handler          PARAMS ((int));
 
 /* Find all the runtime handlers type matches currently referenced */
 
-int find_all_handler_type_matches               PROTO((void ***));
+int find_all_handler_type_matches               PARAMS ((void ***));
 
 /* The eh_nesting_info structure is used to find a list of valid handlers
    for any arbitrary exception region.  When init_eh_nesting_info is called,
@@ -307,114 +308,114 @@ typedef struct eh_nesting
 
 /* Initialize the eh_nesting_info structure.  */
 
-eh_nesting_info *init_eh_nesting_info 		PROTO((void));
+eh_nesting_info *init_eh_nesting_info 		PARAMS ((void));
 
 /* Get a list of handlers reachable from a an exception region/insn.  */
 
-int reachable_handlers 			PROTO((int, eh_nesting_info *, rtx, 
-					       handler_info ***handlers));
+int reachable_handlers 			PARAMS ((int, eh_nesting_info *, rtx, 
+						 handler_info ***handlers));
 
 /* Free the eh_nesting_info structure.  */
 
-void free_eh_nesting_info 			PROTO((eh_nesting_info *));
+void free_eh_nesting_info 			PARAMS ((eh_nesting_info *));
 
-extern void init_eh				PROTO((void));
+extern void init_eh				PARAMS ((void));
 
 /* Initialization for the per-function EH data.  */
 
-extern void init_eh_for_function		PROTO((void));
+extern void init_eh_for_function		PARAMS ((void));
 
 /* Generate an exception label. Use instead of gen_label_rtx */
 
-extern rtx gen_exception_label                  PROTO((void));
+extern rtx gen_exception_label                  PARAMS ((void));
 
 /* Adds an EH table entry for EH entry number N. Called from
    final_scan_insn for NOTE_INSN_EH_REGION_BEG.  */
 
-extern void add_eh_table_entry			PROTO((int n));
+extern void add_eh_table_entry			PARAMS ((int n));
 
 /* Start a catch clause, triggered by runtime value paramter. */
 
 #ifdef TREE_CODE
-extern void start_catch_handler                 PROTO((tree));
+extern void start_catch_handler                 PARAMS ((tree));
 #endif
 
 /* End an individual catch clause. */
 
-extern void end_catch_handler                   PROTO((void));
+extern void end_catch_handler                   PARAMS ((void));
 
 /* Returns a non-zero value if we need to output an exception table.  */
 
-extern int exception_table_p			PROTO((void));
+extern int exception_table_p			PARAMS ((void));
 
 /* Outputs the exception table if we have one.  */
 
-extern void output_exception_table		PROTO((void));
+extern void output_exception_table		PARAMS ((void));
 
 /* Given a return address in ADDR, determine the address we should use
    to find the corresponding EH region.  */
 
-extern rtx eh_outer_context			PROTO((rtx addr));
+extern rtx eh_outer_context			PARAMS ((rtx addr));
 
 /* Called at the start of a block of try statements for which there is
    a supplied catch handler.  */
 
-extern void expand_start_try_stmts 		PROTO((void));
+extern void expand_start_try_stmts 		PARAMS ((void));
 
 /* Called at the start of a block of catch statements. It terminates the
    previous set of try statements.  */
 
-extern void expand_start_all_catch		PROTO((void));
+extern void expand_start_all_catch		PARAMS ((void));
 
 /* Called at the end of a block of catch statements.  */
 
-extern void expand_end_all_catch		PROTO((void));
+extern void expand_end_all_catch		PARAMS ((void));
 
 /* Begin a region that will contain entries created with
    add_partial_entry.  */
 
-extern void begin_protect_partials              PROTO((void));
+extern void begin_protect_partials              PARAMS ((void));
 
 #ifdef TREE_CODE
 /* Create a new exception region and add the handler for the region
    onto a list. These regions will be ended (and their handlers
    emitted) when end_protect_partials is invoked.  */
 
-extern void add_partial_entry			PROTO((tree handler));
+extern void add_partial_entry			PARAMS ((tree handler));
 #endif
 
 /* End all of the pending exception regions that have handlers added with
    push_protect_entry ().  */
 
-extern void end_protect_partials		PROTO((void));
+extern void end_protect_partials		PARAMS ((void));
 
 /* An internal throw.  */
 
-extern void expand_internal_throw		PROTO((void));
+extern void expand_internal_throw		PARAMS ((void));
 
 /* Called from expand_exception_blocks and expand_end_catch_block to
    expand and pending handlers.  */
 
-extern void expand_leftover_cleanups		PROTO((void));
+extern void expand_leftover_cleanups		PARAMS ((void));
 
 /* If necessary, emit insns to get EH context for the current
    function. */
 
-extern void emit_eh_context			PROTO((void));
+extern void emit_eh_context			PARAMS ((void));
 
 /* Builds a list of handler labels and puts them in the global
    variable exception_handler_labels.  */
 
-extern void find_exception_handler_labels	PROTO((void));
+extern void find_exception_handler_labels	PARAMS ((void));
 
 /* Determine if an arbitrary label is an exception label */
 
-extern int is_exception_handler_label           PROTO((int));
+extern int is_exception_handler_label           PARAMS ((int));
 
 /* Performs sanity checking on the check_exception_handler_labels
    list.  */
 
-extern void check_exception_handler_labels	PROTO((void));
+extern void check_exception_handler_labels	PARAMS ((void));
 
 /* Keeps track of the label used as the context of a throw to rethrow an
    exception to the outer exception region.  */
@@ -429,26 +430,26 @@ extern rtx exception_handler_labels;
 /* Performs optimizations for exception handling, such as removing
    unnecessary exception regions. Invoked from jump_optimize ().  */
 
-extern void exception_optimize			PROTO((void));
+extern void exception_optimize			PARAMS ((void));
 
 /* Return EH context (and set it up once per fn).  */
-extern rtx get_eh_context			PROTO((void));
+extern rtx get_eh_context			PARAMS ((void));
 
 /* Get the dynamic handler chain.  */
-extern rtx get_dynamic_handler_chain		PROTO((void));
+extern rtx get_dynamic_handler_chain		PARAMS ((void));
 
 /* Get the dynamic cleanup chain.  */
-extern rtx get_dynamic_cleanup_chain		PROTO((void));
+extern rtx get_dynamic_cleanup_chain		PARAMS ((void));
 
 /* Throw an exception.  */
 
-extern void emit_throw				PROTO((void));
+extern void emit_throw				PARAMS ((void));
 
 /* Save away the current ehqueue.  */
-extern void push_ehqueue                        PROTO((void));
+extern void push_ehqueue                        PARAMS ((void));
 
 /* Restore a previously pushed ehqueue.  */
-extern void pop_ehqueue                         PROTO((void));
+extern void pop_ehqueue                         PARAMS ((void));
 
 /* One to use setjmp/longjmp method of generating code.  */
 
@@ -464,32 +465,32 @@ extern int asynchronous_exceptions;
 extern int protect_cleanup_actions_with_terminate;
 
 #ifdef TREE_CODE
-extern tree protect_with_terminate		PROTO((tree));
+extern tree protect_with_terminate		PARAMS ((tree));
 #endif
 
-extern void expand_fixup_region_start	PROTO((void));
+extern void expand_fixup_region_start	PARAMS ((void));
 #ifdef TREE_CODE
-extern void expand_fixup_region_end	PROTO((tree));
+extern void expand_fixup_region_end	PARAMS ((tree));
 #endif
 
 /* Various hooks for the DWARF 2 __throw routine.  */
 
-void expand_builtin_unwind_init		PROTO((void));
-rtx expand_builtin_dwarf_fp_regnum	PROTO((void));
+void expand_builtin_unwind_init		PARAMS ((void));
+rtx expand_builtin_dwarf_fp_regnum	PARAMS ((void));
 #ifdef TREE_CODE
-rtx expand_builtin_frob_return_addr	PROTO((tree));
-rtx expand_builtin_extract_return_addr	PROTO((tree));
-void expand_builtin_init_dwarf_reg_sizes	PROTO((tree));
-void expand_builtin_eh_return		PROTO((tree, tree, tree));
+rtx expand_builtin_frob_return_addr	PARAMS ((tree));
+rtx expand_builtin_extract_return_addr	PARAMS ((tree));
+void expand_builtin_init_dwarf_reg_sizes	PARAMS ((tree));
+void expand_builtin_eh_return		PARAMS ((tree, tree, tree));
 #endif
-void expand_eh_return			PROTO((void));
+void expand_eh_return			PARAMS ((void));
 
 
 /* Checking whether 2 instructions are within the same exception region. */
 
-int in_same_eh_region                   PROTO((rtx, rtx));
-void free_insn_eh_region                PROTO((void));
-void init_insn_eh_region                PROTO((rtx, int));
+int in_same_eh_region                   PARAMS ((rtx, rtx));
+void free_insn_eh_region                PARAMS ((void));
+void init_insn_eh_region                PARAMS ((rtx, int));
 
 #ifdef rtx
 #undef rtx

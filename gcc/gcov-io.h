@@ -1,5 +1,5 @@
 /* Machine-independent I/O routines for gcov.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
 
 This file is part of GNU CC.
@@ -24,10 +24,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <sys/types.h>
 
-static int __fetch_long		PROTO ((long *, char *, size_t));
-static int __store_long		PROTO ((long, char *, size_t));
-static int __read_long		PROTO ((long *, FILE *, size_t));
-static int __write_long		PROTO ((long, FILE *, size_t));
+static int __fetch_long		PARAMS ((long *, char *, size_t));
+static int __store_long		PARAMS ((long, char *, size_t));
+static int __read_long		PARAMS ((long *, FILE *, size_t));
+static int __write_long		PARAMS ((long, FILE *, size_t));
 
 /* These routines only work for signed values. */
 

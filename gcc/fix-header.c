@@ -1,5 +1,5 @@
 /* fix-header.c - Make C header file suitable for C++.
-   Copyright (C) 1993, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-99, 2000 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -77,8 +77,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-static void v_fatal PROTO ((const char *, va_list)) ATTRIBUTE_NORETURN;
-static void fatal PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void v_fatal PARAMS ((const char *, va_list)) ATTRIBUTE_NORETURN;
+static void fatal PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 sstring buf;
 
@@ -187,17 +187,17 @@ struct symbol_list {
 struct symbol_list symbol_table[SYMBOL_TABLE_SIZE];
 int cur_symbol_table_size;
 
-static void add_symbols PROTO ((symbol_flags, namelist));
-static struct fn_decl *lookup_std_proto PROTO ((const char *, int));
-static void write_lbrac PROTO ((void));
-static void recognized_macro PROTO ((const char *));
-static void check_macro_names PROTO ((cpp_reader *, namelist));
-static void read_scan_file PROTO ((char *, int, char **));
-static void write_rbrac PROTO ((void));
-static int inf_skip_spaces PROTO ((int));
-static int inf_read_upto PROTO ((sstring *, int));
-static int inf_scan_ident PROTO ((sstring *, int));
-static int check_protection PROTO ((int *, int *));
+static void add_symbols PARAMS ((symbol_flags, namelist));
+static struct fn_decl *lookup_std_proto PARAMS ((const char *, int));
+static void write_lbrac PARAMS ((void));
+static void recognized_macro PARAMS ((const char *));
+static void check_macro_names PARAMS ((cpp_reader *, namelist));
+static void read_scan_file PARAMS ((char *, int, char **));
+static void write_rbrac PARAMS ((void));
+static int inf_skip_spaces PARAMS ((int));
+static int inf_read_upto PARAMS ((sstring *, int));
+static int inf_scan_ident PARAMS ((sstring *, int));
+static int check_protection PARAMS ((int *, int *));
 
 static void
 add_symbols (flags, names)
@@ -1062,7 +1062,7 @@ check_protection (ifndef_line, endif_line)
   return 1;
 }
 
-extern int main			PROTO ((int, char **));
+extern int main			PARAMS ((int, char **));
 
 int
 main (argc, argv)
@@ -1320,7 +1320,7 @@ v_fatal (str, ap)
 }
 
 static void
-fatal VPROTO ((const char *str, ...))
+fatal VPARAMS ((const char *str, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *str;

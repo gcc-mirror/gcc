@@ -1,5 +1,28 @@
 2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* eh-common.h: PROTO -> PARAMS.
+	* emit-rtl.c: Likewise.
+	* errors.c: Likewise.
+	* errors.h: Likewise.
+	* except.c: Likewise.
+	* except.h: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* expr.h: Likewise.
+	* final.c: Likewise.
+	* fix-header.c: Likewise.
+	* flow.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* function.h: Likewise.
+	* gcc.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	* gcse.c: Likewise.
+
+2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* sh-protos.h: New file.
 
 	* sh.c: Include insn-config.h, toplev.h, recog.h and tm_p.h.

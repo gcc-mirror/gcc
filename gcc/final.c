@@ -290,27 +290,27 @@ static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
 static int sbb_label_num	= 0;		/* Last label used */
 
 #ifdef HAVE_ATTR_length
-static int asm_insn_count	PROTO((rtx));
+static int asm_insn_count	PARAMS ((rtx));
 #endif
-static void profile_function	PROTO((FILE *));
-static void profile_after_prologue PROTO((FILE *));
-static void add_bb		PROTO((FILE *));
-static int add_bb_string	PROTO((const char *, int));
-static void output_source_line	PROTO((FILE *, rtx));
-static rtx walk_alter_subreg	PROTO((rtx));
-static void output_asm_name	PROTO((void));
-static void output_operand	PROTO((rtx, int));
+static void profile_function	PARAMS ((FILE *));
+static void profile_after_prologue PARAMS ((FILE *));
+static void add_bb		PARAMS ((FILE *));
+static int add_bb_string	PARAMS ((const char *, int));
+static void output_source_line	PARAMS ((FILE *, rtx));
+static rtx walk_alter_subreg	PARAMS ((rtx));
+static void output_asm_name	PARAMS ((void));
+static void output_operand	PARAMS ((rtx, int));
 #ifdef LEAF_REGISTERS
-static void leaf_renumber_regs	PROTO((rtx));
+static void leaf_renumber_regs	PARAMS ((rtx));
 #endif
 #ifdef HAVE_cc0
-static int alter_cond		PROTO((rtx));
+static int alter_cond		PARAMS ((rtx));
 #endif
 #ifndef ADDR_VEC_ALIGN
-static int final_addr_vec_align PROTO ((rtx));
+static int final_addr_vec_align PARAMS ((rtx));
 #endif
 #ifdef HAVE_ATTR_length
-static int align_fuzz		PROTO ((rtx, rtx, int, unsigned));
+static int align_fuzz		PARAMS ((rtx, rtx, int, unsigned));
 #endif
 
 /* Initialize data in final at the beginning of a compilation.  */
@@ -3726,7 +3726,7 @@ output_addr_const (file, x)
    We handle alternate assembler dialects here, just like output_asm_insn.  */
 
 void
-asm_fprintf VPROTO((FILE *file, const char *p, ...))
+asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *file;

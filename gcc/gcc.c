@@ -48,7 +48,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/resource.h>
 #endif
 #ifdef NEED_DECLARATION_GETRUSAGE
-extern int getrusage PROTO ((int, struct rusage *));
+extern int getrusage PARAMS ((int, struct rusage *));
 #endif
 
 /* By default there is no special suffix for executables.  */
@@ -194,58 +194,58 @@ extern char *version_string;
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 
-static void init_spec		PROTO((void));
+static void init_spec		PARAMS ((void));
 #ifndef VMS
-static char **split_directories	PROTO((const char *, int *));
-static void free_split_directories PROTO((char **));
-static char *make_relative_prefix PROTO((const char *, const char *, const char *));
+static char **split_directories	PARAMS ((const char *, int *));
+static void free_split_directories PARAMS ((char **));
+static char *make_relative_prefix PARAMS ((const char *, const char *, const char *));
 #endif /* VMS */
-static void read_specs		PROTO((const char *, int));
-static void set_spec		PROTO((const char *, const char *));
-static struct compiler *lookup_compiler PROTO((const char *, size_t, const char *));
-static char *build_search_list	PROTO((struct path_prefix *, const char *, int));
-static void putenv_from_prefixes PROTO((struct path_prefix *, const char *));
-static int access_check		PROTO((const char *, int));
-static char *find_a_file	PROTO((struct path_prefix *, const char *, int));
-static void add_prefix		PROTO((struct path_prefix *, const char *,
-				       const char *, int, int, int *));
-static char *skip_whitespace	PROTO((char *));
-static void record_temp_file	PROTO((const char *, int, int));
-static void delete_if_ordinary	PROTO((const char *));
-static void delete_temp_files	PROTO((void));
-static void delete_failure_queue PROTO((void));
-static void clear_failure_queue PROTO((void));
-static int check_live_switch	PROTO((int, int));
-static const char *handle_braces PROTO((const char *));
-static char *save_string	PROTO((const char *, int));
-static int do_spec_1		PROTO((const char *, int, const char *));
-static const char *find_file	PROTO((const char *));
-static int is_directory		PROTO((const char *, const char *, int));
-static void validate_switches	PROTO((const char *));
-static void validate_all_switches PROTO((void));
-static void give_switch		PROTO((int, int, int));
-static int used_arg		PROTO((const char *, int));
-static int default_arg		PROTO((const char *, int));
-static void set_multilib_dir	PROTO((void));
-static void print_multilib_info	PROTO((void));
-static void pfatal_with_name	PROTO((const char *)) ATTRIBUTE_NORETURN;
-static void perror_with_name	PROTO((const char *));
-static void pfatal_pexecute	PROTO((const char *, const char *))
+static void read_specs		PARAMS ((const char *, int));
+static void set_spec		PARAMS ((const char *, const char *));
+static struct compiler *lookup_compiler PARAMS ((const char *, size_t, const char *));
+static char *build_search_list	PARAMS ((struct path_prefix *, const char *, int));
+static void putenv_from_prefixes PARAMS ((struct path_prefix *, const char *));
+static int access_check		PARAMS ((const char *, int));
+static char *find_a_file	PARAMS ((struct path_prefix *, const char *, int));
+static void add_prefix		PARAMS ((struct path_prefix *, const char *,
+					 const char *, int, int, int *));
+static char *skip_whitespace	PARAMS ((char *));
+static void record_temp_file	PARAMS ((const char *, int, int));
+static void delete_if_ordinary	PARAMS ((const char *));
+static void delete_temp_files	PARAMS ((void));
+static void delete_failure_queue PARAMS ((void));
+static void clear_failure_queue PARAMS ((void));
+static int check_live_switch	PARAMS ((int, int));
+static const char *handle_braces PARAMS ((const char *));
+static char *save_string	PARAMS ((const char *, int));
+static int do_spec_1		PARAMS ((const char *, int, const char *));
+static const char *find_file	PARAMS ((const char *));
+static int is_directory		PARAMS ((const char *, const char *, int));
+static void validate_switches	PARAMS ((const char *));
+static void validate_all_switches PARAMS ((void));
+static void give_switch		PARAMS ((int, int, int));
+static int used_arg		PARAMS ((const char *, int));
+static int default_arg		PARAMS ((const char *, int));
+static void set_multilib_dir	PARAMS ((void));
+static void print_multilib_info	PARAMS ((void));
+static void pfatal_with_name	PARAMS ((const char *)) ATTRIBUTE_NORETURN;
+static void perror_with_name	PARAMS ((const char *));
+static void pfatal_pexecute	PARAMS ((const char *, const char *))
   ATTRIBUTE_NORETURN;
-static void error		PVPROTO((const char *, ...))
+static void error		PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
-static void notice		PVPROTO((const char *, ...))
+static void notice		PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
-static void display_help 	PROTO((void));
-static void add_preprocessor_option	PROTO ((const char *, int));
-static void add_assembler_option	PROTO ((const char *, int));
-static void add_linker_option		PROTO ((const char *, int));
-static void process_command		PROTO ((int, char **));
-static int execute			PROTO ((void));
-static void unused_prefix_warnings	PROTO ((struct path_prefix *));
-static void clear_args			PROTO ((void));
-static void fatal_error			PROTO ((int));
-static void set_input			PROTO ((const char *));
+static void display_help 	PARAMS ((void));
+static void add_preprocessor_option	PARAMS ((const char *, int));
+static void add_assembler_option	PARAMS ((const char *, int));
+static void add_linker_option		PARAMS ((const char *, int));
+static void process_command		PARAMS ((int, char **));
+static int execute			PARAMS ((void));
+static void unused_prefix_warnings	PARAMS ((struct path_prefix *));
+static void clear_args			PARAMS ((void));
+static void fatal_error			PARAMS ((int));
+static void set_input			PARAMS ((const char *));
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -4988,7 +4988,7 @@ fatal_error (signum)
   kill (getpid (), signum);
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
@@ -5635,7 +5635,7 @@ fancy_abort ()
 /* Output an error message and exit */
 
 void
-fatal VPROTO((const char *msgid, ...))
+fatal VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -5657,7 +5657,7 @@ fatal VPROTO((const char *msgid, ...))
 }
 
 static void
-error VPROTO((const char *msgid, ...))
+error VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -5678,7 +5678,7 @@ error VPROTO((const char *msgid, ...))
 }
 
 static void
-notice VPROTO((const char *msgid, ...))
+notice VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;

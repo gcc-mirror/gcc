@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,56 +52,56 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-static void encode		PROTO((HOST_WIDE_INT *,
-				       HOST_WIDE_INT, HOST_WIDE_INT));
-static void decode		PROTO((HOST_WIDE_INT *,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *));
-int div_and_round_double	PROTO((enum tree_code, int, HOST_WIDE_INT,
-				       HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, HOST_WIDE_INT *,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *,
-				       HOST_WIDE_INT *));
-static tree negate_expr		PROTO((tree));
-static tree split_tree		PROTO((tree, enum tree_code, tree *, tree *,
-				       int));
-static tree associate_trees	PROTO((tree, tree, enum tree_code, tree));
-static tree int_const_binop	PROTO((enum tree_code, tree, tree, int, int));
-static void const_binop_1	PROTO((PTR));
-static tree const_binop		PROTO((enum tree_code, tree, tree, int));
-static void fold_convert_1	PROTO((PTR));
-static tree fold_convert	PROTO((tree, tree));
-static enum tree_code invert_tree_comparison PROTO((enum tree_code));
-static enum tree_code swap_tree_comparison PROTO((enum tree_code));
-static int truth_value_p	PROTO((enum tree_code));
-static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
-static int twoval_comparison_p	PROTO((tree, tree *, tree *, int *));
-static tree eval_subst		PROTO((tree, tree, tree, tree, tree));
-static tree omit_one_operand	PROTO((tree, tree, tree));
-static tree pedantic_omit_one_operand PROTO((tree, tree, tree));
-static tree distribute_bit_expr PROTO((enum tree_code, tree, tree, tree));
-static tree make_bit_field_ref	PROTO((tree, tree, int, int, int));
-static tree optimize_bit_field_compare PROTO((enum tree_code, tree,
-					      tree, tree));
-static tree decode_field_reference PROTO((tree, int *, int *,
-					  enum machine_mode *, int *,
-					  int *, tree *, tree *));
-static int all_ones_mask_p	PROTO((tree, int));
-static int simple_operand_p	PROTO((tree));
-static tree range_binop		PROTO((enum tree_code, tree, tree, int,
-				       tree, int));
-static tree make_range		PROTO((tree, int *, tree *, tree *));
-static tree build_range_check	PROTO((tree, tree, int, tree, tree));
-static int merge_ranges		PROTO((int *, tree *, tree *, int, tree, tree,
+static void encode		PARAMS ((HOST_WIDE_INT *,
+					 HOST_WIDE_INT, HOST_WIDE_INT));
+static void decode		PARAMS ((HOST_WIDE_INT *,
+					 HOST_WIDE_INT *, HOST_WIDE_INT *));
+int div_and_round_double	PARAMS ((enum tree_code, int, HOST_WIDE_INT,
+					 HOST_WIDE_INT, HOST_WIDE_INT,
+					 HOST_WIDE_INT, HOST_WIDE_INT *,
+					 HOST_WIDE_INT *, HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
+static tree negate_expr		PARAMS ((tree));
+static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
+					 int));
+static tree associate_trees	PARAMS ((tree, tree, enum tree_code, tree));
+static tree int_const_binop	PARAMS ((enum tree_code, tree, tree, int, int));
+static void const_binop_1	PARAMS ((PTR));
+static tree const_binop		PARAMS ((enum tree_code, tree, tree, int));
+static void fold_convert_1	PARAMS ((PTR));
+static tree fold_convert	PARAMS ((tree, tree));
+static enum tree_code invert_tree_comparison PARAMS ((enum tree_code));
+static enum tree_code swap_tree_comparison PARAMS ((enum tree_code));
+static int truth_value_p	PARAMS ((enum tree_code));
+static int operand_equal_for_comparison_p PARAMS ((tree, tree, tree));
+static int twoval_comparison_p	PARAMS ((tree, tree *, tree *, int *));
+static tree eval_subst		PARAMS ((tree, tree, tree, tree, tree));
+static tree omit_one_operand	PARAMS ((tree, tree, tree));
+static tree pedantic_omit_one_operand PARAMS ((tree, tree, tree));
+static tree distribute_bit_expr PARAMS ((enum tree_code, tree, tree, tree));
+static tree make_bit_field_ref	PARAMS ((tree, tree, int, int, int));
+static tree optimize_bit_field_compare PARAMS ((enum tree_code, tree,
+						tree, tree));
+static tree decode_field_reference PARAMS ((tree, int *, int *,
+					    enum machine_mode *, int *,
+					    int *, tree *, tree *));
+static int all_ones_mask_p	PARAMS ((tree, int));
+static int simple_operand_p	PARAMS ((tree));
+static tree range_binop		PARAMS ((enum tree_code, tree, tree, int,
+					 tree, int));
+static tree make_range		PARAMS ((tree, int *, tree *, tree *));
+static tree build_range_check	PARAMS ((tree, tree, int, tree, tree));
+static int merge_ranges		PARAMS ((int *, tree *, tree *, int, tree, tree,
 				       int, tree, tree));
-static tree fold_range_test	PROTO((tree));
-static tree unextend		PROTO((tree, int, int, tree));
-static tree fold_truthop	PROTO((enum tree_code, tree, tree, tree));
-static tree optimize_minmax_comparison PROTO((tree));
-static tree extract_muldiv	PROTO((tree, tree, enum tree_code, tree));
-static tree strip_compound_expr PROTO((tree, tree));
-static int multiple_of_p	PROTO((tree, tree, tree));
-static tree constant_boolean_node PROTO((int, tree));
-static int count_cond		PROTO((tree, int));
+static tree fold_range_test	PARAMS ((tree));
+static tree unextend		PARAMS ((tree, int, int, tree));
+static tree fold_truthop	PARAMS ((enum tree_code, tree, tree, tree));
+static tree optimize_minmax_comparison PARAMS ((tree));
+static tree extract_muldiv	PARAMS ((tree, tree, enum tree_code, tree));
+static tree strip_compound_expr PARAMS ((tree, tree));
+static int multiple_of_p	PARAMS ((tree, tree, tree));
+static tree constant_boolean_node PARAMS ((int, tree));
+static int count_cond		PARAMS ((tree, int));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
