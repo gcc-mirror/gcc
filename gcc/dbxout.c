@@ -310,6 +310,7 @@ static void dbxout_type_method_1	PARAMS ((tree, const char *));
 static void dbxout_type_methods		PARAMS ((tree));
 static void dbxout_range_type		PARAMS ((tree));
 static void dbxout_type			PARAMS ((tree, int));
+static bool print_int_cst_bounds_in_octal_p	PARAMS ((tree));
 static void print_int_cst_octal		PARAMS ((tree));
 static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
 static void print_wide_int		PARAMS ((HOST_WIDE_INT));
@@ -1098,7 +1099,10 @@ dbxout_range_type (type)
     {
       putc (';', asmfile);
       CHARS (1);
-      print_wide_int (tree_low_cst (TYPE_MIN_VALUE (type), 0));
+      if (print_int_cst_bounds_in_octal_p (type))
+        print_int_cst_octal (TYPE_MIN_VALUE (type));
+      else
+        print_wide_int (tree_low_cst (TYPE_MIN_VALUE (type), 0));
     }
   else
     {
@@ -1111,7 +1115,10 @@ dbxout_range_type (type)
     {
       putc (';', asmfile);
       CHARS (1);
-      print_wide_int (tree_low_cst (TYPE_MAX_VALUE (type), 0));
+      if (print_int_cst_bounds_in_octal_p (type))
+        print_int_cst_octal (TYPE_MAX_VALUE (type));
+      else
+        print_wide_int (tree_low_cst (TYPE_MAX_VALUE (type), 0));
       putc (';', asmfile);
       CHARS (1);
     }
@@ -1345,30 +1352,7 @@ dbxout_type (type, full)
 	      CHARS (5);
 	    }
 
-	  /* If we can use GDB extensions and the size is wider than a
-	     long (the size used by GDB to read them) or we may have
-	     trouble writing the bounds the usual way, write them in
-	     octal.  Note the test is for the *target's* size of "long",
-	     not that of the host.  The host test is just to make sure we
-	     can write it out in case the host wide int is narrower than the
-	     target "long".  */
-
-	  /* For unsigned types, we use octal if they are the same size or
-	     larger.  This is because we print the bounds as signed decimal,
-	     and hence they can't span same size unsigned types.  */
-
-	  if (use_gnu_debug_info_extensions
-	      && TYPE_MIN_VALUE (type) != 0
-	      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-	      && TYPE_MAX_VALUE (type) != 0
-	      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
-	      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
-		  || ((TYPE_PRECISION (type)
-		       == TYPE_PRECISION (integer_type_node))
-		      && TREE_UNSIGNED (type))
-		  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT
-		  || (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT
-		      && TREE_UNSIGNED (type))))
+ 	  if (print_int_cst_bounds_in_octal_p (type))
 	    {
 	      fprintf (asmfile, "r");
 	      CHARS (1);
@@ -1831,6 +1815,40 @@ dbxout_type (type, full)
     default:
       abort ();
     }
+}
+
+/* Return non-zero if the given type represents an integer whose bounds
+   should be printed in octal format.  */
+
+static bool
+print_int_cst_bounds_in_octal_p (type)
+     tree type;
+{
+  /* If we can use GDB extensions and the size is wider than a long
+     (the size used by GDB to read them) or we may have trouble writing
+     the bounds the usual way, write them in octal.  Note the test is for
+     the *target's* size of "long", not that of the host.  The host test
+     is just to make sure we can write it out in case the host wide int
+     is narrower than the target "long".
+  
+     For unsigned types, we use octal if they are the same size or larger.
+     This is because we print the bounds as signed decimal, and hence they
+     can't span same size unsigned types.  */
+
+  if (use_gnu_debug_info_extensions
+      && TYPE_MIN_VALUE (type) != 0
+      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+      && TYPE_MAX_VALUE (type) != 0
+      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
+      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
+	  || ((TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
+	      && TREE_UNSIGNED (type))
+	  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT
+	  || (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT
+	      && TREE_UNSIGNED (type))))
+    return TRUE;
+  else
+    return FALSE;
 }
 
 /* Print the value of integer constant C, in octal,

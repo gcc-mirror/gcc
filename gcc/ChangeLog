@@ -12,6 +12,12 @@
 
 2003-04-14  Joel Brobecker  <brobecker@gnat.com>
 
+	* dbxout.c (print_int_cst_bounds_in_octal_p): New function,
+	extracted from dbxout_type.
+	(dbxout_range_type): print large bounds in octal format.
+	(dbxout_type): Replace extracted code by call to
+	print_int_cst_bounds_in_octal_p.
+
         * dwarf2out.c (gen_compile_unit_die): Emit DW_LANG_Ada95 instead
         of DW_LANG_Ada83 for Ada units.
 
