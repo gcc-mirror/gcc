@@ -2039,6 +2039,17 @@ rest_of_compilation (decl)
 	       && ! flag_keep_inline_functions)
 	      || DECL_EXTERNAL (decl)))
 	{
+#ifdef DWARF_DEBUGGING_INFO
+	  /* Generate the DWARF info for the "abstract" instance
+	     of a function which we may later generate inlined and/or
+	     out-of-line instances of.  */
+	  if (write_symbols == DWARF_DEBUG)
+	    {
+	      set_decl_abstract_flags (decl, 1);
+	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
+	      set_decl_abstract_flags (decl, 0);
+	    }
+#endif
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  goto exit_rest_of_compilation;
 	}
@@ -2047,6 +2058,18 @@ rest_of_compilation (decl)
 	 so that its compilation will not affect what others get.  */
       if (DECL_INLINE (decl))
 	{
+#ifdef DWARF_DEBUGGING_INFO
+	  /* Generate the DWARF info for the "abstract" instance of
+	     a function which we will generate an out-of-line instance
+	     of almost immediately (and which we may also later generate
+	     various inlined instances of).  */
+	  if (write_symbols == DWARF_DEBUG)
+	    {
+	      set_decl_abstract_flags (decl, 1);
+	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
+	      set_decl_abstract_flags (decl, 0);
+	    }
+#endif
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
