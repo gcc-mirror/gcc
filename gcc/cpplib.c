@@ -5972,29 +5972,6 @@ cpp_start_read (pfile, fname)
     fprintf (stderr, "End of search list.\n");
   }
 
-  /* Scan the -imacros files before the main input.
-     Much like #including them, but with no_output set
-     so that only their macro definitions matter.  */
-
-  opts->no_output++; pfile->no_record_file++;
-  for (pend = opts->pending;  pend;  pend = pend->next)
-    {
-      if (pend->cmd != NULL && strcmp (pend->cmd, "-imacros") == 0)
-	{
-	  int fd = open (pend->arg, O_RDONLY, 0666);
-	  if (fd < 0)
-	    {
-	      cpp_perror_with_name (pfile, pend->arg);
-	      return 0;
-	    }
-	  if (!cpp_push_buffer (pfile, NULL, 0))
-	      return 0;
-	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
-	  cpp_scan_buffer (pfile);
-	}
-    }
-  opts->no_output--; pfile->no_record_file--;
-
   /* Copy the entire contents of the main input file into
      the stacked input buffer previously allocated for it.  */
   if (fname == NULL || *fname == 0) {
@@ -6139,24 +6116,48 @@ cpp_start_read (pfile, fname)
     trigraph_pcp (fp);
 #endif
 
-  /* Scan the -include files before the main input.
-   We push these in reverse order, so that the first one is handled first.  */
+  /* Avoid a #line 0 if -include files are present. */
+  CPP_BUFFER (pfile)->lineno = 1;
+  output_line_command (pfile, 0, same_file);
+  
+  /* Scan the -include and -imacros files before the main input. */
 
   pfile->no_record_file++;
-  opts->pending = nreverse_pending (opts->pending);
   for (pend = opts->pending;  pend;  pend = pend->next)
     {
-      if (pend->cmd != NULL && strcmp (pend->cmd, "-include") == 0)
-	{
-	  int fd = open (pend->arg, O_RDONLY, 0666);
-	  if (fd < 0)
+      if (pend->cmd != NULL)
+        {
+	  if (strcmp (pend->cmd, "-include") == 0)
 	    {
-	      cpp_perror_with_name (pfile, pend->arg);
-	      return 0;
+	      int fd = open (pend->arg, O_RDONLY, 0666);
+	      if (fd < 0)
+	        {
+	          cpp_perror_with_name (pfile, pend->arg);
+	          return 0;
+	        }
+	      if (!cpp_push_buffer (pfile, NULL, 0))
+	        return 0;
+	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
+	        {
+		  output_line_command (pfile, 0, enter_file);
+		  cpp_scan_buffer (pfile);
+		}
 	    }
-	  if (!cpp_push_buffer (pfile, NULL, 0))
-	    return 0;
-	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
+	  else if (strcmp (pend->cmd, "-imacros") == 0)
+	    {
+	      int fd = open (pend->arg, O_RDONLY, 0666);
+	      if (fd < 0)
+	        {
+	          cpp_perror_with_name (pfile, pend->arg);
+	          return 0;
+	        }
+	      opts->no_output++;
+	      if (!cpp_push_buffer (pfile, NULL, 0))
+	        return 0;
+	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
+		cpp_scan_buffer (pfile);
+	      opts->no_output--;
+	    }
 	}
     }
   pfile->no_record_file--;
@@ -6182,8 +6183,7 @@ cpp_start_read (pfile, fname)
     pedwarn ("file does not end in newline");
 
 #endif
-  if (finclude (pfile, f, fname, 0, NULL_PTR))
-    output_line_command (pfile, 0, same_file);
+  finclude (pfile, f, fname, 0, NULL_PTR);
   return 1;
 }
 
