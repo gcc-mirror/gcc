@@ -4626,8 +4626,12 @@ static int
 absolute_filename (filename)
      char *filename;
 {
-#if defined (__MSDOS__) || defined (_WIN32)
+#if defined (__MSDOS__) || (defined (_WIN32) && !defined (__CYGWIN32__))
   if (isalpha (filename[0]) && filename[1] == ':') filename += 2;
+#endif
+#if defined (__CYGWIN32__)
+  /* At present, any path that begins with a drive spec is absolute.  */
+  if (isalpha (filename[0]) && filename[1] == ':') return 1;
 #endif
   if (filename[0] == '/') return 1;
 #ifdef DIR_SEPARATOR
