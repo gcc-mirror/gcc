@@ -37,6 +37,13 @@ Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
+        * pa.c (hppa_legitimize_address): Handle full offsets for PA2.0
+        FP loads and stores.
+	(following_call): Always return zero for the PA8000.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Handle full offsets for PA2.0
+	FP loads and stores.
+        (LEGITIMIZE_RELOAD_ADDRESS): Similarly.
+
 	* pa.h (BRANCH_COST): Define.
 
 	* pa.md (return, return_internal): Use bve for PA2.0.

@@ -791,7 +791,10 @@ hppa_legitimize_address (x, oldx, mode)
       rtx int_part, ptr_reg;
       int newoffset;
       int offset = INTVAL (XEXP (x, 1));
-      int mask = GET_MODE_CLASS (mode) == MODE_FLOAT ? 0x1f : 0x3fff;
+      int mask;
+
+      mask = (GET_MODE_CLASS (mode) == MODE_FLOAT
+	      ? (TARGET_PA_20 ? 0x3fff : 0x1f) : 0x3fff);
 
       /* Choose which way to round the offset.  Round up if we
 	 are >= halfway to the next boundary.  */
@@ -5939,6 +5942,11 @@ int
 following_call (insn)
      rtx insn;
 {
+  /* We do not parallel movb,addb or place jumps into call delay slots when
+     optimizing for the PA8000.  */
+  if (pa_cpu != PROCESSOR_8000)
+    return 0;
+
   /* Find the previous real insn, skipping NOTEs.  */
   insn = PREV_INSN (insn);
   while (insn && GET_CODE (insn) == NOTE)
