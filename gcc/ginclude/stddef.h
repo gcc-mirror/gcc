@@ -121,7 +121,9 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef __SIZE_TYPE__
 #define __SIZE_TYPE__ long unsigned int
 #endif
+#if !(defined (__GNUG__) && defined (size_t))
 typedef __SIZE_TYPE__ size_t;
+#endif /* !(defined (__GNUG__) && defined (size_t)) */
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
