@@ -104,18 +104,37 @@ estimate_probability (loops_info)
       rtx last_insn = BLOCK_END (i);
       rtx cond, earliest;
       int prob = 0;
+      edge e;
 
       if (GET_CODE (last_insn) != JUMP_INSN
 	  || ! condjump_p (last_insn) || simplejump_p (last_insn))
+	continue;
+      if (find_reg_note (last_insn, REG_BR_PROB, 0))
 	continue;
       cond = get_condition (last_insn, &earliest);
       if (! cond)
 	continue;
 
+      /* If the jump branches around a block with no successors,
+	 predict it to be taken.  */
+      prob = 0;
+      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+	if ((e->flags & EDGE_FALLTHRU) && e->dest->succ == NULL)
+	  {
+	    prob = REG_BR_PROB_BASE;
+	    break;
+	  }
+      if (prob)
+	{
+	  REG_NOTES (last_insn)
+	    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
+				 REG_NOTES (last_insn));
+	  continue;
+	}
+
       /* Try "pointer heuristic."
 	 A comparison ptr == 0 is predicted as false.
 	 Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
-      prob = 0;
       switch (GET_CODE (cond))
 	{
 	case EQ:
@@ -137,10 +156,13 @@ estimate_probability (loops_info)
 	default:
 	  prob = 0;
 	}
-	if (prob && ! find_reg_note (last_insn, REG_BR_PROB, 0))
+      if (prob)
+	{
 	  REG_NOTES (last_insn)
 	    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
 				 REG_NOTES (last_insn));
+	  continue;
+	}
 
       /* Try "opcode heuristic."
 	 EQ tests are usually false and NE tests are usually true. Also,
@@ -174,10 +196,9 @@ estimate_probability (loops_info)
 	default:
 	  prob = 0;
 	}
-      if (! find_reg_note (last_insn, REG_BR_PROB, 0))
-	REG_NOTES (last_insn)
-	  = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-			       REG_NOTES (last_insn));
+      REG_NOTES (last_insn)
+	= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
+			     REG_NOTES (last_insn));
     }
 }
 
