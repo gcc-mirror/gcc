@@ -3004,9 +3004,9 @@ record_range (tree cond, basic_block bb)
       slot = htab_find_slot (vrp_data, vrp_hash_elt, INSERT);
 
       if (*slot == NULL)
-	*slot = (void *)vrp_hash_elt;
+	*slot = (void *) vrp_hash_elt;
 
-      vrp_hash_elt = *(struct vrp_hash_elt **)slot;
+      vrp_hash_elt = (struct vrp_hash_elt *) *slot;
       vrp_records_p = &vrp_hash_elt->records;
 
       element = ggc_alloc (sizeof (struct vrp_element));
