@@ -1,3 +1,25 @@
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.h: Fix comment formatting.
+	* c-cppbuiltin.c: Likewise.
+	* c-pragma.c: Likewise.
+	* calls.c: Likewise.
+	* collect2.c: Likewise.
+	* cppcharset.c: Likewise.
+	* cpptrad.c: Likewise.
+	* dbxout.c: Likewise.
+	* defaults.h: Likewise.
+	* dwarf2out.c: Likewise.
+	* fold-const.c: Likewise.
+	* genautomata.c: Likewise.
+	* genconditions.c: Likewise.
+	* genflags.c: Likewise.
+	* gengtype.c: Likewise.
+	* integrate.c: Likewise.
+	* loop.c: Likewise.
+	* predict.c: Likewise.
+	* sdbout.c: Likewise.
+
 2004-01-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.md (*movti_internal): C output template

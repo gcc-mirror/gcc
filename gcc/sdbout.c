@@ -1159,7 +1159,7 @@ sdbout_one_type (tree type)
 	      }
 	  }
 
-	/* output the individual fields */
+	/* Output the individual fields.  */
 
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  {
@@ -1206,7 +1206,7 @@ sdbout_one_type (tree type)
 		  }
 		PUT_SDB_ENDEF;
 	      }
-	/* output end of a structure,union, or enumeral definition */
+	/* Output end of a structure,union, or enumeral definition.  */
 
 	PUT_SDB_PLAIN_DEF ("eos");
 	PUT_SDB_INT_VAL (size);

@@ -8666,7 +8666,7 @@ output_internal_insn_latency_func (void)
       {
 	decl = description->decls[i];
 	if (DECL_INSN_RESERV (decl)->default_latency > UCHAR_MAX
-	    && tabletype[0] != 'i')  /* don't shrink it */
+	    && tabletype[0] != 'i')  /* Don't shrink it.  */
 	  tabletype = "unsigned short";
 	if (DECL_INSN_RESERV (decl)->default_latency > USHRT_MAX)
 	  tabletype = "int";

@@ -209,7 +209,7 @@ gen_insn (rtx insn)
     max_id_len = len;
 
   if (truth == 0)
-    /* emit nothing */;
+    /* Emit nothing.  */;
   else if (truth == 1)
     printf ("#define HAVE_%s 1\n", name);
   else

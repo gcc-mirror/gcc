@@ -222,7 +222,8 @@ struct c_common_identifier GTY(())
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
-/* In a RECORD_TYPE, a sorted array of the fields of the type, not a tree for size reasons.  */
+/* In a RECORD_TYPE, a sorted array of the fields of the type, not a
+   tree for size reasons.  */
 struct sorted_fields_type GTY(())
 {
   int len;

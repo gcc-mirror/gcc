@@ -887,7 +887,7 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   struct cset_converter cvt
     = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
-  from++;  /* skip u/U */
+  from++;  /* Skip u/U.  */
   ucn = _cpp_valid_ucn (pfile, &from, limit, 0);
 
   rval = one_cppchar_to_utf8 (ucn, &bufp, &bytesleft);
@@ -966,7 +966,7 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
     cpp_error (pfile, CPP_DL_WARNING,
 	       "the meaning of '\\x' is different in traditional C");
 
-  from++;  /* skip 'x' */
+  from++;  /* Skip 'x'.  */
   while (from < limit)
     {
       c = *from;
@@ -1148,8 +1148,8 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
     {
       p = from[i].text;
       if (*p == 'L') p++;
-      p++; /* skip leading quote */
-      limit = from[i].text + from[i].len - 1; /* skip trailing quote */
+      p++; /* Skip leading quote.  */
+      limit = from[i].text + from[i].len - 1; /* Skip trailing quote.  */
 
       for (;;)
 	{

@@ -798,7 +798,7 @@ div_and_round_double (enum tree_code code, int uns,
       abort ();
     }
 
-  /* compute true remainder:  rem = num - (quo * den)  */
+  /* Compute true remainder:  rem = num - (quo * den)  */
   mul_double (*lquo, *hquo, lden_orig, hden_orig, lrem, hrem);
   neg_double (*lrem, *hrem, lrem, hrem);
   add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);

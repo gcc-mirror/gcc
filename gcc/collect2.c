@@ -2402,7 +2402,7 @@ scan_libraries (const char *prog_name)
   if (debug)
     fprintf (stderr, "\n");
 
-  /* now iterate through the library list adding their symbols to
+  /* Now iterate through the library list adding their symbols to
      the list.  */
   for (list = libraries.first; list; list = list->next)
     scan_prog_file (list->name, PASS_LIB);
@@ -2538,7 +2538,7 @@ scan_libraries (const char *prog_name)
   signal (SIGQUIT, quit_handler);
 #endif
 
-  /* now iterate through the library list adding their symbols to
+  /* Now iterate through the library list adding their symbols to
      the list.  */
   for (list = libraries.first; list; list = list->next)
     scan_prog_file (list->name, PASS_LIB);
@@ -2705,7 +2705,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 		      char *name;
 
 		      if ((name = ldgetname (ldptr, &symbol)) == NULL)
-			continue;		/* should never happen */
+			continue;		/* Should never happen.  */
 
 #ifdef XCOFF_DEBUGGING_INFO
 		      /* All AIX function names have a duplicate entry
