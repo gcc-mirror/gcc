@@ -6,6 +6,9 @@
 
 #include <ia64intrin.h>
 
+extern void abort (void);
+extern void *memcpy (void *, const void *, __SIZE_TYPE__);
+
 static int AI[12];
 static int init_noret_si[12] = { 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0 };
 static int test_noret_si[12] = { 1, 1, 1, 0, 1, 4, 22, -12, 7, 8, 9, 7 };

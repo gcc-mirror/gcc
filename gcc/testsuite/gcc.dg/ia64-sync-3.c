@@ -5,6 +5,9 @@
 
 #include <ia64intrin.h>
 
+extern void abort (void);
+extern void *memcpy (void *, const void *, __SIZE_TYPE__);
+
 static int AI[4];
 static int init_si[4] = { -30,-30,-50,-50 };
 static int test_si[4] = { -115,-115,25,25 };

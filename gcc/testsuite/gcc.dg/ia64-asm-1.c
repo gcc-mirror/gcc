@@ -1,6 +1,8 @@
 /* { dg-do run { target ia64-*-* } } */
 /* { dg-options } */
 
+extern void abort (void);
+
 /* Test that "=S" properly avoids the post-increment on the memory address.  */
 
 static void foo(int *x)

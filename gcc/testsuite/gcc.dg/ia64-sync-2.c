@@ -5,6 +5,9 @@
 
 #include <ia64intrin.h>
 
+extern void abort (void);
+extern void *memcpy (void *, const void *, __SIZE_TYPE__);
+
 static int AI[18];
 static int init_si[18] = { 0,0,0,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
 static int test_si[18] = { 1,1,1,1,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
