@@ -1,5 +1,8 @@
 2004-01-17  Jan Hubicka  <jh@suse.cz>
 
+	* toplev.c (rest_of_handle_reorder_blocks): Fix pasto in previous
+	commit.
+
 	* toplev.c (HAVE_conditional_execution): Provide default.
 	(rest_of_handle_reorder_blocks): For conditional_execution target
 	update liveness once after all transformations
