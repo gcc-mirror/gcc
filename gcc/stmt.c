@@ -3444,10 +3444,10 @@ check_for_full_enumeration_handling (type)
 	   n = n->right)
 	;
 
-      if (!(n && tree_int_cst_equal (n->low, TREE_VALUE (chain))))
+      if (!n || tree_int_cst_lt (TREE_VALUE (chain), n->low))
 	{
 	  if (warn_switch)
-	    warning ("enumerated value `%s' not handled in switch",
+	    warning ("enumeration value `%s' not handled in switch",
 		     IDENTIFIER_POINTER (TREE_PURPOSE (chain)));
 	  all_values = 0;
 	}
@@ -3473,6 +3473,21 @@ check_for_full_enumeration_handling (type)
 					== IDENTIFIER_NODE)
 				       ? TYPE_NAME (type)
 				       : DECL_NAME (TYPE_NAME (type))));
+	if (!tree_int_cst_equal (n->low, n->high))
+	  {
+	    for (chain = TYPE_VALUES (type);
+		 chain && !tree_int_cst_equal (n->high, TREE_VALUE (chain));
+		 chain = TREE_CHAIN (chain))
+	      ;
+
+	    if (!chain)
+	      warning ("case value `%d' not in enumerated type `%s'",
+		       TREE_INT_CST_LOW (n->high),
+		       IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
+					    == IDENTIFIER_NODE)
+					   ? TYPE_NAME (type)
+					   : DECL_NAME (TYPE_NAME (type))));
+	  }
       }
 
   /* If all values were found as case labels, make one of them the default
