@@ -1,3 +1,7 @@
+2001-12-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/cpp/ucs.c: Adjust expected warning for 64-bit hosts.
+
 2001-12-07  Stephane Carrez  <Stephane.Carrez@sun.com>
 
 	* gcc.dg/sparc-ret.c: New file, test return corruption bug for
