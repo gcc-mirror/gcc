@@ -159,9 +159,9 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an overload used by find() for the Input Iterator case.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _Tp>
     inline _InputIter
@@ -175,9 +175,9 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an overload used by find_if() for the Input Iterator case.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _Predicate>
     inline _InputIter
@@ -191,9 +191,9 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an overload used by find() for the RAI case.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Tp>
     _RandomAccessIter
@@ -235,9 +235,9 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an overload used by find_if() for the RAI case.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Predicate>
     _RandomAccessIter
@@ -1087,10 +1087,10 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified unique_copy(_InputIter, _InputIter, _OutputIter)
    *  overloaded for output iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _OutputIter>
     _OutputIter
@@ -1110,10 +1110,10 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified unique_copy(_InputIter, _InputIter, _OutputIter)
    *  overloaded for forward iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _ForwardIter>
     _ForwardIter
@@ -1159,11 +1159,11 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified
    *  unique_copy(_InputIter, _InputIter, _OutputIter, _BinaryPredicate)
    *  overloaded for output iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _OutputIter, typename _BinaryPredicate>
     _OutputIter
@@ -1188,11 +1188,11 @@ namespace std
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified
    *  unique_copy(_InputIter, _InputIter, _OutputIter, _BinaryPredicate)
    *  overloaded for forward iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _InputIter, typename _ForwardIter, typename _BinaryPredicate>
     _ForwardIter
@@ -1301,10 +1301,10 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified reverse(_BidirectionalIter, _BidirectionalIter)
    *  overloaded for bidirectional iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _BidirectionalIter>
     void
@@ -1319,10 +1319,10 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is an uglified reverse(_BidirectionalIter, _BidirectionalIter)
    *  overloaded for bidirectional iterators.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     void
@@ -1389,9 +1389,9 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the rotate algorithm specialized on RAIs.
-   *  @endmaint
+   *  @endif
   */
   template<typename _EuclideanRingElement>
     _EuclideanRingElement
@@ -1406,9 +1406,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the rotate algorithm.
-   *  @endmaint
+   *  @endif
   */
   template<typename _ForwardIter>
     void
@@ -1439,9 +1439,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the rotate algorithm.
-   *  @endmaint
+   *  @endif
   */
   template<typename _BidirectionalIter>
     void
@@ -1472,9 +1472,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the rotate algorithm.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     void
@@ -1582,13 +1582,13 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  Return a random number in the range [0, __n).  This function encapsulates
    *  whether we're using rand (part of the standard C library) or lrand48
    *  (not standard, but a much better choice whenever it's available).
    *
    *  XXX There is no corresponding encapsulation fn to seed the generator.
-   *  @endmaint
+   *  @endif
   */
   template<typename _Distance>
     inline _Distance
@@ -1648,9 +1648,9 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _ForwardIter, typename _Predicate>
     _ForwardIter
@@ -1675,9 +1675,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _BidirectionalIter, typename _Predicate>
     _BidirectionalIter
@@ -1730,9 +1730,9 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _ForwardIter, typename _Predicate, typename _Distance>
     _ForwardIter
@@ -1755,9 +1755,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _ForwardIter, typename _Pointer, typename _Predicate,
 	   typename _Distance>
@@ -1837,9 +1837,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Tp>
     _RandomAccessIter
@@ -1860,9 +1860,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function...
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Tp, typename _Compare>
     _RandomAccessIter
@@ -1884,17 +1884,17 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  @doctodo
    *  This controls some aspect of the sort routines.
-   *  @endmaint
+   *  @endif
   */
   enum { _M_threshold = 16 };
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Tp>
     void
@@ -1911,9 +1911,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Tp, typename _Compare>
     void
@@ -1930,9 +1930,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     void
@@ -1953,9 +1953,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Compare>
     void
@@ -1977,9 +1977,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     inline void
@@ -1992,9 +1992,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Compare>
     inline void
@@ -2008,9 +2008,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     void
@@ -2025,9 +2025,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Compare>
     void
@@ -2043,9 +2043,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _Size>
     inline _Size
@@ -2057,9 +2057,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Size>
     void
@@ -2085,9 +2085,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the sort routine.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Size, typename _Compare>
     void
@@ -2166,9 +2166,9 @@ __result, __binary_pred, _IterType());
 
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the stable sorting routines.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter>
     void
@@ -2187,9 +2187,9 @@ __result, __binary_pred, _IterType());
     }
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function for the stable sorting routines.
-   *  @endmaint
+   *  @endif
   */
   template<typename _RandomAccessIter, typename _Compare>
     void

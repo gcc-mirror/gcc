@@ -48,10 +48,10 @@ do not have the C code (to which the doxygen comments would be attached),
 this would need to be done in entirely separate files, a la doxygroups.cc.
 
 B)  Huge chunks of containers and strings are described in common "Tables"
-in the standard.  These are being pseudo-duplicated in tables.html.  We can
+in the standard.  These are pseudo-duplicated in tables.html.  We can
 use doxygen hooks like @pre and @see to reference the tables.  Then the
-individual classes would do like the standard does, and only document
-members for which additional info is available.
+individual classes do like the standard does, and only document members for
+which additional info is available.
 
 
 STYLE:

@@ -62,10 +62,10 @@ namespace std
 {
 
   /**
-   *  @maint
+   *  @if maint
    *  This is a helper function.  The unused second parameter exists to
    *  permit the real get_temporary_buffer to use template parameter deduction.
-   *  @endmaint
+   *  @endif
   */
   template <class _Tp>
   pair<_Tp*, ptrdiff_t> 
@@ -202,7 +202,3 @@ public:
 
 #endif /* _CPP_MEMORY */
 
-
-// Local Variables:
-// mode:C++
-// End:

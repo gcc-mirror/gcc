@@ -146,10 +146,10 @@ namespace std
     };
 
   /**
-   *  @maint
+   *  @if maint
    *  This function is not a part of the C++ standard but is syntactic
    *  sugar for internal library use only.
-   *  @endmaint
+   *  @endif
   */
   template<typename _Iter>
     inline typename iterator_traits<_Iter>::iterator_category
@@ -160,7 +160,3 @@ namespace std
 
 #endif /* __GLIBCPP_INTERNAL_ITERATOR_BASE_TYPES_H */
 
-
-// Local Variables:
-// mode:C++
-// End:

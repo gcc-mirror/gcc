@@ -1,6 +1,6 @@
 // deque implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,14 +73,14 @@ namespace std
 { 
 
 /**
- *  @maint
+ *  @if maint
  *  @brief This function controls the size of memory nodes.
  *  @param  size  The size of an element.
  *  @return   The number (not bytesize) of elements per node.
  *
  *  This function started off as a compiler kludge from SGI, but seems to
  *  be a useful wrapper around a repeated constant expression.
- *  @endmaint
+ *  @endif
 */
 inline size_t 
 __deque_buf_size(size_t __size) 
@@ -94,9 +94,9 @@ __deque_buf_size(size_t __size)
  *  marking its valid range.  Access to elements is done as offsets of either
  *  of those two, relying on operator overloading in this class.
  *
- *  @maint
+ *  @if maint
  *  All the functions are op overloads except for _M_set_node.
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Ref, class _Ptr>
 struct _Deque_iterator
@@ -204,11 +204,11 @@ struct _Deque_iterator
   bool operator<=(const _Self& __x) const { return !(__x < *this); }
   bool operator>=(const _Self& __x) const { return !(*this < __x); }
 
-  /** @maint
+  /** @if maint
    *  Prepares to traverse new_node.  Sets everything except _M_cur, which
    *  should therefore be set by the caller immediately afterwards, based on
    *  _M_first and _M_last.
-   *  @endmaint
+   *  @endif
   */
   void _M_set_node(_Map_pointer __new_node) {
     _M_node = __new_node;
@@ -225,16 +225,16 @@ operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
 }
 
 
-/// @maint Primary default version.  @endmaint
+/// @if maint Primary default version.  @endif
 /**
- *  @maint
+ *  @if maint
  *  Deque base class.  It has two purposes.  First, its constructor
  *  and destructor allocate (but don't initialize) storage.  This makes
  *  exception safety easier.  Second, the base class encapsulates all of
  *  the differences between SGI-style allocators and standard-conforming
  *  allocators.  There are two versions:  this ordinary one, and the
  *  space-saving specialization for instanceless allocators.
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc, bool __is_static>
 class _Deque_alloc_base
@@ -270,7 +270,7 @@ protected:
   size_t _M_map_size;
 };
 
-/// Specialization for instanceless allocators.
+/// @if maint Specialization for instanceless allocators.  @endif
 template <class _Tp, class _Alloc>
 class _Deque_alloc_base<_Tp, _Alloc, true>
 {
@@ -301,14 +301,14 @@ protected:
 
 
 /**
- *  @maint
+ *  @if maint
  *  Deque base class.  Using _Alloc_traits in the instantiation of the parent
  *  class provides the compile-time dispatching mentioned in the parent's docs.
  *  This class provides the unified face for deque's allocation.
  *
  *  Nothing in this class ever constructs or destroys an actual Tp element.
  *  (Deque handles that itself.)  Only/All memory management is performed here.
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc>
 class _Deque_base
@@ -352,13 +352,13 @@ _Deque_base<_Tp,_Alloc>::~_Deque_base()
 }
 
 /**
- *  @maint
+ *  @if maint
  *  @brief Layout storage.
  *  @param  num_elements  The count of T's for which to allocate space at first.
  *  @return   Nothing.
  *
  *  The initial underlying memory layout is a bit complicated...
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc>
 void
@@ -415,6 +415,14 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
 
 
 /**
+ *  @ingroup Containers
+ *  @ingroup Sequences
+ *
+ *  Meets the requirements of a <a href="tables.html#65">container</a>, a
+ *  <a href="tables.html#66">reversible container</a>, and a
+ *  <a href="tables.html#67">sequence</a>, including the
+ *  <a href="tables.html#68">optional sequence requirements</a>.
+ *
  *  Placeholder:  see http://www.sgi.com/tech/stl/Deque.html for now.
  *
  *  In previous HP/SGI versions of deque, there was an extra template parameter
@@ -422,7 +430,7 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  the C++ standard (it can be detected using template template parameters),
  *  and it was removed.
  *
- *  @maint
+ *  @if maint
  *  Here's how a deque<Tp> manages memory.  Each deque has 4 members:
  *  
  *  - Tp**        _M_map
@@ -483,8 +491,7 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  the implementation routines for deque itself work only through the start
  *  and finish iterators.  This keeps the routines simple and sane, and we can
  *  use other standard algorithms as well.
- *
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc = allocator<_Tp> >
 class deque : protected _Deque_base<_Tp, _Alloc>
@@ -524,11 +531,11 @@ protected:
   using _Base::_M_allocate_map;
   using _Base::_M_deallocate_map;
 
-  /** @maint
+  /** @if maint
    *  A total of four data members accumulated down the heirarchy.  If the
    *  _Alloc type requires separate instances, then two of them will also be
    *  included in each deque.
-   *  @endmaint
+   *  @endif
   */
   using _Base::_M_map;
   using _Base::_M_map_size;
@@ -1035,7 +1042,7 @@ void deque<_Tp,_Alloc>::clear()
 }
 
 /**
- *  @maint
+ *  @if maint
  *  @brief Fills the deque with copies of value.
  *  @param  value  Initial value.
  *  @return   Nothing.
@@ -1044,7 +1051,7 @@ void deque<_Tp,_Alloc>::clear()
  *
  *  This function is called only when the user provides an explicit size (with
  *  or without an explicit exemplar value).
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc>
 void deque<_Tp,_Alloc>::_M_fill_initialize(const value_type& __value)
@@ -1063,7 +1070,7 @@ void deque<_Tp,_Alloc>::_M_fill_initialize(const value_type& __value)
 }
 
 /** @{
- *  @maint
+ *  @if maint
  *  @brief Fills the deque with whatever is in [first,last).
  *  @param  first  An input iterator.
  *  @param  last  An input iterator.
@@ -1072,7 +1079,7 @@ void deque<_Tp,_Alloc>::_M_fill_initialize(const value_type& __value)
  *  If the iterators are actually forward iterators (or better), then the
  *  memory layout can be done all at once.  Else we move forward using
  *  push_back on each value from the iterator.
- *  @endmaint
+ *  @endif
 */
 template <class _Tp, class _Alloc> template <class _InputIterator>
 void deque<_Tp,_Alloc>::_M_range_initialize(_InputIterator __first,
@@ -1570,6 +1577,3 @@ inline void swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y) {
   
 #endif /* __GLIBCPP_INTERNAL_DEQUE_H */
 
-// Local Variables:
-// mode:C++
-// End:

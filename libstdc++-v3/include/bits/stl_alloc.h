@@ -50,7 +50,7 @@
 
 /**
  *  @defgroup Allocators Memory Allocators
- *  @maint
+ *  @if maint
  *  stl_alloc.h implements some node allocators.  These are NOT the same as
  *  allocators in the C++ standard, nor in the original H-P STL.  They do not
  *  encapsulate different pointer types; we assume that there is only one
@@ -72,7 +72,7 @@
  *
  *  "SGI" allocators may be wrapped in __allocator to convert the interface
  *  into a "standard" one.
- *  @endmaint
+ *  @endif
  *
  *  The canonical description of these classes is in docs/html/ext/howto.html
  *  or online at http://gcc.gnu.org/onlinedocs/libstdc++/ext/howto.html#3
@@ -88,11 +88,11 @@
 namespace std
 {
   /**
-   *  @maint
+   *  @if maint
    *  A new-based allocator, as required by the standard.  Allocation and
    *  deallocation forward to global new and delete.  "SGI" style, minus
    *  reallocate().
-   *  @endmaint
+   *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
   */
   class __new_alloc 
@@ -109,13 +109,13 @@ namespace std
   
 
   /**
-   *  @maint
+   *  @if maint
    *  A malloc-based allocator.  Typically slower than the
    *  __default_alloc_template (below).  Typically thread-safe and more
    *  storage efficient.  The template argument is unused and is only present
    *  to permit multiple instantiations (but see __default_alloc_template
    *  for caveats).  "SGI" style, plus __set_malloc_handler for OOM conditions.
-   *  @endmaint
+   *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
   */
   template <int __inst>
@@ -207,13 +207,13 @@ namespace std
 
 
   /**
-   *  @maint
+   *  @if maint
    *  This is used primarily (only?) in _Alloc_traits and other places to
    *  help provide the _Alloc_type typedef.
    *
    *  This is neither "standard"-conforming nor "SGI".  The _Alloc parameter
    *  must be "SGI" style.
-   *  @endmaint
+   *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
   */
   template<class _Tp, class _Alloc>
@@ -235,7 +235,7 @@ namespace std
 
 
   /**
-   *  @maint
+   *  @if maint
    *  An adaptor for an underlying allocator (_Alloc) to check the size
    *  arguments for debugging.  Errors are reported using assert; these
    *  checks can be disabled via NDEBUG, but the space penalty is still
@@ -245,7 +245,7 @@ namespace std
    *  "There is some evidence that this can confuse Purify." - SGI comment
    *
    *  This adaptor is "SGI" style.  The _Alloc parameter must also be "SGI".
-   *  @endmaint
+   *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
   */
   template <class _Alloc>
@@ -293,7 +293,7 @@ typedef __mem_interface __single_client_alloc;
 
 
 /**
- *  @maint
+ *  @if maint
  *  Default node allocator.  "SGI" style.  Uses __mem_interface for its
  *  underlying requests (and makes as few requests as possible).
  *  **** Currently __mem_interface is always __new_alloc, never __malloc*.
@@ -318,7 +318,7 @@ typedef __mem_interface __single_client_alloc;
  *  approach.  If you do not wish to share the free lists with the main
  *  default_alloc instance, instantiate this with a non-zero __inst.
  *
- *  @endmaint
+ *  @endif
  *  (See @link Allocators allocators info @endlink for more.)
 */
 template<bool __threads, int __inst>
@@ -682,14 +682,14 @@ inline bool operator!=(const allocator<_T1>&, const allocator<_T2>&)
 
 
 /**
- *  @maint
+ *  @if maint
  *  Allocator adaptor to turn an "SGI" style allocator (e.g., __alloc,
  *  __malloc_alloc_template) into a "standard" conforming allocator.  Note
  *  that this adaptor does *not* assume that all objects of the underlying
  *  alloc class are identical, nor does it assume that all of the underlying
  *  alloc's member functions are static member functions.  Note, also, that
  *  __allocator<_Tp, __alloc> is essentially the same thing as allocator<_Tp>.
- *  @endmaint
+ *  @endif
  *  (See @link Allocators allocators info @endlink for more.)
 */
 template <class _Tp, class _Alloc>
@@ -800,7 +800,7 @@ inline bool operator!=(const __debug_alloc<_Alloc>&,
 
 
 /**
- *  @maint
+ *  @if maint
  *  Another allocator adaptor:  _Alloc_traits.  This serves two purposes.
  *  First, make it possible to write containers that can use either "SGI"
  *  style allocators or "standard" allocators.  Second, provide a mechanism
@@ -832,7 +832,7 @@ inline bool operator!=(const __debug_alloc<_Alloc>&,
  *  The size_t parameters are "standard" style (see top of stl_alloc.h) in
  *  that they take counts, not sizes.
  *
- *  @endmaint
+ *  @endif
  *  (See @link Allocators allocators info @endlink for more.)
 */
 //@{
