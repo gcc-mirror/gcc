@@ -44,6 +44,13 @@ Boston, MA 02111-1307, USA.  */
 extern int errno;
 #endif
 
+#if USE_CPPLIB
+#include "cpplib.h"
+cpp_reader parse_in;
+cpp_options parse_options;
+static enum cpp_token cpp_token;
+#endif
+
 /* The elements of `ridpointers' are identifier nodes
    for the reserved type names and storage classes.
    It is indexed by a RID_... value.  */
@@ -51,6 +58,32 @@ tree ridpointers[(int) RID_MAX];
 
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
+
+#if USE_CPPLIB
+static unsigned char *yy_cur, *yy_lim;
+
+int
+yy_get_token ()
+{
+  for (;;)
+    {
+      parse_in.limit = parse_in.token_buffer;
+      cpp_token = cpp_get_token (&parse_in);
+      if (cpp_token == CPP_EOF)
+	return -1;
+      yy_lim = CPP_PWRITTEN (&parse_in);
+      yy_cur = parse_in.token_buffer;
+      if (yy_cur < yy_lim)
+	return *yy_cur++;
+    }
+}
+
+#define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
+#define UNGETC(c) ((c), yy_cur--)
+#else
+#define GETC() getc (finput)
+#define UNGETC(c) ungetc (c, finput)
+#endif
 
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,
@@ -88,8 +121,10 @@ char *token_buffer;	/* Pointer to token buffer.
 /* Nonzero if end-of-file has been seen on input.  */
 static int end_of_file;
 
+#if !USE_CPPLIB
 /* Buffered-back input character; faster than using ungetc.  */
 static int nextchar = -1;
+#endif
 
 int check_newline ();
 
@@ -142,6 +177,31 @@ remember_protocol_qualifiers ()
       wordlist[i].name = "oneway";   
 }
 
+#if USE_CPPLIB
+void
+init_parse (filename)
+     char *filename;
+{
+  init_lex ();
+  yy_cur = "\n";
+  yy_lim = yy_cur+1;
+
+  cpp_reader_init (&parse_in);
+  parse_in.data = &parse_options;
+  cpp_options_init (&parse_options);
+  cpp_handle_options (&parse_in, 0, NULL); /* FIXME */
+  parse_in.show_column = 1;
+  if (! cpp_start_read (&parse_in, filename))
+    abort ();
+}
+
+void
+finish_parse ()
+{
+  cpp_finish (&parse_in);
+}
+#endif
+
 void
 init_lex ()
 {
@@ -289,7 +349,7 @@ skip_white_space (c)
 	case '\f':
 	case '\v':
 	case '\b':
-	  c = getc (finput);
+	  c = GETC();
 	  break;
 
 	case '\r':
@@ -301,16 +361,16 @@ skip_white_space (c)
 	      warning ("(we only warn about the first carriage return)");
 	      newline_warning = 1;
 	    }
-	  c = getc (finput);
+	  c = GETC();
 	  break;
 
 	case '\\':
-	  c = getc (finput);
+	  c = GETC();
 	  if (c == '\n')
 	    lineno++;
 	  else
 	    error ("stray '\\' in program");
-	  c = getc (finput);
+	  c = GETC();
 	  break;
 
 	default:
@@ -327,12 +387,14 @@ position_after_white_space ()
 {
   register int c;
 
+#if !USE_CPPLIB
   if (nextchar != -1)
     c = nextchar, nextchar = -1;
   else
-    c = getc (finput);
+#endif
+    c = GETC();
 
-  ungetc (skip_white_space (c), finput);
+  UNGETC (skip_white_space (c));
 }
 
 /* Make the token buffer longer, preserving the data in it.
@@ -351,6 +413,89 @@ extend_token_buffer (p)
 
   return token_buffer + offset;
 }
+
+
+#if !USE_CPPLIB
+#define GET_DIRECTIVE_LINE() get_directive_line (finput)
+#else /* USE_CPPLIB */
+/* Read the rest of a #-directive from input stream FINPUT.
+   In normal use, the directive name and the white space after it
+   have already been read, so they won't be included in the result.
+   We allow for the fact that the directive line may contain
+   a newline embedded within a character or string literal which forms
+   a part of the directive.
+
+   The value is a string in a reusable buffer.  It remains valid
+   only until the next time this function is called.  */
+
+static char *
+GET_DIRECTIVE_LINE ()
+{
+  static char *directive_buffer = NULL;
+  static unsigned buffer_length = 0;
+  register char *p;
+  register char *buffer_limit;
+  register int looking_for = 0;
+  register int char_escaped = 0;
+
+  if (buffer_length == 0)
+    {
+      directive_buffer = (char *)xmalloc (128);
+      buffer_length = 128;
+    }
+
+  buffer_limit = &directive_buffer[buffer_length];
+
+  for (p = directive_buffer; ; )
+    {
+      int c;
+
+      /* Make buffer bigger if it is full.  */
+      if (p >= buffer_limit)
+        {
+	  register unsigned bytes_used = (p - directive_buffer);
+
+	  buffer_length *= 2;
+	  directive_buffer
+	    = (char *)xrealloc (directive_buffer, buffer_length);
+	  p = &directive_buffer[bytes_used];
+	  buffer_limit = &directive_buffer[buffer_length];
+        }
+
+      c = GETC ();
+
+      /* Discard initial whitespace.  */
+      if ((c == ' ' || c == '\t') && p == directive_buffer)
+	continue;
+
+      /* Detect the end of the directive.  */
+      if (c == '\n' && looking_for == 0)
+	{
+          UNGETC (c);
+	  c = '\0';
+	}
+
+      *p++ = c;
+
+      if (c == 0)
+	return directive_buffer;
+
+      /* Handle string and character constant syntax.  */
+      if (looking_for)
+	{
+	  if (looking_for == c && !char_escaped)
+	    looking_for = 0;	/* Found terminator... stop looking.  */
+	}
+      else
+        if (c == '\'' || c == '"')
+	  looking_for = c;	/* Don't stop buffering until we see another
+				   another one of these (or an EOF).  */
+
+      /* Handle backslash.  */
+      char_escaped = (c == '\\' && ! char_escaped);
+    }
+}
+#endif /* USE_CPPLIB */
 
 /* At the beginning of a line, increment the line number
    and process any #-directive on this line.
@@ -367,9 +512,9 @@ check_newline ()
 
   /* Read first nonwhite char on the line.  */
 
-  c = getc (finput);
+  c = GETC();
   while (c == ' ' || c == '\t')
-    c = getc (finput);
+    c = GETC();
 
   if (c != '#')
     {
@@ -379,9 +524,9 @@ check_newline ()
 
   /* Read first nonwhite char after the `#'.  */
 
-  c = getc (finput);
+  c = GETC();
   while (c == ' ' || c == '\t')
-    c = getc (finput);
+    c = GETC();
 
   /* If a letter follows, then if the word here is `line', skip
      it and ignore it; otherwise, ignore the line, with an error
@@ -391,34 +536,38 @@ check_newline ()
     {
       if (c == 'p')
 	{
-	  if (getc (finput) == 'r'
-	      && getc (finput) == 'a'
-	      && getc (finput) == 'g'
-	      && getc (finput) == 'm'
-	      && getc (finput) == 'a'
-	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
+	  if (GETC() == 'r'
+	      && GETC() == 'a'
+	      && GETC() == 'g'
+	      && GETC() == 'm'
+	      && GETC() == 'a'
+	      && ((c = GETC()) == ' ' || c == '\t' || c == '\n'))
 	    {
 	      while (c == ' ' || c == '\t')
-		c = getc (finput);
+		c = GETC ();
 	      if (c == '\n')
 		return c;
 #ifdef HANDLE_SYSV_PRAGMA
-	      ungetc (c, finput);
+	      UNGETC (c);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
-	      return handle_sysv_pragma (finput, token);
+	      return handle_sysv_pragma (token);
 #else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
-	      ungetc (c, finput);
+#if !USE_CPPLIB
+	      UNGETC (c);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
-	      if (HANDLE_PRAGMA (finput, yylval.ttype))
+	      if (HANDLE_PRAGMA (yylval.ttype))
 		{
-		  c = getc (finput);
+		  c = GETC ();
 		  return c;
 		}
+#else
+	      ??? do not know what to do ???;
+#endif /* !USE_CPPLIB */
 #endif /* HANDLE_PRAGMA */
 #endif /* !HANDLE_SYSV_PRAGMA */
 	      goto skipline;
@@ -427,46 +576,46 @@ check_newline ()
 
       else if (c == 'd')
 	{
-	  if (getc (finput) == 'e'
-	      && getc (finput) == 'f'
-	      && getc (finput) == 'i'
-	      && getc (finput) == 'n'
-	      && getc (finput) == 'e'
-	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
+	  if (GETC() == 'e'
+	      && GETC() == 'f'
+	      && GETC() == 'i'
+	      && GETC() == 'n'
+	      && GETC() == 'e'
+	      && ((c = GETC()) == ' ' || c == '\t' || c == '\n'))
 	    {
 	      if (c != '\n')
-		debug_define (lineno, get_directive_line (finput));
+		debug_define (lineno, GET_DIRECTIVE_LINE ());
 	      goto skipline;
 	    }
 	}
       else if (c == 'u')
 	{
-	  if (getc (finput) == 'n'
-	      && getc (finput) == 'd'
-	      && getc (finput) == 'e'
-	      && getc (finput) == 'f'
-	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
+	  if (GETC() == 'n'
+	      && GETC() == 'd'
+	      && GETC() == 'e'
+	      && GETC() == 'f'
+	      && ((c = GETC()) == ' ' || c == '\t' || c == '\n'))
 	    {
 	      if (c != '\n')
-		debug_undef (lineno, get_directive_line (finput));
+		debug_undef (lineno, GET_DIRECTIVE_LINE ());
 	      goto skipline;
 	    }
 	}
       else if (c == 'l')
 	{
-	  if (getc (finput) == 'i'
-	      && getc (finput) == 'n'
-	      && getc (finput) == 'e'
-	      && ((c = getc (finput)) == ' ' || c == '\t'))
+	  if (GETC() == 'i'
+	      && GETC() == 'n'
+	      && GETC() == 'e'
+	      && ((c = GETC()) == ' ' || c == '\t'))
 	    goto linenum;
 	}
       else if (c == 'i')
 	{
-	  if (getc (finput) == 'd'
-	      && getc (finput) == 'e'
-	      && getc (finput) == 'n'
-	      && getc (finput) == 't'
-	      && ((c = getc (finput)) == ' ' || c == '\t'))
+	  if (GETC() == 'd'
+	      && GETC() == 'e'
+	      && GETC() == 'n'
+	      && GETC() == 't'
+	      && ((c = GETC()) == ' ' || c == '\t'))
 	    {
 	      /* #ident.  The pedantic warning is now in cccp.c.  */
 
@@ -474,13 +623,13 @@ check_newline ()
 		 A string constant should follow.  */
 
 	      while (c == ' ' || c == '\t')
-		c = getc (finput);
+		c = GETC();
 
 	      /* If no argument, ignore the line.  */
 	      if (c == '\n')
 		return c;
 
-	      ungetc (c, finput);
+	      UNGETC (c);
 	      token = yylex ();
 	      if (token != STRING
 		  || TREE_CODE (yylval.ttype) != STRING_CST)
@@ -510,7 +659,7 @@ linenum:
      In either case, it should be a line number; a digit should follow.  */
 
   while (c == ' ' || c == '\t')
-    c = getc (finput);
+    c = GETC();
 
   /* If the # is the only nonwhite char on the line,
      just ignore it.  Check the new newline.  */
@@ -519,7 +668,7 @@ linenum:
 
   /* Something follows the #; read a token.  */
 
-  ungetc (c, finput);
+  UNGETC (c);
   token = yylex ();
 
   if (token == CONSTANT
@@ -533,16 +682,16 @@ linenum:
       int l = TREE_INT_CST_LOW (yylval.ttype) - 1;
 
       /* Is this the last nonwhite stuff on the line?  */
-      c = getc (finput);
+      c = GETC();
       while (c == ' ' || c == '\t')
-	c = getc (finput);
+	c = GETC();
       if (c == '\n')
 	{
 	  /* No more: store the line number and check following line.  */
 	  lineno = l;
 	  return c;
 	}
-      ungetc (c, finput);
+      UNGETC (c);
 
       /* More follows: it must be a string constant (filename).  */
 
@@ -568,9 +717,9 @@ linenum:
 	main_input_filename = input_filename;
 
       /* Is this the last nonwhite stuff on the line?  */
-      c = getc (finput);
+      c = GETC();
       while (c == ' ' || c == '\t')
-	c = getc (finput);
+	c = GETC();
       if (c == '\n')
 	{
 	  /* Update the name in the top element of input_file_stack.  */
@@ -579,7 +728,7 @@ linenum:
 
 	  return c;
 	}
-      ungetc (c, finput);
+      UNGETC (c);
 
       token = yylex ();
       used_up = 0;
@@ -631,12 +780,12 @@ linenum:
       if (used_up)
 	{
 	  /* Is this the last nonwhite stuff on the line?  */
-	  c = getc (finput);
+	  c = GETC();
 	  while (c == ' ' || c == '\t')
-	    c = getc (finput);
+	    c = GETC();
 	  if (c == '\n')
 	    return c;
-	  ungetc (c, finput);
+	  UNGETC (c);
 
 	  token = yylex ();
 	  used_up = 0;
@@ -652,12 +801,12 @@ linenum:
       if (used_up)
 	{
 	  /* Is this the last nonwhite stuff on the line?  */
-	  c = getc (finput);
+	  c = GETC();
 	  while (c == ' ' || c == '\t')
-	    c = getc (finput);
+	    c = GETC();
 	  if (c == '\n')
 	    return c;
-	  ungetc (c, finput);
+	  UNGETC (c);
 	}
 
       warning ("unrecognized text at end of #line");
@@ -668,22 +817,32 @@ linenum:
   /* skip the rest of this line.  */
  skipline:
   while (c != '\n' && c != EOF)
-    c = getc (finput);
+    c = GETC();
   return c;
+}
+
+void
+lang_init ()
+{
+#if !USE_CPPLIB
+  /* the beginning of the file is a new line; check for # */
+  /* With luck, we discover the real source file's name from that
+     and put it in input_filename.  */
+  UNGETC (check_newline ());
+#endif
 }
 
 #ifdef HANDLE_SYSV_PRAGMA
 
-/* Handle a #pragma directive.  INPUT is the current input stream,
-   and TOKEN is the token we read after `#pragma'.  Processes the entire input
+/* Handle a #pragma directive.
+   TOKEN is the token we read after `#pragma'.  Processes the entire input
    line and returns a character for the caller to reread: either \n or EOF.  */
 
 /* This function has to be in this file, in order to get at
    the token types.  */
 
 int
-handle_sysv_pragma (input, token)
-     FILE *input;
+handle_sysv_pragma (token)
      register int token;
 {
   register int c;
@@ -701,20 +860,21 @@ handle_sysv_pragma (input, token)
 	default:
 	  handle_pragma_token (token_buffer, 0);
 	}
-
+#if !USE_CPPLIB
       if (nextchar >= 0)
 	c = nextchar, nextchar = -1;
       else
-	c = getc (input);
+#endif
+	c = GETC ();
 
       while (c == ' ' || c == '\t')
-	c = getc (input);
+	c = GETC ();
       if (c == '\n' || c == EOF)
 	{
 	  handle_pragma_token (0, 0);
 	  return c;
 	}
-      ungetc (c, input);
+      UNGETC (c);
       token = yylex ();
     }
 }
@@ -730,7 +890,7 @@ static int
 readescape (ignore_ptr)
      int *ignore_ptr;
 {
-  register int c = getc (finput);
+  register int c = GETC();
   register int code;
   register unsigned count;
   unsigned firstdig = 0;
@@ -750,12 +910,12 @@ readescape (ignore_ptr)
       nonnull = 0;
       while (1)
 	{
-	  c = getc (finput);
+	  c = GETC();
 	  if (!(c >= 'a' && c <= 'f')
 	      && !(c >= 'A' && c <= 'F')
 	      && !(c >= '0' && c <= '9'))
 	    {
-	      ungetc (c, finput);
+	      UNGETC (c);
 	      break;
 	    }
 	  code *= 16;
@@ -792,9 +952,9 @@ readescape (ignore_ptr)
       while ((c <= '7') && (c >= '0') && (count++ < 3))
 	{
 	  code = (code * 8) + (c - '0');
-	  c = getc (finput);
+	  c = GETC();
 	}
-      ungetc (c, finput);
+      UNGETC (c);
       return code;
 
     case '\\': case '\'': case '"':
@@ -918,10 +1078,12 @@ yylex ()
   int wide_flag = 0;
   int objc_flag = 0;
 
+#if !USE_CPPLIB
   if (nextchar >= 0)
     c = nextchar, nextchar = -1;
   else
-    c = getc (finput);
+#endif
+    c = GETC();
 
   /* Effectively do c = skip_white_space (c)
      but do it faster in the usual cases.  */
@@ -933,7 +1095,7 @@ yylex ()
       case '\f':
       case '\v':
       case '\b':
-	c = getc (finput);
+	c = GETC();
 	break;
 
       case '\r':
@@ -964,7 +1126,7 @@ yylex ()
     case 'L':
       /* Capital L may start a wide-string or wide-character constant.  */
       {
-	register int c = getc (finput);
+	register int c = GETC();
 	if (c == '\'')
 	  {
 	    wide_flag = 1;
@@ -975,7 +1137,7 @@ yylex ()
 	    wide_flag = 1;
 	    goto string_constant;
 	  }
-	ungetc (c, finput);
+	UNGETC (c);
       }
       goto letter;
 
@@ -988,13 +1150,13 @@ yylex ()
       else
 	{
 	  /* '@' may start a constant string object.  */
-	  register int c = getc(finput);
+	  register int c = GETC ();
 	  if (c == '"')
 	    {
 	      objc_flag = 1;
 	      goto string_constant;
 	    }
-	  ungetc(c, finput);
+	  UNGETC (c);
 	  /* Fall through to treat '@' as the start of an identifier.  */
 	}
 
@@ -1031,11 +1193,15 @@ yylex ()
 	    p = extend_token_buffer (p);
 
 	  *p++ = c;
-	  c = getc (finput);
+	  c = GETC();
 	}
 
       *p = 0;
+#if USE_CPPLIB
+      UNGETC (c);
+#else
       nextchar = c;
+#endif
 
       value = IDENTIFIER;
       yylval.itype = 0;
@@ -1120,8 +1286,8 @@ yylex ()
 	int next_c;
 	/* Check first for common special case:  single-digit 0 or 1.  */
 
-	next_c = getc (finput);
-	ungetc (next_c, finput);	/* Always undo this lookahead.  */
+	next_c = GETC ();
+	UNGETC (next_c);	/* Always undo this lookahead.  */
 	if (!isalnum (next_c) && next_c != '.')
 	  {
 	    token_buffer[0] = (char)c,  token_buffer[1] = '\0';
@@ -1160,11 +1326,11 @@ yylex ()
 
 	if (c == '0')
 	  {
-	    *p++ = (c = getc (finput));
+	    *p++ = (c = GETC());
 	    if ((c == 'x') || (c == 'X'))
 	      {
 		base = 16;
-		*p++ = (c = getc (finput));
+		*p++ = (c = GETC());
 	      }
 	    /* Leading 0 forces octal unless the 0 is the only digit.  */
 	    else if (c >= '0' && c <= '9')
@@ -1203,7 +1369,7 @@ yylex ()
 		  floatflag = AFTER_POINT;
 
 		base = 10;
-		*p++ = c = getc (finput);
+		*p++ = c = GETC();
 		/* Accept '.' as the start of a floating-point number
 		   only when it is followed by a digit.
 		   Otherwise, unread the following non-digit
@@ -1212,7 +1378,7 @@ yylex ()
 		  {
 		    if (c == '.')
 		      {
-			c = getc (finput);
+			c = GETC();
 			if (c == '.')
 			  {
 			    *p++ = c;
@@ -1221,7 +1387,7 @@ yylex ()
 			  }
 			error ("parse error at `..'");
 		      }
-		    ungetc (c, finput);
+		    UNGETC (c);
 		    token_buffer[1] = 0;
 		    value = '.';
 		    goto done;
@@ -1280,7 +1446,7 @@ yylex ()
 
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
-		*p++ = (c = getc (finput));
+		*p++ = (c = GETC());
 	      }
 	  }
 
@@ -1308,11 +1474,11 @@ yylex ()
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getc (finput);
+		c = GETC();
 		if ((c == '+') || (c == '-'))
 		  {
 		    *p++ = c;
-		    c = getc (finput);
+		    c = GETC();
 		  }
 		if (! isdigit (c))
 		  error ("floating constant exponent has no digits");
@@ -1321,7 +1487,7 @@ yylex ()
 		    if (p >= token_buffer + maxtoken - 3)
 		      p = extend_token_buffer (p);
 		    *p++ = c;
-		    c = getc (finput);
+		    c = GETC();
 		  }
 	      }
 
@@ -1383,7 +1549,7 @@ yylex ()
 		      p = extend_token_buffer (p);
 		    *p++ = c;
 		    *p = 0;
-		    c = getc (finput);
+		    c = GETC();
 		  }
 
 		/* The second argument, machine_mode, of REAL_VALUE_ATOF
@@ -1490,7 +1656,7 @@ yylex ()
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getc (finput);
+		c = GETC();
 	      }
 
 	    /* If the constant is not long long and it won't fit in an
@@ -1631,7 +1797,7 @@ yylex ()
 	      TREE_TYPE (yylval.ttype) = type;
 	  }
 
-	ungetc (c, finput);
+	UNGETC (c);
 	*p = 0;
 
 	if (isalnum (c) || c == '.' || c == '_' || c == '$'
@@ -1666,7 +1832,7 @@ yylex ()
 	  {
 	  tryagain:
 
-	    c = getc (finput);
+	    c = GETC();
 
 	    if (c == '\'' || c == EOF)
 	      break;
@@ -1776,7 +1942,7 @@ yylex ()
     case '"':
     string_constant:
       {
-	c = getc (finput);
+	c = GETC();
 	p = token_buffer + 1;
 
 	while (c != '"' && c >= 0)
@@ -1804,7 +1970,7 @@ yylex ()
 	    *p++ = c;
 
 	  skipnewline:
-	    c = getc (finput);
+	    c = GETC();
 	  }
 	*p = 0;
 
@@ -1918,7 +2084,7 @@ yylex ()
 	    yylval.code = GT_EXPR; break;
 	  }
 
-	token_buffer[1] = c1 = getc (finput);
+	token_buffer[1] = c1 = GETC();
 	token_buffer[2] = 0;
 
 	if (c1 == '=')
@@ -1976,7 +2142,7 @@ yylex ()
 		{ value = '}'; goto done; }
 	      break;
 	    }
-	ungetc (c1, finput);
+	UNGETC (c1);
 	token_buffer[1] = 0;
 
 	if ((c == '<') || (c == '>'))
