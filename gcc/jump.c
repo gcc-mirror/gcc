@@ -863,6 +863,96 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		}
 	    }
 
+	  /* Simplify   if (...) { x = a; goto l; } x = b; by converting it
+	     to         x = a; if (...) goto l; x = b;
+	     if A is sufficiently simple, the test doesn't involve X,
+	     and nothing in the test modifies A or X.
+
+	     If we have small register classes, we also can't do this if X
+	     is a hard register.
+
+	     If the "x = a;" insn has any REG_NOTES, we don't do this because
+	     of the possibility that we are running after CSE and there is a
+	     REG_EQUAL note that is only valid if the branch has already been
+	     taken.  If we move the insn with the REG_EQUAL note, we may
+	     fold the comparison to always be false in a later CSE pass.
+	     (We could also delete the REG_NOTES when moving the insn, but it
+	     seems simpler to not move it.)  An exception is that we can move
+	     the insn if the only note is a REG_EQUAL or REG_EQUIV whose
+	     value is the same as "a".
+
+	     INSN is the goto.
+
+	     We set:
+
+	     TEMP to the jump insn preceding "x = a;"
+	     TEMP1 to X
+	     TEMP2 to the insn that sets "x = b;"
+	     TEMP3 to the insn that sets "x = a;"
+	     TEMP4 to the set of "x = a";  */
+
+	  if (this_is_simplejump
+	      && (temp2 = next_active_insn (insn)) != 0
+	      && GET_CODE (temp2) == INSN
+	      && (temp4 = single_set (temp2)) != 0
+	      && GET_CODE (temp1 = SET_DEST (temp4)) == REG
+#ifdef SMALL_REGISTER_CLASSES
+	      && REGNO (temp1) >= FIRST_PSEUDO_REGISTER
+#endif
+
+	      && (temp3 = prev_active_insn (insn)) != 0
+	      && GET_CODE (temp3) == INSN
+	      && (temp4 = single_set (temp3)) != 0
+	      && rtx_equal_p (SET_DEST (temp4), temp1)
+	      && (GET_CODE (SET_SRC (temp4)) == REG
+		  || GET_CODE (SET_SRC (temp4)) == SUBREG
+		  || CONSTANT_P (SET_SRC (temp4)))
+	      && (REG_NOTES (temp3) == 0
+		  || ((REG_NOTE_KIND (REG_NOTES (temp3)) == REG_EQUAL
+		       || REG_NOTE_KIND (REG_NOTES (temp3)) == REG_EQUIV)
+		      && XEXP (REG_NOTES (temp3), 1) == 0
+		      && rtx_equal_p (XEXP (REG_NOTES (temp3), 0),
+				      SET_SRC (temp4))))
+	      && (temp = prev_active_insn (temp3)) != 0
+	      && condjump_p (temp) && ! simplejump_p (temp)
+	      /* TEMP must skip over the "x = a;" insn */
+	      && prev_real_insn (JUMP_LABEL (temp)) == insn
+	      && no_labels_between_p (temp, insn))
+	    {
+	      rtx prev_label = JUMP_LABEL (temp);
+	      rtx insert_after = prev_nonnote_insn (temp);
+
+#ifdef HAVE_cc0
+	      /* We cannot insert anything between a set of cc and its use.  */
+	      if (insert_after && GET_RTX_CLASS (GET_CODE (insert_after)) == 'i'
+		  && sets_cc0_p (PATTERN (insert_after)))
+		insert_after = prev_nonnote_insn (insert_after);
+#endif
+	      ++LABEL_NUSES (prev_label);
+
+	      if (insert_after
+		  && no_labels_between_p (insert_after, temp)
+		  && ! reg_referenced_between_p (temp1, insert_after, temp)
+		  && ! reg_set_between_p (temp1, insert_after, temp)
+		  && (GET_CODE (SET_SRC (temp4)) == CONST_INT
+		      || ! reg_set_between_p (SET_SRC (temp4),
+					      insert_after, temp))
+		  && invert_jump (temp, JUMP_LABEL (insn)))
+		{
+		  emit_insn_after_with_line_notes (PATTERN (temp3),
+						   insert_after, temp3);
+		  delete_insn (temp3);
+		  delete_insn (insn);
+		  /* Set NEXT to an insn that we know won't go away.  */
+		  next = temp2;
+		  changed = 1;
+		}
+	      if (prev_label && --LABEL_NUSES (prev_label) == 0)
+		delete_insn (prev_label);
+	      if (changed)
+		continue;
+	    }
+
 #ifndef HAVE_cc0
 	  /* If we have if (...) x = exp;  and branches are expensive,
 	     EXP is a single insn, does not have any side effects, cannot
