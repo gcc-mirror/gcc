@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
