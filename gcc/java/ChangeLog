@@ -1,3 +1,8 @@
+2004-05-21  Mark Wielaard  <mark@klomp.org>
+
+	* gjavah.c (print_stub_or_jni): Mark functions only JNIEXPORT, not
+	extern.
+
 2004-05-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* typeck.c: Remove non-printable character 160.
