@@ -1,3 +1,11 @@
+2004-04-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/15119
+	* g++.dg/other/vararg-1.C: New test.
+	
+	PR c++/4794
+	* g++.dg/eh/cleanup3.C: New test.
+
 2004-04-24  Laurent GUERBY <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: Handle cd2a83c, cd2a91c (target_bit)
