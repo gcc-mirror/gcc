@@ -1,3 +1,7 @@
+2003-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030826-2.c: New test.
+
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/12002
