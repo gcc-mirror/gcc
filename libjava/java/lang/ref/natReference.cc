@@ -1,6 +1,6 @@
 // natReference.cc - Native code for References
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -165,7 +165,8 @@ add_to_hash (java::lang::ref::Reference *the_reference)
   if (3 * hash_count >= 2 * hash_size)
     rehash ();
 
-  jobject referent = the_reference->referent;
+  // Use `copy' here because the `referent' field has been cleared.
+  jobject referent = the_reference->copy;
   object_list *item = find_slot (referent);
   if (item->reference == NULL)
     {
@@ -197,7 +198,7 @@ add_to_hash (java::lang::ref::Reference *the_reference)
       link = &iter->next;
       iter = *link;
     }
-  n->next = (*link) ? (*link)->next : NULL;
+  n->next = *link;
   *link = n;
 }
 
@@ -249,13 +250,7 @@ finalize_referred_to_object (jobject obj)
 	  // If the copy is already NULL then the user must have
 	  // called Reference.clear().
 	  if (ref->copy != NULL)
-	    {
-	      if (w == PHANTOM)
-		ref->referent = ref->copy;
-	      else
-		ref->copy = NULL;
-	      ref->enqueue ();
-	    }
+	    ref->enqueue ();
 
 	  object_list *next = head->next;
 	  _Jv_Free (head);
