@@ -1,3 +1,9 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c-torture/execute/20010114-2.x: XFAIL it.
+	* gcc.c-torture/execute/20010123-1.x: Likewise.
+	* gcc.c-torture/execute/loop-2b.x: Likewise.
+
 2001-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash31.C: XFAIL it.
