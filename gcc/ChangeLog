@@ -1,3 +1,9 @@
+2002-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/6489
+	* tradcpp.c (fixup_newlines): New.
+	(main, finclude): Use it.
+
 2002-05-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/elf64.h (UNIQUE_SECTION): Use mips_unique_section.
