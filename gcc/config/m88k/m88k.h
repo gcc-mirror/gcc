@@ -648,7 +648,6 @@ extern char * reg_names[];
 /* These interfaces that don't apply to the m88000.  */
 /* OVERLAPPING_REGNO_P(REGNO) 0 */
 /* INSN_CLOBBERS_REGNO_P(INSN, REGNO) 0 */
-/* PRESERVE_DEATH_INFO_REGNO_P(REGNO) 0 */
 
 /* True if register is an extended register.  */
 #define XRF_REGNO_P(N) ((N) < FIRST_PSEUDO_REGISTER && (N) >= FIRST_EXTENDED_REGISTER)

@@ -1,3 +1,47 @@
+Thu Oct 15 23:53:29 1998 Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+			 Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (life_analysis_1): Do not clobber regs_ever_live after
+	reload.  Never perform rescans of the insn chain after reload.
+	(propagate_block): Do not delete insn or create new autoinc addressing
+	modes after reload.
+
+	* jump.c (jump_optimize): Unconditionally use the code that was
+	previously conditional on PRESERVE_DEATH_INFO_REGNO_P.
+	* reload1.c (reload): When reloading is finished, delete all
+	REG_DEAD and REG_UNUSED notes.
+	(emit_reload_insns): Delete all code that was conditional on
+	PRESERVE_DEATH_INFO_REGNO_P.
+	(no_longer_dead_regs): Delete variable.
+	(reload_cse_delete_death_notes): Delete function.
+	(reload_cse_no_longer_dead): Delete function.
+	(reload_cse_regs_1): Delete all code to handle deletion of death
+	notes.
+	(reload_cse_noop_set_p): Likewise.
+	(reload_cse_simplify_set): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	(reload_cse_move2add): Likewise.
+	* reorg.c (used_spill_regs): Delete declaration.
+	(max_label_num_after_reload): Delete declaration.
+	(find_dead_or_set_registers): Don't assume that spill regs are
+	dead at a CODE_LABEL.
+	* rtlanal.c (dead_or_set_regno_p): Death notes are always accurate,
+	even after reload.
+	* sched.c (sched_analyze_insn): Likewise.
+	(update_flow_info): Likewise.
+	* haifa-sched.c (sched_analyze_insn): Likewise.
+	(update_flow_info): Likewise.
+	* tm.texi (PRESERVE_DEATH_INFO_REGNO_P): Delete documentation.
+	* toplev.c (max_label_num_after_reload): Delete variable.
+	(rest_of_compilation): Don't set max_label_num_after_reload.
+	Call life_analysis after reload_cse_regs if optimizing.
+	* config/gmicro/gmicro.h: Delete comment referring to
+	PRESERVE_DEATH_INFO_REGNO_P.
+	* config/i386/i386.h: Likewise.
+	* config/m88k/m88k.h: Likewise.
+	* config/m32r/m32r.h (PRESERVE_DEATH_INFO_REGNO_P): Delete definition.
+	* config/sh/sh.h: Likewise.
+
 Thu Oct 15 19:48:41 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* loop.c (strength_reduce): Restore marking bct_p as

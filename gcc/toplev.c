@@ -355,10 +355,6 @@ lang_expand_expr_t lang_expand_expr = 0;
 
 void (*incomplete_decl_finalize_hook) PROTO((tree)) = 0;
 
-/* Highest label number used at the end of reload.  */
-
-int max_label_num_after_reload;
-
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -3756,10 +3752,6 @@ rest_of_compilation (decl)
   if (global_reg_dump)
     open_dump_file (".greg", decl_printable_name (decl, 2));
 
-  /* Save the last label number used so far, so reorg can tell
-     when it's safe to kill spill regs.  */
-  max_label_num_after_reload = max_label_num ();
-
   /* Unless we did stupid register allocation,
      allocate remaining pseudo-regs, then do the reload pass
      fixing up any insns that are invalid.  */
@@ -3781,6 +3773,15 @@ rest_of_compilation (decl)
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
     reload_cse_regs (insns);
+
+  /* Re-create the death notes which were deleted during reload.  */
+  if (optimize)
+    TIMEVAR
+      (flow_time,
+       {
+	 find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	 life_analysis (insns, max_reg_num (), rtl_dump_file);
+       });
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between

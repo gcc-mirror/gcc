@@ -241,7 +241,6 @@ extern int target_flags;
 /* #define OVERLAPPING_REGNO_P(REGNO) */
 
 /* #define INSN_CLOBBERS_REGNO_P(INSN,REGNO)  */
-/* #define PRESERVE_DEATH_INFO_REGNO_P(REGNO)  */
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.

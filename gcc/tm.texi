@@ -1684,24 +1684,6 @@ If this macro is not defined, it means that no insn clobbers registers
 mysteriously.  This is the usual situation; all else being equal,
 it is best for the RTL expression to show all the activity.
 
-@cindex death notes
-@findex PRESERVE_DEATH_INFO_REGNO_P
-@item PRESERVE_DEATH_INFO_REGNO_P (@var{regno})
-If defined, this is a C expression whose value is nonzero if correct
-@code{REG_DEAD} notes are needed for hard register number @var{regno}
-after reload.
-
-You would arrange to preserve death info for a register when some of the
-code in the machine description which is executed to write the assembler
-code looks at the death notes.  This is necessary only when the actual
-hardware feature which GNU CC thinks of as a register is not actually a
-register of the usual sort.  (It might, for example, be a hardware
-stack.)
-
-It is also useful for peepholes and linker relaxation.
-
-If this macro is not defined, it means that no death notes need to be
-preserved, and some may even be incorrect.  This is the usual situation.
 @end table
 
 @node Register Classes
