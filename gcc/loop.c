@@ -1,6 +1,6 @@
 /* Perform various loop optimizations, including strength reduction.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -540,6 +540,9 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
   end_alias_analysis ();
 
   /* Clean up.  */
+  for (i = 0; i < (int) loops->num; i++)
+    free (loops_info[i].mems);
+  
   free (uid_luid);
   free (uid_loop);
   free (loops_info);

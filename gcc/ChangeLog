@@ -1,5 +1,7 @@
 2004-01-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* loop.c (loop_optimize): Free all loops_info's mems.
+
 	* c-typeck.c (finish_init): Free spelling_base before 
 	setting it again.
 	
