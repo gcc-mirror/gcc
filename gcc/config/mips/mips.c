@@ -352,6 +352,7 @@ static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
 static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
 				tree, bool);
+static bool mips_scalar_mode_supported_p (enum machine_mode);
 static bool mips_vector_mode_supported_p (enum machine_mode);
 static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
@@ -799,6 +800,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P mips_scalar_mode_supported_p
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS mips_init_builtins
@@ -7075,6 +7079,28 @@ mips_valid_pointer_mode (enum machine_mode mode)
 {
   return (mode == SImode || (TARGET_64BIT && mode == DImode));
 }
+
+/* Define this so that we can deal with a testcase like:
+
+   char foo __attribute__ ((mode (SI)));
+
+   then compiled with -mabi=64 and -mint64. We have no
+   32-bit type at that point and so the default case
+   always fails.  Instead of special casing everything
+   it's easier to accept SImode in this function and
+   then punt to the default which will work for all
+   of the cases where we deal with TARGET_64BIT, etc.  */
+static bool
+mips_scalar_mode_supported_p (enum machine_mode mode)
+{
+  /* We can always handle SImode.  */
+  if (mode == SImode)
+    return true;
+  else
+    return default_scalar_mode_supported_p (mode);
+
+}
+
 
 /* Target hook for vector_mode_supported_p.  */
 static bool
