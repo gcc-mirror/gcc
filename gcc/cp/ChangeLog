@@ -1,3 +1,8 @@
+2003-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8385
+	* semantics.c (finish_typeof): Refine type-dependency check.
+
 2003-05-13  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_modify_expr): Don't always stabilize the lhs and

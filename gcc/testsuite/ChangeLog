@@ -1,3 +1,8 @@
+2003-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8385
+	* g++.dg/ext/typeof5.C: New test.
+
 2003-05-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/builtins/string-asm-1.c: Take
