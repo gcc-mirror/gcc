@@ -15758,10 +15758,8 @@ if test "${enable_version_specific_runtime_libs+set}" = set; then
 # is selected.
 gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print }'`
 gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
-#gcc_date=`grep version_string ${srcdir}/../gcc/version.c | awk '{print }'`
-#gcc_version=$gcc_num-$gcc_date
 gcc_version=$gcc_num
-gxx_include_dir=$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++
+gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++'
 
 
 
@@ -15780,7 +15778,7 @@ fi
 echo "$ac_t""$version_specific_libs" 1>&6
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:15784: checking for install location" >&5
+echo "configure:15782: checking for install location" >&5
 if test x"$version_specific_libs" = x"no" \
    && test x"$gxx_include_dir"=x"no"; then
   gxx_include_dir=${prefix}/include/g++-${libstdcxx_interface}

@@ -1539,10 +1539,8 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 changequote(,)dnl
 gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $6}'`
 gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
-#gcc_date=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $7}'`
-#gcc_version=$gcc_num-$gcc_date
 gcc_version=$gcc_num
-gxx_include_dir=$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++
+gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++'
 changequote([,])dnl
 AC_SUBST(gcc_version)
 AM_CONDITIONAL(VERSION_SPECIFIC_LIBS, test x"$version_specific_libs" = x"yes")
