@@ -51,7 +51,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
 {
   public static class MapMode
   {
-    public int m;
+    int m;
 
     public static MapMode READ_ONLY  = new MapMode(0);
     public static MapMode READ_WRITE = new MapMode(1);
