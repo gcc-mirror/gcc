@@ -1,3 +1,9 @@
+Fri Nov 21 12:56:24 1997  Manfred Hollstein <manfred@s-direktnet.de>
+
+	* Makefile.in (bigstmp-complex): Name changed to bigstmp-complx to
+	cope with filesystem not capable to handle names longer than
+	14 characters.
+
 Sun Nov 16 22:41:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (SHLIB): Build with CC instead of CXX.
