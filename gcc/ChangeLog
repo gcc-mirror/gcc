@@ -1,3 +1,11 @@
+Tue Nov  4 12:30:28 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* acconfig.h (HAVE_INTTYPES_H): Undef.
+	* configure.in (inttypes.h): Check for conflicts between sys/types.h
+	and inttypes.h, and verify that intmax_t is defined.
+	* config/mips/x-iris (CC, OPT, OLDCC): Comment out.
+	* config/mips/x-iris3: Likewise.
+
 Tue Nov  4 16:07:15 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* alias.c (find_base_value): When copying arguments, return the

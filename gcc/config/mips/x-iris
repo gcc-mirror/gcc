@@ -9,9 +9,11 @@
 # can use -O2.  Down with fixed size tables!
 # The -cckr is to turn off strict ANSI checking.
 
-CC		= $(OLDCC)
-OPT		= -O1
-OLDCC		= cc -Wf,-XNh2000,-XNg1500 -Olimit 3000 -cckr $(OPT)
+# These definitions are commented out because they cause trouble with
+# autoconf.  It is believed that they aren't needed anymore.
+#CC		= $(OLDCC)
+#OPT		= -O1
+#OLDCC		= cc -Wf,-XNh2000,-XNg1500 -Olimit 3000 -cckr $(OPT)
 
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.

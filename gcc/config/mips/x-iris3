@@ -12,9 +12,11 @@
 # the -cckr option, so, lets try without it for all versions of Irix 3.x.
 # The -cckr is to turn off strict ANSI checking.
 
-CC		= $(OLDCC)
-OPT		= -O1
-OLDCC		= cc -Wf,-XNh2000,-XNg1500 -Olimit 3000 $(OPT)
+# These definitions are commented out because they cause trouble with
+# autoconf.  It is believed that they aren't needed anymore.
+#CC		= $(OLDCC)
+#OPT		= -O1
+#OLDCC		= cc -Wf,-XNh2000,-XNg1500 -Olimit 3000 $(OPT)
 
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.
