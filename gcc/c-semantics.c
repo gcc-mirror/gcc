@@ -592,7 +592,7 @@ genrtl_break_stmt (void)
 {
   emit_line_note (input_location);
   if ( ! expand_exit_something ())
-    error ("break statement not within loop or switch");
+    abort ();
 }
 
 /* Build a continue statement node and return it.  */
@@ -610,7 +610,7 @@ genrtl_continue_stmt (void)
 {
   emit_line_note (input_location);
   if (! expand_continue_loop (0))
-    error ("continue statement not within a loop");
+    abort ();
 }
 
 /* Generate the RTL for T, which is a SCOPE_STMT.  */

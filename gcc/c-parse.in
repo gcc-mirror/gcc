@@ -257,6 +257,9 @@ do {									\
 static int stmt_count;
 static int compstmt_count;
 
+extern int c_in_iteration_stmt;
+extern int c_in_case_stmt;
+
 /* Input location of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
 static location_t if_stmt_locus;
@@ -2053,12 +2056,12 @@ pushlevel:  /* empty */
 	;
 
 poplevel:  /* empty */
-                { 
+                {
 @@ifobjc
 		  if (c_dialect_objc ())
 		    objc_clear_super_receiver ();
 @@end_ifobjc
-		  $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); 
+		  $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
 		}
         ;
 
@@ -2202,6 +2205,7 @@ do_stmt_start:
 	  DO
 		{ stmt_count++;
 		  compstmt_count++;
+		  c_in_iteration_stmt++;
 		  $<ttype>$
 		    = add_stmt (build_stmt (DO_STMT, NULL_TREE,
 					    NULL_TREE));
@@ -2212,7 +2216,8 @@ do_stmt_start:
 		  DO_COND ($<ttype>$) = error_mark_node; }
 	  c99_block_lineno_labeled_stmt WHILE
 		{ $$ = $<ttype>2;
-		  RECHAIN_STMTS ($$, DO_BODY ($$)); }
+		  RECHAIN_STMTS ($$, DO_BODY ($$));
+		  c_in_iteration_stmt--; }
 	;
 
 /* The forced readahead in here is because we might be at the end of a
@@ -2295,12 +2300,14 @@ select_or_iter_stmt:
                 { stmt_count++;
 		  $<ttype>$ = c_begin_while_stmt (); }
 	  '(' expr ')'
-                { $4 = c_common_truthvalue_conversion ($4);
+                { c_in_iteration_stmt++;
+		  $4 = c_common_truthvalue_conversion ($4);
 		  c_finish_while_stmt_cond
 		    (c_common_truthvalue_conversion ($4), $<ttype>2);
 		  $<ttype>$ = add_stmt ($<ttype>2); }
 	  c99_block_lineno_labeled_stmt
-		{ RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
+                { c_in_iteration_stmt--;
+		  RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
 	| do_stmt_start
 	  '(' expr ')' ';'
                 { DO_COND ($1) = c_common_truthvalue_conversion ($3); }
@@ -2318,14 +2325,18 @@ select_or_iter_stmt:
 		    FOR_COND ($<ttype>2)
 		      = c_common_truthvalue_conversion ($6); }
 	  xexpr ')'
-		{ FOR_EXPR ($<ttype>2) = $9; }
+                { c_in_iteration_stmt++;
+		  FOR_EXPR ($<ttype>2) = $9; }
 	  c99_block_lineno_labeled_stmt
-                { RECHAIN_STMTS ($<ttype>2, FOR_BODY ($<ttype>2)); }
+                { RECHAIN_STMTS ($<ttype>2, FOR_BODY ($<ttype>2));
+		  c_in_iteration_stmt--;}
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
-		  $<ttype>$ = c_start_case ($3); }
+		  $<ttype>$ = c_start_case ($3);
+		  c_in_case_stmt++; }
 	  c99_block_lineno_labeled_stmt
-                { c_finish_case (); }
+                { c_finish_case ();
+		  c_in_case_stmt--; }
 	;
 
 for_init_stmt:
@@ -2348,9 +2359,21 @@ stmt:
 		  $$ = NULL_TREE; }
 	| BREAK ';'
 	        { stmt_count++;
+		if (!(c_in_iteration_stmt || c_in_case_stmt))
+		  {
+		    error ("break statement not within loop or switch");
+		    $$ = NULL_TREE;
+		  }
+		else
 		  $$ = add_stmt (build_break_stmt ()); }
 	| CONTINUE ';'
                 { stmt_count++;
+		if (!c_in_iteration_stmt)
+		  {
+		    error ("continue statement not within a loop");
+		    $$ = NULL_TREE;
+		  }
+		else
 		  $$ = add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
                 { stmt_count++;
@@ -2397,18 +2420,18 @@ stmt:
 		{ $$ = NULL_TREE; }
 @@ifobjc
 	| AT_THROW expr ';'
-		{ stmt_count++; 
-		  $$ = objc_build_throw_stmt ($2); 
+		{ stmt_count++;
+		  $$ = objc_build_throw_stmt ($2);
 		}
 	| AT_THROW ';'
-		{ stmt_count++; 
-		  $$ = objc_build_throw_stmt (NULL_TREE); 
+		{ stmt_count++;
+		  $$ = objc_build_throw_stmt (NULL_TREE);
 		}
-	| objc_try_catch_stmt 
+	| objc_try_catch_stmt
 		{ objc_build_finally_prologue (); }
 	  objc_finally_block
 		{ $$ = objc_build_try_catch_finally_stmt ($1, $3); }
-	| AT_SYNCHRONIZED '(' expr ')' 
+	| AT_SYNCHRONIZED '(' expr ')'
 		{ objc_build_synchronized_prologue ($3); }
 	  compstmt
 		{ $$ = objc_build_synchronized_epilogue (); }
@@ -2425,18 +2448,18 @@ objc_try_catch_stmt:
 
 
 objc_try_stmt:
-	  AT_TRY 
+	  AT_TRY
 		{ objc_build_try_prologue (); }
-	  compstmt 
+	  compstmt
 	;
-	
+
 objc_catch_list:
 	  objc_catch_list objc_catch_block
 	| objc_catch_block
 	;
 
 objc_catch_block:
-	  AT_CATCH '(' parm ')' 
+	  AT_CATCH '(' parm ')'
 		{ objc_build_catch_stmt ($3); }
 	  compstmt
 		{ stmt_count++; }
@@ -3689,7 +3712,7 @@ _yylex (void)
     case CPP_STRING:
     case CPP_WSTRING:
       return STRING;
-      
+
     case CPP_OBJC_STRING:
       return OBJC_STRING;
 
