@@ -7626,7 +7626,6 @@ expand_expr (exp, target, tmode, modifier)
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
-    case UNNE_EXPR:
       preexpand_calls (exp);
       temp = do_store_flag (exp, target, tmode != VOIDmode ? tmode : mode, 0);
       if (temp != 0)
@@ -9556,9 +9555,7 @@ do_jump (exp, if_false_label, if_true_label)
 	rcode1 = UNEQ;
 	tcode2 = EQ_EXPR;
 	goto unordered_bcc;
-      case UNNE_EXPR:
-	rcode1 = UNNE;
-	tcode2 = NE_EXPR;
+
       unordered_bcc:
         mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 	if (can_compare_p (rcode1, mode, ccp_jump))
@@ -10164,9 +10161,6 @@ do_store_flag (exp, target, mode, only_cheap)
       break;
     case UNEQ_EXPR:
       code = UNEQ;
-      break;
-    case UNNE_EXPR:
-      code = UNNE;
       break;
 
     default:

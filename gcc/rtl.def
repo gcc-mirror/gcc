@@ -742,12 +742,14 @@ DEF_RTL_EXPR(UNORDERED, "unordered", "ee", '<')
 DEF_RTL_EXPR(ORDERED, "ordered", "ee", '<')
 
 /* These are equivalent to unordered or ... */
-DEF_RTL_EXPR(UNNE, "unne", "ee", '<')
 DEF_RTL_EXPR(UNEQ, "uneq", "ee", '<')
 DEF_RTL_EXPR(UNGE, "unge", "ee", '<')
 DEF_RTL_EXPR(UNGT, "ungt", "ee", '<')
 DEF_RTL_EXPR(UNLE, "unle", "ee", '<')
 DEF_RTL_EXPR(UNLT, "unlt", "ee", '<')
+
+/* This is an ordered NE, ie !UNEQ, ie false for NaN.  */
+DEF_RTL_EXPR(LTGT, "ltgt", "ee", '<')
 
 /* Represents the result of sign-extending the sole operand.
    The machine modes of the operand and of the SIGN_EXTEND expression

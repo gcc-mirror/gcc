@@ -1,3 +1,7 @@
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault): Remove UNNE_EXPR.
+
 2000-01-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (vcall_offset_in_vtable_p): New macro.

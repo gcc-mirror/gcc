@@ -3473,8 +3473,64 @@ reverse_condition (code)
     case UNGT:
     case UNGE:
     case UNEQ:
-    case UNNE:
+    case LTGT:
       return UNKNOWN;
+
+    default:
+      abort ();
+    }
+}
+
+/* Similar, but we're allowed to generate unordered comparisons, which
+   makes it safe for IEEE floating-point.  Of course, we have to recognize
+   that the target will support them too...  */
+
+enum rtx_code
+reverse_condition_maybe_unordered (code)
+     enum rtx_code code;
+{
+  /* Non-IEEE formats don't have unordered conditions.  */
+  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+    return reverse_condition (code);
+
+  switch (code)
+    {
+    case EQ:
+      return NE;
+    case NE:
+      return EQ;
+    case GT:
+      return UNLE;
+    case GE:
+      return UNLT;
+    case LT:
+      return UNGE;
+    case LE:
+      return UNGT;
+    case LTGT:
+      return UNEQ;
+    case GTU:
+      return LEU;
+    case GEU:
+      return LTU;
+    case LTU:
+      return GEU;
+    case LEU:
+      return GTU;
+    case UNORDERED:
+      return ORDERED;
+    case ORDERED:
+      return UNORDERED;
+    case UNLT:
+      return GE;
+    case UNLE:
+      return GT;
+    case UNGT:
+      return LE;
+    case UNGE:
+      return LT;
+    case UNEQ:
+      return LTGT;
 
     default:
       abort ();
@@ -3495,7 +3551,7 @@ swap_condition (code)
     case UNORDERED:
     case ORDERED:
     case UNEQ:
-    case UNNE:
+    case LTGT:
       return code;
 
     case GT:
@@ -3514,7 +3570,6 @@ swap_condition (code)
       return GTU;
     case LEU:
       return GEU;
-
     case UNLT:
       return UNGT;
     case UNLE:
@@ -3549,13 +3604,10 @@ unsigned_condition (code)
 
     case GT:
       return GTU;
-
     case GE:
       return GEU;
-
     case LT:
       return LTU;
-
     case LE:
       return LEU;
 
@@ -3582,13 +3634,10 @@ signed_condition (code)
 
     case GTU:
       return GT;
-
     case GEU:
       return GE;
-
     case LTU:
       return LT;
-
     case LEU:
       return LE;
 
@@ -3610,17 +3659,29 @@ comparison_dominates_p (code1, code2)
   switch (code1)
     {
     case EQ:
-      if (code2 == LE || code2 == LEU || code2 == GE || code2 == GEU)
+      if (code2 == LE || code2 == LEU || code2 == GE || code2 == GEU
+	  || code2 == ORDERED)
 	return 1;
       break;
 
     case LT:
-      if (code2 == LE || code2 == NE)
+      if (code2 == LE || code2 == NE || code2 == ORDERED)
 	return 1;
       break;
 
     case GT:
-      if (code2 == GE || code2 == NE)
+      if (code2 == GE || code2 == NE || code2 == ORDERED)
+	return 1;
+      break;
+
+    case GE:
+    case LE:
+      if (code2 == ORDERED)
+	return 1;
+      break;
+
+    case LTGT:
+      if (code2 == NE || code2 == ORDERED)
 	return 1;
       break;
 
@@ -3631,6 +3692,11 @@ comparison_dominates_p (code1, code2)
 
     case GTU:
       if (code2 == GEU || code2 == NE)
+	return 1;
+      break;
+
+    case UNORDERED:
+      if (code2 == NE)
 	return 1;
       break;
       
