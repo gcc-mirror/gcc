@@ -1,3 +1,8 @@
+2005-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (libgcj Runtime Properties): Default library_control
+	to 'cache'.
+
 2005-02-02  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/15543

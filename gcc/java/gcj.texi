@@ -2469,11 +2469,11 @@ the runtime is unable to do it through @code{dladdr}.
 
 @item gnu.gcj.runtime.VMClassLoader.library_control
 This controls how shared libraries are automatically loaded by the
-built-in class loader.  By default, or if this property is set to
-@samp{full}, a full search is done for each requested class.  If this
-property is set to @samp{cache}, then any failed lookups are cached
-and not tried again.  If this property is set to @samp{never}, then
-lookups are never done.  For more information, @xref{Extensions}.
+built-in class loader.  If this property is set to @samp{full}, a full
+search is done for each requested class.  If this property is set to
+@samp{cache} (the default), then any failed lookups are cached and not
+tried again.  If this property is set to @samp{never}, then lookups
+are never done.  For more information, @xref{Extensions}.
 
 @item gnu.gcj.jit.compiler
 @c FIXME we should probably have a whole node on this...
