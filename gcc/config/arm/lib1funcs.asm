@@ -334,7 +334,7 @@ LSYM(Lover4):
 	blo	LSYM(Lover1)
 	sub	dividend, dividend, divisor
 	orr	result, result, curbit
-LSM(Lover1):
+LSYM(Lover1):
 	lsr	work, divisor, #1
 	cmp	dividend, work
 	blo	LSYM(Lover2)

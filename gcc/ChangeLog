@@ -1,3 +1,7 @@
+2003-05-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/lib1funcs.asm: Fix typo: LSM instead of LSYM.
+
 2003-05-16  Wolfgang Bangerth <bangerth@dealii.org>
 
 	* doc/bugreport.texi: Remove most of the of the preface of the
