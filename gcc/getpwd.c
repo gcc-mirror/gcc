@@ -91,7 +91,8 @@ getpwd ()
 {
   static char *pwd = 0;
 
-  if (!pwd) pwd = getcwd (xmalloc (MAXPATHLEN+1), MAXPATHLEN+1);
+  if (!pwd)
+    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1, 0);
   return pwd;
 }
 
