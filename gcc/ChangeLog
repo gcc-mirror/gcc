@@ -1,3 +1,7 @@
+2004-11-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vectorizer.c: Fix a comment typo.
+
 2004-11-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* genconfig.c (walk_insn_part): Look at match_dups inside a label_ref.
