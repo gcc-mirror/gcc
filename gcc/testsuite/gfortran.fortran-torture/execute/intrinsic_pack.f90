@@ -11,8 +11,7 @@ program intrinsic_pack
    b = pack (a(2:3, 2:3), a(2:3, 2:3) .ne. 0, (/1, 2, 3, 4, 5, 6/));
    if (any (b .ne. (/9, 7, 3, 4, 5, 6/))) call abort
 
-! this is waiting for PR 17756 to be fixed
-!   call tests_with_temp()
+   call tests_with_temp()
 contains
   subroutine tests_with_temp
     ! A few tests which involve a temporary
