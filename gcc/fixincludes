@@ -635,6 +635,48 @@ EOF
   fi
 fi
 
+# parameters not const on DECstation Ultrix V4.0.
+file=stdio.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, non-const arg
+  sed -e 's@perror( char \*__s );@perror( const char *__s );@' \
+      -e 's@fputs( char \*__s,@fputs( const char *__s,@' \
+      -e 's@fopen( char \*__filename, char \*__type );@fopen( const char *__filename, const char *__type );@' \
+      -e 's@fwrite( void \*__ptr,@fwrite( const void *__ptr,@' \
+      -e 's@fscanf( FILE \*__stream, char \*__format,@fscanf( FILE *__stream, const char *__format,@' \
+      -e 's@scanf( char \*__format,@scanf( const char *__format,@' \
+      -e 's@sscanf( char \*__s, char \*__format,@sscanf( const char *__s, const char *__format,@' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# parameter to atof not const on DECstation Ultrix V4.0.
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, non-const arg
+  sed -e 's@atof( char \*__nptr );@atof( const char *__nptr );@' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
