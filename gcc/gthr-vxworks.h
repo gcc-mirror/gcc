@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_vxworks_h
-#define __gthr_vxworks_h
+#ifndef GCC_GTHR_VXWORKS_H
+#define GCC_GTHR_VXWORKS_H
 
 #ifdef _LIBOBJC
 
@@ -307,4 +307,4 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 
 #endif /* _LIBOBJC */
 
-#endif /* not __gthr_vxworks_h */
+#endif /* ! GCC_GTHR_VXWORKS_H */

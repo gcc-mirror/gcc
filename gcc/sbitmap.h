@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _SBITMAP_H
-#define _SBITMAP_H 1
+#ifndef GCC_SBITMAP_H
+#define GCC_SBITMAP_H 
 
 /* It's not clear yet whether using bitmap.[ch] will be a win.
    It should be straightforward to convert so for now we keep things simple
@@ -136,4 +136,4 @@ extern void sbitmap_union_of_succs	   PARAMS ((sbitmap, sbitmap *, int));
 extern void sbitmap_union_of_preds	   PARAMS ((sbitmap, sbitmap *, int));
 
 extern void debug_sbitmap		   PARAMS ((sbitmap));
-#endif /* _SBITMAP_H */
+#endif /* ! GCC_SBITMAP_H */

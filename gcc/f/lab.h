@@ -29,8 +29,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_lab
-#define _H_f_lab
+#ifndef GCC_F_LAB_H
+#define GCC_F_LAB_H
 
 /* Simple definitions and enumerations. */
 
@@ -151,4 +151,4 @@ ffelab ffelab_new (ffelabValue v);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_LAB_H */

@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 /* For complex reasons, cpp_reader is also typedefed in c-pragma.h.  */
-#ifndef _C_PRAGMA_H
+#ifndef GCC_C_PRAGMA_H
 typedef struct cpp_reader cpp_reader;
 #endif
 typedef struct cpp_buffer cpp_buffer;
@@ -631,4 +631,5 @@ extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 #ifdef __cplusplus
 }
 #endif
-#endif /* GCC_CPPLIB_H */
+
+#endif /* ! GCC_CPPLIB_H */

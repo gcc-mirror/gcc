@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_stp
-#define _H_f_stp
+#ifndef GCC_F_STP_H
+#define GCC_F_STP_H
 
 /* Simple definitions and enumerations. */
 
@@ -505,4 +505,4 @@ extern union _ffestp_fileu_ ffestp_file;
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STP_H */

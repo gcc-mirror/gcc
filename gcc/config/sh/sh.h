@@ -2464,4 +2464,4 @@ do {									\
 1:	.long	" USER_LABEL_PREFIX #func " - 0b\n\
 2:")
 
-#endif /* sh.h */
+#endif /* ! GCC_SH_H */

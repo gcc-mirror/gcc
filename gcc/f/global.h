@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_global
-#define _H_f_global
+#ifndef GCC_F_GLOBAL_H
+#define GCC_F_GLOBAL_H
 
 /* Simple definitions and enumerations. */
 
@@ -197,4 +197,5 @@ void ffeglobal_terminate_1 (void);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_GLOBAL_H */
+ 

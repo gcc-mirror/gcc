@@ -25,8 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #include "splay-tree.h"
 #include "varray.h"
 
-#ifndef _CP_TREE_H
-#define _CP_TREE_H
+#ifndef GCC_CP_TREE_H
+#define GCC_CP_TREE_H
 
 #include "c-common.h"
 
@@ -4533,4 +4533,4 @@ extern int cp_dump_tree                         PARAMS ((dump_info_p, tree));
 
 /* -- end of C++ */
 
-#endif /* not _CP_TREE_H */
+#endif /* ! GCC_CP_TREE_H */

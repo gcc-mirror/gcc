@@ -6,8 +6,8 @@
    Provide definitions for macros which depend on HOST_BITS_PER_INT
    and HOST_BITS_PER_LONG. */
 
-#ifndef __HWINT_H__
-#define __HWINT_H__
+#ifndef GCC_HWINT_H
+#define GCC_HWINT_H
 
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR  CHAR_BIT
@@ -146,4 +146,4 @@
 # endif /* long long wider than long */
 #endif /* ! HOST_WIDEST_INT */
 
-#endif /* __HWINT_H__ */
+#endif /* ! GCC_HWINT_H */

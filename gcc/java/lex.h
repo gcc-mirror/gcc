@@ -23,8 +23,8 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-#ifndef JV_LEX_H
-#define JV_LEX_H
+#ifndef GCC_JAVA_LEX_H
+#define GCC_JAVA_LEX_H
 
 #include <setjmp.h>		/* set_float_handler argument uses it */
 
@@ -288,4 +288,4 @@ extern void set_float_handler PARAMS ((jmp_buf));
 #define JAVA_CHAR_ERROR -2
 #define UEOF -1
 
-#endif
+#endif /* ! GCC_JAVA_LEX_H */

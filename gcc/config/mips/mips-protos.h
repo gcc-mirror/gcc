@@ -23,8 +23,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __MIPS_PROTOS_H__
-#define __MIPS_PROTOS_H__
+#ifndef GCC_MIPS_PROTOS_H
+#define GCC_MIPS_PROTOS_H
 
 extern HOST_WIDE_INT	compute_frame_size PARAMS ((HOST_WIDE_INT));
 extern void		function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -157,4 +157,4 @@ extern int		m16_usym8_4 PARAMS ((rtx, enum machine_mode));
 extern int		m16_usym5_4 PARAMS ((rtx, enum machine_mode));
 #endif /* RTX_CODE */
 
-#endif /* __MIPS_PROTOS_H__ */
+#endif /* ! GCC_MIPS_PROTOS_H */

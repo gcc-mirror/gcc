@@ -19,14 +19,14 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _VARRAY_H_
-#define _VARRAY_H_
+#ifndef GCC_VARRAY_H
+#define GCC_VARRAY_H
 
 #ifndef HOST_WIDE_INT
 #include "machmode.h"
 #endif
 
-#ifndef __GCC_SYSTEM_H__
+#ifndef GCC_SYSTEM_H
 #include "system.h"
 #endif
 
@@ -271,4 +271,4 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 #define VARRAY_TOP_CONST_EQUIV(VA)	VARRAY_TOP (VA, const_equiv)
 #define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, bb)
 
-#endif /* _VARRAY_H_ */
+#endif /* ! GCC_VARRAY_H */

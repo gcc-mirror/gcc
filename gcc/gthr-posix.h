@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_posix_h
-#define __gthr_posix_h
+#ifndef GCC_GTHR_POSIX_H
+#define GCC_GTHR_POSIX_H
 
 /* POSIX threads specific definitions.
    Easy, since the interface is just one-to-one mapping. */
@@ -500,4 +500,4 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 
 #endif /* _LIBOBJC */
 
-#endif /* not __gthr_posix_h */
+#endif /* ! GCC_GTHR_POSIX_H */

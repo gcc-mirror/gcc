@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _BASIC_BLOCK_H
-#define _BASIC_BLOCK_H 1
+#ifndef GCC_BASIC_BLOCK_H
+#define GCC_BASIC_BLOCK_H 
 
 #include "bitmap.h"
 #include "sbitmap.h"
@@ -578,4 +578,4 @@ enum cdi_direction
 extern void calculate_dominance_info	PARAMS ((int *, sbitmap *,
 						 enum cdi_direction));
 
-#endif /* _BASIC_BLOCK_H */
+#endif /* GCC_BASIC_BLOCK_H */

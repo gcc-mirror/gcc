@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _C_PRAGMA_H
-#define _C_PRAGMA_H
+#ifndef GCC_C_PRAGMA_H
+#define GCC_C_PRAGMA_H
 
 #ifdef HANDLE_SYSV_PRAGMA
 /* Support #pragma weak iff ASM_WEAKEN_LABEL and ASM_OUTPUT_DEF are
@@ -70,4 +70,4 @@ extern void cpp_register_pragma PARAMS ((cpp_reader *,
 extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
 #endif
 
-#endif /* _C_PRAGMA_H */
+#endif /* GCC_C_PRAGMA_H */

@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#ifndef _TRADCPP_H_
-#define _TRADCPP_H_
+#ifndef GCC_TRADCPP_H
+#define GCC_TRADCPP_H
 
 extern void error PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
 extern void warning PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
@@ -41,4 +41,4 @@ extern int test_assertion PARAMS ((unsigned char **));
 #define is_space(x)	ISSPACE(x)
 #define is_nvspace(x)	(IS_NVSPACE(x) && x != '\0')
 
-#endif /* ! _TRADCPP_H_ */
+#endif /* ! GCC_TRADCPP_H */

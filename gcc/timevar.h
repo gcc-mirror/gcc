@@ -88,4 +88,4 @@ extern void timevar_print PARAMS ((FILE *));
 extern long get_run_time PARAMS ((void));
 extern void print_time PARAMS ((const char *, long));
 
-#endif
+#endif /* ! GCC_TIMEVAR_H */

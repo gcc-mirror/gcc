@@ -23,8 +23,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com>, February 1996. */
 
-#ifndef JCF_H
-#define JCF_H
+#ifndef GCC_JCF_H
+#define GCC_JCF_H
 #include "javaop.h"
 #ifndef DEFUN
 #if defined (__STDC__)
@@ -278,4 +278,4 @@ extern int jcf_path_is_zipfile PARAMS ((void *));
 extern int jcf_path_is_system PARAMS ((void *));
 extern int jcf_path_max_len PARAMS ((void));
 
-#endif
+#endif /* ! GCC_JCF_H */

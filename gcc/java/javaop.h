@@ -23,8 +23,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com>, February 1996. */
 
-#ifndef JAVAOP_H
-#define JAVAOP_H
+#ifndef GCC_JAVAOP_H
+#define GCC_JAVAOP_H
 
 typedef	unsigned char	uint8;
 #ifndef int16
@@ -155,4 +155,4 @@ WORDS_TO_DOUBLE(jword hi, jword lo)
    : ((PREFIX_CHAR) & 0x10) == 0 ? 3 \
    : ((PREFIX_CHAR) & 0x08) == 0 ? 4 : 5)
 
-#endif /* !JAVAOP_H */
+#endif /* ! GCC_JAVAOP_H */

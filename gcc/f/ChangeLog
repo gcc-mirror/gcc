@@ -1,3 +1,13 @@
+2001-05-25  Sam TH  <sam@uchicago.edu>
+
+	* bad.h: Fix header include guards.
+	* bit.h bld.h com.h data.h equiv.h expr.h global.h
+	implic.h info.h intrin.h lab.h lex.h malloc.h name.h
+	proj.h src.h st.h sta.h stb.h stc.h std.h ste.h
+	storag.h stp.h str.h sts.h stt.h stu.h stv.h stw.h
+	symbol.h target.h top.h type.h version.h 
+	where.h: Likewise.
+
 2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.texi: Update last-changed date.

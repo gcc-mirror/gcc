@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_TSYSTEM_H__
-#define __GCC_TSYSTEM_H__
+#ifndef GCC_TSYSTEM_H
+#define GCC_TSYSTEM_H
 
 /* System headers (e.g. stdio.h, stdlib.h, unistd.h) sometimes
    indirectly include getopt.h.  Our -I flags will cause gcc's gnu
@@ -94,4 +94,4 @@ extern int errno;
 #define NULL 0
 #endif
 
-#endif /* __GCC_TSYSTEM_H__ */
+#endif /* ! GCC_TSYSTEM_H */

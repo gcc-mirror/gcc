@@ -111,4 +111,4 @@ extern void i960_pr_align PARAMS ((cpp_reader *));
 extern void i960_pr_noalign PARAMS ((cpp_reader *));
 #endif
 
-#endif /* i960-protos.h */
+#endif /* ! GCC_I960_PROTOS_H  */

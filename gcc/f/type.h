@@ -19,8 +19,8 @@ along with GNU Fortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#ifndef _H_f_type
-#define _H_f_type
+#ifndef GCC_F_TYPE_H
+#define GCC_F_TYPE_H
 
 typedef struct _ffetype_ *ffetype;
 typedef struct _ffetype_indexes_ *ffetype_indexes_;
@@ -61,4 +61,4 @@ void ffetype_set_star (ffetype base_type, int star, ffetype type);
 #define ffetype_terminate_3()
 #define ffetype_terminate_4()
 
-#endif
+#endif /* ! GCC_F_TYPE_H */

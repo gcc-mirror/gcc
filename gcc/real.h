@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef REAL_H_INCLUDED
-#define REAL_H_INCLUDED
+#ifndef GCC_REAL_H
+#define GCC_REAL_H
 
 /* Define codes for all the float formats that we know of.  */
 #define UNKNOWN_FLOAT_FORMAT 0
@@ -481,4 +481,4 @@ extern int target_negative	PARAMS ((REAL_VALUE_TYPE));
 extern void debug_real		PARAMS ((REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE ereal_atof PARAMS ((const char *, enum machine_mode));
 
-#endif /* Not REAL_H_INCLUDED */
+#endif /* ! GCC_REAL_H */

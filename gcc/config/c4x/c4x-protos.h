@@ -313,4 +313,4 @@ extern void c4x_pr_ignored		PARAMS ((cpp_reader *));
 extern void c4x_init_pragma		PARAMS ((int (*) (tree *)));
 #endif
 
-#endif
+#endif /* ! GCC_C4X_PROTOS_H */

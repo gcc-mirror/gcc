@@ -18,11 +18,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GRAPH_H__
-#define __GRAPH_H__
+#ifndef GCC_GRAPH_H
+#define GCC_GRAPH_H
 
 extern void print_rtl_graph_with_bb PARAMS ((const char *, const char *, rtx));
 extern void clean_graph_dump_file PARAMS ((const char *, const char *));
 extern void finish_graph_dump_file PARAMS ((const char *, const char *));
 
-#endif /* ! __GRAPH_H__ */
+#endif /* ! GCC_GRAPH_H */

@@ -23,8 +23,8 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-#ifndef JV_LANG_H
-#define JV_LANG_H
+#ifndef GCC_JAVA_PARSE_H
+#define GCC_JAVA_PARSE_H
 
 #include "lex.h"
 
@@ -932,4 +932,5 @@ extern void java_expand_classes PARAMS ((void));
 
 extern struct parser_ctxt *ctxp;
 struct parser_ctxt *ctxp_for_generation;
-#endif
+
+#endif /* ! GCC_JAVA_PARSE_H */

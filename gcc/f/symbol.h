@@ -19,8 +19,8 @@ along with GNU Fortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#ifndef _H_f_symbol
-#define _H_f_symbol
+#ifndef GCC_F_SYMBOL_H
+#define GCC_F_SYMBOL_H
 
 /* The main symbol type.  */
 
@@ -293,4 +293,4 @@ void ffesymbol_update_save (ffesymbol s);
 #define ffesymbol_where_line(s) (((s)->name == NULL) ? ffewhere_line_unknown() \
       : ffename_where_line((s)->name))
 
-#endif
+#endif /* ! GCC_F_SYMBOL_H */

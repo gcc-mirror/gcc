@@ -21,8 +21,8 @@ can know your rights and responsibilities.  It should be in a
 file named COPYING.  Among other things, the copyright notice
 and this notice must be preserved on all copies.  */
 
-#ifndef _CP_LEX_H
-#define _CP_LEX_H
+#ifndef GCC_CP_LEX_H
+#define GCC_CP_LEX_H
 
 #if 0
 /* Formerly, the RID_* values used as mask bits did not fit into a
@@ -84,4 +84,4 @@ extern int pending_lang_change;
 
 extern int yylex PARAMS ((void));
 
-#endif /* _CP_LEX_H */
+#endif /* ! GCC_CP_LEX_H */

@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _RTL_H
-#define _RTL_H
+#ifndef GCC_RTL_H
+#define GCC_RTL_H
 
 struct function;
 
@@ -2022,4 +2022,4 @@ extern void regrename_optimize		PARAMS ((void));
 /* In condexec.c */
 extern void if_convert			PARAMS ((int));
 
-#endif /* _RTL_H */
+#endif /* ! GCC_RTL_H */

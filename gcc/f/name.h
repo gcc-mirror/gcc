@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_name
-#define _H_f_name
+#ifndef GCC_F_NAME_H
+#define GCC_F_NAME_H
 
 /* Simple definitions and enumerations. */
 
@@ -106,4 +106,4 @@ ffenameSpace ffename_space_new (mallocPool pool);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_NAME_H */

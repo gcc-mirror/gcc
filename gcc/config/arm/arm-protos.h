@@ -211,4 +211,4 @@ extern void arm_pr_no_long_calls	PARAMS ((cpp_reader *));
 extern void arm_pr_long_calls_off	PARAMS ((cpp_reader *));
 #endif
 
-#endif /* GCC_ARM_PROTOS_H */
+#endif /* ! GCC_ARM_PROTOS_H */

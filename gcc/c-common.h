@@ -835,4 +835,4 @@ struct c_fileinfo
 struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
-#endif
+#endif /* ! GCC_C_COMMON_H */

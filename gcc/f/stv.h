@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_stv
-#define _H_f_stv
+#ifndef GCC_F_STV_H
+#define GCC_F_STV_H
 
 /* Simple definitions and enumerations. */
 
@@ -162,4 +162,4 @@ extern ffelabNumber ffestv_num_label_defines_;
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STV_H */

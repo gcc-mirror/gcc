@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_MBCHAR_H__
-#define __GCC_MBCHAR_H__
+#ifndef GCC_MBCHAR_H
+#define GCC_MBCHAR_H
 
 #ifdef MULTIBYTE_CHARS
 
@@ -38,4 +38,4 @@ extern int local_mb_cur_max PARAMS ((void));
 /* The locale being used for multibyte characters in string/char literals.  */
 extern const char *literal_codeset;
 #endif /* MULTIBYTE_CHARS */
-#endif
+#endif /* ! GCC_MBCHAR_H */

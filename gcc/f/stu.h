@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_stu
-#define _H_f_stu
+#ifndef GCC_F_STU_H
+#define GCC_F_STU_H
 
 /* Simple definitions and enumerations. */
 
@@ -66,4 +66,4 @@ ffesymbol ffestu_sym_exec_transition (ffesymbol s);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STU_H */

@@ -21,8 +21,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 */
 
-#ifndef _H_f_proj
-#define _H_f_proj
+#ifndef GCC_F_PROJ_H
+#define GCC_F_PROJ_H
 
 #ifdef USE_HCONFIG
 #include "hconfig.h"
@@ -47,4 +47,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define dmpout stderr
 #endif
 
-#endif
+#endif /* ! GCC_F_PROJ_H */

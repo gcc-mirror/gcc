@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_DIAGNOSTIC_H__
-#define __GCC_DIAGNOSTIC_H__
+#ifndef GCC_DIAGNOSTIC_H
+#define GCC_DIAGNOSTIC_H
 
 #include "obstack.h"
 
@@ -227,4 +227,4 @@ extern int error_function_changed	PARAMS ((void));
 extern void record_last_error_function	PARAMS ((void));
 extern void report_problematic_module	PARAMS ((output_buffer *));     
 
-#endif /* __GCC_DIAGNOSTIC_H__ */
+#endif /* ! GCC_DIAGNOSTIC_H */

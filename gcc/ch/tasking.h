@@ -18,10 +18,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _CH_TASKING_H
-#define _CH_TASKING_H
+#ifndef GCC_TASKING_H
+#define GCC_TASKING_H
 
 /* list of this module's process, buffer, etc. decls */
 extern tree tasking_list;
 
-#endif
+#endif /* ! GCC_TASKING_H */

@@ -1,4 +1,4 @@
-#ifndef __GCC_VERSION_H__
-#define __GCC_VERSION_H__
+#ifndef GCC_VERSION_H
+#define GCC_VERSION_H
 extern const char *const version_string;
-#endif /* __GCC_VERSION_H__ */
+#endif /* ! GCC_VERSION_H */

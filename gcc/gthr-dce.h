@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_dce_h
-#define __gthr_dce_h
+#ifndef GCC_GTHR_DCE_H
+#define GCC_GTHR_DCE_H
 
 /* DCE threads interface.
    DCE threads are based on POSIX threads draft 4, and many things
@@ -486,4 +486,4 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 
 #undef UNUSED
 
-#endif /* not __gthr_dce_h */
+#endif /* ! GCC_GTHR_DCE_H */

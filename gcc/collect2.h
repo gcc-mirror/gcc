@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __COLLECT2_H__
-#define __COLLECT2_H__
+#ifndef GCC_COLLECT2_H
+#define GCC_COLLECT2_H
 
 extern void do_tlink PARAMS ((char **, char **));
 
@@ -48,4 +48,4 @@ extern void fatal PARAMS ((const char *, ...))
 extern void fatal_perror PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
-#endif /* ! __COLLECT2_H__ */
+#endif /* ! GCC_COLLECT2_H */

@@ -631,4 +631,4 @@ extern int flag_detailed_statistics;
 /* Nonzero means enable synchronous exceptions for non-call instructions.  */
 extern int flag_non_call_exceptions;
 
-#endif /* GCC_FLAGS_H */
+#endif /* ! GCC_FLAGS_H */
