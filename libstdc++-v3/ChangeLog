@@ -1,3 +1,17 @@
+2001-06-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3114
+	* include/bits/ostream.tcc (ostream::seekp): Add error checking as
+	per DR 129.
+	* include/bits/istream.tcc (istream::seekg): Same.
+	* testsuite/27_io/istream_seeks.cc: Fix.
+	
+	libstdc++/3113
+	* include/bits/stl_function.h (binder2nd): Fix as per DR 109.
+	(binder1st): Same.
+	* include/bits/std_queue.h: Add c++config.h.
+	* testsuite/20_util/binders.cc: New test.
+	
 2001-06-11  Matthias Klose  <doko@debian.org>
             Phil Edwards  <pme@sources.redhat.com>
 

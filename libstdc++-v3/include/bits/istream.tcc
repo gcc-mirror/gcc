@@ -959,7 +959,11 @@ namespace std
 	    {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	      this->rdbuf()->pubseekpos(__pos, ios_base::in);
+	      pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::in);
+
+// 129. Need error indication from seekp() and seekg()
+	      if (__err == pos_type(off_type(-1)))
+		this->setstate(failbit);
 #endif
 	    }
 	  catch(exception& __fail)
@@ -987,7 +991,12 @@ namespace std
 	    {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	      this->rdbuf()->pubseekoff(__off, __dir, ios_base::in);
+	      pos_type __err = this->rdbuf()->pubseekoff(__off, __dir, 
+							 ios_base::in);
+
+// 129. Need error indication from seekp() and seekg()
+	      if (__err == pos_type(off_type(-1)))
+		this->setstate(failbit);
 #endif
 	    }
 	  catch(exception& __fail)
