@@ -15,7 +15,7 @@ typedef union {
 } __f_regs;
 
 typedef struct {
-#if defined (__SVR4__) || defined (__svr4__) || defined (__alliant__)
+#if defined (__SVR4__) || defined (__svr4__) || defined (__alliant__) || defined (__PARAGON__)
   __f_regs __float_regs; long __ireg[12];
 #else /* pre-SVR4 */
   long __ireg[12]; __f_regs __float_regs;
@@ -23,7 +23,7 @@ typedef struct {
 } __va_saved_regs;
 
 typedef struct {
-#if defined(__SVR4__) || defined(__svr4__) || defined(__alliant__)
+#if defined(__SVR4__) || defined(__svr4__) || defined(__alliant__) || defined (__PARAGON__)
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
   long		*__reg_base;	/* Address of where we stored the regs. */
@@ -45,7 +45,11 @@ typedef struct {
 
 /* varargs support */
 #define va_alist __builtin_va_alist
+#if defined (__PARAGON__)
+#define va_dcl int va_alist;
+#else	/* __PARAGON__ */
 #define va_dcl
+#endif	/* __PARAGON__ */
 #define va_start(pvar) ((pvar) = * (__gnuc_va_list *) __builtin_saveregs ())
 
 #else /* STDARG.H */
