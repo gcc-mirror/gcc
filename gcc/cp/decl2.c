@@ -2592,7 +2592,11 @@ finish_vtable_vardecl (prev, vars)
 {
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars)
-      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
+      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars)
+#ifdef DECL_ONE_ONLY
+	   && ! DECL_ONE_ONLY (vars)
+#endif
+	   )
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
@@ -3245,7 +3249,10 @@ finish_file ()
 	    else if (DECL_INITIAL (decl) == 0)
 	      p = &TREE_CHAIN (*p);
 	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
-		      && ! DECL_ONE_ONLY (decl))
+#ifdef DECL_ONE_ONLY
+		      && ! DECL_ONE_ONLY (decl)
+#endif
+		      )
 		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		     || flag_keep_inline_functions)
 	      {
