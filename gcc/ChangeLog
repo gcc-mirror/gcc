@@ -13,6 +13,8 @@ Thu Oct  8 17:00:18 1998  Richard Henderson  <rth@cygnus.com>
 
 Thu Oct  8 17:15:04 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (output_file_directive): Use DIR_SEPARATOR, not '/'.
+
 	* cpplib.h: Protect from multiple inclusions.
 	* cpplib.c: Fix minor formatting problems.
 
