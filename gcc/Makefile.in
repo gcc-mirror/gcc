@@ -605,15 +605,6 @@ GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(COLLECT2) $(EXTRA_PARTS)
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
-# Flags to use when cross-building GCC.
-# Prefix to apply to names of object files when using them
-# to run on the machine we are compiling on.
-BUILD_PREFIX = @BUILD_PREFIX@
-# Prefix to apply to names of object files when compiling them
-# to run on the machine we are compiling on.
-# The default for this variable is chosen to keep these rules
-# out of the way of the other rules for compiling the same source files.
-BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # Native compiler for the build machine and its switches.
 CC_FOR_BUILD = @CC_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
@@ -774,14 +765,13 @@ LDEXP_LIB = @LDEXP_LIB@
 # even if we are cross-building GCC.
 BUILD_LIBS = $(BUILD_LIBIBERTY)
 
-BUILD_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o \
-		ggc-none.o min-insn-modes.o
+BUILD_RTL = build-rtl.o read-rtl.o ggc-none.o min-insn-modes.o
 BUILD_SUPPORT = gensupport.o insn-conditions.o
 BUILD_EARLY_SUPPORT = gensupport.o dummy-conditions.o
 
-BUILD_PRINT = print-rtl1.o
-BUILD_ERRORS = $(BUILD_PREFIX)errors.o
-BUILD_VARRAY = $(BUILD_PREFIX)varray.o
+BUILD_PRINT = build-print-rtl.o
+BUILD_ERRORS = errors.o
+BUILD_VARRAY = build-varray.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -816,8 +806,6 @@ export AR_CREATE_FOR_TARGET
 export AR_FLAGS_FOR_TARGET
 export AR_EXTRACT_FOR_TARGET
 export AWK
-export BUILD_PREFIX
-export BUILD_PREFIX_1
 export DESTDIR
 export GCC_FOR_TARGET
 export INCLUDES
@@ -2461,7 +2449,7 @@ genobjs=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
         genautomata.o gengenrtl.o genmodes.o genpreds.o gengtype.o \
 	genconstants.o gen-protos.o scan.o fix-header.o scan-decls.o \
 	gencheck.o dummy-conditions.o genconditions.o errors.o ggc-none.o \
-	min-insn-modes.o
+	min-insn-modes.o build-rtl.o build-print-rtl.o build-varray.o
 
 $(genprogs): %$(build_exeext): %.o  $(BUILD_RTL) $(BUILD_SUPPORT) \
 			       $(BUILD_PRINT) $(BUILD_ERRORS) \
@@ -2470,7 +2458,7 @@ $(genprogs): %$(build_exeext): %.o  $(BUILD_RTL) $(BUILD_SUPPORT) \
 		$< $(BUILD_RTL) $(BUILD_SUPPORT) $(BUILD_PRINT) \
 		$(BUILD_ERRORS) $(BUILD_LIBS)
 
-$(genobjs): %.o : %.c
+$(genobjs): %.o :  # dependencies provided by explicit rule later
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	    $< $(OUTPUT_OPTION)
 
@@ -2587,34 +2575,16 @@ genconditions$(build_exeext) : genconditions.o $(BUILD_EARLY_SUPPORT) \
 
 genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(GTM_H) errors.h
+
 errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
 ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
 min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) system.h $(MACHMODE_H)
-
-#
-# Compile the libraries to be used by gen*.
-# If we are not cross-building, gen* use the same .o's that cc1 will use,
-# and BUILD_PREFIX_1 is `loser-', just to ensure these rules don't conflict
-# with the rules for rtl.o, etc.
-$(BUILD_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) $(RTL_H) \
+build-rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) $(RTL_H) \
   real.h $(GGC_H) errors.h
-	rm -f $(BUILD_PREFIX)rtl.c
-	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/rtl.c > $(BUILD_PREFIX)rtl.c
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)rtl.c $(OUTPUT_OPTION)
-
-print-rtl1.o: $(srcdir)/print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(GTM_H) $(RTL_BASE_H) $(TREE_H) $(FLAGS_H) hard-reg-set.h $(BASIC_BLOCK_H) 
-	rm -f print-rtl1.c
-	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/print-rtl.c > print-rtl1.c
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) print-rtl1.c $(OUTPUT_OPTION)
-
-$(BUILD_PREFIX_1)varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) varray.h \
-  $(RTL_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
-	rm -f $(BUILD_PREFIX)varray.c
-	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/varray.c > \
-		$(BUILD_PREFIX)varray.c
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
-		$(BUILD_PREFIX)varray.c $(OUTPUT_OPTION)
+build-print-rtl.o: print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(GTM_H) $(RTL_BASE_H)
+build-varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) \
+  varray.h $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
 
 #
 # Remake internationalization support.
@@ -3020,8 +2990,6 @@ mostlyclean: lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 	-rm -f *$(coverageexts)
 	-rm -rf libgcc
-# Delete the temporary source copies for cross compilation.
-	-rm -f $(BUILD_PREFIX_1)rtl.c $(BUILD_PREFIX_1)varray.c print-rtl1.c
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h
 # Delete other built files.
