@@ -3224,10 +3224,21 @@ h8300_adjust_insn_length (insn, length)
 	{
 	  if (val == (val & 0xff)
 	      || val == (val & 0xff00))
-	    return -6;
+	    return 4 - 6;
 
-	  if (val == -4 || val == -2 || val == -1)
-	    return -6;
+	  switch (val & 0xffffffff)
+	    {
+	    case 0xffffffff:
+	    case 0xfffffffe:
+	    case 0xfffffffc:
+	    case 0x0000ffff:
+	    case 0x0000fffe:
+	    case 0xffff0000:
+	    case 0xfffe0000:
+	    case 0x00010000:
+	    case 0x00020000:
+	      return 4 - 6;
+	    }
 	}
     }
 
