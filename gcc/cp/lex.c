@@ -2936,29 +2936,26 @@ yyerror (string)
      const char *string;
 {
   extern int end_of_file;
-  char buf[200];
-
-  strcpy (buf, string);
 
   /* We can't print string and character constants well
      because the token_buffer contains the result of processing escapes.  */
   if (end_of_file)
-    strcat (buf, input_redirected ()
-	    ? " at end of saved text"
-	    : " at end of input");
+  {
+    if (input_redirected ())
+      error ("%s at end of saved text", string);
+    else
+      error ("%s at end of input", string);
+  }
   else if (token_buffer[0] == 0)
-    strcat (buf, " at null character");
+    error ("%s at null character", string);
   else if (token_buffer[0] == '"')
-    strcat (buf, " before string constant");
+    error ("%s before string constant", string);
   else if (token_buffer[0] == '\'')
-    strcat (buf, " before character constant");
+    error ("%s before character constant", string);
   else if (!ISGRAPH ((unsigned char)token_buffer[0]))
-    sprintf (buf + strlen (buf), " before character 0%o",
-	     (unsigned char) token_buffer[0]);
+    error ("%s before character 0%o", string, (unsigned char) token_buffer[0]);
   else
-    strcat (buf, " before `%s'");
-
-  error (buf, token_buffer);
+    error ("%s before `%s'", string, token_buffer);
 }
 
 /* Value is 1 (or 2) if we should try to make the next identifier look like

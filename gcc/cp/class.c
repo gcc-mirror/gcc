@@ -583,7 +583,7 @@ get_vtable_name (type)
      tree type;
 {
   tree type_id = build_typename_overload (type);
-  char *buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT)
+  char *buf = (char *) alloca (strlen (VTABLE_NAME_PREFIX)
 			       + IDENTIFIER_LENGTH (type_id) + 2);
   const char *ptr = IDENTIFIER_POINTER (type_id);
   int i;
@@ -596,7 +596,7 @@ get_vtable_name (type)
   while (ptr[i] >= '0' && ptr[i] <= '9')
     i += 1;
 #endif
-  sprintf (buf, VTABLE_NAME_FORMAT, ptr+i);
+  sprintf (buf, "%s%s", VTABLE_NAME_PREFIX, ptr+i);
   return get_identifier (buf);
 }
 
@@ -796,8 +796,8 @@ prepare_fresh_vtable (binfo, for_type)
 
       sprintf (buf1, "%s%c%s", TYPE_ASSEMBLER_NAME_STRING (for_type), joiner,
 	       buf2);
-      buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT) + strlen (buf1) + 1);
-      sprintf (buf, VTABLE_NAME_FORMAT, buf1);
+      buf = (char *) alloca (strlen (VTABLE_NAME_PREFIX) + strlen (buf1) + 1);
+      sprintf (buf, "%s%s", VTABLE_NAME_PREFIX, buf1);
       name = get_identifier (buf);
 
       /* If this name doesn't clash, then we can use it, otherwise
@@ -827,9 +827,9 @@ prepare_fresh_vtable (binfo, for_type)
 	    sprintf (buf1, "%s%c%s%c%d",
 		     TYPE_ASSEMBLER_NAME_STRING (basetype), joiner,
 		     buf2, joiner, j);
-	    buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT)
+	    buf = (char *) alloca (strlen (VTABLE_NAME_PREFIX)
 				   + strlen (buf1) + 1);
-	    sprintf (buf, VTABLE_NAME_FORMAT, buf1);
+	    sprintf (buf, "%s%s", VTABLE_NAME_PREFIX, buf1);
 	    name = get_identifier (buf);
 
 	    /* If this name doesn't clash, then we can use it,

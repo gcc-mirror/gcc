@@ -695,7 +695,7 @@ optimize_function (fn)
       struct saved_scope *s;
 
       /* Clear out ID.  */
-      bzero (&id, sizeof (id));
+      memset (&id, 0, sizeof (id));
 
       /* Don't allow recursion into FN.  */
       VARRAY_TREE_INIT (id.fns, 32, "fns");

@@ -2922,7 +2922,7 @@ extern tree global_base_init_list;
 #define AUTO_TEMP_NAME "_$tmp_"
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
 #define VTABLE_BASE "$vb"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt$%s")
+#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt$")
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
@@ -2944,7 +2944,7 @@ extern tree global_base_init_list;
 #define AUTO_TEMP_NAME "_.tmp_"
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
 #define VTABLE_BASE ".vb"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt.%s")
+#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt.")
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
@@ -2973,7 +2973,7 @@ extern tree global_base_init_list;
 #define AUTO_TEMP_FORMAT "__tmp_%d"
 #define VTABLE_BASE "__vtb"
 #define VTABLE_NAME "__vt_"
-#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt_%s")
+#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt_")
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))

@@ -7381,7 +7381,6 @@ void
 make_rtl_for_local_static (decl)
      tree decl;
 {
-  tree type = TREE_TYPE (decl);
   const char *asmspec = NULL;
 
   /* If we inlined this variable, we could see it's declaration
