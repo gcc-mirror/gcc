@@ -1,6 +1,6 @@
 // GROUPS passed templates
 // Bug: g++ emits template instances when it shouldn't.
-// Special g++ Options: -g -Wno-deprecated -fexternal-templates
+// Special g++ Options: -g -O0 -Wno-deprecated -fexternal-templates
 
 // We mark this XFAIL because we can't test for expected linker errors.
 // If we get an XPASS for this testcase, that's a bug.

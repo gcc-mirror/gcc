@@ -2,8 +2,6 @@
 
 // Based on a testcase by Martin Bachtold <martinb@coyotesystems.com>
 
-// excess errors test - XFAIL *-*-*
-
 struct foo {
   void m();
 };
