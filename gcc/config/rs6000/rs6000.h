@@ -2904,12 +2904,17 @@ do {									\
 #define ASM_OUTPUT_ASCII(FILE, P, N)  output_ascii ((FILE), (P), (N))
 
 /* This is how to output code to push a register on the stack.
-   It need not be very fast code.  */
+   It need not be very fast code.
+
+   On the rs6000, we must keep the backchain up to date.  In order
+   to simplify things, always allocate 16 bytes for a push (System V
+   wants to keep stack aligned to a 16 byte boundary).  */
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
 do {									\
   extern char *reg_names[];						\
-  asm_fprintf (FILE, "\{tstu|stwu} %s,-4(%s)\n", reg_names[REGNO],	\
+  asm_fprintf (FILE, "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,8(%s)\n",	\
+	       reg_names[1], reg_names[1], reg_names[REGNO],		\
 	       reg_names[1]);						\
 } while (0)
 
@@ -2919,7 +2924,7 @@ do {									\
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)					\
 do {									\
   extern char *reg_names[];						\
-  asm_fprintf (FILE, "\t{l|lwz} %s,0(%s)\n\t{ai|addic} %s,%s,4\n",	\
+  asm_fprintf (FILE, "\t{l|lwz} %s,8(%s)\n\t{ai|addic} %s,%s,16\n",	\
 	       reg_names[REGNO], reg_names[1], reg_names[1],		\
 	       reg_names[1]);						\
 } while (0)
