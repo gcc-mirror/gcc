@@ -2918,6 +2918,13 @@ start_objects (method_type, initp)
   clear_last_expr ();
   push_momentary ();
   expand_start_bindings (0);
+
+  /* We cannot allow these functions to be elided, even if they do not
+     have external linkage.  And, there's no point in deferring
+     copmilation of thes functions; they're all going to have to be
+     out anyhow.  */
+  current_function_cannot_inline
+    = "static constructors and destructors cannot be inlined";
 }
 
 /* Finish the process of running a particular set of global constructors

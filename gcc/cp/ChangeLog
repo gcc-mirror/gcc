@@ -1,3 +1,14 @@
+1999-05-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (start_objects): Don't let static constructors and
+	destructors get inlined.
+
+	* parse.y (nested_name_specifier): Make sure ordinary types are
+	complete, just like template types.
+	* parse.c: Regenerated.
+
+	* pt.c (check_explicit_specialization): Improve error messages.
+
 1999-05-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (string_conv_p): Use same_type_p to check whether we
