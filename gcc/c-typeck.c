@@ -166,43 +166,6 @@ qualify_type (type, like)
   return c_build_type_variant (type, constflag, volflag);
 }
 
-/* Return an attribute list that is the union of a1 and a2.  */
-tree
-merge_attributes (a1, a2)
-     register tree a1, a2;
-{
-  tree attributes;
-
-  /* Either one unset?  Take the set one.  */
-
-  if (! (attributes = a1))
-    attributes = a2;
-
-  /* One that completely contains the other?  Take it.  */
-
-  else if (a2 && ! attribute_list_contained (a1, a2))
-    if (attribute_list_contained (a2, a1))
-      attributes = a2;
-    else
-      {
-	/* Pick the longest list, and hang on the other list.  */
-	/* ??? For the moment we punt on the issue of attrs with args.  */
-
-	if (list_length (a1) < list_length (a2))
-	  attributes = a2, a2 = a1;
-
-	for (; a2; a2 = TREE_CHAIN (a2))
-	  if (lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
-				attributes) == NULL_TREE)
-	    {
-	      a1 = copy_node (a2);
-	      TREE_CHAIN (a1) = attributes;
-	      attributes = a1;
-	    }
-      }
-  return attributes;
-}
-
 /* Return the common type of two types.
    We assume that comptypes has already been done and returned 1;
    if that isn't so, this may crash.  In particular, we assume that qualifiers
