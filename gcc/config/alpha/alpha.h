@@ -510,10 +510,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Optional extra constraints for this machine.
 
    For the Alpha, `Q' means that this is a memory operand but not a
-   reference to an unaligned location.  */
+   reference to an unaligned location.
+   `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
+   function.  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND \
+   : (C) == 'R' ? current_file_function_operand (OP, Pmode)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1514,14 +1517,12 @@ literal_section ()						\
 
 #define READONLY_DATA_SECTION	literal_section
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to see
-   indicate that we can branch to this function without setting PV or
-   restoring GP.  */
+/* If we are referencing a function that is static, make the SYMBOL_REF
+   special.  We use this to see indicate we can branch to this function
+   without setting PV or restoring GP.  */
 
 #define ENCODE_SECTION_INFO(DECL)  \
-  if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
+  if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* How to refer to registers in assembler output.
@@ -1837,6 +1838,7 @@ literal_section ()						\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},		\
   {"fp0_operand", {CONST_DOUBLE}},			\
   {"current_file_function_operand", {SYMBOL_REF}},	\
+  {"call_operand", {REG, SYMBOL_REF}},			\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,	\
 		     SYMBOL_REF, CONST, LABEL_REF}},	\
   {"aligned_memory_operand", {MEM}},			\
