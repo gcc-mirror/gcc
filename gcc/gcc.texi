@@ -2248,11 +2248,19 @@ Please report each bug in a separate message.  This makes it easier for
 us to track which bugs have been fixed and to forward your bugs reports
 to the appropriate maintainer.
 
-Do not compress and encode any part of your bug report using programs
-such as @file{uuencode}.  If you do so it will slow down the processing
-of your bug.  If you must submit multiple large files, use @file{shar},
-which allows us to read your message without having to run any
-decompression programs.
+If you include source code in your message, you can send it as clear
+text if it is small. If the message is larger, you may compress it using
+@file{gzip}, @file{bzip2}, or @file{pkzip}. Please be aware that sending
+compressed files needs an additional binary-safe mechanism such as
+@code{MIME} or @code{uuencode}. There is a 100k message limit on the
+@samp{egcs-bugs@@egcs.cygnus.com} mailing list at the time of this
+writing (March 1999).  We're trying to create some mechanism for larger
+bug reports to be submitted; please check the on-line FAQ for more
+up-to-date instructions.  Don't think that just posting a URL to the
+code is better, we do want to archive bug reports, and not all
+maintainers have good network connectivity to download large pieces of
+software when they need them; it's much easier for them to have them in
+their mailboxes.
 
 To enable someone to investigate the bug, you should include all these
 things:
