@@ -2583,7 +2583,12 @@ process_command (argc, argv)
 	/* The +e options to the C++ front-end.  */
 	n_switches++;
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
-	n_infiles++;
+	{
+	  int j;
+	  /* Split the argument at commas.  */
+	  for (j = 3; argv[i][j]; j++)
+	    n_infiles += (argv[i][j] == ',');
+	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
 	  if (i + 1 == argc)
@@ -2794,8 +2799,20 @@ process_command (argc, argv)
 	}
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
 	{
+	  int prev, j;
+	  /* Split the argument at commas.  */
+	  prev = 4;
+	  for (j = 4; argv[i][j]; j++)
+	    if (argv[i][j] == ',')
+	      {
+		infiles[n_infiles].language = spec_lang;
+		infiles[n_infiles++].name
+		  = save_string (argv[i] + prev, j - prev);
+		prev = j + 1;
+	      }
+	  /* Record the part after the last comma.  */
 	  infiles[n_infiles].language = spec_lang;
-	  infiles[n_infiles++].name = argv[i] + 4;
+	  infiles[n_infiles++].name = argv[i] + prev;
 	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
