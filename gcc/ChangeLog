@@ -1,3 +1,13 @@
+2001-12-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* h8300.c (h8300_asm_named_section): Wrap with !OBJECT_FORMAT_ELF.
+	* m88k.c (m88k_svr3_asm_out_constructor,
+	m88k_svr3_asm_out_destructor): Wrap with CTOR_LIST_BEGIN &&
+	!OBJECT_FORMAT_ELF.
+	* mcore.c (mcore_asm_named_section): Wrap with OBJECT_FORMAT_ELF.
+	* sh.c (sh_asm_named_section): Wrap with !OBJECT_FORMAT_ELF.
+	* sparc.c (sparc_elf_asm_named_section): Wrap with OBJECT_FORMAT_ELF.
+
 2001-12-01  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.h (LEGITIMATE_LO_SUM_ADDRESS_P): Complex

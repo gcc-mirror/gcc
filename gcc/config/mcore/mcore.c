@@ -133,8 +133,10 @@ static int        mcore_dllexport_p            PARAMS ((tree));
 static int        mcore_dllimport_p            PARAMS ((tree));
 const struct attribute_spec mcore_attribute_table[];
 static tree       mcore_handle_naked_attribute PARAMS ((tree *, tree, tree, int, bool *));
+#ifdef OBJECT_FORMAT_ELF
 static void	  mcore_asm_named_section      PARAMS ((const char *,
 							unsigned int));
+#endif
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -3544,6 +3546,7 @@ mcore_naked_function_p ()
   return lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
 }
 
+#ifdef OBJECT_FORMAT_ELF
 static void
 mcore_asm_named_section (name, flags)
      const char *name;
@@ -3551,3 +3554,4 @@ mcore_asm_named_section (name, flags)
 {
   fprintf (asm_out_file, "\t.section %s\n", name);
 }
+#endif /* OBJECT_FORMAT_ELF */
