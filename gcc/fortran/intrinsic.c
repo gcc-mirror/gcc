@@ -1959,7 +1959,13 @@ do_sort:
 
   for (f = formal; f; f = f->next)
     {
-      a = (f->actual == NULL) ? gfc_get_actual_arglist () : f->actual;
+      if (f->actual == NULL)
+	{
+	  a = gfc_get_actual_arglist ();
+	  a->missing_arg_type = f->ts.type;
+	}
+      else
+	a = f->actual;
 
       if (actual == NULL)
 	*ap = a;

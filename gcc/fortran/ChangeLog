@@ -1,3 +1,8 @@
+2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* intrinsic.c (sort_actual): Keep track of type of missing 
+	arguments. (Missing from previous commit.)
+
 2004-06-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_actual_arglist): New field missing_arg_type.
