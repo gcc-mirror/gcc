@@ -1,3 +1,9 @@
+2003-04-18  Alexander Sotirov  <sluncho@mirizma.org>
+
+	PR c/9177
+	* c-decl.c (c_expand_body): Don't garbage collect the function
+	body if we are going to dump it later.
+
 2003-04-18  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (SYMBOL_FLAG_NEAR, SYMBOL_FLAG_SAMEGP): Remove.
