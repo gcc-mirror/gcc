@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -53,6 +53,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "tm.h"
 #include "defaults.h"
+#include <stddef.h>
+#include "frame.h"
 
 /* Provide default definitions for the pseudo-ops used to switch to the
    .ctors and .dtors sections.
@@ -160,7 +162,8 @@ fini_dummy ()
 static void
 frame_dummy ()
 {
-  __register_frame (__EH_FRAME_BEGIN__);
+  static struct object object;
+  __register_frame (__EH_FRAME_BEGIN__, &object);
 }
 
 static void
