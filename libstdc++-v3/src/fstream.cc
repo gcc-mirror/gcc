@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,15 +52,14 @@ namespace std
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
 	  if (_M_pback_init)
+	    _M_pback_destroy();
+
+	  if (_M_in_cur && _M_in_cur < _M_in_end)
 	    {
-	      _M_pback_destroy();
-	      if (_M_in_cur < _M_in_end)
-		{
-		  __ret = traits_type::to_int_type(*_M_in_cur);
-		  if (__bump)
-		    _M_in_cur_move(1);
-		  return __ret;
-		}
+	      __ret = traits_type::to_int_type(*_M_in_cur);
+	      if (__bump)
+		_M_in_cur_move(1);
+	      return __ret;
 	    }
 
 	  // Sync internal and external buffers.
@@ -135,15 +134,14 @@ namespace std
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
 	  if (_M_pback_init)
+	    _M_pback_destroy();
+
+	  if (_M_in_cur && _M_in_cur < _M_in_end)
 	    {
-	      _M_pback_destroy();
-	      if (_M_in_cur < _M_in_end)
-		{
-		  __ret = traits_type::to_int_type(*_M_in_cur);
-		  if (__bump)
-		    _M_in_cur_move(1);
-	  	  return __ret;
-		}
+	      __ret = traits_type::to_int_type(*_M_in_cur);
+	      if (__bump)
+		_M_in_cur_move(1);
+	      return __ret;
 	    }
 
 	  // Sync internal and external buffers.

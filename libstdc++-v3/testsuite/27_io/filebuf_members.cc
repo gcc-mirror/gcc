@@ -133,9 +133,10 @@ test_04()
   const char* name = "tmp_fifo1";
   signal(SIGPIPE, SIG_IGN);
   
+  unlink(name);
   if (0 != mkfifo(name, S_IRWXU))
     {
-      std::cerr << "failed to creat fifo" << std::endl;
+      std::cerr << "failed to create fifo" << std::endl;
       exit(-1);
     }
   
