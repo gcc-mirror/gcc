@@ -157,5 +157,5 @@ Boston, MA 02111-1307, USA.  */
    This modification is not encouraged but with the present state of the
    NetBSD source tree it is currently the only solution that meets the
    requirements.  */
-#undef STRUCTURE_SIZE_BOUNDARY
-#define STRUCTURE_SIZE_BOUNDARY 8
+#undef  DEFAULT_STRUCTURE_SIZE_BOUNDARY
+#define DEFAULT_STRUCTURE_SIZE_BOUNDARY 8

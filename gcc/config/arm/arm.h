@@ -615,15 +615,21 @@ extern int arm_is_6_or_7;
   (TREE_CODE (EXP) == STRING_CST        \
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Setting this to 32 produces more efficient code, but the value set in
-   previous versions of this toolchain was 8, which produces more compact
-   structures.  The command line option -mstructure_size_boundary=<n> can
-   be used to change this value, for compatability with the ARM SDK however
-   the value should be left at 32.  ARM SDT Reference Manual (ARM DUI 0020D)
-   page 2-20 says "Structures are aligned on word boundaries".  */
-#ifndef STRUCTURE_SIZE_BOUNDARY
+/* Setting STRUCTURE_SIZE_BOUNDARY to 32 produces more efficient code, but the
+   value set in previous versions of this toolchain was 8, which produces more
+   compact structures.  The command line option -mstructure_size_boundary=<n>
+   can be used to change this value.  For compatability with the ARM SDK
+   however the value should be left at 32.  ARM SDT Reference Manual (ARM DUI
+   0020D) page 2-20 says "Structures are aligned on word boundaries".  */
 #define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
 extern int arm_structure_size_boundary;
+
+/* This is the value used to initialise arm_structure_size_boundary.  If a
+   particular arm target wants to change the default value it should change
+   the definition of this macro, not STRUCTRUE_SIZE_BOUNDARY.  See netbsd.h
+   for an example of this.  */
+#ifndef DEFAULT_STRUCTURE_SIZE_BOUNDARY
+#define DEFAULT_STRUCTURE_SIZE_BOUNDARY 32
 #endif
 
 /* Used when parsing command line option -mstructure_size_boundary.  */
