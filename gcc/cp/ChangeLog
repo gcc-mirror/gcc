@@ -1,5 +1,8 @@
 2000-05-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_vtable_entry_ref): Correct usage of
+	get_vtbl_decl_for_binfo.
+
 	* decl2.c (grokclassfn): Set DECL_LANGUAGE here.
 	* method.c (implicitly_declare_fn): Not here.
 
