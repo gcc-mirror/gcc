@@ -1,3 +1,8 @@
+2003-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/string-opt-18.c: Clean up.  Fix copyright
+	date.
+
 2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10337

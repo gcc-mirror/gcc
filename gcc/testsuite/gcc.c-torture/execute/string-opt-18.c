@@ -1,5 +1,4 @@
-#include <stdio.h>
-/* Copyright (C) 2000  Free Software Foundation.
+/* Copyright (C) 2003  Free Software Foundation.
 
    Ensure builtin mempcpy and stpcpy perform correctly.
 
@@ -8,7 +7,7 @@
 extern void abort (void);
 extern char *strcpy (char *, const char *);
 extern char *stpcpy (char *, const char *);
-/*typedef __SIZE_TYPE__ size_t;*/
+typedef __SIZE_TYPE__ size_t;
 extern size_t strlen(const char *);
 extern void *memcpy (void *, const void *, size_t);
 extern void *mempcpy (void *, const void *, size_t);
