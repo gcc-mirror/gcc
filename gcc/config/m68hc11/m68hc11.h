@@ -1580,6 +1580,52 @@ do {                                                                    \
 /* Output before uninitialized data.  */
 #define BSS_SECTION_ASM_OP 	("\t.sect\t.bss")
 
+/* This is the pseudo-op used to generate a reference to a specific
+   symbol in some section.  It is only used in machine-specific
+   configuration files, typically only in ASM_OUTPUT_CONSTRUCTOR and
+   ASM_OUTPUT_DESTRUCTOR.  This is the same for all known svr4
+   assemblers, except those in targets that don't use 32-bit pointers.
+   Those should override INT_ASM_OP.  Yes, the name of the macro is
+   misleading.  */
+#undef INT_ASM_OP
+#define INT_ASM_OP		"\t.word\t"
+
+/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+
+   Same as config/elfos.h but don't mark these section SHF_WRITE since
+   there is no shared library problem.  */
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\""
+
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\""
+
+#undef CTORS_SECTION_FUNCTION
+#define CTORS_SECTION_FUNCTION					\
+void								\
+ctors_section ()						\
+{								\
+  if (in_section != in_ctors)					\
+    {								\
+      fprintf (asm_out_file, "\t.globl\t__do_global_ctors\n");	\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
+      in_section = in_ctors;					\
+    }								\
+}
+
+#undef DTORS_SECTION_FUNCTION
+#define DTORS_SECTION_FUNCTION					\
+void								\
+dtors_section ()						\
+{								\
+  if (in_section != in_dtors)					\
+    {								\
+      fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");	\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
+      in_section = in_dtors;					\
+    }								\
+}
+
 /* This is how to begin an assembly language file.  Most svr4 assemblers want
    at least a .file directive to come first, and some want to see a .version
    directive come right after that.  Here we just establish a default
