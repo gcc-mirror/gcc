@@ -1,3 +1,8 @@
+2002-06-10  Eric Christopher  <echristo@redhat.com>
+
+	* doc/extend.texi (Return Address): Add note explaining the side-
+	effects of inlining on __builtin_return_address.
+
 2002-06-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (LANGHOOKS_DEF_H): Include langhooks-def.h.
