@@ -1,5 +1,8 @@
 2002-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* lex.c (java_init_lex): Avoid incorrect hardcoded constant 11.
+	* parse.y (mark_parser_ctxt): Likewise.
+
 	* lex.c (java_read_char): Avoid "comparison is always true"
 	warning.
 

@@ -16148,13 +16148,15 @@ mark_parser_ctxt (p)
      void *p;
 {
   struct parser_ctxt *pc = *((struct parser_ctxt **) p);
-  int i;
+#ifndef JC1_LITE
+  size_t i;
+#endif
 
   if (!pc)
     return;
 
 #ifndef JC1_LITE
-  for (i = 0; i < 11; ++i)
+  for (i = 0; i < ARRAY_SIZE (pc->modifier_ctx); ++i)
     ggc_mark_tree (pc->modifier_ctx[i]);
   ggc_mark_tree (pc->class_type);
   ggc_mark_tree (pc->function_decl);
