@@ -1,3 +1,8 @@
+Tue Jul 28 23:29:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* configure.in: Fix --without/--disable cases for local-prefix, 
+	gxx-include-dir and checking.
+
 Tue Jul 28 22:01:23 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* configure.in (enable_haifa): Set by default for sparc64 too.
