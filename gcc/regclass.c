@@ -1724,9 +1724,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 static int
 copy_cost (x, mode, class, to_p)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      enum reg_class class;
-     int to_p;
+     int to_p ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_SECONDARY_RELOADS
   enum reg_class secondary_class = NO_REGS;

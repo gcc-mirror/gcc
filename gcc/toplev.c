@@ -58,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "graph.h"
 #include "loop.h"
+#include "regs.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"

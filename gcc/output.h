@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991, 1994, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -182,6 +182,10 @@ extern void init_section PARAMS ((void));
 
 #ifdef FINI_SECTION_ASM_OP
 extern void fini_section PARAMS ((void));
+#endif
+
+#ifdef TDESC_SECTION_ASM_OP
+extern void tdesc_section PARAMS ((void));
 #endif
 
 #ifdef TREE_CODE
