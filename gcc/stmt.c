@@ -1416,7 +1416,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
 	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
 	  case '+':
@@ -1522,7 +1522,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Make sure constraint has neither `=' nor `+'.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
 	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
 	  case '+':   case '=':
@@ -3174,6 +3174,11 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 			      copy_to_reg (arg_pointer_save_area));
 	    }
 	}
+#endif
+
+#ifdef HAVE_nonlocal_goto_receiver
+      if (HAVE_nonlocal_goto_receiver)
+	emit_insn (gen_nonlocal_goto_receiver ());
 #endif
 
       /* The handler expects the desired label address in the static chain
