@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "obstack.h"
 #include "toplev.h"
+
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
@@ -923,7 +924,7 @@ read_rtx (infile)
       }
 
   if (tmp_code == UNKNOWN)
-    fatal ("Unknown rtx read in rtl.read_rtx(). Code name was %s .", tmp_char);
+    fatal_with_file_and_line (infile, "unknown rtx code `%s'", tmp_char);
 
   /* (NIL) stands for an expression that isn't there.  */
   if (tmp_code == NIL)
@@ -951,8 +952,7 @@ read_rtx (infile)
 	  break;
 
       if (j == MAX_MACHINE_MODE)
-	fatal ("Unknown mode read in rtl.read_rtx(). Mode name was %s.",
-	       tmp_char);
+	fatal_with_file_and_line (infile, "unknown mode `%s'", tmp_char);
 
       PUT_MODE (return_rtx, (enum machine_mode) j);
     }
