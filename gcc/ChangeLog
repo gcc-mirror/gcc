@@ -1,3 +1,7 @@
+2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ra-build.c: Fix a comment typo.
+
 2002-12-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_output_function_prologue):
