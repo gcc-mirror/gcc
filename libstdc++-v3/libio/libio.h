@@ -55,15 +55,21 @@
 # endif /* __GNUC_VA_LIST */
 #endif
 
-#ifndef __P
+#ifndef __THROW
 # ifdef __cplusplus
 #  define __THROW throw ()
 # else
 #  define __THROW
 # endif
+#endif /* not __THROW */
+
+#ifndef __P
 # define __P(p) p __THROW
+#endif /* not __P */
+
+#ifndef __PMT
 # define __PMT(p) p
-#endif /*!__P*/
+#endif /* not __PMT */
 
 /* For backward compatibility */
 #ifndef _PARAMS
