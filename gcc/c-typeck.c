@@ -193,22 +193,21 @@ common_type (t1, t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
-  /* If one type is complex, form the common type
-     of the non-complex components,
-     then make that complex.  */
+  /* If one type is complex, form the common type of the non-complex
+     components, then make that complex.  Use T1 or T2 if it is the
+     required type.  */
   if (code1 == COMPLEX_TYPE || code2 == COMPLEX_TYPE)
     {
-      tree subtype1, subtype2, subtype;
-      if (code1 == COMPLEX_TYPE)
-	subtype1 = TREE_TYPE (t1);
+      tree subtype1 = code1 == COMPLEX_TYPE ? TREE_TYPE (t1) : t1;
+      tree subtype2 = code2 == COMPLEX_TYPE ? TREE_TYPE (t2) : t2;
+      tree subtype = common_type (subtype1, subtype2);
+
+      if (code1 == COMPLEX_TYPE && TREE_TYPE (t1) == subtype)
+	return t1;
+      else if (code2 == COMPLEX_TYPE && TREE_TYPE (t2) == subtype)
+	return t2;
       else
-	subtype1 = t1;
-      if (code2 == COMPLEX_TYPE)
-	subtype2 = TREE_TYPE (t2);
-      else
-	subtype2 = t2;
-      subtype = common_type (subtype1, subtype2);
-      return build_complex_type (subtype);
+	return build_complex_type (subtype);
     }
 
   switch (code1)
@@ -2358,7 +2357,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
       /* Comparison operations are shortened too but differently.
 	 They identify themselves by setting short_compare = 1.  */
 
-      if (short_compare && none_complex)
+      if (short_compare)
 	{
 	  /* Don't write &op0, etc., because that would prevent op0
 	     from being kept in a register.
