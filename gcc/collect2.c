@@ -213,7 +213,7 @@ enum pass {
 };
 
 #ifndef NO_SYS_SIGLIST
-#ifndef DONT_DECLARE_SYS_SIGLIST
+#ifndef SYS_SIGLIST_DECLARED
 extern char *sys_siglist[];
 #endif
 #endif

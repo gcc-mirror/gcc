@@ -1767,7 +1767,7 @@ extern int   optind;
 extern int   opterr;
 extern char *version_string;
 #ifndef NO_SYS_SIGLIST
-#ifndef DONT_DECLARE_SYS_SIGLIST
+#ifndef SYS_SIGLIST_DECLARED
 extern char *sys_siglist[NSIG + 1];
 #endif
 #endif
