@@ -35,28 +35,41 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
+import java.util.Map;
+
 /**
-  * This interface provides a mechanism for obtaining information about
-  * a SQL structured type
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public interface Ref
+ * This interface provides a mechanism for obtaining information about
+ * a SQL structured type
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.2
+ */
+public interface Ref 
 {
+  /**
+   * This method returns the fully qualified name of the SQL structured
+   * type of the referenced item.
+   *
+   * @return The fully qualified name of the SQL structured type.
+   * @exception SQLException If an error occurs.
+   * @since 1.2
+   */
+  public String getBaseTypeName() throws SQLException;
 
-/**
-  * This method returns the fully qualified name of the SQL structured
-  * type of the referenced item.
-  *
-  * @return The fully qualified name of the SQL structured type.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract String
-getBaseTypeName() throws SQLException;
+  /**
+   * @since 1.4
+   */
+  public Object getObject(Map map) throws SQLException;
 
-} // interface Ref
+  /**
+   * @since 1.4
+   */
+  public Object getObject() throws SQLException;
 
+  /**
+   * @since 1.4
+   */
+  public void setObject(Object value) throws SQLException;
+}

@@ -1,5 +1,5 @@
-/* DriverPropertyInfo.java -- Property information about drivers.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* ParameterMetaData.java
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,54 +35,69 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
 /**
- * This class holds a driver property that can be used for querying or
- * setting driver configuration parameters.
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.4
  */
-public class DriverPropertyInfo 
+public interface ParameterMetaData 
 {
-  /**
-   * The name of the property.
-   */
-  public String name;
+  public static final int parameterNoNulls = 0;
+
+  public static final int parameterNullable = 1;
+
+  public static final int parameterNullableUnknown = 2;
+
+  public static final int parameterModeUnknown = 0;
+
+  public static final int parameterModeIn = 1;
+
+  public static final int parameterModeInOut = 2;
+
+  public static final int parameterModeOut = 4;
 
   /**
-   * A description of the property, possibly <code>null</code>.
+   * @since 1.4
    */
-  public String description;
+  public int getParameterCount() throws SQLException;
 
   /**
-   * A flag indicating whether or not a value for this property is required
-   * in order to connect to the database.
+   * @since 1.4
    */
-  public boolean required;
+  public int isNullable(int param) throws SQLException;
 
   /**
-   * This is the value of the property.
+   * @since 1.4
    */
-  public String value;
+  public boolean isSigned(int param) throws SQLException;
 
   /**
-    * If values are restricted to certain choices, this is the list of valid
-    * ones.  Otherwise it is <code>null</code>.
-    */
-  public String[] choices;
+   * @since 1.4
+   */
+  public int getPrecision(int param) throws SQLException;
 
   /**
-   * This method initializes a new instance of <code>DriverPropertyInfo</code>
-   * with the specified name and value.  All other fields are defaulted.
-   *
-   * @param name The name of the property.
-   * @param value The value to assign to the property.
+   * @since 1.4
    */
-  public DriverPropertyInfo(String name, String value)
-  {
-    this.name = name;
-    this.value = value;
-  }
+  public int getScale(int param) throws SQLException;
+
+  /**
+   * @since 1.4
+   */
+  public int getParameterType(int param) throws SQLException;
+
+  /**
+   * @since 1.4
+   */
+  public String getParameterTypeName(int param) throws SQLException;
+
+  /**
+   * @since 1.4
+   */
+  public String getParameterClassName(int param) throws SQLException;
+
+  /**
+   * @since 1.4
+   */
+  public int getParameterMode(int param) throws SQLException;
 }

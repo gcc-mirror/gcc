@@ -1,5 +1,5 @@
 /* Struct.java -- Mapping for a SQL structured type.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,51 +41,37 @@ package java.sql;
 import java.util.Map;
 
 /**
-  * This interface implements the standard type mapping for a SQL 
-  * structured type.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public interface Struct
+ * This interface implements the standard type mapping for a SQL 
+ * structured type.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
+public interface Struct 
 {
+  /**
+   * This method returns the name of the SQL structured type for this
+   * object.
+   *
+   * @return The SQL structured type name.
+   * @exception SQLException If an error occurs.
+   */
+  public String getSQLTypeName() throws SQLException;
 
-/**
-  * This method returns the name of the SQL structured type for this
-  * object.
-  *
-  * @return The SQL structured type name.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract String
-getSQLTypeName() throws SQLException;
+  /**
+   * This method returns the attributes of this SQL structured type.
+   *
+   * @return The attributes of this structure type.
+   * @exception SQLException If an error occurs.
+   */
+  public Object[] getAttributes() throws SQLException;
 
-/*************************************************************************/
-
-/**
-  * This method returns the attributes of this SQL structured type.
-  *
-  * @return The attributes of this structure type.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract Object[]
-getAttributes() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the attributes of this SQL structured type.
-  * The specified map of type mappings overrides the default mappings.
-  *
-  * @param map The map of SQL type mappings.
-  *
-  * @return The attributes of this structure type.
-  *
-  * @exception SQLException If a error occurs.
-  */
-public abstract Object[]
-getAttributes(Map map) throws SQLException;
-
-} // interface Struct
-
+  /**
+   * This method returns the attributes of this SQL structured type.
+   * The specified map of type mappings overrides the default mappings.
+   *
+   * @param map The map of SQL type mappings.
+   * @return The attributes of this structure type.
+   * @exception SQLException If a error occurs.
+   */
+  public Object[] getAttributes(Map map) throws SQLException;
+}
