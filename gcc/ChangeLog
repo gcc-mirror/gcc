@@ -1,3 +1,11 @@
+Wed Nov 10 03:58:08 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* Makefile.in ($(HOST_PREFIX_1)rtl.o): Update dependencies to
+	match rtl.o's: added ggc.h and toplev.h
+	($(HOST_PREFIX_1)print-rtl.o): Likewise: added system.h.
+	($(HOST_PREFIX_1)rtlanal.o): Likewise: added system.h.
+	($(HOST_PREFIX_1)obstack.o): Likewise: added $(CONFIG_H).
+
 Tue Nov  9 10:30:08 1999  Tom Tromey  <tromey@cygnus.com>
 
 	* config/i386/xm-djgpp.h (HAVE_DOS_BASED_FILE_SYSTEM): Renamed
