@@ -9642,6 +9642,22 @@ expand_increment (exp, post, ignore)
 
 	  return enqueue_insn (op0, GEN_FCN (icode) (op0, op0, op1));
 	}
+      if (icode != (int) CODE_FOR_nothing && GET_CODE (op0) == MEM)
+	{
+	  rtx addr = force_reg (Pmode, XEXP (op0, 0));
+	  rtx temp, result;
+
+	  op0 = change_address (op0, VOIDmode, addr);
+	  temp = force_reg (GET_MODE (op0), op0);
+	  if (! (*insn_operand_predicate[icode][2]) (op1, mode))
+	    op1 = force_reg (mode, op1);
+
+	  /* The increment queue is LIFO, thus we have to `queue'
+	     the instructions in reverse order.  */
+	  enqueue_insn (op0, gen_move_insn (op0, temp));
+	  result = enqueue_insn (temp, GEN_FCN (icode) (temp, temp, op1));
+	  return result;
+	}
     }
 
   /* Preincrement, or we can't increment with one simple insn.  */
