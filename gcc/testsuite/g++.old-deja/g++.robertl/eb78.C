@@ -119,6 +119,7 @@ tryIt(const String& filename)
   }
 }
 
+int
 main()
 {
   tryIt("goodFile.txt");

@@ -11,6 +11,7 @@ public:
   int a;
 };
 
+int
 main()
 {
   char buffer[1024];

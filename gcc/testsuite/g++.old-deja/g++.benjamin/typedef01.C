@@ -40,12 +40,7 @@ struct S {
 typedef struct S T;
 
 S a = T();                      // OK 
-struct T * p;                   // error
+struct T * p;                   // ERROR - using typedef after struct
 
 //case01
 typedef bool short;// ERROR - .*
-
-
-
-
-
