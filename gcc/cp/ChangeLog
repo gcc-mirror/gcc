@@ -1,5 +1,11 @@
 1999-09-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (initialize_local_var): Handle static variables here.
+	(cp_finish_decl): Tweak handling of function-scope static
+	variables.
+	* semantics.c (expand_stmt): Handle DECL_STMTs for static
+	variables.
+
 	* method.c (emit_thunk): Don't crash when -fsyntax-only.
 
 	* cp-tree.h (lang_decl_flags): Add global_ctor_p and

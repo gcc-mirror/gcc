@@ -2274,11 +2274,9 @@ expand_stmt (t)
 	    /* If this is a declaration for an automatic local
 	       variable, initialize it.  Note that we might also see a
 	       declaration for a namespace-scope object (declared with
-	       `extern') or an object with static storage duration
-	       (declared with `static').  We don't have to handle the
-	       initialization of those objects here; the former can
-	       never be a definition (only a declaration), and the
-	       latter is handled in finish_file.  */
+	       `extern').  We don't have to handle the initialization
+	       of those objects here; they can only be declarations,
+	       rather than definitions.  */
 	    if (TREE_CODE (decl) == VAR_DECL 
 		&& !TREE_STATIC (decl)
 		&& !DECL_EXTERNAL (decl))
@@ -2290,6 +2288,10 @@ expand_stmt (t)
 		  expand_anon_union_decl (decl, NULL_TREE, 
 					  DECL_ANON_UNION_ELEMS (decl));
 	      }
+	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	      rest_of_decl_compilation 
+		(decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		 /*top_level=*/0, /*at_end=*/0);
 
 	    resume_momentary (i);
 	  }

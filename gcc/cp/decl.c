@@ -7470,15 +7470,27 @@ initialize_local_var (decl, init, flags)
      tree init;
      int flags;
 {
-  tree type;
+  tree type = TREE_TYPE (decl);
 
-  type = complete_type (TREE_TYPE (decl));
+  /* If the type is bogus, don't bother initializing the variable.  */
+  if (type == error_mark_node)
+    return;
 
   if (DECL_SIZE (decl) == NULL_TREE && !TREE_STATIC (decl))
     {
       /* If we used it already as memory, it must stay in memory.  */
       DECL_INITIAL (decl) = NULL_TREE;
       TREE_ADDRESSABLE (decl) = TREE_USED (decl);
+    }
+
+  /* Local statics are handled differently from ordinary automatic
+     variables.  */
+  if (TREE_STATIC (decl))
+    {
+      if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
+	  || TYPE_NEEDS_DESTRUCTOR (type))
+	expand_static_init (decl, init);
+      return;
     }
 
   if (DECL_SIZE (decl) && type != error_mark_node)
@@ -7776,13 +7788,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  if (init)
 	    DECL_INITIAL (decl) = init;
 	}
-      else if (TREE_STATIC (decl) && type != error_mark_node)
-	{
-	  /* Cleanups for static variables are handled by `finish_file'.  */
-	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
-	      || TYPE_NEEDS_DESTRUCTOR (type))
-	    expand_static_init (decl, init);
-	}
       else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL)
 	{
 	  /* This is a local declaration.  */
@@ -7807,6 +7812,13 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      /* Clean up the variable.  */
 	      destroy_local_var (decl);
 	    }
+	}
+      else if (TREE_STATIC (decl) && type != error_mark_node)
+	{
+	  /* Cleanups for static variables are handled by `finish_file'.  */
+	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
+	      || TYPE_NEEDS_DESTRUCTOR (type))
+	    expand_static_init (decl, init);
 	}
     finish_end0:
 
