@@ -3960,14 +3960,6 @@ function_arg (cum, mode, type, named)
 	  int n_words;
 	  int gregno = cum->sysv_gregno;
 
-	  if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode)
-	      && !cum->stdarg
-	      && cum->sysv_gregno <= GP_ARG_MAX_REG)
-	    {
-	      cum->sysv_gregno++;
-	      return;
-	    }
-
 	  /* Aggregates and IEEE quad get passed by reference.  */
 	  if ((type && AGGREGATE_TYPE_P (type))
 	      || mode == TFmode)
