@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Clue the simulator in to use netbsd */
 #undef LINK_START_SPEC
-#define LINK_START_SPEC "%{msim: %{!Ttext*: -Ttext 0x10000000}}"
+#define LINK_START_SPEC "%{msim: %{!Ttext*: -Ttext 0x10000074}}"
 
 /* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
 #undef  STARTFILE_SPEC
