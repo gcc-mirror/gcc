@@ -1,3 +1,7 @@
+2003-01-25  Andrew Haley  <aph@redhat.com>
+
+	* tree-inline.c (walk_tree): Add CHAR_TYPE.
+
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* doc/install.texi: Add documentation for installation into
