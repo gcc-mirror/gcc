@@ -127,6 +127,7 @@ static void	 thumb_output_function_prologue PARAMS ((FILE *, Hint));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes PARAMS ((tree));
 static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
+static int	 arm_use_dfa_pipeline_interface PARAMS ((void));
 static int	 count_insns_for_constant	PARAMS ((Hint, int));
 static int	 arm_get_strip_length		PARAMS ((int));
 static bool      arm_function_ok_for_sibcall    PARAMS ((tree, tree));
@@ -192,6 +193,9 @@ static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST arm_adjust_cost
+
+#undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE arm_use_dfa_pipeline_interface
 
 #undef TARGET_ENCODE_SECTION_INFO
 #ifdef ARM_PE
@@ -3466,6 +3470,12 @@ arm_address_cost (X)
    ? 1 : 2)
      
   return (TARGET_ARM ? ARM_ADDRESS_COST (X) : THUMB_ADDRESS_COST (X));
+}
+
+static int
+arm_use_dfa_pipeline_interface ()
+{
+  return true;
 }
 
 static int
