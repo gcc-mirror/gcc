@@ -1,3 +1,10 @@
+2003-08-19  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libgcj/11575
+	* java/io/natFileDescriptorWin32.cc (open): Set create
+	flag to OPEN_AWAYS when READ & WRITE regardless of APPEND flag.
+	Honor EXCL when openning with WRITE flag. 
+
 2003-08-19  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* include/jvm.h: New class _Jv_TempUTFString (helper class for
