@@ -1245,6 +1245,11 @@ walk_tree (tp, func, data)
     {
       int i, len;
 
+      /* Set lineno here so we get the right instantiation context
+	 if we call instantiate_decl from inlinable_function_p.  */
+      if (statement_code_p (code) && !STMT_LINENO_FOR_FN_P (*tp))
+	lineno = STMT_LINENO (*tp);
+
       /* Walk over all the sub-trees of this operand.  */
       len = first_rtl_op (code);
       /* TARGET_EXPRs are peculiar: operands 1 and 3 can be the same.
