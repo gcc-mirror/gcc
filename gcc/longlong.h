@@ -317,8 +317,8 @@
 
 #if defined (___IBMR2__) /* IBM RS6000 */
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("a%I5 %1,%4,%5
-	ae %0,%2,%3"							\
+  __asm__ ("{a%I5|add%I5c} %1,%4,%5
+	{ae|adde} %0,%2,%3"						\
 	   : "=r" ((USItype)(sh)),					\
 	     "=&r" ((USItype)(sl))					\
 	   : "%r" ((USItype)(ah)),					\
@@ -326,8 +326,8 @@
 	     "%r" ((USItype)(al)),					\
 	     "rI" ((USItype)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sf%I4 %1,%5,%4
-	sfe %0,%3,%2"							\
+  __asm__ ("{sf%I4|subf%I4c} %1,%5,%4
+	{sfe|subfe} %0,%3,%2"						\
 	   : "=r" ((USItype)(sh)),					\
 	     "=&r" ((USItype)(sl))					\
 	   : "r" ((USItype)(ah)),					\
@@ -359,7 +359,7 @@
 #define UDIV_TIME 40
 #define UDIV_NEEDS_NORMALIZATION 1
 #define count_leading_zeros(count, x) \
-  __asm__ ("cntlz %0,%1"						\
+  __asm__ ("{cntlz|cntlzw} %0,%1"					\
 	   : "=r" ((USItype)(count))					\
 	   : "r" ((USItype)(x)))
 #endif /* ___IBMR2__ */
