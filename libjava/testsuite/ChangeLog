@@ -1,3 +1,17 @@
+2003-03-22  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (gcj_invoke): Moved...
+	* libjava.jni/jni.exp: ...from here.
+
+	* libjava.cni/shortfield.out: New file.
+	* libjava.cni/shortfield.java: New file.
+	* libjava.cni/natshortfield.cc: New file.
+	* libjava.cni/natlongfield.cc: New file.
+	* libjava.cni/longfield.out: New file.
+	* libjava.cni/longfield.java: New file.
+
+	* libjava.cni/cni.exp: New file.
+
 2003-03-11  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/initfield.java: New file.

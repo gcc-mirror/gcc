@@ -43,50 +43,6 @@ proc gcj_jni_build_header {file} {
   return 1
 }
 
-# Invoke the program and see what happens.  Return 0 on failure.
-proc gcj_invoke {program expectFile ld_library_additions} {
-  global env
-  set lib_path $env(LD_LIBRARY_PATH)
-
-  set newval .
-  if {[llength $ld_library_additions] > 0} {
-    append newval :[join $ld_library_additions :]
-  }
-  append newval :$lib_path
-
-  setenv LD_LIBRARY_PATH $newval
-  setenv SHLIB_PATH $newval
-
-  verbose "LD_LIBRARY_PATH=$env(LD_LIBRARY_PATH)"
-
-  set result [libjava_load ./$program]
-  set status [lindex $result 0]
-  set output [lindex $result 1]
-
-  # Restore setting
-  setenv LD_LIBRARY_PATH $lib_path
-  setenv SHLIB_PATH $lib_path
-
-  if {$status != "pass"} {
-    verbose "got $output"
-    fail "$program run"
-    untested "$program output"
-    return 0
-  }
-
-  set id [open $expectFile r]
-  set expected [read $id]
-  close $id
-
-  if {! [string compare $output $expected]} {
-    pass "$program output"
-    return 1
-  } else {
-    fail "$program output"
-    return 0
-  }
-}
-
 # Do all the work for a single JNI test.  Return 0 on failure.
 proc gcj_jni_test_one {file} {
   global runtests
