@@ -1,5 +1,15 @@
 2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* gnu/java/security/action/GetPropertyAction.java (setParameters):
+	Renamed from 'setName'. New 2-argument form with default value.
+	(run): Pass default 'value' parameter to System.getProperty().
+	* gnu/java/security/action/SetAccessibleAction.java: Fix javadoc
+	typos.
+	* gnu/java/net/protocol/http/Connection.java: Use 'setParameters'
+	not 'setName'.
+
+2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* configure.in: Check for minimum GTK version 2.4 requirement.
 	* configure: Rebuilt.
 

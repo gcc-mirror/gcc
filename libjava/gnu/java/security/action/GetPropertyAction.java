@@ -51,7 +51,8 @@ import java.security.PrivilegedAction;
  */
 public class GetPropertyAction implements PrivilegedAction
 {
-  String propName;
+  String name;
+  String value = null;
 
   public GetPropertyAction()
   {
@@ -59,17 +60,30 @@ public class GetPropertyAction implements PrivilegedAction
   
   public GetPropertyAction(String propName)
   {
-    this.propName = propName;
+    setParameters(propName);
+  }
+
+  public GetPropertyAction(String propName, String defaultValue)
+  {
+    setParameters(propName, defaultValue);
   }
   
   public Object run()
   {
-    return System.getProperty(propName);
+    return System.getProperty(name, value);
   }
   
-  public GetPropertyAction setName(String propName)
+  public GetPropertyAction setParameters(String propName)
   {
-    this.propName = propName;
+    this.name = propName;
+    this.value = null;
+    return this;
+  }
+
+  public GetPropertyAction setParameters(String propName, String defaultValue)
+  {
+    this.name = propName;
+    this.value = defaultValue;
     return this;
   }
 }
