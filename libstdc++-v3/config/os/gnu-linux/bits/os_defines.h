@@ -58,18 +58,14 @@ typedef __loff_t __off64_t;
 // our definitions.
 #define __NO_MATH_INLINES
 
-#endif /* not glibc 2.1 or higher.  */
+#endif 
 
-# if defined __GLIBC__ && __GLIBC__ >= 2
+#if defined __GLIBC__ && __GLIBC__ >= 2
 // We must not see the optimized string functions GNU libc defines.
-#  define __NO_STRING_INLINES
-# endif
-
-#if defined(__sparc__) && defined(__arch64__)
-#define __glibcpp_long_bits 64
+#define __NO_STRING_INLINES
 #endif
 
-#ifdef __powerpc64__
+#if defined(__powerpc64__) || defined(__s390x__) || (defined(__sparc__) && defined(__arch64__))
 #define __glibcpp_long_bits 64
 #endif
 

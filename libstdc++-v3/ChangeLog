@@ -1,4 +1,13 @@
 2001-10-25  Benjamin Kosnik  <bkoz@redhat.com>
+	    Peter Schmid <schmid@snake.iap.physik.tu-darmstadt.de>
+	    Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+	
+	* config/os/gnu-linux/bits/os_defines.h: Set to 64 bit longs with
+	__s390x__ only.
+	* include/bits/std_limits.h: Fix wchar_t issues.
+	* config/os/aix/bits/os_defines.h: Fix.
+	
+2001-10-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (collate::do_transform): Fix.
 

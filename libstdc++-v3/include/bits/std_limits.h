@@ -96,7 +96,7 @@
 #define __glibcpp_wchar_t_bits 32
 #endif
 #ifndef __glibcpp_wchar_t_is_signed
-#define __glibcpp_wchar_t_is_signed false
+#define __glibcpp_wchar_t_is_signed true
 #endif
 #ifdef _GLIBCPP_USE_LONG_LONG
 #ifndef __glibcpp_long_long_bits
