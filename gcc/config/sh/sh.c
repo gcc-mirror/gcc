@@ -149,6 +149,7 @@ static void pop PARAMS ((int));
 static void push_regs PARAMS ((int, int));
 static int calc_live_regs PARAMS ((int *, int *));
 static void mark_use PARAMS ((rtx, rtx *));
+static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 
 /* Print the operand address in x to the stream.  */
 
@@ -3793,6 +3794,18 @@ calc_live_regs (count_ptr, live_regs_mask2)
 
 /* Code to generate prologue and epilogue sequences */
 
+static HOST_WIDE_INT
+rounded_frame_size (pushed)
+     int pushed;
+{
+  HOST_WIDE_INT size = get_frame_size ();
+  HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
+
+  if (TARGET_ALIGN_DOUBLE && pushed & 1)
+    size += 4;
+  return size + align - 1 & -align;
+}
+
 void
 sh_expand_prologue ()
 {
@@ -3800,7 +3813,6 @@ sh_expand_prologue ()
   int d, i;
   int live_regs_mask2;
   int save_flags = target_flags;
-  int double_align = 0;
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
@@ -3845,12 +3857,9 @@ sh_expand_prologue ()
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
 
-  if (TARGET_ALIGN_DOUBLE && d & 1)
-    double_align = 4;
-
   target_flags = save_flags;
 
-  output_stack_adjust (-get_frame_size () - double_align,
+  output_stack_adjust (-rounded_frame_size (d),
 		       stack_pointer_rtx, 3);
 
   if (frame_pointer_needed)
@@ -3865,12 +3874,11 @@ sh_expand_epilogue ()
 
   int live_regs_mask2;
   int save_flags = target_flags;
-  int frame_size = get_frame_size ();
+  int frame_size;
 
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
 
-  if (TARGET_ALIGN_DOUBLE && d & 1)
-    frame_size += 4;
+  frame_size = rounded_frame_size (d);
 
   if (frame_pointer_needed)
     {
@@ -4295,13 +4303,12 @@ initial_elimination_offset (from, to)
 {
   int regs_saved;
   int total_saved_regs_space;
-  int total_auto_space = get_frame_size ();
+  int total_auto_space;
   int save_flags = target_flags;
 
   int live_regs_mask, live_regs_mask2;
   live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
-  if (TARGET_ALIGN_DOUBLE && regs_saved & 1)
-    total_auto_space += 4;
+  total_auto_space = rounded_frame_size (regs_saved);
   target_flags = save_flags;
 
   total_saved_regs_space = (regs_saved) * 4;
