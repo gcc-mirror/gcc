@@ -1,5 +1,7 @@
 2004-08-18  James E Wilson  <wilson@specifixinc.com>
 
+	* config/mips/sb1.md (ir_sb1_divsf_1pipe): Renamed from ...1pipes.
+
 	* config/mips/mips.md (type): Add frdiv.
 	(divsf3+1, divsf3+2): Change type to frdiv.
 	* config/mips/sb1.md (ir_sb1_recipsf_2pipes, ir_sb1_recipsf_1pipe,
