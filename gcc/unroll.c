@@ -1702,8 +1702,6 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		      else
 			label = XEXP (XEXP (tem, 2), 0);
 		    }
-		  else
-		    abort ();
 		}
 
 	      if (label && GET_CODE (label) == CODE_LABEL)
