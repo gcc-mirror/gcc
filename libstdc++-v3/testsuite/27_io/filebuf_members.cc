@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -89,23 +89,24 @@ void test_02()
   // read (ext)
   FILE* f2 = fopen(name_01, "r");
   VERIFY( f2 != NULL );
+  if (f2)
   {
     __gnu_cxx::stdio_filebuf<char> fb(f2, std::ios_base::in, 512);
+    close_num = fclose(f2);
   }
-  close_num = fclose(f2);
   VERIFY( close_num == 0 );
-
 
   // read (standard)
   FILE* f = fopen(name_01, "r");
   VERIFY( f != NULL );
+  if (f)
   {
     std::ifstream ifstream1(name_01);
     VERIFY( ifstream1.is_open() );
     std::ios_base::iostate st01 = ifstream1.rdstate();
     VERIFY( st01 == std::ios_base::goodbit );
+    close_num = fclose(f);
   }
-  close_num = fclose(f);
   VERIFY( close_num == 0 );
 }
 
@@ -128,9 +129,11 @@ void test_03()
 void
 test_04()
 {
+  bool test = true;
+  const char* name = "tmp_fifo1";
   signal(SIGPIPE, SIG_IGN);
   
-  if (0 != mkfifo("xxx", S_IRWXU))
+  if (0 != mkfifo(name, S_IRWXU))
     {
       std::cerr << "failed to creat fifo" << std::endl;
       exit(-1);
@@ -140,18 +143,18 @@ test_04()
   if (fval == -1)
     {
       std::cerr << "failed to fork" << std::endl;
-      unlink("xxx");
+      unlink(name);
       exit(-1);
     }
   else if (fval == 0)
     {
-      std::ifstream ifs("xxx");
+      std::ifstream ifs(name);
       sleep(1);
       ifs.close();
       exit(0);
     }
 
-  std::ofstream ofs("xxx");
+  std::ofstream ofs(name);
   sleep(2);
   ofs.put('t');
 
@@ -166,25 +169,27 @@ test_04()
   ofs.close();
   if (!(ofs.rdstate() & std::ios::failbit))
     {
-      std::cerr << "fail bit was not set!" << std::endl;
-      unlink("xxx");
+      test = false;
+      VERIFY( test );
+      unlink(name);
       exit(-1);
     }
 
-  unlink("xxx");
+  unlink(name);
 }
 
 // Charles Leggett <CGLeggett@lbl.gov>
 void test_05()
 {
   bool test = true;
+  const char* name = "tmp_file5";
 
   std::fstream scratch_file;
 
-  scratch_file.open("SCRATCH", std::ios::out);
+  scratch_file.open(name, std::ios::out);
   scratch_file.close();
 
-  scratch_file.open("SCRATCH", std::ios::in);
+  scratch_file.open(name, std::ios::in);
   if (!scratch_file)
     VERIFY( false );
   scratch_file.close();
@@ -194,27 +199,64 @@ void test_05()
 void test_06()
 {
   bool test = true;
+  const char* name = "tmp_fifo2";
 
   signal(SIGPIPE, SIG_IGN);
 
-  unlink("yyy");
-  mkfifo("yyy", S_IRWXU);
+  unlink(name);
+  mkfifo(name, S_IRWXU);
 	
   if (!fork())
     {
       std::filebuf fbuf;
-      fbuf.open("yyy", std::ios_base::in);
+      fbuf.open(name, std::ios_base::in);
       fbuf.sgetc();
       fbuf.close();
-
       exit(0);
     }
 
   std::filebuf fbuf;
-  std::filebuf* r =
-    fbuf.open("yyy", std::ios_base::out | std::ios_base::ate);
+  std::filebuf* r = fbuf.open(name, std::ios_base::out | std::ios_base::ate);
   VERIFY( !fbuf.is_open() );
   VERIFY( r == NULL );
+}
+
+// libstdc++/9964
+void test_07()
+{
+  using namespace std;
+  bool test = true;
+
+  const char* name = "tmp_fifo3";
+
+  signal(SIGPIPE, SIG_IGN);
+
+  unlink(name);  
+  mkfifo(name, S_IRWXU);
+  
+  int child = fork();
+  VERIFY( child != -1 );
+
+  if (child == 0)
+    {
+      filebuf fbin;
+      fbin.open(name, ios_base::in);
+      sleep(1);
+      fbin.close();
+      exit(0);
+    }
+  
+  filebuf fb;
+  filebuf* ret = fb.open(name, ios_base::out | ios_base::trunc);
+  VERIFY( ret != NULL );
+  VERIFY( fb.is_open() );
+
+  sleep(2);
+  fb.sputc('a');
+
+  ret = fb.close();
+  VERIFY( ret == NULL );
+  VERIFY( !fb.is_open() );
 }
 
 int
@@ -226,6 +268,7 @@ main()
   test_04();
   test_05();
   test_06();
+  test_07();
   return 0;
 }
 

@@ -1,3 +1,17 @@
+2003-03-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/Makefile.am (CLEANFILES): Add tmp*.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/27_io/filebuf_members.cc: Consistently name tmp files.
+	Cleanups.
+
+2003-03-17  Petur Runolfsson  <peturr02@ru.is>
+ 
+        PR libstdc++/9964
+        * include/bits/fstream.tcc (basic_filebuf::close):
+        Always close file, even when write fails.
+        * testsuite/27_io/filebuf_members.cc (test_07):  New test.
+ 
 2003-03-17  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* libsupc++/Makefile.am (C_COMPILE): Remove.
