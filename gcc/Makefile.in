@@ -227,6 +227,7 @@ LIBCONVERT =
 INSTALL_HEADERS=install-headers
 
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
+# This value is overridden directly by configure.
 FIXINCLUDES=fixincludes
 
 # Additional directories of header files to run fixincludes on.
@@ -1312,12 +1313,16 @@ stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimi
 stmp-fixincludes: $(srcdir)/$(FIXINCLUDES)
 	rm -rf include
 	mkdir include
-	for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
-	  if [ -d $$dir ]; \
-	  then \
-	    $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
-	  else true; fi; \
-	done
+	if [ $(FIXINCLUDES) != Makefile.in ] \
+	then \
+	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
+	    if [ -d $$dir ]; \
+	    then \
+	      $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
+	    else true; fi; \
+	  done \
+	else true; \
+	fi
 	touch stmp-fixincludes
 
 # Remake the info files.
