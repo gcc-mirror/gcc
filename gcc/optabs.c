@@ -5193,6 +5193,8 @@ init_optabs ()
   sqrt_optab = init_optab (SQRT);
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
+  exp_optab = init_optab (UNKNOWN);
+  log_optab = init_optab (UNKNOWN);
   strlen_optab = init_optab (UNKNOWN);
   cbranch_optab = init_optab (UNKNOWN);
   cmov_optab = init_optab (UNKNOWN);

@@ -4500,6 +4500,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex exit
 @findex _exit
 @findex _Exit
+@findex exp
+@findex expf
+@findex expl
 @findex fabs
 @findex fabsf
 @findex fabsl
@@ -4512,6 +4515,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex index
 @findex labs
 @findex llabs
+@findex log
+@findex logf
+@findex logl
 @findex memcmp
 @findex memcpy
 @findex memset
@@ -4577,13 +4583,15 @@ The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl},
 @code{cimagl}, @code{llabs} and @code{imaxabs} are handled as built-in
 functions except in strict ISO C90 mode.  There are also built-in
 versions of the ISO C99 functions @code{cosf}, @code{cosl},
-@code{fabsf}, @code{fabsl}, @code{sinf}, @code{sinl}, @code{sqrtf}, and
+@code{expf}, @code{expl}, @code{fabsf}, @code{fabsl},
+@code{logf}, @code{logl}, @code{sinf}, @code{sinl}, @code{sqrtf}, and
 @code{sqrtl}, that are recognized in any mode since ISO C90 reserves
 these names for the purpose to which ISO C99 puts them.  All these
 functions have corresponding versions prefixed with @code{__builtin_}.
 
-The ISO C90 functions @code{abs}, @code{cos}, @code{fabs},
-@code{fprintf}, @code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy},
+The ISO C90 functions @code{abs}, @code{cos}, @code{exp}, @code{fabs},
+@code{fprintf}, @code{fputs}, @code{labs}, @code{log},
+@code{memcmp}, @code{memcpy},
 @code{memset}, @code{printf}, @code{sin}, @code{sqrt}, @code{strcat},
 @code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
 @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},

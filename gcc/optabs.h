@@ -131,6 +131,10 @@ enum optab_index
   OTI_sin,
   /* Cosine */
   OTI_cos,
+  /* Exponential */
+  OTI_exp,
+  /* Natural Logarithm */
+  OTI_log,
 
   /* Compare insn; two operands.  */
   OTI_cmp,
@@ -198,6 +202,8 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define sqrt_optab (optab_table[OTI_sqrt])
 #define sin_optab (optab_table[OTI_sin])
 #define cos_optab (optab_table[OTI_cos])
+#define exp_optab (optab_table[OTI_exp])
+#define log_optab (optab_table[OTI_log])
 
 #define cmp_optab (optab_table[OTI_cmp])
 #define ucmp_optab (optab_table[OTI_ucmp])

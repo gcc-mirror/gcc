@@ -1525,7 +1525,15 @@ expand_builtin_mathfn (exp, target, subtarget)
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
       builtin_optab = sqrt_optab; break;
-     default:
+    case BUILT_IN_EXP:
+    case BUILT_IN_EXPF:
+    case BUILT_IN_EXPL:
+      builtin_optab = exp_optab; break;
+    case BUILT_IN_LOG:
+    case BUILT_IN_LOGF:
+    case BUILT_IN_LOGL:
+      builtin_optab = log_optab; break;
+    default:
       abort ();
     }
 
@@ -3689,11 +3697,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   if (!optimize && !CALLED_AS_BUILT_IN (fndecl))
     switch (fcode)
       {
-      case BUILT_IN_SIN:
-      case BUILT_IN_COS:
       case BUILT_IN_SQRT:
       case BUILT_IN_SQRTF:
       case BUILT_IN_SQRTL:
+      case BUILT_IN_SIN:
+      case BUILT_IN_SINF:
+      case BUILT_IN_SINL:
+      case BUILT_IN_COS:
+      case BUILT_IN_COSF:
+      case BUILT_IN_COSL:
+      case BUILT_IN_EXP:
+      case BUILT_IN_EXPF:
+      case BUILT_IN_EXPL:
       case BUILT_IN_MEMSET:
       case BUILT_IN_MEMCPY:
       case BUILT_IN_MEMCMP:
@@ -3764,6 +3779,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_COS:
     case BUILT_IN_COSF:
     case BUILT_IN_COSL:
+    case BUILT_IN_EXP:
+    case BUILT_IN_EXPF:
+    case BUILT_IN_EXPL:
+    case BUILT_IN_LOG:
+    case BUILT_IN_LOGF:
+    case BUILT_IN_LOGL:
       /* Treat these like sqrt only if unsafe math optimizations are allowed,
 	 because of possible accuracy problems.  */
       if (! flag_unsafe_math_optimizations)

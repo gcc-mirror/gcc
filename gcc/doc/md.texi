@@ -2523,7 +2523,45 @@ Store the absolute value of operand 1 into operand 0.
 Store the square root of operand 1 into operand 0.
 
 The @code{sqrt} built-in function of C always uses the mode which
-corresponds to the C data type @code{double}.
+corresponds to the C data type @code{double} and the @code{sqrtf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{cos@var{m}2} instruction pattern
+@item @samp{cos@var{m}2}
+Store the cosine of operand 1 into operand 0.
+
+The @code{cos} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{cosf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{sin@var{m}2} instruction pattern
+@item @samp{sin@var{m}2}
+Store the sine of operand 1 into operand 0.
+
+The @code{sin} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{sinf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{exp@var{m}2} instruction pattern
+@item @samp{exp@var{m}2}
+Store the exponential of operand 1 into operand 0.
+
+The @code{exp} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{expf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{log@var{m}2} instruction pattern
+@item @samp{log@var{m}2}
+Store the natural logarithm of operand 1 into operand 0.
+
+The @code{log} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{logf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
 
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
