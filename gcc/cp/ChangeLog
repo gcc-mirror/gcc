@@ -1,3 +1,7 @@
+2001-06-27  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* decl2.c (import_export_class): Update.
+
 2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (init_error): Adjust settings.
