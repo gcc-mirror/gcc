@@ -1,3 +1,8 @@
+2001-10-10  Ed Schonberg <schonber@gnat.com>
+
+	* einfo.adb (Write_Entity_Flags): Elaboration_Entity_Required 
+	is Flag174.
+
 2001-10-10  Geert Bosch  <bosch@gnat.com>
 
 	* snames.ads: Add new names for project facility.

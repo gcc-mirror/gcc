@@ -5798,7 +5798,7 @@ package body Einfo is
       W ("Depends_On_Private",            Flag14  (Id));
       W ("Discard_Names",                 Flag88  (Id));
       W ("Elaborate_All_Desirable",       Flag146 (Id));
-      W ("Elaboration_Entity_Required",   Flag175 (Id));
+      W ("Elaboration_Entity_Required",   Flag174 (Id));
       W ("Entry_Accepted",                Flag152 (Id));
       W ("Finalize_Storage_Only",         Flag158 (Id));
       W ("From_With_Type",                Flag159 (Id));
