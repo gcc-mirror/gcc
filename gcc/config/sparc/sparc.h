@@ -632,8 +632,7 @@ extern char leaf_reg_backmap[];
    a paradoxical subreg in a float/fix conversion insn.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
-  (flag_pic && pic_address_needs_scratch (IN) ? GENERAL_REGS	\
-   : ((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)\
+  (((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)\
       && (GET_CODE (IN) == MEM					\
 	  || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
 	      && true_regnum (IN) == -1))) ? GENERAL_REGS : NO_REGS)
@@ -1120,12 +1119,20 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 
 #define MAX_REGS_PER_ADDRESS 2
 
-/* Recognize any constant value that is a valid address.  */
+/* Recognize any constant value that is a valid address.
+   When PIC, we do not accept an address that would require a scratch reg
+   to load into a register.  */
 
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH)
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH			\
+   || (GET_CODE (X) == CONST						\
+       && ! (flag_pic && pic_address_needs_scratch (X))))
+
+/* Define this, so that when PIC, reload won't try to reload invalid
+   addresses which require two reload registers.  */
+
+#define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    Anything can be made to work except floating point constants.  */
@@ -1245,7 +1252,9 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 	  else if (flag_pic == 1			\
 		   && GET_CODE (op1) != REG		\
 		   && GET_CODE (op1) != LO_SUM		\
-		   && GET_CODE (op1) != MEM)		\
+		   && GET_CODE (op1) != MEM		\
+		   && (GET_CODE (op1) != CONST_INT	\
+		       || SMALL_INT (op1)))		\
 	    goto ADDR;					\
 	}						\
       else if (RTX_OK_FOR_BASE_P (op0))			\
@@ -1304,7 +1313,7 @@ extern struct rtx_def *legitimize_pic_address ();
 		   force_operand (XEXP (X, 1), NULL_RTX));	\
   if (sparc_x != (X) && memory_address_p (MODE, X))		\
     goto WIN;							\
-  if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0, 0);	\
+  if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0);	\
   else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
     (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
 		   copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
