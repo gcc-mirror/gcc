@@ -1,5 +1,5 @@
 /* Configuration for an i386 running MS-DOS with DJGPP.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -106,7 +106,7 @@ Boston, MA 02111-1307, USA.  */
 \t%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 \t%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 \t%{static:} %{L*} %D %o\
-\t%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
+\t%{!nostdlib:%{!nodefaultlibs:%G}}\
 \t%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
 \t-Tdjgpp.djl %{T*}}}}}}}\n\
 %{!c:%{!M:%{!MM:%{!E:%{!S:stubify %{v} %{o*:%*} %{!o*:a.out} }}}}}"
