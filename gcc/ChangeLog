@@ -1,4 +1,4 @@
-2003-01-10    <aph@host240.cambridge.redhat.com>
+2003-01-10  Andrew Haley  <aph@redhat.com>
 
 	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Rename
 	registers to be in correct order.  Add rip.
