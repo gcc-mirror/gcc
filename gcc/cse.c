@@ -6043,7 +6043,7 @@ cse_insn (insn, in_libcall_block)
 
   /* Records what this insn does to set CC0.  */
   rtx this_insn_cc0 = 0;
-  enum machine_mode this_insn_cc0_mode;
+  enum machine_mode this_insn_cc0_mode = VOIDmode;
 
   rtx src_eqv = 0;
   struct table_elt *src_eqv_elt = 0;
