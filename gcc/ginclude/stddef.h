@@ -63,6 +63,25 @@
 #undef _PTRDIFF_T_
 #endif
 
+/* On VxWorks, <type/vxTypesBase.h> may have defined macros like
+   _TYPE_size_t which will typedef size_t.  fixincludes patched the
+   vxTypesBase.h so that this macro is only defined if _GCC_SIZE_T is
+   not defined, and so that defining this macro defines _GCC_SIZE_T.
+   If we find that the macros are still defined at this point, we must
+   invoke them so that the type is defined as expected.  */
+#if defined (TYPE_ptrdiff_t) && (defined (__need_ptrdiff_t) || defined (_STDDEF_H_))
+_TYPE_ptrdiff_t;
+#undef _TYPE_ptrdiff_t
+#endif
+#if defined (_TYPE_size_t) && (defined (__need_size_t) || defined (_STDDEF_H_))
+_TYPE_size_t;
+#undef _TYPE_size_t
+#endif
+#if defined (_TYPE_wchar_t) && (defined (__need_wchar_t) || defined (_STDDEF_H_))
+_TYPE_wchar_t;
+#undef _TYPE_wchar_t
+#endif
+
 /* In case nobody has defined these types, but we aren't running under
    GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
    __WCHAR_TYPE__ have reasonable values.  This can happen if the
