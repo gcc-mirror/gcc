@@ -4907,7 +4907,7 @@ handlers.
 @end table
 
 These @samp{-m} switches are supported in addition to the above
-on SPARC V9 processors in 64 bit environments.
+on SPARC V9 processors in 64-bit environments.
 
 @table @gcctabopt
 @item -mlittle-endian
@@ -4915,9 +4915,9 @@ Generate code for a processor running in little-endian mode.
 
 @item -m32
 @itemx -m64
-Generate code for a 32 bit or 64 bit environment.
-The 32 bit environment sets int, long and pointer to 32 bits.
-The 64 bit environment sets int to 32 bits and long and pointer
+Generate code for a 32-bit or 64-bit environment.
+The 32-bit environment sets int, long and pointer to 32 bits.
+The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.
 
 @item -mcmodel=medlow
@@ -4939,9 +4939,9 @@ Pointers are 64 bits.
 
 @item -mcmodel=embmedany
 Generate code for the Medium/Anywhere code model for embedded systems:
-assume a 32 bit text and a 32 bit data segment, both starting anywhere
+assume a 32-bit text and a 32-bit data segment, both starting anywhere
 (determined at link time).  Register %g4 points to the base of the
-data segment.  Pointers still 64 bits.
+data segment.  Pointers are still 64 bits.
 Programs are statically linked, PIC is not supported.
 
 @item -mstack-bias
@@ -5551,12 +5551,12 @@ The addressability of a particular object can be set with the
 @code{model} attribute.
 
 @item -mcode-model=medium
-Assume objects may be anywhere in the 32 bit address space (the compiler
+Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume all subroutines are reachable with the @code{bl} instruction.
 
 @item -mcode-model=large
-Assume objects may be anywhere in the 32 bit address space (the compiler
+Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume subroutines may not be reachable with the @code{bl} instruction
 (the compiler will generate the much slower @code{seth/add3/jl}
@@ -6350,7 +6350,7 @@ root instructions).  @samp{r6000} is the default @var{cpu type} at this
 ISA level.
 
 @item -mips3
-Issue instructions from level 3 of the MIPS ISA (64 bit instructions).
+Issue instructions from level 3 of the MIPS ISA (64-bit instructions).
 @samp{r4000} is the default @var{cpu type} at this ISA level.
 
 @item -mips4
@@ -6689,7 +6689,7 @@ These options are meaningful only on System V Release 3.
 @item -mno-wide-multiply
 @itemx -mwide-multiply
 Control whether GCC uses the @code{mul} and @code{imul} that produce
-64 bit results in @code{eax:edx} from 32 bit operands to do @code{long
+64-bit results in @code{eax:edx} from 32-bit operands to do @code{long
 long} multiplies and 32-bit division by constants.
 
 @item -mrtd
@@ -7334,7 +7334,7 @@ Compile code for the processor in big endian mode.
 Compile code for the processor in little endian mode.
 
 @item -mdalign
-Align doubles at 64 bit boundaries.  Note that this changes the calling
+Align doubles at 64-bit boundaries.  Note that this changes the calling
 conventions, and thus some functions from the standard C library will
 not work unless you recompile it first with -mdalign.
 

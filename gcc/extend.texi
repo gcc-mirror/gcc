@@ -1940,11 +1940,11 @@ Small model objects live in the lower 16MB of memory (so that their
 addresses can be loaded with the @code{ld24} instruction), and are
 callable with the @code{bl} instruction.
 
-Medium model objects may live anywhere in the 32 bit address space (the
+Medium model objects may live anywhere in the 32-bit address space (the
 compiler will generate @code{seth/add3} instructions to load their addresses),
 and are callable with the @code{bl} instruction.
 
-Large model objects may live anywhere in the 32 bit address space (the
+Large model objects may live anywhere in the 32-bit address space (the
 compiler will generate @code{seth/add3} instructions to load their addresses),
 and may not be reachable with the @code{bl} instruction (the compiler will
 generate the much slower @code{seth/add3/jl} instruction sequence).
@@ -2514,7 +2514,7 @@ or @code{large}, representing each of the code models.
 Small model objects live in the lower 16MB of memory (so that their
 addresses can be loaded with the @code{ld24} instruction).
 
-Medium and large model objects may live anywhere in the 32 bit address space
+Medium and large model objects may live anywhere in the 32-bit address space
 (the compiler will generate @code{seth/add3} instructions to load their
 addresses).
 

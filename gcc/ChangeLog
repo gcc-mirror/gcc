@@ -1,5 +1,11 @@
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
+	* invoke.texi: Use XX-bit instead of XXbit or XX bit where
+	appropriate.
+	* extend.texi: Likewise.
+
+2001-04-28  Andreas Jaeger  <aj@suse.de>
+
         * md.texi: Use XX-bit instead of XXbit or XX bit where
         appropriate.
 
