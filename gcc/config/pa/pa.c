@@ -4117,6 +4117,11 @@ print_operand (file, x, code)
 	fprintf (file, "%d,%d,%d", op[0], op[1], op[2]);
 	return;
       }
+    case 'c':
+      /* We can get here from a .vtable_inherit due to our
+	 CONSTANT_ADDRESS_P rejecting perfectly good constant
+	 addresses.  */
+      break;
     default:
       abort ();
     }
