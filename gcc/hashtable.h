@@ -27,6 +27,7 @@ struct ht_identifier GTY(())
 {
   const unsigned char *str;
   unsigned int len;
+  unsigned int hash_value;
 };
 
 #define HT_LEN(NODE) ((NODE)->len)
