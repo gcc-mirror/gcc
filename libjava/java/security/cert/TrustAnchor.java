@@ -1,5 +1,5 @@
 /* TrustAnchor.java -- an ultimately-trusted certificate.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package java.security.cert;
 
-import java.security.PublicKey;
-
 import gnu.java.security.x509.X500DistinguishedName;
+
+import java.security.PublicKey;
 
 /**
  * An ultimately-trusted certificate to serve as the root of a

@@ -1,5 +1,5 @@
 /* CertStore -- stores and retrieves certificates.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,16 +38,15 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.security.Engine;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
-
 import java.util.Collection;
-
-import gnu.java.security.Engine;
 
 /**
  * A CertStore is a read-only repository for certificates and

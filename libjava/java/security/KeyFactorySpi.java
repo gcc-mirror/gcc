@@ -1,5 +1,5 @@
 /* KeyFactorySpi.java --- Key Factory Service Provider Interface
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,96 +35,98 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
-import java.security.spec.KeySpec;
+
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 /**
-   KeyFactorySpi is the Service Provider Interface (SPI) for the 
-   KeyFactory class. This is the interface for providers to 
-   supply to implement a key factory for an algorithm.
-
-   Key factories are used to convert keys (opaque cryptographic 
-   keys of type Key) into key specifications (transparent 
-   representations of the underlying key material).
-
-   Key factories are bi-directional. They allow a key class 
-   to be converted into a key specification (key material) and
-   back again.
-
-   For example DSA public keys can be specified as 
-   DSAPublicKeySpec or X509EncodedKeySpec. The key factory
-   translate these key specifications. 
-
-   @since JDK 1.2
-   @author Mark Benvenuto
+ * KeyFactorySpi is the Service Provider Interface (SPI) for the 
+ * KeyFactory class. This is the interface for providers to 
+ * supply to implement a key factory for an algorithm.
+ *
+ * Key factories are used to convert keys (opaque cryptographic 
+ * keys of type Key) into key specifications (transparent 
+ * representations of the underlying key material).
+ *
+ * Key factories are bi-directional. They allow a key class 
+ * to be converted into a key specification (key material) and
+ * back again.
+ *
+ * For example DSA public keys can be specified as 
+ * DSAPublicKeySpec or X509EncodedKeySpec. The key factory
+ * translate these key specifications. 
+ *
+ * @since JDK 1.2
+ * @author Mark Benvenuto
  */
 public abstract class KeyFactorySpi
 {
   /**
-     Constucts a new KeyFactorySpi.
+   * Constucts a new KeyFactorySpi.
    */
   public KeyFactorySpi()
   {
   }
 
   /**
-     Generates a public key from the provided key specification.
-
-     @param keySpec key specification
-
-     @return the public key
-
-     @throws InvalidKeySpecException invalid key specification for
-     this key factory to produce a public key
+   * Generates a public key from the provided key specification.
+   *
+   * @param keySpec key specification
+   *
+   * @return the public key
+   *
+   * @throws InvalidKeySpecException invalid key specification for
+   * this key factory to produce a public key
    */
   protected abstract PublicKey engineGeneratePublic(KeySpec keySpec)
     throws InvalidKeySpecException;
 
 
   /**
-     Generates a private key from the provided key specification.
-
-     @param keySpec key specification
-
-     @return the private key
-
-     @throws InvalidKeySpecException invalid key specification for
-     this key factory to produce a private key
+   * Generates a private key from the provided key specification.
+   *
+   * @param keySpec key specification
+   *
+   * @return the private key
+   *
+   * @throws InvalidKeySpecException invalid key specification for
+   * this key factory to produce a private key
    */
   protected abstract PrivateKey engineGeneratePrivate(KeySpec keySpec)
     throws InvalidKeySpecException;
 
   /**
-     Returns a key specification for the given key. keySpec 
-     identifies the specification class to return the key 
-     material in.
-
-     @param key the key
-     @param keySpec the specification class to return the 
-     key material in.
-
-     @return the key specification in an instance of the requested
-     specification class
-
-     @throws InvalidKeySpecException the requested key specification
-     is inappropriate for this key or the key is 
-     unrecognized.
+   * Returns a key specification for the given key. keySpec 
+   * identifies the specification class to return the key 
+   * material in.
+   *
+   * @param key the key
+   * @param keySpec the specification class to return the 
+   * key material in.
+   *
+   * @return the key specification in an instance of the requested
+   * specification class
+   *
+   * @throws InvalidKeySpecException the requested key specification
+   * is inappropriate for this key or the key is 
+   * unrecognized.
    */
   protected abstract KeySpec engineGetKeySpec(Key key, Class keySpec)
     throws InvalidKeySpecException;
 
 
   /**
-     Translates the key from an unknown or untrusted provider
-     into a key for this key factory.
-
-     @param the key from an unknown or untrusted provider
-
-     @return the translated key
-
-     @throws InvalidKeySpecException if the key cannot be 
-     processed by this key factory
+   * Translates the key from an unknown or untrusted provider
+   * into a key for this key factory.
+   *
+   * @param the key from an unknown or untrusted provider
+   *
+   * @return the translated key
+   *
+   * @throws InvalidKeySpecException if the key cannot be 
+   * processed by this key factory
    */
   protected abstract Key engineTranslateKey(Key key)
     throws InvalidKeyException;

@@ -35,13 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
+
+import gnu.java.security.Engine;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
-
-import gnu.java.security.Engine;
 
 /**
  * <p>This <code>Signature</code> class is used to provide applications the

@@ -1,5 +1,5 @@
 /* CodeSource.java -- Code location and certifcates
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,13 +43,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.URL;
 import java.net.SocketPermission;
+import java.net.URL;
 // Note that this overrides Certificate in this package.
 import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,8 +59,8 @@ import java.util.Iterator;
  * represented by a URL), and the list of certificates that are used to
  * check the signatures of signed code loaded from this source.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* X509CRL.java --- X.509 Certificate Revocation List
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,11 +39,11 @@ exception statement from your version. */
 package java.security.cert;
 
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.PublicKey;
-import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.Set;

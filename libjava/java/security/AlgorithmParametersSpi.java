@@ -1,5 +1,5 @@
 /* AlgorithmParametersSpi.java --- Algorithm Parameters SPI
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,79 +35,83 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
-import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.AlgorithmParameterSpec;
+
 import java.io.IOException;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.InvalidParameterSpecException;
 
 /**
-   AlgorithmParametersSpi is the Service Provider Interface
-   for the Algorithm Parameters class. This class is used
-   to manage the algorithm parameters.
-
-   @since JDK 1.2
-   @author Mark Benvenuto
+ * AlgorithmParametersSpi is the Service Provider Interface
+ * for the Algorithm Parameters class. This class is used
+ * to manage the algorithm parameters.
+ *
+ * @since 1.2
+ * @author Mark Benvenuto
  */
 public abstract class AlgorithmParametersSpi
 {
   /**
-     Creates a new instance of AlgorithmParametersSpi
+   * Creates a new instance of AlgorithmParametersSpi
    */
   public AlgorithmParametersSpi()
   {
   }
 
   /**
-     Initializes the engine with the specified 
-     AlgorithmParameterSpec class.
-
-     @param paramSpec A AlgorithmParameterSpec to initialize with
-
-     @throws InvalidParameterSpecException For an inapporiate ParameterSpec class
+   * Initializes the engine with the specified 
+   * AlgorithmParameterSpec class.
+   *
+   * @param paramSpec A AlgorithmParameterSpec to initialize with
+   *
+   * @throws InvalidParameterSpecException For an inapporiate
+   * ParameterSpec class
    */
-  protected abstract void engineInit(AlgorithmParameterSpec paramSpec) throws
-    InvalidParameterSpecException;
+  protected abstract void engineInit(AlgorithmParameterSpec paramSpec)
+    throws InvalidParameterSpecException;
 
   /**
-     Initializes the engine with the specified 
-     parameters stored in the byte array and decodes them
-     according to the ASN.1 specification. If the ASN.1
-     specification exists then it succeeds or else it throws
-     IOException.
-
-     @param params Parameters to initialize with
-
-     @throws IOException Decoding Error
+   * Initializes the engine with the specified 
+   * parameters stored in the byte array and decodes them
+   * according to the ASN.1 specification. If the ASN.1
+   * specification exists then it succeeds or else it throws
+   * IOException.
+   *
+   * @param params Parameters to initialize with
+   *
+   * @throws IOException Decoding Error
    */
   protected abstract void engineInit(byte[]params) throws IOException;
 
   /**
-     Initializes the engine with the specified 
-     parameters stored in the byte array and decodes them
-     according to the specified decoding specification. 
-     If format is null, then it is decoded using the ASN.1 
-     specification if it exists or else it throws
-     IOException.
-
-     @param params Parameters to initialize with
-     @param format Name of decoding format to use
-
-     @throws IOException Decoding Error
+   * Initializes the engine with the specified 
+   * parameters stored in the byte array and decodes them
+   * according to the specified decoding specification. 
+   * If format is null, then it is decoded using the ASN.1 
+   * specification if it exists or else it throws
+   * IOException.
+   *
+   * @param params Parameters to initialize with
+   * @param format Name of decoding format to use
+   *
+   * @throws IOException Decoding Error
    */
-  protected abstract void engineInit(byte[]params,
-				     String format) throws IOException;
+  protected abstract void engineInit(byte[]params, String format)
+    throws IOException;
 
 
   /**
-     Returns a specification of this AlgorithmParameters object.
-     paramSpec identifies the class to return the AlgortihmParameters
-     in. 
-
-     @param paramSpec Class to return AlgorithmParameters in
-
-     @return the parameter specification
-
-     @throws InvalidParameterSpecException if the paramSpec is an invalid parameter class
+   * Returns a specification of this AlgorithmParameters object.
+   * paramSpec identifies the class to return the AlgortihmParameters
+   * in.
+   *
+   * @param paramSpec Class to return AlgorithmParameters in
+   *
+   * @return the parameter specification
+   *
+   * @throws InvalidParameterSpecException if the paramSpec is an
+   * invalid parameter class
    */
   protected abstract AlgorithmParameterSpec engineGetParameterSpec(Class
 								   paramSpec)
@@ -115,31 +119,31 @@ public abstract class AlgorithmParametersSpi
 
 
   /**
-     Returns the parameters in the default encoding format. 
-     The primary encoding format is ASN.1 format if it exists
-     for the specified type.
-
-     @return byte array representing the parameters
+   * Returns the parameters in the default encoding format. 
+   * The primary encoding format is ASN.1 format if it exists
+   * for the specified type.
+   *
+   * @return byte array representing the parameters
    */
   protected abstract byte[] engineGetEncoded() throws IOException;
 
 
   /**
-     Returns the parameters in the specified encoding format. 
-     If <code>format</code> is <code>null</code> then the 
-     primary encoding format is used, the ASN.1 format, 
-     if it exists for the specified type.
-
-     @return byte array representing the parameters
+   * Returns the parameters in the specified encoding format. 
+   * If <code>format</code> is <code>null</code> then the 
+   * primary encoding format is used, the ASN.1 format, 
+   * if it exists for the specified type.
+   *
+   * @return byte array representing the parameters
    */
-  protected abstract byte[] engineGetEncoded(String format) throws
-    IOException;
+  protected abstract byte[] engineGetEncoded(String format)
+    throws IOException;
 
   /**
-     Returns a string describing the parameters in the 
-     AlgorithmParametersSpi class.
-
-     @return A string representing the format of the parameters.
+   * Returns a string describing the parameters in the 
+   * AlgorithmParametersSpi class.
+   *
+   * @return A string representing the format of the parameters.
    */
   protected abstract String engineToString();
 }
