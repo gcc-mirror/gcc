@@ -1,3 +1,7 @@
+2003-07-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Note that zlib is not part of GCC.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
