@@ -42,7 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE -Asystem(unix) -Asystem(hpux) -Acpu(hppa) -Amachine(hppa)"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-u main %{static: -a archive}%{g: -a archive}"
+#define LINK_SPEC "-u main %{static: -a archive}%{g*: -a archive}"
 
 /* hpux8 and later have C++ compatable include files, so do not
    pretend they are `extern "C"'.  */
