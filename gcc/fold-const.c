@@ -4749,6 +4749,9 @@ fold (expr)
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold (build (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
+      /* (-A) + B -> B - A */
+      if (TREE_CODE (arg0) == NEGATE_EXPR)
+	return fold (build (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0)));
       else if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
@@ -4867,6 +4870,11 @@ fold (expr)
 		|| flag_fast_math)
 	       && real_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
+      /* x+(-0) equals x, even for IEEE.  */
+      else if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
+	return non_lvalue (convert (type, arg0));
+
+
     associate:
       /* In most languages, can't associate operations on floats
 	 through parentheses.  Rather than remember where the parentheses
@@ -4989,6 +4997,17 @@ fold (expr)
       return t;
 
     case MINUS_EXPR:
+      /* A - (-B) -> A + B */
+      if (TREE_CODE (arg1) == NEGATE_EXPR)
+	return fold (build (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
+      /* (-A) - CST -> (-CST) - A   for floating point (what about ints ?)  */
+      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == REAL_CST)
+	return
+	  fold (build (MINUS_EXPR, type, 
+		       build_real (TREE_TYPE (arg1),
+				   REAL_VALUE_NEGATE (TREE_REAL_CST (arg1))),
+		       TREE_OPERAND (arg0, 0)));
+
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (! wins && integer_zerop (arg0))
@@ -5009,9 +5028,6 @@ fold (expr)
 					     TREE_OPERAND (arg1, 0))),
 				TREE_OPERAND (arg0, 1)));
 	}
-      /* Convert A - (-B) to A + B.  */
-      else if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold (build (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
 
       else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
 	       || flag_fast_math)
@@ -5037,6 +5053,11 @@ fold (expr)
       goto associate;
 
     case MULT_EXPR:
+      /* (-A) * (-B) -> A * B  */
+      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == NEGATE_EXPR)
+	return fold (build (MULT_EXPR, type, TREE_OPERAND (arg0, 0),
+		            TREE_OPERAND (arg1, 0)));
+
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
@@ -5229,6 +5250,11 @@ fold (expr)
 	return t;
 #endif
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
+
+      /* (-A) / (-B) -> A / B  */
+      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == NEGATE_EXPR)
+	return fold (build (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
+			    TREE_OPERAND (arg1, 0)));
 
       /* In IEEE floating point, x/1 is not equivalent to x for snans.
 	 However, ANSI says we can drop signals, so we can do this anyway.  */
@@ -5662,6 +5688,29 @@ fold (expr)
     case GT_EXPR:
     case LE_EXPR:
     case GE_EXPR:
+      if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
+	{
+	  /* (-a) CMP (-b) -> b CMP a  */
+	  if (TREE_CODE (arg0) == NEGATE_EXPR
+	      && TREE_CODE (arg1) == NEGATE_EXPR)
+	    return fold (build (code, type, TREE_OPERAND (arg1, 0),
+				TREE_OPERAND (arg0, 0)));
+	  /* (-a) CMP CST -> a swap(CMP) (-CST)  */
+	  if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == REAL_CST)
+	    return
+	      fold (build
+		     (swap_tree_comparison (code), type,
+		      TREE_OPERAND (arg0, 0),
+		      build_real (TREE_TYPE (arg1),
+				  REAL_VALUE_NEGATE (TREE_REAL_CST (arg1)))));
+	  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
+	  /* a CMP (-0) -> a CMP 0  */
+	  if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
+	    return fold (build (code, type, arg0,
+				build_real (TREE_TYPE (arg1), dconst0)));
+	}
+
+
       /* If one arg is a constant integer, put it last.  */
       if (TREE_CODE (arg0) == INTEGER_CST
 	  && TREE_CODE (arg1) != INTEGER_CST)
