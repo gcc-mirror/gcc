@@ -1,3 +1,7 @@
+Fri Aug 29 19:19:54 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* i386/xm-sysv4.h (DONT_DECLARE_SYS_SIGLIST): Define.
+
 Fri Aug 29 16:13:51 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload_peepholes): Make sure operand is a REG before
@@ -9,7 +13,7 @@ Fri Aug 29 11:42:04 1997  Jim Wilson  <wilson@cygnus.com>
 
 Fri Aug 29 09:33:20 1997  Philipp Thomas  (kthomas@lxi165.gwdg.de)
 
-	* dwarfout2.c (build_abbrev_table): Use xrealloc, not xmalloc
+	* dwarf2out.c (build_abbrev_table): Use xrealloc, not xmalloc
 	to reallocate abbrev_die_table.
 
 Thu Aug 28 15:14:46 1997  Jim Wilson  <wilson@cygnus.com>
