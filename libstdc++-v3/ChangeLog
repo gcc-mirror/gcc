@@ -1,3 +1,25 @@
+2004-01-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (_S_create(size_t,
+	const _Alloc&): Change signature to take two size_type
+	arguments.
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Update
+	call, tweak a bit.
+	(_S_construct(_InIterator, _InIterator, const _Alloc&,
+	forward_iterator_tag)): Likewise.
+	(_S_construct(size_type, _CharT, const _Alloc&)): Likewise.
+	(_M_mutate(size_type, size_type, size_type)): Don't
+	implement the exponential growth policy, demand it to
+	_S_create, update call and simplify.
+	(_M_clone(const _Alloc&, size_type)): Likewise.
+	(_S_create(size_type, size_type, const _Alloc&)): Implement
+	the growth policy, simplify otherwise.
+
+	* include/bits/basic_string.h (_Rep::operator[]): Tweak
+	signature to take a size_type, consistently with the other
+	members.
+	
 2004-01-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ios_base/storage/11584.cc: Correct new and
