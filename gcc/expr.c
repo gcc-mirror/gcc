@@ -4122,7 +4122,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (offset_rtx) != Pmode)
-	    offset_rtx = convert_memory_address (Pmode, offset_rtx);
+	    offset_rtx = convert_to_mode (Pmode, offset_rtx, 0);
 #else
 	  if (GET_MODE (offset_rtx) != ptr_mode)
 	    offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
@@ -4630,7 +4630,8 @@ store_expr (exp, target, want_value)
 	      rtx label = 0;
 
 	      /* Copy that much.  */
-	      copy_size_rtx = convert_to_mode (ptr_mode, copy_size_rtx, 0);
+	      copy_size_rtx = convert_to_mode (ptr_mode, copy_size_rtx,
+					       TREE_UNSIGNED (sizetype));
 	      emit_block_move (target, temp, copy_size_rtx,
 			       (want_value & 2
 				? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
@@ -4651,8 +4652,8 @@ store_expr (exp, target, want_value)
 
 #ifdef POINTERS_EXTEND_UNSIGNED
 		  if (GET_MODE (copy_size_rtx) != Pmode)
-		    copy_size_rtx = convert_memory_address (Pmode,
-							    copy_size_rtx);
+		    copy_size_rtx = convert_to_mode (Pmode, copy_size_rtx,
+						     TREE_UNSIGNED (sizetype));
 #endif
 
 		  target = offset_address (target, copy_size_rtx,
@@ -4957,7 +4958,7 @@ store_constructor (exp, target, cleared, size)
 
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      if (GET_MODE (offset_rtx) != Pmode)
-		offset_rtx = convert_memory_address (Pmode, offset_rtx);
+		offset_rtx = convert_to_mode (Pmode, offset_rtx, 0);
 #else
 	      if (GET_MODE (offset_rtx) != ptr_mode)
 		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
@@ -7448,7 +7449,7 @@ expand_expr (exp, target, tmode, modifier)
 
 #ifdef POINTERS_EXTEND_UNSIGNED
 	    if (GET_MODE (offset_rtx) != Pmode)
-	      offset_rtx = convert_memory_address (Pmode, offset_rtx);
+	      offset_rtx = convert_to_mode (Pmode, offset_rtx, 0);
 #else
 	    if (GET_MODE (offset_rtx) != ptr_mode)
 	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
