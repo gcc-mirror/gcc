@@ -1,3 +1,11 @@
+1999-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* obstack.h (obstack_grow, obstack_grow0): Move (char*) casts
+	in calls to `_obstack_memcpy' from here ...
+
+	(_obstack_memcpy): ... to here, except in the __STDC__ case which
+	doesn't need it.
+
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (getpwd): Prototype.
