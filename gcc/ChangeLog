@@ -1,3 +1,8 @@
+Fri Sep  5 16:16:44 1997  Christian Kuehnke  <Christian.Kuehnke@arbi.Informatik.Uni-Oldenburg.DE>
+
+	* sparc/sparc.md: Add ultrasparc scheduling support.
+	* sparc/sparc.h (RTX_COSTS): For MULT give v9 a cost of 25 insns.
+
 Fri Sep  5 14:04:59 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
 
 	* integrate.c (save_for_inline_copying): Use 0, not NULL_PTR,
