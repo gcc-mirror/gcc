@@ -222,7 +222,7 @@ in the following sections.
 -Werror-implicit-function-declaration @gol
 -Wimport  -Winline -Wno-endif-labels @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
--Wmain  -Wmissing-braces  -Wmissing-declarations @gol
+-Wmain  -Wmissing-braces @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
 -Wno-multichar  -Wno-format-extra-args  -Wno-format-y2k @gol
 -Wno-import  -Wnonnull  -Wpacked  -Wpadded @gol
@@ -236,8 +236,8 @@ in the following sections.
 
 @item C-only Warning Options
 @gccoptlist{
--Wbad-function-cast  -Wmissing-prototypes  -Wnested-externs @gol
--Wstrict-prototypes  -Wtraditional}
+-Wbad-function-cast  -Wmissing-declarations  -Wmissing-prototypes @gol
+-Wnested-externs  -Wstrict-prototypes  -Wtraditional}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
