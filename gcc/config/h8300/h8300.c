@@ -502,7 +502,6 @@ pop (rn)
 void
 h8300_expand_prologue ()
 {
-  int fsize = round_frame_size (get_frame_size ());
   int regno;
   int saved_regs;
   int n_regs;
@@ -526,7 +525,7 @@ h8300_expand_prologue ()
     }
 
   /* Leave room for locals.  */
-  dosize (-1, fsize);
+  dosize (-1, round_frame_size (get_frame_size ()));
 
   /* Push the rest of the registers in ascending order.  */
   saved_regs = compute_saved_regs ();
@@ -592,7 +591,6 @@ h8300_can_use_return_insn_p ()
 void
 h8300_expand_epilogue ()
 {
-  int fsize = round_frame_size (get_frame_size ());
   int regno;
   int saved_regs;
   int n_regs;
@@ -652,7 +650,7 @@ h8300_expand_epilogue ()
     }
 
   /* Deallocate locals.  */
-  dosize (1, fsize);
+  dosize (1, round_frame_size (get_frame_size ()));
 
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
