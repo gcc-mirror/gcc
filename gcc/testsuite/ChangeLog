@@ -1,3 +1,9 @@
+2004-07-24  Alexander Kabaev  <kan@freebsd.org>
+	    Zack Weinberg  <zack@codesourcery.com
+
+	PR 16684
+	* gcc.dg/Wredundant-decls-1.c: New test case.
+
 2004-07-21  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/16175
@@ -44,7 +50,7 @@
 	* gcc.dg/range-test-1.c: New test.
 	* g++.dg/opt/range-test-1.C: New test.
 
-2004-07-09  Loren James Rittle  <ljrittle@acm.org> 
+2004-07-09  Loren James Rittle  <ljrittle@acm.org>
 
 	* gcc.dg/builtins-config.h: Handle FreeBSD.
 

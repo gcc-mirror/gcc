@@ -1253,6 +1253,11 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 definition.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL
 	   && DECL_INITIAL (newdecl) && !DECL_INITIAL (olddecl))
+      /* Don't warn about redundant redeclarations of builtins. */
+      && !(TREE_CODE (newdecl) == FUNCTION_DECL
+	   && !DECL_BUILT_IN (newdecl)
+	   && DECL_BUILT_IN (olddecl)
+	   && C_DECL_INVISIBLE (olddecl))
       /* Don't warn about an extern followed by a definition.  */
       && !(DECL_EXTERNAL (olddecl) && !DECL_EXTERNAL (newdecl))
       /* Don't warn about forward parameter decls.  */

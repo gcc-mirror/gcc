@@ -1,3 +1,11 @@
+2004-07-24  Alexander Kabaev  <kan@freebsd.org>
+	    Zack Weinberg  <zack@codesourcery.com
+
+	PR 16684
+	* c-decl.c (diagnose_mismatched_decls): Don't issue a
+	redundant-declaration warning the first time a builtin is
+	declared explicitly.
+
 2004-07-21  Jakub Jelinek  <jakub@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 
