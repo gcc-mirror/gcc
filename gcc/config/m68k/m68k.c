@@ -98,10 +98,6 @@ static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef M68K_TARGET_COFF
 static void m68k_coff_asm_named_section (const char *, unsigned int);
 #endif /* M68K_TARGET_COFF */
-#ifdef HPUX_ASM
-static void m68k_hp320_internal_label (FILE *, const char *, unsigned long);
-static void m68k_hp320_file_start (void);
-#endif
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
 static rtx m68k_struct_value_rtx (tree, int);
@@ -171,10 +167,6 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_FUNCTION_PROLOGUE m68k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68k_output_function_epilogue
-#ifdef HPUX_ASM
-#undef TARGET_ASM_INTERNAL_LABEL
-#define  TARGET_ASM_INTERNAL_LABEL m68k_hp320_internal_label
-#endif
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
@@ -1017,9 +1009,7 @@ m68k_output_pic_call(rtx dest)
   else if (TARGET_PCREL)
     out = "bsr.l %o0";
   else if ((flag_pic == 1) || TARGET_68020)
-#ifdef HPUX_ASM
-    out = "bsr.l %0";
-#elif defined(USE_GAS)
+#if defined(USE_GAS)
     out = "bsr.l %0@PLTPC";
 #else
     out = "bsr %0@PLTPC";
@@ -3350,28 +3340,6 @@ m68k_coff_asm_named_section (const char *name, unsigned int flags)
 
 #endif /* M68K_TARGET_COFF */
 
-#ifdef HPUX_ASM
-static void
-m68k_hp320_internal_label (FILE *stream, const char *prefix,
-                           unsigned long labelno)
-{
-  if (prefix[0] == 'L' && prefix[1] == 'I')
-    fprintf(stream, "\tset %s%ld,.+2\n", prefix, labelno);
-  else
-    fprintf (stream, "%s%ld:\n", prefix, labelno);
-}
-
-static void
-m68k_hp320_file_start (void)
-{
-  /* version 1: 68010.
-             2: 68020 without FPU.
-	     3: 68020 with FPU.  */
-  fprintf (asm_out_file, "\tversion %d\n",
-	   TARGET_68020 ? (TARGET_68881 ? 3 : 2) : 1);
-}
-#endif
-
 static void
 m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta,
@@ -3407,9 +3375,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       else if ((flag_pic == 1) || TARGET_68020)
 	{
 	  if (MOTOROLA)
-#ifdef HPUX_ASM
-	    fmt = "bra.l %0";
-#elif defined(USE_GAS)
+#if defined(USE_GAS)
 	    fmt = "bra.l %0@PLTPC";
 #else
 	    fmt = "bra %0@PLTPC";

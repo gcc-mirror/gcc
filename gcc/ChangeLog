@@ -1,3 +1,7 @@
+2004-02-16  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c: Remove obsolete support for HPUX_ASM.
+
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_expand_prologue): Don't generate
