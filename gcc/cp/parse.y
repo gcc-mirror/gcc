@@ -233,6 +233,7 @@ empty_parms ()
 %type <ttype> fn.def2 return_id
 %type <itype> ctor_initializer_opt
 %type <ttype> named_class_head named_class_head_sans_basetype
+%type <ttype> named_complex_class_head_sans_basetype
 %type <ttype> unnamed_class_head
 %type <ttype> class_head base_class_list
 %type <itype> base_class_access_list
@@ -820,11 +821,15 @@ explicit_instantiation:
 	| TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($2);
 		  do_function_instantiation (specs, $3, NULL_TREE); }
+	| TEMPLATE notype_declarator
+		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| SCSPEC TEMPLATE specialization template_instantiation
 		{ do_type_instantiation ($4 ? $4 : $3, $1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3);
 		  do_function_instantiation (specs, $4, $1); }
+	| SCSPEC TEMPLATE notype_declarator
+		{ do_function_instantiation (NULL_TREE, $3, $1); }
 	;
 
 template_type:
@@ -2286,10 +2291,6 @@ specialization:
 named_class_head_sans_basetype:
 	  aggr identifier
 		{ current_aggr = $$; $$ = $2; }
-	| aggr complex_type_name
-		{ current_aggr = $$; $$ = $2; }
-	| aggr template_type %prec EMPTY
-		{ current_aggr = $$; $$ = $2; }
 	| specialization
 	;
 
@@ -2306,6 +2307,13 @@ named_class_head_sans_basetype_defn:
 		{ yyungetc (':', 1); goto aggr2; }
 	;
 
+named_complex_class_head_sans_basetype:
+	  aggr nested_name_specifier identifier
+		{ current_aggr = $$; $$ = $3; }
+	| aggr template_type %prec EMPTY
+		{ current_aggr = $$; $$ = $2; }
+	;
+
 do_xref_defn: /* empty */ %prec EMPTY
         { $<ttype>$ = xref_tag (current_aggr, $<ttype>0, NULL_TREE, 0); }
 	;
@@ -2319,6 +2327,12 @@ named_class_head:
 		  $$ = $<ttype>2;
 		  if ($3)
                     xref_basetypes (current_aggr, $1, $<ttype>2, $3); 
+		}
+	| named_complex_class_head_sans_basetype maybe_base_class_list
+		{ 
+		  $$ = TREE_TYPE ($1);
+		  if ($2)
+		    xref_basetypes (current_aggr, $1, TREE_TYPE ($1), $2); 
 		}
 	;
 

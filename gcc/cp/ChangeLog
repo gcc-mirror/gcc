@@ -1,3 +1,28 @@
+Fri Nov  3 17:58:52 1995  Mike Stump  <mrs@cygnus.com>
+
+	* Version 2.7.1 released.
+
+Thu Nov  2 17:02:47 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (convert_harshness): Handle references to arrays.
+
+Fri Oct 27 14:20:21 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (comp_target_types): Check multi-level pointer
+	conversions in both directions.
+
+Tue Oct 17 21:39:05 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (explicit_instantiation): Fix 'extern template' with no
+	return type.
+
+Mon Oct 16 14:35:20 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (explicit_instantiation): Support automatic instantiation
+	of constructors.
+	(named_class_head_*): Support out-of-class definition of nested
+	types.
+
 Wed Oct 11 12:20:56 1995  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (envelope_add_decl): New routine.  Fix so that
