@@ -1,3 +1,7 @@
+2002-11-29  Joe Buck <jbuck@synopsys.com>
+
+	* g++.dg/lookup/anon2.C: New test.
+
 2002-11-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/strct-varg-1.x: Remove xfail on the

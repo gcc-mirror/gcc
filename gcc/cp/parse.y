@@ -2524,6 +2524,8 @@ class_head_defn:
 							 make_anon_name (), 
 							 0));
 		  $$.new_type_flag = 0;
+		  CLASSTYPE_DECLARED_CLASS (TREE_TYPE ($$.t))
+		    = $1 == class_type_node;
 		  yyungetc ('{', 1);
 		}
 	;

@@ -1,3 +1,8 @@
+2002-11-29  Joe Buck <jbuck@synopsys.com>
+
+	* parse.y (class_head_defn): Set CLASSTYPE_DECLARED_CLASS for
+	anonymous structs.
+	
 2002-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (walk_subobject_offsets): Recur on binfos as well as on
