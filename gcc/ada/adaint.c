@@ -1579,7 +1579,7 @@ __gnat_portable_spawn (char *args[])
   strcat (args[0], args_0);
   strcat (args[0], "\"");
 
-  status = spawnvp (P_WAIT, args_0, (char* const*)args);
+  status = spawnvp (P_WAIT, args_0, (const char* const*)args);
 
   /* restore previous value */
   free (args[0]);
