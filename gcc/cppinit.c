@@ -1130,6 +1130,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)           \
   DEF_OPT("trigraphs",                0,      OPT_trigraphs)                  \
   DEF_OPT("v",                        0,      OPT_v)                          \
+  DEF_OPT("version",                  0,      OPT_version)                    \
   DEF_OPT("w",                        0,      OPT_w)
 
 #define DEF_OPT(text, msg, code) code,
@@ -1322,16 +1323,32 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_h:
 	case OPT__help:
 	  print_help ();
-	  exit (0);  /* XXX */
+	  pfile->help_only = 1;
 	  break;
 	case OPT_target__help:
-          /* Print if any target specific options. */
-          exit (0);
+          /* Print if any target specific options. cpplib has none, but
+	     make sure help_only gets set.  */
+	  pfile->help_only = 1;
           break;
+
+	  /* --version inhibits compilation, -version doesn't. -v means
+	     verbose and -version.  Historical reasons, don't ask.  */
 	case OPT__version:
-	  fprintf (stderr, _("GNU CPP version %s (cpplib)\n"), version_string);
-	  exit (0);  /* XXX */
+	  pfile->help_only = 1;
+	  goto version;
+	case OPT_v:
+	  CPP_OPTION (pfile, verbose) = 1;
+	  goto version;
+
+	case OPT_version:
+	version:
+	  fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
+#ifdef TARGET_VERSION
+	  TARGET_VERSION;
+#endif
+	  fputc ('\n', stderr);
 	  break;
+
 	case OPT_C:
 	  CPP_OPTION (pfile, discard_comments) = 0;
 	  break;
@@ -1424,14 +1441,6 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, out_fname) = arg;
 	  if (!strcmp (CPP_OPTION (pfile, out_fname), "-"))
 	    CPP_OPTION (pfile, out_fname) = "";
-	  break;
-	case OPT_v:
-	  fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
-#ifdef TARGET_VERSION
-	  TARGET_VERSION;
-#endif
-	  fputc ('\n', stderr);
-	  CPP_OPTION (pfile, verbose) = 1;
 	  break;
 	case OPT_stdin_stdout:
 	  /* JF handle '-' as file name meaning stdin or stdout.  */

@@ -616,6 +616,10 @@ struct cpp_reader
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
+
+  /* True if --help appeared in the options.  Caller should then bail
+     out after option parsing and printing its own help.  See cppmain.c.  */
+  unsigned char help_only;
 };
 
 #define CPP_FATAL_LIMIT 1000

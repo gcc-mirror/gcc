@@ -82,6 +82,13 @@ main (argc, argv)
   if (CPP_FATAL_ERRORS (pfile))
     return (FATAL_EXIT_CODE);
 
+  /* If cpp_handle_options saw --help or --version on the command
+     line, it will have set pfile->help_only to indicate this.  Exit
+     successfully.  [The library does not exit itself, because
+     e.g. cc1 needs to print its own --help message at this point.]  */
+  if (pfile->help_only)
+    return (SUCCESS_EXIT_CODE);
+
   /* Open the output now.  We must do so even if no_output is on,
      because there may be other output than from the actual
      preprocessing (e.g. from -dM).  */
