@@ -1244,7 +1244,7 @@ get_pseudo_ti_desc (tree type)
 }
 
 /* Make sure the required builtin types exist for generating the type_info
-   varable definitions.  */
+   variable definitions.  */
 
 static void
 create_tinfo_types (void)

@@ -2292,7 +2292,7 @@ do_static_initialization (tree decl, tree init)
   if (flag_use_cxa_atexit)
     register_dtor_fn (decl);
 
-  /* Finsh up.  */
+  /* Finish up.  */
   finish_static_initialization_or_destruction (guard_if_stmt);
 }
 

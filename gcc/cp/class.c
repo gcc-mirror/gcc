@@ -4178,7 +4178,7 @@ create_vtable_ptr (tree t, tree* virtuals_p)
     {
       /* We build this decl with vtbl_ptr_type_node, which is a
 	 `vtable_entry_type*'.  It might seem more precise to use
-	 `vtable_entry_type (*)[N]' where N is the number of firtual
+	 `vtable_entry_type (*)[N]' where N is the number of virtual
 	 functions.  However, that would require the vtable pointer in
 	 base classes to have a different type than the vtable pointer
 	 in derived classes.  We could make that happen, but that
