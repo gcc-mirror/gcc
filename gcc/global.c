@@ -1290,17 +1290,17 @@ retry_global_alloc (regno, forbidden_regs)
      int regno;
      HARD_REG_SET forbidden_regs;
 {
-  int allocno = reg_allocno[regno];
-  if (allocno >= 0)
+  int alloc_no = reg_allocno[regno];
+  if (alloc_no >= 0)
     {
       /* If we have more than one register class,
 	 first try allocating in the class that is cheapest
 	 for this pseudo-reg.  If that fails, try any reg.  */
       if (N_REG_CLASSES > 1)
-	find_reg (allocno, forbidden_regs, 0, 0, 1);
+	find_reg (alloc_no, forbidden_regs, 0, 0, 1);
       if (reg_renumber[regno] < 0
 	  && reg_alternate_class (regno) != NO_REGS)
-	find_reg (allocno, forbidden_regs, 1, 0, 1);
+	find_reg (alloc_no, forbidden_regs, 1, 0, 1);
 
       /* If we found a register, modify the RTL for the register to
 	 show the hard register, and mark that register live.  */
