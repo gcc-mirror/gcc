@@ -1,3 +1,9 @@
+Sat Nov  1 19:15:28 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): If we delete the label for an
+	exception handler, remove it from the EH label list and remove
+	the EH_BEGIN/EH_END notes for that EH region.
+
 Sat Nov  1 16:44:49 1997  Jason Merrill  (jason@cygnus.com)
 
 	* flow.c (find_basic_blocks): Generate correct flow control
