@@ -1,3 +1,7 @@
+1999-06-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* stl_queue.h: Rename _M_c to c, and _M_comp to comp.
+
 1999-06-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* stl_algo.h (transform): Rename __opr to __oper, as __opr is used 
