@@ -1,3 +1,23 @@
+2003-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8700
+	* call.c (convert_class_to_reference): Adjust usage of
+	splice_viable.
+	(any_viable): Remove.
+	(splice_viable): Combine with any_viable.
+	(print_z_candidates): Avoid printing duplicates.
+	(build_user_type_conversion_1): Adjust usage of splice_viable.
+	(build_new_function_call): Likewise.
+	(build_operator_new_call): Likewise.
+	(build_object_call): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+	(joust): Remove spurious comment.
+	* cp-tree.h (DECL_FRIENDLIST): Correct documentation.
+	* decl2.c (arg_assoc_class): Simplify.
+	* friend.c (add_friend): Likewise.
+
 2003-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8660

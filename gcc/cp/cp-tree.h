@@ -2657,14 +2657,8 @@ struct lang_decl GTY(())
 /* The format of each node in the DECL_FRIENDLIST is as follows:
 
    The TREE_PURPOSE will be the name of a function, i.e., an
-   IDENTIFIER_NODE.  The TREE_VALUE will be itself a TREE_LIST, the
-   list of functions with that name which are friends.  The
-   TREE_PURPOSE of each node in this sublist will be error_mark_node,
-   if the function was declared a friend individually, in which case
-   the TREE_VALUE will be the function_decl.  If, however, all
-   functions with a given name in a class were declared to be friends,
-   the TREE_PUROSE will be the class type, and the TREE_VALUE will be
-   NULL_TREE.  */
+   IDENTIFIER_NODE.  The TREE_VALUE will be itself a TREE_LIST, whose
+   TREE_VALUEs are friends with the given name.  */
 #define DECL_FRIENDLIST(NODE)		(DECL_INITIAL (NODE))
 #define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
 #define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))
