@@ -2676,7 +2676,7 @@ eliminate_regs (x, mem_mode, insn)
 	     reference to the pseudo.  Ensure we make a copy of the
 	     address in case it is shared.  */
 	  new = eliminate_regs (reg_equiv_memory_loc[regno],
-				mem_mode, NULL_RTX);
+				mem_mode, insn);
 	  if (new != reg_equiv_memory_loc[regno])
 	    {
 	      cannot_omit_stores[regno] = 1;
@@ -2696,7 +2696,10 @@ eliminate_regs (x, mem_mode, insn)
 	       ep++)
 	    if (ep->from_rtx == XEXP (x, 0) && ep->can_eliminate)
 	      {
-		if (! mem_mode)
+		if (! mem_mode
+		    /* Refs inside notes don't count for this purpose.  */
+		    && ! (insn != 0 && (GET_CODE (insn) == EXPR_LIST
+					|| GET_CODE (insn) == INSN_LIST)))
 		  ep->ref_outside_mem = 1;
 
 		/* The only time we want to replace a PLUS with a REG (this
@@ -2735,8 +2738,8 @@ eliminate_regs (x, mem_mode, insn)
 	 reload.  This is the desired action.  */
 
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
-	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, NULL_RTX);
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  {
@@ -2773,7 +2776,7 @@ eliminate_regs (x, mem_mode, insn)
       /* If we have something in XEXP (x, 0), the usual case, eliminate it.  */
       if (XEXP (x, 0))
 	{
-	  new = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
+	  new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	  if (new != XEXP (x, 0))
 	    x = gen_rtx (EXPR_LIST, REG_NOTE_KIND (x), new, XEXP (x, 1));
 	}
@@ -2786,7 +2789,7 @@ eliminate_regs (x, mem_mode, insn)
 	 strictly needed, but it simplifies the code.  */
       if (XEXP (x, 1))
 	{
-	  new = eliminate_regs (XEXP (x, 1), mem_mode, NULL_RTX);
+	  new = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 	  if (new != XEXP (x, 1))
 	    return gen_rtx (INSN_LIST, GET_MODE (x), XEXP (x, 0), new);
 	}
@@ -2805,9 +2808,9 @@ eliminate_regs (x, mem_mode, insn)
     case GE:       case GT:       case GEU:    case GTU:
     case LE:       case LT:       case LEU:    case LTU:
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	rtx new1
-	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, NULL_RTX) : 0;
+	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn) : 0;
 
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  return gen_rtx (code, GET_MODE (x), new0, new1);
@@ -2845,7 +2848,7 @@ eliminate_regs (x, mem_mode, insn)
     case ABS:
     case SQRT:
     case FFS:
-      new = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx (code, GET_MODE (x), new);
       return x;
@@ -2864,7 +2867,7 @@ eliminate_regs (x, mem_mode, insn)
 	  && reg_equiv_memory_loc[REGNO (SUBREG_REG (x))] != 0)
 	{
 	  new = eliminate_regs (reg_equiv_memory_loc[REGNO (SUBREG_REG (x))],
-				mem_mode, NULL_RTX);
+				mem_mode, insn);
 
 	  /* If we didn't change anything, we must retain the pseudo.  */
 	  if (new == reg_equiv_memory_loc[REGNO (SUBREG_REG (x))])
@@ -2875,7 +2878,7 @@ eliminate_regs (x, mem_mode, insn)
 	    new = copy_rtx (new);
 	}
       else
-	new = eliminate_regs (SUBREG_REG (x), mem_mode, NULL_RTX);
+	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn);
 
       if (new != XEXP (x, 0))
 	{
@@ -2920,7 +2923,7 @@ eliminate_regs (x, mem_mode, insn)
 	if (ep->to_rtx == XEXP (x, 0))
 	  ep->can_eliminate = 0;
 
-      new = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx (code, GET_MODE (x), new);
       return x;
@@ -2938,7 +2941,7 @@ eliminate_regs (x, mem_mode, insn)
 	    temp_vec = (rtx *) alloca (XVECLEN (x, 3) * sizeof (rtx));
 	    for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	      temp_vec[i] = eliminate_regs (ASM_OPERANDS_INPUT (x, i),
-					    mem_mode, NULL_RTX);
+					    mem_mode, insn);
 
 	    for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	      if (temp_vec[i] != ASM_OPERANDS_INPUT (x, i))
@@ -3009,8 +3012,8 @@ eliminate_regs (x, mem_mode, insn)
 
       /* Now avoid the loop below in this common case.  */
       {
-	rtx new0 = eliminate_regs (SET_DEST (x), 0, NULL_RTX);
-	rtx new1 = eliminate_regs (SET_SRC (x), 0, NULL_RTX);
+	rtx new0 = eliminate_regs (SET_DEST (x), 0, insn);
+	rtx new1 = eliminate_regs (SET_SRC (x), 0, insn);
 
 	/* If SET_DEST changed from a REG to a MEM and INSN is an insn,
 	   write a CLOBBER insn.  */
@@ -3029,7 +3032,7 @@ eliminate_regs (x, mem_mode, insn)
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */
-      new = eliminate_regs (XEXP (x, 0), GET_MODE (x), NULL_RTX);
+      new = eliminate_regs (XEXP (x, 0), GET_MODE (x), insn);
       if (new != XEXP (x, 0))
 	{
 	  new = gen_rtx (MEM, GET_MODE (x), new);
@@ -3049,7 +3052,7 @@ eliminate_regs (x, mem_mode, insn)
     {
       if (*fmt == 'e')
 	{
-	  new = eliminate_regs (XEXP (x, i), mem_mode, NULL_RTX);
+	  new = eliminate_regs (XEXP (x, i), mem_mode, insn);
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
