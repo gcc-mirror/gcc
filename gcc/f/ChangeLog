@@ -1,3 +1,13 @@
+Wed May 26 11:45:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Rename -fsubscript-check to -fbounds-check and
+	-ff2c-subscript-check to -ffortran-bounds-check:
+	* g77.texi: Rename options in docs, clarify usage.
+	* lang-options.h: Rename options, clarify doclets.
+	* news.texi: Rename options, don't bother with fortran-specific
+	option.
+	* top.c (ffe_decode_option): Rename recognized strings.
+
 Tue May 25 18:21:09 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (FFECOM_FASTER_ARRAY_REFS): Delete this vestige,

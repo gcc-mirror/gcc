@@ -323,13 +323,13 @@ ffe_decode_option (argc, argv)
 	ffe_set_is_globals (TRUE);
       else if (strcmp (&opt[2], "no-globals") == 0)
 	ffe_set_is_globals (FALSE);
-      else if (strcmp (&opt[2], "subscript-check") == 0)
+      else if (strcmp (&opt[2], "bounds-check") == 0)
 	ffe_set_is_subscript_check (TRUE);
-      else if (strcmp (&opt[2], "no-subscript-check") == 0)
+      else if (strcmp (&opt[2], "no-bounds-check") == 0)
 	ffe_set_is_subscript_check (FALSE);
-      else if (strcmp (&opt[2], "f2c-subscript-check") == 0)
+      else if (strcmp (&opt[2], "fortran-bounds-check") == 0)
 	ffe_set_is_subscript_check (TRUE);
-      else if (strcmp (&opt[2], "no-f2c-subscript-check") == 0)
+      else if (strcmp (&opt[2], "no-fortran-bounds-check") == 0)
 	ffe_set_is_subscript_check (FALSE);
       else if (strcmp (&opt[2], "typeless-boz") == 0)
 	ffe_set_is_typeless_boz (TRUE);
