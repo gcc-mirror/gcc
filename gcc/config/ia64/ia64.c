@@ -174,6 +174,9 @@ static void ia64_rwreloc_unique_section PARAMS ((tree, int))
 static void ia64_rwreloc_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					             unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
+static unsigned int ia64_rwreloc_section_type_flags
+     PARAMS ((tree, const char *, int))
+     ATTRIBUTE_UNUSED;
 
 static void ia64_hpux_add_extern_decl PARAMS ((const char *name))
      ATTRIBUTE_UNUSED;
@@ -8211,6 +8214,16 @@ ia64_rwreloc_select_rtx_section (mode, x, align)
   ia64_select_rtx_section (mode, x, align);
   flag_pic = save_pic;
 }
+
+static unsigned int
+ia64_rwreloc_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  return default_section_type_flags_1 (decl, name, reloc, true);
+}
+
 
 /* Output the assembler code for a thunk function.  THUNK_DECL is the
    declaration for the thunk function itself, FUNCTION is the decl for

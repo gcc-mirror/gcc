@@ -1,5 +1,10 @@
 2003-01-29	Steve Ellcey <sje@cup.hp.com>
 
+	* config/ia64/ia64.c (ia64_rwreloc_section_type_flags): New.
+	* config/ia64/hpux.h (TARGET_SECTION_TYPE_FLAGS): New.
+
+2003-01-29	Steve Ellcey <sje@cup.hp.com>
+
         * config/ia64/ia64.c (ia64_rwreloc_select_rtx_section): Rename
         from ia64_aix_select_rtx_section.
         (ia64_rwreloc_select_section): Simlarly; use default*_1 function
