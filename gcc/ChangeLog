@@ -1,3 +1,9 @@
+2004-07-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/16380
+	* loop.c (check_dbra_loop): Sink comparison instructions if they
+	do something other than set cc0.
+
 2004-07-06  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/interface.texi (longjmp and automatic variables): Delete
