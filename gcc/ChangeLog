@@ -1,4 +1,12 @@
-2003-06-19  David Taylor  <dtaylor@emc.com>
+2003-06-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in, configure.in, config/m68hc11/t-m68hc11-gas:
+	Replace "build_canonical" with build, "host_canonical" with host.
+	* configure.in: Use GCC_TOPLEV_SUBDIRS.
+	* aclocal.m4: Include ../config/acx.m4.
+	* configure: Regenerate.
+
+2003-06-09  David Taylor  <dtaylor@emc.com>
 
 	* config/rs6000/rs6000.c (rs6000_build_va_list): Give the two
 	bytes of padding in the __va_list_tag structure a name (reserved).
@@ -7,7 +15,7 @@
 
 	* fold-const.c (operand_equal_p): Handle ADDR_EXPR and TRUTH_NOT_EXPR.
 
-2003-06-19  Osku Salerma  <osku@iki.fi>
+2003-06-09  Osku Salerma  <osku@iki.fi>
 
 	* c-format.c (check_format_string, get_constant): New.
 	(handle_format_attribute, handle_format_arg_attribute,

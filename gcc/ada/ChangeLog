@@ -1,3 +1,8 @@
+2003-06-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Replace "host_canonical" with "host" for autoconf
+	substitution.
+
 2003-06-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update.

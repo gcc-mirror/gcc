@@ -59,8 +59,8 @@ MAKEOVERRIDES =
 # Directory where sources are, from where we are.
 VPATH = @srcdir@
 
-build_canonical = @build_canonical@
-host_canonical = @host_canonical@
+build=@build@
+host=@host@
 target=@target@
 target_alias=@target_alias@
 
@@ -273,7 +273,7 @@ AR_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ar ] ; then \
     echo $(objdir)/../binutils/ar ; \
   else \
-    if [ "$(host_canonical)" = "$(target)" ] ; then \
+    if [ "$(host)" = "$(target)" ] ; then \
       echo ar; \
     else \
        t='$(program_transform_cross_name)'; echo ar | sed -e $$t ; \
@@ -286,7 +286,7 @@ RANLIB_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
   else \
-    if [ "$(host_canonical)" = "$(target)" ] ; then \
+    if [ "$(host)" = "$(target)" ] ; then \
       echo $(RANLIB); \
     else \
        t='$(program_transform_cross_name)'; echo ranlib | sed -e $$t ; \
@@ -298,7 +298,7 @@ NM_FOR_TARGET = ` \
   elif [ -f $(objdir)/../binutils/nm-new ] ; then \
     echo $(objdir)/../binutils/nm-new ; \
   else \
-    if [ "$(host_canonical)" = "$(target)" ] ; then \
+    if [ "$(host)" = "$(target)" ] ; then \
       echo nm; \
     else \
        t='$(program_transform_cross_name)'; echo nm | sed -e $$t ; \
@@ -2519,7 +2519,7 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	WARN_CFLAGS="$(WARN_CFLAGS)"; LIBERTY=`pwd`/"$(BUILD_LIBIBERTY)"; \
 	export MAKE srcdir CC CFLAGS LDFLAGS WARN_CFLAGS LIBERTY; \
 	cd ./fixinc && \
-	$(SHELL) $${srcdir}/mkfixinc.sh $(build_canonical) $(target))
+	$(SHELL) $${srcdir}/mkfixinc.sh $(build) $(target))
 
 .PHONY: install-gcc-tooldir
 install-gcc-tooldir:
@@ -3246,8 +3246,8 @@ site.exp: ./config.status Makefile
 	@echo "# add them to the last section" >> ./tmp0
 	@echo "set rootme \"`${PWD}`\"" >> ./tmp0
 	@echo "set srcdir \"`cd ${srcdir}; ${PWD}`\"" >> ./tmp0
-	@echo "set host_triplet $(host_canonical)" >> ./tmp0
-	@echo "set build_triplet $(build_canonical)" >> ./tmp0
+	@echo "set host_triplet $(host)" >> ./tmp0
+	@echo "set build_triplet $(build)" >> ./tmp0
 	@echo "set target_triplet $(target)" >> ./tmp0
 	@echo "set target_alias $(target_alias)" >> ./tmp0
 # CFLAGS is set even though it's empty to show we reserve the right to set it.
@@ -3265,7 +3265,7 @@ site.exp: ./config.status Makefile
 # theoretically the -B won't be needed.
 # We also need to pass -L ../ld so that the linker can find ldscripts.
 	@if [ -d $(objdir)/../$(target_subdir)/newlib ] \
-	    && [ "${host_canonical}" != "${target}" ]; then \
+	    && [ "${host}" != "${target}" ]; then \
 	  echo "set newlib_cflags \"-I$(objdir)/../$(target_subdir)/newlib/targ-include -I\$$srcdir/../newlib/libc/include\"" >> ./tmp0; \
 	  echo "set newlib_ldflags \"-B$(objdir)/../$(target_subdir)/newlib/\"" >> ./tmp0; \
 	  echo "append CFLAGS \" \$$newlib_cflags\"" >> ./tmp0; \
