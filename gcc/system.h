@@ -188,4 +188,33 @@ extern void free ();
 extern char *getenv ();
 #endif
 
+/* Redefine abort to report an internal error w/o coredump, and reporting the
+   location of the error in the source file.  */
+#ifndef abort
+#ifndef __STDC__
+#ifndef __GNUC__
+#ifndef USE_SYSTEM_ABORT
+#define USE_SYSTEM_ABORT
+#endif /* !USE_SYSTEM_ABORT */
+#endif /* !__GNUC__ */
+#endif /* !__STDC__ */
+
+#ifndef USE_SYSTEM_ABORT
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#define abort()								\
+(fprintf (stderr,							\
+	  "%s:%d: Internal compiler error\n", __FILE__, __LINE__),	\
+ exit (FATAL_EXIT_CODE))
+
+#else
+#define abort()								\
+(fprintf (stderr,							\
+	  "%s:%d: Internal compiler error in function %s\n",		\
+	  __FILE__, __LINE__, __PRETTY_FUNCTION__),			\
+ exit (FATAL_EXIT_CODE))
+
+#endif /* recent gcc */
+#endif /* !USE_SYSTEM_ABORT */
+#endif /* !abort */
+
 #endif /* __GCC_SYSTEM_H__ */

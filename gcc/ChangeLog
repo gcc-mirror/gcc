@@ -1,5 +1,11 @@
 Mon Apr 27 08:55:23 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* system.h (abort): If abort is not defined, and neither is
+	USE_SYSTEM_ABORT, redefine abort to call fprintf and exit,
+	reporting the line and filename of the error.
+
+	* .gdbinit: Add breakpoints on exit and fancy_abort.
+
 	* final.c (split_double): Avoid a compiler warning if
 	BITS_PER_WORD is less than or equal to HOST_BIT_PER_WIDE_INT.
 
