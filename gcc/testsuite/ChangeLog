@@ -1,3 +1,7 @@
+2002-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020315-1.c: New test.
+
 2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.dg/weak-1.c: Fix scan tests.
