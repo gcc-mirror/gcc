@@ -3441,6 +3441,9 @@ schedule_block (b, file)
 	    {
 	      if (file)
 		fprintf (file, "\n");
+	      /* We must set n_ready here, to ensure that sorting always
+		 occurs when we come back to the SCHED_SORT line above.  */
+	      n_ready = 0;
 	      continue;
 	    }
 	}
