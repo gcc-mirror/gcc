@@ -1,5 +1,8 @@
 Mon Apr 16 08:02:14 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (secondary_reload_class): SAR<->FP copies require a 
+	secondary register.
+
 	* install.texi (mips-mips-bsd): Update list of functions
 	required to include memmove.
 	* tm.texi (TARGET_MEM_FUNCTIONS): Update list of implicitly

@@ -4594,6 +4594,13 @@ secondary_reload_class (class, mode, in)
       || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
     return GENERAL_REGS;
 
+  /* A SAR<->FP register copy requires a secondary register (GPR) as
+     well as secondary memory.  */
+  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER
+      && ((REGNO_REG_CLASS (regno) == SHIFT_REGS && FP_REG_CLASS_P (class))
+	  || (class == SHIFT_REGS && FP_REG_CLASS_P (REGNO_REG_CLASS (regno)))))
+    return GENERAL_REGS;
+
   if (GET_CODE (in) == HIGH)
     in = XEXP (in, 0);
 
