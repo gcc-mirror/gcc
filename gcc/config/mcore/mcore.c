@@ -30,7 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
-#include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"

@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
-#include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "function.h"

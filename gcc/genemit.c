@@ -768,8 +768,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"insn-config.h\"\n");
-  printf ("#include \"insn-flags.h\"\n");
-  printf ("#include \"insn-codes.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"resource.h\"\n");

@@ -268,10 +268,6 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    A few optabs, such as move_optab and cmp_optab, are used
    by special code.  */
 
-/* Everything that uses expr.h needs to define enum insn_code
-   but we don't list it in the Makefile dependencies just for that.  */
-#include "insn-codes.h"
-
 typedef struct optab
 {
   enum rtx_code code;

@@ -229,9 +229,7 @@ output_prologue ()
   printf ("#include \"real.h\"\n");
   printf ("#include \"insn-config.h\"\n\n");
   printf ("#include \"conditions.h\"\n");
-  printf ("#include \"insn-flags.h\"\n");
   printf ("#include \"insn-attr.h\"\n\n");
-  printf ("#include \"insn-codes.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");

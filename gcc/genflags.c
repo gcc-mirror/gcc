@@ -156,16 +156,16 @@ gen_proto (insn)
 	gen_macro (name, num, 5);
     }
 
-  printf ("extern rtx gen_%-*s PARAMS ((", max_id_len, name);
+  printf ("extern struct rtx_def * gen_%-*s PARAMS ((", max_id_len, name);
 
   if (num == 0)
     printf ("void");
   else
     {
       while (num-- > 1)
-	printf ("rtx, ");
+	printf ("struct rtx_def *, ");
 
-      printf ("rtx");
+      printf ("struct rtx_def *");
     }
 
   printf ("));\n");
@@ -254,6 +254,7 @@ from the machine description file `md'.  */\n\n");
   obstack_grow (&obstack, &dummy, sizeof (rtx));
   insns = (rtx *) obstack_finish (&obstack);
 
+  printf ("struct rtx_def;\n");
   for (insn_ptr = insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);
 

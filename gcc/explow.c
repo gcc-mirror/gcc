@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "insn-flags.h"
-#include "insn-codes.h"
 
 #if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
