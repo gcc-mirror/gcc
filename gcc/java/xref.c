@@ -31,8 +31,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "xref.h"
 #include "jcf.h"
 #include "parse.h"
-#include "obstack.h"
-
 
 static xref_flag_table xref_table [] = {
   {NULL, NULL, NULL, NULL},

@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "obstack.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"

@@ -28,7 +28,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "recog.h"
 #include "toplev.h"
-#include "obstack.h"
 #include "tm_p.h"
 
 /* Store the data structures necessary for depth-first search.  */

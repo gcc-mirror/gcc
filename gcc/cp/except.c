@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "libfuncs.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "obstack.h"
 #include "output.h"
 #include "except.h"
 #include "toplev.h"

@@ -46,7 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 #include "libfuncs.h"
 #include "hard-reg-set.h"
-#include "obstack.h"
 #include "loop.h"
 #include "recog.h"
 #include "machmode.h"

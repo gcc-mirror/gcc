@@ -38,7 +38,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "function.h"
 #include "expr.h"
 #include "hard-reg-set.h"
