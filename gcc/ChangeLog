@@ -1,3 +1,8 @@
+2004-08-19  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Replace 
+	STACK_BOUDARY with PREFERRED_STACK_BOUNDARY.
+
 2004-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* bpabi.h (FPUTYPE_DEFAULT): Set it to FPUTYPE_VFP.
