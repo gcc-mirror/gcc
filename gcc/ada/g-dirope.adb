@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,12 @@
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
+
 with Unchecked_Deallocation;
 with Unchecked_Conversion;
-with System;  use System;
+
+with System;      use System;
+with System.CRTL; use System.CRTL;
 
 with GNAT.OS_Lib;
 
@@ -181,10 +184,6 @@ package body GNAT.Directory_Operations is
    -----------
 
    procedure Close (Dir : in out Dir_Type) is
-
-      function closedir (Directory : System.Address) return Integer;
-      pragma Import (C, closedir, "closedir");
-
       Discard : Integer;
       pragma Warnings (Off, Discard);
 
@@ -193,7 +192,7 @@ package body GNAT.Directory_Operations is
          raise Directory_Error;
       end if;
 
-      Discard := closedir (System.Address (Dir.all));
+      Discard := closedir (DIRs (Dir.all));
       Free (Dir);
    end Close;
 
@@ -630,12 +629,8 @@ package body GNAT.Directory_Operations is
    is
       C_File_Name : constant String := Dir_Name & ASCII.NUL;
 
-      function opendir
-        (File_Name : String) return Dir_Type_Value;
-      pragma Import (C, opendir, "opendir");
-
    begin
-      Dir := new Dir_Type_Value'(opendir (C_File_Name));
+      Dir := new Dir_Type_Value'(Dir_Type_Value (opendir (C_File_Name)));
 
       if not Is_Open (Dir) then
          Free (Dir);
@@ -736,9 +731,6 @@ package body GNAT.Directory_Operations is
       Str         : String (1 .. Filename_Max);
       Success     : Boolean;
       Working_Dir : Dir_Type;
-
-      procedure rmdir (Dir_Name : String);
-      pragma Import (C, rmdir, "rmdir");
 
    begin
       --  Remove the directory only if it is empty
