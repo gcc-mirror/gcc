@@ -1,3 +1,14 @@
+Tue Oct 20 22:16:11 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_parallel_process): Disable until BCT
+	loop optimization stable for the C4x.
+	(c4x_rptb_info_t, c4x_dump, c4x_rptb_in_range, c4x_rptb_unjumped_loop,
+	c4x_rptb_find_comp_and_jump, c4x_rptb_loop_info_get,
+	c4x_rptb_emit_init, c4x_rptb_process): Deleted (superceded by BCT
+	loop optimization).
+	(c4x_address_conflict): Be more paranoid when packing a volatile
+	memref in a parallel load/store.
+
 Tue Oct 20 21:56:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (repeat_block_top, repeat_block_end,
