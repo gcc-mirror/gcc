@@ -2816,6 +2816,7 @@ do {									\
 {"uns_arith_operand", {SUBREG, REG, CONST_INT}},			\
 {"clobbered_register", {REG}},						\
 {"input_operand", {SUBREG, REG, CONST_INT, MEM, CONST}},		\
+{"compare_operand", {SUBREG, REG, ZERO_EXTRACT}},			\
 {"const64_operand", {CONST_INT, CONST_DOUBLE}},				\
 {"const64_high_operand", {CONST_INT, CONST_DOUBLE}},			\
 {"tgd_symbolic_operand", {SYMBOL_REF}},					\
