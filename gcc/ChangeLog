@@ -1,3 +1,10 @@
+2004-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/18129
+	* varasm.c (copy_constant): Don't copy STRING_CSTs if
+	flag_writable_strings.
+	(build_constant_desc): Call copy_constant unconditionally.
+
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17581

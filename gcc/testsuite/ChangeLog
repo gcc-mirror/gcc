@@ -1,3 +1,8 @@
+2004-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/18129
+	* gcc.dg/20041024-1.c: New test.
+
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/18084

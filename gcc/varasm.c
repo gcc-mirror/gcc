@@ -2350,7 +2350,8 @@ compare_constant (const tree t1, const tree t2)
 }
 
 /* Make a copy of the whole tree structure for a constant.  This
-   handles the same types of nodes that compare_constant handles.  */
+   handles the same types of nodes that compare_constant handles.
+   Writable string constants are never copied.  */
 
 static tree
 copy_constant (tree exp)
@@ -2366,9 +2367,12 @@ copy_constant (tree exp)
       else
 	return copy_node (exp);
 
+    case STRING_CST:
+      if (flag_writable_strings)
+	return exp;
+      /* FALLTHROUGH */
     case INTEGER_CST:
     case REAL_CST:
-    case STRING_CST:
       return copy_node (exp);
 
     case COMPLEX_CST:
@@ -2434,10 +2438,7 @@ build_constant_desc (tree exp)
   struct constant_descriptor_tree *desc;
 
   desc = ggc_alloc (sizeof (*desc));
-  if (flag_writable_strings && TREE_CODE (exp) == STRING_CST)
-    desc->value = exp;
-  else
-    desc->value = copy_constant (exp);
+  desc->value = copy_constant (exp);
 
   /* Create a string containing the label name, in LABEL.  */
   labelno = const_labelno++;
