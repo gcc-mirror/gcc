@@ -8047,10 +8047,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    tree arg = TREE_VALUE (arglist);
 
 	    /* Strip off all nops for the sake of the comparison.  This
-	       is not quite the same as STRIP_NOPS.  It does more.  */
+	       is not quite the same as STRIP_NOPS.  It does more.  
+	       We must also strip off INDIRECT_EXPR for C++ reference
+	       parameters.  */
 	    while (TREE_CODE (arg) == NOP_EXPR
 		   || TREE_CODE (arg) == CONVERT_EXPR
-		   || TREE_CODE (arg) == NON_LVALUE_EXPR)
+		   || TREE_CODE (arg) == NON_LVALUE_EXPR
+		   || TREE_CODE (arg) == INDIRECT_REF)
 	      arg = TREE_OPERAND (arg, 0);
 	    if (arg != last_parm)
 	      warning ("second parameter of `va_start' not last named argument");
