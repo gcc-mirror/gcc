@@ -1,5 +1,7 @@
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/static6.C: New test.
+
 	* g++.old-deja/g++.pt/decl2.C: New test.
 
 1998-11-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
