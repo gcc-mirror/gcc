@@ -1,3 +1,8 @@
+2004-10-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17132
+	* g++.dg/template/memclass3.C: New test.
+
 2004-10-28  Adam Nemet  <anemet@lnxw.com>
 
 	PR middle-end/18160  
