@@ -105,7 +105,7 @@ DEFTREECODE (ALIAS_DECL, "alias_decl", 'd', 0)
    the type of the expression.  This type is either a FUNCTION_TYPE,
    METHOD_TYPE, or `unknown_type_node' indicating that the function is
    overloaded. */
-DEFTREECODE (BASELINK, "baselink", 'e', 3)
+DEFTREECODE (BASELINK, "baselink", 'x', 3)
 
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for

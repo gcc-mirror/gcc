@@ -1216,9 +1216,14 @@ get_pseudo_ti_desc (tree type)
 	      if (var_desc)
 		return var_desc;
   
-	      /* Add number of bases and trailing array of
-		 base_class_type_info.  */
-	      array_domain = build_index_type (size_int (num_bases));
+	      /* Create the array of __base_class_type_info entries.
+		 G++ 3.2 allocated an array that had one too many
+		 entries, and then filled that extra entries with
+		 zeros.  */
+	      if (abi_version_at_least (2))
+		array_domain = build_index_type (size_int (num_bases - 1));
+	      else
+		array_domain = build_index_type (size_int (num_bases));
 	      base_array =
 		build_array_type (base_desc_type_node, array_domain);
 
