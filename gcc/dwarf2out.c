@@ -29,6 +29,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "defaults.h"
 #include <stdio.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 #include "tree.h"
 #include "flags.h"
 #include "rtl.h"
@@ -385,13 +395,13 @@ static unsigned reg_number		PROTO((rtx));
   do {									\
     if (WORDS_BIG_ENDIAN)						\
       {									\
-	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
-	fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
+	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
+	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
       }									\
     else								\
       {									\
-	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
-	fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
+	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
+	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
       }									\
   } while (0)
 #endif
@@ -1411,7 +1421,7 @@ output_uleb128 (value)
   while (value != 0);
 
   if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s ULEB128 0x%x", ASM_COMMENT_START, save_value);
+    fprintf (asm_out_file, "\t%s ULEB128 0x%lx", ASM_COMMENT_START, save_value);
 }
 
 /* Output an signed LEB128 quantity.  */
@@ -1442,7 +1452,7 @@ output_sleb128 (value)
 
   while (more);
   if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s SLEB128 %d", ASM_COMMENT_START, save_value);
+    fprintf (asm_out_file, "\t%s SLEB128 %ld", ASM_COMMENT_START, save_value);
 }
 
 /* Output a Call Frame Information opcode and its operand(s).  */
@@ -1458,7 +1468,7 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f));
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s DW_CFA_advance_loc 0x%x",
+	fprintf (asm_out_file, "\t%s DW_CFA_advance_loc 0x%lx",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_offset);
       fputc ('\n', asm_out_file);
     }
@@ -1469,7 +1479,7 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s DW_CFA_offset, column 0x%x",
+	fprintf (asm_out_file, "\t%s DW_CFA_offset, column 0x%lx",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
 
       fputc ('\n', asm_out_file);
@@ -1482,7 +1492,7 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s DW_CFA_restore, column 0x%x",
+	fprintf (asm_out_file, "\t%s DW_CFA_restore, column 0x%lx",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
 
       fputc ('\n', asm_out_file);
@@ -1588,11 +1598,9 @@ static void
 output_call_frame_info (for_eh)
      int for_eh;
 {
-  register unsigned long i, j;
+  register unsigned long i;
   register dw_fde_ref fde;
-  register unsigned long fde_size;
   register dw_cfi_ref cfi;
-  unsigned long fde_pad;
   char l1[20], l2[20];
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
   char ld[20];
@@ -2304,7 +2312,9 @@ static unsigned pending_types;
 
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
+#if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
+#endif
 
 /* A pointer to the ..._DECL node which we have most recently been working
    on.  We keep this around just in case something about it looks screwy and
@@ -2396,7 +2406,7 @@ static unsigned long size_of_locs	PROTO((dw_loc_descr_ref));
 static int constant_size		PROTO((long unsigned));
 static unsigned long size_of_die	PROTO((dw_die_ref));
 static void calc_die_sizes		PROTO((dw_die_ref));
-static unsigned long size_of_prolog	PROTO((void));
+static unsigned long size_of_line_prolog	PROTO((void));
 static unsigned long size_of_line_info	PROTO((void));
 static unsigned long size_of_pubnames	PROTO((void));
 static unsigned long size_of_aranges	PROTO((void));
@@ -2410,8 +2420,8 @@ static void output_compilation_unit_header PROTO((void));
 static char *dwarf2_name		PROTO((tree, int));
 static void add_pubname			PROTO((tree, dw_die_ref));
 static void output_pubnames		PROTO((void));
-static void add_arrange			PROTO((tree, dw_die_ref));
-static void output_arranges		PROTO((void));
+static void add_arange			PROTO((tree, dw_die_ref));
+static void output_aranges		PROTO((void));
 static void output_line_info		PROTO((void));
 static int is_body_block		PROTO((tree));
 static dw_die_ref base_type_die		PROTO((tree));
@@ -2446,7 +2456,7 @@ static void add_prototyped_attribute	PROTO((dw_die_ref, tree));
 static void add_abstract_origin_attribute PROTO((dw_die_ref, tree));
 static void add_pure_or_virtual_attribute PROTO((dw_die_ref, tree));
 static void add_src_coords_attributes	PROTO((dw_die_ref, tree));
-static void ad_name_and_src_coords_attributes PROTO((dw_die_ref, tree));
+static void add_name_and_src_coords_attributes PROTO((dw_die_ref, tree));
 static void push_decl_scope		PROTO((tree));
 static dw_die_ref scope_die_for		PROTO((tree, dw_die_ref));
 static void pop_decl_scope		PROTO((void));
@@ -2455,7 +2465,7 @@ static void add_type_attribute		PROTO((dw_die_ref, tree, int, int,
 static char *type_tag			PROTO((tree));
 static tree member_declared_type	PROTO((tree));
 static char *decl_start_label		PROTO((tree));
-static void gen_arrqay_type_die		PROTO((tree, dw_die_ref));
+static void gen_array_type_die		PROTO((tree, dw_die_ref));
 static void gen_set_type_die		PROTO((tree, dw_die_ref));
 static void gen_entry_point_die		PROTO((tree, dw_die_ref));
 static void pend_type			PROTO((tree));
@@ -2471,7 +2481,7 @@ static void gen_subprogram_die		PROTO((tree, dw_die_ref));
 static void gen_variable_die		PROTO((tree, dw_die_ref));
 static void gen_label_die		PROTO((tree, dw_die_ref));
 static void gen_lexical_block_die	PROTO((tree, dw_die_ref, int));
-static void gen_inlined_subprogram_die	PROTO((tree, dw_die_ref, int));
+static void gen_inlined_subroutine_die	PROTO((tree, dw_die_ref, int));
 static void gen_field_die		PROTO((tree, dw_die_ref));
 static void gen_ptr_to_mbr_type_die	PROTO((tree, dw_die_ref));
 static void gen_compile_unit_die	PROTO((char *));
@@ -4087,7 +4097,6 @@ equate_decl_number_to_die (decl, decl_die)
      register dw_die_ref decl_die;
 {
   register unsigned decl_id = DECL_UID (decl);
-  register unsigned i;
   register unsigned num_allocated;
 
   if (decl_id >= decl_die_table_allocated)
@@ -4177,11 +4186,11 @@ print_die (die, outfile)
   register dw_die_ref c;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4u: %s\n",
+  fprintf (outfile, "DIE %4lu: %s\n",
 	   die->die_offset, dwarf_tag_name (die->die_tag));
   print_spaces (outfile);
-  fprintf (outfile, "  abbrev id: %u", die->die_abbrev);
-  fprintf (outfile, " offset: %u\n", die->die_offset);
+  fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
+  fprintf (outfile, " offset: %lu\n", die->die_offset);
 
   for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
     {
@@ -4197,13 +4206,13 @@ print_die (die, outfile)
 	  fprintf (outfile, "location descriptor");
 	  break;
 	case dw_val_class_const:
-	  fprintf (outfile, "%d", a->dw_attr_val.v.val_int);
+	  fprintf (outfile, "%ld", a->dw_attr_val.v.val_int);
 	  break;
 	case dw_val_class_unsigned_const:
-	  fprintf (outfile, "%u", a->dw_attr_val.v.val_unsigned);
+	  fprintf (outfile, "%lu", a->dw_attr_val.v.val_unsigned);
 	  break;
 	case dw_val_class_long_long:
-	  fprintf (outfile, "constant (%u,%u)",
+	  fprintf (outfile, "constant (%lu,%lu)",
 		  a->dw_attr_val.v.val_long_long.hi,
 		  a->dw_attr_val.v.val_long_long.low);
 	  break;
@@ -4215,7 +4224,7 @@ print_die (die, outfile)
 	  break;
 	case dw_val_class_die_ref:
 	  if (a->dw_attr_val.v.val_die_ref != NULL)
-	    fprintf (outfile, "die -> %u",
+	    fprintf (outfile, "die -> %lu",
 		     a->dw_attr_val.v.val_die_ref->die_offset);
 	  else
 	    fprintf (outfile, "die -> <null>");
@@ -4265,7 +4274,7 @@ print_dwarf_line_table (outfile)
       line_info = &line_info_table[i];
       fprintf (outfile, "%5d: ", i);
       fprintf (outfile, "%-20s", file_table[line_info->dw_file_num]);
-      fprintf (outfile, "%6d", line_info->dw_line_num);
+      fprintf (outfile, "%6ld", line_info->dw_line_num);
       fprintf (outfile, "\n");
     }
 
@@ -5139,7 +5148,7 @@ output_die (die)
 
   output_uleb128 (die->die_abbrev);
   if (flag_debug_asm)
-    fprintf (asm_out_file, " (DIE (0x%x) %s)",
+    fprintf (asm_out_file, " (DIE (0x%lx) %s)",
 	     die->die_offset, dwarf_tag_name (die->die_tag));
 
   fputc ('\n', asm_out_file);
@@ -5325,7 +5334,7 @@ output_die (die)
       /* Add null byte to terminate sibling list. */
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s end of children of DIE 0x%x",
+	fprintf (asm_out_file, "\t%s end of children of DIE 0x%lx",
 		 ASM_COMMENT_START, die->die_offset);
 
       fputc ('\n', asm_out_file);
@@ -5679,7 +5688,7 @@ output_line_info ()
       if (flag_debug_asm)
 	{
 	  ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
-	  fprintf (asm_out_file, "%s File Entry: 0x%x",
+	  fprintf (asm_out_file, "%s File Entry: 0x%lx",
 		   ASM_COMMENT_START, ft_index);
 	}
       else
@@ -5802,7 +5811,7 @@ output_line_info ()
 				  DWARF_LINE_OPCODE_BASE + line_delta);
 	  if (flag_debug_asm)
 	      fprintf (asm_out_file,
-		       "\t%s line %d", ASM_COMMENT_START, current_line);
+		       "\t%s line %ld", ASM_COMMENT_START, current_line);
 
 	  fputc ('\n', asm_out_file);
 	}
@@ -5812,7 +5821,7 @@ output_line_info ()
 	     on the value being encoded.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
 	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s advance to line %d",
+	    fprintf (asm_out_file, "\t%s advance to line %ld",
 		     ASM_COMMENT_START, current_line);
 
 	  fputc ('\n', asm_out_file);
@@ -5953,7 +5962,7 @@ output_line_info ()
 				      DWARF_LINE_OPCODE_BASE + line_delta);
 	      if (flag_debug_asm)
 		fprintf (asm_out_file,
-			 "\t%s line %d", ASM_COMMENT_START, current_line);
+			 "\t%s line %ld", ASM_COMMENT_START, current_line);
 
 	      fputc ('\n', asm_out_file);
 	    }
@@ -5961,7 +5970,7 @@ output_line_info ()
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
 	      if (flag_debug_asm)
-		fprintf (asm_out_file, "\t%s advance to line %d",
+		fprintf (asm_out_file, "\t%s advance to line %ld",
 			 ASM_COMMENT_START, current_line);
 
 	      fputc ('\n', asm_out_file);
@@ -7223,7 +7232,8 @@ add_subscript_info (type_die, type)
 	/* We have an array type with an unspecified length.  The DWARF-2
 	     spec does not say how to handle this; let's just leave out the
 	     bounds.  */
-	;
+	{;}
+      
 
 #ifndef MIPS_DEBUGGING_INFO
     }
@@ -8005,7 +8015,6 @@ gen_subprogram_die (decl, context_die)
   char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
   register tree origin = decl_ultimate_origin (decl);
   register dw_die_ref subr_die;
-  register dw_loc_descr_ref fp_loc = NULL;
   register rtx fp_reg;
   register tree fn_arg_types;
   register tree outer_scope;

@@ -1550,7 +1550,7 @@ invalidate (x, full_mode)
 
 	  struct table_elt *elt;
 
-	  while (elt = lookup_for_remove (x, hash, GET_MODE (x)))
+	  while ((elt = lookup_for_remove (x, hash, GET_MODE (x))))
 	    remove_from_table (elt, hash);
 	}
       else
@@ -2554,7 +2554,6 @@ find_best_addr (insn, loc)
 {
   struct table_elt *elt, *p;
   rtx addr = *loc;
-  int our_cost;
   int found_better = 1;
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
@@ -2624,7 +2623,7 @@ find_best_addr (insn, loc)
 #ifndef ADDRESS_COST
   if (elt)
     {
-      our_cost = elt->cost;
+      int our_cost = elt->cost;
 
       /* Find the lowest cost below ours that works.  */
       for (elt = elt->first_same_value; elt; elt = elt->next_same_value)
@@ -5266,10 +5265,13 @@ fold_rtx (x, insn)
 	  }
       }
 
-    else if (fmt[i] == 'E')
-      /* Don't try to fold inside of a vector of expressions.
-	 Doing nothing is harmless.  */
-      ;
+    else
+      {
+	if (fmt[i] == 'E')
+	  /* Don't try to fold inside of a vector of expressions.
+	     Doing nothing is harmless.  */
+	  {;}	
+      }
 
   /* If a commutative operation, place a constant integer as the second
      operand unless the first operand is also a constant integer.  Otherwise,
@@ -6111,9 +6113,11 @@ cse_insn (insn, in_libcall_block)
   rtx tem;
   register int n_sets = 0;
 
+#ifdef HAVE_cc0
   /* Records what this insn does to set CC0.  */
   rtx this_insn_cc0 = 0;
   enum machine_mode this_insn_cc0_mode = VOIDmode;
+#endif
 
   rtx src_eqv = 0;
   struct table_elt *src_eqv_elt = 0;
