@@ -345,13 +345,6 @@ void dump_flow_info			PROTO((FILE *));
 void debug_flow_info			PROTO((void));
 static void dump_edge_info		PROTO((FILE *, edge, int));
 
-static int_list_ptr alloc_int_list_node PROTO ((int_list_block **));
-static int_list_ptr add_int_list_node   PROTO ((int_list_block **,
-						int_list **, int));
-
-static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
-						int_list_ptr *, int *, int *));
-
 static void count_reg_sets_1		PROTO ((rtx));
 static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
@@ -5138,135 +5131,6 @@ print_rtl_with_bb (outf, rtx_first)
 	   tmp_rtx = XEXP (tmp_rtx, 1))
 	print_rtl_single (outf, XEXP (tmp_rtx, 0));
     }
-}
-
-
-/* Integer list support.  */
-
-/* Allocate a node from list *HEAD_PTR.  */
-
-static int_list_ptr
-alloc_int_list_node (head_ptr)
-     int_list_block **head_ptr;
-{
-  struct int_list_block *first_blk = *head_ptr;
-
-  if (first_blk == NULL || first_blk->nodes_left <= 0)
-    {
-      first_blk = (struct int_list_block *) xmalloc (sizeof (struct int_list_block));
-      first_blk->nodes_left = INT_LIST_NODES_IN_BLK;
-      first_blk->next = *head_ptr;
-      *head_ptr = first_blk;
-    }
-
-  first_blk->nodes_left--;
-  return &first_blk->nodes[first_blk->nodes_left];
-}
-
-/* Pointer to head of predecessor/successor block list.  */
-static int_list_block *pred_int_list_blocks;
-
-/* Add a new node to integer list LIST with value VAL.
-   LIST is a pointer to a list object to allow for different implementations.
-   If *LIST is initially NULL, the list is empty.
-   The caller must not care whether the element is added to the front or
-   to the end of the list (to allow for different implementations).  */
-
-static int_list_ptr
-add_int_list_node (blk_list, list, val)
-     int_list_block **blk_list;
-     int_list **list;
-     int val;
-{
-  int_list_ptr p = alloc_int_list_node (blk_list);
-
-  p->val = val;
-  p->next = *list;
-  *list = p;
-  return p;
-}
-
-/* Free the blocks of lists at BLK_LIST.  */
-
-void
-free_int_list (blk_list)
-     int_list_block **blk_list;
-{
-  int_list_block *p, *next;
-
-  for (p = *blk_list; p != NULL; p = next)
-    {
-      next = p->next;
-      free (p);
-    }
-
-  /* Mark list as empty for the next function we compile.  */
-  *blk_list = NULL;
-}
-
-/* Predecessor/successor computation.  */
-
-/* Mark PRED_BB a precessor of SUCC_BB,
-   and conversely SUCC_BB a successor of PRED_BB.  */
-
-static void
-add_pred_succ (pred_bb, succ_bb, s_preds, s_succs, num_preds, num_succs)
-     int pred_bb;
-     int succ_bb;
-     int_list_ptr *s_preds;
-     int_list_ptr *s_succs;
-     int *num_preds;
-     int *num_succs;
-{
-  if (succ_bb != EXIT_BLOCK)
-    {
-      add_int_list_node (&pred_int_list_blocks, &s_preds[succ_bb], pred_bb);
-      num_preds[succ_bb]++;
-    }
-  if (pred_bb != ENTRY_BLOCK)
-    {
-      add_int_list_node (&pred_int_list_blocks, &s_succs[pred_bb], succ_bb);
-      num_succs[pred_bb]++;
-    }
-}
-
-/* Convert edge lists into pred/succ lists for backward compatibility.  */
-
-void
-compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
-     int_list_ptr *s_preds;
-     int_list_ptr *s_succs;
-     int *num_preds;
-     int *num_succs;
-{
-  int i, n = n_basic_blocks;
-  edge e;
-
-  memset (s_preds, 0, n_basic_blocks * sizeof (int_list_ptr));
-  memset (s_succs, 0, n_basic_blocks * sizeof (int_list_ptr));
-  memset (num_preds, 0, n_basic_blocks * sizeof (int));
-  memset (num_succs, 0, n_basic_blocks * sizeof (int));
-
-  for (i = 0; i < n; ++i)
-    {
-      basic_block bb = BASIC_BLOCK (i);
-      
-      for (e = bb->succ; e ; e = e->succ_next)
-	add_pred_succ (i, e->dest->index, s_preds, s_succs,
-		       num_preds, num_succs);
-    }
-
-  for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
-    add_pred_succ (ENTRY_BLOCK, e->dest->index, s_preds, s_succs,
-		   num_preds, num_succs);
-}
-
-/* Free basic block data storage.  */
-
-void
-free_bb_mem ()
-{
-  free_int_list (&pred_int_list_blocks);
 }
 
 /* Compute dominator relationships using new flow graph structures.  */

@@ -473,8 +473,7 @@ static int *out_edges;
 
 
 static int is_cfg_nonregular PROTO ((void));
-static int build_control_flow PROTO ((int_list_ptr *, int_list_ptr *,
-				      int *, int *));
+static int build_control_flow PROTO ((struct edge_list *));
 static void new_edge PROTO ((int, int));
 
 
@@ -513,8 +512,7 @@ static int *containing_rgn;
 
 void debug_regions PROTO ((void));
 static void find_single_block_region PROTO ((void));
-static void find_rgns PROTO ((int_list_ptr *, int_list_ptr *,
-			      int *, int *, sbitmap *));
+static void find_rgns PROTO ((struct edge_list *, sbitmap *));
 static int too_large PROTO ((int, int *, int *));
 
 extern void debug_live PROTO ((int, int));
@@ -1060,48 +1058,45 @@ is_cfg_nonregular ()
    prevent cross block scheduling.  */
 
 static int
-build_control_flow (s_preds, s_succs, num_preds, num_succs)
-     int_list_ptr *s_preds;
-     int_list_ptr *s_succs;
-     int *num_preds;
-     int *num_succs;
+build_control_flow (edge_list)
+     struct edge_list *edge_list;
 {
-  int i;
-  int_list_ptr succ;
-  int unreachable;
+  int i, unreachable, num_edges;
 
-  /* Count the number of edges in the cfg.  */
-  nr_edges = 0;
+  /* This already accounts for entry/exit edges.  */
+  num_edges = NUM_EDGES (edge_list);
+
+  /* Unreachable loops with more than one basic block are detected
+     during the DFS traversal in find_rgns.
+
+     Unreachable loops with a single block are detected here.  This
+     test is redundant with the one in find_rgns, but it's much
+    cheaper to go ahead and catch the trivial case here.  */
   unreachable = 0;
   for (i = 0; i < n_basic_blocks; i++)
     {
-      nr_edges += num_succs[i];
+      basic_block b = BASIC_BLOCK (i);
 
-      /* Unreachable loops with more than one basic block are detected
-	 during the DFS traversal in find_rgns.
-
-	 Unreachable loops with a single block are detected here.  This
-	 test is redundant with the one in find_rgns, but it's much
-	 cheaper to go ahead and catch the trivial case here.  */
-      if (num_preds[i] == 0
-	  || (num_preds[i] == 1 && INT_LIST_VAL (s_preds[i]) == i))
+      if (b->pred == NULL
+	  || (b->pred->dest == b
+	      && b->pred->pred_next == NULL))
 	unreachable = 1;
     }
 
-  /* Account for entry/exit edges.  */
-  nr_edges += 2;
-
+  /* ??? We can kill these soon.  */
   in_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
   out_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
-  edge_table = (haifa_edge *) xcalloc (nr_edges, sizeof (haifa_edge));
+  edge_table = (haifa_edge *) xcalloc (num_edges, sizeof (haifa_edge));
 
   nr_edges = 0;
-  for (i = 0; i < n_basic_blocks; i++)
-    for (succ = s_succs[i]; succ; succ = succ->next)
-      {
-	if (INT_LIST_VAL (succ) != EXIT_BLOCK)
-	  new_edge (i, INT_LIST_VAL (succ));
-      }
+  for (i = 0; i < num_edges; i++)
+    {
+      edge e = INDEX_EDGE (edge_list, i);
+
+      if (e->dest != EXIT_BLOCK_PTR
+	  && e->src != ENTRY_BLOCK_PTR)
+	new_edge (e->src->index, e->dest->index);
+    }
 
   /* Increment by 1, since edge 0 is unused.  */
   nr_edges++;
@@ -1391,11 +1386,8 @@ too_large (block, num_bbs, num_insns)
    of edge tables.  That would simplify it somewhat.  */
 
 static void
-find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
-     int_list_ptr *s_preds;
-     int_list_ptr *s_succs;
-     int *num_preds;
-     int *num_succs;
+find_rgns (edge_list, dom)
+     struct edge_list *edge_list;
      sbitmap *dom;
 {
   int *max_hdr, *dfs_nr, *stack, *degree;
@@ -1419,6 +1411,8 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 
   /* Note if a block is in the block queue. */
   sbitmap in_stack;
+
+  int num_edges = NUM_EDGES (edge_list);
 
   /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
      and a mapping from block to its loop header (if the block is contained
@@ -1554,9 +1548,13 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
      to hold degree counts.  */
   degree = dfs_nr;
 
-  /* Compute the in-degree of every block in the graph.  */
-  for (i = 0; i < n_basic_blocks; i++)
-    degree[i] = num_preds[i];
+  for (i = 0; i < num_edges; i++)
+    {
+      edge e = INDEX_EDGE (edge_list, i);
+
+      if (e->src != ENTRY_BLOCK_PTR)
+	degree[e->src->index]++;
+    }
 
   /* Do not perform region scheduling if there are any unreachable
      blocks.  */
@@ -1578,7 +1576,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	{
 	  if (TEST_BIT (header, i) && TEST_BIT (inner, i))
 	    {
-	      int_list_ptr ps;
+	      edge e;
 	      int j;
 
 	      /* Now check that the loop is reducible.  We do this separate
@@ -1619,10 +1617,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
-	      for (ps = s_succs[i]; ps; ps = ps->next)
-		if (INT_LIST_VAL (ps) != EXIT_BLOCK
-		    && INT_LIST_VAL (ps) != ENTRY_BLOCK)
-		  --degree[INT_LIST_VAL(ps)];
+	      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+		if (e->dest != EXIT_BLOCK_PTR)
+		  --degree[e->dest->index];
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
@@ -1639,8 +1636,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 		  for (j = 0; j < n_basic_blocks; j++)
 		    /* Leaf nodes have only a single successor which must
 		       be EXIT_BLOCK.  */
-		    if (num_succs[j] == 1
-			&& INT_LIST_VAL (s_succs[j]) == EXIT_BLOCK)
+		    if (BASIC_BLOCK (j)->succ
+			&& BASIC_BLOCK (j)->succ->dest == EXIT_BLOCK_PTR
+			&& BASIC_BLOCK (j)->succ->succ_next == NULL)
 		      {
 			queue[++tail] = j;
 			SET_BIT (in_queue, j);
@@ -1654,15 +1652,15 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 		}
 	      else
 		{
-		  int_list_ptr ps;
+		  edge e;
 
-		  for (ps = s_preds[i]; ps; ps = ps->next)
+		  for (e = BASIC_BLOCK (i)->pred; e; e = e->pred_next)
 		    {
-		      node = INT_LIST_VAL (ps);
-
-		      if (node == ENTRY_BLOCK || node == EXIT_BLOCK)
+		      if (e->src == ENTRY_BLOCK_PTR)
 			continue;
- 
+
+		      node = e->src->index;
+
 		      if (max_hdr[node] == loop_head && node != i)
 			{
 			  /* This is a loop latch.  */
@@ -1712,16 +1710,16 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	
 	      while (head < tail && !too_large_failure)
 		{
-		  int_list_ptr ps;
+		  edge e;
 		  child = queue[++head];
 
-		  for (ps = s_preds[child]; ps; ps = ps->next)
+		  for (e = BASIC_BLOCK (child)->pred; e; e = e->pred_next)
 		    {
-		      node = INT_LIST_VAL (ps);
+		      node = e->src->index;
 
 		      /* See discussion above about nodes not marked as in
 			 this loop during the initial DFS traversal.  */
-		      if (node == ENTRY_BLOCK || node == EXIT_BLOCK
+		      if (e->src == ENTRY_BLOCK_PTR
 			  || max_hdr[node] != loop_head)
 			{
 			  tail = -1;
@@ -1757,23 +1755,24 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 		     the region.  */
 		  while (tail >= 0)
 		    {
-		      int_list_ptr ps;
-
 		      if (head < 0)
 			head = tail;
 		      child = queue[head];
 		      if (degree[child] == 0)
 			{
+			  edge e;
+
 			  degree[child] = -1;
 			  rgn_bb_table[idx++] = child;
 			  BLOCK_TO_BB (child) = ++count;
 			  CONTAINING_RGN (child) = nr_regions;
 			  queue[head] = queue[tail--];
 
-			  for (ps = s_succs[child]; ps; ps = ps->next)
-			    if (INT_LIST_VAL (ps) != ENTRY_BLOCK
-				&& INT_LIST_VAL (ps) != EXIT_BLOCK)
-			      --degree[INT_LIST_VAL (ps)];
+			  for (e = BASIC_BLOCK (child)->succ;
+			       e;
+			       e = e->succ_next)
+			    if (e->dest != EXIT_BLOCK_PTR)
+			      --degree[e->dest->index];
 			}
 		      else
 			--head;
@@ -6963,16 +6962,9 @@ schedule_insns (dump_file)
 	}
       else
 	{
-	  int_list_ptr *s_preds, *s_succs;
-	  int *num_preds, *num_succs;
 	  sbitmap *dom;
+	  struct edge_list *edge_list;
 
-	  s_preds = (int_list_ptr *) xmalloc (n_basic_blocks
-					      * sizeof (int_list_ptr));
-	  s_succs = (int_list_ptr *) xmalloc (n_basic_blocks
-					      * sizeof (int_list_ptr));
-	  num_preds = (int *) xmalloc (n_basic_blocks * sizeof (int));
-	  num_succs = (int *) xmalloc (n_basic_blocks * sizeof (int));
 	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
 
 	  /* The scheduler runs after flow; therefore, we can't blindly call
@@ -6986,8 +6978,7 @@ schedule_insns (dump_file)
 
 	     We could (should?) recompute register live information.  Doing
 	     so may even be beneficial.  */
-
-	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
+	  edge_list = create_edge_list ();
 
 	  /* Compute the dominators and post dominators.  We don't
 	     currently use post dominators, but we should for
@@ -6997,22 +6988,17 @@ schedule_insns (dump_file)
 	  /* build_control_flow will return nonzero if it detects unreachable
 	     blocks or any other irregularity with the cfg which prevents
 	     cross block scheduling.  */
-	  if (build_control_flow (s_preds, s_succs, num_preds, num_succs) != 0)
+	  if (build_control_flow (edge_list) != 0)
 	    find_single_block_region ();
 	  else
-	    find_rgns (s_preds, s_succs, num_preds, num_succs, dom);
+	    find_rgns (edge_list, dom);
 
 	  if (sched_verbose >= 3)
 	    debug_regions ();
 
 	  /* For now.  This will move as more and more of haifa is converted
 	     to using the cfg code in flow.c.  */
-	  free_bb_mem ();
 	  free (dom);
-	  free (s_preds);
-	  free (s_succs);
-	  free (num_preds);
-	  free (num_succs);
 	}
     }
 

@@ -1,5 +1,20 @@
 Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* basic-block.h: Remove all #defines and prototypes related to
+	integer lists.
+	(free_bb_mem, compute_preds_succs): Remove prototype.
+	* rtl.h (free_bb_mem): Remove prototype.
+	* flow.c (alloc_int_list_node); Remove function.
+	(add_inst_list_node, free_int_list, add_pred_succ): Likewise.
+	(compute_preds_succs, free_bb_mem): Likewise.
+	* gcse.c (gcse_main): Do not call free_bb_mem anymore.
+	* toplev.c (rest_of_compilation): Likewise.
+	* haifa-sched.c (build_control_flow): Use flow generated edge
+	list to build the haifa specific edge list.
+	(find_rgns): Use new CFG data structures instead of pred/succ lists.
+	(schedule_insns): Do not build pred/succ lists anymore.  Instead
+	build the edge table.
+
 	* basic-block.h (dump_bb_data): Remove declaration.
 	* flow.c (dump_bb_data): Remove function.
 	* sbitmap.c (sbitmap_intersect_of_predsucc): Delete function.
