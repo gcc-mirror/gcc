@@ -1,5 +1,5 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
+LIBGCC1 =
+CROSS_LIBGCC1 =
 
 LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
 
