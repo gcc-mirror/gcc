@@ -1,3 +1,15 @@
+2005-04-07  Scott Gilbertson  <scottg@mantatest.com>
+	* gnu/gcj/xlib/natXAnyEvent.cc (loadNext): Added timeout.
+	* gnu/awt/xlib/XCanvasPeer.java (setBackground): Removed
+	throw UnsupportedOperationException, fixed comments.
+	(setFont, setForeground): Fixed comments.
+	* gnu/awt/xlib/XEventLoop.java (postNextEvent): Changed
+	return type to boolean.
+	(getNextEvent): Fixed javadocs.
+	* gnu/awt/xlib/XToolkit.java (interrupted): Removed field.
+	(nativeQueueEmpty): Removed unused code.
+	(iterateNativeQueue): Removed outer loop.
+
 2005-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR libgcj/20155

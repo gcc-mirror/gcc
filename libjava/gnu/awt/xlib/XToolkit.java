@@ -444,8 +444,6 @@ public class XToolkit extends ClasspathToolkit
     throw new java.lang.UnsupportedOperationException ();
   }
 
-  boolean interrupted;
-
   public boolean nativeQueueEmpty() 
   { 
     return eventLoop.isIdle(); 
@@ -453,14 +451,19 @@ public class XToolkit extends ClasspathToolkit
 
   public void wakeNativeQueue() 
   {
-    interrupted = true;
     eventLoop.interrupt();
   }
 
+  /** Checks the native event queue for events.  If blocking, waits until an
+   * event is available before returning, unless interrupted by
+   * wakeNativeQueue.  If non-blocking, returns immediately even if no
+   * event is available.
+   *
+   * @param locked The calling EventQueue
+   * @param block If true, waits for a native event before returning
+   */
   public void iterateNativeQueue(java.awt.EventQueue locked, boolean block) 
   {
-    interrupted = false;
-    while (!interrupted)
-      eventLoop.postNextEvent(block);
-  }; 
+    eventLoop.postNextEvent(block);
+  }
 }
