@@ -1,3 +1,7 @@
+2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* jump.c (mark_all_labels): Handle CALL_PLACEHOLDERs.
+
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Rework fields used to describe positions of bitfields and
