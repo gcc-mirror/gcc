@@ -4501,10 +4501,17 @@ extract_muldiv (t, c, code, wide_type)
 	    break;
 	}
 
-      /* Now do the operation and verify it doesn't overflow.  */
-      op1 = const_binop (code, convert (ctype, op1), convert (ctype, c), 0);
-      if (op1 == 0 || TREE_OVERFLOW (op1))
-	break;
+      /* If it's a multiply or a division/modulus operation of a multiple
+         of our constant, do the operation and verify it doesn't overflow.  */
+      if (code == MULT_EXPR
+	  || integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
+        {
+          op1 = const_binop (code, convert (ctype, op1), convert (ctype, c), 0);
+          if (op1 == 0 || TREE_OVERFLOW (op1))
+            break;
+        }
+      else
+        break;
 
       /* If we have an unsigned type is not a sizetype, we cannot widen
 	 the operation since it will change the result if the original
