@@ -208,7 +208,8 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
-  jbyte *dbytes = elements (p->getData());
+  jbyte *dbytes = elements (p->getData()) + p->getOffset();
+  jint maxlen = p->getData()->length - p->getOffset();
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
@@ -228,7 +229,7 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
     }
 
   retlen =
-    ::recvfrom (native_fd, (char *) dbytes, p->getLength(), MSG_PEEK, (sockaddr*) &u,
+    ::recvfrom (native_fd, (char *) dbytes, maxlen, MSG_PEEK, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
     goto error;
@@ -290,7 +291,7 @@ gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
-  jbyte *dbytes = elements (p->getData());
+  jbyte *dbytes = elements (p->getData()) + p->getOffset();
   if (len == 4)
     {
       u.address.sin_family = AF_INET;
@@ -327,7 +328,8 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
-  jbyte *dbytes = elements (p->getData());
+  jbyte *dbytes = elements (p->getData()) + p->getOffset();
+  jint maxlen = p->getData()->length - p->getOffset();
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
@@ -347,7 +349,7 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
     }
 
   retlen =
-    ::recvfrom (native_fd, (char *) dbytes, p->getLength(), 0, (sockaddr*) &u,
+    ::recvfrom (native_fd, (char *) dbytes, maxlen, 0, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
     goto error;
