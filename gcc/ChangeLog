@@ -1,3 +1,9 @@
+2002-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8333
+	* varasm.c (asm_output_aligned_bss): Do not call
+	ASM_GLOBALIZE_LABEL.
+
 2002-10-30  David Edelsohn  <edelsohn@gnu.org>
 	    Torbjorn Granlund  <tege@swox.com>
 
