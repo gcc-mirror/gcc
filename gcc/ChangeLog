@@ -1,3 +1,16 @@
+2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (doing_line_wrapping, line_wrapper_printf, notice,
+	v_error_with_decl, v_warning_with_decl, v_pedwarn_with_decl): Remove. 
+	(v_message_with_decl): Rename to ...
+	(format_with_decl): ... this. Tweak
+	(diagnostic_for_decl): New function.
+	(fatal_io_error): Use verbatim in lieu of notice.
+	(announce_function): Use verbatim.
+	(default_print_error_function): Likewise.
+	(error_with_decl, warning_with_decl, pedwarn_with_decl): Use new
+	infratructure. 
+
 2000-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (function_arg_pass_by_reference): Don't do automatic
