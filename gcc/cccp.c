@@ -3820,8 +3820,15 @@ special_symbol (hp, op)
 #endif
 
   case T_WCHAR_TYPE:
-    buf = (char *) alloca (3 + strlen (WCHAR_TYPE));
-    sprintf (buf, "%s", WCHAR_TYPE);
+    /* In C++, wchar_t is a distinct basic type, and we can expect
+       __wchar_t to be defined by cc1plus.  */
+    if (cplusplus)
+      buf = "__wchar_t";
+    else
+      {
+	buf = (char *) alloca (3 + strlen (WCHAR_TYPE));
+	sprintf (buf, "%s", WCHAR_TYPE);
+      }
     break;
 
   case T_USER_LABEL_PREFIX_TYPE:
