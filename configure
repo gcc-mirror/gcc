@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.44 $"
+version="$Revision: 1.45 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -572,33 +572,6 @@ case "${srcdir}" in
 		srcdir=.
 	fi
 esac
-
-# If it's an in-source build, make a directory and configure there instead.
-# Name the build directory after the host for clarity's sake.  Remember that
-# name for the redirecting makefile's use, since the makefile shouldn't have
-# to duplicate the work of figuring out host_alias.
-#
-# Also remember if this is a native build or not.  Variations on "or not"
-# are performed later in this script so we can't test them here.  In
-# particular, build_alias will still be empty unless specified by the user,
-# so do not try in-source builds when making a host-x-host compiler.
-# For a cross compile, "make all" = "all".  Otherwise, "all" = "bootstrap".
-if test "${srcdir}" = "." ; then
-	builddir=${host_alias}
-	if test ! -d ${builddir}; then
-		mkdir ${builddir} || exit 1
-	fi
-	if test ${host_alias} != ${target_alias}; then
-		t=all
-	else
-		t=bootstrap
-	fi
-	# stamp-builddir is too long for #$&!*@ 8.3 filesystems
-	echo "builddir=${builddir}" > s-buildd
-	echo "defaulttarget=$t" >> s-buildd
-	cd ${builddir}
-	exec ${config_shell} ../configure $arguments
-fi
 
 ### warn about some conflicting configurations.
 
