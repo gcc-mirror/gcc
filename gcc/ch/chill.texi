@@ -6,7 +6,7 @@
 @ifinfo
 @format
 START-INFO-DIR-ENTRY
-* Chill::                       Chill compiler
+* Chill: (chill).               Chill compiler
 END-INFO-DIR-ENTRY
 @end format
 @end ifinfo
