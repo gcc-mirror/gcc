@@ -6127,13 +6127,13 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
       return 1;
 
     case SUBREG:
-      /* If this is a SUBREG for a promoted variable, check the inner
-	 value.  */
-      if (SUBREG_PROMOTED_VAR_P (x))
-	return basic_induction_var (loop, SUBREG_REG (x),
-				    GET_MODE (SUBREG_REG (x)),
-				    dest_reg, p, inc_val, mult_val, location);
-      return 0;
+      /* If what's inside the SUBREG is a BIV, then the SUBREG.  This will
+	 handle addition of promoted variables.
+	 ??? The comment at the start of this function is wrong: promoted
+	 variable increments don't look like it says they do.  */
+      return basic_induction_var (loop, SUBREG_REG (x),
+				  GET_MODE (SUBREG_REG (x)),
+				  dest_reg, p, inc_val, mult_val, location);
 
     case REG:
       /* If this register is assigned in a previous insn, look at its
