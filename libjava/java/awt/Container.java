@@ -1,5 +1,5 @@
 /* Container.java -- parent container class in AWT
-   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2003, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -1516,7 +1516,7 @@ public class Container extends Component
           (ACCESSIBLE_CHILD_PROPERTY, e.getChild(), null);
       }
     } // class AccessibleContainerHandler
-  } // class AccessibleAWTPanel
+  } // class AccessibleAWTContainer
 } // class Container
 
 /**
@@ -1562,26 +1562,26 @@ class LightweightDispatcher implements Serializable
     Component candidate = mouseEventTarget;
 
     boolean candidate_is_container_with_children = 
-	    ((candidate != null)
-	     && (candidate instanceof Container)
-	     && (((Container)candidate).getComponentCount () > 0));
+      ((candidate != null)
+       && (candidate instanceof Container)
+       && (((Container)candidate).getComponentCount () > 0));
 
     boolean candidate_does_not_contain_point =
-	    ((candidate != null)
-	     && (! candidate.contains (x - candidate.getX (),
+      ((candidate != null)
+       && (! candidate.contains (x - candidate.getX (),
                                  y - candidate.getY ())));
 
     if (candidate == null
         || candidate_is_container_with_children
         || candidate_does_not_contain_point)
-  {
+      {
         // Try to reacquire.
         candidate = nativeContainer.findComponentAt (x, y);
-  }
+      }
 
     if (mouseEventTarget != null
         && mouseEventTarget != candidate)
-  {
+      {
         int nx = x - mouseEventTarget.getX ();
         int ny = y - mouseEventTarget.getY ();
         MouseEvent exited = new MouseEvent (mouseEventTarget, 
@@ -1594,15 +1594,15 @@ class LightweightDispatcher implements Serializable
                                             me.getButton ());
         mouseEventTarget.dispatchEvent (exited); 
         mouseEventTarget = null;
-  }
+      }
 
     if (candidate != null)
-	    {
+      {
         // Possibly set new state.
         if (candidate.isLightweight() 
             && candidate != nativeContainer
             && candidate != mouseEventTarget)
-  {
+	  {
 			
             mouseEventTarget = candidate;
 			
@@ -1620,16 +1620,16 @@ class LightweightDispatcher implements Serializable
                                                  me.getButton ());
             mouseEventTarget.dispatchEvent (entered);
           }
-	    }
+      }
   }
 
   boolean handleEvent (AWTEvent e)
   {
     if ((eventMask & e.getID ()) == 0)
-	    return false;
+      return false;
 
     if (e instanceof MouseEvent)
-  {
+      {
         MouseEvent me = (MouseEvent) e;
         acquireComponentForMouseEvent (me);
 
@@ -1640,11 +1640,11 @@ class LightweightDispatcher implements Serializable
             mouseEventTarget.dispatchEvent (me);
             me.setSource (oldSource);
           }
-	    }
+      }
     else if (e instanceof KeyEvent && focus != null)
-  {
+      {
         focus.processKeyEvent ((KeyEvent) e);
-	    }
+      }
       
     return e.isConsumed();
   }

@@ -1,5 +1,7 @@
 2004-01-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Container.java: Typo and indentation fixes.
+
 	* java/lang/natClassLoader.cc: Moved VMClassLoader methods...
 	* java/lang/natVMClassLoader.cc: ...here.  New file.
 	* Makefile.in: Rebuilt.
