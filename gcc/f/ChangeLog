@@ -29,6 +29,29 @@ Fri Jan  9 19:09:07 1998  Craig Burley  <burley@gnu.org>
 
 Tue Dec 23 14:58:04 1997  Craig Burley  <burley@gnu.org>
 
+	Improve run-time diagnostic for "PRINT '(I1', 42":
+	* com.c (ffecom_char_args_x_): Renamed from ffecom_char_args_,
+	which is now a macro (to avoid lots of changes to other code)
+	with new arg, ffecom_char_args_with_null_ being another new
+	macro to call same function with different value for new arg.
+	This function now appends a null byte to opCONTER expression
+	if the new arg is TRUE.
+	(ffecom_arg_ptr_to_expr): Support NULL length pointer.
+	* ste.c (ffeste_io_cilist_):
+	(ffeste_io_icilist_): Pass NULL length ptr for
+	FORMAT expression, so null byte gets appended where
+	feasible.
+	* target.c (ffetarget_character1):
+	(ffetarget_concatenate_character1):
+	(ffetarget_substr_character1):
+	(ffetarget_convert_character1_character1):
+	(ffetarget_convert_character1_hollerith):
+	(ffetarget_convert_character1_integer4):
+	(ffetarget_convert_character1_logical4):
+	(ffetarget_convert_character1_typeless):
+	(ffetarget_hollerith): Append extra phantom null byte as
+	part of FFETARGET-NULL-BYTE kludge.
+
 	* intrin.c (ffeintrin_fulfill_generic): Don't generate
 	FFEBAD_INTRINSIC_TYPE for CHARACTER*(*) intrinsic.
 

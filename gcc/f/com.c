@@ -420,8 +420,8 @@ static tree ffecom_call_binop_ (tree fn, ffeinfoKindtype kt,
 				tree dest_tree, ffebld dest,
 				bool *dest_used, tree callee_commons,
 				bool scalar_args);
-static void ffecom_char_args_ (tree *xitem, tree *length,
-			       ffebld expr);
+static void ffecom_char_args_x_ (tree *xitem, tree *length,
+				 ffebld expr, bool with_null);
 static tree ffecom_check_size_overflow_ (ffesymbol s, tree type, bool dummy);
 static tree ffecom_char_enhance_arg_ (tree *xtype, ffesymbol s);
 static ffecomConcatList_
@@ -652,6 +652,9 @@ static char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 
 #define ffecom_start_compstmt_ bison_rule_pushlevel_
 #define ffecom_end_compstmt_ bison_rule_compstmt_
+
+#define ffecom_char_args_(i,l,e) ffecom_char_args_x_((i),(l),(e),FALSE)
+#define ffecom_char_args_with_null_(i,l,e) ffecom_char_args_x_((i),(l),(e),TRUE)
 
 /* For each binding contour we allocate a binding_level structure
  * which records the names defined in that contour.
@@ -1646,36 +1649,46 @@ ffecom_call_binop_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 }
 #endif
 
-/* ffecom_char_args_ -- Return ptr/length args for char subexpression
+/* ffecom_char_args_x_ -- Return ptr/length args for char subexpression
 
    tree ptr_arg;
    tree length_arg;
    ffebld expr;
-   ffecom_char_args_(&ptr_arg,&length_arg,expr);
+   bool with_null;
+   ffecom_char_args_x_(&ptr_arg,&length_arg,expr,with_null);
 
    Handles CHARACTER-type CONTER, SYMTER, SUBSTR, ARRAYREF, and FUNCREF
    subexpressions by constructing the appropriate trees for the ptr-to-
    character-text and length-of-character-text arguments in a calling
-   sequence.  */
+   sequence.
+
+   Note that if with_null is TRUE, and the expression is an opCONTER,
+   a null byte is appended to the string.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffecom_char_args_ (tree *xitem, tree *length, ffebld expr)
+ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 {
   tree item;
   tree high;
   ffetargetCharacter1 val;
+  ffetargetCharacterSize newlen;
 
   switch (ffebld_op (expr))
     {
     case FFEBLD_opCONTER:
       val = ffebld_constant_character1 (ffebld_conter (expr));
-      *length = build_int_2 (ffetarget_length_character1 (val), 0);
+      newlen = ffetarget_length_character1 (val);
+      if (with_null)
+	{
+	  if (newlen != 0)
+	    ++newlen;	/* begin FFETARGET-NULL-KLUDGE. */
+	}
+      *length = build_int_2 (newlen, 0);
       TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
-      high = build_int_2 (ffetarget_length_character1 (val),
-			  0);
+      high = build_int_2 (newlen, 0);
       TREE_TYPE (high) = ffecom_f2c_ftnlen_type_node;
-      item = build_string (ffetarget_length_character1 (val),
+      item = build_string (newlen,	/* end FFETARGET-NULL-KLUDGE. */
 			   ffetarget_text_character1 (val));
       TREE_TYPE (item)
 	= build_type_variant
@@ -10818,7 +10831,19 @@ ffecom_arg_expr (ffebld expr, tree *length)
    returns and sets the length return value to NULL_TREE.  Otherwise
    generates code to evaluate the character expression, returns the proper
    pointer to the result, AND sets the length return value to a tree that
-   specifies the length of the result.	*/
+   specifies the length of the result.
+
+   If the length argument is NULL, this is a slightly special
+   case of building a FORMAT expression, that is, an expression that
+   will be used at run time without regard to length.  For the current
+   implementation, which uses the libf2c library, this means it is nice
+   to append a null byte to the end of the expression, where feasible,
+   to make sure any diagnostic about the FORMAT string terminates at
+   some useful point.
+
+   For now, treat %REF(char-expr) as the same as char-expr with a NULL
+   length argument.  This might even be seen as a feature, if a null
+   byte can always be appended.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
@@ -10828,7 +10853,8 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
   tree ign_length;
   ffecomConcatList_ catlist;
 
-  *length = NULL_TREE;
+  if (length != NULL)
+    *length = NULL_TREE;
 
   if (expr == NULL)
     return integer_zero_node;
@@ -10850,8 +10876,11 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     case FFEBLD_opPERCENT_REF:
       if (ffeinfo_basictype (ffebld_info (expr)) != FFEINFO_basictypeCHARACTER)
 	return ffecom_ptr_to_expr (ffebld_left (expr));
-      ign_length = NULL_TREE;
-      length = &ign_length;
+      if (length != NULL)
+	{
+	  ign_length = NULL_TREE;
+	  length = &ign_length;
+	}
       expr = ffebld_left (expr);
       break;
 
@@ -10877,7 +10906,8 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     }
 
 #ifdef PASS_HOLLERITH_BY_DESCRIPTOR
-  if (ffeinfo_basictype (ffebld_info (expr)) == FFEINFO_basictypeHOLLERITH)
+  if ((ffeinfo_basictype (ffebld_info (expr)) == FFEINFO_basictypeHOLLERITH)
+      && (length != NULL))
     {				/* Pass Hollerith by descriptor. */
       ffetargetHollerith h;
 
@@ -10900,14 +10930,21 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
   switch (ffecom_concat_list_count_ (catlist))
     {
     case 0:			/* Shouldn't happen, but in case it does... */
-      *length = ffecom_f2c_ftnlen_zero_node;
-      TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
+      if (length != NULL)
+	{
+	  *length = ffecom_f2c_ftnlen_zero_node;
+	  TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
+	}
       ffecom_concat_list_kill_ (catlist);
       return null_pointer_node;
 
     case 1:			/* The (fairly) easy case. */
-      ffecom_char_args_ (&item, length,
-			 ffecom_concat_list_expr_ (catlist, 0));
+      if (length == NULL)
+	ffecom_char_args_with_null_ (&item, &ign_length,
+				     ffecom_concat_list_expr_ (catlist, 0));
+      else
+	ffecom_char_args_ (&item, length,
+			   ffecom_concat_list_expr_ (catlist, 0));
       ffecom_concat_list_kill_ (catlist);
       assert (item != NULL_TREE);
       return item;
@@ -10943,8 +10980,13 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 
     for (i = 0; i < count; ++i)
       {
-	ffecom_char_args_ (&citem, &clength,
-			   ffecom_concat_list_expr_ (catlist, i));
+	if ((i == count)
+	    && (length == NULL))
+	  ffecom_char_args_with_null_ (&citem, &clength,
+				       ffecom_concat_list_expr_ (catlist, i));
+	else
+	  ffecom_char_args_ (&citem, &clength,
+			     ffecom_concat_list_expr_ (catlist, i));
 	if ((citem == error_mark_node)
 	    || (clength == error_mark_node))
 	  {
@@ -10963,10 +11005,11 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 				     citem),
 		      items);
 	clength = ffecom_save_tree (clength);
-	known_length
-	  = ffecom_2 (PLUS_EXPR, ffecom_f2c_ftnlen_type_node,
-		      known_length,
-		      clength);
+	if (length != NULL)
+	  known_length
+	    = ffecom_2 (PLUS_EXPR, ffecom_f2c_ftnlen_type_node,
+			known_length,
+			clength);
 	lengths
 	  = ffecom_2 (COMPOUND_EXPR, TREE_TYPE (lengths),
 		      ffecom_modify (void_type_node,
@@ -11015,7 +11058,8 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 		     item,
 		     temporary);
 
-    *length = known_length;
+    if (length != NULL)
+      *length = known_length;
   }
 
   ffecom_concat_list_kill_ (catlist);

@@ -999,7 +999,6 @@ ffeste_io_cilist_ (bool have_err,
   int yes;
   tree field;
   tree inits, initn;
-  tree ignore;			/* We ignore the length of format! */
   bool constantp = TRUE;
   static tree errfield, unitfield, endfield, formatfield, recfield;
   tree errinit, unitinit, endinit, formatinit, recinit;
@@ -1086,7 +1085,7 @@ ffeste_io_cilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, &ignore);
+      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
       if (TREE_CONSTANT (formatexp))
 	{
 	  formatinit = formatexp;
@@ -1305,7 +1304,6 @@ ffeste_io_icilist_ (bool have_err,
   int yes;
   tree field;
   tree inits, initn;
-  tree ignore;			/* We ignore the length of format! */
   bool constantp = TRUE;
   static tree errfield, unitfield, endfield, formatfield, unitlenfield,
     unitnumfield;
@@ -1409,7 +1407,7 @@ ffeste_io_icilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, &ignore);
+      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
       if (TREE_CONSTANT (formatexp))
 	{
 	  formatinit = formatexp;
