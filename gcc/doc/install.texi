@@ -296,7 +296,6 @@ the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-
 @item autoconf versions 2.13 and 2.59
 @itemx GNU m4 version 1.4 (or later)
 

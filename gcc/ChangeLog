@@ -1,3 +1,8 @@
+2004-06-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR web/15263
+	* doc/install.texi: Remove superfluous linebreak.
+
 2004-06-10  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin): Fall back to library function call for
