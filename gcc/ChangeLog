@@ -1,3 +1,8 @@
+2004-01-02  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (integer_nonzerop): Use PARAMS macro with prototype.
+	* tree.c (integer_nonzerop): Use K&R style function declaration.
+
 2004-01-02  Andreas Schwab  <schwab@suse.de>
 
 	* doc/c-tree.texi: Fix @item vs. @itemx.
