@@ -2536,6 +2536,11 @@ cprop_operand (tree stmt, use_operand_p op_p)
 	      || TREE_CODE (val) != SSA_NAME))
 	return false;
 
+      /* Do not replace hard register operands in asm statements.  */
+      if (TREE_CODE (stmt) == ASM_EXPR
+	  && !may_propagate_copy_into_asm (op))
+	return false;
+
       /* Get the toplevel type of each operand.  */
       op_type = TREE_TYPE (op);
       val_type = TREE_TYPE (val);
