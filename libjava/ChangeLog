@@ -1,3 +1,9 @@
+1999-05-10  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/RawData.java: Added copyright header.
+
+	* include/jni.h (_Jv_va_list): Always define as va_list.
+
 1999-05-9  Anthony Green  <green@cygnus.com>
 
 	* java/text/DateFormat.java (computeInstance): Separate time
