@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <ctype.h>
 
-#include "regex.h"
+#include "gnu-regex.h"
 #include "server.h"
 
 static const char program_id[] = "fixincl version 1.0";

@@ -5,6 +5,7 @@ Thu Apr 29 15:58:52 1999  Robert Lipe  <robertlipe@usa.net>
 	* fixinc/gnu-regex.c, fixinc/gnu-regex.h: Imported from GDB 4.18.
 	* fixinc/Makefile.in (OBJ, HDR): Handle name changes from above.
 	(gnu-regex.o): Define REGEX_MALLOC to avoid memory leak.
+	* fixinc/fixincl.c: new regex.h header name 
 
 Thu Apr 29 12:53:33 1999  Richard Henderson  <rth@cygnus.com>
 
