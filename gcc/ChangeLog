@@ -1,3 +1,9 @@
+2003-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (SHLIB_LINK): Override to use a linker script
+	libgcc_s.so.
+	(SHLIB_INSTALL): Likewise.
+
 2003-10-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Remove reference to removed 'pthreads' thread
