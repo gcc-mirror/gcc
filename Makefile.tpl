@@ -642,12 +642,13 @@ do-[+make_target+]: unstage [+make_target+]-host [+make_target+]-target stage
 
 # Here are the targets which correspond to the do-X targets.
 
-.PHONY: info installcheck dvi install-info
+.PHONY: info installcheck dvi html install-info
 .PHONY: clean distclean mostlyclean maintainer-clean realclean
 .PHONY: local-clean local-distclean local-maintainer-clean
 info: do-info
 installcheck: do-installcheck
 dvi: do-dvi
+html: do-html
 
 # Make sure makeinfo is built before we do a `make info', if we're
 # in fact building texinfo.
