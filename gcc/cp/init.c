@@ -1381,7 +1381,11 @@ build_member_call (type, name, parmlist)
   if (TREE_CODE (name) != TEMPLATE_ID_EXPR)
     method_name = name;
   else
-    method_name = TREE_OPERAND (name, 0);
+    {
+      method_name = TREE_OPERAND (name, 0);
+      if (is_overloaded_fn (method_name))
+	method_name = DECL_NAME (OVL_CURRENT (method_name));
+    }
 
   if (TREE_CODE (method_name) == BIT_NOT_EXPR)
     {
