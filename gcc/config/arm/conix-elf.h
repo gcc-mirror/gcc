@@ -41,4 +41,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
      
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-D__arm__ -D__CONIX__ -Acpu=arm -Amachine=arm -D__ELF__"
+  "-D__arm__ -D__CONIX__ -D__ELF__"

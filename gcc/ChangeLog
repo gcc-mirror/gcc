@@ -1,3 +1,18 @@
+2001-12-12  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (arm-*-freebsd*): Add target.
+	* config/arm/freebsd.h: New file.
+	* config/arm/arm.h (CPP_PREDEFINES): Do not define.
+	(CPP_SPEC): #undef before defining.
+	(CPP_CPU_ARCH_SPEC): Add -Acpu=arm -Amachine=arm.
+	* config/arm/conix-elf.h (CPP_PREDEFINES): Remove -Acpu=arm
+	-Amachine=arm.
+	* config/arm/linux-elf.h: Likewise.
+	* config/arm/netbsd.h: Likewise.
+	* config/arm/riscix.h: Likewise.
+	* config/arm/riscix1-1.h: Likewise.
+	* config/arm/semiaof.h: Likewise.
+
 2001-12-12  Richard Henderson  <rth@redhat.com>
 
 	* regrename.c (copyprop_hardreg_forward): New optimization.
