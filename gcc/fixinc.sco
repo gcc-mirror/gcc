@@ -6,6 +6,8 @@
 #   Based on fixinc.svr4 script by Ron Guilmette (rfg@ncd.com) (SCO
 #   modifications by Ian Lance Taylor (ian@airs.com)).
 #
+# Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+#
 # This file is part of GNU CC.
 # 
 # GNU CC is free software; you can redistribute it and/or modify
@@ -289,6 +291,44 @@ if [ -r ${LIB}/$file ]; then
     rm ${LIB}/$file
   fi
 fi
+
+# This function is borrowed from fixinclude.svr4
+# The OpenServer math.h defines struct exception, which conflicts with
+# the class exception defined in the C++ file std/stdexcept.h.  We
+# redefine it to __math_exception.  This is not a great fix, but I
+# haven't been able to think of anything better.
+file=math.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/struct exception/i\
+#ifdef __cplusplus\
+#define exception __math_exception\
+#endif'\
+      -e '/struct exception/a\
+#ifdef __cplusplus\
+#undef exception\
+#endif' $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 
 echo 'Removing unneeded directories:'
 cd $LIB
