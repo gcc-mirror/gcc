@@ -1,3 +1,145 @@
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * include/bits/locale_facets.h (__timepunct::__timepunct): Allocate
+        _M_name_timepunct.
+        (__timepunct::~__timepunct): Deallocate, remove specialization
+        declarations.
+        (messages::messages): Allocate _M_name_messages.
+        (messages::~messages): Deallocate.
+        (messages_byname): Same.
+        * config/locale/gnu/time_members.cc (__timepunct::~__timepunct):
+        Remove.
+        * config/locale/generic/time_members.cc (__timepunct::~__timepunct):
+        Remove.
+
+        * docs/html/install.html: Add eqs_MX, en_PH to required locales list.
+  
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/globals.cc (__gnu_cxx::c_locale_impl_compat): Add, alias to
+	c_locale_impl.
+	* testsuite/abi_check.cc (line_to_symbol_info): Collect size info.
+	* docs/html/abi.txt: Update.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/static_members.cc (test02): Less provincial.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/static_members.cc (test02): Disable for 
+	systems without named locale support.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Don't assume
+	running the testsuites in "C" environment.
+	Add new tests.
+	* docs/html/22_locale/locale.html: Update.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/abi_check.cc (hash<string>): Specialize.
+	Simplify. Check compatible symbol versions.
+	* config/linker-map.gnu: Clarify, explicitly export
+	std::codecvt::c* symbols.
+
+	* testsuite/22_locale/static_members.cc (test02): Avoid null strings.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/static_members.cc (test02): Fix.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h (_GLIBCPP_SYMVER): Add.
+	(_GLIBCPP_ASM_SYMVER): Add.
+	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS): Define _GLIBCPP_SYMVER.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/c++config (_GLIBCPP_AT_AT): Define, as an expedient
+	hack around m4 issues with quoting '@'.
+	* src/locale.cc: Use _GLIBCPP_ASM_SYMVER.
+	* src/globals.cc (__gnu_cxx): Same.
+	
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Fix for
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu (GLIBCPP_3.2.1): Add.
+	(GLIBCPP_3.2): Don't export locale::_S_*. 
+	* src/ios.cc: Move globals into __gnu_cxx. Make old exported
+	symbols match.
+	* src/locale.cc: Same.
+	* src/localename.cc: Same.	
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>	
+
+	* src/locale.cc: Fix comments, move ctors together.
+	* testsuite/22_locale/static_members.cc (test03): Add.
+
+2002-10-16  Paolo Carlini  <pcarlini@unitus.it>
+	    Benjamin Kosnik  <bkoz@redhat.com>	
+
+	* include/bits/localefwd.h (class locale): Add static member
+	_S_num_extra_categories, encoding the number of additional
+	categories.
+	Change _S_num_categories to _S_categories_size.
+	(class locale::_Impl): Add _M_c_cats.
+	(class locale::_Impl::_M_names): Change to array of chars.
+	(class locale::_Impl::_M_check_same_name): Use
+	_S_extra_categories_size, tweak.
+	(locale::locale(const locale&, _Facet*)): Ditto.
+    	* src/locale.cc (locale::locale(const char* )): Rewrite to deal
+	with the environment in a POSIX-compliant way while being thread
+	safe.
+	(locale::name()): Update to output POSIX environment strings.
+	* src/localename.cc
+	(locale::_Impl::_Impl(const _Impl&, size_t): Use
+	_S_categories_size_*, tweak.
+	(locale::_Impl::_Impl(facet**, size_t, bool)): Ditto.
+	(locale::_Impl::_Impl(const char*, size_t)): Name each category
+	individually.
+	(locale::_Impl::_M_replace_categories): Use strcpy.
+
+	* include/bits/locale_facets.h (numpunct::_M_initialize_numpunct):
+	Change default argument to NULL from _S_c_locale.
+	(timepunct::_M_initialize_timepunct): Same.
+	_S_c_locale cleanups.
+	* src/codecvt.c: _S_c_locale simplification.
+	* src/ctype.c: Same.
+	* src/globals.cc: Add fake_name.
+	* src/locale-inst.cc: Remove extra includes.	
+	* src/locale.cc: Remove extra includes.
+	Add _S_extra_categories_size definition.
+	Correct "C" initialization.
+	(locale::facet::facet): Don't initialize _S_c_locale.
+	(locale::facet::_M_remove_reference): Adjust.
+	* src/localename: Use facet_vec, facet_name.
+	(locale::_Impl::_Impl(facet** __f, size_t __refs, bool)): Set
+	facet ref counts to one. Initialize _S_c_locale.
+	(locale::_Impl::_M_install_facet(id*, facet*)): Adjust facet ref
+	counts when installing unilaterally.
+
+	* config/locale/generic/c_locale.cc: Add _S_categories definition.
+	* config/locale/generic/c_locale.h: Add _GLIBCPP_NUM_CATEGORIES macro.
+	* config/locale/generic/time_members.cc: _S_c_locale cleanup.
+	
+	* config/locale/gnu/c_locale.cc: Add _S_categories definition.
+	(_S_destroy_c_locale): Move checks against _S_c_locale here.
+	* config/locale/gnu/c_locale.h: Add _GLIBCPP_NUM_CATEGORIES macro.
+	* config/locale/gnu/ctype_members.cc: Simplify _S_destroy_c_locale
+	calls, _S_c_locale usage.
+	* config/locale/gnu/monetary_members.cc: Same, tweaks.
+	* config/locale/gnu/monetary_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.	
+	* config/os/gnu-linux/ctype_noninline.h: Use locale::classic().
+
+	* docs/html/22_locale/locale.html: Add bits about global locales
+	and "C" setlocale.
+
+	* testsuite/22_locale/facet.cc (test02): Add.
+	* testsuite/22_locale/static_members.cc (test02): Add.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Add.
+
 2002-10-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_limits.h (__glibcpp_char_digits10): Fix Typo.

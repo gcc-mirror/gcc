@@ -79,8 +79,7 @@ namespace std
 
   ctype<char>::~ctype()
   { 
-    if (_M_c_locale_ctype != _S_c_locale)
-      _S_destroy_c_locale(_M_c_locale_ctype);
+    _S_destroy_c_locale(_M_c_locale_ctype);
     if (_M_del) 
       delete[] this->table(); 
   }
@@ -135,17 +134,13 @@ namespace std
   { _M_c_locale_ctype = _S_clone_c_locale(__cloc); }
 
   ctype<wchar_t>::~ctype() 
-  { 
-    if (_M_c_locale_ctype != _S_c_locale)
-      _S_destroy_c_locale(_M_c_locale_ctype); 
-  }
+  { _S_destroy_c_locale(_M_c_locale_ctype); }
 
   template<>
     ctype_byname<wchar_t>::ctype_byname(const char* __s, size_t __refs)
     : ctype<wchar_t>(__refs) 
     { 	
-      if (_M_c_locale_ctype != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_ctype);
+      _S_destroy_c_locale(_M_c_locale_ctype);
       _S_create_c_locale(_M_c_locale_ctype, __s); 
     }
 #endif

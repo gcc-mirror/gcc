@@ -30,9 +30,14 @@
 #include <cstring>
 #include <locale>
 
-namespace std
+namespace __gnu_cxx
 {
+  using namespace std;
+
   // Defined in globals.cc.
+  extern locale::facet** facet_vec;
+  extern char* facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
+
   extern std::ctype<char>			ctype_c;
   extern std::collate<char> 			collate_c;
   extern numpunct<char> 			numpunct_c;
@@ -63,6 +68,11 @@ namespace std
   extern time_put<wchar_t> 			time_put_w;
   extern std::messages<wchar_t> 		messages_w;
 #endif
+} // namespace __gnu_cxx
+
+namespace std
+{
+  using namespace __gnu_cxx;
 
   locale::_Impl::
   ~_Impl() throw()
@@ -71,6 +81,10 @@ namespace std
       if (_M_facets[__i])
 	_M_facets[__i]->_M_remove_reference();
     delete [] _M_facets;
+
+    for (size_t __i = 0; 
+	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+      delete [] _M_names[__i];  
   }
 
   // Clone existing _Impl object.
@@ -95,14 +109,19 @@ namespace std
 	if (_M_facets[__i])
 	  _M_facets[__i]->_M_add_reference();
       }
-    for (size_t __i = 0; __i < _S_num_categories; ++__i)
-      _M_names[__i] = __imp._M_names[__i];
+    for (size_t __i = 0; 
+	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+      {
+	char* __new = new char[strlen(__imp._M_names[__i]) + 1];
+	strcpy(__new, __imp._M_names[__i]);
+	_M_names[__i] = __new;
+      }
   }
 
   // Construct named _Impl.
   locale::_Impl::
   _Impl(const char* __s, size_t __refs) 
-  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS) // XXX
+  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS) 
   {
     // Initialize the underlying locale model, which also checks
     // to see if the given name is valid.
@@ -122,11 +141,40 @@ namespace std
       }
 
     // Name all the categories.
-    for (size_t i = 0; i < _S_num_categories; ++i)
-      _M_names[i] = __s;
+    if (!strchr(__s, ';'))
+      {
+	size_t __len = strlen(__s) + 1;
+	for (size_t __i = 0; 
+	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
+	  {
+	    _M_names[__i] = new char[__len];
+	    strcpy(_M_names[__i], __s);
+	  }
+      }
+    else
+      {
+	char* __tmp = strdup(__s);
+	__tmp[strlen(__tmp)] = ';';
+	strtok(__tmp, "=;");
+	for (size_t __i = 0; 
+	     __i < _S_categories_size + _S_extra_categories_size - 1; ++__i)
+	  {
+	    char* __src = strtok(NULL, "=;");
+	    char* __new = new char[strlen(__src) + 1];
+	    strcpy(__new, __src);
+	    _M_names[__i] = __new;
+	    strtok(NULL, "=;");
+	  }
+	char* __src = strtok(NULL, "=;");
+	char* __new = new char[strlen(__src) + 1];
+	strcpy(__new, __src);
+	_M_names[_S_categories_size + _S_extra_categories_size - 1] = __new;
 
-    // Construct all standard facets and add them to _M_facets.
-    _M_init_facet(new std::ctype<char>(__cloc));
+	free(__tmp);
+      }
+      
+    // Construct all standard facets and add them to _M_facets.  
+    _M_init_facet(new std::ctype<char>(__cloc, 0, false));
     _M_init_facet(new codecvt<char, char, mbstate_t>);
     _M_init_facet(new numpunct<char>(__cloc));
     _M_init_facet(new num_get<char>);
@@ -162,47 +210,61 @@ namespace std
 
   // Construct "C" _Impl.
   locale::_Impl::
-  _Impl(facet** __f, size_t __refs, bool) 
-  : _M_references(__refs), _M_facets(__f), _M_facets_size(_GLIBCPP_NUM_FACETS)
+  _Impl(facet**, size_t __refs, bool) 
+  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS)
   {
+    // Initialize the underlying locale model.
+    locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, "C");
+
+    _M_facets = new(&facet_vec) facet*[_M_facets_size];
+    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      _M_facets[__i] = 0;
+
     // Name all the categories.
-    for (size_t i = 0; i < _S_num_categories; ++i)
-      _M_names[i] = "C";
+    for (size_t __i = 0; 
+	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+      {
+	_M_names[__i]  = new (&facet_name[__i]) char[2];
+	strcpy(_M_names[__i], "C");
+      }
 
     // This is needed as presently the C++ version of "C" locales
     // != data in the underlying locale model for __timepunct,
     // numpunct, and moneypunct. Also, the "C" locales must be
     // constructed in a way such that they are pre-allocated.
-    _M_init_facet(new (&ctype_c) std::ctype<char>);
-    _M_init_facet(new (&codecvt_c) codecvt<char, char, mbstate_t>);
-    _M_init_facet(new (&numpunct_c) numpunct<char>);
-    _M_init_facet(new (&num_get_c) num_get<char>);
-    _M_init_facet(new (&num_put_c) num_put<char>);
-    _M_init_facet(new (&collate_c) std::collate<char>);
-    _M_init_facet(new (&moneypunct_fc) moneypunct<char, false>);
-    _M_init_facet(new (&moneypunct_tc) moneypunct<char, true>);
-    _M_init_facet(new (&money_get_c) money_get<char>);
-    _M_init_facet(new (&money_put_c) money_put<char>);
-    _M_init_facet(new (&timepunct_c) __timepunct<char>);
-    _M_init_facet(new (&time_get_c) time_get<char>);
-    _M_init_facet(new (&time_put_c) time_put<char>);
-    _M_init_facet(new (&messages_c) std::messages<char>);	
+    // NB: Set locale::facets(ref) count to one so that each individual
+    // facet is not destroyed when the locale (and thus locale::_Impl) is
+    // destroyed.
+    _M_init_facet(new (&ctype_c) std::ctype<char>(0, false, 1));
+    _M_init_facet(new (&codecvt_c) codecvt<char, char, mbstate_t>(1));
+    _M_init_facet(new (&numpunct_c) numpunct<char>(1));
+    _M_init_facet(new (&num_get_c) num_get<char>(1));
+    _M_init_facet(new (&num_put_c) num_put<char>(1));
+    _M_init_facet(new (&collate_c) std::collate<char>(1));
+    _M_init_facet(new (&moneypunct_fc) moneypunct<char, false>(1));
+    _M_init_facet(new (&moneypunct_tc) moneypunct<char, true>(1));
+    _M_init_facet(new (&money_get_c) money_get<char>(1));
+    _M_init_facet(new (&money_put_c) money_put<char>(1));
+    _M_init_facet(new (&timepunct_c) __timepunct<char>(1));
+    _M_init_facet(new (&time_get_c) time_get<char>(1));
+    _M_init_facet(new (&time_put_c) time_put<char>(1));
+    _M_init_facet(new (&messages_c) std::messages<char>(1));	
 #ifdef  _GLIBCPP_USE_WCHAR_T
-    _M_init_facet(new (&ctype_w) std::ctype<wchar_t>);
-    _M_init_facet(new (&codecvt_w) codecvt<wchar_t, char, mbstate_t>);
-    _M_init_facet(new (&numpunct_w) numpunct<wchar_t>);
-    _M_init_facet(new (&num_get_w) num_get<wchar_t>);
-    _M_init_facet(new (&num_put_w) num_put<wchar_t>);
-    _M_init_facet(new (&collate_w) std::collate<wchar_t>);
-    _M_init_facet(new (&moneypunct_fw) moneypunct<wchar_t, false>);
-    _M_init_facet(new (&moneypunct_tw) moneypunct<wchar_t, true>);
-    _M_init_facet(new (&money_get_w) money_get<wchar_t>);
-    _M_init_facet(new (&money_put_w) money_put<wchar_t>);
-    _M_init_facet(new (&timepunct_w) __timepunct<wchar_t>);
-    _M_init_facet(new (&time_get_w) time_get<wchar_t>);
-    _M_init_facet(new (&time_put_w) time_put<wchar_t>);
-    _M_init_facet(new (&messages_w) std::messages<wchar_t>);
-#endif	  
+    _M_init_facet(new (&ctype_w) std::ctype<wchar_t>(1));
+    _M_init_facet(new (&codecvt_w) codecvt<wchar_t, char, mbstate_t>(1));
+    _M_init_facet(new (&numpunct_w) numpunct<wchar_t>(1));
+    _M_init_facet(new (&num_get_w) num_get<wchar_t>(1));
+    _M_init_facet(new (&num_put_w) num_put<wchar_t>(1));
+    _M_init_facet(new (&collate_w) std::collate<wchar_t>(1));
+    _M_init_facet(new (&moneypunct_fw) moneypunct<wchar_t, false>(1));
+    _M_init_facet(new (&moneypunct_tw) moneypunct<wchar_t, true>(1));
+    _M_init_facet(new (&money_get_w) money_get<wchar_t>(1));
+    _M_init_facet(new (&money_put_w) money_put<wchar_t>(1));
+    _M_init_facet(new (&timepunct_w) __timepunct<wchar_t>(1));
+    _M_init_facet(new (&time_get_w) time_get<wchar_t>(1));
+    _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
+    _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
+#endif 
   }
   
   void
@@ -210,7 +272,7 @@ namespace std
   _M_replace_categories(const _Impl* __imp, category __cat)
   {
     category __mask;
-    for (unsigned int __ix = 0; __ix < _S_num_categories; ++__ix)
+    for (size_t __ix = 0; __ix < _S_categories_size; ++__ix)
       {
 	__mask = 1 << __ix;
 	if (__mask & __cat)
@@ -220,7 +282,12 @@ namespace std
 	    // If both have names, go ahead and mangle.
 	    if (strcmp(_M_names[__ix], "*") != 0 
 		&& strcmp(__imp->_M_names[__ix], "*") != 0)
-	      _M_names[__ix] = __imp->_M_names[__ix];
+	      {
+		delete [] _M_names[__ix];
+		char* __new = new char[strlen(__imp->_M_names[__ix]) + 1];
+		strcpy(__new, __imp->_M_names[__ix]);
+		_M_names[__ix] = __new;
+	      }
 	  }
       }
   }
@@ -250,6 +317,8 @@ namespace std
     if (__fp)
       {
 	size_t __index = __idp->_M_id();
+
+	// Check size of facet vector to ensure adequate room.
 	if (__index > _M_facets_size - 1)
 	  {
 	    facet** __old = _M_facets;
@@ -266,11 +335,11 @@ namespace std
 	    delete [] __old;
 	  }
 
+	__fp->_M_add_reference();
 	facet*& __fpr = _M_facets[__index];
 	if (__fpr)
 	  {
 	    // Replacing an existing facet. Order matters.
-	    __fp->_M_add_reference();
 	    __fpr->_M_remove_reference();
 	    __fpr = __fp;
 	  }

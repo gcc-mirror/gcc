@@ -2201,6 +2201,7 @@ case $enable_symvers in
       ;;
   gnu)
       LINKER_MAP=config/linker-map.gnu
+      AC_DEFINE(_GLIBCPP_SYMVER)	
       ;;
 esac
 

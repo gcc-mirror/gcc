@@ -20,7 +20,6 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-
 GLIBCPP_3.2 {
 
   global:
@@ -29,7 +28,17 @@ GLIBCPP_3.2 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za-z]*;
+      std::[A-Za-k]*;
+      std::length_error*;
+      std::logic_error*;
+      std::locale::[A-Za-z]*;
+      std::locale::_[A-Ra-z]*;
+      std::locale::_S_classic;
+      std::locale::_S_global;
+      std::locale::_S_num_categories;
+      std::locale::_S_normalize_category*;
+      std::locale::_[T-Za-z]*;
+      std::[A-Zm-z]*;
       std::__throw_*;
       std::__basic_file*;
       std::__num_base*;
@@ -42,6 +51,11 @@ GLIBCPP_3.2 {
     };
 
     # Names not in an 'extern' block are mangled names.
+
+    # std::locale destructors
+    _ZNSt6localeD*;
+	 
+    # std::has_facet*
     _ZSt9has_facet*;
 
     # operator new(unsigned)
@@ -72,8 +86,8 @@ GLIBCPP_3.2 {
     # operator delete[](void*, std::nothrow_t const&)
     _ZdaPvRKSt9nothrow_t;
 
-    # vtable	
-    _ZTV*;  
+    # vtable
+    _ZTV*;
     _ZTT*;
 
     # typeinfo
@@ -94,7 +108,6 @@ GLIBCPP_3.2 {
   local:
     *;
 };
-
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {

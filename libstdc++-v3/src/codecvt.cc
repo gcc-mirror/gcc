@@ -50,7 +50,7 @@ namespace std
 
   codecvt<char, char, mbstate_t>::
   ~codecvt()
-   { }
+  { }
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::

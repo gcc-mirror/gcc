@@ -22032,6 +22032,10 @@ case $enable_symvers in
       ;;
   gnu)
       LINKER_MAP=config/linker-map.gnu
+      cat >> confdefs.h <<\EOF
+#define _GLIBCPP_SYMVER 1
+EOF
+	
       ;;
 esac
 
@@ -22046,7 +22050,7 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:22050: checking versioning on shared library symbols" >&5
+echo "configure:22054: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
@@ -22134,7 +22138,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:22138: checking for --with-gxx-include-dir" >&5
+echo "configure:22142: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -22158,7 +22162,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:22162: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:22166: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -22204,7 +22208,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:22208: checking for install location" >&5
+echo "configure:22212: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 

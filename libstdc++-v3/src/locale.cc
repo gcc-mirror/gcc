@@ -31,19 +31,19 @@
 #include <cassert>
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
-#include <limits>
-#include <exception>
 #include <locale>
-#include <istream>
-#include <ostream>
 #include <bits/atomicity.h>
+
+namespace __gnu_cxx
+{
+  // Defined in globals.cc.
+  extern std::locale 		c_locale;
+  extern std::locale::_Impl 	c_locale_impl;
+} // namespace __gnu_cxx
 
 namespace std 
 {
-  // Defined in globals.cc.
-  extern locale 		c_locale;
-  extern locale::_Impl 		c_locale_impl;
-  extern locale::facet**	facet_vec;
+  using namespace __gnu_cxx;
 
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
@@ -55,9 +55,14 @@ namespace std
   const locale::category 	locale::messages;
   const locale::category 	locale::all;
 
+  // In the future, GLIBCXX_ABI > 5 should remove all uses of
+  // _GLIBCPP_ASM_SYMVER in this file, and remove exports of any
+  // static data members of locale.
   locale::_Impl* 		locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
-  const size_t 			locale::_S_num_categories;
+  const size_t 			locale::_S_categories_size;
+  _GLIBCPP_ASM_SYMVER(_ZNSt6locale18_S_categories_sizeE, _ZNSt6locale17_S_num_categoriesE, GLIBCPP_3.2)
+  const size_t 			locale::_S_extra_categories_size;
 
   // Definitions for static const data members of locale::id
   _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
@@ -146,30 +151,11 @@ namespace std
     locale::_Impl::_S_id_ctype,
     locale::_Impl::_S_id_numeric,
     locale::_Impl::_S_id_collate,
-    locale::_Impl::_S_id_monetary,
     locale::_Impl::_S_id_time,
+    locale::_Impl::_S_id_monetary,
     locale::_Impl::_S_id_messages,
     0
   };
-
-  locale::~locale() throw()
-  { _M_impl->_M_remove_reference(); }
-
-  void
-  locale::_M_coalesce(const locale& __base, const locale& __add, 
-		      category __cat)
-  {
-    __cat = _S_normalize_category(__cat);  
-    _M_impl = new _Impl(*__base._M_impl, 1);  
-
-    try 
-      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
-    catch (...) 
-      { 
-	_M_impl->_M_remove_reference(); 
-	__throw_exception_again;
-      }
-  }
 
   locale::locale() throw()
   { 
@@ -182,6 +168,7 @@ namespace std
 
   // This is used to initialize global and classic locales, and
   // assumes that the _Impl objects are constructed correctly.
+  // The lack of a reference increment is intentional.
   locale::locale(_Impl* __ip) throw() : _M_impl(__ip)
   { }
 
@@ -192,18 +179,110 @@ namespace std
 	_S_initialize(); 
 	if (strcmp(__s, "C") == 0 || strcmp(__s, "POSIX") == 0)
 	  (_M_impl = _S_classic)->_M_add_reference();
-	else if (strcmp(__s, "") == 0)
-	  {
-	    char* __env = getenv("LC_ALL");
-	    if (__env)
-	      _M_impl = new _Impl(__env, 1);
-	    else if ((__env = getenv("LANG")))
-	      _M_impl = new _Impl(__env, 1);
-	    else
-	      (_M_impl = _S_classic)->_M_add_reference();
-	  }
-	else
+	else if (strcmp(__s, "") != 0)
 	  _M_impl = new _Impl(__s, 1);
+	else
+	  {
+	    // Get it from the environment.
+	    char* __env = getenv("LC_ALL");
+	    // If LC_ALL is set we are done.
+	    if (__env && strcmp(__env, "") != 0)
+	      {
+		if (strcmp(__env, "C") == 0 || strcmp(__env, "POSIX") == 0)
+		  (_M_impl = _S_classic)->_M_add_reference();
+		else
+		  _M_impl = new _Impl(__env, 1);
+	      }
+	    else
+	      {
+		char* __res;
+		// LANG may set a default different from "C".
+		char* __env = getenv("LANG");
+		if (!__env || strcmp(__env, "") == 0 || strcmp(__env, "C") == 0
+		    || strcmp(__env, "POSIX") == 0)
+		  __res = strdup("C");
+		else 
+		  __res = strdup(__env);
+		
+		// Scan the categories looking for the first one
+		// different from LANG.
+		size_t __i = 0;
+		if (strcmp(__res, "C") == 0)
+		  for (__i = 0; 
+		       __i < _S_categories_size + _S_extra_categories_size; 
+		       ++__i)
+		    {
+		      __env = getenv(_S_categories[__i]);
+		      if (__env && strcmp(__env, "") != 0 
+			  && strcmp(__env, "C") != 0 
+			  && strcmp(__env, "POSIX") != 0) 
+			break;
+		    }
+		else
+		  for (__i = 0; 
+		       __i < _S_categories_size + _S_extra_categories_size; 
+		       ++__i)
+		    {
+		      __env = getenv(_S_categories[__i]);
+		      if (__env && strcmp(__env, "") != 0 
+			  && strcmp(__env, __res) != 0) 
+			break;
+		    }
+	
+		// If one is found, build the complete string of
+		// the form LC_CTYPE=xxx;LC_NUMERIC=yyy; and so on...
+		if (__i < _S_categories_size + _S_extra_categories_size)
+		  {
+		    string __str;
+		    for (size_t __j = 0; __j < __i; ++__j)
+		      {
+			__str += _S_categories[__j];
+			__str += "=";
+			__str += __res;
+			__str += ";";
+		      }
+		    __str += _S_categories[__i];
+		    __str += "=";
+		    __str += __env;
+		    __str += ";";
+		    __i++;
+		    for (; __i < _S_categories_size
+			   + _S_extra_categories_size; ++__i)
+		      {
+			__env = getenv(_S_categories[__i]);
+			if (!__env || strcmp(__env, "") == 0)
+			  {
+			    __str += _S_categories[__i];
+			    __str += '=';
+			    __str += __res;
+			    __str += ';';
+			  }
+			else if (strcmp(__env, "C") == 0
+				 || strcmp(__env, "POSIX") == 0)
+			  {
+			    __str += _S_categories[__i];
+			    __str += "=C;";
+			  }
+			else
+			  {
+			    __str += _S_categories[__i];
+			    __str += "=";
+			    __str += __env;
+			    __str += ";";
+			  }
+		      }
+		    __str.erase(__str.end() - 1);
+		    _M_impl = new _Impl(__str.c_str(), 1);
+		  }
+		// ... otherwise either an additional instance of
+		// the "C" locale or LANG.
+		else if (strcmp(__res, "C") == 0)
+		  (_M_impl = _S_classic)->_M_add_reference();
+		else
+		  _M_impl = new _Impl(__res, 1);
+		free(__res);
+	      }
+	  }
       }
     else
       __throw_runtime_error("attempt to create locale from NULL name");
@@ -220,6 +299,9 @@ namespace std
 
   locale::locale(const locale& __base, const locale& __add, category __cat)
   { _M_coalesce(__base, __add, __cat); }
+
+  locale::~locale() throw()
+  { _M_impl->_M_remove_reference(); }
 
   bool
   locale::operator==(const locale& __rhs) const throw()
@@ -261,20 +343,22 @@ namespace std
   string
   locale::name() const
   {
-    // Need some kind of separator character. This one was pretty much
-    // arbitrarily chosen as to not conflict with glibc locales: the
-    // exact formatting is not set in stone.
-    const char __separator = '|';
-
     string __ret;
     if (_M_impl->_M_check_same_name())
       __ret = _M_impl->_M_names[0];
     else
       {
-	for (size_t i = 0; i < _S_num_categories; ++i)
+	__ret += _S_categories[0];
+	__ret += "=";
+	__ret += _M_impl->_M_names[0]; 
+	for (size_t __i = 1; 
+	     __i < _S_categories_size + _S_extra_categories_size; 
+	     ++__i)
 	  {
-	    __ret += __separator;
-	    __ret += _M_impl->_M_names[i];
+	    __ret += ";";
+	    __ret += _S_categories[__i];
+	    __ret += "=";
+	    __ret += _M_impl->_M_names[__i];
 	  }
       }
     return __ret;
@@ -291,12 +375,8 @@ namespace std
 	try 
 	  {
 	    // 26 Standard facets, 2 references.
-	    // One reference for _M_classic, one for _M_global
-	    facet** f = new(&facet_vec) facet*[_GLIBCPP_NUM_FACETS];
-	    for (size_t __i = 0; __i < _GLIBCPP_NUM_FACETS; ++__i)
-	      f[__i] = 0;
-
-	    _S_classic = new (&c_locale_impl) _Impl(f, 2, true);
+	    // One reference for _S_classic, one for _S_global
+	    _S_classic = new (&c_locale_impl) _Impl(0, 2, true);
 	    _S_global = _S_classic; 	    
 	    new (&c_locale) locale(_S_classic);
 	  }
@@ -311,6 +391,22 @@ namespace std
 	  }
       }
     return c_locale;
+  }
+
+  void
+  locale::_M_coalesce(const locale& __base, const locale& __add, 
+		      category __cat)
+  {
+    __cat = _S_normalize_category(__cat);  
+    _M_impl = new _Impl(*__base._M_impl, 1);  
+
+    try 
+      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
+    catch (...) 
+      { 
+	_M_impl->_M_remove_reference(); 
+	__throw_exception_again;
+      }
   }
 
   locale::category
@@ -361,11 +457,8 @@ namespace std
   ~facet() { }
 
   locale::facet::
-  facet(size_t __refs) throw() : _M_references(__refs) 
-  { 
-    if (!_S_c_locale)
-      _S_create_c_locale(_S_c_locale, "C");
-  }
+  facet(size_t __refs) throw() : _M_references(__refs ? 1 : 0) 
+  { }
 
   void  
   locale::facet::
@@ -376,7 +469,7 @@ namespace std
   locale::facet::
   _M_remove_reference() throw()
   {
-    if (__exchange_and_add(&_M_references, -1) == 0)
+    if (__exchange_and_add(&_M_references, -1) == 1)
       {
         try 
 	  { delete this; }  

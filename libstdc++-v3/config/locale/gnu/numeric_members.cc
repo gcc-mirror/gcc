@@ -42,7 +42,7 @@ namespace std
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc)
     {
-      if (__cloc == _S_c_locale)
+      if (!__cloc)
 	{
 	  // "C" locale
 	  _M_decimal_point = '.';
@@ -76,7 +76,7 @@ namespace std
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc)
     {
-      if (__cloc == _S_c_locale)
+      if (!__cloc)
 	{
 	  // "C" locale
 	  _M_decimal_point = L'.';

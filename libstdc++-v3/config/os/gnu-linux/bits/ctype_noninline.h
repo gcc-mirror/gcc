@@ -38,8 +38,7 @@
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
   {
-    if (!_S_c_locale)
-      _S_create_c_locale(_S_c_locale, "C");
+    locale::classic();
     return _S_c_locale->__ctype_b;
   }
 #else
@@ -96,7 +95,7 @@
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
   __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del)
   {
-    _M_c_locale_ctype = _S_c_locale;
+    _M_c_locale_ctype = _S_c_locale; 
     _M_toupper = _M_c_locale_ctype->__ctype_toupper;
     _M_tolower = _M_c_locale_ctype->__ctype_tolower;
     _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
