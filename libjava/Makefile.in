@@ -1193,21 +1193,10 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
-gnu/java/security/der/DEREncodingException.java \
-gnu/java/security/provider/DERReader.java \
-gnu/java/security/provider/DERWriter.java \
-gnu/java/security/provider/DSAKeyPairGenerator.java \
-gnu/java/security/provider/DSAParameterGenerator.java \
-gnu/java/security/provider/DSAParameters.java \
-gnu/java/security/provider/DSASignature.java \
 gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/Gnu.java \
-gnu/java/security/provider/GnuDSAPrivateKey.java \
-gnu/java/security/provider/GnuDSAPublicKey.java \
-gnu/java/security/provider/MD5.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
-gnu/java/security/util/Prime.java \
 gnu/java/text/BaseBreakIterator.java \
 gnu/java/text/CharacterBreakIterator.java \
 gnu/java/text/LineBreakIterator.java \
@@ -1779,7 +1768,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -2047,21 +2036,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/server/UnicastRemoteStub.P \
 .deps/gnu/java/rmi/server/UnicastServer.P \
 .deps/gnu/java/rmi/server/UnicastServerRef.P \
-.deps/gnu/java/security/der/DEREncodingException.P \
-.deps/gnu/java/security/provider/DERReader.P \
-.deps/gnu/java/security/provider/DERWriter.P \
-.deps/gnu/java/security/provider/DSAKeyPairGenerator.P \
-.deps/gnu/java/security/provider/DSAParameterGenerator.P \
-.deps/gnu/java/security/provider/DSAParameters.P \
-.deps/gnu/java/security/provider/DSASignature.P \
 .deps/gnu/java/security/provider/DefaultPolicy.P \
 .deps/gnu/java/security/provider/Gnu.P \
-.deps/gnu/java/security/provider/GnuDSAPrivateKey.P \
-.deps/gnu/java/security/provider/GnuDSAPublicKey.P \
-.deps/gnu/java/security/provider/MD5.P \
 .deps/gnu/java/security/provider/SHA.P \
 .deps/gnu/java/security/provider/SHA1PRNG.P \
-.deps/gnu/java/security/util/Prime.P \
 .deps/gnu/java/text/BaseBreakIterator.P \
 .deps/gnu/java/text/CharacterBreakIterator.P \
 .deps/gnu/java/text/LineBreakIterator.P \

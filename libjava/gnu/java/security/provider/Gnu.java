@@ -51,7 +51,7 @@ public final class Gnu extends Provider
 
     // Signature
     put("Signature.SHA1withDSA",
-	gnu.java.security.provider.DSASignature.class.getName());
+	"gnu.java.security.provider.DSASignature");
 
     put("Alg.Alias.Signature.DSS", "SHA1withDSA");
     put("Alg.Alias.Signature.DSA", "SHA1withDSA");
@@ -68,15 +68,15 @@ public final class Gnu extends Provider
 
     // Key Pair Generator
     put("KeyPairGenerator.DSA",
-	gnu.java.security.provider.DSAKeyPairGenerator.class.getName());
+	"gnu.java.security.provider.DSAKeyPairGenerator");
 
     put("Alg.Alias.KeyPairGenerator.OID.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.3.14.3.2.12", "DSA");
 
     // Message Digests
-    put("MessageDigest.SHA", gnu.java.security.provider.SHA.class.getName());
-    put("MessageDigest.MD5", gnu.java.security.provider.MD5.class.getName());
+    put("MessageDigest.SHA", "gnu.java.security.provider.SHA");
+    put("MessageDigest.MD5", "gnu.java.security.provider.MD5");
 
     // Format "Alias", "Actual Name"
     put("Alg.Alias.MessageDigest.SHA1", "SHA");
@@ -84,15 +84,15 @@ public final class Gnu extends Provider
 
     // Algorithm Parameters
     put("AlgorithmParameters.DSA",
-	gnu.java.security.provider.DSAParameters.class.getName());
+	"gnu.java.security.provider.DSAParameters");
 
     // Algorithm Parameter Generator
     put("AlgorithmParameterGenerator.DSA",
-     gnu.java.security.provider.DSAParameterGenerator.class.getName());
+     "gnu.java.security.provider.DSAParameterGenerator");
 
     // SecureRandom
     put("SecureRandom.SHA1PRNG",
-	gnu.java.security.provider.SHA1PRNG.class.getName());
+	"gnu.java.security.provider.SHA1PRNG");
 
   }
 }
