@@ -1484,25 +1484,9 @@ build_exception_variant (type, raises)
   int type_quals = TYPE_QUALS (type);
 
   for (; v; v = TYPE_NEXT_VARIANT (v))
-    {
-      tree t;
-      tree u;
-
-      if (TYPE_QUALS (v) != type_quals)
-	continue;
-
-      for (t = TYPE_RAISES_EXCEPTIONS (v), u = raises;
-	   t != NULL_TREE && u != NULL_TREE;
-	   t = TREE_CHAIN (t), u = TREE_CHAIN (u))
-	if (((TREE_VALUE (t) != NULL_TREE) 
-	     != (TREE_VALUE (u) != NULL_TREE))
-	    || !same_type_p (TREE_VALUE (t), TREE_VALUE (u)))
-	  break;
-
-      if (!t && !u)
-	/* There's a memory leak here; RAISES is not freed.  */
-	return v;
-    }
+    if (TYPE_QUALS (v) == type_quals
+        && comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (v), 1))
+      return v;
 
   /* Need to build a new variant.  */
   v = build_type_copy (type);

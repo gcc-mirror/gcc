@@ -1,3 +1,33 @@
+1999-08-04  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (empty_except_spec): New global var.
+	(compexcepttypes): Remove prototype.
+	(comp_except_specs): Prototype new global function.
+	(add_exception_specifier): Prototype new global function.
+	* decl.c (empty_except_spec): Define new global var.
+	(duplicate_decls): Use comp_except_specs, reword error message.
+	(init_decl_processing): Initialize empty_except_spec.
+	Adjust build_exception_variant calls.
+	* parse.y (exception_specification_opt): Use empty_except_spec.
+	(ansi_raise_identifier): Call check_for_new_type.
+	(ansi_raise_identifiers): Use add_exception_specifier.
+	* pt.c (tsubst): Use add_exception_specifier to build exception
+	specifier.
+	* search.c (check_final_overrider): New static function, broken
+	out of get_matching_virtual. Check throw specifiers, reword
+	diagnostics.
+	(get_matching_virtual): Use check_final_overrider.
+	* tree.c (build_exception_variant): Use comp_except_specs.
+	* typeck.c (compexcepttypes): Remove.
+	(comp_except_types): New static function, helper for
+	comp_except_specs. Compare two types as exception specifiers.
+	(comp_except_specs): New global function, compare two exception
+	specifiers.
+	(comptypes): Adjust for comp_except_specs.
+	* typeck2.c (add_exception_specifier): New global function.
+	
+	* class.c (check_for_override): Reword error message.
+
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (convert_arg_to_ellipsis): Use pod_type_p.

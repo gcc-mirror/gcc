@@ -48,6 +48,7 @@ static int comp_target_parms PROTO((tree, tree, int));
 static int comp_ptr_ttypes_real PROTO((tree, tree, int));
 static int comp_ptr_ttypes_const PROTO((tree, tree));
 static int comp_ptr_ttypes_reinterpret PROTO((tree, tree));
+static int comp_except_types PROTO((tree, tree, int));
 static int comp_array_types PROTO((int (*) (tree, tree, int), tree,
 				   tree, int));
 static tree common_base_type PROTO((tree, tree));
@@ -853,13 +854,102 @@ common_type (t1, t2)
     }
 }
 
-/* Return 1 if TYPE1 and TYPE2 raise the same exceptions.  */
+/* Compare two exception specifier types for exactness or subsetness, if
+   allowed. Returns 0 for mismatch, 1 for same, 2 if B is allowed by A.
+ 
+   [except.spec] "If a class X ... objects of class X or any class publicly
+   and unambigously derrived from X. Similarly, if a pointer type Y * ...
+   exceptions of type Y * or that are pointers to any type publicly and
+   unambigously derrived from Y. Otherwise a function only allows exceptions
+   that have the same type ..."
+   This does not mention cv qualifiers and is different to what throw
+   [except.throw] and catch [except.catch] will do. They will ignore the
+   top level cv qualifiers, and allow qualifiers in the pointer to class
+   example.
+   
+   We implement the letter of the standard.  */
+
+static int
+comp_except_types (a, b, exact)
+     tree a, b;
+     int exact;
+{
+  if (same_type_p (a, b))
+    return 1;
+  else if (!exact)
+    {
+      if (CP_TYPE_QUALS (a) || CP_TYPE_QUALS (b))
+        return 0;
+      
+      if (TREE_CODE (a) == POINTER_TYPE
+          && TREE_CODE (b) == POINTER_TYPE)
+        {
+          a = TREE_TYPE (a);
+          b = TREE_TYPE (b);
+          if (CP_TYPE_QUALS (a) || CP_TYPE_QUALS (b))
+            return 0;
+        }
+      
+      if (TREE_CODE (a) != RECORD_TYPE
+          || TREE_CODE (b) != RECORD_TYPE)
+        return 0;
+      
+      if (ACCESSIBLY_UNIQUELY_DERIVED_P (a, b))
+        return 2;
+    }
+  return 0;
+}
+
+/* Return 1 if TYPE1 and TYPE2 are equivalent exception specifiers.
+   If EXACT is 0, T2 can be a subset of T1 (according to 15.4/7),
+   otherwise it must be exact. Exception lists are unordered, but
+   we've already filtered out duplicates. Most lists will be in order,
+   we should try to make use of that.  */
 
 int
-compexcepttypes (t1, t2)
+comp_except_specs (t1, t2, exact)
      tree t1, t2;
+     int exact;
 {
-  return TYPE_RAISES_EXCEPTIONS (t1) == TYPE_RAISES_EXCEPTIONS (t2);
+  tree probe;
+  tree base;
+  int  length = 0;
+
+  if (t1 == t2)
+    return 1;
+  
+  if (t1 == NULL_TREE)              /* T1 is ... */
+    return t2 == NULL_TREE || !exact;
+  if (!TREE_VALUE (t1)) /* t1 is EMPTY */
+    return t2 != NULL_TREE && !TREE_VALUE (t2);
+  if (t2 == NULL_TREE)              /* T2 is ... */
+    return 0;
+  if (TREE_VALUE(t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
+    return !exact;
+  
+  /* Neither set is ... or EMPTY, make sure each part of T2 is in T1.
+     Count how many we find, to determine exactness. For exact matching and
+     ordered T1, T2, this is an O(n) operation, otherwise its worst case is
+     O(nm).  */
+  for (base = t1; t2 != NULL_TREE; t2 = TREE_CHAIN (t2))
+    {
+      for (probe = base; probe != NULL_TREE; probe = TREE_CHAIN (probe))
+        {
+          tree a = TREE_VALUE (probe);
+          tree b = TREE_VALUE (t2);
+          
+          if (comp_except_types (a, b, exact))
+            {
+              if (probe == base && exact)
+                base = TREE_CHAIN (probe);
+              length++;
+              break;
+            }
+        }
+      if (probe == NULL_TREE)
+        return 0;
+    }
+  return !exact || base == NULL_TREE || length == list_length (t1);
 }
 
 /* Compare the array types T1 and T2, using CMP as the type comparison
@@ -1031,7 +1121,8 @@ comptypes (t1, t2, strict)
       break;
 
     case METHOD_TYPE:
-      if (! compexcepttypes (t1, t2))
+      if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
+                             TYPE_RAISES_EXCEPTIONS (t2), 1))
 	return 0;
 
       /* This case is anti-symmetrical!
@@ -1058,7 +1149,8 @@ comptypes (t1, t2, strict)
       break;
 
     case FUNCTION_TYPE:
-      if (! compexcepttypes (t1, t2))
+      if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
+                             TYPE_RAISES_EXCEPTIONS (t2), 1))
 	return 0;
 
       val = ((TREE_TYPE (t1) == TREE_TYPE (t2)
@@ -2175,6 +2267,9 @@ build_component_ref (datum, component, basetype_path, protect)
       tree name = component;
       if (TREE_CODE (component) == VAR_DECL)
 	name = DECL_NAME (component);
+      if (TREE_CODE (component) == NAMESPACE_DECL)
+        /* Source is in error, but produce a sensible diagnostic.  */
+        name = DECL_NAME (component);
       if (basetype_path == NULL_TREE)
 	basetype_path = TYPE_BINFO (basetype);
       field = lookup_field (basetype_path, name,

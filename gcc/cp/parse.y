@@ -3685,21 +3685,22 @@ exception_specification_opt:
 	| THROW '(' ansi_raise_identifiers  ')'  %prec EMPTY
 		{ $$ = $3; }
 	| THROW LEFT_RIGHT  %prec EMPTY
-		{ $$ = build_decl_list (NULL_TREE, NULL_TREE); }
+		{ $$ = empty_except_spec; }
 	;
 
 ansi_raise_identifier:
 	  type_id
-		{ $$ = build_decl_list (NULL_TREE, groktypename($1.t)); }
+		{
+		  check_for_new_type ("exception specifier", $1);
+		  $$ = groktypename ($1.t);
+		}
 	;
 
 ansi_raise_identifiers:
 	  ansi_raise_identifier
+		{ $$ = add_exception_specifier (NULL_TREE, $1, 1); }
 	| ansi_raise_identifiers ',' ansi_raise_identifier
-		{
-		  TREE_CHAIN ($3) = $$;
-		  $$ = $3;
-		}
+		{ $$ = add_exception_specifier ($1, $3, 1); }
 	;
 
 conversion_declarator:

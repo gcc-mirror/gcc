@@ -1520,3 +1520,56 @@ check_for_new_type (string, inptree)
       && (pedantic || strcmp (string, "cast") != 0))
     pedwarn ("ANSI C++ forbids defining types within %s",string);
 }
+
+/* Add new exception specifier SPEC, to the LIST we currently have.
+   If it's already in LIST then do nothing.
+   Moan if it's bad and we're allowed to. COMPLAIN < 0 means we
+   know what we're doing.  */
+
+tree
+add_exception_specifier (list, spec, complain)
+     tree list, spec;
+     int complain;
+{
+  int ok;
+  tree core = spec;
+  int is_ptr;
+  
+  if (spec == error_mark_node)
+    return list;
+  
+  my_friendly_assert (spec && (!list || TREE_VALUE (list)), 19990317);
+  
+  /* [except.spec] 1, type in an exception specifier shall not be
+     incomplete, or pointer or ref to incomplete other than pointer
+     to cv void.  */
+  is_ptr = TREE_CODE (core) == POINTER_TYPE;
+  if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
+    core = TREE_TYPE (core);
+  if (complain < 0)
+    ok = 1;
+  else if (TYPE_MAIN_VARIANT (core) == void_type_node)
+    ok = is_ptr;
+  else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
+    ok = 1;
+  else
+    ok = TYPE_SIZE (core) != NULL_TREE;
+  
+  if (ok)
+    {
+      tree probe;
+      
+      for (probe = list; probe; probe = TREE_CHAIN (probe))
+        if (same_type_p (TREE_VALUE (probe), spec))
+          break;
+      if (!probe)
+        {
+          spec = build_decl_list (NULL_TREE, spec);
+          TREE_CHAIN (spec) = list;
+          list = spec;
+        }
+    }
+  else if (complain)
+    incomplete_type_error (NULL_TREE, core);
+  return list;
+}
