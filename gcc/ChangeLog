@@ -1,3 +1,27 @@
+2002-06-04  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (sh5-*-netbsd*, sh5l*-*-netbsd*)
+	(sh64-*-netbsd*, sh64l*-*-netbsd*): New targets.
+	* config/sh/netbsd-elf.h (TARGET_VERSION_ENDIAN)
+	(TARGET_VERSION_CPU): Define according to the
+	default target.
+	(TARGET_VERSION): Use TARGET_VERSION_ENDIAN and
+	TARGET_VERSION_CPU.
+	(TARGET_OS_CPP_BUILTINS): Use NETBSD_OS_CPP_BUILTINS_LP64
+	if TARGET_SHMEDIA64.
+	(LINK_DEFAULT_CPU_EMUL): Define according to the
+	default target.
+	(SUBTARGET_LINK_EMUL_SUFFIX): Define.
+	(SUBTARGET_LINK_SPEC): Define.
+	(LINK_SPEC): Use SH_LINK_SPEC.
+	(ASM_SPEC): Remove.
+	(TARGET_DEFAULT): Use TARGET_CPU_DEFAULT.
+	(FUNCTION_PROFILER): Add cases for TARGET_SHMEDIA32
+	and TARGET_SHMEDIA64 which abort, for now.
+	* config/sh/t-netbsd-sh5: New file.
+	* config/sh/t-netbsd-sh5-32: New file.
+	* config/sh/t-netbsd-sh5-64: New file.
+
 2002-06-03  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 	    Richard Henderson  <rth@redhat.com>
 
