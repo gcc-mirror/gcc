@@ -1,3 +1,7 @@
+Thu May 27 02:40:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Don't do biv->giv conversion on constants.
+
 Thu May 27 02:09:27 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (push_reload): Do not call remove_address_replacements

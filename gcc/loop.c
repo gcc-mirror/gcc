@@ -4193,6 +4193,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  || ! next->always_executed
 		  || next->maybe_multiple
 		  || ! CONSTANT_P (next->add_val)
+		  || v->mult_val != const1_rtx
+		  || next->mult_val != const1_rtx
 		  || ! (biv_dead_after_loop
 			|| no_jumps_between_p (v->insn, next->insn)))
 		{
