@@ -1,7 +1,8 @@
 // Build don't link:
 // Special g++ Options:
 
-extern "C" void qsort();
+extern "C" void qsort(void *base, __SIZE_TYPE__ nmemb, __SIZE_TYPE__ size,
+              int (*compar)(const void *, const void *));
 
 struct R {
   int count;

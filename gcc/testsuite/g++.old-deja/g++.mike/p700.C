@@ -1514,9 +1514,9 @@ extern struct _iobuf 	*c_proto_fdopen ();
 extern struct _iobuf 	*c_proto_freopen ();
 extern struct _iobuf 	*c_proto_popen ();
 extern struct _iobuf 	*tmpfile();
-extern long	ftell();
-extern char	*fgets();
-extern char	*gets();
+extern long	ftell(_iobuf *);
+extern char	*fgets(char *, int, _iobuf *);
+extern char	*gets(char *);
 extern char	*c_proto_sprintf ();
 extern char	*ctermid();
 extern char	*cuserid();
@@ -1820,7 +1820,7 @@ struct	tm {
 extern	struct tm *c_proto_gmtime (), *c_proto_localtime ();
 extern	char *c_proto_asctime (), *c_proto_ctime ();
 extern	void c_proto_tzset (), c_proto_tzsetwall ();
-extern  int dysize();
+extern  int dysize(int);
 extern  time_t timelocal(), timegm();
 
 
@@ -1945,7 +1945,7 @@ struct tms {
 };
 
 
-clock_t times( );
+clock_t times(tms * );
 
 
 
