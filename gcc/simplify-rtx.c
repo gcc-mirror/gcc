@@ -948,11 +948,29 @@ simplify_binary_operation (code, mode, op0, op1)
 	       || ! FLOAT_MODE_P (mode) || flag_fast_math)
 	      && op1 == CONST0_RTX (mode))
 	    return op0;
-#else
-	  /* Do nothing here.  */
 #endif
-	  break;
-	      
+
+	  /* Convert (compare (gt (flags) 0) (lt (flags) 0)) to (flags).  */
+	  if (((GET_CODE (op0) == GT && GET_CODE (op1) == LT)
+	       || (GET_CODE (op0) == GTU && GET_CODE (op1) == LTU))
+	      && XEXP (op0, 1) == const0_rtx && XEXP (op1, 1) == const0_rtx)
+	    {
+	      rtx xop00 = XEXP (op0, 0);
+	      rtx xop10 = XEXP (op1, 0);
+
+#ifdef HAVE_cc0
+	      if (GET_CODE (xop00) == CC0 && GET_CODE (xop10) == CC0)
+#else
+	      if (GET_CODE (xop00) == REG && GET_CODE (xop10) == REG
+		  && GET_MODE (xop00) == GET_MODE (xop10)
+		  && REGNO (xop00) == REGNO (xop10)
+		  && GET_MODE_CLASS (GET_MODE (xop00)) == MODE_CC
+		  && GET_MODE_CLASS (GET_MODE (xop10)) == MODE_CC)
+#endif
+		return xop00;
+	    }
+
+	  break;	      
 	case MINUS:
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
@@ -1912,8 +1930,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
       if (GET_CODE (op0) == CONST_INT
 	  && GET_CODE (op1) == CONST_INT
 	  && GET_CODE (op2) == CONST_INT
-	  && ((unsigned) INTVAL (op1) + (unsigned) INTVAL (op2)
-	      <= GET_MODE_BITSIZE (op0_mode))
+	  && ((unsigned) INTVAL (op1) + (unsigned) INTVAL (op2) <= width)
 	  && width <= (unsigned) HOST_BITS_PER_WIDE_INT)
 	{
 	  /* Extracting a bit-field from a constant */

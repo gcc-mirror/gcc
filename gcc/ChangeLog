@@ -1,3 +1,10 @@
+2000-07-17  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* simplify-rtx.c (simplify_binary_operation): Recognize
+	   (compare (gt[u] (cc) 0) (lt[u] (cc) 0)).
+	(simplify_ternary_operation):  Do not examine MODE_BITSIZE of
+	   a CONST_INT, it will always be zero.
+
 2000-07-17  Chandrakala Chavva   <cchavva@cygnus.com>
 
 	* loop.c (check_dbra_loop) : Return if more than one condition is 
