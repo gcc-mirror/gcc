@@ -238,6 +238,27 @@
    s%2subl %r1,%n3,%0"
   [(set_attr "type" "iaddlog")])
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI
+	 (plus:SI (mult:SI (match_operator:SI 1 "comparison_operator"
+					      [(match_operand 2 "" "")
+					       (match_operand 3 "" "")])
+			   (match_operand:SI 4 "const48_operand" ""))
+		  (match_operand:SI 5 "add_operand" ""))))
+   (clobber (match_operand:DI 6 "register_operand" ""))]
+  ""
+  [(set (match_dup 6) (match_dup 7))
+   (set (match_dup 0)
+	(sign_extend:DI (plus:SI (mult:SI (match_dup 8) (match_dup 4))
+				 (match_dup 5))))]
+  "
+{
+  operands[7] = gen_rtx (GET_CODE (operands[1]), DImode,
+			 operands[2], operands[3]);
+  operands[8] = gen_lowpart (SImode, operands[6]);
+}")
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ,rJ")
