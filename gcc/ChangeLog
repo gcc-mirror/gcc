@@ -1,3 +1,7 @@
+Wed Oct 13 21:47:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-page.c (MAP_FAILED): Provide default.
+
 Wed Oct 13 21:41:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (symbolic_operand): Verify mode; don't accept CONST_DOUBLE.

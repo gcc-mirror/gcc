@@ -31,6 +31,10 @@
 #include <sys/mman.h>
 #endif
 
+#ifndef MAP_FAILED
+#define MAP_FAILED -1
+#endif
+
 
 /* Stategy: 
 
