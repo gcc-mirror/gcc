@@ -1,3 +1,11 @@
+2005-02-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c (SSANORM_REMOVE_ALL_PHIS): Remove.
+	(SSANORM_COALESCE_PARTITIONS, SSANORM_USE_COALESCE_LIST):
+	Adjust their definitions.
+	(remove_ssa_form): Don't check for SSANORM_REMOVE_ALL_PHIS.
+	(rewrite_out_of_ssa): Don't use SSANORM_REMOVE_ALL_PHIS.
+
 2005-02-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dbxout.c (dbxout_function_end): Emit Lscope label always.
