@@ -1,3 +1,16 @@
+2001-03-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2181
+	* include/bits/istream.tcc (basic_istream<_CharT, _Traits>::
+	operator>>(__istream_type& (*__pf)(__istream_type&)): Don't use
+	sentry.
+	(basic_istream<_CharT, _Traits>:: operator>>(__ios_type&
+	(*__pf)(__ios_type&)): Same.
+	(basic_istream<_CharT, _Traits>:: operator>>(ios_base&
+	(*__pf)(ios_base&))): Same.
+	* testsuite/27_io/istream_extractor_other.cc: Add tests.
+	* testsuite/27_io/istream_manip.cc (test01): Fix.
+	
 2001-03-06  Nathan Myers  <ncm@cantrip.org> 
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
