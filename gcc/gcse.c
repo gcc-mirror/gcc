@@ -927,13 +927,13 @@ void
 dump_cuid_table (file)
      FILE *file;
 {
-  int i,n;
+  int i;
 
   fprintf (file, "CUID table\n");
-  for (i = n = 0; i < max_cuid; i++)
+  for (i = 0; i < max_cuid; i++)
     {
       rtx insn = CUID_INSN (i);
-      if (n != 0 && n % 10 == 0)
+      if (i != 0 && i % 10 == 0)
 	fprintf (file, "\n");
       if (insn != NULL)
 	fprintf (file, " %d", INSN_UID (insn));

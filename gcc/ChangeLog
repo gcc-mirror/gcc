@@ -1,3 +1,7 @@
+Sat Oct 17 13:09:09 1998  Graham  <grahams@rcp.co.uk>
+
+	* gcse.c (dump_cuid_table): Correct typo.
+
 Sat Oct 17 11:02:47 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c (display_help): Prepend '-m' to target specific
