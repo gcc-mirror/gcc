@@ -1,3 +1,7 @@
+Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/20020312-2.c: Add SH target.
+
 2002-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/labels-3.x: New file, don't assemble the

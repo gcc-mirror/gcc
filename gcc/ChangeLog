@@ -1,4 +1,6 @@
-Wed Apr 24 21:25:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Apr 24 21:35:11 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (PIC_OFFSET_TABLE_REGNUM): Conditionalize on flag_pic.
 
 	* sh.md (divsi3_i4_media): Use match_operand for input values
 	rather than hard registers.
