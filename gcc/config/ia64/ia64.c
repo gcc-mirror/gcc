@@ -1852,12 +1852,6 @@ ia64_expand_prologue ()
 	reg_names[OUT_REG (i)] = ia64_reg_numbers[inputs + locals + i];
     }
 
-  /* ??? Temporarily mark the remaining output registers fixed, so
-     that the register renaming pass does not try to used them after
-     we've fixed the size of the register frame.  */
-  for (i = current_frame_info.n_output_regs; i < 8; ++i)
-    fixed_regs[OUT_REG (i)] = 1;
-
   /* Set the frame pointer register name.  The regnum is logically loc79,
      but of course we'll not have allocated that many locals.  Rather than
      worrying about renumbering the existing rtxs, we adjust the name.  */
@@ -2393,6 +2387,31 @@ ia64_direct_return ()
   return 0;
 }
 
+int
+ia64_hard_regno_rename_ok (from, to)
+     int from;
+     int to;
+{
+  /* Don't clobber any of the registers we reserved for the prologue.  */
+  if (to == current_frame_info.reg_fp
+      || to == current_frame_info.reg_save_b0
+      || to == current_frame_info.reg_save_pr
+      || to == current_frame_info.reg_save_ar_pfs
+      || to == current_frame_info.reg_save_ar_unat
+      || to == current_frame_info.reg_save_ar_lc)
+    return 0;
+
+  /* Don't use output registers outside the register frame.  */
+  if (OUT_REGNO_P (to) && to >= OUT_REG (current_frame_info.n_output_regs))
+    return 0;
+
+  /* Retain even/oddness on predicate register pairs.  */
+  if (PR_REGNO_P (from) && PR_REGNO_P (to))
+    return (from & 1) == (to & 1);
+
+  return 1;
+}
+
 /* Emit the function prologue.  */
 
 void
@@ -2502,9 +2521,6 @@ ia64_function_epilogue (file, size)
       for (i = 0; i < current_frame_info.n_output_regs; i++)
 	reg_names[OUT_REG (i)] = ia64_output_reg_names[i];
     }
-
-  for (i = 0; i < 8; ++i)
-    fixed_regs[OUT_REG (i)] = 0;
 
   current_frame_info.initialized = 0;
 }

@@ -1,3 +1,10 @@
+2000-10-27  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c: Revert 10-23 patch.
+	(ia64_hard_regno_rename_ok): New.
+	* config/ia64/ia64-protos.h: Declare it.
+	* config/ia64/ia64.h (HARD_REGNO_RENAME_OK): Use it.
+
 2000-10-27  Bernd Schmidt  <bernds@redhat.co.uk>
 	    Richard Henderson  <rth@redhat.com>
 
