@@ -1,3 +1,12 @@
+2004-01-27  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Remove SUBREG
+	on CQImode and CHImode incoming arguments in register a7.
+	(function_arg): Wrap BLKmode argument in register a7 in a PARALLEL.
+	* config/xtensa/xtensa.h (BLOCK_REG_PADDING): Define.
+	* config/xtensa/xtensa.md (movdi, movdf): Only call force_reg or
+	xtensa_copy_incoming_a7 before reload.
+
 2004-01-27  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* config/arm/arm.c (output_return_instruction): Only restore IP

@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001,2002,2003,2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -824,6 +824,12 @@ typedef struct xtensa_args {
 
 /* Pass complex arguments independently.  */
 #define SPLIT_COMPLEX_ARGS 1
+
+/* Because Xtensa's function_arg() wraps BLKmode arguments passed in
+   a7 inside a PARALLEL, BLOCK_REG_PADDING needs to be defined
+   to get emit_group_store to do the right thing.  */
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
+  FUNCTION_ARG_PADDING (MODE, TYPE)
 
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001,2002,2003,2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -1310,7 +1310,27 @@ xtensa_copy_incoming_a7 (rtx *operands, enum machine_mode mode)
   if (a7_overlap_mentioned_p (operands[1])
       && !cfun->machine->incoming_a7_copied)
     {
-      rtx mov;
+      rtx mov, src;
+
+      /* Despite defining SPLIT_COMPLEX_ARGS, complex function
+	 arguments may still appear if they are wrapped in a struct.
+	 For CQImode and CHImode arguments, this results in a move
+	 with a source operand of the form: "(subreg:SI (reg:CHI a7)
+	 0)".  The subreg is later removed by the reload pass,
+	 resulting in the RTL for a7 being regenerated using
+	 hard_frame_pointer_rtx, and making it impossible for us to
+	 distinguish the function argument.  Detect this here when
+	 generating the RTL and remove the subreg immediately so that
+	 reload won't mess it up.  */
+      src = operands[1];
+      if (GET_CODE (src) == SUBREG
+	  && GET_CODE (SUBREG_REG (src)) == REG
+	  && REGNO (SUBREG_REG (src)) == A7_REG
+	  && SUBREG_BYTE (src) == 0
+	  && (GET_MODE (SUBREG_REG (src)) == CHImode
+	      || GET_MODE (SUBREG_REG (src)) == CQImode))
+	operands[1] = gen_raw_REG (mode, A7_REG);
+
       switch (mode)
 	{
 	case DFmode:
@@ -1756,11 +1776,15 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
      rtx that is not equal to hard_frame_pointer_rtx.  For multi-word
      modes for which we don't define move patterns, we can't control
      the expansion unless we explicitly list the individual registers
-     in a PARALLEL.  */
+     in a PARALLEL.  Likewise, a single-word BLKmode argument passed
+     in a7 must be wrapped in a PARALLEL to avoid code that takes the
+     register number and builds a new REG.  This is extremely fragile
+     but seems to be the best solution for now.  */
 
-  if (mode != DImode && mode != DFmode
-      && regno < A7_REG
-      && regno + words > A7_REG)
+  if ((mode != DImode && mode != DFmode
+       && regno < A7_REG
+       && regno + words > A7_REG)
+      || (mode == BLKmode && regno == A7_REG))
     {
       rtx result;
       int n;
