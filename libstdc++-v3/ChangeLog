@@ -1,3 +1,14 @@
+2004-04-29  Dhruv Matani  <dhruvbird@gmx.net>
+	
+	* include/ext/bitmap_allocator.h: (_Bit_scan_forward) -> Made this
+	function call __builtin_ctz instead of the while loop.
+	(allocate) -> If condition has __builtin_expect.
+	(deallocate) -> Ditto.
+	Renamed a few left-over variables and typedefs according to the
+	C++STYLE mentioned in the documentation.
+	Protected calls to __gthread* by __gthread_active_p(), whose value
+	is cached in the local variable __threads_active.
+
 2004-04-29  Felix Yen  <fwy@alumni.brown.edu>
 
 	* testsuite/performance/20_util/allocator/producer_consumer.cc:
