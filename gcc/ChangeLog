@@ -1,3 +1,12 @@
+2005-01-08  Jeff Law  <law@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-nrv.c (tree_nrv): Ignore volatile return values.
+	* tree-ssa-dse.c (dse_optimize_stmt): Do not optimize
+	statements with volatile operands.
+	* tree-ssa-operands.c (add_stmt_operand): Do add volatile
+	operands after marking a statement with has_volatile_ops.
+
 2005-01-08  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.c (int_fits_type_p): Always honor integer constant
