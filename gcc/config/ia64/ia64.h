@@ -43,11 +43,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_EXTRA_SPEC ""
 
-/* ia64-specific options for gas
-   ??? ia64 gas doesn't accept standard svr4 assembler options?  */
-#undef ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic} %(asm_extra)"
-
 
 /* This declaration should be present.  */
 extern int target_flags;
