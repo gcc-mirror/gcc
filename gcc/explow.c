@@ -751,18 +751,21 @@ emit_stack_save (save_level, psave, after)
 	abort ();
     }
 
+  if (sa != 0)
+    sa = validize_mem (sa);
+
   if (after)
     {
       rtx seq;
 
       start_sequence ();
-      emit_insn (fcn (validize_mem (sa), stack_pointer_rtx));
+      emit_insn (fcn (sa, stack_pointer_rtx));
       seq = gen_sequence ();
       end_sequence ();
       emit_insn_after (seq, after);
     }
   else
-    emit_insn (fcn (validize_mem (sa), stack_pointer_rtx));
+    emit_insn (fcn (sa, stack_pointer_rtx));
 }
 
 /* Restore the stack pointer for the purpose in SAVE_LEVEL.  SA is the save
@@ -804,18 +807,21 @@ emit_stack_restore (save_level, sa, after)
 #endif
     }
 
+  if (sa != 0)
+    sa = validize_mem (sa);
+
   if (after)
     {
       rtx seq;
 
       start_sequence ();
-      emit_insn (fcn (stack_pointer_rtx, validize_mem (sa)));
+      emit_insn (fcn (stack_pointer_rtx, sa));
       seq = gen_sequence ();
       end_sequence ();
       emit_insn_after (seq, after);
     }
   else
-    emit_insn (fcn (stack_pointer_rtx, validize_mem (sa)));
+    emit_insn (fcn (stack_pointer_rtx, sa));
 }
 
 /* Return an rtx representing the address of an area of memory dynamically
