@@ -1,5 +1,16 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* genoutput.c: Don't include errors.h.
+	(struct data): Add lineno member.
+	(have_error): New.
+	(scan_operands): Use message_with_line instead of error.
+	(validate_insn_alternatives): Likewise.
+	(gen_insn): Accept and store the pattern's line number.
+	(gen_peephole, gen_expand, gen_split): Likewise.
+	(main): Don't set progname.  Pass line_no to gen_foo.
+
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
 	* config/d30v/d30v.c (d30v_print_operand): Handle ':'.
 	* config/d30v/d30v.h (PRINT_OPERAND_PUNCT_VALID_P): Accept ':'.
 	* config/d30v/d30v.md (attr predicable): New.
