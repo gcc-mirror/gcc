@@ -29,7 +29,6 @@ extern "C" {
 
 typedef unsigned char U_CHAR;
 
-struct parse_file;
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
@@ -266,11 +265,19 @@ struct cpp_reader {
 #endif
 };
 
+#define CPP_FATAL_LIMIT 1000
+/* True if we have seen a "fatal" error. */
+#define CPP_FATAL_ERRORS(READER) ((READER)->errors >= CPP_FATAL_LIMIT)
+
 #define CPP_BUF_PEEK(BUFFER) \
   ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur : EOF)
 #define CPP_BUF_GET(BUFFER) \
   ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur++ : EOF)
 #define CPP_FORWARD(BUFFER, N) ((BUFFER)->cur += (N))
+
+/* Macros for manipulating the token_buffer. */
+
+#define CPP_OUT_BUFFER(PFILE) ((PFILE)->token_buffer)
 
 /* Number of characters currently in PFILE's output buffer. */
 #define CPP_WRITTEN(PFILE) ((PFILE)->limit - (PFILE)->token_buffer)
@@ -298,8 +305,10 @@ struct cpp_reader {
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
 #define CPP_OPTIONS(PFILE) ((cpp_options*)(PFILE)->data)
+
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)+1)
+/* The bottom of the buffer stack. */
 #define CPP_NULL_BUFFER(PFILE) (&(PFILE)->buffer_stack[CPP_STACK_MAX])
 
 /* Pointed to by cpp_reader::data. */
