@@ -1,3 +1,7 @@
+2002-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux.h: Revert 2002-04-22 changes.
+
 2002-05-13  Scott Marks <SMarks@mobile-mind.com>
 
 	* config/fr30/fr30.md: Only allow splits of immediate loads
