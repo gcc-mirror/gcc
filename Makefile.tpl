@@ -743,8 +743,13 @@ check:
 	$(MAKE) do-check NOTPARALLEL=parallel-ok
 
 # Only include modules actually being configured and built.
-do-check: @check_host_modules@ \
-	@check_target_modules@
+do-check: maybe-check-gcc [+
+  FOR host_modules +] \
+    maybe-check-[+module+][+
+  ENDFOR host_modules +][+
+  FOR target_modules +] \
+    maybe-check-target-[+module+][+
+  ENDFOR target_modules +]
 
 # Automated reporting of test results.
 
@@ -772,11 +777,18 @@ mail-report-with-warnings.log: warning.log
 .PHONY: install uninstall
 install: installdirs install-host install-target
 
+.PHONY: install-host-nogcc
+install-host-nogcc: [+
+  FOR host_modules +] \
+    maybe-install-[+module+][+
+  ENDFOR host_modules +]
+
 .PHONY: install-host
 install-host: maybe-install-gcc [+
   FOR host_modules +] \
     maybe-install-[+module+][+
   ENDFOR host_modules +]
+
 .PHONY: install-target
 install-target: [+
   FOR target_modules +] \
@@ -800,7 +812,7 @@ install.all: install-no-fixedincludes
 # install-no-fixedincludes is used because Cygnus can not distribute
 # the fixed header files.
 .PHONY: install-no-fixedincludes
-install-no-fixedincludes: installdirs @install_host_modules_nogcc@ \
+install-no-fixedincludes: installdirs install-host-nogcc \
 	install-target gcc-no-fixedincludes
 
 ### other supporting targets
@@ -962,11 +974,11 @@ all-[+module+]: configure-[+module+]
 	    +] $(X11_FLAGS_TO_PASS)[+ 
 	  ENDIF with_x +] all)
 
+.PHONY: check-[+module+] maybe-check-[+module+]
+maybe-check-[+module+]:
 [+ IF no_check +]
-.PHONY: check-[+module+]
 check-[+module+]:
 [+ ELIF no_check_cross +]
-.PHONY: check-[+module+]
 # This module is only tested in a native toolchain.
 check-[+module+]:
 	@if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
@@ -979,7 +991,6 @@ check-[+module+]:
 	    ENDIF with_x +] check); \
 	fi
 [+ ELSE check +]
-.PHONY: check-[+module+]
 check-[+module+]:
 	@r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
@@ -990,13 +1001,11 @@ check-[+module+]:
 	  ENDIF with_x +] check)
 [+ ENDIF no_check +]
 
-[+ IF no_install +]
 .PHONY: install-[+module+] maybe-install-[+module+]
 maybe-install-[+module+]:
+[+ IF no_install +]
 install-[+module+]:
 [+ ELSE install +]
-.PHONY: install-[+module+] maybe-install-[+module+]
-maybe-install-[+module+]:
 install-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
@@ -1101,12 +1110,13 @@ all-target-[+module+]: configure-target-[+module+]
 	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
 	    ENDIF raw_cxx 
 	  +] all)
+
+.PHONY: check-target-[+module+] maybe-check-target-[+module+]
+maybe-check-target-[+module+]:
 [+ IF no_check +]
 # Dummy target for uncheckable module.
-.PHONY: check-target-[+module+]
 check-target-[+module+]:
 [+ ELSE check +]
-.PHONY: check-target-[+module+]
 check-target-[+module+]:
 	@r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
@@ -1118,14 +1128,13 @@ check-target-[+module+]:
 	    ENDIF raw_cxx 
 	  +] check)
 [+ ENDIF no_check +]
-[+ IF no_install +]
+
 .PHONY: install-target-[+module+] maybe-install-target-[+module+]
 maybe-install-target-[+module+]:
+[+ IF no_install +]
 # Dummy target for uninstallable.
 install-target-[+module+]:
 [+ ELSE install +]
-.PHONY: install-target-[+module+] maybe-install-target-[+module+]
-maybe-install-target-[+module+]:
 install-target-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
