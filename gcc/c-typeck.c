@@ -6706,8 +6706,14 @@ tree
 c_expand_start_case (exp)
      tree exp;
 {
-  register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
-  tree type = TREE_TYPE (exp);
+  register enum tree_code code;
+  tree type;
+
+  if (TREE_CODE (exp) == ERROR_MARK)
+    return exp;
+
+  code = TREE_CODE (TREE_TYPE (exp));
+  type = TREE_TYPE (exp);
 
   if (code != INTEGER_TYPE && code != ENUMERAL_TYPE && code != ERROR_MARK)
     {

@@ -1,3 +1,13 @@
+1999-08-27 00:27 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* c-typeck.c (c_expand_start_case): Return immediately if exp
+	is an ERROR_MARK.
+	* fold-const.c (operand_equal_p): Return immediately if arg1
+	or arg0 are ERROR_MARKs.
+	* stor-layout.c (layout_type [case RECORD_TYPE]): Ignore
+	fields of type ERROR_MARK when calculating if the record can
+	go in a register.
+
 Fri Aug 27 01:03:48 1999  Jim Kingdon  <http://developer.redhat.com>
 	with much help from Jeffrey A Law and Richard Henderson
 
