@@ -3814,9 +3814,11 @@ safe_from_p (x, exp)
       /* If EXP has varying size, we MUST use a target since we currently
 	 have no way of allocating temporaries of variable size.  So we
 	 assume here that something at a higher level has prevented a
-	 clash.  This is somewhat bogus, but the best we can do.  */
+	 clash.  This is somewhat bogus, but the best we can do.  Only
+	 do this when X is BLKmode.  */
       || (TREE_TYPE (exp) != 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
-	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST))
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
+	  && GET_MODE (x) == BLKmode))
     return 1;
 
   /* If this is a subreg of a hard register, declare it unsafe, otherwise,
