@@ -269,7 +269,7 @@ proc libjava_arguments {{mode compile}} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.
 	    lappend args \
-	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST -B$objdir/../"
+	      "compiler=$d/$x/libtool --silent --tag=GCJ --mode=$mode $GCJ_UNDER_TEST -B$objdir/../"
 	    set found_compiler 1
 	    break
 	}

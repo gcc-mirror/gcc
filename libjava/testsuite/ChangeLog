@@ -1,3 +1,8 @@
+2000-11-03  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (libjava_arguments): Set --tag on libtool
+	invocation.
+
 Sun Oct  8 19:14:05 2000  Anthony Green  <green@redhat.com>
 
 	* libjava.compile/ArrayClass.java: New file.
