@@ -5799,9 +5799,75 @@ make_nan (nan, sign, mode)
     *nan = (sign << 15) | *p;
 }
 
-/* Convert an SFmode target `float' value to a REAL_VALUE_TYPE.
-   This is the inverse of the function `etarsingle' invoked by
+/* This is the inverse of the function `etarsingle' invoked by
    REAL_VALUE_TO_TARGET_SINGLE.  */
+
+REAL_VALUE_TYPE
+ereal_unto_float (f)
+     long f;
+{
+  REAL_VALUE_TYPE r;
+  unsigned EMUSHORT s[2];
+  unsigned EMUSHORT e[NE];
+
+  /* Convert 32 bit integer to array of 16 bit pieces in target machine order.
+   This is the inverse operation to what the function `endian' does.  */
+  if (REAL_WORDS_BIG_ENDIAN)
+    {
+      s[0] = (unsigned EMUSHORT) (f >> 16);
+      s[1] = (unsigned EMUSHORT) f;
+    }
+  else
+    {
+      s[0] = (unsigned EMUSHORT) f;
+      s[1] = (unsigned EMUSHORT) (f >> 16);
+    }
+  /* Convert and promote the target float to E-type. */
+  e24toe (s, e);
+  /* Output E-type to REAL_VALUE_TYPE. */
+  PUT_REAL (e, &r);
+  return r;
+}
+
+
+/* This is the inverse of the function `etardouble' invoked by
+   REAL_VALUE_TO_TARGET_DOUBLE.  */
+
+REAL_VALUE_TYPE
+ereal_unto_double (d)
+     long d[];
+{
+  REAL_VALUE_TYPE r;
+  unsigned EMUSHORT s[4];
+  unsigned EMUSHORT e[NE];
+
+  /* Convert array of HOST_WIDE_INT to equivalent array of 16-bit pieces.  */
+  if (REAL_WORDS_BIG_ENDIAN)
+    {
+      s[0] = (unsigned EMUSHORT) (d[0] >> 16);
+      s[1] = (unsigned EMUSHORT) d[0];
+      s[2] = (unsigned EMUSHORT) (d[1] >> 16);
+      s[3] = (unsigned EMUSHORT) d[1];
+    }
+  else
+    {
+      /* Target float words are little-endian.  */
+      s[0] = (unsigned EMUSHORT) d[0];
+      s[1] = (unsigned EMUSHORT) (d[0] >> 16);
+      s[2] = (unsigned EMUSHORT) d[1];
+      s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+    }
+  /* Convert target double to E-type. */
+  e53toe (s, e);
+  /* Output E-type to REAL_VALUE_TYPE. */
+  PUT_REAL (e, &r);
+  return r;
+}
+
+
+/* Convert an SFmode target `float' value to a REAL_VALUE_TYPE.
+   This is somewhat like ereal_unto_float, but the input types
+   for these are different.  */
 
 REAL_VALUE_TYPE
 ereal_from_float (f)
@@ -5832,8 +5898,8 @@ ereal_from_float (f)
 
 
 /* Convert a DFmode target `double' value to a REAL_VALUE_TYPE.
-   This is the inverse of the function `etardouble' invoked by
-   REAL_VALUE_TO_TARGET_DOUBLE.
+   This is somewhat like ereal_unto_double, but the input types
+   for these are different.
 
    The DFmode is stored as an array of HOST_WIDE_INT in the target's
    data format, with no holes in the bit packing.  The first element

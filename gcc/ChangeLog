@@ -1,3 +1,14 @@
+Tue Aug 12 10:20:36 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump version to "gcc-3.0.0 970802 experimental".
+
+	* gcc.info*: Rebuilt.
+
+	* COPYING.g77, README.g77: New files.
+	* real.c (ereal_unto_float, ereal_unto_double): New functions.
+	* real.h (ereal_unto_float, ereal_unto_double): Declare them.
+	(REAL_VALUE_UNTO_TARGET_DOUBLE, REAL_VALUE_UNTO_TARGET_SINGLE): Define.
+
 Mon Aug 11 14:50:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Integrate Haifa instruction scheduler.

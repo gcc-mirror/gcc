@@ -153,6 +153,8 @@ extern long etarsingle		PROTO((REAL_VALUE_TYPE));
 extern void ereal_to_decimal	PROTO((REAL_VALUE_TYPE, char *));
 extern int ereal_cmp		PROTO((REAL_VALUE_TYPE, REAL_VALUE_TYPE));
 extern int ereal_isneg		PROTO((REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE ereal_unto_float PROTO((long));
+extern REAL_VALUE_TYPE ereal_unto_double PROTO((long *));
 extern REAL_VALUE_TYPE ereal_from_float PROTO((HOST_WIDE_INT));
 extern REAL_VALUE_TYPE ereal_from_double PROTO((HOST_WIDE_INT *));
 
@@ -199,6 +201,12 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long. */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) ((OUT) = etarsingle ((IN)))
+
+/* Inverse of REAL_VALUE_TO_TARGET_DOUBLE. */
+#define REAL_VALUE_UNTO_TARGET_DOUBLE(d)  (ereal_unto_double (d))
+
+/* Inverse of REAL_VALUE_TO_TARGET_SINGLE. */
+#define REAL_VALUE_UNTO_TARGET_SINGLE(f)  (ereal_unto_float (f))
 
 /* d is an array of HOST_WIDE_INT that holds a double precision
    value in the target computer's floating point format. */
