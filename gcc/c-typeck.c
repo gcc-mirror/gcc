@@ -2455,6 +2455,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		 all the values of the unsigned type.  */
 	      if (! TREE_UNSIGNED (result_type))
 		/* OK */;
+              /* Do not warn if both operands are unsigned.  */
+              else if (op0_signed == op1_signed)
+                /* OK */;
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
 		 involving such literals) and it is non-negative.  */
