@@ -698,6 +698,8 @@ FFEBAD_MSGS1 (FFEBAD_FILEWIDE_ARG_W, WARN,
 "Argument #%B of `%A' is %C at %0 but is %D at %1 [info -f g77 M GLOBALS]")
 FFEBAD_MSGS1 (FFEBAD_ARRAY_LARGE, FATAL,
 "Array `%A' at %0 is too large to handle")
+FFEBAD_MSGS1 (FFEBAD_SFUNC_UNUSED, WARN,
+"Statement function `%A' defined at %0 is not used")
 
 #undef INFORM
 #undef TRIVIAL
