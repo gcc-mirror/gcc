@@ -1,3 +1,10 @@
+2003-07-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11154
+	* pt.c (more_specialized_class): Add full_args parameter.
+	(most_specialized_class): Adjust calls to more_specialized_class.
+	* cp-tree.h (more_specialized_class): Adjust declaration.
+
 2003-07-14  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* lex.c (enum tree_node_kind): Delete.

@@ -3968,7 +3968,7 @@ extern tree instantiate_decl			(tree, int);
 extern tree get_bindings			(tree, tree, tree);
 extern int push_tinst_level			(tree);
 extern void pop_tinst_level			(void);
-extern int more_specialized_class		(tree, tree);
+extern int more_specialized_class		(tree, tree, tree);
 extern int is_member_template                   (tree);
 extern int comp_template_parms                  (tree, tree);
 extern int template_class_depth                 (tree);
