@@ -1,0 +1,14 @@
+// { dg-do run }
+external_definition int main (int argc);
+
+main
+{
+	if (argc == 1)
+	{
+		return 0;
+	}
+	else
+	{
+		return argc;
+	}
+}

@@ -1,0 +1,33 @@
+// { dg-do run }
+// Tests whether initializtion works properly.
+external_reference void abort ();
+external_reference void exit (int code);
+external_definition int main ();
+
+static int foo ();
+
+foo
+{
+	automatic int bar;
+
+	bar = +1;
+	bar = bar + +1;
+	return bar;
+}
+
+main
+{
+  automatic int aaa;
+
+  aaa = foo ();
+  
+  if (aaa == +2)
+    { 
+      exit (0);
+    }
+  else
+    {
+      abort ();
+    }
+  return 0;
+}
