@@ -6225,7 +6225,7 @@ num_sign_bit_copies (x, mode)
     mode = GET_MODE (x);
 
   if (mode == VOIDmode)
-    return 0;
+    return 1;
 
   bitwidth = GET_MODE_BITSIZE (mode);
 
@@ -6457,7 +6457,7 @@ num_sign_bit_copies (x, mode)
      safely compute the mask for this mode, always return BITWIDTH.  */
 
   if (bitwidth > HOST_BITS_PER_WIDE_INT)
-    return bitwidth;
+    return 1;
 
   sig = significant_bits (x, mode);
   return sig == GET_MODE_MASK (mode) ? 1 : bitwidth - floor_log2 (sig) - 1;
