@@ -2745,15 +2745,29 @@
 	    offset = 4;
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
-	  word0 = gen_rtx(SUBREG, SImode, regop, 0);
-	  emit_insn (store_p
-		     ? gen_movsi_ie (mem, word0) : gen_movsi_ie (word0, mem));
-	  emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (offset)));
-	  mem = copy_rtx (mem);
-	  word1 = gen_rtx(SUBREG, SImode, regop, 1);
-	  emit_insn (store_p
-		     ? gen_movsi_ie (mem, word1) : gen_movsi_ie (word1, mem));
-	  emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (-offset)));
+	  word0 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 0));
+	  word1 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 1));
+	  if (store_p || ! refers_to_regno_p (REGNO (word0),
+					      REGNO (word0) + 1, addr, 0))
+	    {
+	      emit_insn (store_p
+			 ? gen_movsi_ie (mem, word0)
+			 : gen_movsi_ie (word0, mem));
+	      emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (offset)));
+	      mem = copy_rtx (mem);
+	      emit_insn (store_p
+			 ? gen_movsi_ie (mem, word1)
+			 : gen_movsi_ie (word1, mem));
+	      emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (-offset)));
+	    }
+	  else
+	    {
+	      emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (offset)));
+	      emit_insn (gen_movsi_ie (word1, mem));
+	      emit_insn (gen_addsi3 (reg0, reg0, GEN_INT (-offset)));
+	      mem = copy_rtx (mem);
+	      emit_insn (gen_movsi_ie (word0, mem));
+	    }
 	  DONE;
 	}
     }

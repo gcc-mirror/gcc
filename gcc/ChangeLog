@@ -1,3 +1,9 @@
+2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (movdf): When splitting load into pair of
+	registers, don't clobber the register used in the address too
+	early.
+
 2001-01-05  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* varasm.c (mark_constant_pool): Improve initial comments.
