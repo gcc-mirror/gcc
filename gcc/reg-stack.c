@@ -483,6 +483,10 @@ record_label_references (insn, pat)
       if (GET_CODE (label) != CODE_LABEL)
 	abort ();
 
+      /* If this is an undefined label, LABEL_REFS (label) contains garbage. */
+      if (INSN_UID (label) == 0)
+	return;
+
       /* Don't make a duplicate in the code_label's chain. */
 
       for (ref = LABEL_REFS (label);
