@@ -2065,7 +2065,8 @@ expand_call (exp, target, ignore)
 	  preserve_temp_slots (target);
 	}
 
-      emit_group_store (target, valreg);
+      if (! rtx_equal_p (target, valreg))
+	emit_group_store (target, valreg);
     }
   else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
 	   && GET_MODE (target) == GET_MODE (valreg))
