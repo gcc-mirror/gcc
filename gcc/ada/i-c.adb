@@ -504,7 +504,8 @@ package body Interfaces.C is
          --  char_array. The lower bound of this array is required to be zero
          --  (RM B.3(50)) but that is of course impossible given that size_t
          --  is unsigned. According to Ada 2005 AI-258, the result is to raise
-         --  Constraint_Error.
+         --  Constraint_Error. This is also the appropriate behavior in Ada 95,
+         --  since nothing else makes sense.
 
          if Item'Length = 0 then
             raise Constraint_Error;
@@ -593,7 +594,8 @@ package body Interfaces.C is
          --  wchar_array. The lower bound of this array is required to be zero
          --  (RM B.3(50)) but that is of course impossible given that size_t
          --  is unsigned. According to Ada 2005 AI-258, the result is to raise
-         --  Constraint_Error.
+         --  Constraint_Error. This is also the appropriate behavior in Ada 95,
+         --  since nothing else makes sense.
 
          if Item'Length = 0 then
             raise Constraint_Error;
@@ -680,7 +682,8 @@ package body Interfaces.C is
          --  char16_array. The lower bound of this array is required to be zero
          --  (RM B.3(50)) but that is of course impossible given that size_t
          --  is unsigned. According to Ada 2005 AI-258, the result is to raise
-         --  Constraint_Error.
+         --  Constraint_Error. This is also the appropriate behavior in Ada 95,
+         --  since nothing else makes sense.
 
          if Item'Length = 0 then
             raise Constraint_Error;

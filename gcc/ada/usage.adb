@@ -26,6 +26,7 @@
 
 with Hostparm;
 with Namet;          use Namet;
+with Opt;            use Opt;
 with Osint;          use Osint;
 with Output;         use Output;
 with System.WCh_Con; use System.WCh_Con;
@@ -466,9 +467,24 @@ begin
    Write_Switch_Char ("83");
    Write_Line ("Enforce Ada 83 restrictions");
 
+   --  Line for -gnat95 switch
+
+   Write_Switch_Char ("95");
+
+   if Ada_Version_Default = Ada_95 then
+      Write_Line ("Ada 95 mode (default)");
+   else
+      Write_Line ("Enforce Ada 95 restrictions");
+   end if;
+
    --  Line for -gnat05 switch
 
    Write_Switch_Char ("05");
-   Write_Line ("Allow Ada 2005 extensions");
+
+   if Ada_Version_Default = Ada_05 then
+      Write_Line ("Ada 2005 mode (default)");
+   else
+      Write_Line ("Allow Ada 2005 extensions");
+   end if;
 
 end Usage;
