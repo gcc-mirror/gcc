@@ -49,11 +49,11 @@
 
 #ifdef __cplusplus
 
-// We use the compiler builtins __SIZE__TYPE__ and __PTRDIFF_TYPE__ instead of
+// We use the compiler builtins __SIZE_TYPE__ and __PTRDIFF_TYPE__ instead of
 // std::size_t and std::ptrdiff_t respectively. This makes us independant of
 // the conformance level of <cstddef> and whether -fhonor-std was supplied.
 // <cstddef> is not currently available during compiler building anyway.
-// including <stddef.h> would be wrong, as that would rudely place size_t in
+// Including <stddef.h> would be wrong, as that would rudely place size_t in
 // the global namespace.
 
 #include <typeinfo>
@@ -215,7 +215,7 @@ public:
     { 
       // This shift, being of a signed type, is implementation defined. GCC
       // implements such shifts as arithmetic, which is what we want.
-      return __PTRDIFF_TYPE__ (vmi_offset_flags) >> offset_shift;
+      return static_cast<__PTRDIFF_TYPE__> (vmi_offset_flags) >> offset_shift;
     }
 };
 
