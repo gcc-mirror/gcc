@@ -2120,7 +2120,8 @@ conversion warnings, for the full set use @samp{-Wconversion}.
 Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 
 @item -Wshadow
-Warn whenever a local variable shadows another local variable.
+Warn whenever a local variable shadows another local variable, parameter or
+global variable or whenever a built-in function is shadowed.
 
 @item -Wid-clash-@var{len}
 Warn whenever two distinct identifiers match in the first @var{len}

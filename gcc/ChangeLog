@@ -1,3 +1,7 @@
+2001-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* invoke.texi (-Wshadow): Clarify.
+
 2001-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (load_mems): Examine all the instructions in the loop
