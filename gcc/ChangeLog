@@ -1,3 +1,17 @@
+Thu Jun 14 12:44:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_accumulate_outgoing_args, x86_prologue_using_move,
+	x86_epilogue_using_move): New global variables.
+	(override_options): Enable ACCUMULATE_OUTGOING_ARGS if preferred.
+	(ix86_emit_save_regs_using_mov): New static function.
+	(ix86_expand_prologue, ix86_expand_epilogue): Use moves if preferred.
+	* i386.h (MASK_MMX, MASK_SSE, MASK_SSE2, MASK_128BIT_LONG_DOUBLE,
+	MASK_MIX_SSE_I387): Renumber.
+	(MASK_NO_ACCUMULATE_OUTGOING_ARGS): New.
+	(x86_accumulate_outgoing_args, x86_prologue_using_move,
+	x86_epilogue_using_move): Declare.
+	(TARGET_PROLOGUE_USING_MOVE, TARGET_EPILOGUE_USING_MOVE): New.
+
 2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* inclhack.def (hpux10_cpp_pow_inline): New hack.

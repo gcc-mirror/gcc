@@ -313,6 +313,9 @@ const int x86_add_esp_8 = m_ATHLON | m_PPRO | m_K6 | m_386 | m_486 | m_PENT4;
 const int x86_integer_DFmode_moves = ~(m_ATHLON | m_PENT4);
 const int x86_partial_reg_dependency = m_ATHLON | m_PENT4;
 const int x86_memory_mismatch_stall = m_ATHLON | m_PENT4;
+const int x86_accumulate_outgoing_args = m_ATHLON | m_PENT4 | m_PPRO;
+const int x86_prologue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
+const int x86_epilogue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
@@ -560,6 +563,7 @@ static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
+static void ix86_emit_save_regs_using_mov PARAMS ((rtx, HOST_WIDE_INT));
 static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
@@ -835,6 +839,11 @@ override_options ()
      on by -msse.  */
   if (TARGET_SSE)
     target_flags |= MASK_MMX;
+
+  if ((x86_accumulate_outgoing_args & CPUMASK)
+      && !(target_flags & MASK_NO_ACCUMULATE_OUTGOING_ARGS)
+      && !optimize_size)
+    target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
 }
 
 void
@@ -2465,6 +2474,28 @@ ix86_emit_save_regs ()
       }
 }
 
+/* Emit code to save registers using MOV insns.  First register
+   is restored from POINTER + OFFSET.  */
+static void
+ix86_emit_save_regs_using_mov (pointer, offset)
+	rtx pointer;
+	HOST_WIDE_INT offset;
+{
+  int regno;
+  rtx insn;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (ix86_save_reg (regno, true))
+      {
+	insn = emit_move_insn (adj_offsettable_operand (gen_rtx_MEM (Pmode,
+								     pointer),
+							offset),
+			       gen_rtx_REG (Pmode, regno));
+	RTX_FRAME_RELATED_P (insn) = 1;
+	offset += UNITS_PER_WORD;
+      }
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -2475,6 +2506,8 @@ ix86_expand_prologue ()
 				  || current_function_uses_const_pool)
 		      && !TARGET_64BIT);
   struct ix86_frame frame;
+  int use_mov = (TARGET_PROLOGUE_USING_MOVE && !optimize_size);
+  HOST_WIDE_INT allocate;
 
   ix86_compute_frame_layout (&frame);
 
@@ -2490,9 +2523,18 @@ ix86_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  ix86_emit_save_regs ();
+  allocate = frame.to_allocate;
+  /* In case we are dealing only with single register and empty frame,
+     push is equivalent of the mov+add sequence.  */
+  if (allocate == 0 && frame.nregs <= 1)
+    use_mov = 0;
 
-  if (frame.to_allocate == 0)
+  if (!use_mov)
+    ix86_emit_save_regs ();
+  else
+    allocate += frame.nregs * UNITS_PER_WORD;
+
+  if (allocate == 0)
     ;
   else if (! TARGET_STACK_PROBE || frame.to_allocate < CHECK_STACK_LIMIT)
     {
@@ -2511,7 +2553,7 @@ ix86_expand_prologue ()
 	abort();
 
       arg0 = gen_rtx_REG (SImode, 0);
-      emit_move_insn (arg0, GEN_INT (frame.to_allocate));
+      emit_move_insn (arg0, GEN_INT (allocate));
 
       sym = gen_rtx_MEM (FUNCTION_MODE,
 			 gen_rtx_SYMBOL_REF (Pmode, "_alloca"));
@@ -2520,6 +2562,14 @@ ix86_expand_prologue ()
       CALL_INSN_FUNCTION_USAGE (insn)
 	= gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, arg0),
 			     CALL_INSN_FUNCTION_USAGE (insn));
+    }
+  if (use_mov)
+    {
+      if (!frame_pointer_needed || !frame.to_allocate)
+        ix86_emit_save_regs_using_mov (stack_pointer_rtx, frame.to_allocate);
+      else
+        ix86_emit_save_regs_using_mov (hard_frame_pointer_rtx,
+				       -frame.nregs * UNITS_PER_WORD);
     }
 
 #ifdef SUBTARGET_PROLOGUE
@@ -2535,7 +2585,6 @@ ix86_expand_prologue ()
   if ((profile_flag || profile_block_flag) && ! pic_reg_used)
     emit_insn (gen_blockage ());
 }
-
 
 /* Emit code to restore saved registers using MOV insns.  First register
    is restored from POINTER + OFFSET.  */
@@ -2598,6 +2647,8 @@ ix86_expand_epilogue (style)
      and there is exactly one register to pop. This heruistic may need some
      tuning in future.  */
   if ((!sp_valid && frame.nregs <= 1)
+      || (TARGET_EPILOGUE_USING_MOVE && !optimize_size
+	  && (frame.nregs > 1 || frame.to_allocate))
       || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
       || (frame_pointer_needed && TARGET_USE_LEAVE && !optimize_size
 	  && frame.nregs == 1)
