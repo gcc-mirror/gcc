@@ -217,7 +217,7 @@ init_expmed (void)
       mul_cost[mode] = rtx_cost (&all.mult, SET);
 
       sdiv_pow2_cheap[mode] = (rtx_cost (&all.div, SET) <= 2 * add_cost[mode]);
-      smod_pow2_cheap[mode] = (rtx_cost (&all.mod, SET) <= 2 * add_cost[mode]);
+      smod_pow2_cheap[mode] = (rtx_cost (&all.mod, SET) <= 4 * add_cost[mode]);
 
       wider_mode = GET_MODE_WIDER_MODE (mode);
       if (wider_mode != VOIDmode)

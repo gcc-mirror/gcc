@@ -1,3 +1,8 @@
+2004-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (init_expmed): A signed modulus by a power of two is
+	considered cheap if its less than or equal to four instructions.
+
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* ggc.h (GGC_NEW, GGC_CNEW, GGC_NEWVEC, GGC_CNEWVEC, GGC_NEWVAR,
