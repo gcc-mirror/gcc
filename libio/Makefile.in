@@ -1,4 +1,4 @@
-# Copyright (C) 1993, 1995 Free Software Foundation
+# Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation
 # 
 # This file is part of the GNU IO Library.  This library is free
 # software; you can redistribute it and/or modify it under the
@@ -97,8 +97,8 @@ stmp-stdio:
 
 _G_config.h: ${srcdir}/gen-params
 	rootme=`pwd`/ ; export rootme; \
-	CC="$(CC)"; export CC; \
-	CXX="$(CXX) $(NOSTDINC) $(CXXFLAGS)"; export CXX; \
+	CC="$(CC) $(CINCLUDES)"; export CC; \
+	CXX="$(CXX) $(CXXINCLUDES) $(NOSTDINC) $(CXXFLAGS)"; export CXX; \
 	CONFIG_NM="$(NM)"; export CONFIG_NM; \
 	$(SHELL) ${srcdir}/gen-params LIB_VERSION=$(VERSION) $(G_CONFIG_ARGS) >tmp-params.h
 	mv tmp-params.h _G_config.h

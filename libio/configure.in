@@ -107,8 +107,16 @@ ${moveifchange} temp.mt target-mkfrag
 LIBDIR=yes
 TO_TOPDIR=../
 ALL='$(_G_CONFIG_H) libio.a libiostream.a iostream.list'
-XCINCLUDES='-I. -I$(srcdir)'
-XCXXINCLUDES='-I. -I$(srcdir)'
+case "${target}" in
+  *-*-cygwin32*)
+    XCINCLUDES='-I. -I$(srcdir) -I$(srcdir)/../winsup/include'
+    XCXXINCLUDES='-I. -I$(srcdir) -I$(srcdir)/../winsup/include'
+    ;;
+  *)
+    XCINCLUDES='-I. -I$(srcdir)'
+    XCXXINCLUDES='-I. -I$(srcdir)'
+    ;;
+esac
 MOSTLYCLEAN='*.o pic stamp-picdir core iostream.list'
 DISTCLEAN='config.status Makefile *~ Make.pack target-mkfrag multilib.out'
 CLEAN='_G_config.h *.a'
