@@ -1,3 +1,10 @@
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (LIBS): Fix definition so we link with $(CLIB).
+	Remove hacks for stuff which comes from libiberty.
+
+	* Make-lang.in: Likewise.
+
 Mon Aug 30 16:41:41 1999  Hans-Peter Nilsson  <hp@axis.se>
 
 	* Makefile.in (xref.o): Depend on xref.c explicitly.
