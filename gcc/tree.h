@@ -2165,6 +2165,8 @@ extern tree size_int_type_wide		PARAMS ((HOST_WIDE_INT, tree));
 extern tree round_up			PARAMS ((tree, int));
 extern tree round_down			PARAMS ((tree, int));
 extern tree get_pending_sizes		PARAMS ((void));
+extern int is_pending_size		PARAMS ((tree));
+extern void put_pending_size		PARAMS ((tree));
 extern void put_pending_sizes		PARAMS ((tree));
 
 /* Type for sizes of data-type.  */

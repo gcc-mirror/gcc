@@ -4449,7 +4449,14 @@ extract_muldiv (t, c, code, wide_type)
       if (SAVE_EXPR_RTL (t) == 0 && ! TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0))
 	  && 0 != (t1 = extract_muldiv (TREE_OPERAND (t, 0), c, code,
 					wide_type)))
-	return save_expr (t1);
+	{
+	  t1 = save_expr (t1);
+	  if (SAVE_EXPR_PERSISTENT_P (t) && TREE_CODE (t1) == SAVE_EXPR)
+	    SAVE_EXPR_PERSISTENT_P (t1) = 1;
+	  if (is_pending_size (t))
+	    put_pending_size (t1);
+	  return t1;
+	}
       break;
 
     case LSHIFT_EXPR:  case RSHIFT_EXPR:

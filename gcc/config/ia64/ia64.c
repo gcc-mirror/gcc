@@ -4560,7 +4560,7 @@ static struct group
 {
   HARD_REG_SET p_reg_set;
   HARD_REG_SET gr_reg_conditionally_set;
-} last_group[3];
+} last_group[2];
 
 /* Index into the last_group array.  */
 static int group_idx;
@@ -4581,7 +4581,7 @@ errata_find_address_regs (xp, data)
     x = XEXP (x, 0);
   if (GET_CODE (x) == REG)
     {
-      struct group *prev_group = last_group + (group_idx + 2) % 3;
+      struct group *prev_group = last_group + (group_idx ^ 1);
       if (TEST_HARD_REG_BIT (prev_group->gr_reg_conditionally_set,
 			     REGNO (x)))
 	return 1;
@@ -4598,7 +4598,7 @@ errata_emit_nops (insn)
      rtx insn;
 {
   struct group *this_group = last_group + group_idx;
-  struct group *prev_group = last_group + (group_idx + 2) % 3;
+  struct group *prev_group = last_group + (group_idx ^ 1);
   rtx pat = PATTERN (insn);
   rtx cond = GET_CODE (pat) == COND_EXEC ? COND_EXEC_TEST (pat) : 0;
   rtx real_pat = cond ? COND_EXEC_CODE (pat) : pat;
@@ -4642,6 +4642,8 @@ errata_emit_nops (insn)
       && REG_P (SET_DEST (set))
       && GET_CODE (SET_SRC (set)) != PLUS
       && GET_CODE (SET_SRC (set)) != MINUS
+      && (GET_CODE (SET_SRC (set)) != ASHIFT
+	  || !shladd_operand (XEXP (SET_SRC (set), 1)))
       && (GET_CODE (SET_SRC (set)) != MEM
 	  || GET_CODE (XEXP (SET_SRC (set), 0)) != POST_MODIFY)
       && GENERAL_REGNO_P (REGNO (SET_DEST (set))))
@@ -4658,6 +4660,8 @@ errata_emit_nops (insn)
       emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
       emit_insn_before (gen_nop (), insn);
       emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
+      group_idx = 0;
+      memset (last_group, 0, sizeof last_group);
     }
 }
 
@@ -4668,17 +4672,23 @@ fixup_errata ()
 {
   rtx insn;
 
+  if (! TARGET_B_STEP)
+    return;
+
   group_idx = 0;
   memset (last_group, 0, sizeof last_group);
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (INSN_P (insn) && ia64_safe_type (insn) == TYPE_S)
+      if (!INSN_P (insn))
+	continue;
+
+      if (ia64_safe_type (insn) == TYPE_S)
 	{
-	  group_idx = (group_idx + 1) % 3;
+	  group_idx ^= 1;
 	  memset (last_group + group_idx, 0, sizeof last_group[group_idx]);
 	}
-      if (TARGET_B_STEP && INSN_P (insn))
+      else
 	errata_emit_nops (insn);
     }
 }

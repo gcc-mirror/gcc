@@ -94,6 +94,30 @@ get_pending_sizes ()
   return chain;
 }
 
+/* Return non-zero if EXPR is present on the pending sizes list.  */
+
+int
+is_pending_size (expr)
+     tree expr;
+{
+  tree t;
+
+  for (t = pending_sizes; t; t = TREE_CHAIN (t))
+    if (TREE_VALUE (t) == expr)
+      return 1;
+  return 0;
+}
+
+/* Add EXPR to the pending sizes list.  */
+
+void
+put_pending_size (expr)
+     tree expr;
+{
+  if (TREE_CODE (expr) == SAVE_EXPR)
+    pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
+}
+
 /* Put a chain of objects into the pending sizes list, which must be
    empty.  */
 
@@ -153,8 +177,8 @@ variable_size (size)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  */
     ;
-  else if (TREE_CODE (size) == SAVE_EXPR)
-    pending_sizes = tree_cons (NULL_TREE, size, pending_sizes);
+  else
+    put_pending_size (size);
 
   return size;
 }
