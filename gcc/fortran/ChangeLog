@@ -3,6 +3,13 @@
 	* trans-types.c (gfc_return_by_reference): Remove superfluous
 	assertion.
 
+	* intrinsic.h (gfc_resolve_getcwd): Update prototype.
+	* iresolve.c (gfc_resolve_getcwd): Add second argument to function.
+
+	PR fortran/17615
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Look at resolved
+	function to determine return type.
+	
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* trans-decl.c (build_entry_thunks): Finalize the function; do not lower

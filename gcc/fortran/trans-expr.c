@@ -2007,8 +2007,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
      functions.  */
   gcc_assert (expr2->value.function.isym
-	  || (gfc_return_by_reference (expr2->symtree->n.sym)
-	      && expr2->symtree->n.sym->result->attr.dimension));
+	      || (gfc_return_by_reference (expr2->value.function.esym)
+	      && expr2->value.function.esym->result->attr.dimension));
 
   ss = gfc_walk_expr (expr1);
   gcc_assert (ss != gfc_ss_terminator);
