@@ -2015,6 +2015,14 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		  if (replacement->new == 0)
 		    replacement->new = gen_reg_rtx (GET_MODE (var));
 		  SUBREG_REG (tem) = replacement->new;
+
+		  /* The following code works only if we have a MEM, so we
+		     need to handle the subreg here.  We directly substitute
+		     it assuming that a subreg must be OK here.  We already
+		     scheduled a replacement to copy the mem into the
+		     subreg.  */
+		  XEXP (x, 0) = tem;
+		  return;
 		}
 	      else
 		tem = fixup_memory_subreg (tem, insn, 0);
