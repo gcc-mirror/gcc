@@ -633,7 +633,7 @@ fi
 
 if test "${srcdir}" = "."; then
   if test "${with_target_subdir}" != "."; then
-    libffi_basedir="${with_multisrctop}.."
+    libffi_basedir="${with_multisrctop}../"
   else
     libffi_basedir="${with_multisrctop}"
   fi
@@ -4094,7 +4094,7 @@ test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 
 if test -n "$CONFIG_FILES"; then
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${srcdir}/${libffi_basedir}/../config-ml.in
+   ac_file=Makefile . ${srcdir}/${libffi_basedir}../config-ml.in
 fi
 
 exit 0
