@@ -1,5 +1,5 @@
-/* List implentation of a partition of consecutive integers.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* List implementation of a partition of consecutive integers.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
    This file is part of GNU CC.

@@ -1,3 +1,7 @@
+2001-05-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* partition.h: Fix misspelling of `implementation'.
+
 2001-05-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h (NULL_PTR): Delete.
