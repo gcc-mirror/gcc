@@ -5186,6 +5186,7 @@ instantiate_class_template (type)
     {
       tree r = tsubst (t, args, /*complain=*/1, NULL_TREE);
       set_current_access_from_decl (r);
+      grok_special_member_properties (r);
       finish_member_declaration (r);
     }
 
@@ -5895,10 +5896,10 @@ tsubst_decl (t, args, type)
 	       If it isn't, that'll be handled by
 	       clone_constructors_and_destructors.  */
 	    if (PRIMARY_TEMPLATE_P (gen_tmpl))
-	      clone_function_decl(r, /*update_method_vec_p=*/0);
+	      clone_function_decl (r, /*update_method_vec_p=*/0);
 	  }
 	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
-	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
+	  grok_op_properties (r, DECL_FRIEND_P (r));
       }
       break;
 

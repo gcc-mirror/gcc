@@ -1645,6 +1645,9 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	  SET_DECL_RTL (value, NULL_RTX);
 	  SET_DECL_ASSEMBLER_NAME (value, get_identifier (asmspec));
 	}
+      if (!DECL_FRIEND_P (value))
+	grok_special_member_properties (value);
+      
       cp_finish_decl (value, init, asmspec_tree, flags);
 
       /* Pass friends back this way.  */
@@ -1762,28 +1765,6 @@ grokoptypename (declspecs, declarator)
 
 */
 
-int
-copy_assignment_arg_p (parmtype, virtualp)
-     tree parmtype;
-     int virtualp ATTRIBUTE_UNUSED;
-{
-  if (current_class_type == NULL_TREE)
-    return 0;
-
-  if (TREE_CODE (parmtype) == REFERENCE_TYPE)
-    parmtype = TREE_TYPE (parmtype);
-
-  if ((TYPE_MAIN_VARIANT (parmtype) == current_class_type)
-#if 0
-      /* Non-standard hack to support old Booch components.  */
-      || (! virtualp && DERIVED_FROM_P (parmtype, current_class_type))
-#endif
-      )
-    return 1;
-
-  return 0;
-}
-
 static void
 grok_function_init (decl, init)
      tree decl;
@@ -1796,17 +1777,7 @@ grok_function_init (decl, init)
   if (TREE_CODE (type) == FUNCTION_TYPE)
     cp_error ("initializer specified for non-member function `%D'", decl);
   else if (integer_zerop (init))
-    {
-      DECL_PURE_VIRTUAL_P (decl) = 1;
-      if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
-	{
-	  tree parmtype
-	    = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl))));
-
-	  if (copy_assignment_arg_p (parmtype, 1))
-	    TYPE_HAS_ABSTRACT_ASSIGN_REF (current_class_type) = 1;
-	}
-    }
+    DECL_PURE_VIRTUAL_P (decl) = 1;
   else
     cp_error ("invalid initializer for virtual method `%D'", decl);
 }

@@ -1,3 +1,29 @@
+2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/87
+	* cp-tree.h (DECL_COPY_CONSTRUCTOR_P): Use copy_fn_p.
+	(copy_args_p): Rename to ...
+	(copy_fn_p): ... here.
+	(grok_special_member_properties): New function.
+	(grok_op_properties): Lose VIRTUALP parameter.
+	(copy_assignment_arg_p): Remove.
+	* call.c (build_over_call): Use copy_fn_p.
+	* decl.c (grokfndecl): Reformat. Adjust call to
+	grok_op_properties.
+	(copy_args_p): Rename to ...
+	(copy_fn_p): ... here. Reject template functions. Check for pass
+	by value.
+	(grok_special_member_properties): Remember special functions.
+	(grok_ctor_properties): Don't remember them here, just check.
+	(grok_op_properties): Likewise.
+	(start_method): Call grok_special_member_properties.
+	* decl2.c (grokfield): Likewise.
+	(copy_assignment_arg_p): Remove.
+	(grok_function_init): Don't remember abstract assignment here.
+	* pt.c (instantiate_class_template): Call
+	grok_special_member_properties.
+	(tsubst_decl): Adjust grok_op_properties call.
+
 2001-12-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * lex.c (rid_to_yy): Add RID_CHOOSE_EXPR and
