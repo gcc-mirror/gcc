@@ -80,10 +80,9 @@ static java::lang::OutOfMemoryError *no_memory;
 // functions are changed to take a size_t argument instead of jint.
 #define MAX_OBJECT_SIZE ((1<<31) - 1)
 
-static const char *no_properties[] = { NULL };
-
 // Properties set at compile time.
-const char **_Jv_Compiler_Properties = no_properties;
+const char **_Jv_Compiler_Properties = NULL;
+int _Jv_Properties_Count = 0;
 
 // The JAR file to add to the beginning of java.class.path.
 const char *_Jv_Jar_Class_Path;
@@ -909,15 +908,180 @@ namespace gcj
   bool runtimeInitialized = false;
 }
 
+static jint
+parse_verbose_args (char* option_string,
+		    bool ignore_unrecognized)
+{
+  size_t len = sizeof ("-verbose");
+
+  if (strlen (option_string) < len)
+    return -1;
+
+  if (option_string[len] == ':'
+      && option_string[len + 1] != '\0')
+    {
+      char* verbose_args = option_string + len + 1;
+      size_t last = 0;
+
+      do
+	{
+	  if (! strncmp (verbose_args,
+			 "gc", (last = sizeof ("gc")) - 1)
+	      && (verbose_args[last] == '\0'
+		  || verbose_args[last] == ','))
+	    {
+	      // FIXME: we should add functions to boehm-gc that
+	      // toggle GC_print_stats, GC_PRINT_ADDRESS_MAP and
+	      // GC_print_back_height.
+
+	    }
+	  else if (! strncmp (verbose_args,
+			      "class",
+			      (last = sizeof ("class")) - 1)
+		   && (verbose_args[last] == '\0'
+		       || verbose_args[last] == ','))
+	    {
+	      gcj::verbose_class_flag = true;
+	    }
+	  else if (! strncmp (verbose_args, "jni",
+			      (last = sizeof ("jni")) - 1)
+		   && (verbose_args[last] == '\0'
+		       || verbose_args[last] == ','))
+	    {
+	      // FIXME: enable JNI messages.
+	    }
+	  else if (ignore_unrecognized
+		   && verbose_args[0] == 'X')
+	    {
+	      // ignore unrecognized non-standard verbose option
+	      last = 0;
+	      while (verbose_args[last] != '\0'
+		     && verbose_args[last++] != ',');
+	    }
+
+	  if (strlen (verbose_args) >= last)
+	    {
+	      if (verbose_args[last] == ',')
+		{
+		  if (verbose_args[last + 1] == '\0')
+		    // trailing comma
+		    return -1;
+		  else
+		    {
+		      verbose_args = verbose_args + last + 1;
+		      last = 0;
+		    }
+		}
+	      // here verbose_args[last] is either '\0' or
+	      // the first character in the next verbose
+	      // argument.
+	    }
+	  else
+	    // partial option
+	    return -1;
+
+	  // verbose_args[last] will be '\0' here if we're
+	  // done.
+	}
+      while (verbose_args[last] != '\0');
+    }
+  else if (option_string[len] == 'g'
+	   && option_string[len + 1] == 'c'
+	   && option_string[len + 2] == '\0')
+    {
+      // FIXME: we should add functions to boehm-gc that
+      // toggle GC_print_stats, GC_PRINT_ADDRESS_MAP and
+      // GC_print_back_height.
+      return 0;
+    }
+  else if (option_string[len] == '\0')
+    {
+      gcj::verbose_class_flag = true;
+      return 0;
+    }
+  else
+    {
+      // unrecognized option beginning with -verbose
+      return -1;
+    }
+  return 0;
+}
+
+static jint
+parse_init_args (JvVMInitArgs* vm_args)
+{
+  // if _Jv_Compiler_Properties is non-NULL then it needs to be
+  // re-allocated dynamically.
+  if (_Jv_Compiler_Properties)
+    {
+      const char** props = _Jv_Compiler_Properties;
+      _Jv_Compiler_Properties = NULL;
+
+      for (int i = 0; props[i]; i++)
+	{
+	  _Jv_Compiler_Properties = (const char**) _Jv_Realloc
+	    (_Jv_Compiler_Properties,
+	     (_Jv_Properties_Count + 1) * sizeof (const char*));
+	  _Jv_Compiler_Properties[_Jv_Properties_Count++] = props[i];
+	}
+    }
+
+  if (vm_args == NULL)
+    return 0;
+
+  for (int i = 0; i < vm_args->nOptions; ++i)
+    {
+      char* option_string = vm_args->options[i].optionString;
+      if (! strcmp (option_string, "vfprintf")
+	  || ! strcmp (option_string, "exit")
+	  || ! strcmp (option_string, "abort"))
+	{
+	  // FIXME: we are required to recognize these, but for
+	  // now we don't handle them in any way.
+	  continue;
+	}
+      else if (! strncmp (option_string,
+			  "-verbose", sizeof ("-verbose") - 1))
+	{
+	  jint result = parse_verbose_args (option_string,
+					    vm_args->ignoreUnrecognized);
+	  if (result < 0)
+	    return result;
+	}
+      else if (! strncmp (option_string, "-D", 2))
+	{
+	  _Jv_Compiler_Properties = (const char**) _Jv_Realloc
+	    (_Jv_Compiler_Properties,
+	     (_Jv_Properties_Count + 1) * sizeof (char*));
+
+	  _Jv_Compiler_Properties[_Jv_Properties_Count++] =
+	    strdup (option_string + 2);
+
+	  continue;
+	}
+      else if (vm_args->ignoreUnrecognized)
+	{
+	  if (option_string[0] == '_'
+	      || ! strncmp (option_string, "-X", 2))
+	    continue;
+	}
+    }
+  return 0;
+}
+
 jint
-_Jv_CreateJavaVM (void* /*vm_args*/)
+_Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 {
   using namespace gcj;
-  
+
   if (runtimeInitialized)
     return -1;
 
   runtimeInitialized = true;
+
+  jint result = parse_init_args (vm_args);
+  if (result < 0)
+    return -1;
 
   PROCESS_GCJ_PROPERTIES;
 
@@ -1016,7 +1180,12 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       // is initialized.
       if (is_jar)
 	_Jv_Jar_Class_Path = strdup (name);
-      _Jv_CreateJavaVM (NULL);
+
+      if (_Jv_CreateJavaVM (NULL) < 0)
+	{
+	  fprintf (stderr, "libgcj: couldn't create virtual machine\n");
+	  exit (1);
+	}
 
       // Get the Runtime here.  We want to initialize it before searching
       // for `main'; that way it will be set up if `main' is a JNI method.

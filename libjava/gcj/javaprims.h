@@ -487,7 +487,30 @@ extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
 extern "C" jint _Jv_hashUtf8String (char*, int);
 
-extern jint _Jv_CreateJavaVM (void* /*vm_args*/);
+struct _Jv_VMOption
+{
+  // a VM initialization option
+  char* optionString;
+  // extra information associated with this option
+  void* extraInfo;
+};
+
+struct _Jv_VMInitArgs
+{
+  // for compatibility with JavaVMInitArgs
+  jint version;
+
+  // number of VM initialization options
+  jint nOptions;
+
+  // an array of VM initialization options
+  struct _Jv_VMOption* options;
+
+  // true if the option parser should ignore unrecognized options
+  jboolean ignoreUnrecognized;
+};
+
+extern jint _Jv_CreateJavaVM (struct _Jv_VMInitArgs*);
 
 void
 _Jv_ThreadRun (java::lang::Thread* thread);

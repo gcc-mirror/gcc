@@ -181,6 +181,85 @@ proc gcj_jni_test_one {file} {
   return 1
 }
 
+# Compile a single C file and produce a binary.  OPTIONS is a list of
+# options to pass to the compiler.  Returns 0 on failure, 1 on
+# success.
+proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
+  global srcdir
+  global host_triplet
+  verbose "options: $options"
+  set options_cxx $options
+  set options ""
+
+  set filename [file tail $file]
+  set name [file rootname $filename]
+
+  # Find jni.h.
+  lappend options "additional_flags=-I$srcdir/../include"
+
+  # Append C++ options
+  lappend options "additional_flags=$options_cxx"
+
+  set x [libjava_prune_warnings \
+	   [target_compile $file $name executable $options]]
+  if {$x != ""} {
+    verbose "target_compile failed: $x" 2
+    fail "$filename compilation"
+    return 0
+  }
+
+  pass "$filename compilation"
+  return 1
+}
+
+# Do all the work for a single invocation API test.  Return 0 on
+# failure.
+proc gcj_jni_invocation_test_one {file} {
+  global runtests
+  global host_triplet
+  global INTERPRETER
+
+  # The base name.  We use it for several purposes.
+  set main [file rootname [file tail $file]]
+  if {! [runtest_file_p $runtests $main]} {
+    # Simply skip it.
+    return 1
+  }
+
+  if {! [bytecompile_file $file [pwd]]} {
+    fail "bytecompile $file"
+    # FIXME - should use `untested' on all remaining tests.
+    # But that is hard.
+    return 0
+  }
+  pass "bytecompile $file"
+
+  set cfile [file rootname $file].c
+  set cxxflags "-lgcj"
+
+  if {! [gcj_jni_invocation_compile_c_to_binary $cfile $cxxflags]} {
+    # FIXME
+    return 0
+  }
+
+  set resultfile [file rootname $file].out
+
+  if {! [gcj_invoke $main $resultfile ""]} {
+    # FIXME
+    return 0
+  }
+
+  # We purposely ignore errors here; we still want to run the other
+  # appropriate tests.
+  set errname [file rootname [file tail $file]]
+
+  # When we succeed we remove all our clutter.
+  eval gcj_cleanup [glob -nocomplain -- ${main}.*] \
+    [list $main]
+
+  return 1
+}
+
 # Run the JNI tests.
 proc gcj_jni_run {} {
   global srcdir subdir
@@ -192,6 +271,13 @@ proc gcj_jni_run {} {
 
     foreach x $srcfiles {
       gcj_jni_test_one $x
+    }
+
+    # Run JNI invocation API tests
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/invocation/*.java] } srcfiles
+
+    foreach x $srcfiles {
+      gcj_jni_invocation_test_one $x
     }
   } else {
     verbose "JNI tests not run in cross-compilation environment"

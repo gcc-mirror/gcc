@@ -1,3 +1,33 @@
+2005-02-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/16923
+	* jni.cc (JNI_CreateJavaVM): Check JNI version.  Cast args to
+	JvVMInitArgs.  Pass args to _Jv_CreateJavaVM and check return
+	value.  Move argument parsing code to prims.cc.
+	* prims.cc (no_properties): Remove.
+	(_Jv_Compiler_Properties): Initialize to NULL.
+	(_Jv_Properties_Count): Initialize to 0.
+	(parse_verbose_args): New function.
+	(parse_init_args): New function.
+	(_Jv_CreateJavaVM): Call parse_init_args.
+	(_Jv_RunMain): Check return value of _Jv_CreateJavaVM.
+	* gcj/cni.h (JvVMOption): New struct.
+	(JvVMInitArgs): Likewise.
+	(JvCreateJavaVM): Declare vm_args as JvVMInitArgs* rather than
+	void*.
+	* libjava/gcj/javaprims.h (_Jv_VMOption): New struct.
+	(_Jv_VMInitArgs): Likewise.
+	* include/java-props.h (_Jv_Properties_Count): Declare.
+	* java/lang/natRuntime.cc (insertSystemProperties): Use
+	_Jv_Properties_Count in for loop exit condition.
+	* testsuite/libjava.jni/jni.exp
+	(gcj_invocation_compile_c_to_binary): New procedure.
+	(gcj_invocation_test_one): Likewise.
+	(gcj_jni_run): Run JNI invocation API tests.
+	* testsuite/libjava.jni/invocation/PR16923.c,
+	testsuite/libjava.jni/invocation/PR16923.java,
+	testsuite/libjava.jni/invocation/PR16923.out: New test.
+
 2005-02-23  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am: Added new file gnu/java/nio/ChannelReader.java.

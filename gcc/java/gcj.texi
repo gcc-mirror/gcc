@@ -2110,7 +2110,8 @@ CNI permits C++ applications to make calls into Java classes, in addition to
 allowing Java code to call into C++. Several functions, known as the 
 @dfn{invocation API}, are provided to support this.
 
-@deftypefun jint JvCreateJavaVM (void* @var{vm_args})
+@deftypefun jint JvCreateJavaVM (JvVMInitArgs* @var{vm_args})
+
 Initializes the Java runtime. This function performs essential initialization
 of the threads interface, garbage collector, exception handling and other key
 aspects of the runtime. It must be called once by an application with
@@ -2119,11 +2120,40 @@ It is safe, but not recommended, to call @code{JvCreateJavaVM()} more than
 once provided it is only called from a single thread.
 The @var{vmargs} parameter can be used to specify initialization parameters 
 for the Java runtime. It may be @code{NULL}.
-This function returns @code{0} upon success, or @code{-1} if the runtime is
-already initialized.
 
-@emph{Note:} In GCJ 3.1, the @code{vm_args} parameter is ignored. It may be 
-used in a future release.
+JvVMInitArgs represents a list of virtual machine initialization
+arguments. @code{JvCreateJavaVM()} ignores the version field.
+
+@example
+typedef struct JvVMOption
+@{
+  // a VM initialization option
+  char* optionString;
+  // extra information associated with this option
+  void* extraInfo;
+@} JvVMOption;
+
+typedef struct JvVMInitArgs
+@{
+  // for compatibility with JavaVMInitArgs
+  jint version;
+
+  // number of VM initialization options
+  jint nOptions;
+
+  // an array of VM initialization options
+  JvVMOption* options;
+
+  // true if the option parser should ignore unrecognized options
+  jboolean ignoreUnrecognized;
+@} JvVMInitArgs;
+@end example
+
+@code{JvCreateJavaVM()} returns @code{0} upon success, or @code{-1} if
+the runtime is already initialized.
+
+@emph{Note:} In GCJ 3.1, the @code{vm_args} parameter is ignored. It
+is recognized and used as of release 4.0.
 @end deftypefun
 
 @deftypefun java::lang::Thread* JvAttachCurrentThread (jstring @var{name}, java::lang::ThreadGroup* @var{group})
