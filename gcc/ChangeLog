@@ -1,5 +1,16 @@
 2002-01-09  Kazu Hirata  <kazu@hxi.com>
 
+	* read-rtl.c: Fix formatting.
+	* real.c: Likewise.
+	* regclass.c: Likewise.
+	* regrename.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* reload.c: Likewise.
+	* rtl.c: Likewise.
+
+2002-01-09  Kazu Hirata  <kazu@hxi.com>
+
 	* rtlanal.c (find_reg_fusage): Use XEXP instead of SET_DEST
 	to extract items in the expr_list chain.
 

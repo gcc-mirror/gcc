@@ -1,5 +1,5 @@
 /* RTL reader for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1991, 1994, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1987, 1988, 1991, 1994, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -396,7 +396,7 @@ atoll(p)
       if (new_wide < tmp_wide)
 	{
 	  /* Return INT_MAX equiv on overflow.  */
-	  tmp_wide = (~(unsigned HOST_WIDE_INT)0) >> 1;
+	  tmp_wide = (~(unsigned HOST_WIDE_INT) 0) >> 1;
 	  break;
 	}
       tmp_wide = new_wide;

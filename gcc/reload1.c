@@ -1,6 +1,6 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4835,7 +4835,7 @@ reload_reg_free_for_value_p (start_regno, regno, opnum, type, value, out,
       rtx reg = rld[i].reg_rtx;
       if (reg && GET_CODE (reg) == REG
 	  && ((unsigned) regno - true_regnum (reg)
-	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - (unsigned)1)
+	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - (unsigned) 1)
 	  && i != reloadnum)
 	{
 	  rtx other_input = rld[i].in;

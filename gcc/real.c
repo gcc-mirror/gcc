@@ -1,7 +1,7 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GCC.
@@ -272,7 +272,7 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 	do {							\
 	  memcpy ((r), (e), 2*NE);				\
 	  if (2*NE < sizeof(*r))				\
-	    memset ((char *)(r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
+	    memset ((char *) (r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
 	} while (0)
 # else /* no XFmode */
 #  if MAX_LONG_DOUBLE_TYPE_SIZE == 128
@@ -284,7 +284,7 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 	do {							\
 	  memcpy ((r), (e), 2*NE);				\
 	  if (2*NE < sizeof(*r))				\
-	    memset ((char *)(r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
+	    memset ((char *) (r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
 	} while (0)
 #else
 #define NE 6
@@ -2423,7 +2423,7 @@ edivm (den, num)
       tnum = (((unsigned EMULONG) num[M]) << 16) + num[M+1];
 
       /* Do not execute the divide instruction if it will overflow.  */
-      if ((tdenm * (unsigned long)0xffff) < tnum)
+      if ((tdenm * (unsigned long) 0xffff) < tnum)
 	tquot = 0xffff;
       else
 	tquot = tnum / tdenm;

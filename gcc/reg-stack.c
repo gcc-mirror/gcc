@@ -1,6 +1,6 @@
 /* Register to Stack convert for GNU compiler.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -226,7 +226,7 @@ static rtx
   FP_mode_reg[LAST_STACK_REG+1-FIRST_STACK_REG][(int) MAX_MACHINE_MODE];
 
 #define FP_MODE_REG(regno,mode)	\
-  (FP_mode_reg[(regno)-FIRST_STACK_REG][(int)(mode)])
+  (FP_mode_reg[(regno)-FIRST_STACK_REG][(int) (mode)])
 
 /* Used to initialize uninitialized registers.  */
 static rtx nan;
@@ -1438,7 +1438,7 @@ subst_stack_regs_pat (insn, regstack, pat)
         }
       /* ??? Uninitialized USE should not happen.  */
       else if (get_hard_regnum (regstack, *src) == -1)
-	abort();
+	abort ();
       break;
 
     case CLOBBER:
