@@ -5229,16 +5229,18 @@ instantiate_type (lhstype, rhs, complain)
 	tree elem, baselink, name = NULL_TREE;
 
 	if (TREE_PURPOSE (rhs) == error_mark_node)
-	{
-	  /* Make sure we don't drop the non-local flag, as the old code
-	     would rely on it. */
-	  int nl = TREE_NONLOCAL_FLAG (rhs);
-	  /* We don't need the type of this node. */
-	  rhs = TREE_VALUE (rhs);
-	  my_friendly_assert (TREE_NONLOCAL_FLAG (rhs) == nl, 980331);
-	}
+	  {
+	    /* Make sure we don't drop the non-local flag, as the old code
+	       would rely on it. */
+	    int nl = TREE_NONLOCAL_FLAG (rhs);
+	    /* We don't need the type of this node. */
+	    rhs = TREE_VALUE (rhs);
+	    my_friendly_assert (TREE_NONLOCAL_FLAG (rhs) == nl, 980331);
+	  }
+
 	/* Now we should have a baselink. */
-	my_friendly_assert (TREE_CODE (TREE_PURPOSE (rhs)) == TREE_VEC, 980331);
+	my_friendly_assert (TREE_CODE (TREE_PURPOSE (rhs)) == TREE_VEC,
+			    980331);
 	/* First look for an exact match.  Search member functions.
 	   May have to undo what `default_conversion' might do to
 	   lhstype.  */
@@ -5247,20 +5249,10 @@ instantiate_type (lhstype, rhs, complain)
 	if (lhstype == error_mark_node)
 	  return lhstype;
 
-	if (TREE_NONLOCAL_FLAG (rhs))
-	  {
-	    my_friendly_abort (980401);
-	    /* Got to get it as a baselink.  */
-	    rhs = lookup_fnfields (TYPE_BINFO (current_class_type),
-				   DECL_NAME (OVL_FUNCTION (rhs)), 0);
-	  }
-	else
-	  {
-	    my_friendly_assert (TREE_CHAIN (rhs) == NULL_TREE, 181);
-	    my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL
-				|| TREE_CODE (TREE_VALUE (rhs)) == OVERLOAD,
-				182);
-	  }
+	my_friendly_assert (TREE_CHAIN (rhs) == NULL_TREE, 181);
+	my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL
+			    || TREE_CODE (TREE_VALUE (rhs)) == OVERLOAD,
+			    182);
 
 	for (baselink = rhs; baselink;
 	     baselink = next_baselink (baselink))
