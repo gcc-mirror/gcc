@@ -1948,8 +1948,6 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 /* REGNUM never really appearing in the INSN stream.  */
 #define INVALID_REGNUM			(~(unsigned int) 0)
 
-extern rtx find_next_ref		PARAMS ((rtx, rtx));
-
 extern rtx output_constant_def		PARAMS ((tree, int));
 
 /* Called from integrate.c when a deferred constant is inlined.  */

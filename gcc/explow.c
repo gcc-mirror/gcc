@@ -241,51 +241,6 @@ eliminate_constant_term (x, constptr)
   return x;
 }
 
-/* Returns the insn that next references REG after INSN, or 0
-   if REG is clobbered before next referenced or we cannot find
-   an insn that references REG in a straight-line piece of code.  */
-
-rtx
-find_next_ref (reg, insn)
-     rtx reg;
-     rtx insn;
-{
-  rtx next;
-
-  for (insn = NEXT_INSN (insn); insn; insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == NOTE)
-	continue;
-      if (GET_CODE (insn) == CODE_LABEL
-	  || GET_CODE (insn) == BARRIER)
-	return 0;
-      if (GET_CODE (insn) == INSN
-	  || GET_CODE (insn) == JUMP_INSN
-	  || GET_CODE (insn) == CALL_INSN)
-	{
-	  if (reg_set_p (reg, insn))
-	    return 0;
-	  if (reg_mentioned_p (reg, PATTERN (insn)))
-	    return insn;
-	  if (GET_CODE (insn) == JUMP_INSN)
-	    {
-	      if (any_uncondjump_p (insn))
-		next = JUMP_LABEL (insn);
-	      else
-		return 0;
-	    }
-	  if (GET_CODE (insn) == CALL_INSN
-	      && REGNO (reg) < FIRST_PSEUDO_REGISTER
-	      && call_used_regs[REGNO (reg)])
-	    return 0;
-	}
-      else
-	abort ();
-    }
-  return 0;
-}
-
 /* Return an rtx for the size in bytes of the value of EXP.  */
 
 rtx
