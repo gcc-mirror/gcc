@@ -1,5 +1,11 @@
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
+	PR target/19028
+	* config/i386/i386.md (sse compare splitter): Test for SF and DFmode
+	explicitly instead of using VALID_SSE_REG_MODE.
+
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
 	PR target/19005
 	* config/i386/i386.md (swaphi_1): Swap with swaphi_2, allow with
 	optimize_size.
@@ -22,14 +28,14 @@
 
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
-        PR target/19010
-        * config/i386/i386.c (gen_reg_or_parallel): New.
-        (function_arg): Use it.
-        (ix86_hard_regno_mode_ok): Test SSE1 and SSE2 separately,
-        MMX and 3DNOW separately.
-        (ix86_rtx_costs): Simplify FLOAT_EXTEND case.
-        * config/i386/i386.h (VALID_SSE2_REG_MODE): Move SSE2 cases from ...
-        (VALID_SSE_REG_MODE): ... here.
+	PR target/19010
+	* config/i386/i386.c (gen_reg_or_parallel): New.
+	(function_arg): Use it.
+	(ix86_hard_regno_mode_ok): Test SSE1 and SSE2 separately,
+	MMX and 3DNOW separately.
+	(ix86_rtx_costs): Simplify FLOAT_EXTEND case.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Move SSE2 cases from ...
+	(VALID_SSE_REG_MODE): ... here.
 	* config/i386/i386.md (movv4sf_internal): Validate one MEM.
 	(movv4si_internal): Likewise.
 	(movv2di_internal): Likewise.  Enable for SSE2 only.
@@ -137,18 +143,18 @@
 
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
-        PR rtl-opt/17186
-        * reg-stack.c (move_for_stack_reg): Handle source register not
+	PR rtl-opt/17186
+	* reg-stack.c (move_for_stack_reg): Handle source register not
 	live with a nan.
 
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
-        PR target/18932
-        * config/i386/i386.md (all splits and peepholes): Use flags_reg_operand
-        and compare_operator to propagate the input CC mode to the output.
+	PR target/18932
+	* config/i386/i386.md (all splits and peepholes): Use flags_reg_operand
+	and compare_operator to propagate the input CC mode to the output.
 	* config/i386/i386.c (compare_operator): New.
 	* config/i386/i386.h (PREDICATE_CODES): Add it.
-        * config/i386/i386-protos.h: Update.
+	* config/i386/i386-protos.h: Update.
 
 2004-12-09  Richard Henderson  <rth@redhat.com>
 
