@@ -42,7 +42,6 @@ static void expand_end_java_handler PARAMS ((struct eh_range *));
 static struct eh_range *find_handler_in_range PARAMS ((int, struct eh_range *,
 						      struct eh_range *));
 static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
-static void check_start_handlers PARAMS ((struct eh_range *, int));
 
 extern struct obstack permanent_obstack;
 
@@ -61,6 +60,14 @@ static struct eh_range *cache_next_child;
 /* A dummy range that represents the entire method. */
 
 struct eh_range whole_range;
+
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+int binding_depth;
+int is_class_level;
+int current_pc;
+extern void indent ();
+
+#endif
 
 /* Search for the most specific eh_range containing PC.
    Assume PC is within RANGE.
@@ -278,6 +285,7 @@ add_handler (start_pc, end_pc, handler, type)
   h->outer = NULL;
   h->handlers = build_tree_list (type, handler);
   h->next_sibling = NULL;
+  h->expanded = 0;
 
   if (prev == NULL)
     whole_range.first_child = h;
@@ -289,8 +297,14 @@ add_handler (start_pc, end_pc, handler, type)
 /* if there are any handlers for this range, issue start of region */
 static void
 expand_start_java_handler (range)
-  struct eh_range *range ATTRIBUTE_UNUSED;
+  struct eh_range *range;
 {
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  indent ();
+  fprintf (stderr, "expand start handler pc %d --> %d\n",
+	   current_pc, range->end_pc);
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
+  range->expanded = 1;
   push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_eh_region_start ();
   pop_obstacks ();
@@ -327,8 +341,9 @@ prepare_eh_table_type (type)
 static void
 expand_end_java_handler (range)
      struct eh_range *range;
-{
+{  
   tree handler = range->handlers;
+  force_poplevels (range->start_pc);
   push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_start_all_catch ();
   pop_obstacks ();
@@ -341,6 +356,11 @@ expand_end_java_handler (range)
       end_catch_handler ();
     }
   expand_end_all_catch ();
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  indent ();
+  fprintf (stderr, "expand end handler pc %d <-- %d\n",
+	   current_pc, range->start_pc);
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 }
 
 /* Recursive helper routine for maybe_start_handlers. */
@@ -353,35 +373,48 @@ check_start_handlers (range, pc)
   if (range != NULL_EH_RANGE && range->start_pc == pc)
     {
       check_start_handlers (range->outer, pc);
-      expand_start_java_handler (range);
+      if (!range->expanded)
+	expand_start_java_handler (range);
     }
 }
 
-struct eh_range *current_range;
 
-/* Emit any start-of-try-range start at PC. */
+static struct eh_range *current_range;
+
+/* Emit any start-of-try-range starting at start_pc and ending after
+   end_pc. */
 
 void
-maybe_start_try (pc)
-     int pc;
+maybe_start_try (start_pc, end_pc)
+     int start_pc;
+     int end_pc;
 {
+  struct eh_range *range;
   if (! doing_eh (1))
     return;
 
-  current_range = find_handler (pc);
-  check_start_handlers (current_range, pc);
+  range = find_handler (start_pc);
+  while (range != NULL_EH_RANGE && range->start_pc == start_pc
+	 && range->end_pc < end_pc)
+    range = range->outer;
+	 
+  current_range = range;
+  check_start_handlers (range, start_pc, end_pc);
 }
 
-/* Emit any end-of-try-range end at PC. */
+/* Emit any end-of-try-range ending at end_pc and starting before
+   start_pc. */
 
 void
-maybe_end_try (pc)
-     int pc;
+maybe_end_try (start_pc, end_pc)
+     int start_pc;
+     int end_pc;
 {
   if (! doing_eh (1))
     return;
 
-  while (current_range != NULL_EH_RANGE && current_range->end_pc <= pc)
+  while (current_range != NULL_EH_RANGE && current_range->end_pc <= end_pc
+	 && current_range->start_pc >= start_pc)
     {
       expand_end_java_handler (current_range);
       current_range = current_range->outer;
