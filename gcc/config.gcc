@@ -140,10 +140,6 @@
 #  build_install_headers_dir
 #			Target to use when installing header files.
 #
-#  host_truncate_target
-#			Non-empty if the target name should be truncated
-#			on this host, due to filename length issues.
-#
 #  gdb_needs_out_file_path
 #			Set to yes if gdb needs a dir command with
 #			`dirname $out_file`.
@@ -186,10 +182,6 @@
 #			is installed, when this system is a build system,
 #			for build_install_headers_dir.
 #
-#  truncate_target	Non-empty if the target name should be truncated
-#			when this system is a host, due to filename length
-#			issues.  For host_truncate_target.
-#
 #  exeext		The suffix for executables on this system.
 #
 #  gnu_ld		Set to yes or no depending on whether the target
@@ -216,8 +208,6 @@ use_collect2=
 target_cpu_default=
 # Set this to control how the header file directory is installed.
 install_headers_dir=install-headers-tar
-# Set this if directory names should be truncated to 14 characters.
-truncate_target=
 # Set this if gdb needs a dir command with `dirname $out_file`
 gdb_needs_out_file_path=
 # Set this if the build machine requires executables to have a
@@ -2643,7 +2633,6 @@ else
 		fi
 		host_xm_defines=$xm_defines
 		host_xmake_file="$xmake_file"
-		host_truncate_target=$truncate_target
 		host_extra_gcc_objs=$extra_gcc_objs
 		host_extra_objs=$extra_host_objs
 		host_exeext=$exeext
