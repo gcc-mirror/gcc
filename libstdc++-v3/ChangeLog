@@ -1,3 +1,26 @@
+2002-09-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (sources): Edit.
+	(target_sources): New.
+	(target_sources_extra): New.
+	* src/Makefile.in: Regenerate.
+	* acinclude.m4: Set CCODECVT_CC. 
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/locale.cc: Move ctype definitions...
+	* src/ctype.cc: ...here. New file. 
+	* src/locale.cc: Move codecvt definitions...
+	* src/codecvt.cc: ...here. 	
+	* config/generic/codecvt_members.cc: ...and here. 	
+	* config/gnu/codecvt_members.cc: ...and here. 		
+	* include/bits/codecvt.h: Tweak.
+	* include/bits/locale_facets: Tweak.
+
+	* src/bitset.cc: Correct license text.
+	* src/concept-inst.cc: Same.
+	* src/strstream.cc: Same.
+	* src/vterminate.cc: Same.	
+
 2002-09-10  Gabriel Dos Reis  <gdr@soliton.integrable-solutions.net>
 
 	* include/bits/stl_vector.h (vector<>): Don't use a name with

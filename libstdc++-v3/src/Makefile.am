@@ -60,12 +60,26 @@ INCLUDES = \
 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)
 
-sources = \
+# Source files linked in via configuration magic for a particular target.
+target_sources = \
+	codecvt_members.cc \
+	collate_members.cc \
+	ctype_members.cc \
+	messages_members.cc \
+	monetary_members.cc \
+	numeric_members.cc \
+	time_members.cc
+
+# Source files linked in via configuration magic for a particular
+# target, but with ad hoc naming rules.
+target_sources_extra = \
 	basic_file.cc \
+	c++locale.cc 
+
+# Sources present in the src directory.
+sources = \
 	bitset.cc \
-	c++locale.cc \
 	codecvt.cc \
-	collate.cc \
 	complex_io.cc \
 	concept-inst.cc \
 	ctype.cc \
@@ -78,13 +92,10 @@ sources = \
 	ios.cc \
 	istream-inst.cc \
 	limits.cc \
-	locale-inst.cc \
 	locale.cc \
+	locale-inst.cc \
 	localename.cc \
-	messages.cc \
 	misc-inst.cc \
-	monetary.cc \
-	numeric.cc \
 	ostream-inst.cc \
 	sstream-inst.cc \
 	stdexcept.cc \
@@ -92,11 +103,11 @@ sources = \
 	streambuf-inst.cc \
 	string-inst.cc \
 	strstream.cc \
-	time.cc \
 	valarray-inst.cc \
 	vterminate.cc \
-	wstring-inst.cc
-
+	wstring-inst.cc \
+	${target_sources} \
+	${target_sources_extra}
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
