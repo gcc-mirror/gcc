@@ -250,6 +250,22 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define SUBTARGET_CPP_SPEC      ""
 #endif
 
+#ifndef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC
+#endif
+
+#ifndef ASM_SPEC
+#define ASM_SPEC "\
+%{mbig-endian:-EB} \
+%{mcpu=*:-m%*} \
+%{march=*:-m%*} \
+%{mapcs-*:-mapcs-%*} \
+%{matpcs:-matpcs} \
+%{mapcs-float:-mfloat} \
+%{msoft-float:-mno-fpu} \
+%{mthumb-interwork:-mthumb-interwork} \
+" SUBTARGET_EXTRA_ASM_SPEC
+#endif
 
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
@@ -321,6 +337,15 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Nonzero if all call instructions should be indirect.  */
 #define ARM_FLAG_LONG_CALLS	(1 << 15)
 
+/* Set if ATPCS compliance is required.  Note there *are* some
+   incompatabilities between APCS and ATPCS.  */
+#define ARM_FLAG_ATPCS		(1 << 16)
+
+/* Set if compatability with older versions of GCC is required,
+   where struct { float a; } would be returned from a function
+   by a hidden extra argument rather than in r0.  */
+#define ARM_FLAG_BUGGY_RETURN_IN_MEMORY	(1 << 17)
+
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -338,6 +363,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_ABORT_NORETURN		(target_flags & ARM_FLAG_ABORT_NORETURN)
 #define TARGET_SINGLE_PIC_BASE		(target_flags & ARM_FLAG_SINGLE_PIC_BASE)
 #define TARGET_LONG_CALLS		(target_flags & ARM_FLAG_LONG_CALLS)
+#define TARGET_ATPCS			(target_flags & ARM_FLAG_ATPCS)
+#define TARGET_BUGGY_RETURN_IN_MEMORY	(target_flags & ARM_FLAG_BUGGY_RETURN_IN_MEMORY)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -399,6 +426,12 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"long-calls",		ARM_FLAG_LONG_CALLS,		\
      "Generate call insns as indirect calls, if necessary"},	\
   {"no-long-calls",	       -ARM_FLAG_LONG_CALLS, ""},	\
+  {"atpcs",			ARM_FLAG_ATPCS, 		\
+    "generate ATPCS compliant code, rather than APCS compliant code" }, \
+  {"no-atpcs", 		       -ARM_FLAG_ATPCS,  "" },		\
+  {"buggy-return-in-memory",	ARM_FLAG_BUGGY_RETURN_IN_MEMORY,\
+    "return struct { float a; } in memory" },			\
+  {"no-buggy-return-in-memory",-ARM_FLAG_BUGGY_RETURN_IN_MEMORY, "" }, \
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT, "" }		\
 }
@@ -1978,6 +2011,10 @@ extern int making_const_table;
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
 #define HANDLE_PRAGMA(GET, UNGET, NAME) arm_process_pragma (GET, UNGET, NAME)
+
+/* Allow short-call attribute functions to be inlined.  */
+#define FUNCTION_ATTRIBUTE_INLINABLE_P(fndecl) \
+  arm_function_attribute_inlineable_p (fndecl);
 
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
@@ -2244,10 +2281,11 @@ extern struct rtx_def * arm_compare_op1;
       int shift = 0;								\
       int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))	\
 		        ? 1 : 0);						\
-      if (mi_delta < 0) mi_delta = -mi_delta;					\
+      if (mi_delta < 0)								\
+        mi_delta = - mi_delta;							\
       while (mi_delta != 0)							\
         {									\
-          if (mi_delta & (3 << shift) == 0)					\
+          if ((mi_delta & (3 << shift)) == 0)					\
 	    shift += 2;								\
           else									\
 	    {									\

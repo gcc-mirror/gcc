@@ -1,3 +1,8 @@
+2000-03-16  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (ASM_OUTPUT_MI_THUNK): Fix compile time
+	warning.
+
 2000-03-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libgcc2.h: Move prototypes above macros with the same name.
