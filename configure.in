@@ -1835,7 +1835,7 @@ if test x${gxx_include_dir} = x; then
     gxx_include_dir='${libsubdir}/include/c++'
   else
     . ${srcdir}/config.if
-    gxx_include_dir='${prefix}/include/${libstdcxx_incdir}'
+    gxx_include_dir='${prefix}/include/'${libstdcxx_incdir}
   fi
 else
   gxx_include_dir=${gxx_include_dir}
