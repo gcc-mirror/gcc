@@ -1,3 +1,8 @@
+Sat Jul 18 14:32:43 CDT 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config.guess: (*-pc-sco3.2v5) Add detection for Pentium II.
+	(*-pc-unixware7) Add detection for Pentium II, Pentium Pro.
+
 Sat Jun 27 22:46:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Add TARGET_SUBDIR.
