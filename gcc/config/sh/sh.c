@@ -556,10 +556,16 @@ output_branch (logic, insn, operands)
   int adjusted_length;
 
   /* Undo the effects of ADJUST_INSN_LENGTH, so that we get the real
-     length.  */
-  adjusted_length = length;
-  ADJUST_INSN_LENGTH (insn, adjusted_length);
-  length -= (adjusted_length - length);
+     length.  If NEXT_INSN (PREV_INSN (insn)) != insn, then the insn
+     is inside a sequence, and ADJUST_INSN_LENGTH was not called on
+     it.  */
+  if (PREV_INSN (insn) == NULL
+      || NEXT_INSN (PREV_INSN (insn)) == insn)
+    {
+      adjusted_length = length;
+      ADJUST_INSN_LENGTH (insn, adjusted_length);
+      length -= (adjusted_length - length);
+    }
 
   switch (length)
     {
