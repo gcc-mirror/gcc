@@ -1,3 +1,8 @@
+2004-07-12  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-cfg.c (find_taken_edge): Statically compute the truth
+	value of a predicate comparing an SSA_NAME to itself.
+
 2004-07-12  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Indicate that the
