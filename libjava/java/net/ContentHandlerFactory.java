@@ -62,7 +62,7 @@ public interface ContentHandlerFactory
     *
     * @return The <code>ContentHandler</code> for the passed in MIME type
     */
-  public ContentHandler createContentHandler(String mimeType);
+  ContentHandler createContentHandler(String mimeType);
 
 } // interface ContentHandlerFactory
 

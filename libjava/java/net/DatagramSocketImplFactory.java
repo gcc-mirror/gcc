@@ -56,5 +56,6 @@ public interface DatagramSocketImplFactory
    *
    * @return A DatagramSocketImpl object
    */
-  public DatagramSocketImpl createDatagramSocketImpl();
+  DatagramSocketImpl createDatagramSocketImpl();
+
 } // interface DatagramSocketImplFactory

@@ -1,5 +1,15 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/ContentHandlerFactory.java,
+	java/net/DatagramSocketImplFactory.java,
+	java/net/FileNameMap.java,
+	java/net/SocketImplFactory.java,
+	java/net/SocketOptions.java,
+	java/net/URLStreamHandlerFactory.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/Externalizable.java,
 	java/io/FileFilter.java,
 	java/io/FilePermission.java,

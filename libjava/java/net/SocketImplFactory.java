@@ -56,7 +56,7 @@ public interface SocketImplFactory
     *
     * @return A <code>SocketImpl</code> object
     */
-  public SocketImpl createSocketImpl();
+  SocketImpl createSocketImpl();
 
 } // interface SocketImplFactory
 

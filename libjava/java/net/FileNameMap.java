@@ -62,7 +62,7 @@ public interface FileNameMap
     *
     * @return The MIME type for the filename passed in.
     */
-  public String getContentTypeFor(String filename);
+  String getContentTypeFor(String filename);
 
 } // interface FileNameMap
 
