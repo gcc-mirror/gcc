@@ -92,6 +92,10 @@ _start:
 	! access those data anyway.  Instead, go straight to main:
 	mov	%l0, %o0	! argc
 	mov	%l1, %o1	! argv
+#ifdef GCRT1
+	setn(___Argv, %o4, %o3)
+	stn	%o1, [%o3]      ! *___Argv
+#endif
 	! Skip argc words past argv, to env:
 	sll	%l0, CPTRSHIFT, %o2
 	add	%o2, CPTRSIZE, %o2
