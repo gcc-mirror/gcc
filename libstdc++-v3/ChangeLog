@@ -1,4 +1,8 @@
 2004-08-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Fix typo.
+
+2004-08-11  Paolo Carlini  <pcarlini@suse.de>
 	
 	* testsuite/27_io/basic_stringbuf/imbue/char/1.cc: Declare test
 	variable.
