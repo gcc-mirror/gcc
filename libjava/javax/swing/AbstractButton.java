@@ -147,8 +147,8 @@ import javax.swing.text.AttributeSet;
  *
  * </ul>
  *
- * @author Ronald Veldema (rveldema&064;cs.vu.nl)
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Ronald Veldema (rveldema@cs.vu.nl)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 
 public abstract class AbstractButton extends JComponent

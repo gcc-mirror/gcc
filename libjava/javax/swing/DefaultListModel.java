@@ -47,7 +47,7 @@ import java.util.Vector;
  * java.util.Vector}.
  *
  * @author Andrew Selkirk
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 
 public class DefaultListModel extends AbstractListModel

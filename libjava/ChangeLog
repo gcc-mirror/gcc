@@ -1,3 +1,16 @@
+2004-05-05  Mark Wielaard  <mark@klomp.org>
+
+	* javax/swing/AbstractButton.java: Replace special HTML entities with
+	ASCII equivalent.
+	* javax/swing/DefaultBoundedRangeModel.java: Likewise.
+	* javax/swing/DefaultButtonModel.java: Likewise.
+	* javax/swing/DefaultListModel.java: Likewise.
+	* javax/swing/JList.java: Likewise.
+	* javax/swing/JSlider.java: Likewise.
+	* javax/swing/ListModel.java: Likewise.
+	* javax/swing/Popup.java: Likewise.
+	* javax/swing/SwingUtilities.java: Likewise.
+
 2004-05-05  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractButton.java,

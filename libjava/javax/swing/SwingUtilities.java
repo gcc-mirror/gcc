@@ -59,7 +59,7 @@ import java.lang.reflect.InvocationTargetException;
  * useful when drawing swing components, dispatching events, or calculating
  * regions which need painting.
  *
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 public class SwingUtilities implements SwingConstants
 {

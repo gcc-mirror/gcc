@@ -71,7 +71,7 @@ import javax.swing.event.EventListenerList;
  *
  * In all other respects this class is just a container of boolean flags.
  *
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 public class DefaultButtonModel implements ButtonModel, Serializable
 {
