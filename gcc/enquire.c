@@ -15,6 +15,7 @@
    In EPROP, avoid a <= old if bad is set, Richard Stallman, May 91.
    Use gstddef.h, not stddef.h, Richard Stallman, Nov 91.
    Don't declare malloc, instead cast the value, Richard Stallman, Nov 91.
+   Include sys/types.h before signal.h, Apr 92.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -378,6 +379,7 @@
 #ifdef NO_SIG
 #define jmp_buf int
 #else
+#include <sys/types.h>
 #include <signal.h>
 #include <setjmp.h>
 #endif
