@@ -183,8 +183,10 @@
 ;; arith3b	like above, but might end with a redirected branch
 ;; load		from memory
 ;; load_si	Likewise, SImode variant for general register.
+;; fload	Likewise, but load to fp register.
 ;; store	to memory
-;; move		register to register
+;; move		general purpose register to register
+;; mt_group	other sh4 mt instructions
 ;; fmove	register to register, floating point
 ;; smpy		word precision integer multiply
 ;; dmpy		longword or doublelongword precision integer multiply
@@ -194,15 +196,20 @@
 ;; pstore	store of pr reg, which can't be put into delay slot of jsr
 ;; prget	copy pr to register, ditto
 ;; pcload	pc relative load of constant value
+;; pcfload	Likewise, but load to fp register.
 ;; pcload_si	Likewise, SImode variant for general register.
 ;; rte		return from exception
 ;; sfunc	special function call with known used registers
 ;; call		function call
 ;; fp		floating point
 ;; fdiv		floating point divide (or square root)
-;; gp_fpul	move between general purpose register and fpul
+;; gp_fpul	move from general purpose register to fpul
+;; fpul_gp	move from fpul to general purpose register
+;; mac_gp	move from mac[lh] to general purpose register
 ;; dfp_arith, dfp_cmp,dfp_conv
+;; ftrc_s	fix_truncsfsi2_i4
 ;; dfdiv	double precision floating point divide (or square root)
+;; cwb		ic_invalidate_line_i
 ;; arith_media	SHmedia arithmetic, logical, and shift instructions
 ;; cbranch_media SHmedia conditional branch instructions
 ;; cmp_media	SHmedia compare instructions
@@ -233,30 +240,32 @@
 ;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,rte,sfunc,call,fp,fdiv,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
+ "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
   (const_string "other"))
 
 ;; We define a new attribute namely "insn_class".We use
-;; this for DFA based pipeline description.
-;; Although the "type" attribute covers almost all insn 
-;; classes,it is more convenient to define new attribute
-;; for certain reservations.
+;; this for the DFA based pipeline description.
 ;;
 ;; mt_group      SH4 "mt" group instructions.
 ;;
-;; ex_group      SH4 "ex" group instructions.They mostly
-;;               overlap with arithmetic instructions but
-;;               new attribute defined to distinguish from
-;;	         mt group instructions.
+;; ex_group      SH4 "ex" group instructions.
 ;;
-;; lds_to_fpscr  The "type" attribute couldn't sufficiently
-;;               distinguish it from others.It is part of 
-;;               new attribute.Similar case with ldsmem_to_fpscr
-;;	  	 and cwb. 
+;; ls_group      SH4 "ls" group instructions.
+;;
 
 (define_attr "insn_class"
-	     "mt_group,ex_group,lds_to_fpscr,ldsmem_to_fpscr,cwb,none"
-	     (const_string "none"))
+  "mt_group,ex_group,ls_group,br_group,fe_group,co_group,none"
+  (cond [(eq_attr "type" "move,mt_group") (const_string "mt_group")
+         (eq_attr "type" "arith,dyn_shift") (const_string "ex_group")
+	 (eq_attr "type" "fmove,load,pcload,load_si,pcload_si,fload,pcfload,store,gp_fpul,fpul_gp") (const_string "ls_group")
+	 (eq_attr "type" "cbranch,jump") (const_string "br_group")
+	 (eq_attr "type" "fp,fdiv,ftrc_s,dfp_arith,dfp_conv,dfdiv")
+	   (const_string "fe_group")
+	 (eq_attr "type" "jump_ind,smpy,dmpy,mac_gp,return,pload,prset,pstore,prget,rte,sfunc,call,dfp_cmp,mem_fpscr,gp_fpscr,cwb") (const_string "co_group")]
+	(const_string "none")))
+;; nil are zero instructions, and arith3 / arith3b are multiple instructions,
+;; so these do not belong in an insn group, although they are modeled
+;; with their own define_insn_reservations.
 
 ;; Indicate what precision must be selected in fpscr for this insn, if any.
 
@@ -445,178 +454,6 @@
   (and (eq_attr "pipe_model" "sh1") (eq_attr "type" "fdiv")) 13 12)
 
 
-;; SH4 scheduling
-;; The SH4 is a dual-issue implementation, thus we have to multiply all
-;; costs by at least two.
-;; There will be single increments of the modeled that don't correspond
-;; to the actual target ;; whenever two insns to be issued depend one a
-;; single resource, and the scheduler picks to be the first one.
-;; If we multiplied the costs just by two, just two of these single
-;; increments would amount to an actual cycle.  By picking a larger
-;; factor, we can ameliorate the effect; However, we then have to make sure
-;; that only two insns are modeled as issued per actual cycle.
-;; Moreover, we need a way to specify the latency of insns that don't
-;; use an actual function unit.
-;; We use an 'issue' function unit to do that, and a cost factor of 10.
-
-(define_function_unit "issue" 2 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "!nil,arith3"))
-  10 10)
-
-(define_function_unit "issue" 2 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "arith3"))
-  30 30)
-
-;; There is no point in providing exact scheduling information about branches,
-;; because they are at the starts / ends of basic blocks anyways.
-
-;; Some insns cannot be issued before/after another insn in the same cycle,
-;; irrespective of the type of the other insn.
-
-;; default is dual-issue, but can't be paired with an insn that
-;; uses multiple function units.
-(define_function_unit "single_issue"     1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "!smpy,dmpy,pload,pstore,dfp_cmp,gp_fpul,call,sfunc,arith3,arith3b"))
-  1 10
-  [(eq_attr "type" "smpy,dmpy,pload,pstore,dfp_cmp,gp_fpul")])
-
-(define_function_unit "single_issue"     1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "smpy,dmpy,pload,pstore,dfp_cmp,gp_fpul"))
-  10 10
-  [(const_int 1)])
-
-;; arith3 insns are always pairable at the start, but not inecessarily at
-;; the end; however, there doesn't seem to be a way to express that.
-(define_function_unit "single_issue"     1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "arith3"))
-  30 20
-  [(const_int 1)])
-
-;; arith3b insn are pairable at the end and have latency that prevents pairing
-;; with the following branch, but we don't want this latency be respected;
-;; When the following branch is immediately adjacent, we can redirect the
-;; internal branch, which is likly to be a larger win.
-(define_function_unit "single_issue"     1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "arith3b"))
-  20 20
-  [(const_int 1)])
-
-;; calls introduce a longisch delay that is likely to flush the pipelines.
-(define_function_unit "single_issue"     1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "call,sfunc"))
-  160 160
-  [(eq_attr "type" "!call") (eq_attr "type" "call")])
-
-;; Load and store instructions have no alignment peculiarities for the SH4,
-;; but they use the load-store unit, which they share with the fmove type
-;; insns (fldi[01]; fmov frn,frm; flds; fsts; fabs; fneg) .
-;; Loads have a latency of two.
-;; However, call insns can only paired with a preceding insn, and have
-;; a delay slot, so that we want two more insns to be scheduled between the
-;; load of the function address and the call.  This is equivalent to a
-;; latency of three.
-;; We cannot use a conflict list for this, because we need to distinguish
-;; between the actual call address and the function arguments.
-;; ADJUST_COST can only properly handle reductions of the cost, so we
-;; use a latency of three here, which gets multiplied by 10 to yield 30.
-;; We only do this for SImode loads of general registers, to make the work
-;; for ADJUST_COST easier.
-
-;; When specifying different latencies for different insns using the
-;; the same function unit, genattrtab.c assumes a 'FIFO constraint'
-;; so that the blockage is at least READY-COST (E) + 1 - READY-COST (C)
-;; for an executing insn E and a candidate insn C.
-;; Therefore, we define three different function units for load_store:
-;; load_store, load and load_si.
-
-(define_function_unit "load_si" 1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "load_si,pcload_si")) 30 10)
-(define_function_unit "load" 1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "load,pcload,pload")) 20 10)
-(define_function_unit "load_store" 1 0
-  (and (eq_attr "pipe_model" "sh4")
-       (eq_attr "type" "load_si,pcload_si,load,pcload,pload,store,pstore,fmove"))
-  10 10)
-
-(define_function_unit "int"    1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "arith,dyn_shift")) 10 10)
-
-;; Again, we have to pretend a lower latency for the "int" unit to avoid a
-;; spurious FIFO constraint; the multiply instructions use the "int"
-;; unit actually only for two cycles.
-(define_function_unit "int"    1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "smpy,dmpy")) 20 20)
-
-;; We use a fictous "mpy" unit to express the actual latency.
-(define_function_unit "mpy"    1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "smpy,dmpy")) 40 20)
-
-;; Again, we have to pretend a lower latency for the "int" unit to avoid a
-;; spurious FIFO constraint.
-(define_function_unit "int"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "gp_fpul")) 10 10)
-
-;; We use a fictous "gp_fpul" unit to express the actual latency.
-(define_function_unit "gp_fpul"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "gp_fpul")) 20 10)
-
-;; ??? multiply uses the floating point unit, but with a two cycle delay.
-;; Thus, a simple single-precision fp operation could finish if issued in
-;; the very next cycle, but stalls when issued two or three cycles later.
-;; Similarily, a divide / sqrt can work without stalls if issued in
-;; the very next cycle, while it would have to block if issued two or
-;; three cycles later.
-;; There is no way to model this with gcc's function units.  This problem is
-;; actually mentioned in md.texi.  Tackling this problem requires first that
-;; it is possible to speak about the target in an open discussion.
-;;
-;; However, simple double-precision operations always conflict.
-
-(define_function_unit "fp"    1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "smpy,dmpy")) 40 40
-  [(eq_attr "type" "dfp_cmp,dfp_conv,dfp_arith")])
-
-;; The "fp" unit is for pipeline stages F1 and F2.
-
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "fp")) 30 10)
-
-;; Again, we have to pretend a lower latency for the "fp" unit to avoid a
-;; spurious FIFO constraint; the bulk of the fdiv type insns executes in
-;; the F3 stage.
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "fdiv")) 30 10)
-
-;; The "fdiv" function unit models the aggregate effect of the F1, F2 and F3
-;; pipeline stages on the pipelining of fdiv/fsqrt insns.
-;; We also use it to give the actual latency here.
-;; fsqrt is actually one cycle faster than fdiv (and the value used here),
-;; but that will hardly matter in practice for scheduling.
-(define_function_unit "fdiv"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "fdiv")) 120 100)
-
-;; There is again a late use of the "fp" unit by [d]fdiv type insns
-;; that we can't express.
-
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "dfp_cmp,dfp_conv")) 40 20)
-
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "dfp_arith")) 80 60)
-
-(define_function_unit "fp"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "dfdiv")) 230 10)
-
-(define_function_unit "fdiv"     1 0
-  (and (eq_attr "pipe_model" "sh4") (eq_attr "type" "dfdiv")) 230 210)
-
 ;; SH-5 SHmedia scheduling
 ;; When executing SHmedia code, the SH-5 is a fairly straightforward
 ;; single-issue machine.  It has four pipelines, the branch unit (br),
@@ -706,6 +543,35 @@
 (define_attr "is_mac_media" ""
   (if_then_else (eq_attr "type" "mac_media") (const_int 1) (const_int 0)))
 
+(define_attr "branch_zero" "yes,no"
+  (cond [(eq_attr "type" "!cbranch") (const_string "no")
+	 (ne (symbol_ref "(next_active_insn (insn)\
+			   == (prev_active_insn\
+			       (XEXP (SET_SRC (PATTERN (insn)), 1))))\
+			  && get_attr_length (next_active_insn (insn)) == 2")
+	     (const_int 0))
+	 (const_string "yes")]
+	(const_string "no")))
+
+;; SH4 Double-precision computation with double-precision result -
+;; the two halves are ready at different times.
+(define_attr "dfp_comp" "yes,no"
+  (cond [(eq_attr "type" "dfp_arith,dfp_conv,dfdiv") (const_string "yes")]
+	(const_string "no")))
+
+;; Insns for which the latency of a preceding fp insn is decreased by one.
+(define_attr "late_fp_use" "yes,no" (const_string "no"))
+;; And feeding insns for which this relevant.
+(define_attr "any_fp_comp" "yes,no"
+  (cond [(eq_attr "type" "fp,fdiv,ftrc_s,dfp_arith,dfp_conv,dfdiv")
+	 (const_string "yes")]
+	(const_string "no")))
+
+(define_attr "any_int_load" "yes,no"
+  (cond [(eq_attr "type" "load,load_si,pcload,pcload_si")
+	 (const_string "yes")]
+	(const_string "no")))
+
 (define_delay
   (eq_attr "needs_delay_slot" "yes")
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
@@ -755,7 +621,7 @@
 	       (const_int 0)))]
   "TARGET_SH1"
   "tst	%1,%0"
-  [(set_attr "insn_class" "mt_group")])
+  [(set_attr "type" "mt_group")])
 
 ;; ??? Perhaps should only accept reg/constant if the register is reg 0.
 ;; That would still allow reload to create cmpi instructions, but would
@@ -772,7 +638,7 @@
 	tst	%0,%0
 	cmp/eq	%1,%0
 	cmp/eq	%1,%0"
-   [(set_attr "insn_class" "mt_group,mt_group,mt_group")])
+   [(set_attr "type" "mt_group")])
 
 (define_insn "cmpgtsi_t"
   [(set (reg:SI T_REG)
@@ -782,7 +648,7 @@
   "@
 	cmp/gt	%1,%0
 	cmp/pl	%0"
-   [(set_attr "insn_class" "mt_group,mt_group")])
+   [(set_attr "type" "mt_group")])
 
 (define_insn "cmpgesi_t"
   [(set (reg:SI T_REG)
@@ -792,7 +658,7 @@
   "@
 	cmp/ge	%1,%0
 	cmp/pz	%0"
-   [(set_attr "insn_class" "mt_group,mt_group")])
+   [(set_attr "type" "mt_group")])
 
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
@@ -804,7 +670,7 @@
 		(match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "cmp/hs	%1,%0"
-   [(set_attr "insn_class" "mt_group")])
+   [(set_attr "type" "mt_group")])
 
 (define_insn "cmpgtusi_t"
   [(set (reg:SI T_REG)
@@ -812,7 +678,7 @@
 		(match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "cmp/hi	%1,%0"
-   [(set_attr "insn_class" "mt_group")])
+   [(set_attr "type" "mt_group")])
 
 ;; We save the compare operands in the cmpxx patterns and use them when
 ;; we generate the branch.
@@ -909,7 +775,7 @@
 	cmp/eq\\t%S1,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/ge\\t%S1,%S0\;cmp/hs\\t%R1,%R0\\n%,Ldi%=:
 	cmp/pz\\t%S0"
   [(set_attr "length" "8,2")
-   (set_attr "type" "arith3,arith")])
+   (set_attr "type" "arith3,mt_group")])
 
 ;; -------------------------------------------------------------------------
 ;; DImode unsigned integer comparisons
@@ -1176,8 +1042,7 @@
 	(ltu:SI (plus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
   "TARGET_SH1"
   "addc	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "addc1"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1187,8 +1052,7 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "addc	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -1217,8 +1081,7 @@
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_SH1"
   "add	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
 ;; Subtraction instructions
@@ -1287,8 +1150,7 @@
 	(gtu:SI (minus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
   "TARGET_SH1"
   "subc	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "subc1"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1298,8 +1160,7 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "subc	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "*subsi3_internal"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1307,8 +1168,7 @@
 		  (match_operand:SI 2 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "sub	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "*subsi3_media"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1734,6 +1594,14 @@
      invariant code motion can move it.  */
   REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
   REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  /* expand_binop can't find a suitable code in umul_widen_optab to
+     make a REG_EQUAL note from, so make one here.
+     See also smulsi3_highpart.
+     ??? Alternatively, we could put this at the calling site of expand_binop,
+     i.e. expand_expr.  */
+  REG_NOTES (last)
+    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
+			 REG_NOTES (last));
   DONE;
 }")
 
@@ -1756,6 +1624,14 @@
      invariant code motion can move it.  */
   REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
   REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  /* expand_binop can't find a suitable code in umul_widen_optab to
+     make a REG_EQUAL note from, so make one here.
+     See also smulsi3_highpart.
+     ??? Alternatively, we could put this at the calling site of expand_binop,
+     i.e. expand_expr.  */
+  REG_NOTES (last)
+    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
+			 REG_NOTES (last));
   DONE;
 }")
 
@@ -2019,6 +1895,7 @@
   REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
   /* expand_binop can't find a suitable code in mul_highpart_optab to
      make a REG_EQUAL note from, so make one here.
+     See also {,u}mulhisi.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_mult_highpart.  */
   REG_NOTES (last)
@@ -2076,8 +1953,7 @@
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   "TARGET_SH1"
   "and	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 ;; If the constant is 255, then emit a extu.b instruction instead of an
 ;; and, since that will give better code.
@@ -2133,8 +2009,7 @@
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   "TARGET_SH1"
   "or	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2152,8 +2027,7 @@
 		(match_operand:SI 2 "logical_operand" "L,r")))]
   "TARGET_SH1"
   "xor	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2220,8 +2094,7 @@
 	(lshiftrt:SI (match_dup 1) (const_int 31)))]
   "TARGET_SH1"
   "rotl	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "rotlsi3_31"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2230,8 +2103,7 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "rotr	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "rotlsi3_16"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2239,8 +2111,7 @@
 		   (const_int 16)))]
   "TARGET_SH1"
   "swap.w	%1,%0"
-  [(set_attr "type" "arith")
-  (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -2304,8 +2175,7 @@
 		   (const_int 8)))]
   "TARGET_SH1"
   "swap.b	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_expand "rotlhi3"
   [(set (match_operand:HI 0 "arith_reg_operand" "")
@@ -2347,8 +2217,7 @@
      (clobber (match_dup 4))])]
   "operands[4] = gen_rtx_SCRATCH (SImode);"
   [(set_attr "length" "*,*,*,4")
-   (set_attr "type" "dyn_shift,arith,arith,arith")
-   (set_attr "insn_class" "ex_group,ex_group,ex_group,ex_group")])
+   (set_attr "type" "dyn_shift,arith,arith,arith")])
 
 (define_insn "ashlhi3_k"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
@@ -2358,8 +2227,7 @@
   "@
 	add	%0,%0
 	shll%O2	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2376,8 +2244,7 @@
 	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 3))
 	       (const_string "6")]
 	      (const_string "8")))
-   (set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+   (set_attr "type" "arith")])
 
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -2466,8 +2333,7 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && INTVAL (operands[2]) == 1"
   "shar	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 ;; We can't do HImode right shifts correctly unless we start out with an
 ;; explicit zero / sign extension; doing that would result in worse overall
@@ -2526,8 +2392,7 @@
 	(lt:SI (match_dup 1) (const_int 0)))]
   "TARGET_SH1"
   "shll	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "ashrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2535,8 +2400,7 @@
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
   "shad	%2,%0"
-  [(set_attr "type" "dyn_shift")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "dyn_shift")])
 
 (define_insn "ashrsi3_n"
   [(set (reg:SI R4_REG)
@@ -2587,8 +2451,7 @@
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
   "shld	%2,%0"
-  [(set_attr "type" "dyn_shift")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "dyn_shift")])
 
 ;;  Only the single bit shift clobbers the T bit.
 
@@ -2599,8 +2462,7 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && CONST_OK_FOR_M (INTVAL (operands[2]))"
   "shlr	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2609,8 +2471,7 @@
   "TARGET_SH1 && CONST_OK_FOR_K (INTVAL (operands[2]))
    && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
   "shlr%O2	%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2689,8 +2550,7 @@
   "TARGET_SH1"
   "shll	%R0\;rotcl	%S0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+   (set_attr "type" "arith")])
 
 (define_insn "ashldi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2730,8 +2590,7 @@
   "TARGET_SH1"
   "shlr	%S0\;rotcr	%R0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+   (set_attr "type" "arith")])
 
 (define_insn "lshrdi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2771,8 +2630,7 @@
   "TARGET_SH1"
   "shar	%S0\;rotcr	%R0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+   (set_attr "type" "arith")])
 
 (define_insn "ashrdi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -3007,8 +2865,7 @@
 			     (const_int 16))))]
   "TARGET_SH1"
   "xtrct	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "xtrct_right"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -3018,8 +2875,7 @@
 			   (const_int 16))))]
   "TARGET_SH1"
   "xtrct	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic
@@ -3034,8 +2890,7 @@
 	       (const_int 0)))]
   "TARGET_SH1"
   "negc	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "*negdi_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
@@ -3073,16 +2928,14 @@
 	(neg:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "neg	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(not:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "not	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_expand "one_cmpldi2"
   [(set (match_operand:DI 0 "arith_reg_operand" "")
@@ -3157,8 +3010,7 @@
 	(zero_extend:SI (match_operand:HI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.w	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "*zero_extendhisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -3196,8 +3048,7 @@
 	(zero_extend:SI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.b	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 (define_insn "*zero_extendqisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -3213,8 +3064,7 @@
 	(zero_extend:HI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.b	%1,%0"
-  [(set_attr "type" "arith")
-   (set_attr "insn_class" "ex_group")])
+  [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
 ;; Sign extension instructions
@@ -3288,8 +3138,7 @@
   "@
 	exts.w	%1,%0
    	mov.w	%1,%0"
-  [(set_attr "type" "arith,load")
-   (set_attr "insn_class" "ex_group,*")])
+  [(set_attr "type" "arith,load")])
 
 (define_insn "*extendhisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -3325,8 +3174,7 @@
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")
-   (set_attr "insn_class" "ex_group,*")])
+  [(set_attr "type" "arith,load")])
 
 (define_insn "*extendqisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -3356,8 +3204,7 @@
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")
-   (set_attr "insn_class" "ex_group,*")])
+  [(set_attr "type" "arith,load")])
 
 /* It would seem useful to combine the truncXi patterns into the movXi
    patterns, but unary operators are ignored when matching constraints,
@@ -3431,6 +3278,7 @@
   "TARGET_SH3E && ! TARGET_SH5"
   "sts.l	fpul,@-r15"
   [(set_attr "type" "store")
+   (set_attr "late_fp_use" "yes")
    (set_attr "hit_stack" "yes")])
 
 ;; DFmode pushes for sh4 require a lot of what is defined for movdf_i4,
@@ -3506,8 +3354,7 @@
 	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,prget,move,store,store,pstore,move,prset,load,pload,pcload_si")
-   (set_attr "insn_class"  "*,*,mt_group,*,*,*,*,*,*,*,*,*,*,*,*")
+  [(set_attr "type" "pcload_si,move,mt_group,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,pcload_si")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
@@ -3541,7 +3388,8 @@
 	lds	%1,%0
 	sts	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,prget,move,store,store,pstore,move,prset,load,pload,load,store,pcload_si,gp_fpul,gp_fpul,nil")
+  [(set_attr "type" "pcload_si,move,*,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,load,store,pcload_si,gp_fpul,fpul_gp,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
@@ -3666,7 +3514,7 @@
   "TARGET_HARD_SH4"
   "ocbwb\\t@%0\;extu.w\\t%0,%2\;or\\t%1,%2\;mov.l\\t%0,@%2"
   [(set_attr "length" "8")
-   (set_attr "insn_class" "cwb")])
+   (set_attr "type" "cwb")])
 
 ;; ??? could make arg 0 an offsettable memory operand to allow to save
 ;; an add in the code that calculates the address.
@@ -4313,7 +4161,8 @@
       (if_then_else
        (ne (symbol_ref "TARGET_SHCOMPACT") (const_int 0))
        (const_int 10) (const_int 8))])
-   (set_attr "type" "fmove,move,pcload,load,store,pcload,load,store,load,load")
+   (set_attr "type" "fmove,move,pcfload,fload,store,pcload,load,store,load,fload")
+   (set_attr "late_fp_use" "*,*,*,*,yes,*,*,*,*,*")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "double")
 					   (const_string "none")))])
@@ -5015,7 +4864,8 @@
 	sts.l	%1,%0
 	lds.l	%1,%0
 	! move optimized away"
-  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,gp_fpul,gp_fpul,store,load,nil")
+  [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,store,pcload,load,store,fmove,fmove,load,*,fpul_gp,gp_fpul,store,load,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
    (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,4,2,2,2,2,0")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "single")
@@ -7996,8 +7846,8 @@
 ;; GO_IF_LEGITIMATE_ADDRESS guards about bogus addresses before reload,
 ;; SECONDARY_INPUT_RELOAD_CLASS does this during reload, and the insn's
 ;; predicate after reload.
-;; The gp_fpul type for r/!c might look a bit odd, but it actually schedules
-;; like a gpr <-> fpul move.
+;; The mac_gp type for r/!c might look a bit odd, but it actually schedules
+;; like a mac -> gpr move.
 (define_insn "fpu_switch"
   [(set (match_operand:PSI 0 "register_operand" "=c,c,r,c,c,r,m,r")
 	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c"))]
@@ -8016,8 +7866,7 @@
 	mov.l	%1,%0
 	sts	fpscr,%0"
   [(set_attr "length" "0,2,2,4,2,2,2,2")
-   (set_attr "type" "dfp_conv,dfp_conv,load,dfp_conv,dfp_conv,move,store,gp_fpul")
-   (set_attr "insn_class" "ldsmem_to_fpscr,*,*,lds_to_fpscr,*,*,*,*")])
+   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp")])
 
 (define_split
   [(set (reg:PSI FPSCR_REG)
@@ -8363,7 +8212,7 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "ftrc	%1,%0"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "ftrc_s")
    (set_attr "fp_mode" "single")])
 
 ;; ??? This pattern is used nowhere.  fix_truncsfsi2 always expands to
@@ -8785,6 +8634,7 @@
   "TARGET_SH4"
   "ftrc	%1,%0"
   [(set_attr "type" "dfp_conv")
+   (set_attr "dfp_comp" "no")
    (set_attr "fp_mode" "double")])
 
 ;; ??? This pattern is used nowhere.  fix_truncdfsi2 always expands to
@@ -9877,6 +9727,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mperm_w_little : gen_mperm_w_big)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 ; This use of vec_select isn't exactly correct according to rtl.texi
@@ -10591,18 +10442,22 @@
 
 (define_cpu_unit "f1_1,f1_2" "fpu_pipe")
 
-;; The floating point units.
+;; The floating point units (except FS - F2 always precedes it.)
 
-(define_cpu_unit "F1,F2,F3,FS" "fpu_pipe")
+(define_cpu_unit "F0,F1,F2,F3" "fpu_pipe")
 
 ;; This is basically the MA unit of SH4
 ;; used in LOAD/STORE pipeline.
 
 (define_cpu_unit "memory" "inst_pipeline")
 
+;; However, there are LS group insns that don't use it, even ones that
+;; complete in 0 cycles.  So we use an extra unit for the issue of LS insns.
+(define_cpu_unit "load_store" "inst_pipeline")
+
 ;; The address calculator used for branch instructions.
-;; This will be reserved with "issue" of branch instructions
-;; and this is to make sure that  no two branch instructions 
+;; This will be reserved after "issue" of branch instructions
+;; and this is to make sure that no two branch instructions 
 ;; can be issued in parallel. 
 
 (define_cpu_unit "pcr_addrcalc" "inst_pipeline")
@@ -10613,26 +10468,57 @@
 (define_reservation  "issue"  "pipe_01|pipe_02")
 
 ;; This is to express the locking of D stage.
+;; Note that the issue of a CO group insn also effectively locks the D stage.
 
 (define_reservation  "d_lock" "pipe_01+pipe_02")
+
+;; Every FE instruction but fipr / ftrv starts with issue and this.
+(define_reservation "F01" "F0+F1")
 
 ;; This is to simplify description where F1,F2,FS
 ;; are used simultaneously.
 
-(define_reservation "fpu" "F1+F2+FS")
+(define_reservation "fpu" "F1+F2")
 
 ;; This is to highlight the fact that f1 
 ;; cannot overlap with F1.
 
 (exclusion_set  "f1_1,f1_2" "F1")
 
+(define_insn_reservation "nil" 0 (eq_attr "type" "nil") "nothing")
+
 ;; Although reg moves have a latency of zero 
 ;; we need to highlight that they use D stage
 ;; for one cycle.
 
+;; Group:	MT
+
 (define_insn_reservation "reg_mov" 0
-               (eq_attr "type" "move,fmove")
-              "issue")
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "move"))
+  "issue")
+
+;; Group:	LS
+
+(define_insn_reservation "freg_mov" 0
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "fmove"))
+  "issue+load_store")
+
+;; We don't model all pipeline stages; we model the issue ('D') stage
+;; inasmuch as we allow only two instructions to issue simultanously,
+;; and CO instructions prevent any simultanous issue of another instruction.
+;; (This uses pipe_01 and pipe_02).
+;; Double issue of EX insns is prevented by using the int unit in the EX stage.
+;; Double issue of EX / BR insns is prevented by using the int unit /
+;; pcr_addrcalc unit in the EX stage.
+;; Double issue of BR / LS instructions is prevented by using the
+;; pcr_addrcalc / load_store unit in the issue cycle.
+;; Double issue of FE instructions is prevented by using F0 in the first
+;; pipeline stage after the first D stage.
+;; There is no need to describe the [ES]X / [MN]A / S stages after a D stage
+;; (except in the cases outlined above), nor to describe the FS stage after
+;; the F2 stage.
 
 ;; Other MT  group intructions(1 step operations)
 ;; Group:	MT
@@ -10640,88 +10526,170 @@
 ;; Issue Rate: 	1
 
 (define_insn_reservation "mt" 1
-                      (eq_attr "insn_class" "mt_group")
-                      "issue,nothing")
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "mt_group"))
+  "issue")
 
 ;; Fixed Point Arithmetic Instructions(1 step operations)
 ;; Group:	EX
 ;; Latency: 	1
 ;; Issue Rate: 	1
 
-(define_insn_reservation "simple_arith" 1 
-            (eq_attr "insn_class" "ex_group")
-            "issue,int")
+(define_insn_reservation "sh4_simple_arith" 1 
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "insn_class" "ex_group"))
+  "issue,int")
+
+;; Load and store instructions have no alignment peculiarities for the SH4,
+;; but they use the load-store unit, which they share with the fmove type
+;; insns (fldi[01]; fmov frn,frm; flds; fsts; fabs; fneg) .
+;; Loads have a latency of two.
+;; However, call insns can only paired with a preceding insn, and have
+;; a delay slot, so that we want two more insns to be scheduled between the
+;; load of the function address and the call.  This is equivalent to a
+;; latency of three.
+;; ADJUST_COST can only properly handle reductions of the cost, so we
+;; use a latency of three here, which gets multiplied by 10 to yield 30.
+;; We only do this for SImode loads of general registers, to make the work
+;; for ADJUST_COST easier.
 
 ;; Load Store instructions. (MOV.[BWL]@(d,GBR)
 ;; Group:	LS
 ;; Latency: 	2
 ;; Issue Rate: 	1
 
-(define_insn_reservation "load_store" 2
-       (eq_attr "type" "load,load_si,pcload,pcload_si,store")
-       "issue,memory*2")
+(define_insn_reservation "sh4_load" 2
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "load,pcload"))
+  "issue+load_store,nothing,memory")
+
+;; calls / sfuncs need an extra instruction for their delay slot.
+;; Moreover, estimating the latency for SImode loads as 3 will also allow
+;; adjust_cost to meaningfully bump it back up to 3 if they load the shift
+;; count of a dynamic shift.
+(define_insn_reservation "sh4_load_si" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "load_si,pcload_si"))
+  "issue+load_store,nothing,memory")
+
+;; (define_bypass 2 "sh4_load_si" "!sh4_call")
+
+;; The load latency is upped to three higher if the dependent insn does
+;; double precision computation.  We want the 'default' latency to reflect
+;; that increased latency because otherwise the insn priorities won't
+;; allow proper scheduling.
+(define_insn_reservation "sh4_fload" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "fload,pcfload"))
+  "issue+load_store,nothing,memory")
+
+;; (define_bypass 2 "sh4_fload" "!")
+
+(define_insn_reservation "sh4_store" 1
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "store"))
+  "issue+load_store,nothing,memory")
+
+;; Load Store instructions.
+;; Group:	LS
+;; Latency: 	1
+;; Issue Rate: 	1
+
+(define_insn_reservation "sh4_gp_fpul" 1
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "gp_fpul"))
+  "issue+load_store")
+
+;; Load Store instructions.
+;; Group:	LS
+;; Latency: 	3
+;; Issue Rate: 	1
+
+(define_insn_reservation "sh4_fpul_gp" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "fpul_gp"))
+  "issue+load_store")
 
 ;; Branch (BF,BF/S,BT,BT/S,BRA)
 ;; Group:	BR
-;; Latency: 	2 (or 1) Actually Observed to be 5/7
+;; Latency when taken: 	2 (or 1)
 ;; Issue Rate: 	1
 ;; The latency is 1 when displacement is 0.
-;; This reservation can be further broken into 2
-;;    1. branch_zero : One with latency 1 and in the TEST 
-;;       part it also checks for 0 (ZERO) displacement 
-;;    2. branch: Latency 2.
+;; We can't really do much with the latency, even if we could express it,
+;; but the pairing restrictions are useful to take into account.
+;; ??? If the branch is likely, we might want to fill the delay slot;
+;; if the branch is likely, but not very likely, should we pretend to use
+;; a resource that CO instructions use, to get a pairable delay slot insn?
 
-(define_insn_reservation "branch_zero"  5
-             (and (eq_attr "type" "cbranch")
-		  (eq_attr "length" "2"))
-             "(issue+pcr_addrcalc),pcr_addrcalc,nothing")
-
-(define_insn_reservation "branch"  7
-             (eq_attr "type" "cbranch")
-             "(issue+pcr_addrcalc),pcr_addrcalc,nothing")
+(define_insn_reservation "sh4_branch"  1
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "cbranch,jump"))
+  "issue+pcr_addrcalc")
 
 ;; Branch Far (JMP,RTS,BRAF)
 ;; Group:	CO
 ;; Latency: 	3
 ;; Issue Rate: 	2
-;;    Since issue stage (D stage) is blocked for 2nd cycle, 
-;;    cpu_unit  int  is reserved since it might be required for far
-;;    address calculation.
+;; ??? Scheduling happens before branch shortening, and hence jmp and braf
+;; can't be distinguished from bra for the "jump" pattern.
 
-(define_insn_reservation "branch_far" 12
-         (and (eq_attr "type" "jump,return")
-	      (eq_attr "length" "6"))
-         "d_lock*2,int+pcr_addrcalc,pcr_addrcalc")
+(define_insn_reservation "sh4_return" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "return,jump_ind"))
+         "d_lock*2")
 
 ;; RTE
 ;; Group:	CO
-;; atency: 	5
+;; Latency: 	5
 ;; Issue Rate: 	5
 ;; this instruction can be executed in any of the pipelines 
 ;; and blocks the pipeline for next 4 stages.
 
-(define_insn_reservation "return_from_exp" 5
-          (eq_attr "type" "rte")
-         "(issue+pcr_addrcalc),d_lock*4,int+pcr_addrcalc,nothing")
+(define_insn_reservation "sh4_return_from_exp" 5
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "rte"))
+  "d_lock*5")
 
 ;; OCBP, OCBWB
 ;; Group:	CO
-;; Latency: 	5
+;; Latency: 	1-5
 ;; Issue Rate: 	1
 
-(define_insn_reservation "ocbwb"  5
-          (eq_attr "insn_class" "cwb") 
- 	   "issue,(int+memory),memory*5")
+;; cwb is used for the sequence ocbwb @%0; extu.w %0,%2; or %1,%2; mov.l %0,@%2
+;; ocbwb on its own would be "d_lock,nothing,memory*5"
+(define_insn_reservation "ocbwb"  6
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "cwb"))
+  "d_lock*2,(d_lock+memory)*3,issue+load_store+memory,memory*2")
 		
 ;; LDS to PR,JSR
 ;; Group:	CO
 ;; Latency: 	3
 ;; Issue Rate: 	2
 ;; The SX stage is blocked for last 2 cycles.
+;; OTOH, the only time that has an effect for insns generated by the compiler
+;; is when lds to PR is followed by sts from PR - and that is highly unlikely -
+;; or when we are doing a function call - and we don't do inter-function
+;; scheduling.  For the function call case, it's really best that we end with
+;; something that models an rts.
 
-(define_insn_reservation "lds_to_pr" 3 
-          (eq_attr "type" "prset,call,sfunc") 
-          "(issue+pcr_addrcalc),(issue+int+pcr_addrcalc),(int+pcr_addrcalc)*2")
+(define_insn_reservation "sh4_lds_to_pr" 3 
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "prset") )
+  "d_lock*2")
+
+;; calls introduce a longisch delay that is likely to flush the pipelines
+;; of the caller's instructions.  Ordinary functions tend to end with a
+;; load to restore a register (in the delay slot of rts), while sfuncs
+;; tend to end with an EX or MT insn.  But that is not actually relevant,
+;; since there are no instructions that contend for memory access early.
+;; We could, of course, provide exact scheduling information for specific
+;; sfuncs, if that should prove useful.
+
+(define_insn_reservation "sh4_call" 16 
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "call,sfunc"))
+  "d_lock*16")
 
 ;; LDS.L to PR 
 ;; Group:	CO
@@ -10730,8 +10698,9 @@
 ;; The SX unit is blocked for last 2 cycles.
  
 (define_insn_reservation "ldsmem_to_pr"  3
-      (eq_attr "type" "pload") 
-     "(issue+pcr_addrcalc),(issue+int+pcr_addrcalc),(int+memory+pcr_addrcalc),(int+pcr_addrcalc)")
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "pload"))
+  "d_lock*2")
 
 ;; STS from PR
 ;; Group:	CO
@@ -10740,17 +10709,19 @@
 ;; The SX unit in second and third cycles.
 
 (define_insn_reservation "sts_from_pr" 2
-        (eq_attr "type" "prget")
-       "(issue+pcr_addrcalc),(pipe_01+int+pcr_addrcalc),(int+pcr_addrcalc),nothing")
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "prget"))
+  "d_lock*2")
 
 ;; STS.L from PR
 ;; Group:	CO
 ;; Latency: 	2
 ;; Issue Rate: 	2
 
-(define_insn_reservation "prload_mem" 2 
-          (eq_attr "type" "pstore")
-           "(issue+pcr_addrcalc),(pipe_01+int+pcr_addrcalc),(int+memory+pcr_addrcalc),memory")
+(define_insn_reservation "sh4_prstore_mem" 2 
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "pstore"))
+  "d_lock*2,nothing,memory")
 
 ;; LDS to FPSCR
 ;; Group:	CO
@@ -10758,9 +10729,10 @@
 ;; Issue Rate: 	1
 ;; F1 is blocked for last three cycles. 
 
-(define_insn_reservation "fpscr_store" 4
-        (eq_attr "insn_class" "lds_to_fpscr")
-       "issue,int,F1*3")
+(define_insn_reservation "fpscr_load" 4
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "gp_fpscr"))
+  "d_lock,nothing,F1*3")
 
 ;; LDS.L to FPSCR
 ;; Group:	CO
@@ -10769,9 +10741,10 @@
 ;; Issue Rate: 	1
 ;; F1 is blocked for last three cycles.
 
-(define_insn_reservation "fpscr_store_mem" 4
-        (eq_attr "insn_class"  "ldsmem_to_fpscr") 
-        "issue,(int+memory),(F1+memory),F1*2")
+(define_insn_reservation "fpscr_load_mem" 4
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type"  "mem_fpscr"))
+  "d_lock,nothing,(F1+memory),F1*2")
 
 
 ;; Fixed point multiplication (DMULS.L DMULU.L MUL.L MULS.W,MULU.W)
@@ -10780,28 +10753,49 @@
 ;; Issue Rate: 	1
 
 (define_insn_reservation "multi" 4
-	(eq_attr "type" "smpy,dmpy")
- 	"issue,(issue+int+f1_1),(int+f1_1),(f1_1|f1_2)*2,F2,FS")
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "smpy,dmpy"))
+  "d_lock,(d_lock+f1_1),(f1_1|f1_2)*3,F2")
+
+;; Fixed STS from MACL / MACH
+;; Group:	CO
+;; Latency: 	3
+;; Issue Rate: 	1
+
+(define_insn_reservation "sh4_mac_gp" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "mac_gp"))
+  "d_lock")
 
 
 ;; Single precision floating point computation FCMP/EQ,
-;; FCP/GT, FADD, FLOAT, FMAC, FMUL, FSUB, FTRC, FRVHG, FSCHG
+;; FCMP/GT, FADD, FLOAT, FMAC, FMUL, FSUB, FTRC, FRVHG, FSCHG
 ;; Group:	FE
-;; Latency: 	4
+;; Latency: 	3/4
 ;; Issue Rate: 	1
 
-(define_insn_reservation "fp_arith"  4
-              (eq_attr "type" "fp")
- 	      "issue,F1,F2,FS")
+(define_insn_reservation "fp_arith"  3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "fp"))
+  "issue,F01,F2")
+
+(define_insn_reservation "fp_arith_ftrc"  3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "ftrc_s"))
+  "issue,F01,F2")
+
+(define_bypass 1 "fp_arith_ftrc" "sh4_fpul_gp")
 
 ;; Single Precision FDIV/SQRT
 ;; Group:	FE
-;; Latency: 	12/13
+;; Latency: 	12/13 (FDIV); 11/12 (FSQRT)
 ;; Issue Rate: 	1
+;; We describe fdiv here; fsqrt is actually one cycle faster.
 
-(define_insn_reservation "fp_div" 13
-               (eq_attr "type" "fdiv")
-               "issue,F1+F3,F1+F2+F3,F3*7,F1+F3,F2,FS")
+(define_insn_reservation "fp_div" 12
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "fdiv"))
+  "issue,F01+F3,F2+F3,F3*7,F1+F3,F2")
 
 ;; Double Precision floating point computation
 ;; (FCNVDS, FCNVSD, FLOAT, FTRC)
@@ -10809,34 +10803,51 @@
 ;; Latency: 	(3,4)/5
 ;; Issue Rate: 	1
 
-(define_insn_reservation "dp_float" 5
-         (eq_attr "type" "dfp_conv")
-	 "issue,F1,F1+F2,F2+FS,FS")
+(define_insn_reservation "dp_float" 4
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "dfp_conv"))
+  "issue,F01,F1+F2,F2")
 
-;; Double-precision floating-point (FADD ,FMUL,FSUB) 
+;; Double-precision floating-point (FADD,FMUL,FSUB) 
 ;; Group:	FE
 ;; Latency: 	(7,8)/9
 ;; Issue Rate: 	1
 
-(define_insn_reservation "fp_double_arith" 9
-        (eq_attr "type" "dfp_arith")
-	"issue,F1,F1+F2,fpu*4,F2+FS,FS")
+(define_insn_reservation "fp_double_arith" 8
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "dfp_arith"))
+  "issue,F01,F1+F2,fpu*4,F2")
 
 ;; Double-precision FCMP (FCMP/EQ,FCMP/GT) 
-;; Group:	FE
+;; Group:	CO
 ;; Latency: 	3/5
 ;; Issue Rate: 	2
 
-(define_insn_reservation "fp_double_cmp" 5 
-        (eq_attr "type" "dfp_cmp")
-	"issue,(issue+F1),F1+F2,F2+FS,FS")
+(define_insn_reservation "fp_double_cmp" 3 
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "dfp_cmp"))
+  "d_lock,(d_lock+F01),F1+F2,F2")
 
 ;; Double precision FDIV/SQRT
 ;; Group:	FE
 ;; Latency: 	(24,25)/26
 ;; Issue Rate: 	1
 
-(define_insn_reservation "dp_div" 26
-        (eq_attr "type" "dfdiv")
- 	"issue,F1+F3,F1+F2+F3,F2+F3+FS,F3*16,F1+F3,F1+F2+F3,fpu+F3,F2+FS,FS")
+(define_insn_reservation "dp_div" 25
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "dfdiv"))
+  "issue,F01+F3,F1+F2+F3,F2+F3,F3*16,F1+F3,(fpu+F3)*2,F2")
 
+
+;; Use the branch-not-taken case to model arith3 insns.  For the branch taken
+;; case, we'd get a d_lock instead of issue at the end.
+(define_insn_reservation "arith3" 3
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "arith3"))
+  "issue,d_lock+pcr_addrcalc,issue")
+
+;; arith3b insns schedule the same no matter if the branch is taken or not.
+(define_insn_reservation "arith3b" 2
+  (and (eq_attr "pipe_model" "sh4")
+       (eq_attr "type" "arith3"))
+  "issue,d_lock+pcr_addrcalc")

@@ -208,6 +208,8 @@ static const char *sh_strip_name_encoding PARAMS ((const char *));
 static void sh_init_builtins PARAMS ((void));
 static void sh_media_init_builtins PARAMS ((void));
 static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static int flow_dependent_p PARAMS ((rtx, rtx));
+static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
 
 
 /* Initialize the GCC target structure.  */
@@ -6994,7 +6996,7 @@ sh_adjust_cost (insn, link, dep_insn, cost)
      rtx dep_insn;
      int cost;
 {
-  rtx reg;
+  rtx reg, use_pat;
 
   if (TARGET_SHMEDIA)
     {
@@ -7007,47 +7009,117 @@ sh_adjust_cost (insn, link, dep_insn, cost)
           && get_attr_is_mac_media (dep_insn))
         cost = 1;
     }
-  else if (GET_CODE(insn) == CALL_INSN)
+  else if (REG_NOTE_KIND (link) == 0)
     {
+      enum attr_type dep_type, type;
+
+      if (recog_memoized (insn) < 0
+	  || recog_memoized (dep_insn) < 0)
+	return;
+
+      dep_type = get_attr_type (dep_insn);
+      if (dep_type == TYPE_FLOAD || dep_type == TYPE_PCFLOAD)
+	cost--;
+      if ((dep_type == TYPE_LOAD_SI || dep_type == TYPE_PCLOAD_SI)
+	  && (type = get_attr_type (insn)) != TYPE_CALL
+	  && type != TYPE_SFUNC)
+	cost--;
+
       /* The only input for a call that is timing-critical is the
 	 function's address.  */
-      rtx call = PATTERN (insn);
+      if (GET_CODE(insn) == CALL_INSN)
+	{
+	  rtx call = PATTERN (insn);
 
-      if (GET_CODE (call) == PARALLEL)
-	call = XVECEXP (call, 0 ,0);
-      if (GET_CODE (call) == SET)
-	call = SET_SRC (call);
-      if (GET_CODE (call) == CALL && GET_CODE (XEXP (call, 0)) == MEM
-	  && ! reg_set_p (XEXP (XEXP (call, 0), 0), dep_insn))
-	cost = 0;
-    }
-  /* All sfunc calls are parallels with at least four components.
-     Exploit this to avoid unnecessary calls to sfunc_uses_reg.  */
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL
-	   && XVECLEN (PATTERN (insn), 0) >= 4
-	   && (reg = sfunc_uses_reg (insn)))
-    {
+	  if (GET_CODE (call) == PARALLEL)
+	    call = XVECEXP (call, 0 ,0);
+	  if (GET_CODE (call) == SET)
+	    call = SET_SRC (call);
+	  if (GET_CODE (call) == CALL && GET_CODE (XEXP (call, 0)) == MEM
+	      && ! reg_set_p (XEXP (XEXP (call, 0), 0), dep_insn))
+	    cost = 0;
+	}
       /* Likewise, the most timing critical input for an sfuncs call
 	 is the function address.  However, sfuncs typically start
 	 using their arguments pretty quickly.
 	 Assume a four cycle delay before they are needed.  */
-      if (! reg_set_p (reg, dep_insn))
-	cost -= TARGET_SUPERSCALAR ? 40 : 4;
+      /* All sfunc calls are parallels with at least four components.
+	 Exploit this to avoid unnecessary calls to sfunc_uses_reg.  */
+      else if (GET_CODE (PATTERN (insn)) == PARALLEL
+	       && XVECLEN (PATTERN (insn), 0) >= 4
+	       && (reg = sfunc_uses_reg (insn)))
+	{
+	  if (! reg_set_p (reg, dep_insn))
+	    cost -= 4;
+	}
+      /* When the preceding instruction loads the shift amount of
+	 the following SHAD/SHLD, the latency of the load is increased
+	 by 1 cycle.  */
+      else if (TARGET_SH4
+	       && get_attr_type (insn) == TYPE_DYN_SHIFT
+	       && get_attr_any_int_load (dep_insn) == ANY_INT_LOAD_YES
+	       && reg_overlap_mentioned_p (SET_DEST (PATTERN (dep_insn)),
+					   XEXP (SET_SRC (single_set(insn)),
+						 1)))
+	cost++;
+      /* When an LS group instruction with a latency of less than
+	 3 cycles is followed by a double-precision floating-point
+	 instruction, FIPR, or FTRV, the latency of the first
+	 instruction is increased to 3 cycles.  */
+      else if (cost < 3
+	       && get_attr_insn_class (dep_insn) == INSN_CLASS_LS_GROUP
+	       && get_attr_dfp_comp (insn) == DFP_COMP_YES)
+	cost = 3;
+      /* The lsw register of a double-precision computation is ready one
+	 cycle earlier.  */
+      else if (reload_completed
+	       && get_attr_dfp_comp (dep_insn) == DFP_COMP_YES
+	       && (use_pat = single_set (insn))
+	       && ! regno_use_in (REGNO (SET_DEST (single_set (dep_insn))),
+				  SET_SRC (use_pat)))
+	cost -= 1;
+
+      if (get_attr_any_fp_comp (dep_insn) == ANY_FP_COMP_YES
+	  && get_attr_late_fp_use (insn) == LATE_FP_USE_YES)
+	cost -= 1;
     }
-  /* Adjust load_si / pcload_si type insns latency.  Use the known
-     nominal latency and form of the insn to speed up the check.  */
-  else if (cost == 3
-	   && GET_CODE (PATTERN (dep_insn)) == SET
-	   /* Latency for dmpy type insns is also 3, so check the that
-	      it's actually a move insn.  */
-	   && general_movsrc_operand (SET_SRC (PATTERN (dep_insn)), SImode))
+  /* An anti-dependence penalty of two applies if the first insn is a double
+     precision fadd / fsub / fmul.  */
+  else if (REG_NOTE_KIND (link) == REG_DEP_ANTI
+	   && recog_memoized (dep_insn) >= 0
+	   && get_attr_type (dep_insn) == TYPE_DFP_ARITH
+	   /* A lot of alleged anti-flow dependences are fake,
+	      so check this one is real.  */
+	   && flow_dependent_p (dep_insn, insn))
     cost = 2;
-  else if (cost == 30
-	   && GET_CODE (PATTERN (dep_insn)) == SET
-	   && GET_MODE (SET_SRC (PATTERN (dep_insn))) == SImode)
-    cost = 20;
+
 
   return cost;
+}
+
+/* Check if INSN is flow-dependent on DEP_INSN.  Can also be used to check
+   if DEP_INSN is anti-flow dependent on INSN.  */
+static int
+flow_dependent_p (insn, dep_insn)
+     rtx insn, dep_insn;
+{
+  rtx tmp = PATTERN (insn);
+
+  note_stores (PATTERN (dep_insn), flow_dependent_p_1, &tmp);
+  return tmp == NULL_RTX;
+}
+
+/* A helper function for flow_dependent_p called through note_stores.  */
+static void
+flow_dependent_p_1 (x, pat, data)
+     rtx x;
+     rtx pat ATTRIBUTE_UNUSED;
+     void *data;
+{
+  rtx * pinsn = (rtx *) data;
+
+  if (*pinsn && reg_referenced_p (x, *pinsn))
+    *pinsn = NULL_RTX;
 }
 
 /* For use by ALLOCATE_INITIAL_VALUE.  Note that sh.md contains some
@@ -7060,27 +7132,26 @@ sh_pr_n_sets ()
   return REG_N_SETS (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
 }
 
-/* This Function Returns non zero if DFA based scheduler
-   interface is to be used.At present supported only for
-   SH4.  */
+/* This Function returns non zero if the DFA based scheduler interface
+   is to be used.  At present this is supported for the SH4 only.  */
 static int
 sh_use_dfa_interface()
 {
-        if (TARGET_SH4)
-                return 1;
-        else
-                return 0;
+  if (TARGET_HARD_SH4)
+    return 1;
+  else
+    return 0;
 }
 
-/* This function returns "2" that signifies dual issue 
-   for SH4 processor.To be used by DFA pipeline description.  */
+/* This function returns "2" to indicate dual issue for the SH4
+   processor.  To be used by the DFA pipeline description.  */
 static int
 sh_issue_rate()
 {
-	if(TARGET_SH4)
-		return 2;
-	else
-		return 1;
+  if (TARGET_SUPERSCALAR)
+    return 2;
+  else
+    return 1;
 }
 
 /* SHmedia requires registers for branches, so we can't generate new
