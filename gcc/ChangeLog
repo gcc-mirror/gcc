@@ -1,5 +1,16 @@
 2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* alpha/osf5.h (CPP_XFLOAT_SPEC): Override default definition.
+	(ASM_OLDAS_SPEC): Likewise.
+
+	* alpha/osf.h (CPP_XFLOAT_SPEC): Define.
+	(CPP_SUBTARGET_SPEC): Use it.
+	(ASM_OLDAS_SPEC): Define.
+	(ASM_SPEC): Use it.
+	(SUBTARGET_EXTRA_SPECS): Define, declare the new specs above.
+
+2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config/alpha/alpha.c (alpha_va_arg): Handle TFmode, TCmode args,
 	passed by reference.
 
