@@ -123,7 +123,7 @@
 ;; Function units of the SPARC
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
-;;                       {ready-delay} {busy-delay} [{conflict-list}])
+;;                       {ready-delay} {issue-delay} [{conflict-list}])
 
 ;; The integer ALU.
 ;; (Noted only for documentation; units that take one cycle do not need to
@@ -133,7 +133,7 @@
 ;;  (eq_attr "type" "unary,binary,move,address") 1 0)
 
 ;; Memory with load-delay of 1 (i.e., 2 cycle load).
-(define_function_unit "memory" 1 0 (eq_attr "type" "load,fpload") 2 0)
+(define_function_unit "memory" 1 1 (eq_attr "type" "load,fpload") 2 0)
 
 ;; SPARC has two floating-point units: the FP ALU,
 ;; and the FP MUL/DIV/SQRT unit.
@@ -154,10 +154,10 @@
 ;; The CY7C602 can only support 2 fp isnsn simultaneously.
 ;; More insns cause the chip to stall.
 
-(define_function_unit "fp_alu" 1 2 (eq_attr "type" "fp") 5 0)
-(define_function_unit "fp_mul" 1 2 (eq_attr "type" "fpmul") 7 0)
-(define_function_unit "fp_div" 1 2 (eq_attr "type" "fpdiv") 37 0)
-(define_function_unit "fp_sqrt" 1 2 (eq_attr "type" "fpsqrt") 63 0)
+(define_function_unit "fp_alu" 1 1 (eq_attr "type" "fp") 5 0)
+(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpmul") 7 0)
+(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpdiv") 37 0)
+(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpsqrt") 63 0)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
