@@ -1,3 +1,7 @@
+2000-04-23  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.c (mark_reference_fields): Use int_byte_position.
+
 2000-04-22  Tom Tromey  <tromey@cygnus.com>
 
 	* boehm.c (mark_reference_fields): Only call byte_position on
